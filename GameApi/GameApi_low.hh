@@ -499,6 +499,22 @@ enum
 #define Low_SDL_BUTTON(x) (1 << ((x)-1))
 #define Low_KMOD_CTRL (0x40|0x80)
 
+struct wl_display;
+struct wl_surface;
+struct wl_shell_surface;
+
+struct Low_SDL_SysWMinfo
+{
+  wl_display *display;
+  wl_surface *surface;
+  wl_shell_surface *shell_surface;
+};
+
+struct Low_SDL_DisplayMode
+{
+  int w,h;
+};
+
 struct Low_SDL_Event_KeySym
 {
   int sym;
@@ -577,6 +593,8 @@ public:
   virtual void init()=0;
   virtual void cleanup()=0;
   virtual void SDL_Init(int flags)=0;
+  virtual void SDL_GetCurrentDisplayMode(int index, Low_SDL_DisplayMode *mode)=0;
+  virtual bool SDL_GetWindowWMInfo(Low_SDL_Window *window, Low_SDL_SysWMinfo *info)=0;
   virtual void SDL_GL_SetAttribute(int flag, int val)=0;
   virtual void SDL_SetHint(const char *flag, const char *str)=0;
   virtual void* SDL_GL_GetProcAddress(char *name)=0;
@@ -611,6 +629,8 @@ public:
   virtual void SDL_GL_DeleteContext(Low_SDL_GLContext ctx)=0;
   virtual const char *SDL_GetError()=0;
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)=0;
+  virtual void SDL_SetWindowPosition(Low_SDL_Window *window, int x, int y)=0;
+  virtual void SDL_GetWindowPosition(Low_SDL_Window *window, int *x, int *y)=0;
   virtual char *SDL_GetClipboardText()=0;
   virtual int SDL_SetClipboardText(const char *text)=0;
 };

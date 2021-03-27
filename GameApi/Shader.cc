@@ -47,6 +47,12 @@
 //#define OPENGL_ES 1
 #endif
 
+//#define WAYLAND 1
+
+#ifdef WAYLAND
+#define OPENGL_ES 1
+#endif
+
 
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
@@ -972,7 +978,7 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 phong(vec4 pos)\n"
 "{\n"
-"    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
+    "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
 "    ex_Normal2 = n;\n"
     "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
@@ -981,6 +987,29 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+"#ifdef SKELETON\n"
+"attribute vec4 JOINTS_0;\n"
+"attribute vec4 WEIGHTS_0;\n"
+    //"uniform mat4 inverseBind[64];\n"
+"uniform mat4 jointMatrix[64];\n"
+"mat4 getSkinningMatrix()\n"
+"{\n"
+    "mat4 skin = mat4(0);\n"
+    "skin += \n"
+    "    WEIGHTS_0.x * jointMatrix[int(JOINTS_0.x)] +\n"
+    "    WEIGHTS_0.y * jointMatrix[int(JOINTS_0.y)] +\n"
+    "    WEIGHTS_0.z * jointMatrix[int(JOINTS_0.z)] +\n"
+    "    WEIGHTS_0.w * jointMatrix[int(JOINTS_0.w)];\n"
+    "return skin;\n"
+    "}\n"
+"vec4 gltf_anim(vec4 pos)\n"
+"{\n"
+    "   return (getSkinningMatrix()* pos);\n"   
+"}\n"
+"#endif\n"
+
+    
 "#ifdef EX_NORMAL2\n"
 "#ifdef IN_NORMAL\n"
 "#ifdef IN_POSITION\n"
@@ -1008,7 +1037,7 @@ ShaderFile::ShaderFile()
 "#ifdef IN_TEXCOORD\n"
 "vec4 bump_phong(vec4 pos)\n"
 "{\n"
-"    ex_Normal2 = normalize(mat3(in_iMV)*in_Normal);\n"
+    "    ex_Normal2 = normalize(mat3(in_iMV)*  in_Normal);\n"
     "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n" //normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "    return pos;\n"
@@ -1104,7 +1133,7 @@ ShaderFile::ShaderFile()
 "#ifdef IN_NORMAL\n"
 "vec4 gltf(vec4 pos)\n"
 "{\n"
-"   ex_Position = in_Position;\n"
+    "   ex_Position = pos.xyz; /*in_Position*/;\n"
 "#ifdef INST\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
@@ -1278,21 +1307,37 @@ ShaderFile::ShaderFile()
 "float angle2 = atan(a.y,a.x)+atan(b.y,b.x);\n"
 "return vec3(sin(angle1)*cos(angle2),sin(angle1)*sin(angle2),cos(angle1));\n"
 "}\n"
+"const float GAMMA2=2.2;\n"
+"const float INV_GAMMA2 = 1.0/GAMMA2;\n"
+"vec3 LINEARtoSRGB2(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA2));\n"
+"}\n"
+"vec3 SRGBtoLINEAR2(vec3 srgbIn)\n"
+"{\n"
+"  return pow(srgbIn.xyz,vec3(GAMMA2));\n"
+"}\n"
+
 "vec4 phong(vec4 rgb)\n"
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
     "    vec3 normal = ex_Normal2;\n"
-    "    c+=intensity(normal)*level1_color.rgb;\n"
-    "    c+=intensity2(normal)*level2_color.rgb;\n"
+    "    c+=intensity(normal)*SRGBtoLINEAR2(level1_color.rgb);\n"
+    "    c+=intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb);\n"
     //"    c = sqrt(c);\n"
     "     c+=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
-    "    return vec4(c,rgb.a);\n"
+    "    return vec4(LINEARtoSRGB2(c),rgb.a);\n"
     "}\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
-
+"#ifdef SKELETON\n"
+"vec4 gltf_anim(vec4 rgb)\n"
+"    {\n"
+"     return rgb;\n"
+"    }\n"
+"#endif\n"
     "#ifdef EX_NORMAL2\n"
 "#ifdef EX_POSITION\n"
 "uniform float edge_width;\n"
@@ -2174,7 +2219,8 @@ ShaderFile::ShaderFile()
 #ifdef EMSCRIPTEN
 "#version 300 es\n"
 #else
-"#version 330\n"
+    //"#version 330\n"
+    "#version 460\n"
 #endif
 "precision highp float;\n"
     //   "uniform float globe_r;\n"
@@ -2184,6 +2230,8 @@ ShaderFile::ShaderFile()
 "#ifdef IN_N\n"
 "uniform mat4 in_N;\n"
 "#endif\n"
+"uniform mat4 in_iMV;\n"
+
 "uniform float in_POS;\n"
 "uniform float time;\n"
 "#ifdef INST\n"
@@ -2202,6 +2250,10 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef IN_TEXCOORD\n"
 "in vec3 in_TexCoord;\n"
+"#endif\n"
+"#ifdef SKELETON\n"
+"in vec4 JOINTS_0;\n"
+"in vec4 WEIGHTS_0;\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "out vec3 ex_TexCoord;\n"
@@ -2259,7 +2311,7 @@ ShaderFile::ShaderFile()
 "#ifdef EX_LIGHTPOS2\n"
 "vec4 phong(vec4 pos)\n"
 "{\n"
-    "   vec3 n = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"    
+    "   vec3 n = normalize(mat3(in_iMV)* in_Normal);\n"    
     "    ex_Normal2 = n;\n"
     "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
@@ -2268,6 +2320,27 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+
+"#ifdef SKELETON\n"
+    //"uniform mat4 inverseBind[64];\n"
+"uniform mat4 jointMatrix[64];\n"
+    "mat4 getSkinningMatrix()\n"
+"{\n"
+    "mat4 skin = mat4(0);\n"
+    "skin += \n"
+    "    WEIGHTS_0.x * jointMatrix[int(JOINTS_0.x)] +\n"
+    "    WEIGHTS_0.y * jointMatrix[int(JOINTS_0.y)] +\n"
+    "    WEIGHTS_0.z * jointMatrix[int(JOINTS_0.z)] +\n"
+    "    WEIGHTS_0.w * jointMatrix[int(JOINTS_0.w)];\n"
+    "return skin;\n"
+    "}\n"
+"vec4 gltf_anim(vec4 pos)\n"
+"{\n"
+    "   return (getSkinningMatrix()*pos);\n" 
+"}\n"
+"#endif\n"
+
+    
 "#ifdef EX_NORMAL2\n"
 "#ifdef IN_NORMAL\n"
 "#ifdef IN_POSITION\n"
@@ -2275,7 +2348,7 @@ ShaderFile::ShaderFile()
 "out vec3 eye;\n"
 "vec4 edge(vec4 pos)\n"
 "{\n"
-    "   vec3 n = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"   
+    "   vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"   
     // "    vec3 n = normalize(mat3(inverse(in_MV))*in_Normal);\n"
 "    ex_Normal2 = n;\n"
 "    ex_Position = in_Position;\n"
@@ -2310,7 +2383,7 @@ ShaderFile::ShaderFile()
 "#ifdef IN_TEXCOORD\n"
 "vec4 bump_phong(vec4 pos)\n"
 "{\n"
-"    ex_Normal2 = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
+"    ex_Normal2 = normalize(mat3(in_iMV)*in_Normal);\n"
     "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n" //normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "     ex_TexCoord = in_TexCoord;\n"
     "    return pos;\n"
@@ -2391,7 +2464,7 @@ ShaderFile::ShaderFile()
     "vec4 dyn_lights(vec4 pos)\n"
     "{\n"
     " ex_Position = in_Position;\n"
-"    ex_Normal2 = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
+"    ex_Normal2 = normalize(mat3(in_iMV)*in_Normal);\n"
     //"#ifdef INST\n"
     //"  ex_Position = in_Position + in_InstPos;\n"
     //"#endif\n"
@@ -2413,7 +2486,7 @@ ShaderFile::ShaderFile()
 "vec4 diffuse(vec4 pos)\n"
 "{\n"
 
-"    ex_Normal2 =normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
+"    ex_Normal2 =normalize(mat3(in_iMV)*in_Normal);\n"
     "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
 "    return pos;\n"
 "}\n"
@@ -2428,7 +2501,7 @@ ShaderFile::ShaderFile()
 "vec4 specular(vec4 pos)\n"
 "{\n"
     //    "    ex_Normal2 = normalize(vec3(in_T * in_MV * vec4(in_Normal,0.0)));\n"
-"    ex_Normal2 = mat3(transpose(inverse(in_MV)))*in_Normal;\n"
+"    ex_Normal2 = mat3(in_iMV)*in_Normal;\n"
 "    ex_LightPos2 = normalize(vec3(in_T*in_MV*vec4(light_dir,1.0)));\n"
 "    return pos;\n"
 "}\n"
@@ -2677,14 +2750,14 @@ ShaderFile::ShaderFile()
 
 "vec4 gltf(vec4 pos)\n"
 "{\n"
-    "   ex_Position = in_Position;\n"
+    "   ex_Position = pos.xyz /*in_Position*/;\n"
 "#ifdef INST\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
 "  ex_Position = in_Position * in_InstMat;\n"
 "#endif\n"
-"  ex_Normal = normalize(mat3(transpose(inverse(in_MV)))*in_Normal);\n"
+"  ex_Normal = normalize(mat3(in_iMV)*in_Normal);\n"
 "   ex_Color = in_Color;\n"
 "   ex_TexCoord = in_TexCoord;\n"
 "   return pos;\n"
@@ -2707,7 +2780,8 @@ ShaderFile::ShaderFile()
 #ifdef EMSCRIPTEN
 "#version 300 es\n"
 #else
-"#version 330\n"
+    //"#version 330\n"
+    "#version 460\n"
 #endif
 "#ifdef CUBEMAPTEXTURES\n"
 "#extension GL_NV_shadow_samplers_cube : enable\n"
@@ -3145,6 +3219,12 @@ ShaderFile::ShaderFile()
     "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
+"#ifdef SKELETON\n"
+"vec4 gltf_anim(vec4 rgb)\n"
+"    {\n"
+"     return rgb;\n"
+"    }\n"
 "#endif\n"
 
     "#ifdef EX_NORMAL2\n"
@@ -4094,7 +4174,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -4111,7 +4191,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
       std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

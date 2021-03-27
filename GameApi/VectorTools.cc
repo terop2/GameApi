@@ -527,6 +527,10 @@ static float det(const Matrix &m)
   return det2(ref(A))*det2(minus(ref(D),mult(mult(ref(C),inv(ref(A))), ref(B))));
 
 }
+float Matrix::Determinant(const Matrix &m) {
+  return det(m);
+}
+
 static float det(const float *m[])
 {
   int a=0;
@@ -674,6 +678,7 @@ Matrix Matrix::Inverse(const Matrix &m)
 		 C12/A, C22/A, C32/A, C42/A,
 		 C13/A, C23/A, C33/A, C43/A,
 		 C14/A, C24/A, C34/A, C44/A } };
+  //std::cout << inv << std::endl;
   //return Matrix::Transpose(inv);
   return inv;
 }

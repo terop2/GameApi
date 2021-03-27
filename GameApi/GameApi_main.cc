@@ -27,6 +27,10 @@ EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 }
 extern Low_SDL_Window *sdl_window;
 
+int g_has_wayland = false;
+extern int g_display_width;
+extern int g_display_height;
+
 EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height, std::string window_title, bool vr_init)
 {
   set_corner(0,0,screen_width, screen_height);
@@ -45,6 +49,12 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   OpenglLowApi *ogl = g_low->ogl;
   g_low->sdl->SDL_SetWindowTitle(sdl_window, window_title.c_str());
 
+  if (g_has_wayland)
+    {
+      screenx = g_display_width;
+      screeny = g_display_height;
+    }
+  
   p->screen_width = screenx;
   p->screen_height = screeny;
   time = g_low->sdl->SDL_GetTicks();

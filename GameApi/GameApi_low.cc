@@ -61,6 +61,10 @@
 #include "GameApi_h.hh"
 #include <SDL_mixer.h>
 
+#ifdef WAYLAND
+#include <SDL_syswm.h>
+#endif
+
 
 #ifdef WINDOWS
 #define GLEW_HACK
@@ -1021,10 +1025,29 @@ class SDLApi : public SDLLowApi
     ::SDL_SetHint(flag,str);
   }
 
+  virtual void SDL_GetCurrentDisplayMode(int index, Low_SDL_DisplayMode *mode)
+  {
+    SDL_DisplayMode m;
+    ::SDL_GetCurrentDisplayMode(index, &m);
+    mode->w = m.w;
+    mode->h = m.h;
+  }
+
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)
   {
     ::SDL_SetWindowSize((SDL_Window*)(window->ptr), w,h);
   }
+  virtual void SDL_SetWindowPosition(Low_SDL_Window *window, int x, int y)
+  {
+    ::SDL_SetWindowPosition((SDL_Window*)(window->ptr),x,y);
+  }
+								       
+  virtual void SDL_GetWindowPosition(Low_SDL_Window *window, int *x, int *y)
+  {
+    ::SDL_GetWindowPosition((SDL_Window*)(window->ptr),x,y);
+  }
+
+  
   virtual char *SDL_GetClipboardText() {
     return ::SDL_GetClipboardText();
   }
@@ -1081,6 +1104,23 @@ class SDLApi : public SDLLowApi
   virtual unsigned long long SDL_GetPerformanceFrequency() { return ::SDL_GetPerformanceFrequency(); }
 
   virtual void SDL_Delay(int ms) { ::SDL_Delay(ms); }
+
+  virtual bool SDL_GetWindowWMInfo(Low_SDL_Window *window, Low_SDL_SysWMinfo *info)
+  {
+    bool b = false;
+#ifdef WAYLAND
+    SDL_Window *win = (SDL_Window*)(window->ptr);
+    SDL_SysWMinfo info2;
+    SDL_VERSION(&info2.version);
+    b = ::SDL_GetWindowWMInfo(win, &info2);
+    info->display = info2.info.wl.display;
+    info->surface = info2.info.wl.surface;
+    info->shell_surface = info2.info.wl.shell_surface;
+#endif
+    return b;
+  }
+
+  
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2) { 
     map_enums_sdl(x);
     map_enums_sdl(y);

@@ -1,4 +1,5 @@
 
+
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -19,7 +20,7 @@
 #include <holoplay.h>
 #endif
 
-
+extern std::string g_msg_string;
 bool is_mobile(GameApi::EveryApi &ev)
 {
   return ev.mainloop_api.get_screen_width() < 700;
@@ -31,6 +32,7 @@ extern Splitter *g_new_splitter;
 extern Envi_2 *g_new_blocker_env;
 
 #define NO_MV 1
+void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 
 class MaterialForward : public Material
 {
@@ -923,12 +925,42 @@ private:
   Fetcher<float> *fetch;
 };
 
+class InterpolateMovement2 : public Movement
+{
+public:
+  InterpolateMovement2(Movement *mn1, Movement *mn2, float start_time, float end_time) : mn1(mn1), mn2(mn2), start_time(start_time), end_time(end_time) { }
+  virtual void event(MainLoopEvent &e) { mn1->event(e); mn2->event(e);}
+  virtual void frame(MainLoopEnv &e) { mn1->frame(e); mn2->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { mn1->draw_frame(e); mn2->draw_frame(e); }
+  void draw_event(FrameLoopEvent &e) { mn1->draw_event(e); mn2->draw_event(e); }
+  
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time, float delta_time) const {
+    float t = (time - start_time)/(end_time-start_time);
+    if (t<0) return mn1->get_whole_matrix(time,delta_time);
+    if (t>1.0) return mn2->get_whole_matrix(time,delta_time);
+    return Matrix::Interpolate(mn1->get_whole_matrix(time,delta_time),
+			       mn2->get_whole_matrix(time,delta_time),
+			       t);
+  }
+private:
+  Movement *mn1, *mn2;
+  float start_time, end_time;
+};
+
 EXPORT GameApi::MN GameApi::MovementNode::mn_interpolate(MN mn1, MN mn2, FF value)
 {
   Movement *mn1_a = find_move(e,mn1);
   Movement *mn2_a = find_move(e,mn2);
   Fetcher<float> *fetch = find_float_fetcher(e,value);
   return add_move(e, new InterpolateMovement(mn1_a,mn2_a,fetch));
+}
+
+EXPORT GameApi::MN GameApi::MovementNode::mn_interpolate2(MN mn1, MN mn2, float start_time, float end_time)
+{
+  Movement *m1 = find_move(e, mn1);
+  Movement *m2 = find_move(e, mn2);
+  return add_move(e, new InterpolateMovement2(m1,m2, start_time, end_time));
 }
 
 class ColorStart : public ColorChange
@@ -1646,6 +1678,12 @@ EXPORT GameApi::MN GameApi::MovementNode::trans2(MN next, float dx, float dy, fl
 {
   Movement *nxt = find_move(e, next);
   return add_move(e, new MatrixMovement(nxt, Matrix::Translate(dx,dy,dz)));  
+}
+EXPORT GameApi::MN GameApi::MovementNode::matrix(MN next, M m)
+{
+  Movement *nxt = find_move(e, next);
+  Matrix mat = find_matrix(e, m);
+  return add_move(e, new MatrixMovement(nxt, mat));
 }
 EXPORT GameApi::MN GameApi::MovementNode::scale2(MN next, float sx, float sy, float sz)
 {
@@ -3262,7 +3300,10 @@ public:
   virtual int Size() const { return mat.size(); }
   virtual Matrix Index(int i) const
   {
-    return mat[i];
+    //std::cout << "MS_array: " << i << "<" << mat.size() << std::endl;
+    if (i>=0 && i<mat.size())
+      return mat[i];
+    return Matrix::Identity();
   }
 private:
   std::vector<Matrix> mat;
@@ -3299,6 +3340,7 @@ GameApi::MS GameApi::TreeApi::tree_ms(EveryApi &ev, T tree, float time)
   TreeStack *tree2 = find_tree(e, tree);
   return execute_recurse_matrix(e,ev, Matrix::Identity(), 0, tree2, time);
 }
+
 
 GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time)
 {
@@ -3347,6 +3389,68 @@ GameApi::MS GameApi::MatricesApi::repeat_ms(EveryApi &ev,MN mn, int val)
 {
   Movement *move = find_move(e,mn);
   return add_matrix_array(e, new RepeatMS(ev,move,val));
+}
+
+class InvMS : public MatrixArray
+{
+public:
+  InvMS(MatrixArray *next) : next(next) { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return next->Update(e); }
+  virtual int Size() const { return next->Size(); }
+  virtual Matrix Index(int i) const {
+    //std::cout << "INVERSE START" << std::endl;
+    Matrix m = Matrix::Inverse(next->Index(i));
+    //std::cout << "INVERSE END" << std::endl;
+    return m;
+  }
+  virtual unsigned int Color(int i) const {
+    return next->Color(i);
+  }
+private:
+  MatrixArray *next;
+};
+
+GameApi::MS GameApi::MatricesApi::inverse_ms(MS ms)
+{
+  MatrixArray *ms1 = find_matrix_array(e,ms);
+  return add_matrix_array(e, new InvMS(ms1));
+}
+
+class InterpolateMS : public MatrixArray
+{
+public:
+  InterpolateMS(MatrixArray *start, MatrixArray *end, float val) : start(start), end(end), val(val) { }
+
+  virtual void Prepare() { start->Prepare(); end->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { start->HandleEvent(event); end->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return start->Update(e) || end->Update(e); }
+  virtual int Size() const { return std::min(start->Size(), end->Size()); }
+  virtual Matrix Index(int i) const {
+    Matrix m1 = start->Index(i);
+    Matrix m2 = end->Index(i);
+    Matrix m;
+    int s = 16;
+    for(int i=0;i<s;i++) m.matrix[i] = val*m2.matrix[i] + (1.0-val)*m1.matrix[i];
+    return m;
+    //return Matrix::Interpolate(m1,m2,val);
+  }
+  virtual unsigned int Color(int i) const {
+    return Color::Interpolate(start->Color(i),end->Color(i), val);
+  }
+private:
+  MatrixArray *start;
+  MatrixArray *end;
+  float val;
+
+};
+
+GameApi::MS GameApi::MatricesApi::interpolate(MS start, MS end, float val)
+{
+  MatrixArray *start_ = find_matrix_array(e, start);
+  MatrixArray *end_ = find_matrix_array(e, end);
+  return add_matrix_array(e, new InterpolateMS(start_, end_, val));
 }
 
 class DefaultMaterial : public MaterialForward
@@ -4149,6 +4253,7 @@ public:
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
@@ -4163,6 +4268,7 @@ public:
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
@@ -4178,6 +4284,7 @@ public:
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
@@ -4194,6 +4301,7 @@ public:
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
@@ -4209,6 +4317,7 @@ public:
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
@@ -4235,6 +4344,7 @@ public:
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P I10=p; 
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -4243,6 +4353,7 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -4250,6 +4361,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,p,ms,bm);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -4258,6 +4370,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     // NOT WORKING
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
@@ -4272,6 +4385,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     //GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
@@ -4297,6 +4411,7 @@ public:
   CubemapTextureMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> bm, float mix, float mix2) : ev(ev), bm(bm), mix(mix),mix2(mix2) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_cubemap(ev,I10,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17, mix,mix2);
@@ -4305,6 +4420,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap(ev,p,pts,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
@@ -4313,6 +4429,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap_matrix(ev,p,ms,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -4322,6 +4439,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     // NOT WORKING
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
@@ -4336,6 +4454,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     //GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
@@ -4363,6 +4482,7 @@ public:
   ManyTextureMaterial2(GameApi::EveryApi &ev, float mix) : ev(ev), mix(mix) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture2(ev,I10);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17, mix);
@@ -4371,6 +4491,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture2(ev,p,pts);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
@@ -4379,6 +4500,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture2_matrix(ev,p,ms);
     GameApi::ML I18=ev.polygon_api.texture_many_shader(ev, I17,mix);
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -4386,6 +4508,7 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     // NOT WORKING
 #if 0
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
@@ -4404,6 +4527,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    confirm_texture_usage(ev.get_env(),p);
 #if 0
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
@@ -4890,6 +5014,7 @@ public:
   {
     //std::cout << "PhongMaterial instmatrix" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
+    std::cout << "mat2_inst_matrix: coll=" << coll << std::endl;
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
 
@@ -5428,10 +5553,17 @@ public:
     GameApi::LI li = ev.lines_api.fur(pts, center, dist);
     GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
     GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
-    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::P pl2 = ev.polygon_api.recalculate_normals(pl);
+    //GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
     GameApi::ML ml;
     ml.id = next->mat(pl2.id);
-    return ml;
+    GameApi::ML ml2;
+    ml2.id = next->mat(p.id);
+    std::vector<GameApi::ML> mls;
+    mls.push_back(ml);
+    mls.push_back(ml2);
+    return ev.mainloop_api.array_ml(ev,mls);
+    //return ml;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
@@ -5439,10 +5571,17 @@ public:
     GameApi::LI li = ev.lines_api.fur(pts2, center, dist);
     GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
     GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
-    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::P pl2 = ev.polygon_api.recalculate_normals(pl);
+    //GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
     GameApi::ML ml;
     ml.id = next->mat_inst(pl2.id, pts.id);
-    return ml;
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst(p.id, pts.id);
+    std::vector<GameApi::ML> mls;
+    mls.push_back(ml);
+    mls.push_back(ml2);
+    return ev.mainloop_api.array_ml(ev,mls);
+    //return ml;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
@@ -5450,10 +5589,18 @@ public:
     GameApi::LI li = ev.lines_api.fur(pts2, center, dist);
     GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
     GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
-    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+      GameApi::P pl2 = ev.polygon_api.recalculate_normals(pl);
+  //GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(pl2.id, ms.id);
-    return ml;
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst_matrix(p.id, ms.id);
+    std::vector<GameApi::ML> mls;
+    mls.push_back(ml);
+    mls.push_back(ml2);
+    return ev.mainloop_api.array_ml(ev,mls);
+
+    //    return ml;
 
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -5462,10 +5609,18 @@ public:
     GameApi::LI li = ev.lines_api.fur(pts, center, dist);
     GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
     GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
-    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::P pl2 = ev.polygon_api.recalculate_normals(pl);
+    //GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
     GameApi::ML ml;
     ml.id = next->mat_inst2(pl2.id, pta.id);
-    return ml;
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst2(p.id, pta.id);
+    std::vector<GameApi::ML> mls;
+    mls.push_back(ml);
+    mls.push_back(ml2);
+    return ev.mainloop_api.array_ml(ev,mls);
+
+    //return ml;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -5473,10 +5628,18 @@ public:
     GameApi::LI li = ev.lines_api.fur(pts2, center, dist);
     GameApi::LI li2 = ev.lines_api.random_angle(li, max_angle);
     GameApi::P  pl = ev.polygon_api.line_to_cone(ev, li2, size, cone_numfaces);
-    GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
+    GameApi::P pl2 = ev.polygon_api.recalculate_normals(pl);
+    //GameApi::P  pl2 = ev.polygon_api.or_elem(pl, p);
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(pl2.id, pts.id, flip, start_time, end_time);
-    return ml;
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    std::vector<GameApi::ML> mls;
+    mls.push_back(ml);
+    mls.push_back(ml2);
+    return ev.mainloop_api.array_ml(ev,mls);
+
+    // return ml;
   }
 private:
   GameApi::EveryApi &ev;
@@ -6450,13 +6613,17 @@ public:
     obj2->HandleEvent(e);
   }
   void Prepare() {
-    if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    va = ev.polygon_api.create_vertex_array(p,false);
+    //if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,false);
+    }
     initialized=true;
   }
   void execute(MainLoopEnv &e)
   {
-    if (!initialized) { std::cout << "Prepare not called in RenderInstanced!" << std::endl; return; }
+    if (!initialized) { std::cout << "Prepare not called in RenderInstanced!" << std::endl;
+    va = ev.polygon_api.create_vertex_array(p,false);
+    initialized=true; }
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     //if (firsttime) { obj2->Prepare(); }
     bool changed = obj2->Update(e);
@@ -6564,7 +6731,11 @@ public:
 
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
-	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
@@ -6743,6 +6914,11 @@ public:
 
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -6922,6 +7098,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -7107,6 +7287,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -7306,6 +7490,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -7499,6 +7687,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -7697,6 +7889,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -7894,6 +8090,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -8079,6 +8279,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -8262,6 +8466,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -8417,7 +8625,11 @@ public:
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
-#ifdef HAS_MATRIX_INVERSE
+#ifdef HAS_MATRIX_INVERSE	
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -8570,6 +8782,10 @@ public:
 	ev.shader_api.use(shader);
 	ev.shader_api.set_var(shader, "in_MV", m);
 #ifdef HAS_MATRIX_INVERSE
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
 	ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
 #endif
 	ev.shader_api.set_var(shader, "in_T", m1);
@@ -8913,6 +9129,11 @@ GameApi::US GameApi::UberShaderApi::v_edge(US us)
   return add_uber(e, new V_ShaderCallFunction("edge", next, "EX_NORMAL2 IN_NORMAL EX_POSITION IN_POSITION"));
 
 }
+GameApi::US GameApi::UberShaderApi::v_gltf_anim(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("gltf_anim", next, "SKELETON"));
+}
 GameApi::US GameApi::UberShaderApi::v_globe(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -9229,6 +9450,11 @@ GameApi::US GameApi::UberShaderApi::f_edge(US us)
 {
   ShaderCall *next = find_uber(e,us);
   return add_uber(e, new F_ShaderCallFunction("edge", next,"EX_NORMAL2 EX_POSITION"));
+}
+GameApi::US GameApi::UberShaderApi::f_gltf_anim(US us)
+{
+  ShaderCall *next = find_uber(e,us);
+  return add_uber(e, new F_ShaderCallFunction("gltf_anim", next,"SKELETON"));
 }
 GameApi::US GameApi::UberShaderApi::f_mesh_color(US us, SFO sfo)
 {
@@ -9842,6 +10068,7 @@ public:
     if (point==2 ||point==3) pos_y+=dy;
     return patch.Map(pos_x, pos_y);
   }
+  bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
     Point p1 = FacePoint(face,0);
@@ -9855,6 +10082,7 @@ public:
   }
   virtual int AttribI(int face, int point, int id) const { return 0; }
   virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const {
     int y = face/sx;
     int x = face - y*sx;
@@ -11219,9 +11447,18 @@ extern void *g_mainloop_ptr;
 void splitter_iter2(void *arg);
 
 
+void clear_texture_confirms();
+
 void blocker_iter(void *arg)
 {
 
+    if (g_msg_string != "")
+      {
+	std::cout << g_msg_string << std::endl;
+	g_msg_string = "";
+      }
+
+  
     if (g_execute_callback)
       {
 	g_execute_callback = false;
@@ -11255,6 +11492,7 @@ void blocker_iter(void *arg)
 
     if (env->firsttime) {
       MainLoopItem *item = find_main_loop(env->ev->get_env(),env->mainloop);
+      clear_texture_confirms();
       item->Prepare();
 
       int s = g_prepare_callbacks.size();
@@ -11361,6 +11599,8 @@ extern GameApi::H g_prepare_heavy_h;
 extern bool g_prepare_heavy_enabled;
 void LoadUrls_async_cbs();
 
+void clear_texture_confirms();
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -11438,6 +11678,12 @@ public:
   }
   virtual int Iter()
   {
+    if (g_msg_string != "")
+      {
+	std::cout << g_msg_string << std::endl;
+	g_msg_string = "";
+      }
+    
     if (g_execute_callback)
       {
 	g_execute_callback = false;
@@ -11492,6 +11738,7 @@ public:
 
     if (firsttime) {
       MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+      clear_texture_confirms();
       item->Prepare();
 
       g_prepare_done = true;
@@ -15127,6 +15374,13 @@ public:
     p_data = pp;
     coll = 0;
   }
+
+    virtual bool has_normal() const { if (!coll) return false; return coll->has_normal(); }
+  virtual bool has_attrib() const { if (!coll) return false;return coll->has_attrib(); }
+  virtual bool has_color() const { if (!coll) return false; return coll->has_color(); }
+  virtual bool has_texcoord() const { if (!coll) return false; return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!coll) return false; return coll->has_skeleton(); }
+
   virtual int NumFaces() const { if (!coll) return 0; return coll->NumFaces(); }
   virtual int NumPoints(int face) const { if (!coll) return 3; return coll->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { if (!coll) return Point(0.0,0.0,0.0); return coll->FacePoint(face,point); }
@@ -20326,6 +20580,8 @@ void* thread_heavy_main(void *ptr2)
 {
   ThreadHeavy *ptr = (ThreadHeavy*)ptr2;
   ptr->Callback();
+  pthread_exit(NULL);
+
   return 0;
 }
 #endif
@@ -25250,4 +25506,105 @@ std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi
     }
   }
   return res;
+}
+
+std::vector<FaceCollection*> g_confirm;
+std::vector<VertexArraySet*> g_confirm2;
+void confirm_texture_usage(GameApi::Env &e, GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  g_confirm.push_back(coll);
+}
+void confirm_texture_usage(FaceCollection *coll)
+{
+  g_confirm.push_back(coll);
+}
+void confirm_texture_usage(VertexArraySet *set)
+{
+  g_confirm2.push_back(set);
+}
+void clear_texture_confirms()
+{
+  g_confirm.clear();
+  g_confirm2.clear();
+}
+bool is_texture_usage_confirmed(const FaceCollection *p)
+{
+  int s = g_confirm.size();
+  for(int i=0;i<s;i++) if (g_confirm[i]==p) return true;
+  return false;
+}
+bool is_texture_usage_confirmed(VertexArraySet *set)
+{
+  int s = g_confirm2.size();
+  for(int i=0;i<s;i++) if (g_confirm2[i]==set) return true;
+  return false;
+  
+}
+
+char key_mapping(char ch, int type)
+{
+  if (type!=0x300 && type!=0x301) return '@';
+  char res = ch;
+#ifdef LINUX
+  
+#endif
+#ifdef EMSCRIPTEN
+  if (ch>=4 && ch<=4+26) { res=ch-4; res+='a'; }
+  if (ch>=30 && ch<=38) { res=ch-30; res+='1'; }
+  if (ch==39) res='0';
+  if (ch==44) res=32;
+#endif
+#ifdef WIN32
+  switch(ch) {
+  };
+#endif
+  return res;
+}
+
+class KeyML : public MainLoopItem
+{
+public:
+  KeyML(std::vector<MainLoopItem*> items, std::string keys) : items(items), keys(keys) {}
+  virtual void logoexecute() { }
+  virtual void Prepare()
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) {
+      items[i]->Prepare();
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    items[current_item]->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int ch = key_mapping(e.ch,e.type);
+    int s = keys.size();
+    for(int i=0;i<s;i++)
+      if (ch==keys[i]) {
+	if (i>=0 && i<items.size())
+	  current_item = i;
+	break;
+      }
+    items[current_item]->handle_event(e);
+  }
+     
+  virtual std::vector<int> shader_id() {
+    return items[current_item]->shader_id();
+  }
+private:
+  std::vector<MainLoopItem*> items;
+  std::string keys;
+  int current_item=0;
+};
+GameApi::ML GameApi::MainLoopApi::key_ml(std::vector<ML> vec, std::string keys)
+{
+  int s = vec.size();
+  std::vector<MainLoopItem*> items;
+  for(int i=0;i<s;i++) {
+    items.push_back(find_main_loop(e,vec[i]));
+  }
+  return add_main_loop(e, new KeyML(items, keys));
 }
