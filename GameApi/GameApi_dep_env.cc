@@ -16,6 +16,41 @@
 int load_size_from_url(std::string url);
 
 
+std::vector<FaceCollection*> g_confirm;
+std::vector<VertexArraySet*> g_confirm2;
+void confirm_texture_usage(GameApi::Env &e, GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  g_confirm.push_back(coll);
+}
+void confirm_texture_usage(FaceCollection *coll)
+{
+  g_confirm.push_back(coll);
+}
+void confirm_texture_usage(VertexArraySet *set)
+{
+  g_confirm2.push_back(set);
+}
+void clear_texture_confirms()
+{
+  g_confirm.clear();
+  g_confirm2.clear();
+}
+bool is_texture_usage_confirmed(const FaceCollection *p)
+{
+  int s = g_confirm.size();
+  for(int i=0;i<s;i++) if (g_confirm[i]==p) return true;
+  return false;
+}
+bool is_texture_usage_confirmed(VertexArraySet *set)
+{
+  int s = g_confirm2.size();
+  for(int i=0;i<s;i++) if (g_confirm2[i]==set) return true;
+  return false;
+  
+}
+
+
 #ifdef RASPI
 inline int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
 #endif

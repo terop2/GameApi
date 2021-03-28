@@ -1,5 +1,6 @@
 
 #include "GameApi_low.hh"
+#if 0
 
 class OpenglStub : public OpenglLowApi
 {
@@ -28,6 +29,7 @@ public:
   virtual void glDisable(int val) { }
   virtual void glGetFloatv(int val, float *params) { }
 
+  virtual void glCullFace(int) { }
   // viewports
   virtual void glViewport(int x, int y, unsigned int w, unsigned int h) { }
 
@@ -225,6 +227,7 @@ class ImageLoadLowApiStub : public ImageLoadLowApi
 
 class SDLLowApiStub : public SDLLowApi
 {
+  virtual Low_SDL_RWops* SDL_RWFromFile(const char*, const char*) { }
   virtual void init() { }
   virtual void cleanup() { }
   virtual void SDL_SetHint(const char *flag, const char *str) { }
@@ -301,3 +304,4 @@ void initialize_stub(int flags)
   low->sdl_mixer = new SDLMixerLowApiStub;
   g_low = low;
 }
+#endif

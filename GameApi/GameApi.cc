@@ -23352,6 +23352,12 @@ void run_callback(void *ptr)
 extern  std::vector<std::string> mtl_urls;
 
 int g_script_hash = 0;
+extern int g_background_mode;
+KP extern "C" void set_background_mode(int i)
+{
+  if (i>=0 && i<9)
+    g_background_mode = i;
+}
 
 KP extern "C" void set_new_script(const char *script2)
 {
@@ -25508,39 +25514,6 @@ std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi
   return res;
 }
 
-std::vector<FaceCollection*> g_confirm;
-std::vector<VertexArraySet*> g_confirm2;
-void confirm_texture_usage(GameApi::Env &e, GameApi::P p)
-{
-  FaceCollection *coll = find_facecoll(e,p);
-  g_confirm.push_back(coll);
-}
-void confirm_texture_usage(FaceCollection *coll)
-{
-  g_confirm.push_back(coll);
-}
-void confirm_texture_usage(VertexArraySet *set)
-{
-  g_confirm2.push_back(set);
-}
-void clear_texture_confirms()
-{
-  g_confirm.clear();
-  g_confirm2.clear();
-}
-bool is_texture_usage_confirmed(const FaceCollection *p)
-{
-  int s = g_confirm.size();
-  for(int i=0;i<s;i++) if (g_confirm[i]==p) return true;
-  return false;
-}
-bool is_texture_usage_confirmed(VertexArraySet *set)
-{
-  int s = g_confirm2.size();
-  for(int i=0;i<s;i++) if (g_confirm2[i]==set) return true;
-  return false;
-  
-}
 
 char key_mapping(char ch, int type)
 {
