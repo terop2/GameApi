@@ -1143,7 +1143,44 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
   //GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
   GameApi::P p3 = ev.polygon_api.flip_normals(p2);
  return p3;
-} 
+}
+GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
+extern Matrix g_last_resize;
+
+GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index)
+{
+
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  int c = get_current_block();
+  set_current_block(-1);
+  FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
+  P p = add_polygon2(e, faces,1);
+  confirm_texture_usage(e,p);
+  GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  set_current_block(c);
+  std::stringstream ss;
+  ss << load->url;
+  ss << prim_index + mesh_index*50;
+  bool b = g_gltf_cache[ss.str()];
+  if (b) {
+    // seems the caching messes up normals in the model? 
+    //p2 = ev.polygon_api.flip_normals(p2);
+  } else {
+    g_gltf_cache[ss.str()] = true;
+  }
+
+  GameApi::P p3 = resize_to_correct_size2(e,p2,&g_last_resize);
+  GameApi::P p4 = ev.polygon_api.flip_normals(p3);
+  return p4;
+
+}
 GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index )
 {
   bool is_binary=false;
@@ -2066,6 +2103,15 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id);
 
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id);
+GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys);
+
+
+bool is_child_node(LoadGltf *load, int node_id, int node2)
+{
+}
+
+
 GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int node_id )
 {
   int s2 = load->model.nodes.size();
@@ -2078,13 +2124,29 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   tinygltf::Node *node = &load->model.nodes[node_id];
 
   // Load mesh
-  int mesh_id = node->mesh;
+  int ss = load->model.skins.size();
+  bool done = false;
   GameApi::ML mesh;
-  mesh.id = -1;
-  if (mesh_id!=-1) {
-    mesh = gltf_mesh2( e, ev, load, mesh_id );
+  for(int i=0;i<ss;i++) {
+    if (node_id == load->model.skins[i].skeleton)
+      {
+	int mesh_id = node->mesh;
+	mesh.id = -1;
+	if (mesh_id != -1) {
+	  mesh = gltf_mesh2_with_skeleton(e,ev,load, mesh_id, i);
+	  done = true;
+	}
+	break;
+      }
+    
   }
-
+  if (!done) {
+    int mesh_id = node->mesh;
+    mesh.id = -1;
+    if (mesh_id!=-1) {
+      mesh = gltf_mesh2( e, ev, load, mesh_id );
+    }
+  }
   // todo cameras
 
   // recurse children
@@ -2162,7 +2224,27 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
   return ev.mainloop_api.array_ml(ev, vec);
 }
 
-
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id)
+{
+  if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
+    int s = load->model.meshes[mesh_id].primitives.size();
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<s;i++) {
+      GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
+      int mat = load->model.meshes[mesh_id].primitives[i].material;
+      GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
+      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, "cvbnmdfghjklerty");
+      GameApi::ML ml = ev.materials_api.bind(p,mat2_anim);
+      mls.push_back(ml);
+    }
+    GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
+    return ml;
+  } else {
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+  }
+}
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
 {
@@ -2520,7 +2602,7 @@ public:
     if (stride==0) { stride=sizeof(float); }
     //assert(stride==0);
     if (time_index>=0 && time_index<count) {
-      float *arr = (float*) dt3 + stride*time_index;
+      float *arr = (float*) (dt3 + stride*time_index);
       return *arr;
     } else { return 0.0; }
 
@@ -2540,11 +2622,14 @@ public:
     unsigned char *dt3 = dt2 + offset2;
     int count = input_acc->count;
     assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
-    assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
-    if (stride==0) { stride=sizeof(float); }
+    //assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
+    if (stride==0 && input_acc->type==TINYGLTF_TYPE_SCALAR) { stride=sizeof(float); }
+    if (stride==0 && input_acc->type==TINYGLTF_TYPE_VEC2) { stride=2*sizeof(float); }
+    if (stride==0 && input_acc->type==TINYGLTF_TYPE_VEC3) { stride=3*sizeof(float); }
+    if (stride==0 && input_acc->type==TINYGLTF_TYPE_VEC4) { stride=4*sizeof(float); }
     //assert(stride==0);
     if (time_index+1>=0 && time_index+1<count) {
-      float *arr = (float*) dt3 + stride*(time_index+1);
+      float *arr = (float*) (dt3 + stride*(time_index+1));
       return *arr;
     } else { return 0.0; }
     } else return 0.0;
@@ -2903,8 +2988,8 @@ public:
       GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik);
       anim->Prepare();
       if (jj!=-1) {
-	start_t[jj] = 10.0*anim->start_time();
-	end_t[jj] = 10.0*anim->end_time();
+	start_t[jj] = 5.0*anim->start_time();
+	end_t[jj] = 5.0*anim->end_time();
       }
       a = anim->Amount(ik);
       a2 = anim->Amount(ik+1);
@@ -3915,16 +4000,39 @@ GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std
   return add_material(e,new KeysMaterial(ev, vec2, keys));
 }
 
+
+GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key)
+{
+  Material *next_mat = find_material(e,next);
+  Material *mat = new GLTF_Animation_Material(e,ev,load, skin_num, animation, num_timeindexes, next_mat, key);
+  return add_material(e, mat);
+}
+
+
+GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys)
+{
+  int s = keys.size();
+  std::vector<GameApi::MT> vec;
+  for(int i=0;i<s;i++) {
+    GameApi::MT mt = gltf_anim_material4(e,ev,load, skin_num, i, num_timeindexes, next, keys[i]);
+    vec.push_back(mt);
+  }
+  return ev.materials_api.m_keys(ev,vec,keys);
+
+}
+
+
 GameApi::MT GameApi::MaterialsApi::gltf_anim_material2(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys)
 {
   int s = keys.size();
   std::vector<GameApi::MT> vec;
   for(int i=0;i<s;i++) {
-    GameApi::MT mt = gltf_anim_material(ev,base_url, url, skin_num, i, num_timeindexes, next, keys[i]);
+    GameApi::MT mt = gltf_anim_material(ev,base_url,url, skin_num, i, num_timeindexes, next, keys[i]);
     vec.push_back(mt);
   }
   return m_keys(ev,vec,keys);
 }
+
 
 GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key)
 {

@@ -8645,6 +8645,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "std::string", "int", "int" },
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0" },
 			 "P", "polygon_api", "gltf_load"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_nr,
+			 "p_gltf_nr",
+			 { "ev", "base_url", "url", "mesh_index", "prim_index" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0" },
+			 "P", "polygon_api", "gltf_load_nr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
 			 "p_alt",
 			 { "vec", "index" },

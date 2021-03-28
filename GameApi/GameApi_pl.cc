@@ -10869,9 +10869,10 @@ Matrix g_last_resize;
 class ResizeFaceCollection : public ForwardFaceCollection
 {
 public:
-  ResizeFaceCollection(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll)
+  ResizeFaceCollection(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll), ext_flag(false)
   {
   }
+  ResizeFaceCollection(FaceCollection *coll, Matrix *m) : ForwardFaceCollection(*coll), coll(coll), ext_mat(m), ext_flag(true) { }
   void Prepare()
   {
     coll->Prepare();
@@ -10885,10 +10886,14 @@ public:
   Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
+    if (ext_flag) return p*(*ext_mat);
     return p*m_m;
   }
 public:
-  Matrix get_matrix() const { return m_m; }
+  Matrix get_matrix() const {
+    if (ext_flag) { return *ext_mat; }
+    return m_m;
+  }
 
 private:
   void find_bounding_box()
@@ -10951,7 +10956,8 @@ private:
     Matrix m2 = Matrix::Scale(val2, val2, val2);
     Matrix mm = m * m2;
     m_m= mm;
-    g_last_resize = mm;
+    if (!ext_flag)
+      g_last_resize = mm;
   }
 
 public:
@@ -10964,6 +10970,8 @@ public:
   Matrix m_m;
 
   float m_scale;
+  bool ext_flag = false;
+  Matrix *ext_mat=0;
 };
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 {
@@ -10973,7 +10981,11 @@ std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 }
 
 
-
+GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat)
+{
+  FaceCollection *coll = find_facecoll(e, model);
+  return add_polygon2(e, new ResizeFaceCollection(coll,mat),1);
+}
 GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
 {
   FaceCollection *coll = find_facecoll(e, model);

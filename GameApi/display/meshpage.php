@@ -251,7 +251,16 @@ if ($connect=="yes") {
 ?>
 </div>
 
+<p>
+<p>
+<div id="addtext"></div>
+<?php
+  page_footer2();
+  ?>
+
+
 </div>
+
 
 <div v-if="state.about">
 <p>
@@ -1022,8 +1031,23 @@ function choose_display(id,label, vm,is_popstate)
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
   var url = "https://meshpage.org/mesh_pre.php?id=" + label;
+  var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label;
   //console.log(g_txt[id]);
   if (g_txt[id]===undefined) {
+
+const myHeaders2 = new Headers();
+const myARequest = new Request(url2, {
+      method: 'GET',
+      headers: myHeaders2,
+      mode: 'same-origin',
+      cache: 'default'
+      });
+      fetch(myARequest).then((r) => {
+      	return r.text();
+	}).then((t) => {
+  	   var pos = document.getElementById("addtext");
+	   pos.innerHTML = t;
+	   });
 
 const myHeaders = new Headers();
 const myFRequest = new Request(url, {
@@ -1278,7 +1302,7 @@ if ($mobile=="yes") {
   echo "hd-=60;";
 } else {
   echo "wd-=130;";
-  echo "hd-=130;";
+  echo "hd-=180;";
   }
 ?>
   var elem = document.getElementById("display");
