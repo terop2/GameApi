@@ -11240,6 +11240,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "PT",    "PT",    "unsigned int", "unsigned int", "int", "int" },
 			 { "ev.point_api.point(0.0,0.0,0.0)", "ev.point_api.point(0.0, 100.0, 0.0)", "ffffffff", "ff888888", "100", "100" },
 			 "BM", "bitmap_api", "gradient"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::circular_gradient,
+			 "circ_gradient",
+			 { "sx", "sy", "center_color", "edge_color" },
+			 { "int", "int", "unsigned int", "unsigned int" },
+			 { "256", "256", "88888888", "00000000" },
+			 "BM", "bitmap_api", "circular_gradient"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::chessboard,
 			 "chessboard",

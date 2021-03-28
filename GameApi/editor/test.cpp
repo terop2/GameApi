@@ -19,8 +19,9 @@
 #include <stdio.h>
 #include <string.h>
 using namespace GameApi;
-
+#ifndef WINDOWS
 #define WAYLAND 1
+#endif
 
 #ifdef WAYLAND
 #include <wayland-client.h>
