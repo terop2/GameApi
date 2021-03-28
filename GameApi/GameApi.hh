@@ -671,6 +671,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM circular_gradient(int sx, int sy, unsigned int center_color, unsigned int edge_color);
   IMPORT BM script_bitmap(std::string url, int sx, int sy);
   IMPORT ML grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc);
   IMPORT P p_world_from_bitmap(EveryApi &ev, std::vector<P> vec, IBM world, float pos_x, float pos_y, float pos_z, float dx, float dz, float y);
