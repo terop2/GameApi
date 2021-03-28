@@ -5421,3 +5421,38 @@ GameApi::BM load_raw_bitmap(GameApi::Env &e, std::string filename)
   GameApi::BM bm = add_bitmap(e, handle2);
   return bm;
 }
+
+class CircularGradient : public Bitmap<Color>
+{
+public:
+  CircularGradient(int sx, int sy, unsigned int center_color, unsigned int edge_color) : sx(sx), sy(sy), center_color(center_color), edge_color(edge_color) { }
+  virtual int SizeX() const {return sx; }
+  virtual int SizeY() const {return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    float r = sqrtf(float(x-sx/2)*float(x-sx/2)+float(y-sy/2)*float(y-sy/2));
+    r/=sqrtf(float(sx/2*sx/2+sy/2*sy/2));
+    Random rr;
+    float rand = double(rr.next())/rr.maximum();
+    rand/=10.0;
+    rand-=1.0/20.0;
+    r+=rand;
+    if (r<0.0) r=0.0;
+    if (r>1.0) r=1.0;
+    return Color(Color::Interpolate(center_color, edge_color, r));
+  }
+  virtual void Prepare() { }
+
+private:
+  int sx,sy;
+  unsigned int center_color, edge_color;
+};
+
+GameApi::BM GameApi::BitmapApi::circular_gradient(int sx, int sy, unsigned int center_color, unsigned int edge_color)
+{
+  Bitmap<Color> *b = new CircularGradient(sx,sy,center_color,edge_color);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
