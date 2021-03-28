@@ -25565,7 +25565,7 @@ char key_mapping(char ch, int type)
 class KeyML : public MainLoopItem
 {
 public:
-  KeyML(std::vector<MainLoopItem*> items, std::string keys) : items(items), keys(keys) {}
+  KeyML(std::vector<MainLoopItem*> items, std::string keys) : items(items), keys(keys) { firsttime = true; }
   virtual void logoexecute() { }
   virtual void Prepare()
   {
@@ -25576,7 +25576,15 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
-    items[current_item]->execute(e);
+    if (firsttime) {
+      int s = items.size();
+      for(int i=0;i<s;i++) {
+	items[i]->execute(e);
+      }
+      firsttime = false;
+    } else {
+      items[current_item]->execute(e);
+    }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -25598,6 +25606,7 @@ private:
   std::vector<MainLoopItem*> items;
   std::string keys;
   int current_item=0;
+  bool firsttime;
 };
 GameApi::ML GameApi::MainLoopApi::key_ml(std::vector<ML> vec, std::string keys)
 {

@@ -2297,6 +2297,7 @@ public:
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   P normal_darkness(P p, float dark);
   P gltf_load( EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index );
+  P gltf_load_nr( EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index );
   BM gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index );
   ARR material_extractor_p(P p, int start_index, int end_index);
   ARR material_extractor_bm(P p, int start_index, int end_index);
