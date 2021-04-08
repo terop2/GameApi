@@ -62,6 +62,11 @@ class AlphaColorBitmap : public Bitmap<Color>
 {
 public:
   AlphaColorBitmap(Bitmap<Color> &bm, unsigned int key) : bm(bm), key(key) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -125,6 +130,8 @@ class BitmapArrayElem : public Bitmap<Color>
 {
 public:
   BitmapArrayElem(BitmapArray2<Color> *arr, int i) : arr(arr), i(i) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   virtual int SizeX() const { return arr->SizeX(i); }
@@ -173,6 +180,10 @@ class ColorRangeBitmap : public Bitmap<Color>
 {
 public:
   ColorRangeBitmap(Bitmap<Color> &bm, unsigned int source_upper, unsigned int source_lower, unsigned int target_upper, unsigned int target_lower) : bm(bm), source_upper(source_upper), source_lower(source_lower), target_upper(target_upper), target_lower(target_lower) { }
+  void Collect(CollectVisitor &vis) {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
@@ -208,6 +219,10 @@ public:
     v = u_x.Dist();
     v = v*v;
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -246,6 +261,10 @@ class RadialGradient : public Bitmap<Color>
 {
 public:
   RadialGradient(int sx, int sy, Point2d pos, float r1, float r2, unsigned int color_1, unsigned int color_2) : sx(sx),sy(sy), pos(pos), r1(r1), r2(r2), color_1(color_1), color_2(color_2) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   virtual int SizeX() const { return sx; }
@@ -297,6 +316,12 @@ class BitmapTransformFromFunction : public Bitmap<T>
 {
 public:
   BitmapTransformFromFunction(Bitmap<T> &bm, std::function<T (int,int,T)> f) : bm(bm),  f(f) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -315,6 +340,10 @@ class BitmapFromFunction : public Bitmap<T>
 {
 public:
   BitmapFromFunction(std::function< T(int,int) > f, int sx, int sy) : f(f), sx(sx),sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   virtual int SizeX() const { return sx; }
@@ -370,6 +399,10 @@ class ChessBoardBitmap2 : public Bitmap<Color>
 {
 public:
   ChessBoardBitmap2(int tile_sx, int tile_sy, int count_x, int count_y, Color c1, Color c2) : tile_sx(tile_sx), tile_sy(tile_sy), count_x(count_x), count_y(count_y), c1(c1), c2(c2) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   int SizeX() const { return tile_sx*count_x; }
@@ -473,6 +506,10 @@ class SaveBitmapML : public MainLoopItem
 {
 public:
   SaveBitmapML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename, bool alpha, float time) : ev(ev), bm(bm), filename(filename), alpha(alpha), time(time) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
@@ -546,7 +583,7 @@ extern std::string gameapi_homepageurl;
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
-  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { }
+  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0; }
 
   virtual int SizeX() const {
     if (!cbm) { return 100; }
@@ -557,8 +594,16 @@ public:
   virtual Color Map(int x, int y) const { 
     if (!cbm) { return Color(0xffffffff); }
     return cbm->Map(x,y); }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
   void Prepare()
   {
+    if (!cbm) {
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
@@ -578,8 +623,9 @@ public:
 	  }
       //std::cout << "ERROR: File not found: " << filename << std::endl;
     }
-    cbm = new BitmapFromBuffer(img);    
-  }
+    cbm = new BitmapFromBuffer(img);
+    }
+  }    
 private:
   GameApi::Env &env;
   std::string url;
@@ -722,6 +768,14 @@ public:
   virtual Color Map(int x, int y) const { 
     if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at Map()" << std::endl; }
     return cbm->Map(x,y); }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   virtual void Prepare()
   {
     if (cbm)
@@ -779,6 +833,14 @@ class BitmapPrepareCache : public Bitmap<Color>
 {
 public:
   BitmapPrepareCache(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   void Prepare()
   {
 
@@ -831,6 +893,8 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
   set_current_block(c);
   return bm2;
 }
+std::string MB(long num);
+
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
 {
   Bitmap<Color> *bm = new LoadBitmapBitmap(filename);
@@ -859,6 +923,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
   bool b = false;
   BufferRef img = LoadImage(filename, b);
+  std::cout << "loadbitmap: " << img.width << "x" << img.height << "=" << ::MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
   if (b==false) {
     img = BufferRef::NewBuffer(10,10);
     for(int x=0;x<10;x++)
@@ -884,6 +949,8 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadtilebitmap(std::string filename, int 
   //ChessBoardBitmap *bmp = new ChessBoardBitmap(Color(255,0.0,0.0), Color(255,255,255), 8, 8, 30, 30);
   bool b = false;
   BufferRef img = LoadImage(filename, b);
+  std::cout << "loadtilebitmap: " << img.width << "x" << img.height << "=" << ::MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
+
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(img.buffer, &ArrayDelete<unsigned int>));
   BitmapFromBuffer *buf = new BitmapFromBuffer(img);  
@@ -1257,6 +1324,10 @@ class BitmapFromString : public Bitmap<T>
 {
 public:
   BitmapFromString(char *array, int sx, int sy, std::function<T (char)> f) : array(array), sx(sx), sy(sy),  f(f) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -1340,6 +1411,11 @@ class Rot90Bitmap : public Bitmap<Color>
 {
 public:
   Rot90Bitmap(Bitmap<Color> &bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeY(); }
   virtual int SizeY() const { return bm.SizeX(); }
@@ -1357,6 +1433,11 @@ class FlipBitmap : public Bitmap<Color>
 {
 public:
   FlipBitmap(Bitmap<Color> &bm, bool x, bool y) : bm(bm), flip_x(x), flip_y(y) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -1382,6 +1463,12 @@ class DupXBitmap : public Bitmap<Color>
 {
 public:
   DupXBitmap(Bitmap<Color> &orig) : bm(orig) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX()*2; }
@@ -1495,7 +1582,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap(std::function<BM(int)> 
 class WorldFromUrl : public Bitmap<Color>
 {
 public:
-  WorldFromUrl(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<GameApi::BM> v, std::string url, std::string homepage, std::string chars, int dx, int dy) : e(e), ev(ev), v(v), url(url), homepage(homepage), chars(chars), dx(dx), dy(dy), ssx(1), ssy(1) { }
+  WorldFromUrl(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<GameApi::BM> v, std::string url, std::string homepage, std::string chars, int dx, int dy) : e(e), ev(ev), v(v), url(url), homepage(homepage), chars(chars), dx(dx), dy(dy), ssx(1), ssy(1) { mymap = 0; }
   virtual int SizeX() const { return ssx*dx; }
   virtual int SizeY() const { return ssy*dy; }
   virtual Color Map(int x, int y) const
@@ -1524,8 +1611,15 @@ public:
       return b2->Map(xxx,yyy);
     return Color(0xffffff00);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare()
   {
+    if (!mymap) {
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -1548,6 +1642,7 @@ public:
 	array[i] = val;
       }
     mymap = array;
+    }
   }
 private:
   GameApi::Env &e;
@@ -1594,6 +1689,14 @@ class ChooseBitmap3 : public Bitmap<Color>
 {
 public:
   ChooseBitmap3(Bitmap<bool> &bools, Bitmap<Color> &true_bitmap, Bitmap<Color> &false_bitmap) : bools(bools), true_bitmap(true_bitmap), false_bitmap(false_bitmap) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bools.Collect(vis);
+    true_bitmap.Collect(vis);
+    false_bitmap.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bools.Prepare(); true_bitmap.Prepare(); false_bitmap.Prepare(); }
 
   virtual int SizeX() const { return std::min(std::min(bools.SizeX(), true_bitmap.SizeX()), false_bitmap.SizeX()); }
@@ -1614,6 +1717,14 @@ class ChooseBitmap4 : public Bitmap<Color>
 {
 public:
   ChooseBitmap4(Bitmap<float> &floats, Bitmap<Color> &bitmap_0, Bitmap<Color> &bitmap_1) : floats(floats), bitmap_0(bitmap_0), bitmap_1(bitmap_1) { }
+  void Collect(CollectVisitor &vis)
+  {
+    floats.Collect(vis);
+    bitmap_0.Collect(vis);
+    bitmap_1.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { floats.Prepare(); bitmap_0.Prepare(); bitmap_1.Prepare(); }
 
   virtual int SizeX() const { return std::min(std::min(floats.SizeX(), bitmap_0.SizeX()), bitmap_1.SizeX()); }
@@ -1633,6 +1744,13 @@ class PerlinNoise : public Bitmap<float>
 {
 public:
   PerlinNoise(Bitmap<float> &grad_1, Bitmap<float> &grad_2) : grad_1(grad_1), grad_2(grad_2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    grad_1.Collect(vis);
+    grad_2.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { grad_1.Prepare(); grad_2.Prepare(); }
 
   int SizeX() const { return grad_1.SizeX(); }
@@ -1702,6 +1820,14 @@ class TriBoolBitmap : public Bitmap<bool>
 {
 public:
   TriBoolBitmap(Bitmap<bool> *bb, Point2d p0, Point2d p1, Point2d p2) : bb(bb), p0(p0), p1(p1), p2(p2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+
   void Prepare() {
     float A = (-p1.y * p2.x + p0.y*(-p1.x + p2.x) + p0.x*(p1.y - p2.y) + p1.x*p2.y);
     if (A<=0.0f)
@@ -1787,6 +1913,12 @@ class EquivalenceClassFromArea : public Bitmap<bool>
 {
 public:
   EquivalenceClassFromArea(Bitmap<Color> &bm, T f) : bm(bm),  f(f) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -1852,6 +1984,12 @@ class LineBoolBitmap : public Bitmap<bool>
 {
 public:
   LineBoolBitmap(Bitmap<bool> &bg, Point2d p1, Point2d p2, float line_width1, float line_width2) : bg(bg), p1(p1), p2(p2), line_width1(line_width1), line_width2(line_width2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bg.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bg.Prepare(); }
 
   virtual int SizeX() const { return bg.SizeX(); }
@@ -1881,6 +2019,11 @@ class EllipseBoolBitmap : public Bitmap<bool>
 {
 public:
   EllipseBoolBitmap(Bitmap<bool> &bg, Point2d c1, Point2d c2, float sum) : bg(bg), c1(c1), c2(c2), sum(sum) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bg.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bg.Prepare(); }
 
   virtual int SizeX() const { return bg.SizeX(); }
@@ -2010,6 +2153,12 @@ public:
   if (res==false&&next) return next->Map(xx,yy);
   return true;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    if (next) next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { if (next) next->Prepare(); }
 private:
   Bitmap<bool> *next;
@@ -2041,6 +2190,13 @@ class BoolBitmapSprite : public Bitmap<bool>
 {
 public:
   BoolBitmapSprite(Bitmap<bool> &bg, Bitmap<bool> &sprite, float x, float y, float mult_x, float mult_y) : bg(bg), sprite(sprite), x(x), y(y), mult_x(mult_x), mult_y(mult_y) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bg.Collect(vis);
+    sprite.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bg.Prepare(); sprite.Prepare(); }
 
   int SizeX() const {return bg.SizeX(); }
@@ -2124,6 +2280,11 @@ class BitmapFromRed : public Bitmap<float>
 {
 public:
   BitmapFromRed(Bitmap<Color> &bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -2165,6 +2326,11 @@ public:
     val+=start_z;
     return val;
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
 
 private:
@@ -2187,6 +2353,11 @@ class BitmapFromGreen : public Bitmap<float>
 {
 public:
   BitmapFromGreen(Bitmap<Color> &bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -2206,6 +2377,10 @@ class SpaceFillFloatBitmap : public Bitmap<float>
 public:
   SpaceFillFloatBitmap(Point *pt, float *values, int size, int sx, int sy) : pt(pt), values(values), size(size), sx(sx), sy(sy) { }
   ~SpaceFillFloatBitmap() { delete [] pt; }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -2251,6 +2426,11 @@ class BitmapFromBlue : public Bitmap<float>
 {
 public:
   BitmapFromBlue(Bitmap<Color> &bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -2278,6 +2458,11 @@ class BitmapFromAlpha : public Bitmap<float>
 {
 public:
   BitmapFromAlpha(Bitmap<Color> &bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -2305,6 +2490,12 @@ class FromBoolBitmap : public Bitmap<float>
 {
 public:
   FromBoolBitmap(Bitmap<bool> &bm, float val_true, float val_false) : bm(bm), val_true(val_true), val_false(val_false) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bm.Prepare(); }
 
   virtual int SizeX() const { return bm.SizeX(); }
@@ -2329,6 +2520,33 @@ float mymin(float x, float y)
 class DistanceFieldBitmap : public Bitmap<float>
 {
 public:
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+  }
+  void HeavyPrepare() {
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    delete [] array_x;
+    delete [] array_y;
+    array_x = new float[sx*sy];
+    array_y = new float[sx*sy];
+    array_sx = sx;
+    array_sy = sy;
+    for(int x=0;x<sx;x++)
+      {
+	for(int y=0;y<sy;y++)
+	  {
+	    float b = bm->Map(x,y);
+	    array_x[x+y*sx] = 1000.0-1000.0*b;
+	    array_y[x+y*sx] = 1000.0-1000.0*b;
+	  }
+      }
+    step1();
+    step2();
+
+  }
+
   void Prepare() 
   { 
     bm->Prepare(); 
@@ -2441,6 +2659,11 @@ class BorderFloatBitmap : public Bitmap<float>
 {
 public:
   BorderFloatBitmap(Bitmap<float> *bm) : bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm->Prepare(); }
 
   int SizeX() const { return bm->SizeX(); }
@@ -2498,6 +2721,15 @@ class BitmapFromRGBA : public Bitmap<Color>
 {
 public:
   BitmapFromRGBA(Bitmap<float> &r, Bitmap<float> &g, Bitmap<float> &b, Bitmap<float> &a) : r(r), g(g), b(b), a(a) { }
+  void Collect(CollectVisitor &vis)
+  {
+    r.Collect(vis);
+    g.Collect(vis);
+    b.Collect(vis);
+    a.Collect(vis);
+  }
+  void HeavyPrepare() { }
+  
   void Prepare() { r.Prepare(); g.Prepare(); b.Prepare(); a.Prepare(); }
 
   virtual int SizeX() const { return r.SizeX(); }
@@ -2541,6 +2773,11 @@ class FloatModBitmap : public Bitmap<bool>
 {
 public:
   FloatModBitmap(Bitmap<float> &fb, float mod_value) : fb(fb), mod_value(mod_value) { }
+  void Collect(CollectVisitor &vis)
+  {
+    fb.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { fb.Prepare(); }
 
   int SizeX() const { return fb.SizeX(); }
@@ -2635,6 +2872,11 @@ class DistanceRenderContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
   DistanceRenderContinuousBitmap(DistanceRenderable *dist, ColorVolumeObject *colours, float sx, float sy) : dist(dist), colours(colours),sx(sx),sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
@@ -2746,6 +2988,11 @@ public:
     //std::cout << val << std::endl;
     return Color(val,val,val,1.0f);
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
  
 private:
@@ -2762,6 +3009,10 @@ class FunctionContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
   FunctionContinuousBitmap( std::function<unsigned int (float, float)> f, float sx, float sy) : f(f), sx(sx), sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   virtual float SizeX() const { return sx; }
   virtual float SizeY() const { return sy; }
@@ -2809,6 +3060,11 @@ class ComposeSurfaceColor : public ContinuousBitmap<Color>
 {
 public:
   ComposeSurfaceColor(SurfaceImpl *impl, ColorVolumeObject *obj) : impl(impl), obj(obj) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   virtual float SizeX() const { return impl->surf->XSize(); }
   virtual float SizeY() const { return impl->surf->YSize(); }
@@ -2868,6 +3124,11 @@ public:
   }
   //int shader_id() { return -1; }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   void handle_event(MainLoopEvent &e)
   {
@@ -2969,6 +3230,12 @@ public:
     if (!res) { std::cout << "PersistentCache:Bitmap Prepare not called!" << std::endl; }
     return res->Map(x,y);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare()
   {
     if (!res)
@@ -3049,6 +3316,12 @@ public:
        ) : bm(bm), center(center_mult),
 	   left(left_mult), right(right_mult), top(top_mult), bottom(bottom_mult) 
   { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX()-2; }
   virtual int SizeY() const { return bm.SizeY()-2; }
@@ -3087,6 +3360,11 @@ class Dithering : public Bitmap<bool>
 {
 public:
   Dithering(Bitmap<float> &val) : val(val) { }
+  void Collect(CollectVisitor &vis)
+  {
+    val.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { val.Prepare(); }
   int SizeX() const { return val.SizeX(); }
   int SizeY() const { return val.SizeY(); }
@@ -3135,6 +3413,10 @@ class XBitmap : public ContinuousBitmap<float>
 {
 public:
   XBitmap(float sx, float sy) : sx(sx), sy(sy) {}
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
@@ -3149,6 +3431,10 @@ class CBitmap : public ContinuousBitmap<float>
 {
 public:
   CBitmap(float sx, float sy, float val) : sx(sx), sy(sy), val(val) {}
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
@@ -3173,6 +3459,10 @@ class YBitmap : public ContinuousBitmap<float>
 {
 public:
   YBitmap(float sx, float sy) : sx(sx), sy(sy) {}
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
@@ -3194,6 +3484,13 @@ class MulBitmap_c : public ContinuousBitmap<float>
 {
 public:
   MulBitmap_c(std::vector<ContinuousBitmap<float>* > a1) : a1(a1) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = a1.size();
+    for(int i=0;i<s;i++)
+      a1[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     int s = a1.size();
     for(int i=0;i<s;i++)
@@ -3237,6 +3534,15 @@ class AddBitmap_c : public ContinuousBitmap<float>
 {
 public:
   AddBitmap_c(std::vector<ContinuousBitmap<float>* > a1) : a1(a1) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = a1.size();
+    for(int i=0;i<s;i++)
+      a1[i]->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() {
     int s = a1.size();
     for(int i=0;i<s;i++)
@@ -3302,6 +3608,15 @@ class EqualizerBitmap : public ContinuousBitmap<bool>
 public:
   EqualizerBitmap(ContinuousBitmap<float> &a1,
 		  ContinuousBitmap<float> &a2) : a1(a1), a2(a2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    a1.Collect(vis);
+    a2.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() {
     a1.Prepare();
     a2.Prepare();
@@ -3328,6 +3643,14 @@ class SampleContFloatBitmap : public Bitmap<float>
 {
 public:
   SampleContFloatBitmap(ContinuousBitmap<float> &bm, int sx, int sy, float start_x, float end_x, float start_y, float end_y, float mult) : bm(bm), sx(sx), sy(sy), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y),mult(mult) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { bm.Prepare(); }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
@@ -3351,6 +3674,14 @@ class SampleContBoolBitmap : public Bitmap<bool>
 {
 public:
   SampleContBoolBitmap(ContinuousBitmap<bool> &bm, int sx, int sy, float start_x, float end_x, float start_y, float end_y) : bm(bm), sx(sx), sy(sy), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { bm.Prepare(); }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
@@ -3377,6 +3708,14 @@ public:
   {
     return sqrt(bm.Map(x,y));
   }
+  void Collect(CollectVisitor &vis)
+  {
+    
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare()
   {
   }
@@ -3404,6 +3743,13 @@ class FuncCont : public ContinuousBitmap<float>
 {
 public:
   FuncCont(double (*fptr)(double), ContinuousBitmap<float> &arg) : fptr(fptr), arg(arg) { }
+  void Collect(CollectVisitor &vis)
+  {
+    
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() {}
   virtual float SizeX() const { return arg.SizeX(); }
   virtual float SizeY() const { return arg.SizeY(); }
@@ -3442,6 +3788,13 @@ public:
   {
     return Color(x*255/sx,y*255/sy,g_ind);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    
+  }
+  void HeavyPrepare()
+  {
+  }
   virtual void Prepare() { }
 
 private:
@@ -3471,6 +3824,14 @@ class SavePngML : public MainLoopItem
 public:
   SavePngML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename) : ev(ev), bm(bm), filename(filename) { 
     firsttime = true;
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+      ev.bitmap_api.save_png(bm,filename);
   }
   void Prepare() {
       ev.bitmap_api.save_png(bm,filename);
@@ -3506,6 +3867,14 @@ public:
     Color c1 = bm1.Map(x,y);
     Color c2 = bm2.Map(x,y);
     return Color::Interpolate(c1,c2,0.5);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    bm1.Collect(vis);
+    bm2.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare()
   {
@@ -3552,6 +3921,12 @@ public:
     float yy = y-py;
     return sqrtf(xx*xx+yy*yy)/std::max(sx,sy);
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { }
 private:
   int sx,sy;
@@ -3577,6 +3952,13 @@ public:
     val*=3.0;
     float xx = -(val*val)/(val*val+1.0)+1.0;
     return xx;
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    fb.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
   }
   void Prepare() { fb.Prepare(); }
 private:
@@ -3604,6 +3986,13 @@ public:
     val/=d;
     return int(val);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    fb.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   virtual void Prepare()
   {
     fb.Prepare();
@@ -3625,6 +4014,13 @@ class IBMToVX : public Voxel<int>
 {
 public:
   IBMToVX(Bitmap<int> *bi) : bi(bi) {}
+  void Collect(CollectVisitor &vis)
+  {
+    bi->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { bi->Prepare(); }
   virtual int SizeX() const { 
     return bi->SizeX(); 
@@ -3704,8 +4100,17 @@ public:
       }
     return val;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
 
   void Prepare() {
+    if (!buf) {
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -3719,6 +4124,7 @@ public:
     sy = r.sy;
     buf = r.buffer;
     chars = r.characters;
+    }
   }
   ~IntBitmapLoader() { delete [] buf; }
 private:
@@ -3754,6 +4160,14 @@ public:
     unsigned int color = color_array[val];
     return Color(color);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { bm.Prepare(); }
 private:
   Bitmap<int> &bm;
@@ -3784,6 +4198,15 @@ public:
     int a = (c1.alpha+c2.alpha)/2;
     return Color(r,g,b,a);
   }
+    void Collect(CollectVisitor &vis)
+  {
+    bm1.Collect(vis);
+    bm2.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare()
   {
     bm1.Prepare();
@@ -3818,6 +4241,13 @@ public:
     p = p*val2+(1.0-p)*val;
     return p;
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare() { }
 private:
   int sx, sy;
@@ -3843,6 +4273,12 @@ public:
     float d = sqrt(xx*xx+yy*yy);
     d/=r;
     return d*val_at_r + (1.0-d)*val_at_zero;
+  }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare() { }
 
@@ -3871,6 +4307,13 @@ public:
   {
     return sin(fb.Map(x,y));
   }
+  void Collect(CollectVisitor &vis)
+  {
+    fb.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   virtual void Prepare() { fb.Prepare(); }
 private:
   Bitmap<float> &fb;
@@ -3892,6 +4335,14 @@ public:
   {
     return b1.Map(x,y)+b2.Map(x,y);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    b1.Collect(vis); b2.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare() { b1.Prepare(); b2.Prepare(); }
 private:
   Bitmap<float> &b1, &b2;
@@ -3909,6 +4360,13 @@ class MulFB : public Bitmap<float>
 {
 public:
   MulFB(Bitmap<float> *f, float mul) : f(f),mul(mul) {}
+  void Collect(CollectVisitor &vis)
+  {
+    f->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { f->Prepare(); }
   int SizeX() const { return f->SizeX(); }
   int SizeY() const { return f->SizeY(); }
@@ -3926,6 +4384,19 @@ class CubeMapBitmap : public Bitmap<Color>
 {
 public:
   CubeMapBitmap(Bitmap<Color> &left, Bitmap<Color> &top, Bitmap<Color> &middle, Bitmap<Color> &right, Bitmap<Color> &back, Bitmap<Color> &down) : left(left), top(top), middle(middle), right(right), back(back), down(down) { }
+  void Collect(CollectVisitor &vis)
+  {
+    left.Collect(vis);
+    top.Collect(vis);
+    middle.Collect(vis);
+    right.Collect(vis);
+    back.Collect(vis);
+    down.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { left.Prepare(); top.Prepare(); middle.Prepare(); right.Prepare(); back.Prepare(); down.Prepare(); }
   int SizeX() const { return left.SizeX()+middle.SizeX()+right.SizeX()+back.SizeX(); }
   int SizeY() const { return top.SizeY()+middle.SizeY()+down.SizeY(); }
@@ -4031,6 +4502,14 @@ public:
     };
     return bm.Map(mx+pos_x, my+pos_y);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { bm.Prepare(); }
 private:
   Bitmap<Color> &bm;
@@ -4130,6 +4609,13 @@ public:
     Color c2(128+int(x),128+int(y),128+int(z),255);
     return c2;    
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { }
 private:
   int sx,sy;
@@ -4151,6 +4637,14 @@ class BumpMap : public Bitmap<Color>
 {
 public:
   BumpMap(Bitmap<float> &values, float h) : values(values),h(h) { }
+  void Collect(CollectVisitor &vis)
+  {
+    values.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { values.Prepare(); }
   int SizeX() const { return values.SizeX(); }
   int SizeY() const { return values.SizeY(); }
@@ -4220,6 +4714,19 @@ public:
       }
     return -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Collect(vis);
+      }
+
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare()
   {
     int s = vec.size();
@@ -4251,6 +4758,13 @@ public:
   virtual bool Map(int x, int y) const
   {
     return bm->Map(x,y)==val;
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare()
   {
@@ -4297,6 +4811,13 @@ public:
 					  color|0xff000000, 0xff000000
 					  );
     return Color(cc2);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare() { bm.Prepare(); }
 
@@ -4362,6 +4883,13 @@ public:
     Color c = bm.Map(x,y);
     unsigned int cc = c.Pixel();
     return bools->is_included(cc);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare() { bm.Prepare(); }
 
@@ -4436,6 +4964,13 @@ public:
       return bm.Map(xx,yy);
     return Color(0x00000000);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   virtual void Prepare() { bm.Prepare(); }
 private:
   Bitmap<Color> &bm;
@@ -4452,6 +4987,15 @@ class CalcLight : public Bitmap<Color>
 {
 public:
   CalcLight(FaceCollection *coll, FaceCollection *coll2, Bitmap<Color> *texture, int count, Point light_pos, float shadow_darkness, float softness) : coll(coll), coll2(coll2), texture(texture), count(count), light_pos(light_pos), shadow_darkness(shadow_darkness), softness(softness) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
   virtual void Prepare()
   {
     if (firsttime) {
@@ -4571,8 +5115,8 @@ public:
 
   bool is_nearest(Point light_pos, Point pp, int zpi) const
   {
-    float rr = 100000.0;
-    int zp = -1;
+    //float rr = 100000.0;
+    //int zp = -1;
     int s = coll2->NumFaces();
     for(int i=0;i<s;i++) {
       int p = coll2->NumPoints(i);
@@ -4658,6 +5202,19 @@ public:
     y/=factor;
     return bm.Map(x,y);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int sxx = bm.SizeX();
+    int syy = bm.SizeY();
+    int mm = std::max(sxx,syy);
+    factor = float(sz)/float(mm);
+  }
+
   virtual void Prepare()
   {
     bm.Prepare();
@@ -4697,6 +5254,14 @@ public:
     speed = 0.0;
     //pid.setOutputLimits(0.0,1.0);
     //pid.setDirection(true);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    map.Collect(vis);
+    next->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare() { map.Prepare(); next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
@@ -4857,6 +5422,33 @@ public:
   {
     res.id = -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    Bitmap<int> *bm = find_int_bitmap(env, world);
+    bm->Collect(vis);
+    
+  }
+  void HeavyPrepare()
+  {
+    Bitmap<int> *bm = find_int_bitmap(env, world);
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    std::vector<GameApi::P> pieces;
+    for(int z=0;z<sy;z++) {
+      for(int x=0;x<sx;x++) {
+	int piece = bm->Map(x,z);
+	int s = vec.size();
+	if (piece<0 || piece>=s) continue;
+	GameApi::P trans = ev.polygon_api.translate(vec[piece], pos_x+dx*x, pos_y + y, pos_z+dz*z);
+	pieces.push_back(trans);
+      }
+    }
+    res = ev.polygon_api.or_array2(pieces);
+    FaceCollection *coll = find_facecoll(env,res);
+    coll->Prepare();
+
+  }
+
   void Prepare() {
     Bitmap<int> *bm = find_int_bitmap(env, world);
     bm->Prepare();
@@ -5301,6 +5893,15 @@ class ScriptBitmap : public Bitmap<Color>
 {
 public:
   ScriptBitmap(GameApi::Env &e, std::string url, std::string homepage, int sx, int sy) : e(e), url(url), homepage(homepage),sx(sx),sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+	      
   virtual void Prepare()
   {
 #ifndef EMSCRIPTEN
@@ -5352,6 +5953,27 @@ class SaveRawBitmap : public MainLoopItem
 {
 public:
   SaveRawBitmap(Bitmap<Color> &bm, std::string filename) : bm(bm), filename(filename) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    std::ofstream file(filename.c_str(), std::ios_base::out|std::ios_base::binary);
+    int sx = bm.SizeX();
+    int sy = bm.SizeY();
+    file << sx << " " << sy << std::endl;
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++) {
+	Color c = bm.Map(x,y);
+	unsigned int cc = c.Pixel();
+	unsigned char *cc2 = (unsigned char*)&cc;
+	file << cc2[0] << cc2[1] << cc2[2] << cc2[3];
+      }
+    file.close();
+  }
+  
   virtual void Prepare()
   {
     bm.Prepare();
@@ -5397,6 +6019,19 @@ public:
   {
     return Color(bmdata[x+sx*y]);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    std::ifstream ss(filename.c_str(), std::ios_base::in|std::ios_base::binary);
+    ss >> sx >> sy;
+    char ch;
+    while(ss.peek()=='\n'||ss.peek()=='\r') ss >> ch;
+    bmdata = new unsigned int[sx*sy];
+    ss.read((char*)bmdata,sx*sy*sizeof(unsigned int));
+  }
   virtual void Prepare()
   {
     std::ifstream ss(filename.c_str(), std::ios_base::in|std::ios_base::binary);
@@ -5441,6 +6076,10 @@ public:
     if (r>1.0) r=1.0;
     return Color(Color::Interpolate(center_color, edge_color, r));
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { }
 
 private:
@@ -5456,3 +6095,4 @@ GameApi::BM GameApi::BitmapApi::circular_gradient(int sx, int sy, unsigned int c
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+

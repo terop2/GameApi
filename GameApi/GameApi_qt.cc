@@ -106,6 +106,9 @@ bool is_comment_end(std::string line)
 
 class QMLRoot : public QMLData
 {
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
   virtual QMLData* Parent() const { return 0; }
   virtual std::string Type() const { return "root"; }
@@ -128,6 +131,9 @@ public:
   QMLLoader() : parent(new QMLRoot) { ((QMLRoot*)parent)->m_child_map.push_back(this); }
   QMLLoader(QMLData *parent) : parent(parent) { ((QMLLoader*)parent)->m_child_map.push_back(this); }
   void set_data(std::vector<unsigned char> vec) { data = vec; }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   virtual void Prepare()
   {
     m_imports=std::vector<std::string>();
@@ -275,6 +281,9 @@ class QMLModule : public QMLData
 {
 public:
   QMLModule(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage) {}
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() {
     //std::cout << "qtPrepare" << std::endl;
 #ifndef EMSCRIPTEN
@@ -340,6 +349,9 @@ class PrintQMLData : public FrameBufferLoop
 {
 public:
   PrintQMLData(QMLData *mod) : mod(mod) {}
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() {
     mod->Prepare();
     int s = mod->NumImports();
@@ -389,6 +401,9 @@ class QMLCreateNode : public FrameBufferLoop
 {
 public:
   QMLCreateNode(QMLData *mod) : mod(mod) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() {
     // these are QMLLoader's prepares
     recursive_prepare(mod);
@@ -458,6 +473,9 @@ class UnknownElement : public QMLLoop
 {
 public:
   UnknownElement(std::string context, std::string type, PVec vec) : context(context), type(type), vec(vec) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   virtual void Prepare()
   {
     std::cout << "UnknownElement: " << context << "." << type << std::endl;
@@ -474,6 +492,9 @@ class UnknownWithChildren : public QMLLoop
 {
 public:
   UnknownWithChildren(std::string context, std::string type, PVec vec, std::vector<QMLLoop*> children) : context(context), type(type), vec(vec), children(children) { }
+    void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   virtual void Prepare()
   {
     std::cout << "Unknown: " << context << "." << type << std::endl;

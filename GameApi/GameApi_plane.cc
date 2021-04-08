@@ -387,6 +387,8 @@ class PLFaces : public FaceCollection
 {
 public:
   PLFaces(FacesInPlane *pl) : pl(pl) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
 
   virtual void Prepare() { }
   virtual int NumFaces() const { return pl->Size(); }

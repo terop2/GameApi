@@ -263,6 +263,13 @@ class PpmFileReader : public Bitmap<Color>
 {
 public:
   PpmFileReader(std::string filename) : filename(filename) { }
+  void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    flag = Read();
+  }
   void Prepare() { flag = Read(); }
 
   bool status() { return flag; }

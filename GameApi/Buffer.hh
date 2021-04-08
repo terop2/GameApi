@@ -67,11 +67,10 @@ public:
   virtual ~BufferRefReq() { }
 };
 
-
 template<class T>
 struct Buffer
 {
-  Buffer(int count) { buffer = new T[count]; }
+  Buffer(int count) : count(count) { buffer = new T[count]; }
   Buffer(const Buffer<T> &buf) : buffer(new T[buf.count]), count(buf.count)
   {
     std::copy(buffer, buffer+count, buf.buffer);  
@@ -126,7 +125,6 @@ inline void AnimBuffer(const Buffer<float> &buf, const Buffer<float> &buf2, Buff
       resbuf[i]=bufbuf[i]*val+buf2buf[i]*m;
     }
 }
-
 
 
 #endif

@@ -14,6 +14,7 @@
 #include "FreeType2.hh"
 
 #include <cstring>
+#include <iomanip>
 
 #ifdef LOOKING_GLASS
 #define HP_LOAD_LIBRARY
@@ -1231,13 +1232,18 @@ public:
     //if (val1>1.0) val1=1.0;
     const_cast<ScaleProgress*>(this)->time+=1.0;
     // if you change the numbers, change logo_iter too
+    //float t = time*50.0/300.0;
+    //if (t>50.0) t=50.0;
+    
     float val2 = float(FindProgressVal())/float(FindProgressMax() +2.0);
-    val2+=time/float(FindProgressMax() +2.0);
+    //std::cout << "SCALEPROGRESS: " << val2 << " " << float(FindProgressVal()) << "/" << float(FindProgressMax()+2.0) << std::endl;
+    //val2+=time/float(FindProgressMax() +2.0);
     //std::cout << "Time:" << time << std::endl;
     if (val2<0.1) val2=0.1;
     if (val2>1.0) val2=1.0;
-    if (g_logo_shown>=1) val2=1.0;
+    //if (g_logo_shown>=1) val2=1.0;
     if (val2>0.99) g_shows_hundred=1;
+    //std::cout << "SCALEPROGRESS(2): " << val2 << std::endl;
     return val2;
   }
 private:
@@ -1742,7 +1748,7 @@ EXPORT GameApi::MN GameApi::MovementNode::change_time(MN next, float d_time)
 class InterpolateMatrix : public Movement
 {
 public:
-  InterpolateMatrix(Movement *n1, Movement *n2, float start_time, float end_time, float start_value, float end_value) : n1(n1), n2(n2), f(f), start_time(start_time), end_time(end_time), start_value(start_value), end_value(end_value) { }
+  InterpolateMatrix(Movement *n1, Movement *n2, float start_time, float end_time, float start_value, float end_value) : n1(n1), n2(n2), start_time(start_time), end_time(end_time), start_value(start_value), end_value(end_value) { }
   virtual void event(MainLoopEvent &e) { 
     n1->event(e);
     n2->event(e);
@@ -1795,7 +1801,6 @@ public:
   }
 private:
   Movement *n1, *n2;
-  Fetcher<float> &f;
   float start_time, end_time;
   float start_value, end_value;
 };
@@ -1852,6 +1857,11 @@ public:
 
     next->handle_event(env);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -1934,6 +1944,11 @@ public:
     std::cout << std::endl;
     next->handle_event(eve);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -1962,6 +1977,11 @@ public:
 
   }
 
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2068,6 +2088,11 @@ public:
     if (eve.type==0x301 && ch==backward) { move_backward=false; }
     next->handle_event(eve);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2192,6 +2217,11 @@ public:
     Movement *move = find_move(e,mn);
     move->event(env);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &env)
@@ -2315,6 +2345,11 @@ public:
   {
     next->handle_event(env);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2398,6 +2433,11 @@ public:
 
     next->handle_event(eve);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2524,6 +2564,11 @@ public:
 
     next->handle_event(eve);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2692,6 +2737,11 @@ public:
     
     next->handle_event(eve);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2827,6 +2877,11 @@ public:
 	next->handle_event(env);
       }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
@@ -2876,6 +2931,13 @@ public:
 	next[i]->handle_event(env);
       }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = next.size();
+    for(int i=0;i<s;i++)
+    next[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { 
     int s = next.size();
     for(int i=0;i<s;i++)
@@ -2942,6 +3004,11 @@ class RepeatML : public MainLoopItem
 {
 public:
   RepeatML(MainLoopItem *next, float duration) : next(next), duration(duration) { }
+  void Collect(CollectVisitor &vis)
+  {
+    if (next) next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { if (next) next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -3236,6 +3303,16 @@ public:
 	next[i]->handle_event(e);
       }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = next.size();
+    for(int i=0;i<s;i++)
+      {
+	next[i]->Collect(vis);
+      }
+
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     int s = next.size();
     for(int i=0;i<s;i++)
@@ -3297,11 +3374,14 @@ class MS_array : public MatrixArray
 {
 public:
   MS_array(std::vector<Matrix> mat) : mat(mat) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int Size() const { return mat.size(); }
   virtual Matrix Index(int i) const
   {
     //std::cout << "MS_array: " << i << "<" << mat.size() << std::endl;
-    if (i>=0 && i<mat.size())
+    int sz = mat.size();
+    if (i>=0 && i<sz)
       return mat[i];
     return Matrix::Identity();
   }
@@ -3355,6 +3435,10 @@ public:
     cache_matrix = Matrix::Identity();
     cache_num = -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual void HandleEvent(MainLoopEvent &event) {
     move->event(event);
@@ -3395,6 +3479,11 @@ class InvMS : public MatrixArray
 {
 public:
   InvMS(MatrixArray *next) : next(next) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { next->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return next->Update(e); }
@@ -3422,6 +3511,12 @@ class InterpolateMS : public MatrixArray
 {
 public:
   InterpolateMS(MatrixArray *start, MatrixArray *end, float val) : start(start), end(end), val(val) { }
+  void Collect(CollectVisitor &vis)
+  {
+    start->Collect(vis);
+    end->Collect(vis);
+  }
+  void HeavyPrepare() { }
 
   virtual void Prepare() { start->Prepare(); end->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { start->HandleEvent(event); end->HandleEvent(event); }
@@ -4073,6 +4168,11 @@ class ForwardRenderToTextureId : public MainLoopItem
 {
 public:
   ForwardRenderToTextureId(VertexArraySet *s, MainLoopItem *next, TextureID *id) : s(s), next(next), id(id) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -6305,6 +6405,18 @@ public:
       ml.id = mat->mat(p.id);
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    // TODO, IS THIS CORRECT IMPLEMENTATION
+    find_ml();
+     MainLoopItem *item = find_main_loop(env,ml);
+     item->Collect(vis);
+      firsttime = false;
+      // TODO, IS THIS CORRECT IMPLEMENTATION
+  }
+  void HeavyPrepare() {
+  }
+
   virtual void Prepare()
   {
   }
@@ -6354,6 +6466,12 @@ public:
       ml.id = mat->mat_inst2(p.id,pta.id);
     }
   }
+  void Collect(CollectVisitor &vis) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare()
   {
   }
@@ -6398,6 +6516,15 @@ public:
     if (ml.id==-1) {
       ml.id = mat->mat_inst_matrix(p.id,ms.id);
     }
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Collect(vis);
+    firsttime = false;
+  }
+  void HeavyPrepare() {
   }
   virtual void Prepare()
   {
@@ -6445,6 +6572,14 @@ public:
       ml.id = mat->mat_inst(p.id,pts.id);
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Collect(vis);
+      firsttime = false;
+  }
+  void HeavyPrepare() { }
   virtual void Prepare()
   {
   }
@@ -6490,6 +6625,14 @@ public:
       ml.id = mat->mat_inst_fade(p.id,pts.id,flip,start_time, end_time);
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Collect(vis);
+    firsttime = false;
+  }
+  void HeavyPrepare() { }
   virtual void Prepare()
   {
   }
@@ -6611,6 +6754,16 @@ public:
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,false);
+    }
+    initialized=true;
   }
   void Prepare() {
     //if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
@@ -6799,6 +6952,12 @@ public:
     MatrixArray *obj2 = find_matrix_array(env, pts);
     obj2->HandleEvent(e);
   }
+
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     va = ev.polygon_api.create_vertex_array(p,false);
@@ -6983,6 +7142,11 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -7173,6 +7337,14 @@ public:
     MatrixArray *obj2 = find_matrix_array(env, pts);
     obj2->HandleEvent(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -7355,7 +7527,7 @@ private:
 class RenderInstancedTex_id : public MainLoopItem
 {
 public:
-  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; }
+  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1; }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -7363,9 +7535,20 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    va = ev.polygon_api.create_vertex_array(p,true);
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,true);
+    }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     initialized=true;
   }
@@ -7552,7 +7735,7 @@ private:
 class RenderInstancedTex_id_matrix : public MainLoopItem
 {
 public:
-  RenderInstancedTex_id_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; }
+  RenderInstancedTex_id_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1;}
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -7560,9 +7743,20 @@ public:
     MatrixArray *obj2 = find_matrix_array(env, pts);
     obj2->HandleEvent(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
-    va = ev.polygon_api.create_vertex_array(p,true);
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,true);
+    }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     initialized=true;
   }
@@ -7750,7 +7944,7 @@ private:
 class RenderInstancedCubemap : public MainLoopItem
 {
 public:
-  RenderInstancedCubemap(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
+  RenderInstancedCubemap(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; va.id = -1; }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -7758,9 +7952,19 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
-  void Prepare() {
-	va = ev.polygon_api.create_vertex_array(p,true);
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
 
+  void Prepare() {
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,true);
+    }
   }
   void execute(MainLoopEnv &e)
   {
@@ -7950,7 +8154,7 @@ private:
 class RenderInstancedCubemap_matrix : public MainLoopItem
 {
 public:
-  RenderInstancedCubemap_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; }
+  RenderInstancedCubemap_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; va.id=-1; }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -7958,9 +8162,19 @@ public:
     MatrixArray *obj2 = find_matrix_array(env, pts);
     obj2->HandleEvent(e);
   }
-  void Prepare() {
-	va = ev.polygon_api.create_vertex_array(p,true);
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
 
+  void Prepare() {
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,true);
+    }
   }
   void execute(MainLoopEnv &e)
   {
@@ -8152,7 +8366,7 @@ private:
 class RenderInstancedTex2 : public MainLoopItem
 {
 public:
-  RenderInstancedTex2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; }
+  RenderInstancedTex2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; va.id=-1; }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -8160,10 +8374,20 @@ public:
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
     obj2->HandleEvent(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
   void Prepare() {
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    va = ev.polygon_api.create_vertex_array(p,true);
-    
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,true);
+    }
   }
   void execute(MainLoopEnv &e)
   {
@@ -8340,7 +8564,7 @@ private:
 class RenderInstancedTex2_matrix : public MainLoopItem
 {
 public:
-  RenderInstancedTex2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; }
+  RenderInstancedTex2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; va.id = -1; }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -8348,10 +8572,20 @@ public:
     MatrixArray *obj2 = find_matrix_array(env, pts);
     obj2->HandleEvent(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
   void Prepare() {
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    va = ev.polygon_api.create_vertex_array(p,true);
-    
+    if (va.id==-1) {
+      va = ev.polygon_api.create_vertex_array(p,true);
+    }
   }
   void execute(MainLoopEnv &e)
   {
@@ -8535,6 +8769,13 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() {
   }
   void execute(MainLoopEnv &e)
@@ -8691,6 +8932,13 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+    void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() {
   }
   void execute(MainLoopEnv &e)
@@ -9505,9 +9753,10 @@ GameApi::US GameApi::UberShaderApi::f_fade(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunctionFlip("fade", next,""));
 }
-GameApi::US GameApi::UberShaderApi::f_flip(US us, US us2)
-{
-}
+//GameApi::US GameApi::UberShaderApi::f_flip(US us, US us2)
+//{
+  
+//}
 GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7)
 {
   ShaderCall *next = find_uber(e, us);
@@ -9969,6 +10218,8 @@ class SampleCurve : public PointsApiPoints
 {
 public:
   SampleCurve(Curve<Point> *c, int num_points) : c(c), num_points(num_points) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   int NumPoints() const { return num_points+1; }
   Point Pos(int i) const
   {
@@ -9995,6 +10246,8 @@ class CurveLineCollection : public LineCollection
 {
 public:
   CurveLineCollection(Curve<Point> *c, int num_lines) : c(c), num_lines(num_lines) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   int NumLines() const { return num_lines; }
   Point LinePoint(int line, int point) const
   {
@@ -10048,6 +10301,13 @@ class PatchSample : public FaceCollection
 {
 public:
   PatchSample(CurvePatch &patch, int sx, int sy) : patch(patch), sx(sx), sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare() { }
   virtual int NumFaces() const { return sx*sy; }
   virtual int NumPoints(int face) const
@@ -10152,6 +10412,14 @@ class FromPointsMatrices : public MatrixArray
 {
 public:
   FromPointsMatrices(PointsApiPoints *p) : p(p) { }
+  void Collect(CollectVisitor &vis)
+  {
+    p->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { p->Prepare(); }
   int Size() const {
     return p->NumPoints();
@@ -10169,6 +10437,12 @@ class MSRandomRot : public MatrixArray
 {
 public:
   MSRandomRot(Point p, int count) : p(p), count(count) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { }
   int Size() const { return count; }
   Matrix Index(int i) const
@@ -10198,6 +10472,14 @@ class From2dLinesMatrices : public MatrixArray
 {
 public:
   From2dLinesMatrices(LineCollection *coll) : coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { coll->Prepare(); }
   int Size() const {
     return coll->NumLines();
@@ -10230,6 +10512,14 @@ class From3dLinesMatrices : public MatrixArray
 {
 public:
   From3dLinesMatrices(LineCollection *coll) : coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { coll->Prepare(); }
   int Size() const {
     return coll->NumLines();
@@ -10260,6 +10550,13 @@ class MultArray1 : public MatrixArray
 {
 public:
   MultArray1(MatrixArray *arr, Matrix m) : arr(arr), m(m) { }
+  void Collect(CollectVisitor &vis)
+  {
+    arr->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { arr->Prepare(); }
   int Size() const { return arr->Size(); }
   Matrix Index(int i) const { return arr->Index(i)*m; }
@@ -10272,6 +10569,13 @@ class MultArray2 : public MatrixArray
 {
 public:
   MultArray2(Matrix m, MatrixArray *arr) : m(m), arr(arr) { }
+  void Collect(CollectVisitor &vis)
+  {
+    arr->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { arr->Prepare(); }
   int Size() const { return arr->Size(); }
   Matrix Index(int i) const { return m*arr->Index(i); }
@@ -10290,6 +10594,15 @@ class MultArray3 : public MatrixArray
 {
 public:
   MultArray3(MatrixArray *arr1, MatrixArray *arr2) : arr1(arr1), arr2(arr2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    arr1->Collect(vis);
+    arr2->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { arr1->Prepare(); arr2->Prepare(); }
   int Size() const { return std::min(arr1->Size(),arr2->Size()); }
   Matrix Index(int i) const { return arr1->Index(i)*arr2->Index(i); }
@@ -10313,6 +10626,14 @@ class SubArrayMatrices : public MatrixArray
 {
 public:
   SubArrayMatrices(MatrixArray *m, int start, int count) : m(m) { }
+  void Collect(CollectVisitor &vis)
+  {
+    m->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { m->Prepare(); }
   int Size() const { return std::min(count, m->Size()-start); }
   Matrix Index(int i) const { return m->Index(start+i); }
@@ -10386,6 +10707,12 @@ class SampleMatrixCurve2 : public MatrixArray
 {
 public:
   SampleMatrixCurve2(Curve<Matrix> *c, int num_points) : c(c), num_points(num_points) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
   void Prepare() { }
   int Size() const { return num_points; }
   Matrix Index(int i) const
@@ -11380,6 +11707,13 @@ public:
     return this;
   }
   virtual void trigger()=0;
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
@@ -11601,6 +11935,21 @@ void LoadUrls_async_cbs();
 
 void clear_texture_confirms();
 
+class CollectInterfaceImpl : public CollectVisitor
+{
+public:
+  void register_obj(CollectInterface *i) { vec.push_back(i); }
+  void execute(int i) {
+    int sz = vec.size();
+    if (i>=0 && i<sz)
+      vec[i]->HeavyPrepare();
+  }
+public:
+  std::vector<CollectInterface*> vec;
+};
+
+void ClearProgress();
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -11619,7 +11968,11 @@ public:
   virtual void Init()
   {
   OpenglLowApi *ogl = g_low->ogl;
+  ClearProgress();
+  
+      InstallProgress(33344, "collect", 30);
 
+  
     score = 0;
     hidden_score = 0;
 
@@ -11739,23 +12092,49 @@ public:
     if (firsttime) {
       MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
       clear_texture_confirms();
-      item->Prepare();
-
+      //item->Prepare();
+      vis = new CollectInterfaceImpl;
+      item->Collect(*vis);
+      ProgressBar(33344, 0, 30, "collect");
+      vis_counter=0;
       g_prepare_done = true;
 
       firsttime = false;
     }
 
+    if (vis) {
+      int num2 = (vis->vec.size()/30);
+      if (num2<1) num2=1;
+      for(int i=0;i<num2;i++) {
+	vis->execute(vis_counter);
+	vis_counter++;
+      }
+
+      int num = vis_counter;
+      if (vis->vec.size()>0)
+	ProgressBar(33344, (30*num/vis->vec.size()), 30, "collect");
+      //bool b = false;
+      if (gameapi_seamless_url=="") {
+	  //std::cout << "Logo iter" << std::endl;
+	  env->ev->mainloop_api.logo_iter();
+	  //std::cout << "End of Logo iter" << std::endl;
+	} else {
+	  env->ev->mainloop_api.seamless_iter();
+	}
+      if (vis_counter>=vis->vec.size()) { delete vis; vis=0; }
+      return -1;
+    }
+    
     if (!g_prepare_done) {
       int num = progress /100;
       ProgressBar(333, progress++, num*100+100, "prepare");
-      bool b = false;
+      //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
-	  b = env->ev->mainloop_api.logo_iter();
+	  env->ev->mainloop_api.logo_iter();
 	  //std::cout << "End of Logo iter" << std::endl;
 	} else {
-	  b = env->ev->mainloop_api.seamless_iter();
+	  env->ev->mainloop_api.seamless_iter();
 	}
     }
 			
@@ -11861,6 +12240,8 @@ private:
   bool firsttime2;
   int progress;
   int logo_frame_count=0;
+  CollectInterfaceImpl *vis=0;
+  int vis_counter=0;
 };
 
 extern int score;
@@ -12195,7 +12576,12 @@ class ChangePosLI : public LineCollection
 {
 public:
   ChangePosLI(LineCollection &coll, LineCollection &orig, PointTransform &trans, float delta_time, bool dif) : coll(coll), orig(orig), trans(trans), delta_time(delta_time),dif(dif) {}
-
+  void Collect(CollectVisitor &vis) {
+    coll.Collect(vis);
+    orig.Collect(vis);
+  }
+  void HeavyPrepare() { }
+  
   virtual int NumLines() const { return coll.NumLines(); }
   virtual Point LinePoint(int line, int point) const
   {
@@ -12232,7 +12618,11 @@ private:
 class ChangePos : public ForwardFaceCollection
 {
 public:
-  ChangePos(FaceCollection &coll, FaceCollection &orig, PointTransform &trans, float delta_time, bool dif) : ForwardFaceCollection(coll), orig(orig), trans(trans), delta_time(delta_time), dif(dif) { }
+  ChangePos(FaceCollection &coll, FaceCollection &orig, PointTransform &trans, float delta_time, bool dif) : ForwardFaceCollection(coll), coll(coll), orig(orig), trans(trans), delta_time(delta_time), dif(dif) { }
+  void Collect(CollectVisitor &vis) {
+    coll.Collect(vis); orig.Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual Point FacePoint(int face, int point) const
   {
     // this FacePoint/EndFacePoint logic looks odd, but is needed
@@ -12257,6 +12647,7 @@ public:
     return trans.Map(p, delta_time);
   }
 private:
+  FaceCollection &coll;
   FaceCollection &orig;
   PointTransform &trans;
   float delta_time;
@@ -12644,6 +13035,13 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { }
   void execute(MainLoopEnv &e) 
   {
@@ -12862,6 +13260,16 @@ class StringDisplayToBitmap : public Bitmap<int>
 {
 public:
   StringDisplayToBitmap(StringDisplay &sd, int def) : sd(sd),def(def) {}
+  void Collect(CollectVisitor &vis)
+  {
+    StringDisplay *ssd = &sd;
+    if (ssd)
+      sd.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { StringDisplay *ssd = &sd; if (ssd) sd.Prepare(); }
   int SizeX() const
   {
@@ -12920,6 +13328,14 @@ class ChooseGlyphFromFont : public GlyphInterface
 {
 public:
   ChooseGlyphFromFont(FontInterface &fi, long idx) : fi(fi), idx(idx) { }
+  void Collect(CollectVisitor &vis)
+  {
+    fi.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare() { fi.Prepare(); }
   virtual int Top() const { return fi.Top(idx); }
   virtual int SizeX() const { return fi.SizeX(idx); }
@@ -12943,6 +13359,15 @@ class StringDisplayFromGlyphs : public StringDisplay
 {
 public:
   StringDisplayFromGlyphs(std::vector<GlyphInterface*> vec, std::string str, int x_gap, int empty_line_height) : vec(vec), x_gap(x_gap), str(str), empty_line_height(empty_line_height) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare() { 
     int s = vec.size();
     for(int i=0;i<s;i++)
@@ -13033,6 +13458,18 @@ class BitmapPrepareCache2 : public Bitmap<Color>
 {
 public:
   BitmapPrepareCache2(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (bitmap_find_data(id)!=-1) { return; }
+    GameApi::BM num = add_color_bitmap2(e,bm);
+    bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
+  }
+
   void Prepare()
   {
     if (bitmap_find_data(id)!=-1) {
@@ -13091,6 +13528,15 @@ class LargeTextBitmap : public Bitmap<Color>
 {
 public:
   LargeTextBitmap(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::FI font, std::string url, std::string homepage, int x_gap, int empty_line_height, int baseline_separation) : env(env), ev(ev), font(font), url(url), homepage(homepage), x_gap(x_gap), empty_line_height(empty_line_height), baseline_separation(baseline_separation) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
@@ -13171,6 +13617,15 @@ public:
 	return bm2.Map(x-bm.SizeX(),y);
     return 0x0;
   }
+    void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+    bm2.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare()
   {
     bm.Prepare();
@@ -13198,6 +13653,15 @@ public:
       return bm2.Map(x,y-bm.SizeY());
     return 0x0;
   }
+    void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+    bm2.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   virtual void Prepare()
   {
     bm.Prepare();
@@ -13438,6 +13902,8 @@ public:
       vec.push_back(p);
     }
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int NumPoints() const { return vec.size(); }
   virtual Point Pos(int i) const { return vec[i]; }
   virtual unsigned int Color(int i) const
@@ -13464,6 +13930,9 @@ public:
     for(int i=0;i<s;i++)
       cmds->Execute(commands[i]);
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void insert(char c) {
     if (c=='.') {
       Point p = cmds->pos();
@@ -13556,6 +14025,14 @@ class Player : public MainLoopItem
 {
 public:
   Player(MainLoopItem *next) : next(next) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -13578,6 +14055,14 @@ class Enemy : public MainLoopItem
 {
 public:
   Enemy(MainLoopItem *next) : next(next) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -13613,6 +14098,14 @@ class PlayerPos : public MainLoopItem
 {
 public:
   PlayerPos(MainLoopItem *next, Point p) : next(next),p(p) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -13654,6 +14147,14 @@ class EnemyPos : public MainLoopItem
 {
 public:
   EnemyPos(MainLoopItem *next, PointsApiPoints *pts) : next(next), pts(pts) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { 
     next->Prepare(); 
 
@@ -13699,6 +14200,14 @@ class BlitVoxel_voxel : public Voxel<int>
 {
 public:
   BlitVoxel_voxel(Voxel<int> *bg, Voxel<int> *obj, int p_x, int p_y, int p_z) : bg(bg), obj(obj),p_x(p_x), p_y(p_y), p_z(p_z) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bg->Collect(vis); obj->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { bg->Prepare(); obj->Prepare(); }
   virtual int SizeX() const { return bg->SizeX(); }
   virtual int SizeY() const { return bg->SizeY(); }
@@ -13731,6 +14240,13 @@ public:
     int ss = sx*sy*sz;
     while (sx>600 || sy>600 ||sz>600 || ss>600*600*600) { sx/=2; sy/=2; sz/=2; ss=sx*sy*sz; std::cout << "Warning: Voxel size too large (" << sx << "x" << sy << "x" << sz << ")" << std::endl; }
 }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() {}
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -13761,6 +14277,13 @@ class EmptyVoxel : public Voxel<int>
 {
 public:
   EmptyVoxel(int sx, int sy, int sz) : sx(sx), sy(sy), sz(sz) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -13780,6 +14303,14 @@ class VoxelLandscape : public Voxel<int>
 {
 public:
   VoxelLandscape(Bitmap<float> &bm, int height, int false_value, int true_value) : bm(bm), height(height), false_value(false_value), true_value(true_value) {}
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return height; }
@@ -13812,6 +14343,14 @@ public:
 	   int start_z, int end_z) : vx(vx), start_x(start_x), end_x(end_x),
 				     start_y(start_y), end_y(end_y),
 				     start_z(start_z), end_z(end_z) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vx->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { vx->Prepare(); }
 
   virtual int SizeX() const { return end_x-start_x; }
@@ -13885,6 +14424,58 @@ public:
   {
     prepared=false;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vx->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+    if (!prepared) {
+      //vx->Prepare();
+    int sx = vx->SizeX();
+    int sy = vx->SizeY();
+    int sz = vx->SizeZ();
+    if (sx && sy && sz)  prepared=true;
+    Point p;
+    float dx = end_x-start_x;
+    float dy = end_y-start_y;
+    float dz = end_z-start_z;
+    pts.resize(count);
+    for(int i=0;i<sx;i++) {
+      p.x = float(i)/sx*dx+start_x;
+      for(int j=0;j<sy;j++) {
+	p.y = float(j)/sy*dy+start_y;
+	for(int k=0;k<sz;k++)
+	  {
+	    int val = vx->Map(i,j,k);
+	    if (val>=0 && val<count) {
+	      p.z = float(k)/sz*dz+start_z;
+	      int val_mx = vx->Map(i-1,j,k);
+	      bool b_mx = val_mx>=0 && val_mx<count;
+	      if (!b_mx) { pts[val].push_back(p); continue; }
+	      int val_px = vx->Map(i+1,j,k);
+	      bool b_px = val_px>=0 && val_px<count;
+	      if (!b_px) { pts[val].push_back(p); continue; }
+	      int val_my = vx->Map(i,j-1,k);
+	      bool b_my = val_my>=0 && val_my<count;
+	      if (!b_my) { pts[val].push_back(p); continue; }
+	      int val_py = vx->Map(i,j+1,k);
+	      bool b_py = val_py>=0 && val_py<count;
+	      if (!b_py) { pts[val].push_back(p); continue; }
+	      int val_mz = vx->Map(i,j,k-1);
+	      bool b_mz = val_mz>=0 && val_mz<count;
+	      if (!b_mz) { pts[val].push_back(p); continue; }
+	      int val_pz = vx->Map(i,j,k+1);
+	      bool b_pz = val_pz>=0 && val_pz<count;
+	      if (!b_pz) { pts[val].push_back(p); continue; }
+	    }
+	  }
+      }
+    }
+    }
+
+  }
+
   void Prepare() {
     if (!prepared) {
     vx->Prepare();
@@ -13945,6 +14536,11 @@ class VPTS : public PointsApiPoints
 {
 public:
   VPTS(VoxelToPTS &pts, int val, Voxel<int> *vx) : pts(pts), val(val),vx(vx) { }
+  void Collect(CollectVisitor &vis)
+  {
+    pts.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     pts.Prepare();
     /*vx->Prepare();*/ }
@@ -14100,6 +14696,11 @@ public:
   QuakeML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
     point.id=-1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   virtual void logoexecute() { next->logoexecute(); }
   virtual void execute(MainLoopEnv &e)
@@ -14198,6 +14799,12 @@ public:
   QuakeML2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
     point.id=-1;
   }
+    void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -14302,6 +14909,13 @@ public:
   QuakeML3(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, MainLoopItem *next2, float speed, float rot_speed, Point p) : env(env), ev(ev), next(next), next2(next2), speed(speed), rot_speed(rot_speed),p(p) { 
     point.id=-1;
   }
+    void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    next2->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { next->Prepare(); next2->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -14437,6 +15051,12 @@ class LocalMove : public MainLoopItem
 {
 public:
   LocalMove(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *inner, PointsApiPoints *o) : env(env), ev(ev), inner(inner), o(o) { }
+  void Collect(CollectVisitor &vis)
+  {
+    inner->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { inner->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -14446,7 +15066,7 @@ public:
       {
 	Point p = o->Pos(i);
 	GameApi::M m = ev.matrix_api.trans(p.x,p.y,p.z);
-	GameApi::M m2 = add_matrix2(env, e.in_MV);
+	//GameApi::M m2 = add_matrix2(env, e.in_MV);
 	MainLoopEnv ee = e;
 
 	//GameApi::SH s1;
@@ -14458,7 +15078,7 @@ public:
 	GameApi::SH s3;
 	s3.id = e.sh_color;
 	
-	GameApi::M mat2 = ev.matrix_api.mult(m,m2);
+	//GameApi::M mat2 = ev.matrix_api.mult(m,m2);
 	//GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
 #ifndef NO_MV
 	ev.shader_api.use(s1);
@@ -14506,6 +15126,13 @@ class LocalMoveMatrix : public MainLoopItem
 {
 public:
   LocalMoveMatrix(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *inner, MatrixArray *o) : env(env), ev(ev), inner(inner), o(o) { }
+  void Collect(CollectVisitor &vis)
+  {
+    inner->Collect(vis);
+    o->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { inner->Prepare(); o->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -14515,7 +15142,7 @@ public:
       {
 	Matrix p = o->Index(i);
 	GameApi::M m = add_matrix2(env, p); //ev.matrix_api.trans(p.x,p.y,p.z);
-	GameApi::M m2 = add_matrix2(env, e.in_MV);
+	//GameApi::M m2 = add_matrix2(env, e.in_MV);
 	MainLoopEnv ee = e;
 
 	//GameApi::SH s1;
@@ -14527,7 +15154,7 @@ public:
 	GameApi::SH s3;
 	s3.id = e.sh_color;
 	
-	GameApi::M mat2 = ev.matrix_api.mult(m,m2);
+	//GameApi::M mat2 = ev.matrix_api.mult(m,m2);
 	//GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
 #ifndef NO_MV
 	ev.shader_api.use(s1);
@@ -14771,6 +15398,8 @@ class WavePoints : public PointsApiPoints
 {
 public:
   WavePoints(Waveform &wv, int num_samples, Point pos, Vector u_x, Vector u_y) : wv(wv), num_samples(num_samples),pos(pos), u_x(u_x), u_y(u_y) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual void HandleEvent(MainLoopEvent &event) { wv.HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return wv.Update(e); }
   virtual int NumPoints() const
@@ -14806,6 +15435,9 @@ class FilterComponent : public PointsApiPoints
 {
 public:
   FilterComponent(PointsApiPoints *pts, int comp, float val) : pts(pts), comp(comp), val(val) { }
+  void Collect(CollectVisitor &vis) { pts->Collect(vis); }
+  void HeavyPrepare() { }
+
   void HandleEveent(MainLoopEvent &event) { pts->HandleEvent(event); }
   bool Update(MainLoopEnv &e) { return pts->Update(e); }
   int NumPoints() const { return pts->NumPoints(); }
@@ -14837,6 +15469,9 @@ public:
     m = Matrix::Identity();
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
   bool Update(MainLoopEnv &e) {
     if (firsttime) { firsttime = false; return true; }
@@ -14875,6 +15510,12 @@ class Scale2dScreen : public MainLoopItem
 {
 public:
   Scale2dScreen(GameApi::EveryApi &ev, MainLoopItem *item, float sx, float sy) : ev(ev), item(item), sx(sx), sy(sy) {}
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -14986,6 +15627,12 @@ public:
       }
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -15359,6 +16006,27 @@ public:
     //std::cout << "async_pending_count inc (P_sctipt2) " << async_pending_count << std::endl;
     
   }
+  void Collect(CollectVisitor &vis)
+  {
+    if (!coll) {
+#ifdef EMSCRIPTEN
+      std::cout << "P_script: script not ready at Collect()" << std::endl;
+#endif
+      Prepare2(); }
+    if (coll)
+      coll->Collect(vis);
+    if (!coll)
+      {
+	GameApi::P pp;
+	pp.id = -1;
+	p_data = pp;
+	coll = 0;
+      }
+  }
+  void HeavyPrepare()
+  {
+  }
+
   void Prepare() { 
     if (!coll) { 
 #ifdef EMSCRIPTEN
@@ -15538,6 +16206,11 @@ public:
       //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
 
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+	      
   void Prepare() {}
   virtual void execute(MainLoopEnv &e3)
   {
@@ -15893,6 +16566,19 @@ public:
     async_taken=false;
 
   }
+  void Collect(CollectVisitor &vis)
+  {
+    if (bitmap) bitmap->Collect(vis);
+    else {
+#ifdef EMSCRIPTEN
+      std::cout << "BM_script: script not ready at Collect()" << std::endl;
+#endif
+      Prepare2();
+      if (bitmap) bitmap->Collect(vis);
+    }
+  }
+  void HeavyPrepare() { }
+
   void Prepare() {
     if (bitmap)
      bitmap->Prepare();
@@ -16001,6 +16687,12 @@ class LoadDS : public DiskStore
 {
 public:
   LoadDS(const std::vector<unsigned char> &file) : vec(file), valid(false) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare() {
     header = (FileHeader*)&vec[0];
     blocks = (FileBlock*)&vec[sizeof(FileHeader)];
@@ -16043,6 +16735,11 @@ class SaveDSMain : public MainLoopItem
 {
 public:
   SaveDSMain(GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : ev(ev), out_file(out_file), p(p) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
@@ -16109,6 +16806,11 @@ class RandomIntBitmap : public Bitmap<int>
 {
 public:
   RandomIntBitmap(int sx, int sy, int min_value, int max_value) : sx(sx), sy(sy), min_value(min_value), max_value(max_value) {}
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
@@ -16406,6 +17108,12 @@ class MoveIN : public MainLoopItem
 {
 public:
   MoveIN(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *item, InputForMoving *in) : e(e), ev(ev), item(item), in(in) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &env)
   {
@@ -16529,6 +17237,12 @@ public:
     start_time = ev.mainloop_api.get_time();
   }
 
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() {
     next->Prepare();
   }
@@ -16621,6 +17335,12 @@ public:
       number_map["score"] = score;
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -16697,6 +17417,13 @@ public:
       number_map["score"] = score;
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+    pts->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { item->Prepare(); pts->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -16809,6 +17536,12 @@ class ScoreHidePTS : public PointsApiPoints
 {
 public:
   ScoreHidePTS(PointsApiPoints *pts) : pts(pts) { }
+  void Collect(CollectVisitor &vis)
+  {
+    pts->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { pts->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { 
     pts->HandleEvent(event);
@@ -16890,6 +17623,12 @@ public:
     item->handle_event(e);
   }
   virtual std::vector<int> shader_id() { return item->shader_id(); }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -16931,6 +17670,12 @@ class LinesCurveGroup : public CurveGroup
 {
 public:
   LinesCurveGroup(LineCollection *coll) : coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { coll->Prepare(); }
   int NumCurves() const { return coll->NumLines(); }
   Point Pos(int num, float t) const
@@ -16961,6 +17706,12 @@ class LinesFromQuads : public LineCollection
 {
 public:
   LinesFromQuads(FaceCollection *coll, int sx, int sy) : coll(coll), sx(sx), sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { coll->Prepare(); }
   int NumLines() const { return coll->NumFaces()*(sx+sy+1); }
   Point LinePoint(int line, int point) const
@@ -17021,6 +17772,15 @@ class AnimCurveGroup : public CurveGroup
 {
 public:
   AnimCurveGroup(MeshAnim *ma, float start_time, float end_time) : ma(ma), start_time(start_time), end_time(end_time) { }
+  void Collect(CollectVisitor &vis)
+  {
+    ma->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    numfaces = ma->NumFaces();
+  }
+
   void Prepare() { ma->Prepare(); numfaces = ma->NumFaces(); }
   int NumCurves() const { return numfaces*ma->NumPoints(0); }
   Point Pos(int num, float t) const
@@ -17053,6 +17813,12 @@ class LineFromCurveGroup : public LineCollection
 {
 public:
   LineFromCurveGroup(CurveGroup *cg, int split) : cg(cg), split(split) {}
+  void Collect(CollectVisitor &vis)
+  {
+    cg->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { cg->Prepare(); }
   int NumLines() const { return split*cg->NumCurves(); }
   Point LinePoint(int line, int point) const
@@ -17102,6 +17868,11 @@ public:
 start_y(start_y), end_y(end_y),
 							     start_z(start_z), end_z(end_z), value(value)
   { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -17527,6 +18298,15 @@ public:
   }
   ~SpriteDraw() { }
 
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() {
+    BitmapToSourceBitmap(bm,src,fmt);
+    prepared=true;
+  }
+
   virtual void Prepare()
   {
     bm.Prepare();
@@ -17611,6 +18391,60 @@ class GouraudDraw : public FrameBufferLoop
 {
 public:
   GouraudDraw(std::string name, FaceCollection *coll, Movement *move) : name(name), coll(coll), size(0), move(move) { ss=0;}
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+
+    int s = coll->NumFaces();
+    size = s;
+    ss = coll->NumPoints(0);
+
+    // THIS EATS WAY TOO MUCH MEMORY, BUT WE CAN'T DO ANYTHING SINCE
+    // WE DON'T HAVE GPU MEMORY AVAILABLE. NORMAL SOLUTION TO THIS PROBLEM
+    // IS BATCHING WHICH SPLITS THESE ARRAYS TO SMALL PIECES + TRANSFERS
+    // TO GPU MEMORY IN SMALL PIECES.
+    vertex_array = new Point[s*3];
+    color_array = new unsigned int[s*3];
+    for(int i=0;i<s;i++)
+      {
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	vertex_array[i*3+0] = p1;
+	vertex_array[i*3+1] = p2;
+	vertex_array[i*3+2] = p3;
+	unsigned int c1=coll->Color(i,0);
+	unsigned int c2=coll->Color(i,1);
+	unsigned int c3=coll->Color(i,2);
+	color_array[i*3+0] = c1;
+	color_array[i*3+1] = c2;
+	color_array[i*3+2] = c3;
+      }
+    if (ss==4) {
+    vertex_array2 = new Point[s*3];
+    color_array2 = new unsigned int[s*3];
+    for(int i=0;i<s;i++)
+      {
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,2);
+	Point p3 = coll->FacePoint(i,3);
+	vertex_array2[i*3+0] = p1;
+	vertex_array2[i*3+1] = p2;
+	vertex_array2[i*3+2] = p3;
+	unsigned int c1=coll->Color(i,0);
+	unsigned int c2=coll->Color(i,2);
+	unsigned int c3=coll->Color(i,3);
+	color_array2[i*3+0] = c1;
+	color_array2[i*3+1] = c2;
+	color_array2[i*3+2] = c3;
+      }
+    }
+
+  }
+
   void Prepare() { 
     coll->Prepare();
     int s = coll->NumFaces();
@@ -18213,6 +19047,14 @@ class ChaiML : public MainLoopItem
 public:
   ChaiML(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, MainLoopItem *next) : env(e), ev(ev), url(url), homepage(homepage), next(next) {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   virtual void Prepare() {
     register_chai_types2(&ev, &chai);
 
@@ -18276,6 +19118,11 @@ public:
   ChaiMainLoop(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage) : env(e), ev(ev), url(url), homepage(homepage) {
     mainloop.id = -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
     chaiscript::ChaiScript chai;
@@ -18575,6 +19422,11 @@ class StateMachineImpl : public IStateMachine
 {
 public:
   StateMachineImpl(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage) { current_state = 0; }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -18924,6 +19776,23 @@ public:
     prepared=false;
   }
   ~SpriteDraw2() { }
+  void Collect(CollectVisitor &vis)
+  {
+    bms.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int s = bms.Size();
+    for(int i=0;i<s;i++)
+      {
+	SourceBitmap s(fmt?D_RGBA8888:D_Mono1,0);
+	src.push_back(s);
+	BitmapCollectionToSourceBitmap(bms,src[i], fmt, i);
+      }
+    prepared=true;
+
+  }
   virtual void Prepare()
   {
     bms.Prepare();
@@ -18971,6 +19840,11 @@ class BitmapColl : public BitmapCollection<Color>
 {
 public:
   BitmapColl(GameApi::Env &e, std::string url, std::string homepage, std::vector<Bitmap<Color>*> vec) : e(e), url(url), homepage(homepage),vec(vec) {}
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
 #ifndef EMSCRIPTEN
@@ -19214,6 +20088,14 @@ public:
     Point2d br = { 100.0, 100.0 };
     SetWorld(new WorldImpl(30,30,10,10,tl,br)); 
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   virtual void Prepare()
   {
     int s = vec.size();
@@ -19293,24 +20175,30 @@ public:
     temp_up=temp_down=false;
 
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() {
+  }
   virtual void Prepare() { 
     next->Prepare(); 
   }
   virtual void handle_event(FrameLoopEvent &e) {
     next->handle_event(e);
 
-    int screen_x = 800; //ev.mainloop_api.get_screen_width();
-    int screen_y = 600; //ev.mainloop_api.get_screen_height();
-    int scr_x_0 = 0.0;
-    int scr_x_1 = screen_x/3.0;
-    int scr_x_2 = screen_x*2.0/3.0;
-    int scr_x_3 = screen_x;
-    int scr_y_0 = 0.0;
-    int scr_y_1 = screen_y/3.0;
-    int scr_y_2 = screen_y*2.0/3.0;
-    int scr_y_3 = screen_y;
+    //int screen_x = 800; //ev.mainloop_api.get_screen_width();
+    //int screen_y = 600; //ev.mainloop_api.get_screen_height();
+    //int scr_x_0 = 0.0;
+    //int scr_x_1 = screen_x/3.0;
+    //int scr_x_2 = screen_x*2.0/3.0;
+    //int scr_x_3 = screen_x;
+    //int scr_y_0 = 0.0;
+    //int scr_y_1 = screen_y/3.0;
+    //int scr_y_2 = screen_y*2.0/3.0;
+    //int scr_y_3 = screen_y;
 
-    Point cursor = e.cursor_pos;
+    //Point cursor = e.cursor_pos;
     
     if (mode==0)
       { // left&right + jump
@@ -19481,6 +20369,45 @@ class BuildWorld : public FrameBufferLoop
 {
 public:
   BuildWorld(GameApi::Env &e, FrameBufferLoop *next, std::string url, std::string homepageurl, std::string chars, int x, int y) : e(e), next(next), url(url), homepage(homepageurl), chars(chars), x(x), y(y), ssx(1), ssy(1) {}
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string data = std::string(ptr->begin(), ptr->end());
+
+    std::stringstream ss(data);
+    ss >> ssx >> ssy;
+
+    int *array = new int[ssx*ssy];
+    for(int i=0;i<ssx*ssy;i++)
+      {
+	unsigned char c;
+	ss >> c;
+	int s = chars.size();
+	int val = 0;
+	for(int j=0;j<s;j++)
+	  {
+	    if (c==(unsigned char)chars[j]) val=j;
+	  }
+	array[i] = val;
+      }
+    WorldBlocks *blk = GetWorld();
+    int sx = std::max(ssx+x,blk->SizeX());
+    int sy = std::max(ssy+y,blk->SizeY());
+    blk->ReserveSize(sx,sy);
+    blk->SetElemBlock(array, ssx, ssy, ssx, x,y);
+    delete []array;
+
+  }
+
   virtual void Prepare()
   {
     next->Prepare();
@@ -19554,6 +20481,15 @@ public:
     unsigned int color = *(((unsigned int*)buf->Buffer())+x+y*buf->Width());
     return Color(color);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    buf->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    buf->frame();
+  }
   virtual void Prepare() { 
     buf->Prepare();
     buf->frame();
@@ -19573,6 +20509,41 @@ class LowFrameBuffer : public FrameBuffer
 {
 public:
   LowFrameBuffer(FrameBufferLoop *loop, int format, int width, int height, int depth) : loop(loop),m_format(format), width(width), height(height), depth(depth) { firsttime = true;  }
+  void Collect(CollectVisitor &vis)
+  {
+    loop->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    depth_buffer = new float[width*height];
+    // 
+    FrameBufferFormat fmt = (FrameBufferFormat)m_format;
+    switch(fmt) {
+    case FrameBufferFormat::F_Mono1:
+      buffer = new unsigned char[width*height/8];
+      size = width*height/8;
+      break;
+    case FrameBufferFormat::F_Mono8:
+      buffer = new unsigned char[width*height];
+      size = width*height;
+      break;
+    case FrameBufferFormat::F_RGB565:
+      buffer = new unsigned short[width*height];
+      size=width*height*sizeof(unsigned short);
+      break;
+    case FrameBufferFormat::F_RGB888:
+      buffer = new unsigned short[width*height];
+      size=width*height*sizeof(unsigned short);
+      break;
+    case FrameBufferFormat::F_RGBA8888:
+      buffer = new unsigned int[width*height];
+      size=width*height*sizeof(unsigned int);
+      break;
+    }
+    firsttime = true;
+
+  }
   virtual void Prepare()
   {
 
@@ -19859,6 +20830,11 @@ class EnemyDraw : public FrameBufferLoop
 {
 public:
   EnemyDraw(GameApi::Env &e, Bitmap<Color>* shape, std::string url, std::string homepage, int fmt, float speed) : e(e), shape(shape), url(url), homepage(homepage), src(fmt?D_RGBA8888:D_Mono1,0), fmt(fmt?D_RGBA8888:D_Mono1), speed(speed) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
 #ifndef EMSCRIPTEN
@@ -19957,6 +20933,12 @@ public:
     current_frame=0;
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare()
   {
     if (firsttime) {
@@ -20071,6 +21053,12 @@ class LowCollision : public FrameBufferLoop
 {
 public:
   LowCollision(FrameBufferLoop *next, float start_x, float end_x, float start_y, float end_y, int key) : next(next), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), key(key) { keep=false; }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { next->Prepare(); }
   virtual void handle_event(FrameLoopEvent &e)
   {
@@ -20140,6 +21128,13 @@ public:
     unsigned int c = b[x+y*buf.Width()];
     return Color(c);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    buf.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { buf.frame(); }
+
   virtual void Prepare()
   {
     buf.Prepare();
@@ -20168,6 +21163,12 @@ public:
     time = 0.0;
     state = 0;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    normal->Collect(vis); next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { normal->Prepare(); next->Prepare(); }
   virtual void handle_event(FrameLoopEvent &e)
   {
@@ -20659,6 +21660,8 @@ BufferRef *find_pngheavy_cache(std::string url)
   return 0;
 }
 
+std::string MB(long num);
+
 class PngHeavy : public HeavyOperation
 {
 public:
@@ -20666,7 +21669,8 @@ public:
     ref=BufferRef::NewBuffer(1,1);
 
     res_ref=BufferRef::NewBuffer(ssx,ssy);
- 
+    std::cout << "PngHeavy:" << ssx << "x" << ssy << "=" << MB(ssx*ssy*sizeof(unsigned int)) << std::endl;
+    
     // show white while loading
     BufferRef *ref = find_pngheavy_cache(url);
     if (!ref) 
@@ -21135,6 +22139,12 @@ public:
     //}
     
   }
+    void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { next->Prepare(); }
   //void logoexecute()
   //{
@@ -21424,6 +22434,12 @@ public:
   SmallWindow(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *draw, int x, int y, int sx, int sy) : env(env), ev(ev), draw(draw), x(x), y(y), sx(sx), sy(sy) { 
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    draw->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { draw->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -21540,6 +22556,13 @@ class FilterPrepares : public MainLoopItem
 {
 public:
   FilterPrepares(MainLoopItem *item) : item(item) { firsttime = true;}
+  void Collect(CollectVisitor &vis)
+  {
+    if (firsttime) { item->Collect(vis); }
+    firsttime = false;
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare()
   {
     if (firsttime) { item->Prepare(); }
@@ -21608,6 +22631,11 @@ class LookingGlassSharedLibraryUse : public MainLoopItem
 {
 public:
   LookingGlassSharedLibraryUse(GameApi::Env &e, std::vector<GameApi::TXID> id, int start, int end) : m_e(e), id(id), start(start), end(end) { firsttime = true;}
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
 #ifdef LOOKING_GLASS
       hp_loadLibrary();
@@ -21679,6 +22707,10 @@ public:
   {
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
@@ -21726,6 +22758,12 @@ class LoadFont : public FontInterface
 {
 public:
   LoadFont(GameApi::Env &e, std::string url, std::string homepageurl) : e(e), url(url), homepageurl(homepageurl) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare() { 
     if (firsttime) {
       firsttime = false;
@@ -22105,6 +23143,12 @@ class DragDropArea : public MainLoopItem
 {
 public:
   DragDropArea(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *mainloop, GameApi::RUN (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename)) : m_e(e), ev(ev), mainloop(mainloop), fptr(fptr) { }
+  void Collect(CollectVisitor &vis)
+  {
+    mainloop->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { mainloop->Prepare(); }
   virtual void execute(MainLoopEnv &e) { 
     mainloop->execute(e);
@@ -22182,6 +23226,25 @@ std::vector<PosDelta> parse_layout(std::string s)
   }
   return pos;
 }
+
+  void FrmContainerWidget::Collect(CollectVisitor &vis)
+  {
+    int s = wid.size();
+    for(int i=0;i<s;i++) { wid[i]->Collect(vis); }
+    vis.register_obj(this);
+  }
+  void FrmContainerWidget::HeavyPrepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string code(ptr->begin(), ptr->end());
+    pos = parse_layout(code);
+    option_num.resize(wid.size());
+
+  }
+
 
 void FrmContainerWidget::Prepare()
 {
@@ -22288,6 +23351,11 @@ class FrmRect : public FrmWidget
 {
 public:
   FrmRect(unsigned int color) : color(color) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
   virtual void handle_event(FrameLoopEvent &e) { }
   virtual void frame(DrawLoopEnv &e)
@@ -22318,6 +23386,31 @@ public:
     FrmWidget::set_size(w_,h_);
     Prepare();
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (w<1 ||h<1) return;
+    delete [] buffer;
+    std::cout << "Bitmap size: " << w << "x" << h << std::endl;
+    buffer = new unsigned int[w*h];
+    //bm.Prepare();
+    int sp_w = bm.SizeX();
+    int sp_h = bm.SizeY();
+    for(int y=0;y<h;y++)
+      for(int x=0;x<w;x++) {
+	float xx = float(x)/w*sp_w;
+	float yy = float(y)/h*sp_h;
+	Color c = bm.Map(xx,yy);
+	unsigned int cc = c.Pixel();
+	buffer[x+y*w] = cc;
+      }
+    sbm.set_data(buffer, w,h,w);
+
+
+  }
 
   virtual void Prepare() 
   { 
@@ -22325,6 +23418,7 @@ public:
     delete [] buffer;
     std::cout << "Bitmap size: " << w << "x" << h << std::endl;
     buffer = new unsigned int[w*h];
+    bm.Prepare();
     int sp_w = bm.SizeX();
     int sp_h = bm.SizeY();
     for(int y=0;y<h;y++)
@@ -22366,6 +23460,11 @@ class FrmText : public FrmWidget
 public:
   FrmText(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::Ft font, std::string str, int x_gap, float baseline_percentage) : env(env), ev(ev), font(font), str(str), x_gap(x_gap), baseline_percentage(baseline_percentage), fmt(D_RGBA8888), sbm(D_RGBA8888,0) { }
   // BM GameApi::FontApi::font_string(Ft font, std::string str, int x_gap)
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
     bm = ev.font_api.font_string(font, str, x_gap);
@@ -22448,6 +23547,11 @@ class SkinDescription : public MainLoopItem
 {
 public:
   SkinDescription(GameApi::Env &e, MainLoopItem *next, std::string url, std::string homepage) : e(e), next(next), url(url), homepage(homepage) {}
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -22550,6 +23654,10 @@ public:
     return 0;
   }
 
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual int NumFaces() const { return m_face_vertex_counts.size(); }
   virtual int NumPoints(int face) const { return m_face_vertex_counts[face]; }
@@ -22701,6 +23809,33 @@ class QuadTreeEntry : public MainLoopItem
 {
 public:
   QuadTreeEntry(QuadTree *tree, FaceCollection *coll) : tree(tree), coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) 
+      {
+	int p = coll->NumPoints(i);
+	std::vector<Vertex> vec;
+	for(int j=0;j<p;j++) {
+	  Vertex v;
+	  v.p = coll->FacePoint(i,j);
+	  v.n = coll->PointNormal(i,j);
+	  v.c = coll->Color(i,j);
+	  v.tx = coll->TexCoord(i,j);
+	  v.tx3 = coll->TexCoord3(i,j);
+	  vec.push_back(v);
+	}
+	tree->push_poly(vec);
+      }
+
+
+  }
+
   virtual void Prepare()
   {
     coll->Prepare();
@@ -22742,6 +23877,12 @@ class ActivateMainLoopItem : public MainLoopItem
 {
 public:
   ActivateMainLoopItem(MainLoopItem *next, int time, MainLoopItem *def) : next(next),time(time),def(def) { }
+  void Collect(CollectVisitor &vis)
+  {
+    def->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  
   virtual void Prepare() { def->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -22787,6 +23928,12 @@ public:
     no_draw=true;
     //InstallProgress(vec.size(), "progress", 15);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
@@ -22871,6 +24018,11 @@ public:
     activated=false;
     committed=false;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { 
     item->Prepare();
   }
@@ -22926,6 +24078,12 @@ class FlipIfMobile : public MainLoopItem
 {
 public:
   FlipIfMobile(GameApi::EveryApi &ev, MainLoopItem *item) : ev(ev), item(item) { }
+    void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -22968,6 +24126,11 @@ class FlipXIfMobile : public MainLoopItem
 {
 public:
   FlipXIfMobile(GameApi::EveryApi &ev, MainLoopItem *item) : ev(ev), item(item) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -23003,6 +24166,12 @@ class Restart : public MainLoopItem
 {
 public:
   Restart(GameApi::EveryApi &ev, MainLoopItem *item, int key) : ev(ev), item(item), key(key) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -23047,6 +24216,28 @@ class RangeCheckMatrix : public MainLoopItem
 {
 public:
   RangeCheckMatrix(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml, std::string url, std::string homepage, MainLoopItem *ml2) : env(env), ev(ev), ml(ml), ml2(ml2), url(url), homepage(homepage) { active = ml; }
+  void Collect(CollectVisitor &vis)
+  {
+    ml->Collect(vis);
+      ml2->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+      float time, range_start, range_end;
+      while(ss >> time >> range_start >> range_end) {
+	m_time.push_back(time);
+	m_range_start.push_back(range_start);
+	m_range_end.push_back(range_end);
+      }
+  }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
@@ -23166,6 +24357,10 @@ class EmscriptenFrame : public Html
 {
 public:
   EmscriptenFrame(std::string codegen, std::string homepage) : codegen(codegen), homepage(homepage) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual std::string html_file() const
   {
@@ -23231,6 +24426,11 @@ class EmscriptenFrame2 : public Html
 {
 public:
   EmscriptenFrame2(std::string codegen, std::string homepage) : codegen(codegen), homepage(homepage) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
   virtual std::string html_file() const
   {
@@ -23722,6 +24922,12 @@ public:
   {
     g_area_type_array.clear();
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare()
   {
 #ifndef EMSCRIPTEN
@@ -23781,6 +24987,12 @@ public:
   CreateLandscape(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage) : env(env), ev(ev), url(url), homepage(homepage) {
   }
   ~CreateLandscape() { g_areas.clear(); }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
@@ -23875,6 +25087,11 @@ class BindObjType : public MainLoopItem
 public:
   BindObjType(std::string name, GameApi::P obj, GameApi::MN move, GameApi::MT mat, float radius) : name(name), obj(obj), move(move), mat(mat),radius(radius) { }
   ~BindObjType() { g_object_types.clear(); }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
     int i = find_obj_type(name);
     if (i==-1) { i=create_obj_type(name); }
@@ -23901,6 +25118,13 @@ class ReadObjPos : public MainLoopItem
 public:
   ReadObjPos(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { }
   ~ReadObjPos() { g_object_pos.clear(); }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
@@ -24018,6 +25242,11 @@ public:
       
       firsttime = false;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare() {
     // apparently this is needed so that works in builder too
     if (firsttime) Prepare2();
@@ -24134,6 +25363,11 @@ public:
   CreateAllObject(GameApi::Env &e, GameApi::EveryApi &ev, int area_id) : env(e), ev(ev), area_id(area_id) {
     ml.id = -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() {
     ml = create_all_objects(env,ev,area_id);
     MainLoopItem *item = find_main_loop(env,ml);
@@ -24241,6 +25475,11 @@ class IsometricView : public MainLoopItem
 {
 public:
   IsometricView(MainLoopItem *item, float y_angle, float x_angle, float translate) : item(item), y_angle(y_angle), x_angle(x_angle),translate(translate) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -24290,6 +25529,11 @@ public:
       }
     return false;
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
 private:
   VolumeObject *obj;
@@ -24396,6 +25640,13 @@ public:
   RandomInstantiate(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML ml, std::vector<GameApi::MN> mns, float start_time, float time_step, float random_chance) : env(e), ev(ev), ml(ml), mns(mns), start_time(start_time), time_step(time_step), random_chance(random_chance) {
     step = 0;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Collect(vis); // this is odd usage of prepare.
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare()
   {
     MainLoopItem *item = find_main_loop(env,ml);
@@ -24477,6 +25728,12 @@ class WhackCollision : public MainLoopItem
 {
 public:
   WhackCollision(MainLoopItem *item) : item(item) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -24553,6 +25810,12 @@ class FlagBMChooser : public MainLoopItem
 {
 public:
   FlagBMChooser(MainLoopItem *item) : item(item) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { item->Prepare(); }
   void execute(MainLoopEnv &e) {
     g_chooser_flag = true;
@@ -24618,6 +25881,10 @@ public:
     }
   }
 
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) {
@@ -24675,6 +25942,9 @@ class ToonOutlineFaceCollection : public ForwardFaceCollection
 {
 public:
   ToonOutlineFaceCollection(FaceCollection *coll, float border_width) : ForwardFaceCollection(*coll), coll(coll),border_width(border_width) { }
+  void Collect(CollectVisitor &vis) {
+  }
+  void HeavyPrepare() { }
   virtual Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -24697,6 +25967,12 @@ class CullFace : public MainLoopItem
 {
 public:
   CullFace(MainLoopItem *item, bool b) : item(item), b(b) { }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -24730,7 +26006,9 @@ class VecMemoryBlock : public MemoryBlock
 {
 public:
   VecMemoryBlock(const std::vector<T> &vec) : vec(vec) { }
-  void prepare() { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  void Prepare() { }
   unsigned char *buffer() const { return (unsigned char*)&vec[0]; }
   int size_in_bytes() const { return vec.size()*sizeof(T); }
 private:
@@ -24747,7 +26025,14 @@ class NetworkMemoryBlock : public MemoryBlock
 {
 public:
   NetworkMemoryBlock(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url), homepage(homepage) { vec=0; }
-  virtual void prepare()
+  void Collect(CollectVisitor &vis)
+  {
+    //next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
+  virtual void Prepare()
   {
     // std::cout << "NetworkMemoryBlock::prepare()" << std::endl;
 #ifndef EMSCRIPTEN
@@ -24778,9 +26063,25 @@ public:
   virtual int SizeX() const { return ref.width; }
   virtual int SizeY() const { return ref.height; }
   virtual Color Map(int x, int y) const { return Color(ref.buffer[x+y*ref.ydelta]); }
+  void Collect(CollectVisitor &vis)
+  {
+    mb->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+
+    unsigned char *buf = mb->buffer();
+    int sz = mb->size_in_bytes();
+    std::vector<unsigned char> vec(buf,buf+sz);
+    bool success = false;
+    ref = LoadImageFromString(vec,success);
+    if (!success) ref=BufferRef::NewBuffer(2,2);
+
+  }
+
   virtual void Prepare()
   {
-    mb->prepare();
+    mb->Prepare();
     unsigned char *buf = mb->buffer();
     int sz = mb->size_in_bytes();
     std::vector<unsigned char> vec(buf,buf+sz);
@@ -24819,7 +26120,18 @@ class UrlMemoryMapLoad : public UrlMemoryMap
 {
 public:
   UrlMemoryMapLoad(DiskStore *store) : store(store) { }
-  virtual void prepare()
+  void Collect(CollectVisitor &vis)
+  {
+    // next->Collect(vis);
+    store->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (store->Type()!=3) std::cout << "ERROR: Wrong kind of UrlMemoryMap file" << std::endl;
+    
+  }
+
+  virtual void Prepare()
   {
     store->Prepare();
     if (store->Type()!=3) std::cout << "ERROR: Wrong kind of UrlMemoryMap file" << std::endl;
@@ -24884,11 +26196,17 @@ class MLLoadUM : public MainLoopItem
 public:
   MLLoadUM(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepageurl) : env(env), ev(ev), url(url), homepageurl(homepageurl) { }
   virtual void logoexecute() { }
+
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
     GameApi::MB mem = ev.mainloop_api.network(url,homepageurl);
     MemoryBlock *blk = find_memblock(env,mem);
-    blk->prepare();
+    blk->Prepare();
     std::vector<unsigned char> vec(blk->buffer(), blk->buffer()+blk->size_in_bytes());
     GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(vec);
     GameApi::PKG urlmemmap = ev.mainloop_api.load_um(ds);
@@ -24926,12 +26244,25 @@ class UrlMemoryMapSave : public DiskStore
 {
 public:
   UrlMemoryMapSave(UrlMemoryMap *map) : map(map) { }
-  void Prepare() {
-    map->prepare();
+  void Collect(CollectVisitor &vis)
+  {
+    map->Collect(vis);
     int s = map->size();
     for(int i=0;i<s;i++) {
       MemoryBlock *blk = map->get_block(map->get_url(i));
-      blk->prepare();
+      blk->Collect(vis);
+    }
+  }
+  void HeavyPrepare()
+  {
+    
+  }
+  void Prepare() {
+    map->Prepare();
+    int s = map->size();
+    for(int i=0;i<s;i++) {
+      MemoryBlock *blk = map->get_block(map->get_url(i));
+      blk->Prepare();
     }
   }
   int Type() const { return 3;}
@@ -24981,7 +26312,13 @@ class GraphUrlMemoryMap : public UrlMemoryMap
 {
 public:
   GraphUrlMemoryMap(GameApi::Env &env, GameApi::EveryApi &ev, std::string script, std::vector<std::string> urls) : env(env), ev(ev), script(script), urls(urls) { }
-  virtual void prepare() {
+  void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
     int s = urls.size();
     for(int i=0;i<s;i++) {
       std::string url = urls[i];
@@ -25104,12 +26441,12 @@ public:
   }
   virtual void logoexecute() { }
   virtual void Prepare2() {
-    map->prepare();
+    map->Prepare();
     int s = map->size();
     for (int i=1;i<s;i++) {
       std::string url = map->get_url(i);
       MemoryBlock *blk = map->get_block(url);
-      blk->prepare();
+      blk->Prepare();
       char *urlptr = new char[url.size()+1];
       std::copy(url.begin(),url.end(),urlptr);
       urlptr[url.size()]=0;
@@ -25122,12 +26459,26 @@ public:
 
     
     MemoryBlock *blk = map->get_block("SCRIPT");
-    blk->prepare();
+    blk->Prepare();
     unsigned char *script = blk->buffer();
     int sz = blk->size_in_bytes();
     std::string code(script,script+sz);
     GameApi::ExecuteEnv e;
     res = GameApi::execute_codegen(env,ev,code,e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    if (res.second=="ML")
+      {
+	GameApi::ML ml;
+	ml.id = res.first;
+	MainLoopItem *item = find_main_loop(env, ml);
+	item->Collect(vis);
+      }
+
+  }
+  void HeavyPrepare()
+  {
   }
   virtual void Prepare()
   {
@@ -25223,6 +26574,14 @@ public:
     async_taken = false;
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    if (ml.id==-1) { Prepare2(); }
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Collect(vis);
+    
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     if (ml.id==-1) { Prepare2(); }
     MainLoopItem *item = find_main_loop(env,ml);
@@ -25380,6 +26739,20 @@ public:
     async_taken = false;
     }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    if (ml.id==-1) {
+      Prepare2(1);
+      Prepare2(2);
+      Prepare2(3);
+      Prepare2(4);
+      Prepare2(5);
+      Prepare2(6);
+    }
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     //std::cout << "MemMapWindow::Prepare()" << std::endl;
     if (ml.id==-1) {
@@ -25493,7 +26866,7 @@ std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi
   if (url.size()>4 && url[url.size()-3] == 'm' && url[url.size()-2] == 't' && url[url.size()-1]=='l') {
     GameApi::MB mb = ev.mainloop_api.network(url,"");
     MemoryBlock *blk = find_memblock(e, mb);
-    blk->prepare();
+    blk->Prepare();
     unsigned char *buf = blk->buffer();
     int sz = blk->size_in_bytes();
     std::string s(buf,buf+sz);
@@ -25540,6 +26913,14 @@ class KeyML : public MainLoopItem
 public:
   KeyML(std::vector<MainLoopItem*> items, std::string keys) : items(items), keys(keys) { firsttime = true; }
   virtual void logoexecute() { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) {
+      items[i]->Collect(vis);
+    }
+  }
+  void HeavyPrepare() { }
   virtual void Prepare()
   {
     int s = items.size();
@@ -25590,3 +26971,15 @@ GameApi::ML GameApi::MainLoopApi::key_ml(std::vector<ML> vec, std::string keys)
   }
   return add_main_loop(e, new KeyML(items, keys));
 }
+
+std::string MB(long num)
+{
+  std::stringstream ss;
+  //if (num>1024*1024*1024*1024) { ss << float(num)/1024.0/1024.0/1024.0/1024.0 << "Tb"; return ss.str(); }
+  if (num>1024*1024*1024) { ss << std::fixed << std::setprecision(2) << float(num)/1024.0/1024.0/1024.0 << "Gb"; return ss.str(); };
+  if (num>1024*1024) { ss <<  std::fixed <<std::setprecision(2) <<float(num)/1024.0/1024.0 << "Mb"; return ss.str(); }
+  if (num>1024) { ss <<  std::fixed <<std::setprecision(2) <<float(num)/1024.0 << "kb"; return ss.str(); }
+  ss << num; return ss.str();
+}
+
+void CollectInterface::Collect(CollectVisitor &vis) { }

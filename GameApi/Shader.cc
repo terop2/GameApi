@@ -3832,8 +3832,35 @@ std::vector<std::string> replace_c_template_unique_ids(std::string defines, std:
 }
 extern std::string g_gpu_vendor;
 
-std::string replace_c(std::string s, std::vector<std::string> comb, bool is_fragment, bool is_fbo, bool is_transparent, ShaderModule *mod, ShaderCall *call, std::string defines, bool is_get_pixel, std::string shader)
+struct replace_c_params
 {
+  std::string s;
+  std::vector<std::string> comb;
+  bool is_fragment;
+  bool is_fbo;
+  bool is_transparent;
+  ShaderModule *mod;
+  ShaderCall *call;
+  std::string defines;
+  bool is_get_pixel;
+  std::string shader;
+};
+
+std::string replace_c(const replace_c_params &pp)
+{
+  std::string s = pp.s;
+  std::vector<std::string> comb = pp.comb;
+  bool is_fragment= pp.is_fragment;
+  bool is_fbo = pp.is_fbo;
+  bool is_transparent = pp.is_transparent;
+  ShaderModule *mod = pp.mod;
+  ShaderCall *call = pp.call;
+  std::string defines = pp.defines;
+  bool is_get_pixel = pp.is_get_pixel;
+  std::string shader = pp.shader;
+
+
+
   int unique_id = 0;
   std::stringstream ss(s);
   std::string ww;
@@ -4171,7 +4198,19 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       //std::cout << "VName: " << name << std::endl;
       std::string shader = file.VertexShader(name);
-      std::string ss = replace_c(shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader);
+      //std::cout << "SHADER:" << shader << std::endl;
+      replace_c_params *pp = new replace_c_params;
+      pp->s = shader;
+      pp->comb = v_vec;
+      pp->is_fragment = false;
+      pp->is_fbo = false;
+      pp->is_transparent = is_trans;
+      pp->mod = mod;
+      pp->call = vertex_c;
+      pp->defines = v_defines;
+      pp->is_get_pixel = false;
+      pp->shader = v_shader;
+      std::string ss = replace_c(*pp /*shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader*/);
       
       //std::cout << "::" << ss << "::" << std::endl;
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
@@ -4190,7 +4229,20 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string name(i, ii);
       //std::cout << "FName: " << name << std::endl;
       std::string shader = file.FragmentShader(name);
-      std::string ss = replace_c(shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader);
+      //std::cout << "SHADER:" << shader << std::endl;
+      replace_c_params *pp = new replace_c_params;
+      pp->s = shader;
+      pp->comb = f_vec;
+      pp->is_fragment = true;
+      pp->is_fbo = false;
+      pp->is_transparent = is_trans;
+      pp->mod = mod;
+      pp->call = fragment_c;
+      pp->defines = f_defines;
+      pp->is_get_pixel = false;
+      pp->shader = f_shader;
+
+      std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);

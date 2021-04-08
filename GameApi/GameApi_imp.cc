@@ -131,6 +131,9 @@ class LowerColor : public Bitmap<Color>
 {
 public:
   LowerColor(ImplicitFunction3d *imp, int sx, int sy, float dx, float dy) : imp(imp), sx(sx), sy(sy), dx(dx),dy(dy) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
@@ -159,6 +162,8 @@ class UpperColor : public Bitmap<Color>
 {
 public:
   UpperColor(ImplicitFunction3d *imp, int sx, int sy, float dx, float dy) : imp(imp), sx(sx), sy(sy), dx(dx),dy(dy) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -188,6 +193,9 @@ class RenderLower : public Bitmap<float>
 {
 public:
   RenderLower(ImplicitFunction3d *imp, int sx, int sy, float dx, float dy) : imp(imp), sx(sx), sy(sy), dx(dx),dy(dy) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -221,6 +229,9 @@ class RenderUpper : public Bitmap<float>
 {
 public:
   RenderUpper(ImplicitFunction3d *imp, int sx, int sy, float dx, float dy) : imp(imp), sx(sx), sy(sy), dx(dx),dy(dy) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }

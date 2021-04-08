@@ -15,6 +15,21 @@ namespace GameApi
 
 };
 
+class CollectVisitor;
+class CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+};
+
+class CollectVisitor
+{
+public:
+  virtual void register_obj(CollectInterface *i)=0;
+};
+
+
 struct Quad
 {
   Point p1,p2,p3,p4;
@@ -124,7 +139,7 @@ public:
 };
 
 template<class C>
-class Bitmap
+class Bitmap : public CollectInterface
 {
 public:
   virtual int SizeX() const=0;
@@ -134,27 +149,28 @@ public:
   virtual ~Bitmap() { }
 };
 
-class MemoryBlock
+class MemoryBlock : public CollectInterface
 {
 public:
-  virtual void prepare()=0;
+  virtual ~MemoryBlock() { }
+  virtual void Prepare()=0;
   virtual unsigned char *buffer() const=0;
   virtual int size_in_bytes() const=0;
 };
 
-class UrlMemoryMap
+class UrlMemoryMap : public CollectInterface
 {
 public:
-  virtual void prepare()=0;
+  virtual void Prepare()=0;
   virtual int size() const=0;
   virtual std::string get_url(int i) const=0;
   virtual MemoryBlock *get_block(std::string url) const=0;
 };
 
-class VertexArray
+class VertexArray : public CollectInterface
 {
 public:
-  virtual void prepare()=0;
+  virtual void Prepare()=0;
   virtual MemoryBlock *triangle_polys()=0;
   virtual MemoryBlock *quad_polys() =0;
   virtual MemoryBlock *poly_polys() =0;
@@ -192,7 +208,7 @@ typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
 
 template<class C>
-class Voxel
+class Voxel : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -214,7 +230,7 @@ public:
 };
 
 template<class C>
-class ContinuousBitmap 
+class ContinuousBitmap : public CollectInterface
 {
 public:
   virtual float SizeX() const=0;
@@ -236,7 +252,7 @@ public:
 };
 
 template<class C>
-class ContinuousVoxel
+class ContinuousVoxel : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -621,11 +637,15 @@ struct MainLoopEvent
   Point event_location;
 };
 
-class MainLoopItem
+
+
+class MainLoopItem : public CollectInterface
 {
 public:
   virtual ~MainLoopItem() { }
   virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
@@ -695,9 +715,10 @@ struct SourceDots
   std::vector<Dot> dots;
 };
 
-class FrameBuffer
+class FrameBuffer : public CollectInterface
 {
 public:
+  virtual ~FrameBuffer() { }
   virtual void Prepare()=0;
   virtual void handle_event(FrameLoopEvent &e)=0;
   virtual void frame()=0;
@@ -731,9 +752,10 @@ struct DrawLoopEnv
 
 
 
-class FrameBufferLoop
+class FrameBufferLoop : public CollectInterface
 {
 public:
+  virtual ~FrameBufferLoop() { }
   virtual void Prepare()=0;
   virtual void handle_event(FrameLoopEvent &e)=0;
   virtual void frame(DrawLoopEnv &e)=0;
@@ -744,6 +766,7 @@ public:
 class ExprNode
 {
 public:
+  virtual ~ExprNode() { }
   virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)=0;
   virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)=0;
 };
@@ -784,6 +807,7 @@ private:
 class TriStrip
 {
 public:
+  virtual ~TriStrip() { }
   virtual int Size() const=0;
   virtual Point Pos(int i) const=0;
   virtual unsigned int Color(int i) const=0;
@@ -814,6 +838,7 @@ class Collision
 {
 public:
   Collision(int id) : m_id(id), m_x(0.0), m_y(0.0) { }
+  virtual ~Collision() { }
   int m_id;
   float m_x,m_y;
   virtual bool check_collision(float x, float y) const=0;
@@ -830,6 +855,7 @@ public:
 class Movement
 {
 public:
+  virtual ~Movement() { }
   virtual void event(MainLoopEvent &e)=0;
   virtual void frame(MainLoopEnv &e)=0;
   virtual void draw_event(FrameLoopEvent &e)=0;
@@ -841,12 +867,14 @@ public:
 class ColorChange
 {
 public:
+  virtual ~ColorChange() { }
   virtual Color get_whole_color(float time, float delta_time) const=0;
 };
 
 class ImplicitFunction2d
 {
 public:
+  virtual ~ImplicitFunction2d() { }
   virtual float f(float x, float y) const=0;
   virtual float f2(float x) const=0; // use substitution y::=f(x)
 };
@@ -854,6 +882,7 @@ public:
 class ImplicitFunction3d
 {
 public:
+  virtual ~ImplicitFunction3d() { }
   virtual float f(float x, float y, float z) const=0;
   virtual float f_u(float x, float y) const=0; // substitute z=f(x,y)
   virtual float f_l(float x, float y) const=0; // substitute z=f(x,y)
@@ -882,6 +911,7 @@ public:
 class TreeLevel
 {
 public:
+  virtual ~TreeLevel() { }
   virtual int num_childs() const=0;
   virtual Matrix get_child(int i, float time) const=0;
 };
@@ -889,6 +919,7 @@ public:
 class TreeStack
 {
 public:
+  virtual ~TreeStack() { }
   virtual int num_levels() const=0;
   virtual TreeLevel *get_level(int i) const=0;
 };
@@ -898,6 +929,7 @@ public:
 class Material
 {
 public:
+  virtual ~Material() { }
   virtual void logoexecute() { }
   virtual int mat(int p) const=0; 
   virtual int mat_inst(int p, int pts) const=0;
@@ -909,6 +941,7 @@ public:
 class ShaderCall
 {
 public:
+  virtual ~ShaderCall() { }
   virtual int index(int base) const=0;
   virtual std::string func_call() const=0;
   virtual std::string func_call2(int &index) const=0;
@@ -916,9 +949,10 @@ public:
   virtual std::string func_name() const=0;
 };
 
-class MatrixArray
+class MatrixArray : public CollectInterface
 {
 public:
+  virtual ~MatrixArray() { }
   virtual void Prepare() { }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
@@ -930,6 +964,7 @@ public:
 class PlaneShape
 {
 public:
+  virtual ~PlaneShape() { }
   virtual int NumShapes() const=0;
   virtual int NumPoints(int shape) const=0;
   virtual Point2d FacePoint(int shape, int point) const=0;
@@ -944,6 +979,7 @@ public:
 class SkeletalNode
 {
 public:
+  virtual ~SkeletalNode() { }
   virtual Matrix mat(float time) const=0;
   virtual Point pos(float time) const=0;
 };
@@ -965,6 +1001,7 @@ public:
 class MixedI
 {
 public:
+  virtual ~MixedI() { }
   virtual int NumItems() const=0;
   virtual std::string Type() const=0;
   virtual std::string Print() const=0;
@@ -992,6 +1029,7 @@ public:
 class Blocker
 {
 public:
+  virtual ~Blocker() { }
   virtual void Execute()=0; // must block execution
   virtual void SetTimeout(float duration)=0;
 };
@@ -1001,6 +1039,7 @@ public:
   GameApi::Env *e;
   GameApi::EveryApi *ev;
 public:
+  virtual ~Splitter() { }
   virtual void Init()=0;
   virtual int Iter()=0;
   virtual void Destroy()=0;
@@ -1011,6 +1050,7 @@ public:
 class PointTransform
 {
 public:
+  virtual ~PointTransform() { }
   virtual Point Map(Point p, float delta_time) const=0;
 };
 class FaceCollection;
@@ -1018,6 +1058,7 @@ class FaceCollection;
 class VertexAnimNode
 { // KF type, gap=[0..n-1]
 public:
+  virtual ~VertexAnimNode() { }
   virtual int NumKeyFrames()=0; // n
   virtual float StepDuration(int keyframe_gap) const=0;
   virtual int FaceColl(int keyframe_gap) const=0;
@@ -1027,6 +1068,7 @@ public:
 class CurvePos
 {
 public:
+  virtual ~CurvePos() { }
   virtual float FindPos(Point p, float curve_length) const=0;
 };
 
@@ -1049,6 +1091,7 @@ template<class T>
 class Fetcher
 {
 public:
+  virtual ~Fetcher() { }
   virtual void event(MainLoopEvent &e)=0;
   virtual void frame(MainLoopEnv &e)=0;
   virtual void draw_event(FrameLoopEvent &e)=0;
@@ -1129,9 +1172,10 @@ private:
 };
 #endif
 
-class FontInterface
+class FontInterface : public CollectInterface
 {
 public:
+  virtual ~FontInterface() { }
   virtual void Prepare() { }
   virtual int Top(long idx) const=0;
   virtual int SizeX(long idx) const=0;
@@ -1140,9 +1184,10 @@ public:
   virtual int Map(long idx, int x, int y) const=0;
 };
 
-class GlyphInterface
+class GlyphInterface : public CollectInterface
 {
 public:
+  virtual ~GlyphInterface() { }
   virtual void Prepare() { }
   virtual int Top() const=0; // needs to be fast
   virtual int SizeX() const=0;
@@ -1152,9 +1197,10 @@ public:
 };
 
 
-class StringDisplay
+class StringDisplay : public CollectInterface
 {
 public:
+  virtual ~StringDisplay() { }
   virtual void Prepare() { }
   virtual int Count() const=0;
   virtual int X(int c) const=0;
@@ -1180,6 +1226,7 @@ public:
 class CurvePatch
 {
 public:
+  virtual ~CurvePatch() { }
   virtual float start_x() const=0;
   virtual float end_x() const=0;
   virtual float start_y() const=0;
@@ -1187,7 +1234,7 @@ public:
   virtual Point Map(float x, float y) const=0;
 };
 
-class PointsApiPoints
+class PointsApiPoints : public CollectInterface
 {
 public:
   virtual void Prepare() { }
@@ -1281,6 +1328,7 @@ public:
 class TextureID
 {
 public:
+  virtual ~TextureID() { }
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual void render(MainLoopEnv &e)=0;
   virtual int texture() const=0;
@@ -1328,9 +1376,10 @@ public:
 };
 
 
-class DiskStore
+class DiskStore : public CollectInterface
 {
 public:
+  virtual ~DiskStore() { }
   // types: 0=P, 1=BM, 2=VX, 3=urlmemorymap
   virtual void Prepare()=0;
   virtual int Type() const=0;
@@ -1363,7 +1412,7 @@ public:
   virtual int SplitType(float y, int idx) const=0; // ret: 1=empty->filled, 2=filled->empty, 3=empty->empty, 4=filled->filled
 };
 
-class CurveGroup
+class CurveGroup : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -1373,7 +1422,7 @@ public:
   virtual int Shape(int num, float t) const=0;
 };
 
-class MeshAnim
+class MeshAnim : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -1389,7 +1438,7 @@ public:
 
 };
 
-class IStateMachine
+class IStateMachine : public CollectInterface
 {
 public:
   virtual int num_flags() const=0;
@@ -1403,7 +1452,7 @@ public:
 };
 
 template<class C>
-class BitmapCollection
+class BitmapCollection : public CollectInterface
 {
 public:
   virtual int Size() const=0;
@@ -1498,7 +1547,7 @@ public:
 };
 
 
-class QMLData
+class QMLData : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -1516,7 +1565,7 @@ public:
 };
 
 
-class SkeletalData
+class SkeletalData : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -1533,10 +1582,11 @@ public:
   virtual float BoneAngle(int pt) const=0;
 };
 
-class FrmWidget
+class FrmWidget : public CollectInterface
 {
 public:
   FrmWidget() : x(0), y(0), w(0), h(0) { }
+  virtual ~FrmWidget() { }
   virtual void Prepare()=0;
   virtual void handle_event(FrameLoopEvent &e)=0;
   virtual void frame(DrawLoopEnv &e)=0;
@@ -1563,6 +1613,8 @@ class FrmContainerWidget : public FrmWidget
 {
 public:
   FrmContainerWidget(GameApi::Env &e, std::vector<FrmWidget*> wid, std::string url, std::string homepage) : e(e), wid(wid), url(url), homepage(homepage) { }
+  void Collect(CollectVisitor &vis);
+  void HeavyPrepare();
   virtual void Prepare();
   virtual void set_size(int w_, int h_); 
     void print_vec(std::vector<int> v);
@@ -1606,6 +1658,11 @@ class FrmRootWidget : public FrameBufferLoop
 {
 public:
   FrmRootWidget(FrmWidget *w, int scrx, int scry) : w(w), scrx(scrx), scry(scry) { }
+  void Collect(CollectVisitor &vis) { w->Collect(vis); vis.register_obj(this); }
+  void HeavyPrepare() {
+    w->set_pos(0,0);
+    w->set_size(scrx,scry);
+  }  
   virtual void Prepare() {
     w->Prepare();
     w->set_pos(0,0);
@@ -1624,9 +1681,10 @@ public:
   virtual bool is_included(unsigned int color) const=0;
 };
 
-class VoxelArray
+class VoxelArray : public CollectInterface
 {
 public:
+  virtual ~VoxelArray() { }
   virtual void Prepare()=0;
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
@@ -1732,7 +1790,7 @@ struct Prop3d
   
 };
 
-class Object3d
+class Object3d : public CollectInterface
 {
 public:
   virtual int current_state() const=0;
@@ -1746,9 +1804,10 @@ public:
 };
 
 
-class Html
+class Html : public CollectInterface
 {
 public:
+  virtual ~Html() { }
   virtual void Prepare()=0;
   virtual std::string html_file() const=0;
 };
@@ -1890,7 +1949,7 @@ struct Rect5
   float sx,sy;
 };
 
-class RectangleArray
+class RectangleArray : public CollectInterface
 {
 public:
   virtual void Prepare() =0;
@@ -1900,7 +1959,7 @@ public:
 };
 
 
-class LoadStream
+class LoadStream : public CollectInterface
 {
 public:
   virtual void Prepare()=0;
@@ -1977,7 +2036,7 @@ struct InEventData
   float radius;
 };
 
-class EventSource
+class EventSource : public CollectInterface
 { // this is only for child graphs to generate events
   // i.e. generating events
   // use MainLoopItem for sending events.
@@ -2008,5 +2067,14 @@ public:
   virtual void execute(MainLoopEnv &e)=0;
 };
 #endif
+
+class BitmapRange
+{
+public:
+  virtual int NumSpans() const=0;
+  virtual int NumRanges(int span) const=0;
+  virtual int StartRange(int span, int range) const=0;
+  virtual int EndRange(int span, int range) const=0;
+};
 
 #endif

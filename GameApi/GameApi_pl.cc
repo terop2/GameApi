@@ -19,11 +19,19 @@ void ProgressBar(int num, int val, int max, std::string label);
 
 int my_getline(LoadStream *stream, int index, std::string &line);
 
-class ObjFileParser
+class ObjFileParser : public CollectInterface
 {
 public:
   ObjFileParser(LoadStream *file_data, int objcount, std::vector<std::string> material_names) : file_data(file_data), obj_num(objcount), material_names_external(material_names) {
     firsttime = true;
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
   }
   void Prepare() {
     if (firsttime) {
@@ -56,13 +64,13 @@ public:
     int tex_count = 0;
     int tex_count2 = 0;
 
-    int obj_base_v = 0;
-    int obj_base_t = 0;
-    int obj_base_n = 0;
-    int mat_base_v = 0;
-    int mat_base_t = 0;
-    int mat_base_n = 0;
-    int obj_face_count = 0;
+    //int obj_base_v = 0;
+    //int obj_base_t = 0;
+    //int obj_base_n = 0;
+    //int mat_base_v = 0;
+    //int mat_base_t = 0;
+    //int mat_base_n = 0;
+    //int obj_face_count = 0;
     int mat_face_count = 0;
     //int obj_base_c = 0;
     int mtl_material = -1;
@@ -72,8 +80,8 @@ public:
     bool first = true;
     InstallProgress(193,"Parsing .obj file", 15);
     int index = 0;
-    bool last_was_f = false;
-    bool new_mat = false;
+    //bool last_was_f = false;
+    //bool new_mat = false;
     while((index = my_getline(file_data, index, line))!=-1)
       {
 	curr_line++;
@@ -98,16 +106,16 @@ public:
 	    // obj_normal_end.push_back(normal_count2);
 	    //  obj_tex_start.push_back(mat_base_t);
 	    //  obj_tex_end.push_back(tex_count2);
-	      new_mat = true;
+	    //  new_mat = true;
 	      
 	      if (!first) {
 		obj_face_counts_start.push_back(mat_face_count);
 		obj_face_counts_end.push_back(face_count);
 	      }
 	      
-	    mat_base_v = vertex_count2;
-	    mat_base_n = normal_count2;
-	    mat_base_t = tex_count2;
+	      //mat_base_v = vertex_count2;
+	      //mat_base_n = normal_count2;
+	      //mat_base_t = tex_count2;
 	    mat_face_count = face_count;
 
 	    first = false;
@@ -118,11 +126,11 @@ public:
 	    
 	    //std::cout << "o" << std::flush;
 	    obj_count++;
-	    obj_base_v = vertex_count2;
-	    obj_base_n = normal_count2;
-	    obj_base_t = tex_count2;
+	    //obj_base_v = vertex_count2;
+	    //obj_base_n = normal_count2;
+	    //obj_base_t = tex_count2;
 
-	    obj_face_count = face_counts.size();
+	    //obj_face_count = face_counts.size();
 	    //obj_base_c = color_count2;
 	  }
 	if (word == "v")
@@ -380,6 +388,11 @@ class ObjFileFaceCollection : public FaceCollection
 {
 public:
   ObjFileFaceCollection(ObjFileParser &parser, int obj_num) : parser(parser), obj_num(obj_num) { }
+  void Collect(CollectVisitor &vis)
+  {
+    parser.Collect(vis);
+  }
+  void HeavyPrepare() { } // not called because register_obj missing
   void Prepare() { parser.Prepare(); }
   
   int NumFaces() const {
@@ -569,8 +582,8 @@ void GameApi::PolygonApi::print_stat(P p)
   if (p.id == -1) { std::cout << "INVALID P OBJECT at print_stat" << std::endl; return; }
   FaceCollection *coll = find_facecoll(e, p);
   if (!coll) { std::cout << "INVALID FACECOLLECTION at print_stat" << std::endl;  return; }
-  int faces = coll->NumFaces();
-  int points = faces>0 ? coll->NumPoints(0) : 0;
+  //int faces = coll->NumFaces();
+  //int points = faces>0 ? coll->NumPoints(0) : 0;
   //std::cout << "Faces: " << faces << std::endl;
   //std::cout << "Points: " << points << std::endl;
 
@@ -822,6 +835,11 @@ class DistFromLines : public SingleForwardFaceCollection
 {
 public:
   DistFromLines(LineCollection *coll, float d1, float d2, Point center) : coll(coll), d1(d1), d2(d2), center(center) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called because register_obj missing
   void Prepare() { coll->Prepare(); }
   virtual int NumFaces() const { return coll->NumLines(); }
   virtual int NumPoints(int face) const
@@ -1121,6 +1139,45 @@ public:
     FaceCollection *coll = find_facecoll(e, p);
     return coll;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    
+    if (find_data(id)!=-1)
+      {
+
+      std::string url = id;
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  InstallProgress(sum,url + " (cached)",15);
+  }
+
+  { // progressbar
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  ProgressBar(sum,15,15,url + " (cached)");
+  }
+
+	//std::cout << "PrepareCache: SKIPPED!" << std::endl;
+	return;
+      }
+    //coll->Prepare();
+    int c = get_current_block();
+    set_current_block(-2); // dont take ownership of this
+    GameApi::P num = add_polygon2(e, coll,1);
+    set_current_block(c);
+    prepare_cache_data.push_back(std::make_pair(id,num.id));
+
+    
+  }
   void Prepare()
   {
     //std::cout << "PrepareCache: " << id << std::endl;
@@ -1231,6 +1288,14 @@ public:
     current = empty;
     filled = 0;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   void Prepare()
   {
     if (current == empty) {
@@ -1317,6 +1382,11 @@ public:
     current = empty;
     filled = 0;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare()
   {
     if (current == empty) {
@@ -1437,6 +1507,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
+  if (!val) { std::cout << "system returned: " << val << std::endl; }
   start+="/";
 #endif
     std::string a_filename = start+a_ss2.str();
@@ -1487,6 +1558,7 @@ ASyncCallback *rem_async_cb(std::string url);
 
 extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 
+std::string MB(long num);
 
 std::vector<std::string> mtl_urls;
 int g_previous_texid_material = 0;
@@ -1558,6 +1630,8 @@ public:
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
+  if (!val)
+    std::cout << "system returned: " << val << std::endl;
   start+="/";
 #endif
    
@@ -1723,6 +1797,7 @@ public:
       }
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
+      std::cout << "NetworkedFaceCollectionMTL2(Prepare2)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
       // flip texture in y-direction
       int sx = img.width;
@@ -1753,6 +1828,7 @@ public:
       }
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
+      std::cout << "NetworkedFaceCollectionMTL2(PrepareD)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
       // flip texture in y-direction
       int sx = img.width;
@@ -1784,7 +1860,8 @@ public:
 
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
-      
+      std::cout << "NetworkedFaceCollectionMTL2(PrepareBump)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
+
       // flip texture in y-direction
       int sx = img.width;
       int sy = img.height;
@@ -1805,7 +1882,8 @@ public:
 #endif
 
   }
-
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { Prepare(); }
   
   void Prepare()
   {
@@ -2063,6 +2141,11 @@ public:
     current = empty;
     filled = 0;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare()
   {
     if (current==empty) {
@@ -2202,13 +2285,20 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 class SaveModel : public MainLoopItem
 {
 public:
-  SaveModel(GameApi::PolygonApi &api, GameApi::P poly, std::string filename) : api(api), poly(poly), filename(filename)
+  SaveModel(GameApi::Env &e, GameApi::PolygonApi &api, GameApi::P poly, std::string filename) : env(e), api(api), poly(poly), filename(filename)
   {
     firsttime = true;
   }
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    FaceCollection *coll = find_facecoll(env,poly);
+    coll->Collect(vis);
+    vis.register_obj(this);    
+  }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() { 
       std::cout << "Saving " << filename << std::endl;
       api.save_model(poly, filename);
@@ -2222,6 +2312,7 @@ public:
   std::vector<int> shader_id() { return std::vector<int>(); }
 
 private:
+  GameApi::Env &env;
   GameApi::PolygonApi &api;
   GameApi::P poly;
   std::string filename;
@@ -2229,7 +2320,7 @@ private:
 };
 EXPORT GameApi::ML GameApi::PolygonApi::save_model_ml(GameApi::P poly, std::string filename)
 {
-  return add_main_loop(e, new SaveModel(*this, poly, filename));
+  return add_main_loop(e, new SaveModel(e,*this, poly, filename));
 }
 EXPORT void GameApi::PolygonApi::save_model(GameApi::P poly, std::string filename)
 {
@@ -2499,6 +2590,18 @@ class BitmapSizedQuad : public FaceCollection
 public:
   BitmapSizedQuad(GameApi::Env &e, GameApi::PolygonApi *pl, Bitmap<::Color> *bm) : e(e), pl(pl), bm(bm) { }
 
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    int sx = bm->SizeX();
+    int sy = bm->SizeY();
+    sx/=2;
+    sy/=2;
+    p = pl->quad_z(-sx,sx,-sy,sy,0.0);
+  }
   virtual void Prepare()
   {
     bm->Prepare();
@@ -2845,6 +2948,12 @@ class MixColorFaceColl : public ForwardFaceCollection
 {
 public:
   MixColorFaceColl(FaceCollection *c1, FaceCollection *c2, float val) : ForwardFaceCollection(*c1), c1(c1), c2(c2),val(val) { }
+  void Collect(CollectVisitor &vis)
+  {
+    c1->Collect(vis);
+    c2->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called because register_obj missing
   void Prepare() { c1->Prepare(); c2->Prepare(); }
   unsigned int Color(int face, int point) const
   {
@@ -2863,6 +2972,12 @@ class MaxColorFaceColl : public ForwardFaceCollection
 {
 public:
   MaxColorFaceColl(FaceCollection *c1, FaceCollection *c2) : ForwardFaceCollection(*c1), c1(c1), c2(c2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    c1->Collect(vis);
+    c2->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called because register_obj missing
   void Prepare() { c1->Prepare(); c2->Prepare(); }
   unsigned int Color(int face, int point) const
   {
@@ -2879,6 +2994,13 @@ class MinColorFaceColl : public ForwardFaceCollection
 {
 public:
   MinColorFaceColl(FaceCollection *c1, FaceCollection *c2) : ForwardFaceCollection(*c1), c1(c1), c2(c2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    c1->Collect(vis);
+    c2->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called because register_obj missing
+
   void Prepare() { c1->Prepare(); c2->Prepare(); }
   unsigned int Color(int face, int point) const
   {
@@ -3055,6 +3177,13 @@ class QuadsToTris2 : public ForwardFaceCollection
 {
 public:
   QuadsToTris2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Iterate(); } // not called because register_obj missing
+
   void Prepare() {
     coll->Prepare();
     Iterate();
@@ -3824,6 +3953,11 @@ public:
 	arr.push_back(mm);
       }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    lines->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { lines->Prepare(); }
   virtual int NumFaces() const { return lines->NumLines() * num_steps; }
   virtual int NumPoints(int face) const { return 4; }
@@ -4582,6 +4716,10 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   void execute(MainLoopEnv &e)
   {
@@ -4780,8 +4918,8 @@ EXPORT void GameApi::PolygonApi::explode(VA va, PT pos, float dist)
 
 EXPORT void GameApi::PolygonApi::create_vertex_array_hw(GameApi::VA va)
 {
-  RenderVertexArray *rend = find_vertex_array_render(e, va);
-  VertexArraySet *set = find_vertex_array(e, va);
+  //RenderVertexArray *rend = find_vertex_array_render(e, va);
+  //VertexArraySet *set = find_vertex_array(e, va);
   //rend->prepare(0);
 }
 
@@ -5223,6 +5361,8 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   void Prepare() { }
   void execute(MainLoopEnv &e)
   {
@@ -5372,6 +5512,17 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis) {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==0) {
+	va = ev.polygon_api.create_vertex_array(p,false);
+    }
+  }
+
   void Prepare() {
     if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p,false);
@@ -5531,6 +5682,17 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis) {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==0) {
+	va = ev.polygon_api.create_vertex_array(p,true);
+    }
+  }
+
   void Prepare() {
     if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p, true);
@@ -5695,6 +5857,17 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis) {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==0) {
+	va = ev.polygon_api.create_vertex_array(p,true);
+    }
+  }
+
   void Prepare() {
     if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p, true);
@@ -5870,6 +6043,17 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis) {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==0) {
+	va = ev.polygon_api.create_vertex_array(p,true);
+    }
+  }
+
   void Prepare() {
     if (va.id==0){
 	va = ev.polygon_api.create_vertex_array(p, true);
@@ -6055,6 +6239,16 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis) {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==0) {
+	va = ev.polygon_api.create_vertex_array(p,true);
+    }
+  }
   void Prepare() {
     if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p, true);
@@ -6128,23 +6322,24 @@ public:
 	      std::cout << "RenderPTex2::V_Texture" << std::endl;
 	      u_v = ev.uber_api.v_texture(u_v);
 	    }
-	    if (e.us_fragment_shader==-1)
+	    if (e.us_fragment_shader==-1) {
 	      std::cout << "RenderPTex2::F_Texture" << std::endl;
 	      u_f = ev.uber_api.f_texture(u_f);
-	  }
-	if (ev.polygon_api.is_array_texture(va))
-	  {
-	    sh.id = e.sh_array_texture;
-	      if (firsttime)
+	    }
+	    if (ev.polygon_api.is_array_texture(va))
 	      {
-		if (e.us_vertex_shader==-1) {
-		  std::cout << "RenderPTex2::V_Texture_Arr" << std::endl;
-		  u_v = ev.uber_api.v_texture_arr(u_v);
-		}
-		if (e.us_fragment_shader==-1) {
-		  std::cout << "RenderPTex2::F_Texture_ARr" << std::endl;
-		  u_f = ev.uber_api.f_texture_arr(u_f);
-		}
+		sh.id = e.sh_array_texture;
+		if (firsttime)
+		  {
+		    if (e.us_vertex_shader==-1) {
+		      std::cout << "RenderPTex2::V_Texture_Arr" << std::endl;
+		      u_v = ev.uber_api.v_texture_arr(u_v);
+		    }
+		    if (e.us_fragment_shader==-1) {
+		      std::cout << "RenderPTex2::F_Texture_ARr" << std::endl;
+		      u_f = ev.uber_api.f_texture_arr(u_f);
+		    }
+		  }
 	      }
 	  }
       }
@@ -6238,15 +6433,29 @@ public:
   {
     shader.id = -1;
     firsttime = true;
+    va.id = 0;
   }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   //  int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
   }
-  void Prepare() {
+  void Collect(CollectVisitor &vis) {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (va.id==0) {
 	va = ev.polygon_api.create_vertex_array(p,true);
 	ev.polygon_api.clone(va);
+    }
+  }
+  void Prepare() {
+    if (va.id==0) {
+	va = ev.polygon_api.create_vertex_array(p,true);
+	ev.polygon_api.clone(va);
+    }
   }
   void execute(MainLoopEnv &e)
   { 
@@ -6399,6 +6608,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() {
   }
   void execute(MainLoopEnv &e)
@@ -6456,6 +6670,11 @@ public:
   {
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -6550,6 +6769,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -6619,6 +6843,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -6690,6 +6919,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -6809,6 +7043,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -6879,6 +7118,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -6947,6 +7191,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7007,6 +7256,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7070,6 +7324,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7142,6 +7401,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7248,6 +7512,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7335,6 +7604,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() {next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7418,6 +7692,11 @@ public:
     firsttime = true;
   }
   std::vector<int> shader_id() { return next->shader_id(); }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -7504,6 +7783,11 @@ public:
     firsttime = true;
   }
   std::vector<int> shader_id() { return next->shader_id(); }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -7595,6 +7879,11 @@ public:
   void handle_event(MainLoopEvent &e)
   {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7686,6 +7975,12 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { initialized=true; } // not called
   void Prepare() { next->Prepare(); initialized=true; }
   void execute(MainLoopEnv &e)
   {
@@ -7805,6 +8100,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7900,6 +8200,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -7986,6 +8291,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e) {
@@ -8081,6 +8391,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e)
@@ -8190,6 +8505,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -8284,6 +8604,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -8375,6 +8700,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -8506,6 +8836,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -8612,6 +8947,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -8719,6 +9059,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -8842,6 +9187,11 @@ public:
   {
     next->handle_event(e);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -9878,7 +10228,8 @@ class CutFaces : public ForwardFaceCollection
 {
 public:
   CutFaces(FaceCollection *i, VolumeObject *oo, Cutter *cut) : ForwardFaceCollection(*i), i(i), oo(oo), cut(cut) { cut_them(); compress(); }
-
+  
+  
   void cut_them()
   {
     int f = i->NumFaces();
@@ -10073,6 +10424,8 @@ class TriToQuad : public ForwardFaceCollection
 {
 public:
   TriToQuad(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int NumFaces() const { return coll->NumFaces(); }
   virtual int NumPoints(int face) const
   {
@@ -10124,7 +10477,14 @@ class ColorMapPoly : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly(Bitmap<::Color> *bm, Point pos, Vector u_x, Vector u_y) : bm(bm), pos(pos), u_x(u_x), u_y(u_y) { prepared = false; }
-    void Prepare() { bm->Prepare(); prepared = true; }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { prepared=true; } // not called
+
+  void Prepare() { bm->Prepare(); prepared = true; }
   virtual int NumFaces() const { if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare(); return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { if (!prepared) const_cast<ColorMapPoly*>(this)->Prepare(); return 4; }
   virtual Point FacePoint(int face, int point) const
@@ -10191,6 +10551,12 @@ class ColorMapPoly2 : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly2(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm),fb(fb), pos(pos), u_x(u_x), u_y(u_y) { u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+
   void Prepare() { bm->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
@@ -10252,6 +10618,11 @@ public:
   ColorMapPoly2_cyl(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
     u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { bm->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
@@ -10320,6 +10691,12 @@ public:
     u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
     u_z *= u_x.Dist();
   }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+    fb->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { bm->Prepare(); fb->Prepare(); }
   virtual int NumFaces() const { return bm->SizeX()*bm->SizeY(); }
   virtual int NumPoints(int face) const { return 4; }
@@ -10560,6 +10937,12 @@ public:
 	if (side(false, i2)) { choose.push_back(1); faces.push_back(i2); }
       }
   }
+  void Collect(CollectVisitor &vis)
+  {
+    coll1->Collect(vis);
+    coll2->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() { coll1->Prepare(); coll2->Prepare(); }
   bool side(bool which, int face) const
   {
@@ -10659,6 +11042,8 @@ public:
     GameApi::PT center2 = ev.point_api.point(center.x, center.y, center.z);
     fd = ev.dist_api.fd_sphere(center2, r);
   }
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
+  void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
@@ -10703,6 +11088,8 @@ public:
       color_bl(color_bl), color_br(color_br) 
   {
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   bool has_color() const { return true; }
   unsigned int Color(int face, int point) const
   {
@@ -10728,6 +11115,8 @@ class DeformFaceCollection : public ForwardFaceCollection
 {
 public:
   DeformFaceCollection(FaceCollection *obj, VolumeObject *bools, Vector v) : ForwardFaceCollection(*obj), obj(obj), bools(bools), v(v) {}
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
   {
     Point p = obj->FacePoint(face,point);
@@ -10831,8 +11220,15 @@ bool invalidate(CacheItem *item, std::string filename, int obj_count)
 class PrepareCut : public ForwardFaceCollection
 {
 public:
-  PrepareCut(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  PrepareCut(FaceCollection *coll) : ForwardFaceCollection(*coll),coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
+private:
+  FaceCollection *coll;
 };
 GameApi::P GameApi::PolygonApi::prepare_cut(P p)
 {
@@ -10864,15 +11260,28 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   cache_map[cache_id(filename,obj_count)]=item2;
   return model;
 }
-Matrix g_last_resize;
+Matrix g_last_resize = Matrix::Identity();
 
 class ResizeFaceCollection : public ForwardFaceCollection
 {
 public:
-  ResizeFaceCollection(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll), ext_flag(false)
+  ResizeFaceCollection(FaceCollection *coll, bool ext_flag) : ForwardFaceCollection(*coll), coll(coll), ext_flag(ext_flag)
   {
   }
-  ResizeFaceCollection(FaceCollection *coll, Matrix *m) : ForwardFaceCollection(*coll), coll(coll), ext_mat(m), ext_flag(true) { }
+  ResizeFaceCollection(FaceCollection *coll, Matrix *m) : ForwardFaceCollection(*coll), coll(coll), ext_flag(true),ext_mat(m) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    find_bounding_box();
+    print_bounding_box();
+    calc_center();
+    calc_size();
+    calc_matrix();
+  }
+
   void Prepare()
   {
     coll->Prepare();
@@ -10975,7 +11384,7 @@ public:
 };
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 {
-  ResizeFaceCollection *coll2 = new ResizeFaceCollection(coll);
+  ResizeFaceCollection *coll2 = new ResizeFaceCollection(coll,true);
   coll2->Prepare();
   return std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
 }
@@ -10989,13 +11398,19 @@ GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *ma
 GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
 {
   FaceCollection *coll = find_facecoll(e, model);
-  return add_polygon2(e, new ResizeFaceCollection(coll),1);
+  return add_polygon2(e, new ResizeFaceCollection(coll,false),1);
 }
 
 class PersistentCachePoly : public FaceCollection
 {
 public:
   PersistentCachePoly(FaceCollection &c, std::string filename) : c(c), filename(filename),res(0) { }
+  
+  void Collect(CollectVisitor &vis)
+  {
+    c.Collect(vis);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
     if (!res) {
@@ -11104,6 +11519,8 @@ class BuildOffsets : public ForwardFaceCollection
 {
 public:
   BuildOffsets(FaceCollection *coll, std::vector<Point> vec) : ForwardFaceCollection(*coll), coll(coll), vec(vec) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
   {
     int part = ForwardFaceCollection::AttribI(face,point, AttrPart);
@@ -11144,6 +11561,11 @@ class SplitterFaceCollection : public FaceCollection
 {
 public:
   SplitterFaceCollection(FaceCollection &coll, int start, int end) : coll(coll), start(start), end(end) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll.Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { return coll.Prepare(); }
   virtual int NumFaces() const { return std::min(end-start,coll.NumFaces()-start); }
   virtual int NumPoints(int face) const
@@ -11174,6 +11596,8 @@ class TexCoordFromNormal : public ForwardFaceCollection
 {
 public:
   TexCoordFromNormal(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   { 
@@ -11228,6 +11652,8 @@ class TexCoordFromNormal2 : public ForwardFaceCollection
 {
 public:
   TexCoordFromNormal2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   { 
@@ -11254,7 +11680,9 @@ class FixTexCoord : public ForwardFaceCollection
 {
 public:
   FixTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) {}
-
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
@@ -11315,8 +11743,14 @@ class LineToCone : public FaceCollection
 {
 public:
   LineToCone(GameApi::Env &e, GameApi::EveryApi &ev, LineCollection *coll2, float size, int numfaces) : e(e), ev(ev), lines(coll2),size(size),numfaces(numfaces) { coll=0; }
-  void Prepare() {
-    lines->Prepare();
+  void Collect(CollectVisitor &vis)
+  {
+    lines->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (!coll) {
     int s = lines->NumLines();
     std::vector<GameApi::P> vec;
     for(int i=0;i<s;i++)
@@ -11330,6 +11764,25 @@ public:
     }
     GameApi::P res = ev.polygon_api.or_array2(vec);
     coll = find_facecoll(e,res);
+    }
+  }
+  void Prepare() {
+    lines->Prepare();
+    if (!coll) {
+      int s = lines->NumLines();
+      std::vector<GameApi::P> vec;
+      for(int i=0;i<s;i++)
+	{
+	  Point p1 = lines->LinePoint(i, 0);
+	  Point p2 = lines->LinePoint(i, 1);
+	  GameApi::PT pp1 = ev.point_api.point(p1.x,p1.y,p1.z);
+	  GameApi::PT pp2 = ev.point_api.point(p2.x,p2.y,p2.z);
+	GameApi::P ct = ev.polygon_api.cone(numfaces, pp1, pp2, size, size);
+	vec.push_back(ct);
+	}
+      GameApi::P res = ev.polygon_api.or_array2(vec);
+      coll = find_facecoll(e,res);
+    }
   }
   virtual int NumFaces() const { if (!coll) return 0; return coll->NumFaces(); }
   virtual int NumPoints(int face) const { if (!coll) return 3; return coll->NumPoints(face); }
@@ -11561,6 +12014,8 @@ class SphNormals : public ForwardFaceCollection
 {
 public:
   SphNormals(FaceCollection *coll, Point pt) : ForwardFaceCollection(*coll), coll(coll), pt(pt) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
@@ -12093,6 +12548,8 @@ class LogCoordsFaceCollection : public ForwardFaceCollection
 {
 public:
   LogCoordsFaceCollection(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
   {
     Point p = ForwardFaceCollection::FacePoint(face,point);
@@ -12122,6 +12579,8 @@ class SphericalWave : public ForwardFaceCollection
 {
 public:
   SphericalWave(FaceCollection *coll, float r1, float fr_1, float r2, float fr_2) : ForwardFaceCollection(*coll), r1(r1), r2(r2), fr_1(fr_1), fr_2(fr_2) { }
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
+  void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
   {
     Point p = ForwardFaceCollection::FacePoint(face,point);
@@ -12147,6 +12606,11 @@ class MainLoopPosition : public MainLoopItem
 {
 public:
   MainLoopPosition(MainLoopItem *next) : next(next) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -12179,6 +12643,12 @@ class PlaneMap2 : public SurfaceIn3d
 public:
   PlaneMap2(Bitmap<float> &fb, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float start_values, float end_values) : fb(fb), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), start_values(start_values), end_values(end_values) {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    fb.Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+
   virtual void Prepare() { fb.Prepare(); }
   virtual Point Index(float x, float y) const
   {
@@ -12227,6 +12697,12 @@ class SphereMap2 : public SurfaceIn3d
 {
 public:
   SphereMap2(float p_x, float p_y, float p_z, Bitmap<float> &fb, float start_radius, float end_radius, float start_values, float end_values) : p_x(p_x), p_y(p_y), p_z(p_z), fb(fb), start_radius(start_radius), end_radius(end_radius), start_values(start_values), end_values(end_values) { }
+  void Collect(CollectVisitor &vis)
+  {
+    fb.Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+
   virtual void Prepare() { fb.Prepare(); }
   virtual Point Index(float x, float y) const
   {
@@ -12313,6 +12789,11 @@ class CurveToPoly : public FaceCollection
 {
 public:
   CurveToPoly(Curve<Point> *curve, float start_x, float end_x, float start_y, float end_y, float start_angle, float end_angle, int numinstances) : curve(curve), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_angle(start_angle), end_angle(end_angle), numinstances(numinstances) {}
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { } // not called
+
   void Prepare() { }
   int NumFaces() const { return numinstances; }
   int NumPoints(int face) const { return 4; }
@@ -12379,6 +12860,12 @@ class DSFaceCollection : public FaceCollection
 {
 public:
   DSFaceCollection(DiskStore *ds) :ds(ds) { ready=false; }
+  void Collect(CollectVisitor &vis)
+  {
+    ds->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { ready=true; }
   void Prepare() { ds->Prepare(); ready=true; }
   int NumFaces() const {
     if (!ready) return 0;
@@ -12495,6 +12982,65 @@ class DiskStoreCollection : public DiskStore
 {
 public:
   DiskStoreCollection(FaceCollection *coll) : coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int s = coll->NumFaces();
+    header.numfaces=s;
+    int s3 = coll->NumObjects();
+    header.numobjects = s3;
+    int accum = 0;
+    InstallProgress(111,"Fetch points", 15);
+    pointcounts.reserve(s);
+    vertexindex.reserve(s);
+    for(int i=0;i<s;i++) {
+      if (s/15>0 && i%(s/15)==0) ProgressBar(111,i*15/s,15,"Fetch points"); 
+      int ss = coll->NumPoints(i);
+      pointcounts.push_back(ss);
+      vertexindex.push_back(accum);
+      accum +=ss;
+    }
+    InstallProgress(112,"Fetch vertex arrays", 15);
+    vertex.reserve(s*coll->NumPoints(0));
+    normal.reserve(s*coll->NumPoints(0));
+    color.reserve(s*coll->NumPoints(0));
+    texcoord.reserve(s*coll->NumPoints(0));
+    texcoord3.reserve(s*coll->NumPoints(0));
+    for(int i=0;i<s;i++)
+      {
+      if (s/15>0 && i%(s/15)==0) ProgressBar(112,i*15/s,15,"Fetch vertex arrays"); 
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++) {
+	  Point p = coll->FacePoint(i,j);
+	  Vector n = coll->PointNormal(i,j);
+	  unsigned int c = coll->Color(i,j);
+	  Point2d tx = coll->TexCoord(i,j);
+	  float tx3 = coll->TexCoord3(i,j);
+	  vertex.push_back(p);
+	  normal.push_back(n);
+	  color.push_back(c);
+	  texcoord.push_back(tx);
+	  texcoord3.push_back(tx3);
+	}
+      }
+    int s2 = coll->NumObjects();
+    InstallProgress(113,"Fetch objects", 15);
+    for(int k=0;k<s2;k++)
+      {
+	if (s2/15>0 && k%(s2/15)==0) ProgressBar(113,k*15/s2,15,"Fetch objects"); 
+	std::pair<int,int> p = coll->GetObject(k);
+	PP p2;
+	p2.first = p.first;
+	p2.second = p.second;
+	obj.push_back(p2);
+      }
+
+  }
+
   void Prepare() { 
     coll->Prepare();
     int s = coll->NumFaces();
@@ -12762,6 +13308,27 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
  {
  public:
    FaceCollectionSplitter(FaceCollection *coll, int start_index, int end_index) : coll(coll), start_index(start_index), end_index(end_index) { firsttime = true; }
+   void Collect(CollectVisitor &vis)
+   {
+     coll->Collect(vis);
+     vis.register_obj(this);
+   }
+   void HeavyPrepare()
+   {
+     if (firsttime) {
+       //coll->Prepare();
+       int s = coll->NumFaces();
+       for(int i=0;i<s;i++) {
+	 float val = coll->TexCoord3(i,0);
+	 int val2 = int(val);
+	 if (val2>=start_index && val2<end_index) {
+	   facenums.push_back(i);
+	 }
+       }
+       firsttime = false;
+     }
+   }
+   
    virtual void Prepare()
    {
      if (firsttime) {
@@ -12780,7 +13347,9 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
    virtual int NumFaces() const { return facenums.size(); }
    virtual int NumPoints(int face) const
    {
-     if (face>=0 && face<facenums.size())
+         int sz = facenums.size();
+
+     if (face>=0 && face<sz)
        return coll->NumPoints(facenums[face]);
      else return 1;
    }
@@ -12795,43 +13364,50 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
    
    virtual Point FacePoint(int face, int point) const
    {
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
      return coll->FacePoint(facenums[face],point);
      else return Point(0.0,0.0,0.0);
    }
    virtual Vector PointNormal(int face, int point) const
    {
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
      return coll->PointNormal(facenums[face],point);
      else return Vector(0.0,0.0,0.0);
    }
    virtual float Attrib(int face, int point, int id) const
    {
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
        return coll->Attrib(facenums[face],point,id);
      else return 0.0;
    }
    virtual int AttribI(int face, int point, int id) const
    {
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
        return coll->AttribI(facenums[face],point,id);
      else
        return 0;
    }
    virtual unsigned int Color(int face, int point) const
    {
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
        return coll->Color(facenums[face],point);
      else return 0x0;
    }
    virtual Point2d TexCoord(int face, int point) const
    {
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
      return coll->TexCoord(facenums[face],point);
      else { Point2d p; p.x=0.0; p.y=0.0; return p; }
    }
    virtual float TexCoord3(int face, int point) const { 
-     if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+     if (face>=0 && face<sz)
      return coll->TexCoord3(facenums[face],point)-start_index;
      else return 0.0;
    }
@@ -12843,7 +13419,8 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
     return coll->TextureBuf(start_index + num);
   }
   virtual int FaceTexture(int face) const {
-    if (face>=0 && face<facenums.size())
+    int sz = facenums.size();
+    if (face>=0 && face<sz)
 
     return coll->FaceTexture(facenums[face]) -start_index;
     else return 0;
@@ -12864,7 +13441,8 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
 GameApi::MT GameApi::PolygonApi::material_index(GameApi::EveryApi &ev, std::vector<MT> vec, int index)
 {
   if (vec.size()==0) return ev.materials_api.m_def(ev);
-  if (index>=0 && index<vec.size())
+  int sz = vec.size();
+  if (index>=0 && index<sz)
     return vec[index];
   else
     return ev.materials_api.m_def(ev);
@@ -12888,6 +13466,29 @@ class TextureSplitter2 : public FaceCollection
 {
 public:
   TextureSplitter2(FaceCollection *coll, int val) : coll(coll), val(val) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (objs.size()==0) {
+      int s = coll->NumObjects();
+      for(int i=0;i<s;i++) {
+	std::pair<int,int> p = coll->GetObject(i);
+	//std::cout << "P:" << p.first << " " << p.second << std::endl;
+	if (p.second-p.first>0) {
+	  float mat = coll->TexCoord3(p.first,0);
+	  //std::cout << "TEXCOORD0:" << mat << "==" << val << std::endl;
+	  if (int(mat)==val) {
+	    //std::cout << "PAIR:" << p.first << " " << p.second << std::endl;
+	    objs.push_back(p);
+	  }
+	}
+      }
+    }
+  }
   virtual void Prepare() {
     coll->Prepare();
     if (objs.size()==0) {
@@ -13009,6 +13610,17 @@ public:
   virtual int SizeX() const { if (bm) return bm->SizeX(); else return 1; }
   virtual int SizeY() const { if (bm) return bm->SizeY(); else return 1; }
   virtual Color Map(int x, int y) const { if (bm) return bm->Map(x,y); else return Color(0x0); }
+  void Collect(CollectVisitor &vis)
+  {
+    if (i==start_index) coll->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+    if (i>=coll->NumTextures()) return;
+    BufferRef ref = coll->TextureBuf(i);
+    BitmapFromBuffer *buf = new BitmapFromBuffer(ref);
+    bm = buf;
+  }
   virtual void Prepare()
   {
     if (i==start_index)
@@ -13054,8 +13666,10 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
   int s = array2->vec.size();
   for(int i=0;i<s;i++) {
     int val = array2->vec[i];
-    int val2 = i>=0&&i<array3->vec.size() ? array3->vec[i] : -1;
-    int val3 = i>=0&&i<array4->vec.size() ? array4->vec[i] : -1;
+    int sz = array3->vec.size();
+    int sz2 = array4->vec.size();
+    int val2 = i>=0&&i<sz ? array3->vec[i] : -1;
+    int val3 = i>=0&&i<sz2 ? array4->vec[i] : -1;
     GameApi::BM bm;
     bm.id = val;
     if ((val2==-1 || val2 == 0) && (val3==-1 || val3==0)) {
@@ -13115,6 +13729,20 @@ public:
 	std::cout << "Warning: Textures of sizes >1024 might not work in emscripten: " << texture_sx << " " << texture_sy << std::endl;
       }
     buf = BufferRef::NewBuffer(texture_sx, texture_sy);
+    std::cout << "TextureStorage::" << buf.width << "x" << buf.height << "=" << MB(buf.width*buf.height*sizeof(unsigned int)) << std::endl;
+
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    num = coll->NumFaces();
+    num = sqrt(num);
+    sx = texture_sx/num;
+    sy = texture_sy/num;
   }
   void Prepare()
   {
@@ -13222,6 +13850,8 @@ class ReplaceTexture : public ForwardFaceCollection
 {
 public:
   ReplaceTexture(FaceCollection *coll, Bitmap<::Color> *bm, int num) : ForwardFaceCollection(*coll), coll(coll), bm(bm),num2(num) {}
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int NumTextures() const { return coll->NumTextures(); }
   virtual void GenTexture(int num) {
     if (num==num2) {
@@ -13295,6 +13925,35 @@ class MeshResize : public ForwardFaceCollection
 {
 public:
   MeshResize(FaceCollection *coll, Point start, Point end) : ForwardFaceCollection(*coll), coll(coll), start(start), end(end) { }
+  void Collect(CollectVisitor &vis)
+  {
+    ForwardFaceCollection::Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    min_x=99999.0;
+    max_x=-99999.0;
+    min_y=99999.0;
+    max_y=-99999.0;
+    min_z=99999.0;
+    max_z=-99999.0;
+    
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      int ps = coll->NumPoints(i);
+      for(int j=0;j<ps;j++)
+	{
+	  Point p = coll->FacePoint(i,j);
+	  if (p.x<min_x) min_x=p.x;
+	  if (p.x>max_x) max_x=p.x;
+	  if (p.y<min_y) min_y=p.y;
+	  if (p.y>max_y) max_y=p.y;
+	  if (p.z<min_z) min_z=p.z;
+	  if (p.z>max_z) max_z=p.z;
+	}
+    }
+  }
   void Prepare() {
     ForwardFaceCollection::Prepare();
     min_x=99999.0;
@@ -13366,10 +14025,46 @@ GameApi::P GameApi::PolygonApi::mesh_resize(P p, float start_x, float end_x, flo
 class SmoothNormals2 : public ForwardFaceCollection
 {
 public:
-  SmoothNormals2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  SmoothNormals2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { firsttime = true; }
   struct Data { Data() : v{0.01,0.01,0.01}, count(0) { } Vector v; int count; };
   
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+    int s = coll->NumFaces();
+    //int count = 0;
+    for(int i=0;i<s;i++) {
+      int s2 = coll->NumPoints(i);
+      for(int j=0;j<s2;j++) {
+	Point p1 = coll->FacePoint(i,(j+1)%s2);
+	Point p2 = coll->FacePoint(i,(j+2)%s2);
+	Point p3 = coll->FacePoint(i,(j+3)%s2);
+	//Point p4 = coll->FacePoint(i,(j+3)%s2);
+	//float area = Vector::DotProduct(coll->PointNormal(i,j),Vector::CrossProduct(p1,p2) + Vector::CrossProduct(p2,p3) + Vector::CrossProduct(p3,p4))/2.0;
+	float a1 = Vector::Angle(p2-p1,p3-p1);
+	//float a2 = Vector::Angle(p3-p2,p1-p2);
+	//float a3 = Vector::Angle(p1-p3,p2-p3);
+	if (std::isnormal(a1)) {
+	  Point p = coll->FacePoint(i,j);
+	  Data &v = mymap[key(p)];
+	  Vector n = coll->PointNormal(i,j);
+	  v.v+=n*a1;
+	//v.v+=a2*n;
+	//v.v+=a3*n;
+	  v.count++;
+	}
+      }
+    }
+    firsttime = false;
+    }
+  }
   virtual void Prepare() {
+    if (firsttime) {
     coll->Prepare();
 
     int s = coll->NumFaces();
@@ -13396,6 +14091,8 @@ public:
 	}
       }
     }
+    firsttime = false;
+    }
   }
   std::tuple<int,int,int> key(Point p) const
   {
@@ -13416,6 +14113,7 @@ public:
 private:
   FaceCollection *coll;
   mutable std::map<std::tuple<int,int,int>, Data> mymap;
+  bool firsttime;
 };
 
 GameApi::P GameApi::PolygonApi::smooth_normals2(P p) {
@@ -14173,6 +14871,56 @@ public:
 #endif
 
   }
+  void Collect(CollectVisitor &vis)
+  {
+    ForwardFaceCollection::Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    std::pair<Point,Point> bounds = find_bounds(coll);
+    int numfaces = coll->NumFaces();
+    delete grid;
+    grid = new GridAccel(18,18,18,
+		   bounds.first.x-10.0,bounds.second.x+10.0,
+		   bounds.first.y-10.0,bounds.second.y+10.0,
+		   bounds.first.z-10.0,bounds.second.z+10.0);
+
+    bind_accel(coll,grid);
+    //std::cout << "Generating lights..." << std::endl;
+  
+    delete cache;
+    cache = new AreaCache;
+    int sj = numfaces;
+    for(int w=0;w<sj;w++)
+      {
+	Point p1 = coll->FacePoint(w,0);
+	Point p2 = coll->FacePoint(w,1);
+	Point p3 = coll->FacePoint(w,2);
+	Point p4 = coll->FacePoint(w,3);
+	cache->push_area(w,AreaTools::QuadArea(p1,p2,p3,p4));
+      }
+    cache->calc_sum(30000);
+
+#if 0
+    for(int q=0;q<split_count;q++) {
+      ShadowCB *cb = new ShadowCB;
+      cb->m_this = this;
+      cb->current = q;
+      async_pending_count++;
+      emscripten_async_call(&shadow_color_callback, cb, -100*q);
+    }
+#else
+    for(int q=0;q<split_count;q++)
+      {
+      ShadowCB *cb = new ShadowCB;
+      cb->m_this = this;
+      cb->current = q;
+      shadow_color_callback(cb);
+      }
+#endif
+
+  }
   void Prepare() {
 #ifdef EMSCRIPTEN
     std::cout << "Warning, you should save the bitmaps created with p_tex_light to a file, upload to a web server and load them to textures via bm_url (p_tex_light is so slow that it shouldn't be used in release builds)" << std::endl;
@@ -14259,6 +15007,20 @@ public:
     unsigned int c = ref.buffer[x+y*ref.ydelta];
     return Color(c);
   }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+      firsttime = false;
+      //coll->Prepare();
+      coll->GenTexture(num);
+      ref = coll->TextureBuf(num);
+    }
+  }
   virtual void Prepare()
   {
     if (firsttime) {
@@ -14291,6 +15053,8 @@ class NormalToTexCoord : public ForwardFaceCollection
 {
 public:
   NormalToTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const {
     Vector n = ForwardFaceCollection::PointNormal(face,point);
@@ -14319,6 +15083,12 @@ class MeshAnimFromMeshes : public MeshAnim
 public:
   MeshAnimFromMeshes(std::vector<FaceCollection*> coll, float start_time, float time_step) : coll(coll), start_time_2(start_time), time_step(time_step) {}
 
+  void Collect(CollectVisitor &vis)
+  {
+    int s = coll.size();
+    for(int i=0;i<s;i++) coll[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare()
   {
     int s = coll.size();
@@ -14438,6 +15208,11 @@ class MeshFromMeshAnim : public FaceCollection
 {
 public:
   MeshFromMeshAnim(MeshAnim *anim, float time) : anim(anim), time(time) { }
+  void Collect(CollectVisitor &vis)
+  {
+    anim->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { anim->Prepare(); }
   virtual int NumFaces() const { return anim->NumFaces(); }
   virtual int NumPoints(int face) const { return anim->NumPoints(face); }
@@ -14480,6 +15255,11 @@ class MeshFromMeshAnim2 : public FaceCollection
 {
 public:
   MeshFromMeshAnim2(MeshAnim *anim, float time1, float time2) : anim(anim), time1(time1), time2(time2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    anim->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { anim->Prepare(); }
   virtual int NumFaces() const { return anim->NumFaces(); }
   virtual int NumPoints(int face) const { return anim->NumPoints(face); }
@@ -14552,6 +15332,13 @@ class ChooseTime : public MainLoopItem
 {
 public:
   ChooseTime(MainLoopItem *next, std::vector<MainLoopItem*> render, float delta_time) : next(next), render(render), delta_time(delta_time) { firsttime=true;}
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    int s = render.size();
+    for(int i=0;i<s;i++) render[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() {  next->Prepare(); 
     int s = render.size();
     for(int i=0;i<s;i++) render[i]->Prepare();
@@ -14657,6 +15444,11 @@ class ShadowMap : public ForwardFaceCollection
 {
 public:
   ShadowMap(FaceCollection *next, Point pos,int sx, int sy) : ForwardFaceCollection(*next), next(next), pos(pos),sx(sx),sy(sy) {}
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { next->Prepare(); }
   virtual int NumFaces() const { return next->NumFaces(); }
   virtual int NumPoints(int face) const { return next->NumPoints(face); }
@@ -14750,6 +15542,23 @@ public:
     }
     return res;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    objs->Collect(vis);
+    quad->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    q1 = quad->FacePoint(0,0);
+    q2 = quad->FacePoint(0,1);
+    q3 = quad->FacePoint(0,2);
+    q4 = quad->FacePoint(0,3);
+    d21 = q2-q1;
+    d34 = q3-q4;
+    d32 = q3-q2;
+    d41 = q4-q1;
+  }
   virtual void Prepare()
   {
     objs->Prepare();
@@ -14790,6 +15599,12 @@ public:
   virtual bool has_texcoord() const { if (!objs) return false; return objs->has_texcoord(); }
   virtual bool has_skeleton() const { if (!objs) return false; return objs->has_skeleton(); }
 
+  void Collect(CollectVisitor &vis)
+  {
+    objs->Collect(vis);
+    quad->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() {objs->Prepare(); quad->Prepare(); }
   virtual int NumFaces() const { return objs->NumFaces(); }
   virtual int NumPoints(int face) const { return objs->NumPoints(face); }
@@ -14800,7 +15615,7 @@ public:
     Point q1 = quad->FacePoint(0,0);
     Point q2 = quad->FacePoint(0,1);
     Point q3 = quad->FacePoint(0,2);
-    Point q4 = quad->FacePoint(0,3);
+    //Point q4 = quad->FacePoint(0,3);
 
     Point pp(pos.x,pos.y,pos.z);
 
@@ -14834,7 +15649,7 @@ private:
 GameApi::BM GameApi::PolygonApi::shadow_map3(EveryApi &ev, P objs,float p_x, float p_y, float p_z, int sx, int sy, P quad)
 {
   FaceCollection *f_objs = find_facecoll(e, objs);
-  FaceCollection *f_quad = find_facecoll(e, quad);
+  //FaceCollection *f_quad = find_facecoll(e, quad);
   FaceCollection *res = f_objs; //new ShadowMap3(f_objs, Point(p_x,p_y,p_z), sx,sy, f_quad);
   GameApi::P p = add_polygon2(e, res,1);
   GameApi::MN mn = ev.move_api.mn_empty();
@@ -14850,13 +15665,18 @@ class AddMeshTexture : public ForwardFaceCollection
 public:
   AddMeshTexture(FaceCollection *coll, Bitmap<::Color> *bm) : ForwardFaceCollection(*coll), coll(coll), bm(bm), bbm(*bm) { 
     buf = BufferRef::NewBuffer(1,1);
+    firsttime = true;
   }
   
-  void Prepare() {
-    coll->Prepare();
-    bm->Prepare();
-
-
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    bm->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
 #ifndef THREADS
   bbm.Gen();
 #else
@@ -14890,6 +15710,48 @@ public:
   //  bbm.Gen();
     
     buf = bbm.Buffer();
+    }
+  }
+  void Prepare() {
+    coll->Prepare();
+    bm->Prepare();
+
+    if (firsttime) {
+    
+#ifndef THREADS
+  bbm.Gen();
+#else
+  bbm.GenPrepare();
+
+  int numthreads = 4;
+  ThreadedUpdateTexture threads;
+  int sx = bm->SizeX();
+  int sy = bm->SizeY();
+  int dsy = sy/numthreads + 1;
+  std::vector<int> ids;
+  for(int i=0;i<numthreads;i++)
+    {
+      int start_x = 0;
+      int end_x = sx;
+      int start_y = i*dsy;
+      int end_y = (i+1)*dsy;
+      if (start_y>sy) { start_y = sy; }
+      if (end_y>sy) end_y = sy;
+      
+      if (end_y-start_y > 0)
+	ids.push_back(threads.push_thread(&bbm, start_x, end_x, start_y, end_y));
+    }
+  int ss = ids.size();
+  for(int i=0;i<ss;i++)
+    {
+      threads.join(ids[i]);
+    }
+#endif
+
+  //  bbm.Gen();
+    
+    buf = bbm.Buffer();
+    }
   }
   virtual int NumTextures() const { return coll->NumTextures()+1; }
   virtual void GenTexture(int num) { 
@@ -14905,6 +15767,7 @@ private:
   Bitmap<::Color> *bm;
   BufferRef buf;
   BufferFromBitmap bbm;
+  bool firsttime;
 };
 
 GameApi::P GameApi::PolygonApi::texture_add(P p, BM bm)
@@ -15048,7 +15911,16 @@ class STLFaceCollection : public FaceCollection
 {
 public:
   STLFaceCollection(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url),homepage(homepage) { m_ptr=0; }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
   void Prepare() {
+    if (!m_ptr) {
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -15064,6 +15936,7 @@ public:
       return;
     }
     m_ptr = ptr;
+    }
   }
   virtual int NumFaces() const { 
     int i = get_int(80);
@@ -15162,6 +16035,12 @@ class FixVertexOrder : public ForwardFaceCollection
 {
 public:
   FixVertexOrder(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() {
+  }
   virtual void Prepare() { coll->Prepare(); }
   virtual int NumFaces() const { return coll->NumFaces(); }
   virtual int NumPoints(int face) const
@@ -15213,9 +16092,32 @@ GameApi::P GameApi::PolygonApi::fix_vertex_order(GameApi::P p)
 class FilterInvisible : public ForwardFaceCollection
 {
 public:
-  FilterInvisible(FaceCollection *coll, float size) : ForwardFaceCollection(*coll), coll(coll), size(size) { }
+  FilterInvisible(FaceCollection *coll, float size) : ForwardFaceCollection(*coll), coll(coll), size(size) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+    indices = std::vector<int>();
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++)
+      {
+	float dist=0.0;
+	int k = coll->NumPoints(i);
+	for(int j=0;j<k;j++) { dist=std::max(dist,(coll->FacePoint(i,j)-coll->FacePoint(i,(j+1)%k)).Dist() ); }
+	if (dist>size) {
+	  indices.push_back(i);
+	}
+      }
+    firsttime = false;
+    }
+  }
   void Prepare()
   {
+    if (firsttime) {
     coll->Prepare();
     indices = std::vector<int>();
     int s = coll->NumFaces();
@@ -15228,6 +16130,8 @@ public:
 	  indices.push_back(i);
 	}
       }
+    firsttime = false;
+    }
   }
   virtual int NumFaces() const { return indices.size(); }
   virtual int NumPoints(int face) const { return coll->NumPoints(indices[face]); }
@@ -15260,6 +16164,7 @@ private:
   FaceCollection *coll;
   std::vector<int> indices;
   float size;
+  bool firsttime;
 };
 
  GameApi::P GameApi::PolygonApi::filter_invisible(GameApi::P p, float size)
@@ -15303,7 +16208,17 @@ public:
     lod_unlock();
     return -1;
   }
-
+  void Collect(CollectVisitor &vis)
+  {
+    int pos = find_val(name);
+    if (pos!=-1)
+      vec[pos]->Collect(vis);
+    
+  }
+  void HeavyPrepare()
+  {
+  }
+  
   virtual void Prepare()
   {
     int pos = find_val(name);
@@ -15397,6 +16312,13 @@ class LodSet : public ForwardFaceCollection
 {
 public:
   LodSet(FaceCollection *coll, std::string name, int val) : ForwardFaceCollection(*coll), coll(coll),name(name), val(val) { }
+  void Collect(CollectVisitor &vis)
+  {
+    add_name(name,val);
+    coll->Collect(vis);
+    rem_name(name);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { 
     add_name(name,val);
     coll->Prepare();
@@ -15536,6 +16458,8 @@ class TexCoord_subarea : public ForwardFaceCollection
 public:
   TexCoord_subarea(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
 public:
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
+  void HeavyPrepare() { }
   virtual Point2d TexCoord(int face, int point) const
   {
     Point2d p = coll->TexCoord(face,point);
@@ -15562,6 +16486,11 @@ class SkeletalDataFromFaceCollection : public SkeletalData
 {
 public:
   SkeletalDataFromFaceCollection(FaceCollection *coll, SkeletalData *bones) : coll(coll), bones(bones) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { coll->Prepare(); }
   int NumBones() const { return bones->NumBones(); }
   Point Bone(int i, bool is_first) const { return bones->Bone(i,is_first); }
@@ -15647,8 +16576,14 @@ private:
  class SceneDesc : public MainLoopItem
  {
 public:
-  SceneDesc(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, int sx, int sz) : env(env), ev(ev), url(url), homepage(homepage),sx(sx),sz(sz) { firsttime = true; }
-  void Prepare() {
+   SceneDesc(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, int sx, int sz) : env(env), ev(ev), url(url), homepage(homepage),sx(sx),sz(sz) { firsttime = true; scene.id = 0; }
+   void Collect(CollectVisitor &vis)
+   {
+     vis.register_obj(this);
+   }
+   void HeavyPrepare() { Prepare(); }
+   void Prepare() {
+     if (scene.id==0) {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
@@ -15668,6 +16603,7 @@ public:
       vec2.push_back(move);
     }
     scene = ev.mainloop_api.array_ml(ev,vec2);
+     }
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -15716,6 +16652,11 @@ class PTSTOVoxel : public VoxelArray
 {
 public:
   PTSTOVoxel(PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz) : points(points), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), sx(sx),sy(sy),sz(sz) { }
+  void Collect(CollectVisitor &vis)
+  {
+    points->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { points->Prepare(); }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -15771,6 +16712,16 @@ class VoxelArrayToPTS : public PointsApiPoints
 {
 public:
   VoxelArrayToPTS(VoxelArray *arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : arr(arr), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  void Collect(CollectVisitor &vis)
+  {
+    arr->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    sx = arr->SizeX();
+    sy = arr->SizeY();
+    sz = arr->SizeZ(); 
+  }
   virtual void Prepare() { 
     arr->Prepare(); 
 
@@ -15832,6 +16783,27 @@ class AV_Unique : public VoxelArray
 {
 public:
   AV_Unique(VoxelArray *arr) : arr(arr) { }
+  void Collect(CollectVisitor &vis)
+  {
+    arr->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int s = arr->Size();
+    for(int i=0;i<s;i++) {
+      VoxelArray::Pos p = arr->Map(i);
+      unsigned int c = arr->Color(i);
+      PosColor cc;
+      cc.pos = p;
+      cc.color = c;
+      vec.push_back(cc);
+    }
+    std::sort(vec.begin(), vec.end(), &Compare_Voxel);
+    auto last = std::unique(vec.begin(), vec.end(), &Compare_Voxel_Eq);
+    vec.erase(last, vec.end());
+
+  }
   void Prepare() {
     arr->Prepare();
 
@@ -15878,6 +16850,8 @@ class NormalDarkness : public ForwardFaceCollection
 {
 public:
   NormalDarkness(FaceCollection *coll, float dark) : ForwardFaceCollection(*coll), coll(coll),dark(dark) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual unsigned int Color(int face, int point) const
   {
     Vector n = coll->PointNormal(face,point);
@@ -15914,6 +16888,8 @@ class GradientColor : public ForwardFaceCollection
 {
 public:
   GradientColor(FaceCollection *coll, Point pt, Vector v, unsigned int start_color, unsigned int end_color) : ForwardFaceCollection(*coll), coll(coll), pt(pt), v(v), start_color(start_color), end_color(end_color) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual unsigned int Color(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -15942,6 +16918,11 @@ class LinesFaceCollection : public FaceCollection
 {
 public:
   LinesFaceCollection(LineCollection *li, float width) : li(li), width(width) { }
+  void Collect(CollectVisitor &vis)
+  {
+    li->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { li->Prepare(); }
   virtual int NumFaces() const { return li->NumLines(); }
   virtual int NumPoints(int face) const 
@@ -15995,6 +16976,8 @@ class MixMesh : public ForwardFaceCollection
 {
 public:
   MixMesh(FaceCollection *coll, PointsApiPoints *pts, float val) : ForwardFaceCollection(*coll), coll(coll), pts(pts), val(val) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -16041,6 +17024,12 @@ class MeshAnimCore : public MainLoopItem
 {
 public:
   MeshAnimCore(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<Anim_Struct> vec) : env(env), ev(ev), vec(vec) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  
   virtual void Prepare()
   {
     int s = vec.size();
@@ -16136,6 +17125,11 @@ public:
     current_states.id = -1;
   }
   
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
   virtual void Prepare()
   {
 #ifndef EMSCRIPTEN
@@ -16339,6 +17333,12 @@ class MeshElem : public FaceCollection
 {
 public:
   MeshElem(FaceCollection *face1, FaceCollection *face2) : face1(face1), face2(face2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    face1->Collect(vis);
+    face2->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { face1->Prepare(); face2->Prepare(); }
   virtual int NumFaces() const { return std::min(face1->NumFaces(),face2->NumFaces()); }
   virtual int NumPoints(int face) const { return std::min(face1->NumPoints(face),face2->NumPoints(face)); }
@@ -16397,6 +17397,24 @@ public:
 		      Movement *move,
 		      Material *mat,
 		      MatrixArray *inst) : env(env), ev(ev), coll(coll), fetch(fetch), move(move), mat(mat), inst(inst) { mainloopitem = 0; }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (!prepare_done) {
+      GameApi::P p = add_polygon2(env, coll, 1);
+      GameApi::MS ms = add_matrix_array(env, inst);
+      GameApi::ML ml;
+      ml.id = mat->mat_inst_matrix(p.id, ms.id);
+      mainloopitem = find_main_loop(env,ml);
+      mainloopitem->Prepare();
+      // std::cout << "Mainloopitem = " << mainloopitem << std::endl;
+      prepare_done = true;
+    }
+  }
   virtual void Prepare()
   {
     if (!prepare_done) {
@@ -16623,6 +17641,27 @@ class Block : public FaceCollection
 {
 public:
   Block(FaceCollection *coll, float pos_x, float pos_z, int x, int z, float delta_x, float delta_z) : coll(coll), pos_x(pos_x), pos_z(pos_z), x(x),z(z), delta_x(delta_x),delta_z(delta_z) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (face_index.size()==0) {
+      int s = coll->NumFaces();
+      float start_x = pos_x + x*delta_x;
+      float start_z = pos_z + z*delta_z;
+      float end_x = pos_x + (x+1)*delta_x;
+      float end_z = pos_z + (z+1)*delta_z;
+      for(int i=0;i<s;i++) {
+	Point p = pos(i);
+	if (p.x>=start_x && p.x<end_x)
+	  if (p.z>=start_z && p.z<end_z)
+	    face_index.push_back(i);
+      }
+    }
+  }
   virtual void Prepare()
   {
     coll->Prepare();
@@ -16771,6 +17810,12 @@ class BlockDraw : public MainLoopItem
 {
 public:
   BlockDraw(std::vector<MainLoopItem*> items, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z, int view) : items(items), pos_x(pos_x), pos_z(pos_z), sx(sx),sz(sz),delta_x(delta_x), delta_z(delta_z), view(view) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) items[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare()
   {
     int s = items.size();
@@ -16865,6 +17910,12 @@ class SubstituteQuadWithMesh : public FaceCollection
 {
 public:
   SubstituteQuadWithMesh(FaceCollection *coll1, FaceCollection *coll2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal) : coll1(coll1), coll2(coll2), start_x(start_x), end_x(end_x), start_y(start_y),end_y(end_y),start_z(start_z),end_z(end_z),normal(normal) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll1->Collect(vis);
+    coll2->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { coll1->Prepare(); coll2->Prepare(); }
   virtual int NumFaces() const
   {
@@ -16962,7 +18013,19 @@ class OptimizeMesh : public FaceCollection
 {
 public:
   OptimizeMesh(FaceCollection *coll, float max) : coll(coll),max(max) {}
-
+  
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    int s = coll->NumFaces();
+    vec.reserve(s);
+    for(int i=0;i<s;i++) {
+      if (!skip(i)) vec.push_back(i);
+    }
+  }
   virtual void Prepare() { coll->Prepare();
 
     int s = coll->NumFaces();
@@ -17116,6 +18179,57 @@ class RectangleBooleanOps : public RectangleArray
 {
 public:
   RectangleBooleanOps(RectangleArray &arr) : arr(arr) { }
+  void Collect(CollectVisitor &vis)
+  {
+    arr.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (x_corners.size()==0 && y_corners.size()==0) {
+
+    int s = arr.NumRects();
+    for(int i=0;i<s;i++) {
+      Rect r = arr.GetRect(i);
+      RectCorner x_c_1;
+      x_c_1.p = Point(r.x,r.y); // tl
+      x_c_1.left_or_right = false;
+      x_c_1.top_or_bottom = false;
+      RectCorner x_c_2;
+      x_c_2.p = Point(r.x+r.sx,r.y); // tr
+      x_c_2.left_or_right = true;
+      x_c_2.top_or_bottom = false;
+      RectCorner x_c_3;
+      x_c_3.p = Point(r.x,r.y+r.sy); // bl
+      x_c_3.left_or_right = false;
+      x_c_3.top_or_bottom = true;
+      RectCorner x_c_4;
+      x_c_4.p = Point(r.x+r.sx,r.y+r.sy); // br
+      x_c_4.left_or_right = true;
+      x_c_4.top_or_bottom = true;
+
+      bool invert = arr.Type(i);
+      if (invert) {
+	x_c_1.invert = true;
+	x_c_2.invert = true;
+	x_c_3.invert = true;
+	x_c_4.invert = true;
+      }
+      
+      x_corners.push_back(x_c_1);
+      x_corners.push_back(x_c_2);
+      x_corners.push_back(x_c_3);
+      x_corners.push_back(x_c_4);
+
+      y_corners.push_back(x_c_1);
+      y_corners.push_back(x_c_2);
+      y_corners.push_back(x_c_3);
+      y_corners.push_back(x_c_4);
+    }
+    std::sort(x_corners.begin(),x_corners.end(),&Compare_x);
+    std::sort(y_corners.begin(),y_corners.end(),&Compare_y);
+    }
+
+  }
   virtual void Prepare()
   {
     arr.Prepare();
@@ -17254,7 +18368,7 @@ public:
 	  int i1 = faces[j][0];
 	  int i2 = faces[j][1];
 	  int i3 = faces[j][2];
-	  int i4 = faces[j][3];
+	  //int i4 = faces[j][3];
 	  Point p1 = points->Pos(H[i1]);
 	  Point p2 = points->Pos(H[i2]);
 	  Point p3 = points->Pos(H[i3]);
@@ -17316,7 +18430,22 @@ public:
       if (faces[i].size()!=0) faces_optimized.push_back(faces[i]);
     }
   }
-
+  void Collect(CollectVisitor &vis)
+  {
+    points->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (faces_optimized.size()==0) {
+      //points->Prepare();
+    calc_convex_hull();
+    std::cout << "Convex_hull size: " << faces.size() << std::endl;
+    filter_empty();
+    std::cout << "Convex_hull size(optimized): " << faces_optimized.size() << std::endl;
+    }
+  }
+  
   virtual void Prepare()
   {
     if (faces_optimized.size()==0) {
@@ -17383,6 +18512,13 @@ class Att : public Attach
 {
 public:
   Att(FaceCollection *coll, LineCollection *lines) : coll(coll), lines(lines) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    lines->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  
   void Prepare() {
     coll->Prepare();
     lines->Prepare();
@@ -17438,6 +18574,23 @@ class AttCache : public Attach
 {
 public:
   AttCache(Attach *next, FaceCollection *coll) : next(next), coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      std::vector<int> vec2;
+      int sp = coll->NumPoints(i);
+      for(int j=0;j<sp;j++) {
+	vec2.push_back(next->Attached(i,j));
+      }
+      vec.push_back(vec2);
+    }
+  }
   virtual void Prepare() {
     next->Prepare();
     coll->Prepare();
@@ -17481,8 +18634,26 @@ GameApi::ATT GameApi::PolygonApi::attach_cache(ATT a, P p)
 class SplitAttachFaces : public FaceCollection
 {
 public:
-  SplitAttachFaces(FaceCollection *coll, Attach *att, int max_attach, int num, bool &prepared) : coll(coll), att(att), max_attach(max_attach), num(num), prepared(prepared) { }
+  SplitAttachFaces(FaceCollection *coll, Attach *att, int max_attach, int num, bool &prepared) : coll(coll), att(att), num(num), max_attach(max_attach),  prepared(prepared) { }
 
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    att->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    prepared=true;
+    
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      int a = att->Attached(i,0);
+      if (a==num) { facemap.push_back(i); }
+    }
+
+  }
+  
   virtual void Prepare() {
     if (!prepared) { coll->Prepare(); att->Prepare(); }
     prepared=true;
@@ -17598,7 +18769,28 @@ GameApi::ARR GameApi::PolygonApi::split_faces(P p, ATT att, int max_attach) // m
 class Pose2 : public FaceCollection
 {
 public:
-  Pose2(GameApi::Env &env, GameApi::EveryApi &ev, MatrixArray *mat, std::vector<GameApi::P> vec, int i) : env(env), ev(ev), mat(mat), vec(vec),i(i) { }
+  Pose2(GameApi::Env &env, GameApi::EveryApi &ev, MatrixArray *mat, std::vector<GameApi::P> vec, int i) : i(i), env(env), ev(ev), mat(mat), vec(vec) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,vec[i]);
+	coll->Collect(vis);
+      }
+    mat->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    
+    GameApi::P p = vec[i];
+    Matrix mm = mat->Index(i);
+    GameApi::M m = add_matrix2(env,mm);
+    GameApi::P p2 = ev.polygon_api.matrix44(p, m);
+    res = p2;
+    
+  }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++)
@@ -17617,23 +18809,28 @@ public:
 
   virtual bool has_normal() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_normal();
+    if (!coll) return false;
+    return coll->has_normal();
   }
   virtual bool has_attrib() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_attrib();
+    if (!coll) return false;
+    return coll->has_attrib();
   }
   virtual bool has_color() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_color();
+    if (!coll) return false;
+    return coll->has_color();
   }
   virtual bool has_texcoord() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_texcoord();
+    if (!coll) return false;
+    return coll->has_texcoord();
   }
   virtual bool has_skeleton() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_skeleton();
+    if (!coll) return false;
+    return coll->has_skeleton();
   }
 
   
@@ -17745,6 +18942,23 @@ class NewPose : public MatrixArray
 {
 public:
   NewPose(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LI li_orig, GameApi::LI li) : env(env), ev(ev), li_orig(li_orig), li(li) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    GameApi::MS ms = ev.matrices_api.from_lines_3d(li);
+    MatrixArray *arr = find_matrix_array(env,ms);
+    arr->Prepare();
+    std::vector<Matrix> vec;
+    for(int i=0;i<arr->Size();i++) { vec.push_back(arr->Index(i)); }
+    vec.push_back(Matrix::Identity());
+    res = ms_array(env,vec); //ev.matrices_api.mult_array(ms_inv, ms);
+
+    MatrixArray *mat = find_matrix_array(env,res);
+    mat->Prepare();
+  }
   virtual void Prepare() {
     GameApi::MS ms = ev.matrices_api.from_lines_3d(li);
     MatrixArray *arr = find_matrix_array(env,ms);
@@ -17819,7 +19033,33 @@ struct Rec
 class SkeletalAnim22 : public MainLoopItem
 {
 public:
-  SkeletalAnim22(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> orig, std::vector<GameApi::MS> new_matrices, std::string url, std::string homepage, GameApi::P mesh, Material *mat) : env(env), ev(ev), orig(orig), new_matrices(new_matrices), url(url), homepage(homepage), mesh(mesh), mat(mat) { firsttime = true; }
+  SkeletalAnim22(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> orig, std::vector<GameApi::MS> new_matrices, std::string url, std::string homepage, GameApi::P mesh, Material *mat) : env(env), ev(ev), orig(orig),  mesh(mesh), new_matrices(new_matrices), url(url), homepage(homepage),  mat(mat) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+      int s4 = orig.size();
+      for(int i=0;i<s4;i++) {
+	FaceCollection *coll = find_facecoll(env, orig[i]);
+	coll->Collect(vis);
+      }
+      FaceCollection *coll2 = find_facecoll(env, mesh);
+      coll2->Collect(vis);
+
+
+      int s = orig.size();
+      for(int i=0;i<s;i++) {
+	GameApi::ML ml = mat->mat(orig[i].id);
+	orig2.push_back( ml );
+	MainLoopItem *item = find_main_loop(env,ml);
+	item->Collect(vis);
+      }
+      mesh2 = mat->mat(mesh.id);
+
+      
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
@@ -17848,27 +19088,6 @@ public:
 
     }
 
-
-      int s4 = orig.size();
-      for(int i=0;i<s4;i++) {
-	FaceCollection *coll = find_facecoll(env, orig[i]);
-	coll->Prepare();
-      }
-      FaceCollection *coll2 = find_facecoll(env, mesh);
-      coll2->Prepare();
-
-
-      int s = orig.size();
-      for(int i=0;i<s;i++) {
-	GameApi::ML ml = mat->mat(orig[i].id);
-	orig2.push_back( ml );
-	MainLoopItem *item = find_main_loop(env,ml);
-	item->Prepare();
-      }
-      mesh2 = mat->mat(mesh.id);
-
-    
-
   }
 
   void logoexecute() {
@@ -17890,12 +19109,14 @@ public:
 	  float d = t/items[i].duration; // 0..1
 	  int start = items[i].start_index;
 	  int end = items[i].end_index;
-	  if (start<0 || start>=new_matrices.size())
+	  int sz2 = new_matrices.size();
+	  if (start<0 || start>=sz2)
 	    {
 	      std::cout << "START BROKEN!" << std::endl;
 	      start =0;
 	    }
-	  if (end<0 || end>=new_matrices.size())
+	  int sz = new_matrices.size();
+	  if (end<0 || end>=sz)
 	    {
 	      std::cout << "END BROKEN!" << std::endl;
 	      end=0;
@@ -17989,6 +19210,11 @@ class MatrixElem44 : public ForwardFaceCollection
 {
 public:
   MatrixElem44(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) {  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { next->Prepare(); }
   virtual int NumFaces() const { return next->NumFaces(); }
   virtual int NumPoints(int face) const { return next->NumPoints(face); }
@@ -18031,7 +19257,8 @@ GameApi::ML GameApi::PolygonApi::ske_anim2(EveryApi &ev, std::vector<P> mesh, LI
   std::vector<GameApi::P> orig = orig_pose2(ev, mesh, orig_pose2_, li_size);
   std::vector<MS> new_matrices;
   int s = new_poses.size();
-  if (s!=mesh.size()) { std::cout << "ske_anim2::[LI] size: " << new_poses.size() << " but meshes: " << mesh.size() << std::endl; }
+  int sz = mesh.size();
+  if (s!=sz) { std::cout << "ske_anim2::[LI] size: " << new_poses.size() << " but meshes: " << mesh.size() << std::endl; }
   for(int i=0;i<s;i++) {
     new_matrices.push_back(new_pose(ev, orig_pose2_, new_poses[i]));
   }
@@ -18050,4 +19277,662 @@ GameApi::ML GameApi::PolygonApi::ske_anim(EveryApi &ev, P mesh, LI orig_pose2, i
     new_matrices.push_back(new_pose(ev, orig_pose2, new_poses[i]));
   }
   return add_main_loop(e, new SkeletalAnim22(e, ev, orig, new_matrices, url, gameapi_homepageurl, mesh,mat2));
+}
+
+
+struct RayRes
+{
+  int face;
+  Point pos;
+};
+
+class RemoveFaces : public FaceCollection
+{
+public:
+  RemoveFaces(FaceCollection *next) : coll(next) { firsttime=true; }
+
+  virtual bool has_normal() const { return true; }
+  virtual bool has_attrib() const { return false; }
+  virtual bool has_color() const { return false; }
+  virtual bool has_texcoord() const { return true; }
+  virtual bool has_skeleton() const { return false; }
+
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+      firsttime=false;
+      //coll->Prepare();
+      int s = coll->NumFaces();
+      for(int i=0;i<s;i++)
+	{
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	Point p4 = coll->FacePoint(i,3);
+	float min_x = std::min(std::min(p1.x,p2.x),std::min(p3.x,p4.x));
+	float max_x = std::max(std::max(p1.x,p2.x),std::max(p3.x,p4.x));
+	float min_y = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+	float max_y = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+	float min_z = std::min(std::min(p1.z,p2.z),std::min(p3.z,p4.z));
+	float max_z = std::max(std::max(p1.z,p2.z),std::max(p3.z,p4.z));
+	float volume = std::max(std::max(max_x-min_x,max_y-min_y),(max_z-min_z));
+	if (volume > 30.0) 
+	  vec.push_back(i);
+	}
+      std::cout << "NumFaces:" << vec.size() << std::endl;
+    }
+
+  }
+  
+  void Prepare() {
+    if (firsttime) {
+      firsttime=false;
+      coll->Prepare();
+      int s = coll->NumFaces();
+      for(int i=0;i<s;i++)
+	{
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	Point p4 = coll->FacePoint(i,3);
+	float min_x = std::min(std::min(p1.x,p2.x),std::min(p3.x,p4.x));
+	float max_x = std::max(std::max(p1.x,p2.x),std::max(p3.x,p4.x));
+	float min_y = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+	float max_y = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+	float min_z = std::min(std::min(p1.z,p2.z),std::min(p3.z,p4.z));
+	float max_z = std::max(std::max(p1.z,p2.z),std::max(p3.z,p4.z));
+	float volume = std::max(std::max(max_x-min_x,max_y-min_y),(max_z-min_z));
+	if (volume > 30.0) 
+	  vec.push_back(i);
+	}
+      std::cout << "NumFaces:" << vec.size() << std::endl;
+    }
+  }
+  virtual int NumFaces() const { return vec.size(); }
+  virtual int NumPoints(int face) const
+  {
+    return coll->NumPoints(vec[face]);
+  }
+
+  virtual Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(vec[face],point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(vec[face],point);
+  }
+  virtual float Attrib(int face, int point, int id) const {
+    return coll->Attrib(vec[face],point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(vec[face],point,id);
+  }
+    
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll->Color(vec[face],point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(vec[face],point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    return coll->TexCoord3(vec[face],point);
+  }
+  virtual int NumTextures() const { return coll->NumTextures(); }
+  virtual void GenTexture(int num) { coll->GenTexture(num); }
+  virtual BufferRef TextureBuf(int num) const {
+    return coll->TextureBuf(num);
+  }
+  virtual int FaceTexture(int face) const { return coll->FaceTexture(face); }
+
+private:
+  bool firsttime;
+  FaceCollection *coll;
+  std::vector<int> vec;
+};
+GameApi::P GameApi::PolygonApi::remove_faces(GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new RemoveFaces(coll),1);
+}
+
+FaceCollection *g_faces;
+Vector g_faces_vec;
+float EvalFaces(int id)
+{
+  Point p1 = g_faces->FacePoint(id,0);
+  Point p2 = g_faces->FacePoint(id,1);
+  Point p3 = g_faces->FacePoint(id,2);
+  Point p4 = g_faces->FacePoint(id,3);
+  Point center1 = Vector(p1+Vector(p2)+Vector(p3)+Vector(p4))*(1.0/4.0);
+  float dist = Vector::FindProjectionLength(Vector(center1),g_faces_vec);
+  return dist;
+}
+bool CompareFaces(int id1, int id2)
+{
+  float dist = EvalFaces(id1);
+  float dist2 = EvalFaces(id2);
+  return dist<dist2;
+}
+
+
+class SortFaces : public CollectInterface
+{
+public:
+  SortFaces(FaceCollection *coll, Vector dir) : coll(coll), dir(dir) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+  void Prepare()
+  {
+    coll->Prepare();
+    g_faces_vec = dir;
+    g_faces = coll;
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      vec.push_back(i);
+    }
+    std::sort(vec.begin(),vec.end(), CompareFaces);
+  }
+  int find_pos2(float target_pos, int start_pos, int end_pos) const
+  {
+  loop:
+    //std::cout << "find_pos:" << start_pos << ".." << end_pos << std::endl;
+    if (end_pos-start_pos<2) return start_pos;
+    int pos = start_pos + (end_pos-start_pos)/2;
+    int pos2 = vec[pos];
+    float val = EvalFaces(pos2);
+    if (val>target_pos) {
+      //end_pos/=2;
+      end_pos = pos;
+      goto loop;
+    } else if (val<target_pos) {      
+      start_pos = pos;
+      goto loop;
+    }
+    return start_pos;
+  }
+  int find_pos(Point p) const
+  {
+    float target_pos = Vector::FindProjectionLength(Vector(p),g_faces_vec);
+    int start_pos = 0;
+    int end_pos = vec.size();
+    return find_pos2(target_pos, start_pos,end_pos);
+  }
+  
+  
+public:
+  FaceCollection *coll;
+  std::vector<int> vec;
+  Vector dir;
+};
+
+class FaceCollectionRays : public CollectInterface
+{
+public:
+  FaceCollectionRays(FaceCollection *coll, Vector v) : coll(coll), v(v) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    sort = new SortFaces(coll,v);
+    sort->Prepare();
+  }
+  void Prepare()
+  {
+    coll->Prepare();
+    //int s = coll->NumFaces();
+    //std::cout << "NumFaces: " << vec.size() << std::endl;
+    sort = new SortFaces(coll,v);
+    sort->Prepare();
+  }
+  RayRes intersect(Point pos) const
+  {
+    LineProperties lp(pos,pos+v);
+    //int s = coll->NumFaces();
+    float min_r = 10000000.0;
+    int res = -1;
+    int start_pos = sort->find_pos(pos);
+    int end_pos = sort->find_pos(pos+v/v.Dist()*30.0);
+    //std::cout << "intersect: " << start_pos << " " << end_pos << std::endl;
+    for(int ii=start_pos;ii<end_pos;ii++) {
+      int i = sort->vec[ii];
+      Point p1 = coll->FacePoint(i,0);
+      Point p2 = coll->FacePoint(i,1);
+      Point p3 = coll->FacePoint(i,2);
+      Point p4 = coll->FacePoint(i,3);
+      float r = 0.0;
+      bool succ = lp.QuadIntersection(p1,p2,p3,p4, r);
+      if (succ && r<min_r && r>0.0) { min_r=r; res=i; }
+    }
+    RayRes rr;
+    rr.face = res;
+    rr.pos = pos + min_r*v;
+    return rr;
+  }
+  float dist_intersect(Point pos) const
+  {
+    RayRes r = intersect(pos);
+    Vector vv = r.pos - pos;
+    return vv.Dist();
+  }
+  float color_intersect(Point pos, float black_dist, float white_dist) const
+  {
+    float d=dist_intersect(pos);
+    d-=black_dist;
+    d/=(white_dist-black_dist);
+    if (d<0.0) d=0.0;
+    if (d>1.0) d=1.0;
+    return d;
+  }
+private:
+  FaceCollection *coll;
+  std::vector<int> vec;
+  Vector v;
+  SortFaces *sort;
+};
+
+class LightMapBitmap : public Bitmap<Color>
+{
+public:
+  LightMapBitmap(int sx, int sy, FaceCollection *coll, FaceCollection *coll2, int face, Vector light_dir) : coll(coll), sx(sx),sy(sy), r(coll,light_dir), coll2(coll2), face(face), light_dir(light_dir) { }
+  void setsize(int sx_, int sy_) { sx=sx_; sy=sy_; }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    Vector v_x = p2-p1;
+    Vector v_y = p4-p1;
+    float xx = float(x)/sx;
+    float yy = float(y)/sy;
+    Point pos = p1 + xx*v_x + yy*v_y;
+    float c = r.color_intersect(pos, 0.0, 300.0);
+    return Color(c,c,c,1.0f);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    coll2->Collect(vis);
+    r.Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    p1 = coll2->FacePoint(face,0);
+    p2 = coll2->FacePoint(face,1);
+    p3 = coll2->FacePoint(face,2);
+    p4 = coll2->FacePoint(face,3);
+    t1 = coll2->TexCoord(face,0);
+    t2 = coll2->TexCoord(face,1);
+    t3 = coll2->TexCoord(face,2);
+    t4 = coll2->TexCoord(face,3);
+    //float v_x = (p3.x-p1.x)/(t3.x-t1.x);
+    //float p0_x = p1.x-t1.x*v_x;
+    //float v_y = (p3.y-p1.y)/(t3.x-t1.x);
+    //float p0_y = p1.y-t1.x*v_y;
+    //float v_z = (p3.z-p1.z)/(t3.x-t1.x);
+    //float p0_z = p1.z-t1.x*v_z;
+
+    //float av_x = (p3.x-p1.x)/(t3.y-t1.y);
+    //float ap0_x = p1.x-t1.y*av_x;
+    //float av_y = (p3.y-p1.y)/(t3.y-t1.y);
+    //float ap0_y = p1.y-t1.y*av_y;
+    //float av_z = (p3.z-p1.z)/(t3.y-t1.y);
+    //float ap0_z = p1.z-t1.y*av_z;
+
+    //Point pp = Point(p0_x,p0_y,p0_z);
+    //Vector v = Vector(v_x,v_y,v_z);
+    //Vector av = Vector(av_x,av_y,av_z);
+    //p1 = pp;
+    //p2 = pp+v;
+    //p3 = pp+v+av;
+    //p4 = pp+av;
+
+  }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+    coll2->Prepare();
+    r.Prepare();
+    p1 = coll2->FacePoint(face,0);
+    p2 = coll2->FacePoint(face,1);
+    p3 = coll2->FacePoint(face,2);
+    p4 = coll2->FacePoint(face,3);
+    t1 = coll2->TexCoord(face,0);
+    t2 = coll2->TexCoord(face,1);
+    t3 = coll2->TexCoord(face,2);
+    t4 = coll2->TexCoord(face,3);
+    //float v_x = (p3.x-p1.x)/(t3.x-t1.x);
+    //float p0_x = p1.x-t1.x*v_x;
+    //float v_y = (p3.y-p1.y)/(t3.x-t1.x);
+    //float p0_y = p1.y-t1.x*v_y;
+    //float v_z = (p3.z-p1.z)/(t3.x-t1.x);
+    //float p0_z = p1.z-t1.x*v_z;
+
+    //float av_x = (p3.x-p1.x)/(t3.y-t1.y);
+    //float ap0_x = p1.x-t1.y*av_x;
+    //float av_y = (p3.y-p1.y)/(t3.y-t1.y);
+    //float ap0_y = p1.y-t1.y*av_y;
+    //float av_z = (p3.z-p1.z)/(t3.y-t1.y);
+    //float ap0_z = p1.z-t1.y*av_z;
+
+    //Point pp = Point(p0_x,p0_y,p0_z);
+    //Vector v = Vector(v_x,v_y,v_z);
+    //Vector av = Vector(av_x,av_y,av_z);
+    //p1 = pp;
+    //p2 = pp+v;
+    //p3 = pp+v+av;
+    //p4 = pp+av;
+    
+  }
+
+private:
+  FaceCollection *coll;
+  int sx, sy;
+  FaceCollectionRays r;
+  FaceCollection *coll2;
+  int face;
+  Point p1,p2,p3,p4;
+  Point2d t1,t2,t3,t4;
+  Vector light_dir;
+};
+GameApi::BM GameApi::BitmapApi::lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z)
+{
+  FaceCollection *coll = find_facecoll(e,faces);
+  FaceCollection *coll2 = find_facecoll(e, faces2);
+  Bitmap<Color> *b = new LightMapBitmap(sx,sy,coll,coll2,face,Vector(light_dir_x, light_dir_y, light_dir_z));
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
+class CollectBitmap : public CollectInterface
+{
+public:
+  CollectBitmap(FaceCollection *coll, std::vector<Bitmap<Color>*> vec, int tx3) : tx3(tx3), coll(coll), vec(vec) { }
+  virtual ~CollectBitmap() { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int sx = vec[0]->SizeX();
+    int sy = vec[0]->SizeY();
+    ref = BufferRef::NewBuffer(sx,sy);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	ref.buffer[x+y*ref.ydelta] = 0xffffffff;
+    int s = vec.size();
+    
+    for(int i=0;i<s;i++) copy_tri(i);
+  }
+  void Prepare()
+  {
+    coll->Prepare();
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+
+    int sx = vec[0]->SizeX();
+    int sy = vec[0]->SizeY();
+    ref = BufferRef::NewBuffer(sx,sy);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	ref.buffer[x+y*ref.ydelta] = 0xffffffff;
+    
+    for(int i=0;i<s;i++) copy_tri(i);
+    
+  }
+  void copy_tri(int face)
+  {
+    float tx3_ = coll->TexCoord3(face,0);
+    if (tx3_ < float(tx3)) return;
+    if (tx3_ > float(tx3+1)) return;
+
+    std::cout << "copy_tri: " << face << "/" << coll->NumFaces() << std::endl;
+    
+    Point2d t1 = coll->TexCoord(face,0);
+    Point2d t2 = coll->TexCoord(face,1);
+    Point2d t3 = coll->TexCoord(face,2);
+    Point2d t4 = coll->TexCoord(face,3);
+    int sx = ref.width;
+    int sy = ref.height;
+
+    float min_x = std::min(std::min(t1.x,t2.x),std::min(t3.x,t4.x));
+    float max_x = std::max(std::max(t1.x,t2.x),std::max(t3.x,t4.x));
+    float min_y = std::min(std::min(t1.y,t2.y),std::min(t3.y,t4.y));
+    float max_y = std::max(std::max(t1.y,t2.y),std::max(t3.y,t4.y));
+    
+    min_x*=sx;
+    max_x*=sx;
+    min_y*=sy;
+    max_y*=sy;
+    int min_xx = std::max(int(min_x),0);
+    int max_xx = std::min(int(max_x),sx);
+    int min_yy = std::max(int(min_y),0);
+    int max_yy = std::min(int(max_y),sy);
+
+    std::cout << "copy_tri: " << min_xx << ".." << max_xx << "x" << min_yy << ".." << max_yy << std::endl;
+    
+    
+    for(int y=min_yy;y<max_yy;y++)
+      for(int x=min_xx;x<max_xx;x++)
+	{
+	  Point2d pt = { float(x)/sx,float(y)/sy };
+	  bool b1 = inside(pt, t1,t2,t3);
+	  bool b2 = inside(pt, t1,t3,t4);
+	  if (b1||b2)
+	    {
+	      ref.buffer[x+y*ref.ydelta] = vec[face]->Map(x,y).Pixel();
+	    }
+	}
+    
+  }
+  float sign(Point2d p1, Point2d p2, Point2d p3)
+  {
+    return (p1.x-p3.x)*(p2.y-p3.y)-(p2.x-p3.x)*(p1.y-p3.y);
+  }
+  bool inside(Point2d pt, Point2d v1, Point2d v2, Point2d v3)
+  {
+    float d1 = sign(pt,v1,v2);
+    float d2 = sign(pt,v2,v3);
+    float d3 = sign(pt,v3,v1);
+    bool has_neg = (d1<0) || (d2<0) || (d3<0);
+    bool has_pos = (d1>0) || (d2>0) || (d3>0);
+    return !(has_neg && has_pos);
+  }
+public:
+  int tx3;
+  BufferRef ref;
+  FaceCollection *coll;
+  std::vector<Bitmap<Color>*> vec;
+};
+
+class SponzaFaceCollection : public ForwardFaceCollection
+{
+public:
+  SponzaFaceCollection(FaceCollection *coll, float light_dir_x, float light_dir_y, float light_dir_z) : ForwardFaceCollection(*coll), coll(coll), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z) { }
+  ~SponzaFaceCollection() {
+    int s = bms.size();
+    for(int i=0;i<s;i++) delete bms[i];
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    ForwardFaceCollection::Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    int s = coll->NumTextures();
+    std::vector<Bitmap<::Color>*> vec;
+    FaceCollection *coll2 = new RemoveFaces(coll);
+    coll2->Prepare();
+    int s2 = coll2->NumFaces();
+    for(int j=0;j<s2;j++) {
+      vec.push_back(new LightMapBitmap(1,1, coll2, coll2, j, Vector(light_dir_x, light_dir_y, light_dir_z)));
+    }
+    for(int i=0;i<s;i++) {
+      coll->GenTexture(i);
+      BufferRef ref = coll->TextureBuf(i);
+      int sx = ref.width;
+      int sy = ref.height;
+      //vec= std::vector<Bitmap<::Color>*>();
+      for(int j=0;j<s2;j++) {
+	((LightMapBitmap*)vec[j])->setsize(sx,sy);
+      }
+      bms.push_back(new CollectBitmap(coll2, vec, i));
+      std::cout << "Sponza: "<< i << "/" << s << std::endl;
+      bms[i]->Prepare();
+    }
+  }
+  void Prepare() {
+    ForwardFaceCollection::Prepare();
+    int s = coll->NumTextures();
+    std::vector<Bitmap<::Color>*> vec;
+    FaceCollection *coll2 = new RemoveFaces(coll);
+    coll2->Prepare();
+    int s2 = coll2->NumFaces();
+    for(int j=0;j<s2;j++) {
+      vec.push_back(new LightMapBitmap(1,1, coll2, coll2, j, Vector(light_dir_x, light_dir_y, light_dir_z)));
+    }
+    for(int i=0;i<s;i++) {
+      coll->GenTexture(i);
+      BufferRef ref = coll->TextureBuf(i);
+      int sx = ref.width;
+      int sy = ref.height;
+      //vec= std::vector<Bitmap<::Color>*>();
+      for(int j=0;j<s2;j++) {
+	((LightMapBitmap*)vec[j])->setsize(sx,sy);
+      }
+      bms.push_back(new CollectBitmap(coll2, vec, i));
+      std::cout << "Sponza: "<< i << "/" << s << std::endl;
+      bms[i]->Prepare();
+    }
+    //for(int i=0;i<s;i++) {
+    // }
+  }
+  virtual int NumTextures() const { return coll->NumTextures(); }
+  virtual void GenTexture(int num) {
+  }
+  virtual BufferRef TextureBuf(int num) const { return bms[num]->ref; }
+private:
+  FaceCollection *coll;
+  std::vector<CollectBitmap*> bms;
+  float light_dir_x, light_dir_y, light_dir_z;
+};
+GameApi::P GameApi::PolygonApi::slow_calc_lights(GameApi::P p, float light_dir_x, float light_dir_y, float light_dir_z)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new SponzaFaceCollection(coll, light_dir_x, light_dir_y, light_dir_z),1);
+}
+
+class CombineTextures : public ForwardFaceCollection
+{
+public:
+  CombineTextures(FaceCollection *coll1, FaceCollection *coll2) : ForwardFaceCollection(*coll1), coll1(coll1), coll2(coll2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll1->Collect(vis);
+    coll2->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  virtual void Prepare()
+  {
+    coll1->Prepare();
+    coll2->Prepare();
+  }
+  virtual int NumTextures() const { return std::min(coll1->NumTextures(), coll2->NumTextures()); }
+  virtual void GenTexture(int num) {
+    coll1->GenTexture(num);
+    coll2->GenTexture(num);
+  }
+  virtual BufferRef TextureBuf(int num) const {
+    int sz = vec.size();
+    if (sz<=num) vec.resize(num+1);
+    BufferRef ref1 = coll1->TextureBuf(num);
+    BufferRef ref2 = coll2->TextureBuf(num);
+    int sx = std::min(ref1.width,ref2.width);
+    int sy = std::min(ref1.height,ref2.height);
+    vec[num] = BufferRef::NewBuffer(sx,sy);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	vec[num].buffer[x+y*vec[num].ydelta] = combine(ref1.buffer[x+y*ref1.ydelta], ref2.buffer[x+y*ref2.ydelta]);
+      
+    return vec[num];
+  }
+  unsigned int combine(unsigned int c1, unsigned int c2) const
+  {
+    unsigned int c1a = c1&0xff000000;
+    unsigned int c1r = c1&0xff0000;
+    unsigned int c1g = c1&0xff00;
+    unsigned int c1b = c1&0xff;
+
+    unsigned int c2a = c2&0xff000000;
+    unsigned int c2r = c2&0xff0000;
+    unsigned int c2g = c2&0xff00;
+    unsigned int c2b = c2&0xff;
+
+    float c1aa = float(c1a>>24)/255.0;
+    float c1rr = float(c1r>>16)/255.0;
+    float c1gg = float(c1g>>8)/255.0;
+    float c1bb = float(c1b)/255.0;
+
+
+    float c2aa = float(c2a>>24)/255.0;
+    float c2rr = float(c2r>>16)/255.0;
+    float c2gg = float(c2g>>8)/255.0;
+    float c2bb = float(c2b)/255.0;
+
+
+    float maa = (c1aa+c2aa)/2.0;
+    float mrr = c1rr*c2rr;
+    float mgg = c1gg*c2gg;
+    float mbb = c1bb*c2bb;
+
+    maa *=255.0;
+    mrr *=255.0;
+    mgg *=255.0;
+    mbb *=255.0;
+
+    unsigned int ma = (unsigned int)(maa);
+    unsigned int mr = (unsigned int)(mrr);
+    unsigned int mg = (unsigned int)(mgg);
+    unsigned int mb = (unsigned int)(mbb);
+    
+    ma<<=24;
+    mr<<=16;
+    mg<<=8;
+    return ma+mr+mg+mb;
+  }
+private:
+  FaceCollection *coll1, *coll2;
+  mutable std::vector<BufferRef> vec;
+};
+
+GameApi::P GameApi::PolygonApi::combine_textures(GameApi::P p1, GameApi::P p2)
+{
+  FaceCollection *coll1 = find_facecoll(e,p1);
+  FaceCollection *coll2 = find_facecoll(e,p2);
+  return add_polygon2(e, new CombineTextures(coll1, coll2),1);
 }

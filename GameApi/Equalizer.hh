@@ -1530,6 +1530,11 @@ class PolygonFill : public ContinuousBitmap<bool>
 {
 public:
   PolygonFill(float sx, float sy, Line2dCollection &coll) : sx(sx), sy(sy), coll(coll), swapped(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
   float SizeX() const { return sx; }
   float SizeY() const { return sy; }
@@ -1571,6 +1576,12 @@ class TextureWithHole : public Bitmap<Color>
 {
 public:
   TextureWithHole(Bitmap<Color> &orig, PointCollection2d &coll) : cont(orig, orig.SizeX(),orig.SizeY()), lines(coll, true), poly(orig.SizeX(), orig.SizeY(), lines), anot(cont, poly), sample(anot, orig.SizeX(), orig.SizeY()) { }
+  void Collect(CollectVisitor &vis)
+  {
+    sample.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { sample.Prepare(); }
 
   int SizeX() const { return sample.SizeX(); }

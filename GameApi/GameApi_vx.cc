@@ -6,6 +6,8 @@ class VoxelFunction : public Voxel<unsigned int>
 {
 public:
   VoxelFunction(GameApi::EveryApi &ev, unsigned int (*fptr)(GameApi::EveryApi &ev,int x, int y, int z, void *data), int sx, int sy, int sz, void*data) : ev(ev), fptr(fptr), sx(sx), sy(sy), sz(sz), data(data) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   void Prepare() { }
   virtual int SizeX() const { return sx; }
   virtual int SizeY() const { return sy; }
@@ -174,6 +176,36 @@ class P_to_VX : public Voxel<int>
 {
 public:
   P_to_VX(FaceCollection *coll, int sx, int sy, int sz, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int value) : coll(coll),sx(sx),sy(sy),sz(sz),bounds({start_x,end_x,start_y,end_y,start_z,end_z}), value(value) { }
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); vis.register_obj(this); }
+  void HeavyPrepare() {
+
+    p1.resize(sz);
+    p2.resize(sz);
+    p3.resize(sz);
+    p4.resize(sz);
+    for(int z=0;z<sz;z++) {
+      float zz = bounds.start_z + z*(bounds.end_z-bounds.start_z)/sz;
+      Plane pl(Point(bounds.start_x,bounds.start_y,zz), Vector(bounds.end_x-bounds.start_x,0.0,0.0), Vector(0.0,bounds.end_y-bounds.start_y,0.0));
+      int s = coll->NumFaces();
+      for(int i=0;i<s;i++) {
+	Point p1a = coll->FacePoint(i, 0);
+	Point p2a = coll->FacePoint(i, 1);
+	Point p3a = coll->FacePoint(i, 2);
+	Point p4a = coll->FacePoint(i, 3);
+
+	Point2d pp1,pp2;
+	Point2d pp3,pp4;
+	bool b = pl.TriangleIntersection(p1a,p2a,p3a, pp1,pp2);
+	bool b2 = pl.TriangleIntersection(p1a,p3a,p4a,pp3,pp4);
+	if (b) p1[z].push_back(pp1);
+	if (b) p2[z].push_back(pp2);
+	if (b2) p3[z].push_back(pp3);
+	if (b2) p4[z].push_back(pp4);
+      }
+    }
+
+  }
+
   void Prepare() { 
     coll->Prepare();
     p1.resize(sz);

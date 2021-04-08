@@ -5209,7 +5209,7 @@ extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_asyn
 
 void async_cb(void *data)
 {
-  ASyncCallback *cb = (ASyncCallback*)data;
+  //ASyncCallback *cb = (ASyncCallback*)data;
   
 }
 std::vector<ASyncCallback*> g_async_vec;
@@ -5241,10 +5241,21 @@ bool is_in_vec(std::string url)
   for(int i=0;i<s;i++) { if (g_extra_async_urls[i]==url) return true; }
   return false;
 }
+std::vector<std::string> g_registered_urls;
+bool is_in_registered(std::string url)
+{
+  int s = g_registered_urls.size();
+  for(int i=0;i<s;i++) if (g_registered_urls[i]==url) return true;
+  return false;
+}
 class RegisterUrl : public MainLoopItem
 {
 public:
-  RegisterUrl(std::string url, MainLoopItem *next) : next(next) { }
+  RegisterUrl(std::string url, MainLoopItem *next) : next(next) {
+    g_registered_urls.push_back(url);
+  }
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
   virtual void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e) { next->execute(e); }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
@@ -8877,6 +8888,24 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float" },
 			 { "", "0.5" },
 			 "P", "lines_api", "p_towards_normal"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::slow_calc_lights,
+			 "slow_calc_lights",
+			 { "mesh", "light_dir_x", "light_dir_y", "light_dir_z" },
+			 { "P", "float", "float", "float" },
+			 { "", "1.0", "2.0", "1.0" },
+			 "P", "polygon_api", "slow_calc_lights"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_textures,
+			 "combine_textures",
+			 { "p1", "p2" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P", "polygon_api", "combine_textures"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::remove_faces,
+			 "remove_faces",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "remove_faces"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
 			 "lod_choose",
 			 { "vec", "name" },
@@ -11228,6 +11257,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "int" },
 			 { "256", "256", "0" },
 			 "BM", "bitmap_api", "Indicator"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::lightmap_bitmap,
+			 "lightmap",
+			 { "sx", "sy", "faces", "faces2", "face", "light_dir_x", "light_dir_y", "light_dir_z" },
+			 { "int", "int", "P", "P", "int", "float", "float", "float" },
+			 { "256", "256", "", "", "0", "1.0", "2.0", "1.0" },
+			 "BM", "bitmap_api", "lightmap_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::noise_vectors,
 			 "noise_vec",
 			 { "sx", "sy" },

@@ -267,7 +267,7 @@ GLfloat mat_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
 GLfloat mat_shininess[] = { 20.0 };
 #endif
-static bool lock1=false;
+//static bool lock1=false;
 //static bool lock2=false;
 //static bool exit_process=false;
 #ifdef MUSIC

@@ -471,6 +471,11 @@ public:
   {
   public:
     FaceStructFaceCollection(FaceStruct &st) : st(st) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
     virtual int NumFaces() const { return st.numfaces; }
     virtual int NumPoints(int face) const 
     {
@@ -584,7 +589,12 @@ public:
   {
   public:
     VectorVectorBitmap(std::vector<std::vector<T2> > &vec) : vec(vec) { }
-  void Prepare() {}
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
+    void Prepare() {}
 
     virtual int SizeX() const { if (vec.size()==0) return 0; return vec[0].size(); }
     virtual int SizeY() const { return vec.size(); }

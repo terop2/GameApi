@@ -209,6 +209,10 @@ class FBOML : public MainLoopItem
 {
 public:
   FBOML(GameApi::Env &env,GameApi::EveryApi &ev, TextureID *id, float start_x, float end_x, float start_y, float end_y, float z) : env(env), ev(ev), id(id), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), z(z) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {

@@ -1,6 +1,8 @@
 
 var pretag = document.getElementById("gameapi_script");
 var data = pretag.innerHTML;
+var pretag2 = document.getElementById("gameapi_modificationdate");
+var data2 = pretag2.innerHTML.trim();
 var lines = data.split("\n");
 var lines2 = "";
 for(var i = 0;i<lines.length;i++) {
@@ -87,9 +89,9 @@ function load_emscripten()
     if (agent.indexOf("Mobile") != -1) mobile = true;
     if (agent.indexOf("Firefox") != -1) firefox = true;
 
-    var src = "web_page.js";
-    if (firefox) src="web_page_nothreads.js";
-    if (mobile) src="web_page_lowmem_nothreads.js";
+    var src = "web_page.js?"+data2;
+    if (firefox) src="web_page_nothreads.js?" + data2;
+    if (mobile) src="web_page_lowmem_nothreads.js?"+data2;
     
     var script = document.createElement("script");
     script.setAttribute("src", src);

@@ -1039,6 +1039,7 @@ bool g_has_title=false;
 std::vector<ProgressI > progress_max;
 std::vector<ProgressI > progress_val;
 std::vector<std::string> progress_label;
+void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); }
 void InstallProgress(int num, std::string label, int max=15)
 {
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
@@ -1194,9 +1195,9 @@ void ProgressBar(int num, int val, int max, std::string label)
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
 	    << " " << label ;
   std::string l = stream.str();
-#ifndef EMSCRIPTEN
-	std::cout << l.c_str() << std::flush;
-#endif
+  //#ifndef EMSCRIPTEN
+  std::cout << l.c_str() << val1 << " " << max1 << std::flush;
+	//#endif
   g_has_title = true;
   }
 
@@ -1299,7 +1300,9 @@ public:
     return new LoadUrlStream(url);
   }
 
-  
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare()
   {
     size = load_size_from_url(url);
@@ -1433,6 +1436,9 @@ public:
   {
     return new LoadStream2(vec);
   }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { pos=vec.begin(); }
+
   virtual void Prepare() {
     pos = vec.begin();
   }

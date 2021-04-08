@@ -243,6 +243,9 @@ public:
     values = 0;
   }
   ~RenderVolume() { delete values; }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   float Map(int x, int y) const {

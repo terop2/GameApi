@@ -862,6 +862,9 @@ public:
     p11 = coll->FacePoint(face, 2);
     p10 = coll->FacePoint(face, 3);
   }
+    void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() {  }
 
   virtual int SizeX() const { return sx; }
@@ -895,6 +898,9 @@ class ArrayBM : public Bitmap<Color>
 {
 public:
   ArrayBM(ColorVolumeObject *col, int sx, int sy, float ssx, float ssy, float z) : col(col) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   virtual int SizeX() const { return sx; }
@@ -1195,6 +1201,9 @@ public:
 	    Vector u_y,
 	    Vector u_z,
 	    float surface_value) : obj(obj), sx(sx), sy(sy), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), surf_val(surface_value) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   virtual int SizeX() const { return sx; }
@@ -1719,6 +1728,9 @@ public:
     : pos(pos), u_x(u_x), u_y(u_y), m_u_z(u_z), dist(dist), sx(sx), sy(sy) { 
     m_u_z/=m_u_z.Dist();
   }
+    void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   virtual int SizeX() const { return sx; }
@@ -1980,6 +1992,9 @@ class RandomVolObject : public PointsApiPoints
 {
 public:
   RandomVolObject(VolumeObject *obj, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int numpoints) : obj(obj), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), numpoints(numpoints) { }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare() { 
     Random r;
     for(int i=0;i<numpoints;i++)

@@ -2233,6 +2233,10 @@ public:
   SFOML(GameApi::EveryApi &ev, GameApi::SFO sfo, float sx, float sy) : ev(ev), sfo(sfo), sx(sx), sy(sy) {
     firsttime = true;
   }
+    void Collect(CollectVisitor &vis) {
+  }
+  void HeavyPrepare() { }
+
   GameApi::V func(int face, int point, GameApi::EveryApi &ev)
   {
     switch(point)
