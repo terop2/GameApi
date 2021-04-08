@@ -1,6 +1,8 @@
 
 #include "VectorTools.hh"
 
+
+
 template<class A, class B>
 class Function 
 {
@@ -47,18 +49,20 @@ public:
 };
 
 
-class FaceCollection
+class FaceCollection : public CollectInterface
 {
 public:
   virtual ~FaceCollection() { }
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
   virtual int NumFaces() const = 0;
   virtual int NumPoints(int face) const=0;
 
-  virtual bool has_normal() const { return false; }
+  virtual bool has_normal() const { return true; }
   virtual bool has_attrib() const { return false; }
-  virtual bool has_color() const { return false; }
-  virtual bool has_texcoord() const { return false; }
+  virtual bool has_color() const { return true; }
+  virtual bool has_texcoord() const { return true; }
   virtual bool has_skeleton() const { return false; }
   
   virtual Point FacePoint(int face, int point) const=0;
@@ -112,9 +116,10 @@ public:
 };
 
 
-class Attach
+class Attach : public CollectInterface
 {
 public:
+  virtual ~Attach() { }
   virtual void Prepare()=0;
   virtual int Attached(int face, int point) const=0;
 };
@@ -136,10 +141,12 @@ std::tuple<int,float,float> FaceCollection_PickRandomPoint_areasensitive(FaceCol
 
 
 
-class LineCollection
+class LineCollection : public CollectInterface
 {
 public:
   virtual ~LineCollection() { }
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
   virtual void Prepare() { }
   virtual int NumLines() const =0;
   virtual Point LinePoint(int line, int point) const = 0;

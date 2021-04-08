@@ -743,6 +743,9 @@ class HexagonMesh : public Mesh
 {
 public:
   HexagonMesh(int len) : len(len) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  
   virtual int NumStates() const { return 0; }
   virtual int StateNum(int frame, int face) const { return 0; }
 
@@ -791,6 +794,8 @@ public:
     u_y_1 = pb - p;
     u_y_2 = pb2 - p;    
   }
+  void Collect(CollectVisitor &vis){ }
+  void HeavyPrepare() { }
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -1021,6 +1026,7 @@ void *thread_func_sprite(void *data)
 
   return 0;
 }
+std::string MB(long i);
 
 class SpriteTexture : public MeshTextures
 {
@@ -1051,6 +1057,7 @@ public:
     if (sx<1 ||sy<1) { /*std::cout << "ERROR: SpriteTexture::GenTexture, too small bitmap ("<< sx << "," << sy << ")" << std::endl;*/ sx=1; sy=1; }
     if (sx>10000 || sy>10000) { /*std::cout << "ERROR: SpriteTexture::GenTexture, too large bitmap ("<< sx << "," << sy << ")" << std::endl;*/ sx=1; sy=1; }
     ref[num] = BufferRef::NewBuffer(sx, sy);
+    //std::cout << "SpriteTexture:" << sx << "x" << sy << "=" << MB(sx*sy*sizeof(unsigned int)) << std::endl;
 #ifdef THREADS
     int numthreads = 4;
     g_sprite_count=0;

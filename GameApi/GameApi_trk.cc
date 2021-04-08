@@ -262,6 +262,9 @@ public:
     if (!music_initialized)
       g_low->sdl_mixer->Mix_Init(0);
   }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);

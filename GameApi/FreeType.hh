@@ -49,6 +49,8 @@ class FontGlyphBitmap : public Bitmap<int>, public LineCollection
 {
 public:
   FontGlyphBitmap(GameApi::Env &e, void *priv_, std::string filename, int sx, int sy);
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   void Prepare() { }
   void load_glyph(long idx);
   void load_glyph_outline(long idx, float sx, float sy);

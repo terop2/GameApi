@@ -116,6 +116,19 @@ class BitmapPrepareCache : public Bitmap<Color>
 {
 public:
   BitmapPrepareCache(GameApi::Env &e, std::string id, Bitmap<Color> *bm) : e(e), id(id), bm(bm) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (bitmap_find_data(id)!=-1) {
+      return;
+    }
+    GameApi::BM num = add_color_bitmap2(e, bm);
+    bitmap_prepare_cache_data.push_back(std::make_pair(id,num.id));
+  }
   void Prepare()
   {
     if (bitmap_find_data(id)!=-1) {
@@ -164,7 +177,7 @@ GameApi::Env *g_e = 0;
 
 
 
-class LoadGltf
+class LoadGltf : public CollectInterface
 {
 public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
@@ -179,6 +192,14 @@ public:
     tiny.SetFsCallbacks(fs);
     //tiny.SetImageLoader(&LoadImageData, this);
     //tiny.SetImageWriter(&WriteImageData, this);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
   }
   void Prepare() {
     if (prepare_done) return;
@@ -275,7 +296,7 @@ std::string ExpandFilePath(const std::string &str, void *ptr)
   //std::cout << "ExpandFilePath " << str << std::endl;
   return str;
 }
-
+bool is_in_registered(std::string url);
 bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
@@ -285,7 +306,10 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
     std::vector<unsigned char> *vec = g_e->get_loaded_async_url(url);
-    if (!vec) { std::cout << "ReadWholeFile::async not ready:" << url << std::endl; std::cout << "Please use async_url() to register it to system" << std::endl; return false; } else { std::cout << "Warning: Please note that you might need to add async_url() for " << url << std::endl; }
+    if (!vec) { std::cout << "ReadWholeFile::async not ready:" << url << std::endl; std::cout << "Please use async_url() to register it to system" << std::endl; return false; } else {
+      if (!is_in_registered(url))
+	std::cout << "\nWarning: Please note that you might need to add async_url() for " << url << std::endl;
+    }
     int sz = vec->size();
 #ifdef EMSCRIPTEN
     sz--;
@@ -317,6 +341,19 @@ class GLTFImage : public Bitmap<Color>
 public:
   GLTFImage(LoadGltf *load, int image_index) : load(load), image_index(image_index) { 
   }
+  void Collect(CollectVisitor &vis)
+  {
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    img = 0;
+    if (image_index>=0 && image_index<int(load->model.images.size()))
+      img = &load->model.images[image_index];
+  }
+
+  
   virtual void Prepare()
   {
     load->Prepare();
@@ -394,6 +431,209 @@ class GLTFFaceCollection : public FaceCollection
 public:
   GLTFFaceCollection( LoadGltf *load, int mesh_index, int prim_index) : load(load), mesh_index(mesh_index), prim_index(prim_index) {
   }
+  void Collect(CollectVisitor &vis)
+  {
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
+      prim = &load->model.meshes[mesh_index].primitives[prim_index];
+    else { std::cout << "Prim failed!" << std::endl;  return; }
+
+    //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
+    
+    model = &load->model;
+    
+    mode = prim->mode;
+
+    //int material = prim->material;
+    //tinygltf::Material *mat = 0;
+    //if (material!=-1)
+    //  mat = &load->model.materials[material];
+
+
+    // find indices
+    indices_index = prim->indices;
+    position_index = -1;
+    normal_index = -1;
+    texcoord_index = -1;
+    color_index = -1;
+    joints_index = -1;
+    weights_index = -1;
+    if (prim->attributes.find("POSITION") != prim->attributes.end())
+      position_index = prim->attributes["POSITION"];
+    if (prim->attributes.find("NORMAL") != prim->attributes.end())
+      normal_index = prim->attributes["NORMAL"];
+    if (prim->attributes.find("TEXCOORD_0") != prim->attributes.end())
+      texcoord_index = prim->attributes["TEXCOORD_0"];
+    if (prim->attributes.find("COLOR_0") != prim->attributes.end())
+      color_index = prim->attributes["COLOR_0"];
+    if (prim->attributes.find("JOINTS_0") != prim->attributes.end())
+      joints_index = prim->attributes["JOINTS_0"];
+    if (prim->attributes.find("WEIGHTS_0") != prim->attributes.end())
+      weights_index = prim->attributes["WEIGHTS_0"];
+
+    //if (mat) {
+    //  int index = mat->pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
+    //  int index_b = mat->pbrMetallicRoughness.baseColorTexture.texCoord;
+    //  int index_n = mat->normalTexture.texCoord;
+    //  int index_o = mat->occlusionTexture.texCoord;
+    //  int index_e = mat->emissiveTexture.texCoord;
+    //  if (index!=-1)
+    //	texcoord_index = index_b;
+    //}
+
+
+    // find Accessors
+    indices_acc = 0;
+    if (indices_index!=-1)
+      indices_acc = &model->accessors[indices_index];
+
+    if (indices_acc) {
+      assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+    }
+    //std::cout << "gltf component type: " << indices_acc->componentType << std::endl;
+    //assert(indices_acc->componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
+
+
+    position_acc = 0;
+    if (position_index!=-1)
+      position_acc = &model->accessors[position_index];
+
+    normal_acc = 0;
+    if (normal_index!=-1)
+      normal_acc = &model->accessors[normal_index];
+    
+    texcoord_acc = 0;
+    if (texcoord_index!=-1)
+      texcoord_acc = &model->accessors[texcoord_index];
+
+    color_acc = 0;
+    if (color_index!=-1)
+      color_acc = &model->accessors[color_index];
+
+    joints_acc = 0;
+    if (joints_index!=-1)
+      joints_acc = &model->accessors[joints_index];
+
+
+    weights_acc = 0;
+    if (weights_index!=-1)
+      weights_acc = &model->accessors[weights_index];
+
+    
+    
+    // find BufferViews
+    indices_bv = 0;
+    if (indices_acc) {
+      int view = indices_acc->bufferView;
+      if (view!=-1)
+	indices_bv = &model->bufferViews[view];
+    }
+
+    position_bv = 0;
+    if (position_acc) {
+      int view = position_acc->bufferView;
+      if (view!=-1)
+	position_bv = &model->bufferViews[view];
+    }
+
+    normal_bv = 0;
+    if (normal_acc) {
+      int view = normal_acc->bufferView;
+      if (view!=-1)
+	normal_bv = &model->bufferViews[view];
+    }
+
+    texcoord_bv = 0;
+    if (texcoord_acc) {
+      int view = texcoord_acc->bufferView;
+      if (view!=-1)
+	texcoord_bv = &model->bufferViews[view];
+    }
+
+    color_bv = 0;
+    if (color_acc) {
+      int view = color_acc->bufferView;
+      if (view!=-1)
+	color_bv = &model->bufferViews[view];
+    }
+
+    joints_bv = 0;
+    if (joints_acc) {
+      int view = joints_acc->bufferView;
+      if (view!=-1)
+	joints_bv = &model->bufferViews[view];
+    }
+
+    weights_bv = 0;
+    if (weights_acc) {
+      int view = weights_acc->bufferView;
+      if (view!=-1)
+	weights_bv = &model->bufferViews[view];
+    }
+    
+    // find buffers
+    indices_buf = 0;
+    if (indices_bv) {
+      int buf = indices_bv->buffer;
+      if (buf!=-1) {
+	indices_buf = &model->buffers[buf];
+      }
+    }
+
+    position_buf = 0;
+    if (position_bv) {
+      int buf = position_bv->buffer;
+      if (buf!=-1) {
+	position_buf = &model->buffers[buf];
+      }
+    }
+
+    normal_buf = 0;
+    if (normal_bv) {
+      int buf = normal_bv->buffer;
+      if (buf!=-1) {
+	normal_buf = &model->buffers[buf];
+      }
+    }
+
+    texcoord_buf = 0;
+    if (texcoord_bv) {
+      int buf = texcoord_bv->buffer;
+      if (buf!=-1) {
+	texcoord_buf = &model->buffers[buf];
+      }
+    }
+
+    color_buf = 0;
+    if (color_bv) {
+      int buf = color_bv->buffer;
+      if (buf!=-1) {
+	color_buf = &model->buffers[buf];
+      }
+    }
+
+    joints_buf = 0;
+    if (joints_bv) {
+      int buf = joints_bv->buffer;
+      if (buf!=-1) {
+	joints_buf = &model->buffers[buf];
+      }
+    }
+
+    weights_buf = 0;
+    if (weights_bv) {
+      int buf = weights_bv->buffer;
+      if (buf!=-1) {
+	weights_buf = &model->buffers[buf];
+      }
+    }
+
+  }
+  
   virtual void Prepare() { 
     //std::cout << "GLTFFaceCollection::Prepare()" << std::endl;
     load->Prepare();
@@ -911,11 +1151,11 @@ public:
 	// todo, check that this branch works
 	unsigned char *pos_ptr = &weights_buf->data[0];
 	unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
-	int stride = weights_bv->byteStride;
-	if (stride==0) stride=4*sizeof(char);
-	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
-	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	//int stride = weights_bv->byteStride;
+	//if (stride==0) stride=4*sizeof(char);
+	//int comp = face*3+point;
+	//unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
+	//float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
 	//res[0] = pos_ptr4[0];
 	//res[1] = pos_ptr4[1];
@@ -1376,7 +1616,7 @@ public:
     int s = num_indexes();
     for(int i=0;i<s;i++) {
       int j = map_index(i);
-      bm.push_back(texture(i));
+      bm.push_back(texture(j));
     }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
@@ -1684,6 +1924,11 @@ class MatrixLineCollection : public LineCollection
 {
 public:
   MatrixLineCollection(Matrix m, LineCollection &coll) : m(m),coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll.Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { coll.Prepare(); }
 
   virtual int NumLines() const { return coll.NumLines(); }
@@ -1702,20 +1947,44 @@ class ScaleToGltf_li : public LineCollection
 {
 public:
   ScaleToGltf_li(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::LI li) : env(e), ev(ev), p(p), li(li) { }
-  void Prepare()
+
+  void Collect(CollectVisitor &vis)
   {
       FaceCollection *coll = find_facecoll(env,p);
-      coll->Prepare();
-      LineCollection *coll2 = find_line_array(env,li);
-      coll2->Prepare();
+      coll->Collect(vis);
+      vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+      FaceCollection *coll = find_facecoll(env,p);
       std::pair<float,Point> dim = find_mesh_scale(coll);
       GameApi::MN I4=ev.move_api.mn_empty();
       GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
       GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
       Movement *move = find_move(env,I6);
       Matrix m = move->get_whole_matrix(0.0, 1.0);
+      //g_last_resize=m;
       GameApi::M m2 = add_matrix2(env,m);
       res= ev.lines_api.li_matrix(li,m2);
+      LineCollection *coll2 = find_line_array(env,li);
+      coll2->Prepare();
+  }
+  void Prepare()
+  {
+      FaceCollection *coll = find_facecoll(env,p);
+      coll->Prepare();
+      std::pair<float,Point> dim = find_mesh_scale(coll);
+      GameApi::MN I4=ev.move_api.mn_empty();
+      GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
+      GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+      Movement *move = find_move(env,I6);
+      Matrix m = move->get_whole_matrix(0.0, 1.0);
+      //g_last_resize=m;
+      GameApi::M m2 = add_matrix2(env,m);
+      res= ev.lines_api.li_matrix(li,m2);
+      LineCollection *coll2 = find_line_array(env,li);
+      coll2->Prepare();
+
   }
   virtual int NumLines() const
   {
@@ -1753,20 +2022,43 @@ class ScaleToGLTF_p : public FaceCollection
 {
 public:
   ScaleToGLTF_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2) : env(e), ev(ev), p(p), p2(p2) { res.id=-1; }
+  void Collect(CollectVisitor &vis)
+  {
+  FaceCollection *coll = find_facecoll(env,p);
+  coll->Collect(vis);
+  FaceCollection *coll2 = find_facecoll(env,p2);
+  coll2->Collect(vis);
+  vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+  FaceCollection *coll = find_facecoll(env,p);
+    std::pair<float,Point> dim = find_mesh_scale(coll);
+    GameApi::MN I4=ev.move_api.mn_empty();
+    GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
+    GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+    Movement *move = find_move(env,I6);
+    Matrix m = move->get_whole_matrix(0.0, 1.0);
+    //g_last_resize=m;
+    GameApi::M m2 = add_matrix2(env,m);
+    res = ev.polygon_api.matrix(p2,m2);
+  
+  }
   void Prepare()
   {
   FaceCollection *coll = find_facecoll(env,p);
   coll->Prepare();
-  FaceCollection *coll2 = find_facecoll(env,p2);
-  coll2->Prepare();
   std::pair<float,Point> dim = find_mesh_scale(coll);
   GameApi::MN I4=ev.move_api.mn_empty();
   GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
   GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
   Movement *move = find_move(env,I6);
   Matrix m = move->get_whole_matrix(0.0, 1.0);
+  //g_last_resize=m;
   GameApi::M m2 = add_matrix2(env,m);
   res = ev.polygon_api.matrix(p2,m2);
+  FaceCollection *coll2 = find_facecoll(env,p2);
+  coll2->Prepare();
   }
 
   virtual int NumFaces() const {
@@ -1785,23 +2077,28 @@ public:
   }
   virtual bool has_normal() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_normal();
+    if (!coll) return false;
+    return coll->has_normal();
   }
   virtual bool has_attrib() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false;return coll->has_attrib();
+    if (!coll) return false;
+    return coll->has_attrib();
   }
   virtual bool has_color() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_color();
+    if (!coll) return false;
+    return coll->has_color();
   }
   virtual bool has_texcoord() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_texcoord();
+    if (!coll) return false;
+    return coll->has_texcoord();
   }
   virtual bool has_skeleton() const {
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return false; return coll->has_skeleton();
+    if (!coll) return false;
+    return coll->has_skeleton();
   }
   
   
@@ -1874,19 +2171,44 @@ class ScaleToGltf : public MainLoopItem
 public:
   ScaleToGltf(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml) : env(e), ev(ev), p(p), ml(ml) {res.id=-1; }
   virtual void logoexecute() { }
-  virtual void Prepare() {
-
+  void Collect(CollectVisitor &vis)
+  {
     FaceCollection *coll = find_facecoll(env,p);
-    coll->Prepare();
+    coll->Collect(vis);
     MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
+    item->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    FaceCollection *coll = find_facecoll(env,p);
     std::pair<float,Point> dim = find_mesh_scale(coll);
     
     GameApi::MN I4=ev.move_api.mn_empty();
     GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
     GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+    //Movement *mv = find_move(env,I6);
+    //g_last_resize = mv->get_whole_matrix(0.0,0.01);
     GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
     res = I7;
+
+  }
+  virtual void Prepare() {
+
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    std::pair<float,Point> dim = find_mesh_scale(coll);
+    
+    GameApi::MN I4=ev.move_api.mn_empty();
+    GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
+    GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
+    //Movement *mv = find_move(env,I6);
+    //g_last_resize = mv->get_whole_matrix(0.0,0.01);
+    GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
+    res = I7;
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -2109,11 +2431,13 @@ GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf
 
 bool is_child_node(LoadGltf *load, int node_id, int node2)
 {
+  return true;
 }
 
 
-GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int node_id )
+GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,  int node_id)
 {
+  //if (!load2) load2 = load;
   int s2 = load->model.nodes.size();
   if (!(node_id>=0 && node_id<s2))
     {
@@ -2128,7 +2452,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   bool done = false;
   GameApi::ML mesh;
   for(int i=0;i<ss;i++) {
-    if (node_id == load->model.skins[i].skeleton)
+    if (load->model.skins[i].skeleton != -1)
       {
 	int mesh_id = node->mesh;
 	mesh.id = -1;
@@ -2136,7 +2460,8 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
 	  mesh = gltf_mesh2_with_skeleton(e,ev,load, mesh_id, i);
 	  done = true;
 	}
-	break;
+	if (done)
+	  break;
       }
     
   }
@@ -2161,8 +2486,8 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   }
   if (mesh.id != -1)
     vec.push_back( mesh );
-  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
 
+ GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
   GameApi::MN mv = ev.move_api.mn_empty();
   if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
@@ -2200,7 +2525,6 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);    
   }
-  
   GameApi::ML ret = ev.move_api.move_ml(ev, array, mv, 1, 10.0 );
   return ret;
 }
@@ -2226,6 +2550,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id)
 {
+  //g_last_resize=Matrix::Identity();
   if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
     int s = load->model.meshes[mesh_id].primitives.size();
     std::vector<GameApi::ML> mls;
@@ -2233,7 +2558,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, Lo
       GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
       int mat = load->model.meshes[mesh_id].primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
-      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, "cvbnmdfghjklerty");
+      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, "cvbnmfghjklertyuiop");
       GameApi::ML ml = ev.materials_api.bind(p,mat2_anim);
       mls.push_back(ml);
     }
@@ -2345,6 +2670,20 @@ class GLTFSkeleton : public LineCollection
 {
 public:
   GLTFSkeleton(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num) : env(env), ev(ev), load(load), skin_num(skin_num) { }
+  void Collect(CollectVisitor &vis)
+  {
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    tinygltf::Skin *skin = &load->model.skins[skin_num];
+    int start_node = skin->skeleton;
+    
+    tinygltf::Node *node = &load->model.nodes[start_node];
+    recurse_node(node, Matrix::Identity(), Point(-300.0,-300.0,-300.0), Point(300.0,300.0,300.0));
+  }
+		   
   void Prepare() {
     load->Prepare();
     tinygltf::Skin *skin = &load->model.skins[skin_num];
@@ -2404,7 +2743,7 @@ public:
     //if (node->mesh != -1) {
       start_pos.push_back(pos2);
       end_pos.push_back(pos2_next);
-	  std::cout << "LINETO: " << pos2 << "->" << pos2_next << std::endl;
+      //std::cout << "LINETO: " << pos2 << "->" << pos2_next << std::endl;
 	  //}
 
     // recurse children
@@ -2426,7 +2765,7 @@ public:
 	  }*/
 	bool doit = true;
 	if (doit) {
-	  Point p = recurse_node( child_node, m, pos2, pos2_next );
+	  recurse_node( child_node, m, pos2, pos2_next );
 	}
       }
     }
@@ -2436,7 +2775,9 @@ public:
   virtual int NumLines() const { return start_pos.size(); }
   virtual Point LinePoint(int line, int point) const
   {
-    if (line>=0 && line<start_pos.size() && line<end_pos.size()) {
+    int sz = start_pos.size();
+    int sz2 = end_pos.size();
+    if (line>=0 && line<sz && line<sz2) {
       if (point==0) return start_pos[line];
       if (point==1) return end_pos[line];
     } else return Point(0.0,0.0,0.0);
@@ -2494,15 +2835,21 @@ GameApi::ARR GameApi::MainLoopApi::gltf_anim_skeleton(GameApi::EveryApi &ev, std
   return add_array(e, array);
 }
 
-class GLTFAnimation 
+class GLTFAnimation : public CollectInterface
 {
 public:
   GLTFAnimation(LoadGltf *load, int animation, int channel, int time_index) : load(load), animation(animation), channel(channel), time_index(time_index) { }
-  void Prepare() {
-    load->Prepare();
+  void Collect(CollectVisitor &vis)
+  {
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
     model = &load->model;
 
-    if (animation<0||animation>=model->animations.size()) return;
+    int sz = model->animations.size();
+    if (animation<0||animation>=sz) return;
     anim = &model->animations[animation];
     //std::cout << "Animation:" << anim->name << std::endl;
     chan = &anim->channels[channel];
@@ -2515,22 +2862,27 @@ public:
     tinygltf::Skin *s = &model->skins[skin];
     int inverseBindMatrices = s->inverseBindMatrices;
 
-    if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<model->accessors.size()) 
+    int sz2 = model->accessors.size();
+    if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) 
       bind_acc = &model->accessors[inverseBindMatrices];
-    if (bind_acc && bind_acc->bufferView>=0 && bind_acc->bufferView<model->bufferViews.size())
+    int sz3 = model->bufferViews.size();
+    if (bind_acc && bind_acc->bufferView>=0 && bind_acc->bufferView<sz3)
       bind_buf = &model->bufferViews[bind_acc->bufferView];
-    if (bind_buf && bind_buf->buffer>=0 && bind_buf->buffer<model->buffers.size())
+    int sz4 = model->buffers.size();
+    if (bind_buf && bind_buf->buffer>=0 && bind_buf->buffer<sz4)
       bind = &model->buffers[bind_buf->buffer];
     
     //std::cout << "Name:" << n->name << std::endl;
     sampler = chan->sampler;
-    if (sampler>=0 && sampler<anim->samplers.size())
+    int sz5 = anim->samplers.size();
+    if (sampler>=0 && sampler<sz5)
       samp = &anim->samplers[sampler];
     if (samp) {
       //std::cout << "AnimSampler:" << samp->interpolation << std::endl;
       int input_idx = samp->input;
       //std::cout << "input=" << input_idx << std::endl;
-      if (input_idx>=0 && input_idx<model->accessors.size())
+      int sz = model->accessors.size();
+      if (input_idx>=0 && input_idx<sz)
 	input_acc = &model->accessors[input_idx]; // keyframe times
       if (input_acc) {
 	//std::cout << "input:" << input_acc->componentType << " " << input_acc->count << " " << input_acc->type << std::endl;
@@ -2538,7 +2890,73 @@ public:
 
       int output_idx = samp->output;
       //std::cout << "output=" << output_idx << std::endl;
-      if (output_idx>=0 && output_idx<model->accessors.size())
+      int sz6 = model->accessors.size();
+      if (output_idx>=0 && output_idx<sz6)
+	output_acc = &model->accessors[output_idx]; // property value changes
+      if (output_acc) {
+	//std::cout << "output:" << output_acc->componentType << " " << output_acc->count << " " << output_acc->type << " " << std::endl;
+      }
+
+    }
+    if (input_acc) {
+      input_buf = &model->bufferViews[input_acc->bufferView];
+    }
+    if (output_acc) {
+      output_buf = &model->bufferViews[output_acc->bufferView];
+    }
+    if (input_buf)
+      input = &model->buffers[input_buf->buffer];
+    if (output_buf)
+      output = &model->buffers[output_buf->buffer];
+
+  }
+  void Prepare() {
+    load->Prepare();
+    model = &load->model;
+
+    int sz = model->animations.size();
+    if (animation<0||animation>=sz) return;
+    anim = &model->animations[animation];
+    //std::cout << "Animation:" << anim->name << std::endl;
+    chan = &anim->channels[channel];
+    int target_node = chan->target_node;
+    //std::cout << "Target node:" << target_node << std::endl;
+    //std::cout << "Target node name:" << &model->nodes[chan->target_node] << std::endl;
+    tinygltf::Node *n = &model->nodes[target_node];
+
+    int skin = n->skin;
+    tinygltf::Skin *s = &model->skins[skin];
+    int inverseBindMatrices = s->inverseBindMatrices;
+    int sz2 = model->accessors.size();
+    if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) 
+      bind_acc = &model->accessors[inverseBindMatrices];
+    int sz3 = model->bufferViews.size();
+    if (bind_acc && bind_acc->bufferView>=0 && bind_acc->bufferView<sz3)
+      bind_buf = &model->bufferViews[bind_acc->bufferView];
+    int sz4 = model->buffers.size();
+    if (bind_buf && bind_buf->buffer>=0 && bind_buf->buffer<sz4)
+      bind = &model->buffers[bind_buf->buffer];
+    
+    //std::cout << "Name:" << n->name << std::endl;
+    sampler = chan->sampler;
+    int sz5 = anim->samplers.size();
+    if (sampler>=0 && sampler<sz5)
+      samp = &anim->samplers[sampler];
+    if (samp) {
+      //std::cout << "AnimSampler:" << samp->interpolation << std::endl;
+      int input_idx = samp->input;
+      //std::cout << "input=" << input_idx << std::endl;
+      int sz = model->accessors.size();
+      if (input_idx>=0 && input_idx<sz)
+	input_acc = &model->accessors[input_idx]; // keyframe times
+      if (input_acc) {
+	//std::cout << "input:" << input_acc->componentType << " " << input_acc->count << " " << input_acc->type << std::endl;
+      }
+
+      int output_idx = samp->output;
+      //std::cout << "output=" << output_idx << std::endl;
+      int sz2 = model->accessors.size();
+      if (output_idx>=0 && output_idx<sz2)
 	output_acc = &model->accessors[output_idx]; // property value changes
       if (output_acc) {
 	//std::cout << "output:" << output_acc->componentType << " " << output_acc->count << " " << output_acc->type << " " << std::endl;
@@ -2562,7 +2980,7 @@ public:
     if (bind && bind_acc && bind_buf) { 
     unsigned char *dt = &bind->data[0];
     int offset = bind_buf->byteOffset;
-    int length = bind_buf->byteLength;
+    // int length = bind_buf->byteLength;
     unsigned char *dt2 = dt + offset;
     
     int offset2 = bind_acc->byteOffset;
@@ -2590,7 +3008,7 @@ public:
     
     unsigned char *dt = &input->data[0];
     int offset = input_buf->byteOffset;
-    int length = input_buf->byteLength;
+    //int length = input_buf->byteLength;
     unsigned char *dt2 = dt + offset;
     int stride = input_buf->byteStride;
 
@@ -2614,7 +3032,7 @@ public:
     if (input && input_buf && input_acc) {
     unsigned char *dt = &input->data[0];
     int offset = input_buf->byteOffset;
-    int length = input_buf->byteLength;
+    //int length = input_buf->byteLength;
     unsigned char *dt2 = dt + offset;
     int stride = input_buf->byteStride;
 
@@ -2647,7 +3065,7 @@ public:
     if (output && output_buf && output_acc) {
     unsigned char *dt = &output->data[0];
     int offset = output_buf->byteOffset;
-    int length = output_buf->byteLength;
+    //int length = output_buf->byteLength;
     unsigned char *dt2 = dt + offset;
     
     int offset2 = output_acc->byteOffset;
@@ -2665,7 +3083,7 @@ public:
     //assert(output_acc->type==TINYGLTF_TYPE_VEC3);
     float *arr = (float*) (dt3 + i*stride);
     return arr;
-    } else return arr2;
+    } else { std::cout << "ERROR: output" << std::endl; return arr2; }
   }
   virtual int Type(int i) const
   {
@@ -2897,6 +3315,46 @@ class GLTFJointMatrices : public MainLoopItem
 {
 public:
   GLTFJointMatrices(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 63;}
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+    next->Prepare();
+      jointmatrices_start.resize(max_joints);
+      jointmatrices_end.resize(max_joints);
+      bindmatrix.resize(max_joints);
+      start_t.resize(max_joints);
+      end_t.resize(max_joints);
+      root_env.resize(max_joints);
+      root_env_2.resize(max_joints);
+      int s = max_joints;
+      for(int i=0;i<s;i++) {
+	//GameApi::MN mn = ev.move_api.mn_empty();
+	root_env[i]= Matrix::Identity();
+	root_env_2[i]=Matrix::Identity();
+	jointmatrices_start[i]=gltf_node_default();
+	jointmatrices_end[i]=gltf_node_default();
+	bindmatrix[i]=Matrix::Identity();
+	start_t[i] = 0.0;
+	end_t[i] = 0.0;
+      }
+      firsttime = false; 
+      // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
+
+      int sz = load->model.skins.size();
+    if (skin_num>=0 && skin_num<sz) {
+      tinygltf::Skin *skin = &load->model.skins[skin_num];
+      int start_node = skin->skeleton;
+      recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+     }
+    }
+
+  }
   void Prepare()
   {
     if (firsttime) {
@@ -2923,7 +3381,8 @@ public:
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
 
     load->Prepare();
-    if (skin_num>=0 && skin_num<load->model.skins.size()) {
+    int sz2 = load->model.skins.size();
+    if (skin_num>=0 && skin_num<sz2) {
       tinygltf::Skin *skin = &load->model.skins[skin_num];
       int start_node = skin->skeleton;
       recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
@@ -2946,7 +3405,8 @@ public:
   
   Matrix recurse_node(int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
-    if (animation<0||animation>=load->model.animations.size()) return Matrix::Identity();
+    int sz = load->model.animations.size();
+    if (animation<0||animation>=sz) return Matrix::Identity();
     
     tinygltf::Node *node = &load->model.nodes[node_id];
     
@@ -2954,7 +3414,7 @@ public:
 
     TransformObject start_obj = gltf_node_transform_obj(node);
     TransformObject end_obj = start_obj;
-    TransformObject parent = start_obj;
+    //TransformObject parent = start_obj;
     
     int channel = -1;
     tinygltf::Animation *anim3 = &load->model.animations[animation];
@@ -2963,9 +3423,9 @@ public:
 
 	tinygltf::Skin *skin = &load->model.skins[skin_num];
 	int s2 = skin->joints.size();
-	bool doit = false;
+	//bool doit = false;
 	for(int j=0;j<s2;j++) {
-	  if (skin->joints[j]==node_id) { doit=true; jj=j; break; }
+	  if (skin->joints[j]==node_id) { /*doit=true;*/ jj=j; break; }
 	  }
 
 
@@ -3134,7 +3594,7 @@ public:
 	//int jj = 0;
 	if (doit) {
 
-	  Matrix p = recurse_node( child_id, 0 /*child_node*/, m,m2, 0 /*anim*/, time_index, channel );
+	  recurse_node( child_id, 0 /*child_node*/, m,m2, 0 /*anim*/, time_index, channel );
 	}
       }
     }
@@ -3188,6 +3648,22 @@ class GLTFSkeletonAnim : public LineCollection
 {
 public:
   GLTFSkeletonAnim(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index) { firsttime = true; }
+  void Collect(CollectVisitor &vis)
+  {
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+      firsttime = false; 
+    
+    tinygltf::Skin *skin = &load->model.skins[skin_num];
+    int start_node = skin->skeleton;
+    recurse_node(start_node, 0, Matrix::Identity(), 0 /*anim*/, time_index, -1);
+    }
+    
+  }
   void Prepare() {
     if (firsttime) {
       firsttime = false; 
@@ -3244,10 +3720,10 @@ public:
 
 	tinygltf::Skin *skin = &load->model.skins[skin_num];
 	int s2 = skin->joints.size();
-	bool doit = false;
-	int jj = -1;
+	//bool doit = false;
+	//int jj = -1;
 	for(int j=0;j<s2;j++) {
-	  if (skin->joints[j]==node_id) { doit=true; jj=j; break; }
+	  if (skin->joints[j]==node_id) { /*doit=true;*/ /*jj=j;*/ break; }
 	  }
 
 
@@ -3307,7 +3783,7 @@ public:
 	mv2 = ev.move_api.matrix(mv2,m_);
 	GameApi::M m2_ = add_matrix2(env, m2);
 	mv = ev.move_api.matrix(mv, m2_);
-	std::cout << "Rot:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << " " << a[3] << "->" << a2[3] << std::endl;
+	//std::cout << "Rot:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << " " << a[3] << "->" << a2[3] << std::endl;
 	//std::cout << "IRot:" << res2[0] << " " << res2[1] << " " << res2[2] << " " << res2[3] << std::endl;
       }
 
@@ -3316,7 +3792,7 @@ public:
       if (type==2 && a && a2) { // scale
 	mv2 = ev.move_api.scale2(mv2,a[0],a[1],a[2]);
 	mv = ev.move_api.scale2(mv, a2[0],a2[1],a2[2]);
-	std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
+	//std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
 
       } 
   
@@ -3363,7 +3839,7 @@ public:
 	//int jj = 0;
 	if (doit) {
 
-	  Matrix p = recurse_node( child_id, 0 /*child_node*/, m, 0 /*anim*/, time_index, channel );
+	  recurse_node( child_id, 0 /*child_node*/, m, 0 /*anim*/, time_index, channel );
 	}
       }
     }
@@ -3476,6 +3952,117 @@ class GLTF_Att : public Attach
 {
 public:
   GLTF_Att( LoadGltf *load, int mesh_index, int prim_index, int num ) : load(load), mesh_index(mesh_index), prim_index(prim_index), num(num) { }
+  void Collect(CollectVisitor &vis)
+  {
+    load->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
+      prim = &load->model.meshes[mesh_index].primitives[prim_index];
+    else
+      return;
+    
+    //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
+    
+    model = &load->model;
+    
+    mode = prim->mode;
+
+    indices_index = prim->indices;
+    indices_acc = 0;
+    if (indices_index!=-1)
+      indices_acc = &model->accessors[indices_index];
+
+    assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+
+
+        indices_bv = 0;
+    if (indices_acc) {
+      int view = indices_acc->bufferView;
+      if (view!=-1)
+	indices_bv = &model->bufferViews[view];
+    }
+
+    indices_buf = 0;
+    if (indices_bv) {
+      int buf = indices_bv->buffer;
+      if (buf!=-1) {
+	indices_buf = &model->buffers[buf];
+      }
+    }
+
+    
+    
+    joints_index = -1;
+    if (prim->attributes.find("JOINTS_0") != prim->attributes.end())
+      joints_index = prim->attributes["JOINTS_0"];
+
+    //std::cout << "joints_index: " << joints_index << std::endl;
+    
+    joints_acc = 0;
+    if (joints_index!=-1)
+      joints_acc = &model->accessors[joints_index];
+    
+    //std::cout << "joints_acc: " << joints_acc << std::endl;
+    
+    joints_bv = 0;
+    if (joints_acc) {
+      int view = joints_acc->bufferView;
+      if (view!=-1)
+	joints_bv = &model->bufferViews[view];
+    }
+    
+    //std::cout << "joints_bv: " << joints_bv << std::endl;
+
+
+    joints_buf = 0;
+    if (joints_bv) {
+      int buf = joints_bv->buffer;
+      if (buf!=-1) {
+	joints_buf = &model->buffers[buf];
+      }
+    }
+
+
+
+
+
+    weights_index = -1;
+    if (prim->attributes.find("WEIGHTS_0") != prim->attributes.end())
+      weights_index = prim->attributes["WEIGHTS_0"];
+
+    //std::cout << "joints_index: " << joints_index << std::endl;
+    
+    weights_acc = 0;
+    if (weights_index!=-1)
+      weights_acc = &model->accessors[weights_index];
+    
+    //std::cout << "joints_acc: " << joints_acc << std::endl;
+    
+    weights_bv = 0;
+    if (weights_acc) {
+      int view = weights_acc->bufferView;
+      if (view!=-1)
+	weights_bv = &model->bufferViews[view];
+    }
+    
+    //std::cout << "joints_bv: " << joints_bv << std::endl;
+
+
+    weights_buf = 0;
+    if (weights_bv) {
+      int buf = weights_bv->buffer;
+      if (buf!=-1) {
+	weights_buf = &model->buffers[buf];
+      }
+    }
+
+
+    
+    //std::cout << "joints_buf: " << joints_buf << std::endl;
+  }
   void Prepare()
   {
     
@@ -4053,7 +4640,7 @@ char key_mapping(char ch, int type);
 class GltfAnimShaderML : public MainLoopItem
 {
 public:
-  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key) { firsttime=true; }
+  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key) { firsttime=true; resize=Matrix::Identity(); }
   std::vector<int> shader_id() {
     return ml_orig->shader_id();
   }
@@ -4077,6 +4664,19 @@ public:
     }
     
     items[0]->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = items.size();
+    for(int i=0;i<s;i++) {
+      items[i]->Collect(vis);
+    }
+    ml_orig->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    resize = g_last_resize; // this communicates with resize_to_correct_size()
   }
   void Prepare() {
     int s = items.size();
@@ -4183,7 +4783,7 @@ public:
 	    std::vector<Matrix> *r = joints->root();
 	    std::vector<Matrix> *r_2 = joints->root2();
 	    sz = std::min(start_0->size(),std::min(start->size(),end->size()));
-
+	    //std::cout << sz << std::endl;
 
 
 	    
@@ -4249,9 +4849,15 @@ public:
 	    if (i<sz)
 	      bindm=bind->operator[](ii);
 	    else bindm = Matrix::Identity();
+
+	    //std::cout << bindm << std::endl;
 	    
 	    //tor[](i), end->operator[](i), time01);
-
+	    //std::cout << "START:" << std::endl;
+	    //print_transform(start_obj);
+	    //std::cout << "END:" << std::endl;
+	    //print_transform(end_obj);
+	    //std::cout << "TIME01:" << time01 << std::endl;
 	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
 	    //Matrix m;
 	    //for(int j=0;j<16;j++) m.matrix[j]=(time01)*mend.matrix[j] + (1.0-time01)*mstart.matrix[j];
@@ -4283,7 +4889,7 @@ public:
 	    
 
 	    Matrix ri = Matrix::Inverse(resize);
-
+	    //std::cout << ri << " " << resize << std::endl;c
 
 	    // std::cout << "time01: " << ii << "::" << time01 << "::" << current_start_time->operator[](i) << " " << current_end_time->operator[](i) << ":::" << m << std::endl;
 
@@ -4294,7 +4900,8 @@ public:
 	    //m=Matrix::Identity(); // TODO remove this.
 	    //std::cout << "Matrixi: " << i << "::" << m0i << std::endl;
 	    //std::cout << "Matrix: " << i << "::" << m << std::endl;
-	    vec.push_back(add_matrix2(env,ri* m0i*m*bindm *resize));
+	    //std::cout << ri << " " << m0i << " " << m << " " << bindm << " " << resize << std::endl;
+	    vec.push_back(add_matrix2(env,ri *m0i*m*bindm *resize));
 	  }
 	//std::vector<GameApi::M> mat;
 	//for(int i=0;i<64;i++)

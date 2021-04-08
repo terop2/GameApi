@@ -8,6 +8,8 @@ class FontInterfaceImpl : public FontInterface
 {
 public:
   FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy);
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int Top(long idx) const;
   virtual int SizeX(long idx) const;
   virtual int SizeY(long idx) const;

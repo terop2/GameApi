@@ -214,7 +214,72 @@ $label = get_label( $arr );
    echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $i . ",'" . $id . "')\" itemprop=\"url\">";
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
+   // BACKGROUND CHANGE
    echo "<img width=\"200\" height=\"150\" draggable=\"false\" src=\"" . $filename . "\" itemprop=\"thumbnailUrl\" crossorigin/>";
+
+
+   //echo "<canvas id=\"cnv" . $i . "\" width=\"200\" height=\"150\"></canvas>";
+  // echo "<script>\n";
+  // echo "var g_background = 0;\n";
+  // echo "function change_black_pixels_to_background(canvas, url, bg)\n";
+  // echo "{\n";
+  // echo "var filename = \"https://meshpage.org/bg\" + bg.toString() + \".png\";\n";
+  // echo "var img = new Image;\n";
+  // echo "img.src = filename;\n";
+  // echo "var canvas = document.getElementById(canvas);\n";
+   ////echo "img.onload = function() {\n";
+
+  // echo "var filename2 = \"https://meshpage.org/bg_white.png\";\n";
+  // echo "var white = new Image;\n";
+  // echo "white.src=filename2;\n";
+
+  // echo "var ctx = canvas.getContext(\"2d\");\n";
+  // echo "var image = new Image();\n";
+  // echo "image.src = url;\n";
+  // echo "image.onload = function() {\n";
+  // echo "  ctx.globalCompositeOperation = \"source-over\";\n";
+  // echo "  ctx.drawImage(image, 0,0, canvas.width, canvas.height);\n";
+  // echo "  var imgdata = ctx.getImageData(0,0,canvas.width,canvas.height);\n";
+  // echo "  ctx.globalCompositeOperation = \"source-over\";\n";
+  // echo "  ctx.drawImage(img, 0,0, canvas.width, canvas.height);\n";
+  // echo "  var imgdata2 = ctx.getImageData(0,0,canvas.width,canvas.height);\n";
+  // echo "  var dt = imgdata.data;\n";
+  // echo "  var dt2 = imgdata2.data;\n";
+  // echo " for(var y=0;y<canvas.height;y++) {\n";
+  // echo " for(var x=0;x<canvas.width;x++) {\n";
+  // echo "   if (dt[(x+y*canvas.width)*4+0]<8 && dt[(x+y*canvas.width)*4+1]<8 && dt[(x+y*canvas.width)*4+2]<8) {\n";
+  // echo "    dt[(x+y*canvas.width)*4+0] = dt2[(x+y*canvas.width)*4+0];\n";
+  // echo "    dt[(x+y*canvas.width)*4+1] = dt2[(x+y*canvas.width)*4+1];\n";
+  // echo "    dt[(x+y*canvas.width)*4+2] = dt2[(x+y*canvas.width)*4+2];\n";
+  // echo "   } } }\n";
+  // echo " ctx.putImageData(imgdata,0,0);\n";
+  // echo " delete imgdata; delete imgdata2;\n";
+////echo "  ctx.globalCompositeOperation = \"difference\";\n";
+ //  //echo "  ctx.drawImage(white, 0,0, canvas.width, canvas.height);\n";
+ //  //echo "  ctx.globalCompositeOperation = \"difference\";\n";
+ //  //echo "  ctx.putImageData(imgdata,0,0);\n";
+ //  echo "}\n";
+ //  echo "}\n";
+ //  //echo "}\n";
+
+//echo "var url3 = \"https://meshpage.org/mesh_background.php?id=" . $i . "\";\n";
+//echo "{const myHeaders3 = new Headers();\n";
+//echo "const myBRequest = new Request(url3, {\n";
+//echo "   method: 'GET',\n";
+//echo "   headers: myHeaders3,\n";
+//echo "   mode: 'same-origin',\n";
+//echo "   cache: 'default'\n";
+//echo "});\n";
+//echo "fetch(myBRequest).then((r) => {\n";
+//echo "   return r.text();\n";
+//echo "}).then((t) => {\n";
+//echo "   if (t==\"\") t=\"1\";\n";
+////echo"   console.log(\"BACKGROUND:\" + t);\n";
+//echo "change_black_pixels_to_background(\"cnv" . $i . "\", \"" . $filename . "\", parseInt(t,10));\n";
+//echo "});}\n";   
+//echo "</script>\n";
+
+   // END OF BACKGROUND CHANGE
    echo "</div>";
    echo "</div>";
    echo "<div style=\"font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
@@ -1019,6 +1084,7 @@ function choose_display_timeout(vm)
       }
 }
 
+
 function choose_display(id,label, vm,is_popstate)
 {
   if (!is_popstate) {
@@ -1032,8 +1098,24 @@ function choose_display(id,label, vm,is_popstate)
 
   var url = "https://meshpage.org/mesh_pre.php?id=" + label;
   var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label;
+  var url3 = "https://meshpage.org/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
   if (g_txt[id]===undefined) {
+
+const myHeaders3 = new Headers();
+const myBRequest = new Request(url3, {
+   method: 'GET',
+   headers: myHeaders3,
+   mode: 'same-origin',
+   cache: 'default'
+});
+fetch(myBRequest).then((r) => {
+   return r.text();
+}).then((t) => {
+   if (t=="") t="0";
+   //console.log("BACKGROUND:" + t);
+   g_background = parseInt(t,10);
+});   
 
 const myHeaders2 = new Headers();
 const myARequest = new Request(url2, {
@@ -1194,8 +1276,10 @@ function show_emscripten(str,hide,indicator,is_async)
 	   try {
 	       if (is_async) {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str],{async:true});
+		  Module.ccall('set_background_mode', null, ['number'], [g_background], {async:true});
 		  } else {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
+		  Module.ccall('set_background_mode', null, ['number'], [g_background]);
 		  }		  
 	   } catch(e) {
 	     console.log(e);
@@ -1280,6 +1364,7 @@ if ($nothreads == "yes") {
 window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
 
+
 function resize_event(event) {
   var wd = window.innerWidth;
   var hd = window.innerHeight;
@@ -1301,7 +1386,7 @@ if ($mobile=="yes") {
   echo "wd-=60;";
   echo "hd-=60;";
 } else {
-  echo "wd-=130;";
+  echo "wd-=240;";
   echo "hd-=180;";
   }
 ?>

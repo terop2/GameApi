@@ -2991,6 +2991,11 @@ class DeltaFloatBitmap : public Bitmap<float>
 {
 public:
   DeltaFloatBitmap(int sx, int sy, float time, float dx, float dy) : sx(sx), sy(sy), time(time), dx(dx), dy(dy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -3009,6 +3014,11 @@ class DeltaPosBitmap : public Bitmap<Point>
 {
 public:
   DeltaPosBitmap(int sx, int sy, Point p, Vector dx, Vector dy) : sx(sx), sy(sy), p(p), dx(dx), dy(dy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -3025,6 +3035,13 @@ class CircleHeightMap : public Bitmap<Point>
 { // both bitmaps need to be same size
 public:
   CircleHeightMap(CurveIn3d &curve, Bitmap<float> &bm, Bitmap<Point> &pos, float time) : curve(curve), bm(bm), pos(pos), time(time) { }
+  void Collect(CollectVisitor &vis)
+  {
+    bm.Collect(vis);
+    pos.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { bm.Prepare(); pos.Prepare(); }
 
   int SizeX() const { return bm.SizeX(); }
@@ -3048,6 +3065,11 @@ class TrueBitmap : public Bitmap<bool>
 {
 public:
   TrueBitmap(int sx, int sy) : sx(sx), sy(sy) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { }
 
   int SizeX() const { return sx; }
@@ -3061,6 +3083,12 @@ class HeightMapPolygons : public BoxableFaceCollection
 {
 public:
   HeightMapPolygons(Bitmap<Point> &pos) : tr(pos.SizeX(),pos.SizeY()), faces(tr, pos) { }
+    void Collect(CollectVisitor &vis)
+  {
+    faces.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { faces.Prepare(); }
   virtual int NumFaces() const { return faces.NumFaces(); }
   virtual int NumPoints(int face) const { return faces.NumPoints(face); }
@@ -3082,6 +3110,12 @@ class SumBitmap : public Bitmap<float>
 {
 public:
   SumBitmap(Bitmap<float> &a1, Bitmap<float> &a2) : a1(a1), a2(a2) { }
+  void Collect(CollectVisitor &vis)
+  {
+    a1.Collect(vis); a2.Collect(vis);
+  }
+  void HeavyPrepare() { }
+
   void Prepare() { a1.Prepare(); a2.Prepare(); }
   int SizeX() const { return a1.SizeX(); }
   int SizeY() const { return a1.SizeY(); }
@@ -4539,8 +4573,10 @@ void OutlineFaces::Prepare()
   }
   Point OutlineFaces::LinePoint(int line, int point) const
   {
-    if (line<0 ||line>=counts.size()) return Point(0.0,0.0,0.0);
-    if (line<0 ||line>=counts2.size()) return Point(0.0,0.0,0.0);
+    int sz = counts.size();
+    int sz2 = counts2.size();
+    if (line<0 ||line>=sz) return Point(0.0,0.0,0.0);
+    if (line<0 ||line>=sz2) return Point(0.0,0.0,0.0);
     //int num = c.NumFaces();
     int count = 0;
     int i=0;

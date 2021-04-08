@@ -671,6 +671,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z);
   IMPORT BM circular_gradient(int sx, int sy, unsigned int center_color, unsigned int edge_color);
   IMPORT BM script_bitmap(std::string url, int sx, int sy);
   IMPORT ML grid_ml(EveryApi &ev, ML next, IBM map, float y, float pos_x, float pos_z, float x_vec_x, float x_vec_z, float z_vec_x, float z_vec_z, int start_x, int start_z, float frame_inc);
@@ -2263,7 +2264,9 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
-  
+  P remove_faces(P p);
+  P combine_textures(P p1, P p2);
+  P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);
   MS identity_pose(int li_size);
   ARR gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach);
   

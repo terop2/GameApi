@@ -9,6 +9,9 @@ public:
 		  float radius, int num_samples, int num_waves)
     : w(w), start_angle(start_angle), end_angle(end_angle),
       radius(radius), num_samples(num_samples), num_waves(num_waves) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { }
   virtual int NumFaces() const { return num_samples*num_waves; }
   virtual int NumPoints(int face) const

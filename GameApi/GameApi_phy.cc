@@ -262,6 +262,8 @@ class PointsPhysics : public PointsApiPoints
 {
 public:
   PointsPhysics(PhysicsNode *node) : node(node) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   int NumPoints() const { return node->NumAnchors(); }
   Point Pos(int i) const { return node->AnchorPoint(i); }
   unsigned int Color(int i) const { return 0xffffffff; }
@@ -280,6 +282,8 @@ class PhysicsAction : public PointsApiPoints
 public:
   PhysicsAction(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::PH phy) : e(e), ev(ev), phy(phy) { firsttime = true; points2.id=-1; }
   // TODO, keyboard handling needed in physics area too
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) {
     if (firsttime) {

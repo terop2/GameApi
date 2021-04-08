@@ -55,6 +55,10 @@ class GlyphChooser : public Bitmap<int>
 {
 public:
   GlyphChooser(long idx, FontGlyphBitmap &bm) : idx(idx),bm(bm) { }
+  void Collect(CollectVisitor &vis) {
+    bm.Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
   int SizeX() const {
     bm.load_glyph(idx);
@@ -277,6 +281,9 @@ public:
     vas = va_vec;
     sh.id = -1;
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
   void Prepare() {
   }
   virtual void execute(MainLoopEnv &e)
@@ -328,6 +335,30 @@ class DynChar_fb : public FrameBufferLoop
 {
 public:
   DynChar_fb(GameApi::Env &e, GameApi::EveryApi &ev, Fetcher<int> *fetch, std::vector<GameApi::BM> vec, int x, int y, int fmt, Movement *move) : e(e), ev(ev), fetch(fetch), vec(vec), x(x), y(y), fmt(fmt?D_RGBA8888:D_Mono1), move(move) {
+  }
+  void Collect(CollectVisitor &vis) {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	BitmapHandle *handle = find_bitmap(e, vec[i]);
+	::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	b2->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	BitmapHandle *handle = find_bitmap(e, vec[i]);
+	::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	//b2->Prepare();
+	SourceBitmap src_bm(fmt,0);
+	src.push_back(src_bm);
+	BitmapToSourceBitmap(*b2, src[i], fmt);
+
+      }
+
   }
   virtual void Prepare()
   {
@@ -400,6 +431,8 @@ public:
     vas = va_vec;
     sh.id = -1;
   }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   void Prepare() {
   }
   virtual void execute(MainLoopEnv &e)
@@ -1495,6 +1528,11 @@ class MLChooser : public MainLoopItem
 {
 public:
   MLChooser(std::vector<MainLoopItem*> vec, Fetcher<int> &f) : vec(vec),f(f) { firsttime = true; }
+  void Collect(CollectVisitor &vis) {
+    int s = vec.size();
+    for(int i=0;i<s;i++) { vec[i]->Collect(vis); }
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++) { vec[i]->Prepare(); }

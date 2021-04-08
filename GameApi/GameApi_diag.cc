@@ -9,6 +9,12 @@ public:
   BarChart(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per) : env(env), ev(ev), url(url), homepage(homepage), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), per(per) { 
     result.id = -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
@@ -107,7 +113,13 @@ class BarChart2 : public FaceCollection
 public:
   BarChart2(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per_x, float per_y) : env(env), ev(ev), url(url), homepage(homepage), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), per_x(per_x), per_y(per_y) {
     result.id = -1;
-  } 
+  }
+    void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
@@ -228,6 +240,12 @@ class PieChart : public LineCollection
 {
 public:
   PieChart(Point center, float start_angle, float end_angle, float radius, int numsteps) : center(center), start_angle(start_angle), end_angle(end_angle), radius(radius), numsteps(numsteps) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
   virtual void Prepare() { 
     Point p1 = center + Vector(radius*cos(start_angle), radius*sin(start_angle), 0.0);
     Point p2 = center + Vector(radius*cos(end_angle), radius*sin(end_angle), 0.0);
@@ -353,6 +371,11 @@ public:
   {
     result.id = -1;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
 
   void Prepare() {
 #ifndef EMSCRIPTEN

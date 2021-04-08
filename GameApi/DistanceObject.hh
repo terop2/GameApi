@@ -165,6 +165,7 @@ private:
 class Separate
 {
 public:
+  virtual ~Separate() { }
   virtual float x_sep(Point p) const=0;
   virtual float y_sep(Point p) const=0;
   virtual float dist_sep(Point p) const=0;
@@ -262,6 +263,8 @@ public:
   }
   int X_Count() const { return (x_range_end-x_range_start)/x_step; }
   int Y_Count() const { return (y_range_end-y_range_start)/y_step; }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int NumFaces() const
   {
     return X_Count()*Y_Count();

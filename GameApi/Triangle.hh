@@ -254,6 +254,10 @@ class FaceCollectionFromTriArray : public SingleForwardFaceCollection
 {
 public:
   FaceCollectionFromTriArray(const TriArray &arr) : arr(arr) { } 
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   int NumFaces() const
   {
     //std::cout << "NUMFACES: " << arr.Size() << std::endl;

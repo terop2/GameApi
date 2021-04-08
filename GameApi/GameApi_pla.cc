@@ -394,6 +394,10 @@ class PlanePolygon : public SingleForwardFaceCollection
 {
 public:
   PlanePolygon(PlanePoints2d *plane, Point pos, Vector u_x, Vector u_y) : plane(plane), pos(pos), u_x(u_x), u_y(u_y) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
   virtual int NumFaces() const
   {
     int s = plane->Size();
@@ -486,6 +490,8 @@ class PlanePolygonLines : public SingleForwardFaceCollection
 {
 public:
   PlanePolygonLines(PlanePoints2d *plane, Point pos, Vector u_x, Vector u_y, Vector u_z, float z_mult) : plane(plane), pos(pos), u_x(u_x), u_y(u_y), u_z(u_z), z_mult(z_mult) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
   virtual int NumFaces() const
   {
     int s = plane->Size();
@@ -660,6 +666,8 @@ class ColorContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
   ColorContinuousBitmap(ContinuousBitmap<bool> &bm, unsigned int color_0, unsigned int color_1) : bm(bm), color_0(color_0), color_1(color_1) { }
+  void Collect(CollectVisitor &vis) { bm.Collect(vis); }
+  void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
   float SizeX() const { return bm.SizeX(); }
   float SizeY() const { return bm.SizeY(); }

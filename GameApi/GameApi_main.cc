@@ -1187,6 +1187,11 @@ class SeqML : public MainLoopItem
 {
 public:
   SeqML(std::vector<MainLoopItem*> vec, float time) : vec(vec), time(time) { num2 = -1; firsttime = true; }
+  void Collect(CollectVisitor &vis) {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
@@ -1251,6 +1256,10 @@ public:
     vec.push_back(ml2);
     num2 = -1; firsttime = true;
   }
+  void Collect(CollectVisitor &vis) {
+    vec[1]->Collect(vis); vec[0]->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { vec[1]->Prepare(); vec[0]->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -1308,6 +1317,9 @@ public:
   {
     curr->handle_event(e);
   }
+  void Collect(CollectVisitor &vis) { curr->Collect(vis); }
+  void HeavyPrepare() { }
+
   void Prepare() { curr->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -1372,6 +1384,9 @@ public:
     old_collision_detected=false; 
     current_item = false; 
   }
+  void Collect(CollectVisitor &vis) { curr->Collect(vis); end->Collect(vis); }
+  void HeavyPrepare() { }
+
   void Prepare() { curr->Prepare(); end->Prepare(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -1453,6 +1468,9 @@ public:
     }
 	   
   }
+  void Collect(CollectVisitor &vis) { end->Collect(vis); curr->Collect(vis); }
+  void HeavyPrepare() { }
+
   void Prepare() { end->Prepare(); curr->Prepare(); }
   void execute(MainLoopEnv &e)
   {
@@ -1514,6 +1532,9 @@ public:
     : ev(ev), player_size(player_size), enemy_size(enemy_size), normal_game_screen(normal_game_screen), gameover_screen(gameover_screen)
   {
   }
+  void Collect(CollectVisitor &vis) { normal_game_screen->Collect(vis); gameover_screen->Collect(vis); }
+  void HeavyPrepare() { }
+
   void Prepare() { normal_game_screen->Prepare(); gameover_screen->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -1598,6 +1619,9 @@ class JoyPrinter : public MainLoopItem
 {
 public:
   JoyPrinter(MainLoopItem *item) : item(item) { }
+  void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  void HeavyPrepare() { }
+
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -1679,6 +1703,22 @@ class PrintStats : public MainLoopItem
 {
 public:
   PrintStats(FaceCollection *coll) : coll(coll) { }
+  void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    std::cout << "Model statistics:" << std::endl;
+    std::cout << "NumFaces()=" << coll->NumFaces() << std::endl;
+
+    std::cout << "NumObjects()=" << coll->NumObjects() << std::endl;
+    int s = coll->NumObjects();
+    for(int i=0;i<s;i++) {
+      std::pair<int,int> p = coll->GetObject(i);
+      std::cout << "Obj #" << i << ":" << p.first << ".." << p.second << std::endl;
+    }
+
+  }
   void Prepare() {
     coll->Prepare();
     std::cout << "Model statistics:" << std::endl;
@@ -1787,6 +1827,12 @@ class ArrayMainLoop : public MainLoopItem
 {
 public:
   ArrayMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<MainLoopItem*> vec) : env(env), ev(ev), vec(vec) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);    
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
@@ -1856,6 +1902,15 @@ class FrameBufferArrayMainLoop : public FrameBufferLoop
 {
 public:
   FrameBufferArrayMainLoop(std::vector<FrameBufferLoop*> vec) : vec(vec) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Collect(vis);
+      }
+  }
+  void HeavyPrepare() { }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++)
@@ -2237,6 +2292,8 @@ public:
   SongML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, MainLoopItem *next, std::string homepage) : env(env), ev(ev), url(url), next(next), homepage(homepage) {
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
   void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -2304,6 +2361,8 @@ class KeyboardToggle : public MainLoopItem
 {
 public:
   KeyboardToggle(MainLoopItem *item, MainLoopItem *item2, int key) : key(key), item(item), item2(item2) { hold=false; toggle=false; firsttime=true; }
+  void Collect(CollectVisitor &vis) { item->Collect(vis); item2->Collect(vis); }
+  void HeavyPrepare() { }
   void Prepare() { item->Prepare(); item2->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -2336,6 +2395,10 @@ class PreparePTS : public MainLoopItem
 {
 public:
   PreparePTS(MainLoopItem *item, PointsApiPoints *points) : item(item), points(points), firsttime(true) {}
+  void Collect(CollectVisitor &vis) {
+    item->Collect(vis); points->Collect(vis);
+  }
+  void HeavyPrepare() { }
   void Prepare() { item->Prepare(); points->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -2367,6 +2430,8 @@ class DepthFunc : public MainLoopItem
 {
 public:
   DepthFunc(MainLoopItem *next, int i) : next(next),i(i) {}
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
   OpenglLowApi *ogl = g_low->ogl;
@@ -2400,6 +2465,9 @@ class BlendFunc : public MainLoopItem
 {
 public:
   BlendFunc(MainLoopItem *next, int i, int i2) : next(next),i(i),i2(i2) {}
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
+
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
   OpenglLowApi *ogl = g_low->ogl;
@@ -2496,6 +2564,8 @@ class RecordKeyPresses : public MainLoopItem
 public:
   RecordKeyPresses(MainLoopItem *item, std::string output_filename) : item(item), output_filename(output_filename) { }
 
+  void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  void HeavyPrepare() { }
   void Prepare() {item->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
     time = e.time;
@@ -2545,6 +2615,9 @@ class PlaybackKeyPresses : public MainLoopItem
 {
 public:
   PlaybackKeyPresses(GameApi::Env &ee, MainLoopItem *item, std::string url, std::string homepageurl) : ee(ee), item(item), url(url), homepageurl(homepageurl) { current_item = 0; firsttime = true; }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { Prepare(); }
+
   void Prepare() {
 #ifndef EMSCRIPTEN
     ee.async_load_url(url, homepageurl);
@@ -2613,6 +2686,17 @@ class DynamicMainLoop : public MainLoopItem
 {
 public:
   DynamicMainLoop(DynMainLoop *d) : d(d) { }
+  void Collect(CollectVisitor &vis) {
+
+    int s = d->num();
+    for(int i=0;i<s;i++) {
+      MainLoopItem *item = d->get_mainloop(i);
+      item->Collect(vis);
+    }
+
+  }
+  void HeavyPrepare() { }
+
   virtual void Prepare() {
     int s = d->num();
     for(int i=0;i<s;i++) {
@@ -2667,6 +2751,11 @@ public:
     button_state[2] = false;
     button_state[3] = false;
   }
+  void Collect(CollectVisitor &vis)
+  {
+    item->Collect(vis);
+  }
+  void HeavyPrepare() { }
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -2757,6 +2846,8 @@ class DisableZBuffer : public MainLoopItem
 {
 public:
   DisableZBuffer(MainLoopItem *item) : item(item) { }
+  void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  void HeavyPrepare() { }
   virtual void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
     OpenglLowApi *ogl = g_low->ogl;
