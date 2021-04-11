@@ -6008,6 +6008,32 @@ void save_raw_bitmap(GameApi::Env &e, GameApi::BM bm, std::string filename)
   save->Prepare();
 }
 
+class SaveRawBitmapML : public MainLoopItem
+{
+public:
+  SaveRawBitmapML(Bitmap<Color> *bm, std::string filename) : bm(bm), filename(filename) { }
+  void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() { Prepare(); }
+
+  void Prepare() {
+    SaveRawBitmap *save = new SaveRawBitmap(*bm, filename);
+    save->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+private:
+  Bitmap<Color> *bm;
+  std::string filename;
+  
+};
+GameApi::ML GameApi::BitmapApi::save_raw(BM bm, std::string filename)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  Bitmap<Color> *bitmap = find_color_bitmap(handle);
+  return add_main_loop(e, new SaveRawBitmapML(bitmap, filename));
+}
 
 class LoadRawBitmap : public Bitmap<Color>
 {

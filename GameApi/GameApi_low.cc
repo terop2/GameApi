@@ -150,6 +150,7 @@
 
 
 #undef Mix_PlayChannel
+#undef Mix_HaltChannel
 
 std::string to_str(int val)
 {
@@ -1237,6 +1238,12 @@ public:
   {
 #ifdef USE_MIX
     return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)(mix_chunk->ptr), val,-1);
+#endif
+  }
+  virtual void Mix_HaltChannel(int channel)
+  {
+#ifdef USE_MIX
+    ::Mix_HaltChannel(channel);
 #endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)

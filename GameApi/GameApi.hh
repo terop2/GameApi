@@ -45,7 +45,7 @@ using std::placeholders::_9;
   name(const name &i) : id(i.id) { } \
   name() : id(-1) { } \
   name(int i) : id(i) { }\
-  name* clone() const { return new name(id); }\
+  name* clone() const { if (id!=-1) return new name(id); return 0; }	\
   };
   MAC(HML)
   MAC(UV)
@@ -301,6 +301,7 @@ public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
   //ML gltf_joint_matrices(EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, ML next);
+  ML choose_ml_from_status(ML connect, ML download, ML prepare);
   ML key_ml(std::vector<ML> vec, std::string keys);
   ML async_url(std::string url, ML ml);
   ARR gltf_anim_skeleton(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int channelk, int num_keyframes);
@@ -671,6 +672,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML save_raw(BM bm, std::string filename);
   IMPORT BM lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z);
   IMPORT BM circular_gradient(int sx, int sy, unsigned int center_color, unsigned int edge_color);
   IMPORT BM script_bitmap(std::string url, int sx, int sy);
@@ -2795,6 +2797,8 @@ public:
   IMPORT void play_song(EveryApi &ev, TBUF buf, WAV samples, int framenum, int speed);
   IMPORT void play_mp3(std::string filename);
   IMPORT void play_ogg(std::string filename);
+  IMPORT void play_ogg(const std::vector<unsigned char> &vec);
+  IMPORT void stop_music_playing();
   IMPORT ML play_wave_via_keypress(EveryApi &ev, ML ml, std::string url, int key);
 private:
   Env &e;

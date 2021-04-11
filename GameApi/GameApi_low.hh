@@ -223,6 +223,7 @@ enum {
 #undef glTexImage2D
 #undef glTexSubImage2D
 #undef Mix_PlayChannel
+#undef Mix_HaltChannel
 #undef Mix_GetError
 #undef emscripten_set_touchend_callback
 #undef emscripten_set_click_callback
@@ -666,7 +667,7 @@ public:
   virtual int Mix_GetNumMusicDecoders()=0;
   virtual void Mix_GetMusicDecoder(int i)=0;
   virtual void Mix_AllocateChannels(int i)=0;
-
+  virtual void Mix_HaltChannel(int channel)=0;
 };
 
 class SDLImageLowApi

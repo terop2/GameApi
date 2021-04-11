@@ -477,9 +477,11 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   
 #ifdef EMSCRIPTEN
   if (tmp!=333) {
+#if 0
     std::string url_store = stripprefix(url_only);
     //std::cout << "Store:" << url_store << std::endl;
     emscripten_idb_async_store("gameapi", url_store.c_str(), &load_url_buffers_async[url_only]->operator[](0), load_url_buffers_async[url_only]->size(), 0, &dummy_cb, &dummy_cb);
+#endif
   }
 #endif
   { // progressbar
@@ -715,7 +717,7 @@ void idb_onerror_async_cb(void *ptr)
 
 #ifdef EMSCRIPTEN
 void fetch_download_succeed(emscripten_fetch_t *fetch) {
-  std::cout << "Fetch success: " << fetch->numBytes << std::endl;
+  //std::cout << "Fetch success: " << fetch->numBytes << std::endl;
   //std::cout << "Fetch data:" << (unsigned char*)fetch->data << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
@@ -723,13 +725,61 @@ void fetch_download_succeed(emscripten_fetch_t *fetch) {
   emscripten_fetch_close(fetch);
 }
 void fetch_download_failed(emscripten_fetch_t *fetch) {
-  std::cout << "Fetch failed: " << fetch->numBytes << std::endl;
+  //std::cout << "Fetch failed: " << fetch->numBytes << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
   onerror_async_cb(333, (void*)url, 0, "fetch failed!");
   emscripten_fetch_close(fetch);
 }
+int g_logo_status = 0;
 void fetch_download_progress(emscripten_fetch_t *fetch) {
+  //std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes << std::endl;
+  int val = 7;
+  if (fetch->totalBytes) {
+    val = fetch->dataOffset * 15 / fetch->totalBytes;
+  } else {
+
+    size_t sz = emscripten_fetch_get_response_headers_length(fetch);
+    char *buf = new char[sz+1];
+    size_t sz2 = emscripten_fetch_get_response_headers(fetch, buf, sz+1);
+    //std::cout << "HEADERS:" << buf << std::endl;
+
+    char**headers = emscripten_fetch_unpack_response_headers(buf);
+    char**ptr = headers;
+    char *res = 0;
+    for(;*ptr;ptr+=2) {
+      //std::cout << ptr[0] << "::" << ptr[1] << std::endl;
+      if (strcmp(ptr[0],"content-length")==0) res = ptr[1];
+    }
+    int total = 0;
+    if (res) {
+      std::stringstream ss(res);
+      ss >> total;
+    }
+    //std::cout << "GOT CONTENT LENGTH: " << total << std::endl;
+    if (total != 0)
+      val = 15*(fetch->dataOffset + fetch->numBytes)/total;
+  }
+  //std::cout << "logo:" << val << std::endl;
+  if (g_logo_status==0)
+    g_logo_status = 1;
+  
+  LoadData *data =(LoadData*)fetch->userData;
+  const char *url = data->buf3;
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,val,15,url_only2);
+  }
+
+  
 }
 #endif
 
@@ -834,6 +884,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
+  std::cout << "InstallProgress:" << sum << " " << url << std::endl;
   if (load_url_buffers_async[url2]) { 
     InstallProgress(sum,url + " (cached)",15);
   } else {
@@ -921,9 +972,11 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
     attr.userData = (void*)ld;
-    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY|256;
     attr.onsuccess = fetch_download_succeed;
     attr.onerror = fetch_download_failed;
+    attr.onprogress = fetch_download_progress;
+    //attr.onreadystatechange = fetch_headers_received;
     attr.requestData = (char*)body_buf;
     attr.requestDataSize = body.size()+1;
     attr.requestHeaders = headers;
@@ -1045,7 +1098,7 @@ void InstallProgress(int num, std::string label, int max=15)
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
-  ProgressI p; p.num = num;
+  ProgressI p; p.num = num; p.value=0; p.ticks=0;
   //p.ticks = g_low->sdl->SDL_GetTicks();
   //g_last_tick = p.ticks;
   int s = progress_max.size();
@@ -1080,22 +1133,44 @@ void SetTicks(int num, int ticks) {
   }
 }
 
+int progress_remove_list[] = { 434, 555 };
+
+float progress_val_mult[] = { 0.1, 0.3, 0.5, 0.8, 1.0 };
+
 int FindProgressVal()
 {
   int s = progress_val.size();
   int sum = 0;
-  for(int i=0;i<s;i++)
-    sum+=progress_val[i].value;
+  for(int i=0;i<s;i++) {
+    bool skip =false;
+    for(int j=0;j<sizeof(progress_remove_list)/sizeof(int);j++)
+      if (progress_val[i].num==progress_remove_list[j]) skip=true;
+    if (!skip) {
+      float mult = 1.0;
+      if (s<sizeof(progress_val_mult)/sizeof(progress_val_mult[0]))
+	mult = progress_val_mult[s];
+      sum+=progress_val[i].value*mult;
+      //std::cout << "ProgressVal:" << progress_val[i].num << " " << progress_val[i].value << " " << progress_label[i] << std::endl;
+    }
+  }
   return sum;
 }
+int g_async_load_count = 0;
 int FindProgressMax()
 {
   int s = progress_max.size();
   int sum = 0;
   for(int i=0;i<s;i++)
     {
+    bool skip =false;
+    for(int j=0;j<sizeof(progress_remove_list)/sizeof(int);j++)
+      if (progress_val[i].num==progress_remove_list[j]) skip=true;
+    if (!skip) {
       sum+=progress_max[i].value;
+      //std::cout << "ProgressMax:" << progress_val[i].num << " " << progress_max[i].value << " " << progress_label[i] << std::endl;
     }
+    }
+  if (s<4) { sum+=15*(4-s); }
   return sum;
 }
 void FinishProgress()
@@ -1115,7 +1190,7 @@ void FinishProgress()
 }
 void ProgressBar(int num, int val, int max, std::string label)
 {
-  //std::cout << "Progress: " << num << " " << val << " " << label << " " << max << std::endl;
+  std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
@@ -1124,17 +1199,27 @@ void ProgressBar(int num, int val, int max, std::string label)
   //std::cout << "P1" << std::endl;
   int val_value = 0;
   int max_value = 0;
+  bool done = false;
   {
-  int s = progress_val.size();
-  for(int i=0;i<s;i++)
-    {
-      int num2 = progress_val[i].num;
-      val_value+=num2;
-      if (num2==num) {
-	progress_val[i].value = val;
-	val_index=i;
+    int s = progress_val.size();
+    for(int i=0;i<s;i++)
+      {
+	int num2 = progress_val[i].num;
+	val_value+=num2;
+	if (num2==num) {
+	  progress_val[i].value = val;
+	  val_index=i;
+	  done = true;
+	}
       }
-    }
+  }
+  if (!done) {
+      ProgressI p; p.num = num; p.value=0; p.ticks=0;
+      p.value = val;
+      progress_max.push_back(p);
+      p.value = max;
+      progress_val.push_back(p);
+      progress_label.push_back(label);
   }
   //std::cout << "P2" << std::endl;
 
@@ -1195,9 +1280,9 @@ void ProgressBar(int num, int val, int max, std::string label)
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
 	    << " " << label ;
   std::string l = stream.str();
-  //#ifndef EMSCRIPTEN
-  std::cout << l.c_str() << val1 << " " << max1 << std::flush;
-	//#endif
+#ifndef EMSCRIPTEN
+  std::cout << l.c_str() << std::flush;
+#endif
   g_has_title = true;
   }
 
