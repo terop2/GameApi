@@ -216,7 +216,7 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   std::copy(filename.begin(), filename.end(), ptr);
 #ifndef EMSCRIPTEN
   Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(ptr);
-  g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
+  g_low->sdl_mixer->Mix_Playusic(mus, 1);
 #else
   //std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
   //char ch;
@@ -227,6 +227,31 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
 #endif
+}
+void GameApi::TrackerApi::play_ogg(const std::vector<unsigned char> &data)
+{
+    g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_OGG);
+  g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
+#ifndef EMSCRIPTEN
+  int c = g_low->sdl_mixer->Mix_GetNumMusicDecoders();
+  for(int i=0;i<c;i++)
+    {
+      g_low->sdl_mixer->Mix_GetMusicDecoder(i);
+    }
+#endif
+  //std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
+  //char ch;
+  //std::vector<unsigned char> s;
+  //while(ss.get(ch)) { s.push_back((unsigned char)ch); }
+  Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromMem((void*)&data[0], data.size());
+  //Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromFile(filename.c_str(),"rb");
+  Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
+  g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
+
+}
+void GameApi::TrackerApi::stop_music_playing()
+{
+  g_low->sdl_mixer->Mix_HaltChannel(-1);
 }
 
 int music_initialized = 0;

@@ -2105,37 +2105,150 @@ bool is_mobile(GameApi::EveryApi &ev);
 
 GameApi::BM load_raw_bitmap(GameApi::Env &e, std::string filename);
 
+extern int g_logo_status;
+
+class LogoStatus : public MainLoopItem
+{
+public:
+  LogoStatus(MainLoopItem *connect, MainLoopItem *download, MainLoopItem *prepare) : connect(connect), download(download), prepare(prepare) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    connect->Collect(vis);
+    download->Collect(vis);
+    prepare->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void Prepare()
+  {
+    connect->Prepare();
+    download->Prepare();
+    prepare->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (g_logo_status==0) connect->execute(e);
+    if (g_logo_status==1) download->execute(e);
+    if (g_logo_status==2) prepare->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  MainLoopItem *connect, *download, *prepare;
+  
+};
+
+GameApi::ML GameApi::MainLoopApi::choose_ml_from_status(ML connect, ML download, ML prepare)
+{
+  MainLoopItem *connect2 = find_main_loop(e,connect);
+  MainLoopItem *download2 = find_main_loop(e,download);
+  MainLoopItem *prepare2 = find_main_loop(e,prepare);
+  MainLoopItem *res = new LogoStatus(connect2, download2, prepare2);
+  return add_main_loop(e,res);
+}
+
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
   //BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
-  BM I7 = load_raw_bitmap(e, "web_page/logo.raw");
-  BM I7a = ev.bitmap_api.flip_y(I7);
-  //BM I7b = ev.mainloop_api.flip_bitmap_if_mobile(ev,I7a);
-  //P I8=ev.polygon_api.color_map(I7,500,300,0);
-  //P I9=ev.polygon_api.rotatex(I8,3.14159);
-  //P I10=ev.polygon_api.scale(I9,2,2,2);
-  //P I11=ev.polygon_api.translate(I10,-400,200,0);
-  //VA I12=ev.polygon_api.create_vertex_array(I11,true);
-  //ML I13=ev.polygon_api.render_vertex_array_ml(ev,I12);
-  //VA va = ev.sprite_api.create_vertex_array(I7a);
-  ML I17;
+  int x = 0;
+  int y = 0;
+  int width = 500;
+  int height = 300;
+  
+  BM I7A = load_raw_bitmap(e, "web_page/logo-connecting.raw");
+  BM I7aA = I7A; //ev.bitmap_api.flip_x(I7A);
+  ML I17A;
   {
+
+BM I2=ev.bitmap_api.scale_bitmap(ev,I7aA,500,300);
+ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+MN I4=ev.move_api.mn_empty();
+MN I5=ev.move_api.scale2(I4,1,1,1);
+MN I6=ev.move_api.trans2(I5,220-40-15,250-20,0);
+ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
+ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+
+    
+//    ML I19=ev.sprite_api.vertex_array_render(ev,I18);
+
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-    P I1=ev.polygon_api.quad_z(0,500,/*is_mobile(ev)?225:*/0,/*is_mobile(ev)?525:*/300,0);
-MT I3=ev.materials_api.texture(ev,I7a,1.0);
+//    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
+//MT I3=ev.materials_api.texture(ev,I7aA,1.0);
 //MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
-ML I5=ev.materials_api.bind(I1,I3);
-MN I6=ev.move_api.mn_empty();
-MN I7=ev.move_api.scale2(I6,4,4,4);
-MN I8=ev.move_api.trans2(I7,-800,400,0);
-MN I9=ev.move_api.rotatey(I8,-1.59);
-MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
-// MN I10 = ev.move_api.rotatey(I9,-1.59);
-MN I11=ev.move_api.trans2(I10,-800,-1400,0);
-I17=ev.move_api.move_ml(ev,I5,I11,1,10.0);
+//ML I5=ev.materials_api.bind(I1,I3);
+//MN I6=ev.move_api.mn_empty();
+//MN I7=ev.move_api.scale2(I6,4,4,4);
+//MN I8=ev.move_api.trans2(I7,-800,400,0);
+//MN I9=ev.move_api.rotatey(I8,-1.59);
+//MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
+//MN I10 = ev.move_api.rotatey(I9,1.59);
+//MN I11=ev.move_api.trans2(I10,-800,-1400,0);
+ I17A=I19; //ev.move_api.move_ml(ev,I5,I11,1,10.0);
   }
-  /*
+
+
+  BM I7B = load_raw_bitmap(e, "web_page/logo-downloading.raw");
+  BM I7aB = I7B; //ev.bitmap_api.flip_x(I7B);
+  ML I17B;
+  {
+    
+BM I2=ev.bitmap_api.scale_bitmap(ev,I7aB,500,300);
+ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+MN I4=ev.move_api.mn_empty();
+MN I5=ev.move_api.scale2(I4,1,1,1);
+MN I6=ev.move_api.trans2(I5,220-40-15,250-20,0);
+ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
+ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+
+    
+    //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
+//    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
+//MT I3=ev.materials_api.texture(ev,I7aB,1.0);
+//MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
+//ML I5=ev.materials_api.bind(I1,I3);
+//MN I6=ev.move_api.mn_empty();
+//MN I7=ev.move_api.scale2(I6,4,4,4);
+//MN I8=ev.move_api.trans2(I7,-800,400,0);
+//MN I9=ev.move_api.rotatey(I8,-1.59);
+//MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
+// MN I10 = ev.move_api.rotatey(I9,1.59);
+//MN I11=ev.move_api.trans2(I10,-800,-1400,0);
+//I17B=ev.move_api.move_ml(ev,I5,I11,1,10.0);
+ I17B = I19;
+  }
+
+  BM I7C = load_raw_bitmap(e, "web_page/logo-preparing.raw");
+  BM I7aC = I7C; //ev.bitmap_api.flip_x(I7C);
+  ML I17C;
+  {
+
+BM I2=ev.bitmap_api.scale_bitmap(ev,I7aC,500,300);
+ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+MN I4=ev.move_api.mn_empty();
+MN I5=ev.move_api.scale2(I4,1,1,1);
+MN I6=ev.move_api.trans2(I5,220-40-15,250-20,0);
+ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
+ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+
+    //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
+//    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
+//MT I3=ev.materials_api.texture(ev,I7aC,1.0);
+//MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
+//ML I5=ev.materials_api.bind(I1,I3);
+//MN I6=ev.move_api.mn_empty();
+//MN I7=ev.move_api.scale2(I6,4,4,4);
+//MN I8=ev.move_api.trans2(I7,-800,400,0);
+//MN I9=ev.move_api.rotatey(I8,-1.59);
+//MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
+// MN I10 = ev.move_api.rotatey(I9,1.59);
+//MN I11=ev.move_api.trans2(I10,-800,-1400,0);
+ I17C=I19; //ev.move_api.move_ml(ev,I5,I11,1,10.0);
+  }
+  ML I17 = ev.mainloop_api.choose_ml_from_status(I17A,I17B,I17C);
+  //ML I18 = ev.mainloop_api.
+  ML I18=ev.sprite_api.turn_to_2d(ev,I17,0,0,800,600);
+    /*
   MN I14=ev.move_api.empty();
   MN I14a=ev.move_api.scale2(I14, 4,4,4);
   MN I14b=ev.move_api.trans2(I14a,-800,400,0);
@@ -2171,7 +2284,7 @@ MN I22=ev.move_api.trans2(I21,-230,-300,0);
 ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
  I26=ev.mainloop_api.array_ml(ev,std::vector<ML>{I12,I23});
   }
-  ML I17a = ev.mainloop_api.array_ml(ev,std::vector<ML>{I17,I26});
+  ML I17a = ev.mainloop_api.array_ml(ev,std::vector<ML>{I26, I18});
   I17a = ev.mainloop_api.display_background(ev,I17a);
 
  ML res = I17a;
@@ -2310,12 +2423,13 @@ public:
   env.async_load_url(url, homepage);
 #endif      
       std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
-      std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
-      int s = ptr->size();
-      for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
-      ss.close();
+      //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
+      //int s = ptr->size();
+      //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+      //ss.close();
       //#ifndef EMSCRIPTEN
-      ev.tracker_api.play_ogg("song.ogg");
+      //ev.tracker_api.play_ogg("song.ogg");
+      ev.tracker_api.play_ogg(*ptr);
       //#else
 	// std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
       //#endif

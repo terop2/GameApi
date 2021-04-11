@@ -775,6 +775,7 @@ var app = new Vue({
      choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
      start_emscripten(vm);
      window.onpopstate = function(e) {
+       stop_music();
        var st = e.state;
        //console.log(st);
        //console.log(e);
@@ -1264,6 +1265,13 @@ function submit_cb()
    //frm.submit();
 
    g_submit_timeout = null;
+}
+
+function stop_music()
+{
+   if (g_emscripten_running) {
+     Module.ccall('stop_music_playing', null, [], [], { async:true });
+   }
 }
 
 function show_emscripten(str,hide,indicator,is_async)

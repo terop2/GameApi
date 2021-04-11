@@ -21,6 +21,7 @@
 #include <holoplay.h>
 #endif
 
+extern int g_logo_status;
 extern std::string g_msg_string;
 bool is_mobile(GameApi::EveryApi &ev)
 {
@@ -1239,18 +1240,23 @@ public:
     //std::cout << "SCALEPROGRESS: " << val2 << " " << float(FindProgressVal()) << "/" << float(FindProgressMax()+2.0) << std::endl;
     //val2+=time/float(FindProgressMax() +2.0);
     //std::cout << "Time:" << time << std::endl;
-    if (val2<0.1) val2=0.1;
+    if (val2<0.001) val2=0.001;
     if (val2>1.0) val2=1.0;
     //if (g_logo_shown>=1) val2=1.0;
+    //std::cout << "progress:" << val2 << std::endl;
     if (val2>0.99) g_shows_hundred=1;
+
+
+    if (val2>val2_cache) val2_cache=val2;
     //std::cout << "SCALEPROGRESS(2): " << val2 << std::endl;
-    return val2;
+    return val2_cache;
   }
 private:
   float time=0.0;
   Movement *next;
   mutable int max_async_pending;
   bool is_x, is_y, is_z;
+  mutable float val2_cache=0;
 };
 
 GameApi::MN GameApi::MovementNode::scale_progress(MN next, bool is_x, bool is_y, bool is_z)
@@ -11783,9 +11789,17 @@ void splitter_iter2(void *arg);
 
 void clear_texture_confirms();
 
+extern bool g_stop_music;
 void blocker_iter(void *arg)
 {
+    if (g_stop_music ==true)
+      {
+	g_stop_music = false;
+	Envi_2 *env = (Envi_2*)arg;
+	env->ev->tracker_api.stop_music_playing();
+      }
 
+  
     if (g_msg_string != "")
       {
 	std::cout << g_msg_string << std::endl;
@@ -11950,6 +11964,8 @@ public:
 
 void ClearProgress();
 
+extern bool g_stop_music;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -11967,6 +11983,7 @@ public:
   }
   virtual void Init()
   {
+    g_logo_status = 0;
   OpenglLowApi *ogl = g_low->ogl;
   ClearProgress();
   
@@ -12031,6 +12048,12 @@ public:
   }
   virtual int Iter()
   {
+    if (g_stop_music ==true)
+      {
+	g_stop_music = false;
+	Envi_2 *env = (Envi_2*)&envi;
+	env->ev->tracker_api.stop_music_playing();
+      }
     if (g_msg_string != "")
       {
 	std::cout << g_msg_string << std::endl;
@@ -12103,6 +12126,8 @@ public:
     }
 
     if (vis) {
+	g_logo_status = 2;
+
       int num2 = (vis->vec.size()/30);
       if (num2<1) num2=1;
       for(int i=0;i<num2;i++) {
@@ -12110,6 +12135,8 @@ public:
 	vis_counter++;
       }
 
+
+      
       int num = vis_counter;
       if (vis->vec.size()>0)
 	ProgressBar(33344, (30*num/vis->vec.size()), 30, "collect");
@@ -24557,6 +24584,12 @@ KP extern "C" void set_background_mode(int i)
 {
   if (i>=0 && i<9)
     g_background_mode = i;
+}
+
+bool g_stop_music = false;
+KP extern "C" void stop_music_playing()
+{
+  g_stop_music = true;
 }
 
 KP extern "C" void set_new_script(const char *script2)

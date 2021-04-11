@@ -5269,7 +5269,7 @@ GameApi::ML GameApi::MainLoopApi::async_url(std::string url, ML ml)
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new RegisterUrl(url, item));
 }
-
+extern int g_async_load_count;
 void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepage)
 {
   int s = sizeof(async_data)/sizeof(ASyncData);
@@ -5278,6 +5278,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
       ASyncData &dt = async_data[i];
       if (line.api_name == dt.api_name && line.func_name == dt.func_name)
 	{
+	  g_async_load_count++;
 	  int param_num = dt.param_num;
 	  std::string url = line.params[param_num];
 	  //if (is_async_loaded_urls_in_vec(url) && load_url_buffers_async[std::string("load_url.php?url=") + url]==0) {
@@ -5618,8 +5619,10 @@ std::string ToString(int num)
   ss << num;
   return ss.str();
 }
+extern int g_async_load_count;
 std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
 {
+  g_async_load_count = 0;
   int error_line_num = 0;
   std::vector<CodeGenLine> vec = parse_codegen(env, ev, text, error_line_num);
   if (vec.size()==0) {
@@ -11045,6 +11048,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "BM", "std::string" },
 			 { "ev", "", "test.png" },
 			 "ML", "bitmap_api", "save_png_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::save_raw,
+			 "save_raw",
+			 { "bm", "filename" },
+			 { "BM", "std::string" },
+			 { "", "test.raw" },
+			 "ML", "bitmap_api", "save_raw"));
 #if 1
   // doesnt work in emscripten, all solutions seem to fail miserably,
   // with emscripten_async_wget didn't work fine.
