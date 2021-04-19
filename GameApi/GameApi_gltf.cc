@@ -4647,19 +4647,8 @@ public:
   void handle_event(MainLoopEvent &e)
   {
     int ch = key_mapping(e.ch,e.type);
-    //if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
-    //if (ch==39) ch='0';
-    //if (ch>=30 && ch<=38 && ch) { ch = ch-30; ch=ch+'1'; }
-    //if (ch==26||ch==82) ch='w';
-    //if (ch==22||ch==82) ch='s';
-    //if (ch==4||ch==80) ch='a';
-    //if (ch==7||ch==79) ch='d';
-    //if (ch==44) ch=32;
-
     
-    //std::cout << ch << " " << key << "::" << std::hex << e.type << std::endl;
     if (ch==key &&e.type==0x300) {
-      //std::cout << "KEYTIME: " << current_time << std::endl;
       key_time = ev.mainloop_api.get_time()/1000.0; /*current_time;*/
     }
     
@@ -4702,19 +4691,16 @@ public:
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
       GameApi::US a0 = ev.uber_api.v_empty();
-      //GameApi::US a1 = ev.uber_api.v_gltf_anim(a0);
       ee.us_vertex_shader = a0.id;
     }
     vertex.id = ee.us_vertex_shader;
     vertex = ev.uber_api.v_gltf_anim(vertex);
-    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
     ee.us_vertex_shader = vertex.id;
 
     GameApi::US fragment;
     fragment.id = ee.us_fragment_shader;
     if (fragment.id==-1) { 
       GameApi::US a0 = ev.uber_api.f_empty(false);
-      //GameApi::US a1 = ev.uber_api.f_colour(a0);
       ee.us_fragment_shader = a0.id;
     }
     fragment.id = ee.us_fragment_shader;
@@ -4722,7 +4708,6 @@ public:
     ee.us_fragment_shader = fragment.id;
 #endif	
       }
-    // if (current!=-1)
     if (1)
       {
      std::vector<int> sh_ids = ml_orig->shader_id();
@@ -4730,28 +4715,18 @@ public:
      for(int i=0;i<s;i++) {
        int sh_id = sh_ids[i];
      sh.id = sh_id;
-    //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
 	GLTFJointMatrices *joints_0 = (GLTFJointMatrices*)ml_orig;
 	std::vector<TransformObject> *start_0 = joints_0->start();
 	std::vector<Matrix> *r_0 = joints_0->root();
-	std::vector<Matrix> *bind = joints_0->bind();
+	std::vector<Matrix> *bind = joints_0->bind();	
 
-
-	
-	//std::cout << "Execute sh_id" << std::endl;
-	
-
-	//GameApi::SH sh;
 	ev.shader_api.use(sh);
-	//std::cout << "sz" << sz << std::endl;
 	std::vector<GameApi::M> vec;
 	int sz = 1;
 	for(int ii=0;ii<64;ii++)
 	  {
-
-
 	    current = -1;
 	    const std::vector<float> *current_start_time=0, *current_end_time=0;
 	    int sz = items.size();
@@ -4760,7 +4735,6 @@ public:
 		GLTFJointMatrices *joints = (GLTFJointMatrices*)items[t];
 		const std::vector<float> *start_time = joints->start_time();
 		const std::vector<float> *end_time = joints->end_time();
-		//std::cout << "time=" << time << "::" << start_time << ".." << end_time
 		
 		int ssz = std::min(start_time->size(),end_time->size());
 		if (ii<ssz)
@@ -4771,7 +4745,6 @@ public:
 		      current_end_time = end_time;
 		      break;
 		    }
-		//if (current!=-1) break;
 	      }
 
 	    if (current==-1) { vec.push_back(add_matrix2(env,Matrix::Identity())); continue; }
@@ -4783,10 +4756,6 @@ public:
 	    std::vector<Matrix> *r = joints->root();
 	    std::vector<Matrix> *r_2 = joints->root2();
 	    sz = std::min(start_0->size(),std::min(start->size(),end->size()));
-	    //std::cout << sz << std::endl;
-
-
-	    
 
 	    float time01 = (time-current_start_time->operator[](ii))/(current_end_time->operator[](ii)-current_start_time->operator[](ii));
 
@@ -4823,99 +4792,34 @@ public:
 	    if (ii<sz)
 	      m0t = start_0->operator[](ii);
 	    else m0t = gltf_node_default();
-
-	    //Movement *move2 = find_move(env,rr0);
-	    //Matrix rr0m = rr0; //move2->get_whole_matrix(0.0, 1.0);
-
 	    
-	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t);//gltf	    
-	    
+	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t);	    
 	    Matrix m0i = Matrix::Inverse(m0);
-	    
-#if 0	    
-	    Matrix mstart;
-	    if (ii<sz)
-	      mstart = start->operator[](ii);
-	    else mstart=Matrix::Identity();
-	    Matrix mend;
-	    if (ii<sz)
-	      mend = end->operator[](ii); //Matrix::Interpolate(start->opera
-	    else
-	      mend =Matrix::Identity();
-
-#endif
-	    
+	    	    
 	    Matrix bindm;
 	    if (i<sz)
 	      bindm=bind->operator[](ii);
 	    else bindm = Matrix::Identity();
 
-	    //std::cout << bindm << std::endl;
-	    
-	    //tor[](i), end->operator[](i), time01);
-	    //std::cout << "START:" << std::endl;
-	    //print_transform(start_obj);
-	    //std::cout << "END:" << std::endl;
-	    //print_transform(end_obj);
-	    //std::cout << "TIME01:" << time01 << std::endl;
 	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
-	    //Matrix m;
-	    //for(int j=0;j<16;j++) m.matrix[j]=(time01)*mend.matrix[j] + (1.0-time01)*mstart.matrix[j];
-
-	    // INTERPOLATE HERE USING start_obj/end_obj
-	    
-	    //Movement *move_1 = find_move(env,rr);
-	    //Matrix m_1 = move_1->get_whole_matrix(0.0, 1.0);
-	    //Movement *move_2 = find_move(env,rr2);
-	    //Matrix m_2 = move_2->get_whole_matrix(0.0, 1.0);
 
 	    Matrix mr;
 	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
-	    //GameApi::MN m_rr0 = ev.move_api.mn_empty();
-	    //GameApi::MN m_rr = ev.move_api.matrix(m_rr0, add_matrix2(env,mr));
 	    
 	    
-	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj);//gltf_node_transform(env,ev,node,mv0); //ev.move_api.mn_empty();
-	    
-	    //GameApi::MN mv2 = gltf_node_transform_obj_apply(env,ev,mv0,start_obj);
-	    
-	    
-	    //Movement *move = find_move(env,mv);
-	    Matrix m = mv; //move->get_whole_matrix(0.0, 1.0);
-    
-	    //Movement *move3 = find_move(env,mv2);
-	    //Matrix m3 = move3->get_whole_matrix(0.0, 1.0);
-
-	    
-
+	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj);
+	    Matrix m = mv;  
 	    Matrix ri = Matrix::Inverse(resize);
-	    //std::cout << ri << " " << resize << std::endl;c
-
-	    // std::cout << "time01: " << ii << "::" << time01 << "::" << current_start_time->operator[](i) << " " << current_end_time->operator[](i) << ":::" << m << std::endl;
-
-	    //Matrix m = mend;
-	    //std::stringstream ss;
-	    //ss << i;
-	    //std::string jj = std::string("jointMatrix[") + ss.str() + "]";
-	    //m=Matrix::Identity(); // TODO remove this.
-	    //std::cout << "Matrixi: " << i << "::" << m0i << std::endl;
-	    //std::cout << "Matrix: " << i << "::" << m << std::endl;
-	    //std::cout << ri << " " << m0i << " " << m << " " << bindm << " " << resize << std::endl;
 	    vec.push_back(add_matrix2(env,ri *m0i*m*bindm *resize));
 	  }
-	//std::vector<GameApi::M> mat;
-	//for(int i=0;i<64;i++)
-	//mat.push_back(add_matrix2(env,Matrix::Identity()));
-	//ev.shader_api.set_var(sh, "jointMatrix", mat,64);
-
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 64);
 
       }
 #ifndef NO_MV
-	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
-	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
-	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
-	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m = add_matrix2( env, e.in_MV);
+	GameApi::M m1 = add_matrix2(env, e.in_T); 
+	GameApi::M m3 = add_matrix2(env, e.in_P); 
+	GameApi::M m2 = add_matrix2(env, e.in_N); 
 	ev.shader_api.set_var(sh, "in_MV", m);
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);

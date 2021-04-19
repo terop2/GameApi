@@ -2523,7 +2523,7 @@ public:
   {
     BufferRef::FreeBuffer(buf);
     buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
-    std::cout << "BufferFromBitmap:" << t.SizeX() << "x" << t.SizeY() << "=" << MB(t.SizeX()*t.SizeY()*sizeof(unsigned int)) << std::endl;
+    //std::cout << "BufferFromBitmap:" << t.SizeX() << "x" << t.SizeY() << "=" << MB(t.SizeX()*t.SizeY()*sizeof(unsigned int)) << std::endl;
   }
   void Gen(int start_x, int end_x, int start_y, int end_y) const
   {

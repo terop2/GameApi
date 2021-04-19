@@ -9834,7 +9834,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 "m_glowedge",
 			 { "ev", "nxt", "light_level", "gray_level", "edge_pos" },
 			 { "EveryApi&", "MT", "float", "float", "float" },
-			 { "ev", "", "1.0", "0.5", "0.02" },
+			 { "ev", "", "0.6", "0.5", "0.03" },
 			 "MT", "materials_api", "glow_edge"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api,&GameApi::MaterialsApi::m_apply_phong,
 			 "m_apply_phong",

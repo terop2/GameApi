@@ -2404,10 +2404,27 @@ class SongML : public MainLoopItem
 public:
   SongML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, MainLoopItem *next, std::string homepage) : env(env), ev(ev), url(url), next(next), homepage(homepage) {
     firsttime = true;
+    firsttime2 = true;
+    vec=0;
   }
-  void Collect(CollectVisitor &vis) { next->Collect(vis); }
-  void HeavyPrepare() { }
-  void Prepare() { next->Prepare(); }
+  ~SongML() { delete vec; }
+  void Collect(CollectVisitor &vis) { next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  void Prepare() {
+    if (firsttime2) {
+    next->Prepare();
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif      
+    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    //std::cout << "SONG SIZE: "<< ptr->size() << std::endl;
+    vec = new std::vector<unsigned char>(*ptr);
+    ptr2 = ev.tracker_api.setup_ogg(*vec);
+    firsttime2 = false;
+    }
+  }
   virtual void execute(MainLoopEnv &e)
   {
     next->execute(e);
@@ -2419,17 +2436,13 @@ public:
     if (e.button==0||e.type==0x300)
 #endif
     if (firsttime) {
-#ifndef EMSCRIPTEN
-  env.async_load_url(url, homepage);
-#endif      
-      std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
       //int s = ptr->size();
       //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
       //ss.close();
       //#ifndef EMSCRIPTEN
       //ev.tracker_api.play_ogg("song.ogg");
-      ev.tracker_api.play_ogg(*ptr);
+      ev.tracker_api.play_ogg(ptr2);
       //#else
 	// std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
       //#endif
@@ -2443,8 +2456,11 @@ private:
   GameApi::EveryApi &ev;
   std::string url;
   bool firsttime;
+  bool firsttime2;
   MainLoopItem *next;
   std::string homepage;
+  std::vector<unsigned char> *vec;
+  void *ptr2;
 };
 
 GameApi::ML GameApi::MainLoopApi::load_song(EveryApi &ev, ML next, std::string url)

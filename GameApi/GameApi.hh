@@ -2798,6 +2798,8 @@ public:
   IMPORT void play_mp3(std::string filename);
   IMPORT void play_ogg(std::string filename);
   IMPORT void play_ogg(const std::vector<unsigned char> &vec);
+  IMPORT void play_ogg(void*);
+  IMPORT void* setup_ogg(const std::vector<unsigned char> &data);
   IMPORT void stop_music_playing();
   IMPORT ML play_wave_via_keypress(EveryApi &ev, ML ml, std::string url, int key);
 private:

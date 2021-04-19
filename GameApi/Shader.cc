@@ -1757,17 +1757,17 @@ ShaderFile::ShaderFile()
 "     level=gray_level;\n"
 "   }\n"
 "   vec3 color;\n"
-"   vec3 white=vec3(1.0,1.0,1.0);\n"
-"   vec3 black=vec3(0.0,0.0,0.0);\n"
+"   vec3 wht=vec3(1.0,1.0,1.0);\n"
+"   vec3 blk=vec3(0.0,0.0,0.0);\n"
 "   if (level>0.5) {\n"
 "     level = 1.0-level;\n"
 "     level*=2.0;\n"
-"     color = (1.0-level)*white + level*rgb.rgb;\n"
+"     color = (1.0-level)*wht + level*rgb.rgb;\n"
 "   } else {\n"
 "     level *= 2.0;\n"
-"     color = (1.0-level)*rgb.rgb + level*black;\n"
+"     color = (1.0-level)*rgb.rgb + level*blk;\n"
 "   }\n"
-"   return vec4(color,rgb.a);\n"
+"   return vec4(color,1.0);\n"
 "}\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
@@ -3143,17 +3143,17 @@ ShaderFile::ShaderFile()
 "     level=gray_level;\n"
 "   }\n"
 "   vec3 color;\n"
-"   vec3 white=vec3(1.0,1.0,1.0);\n"
-"   vec3 black=vec3(0.0,0.0,0.0);\n"
+"   vec3 wht=vec3(1.0,1.0,1.0);\n"
+"   vec3 blk=vec3(0.0,0.0,0.0);\n"
 "   if (level>0.5) {\n"
 "     level = 1.0-level;\n"
 "     level*=2.0;\n"
-"     color = (1.0-level)*white + level*rgb.rgb;\n"
+"     color = (1.0-level)*wht + level*rgb.rgb;\n"
 "   } else {\n"
 "     level *= 2.0;\n"
-"     color = (1.0-level)*rgb.rgb + level*black;\n"
+"     color = (1.0-level)*rgb.rgb + level*blk;\n"
 "   }\n"
-"   return vec4(color,rgb.a);\n"
+"   return vec4(color,1.0);\n"
 "}\n"
 "#endif\n"
     
@@ -4213,7 +4213,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       std::string ss = replace_c(*pp /*shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader*/);
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -4243,7 +4243,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       pp->shader = f_shader;
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
