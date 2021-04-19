@@ -731,7 +731,7 @@ void fetch_download_failed(emscripten_fetch_t *fetch) {
   onerror_async_cb(333, (void*)url, 0, "fetch failed!");
   emscripten_fetch_close(fetch);
 }
-int g_logo_status = 0;
+extern int g_logo_status;
 void fetch_download_progress(emscripten_fetch_t *fetch) {
   //std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes << std::endl;
   int val = 7;
@@ -1190,7 +1190,7 @@ void FinishProgress()
 }
 void ProgressBar(int num, int val, int max, std::string label)
 {
-  std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
+  //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;

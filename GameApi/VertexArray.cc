@@ -2729,7 +2729,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
     bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(&s)||is_texture_usage_confirmed(&coll));
     bool has_skeleton2 = coll.has_skeleton();
 
-    g_msg_string += std::string(has_normal2?"normal":"!n") + "+" + std::string(has_attrib2?"attrib":"!a") + "+" + std::string(has_color2?"color":"!c") + "+" + std::string(has_texcoord2?"texcoord":"!t") + "+" + std::string(has_skeleton2?"skeleton":"!s") + "\n";
+    //g_msg_string += std::string(has_normal2?"normal":"!n") + "+" + std::string(has_attrib2?"attrib":"!a") + "+" + std::string(has_color2?"color":"!c") + "+" + std::string(has_texcoord2?"texcoord":"!t") + "+" + std::string(has_skeleton2?"skeleton":"!s") + "\n";
     
     s.has_normal = has_normal2;
     s.has_attrib = has_attrib2;

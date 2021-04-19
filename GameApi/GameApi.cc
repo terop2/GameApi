@@ -5926,12 +5926,15 @@ public:
   GlowEdgeMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float white_level, float gray_level, float edge_pos) : e(e), ev(ev), next(next), white_level(white_level), gray_level(gray_level), edge_pos(edge_pos) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    confirm_texture_usage(ev.get_env(),p);
+
     GameApi::ML ml3;
     ml3.id = next->mat(p.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
     return ml4;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML ml3;
     ml3.id = next->mat_inst(p.id,pts.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
@@ -5939,6 +5942,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML ml3;
     ml3.id = next->mat_inst_matrix(p.id,ms.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
@@ -5946,6 +5950,7 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML ml3;
     ml3.id = next->mat_inst2(p.id,pta.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
@@ -5953,6 +5958,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    confirm_texture_usage(ev.get_env(),p);
     GameApi::ML ml3;
     ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
@@ -27016,3 +27022,5 @@ std::string MB(long num)
 }
 
 void CollectInterface::Collect(CollectVisitor &vis) { }
+
+int g_logo_status = 0;
