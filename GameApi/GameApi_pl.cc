@@ -1402,15 +1402,15 @@ public:
 
       
 #ifdef HAS_POPEN
-      std::cout << "load_from_url" << url << std::endl;
+	//std::cout << "load_from_url" << url << std::endl;
       LoadStream *stream = load_from_url_stream(url);
 #else
       
-      std::cout << "A" << std::endl;
+      //std::cout << "A" << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-      std::cout << "B" << std::endl;
+    //std::cout << "B" << std::endl;
 
     std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
     if (!ptr) {
@@ -1507,7 +1507,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
-  if (!val) { std::cout << "system returned: " << val << std::endl; }
+  if (val) { std::cout << "system returned: " << val << std::endl; }
   start+="/";
 #endif
     std::string a_filename = start+a_ss2.str();
@@ -1630,7 +1630,7 @@ public:
   start = home + "/.gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
-  if (!val)
+  if (val)
     std::cout << "system returned: " << val << std::endl;
   start+="/";
 #endif
@@ -1797,7 +1797,7 @@ public:
       }
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
-      std::cout << "NetworkedFaceCollectionMTL2(Prepare2)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
+      //std::cout << "NetworkedFaceCollectionMTL2(Prepare2)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
       // flip texture in y-direction
       int sx = img.width;
@@ -1828,7 +1828,7 @@ public:
       }
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
-      std::cout << "NetworkedFaceCollectionMTL2(PrepareD)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
+      //std::cout << "NetworkedFaceCollectionMTL2(PrepareD)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
       // flip texture in y-direction
       int sx = img.width;
@@ -1860,7 +1860,7 @@ public:
 
       bool b = false;
       BufferRef img = LoadImageFromString(*vec,b);
-      std::cout << "NetworkedFaceCollectionMTL2(PrepareBump)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
+      //std::cout << "NetworkedFaceCollectionMTL2(PrepareBump)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
 
       // flip texture in y-direction
       int sx = img.width;
@@ -15965,6 +15965,7 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
+  bool has_color() const { return false; }
   virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
   bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const { 

@@ -61,6 +61,18 @@ public:
   Point() : x(0.0), y(0.0), z(0.0) { }
   Point(float xx, float yy, float zz) : x(xx), y(yy), z(zz) { }
   Point(const Vector &v);
+  friend bool operator==(const Point &p1, const Point &p2)
+  {
+    float dx = fabs(p1.x-p2.x);
+    float dy = fabs(p1.y-p2.y);
+    float dz = fabs(p1.z-p2.z);
+    if (dx<0.001 && dy<0.001 && dz<0.001) return true;
+    return false;
+  }
+  friend bool operator!=(const Point &p1, const Point &p2)
+  {
+    return !(p1==p2);
+  }
 public:
   float x,y,z;
 public:

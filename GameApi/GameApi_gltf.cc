@@ -1461,6 +1461,17 @@ public:
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    FaceCollection *coll = find_facecoll(e,p);
+    if (!coll->has_color())
+      {
+	p = ev.polygon_api.color(p,0xffffffff);
+      }
+    if (!coll->has_normal())
+      {
+	p = ev.polygon_api.recalculate_normals(p);
+      }
+      
+    
     std::vector<GameApi::BM> bm;
 
     //GameApi::P I10=p; 
@@ -1474,6 +1485,16 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    FaceCollection *coll = find_facecoll(e,p);
+    if (!coll->has_color())
+      {
+	p = ev.polygon_api.color(p,0xffffffff);
+      }
+    if (!coll->has_normal())
+      {
+	p = ev.polygon_api.recalculate_normals(p);
+      }
+
     std::vector<GameApi::BM> bm;
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
@@ -1484,6 +1505,16 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    FaceCollection *coll = find_facecoll(e,p);
+    if (!coll->has_color())
+      {
+	p = ev.polygon_api.color(p,0xffffffff);
+      }
+    if (!coll->has_normal())
+      {
+	p = ev.polygon_api.recalculate_normals(p);
+      }
+
     std::vector<GameApi::BM> bm;
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
@@ -1495,6 +1526,7 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+
     //GameApi::ML I13;
     //I13.id = next->mat_inst2(p.id,pta.id);
     std::cout << "ERROR gltf::mat2inst2" << std::endl;
