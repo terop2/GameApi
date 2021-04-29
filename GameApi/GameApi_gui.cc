@@ -5180,7 +5180,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "gltf_scene_anim", 2},
   { "mainloop_api", "async_url", 0},
   { "materials_api", "gltf_anim_material", 2},
-  { "materials_api", "gltf_anim_material2", 2}
+  { "materials_api", "gltf_anim_material2", 2},
+  { "mainloop_api", "tunnel_tree", 3}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -7193,6 +7194,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "[P]", "LI", "int", "std::string", "[LI]", "MT" },
 			 { "ev", "", "", "30", "https://tpgames.org/ske_example.txt", "", "" },
 			 "ML", "polygon_api", "ske_anim2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::tunnel_tree,
+			 "tunnel_tree",
+			 { "ev", "faces", "moves", "url", "mat2" },
+			 { "EveryApi&", "[P]", "[MN]", "std::string", "MT" },
+			 { "ev", "", "", "https://tpgames.org/tunnel.sm", "" },
+			 "ML", "mainloop_api", "tunnel_tree"));
+			
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_skeleton,
 			 "li_gltf_ske",
 			 { "ev", "base_url", "url", "start_node" },
@@ -8579,6 +8587,21 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { },
 			 { },
 			 "P", "polygon_api", "p_empty"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::edit_3d,
+			 "p_edit",
+			 { "ev", "p", "radius" },
+			 { "EveryApi&", "P", "float" },
+			 { "ev", "", "30.0" },
+			 "ML", "mainloop_api", "edit_3d"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::edit_3d_p,
+			 "p_edit2",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "P", "mainloop_api", "edit_3d_p"));
+#endif
+  
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_model,
 			 "load_model",

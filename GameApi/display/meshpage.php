@@ -1,6 +1,5 @@
 <?php
 header("Cross-Origin-Opener-Policy: same-origin");
-header("Cross-Origin-Embedder-Policy: require-corp");
 ?>
 <html id="html">
 <head>
@@ -64,7 +63,7 @@ echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css?" . filemti
 
 <?php
 require_once("user.php");
-$nothreads = js_no_threads();
+$nothreads = "no"; //js_no_threads();
 $mobile = js_mobile();
 if ($mobile == "yes") {
   echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
@@ -633,7 +632,7 @@ visit_counter_inc( "tool" );
 </div>
 </ul>
 </div>
-<p>
+<!--p>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -654,7 +653,7 @@ visit_counter_inc( "tool" );
 </div>
 </ul>
 </div>
-<p>
+<p-->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
 <a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v25.msi">
 <img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
@@ -1357,7 +1356,7 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
 </script>
 <?php
 require_once("user.php");
-$nothreads = js_no_threads();
+$nothreads = "no"; //js_no_threads();
 $mobile = js_mobile();
 if ($mobile == "yes") {
   echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";
@@ -1472,4 +1471,6 @@ function fix_keyboard(hide)
   window.removeEventListener('keyup', e1, true);
   }
 }
+
+
 </script>

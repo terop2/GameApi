@@ -2394,6 +2394,8 @@ std::map<int,Matrix> g_key_activate_collect;
 
 extern bool g_restart_ongoing;
 
+char key_mapping(char ch, int type);
+
 class KeyActivateML : public MainLoopItem
 {
 public:
@@ -2422,12 +2424,13 @@ public:
     Movement *move = find_move(e, mn);
     move->event(eve);
 
-    int ch = eve.ch;
+    int ch = key_mapping(eve.ch,eve.type);
 #ifdef EMSCRIPTEN
-    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
-    if (ch==39) ch='0';
-    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+    //if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    //if (ch==39) ch='0';
+    //if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
+   
     bool start_anim = false;
     if (eve.type==0x300 && ch == key) { key_pressed = true; }
     if (eve.type==0x300 && ch == key && !anim_ongoing) { start_anim = true; }
@@ -5120,7 +5123,7 @@ public:
   {
     //std::cout << "PhongMaterial instmatrix" << std::endl;
     FaceCollection *coll = find_facecoll(env,p);
-    std::cout << "mat2_inst_matrix: coll=" << coll << std::endl;
+    //std::cout << "mat2_inst_matrix: coll=" << coll << std::endl;
     coll->Prepare();
     Vector v = coll->PointNormal(0,0);
 
@@ -11870,7 +11873,7 @@ void blocker_iter(void *arg)
       {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
-	if (e.ch==27 && e.type==0x300) { std::cout << "ESC pressed!" << std::endl; env->exit = true; }
+	if (e.ch==27 && e.type==0x300) { /*std::cout << "ESC pressed!" << std::endl;*/ env->exit = true; }
 #endif
 
 	GameApi::InteractionApi::quake_movement_event(*env->ev,e, env->pos_x, env->pos_y, env->rot_y,
@@ -11993,7 +11996,7 @@ public:
   OpenglLowApi *ogl = g_low->ogl;
   ClearProgress();
   
-      InstallProgress(33344, "collect", 30);
+  // InstallProgress(33344, "collect", 30);
 
   
     score = 0;
@@ -12124,7 +12127,7 @@ public:
       //item->Prepare();
       vis = new CollectInterfaceImpl;
       item->Collect(*vis);
-      ProgressBar(33344, 0, 30, "collect");
+      //ProgressBar(33344, 0, 30, "collect");
       vis_counter=0;
       g_prepare_done = true;
 
@@ -12144,8 +12147,8 @@ public:
 
       
       int num = vis_counter;
-      if (vis->vec.size()>0)
-	ProgressBar(33344, (30*num/vis->vec.size()), 30, "collect");
+      //if (vis->vec.size()>0)
+      //ProgressBar(33344, (30*num/vis->vec.size()), 30, "collect");
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
@@ -12377,7 +12380,7 @@ public:
 	}
 	ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
 
-      std::cout << "Mainloop existing.." << std::endl;
+	//std::cout << "Mainloop existing.." << std::endl;
       ogl->glDisable(Low_GL_DEPTH_TEST);
   }
   private:
@@ -25382,7 +25385,7 @@ GameApi::ML create_all_objects(GameApi::Env &e, GameApi::EveryApi &ev, int area_
   V_Area_Pos *pos = &g_areas[area_id];
   if (!pos) { std::cout << "create_all_objects failed" << std::endl; GameApi::ML ml; ml.id = 0; return ml; }
   int s = pos->vec.size();
-  std::cout << "create_all_objects: count=" << s << std::endl;
+  //std::cout << "create_all_objects: count=" << s << std::endl;
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
     V_Area *area = &pos->vec[i];
@@ -27024,3 +27027,425 @@ std::string MB(long num)
 void CollectInterface::Collect(CollectVisitor &vis) { }
 
 int g_logo_status = 0;
+
+
+
+std::vector<std::string> parse_sep(std::string s, char sep);
+
+
+class TunnelMatrices : public MainLoopItem
+{
+public:
+  TunnelMatrices(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<FaceCollection*> faces, std::vector<Movement *> moves, std::string url, std::string homepage, Material *mat) : env(env), ev(ev), faces(faces), moves(moves), url(url), homepage(homepage), mat(mat) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = faces.size();
+    for(int i=0;i<s;i++) { faces[i]->Collect(vis); }
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+
+    std::string ss(ptr->begin(), ptr->end());
+    std::stringstream ss2(ss);
+    std::string line;
+    int ln = 0;
+    while(std::getline(ss2, line)) {      
+      //std::cout << "Line:" << line << std::endl;
+      std::vector<std::string> vec = parse_sep(line, ':');
+      
+      if (vec.size()!=3 && vec.size()!=2) { std::cout << "Line " << ln << "not enough ':' separators" << std::endl; continue; }
+      if (vec.size()==3) {
+	std::string name = vec[0];
+	std::string matrix_indexes = vec[1];
+	std::string mesh_indexes = vec[2];
+	//std::cout << "NAME:" << name << " matrix_idx:" << matrix_indexes << " mesh:" << mesh_indexes << std::endl;
+	std::vector<std::string> matrix_strings = parse_sep(matrix_indexes, ' ');
+	std::vector<std::string> mesh_strings = parse_sep(mesh_indexes, ' ');
+	Line ll;
+	ll.name = name;
+	int s = matrix_strings.size();
+	for(int i=0;i<s;i++) {
+	  if (matrix_strings[i]=="") continue;
+	  //std::cout << "matrix_string:" << i << " " << matrix_strings[i] << std::endl;
+	  std::stringstream ss(matrix_strings[i]);
+	  int idx = 0;
+	  ss >> idx;
+	  ll.matrix_idx.push_back(idx);
+	}
+	int s2 = mesh_strings.size();
+	for(int i=0;i<s2;i++) {
+	  std::stringstream ss(mesh_strings[i]);
+	  int idx = 0;
+	  ss >> idx;
+	  ll.mesh_idx.push_back(idx);
+	}
+	lines.push_back(ll);
+      } else if (vec.size()==2)
+	{
+	  std::string name = vec[0];
+	  std::string links = vec[1];
+	  //std::cout << "name=" << name << std::endl;
+	  std::vector<std::string> name_split = parse_sep(name, '@');
+	  std::string name_id = name_split[0];
+	  std::string name_line = name_split[1];
+
+
+	  //std::cout << "name_id=" << name_id << " name_line=" << name_line << std::endl;
+	  Inst ii;
+	  ii.name_id = name_id;
+	  int s = lines.size();
+	  int res = -1;
+	  for(int i=0;i<s;i++) { if (lines[i].name==name_line) res=i; }
+	  ii.line = res;
+	  std::vector<std::string> matrix_lines = parse_sep(links,' ');
+	  int s3 = matrix_lines.size();
+	  for(int i=0;i<s3;i++) {
+	    std::string name = matrix_lines[i];
+	    if (name=="") continue;
+	    //std::cout << "insert_instance: '" << name << "'" << std::endl;
+	    ii.instance_names.push_back(name);
+	    ii.instances.push_back(-1);
+	  }
+	  instances.push_back(ii);
+	}
+    }
+
+    int ss4 = instances.size();
+    for(int i=0;i<ss4;i++) {
+      int ss2 = std::min(instances[i].instance_names.size(),instances[i].instances.size());
+      for(int j=0;j<ss2;j++) {
+	int ss3 = instances.size();
+	bool done = false;
+	for(int k=0;k<ss3;k++) {
+	  //std::cout << "Compare:'" << instances[i].instance_names[j] << "'=='" << instances[k].name_id << "'" << std::endl;
+	  if (instances[i].instance_names[j] == instances[k].name_id) { instances[i].instances[j] = k; done=true; } }
+	if (done==false) std::cout << "instance i=" << i << " j="<< j << " " << instances[i].name_id << " not found" << std::endl;
+      }
+    }
+
+
+    int st = faces.size();
+    for(int i=0;i<st;i++) {
+      FaceCollection *coll = faces[i];
+      GameApi::P p = add_polygon2(env,coll,1);
+      int ml_id = mat->mat(p.id);
+      GameApi::ML ml;
+      ml.id = ml_id;
+      MainLoopItem *item = find_main_loop(env, ml);
+      item->Prepare();
+      mainloops.push_back(item);
+    }
+    
+  }
+  void Prepare() {
+    int s = faces.size();
+    for(int i=0;i<s;i++) { faces[i]->Prepare(); }
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    pos += speed;
+    if (current_instance==-1) { std::cout << "current instance=-1" << std::endl; return; }
+    Inst &ii = current_instance>=0 && current_instance<instances.size()?instances[current_instance]:instances[0];
+
+    if (pos>1.0)
+      {
+	pos-=1.0;
+	if (next_door>=0 && next_door<ii.instances.size())
+	  current_instance = ii.instances[next_door];
+	else std::cout << "execute: ERROR" << std::endl;
+	//speed+=0.001;
+	//if (speed>0.5) speed=0.5;
+      }
+
+    Inst &ii2 = current_instance>=0 && current_instance<instances.size()?instances[current_instance]:instances[0];
+    
+    int line = ii2.line;
+    //std::cout << "Line: " << line << std::endl;
+    if (line==-1) return;
+    Line &ll = lines[line];
+
+    int output_door = next_door<ll.matrix_idx.size()?ll.matrix_idx[next_door]:-1;
+    Movement *door_move = output_door!=-1?moves[output_door]:0;
+    Matrix door_matrix = door_move?door_move->get_whole_matrix(e.time, ev.mainloop_api.get_delta_time()):Matrix::Identity();
+    
+
+
+    Matrix res;
+    Matrix start = Matrix::Identity();
+    int s = 16;
+    for(int i=0;i<s;i++) { res.matrix[i] = (1.0-pos)*start.matrix[i] + (pos)*door_matrix.matrix[i]; }
+
+    Matrix start2 = Matrix::Translate(0.0,0.0,300.0);
+    
+    handle_instance(e, 18, current_instance, start2*Matrix::Inverse(res));
+  }
+
+  void handle_instance(MainLoopEnv &e, int depth, int i, Matrix m)
+  {
+    //std::cout << "handle_instance: " << depth << " " << i << std::endl;
+    if (depth<=0) return;
+    
+    Inst &ii = i>=0&&i<instances.size()?instances[i]:instances[0];
+    int line = ii.line;
+    //std::cout << "Line: " << line << std::endl;
+    if (line==-1) return;
+    Line &ll = line>=0 && line<lines.size()?lines[line]:lines[0];
+
+    int s = ll.mesh_idx.size();
+    for(int i=0;i<s;i++) {
+      int mesh_id = ll.mesh_idx[i];
+      //std::cout << "Drawing: mesh_id=" << mesh_id << std::endl;
+      MainLoopItem *mains = mainloops[mesh_id];
+
+      MainLoopEnv ee = e;
+      ee.in_MV = m * e.in_MV;
+      mains->execute(ee);
+    }
+
+    int s2 = std::min(ll.matrix_idx.size(),ii.instances.size());
+    for(int i=0;i<s2;i++) {
+      Movement *move = moves[ll.matrix_idx[i]];
+      int instance = ii.instances[i];
+      if (instance!=-1) {
+	Matrix m2 = m * move->get_whole_matrix(e.time, ev.mainloop_api.get_delta_time());
+	handle_instance(e, depth-1, instance, m2);
+      }
+    }
+    
+  }
+  
+  
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual std::vector<int> shader_id() {
+    int s = mainloops.size();
+    std::vector<int> res;
+    for(int i=0;i<s;i++) {
+      std::vector<int> v = mainloops[i]->shader_id();
+      int s2 = v.size();
+      for(int j=0;j<s2;j++) res.push_back(v[j]);
+    }
+    return res;
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<FaceCollection*> faces;
+  std::vector<MainLoopItem*> mainloops;
+  std::vector<Movement*> moves;
+  std::string url;
+  std::string homepage;
+  struct Line {
+    std::string name;
+    std::vector<int> matrix_idx;
+    std::vector<int> mesh_idx;
+  };
+  std::vector<Line> lines;
+
+  struct Inst
+  {
+    std::string name_id;
+    int line;
+    std::vector<std::string> instance_names;
+    std::vector<int> instances;
+  };
+  std::vector<Inst> instances;
+  Material *mat;
+  int current_instance = 0;
+  float pos=0.0;
+  int next_door = 0;
+  float speed = 0.01;
+};
+
+GameApi::ML GameApi::MainLoopApi::tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2)
+{
+  Material *mat = find_material(e,mat2);
+  int s = faces.size();
+  std::vector<FaceCollection*> vec;
+  for(int i=0;i<s;i++) {
+    vec.push_back(find_facecoll(e,faces[i]));
+  }
+  int s2 = moves.size();
+  std::vector<Movement*> mvs;
+  for(int i=0;i<s2;i++) {
+    mvs.push_back(find_move(e,moves[i]));
+  }
+  return add_main_loop(e, new TunnelMatrices(e, ev, vec, mvs, url, gameapi_homepageurl, mat));
+}
+
+
+class EditWrapper : public ForwardFaceCollection
+{
+public:
+  EditWrapper(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+};
+
+class Edit3dModel : public MainLoopItem, public FaceCollection
+{
+public:
+  Edit3dModel(GameApi::Env &env, GameApi::EveryApi &ev, FaceCollection *coll, float radius) : env(env), ev(ev), coll(coll), radius(radius) { }
+  virtual void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj((FaceCollection*)this);
+  }
+  virtual void HeavyPrepare() {
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      int s2 = coll->NumPoints(i);
+      for(int j=0;j<s2;j++) {
+	Point p = coll->FacePoint(i,j);
+	x_pos.push_back(p.x);
+	y_pos.push_back(p.y);
+	z_pos.push_back(p.z);
+      }
+    }
+    
+  }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+      Point p1 = Point(xx,yy,-500.0);
+      Point p2 = Point(xx,yy,500.0);
+      Matrix m = e.in_MV;
+      Matrix mi = Matrix::Inverse(m);
+    if (update) {
+      update=false;
+      std::cout << "p1=" << Point(Vector(p1)*mi) << " p2=" << Point(Vector(p2)*mi) << std::endl;
+
+      ConeVolume cone(Point(Vector(p1)*mi), Vector(Point(Vector(p2)*mi)-Point(Vector(p1)*mi)), radius, radius);
+      int s = x_pos.size();
+      for(int i=0;i<s;i++) {
+	Point p = Point(x_pos[i],y_pos[i],z_pos[i]);
+	bool b = cone.Inside(p);
+	if (b) {
+	  Vector v = Vector(0.0,0.0,-10.0);
+	  Vector v2 = v*Matrix::KeepRotation(mi);
+	  //std::cout << "v2 = " << v2 << std::endl;
+	  x_pos[i]+=v2.dx;
+	  y_pos[i]+=v2.dy;
+	  z_pos[i]+=v2.dz;
+	  
+	}
+      }
+
+      GameApi::P poly = add_polygon2(env, new EditWrapper(this),1);
+      GameApi::MT mat0 = ev.materials_api.m_def(ev);
+      GameApi::MT mat1 = ev.materials_api.phong(ev, mat0, 0.0, 0.0, 0.0, 0xff888888, 0xffffffff, 3.0);
+      GameApi::ML ml = ev.materials_api.bind(poly, mat1);
+      //GameApi::PTS pts = ev.points_api.single_pts();
+      //GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,poly,pts);
+      ml2 = ml;
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+
+      
+    }
+
+      Point pp1 = Vector(p1)*mi;
+      Point pp2 = Vector(p2)*mi;
+
+      if (old_pp1!=pp1 && old_pp2!=pp2) {
+	old_pp1 = pp1; old_pp2=pp2;
+      GameApi::PT pt1 = ev.point_api.point(pp1.x,pp1.y,pp1.z);
+      GameApi::PT pt2 = ev.point_api.point(pp2.x,pp2.y,pp2.z);
+      GameApi::P poly2 = ev.polygon_api.cone(20, pt1,pt2,radius,radius);
+      GameApi::LI lines = ev.lines_api.from_polygon(poly2);
+      GameApi::LLA lla = ev.lines_api.prepare(lines);
+      GameApi::ML ml22 = ev.lines_api.render_ml(ev,lla, 1.0);
+      ml2_cache = ml22;
+      MainLoopItem *item2 = find_main_loop(env,ml2_cache);
+      item2->Prepare();
+      }
+      MainLoopItem *item2 = find_main_loop(env,ml2_cache);
+      item2->execute(e);
+
+    MainLoopItem *item = find_main_loop(env,ml2);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    // std::cout << "button=" << e.button << " type=" << e.type << " " << " ch=" << e.ch << std::endl;
+      Point p = e.cursor_pos;
+      float x = p.x;
+      float y = ev.mainloop_api.get_screen_height()-p.y;
+      xx=x-ev.mainloop_api.get_screen_width()/2;
+      yy=y-ev.mainloop_api.get_screen_height()/2;
+
+    if (e.button==0) {
+      update=true;
+      std::cout << "x=" << x << " y=" << y << std::endl;
+    }
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { return coll->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const
+  {
+    return Point(x_pos[face*coll->NumPoints(0)+point],
+		 y_pos[face*coll->NumPoints(0)+point],
+		 z_pos[face*coll->NumPoints(0)+point]);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return coll->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const { return coll->TexCoord3(face,point); }
+  virtual VEC4 Joints(int face, int point) const { return coll->Joints(face,point); }
+  virtual VEC4 Weights(int face, int point) const { return coll->Weights(face,point); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  FaceCollection *coll;
+  std::vector<float> x_pos;
+  std::vector<float> y_pos;
+  std::vector<float> z_pos;
+  float xx, yy;
+  bool update;
+  float radius;
+  GameApi::ML ml2;
+  GameApi::ML ml2_cache;
+  Point old_pp1, old_pp2;
+};
+FaceCollection *g_edit_faces=0;
+GameApi::ML GameApi::MainLoopApi::edit_3d(GameApi::EveryApi &ev, P p, float radius)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  Edit3dModel *model = new Edit3dModel(e,ev,coll,radius);
+  g_edit_faces = model;
+  return add_main_loop(e, model);
+}
+GameApi::P GameApi::MainLoopApi::edit_3d_p(EveryApi &ev)
+{
+  if (g_edit_faces) {
+    return add_polygon2(e, new EditWrapper(g_edit_faces),1);
+  } else
+    {
+      return ev.polygon_api.p_empty();
+    }
+}

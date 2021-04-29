@@ -1006,7 +1006,7 @@ public:
     int width = bm.SizeX();
     int height = bm.SizeY();
     buf = BufferRef::NewBuffer(width, height);
-    std::cout << "MemoizeBitmap " << width << "x" << height << "=" << MB(width*height*sizeof(unsigned int)) << std::endl;
+    //std::cout << "MemoizeBitmap " << width << "x" << height << "=" << MB(width*height*sizeof(unsigned int)) << std::endl;
     for(int j=0;j<height;j++)
       for(int i=0;i<width;i++)
 	{
@@ -1021,7 +1021,7 @@ public:
     int width = bm.SizeX();
     int height = bm.SizeY();
     buf = BufferRef::NewBuffer(width, height);
-    std::cout << "MemoizeBitmap " << width << "x" << height << "=" << MB(width*height*sizeof(unsigned int)) << std::endl;
+    //std::cout << "MemoizeBitmap " << width << "x" << height << "=" << MB(width*height*sizeof(unsigned int)) << std::endl;
     for(int j=0;j<height;j++)
       for(int i=0;i<width;i++)
 	{

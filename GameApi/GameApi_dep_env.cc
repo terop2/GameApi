@@ -566,9 +566,10 @@ void* process(void *ptr)
 }
 
 bool g_progress_already_done = false;
-int g_current_size=0;
+long long g_current_size=0;
 void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homepage)
 {
+  //std::cout<< "URLS_SIZE:" << urls.size() << std::endl;
 #if 0
   int s2 = urls.size();
   for(int i=0;i<s2;i++)
@@ -582,7 +583,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   g_progress_already_done = true;
 #ifndef EMSCRIPTEN
   int s = urls.size();
-
+  std::vector<std::string> urls1 = urls;
 
   std::vector<std::string> urls2;
   for (int e=0;e<s;e++)
@@ -591,15 +592,16 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       std::string url2 = "load_url.php?url=" + url ;
       if (load_url_buffers_async[url2])
 	{
-      ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
-      if (cb) {
+	  
+	  //ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
+	  //if (cb) {
 	//std::cout << "Load cb!" << url2 << std::endl;
 	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
-	(*cb->fptr)(cb->data);
-      } else {
+	//(*cb->fptr)(cb->data);
+	  //} else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
-      }
-
+	  //}
+	  
 	}
       else
 	{
@@ -618,13 +620,14 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   //for(int u=0;u<sk;u+=10) { 
   int u=0;
   
-  int total_size = 0;
+  long long total_size = 0;
   std::vector<int> sizes;
   //s=std::min(10,s-u);
   for(int d=0;d<s;d++)
     {
       std::string url = urls[u+d];
       int sz = load_size_from_url(url);
+      //std::cout << "SZ:" << url << "=" << sz << std::endl;
       sizes.push_back(sz);
       total_size+=sz;
     }
@@ -646,10 +649,11 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 300000);
-    pthread_create(&processdata->thread_id, &attr, &process, (void*)processdata);
+    int err = pthread_create(&processdata->thread_id, &attr, &process, (void*)processdata);
+    if (err) { std::cout << "pthread_create returned error " << err << std::endl; }
   }
   int current_size = 0;
-  int last_size = 0;
+  long long last_size = 0;
   for(int j=0;j<s;j++)
     {
       void *res;
@@ -659,10 +663,11 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	{
 	  if (g_current_size > last_size+(total_size/15))
 	  {
-	    int s = url.size();
-	    int sum=0;
-	    for(int i=0;i<s;i++) sum+=int(url[u+i]);
-	    sum = sum % 1000;
+	    //int s = url.size();
+	    //int sum=0;
+	    //for(int i=0;i<s;i++) sum+=int(url[u+i]);
+	    //sum = sum % 1000;
+	    //std::cout << g_current_size << "*15/" << total_size << std::endl; 
 	    ProgressBar(444,g_current_size*15/total_size,15,"loading assets");
 	  last_size=g_current_size;
 	  }
@@ -671,14 +676,14 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 #endif
 	}
       // pthread_join(vec[j]->thread_id,&res);
-      ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
-      if (cb) {
+      //ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
+      //if (cb) {
 	//std::cout << "Load cb!" << url2 << std::endl;
 	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
-	(*cb->fptr)(cb->data);
-      } else {
+      //	(*cb->fptr)(cb->data);
+      //} else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
-      }
+      //}
       current_size+=sizes[u+j];
 
       
@@ -694,6 +699,25 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     }
   //  }
 
+
+  int ssk = urls1.size();
+  for(int j=0;j<ssk;j++)
+    {
+      void *res;
+      std::string url = urls1[u+j];
+      std::string url2 = "load_url.php?url=" + url ;
+
+      ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
+      if (cb) {
+	//std::cout << "Load cb!" << url2 << std::endl;
+	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
+	(*cb->fptr)(cb->data);
+      } else {
+	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
+      }
+
+    }
+  
 #endif
   g_progress_already_done = false;
 
@@ -884,7 +908,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  std::cout << "InstallProgress:" << sum << " " << url << std::endl;
+  //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
   if (load_url_buffers_async[url2]) { 
     InstallProgress(sum,url + " (cached)",15);
   } else {
@@ -959,7 +983,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
     //emscripten_async_wget_data(buf2, (void*)buf2 , &onload_async_cb, &onerror_async_cb);
 
-  std::cout << "Fetch start" << std::endl;
+    //std::cout << "Fetch start" << std::endl;
 
     
     LoadData *ld = new LoadData;
@@ -983,7 +1007,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     emscripten_fetch(&attr, "load_url.php"); 
     //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
 
-  std::cout << "Fetch end" << std::endl;
+    //std::cout << "Fetch end" << std::endl;
 
     
 #if 0
@@ -1321,7 +1345,7 @@ bool file_exists(std::string filename)
 
 int load_size_from_url(std::string url)
 {
-  if (url=="") return 100000;
+  if (url=="") return 1;
     std::vector<unsigned char> buffer;
     bool succ=false;
 #ifdef WINDOWS
@@ -1334,7 +1358,7 @@ int load_size_from_url(std::string url)
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
-    int num = 100000;
+    int num = 1;
     if (succ) {
 
 #ifdef __APPLE__
@@ -1567,6 +1591,8 @@ LoadStream *load_from_vector(std::vector<unsigned char> vec)
   return stream;
 }
 
+extern std::string g_msg_string;
+
 std::vector<unsigned char> *load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
   if (url.size()==0) return new std::vector<unsigned char>();
@@ -1579,6 +1605,8 @@ std::vector<unsigned char> *load_from_url(std::string url)
       if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
+	g_current_size+=vec->size();
+
 	return vec;
       }
     }
@@ -1643,7 +1671,9 @@ std::vector<unsigned char> *load_from_url(std::string url)
     FILE *f = popen(cmd.c_str(), "rb");
 #endif
 #endif
-    if (!f) { std::cout << "popen failed#2" << std::endl;
+    if (!f) {
+      g_msg_string = "popen failed!";
+      std::cout << "popen failed#2" << std::endl;
       std::cout << errno << std::endl;
       std::cout << url << std::endl;
       return new std::vector<unsigned char>();
@@ -1687,6 +1717,9 @@ std::vector<unsigned char> *load_from_url(std::string url)
 #else
     FILE *f = popen(cmd.c_str(), "rb");
 #endif
+
+    if (!f) { g_msg_string = "popen failed!"; std::cout << "popen failed!" << std::endl; }
+    
     unsigned char c;
     //std::vector<unsigned char> buffer;
     int i = 0;

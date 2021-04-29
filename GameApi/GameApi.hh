@@ -300,6 +300,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
+  ML edit_3d(EveryApi &ev, P p, float radius);
+  P edit_3d_p(EveryApi &ev);
   //ML gltf_joint_matrices(EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, ML next);
   ML choose_ml_from_status(ML connect, ML download, ML prepare);
   ML key_ml(std::vector<ML> vec, std::string keys);

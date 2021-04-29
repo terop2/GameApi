@@ -481,7 +481,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
     std::cout << "NumJoysticks:"  << g_low->sdl->SDL_NumJoysticks() << std::endl;
 
-    std::cout << "TEST:" << std::endl;
+    //   std::cout << "TEST:" << std::endl;
     
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
@@ -571,9 +571,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   if (strlen((const char*)ptr)>4) {
   g_gpu_vendor = std::string(ptr,ptr+4);
   }
-  std::cout << "Vendor: " << ogl->glGetString(Low_GL_VENDOR)<< std::endl;
-  std::cout << "Renderer:" << ogl->glGetString(Low_GL_RENDERER)<< std::endl;
-  std::cout << "Version:" << ogl->glGetString(Low_GL_VERSION) << std::endl;
+  std::cout << "GPU Vendor: " << ogl->glGetString(Low_GL_VENDOR)<< std::endl;
+  std::cout << "GPU Renderer:" << ogl->glGetString(Low_GL_RENDERER)<< std::endl;
+  std::cout << "GPU Version:" << ogl->glGetString(Low_GL_VERSION) << std::endl;
   
 
   vblank = true;
