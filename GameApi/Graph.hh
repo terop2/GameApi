@@ -2480,7 +2480,7 @@ public:
     int sx = t.SizeX(i);
     int sy = t.SizeY(i);
     buf = BufferRef::NewBuffer(sx, sy);
-    std::cout << "BufferFromBitmapCollection::" << sx << "x" << sy << "=" << MB(sx*sy*sizeof(unsigned int)) << std::endl;
+    //std::cout << "BufferFromBitmapCollection::" << sx << "x" << sy << "=" << MB(sx*sy*sizeof(unsigned int)) << std::endl;
     for(int y=0;y<sy;y++)
       for(int x=0;x<sx;x++)
 	{
@@ -2511,7 +2511,7 @@ public:
     int sx = t.SizeX();
     int sy = t.SizeY();
     buf = BufferRef::NewBuffer(sx, sy);
-    std::cout << "BufferFromBitmap:" << sx << "x" << sy << "=" << MB(sx*sy*sizeof(unsigned int)) << std::endl;
+    //std::cout << "BufferFromBitmap:" << sx << "x" << sy << "=" << MB(sx*sy*sizeof(unsigned int)) << std::endl;
     for(int y=0;y<sy;y++)
       for(int x=0;x<sx;x++)
 	{
@@ -2537,7 +2537,7 @@ public:
   void FlipBytes() {
     BufferRef::FreeBuffer(buf);
     buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
-    std::cout << "BufferFromBitmap:" << t.SizeX() << "x" << t.SizeY() << "=" << MB(t.SizeX()*t.SizeY()*sizeof(unsigned int)) << std::endl;
+    //std::cout << "BufferFromBitmap:" << t.SizeX() << "x" << t.SizeY() << "=" << MB(t.SizeX()*t.SizeY()*sizeof(unsigned int)) << std::endl;
     for(int y=0;y<t.SizeY();y++)
       for(int x=0;x<t.SizeX();x++)
 	{
@@ -4118,7 +4118,7 @@ public:
     int sizex = bitmap.SizeX();
     int sizey = bitmap.SizeY();
     ref = BufferRef::NewBuffer(sizex, sizey);
-    std::cout << "BitmapCache:" << sizex << "x" << sizey << "=" << MB(sizex*sizey*sizeof(unsigned int)) << std::endl;
+    //std::cout << "BitmapCache:" << sizex << "x" << sizey << "=" << MB(sizex*sizey*sizeof(unsigned int)) << std::endl;
     if (r.tl.x > r.br.x) std::swap(r.tl.x,r.br.x);
     if (r.tl.y > r.br.y) std::swap(r.tl.y,r.br.y);
     if (r.br.x > sizex) r.br.x = sizex;

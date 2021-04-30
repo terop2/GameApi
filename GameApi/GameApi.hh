@@ -45,7 +45,7 @@ using std::placeholders::_9;
   name(const name &i) : id(i.id) { } \
   name() : id(-1) { } \
   name(int i) : id(i) { }\
-  name* clone() const { if (id!=-1) return new name(id); return 0; }	\
+  name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
   MAC(HML)
   MAC(UV)
