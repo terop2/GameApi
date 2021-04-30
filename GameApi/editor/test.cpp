@@ -2021,7 +2021,8 @@ int main(int argc, char *argv[]) {
   bool has_wayland = false;
   
   const char *ee = getenv("XDG_SESSION_TYPE");
-  std::cout << "SESSION TYPE:" << ee << std::endl;
+  if (ee)
+    std::cout << "SESSION TYPE:" << ee << std::endl;
   const char *ee2 = getenv("SDL_VIDEODRIVER");
   bool has_wayland1 = false;
   bool has_wayland2 = false;
