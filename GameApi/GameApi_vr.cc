@@ -224,6 +224,9 @@ public:
   SubmitML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, TextureID *left, TextureID *right, bool invert, bool translate) :  env(env),ev(ev),item(item), left(left), right(right), invert(invert), translate(translate) {
     firsttime = true;
   }
+  void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  void HeavyPrepare() {}
+
   void Prepare() { item->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
@@ -440,6 +443,9 @@ class HMDProjection : public MainLoopItem
 public:
   HMDProjection(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, bool eye, bool standard, float nr, float fr, bool translate) : env(env), ev(ev), item(item), eye(eye), is_standard(standard), m_fNearClip(nr), m_fFarClip(fr),  translate(translate) {}
 
+
+  void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  void HeavyPrepare() {}
 
   Matrix GetHMDMatrixPoseEye( bool eye, bool is_std )
 {
