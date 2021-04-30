@@ -69,25 +69,25 @@ libGameApi.so: $(OFiles) Makefile
 	@g++ -m64 -rdynamic -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
 #`pkg-config gtkmm-2.4 --libs` 
 
-subdirs: $(Subdirs)
+#subdirs: $(Subdirs)
 
-$(Subdirs):
-	$(MAKE) -C $@
+#$(Subdirs):
+#	$(MAKE) -C $@
 
-.PHONY: subdirs $(Subdirs)
+#.PHONY: subdirs $(Subdirs)
 
-ctags: TAGS
+#ctags: TAGS
 
-TAGS: $(CFiles)
-	etags -o TAGS -l c++ $(CFiles)
+#TAGS: $(CFiles)
+#	etags -o TAGS -l c++ $(CFiles)
 
-CC = g++
+CC = $(CROSS_COMPILE)g++
 CCWIN = i586-mingw32msvc-g++
 
-$(DFiles): objs/%.d: %.cc
-	@echo "  DEP    $@"
-	@gcc -M $(CCFLAGS) $< \
-	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
+#$(DFiles): objs/%.d: %.cc
+#	@echo "  DEP    $@"
+#	@$(CC) -M $(CCFLAGS) $< \
+#	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 
 $(OFiles): objs/%.o : %.cc

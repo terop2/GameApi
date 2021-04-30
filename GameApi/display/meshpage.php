@@ -617,7 +617,7 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux 64-bit amd64</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-25.deb">download deb</a>
+<li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-26.deb">download deb</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
