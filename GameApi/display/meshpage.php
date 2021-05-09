@@ -593,7 +593,7 @@ require_once("user.php");
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 10 64-bit</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v25.msi">download msi</a>
+<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v26.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -655,7 +655,7 @@ visit_counter_inc( "tool" );
 </div>
 <p-->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v25.msi">
+<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v26.msi">
 <img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <div>
@@ -1097,7 +1097,12 @@ function choose_display(id,label, vm,is_popstate)
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
   var url = "https://meshpage.org/mesh_pre.php?id=" + label;
-  var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label;
+<?php
+      $arr = array("username" => "terop", "index" => $_GET["id"]);
+      $res = addtext_date($arr);
+      echo "var dt = \"$res;\";";
+?>
+  var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label + "&" + dt;
   var url3 = "https://meshpage.org/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
   if (g_txt[id]===undefined) {
