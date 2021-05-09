@@ -279,20 +279,26 @@ bool FractalEffect::Frame(float time)
 }
 bool FaceCollectionVolume::Inside(Point p) const
 {
-  int s = coll->NumFaces();
   bool res = false;
-  LineProperties line(pp,p);
-  for(int i=0;i<s;i++)
+  Point pp2 = pp;
+  pp2.y = p.y;
+  LineProperties line(pp2,p);
+  std::vector<int> *faces = accel.optimized_faces(p.y); 
+  int s = faces->size();
+  for(int ii=0;ii<s;ii++)
     {
+      int i = faces->operator[](ii);
       int ss = coll->NumPoints(i);
       if (ss==3)
 	{
 	  Point p1 = coll->FacePoint(i,0);
 	  Point p2 = coll->FacePoint(i,1);
 	  Point p3 = coll->FacePoint(i,2);
-	  float t;
+	  float t = 0.0;
 	  bool b = line.TriangleIntersection(p1,p2,p3,t);
-	  res = res ^ b;
+	  //if (t>0)
+	  //  res = (res ^ b);
+	  if (b && t>0) res=!res;
 	}
       else if (ss==4)
 	{
@@ -300,9 +306,11 @@ bool FaceCollectionVolume::Inside(Point p) const
 	  Point p2 = coll->FacePoint(i,1);
 	  Point p3 = coll->FacePoint(i,2);
 	  Point p4 = coll->FacePoint(i,3);
-	  float t;
+	  float t=0.0;
 	  bool b = line.QuadIntersection(p1,p2,p3,p4,t);
-	  res = res ^ b;
+	  //if (t>0)
+	  //   res = (res ^ b);
+	  if (b && t>0) res=!res;
 	}
     }
   return res;

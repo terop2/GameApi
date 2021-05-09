@@ -300,6 +300,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML transparent(ML ml);
+  ML async_gltf(ML ml, std::string base_url, std::string url);
   ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
   ML edit_3d(EveryApi &ev, P p, float radius);
   P edit_3d_p(EveryApi &ev);
@@ -1383,6 +1385,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next);
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key);
   IMPORT MT gltf_anim_material2(EveryApi &e, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys);
@@ -2269,6 +2272,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P transparent_separate(P p, BM bm, bool opaque);
+  void sort_vertices(VA va, M m);
   P remove_faces(P p);
   P combine_textures(P p1, P p2);
   P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);

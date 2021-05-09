@@ -1029,6 +1029,503 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
 #endif
 
 }
+Matrix g_in_MV;
+std::vector<Point> *g_ptr;
+std::vector<Vector> *g_ptr_normal;
+std::vector<float> *g_ptr_color;
+std::vector<Point> *g_ptr_texcoord;
+std::vector<VEC4> *g_ptr_joint;
+std::vector<VEC4> *g_ptr_weight;
+int g_count;
+bool sort_compare_tri_polys(const Point *p1, const Point *p2)
+{
+  if (g_count==3) {
+    Point pp1_1 = p1[0];
+    Point pp1_2 = p1[1];
+    Point pp1_3 = p1[2];
+    Point pp2_1 = p2[0];
+    Point pp2_2 = p2[1];
+    Point pp2_3 = p2[2];
+    Point p1_center = (Vector(pp1_1) + Vector(pp1_2) + Vector(pp1_3))/3.0;
+    Point p2_center = (Vector(pp2_1) + Vector(pp2_2) + Vector(pp2_3))/3.0;
+    Point p1_trans = p1_center * g_in_MV;
+    Point p2_trans = p2_center * g_in_MV;
+    return p1_trans.z>p2_trans.z;
+  } else if (g_count==6) {
+    Point pp1_1 = p1[0];
+    Point pp1_2 = p1[1];
+    Point pp1_3 = p1[2];
+    Point pp1_4 = p1[5];
+    Point pp2_1 = p2[0];
+    Point pp2_2 = p2[1];
+    Point pp2_3 = p2[2];
+    Point pp2_4 = p2[5];
+    Point p1_center = (Vector(pp1_1) + Vector(pp1_2) + Vector(pp1_3) + Vector(pp1_4))/4.0;
+    Point p2_center = (Vector(pp2_1) + Vector(pp2_2) + Vector(pp2_3) + Vector(pp2_4))/4.0;
+    Point p1_trans = p1_center * g_in_MV;
+    Point p2_trans = p2_center * g_in_MV;
+    return p1_trans.z>p2_trans.z;
+  }
+  return false;
+}
+void swap_elem(int i1, int i2)
+{
+  if (g_count==3) {
+	  g_ptr->operator[](i1*g_count+0) = g_ptr->operator[](i2*g_count+0);
+	  g_ptr->operator[](i1*g_count+1) = g_ptr->operator[](i2*g_count+1);
+	  g_ptr->operator[](i1*g_count+2) = g_ptr->operator[](i2*g_count+2);
+
+	  if (g_ptr_normal) {
+	  g_ptr_normal->operator[](i1*g_count+0) = g_ptr_normal->operator[](i2*g_count+0);
+	  g_ptr_normal->operator[](i1*g_count+1) = g_ptr_normal->operator[](i2*g_count+1);
+	  g_ptr_normal->operator[](i1*g_count+2) = g_ptr_normal->operator[](i2*g_count+2);
+	  }
+
+	  if (g_ptr_color) {
+	  g_ptr_color->operator[](i1*g_count*4+0) = g_ptr_color->operator[](i2*g_count*4+0);
+	  g_ptr_color->operator[](i1*g_count*4+1) = g_ptr_color->operator[](i2*g_count*4+1);
+	  g_ptr_color->operator[](i1*g_count*4+2) = g_ptr_color->operator[](i2*g_count*4+2);
+
+	  g_ptr_color->operator[](i1*g_count*4+3) = g_ptr_color->operator[](i2*g_count*4+3);
+	  g_ptr_color->operator[](i1*g_count*4+4) = g_ptr_color->operator[](i2*g_count*4+4);
+	  g_ptr_color->operator[](i1*g_count*4+5) = g_ptr_color->operator[](i2*g_count*4+5);
+
+	  g_ptr_color->operator[](i1*g_count*4+6) = g_ptr_color->operator[](i2*g_count*4+6
+									    );
+	  g_ptr_color->operator[](i1*g_count*4+7) = g_ptr_color->operator[](i2*g_count*4+7);
+	  g_ptr_color->operator[](i1*g_count*4+8) = g_ptr_color->operator[](i2*g_count*4+8);
+
+	  g_ptr_color->operator[](i1*g_count*4+9) = g_ptr_color->operator[](i2*g_count*4+0);
+	  g_ptr_color->operator[](i1*g_count*4+10) = g_ptr_color->operator[](i2*g_count*4+10);
+	  g_ptr_color->operator[](i1*g_count*4+11) = g_ptr_color->operator[](i2*g_count*4+11);
+
+	  
+	  }
+	  if (g_ptr_texcoord) {
+	  g_ptr_texcoord->operator[](i1*g_count+0) = g_ptr_texcoord->operator[](i2*g_count+0);
+	  g_ptr_texcoord->operator[](i1*g_count+1) = g_ptr_texcoord->operator[](i2*g_count+1);
+	  g_ptr_texcoord->operator[](i1*g_count+2) = g_ptr_texcoord->operator[](i2*g_count+2);
+	  }
+
+	  if (g_ptr_joint) {
+	  g_ptr_joint->operator[](i1*g_count+0) = g_ptr_joint->operator[](i2*g_count+0);
+	  g_ptr_joint->operator[](i1*g_count+1) = g_ptr_joint->operator[](i2*g_count+1);
+	  g_ptr_joint->operator[](i1*g_count+2) = g_ptr_joint->operator[](i2*g_count+2);
+	  }
+
+	  if (g_ptr_weight) {
+	  
+	  g_ptr_weight->operator[](i1*g_count+0) = g_ptr_weight->operator[](i2*g_count+0);
+	  g_ptr_weight->operator[](i1*g_count+1) = g_ptr_weight->operator[](i2*g_count+1);
+	  g_ptr_weight->operator[](i1*g_count+2) = g_ptr_weight->operator[](i2*g_count+2);
+	  }
+
+	  
+  } else if (g_count==6)
+    {
+	  g_ptr->operator[](i1*g_count+0) = g_ptr->operator[](i2*g_count+0);
+	  g_ptr->operator[](i1*g_count+1) = g_ptr->operator[](i2*g_count+1);
+	  g_ptr->operator[](i1*g_count+2) = g_ptr->operator[](i2*g_count+2);
+	  g_ptr->operator[](i1*g_count+3) = g_ptr->operator[](i2*g_count+3);
+	  g_ptr->operator[](i1*g_count+4) = g_ptr->operator[](i2*g_count+4);
+	  g_ptr->operator[](i1*g_count+5) = g_ptr->operator[](i2*g_count+5);
+
+	  if (g_ptr_normal) {
+	  g_ptr_normal->operator[](i1*g_count+0) = g_ptr_normal->operator[](i2*g_count+0);
+	  g_ptr_normal->operator[](i1*g_count+1) = g_ptr_normal->operator[](i2*g_count+1);
+	  g_ptr_normal->operator[](i1*g_count+2) = g_ptr_normal->operator[](i2*g_count+2);
+	  g_ptr_normal->operator[](i1*g_count+3) = g_ptr_normal->operator[](i2*g_count+3);
+	  g_ptr_normal->operator[](i1*g_count+4) = g_ptr_normal->operator[](i2*g_count+4);
+	  g_ptr_normal->operator[](i1*g_count+5) = g_ptr_normal->operator[](i2*g_count+5);
+	  }
+	  
+	  if (g_ptr_color) {
+	  g_ptr_color->operator[](i1*g_count*4+0) = g_ptr_color->operator[](i2*g_count*4+0);
+	  g_ptr_color->operator[](i1*g_count*4+1) = g_ptr_color->operator[](i2*g_count*4+1);
+	  g_ptr_color->operator[](i1*g_count*4+2) = g_ptr_color->operator[](i2*g_count*4+2);
+	  g_ptr_color->operator[](i1*g_count*4+3) = g_ptr_color->operator[](i2*g_count*4+3);
+	  g_ptr_color->operator[](i1*g_count*4+4) = g_ptr_color->operator[](i2*g_count*4+4);
+	  g_ptr_color->operator[](i1*g_count*4+5) = g_ptr_color->operator[](i2*g_count*4+5);
+
+
+	  g_ptr_color->operator[](i1*g_count*4+6) = g_ptr_color->operator[](i2*g_count*4+6);
+	  g_ptr_color->operator[](i1*g_count*4+7) = g_ptr_color->operator[](i2*g_count*4+7);
+	  g_ptr_color->operator[](i1*g_count*4+8) = g_ptr_color->operator[](i2*g_count*4+8);
+	  g_ptr_color->operator[](i1*g_count*4+9) = g_ptr_color->operator[](i2*g_count*4+9);
+	  g_ptr_color->operator[](i1*g_count*4+10) = g_ptr_color->operator[](i2*g_count*4+10);
+	  g_ptr_color->operator[](i1*g_count*4+11) = g_ptr_color->operator[](i2*g_count*4+11);
+
+
+	  g_ptr_color->operator[](i1*g_count*4+12) = g_ptr_color->operator[](i2*g_count*4+12);
+	  g_ptr_color->operator[](i1*g_count*4+13) = g_ptr_color->operator[](i2*g_count*4+13);
+	  g_ptr_color->operator[](i1*g_count*4+14) = g_ptr_color->operator[](i2*g_count*4+14);
+	  g_ptr_color->operator[](i1*g_count*4+15) = g_ptr_color->operator[](i2*g_count*4+15);
+	  g_ptr_color->operator[](i1*g_count*4+16) = g_ptr_color->operator[](i2*g_count*4+16);
+	  g_ptr_color->operator[](i1*g_count*4+17) = g_ptr_color->operator[](i2*g_count*4+17);
+
+
+	  g_ptr_color->operator[](i1*g_count*4+18) = g_ptr_color->operator[](i2*g_count*4+18);
+	  g_ptr_color->operator[](i1*g_count*4+19) = g_ptr_color->operator[](i2*g_count*4+19);
+	  g_ptr_color->operator[](i1*g_count*4+20) = g_ptr_color->operator[](i2*g_count*4+20);
+	  g_ptr_color->operator[](i1*g_count*4+21) = g_ptr_color->operator[](i2*g_count*4+21);
+	  g_ptr_color->operator[](i1*g_count*4+22) = g_ptr_color->operator[](i2*g_count*4+22);
+	  g_ptr_color->operator[](i1*g_count*4+23) = g_ptr_color->operator[](i2*g_count*4+23);
+
+	  
+	  
+	  }
+	  if (g_ptr_texcoord) {
+	  g_ptr_texcoord->operator[](i1*g_count+0) = g_ptr_texcoord->operator[](i2*g_count+0);
+	  g_ptr_texcoord->operator[](i1*g_count+1) = g_ptr_texcoord->operator[](i2*g_count+1);
+	  g_ptr_texcoord->operator[](i1*g_count+2) = g_ptr_texcoord->operator[](i2*g_count+2);
+	  g_ptr_texcoord->operator[](i1*g_count+3) = g_ptr_texcoord->operator[](i2*g_count+3);
+	  g_ptr_texcoord->operator[](i1*g_count+4) = g_ptr_texcoord->operator[](i2*g_count+4);
+	  g_ptr_texcoord->operator[](i1*g_count+5) = g_ptr_texcoord->operator[](i2*g_count+5);
+	  }
+	  if (g_ptr_joint) {
+	  g_ptr_joint->operator[](i1*g_count+0) = g_ptr_joint->operator[](i2*g_count+0);
+	  g_ptr_joint->operator[](i1*g_count+1) = g_ptr_joint->operator[](i2*g_count+1);
+	  g_ptr_joint->operator[](i1*g_count+2) = g_ptr_joint->operator[](i2*g_count+2);
+	  g_ptr_joint->operator[](i1*g_count+3) = g_ptr_joint->operator[](i2*g_count+3);
+	  g_ptr_joint->operator[](i1*g_count+4) = g_ptr_joint->operator[](i2*g_count+4);
+	  g_ptr_joint->operator[](i1*g_count+5) = g_ptr_joint->operator[](i2*g_count+5);	  
+	  }
+
+	  if (g_ptr_weight) {
+	  g_ptr_weight->operator[](i1*g_count+0) = g_ptr_weight->operator[](i2*g_count+0);
+	  g_ptr_weight->operator[](i1*g_count+1) = g_ptr_weight->operator[](i2*g_count+1);
+	  g_ptr_weight->operator[](i1*g_count+2) = g_ptr_weight->operator[](i2*g_count+2);
+	  g_ptr_weight->operator[](i1*g_count+3) = g_ptr_weight->operator[](i2*g_count+3);
+	  g_ptr_weight->operator[](i1*g_count+4) = g_ptr_weight->operator[](i2*g_count+4);
+	  g_ptr_weight->operator[](i1*g_count+5) = g_ptr_weight->operator[](i2*g_count+5);	  
+	  }
+
+	  
+    }
+}
+Point g_x[6];
+Vector gv_x[6];
+float gc_x[6*4];
+Point gt_x[6];
+VEC4 gj_x[6];
+VEC4 gw_x[6];
+void store_elem(int i)
+{
+  if (g_count==3) {
+    g_x[0] = g_ptr->operator[](i*g_count+0);
+    g_x[1] = g_ptr->operator[](i*g_count+1);
+    g_x[2] = g_ptr->operator[](i*g_count+2);
+
+    if (g_ptr_normal) {
+    gv_x[0] = g_ptr_normal->operator[](i*g_count+0);
+    gv_x[1] = g_ptr_normal->operator[](i*g_count+1);
+    gv_x[2] = g_ptr_normal->operator[](i*g_count+2);
+    }
+
+    
+    if (g_ptr_color) {
+    gc_x[0] = g_ptr_color->operator[](i*g_count*4+0);
+    gc_x[1] = g_ptr_color->operator[](i*g_count*4+1);
+    gc_x[2] = g_ptr_color->operator[](i*g_count*4+2);
+
+    gc_x[3] = g_ptr_color->operator[](i*g_count*4+3);
+    gc_x[4] = g_ptr_color->operator[](i*g_count*4+4);
+    gc_x[5] = g_ptr_color->operator[](i*g_count*4+5);
+
+    gc_x[6] = g_ptr_color->operator[](i*g_count*4+6);
+    gc_x[7] = g_ptr_color->operator[](i*g_count*4+7);
+    gc_x[8] = g_ptr_color->operator[](i*g_count*4+8);
+
+    gc_x[9] = g_ptr_color->operator[](i*g_count*4+9);
+    gc_x[10] = g_ptr_color->operator[](i*g_count*4+10);
+    gc_x[11] = g_ptr_color->operator[](i*g_count*4+11);
+
+    
+    
+    }
+    
+    if (g_ptr_texcoord) {
+    gt_x[0] = g_ptr_texcoord->operator[](i*g_count+0);
+    gt_x[1] = g_ptr_texcoord->operator[](i*g_count+1);
+    gt_x[2] = g_ptr_texcoord->operator[](i*g_count+2);
+    }
+    
+    if (g_ptr_joint) {
+    gj_x[0] = g_ptr_joint->operator[](i*g_count+0);
+    gj_x[1] = g_ptr_joint->operator[](i*g_count+1);
+    gj_x[2] = g_ptr_joint->operator[](i*g_count+2);
+    }
+    if (g_ptr_weight) {
+    gw_x[0] = g_ptr_weight->operator[](i*g_count+0);
+    gw_x[1] = g_ptr_weight->operator[](i*g_count+1);
+    gw_x[2] = g_ptr_weight->operator[](i*g_count+2);
+    }
+    
+    
+  } else if (g_count==6)
+    {
+    g_x[0] = g_ptr->operator[](i*g_count+0);
+    g_x[1] = g_ptr->operator[](i*g_count+1);
+    g_x[2] = g_ptr->operator[](i*g_count+2);
+    g_x[3] = g_ptr->operator[](i*g_count+3);
+    g_x[4] = g_ptr->operator[](i*g_count+4);
+    g_x[5] = g_ptr->operator[](i*g_count+5);
+
+    if (g_ptr_normal) {
+    gv_x[0] = g_ptr_normal->operator[](i*g_count+0);
+    gv_x[1] = g_ptr_normal->operator[](i*g_count+1);
+    gv_x[2] = g_ptr_normal->operator[](i*g_count+2);
+    gv_x[3] = g_ptr_normal->operator[](i*g_count+3);
+    gv_x[4] = g_ptr_normal->operator[](i*g_count+4);
+    gv_x[5] = g_ptr_normal->operator[](i*g_count+5);
+    }
+    
+    if (g_ptr_color) {
+    gc_x[0] = g_ptr_color->operator[](i*g_count*4+0);
+    gc_x[1] = g_ptr_color->operator[](i*g_count*4+1);
+    gc_x[2] = g_ptr_color->operator[](i*g_count*4+2);
+    gc_x[3] = g_ptr_color->operator[](i*g_count*4+3);
+    gc_x[4] = g_ptr_color->operator[](i*g_count*4+4);
+    gc_x[5] = g_ptr_color->operator[](i*g_count*4+5);
+
+    gc_x[6] = g_ptr_color->operator[](i*g_count*4+6);
+    gc_x[7] = g_ptr_color->operator[](i*g_count*4+7);
+    gc_x[8] = g_ptr_color->operator[](i*g_count*4+8);
+    gc_x[9] = g_ptr_color->operator[](i*g_count*4+9);
+    gc_x[10] = g_ptr_color->operator[](i*g_count*4+10);
+    gc_x[11] = g_ptr_color->operator[](i*g_count*4+11);
+
+    gc_x[12] = g_ptr_color->operator[](i*g_count*4+12);
+    gc_x[13] = g_ptr_color->operator[](i*g_count*4+13);
+    gc_x[14] = g_ptr_color->operator[](i*g_count*4+14);
+    gc_x[15] = g_ptr_color->operator[](i*g_count*4+15);
+    gc_x[16] = g_ptr_color->operator[](i*g_count*4+16);
+    gc_x[17] = g_ptr_color->operator[](i*g_count*4+17);
+
+    gc_x[18] = g_ptr_color->operator[](i*g_count*4+18);
+    gc_x[19] = g_ptr_color->operator[](i*g_count*4+19);
+    gc_x[20] = g_ptr_color->operator[](i*g_count*4+20);
+    gc_x[21] = g_ptr_color->operator[](i*g_count*4+21);
+    gc_x[22] = g_ptr_color->operator[](i*g_count*4+22);
+    gc_x[23] = g_ptr_color->operator[](i*g_count*4+23);
+
+    
+    
+    }
+    
+    if (g_ptr_texcoord) {
+    gt_x[0] = g_ptr_texcoord->operator[](i*g_count+0);
+    gt_x[1] = g_ptr_texcoord->operator[](i*g_count+1);
+    gt_x[2] = g_ptr_texcoord->operator[](i*g_count+2);
+    gt_x[3] = g_ptr_texcoord->operator[](i*g_count+3);
+    gt_x[4] = g_ptr_texcoord->operator[](i*g_count+4);
+    gt_x[5] = g_ptr_texcoord->operator[](i*g_count+5);
+    }
+
+    if (g_ptr_joint) {
+      gj_x[0] = g_ptr_joint->operator[](i*g_count+0);
+      gj_x[1] = g_ptr_joint->operator[](i*g_count+1);
+      gj_x[2] = g_ptr_joint->operator[](i*g_count+2);
+      gj_x[3] = g_ptr_joint->operator[](i*g_count+3);
+      gj_x[4] = g_ptr_joint->operator[](i*g_count+4);
+      gj_x[5] = g_ptr_joint->operator[](i*g_count+5);
+    }
+
+    if (g_ptr_weight) {
+      gw_x[0] = g_ptr_weight->operator[](i*g_count+0);
+      gw_x[1] = g_ptr_weight->operator[](i*g_count+1);
+      gw_x[2] = g_ptr_weight->operator[](i*g_count+2);
+      gw_x[3] = g_ptr_weight->operator[](i*g_count+3);
+      gw_x[4] = g_ptr_weight->operator[](i*g_count+4);
+      gw_x[5] = g_ptr_weight->operator[](i*g_count+5);
+    }
+    }
+}
+void set_elem(int i2)
+{
+  if (g_count==3) {
+    g_ptr->operator[](i2*g_count+0) = g_x[0];
+    g_ptr->operator[](i2*g_count+1) = g_x[1];
+    g_ptr->operator[](i2*g_count+2) = g_x[2];
+
+    if (g_ptr_normal) {
+    g_ptr_normal->operator[](i2*g_count+0) = gv_x[0];
+    g_ptr_normal->operator[](i2*g_count+1) = gv_x[1];
+    g_ptr_normal->operator[](i2*g_count+2) = gv_x[2];
+    }
+    
+    if (g_ptr_color) {
+    g_ptr_color->operator[](i2*g_count*4+0) = gc_x[0];
+    g_ptr_color->operator[](i2*g_count*4+1) = gc_x[1];
+    g_ptr_color->operator[](i2*g_count*4+2) = gc_x[2];
+
+    g_ptr_color->operator[](i2*g_count*4+3) = gc_x[3];
+    g_ptr_color->operator[](i2*g_count*4+4) = gc_x[4];
+    g_ptr_color->operator[](i2*g_count*4+5) = gc_x[5];
+
+    g_ptr_color->operator[](i2*g_count*4+6) = gc_x[6];
+    g_ptr_color->operator[](i2*g_count*4+7) = gc_x[7];
+    g_ptr_color->operator[](i2*g_count*4+8) = gc_x[8];
+
+    g_ptr_color->operator[](i2*g_count*4+9) = gc_x[9];
+    g_ptr_color->operator[](i2*g_count*4+10) = gc_x[10];
+    g_ptr_color->operator[](i2*g_count*4+11) = gc_x[11];
+
+    }
+    
+    if (g_ptr_texcoord) {
+    g_ptr_texcoord->operator[](i2*g_count+0) = gt_x[0];
+    g_ptr_texcoord->operator[](i2*g_count+1) = gt_x[1];
+    g_ptr_texcoord->operator[](i2*g_count+2) = gt_x[2];
+    }
+    if (g_ptr_joint) {
+    g_ptr_joint->operator[](i2*g_count+0) = gj_x[0];
+    g_ptr_joint->operator[](i2*g_count+1) = gj_x[1];
+    g_ptr_joint->operator[](i2*g_count+2) = gj_x[2];
+    }
+    if (g_ptr_weight) {
+    g_ptr_weight->operator[](i2*g_count+0) = gw_x[0];
+    g_ptr_weight->operator[](i2*g_count+1) = gw_x[1];
+    g_ptr_weight->operator[](i2*g_count+2) = gw_x[2];
+    }
+    
+    
+    
+  } else if (g_count==6)
+    {
+    g_ptr->operator[](i2*g_count+0) = g_x[0];
+    g_ptr->operator[](i2*g_count+1) = g_x[1];
+    g_ptr->operator[](i2*g_count+2) = g_x[2];
+    g_ptr->operator[](i2*g_count+3) = g_x[3];
+    g_ptr->operator[](i2*g_count+4) = g_x[4];
+    g_ptr->operator[](i2*g_count+5) = g_x[5];
+
+    if (g_ptr_normal) {
+    g_ptr_normal->operator[](i2*g_count+0) = gv_x[0];
+    g_ptr_normal->operator[](i2*g_count+1) = gv_x[1];
+    g_ptr_normal->operator[](i2*g_count+2) = gv_x[2];
+    g_ptr_normal->operator[](i2*g_count+3) = gv_x[3];
+    g_ptr_normal->operator[](i2*g_count+4) = gv_x[4];
+    g_ptr_normal->operator[](i2*g_count+5) = gv_x[5];
+    }
+    if (g_ptr_color) {
+    g_ptr_color->operator[](i2*g_count*4+0) = gc_x[0];
+    g_ptr_color->operator[](i2*g_count*4+1) = gc_x[1];
+    g_ptr_color->operator[](i2*g_count*4+2) = gc_x[2];
+    g_ptr_color->operator[](i2*g_count*4+3) = gc_x[3];
+    g_ptr_color->operator[](i2*g_count*4+4) = gc_x[4];
+    g_ptr_color->operator[](i2*g_count*4+5) = gc_x[5];
+
+    g_ptr_color->operator[](i2*g_count*4+6) = gc_x[6];
+    g_ptr_color->operator[](i2*g_count*4+7) = gc_x[7];
+    g_ptr_color->operator[](i2*g_count*4+8) = gc_x[8];
+    g_ptr_color->operator[](i2*g_count*4+9) = gc_x[9];
+    g_ptr_color->operator[](i2*g_count*4+10) = gc_x[10];
+    g_ptr_color->operator[](i2*g_count*4+11) = gc_x[11];
+
+    g_ptr_color->operator[](i2*g_count*4+12) = gc_x[12];
+    g_ptr_color->operator[](i2*g_count*4+13) = gc_x[13];
+    g_ptr_color->operator[](i2*g_count*4+14) = gc_x[14];
+    g_ptr_color->operator[](i2*g_count*4+15) = gc_x[15];
+    g_ptr_color->operator[](i2*g_count*4+16) = gc_x[16];
+    g_ptr_color->operator[](i2*g_count*4+17) = gc_x[17];
+
+    g_ptr_color->operator[](i2*g_count*4+18) = gc_x[18];
+    g_ptr_color->operator[](i2*g_count*4+19) = gc_x[19];
+    g_ptr_color->operator[](i2*g_count*4+20) = gc_x[20];
+    g_ptr_color->operator[](i2*g_count*4+21) = gc_x[21];
+    g_ptr_color->operator[](i2*g_count*4+22) = gc_x[22];
+    g_ptr_color->operator[](i2*g_count*4+23) = gc_x[23];
+
+    
+    
+    }
+    if (g_ptr_texcoord) {
+    g_ptr_texcoord->operator[](i2*g_count+0) = gt_x[0];
+    g_ptr_texcoord->operator[](i2*g_count+1) = gt_x[1];
+    g_ptr_texcoord->operator[](i2*g_count+2) = gt_x[2];
+    g_ptr_texcoord->operator[](i2*g_count+3) = gt_x[3];
+    g_ptr_texcoord->operator[](i2*g_count+4) = gt_x[4];
+    g_ptr_texcoord->operator[](i2*g_count+5) = gt_x[5];
+    }
+    if (g_ptr_joint) {
+    g_ptr_joint->operator[](i2*g_count+0) = gj_x[0];
+    g_ptr_joint->operator[](i2*g_count+1) = gj_x[1];
+    g_ptr_joint->operator[](i2*g_count+2) = gj_x[2];
+    g_ptr_joint->operator[](i2*g_count+3) = gj_x[3];
+    g_ptr_joint->operator[](i2*g_count+4) = gj_x[4];
+    g_ptr_joint->operator[](i2*g_count+5) = gj_x[5];
+    }
+    if (g_ptr_weight) {
+    g_ptr_weight->operator[](i2*g_count+0) = gw_x[0];
+    g_ptr_weight->operator[](i2*g_count+1) = gw_x[1];
+    g_ptr_weight->operator[](i2*g_count+2) = gw_x[2];
+    g_ptr_weight->operator[](i2*g_count+3) = gw_x[3];
+    g_ptr_weight->operator[](i2*g_count+4) = gw_x[4];
+    g_ptr_weight->operator[](i2*g_count+5) = gw_x[5];
+    }
+    
+    }
+    
+}
+void sort_vertex()
+{
+  if (g_count==3) {
+    int i = 1;
+    int s = g_ptr->size()/g_count;
+    while(i<s) {
+      //Point *x_p1 = &(g_ptr->operator[](i*g_count));
+      store_elem(i);
+      int j = i - 1;
+      while(j >= 0 && sort_compare_tri_polys(&g_ptr->operator[](j*g_count),&g_x[0]))
+	{
+	  swap_elem(j+1,j);
+	  j=j-1;
+	}
+      set_elem(j+1);
+      i = i + 1;
+    }
+  } else if (g_count==4) {
+
+    int i = 1;
+    int s = g_ptr->size()/g_count;
+    while(i<s) {
+      //Point *x_p1 = &(g_ptr->operator[](i*g_count));
+      store_elem(i);
+      int j = i - 1;
+      while(j >= 0 && sort_compare_tri_polys(&g_ptr->operator[](j*g_count),&g_x[0]))
+	{
+	  swap_elem(j+1,j);
+	  j=j-1;
+	}
+      set_elem(j+1);
+      i = i + 1;
+    }
+  }
+}
+void RenderVertexArray::sort_blit(int id, Matrix in_MV)
+{
+#if 0
+  g_in_MV = in_MV;
+  g_ptr = &(s.m_set[id]->tri_polys);
+  g_ptr_normal = s.has_normal ? &(s.m_set[id]->tri_normals) : 0;
+  g_ptr_color = s.has_color ? &(s.m_set[id]->tri_color) : 0;
+  g_ptr_texcoord = s.has_texcoord ? &(s.m_set[id]->tri_texcoord) : 0;
+  g_ptr_joint = s.has_skeleton ? &(s.m_set[id]->tri_joint) : 0;
+  g_ptr_weight = s.has_skeleton ? &(s.m_set[id]->tri_weight) : 0;
+  g_count = 3;
+  sort_vertex();
+  g_ptr = &(s.m_set[id]->quad_polys);
+  g_ptr_normal = s.has_normal ? &(s.m_set[id]->quad_normals) : 0;
+  g_ptr_color = s.has_color ? &(s.m_set[id]->quad_color) : 0;
+  g_ptr_texcoord = s.has_texcoord ? &(s.m_set[id]->quad_texcoord) : 0;
+  g_ptr_joint = s.has_skeleton ? &(s.m_set[id]->quad_joint) : 0;
+  g_ptr_weight = s.has_skeleton ? &(s.m_set[id]->quad_weight) : 0;
+  g_count=6;
+  sort_vertex();
+  update(id);
+#endif
+}
 void RenderVertexArray::update(int id)
 { 
   OpenglLowApi *ogl = g_low->ogl;
@@ -1094,6 +1591,7 @@ void RenderVertexArray::update(int id)
 
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[3]);
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*3, s.poly_texcoord_polys(id));
+  
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[4]);
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*3, s.poly_polys2(id));
 

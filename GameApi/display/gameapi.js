@@ -91,7 +91,7 @@ function load_emscripten()
 
     var src = "web_page.js?"+data2;
     if (firefox) src="web_page_nothreads.js?" + data2;
-    if (mobile) src="web_page_lowmem_nothreads.js?"+data2;
+    if (mobile) src="web_page_lowmem.js?"+data2;
     
     var script = document.createElement("script");
     script.setAttribute("src", src);

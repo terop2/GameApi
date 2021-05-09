@@ -839,14 +839,59 @@ private:
   Point center;
 };
 
+class Y_Accel
+{
+public:
+  Y_Accel(FaceCollection *coll, float y_0, float y_1, int count) : coll(coll), y_0(y_0), y_1(y_1), count(count) { }
+
+  void process()
+  {
+    vec.resize(count);
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      Point p1 = coll->FacePoint(i,0);
+      Point p2 = coll->FacePoint(i,1);
+      Point p3 = coll->FacePoint(i,2);
+      Point p4 = coll->FacePoint(i,3 % coll->NumPoints(i));
+      float min_y = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+      float max_y = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+
+      float y = y_0;
+      float d = y_1-y_0;
+      for(int j=0;j<count;j++,y+=d) {
+	if (max_y>y) continue;
+	if (min_y<y+d) continue;
+	vec[j].push_back(i);
+      }
+    }
+  }
+  std::vector<int> *optimized_faces(float y) const {
+    float pos = y-y_0;
+    pos/=(y_1-y_0);
+    if (pos<0) pos=-pos;
+    int val = int(pos);
+    if (val>=0 && val<vec.size()) return &vec[val];
+    return &empty;
+  }
+private:
+  FaceCollection *coll;
+  float y_0;
+  float y_1;
+  int count;
+  mutable std::vector<std::vector<int> > vec;
+  mutable std::vector<int> empty;
+};
+
+
 class FaceCollectionVolume : public VolumeObject
 {
 public:
-  FaceCollectionVolume(FaceCollection *coll, Point p) : coll(coll),pp(p) { }
+  FaceCollectionVolume(FaceCollection *coll, Point p) : coll(coll),pp(p), accel(coll,-300.0, -290.0, 60) { accel.process(); }
   bool Inside(Point p) const;
 private:
   FaceCollection *coll;
   Point pp;
+  Y_Accel accel;
 };
 
 
