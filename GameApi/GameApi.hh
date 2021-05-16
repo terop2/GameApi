@@ -300,6 +300,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML gltf_mesh_all_env(EveryApi &ev, std::string base_url, std::string url, BM diffuse, BM specular, BM bfrd);
   ML transparent(ML ml);
   ML async_gltf(ML ml, std::string base_url, std::string url);
   ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);

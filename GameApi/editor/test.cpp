@@ -31,6 +31,7 @@ using namespace GameApi;
 extern "C" void _udev_device_get_action() { }
 #endif
 
+extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 extern int g_display_width;
@@ -1002,6 +1003,10 @@ void iter(void *arg)
 
 		    //std::cout << "URLS:" << ids.second << std::endl;
 		    std::vector<std::string> urls = ids.second;
+		    std::vector<std::string> urls2 = g_registered_urls;
+		    int s = urls2.size();
+		    for(int i=0;i<s;i++) urls.push_back(urls2[i]);
+		    
 		    std::sort(urls.begin(),urls.end());
 		    auto last3 = std::unique(urls.begin(),urls.end());
 		    urls.erase(last3,urls.end());
