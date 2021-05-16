@@ -24906,6 +24906,7 @@ KP extern "C" void set_string(int num, const char *value)
 {
   //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
+    std::cout << value << std::endl;
     set_new_script(value);      
   }
   

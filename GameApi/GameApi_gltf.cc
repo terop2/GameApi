@@ -1941,6 +1941,20 @@ GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base
   return add_material(e, mat);
 } 
 
+GameApi::MT gltf_material_env2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM bfrd)
+{
+  //bool is_binary=false;
+  //if (int(url.size())>3) {
+  //  std::string sub = url.substr(url.size()-3);
+  //  if (sub=="glb") is_binary=true;
+  //}
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  Material *mat = new GLTF_Material_env(e,ev, load, material_id,mix, diffuse_env, specular_env, bfrd);
+  return add_material(e, mat);
+
+}
+
 GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd )
 {
   bool is_binary=false;
@@ -2633,6 +2647,32 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   }
 }
 
+GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd)
+{
+  if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
+    int s = load->model.meshes[mesh_id].primitives.size();
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<s;i++) {
+      GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
+      int mat = load->model.meshes[mesh_id].primitives[i].material;
+      GameApi::MT mat2 = gltf_material_env2(e, ev, load, mat, 1.0, diffuse, specular, brfd);
+      Material *mat0 = find_material(e,mat2);
+      GLTF_Material *mat3 = (GLTF_Material*)mat0;
+      GameApi::BM bm = mat3->texture(0); // basecolor
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2);
+      GameApi::ML ml = ev.materials_api.bind(p,mat4);
+      mls.push_back(ml);
+    }
+    GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
+    return ml;
+  } else {
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+  }
+}
+
+
 class GltfMesh : public MainLoopItem
 {
 public:
@@ -2866,6 +2906,18 @@ GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
   }
   return ev.mainloop_api.array_ml(ev, mls);
 }
+
+GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd )
+{
+  int s = load->model.meshes.size();
+  std::vector<GameApi::ML> mls;
+  for(int i=0;i<s;i++) {
+    GameApi::ML ml = gltf_mesh2_env( e, ev, load, i, diffuse,specular,brfd );
+    mls.push_back(ml);
+  }
+  return ev.mainloop_api.array_ml(ev, mls);
+}
+
 class GltfMeshAll : public MainLoopItem
 {
 public:
@@ -2935,6 +2987,78 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::str
 {
   return add_main_loop(e, new GltfMeshAll(e,ev,base_url,url));
 }
+
+class GltfMeshAllEnv : public MainLoopItem
+{
+public:
+  GltfMeshAllEnv(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM bfrd)
+    :env(env), ev(ev), base_url(base_url), url(url), diffuse(diffuse),specular(specular),bfrd(bfrd) { res.id = -1;}
+
+
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+
+    bool is_binary=false;
+    if (int(url.size())>3) {
+      std::string sub = url.substr(url.size()-3);
+      if (sub=="glb") is_binary=true;
+    }
+    LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+    //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+    load->Prepare();
+    GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
+    
+    GameApi::ML ml = gltf_mesh_all2_env( env, ev, load,diffuse,specular,bfrd );
+    res = scale_to_gltf_size(env,ev,mesh,ml);
+
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      if (item)
+	item->Prepare();
+    }
+    
+  }
+  virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      if (item)
+	item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      return item->shader_id();
+    else return std::vector<int>();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string base_url;
+  std::string url;
+  GameApi::ML res;
+  GameApi::BM diffuse, specular, bfrd;
+};
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_env( GameApi::EveryApi &ev, std::string base_url, std::string url, BM diffuse,BM specular, BM bfrd )
+{
+  return add_main_loop(e, new GltfMeshAllEnv(e,ev,base_url,url,diffuse,specular,bfrd));
+}
+
 
 class GLTFSkeleton : public LineCollection
 {
@@ -5189,10 +5313,16 @@ public:
 	  url2 = base_url + "/" + url2.substr(1,url2.size()-2);
 	//std::cout << "URL:" << url2 << std::endl;
 	g_registered_urls.push_back(url2);
+#ifdef EMSCRIPTEN
 	env.async_load_url(url2,homepage);
+#endif
       }
     }
     }
+#ifndef EMSCRIPTEN
+    env.async_load_all_urls(g_registered_urls, gameapi_homepageurl);
+#endif
+    
   }
 
   virtual void Collect(CollectVisitor &vis) { Prepare2(); next->Collect(vis); }

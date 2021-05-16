@@ -63,7 +63,7 @@ echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css?" . filemti
 
 <?php
 require_once("user.php");
-$nothreads = "no"; //js_no_threads();
+$nothreads = js_no_threads();
 $mobile = js_mobile();
 if ($mobile == "yes") {
   echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
@@ -190,27 +190,44 @@ $user="terop";
 $num = read_num( $user );
 page_title("meshpage.org", "teleporting your 3d animations to all over the world");
 echo "<div class=\"flex-container\">";
-for($i=$num;$i>1;$i--)
+$cnt = 0;
+$start = $num;
+$startpos = $_GET["ps"];
+if ($startpos!="") {
+  $start = $num-($startpos*50);
+}
+for($i=$start;$cnt<50;$i--)
 {
+$ii = $i;
+if ($i<=1) {
+  $ii = rand(2, $num);
+}
+
 $arr = array("username" => $user,
-             "index" => $i,
+             "index" => $ii,
 	     "width" => 200,
 	     "height" => 150,
 	     "id" => "200x150");
 if (is_hidden($arr)) continue;
 if (js_mobile()=="yes" && !is_lowmem($arr)) continue;
 if (read_url_block($arr)=="block") continue;
+
+
+$cnt = $cnt + 1;
 $id = create_id( $arr );
 $label = get_label( $arr );
 
-   $filename = "user_data/user_" . $user . "/screenshot" . $i . ".png";
-   $filename2 = "user_data/user_" . $user . "/screenshot" . $i . ".webp";
+   $filename = "user_data/user_" . $user . "/screenshot" . $ii . ".png";
+   $filename2 = "user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    if (file_exists($filename2)) $filename = $filename2;
+   if (!file_exists($filename)) { $filename = "https://tpgames.org/unknown.webp"; }
 
-   $url = "/" . $i; //"meshpage.php?p=2&id=" . $i; // . "&label=" . $id;
+
+
+   $url = "/" . $ii; //"meshpage.php?p=2&id=" . $ii; // . "&label=" . $id;
    echo "<div class=\"flex-item\" itemscope itemtype=\"http://schema.org/CreativeWork\">";
    echo "<div class=\"highlight\">";
-   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $i . ",'" . $id . "')\" itemprop=\"url\">";
+   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "')\" itemprop=\"url\">";
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
@@ -281,15 +298,56 @@ $label = get_label( $arr );
    // END OF BACKGROUND CHANGE
    echo "</div>";
    echo "</div>";
+
    echo "<div style=\"font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
    echo "</a>";
    echo "</div>";
    echo "</div>";
 }
+
    echo "</div>";
-   page_footer();
+
+   echo "<div style=\"font-family: 'calibri', sans-serif\" align=\"left\">";
+   echo "<p>";
+   echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
+   if ($startpos!="")
+      echo "<a href=\"https://meshpage.org/meshpage\">000</a> | ";
+   else echo "000 | ";
+   if ($startpos!="1")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=1\">050</a> | ";
+   else echo "050 | ";
+   if ($startpos!="2")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=2\">100</a> | ";
+   else echo "100 | ";
+   if ($startpos!="3")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=3\">150</a> | ";
+   else echo "150 | ";
+   if ($startpos!="4")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=4\">200</a> | ";
+   else echo "200 | ";
+   if ($startpos!="5")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=5\">250</a> | ";
+   else echo "250 | ";
+   if ($startpos!="6")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=6\">300</a> | ";
+   else echo "300 | ";
+   if ($startpos!="7")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=7\">350</a> | ";
+   else echo "350 | ";
+   if ($startpos!="8")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=8\">400</a> | ";
+   else echo "400 | ";
+   if ($startpos!="9")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=9\">450</a> | ";
+   else echo "450 | ";
+   if ($startpos!="10")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=10\">500</a>";
+   else echo "500";
+   echo "</div>";
+echo "<br>";
+page_footer();
+echo "</div>";
 ?>
-</div>
 
 <div v-show="state.mesh">
 
@@ -1361,7 +1419,7 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
 </script>
 <?php
 require_once("user.php");
-$nothreads = "no"; //js_no_threads();
+$nothreads = js_no_threads();
 $mobile = js_mobile();
 if ($mobile == "yes") {
   echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";

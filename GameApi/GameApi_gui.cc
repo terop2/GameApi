@@ -5147,6 +5147,7 @@ ASyncData async_data[] = {
   { "polygon_api", "piechart_full", 4 },
   { "mainloop_api", "gltf_mesh", 2 },
   { "mainloop_api", "gltf_mesh_all", 2 },
+  { "mainloop_api", "gltf_mesh_all_env", 2 },
   { "mainloop_api", "gltf_node", 2 },
   { "mainloop_api", "gltf_scene", 2 },
   { "mainloop_api", "gltf_anim", 2 },
@@ -7637,6 +7638,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string" },
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_env,
+			 "ml_gltf_all_env",
+			 { "ev", "base_url", "url", "diffuse", "specular", "bfrd" },
+			 { "EveryApi&", "std::string", "std::string", "BM", "BM", "BM" },
+			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "", "", "" },
+			 "ML", "mainloop_api", "gltf_mesh_all_env"));
+
   /*  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim,
 			 "ml_gltf_anim",
 			 { "ev", "base_url", "url", "animation", "channel", "mesh_index", "prim_index", "mat" },
