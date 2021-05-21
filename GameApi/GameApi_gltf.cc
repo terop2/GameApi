@@ -216,7 +216,7 @@ public:
     std::string err;
     std::string warn;
     if (!is_binary) {
-      std::cout << "File size: " << url  << "::" << str.size() << std::endl;
+      //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
 #ifdef EMSCRIPTEN
       sz--;
@@ -224,7 +224,7 @@ public:
       tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
-      std::cout << "File size: " << url  << "::" << sz << std::endl;
+      //std::cout << "File size: " << url  << "::" << sz << std::endl;
 #ifdef EMSCRIPTEN
       sz--;
 #endif
@@ -308,7 +308,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     std::vector<unsigned char> *vec = g_e->get_loaded_async_url(url);
     if (!vec) { std::cout << "ReadWholeFile::async not ready:" << url << std::endl; std::cout << "Please use async_url() to register it to system" << std::endl; return false; } else {
       if (!is_in_registered(url))
-	std::cout << "\nWarning: Please note that you might need to add async_url() for " << url << std::endl;
+	std::cout << "\nWarning: Please note that you might need to add async_url() or async_gltf for " << url << std::endl;
     }
     int sz = vec->size();
 #ifdef EMSCRIPTEN
@@ -2677,7 +2677,7 @@ class GltfMesh : public MainLoopItem
 {
 public:
   GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id)
-    :env(env), ev(ev), base_url(base_url), url(url),mesh_id(mesh_id) { }
+    :env(env), ev(ev), base_url(base_url), url(url),mesh_id(mesh_id) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -2703,21 +2703,27 @@ public:
     
   }
   virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       item->execute(e);
+    }
   }
   virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       item->handle_event(e);
+    }
   }
   virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       return item->shader_id();
     else return std::vector<int>();
-  }
+    }
+    }
 
 private:
   GameApi::Env &env;
@@ -2751,7 +2757,7 @@ class GltfNode : public MainLoopItem
 {
 public:
   GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int node_id)
-    :env(env), ev(ev), base_url(base_url), url(url),node_id(node_id) { }
+    :env(env), ev(ev), base_url(base_url), url(url),node_id(node_id) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -2777,20 +2783,29 @@ public:
     
   }
   virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
+
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       item->execute(e);
+    }
   }
   virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
+
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       item->handle_event(e);
+    }
   }
   virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       return item->shader_id();
     else return std::vector<int>();
+    } else return std::vector<int>();
   }
 
 private:
@@ -2826,7 +2841,7 @@ class GltfScene : public MainLoopItem
 {
 public:
   GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id)
-    :env(env), ev(ev), base_url(base_url), url(url),scene_id(scene_id) { }
+    :env(env), ev(ev), base_url(base_url), url(url),scene_id(scene_id) { res.id=-1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -2850,20 +2865,26 @@ public:
   res= scale_to_gltf_size(env,ev,mesh,ml);    
   }
   virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       item->execute(e);
+    }
   }
   virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       item->handle_event(e);
+    }
   }
   virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
       return item->shader_id();
     else return std::vector<int>();
+    } else return std::vector<int>();
   }
 
 private:

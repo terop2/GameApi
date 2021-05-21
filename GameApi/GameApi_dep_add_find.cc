@@ -1316,6 +1316,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   return ee;
 }
 
+GameState *find_game_state(GameApi::Env &e, GameApi::GS gs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->game_state[gs.id];
+}
+
 Attach *find_attach(GameApi::Env &e, GameApi::ATT att)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1833,6 +1839,15 @@ GameApi::PKG add_urlmemmap(GameApi::Env &e, UrlMemoryMap *map)
   env->urlmemmap.push_back(map);
   GameApi::PKG c;
   c.id = env->urlmemmap.size()-1;
+  return c;
+}
+
+GameApi::GS add_game_state(GameApi::Env &e, GameState *gs)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->game_state.push_back(gs);
+  GameApi::GS c;
+  c.id = env->game_state.size()-1;
   return c;
 }
 
