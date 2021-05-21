@@ -47,6 +47,7 @@ using std::placeholders::_9;
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(GS)
   MAC(HML)
   MAC(UV)
   MAC(AV)
@@ -300,6 +301,11 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  GS game_state();
+  ML gs_mouse_pos(GS gs, ML ml, int x, int y);
+  ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
+  ML gs_delta(GS gs, ML ml, int p, int n, float delta);
+  ML gs_time(GS gs, ML ml, int t);
   ML gltf_mesh_all_env(EveryApi &ev, std::string base_url, std::string url, BM diffuse, BM specular, BM bfrd);
   ML transparent(ML ml);
   ML async_gltf(ML ml, std::string base_url, std::string url);

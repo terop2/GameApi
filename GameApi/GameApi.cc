@@ -27712,3 +27712,166 @@ GameApi::P GameApi::MainLoopApi::edit_3d_p(EveryApi &ev)
       return ev.polygon_api.p_empty();
     }
 }
+
+
+class MousePosGameState : public MainLoopItem
+{
+public:
+  MousePosGameState(GameState &st, MainLoopItem *next, int x, int y) : st(st),next(next),x(x),y(y) { }
+
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    *(st.index_float(x)) = e.cursor_pos.x;
+    *(st.index_float(y)) = e.cursor_pos.y;
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int x;
+  int y;
+};
+
+class ObjPosGameState : public MainLoopItem
+{
+public:
+  ObjPosGameState(GameState &st, MainLoopItem *next, int x, int y, int z) : st(st), next(next), x(x),y(y),z(z) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Matrix m = e.in_MV;
+    *(st.index_float(x)) = m.matrix[3];
+    *(st.index_float(y)) = m.matrix[7];
+    *(st.index_float(z)) = m.matrix[11];
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int x;
+  int y;
+  int z;
+};
+
+class TimeGameState : public MainLoopItem
+{
+public:
+  TimeGameState(GameState &st, MainLoopItem *next, int t) : st(st), next(next), t(t) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    *(st.index_float(t)) = e.time;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int t;
+};
+
+class DeltaGameState : public MainLoopItem
+{
+public:
+  DeltaGameState(GameState &st, MainLoopItem *next, int p, int n, float delta) : st(st), next(next), p(p), n(n), delta(delta) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    *(st.index_float(n)) = *(st.index_float(p)) + delta;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int p, n;
+  float delta;
+};
+
+GameApi::ML GameApi::MainLoopApi::gs_mouse_pos(GS gs, ML ml, int x, int y)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new MousePosGameState(*gs0, item, x, y));
+}
+GameApi::ML GameApi::MainLoopApi::gs_obj_pos(GS gs, ML ml, int x, int y, int z)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new ObjPosGameState(*gs0, item, x, y,z));
+}
+
+GameApi::ML GameApi::MainLoopApi::gs_delta(GS gs, ML ml, int p, int n, float delta)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new DeltaGameState(*gs0,item,p,n,delta));
+}
+
+GameApi::ML GameApi::MainLoopApi::gs_time(GS gs, ML ml, int t)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new TimeGameState(*gs0,item,t));
+}
+
+class GameStateImpl : public GameState
+{
+  float *index_float(int i) const {
+    int s = floats.size();
+    if (i>=0 && i<s) { return &floats[i]; }
+    floats.resize(i+1);
+    return &floats[i];
+  }
+  int *index_int(int i) const {
+    int s = ints.size();
+    if (i>=0 && i<s) { return &ints[i]; }
+    ints.resize(i+1);
+    return &ints[i];
+  }
+  std::string *index_string(int i) const
+  {
+    int s = strings.size();
+    if (i>=0 && i<s) { return &strings[i]; }
+    strings.resize(i+1);
+    return &strings[i];
+  }
+private:
+  mutable std::vector<float> floats;
+  mutable std::vector<int> ints;
+  mutable std::vector<std::string> strings;
+};
+
+GameApi::GS GameApi::MainLoopApi::game_state()
+{
+  return add_game_state(e, new GameStateImpl);
+}

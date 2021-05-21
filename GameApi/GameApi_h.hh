@@ -732,6 +732,7 @@ struct EnvImpl
   std::vector<MemoryBlock*> memblock;
   std::vector<UrlMemoryMap*> urlmemmap;
   std::vector<Attach*> attach;
+  std::vector<GameState*> game_state;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1043,6 +1044,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::GS add_game_state(GameApi::Env &e, GameState *gs);
 GameApi::ATT add_attach(GameApi::Env &e, Attach *att);
 GameApi::PKG add_urlmemmap(GameApi::Env &e, UrlMemoryMap *map);
 GameApi::MB add_memblock(GameApi::Env &e, MemoryBlock *block);
@@ -1191,6 +1193,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+GameState *find_game_state(GameApi::Env &e, GameApi::GS gs);
 Attach *find_attach(GameApi::Env &e, GameApi::ATT att);
 UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG p);
 MemoryBlock *find_memblock(GameApi::Env &e, GameApi::MB b);

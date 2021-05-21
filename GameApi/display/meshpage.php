@@ -65,17 +65,27 @@ echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css?" . filemti
 require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
+$highmem = js_highmem();
 if ($mobile == "yes") {
   echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
 } else
 if ($nothreads == "yes") {
+   if ($highmem == "yes") {
+   echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "\" as=\"script\"/>";
+
+  echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.worker.js?" . filemtime("web_page_nothreads_highmem_worker.js") . "\" as=\"script\" crossorigin/>";
+
+  } else {
    echo "<link rel=\"preload\" href=\"web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "\" as=\"script\"/>";
 
   echo "<link rel=\"preload\" href=\"web_page_nothreads.worker.js?" . filemtime("web_page_nothreads_worker.js") . "\" as=\"script\" crossorigin/>";
+  }
 } else {
+   if ($highmem == "yes") {
+   echo "<link rel=\"preload\" href=\"web_page_highmem.js?" . filemtime("web_page_highmem.js") . "\" as=\"script\" crossorigin/>";
+   } else {
    echo "<link rel=\"preload\" href=\"web_page.js?" . filemtime("web_page.js") . "\" as=\"script\" crossorigin/>";
-  //echo "<link rel=\"preload\" href=\"web_page.worker.js?" . filemtime("web_page.worker.js") . "\" as=\"script\" crossorigin/>";
-  //echo "<link rel=\"preload\" href=\"web_page.worker.js\" as=\"script\" crossorigin/>";
+   }
 }
 echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"  onload=\"this.rel = 'stylesheet'\"/>";
 
@@ -1421,13 +1431,24 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
 require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
+$highmem = js_highmem();
 if ($mobile == "yes") {
   echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";
 } else
 if ($nothreads == "yes") {
+   if ($highmem == "yes") {
+  echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
+
+   } else {
   echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
+   }
 } else {
+   if ($highmem == "yes") {
+  echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
+
+   } else {
   echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
+  }
 }
 ?>
 <script>
