@@ -250,6 +250,7 @@ public:
   void update(int id);
   void update_tri(int id, int buffer_id, int start, int end);
   void render(int id);
+  void sort_blit(int id, Matrix in_MV);
   void prepare_instanced(int id, Point *positions, int size);
   void prepare_instanced_matrix(int id, Matrix *positions, int size);
   void render_instanced(int id, Point *positions, int size);

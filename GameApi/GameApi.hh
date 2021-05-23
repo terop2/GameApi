@@ -47,6 +47,7 @@ using std::placeholders::_9;
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(GS)
   MAC(HML)
   MAC(UV)
   MAC(AV)
@@ -300,6 +301,14 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  GS game_state();
+  ML gs_mouse_pos(GS gs, ML ml, int x, int y);
+  ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
+  ML gs_delta(GS gs, ML ml, int p, int n, float delta);
+  ML gs_time(GS gs, ML ml, int t);
+  ML gltf_mesh_all_env(EveryApi &ev, std::string base_url, std::string url, BM diffuse, BM specular, BM bfrd);
+  ML transparent(ML ml);
+  ML async_gltf(ML ml, std::string base_url, std::string url);
   ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
   ML edit_3d(EveryApi &ev, P p, float radius);
   P edit_3d_p(EveryApi &ev);
@@ -1383,6 +1392,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next);
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key);
   IMPORT MT gltf_anim_material2(EveryApi &e, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys);
@@ -2269,6 +2279,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P transparent_separate(P p, BM bm, bool opaque);
+  void sort_vertices(VA va, M m);
   P remove_faces(P p);
   P combine_textures(P p1, P p2);
   P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);

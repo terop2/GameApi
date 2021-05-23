@@ -3557,6 +3557,268 @@ GameApi::MS GameApi::MatricesApi::interpolate(MS start, MS end, float val)
   return add_matrix_array(e, new InterpolateMS(start_, end_, val));
 }
 
+class TransparentSeparateFaceCollection : public FaceCollection
+{
+public:
+  TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque) : coll(coll), texture(texture),opaque(opaque) { }
+
+
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
+  void HeavyPrepare() { }
+  void Prepare() { coll->Prepare(); }
+  
+  int NumFaces() const
+  {
+    int c=coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<c;i++)
+      {
+	bool b = is_transparent(i);
+	if (opaque) b=!b;
+	if (b) count++;
+      }
+    return count;
+  }
+  int NumPoints(int face) const
+  {
+    return coll->NumPoints(Mapping(face));
+  }
+  Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(Mapping(face), point);
+  }
+  Point EndFacePoint(int face, int point) const
+  {
+    return coll->EndFacePoint(Mapping(face), point);
+  }
+  unsigned int Color(int face, int point) const
+  {
+    return coll->Color(Mapping(face), point);
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(Mapping(face), point);
+  }
+  float TexCoord3(int face, int point) const
+  {
+    return coll->TexCoord3(Mapping(face), point);
+  }
+
+  Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(Mapping(face), point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(Mapping(face), point, id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(Mapping(face),point,id);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return coll->Joints(Mapping(face),point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return coll->Weights(Mapping(face),point);
+  }
+
+
+  virtual bool has_normal() const { return coll->has_normal(); }
+  virtual bool has_attrib() const { return coll->has_attrib(); }
+  virtual bool has_color() const { return coll->has_color(); }
+  virtual bool has_texcoord() const { return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { return coll->has_skeleton(); }
+
+  
+
+  
+  bool is_transparent(int face) const
+  {
+    Point2d t1 = coll->TexCoord(face,0);
+    Point2d t2 = coll->TexCoord(face,1);
+    Point2d t3 = coll->TexCoord(face,2);
+    Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
+    ::Color c = texture.Map(center.x*texture.SizeX(), center.y*texture.SizeY());
+    return c.alpha < 250;
+  }
+  int Mapping(int ii) const
+  {
+    if (vec.size()>0) return vec[ii];
+    int count=0;
+    int num = coll->NumFaces();
+    for(int i=0;i<num;i++)
+      {
+	bool b = is_transparent(i);
+	if (opaque) b=!b;
+	if (b)
+	  {
+	    vec.push_back(i);
+	    //if (count == ii) return i;
+	  count++;
+	  }
+      }
+    return 0;
+  }
+
+  
+private:
+  FaceCollection *coll;
+  Bitmap<::Color> &texture;
+  bool opaque;
+  mutable std::vector<int> vec;
+};
+
+GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+
+  return add_polygon2(e, new TransparentSeparateFaceCollection(coll, *b2, opaque),1);
+}
+
+class TransparentMainLoop : public MainLoopItem
+{
+public:
+  TransparentMainLoop(MainLoopItem *next) : next(next) { }
+
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+    g_low->ogl->glDepthMask(Low_GL_FALSE);
+    next->execute(e);
+    g_low->ogl->glDepthMask(Low_GL_TRUE);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+  
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::MainLoopApi::transparent(ML ml)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new TransparentMainLoop(next));
+}
+class TransparentRenderMaterial : public MaterialForward
+{
+public:
+  TransparentRenderMaterial(GameApi::EveryApi &ev, GameApi::BM bm, Material *next) : ev(ev),bm(bm),next(next) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+
+    GameApi::ML I13;
+    I13.id = next->mat(p_opaque.id);
+
+    GameApi::ML I14;
+    I14.id = next->mat(p_trans.id);
+    GameApi::ML I15 = ev.mainloop_api.transparent(I14);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(I13);
+    vec.push_back(I15);
+    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    return I16;
+    
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst(p_opaque.id,pts.id);
+
+    GameApi::ML I14;
+    I14.id = next->mat_inst(p_trans.id,pts.id);
+    GameApi::ML I15 = ev.mainloop_api.transparent(I14);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(I13);
+    vec.push_back(I15);
+    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    return I16;
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst_matrix(p_opaque.id,ms.id);
+
+    GameApi::ML I14;
+    I14.id = next->mat_inst_matrix(p_trans.id,ms.id);
+    GameApi::ML I15 = ev.mainloop_api.transparent(I14);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(I13);
+    vec.push_back(I15);
+    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    return I16;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst2(p_opaque.id,pta.id);
+
+    GameApi::ML I14;
+    I14.id = next->mat_inst2(p_trans.id,pta.id);
+    GameApi::ML I15 = ev.mainloop_api.transparent(I14);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(I13);
+    vec.push_back(I15);
+    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    return I16;
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+
+    GameApi::ML I13;
+    I13.id = next->mat_inst_fade(p_opaque.id,pts.id,flip,start_time,end_time);
+
+    GameApi::ML I14;
+    I14.id = next->mat_inst_fade(p_trans.id,pts.id,flip,start_time,end_time);
+
+    GameApi::ML I15 = ev.mainloop_api.transparent(I14);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(I13);
+    vec.push_back(I15);
+    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    return I16;
+
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::BM bm;
+  Material *next;
+};
+
+GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT next)
+{
+  Material *next_mat = find_material(e,next);
+  return add_material(e, new TransparentRenderMaterial(ev,bm,next_mat));
+}
+
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -24644,6 +24906,7 @@ KP extern "C" void set_string(int num, const char *value)
 {
   //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
+    std::cout << value << std::endl;
     set_new_script(value);      
   }
   
@@ -27448,4 +27711,167 @@ GameApi::P GameApi::MainLoopApi::edit_3d_p(EveryApi &ev)
     {
       return ev.polygon_api.p_empty();
     }
+}
+
+
+class MousePosGameState : public MainLoopItem
+{
+public:
+  MousePosGameState(GameState &st, MainLoopItem *next, int x, int y) : st(st),next(next),x(x),y(y) { }
+
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    *(st.index_float(x)) = e.cursor_pos.x;
+    *(st.index_float(y)) = e.cursor_pos.y;
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int x;
+  int y;
+};
+
+class ObjPosGameState : public MainLoopItem
+{
+public:
+  ObjPosGameState(GameState &st, MainLoopItem *next, int x, int y, int z) : st(st), next(next), x(x),y(y),z(z) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Matrix m = e.in_MV;
+    *(st.index_float(x)) = m.matrix[3];
+    *(st.index_float(y)) = m.matrix[7];
+    *(st.index_float(z)) = m.matrix[11];
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int x;
+  int y;
+  int z;
+};
+
+class TimeGameState : public MainLoopItem
+{
+public:
+  TimeGameState(GameState &st, MainLoopItem *next, int t) : st(st), next(next), t(t) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    *(st.index_float(t)) = e.time;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int t;
+};
+
+class DeltaGameState : public MainLoopItem
+{
+public:
+  DeltaGameState(GameState &st, MainLoopItem *next, int p, int n, float delta) : st(st), next(next), p(p), n(n), delta(delta) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    *(st.index_float(n)) = *(st.index_float(p)) + delta;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  GameState &st;
+  MainLoopItem *next;
+  int p, n;
+  float delta;
+};
+
+GameApi::ML GameApi::MainLoopApi::gs_mouse_pos(GS gs, ML ml, int x, int y)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new MousePosGameState(*gs0, item, x, y));
+}
+GameApi::ML GameApi::MainLoopApi::gs_obj_pos(GS gs, ML ml, int x, int y, int z)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new ObjPosGameState(*gs0, item, x, y,z));
+}
+
+GameApi::ML GameApi::MainLoopApi::gs_delta(GS gs, ML ml, int p, int n, float delta)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new DeltaGameState(*gs0,item,p,n,delta));
+}
+
+GameApi::ML GameApi::MainLoopApi::gs_time(GS gs, ML ml, int t)
+{
+  GameState *gs0 = find_game_state(e, gs);
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new TimeGameState(*gs0,item,t));
+}
+
+class GameStateImpl : public GameState
+{
+  float *index_float(int i) const {
+    int s = floats.size();
+    if (i>=0 && i<s) { return &floats[i]; }
+    floats.resize(i+1);
+    return &floats[i];
+  }
+  int *index_int(int i) const {
+    int s = ints.size();
+    if (i>=0 && i<s) { return &ints[i]; }
+    ints.resize(i+1);
+    return &ints[i];
+  }
+  std::string *index_string(int i) const
+  {
+    int s = strings.size();
+    if (i>=0 && i<s) { return &strings[i]; }
+    strings.resize(i+1);
+    return &strings[i];
+  }
+private:
+  mutable std::vector<float> floats;
+  mutable std::vector<int> ints;
+  mutable std::vector<std::string> strings;
+};
+
+GameApi::GS GameApi::MainLoopApi::game_state()
+{
+  return add_game_state(e, new GameStateImpl);
 }
