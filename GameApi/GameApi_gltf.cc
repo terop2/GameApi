@@ -216,7 +216,7 @@ public:
     std::string err;
     std::string warn;
     if (!is_binary) {
-      std::cout << "File size: " << url  << "::" << str.size() << std::endl;
+      //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
 #ifdef EMSCRIPTEN
       sz--;
@@ -224,7 +224,7 @@ public:
       tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
-      std::cout << "File size: " << url  << "::" << sz << std::endl;
+      //std::cout << "File size: " << url  << "::" << sz << std::endl;
 #ifdef EMSCRIPTEN
       sz--;
 #endif
