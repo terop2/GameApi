@@ -1,0 +1,26 @@
+
+
+all: nodebug
+
+nodebug: pthreads_both_nodebug both_nodebug
+
+debug: pthreads_both both
+
+libGameApi.bc:
+	$(MAKE) -j 8 -f Makefile.LinuxEm
+
+libGameApi_nothreads.bc:
+	$(MAKE) -j 8 -f Makefile.LinuxEm nothreads
+
+pthreads_both : libGameApi.bc
+	(cd web_page; $(MAKE) -f Makefile.LinuxEm pthreads_both)
+
+both: libGameApi_nothreads.bc
+	(cd web_page; $(MAKE) -f Makefile.LinuxEm both)
+
+pthreads_both_nodebug : libGameApi.bc
+	(cd web_page; $(MAKE) -f Makefile.LinuxEm pthreads_both)
+
+both_nodebug : libGameApi_nothreads.bc
+	(cd web_page; $(MAKE) -f Makefile.LinuxEm both)
+

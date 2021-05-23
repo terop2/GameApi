@@ -63,19 +63,29 @@ echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css?" . filemti
 
 <?php
 require_once("user.php");
-$nothreads = "no"; //js_no_threads();
+$nothreads = js_no_threads();
 $mobile = js_mobile();
+$highmem = js_highmem();
 if ($mobile == "yes") {
   echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
 } else
 if ($nothreads == "yes") {
+   if ($highmem == "yes") {
+   echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "\" as=\"script\"/>";
+
+  echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.worker.js?" . filemtime("web_page_nothreads_highmem_worker.js") . "\" as=\"script\" crossorigin/>";
+
+  } else {
    echo "<link rel=\"preload\" href=\"web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "\" as=\"script\"/>";
 
   echo "<link rel=\"preload\" href=\"web_page_nothreads.worker.js?" . filemtime("web_page_nothreads_worker.js") . "\" as=\"script\" crossorigin/>";
+  }
 } else {
+   if ($highmem == "yes") {
+   echo "<link rel=\"preload\" href=\"web_page_highmem.js?" . filemtime("web_page_highmem.js") . "\" as=\"script\" crossorigin/>";
+   } else {
    echo "<link rel=\"preload\" href=\"web_page.js?" . filemtime("web_page.js") . "\" as=\"script\" crossorigin/>";
-  //echo "<link rel=\"preload\" href=\"web_page.worker.js?" . filemtime("web_page.worker.js") . "\" as=\"script\" crossorigin/>";
-  //echo "<link rel=\"preload\" href=\"web_page.worker.js\" as=\"script\" crossorigin/>";
+   }
 }
 echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"  onload=\"this.rel = 'stylesheet'\"/>";
 
@@ -190,27 +200,44 @@ $user="terop";
 $num = read_num( $user );
 page_title("meshpage.org", "teleporting your 3d animations to all over the world");
 echo "<div class=\"flex-container\">";
-for($i=$num;$i>1;$i--)
+$cnt = 0;
+$start = $num;
+$startpos = $_GET["ps"];
+if ($startpos!="") {
+  $start = $num-($startpos*50);
+}
+for($i=$start;$cnt<50;$i--)
 {
+$ii = $i;
+if ($i<=1) {
+  $ii = rand(2, $num);
+}
+
 $arr = array("username" => $user,
-             "index" => $i,
+             "index" => $ii,
 	     "width" => 200,
 	     "height" => 150,
 	     "id" => "200x150");
 if (is_hidden($arr)) continue;
 if (js_mobile()=="yes" && !is_lowmem($arr)) continue;
 if (read_url_block($arr)=="block") continue;
+
+
+$cnt = $cnt + 1;
 $id = create_id( $arr );
 $label = get_label( $arr );
 
-   $filename = "user_data/user_" . $user . "/screenshot" . $i . ".png";
-   $filename2 = "user_data/user_" . $user . "/screenshot" . $i . ".webp";
+   $filename = "user_data/user_" . $user . "/screenshot" . $ii . ".png";
+   $filename2 = "user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    if (file_exists($filename2)) $filename = $filename2;
+   if (!file_exists($filename)) { $filename = "https://tpgames.org/unknown.webp"; }
 
-   $url = "/" . $i; //"meshpage.php?p=2&id=" . $i; // . "&label=" . $id;
+
+
+   $url = "/" . $ii; //"meshpage.php?p=2&id=" . $ii; // . "&label=" . $id;
    echo "<div class=\"flex-item\" itemscope itemtype=\"http://schema.org/CreativeWork\">";
    echo "<div class=\"highlight\">";
-   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $i . ",'" . $id . "')\" itemprop=\"url\">";
+   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "')\" itemprop=\"url\">";
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
@@ -281,15 +308,56 @@ $label = get_label( $arr );
    // END OF BACKGROUND CHANGE
    echo "</div>";
    echo "</div>";
+
    echo "<div style=\"font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
    echo "</a>";
    echo "</div>";
    echo "</div>";
 }
+
    echo "</div>";
-   page_footer();
+
+   echo "<div style=\"font-family: 'calibri', sans-serif\" align=\"left\">";
+   echo "<p>";
+   echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
+   if ($startpos!="")
+      echo "<a href=\"https://meshpage.org/meshpage\">000</a> | ";
+   else echo "000 | ";
+   if ($startpos!="1")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=1\">050</a> | ";
+   else echo "050 | ";
+   if ($startpos!="2")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=2\">100</a> | ";
+   else echo "100 | ";
+   if ($startpos!="3")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=3\">150</a> | ";
+   else echo "150 | ";
+   if ($startpos!="4")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=4\">200</a> | ";
+   else echo "200 | ";
+   if ($startpos!="5")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=5\">250</a> | ";
+   else echo "250 | ";
+   if ($startpos!="6")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=6\">300</a> | ";
+   else echo "300 | ";
+   if ($startpos!="7")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=7\">350</a> | ";
+   else echo "350 | ";
+   if ($startpos!="8")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=8\">400</a> | ";
+   else echo "400 | ";
+   if ($startpos!="9")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=9\">450</a> | ";
+   else echo "450 | ";
+   if ($startpos!="10")
+      echo "<a href=\"https://meshpage.org/meshpage?ps=10\">500</a>";
+   else echo "500";
+   echo "</div>";
+echo "<br>";
+page_footer();
+echo "</div>";
 ?>
-</div>
 
 <div v-show="state.mesh">
 
@@ -593,7 +661,7 @@ require_once("user.php");
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 10 64-bit</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v25.msi">download msi</a>
+<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v26.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -655,7 +723,7 @@ visit_counter_inc( "tool" );
 </div>
 <p-->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v25.msi">
+<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v26.msi">
 <img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <div>
@@ -1097,7 +1165,12 @@ function choose_display(id,label, vm,is_popstate)
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
   var url = "https://meshpage.org/mesh_pre.php?id=" + label;
-  var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label;
+<?php
+      $arr = array("username" => "terop", "index" => $_GET["id"]);
+      $res = addtext_date($arr);
+      echo "var dt = \"$res;\";";
+?>
+  var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label + "&" + dt;
   var url3 = "https://meshpage.org/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
   if (g_txt[id]===undefined) {
@@ -1356,15 +1429,26 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
 </script>
 <?php
 require_once("user.php");
-$nothreads = "no"; //js_no_threads();
+$nothreads = js_no_threads();
 $mobile = js_mobile();
+$highmem = js_highmem();
 if ($mobile == "yes") {
   echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";
 } else
 if ($nothreads == "yes") {
+   if ($highmem == "yes") {
+  echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
+
+   } else {
   echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
+   }
 } else {
+   if ($highmem == "yes") {
+  echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
+
+   } else {
   echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
+  }
 }
 ?>
 <script>

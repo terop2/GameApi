@@ -2005,7 +2005,7 @@ ShaderFile::ShaderFile()
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
 "  specularColor = mix(f0, baseColor.rgb, metallic);\n"
 
-"  baseColor.a = 1.0;\n"
+    ///    "  baseColor.a = 1.0;\n"
     // use next one if material is unlit
    //"  return vec4(LINEARtoSRGB(baseColor.rgb),baseColor.a);\n"
 
@@ -3557,7 +3557,7 @@ ShaderFile::ShaderFile()
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
 "  specularColor = mix(f0, baseColor.rgb, metallic);\n"
 
-"  baseColor.a = 1.0;\n"
+    //   "  baseColor.a = 1.0;\n"
     // use next one if material is unlit
    //"  return vec4(LINEARtoSRGB(baseColor.rgb),baseColor.a);\n"
 

@@ -5825,6 +5825,9 @@ public:
 	ev.shader_api.set_var(shader, "in_N", m2);
 	ev.shader_api.set_var(shader, "time", e.time);
 	sh = shader;
+
+	api.sort_vertices(va,m);
+
       }
     if (firsttime) { firsttime = false; }
     ev.shader_api.use(sh);
@@ -9496,12 +9499,19 @@ EXPORT bool GameApi::PolygonApi::is_array_texture(VA va)
   VertexArraySet *s = find_vertex_array(e, va);
   return s->is_array_texture();
 }
+void GameApi::PolygonApi::sort_vertices(VA va, M m)
+{
+  Matrix mm = find_matrix(e,m);
+  RenderVertexArray *rend = find_vertex_array_render(e, va);
+  rend->sort_blit(0,mm);
+}
 EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 {
   VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   OpenglLowApi *ogl = g_low->ogl;
 
+  
 #ifdef VAO
   if (rend->tri_count>0)
     ogl->glBindVertexArray(rend->vao[0]);
@@ -19937,3 +19947,4 @@ GameApi::P GameApi::PolygonApi::combine_textures(GameApi::P p1, GameApi::P p2)
   FaceCollection *coll2 = find_facecoll(e,p2);
   return add_polygon2(e, new CombineTextures(coll1, coll2),1);
 }
+

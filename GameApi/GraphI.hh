@@ -2077,4 +2077,12 @@ public:
   virtual int EndRange(int span, int range) const=0;
 };
 
+class GameState
+{
+public:
+  virtual float *index_float(int i) const=0;
+  virtual int *index_int(int i) const=0;
+  virtual std::string *index_string(int i) const=0;
+};
+
 #endif
