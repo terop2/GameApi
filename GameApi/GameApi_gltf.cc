@@ -412,6 +412,7 @@ public:
 
       return Color(val);
     }
+    std::cout << img->component << " " << img->bits << std::endl;
     std::cout << "GLTF Image format not regognized" << std::endl;
     return Color(0x0);
   }
