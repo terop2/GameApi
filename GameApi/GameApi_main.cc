@@ -2092,8 +2092,8 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
   if (g_transparent) { 
     return ml;
   } else {
-    BM I1 = ev.bitmap_api.circular_gradient(256,256, g_background_center[g_background_mode], g_background_edge[g_background_mode]);
-    //BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
+    //BM I1 = ev.bitmap_api.circular_gradient(256,256, g_background_center[g_background_mode], g_background_edge[g_background_mode]);
+    BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
     BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
     ML I3=ev.sprite_api.vertex_array_render(ev,I2);
     ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);

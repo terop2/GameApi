@@ -312,7 +312,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     }
     int sz = vec->size();
 #ifdef EMSCRIPTEN
-    sz--;
+        sz--;
 #endif
     *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
   return true;
@@ -369,6 +369,7 @@ public:
     if (!img) return Color(0x0);
     unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
+    //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
     if ((img->component==4 ||img->component==3)&& img->bits==8) {
 
 
@@ -412,8 +413,7 @@ public:
 
       return Color(val);
     }
-    std::cout << img->component << " " << img->bits << std::endl;
-    std::cout << "GLTF Image format not regognized" << std::endl;
+    std::cout << "GLTF Image format not recognized" << std::endl;
     return Color(0x0);
   }
 private:

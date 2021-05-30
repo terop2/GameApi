@@ -198,6 +198,7 @@ clean:
 	@$(RM) -rf objs/*.bc objs/*.bc objs/*.gch objs/*.gch2
 	@$(RM) -rf objs/nothreads/*.bc objs/nothreads/*.bc objs/nothreads/*.gch objs/nothreads/*.gch2
 	@$(RM) main
+	@$(RM) libGameApi.bc libGameApi_nothreads.bc
 	@echo Clean.
 
 profile:
