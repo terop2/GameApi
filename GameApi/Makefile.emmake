@@ -24,3 +24,4 @@ pthreads_both_nodebug : libGameApi.bc
 both_nodebug : libGameApi_nothreads.bc
 	(cd web_page; $(MAKE) -f Makefile.LinuxEm both)
 
+.PHONY: all nodebug debug pthreads_both both pthreads_both_nodebug both_nodebug libGameApi.bc libGameApi_nothreads.bc

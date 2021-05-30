@@ -86,11 +86,23 @@ function load_emscripten()
     var agent = navigator.userAgent;
     var mobile = false;
     var firefox = false;
+    var idx = 0;
     if (agent.indexOf("Mobile") != -1) mobile = true;
-    if (agent.indexOf("Firefox") != -1) firefox = true;
+    if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
     var src = "web_page.js?"+data2;
-    if (firefox) src="web_page_nothreads.js?" + data2;
+    //alert(window.navigator.appVersion);
+    //console.log(agent);
+    var vstr = agent.substring(idx+8);
+    //console.log(vstr);
+    var vnum = parseInt(vstr);
+    //console.log(vnum);
+
+
+    
+    if (firefox && vnum<=78)
+	src="web_page_nothreads.js?" + data2;
+    else if (firefox) src="web_page_nothreads_highmem.js?" + data2;
     if (mobile) src="web_page_lowmem.js?"+data2;
     
     var script = document.createElement("script");
