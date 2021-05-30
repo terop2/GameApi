@@ -2723,7 +2723,7 @@ public:
     if (item)
       return item->shader_id();
     else return std::vector<int>();
-    }
+    } else return std::vector<int>();
     }
 
 private:
