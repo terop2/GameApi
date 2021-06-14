@@ -1,3 +1,7 @@
 cd meshpage.org
 put meshpage.php
 put cert.php
+put cert_linux.php
+put login.php
+put oauth2.php
+put oauth2_callback.php

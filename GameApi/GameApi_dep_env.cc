@@ -13,6 +13,9 @@
 #define idb_disabled 1
 //#define idb_disabled 0
 
+
+std::string g_window_href;
+
 int load_size_from_url(std::string url);
 
 
@@ -48,6 +51,34 @@ bool is_texture_usage_confirmed(VertexArraySet *set)
   for(int i=0;i<s;i++) if (g_confirm2[i]==set) return true;
   return false;
   
+}
+
+
+std::string extract_server(std::string url)
+{
+  int s = url.size();
+  bool found = false;
+  int i = 0;
+  for(;i<s;i++) { if (url[i]==':') { break; } }
+  i++;
+  for(;i<s;i++) { if (url[i]=='/') { break; } }
+  i++;
+  for (;i<s;i++) { if (url[i]=='/') { break; } }
+  i++;
+  int pos = i;
+  for(;i<s;i++) { if (url[i]=='/') { break; } }
+  i++;
+  int pos2 = i;
+  if (pos<s && pos2<s) return url.substr(pos,pos2-pos);
+  return url;
+}
+
+bool is_urls_from_same_server(std::string url, std::string url2)
+{
+  std::string s1 = extract_server(url);
+  std::string s2 = extract_server(url2);
+  //std::cout << "is_urls_from_same_server::Compare:" << s1 << "==" << s2 << std::endl;
+  return s1==s2;
 }
 
 
@@ -991,6 +1022,10 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ld->buf3 = buf3;
     ld->url = oldurl;
     ld->url3 = url3;
+
+    bool is_same_server = is_urls_from_same_server(oldurl,g_window_href);
+    
+    
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
@@ -1001,10 +1036,16 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     attr.onerror = fetch_download_failed;
     attr.onprogress = fetch_download_progress;
     //attr.onreadystatechange = fetch_headers_received;
-    attr.requestData = (char*)body_buf;
-    attr.requestDataSize = body.size()+1;
+    if (!is_same_server) {
+      attr.requestData = (char*)body_buf;
+      attr.requestDataSize = body.size()+1;
+    }
     attr.requestHeaders = headers;
-    emscripten_fetch(&attr, "load_url.php"); 
+    if (!is_same_server) {
+      emscripten_fetch(&attr, "load_url.php");
+    } else {
+      emscripten_fetch(&attr, oldurl.c_str());
+    }
     //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
 
     //std::cout << "Fetch end" << std::endl;

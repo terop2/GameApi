@@ -1022,7 +1022,7 @@ void *thread_func_sprite(void *data)
   ProgressBar(434, g_sprite_count, 4, s);
 #endif
 
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
 
   return 0;
 }

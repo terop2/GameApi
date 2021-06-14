@@ -171,6 +171,21 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </template>
 </div>
 </template>
+<div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; " class="link level1" id="login_label">
+<b>
+<a class="navi" v-on:click="login_click($event)"><span><div id="login_info">Anonymous</div></span></a>
+</b>
+</div>
+</div>
+</div>
+<div v-if="state.dropdown" class="dropdown-window" id="dropdown">
+<div class="dropdown-content">
+<b>
+<a href="#">Profile</a>
+<a href="#">Create new</a>
+<a href="#">My Animations</a><hr>
+<a href="#">Logout</a>
+</b>
 </div>
 </div>
 <div class="main">
@@ -245,8 +260,8 @@ $label = get_label( $arr );
 
 
    //echo "<canvas id=\"cnv" . $i . "\" width=\"200\" height=\"150\"></canvas>";
-  // echo "<script>\n";
-  // echo "var g_background = 0;\n";
+   echo "<script>\n";
+   echo "var g_background = 0;\n";
   // echo "function change_black_pixels_to_background(canvas, url, bg)\n";
   // echo "{\n";
   // echo "var filename = \"https://meshpage.org/bg\" + bg.toString() + \".png\";\n";
@@ -303,7 +318,7 @@ $label = get_label( $arr );
 ////echo"   console.log(\"BACKGROUND:\" + t);\n";
 //echo "change_black_pixels_to_background(\"cnv" . $i . "\", \"" . $filename . "\", parseInt(t,10));\n";
 //echo "});}\n";   
-//echo "</script>\n";
+echo "</script>\n";
 
    // END OF BACKGROUND CHANGE
    echo "</div>";
@@ -409,8 +424,22 @@ echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>";
 echo "<br>";
-
+echo "<button type=\"button\" onclick=\"login()\">LOGIN</button>";
+echo "<div id=\"result\">RESULT COMES HERE...</div>";
 ?>
+<script>
+function login() {
+	 var req = new XMLHttpRequest();
+	 req.open("GET", "https://meshpage.org/oauth2.php");
+	 req.onload = function() {
+	     console.log("LOAD");
+    	     var res = document.getElementById("result");
+    	     res.innerHTML = req.response_text;
+	 }
+	 req.send();
+}
+</script>
+
 </div>
 <div v-if="state.docs">
 <p>
@@ -740,6 +769,29 @@ visit_counter_inc( "tool" );
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.dropdown-window {
+  position: absolute;
+  top:36px;
+  right: 0px;
+  background-color: #000;
+  z-index: 1;
+  border-width: thin;
+  border-style: solid;
+  border-color: #fff;
+}
+.dropdown-content a {
+  color: white;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+.dropdown-content
+{
+font-size: 20px;
+width: 240px;
+text-color: #fff;
+}
+.dropdown-content a:hover { background-color: #d40; }
 .noselect {
  -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -761,6 +813,10 @@ visit_counter_inc( "tool" );
   }
 </style>
 <script>
+function event_target(event)
+{
+}
+
 var store = {
   state: {
     empty: true,
@@ -779,7 +835,8 @@ var store = {
     mesh: false,
     functions: false,
     source_code: false,
-    html_embed: false
+    html_embed: false,
+    dropdown: false
     },
     clear_state() {
        this.state.empty = false;
@@ -798,6 +855,28 @@ var store = {
        this.state.functions = false;
        this.state.source_code = false;
        this.state.html_embed = false;
+    },
+    toggle_dropdown()
+    {
+	if (this.state.dropdown) this.state.dropdown=false;
+	else {
+
+	     this.state.dropdown=true;
+	     var hm = document.getElementById("html");
+	     function clickhandler(state,hm) {
+	      return function (event)
+	     	      {
+			var elem = document.getElementById("login_label");
+			if (!elem.contains(event.target))
+			   {
+		  		state.dropdown=false;
+				hm.removeEventListener("click", clickhandler, true);
+     	 	           }
+		      
+	     	      }
+	     }
+	     hm.addEventListener("click", clickhandler(this.state,hm), true);
+	     }
     },
     choose(a) {
       this.clear_state();
@@ -984,6 +1063,9 @@ if ($page!="") {
 	  choose_display(id,label,vm,false);
 
 	  //console.log(id);
+       },
+       login_click(e) {
+	  store.toggle_dropdown();
        },
        bread_click(e) {
        		      var vm = this;
@@ -1423,7 +1505,7 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
       "--code", "P I1=ev.polygon_api.p_empty();\nML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\nRUN I3=ev.blocker_api.game_window2(ev,I2,false,false,0.0,100000.0);\n", "--homepage",gameapi_homepageurl,"--platform","<?php echo $ua ?>"],
       print: (function() {
       	     return function(text) {
-	     	    console.log(text);
+	     	       console.log(text);
 		    } })(),      
   };
 </script>
