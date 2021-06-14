@@ -374,3 +374,25 @@ private:
   Waveform *wv;
   float delta;
 };
+
+#if 0
+class ApproximationWaveform : public Waveform
+{
+  ApproximationWaveform(std::vector<std::pair<float,float> > vec) : vec(vec) { }
+
+  float Recurse(float val, std::vector<std::pair<float,float> > vec)
+  {
+    if (vec.size()==0) return 1.0;
+    std::pair<float,float> p = vec[vec.size()-1];
+    vec.pop_back();
+    return (val-p.first)*Recurse(val,vec)+p.second;
+  }
+  
+  float Index(float val) const
+  {
+    return Recurse(val, vec);
+  }
+private:
+  std::vector<std::pair<float,float> > vec;
+};
+#endif

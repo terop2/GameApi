@@ -230,6 +230,8 @@ extern int g_event_screen_x;
 extern int g_event_screen_y;
 extern std::string g_platform;
 
+
+extern std::string g_window_href;
 extern GameApi::EveryApi *g_everyapi;
 
 #if 1
@@ -317,7 +319,14 @@ int main(int argc, char *argv[]) {
 	    std::cout << "Using platform:" << cmd_args[current_arg+1] << std::endl;
 	    g_platform = cmd_args[current_arg+1];
 	  current_arg+=2;
-	} else
+	  } else
+	  if (check_count(cmd_args, current_arg,2) && cmd_args[current_arg]=="--href")
+	      {
+		std::cout << "Page from server: " << cmd_args[current_arg+1] << std::endl;
+		g_window_href = cmd_args[current_arg+1];
+		current_arg+=2;
+	      }
+	else
 	{
 	  std::cout << "Invalid commandline args" << std::endl;
 	  std::cout << "Alternatives are: " << std::endl;
