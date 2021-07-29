@@ -1,5 +1,8 @@
 <?php
 session_start();
+//header("Cross-origin-Resource-Policy: cross-origin");
+//header("Access-Control-Allow-Origin: https://meshpage.org");
+//header("Vary: Origin");
 include '/home/terop/tpgames.org/oauth2/RandomInterface.php';
 include '/home/terop/tpgames.org/oauth2/Random.php';
 include '/home/terop/tpgames.org/oauth2/AccessToken.php';
@@ -37,7 +40,7 @@ $accessToken = $client->getAccessToken(
   );
 //  echo "AFTER";
 //var_dump($accessToken);
-unset($_SESSION['oauth2_session']);
+//unset($_SESSION['oauth2_session']);
 //echo "TOKEN:\n";
 //echo $accessToken->getToken() . "\r\n";
 //echo "TOKENTYPE:\n";
@@ -55,7 +58,8 @@ unset($_SESSION['oauth2_session']);
 $opts = array(
       'http'=>array(
 	'method'=>"GET",
-	'header'=>"Authorisation: " . $accessToken->getTokenType() . "\r\n"
+	'header'=>"Authorisation: " . $accessToken->getTokenType() . "\r\n" .
+		  "Access-Control-Allow-Origin: null\r\n"
 	)
 	);
 $context = stream_context_create($opts);
@@ -63,6 +67,12 @@ $s = file_get_contents("https://auth.euderco.net/userdata?access_token=" . $acce
 
 $arr = json_decode($s,true);
 
-echo "<p>USERNAME: " . $arr["user_id"] . "\r\n";
-echo "<p>NAME:" . $arr["name"] . "\r\n";
-echo "<p>EMAIL: " . $arr["email"] . "\r\n";
+echo "<div id=\"cnts\">" . $arr["user_id"] . "%";
+echo "" . $arr["name"] . "%";
+echo "" . $arr["email"] . "%";
+echo "</div>";
+//echo "<script>";
+//echo "const frame = document.getElementById('frm');\n";
+//echo "const cnts = document.getElementById('cnts');\n";
+//echo "frame.contentWindow.postMessage(cnts, 'http://meshpage.org');";
+//echo "</script>";

@@ -9730,6 +9730,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       float x = arr->array[i*3];
       float y = arr->array[i*3+1];
       float z = arr->array[i*3+2];
+      shapi.use(sh);
       shapi.set_var(sh, "in_InstPos", x,y,z);
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -9929,6 +9930,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       float x = arr->array[i*3];
       float y = arr->array[i*3+1];
       float z = arr->array[i*3+2];
+      shapi.use(sh);
       shapi.set_var(sh, "in_InstPos", x,y,z);
 
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -17467,6 +17469,7 @@ public:
 	    int sh_id = vec[i];
 	    GameApi::SH sh;
 	    sh.id = sh_id;
+	    ev.shader_api.use(sh);
 	    ev.shader_api.set_var(sh, "in_POS", mix_val);
 	  }
 	mainloopitem->execute(ee);

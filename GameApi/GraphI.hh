@@ -19,6 +19,7 @@ class CollectVisitor;
 class CollectInterface
 {
 public:
+  virtual ~CollectInterface() { }
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
 };
@@ -26,6 +27,7 @@ public:
 class CollectVisitor
 {
 public:
+  virtual ~CollectVisitor() { }
   virtual void register_obj(CollectInterface *i)=0;
 };
 

@@ -1,4 +1,4 @@
-
+ 
 #include "GameApi_h.hh"
 #include "GraphI.hh"
 
@@ -3730,17 +3730,17 @@ extern Matrix g_last_resize;
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
-  GLTFJointMatrices(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 63;}
+  GLTFJointMatrices(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640;}
   void Collect(CollectVisitor &vis)
   {
-    next->Collect(vis);
     load->Collect(vis);
+    next->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
   {
     if (firsttime) {
-    next->Prepare();
+      //next->Prepare();
       jointmatrices_start.resize(max_joints);
       jointmatrices_end.resize(max_joints);
       bindmatrix.resize(max_joints);
@@ -3821,10 +3821,12 @@ public:
   
   Matrix recurse_node(int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
+    if (node_id<0 || node_id>=load->model.nodes.size()) return Matrix::Identity();
     int sz = load->model.animations.size();
     if (animation<0||animation>=sz) return Matrix::Identity();
     
     tinygltf::Node *node = &load->model.nodes[node_id];
+    if (!node) return Matrix::Identity();
     
     //std::cout << "Node: " << node->name << std::endl;
 
@@ -4849,6 +4851,7 @@ public:
     ml.id = next->mat(p.id);
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    //std::cout << "NUM_TIMEINDEXES: " << num_timeindexes << std::endl;
     for(int i=0;i<num_timeindexes;i++) {
       GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml, true);
       mls.push_back(ml1);
@@ -5067,16 +5070,18 @@ public:
     if (ch==key &&e.type==0x300) {
       key_time = ev.mainloop_api.get_time()/1000.0; /*current_time;*/
     }
-    
-    items[0]->handle_event(e);
+    if (items.size()>0)
+      items[0]->handle_event(e);
   }
   void Collect(CollectVisitor &vis)
   {
     int s = items.size();
     for(int i=0;i<s;i++) {
-      items[i]->Collect(vis);
+      if (items[i])
+	items[i]->Collect(vis);
     }
-    ml_orig->Collect(vis);
+    if (ml_orig)
+      ml_orig->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -5086,9 +5091,11 @@ public:
   void Prepare() {
     int s = items.size();
     for(int i=0;i<s;i++) {
-      items[i]->Prepare();
+      if (items[i])
+	items[i]->Prepare();
     }
-    ml_orig->Prepare();
+    if (ml_orig)
+      ml_orig->Prepare();
     resize = g_last_resize; // this communicates with resize_to_correct_size()
   }
   void logoexecute() {
@@ -5148,7 +5155,7 @@ public:
 	    int sz = items.size();
 	    for(int t=0;t<sz;t++)
 	      {
-		GLTFJointMatrices *joints = (GLTFJointMatrices*)items[t];
+		GLTFJointMatrices *joints = (GLTFJointMatrices*)(items[t]);
 		const std::vector<float> *start_time = joints->start_time();
 		const std::vector<float> *end_time = joints->end_time();
 		

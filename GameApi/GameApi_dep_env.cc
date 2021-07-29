@@ -559,7 +559,8 @@ void *process2(void *ptr)
   std::string *str = (std::string*)ptr;
   pthread_detach(pthread_self());
   system(str->c_str());
-  pthread_exit(0);
+  //pthread_exit(0);
+  return 0;
 }
 
 void pthread_system(std::string str)
@@ -593,7 +594,8 @@ void* process(void *ptr)
   std::vector<unsigned char> *buf = load_from_url(url);
   std::string url2 = "load_url.php?url=" + url ;
   load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
-  pthread_exit(0);
+  //pthread_exit(0);
+  return 0;
 }
 
 bool g_progress_already_done = false;

@@ -3866,7 +3866,7 @@ std::string replace_c(const replace_c_params &pp)
   std::string ww;
   std::string out;
   std::vector<std::string> current_define;
-  std::vector<bool> current_bools;
+  std::vector<int> current_bools;
   std::vector<std::string> current_template;
   std::vector<int> current_template_id;
 
@@ -3975,7 +3975,7 @@ std::string replace_c(const replace_c_params &pp)
 		  break;
 		}
 	    }
-	  current_bools.push_back(b);
+	  current_bools.push_back(b?1:0);
 	  if (b) {
 	    current_define.push_back(s);
 	  }
@@ -4001,7 +4001,7 @@ std::string replace_c(const replace_c_params &pp)
 		  break;
 		}
 	    }
-	  current_bools.push_back(b);
+	  current_bools.push_back(b?1:0);
 	  if (b) {
 	    current_define.push_back(s);
 	  }
@@ -4011,7 +4011,7 @@ std::string replace_c(const replace_c_params &pp)
 	{
 	  if (current_bools.size()>0)
 	    {
-	    bool b = current_bools[current_bools.size()-1];
+	    int b = current_bools[current_bools.size()-1];
 	    if (b)
 	      current_define.pop_back();
 	    current_bools.pop_back();

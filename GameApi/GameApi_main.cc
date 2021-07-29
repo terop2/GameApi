@@ -625,6 +625,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1,
 				     60000.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
+      prog->use();
       prog->set_var("in_P", m);
       prog->set_var("in_T", m3);
       //glMultMatrixf(&mat[0]);
@@ -646,6 +647,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       //m = m*Matrix::Translate(-1.0/2, -1.0/2, 0.0);
       //m = m * Matrix::Scale(1.0, -1.0, 0.0);
       //m = m*Matrix::Translate(-1, -1, 0.0);
+      prog->use();
       prog->set_var("in_P", m);
       //g_low->ogl->glDisable(Low_GL_LIGHTING);
       ogl->glDisable(Low_GL_DEPTH_TEST);
@@ -2087,18 +2089,41 @@ unsigned int g_background_center[] = { 0xff000000, 0xff888888, 0xffffffff, 0xff0
 unsigned int g_background_edge[] = { 0xff000000, 0xff000000, 0xff888888, 0xff000000, 
 				     0xff880000, 0xff008800, 0xff888800,
 				     0xff008888, 0xff880088 };
+
+class Bg : public MainLoopItem
+{
+public:
+  Bg(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    ev.mainloop_api.clear_3d(0xff000000);
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GameApi::EveryApi &ev;
+};
+GameApi::ML GameApi::MainLoopApi::glClear(GameApi::EveryApi &ev)
+{
+  return add_main_loop(e,new Bg(ev));
+}
+
 GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
 {
   if (g_transparent) { 
     return ml;
   } else {
     //BM I1 = ev.bitmap_api.circular_gradient(256,256, g_background_center[g_background_mode], g_background_edge[g_background_mode]);
-    BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
-    BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
-    ML I3=ev.sprite_api.vertex_array_render(ev,I2);
-    ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
+    //BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
+    //BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
+    //ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+    //ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
+    ML I4=ev.mainloop_api.glClear(ev);
     ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
-    return I5;
+    return ml;
   }
 }
 bool is_mobile(GameApi::EveryApi &ev);

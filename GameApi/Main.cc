@@ -423,7 +423,7 @@ c  for(int i=0;i<size1&&!exit2;i+=100)
   delete [] audio_buffer;
   }
 
-  pthread_exit(0);
+  //pthread_exit(0);
   return 0;
 
 }

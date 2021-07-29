@@ -902,7 +902,7 @@ void *thread_func_pts(void *data)
       jj++;
     }
   //  std::cout << "Thread finished" << jj << " " << ti->arr->numpoints << std::endl;
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
 
   return 0;
 }

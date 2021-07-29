@@ -142,6 +142,8 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </script>
 <body id="body">
 <script src="https://meshpage.org/vue.js"></script>
+<div id="result" style="display:none"></div>
+<div id="result2" style="display:none"></div>
 <div id="app">
 <div id="navbar" class="navi">
 <div class="ncenter noselect">
@@ -171,19 +173,19 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </template>
 </div>
 </template>
-<div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; " class="link level1" id="login_label">
+<div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; display:none;" class="link level1" id="login_label">
 <b>
-<a class="navi" v-on:click="login_click($event)"><span><div id="login_info">Anonymous</div></span></a>
+<a class="navi" v-on:click="login_click($event)"  id="login_button"><span><div id="login_info">Anonymous</div></span></a>
 </b>
 </div>
 </div>
 </div>
-<div v-if="state.dropdown" class="dropdown-window" id="dropdown">
+<div class="dropdown-window" id="dropdown" style="display:none">
 <div class="dropdown-content">
 <b>
-<a href="#">Profile</a>
-<a href="#">Create new</a>
-<a href="#">My Animations</a><hr>
+<a v-on:click="login_menu_click($event, 'profile')">Profile</a>
+<a v-on:click="login_menu_click($event, 'create_new')">Create new anim</a>
+<a v-on:click="login_menu_click($event, 'my_animations')">My Animations</a><hr>
 <a href="#">Logout</a>
 </b>
 </div>
@@ -207,6 +209,14 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <br><br><br><br><br><br>
 <br><br><br><br><br><br>
 <br><br><br><br><br><br>
+</div>
+<div id="profile" style="display:none">
+<div style="font-size: 20px;"><span id="log">#</span>(<span id="name">#</span> - <span id="email">#</span>)</div>
+
+</div>
+<div v-if="state.create_new">
+</div>
+<div v-if="state.my_animations">
 </div>
 <div v-if="state.main">
 <?php
@@ -424,20 +434,60 @@ echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>";
 echo "<br>";
-echo "<button type=\"button\" onclick=\"login()\">LOGIN</button>";
-echo "<div id=\"result\">RESULT COMES HERE...</div>";
+echo "";
 ?>
 <script>
-function login() {
-	 var req = new XMLHttpRequest();
-	 req.open("GET", "https://meshpage.org/oauth2.php");
-	 req.onload = function() {
-	     console.log("LOAD");
-    	     var res = document.getElementById("result");
-    	     res.innerHTML = req.response_text;
-	 }
-	 req.send();
+ var g_counter = 0;
+ function onload_button() {
+    g_counter = g_counter + 1;
+    if (g_counter<15)
+       setTimeout(login, 50);
+ }
+ function submit_data(user_id, user_name, user_email)
+ {
+     //console.log("submit_data");
+     if (user_id!="" && user_name != "" && user_email !="") {
+     	var res4 = document.getElementById("login_label");
+	res4.style = "font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0;";
+     	var res2 = document.getElementById("result2");
+     	res2.innerHTML = user_name;
+     	var res3 = document.getElementById("login_info");
+     	res3.innerHTML = user_id;
+	var res4 = document.getElementById("log");
+	if (res4) res4.innerHTML = user_id;
+	var res5 = document.getElementById("name");
+	if (res5) res5.innerHTML = user_name;
+	var res6 = document.getElementById("email");
+	if (res6) res6.innerHTML = user_email;
+     } else onload_button();
+ }
+ var g_cnts = null;
+ function onload_iframe() {
+     //console.log("LOAD");
+     var txt = document.getElementById("frm");
+     var innerdoc = (txt.contentDocument) ? txt.contentDocument : txt.contentWindow.document;
+     var txt2a = g_cnts || innerdoc.getElementById("cnts");
+     if (txt2a) {
+     	var txt2 = txt2a.innerHTML;
+     	var txts = txt2.split("%");
+     	var user_id = txts[0];
+     	var user_name = txts[1];
+     	var user_email = txts[2];
+     	submit_data(user_id, user_name, user_email);
+	}
 }
+
+function login() {
+	 var res = document.getElementById("result");
+	 if (res==null) onload_button(); else
+	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"https://meshpage.org/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" style=\"display:none\"></iframe>";
+	 
+
+	 //var req = new XMLHttpRequest();
+	 //req.open("GET", "https://meshpage.org/oauth2.php");
+
+}
+onload_button();
 </script>
 
 </div>
@@ -836,7 +886,11 @@ var store = {
     functions: false,
     source_code: false,
     html_embed: false,
-    dropdown: false
+    dropdown: false,
+
+    profile: false,
+    create_new: false,
+    my_animations: false
     },
     clear_state() {
        this.state.empty = false;
@@ -855,13 +909,22 @@ var store = {
        this.state.functions = false;
        this.state.source_code = false;
        this.state.html_embed = false;
+       this.state.profile = false;
+       this.state.create_new = false;
+       this.state.my_animations = false;
     },
     toggle_dropdown()
     {
-	if (this.state.dropdown) this.state.dropdown=false;
-	else {
+	if (this.state.dropdown) {
+	this.state.dropdown=false;
+	     var dd = document.getElementById("dropdown");
+	     dd.style = "display:none";
 
+	}
+	else {
 	     this.state.dropdown=true;
+	     var dd = document.getElementById("dropdown");
+	     dd.style = "display:inline;";
 	     var hm = document.getElementById("html");
 	     function clickhandler(state,hm) {
 	      return function (event)
@@ -870,6 +933,9 @@ var store = {
 			if (!elem.contains(event.target))
 			   {
 		  		state.dropdown=false;
+				var dd = document.getElementById("dropdown");
+	     			dd.style = "display:none";
+
 				hm.removeEventListener("click", clickhandler, true);
      	 	           }
 		      
@@ -895,6 +961,9 @@ var store = {
       if (a=='functions') this.state.functions = true;
       if (a=='source_code') this.state.source_code = true;
       if (a=='html_embed') this.state.html_embed = true;
+      if (a=='profile') this.state.profile = true;
+      if (a=='create_new') this.state.create_new = true;
+      if (a=='my_animations') this.state.my_animations = true;
       },
 };
 
@@ -1057,6 +1126,7 @@ if ($page!="") {
    methods: {
 
        mesh_display(id,label) {
+		hide_profile(false);
           var vm = this;
           if (!g_emscripten_alive) { start_timer(id,label,vm); return; }
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
@@ -1067,7 +1137,12 @@ if ($page!="") {
        login_click(e) {
 	  store.toggle_dropdown();
        },
+       login_menu_click(e,str) {
+       		store.choose(str);
+		hide_profile(str=='profile');
+       },
        bread_click(e) {
+		hide_profile(false);
        		      var vm = this;
 		      var txt = e.target.textContent;
        		      //console.log(txt);
@@ -1637,6 +1712,22 @@ function fix_keyboard(hide)
   window.removeEventListener('keyup', e1, true);
   }
 }
+function hide_profile(b)
+{
+   var elem = document.getElementById("profile");
+   if (b) elem.style="";
+   else elem.style="display:none";
+}
 
+//window.addEventListener('message', event=>{
+//   console.log("MESSAGE EVENT");
+//   if (event.origin.startsWith('https://meshpage.org')||event.origin.startsWith('http://meshpage.org')) {
+//      g_cnts = event.data;
+//      console.log("ADDEVENTLISTENER");
+//      console.log(event.data);
+//   } else {
+//      return;
+//   }
+//});
 
 </script>
