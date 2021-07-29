@@ -3119,7 +3119,7 @@ void *thread_func(void *data)
   ThreadInfo *ti = (ThreadInfo*)data;
   //ti->va->reserve(0);
   ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
   return 0;
 #else
   ThreadInfo *ti = (ThreadInfo*)data;
@@ -3167,7 +3167,7 @@ void *thread_func(void *data)
       ti->set->free_reserve(0);
     }
  #endif
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
   return 0;
 }
 #endif

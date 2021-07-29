@@ -595,7 +595,7 @@ void *Thread_Call(void *data)
   GameApi::RenderObject *o = (GameApi::RenderObject*)data;
   o->prepare();
 #ifndef ARM
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
 #endif
   return 0;
 }
@@ -12223,14 +12223,23 @@ void clear_texture_confirms();
 class CollectInterfaceImpl : public CollectVisitor
 {
 public:
-  void register_obj(CollectInterface *i) { vec.push_back(i); }
+  void register_obj(CollectInterface *i) {
+    
+    vec.push_back(i);
+    if (count==5)
+      {
+	std::cout << "REG" << std::endl;
+      }
+    count++;
+  }
   void execute(int i) {
     int sz = vec.size();
-    if (i>=0 && i<sz)
+    if (i>=0 && i<sz && vec[i])
       vec[i]->HeavyPrepare();
   }
 public:
   std::vector<CollectInterface*> vec;
+  int count=0;
 };
 
 void ClearProgress();
@@ -21879,7 +21888,7 @@ void* thread_heavy_main(void *ptr2)
 {
   ThreadHeavy *ptr = (ThreadHeavy*)ptr2;
   ptr->Callback();
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
 
   return 0;
 }
@@ -27242,7 +27251,8 @@ public:
       }
       firsttime = false;
     } else {
-      items[current_item]->execute(e);
+      if (current_item>=0 && current_item<items.size())
+	items[current_item]->execute(e);
     }
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -27255,11 +27265,14 @@ public:
 	  current_item = i;
 	break;
       }
+    if (current_item>=0 && current_item<items.size())
     items[current_item]->handle_event(e);
   }
      
   virtual std::vector<int> shader_id() {
-    return items[current_item]->shader_id();
+    if (current_item>=0 && current_item<items.size())
+      return items[current_item]->shader_id();
+    return std::vector<int>();
   }
 private:
   std::vector<MainLoopItem*> items;

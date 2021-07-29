@@ -4,11 +4,35 @@ session_start();
 include '/home/terop/tpgames.org/oauth2/RandomInterface.php';
 include '/home/terop/tpgames.org/oauth2/Random.php';
 include '/home/terop/tpgames.org/oauth2/AccessToken.php';
-include '/home/terop/tpgames.org/oauth2/Exception/OauthException.php';
+//include '/home/terop/tpgames.org/oauth2/Exception/OauthException.php';
 include '/home/terop/tpgames.org/oauth2/OAuth2Client.php';
 include '/home/terop/tpgames.org/oauth2/Provider.php';
 include '/home/terop/tpgames.org/oauth2/HttpClientInterface.php';
 include '/home/terop/tpgames.org/oauth2/CurlHttpClient.php';
+
+function redirect_post($url, array $data, array $headers = null) {
+  $params = [
+    'http' => [
+      'method' => 'POST',
+      'content' => http_build_query($data)
+      ]
+      ];
+      if (!is_null($headers)) {
+         $params['http']['header'] = '';
+	 foreach ($headers as $k => $v) {
+	    $params['http']['header'] .= "$k: $v\n";
+	    }
+	    }
+     $ctx = stream_context_create($params);
+     $fp = @fopen($url, 'rb', false, $ctx);
+     if ($fp) {
+        echo @stream_get_contents($fp);
+	die();
+	} else {
+	 throw new Exception("Error loading '$url'");
+	 }
+	 }
+
 
 $provider = new \fkooman\OAuth\Client\Provider(
   'meshpage',
@@ -26,6 +50,8 @@ $authorizationRequestUri = $client->getAuthorizationRequestUri(
   );
 $_SESSION['oauth2_session'] = $authorizationRequestUri;
 http_response_code(302);
-#echo "<meta http-equiv=\"refresh\" content=\"0; url=" . $authorizationRequestUri . "\" />";
 header("Location: " . $authorizationRequestUri);
 
+//$arr = array('url' => $authorizationRequestUri);
+
+//redirect_post($authorizationRequestUri, $arr);

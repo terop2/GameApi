@@ -177,7 +177,7 @@ void *thread_func_bitmap(void *data)
 {
   ThreadInfo_bitmap *ti = (ThreadInfo_bitmap*)data;
   ti->buffer->Gen(ti->start_x, ti->end_x, ti->start_y, ti->end_y);
-  pthread_exit(NULL);
+  //pthread_exit(NULL);
   return 0;
 }
 
