@@ -102,16 +102,19 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
       std::cout << "" << buf << std::endl;
 
   }
+#if 0
   int i=0;
   g_low->ogl->glGetShaderiv(handle, Low_GL_COMPILE_STATUS, &i );
   if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
+  int val2 = g_low->ogl->glGetError();
+  if (val2!=Low_GL_NO_ERROR) {
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
   if (len>0)
     std::cout << std::endl << log << std::endl;
-
+  }
   }
   else
     {
@@ -120,6 +123,8 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
       g_low->ogl->glGetShaderInfoLog(handle, 255, &len, buf);
       std::cout << shader.Name() << " ERROR: " << buf << std::endl;
     }
+
+#endif
   delete [] strings;
   delete [] lengths;
   priv = new ShaderPriv;
@@ -245,13 +250,15 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
+  int val = g_low->ogl->glGetError();
+  if (val!=Low_GL_NO_ERROR) {
   int len=0;
   char log[255];
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
   if (len>0)
     std::cout << std::endl << log << std::endl;
-
+  }
 }
 void Program::print_log()
 {

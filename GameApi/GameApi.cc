@@ -12226,11 +12226,11 @@ public:
   void register_obj(CollectInterface *i) {
     
     vec.push_back(i);
-    if (count==5)
-      {
-	std::cout << "REG" << std::endl;
-      }
-    count++;
+    //if (count==5)
+    //  {
+    //	std::cout << "REG" << std::endl;
+    //  }
+    //count++;
   }
   void execute(int i) {
     int sz = vec.size();
@@ -12239,7 +12239,7 @@ public:
   }
 public:
   std::vector<CollectInterface*> vec;
-  int count=0;
+  //int count=0;
 };
 
 void ClearProgress();

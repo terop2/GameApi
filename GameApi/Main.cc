@@ -482,6 +482,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << "NumJoysticks:"  << g_low->sdl->SDL_NumJoysticks() << std::endl;
 
     //   std::cout << "TEST:" << std::endl;
+
     
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
@@ -529,21 +530,27 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     //}
 #endif
 
+    //scr_x = 800; scr_y=600;
+    //std::cout << "Trying to create window" << scr_x << "," << scr_y << std::endl;
+    
   if (resize)
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE);
   else
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
- 
+
+  //std::cout << "window created!" << std::endl;
   std::cout << g_low->sdl->SDL_GetError() << std::endl;
 
   //std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
+  //std::cout << "Trying to create context" << std::endl;
   g_context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
   if (!g_context) { 
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
-
+  //std::cout << "context created" << std::endl;
+  
 #ifdef WAYLAND
   Low_SDL_SysWMinfo info;
   if (g_low->sdl->SDL_GetWindowWMInfo(sdl_window, &info))
