@@ -11,9 +11,10 @@ if ($page!="2") {
  echo '<meta name="description" content="Meshpage allows converting your ideas to 3d for your web page"/>';
  }
  ?>
+<meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
 <meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
-<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ==">
+<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
 <?php
 require_once("user.php");
 function create_id2( $name, $index )
@@ -147,7 +148,6 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <div id="app">
 <div id="navbar" class="navi">
 <div class="ncenter noselect">
-<!--
 <template v-if="indicator[0]">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
@@ -158,8 +158,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
--->
-
+	
 <template v-for="bread in main_breadcrumb">
 <div style="font-family: 'calibri', sans-serif" class="link level1">
 <meta itemprop="position" v-bind:content="bread.num"/>
@@ -218,6 +217,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </div>
 <div v-if="state.my_animations">
 </div>
+
 <div v-if="state.main">
 <?php
 require_once("user.php");
@@ -445,6 +445,7 @@ echo "";
  }
  function submit_data(user_id, user_name, user_email)
  {
+
      //console.log("submit_data");
      if (user_id!="" && user_name != "" && user_email !="") {
      	var res4 = document.getElementById("login_label");
@@ -460,9 +461,11 @@ echo "";
 	var res6 = document.getElementById("email");
 	if (res6) res6.innerHTML = user_email;
      } else onload_button();
+
  }
  var g_cnts = null;
  function onload_iframe() {
+
      //console.log("LOAD");
      var txt = document.getElementById("frm");
      var innerdoc = (txt.contentDocument) ? txt.contentDocument : txt.contentWindow.document;
@@ -475,6 +478,7 @@ echo "";
      	var user_email = txts[2];
      	submit_data(user_id, user_name, user_email);
 	}
+
 }
 
 function login() {
@@ -483,8 +487,6 @@ function login() {
 	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"https://meshpage.org/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" style=\"display:none\"></iframe>";
 	 
 
-	 //var req = new XMLHttpRequest();
-	 //req.open("GET", "https://meshpage.org/oauth2.php");
 
 }
 onload_button();
@@ -527,7 +529,7 @@ list_end();
 <li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message for your teleporter with the tool
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
-<li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.html">ENJOY</a>: Then open the animation in your browser
+<li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.php">ENJOY</a>: Then open the animation in your browser
 </ul>
 <h2>What are the advantages in your approach?</h2>
 <ul>
@@ -779,7 +781,7 @@ visit_counter_inc( "tool" );
 </div>
 </ul>
 </div>
-<!--p>
+<!--
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -800,7 +802,7 @@ visit_counter_inc( "tool" );
 </div>
 </ul>
 </div>
-<p-->
+-->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
 <a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v26.msi">
 <img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
@@ -915,6 +917,7 @@ var store = {
     },
     toggle_dropdown()
     {
+    /*
 	if (this.state.dropdown) {
 	this.state.dropdown=false;
 	     var dd = document.getElementById("dropdown");
@@ -943,6 +946,7 @@ var store = {
 	     }
 	     hm.addEventListener("click", clickhandler(this.state,hm), true);
 	     }
+	     */
     },
     choose(a) {
       this.clear_state();
@@ -1505,6 +1509,7 @@ function stop_music()
 
 function show_emscripten(str,hide,indicator,is_async)
 {
+
 	if (typeof fix_keyboard === "function") fix_keyboard(hide);
 
 	g_emscripten_start_count++;
@@ -1556,6 +1561,7 @@ function show_emscripten(str,hide,indicator,is_async)
 	}
 	return;
 	}
+
 }
 
 
@@ -1717,6 +1723,13 @@ function hide_profile(b)
    var elem = document.getElementById("profile");
    if (b) elem.style="";
    else elem.style="display:none";
+}
+
+function hide_display(b)
+{
+  var elem = document.getElementById("main_display");
+  if (b) elem.style="";
+  else elem.style="display:none";
 }
 
 //window.addEventListener('message', event=>{
