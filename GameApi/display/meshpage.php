@@ -384,9 +384,11 @@ page_footer();
 echo "</div>";
 ?>
 
-<div v-show="state.mesh">
-
-<div class="display" id="display" style="display:none">
+<div id="main_display"> <!--v-show="state.mesh"-->
+<div class="display" id="display2" style="display:none">
+<div class="ems" id="canvas2" style="width:330px; height:247px"></div>
+</div>
+<div class="display" id="display" > <!-- style="display:none" -->
 <?php
 require_once("user.php");
 $mobile = js_mobile();
@@ -865,6 +867,14 @@ text-color: #fff;
   }
 </style>
 <script>
+
+function hide_display(b)
+{
+  var elem = document.getElementById("main_display");
+  if (b) elem.style="";
+  else elem.style="display:none";
+}
+
 function event_target(event)
 {
 }
@@ -914,7 +924,9 @@ var store = {
        this.state.profile = false;
        this.state.create_new = false;
        this.state.my_animations = false;
-    },
+      hide_display(this.state.mesh);
+
+      },
     toggle_dropdown()
     {
     /*
@@ -968,6 +980,7 @@ var store = {
       if (a=='profile') this.state.profile = true;
       if (a=='create_new') this.state.create_new = true;
       if (a=='my_animations') this.state.my_animations = true;
+      hide_display(this.state.mesh);
       },
 };
 
@@ -1258,6 +1271,8 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
       if (txt!='mesh') {
            var elem = document.getElementById("display");
 	   elem.style.display = "none";
+	   var elem2 = document.getElementById("display2");
+	   elem2.style.display = "block";
 	  if (typeof fix_keyboard === "function") fix_keyboard(true);
 
       } else { 	  if (typeof fix_keyboard === "function") fix_keyboard(false); }
@@ -1487,6 +1502,8 @@ function display_cb()
 {
               var elem = document.getElementById("display");
 	      elem.style.display = "block";
+              var elem2 = document.getElementById("display2");
+	      elem2.style.display = "none";
 	      g_display_timeout = null;
 }
 
@@ -1541,6 +1558,9 @@ function show_emscripten(str,hide,indicator,is_async)
 	var elem = document.getElementById("display");
 	if (!hide) {
 	   elem.style.display = "block";
+	   var elem2 = document.getElementById("display2");
+	   elem2.style.display = "none";
+
 	}
    	var html = "";
 	var sz = resize_size();
@@ -1645,14 +1665,23 @@ if ($mobile=="yes") {
   }
 ?>
   var elem = document.getElementById("display");
+  var elem2 = document.getElementById("display2");
   if (typeof(elem)!='undefined' && elem != null) { } else { return; }
   elem.style.width = (wd).toString() + "px";
   elem.style.height = (hd).toString() + "px";
+  elem2.style.width = (wd).toString() + "px";
+  elem2.style.height = (hd).toString() + "px";
 
   var iframe = document.getElementById("canvas");
   if (!iframe) return;
   iframe.style.width = (wd).toString() + "px";
   iframe.style.height = (hd).toString() + "px";
+
+  var iframe2 = document.getElementById("canvas2");
+  if (!iframe2) return;
+  iframe2.style.width = (wd).toString() + "px";
+  iframe2.style.height = (hd).toString() + "px";
+
 
   //var prog = document.getElementById("prgress");
   //prog.style.width = (wd).toString() + "px";
@@ -1725,12 +1754,6 @@ function hide_profile(b)
    else elem.style="display:none";
 }
 
-function hide_display(b)
-{
-  var elem = document.getElementById("main_display");
-  if (b) elem.style="";
-  else elem.style="display:none";
-}
 
 //window.addEventListener('message', event=>{
 //   console.log("MESSAGE EVENT");
