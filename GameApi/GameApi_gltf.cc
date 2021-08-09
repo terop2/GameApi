@@ -2414,13 +2414,17 @@ TransformObject gltf_node_transform_obj(tinygltf::Node *node)
 
 Matrix gltf_node_transform_obj_apply(GameApi::Env &e, GameApi::EveryApi &ev, Matrix root, const TransformObject &o)
 {
+  //std::cout << "obj_apply:" << std::endl;
+  //print_transform(o);
+  
   //GameApi::MN mv = ev.move_api.mn_empty();
   Matrix mv = Matrix::Identity();
   Quarternion q = { float(o.rot_x), float(o.rot_y), float(o.rot_z), float(o.rot_w) };
   Matrix m = Quarternion::QuarToMatrix(q);
+  //Matrix mi = Matrix::Inverse(m);
   // Scale
-  mv = mv * Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
   mv = mv * m;
+  mv = mv * Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
   mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
   mv = mv * o.m;
   mv = mv * root;
@@ -2437,12 +2441,6 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
 
 
   /* TODO, WHY REMOVING THESE TRANSLATIONS BREAK THE MODEL */
-  if (int(node->scale.size())==3) {
-    double s_x = node->scale[0];
-    double s_y = node->scale[1];
-    double s_z = node->scale[2];
-    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-    }
     if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
     double r_y = node->rotation[1];
@@ -2453,6 +2451,12 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
     Movement *orig = find_move(e, mv);
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
+    }
+  if (int(node->scale.size())==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
     }
   if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
@@ -2465,7 +2469,7 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
     double *arr = &node->matrix[0];
     Matrix m;
       for(int i=0;i<4;i++)
-      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+	for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i]; 
 
       // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
     Movement *orig = find_move(e, mv);
@@ -2541,12 +2545,12 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
 
  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
   GameApi::MN mv = ev.move_api.mn_empty();
-  if (int(node->translation.size())==3) {
-    double m_x = node->translation[0];
-    double m_y = node->translation[1];
-    double m_z = node->translation[2];
-    mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
-  }
+  if (int(node->scale.size())==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+    }
   
   if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
@@ -2559,13 +2563,15 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
     }
+
+  if (int(node->translation.size())==3) {
+    double m_x = node->translation[0];
+    double m_y = node->translation[1];
+    double m_z = node->translation[2];
+    mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+  }
+
   
-  if (int(node->scale.size())==3) {
-    double s_x = node->scale[0];
-    double s_y = node->scale[1];
-    double s_z = node->scale[2];
-    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-    }
   if (int(node->matrix.size())==16) {
     double *arr = &node->matrix[0];
     Matrix m;
@@ -3850,6 +3856,7 @@ public:
 	
     for(int i=s5-1;i>=0;i--) {
       tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      std::string path = chan->target_path;
       if (chan->target_node == node_id) {
 	channel = i;
 
@@ -3885,11 +3892,10 @@ public:
 
     if (has_anim) {
     
-      if (type==0 && a && a2) { // translation
+      if (type==0 && a && a2 && path=="translation") { // translation
 	//std::cout << "trans:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << std::endl;
 	//mv2 = ev.move_api.trans2(mv2,a[0]*1,a[1]*1,a[2]*1);
 	//mv = ev.move_api.trans2(mv, a2[0]*1, a2[1]*1, a2[2]*1);
-
 	start_obj.trans_x =a[0];
 	start_obj.trans_y =a[1];
 	start_obj.trans_z =a[2];
@@ -3897,13 +3903,14 @@ public:
 	end_obj.trans_y =a2[1];
 	end_obj.trans_z =a2[2];
 	
-	//pos3+=Vector(a2[0]-a[0],a2[1]-a[1],a2[2]-a[2]);
       } else {
 
       }
 
 #if 1
-      if (type==1 && a && a2) { // rotation
+      if (type==1 && a && a2 && path=="rotation") { // rotation
+	//std::cout << "rot(s):" << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << std::endl;
+	//std::cout << "rot(t):" << a2[0] << " " << a2[1] << " " << a2[2] << " " << a2[3] << std::endl;
 	start_obj.rot_x=a[0];
 	start_obj.rot_y=a[1];
 	start_obj.rot_z=a[2];
@@ -3913,32 +3920,13 @@ public:
 	end_obj.rot_z=a2[2];
 	end_obj.rot_w=a2[3];
 	
-#if 0
-	Quarternion q,q2;
-	q.x = float(a[0]);
-	q.y = float(a[1]);
-	q.z = float(a[2]);
-	q.w = float(a[3]);
-	q2.x = float(a2[0]);
-	q2.y = float(a2[1]);
-	q2.z = float(a2[2]);
-	q2.w = float(a2[3]);
-	Matrix m = Quarternion::QuarToMatrix(q);
-	Matrix m2 = Quarternion::QuarToMatrix(q2);
-	GameApi::M m_ = add_matrix2(env,m);
-	mv2 = ev.move_api.matrix(mv2,m_);
-	GameApi::M m2_ = add_matrix2(env, m2);
-	mv = ev.move_api.matrix(mv, m2_);
-
-#endif
 	
-	//std::cout << "Rot:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << " " << a[3] << "->" << a2[3] << std::endl;
-	//std::cout << "IRot:" << res2[0] << " " << res2[1] << " " << res2[2] << " " << res2[3] << std::endl;
+
       }
 
 #endif
 #if 1
-      if (type==2 && a && a2) { // scale
+      if (type==2 && a && a2 && path=="scale") { // scale
 	start_obj.scale_x=a[0];
 	start_obj.scale_y=a[1];
 	start_obj.scale_z=a[2];
@@ -3952,6 +3940,9 @@ public:
       } 
   
       if (type==3) { // weights
+	std::cout << "WEIGHTS (not implemented)" << std::endl;
+	std::cout << "WEIGHT(s): " <<a[0] << " " << a[1] << " " << a[2] << " "<< a[3] << std::endl;
+	std::cout << "WEIGHT(t): " <<a2[0] << " " << a2[1] << " " << a2[2] << " "<< a2[3] << std::endl;
       }
 #endif
 
@@ -4133,6 +4124,7 @@ public:
     int s5 = anim3->channels.size();
     for(int i=s5-1;i>=0;i--) {
       tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      std::string path = chan->target_path;
       if (chan->target_node == node_id) {
 	channel = i;
 
@@ -4175,7 +4167,7 @@ public:
 
 
     
-      if (type==0 && a && a2) { // translation
+    if (type==0 && a && a2 && path=="translation") { // translation
 	//std::cout << "trans:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << std::endl;
 	mv2 = ev.move_api.trans2(mv2,a[0]*1,a[1]*1,a[2]*1);
 	mv = ev.move_api.trans2(mv, a2[0]*1, a2[1]*1, a2[2]*1);
@@ -4185,7 +4177,7 @@ public:
       }
 
 #if 0
-      if (type==1 && a && a2) { // rotation
+    if (type==1 && a && a2 && path=="rotation") { // rotation
 	Quarternion q,q2;
 	q.x = float(a[0]);
 	q.y = float(a[1]);
@@ -4207,7 +4199,7 @@ public:
 
 #endif
 #if 1
-      if (type==2 && a && a2) { // scale
+    if (type==2 && a && a2 && path=="scale") { // scale
 	mv2 = ev.move_api.scale2(mv2,a[0],a[1],a[2]);
 	mv = ev.move_api.scale2(mv, a2[0],a2[1],a2[2]);
 	//std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
@@ -5148,7 +5140,7 @@ public:
 	ev.shader_api.use(sh);
 	std::vector<GameApi::M> vec;
 	int sz = 1;
-	for(int ii=0;ii<64;ii++)
+	for(int ii=0;ii<640;ii++)
 	  {
 	    current = -1;
 	    const std::vector<float> *current_start_time=0, *current_end_time=0;
@@ -5215,16 +5207,33 @@ public:
 	    if (ii<sz)
 	      m0t = start_0->operator[](ii);
 	    else m0t = gltf_node_default();
+
+	    //std::cout << "rr0:" << rr0 << std::endl;
+	    //std::cout << "m0t:" << std::endl;
+	    //print_transform(m0t);
 	    
 	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t);	    
 	    Matrix m0i = Matrix::Inverse(m0);
-	    	    
+	    //for(int j=0;j<16;j++)
+	    //  if (isnan(m0i.matrix[j])||isinf(m0i.matrix[j])) m0i.matrix[j]=0.0;
+	    //std::cout << "m0:" << m0 << std::endl;
+	    //std::cout << "m0i:" << m0i << std::endl;
+	    
+
+
+	    
 	    Matrix bindm;
 	    if (i<sz)
 	      bindm=bind->operator[](ii);
 	    else bindm = Matrix::Identity();
-
+	    //std::cout << "START_OBJ:" << std::endl;
+	    //print_transform(start_obj);
+	    //std::cout << "END_OBJ:" << std::endl;
+	    //print_transform(end_obj);
+	    
 	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
+	    //std::cout << "RESULT_OBJ:" << std::endl;
+	    //print_transform(obj);
 
 	    Matrix mr;
 	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
@@ -5233,9 +5242,13 @@ public:
 	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj);
 	    Matrix m = mv;  
 	    Matrix ri = Matrix::Inverse(resize);
-	    vec.push_back(add_matrix2(env,ri *m0i*m*bindm *resize));
+
+	    //std::cout << ri << std::endl;
+	    //std::cout << resize << std::endl;
+	    
+	    vec.push_back(add_matrix2(env,ri *m0i *m* bindm * resize ));
 	  }
-	ev.shader_api.set_var(sh, "jointMatrix", vec, 64);
+	ev.shader_api.set_var(sh, "jointMatrix", vec, 640);
 
       }
 #ifndef NO_MV
@@ -5257,7 +5270,7 @@ public:
       // THIS IS ONLY FOR SITUATION WHEN MODEL DOESNT EXIST.
       MainLoopItem *next = items[0];
       std::vector<GameApi::M> mat;
-      for(int i=0;i<64;i++)
+      for(int i=0;i<640;i++)
 	mat.push_back(add_matrix2(env,Matrix::Identity()));
 
       std::vector<int> sh_ids = next->shader_id();
@@ -5267,7 +5280,7 @@ public:
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 	
-	ev.shader_api.set_var(sh, "jointMatrix", mat,64);
+	ev.shader_api.set_var(sh, "jointMatrix", mat,640);
       }
     ml_orig->execute(ee);
     }
