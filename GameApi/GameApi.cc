@@ -16263,6 +16263,10 @@ std::string replace_str(std::string val, std::string repl, std::string subst)
 }
 void P_cb(void *data);
 
+
+class P_script;
+std::vector<P_script*> del_p_script;
+
 class P_script : public FaceCollection
 {
 public:
@@ -16274,8 +16278,10 @@ public:
 #endif
     // std::cout << "P_script url: " << url << std::endl;
   }
-  ~P_script() { e.async_rem_callback(url); }
+  ~P_script() { e.async_rem_callback(url); del_p_script.push_back(this); }
   void Prepare2() {
+    for(int i=0;i<del_p_script.size();i++)
+      if (del_p_script[i]==this) return;
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -17069,6 +17075,46 @@ private:
 GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p)
 {
   return add_main_loop(e, new SaveDSMain(ev,output_filename, p));
+}
+
+std::string GameApi::MainLoopApi::ds_to_string(DS ds)
+{
+  //std::ofstream ff(output_filename, std::ios::out | std::ios::binary);
+  std::stringstream ff;
+  
+  int offset = 0;
+  DiskStore *dds = find_disk_store(e, ds);
+  dds->Prepare();
+  FileHeader h;
+  h.d = 'd';
+  h.s = 's';
+  h.type = dds->Type();
+  h.numblocks = dds->NumBlocks();
+  //std::cout << "Writing Header:" << sizeof(FileHeader) << std::endl;
+  ff.write((char*)&h, (int)sizeof(FileHeader));
+  offset += sizeof(FileHeader);
+  int s = h.numblocks;
+  offset += sizeof(FileBlock)*s;
+  for(int i=0;i<s;i++)
+    {
+      FileBlock b;
+      b.block_type = dds->BlockType(i);
+      b.block_size_in_bytes = dds->BlockSizeInBytes(i);
+      b.block_offset_from_beginning_of_file = offset;
+      offset += b.block_size_in_bytes;
+      //std::cout << "Writing FileBlock:" << sizeof(FileBlock) << std::endl;
+      ff.write((char*)&b,(int)sizeof(FileBlock));
+    }
+  for(int i=0;i<s;i++)
+    {
+      int s = dds->BlockSizeInBytes(i);
+      unsigned char *ptr = dds->Block(i);
+      //std::cout << "Writing Block:" << s << std::endl;
+      ff.write((char*)ptr, s);
+    }
+  //std::cout << "Closing file" << std::endl;
+  //ff.close();
+  return ff.str();
 }
 
 void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
@@ -26622,6 +26668,245 @@ private:
   mutable unsigned char *url_string=0;
 };
 
+class LoadStreamFromMemoryBlock : public LoadStream
+{
+public:
+  LoadStreamFromMemoryBlock(MemoryBlock *blk) : blk(blk) { }
+  void Collect(CollectVisitor &vis) {
+    blk->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+    blk->Prepare();
+    buffer = blk->buffer();
+    size = blk->size_in_bytes();
+  }
+  virtual LoadStream *Clone() { return new LoadStreamFromMemoryBlock(blk); }
+  virtual bool get_ch(unsigned char &ch)
+  {
+    if (pos>=size) return false;
+    ch=buffer[pos++];
+    //std::cout << "get_ch:" << ch << std::endl;
+    return true;
+  }
+  virtual bool get_line(std::vector<unsigned char> &line)
+  {
+    if (pos>=size) return false;
+    unsigned char ch;
+    bool b;
+    line.clear();
+    while((b=get_ch(ch)) && ch!='\n') line.push_back(ch);
+    //std::cout << "get_line:" << std::string(line.begin(),line.end()) << std::endl;
+    return b;
+  }
+  virtual bool get_file(std::vector<unsigned char> &file)
+  {
+    for(int i=pos;i<size;i++) file.push_back(buffer[i]);
+    //std::cout << "get_file" << std::endl;
+    return true;
+  }
+private:
+  MemoryBlock *blk;
+  int pos=0;
+  unsigned char *buffer;
+  int size;
+};
+LoadStream *load_from_vector(std::vector<unsigned char> vec);
+
+
+bool is_obj_or_mtl(MemoryBlock *blk, std::string &mtl_filename)
+{
+  blk->Prepare();
+  unsigned char *buf = blk->buffer();
+  int sz = blk->size_in_bytes();
+  std::string s(buf,buf+sz);
+  std::stringstream ss(s);
+  std::string line;
+  while(std::getline(ss,line)) {
+    int val1 = find_str(line, "p_url");
+    int val2 = find_str(line, "p_mtl");
+    if (val1!=-1) return false;
+    if (val2!=-1) {
+      int val3 = find_str(line,",");
+      std::string line2 = line.substr(val3+1);
+      int val4 = find_str(line2,",");
+      std::string line3 = line2.substr(val4+1);
+      int val5 = find_str(line3,",");
+      mtl_filename = line2.substr(val4,val5);
+      return true;
+    }
+  }
+  return false;
+}
+
+class ObjToDSMemBlock : public MemoryBlock
+{
+public:
+  ObjToDSMemBlock(GameApi::EveryApi &ev, MemoryBlock *blk, bool b, std::string mtl_filename) : ev(ev), blk(blk),b(b), mtl_filename(mtl_filename) { }
+  void Collect(CollectVisitor &vis) {
+    blk->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+
+  virtual void Prepare() {
+    std::cout << "ObjToDSMemBlock::Prepare()" << std::endl;
+    blk->Prepare();
+    unsigned char *buf = blk->buffer();
+    std::vector<unsigned char> vec(buf,buf+blk->size_in_bytes());
+    LoadStream *stream = load_from_vector(vec);
+
+    GameApi::P p;
+    if (!b) {
+      p = ev.polygon_api.load_model_all_no_cache(stream, 300);
+    } else {
+
+      std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(mtl_filename);
+      std::vector<std::string> materials;
+      int s = mat.size();
+      for(int i=0;i<s;i++) { materials.push_back(mat[i].material_name); }
+      
+      p = ev.polygon_api.load_model_all_no_cache_mtl(stream, 300, materials);
+    }
+    
+    GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
+    res = ev.mainloop_api.ds_to_string(ds);
+    //std::cout << "RES:" << res << std::endl;
+  }
+  void set_blk(MemoryBlock *m) { blk = m; }
+  virtual unsigned char *buffer() const { return (unsigned char*)res.c_str(); }
+  virtual int size_in_bytes() const { return res.size(); }
+private:
+  GameApi::EveryApi &ev;
+  MemoryBlock *blk;
+  std::string res;
+  bool b;
+  std::string mtl_filename;
+};
+
+std::string replace_str2(std::string val, std::string repl, std::string subst)
+{
+
+  std::string s = "";
+  int p = 0;
+  while(1) {
+    int pos = find_str(val,repl);
+    if (pos==-1) { s+=val.substr(p,val.size()-p); return s; }
+    s+=val.substr(p,pos-p);
+    s+=subst;
+    val[pos]='X'; // remove %N
+    p=pos+repl.size();
+  }
+  return "ERROR";
+}
+
+class ReplaceStringMemBlock : public MemoryBlock
+{
+public:
+  ReplaceStringMemBlock(MemoryBlock *blk, std::string repl, std::string subst)
+    : blk(blk), repl(repl), subst(subst) { }
+  void Collect(CollectVisitor &vis) {
+    blk->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+  void set_blk(MemoryBlock *m) { blk = m; }
+  virtual void Prepare() {
+    blk->Prepare();
+    unsigned char *buf = blk->buffer();
+    int sz = blk->size_in_bytes();
+    val = std::string(buf,buf+sz);
+    //std::cout << "VAL:" << val << std::endl;
+    val = replace_str2(val, repl, subst);
+    //std::cout << "VAL2:" << val << std::endl;
+  }
+  virtual unsigned char *buffer() const { return (unsigned char*)val.c_str(); }
+  virtual int size_in_bytes() const
+  {
+    return val.size();
+  }
+private:
+  MemoryBlock *blk;
+  std::string repl;
+  std::string subst;
+  std::string val;
+  };
+
+class OptimizeObjFilesFromUrlMemoryMap : public UrlMemoryMap
+{
+public:
+  OptimizeObjFilesFromUrlMemoryMap(GameApi::EveryApi &ev, UrlMemoryMap *map) : ev(ev), map(map) { }
+  void Collect(CollectVisitor &vis) {
+    map->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+
+  virtual void Prepare() { map->Prepare(); }
+  virtual int size() const { return map->size(); }
+  virtual std::string get_url(int i) const
+  {
+    std::string url = map->get_url(i);
+    std::string ext = url.substr(url.size()-4);
+    if (ext==".obj") {
+      std::string url2 = url.substr(0,url.size()-4);
+      url2+=".ds";
+      //std::cout << "url2=" << url2 << std::endl;
+      return url2;
+    } else {
+      block_list.push_back(url);
+    }
+    return url;
+  }
+  virtual MemoryBlock *get_block(std::string url) const
+  {
+    int s = block_list.size();
+    for(int i=0;i<s;i++) if (url==block_list[i]) return map->get_block(url);
+    
+    std::string ext3 = url.substr(url.size()-3);
+    std::string url2 = url;
+    if (ext3==".ds") {
+      std::string urlstart = url.substr(0,url.size()-3);
+      url2 = urlstart + ".obj";
+      //std::cout << "get_block: " << url2 << std::endl;
+    }
+    MemoryBlock *blk = map->get_block(url2);
+    if (url=="SCRIPT") {
+      if (!repl)
+	repl = new ReplaceStringMemBlock(blk, ".obj", ".ds");
+
+      repl->set_blk(blk);
+      return repl;
+    }
+    std::string ext = url.substr(url.size()-3);
+    if (blk && ext==".ds") {
+      std::string mtl_filename;
+      MemoryBlock *script = map->get_block("SCRIPT");
+      bool b = is_obj_or_mtl(script, mtl_filename);
+      if (!conv) conv =  new ObjToDSMemBlock(ev,blk,b,mtl_filename);
+      conv->set_blk(blk);
+      return conv;
+    }
+    return blk;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  UrlMemoryMap *map;
+  mutable ReplaceStringMemBlock *repl=0;
+  mutable ObjToDSMemBlock *conv=0;
+  mutable std::vector<std::string> block_list;
+};
+
 class GraphUrlMemoryMap : public UrlMemoryMap
 {
 public:
@@ -26676,7 +26961,9 @@ private:
 void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls)
 {
   UrlMemoryMap *map = new GraphUrlMemoryMap(e,ev,script,urls);
-  DiskStore *store  = new UrlMemoryMapSave(map);
+  UrlMemoryMap *map2 = new OptimizeObjFilesFromUrlMemoryMap(ev,map);
+  // more optimizations here.
+  DiskStore *store  = new UrlMemoryMapSave(map2);
   GameApi::DS ds = add_disk_store(e,store);
   ev.mainloop_api.save_ds(filename,ds);
 
@@ -26852,6 +27139,8 @@ GameApi::ML GameApi::MainLoopApi::memmap_window(GameApi::EveryApi &ev, GameApi::
 }
 
 void M_cb(void *data);
+class MemMapWindow;
+std::vector<MemMapWindow*> del_memmap;
 class MemMapWindow : public MainLoopItem
 {
 public:
@@ -26863,7 +27152,7 @@ public:
 #endif
     
   }
-  ~MemMapWindow() { env.async_rem_callback(url); }
+  ~MemMapWindow() { env.async_rem_callback(url); del_memmap.push_back(this);}
   virtual void logoexecute() { }
   virtual void Prepare2()
   {
@@ -26935,6 +27224,7 @@ private:
 void M_cb(void *data)
 {
   MemMapWindow *script = (MemMapWindow*)data;
+  for(int i=0;i<del_memmap.size();i++) if (script==del_memmap[i]) return;
   script->Prepare2();
 }
 

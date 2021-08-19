@@ -3347,8 +3347,8 @@ public:
     tinygltf::Node *n = &model->nodes[target_node];
 
     int skin = n->skin;
-    tinygltf::Skin *s = &model->skins[skin];
-    int inverseBindMatrices = s->inverseBindMatrices;
+    tinygltf::Skin *s = skin<0 && skin>=model->skins.size() ? NULL : &model->skins[skin];
+    int inverseBindMatrices = s?s->inverseBindMatrices:-1;
     int sz2 = model->accessors.size();
     if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) 
       bind_acc = &model->accessors[inverseBindMatrices];
