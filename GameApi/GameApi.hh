@@ -526,7 +526,8 @@ public:
   DS load_ds_from_mem(const std::vector<unsigned char> &vec);
   DS load_ds_from_disk(std::string filename);
   void save_ds(std::string output_filename, DS ds);
-
+  std::string ds_to_string(DS ds);
+  
   INP cursor_keys_normal_move();
   INP cursor_keys_rotate_move(float speed_rot, float pos_forward, float pos_normal, float pos_backward);
   INP move_sequence(float start_time, float time_per_char, std::string str);
@@ -2283,7 +2284,7 @@ public:
   P transparent_separate(P p, BM bm, bool opaque);
   void sort_vertices(VA va, M m);
   P remove_faces(P p);
-  P combine_textures(P p1, P p2);
+  P combine_textures(P p1, P p2); 
   P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);
   MS identity_pose(int li_size);
   ARR gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach);

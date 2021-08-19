@@ -2450,10 +2450,11 @@ private:
 class RectangleWidget : public GuiWidgetForward
 {
 public:
+  RectangleWidget() = delete;
   RectangleWidget(GameApi::EveryApi &ev, GameApi::SH sh, int start_x, int end_x, int start_y, int end_y, unsigned int color) : GuiWidgetForward(ev, { } ), sh(sh), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), color(color) {
+    firsttime = true;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
-    firsttime = true;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -8982,7 +8983,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "2.0", "1.0" },
 			 "P", "polygon_api", "slow_calc_lights"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_textures,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_textures, 
 			 "combine_textures",
 			 { "p1", "p2" },
 			 { "P", "P" },

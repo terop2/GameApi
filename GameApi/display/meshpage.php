@@ -3,7 +3,7 @@ header("Cross-Origin-Opener-Policy: same-origin");
 ?>
 <html id="html">
 <head>
-<title>meshpage.org -- teleport animations to the world</title>
+<title>meshpage.org -- your favourite 3d web development framework</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
@@ -223,7 +223,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 require_once("user.php");
 $user="terop";
 $num = read_num( $user );
-page_title("meshpage.org", "teleporting your 3d animations to all over the world");
+page_title("meshpage.org", "your favourite 3d web development framework");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -522,13 +522,13 @@ list_end();
 <h2>What is meshpage.org?</h2>
 
 <ul>
-<li>Meshpage is a mechanism to create 3d animations and sending them to your friends.
+<li>Meshpage is a mechanism to create 3d animations and adding them to your own web page.
 </ul>
 
 <h2>How does the site work?</h2>
 <ul>
 <li><a style="font-size:large;" href="https://meshpage.org/meshpage?p=4">DOWNLOAD</a>: You download the builder tool</a>
-<li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message for your teleporter with the tool
+<li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message with 3d technology
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="http://tpgames.org/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
 <li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.php">ENJOY</a>: Then open the animation in your browser
@@ -539,7 +539,7 @@ list_end();
 <li>File size is very small. The file size is like 30 lines of c++ code,
 instead of megabytes of video files
 <li>It's based on "designing the future", instead of "recording the past"
-<li>Teleportation works via URL's: normal web technologies are used to transfer animations to other computers on the planet 
+<li>Displaying models works via URL's: normal web technologies are used to transfer animations to other computers on the planet 
 </ul>
 <h2>What are the disadvantages?</h2>
 <ul>
@@ -551,94 +551,6 @@ instead of megabytes of video files
     as the output of this process
 <li>Different animation models are very limited -- basically just translate/rotate
 <li>We don't have sound or music support at all, because it's fundamentally based on recording industry technology, and we're not experts in that area.
-</ul>
-<h2>How is this different from other user-generated-content sites?</h2>
-<ul>
-<li>There's isn't any issues with copyrights -- i.e. no DCMA kind of problems (this is necessary because it must work in EU)
-<li>All content for the site must be created with the builder tool
-<li>The tool can control what content is allowed to be included to the product, thus we can check against copyright infringements
-<li>Bm_url and FI_load are the biggest features in this area.
-<p>
-<li>If we don't like some content, we can "hide" it from the front page, but
-    the urls still continue to work
-</ul>
-<h2>How does meshpage.org get licenses to user's content?</h2>
-<ul>
-<li>User still needs to agree to license the content he created with the tool
-to meshpage.org and associates
-<li>This is similar to how Youtube handles it, i.e. when user presses "Save & Publish" button on the web page, we get a license to display the content on our web page - before that, it'll only be displayed for that same user who is posting the content
-<li>This is basically "implicit licensing".
-<li>But current situation is that users are spending much less time creating content than what it took to create the GameApi library and GameApi Builder tool, so it can still be considered exchange of licenses -- user can use the builder tool in exchange of giving license to the content created with the tool.
-</ul>
-<h2>What other problems are you seeing currently?</h2>
-<ul>
-<li>Large problem in today's technologies is something called "Effort calculation".
-<li>Effort calculation is based on the premise that web site authors are eating significant amount of time from their user base, but cannot even say critical questions like:
-  <ul>
-  <li>how much time they're eating from their user base?
-  <li>how many people are using their site?
-  <li>how they can ensure that work amounts imposed to the user base are staying within acceptable range?
-  <li>what actions are taken, if work amount explodes and people are doing too much work to improve the user-generated-content-site?
-  </ul>
-This kind of basic information is usually missing, and "Effort Calculation" is the key metric how it should be handled.
-</ul>
-<h2>How do bm_url and FI_load work?</h2>
-
-You might notice that bm_url and FI_load are refusing to load some
-urls which are not around the user's homepage.<p>
-
-We have some technology included that checks against user's copyright
-infringements, before posting the content to meshpage.org. This is
-implemented in the bm_url and FI_load features. Basically we use user's
-homepage as a center of user's world, and implement a domain
-restriction which limits usage of content inside meshpage.org
-animations. For example when it loads png image from some url, it
-checks whether the user's homepage was in the same domain.<p>
-
-The theory behind this check is that we should allow only content that
-user published himself, instead of all the content in the world, and
-thus domain where user's homepage is at, is good candidate for allowed
-content. This cannot provide absolute guarantee against copyright
-infringements, but it prevents certain kind of spread pattern where
-user picks urls from all around the world and uses them as content
-inside the animations. Since meshpage.org is publishing this content
-in the web page, we try to check problems in the content.<p>
-
-This domain restriction check is more cunning that you'd expect, since if
-you use several pieces of content in an animation, they need to all come from
-the same domain. I.e. you can't pick one url from one domain and next url from
-completely different place. Expectation is that animations contain more than
-one piece of content/sprites/bitmaps/fonts/etc.., and thus the domain restriction can pinpoint the location of the user's real homepage address.<p>
-
-Other features than bm_url and FI_load cannot use external content at
-all, so all content coming from other features are built competely
-using GameApi Builder tool. This ensures pretty much that the user
-created it himself, at least if copy-pasting CodeGen output code snippets
-are not counted.<p>
-
-Note that currently we do not have login system for end users
-implemented, so the domain check is per individual animation. Once
-login system gets improved, it would allow implementing the domain
-check for per-user homepage, instead of per-animation homepage. This
-would improve the system, but is not currently implemented.
-
-<h2>What features have domain check like bm_url & FI_load</h2>
-<ul>
-<li>bm_url
-<li>p_url
-<li>p_mtl
-<li>p_mtl_url
-<li>gltf
-<li>newfont
-<li>fi_load / load_font
-<li>load_song
-</ul>
-This means these can load asyncronously data from url's and that
-loading is handled via domain restriction.
-
-<h2>Why builder can't load textures via p_mtl?</h2>
-<ul>
-<li>it can, but you need to use p_mtl and m_texture_many_p together.
 </ul>
 
 <h2>What technologies are you using to provide the features of the site?</h2>
