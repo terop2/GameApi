@@ -1,6 +1,7 @@
 <?php
 header("Cross-Origin-Opener-Policy: same-origin");
 ?>
+<!DOCTYPE html>
 <html id="html">
 <head>
 <title>meshpage.org -- your favourite 3d web development framework</title>

@@ -1330,7 +1330,8 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    LoadStream *stream = load_from_vector(*ptr);
+    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    LoadStream *stream = load_from_vector(vec);
 #endif
     GameApi::P p = ev.polygon_api.load_model_all_no_cache(stream, count);
     FaceCollection *coll = find_facecoll(e, p);
@@ -1426,7 +1427,8 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    LoadStream *stream = load_from_vector(*ptr);
+    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    LoadStream *stream = load_from_vector(vec);
 #endif
     GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
     FaceCollection *coll = find_facecoll(e, p);
@@ -1957,7 +1959,8 @@ public:
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.write(&ptr->operator[](0),ptr->size());
     //ss.close();
-    LoadStream *stream = load_from_vector(*ptr);
+    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    LoadStream *stream = load_from_vector(vec);
 #endif
     
     GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
