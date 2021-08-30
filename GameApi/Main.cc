@@ -1498,16 +1498,21 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
 #undef LoadImage
 BufferRef LoadImageFromString(std::vector<unsigned char> buffer, bool &success)
 {
-  std::vector<unsigned char> mem;
-  int s = buffer.size();
-  for(int i=0;i<s;i++) mem.push_back(buffer[i]);
+  //std::vector<unsigned char> mem;
+  //int s = buffer.size();
+  //for(int i=0;i<s;i++) mem.push_back(buffer[i]);
 
   int x=0,y=0;
   int comp=0;
-  stbi_uc * ptr = stbi_load_from_memory(&mem[0], mem.size(), &x, &y, &comp, 4);
+  stbi_uc * ptr = stbi_load_from_memory(&buffer[0], buffer.size(), &x, &y, &comp, 4);
   //std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
+  int sz = x*y*sizeof(int);
+  // this is required because stbi allocs it with malloc(), and we should use new.
+  unsigned char *buf = new unsigned char[sz];
+  std::copy(ptr,ptr+sz,buf);
+  free(ptr);
   BufferRef ref;
-  ref.buffer = (unsigned int *)ptr;
+  ref.buffer = (unsigned int *)buf;
   ref.width = x;
   ref.height = y;
   ref.ydelta = x;

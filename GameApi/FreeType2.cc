@@ -135,7 +135,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   std::stringstream ss2;
   ss2 << "font" << idx << ".ttf";
 
-  std::vector<unsigned char> *ptr = e.get_loaded_async_url(ttf_filename);
+  GameApi::ASyncVec *ptr = e.get_loaded_async_url(ttf_filename);
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
 #ifndef EMSCRIPTEN

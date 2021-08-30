@@ -326,7 +326,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     
     filename = "audioA.wav";
     static int index = 0;
