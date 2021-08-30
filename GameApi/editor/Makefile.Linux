@@ -1,4 +1,4 @@
 
 all:
 	@echo "   LD   a.out"
-	@g++ -m64 -DLINUX -fPIC -g -std=c++11 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client
+	@g++ -m64 -DLINUX -fPIC -g -std=c++11 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client 

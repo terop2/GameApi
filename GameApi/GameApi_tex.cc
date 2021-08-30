@@ -562,6 +562,23 @@ EXPORT void GameApi::TextureApi::unuse(TXID tx)
   ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 
+EXPORT void GameApi::TextureApi::delete_texid(TXID tx)
+{
+  OpenglLowApi *ogl = g_low->ogl;
+    Low_GLuint id;
+    id = tx.id;
+    ogl->glDeleteTextures(1, &id);
+}
+EXPORT void GameApi::TextureApi::delete_texid(std::vector<TXID> vec)
+{
+
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    delete_texid(vec[i]);
+  }
+}
+
+
 class TextureID;
 
 #if 0

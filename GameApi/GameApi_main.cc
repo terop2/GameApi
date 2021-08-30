@@ -2443,9 +2443,9 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif      
-    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     //std::cout << "SONG SIZE: "<< ptr->size() << std::endl;
-    vec = new std::vector<unsigned char>(*ptr);
+    vec = new std::vector<unsigned char>(ptr->begin(),ptr->end());
     ptr2 = ev.tracker_api.setup_ogg(*vec);
     firsttime2 = false;
     }
@@ -2777,7 +2777,7 @@ public:
 #ifndef EMSCRIPTEN
     ee.async_load_url(url, homepageurl);
 #endif
-    std::vector<unsigned char> *vec = ee.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = ee.get_loaded_async_url(url);
     std::string ss(vec->begin(), vec->end());
     load(ss);
 

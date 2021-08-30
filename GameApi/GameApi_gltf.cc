@@ -206,7 +206,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; return; }
     std::vector<char> vec2(vec->begin(), vec->end());
     std::string str(vec->begin(),vec->end());
@@ -305,7 +305,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
-    std::vector<unsigned char> *vec = g_e->get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = g_e->get_loaded_async_url(url);
     if (!vec) { std::cout << "ReadWholeFile::async not ready:" << url << std::endl; std::cout << "Please use async_url() to register it to system" << std::endl; return false; } else {
       if (!is_in_registered(url))
 	std::cout << "\nWarning: Please note that you might need to add async_url() or async_gltf for " << url << std::endl;
@@ -3737,6 +3737,10 @@ class GLTFJointMatrices : public MainLoopItem
 {
 public:
   GLTFJointMatrices(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640;}
+  ~GLTFJointMatrices() {
+    int s = anims.size();
+    for(int i=0;i<s;i++) delete anims[i];
+  }
   void Collect(CollectVisitor &vis)
   {
     load->Collect(vis);
@@ -3871,6 +3875,7 @@ public:
       {
       int ik = time_index;
       GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik);
+      anims.push_back(anim);
       anim->Prepare();
       if (jj!=-1) {
 	start_t[jj] = 5.0*anim->start_time();
@@ -4038,6 +4043,7 @@ private:
   std::vector<float> end_t;
   bool firsttime;
   bool has_anim;
+  std::vector<GLTFAnimation*> anims;
 };
 
 GameApi::ML gltf_joint_matrices2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
@@ -5336,7 +5342,7 @@ public:
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
       if (!vec) { std::cout << "ASyncGltf::async not ready!" << std::endl; done=false; return; }
     std::string ss(vec->begin(),vec->end());
     std::stringstream s(ss);

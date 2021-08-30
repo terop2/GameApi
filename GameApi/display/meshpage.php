@@ -211,13 +211,72 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </div>
 <div id="profile" style="display:none">
 <div style="font-size: 20px;"><span id="log">#</span>(<span id="name">#</span> - <span id="email">#</span>)</div>
-
+<form action="/update_profile.php" method="post">
+<label for="nickname">Display name:</label>
+<input type="text" id="nickname"><br><br>
+<label for="homepage">Homepage:</label>
+<input type="text" id="homepage"><br><br>
+<input type="submit"><br><br>
+</form>
 </div>
 <div v-if="state.create_new">
+<div class="tab">
+  <button class="tablinks active" onclick="open_tab(event,'pkg')">Package files</button>
+  <button class="tablinks" onclick="open_tab(event,'script')">Script files</button>
+</div>
+<div id="pkg" class="tabcontent">
+  <h3>Package files</h3>
+  <form action="/submit_pkg.php" method="post">
+<label for="screenshot">Screenshot(.png):</label>
+<input type="file" id="screenshot">
+<br><br>
+  <p>Please enter urls for Game_*.pkg files:</p>
+<label for="pkg_1">url for game_1.pkg:</label>
+  <input type="text" id="pkg_1" ><br>
+  <label for="pkg_2">url for game_2.pkg:</label>
+  <input type="text" id="pkg_2" ><br>
+  <label for="pkg_3">url for game_3.pkg:</label>
+  <input type="text" id="pkg_3" ><br>
+  <label for="pkg_4">url for game_4.pkg:</label>
+  <input type="text" id="pkg_4" ><br>
+  <label for="pkg_5">url for game_5.pkg:</label>
+  <input type="text" id="pkg_5" ><br>
+  <label for="pkg_6">url for game_6.pkg:</label>
+  <input type="text" id="pkg_6" ><br>
+  <input type="submit">
+  </form>
+</div>
+<div id="script" class="tabcontent notdefault">
+  <h3>Script file</h3>
+  <form action="/submit_script.php" method="post">
+<label for="screenshot">Screenshot(.png):</label>
+<input type="file" id="screenshot">
+<br><br>
+  <p>Please enter the script</p>
+  <label for="script">Script</label><br>
+  <textarea id="script" name="script" rows="30" cols="80">
+  </textarea><br>
+  <input type="submit">
+  </form>
+</div>
+<script>
+function open_tab(event, label) {
+  var tabcontent = document.getElementsByClassName("tabcontent");
+  var i;
+  for(i=0;i<tabcontent.length; i++) {
+     tabcontent[i].style.display="none";
+  }
+  var tablinks = document.getElementsByClassName("tablinks");
+  for(i=0;i<tablinks.length;i++) {
+     tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(label).style.display = "block";
+  event.currentTarget.className += " active";
+}
+</script>
 </div>
 <div v-if="state.my_animations">
 </div>
-
 <div v-if="state.main">
 <?php
 require_once("user.php");
@@ -460,6 +519,8 @@ echo "";
 	if (res4) res4.innerHTML = user_id;
 	var res5 = document.getElementById("name");
 	if (res5) res5.innerHTML = user_name;
+	var res5a = document.getElementById("nickname");
+	if (res5a) res5a.value = user_id;
 	var res6 = document.getElementById("email");
 	if (res6) res6.innerHTML = user_email;
      } else onload_button();
@@ -735,6 +796,34 @@ visit_counter_inc( "tool" );
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  }
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+  }
+.tab button:hover {
+  background-color: #ddd;
+}
+.tab button.active {
+  background-color: #ccc;
+}
+.tabcontent {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-top: none;
+  }
+.notdefault {
+  display: none;
+  }
 .dropdown-window {
   position: absolute;
   top:36px;
@@ -841,7 +930,6 @@ var store = {
       },
     toggle_dropdown()
     {
-    /*
 	if (this.state.dropdown) {
 	this.state.dropdown=false;
 	     var dd = document.getElementById("dropdown");
@@ -870,7 +958,6 @@ var store = {
 	     }
 	     hm.addEventListener("click", clickhandler(this.state,hm), true);
 	     }
-	     */
     },
     choose(a) {
       this.clear_state();
