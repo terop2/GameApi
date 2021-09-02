@@ -607,12 +607,13 @@ public:
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string s(vec->begin(), vec->end());
-
+      std::vector<unsigned char> vec2(vec->begin(),vec->end());
+      
       bool b = false;
-      img = LoadImageFromString(*vec, b);
+      img = LoadImageFromString(vec2, b);
       
     if (b==false) {
       img = BufferRef::NewBuffer(10,10);
@@ -1623,7 +1624,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     std::string data(ptr->begin(), ptr->end());
     std::stringstream ss(data);
     ss >> ssx >> ssy;
@@ -4114,12 +4115,12 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) {
       std::cout << "intbitmap_loader async not ready yet, failing..." << std::endl;
       return;
      }
-    Ret r = bitmapparser(&ptr->operator[](0));
+    Ret r = bitmapparser(const_cast<unsigned char*>(&ptr->operator[](0)));
     sx = r.sx;
     sy = r.sy;
     buf = r.buffer;
@@ -5907,7 +5908,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     std::string s(ptr->begin(),ptr->end());
     std::stringstream ss(s);
     std::string line;

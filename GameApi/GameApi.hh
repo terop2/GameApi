@@ -244,6 +244,9 @@ struct ExecuteEnv
 #define EXPORT
 #endif
 #endif
+
+  class ASyncVec;
+  
 class Env
 {
 public:
@@ -256,7 +259,7 @@ public:
   IMPORT void async_load_all_urls(std::vector<std::string> urls, std::string homepage);
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
   IMPORT void async_rem_callback(std::string url);
-  IMPORT std::vector<unsigned char> *get_loaded_async_url(std::string url);
+  IMPORT ASyncVec *get_loaded_async_url(std::string url);
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
@@ -523,10 +526,12 @@ public:
   ML playback_keypresses(ML ml, std::string input_url);
   ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
   
-  DS load_ds_from_mem(const std::vector<unsigned char> &vec);
+  DS load_ds_from_mem(const unsigned char *buf, const unsigned char *end);
   DS load_ds_from_disk(std::string filename);
+  DS load_ds_from_disk_incrementally(std::string filename);
   void save_ds(std::string output_filename, DS ds);
-
+  std::string ds_to_string(DS ds);
+  
   INP cursor_keys_normal_move();
   INP cursor_keys_rotate_move(float speed_rot, float pos_forward, float pos_normal, float pos_backward);
   INP move_sequence(float start_time, float time_per_char, std::string str);
@@ -644,7 +649,9 @@ public:
 	IMPORT void use(TXID tx, int i = 0);
   IMPORT void use_many(std::vector<TXID> vec, int i=0);
 	IMPORT void unuse(TXID tx);
-	IMPORT VA bind(VA va, TXID tx);
+  IMPORT void delete_texid(TXID tx);
+  IMPORT void delete_texid(std::vector<TXID> vec);
+  IMPORT VA bind(VA va, TXID tx);
   IMPORT VA bind_many(VA va, std::vector<TXID> tx, std::vector<int> types=std::vector<int>());
         IMPORT VA bind_cubemap(VA va, TXID id);
 	IMPORT VA bind_arr(VA va, TXA tx);
@@ -2283,7 +2290,7 @@ public:
   P transparent_separate(P p, BM bm, bool opaque);
   void sort_vertices(VA va, M m);
   P remove_faces(P p);
-  P combine_textures(P p1, P p2);
+  P combine_textures(P p1, P p2); 
   P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);
   MS identity_pose(int li_size);
   ARR gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach);
@@ -2380,7 +2387,7 @@ public:
   IMPORT ARR p_mtl_d(P p);
   IMPORT ARR p_mtl_bump(P p);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
-  IMPORT P p_ds(EveryApi &ev, const std::vector<unsigned char> &vec);
+  IMPORT P p_ds(EveryApi &ev, const unsigned char *beg, const unsigned char *end);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);
   IMPORT DS p_ds_inv(P model);
   IMPORT P file_cache(P model, std::string filename, int obj_num);

@@ -2450,10 +2450,11 @@ private:
 class RectangleWidget : public GuiWidgetForward
 {
 public:
+  RectangleWidget() = delete;
   RectangleWidget(GameApi::EveryApi &ev, GameApi::SH sh, int start_x, int end_x, int start_y, int end_y, unsigned int color) : GuiWidgetForward(ev, { } ), sh(sh), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), color(color) {
+    firsttime = true;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
-    firsttime = true;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -5209,7 +5210,29 @@ bool is_async_loaded_urls_in_vec(std::string url)
 struct ASyncCallback { void (*fptr)(void*); void *data; };
 ASyncCallback *rem_async_cb(std::string url);
 
-extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+
+struct del_map
+{
+  void del_url(std::string url)
+  {
+    //std::vector<unsigned char>* v = load_url_buffers_async[url];
+    //delete v;
+    //load_url_buffers_async[url] = 0;
+  }
+  ~del_map() {
+    //std::map<std::string,std::vector<unsigned char>*>::iterator i = load_url_buffers_async.begin();
+    //for(;i!=load_url_buffers_async.end();i++)
+    //  {
+    //	std::pair<std::string,std::vector<unsigned char>*> p = *i;
+    //	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
+    //	delete p.second;
+    //  }
+  }
+  std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+};
+extern del_map g_del_map;
+
+//extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 
 void async_cb(void *data)
 {
@@ -5226,7 +5249,7 @@ void LoadUrls_async_cbs()
     ASyncCallback *cb = g_async_vec[i];
     std::string url = g_async_vec2[i];
     
-    if (cb && load_url_buffers_async[std::string("load_url.php?url=") + url]!=0) {
+    if (cb && g_del_map.load_url_buffers_async[std::string("load_url.php?url=") + url]!=0) {
       //std::cout << "Callback: " << url << std::endl;
       (*cb->fptr)(cb->data);
       g_async_vec[i] =0 ;
@@ -5825,6 +5848,18 @@ private:
   std::string symbols;
   std::string comment;
 };
+
+struct DelApiItemF
+{
+  std::vector<GameApiItem*> items;
+  ~DelApiItemF() { int s = items.size(); for(int i=0;i<s;i++) delete items[i]; }
+};
+
+#ifdef FIRST_PART
+DelApiItemF g_api_item_deleter;
+#endif
+extern DelApiItemF g_api_item_deleter;
+
 template<class T, class RT, class... P>
 GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 		      std::string name,
@@ -5833,7 +5868,9 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
 		      std::vector<std::string> param_default,
 		      std::string return_type, std::string api_name, std::string func_name, std::string symbols="", std::string comment="")
 {
-  return new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type, api_name, func_name, symbols,comment);
+  GameApiItem *item = new ApiItem<T,RT,P...>(api, fptr, name, param_name, param_type, param_default, return_type, api_name, func_name, symbols,comment);
+  g_api_item_deleter.items.push_back(item);
+  return item;
 }
 
 std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::vector<GameApiItem*> vec2);
@@ -8982,7 +9019,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float", "float", "float" },
 			 { "", "1.0", "2.0", "1.0" },
 			 "P", "polygon_api", "slow_calc_lights"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_textures,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::combine_textures, 
 			 "combine_textures",
 			 { "p1", "p2" },
 			 { "P", "P" },

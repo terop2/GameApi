@@ -12,24 +12,32 @@ struct Block
   ~Block()
   {
     int s = vec.size();
-    if (s)
-      InstallProgress(667, "Cleanup", 15);
+    //if (s)
+    //  InstallProgress(667, "Cleanup", 15);
     for(int i=0;i<s;i++)
       {
-	if (i%10==0) {
-	  ProgressBar(667,i*15/s,15,"Cleanup");
-	}
+	//if (i%10==0) {
+	//  ProgressBar(667,i*15/s,15,"Cleanup");
+	//}
       vec[i].reset();
       }
-    if (s)
-      ProgressBar(667,15,15,"Cleanup");
-    std::cout << std::endl;
+  //if (s)
+  //    ProgressBar(667,15,15,"Cleanup");
+    //std::cout << std::endl;
     vec.clear();
   }
 
 };
 
+struct G_BLOCK
+{
 std::vector<Block*> g_blocks;
+  ~G_BLOCK() {
+    int s = g_blocks.size();
+    for(int i=0;i<s;i++) delete g_blocks[i];
+  }
+} g_blocks;
+
 struct Rest {
   std::vector<std::shared_ptr<void> > g_rest;
   void delete_item_from_rest(void *ptr)
@@ -65,8 +73,8 @@ Rest g_rest;
 int g_current_block=-1;
 int add_block()
 {
-  g_blocks.push_back(new Block);
-  return g_blocks.size()-1;
+  g_blocks.g_blocks.push_back(new Block);
+  return g_blocks.g_blocks.size()-1;
 }
 void set_current_block(int id)
 {
@@ -84,9 +92,9 @@ void delete_item_from_block(void *ptr, Block *blk)
 }
 void delete_item(void *ptr)
 {
-  int ks = g_blocks.size();
+  int ks = g_blocks.g_blocks.size();
   for(int i=0;i<ks;i++) {
-    Block *blk = g_blocks[i];
+    Block *blk = g_blocks.g_blocks[i];
     if (blk)
     delete_item_from_block(ptr, blk);
   }
@@ -98,13 +106,13 @@ int get_current_block()
 }
 void clear_block(int id)
 {
-  delete g_blocks[id];
-  g_blocks[id]=0;
+  delete g_blocks.g_blocks[id];
+  g_blocks.g_blocks[id]=0;
 }
 void add_b(std::shared_ptr<void> ptr)
 {
   if (g_current_block!=-1)
-    g_blocks[g_current_block]->vec.push_back(ptr);
+    g_blocks.g_blocks[g_current_block]->vec.push_back(ptr);
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
 }

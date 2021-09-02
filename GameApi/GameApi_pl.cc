@@ -1316,7 +1316,7 @@ public:
     e.async_load_url(url, homepage);
 #endif
 
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) {
       std::cout << "p_url async not ready yet, failing..." << std::endl;
       return;
@@ -1330,7 +1330,8 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    LoadStream *stream = load_from_vector(*ptr);
+    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    LoadStream *stream = load_from_vector(vec);
 #endif
     GameApi::P p = ev.polygon_api.load_model_all_no_cache(stream, count);
     FaceCollection *coll = find_facecoll(e, p);
@@ -1412,7 +1413,7 @@ public:
 #endif
     //std::cout << "B" << std::endl;
 
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) {
       std::cout << "p_url async not ready yet, failing..." << std::endl;
       return;
@@ -1426,7 +1427,8 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    LoadStream *stream = load_from_vector(*ptr);
+    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    LoadStream *stream = load_from_vector(vec);
 #endif
     GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
     FaceCollection *coll = find_facecoll(e, p);
@@ -1609,7 +1611,7 @@ public:
   {
     if (done_mtl) return;
     //std::cout << "PrepareMTL" << std::endl;
-    std::vector<unsigned char> *ptr2 = e.get_loaded_async_url(mtl_url);
+    GameApi::ASyncVec *ptr2 = e.get_loaded_async_url(mtl_url);
     if (!ptr2) {
       std::cout << "p_mtl .mtl async not ready yet, failing..." << std::endl;
       return;
@@ -1646,6 +1648,8 @@ public:
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
 
     BufferRef ref; ref.buffer=0;
+    BufferRef ref2; ref2.buffer=0;
+    BufferRef ref3; ref3.buffer=0;
     int b_s = mat.size();
     std::vector<std::string> urls;
     std::vector<std::string> urls2;
@@ -1670,8 +1674,8 @@ public:
 	std::string url3 = convert_slashes(url_prefix+"/"+s3);
 	dt->bump_url = url3;
 	buffer.push_back(ref);
-	d_buffer.push_back(ref);
-	bump_buffer.push_back(ref);
+	d_buffer.push_back(ref2);
+	bump_buffer.push_back(ref3);
 
 	if (s=="") {
 	  Prepare2_color(b_i, mat[b_i]);
@@ -1791,12 +1795,13 @@ public:
   void Prepare2(std::string url, int i)
   {
     //std::cout << "MTL:Prepare2: " << url << " " << i << std::endl;
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) {
 	std::cout <<  "Async failing at: mtl prepare2: " << url << std::endl;
       }
       bool b = false;
-      BufferRef img = LoadImageFromString(*vec,b);
+      std::vector<unsigned char> vec2(vec->begin(), vec->end());
+      BufferRef img = LoadImageFromString(vec2,b);
       //std::cout << "NetworkedFaceCollectionMTL2(Prepare2)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
       // flip texture in y-direction
@@ -1822,12 +1827,13 @@ public:
   void PrepareD(std::string url, int i)
   {
     //std::cout << "MTL:PrepareD: " << url << " " << i << std::endl;
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) {
 	std::cout <<  "Async failing at: mtl prepareD: " << url << std::endl;
       }
       bool b = false;
-      BufferRef img = LoadImageFromString(*vec,b);
+      std::vector<unsigned char> vec2(vec->begin(), vec->end());
+      BufferRef img = LoadImageFromString(vec2,b);
       //std::cout << "NetworkedFaceCollectionMTL2(PrepareD)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
       // flip texture in y-direction
@@ -1853,13 +1859,14 @@ public:
   void PrepareBump(std::string url, int i)
   {
     //std::cout << "MTL:PrepareBump: " << url << " " << i << std::endl;
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) {
 	std::cout <<  "Async failing at: mtl prepareBump: " << url << std::endl;
       }
 
       bool b = false;
-      BufferRef img = LoadImageFromString(*vec,b);
+      std::vector<unsigned char> vec2(vec->begin(), vec->end());
+      BufferRef img = LoadImageFromString(vec2,b);
       //std::cout << "NetworkedFaceCollectionMTL2(PrepareBump)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
 
       // flip texture in y-direction
@@ -1922,7 +1929,7 @@ public:
       //std::cout << "DD" << std::endl;
 #endif
 
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) {
       std::cout << "p_mtl .obj async not ready yet, failing..." << std::endl;
       return;
@@ -1952,7 +1959,8 @@ public:
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.write(&ptr->operator[](0),ptr->size());
     //ss.close();
-    LoadStream *stream = load_from_vector(*ptr);
+    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    LoadStream *stream = load_from_vector(vec);
 #endif
     
     GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
@@ -2152,12 +2160,13 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
       if (!ptr) {
 	std::cout << "p_ds_url async not ready yet, failing..." << std::endl;
 	return;
       }
-      GameApi::P p = ev.polygon_api.p_ds(ev,*ptr);
+      //std::vector<unsigned char> vec2(ptr->begin(), ptr->end());
+      GameApi::P p = ev.polygon_api.p_ds(ev,ptr->begin(),ptr->end());
       FaceCollection *coll = find_facecoll(e,p);
       coll->Prepare();
       filled = coll;
@@ -11255,6 +11264,17 @@ std::string cache_id(std::string filename, int obj_count)
   return ss.str();
 }
 
+struct CacheItemDel
+{
+  std::vector<CacheItem*> vec;
+  ~CacheItemDel()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) delete vec[i];
+  }
+};
+CacheItemDel cache_del;
+
 GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int obj_count)
 {
   static std::map<std::string, CacheItem*> cache_map;
@@ -11265,6 +11285,7 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   }
   //std::cout << "From File" << std::endl;
   CacheItem *item2 = new CacheItem;
+  cache_del.vec.push_back(item2);
   item2->filename = filename;
   item2->obj = memoize(prepare_cut(model));
   item2->filesize = filesize(filename);
@@ -12986,9 +13007,9 @@ private:
   bool ready;
 };
 
-GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const std::vector<unsigned char> &vec)
+GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const unsigned char *buf, const unsigned char *end)
 {
-  DS ds = ev.mainloop_api.load_ds_from_mem(vec);
+  DS ds = ev.mainloop_api.load_ds_from_mem(buf,end);
   DiskStore *dds = find_disk_store(e, ds);
   return add_polygon2(e, new DSFaceCollection(dds),1);
 }
@@ -13152,6 +13173,21 @@ public:
     case 6: return (unsigned char*)&texcoord[0];
     case 7: return (unsigned char*)&texcoord3[0];
     case 8: return (unsigned char*)&obj[0];
+    };
+    return 0;
+  }
+  unsigned char *BlockWithOffset(int block, int offset, int size) const
+  {
+    switch(block) {
+    case 0: return ((unsigned char*)&header)+offset;
+    case 1: return ((unsigned char*)&pointcounts[0])+offset;
+    case 2: return ((unsigned char*)&vertexindex[0])+offset;
+    case 3: return ((unsigned char*)&vertex[0])+offset;
+    case 4: return ((unsigned char*)&normal[0])+offset;
+    case 5: return ((unsigned char*)&color[0])+offset;
+    case 6: return ((unsigned char*)&texcoord[0])+offset;
+    case 7: return ((unsigned char*)&texcoord3[0])+offset;
+    case 8: return ((unsigned char*)&obj[0])+offset;
     };
     return 0;
   }
@@ -15940,18 +15976,20 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "stlfacecollection async not ready!" << std::endl; return; }
     if (ptr->size()<5) { std::cout << "STLFaceCollection: async not found!" << std::endl; return; }
     if (ptr->operator[](0)=='s' && ptr->operator[](1)=='o' && ptr->operator[](2)=='l' && ptr->operator[](3)=='i' && ptr->operator[](4)=='d')
       {
-	convert_stl_to_binary(ptr);
+	std::vector<unsigned char> ptr2(ptr->begin(),ptr->end());
+	convert_stl_to_binary(&ptr2);
       }
     if (ptr->operator[](0)=='<' && ptr->operator[](1)=='!' && ptr->operator[](2)=='D' && ptr->operator[](3)=='O' && ptr->operator[](4)=='C' && ptr->operator[](5)=='T') {
       std::cout << "404 error at STLFaceCollcection / " << url << std::endl;
       return;
     }
-    m_ptr = ptr;
+    std::vector<unsigned char> *ptr2 = new std::vector<unsigned char>(ptr->begin(),ptr->end());
+    m_ptr = ptr2;
     }
   }
   virtual int NumFaces() const { 
@@ -16590,6 +16628,7 @@ private:
   return ml;
 }
 
+
  class SceneDesc : public MainLoopItem
  {
 public:
@@ -16604,7 +16643,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "scenedesc async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     std::stringstream ss(code);
@@ -16880,7 +16919,7 @@ public:
       if (val2<0.0) val2=0.0;
       val = 1.0 - val2;
     } else {
-	val = 1.0;
+       val = 1.0;
     }
     ::Color c(coll->Color(face,point));
     c.r*=val;
@@ -17056,25 +17095,25 @@ public:
       GameApi::P p = vec[i].pair;
       GameApi::FF val;
       if (vec[i].state == -1 && current_state==-1) {
-	if (vec[i].key == -1 && current_key==-1) {
-	  val = ev.font_api.time_range_fetcher(vec[i].start_time, vec[i].end_time, -10000.0, 0.0, 1.0, -100000.0, vec[i].repeat);
-	}
-	else {
-	  if (vec[i].key!=-1)
-	    current_key = vec[i].key;
-	  val = ev.font_api.time_range_fetcher_key(current_key,vec[i].start_time, vec[i].end_time, -10000.0,0.0,1.0,-10000.0, vec[i].repeat);
-	}
+       if (vec[i].key == -1 && current_key==-1) {
+         val = ev.font_api.time_range_fetcher(vec[i].start_time, vec[i].end_time, -10000.0, 0.0, 1.0, -100000.0, vec[i].repeat);
+       }
+       else {
+         if (vec[i].key!=-1)
+           current_key = vec[i].key;
+         val = ev.font_api.time_range_fetcher_key(current_key,vec[i].start_time, vec[i].end_time, -10000.0,0.0,1.0,-10000.0, vec[i].repeat);
+       }
       } else { // state
-	if (vec[i].state!=-1)
-	  current_state = vec[i].state;
+       if (vec[i].state!=-1)
+         current_state = vec[i].state;
 
-	if (vec[i].key==-1 && current_key==-1) {
-	  val = ev.font_api.time_range_fetcher_state(current_state, vec[i].var, vec[i].start_time, vec[i].end_time, -10000.0,0.0,1.0,-10000.0, vec[i].repeat);
-	} else {
-	  if (vec[i].key!=-1)
-	    current_key = vec[i].key;
-	  val = ev.font_api.time_range_fetcher_state_key(current_state, current_key, vec[i].var, vec[i].start_time, vec[i].end_time, -10000.0, 0.0, 1.0, -10000.0, vec[i].repeat);
-	}
+       if (vec[i].key==-1 && current_key==-1) {
+         val = ev.font_api.time_range_fetcher_state(current_state, vec[i].var, vec[i].start_time, vec[i].end_time, -10000.0,0.0,1.0,-10000.0, vec[i].repeat);
+       } else {
+         if (vec[i].key!=-1)
+           current_key = vec[i].key;
+         val = ev.font_api.time_range_fetcher_state_key(current_state, current_key, vec[i].var, vec[i].start_time, vec[i].end_time, -10000.0, 0.0, 1.0, -10000.0, vec[i].repeat);
+       }
       }
       GameApi::MN mn = vec[i].move;
       GameApi::MT mat = vec[i].material;
@@ -17130,13 +17169,13 @@ class MeshAnimFromUrl : public MainLoopItem
 {
 public:
   MeshAnimFromUrl(GameApi::Env &env,
-		  GameApi::EveryApi &ev,
-		  std::vector<GameApi::P> faces,
-		  std::vector<GameApi::MN> move,
-		  std::vector<GameApi::MT> materials,
-		  std::vector<GameApi::MS> instantiates,
-		  std::vector<GameApi::IF> states,
-		  std::string url, std::string homepage)
+                 GameApi::EveryApi &ev,
+                 std::vector<GameApi::P> faces,
+                 std::vector<GameApi::MN> move,
+                 std::vector<GameApi::MT> materials,
+                 std::vector<GameApi::MS> instantiates,
+                 std::vector<GameApi::IF> states,
+                 std::string url, std::string homepage)
     : env(env), ev(ev), faces(faces), move(move), materials(materials), instantiates(instantiates), states(states), url(url), homepage(homepage) {
     ml.id = -1;
     current_states.id = -1;
@@ -17152,7 +17191,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "meshanimfromurl async not ready!" << std::endl; return; }
     std::string s3(vec->begin(), vec->end());
     std::stringstream ss(s3);
@@ -17286,7 +17325,8 @@ public:
     ml = mesh_anim(env,ev,animations);
     MainLoopItem *item = find_main_loop(env,ml);
     item->Prepare();
-  }
+     }
+
   virtual void execute(MainLoopEnv &e)
   {
     if (ml.id!=-1) {
@@ -17334,6 +17374,9 @@ private:
   GameApi::ML ml;
 };
 
+
+
+
 GameApi::ML GameApi::PolygonApi::mesh_anim(GameApi::EveryApi &ev,
 					   std::vector<GameApi::P> vec,
 					   std::vector<GameApi::MN> move,
@@ -17344,6 +17387,7 @@ GameApi::ML GameApi::PolygonApi::mesh_anim(GameApi::EveryApi &ev,
 {
   return add_main_loop(e, new MeshAnimFromUrl(e, ev, vec, move, materials, inst, states,url, gameapi_homepageurl));
 }
+
 // note, needs to have equal amount of vertices. p_script is good way to generate these
 
 class MeshElem : public FaceCollection
@@ -19082,7 +19126,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!(SkeletalAnim22)" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     std::stringstream ss(code);

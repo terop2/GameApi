@@ -146,7 +146,7 @@ void FontGlyphBitmap::check_load()
   // This is done in GameApi_gui.cc if we're inside emscripten
     e.async_load_url(filename,"");
 #endif
-  std::vector<unsigned char> *ptr = e.get_loaded_async_url(filename);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(filename);
   if (!ptr) { return; } else {
     std::fstream ss("font.ttf", std::ios_base::binary | std::ios_base::out);
     int s = ptr->size();

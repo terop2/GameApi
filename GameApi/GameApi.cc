@@ -4476,6 +4476,9 @@ class TextureIDMaterial : public MaterialForward
 {
 public:
   TextureIDMaterial(GameApi::EveryApi &ev, GameApi::TXID id, float mix) : ev(ev), txid(id), mix(mix) { }
+  ~TextureIDMaterial() {
+    ev.texture_api.delete_texid(txid);
+  }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
 
@@ -4619,7 +4622,8 @@ private:
 class TextureMaterial : public MaterialForward
 {
 public:
-  TextureMaterial(GameApi::EveryApi &ev, GameApi::BM bm, float mix) : ev(ev), bm(bm), mix(mix) { }
+  TextureMaterial(GameApi::EveryApi &ev, GameApi::BM bm, float mix) : ev(ev), bm(bm), mix(mix) { txid.id = -1; }
+  ~TextureMaterial() { ev.texture_api.delete_texid(txid); }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
@@ -4629,6 +4633,8 @@ public:
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
+    if (txid.id!=-1) ev.texture_api.delete_texid(txid);
+    txid=I15;
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml(ev,I16);
     GameApi::ML I18=ev.polygon_api.texture_shader(ev, I17, mix);
@@ -4644,6 +4650,8 @@ public:
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
+    if (txid.id!=-1) ev.texture_api.delete_texid(txid);
+    txid=I15;
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
@@ -4660,6 +4668,8 @@ public:
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
+    if (txid.id!=-1) ev.texture_api.delete_texid(txid);
+    txid=I15;
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::MSA pta = ev.matrices_api.prepare(ms);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_matrix(ev,I16,pta);
@@ -4677,6 +4687,8 @@ public:
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
+    if (txid.id!=-1) ev.texture_api.delete_texid(txid);
+    txid=I15;
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     //GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml(ev,I16,pta);
@@ -4693,6 +4705,8 @@ public:
     GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
     GameApi::TX I14=ev.texture_api.tex_bitmap(I13);
     GameApi::TXID I15=ev.texture_api.prepare(I14);
+    if (txid.id!=-1) ev.texture_api.delete_texid(txid);
+    txid=I15;
     GameApi::VA I16=ev.texture_api.bind(I12,I15);
     GameApi::PTA pta = ev.points_api.prepare(pts);
     GameApi::ML I17=ev.materials_api.render_instanced2_ml_fade(ev,I16,pta, flip, start_time, end_time);
@@ -4705,6 +4719,7 @@ private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
   float mix;
+  mutable GameApi::TXID txid;
 };
 
 
@@ -7413,6 +7428,7 @@ class RenderInstancedTex : public MainLoopItem
 {
 public:
   RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  ~RenderInstancedTex() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
@@ -7441,6 +7457,7 @@ public:
     pta = ev.points_api.prepare(pts);
     ev.polygon_api.create_vertex_array_hw(va);
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    ids = id;
     va = ev.texture_api.bind_many(va, id, types);
 
       }
@@ -7601,6 +7618,7 @@ private:
   std::vector<GameApi::BM> bm;
   std::vector<int> types;
   bool initialized;
+  std::vector<GameApi::TXID> ids;
 };
 
 
@@ -7608,6 +7626,7 @@ class RenderInstancedTex_matrix : public MainLoopItem
 {
 public:
   RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  ~RenderInstancedTex_matrix() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
@@ -7639,6 +7658,7 @@ public:
     pta = ev.matrices_api.prepare(pts);
     ev.polygon_api.create_vertex_array_hw(va);
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    ids = id;
     va = ev.texture_api.bind_many(va, id, types);
       }
     if (changed)
@@ -7798,6 +7818,7 @@ private:
   std::vector<GameApi::BM> bm;
   std::vector<int> types;
   bool initialized;
+  std::vector<GameApi::TXID> ids;
 };
 
 
@@ -7806,6 +7827,7 @@ class RenderInstancedTex_id : public MainLoopItem
 public:
   RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1; }
   //int shader_id() { return shader.id; }
+  ~RenderInstancedTex_id() { if (bm) ev.texture_api.delete_texid(*bm); }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
@@ -8013,6 +8035,7 @@ class RenderInstancedTex_id_matrix : public MainLoopItem
 {
 public:
   RenderInstancedTex_id_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1;}
+  ~RenderInstancedTex_id_matrix() { if (bm) ev.texture_api.delete_texid(*bm); }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -8645,6 +8668,7 @@ class RenderInstancedTex2 : public MainLoopItem
 public:
   RenderInstancedTex2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; va.id=-1; }
   //int shader_id() { return shader.id; }
+  ~RenderInstancedTex2() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
   {
@@ -8682,6 +8706,7 @@ public:
       bm.push_back(ev.polygon_api.p_texture(p,i));
     }
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
+    ids = id;
     va = ev.texture_api.bind_many(va, id);
 
       }
@@ -8835,6 +8860,7 @@ private:
   GameApi::SH shader;
   bool fade, flip;
   float start_time, end_time;
+  std::vector<GameApi::TXID> ids;
 };
 
 
@@ -8842,6 +8868,7 @@ class RenderInstancedTex2_matrix : public MainLoopItem
 {
 public:
   RenderInstancedTex2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; va.id = -1; }
+  ~RenderInstancedTex2_matrix() { ev.texture_api.delete_texid(ids); }
   //int shader_id() { return shader.id; }
   std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
   void handle_event(MainLoopEvent &e)
@@ -8880,6 +8907,7 @@ public:
       bm.push_back(ev.polygon_api.p_texture(p,i));
     }
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
+    ids = id;
     va = ev.texture_api.bind_many(va, id);
       }
     if (changed)
@@ -9032,6 +9060,7 @@ private:
   GameApi::SH shader;
   bool fade, flip;
   float start_time, end_time;
+  std::vector<GameApi::TXID> ids;
 };
 
 
@@ -13848,7 +13877,7 @@ public:
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string s(vec->begin(), vec->end());
 
@@ -16263,6 +16292,10 @@ std::string replace_str(std::string val, std::string repl, std::string subst)
 }
 void P_cb(void *data);
 
+
+class P_script;
+std::vector<P_script*> del_p_script;
+
 class P_script : public FaceCollection
 {
 public:
@@ -16274,13 +16307,15 @@ public:
 #endif
     // std::cout << "P_script url: " << url << std::endl;
   }
-  ~P_script() { e.async_rem_callback(url); }
+  ~P_script() { e.async_rem_callback(url); del_p_script.push_back(this); }
   void Prepare2() {
+    for(int i=0;i<del_p_script.size();i++)
+      if (del_p_script[i]==this) return;
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     code = replace_str(code, "%1", p1);
@@ -16476,7 +16511,7 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
       code = replace_str(code, "%1", p1);
@@ -16573,7 +16608,7 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
       code = replace_str(code, "%1", p1);
@@ -16666,7 +16701,7 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
       code = replace_str(code, "%1", p1);
@@ -16841,7 +16876,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     //std::cout << "BM_scriptA: " << code << std::endl;
@@ -16993,7 +17028,7 @@ struct FileBlock
 class LoadDS : public DiskStore
 {
 public:
-  LoadDS(const std::vector<unsigned char> &file) : vec(file), valid(false) { }
+  LoadDS(const unsigned char *buf, const unsigned char *end) : buf(buf), end(end), valid(false) { }
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -17001,9 +17036,9 @@ public:
   void HeavyPrepare() { Prepare(); }
 
   void Prepare() {
-    header = (FileHeader*)&vec[0];
-    blocks = (FileBlock*)&vec[sizeof(FileHeader)];
-    wholefile = (unsigned char*)&vec[0];
+    header = (FileHeader*)&buf[0];
+    blocks = (FileBlock*)&buf[sizeof(FileHeader)];
+    wholefile = (unsigned char*)&buf[0];
     valid = header->d=='d' && header->s=='s';
   }
   int Type() const { return header->type; }
@@ -17011,16 +17046,86 @@ public:
   int BlockType(int block) const { return blocks[block].block_type; }
   int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
   unsigned char *Block(int block) const { return wholefile + blocks[block].block_offset_from_beginning_of_file; }
+  unsigned char *BlockWithOffset(int block, int offset2, int size2) const
+  {
+    return wholefile + blocks[block].block_offset_from_beginning_of_file + offset2;
+  }
+
 private:
-  const std::vector<unsigned char> &vec;
+  const unsigned char *buf;
+  const unsigned char *end;
+  //const std::vector<unsigned char> &vec;
   FileHeader *header;
   FileBlock *blocks;
   unsigned char *wholefile;
   bool valid;
 };
 
-GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
+class LoadDSDisk : public DiskStore
 {
+public:
+  LoadDSDisk(std::string filename) : filename(filename), t(filename,std::ios::in | std::ios::binary) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  void Prepare() {
+    t.seekg(0,std::ios::beg);
+    t.read((char*)&header,sizeof(header));
+    int num = NumBlocks();
+    blocks = new FileBlock[num];
+    t.seekg(sizeof(FileHeader),std::ios::beg);
+    t.read((char*)blocks, num*sizeof(FileBlock));
+  }
+  int Type() const { return header.type; }
+  int NumBlocks() const { return header.numblocks; }
+  int BlockType(int block) const { return blocks[block].block_type; }
+  int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
+  unsigned char *BlockWithOffset(int block, int offset2, int size2) const
+  {
+    if (block==blocknum && offset2==offset && size2 == sz) return buf;
+    delete [] buf;
+    int size = BlockSizeInBytes(block);
+    buf = new unsigned char[std::min(size-offset2,size2)];
+    t.seekg(blocks[block].block_offset_from_beginning_of_file+offset2,std::ios::beg);
+    t.read((char*)buf,std::min(size-offset2,size2));
+    blocknum = block;
+    offset = offset;
+    sz = size2;
+    return buf;
+  }
+  unsigned char *Block(int block) const
+  {
+    if (block==blocknum && offset==-1 && sz==-1) return buf;
+    delete [] buf;
+    int size = BlockSizeInBytes(block);
+    buf = new unsigned char[size];
+    t.seekg(blocks[block].block_offset_from_beginning_of_file,std::ios::beg);
+    t.read((char*)buf,size);
+    blocknum = block;
+    offset=-1;
+    sz = -1;
+    return buf;
+  }
+private:
+  std::string filename;
+  mutable std::ifstream t;
+  mutable FileHeader header;
+  mutable FileBlock *blocks;
+  mutable int blocknum = -1;
+  mutable int offset = -1;
+  mutable int sz = -1;
+  mutable unsigned char *buf = 0;
+};
+
+GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string filename)
+{ // This doesnt use too much memory.
+  return add_disk_store(e,new LoadDSDisk(filename));
+}
+
+GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
+{ // this uses lots of memory
   std::ifstream t(filename,std::ios::in | std::ios::binary);
   std::string str;
   if (t) {
@@ -17030,12 +17135,12 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
     t.read(&str[0],str.size());
     t.close();
   }
-  std::vector<unsigned char> vec(str.begin(),str.end());
-  return add_disk_store(e, new LoadDS(vec));
+  std::vector<unsigned char> *vec = new std::vector<unsigned char>(str.begin(),str.end());
+  return add_disk_store(e, new LoadDS(&vec->operator[](0),&vec->operator[](vec->size())));
 }
-GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const std::vector<unsigned char> &vec)
+GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const unsigned char *buf, const unsigned char *end)
 {
-   return add_disk_store(e, new LoadDS(vec));
+  return add_disk_store(e, new LoadDS(buf,end));
 }
 
 class SaveDSMain : public MainLoopItem
@@ -17069,6 +17174,46 @@ private:
 GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p)
 {
   return add_main_loop(e, new SaveDSMain(ev,output_filename, p));
+}
+
+std::string GameApi::MainLoopApi::ds_to_string(DS ds)
+{
+  //std::ofstream ff(output_filename, std::ios::out | std::ios::binary);
+  std::stringstream ff;
+  
+  int offset = 0;
+  DiskStore *dds = find_disk_store(e, ds);
+  dds->Prepare();
+  FileHeader h;
+  h.d = 'd';
+  h.s = 's';
+  h.type = dds->Type();
+  h.numblocks = dds->NumBlocks();
+  //std::cout << "Writing Header:" << sizeof(FileHeader) << std::endl;
+  ff.write((char*)&h, (int)sizeof(FileHeader));
+  offset += sizeof(FileHeader);
+  int s = h.numblocks;
+  offset += sizeof(FileBlock)*s;
+  for(int i=0;i<s;i++)
+    {
+      FileBlock b;
+      b.block_type = dds->BlockType(i);
+      b.block_size_in_bytes = dds->BlockSizeInBytes(i);
+      b.block_offset_from_beginning_of_file = offset;
+      offset += b.block_size_in_bytes;
+      //std::cout << "Writing FileBlock:" << sizeof(FileBlock) << std::endl;
+      ff.write((char*)&b,(int)sizeof(FileBlock));
+    }
+  for(int i=0;i<s;i++)
+    {
+      int s = dds->BlockSizeInBytes(i);
+      unsigned char *ptr = dds->Block(i);
+      //std::cout << "Writing Block:" << s << std::endl;
+      ff.write((char*)ptr, s);
+    }
+  //std::cout << "Closing file" << std::endl;
+  //ff.close();
+  return ff.str();
 }
 
 void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
@@ -19368,7 +19513,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string script = std::string(ptr->begin(), ptr->end());
     try {
@@ -19438,7 +19583,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string script = std::string(ptr->begin(), ptr->end());
     try {
@@ -19507,7 +19652,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     script = std::string(ptr->begin(), ptr->end());
     try {
@@ -19738,7 +19883,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string script = std::string(ptr->begin(), ptr->end());
 
@@ -20157,7 +20302,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string script = std::string(ptr->begin(), ptr->end());
     mappings = std::vector<BM_coll>();
@@ -20686,7 +20831,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string data = std::string(ptr->begin(), ptr->end());
 
@@ -20722,7 +20867,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string data = std::string(ptr->begin(), ptr->end());
 
@@ -21147,7 +21292,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string data = std::string(ptr->begin(), ptr->end());
 
@@ -21253,7 +21398,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string data = std::string(ptr->begin(), ptr->end());
 
@@ -21638,7 +21783,8 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url+str, homepage);
 #endif
-    ptr = e.get_loaded_async_url(url+str);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url+str); 
+    ptr = new std::vector<unsigned char>(vec->begin(),vec->end());
     publish_ptr = ptr;
 
     network_heavy_cache_url.push_back(url);
@@ -23077,7 +23223,7 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepageurl);
 #endif
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string s(vec->begin(), vec->end());
       std::stringstream ss(s);
@@ -23544,7 +23690,7 @@ std::vector<PosDelta> parse_layout(std::string s)
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(ptr->begin(), ptr->end());
     pos = parse_layout(code);
@@ -23558,7 +23704,7 @@ void FrmContainerWidget::Prepare()
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(ptr->begin(), ptr->end());
     pos = parse_layout(code);
@@ -23863,7 +24009,7 @@ public:
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     std::stringstream ss(code);
@@ -24533,7 +24679,7 @@ public:
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string s(vec->begin(), vec->end());
       std::stringstream ss(s);
@@ -24549,7 +24695,7 @@ public:
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string s(vec->begin(), vec->end());
       std::stringstream ss(s);
@@ -25247,7 +25393,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string s(vec->begin(), vec->end());
     std::stringstream ss(s);
@@ -25311,7 +25457,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string s3(vec->begin(), vec->end());
     std::stringstream ss(s3);
@@ -25443,7 +25589,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string s3(vec->begin(), vec->end());
     std::stringstream ss(s3);
@@ -25505,7 +25651,7 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *vec = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
       std::stringstream ss2(code);
@@ -26355,13 +26501,13 @@ public:
     vec = env.get_loaded_async_url(url);
     //std::cout << "vec=" << vec << std::endl;
   }
-  virtual unsigned char *buffer() const { if (vec) return &vec->operator[](0); else { std::cout << "ERROR: vec=0 in NetworkMemoryBlock::buffer" << std::endl; return 0; } }
+  virtual unsigned char *buffer() const { if (vec) return const_cast<unsigned char*>(&vec->operator[](0)); else { std::cout << "ERROR: vec=0 in NetworkMemoryBlock::buffer" << std::endl; return 0; } }
   virtual int size_in_bytes() const { if (vec) return vec->size(); else { std::cout << "error vec=0 in NetworkMemoryBlock::size_in_bytes" << std::endl;  return 0; } }
 private:
   GameApi::Env &env;
   std::string url;
   std::string homepage;
-  std::vector<unsigned char> *vec;
+  GameApi::ASyncVec *vec;
 };
 
 GameApi::MB GameApi::MainLoopApi::network(std::string url, std::string homepage)
@@ -26521,8 +26667,8 @@ public:
     GameApi::MB mem = ev.mainloop_api.network(url,homepageurl);
     MemoryBlock *blk = find_memblock(env,mem);
     blk->Prepare();
-    std::vector<unsigned char> vec(blk->buffer(), blk->buffer()+blk->size_in_bytes());
-    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(vec);
+    //std::vector<unsigned char> vec(blk->buffer(), blk->buffer()+blk->size_in_bytes());
+    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(blk->buffer(),blk->buffer()+blk->size_in_bytes());
     GameApi::PKG urlmemmap = ev.mainloop_api.load_um(ds);
     ml = ev.mainloop_api.memmap_window(ev,urlmemmap);
     MainLoopItem *m = find_main_loop(env,ml);
@@ -26606,6 +26752,15 @@ public:
     if (!blk) std::cout << "ERROR: blk not found in Block()" << std::endl;
     return blk->buffer();
   }
+  unsigned char *BlockWithOffset(int block, int offset, int size) const
+  {
+    if (block==0 && !url_string) create_urls();
+    if (block==0) return url_string+offset;
+    block--;
+    MemoryBlock *blk = map->get_block(map->get_url(block));
+    if (!blk) std::cout << "ERROR: blk not found in Block()" << std::endl;
+    return blk->buffer()+offset;
+  }
   void create_urls() const {
     int s = map->size();
     std::string res;
@@ -26620,6 +26775,245 @@ public:
 private:
   UrlMemoryMap *map;
   mutable unsigned char *url_string=0;
+};
+
+class LoadStreamFromMemoryBlock : public LoadStream
+{
+public:
+  LoadStreamFromMemoryBlock(MemoryBlock *blk) : blk(blk) { }
+  void Collect(CollectVisitor &vis) {
+    blk->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+    blk->Prepare();
+    buffer = blk->buffer();
+    size = blk->size_in_bytes();
+  }
+  virtual LoadStream *Clone() { return new LoadStreamFromMemoryBlock(blk); }
+  virtual bool get_ch(unsigned char &ch)
+  {
+    if (pos>=size) return false;
+    ch=buffer[pos++];
+    //std::cout << "get_ch:" << ch << std::endl;
+    return true;
+  }
+  virtual bool get_line(std::vector<unsigned char> &line)
+  {
+    if (pos>=size) return false;
+    unsigned char ch;
+    bool b;
+    line.clear();
+    while((b=get_ch(ch)) && ch!='\n') line.push_back(ch);
+    //std::cout << "get_line:" << std::string(line.begin(),line.end()) << std::endl;
+    return b;
+  }
+  virtual bool get_file(std::vector<unsigned char> &file)
+  {
+    for(int i=pos;i<size;i++) file.push_back(buffer[i]);
+    //std::cout << "get_file" << std::endl;
+    return true;
+  }
+private:
+  MemoryBlock *blk;
+  int pos=0;
+  unsigned char *buffer;
+  int size;
+};
+LoadStream *load_from_vector(std::vector<unsigned char> vec);
+
+
+bool is_obj_or_mtl(MemoryBlock *blk, std::string &mtl_filename)
+{
+  blk->Prepare();
+  unsigned char *buf = blk->buffer();
+  int sz = blk->size_in_bytes();
+  std::string s(buf,buf+sz);
+  std::stringstream ss(s);
+  std::string line;
+  while(std::getline(ss,line)) {
+    int val1 = find_str(line, "p_url");
+    int val2 = find_str(line, "p_mtl");
+    if (val1!=-1) return false;
+    if (val2!=-1) {
+      int val3 = find_str(line,",");
+      std::string line2 = line.substr(val3+1);
+      int val4 = find_str(line2,",");
+      std::string line3 = line2.substr(val4+1);
+      int val5 = find_str(line3,",");
+      mtl_filename = line2.substr(val4,val5);
+      return true;
+    }
+  }
+  return false;
+}
+
+class ObjToDSMemBlock : public MemoryBlock
+{
+public:
+  ObjToDSMemBlock(GameApi::EveryApi &ev, MemoryBlock *blk, bool b, std::string mtl_filename) : ev(ev), blk(blk),b(b), mtl_filename(mtl_filename) { }
+  void Collect(CollectVisitor &vis) {
+    blk->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+
+  virtual void Prepare() {
+    std::cout << "ObjToDSMemBlock::Prepare()" << std::endl;
+    blk->Prepare();
+    unsigned char *buf = blk->buffer();
+    std::vector<unsigned char> vec(buf,buf+blk->size_in_bytes());
+    LoadStream *stream = load_from_vector(vec);
+
+    GameApi::P p;
+    if (!b) {
+      p = ev.polygon_api.load_model_all_no_cache(stream, 300);
+    } else {
+
+      std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(mtl_filename);
+      std::vector<std::string> materials;
+      int s = mat.size();
+      for(int i=0;i<s;i++) { materials.push_back(mat[i].material_name); }
+      
+      p = ev.polygon_api.load_model_all_no_cache_mtl(stream, 300, materials);
+    }
+    
+    GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
+    res = ev.mainloop_api.ds_to_string(ds);
+    //std::cout << "RES:" << res << std::endl;
+  }
+  void set_blk(MemoryBlock *m) { blk = m; }
+  virtual unsigned char *buffer() const { return (unsigned char*)res.c_str(); }
+  virtual int size_in_bytes() const { return res.size(); }
+private:
+  GameApi::EveryApi &ev;
+  MemoryBlock *blk;
+  std::string res;
+  bool b;
+  std::string mtl_filename;
+};
+
+std::string replace_str2(std::string val, std::string repl, std::string subst)
+{
+
+  std::string s = "";
+  int p = 0;
+  while(1) {
+    int pos = find_str(val,repl);
+    if (pos==-1) { s+=val.substr(p,val.size()-p); return s; }
+    s+=val.substr(p,pos-p);
+    s+=subst;
+    val[pos]='X'; // remove %N
+    p=pos+repl.size();
+  }
+  return "ERROR";
+}
+
+class ReplaceStringMemBlock : public MemoryBlock
+{
+public:
+  ReplaceStringMemBlock(MemoryBlock *blk, std::string repl, std::string subst)
+    : blk(blk), repl(repl), subst(subst) { }
+  void Collect(CollectVisitor &vis) {
+    blk->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+  void set_blk(MemoryBlock *m) { blk = m; }
+  virtual void Prepare() {
+    blk->Prepare();
+    unsigned char *buf = blk->buffer();
+    int sz = blk->size_in_bytes();
+    val = std::string(buf,buf+sz);
+    //std::cout << "VAL:" << val << std::endl;
+    val = replace_str2(val, repl, subst);
+    //std::cout << "VAL2:" << val << std::endl;
+  }
+  virtual unsigned char *buffer() const { return (unsigned char*)val.c_str(); }
+  virtual int size_in_bytes() const
+  {
+    return val.size();
+  }
+private:
+  MemoryBlock *blk;
+  std::string repl;
+  std::string subst;
+  std::string val;
+  };
+
+class OptimizeObjFilesFromUrlMemoryMap : public UrlMemoryMap
+{
+public:
+  OptimizeObjFilesFromUrlMemoryMap(GameApi::EveryApi &ev, UrlMemoryMap *map) : ev(ev), map(map) { }
+  void Collect(CollectVisitor &vis) {
+    map->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+
+  virtual void Prepare() { map->Prepare(); }
+  virtual int size() const { return map->size(); }
+  virtual std::string get_url(int i) const
+  {
+    std::string url = map->get_url(i);
+    std::string ext = url.substr(url.size()-4);
+    if (ext==".obj") {
+      std::string url2 = url.substr(0,url.size()-4);
+      url2+=".ds";
+      //std::cout << "url2=" << url2 << std::endl;
+      return url2;
+    } else {
+      block_list.push_back(url);
+    }
+    return url;
+  }
+  virtual MemoryBlock *get_block(std::string url) const
+  {
+    int s = block_list.size();
+    for(int i=0;i<s;i++) if (url==block_list[i]) return map->get_block(url);
+    
+    std::string ext3 = url.substr(url.size()-3);
+    std::string url2 = url;
+    if (ext3==".ds") {
+      std::string urlstart = url.substr(0,url.size()-3);
+      url2 = urlstart + ".obj";
+      //std::cout << "get_block: " << url2 << std::endl;
+    }
+    MemoryBlock *blk = map->get_block(url2);
+    if (url=="SCRIPT") {
+      if (!repl)
+	repl = new ReplaceStringMemBlock(blk, ".obj", ".ds");
+
+      repl->set_blk(blk);
+      return repl;
+    }
+    std::string ext = url.substr(url.size()-3);
+    if (blk && ext==".ds") {
+      std::string mtl_filename;
+      MemoryBlock *script = map->get_block("SCRIPT");
+      bool b = is_obj_or_mtl(script, mtl_filename);
+      if (!conv) conv =  new ObjToDSMemBlock(ev,blk,b,mtl_filename);
+      conv->set_blk(blk);
+      return conv;
+    }
+    return blk;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  UrlMemoryMap *map;
+  mutable ReplaceStringMemBlock *repl=0;
+  mutable ObjToDSMemBlock *conv=0;
+  mutable std::vector<std::string> block_list;
 };
 
 class GraphUrlMemoryMap : public UrlMemoryMap
@@ -26676,7 +27070,9 @@ private:
 void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls)
 {
   UrlMemoryMap *map = new GraphUrlMemoryMap(e,ev,script,urls);
-  DiskStore *store  = new UrlMemoryMapSave(map);
+  UrlMemoryMap *map2 = new OptimizeObjFilesFromUrlMemoryMap(ev,map);
+  // more optimizations here.
+  DiskStore *store  = new UrlMemoryMapSave(map2);
   GameApi::DS ds = add_disk_store(e,store);
   ev.mainloop_api.save_ds(filename,ds);
 
@@ -26852,6 +27248,8 @@ GameApi::ML GameApi::MainLoopApi::memmap_window(GameApi::EveryApi &ev, GameApi::
 }
 
 void M_cb(void *data);
+class MemMapWindow;
+std::vector<MemMapWindow*> del_memmap;
 class MemMapWindow : public MainLoopItem
 {
 public:
@@ -26863,7 +27261,7 @@ public:
 #endif
     
   }
-  ~MemMapWindow() { env.async_rem_callback(url); }
+  ~MemMapWindow() { env.async_rem_callback(url); del_memmap.push_back(this);}
   virtual void logoexecute() { }
   virtual void Prepare2()
   {
@@ -26872,9 +27270,10 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
-    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(*vec);
+    //std::vector<unsigned char> vec2(vec->begin(), vec->end());
+    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(vec->begin(),vec->end());
     GameApi::PKG urlmap = ev.mainloop_api.load_um(ds);
     ml = ev.mainloop_api.memmap_window(ev,urlmap);
     MainLoopItem *item = find_main_loop(env,ml);
@@ -26935,6 +27334,7 @@ private:
 void M_cb(void *data)
 {
   MemMapWindow *script = (MemMapWindow*)data;
+  for(int i=0;i<del_memmap.size();i++) if (script==del_memmap[i]) return;
   script->Prepare2();
 }
 
@@ -26946,10 +27346,33 @@ void M_cb2_4(void *data);
 void M_cb2_5(void *data);
 void M_cb2_6(void *data);
 
+struct del_map
+{
+  void del_url(std::string url)
+  {
+    //std::vector<unsigned char>* v = load_url_buffers_async[url];
+    //delete v;
+    //load_url_buffers_async[url] = 0;
+  }
+  ~del_map() {
+    //std::map<std::string,std::vector<unsigned char>*>::iterator i = load_url_buffers_async.begin();
+    //for(;i!=load_url_buffers_async.end();i++)
+    //  {
+    //	std::pair<std::string,std::vector<unsigned char>*> p = *i;
+    //	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
+    //	delete p.second;
+    //}
+  }
+  std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+};
+extern del_map g_del_map;
+
+
 class MemMapWindow2 : public MainLoopItem
 {
 public:
-  MemMapWindow2(GameApi::Env &env,GameApi::EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6, std::string homepage) : env(env), ev(ev), url_1(url_1), url_2(url_2), url_3(url_3), url_4(url_4), url_5(url_5), url_6(url_6), homepage(homepage) { ml.id=-1;
+  MemMapWindow2(GameApi::Env &env,GameApi::EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6, std::string homepage) : env(env), ev(ev), url_1(url_1), url_2(url_2), url_3(url_3), url_4(url_4), url_5(url_5), url_6(url_6), homepage(homepage) {
+    ml.id=-1;
     env.async_load_callback(url_1, &M_cb2_1, this);
     env.async_load_callback(url_2, &M_cb2_2, this);
     env.async_load_callback(url_3, &M_cb2_3, this);
@@ -26983,7 +27406,6 @@ public:
       if (access[i]==false) return;
     }
     
-    
     //std::cout << "MemMapWindow::Prepare2()" << std::endl;
     if (ml.id==-1) {
 #ifndef EMSCRIPTEN
@@ -26994,12 +27416,13 @@ public:
     env.async_load_url(url_5, homepage);
     env.async_load_url(url_6, homepage);
 #endif
-    std::vector<unsigned char> *vec_1 = env.get_loaded_async_url(url_1);
-    std::vector<unsigned char> *vec_2 = env.get_loaded_async_url(url_2);
-    std::vector<unsigned char> *vec_3 = env.get_loaded_async_url(url_3);
-    std::vector<unsigned char> *vec_4 = env.get_loaded_async_url(url_4);
-    std::vector<unsigned char> *vec_5 = env.get_loaded_async_url(url_5);
-    std::vector<unsigned char> *vec_6 = env.get_loaded_async_url(url_6);
+    GameApi::ASyncVec *vec_1 = env.get_loaded_async_url(url_1);
+    GameApi::ASyncVec *vec_2 = env.get_loaded_async_url(url_2);
+    GameApi::ASyncVec *vec_3 = env.get_loaded_async_url(url_3);
+    GameApi::ASyncVec *vec_4 = env.get_loaded_async_url(url_4);
+    GameApi::ASyncVec *vec_5 = env.get_loaded_async_url(url_5);
+    GameApi::ASyncVec *vec_6 = env.get_loaded_async_url(url_6);
+
     if (!vec_1) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
     if (!vec_2) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
     if (!vec_3) { std::cout << "MemMapWindow: async not ready!" << std::endl; return; }
@@ -27039,7 +27462,15 @@ public:
     vec->insert(vec->end(), vec_6->begin(), vec_6->end());
     
 #endif    
-    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(*vec);
+    //g_del_map.del_url("load_url.php?url=" + url_1);
+    //g_del_map.del_url("load_url.php?url=" +url_2);
+    //g_del_map.del_url("load_url.php?url=" +url_3);
+    //g_del_map.del_url("load_url.php?url=" +url_4);
+    //g_del_map.del_url("load_url.php?url=" +url_5);
+    //g_del_map.del_url("load_url.php?url=" +url_6);
+
+
+    GameApi::DS ds = ev.mainloop_api.load_ds_from_mem(&vec->operator[](0),&vec->operator[](vec->size()));
     GameApi::PKG urlmap = ev.mainloop_api.load_um(ds);
     ml = ev.mainloop_api.memmap_window(ev,urlmap);
     MainLoopItem *item = find_main_loop(env,ml);
@@ -27324,7 +27755,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *ptr = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
 
     std::string ss(ptr->begin(), ptr->end());
