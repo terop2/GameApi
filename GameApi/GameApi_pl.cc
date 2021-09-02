@@ -11670,6 +11670,10 @@ public:
   Point2d TexCoord(int face, int point) const
   { 
     Vector n = coll->PointNormal(face,point);
+    while (n.dx<0.0) n.dx+=1.0;
+    while (n.dy<0.0) n.dy+=1.0;
+    while (n.dx>1.0) n.dx-=1.0;
+    while (n.dy>1.0) n.dy-=1.0;
     Point2d p;
     p.x = n.dx;
     p.y = n.dy;
