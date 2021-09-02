@@ -31,6 +31,19 @@ public:
   virtual void register_obj(CollectInterface *i)=0;
 };
 
+namespace GameApi
+{
+
+class ASyncVec
+{
+public:
+  virtual ~ASyncVec() { }
+  virtual const unsigned char &operator[](int i) const=0;
+  virtual int size() const=0;
+  virtual const unsigned char *begin() const=0;
+  virtual const unsigned char *end() const=0;
+};
+}
 
 struct Quad
 {
@@ -420,6 +433,7 @@ namespace chaiscript
 class GameApiItem
 {
 public:
+  virtual ~GameApiItem() { }
   virtual int Count() const=0;
   virtual std::string Name(int i) const=0;
   virtual int ParamCount(int i) const=0;
@@ -1107,7 +1121,7 @@ class ASyncLoader
 public:
   void load_urls(std::string url, std::string homepage);
   void load_all_urls(std::vector<std::string> urls, std::string homepage);
-  std::vector<unsigned char> *get_loaded_data(std::string url) const;
+  GameApi::ASyncVec *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);
   void rem_callback(std::string url);
 };
@@ -1390,6 +1404,7 @@ public:
   virtual int BlockType(int block) const=0;
   virtual int BlockSizeInBytes(int block) const=0;
   virtual unsigned char* Block(int block) const=0;
+  virtual unsigned char* BlockWithOffset(int block, int offset, int size) const=0;
 };
 
 class InputForMoving

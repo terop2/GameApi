@@ -19,7 +19,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) return;
     std::string str(vec->begin(),vec->end());
     std::stringstream ss(str);
@@ -124,7 +124,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) return;
     std::string str(vec->begin(),vec->end());
     std::stringstream ss(str);
@@ -381,7 +381,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) return;
     std::string str(vec->begin(),vec->end());
     std::stringstream ss(str);

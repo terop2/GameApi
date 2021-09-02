@@ -2047,7 +2047,7 @@ public:
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      std::vector<unsigned char> *ptr = e.get_loaded_async_url(url);
+      GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
       if (!ptr) {
 	std::cout << "ifc_url async not ready yet, failing..." << std::endl;
 	return;
@@ -2361,7 +2361,7 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    std::vector<unsigned char> *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     std::string code(vec->begin(), vec->end());
     std::stringstream ss(code);

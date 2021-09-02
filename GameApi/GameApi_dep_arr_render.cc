@@ -430,6 +430,7 @@ ArrayRender::~ArrayRender()
     {
       ogl->glDeleteTextures(texture_count, (const Low_GLuint*)&texture[0]);
     }
+  ogl->glDeleteBuffers(5,&buffer[0]);
   delete [] q_vertex_array;
   delete [] q_normal_array;
   delete [] q_color_array;

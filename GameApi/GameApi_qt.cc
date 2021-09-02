@@ -15,7 +15,7 @@ void async_load_url(GameApi::Env &e, std::string url, std::string homepage)
 {
   e.async_load_url(url,homepage);
 }
-std::vector<unsigned char> *get_loaded_async_url(GameApi::Env &e, std::string url)
+GameApi::ASyncVec *get_loaded_async_url(GameApi::Env &e, std::string url)
 {
   return e.get_loaded_async_url(url);
 }
@@ -289,7 +289,7 @@ public:
 #ifndef EMSCRIPTEN
     async_load_url(e,url,homepage);
 #endif
-    std::vector<unsigned char> *vec = get_loaded_async_url(e,url);
+    GameApi::ASyncVec *vec = get_loaded_async_url(e,url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     // replace \n\r -> \n
     std::string ss(vec->begin(),vec->end());

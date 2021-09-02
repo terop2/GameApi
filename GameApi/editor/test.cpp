@@ -967,6 +967,9 @@ void iter(void *arg)
 	    std::cout << "Saving game_4.pkg complete" << std::endl;
 	    std::cout << "Saving game_5.pkg complete" << std::endl;
 	    std::cout << "Saving game_6.pkg complete" << std::endl;
+
+	    std::cout << "Please upload pkg files to web server, then use pkg_window(slower) or pkg_window2(faster) to load it to builder." << std::endl;
+	    std::cout << "If you are planning to do web build, use codegen from run_window and copy-paste the script from cmd prompt/shell window to gameapi_example.html file." << std::endl;
 	    } else {
 	      std::cout << "ERROR: Box return type needs to be ML" << std::endl;
 	    }
