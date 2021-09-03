@@ -5856,7 +5856,9 @@ struct DelApiItemF
 };
 
 #ifdef FIRST_PART
+#ifdef SECTION_1
 DelApiItemF g_api_item_deleter;
+#endif
 #endif
 extern DelApiItemF g_api_item_deleter;
 

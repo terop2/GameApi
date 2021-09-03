@@ -652,6 +652,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     {
       std::string url = urls[e];
       std::string url2 = "load_url.php?url=" + url ;
+      //std::cout << url2 << std::endl;
       if (g_del_map.load_url_buffers_async[url2])
 	{
 	  
