@@ -4401,6 +4401,7 @@ public:
   {
     std::string s;
     ss >> s;
+    if (s=="?") s="";
     return s;
   }
 };
@@ -5784,6 +5785,9 @@ public:
   
   int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
   {
+    int s = params.size();
+    for(int i=0;i<s;i++) if (params[i]=="") params[i]="?";
+    
     if (params.size()!=param_name.size()) {
 	if (ApiName(0)=="mainloop_api" && FuncName(0)=="array_ml") {
 	  params.insert(params.begin(),"ev");
@@ -6996,6 +7000,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "[ML]", "IF" },
 			 { "", "" },
 			 "ML", "font_api", "ml_chooser"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::anim_ML,
+			 "ml_anim",
+			 { "ev", "url", "p1", "p2", "p3", "p4", "p5", "dyn" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string", "IF" },
+			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a/a", "b/b", "c/c", "d/d", "e/e", "" },
+			 "ML", "mainloop_api", "anim_ML"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::key_ml,
 			 "key_ml",
 			 { "vec", "keys" },

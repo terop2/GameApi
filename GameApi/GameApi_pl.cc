@@ -15977,18 +15977,18 @@ public:
     e.async_load_url(url, homepage);
 #endif
     GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    std::vector<unsigned char> *ptr2 = new std::vector<unsigned char>(ptr->begin(),ptr->end());
     if (!ptr) { std::cout << "stlfacecollection async not ready!" << std::endl; return; }
-    if (ptr->size()<5) { std::cout << "STLFaceCollection: async not found!" << std::endl; return; }
+    if (ptr->size()<5) { std::cout << "STLFaceCollection: async not found!" << std::endl; std::cout << "ptr->size()=" << ptr->size() << "<5" << std::endl; return; }
     if (ptr->operator[](0)=='s' && ptr->operator[](1)=='o' && ptr->operator[](2)=='l' && ptr->operator[](3)=='i' && ptr->operator[](4)=='d')
       {
-	std::vector<unsigned char> ptr2(ptr->begin(),ptr->end());
-	convert_stl_to_binary(&ptr2);
+	convert_stl_to_binary(ptr2);
       }
     if (ptr->operator[](0)=='<' && ptr->operator[](1)=='!' && ptr->operator[](2)=='D' && ptr->operator[](3)=='O' && ptr->operator[](4)=='C' && ptr->operator[](5)=='T') {
       std::cout << "404 error at STLFaceCollcection / " << url << std::endl;
       return;
     }
-    std::vector<unsigned char> *ptr2 = new std::vector<unsigned char>(ptr->begin(),ptr->end());
+    //std::vector<unsigned char> *ptr2 = new std::vector<unsigned char>(ptr->begin(),ptr->end());
     m_ptr = ptr2;
     }
   }
@@ -19999,3 +19999,47 @@ GameApi::P GameApi::PolygonApi::combine_textures(GameApi::P p1, GameApi::P p2)
   return add_polygon2(e, new CombineTextures(coll1, coll2),1);
 }
 
+#if 0
+
+class PolygonHeightMap : public Bitmap<Color>
+{
+public:
+  PolygonHeightMap(FaceCollection *coll, int sx, int sy, Point start, Point end) : coll(coll) { }
+
+  void Prepare() {
+    int s = coll->NumFaces();
+    for(int i=0;i<s;i++) {
+      int count = coll->NumPoints(i);
+      if (count==3)
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  Point2d pp1 = { p1.x, p1.z };
+	  Point2d pp2 = { p2.x, p2.z };
+	  Point2d pp3 = { p3.x, p3.z };
+	  bms.push_back(new TriangleContinuousBitmap(sx,sy, pp1, pp2, pp3));
+	}
+      else if (count==4)
+	{
+	  Point p1 = coll->FacePoint(i,0);
+	  Point p2 = coll->FacePoint(i,1);
+	  Point p3 = coll->FacePoint(i,2);
+	  Point p4 = coll->FacePoint(i,3);
+	  Point2d pp1 = { p1.x, p1.z };
+	  Point2d pp2 = { p2.x, p2.z };
+	  Point2d pp3 = { p3.x, p3.z };
+	  Point2d pp4 = { p4.x, p4.z };
+	  bms.push_back(new QuadContinuousBitmap(sx,sy, pp1, pp2, pp3,pp4));
+	}
+    }
+  }
+private:
+  FaceCollection *coll;
+  std::vector<ContinuousBitmap<bool> *> bms;
+};
+
+GameApi::BM GameApi::PolygonApi::polygon_heightmap(GameApi::P p)
+{
+}
+#endif

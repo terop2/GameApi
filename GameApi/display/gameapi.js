@@ -2,6 +2,10 @@
 var pretag = document.getElementById("gameapi_script");
 var data = pretag.innerHTML;
 var pretag2 = document.getElementById("gameapi_modificationdate");
+var prefiletag = document.getElementById("file");
+var prefilename = document.getElementById("filename");
+var prefiletag2 = document.getElementById("file2");
+var prefilename2 = document.getElementById("filename2");
 var data2 = pretag2.innerHTML.trim();
 var lines = data.split("\n");
 var lines2 = "";
@@ -22,13 +26,42 @@ window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
 check_if_emscripten_running();
 var g_emscripten_running = false;
+function load_file()
+{
+    if (prefiletag) {
+	var filename = prefilename.innerText;
+	var data3 = atob(prefiletag.innerText);
+
+	var filename2 = prefilename2.innerText;
+	var data4 = atob(prefiletag2.innerText);
+	
+	console.log("FILE SET");
+	console.log(data3.length);
+	console.log(filename);
+	console.log("FILE SET");
+	console.log(data4.length);
+	console.log(filename2);
+	   try {
+	       Module.ccall('set_integer', null, ['number', 'number'], [2,data3.length], { async:true });
+	       Module.ccall('set_string', null, ['number', 'string'], [1,filename] , { async:true });
+	       Module.ccall('set_string', null, ['number', 'string'], [2,data3], { async:true });
+
+	       Module.ccall('set_integer', null, ['number', 'number'], [2,data4.length], { async:true });
+	       Module.ccall('set_string', null, ['number', 'string'], [1,filename2], { async:true });
+	       Module.ccall('set_string', null, ['number', 'string'], [2,data4], { async:true });
+	   } catch(e) {
+	     console.log(e);
+	   }
+	
+    }
+}
 function check_em() {
     return function() {
 	g_emscripten_running = true;
 	resize_event(null);
+	load_file();
     }
 }
-
 
 function check_emscripten_running()
 {
@@ -91,14 +124,8 @@ function load_emscripten()
     if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
     var src = "web_page.js?"+data2;
-    //alert(window.navigator.appVersion);
-    //console.log(agent);
     var vstr = agent.substring(idx+8);
-    //console.log(vstr);
     var vnum = parseInt(vstr);
-    //console.log(vnum);
-
-
     
     if (firefox && vnum<=78)
 	src="web_page_nothreads.js?" + data2;

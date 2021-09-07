@@ -20,6 +20,7 @@
 #define HP_LOAD_LIBRARY
 #include <holoplay.h>
 #endif
+#include <cstring>
 
 extern int g_logo_status;
 extern std::string g_msg_string;
@@ -16803,6 +16804,49 @@ void ML_cb(void *data)
 }
 
 
+std::vector<std::string> split_str(std::string str, char ch)
+{
+  std::vector<std::string> res;
+  int s = str.size();
+  int last = 0;
+  for(int i=0;i<s;i++)
+    {
+      char c = str[i];
+      if (c==ch) {
+	std::string spl = str.substr(last,i-last);
+	res.push_back(spl);
+	last = i+1;
+      }
+    }
+  std::string spl = str.substr(last);
+  res.push_back(spl);
+  return res;
+}
+
+std::string ch_str(std::vector<std::string> vec, int i)
+{
+  int max = vec.size();
+  if (i>=max) return "";
+  return vec[i];
+}
+
+GameApi::ML GameApi::MainLoopApi::anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn)
+{
+  std::vector<std::string> v1 = split_str(p1,'/');
+  std::vector<std::string> v2 = split_str(p2,'/');
+  std::vector<std::string> v3 = split_str(p3,'/');
+  std::vector<std::string> v4 = split_str(p4,'/');
+  std::vector<std::string> v5 = split_str(p5,'/');
+  std::vector<GameApi::ML> vec;
+  vec.push_back(load_ML_script(ev,url,ch_str(v1,0),ch_str(v2,0),ch_str(v3,0),ch_str(v4,0), ch_str(v5,0)));
+  vec.push_back(load_ML_script(ev,url,ch_str(v1,1),ch_str(v2,1),ch_str(v3,1),ch_str(v4,1), ch_str(v5,1)));
+  vec.push_back(load_ML_script(ev,url,ch_str(v1,2),ch_str(v2,2),ch_str(v3,2),ch_str(v4,2), ch_str(v5,2)));
+  vec.push_back(load_ML_script(ev,url,ch_str(v1,3),ch_str(v2,3),ch_str(v3,3),ch_str(v4,3), ch_str(v5,3)));
+  vec.push_back(load_ML_script(ev,url,ch_str(v1,4),ch_str(v2,4),ch_str(v3,4),ch_str(v4,4), ch_str(v5,4)));
+  GameApi::ML ml = ev.font_api.ml_chooser(vec, dyn);
+  return ml;
+}
+
 GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
@@ -25047,9 +25091,13 @@ KP extern "C" void set_toggle_button(int num, bool value)
   std::cout << "TOGGLE " << num << " " << value << std::endl;
   if (num>=0 && num<25) { g_toggle_buttons[num]=value; }
 }
+int g_set_string_int=0;
 KP extern "C" void set_integer(int num, int value)
 {
-  std::cout << "INTEGER " << num << " " << value << std::endl;
+  //std::cout << "INTEGER " << num << " " << value << std::endl;
+  if (num==2) {
+    g_set_string_int = value;
+  }
   if (num>=0 && num<25) { g_integers[num]=value; }
 }
 KP extern "C" void set_float(int num, float value)
@@ -25057,16 +25105,80 @@ KP extern "C" void set_float(int num, float value)
   std::cout << "FLOAT " << num << " " << value << std::endl;
   if (num>=0 && num<25) { g_floats[num]=value; }
 }
+std::string g_set_string_url;
+extern std::vector<const unsigned char*> g_content;
+extern std::vector<const unsigned char*> g_content_end;
+extern std::vector<const char*> g_urls;
+
+std::vector<unsigned char *> g_buffers;
+std::vector<int> g_buffer_sizes;
+
 KP extern "C" void set_string(int num, const char *value)
 {
   //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
     std::cout << value << std::endl;
     set_new_script(value);      
+    return;
+  }
+  if (num==1) { // use this with num=2
+    g_set_string_url = std::string(value);
+    //std::cout << "URL SET TO: " << g_set_string_url << std::endl;
+    return;
+  }
+  if (num==2) { // use this with num=1
+    unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
+    std::copy(value,value+g_set_string_int,data);
+    g_urls.push_back(strdup(g_set_string_url.c_str()));
+    g_content.push_back(data);
+    g_content_end.push_back(data+g_set_string_int);
+    //std::cout << "g_content set" << std::endl;
+    return;
+  }
+  if (num==3) {
+    unsigned char *data = new unsigned char[g_set_string_int];
+    int s = g_set_string_int;
+    for(int i=0;i<s;i++) {
+      unsigned char ch1 = value[i*2];
+      unsigned char ch2 = value[i*2+1];
+      if (ch1>='0' && ch1<='9') { ch1-='0'; }
+      if (ch2>='0' && ch2<='9') { ch2-='0'; }
+      if (ch1>='a' && ch1<='f') { ch1-='a'; ch1+=10; }
+      if (ch2>='a' && ch2<='f') { ch2-='a'; ch2+=10; }
+      data[i] = (int(ch1)<<4)+int(ch2);
+    }
+    //std::copy(value,value+g_set_string_int,data);
+    g_buffers.push_back(data);
+    g_buffer_sizes.push_back(g_set_string_int);
+    //std::cout << "Buffer:" << g_set_string_int << std::endl;
+    return;
+  }
+  if (num==4) {
+    int s = g_buffers.size();
+    int size = 0;
+    for(int i=0;i<s;i++) {
+      size+=g_buffer_sizes[i];
+    }
+    //std::cout << "Combine:" << size << std::endl;
+    unsigned char *data = new unsigned char[size];
+    int offset = 0;
+    for(int i=0;i<s;i++) {
+      std::copy(g_buffers[i],g_buffers[i]+g_buffer_sizes[i],data+offset);
+      offset+=g_buffer_sizes[i];
+    }
+    g_urls.push_back(strdup(g_set_string_url.c_str()));
+    g_content.push_back(data);
+    g_content_end.push_back(data+size);
+    //std::cout << data << std::endl;
+    for(int i=0;i<s;i++) {
+      delete [] g_buffers[i];
+    }
+    g_buffers = std::vector<unsigned char*>();
+    g_buffer_sizes = std::vector<int>();
   }
   
-  std::string s(value);
-  if (num>=0 && num<25) { g_strings[num]=s; }
+  //std::string s(value);
+  //if (num>=0 && num<25) { g_strings[num]=s; }
 }
 
 int g_resize_event_sx = -1;
