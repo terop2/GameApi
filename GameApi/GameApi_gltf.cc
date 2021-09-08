@@ -222,14 +222,32 @@ public:
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
 #ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space) {
       sz--;
+    }
 #endif
+    //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
       tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
 #ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space)
+      {
       sz--;
+      }
 #endif
       tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL); 
     }
