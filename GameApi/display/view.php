@@ -7,18 +7,18 @@ header("Cross-Origin-Opener-Policy: same-origin");
 <div style="display:flex">
 <div id="div2" style="display:none"></div>
 <div style=" width:300px; height:300px;background-color:#f84;" id="div1" ondrop="drop(event)" ondragover="allowDrop(event)">
-<div style="margin: auto; text-align: center; padding: 120px;">
+<div style="margin: auto; text-align: center; padding: 120px;" id="label">
 drag&drop here.
 </div>
 </div>
 <div style="margin-left: 30px; float:left; display:block;">
 <h1>The great 3d model viewer</h1>
 <h3>Supported file formats</h3>
-.gltf, .glb, .stl, .obj, .ply(ascii), .ds
+.gltf, .glb, .stl, .obj, .mtl, .ply(ascii), .ds, dirs
 <h3>Supported texture formats</h3>
 .jpg, .png
 <h3>Features under development</h3>
-.mtl, .zip, dir support(OK)
+.zip
 </div>
 </div>
 <div style="height:10px"></div>
@@ -118,8 +118,8 @@ function create_script(filename, contents, filenames)
   if (filename.substr(-4)==".glb") { res+="P I1=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
   if (filename.substr(-5)==".gltf") { res+="P I1=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else { res+="P I1 = ev.polygon_api.p_empty();\n"; }
 
-
-  res+="P I2=ev.polygon_api.recalculate_normals(I1);\n";
+  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"))
+      res+="P I2=ev.polygon_api.recalculate_normals(I1);\n";
   res+="MT I3=ev.materials_api.m_def(ev);\n";
   if (filename.substr(-4)==".obj"&&mtl_name!="") {
      res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
@@ -129,7 +129,10 @@ function create_script(filename, contents, filenames)
   } else {
      res+="MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
   }
-  res+="ML I5=ev.materials_api.bind(I2,I4);\n";
+  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"))
+     res+="ML I5=ev.materials_api.bind(I2,I4);\n";
+  else
+     res+="ML I5=ev.materials_api.bind(I1,I4);\n";
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf") {
     res+="ML I88=ev.mainloop_api.async_gltf(I5,"+base_dir+"," + filename + ");\n";
@@ -189,6 +192,7 @@ function load_finished(value)
 {
    load_files(contents_array,filename_array);
    load_emscripten(g_filename, contents_array, filename_array);
+   set_label("Drag & Drop files here..");
 }
 function fix_filename(filename)
 {
@@ -242,6 +246,8 @@ function flatten_arrays(data)
 }
 function drop(ev)
 {
+  set_label("Loading model..");
+
   ev.preventDefault();
   var files = [];
   var filenames = [];
@@ -360,6 +366,7 @@ function check_em() {
 	g_emscripten_running = true;
 	//resize_event(null);
 	//load_file();
+	set_label("Drag & Drop files here..");
     }
 }
 
@@ -376,7 +383,12 @@ function check_if_emscripten_running()
 {
     setTimeout(function() { check_emscripten_running() },100);
 }
-
+function set_label(label)
+{
+   var wid = document.getElementById("label");
+   wid.innerHTML = label;
+}
+set_label("Loading 3d engine..");
 load_emscripten("");
 
 </script>

@@ -25160,7 +25160,8 @@ KP extern "C" void set_string(int num, const char *value)
       size+=g_buffer_sizes[i];
     }
     //std::cout << "Combine:" << size << std::endl;
-    unsigned char *data = new unsigned char[size];
+    unsigned char *data = new unsigned char[size+1];
+    data[size]=0; // null terminate for models that have text strings.
     int offset = 0;
     for(int i=0;i<s;i++) {
       std::copy(g_buffers[i],g_buffers[i]+g_buffer_sizes[i],data+offset);
