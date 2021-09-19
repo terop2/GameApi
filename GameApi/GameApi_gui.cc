@@ -8178,6 +8178,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "true", "true", "0.01", "0" },
 			 "ML", "mainloop_api", "touch_rotate"));
 			 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mouse_roll_zoom,
+			 "mouse_zoom",
+			 { "ev", "next" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "mouse_roll_zoom"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::right_mouse_pan,
+			 "r_mouse_pan",
+			 { "ev", "next" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "right_mouse_pan"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::record_keypresses,
 			 "key_record_ml",
 			 { "ml", "output_filename" },
@@ -8342,6 +8354,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML" },
 			 { "" },
 			 "ML", "mainloop_api", "transparent"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::perspective,
+			 "ogl_perspective",
+			 { "ml", "mult", "front_plane", "end_plane" },
+			 { "ML", "float", "float" ,"float" },
+			 { "", "80.0", "10.1", "60000.0" },
+			 "ML", "mainloop_api", "perspective"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_song,
 			 "song_ml",
 			 { "ev", "next", "url" },

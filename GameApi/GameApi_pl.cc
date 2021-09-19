@@ -20043,3 +20043,184 @@ GameApi::BM GameApi::PolygonApi::polygon_heightmap(GameApi::P p)
 {
 }
 #endif
+
+class PerspectiveMainLoop : public MainLoopItem
+{
+public:
+  PerspectiveMainLoop(MainLoopItem *next, float mult, float front_plane, float end_plane) : next(next), mult(mult), front_plane(front_plane), end_plane(end_plane) { }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_P = Matrix::Perspective(mult, (double)800/(double)600, front_plane, end_plane);
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual void destroy() { }
+
+private:
+  MainLoopItem *next;
+  float mult;
+  float front_plane;
+  float end_plane;
+};
+
+GameApi::ML GameApi::MainLoopApi::perspective(ML next, float mult, float front_plane, float end_plane)
+{
+  MainLoopItem *item = find_main_loop(e,next);
+  return add_main_loop(e, new PerspectiveMainLoop(item,mult,front_plane, end_plane));
+}
+
+
+class MouseRollZoom : public MainLoopItem
+{
+public:
+  MouseRollZoom(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next) : e2(e), ev(ev), next(next) { }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_MV = mat * e.in_MV;
+    ee.env = mat * e.env;
+
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s11;
+    s11.id = e.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+
+
+    GameApi::M mat2 = add_matrix2(e2,ee.in_MV);
+    //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    //ev.shader_api.set_var(s11, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    //ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+    if (e.type==1027 && e.ch==1)
+      {
+	zoom_pos--; if (zoom_pos<-5) zoom_pos=-5;
+	calc_mat();
+      }
+    if (e.type==1027 && e.ch==-1)
+      {
+	zoom_pos++; if (zoom_pos>5) zoom_pos=5;
+	calc_mat();
+      }
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual void destroy() { }
+  void calc_mat()
+  {
+    float scale = 1.0;
+    if (zoom_pos<0) { scale-=0.18*(-zoom_pos); }
+    if (zoom_pos>0) { scale+=0.3*zoom_pos; }
+    mat = Matrix::Scale(scale,scale,scale);
+  }
+private:
+  GameApi::Env &e2;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int zoom_pos = 0;
+  Matrix mat = Matrix::Identity();
+};
+
+GameApi::ML GameApi::MainLoopApi::mouse_roll_zoom(EveryApi &ev, ML next)
+{
+  MainLoopItem *next2 = find_main_loop(e,next);
+  return add_main_loop(e,new MouseRollZoom(e,ev,next2));
+}
+
+class RightMousePan : public MainLoopItem
+{
+public:
+  RightMousePan(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next) : e2(e), ev(ev), next(next) { firsttime = true; }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_T = e.in_T * mat;
+
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+    if (e.button==2 && oldbutton!=2) {
+      old_x = e.cursor_pos.x;
+      old_y = e.cursor_pos.y;
+    }
+    if (e.button==2)
+      {
+	float dx = e.cursor_pos.x - old_x;
+	float dy = e.cursor_pos.y - old_y;
+
+	pan_x += dx;
+	pan_y += dy;
+	if (pan_x<-600.0) pan_x=-600.0;
+	if (pan_x>600.0) pan_x=600.0;
+	if (pan_y<-600.0) pan_y=-600.0;
+	if (pan_y>600.0) pan_y=600.0;
+	calc_mat();
+	old_x = e.cursor_pos.x;
+	old_y = e.cursor_pos.y;
+      }
+    oldbutton = e.button;
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual void destroy() { }
+  void calc_mat()
+  {
+    mat = Matrix::Translate(pan_x,-pan_y,0.0);
+  }
+
+private:
+  GameApi::Env &e2;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  float pan_x = 0.0, pan_y = 0.0;
+  Matrix mat = Matrix::Identity();
+  bool firsttime;
+  int oldbutton = 0;
+  float old_x, old_y;
+};
+
+GameApi::ML GameApi::MainLoopApi::right_mouse_pan(EveryApi &ev, ML next)
+{
+  MainLoopItem *next2 = find_main_loop(e,next);
+  return add_main_loop(e, new RightMousePan(e,ev,next2));
+}

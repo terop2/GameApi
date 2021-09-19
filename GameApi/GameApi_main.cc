@@ -1751,6 +1751,11 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   MainLoopEvent e2;
   e2.type = ee.type;
   e2.ch = ee.ch;
+  if (e2.type==1027 && e2.ch==0)
+    {
+      if (ee.mouse_wheel_y<0) e2.ch=-1;
+      if (ee.mouse_wheel_y>0) e2.ch=1;
+    }
   e2.cursor_pos = *find_point(e,ee.cursor_pos);
   e2.button = ee.button;
   e2.drag_drop_filename = ee.drag_drop_filename;

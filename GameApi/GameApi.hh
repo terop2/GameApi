@@ -304,6 +304,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML right_mouse_pan(EveryApi &ev, ML next);
+  ML mouse_roll_zoom(EveryApi &ev, ML next);
+  ML perspective(ML next, float mult, float front_plane, float end_plane);
   ML anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn);
   ML glClear(EveryApi &ev);
   GS game_state();

@@ -69,12 +69,13 @@ std::string extract_server(std::string url)
   for(;i<s;i++) { if (url[i]=='/') { break; } }
   i++;
   int pos2 = i;
-  if (pos<s && pos2<s) return url.substr(pos,pos2-pos);
-  return url;
+  if (pos<s && pos2<=s) return url.substr(pos,pos2-pos);
+  return "";
 }
 
 bool is_urls_from_same_server(std::string url, std::string url2)
 {
+  //std::cout << "URL COMPARE: " << url << "==" << url2 << std::endl;
   std::string s1 = extract_server(url);
   std::string s2 = extract_server(url2);
   //std::cout << "is_urls_from_same_server::Compare:" << s1 << "==" << s2 << std::endl;
@@ -1063,9 +1064,10 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ld->url3 = url3;
 
     bool is_same_server = is_urls_from_same_server(oldurl,g_window_href);
-    
+    bool is_same_server2 = is_urls_from_same_server(oldurl,homepage+"/");
     
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
+    if (extract_server(oldurl)=="" || is_same_server || is_same_server2) {
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
@@ -1089,7 +1091,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
     //std::cout << "Fetch end" << std::endl;
 
-    
+    } else { std::cout << "WARNING: Security violation, trying to access urls that are outside allowed ownership area:" << oldurl << " isn't in domains '" << extract_server(g_window_href) << "' or '" << extract_server(homepage) << "'" << std::endl; }
 #if 0
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
