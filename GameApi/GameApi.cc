@@ -5468,6 +5468,121 @@ private:
 };
 
 
+class VertexPhongMaterial : public MaterialForward
+{
+public:
+  VertexPhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow),mix(mix) { }
+  void logoexecute() { next->logoexecute(); }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    //std::cout << "PhongMaterial mat2" << std::endl;
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat(p0.id);
+    GameApi::ML sh = ev.polygon_api.vertex_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,mix);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    //std::cout << "PhongMaterial inst" << std::endl;
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p0.id, pts.id);
+    GameApi::ML sh = ev.polygon_api.vertex_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,mix);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    //std::cout << "PhongMaterial instmatrix" << std::endl;
+    FaceCollection *coll = find_facecoll(env,p);
+    //std::cout << "mat2_inst_matrix: coll=" << coll << std::endl;
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p0.id, ms.id);
+    GameApi::ML sh = ev.polygon_api.vertex_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,mix);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //std::cout << "PhongMaterial inst2" << std::endl;
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p0.id, pta.id);
+    GameApi::ML sh = ev.polygon_api.vertex_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,mix);
+    return sh;
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    //std::cout << "PhongMaterial fade" << std::endl;
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
+
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+    //    GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh = ev.polygon_api.vertex_phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,mix);
+    return sh;
+
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Material *next;
+  float light_dir_x, light_dir_y, light_dir_z;
+  unsigned int ambient, highlight;
+  float pow;
+  float mix;
+};
+
+
+
 class EdgeMaterial : public MaterialForward
 {
 public:
@@ -6417,6 +6532,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float ligh
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new VertexPhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow,mix));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color)
 {
@@ -9728,6 +9848,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_vertexphong(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("vertex_phong", next,"LIGHTDIR IN_NORMAL EX_COLOR COLOR_MIX VERTEX_LEVELS"));
+}
 GameApi::US GameApi::UberShaderApi::v_glowedge(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -10050,6 +10175,13 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
 }
+GameApi::US GameApi::UberShaderApi::f_vertexphong(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("vertex_phong", next,"EX_COLOR COLOR_MIX EX_NORMAL2 EX_LIGHTPOS2 VERTEX_LEVELS"));
+}
+
+
 GameApi::US GameApi::UberShaderApi::f_gi(US us)
 {
   ShaderCall *next = find_uber(e, us);

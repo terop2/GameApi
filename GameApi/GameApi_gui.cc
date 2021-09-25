@@ -8356,9 +8356,9 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "mainloop_api", "transparent"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::perspective,
 			 "ogl_perspective",
-			 { "ml", "mult", "front_plane", "end_plane" },
-			 { "ML", "float", "float" ,"float" },
-			 { "", "80.0", "10.1", "60000.0" },
+			 { "ev", "ml", "mult", "front_plane", "end_plane" },
+			 { "EveryApi&", "ML", "float", "float" ,"float" },
+			 { "ev", "", "80.0", "10.1", "60000.0" },
 			 "ML", "mainloop_api", "perspective"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_song,
 			 "song_ml",
@@ -9988,6 +9988,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::vertex_phong,
+			 "m_vertexphong",
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "mix" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float", "float" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0", "0.5" },
+			 "MT", "materials_api", "vertex_phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::glow_edge,
 			 "m_glowedge",
 			 { "ev", "nxt", "light_level", "gray_level", "edge_pos" },

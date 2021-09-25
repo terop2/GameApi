@@ -8503,6 +8503,123 @@ private:
 };
 
 
+class VertexPhongShaderML : public MainLoopItem
+{
+public:
+  VertexPhongShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, unsigned int ambient, unsigned int highlight, float pow, float mix) : env(env), ev(ev), next(next), light_dir(light_dir), ambient(ambient), highlight(highlight), pow(pow), mix(mix) 
+  { 
+    firsttime = true;
+    sh.id = -1;
+  }
+  std::vector<int> shader_id() { return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_vertexphong(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    if (ambient)
+      fragment = ev.uber_api.f_vertexphong(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+     std::vector<int> sh_ids = next->shader_id();
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+#if 0
+	// to fix bug in phong and bump phong in linux nvidia drivers.
+	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, 18000.0 /*light_dir.dz*/);
+#else
+	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
+#endif
+	ev.shader_api.set_var(sh, "level1_color",
+			      ((ambient&0xff0000)>>16)/255.0,
+			      ((ambient&0xff00)>>8)/255.0,
+			      ((ambient&0xff))/255.0,
+			      ((ambient&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "level2_color",
+			      ((highlight&0xff0000)>>16)/255.0,
+			  ((highlight&0xff00)>>8)/255.0,
+			      ((highlight&0xff))/255.0,
+			  ((highlight&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "hilight", pow);
+	ev.shader_api.set_var(sh, "color_mix", mix);
+
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Vector light_dir;
+  GameApi::SH sh;
+  bool firsttime;
+  unsigned int ambient;
+  unsigned int highlight;
+  float pow;
+  float mix;
+};
+
+
+
 class EdgeShaderML : public MainLoopItem
 {
 public:
@@ -9394,6 +9511,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, 
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new VertexPhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow,mix));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color)
 {
@@ -15980,9 +16102,19 @@ public:
     std::vector<unsigned char> *ptr2 = new std::vector<unsigned char>(ptr->begin(),ptr->end());
     if (!ptr) { std::cout << "stlfacecollection async not ready!" << std::endl; return; }
     if (ptr->size()<5) { std::cout << "STLFaceCollection: async not found!" << std::endl; std::cout << "ptr->size()=" << ptr->size() << "<5" << std::endl; return; }
-    if (ptr->operator[](0)=='s' && ptr->operator[](1)=='o' && ptr->operator[](2)=='l' && ptr->operator[](3)=='i' && ptr->operator[](4)=='d')
+
+    int i=0;
+    while(ptr->operator[](i)==' '||ptr->operator[](i)=='\n'||ptr->operator[](i)=='\r') i++;
+    if (ptr->operator[](i+0)=='s' && ptr->operator[](i+1)=='o' && ptr->operator[](i+2)=='l' && ptr->operator[](i+3)=='i' && ptr->operator[](i+4)=='d')
       {
-	convert_stl_to_binary(ptr2);
+	int s = ptr->size();
+	bool b = false;
+	for(int i=0;i<s;i++) {
+	  unsigned char ch = ptr->operator[](i);
+	  if ((ch&0x80)==0x80) { b=true; break; }
+	}
+	if (!b)
+	  convert_stl_to_binary(ptr2);
       }
     if (ptr->operator[](0)=='<' && ptr->operator[](1)=='!' && ptr->operator[](2)=='D' && ptr->operator[](3)=='O' && ptr->operator[](4)=='C' && ptr->operator[](5)=='T') {
       std::cout << "404 error at STLFaceCollcection / " << url << std::endl;
@@ -20047,7 +20179,7 @@ GameApi::BM GameApi::PolygonApi::polygon_heightmap(GameApi::P p)
 class PerspectiveMainLoop : public MainLoopItem
 {
 public:
-  PerspectiveMainLoop(MainLoopItem *next, float mult, float front_plane, float end_plane) : next(next), mult(mult), front_plane(front_plane), end_plane(end_plane) { }
+  PerspectiveMainLoop(GameApi::EveryApi &ev, MainLoopItem *next, float mult, float front_plane, float end_plane) : ev(ev), next(next), mult(mult), front_plane(front_plane), end_plane(end_plane) { }
   virtual void logoexecute() { }
   virtual void Collect(CollectVisitor &vis)
   {
@@ -20058,7 +20190,27 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-    ee.in_P = Matrix::Perspective(mult, (double)800/(double)600, front_plane, end_plane);
+    Matrix m = Matrix::Perspective(mult, (double)800/(double)600, front_plane, end_plane); 
+    ee.in_P = m;
+
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s11;
+    s11.id = e.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_P", add_matrix2(ev.get_env(),m));
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_P", add_matrix2(ev.get_env(),m));
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_P", add_matrix2(ev.get_env(),m));
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_P", add_matrix2(ev.get_env(),m));
+
+    
     next->execute(ee);
   }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
@@ -20066,16 +20218,17 @@ public:
   virtual void destroy() { }
 
 private:
+  GameApi::EveryApi &ev;
   MainLoopItem *next;
   float mult;
   float front_plane;
   float end_plane;
 };
 
-GameApi::ML GameApi::MainLoopApi::perspective(ML next, float mult, float front_plane, float end_plane)
+GameApi::ML GameApi::MainLoopApi::perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane)
 {
   MainLoopItem *item = find_main_loop(e,next);
-  return add_main_loop(e, new PerspectiveMainLoop(item,mult,front_plane, end_plane));
+  return add_main_loop(e, new PerspectiveMainLoop(ev,item,mult,front_plane, end_plane));
 }
 
 
