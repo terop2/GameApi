@@ -178,8 +178,8 @@ function get_border(i,m)
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   //res+= "MT I401=ev.materials_api.m_def(ev);\n"
   res+= "MT I501=ev.materials_api.toon_border(ev,I4," + width + ",ff" + color + ");\n";
-  res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
-  res+="ML I502=ev.mainloop_api.depthfunc(I5022,0);\n";
+  res+="ML I502=ev.materials_api.bind(I206,I501);\n";
+  //res+="ML I502=ev.mainloop_api.depthfunc(I5022,0);\n";
   return res;
 }
 function get_background_value()
@@ -208,9 +208,17 @@ function get_material(i)
 var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
 var metalmaterial = "MT I4=ev.materials_api.gltf_material3(ev,0.5,0.8,1,1,1,1,1);\n";
 var goldmaterial = "MT I4=ev.materials_api.gltf_material3(ev,0.5,0.97,0.5,0.3,0,1,1);\n";
-var wood1material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood1.png);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
-var wood2material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood2.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
-var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood3.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
+var wood1material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood1.png);\nMT I400=ev.materials_api.texture(ev,I500,1.0);\nMT I401=ev.materials_api.m_def(ev);\nMT I402=ev.materials_api.phong(ev,I401,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\nMT I4=ev.materials_api.combine_materials(ev,I402,I400);\n";
+
+var wood2material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood2.jpg);\nMT I400=ev.materials_api.texture(ev,I500,1.0);\nMT I401=ev.materials_api.m_def(ev);\nMT I402=ev.materials_api.phong(ev,I401,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\nMT I4=ev.materials_api.combine_materials(ev,I402,I400);\n";
+
+
+var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood3.jpg);\nMT I400=ev.materials_api.texture(ev,I500,1.0);\nMT I401=ev.materials_api.m_def(ev);\nMT I402=ev.materials_api.phong(ev,I401,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\nMT I4=ev.materials_api.combine_materials(ev,I402,I400);\n";
+
+
+
+//var wood2material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood2.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
+//var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood3.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
 
 var woodfile = "wood1.png";
 if (i==10) woodfile="wood2.jpg";
@@ -262,7 +270,8 @@ function create_script(filename, contents, filenames)
   var border_value = get_border_value();
   var border = get_border(border_value,material_value);
 
-  if (filename.substr(-4)==".stl") { res+="P I1=ev.polygon_api.stl_load(" + filename + ");\n"; } else
+  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I1=ev.polygon_api.color_grayscale(I19);\n";
+     } else
   if (filename.substr(-4)==".obj") {
      if (mtl_name=="") {
        res+="P I1=ev.polygon_api.p_url(ev," + filename + ",350);\n";
@@ -294,7 +303,8 @@ function create_script(filename, contents, filenames)
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
      res+="MT I4=ev.materials_api.gltf_material(ev,"+base_dir+"," + filename + ",0,1);\n";
   } else {
-     res+="MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
+     //res+="MT I4=ev.materials_api.colour_material(ev,0.9);\n";
+     res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0,0.5);\n";
   }
 
 
@@ -308,8 +318,10 @@ function create_script(filename, contents, filenames)
      res="ML I6=ev.mainloop_api.gltf_mesh_all(ev," + base_dir +"," + filename + ");\n";
 
   }
-  res+=border;
+  res+=border; // outputs I502
+  
   res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I502});\n";
+  //res+="ML I68=ev.mainloop_api.isometric(I66,0.5236,0.5236,-1400.0);\n";
 
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf") {
@@ -322,6 +334,7 @@ function create_script(filename, contents, filenames)
   res+="ML I9=ev.mainloop_api.right_mouse_pan(ev,I8);\n";
   res+=background;
   res+="ML I14=ev.mainloop_api.array_ml(ev,std::vector<ML>{I44,I9});\n";
+  //res+="ML I15=ev.mainloop_api.perspective(ev,I14,90.0,10.1,60000.0);\n";
   res+="RUN I10=ev.blocker_api.game_window2(ev,I14,false,false,0.0,1000000.0);\n";
 
 

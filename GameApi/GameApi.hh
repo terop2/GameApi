@@ -306,7 +306,7 @@ public:
 	IMPORT ~MainLoopApi();
   ML right_mouse_pan(EveryApi &ev, ML next);
   ML mouse_roll_zoom(EveryApi &ev, ML next);
-  ML perspective(ML next, float mult, float front_plane, float end_plane);
+  ML perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane);
   ML anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn);
   ML glClear(EveryApi &ev);
   GS game_state();
@@ -1425,6 +1425,7 @@ public:
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT MT vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
   IMPORT ARR m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
@@ -2652,6 +2653,7 @@ public:
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
   IMPORT ML edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color);
   IMPORT ML gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key);
   IMPORT ML globe_shader(EveryApi &ev, ML mainloop, float globe_r);
@@ -3583,6 +3585,7 @@ public:
   US v_skeletal(US us);
   US v_custom(US us, std::string v_funcname);
   US v_phong(US us);
+  US v_vertexphong(US us);
   US v_glowedge(US us);
   US v_bump_phong(US us);
   US v_fog(US us);
@@ -3601,6 +3604,7 @@ public:
   US f_ambient(US us);
   US f_specular(US us);
   US f_phong(US us);
+  US f_vertexphong(US us);
   US f_glowedge(US us);
   US f_bump_phong(US us);
   US f_fog(US us);

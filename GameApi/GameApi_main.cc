@@ -2604,7 +2604,7 @@ public:
     case 5: ogl->glDepthFunc(Low_GL_GEQUAL); break;
     };
     next->execute(e);
-    ogl->glDepthFunc(Low_GL_LEQUAL);
+    ogl->glDepthFunc(Low_GL_LESS);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
