@@ -9976,8 +9976,11 @@ GameApi::US GameApi::UberShaderApi::v_cubemaptexture(US us)
 
 GameApi::US GameApi::UberShaderApi::v_texture_arr(US us)
 {
+  return v_texture(us);
+  /*
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD IN_TEXCOORD"));
+  */
 }
 
 GameApi::US GameApi::UberShaderApi::v_colour(US us)
@@ -10370,8 +10373,11 @@ GameApi::US GameApi::UberShaderApi::f_cubemaptexture(US us)
 
 GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
 {
+  return f_texture(us);
+  /*
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX"));
+  */
 }
 
 GameApi::US GameApi::UberShaderApi::f_colour(US us)
@@ -12323,8 +12329,8 @@ void blocker_iter(void *arg)
 	env->ev->shader_api.set_var(env->texture_sh, "in_MV", mat);
 	//env->ev->shader_api.set_var(env->texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
 
-	env->ev->shader_api.use(env->arr_texture_sh);
-	env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
+	//env->ev->shader_api.use(env->arr_texture_sh);
+	//env->ev->shader_api.set_var(env->arr_texture_sh, "in_MV", mat);
 	//env->ev->shader_api.set_var(env->arr_texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
 #endif
 	env->ev->shader_api.use(env->color_sh);
@@ -12333,7 +12339,7 @@ void blocker_iter(void *arg)
 	GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
 	GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
 	if (env->fpscounter)
 	  env->ev->mainloop_api.fpscounter();
@@ -12446,7 +12452,7 @@ public:
     
     GameApi::SH sh = env.ev->shader_api.colour_shader();
     GameApi::SH sh2 = env.ev->shader_api.texture_shader();
-    GameApi::SH sh3 = env.ev->shader_api.texture_array_shader();
+    GameApi::SH sh3 = env.ev->shader_api.texture_shader();
     
     // rest of the initializations
     env.ev->mainloop_api.init_3d(sh);
@@ -12753,7 +12759,7 @@ public:
 
     GameApi::SH sh = ev.shader_api.colour_shader();
     GameApi::SH sh2 = ev.shader_api.texture_shader();
-    GameApi::SH sh3 = ev.shader_api.texture_array_shader();
+    GameApi::SH sh3 = ev.shader_api.texture_shader();
     
     // rest of the initializations
     ev.mainloop_api.init_3d(sh);
@@ -23549,7 +23555,7 @@ public:
     
     GameApi::SH sh = env.ev->shader_api.colour_shader();
     GameApi::SH sh2 = env.ev->shader_api.texture_shader();
-    GameApi::SH sh3 = env.ev->shader_api.texture_array_shader();
+    GameApi::SH sh3 = env.ev->shader_api.texture_shader();
     
     // rest of the initializations
     env.ev->mainloop_api.init_3d(sh);
