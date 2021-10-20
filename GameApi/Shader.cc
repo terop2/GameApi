@@ -44,7 +44,7 @@
 #endif
 
 #ifdef LINUX
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 //#define WAYLAND 1
@@ -192,7 +192,6 @@ void Program::push_back(const Shader &shader)
     buf[length]=0;
     std::cout << "" << buf << std::endl;
     }
-
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }

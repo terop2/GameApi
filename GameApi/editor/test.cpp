@@ -2078,7 +2078,7 @@ int main(int argc, char *argv[]) {
   ev.shader_api.load_default();
   SH sh = ev.shader_api.texture_shader();
   SH sh_2d = ev.shader_api.texture_shader();
-  SH sh_arr = ev.shader_api.texture_array_shader();
+  SH sh_arr = ev.shader_api.texture_shader();
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
   Ft font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 13,15 
