@@ -1548,8 +1548,8 @@ public:
 #endif
 
     if (!f) { std::cout << "popen failed" << std::endl;
-      std::cout << errno << std::endl;
-      std::cout << url << std::endl;
+      //std::cout << errno << std::endl;
+      //std::cout << url << std::endl;
     }
   }
   virtual bool get_ch(unsigned char &ch)

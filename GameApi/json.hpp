@@ -2691,7 +2691,7 @@ class lexer
     {
         const auto loc = localeconv();
         assert(loc != nullptr);
-        return (loc->decimal_point == nullptr) ? '.' : *(loc->decimal_point);
+        return '.';
     }
 
     /////////////////////
@@ -10944,8 +10944,8 @@ class serializer
                error_handler_t error_handler_ = error_handler_t::strict)
         : o(std::move(s))
         , loc(std::localeconv())
-        , thousands_sep(loc->thousands_sep == nullptr ? '\0' : * (loc->thousands_sep))
-        , decimal_point(loc->decimal_point == nullptr ? '\0' : * (loc->decimal_point))
+        , thousands_sep('\0')
+        , decimal_point('.')
         , indent_char(ichar)
         , indent_string(512, indent_char)
         , error_handler(error_handler_)

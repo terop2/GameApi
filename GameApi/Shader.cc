@@ -92,7 +92,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   int val = g_low->ogl->glGetError();
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-  //if (val!=Low_GL_NO_ERROR)
+  if (val!=Low_GL_NO_ERROR)
     {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -183,14 +183,14 @@ void Program::push_back(const Shader &shader)
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   int val = g_low->ogl->glGetError();
-  //if (val!=Low_GL_NO_ERROR)
+  if (val!=Low_GL_NO_ERROR)
     {
-    std::cout << "glAttachShader ERROR: " << val << std::endl;
+      //std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
     int length=0;
     g_low->ogl->glGetProgramInfoLog(priv->program, 256, &length, &buf[0]);
     buf[length]=0;
-    std::cout << "InfoLog: " << buf << std::endl;
+    std::cout << "" << buf << std::endl;
     }
 
   priv->shaders.push_back(&shader);
@@ -252,7 +252,7 @@ void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
   int val = g_low->ogl->glGetError();
-  /*if (val!=Low_GL_NO_ERROR)*/ {
+  if (val!=Low_GL_NO_ERROR) {
   int len=0;
   char log[255];
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
@@ -1005,6 +1005,7 @@ ShaderFile::ShaderFile()
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_COLOR\n"
+"#ifdef VERTEX_LEVELS\n"
 "uniform float hilight;\n"	  
 
 "float V_intensity(vec3 dir) {\n"
@@ -1043,6 +1044,7 @@ ShaderFile::ShaderFile()
     "    ex_Color = vec4(c,1.0);\n"
     "    return pos;\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
@@ -2400,6 +2402,7 @@ ShaderFile::ShaderFile()
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_COLOR\n"
+"#ifdef VERTEX_LEVELS\n"
 
 "uniform float hilight;\n"	  
 
@@ -2442,7 +2445,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
-
+"#endif\n"
     
 "#ifdef SKELETON\n"
     //"uniform mat4 inverseBind[64];\n"
@@ -4351,7 +4354,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -4382,7 +4385,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp;
-      std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

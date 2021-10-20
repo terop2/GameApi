@@ -24,6 +24,8 @@
 
 extern int g_logo_status;
 extern std::string g_msg_string;
+extern int g_global_face_count;
+extern int g_engine_status;
 bool is_mobile(GameApi::EveryApi &ev)
 {
   return ev.mainloop_api.get_screen_width() < 700;
@@ -12345,6 +12347,7 @@ void blocker_iter(void *arg)
 
     // swapbuffers
     env->ev->mainloop_api.swapbuffers();
+    g_engine_status = 1;
     //    ogl->glGetError();
 }
 extern int async_pending_count;
@@ -12425,6 +12428,7 @@ public:
   }
   virtual void Init()
   {
+    g_engine_status = 0;
     g_logo_status = 0;
   OpenglLowApi *ogl = g_low->ogl;
   ClearProgress();
@@ -12543,6 +12547,7 @@ public:
 
 	MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
 	item->logoexecute();
+	g_engine_status = 2;
 	
 	// b &&
 	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
@@ -12586,9 +12591,11 @@ public:
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
 	  env->ev->mainloop_api.logo_iter();
+	  g_engine_status = 2;
 	  //std::cout << "End of Logo iter" << std::endl;
 	} else {
 	  env->ev->mainloop_api.seamless_iter();
+	  g_engine_status = 2;
 	}
       if (vis_counter>=vis->vec.size()) { delete vis; vis=0; }
       return -1;
@@ -12601,9 +12608,11 @@ public:
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
 	  env->ev->mainloop_api.logo_iter();
+	  g_engine_status = 2;
 	  //std::cout << "End of Logo iter" << std::endl;
 	} else {
 	  env->ev->mainloop_api.seamless_iter();
+	  g_engine_status = 2;
 	}
     }
 			
@@ -12670,6 +12679,7 @@ public:
     // swapbuffers
     //std::cout << "swapbuffers" << std::endl;
     env->ev->mainloop_api.swapbuffers();
+    g_engine_status = 1;
     //xsogl->glGetError();
     return -1;
   }
@@ -12725,6 +12735,8 @@ extern void *g_mainloop_ptr;
 extern Envi_2 *g_pending_blocker_env;
 extern bool g_new_blocker_block;
 
+int g_engine_status=0; // 0=uninitialized, 2=loading, 1=ready
+
 class MainLoopBlocker_win32_and_emscripten : public Blocker
 {
 public:
@@ -12737,6 +12749,7 @@ public:
   }
   void Execute()
   {
+    g_engine_status = 0;
 
 
     
@@ -25236,6 +25249,12 @@ KP extern "C" void set_float(int num, float value)
 {
   std::cout << "FLOAT " << num << " " << value << std::endl;
   if (num>=0 && num<25) { g_floats[num]=value; }
+}
+KP extern "C" int get_integer(int num)
+{
+  if (num==0) return g_global_face_count; // use P get_face_count(P) to set this
+  if (num==1) return g_engine_status;
+  return -1;
 }
 std::string g_set_string_url;
 extern std::vector<const unsigned char*> g_content;

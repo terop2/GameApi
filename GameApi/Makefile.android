@@ -18,6 +18,17 @@
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+android_ndk = /home/terop/cvs/ndk/android-ndk-r9b
+
+android_compiler = $(android_ndk)/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/bin/arm-linux-androideabi-
+
+CROSS_COMPILE=$(android_compiler)
+
+CC = $(CROSS_COMPILE)g++
+INC = $(android_ndk)/platforms/android-19/arch-arm/usr/include
+CXX_INC = $(android_ndk)/sources/cxx-stl/gnu-libstdc++/4.8/include
+CXX_INC2 = $(android_ndk)/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi/include
+
 
 CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui_1.cc GameApi_gui_2.cc GameApi_gui_3.cc GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
@@ -45,19 +56,19 @@ CFiles2 =
 Subdirs = 
 #module1
 
-OFiles = $(patsubst %.cc,objs/%.o,$(CFiles) $(CFiles2))
-O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
-DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2)) 
-D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles) $(CFiles2)) 
+OFiles = $(patsubst %.cc,android-objs/%.o,$(CFiles) $(CFiles2))
+O2Files = $(patsubst %.cc,android-objs/%.obj,$(CFiles) $(CFiles2))
+DFiles = $(patsubst %.cc,android-objs/%.d,$(CFiles) $(CFiles2)) 
+D2Files = $(patsubst %.cc,android-objs/%.d2,$(CFiles) $(CFiles2)) 
 HFiles = $(patsubst %.cc,%.hh,$(CFiles))
-#GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
-#GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
+#GCHFiles = $(patsubst %.cc,android-objs/%.hh.gch,$(CFiles))
+#GCH2Files = $(patsubst %.cc,android-objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function
 
-CCFLAGS = -m64 -std=c++14 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
-CC2FLAGS = -m64 -std=c++14 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
+CCFLAGS = -fPIC -Wall -I./android-objs -DANDROID -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I$(INC) -I$(CXX_INC) -I$(CXX_INC2)
+CC2FLAGS = -Wall -I./android-objs -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DANDROID -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I$(INC) -I$(CXX_INC) -I$(CXX_INC2)
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -66,7 +77,7 @@ default: libGameApi.so
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD    libGameApi.so"
-	@g++ -m64 -rdynamic -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@$(CC) -m64 -rdynamic -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
 
 #`pkg-config gtkmm-2.4 --libs` 
 
@@ -82,16 +93,14 @@ libGameApi.so: $(OFiles) Makefile
 #TAGS: $(CFiles)
 #	etags -o TAGS -l c++ $(CFiles)
 
-CC = $(CROSS_COMPILE)g++
-CCWIN = i586-mingw32msvc-g++
 
-#$(DFiles): objs/%.d: %.cc
+#$(DFiles): android-objs/%.d: %.cc
 #	@echo "  DEP    $@"
 #	@$(CC) -M $(CCFLAGS) $< \
-#	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
+#	|sed 's,\($*\)\.o[ :]*,android-objs/\1.o $@ : ,g' > $@
 
 
-$(OFiles): objs/%.o : %.cc
+$(OFiles): android-objs/%.o : %.cc
 	@echo "  CC    $@"
 	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
 
@@ -102,8 +111,7 @@ touch_all:
 
 
 clean:
-	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
-	@rm main
+	@rm -rf android-objs/*.o android-objs/*.obj android-objs/*.d android-objs/*.d2 android-objs/*.gch android-objs/*.gch2
 	@echo Clean.
 
 
