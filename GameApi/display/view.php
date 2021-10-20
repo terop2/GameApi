@@ -3,69 +3,50 @@ header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page.js");
 ?>
 <html>
+<head>
+</head>
 <body>
 <script src="https://meshpage.org/vue.js"></script>
+<div id="app">
+<appdragdroparea v-on:dragdrop="dragdrop2($event)">
+
+<apptitle>The great 3d model viewer</apptitle>
+<br>
 <div style="display:flex">
 <div id="div2" style="display:none"></div>
-<div style=" width:300px; height:300px;background-color:#f84;" id="div1" ondrop="drop(event)" ondragover="allowDrop(event)">
-<div style="margin: auto; text-align: center; padding: 120px;" id="label">
-drag&drop here.
-</div>
-</div>
+<!--/div-->
 <div style="margin-left: 30px; float:left; display:block;">
-<h1>The great 3d model viewer</h1>
-<h3>Supported file formats</h3>
-.gltf, .glb, .stl, .obj, .mtl, .ds, dirs
-<h3>Supported texture formats</h3>
-.jpg, .png
-<h3>Features under development</h3>
-.zip
+<appcanvas></appcanvas>
 </div>
 <div style="margin-left: 30px; float:left; display:block;">
 <p>
-Material:
-<select name="material" id="material-select" onchange="drop2()">
-  <option value="-1">Default</option>
-  <option value="0">EdgedPhong</option>
-  <option value="1">EdgedMetal</option>
-  <option value="2">EdgedGold</option>
-  <option value="3">SmoothPhong</option>
-  <option value="4">SmoothMetal</option>
-  <option value="5">SmoothGold</option>
-  <option value="6">Wood1</option>
-  <option value="7">Wood2</option>
-  <option value="8">Wood3</option>
-  <option value="9">Shiny Wood1</option>
-  <option value="10">Shiny Wood2</option>
-  <option value="11">Shiny Wood3</option>
-</select><br><p>
-Background:<select name="background" id="background-select" onchange="drop2()">
-  <option value="-1">Black</option>
-  <option value="0">White</option>
-  <option value="1">Grey</option>
-</select><br><p>
-Border:<select name="border" id="border-select" onchange="drop2()">
-  <option value="-1">None</option>
-  <option value="0">Black 2px</option>
-  <option value="1">White 2px</option>
-  <option value="2">Black 4px</option>
-  <option value="3">White 4px</option>
-  <option value="4">Black 8px</option>
-  <option value="5">White 8px</option>
-  </select><br><p>
-Model:<select name="model" id="model-select" onchange="drop2()">
- <option value="-1">(use drag&drop area)</option>
- <option value="0">Sheep</option>
- <option value="1">BoomBox</option>
- <option value="2">Duck</option>
- <option value="3">Astronaut</option>
- </select>
+<appmodel v-bind:is_example="state.appmodel_is_examples"
+	  v-bind:is_selected="state.appmodel_is_selected"
+	  v-bind:is_notselected="state.appmodel_is_notselected"
+	  v-bind:is_twoline="state.appmodel_is_twoline"
+	  v-bind:model_info="state.model_info"
+	  v-on:examples_click="change_appmodel(2)"
+	  v-on:change_model="change_model()"
+	  v-on:change_choose="change_model()"
+	  v-on:root_handle_drop="change_model3($event)"
+	  v-bind:filename="state.filename"
+	  v-bind:filename1="state.filename1"
+	  v-bind:filename2="state.filename2"
+></appmodel>
+<appbackground v-on:change_model="change_model()"></appbackground>
+<appmaterial v-on:change_model="change_model()"
+	     v-on:change_category="change_category()"
+	     v-bind:is_metal="state.is_metal"
+	     v-bind:is_plastic="state.is_plastic"
+	     v-bind:is_textured="state.is_textured"
+></appmaterial>
+<appborder v-on:change_model="change_model()"></appborder><br>
 </div>
 </div>
 <div style="height:10px"></div>
-<canvas id="canvas" style="border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;" oncontextmenu="event.preventDefault()"></canvas>
 <div style="height:10px"></div>
-
+</appdragdroparea>
+</div> <!-- vue ends here -->
 </body>
 </html>
 
@@ -73,18 +54,422 @@ Model:<select name="model" id="model-select" onchange="drop2()">
 var store = {
    state : {
       empty: true,
+      appmodel_is_examples: "false",
+      appmodel_is_selected: "false",
+      appmodel_is_notselected: "true",
+      appmodel_is_twoline: "0",
+      model_info: "(no model)",
+      filename: "(no file)",
+      filename1: "",
+      filename2: "",
+      is_metal: "true",
+      is_plastic: "false",
+      is_textured: "false",
+      model_db: [],
+      background_db: [],
+      material_db: [],
+      border_db: [],
+      file_ap: function(type,filename) { }, // should return promise
       }
       };
+
+Vue.component('apptitle', {
+   data: function() {
+       return {
+          }
+        },
+	template: `<div class="block"><div class='lab'><h1><slot></slot></h1></div></div>`
+ });
+
+Vue.component('appdragdroparea', {
+   data: function() {
+       return {
+          }
+	},
+	template: '<div id="div1" v-on:drop="$emit(`dragdrop`,$event)" ondragover="allowDrop(event)"><slot></slot></div>'
+	});
+
+Vue.component('appmaterial', {
+   props: ['is_metal', 'is_plastic', 'is_textured'],
+   data: function() {
+      return {
+      }
+      },
+      template: `<div>
+	<div class="block blockitem height16 border"><!--Material<br>
+	<div class="horizspace">
+		<select name="material" id="material-select" v-on:change="$emit('change_model')">
+		 <option value="-1">Default</option>
+		 <option value="0">EdgedPhong</option>
+		 <option value="1">EdgedMetal</option>
+  		 <option value="2">EdgedGold</option>
+  		 <option value="6">Wood1</option>
+  		 <option value="7">Wood2</option>
+  		 <option value="8">Wood3</option>
+  		 <option value="9">Shiny Wood1</option>
+  		 <option value="10">Shiny Wood2</option>
+  		 <option value="11">Shiny Wood3</option>
+		 </select></div>-->
+		 Category<br>
+		 <div class="horizspace">
+		 <select name="category" id="category-select" v-on:change="$emit('change_category')">
+		 <option value="0">Metal</option>
+		 <option value="1">Plastic</option>
+		 <option value="2">Textured</option>
+		 </div>
+		 <div v-if="is_metal=='true'">
+		 Type<br>
+		 <div class="horizspace">
+		 <select name="type" id="metal-type-select" v-on:change="$emit('change_model')">
+		 <option value="-1">Default</option>
+		 <option value="0">Aluminium</option>
+		 <option value="1">Brass</option>
+		 <option value="2">Bronze</option>
+		 <option value="3">Gold</option>
+		 <option value="4">Iron</option>
+		 <option value="5">Silver</option>
+		 <option value="6">Steel</option>
+		 <option value="7">Titanium</option>
+		 </select>
+		 </div>
+		 </div>
+		 <div v-if="is_plastic=='true'">
+		 Type<br>
+		 <div class="horizspace">
+		 <select name="type" id="plastic-type-select" v-on:change="$emit('change_model')">
+		 <option value="-1">Default</option>
+		 <option value="8">red</option>
+		 <option value="9">yellow</option>
+		 <option value="10">blue</option>
+		 <option value="11">orange</option>
+		 <option value="12">white</option>
+		 <option value="13">green</option>
+		 <option value="14">magenta</option>
+		 </select>
+		 </div>
+		 </div>
+
+		 <div v-if="is_textured=='true'">
+		 Type<br>
+		 <div class="horizspace">
+		 <select name="type" id="textured-type-select" v-on:change="$emit('change_model')">
+		 <option value="-1">Default</option>
+		 <option value="15">Wood (Pine)</option>
+		 <option value="16">Wood (Oak)</option>
+		 <option value="17">Wood (Ebenholz)</option>
+		 <option value="18">Brick</option>
+		 <option value="19">Concrete</option>
+		 </select></div>
+		 </div>
+		 Surface<br>
+		 <div class="horizspace">
+		 <select name="surface" id="surface-select">
+		 <option value="0">Smooth</option>
+		 <option value="1">Brushed</option>
+		 <option value="2">Hammered</option>
+		 </select>
+		 </div>
+		 `
+});
+
+Vue.component('appbackground', {
+  data: function() {
+    return {
+    }
+    },
+    template: `
+    <div class="block blockitem height8 border">
+    Background<br>
+    <div class="horizspace">
+    <select name="background" id="background-select" v-on:change="$emit('change_model')">
+      <option value="-1">Black</option>
+      <option value="0">Gray</option>
+      <option value="1">White</option>
+      <option value="2">Blue</option>
+      <option value="3">Custom</option>
+    </select></div></div>
+    `
+});
+
+Vue.component('appborder', {
+  data: function() {
+     return {
+     }
+     },
+     template: `<div class="block blockitem height8 border">
+     Border<br><div class="horizspace"><select name="border" id="border-select" v-on:change="$emit('change_model')">
+  <option value="-1">None</option>
+  <option value="0">Black 2px</option>
+  <option value="1">White 2px</option>
+  <option value="2">Black 4px</option>
+  <option value="3">White 4px</option>
+  <option value="4">Black 8px</option>
+  <option value="5">White 8px</option>
+  </select></div></div>
+     `
+});
+
+Vue.component('appmodel_choose', {
+  data: function() {
+     return {
+     }
+     },
+     template: `<div class="border block blockitem height12">
+     Model<br><select name="model" id="model-select" v-on:change="$emit('change_model')">
+ <option value="-1">(use drag&drop area)</option>
+ <option value="0">Sheep</option>
+ <option value="1">BoomBox</option>
+ <option value="2">Duck</option>
+ <option value="3">Astronaut</option>
+ </select></div>
+     `
+     });
+
+Vue.component('appmodel_notselected', {
+   data: function() {
+     return { } },
+   template: `<div class="border block blockitem height12">
+   <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a>.</small>
+   <br><br><small>.STL, .OBJ, .GLB file types supported. See help for materials.</small>
+   <button type="button" onclick="clickselectfile()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
+   <input id="selectfile" type="file" multiple v-on:change="$emit('handle_drop','selectfile')" style="display:none"/>
+   </div>`
+   });
+
+Vue.component('appmodel_selected', {
+  props: ['filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  data: function() {
+    return { } },
+    template: `<div class="border block blockitem height12">
+      <!--appprogress></appprogress-->
+      <appfilenameinfo v-bind:is_twoline="is_twoline" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2"></appfilenameinfo>
+      <appmodelinfo v-bind:model_info="model_info"></appmodelinfo>
+      <button type="button" onclick="clickselectfile2()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
+   <input id="selectfile2" type="file" multiple v-on:change="$emit('handle_drop','selectfile2')" style="display: none;"/>
+      </div>`
+      });
+
+Vue.component('appmodel', {
+  props: ['is_example', 'is_selected', 'is_notselected', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  data: function() {
+    return { } },
+    template: `<div class="block blockitem">
+       <div v-if="is_example=='true'">
+       <appmodel_choose v-on:change_model="$emit('change_choose')"></appmodel_choose>
+       </div>
+       <div v-if="is_selected=='true'">
+       <appmodel_selected v-bind:model_info="model_info" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2" v-bind:is_twoline="is_twoline" v-on:handle_drop="$emit('root_handle_drop',$event)"></appmodel_selected>
+       </div>
+       <div v-if="is_notselected=='true'">
+       <appmodel_notselected v-on:examples_click="$emit('examples_click')"
+			     v-on:handle_drop="$emit('root_handle_drop',$event)"
+       ></appmodel_notselected>
+       </div>
+       </div>`
+       });
+
+
+Vue.component('appcanvas', {
+  data: function() {
+     return {
+     }
+     },
+     template: `<div class="block">
+<canvas class="canvas" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+     </div>
+     `
+});
+
+Vue.component('appinfo', {
+  data: function() {
+     return {
+     }
+     },
+     template: `<div class="block blockitem">
+<h3>Supported file formats</h3>
+.gltf, .glb, .stl, .obj, .mtl, .ds, dirs
+<h3>Supported texture formats</h3>
+.jpg, .png</div>
+     `});
+
+
+Vue.component('appprogress', {
+  data: function() {
+     return {
+     }
+     },
+     template: `
+     <div class="info block blockitem" id="label">
+     drag&drop here.
+     </div>
+     `
+});
+
+Vue.component('appfilenameinfo', {
+  props: ['filename', 'filename1', 'filename2', 'is_twoline'],
+  data: function() {
+    return {
+     }
+     },
+     template: `<div>
+       <div v-if="is_twoline=='2'">
+          <div class="info block blockitem height4">
+	  <b>{{ filename1 }}<br>{{ filename2 }}</b>
+	  </div>
+       </div>
+       <div v-if="is_twoline=='1'">
+          <div class="info block blockitem middle height4">
+	  <b>{{ filename }}</b>
+	  </div>
+       </div>
+       <div v-if="is_twoline=='0'">
+          <div class="info block blockitem large height4">
+          <b>{{ filename }}</b>
+          </div>
+       </div>
+    </div>`
+     });
+
+Vue.component('appmodelinfo', {
+  props: ['model_info'],
+  data: function() {
+     return {
+     }
+     },
+     template: `<div class="info block blockitem horizspace">
+     {{ model_info }}
+     </div>`
+     });
+
+var repeat_prev = 0;
 
 var app = new Vue({
    el: '#app',
    data: {
-      state: store.state,
+      state: store.state
+      },
+   methods: {
+      dragdrop2: function(event) {
+         console.log("DRAGDROP");
+	 console.log(event);
+        if (repeat_prev==0) {
+        repeat_prev=1;
+          this.change_appmodel(1);
+         drop(event);
+	    repeat_prev = 0;
+	    }
+      },
+      change_appmodel: function(val) {
+         this.state.appmodel_is_notselected = "false";
+	 this.state.appmodel_is_selected = "false";
+	 this.state.appmodel_is_examples = "false";
+         if (val==0) this.state.appmodel_is_notselected = "true";
+	 if (val==1) this.state.appmodel_is_selected = "true";
+	 if (val==2) this.state.appmodel_is_examples = "true";
+      },
+      change_category: function() {
+        var elem = document.getElementById("category-select");
+	var val = elem.value;
+	this.state.is_metal="false";
+	this.state.is_plastic="false";
+	this.state.is_textured="false";
+	console.log("change_category:" + val);
+	if (val==0) { this.state.is_metal="true"; }
+	if (val==1) { this.state.is_plastic="true"; }
+	if (val==2) { this.state.is_textured="true"; }
+      },
+      change_model: function() {
+        if (repeat_prev==0) {
+        repeat_prev=1;
+        console.log("CHANGE_MODEL");
+	  if (typeof drop2 == 'function')
+            drop2(this.state);
+	    }
+          this.change_appmodel(1);
+	    repeat_prev = 0;
+      },
+      change_model3: function(selectfile) {
+        if (repeat_prev==0) {
+        repeat_prev=1;
+        console.log("CHANGE_MODEL3");
+	console.log(selectfile);
+	if (typeof drop3 =='function')
+           drop3(this.state, selectfile);
+	}
+        this.change_appmodel(1);
+        repeat_prev = 0;
       }
+   }
+      
    });
    
+var mat_db = "material_db.txt";
+var bor_db = "border_db.txt";
+var bck_db = "background_db.txt";
+var mdl_db = "model_db.txt";
+
+fetch(mat_db).then(response => {
+response.body.getReader().read().then(value=>{
+   var str = strfy(value.value);
+   store.state.material_db = str.split("\n");
+   store.state.material_db.pop();
+console.log(store.state.material_db);
+   });
+});
+fetch(bor_db).then(response => {
+response.body.getReader().read().then(value=>{
+   var str = strfy(value.value);
+   store.state.border_db = str.split("\n");
+   store.state.border_db.pop();
+   console.log(store.state.border_db);
+   });
+});
+fetch(bck_db).then(response => {
+response.body.getReader().read().then(value=>{
+   var str = strfy(value.value);
+   store.state.background_db = str.split("\n");
+   store.state.background_db.pop();
+  
+   console.log(store.state.background_db);
+   });
+});
+fetch(mdl_db).then(response => {
+response.body.getReader().read().then(value=>{
+   var str = strfy(value.value);
+   store.state.model_db = str.split("\n");
+   store.state.model_db.pop();
+   console.log(store.state.model_db);
+   });
+});
+
+function strfy(arr)
+{
+  const array = Array.from(arr);
+  let str = "";
+  for (let i=0;i<array.length; i++) {
+    str+=String.fromCharCode(parseInt(array[i]));
+    }
+   return str;
+}
+
 
 </script>
+<style>
+.lab { width:820px; height: 30px; text-align:center; }
+.canvas { border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px; }
+.block { display: block;   }
+.info { margin: auto; text-align: left; padding: 3px; }
+.prettysmall { font-size: 25px; }
+.middle { font-size: 30px; }
+.large { font-size: 40px; }
+.border { border: 1px solid black; padding: 15px 15px 0px; 35px; margin-top: -1px; }
+.blockitem { width: 250px;}
+.height4 { height: 40px; }
+.height8 { height: 80px; }
+.height12 { height: 120px; }
+.height16 { height: 160px; }
+.horizspace { margin-left: 1em; }
+</style>
 
 <script>
 function find_main_item(arr)
@@ -115,8 +500,8 @@ function convert_enter_to_at(str)
   var s = str.length;
   var res = "";
   for(var i=0;i<s;i++) {
-    if (str[i]=="\n") res.push("@");
-    else res.push(str[i]);
+    if (str[i]=="\n") res +='@';
+    else res+=str[i];
   }
   return res;
 }
@@ -143,7 +528,8 @@ function find_mtl_name(filenames)
 function get_model_value()
 {
   var elem = document.getElementById("model-select");
-  return parseInt(elem.value);
+  if (elem) return parseInt(elem.value);
+  return -1;
 }
 function get_model(i)
 {
@@ -178,8 +564,8 @@ function get_border(i,m)
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   //res+= "MT I401=ev.materials_api.m_def(ev);\n"
   res+= "MT I501=ev.materials_api.toon_border(ev,I4," + width + ",ff" + color + ");\n";
-  res+="ML I502=ev.materials_api.bind(I206,I501);\n";
-  //res+="ML I502=ev.mainloop_api.depthfunc(I5022,0);\n";
+  res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
+  res+="ML I502=ev.mainloop_api.depthfunc(I5022,3);\n";
   return res;
 }
 function get_background_value()
@@ -190,19 +576,96 @@ function get_background_value()
 function get_background(i)
 {
   var color = "000000";
-  if (i==0) color="ffffff";
-  if (i==1) color="888888";
+  if (i==0) color="888888";
+  if (i==1) color="ffffff";
+  if (i==2) color="0088ff";
+  if (i==3) console.log("ERROR: custom color not implemented");
   var background="BM I41=ev.bitmap_api.newbitmap(100,100,ff" + color + ");\nBM I42=ev.bitmap_api.scale_bitmap_fullscreen(ev,I41);\nML I43=ev.sprite_api.vertex_array_render(ev,I42);\nML I44=ev.sprite_api.turn_to_2d(ev,I43,0.0,0.0,800.0,600.0);\n";
   return background;
 }
 
 function get_material_value()
 {
-  var elem = document.getElementById("material-select");
+  var cat_elem = document.getElementById("category-select");
+  var cat_val = parseInt(cat_elem.value);
+  var id = "";
+  if (cat_val==0) // metal
+  {
+     id = "metal-type-select";  
+  } else if (cat_val==1) // plastic
+  {
+    id="plastic-type-select";
+  }
+  else if (cat_val==2) // Textured
+  {
+    id="textured-type-select";
+  }
+
+  var elem = document.getElementById(id);
   return parseInt(elem.value);
 }
+function get_metal_color(i)
+{
+  if (i==0) { return 0xd0d5db; }
+  if (i==1) { return 0xb5a642; }
+  if (i==2) { return 0xb08d57; }
+  if (i==3) { return 0xffd700; }
+  if (i==4) { return 0xa19d94; }
+  if (i==5) { return 0xaaa9ad; }
+  if (i==6) { return 0x43464b; }
+  if (i==7) { return 0x878681; }
+  // plastics
+  if (i==8) { return 0xff0000; }
+  if (i==9) { return 0xffff00; }
+  if (i==10) { return 0x0000ff; }
+  if (i==11) { return 0xff4500; }
+  if (i==12) { return 0xffffff; }
+  if (i==13) { return 0x00ff00; }
+  if (i==14) { return 0xff00ff; }
+return 0xffffff;
+}
+
+function get_metal_roughness(i)
+{
+  if (i==0) return 0.4;
+  if (i==1) return 0.8;
+  if (i==2) return 0.5;
+  if (i==3) return 0.4;
+  if (i==4) return 0.6;
+  if (i==5) return 0.4;
+  if (i==6) return 0.7;
+  if (i==7) return 0.5;
+  if (i==8) return 0.2;
+  if (i==9) return 0.2;
+  if (i==10) return 0.2;
+  if (i==11) return 0.2;
+  if (i==12) return 0.2;
+  if (i==13) return 0.2;
+  if (i==14) return 0.2;
+  return 0.5;
+}
+
 function get_material(i)
 {
+ var metal_color = get_metal_color(i);
+ var r = (metal_color&0xff0000)>>16;
+ var g = (metal_color&0xff00)>>8;
+ var b = (metal_color&0xff);
+ var rr = r/255.0;
+ var gg = g/255.0;
+ var bb = b/255.0;
+ var rrs = rr.toString();
+ var ggs = gg.toString();
+ var bbs = bb.toString();
+
+ var rough = get_metal_roughness(i);
+ var roughstr = rough.toString();
+
+ var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1);\n";
+
+ var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1);\n";
+
+
 
 // these are all mat :: () -> I4 :: () -> MT
 var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
@@ -221,12 +684,12 @@ var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/
 //var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood3.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
 
 var woodfile = "wood1.png";
-if (i==10) woodfile="wood2.jpg";
-if (i==11) woodfile="wood3.jpg";
+if (i==16) woodfile="wood2.jpg";
+if (i==17) woodfile="wood3.jpg";
 
 var glow = "30";
-if (i==10) glow="300";
-if (i==11) glow="3000";
+if (i==16) glow="30";
+if (i==17) glow="30";
 
 var shinywood = "BM I111=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/" + woodfile + ");\nFB I222=ev.float_bitmap_api.from_red(I111);\nMT I333=ev.materials_api.bump_phong(ev,-0.3,0.3,-1,ff000000,ffffffff," + glow + ",I222,15);\nMT I555=ev.materials_api.texture(ev,I111,0.7);\nMT I4=ev.materials_api.combine_materials(ev,I333,I555);\n";
 
@@ -239,19 +702,28 @@ var smoothnormals = "P I200=ev.polygon_api.recalculate_normals(I1);\nP I2=ev.pol
 var texcoord_normals = "P I200=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\nP I2=ev.polygon_api.recalculate_normals(I200);\n"
 var texcoord_smoothnormals = "P I200=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\nP I201=ev.polygon_api.recalculate_normals(I200);\nP I2=ev.polygon_api.smooth_normals2(I201);\n"
 
+if (i>=0 && i<=7) return [metal,normals];
+if (i>=8 && i<=14) return [plastic,normals];
+
+if (i==15) return [wood1material, texcoord_normals];
+if (i==16) return [wood2material, texcoord_normals];
+if (i==17) return [wood3material, texcoord_normals];
+if (i==-1) return ["",""];
+/*
 if (i==-1) return ["",""];
 if (i==0) return [phongmaterial,normals];
 if (i==1) return [metalmaterial,normals];
 if (i==2) return [goldmaterial,normals];
-if (i==3) return [phongmaterial,smoothnormals];
-if (i==4) return [metalmaterial,smoothnormals];
-if (i==5) return [goldmaterial,smoothnormals];
+//if (i==3) return [phongmaterial,smoothnormals];
+//if (i==4) return [metalmaterial,smoothnormals];
+//if (i==5) return [goldmaterial,smoothnormals];
 if (i==6) return [wood1material,texcoord_normals];
 if (i==7) return [wood2material,texcoord_normals];
 if (i==8) return [wood3material,texcoord_normals];
-if (i==9) return [shinywood,texcoord_smoothnormals];
-if (i==10) return [shinywood,texcoord_smoothnormals];
-if (i==11) return [shinywood,texcoord_smoothnormals];
+if (i==9) return [shinywood,texcoord_normals];
+if (i==10) return [shinywood,texcoord_normals];
+if (i==11) return [shinywood,texcoord_normals];
+*/
 return [phongmaterial,normals];
 }
 function create_script(filename, contents, filenames)
@@ -270,22 +742,23 @@ function create_script(filename, contents, filenames)
   var border_value = get_border_value();
   var border = get_border(border_value,material_value);
 
-  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I1=ev.polygon_api.color_grayscale(I19);\n";
+  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I155=ev.polygon_api.color_grayscale(I19);\n";
      } else
   if (filename.substr(-4)==".obj") {
      if (mtl_name=="") {
-       res+="P I1=ev.polygon_api.p_url(ev," + filename + ",350);\n";
+       res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n";
        } else {
-       res+="P I1=ev.polygon_api.p_mtl(ev," + filename +"," + mtl_name +"," + base_dir + ",600);\n";
+       res+="P I155=ev.polygon_api.p_mtl(ev," + filename +"," + mtl_name +"," + base_dir + ",600);\n";
        }
      } else
-  if (filename.substr(-3)==".ds") { res+="P I1=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
-  //if (filename.substr(-4)==".ply") { res+="P I1=ev.points_api.ply_faces(" + filename + ");\n"; } else
-  if (filename.substr(-4)==".glb") { res+="P I1=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
-  if (filename.substr(-5)==".gltf") { res+="P I1=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
+  if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
+  //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
+  if (filename.substr(-4)==".glb") { res+="P I155=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
+  if (filename.substr(-5)==".gltf") { res+="P I155=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
      {
-	res+="P I1=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
+	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
+   res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 
   if (material[0]!="") {
      res+=material[1];
@@ -350,14 +823,64 @@ function preventDefault(ev)
       ev.preventDefault();
 }
 
+function publish_face_count(state)
+{
+   if (Module)
+   {
+     var value = Module.ccall('get_integer', 'number', ['number'],[0]);
+     if (value != 0) {
+     //var elem = document.getElementById("modelinfo");
+     //if (elem) elem.innerHTML = "faces: " + value;
+     state.model_info = value + " faces";
+     }
+   }
+}
+
 var contents_array = [];
 var filename_array = [];
 var g_filename = "";
 
-function extract_contents(file_array,filenames, filename)
+function set_model_info(state,val)
+{
+ state.model_info = val;
+}
+
+function set_filename_info(state,filename)
+{
+   let res = "";
+   if (filename) {
+   var pos = filename.lastIndexOf('/');
+   if (pos==-1)
+      res = filename;
+   else
+      res = filename.substr(pos+1);   
+   }
+   if (res.length>13) {
+      if (res.length>16) {
+      	  state.appmodel_is_twoline = "2";
+      } else {
+      	state.appmodel_is_twoline = "1";
+      }
+      } else {
+      state.appmodel_is_twoline = "0";
+      }
+   if (res.length>16) {
+      var res1 = res.substring(0,30);
+      var res2 = res.substring(30);
+      state.filename1 = res1;
+      state.filename2 = res2;
+      state.filename = "";
+   } else {
+     state.filename = res;
+     state.filename1 = "";
+     state.filename2 = "";
+     }
+}
+
+function extract_contents(state,file_array,filenames, filename)
 {
    g_filename = filename;
-
+   set_filename_info(state,g_filename);
    if (file_array==""||filenames=="") {
       return new Promise((resolve,reject) => {
            resolve("success");
@@ -399,13 +922,13 @@ function extract_contents(file_array,filenames, filename)
 function load_finished(value)
 {
    load_files(contents_array,filename_array);
-   load_emscripten(g_filename, contents_array, filename_array);
-   set_label("Drag & Drop files here..");
+   load_emscripten(store.state,g_filename, contents_array, filename_array);
+   set_label("Load finished..");
 }
 function fix_filename(filename)
 {
   var res = "";
-  var s = filename.length;
+  var s = filename ? filename.length : 0;
   for(var i=0;i<s;i++) {
      if (filename[i]==' ') res+="_"; else 
      if (filename[i]=='\\') res+="/"; else res+=filename[i];
@@ -455,24 +978,74 @@ function flatten_arrays(data)
 var old_main_item_name = "";
 var old_files = "";
 var old_filenames = "";
-function drop2()
+function drop2(state)
 {
+   set_filename_info(state,"");
+     set_model_info(state,"(loading..)");
+
   var model_val = get_model_value();
   var model = get_model(model_val);
   if (old_main_item_name!="" || model!="") {
     if (model!="") { old_main_item_name=model; }
     // old_files, old_filenames
-const promise = extract_contents("","",fix_filename(old_main_item_name));
+    if (state) { state.filename = fix_filename(old_main_item_name); }
+    const promise = extract_contents(state,"","",fix_filename(old_main_item_name));
     promise.then(load_finished);
     }
 }
 
+function drop3(state,selectfileelem)
+{
+   set_filename_info(state,"");
+   var elem2 = document.getElementById(selectfileelem);
+   var files2 = elem2.files;
+
+   console.log(files2);
+   set_model_info(state,"(loading..)");
+  set_label("Loading model..");
+
+  //var mod = document.getElementById("model-select");
+  //mod.value="-1";
+
+
+  var files = [];
+  var filenames = [];
+  if (files2) {
+     const promise2 = new Promise( resolve => {
+
+     	   var s = files2.length;
+     	   for(var i=0;i<s;i++) {
+	   	   filenames.push(files2[i].name);
+		   files.push(files2[i]);
+	   }
+
+           //const [files,filenames] = flatten_arrays(data);
+	   //console.log(files);
+	   //console.log(filenames);
+           var main_item_num = find_main_item(files);
+	   var main_item = files[main_item_num];
+           var main_item_name = filenames[main_item_num];
+
+	   old_files = files;
+	   old_filenames = filenames;
+	   old_main_item_name = main_item_name;
+
+           const promise = extract_contents(state,files,filenames,fix_filename(main_item_name));
+           promise.then(load_finished);
+
+     });
+     }
+
+
+}
+
 function drop(ev)
 {
+  set_model_info(store.state,"(loading..)");
   set_label("Loading model..");
 
   var mod = document.getElementById("model-select");
-  mod.value="-1";
+  if (mod) mod.value="-1";
 
 
   ev.preventDefault();
@@ -503,7 +1076,7 @@ function drop(ev)
 	   old_filenames = filenames;
 	   old_main_item_name = main_item_name;
 
-           const promise = extract_contents(files,filenames,fix_filename(main_item_name));
+           const promise = extract_contents(store.state,files,filenames,fix_filename(main_item_name));
            promise.then(load_finished);
 
      });
@@ -518,10 +1091,11 @@ var Module = {
    canvas : canv,
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
+   printErr : (function() { return function(text) { console.log(text); } })(),
    };
 
 
-function load_emscripten(filename, contents, filenames)
+function load_emscripten(state,filename, contents, filenames)
 {
     var data2 = "<?php echo $date ?>";
     var agent = navigator.userAgent;
@@ -553,6 +1127,7 @@ function load_emscripten(filename, contents, filenames)
       } else {
       Module.ccall('set_string', null, ['number', 'string'],[0,create_script(filename,contents,filenames)]);
       }
+      setTimeout(function() { check_emscripten_ready(state) }, 100);
 }
 
 function load_files(data_array, filename_array)
@@ -597,7 +1172,7 @@ function check_em() {
 	g_emscripten_running = true;
 	//resize_event(null);
 	//load_file();
-	set_label("Drag & Drop files here..");
+	set_label("Drag & Drop files..");
     }
 }
 
@@ -612,14 +1187,88 @@ function check_emscripten_running()
 }
 function check_if_emscripten_running()
 {
-    setTimeout(function() { check_emscripten_running() },100);
+  setTimeout(function() { check_emscripten_running() },100);
+}
+function emscripten_loading_callback()
+{
+   //console.log("Preparing");
+   set_label("Preparing..");
+}
+function emscripten_ready_callback(state)
+{
+   console.log("Ready");
+   set_label("Ready..");
+   publish_face_count(state);
+}
+function check_emscripten_ready(state)
+{
+  if (g_emscripten_running && Module) {
+    var value = Module.ccall('get_integer', 'number', ['number'],[1]);
+    //if (value !== undefined)
+    //    console.log('ready: ' . value);
+    if (value==2) { emscripten_loading_callback();
+    	 setTimeout(function() { check_emscripten_ready(state) }, 100);
+    } else
+    if (value==1) { emscripten_ready_callback(state); }
+    else {
+    	 setTimeout(function() { check_emscripten_ready(state) }, 100);
+	 }
+	 } else
+	 {
+    	 setTimeout(function() { check_emscripten_ready(state) }, 100);
+	 }
+}
+function clickselectfile2()
+{
+  var elem = document.getElementById("selectfile2");
+  elem.click();
+}
+function clickselectfile()
+{
+  var elem = document.getElementById("selectfile");
+  elem.click();
 }
 function set_label(label)
 {
    var wid = document.getElementById("label");
-   wid.innerHTML = label;
+   if (wid) wid.innerHTML = label;
 }
 set_label("Loading 3d engine..");
-load_emscripten("");
+load_emscripten(store.state,"");
+
+window.onresize = resize_event;
+window.setTimeout(function() { resize_event(null); },10);
+
+function resize_event(event)
+{
+  var wd = window.innerWidth;
+  var hd = window.innerHeight;
+
+  wd-=120;
+  
+
+  var w = 800;
+  var h = 600;
+
+  wd/=3.0;
+  wd*=2.0;
+  
+  hd/=10.0;
+  hd*=7.5;
+
+  var s_x = wd/w;
+  var s_y = hd/h;
+
+  var scale;
+  if (s_x<s_y) scale=s_x; else scale=s_y;
+
+  var scale_x = w*scale;
+  var scale_y = h*scale;
+
+  var elem = document.getElementById("canvas");
+  elem.style.width = scale_x.toString() + "px";
+  elem.style.height = scale_y.toString() + "px";
+
+}
 
 </script>

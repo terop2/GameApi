@@ -696,6 +696,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT CBM scale_bitmap2(BM bm);
   IMPORT ML save_raw(BM bm, std::string filename);
   IMPORT BM lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z);
   IMPORT BM circular_gradient(int sx, int sy, unsigned int center_color, unsigned int edge_color);
@@ -2292,6 +2293,10 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ARR comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2);
+  ARR p_mtl_materials(EveryApi &ev, P P);
+  ARR p_mtl2_materials(EveryApi &ev, P p);
+  P get_face_count(P p);
   P transparent_separate(P p, BM bm, bool opaque);
   void sort_vertices(VA va, M m);
   P remove_faces(P p);

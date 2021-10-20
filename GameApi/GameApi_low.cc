@@ -29,13 +29,16 @@
 #ifndef DEPS
 //#ifndef RASPI
 //#ifndef LINUX
+#ifndef ANDROID
 #include <GL/glew.h> 
+#endif
 //#endif
 //#endif
 #ifdef __APPLE__
 #define GLEW_HACK
 #include <OpenGL/gl.h>
 #else
+#ifndef ANDROID
 #ifndef RASPI
 //#ifndef LINUX
 #include <GL/gl.h>
@@ -47,6 +50,10 @@
 #define GLEW_HACK
 //#include <GL/glext.h>
 #endif
+#else // android
+#include <GLES2/gl2.h>
+#endif
+
 #endif
 #endif
 #ifndef DEPS

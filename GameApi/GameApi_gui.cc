@@ -8360,6 +8360,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" ,"float" },
 			 { "ev", "", "80.0", "10.1", "60000.0" },
 			 "ML", "mainloop_api", "perspective"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::get_face_count,
+			 "eng_face_count",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "get_face_count"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_song,
 			 "song_ml",
 			 { "ev", "next", "url" },
@@ -10189,6 +10195,18 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "P", "float", "int","int" },
 			 { "ev", "", "1.0", "0", "32" },
 			 "[MT]", "polygon_api", "material_extractor_mt"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_materials,
+			 "mtl_materials",
+			 { "ev", "p" },
+			 { "EveryApi&", "P" },
+			 { "ev", "" },
+			 "[MT]", "polygon_api", "p_mtl_materials"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl2_materials,
+			 "mtl2_materials",
+			 { "ev", "p" },
+			 { "EveryApi&", "P" },
+			 { "ev", "" },
+			 "[MT]", "polygon_api", "p_mtl2_materials"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_index,
 			 "mat_idx",
 			 { "ev", "vec", "index" },
@@ -10201,6 +10219,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "[MT]", "int", "int" },
 			 { "", "0", "32" },
 			 "[MT]", "polygon_api", "material_arr"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::comb_mat,
+			 "comb_mat",
+			 { "ev", "vec1", "vec2" },
+			 { "EveryApi&", "[MT]", "[MT]" },
+			 { "ev", "", "" },
+			 "[MT]", "polygon_api", "comb_mat"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
 			 "sbm_many_texture",
@@ -11546,6 +11570,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "CBM", "int", "int" },
 			 { "", "200", "200" },
 			 "BM", "cont_bitmap_api", "to_bitmap"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap2,
+			 "cbm_scale_bitmap",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "CBM", "bitmap_api", "scale_bitmap2"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::bicubic,
 			 "cbm_bicubic",
 			 { "f_0", "f_1", "df_0", "df_1", "ff_0", "ff_1", "dff_0", "dff_1" },

@@ -1646,7 +1646,7 @@ public:
     a_ss.close();
 
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
-
+    materials = mat;
     BufferRef ref; ref.buffer=0;
     BufferRef ref2; ref2.buffer=0;
     BufferRef ref3; ref3.buffer=0;
@@ -2026,6 +2026,7 @@ public:
   std::vector<BufferRef> d_buffer;
   std::vector<BufferRef> bump_buffer;
   std::vector<std::string> material_names;
+  std::vector<GameApi::MaterialDef> materials;
   std::vector<int> flags;
   std::vector<int> d_flags;
   std::vector<int> bump_flags;
@@ -2058,6 +2059,104 @@ void MTL2_CB(void *data)
     NetworkedFaceCollectionMTL2 *dt = (NetworkedFaceCollectionMTL2*)data;
     dt->PrepareMTL();
 }
+
+GameApi::ARR GameApi::PolygonApi::comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2)
+{
+
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  int s = std::min(vec1.size(),vec2.size());
+  for(int i=0;i<s;i++) {
+    array->vec.push_back(ev.materials_api.combine_materials(ev,vec1[i],vec2[i]).id);
+  }
+  
+  return add_array(e,array);
+
+}
+
+GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  coll->Prepare();
+#ifndef EMSCRIPTEN
+  PrepareCache *coll2 = dynamic_cast<PrepareCache*>(coll);
+#else
+  PrepareCache *coll2 = static_cast<PrepareCache*>(coll);
+#endif
+
+  FaceCollection *coll3 = coll2->get_coll2();
+  
+
+
+#ifndef EMSCRIPTEN
+  NetworkedFaceCollectionMTL2 *coll4 = dynamic_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#else
+  NetworkedFaceCollectionMTL2 *coll4 = static_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#endif
+  if (!coll4) {
+    //std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
+    ArrayType *array = new ArrayType;
+    array->type=0;
+    return add_array(e,array);
+  }
+  std::vector<GameApi::MaterialDef> vec = coll4->materials;
+
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    GameApi::MaterialDef mat = vec[i];
+    GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Ka_x,mat.Ka_y,mat.Ka_z,1.0, mat.d);
+    array->vec.push_back(m.id);
+  }
+  return add_array(e,array);
+  
+}
+
+
+GameApi::ARR GameApi::PolygonApi::p_mtl2_materials(GameApi::EveryApi &ev, P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  coll->Prepare();
+#ifndef EMSCRIPTEN
+  PrepareCache *coll2 = dynamic_cast<PrepareCache*>(coll);
+#else
+  PrepareCache *coll2 = static_cast<PrepareCache*>(coll);
+#endif
+
+  FaceCollection *coll3 = coll2->get_coll2();
+  
+
+
+#ifndef EMSCRIPTEN
+  NetworkedFaceCollectionMTL2 *coll4 = dynamic_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#else
+  NetworkedFaceCollectionMTL2 *coll4 = static_cast<NetworkedFaceCollectionMTL2*>(coll3);
+#endif
+  if (!coll4) {
+    //std::cout << "ERROR: dynamic_cast failed in p_mtl_d()" << std::endl;
+    ArrayType *array = new ArrayType;
+    array->type=0;
+    return add_array(e,array);
+  }
+  std::vector<GameApi::MaterialDef> vec = coll4->materials;
+
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    GameApi::MaterialDef mat = vec[i];
+    //GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Kd_x,mat.Kd_y,mat.Kd_z,1.0, mat.d);
+    GameApi::MT m0 = ev.materials_api.m_def(ev);
+    unsigned int ambient = 0xff000000 + (int(mat.Ka_x*255.0)<<16) + (int(mat.Ka_y*255.0)<<8) + int(mat.Ka_z*255.0);
+    unsigned int specular = 0xff000000 + (int(mat.Ks_x*255.0)<<16) + (int(mat.Ks_y*255.0)<<8) + int(mat.Ks_z*255.0);
+    GameApi::MT m = ev.materials_api.phong(ev, m0, 1.0,1.0,1.0,ambient, specular, mat.Ns);
+    array->vec.push_back(m.id);
+  }
+  return add_array(e,array);
+  
+}
+
 
 GameApi::ARR GameApi::PolygonApi::p_mtl_d(P p)
 {
@@ -13827,6 +13926,7 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_bm(P p, int start_index, in
   }
   return add_array(e,array);
 }
+
 GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P p, float mix, int start_index, int end_index)
 {
   ARR arr = material_extractor_bm(p,start_index, end_index);
@@ -20376,4 +20476,33 @@ GameApi::ML GameApi::MainLoopApi::right_mouse_pan(EveryApi &ev, ML next)
 {
   MainLoopItem *next2 = find_main_loop(e,next);
   return add_main_loop(e, new RightMousePan(e,ev,next2));
+}
+
+int g_global_face_count = 0;
+
+class PublishFaceCount : public ForwardFaceCollection
+{
+public:
+  PublishFaceCount(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    g_global_face_count = coll->NumFaces();
+  }
+  void Prepare() {
+    coll->Prepare();
+    g_global_face_count = coll->NumFaces();
+  }
+private:
+  FaceCollection *coll;
+};
+
+GameApi::P GameApi::PolygonApi::get_face_count(P p)
+{ // publishes vertex count to js
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new PublishFaceCount(coll),1);
 }

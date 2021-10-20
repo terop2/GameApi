@@ -1314,8 +1314,8 @@ bool LineProperties::QuadIntersection(Point a1, Point a2, Point a3, Point a4, fl
 bool LineProperties::BoxIntersection(BOX &b, float &tmin, float &tmax)
 {
   Vector v1 = p2-p1;
-  tmin = -std::numeric_limits<float>::infinity(); //10000000.0;
-  tmax = std::numeric_limits<float>::infinity(); //10000000.0;
+  tmin = -10000000.0; //std::numeric_limits<float>::infinity(); //10000000.0;
+  tmax = 10000000.0; //std::numeric_limits<float>::infinity(); //10000000.0;
   if (v1.dx!=0.0) {
     float tx1 = (b.start_x-p1.x)/v1.dx;
     float tx2 = (b.end_x -p1.x)/v1.dx;
@@ -1610,7 +1610,7 @@ Line PlanePlaneIntersection(const Plane &p1, const Plane &p2)
   NodeToZero a10(a12, 1,0); 
   NodeToZero a20(a10, 2,0); 
   NodeToZero a21(a20, 2,1); 
-
+  /*
   for(int y=0;y<a21.SizeY();y++)
     {
     for(int x=0;x<a21.SizeX();x++)
@@ -1619,7 +1619,7 @@ Line PlanePlaneIntersection(const Plane &p1, const Plane &p2)
       }
     std::cout << std::endl;
     }
-
+  */
   Point p(a21.Map(3,0), a21.Map(3,1), a21.Map(3,2));
   Point u1(a21.Map(4,0), a21.Map(4,1), a21.Map(4,2));
   Point u2(a21.Map(5,0), a21.Map(5,1), a21.Map(5,2));
