@@ -1,0 +1,7 @@
+None 0px ffffff 0
+Black 2px 000000 2
+White 2px ffffff 2
+Black 4px 000000 4
+White 4px ffffff 4
+Black 8px 000000 8
+White 8px ffffff 8
