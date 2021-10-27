@@ -1,0 +1,4 @@
+0 wooly_sheep.stl Sheep
+1 BoomBox.glb BoomBox
+2 Duck.glb Duck
+3 Astronaut.glb Astronaut

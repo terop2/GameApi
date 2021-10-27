@@ -23,6 +23,7 @@ $date = filemtime("web_page.js");
 <appmodel v-bind:is_example="state.appmodel_is_examples"
 	  v-bind:is_selected="state.appmodel_is_selected"
 	  v-bind:is_notselected="state.appmodel_is_notselected"
+	  v-bind:is_loading="state.appmodel_is_loading"
 	  v-bind:is_twoline="state.appmodel_is_twoline"
 	  v-bind:model_info="state.model_info"
 	  v-on:examples_click="change_appmodel(2)"
@@ -56,7 +57,8 @@ var store = {
       empty: true,
       appmodel_is_examples: "false",
       appmodel_is_selected: "false",
-      appmodel_is_notselected: "true",
+      appmodel_is_notselected: "false",
+      appmodel_is_loading: "true",
       appmodel_is_twoline: "0",
       model_info: "(no model)",
       filename: "(no file)",
@@ -78,7 +80,7 @@ Vue.component('apptitle', {
        return {
           }
         },
-	template: `<div class="block"><div class='lab'><h1><slot></slot></h1></div></div>`
+	template: `<div class="block"><div class='lab'><h1 class="customfont"><slot></slot></h1></div></div>`
  });
 
 Vue.component('appdragdroparea', {
@@ -96,8 +98,8 @@ Vue.component('appmaterial', {
       }
       },
       template: `<div>
-	<div class="block blockitem height16 border"><!--Material<br>
-	<div class="horizspace">
+	<div class="block blockitem height16 border customfont"><!--Material<br>
+	<div class="horizspace customfont">
 		<select name="material" id="material-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
 		 <option value="0">EdgedPhong</option>
@@ -119,7 +121,7 @@ Vue.component('appmaterial', {
 		 </div>
 		 <div v-if="is_metal=='true'">
 		 Type<br>
-		 <div class="horizspace">
+		 <div class="horizspace customfont">
 		 <select name="type" id="metal-type-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
 		 <option value="0">Aluminium</option>
@@ -135,7 +137,7 @@ Vue.component('appmaterial', {
 		 </div>
 		 <div v-if="is_plastic=='true'">
 		 Type<br>
-		 <div class="horizspace">
+		 <div class="horizspace customfont">
 		 <select name="type" id="plastic-type-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
 		 <option value="8">red</option>
@@ -151,7 +153,7 @@ Vue.component('appmaterial', {
 
 		 <div v-if="is_textured=='true'">
 		 Type<br>
-		 <div class="horizspace">
+		 <div class="horizspace customfont">
 		 <select name="type" id="textured-type-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
 		 <option value="15">Wood (Pine)</option>
@@ -162,7 +164,7 @@ Vue.component('appmaterial', {
 		 </select></div>
 		 </div>
 		 Surface<br>
-		 <div class="horizspace">
+		 <div class="horizspace customfont">
 		 <select name="surface" id="surface-select">
 		 <option value="0">Smooth</option>
 		 <option value="1">Brushed</option>
@@ -178,15 +180,14 @@ Vue.component('appbackground', {
     }
     },
     template: `
-    <div class="block blockitem height8 border">
+    <div class="block blockitem height8 border customfont">
     Background<br>
-    <div class="horizspace">
+    <div class="horizspace customfont">
     <select name="background" id="background-select" v-on:change="$emit('change_model')">
-      <option value="-1">Black</option>
-      <option value="0">Gray</option>
-      <option value="1">White</option>
-      <option value="2">Blue</option>
-      <option value="3">Custom</option>
+      <!--option value="-1">Black</option-->
+    <template v-for="bg in store.state.background_db">
+    <option v-bind:value="parse_bg_count(bg)">{{ parse_bg_name(bg) }}</option>
+    </template>
     </select></div></div>
     `
 });
@@ -196,8 +197,8 @@ Vue.component('appborder', {
      return {
      }
      },
-     template: `<div class="block blockitem height8 border">
-     Border<br><div class="horizspace"><select name="border" id="border-select" v-on:change="$emit('change_model')">
+     template: `<div class="block blockitem height8 border customfont">
+     Border<br><div class="horizspace customfont"><select name="border" id="border-select" v-on:change="$emit('change_model')">
   <option value="-1">None</option>
   <option value="0">Black 2px</option>
   <option value="1">White 2px</option>
@@ -214,21 +215,28 @@ Vue.component('appmodel_choose', {
      return {
      }
      },
-     template: `<div class="border block blockitem height12">
+     template: `<div class="border block blockitem height12 customfont">
      Model<br><select name="model" id="model-select" v-on:change="$emit('change_model')">
  <option value="-1">(use drag&drop area)</option>
- <option value="0">Sheep</option>
- <option value="1">BoomBox</option>
- <option value="2">Duck</option>
- <option value="3">Astronaut</option>
- </select></div>
+ <template v-for="model in store.state.model_db">
+ <option v-bind:value="parse_model_count(model)">{{ parse_model_name(model) }}</option>
+ </template>
+</select></div>
      `
      });
+
+Vue.component('appmodel_loading', {
+  data: function() {
+     return { } },
+     template: `<div class="border block blockitem height12 customfont">
+      Loading 3d engine...
+      </div>`
+      });
 
 Vue.component('appmodel_notselected', {
    data: function() {
      return { } },
-   template: `<div class="border block blockitem height12">
+   template: `<div class="border block blockitem height12 customfont">
    <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a>.</small>
    <br><br><small>.STL, .OBJ, .GLB file types supported. See help for materials.</small>
    <button type="button" onclick="clickselectfile()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
@@ -240,7 +248,7 @@ Vue.component('appmodel_selected', {
   props: ['filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
   data: function() {
     return { } },
-    template: `<div class="border block blockitem height12">
+    template: `<div class="border block blockitem height12 customfont">
       <!--appprogress></appprogress-->
       <appfilenameinfo v-bind:is_twoline="is_twoline" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2"></appfilenameinfo>
       <appmodelinfo v-bind:model_info="model_info"></appmodelinfo>
@@ -250,10 +258,13 @@ Vue.component('appmodel_selected', {
       });
 
 Vue.component('appmodel', {
-  props: ['is_example', 'is_selected', 'is_notselected', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  props: ['is_example', 'is_selected', 'is_notselected', 'is_loading', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
   data: function() {
     return { } },
     template: `<div class="block blockitem">
+       <div v-if="is_loading=='true'">
+       <appmodel_loading></appmodel_loading>
+       </div>
        <div v-if="is_example=='true'">
        <appmodel_choose v-on:change_model="$emit('change_choose')"></appmodel_choose>
        </div>
@@ -285,7 +296,7 @@ Vue.component('appinfo', {
      return {
      }
      },
-     template: `<div class="block blockitem">
+     template: `<div class="block blockitem customfont">
 <h3>Supported file formats</h3>
 .gltf, .glb, .stl, .obj, .mtl, .ds, dirs
 <h3>Supported texture formats</h3>
@@ -299,7 +310,7 @@ Vue.component('appprogress', {
      }
      },
      template: `
-     <div class="info block blockitem" id="label">
+     <div class="info block blockitem" id="label customfont">
      drag&drop here.
      </div>
      `
@@ -313,17 +324,17 @@ Vue.component('appfilenameinfo', {
      },
      template: `<div>
        <div v-if="is_twoline=='2'">
-          <div class="info block blockitem height4">
+          <div class="info block blockitem height4 customfont">
 	  <b>{{ filename1 }}<br>{{ filename2 }}</b>
 	  </div>
        </div>
        <div v-if="is_twoline=='1'">
-          <div class="info block blockitem middle height4">
+          <div class="info block blockitem middle height4 customfont">
 	  <b>{{ filename }}</b>
 	  </div>
        </div>
        <div v-if="is_twoline=='0'">
-          <div class="info block blockitem large height4">
+          <div class="info block blockitem large height4 customfont">
           <b>{{ filename }}</b>
           </div>
        </div>
@@ -336,7 +347,7 @@ Vue.component('appmodelinfo', {
      return {
      }
      },
-     template: `<div class="info block blockitem horizspace">
+     template: `<div class="info block blockitem horizspace customfont">
      {{ model_info }}
      </div>`
      });
@@ -348,6 +359,8 @@ var app = new Vue({
    data: {
       state: store.state
       },
+   computed: {
+   },
    methods: {
       dragdrop2: function(event) {
          console.log("DRAGDROP");
@@ -363,9 +376,11 @@ var app = new Vue({
          this.state.appmodel_is_notselected = "false";
 	 this.state.appmodel_is_selected = "false";
 	 this.state.appmodel_is_examples = "false";
+	 this.state.appmodel_is_loading = "false";
          if (val==0) this.state.appmodel_is_notselected = "true";
 	 if (val==1) this.state.appmodel_is_selected = "true";
 	 if (val==2) this.state.appmodel_is_examples = "true";
+	 if (val==3) this.state.appmodel_is_loading = "true";
       },
       change_category: function() {
         var elem = document.getElementById("category-select");
@@ -469,6 +484,8 @@ function strfy(arr)
 .height12 { height: 120px; }
 .height16 { height: 160px; }
 .horizspace { margin-left: 1em; }
+@font-face { font-family: "custom"; src: url("cafe.ttf"); }
+.customfont { font-family: custom; }
 </style>
 
 <script>
@@ -531,13 +548,38 @@ function get_model_value()
   if (elem) return parseInt(elem.value);
   return -1;
 }
+function get_model_html(str)
+{
+  return "<option value=\"" + get_model_count(str) + "\">{{ parse_model_name(model) }}</option>";
+}
+function parse_model_count(str)
+{
+  var arr = str.split(" ");
+  return arr[0];
+}
+function parse_model_filename(name)
+{
+   var arr = name.split(' ');
+   return arr[1];
+}
+function parse_model_name(name)
+{
+   var arr = name.split(' ');
+   return arr[2];
+}
 function get_model(i)
 {
    var model = "";
-   if (i==0) model="https://tpgames.org/wooly_sheep.stl";
-   if (i==1) model="https://tpgames.org/BoomBox.glb";
-   if (i==2) model="https://tpgames.org/Duck.glb";
-   if (i==3) model="https://tpgames.org/Astronaut.glb";
+   if (i>=0 && i<store.state.model_db.length) {
+      var name2 = store.state.model_db[i];
+      var name = parse_model_filename(name2);
+      model = "https://tpgames.org/" + name;
+   }
+
+   //if (i==0) model="https://tpgames.org/wooly_sheep.stl";
+   //if (i==1) model="https://tpgames.org/BoomBox.glb";
+   //if (i==2) model="https://tpgames.org/Duck.glb";
+   //if (i==3) model="https://tpgames.org/Astronaut.glb";
    return model;
 }
 function get_border_value()
@@ -568,6 +610,21 @@ function get_border(i,m)
   res+="ML I502=ev.mainloop_api.depthfunc(I5022,3);\n";
   return res;
 }
+function parse_bg_count(bg)
+{
+   var arr = bg.split(" ");
+   return arr[0];
+}
+function parse_bg_name(bg)
+{
+  var arr = bg.split(" ");
+  return arr[1];
+}
+function parse_bg_colour(bg)
+{
+  var arr = bg.split(" ");
+  return arr[2];
+}
 function get_background_value()
 {
   var elem = document.getElementById("background-select");
@@ -576,10 +633,17 @@ function get_background_value()
 function get_background(i)
 {
   var color = "000000";
+  if (i>=0 && i<store.state.background_db.length) {
+    var name2 = store.state.background_db[i];
+    var name = parse_bg_colour(name2);
+    color = name;
+  }
+  /*
   if (i==0) color="888888";
   if (i==1) color="ffffff";
   if (i==2) color="0088ff";
   if (i==3) console.log("ERROR: custom color not implemented");
+  */
   var background="BM I41=ev.bitmap_api.newbitmap(100,100,ff" + color + ");\nBM I42=ev.bitmap_api.scale_bitmap_fullscreen(ev,I41);\nML I43=ev.sprite_api.vertex_array_render(ev,I42);\nML I44=ev.sprite_api.turn_to_2d(ev,I43,0.0,0.0,800.0,600.0);\n";
   return background;
 }
@@ -1197,6 +1261,11 @@ function emscripten_loading_callback()
 function emscripten_ready_callback(state)
 {
    console.log("Ready");
+   //app.methods.change_appmodel(0);
+   if (store.state.appmodel_is_loading == "true") {
+      store.state.appmodel_is_loading = "false";
+      store.state.appmodel_is_notselected = "true";
+      }
    set_label("Ready..");
    publish_face_count(state);
 }
