@@ -16,7 +16,7 @@
 
 std::string g_window_href;
 
-int load_size_from_url(std::string url);
+long long load_size_from_url(std::string url);
 
 
 std::vector<FaceCollection*> g_confirm;
@@ -683,14 +683,20 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   //int sk = s;
   //for(int u=0;u<sk;u+=10) { 
   int u=0;
+
+    {
+	InstallProgress(444,"loading assets",15);
+	ProgressBar(444,0,15,"loading assets");
+    }
+
   
   long long total_size = 0;
-  std::vector<int> sizes;
+  std::vector<long long> sizes;
   //s=std::min(10,s-u);
   for(int d=0;d<s;d++)
     {
       std::string url = urls[u+d];
-      int sz = load_size_from_url(url);
+      long long sz = load_size_from_url(url);
       //std::cout << "SZ:" << url << "=" << sz << std::endl;
       sizes.push_back(sz);
       total_size+=sz;
@@ -700,9 +706,6 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   std::vector<ProcessData*> vec;
 
     
-    {
-	InstallProgress(444,"loading assets",15);
-    }
 
     std::vector<ProcessData*> dt;
   for(int i=0;i<s;i++) {
@@ -718,7 +721,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     int err = pthread_create(&processdata->thread_id, &attr, &process, (void*)processdata);
     if (err) { std::cout << "pthread_create returned error " << err << std::endl; }
   }
-  int current_size = 0;
+  long long current_size = 0;
   long long last_size = 0;
   for(int j=0;j<s;j++)
     {
@@ -788,6 +791,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       }
 
     }
+	ProgressBar(444,15,15,"loading assets");
   
 #endif
   g_progress_already_done = false;
@@ -871,7 +875,7 @@ void fetch_download_progress(emscripten_fetch_t *fetch) {
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
-  ProgressBar(sum,val,15,url_only2);
+  ProgressBar(sum,val,15,"fetch: "+url_only2);
   }
 
   
@@ -1386,14 +1390,16 @@ void ProgressBar(int num, int val, int max, std::string label)
   if (label!="installprogress" /*&& (ticks>40||val==max)*/) {
 
     std::stringstream stream;
+    std::stringstream stream2;
+    std::stringstream stream3;
     if (old_label != label) { old_label = label; stream << std::endl << "["; }
   else
     stream << "\r[";
   for(int i=0;i<val2;i++) {
-    stream << "#";
+    stream2 << "#";
   }
   for(int i=val2;i<max2;i++) {
-    stream << "-";
+    stream2 << "-";
   }
   int s = label.size();
   int pos = -1;
@@ -1402,12 +1408,28 @@ void ProgressBar(int num, int val, int max, std::string label)
   }
   if (pos!=-1) label = label.substr(pos);
 
-  stream << "] "
+  stream3 << "] "
     //<< val1 << "/" << max1 << ") (" << val << "/" << max << ") " << num << " " 
 	    << " " << label ;
-  std::string l = stream.str();
+  std::string l = stream2.str();
+
+    std::stringstream sk;
+    sk << val2 << "/" << max2;
+    std::string kk = sk.str();
+    int center = l.size()/2;
+    int center_kk = kk.size()/2;
+    int pos2 = center-center_kk;
+    for(int i=0;i<kk.size();i++) { l[pos2+i] = kk[i]; }
+
+
+    //std::string start = l.substr(0,std::max(0,std::min(val2,int(l.size()))));
+    //std::string end = l.substr(std::max(1,std::min(val2+1,int(l.size()))));
+    
+    
+
+    
 #ifndef EMSCRIPTEN
-  std::cout << l.c_str() << std::flush;
+    std::cout << stream.str() << l << stream3.str() << std::flush;
 #endif
   g_has_title = true;
   }
@@ -1445,7 +1467,7 @@ bool file_exists(std::string filename)
   return f.good();
 }
 
-int load_size_from_url(std::string url)
+long long load_size_from_url(std::string url)
 {
   if (url=="") return 1;
     std::vector<unsigned char> buffer;
@@ -1460,7 +1482,7 @@ int load_size_from_url(std::string url)
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
-    int num = 1;
+    long long num = 1;
     if (succ) {
 
 #ifdef __APPLE__
@@ -1568,7 +1590,7 @@ public:
     //std::cout << "getline" << std::endl;
     std::vector<unsigned char> vec;
     unsigned char ch='a';
-    int i = 0;
+    long long i = 0;
     bool succ = false;
     while((succ = get_ch(ch))&&ch!='\n') {
 	  vec.push_back(ch);
@@ -1635,8 +1657,8 @@ public:
 private:
   std::string url;
   FILE *f;
-  int size=0;
-  int currentpos=0;
+  long long size=0;
+  long long currentpos=0;
 };
 
 class LoadStream2 : public LoadStream
@@ -1799,7 +1821,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
 
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
-    int i = 0;
+    long long i = 0;
     if (num>0)
       buffer->reserve(num);
     while(fread(&c,1,1,f)==1) {
@@ -1808,7 +1830,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
-	for(int i=0;i<s;i++) sum+=int(url[i]);
+	for(int j=0;j<s;j++) sum+=int(url[j]);
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
@@ -1839,14 +1861,14 @@ std::vector<unsigned char> *load_from_url(std::string url)
     
     unsigned char c;
     //std::vector<unsigned char> buffer;
-    int i = 0;
+    long long i = 0;
     while(fread(&c,1,1,f)==1) {
       i++;
       g_current_size++;
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
-	for(int i=0;i<s;i++) sum+=int(url[i]);
+	for(int j=0;j<s;j++) sum+=int(url[j]);
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
