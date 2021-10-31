@@ -1792,7 +1792,7 @@ public:
   IMPORT int canvas_item_index(W canvas, W item);
   IMPORT int canvas_item(W canvas, W item, int x, int y);
   IMPORT void del_canvas_item(W canvas, int id);
-  IMPORT W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
+  IMPORT W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, std::vector<W *> connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
   IMPORT W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
   IMPORT W list_item(BM icon, std::string label, int sx, int sy);
@@ -1888,6 +1888,10 @@ public:
   IMPORT void set_dynamic_param(W w, int id, float val);
   IMPORT std::string get_id(W w);
   IMPORT void set_id(W w, std::string id);
+  IMPORT int get_index(W w);
+  IMPORT void set_index(W w, int j);
+  IMPORT int get_size2(W w);
+  IMPORT void set_size2(W w, int sz);
   IMPORT int num_childs(W w);
   IMPORT W get_child(W w, int i);
   IMPORT int pos_x(W w);
@@ -1924,7 +1928,7 @@ public:
   IMPORT void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
   IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);
   IMPORT void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
-  IMPORT W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params);
+  IMPORT W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params);
   IMPORT std::vector<int> indexes_from_funcname(std::string funcname);
   IMPORT std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
   IMPORT std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
@@ -1939,22 +1943,23 @@ public:
   IMPORT void insert_to_mod(WM mod, int id, std::string modname, std::string uid, bool array_return, int x, int y, std::vector<InsertParam> params);
   
   IMPORT std::string get_funcname(WM mod2, int id, std::string uid);
-  IMPORT void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue);
+  IMPORT void change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue, int j);
   IMPORT void change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index);
+  IMPORT void change_param_multiple_return_values(WM mod2, int id, std::string uid, int j, int sz);
   IMPORT int find_line_index(WM mod2, int id, std::string uid);
   IMPORT std::string param_value(WM mod2, int id, std::string uid, int param_index);
   IMPORT std::vector<std::string> parse_param_array(std::string s);
   IMPORT std::string generate_param_array(std::vector<std::string> v);
-  IMPORT bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return);
+  IMPORT bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return);
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
-  IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level);
+  IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j);
   IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size);
   
 
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   IMPORT void codegen_reset_counter();
-  IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
+  IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j);
   IMPORT std::string return_type(WM mod2, int id, std::string line_uid);
   IMPORT void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
@@ -2293,6 +2298,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ARR material_choose(std::vector<MT> mat, std::vector<P> p);
   ARR comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2);
   ARR p_mtl_materials(EveryApi &ev, P P);
   ARR p_mtl2_materials(EveryApi &ev, P p);
@@ -2394,6 +2400,7 @@ public:
   IMPORT P load_model_all_no_cache_mtl(LoadStream * file_data, int count, std::vector<std::string> material_names);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
   IMPORT P p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
+  IMPORT ARR p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix);
   IMPORT ARR p_mtl_d(P p);
   IMPORT ARR p_mtl_bump(P p);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);

@@ -139,8 +139,8 @@ public:
   virtual std::string FuncName(int i) const=0;
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
-  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
+  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)=0;
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
 };
@@ -268,6 +268,8 @@ struct Envi {
   std::vector<W> connect_targets;
   std::vector<W> connect_links;
   std::string connect_start_uid;
+  int connect_start_j;
+  int connect_start_sz;
 
   std::vector<W> display_clicks;
   std::vector<W> edit_clicks;
@@ -335,6 +337,20 @@ void add_to_canvas(GuiApi &gui, W canvas, std::vector<W> items)
       add_to_canvas(gui,canvas, items[i]);
     }
 }
+void print_connect_targets(std::string ss, Envi *envi)
+{
+  std::cout << ss << std::endl;
+  int s = envi->connect_targets.size();
+  for(int i=0;i<s;i++)
+    {
+      W wid = envi->connect_targets[i];
+      if (wid.id!=0) {
+	  int j = envi->gui->get_index(wid);
+	  int sz = envi->gui->get_size2(wid);
+	  std::cout << "J:" << j << " " << sz << std::endl;
+      }
+    }
+}
 void connect_target(int x, int y, Envi *envi)
 {
   //std::cout << "Connect target!" << std::endl;
@@ -351,8 +367,11 @@ void connect_target(int x, int y, Envi *envi)
       if (x>=xx && x<xx+sx && y>=yy && y<yy+sy)
 	{
 	  std::string uidstring = envi->gui->get_id(wid);
+	  //int j = envi->gui->get_index(wid);
+	  //int sz = envi->gui->get_size2(wid);
 	  //std::cout << "UID: " << uidstring << std::endl;
 
+	  
 	  std::stringstream ss(uidstring);
 	  std::string uid;
 	  ss >> uid;
@@ -365,14 +384,23 @@ void connect_target(int x, int y, Envi *envi)
 	  //std::cout << "Real index: " << real_index << std::endl;
 	  bool is_array = false;
 	  bool is_array_return = false; // TODO
-	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, is_array, is_array_return);
+	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, envi->connect_start_j, is_array, is_array_return);
 	  bool erase = false;
 	  if (b) 
 	    {
+	      if (envi->connect_start_sz>1)
+		{ // multiple return values
+		  std::string val2 = envi->connect_start_uid; 
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2, envi->connect_start_j);
+		  envi->ev->mod_api.change_param_multiple_return_values(envi->mod, 0, val2, -1 /*envi->connect_start_j*/, envi->connect_start_sz);
+		  erase=true;
+		  
+		}
+	      else
 	      if (is_array_return)
 		{
 		  std::string val2 = envi->connect_start_uid; 
-		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2,0);
 		  int ii = envi->ev->mod_api.find_line_index(envi->mod, 0, val2);
 		  envi->ev->mod_api.change_param_is_array(envi->mod, 0, uid, real_index, true, ii);
 		  erase = true;
@@ -384,12 +412,12 @@ void connect_target(int x, int y, Envi *envi)
 		  std::vector<std::string> vec = envi->ev->mod_api.parse_param_array(val);
 		  vec.push_back(envi->connect_start_uid);
 		  std::string val2 = envi->ev->mod_api.generate_param_array(vec);
-		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2);
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2,0);
 		  erase=false;
 		}
 	      else
 		{
-		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, envi->connect_start_uid);
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, envi->connect_start_uid,0);
 		  erase = true;
 		}
 	      if (erase)
@@ -419,11 +447,15 @@ void connect_target(int x, int y, Envi *envi)
 	  W start_link = envi->gui->find_canvas_item(envi->canvas, envi->connect_start_uid);
 	      if (start_link.id!=-1)
 		{
-		  W link = envi->gui->line( start_link, envi->gui->size_x(start_link),(envi->gui->size_y(start_link)-16)/2+16+5,
+		  int j = envi->connect_start_j;
+		  int sz = envi->connect_start_sz;
+		  W link = envi->gui->line( start_link, envi->gui->size_x(start_link),/*(envi->gui->size_y(start_link)-16)+*/16+16+5+4+(envi->gui->size_y(start_link)-16-16)*j/sz,
 					    wid, 0,10, envi->sh2, envi->sh);
 		  std::stringstream ss2;
 		  ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
 		  envi->gui->set_id(link, ss2.str());
+		  envi->gui->set_index(link, j);
+		  envi->gui->set_size2(link, sz);
 		  envi->connect_links.push_back(link);
 		  add_to_canvas(*envi->gui, envi->canvas, link);
 		}
@@ -432,9 +464,9 @@ void connect_target(int x, int y, Envi *envi)
 	    {
 	      std::cout << "TypeCheck failed!" << std::endl;
 	    }
-    }
+	}
       
-}
+    }
 
 }
 void callback_func(int x, int y, Envi *envi)
@@ -680,7 +712,7 @@ void iter(void *arg)
 		/* code generation here */
 		std::cout << "CodeGen" << std::endl;
 		env->ev->mod_api.codegen_reset_counter();
-		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000);
+		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000,0);
 		std::cout << p.second << std::endl;
 	      }
 	    int chosen3 = env->gui->chosen_item(env->collect_button);
@@ -725,6 +757,7 @@ void iter(void *arg)
 		  {
 		    W w = env->connect_targets[i];
 		    std::string id = env->gui->get_id(w);
+		    
 		    //std::cout << id << std::endl;
 		    std::stringstream ss(id);
 		    std::string id1;
@@ -908,7 +941,7 @@ void iter(void *arg)
 	  //  if (chosen==0)
 		{
 		  std::cout << "CodeGen!" << std::endl;
-		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000);
+		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
 		std::cout << p.second << std::endl;
 
 		}
@@ -952,7 +985,7 @@ void iter(void *arg)
 		std::cout << "Loading: " << urls[i] << std::endl;
 	      }
 	      
-	      std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000);
+	      std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
 
 		  
 		  
@@ -1027,7 +1060,7 @@ void iter(void *arg)
 		set_current_block(g_id);
 		    set_codegen_values(env->mod,0,uid,1000);
 		    
-		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000);
+		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
 		    set_current_block(-2);
 
 		    if (id==-1) {
@@ -1566,16 +1599,21 @@ void iter(void *arg)
 	      {
 		//std::cout << "Connect_click" << std::endl;
 		std::string uid = env->gui->get_id(wid);
+		int j = env->gui->get_index(wid);
+		int sz = env->gui->get_size2(wid);
+		//std::cout << "Connect_click: " << j << " " << sz << std::endl;
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
 		if (canvas_item.id==-1) continue;
 		BM bm = env->ev->bitmap_api.newbitmap(2,2);
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
 		
-		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),(env->gui->size_y(canvas_item)-16)/2+16+5,
+		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz,
 						   env->connect_widget, 0, 0, env->sh2, env->sh);
 		
 		env->connect_start_uid = uid;
+		env->connect_start_j = j;
+		env->connect_start_sz = sz;
 		env->connect_ongoing = true;
 		break;
 	      }
@@ -1732,13 +1770,20 @@ void iter(void *arg)
 		//std::cout << "Chosen label: " << name << std::endl;
 		env->insert_mod_name = name;
 		W ww = { 0 };
-		env->connect_clicks.push_back(ww);
+		std::vector<W*> conn;
+		int ssk = 8;
+		for(int i=0;i<ssk;i++) {
+		  env->connect_clicks.push_back(ww);
+		  conn.push_back(&env->connect_clicks[env->connect_clicks.size()-1]);
+		}
 		int uid_num = env->unique_id_counter;
 		std::stringstream ss;
 		ss << "uid" << uid_num;
 		std::string uid = ss.str();
 		
-		env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, env->connect_clicks[env->connect_clicks.size()-1], uid, env->connect_targets);
+		env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, conn /*env->connect_clicks[env->connect_clicks.size()-1]*/, uid, env->connect_targets);
+		int sk = env->connect_clicks.size()-1;
+		for(;sk>=0;sk--) { if (env->connect_clicks[sk].id==0) env->connect_clicks.pop_back(); else break; }
 		env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
 		env->insert_ongoing = true;
 	      }
@@ -1823,11 +1868,11 @@ public:
   virtual std::string Symbols() const { return ii->Symbols(); }
   virtual std::string Comment() const { return ""; }
 
-  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
+  virtual int Execute(GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
   {
     return ii->Execute(params);
   }
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
   {
     return ii->CodeGen(params, param_names);
   }
@@ -2308,11 +2353,12 @@ int main(int argc, char *argv[]) {
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
   ProgressBar(888,5,5,"init");
   ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
-
+  
   //ProgressBar(888,7,10,"init");
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
   //ProgressBar(888,8,10,"init");
   add_to_canvas(gui, canvas, env.connect_links);
+  //print_connect_targets("init", &env);
   //ProgressBar(888,9,10,"init");
 
 

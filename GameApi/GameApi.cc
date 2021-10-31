@@ -24991,7 +24991,7 @@ void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int leve
 std::string do_codegen(GameApi::EveryApi &ev)
 {
   //std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
-  std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level); 
+  std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level,0); 
   //std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
   return p.second;
 }
