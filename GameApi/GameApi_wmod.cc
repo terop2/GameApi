@@ -88,9 +88,21 @@ GameApiModule load_gameapi(std::string filename)
 	  ss4 >> uid;
 	  bool is_array;
 	  ss4 >> is_array;
+	  while(ss4.peek()==' ') ss4.ignore(1,' ');
+	  int val = ss4.peek();
+	  int j = 0;
+	  int sz = 1;
+	  //std::cout << "VALUE: " << val << " " << (char)val << std::endl;
+	  if ((val>='0'&&val<='9')||val=='-') {
+	  ss4 >> j;
+	  ss4 >> sz;
+	   }
+	  //std::cout << "VALUE: " << j << " " << sz << std::endl;
 	  g_line.x = x;
 	  g_line.y = y;
 	  g_line.uid = uid;
+	  //g_line.j = j;
+	  g_line.sz = sz;
 	  g_line.module_name = mod_name;
 	  g_line.array_return = is_array;
 	  std::string name_value;
@@ -101,7 +113,7 @@ GameApiModule load_gameapi(std::string filename)
 	      //std::cout << name_value << std::endl;
 	      int s = name_value.size();
 	      int i = 0;
-	      int i1=0,i2=0,i3=0;
+	      int i1=0,i2=0,i3=0,i4=0;
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      i1 = i;
 	      i++;
@@ -109,18 +121,30 @@ GameApiModule load_gameapi(std::string filename)
 	      i2 = i;
 	      i++;
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
-	      i3 = 3;
+	      i3 = i;
+	      i++;
+	      for(;i<s;i++) { if (name_value[i]==':') break; }
+	      i4= i;
+	      i++;
 	      p.param_name = name_value.substr(0, std::max(i1,0));
 	      p.value = unhexify(name_value.substr(i1+1, i2-i1-1));
 	      std::string is_array_str = name_value.substr(i2+1, i3-i2-1);
 	      if (is_array_str=="true") { p.is_array = true; }
-	      std::string array_target_str = name_value.substr(i3+1, s-i3-1);
+	      std::string array_target_str = name_value.substr(i3+1, i4-i3-1);
+	      //std::cout << "S:" << s << " I4:" << i4 << std::endl;
+	      std::string jj = i4!=s?name_value.substr(i4+1, s-i4-1):"0";
 	      int array_index = -1;
 	      std::stringstream ss(array_target_str);
 	      ss >> array_index;
 	      GameApiLine *array_line = p.is_array && array_index != -1 ? &f.lines[array_index] : NULL;
 	      p.array_return_target = array_line;
+
+	      std::stringstream ss2(jj);
+	      int j=0;
+	      ss2 >> j;
+	      p.j = j;
 	      //std::cout << "Name: " << p.param_name << " Value: " << p.value << std::endl;
+	      //std::cout << "PARAMS: " << j << std::endl;
 	      g_line.params.push_back(p);
 	    }
 	  f.lines.push_back(g_line);
@@ -160,7 +184,7 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
       for(int k=0;k<s4;k++)
 	{
 	  const GameApiLine &line = func.lines[k];
-	  ss << '(' << line.x << "," << line.y << ')' << line.module_name << " " << line.uid << " " << line.array_return;
+	  ss << '(' << line.x << "," << line.y << ')' << line.module_name << " " << line.uid << " " << line.array_return << " " << line.j << " " << line.sz;
 	  int s = line.params.size();
 	  if (s!=0) ss << " ";
 	  for(int i=0;i<s;i++)
@@ -169,12 +193,15 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
 	      std::string name = p.param_name;
 	      std::string value = hexify(p.value);
 	      std::string is_array = p.is_array ? "true" : "false";
+	      int j = p.j;
 	      int array_line = p.array_return_target ? (p.array_return_target - &func.lines[0])/sizeof(GameApiLine) : -1;
 	      std::stringstream ss2;
 	      ss2 << array_line;
 	      std::string array_line_str = ss2.str();
-	      
-	      ss << name << ":" << value << ":" << is_array << ":" << array_line_str;
+	      std::stringstream ss3;
+	      ss3 << j;
+	      std::string jj2 = ss3.str();
+	      ss << name << ":" << value << ":" << is_array << ":" << array_line_str << ":" << jj2;
 	      if (i!=s-1) ss << " ";
 	    }
 	  ss << std::endl;
@@ -333,7 +360,7 @@ EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(std::string func
   return param_indexes2;
 }
 
-EXPORT GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, W &connect_click, std::string uid, std::vector<W> &params)
+EXPORT GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params)
 {
   static std::vector<GameApiItem*> functions = all_functions();
 
@@ -554,6 +581,7 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 	{
 	  GameApiParam &param = line.params[ii];
 	  std::string value = param.value;
+	  int j = param.j;
 	  
 	  if (value.size()>1 && value[0]=='[' && value[value.size()-1]==']')
 	    {
@@ -575,6 +603,8 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		    {
 		      W wid = connect_targets[iiii];
 		      std::string u = gui.get_id(wid);
+		      //int j = gui.get_index(wid);
+		      int sz = gui.get_size2(w1);
 		      std::stringstream ss(u);
 		      std::string target_uid;
 		      int num;
@@ -587,11 +617,14 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      if (target_uid == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
-			  W line = gui.line( w1, gui.size_x(w1), (gui.size_y(w1)-16)/2+16+5,
+			  //std::cout << "NUMS:" << j << " " << sz << std::endl;
+			  W line = gui.line( w1, gui.size_x(w1), /*(gui.size_y(w1)-16)/2+16+5*/ 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;
 			  gui.set_id(line, ss2.str());
+			  gui.set_index(line, j);
+			  gui.set_size2(line, sz);
 			  //std::cout << "LINK2: " << ss2.str() << std::endl;
 			  links.push_back(line);
 			}
@@ -618,6 +651,8 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		    {
 		      W wid = connect_targets[iiii];
 		      std::string u = gui.get_id(wid);
+		      //int j = gui.get_index(wid);
+		      int sz = gui.get_size2(w1);
 		      std::stringstream ss(u);
 		      std::string target_uid;
 		      int num;
@@ -630,11 +665,14 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      if (target_uid == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
-			  W line = gui.line( w1, gui.size_x(w1), (gui.size_y(w1)-16)/2+16+5,
+			  //std::cout << "NUMS:" << j << " " << sz << std::endl;
+			  W line = gui.line( w1, gui.size_x(w1), 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz /*(gui.size_y(w1)-16)/2+16+5*/,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;
 			  gui.set_id(line, ss2.str());
+			  gui.set_index(line, j);
+			  gui.set_size2(line, sz);
 			  //std::cout << "LINK: " << ss2.str() << std::endl;
 			  links.push_back(line);
 			}
@@ -729,146 +767,7 @@ EXPORT void GameApi::WModApi::delete_by_uid(WM mod2, int id, std::string line_ui
 
 }
 
-#if 0
-EXPORT GameApi::CollectResult GameApi::WModApi::collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
-{
-  static std::vector<GameApiItem*> vec = all_functions();
 
-  ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  GameApiModule *mod = env->gameapi_modules[mod2.id];
-  GameApiFunction *func = &mod->funcs[id];
-  
-  int s = func->lines.size();
-  for(int i=0;i<s;i++)
-    {
-      GameApiLine *line = &func->lines[i];
-      if (line->uid == line_uid)
-	{
-
-	  // COLLECT PARAMS & RECURSE
-	  int ss = line->params.size();
-	  std::vector<std::string> params;
-	  std::vector<std::string> param_names;
-	  level-=ss;
-	  for(int ii=0;ii<ss;ii++)
-	    {
-	      //level--;
-	      GameApiParam *param = &line->params[ii];
-	      std::string p = "";
-	      std::string pn = param->value;
-	      if (level<=0)
-		{ // Stopping recursion
-		  int sd = vec.size();
-		  for(int k=0;k<sd;k++)
-		    {
-		      GameApiItem *item = vec[k];
-		      std::string name = item->Name(0);
-		      if (name == line->module_name)
-			{
-			  if (pn.size()>0 && pn[0]=='[')
-			    pn="[]";
-			  else
-			    pn = "@";
-			  break;
-			}
-		    }
-		}
-
-	      if (pn.size()==0)
-		{
-		  std::cout << "COLLECT FAILED at param!" << std::endl;
-		  CollectResult res;
-		  res.p = "";
-		  res.pn = "";
-		  return res;;
-		}
-	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
-		{
-		  CollectResult res = collect_nodes(ev, mod2, id, pn, level-1);
-		  p = res.p;
-		  pn = res.pn;
-		}
-	      if (pn.size()>1 && pn[0]=='[' && pn[pn.size()-1]==']')
-		{
-		  std::string param_type = "";
-		  int sd = vec.size();
-		  for(int k=0;k<sd;k++)
-		    {
-		      GameApiItem *item = vec[k];
-		      std::string name = item->Name(0);
-		      if (name == line->module_name)
-			{
-			  std::string paramtype = item->ParamType(0,ii);
-			  param_type=paramtype;
-			}
-		    }
-		  param_type = param_type.substr(1,param_type.size()-2);
-
-		  
-		  int prev = 1;
-		  std::string ss = "std::vector<" + param_type + ">{";
-		  int sz = pn.size();
-		  for(int i=1;i<sz;i++)
-		    {
-		      if (pn[i]==',' || pn[i]==']')
-			{
-			  std::string substr = pn.substr(prev, i-prev);
-			  //std::cout << "substr: " << substr << std::endl;
-			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
-			    {
-			      CollectResult res = collect_nodes(ev, mod2, id, substr, level-1);
-			      p += res.p;
-			      ss += res.pn;
-			    }
-			  else
-			    {
-			      ss+=substr;
-			    }
-			  prev = i+1;
-			  //ss+=substr;
-			  if (i!=sz-1) { ss+=","; }
-			}
-
-		    }
-		  ss+="}";
-		  //std::cout << "Param: " << ss << std::endl;
-		  param_names.push_back(ss);
-		  params.push_back(p);
-		}
-	      else
-		{
-		  params.push_back(p);
-		  param_names.push_back(pn);
-		}
-	    }
-	  // EXECUTE
-	  int sd = vec.size();
-	  for(int k=0;k<sd;k++)
-	    {
-	      GameApiItem *item = vec[k];
-	      std::string name = item->Name(0);
-	      if (name == line->module_name)
-		{
-		  std::vector<EditNode*> val = item->CollectNodes(ev, params, param_names);
-		  std::pair<std::string,std::string> val2 = item->CodeGen(ev, params, param_names);
-		  CollectResult res;
-		  res.res = val;
-		  res.p = val2.second;
-		  res.pn = val2.first;
-		  
-		  return res;
-		}
-	    }
-	}
-    }
-  std::cout << "COLLECT FAILED! " << std::endl;
-  CollectResult res;
-  res.p = "";
-  res.pn = "";
-  return res;
-
-}
-#endif
 int env_counter(bool reset)
 {
   static int i =0;
@@ -879,7 +778,7 @@ EXPORT void GameApi::WModApi::codegen_reset_counter()
 {
   env_counter(true);
 }
-EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level)
+EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -905,6 +804,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
 	      std::string pn = param->value;
+	      int jj = param->j;
 	      if (level<=0)
 		{ // Stopping recursion
 		  int sd = vec.size();
@@ -934,7 +834,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 		}
 	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
 		{
-		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn, level-1);
+		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn, level-1,jj);
 		  p = val.second;
 		  pn = val.first;
 		}
@@ -967,7 +867,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, substr, level-1);
+			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, substr, level-1,0);
 			      p += val.second;
 			      ss += val.first;
 			    }
@@ -1000,7 +900,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
-		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names);
+		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names,j);
 		  return val;
 		}
 	    }
@@ -1010,7 +910,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
   return std::make_pair("","");
 
 }
-EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level)
+EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -1047,6 +947,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	    {
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = param->value;
+	      int jj = param->j;
 	      if (level<=0)
 		{ // Stopping recursion
 		  int sd = vec.size();
@@ -1071,7 +972,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
-		  int val = execute(ev, mod2, id, p, exeenv, level-1);
+		  int val = execute(ev, mod2, id, p, exeenv, level-1,jj);
 		  if (val==-1) return -1;
 		  std::stringstream sw;
 		  sw << val;
@@ -1092,7 +993,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      int val = execute(ev, mod2, id, substr, exeenv, level-1);
+			      int val = execute(ev, mod2, id, substr, exeenv, level-1,0);
 			      if (val==-1) return -1;
 			      std::stringstream sw;
 			      sw << val;
@@ -1125,7 +1026,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		{
 		  //std::cout << "Execute: " << name << std::endl;
 		  std::stringstream ss;
-		  int val = item->Execute(ss,e, ev, params, exeenv);
+		  int val = item->Execute(ss,e, ev, params, exeenv,j);
 		  item->EndEnv(exeenv);
 		  //std::cout << "Execute " << name << " returns " << val << std::endl;
 		  return val;
@@ -1289,7 +1190,11 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
   return std::make_pair(-1,res);
 }
 
-EXPORT bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, bool &is_array, bool &is_array_return)
+int ret_type_count(std::string);
+std::string ret_type_index(std::string return_type, int index);
+
+
+EXPORT bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return)
 {
   is_array=false;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1322,11 +1227,16 @@ EXPORT bool GameApi::WModApi::typecheck(WM mod2, int id, std::string uid1, std::
 	{
 	  type1 = item->ReturnType(0);
 	  if (type1.size()>2) {
+	    if (ret_type_count(type1)>1)
+	      {
+		type1 = ret_type_index(type1, ret_index);
+	      }	    
 	    if (type1[0]=='[' && type1[type1.size()-1]==']')
 	      {
 		is_array_return=true;
 		type1 = type1.substr(1,type1.size()-2);
 	      }
+
 	  }
 
 	}
@@ -1363,6 +1273,22 @@ EXPORT int GameApi::WModApi::find_line_index(WM mod2, int id, std::string uid)
     }
   return -1;
 }
+EXPORT void GameApi::WModApi::change_param_multiple_return_values(WM mod2, int id, std::string uid, int j, int sz)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  int s = func->lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine &line = func->lines[i];
+      if (line.uid == uid)
+	{
+	  line.j = j;
+	  line.sz = sz;
+	}
+    }
+}
 EXPORT void GameApi::WModApi::change_param_is_array(WM mod2, int id, std::string uid, int param_index, bool is_array, int ref_line_index)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1385,7 +1311,7 @@ EXPORT void GameApi::WModApi::change_param_is_array(WM mod2, int id, std::string
     }
 
 }
-EXPORT void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue)
+EXPORT void GameApi::WModApi::change_param_value(WM mod2, int id, std::string uid, int param_index, std::string newvalue, int j)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1398,6 +1324,7 @@ EXPORT void GameApi::WModApi::change_param_value(WM mod2, int id, std::string ui
 	{
 	  GameApiParam &param = line.params[param_index];
 	  param.value = newvalue;
+	  param.j = j;
 	  //std::cout << "Param: " << param.param_name << " changed to " << newvalue << std::endl;
 	}
     }
@@ -1784,6 +1711,8 @@ EXPORT std::string GameApi::WModApi::dump_functions()
   return json_object(vec2);
 }
 
+int ret_type_count(std::string);
+
 EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1792,12 +1721,29 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
   static std::vector<GameApiItem*> functions = all_functions();
   int s = func->lines.size();
   std::vector<W> connect_clicks;
+  std::vector<int> connect_counts;
   for(int j=0;j<s;j++)
     {
+      GameApiLine *line = &func->lines[j];
       W w = { 0 };
-      connect_clicks.push_back(w);
+
+      int ss = functions.size();
+      int p = 0;
+      for(;p<ss;p++)
+	{
+	  GameApiItem* item = functions[p];
+	  if (item->Name(0) == line->module_name) break;
+	}
+      if (p==ss) { connect_counts.push_back(0); continue; }
+      GameApiItem *item = functions[p];
+      std::string return_type = item->ReturnType(0);
+      int count = ret_type_count(return_type);
+      connect_counts.push_back(count);
+      for(int k=0;k<count;k++)
+	connect_clicks.push_back(w);
     }
   InstallProgress(898, "create boxes", 15);
+  int ret_count=0;
   for(int i=0;i<s;i++)
     {
       if (s/15>0 && i % (s/15)==0)
@@ -1810,7 +1756,8 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
 	  GameApiItem* item = functions[j];
 	  if (item->Name(0) == line->module_name) break;
 	}
-      if (j==ss) continue;
+      int cnt = i<connect_counts.size()?connect_counts[i]:1;
+      if (j==ss) { ret_count+=cnt; continue; }
       GameApiItem *item = functions[j];
       std::vector<std::string> param_types;
       std::vector<std::string> param_tooltip;
@@ -1826,7 +1773,13 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       std::string symbols = item->Symbols();
       std::string comment = item->Comment();
 
-      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_clicks[i], line->uid, params, symbols,comment);
+
+      std::vector<W*> connect_clicks2;
+      for(int u=0;u<cnt;u++) connect_clicks2.push_back(&connect_clicks[ret_count+u]);
+      
+      
+      W node = gui.canvas_item_gameapi_node(100,100, line->module_name, param_types2, param_tooltip2, return_type, atlas, atlas_bm, connect_clicks2, line->uid, params, symbols,comment);
+      ret_count+=cnt;
 
       // W codegen_0 = gui.highlight(20,20);
       // W codegen_1 = gui.button(20,20, 0xff88ff88, 0xff44ff44);
@@ -1834,6 +1787,8 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       W codegen_2 = gui.canvas(20,20);
       W codegen_3 = gui.click_area(codegen_2, 0,0, gui.size_x(codegen_2), gui.size_y(codegen_2),0);
       gui.set_id(codegen_3, line->uid);
+      gui.set_index(codegen_3, line->j);
+      gui.set_size2(codegen_3, line->sz);
       codegen_button.push_back(codegen_3);
       W codegen_4 = gui.center_align(codegen_3, gui.size_x(node));
       W codegen_5 = gui.center_y(codegen_4, gui.size_y(node)-40);
@@ -1846,6 +1801,8 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       W display2_1 = gui.canvas(20,20);
       W display_22 = gui.click_area(display2_1, 0,0, gui.size_x(display2_1), gui.size_y(display2_1),0);
       gui.set_id(display_22, line->uid);
+      gui.set_index(display_22, line->j);
+      gui.set_size2(display_22, line->sz);
       display_clicks.push_back(display_22);
       W display_3a = gui.center_align(display_22, gui.size_x(node));
       W display_3b = gui.center_y(display_3a, gui.size_y(node)-80);
@@ -1862,6 +1819,8 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
 
       W node2 = gui.click_area(node, (gui.size_x(node)-20)/2, (gui.size_y(node)-20)/2, gui.size_x(node22), gui.size_y(node22),0);
       gui.set_id(node2, line->uid);
+      gui.set_index(node2, line->j);
+      gui.set_size2(node2, line->sz);
       edit_clicks.push_back(node2);
 
 
@@ -1875,12 +1834,19 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GuiApi &gui, W canvas, WM mod2, i
       W node4 = gui.key_area(node22222, 0, 0, gui.size_x(node22222), 20, 127);
 #endif
       gui.set_id(node4, line->uid);
+      gui.set_index(node4, line->j);
+      gui.set_size2(node4, line->sz);
+
       delete_key.push_back(node4);
       W node5 = gui.click_area(node4, 0, 0, gui.size_x(node4), gui.size_y(node4), 2);
       gui.set_id(node5, line->uid);
+      gui.set_index(node5, line->j);
+      gui.set_size2(node5, line->sz);
       popup_open.push_back(node5);
       W node3 = gui.mouse_move(node5, 0, 0, gui.size_x(node5), 20);
       gui.set_id(node3, line->uid);
+      gui.set_index(node3, line->j);
+      gui.set_size2(node3, line->sz);
       gui.canvas_item(canvas, node3, line->x, line->y);
     }
   connect_clicks_p = connect_clicks;

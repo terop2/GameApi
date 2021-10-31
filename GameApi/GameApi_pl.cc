@@ -78,6 +78,7 @@ public:
     std::stringstream ss;
     int curr_line = 0;
     bool first = true;
+    int curr_tex_index = 0;
     InstallProgress(193,"Parsing .obj file", 15);
     int index = 0;
     //bool last_was_f = false;
@@ -152,6 +153,7 @@ public:
 	    //std::cout << "Vertex:" << vertex_data.size() << " " << x << " " << y << " " << z << std::endl;
 	    Point p(x,y,z);
 	    vertex_data.push_back(p);
+	    texcoord3_data.push_back(0.0);
 	    if (b1&&b2&&b3) {
 	    ::Color vc(cr,cg,cb,1.0f);
 	    color_data.push_back(vc.clamp().Pixel());
@@ -170,7 +172,8 @@ public:
 	    ss >> tx >> ty >> tz;
 	    Point2d p = { tx, ty };
 	    texcoord_data.push_back(p);
-	    texcoord3_data.push_back(0.0); // TODO, oli 0.0
+	    if (int(texcoord3_data.size())>tex_count-1)
+	      texcoord3_data[tex_count-1]=0.0; // TODO, oli 0.0
 	  } else if (word=="vt") { tex_count2++; }
 	if (word == "vn")
 	  {
@@ -214,6 +217,9 @@ public:
 	    char c;
 	    bool t_bool = texcoord_data.size()!=0;
 	    bool n_bool = normal_data.size()!=0;
+
+	    has_t = t_bool;
+	    has_n = n_bool;
 	    
 	    //std::cout << "Face:" << face_counts.size() << std::endl;
 	    if (t_bool && n_bool) {
@@ -267,9 +273,11 @@ public:
 	    //n_index -= obj_base_n;
 
 	    vertex_index.push_back(v_index-1);
-	    texture_index.push_back(0);
-	    if (int(texcoord3_data.size())>0)
-	      texcoord3_data[0]=mtl_material+0.3;
+	    texture_index.push_back(v_index-1);
+	    if (int(texcoord3_data.size())>v_index-1)
+	      texcoord3_data[v_index-1]=mtl_material+0.3;
+	    //if (int(texcoord3_data.size())>0)
+	    //  texcoord3_data[0]=mtl_material+0.3;
 	    normal_index.push_back(n_index-1);
 		    //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
 		    count++;
@@ -287,9 +295,11 @@ public:
 	    //if (n_index<0) n_index = -n_index;
 
 	    vertex_index.push_back(v_index-1);
-		  texture_index.push_back(0);
-		  if (int(texcoord3_data.size())>0)
-		    texcoord3_data[0]=mtl_material+0.3;
+		  texture_index.push_back(v_index-1);
+	    if (int(texcoord3_data.size())>v_index-1)
+	      texcoord3_data[v_index-1]=mtl_material+0.3;
+	    //  if (int(texcoord3_data.size())>0)
+	    //	    texcoord3_data[0]=mtl_material+0.3;
 
 		  normal_index.push_back(0);
 		  //std::cout << "Index: " << v_index << " " << t_index << " " << n_index << std::endl;
@@ -345,6 +355,7 @@ public:
     for(int i=0;i<s;i++)
       {
 	std::string name = material_names_external[i];
+	//std::cout << internal << "==" << name << std::endl;
 	if (internal==name) {
 	  material_names_map[j] = i+1;
 	}
@@ -382,6 +393,9 @@ public:
   //std::vector<int> obj_tex_end;
   std::vector<int> obj_face_counts_start;
   std::vector<int> obj_face_counts_end;
+
+  bool has_t;
+  bool has_n;
 };
 
 class ObjFileFaceCollection : public FaceCollection
@@ -464,15 +478,19 @@ public:
   float TexCoord3(int face, int point) const
   {
     int c = Count(face,point);
+    if (parser.has_t) {
     if (c>=0 && c<(int)parser.texture_index.size())
       {
 	int index = parser.texture_index[c];
+	//if (face==0) std::cout << "R1:" << index << std::endl;
 	if (index>=0 && index<(int)parser.texcoord3_data.size())
 	  {
 	    float i = parser.texcoord3_data[index];
 	    int ii = int(i);
+	    //if (face==0) std::cout << "R2:" << ii << std::endl;
 
 	    int val = parser.material_names_map[ii];
+	    //if (face==0) std::cout << "R3:" << val << std::endl;
 
 	    if (val!=0) {
 	      return float(val-1)+0.5;
@@ -480,8 +498,52 @@ public:
 	    
 
 	    return i;
+	  } else
+	  {
+	    int index = parser.vertex_index[c];
+	    //if (face==0) std::cout << "R0:" << index << " " << parser.texcoord3_data.size() << std::endl;
+	if (index>=0 && index<(int)parser.texcoord3_data.size())
+	  {
+	    float i = parser.texcoord3_data[index];
+	    int ii = int(i);
+	    //if (face==0) std::cout << "R2:" << ii << std::endl;
+
+	    int val = parser.material_names_map[ii];
+	    //if (face==0) std::cout << "R3:" << val << std::endl;
+
+	    if (val!=0) {
+	      return float(val-1)+0.5;
+	    }
+	    
+
+	    return i;
+	   
+	  }
 	  }
       }
+    } else
+      {
+	    int index = parser.vertex_index[c];
+	    //if (face==0) std::cout << "R0:" << index << " " << parser.texcoord3_data.size() << std::endl;
+	if (index>=0 && index<(int)parser.texcoord3_data.size())
+	  {
+	    float i = parser.texcoord3_data[index];
+	    int ii = int(i);
+	    //if (face==0) std::cout << "R2:" << ii << std::endl;
+
+	    int val = parser.material_names_map[ii];
+	    //if (face==0) std::cout << "R3:" << val << std::endl;
+
+	    if (val!=0) {
+	      return float(val-1)+0.5;
+	    }
+	    
+
+	    return i;
+	   
+	  }
+      }
+    
     return 0.0;
   }
   Point2d TexCoord(int face, int point) const
@@ -1901,8 +1963,12 @@ public:
 	e.async_load_url(mtl_url, homepage);
 	PrepareMTL();
 #endif
+  int c = get_current_block();
+  set_current_block(-1);
 
 	GameApi::P p = ev.polygon_api.p_ds_url(ev,url);
+  set_current_block(c);
+	
 	FaceCollection *coll = find_facecoll(e,p);
 	filled = coll;
 	current = filled;
@@ -1962,8 +2028,11 @@ public:
     std::vector<unsigned char> vec(ptr->begin(),ptr->end());
     LoadStream *stream = load_from_vector(vec);
 #endif
+  int c = get_current_block();
+  set_current_block(-1);
     
     GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
+    set_current_block(c);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -2106,7 +2175,8 @@ GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
   int s = vec.size();
   for(int i=0;i<s;i++) {
     GameApi::MaterialDef mat = vec[i];
-    GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Ka_x,mat.Ka_y,mat.Ka_z,1.0, mat.d);
+    //std::cout << "Material: Ni=" << mat.Ni << ", Ns=" << mat.Ns << ", Kd=(" << mat.Kd_x << "," << mat.Kd_y << "," << mat.Kd_z << "), d="<< mat.d << std::endl;
+    GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Kd_x,mat.Kd_y,mat.Kd_z,1.0, mat.d);
     array->vec.push_back(m.id);
   }
   return add_array(e,array);
@@ -2265,7 +2335,10 @@ public:
 	return;
       }
       //std::vector<unsigned char> vec2(ptr->begin(), ptr->end());
+  int c = get_current_block();
+  set_current_block(-1);
       GameApi::P p = ev.polygon_api.p_ds(ev,ptr->begin(),ptr->end());
+      set_current_block(c);
       FaceCollection *coll = find_facecoll(e,p);
       coll->Prepare();
       filled = coll;
@@ -13876,6 +13949,83 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int
   
   return add_array(e,array);
 }
+
+GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
+{
+  GameApi::P p = p_mtl(ev,obj_url,mtl_url, prefix, count);
+  GameApi::ARR parr = material_extractor_p(p, start_index, end_index);
+  GameApi::ARR matarr = p_mtl_materials(ev,p);
+  GameApi::ARR matarr2 = material_extractor_mt(ev,p,mix, start_index, end_index);
+  GameApi::ARR bmarr = material_extractor_bm(p, start_index, end_index);
+  ArrayType *t = new ArrayType;
+  t->vec.push_back(p.id);
+  t->vec.push_back(parr.id);
+  t->vec.push_back(matarr.id);
+  t->vec.push_back(matarr2.id);
+  t->vec.push_back(bmarr.id);
+  return add_array(e,t);
+}
+
+
+class MaterialChoose : public Material
+{
+public:
+  MaterialChoose(std::vector<Material*> mats, FaceCollection* faces) : mats(mats), faces(faces) { }
+  virtual void logoexecute() { }
+  virtual int mat(int p) const
+  {
+    return choose_mat()->mat(p);
+  }
+  virtual int mat_inst(int p, int pts) const { return choose_mat()->mat_inst(p,pts); }
+  virtual int mat_inst_matrix(int p, int ms) const { return choose_mat()->mat_inst_matrix(p,ms); }
+  virtual int mat_inst2(int p, int pta) const { return choose_mat()->mat_inst2(p,pta); }
+  virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    return choose_mat()->mat_inst_fade(p,pts,flip,start_time, end_time);
+  }
+   
+
+  int choose() const
+  {
+    FaceCollection *coll = faces;
+    coll->Prepare();
+    float val = faces->TexCoord3(0,0);
+    int choose = (int)val;
+    std::cout << "Material Choosing: " << val << " " << choose << std::endl;
+    return choose;
+  }
+  Material *choose_mat() const
+  {
+    int ch = choose();
+    return mats[ch];
+  }
+private:
+  std::vector<Material*> mats;
+  FaceCollection* faces;
+};
+
+GameApi::ARR GameApi::PolygonApi::material_choose(std::vector<MT> mat, std::vector<P> p)
+{
+  std::vector<Material*> mats;
+  int s2 = mat.size();
+  for(int i=0;i<s2;i++)
+    {
+      Material *m = find_material(e,mat[i]);
+      mats.push_back(m);
+    }
+  ArrayType *t = new ArrayType;
+  int s = p.size();
+  for(int i=0;i<s;i++) {
+    GameApi::P pp = p[i];
+    FaceCollection *coll = find_facecoll(e,pp);
+    Material *mt = new MaterialChoose(mats,coll);
+    GameApi::MT mt2 = add_material(e,mt);
+    t->vec.push_back(mt2.id);
+  }
+  return add_array(e,t);
+}
+
+
 class ExtractorBitmap : public Bitmap<Color>
 {
 public:

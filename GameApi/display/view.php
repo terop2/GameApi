@@ -40,6 +40,8 @@ $date = filemtime("web_page.js");
 	     v-bind:is_metal="state.is_metal"
 	     v-bind:is_plastic="state.is_plastic"
 	     v-bind:is_textured="state.is_textured"
+	     v-bind:filter_material_metal="filter_material_metal()"
+	     v-bind:filter_material_plastic="filter_material_plastic()"
 ></appmaterial>
 <appborder v-on:change_model="change_model()"></appborder><br>
 </div>
@@ -92,7 +94,7 @@ Vue.component('appdragdroparea', {
 	});
 
 Vue.component('appmaterial', {
-   props: ['is_metal', 'is_plastic', 'is_textured'],
+   props: ['is_metal', 'is_plastic', 'is_textured', 'filter_material_metal', 'filter_material_plastic'],
    data: function() {
       return {
       }
@@ -124,14 +126,9 @@ Vue.component('appmaterial', {
 		 <div class="horizspace customfont">
 		 <select name="type" id="metal-type-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
-		 <option value="0">Aluminium</option>
-		 <option value="1">Brass</option>
-		 <option value="2">Bronze</option>
-		 <option value="3">Gold</option>
-		 <option value="4">Iron</option>
-		 <option value="5">Silver</option>
-		 <option value="6">Steel</option>
-		 <option value="7">Titanium</option>
+		 <template v-for="metal in filter_material_metal">
+		 <option v-bind:value="parse_material_count(metal,'Metal')">{{ parse_material_name(metal,'Metal') }}</option>
+		 </template>
 		 </select>
 		 </div>
 		 </div>
@@ -140,13 +137,9 @@ Vue.component('appmaterial', {
 		 <div class="horizspace customfont">
 		 <select name="type" id="plastic-type-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
-		 <option value="8">red</option>
-		 <option value="9">yellow</option>
-		 <option value="10">blue</option>
-		 <option value="11">orange</option>
-		 <option value="12">white</option>
-		 <option value="13">green</option>
-		 <option value="14">magenta</option>
+		 <template v-for="plastic in filter_material_plastic">
+		 <option v-bind:value="parse_material_count(plastic,'Plastic')">{{ parse_material_name(plastic,'Plastic') }}</option>
+		 </template>
 		 </select>
 		 </div>
 		 </div>
@@ -199,13 +192,10 @@ Vue.component('appborder', {
      },
      template: `<div class="block blockitem height8 border customfont">
      Border<br><div class="horizspace customfont"><select name="border" id="border-select" v-on:change="$emit('change_model')">
-  <option value="-1">None</option>
-  <option value="0">Black 2px</option>
-  <option value="1">White 2px</option>
-  <option value="2">Black 4px</option>
-  <option value="3">White 4px</option>
-  <option value="4">Black 8px</option>
-  <option value="5">White 8px</option>
+  <!--option value="-1">None</option -->
+  <template v-for="brd in store.state.border_db">
+  <option v-bind:value="parse_border_count(brd)">{{ parse_border_name(brd) }}</option>
+  </template>
   </select></div></div>
      `
 });
@@ -360,8 +350,39 @@ var app = new Vue({
       state: store.state
       },
    computed: {
+
+
    },
    methods: {
+parse_material_type : function(mat)
+{
+   var arr = mat.split(" ");
+   return arr[1];
+},
+
+filter_material : function(arr,key)
+{
+   var arr = store.state.material_db;
+  console.log(arr);
+  var s = arr.length;
+  var res = [];
+  for(var i=0;i<s;i++) {
+     var type = parse_material_type(arr[i]);
+     if (type==key) { res.push(arr[i]); }
+  }
+  return res;
+},
+   
+   filter_material_metal : function() {
+   var arr = store.state.material_db;
+   return this.filter_material(arr,'Metal');
+},
+   filter_material_plastic: function() {
+   var arr = store.state.material_db;
+   return this.filter_material(arr,'Plastic');
+},
+
+
       dragdrop2: function(event) {
          console.log("DRAGDROP");
 	 console.log(event);
@@ -587,18 +608,44 @@ function get_border_value()
   var elem = document.getElementById("border-select");
   return parseInt(elem.value);
 }
+function parse_border_count(brd)
+{
+   var arr = brd.split(" ");
+   return arr[0];
+}
+function parse_border_name(brd)
+{
+   var arr = brd.split(" ");
+   return arr[1] + " " + arr[2];
+}
+function parse_border_color(brd)
+{
+   var arr = brd.split(" ");
+   return arr[3];
+}
+function parse_border_width(brd)
+{
+   var arr = brd.split(" ");
+   return arr[4];
+}
 function get_border(i,m)
 {
   var color = "000000";
+  var width = "0";
+  if (i>=0 && i<store.state.border_db.length) {
+     var name2 = store.state.border_db[i];
+     color = parse_border_color(name2);
+     width = parse_border_width(name2);
+  }
+  /*
   if (i==1) color="ffffff";
   if (i==3) color="ffffff";
   if (i==5) color="ffffff";
 
-  var width = "0";
   if (i==0 || i==1) width="2";
   if (i==2 || i==3) width="4";
   if (i==4 || i==5) width="8";
-
+*/
   var variable = "I2";
   if (m==-1) variable="I1";
 
@@ -648,6 +695,49 @@ function get_background(i)
   return background;
 }
 
+
+
+function parse_material_count(mat)
+{
+   var arr = mat.split(" ");
+   return arr[0];
+}
+function parse_material_name(mat)
+{
+   var arr = mat.split(" ");
+   return arr[2];
+}
+function parse_material_type(mat)
+{
+   var arr = mat.split(" ");
+   return arr[1];
+}
+function parse_material_color(mat)
+{
+   var arr = mat.split(" ");
+   return arr[3];
+}
+function parse_material_roughness(mat)
+{
+   var arr = mat.split(" ");
+   return arr[4];
+}
+function find_line_from_material_db(index)
+{
+  var s = store.state.material_db.length;
+  for(var i=0;i<s;i++) {
+     var elem2 = store.state.material_db[i];
+     var cnt = parse_material_count(elem2);
+     if (cnt==index) {
+        console.log(cnt);
+	console.log(index);
+     	return store.state.material_db[i];
+	}
+  }
+  return "";
+}
+
+
 function get_material_value()
 {
   var cat_elem = document.getElementById("category-select");
@@ -668,8 +758,68 @@ function get_material_value()
   var elem = document.getElementById(id);
   return parseInt(elem.value);
 }
+function hex_color_to_number(text)
+{
+
+
+        var hash = 0;
+        var digit = 0;
+	var digit2 = '0';
+        for (var i = 0; i < text.length; i++)
+        {
+	    digit2 = text.charAt(i);
+	    if (digit2=='0') digit=0;	
+	    if (digit2=='1') digit=1;
+	    if (digit2=='2') digit=2;
+	    if (digit2=='3') digit=3;
+	    if (digit2=='4') digit=4;
+	    if (digit2=='5') digit=5;
+	    if (digit2=='6') digit=6;
+	    if (digit2=='7') digit=7;
+	    if (digit2=='8') digit=8;
+	    if (digit2=='9') digit=9;
+	    if (digit2=='a'||digit2=='A') digit=10;	
+	    if (digit2=='b'||digit2=='B') digit=11;
+	    if (digit2=='c'||digit2=='C') digit=12;
+	    if (digit2=='d'||digit2=='D') digit=13;
+	    if (digit2=='e'||digit2=='E') digit=14;
+	    if (digit2=='f'||digit2=='F') digit=15;
+	    console.log(digit);
+            hash = digit + (hash << 4);
+        }
+
+        var c = (hash & 0x00FFFFFF);
+        //c = c - 16777216;
+        console.log(text);
+	console.log(c.toString(16));
+        return c;
+
+
+/*
+
+  var s = str.length;
+  var res=0;
+  for(var i=0;i<s;i++)
+  {
+     var digit =0;
+     var ch = str[i];
+     if (ch>='0' && ch<='9') digit=ch-'0';
+     if (ch>='a' && ch<='f') digit=ch-'a'+10;
+     if (ch>='A' && ch<='F') digit=ch-'A'+10;
+     res+=digit;
+     if (i!=s-1) res<<=4;
+  }
+  console.log(str);
+  console.log(res);
+  return res;
+  */
+}
 function get_metal_color(i)
 {
+  var line = find_line_from_material_db(i);
+  var str = parse_material_color(line);
+  return hex_color_to_number(str);
+/*
   if (i==0) { return 0xd0d5db; }
   if (i==1) { return 0xb5a642; }
   if (i==2) { return 0xb08d57; }
@@ -687,10 +837,15 @@ function get_metal_color(i)
   if (i==13) { return 0x00ff00; }
   if (i==14) { return 0xff00ff; }
 return 0xffffff;
+*/
 }
 
 function get_metal_roughness(i)
 {
+  var line = find_line_from_material_db(i);
+  var str = parse_material_roughness(line);
+  return parseFloat(str);
+  /*
   if (i==0) return 0.4;
   if (i==1) return 0.8;
   if (i==2) return 0.5;
@@ -707,10 +862,12 @@ function get_metal_roughness(i)
   if (i==13) return 0.2;
   if (i==14) return 0.2;
   return 0.5;
+  */
 }
 
 function get_material(i)
 {
+if (i==-1) return ["",""];
  var metal_color = get_metal_color(i);
  var r = (metal_color&0xff0000)>>16;
  var g = (metal_color&0xff00)>>8;
@@ -766,13 +923,16 @@ var smoothnormals = "P I200=ev.polygon_api.recalculate_normals(I1);\nP I2=ev.pol
 var texcoord_normals = "P I200=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\nP I2=ev.polygon_api.recalculate_normals(I200);\n"
 var texcoord_smoothnormals = "P I200=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\nP I201=ev.polygon_api.recalculate_normals(I200);\nP I2=ev.polygon_api.smooth_normals2(I201);\n"
 
-if (i>=0 && i<=7) return [metal,normals];
-if (i>=8 && i<=14) return [plastic,normals];
-
+var line = find_line_from_material_db(i);
+if (parse_material_type(line)=='Metal') return [metal,normals];
+if (parse_material_type(line)=='Plastic') return [plastic,normals];
+/*
 if (i==15) return [wood1material, texcoord_normals];
 if (i==16) return [wood2material, texcoord_normals];
 if (i==17) return [wood3material, texcoord_normals];
 if (i==-1) return ["",""];
+*/
+
 /*
 if (i==-1) return ["",""];
 if (i==0) return [phongmaterial,normals];
