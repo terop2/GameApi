@@ -4943,6 +4943,10 @@ extern volatile bool g_lock1;
 extern volatile bool g_lock2;
 extern volatile bool g_lock3;
 
+extern long long g_copy_total;
+extern long long g_copy_progress;
+
+
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
 {
   if (keep) {
@@ -5027,19 +5031,28 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
-  InstallProgress(0,"send to gpu mem",10);
+  InstallProgress(0,"gpu mem",15);
+  long long prev = 0;
   while(1) {
     //std::cout << "lock3 wait" << std::endl;
     while(g_lock3==true) {
 #ifdef EMSCRIPTEN
       // emscripten_sleep(100);
 #endif
+
+      if (g_copy_progress*15/g_copy_total!=prev)
+	{
+	  prev = g_copy_progress*15/g_copy_total;
+	  ProgressBar(0,prev,15,"gpu mem");
+	  
+	}
+	 
+      
     }
     g_lock3 = true;
     //std::cout << "Lock3 wait end" << std::endl;
     //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
     progress++;
-    ProgressBar(0,progress*10/num_threads,10,"send to gpu mem");
 
     // now ti_global is available
     ThreadInfo volatile *ti_global2 = ti_global;
