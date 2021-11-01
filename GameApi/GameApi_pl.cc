@@ -2218,9 +2218,9 @@ GameApi::ARR GameApi::PolygonApi::p_mtl2_materials(GameApi::EveryApi &ev, P p)
     GameApi::MaterialDef mat = vec[i];
     //GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Kd_x,mat.Kd_y,mat.Kd_z,1.0, mat.d);
     GameApi::MT m0 = ev.materials_api.m_def(ev);
-    unsigned int ambient = 0xff000000 + (int(mat.Ka_x*255.0)<<16) + (int(mat.Ka_y*255.0)<<8) + int(mat.Ka_z*255.0);
+    unsigned int ambient = 0xff000000 + (int(mat.Kd_x*255.0)<<16) + (int(mat.Kd_y*255.0)<<8) + int(mat.Kd_z*255.0);
     unsigned int specular = 0xff000000 + (int(mat.Ks_x*255.0)<<16) + (int(mat.Ks_y*255.0)<<8) + int(mat.Ks_z*255.0);
-    GameApi::MT m = ev.materials_api.phong(ev, m0, 1.0,1.0,1.0,ambient, specular, mat.Ns);
+    GameApi::MT m = ev.materials_api.phong2(ev, m0, 1.0,1.0,1.0,ambient, specular, mat.Ns);
     array->vec.push_back(m.id);
   }
   return add_array(e,array);
@@ -5031,7 +5031,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
-  InstallProgress(0,"gpu mem",15);
+  InstallProgress(999,"gpu mem",15);
   long long prev = 0;
   while(1) {
     //std::cout << "lock3 wait" << std::endl;
@@ -5043,7 +5043,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       if (g_copy_progress*15/g_copy_total!=prev)
 	{
 	  prev = g_copy_progress*15/g_copy_total;
-	  ProgressBar(0,prev,15,"gpu mem");
+	  ProgressBar(999,prev,15,"gpu mem");
 	  
 	}
 	 
@@ -8577,7 +8577,7 @@ private:
 class PhongShaderML : public MainLoopItem
 {
 public:
-  PhongShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, unsigned int ambient, unsigned int highlight, float pow) : env(env), ev(ev), next(next), light_dir(light_dir), ambient(ambient), highlight(highlight), pow(pow) 
+  PhongShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, unsigned int ambient, unsigned int highlight, float pow, bool background_included) : env(env), ev(ev), next(next), light_dir(light_dir), ambient(ambient), highlight(highlight), pow(pow), background_included(background_included) 
   { 
     firsttime = true;
     sh.id = -1;
@@ -8621,8 +8621,13 @@ public:
       ee.us_fragment_shader = a0.id;
     }
     fragment.id = ee.us_fragment_shader;
-    if (ambient)
-      fragment = ev.uber_api.f_phong(fragment);
+    if (ambient) {
+      if (background_included) {
+	fragment = ev.uber_api.f_phong(fragment);
+      } else {
+	fragment = ev.uber_api.f_phong2(fragment);
+      }
+    }
     ee.us_fragment_shader = fragment.id;
 #endif
       }
@@ -8684,7 +8689,7 @@ private:
   unsigned int ambient;
   unsigned int highlight;
   float pow;
-  
+  bool background_included;
 };
 
 
@@ -9695,7 +9700,12 @@ EXPORT GameApi::ML GameApi::PolygonApi::glowedge_shader(EveryApi &ev, ML mainloo
 EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow));
+  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow,false));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow,true));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix)
 {
@@ -13967,7 +13977,7 @@ GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std:
 {
   GameApi::P p = p_mtl(ev,obj_url,mtl_url, prefix, count);
   GameApi::ARR parr = material_extractor_p(p, start_index, end_index);
-  GameApi::ARR matarr = p_mtl_materials(ev,p);
+  GameApi::ARR matarr = p_mtl2_materials(ev,p);
   GameApi::ARR matarr2 = material_extractor_mt(ev,p,mix, start_index, end_index);
   GameApi::ARR bmarr = material_extractor_bm(p, start_index, end_index);
   ArrayType *t = new ArrayType;

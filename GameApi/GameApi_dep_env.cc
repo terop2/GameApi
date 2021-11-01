@@ -1263,7 +1263,7 @@ void SetTicks(int num, int ticks) {
   }
 }
 
-int progress_remove_list[] = { 434, 555 };
+int progress_remove_list[] = { 1, 434, 555 };
 
 float progress_val_mult[] = { 0.1, 0.3, 0.5, 0.8, 1.0 };
 
