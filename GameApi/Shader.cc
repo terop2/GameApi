@@ -47,6 +47,10 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef WINDOWS
+//#define OPENGL_ES 1
+#endif
+
 //#define WAYLAND 1
 
 #ifdef WAYLAND

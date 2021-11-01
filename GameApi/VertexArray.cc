@@ -1611,7 +1611,7 @@ void RenderVertexArray::update(int id)
 void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
 {
   int s = 7;
-  for(int i=0;i<s;i++) { buffers[i]=ids.buffers[i]; buffers2[i]=ids.buffers2[i], buffers3[i]=ids.buffers3[i]; }
+  for(int i=0;i<s;i++) { buffers[i]=ids.buffers[i]; buffers2[i]=ids.buffers2[i]; buffers3[i]=ids.buffers3[i]; }
   int ss = 3;
   for(int i=0;i<ss;i++) { vao[i]=ids.vao[i]; }
   pos_buffer=ids.pos_buffer;
@@ -1669,7 +1669,7 @@ void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
 void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
 {
   int s = 7;
-  for(int i=0;i<s;i++) { ids.buffers[i]=buffers[i]; ids.buffers2[i]=buffers2[i], ids.buffers3[i]=buffers3[i]; }
+  for(int i=0;i<s;i++) { ids.buffers[i]=buffers[i]; ids.buffers2[i]=buffers2[i]; ids.buffers3[i]=buffers3[i]; }
   int ss = 3;
   for(int i=0;i<ss;i++) { ids.vao[i]=vao[i]; }
   ids.pos_buffer=pos_buffer;
