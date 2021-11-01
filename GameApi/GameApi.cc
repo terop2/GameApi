@@ -12475,7 +12475,7 @@ public:
   OpenglLowApi *ogl = g_low->ogl;
   ClearProgress();
   
-  // InstallProgress(33344, "collect", 30);
+  InstallProgress(33344, "collect", 15);
 
   
     score = 0;
@@ -12530,7 +12530,7 @@ public:
      g_prepare_done = false;
      firsttime2 = true;
      //#ifdef THREADS
-     // InstallProgress(333,"prepare",100);
+     //InstallProgress(777,"prepare",100);
      //#endif
      g_logo_shown = 0;
   }
@@ -12628,7 +12628,7 @@ public:
       
       int num = vis_counter;
       //if (vis->vec.size()>0)
-      //ProgressBar(33344, (30*num/vis->vec.size()), 30, "collect");
+      ProgressBar(33344, (15*num/vis->vec.size()), 15, "collect");
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
@@ -12645,7 +12645,7 @@ public:
     
     if (!g_prepare_done) {
       int num = progress /100;
-      ProgressBar(333, progress++, num*100+100, "prepare");
+      //ProgressBar(777, progress++, num*100+100, "prepare");
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
