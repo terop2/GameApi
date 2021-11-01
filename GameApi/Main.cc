@@ -65,7 +65,7 @@
 #endif
 
 #ifdef LINUX
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 #endif
 
 //#define WAYLAND 1
