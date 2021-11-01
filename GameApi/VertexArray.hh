@@ -219,10 +219,10 @@ public:
 
 struct RenderVertexArray_bufferids
 {
-  unsigned int buffers[5];
+  unsigned int buffers[7];
   unsigned int vao[3];
-  unsigned int buffers2[5];
-  unsigned int buffers3[5];
+  unsigned int buffers2[7];
+  unsigned int buffers3[7];
   unsigned int pos_buffer;
   unsigned int pos_buffer_matrix;
   std::vector<unsigned int> attrib_buffer;
