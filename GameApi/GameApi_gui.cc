@@ -2599,7 +2599,36 @@ EXPORT GameApi::W GameApi::GuiApi::window_move(W widget, int area_x, int area_y,
   return add_widget(e, new WindowMoveWidget(ev, wid, area_x, area_y, area_width, area_height));
 }
 
-EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, W &connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment)
+int ret_type_count(std::string return_type)
+{
+  if (return_type.size()>1&&return_type[0]=='[') return 1; // filter out array rturns
+  int s = return_type.size();
+  int count = 1;
+  for(int i=0;i<s;i++) {
+    if (return_type[i]==',') count++;
+  }
+  return count;
+}
+std::string ret_type_index(std::string return_type, int index)
+{
+  int s = return_type.size();
+  int count = 0;
+  int beg = 0;
+  std::string label;
+  int i=0;
+  for(;i<s;i++) {
+    if (return_type[i]==',') {
+      label = return_type.substr(beg,i-beg);
+      if (count==index) return label;
+      count++;
+      beg = i+1;
+    }
+  }
+  label = return_type.substr(beg,i-beg);
+  return label;
+}
+
+EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, std::vector<W *> connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment)
 {
   std::vector<W> vec;
   int s = param_types.size();
@@ -2642,18 +2671,46 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   int ssy = std::max(sy, size_y(array)+size_y(node_22)+5);
   int ssy0 = std::max(sy-size_y(node_22), size_y(array));
   int ssy2 = ssy0 - size_y(array);
-  W array_1 = margin(array, 0, size_y(node_22) + ssy2/2+2, 0, ssy2/2-size_y(node_22)-2);
-  
-  W txt_0 = text(return_type, atlas,atlas_bm);
-  W txt_1 = margin(txt_0, 5,5,5,5);
 
-  int max_width2 = size_x(txt_1);
-  W txt_11 = highlight(txt_1);
-  W txt_111 = click_area(txt_11, 0.0, 0.0, size_x(txt_11), size_y(txt_11),0);
-  set_id(txt_111, uid);
-  connect_click = txt_111;
-  W txt_2 = button(size_x(txt_1), size_y(txt_1), c_canvas_item_text_button, c_canvas_item_text_button2 /*0xff330033, 0xff880088*/);
-  W txt_3 = layer(txt_2, txt_111);
+
+  int rs = ret_type_count(return_type);
+  std::vector<W> vec_ret;
+  int ret_sx=0;
+  for(int j=0;j<rs;j++) {
+    std::string ret_type = ret_type_index(return_type,j);
+    W txt_0 = text(ret_type, atlas,atlas_bm);
+    W txt_1 = margin(txt_0, 5,5,5,5);
+
+    int max_width2 = size_x(txt_1);
+    W txt_11 = highlight(txt_1);
+    W txt_111 = click_area(txt_11, 0.0, 0.0, size_x(txt_11), size_y(txt_11),0);
+    set_id(txt_111, uid);
+    set_index(txt_111,j);
+    set_size2(txt_111,rs);
+    *(connect_click[j]) = txt_111; 
+    W txt_2 = button(size_x(txt_1), size_y(txt_1), c_canvas_item_text_button, c_canvas_item_text_button2 /*0xff330033, 0xff880088*/);
+    W txt_3 = layer(txt_2, txt_111);
+
+    ret_sx = std::max(size_x(txt_3),ret_sx);
+    
+    vec_ret.push_back(txt_3);
+  }
+  for(int j=0;j<rs;j++)
+    {
+      vec_ret[j] = margin(vec_ret[j], ret_sx-size_x(vec_ret[j]),0.0, 0.0, 0.0);
+    }
+  int max_width2 = ret_sx;
+  W array_ret = array_y(&vec_ret[0], vec_ret.size(), 5);
+  int ret_sy = size_y(array_ret);
+
+  W array_1 = margin(array, 0, size_y(node_22) + ssy2/2+2, 0, ssy2/2-size_y(node_22)-2);
+
+  
+  ssy = std::max(ssy, size_y(array_ret)+size_y(node_22)+5);
+  ssy0 = std::max(ssy0, size_y(array_ret));
+  ssy2 = ssy0 - std::max(size_y(array), size_y(array_ret));
+
+  
 
   int ssx_0 = std::max(sx, max_width+4+20+4+max_width2);
   int ssx = std::max(ssx_0,size_x(node_22));
@@ -2661,9 +2718,11 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W node_1 = button(ssx,size_y(node_22), c_canvas_item_node_1, c_canvas_item_node_1_2 /*0xff884422, 0xff442211*/);
   W node_12 = highlight(node_1);
 
-  int sy0 = std::max(sy, size_y(array)+size_y(node_22)+5);
-  W txt_4 = margin(txt_3, ssx-size_x(txt_3), size_y(node_22)+((sy0-size_y(node_22))-size_y(txt_3))/2, 0,((sy0-size_y(node_22))-size_y(txt_3))/2-size_y(node_22));
+  int sy0 = std::max(sy, std::max(size_y(array),size_y(array_ret))+size_y(node_22)+5);
+  //W txt_4 = margin(txt_3, ssx-size_x(txt_3), size_y(node_22)+((sy0-size_y(node_22))-size_y(txt_3))/2, 0,((sy0-size_y(node_22))-size_y(txt_3))/2-size_y(node_22));
+  W txt_4 = margin(array_ret, ssx-ret_sx, size_y(node_22)+((sy0-size_y(node_22))-ret_sy)/2, 0, ((sy0-size_y(node_22))-ret_sy)/2-size_y(node_22));
 
+  
 
   W l_0 = layer(node_0, node_12);
   W l_1 = layer(l_0, node_22);
@@ -4309,6 +4368,26 @@ EXPORT std::string GameApi::GuiApi::get_id(W w)
   GuiWidget *ww = find_widget(e,w);
   return ww->get_id();
 }
+EXPORT int GameApi::GuiApi::get_index(W w)
+{
+  GuiWidget *ww = find_widget(e,w);
+  return ww->get_index();
+}
+EXPORT int GameApi::GuiApi::get_size2(W w)
+{
+  GuiWidget *ww = find_widget(e,w);
+  return ww->get_size2();
+}
+EXPORT void GameApi::GuiApi::set_size2(W w, int sz)
+{
+  GuiWidget *ww = find_widget(e, w);
+  ww->set_size2(sz);
+}
+EXPORT void GameApi::GuiApi::set_index(W w, int j)
+{
+  GuiWidget *ww = find_widget(e, w);
+  ww->set_index(j);
+}
 EXPORT void GameApi::GuiApi::set_id(W w, std::string id)
 {
   GuiWidget *ww = find_widget(e, w);
@@ -4401,6 +4480,7 @@ public:
   {
     std::string s;
     ss >> s;
+    if (s=="?") s="";
     return s;
   }
 };
@@ -5112,6 +5192,10 @@ ASyncData async_data[] = {
   { "polygon_api", "p_mtl", 1 },
 #endif
   { "polygon_api", "p_mtl", 2 },
+#ifndef HAS_POPEN
+  { "polygon_api", "p_mtl2", 1 },
+#endif
+  { "polygon_api", "p_mtl2", 2 },
   { "mainloop_api", "fps_display", 2 },
   { "mainloop_api", "score_display", 2 },
   { "mainloop_api", "time_display", 2 },
@@ -5191,6 +5275,7 @@ ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
 ASyncData async_data2[] = { 
   { "polygon_api", "p_mtl", 1 },
+  { "polygon_api", "p_mtl2", 1 },
   { "polygon_api", "p_url", 1 }
 };
 ASyncData *g_async_ptr2 = &async_data2[0];
@@ -5626,7 +5711,7 @@ int execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeG
       
       //std::cout << "Execute: " << params << std::endl;
       std::stringstream sk3;
-      int val = l.item->Execute(sk3, ee,ev, params, e);
+      int val = l.item->Execute(sk3, ee,ev, params, e,0); /* TODO, 0 = wrong */
       std::stringstream ss2;
       ss2 << val;
       res_vec.push_back(ss2.str());
@@ -5695,12 +5780,12 @@ private:
 };
 #endif // SECTION_1
 #endif
-std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name);
+std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name,int j);
 
 
 #ifdef FIRST_PART
 #ifdef SECTION_2
-std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name)
+std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name, int j)
 {
       std::string s;
     int ss = params.size();
@@ -5743,6 +5828,8 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 #include <chaiscript/language/chaiscript_common.hpp>
 #endif
 
+int ret_type_count(std::string s);
+
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
 {
@@ -5782,8 +5869,11 @@ public:
   }
 #endif
   
-  int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)
+  int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
   {
+    int s = params.size();
+    for(int i=0;i<s;i++) if (params[i]=="") params[i]="?";
+    
     if (params.size()!=param_name.size()) {
 	if (ApiName(0)=="mainloop_api" && FuncName(0)=="array_ml") {
 	  params.insert(params.begin(),"ev");
@@ -5791,7 +5881,16 @@ public:
 	  std::cout << "Error: param vectors different size: " << ApiName(0) << "::" << FuncName(0) << std::endl;
 	}
     }
-    return funccall(ss,ee, ev, api, fptr, params, e, param_name, return_type); 
+    int ret = funccall(ss,ee, ev, api, fptr, params, e, param_name, return_type);
+    int ret_count = ret_type_count(return_type);
+    if (ret_count>1)
+      { // multiple return values
+	GameApi::ARR arr; 
+	arr.id = ret;
+	ArrayType *t = find_array(ee, arr);
+	ret = t->vec[j];
+      }
+    return ret;
   }
 #if 0
   std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
@@ -5799,9 +5898,9 @@ public:
     return collectnodes(name,param_type, param_names, params, param_name);
   }
 #endif
-  std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)
+  std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, param_type, return_type,api_name,func_name);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, param_type, return_type,api_name,func_name,j);
     return p;
 #if 0
     int ss = params.size();
@@ -5856,7 +5955,9 @@ struct DelApiItemF
 };
 
 #ifdef FIRST_PART
+#ifdef SECTION_1
 DelApiItemF g_api_item_deleter;
+#endif
 #endif
 extern DelApiItemF g_api_item_deleter;
 
@@ -6994,6 +7095,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "[ML]", "IF" },
 			 { "", "" },
 			 "ML", "font_api", "ml_chooser"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::anim_ML,
+			 "ml_anim",
+			 { "ev", "url", "p1", "p2", "p3", "p4", "p5", "dyn" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string", "IF" },
+			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a/a", "b/b", "c/c", "d/d", "e/e", "" },
+			 "ML", "mainloop_api", "anim_ML"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::key_ml,
 			 "key_ml",
 			 { "vec", "keys" },
@@ -8166,6 +8273,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "true", "true", "0.01", "0" },
 			 "ML", "mainloop_api", "touch_rotate"));
 			 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mouse_roll_zoom,
+			 "mouse_zoom",
+			 { "ev", "next" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "mouse_roll_zoom"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::right_mouse_pan,
+			 "r_mouse_pan",
+			 { "ev", "next" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "right_mouse_pan"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::record_keypresses,
 			 "key_record_ml",
 			 { "ml", "output_filename" },
@@ -8330,6 +8449,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML" },
 			 { "" },
 			 "ML", "mainloop_api", "transparent"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::perspective,
+			 "ogl_perspective",
+			 { "ev", "ml", "mult", "front_plane", "end_plane" },
+			 { "EveryApi&", "ML", "float", "float" ,"float" },
+			 { "ev", "", "80.0", "10.1", "60000.0" },
+			 "ML", "mainloop_api", "perspective"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::get_face_count,
+			 "eng_face_count",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "get_face_count"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_song,
 			 "song_ml",
 			 { "ev", "next", "url" },
@@ -8739,6 +8870,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600" },
 			 "P", "polygon_api", "p_mtl"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl2,
+			 "p_mtl2",
+			 { "ev", "obj_url", "mtl_url", "url_prefix", "count", "start_index", "end_index", "mix" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "int", "int", "int", "float" },
+			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600", "0", "32", "1.0" },
+			 "P,[P],[MT],[MT],[BM]", "polygon_api", "p_mtl2"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_d,
 			 "p_mtl_d",
 			 { "p" },
@@ -9958,6 +10097,19 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong2,
+			 "m_phong2",
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
+			 "MT", "materials_api", "phong2"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::vertex_phong,
+			 "m_vertexphong",
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "mix" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float", "float" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0", "0.5" },
+			 "MT", "materials_api", "vertex_phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::glow_edge,
 			 "m_glowedge",
 			 { "ev", "nxt", "light_level", "gray_level", "edge_pos" },
@@ -10153,6 +10305,24 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "P", "float", "int","int" },
 			 { "ev", "", "1.0", "0", "32" },
 			 "[MT]", "polygon_api", "material_extractor_mt"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_choose,
+			 "ext_choose",
+			 { "mat", "p" },
+			 { "[MT]", "[P]" },
+			 { "", "" },
+			 "[MT]", "polygon_api", "material_choose"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_materials,
+			 "mtl_materials",
+			 { "ev", "p" },
+			 { "EveryApi&", "P" },
+			 { "ev", "" },
+			 "[MT]", "polygon_api", "p_mtl_materials"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl2_materials,
+			 "mtl2_materials",
+			 { "ev", "p" },
+			 { "EveryApi&", "P" },
+			 { "ev", "" },
+			 "[MT]", "polygon_api", "p_mtl2_materials"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_index,
 			 "mat_idx",
 			 { "ev", "vec", "index" },
@@ -10165,6 +10335,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "[MT]", "int", "int" },
 			 { "", "0", "32" },
 			 "[MT]", "polygon_api", "material_arr"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::comb_mat,
+			 "comb_mat",
+			 { "ev", "vec1", "vec2" },
+			 { "EveryApi&", "[MT]", "[MT]" },
+			 { "ev", "", "" },
+			 "[MT]", "polygon_api", "comb_mat"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::texture_sbm,
 			 "sbm_many_texture",
@@ -11230,7 +11406,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			   { "bm" },
 			   { "BM" },
 			   { "" },
-			   "[BM]", "bitmap_api", "cubemap"));
+			   "BM,BM,BM,BM,BM,BM", "bitmap_api", "cubemap")); // this was array before
     vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bm_cubemap,
 			   "bm_invcubemap",
 			   { "ev", "left", "top", "middle", "right", "back", "down", "sx", "sy" },
@@ -11510,6 +11686,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "CBM", "int", "int" },
 			 { "", "200", "200" },
 			 "BM", "cont_bitmap_api", "to_bitmap"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap2,
+			 "cbm_scale_bitmap",
+			 { "bm" },
+			 { "BM" },
+			 { "" },
+			 "CBM", "bitmap_api", "scale_bitmap2"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::bicubic,
 			 "cbm_bicubic",
 			 { "f_0", "f_1", "df_0", "df_1", "ff_0", "ff_1", "dff_0", "dff_1" },

@@ -44,7 +44,7 @@
 #endif
 
 #ifdef LINUX
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 //#define WAYLAND 1
@@ -92,7 +92,8 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   int val = g_low->ogl->glGetError();
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-  if (val!=Low_GL_NO_ERROR) {
+  if (val!=Low_GL_NO_ERROR)
+    {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
     int length=0;
@@ -184,14 +185,13 @@ void Program::push_back(const Shader &shader)
   int val = g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
     {
-    std::cout << "glAttachShader ERROR: " << val << std::endl;
+      //std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
     int length=0;
     g_low->ogl->glGetProgramInfoLog(priv->program, 256, &length, &buf[0]);
     buf[length]=0;
-    std::cout << "InfoLog: " << buf << std::endl;
+    std::cout << "" << buf << std::endl;
     }
-
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -665,6 +665,12 @@ ShaderFile::ShaderFile()
 "varying vec3 ex_Normal3;\n"
 "varying vec3 ex_LightPos3;\n"
 #endif
+"#ifdef VERTEX_LEVELS\n"
+"uniform vec4 level1_color;\n"
+"uniform vec4 level2_color;\n"
+"uniform vec4 level3_color;\n"
+"#endif\n"
+
 "#ifdef LIGHTDIR\n"
 "uniform vec3 light_dir;\n"
 "#endif\n"
@@ -995,6 +1001,53 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 
+"#ifdef IN_NORMAL\n"
+"#ifdef LIGHTDIR\n"
+"#ifdef EX_COLOR\n"
+"#ifdef VERTEX_LEVELS\n"
+"uniform float hilight;\n"	  
+
+"float V_intensity(vec3 dir) {\n"
+" float n = dot(normalize(-dir),normalize(vec3(0.0,0.0,-1.0)));\n"
+" return n;\n"
+"}\n"
+"float V_intensity2(vec3 dir) {\n"
+" float i=V_intensity(dir); return pow(i,hilight);\n"
+"}\n"
+
+"const float GAMMA2=2.2;\n"
+"const float INV_GAMMA2 = 1.0/GAMMA2;\n"
+"vec3 V_LINEARtoSRGB2(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA2));\n"
+"}\n"
+"vec3 V_SRGBtoLINEAR2(vec3 srgbIn)\n"
+"{\n"
+"  return pow(srgbIn.xyz,vec3(GAMMA2));\n"
+"}\n"
+
+    
+    "vec4 vertex_phong(vec4 pos)\n"
+"{\n"
+    "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
+    ///"    ex_Normal2 = n;\n"
+    //"    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
+
+    "    vec3 c = vec3(0.0,0.0,0.0);\n"
+    "    vec3 normal = n;\n"
+    "    c+=V_intensity(normal)*V_SRGBtoLINEAR2(level1_color.rgb);\n"
+    "    c+=V_intensity2(normal)*V_SRGBtoLINEAR2(level2_color.rgb);\n"
+    //"    c = sqrt(c);\n"
+    //"     c+=rgb.rgb;\n"
+    //"     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
+    "    ex_Color = vec4(c,1.0);\n"
+    "    return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+    
 "#ifdef SKELETON\n"
 "attribute vec4 JOINTS_0;\n"
 "attribute vec4 WEIGHTS_0;\n"
@@ -1329,10 +1382,18 @@ ShaderFile::ShaderFile()
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
     "    vec3 normal = ex_Normal2;\n"
-    "    c+=intensity(normal)*SRGBtoLINEAR2(level1_color.rgb);\n"
+    "    c+=SRGBtoLINEAR2(rgb.rgb);\n"
+"#ifdef PHONG_TEXTURE\n"
+    "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
+    "    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
+"#endif\n"
+"#ifndef PHONG_TEXTURE\n"
+    "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb,vec3(1,1,1),0.1));\n"
     "    c+=intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb);\n"
+"#endif\n"
+    
     //"    c = sqrt(c);\n"
-    "     c+=rgb.rgb;\n"
+    //"     c*=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
     "    return vec4(LINEARtoSRGB2(c),rgb.a);\n"
     "}\n"
@@ -2101,6 +2162,16 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef COLOR_MIX\n"
+"vec4 vertex_phong(vec4 rgb)\n"
+"{\n"
+"    vec4 c = vec4(mix(rgb.rgb, ex_Color.rgb, color_mix),ex_Color.a);\n"
+    "    c=clamp(c,vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"   
+    "  return c;    \n"
+"}\n"
+"#endif\n"
+"#endif\n"
 "vec4 empty(vec4 rgb)\n"
 "{\n"
 "   return rgb;\n"
@@ -2300,7 +2371,14 @@ ShaderFile::ShaderFile()
 "out float fog_intensity;\n"
 "out vec2 shadow_position;\n"
     //"flat out vec4 ex_FlatColor;\n"
-"//M:\n"
+"#ifdef VERTEX_LEVELS\n"
+"uniform vec4 level1_color;\n"
+"uniform vec4 level2_color;\n"
+"uniform vec4 level3_color;\n"
+"#endif\n"
+
+
+    "//M:\n"
 "//B:\n"
 "#ifdef SKELETAL\n"
 "vec4 skeletal(vec4 pos)\n"
@@ -2328,6 +2406,54 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 
+"#ifdef IN_NORMAL\n"
+"#ifdef LIGHTDIR\n"
+"#ifdef EX_COLOR\n"
+"#ifdef VERTEX_LEVELS\n"
+
+"uniform float hilight;\n"	  
+
+    
+"float V_intensity(vec3 dir) {\n"
+" float n = dot(normalize(-dir),normalize(vec3(0.0,0.0,-1.0)));\n"
+" return n;\n"
+"}\n"
+"float V_intensity2(vec3 dir) {\n"
+" float i=V_intensity(dir); return pow(i,hilight);\n"
+"}\n"
+
+"const float GAMMA2=2.2;\n"
+"const float INV_GAMMA2 = 1.0/GAMMA2;\n"
+"vec3 V_LINEARtoSRGB2(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA2));\n"
+"}\n"
+"vec3 V_SRGBtoLINEAR2(vec3 srgbIn)\n"
+"{\n"
+"  return pow(srgbIn.xyz,vec3(GAMMA2));\n"
+"}\n"
+    
+"vec4 vertex_phong(vec4 pos)\n"
+"{\n"
+    "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
+    //"    ex_Normal2 = n;\n"
+    //"    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
+
+    "    vec3 c = vec3(0.0,0.0,0.0);\n"
+    "    vec3 normal = n;\n"
+    "    c+=V_intensity(normal)*V_SRGBtoLINEAR2(level1_color.rgb);\n"
+    "    c+=V_intensity2(normal)*V_SRGBtoLINEAR2(level2_color.rgb);\n"
+    //"    c = sqrt(c);\n"
+    //"     c+=rgb.rgb;\n"
+    //"     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
+    "    ex_Color = vec4(c,1.0);\n"
+    "    return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+    
 "#ifdef SKELETON\n"
     //"uniform mat4 inverseBind[64];\n"
 "uniform mat4 jointMatrix[64];\n"
@@ -3225,6 +3351,19 @@ ShaderFile::ShaderFile()
     "    return vec4(c,rgb.a);\n"
     "}\n"
 "#endif\n"
+"#endif\n"
+"#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef COLOR_MIX\n"
+"vec4 vertex_phong(vec4 rgb)\n"
+"{\n"
+"    vec4 c = vec4(mix(rgb.rgb, ex_Color.rgb, color_mix),ex_Color.a);\n"
+    "    c=clamp(c,vec4(0.0,0.0,0.0,0.0), vec4(1.0,1.0,1.0,1.0));\n"   
+    "  return c;    \n"
+
+    //"  return vec4(mix(rgb.rgb, ex_Color.rgb, color_mix),ex_Color.a);    \n"
+    //"return vec4(1.0,0.0,0.0,1.0);\n"
+    "}\n"
 "#endif\n"
 "#endif\n"
 "#ifdef SKELETON\n"

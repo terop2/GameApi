@@ -375,8 +375,13 @@ public:
 class GuiWidget
 {
 public:
+  GuiWidget() : index(0), size2(1) { }
   void set_id(std::string id_m) { id = id_m; }
   std::string get_id() const { return id; }
+  void set_index(int j) { index = j; }
+  int get_index() const { return index; }
+  void set_size2(int sz) { size2=sz; }
+  int get_size2() const { return size2; }
   virtual ~GuiWidget() { }
   virtual void hide() { }
   virtual void show() { }
@@ -399,6 +404,8 @@ public:
   virtual std::vector<GuiWidget*> *child_from_path(std::string path) { return 0; }
 private:
   std::string id;
+  int index;
+  int size2;
 };
 namespace GameApi
 {
@@ -414,6 +421,7 @@ struct GameApiParam
   std::string value;
   bool is_array = false;
   GameApiLine *array_return_target = 0;
+  int j; // multiple return values
 };
 namespace GameApi {
 class EditNode;
@@ -445,9 +453,9 @@ public:
   virtual std::string FuncName(int i) const=0;
   virtual std::string Symbols() const=0;
   virtual std::string Comment() const=0;
-  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e)=0;
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)=0;
   //virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
   virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }
@@ -458,6 +466,8 @@ struct GameApiLine
   int x,y;
   std::string module_name;
   std::string uid;
+  int j;
+  int sz;
   bool array_return = false;
   std::vector<GameApiParam> params;
 };

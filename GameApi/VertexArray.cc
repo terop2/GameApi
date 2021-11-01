@@ -3212,6 +3212,8 @@ Counts CalcOffsets(FaceCollection *coll, int start)
   return c;
 }
 std::string g_msg_string;
+long long g_copy_total;
+long long g_copy_progress;
 bool is_texture_usage_confirmed(const FaceCollection *p);
 bool is_texture_usage_confirmed(VertexArraySet *set);
 
@@ -3237,6 +3239,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
     
     for(int i=start_range;i<end_range;i++)
       {
+	g_copy_progress++;
 	//std::cout << "F" << i << std::endl;
 	//if ((i-start_range)%1000==0) { std::cout << "Face: " << i << std::endl; }
 	int w = coll.NumPoints(i);

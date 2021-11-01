@@ -1,7 +1,12 @@
 cd meshpage.org
+put view.php
 put meshpage.php
 put cert.php
 put cert_linux.php
 put login.php
 put oauth2.php
 put oauth2_callback.php
+put material_db.txt
+put border_db.txt
+put background_db.txt
+put model_db.txt

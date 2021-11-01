@@ -8,7 +8,7 @@
 #include "GameApi_low.hh"
 
 
-bool g_vr_enable = false;
+bool g_vr_enable = false; 
 int g_vr_device_id = 0;
 
 class ZeroIntFetcher : public Fetcher<int>
@@ -228,6 +228,16 @@ public:
   void HeavyPrepare() {}
 
   void Prepare() { item->Prepare(); }
+  //Matrix Get300BoxToMetersMatrix() const
+  //{
+  // Matrix m = { 1.0, 0.0, 0.0, 0.0,
+  //		 0.0, 1.0, 0.0, 0.0,
+  //		 0.0, 0.0, 1.0, 0.0,
+  //		 0.0, 0.0, 0.0, 1.0 };
+  //m=Matrix::Scale(1.0,1.0,6.0/60000.0);
+  //  return m;
+  //}
+
   virtual void execute(MainLoopEnv &e)
   {
     //if (firsttime) {
@@ -260,11 +270,14 @@ public:
       }
     if (pose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid ) {
       hmd_pose = device_pose[vr::k_unTrackedDeviceIndex_Hmd];
+      //hmd_pose = Get300BoxToMetersMatrix() * hmd_pose * Matrix::Inverse(Get300BoxToMetersMatrix());
+
+      //std::cout << "HMD_POSE:" << hmd_pose << std::endl;
       if (invert) {
 	hmd_pose = Matrix::Inverse(hmd_pose);
       }
       if (translate) {
-	hmd_pose = Matrix::Translate(0.0,0.0,-1200.0) * hmd_pose;
+	hmd_pose =  Matrix::Translate(0.0,0.0,-1200.0) * hmd_pose;
       }
     }
     }
@@ -318,7 +331,7 @@ public:
 	  hmd_pose = Matrix::Inverse(hmd_pose);
 	}
 	if (translate) {
-	  hmd_pose = Matrix::Translate(0.0,0.0,-1200.0) * hmd_pose;
+	  hmd_pose =  Matrix::Translate(0.0,0.0,-1200.0) * hmd_pose;
 	}
 
       }
@@ -330,9 +343,14 @@ public:
   {
     // 0.0 vaikuttaa sponzan 2 kerroksen pilareihin
     Matrix m = { pose.m[0][0], pose.m[0][1], pose.m[0][2], pose.m[0][3],
-		 pose.m[1][0], pose.m[1][1], pose.m[1][2], pose.m[1][3],
-		 pose.m[2][0], pose.m[2][1], pose.m[2][2], pose.m[2][3],
-	         0.0, 0.0,0.0, 1.0f};
+    		 pose.m[1][0], pose.m[1][1], pose.m[1][2], pose.m[1][3],
+    		 pose.m[2][0], pose.m[2][1], pose.m[2][2], pose.m[2][3],
+    	         0.0, 0.0,0.0, 1.0f};
+    //Matrix m = { 1.0, 0.0, 0.0, pose.m[0][3],
+    //		 0.0, 1.0, 0.0, pose.m[1][3],
+    //		 0.0,0.0,1.0, pose.m[2][3],
+    //	         0.0, 0.0,0.0, 1.0f};
+    // std::cout << "POSE:" << std::endl << m << std::endl;
     for(int i=0;i<16;i++) if (std::isnan(m.matrix[i])) m.matrix[i]=0.0;
     return m;
   }
@@ -447,7 +465,7 @@ public:
   void Collect(CollectVisitor &vis) { item->Collect(vis); }
   void HeavyPrepare() {}
 
-  Matrix Get300BoxToMetersConversion() const
+  Matrix Get300BoxToMetersMatrix() const
   {
     Matrix m = { 1.0, 0.0, 0.0, 0.0,
 		 0.0, 1.0, 0.0, 0.0,
@@ -463,10 +481,18 @@ public:
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
   vr::HmdMatrix34_t mat = hmd->GetEyeToHeadTransform( nEye );
   Matrix m = { mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
-	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
-	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
-	       0.0, 0.0, 0.0, 1.0 };
+  	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
+  	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
+  	       0.0, 0.0, 0.0, 1.0 };
+  //Matrix m = { 1.0,0.0,0.0, mat.m[0][3],
+  //	       0.0,1.0,0.0, mat.m[1][3],
+  //	       0.0,0.0,1.0, mat.m[2][3],
+  //	       0.0, 0.0, 0.0, 1.0 };
 
+  //std::cout << "EYE:" << m << std::endl;
+  
+  m = Get300BoxToMetersMatrix() * m;  /* Matrix::Inverse(Get300BoxToMetersMatrix()); */
+  
   //m.matrix[3]*=300.0*300.0;
   // m.matrix[7]*=300.0*300.0;
   //m.matrix[11]*=300.0*300.0;
@@ -542,12 +568,21 @@ public:
 #ifndef EMSCRIPTEN
   if (!hmd) { return DefaultProjection(ev); }
   vr::Hmd_Eye nEye = eye ? vr::Eye_Left : vr::Eye_Right;
-  vr::HmdMatrix44_t mat = hmd->GetProjectionMatrix( nEye, m_fNearClip, m_fFarClip );
+  vr::HmdMatrix44_t mat = hmd->GetProjectionMatrix( nEye, 0.03, 36.0); //m_fNearClip, m_fFarClip );
   Matrix m = { mat.m[0][0], mat.m[0][1], mat.m[0][2], mat.m[0][3],
-	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
-	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
-	       mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3] };
+  	       mat.m[1][0], mat.m[1][1], mat.m[1][2], mat.m[1][3],
+  	       mat.m[2][0], mat.m[2][1], mat.m[2][2], mat.m[2][3],
+  	       mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3] };
 
+  //Matrix m = { 1.0, 0.0, 0.0 , mat.m[0][3],
+  //	       0.0, 1.0, 0.0, mat.m[1][3],
+  //	       0.0, 0.0, 1.0, mat.m[2][3],
+  //	       mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3] };
+
+  //std::cout << "PROJ:" << m << std::endl;
+	       //mat.m[3][0], mat.m[3][1], mat.m[3][2], mat.m[3][3] };
+
+  
   //std::cout << "MATRIX:" << std::endl;
   //std::cout << m.matrix[0] << " " << m.matrix[1] << " " << m.matrix[2] << " " << m.matrix[3] << std::endl;
   //std::cout << m.matrix[4] << " " << m.matrix[5] << " " << m.matrix[6] << " " << m.matrix[7] << std::endl;
@@ -556,7 +591,9 @@ public:
 
   GameApi::M m2 = ev.matrix_api.scale(1.0,0.5,1.0);
   Matrix mm = find_matrix(env,m2);
-  m = mm * m;
+  GameApi::M m2a = ev.matrix_api.scale(4.0/300.0,4.0/300.0,4.0/300.0);
+  Matrix mma = find_matrix(env,m2a);
+  m = mma * mm * m;
 
 #else
   if (!vr_vr_ready ||current_display==NULL||current_display==-1) { return DefaultProjection(ev); }

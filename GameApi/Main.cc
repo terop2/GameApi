@@ -21,7 +21,9 @@
 // this is also in GameApi_h.hh
 #ifndef LINUX
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define VIRTUAL_REALITY 1
+#endif
 #endif
 #endif
 //#define VIRTUAL_REALITY_OVERLAY 1
@@ -33,8 +35,10 @@
 #ifndef ARM
 //#ifndef LINUX
 //#ifndef RASPI
+#ifndef ANDROID
 #define USE_GLEW 1
 #include <GL/glew.h>
+#endif
 //#endif
 //#endif
 #endif
@@ -61,7 +65,7 @@
 #endif
 
 #ifdef LINUX
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 //#define WAYLAND 1
