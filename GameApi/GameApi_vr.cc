@@ -471,10 +471,9 @@ public:
 		 0.0, 1.0, 0.0, 0.0,
 		 0.0, 0.0, 1.0, 0.0,
 		 0.0, 0.0, 0.0, 1.0 };
-    //m=Matrix::Scale(1.0,1.0,6.0/600.0);
     return m;
   }
-  
+
   Matrix GetHMDMatrixPoseEye( bool eye, bool is_std )
 {
 #ifndef EMSCRIPTEN
