@@ -1212,6 +1212,7 @@ public:
       {
 
       std::string url = id;
+      /*
   { // progressbar
   int s = url.size();
   int sum=0;
@@ -1227,7 +1228,7 @@ public:
   sum = sum % 1000;
   ProgressBar(sum,15,15,url + " (cached)");
   }
-
+      */
 	//std::cout << "PrepareCache: SKIPPED!" << std::endl;
 	return;
       }
@@ -1247,7 +1248,9 @@ public:
       {
 
       std::string url = id;
-  { // progressbar
+
+      /*
+      { // progressbar
   int s = url.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
@@ -1262,7 +1265,7 @@ public:
   sum = sum % 1000;
   ProgressBar(sum,15,15,url + " (cached)");
   }
-
+      */
 	//std::cout << "PrepareCache: SKIPPED!" << std::endl;
 	return;
       }
@@ -5209,7 +5212,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
       }
     int progress = 0;
-    InstallProgress(1,"send to gpu mem",10);
+    //InstallProgress(1,"send to gpu mem",10);
     while(1) {
       //std::cout << "wait 3" << std::endl;
       while(g_lock3==true) {
@@ -5221,7 +5224,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //std::cout << "wait 3 end" << std::endl;
       //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
       progress++;
-      ProgressBar(1,progress*10/num_threads,10,"send to gpu mem");
+      //ProgressBar(1,progress*10/num_threads,10,"send to gpu mem");
       
       // now ti_global is available
       ThreadInfo volatile *ti_global2 = ti_global;

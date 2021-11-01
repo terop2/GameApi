@@ -1384,7 +1384,7 @@ ShaderFile::ShaderFile()
     "    vec3 normal = ex_Normal2;\n"
     "    c+=SRGBtoLINEAR2(rgb.rgb);\n"
 "#ifdef PHONG_TEXTURE\n"
-    "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.1));\n"
+    "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
     "    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
 "#endif\n"
 "#ifndef PHONG_TEXTURE\n"
