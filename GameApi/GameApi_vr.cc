@@ -447,6 +447,15 @@ public:
   void Collect(CollectVisitor &vis) { item->Collect(vis); }
   void HeavyPrepare() {}
 
+  Matrix Get300BoxToMetersConversion() const
+  {
+    Matrix m = { 1.0, 0.0, 0.0, 0.0,
+		 0.0, 1.0, 0.0, 0.0,
+		 0.0, 0.0, 1.0, 0.0,
+		 0.0, 0.0, 0.0, 1.0 };
+    return m;
+  }
+
   Matrix GetHMDMatrixPoseEye( bool eye, bool is_std )
 {
 #ifndef EMSCRIPTEN
