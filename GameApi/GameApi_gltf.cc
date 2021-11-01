@@ -5,6 +5,7 @@
 #define TINYGLTF_IMPLEMENTATION
 #include "tiny_gltf.h"
 
+extern std::vector<const char *> g_urls;
 extern std::string gameapi_homepageurl;
 
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
@@ -203,6 +204,8 @@ public:
   }
   void Prepare() {
     if (prepare_done) return;
+    //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
+    //std::cout << "LoadGLTF: url=" << url << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
@@ -219,14 +222,32 @@ public:
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
 #ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space) {
       sz--;
+    }
 #endif
+    //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
       tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
 #ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space)
+      {
       sz--;
+      }
 #endif
       tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL); 
     }
@@ -302,6 +323,9 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
   //LoadGltf *data = (LoadGltf*)ptr;
   //std::cout << "ReadWholeFile " << filepath << std::endl;
   std::string url = filepath;
+  // remove starting / from file names.
+  if (url.size()>0 && url[0]=='/') url=url.substr(1);
+
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
@@ -312,7 +336,14 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     }
     int sz = vec->size();
 #ifdef EMSCRIPTEN
-        sz--;
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space)
+      sz--;
 #endif
     *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
   return true;

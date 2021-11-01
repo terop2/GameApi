@@ -4,7 +4,9 @@
 #ifndef RASPI
 // this is also in Main.cc
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define VIRTUAL_REALITY 1
+#endif
 #endif
 #ifndef EMSCRIPTEN
 //#define VIRTUAL_REALITY_OVERLAY 1
@@ -29,8 +31,10 @@
 #ifndef RASPI
 #ifndef EMSCRIPTEN
 #ifndef LINUX
+#ifndef ANDROID
 #define LOOKING_GLASS 1
 //#undef LOOKING_GLASS
+#endif
 #endif
 #endif
 #endif
@@ -57,7 +61,9 @@
 #define HAS_FREETYPE 1
 #endif
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define HAS_POPEN 1
+#endif
 #endif
 #endif
 #endif
@@ -86,7 +92,7 @@
 #endif
 
 #ifdef LINUX
-//#define OPENGL_ES 1
+#define OPENGL_ES 1
 #endif
 
 //#define WAYLAND 1
@@ -127,6 +133,21 @@
 #include <memory>
 #include <cmath>
 #include <chrono>
+
+#ifdef ANDROID
+namespace std {
+  template<class T>
+  std::string to_string(const T &t) { std::stringstream ss; ss << t; return ss.str(); }
+  float strtof(const char *s, char **end) { std::stringstream ss(s); float f=0.0; ss >> f; return f; }
+  int stoi(std::string s, size_t *chs) { std::stringstream ss(s); int i=0; ss >> i; return i; }
+  long double strtold(const char *s, char**end) { std::stringstream ss(s); long double ll; ss >> ll; return ll; }
+  long long strtoll(const char *s, char**end, int) { std::stringstream ss(s); long long ll; ss >> ll; return ll; }
+  unsigned long long strtoull(const char *s, char**end, int) { std::stringstream ss(s); unsigned long long ll; ss >> ll; return ll; }
+  int snprintf(char *a, size_t b, const char * c, ...) { int val = 0; va_list arglist; va_start( arglist, c); val=::vsnprintf(a,b,c,arglist ); va_end(arglist); return val; }
+};
+  extern int errno;
+#define UINT64_MAX 0xffffffffffffffffL
+#endif
 
 
 //#define NO_SDL_GLEXT 

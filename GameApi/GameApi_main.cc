@@ -1683,7 +1683,7 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d
   ek.sh_color = color.id;
   ek.sh_texture_2d = texture_2d.id;
   ek.sh_texture = texture.id;
-  ek.sh_array_texture = array_texture.id;
+  ek.sh_array_texture = texture.id; //array_texture.id;
   //ek.type = ee.type;
   //ek.ch = ee.ch;
   //ek.cursor_pos = *find_point(e,ee.cursor_pos);
@@ -1751,6 +1751,11 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   MainLoopEvent e2;
   e2.type = ee.type;
   e2.ch = ee.ch;
+  if (e2.type==1027 && e2.ch==0)
+    {
+      if (ee.mouse_wheel_y<0) e2.ch=-1;
+      if (ee.mouse_wheel_y>0) e2.ch=1;
+    }
   e2.cursor_pos = *find_point(e,ee.cursor_pos);
   e2.button = ee.button;
   e2.drag_drop_filename = ee.drag_drop_filename;
@@ -2063,7 +2068,7 @@ void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
 #ifdef EMSCRIPTEN
  SH arr = texture;
 #else
- SH arr = ev.shader_api.texture_array_shader();
+ SH arr = ev.shader_api.texture_shader();
 #endif
  ev.mainloop_api.init_3d(color);
  ev.mainloop_api.init_3d(texture);
@@ -2346,7 +2351,7 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
 #ifdef EMSCRIPTEN
  SH arr = texture;
 #else
- SH arr = ev.shader_api.texture_array_shader();
+ SH arr = ev.shader_api.texture_shader();
 #endif
  ev.mainloop_api.init_3d(color);
  ev.mainloop_api.init_3d(texture);
@@ -2599,7 +2604,7 @@ public:
     case 5: ogl->glDepthFunc(Low_GL_GEQUAL); break;
     };
     next->execute(e);
-    ogl->glDepthFunc(Low_GL_LEQUAL);
+    ogl->glDepthFunc(Low_GL_LESS);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);

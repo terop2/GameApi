@@ -368,12 +368,17 @@ struct ThreadInfo
   Counts ct2_counts;
 };
 void *thread_func(void *data);
+extern long long g_copy_total;
+extern long long g_copy_progress;
+
 class ThreadedPrepare
 {
 public:
   ThreadedPrepare(FaceCollection *faces) : faces(faces) { }
   int push_thread(int start_range, int end_range, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
   {
+    g_copy_total += end_range-start_range;
+    
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
     s->set_reserve(0, end_range-start_range, end_range-start_range, end_range-start_range);
@@ -406,6 +411,7 @@ public:
 
   int push_thread2(int start_range, int end_range, RenderVertexArray *r, pthread_mutex_t *mutex1, pthread_mutex_t *mutex2, pthread_mutex_t *mutex3, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
   {
+    g_copy_total += end_range-start_range;
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
     //s->set_reserve(0, (end_range-start_range)/10+1, (end_range-start_range)/10+1, (end_range-start_range)/10+1);
@@ -444,6 +450,8 @@ public:
     void *res;
     //std::cout << "phread_join" << id << std::endl;
     pthread_join(ti[id]->thread_id, &res);
+    g_copy_total=0;
+    g_copy_progress=0;
   }
   void transfer_to_gpu_mem(VertexArraySet *set, RenderVertexArray &r, int rend_id, int buf, int start, int end) {
     RenderVertexArray_bufferids ids;

@@ -87,7 +87,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_many_shader()
 {
@@ -104,7 +104,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
   switch(i) {
   case 0: sh = colour_shader(); break;
   case 1: sh = texture_shader();break;
-  case 2: sh = texture_array_shader(); break;
+  case 2: sh = texture_shader(); break;
   case 3: sh = colour_texture_shader();break;
   };
   int width = ev.mainloop_api.get_screen_width();
