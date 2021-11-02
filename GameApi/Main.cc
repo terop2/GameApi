@@ -362,7 +362,7 @@ void *audio(void *arg)
   f1.seekg(0, std::ios_base::beg);
   char *audio_buffer = new char[size1];
   f1.read((char*)audio_buffer, size1);
-c  for(int i=0;i<size1&&!exit2;i+=100)
+  for(int i=0;i<size1&&!exit2;i+=100)
     write(audio_fd,audio_buffer+i,100);
   lock1=true;
   delete [] audio_buffer;
@@ -559,6 +559,8 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
   //std::cout << "context created" << std::endl;
+
+  g_low->ogl->glEnable(Low_GL_MULTISAMPLE);
   
 #ifdef WAYLAND
   Low_SDL_SysWMinfo info;
