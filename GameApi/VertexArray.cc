@@ -7,6 +7,7 @@
 
 #include "GameApi_h.hh"
 #include "GameApi_low.hh"
+#include <atomic>
 
 #ifndef EMSCRIPTEN
 #define VAO 1
@@ -3106,7 +3107,7 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
 Counts CalcCounts(FaceCollection *coll, int start, int end);
 Counts CalcOffsets(FaceCollection *coll, int start);
 void ProgressBar(int val, int max);
-volatile bool g_lock1=false, g_lock2=false, g_lock3=false;
+std::atomic<bool> g_lock1, g_lock2, g_lock3;
 
 #ifndef ARM
 ThreadInfo volatile *ti_global;
@@ -3155,7 +3156,8 @@ void *thread_func(void *data)
       //std::cout << "Lock2 wait" << std::endl;
       //std::cout << "wait 2" << std::endl;
       //std::cout << "lock 2 wait" << std::endl;
-     while(g_lock2==true);
+      while(g_lock2==true);
+      //g_lock2.wait(false);
       g_lock2 = true;
       //std::cout << "lock 2 wait end" << std::endl;
       //std::cout << "wait 2 end" << std::endl;

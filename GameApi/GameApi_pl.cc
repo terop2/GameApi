@@ -5,7 +5,7 @@
 #endif
 
 #include "GameApi_low.hh"
-
+#include <atomic>
 
 
 
@@ -4942,9 +4942,9 @@ extern ThreadInfo volatile *ti_global;
 #endif
 extern volatile int thread_counter;
 
-extern volatile bool g_lock1;
-extern volatile bool g_lock2;
-extern volatile bool g_lock3;
+extern std::atomic<bool> g_lock1;
+extern std::atomic<bool> g_lock2;
+extern std::atomic<bool> g_lock3;
 
 extern long long g_copy_total;
 extern long long g_copy_progress;
@@ -5034,24 +5034,27 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
     }
   int progress = 0;
-  InstallProgress(999,"gpu mem",15);
+  //InstallProgress(999,"gpu mem",15);
   long long prev = 0;
   while(1) {
     //std::cout << "lock3 wait" << std::endl;
+#if 1
     while(g_lock3==true) {
 #ifdef EMSCRIPTEN
       // emscripten_sleep(100);
 #endif
 
-      if (g_copy_progress*15/g_copy_total!=prev)
-	{
-	  prev = g_copy_progress*15/g_copy_total;
-	  ProgressBar(999,prev,15,"gpu mem");
+      //if (g_copy_progress*15/g_copy_total!=prev)
+      //	{
+      //	  prev = g_copy_progress*15/g_copy_total;
+      //	  ProgressBar(999,prev,15,"gpu mem");
 	  
-	}
+      //	}
 	 
       
     }
+#endif
+    //g_lock3.wait(false); // wait is available only in c++20
     g_lock3 = true;
     //std::cout << "Lock3 wait end" << std::endl;
     //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.
@@ -5215,11 +5218,14 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //InstallProgress(1,"send to gpu mem",10);
     while(1) {
       //std::cout << "wait 3" << std::endl;
+#if 1
       while(g_lock3==true) {
 #ifdef EMSCRIPTEN
 	///	emscripten_sleep(100);
 #endif
       }
+#endif
+      // g_lock3.wait(); // wait is available in c++20 only
       g_lock3 = true;
       //std::cout << "wait 3 end" << std::endl;
       //pthread_mutex_lock(mutex3); // WAIT FOR mutex3 to open.

@@ -12627,7 +12627,7 @@ public:
 
       
       int num = vis_counter;
-      //if (vis->vec.size()>0)
+      if (vis->vec.size()>0)
       ProgressBar(33344, (15*num/vis->vec.size()), 15, "collect");
       //bool b = false;
       if (gameapi_seamless_url=="") {
