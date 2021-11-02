@@ -605,6 +605,7 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      std::string u = gui.get_id(wid);
 		      //int j = gui.get_index(wid);
 		      int sz = gui.get_size2(w1);
+		      if (sz==0) sz=1;
 		      std::stringstream ss(u);
 		      std::string target_uid;
 		      int num;
@@ -653,6 +654,7 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      std::string u = gui.get_id(wid);
 		      //int j = gui.get_index(wid);
 		      int sz = gui.get_size2(w1);
+		      if (sz==0) sz=1;
 		      std::stringstream ss(u);
 		      std::string target_uid;
 		      int num;
