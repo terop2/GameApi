@@ -58,4 +58,7 @@ GameApi/web_page/web_page_highmem.*
 GameApi/web_page/web_page_lowmem.*
 GameApi/web_page/web_page_nothreads.*
 GameApi/web_page/web_page_nothreads_highmem.*
+GameApi/web_page/web_page_lowmem_nothreads.*
+GameApi/web_page/a.out
+GameApi/web_page/#*#
 
