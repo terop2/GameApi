@@ -49,7 +49,7 @@ extern wl_display *g_wl_display;
 extern wl_surface *g_wl_surface;
 extern wl_shell_surface *g_wl_shell_surface;
 
-
+void clear_codegen();
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
 void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
@@ -388,7 +388,7 @@ void connect_target(int x, int y, Envi *envi)
 	  bool erase = false;
 	  if (b) 
 	    {
-	      if (envi->connect_start_sz>1)
+	      if (envi->connect_start_sz>1 && !is_array)
 		{ // multiple return values
 		  std::string val2 = envi->connect_start_uid; 
 		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2, envi->connect_start_j);
@@ -396,6 +396,20 @@ void connect_target(int x, int y, Envi *envi)
 		  erase=true;
 		  
 		}
+	      else
+		if (envi->connect_start_sz>1 && is_array)
+		  {
+
+		  std::string val = envi->ev->mod_api.param_value(envi->mod, 0, uid, real_index);
+		  std::vector<std::string> vec = envi->ev->mod_api.parse_param_array(val);
+		  std::stringstream ss;
+		  ss << envi->connect_start_j;
+		  vec.push_back(envi->connect_start_uid + "@" + ss.str());
+		  std::string val2 = envi->ev->mod_api.generate_param_array(vec);
+		  envi->ev->mod_api.change_param_value(envi->mod, 0, uid, real_index, val2,0);
+		  erase=false;
+		    
+		  }
 	      else
 	      if (is_array_return)
 		{
@@ -712,6 +726,7 @@ void iter(void *arg)
 		/* code generation here */
 		std::cout << "CodeGen" << std::endl;
 		env->ev->mod_api.codegen_reset_counter();
+		clear_codegen();
 		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000,0);
 		std::cout << p.second << std::endl;
 	      }
@@ -941,6 +956,7 @@ void iter(void *arg)
 	  //  if (chosen==0)
 		{
 		  std::cout << "CodeGen!" << std::endl;
+		clear_codegen();
 		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
 		std::cout << p.second << std::endl;
 
@@ -956,8 +972,8 @@ void iter(void *arg)
 	    //ProgressBar(933, 7,15, "Execute");
 	    GameApi::ExecuteEnv exeenv;
 	    if (type2 == "ML") {
-	      std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
-	      std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2);
+	      std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
+	      std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2,0);
 	      
 	      
 
@@ -985,6 +1001,7 @@ void iter(void *arg)
 		std::cout << "Loading: " << urls[i] << std::endl;
 	      }
 	      
+		clear_codegen();
 	      std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
 
 		  
@@ -1034,7 +1051,7 @@ void iter(void *arg)
 		    //ProgressBar(933, 7,15, "Execute");
 		    GameApi::ExecuteEnv exeenv;
 		    if (type2 != "HML") {
-		    std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count);
+		      std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
 		    //ProgressBar(933, 15,15, "Execute");
 
 		    //std::cout << "URLS:" << ids.second << std::endl;

@@ -590,20 +590,22 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 	      for(int i=0;i<s;i++)
 		{
 		  std::string value = v[i];
+		  bool success;
+		  std::pair<std::string,int> pp = parse_multiple_return_uid(value, success);
 	  int sss = func->lines.size();
 	  for(int iii = 0; iii<sss; iii++)
 	    {
 	      GameApiLine &line2 = func->lines[iii];
-	      if (line2.uid == value)
+	      if (line2.uid == pp.first /*value*/)
 		{
-		  W w1 = gui.find_canvas_item(canvas, value);
+		  W w1 = gui.find_canvas_item(canvas, pp.first /*value*/);
 		  if (w1.id==-1) continue;
 		  int ssss = connect_targets.size();
 		  for(int iiii=0;iiii<ssss; iiii++)
 		    {
 		      W wid = connect_targets[iiii];
 		      std::string u = gui.get_id(wid);
-		      //int j = gui.get_index(wid);
+		      int j = pp.second; //gui.get_index(wid);
 		      int sz = gui.get_size2(w1);
 		      if (sz==0) sz=1;
 		      std::stringstream ss(u);
@@ -615,14 +617,17 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      std::vector<int> vec = ev.mod_api.indexes_from_funcname(funcname);
 		      int real_num = vec[num];
 
-		      if (target_uid == line.uid && real_num == ii)
+		      bool success;
+		      std::pair<std::string,int> pp2 = parse_multiple_return_uid(target_uid, success);
+		      
+		      if (/*target_uid*/ pp2.first == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
 			  //std::cout << "NUMS:" << j << " " << sz << std::endl;
 			  W line = gui.line( w1, gui.size_x(w1), /*(gui.size_y(w1)-16)/2+16+5*/ 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
-			  ss2 << value << " " << target_uid << " " << real_num;
+			  ss2 << pp.first << " " << target_uid << " " << real_num;
 			  gui.set_id(line, ss2.str());
 			  gui.set_index(line, j);
 			  gui.set_size2(line, sz);
@@ -663,8 +668,10 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      std::string funcname = ev.mod_api.get_funcname(mod2, 0, target_uid);
 		      std::vector<int> vec = ev.mod_api.indexes_from_funcname(funcname);
 		      int real_num = vec[num];
+		      bool success;
+		      std::pair<std::string,int> pp = parse_multiple_return_uid(target_uid, success);
 
-		      if (target_uid == line.uid && real_num == ii)
+		      if (pp.first /* target_uid */ == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
 			  //std::cout << "NUMS:" << j << " " << sz << std::endl;
@@ -780,6 +787,44 @@ EXPORT void GameApi::WModApi::codegen_reset_counter()
 {
   env_counter(true);
 }
+int ret_type_count(std::string return_type);
+
+
+struct codegen_item
+{
+  int id;
+  std::string line_uid;
+  std::string ret_id;
+};
+std::vector<codegen_item> codegen_cache;
+
+void clear_codegen()
+{
+  codegen_cache = std::vector<codegen_item>();
+}
+
+void push_codegen(int id, std::string line_uid, std::string ret_id)
+{
+  codegen_item i;
+  i.id = id;
+  i.line_uid = line_uid;
+  i.ret_id = ret_id;
+  codegen_cache.push_back(i);
+}
+
+std::string find_codegen(int id, std::string line_uid, bool &success)
+{
+  int s = codegen_cache.size();
+  for(int i=0;i<s;i++)
+    {
+      codegen_item &ii = codegen_cache[i];
+      if (ii.id==id && ii.line_uid==line_uid) { success=true; return ii.ret_id; }
+    }
+  success=false;
+  return "";
+}
+    
+
 EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions();
@@ -806,7 +851,9 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
 	      std::string pn = param->value;
+	      std::string rt = "";
 	      int jj = param->j;
+	      int sz = line->sz;
 	      if (level<=0)
 		{ // Stopping recursion
 		  int sd = vec.size();
@@ -836,10 +883,28 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 		}
 	      if (pn.size()>3 && pn[0]=='u' && pn[1] == 'i' && pn[2] =='d')
 		{
+		  bool success = false;
+		  std::string id2 = find_codegen(id,pn,success);
+		  if (success) {
+		    rt = return_type(mod2,id,pn);
+		    p = "";
+		    pn = id2;
+		  } else {
 		  std::pair<std::string,std::string> val = codegen(ev, mod2, id, pn, level-1,jj);
+		  //std::cout << "CODEGEN:" << line_uid << " " << pn << std::endl;
+		  rt = return_type(mod2, id, pn);
 		  p = val.second;
 		  pn = val.first;
+		  }
 		}
+	      int ret_count = ret_type_count(rt);
+	      if (ret_count>1) {
+		// Multiple return types
+		// Use jj here..
+		std::stringstream ss;
+		ss << jj;
+		pn += "[" + ss.str() + "]";
+	      }
 	      if (pn.size()>1 && pn[0]=='[' && pn[pn.size()-1]==']')
 		{
 		  std::string param_type = "";
@@ -869,9 +934,32 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, substr, level-1,0);
+		  bool success = false;
+		  std::pair<std::string,int> pp = parse_multiple_return_uid(substr, success);
+
+		  std::string id2 = find_codegen(id,pp.first,success);
+		  if (success) {
+		    rt = return_type(mod2,id,pp.first);
+		    p += "";
+		    ss+= id2;
+		  } else {
+
+			      
+			      bool success;
+			      std::pair<std::string,std::string> val = codegen(ev, mod2, id, pp.first /*substr*/, level-1,0);
+			      // TODO guess no multiple return values here
+			      rt = return_type(mod2, id, pp.first /*substr*/);
+
 			      p += val.second;
 			      ss += val.first;
+		  }
+
+			      int ret_count = ret_type_count(rt);
+			      if (ret_count>1) {
+			      	std::stringstream ss2;
+			      	ss2 << pp.second; 
+				ss+= "[" + ss2.str() + "]";
+			      }
 			    }
 			  else
 			    {
@@ -903,6 +991,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      if (name == line->module_name)
 		{
 		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names,j);
+		  push_codegen(id,line_uid, val.first);
 		  return val;
 		}
 	    }
@@ -995,7 +1084,9 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      int val = execute(ev, mod2, id, substr, exeenv, level-1,0);
+			      bool success;
+			      std::pair<std::string,int> pp = parse_multiple_return_uid(substr,success);
+			      int val = execute(ev, mod2, id, pp.first /*substr*/, exeenv, level-1,pp.second);
 			      if (val==-1) return -1;
 			      std::stringstream sw;
 			      sw << val;
@@ -1048,7 +1139,7 @@ std::vector<std::string> combine_vec(std::vector<std::string> v1, std::vector<st
   return vec;
 }
 
-EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size)
+EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
@@ -1087,6 +1178,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 	    {
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = param->value;
+	      int jj = param->j;
 	      if (level<=0)
 		{ // Stopping recursion
 		  int sd = vec.size();
@@ -1111,7 +1203,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
-		  std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, p, exeenv, level-1,arr,arr_size);
+		  std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, p, exeenv, level-1,arr,arr_size,jj);
 		  int val = vals.first;
 		  std::vector<std::string> urls = vals.second;
 		  res = combine_vec(res, urls);
@@ -1135,7 +1227,9 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 			  //std::cout << "substr: " << substr << std::endl;
 			  if (substr.size()>3 && substr[0]=='u' && substr[1] == 'i' && substr[2] =='d')
 			    {
-			      std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, substr, exeenv, level-1,arr,arr_size);
+			      bool success;
+			      std::pair<std::string,int> pp = parse_multiple_return_uid(substr, success);
+			      std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, pp.first /*substr*/, exeenv, level-1,arr,arr_size,pp.second);
 			      int val = vals.first;
 			      res = combine_vec(res,vals.second);
 			      //if (val==-1) return std::make_pair(-1,res);
@@ -1368,6 +1462,30 @@ EXPORT std::string GameApi::WModApi::generate_param_array(std::vector<std::strin
     }
   ss << "]";
   return ss.str();
+}
+
+EXPORT std::pair<std::string, int> GameApi::WModApi::parse_multiple_return_uid(std::string s, bool &success)
+{
+  //std::cout << "PARSE: " << s << std::endl;
+  if (s.size()<2) { success=false; return std::pair<std::string,int>(s,0); }
+  int ss = s.size();
+  int pos = 0;
+  std::string label = s;
+  std::string index = "0";
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]=='@') {
+	label = s.substr(0,i);
+	index = s.substr(i+1);
+	//std::cout << "LABEL:" << label << std::endl;
+	//std::cout << "INDEX: " << index << std::endl;
+      }
+    }
+  std::stringstream ss2(index);
+  int index2;
+  ss2 >> index2;
+  success = true;
+  return std::make_pair(label, index2);
 }
 
 EXPORT std::string GameApi::WModApi::param_value(WM mod2, int id, std::string uid, int param_index)
