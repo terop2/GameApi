@@ -1950,12 +1950,13 @@ public:
   IMPORT int find_line_index(WM mod2, int id, std::string uid);
   IMPORT std::string param_value(WM mod2, int id, std::string uid, int param_index);
   IMPORT std::vector<std::string> parse_param_array(std::string s);
+  IMPORT std::pair<std::string,int> parse_multiple_return_uid(std::string s, bool &success);
   IMPORT std::string generate_param_array(std::vector<std::string> v);
   IMPORT bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return);
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j);
-  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size);
+  IMPORT std::pair<int,std::vector<std::string> > collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j);
   
 
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
