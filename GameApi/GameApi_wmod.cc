@@ -606,7 +606,7 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      W wid = connect_targets[iiii];
 		      std::string u = gui.get_id(wid);
 		      int j = pp.second; //gui.get_index(wid);
-		      int sz = gui.get_size2(w1);
+		      int sz = line2.sz; //gui.get_size2(w1);
 		      if (sz==0) sz=1;
 		      std::stringstream ss(u);
 		      std::string target_uid;
@@ -623,8 +623,12 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      if (/*target_uid*/ pp2.first == line.uid && real_num == ii)
 			{
 			  W w2 = wid;
+			  if (sz<0||sz>25) sz=1;
+			  if (j<0||j>25) j=0;
 			  //std::cout << "NUMS:" << j << " " << sz << std::endl;
-			  W line = gui.line( w1, gui.size_x(w1), /*(gui.size_y(w1)-16)/2+16+5*/ 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz,
+			  int yy = 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz;
+			  if (sz<=1) yy=16+5+4+(gui.size_y(w1)-16-16)/2;
+			  W line = gui.line( w1, gui.size_x(w1), /*(gui.size_y(w1)-16)/2+16+5*/ yy /*16+16+5+4+(gui.size_y(w1)-16-16)*j/sz*/,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
 			  ss2 << pp.first << " " << target_uid << " " << real_num;
@@ -658,8 +662,11 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 		      W wid = connect_targets[iiii];
 		      std::string u = gui.get_id(wid);
 		      //int j = gui.get_index(wid);
-		      int sz = gui.get_size2(w1);
+		      int sz = line2.sz; //gui.get_size2(w1);
 		      if (sz==0) sz=1;
+		      if (sz<0||sz>25) sz=1;
+		      if (j<0||j>25) j=0;
+
 		      std::stringstream ss(u);
 		      std::string target_uid;
 		      int num;
@@ -675,7 +682,9 @@ EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, i
 			{
 			  W w2 = wid;
 			  //std::cout << "NUMS:" << j << " " << sz << std::endl;
-			  W line = gui.line( w1, gui.size_x(w1), 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz /*(gui.size_y(w1)-16)/2+16+5*/,
+		  int yy = 16+16+5+4+(gui.size_y(w1)-16-16)*j/sz;
+		  if (sz<=1) yy=16+5+4+(gui.size_y(w1)-16-16)/2;
+		  W line = gui.line( w1, gui.size_x(w1), yy /*16+16+5+4+(gui.size_y(w1)-16-16)*j/sz*/ /*(gui.size_y(w1)-16)/2+16+5*/,
 					     w2, 0, 10, sh2, sh);
 			  std::stringstream ss2;
 			  ss2 << value << " " << target_uid << " " << real_num;
@@ -1125,9 +1134,10 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		  return val;
 		}
 	    }
+  std::cout << "EXECUTE FAILED! "<< line->module_name << std::endl;
+
 	}
     }
-  std::cout << "EXECUTE FAILED! " << std::endl;
   return -1;
 }
 

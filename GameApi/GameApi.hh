@@ -1422,6 +1422,7 @@ public:
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix );
+  IMPORT MT gltf_material_manual( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM, BM, BM,BM,BM,bool,bool,bool,bool,bool );
   IMPORT MT gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
@@ -1663,6 +1664,7 @@ public:
   IMPORT M get_matrix(MN n, float time, float delta_time);
   IMPORT ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
   IMPORT ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
+  IMPORT P move_ml_p(EveryApi &ev, P p, MN move, float time);
   IMPORT ML repeat_ml(EveryApi &ev, ML ml, float duration);
   IMPORT ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
   IMPORT ML comb_key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, int key_2, float duration);
@@ -2300,6 +2302,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ML p_mtl2_prepare(P p);
   ARR material_choose(std::vector<MT> mat, std::vector<P> p);
   ARR comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2);
   ARR p_mtl_materials(EveryApi &ev, P P);

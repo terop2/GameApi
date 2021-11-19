@@ -463,7 +463,12 @@ void connect_target(int x, int y, Envi *envi)
 		{
 		  int j = envi->connect_start_j;
 		  int sz = envi->connect_start_sz;
-		  W link = envi->gui->line( start_link, envi->gui->size_x(start_link),/*(envi->gui->size_y(start_link)-16)+*/16+16+5+4+(envi->gui->size_y(start_link)-16-16)*j/sz,
+		  if (sz<0||sz>25) sz=1;
+		  if (j<0||j>25) j=0;
+
+		  int yy = 16+16+5+4+(envi->gui->size_y(start_link)-16-16)*j/sz;
+		  if (sz<=1) yy=16+5+4+(envi->gui->size_y(start_link)-16-16)/2;
+		  W link = envi->gui->line( start_link, envi->gui->size_x(start_link),yy /*(envi->gui->size_y(start_link)-16)+*/ /*16+16+5+4+(envi->gui->size_y(start_link)-16-16)*j/sz*/,
 					    wid, 0,10, envi->sh2, envi->sh);
 		  std::stringstream ss2;
 		  ss2 << envi->connect_start_uid << " " << uid << " " << real_index; 
@@ -1618,6 +1623,9 @@ void iter(void *arg)
 		std::string uid = env->gui->get_id(wid);
 		int j = env->gui->get_index(wid);
 		int sz = env->gui->get_size2(wid);
+		if (sz<0||sz>25) sz=1;
+		if (j<0||j>25) j=0;
+
 		//std::cout << "Connect_click: " << j << " " << sz << std::endl;
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
 		if (canvas_item.id==-1) continue;
@@ -1625,7 +1633,9 @@ void iter(void *arg)
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
 		
-		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz,
+		  int yy = 16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz;
+		  if (sz<=1) yy=16+5+4+(env->gui->size_y(canvas_item)-16-16)/2;
+		  env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),yy /*16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz*/,
 						   env->connect_widget, 0, 0, env->sh2, env->sh);
 		
 		env->connect_start_uid = uid;
