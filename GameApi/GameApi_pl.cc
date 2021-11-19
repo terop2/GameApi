@@ -1675,7 +1675,7 @@ public:
   void PrepareMTL()
   {
     if (done_mtl) return;
-    //std::cout << "PrepareMTL" << std::endl;
+    // std::cout << "PrepareMTL" << std::endl;
     GameApi::ASyncVec *ptr2 = e.get_loaded_async_url(mtl_url);
     if (!ptr2) {
       std::cout << "p_mtl .mtl async not ready yet, failing..." << std::endl;
@@ -1923,6 +1923,7 @@ public:
 
   void PrepareBump(std::string url, int i)
   {
+    
     //std::cout << "MTL:PrepareBump: " << url << " " << i << std::endl;
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
       if (!vec) {
@@ -13982,6 +13983,29 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int
   return add_array(e,array);
 }
 
+class P_MTL2_ML : public MainLoopItem
+{
+public:
+  P_MTL2_ML(GameApi::Env &e, GameApi::P p) :e(e), p(p) { }
+    void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() { Prepare(); }
+  void Prepare()
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    coll->Prepare();
+  }
+  void execute(MainLoopEnv &e) { }
+  void handle_event(MainLoopEvent &e) { }
+private:
+  GameApi::Env &e;
+  GameApi::P p;
+};
+
+GameApi::ML GameApi::PolygonApi::p_mtl2_prepare(P p)
+{
+  return add_main_loop(e, new P_MTL2_ML(e,p));
+}
+
 GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
 {
   GameApi::P p = p_mtl(ev,obj_url,mtl_url, prefix, count);
@@ -13989,12 +14013,14 @@ GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std:
   GameApi::ARR matarr = p_mtl2_materials(ev,p);
   GameApi::ARR matarr2 = material_extractor_mt(ev,p,mix, start_index, end_index);
   GameApi::ARR bmarr = material_extractor_bm(p, start_index, end_index);
+  GameApi::ML ml = p_mtl2_prepare(p);
   ArrayType *t = new ArrayType;
   t->vec.push_back(p.id);
   t->vec.push_back(parr.id);
   t->vec.push_back(matarr.id);
   t->vec.push_back(matarr2.id);
   t->vec.push_back(bmarr.id);
+  t->vec.push_back(ml.id);
   return add_array(e,t);
 }
 

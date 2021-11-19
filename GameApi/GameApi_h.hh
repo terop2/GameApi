@@ -102,6 +102,9 @@
 #endif
 
 
+//#define STABLE 1
+
+
 #include "GameApi.hh"
 #include <vector>
 #include <map>

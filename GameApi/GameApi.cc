@@ -2206,6 +2206,8 @@ std::vector<Matrix> g_moved_positions;
 
 extern bool g_collide_flag;
 
+
+
 class MoveML : public MainLoopItem
 {
 public:
@@ -3049,6 +3051,11 @@ EXPORT GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, 
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move, clone_count, time_delta));
+}
+EXPORT GameApi::P GameApi::MovementNode::move_ml_p(EveryApi &ev, GameApi::P p, GameApi::MN move, float time)
+{
+  GameApi::M mat = ev.move_api.get_matrix(move, time, 1.0);
+  return ev.polygon_api.matrix(p,mat);
 }
 EXPORT GameApi::ML GameApi::MovementNode::color_ml(EveryApi &ev, int color_num, ML ml, CC cc)
 {
@@ -22353,7 +22360,7 @@ public:
     ref=BufferRef::NewBuffer(1,1);
 
     res_ref=BufferRef::NewBuffer(ssx,ssy);
-    std::cout << "PngHeavy:" << ssx << "x" << ssy << "=" << MB(ssx*ssy*sizeof(unsigned int)) << std::endl;
+    //std::cout << "PngHeavy:" << ssx << "x" << ssy << "=" << MB(ssx*ssy*sizeof(unsigned int)) << std::endl;
     
     // show white while loading
     BufferRef *ref = find_pngheavy_cache(url);

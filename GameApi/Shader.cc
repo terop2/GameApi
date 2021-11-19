@@ -113,7 +113,8 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
   int val2 = g_low->ogl->glGetError();
-  if (val2!=Low_GL_NO_ERROR) {
+  if (val2!=Low_GL_NO_ERROR)
+  {
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
@@ -255,7 +256,8 @@ void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
   int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR) {
+  if (val!=Low_GL_NO_ERROR)
+  {
   int len=0;
   char log[255];
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
@@ -3341,18 +3343,35 @@ ShaderFile::ShaderFile()
 "float angle2 = atan(a.y,a.x)+atan(b.y,b.x);\n"
 "return vec3(sin(angle1)*cos(angle2),sin(angle1)*sin(angle2),cos(angle1));\n"
 "}\n"
+"const float GAMMA2=2.2;\n"
+"const float INV_GAMMA2 = 1.0/GAMMA2;\n"
+"vec3 LINEARtoSRGB2(vec3 color)\n"
+"{\n"
+" return pow(color, vec3(INV_GAMMA2));\n"
+"}\n"
+"vec3 SRGBtoLINEAR2(vec3 srgbIn)\n"
+"{\n"
+"  return pow(srgbIn.xyz,vec3(GAMMA2));\n"
+"}\n"
 
 "vec4 phong(vec4 rgb)\n"
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
-    "    vec3 normal = ex_Normal2;\n" 
-    "    c+=intensity(normal)*level1_color.rgb;\n"
-    "    c+=intensity2(normal)*level2_color.rgb;\n"
+    "    vec3 normal = ex_Normal2;\n"
+    "    c+=SRGBtoLINEAR2(rgb.rgb);\n"
+"#ifdef PHONG_TEXTURE\n"
+    "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
+    "    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
+"#endif\n"
+"#ifndef PHONG_TEXTURE\n"
+    "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb,vec3(1,1,1),0.1));\n"
+    "    c+=intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb);\n"
+"#endif\n"
+    
     //"    c = sqrt(c);\n"
-
-    "    c+=rgb.rgb;\n"
+    //"     c*=rgb.rgb;\n"
     "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
-    "    return vec4(c,rgb.a);\n"
+    "    return vec4(LINEARtoSRGB2(c),rgb.a);\n"
     "}\n"
 "#endif\n"
 "#endif\n"

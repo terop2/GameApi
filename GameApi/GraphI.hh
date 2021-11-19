@@ -466,8 +466,8 @@ struct GameApiLine
   int x,y;
   std::string module_name;
   std::string uid;
-  int j;
-  int sz;
+  int j=0;
+  int sz=1;
   bool array_return = false;
   std::vector<GameApiParam> params;
 };
