@@ -2130,8 +2130,8 @@ extern int g_vr_device_id;
 extern bool g_progress_callback_set;
 extern void (*g_progress_callback)();
 
-void update_progress_dialog_cb_impl(W w, int x,int y, FtA f, BM b, std::vector<std::string>);
-extern void (*update_progress_dialog_cb)(W, int,int, FtA, BM, std::vector<std::string>);
+void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>);
+extern void (*update_progress_dialog_cb)(GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
 
 int main(int argc, char *argv[]) {
   //clear_counters();
