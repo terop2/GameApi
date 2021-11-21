@@ -1327,6 +1327,9 @@ GameApi::BM g_atlas_bm;
 bool g_progress_callback_set=false;
 void (*g_progress_callback)();
 
+void (*update_progress_dialog_cb)(GameApi::W w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
+
+
 void ProgressBar(int num, int val, int max, std::string label)
 {
   //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
@@ -1446,7 +1449,8 @@ void ProgressBar(int num, int val, int max, std::string label)
 	g_prog_labels[g_prog_labels.size()-1] = stream.str() + l + stream3.str();
 	if (g_everyapi2)
 	  {
-	    g_everyapi_gui->update_progress_dialog(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels);
+	    
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels);
 	    if (g_progress_callback_set) {
 	      g_progress_callback();
 	    }

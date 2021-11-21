@@ -52,6 +52,7 @@ int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-
 int strlen(const char *);
 #endif
 #endif
+int ret_type_count(std::string return_type);
 
 std::string unique_id_apiitem();
 std::vector<GameApiItem*> all_functions();
@@ -2663,6 +2664,13 @@ EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM
   W txt_3 = layer(rect, array_1);
   
   return txt_3;
+}
+extern GameApi::GuiApi *g_everyapi_gui;
+
+
+void update_progress_dialog_cb_impl(GameApi::W w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v)
+{
+  g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v);
 }
 
 void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
