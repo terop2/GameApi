@@ -1130,10 +1130,12 @@ void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress)
 }
 void TextureEnable(ArrayRender &rend, int frame, bool enable)
 {
+  if (&rend) {
   if (enable)
     rend.EnableTexture(frame);
   else
     rend.DisableTexture();
+  }
 }
 void PrepareSprite(const Sprite &s, ArrayRender &rend)
 {

@@ -211,6 +211,8 @@ public:
   {
     if (firsttime)
       {
+	int c = get_current_block();
+	set_current_block(-1);
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
 	GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
 	int sx = ev.bitmap_api.size_x(rendered_bitmap);
@@ -229,6 +231,7 @@ public:
 	  rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	  shared_text[key]=rendered_bitmap_va.id;
 	}
+	set_current_block(c);
 	firsttime = false;
       }
     size.dx = ev.bitmap_api.size_x(scaled_bitmap);
@@ -1479,6 +1482,9 @@ public:
     size.dy = ev.bitmap_api.size_y(bm);
     if (firsttime)
       {
+	int c = get_current_block();
+	set_current_block(-1);
+	
 	//std::map<int,int>::iterator i = shared_sprites.find(key);
 	int index = find_shared_sprites(key);
 	if (index!=-1) {
@@ -1506,6 +1512,7 @@ public:
 	  //shared_sprites[a.key] = a.value;
 	  // shared_sprites[key] = bm_va.id;
 	}
+	set_current_block(c);
 	firsttime = false;
       }
     #endif
@@ -2630,6 +2637,45 @@ std::string ret_type_index(std::string return_type, int index)
   }
   label = return_type.substr(beg,i-beg);
   return label;
+}
+
+EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
+{
+  std::string prog = vec[vec.size()-1].substr(0,18);
+  std::string rest = vec[vec.size()-1].substr(18);
+
+  
+  W txt_0 = text(prog, atlas, atlas_bm);
+  W txt_1 = text(rest, atlas, atlas_bm);
+  W arr[2] = { txt_0, txt_1 };
+  W array_0 = array_y(&arr[0], 2, 5);
+
+  W array_1 = margin(array_0, (sx-size_x(array_0))/2, (sy-size_y(array_0))/2, (sx-size_x(array_0))/2, (sy-size_y(array_0))/2);
+  
+  //W rect = highlight(400,200);
+  
+  //vec2.push_back(txt_1);
+
+  //W array_0 = array_y(&vec2[0], vec2.size(), 5);
+  //W array_1 = margin(array_0, 5,5,5,5); 
+  W rect = button(sx,sy,c_dialog_1, c_dialog_1_2);
+
+  W txt_3 = layer(rect, array_1);
+  
+  return txt_3;
+}
+
+void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
+{
+  static int g_id = -1;
+  if (g_id!=-1) clear_block(g_id);
+  g_id = add_block();
+  int old = get_current_block();
+  set_current_block(g_id);
+  
+  w = progress_dialog(sx,sy,atlas,atlas_bm, vec);
+  
+  set_current_block(old);
 }
 
 EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltip, std::string return_type, FtA atlas, BM atlas_bm, std::vector<W *> connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment)
@@ -4297,7 +4343,8 @@ EXPORT void GameApi::GuiApi::update(W w, PT mouse, int button,int ch, int type, 
 {
   GuiWidget *ww = find_widget(e, w);
   Point *pt = find_point(e, mouse);
-  Point2d pt2 = { pt->x, pt->y };
+
+  Point2d pt2 = { pt?pt->x:0.0f, pt?pt->y:0.0f };
   ww->update(pt2, button,ch, type, mouse_wheel_y);
 }
 EXPORT void GameApi::GuiApi::render(W w)

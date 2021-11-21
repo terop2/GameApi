@@ -722,7 +722,7 @@ require_once("user.php");
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 10 64-bit</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v26.msi">download msi</a>
+<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v27.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -746,7 +746,7 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux 64-bit amd64</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-26.deb">download deb</a>
+<li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-27.deb">download deb</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -784,7 +784,7 @@ visit_counter_inc( "tool" );
 </div>
 -->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v26.msi">
+<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v27.msi">
 <img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <div>

@@ -304,6 +304,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  void start_editor_state();
+  void end_editor_state();
   ML right_mouse_pan(EveryApi &ev, ML next);
   ML mouse_roll_zoom(EveryApi &ev, ML next);
   ML perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane);
@@ -1743,6 +1745,8 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  IMPORT W progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec);
+  IMPORT void update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec);
   IMPORT void delete_widget(W w);
   IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W empty();
