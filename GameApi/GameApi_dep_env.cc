@@ -1318,6 +1318,15 @@ void FinishProgress()
     //}
   }
 }
+std::vector<std::string> g_prog_labels;
+GameApi::W g_progress_dialog;
+GameApi::EveryApi *g_everyapi2=0;
+GameApi::GuiApi *g_everyapi_gui=0;
+GameApi::FtA g_atlas;
+GameApi::BM g_atlas_bm;
+bool g_progress_callback_set=false;
+void (*g_progress_callback)();
+
 void ProgressBar(int num, int val, int max, std::string label)
 {
   //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
@@ -1392,14 +1401,16 @@ void ProgressBar(int num, int val, int max, std::string label)
     std::stringstream stream;
     std::stringstream stream2;
     std::stringstream stream3;
-    if (old_label != label) { old_label = label; stream << std::endl << "["; }
+    if (old_label != label) {
+      g_prog_labels.push_back("");
+      old_label = label; stream << std::endl << "["; }
   else
     stream << "\r[";
   for(int i=0;i<val2;i++) {
     stream2 << "#";
   }
   for(int i=val2;i<max2;i++) {
-    stream2 << "-";
+    stream2 << "_";
   }
   int s = label.size();
   int pos = -1;
@@ -1429,7 +1440,19 @@ void ProgressBar(int num, int val, int max, std::string label)
 
     
 #ifndef EMSCRIPTEN
-    std::cout << stream.str() << l << stream3.str() << std::flush;
+    //std::cout << stream.str() << l << stream3.str() << std::flush;
+    if (g_prog_labels.size()>0)
+      {
+	g_prog_labels[g_prog_labels.size()-1] = stream.str() + l + stream3.str();
+	if (g_everyapi2)
+	  {
+	    g_everyapi_gui->update_progress_dialog(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels);
+	    if (g_progress_callback_set) {
+	      g_progress_callback();
+	    }
+	  }
+	
+      }
 #endif
   g_has_title = true;
   }

@@ -404,8 +404,10 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
     OpenglLowApi *ogl = g_low->ogl;
 
   VertexArraySet *s = find_vertex_array(e, va);
+  if (!s) return;
   confirm_texture_usage(s);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
+  if (!rend) return;
   //if (!s || ((int)s)<0x100) { std::cout << "render_sprite_vertex_array ignored!" << std::endl; return; }
   //if (!rend || ((int)rend)<0x100){ std::cout << "render_sprite_vertex_array ignored!" << std::endl;  return; }
   //SpritePriv &spriv = *(SpritePriv*)priv;
@@ -413,11 +415,13 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 
   if (s->texture_id!=-1 && s->texture_id<SPECIAL_TEX_ID)
     {
-      TextureEnable(*env->renders2[s->texture_id], 0, true);
-      //RenderVertexArray arr(*s);
-      //arr.render(0);
-      rend->render(0);
-      TextureEnable(*env->renders2[s->texture_id], 0, false);
+      if (env->renders2[s->texture_id] && rend) {
+	TextureEnable(*env->renders2[s->texture_id], 0, true);
+	//RenderVertexArray arr(*s);
+	//arr.render(0);
+	rend->render(0);
+	TextureEnable(*env->renders2[s->texture_id], 0, false);
+      }
     }
   else if(s->texture_id!=-1)
     {
@@ -427,8 +431,8 @@ EXPORT void GameApi::SpriteApi::render_sprite_vertex_array(VA va)
 #endif
       ogl->glActiveTexture(Low_GL_TEXTURE0+0);
       ogl->glBindTexture(Low_GL_TEXTURE_2D, s->texture_id-SPECIAL_TEX_ID);
-
-      rend->render(0);
+      if (rend)
+	rend->render(0);
       //      RenderVertexArray arr(*s);
       //arr.render(0);
 

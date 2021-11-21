@@ -40,6 +40,14 @@ extern int g_window_pos_x;
 extern int g_window_pos_y;
 extern std::string gameapi_homepageurl;
 extern int g_has_wayland;
+extern GameApi::W g_progress_dialog;
+extern std::vector<std::string> g_prog_labels;
+extern GameApi::EveryApi *g_everyapi2;
+extern GameApi::FtA g_atlas;
+extern GameApi::BM g_atlas_bm;
+extern GameApi::W g_progress_dialog;
+extern GameApi::GuiApi *g_everyapi_gui;
+
 
 struct wl_display;
 struct wl_surface;
@@ -247,6 +255,8 @@ struct Envi {
   W display;
   W mem;
   bool display_visible;
+  bool progress_visible;
+  bool progress_rest;
   W txt;
   W txt2;
   W scroll_area;
@@ -552,12 +562,102 @@ extern int g_async_count2;
 
 
 void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls);
+PT old_cursor_pos;
+
+void render_cb(Envi *env)
+{
+
+   if (env->progress_rest) {
+  
+  if (env->has_wayland) {
+     env->gui->render(env->window_decoration);
+   }
+
+    
+    //env->gui->render(env->txt2);
+    env->gui->render(env->line);
+    //env->gui->render(env->txt);
+    env->gui->render(env->scroll_area);
+    //env->gui->render(env->wave);
+    //env->gui->render(env->gameapi);
+    //env->gui->render(env->test1);
+
+    env->gui->render(env->canvas_area);
+    env->gui->render(env->scrollbar_x);
+    //env->gui->render(env->scrollbar_y);
+    env->gui->render(env->list_tooltips);
+    if (env->popup_visible)
+      {
+	env->gui->render(env->popup_dialog);
+      }
+    if (env->insert_ongoing)
+      {
+	env->gui->render(env->insert_widget);
+      }
+    if (env->connect_ongoing)
+      {
+	env->gui->render(env->connect_line);
+	env->ev->shader_api.use(env->sh);
+	env->gui->render(env->connect_widget);
+      }
+    if (env->display_visible)
+      {
+	env->gui->render(env->display);
+      }
+
+    if (env->editor_visible)
+      env->gui->render(env->editor);
+   }
+
+
+    if (env->progress_visible)
+      {
+	env->gui->set_pos(g_progress_dialog, 300,300);
+  PT cursor_pos = old_cursor_pos;
+	int button = -1;
+	int ch = -1;
+	int type = 0;
+	int mouse_wheel_y = 0;
+	env->gui->update(g_progress_dialog, cursor_pos, button, ch, type, mouse_wheel_y);
+
+	env->gui->render(g_progress_dialog);
+      }
+
+}
+
 
 void FinishProgress();
+Envi *g_env;
+void refresh()
+{
+
+  if (g_env && g_env->progress_visible) {
+  g_env->ev->shader_api.use(g_env->sh);
+  if (g_env->has_wayland) {
+    g_env->ev->mainloop_api.clear(0x00000000);
+  } else {
+    g_env->ev->mainloop_api.clear(0xff000000);
+  }
+  g_env->ev->mainloop_api.start_editor_state();
+  PT cursor_pos = old_cursor_pos;
+	int button = -1;
+	int ch = -1;
+	int type = 0;
+	int mouse_wheel_y = 0;
+	if (g_env->progress_rest) {
+  g_env->gui->update(g_env->canvas_area, cursor_pos, button,ch, type, mouse_wheel_y);
+	}
+
+  render_cb(g_env);
+  g_env->ev->mainloop_api.end_editor_state();
+  g_env->ev->mainloop_api.swapbuffers();
+
+
+  }
+}
 void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
-
 
 #if 0
   if (env->logo_shown)
@@ -593,7 +693,9 @@ void iter(void *arg)
 #endif
   }
   
-    //env->ev->mainloop_api.clear_3d();
+  render_cb(env);
+  //env->ev->mainloop_api.clear_3d();
+#if 0
     if (env->has_wayland) {
       env->gui->render(env->window_decoration);
     }
@@ -639,10 +741,15 @@ void iter(void *arg)
       {
 	env->gui->render(env->display);
       }
+    if (env->progress_visible)
+      {
+	env->gui->render(g_progress_dialog);
+      }
     if (env->editor_visible)
       env->gui->render(env->editor);
 
-
+#endif
+    
     
     
     //env->ev->mainloop_api.fpscounter();
@@ -660,6 +767,7 @@ void iter(void *arg)
     e.last = true;
     while((e=env->ev->mainloop_api.get_event()).last)
       {
+	old_cursor_pos = e.cursor_pos;
 	if (e.type==256) { exit(0); }
 	if (e.type==0x200) {
 	    int sx = g_event_screen_x;
@@ -1052,7 +1160,14 @@ void iter(void *arg)
 		//InstallProgress(933, "Execute", 15);
 		//ProgressBar(933, 0,15, "Execute");
 		
-		    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+	    env->progress_visible = true;
+	    g_prog_labels = std::vector<std::string>();
+	    g_prog_labels.push_back("");
+	    g_everyapi2 = env->ev;
+	    g_atlas = env->atlas;
+	    g_atlas_bm = env->atlas_bm;
+	    
+	    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
 		    //ProgressBar(933, 7,15, "Execute");
 		    GameApi::ExecuteEnv exeenv;
 		    if (type2 != "HML") {
@@ -1076,6 +1191,8 @@ void iter(void *arg)
 		    //	env->env->async_load_url(urls[i], gameapi_homepageurl);
 		    // }
 
+
+		    
 		static int g_id = -1;
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
@@ -1084,7 +1201,9 @@ void iter(void *arg)
 		    
 		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
 		    set_current_block(-2);
+	    
 
+	    
 		    if (id==-1) {
 		      std::cout << "Execute failed!" << std::endl;
 		      break;
@@ -1482,7 +1601,9 @@ void iter(void *arg)
 			env->gui->set_pos(env->display, 200.0, 50.0);
 			env->display_visible = true;
 		      }
-		  }
+		    env->progress_visible = false;
+		    
+	          }
 	      }
 	  }
 	
@@ -1547,6 +1668,11 @@ void iter(void *arg)
 	  }
 
 	PT cursor_pos = e.cursor_pos;
+
+	//if (env->progress_visible)
+	//  {
+	//   env->gui->update(g_progress_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	// }
 	
 	env->gui->update(env->line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
@@ -2000,10 +2126,15 @@ bool file_exists(std::string s);
 extern bool g_vr_enable;
 extern int g_vr_device_id;
 //extern pthread_t g_main_thread;
+
+extern bool g_progress_callback_set;
+extern void (*g_progress_callback)();
+
+
 int main(int argc, char *argv[]) {
   //clear_counters();
   //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
-
+  
   //pid_t pid = getpid();
   //std::cout << "pid: " << (long)pid << std::endl;
   InstallProgress(888,"init",10);
@@ -2023,6 +2154,8 @@ int main(int argc, char *argv[]) {
 
   Envi env;
   env.env = e2;
+  env.ev = &ev;
+  g_env = &env;
 
 #ifdef WINDOWS
   //env.dlls = load_dlls("DllList.txt");
@@ -2245,6 +2378,7 @@ int main(int argc, char *argv[]) {
   BM atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1.c_str());
   BM atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2.c_str());
 
+  
 #if 0
   FB atlas_bm_b = ev.float_bitmap_api.from_red(atlas_bm_a);
   FB atlas_bm2_b = ev.float_bitmap_api.from_red(atlas_bm2_a);
@@ -2266,33 +2400,30 @@ int main(int argc, char *argv[]) {
   
   
   GuiApi gui(e, ev, sh);
+  g_everyapi_gui = &gui;
+  env.gui = &gui;
+
+ 
+  env.atlas = atlas;
+  env.atlas2 = atlas2;
+  env.atlas3 = atlas3;
+  env.atlas_bm = atlas_bm;
+  env.atlas_bm2 = atlas_bm2;
+  env.atlas_bm3 = atlas_bm3;
+
+  g_progress_callback = &refresh;
+  g_progress_callback_set = true;
+
+  env.progress_visible = true;
+  env.progress_rest = false;
   
-  //W txt_0 = gui.highlight(100,100);
-  //W txt_1 = gui.margin(txt_0, 10, 10, 10, 10);
-  //W txt_2 = gui.text("Hello World", font);
-  //W txt_3 = gui.layer(txt_1, txt_2);
-  //W arr[] = { txt_1, txt_2 };
-  //W txt = gui.array_x(arr, 2, 2);
-#if 0
-  std::vector<std::string> vec;
-  vec.push_back("Edit");
-  vec.push_back("File");
-  vec.push_back("Open");
-  W txt = gui.main_menu(vec, atlas, atlas_bm);
-  std::vector<std::string> vec2;
-  vec2.push_back("test1");
-  vec2.push_back("test2");
-  vec2.push_back("test3");
-  std::vector<W> menus;
-  for(int i=0;i<vec.size();i++)
-    {
-      W txt_2 = gui.menu(txt,i, vec2, atlas, atlas_bm);
-      menus.push_back(txt_2);
-    }
-#endif			 
-
-
-
+  env.progress_visible = true;
+  g_prog_labels = std::vector<std::string>();
+  g_prog_labels.push_back("");
+  g_everyapi2 = env.ev;
+  g_atlas = env.atlas;
+  g_atlas_bm = env.atlas_bm;
+  
   //std::vector<std::string> vec3;
   //vec3.push_back("newbitmap");
   //vec3.push_back("newbitmap");
@@ -2409,24 +2540,17 @@ int main(int argc, char *argv[]) {
   env.target_string = "abcde";
 
   env.line = line;
-  env.gui = &gui;
-  env.ev = &ev;
   //env.txt = txt;
   //env.txt2 = txt2;
   env.font = font;
   env.font3 = font3;
-  env.atlas = atlas;
-  env.atlas2 = atlas2;
-  env.atlas3 = atlas3;
-  env.atlas_bm = atlas_bm;
-  env.atlas_bm2 = atlas_bm2;
-  env.atlas_bm3 = atlas_bm3;
   env.unique_id_counter = ev.mainloop_api.random();
   //env.editor = editor;
   env.editor_visible = false;
   env.display = gui.empty();
   env.mem = gui.empty();
   env.display_visible = false;
+  env.progress_visible = false;
   //env.wave = wave;
   //env.test1 = test1;
   env.array = array;
@@ -2466,6 +2590,10 @@ int main(int argc, char *argv[]) {
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
 
+  env.progress_visible = false;
+  env.progress_rest = true;
+
+  
   //print_counters();
   //ev.mainloop_api.display_logo(ev);
   //ProgressBar(888,10,10,"init");
