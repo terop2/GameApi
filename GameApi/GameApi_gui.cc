@@ -2668,7 +2668,7 @@ EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM
 extern GameApi::GuiApi *g_everyapi_gui;
 
 
-void update_progress_dialog_cb_impl(GameApi::W w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v)
+void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v)
 {
   g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v);
 }
@@ -4339,7 +4339,9 @@ EXPORT void GameApi::GuiApi::set_pos(W w, float px, float py)
 {
   Point2d p = { px, py };
   GuiWidget *ww = find_widget(e, w);
+  if (ww) {
   ww->set_pos(p);
+  }
 }
 EXPORT void GameApi::GuiApi::set_size(W w, float sx, float sy)
 {
@@ -4350,16 +4352,19 @@ EXPORT void GameApi::GuiApi::set_size(W w, float sx, float sy)
 EXPORT void GameApi::GuiApi::update(W w, PT mouse, int button,int ch, int type, int mouse_wheel_y)
 {
   GuiWidget *ww = find_widget(e, w);
+  if (ww) {
   Point *pt = find_point(e, mouse);
 
   Point2d pt2 = { pt?pt->x:0.0f, pt?pt->y:0.0f };
   ww->update(pt2, button,ch, type, mouse_wheel_y);
+  }
 }
 EXPORT void GameApi::GuiApi::render(W w)
 {
   //std::cout << "GuiApi::render" << w.id << std::endl;
   GuiWidget *ww = find_widget(e, w);
-  ww->render();
+  if (ww)
+    ww->render();
 }
 EXPORT int GameApi::GuiApi::chosen_item(W w)
 {

@@ -1327,7 +1327,7 @@ GameApi::BM g_atlas_bm;
 bool g_progress_callback_set=false;
 void (*g_progress_callback)();
 
-void (*update_progress_dialog_cb)(GameApi::W w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
+void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
 
 
 void ProgressBar(int num, int val, int max, std::string label)
