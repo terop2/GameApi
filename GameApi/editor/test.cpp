@@ -612,7 +612,7 @@ void render_cb(Envi *env)
 
     if (env->progress_visible)
       {
-	env->gui->set_pos(g_progress_dialog, 300,300);
+	env->gui->set_pos(g_progress_dialog, 400,300);
   PT cursor_pos = old_cursor_pos;
 	int button = -1;
 	int ch = -1;
