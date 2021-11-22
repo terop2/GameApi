@@ -2280,7 +2280,7 @@ int main(int argc, char *argv[]) {
       display_height = g_display_height;
     }
   
-  int font_scale = 1;
+  int font_scale = 2;
 
   ProgressBar(888,0,5,"init");
   // shader initialization
