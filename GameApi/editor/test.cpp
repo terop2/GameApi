@@ -2291,9 +2291,9 @@ int main(int argc, char *argv[]) {
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
   // Chunkfive.otf
-  Ft font = ev.font_api.newfont("http://tpgames.org/font.otf", 10*font_scale,13*font_scale); // 13,15 
-  Ft font2 = ev.font_api.newfont("http://tpgames.org/font.otf", 10*font_scale,13*font_scale); // 10,13
-  Ft font3 = ev.font_api.newfont("http://tpgames.org/font.otf", 30*font_scale,30*font_scale); // 30,30
+  Ft font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 13,15 
+  Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 10,13
+  Ft font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
 
   std::string fname = "atlas0.txt";
   if (file_exists("/usr/share/atlas0.txt")) {
