@@ -1753,6 +1753,7 @@ public:
   IMPORT W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   IMPORT W icon(BM bitmap);
   IMPORT W icon_shared(BM bitmap, int key);
+  IMPORT W icon_shared_noscale(BM bitmap, int key);
   IMPORT W poly(P p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   IMPORT W va(VA p, SH sh, int sx, int sy, int screen_size_x, int screen_size_y);
   IMPORT W ml(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int sx, int sy, int screen_size_x, int screen_size_y);

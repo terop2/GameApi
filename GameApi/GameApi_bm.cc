@@ -760,14 +760,14 @@ class LoadBitmapBitmap : public Bitmap<Color>
 public:
   LoadBitmapBitmap(std::string filename) : filename(filename),cbm(0) { }
   virtual int SizeX() const { 
-    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at SizeX()" << std::endl; }
+    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at SizeX()" << std::endl; const_cast<LoadBitmapBitmap*>(this)->Prepare(); }
 
     return cbm->SizeX(); }
   virtual int SizeY() const {
-    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at SizeY()" << std::endl; } 
+    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at SizeY()" << std::endl;  const_cast<LoadBitmapBitmap*>(this)->Prepare();} 
     return cbm->SizeY(); }
   virtual Color Map(int x, int y) const { 
-    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at Map()" << std::endl; }
+    if (!cbm) { std::cout << "LoadBitmapBitmap::Prepare() for Bitmap not called at Map()" << std::endl;  const_cast<LoadBitmapBitmap*>(this)->Prepare();}
     return cbm->Map(x,y); }
   void Collect(CollectVisitor &vis)
   {

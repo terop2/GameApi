@@ -215,11 +215,15 @@ public:
 	int c = get_current_block();
 	set_current_block(-1);
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
+	
 	GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
 	int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	scaled_bitmap = ev.cont_bitmap_api.sample(sca, sx/2, sy/2);
-
+	
+	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	//scaled_bitmap = rendered_bitmap; //ev.bitmap_api.scale_bitmap(ev,rendered_bitmap, sx/2,sy/2);
 	std::stringstream ss;
 	ss << sx << " " << sy;
 	std::string key = label + ss.str();
@@ -244,8 +248,12 @@ public:
     if (!firsttime)
       {
 	Point2d p = get_pos();
-	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glAlphaFunc(Low_GL_LESS, 0.5);
+    ogl->glEnable(Low_GL_ALPHA_TEST);
+	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
+	ogl->glDisable(Low_GL_ALPHA_TEST);
       }
   }
   int render_to_bitmap()
@@ -1552,6 +1560,98 @@ private:
   //static std::map<int, int> arrs;
   int key;
 };
+
+
+class IconGuiWidgetSharedNoScale : public GuiWidgetForward
+{
+public:
+  IconGuiWidgetSharedNoScale(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm, GameApi::SH sh, int key) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), env(env), ev(ev), sh(sh), bm(bm), key(key) { firsttime=true;
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1, -1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+    //ev.bitmap_api.prepare(bm);
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    #if 1
+    //BitmapHandle *handle = find_bitmap(env, bm);
+    //::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    //b2->Prepare();
+    size.dx = 400; //ev.bitmap_api.size_x(bm);
+    size.dy = 200; //ev.bitmap_api.size_y(bm);
+    if (firsttime)
+      {
+	int c = get_current_block();
+	set_current_block(-1);
+	
+	//std::map<int,int>::iterator i = shared_sprites.find(key);
+	int index = find_shared_sprites(key);
+	if (index!=-1) {
+	  bm_va.id = shared_sprites[index].value;
+	  RenderVertexArray *r = find_vertex_array_render(env, bm_va);
+	  if (!r) {
+	    GameApi::BM scaled = ev.bitmap_api.scale_bitmap(ev,bm, 400,200);
+	    bm_va = ev.sprite_api.create_vertex_array(scaled);
+	    A a;
+	    a.key = key;
+	    a.value = bm_va.id;
+	    shared_sprites.push_back(a);
+	    //std::cout << "shared_sprites " << shared_sprites.size() << " " << bm_va.id << std::endl; 
+	    //shared_sprites[key] = bm_va.id;
+	  }
+	} else {
+	  GameApi::BM scaled = ev.bitmap_api.scale_bitmap(ev,bm, 400,200);
+	  bm_va = ev.sprite_api.create_vertex_array(scaled);
+	  A a;
+	  a.key = key;
+	  a.value = bm_va.id;
+	  shared_sprites.push_back(a);
+	  // std::cout << "shared_sprites2 " << shared_sprites.size() << " " << bm_va.id << std::endl; 
+	  //shared_sprites[key] = bm_va.id;
+	  //shared_sprites[a.key] = a.value;
+	  // shared_sprites[key] = bm_va.id;
+	}
+	set_current_block(c);
+	firsttime = false;
+      }
+    #endif
+  }
+  void render()
+  {
+    #if 1
+    if (is_visible())
+      {
+    if (!firsttime)
+      {
+	Point2d p = get_pos();
+	GameApi::M m = ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0);
+	GameApi::M ms = ev.matrix_api.scale(size.dx/100.0, size.dy/100.0, 1.0);
+	GameApi::M mc = ev.matrix_api.mult(ms,m);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "color_mix", 1.0f);
+	ev.shader_api.set_var(sh, "in_MV", mc);
+	ev.sprite_api.render_sprite_vertex_array(bm_va);
+	ev.shader_api.use(sh);
+      }
+      }
+    #endif
+  }
+  int render_to_bitmap()
+  {
+    return bm.id;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  bool firsttime;
+  GameApi::SH sh;
+  GameApi::BM bm;
+  GameApi::VA bm_va;
+  //static std::map<int, int> arrs;
+  int key;
+};
+
 #endif
 
 //std::map<int,int> IconGuiWidget::arrs;
@@ -2640,6 +2740,10 @@ std::string ret_type_index(std::string return_type, int index)
   return label;
 }
 
+
+
+int progress_lock=0;
+
 EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
 {
   std::string prog = vec[vec.size()-1].substr(0,18);
@@ -2661,9 +2765,15 @@ EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM
   //W array_1 = margin(array_0, 5,5,5,5); 
   W rect = button(sx,sy,c_dialog_1, c_dialog_1_2);
 
-  W txt_3 = layer(rect, array_1);
+  //BM bm = ev.bitmap_api.loadbitmap("progress_v1.ppm");
+  //progress_lock = 1;
+  //W pic = icon_shared_noscale(bm,0x7777);
+  //progress_lock = 0;
+  //set_size(pic,sx,sy);
+  //W txt_3 = layer(rect, pic);
+  W txt_4 = layer(rect, array_1);
   
-  return txt_3;
+  return txt_4;
 }
 extern GameApi::GuiApi *g_everyapi_gui;
 
@@ -2675,6 +2785,7 @@ void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, 
 
 void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
 {
+  if (progress_lock) return;
   static int g_id = -1;
   if (g_id!=-1) clear_block(g_id);
   g_id = add_block();
@@ -2804,6 +2915,17 @@ EXPORT GameApi::W GameApi::GuiApi::text(std::string label, FtA atlas, BM atlas_b
 EXPORT GameApi::W GameApi::GuiApi::icon(BM bm)
 {
   return add_widget(e, new IconGuiWidget(ev, bm,sh));
+}
+EXPORT GameApi::W GameApi::GuiApi::icon_shared_noscale(BM bm, int key)
+{
+#ifndef EMSCRIPTEN
+  return add_widget(e, new IconGuiWidgetSharedNoScale(e,ev, bm, sh, key));
+#else
+  W w;
+  w.id = 0;
+  return w;
+#endif
+
 }
 EXPORT GameApi::W GameApi::GuiApi::icon_shared(BM bm, int key)
 {
