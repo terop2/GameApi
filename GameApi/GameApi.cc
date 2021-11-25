@@ -12460,6 +12460,8 @@ void ClearProgress();
 
 extern bool g_stop_music;
 
+extern pthread_t g_main_thread_id;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -12477,6 +12479,8 @@ public:
   }
   virtual void Init()
   {
+    g_main_thread_id = pthread_self();
+
     g_engine_status = 0;
     g_logo_status = 0;
   OpenglLowApi *ogl = g_low->ogl;
@@ -12981,6 +12985,7 @@ EXPORT GameApi::BLK GameApi::BlockerApi::game_seq(GameApi::EveryApi &ev,std::vec
 }
 EXPORT void GameApi::BlockerApi::run(BLK blk)
 {
+  g_main_thread_id = pthread_self();
   Blocker *blk2 = find_blocker(e, blk);
   blk2->Execute();
 }

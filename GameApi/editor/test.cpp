@@ -47,6 +47,7 @@ extern GameApi::FtA g_atlas;
 extern GameApi::BM g_atlas_bm;
 extern GameApi::W g_progress_dialog;
 extern GameApi::GuiApi *g_everyapi_gui;
+extern pthread_t g_main_thread_id;
 
 
 struct wl_display;
@@ -2137,6 +2138,8 @@ int main(int argc, char *argv[]) {
   //clear_counters();
   //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
 
+  g_main_thread_id = pthread_self();
+  
   update_progress_dialog_cb = &update_progress_dialog_cb_impl;
   
   //pid_t pid = getpid();
