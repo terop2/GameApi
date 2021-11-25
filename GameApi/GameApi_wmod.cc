@@ -1067,8 +1067,9 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		}
 	      if (p.size()==0)
 		{
-		  std::cout << "EXECUTE FAILED at param!" << std::endl;
-		  return -1;
+		  p = "@";
+		  //std::cout << "EXECUTE FAILED at param!" << std::endl;
+		  //return -1;
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
@@ -1208,8 +1209,9 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		}
 	      if (p.size()==0)
 		{
-		  std::cout << "EXECUTE FAILED at param!" << std::endl;
-		  return std::make_pair(-1,res);
+		  p = "@";
+		  //std::cout << "EXECUTE FAILED at param!" << std::endl;
+		  //return std::make_pair(-1,res);
 		}
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{

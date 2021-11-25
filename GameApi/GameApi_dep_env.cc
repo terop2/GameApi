@@ -1332,6 +1332,9 @@ void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi:
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
+#ifndef EMSCRIPTEN
+  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+#endif
   //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 

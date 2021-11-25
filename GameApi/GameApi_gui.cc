@@ -7300,6 +7300,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "score", "Score: ", "5" },
 			 "SF", "font_api", "score_string_fetcher"));
 #endif
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_adder,
 			 "score_adder",
 			 { "ev", "ml", "o", "mn", "enter_score", "leave_score", "dyn_point", "timeout" },
@@ -7312,7 +7313,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "ML", "O", "PTS", "MN", "int", "int", "int", "float", "IF" },
 			 { "ev", "", "", "", "", "1", "0", "-1", "5.0", "" },
 			 "ML", "mainloop_api", "score_adder2"));
-
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::score_hidder,
 			 "score_hidder",
 			 { "ev", "ml", "o","max_count" },
@@ -7320,7 +7321,6 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "ev", "", "", "50" },
 			 "ML", "mainloop_api", "score_hidder"));
 
-#endif
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font,
 			 "FI_load",
