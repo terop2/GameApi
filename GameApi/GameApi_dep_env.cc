@@ -1330,10 +1330,14 @@ void (*g_progress_callback)();
 void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
 
 
+pthread_t g_main_thread_id;
+
 void ProgressBar(int num, int val, int max, std::string label)
 {
 #ifndef EMSCRIPTEN
-  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+  //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
+  pthread_t curr = pthread_self();
+  if (!pthread_equal(curr, g_main_thread_id)) return;
 #endif
   //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
