@@ -390,7 +390,7 @@ EXPORT void GameApi::MainLoopApi::start_editor_state()
 EXPORT void GameApi::MainLoopApi::end_editor_state()
 {
   OpenglLowApi *ogl = g_low->ogl;
-  alpha_1(false);
+  alpha_1(true);
   ogl->glEnable(Low_GL_DEPTH_TEST);
 }
 
