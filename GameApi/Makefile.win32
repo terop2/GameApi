@@ -44,7 +44,19 @@ CFiles=	GameApi2.cc GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc 
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
 	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc GameApi_vr.cc \
- 	GameApi_qt.cc GameApi_low_egl.cc escapi.cc
+ 	GameApi_qt.cc GameApi_low_egl.cc escapi.cc \
+	GameApi_cmd_move.cc \
+	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
+	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
+	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
+	GameApi_cmd_cvolume.cc       GameApi_cmd_polygon2.cc \
+	GameApi_cmd_fbitmap.cc       GameApi_cmd_polygon.cc \
+	GameApi_cmd_font.cc          GameApi_cmd_framebuffer.cc \
+	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
+	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
+	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
+	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc
+
 
 WARN = -Wno-unused-function -Wno-sign-compare -Wno-reorder -Wno-unused-variable
 

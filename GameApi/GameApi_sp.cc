@@ -59,12 +59,15 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
       ArraySprite *ss = new ArraySprite(arr, s);
       ss->update_cache();
       env.sprites2[handle->id] = ss;
+      //env.sprites2.insert(std::pair<int,Sprite*>(handle->id, ss));
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
       ArrayRender *rend = env2->renders2[handle->id];
       if (rend)
 	{
 	  delete rend;
+	  env2->renders2.erase(handle->id);
 	}
+      //env2->renders2.insert(std::pair<int,ArrayRender*>(handle->id, new ArrayRender(g_low)));
       env2->renders2[handle->id] = new ArrayRender(g_low);
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
@@ -86,13 +89,16 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
 	  p.y = pos->y;
 	}
       Sprite *ss = new BitmapSprite(*chandle->bm, p);
+      //env.sprites2.insert(std::pair<int,Sprite*>(handle->id, ss));
       env.sprites2[handle->id] = ss;
       EnvImpl *env2 = ::EnvImpl::Environment(&e);
       ArrayRender *rend = env2->renders2[handle->id];
       if (rend)
 	{
 	  delete rend;
+	  env2->renders2.erase(handle->id);
 	}
+      //env2->renders2.insert(std::pair<int,ArrayRender*>(handle->id, new ArrayRender(g_low)));
       env2->renders2[handle->id] = new ArrayRender(g_low);
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
