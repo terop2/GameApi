@@ -19,7 +19,7 @@
 #
 
 
-CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui_1.cc GameApi_gui_2.cc GameApi_gui_3.cc GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
@@ -38,7 +38,20 @@ CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc Gam
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc \
+	GameApi_cmd_move.cc \
+	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
+	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
+	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
+	GameApi_cmd_cvolume.cc       GameApi_cmd_polygon2.cc \
+	GameApi_cmd_fbitmap.cc       GameApi_cmd_polygon.cc \
+	GameApi_cmd_font.cc          GameApi_cmd_framebuffer.cc \
+	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
+	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
+	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
+	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc \
+	GameApi_cmd.cc
+
 
 CFiles2 = 
 
@@ -56,8 +69,8 @@ Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function
 
-CCFLAGS = -O3 -m64 -std=c++17 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
-CC2FLAGS = -O3 -m64 -std=c++17 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
+CCFLAGS = -m64 -std=c++17 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
+CC2FLAGS = -m64 -std=c++17 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -66,7 +79,7 @@ default: libGameApi.so
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD    libGameApi.so"
-	@g++ -m64 -rdynamic -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@g++ -m64 -rdynamic -shared -g $(OFiles) -std=c++17 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
 
 #`pkg-config gtkmm-2.4 --libs` 
 
@@ -93,7 +106,7 @@ CCWIN = i586-mingw32msvc-g++
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC    $@"
-	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
+	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
 
 touch_all:
 	touch GameApi_gui_1.cc
