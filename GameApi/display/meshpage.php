@@ -717,7 +717,8 @@ On my laptop I get the following benchmarks(this test: <a href="https://meshpage
 <?php
 require_once("user.php");
 ?>
-<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
+<div style="padding: 20px;">
+<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
@@ -740,14 +741,23 @@ visit_counter_inc( "tool" );
 </div>
 </ul>
 </div>
+<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="margin: 30px;">
+      (doubleclick msi file to install it)<br>
+       start menu -> GameApi-Builder v27.0 -> GameApi_Builder v27.0
+</div>
+</div>
+</div>
 <p>
-<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
+<div style="padding: 20px;">
+<div></div>
+<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux 64-bit amd64</span>
 <li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-27.deb">download deb</a>
-<div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
+<div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
   <li>RatingCount: <span itemprop="ratingCount">1</span>
@@ -760,6 +770,14 @@ visit_counter_inc( "tool" );
   </ul>
 </div>
 </ul>
+</div>
+<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="margin: 30px;">
+      sudo apt-get install zstd<br>
+      sudo dpkg -i gameapi-builder_1.0-27.deb<br>
+      gameapi-builder
+</div>
+</div>
 </div>
 <!--
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">

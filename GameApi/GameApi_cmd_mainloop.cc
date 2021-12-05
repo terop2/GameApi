@@ -860,13 +860,13 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "EveryApi&", "ML", "float", "int", "int", "int" },
 			 { "ev", "", "150.0", "0", "0", "45" },
 			 "ML", "mainloop_api", "looking_glass_full"));
-#ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_window,
 			 "vr_window",
 			 { "ev", "ml", "logo", "fpscounter", "start_time", "duration", "invert", "translate" },
 			 { "EveryApi&", "ML", "bool", "bool", "float", "float", "bool", "bool" },
 			 { "ev", "", "false", "false", "0.0", "100000.0", "true", "true" },
 			 "RUN", "blocker_api", "vr_window"));
+#ifdef VIRTUAL_REALITY
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::vr_submit,
 			 "vr_submit",
 			 { "ev", "left_eye", "right_eye" },
