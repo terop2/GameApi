@@ -154,6 +154,7 @@
 #undef glMatrixMode
 #undef glLoadIdentity
 #undef glTranslatef
+#undef glDrawBuffers
 
 
 #undef Mix_PlayChannel
@@ -387,6 +388,14 @@ public:
   virtual void init() { }
   virtual void cleanup() { }
 
+  virtual void glDrawBuffers(int n, const unsigned int *bufs) {
+#ifdef GLEW_HACK
+#define glDrawBuffers GLEW_GET_FUN(__glewDrawBuffers)
+#endif
+    glDrawBuffers((GLsizei)n, bufs);
+  }
+
+
   virtual int glGetError() {
     return Low_GL_NO_ERROR;
     //int i = ::glGetError(); 
@@ -596,6 +605,7 @@ public:
 #endif
 }
   
+
 
   // blend
   virtual void glBlendFunc(int val, int val2) { 

@@ -275,7 +275,7 @@ public:
   virtual void glGetTexLevelParameteriv(int a, int, int w, int *ptr)=0;
   virtual void glGetTexImage(int a, int, int rgba, int unsign_byte, void *ptr)=0;
   virtual void glReadBuffer(int a)=0;
-  
+  virtual void glDrawBuffers(int n, const unsigned int *bufs)=0;
 
   // blend
   virtual void glBlendFunc(int val, int val2)=0;

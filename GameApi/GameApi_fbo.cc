@@ -1,6 +1,8 @@
 
 #include "GameApi_h.hh"
 
+void confirm_texture_usage(VertexArraySet *set);
+
 EXPORT GameApi::TXID GameApi::FrameBufferApi::tex_id(FBO buffer)
 {
   FBOPriv *priv = find_fbo(e, buffer);
@@ -29,27 +31,32 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, sx,sy, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, 0);
   ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_LINEAR);
   ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_LINEAR);
-  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
-  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+  //ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+  //ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
 
-  Low_GLuint depth_texture2;
+  Low_GLuint depth_texture2=0;
+  /*
   Low_GLuint depth_texture;
-  ogl->glGenTextures(1, &depth_texture2);
-  ogl->glBindTexture(Low_GL_TEXTURE_2D, depth_texture2);
-  //ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
-  //ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_NEAREST);
+  ogl->glGenTextures(1, &depth_texture);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, depth_texture);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_NEAREST);
   ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_DEPTH_COMPONENT, sx,sy, 0, Low_GL_DEPTH_COMPONENT, Low_GL_UNSIGNED_INT,0);
-  //ogl->glGenRenderbuffers(1, &depth_texture);
-  //ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, depth_texture);
-  //ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_DEPTH_COMPONENT16, sx, sy);
+  ogl->glGenRenderbuffers(1, &depth_texture);
+  ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, depth_texture);
+  ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_RGBA, sx, sy);
+  */
+  /*
   ogl->glFramebufferRenderbuffer(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_RENDERBUFFER, depth_texture2);
 
   ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, depth_texture2, 0);
+  */
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
   ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
 
   return add_fbo(e, fbo_name, texture, depth_texture2, sx,sy);
 }
+void map_enums(int &i);
 EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
 {
   OpenglLowApi *ogl = g_low->ogl;
@@ -60,10 +67,13 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, priv->texture, 0);
   //ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, priv->depthbuffer,0);
   
-  //GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-  //glDrawBuffers(1, DrawBuffers);
-  //glReadBuffer( GL_COLOR_ATTACHMENT0 );
-  
+  /*
+  int ii = Low_GL_COLOR_ATTACHMENT0;
+  map_enums(ii);
+  unsigned int DrawBuffers[1] = { (unsigned int)ii };
+  ogl->glDrawBuffers(1, DrawBuffers);
+  ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
+  */
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
 }
 EXPORT GameApi::FrameBufferApi::vp GameApi::FrameBufferApi::bind_fbo(FBO buffer)
@@ -71,7 +81,7 @@ EXPORT GameApi::FrameBufferApi::vp GameApi::FrameBufferApi::bind_fbo(FBO buffer)
   OpenglLowApi *ogl = g_low->ogl;
   FBOPriv *priv = find_fbo(e, buffer);
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
-  ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, priv->depthbuffer);
+  // ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, priv->depthbuffer);
   FrameBufferApi::vp viewport;
   ogl->glGetIntegerv(Low_GL_VIEWPORT, viewport.viewport);
   ogl->glViewport(0,0,priv->sx,priv->sy);
@@ -92,7 +102,7 @@ EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
   FBOPriv *priv = find_fbo(e, buffer);
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
   int val = ogl->glCheckFramebufferStatus(Low_GL_FRAMEBUFFER);
-  //std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
+  std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
   return val == Low_GL_FRAMEBUFFER_COMPLETE;
 }
@@ -122,6 +132,7 @@ public:
   {
     if (sx == -1) { sx=ev.mainloop_api.get_screen_width(); }
     if (sy == -1) { sy=ev.mainloop_api.get_screen_height(); }
+    std::cout << sx << " " << sy << std::endl;
     fbo = ev.fbo_api.create_fbo(sx,sy);
     ev.fbo_api.config_fbo(fbo);
     if (is_depth) {
@@ -129,6 +140,7 @@ public:
     } else {
       id = ev.fbo_api.tex_id(fbo);
     }
+    bool b = ev.fbo_api.fbo_status(fbo);
     firsttime = true;
   }
   void handle_event(MainLoopEvent &e)
@@ -141,11 +153,13 @@ public:
     ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id2);
     ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
     GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
-    ogl->glClearColor(0.0,0.0,0.0,0.0);
-    ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
-    ogl->glEnable(Low_GL_DEPTH_TEST);
-    ogl->glDepthMask(Low_GL_TRUE);
+    ogl->glClearColor(0.3,0.3,0.3,1.0);
+    ogl->glClear( Low_GL_COLOR_BUFFER_BIT| Low_GL_DEPTH_BUFFER_BIT);
+    ogl->glDisable(Low_GL_DEPTH_TEST);
+    ogl->glEnable(Low_GL_BLEND);
+    //ogl->glDepthMask(Low_GL_TRUE);
     MainLoopEnv ee = e;
+    
     ee.v_shader_functions = "";
     ee.f_shader_functions = "";
     ee.v_shader_funcnames.clear();
@@ -154,6 +168,7 @@ public:
     ee.us_fragment_shader=-1;
     ee.screen_x = 0;
     ee.screen_y = 0;
+    
     //ee.screen_width = sx;
     //ee.screen_height = sy;
     
@@ -168,13 +183,14 @@ public:
     } else {
       ee.in_MV = Matrix::Identity();
       ee.env = Matrix::Identity();
-    }
+      }
     if (firsttime) {
       item->Prepare();
       firsttime = false;
     }
-
+    ogl->glDisable(Low_GL_MULTISAMPLE);
       item->execute(ee);
+    ogl->glEnable(Low_GL_MULTISAMPLE);
     ev.fbo_api.bind_screen(viewport);
     ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
     //ogl->glDisable(Low_GL_DEPTH_TEST);
@@ -227,6 +243,10 @@ public:
 	va = ev.polygon_api.create_vertex_array(p, true);
 	//va = ev.sprite_api.create_vertex_array(bm);
 	va2 = ev.texture_api.bind(va, iid);
+	VertexArraySet *s = find_vertex_array(env, va2);
+	confirm_texture_usage(s);
+	//VertexArraySet *find_vertex_array(GameApi::Env &e, GameApi::VA p)
+
 	firsttime = false;
       }
     GameApi::US us_v;
