@@ -53,7 +53,6 @@ bool is_texture_usage_confirmed(VertexArraySet *set)
   
 }
 
-
 std::string extract_server(std::string url)
 {
   int s = url.size();

@@ -35,6 +35,7 @@ public:
       }
     bm_id = 0;
     texture_id = s.texture_id;
+    texture_many_ids = s.texture_many_ids;
     has_normal = s.has_normal;
     has_attrib = s.has_attrib;
     has_color = s.has_color;
