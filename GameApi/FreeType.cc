@@ -167,7 +167,9 @@ void FontGlyphBitmap::check_load()
     std::cout << "FT_New_Face ERROR: " << err << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
   }
-  FT_Set_Char_Size(priv->face, sx*64,sy*64,100,100);
+  //FT_Set_Char_Size(priv->face, sx*64,sy*64,sx*64,sy*64 /*100,100*/);
+  FT_Set_Pixel_Sizes(priv->face, sx,sy);
+  std::cout << "SIZE: " << sx << " " << sy << std::endl;
   }
 
 

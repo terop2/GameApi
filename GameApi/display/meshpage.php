@@ -291,11 +291,18 @@ $startpos = $_GET["ps"];
 if ($startpos!="") {
   $start = $num-($startpos*50);
 }
+$dupcache = array();
 for($i=$start;$cnt<50;$i--)
 {
 $ii = $i;
 if ($i<=1) {
+  redo:
   $ii = rand(2, $num);
+  foreach($dupcache as $i)
+  {
+    if ($i==$ii) goto redo;
+  }
+  array_push($dupcache, $ii);
 }
 
 $arr = array("username" => $user,
@@ -326,7 +333,7 @@ $label = get_label( $arr );
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
-   echo "<img width=\"200\" height=\"150\" draggable=\"false\" src=\"" . $filename . "\" itemprop=\"thumbnailUrl\" crossorigin/>";
+   echo "<img class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\" src=\"" . $filename . "\" itemprop=\"thumbnailUrl\" crossorigin/>";
 
 
    //echo "<canvas id=\"cnv" . $i . "\" width=\"200\" height=\"150\"></canvas>";
@@ -441,6 +448,7 @@ echo "</script>\n";
    echo "</div>";
 echo "<br>";
 page_footer();
+echo "<div style=\"height:40px\"></div>";
 echo "</div>";
 ?>
 

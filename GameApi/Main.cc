@@ -460,6 +460,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   EmscriptenWebGLContextAttributes attr;
   emscripten_webgl_init_context_attributes(&attr);
   attr.majorVersion = 2; attr.minorVersion = 0;
+
   //attr.desynchronized = true;
   //attr.premultipliedAlpha = true;
   //attr.antialias = true;
@@ -507,6 +508,19 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
 #endif
+#ifndef EMSCRIPTEN
+#ifdef LINUX
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLESAMPLES, 8);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+#endif
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLESAMPLES, 8);
+
+#endif
+  
 #ifndef EMSCRIPTEN
 #ifndef LINUX
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
@@ -586,7 +600,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   OpenglLowApi *ogl = g_low->ogl;
 
   const unsigned char *ptr = ogl->glGetString(Low_GL_VENDOR);
-  if (strlen((const char*)ptr)>4) {
+  if (ptr && strlen((const char*)ptr)>4) {
   g_gpu_vendor = std::string(ptr,ptr+4);
   }
   std::cout << "GPU Vendor: " << ogl->glGetString(Low_GL_VENDOR)<< std::endl;
