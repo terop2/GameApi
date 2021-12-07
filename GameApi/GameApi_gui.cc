@@ -169,7 +169,8 @@ std::map<std::string, int> shared_text;
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
 public:
-  TextGuiWidgetAtlas(GameApi::EveryApi &ev, std::string label, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true; 
+  TextGuiWidgetAtlas(GameApi::EveryApi &ev, std::string label, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), label(label), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true;
+    //std::cout << "TextGuiWidgetAtlas: " << atlas.id << " " << atlas_bm.id << std::endl;
     Point2d p = { -666.0, -666.0 };
     update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
@@ -184,13 +185,13 @@ public:
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
 	
 	GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
-	int sx = ev.bitmap_api.size_x(rendered_bitmap);
-	int sy = ev.bitmap_api.size_y(rendered_bitmap);
-	scaled_bitmap = ev.cont_bitmap_api.sample(sca, sx/2, sy/2);
-	
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
-	//scaled_bitmap = rendered_bitmap; //ev.bitmap_api.scale_bitmap(ev,rendered_bitmap, sx/2,sy/2);
+	//scaled_bitmap = ev.cont_bitmap_api.sample(sca, sx/2, sy/2);
+	
+	int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	scaled_bitmap = rendered_bitmap; //ev.bitmap_api.scale_bitmap(ev,rendered_bitmap, sx/2,sy/2);
 	std::stringstream ss;
 	ss << sx << " " << sy;
 	std::string key = label + ss.str();
@@ -3336,7 +3337,10 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 
 EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W&collect_button)
 {
-  ev.bitmap_api.prepare(bm);
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glDisable(Low_GL_DEPTH_TEST);
+
+    ev.bitmap_api.prepare(bm);
   float sx = float(ev.bitmap_api.size_x(bm));
   float sy = float(ev.bitmap_api.size_y(bm));
   if (sx>sy) {
@@ -3735,8 +3739,8 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
 	}
       else 
 	{
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,:";
-      W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,:_";
+      W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 	}

@@ -391,7 +391,7 @@ EXPORT void GameApi::MainLoopApi::end_editor_state()
 {
   OpenglLowApi *ogl = g_low->ogl;
   alpha_1(true);
-  ogl->glEnable(Low_GL_DEPTH_TEST);
+  //ogl->glEnable(Low_GL_DEPTH_TEST);
 }
 
 EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
