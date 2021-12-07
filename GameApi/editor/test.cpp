@@ -629,9 +629,10 @@ void render_cb(Envi *env)
 
 void FinishProgress();
 Envi *g_env;
+bool g_progress_halt=false;
 void refresh()
 {
-
+  //if (g_progress_halt) return;
   if (g_env && g_env->progress_visible) {
   g_env->ev->shader_api.use(g_env->sh);
   if (g_env->has_wayland) {
@@ -659,7 +660,8 @@ void refresh()
 void iter(void *arg)
 {
   Envi *env = (Envi*)arg;
-
+  //g_progress_halt = true;
+  
 #if 0
   if (env->logo_shown)
     {
@@ -1216,7 +1218,6 @@ void iter(void *arg)
 
 
 		    
-		    
 		    bool display = true;
 		    if (type=="BO")
 		      {
@@ -1601,6 +1602,8 @@ void iter(void *arg)
 		      {
 			env->gui->set_pos(env->display, 200.0, 50.0);
 			env->display_visible = true;
+			  g_env->ev->mainloop_api.end_editor_state();
+
 		      }
 		    env->progress_visible = false;
 		    
@@ -1987,6 +1990,7 @@ void iter(void *arg)
 	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
 	//float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
 	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
+	// g_progress_halt = false;
 
 }
 float f(float w)
@@ -2283,7 +2287,7 @@ int main(int argc, char *argv[]) {
       display_height = g_display_height;
     }
   
-  int font_scale = 2;
+  float font_scale = 1.5;
 
   ProgressBar(888,0,5,"init");
   // shader initialization
@@ -2294,9 +2298,9 @@ int main(int argc, char *argv[]) {
   SH sh2 = ev.shader_api.colour_shader();
   SH sh3 = ev.shader_api.colour_shader();
   // Chunkfive.otf
-  Ft font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 13,15 
-  Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 10*font_scale,13*font_scale); // 10,13
-  Ft font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 30*font_scale,30*font_scale); // 30,30
+  Ft font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
+  Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
+  Ft font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
 
   std::string fname = "atlas0.txt";
   if (file_exists("/usr/share/atlas0.txt")) {
@@ -2318,17 +2322,17 @@ int main(int argc, char *argv[]) {
       if (flag ||std::string(argv[1])=="--generate-font-atlas")
 	{
 	  std::cout << "Generating logo." << std::endl;
-	  ev.mainloop_api.save_logo(ev);
+	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ ";
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
-	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 10*font_scale,13*font_scale, 25*font_scale);
-	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 10*font_scale,13*font_scale, 25*font_scale);
-	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 30*font_scale,30*font_scale, 65*font_scale);
-	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 10*font_scale,13*font_scale);
-	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 10*font_scale,13*font_scale);
-	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 30*font_scale,30*font_scale);
+	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 8*font_scale,12*font_scale, 25*font_scale);
+	  FtA atlas2 = ev.font_api.font_atlas_info(ev, font2, chars, 8*font_scale,12*font_scale, 25*font_scale);
+	  FtA atlas3 = ev.font_api.font_atlas_info(ev, font3, chars, 20*font_scale,20*font_scale, 65*font_scale);
+	  BM atlas_bm = ev.font_api.font_atlas(ev, font, atlas, 8*font_scale,12*font_scale);
+	  BM atlas_bm2 = ev.font_api.font_atlas(ev,font2, atlas2, 8*font_scale,12*font_scale);
+	  BM atlas_bm3 = ev.font_api.font_atlas(ev,font3, atlas3, 20*font_scale,20*font_scale);
 	  std::cout << "Saving 0" << std::endl;
 	  ev.font_api.save_atlas(atlas, "atlas0.txt");
 	  std::cout << "Saving 1" << std::endl;
@@ -2355,20 +2359,20 @@ int main(int argc, char *argv[]) {
   std::string a_atlas_bm1;
   std::string a_atlas_bm2;
   
-  if (file_exists("/usr/share/atlas0.txt")) {
-    a_atlas0 = "/usr/share/atlas0.txt";
-    a_atlas1 = "/usr/share/atlas1.txt";
-    a_atlas2 = "/usr/share/atlas2.txt";
-    a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
-    a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
-    a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
-  } else {
+  if (file_exists("./atlas0.txt")) {
     a_atlas0 = "atlas0.txt";
     a_atlas1 = "atlas1.txt";
     a_atlas2 = "atlas2.txt";
     a_atlas_bm0 = "atlas_bm0.ppm";
     a_atlas_bm1 = "atlas_bm1.ppm";
     a_atlas_bm2 = "atlas_bm2.ppm";
+  } else {
+    a_atlas0 = "/usr/share/atlas0.txt";
+    a_atlas1 = "/usr/share/atlas1.txt";
+    a_atlas2 = "/usr/share/atlas2.txt";
+    a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
+    a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
+    a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
 #else
   std::string a_atlas0 = "atlas0.txt";
@@ -2379,12 +2383,12 @@ int main(int argc, char *argv[]) {
   std::string a_atlas_bm2 = "atlas_bm2.ppm";
 #endif
   
-  FtA atlas = ev.font_api.load_atlas(a_atlas0.c_str());
-  FtA atlas2 = ev.font_api.load_atlas(a_atlas1.c_str());
-  FtA atlas3 = ev.font_api.load_atlas(a_atlas2.c_str());
-  BM atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0.c_str());
-  BM atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1.c_str());
-  BM atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2.c_str());
+  FtA atlas = ev.font_api.load_atlas(a_atlas0);
+  FtA atlas2 = ev.font_api.load_atlas(a_atlas1);
+  FtA atlas3 = ev.font_api.load_atlas(a_atlas2);
+  BM atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0);
+  BM atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
+  BM atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
 
   
 #if 0

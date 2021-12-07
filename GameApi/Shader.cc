@@ -96,7 +96,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   int val = g_low->ogl->glGetError();
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-  if (val!=Low_GL_NO_ERROR)
+  // if (val!=Low_GL_NO_ERROR)
     {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -113,7 +113,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
   int val2 = g_low->ogl->glGetError();
-  if (val2!=Low_GL_NO_ERROR)
+  //if (val2!=Low_GL_NO_ERROR)
   {
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
@@ -188,7 +188,7 @@ void Program::push_back(const Shader &shader)
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
+  //if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
@@ -256,7 +256,7 @@ void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
   int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
+  //if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
   char log[255];
@@ -1251,8 +1251,8 @@ ShaderFile::ShaderFile()
 #endif
 #endif
 "#ifdef GLTF\n"
-"#extension GL_OES_standard_derivatives : enable\n"
-"#extension GL_NV_shadow_samplers_cube : enable\n"
+    "#extension GL_OES_standard_derivatives : enable\n"
+    "#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
 "precision highp float;\n"
 "uniform float time;\n"
@@ -1987,11 +1987,26 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
-
+"float dfd(vec2 p) {\n"
+   " return p.x*p.x-p.y;\n"
+    "}\n"
+"vec3 ddFdx(vec3 p) {\n"
+"   vec2 uv = ex_TexCoord.xy;\n"
+"   vec2 pixel_step = vec2(1/100,1/100);\n"
+"   float current = dfd(uv);\n"
+"   return vec3(dfd(uv+pixel_step.x) - current,0.0,0.0);\n"
+"}\n"
+"vec3 ddFdy(vec3 p) {\n"
+"   vec2 uv = ex_TexCoord.xy;\n"
+"   vec2 pixel_step = vec2(1/100,1/100);\n"
+"   float current = dfd(uv);\n"
+"   return vec3(0.0,dfd(uv+pixel_step.x) - current,0.0);\n"
+"}\n"
+    
 "vec3 getNormal() {\n"
 "   vec2 uv = ex_TexCoord.xy;\n"
-"   vec3 pos_dx = dFdx(ex_Position);\n"
-"   vec3 pos_dy = dFdy(ex_Position);\n"
+    "   vec3 pos_dx = dFdx(ex_Position);\n"
+    "   vec3 pos_dy = dFdy(ex_Position);\n"
 "   vec3 tex_dx = dFdx(vec3(uv,0.0));\n"
 "   vec3 tex_dy = dFdy(vec3(uv,0.0));\n"
 "   vec3 t = (tex_dx.t * pos_dx - tex_dx.t*pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);\n"
@@ -2926,8 +2941,8 @@ ShaderFile::ShaderFile()
 "#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
 "#ifdef GLTF\n"
-"#extension GL_OES_standard_derivatives : enable\n"
-"#extension GL_NV_shadow_samplers_cube : enable\n"
+    "#extension GL_OES_standard_derivatives : enable\n"
+    "#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
 "#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
