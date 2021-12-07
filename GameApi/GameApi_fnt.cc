@@ -108,6 +108,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std
   for(int i=0;i<s;i++)
     {
       char ch = chars[i];
+      std::cout << ch << std::flush;
       BM bm = glyph(font, ch);
       Bitmap<int> *bmA = env->fonts[font.id].bm;
       FontGlyphBitmap *bm2 = dynamic_cast<FontGlyphBitmap*>(bmA);
@@ -146,6 +147,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas(EveryApi &ev, Ft font, FtA atlas
     {
       std::pair<int,FontAtlasGlyphInfo> p = *i;
       int ch = p.first;
+      std::cout << ch << std::flush;
       BM bm = glyph(font, ch);
       bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x, p.second.y+p.second.top);
     }

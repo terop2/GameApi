@@ -188,10 +188,14 @@ public:
       item->Prepare();
       firsttime = false;
     }
+#ifndef EMSCRIPTEN
     ogl->glDisable(Low_GL_MULTISAMPLE);
+#endif
       item->execute(ee);
-    ogl->glEnable(Low_GL_MULTISAMPLE);
-    ev.fbo_api.bind_screen(viewport);
+#ifndef EMSCRIPTEN
+      ogl->glEnable(Low_GL_MULTISAMPLE);
+#endif
+      ev.fbo_api.bind_screen(viewport);
     ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
     //ogl->glDisable(Low_GL_DEPTH_TEST);
 		  
