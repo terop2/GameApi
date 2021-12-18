@@ -4493,6 +4493,8 @@ public:
   {
 
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    confirm_texture_usage(ev.get_env(),p);
+
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
@@ -4509,6 +4511,7 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
@@ -4526,6 +4529,7 @@ public:
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
@@ -4544,6 +4548,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
@@ -4561,6 +4566,7 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
+    confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
     GameApi::VA I12=ev.polygon_api.create_vertex_array(I10,true);
     //GameApi::BM I13=bm; //ev.bitmap_api.chessboard(20,20,2,2,ffffffff,ff888888);
@@ -12276,6 +12282,10 @@ void clear_texture_confirms();
 extern bool g_stop_music;
 void blocker_iter(void *arg)
 {
+  {
+    Envi_2 *env = (Envi_2*)arg;
+    env->ev->mainloop_api.fpscounter_framestart();
+  }
     if (g_stop_music ==true)
       {
 	g_stop_music = false;
@@ -12395,6 +12405,10 @@ void blocker_iter(void *arg)
 	  }
 
     // swapbuffers
+	{
+    Envi_2 *env = (Envi_2*)arg;
+  env->ev->mainloop_api.fpscounter_frameready();
+	}
     env->ev->mainloop_api.swapbuffers();
     g_engine_status = 1;
     //    ogl->glGetError();
@@ -12547,6 +12561,10 @@ public:
   }
   virtual int Iter()
   {
+    {
+      Envi_2 *env = (Envi_2*)&envi;
+      env->ev->mainloop_api.fpscounter_framestart();
+    }
     if (g_stop_music ==true)
       {
 	g_stop_music = false;
@@ -12731,6 +12749,10 @@ public:
     
     // swapbuffers
     //std::cout << "swapbuffers" << std::endl;
+    {
+    Envi_2 *env = (Envi_2*)&envi;
+    env->ev->mainloop_api.fpscounter_frameready();
+    }
     env->ev->mainloop_api.swapbuffers();
     g_engine_status = 1;
     //xsogl->glGetError();
@@ -16448,6 +16470,34 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   ML K24=ev.font_api.dynamic_character(ev,std::vector<BM>{K2,K4,K6,K8,K10,K12,K14,K16,K18,K20},K23,35*2,0);
 
 
+  FI T1=ev.font_api.load_font(font,30,30);
+  BM T2=ev.font_api.draw_text_string(T1,"0",5,30);
+  FI T3=ev.font_api.load_font(font,30,30);
+  BM T4=ev.font_api.draw_text_string(T3,"1",5,30);
+  FI T5=ev.font_api.load_font(font,30,30);
+  BM T6=ev.font_api.draw_text_string(T5,"2",5,30);
+  FI T7=ev.font_api.load_font(font,30,30);
+  BM T8=ev.font_api.draw_text_string(T7,"3",5,30);
+  FI T9=ev.font_api.load_font(font,30,30);
+  BM T10=ev.font_api.draw_text_string(T9,"4",5,30);
+  FI T11=ev.font_api.load_font(font,30,30);
+  BM T12=ev.font_api.draw_text_string(T11,"5",5,30);
+  FI T13=ev.font_api.load_font(font,30,30);
+  BM T14=ev.font_api.draw_text_string(T13,"6",5,30);
+  FI T15=ev.font_api.load_font(font,30,30);
+  BM T16=ev.font_api.draw_text_string(T15,"7",5,30);
+  FI T17=ev.font_api.load_font(font,30,30);
+  BM T18=ev.font_api.draw_text_string(T17,"8",5,30);
+  FI T19=ev.font_api.load_font(font,30,30);
+  BM T20=ev.font_api.draw_text_string(T19,"9",5,30);
+  FF T21=ev.font_api.fps_fetcher(ev);
+  SF T22=ev.font_api.float_to_string_fetcher(K21);
+  IF T23=ev.font_api.char_fetcher_from_string(K22,"0123456789",3);
+  ML T24=ev.font_api.dynamic_character(ev,std::vector<BM>{T2,T4,T6,T8,T10,T12,T14,T16,T18,T20},T23,35*3,0);
+
+  
+  
+
   //MN I49=ev.move_api.empty();
   //MN I50=ev.move_api.trans2(I49,35,0,10);
   //ML I51=ev.move_api.move_ml(ev,I48,I50,1,10.0);
@@ -16457,7 +16507,7 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   //ML K51=ev.move_api.move_ml(ev,K24,K50,1,10.0);
 
 
-  ML I52=ev.mainloop_api.array_ml(ev,std::vector<ML>{I24,I48,K24});
+  ML I52=ev.mainloop_api.array_ml(ev,std::vector<ML>{I24,I48,K24,T24});
   ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
   ML I54=ev.mainloop_api.array_ml(ev,std::vector<ML>{ml,I53});
   return I54;
@@ -22334,7 +22384,10 @@ public:
       }
       return &res_vec;
     }
-    return 0;
+    // get last one that was executed
+    int i = current_i;
+    if (i==-1) return 0;
+    return vec[i]->get_data(type);
   }
   void set_usage_index(int slot) { }
 private:
@@ -22662,6 +22715,11 @@ GameApi::H GameApi::BitmapApi::png_heavy(EveryApi &ev, H net, std::string url, i
   HeavyOperation *op = find_heavy(e, net);
   return add_heavy(e, new PngHeavy(ev,op,url,1024,1024, texture_unit));
 }
+GameApi::H GameApi::BitmapApi::png_heavy2(EveryApi &ev, H net, std::string url, int texture_unit, int sx, int sy)
+{
+  HeavyOperation *op = find_heavy(e, net);
+  return add_heavy(e, new PngHeavy(ev,op,url,sx,sy, texture_unit));
+}
 GameApi::H GameApi::BitmapApi::array_heavy(std::vector<H> vec)
 {
   int s = vec.size();
@@ -22689,6 +22747,34 @@ GameApi::H GameApi::BitmapApi::bitmap_prepare_heavy(EveryApi &ev, H bitmap_gen, 
   HeavyOperation *op = find_heavy(e,bitmap_gen);
   return add_heavy(e, new BitmapPrepareHeavy(ev, op, scanlines_per_slot));
 }
+
+#if 0
+GameApi::H GameApi::BitmapApi::progressive_heavy(EveryApi &ev, std::string url, std::string url2)
+{
+  GameApi::TXID txid_1 = dyn_fetch_bitmap2(ev, url, 20, 0, 256,256);
+
+  GameApi::TXID txid_2 = dyn_fetch_bitmap2(ev, url2, 20, 0, 1024, 1024);
+}
+#endif
+
+class TextureIDCombine : public TextureID
+{
+public:
+  TextureIDCombine(TextureID *i1, TextureID *i2) : i1(i1), i2(i2) { }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void render(MainLoopEnv &e)
+  {
+  }
+  int texture() const
+  {
+  }
+private:
+  TextureID *i1;
+  TextureID *i2;
+};
+
 
 class HeavyTextureID : public TextureID
 {
@@ -22917,6 +23003,26 @@ GameApi::ML GameApi::BitmapApi::txidarray_from_heavy(GameApi::EveryApi &ev, H he
   HeavyOperation *op = find_heavy(e, heavy);
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new TXIDArrayMainLoop(e,ev,op, vec,item, start_range,end_range,heavycount));
+}
+
+GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap2(EveryApi &ev, std::string url,std::string url2, int time, int texture_unit, int sx, int sy, int sx2, int sy2)
+{
+  H timing = timing_heavy(time);
+  H net = network_heavy(url, gameapi_homepageurl, timing);
+  H png = png_heavy2(ev,net,url,texture_unit,sx,sy);
+
+  H timing2 = timing_heavy(time);
+  H net2 = network_heavy(url, gameapi_homepageurl, timing2);
+  H png2 = png_heavy2(ev,net2,url,texture_unit,sx2,sy2);
+
+  std::vector<H> vec;
+  vec.push_back(png);
+  vec.push_back(png2);
+  H arr = array_heavy(vec);
+  
+  //H thr = thread_heavy(png);
+  TXID id = txid_from_heavy(arr);
+  return id;
 }
 
 GameApi::TXID GameApi::BitmapApi::dyn_fetch_bitmap(EveryApi &ev, std::string url, int time, int texture_unit)

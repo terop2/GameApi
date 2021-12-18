@@ -59,6 +59,8 @@ EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_heigh
   p->screen_height = screeny;
   time = g_low->sdl->SDL_GetTicks();
   ogl->glDisable(Low_GL_DEPTH_TEST);
+    fpscounter_init();
+
 }
 EXPORT void GameApi::MainLoopApi::init(SH sh, int screen_width, int screen_height)
 {
@@ -356,28 +358,104 @@ EXPORT void GameApi::MainLoopApi::print_profile()
 #endif
 #endif
 }
+
+
+int frame_counter = 0;
+
+EXPORT void GameApi::MainLoopApi::fpscounter_init()
+{
+}
+
+EXPORT void GameApi::MainLoopApi::fpscounter_framestart()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
+  p->time = time;
+}
+
+unsigned long long g_fps_time;
+EXPORT void GameApi::MainLoopApi::fpscounter_frameready()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
+  p->time2 = time;
+  g_fps_time = p->time;
+}
+
+unsigned long long s_time;
+
+EXPORT void GameApi::MainLoopApi::fpscounter_swapbuffersready()
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
+  s_time = time;
+  
+}
+
+
+float collect_time=0.0;
+float collect_delta = 0.0;
+int collect_frame = 0;
+
 EXPORT float GameApi::MainLoopApi::fpscounter(bool print)
 {
   MainLoopPriv *p = (MainLoopPriv*)priv;
   //unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
   // time = time*1000/g_low->sdl->SDL_GetPerformanceFrequency();
-    unsigned int time = g_low->sdl->SDL_GetTicks();
-  unsigned int delta_time = time - p->time;
-  unsigned int f_time = time - p->frame_time;
-  //p->time = time;
-  if (p->count==0) { p->avg_time = 0; p->time = time; p->frame=0; }
-  p->avg_time+=f_time;
-  p->frame++;
-  p->count++;
-  if (delta_time<1) delta_time=1;
-  float fps = p->frame/(delta_time/1000.0f);
-  if (p->count<0) { p->count = 0; }
-  if (p->count>100) {
-    if (print) {
-    std::cout << "FPS: " << fps << " delta_time:" << p->avg_time/100.0 << std::endl;
-    }
-    p->count = 0;
+  // unsigned int time = g_low->sdl->SDL_GetTicks();
+  //double delta_time = (((long double)(p->time2 - p->time))*1000.0f)/(double)g_low->sdl->SDL_GetPerformanceFrequency(); // in ms
+
+  long long delta_time_ticks = p->time2 - g_fps_time;
+  long long delta_time_ticks2 = s_time - g_fps_time;
+  if (delta_time_ticks<0) delta_time_ticks=-delta_time_ticks;
+  if (delta_time_ticks2<0) delta_time_ticks2=-delta_time_ticks2;
+  //std::cout << "delta_ticks: " << delta_time_ticks << std::endl;
+  //if (delta_time_ticks<0) delta_time_ticks=1;
+  
+  float delta_time = delta_time_ticks*1000.0/g_low->sdl->SDL_GetPerformanceFrequency();
+
+  float delta_time2 = delta_time_ticks2*1000.0/g_low->sdl->SDL_GetPerformanceFrequency();
+
+  
+  
+  //unsigned int f_time = time - p->frame_time;
+  //if (p->count==0) { p->avg_time = 0; p->time = time; p->frame=0; }
+  //p->avg_time+=f_time;
+  // std::cout << "Freq: " << g_low->sdl->SDL_GetPerformanceFrequency() << std::endl;
+  //std::cout << "Time2: " << p->time2 << " " << p->time << std::endl;
+  //std::cout << "Delta_time: " << delta_time << std::endl;
+  //p->frame++;
+  //p->count++;
+  //if (delta_time<1) delta_time=1;
+  collect_delta+=delta_time;
+  collect_frame++;
+  
+  float fps = 1000.0f*collect_frame/collect_delta; // p->frame/(delta_time/1000.0f);
+
+
+
+  static float s_fps = 0.0; 
+  collect_time+=delta_time2;
+  if (collect_time>100.0) {
+    collect_time=0.0;
+    collect_delta = 0.0;
+    collect_frame=0;
+    s_fps = fps;
+  } else {
+    return s_fps;
   }
+
+  //std::cout << "fps: " << fps << std::endl;
+
+  //if (p->count<0) { p->count = 0; }
+  //if (p->count>100) {
+  //  if (print) {
+  //  std::cout << "FPS: " << fps << " delta_time:" << p->avg_time/100.0 << std::endl;
+  //  }
+  //  p->count = 0;
+  //}
+
+
   return fps;
 }
 
@@ -911,7 +989,8 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   //#ifdef EMSCRIPTEN
   // emscripten_webgl_commit_frame();
   //#endif
-				  
+  fpscounter_swapbuffersready();
+  
 #if 1
   unsigned int time = g_low->sdl->SDL_GetTicks();
   MainLoopPriv *p = (MainLoopPriv*)priv;

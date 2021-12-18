@@ -447,3 +447,59 @@ int main()
     std::cout << select_sum(i, diff) << ",";
 }
 #endif
+
+
+//
+//
+// Navier Stokes equations
+//
+//
+
+struct NS_Point
+{
+  float x,y,z;
+};
+
+class NS_StateSpace
+{
+public:
+  virtual NS_Point u(NS_Point x, float t) const=0;
+  virtual float p(NS_Point x, float t) const=0;
+};
+
+class NS_StateSpaceInitial
+{
+public:
+  virtual NS_Point u_0(NS_Point x) const=0;
+};
+
+class NS_InitialConditions : public NS_StateSpace
+{
+public:
+  NS_InitialConditions(NS_StateSpaceInitial *init, NS_StateSpace *next) : init(init), next(next) { }
+  virtual NS_Point u(NS_Point x, float t) const {
+    if (t==0.0f) { return init->u_0(x); }
+    return next->u(x,t);
+  }
+  virtual float p(NS_Point x, float t) const { return next->p(x,t); }
+private:
+  NS_StateSpaceInitial *init;
+  NS_StateSpace *next;
+};
+
+// Integration and derivatives
+
+// lim dx->1 (f(x+dx)-f(x))/dx
+
+float derivative(float f_x_plus_dx, float f_x, float dx=1.0f)
+{
+  return (f_x_plus_dx-f_x)/dx;
+}
+float next_item(float f_x, float df_dx_at_x, float dx=1.0f)
+{
+  return f_x+df_dx_at_x*dx;
+}
+float prev_item(float f_x_plus_dx, float df_dx_at_x, float dx=1.0f)
+{
+  return f_x_plus_dx-df_dx_at_x*dx;
+}

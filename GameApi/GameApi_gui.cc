@@ -441,7 +441,7 @@ public:
 	int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
-	scaled_bitmap = ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
+	scaled_bitmap = rendered_bitmap; //ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
 	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	firsttime = false;
       }
@@ -594,7 +594,7 @@ public:
 	int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
-	scaled_bitmap = ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
+	scaled_bitmap = rendered_bitmap; //ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
 	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	firsttime = false;
       }
@@ -3409,7 +3409,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
       std::string label = labels[i];
       W lab = text(label, atlas,atlas_bm, 8);
       W lab_2 = right_align(lab, size_x1);
-      W edit = generic_editor(*target, atlas, atlas_bm, type, 8, atlas_tiny, atlas_tiny_bm, size_y(lab));
+      W edit = generic_editor(*target, atlas, atlas_bm, type, 2, atlas_tiny, atlas_tiny_bm, size_y(lab));
 
       W array2[] = { lab_2, edit };
       W array3 = array_x(&array2[0], 2, 5);
@@ -3740,7 +3740,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
       else 
 	{
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,:_";
-      W edit = string_editor(allowed, target.s, atlas, atlas_bm, x_gap);
+      W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 	}

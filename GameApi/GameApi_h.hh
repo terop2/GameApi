@@ -254,8 +254,9 @@ bool is_platform_firefox();
 struct MainLoopPriv
 {
   Low_SDL_Surface *screen;
-  unsigned int time;
-  unsigned int frame_time;
+  unsigned long long time;
+  unsigned long long time2;
+  unsigned long long frame_time;
   unsigned int avg_time;
   float current_time;
   float delta_time;

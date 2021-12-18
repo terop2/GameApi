@@ -52,10 +52,16 @@ std::vector<GameApiItem*> bitmapapi_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap,
 			 "bm_fetch",
-			 { "ev", "url", "reload_frame" },
-			 { "EveryApi&", "std::string", "int" },
-			 { "ev", "http://tpgames.org/gameapi_logo.png", "300000" },
+			 { "ev", "url", "reload_frame", "texture_unit" },
+			 { "EveryApi&", "std::string", "int", "int" },
+			 { "ev", "http://tpgames.org/gameapi_logo.png", "300000", "0" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap2,
+			 "bm_fetch2",
+			 { "ev", "url", "url2", "texture_unit", "sx", "sy", "sx2", "sy2" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "int" },
+			 { "ev", "http://tpgames.org/gameapi_logo.png", "http://tpgames.org/gameapi_logo.png", "0", "256", "256", "1024", "1024" },
+			 "TXID", "bitmap_api", "dyn_fetch_bitmap2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_bitmap,
 			 "bm_gltf",
 			 { "ev", "base_url", "url", "image_index" },
