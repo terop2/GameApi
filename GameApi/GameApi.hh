@@ -410,6 +410,10 @@ public:
   IMPORT void swapbuffers();
   IMPORT void finish();
   IMPORT BM screenshot();
+  IMPORT void fpscounter_init();
+  IMPORT void fpscounter_framestart();
+  IMPORT void fpscounter_frameready();
+  IMPORT void fpscounter_swapbuffersready();
   IMPORT float fpscounter(bool print=true);
   IMPORT ML fps_display(EveryApi &ev, ML ml, std::string font);
   IMPORT ML score_display(EveryApi &ev, ML ml, std::string font);
@@ -800,11 +804,14 @@ public:
   IMPORT H network_heavy(std::string url, std::string homepageurl, H timing_heavy);
   IMPORT H bitmap_heavy(BM bm, H timing);
   IMPORT H png_heavy(EveryApi &ev, H data, std::string url, int texture_unit);
+  IMPORT H png_heavy2(EveryApi &ev, H net, std::string url, int texture_unit, int sx, int sy);
   IMPORT H mtl_heavy(EveryApi &ev, H net, std::string url_prefix, int texture_unit_delta);
+  IMPORT H progressive_heavy(EveryApi &ev, std::string url, std::string url2);
   IMPORT H array_heavy(std::vector<H> vec);
   IMPORT H thread_heavy(H threaded);
   IMPORT H timing_heavy(int num_frames);
   IMPORT TXID dyn_fetch_bitmap(EveryApi& ev, std::string url, int time, int texture_unit);
+  IMPORT TXID dyn_fetch_bitmap2(EveryApi &ev, std::string url, std::string url2, int time, int texture_unit, int sx, int sy, int sx2, int sy2);
   IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
   IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range, int heavycount);
 

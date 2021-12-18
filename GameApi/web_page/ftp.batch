@@ -1,4 +1,10 @@
 cd meshpage.org
+put web_page_highmem.html
+put web_page_highmem.worker.js
+put web_page_highmem.data
+put web_page_highmem.js
+put web_page_highmem.wasm
+put web_page_highmem.wasm.map
 put web_page.html
 put web_page.data
 put web_page.js
@@ -6,12 +12,6 @@ put web_page.wasm
 put web_page.wasm.map
 put pthread-main.js
 put web_page.worker.js
-put web_page_highmem.html
-put web_page_highmem.worker.js
-put web_page_highmem.data
-put web_page_highmem.js
-put web_page_highmem.wasm
-put web_page_highmem.wasm.map
 put web_page_lowmem.html
 put web_page_lowmem.worker.js
 put web_page_lowmem.data
