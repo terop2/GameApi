@@ -306,6 +306,11 @@ private:
 };
 GameApi::ML GameApi::FrameBufferApi::fbo_ml_blit(EveryApi &ev, GameApi::TXID id, float start_x, float end_x, float start_y, float end_y, float z)
 {
-  TextureID *txid = find_txid(e, id);
-  return add_main_loop(e, new FBOML(e,ev,txid, start_x, end_x, start_y, end_y, z));
+P I1=ev.polygon_api.quad_z(start_x,end_x,start_y,end_y,z);
+//P I1=ev.polygon_api.fullscreen_quad(ev);
+  MT I6=ev.materials_api.textureid(ev,id,1.0);
+  ML I7=ev.materials_api.bind(I1,I6);
+  return I7;
+  //TextureID *txid = find_txid(e, id);
+  //return add_main_loop(e, new FBOML(e,ev,txid, start_x, end_x, start_y, end_y, z));
 }
