@@ -153,7 +153,7 @@ public:
     ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id2);
     ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
     GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
-    ogl->glClearColor(0.3,0.3,0.3,1.0);
+    ogl->glClearColor(0.0,0.0,0.0,0.0);
     ogl->glClear( Low_GL_COLOR_BUFFER_BIT| Low_GL_DEPTH_BUFFER_BIT);
     ogl->glDisable(Low_GL_DEPTH_TEST);
     ogl->glEnable(Low_GL_BLEND);
@@ -188,13 +188,13 @@ public:
       item->Prepare();
       firsttime = false;
     }
-#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
     ogl->glDisable(Low_GL_MULTISAMPLE);
-#endif
+    //#endif
       item->execute(ee);
-#ifndef EMSCRIPTEN
+      //#ifndef EMSCRIPTEN
       ogl->glEnable(Low_GL_MULTISAMPLE);
-#endif
+      //#endif
       ev.fbo_api.bind_screen(viewport);
     ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
     //ogl->glDisable(Low_GL_DEPTH_TEST);
