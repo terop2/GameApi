@@ -92,6 +92,7 @@
 #endif
 
 #ifdef LINUX
+// TEST
 //#define OPENGL_ES 1
 #endif
 

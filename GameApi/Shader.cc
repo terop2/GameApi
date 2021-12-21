@@ -96,7 +96,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   int val = g_low->ogl->glGetError();
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-  // if (val!=Low_GL_NO_ERROR)
+   if (val!=Low_GL_NO_ERROR)
     {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -113,7 +113,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
   int val2 = g_low->ogl->glGetError();
-  //if (val2!=Low_GL_NO_ERROR)
+  if (val2!=Low_GL_NO_ERROR)
   {
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
@@ -188,7 +188,7 @@ void Program::push_back(const Shader &shader)
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   int val = g_low->ogl->glGetError();
-  //if (val!=Low_GL_NO_ERROR)
+  if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
@@ -256,7 +256,7 @@ void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
   int val = g_low->ogl->glGetError();
-  //if (val!=Low_GL_NO_ERROR)
+  if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
   char log[255];
