@@ -102,7 +102,7 @@ EXPORT bool GameApi::FrameBufferApi::fbo_status(FBO buffer)
   FBOPriv *priv = find_fbo(e, buffer);
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
   int val = ogl->glCheckFramebufferStatus(Low_GL_FRAMEBUFFER);
-  std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
+  //std::cout << "CheckFrameBuffer: " << val << "== " << Low_GL_FRAMEBUFFER_COMPLETE << std::endl;
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
   return val == Low_GL_FRAMEBUFFER_COMPLETE;
 }
@@ -132,7 +132,16 @@ public:
   {
     if (sx == -1) { sx=ev.mainloop_api.get_screen_width(); }
     if (sy == -1) { sy=ev.mainloop_api.get_screen_height(); }
-    std::cout << sx << " " << sy << std::endl;
+
+    if (sx!=1 && sx!=2 && sx!=4 && sx!=8 && sx!=16 && sx!=32 && sx!=64 && sx!=128 && sx!=256 && sx!=512 && sx!=1024 && sx!=2048 && sx!=4096) {
+      std::cout << "Warning: power of two texture sizes needed in fbo_ml/fbo_id (doesnt work in webgl)" << std::endl;
+    }
+    if (sy!=1 && sy!=2 && sy!=4 && sy!=8 && sy!=16 && sy!=32 && sy!=64 && sy!=128 && sy!=256 && sy!=512 && sy!=1024 && sy!=2048 && sy!=4096) {
+      std::cout << "Warning: power of two texture sizes needed in fbo_ml/fbo_id (doesnt work in webgl)" << std::endl;
+    }
+
+    
+    //std::cout << sx << " " << sy << std::endl;
     fbo = ev.fbo_api.create_fbo(sx,sy);
     ev.fbo_api.config_fbo(fbo);
     if (is_depth) {
