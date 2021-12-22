@@ -10007,7 +10007,7 @@ GameApi::US GameApi::UberShaderApi::v_toon(US us)
 GameApi::US GameApi::UberShaderApi::v_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("texture", next,"EX_TEXCOORD IN_TEXCOORD"));
+  return add_uber(e, new V_ShaderCallFunction("texture_impl", next,"EX_TEXCOORD IN_TEXCOORD"));
 }
 GameApi::US GameApi::UberShaderApi::v_manytexture(US us)
 {
@@ -10408,7 +10408,7 @@ GameApi::US GameApi::UberShaderApi::f_toon(US us)
 GameApi::US GameApi::UberShaderApi::f_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture", next,"EX_TEXCOORD COLOR_MIX"));
+  return add_uber(e, new F_ShaderCallFunction("texture_impl", next,"EX_TEXCOORD COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_manytexture(US us)

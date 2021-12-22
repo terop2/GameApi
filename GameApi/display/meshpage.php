@@ -1620,6 +1620,9 @@ function show_emscripten(str,hide,indicator,is_async)
   var canv = document.getElementById("canvas");
   var Module = {
       canvas : canv,
+      createContext: function(canvas, useWebGL, setInModule, webGLContextAttribuutes) {
+            return canvas.getContext("experimental-webgl2",{antialias:false});
+      },
       arguments : [
 <?php
 require_once("user.php");
