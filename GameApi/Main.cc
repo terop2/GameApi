@@ -459,8 +459,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #ifdef EMSCRIPTEN
   EmscriptenWebGLContextAttributes attr;
   emscripten_webgl_init_context_attributes(&attr);
-  attr.majorVersion = 2; attr.minorVersion = 0;
+  attr.majorVersion = 3; attr.minorVersion = 0;
 
+
+  attr.enableExtensionsByDefault = false;
+  
   //attr.desynchronized = true;
   //attr.premultipliedAlpha = true;
   //attr.antialias = true;
@@ -535,7 +538,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_CORE);
 #else 
-  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3); // 2
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
 
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);

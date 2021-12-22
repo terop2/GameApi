@@ -57,6 +57,19 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef EMSCRIPTEN
+#define WEBGL2 1
+#endif
+
+#ifdef WEBGL2
+#define ATTRIBUTE "in"
+#define VARYING_IN "in"
+#define VARYING_OUT "out"
+#else
+#define ATTRIBUTE "attribute"
+#define VARYING_IN "varying"
+#define VARYING_OUT "varying"
+#endif
 
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
@@ -96,7 +109,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   int val = g_low->ogl->glGetError();
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-   if (val!=Low_GL_NO_ERROR)
+  //if (val!=Low_GL_NO_ERROR)
     {
     //std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -113,7 +126,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
   int val2 = g_low->ogl->glGetError();
-  if (val2!=Low_GL_NO_ERROR)
+  //if (val2!=Low_GL_NO_ERROR)
   {
   char log[255];
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
@@ -188,7 +201,7 @@ void Program::push_back(const Shader &shader)
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
   int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
+  //if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
@@ -256,7 +269,7 @@ void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
   int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
+  //if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
   char log[255];
@@ -619,9 +632,13 @@ ShaderFile::ShaderFile()
 #ifdef OLD_SHADER
   std::string s =
 "//V: comb\n"
-"#version 100\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
-"precision highp float;\n"
+    "precision highp float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -632,41 +649,41 @@ ShaderFile::ShaderFile()
 "uniform float in_POS;\n"
 "uniform float time;\n"
 "#ifdef INST\n"
-"attribute vec3 in_InstPos;\n"
+ATTRIBUTE " vec3 in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"attribute mat4 in_InstMat;\n"
+ATTRIBUTE " mat4 in_InstMat;\n"
 "#endif\n"
-"attribute vec3 in_Position;\n"
-"attribute vec3 in_Position2;\n"
+ATTRIBUTE " vec3 in_Position;\n"
+ATTRIBUTE " vec3 in_Position2;\n"
 "#ifdef IN_NORMAL\n"
-"attribute vec3 in_Normal;\n"
+ATTRIBUTE " vec3 in_Normal;\n"
 "#endif\n"
 "#ifdef IN_COLOR\n"
-"attribute vec4 in_Color;\n"
+ATTRIBUTE " vec4 in_Color;\n"
 "#endif\n"
 "#ifdef IN_TEXCOORD\n"
-"attribute vec3 in_TexCoord;\n"
+ATTRIBUTE " vec3 in_TexCoord;\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
-"varying vec3 ex_TexCoord;\n"
-"#endif\n"
+VARYING_OUT " vec3 ex_TexCoord;\n"
+    "#endif\n"
 "#ifdef EX_COLOR\n"
-"varying vec4 ex_Color;\n"
-"#endif\n"
+VARYING_OUT " vec4 ex_Color;\n"
+    "#endif\n"
     //"flat varying vec4 ex_FlatColor;\n"
 "#ifdef EX_NORMAL\n"
-"varying vec3 ex_Normal;\n"
-"#endif\n"
+VARYING_OUT " vec3 ex_Normal;\n"
+    "#endif\n"
 "#ifdef EX_POSITION\n"
-"varying vec3 ex_Position;\n"
-"#endif\n"
+VARYING_OUT " vec3 ex_Position;\n"
+    "#endif\n"
 "#ifdef EX_NORMAL2\n"
-"varying vec3 ex_Normal2;\n"
-"#endif\n"
+VARYING_OUT " vec3 ex_Normal2;\n"
+    "#endif\n"
 "#ifdef EX_LIGHTPOS2\n"
-"varying vec3 ex_LightPos2;\n"
-"#endif\n"
+VARYING_OUT " vec3 ex_LightPos2;\n"
+    "#endif\n"
 #if 0
 "varying vec3 ex_Normal3;\n"
 "varying vec3 ex_LightPos3;\n"
@@ -680,9 +697,9 @@ ShaderFile::ShaderFile()
 "#ifdef LIGHTDIR\n"
 "uniform vec3 light_dir;\n"
 "#endif\n"
-"varying float fog_intensity;\n"
-"varying vec2 shadow_position;\n"
-"#template LIGHTPOS\n"
+VARYING_OUT " float fog_intensity;\n"
+VARYING_OUT " vec2 shadow_position;\n"
+    "#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
 "uniform vec3 lightpos@;\n"
 "#endif\n"
@@ -916,7 +933,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
-"vec4 texture(vec4 pos)\n"
+"vec4 texture_impl(vec4 pos)\n"
 "{\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
@@ -1055,8 +1072,8 @@ ShaderFile::ShaderFile()
 "#endif\n"
     
 "#ifdef SKELETON\n"
-"attribute vec4 JOINTS_0;\n"
-"attribute vec4 WEIGHTS_0;\n"
+ATTRIBUTE " vec4 JOINTS_0;\n"
+ATTRIBUTE " vec4 WEIGHTS_0;\n"
     //"uniform mat4 inverseBind[64];\n"
 "uniform mat4 jointMatrix[64];\n"
 "mat4 getSkinningMatrix()\n"
@@ -1080,8 +1097,8 @@ ShaderFile::ShaderFile()
 "#ifdef IN_NORMAL\n"
 "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
-"varying vec3 eye;\n"
-"vec4 edge(vec4 pos)\n"
+VARYING_OUT " vec3 eye;\n"
+    "vec4 edge(vec4 pos)\n"
 "{\n"
     "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
     //"    vec3 n = normalize(mat3(in_iMV)*vec3(in_MV*vec4(in_Normal,1.0)));\n"
@@ -1229,11 +1246,15 @@ ShaderFile::ShaderFile()
 "}\n"
 "\n"
 "//V: empty\n"
-"#version 100\n"
-"uniform mat4 in_P;\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
-"attribute vec3 in_Position;\n"
+ATTRIBUTE " vec3 in_Position;\n"
 "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -1242,7 +1263,12 @@ ShaderFile::ShaderFile()
 "}\n"
 "\n"
 "//F: comb\n"
+#ifdef EMSCRIPTEN
+"#version 300 es\n"
+#else
 "#version 100\n"
+#endif
+
 #ifndef EMSCRIPTEN
 #ifndef __APPLE__
 "#ifdef TEXTURE_ARRAY\n"
@@ -1251,12 +1277,19 @@ ShaderFile::ShaderFile()
 #endif
 #endif
 "#ifdef GLTF\n"
+#ifdef WEBGL2
+#else
     "#extension GL_OES_standard_derivatives : enable\n"
-    "#extension GL_NV_shadow_samplers_cube : enable\n"
+"#extension GL_NV_shadow_samplers_cube : enable\n"
+#endif
 "#endif\n"
 "precision highp float;\n"
-"uniform float time;\n"
-"varying vec4 ex_Color;\n"
+#ifdef WEBGL2
+    "out vec4 out_Color;\n"
+#endif
+
+    "uniform float time;\n"
+VARYING_IN " vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
     //"out vec4 out_Color;\n"
     //"uniform mat4 in_P;\n"
@@ -1264,20 +1297,20 @@ ShaderFile::ShaderFile()
     //"uniform mat4 in_T;\n"
     //"uniform mat4 in_N;\n"
 "#ifdef EX_TEXCOORD\n"
-"varying vec3 ex_TexCoord;\n"
-"#endif\n"
+VARYING_IN    " vec3 ex_TexCoord;\n"
+    "#endif\n"
 "#ifdef EX_NORMAL\n"
-"varying vec3 ex_Normal;\n"
-"#endif\n"
+VARYING_IN " vec3 ex_Normal;\n"
+    "#endif\n"
 "#ifdef EX_POSITION\n"
-"varying vec3 ex_Position;\n"
-"#endif\n"
+VARYING_IN " vec3 ex_Position;\n"
+    "#endif\n"
 "#ifdef EX_NORMAL2\n"
-"varying vec3 ex_Normal2;\n"
-"#endif\n"
+VARYING_IN " vec3 ex_Normal2;\n"
+    "#endif\n"
 "#ifdef EX_LIGHTPOS2\n"
-"varying vec3 ex_LightPos2;\n"
-"#endif\n"
+VARYING_IN " vec3 ex_LightPos2;\n"
+    "#endif\n"
 #if 0
 "varying vec3 ex_Normal3;\n"
 "varying vec3 ex_LightPos3;\n"
@@ -1416,8 +1449,8 @@ ShaderFile::ShaderFile()
 "#ifdef EX_POSITION\n"
 "uniform float edge_width;\n"
 "uniform vec4 edge_color;\n"
-"varying vec3 eye;\n"
-"vec4 edge(vec4 rgb)\n"
+VARYING_IN " vec3 eye;\n"
+    "vec4 edge(vec4 rgb)\n"
 "{\n"
     "    vec3 view = eye;\n" //-ex_Position + vec3(0.0,0.0,-4000.0);\n"
 "    vec3 n = ex_Normal2;\n"
@@ -1462,7 +1495,11 @@ ShaderFile::ShaderFile()
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
     "    vec3 n = ex_Normal2;\n"
+#ifdef WEBGL2
+    "    vec3 n2 = texture(texsampler[0],ex_TexCoord.xy).rgb;\n"
+#else
     "    vec3 n2 = texture2D(texsampler[0],ex_TexCoord.xy).rgb;\n"
+#endif
     "    n2-=vec3(0.5,0.5,0.5);\n"
     "    n2*=2.0;\n"
     "    vec3 normal=normalmix(n,n2);\n"
@@ -1508,13 +1545,30 @@ ShaderFile::ShaderFile()
 
 
 "#ifdef MANYTEXTURES\n"
-"varying vec2 shadow_position;\n"
-"uniform vec4 shadow_dark;\n"
+VARYING_IN " vec2 shadow_position;\n"
+    "uniform vec4 shadow_dark;\n"
 "uniform float shadow_tex;\n"
 "vec4 shadow(vec4 rgb)\n"
 "{\n"
 "   vec2 f = shadow_position;\n"
 "   vec4 tx = vec4(0.0,0.0,0.0,0.0);\n"
+#ifdef WEBGL2
+"   if (shadow_tex<0.7) tx=texture(texsampler[0],f); else\n"
+"   if (shadow_tex<1.7) tx=texture(texsampler[1],f); else\n"
+"   if (shadow_tex<2.7) tx=texture(texsampler[2],f); else\n"
+"   if (shadow_tex<3.7) tx=texture(texsampler[3],f); else\n"
+"   if (shadow_tex<4.7) tx=texture(texsampler[4],f); else\n"
+"   if (shadow_tex<5.7) tx=texture(texsampler[5],f); else\n"
+"   if (shadow_tex<6.7) tx=texture(texsampler[6],f); else\n"
+"   if (shadow_tex<7.7) tx=texture(texsampler[7],f); else\n"
+"   if (shadow_tex<8.7) tx=texture(texsampler[8],f); else\n"
+"   if (shadow_tex<9.7) tx=texture(texsampler[9],f); else\n"
+"   if (shadow_tex<10.7) tx=texture(texsampler[10],f); else\n"
+"   if (shadow_tex<11.7) tx=texture(texsampler[11],f); else\n"
+"   if (shadow_tex<12.7) tx=texture(texsampler[12],f); else\n"
+"   if (shadow_tex<13.7) tx=texture(texsampler[13],f); else\n"
+    "     tx=texture(texsampler[14],f);\n"
+#else
 "   if (shadow_tex<0.7) tx=texture2D(texsampler[0],f); else\n"
 "   if (shadow_tex<1.7) tx=texture2D(texsampler[1],f); else\n"
 "   if (shadow_tex<2.7) tx=texture2D(texsampler[2],f); else\n"
@@ -1529,8 +1583,9 @@ ShaderFile::ShaderFile()
 "   if (shadow_tex<11.7) tx=texture2D(texsampler[11],f); else\n"
 "   if (shadow_tex<12.7) tx=texture2D(texsampler[12],f); else\n"
 "   if (shadow_tex<13.7) tx=texture2D(texsampler[13],f); else\n"
-"     tx=texture2D(texsampler[14],f);\n"
-"   float alpha = tx.r;\n"
+    "     tx=texture2D(texsampler[14],f);\n"
+#endif
+    "   float alpha = tx.r;\n"
 "   float visibility = 1.0;\n"
 "   if (alpha>0.5) visibility = 0.5;\n"
 "   rgb = shadow_dark+visibility*rgb;\n"
@@ -1538,8 +1593,8 @@ ShaderFile::ShaderFile()
 "}\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
-"varying float fog_intensity;\n"
-"uniform vec4 fog_dark;\n"
+VARYING_IN " float fog_intensity;\n"
+    "uniform vec4 fog_dark;\n"
 "uniform vec4 fog_light;\n"
 "vec4 fog(vec4 rgb)\n"
 "{\n"
@@ -1721,11 +1776,20 @@ ShaderFile::ShaderFile()
 "  vec2 t_px = ex_TexCoord.xy + vec2(0.005,0.0);\n"
 "  vec2 t_py = ex_TexCoord.xy + vec2(0.0,0.005);\n"
 "\n"
-"   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
-"   vec4 tex_mx = texture2D(tex, t_mx);	\n"
+#ifdef WEBGL2
+    "   vec4 tex2 = texture(tex, ex_TexCoord.xy);\n"
+    "   vec4 tex_mx = texture(tex, t_mx);	\n"
+"   vec4 tex_my = texture(tex, t_my);	\n"
+"   vec4 tex_px = texture(tex, t_px);	\n"
+"   vec4 tex_py = texture(tex, t_py);\n"
+#else
+    "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
+    "   vec4 tex_mx = texture2D(tex, t_mx);	\n"
 "   vec4 tex_my = texture2D(tex, t_my);	\n"
 "   vec4 tex_px = texture2D(tex, t_px);	\n"
 "   vec4 tex_py = texture2D(tex, t_py);\n"
+#endif
+
 "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "   vec4 t2 = mix(tex_my, tex_py, 0.5);\n"
 "   vec4 t12 = mix(t1,t2,0.5);\n"
@@ -1795,10 +1859,14 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef COLOR_MIX\n"
-"vec4 texture(vec4 rgb)\n"
+"vec4 texture_impl(vec4 rgb)\n"
 "{\n"
-"   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
-"   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
+#ifdef WEBGL2
+    "   vec4 t = texture(tex, ex_TexCoord.xy);\n"
+#else
+    "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
+#endif
+    "   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
     //"   return vec4(mix(rgb.rgb, texture2D(tex, ex_TexCoord.xy).rgb, color_mix),1.0);\n"
 "}\n"
 "#endif\n"
@@ -1807,8 +1875,12 @@ ShaderFile::ShaderFile()
 "#ifdef CUBEMAPTEXTURES\n"
 "vec4 cubemaptextures(vec4 rgb)\n"
 "{\n"
-"  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n"
-"  return mix(vec4(0.0,0.0,0.0,1.0),rgb, color_mix)+mix(vec4(0.0,0.0,0.0,1.0),tex,color_mix2);\n"
+#ifdef WEBGL2
+    "  vec4 tex = texture(cubesampler,ex_TexCoord.xyz);\n"
+#else
+    "  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n"
+#endif
+    "  return mix(vec4(0.0,0.0,0.0,1.0),rgb, color_mix)+mix(vec4(0.0,0.0,0.0,1.0),tex,color_mix2);\n"
 "}\n"
 "#endif\n"
 "#endif\n"
@@ -1848,7 +1920,83 @@ ShaderFile::ShaderFile()
 "#ifdef MANYTEXTURES\n"
 "vec4 manytextures(vec4 rgb)\n"
 "{\n"
-"  if (ex_TexCoord.z<0.7)\n"
+#ifdef WEBGL2
+    "  if (ex_TexCoord.z<0.7)\n"
+"  { vec4 t = texture(texsampler[0],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+    "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+"  if (ex_TexCoord.z<1.7)\n"
+"  { vec4 t = texture(texsampler[1],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[1],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<2.7)\n"
+"  { vec4 t = texture(texsampler[2],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[2],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<3.7)\n"
+"  { vec4 t = texture(texsampler[3],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[3],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<4.7)\n"
+"  { vec4 t = texture(texsampler[4],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[4],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<5.7)\n"
+"  { vec4 t = texture(texsampler[5],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[5],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<6.7)\n"
+"  { vec4 t = texture(texsampler[6],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[6],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<7.7)\n"
+"  { vec4 t = texture(texsampler[7],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[7],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<8.7)\n"
+"  { vec4 t = texture(texsampler[8],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[8],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<9.7)\n"
+"  { vec4 t = texture(texsampler[9],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[9],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<10.7)\n"
+"  { vec4 t = texture(texsampler[10],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[10],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<11.7)\n"
+"  { vec4 t = texture(texsampler[11],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[11],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<12.7)\n"
+"  { vec4 t = texture(texsampler[12],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[12],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<13.7)\n"
+"  { vec4 t = texture(texsampler[13],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[13],ex_TexCoord.xy), color_mix);\n"
+"  if (ex_TexCoord.z<14.7)\n"
+"  { vec4 t = texture(texsampler[14],ex_TexCoord.xy);\n"
+    //"    if (t.a<0.5) discard;\n"
+"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
+    //"  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n"
+#else
+    "  if (ex_TexCoord.z<0.7)\n"
 "  { vec4 t = texture2D(texsampler[0],ex_TexCoord.xy);\n"
     //"    if (t.a<0.5) discard;\n"
     "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
@@ -1922,7 +2070,8 @@ ShaderFile::ShaderFile()
     //"    if (t.a<0.5) discard;\n"
 "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
     //"  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n"
-"}\n"
+#endif
+    "}\n"
 "#endif\n"
 "#endif\n"
 "const float GAMMA=2.2;\n"
@@ -1975,9 +2124,15 @@ ShaderFile::ShaderFile()
 "   float NdotV = clamp(dot(n,v), 0.0, 1.0);\n"
 "   vec3 ref = normalize(reflect(-v,n));\n"
 "   vec2 bfrdsample = clamp(vec2(NdotV, info.perceptualRoughness), vec2(0.0,0.0), vec2(1.0,1.0));\n"
-"   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
-"   vec4 diff = textureCube(texsampler_cube[5], n);\n"
+#ifdef WEBGL2
+"   vec2 bfrd = texture(texsampler[7], bfrdsample).rg;\n"
+    "   vec4 diff = texture(texsampler_cube[5], n);\n"
+"   vec4 spec = texture(texsampler_cube[6], ref);\n"
+#else
+"   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"#
+    "   vec4 diff = textureCube(texsampler_cube[5], n);\n"
 "   vec4 spec = textureCube(texsampler_cube[6], ref);\n"
+#endif
 "   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
 "   vec3 specLight = SRGBtoLINEAR(spec).rgb;\n"
     "   vec3 diffuse = diffLight * info.diffuseColor;\n"
@@ -1987,36 +2142,31 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
-"float dfd(vec2 p) {\n"
-   " return p.x*p.x-p.y;\n"
-    "}\n"
 "vec3 ddFdx(vec3 p) {\n"
-"   vec2 uv = ex_TexCoord.xy;\n"
-"   vec2 pixel_step = vec2(1/100,1/100);\n"
-"   float current = dfd(uv);\n"
-"   return vec3(dfd(uv+pixel_step.x) - current,0.0,0.0);\n"
-"}\n"
+"return vec3(dFdx(p.x),dFdx(p.y),dFdx(p.z));\n"
+    "}\n"
 "vec3 ddFdy(vec3 p) {\n"
-"   vec2 uv = ex_TexCoord.xy;\n"
-"   vec2 pixel_step = vec2(1/100,1/100);\n"
-"   float current = dfd(uv);\n"
-"   return vec3(0.0,dfd(uv+pixel_step.x) - current,0.0);\n"
+"return vec3(dFdy(p.x),dFdy(p.y),dFdy(p.z));\n"
 "}\n"
     
 "vec3 getNormal() {\n"
 "   vec2 uv = ex_TexCoord.xy;\n"
-    "   vec3 pos_dx = dFdx(ex_Position);\n"
-    "   vec3 pos_dy = dFdy(ex_Position);\n"
-"   vec3 tex_dx = dFdx(vec3(uv,0.0));\n"
-"   vec3 tex_dy = dFdy(vec3(uv,0.0));\n"
+    "   vec3 pos_dx = ddFdx(ex_Position);\n"
+    "   vec3 pos_dy = ddFdy(ex_Position);\n"
+"   vec3 tex_dx = ddFdx(vec3(uv,0.0));\n"
+"   vec3 tex_dy = ddFdy(vec3(uv,0.0));\n"
 "   vec3 t = (tex_dx.t * pos_dx - tex_dx.t*pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);\n"
 "   vec3 ng = normalize(ex_Normal);\n"
 "   t = normalize(t-ng*dot(ng,t));\n"
 "   vec3 b = normalize(cross(ng,t));\n"
 "   mat3 tbn = mat3(t,b,ng);\n"
 "#ifdef GLTF_TEX2\n"
-"   vec3 n = texture2D(texsampler[2], uv).rgb;\n"
-"   n = normalize(tbn*((2.0*n-1.0) * vec3(u_NormalScale,u_NormalScale,1.0)));\n"
+#ifdef WEBGL2
+    "   vec3 n = texture(texsampler[2], uv).rgb;\n"
+#else
+    "   vec3 n = texture2D(texsampler[2], uv).rgb;\n"
+#endif
+    "   n = normalize(tbn*((2.0*n-1.0) * vec3(u_NormalScale,u_NormalScale,1.0)));\n"
 "   return n;\n"
 "#endif\n"
 "   return normalize(ex_Normal);\n"
@@ -2076,8 +2226,12 @@ ShaderFile::ShaderFile()
 "vec3 specularColor=vec3(0.0);\n"
 "vec3 f0 =vec3(0.04);\n"
 "#ifdef GLTF_TEX1\n"
-"  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
-"  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
+#ifdef WEBGL2
+    "  vec4 mrSample = texture(texsampler[1],ex_TexCoord.xy);\n"
+#else
+    "  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
+#endif
+    "  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
 "  metallic = mrSample.b * u_MetallicFactor;\n"
 "#endif\n"
     "#ifndef GLTF_TEX1\n"
@@ -2085,8 +2239,13 @@ ShaderFile::ShaderFile()
     "  perceptualRoughness = u_RoughnessFactor;\n"
     "#endif\n"
 "#ifdef GLTF_TEX0\n"
-"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
-"#endif\n"
+#ifdef WEBGL2
+    "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+#else
+    "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+#endif
+    
+    "#endif\n"
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
     "#endif\n"
@@ -2130,13 +2289,21 @@ ShaderFile::ShaderFile()
     // TODO LIGHTS
 "   float ao=1.0;\n"
 "#ifdef GLTF_TEX3\n"
+#ifdef WEBGL2
+"   ao = texture(texsampler[3], ex_TexCoord.xy).r;\n"
+#else
 "   ao = texture2D(texsampler[3], ex_TexCoord.xy).r;\n"
-"   color = mix(color, color*ao, u_OcculsionStrength);\n"
+#endif
+    "   color = mix(color, color*ao, u_OcculsionStrength);\n"
 "#endif\n"
 "   vec3 emissive = vec3(0);\n"
 "#ifdef GLTF_TEX4\n"
+#ifdef WEBGL2
+"   emissive = SRGBtoLINEAR(texture(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor;\n"
+#else
 "   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor;\n"
-"   color += emissive;\n"
+#endif
+    "   color += emissive;\n"
 "#endif\n"
     //"   return vec4(metallic,metallic,metallic,1.0);\n"
     //"   return vec4(vec3(perceptualRoughness),1.0);\n"
@@ -2160,7 +2327,11 @@ ShaderFile::ShaderFile()
 "   return rgb;\n"
 #else
 #ifndef __APPLE__
-"   return mix(rgb, texture2DArray(texarr, ex_TexCoord), color_mix);\n"
+#ifdef WEBGL2
+    "   return mix(rgb, textureArray(texarr, ex_TexCoord), color_mix);\n"
+#else
+    "   return mix(rgb, texture2DArray(texarr, ex_TexCoord), color_mix);\n"
+#endif
 #else
 "   return rgb;\n"
 #endif
@@ -2203,15 +2374,19 @@ ShaderFile::ShaderFile()
 "//C:\n"
 "}\n"
 "//V: screen\n"
-"#version 100\n"
-"precision highp float;\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "precision highp float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
-"attribute vec3 in_Normal;\n"
-"attribute vec3 in_Position;\n"
-"varying vec2 XY;\n"
-"\n"
+ATTRIBUTE " vec3 in_Normal;\n"
+ATTRIBUTE " vec3 in_Position;\n"
+VARYING_IN " vec2 XY;\n"
+    "\n"
 "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -2219,10 +2394,15 @@ ShaderFile::ShaderFile()
 "  gl_Position = in_P * in_T * in_MV *vec4(in_Position,1.0);\n"
 "}\n"
 "//F: screen\n"
-"#version 100\n"
-"precision highp float;\n"
-"varying vec2 XY;\n"
-"uniform float time;\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "precision highp float;\n"
+VARYING_IN " vec2 XY;\n"
+
+    "uniform float time;\n"
 "uniform float time2;\n"
 "uniform float time3;\n"
 "uniform float roty;\n"
@@ -2250,13 +2430,17 @@ ShaderFile::ShaderFile()
 "  gl_FragColor = color;\n"
 "}\n"
 "//V: colour\n"
-"#version 100\n"
-"/*layout(location=0)*/ attribute vec3 in_Position;\n"
-"/*layout(location=1)*/ attribute vec3 in_Normal;\n"
-"/*layout(location=2)*/ attribute vec3 in_Color;\n"
-"/*layout(location=3)*/ attribute vec3 in_TexCoord;\n"
-"varying vec3 ex_Color;\n"
-"uniform mat4 in_P;\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+"/*layout(location=0)*/ " ATTRIBUTE " vec3 in_Position;\n"
+"/*layout(location=1)*/ " ATTRIBUTE " vec3 in_Normal;\n"
+"/*layout(location=2)*/ " ATTRIBUTE " vec3 in_Color;\n"
+"/*layout(location=3)*/ " ATTRIBUTE " vec3 in_TexCoord;\n"
+VARYING_OUT " vec3 ex_Color;\n"
+    "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
 "//T:\n"
@@ -2266,28 +2450,40 @@ ShaderFile::ShaderFile()
 "   ex_Color = in_Color;\n"
 "}\n"
 "//F: colour\n"
-"#version 100\n"
-"precision highp float;\n"
-"varying vec3 ex_Color;\n"
-"//T:\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "precision highp float;\n"
+VARYING_IN " vec3 ex_Color;\n"
+    "//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = vec4(ex_Color,1.0);\n"
 "}\n"
 "\n"
 "//F: empty\n"
-"#version 100\n"
-"precision highp float;\n" 
-"varying vec3 ex_Color;\n"
-"//T:\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "precision highp float;\n" 
+VARYING_IN " vec3 ex_Color;\n"
+    "//T:\n"
 "void main(void)\n"
 "{\n"
 "   gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n"
 "}\n"
 "\n"
 "//V: texture\n"
-"#version 100\n"
-"/*layout(location=0)*/ in vec3 in_Position;\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "/*layout(location=0)*/ in vec3 in_Position;\n"
 "/*layout(location=1)*/ in vec3 in_Normal;\n"
 "/*layout(location=2)*/ in vec3 in_Color;\n"
 "/*layout(location=3)*/ in vec3 in_TexCoord;\n"
@@ -2302,16 +2498,24 @@ ShaderFile::ShaderFile()
 "   ex_TexCoord = in_TexCoord;\n"
 "}\n"
 "//F: texture\n"
-"#version 100\n"
-"//precision highp float;\n"
+#ifdef WEBGL2
+    "#version 300 es\n"
+#else
+    "#version 100\n"
+#endif
+    "//precision highp float;\n"
 "uniform sampler2D tex;\n"
-"attribute vec3 ex_TexCoord;\n"
+ATTRIBUTE " vec3 ex_TexCoord;\n"
     //" vec4 out_Color;\n"
 "//T:\n"
 "void main(void)\n"
 "{\n"
-"   gl_FragColor = texture2D(tex, ex_TexCoord.xy);\n"
-  "}\n";
+#ifdef WEBGL2
+    "   out_Color = texture(tex, ex_TexCoord.xy);\n"
+#else
+    "   gl_FragColor = texture2D(tex, ex_TexCoord.xy);\n"
+#endif
+    "}\n";
 #else
   std::string s =
 "//V: comb\n"
@@ -2818,7 +3022,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
-"vec4 texture(vec4 pos)\n"
+"vec4 texture_impl(vec4 pos)\n"
 "{\n"
 "  ex_TexCoord = in_TexCoord;\n"
 "  return pos;\n"
@@ -2941,8 +3145,8 @@ ShaderFile::ShaderFile()
 "#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
 "#ifdef GLTF\n"
-    "#extension GL_OES_standard_derivatives : enable\n"
-    "#extension GL_NV_shadow_samplers_cube : enable\n"
+    //    "#extension GL_OES_standard_derivatives : enable\n"
+"#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
 "#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
@@ -3196,11 +3400,20 @@ ShaderFile::ShaderFile()
 "  vec2 t_px = ex_TexCoord.xy + vec2(0.005,0.0);\n"
 "  vec2 t_py = ex_TexCoord.xy + vec2(0.0,0.005);\n"
 "\n"
-"   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
-"   vec4 tex_mx = texture2D(tex, t_mx);	\n"
+#ifdef WEBGL2
+    "   vec4 tex2 = texture(tex, ex_TexCoord.xy);\n"
+    "   vec4 tex_mx = texture(tex, t_mx);	\n"
+"   vec4 tex_my = texture(tex, t_my);	\n"
+"   vec4 tex_px = texture(tex, t_px);	\n"
+"   vec4 tex_py = texture(tex, t_py);\n"
+#else
+    "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
+    "   vec4 tex_mx = texture2D(tex, t_mx);	\n"
 "   vec4 tex_my = texture2D(tex, t_my);	\n"
 "   vec4 tex_px = texture2D(tex, t_px);	\n"
 "   vec4 tex_py = texture2D(tex, t_py);\n"
+#endif
+
 "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "   vec4 t2 = mix(tex_my, tex_py, 0.5);\n"
 "   vec4 t12 = mix(t1,t2,0.5);\n"
@@ -3270,7 +3483,7 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef COLOR_MIX\n"
-"vec4 texture(vec4 rgb)\n"
+"vec4 texture_impl(vec4 rgb)\n"
 "{\n"
 "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
 "   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
@@ -3325,8 +3538,12 @@ ShaderFile::ShaderFile()
 "#ifdef CUBEMAPTEXTURES\n"
 "vec4 cubemaptextures(vec4 rgb)\n"
 "{\n"
-"  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n"
-"   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0,0.0),tex.rgb,color_mix2),1.0);\n"
+#ifdef WEBGL2
+    "  vec4 tex = texture(cubesampler,ex_TexCoord.xyz);\n"
+#else
+    "  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n"
+#endif
+    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0,0.0),tex.rgb,color_mix2),1.0);\n"
     //"  return mix(vec4(0.0,0.0,0.0,1.0),rgb, color_mix)+mix(vec4(0.0,0.0,0.0,1.0),tex,color_mix2);\n"
 "}\n"
 "#endif\n"
@@ -3637,10 +3854,16 @@ ShaderFile::ShaderFile()
 "   float NdotV = clamp(dot(n,v), 0.0, 1.0);\n"
 "   vec3 ref = normalize(reflect(-v,n));\n"
 "   vec2 bfrdsample = clamp(vec2(NdotV, info.perceptualRoughness), vec2(0.0,0.0), vec2(1.0,1.0));\n"
+#ifdef WEBGL2
+"   vec2 bfrd = texture(texsampler[7], bfrdsample).rg;\n"
+"   vec4 diff = texture(texsampler_cube[5], n);\n"
+"   vec4 spec = texture(texsampler_cube[6], ref);\n"
+#else
 "   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 "   vec4 diff = textureCube(texsampler_cube[5], n);\n"
 "   vec4 spec = textureCube(texsampler_cube[6], ref);\n"
-"   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
+#endif
+    "   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
 "   vec3 specLight = SRGBtoLINEAR(spec).rgb;\n"
     "   vec3 diffuse = diffLight * info.diffuseColor;\n"
     "   vec3 specular = specLight * (info.specularColor * bfrd.x + bfrd.y);\n"
@@ -3649,13 +3872,20 @@ ShaderFile::ShaderFile()
 "#endif\n"
 "#endif\n"
 "#endif\n"
+"vec3 ddFdx(vec3 p) {\n"
+"return vec3(dFdx(p.x),dFdx(p.y),dFdx(p.z));\n"
+    "}\n"
+"vec3 ddFdy(vec3 p) {\n"
+"return vec3(dFdy(p.x),dFdy(p.y),dFdy(p.z));\n"
+"}\n"
 
+    
 "vec3 getNormal() {\n"
 "   vec2 uv = ex_TexCoord.xy;\n"
-"   vec3 pos_dx = dFdx(ex_Position);\n"
-"   vec3 pos_dy = dFdy(ex_Position);\n"
-"   vec3 tex_dx = dFdx(vec3(uv,0.0));\n"
-"   vec3 tex_dy = dFdy(vec3(uv,0.0));\n"
+"   vec3 pos_dx = ddFdx(ex_Position);\n"
+"   vec3 pos_dy = ddFdy(ex_Position);\n"
+"   vec3 tex_dx = ddFdx(vec3(uv,0.0));\n"
+"   vec3 tex_dy = ddFdy(vec3(uv,0.0));\n"
 "   vec3 t = (tex_dx.t * pos_dx - tex_dx.t*pos_dy) / (tex_dx.s * tex_dy.t - tex_dy.s * tex_dx.t);\n"
 "   vec3 ng = normalize(ex_Normal);\n"
 "   t = normalize(t-ng*dot(ng,t));\n"
@@ -4287,10 +4517,17 @@ std::string replace_c(const replace_c_params &pp)
 		ss3 << num2;
 
 #ifdef OLD_SHADER
+#ifdef WEBGL2
+		if (is_fbo)
+		  out += "gl_FragData[0] = rgb"; // TODO, fbo's probably not working.
+		else
+		  out+="out_Color = rgb";
+#else
 		if (is_fbo)
 		  out += "gl_FragData[0] = rgb";
 		else
 		  out+="gl_FragColor = rgb";
+#endif
 #else
 		out+="out_Color = rgb";
 #endif
@@ -4327,6 +4564,17 @@ std::string replace_c(const replace_c_params &pp)
 	      ss3 << s;
 	      
 #ifdef OLD_SHADER
+
+#ifdef WEBGL2
+	      if (is_fbo) {
+		out += "gl_FragData[0] = rgb"; // TODO
+	      out+= ss3.str();
+	      }
+	      else {
+		out+="out_Color = rgb";
+	      out+= ss3.str();
+	      }
+#else
 	      if (is_fbo) {
 		out += "gl_FragData[0] = rgb";
 	      out+= ss3.str();
@@ -4335,6 +4583,8 @@ std::string replace_c(const replace_c_params &pp)
 		out+="gl_FragColor = rgb";
 	      out+= ss3.str();
 	      }
+#endif
+
 #else
 	      if (g_gpu_vendor!="NVID") {
 		out+="out_Color = rgb" + ss3.str() + "";
