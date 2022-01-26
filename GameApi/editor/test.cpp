@@ -629,10 +629,10 @@ void render_cb(Envi *env)
 
 void FinishProgress();
 Envi *g_env;
-bool g_progress_halt=false;
+extern bool g_progress_halt;
 void refresh()
 {
-  //if (g_progress_halt) return;
+  if (g_progress_halt) return;
   if (g_env && g_env->progress_visible) {
   g_env->ev->shader_api.use(g_env->sh);
   if (g_env->has_wayland) {

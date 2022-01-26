@@ -485,6 +485,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   //char *url = (char*)arg;
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
+  /*
 
   { // progressbar
     std::string url_only2 = stripprefix(url_only);
@@ -494,9 +495,11 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   sum = sum % 1000;
   ProgressBar(sum,7,15,url_only2);
   }
+  */
   
   //std::cout << "url loading complete! " << url_str << std::endl;
   // THIS WAS url_only, but seems to have not worked.
+  //std::cout << "g_del_map " << url_only << " = " << (int)buffer << std::endl;
   g_del_map.load_url_buffers_async[url_only] = buffer;
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
@@ -536,6 +539,8 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
 #endif
   }
 #endif
+
+  /*
   { // progressbar
     std::string url_only2 = stripprefix(url_only);
   int s = url_only2.size();
@@ -543,7 +548,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   ProgressBar(sum,15,15,url_only2);
-  }
+  }*/
 
 }
 
@@ -563,12 +568,13 @@ void ASyncLoader::rem_callback(std::string url)
 void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 {
   // progress bar
+  
   int s = url.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
   InstallProgress(sum,url,15);
-
+  
 
   url = "load_url.php?url=" + url;
   ASyncCallback* cb = new ASyncCallback;
@@ -622,6 +628,7 @@ void* process(void *ptr)
   pthread_detach(pthread_self());
   std::vector<unsigned char> *buf = load_from_url(url);
   std::string url2 = "load_url.php?url=" + url ;
+  //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
   //pthread_exit(0);
   return 0;
@@ -831,10 +838,11 @@ void fetch_download_failed(emscripten_fetch_t *fetch) {
 }
 extern int g_logo_status;
 void fetch_download_progress(emscripten_fetch_t *fetch) {
-  //std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes << std::endl;
+  //std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes<< " " << fetch->numBytes << std::endl;
   int val = 7;
   if (fetch->totalBytes) {
     val = fetch->dataOffset * 15 / fetch->totalBytes;
+    if (val>15) val=15;
   } else {
 
     size_t sz = emscripten_fetch_get_response_headers_length(fetch);
@@ -847,7 +855,7 @@ void fetch_download_progress(emscripten_fetch_t *fetch) {
     char *res = 0;
     for(;*ptr;ptr+=2) {
       //std::cout << ptr[0] << "::" << ptr[1] << std::endl;
-      if (strcmp(ptr[0],"content-length")==0) res = ptr[1];
+      if (strcmp(ptr[0],"uncompressed-length")==0) res = ptr[1];
     }
     int total = 0;
     if (res) {
@@ -857,6 +865,7 @@ void fetch_download_progress(emscripten_fetch_t *fetch) {
     //std::cout << "GOT CONTENT LENGTH: " << total << std::endl;
     if (total != 0)
       val = 15*(fetch->dataOffset + fetch->numBytes)/total;
+    if (val>15) val=15;
   }
   //std::cout << "logo:" << val << std::endl;
   if (g_logo_status==0)
@@ -914,6 +923,15 @@ extern std::vector<const unsigned char*> g_content_end;
 extern std::vector<const char*> g_urls;
 
 
+int CalcUrlIndex(std::string url)
+{
+  int s = url.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url[i]);
+  sum = sum % 1000;
+  return sum;
+}
+
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
     //std::cout << "load_urls:" << url << std::endl;
@@ -931,7 +949,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
 	g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
 	//async_pending_count--;
+	// std::cout << "g_del_map " << url_only << " = " << (int)g_del_map.load_url_buffers_async[url_only] << std::endl;
 
+	
 	
 	std::string oldurl = url;
 	url = "load_url.php?url=" + url + "&homepage=" + homepage;
@@ -976,6 +996,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
     
   // progress bar
+    
     {
     std::string url2 = "load_url.php?url=" + url ;
   int s = url.size();
@@ -990,7 +1011,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
   }
     }
-
+    
 #ifdef EMSCRIPTEN
     std::string olderurl = url;
   std::string url2 = "load_url.php";
@@ -1075,7 +1096,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
     attr.userData = (void*)ld;
-    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY|256;
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY| EMSCRIPTEN_FETCH_APPEND;
     attr.onsuccess = fetch_download_succeed;
     attr.onerror = fetch_download_failed;
     attr.onprogress = fetch_download_progress;
@@ -1136,6 +1157,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     if (buf->size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
     }
+    //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
     g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
@@ -1175,8 +1197,8 @@ public:
     return (*vec)[i];
   }
   int size() const { if (buf) return end2-buf; return vec->size(); }
-  const unsigned char *begin() const { if (buf) return buf; return &(*vec->begin()); }
-  const unsigned char *end() const { if (end2) return end2; return &(*vec->end()); }
+  const unsigned char *begin() const { if (buf) return buf; return vec->data(); }
+  const unsigned char *end() const { if (end2) return end2; return vec->data() + vec->size(); }
 private:
   std::vector<unsigned char> *vec;
   const unsigned char *buf, *end2;
@@ -1190,10 +1212,10 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
 
-      if (remove_load(url)==g_urls[i]) { 
+      if (remove_load(url)==std::string(g_urls[i])) { 
 	//std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
+	//std::cout << "load_from_url using memory: " << url << std::endl;
 	return new ASyncDataFetcher(g_content[i], g_content_end[i]);
-	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
 	//	return vec;
       }
     }
@@ -1221,7 +1243,11 @@ bool g_has_title=false;
 std::vector<ProgressI > progress_max;
 std::vector<ProgressI > progress_val;
 std::vector<std::string> progress_label;
-void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); }
+
+std::vector<int> g_setup;
+std::vector<int> g_setup_count;
+
+void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
 void InstallProgress(int num, std::string label, int max=15)
 {
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
@@ -1266,41 +1292,121 @@ int progress_remove_list[] = { 1, 434, 555 };
 
 float progress_val_mult[] = { 0.1, 0.3, 0.5, 0.8, 1.0 };
 
+int g_val2;
+int g_max2;
+
 int FindProgressVal()
 {
+
+#if 0
+  int res=0;
+  std::vector<int> done_vec;
+  for(int i=0;i<g_setup.size();i++)
+    {
+      int s = g_setup[i];
+      int s2 = g_setup_count[i];
+      
+      for(int j=0;j<progress_val.size();j++)
+	{
+	  if (s == progress_val[j].num) { res+=progress_val[j].value*s2; done_vec.push_back(s); }
+	}
+    }
+  for(int ii=0;ii<g_setup.size();ii++)
+    {
+      int s = g_setup[ii];
+      int s2 = g_setup_count[ii];
+      
+  if (s==-1) {
+    for(int i=0;i<progress_val.size();i++)
+      {
+	bool skip = false;
+	for(int k=0;k<done_vec.size();k++) {
+	  if (done_vec[k]==progress_val[i].num) { skip=true; break;}
+	}
+	if (skip) { continue; }
+	res+=progress_val[i].value*s2;
+      }
+  }
+  
+    }
+#endif  
+  
+  //return res;
+  
   int s = progress_val.size();
-  int sum = 0;
+  float sum = 0.0;
   for(int i=0;i<s;i++) {
     bool skip =false;
     for(int j=0;j<sizeof(progress_remove_list)/sizeof(int);j++)
       if (progress_val[i].num==progress_remove_list[j]) skip=true;
     if (!skip) {
       float mult = 1.0;
-      if (s<sizeof(progress_val_mult)/sizeof(progress_val_mult[0]))
-	mult = progress_val_mult[s];
-      sum+=progress_val[i].value*mult;
+      //if (s<sizeof(progress_val_mult)/sizeof(progress_val_mult[0]))
+      //	mult = progress_val_mult[s];
+      float val = float(progress_val[i].value)/15.0;
+      val = 1.0-val;
+      sum+=val;
       //std::cout << "ProgressVal:" << progress_val[i].num << " " << progress_val[i].value << " " << progress_label[i] << std::endl;
     }
   }
-  return sum;
+  return (s-sum)*256.0;
+  
 }
 int g_async_load_count = 0;
 int FindProgressMax()
 {
+
+#if 0
+  int res=0;
+  std::vector<int> done_vec;
+  for(int i=0;i<g_setup.size();i++)
+    {
+      int s = g_setup[i];
+      int s2 = g_setup_count[i];
+      
+      for(int j=0;j<progress_max.size();j++)
+	{
+	  if (s == progress_max[j].num) { res+=progress_max[j].value*s2; done_vec.push_back(s); }
+	}
+    }
+  for(int ii=0;ii<g_setup.size();ii++)
+    {
+      int s = g_setup[ii];
+      int s2 = g_setup_count[ii];
+  if (s==-1) {
+    for(int i=0;i<progress_max.size();i++)
+      {
+	bool skip = false;
+	for(int k=0;k<done_vec.size();k++) {
+	  if (done_vec[k]==progress_max[i].num) { skip=true; break;}
+	}
+	if (skip) { continue; }
+	res+=progress_max[i].value*s2;
+      }
+  }
+    }
+  
+#endif
+  
+  //return res;
+  //return g_max2;
+    
   int s = progress_max.size();
-  int sum = 0;
+  float sum = 0.0;
   for(int i=0;i<s;i++)
     {
     bool skip =false;
     for(int j=0;j<sizeof(progress_remove_list)/sizeof(int);j++)
       if (progress_val[i].num==progress_remove_list[j]) skip=true;
     if (!skip) {
-      sum+=progress_max[i].value;
+      float val = float(progress_max[i].value)/15.0;
+      val = 1.0-val;
+      sum+=val;
       //std::cout << "ProgressMax:" << progress_val[i].num << " " << progress_max[i].value << " " << progress_label[i] << std::endl;
     }
     }
-  if (s<4) { sum+=15*(4-s); }
-  return sum;
+  //if (s<4) { sum+=15*(4-s); }
+  return (s-sum)*256.0;
 }
 void FinishProgress()
 {
@@ -1327,6 +1433,15 @@ bool g_progress_callback_set=false;
 void (*g_progress_callback)();
 
 void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
+
+
+
+
+void SetupProgress(int num, int count)
+{
+  g_setup.push_back(num);
+  g_setup_count.push_back(count);
+}
 
 
 pthread_t g_main_thread_id;
@@ -1413,8 +1528,12 @@ void ProgressBar(int num, int val, int max, std::string label)
     if (old_label != label) {
       g_prog_labels.push_back("");
       old_label = label; stream << std::endl << "["; }
-  else
+    else
     stream << "\r[";
+
+    g_val2 = val2;
+    g_max2 = max2;
+   
   for(int i=0;i<val2;i++) {
     stream2 << "#";
   }
@@ -1540,7 +1659,7 @@ long long load_size_from_url(std::string url)
     while(std::getline(ss,line)) {
       //std::cout << "Line: " << line << std::endl;
       //if (line.size()>15)
-	//std::cout << "Substr: " << line.substr(0,15) << std::endl;
+      //std::cout << "Substr: " << line.substr(0,15) << std::endl;
       if (line.size()>15 && line.substr(0,15)=="Content-Length:") {
 	std::stringstream ss2(line);
 	std::string dummy;
@@ -1820,8 +1939,8 @@ std::vector<unsigned char> *load_from_url(std::string url)
     std::string line;
     while(std::getline(ss,line)) {
       //std::cout << "Line: " << line << std::endl;
-      //if (line.size()>15)
-	//std::cout << "Substr: " << line.substr(0,15) << std::endl;
+      //if (line.size()>20)
+      //	std::cout << "Substr: " << line.substr(0,20) << std::endl;
       if (line.size()>15 && line.substr(0,15)=="Content-Length:") {
 	std::stringstream ss2(line);
 	std::string dummy;

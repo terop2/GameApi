@@ -6123,3 +6123,64 @@ GameApi::BM GameApi::BitmapApi::circular_gradient(int sx, int sy, unsigned int c
   return bm;
 }
 
+
+class BitmapGraphicsContext : public Bitmap<Color>, public GraphicsContext
+{
+public:
+  BitmapGraphicsContext(int sx, int sy) : sx(sx), sy(sy) {
+    bm = new unsigned int[sx*sy];
+  }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const { return Color(bm[x+sx*y]); } 
+  virtual void Prepare() { }
+
+  int size_x() const { return sx; }
+  int size_y() const { return sy; }
+  void draw_pixel(int x, int y, unsigned int color)
+  {
+    if (x>=0 && x<sx)
+      if (y>=0 && y<sy)
+	bm[x+sx*y] = color;
+  }
+  unsigned int get_pixel(int x, int y) const
+  {
+    if (x>=0 && x<sx)
+      if (y>=0 && y<sy)
+	return bm[x+sx*y];
+    return 0x0;
+  }
+  void draw_rect(int xx, int yy, int ssx, int ssy, unsigned int color)
+  {
+    if (xx<0) { ssx+=xx; xx=0; } 
+    if (yy<0) { ssy+=yy; yy=0; }
+    if (xx+ssx>sx) { ssx=sx-xx; }
+    if (yy+ssy>sy) { ssy=sy-yy; }
+    
+    for(int y=yy;y<ssy;y++)
+      for(int x=xx;x<ssx;x++)
+	{
+	  bm[x+sx*y] = color;
+	}
+  }
+  void draw_image(int xx, int yy, int ssx, int ssy, Bitmap<Color> &bitmap)
+  {
+    int bm_x = 0, bm_y =0;
+    if (xx<0) { bm_x-=xx; ssx+=xx; xx=0; } 
+    if (yy<0) { bm_y-=yy; ssy+=yy; yy=0; }
+    if (xx+ssx>sx) { ssx=sx-xx; }
+    if (yy+ssy>sy) { ssy=sy-yy; }
+    int bm_x_start = bm_x;
+    for(int y=yy;y<ssy;y++,bm_y++)
+      {
+	bm_x = bm_x_start;
+	for(int x=xx;x<ssx;x++,bm_x++)
+	  {
+	    bm[x+sx*y] = bitmap.Map(bm_x,bm_y).Pixel();
+	  }
+      }
+  }
+private:
+  unsigned int *bm;
+  int sx, sy;
+};

@@ -47,6 +47,8 @@ using std::placeholders::_9;
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(AA)
+  MAC(GC)
   MAC(GS)
   MAC(HML)
   MAC(UV)
@@ -1414,6 +1416,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT gltf_material_from_file(EveryApi &ev, std::string url);
   IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next);
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key);
@@ -1431,7 +1434,7 @@ public:
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
   IMPORT MT gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix );
-  IMPORT MT gltf_material_manual( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM, BM, BM,BM,BM,bool,bool,bool,bool,bool );
+  IMPORT MT gltf_material_manual( EveryApi &ev, float mix, BM, BM, BM,BM,BM,bool,bool,bool,bool,bool,float,float,float,float,float,float,float );
   IMPORT MT gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
@@ -1653,6 +1656,7 @@ public:
   IMPORT MN translate(MN next, float start_time, float end_time,float dx, float dy, float dz);
   IMPORT MN translate_wave(MN next, float start_time, float end_time, WV wave, float dx, float dy, float dz);
   IMPORT MN scale_progress(MN next, bool is_x, bool is_y, bool is_z);
+  IMPORT MN scale_progress_max(MN next, bool is_x, bool is_y, bool is_z);
   IMPORT MN mn_fetcher(PF pf);
   IMPORT MN scale(MN next, float start_time, float end_time,float sx, float sy, float sz);
   IMPORT MN scale_wave(MN next, float start_time, float end_time,WV wave,float sx, float sy, float sz);
@@ -2314,6 +2318,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ML anim_render(AA, float delta);
   ML p_mtl2_prepare(P p);
   ARR material_choose(std::vector<MT> mat, std::vector<P> p);
   ARR comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2);

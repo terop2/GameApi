@@ -2381,18 +2381,33 @@ ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
   */
   ML I26;
   { // PROGRESS BAR
-BB I1=ev.bool_bitmap_api.bb_empty(92,12);
-BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,92,12);
+BB I1=ev.bool_bitmap_api.bb_empty(92,12/2);
+BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,92,12/2);
 BM I3=ev.bool_bitmap_api.to_bitmap(I2,255,255,255,255,0,0,0,0);
 ML I4=ev.sprite_api.vertex_array_render(ev,I3);
 MN I5=ev.move_api.mn_empty();
 MN I6=ev.move_api.trans2(I5,4,4,0);
-MN I7=ev.move_api.scale_progress(I6,true,false,false);
+MN I7=ev.move_api.scale_progress_max(I6,true,false,false);
 ML I8=ev.move_api.move_ml(ev,I4,I7,1,10.0);
-MN I9=ev.move_api.mn_empty();
+
+BB AI1=ev.bool_bitmap_api.bb_empty(92,12/2);
+BB AI2=ev.bool_bitmap_api.rectangle(AI1,0,0,92,12/2);
+BM AI3=ev.bool_bitmap_api.to_bitmap(AI2,255,255,255,255,0,0,0,0);
+ML AI4=ev.sprite_api.vertex_array_render(ev,AI3);
+MN AI5=ev.move_api.mn_empty();
+MN AI6=ev.move_api.trans2(AI5,4,4+6,0);
+MN AI7=ev.move_api.scale_progress(AI6,true,false,false);
+ML AI8=ev.move_api.move_ml(ev,AI4,AI7,1,10.0);
+
+ ML BI8=ev.mainloop_api.array_ml(ev,std::vector<ML>{I8,AI8});
+ 
+
+
+ 
+ MN I9=ev.move_api.mn_empty();
 MN I10=ev.move_api.scale2(I9,5,5,1);
 MN I11=ev.move_api.trans2(I10,-230,-300,0);
-ML I12=ev.move_api.move_ml(ev,I8,I11,1,10.0);
+ML I12=ev.move_api.move_ml(ev,BI8,I11,1,10.0);
 BB I13=ev.bool_bitmap_api.bb_empty(100,20);
 BB I14=ev.bool_bitmap_api.rectangle(I13,0,0,100,2);
 BB I15=ev.bool_bitmap_api.rectangle(I14,0,18,100,2);

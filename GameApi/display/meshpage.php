@@ -278,7 +278,7 @@ function open_tab(event, label) {
 </div>
 <div v-if="state.my_animations">
 </div>
-<div v-if="state.main">
+<div id="main_div">
 <?php
 require_once("user.php");
 $user="terop";
@@ -292,8 +292,11 @@ if ($startpos!="") {
   $start = $num-($startpos*50);
 }
 $dupcache = array();
+echo "<script>var imgarr=[];</script>";
+$iii=0;
 for($i=$start;$cnt<50;$i--)
 {
+$iii++;
 $ii = $i;
 if ($i<=1) {
   redo:
@@ -333,69 +336,32 @@ $label = get_label( $arr );
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
-   echo "<img class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\" src=\"" . $filename . "\" itemprop=\"thumbnailUrl\" crossorigin/>";
+   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   // src=\"" . $filename . "\"
+   echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
 
-
-   //echo "<canvas id=\"cnv" . $i . "\" width=\"200\" height=\"150\"></canvas>";
-   echo "<script>\n";
+echo "<script>\n";
    echo "var g_background = 0;\n";
-  // echo "function change_black_pixels_to_background(canvas, url, bg)\n";
-  // echo "{\n";
-  // echo "var filename = \"https://meshpage.org/bg\" + bg.toString() + \".png\";\n";
-  // echo "var img = new Image;\n";
-  // echo "img.src = filename;\n";
-  // echo "var canvas = document.getElementById(canvas);\n";
-   ////echo "img.onload = function() {\n";
-
-  // echo "var filename2 = \"https://meshpage.org/bg_white.png\";\n";
-  // echo "var white = new Image;\n";
-  // echo "white.src=filename2;\n";
-
-  // echo "var ctx = canvas.getContext(\"2d\");\n";
-  // echo "var image = new Image();\n";
-  // echo "image.src = url;\n";
-  // echo "image.onload = function() {\n";
-  // echo "  ctx.globalCompositeOperation = \"source-over\";\n";
-  // echo "  ctx.drawImage(image, 0,0, canvas.width, canvas.height);\n";
-  // echo "  var imgdata = ctx.getImageData(0,0,canvas.width,canvas.height);\n";
-  // echo "  ctx.globalCompositeOperation = \"source-over\";\n";
-  // echo "  ctx.drawImage(img, 0,0, canvas.width, canvas.height);\n";
-  // echo "  var imgdata2 = ctx.getImageData(0,0,canvas.width,canvas.height);\n";
-  // echo "  var dt = imgdata.data;\n";
-  // echo "  var dt2 = imgdata2.data;\n";
-  // echo " for(var y=0;y<canvas.height;y++) {\n";
-  // echo " for(var x=0;x<canvas.width;x++) {\n";
-  // echo "   if (dt[(x+y*canvas.width)*4+0]<8 && dt[(x+y*canvas.width)*4+1]<8 && dt[(x+y*canvas.width)*4+2]<8) {\n";
-  // echo "    dt[(x+y*canvas.width)*4+0] = dt2[(x+y*canvas.width)*4+0];\n";
-  // echo "    dt[(x+y*canvas.width)*4+1] = dt2[(x+y*canvas.width)*4+1];\n";
-  // echo "    dt[(x+y*canvas.width)*4+2] = dt2[(x+y*canvas.width)*4+2];\n";
-  // echo "   } } }\n";
-  // echo " ctx.putImageData(imgdata,0,0);\n";
-  // echo " delete imgdata; delete imgdata2;\n";
-////echo "  ctx.globalCompositeOperation = \"difference\";\n";
- //  //echo "  ctx.drawImage(white, 0,0, canvas.width, canvas.height);\n";
- //  //echo "  ctx.globalCompositeOperation = \"difference\";\n";
- //  //echo "  ctx.putImageData(imgdata,0,0);\n";
- //  echo "}\n";
- //  echo "}\n";
- //  //echo "}\n";
-
-//echo "var url3 = \"https://meshpage.org/mesh_background.php?id=" . $i . "\";\n";
-//echo "{const myHeaders3 = new Headers();\n";
-//echo "const myBRequest = new Request(url3, {\n";
-//echo "   method: 'GET',\n";
-//echo "   headers: myHeaders3,\n";
-//echo "   mode: 'same-origin',\n";
-//echo "   cache: 'default'\n";
-//echo "});\n";
-//echo "fetch(myBRequest).then((r) => {\n";
-//echo "   return r.text();\n";
-//echo "}).then((t) => {\n";
-//echo "   if (t==\"\") t=\"1\";\n";
-////echo"   console.log(\"BACKGROUND:\" + t);\n";
-//echo "change_black_pixels_to_background(\"cnv" . $i . "\", \"" . $filename . "\", parseInt(t,10));\n";
-//echo "});}\n";   
+?>
+function populate_imgs()
+{
+   var s = imgarr.length;
+   var i = 0;
+   for(i=0;i<s;i++)
+   {
+      var node = imgarr[i];
+      var tag = node.tag;
+      var filename = node.filename;
+      console.log(tag);
+      console.log(filename);
+      var tag2 = document.getElementById(tag);
+      tag2.src = filename;
+   }
+}
+<?php
 echo "</script>\n";
+
+
 
    // END OF BACKGROUND CHANGE
    echo "</div>";
@@ -698,6 +664,14 @@ In addition to these external stuff, we have internal development in the followi
 <li>static_instancing/ms_static_inst for cpu side instancing
 <li>blk_window and MainLoopApi features to finish your product
 </ul>
+<h2>I get browser crashes when loading your web site in windows machines</h2>
+Here's steps to fix some webgl2 problems in windows:
+<ul>
+<li>about:flags -> angle graphics backend -> opengl
+</ul>
+It seems the default d3d11 webgl2 backend is somewhat broken, but happily
+its possible to fix the problem by using the opengl backend.
+
 <h2>I get error while loading the animations</h2>
 <ul>
 <li>With new pthreads support in the site, browser settings need to be changed
@@ -907,6 +881,17 @@ function hide_display(b)
   else elem.style="display:none";
 }
 
+function hide_main(b)
+{
+  var elem = document.getElementById("main_div");
+  if (b) elem.style="";
+  else elem.style="display:none";
+
+  if (b) {
+     populate_imgs();
+  }
+}
+
 function event_target(event)
 {
 }
@@ -957,7 +942,7 @@ var store = {
        this.state.create_new = false;
        this.state.my_animations = false;
       hide_display(this.state.mesh);
-
+      hide_main(this.state.main);
       },
     toggle_dropdown()
     {
@@ -1011,6 +996,7 @@ var store = {
       if (a=='create_new') this.state.create_new = true;
       if (a=='my_animations') this.state.my_animations = true;
       hide_display(this.state.mesh);
+      hide_main(this.state.main);
       },
 };
 
@@ -1620,9 +1606,9 @@ function show_emscripten(str,hide,indicator,is_async)
   var canv = document.getElementById("canvas");
   var Module = {
       canvas : canv,
-      createContext: function(canvas, useWebGL, setInModule, webGLContextAttribuutes) {
-            return canvas.getContext("experimental-webgl2",{antialias:false});
-      },
+//      createContext: function(canvas, useWebGL, setInModule, webGLContextAttribuutes) {
+//            return canvas.getContext("experimental-webgl2",{antialias:false});
+//      },
       arguments : [
 <?php
 require_once("user.php");

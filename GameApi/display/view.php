@@ -156,14 +156,14 @@ Vue.component('appmaterial', {
 		 <option value="19">Concrete</option>
 		 </select></div>
 		 </div>
-		 Surface<br>
+		 <!--Surface<br>
 		 <div class="horizspace customfont">
 		 <select name="surface" id="surface-select">
 		 <option value="0">Smooth</option>
 		 <option value="1">Brushed</option>
 		 <option value="2">Hammered</option>
 		 </select>
-		 </div>
+		 </div>-->
 		 `
 });
 
@@ -477,6 +477,7 @@ response.body.getReader().read().then(value=>{
    console.log(store.state.model_db);
    });
 });
+
 
 function strfy(arr)
 {

@@ -4921,7 +4921,8 @@ ASyncData async_data[] = {
   { "materials_api", "gltf_anim_material", 2},
   { "materials_api", "gltf_anim_material2", 2},
   { "mainloop_api", "tunnel_tree", 3},
-  { "mainloop_api", "async_gltf", 2}
+  { "mainloop_api", "async_gltf", 2},
+  { "materials_api", "gltf_material_from_file", 1}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -5045,34 +5046,17 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	  g_async_load_count++;
 	  int param_num = dt.param_num;
 	  std::string url = line.params[param_num];
-	  //if (is_async_loaded_urls_in_vec(url) && load_url_buffers_async[std::string("load_url.php?url=") + url]==0) {
-	  // ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
-	  // g_async_vec.push_back(cb);
-	  // g_async_vec2.push_back(url);
-	  //} else
+
 	  if (!is_async_loaded_urls_in_vec(url)) {
-	    //std::cout << "Start loading: " << url << std::endl;
 
 	    e.async_load_url(url,homepage);
 	    g_async_loaded_urls.push_back(url);
 	  } else {
-	    //if (load_url_buffers_async[std::string("load_url.php?url=") + url]==0) {
-	    //std::cout << "Callback2: " << url << std::endl;
 
 	    ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
-	    //if (!cb) std::cout << "BUT cb=0" << std::endl;
 	    g_async_vec.push_back(cb);
 	    g_async_vec2.push_back(url);
 	      
-	      //} else {
-	      
-	    
-	    //  ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
-	    // if (!cb) std::cout << "BUT cb=0" << std::endl;
-	    // if (cb) {
-	    //  	(*cb->fptr)(cb->data);
-	    //  }
-	      //}
 	  }
 	}
     }

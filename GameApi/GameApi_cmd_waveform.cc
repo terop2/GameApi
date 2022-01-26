@@ -1,11 +1,10 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
+#include "GameApi_cmd.hh"
 
 std::vector<GameApiItem*> waveform_functions()
 {
   std::vector<GameApiItem*> vec;
-#if 0
-#ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::waveform_api, &GameApi::WaveformApi::wv_empty,
 			 "wv_empty",
 			 { "length" },
@@ -103,7 +102,5 @@ std::vector<GameApiItem*> waveform_functions()
 			 { "PN", "float", "float", "float", "float" },
 			 { "", "-5.0", "5.0", "5.0", "-5.0" },
 			 "WV", "waveform_api", "polynomial_wave"));
-#endif
-#endif
   return vec;
 }

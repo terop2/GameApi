@@ -117,6 +117,17 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::GC add_gc(GameApi::Env &e, GraphicsContext *gc)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->gc.push_back(gc);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(gc));
+  GameApi::GC im;
+  im.id = env->gc.size()-1;
+  return im;
+}
+
 GameApi::ATT add_attach(GameApi::Env &e, Attach *att)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1322,6 +1333,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+GraphicsContext *find_gc(GameApi::Env &e, GameApi::GC gc)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->gc[gc.id];
 }
 
 GameState *find_game_state(GameApi::Env &e, GameApi::GS gs)

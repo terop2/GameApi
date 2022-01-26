@@ -1,11 +1,10 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
+#include "GameApi_cmd.hh"
 
  std::vector<GameApiItem*> framebuffermoduleapi_functions()
 {
   std::vector<GameApiItem*> vec;
-#if 0
-#ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_sprite_draw,
 			 "fr_sprite_draw",
 			 { "name", "bm", "move", "x", "y", "fmt", "start_time" },
@@ -133,7 +132,5 @@
 			 { "BM" },
 			 { "" },
 			 "W", "low_frame_api", "w_bitmap"));
-#endif
-#endif
   return vec;
 }

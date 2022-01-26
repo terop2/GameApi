@@ -759,6 +759,7 @@ struct EnvImpl
   std::vector<UrlMemoryMap*> urlmemmap;
   std::vector<Attach*> attach;
   std::vector<GameState*> game_state;
+  std::vector<GraphicsContext*> gc;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;

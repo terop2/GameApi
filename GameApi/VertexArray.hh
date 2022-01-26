@@ -42,6 +42,7 @@ public:
     has_texcoord = s.has_texcoord;
     has_skeleton = s.has_skeleton;
   }
+  void clear_poly_and_poly2(int id);
   void clear_arrays()
   {
     std::map<int, Polys*>::iterator it = m_set.begin();

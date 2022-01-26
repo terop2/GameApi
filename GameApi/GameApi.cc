@@ -1239,7 +1239,67 @@ public:
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
     
-    float val2 = float(FindProgressVal())/float(FindProgressMax() +2.0);
+    float val2 = float(FindProgressVal())/float(FindProgressMax() +0.1);
+
+    //int val3 = 15*val2;
+    //val2 = val3/15.0;
+    
+    //std::cout << "SCALEPROGRESS: " << val2 << " " << float(FindProgressVal()) << "/" << float(FindProgressMax()+2.0) << std::endl;
+    //val2+=time/float(FindProgressMax() +2.0);
+    //std::cout << "Time:" << time << std::endl;
+    if (val2<0.001) val2=0.001;
+    if (val2>1.0) val2=1.0;
+    //if (g_logo_shown>=1) val2=1.0;
+    //std::cout << "progress:" << val2 << std::endl;
+    if (val2>0.99) g_shows_hundred=1;
+
+
+    //if (val2>val2_cache) val2_cache=val2;
+    //std::cout << "SCALEPROGRESS(2): " << val2 << std::endl;
+    return val2;
+  }
+private:
+  float time=0.0;
+  Movement *next;
+  mutable int max_async_pending;
+  bool is_x, is_y, is_z;
+  mutable float val2_cache=0;
+};
+
+class ScaleProgressMax : public Movement
+{
+public:
+  ScaleProgressMax(Movement *next, bool is_x, bool is_y, bool is_z) : next(next), is_x(is_x), is_y(is_y), is_z(is_z) { 
+    max_async_pending = 0;
+  }
+  virtual void event(MainLoopEvent &e) { next->event(e); }
+  virtual void frame(MainLoopEnv &e) { next->frame(e); }
+  virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
+  virtual void draw_event(FrameLoopEvent &e) { next->draw_event(e); }
+  void set_matrix(Matrix m) { }
+  void set_pos(float ddx, float ddy, float ddz) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    float x = is_x ? val() : 1.0;
+    float y = is_y ? val() : 1.0;
+    float z = is_z ? val() : 1.0;
+    return Matrix::Scale(x,y,z)*next->get_whole_matrix(time,delta_time);
+  }
+  float val() const {
+    //if (async_pending_count>max_async_pending) max_async_pending=async_pending_count;
+    //float val1 = 1.0-(async_pending_count/max_async_pending);
+    //if (val1<0.1) val1=0.1;
+    //if (val1>1.0) val1=1.0;
+    const_cast<ScaleProgressMax*>(this)->time+=1.0;
+    // if you change the numbers, change logo_iter too
+    //float t = time*50.0/300.0;
+    //if (t>50.0) t=50.0;
+    
+    float val2 = float(FindProgressVal())/float(FindProgressMax() +0.1);
+
+    //int val3 = 15*val2;
+    //val2 = val3/15.0;
+    
     //std::cout << "SCALEPROGRESS: " << val2 << " " << float(FindProgressVal()) << "/" << float(FindProgressMax()+2.0) << std::endl;
     //val2+=time/float(FindProgressMax() +2.0);
     //std::cout << "Time:" << time << std::endl;
@@ -1251,6 +1311,7 @@ public:
 
 
     if (val2>val2_cache) val2_cache=val2;
+    if (val2_cache-val2>0.3) val2_cache=val2;
     //std::cout << "SCALEPROGRESS(2): " << val2 << std::endl;
     return val2_cache;
   }
@@ -1262,10 +1323,16 @@ private:
   mutable float val2_cache=0;
 };
 
+
 GameApi::MN GameApi::MovementNode::scale_progress(MN next, bool is_x, bool is_y, bool is_z)
 {
   Movement *nxt = find_move(e, next);
   return add_move(e, new ScaleProgress(nxt,is_x,is_y,is_z));
+}
+GameApi::MN GameApi::MovementNode::scale_progress_max(MN next, bool is_x, bool is_y, bool is_z)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new ScaleProgressMax(nxt,is_x,is_y,is_z));
 }
 class MN_Fetcher : public Movement
 {
@@ -12500,8 +12567,10 @@ public:
   OpenglLowApi *ogl = g_low->ogl;
   ClearProgress();
   
+#ifndef EMSCRIPTEN
   InstallProgress(33344, "collect", 15);
-
+#endif
+  
   
     score = 0;
     hidden_score = 0;
@@ -12656,8 +12725,10 @@ public:
 
       
       int num = vis_counter;
+#ifndef EMSCRIPTEN
       if (vis->vec.size()>0)
-      ProgressBar(33344, (15*num/vis->vec.size()), 15, "collect");
+	ProgressBar(33344, (15*num/vis->vec.size()), 15, "collect");
+#endif
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
@@ -12819,6 +12890,7 @@ public:
   {
     score = 0;
     hidden_score=0;
+  ClearProgress();
   }
   void SetTimeout(float duration) {
   }
@@ -18875,13 +18947,13 @@ void get_iot_event(const GameApi::MainLoopApi::Event &e, bool *array);
 class FBU_run : public Splitter
 {
 public:
-  FBU_run(GameApi::Env &env, GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : env(env), ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false; firsttime = true; }
+  FBU_run(GameApi::Env &env, GameApi::EveryApi &ev, FrameBuffer *buf, int mode, int scr_x, int scr_y) : env(env), ev(ev), buf(buf), scr_x(scr_x), scr_y(scr_y) { exit=false; firsttime = true; async_is_done=false;}
   virtual void Init() {
     surf = init_sdl_surface_framebuffer(scr_x, scr_y);
   }
   virtual Splitter* NextState(int code) { return 0; }
   virtual int Iter() {
-    //std::cout << "Iter: " << async_pending_count << std::endl;
+    std::cout << "Iter: " << async_pending_count << " " << async_is_done << std::endl;
     if (async_pending_count>0 && !async_is_done) {
       return -1;
     } 
@@ -21131,6 +21203,8 @@ public:
     std::stringstream ss(data);
     ss >> ssx >> ssy;
 
+    if (ssx<=0||ssy<=0) return;
+
     int *array = new int[ssx*ssy];
     for(int i=0;i<ssx*ssy;i++)
       {
@@ -21161,12 +21235,17 @@ public:
     e.async_load_url(url, homepage);
 #endif
     GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+
     if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
     std::string data = std::string(ptr->begin(), ptr->end());
 
+    
     std::stringstream ss(data);
     ss >> ssx >> ssy;
+    std::cout << ssx << " " << ssy << std::endl;
 
+    if (ssx<=0||ssy<=0) return;
+    
     int *array = new int[ssx*ssy];
     for(int i=0;i<ssx*ssy;i++)
       {
@@ -21203,10 +21282,10 @@ private:
   std::string url;
   std::string homepage;
   std::string chars;
-  int x;
-  int y;
-  int ssx;
-  int ssy;
+  int x=0;
+  int y=0;
+  int ssx=0;
+  int ssy=0;
 };
 
 GameApi::FML GameApi::LowFrameBufferApi::low_build_world(GameApi::FML ml, std::string url, std::string chars, int x, int y)
@@ -21250,6 +21329,7 @@ GameApi::BM GameApi::MainLoopApi::framebuffer_bitmap(FBU buf)
   return add_color_bitmap(e, new FrameBufferBitmap(fbuf));
 }
 
+bool g_progress_halt = false;
 class LowFrameBuffer : public FrameBuffer
 {
 public:
@@ -21261,6 +21341,7 @@ public:
   }
   void HeavyPrepare()
   {
+    g_progress_halt = true;
     depth_buffer = new float[width*height];
     // 
     FrameBufferFormat fmt = (FrameBufferFormat)m_format;
@@ -21287,11 +21368,13 @@ public:
       break;
     }
     firsttime = true;
+    g_progress_halt = false;
 
   }
   virtual void Prepare()
   {
 
+    g_progress_halt = true;
     loop->Prepare();
 
     depth_buffer = new float[width*height];
@@ -21320,19 +21403,23 @@ public:
       break;
     }
     firsttime = true;
+    g_progress_halt = false;
   }
   virtual void handle_event(FrameLoopEvent &e)
   {
+    g_progress_halt = true;
     auto p3 = std::chrono::system_clock::now();
     auto dur_in_seconds3 = std::chrono::duration<double>(std::chrono::duration_cast<std::chrono::milliseconds>(p3.time_since_epoch()));
     double val = dur_in_seconds3.count();  
     e.time = float(val-start_time_epoch);
 
     loop->handle_event(e);
+    g_progress_halt = false;
   }
   virtual void frame()
   {
     // clear the buffer
+    g_progress_halt = true;
     std::memset(buffer,0, size);
     ClearDepthBuffer(depth_buffer, width, height);
     if (firsttime) {
@@ -21362,6 +21449,7 @@ public:
     start_time = val;
     loop->frame(e);
 
+    g_progress_halt = false;
     // TODO submit to iot platform
   }
   virtual void *Buffer() const { return buffer; }
