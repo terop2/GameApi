@@ -15,7 +15,7 @@
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
-
+void SetupProgress(int num, int count);
 
 int my_getline(LoadStream *stream, int index, std::string &line);
 
@@ -1626,6 +1626,7 @@ ASyncCallback *rem_async_cb(std::string url);
 extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 
 std::string MB(long num);
+int CalcUrlIndex(std::string url);
 
 std::vector<std::string> mtl_urls;
 int g_previous_texid_material = 0;
@@ -1652,6 +1653,10 @@ public:
   }
   NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump)
   {
+    int id1 = CalcUrlIndex(mtl_url);
+    SetupProgress(id1, 15);
+    SetupProgress(-1, 15);
+    
     bool cached2 = false;
     int s = mtl_urls.size();
     for(int i=0;i<s;i++) {
@@ -20713,4 +20718,157 @@ GameApi::P GameApi::PolygonApi::get_face_count(P p)
 { // publishes vertex count to js
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new PublishFaceCount(coll),1);
+}
+
+
+class CombineAnim : public ForwardFaceCollection
+{
+public:
+  CombineAnim(FaceCollection *coll1, FaceCollection *coll2) : ForwardFaceCollection(*coll1), coll2(coll2) { }
+  virtual Point EndFacePoint(int face, int point) const { return coll2->FacePoint(face, point); }
+private:
+  FaceCollection *coll2;
+  
+};
+
+extern bool g_use_vertices_only;
+
+class AnimRender3 : public MainLoopItem
+{
+public:
+  AnimRender3(GameApi::EveryApi &ev, TimeAnim *a, float delta) : ev(ev), a(a), delta(delta) { comb = 0; set = 0; render = 0; }
+  void prepare_start(float time_1, float time_2)
+  {
+    start_time = time_1;
+    end_time = time_2;
+
+    start_coll = a->get_frame(start_time);
+    end_coll = a->get_frame(end_time);
+
+    delete comb;
+    comb = new CombineAnim(start_coll, end_coll);
+
+    delete render;
+    render = new RenderVertexArray(g_low, *set);
+
+    delete arr;
+    arr = new FaceCollectionVertexArray2(*comb, *set);
+    last_prepare_time = start_time;
+    set->clear_poly_and_poly2(0);
+  }
+  void prepare_frame(float time)
+  {
+    int s = comb->NumFaces();
+    float d = time - last_prepare_time;
+    float total = end_time-start_time;
+    float start = last_prepare_time - start_time;
+    float sz = d/total;
+    if (start<0.0) start=0.0;
+    if (start>1.0) start=1.0;
+    if (sz<0.0) sz=0.0;
+    if (start+sz>1.0) sz=1.0-start;
+    start*=s;
+    sz*=s;
+    g_use_vertices_only = true;
+    arr->copy(int(start), int(sz), std::vector<int>(), std::vector<int>());
+    g_use_vertices_only = false;
+    last_prepare_time = time;
+  }
+  void switch_to_next()
+  {
+    render_start_time = start_time;
+    render_end_time = end_time;
+
+    render->prepare(0, false, -1, -1, -1);
+    
+  }
+
+
+  virtual void Collect(CollectVisitor &vis) {
+    a->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    float s = a->start_time();
+    float e = start_time + delta;
+    prepare_start(s, e);
+    delete set;
+    set = new VertexArraySet;
+  }
+  virtual void Prepare() {
+    a->Prepare();
+    float s = a->start_time();
+    float e = start_time + delta;
+    prepare_start(s, e);
+    delete set;
+    set = new VertexArraySet;
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float time = e.time;
+    prepare_frame(time);
+
+    if (time>=start_time)
+      {
+	switch_to_next();
+	prepare_start(end_time, end_time+delta);
+      }
+    float interpolate = (time-render_start_time)/(render_end_time-render_start_time);
+
+    if (sh.id == -1) {
+
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (e.us_vertex_shader==-1)
+      {
+	u_v = ev.uber_api.v_colour(u_v);
+	u_v = ev.uber_api.v_light(u_v);
+      }
+    if (e.us_fragment_shader==-1)
+      {
+	u_f = ev.uber_api.f_colour(u_f);
+	u_f = ev.uber_api.f_light(u_f);
+      }    
+    GameApi::US vertex;
+    GameApi::US fragment;
+    vertex.id = u_v.id; //e.us_vertex_shader;
+    fragment.id = u_f.id; //e.us_fragment_shader;
+    sh = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+    }
+
+    ev.shader_api.use(sh);
+    ev.shader_api.set_var(sh, "in_POS", interpolate);
+
+    render->render(0);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+
+private:
+  GameApi::EveryApi &ev;
+  TimeAnim *a;
+  Material *mat;
+  float start_time, end_time;
+  float delta;
+  float last_prepare_time;
+  float render_start_time, render_end_time;
+  FaceCollection *start_coll, *end_coll;
+  FaceCollection *comb;
+  VertexArraySet *set;
+  RenderVertexArray *render;
+  FaceCollectionVertexArray2 *arr;
+  GameApi::SH sh;
+};
+
+GameApi::ML GameApi::PolygonApi::anim_render(AA a, float delta)
+{
 }

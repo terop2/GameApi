@@ -1762,11 +1762,10 @@ class GLTF_Material_manual : public MaterialForward
 {
 public:
   
-  GLTF_Material_manual(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,
-		int material_id, float mix,
+  GLTF_Material_manual(GameApi::Env &e, GameApi::EveryApi &ev, float mix,
 		       GameApi::BM baseColor, GameApi::BM metalrough, GameApi::BM normaltexture, GameApi::BM occlusion, GameApi::BM emissive,
-		bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b)
-    : e(e), ev(ev),  load(load), material_id(material_id),mix(mix), baseColor_bm(baseColor), metalrough_bm(metalrough), normaltexture_bm(normaltexture), occlusion_bm(occlusion), emissive_bm(emissive),baseColor_b(baseColor_b), metalrough_b(metalrough_b), normaltexture_b(normaltexture_b), occlusion_b(occlusion_b), emissive_b(emissive_b)
+		       bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b, float roughnessfactor, float metallicfactor, float baseColor_red, float baseColor_green, float baseColor_blue, float baseColor_alpha, float occulsionStrength)
+  : e(e), ev(ev),  mix(mix), baseColor_bm(baseColor), metalrough_bm(metalrough), normaltexture_bm(normaltexture), occlusion_bm(occlusion), emissive_bm(emissive),baseColor_b(baseColor_b), metalrough_b(metalrough_b), normaltexture_b(normaltexture_b), occlusion_b(occlusion_b), emissive_b(emissive_b), roughnessfactor(roughnessfactor), metallicfactor(metallicfactor), baseColor_red(baseColor_red), baseColor_green(baseColor_green), baseColor_blue(baseColor_blue), baseColor_alpha(baseColor_alpha), occulsionStrength(occulsionStrength)
 
 																													     
   { 
@@ -1798,9 +1797,9 @@ public:
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
   GameApi::BM texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
-      return ev.bitmap_api.newbitmap(1,1,0xffffffff);
-    }
+    //if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    //  return ev.bitmap_api.newbitmap(1,1,0xffffffff);
+    //}
     switch(i) {
     case 0: return baseColor_bm; /*gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index);*/
     case 1: return metalrough_bm; /*gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index);*/
@@ -1813,9 +1812,9 @@ public:
     };
   }
   bool has_texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
-      return false;
-    }
+    //if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    //  return false;
+    //}
 
     switch(i) {
     case 0: return baseColor_b; //load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index!=-1;
@@ -1829,13 +1828,17 @@ public:
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    load->Prepare();
+    //load->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
     for(int i=0;i<s;i++) {
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+    for(int i=0;i<s;i++)
+      {
+	ev.bitmap_api.prepare(bm[i]);
+      }
     //GameApi::ML I13;
     //I13.id = next->mat(p.id);
     //GameApi::P I10=p; 
@@ -1843,65 +1846,73 @@ public:
 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
-      I18 = I17;
-    } else {
-      tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-      tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
-    }
+    //if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    //  I18 = I17;
+    //} else {
+    //tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+    //tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,roughnessfactor, metallicfactor, baseColor_red, baseColor_green,baseColor_blue,baseColor_alpha, occulsionStrength, 1.0); // todo base color
+      //}
     // GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
 
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    load->Prepare();
+    //load->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
     for(int i=0;i<s;i++) {
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+    for(int i=0;i<s;i++)
+      {
+	ev.bitmap_api.prepare(bm[i]);
+      }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
-      I18 = I17;
-    } else {
+    //if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      // I18 = I17;
+      //} else {
 
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
-    }
+      //tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+    //tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,roughnessfactor, metallicfactor, baseColor_red, baseColor_green,baseColor_blue,baseColor_alpha, occulsionStrength, 1.0); // todo base color
+      //}
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    load->Prepare();
+    //load->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
     for(int i=0;i<s;i++) {
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+    for(int i=0;i<s;i++)
+      {
+	ev.bitmap_api.prepare(bm[i]);
+      }
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
-      I18 = I17;
-    } else {
+    //if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    //  I18 = I17;
+    //} else {
 
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
-    }
+      //tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+      //tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,roughnessfactor, metallicfactor, baseColor_red, baseColor_green,baseColor_blue,baseColor_alpha, occulsionStrength, 1.0); // todo base color
+      //}
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
@@ -1927,8 +1938,8 @@ public:
 private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
-  LoadGltf *load;
-  int material_id;
+  //LoadGltf *load;
+  //int material_id;
   float mix;
   GameApi::BM baseColor_bm;
   GameApi::BM metalrough_bm;
@@ -1936,7 +1947,208 @@ private:
   GameApi::BM occlusion_bm;
   GameApi::BM emissive_bm;
   bool baseColor_b, metalrough_b, normaltexture_b, occlusion_b, emissive_b;
+  float roughnessfactor, metallicfactor, baseColor_red, baseColor_green, baseColor_blue, baseColor_alpha, occulsionStrength;
 };
+
+
+GameApi::MT gltf_material2_manual( GameApi::Env &e, GameApi::EveryApi &ev, float mix, GameApi::BM baseColor, GameApi::BM metalrough, GameApi::BM normaltexture, GameApi::BM occlusion, GameApi::BM emissive, bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b, float roughnessfactor, float metallicfactor, float baseColor_red, float baseColor_green, float baseColor_blue, float baseColor_alpha, float occulsionStrength);
+
+
+void MAT_CB(void *);
+
+class GLTF_Material_from_file : public MaterialForward
+{
+public:
+  GLTF_Material_from_file(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage) : e(env), ev(ev), url(url), homepage(homepage) { mat.id = -1;
+
+    env.async_load_callback(url, &MAT_CB, (void*)this);
+  }
+  void MaterialCallback()
+  {
+    if (mat.id==-1) mat=mat_from_file();
+  }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    if (mat.id==-1) mat=mat_from_file();
+    Material *mat2 = find_material(e,mat);
+    return mat2->mat(p.id);
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    if (mat.id==-1) mat=mat_from_file();
+    Material *mat2 = find_material(e,mat);
+    return mat2->mat_inst(p.id,pts.id);
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    if (mat.id==-1) mat=mat_from_file();
+    Material *mat2 = find_material(e,mat);
+    return mat2->mat_inst_matrix(p.id,ms.id);
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    if (mat.id==-1) mat=mat_from_file();
+    Material *mat2 = find_material(e,mat);
+    return mat2->mat_inst2(p.id,pta.id);
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    if (mat.id==-1) mat=mat_from_file();
+    Material *mat2 = find_material(e,mat);
+    return mat2->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+  }
+
+  
+  std::string fix_url(std::string url, std::string name) const
+  {
+    int s = url.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (url[i]=='/'||url[i]=='\\')
+	  {
+	    pos = i;
+	  }
+      }
+    if (pos==-1) return "";
+    std::string start = url.substr(0,pos);
+    return start + "/" + name;    
+  }
+
+  
+  GameApi::MT mat_from_file() const
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    std::string s(ptr->begin(), ptr->end());
+    std::stringstream ss(s);
+    std::string line;
+    while(std::getline(ss,line))
+      {
+	std::string key;
+	std::stringstream ss2(line);
+	ss2 >> key;
+	//std::cout << "Parsing " << key << std::endl;
+	if (key=="mix") { ss2 >> mix; }
+	if (key=="baseColorTexture") {
+	  std::string val;
+	  ss2 >> val;
+	  baseColor_b = val=="true";
+	  ss2 >> baseColor_url;
+	}
+	if (key=="metalRoughTexture") {
+	  std::string val;
+	  ss2 >> val;
+	  metalRough_b = val=="true";
+
+	  ss2 >> metalRough_url; }
+	if (key=="normalTexture") {
+	  std::string val;
+	  ss2 >> val;
+	  normal_b = val=="true";
+
+	  ss2 >> normal_url; }
+	if (key=="occulsionTexture") {
+	  std::string val;
+	  ss2 >> val;
+	  occul_b = val=="true";
+
+	  ss2 >> occul_url; }
+	if (key=="emissiveTexture") {
+	  	  std::string val;
+	  ss2 >> val;
+	  emis_b = val=="true";
+
+	  ss2 >> emis_url; }
+	if (key=="roughnessfactor") { ss2 >> roughFactor; }
+	if (key=="metallicfactor") { ss2 >> metalFactor; }
+	if (key=="baseColor") { ss2 >> base_r >> base_g >> base_b >> base_a; }
+	if (key=="occusionstrength") { ss2 >> occul_strength; }
+      }
+    
+    baseColor_url = fix_url(url, baseColor_url);
+    metalRough_url = fix_url(url, metalRough_url);
+    normal_url = fix_url(url, normal_url);
+    occul_url = fix_url(url, occul_url);
+    emis_url = fix_url(url, emis_url);
+
+#ifdef EMSCRIPTEN
+    if (baseColor_b) e.async_load_url(baseColor_url, homepage);
+    if (metalRough_b) e.async_load_url(metalRough_url, homepage);
+    if (normal_b) e.async_load_url(normal_url, homepage);
+    if (occul_b) e.async_load_url(occul_url, homepage);
+    if (emis_b) e.async_load_url(emis_url, homepage);
+#endif
+    //std::cout << "Loading: " << baseColor_url << std::endl;
+    //std::cout << "Loading: " << metalRough_url << std::endl;
+    //std::cout << "Loading: " << normal_url << std::endl;
+    //std::cout << "Loading: " << occul_url << std::endl;
+    //std::cout << "Loading: " << emis_url << std::endl;
+    
+    
+    GameApi::BM bm_base;
+    if (baseColor_b) {
+      bm_base = ev.bitmap_api.loadbitmapfromurl(baseColor_url);
+    } else { bm_base = ev.bitmap_api.newbitmap(1,1,0x0); }
+
+    GameApi::BM bm_metalrough;
+    if (metalRough_b)
+      {
+	bm_metalrough = ev.bitmap_api.loadbitmapfromurl(metalRough_url);
+      } else { bm_metalrough = ev.bitmap_api.newbitmap(1,1,0x0); }
+
+    GameApi::BM bm_normal;
+    if (normal_b)
+      {
+	bm_normal = ev.bitmap_api.loadbitmapfromurl(normal_url);
+      } else { bm_normal = ev.bitmap_api.newbitmap(1,1,0x0); }
+
+    GameApi::BM bm_occul;
+    if (occul_b)
+      {
+	bm_occul = ev.bitmap_api.loadbitmapfromurl(occul_url);
+      } else { bm_occul = ev.bitmap_api.newbitmap(1,1,0x0); }
+
+    GameApi::BM bm_emis;
+    if (emis_b)
+      {
+	bm_emis = ev.bitmap_api.loadbitmapfromurl(emis_url);
+      } else { bm_emis = ev.bitmap_api.newbitmap(1,1,0x0); }
+    
+
+    return gltf_material2_manual(e, ev, mix, bm_base, bm_metalrough, bm_normal, bm_occul, bm_emis, baseColor_b, metalRough_b, normal_b, occul_b, emis_b, roughFactor, metalFactor, base_b, base_g, base_b, base_a, occul_strength);
+    
+  }
+
+  
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  mutable GameApi::MT mat;
+  std::string url, homepage;
+  mutable float mix = 1.0;
+  mutable bool baseColor_b = false;
+  mutable std::string baseColor_url;
+  mutable bool metalRough_b = false;
+  mutable std::string metalRough_url;
+  mutable bool normal_b = false;
+  mutable std::string normal_url;
+  mutable bool occul_b = false;
+  mutable std::string occul_url;
+  mutable bool emis_b = false;
+  mutable std::string emis_url;
+  mutable float roughFactor = 0.5;
+  mutable float metalFactor = 0.5;
+  mutable float base_r=0.5, base_g=0.5, base_b=0.5, base_a=1.0;
+  mutable float occul_strength=1.0;
+};
+void MAT_CB(void *dt)
+{
+  GLTF_Material_from_file* ptr = (GLTF_Material_from_file*)dt;
+  ptr->MaterialCallback();
+}
 
 
 
@@ -2138,15 +2350,20 @@ GameApi::MT gltf_material2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
     Material *mat = new GLTF_Material(e,ev, load, material_id, mix);
   return add_material(e, mat);
   }
-GameApi::MT gltf_material2_manual( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM baseColor, GameApi::BM metalrough, GameApi::BM normaltexture, GameApi::BM occlusion, GameApi::BM emissive, bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b)
+GameApi::MT gltf_material2_manual( GameApi::Env &e, GameApi::EveryApi &ev, float mix, GameApi::BM baseColor, GameApi::BM metalrough, GameApi::BM normaltexture, GameApi::BM occlusion, GameApi::BM emissive, bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b, float roughnessfactor, float metallicfactor, float baseColor_red, float baseColor_green, float baseColor_blue, float baseColor_alpha, float occulsionStrength)
 {
-  Material *mat = new GLTF_Material_manual(e,ev,load,material_id, mix, baseColor, metalrough, normaltexture, occlusion, emissive, baseColor_b, metalrough_b, normaltexture_b, occlusion_b, emissive_b);
+  Material *mat = new GLTF_Material_manual(e,ev, mix, baseColor, metalrough, normaltexture, occlusion, emissive, baseColor_b, metalrough_b, normaltexture_b, occlusion_b, emissive_b, roughnessfactor, metallicfactor, baseColor_red, baseColor_green, baseColor_blue, baseColor_alpha, occulsionStrength);
   return add_material(e, mat);
 }
 			   
 GameApi::MT GameApi::MaterialsApi::gltf_material3( GameApi::EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix)
 {
   return add_material(e, new GLTF_Material2(e,ev, mix, roughness, metallic, base_r, base_g, base_b, base_a,1.0));
+}
+
+GameApi::MT GameApi::MaterialsApi::gltf_material_from_file( GameApi::EveryApi &ev, std::string url)
+{
+  return add_material(e, new GLTF_Material_from_file(e,ev, url, gameapi_homepageurl));
 }
 
 GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix )
@@ -2162,16 +2379,16 @@ GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base
   return add_material(e, mat);
 } 
 
-GameApi::MT GameApi::MaterialsApi::gltf_material_manual( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix , BM baseColor, BM metalrough, BM normaltexture, BM occlusion, BM emissive, bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b)
+GameApi::MT GameApi::MaterialsApi::gltf_material_manual( EveryApi &ev, float mix , BM baseColor, BM metalrough, BM normaltexture, BM occlusion, BM emissive, bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b, float roughnessfactor, float metallicfactor, float baseColor_red, float baseColor_green, float baseColor_blue, float baseColor_alpha, float occulsionstrength)
   {
-  bool is_binary=false;
-  if (int(url.size())>3) {
-    std::string sub = url.substr(url.size()-3);
-    if (sub=="glb") is_binary=true;
-  }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+    //bool is_binary=false;
+    //if (int(url.size())>3) {
+    //  std::string sub = url.substr(url.size()-3);
+    // if (sub=="glb") is_binary=true;
+    // }
+    //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  Material *mat = new GLTF_Material_manual(e,ev, load, material_id,mix, baseColor, metalrough, normaltexture, occlusion, emissive, baseColor_b, metalrough_b, normaltexture_b, occlusion_b, emissive_b);
+  Material *mat = new GLTF_Material_manual(e,ev, mix, baseColor, metalrough, normaltexture, occlusion, emissive, baseColor_b, metalrough_b, normaltexture_b, occlusion_b, emissive_b, roughnessfactor, metallicfactor, baseColor_red, baseColor_green, baseColor_blue, baseColor_alpha, occulsionstrength);
   return add_material(e, mat);
 } 
 

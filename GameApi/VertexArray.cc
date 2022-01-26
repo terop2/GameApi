@@ -70,6 +70,21 @@ void VertexArraySet::explode(int id, Point pt, float dist)
 	}
     }
 }
+void VertexArraySet::clear_poly_and_poly2(int id)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];  
+    }
+  p->tri_polys.clear();
+  p->quad_polys.clear();
+  p->poly_polys.clear();
+  p->tri_polys2.clear();
+  p->quad_polys2.clear();
+  p->poly_polys2.clear();
+}
 void VertexArraySet::free_reserve(int id)
 {
   Polys *p = m_set[id];
@@ -2203,8 +2218,7 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
 
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
-
-
+  
 #ifdef VAO
   ogl->glBindVertexArray(vao[1]);
 #endif
@@ -2212,6 +2226,10 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
+
+
+  
+  
 #ifdef VAO
   ogl->glBindVertexArray(vao[2]);
 #endif
@@ -2219,6 +2237,9 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
+
+
+  
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif
@@ -2237,12 +2258,13 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
 #endif
     if (tri_count && size) {
 
+      
   // INSTANCED DRAWING
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   if (g_inst_map_matrix[positions]==false) {
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
   }
-    
+  //#ifndef VAO    
   ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
   ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
   ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
@@ -2264,6 +2286,8 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glVertexAttribDivisor(3, 0);
   ogl->glVertexAttribDivisor(4, 0);
 
+  //#endif
+  
 
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[0]);
@@ -2327,7 +2351,11 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   if (g_inst_map_matrix[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
   }
-				    ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+
+
+  //#ifndef VAO
+  
+  ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
 				    ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
   ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
   ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
@@ -2350,7 +2378,7 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glVertexAttribDivisor(11, 0);
   ogl->glVertexAttribDivisor(12, 0);
 
-  
+  //#endif  
 
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
@@ -2413,7 +2441,9 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   if (g_inst_map_matrix[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
   }
-				    ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
+
+  //#ifndef VAO
+  ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
 				    ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
   ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
   ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
@@ -2435,7 +2465,8 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glVertexAttribDivisor(11, 0);
   ogl->glVertexAttribDivisor(12, 0);
 
-
+  //#endif
+  
 #ifndef VAO
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[0]);
     ogl->glVertexAttribPointer(0, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
@@ -3219,6 +3250,8 @@ long long g_copy_progress;
 bool is_texture_usage_confirmed(const FaceCollection *p);
 bool is_texture_usage_confirmed(VertexArraySet *set);
 
+bool g_use_vertices_only = false;
+
 void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vector<int> attribs, std::vector<int> attribsi)
 {
   if (!&coll) return;
@@ -3253,6 +3286,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	    //std::cout << "EFP!" << i << std::endl;
 	    p2[j] = coll.EndFacePoint(i,j);
 	    //std::cout << "PN!" << i << std::endl;
+	    if (!g_use_vertices_only) {
 	    if (has_normal2)
 	      v[j] = coll.PointNormal(i,j);
 
@@ -3285,7 +3319,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	      joints[j] = jj;
 	      weights[j] = ww;
 	    }
-	    
+	    } // use vertices only
 	    //std::cout << "VA: " << tex[j] << std::endl;
 	  }
 	//std::cout << "push_p!" << i << std::endl;
@@ -3293,6 +3327,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	//  std::cout << "push_p2!" << i << std::endl;
 	s.push_poly2(0, w, &p2[0]);
 	//  std::cout << "push_n!" << i << std::endl
+	if (!g_use_vertices_only) {
 	if (has_normal2)
 	  s.push_normal(0, w, &v[0]);
 
@@ -3313,7 +3348,8 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
 	    s.push_joint(0,w,&joints[0]);
 	    s.push_weight(0,w,&weights[0]);
 	  }
-	
+	}
       }
+      
     //std::cout << "Copy returns" << std::endl;
   }

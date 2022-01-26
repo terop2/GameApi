@@ -2113,4 +2113,45 @@ public:
 };
 
 
+class GCBitmap : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual unsigned int Map(int x, int y) const=0;
+};
+
+class GraphicsContext
+{
+public:
+  virtual int size_x() const=0;
+  virtual int size_y() const=0;
+
+  virtual void StartBatch(std::string name)=0;
+  virtual void EndBatch(std::string name)=0;
+  
+  virtual void draw_pixel(int x, int y, unsigned int color)=0;
+  //virtual unsigned int get_pixel(int x, int y) const=0; // ei toimi henrin platassa
+  virtual void draw_rect(int x, int y, int sx, int sy, unsigned int color)=0;
+  virtual void draw_image(int x, int y, int sx, int sy, GCBitmap &bitmap)=0;
+  virtual void draw_image2(int x, int y, int sx, int sy, GCBitmap &bitmap)=0;
+  virtual void draw_line(int x, int y, int x2, int y2, unsigned int color)=0;
+
+  // text drawing not included, but should do Bitmap<Color> *draw_text(std::string label, Font *font);
+};
+GCBitmap *to_gcbitmap(Bitmap<Color> *bm);
+
+class TimeAnim : public CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  virtual float start_time() const=0;
+  virtual float end_time() const=0;
+  virtual FaceCollection *get_frame(float time) const=0;
+};
+
 #endif
+

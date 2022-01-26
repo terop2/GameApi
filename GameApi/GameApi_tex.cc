@@ -129,6 +129,17 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
     {
       BitmapHandle *handle = find_bitmap(e, vec[i]);
       Bitmap<Color> *bm = find_color_bitmap(handle);
+
+
+      if (sizex==-1) sizex=bm->SizeX();
+      if (sizey==-1) sizey=bm->SizeY();
+      if (sizex!=sizey) {std::cout << "Warning: Cubemap textures dimensions need to be the same" << std::endl;
+	if (sizex>sizey) { sizex=sizey; } else { sizey=sizex; }
+      }
+	bm = new SubBitmap<Color>(*bm, 0, 0, sizex, sizey);
+
+
+      
       FlipColours flip(*bm);
       BufferFromBitmap buf(flip);
       //      buf.Gen();
@@ -165,16 +176,12 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
 #endif
 
       
-      if (sizex==-1) sizex=bm->SizeX();
-      if (sizey==-1) sizey=bm->SizeY();
-      if (sizex!=sizey) {std::cout << "Warning: Cubemap textures dimensions need to be the same" << std::endl; }
-
       if (bm->SizeX() != sizex) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
       if (bm->SizeY() != sizey) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
 
 
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP, id);
-      ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+      ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,0,Low_GL_RGBA,sizex,sizey, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
     }
   //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
   ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      

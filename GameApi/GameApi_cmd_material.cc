@@ -312,11 +312,17 @@
 			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM" }, 
 			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "1.0", "", "", "" },
 			 "MT", "materials_api", "gltf_material_env"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_from_file,
+			 "m_gltf_file",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://tpgames.org/materials/wood.mat" },
+			 "MT", "materials_api", "gltf_material_from_file"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_manual,
 			 "m_gltf_man",
-			 { "ev", "base_url", "url", "material_id", "mix", "baseColor", "metalrough", "normal", "occlusion", "emissive", "baseColor_b", "metalrough_b", "normal_b", "occlusion_b", "emissive_b" },
-			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM", "BM", "BM", "bool", "bool", "bool", "bool", "bool" }, 
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "1.0", "", "", "", "", "", "true", "true", "true", "true", "true" },
+			 { "ev", "mix", "baseColor", "metalrough", "normal", "occlusion", "emissive", "baseColor_b", "metalrough_b", "normal_b", "occlusion_b", "emissive_b", "roughnessfactor", "metallicfactor", "base_r", "base_g", "base_b", "base_a", "occulsionstrength" },
+			 { "EveryApi&", "float", "BM", "BM", "BM", "BM", "BM", "bool", "bool", "bool", "bool", "bool", "float", "float", "float", "float", "float", "float", "float" }, 
+			 { "ev", "1.0", "", "", "", "", "", "true", "true", "true", "true", "true", "0.5", "0.5", "0.5", "0.5", "0.5", "1.0", "1.0" },
 			 "MT", "materials_api", "gltf_material_manual"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material,
 			 "m_gltf_anim",
