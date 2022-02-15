@@ -279,6 +279,23 @@ function open_tab(event, label) {
 <div v-if="state.my_animations">
 </div>
 <div id="main_div">
+<script>
+function populate_imgs()
+{
+   var s = imgarr.length;
+   var i = 0;
+   for(i=0;i<s;i++)
+   {
+      var node = imgarr[i];
+      var tag = node.tag;
+      var filename = node.filename;
+      //console.log(tag);
+      //console.log(filename);
+      var tag2 = document.getElementById(tag);
+      tag2.src = filename;
+   }
+}
+</script>
 <?php
 require_once("user.php");
 $user="terop";
@@ -340,26 +357,6 @@ $label = get_label( $arr );
    // src=\"" . $filename . "\"
    echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
 
-echo "<script>\n";
-   echo "var g_background = 0;\n";
-?>
-function populate_imgs()
-{
-   var s = imgarr.length;
-   var i = 0;
-   for(i=0;i<s;i++)
-   {
-      var node = imgarr[i];
-      var tag = node.tag;
-      var filename = node.filename;
-      console.log(tag);
-      console.log(filename);
-      var tag2 = document.getElementById(tag);
-      tag2.src = filename;
-   }
-}
-<?php
-echo "</script>\n";
 
 
 
@@ -416,7 +413,12 @@ echo "<br>";
 page_footer();
 echo "<div style=\"height:40px\"></div>";
 echo "</div>";
+echo "<script>\n";
+   echo "var g_background = 0;\n";
+echo "</script>\n";
+
 ?>
+
 
 <div id="main_display"> <!--v-show="state.mesh"-->
 <div class="display" id="display2" style="display:none">
@@ -877,18 +879,21 @@ text-color: #fff;
 function hide_display(b)
 {
   var elem = document.getElementById("main_display");
+  if (elem) {
   if (b) elem.style="";
   else elem.style="display:none";
+}
 }
 
 function hide_main(b)
 {
   var elem = document.getElementById("main_div");
+  if (elem) {
   if (b) elem.style="";
   else elem.style="display:none";
-
   if (b) {
      populate_imgs();
+  }
   }
 }
 

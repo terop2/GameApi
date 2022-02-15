@@ -4878,7 +4878,7 @@ ASyncData async_data[] = {
   { "polygon_api", "gltf_load", 2 },
   { "polygon_api", "gltf_load_bitmap", 2 },
   { "materials_api", "gltf_material", 2 },
-  { "materials_api", "gltf_material_manual", 2 },
+  //{ "materials_api", "gltf_material_manual", 2 },
   { "materials_api", "gltf_material_env", 2 },
   { "polygon_api", "bar_chart", 1 },
   { "polygon_api", "bar_chart2", 1 },

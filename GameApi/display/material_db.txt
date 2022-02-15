@@ -1,15 +1,18 @@
-0 Metal Aluminium d0d5db 0.4
-1 Metal Brass b5a642 0.8
-2 Metal Bronze b08d57 0.5
-3 Metal Gold ffd700 0.4
-4 Metal Iron a19d94 0.6
-5 Metal Silver aaa9ad 0.4
-6 Metal Steel 43464b 0.7
-7 Metal Titanium 878681 0.5
-8 Plastic Red ff0000 0.2
-9 Plastic Yellow ffff00 0.2
-10 Plastic Blue 0000ff 0.2
-11 Plastic Orange ff4500 0.2
-12 Plastic White ffffff 0.2
-13 Plastic Green 00ff00 0.2
-14 Plastic Magenta ff00ff 0.2
+1 Metal Aluminium d0d5db 0.4
+2 Metal Brass b5a642 0.8
+3 Metal Bronze b08d57 0.5
+4 Metal Gold ffd700 0.4
+5 Metal Iron a19d94 0.6
+6 Metal Silver aaa9ad 0.4
+7 Metal Steel 43464b 0.7
+8 Metal Titanium 878681 0.5
+9 Plastic Red ff0000 0.2
+10 Plastic Yellow ffff00 0.2
+11 Plastic Blue 0000ff 0.2
+12 Plastic Orange ff4500 0.2
+13 Plastic White ffffff 0.2
+14 Plastic Green 00ff00 0.2
+15 Plastic Magenta ff00ff 0.2
+16 Textured wood http://tpgames.org/materials/wood.mat
+17 Textured bricks http://tpgames.org/materials/bricks.mat
+18 Textured bricks2 http://tpgames.org/materials/bricks2.mat

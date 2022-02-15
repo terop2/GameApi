@@ -194,6 +194,9 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
 }
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps)
 {
+
+  mipmaps = false;
+  
   OpenglLowApi *ogl = g_low->ogl;
   //mipmaps = false;
 
@@ -511,7 +514,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 
   int ssx = bm.SizeX();
   int ssy = bm.SizeY();
-  bool mipmaps = true;
+  bool mipmaps = false;
   bool power_of_two = true;
       if (!(ssx==1 ||ssx==2||ssx==4||ssx==8||ssx==16||ssx==32||ssx==64||ssx==128||ssx==256||ssx==512||ssx==1024||ssx==2048||ssx==4096||ssx==8192||ssx==16384))
 	power_of_two = false;
@@ -729,7 +732,7 @@ GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const Bu
       int sx = buf.width;
       int sy = buf.height;
 
-      bool mipmaps = true;
+      bool mipmaps = false;
       bool power_of_two = true;
       if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
 	power_of_two = false;

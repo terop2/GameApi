@@ -42,8 +42,12 @@ $date = filemtime("web_page.js");
 	     v-bind:is_textured="state.is_textured"
 	     v-bind:filter_material_metal="filter_material_metal()"
 	     v-bind:filter_material_plastic="filter_material_plastic()"
+	     v-bind:filter_material_textured="filter_material_textured()"
 ></appmaterial>
-<appborder v-on:change_model="change_model()"></appborder><br>
+<appborder v-on:change_model="change_model()"></appborder>
+<appnormals v-on:change_model="change_model()"></appnormals>
+<appsubmitbutton></appsubmitbutton>
+<br>
 </div>
 </div>
 <div style="height:10px"></div>
@@ -85,6 +89,21 @@ Vue.component('apptitle', {
 	template: `<div class="block"><div class='lab'><h1 class="customfont"><slot></slot></h1></div></div>`
  });
 
+Vue.component('appsubmitbutton', {
+    data: function() {
+       return { }
+       },
+       template: `<div class="block blockitem height8 border customfont">
+           <form id="submitcontents" action="submit_contents.php" method="POST">
+	   <input name="state" id="formstate" type="hidden" value="@"/>
+	   <input name="contents_array" id="formcontentsarray" type="hidden"/>
+	   <input name="filename_array" id="formfilenamearray" type="hidden"/>
+	   <input name="g_filename" id="formgfilename" type="hidden"/>
+           <input type="submit" value="Submit"/>
+	   </form>
+	   </div>`
+	   });
+
 Vue.component('appdragdroparea', {
    data: function() {
        return {
@@ -93,8 +112,23 @@ Vue.component('appdragdroparea', {
 	template: '<div id="div1" v-on:drop="$emit(`dragdrop`,$event)" ondragover="allowDrop(event)"><slot></slot></div>'
 	});
 
+Vue.component('appnormals', {
+   data: function() {
+      return { } },
+   template: `<div>
+       <div class="block blockitem height8 border customfont">
+       Normals:
+        <select name="normals" id="normals-select" v-on:change="$emit('change_model')">
+        <!--option value="-1">Default</option-->
+	<option value="0">Edged normals</option>
+        <option value="1">Smooth normals</option>
+        <option value="2">File normals</option>
+        </select>
+       </div></div>`
+ });    
+       
 Vue.component('appmaterial', {
-   props: ['is_metal', 'is_plastic', 'is_textured', 'filter_material_metal', 'filter_material_plastic'],
+   props: ['is_metal', 'is_plastic', 'is_textured', 'filter_material_metal', 'filter_material_plastic', 'filter_material_textured'],
    data: function() {
       return {
       }
@@ -149,11 +183,9 @@ Vue.component('appmaterial', {
 		 <div class="horizspace customfont">
 		 <select name="type" id="textured-type-select" v-on:change="$emit('change_model')">
 		 <option value="-1">Default</option>
-		 <option value="15">Wood (Pine)</option>
-		 <option value="16">Wood (Oak)</option>
-		 <option value="17">Wood (Ebenholz)</option>
-		 <option value="18">Brick</option>
-		 <option value="19">Concrete</option>
+		 <template v-for="tex in filter_material_textured">
+		 <option v-bind:value="parse_material_count(tex,'Textured')">{{ parse_material_name(tex,'Textured') }}</option>
+		 </template>
 		 </select></div>
 		 </div>
 		 <!--Surface<br>
@@ -381,6 +413,10 @@ filter_material : function(arr,key)
    var arr = store.state.material_db;
    return this.filter_material(arr,'Plastic');
 },
+   filter_material_textured: function() {
+   var arr = store.state.material_db;
+   return this.filter_material(arr,'Textured');
+},
 
 
       dragdrop2: function(event) {
@@ -604,6 +640,11 @@ function get_model(i)
    //if (i==3) model="https://tpgames.org/Astronaut.glb";
    return model;
 }
+function get_normals_value()
+{
+  var elem = document.getElementById("normals-select");
+  return parseInt(elem.value);
+}
 function get_border_value()
 {
   var elem = document.getElementById("border-select");
@@ -713,6 +754,11 @@ function parse_material_type(mat)
    var arr = mat.split(" ");
    return arr[1];
 }
+function parse_material_url(mat)
+{ // this only works with textured
+   var arr = mat.split(" ");
+   return arr[3];
+}
 function parse_material_color(mat)
 {
    var arr = mat.split(" ");
@@ -796,49 +842,12 @@ function hex_color_to_number(text)
         return c;
 
 
-/*
-
-  var s = str.length;
-  var res=0;
-  for(var i=0;i<s;i++)
-  {
-     var digit =0;
-     var ch = str[i];
-     if (ch>='0' && ch<='9') digit=ch-'0';
-     if (ch>='a' && ch<='f') digit=ch-'a'+10;
-     if (ch>='A' && ch<='F') digit=ch-'A'+10;
-     res+=digit;
-     if (i!=s-1) res<<=4;
-  }
-  console.log(str);
-  console.log(res);
-  return res;
-  */
 }
 function get_metal_color(i)
 {
   var line = find_line_from_material_db(i);
   var str = parse_material_color(line);
   return hex_color_to_number(str);
-/*
-  if (i==0) { return 0xd0d5db; }
-  if (i==1) { return 0xb5a642; }
-  if (i==2) { return 0xb08d57; }
-  if (i==3) { return 0xffd700; }
-  if (i==4) { return 0xa19d94; }
-  if (i==5) { return 0xaaa9ad; }
-  if (i==6) { return 0x43464b; }
-  if (i==7) { return 0x878681; }
-  // plastics
-  if (i==8) { return 0xff0000; }
-  if (i==9) { return 0xffff00; }
-  if (i==10) { return 0x0000ff; }
-  if (i==11) { return 0xff4500; }
-  if (i==12) { return 0xffffff; }
-  if (i==13) { return 0x00ff00; }
-  if (i==14) { return 0xff00ff; }
-return 0xffffff;
-*/
 }
 
 function get_metal_roughness(i)
@@ -846,29 +855,31 @@ function get_metal_roughness(i)
   var line = find_line_from_material_db(i);
   var str = parse_material_roughness(line);
   return parseFloat(str);
-  /*
-  if (i==0) return 0.4;
-  if (i==1) return 0.8;
-  if (i==2) return 0.5;
-  if (i==3) return 0.4;
-  if (i==4) return 0.6;
-  if (i==5) return 0.4;
-  if (i==6) return 0.7;
-  if (i==7) return 0.5;
-  if (i==8) return 0.2;
-  if (i==9) return 0.2;
-  if (i==10) return 0.2;
-  if (i==11) return 0.2;
-  if (i==12) return 0.2;
-  if (i==13) return 0.2;
-  if (i==14) return 0.2;
-  return 0.5;
-  */
 }
 
 function get_material(i)
 {
-if (i==-1) return ["",""];
+// these are all I1 => I2 :: P->P
+var texcoords = "P I2=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);\n";
+var normals = "P I2=ev.polygon_api.recalculate_normals(I1);\n";
+var smoothnormals = "P I200=ev.polygon_api.recalculate_normals(I1);\nP I2=ev.polygon_api.smooth_normals2(I200);\n";
+var objnormals = "P I2=ev.polygon_api.translate(I1,0.0,0.0,0.0);\n";
+var texcoord_normals = "P I200=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);\nP I2=ev.polygon_api.recalculate_normals(I200);\n"
+var texcoord_smoothnormals = "P I200=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);\nP I201=ev.polygon_api.recalculate_normals(I200);\nP I2=ev.polygon_api.smooth_normals2(I201);\n"
+var texcoord_objnormals = "P I2=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);\n";
+
+
+var normals_select = normals;
+var texcoord_normals_select = texcoord_normals;
+var normals_val = get_normals_value();
+if (normals_val==0) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
+if (normals_val==1) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
+if (normals_val==2) { normals_select = objnormals; texcoord_normals_select = texcoord_objnormals; }
+
+var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
+
+if (i==-1) return ["",normals_select];
+;
  var metal_color = get_metal_color(i);
  var r = (metal_color&0xff0000)>>16;
  var g = (metal_color&0xff00)>>8;
@@ -888,68 +899,18 @@ if (i==-1) return ["",""];
  var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1);\n";
 
 
-
-// these are all mat :: () -> I4 :: () -> MT
-var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
-var metalmaterial = "MT I4=ev.materials_api.gltf_material3(ev,0.5,0.8,1,1,1,1,1);\n";
-var goldmaterial = "MT I4=ev.materials_api.gltf_material3(ev,0.5,0.97,0.5,0.3,0,1,1);\n";
-var wood1material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood1.png);\nMT I400=ev.materials_api.texture(ev,I500,1.0);\nMT I401=ev.materials_api.m_def(ev);\nMT I402=ev.materials_api.phong(ev,I401,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\nMT I4=ev.materials_api.combine_materials(ev,I402,I400);\n";
-
-var wood2material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood2.jpg);\nMT I400=ev.materials_api.texture(ev,I500,1.0);\nMT I401=ev.materials_api.m_def(ev);\nMT I402=ev.materials_api.phong(ev,I401,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\nMT I4=ev.materials_api.combine_materials(ev,I402,I400);\n";
-
-
-var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood3.jpg);\nMT I400=ev.materials_api.texture(ev,I500,1.0);\nMT I401=ev.materials_api.m_def(ev);\nMT I402=ev.materials_api.phong(ev,I401,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\nMT I4=ev.materials_api.combine_materials(ev,I402,I400);\n";
-
-
-
-//var wood2material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood2.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
-//var wood3material = "BM I500=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/wood3.jpg);\nMT I400=ev.materials_api.texture(ev,I500,0.7);\nMT I4=ev.materials_api.phong(ev,I400,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
-
-var woodfile = "wood1.png";
-if (i==16) woodfile="wood2.jpg";
-if (i==17) woodfile="wood3.jpg";
-
-var glow = "30";
-if (i==16) glow="30";
-if (i==17) glow="30";
-
-var shinywood = "BM I111=ev.bitmap_api.loadbitmapfromurl(http://tpgames.org/" + woodfile + ");\nFB I222=ev.float_bitmap_api.from_red(I111);\nMT I333=ev.materials_api.bump_phong(ev,-0.3,0.3,-1,ff000000,ffffffff," + glow + ",I222,15);\nMT I555=ev.materials_api.texture(ev,I111,0.7);\nMT I4=ev.materials_api.combine_materials(ev,I333,I555);\n";
-
-
-
-// these are all I1 => I2 :: P->P
-var texcoords = "P I2=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\n";
-var normals = "P I2=ev.polygon_api.recalculate_normals(I1);\n";
-var smoothnormals = "P I200=ev.polygon_api.recalculate_normals(I1);\nP I2=ev.polygon_api.smooth_normals2(I200);\n";
-var texcoord_normals = "P I200=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\nP I2=ev.polygon_api.recalculate_normals(I200);\n"
-var texcoord_smoothnormals = "P I200=ev.polygon_api.texcoord_plane(I1,-600,600,-600,600);\nP I201=ev.polygon_api.recalculate_normals(I200);\nP I2=ev.polygon_api.smooth_normals2(I201);\n"
-
 var line = find_line_from_material_db(i);
-if (parse_material_type(line)=='Metal') return [metal,normals];
-if (parse_material_type(line)=='Plastic') return [plastic,normals];
-/*
-if (i==15) return [wood1material, texcoord_normals];
-if (i==16) return [wood2material, texcoord_normals];
-if (i==17) return [wood3material, texcoord_normals];
-if (i==-1) return ["",""];
-*/
 
-/*
-if (i==-1) return ["",""];
-if (i==0) return [phongmaterial,normals];
-if (i==1) return [metalmaterial,normals];
-if (i==2) return [goldmaterial,normals];
-//if (i==3) return [phongmaterial,smoothnormals];
-//if (i==4) return [metalmaterial,smoothnormals];
-//if (i==5) return [goldmaterial,smoothnormals];
-if (i==6) return [wood1material,texcoord_normals];
-if (i==7) return [wood2material,texcoord_normals];
-if (i==8) return [wood3material,texcoord_normals];
-if (i==9) return [shinywood,texcoord_normals];
-if (i==10) return [shinywood,texcoord_normals];
-if (i==11) return [shinywood,texcoord_normals];
-*/
-return [phongmaterial,normals];
+
+if (parse_material_type(line)=='Metal') return [metal,normals_select];
+if (parse_material_type(line)=='Plastic') return [plastic,normals_select];
+
+
+var tex_url = parse_material_url(line);
+var textured_material = "MT I4=ev.materials_api.gltf_material_from_file(ev," + tex_url + ");\n";
+if (parse_material_type(line)=='Textured') return [textured_material,texcoord_normals_select];
+
+return [phongmaterial,normals_select];
 }
 function create_script(filename, contents, filenames)
 {
@@ -985,7 +946,7 @@ function create_script(filename, contents, filenames)
 	}
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 
-  if (material[0]!="") {
+  if (material[1]!="") {
      res+=material[1];
   } else
   if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
@@ -1006,10 +967,10 @@ function create_script(filename, contents, filenames)
   }
 
 
-  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"))
+  //if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"))
      res+="ML I6=ev.materials_api.bind(I2,I4);\n";
-  else
-     res+="ML I6=ev.materials_api.bind(I1,I4);\n";
+  //else
+  //   res+="ML I6=ev.materials_api.bind(I1,I4);\n";
 
 
   if ((parseInt(material_value)==0&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
@@ -1017,7 +978,8 @@ function create_script(filename, contents, filenames)
 
   }
   res+=border; // outputs I502
-  
+
+
   res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I502});\n";
   //res+="ML I68=ev.mainloop_api.isometric(I66,0.5236,0.5236,-1400.0);\n";
 
@@ -1464,7 +1426,7 @@ function set_label(label)
    if (wid) wid.innerHTML = label;
 }
 set_label("Loading 3d engine..");
-load_emscripten(store.state,"");
+if (store) load_emscripten(store.state,"");
 
 window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
@@ -1500,5 +1462,73 @@ function resize_event(event)
   elem.style.height = scale_y.toString() + "px";
 
 }
+
+function serialize_state()
+{
+   var elem = document.getElementById("category-select");
+   var elem2 = document.getElementById("metal-type-select");
+   var elem3 = document.getElementById("plastic-type-select");
+   var elem4 = document.getElementById("textured-type-select");
+
+   var ser = {
+          model   : get_model_value(),
+          normals : get_normals_value(),
+          border  : get_border_value(),
+        background: get_background_value(),
+         material : get_material_value(),
+	 category : elem && elem.value,
+	 metal : elem2 && elem2.value,
+	 plastic : elem3 && elem3.value,
+	 textured : elem4 && elem4.value
+   };
+   return JSON.stringify(ser);
+}
+
+function deserialize_state(txt)
+{
+  var ser = JSON.parse(txt);
+  var model = ser.model;
+  var normals = ser.normals;
+  var border = ser.border;
+  var bg = ser.background;
+  var cat = ser.category;
+  var metal = ser.metal;
+  var plastic = ser.plastic;
+  var textured = ser.textured;
+  //var mat = ser.material;
+
+  var elem = document.getElementById("model-select");
+  if (elem) elem.value = model;
+  var elem2 = document.getElementById("normals-select");
+  if (elem2) elem2.value = normals;
+  var elem3 = document.getElementById("border-select");
+  if (elem3) elem3.value = border;
+  var elem4 = document.getElementById("background-select");
+  if (elem4) elem4.value = bg;
+  var elem5 = document.getElementById("category-select");
+  if (elem5) elem5.value = cat;
+  var elem6 = document.getElementById("metal-type-select");
+  if (elem6) elem6.value = metal;
+  var elem7 = document.getElementById("plastic-type-select");
+  if (elem7) elem7.value = plastic;
+  var elem8 = document.getElementById("textured-type-select");
+  if (elem8) elem8.value = textured;
+}
+
+var form = document.getElementById("submitcontents");
+form.addEventListener('submit', (event) => {
+  console.log("EVENTLISTENER");
+  var st = serialize_state();
+  var st2 = document.getElementById("formstate");
+  st2.value = st;
+  //event.preventDefault();
+  var st3 = document.getElementById("formcontentsarray");
+  st3.value = JSON.stringify(contents_array);
+  var st4 = document.getElementById("formfilenamearray");
+  st4.value = JSON.stringify(filename_array);
+  var st5 = document.getElementById("formgfilename");
+  st5.value = JSON.stringify(g_filename);
+});
+
 
 </script>
