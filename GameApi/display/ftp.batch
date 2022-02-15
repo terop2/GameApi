@@ -1,5 +1,6 @@
 cd meshpage.org
 put view.php
+put submit_contents.php
 put meshpage.php
 put cert.php
 put cert_linux.php
