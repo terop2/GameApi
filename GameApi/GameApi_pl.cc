@@ -10577,6 +10577,26 @@ EXPORT GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float s
   FaceCollection *coll = new AnimFaceScale(*i, *pp, scale_x, scale_y, scale_z);
   return add_polygon(e, coll, 1);
 }
+
+class VolumeObjectFromCutter : public VolumeObject
+{
+public:
+  VolumeObjectFromCutter(Cutter *cut) : cut(cut) { }
+  bool Inside(Point v) const
+  {
+    std::vector<Point> v=cut->cut(Point(-10000.0,0,0), v);
+    return v.size()%2==1;
+  }
+private:
+  Cutter *cut;
+};
+
+EXPORT GameApi::O GameApi::CutterApi::cutter_volume2(CT c)
+{
+  Cutter *ct = find_cutter(e,c);
+  return add_volume(e, new VolumeObjectFromCutter(ct));
+}
+
 class CutFaces : public ForwardFaceCollection
 {
 public:

@@ -1,16 +1,53 @@
 <?php
+ini_set("post_max_size", "120M");
+ini_set("upload_max_filesize", "100M");
+
+include("backend.php");
 header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page.js");
+
+$id=intval($_GET["id"]);
+$user = "terop";
+if ($id>0)
+{
+  $state = load_form_state($user, $id);
+  $contentsarray = "";
+  $filenamearray = "";
+  for($i=0;$i<10;$i++) {
+  		       $contentsarray = $contentsarray . load_form_contentsarray($user, strval($id) . "_" . strval($i));
+  		       $filenamearray = $filenamearray . load_form_filenamearray($user, strval($id) . "_" . strval($i));
+  }
+  $gfilename = load_form_gfilename($user, $id);
+
+}
 ?>
 <html>
 <head>
 </head>
 <body>
+<?php
+echo "<pre id='formstate2' style='display:none'>";
+echo "$state";
+echo "</pre>";
+
+echo "<pre id='formcontentsarray2' style='display:none'>";
+echo "$contentsarray";
+echo "</pre>";
+
+echo "<pre id='formfilenamearray2' style='display:none'>";
+echo "$filenamearray";
+echo "</pre>";
+
+echo "<pre id='formgfilename2' style='display:none'>";
+echo "$gfilename";
+echo "</pre>";
+?>
+
 <script src="https://meshpage.org/vue.js"></script>
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
-<apptitle>The great 3d model viewer</apptitle>
+<apptitle><a href="view.php">The great 3d model viewer</a></apptitle>
 <br>
 <div style="display:flex">
 <div id="div2" style="display:none"></div>
@@ -94,13 +131,15 @@ Vue.component('appsubmitbutton', {
        return { }
        },
        template: `<div class="block blockitem height8 border customfont">
-           <form id="submitcontents" action="submit_contents.php" method="POST">
+           <!-- form id="submitcontents" action="submit_contents.php" method="POST">
 	   <input name="state" id="formstate" type="hidden" value="@"/>
 	   <input name="contents_array" id="formcontentsarray" type="hidden"/>
 	   <input name="filename_array" id="formfilenamearray" type="hidden"/>
 	   <input name="g_filename" id="formgfilename" type="hidden"/>
-           <input type="submit" value="Submit"/>
-	   </form>
+	   <input name="num" id="formnum" type="hidden"/>
+	   </form -->
+	   <button type="button" onclick="formsubmit()">Submit</button>
+	   <div id="progressbar"></div>
 	   </div>`
 	   });
 
@@ -788,6 +827,7 @@ function find_line_from_material_db(index)
 function get_material_value()
 {
   var cat_elem = document.getElementById("category-select");
+  if (cat_elem) {
   var cat_val = parseInt(cat_elem.value);
   var id = "";
   if (cat_val==0) // metal
@@ -803,12 +843,14 @@ function get_material_value()
   }
 
   var elem = document.getElementById(id);
-  return parseInt(elem.value);
+  if (elem) return parseInt(elem.value);
+  return 0;
+  } else return 0;
 }
 function hex_color_to_number(text)
 {
 
-
+	if (text) {
         var hash = 0;
         var digit = 0;
 	var digit2 = '0';
@@ -840,7 +882,7 @@ function hex_color_to_number(text)
         console.log(text);
 	console.log(c.toString(16));
         return c;
-
+	} return 0;
 
 }
 function get_metal_color(i)
@@ -1105,9 +1147,11 @@ function extract_contents(state,file_array,filenames, filename)
   }
 });
 }
+var loading_data = 0;
 
 function load_finished(value)
 {
+   console.log("LOAD FINISHED");
    load_files(contents_array,filename_array);
    load_emscripten(store.state,g_filename, contents_array, filename_array);
    set_label("Load finished..");
@@ -1234,8 +1278,8 @@ function drop(ev)
   var mod = document.getElementById("model-select");
   if (mod) mod.value="-1";
 
-
   ev.preventDefault();
+
   var files = [];
   var filenames = [];
   if (ev.dataTransfer.items) {
@@ -1353,13 +1397,29 @@ function load_files(data_array, filename_array)
   }
 }
 
+
 var g_emscripten_running = false;
 function check_em() {
     return function() {
 	g_emscripten_running = true;
+	console.log("EMSCRIPTEN RUNNING");
 	//resize_event(null);
 	//load_file();
-	set_label("Drag & Drop files..");
+	load_data();
+	if (loading_data==1) {
+	console.log("LOADING DATA");
+	app.change_appmodel(1);
+	app.change_category();
+	setTimeout(function() {
+	console.log("TIMEOUT");
+	load_data();
+	app.change_model();
+	load_finished(1);
+	}, 100);
+
+   set_filename_info(app.state,g_filename);
+   }
+set_label("Drag & Drop files..");
     }
 }
 
@@ -1497,6 +1557,10 @@ function deserialize_state(txt)
   var textured = ser.textured;
   //var mat = ser.material;
 
+  var elem5 = document.getElementById("category-select");
+  if (elem5) elem5.value = cat;
+  app.change_category();
+
   var elem = document.getElementById("model-select");
   if (elem) elem.value = model;
   var elem2 = document.getElementById("normals-select");
@@ -1505,30 +1569,165 @@ function deserialize_state(txt)
   if (elem3) elem3.value = border;
   var elem4 = document.getElementById("background-select");
   if (elem4) elem4.value = bg;
-  var elem5 = document.getElementById("category-select");
-  if (elem5) elem5.value = cat;
   var elem6 = document.getElementById("metal-type-select");
   if (elem6) elem6.value = metal;
   var elem7 = document.getElementById("plastic-type-select");
-  if (elem7) elem7.value = plastic;
+  if (elem7) elem7.value = plastic; else console.log("PLASTIC ERROR");
   var elem8 = document.getElementById("textured-type-select");
   if (elem8) elem8.value = textured;
 }
 
-var form = document.getElementById("submitcontents");
-form.addEventListener('submit', (event) => {
-  console.log("EVENTLISTENER");
-  var st = serialize_state();
-  var st2 = document.getElementById("formstate");
-  st2.value = st;
-  //event.preventDefault();
-  var st3 = document.getElementById("formcontentsarray");
-  st3.value = JSON.stringify(contents_array);
-  var st4 = document.getElementById("formfilenamearray");
-  st4.value = JSON.stringify(filename_array);
-  var st5 = document.getElementById("formgfilename");
-  st5.value = JSON.stringify(g_filename);
-});
+function load_data()
+{
+   var st = document.getElementById("formstate2");
+   var ca = document.getElementById("formcontentsarray2");
+   var fa = document.getElementById("formfilenamearray2");
+   var gf = document.getElementById("formgfilename2");
+   if (st.textContent != "") {
+    loading_data=1;
+   var a_st = st.textContent;
+   console.log(ca.textContent);
+   var a_ca = JSON.parse(ca.textContent);
+   console.log(fa.textContent);
+   var a_fa = JSON.parse(fa.textContent);
+   console.log(gf.textContent);
+   var a_gf = JSON.parse(gf.textContent);
 
+   deserialize_state(a_st);
+   contents_array = base64_to_array(a_ca);
+   filename_array = base64_to_array(a_fa);
+   g_filename = a_gf;
+
+   old_files = contents_array;
+   old_filenames = filename_array;
+   old_main_item_name = g_filename;
+   }
+}
+
+function array_to_base64(arr)
+{
+   var res = [];
+   for(var i=0;i<arr.length;i++)
+   {
+     var val = arr[i];
+     var buffer = btoa(val);
+     res.push(buffer);
+   }
+   return res;
+}
+function base64_to_array(arr)
+{
+  var res = [];
+   for(var i=0;i<arr.length;i++)
+   {
+     var val = arr[i];
+     var res2 = atob(val);
+     res.push(res2);
+   }
+   return res;
+  
+}
+
+
+function submitprogressbar(i)
+{
+   var prog = document.getElementById("progressbar");
+   prog.innerHTML = "<progress value='"+ i.toString() + "' max='10'></progress>";
+   //for(var ii=0;ii<i;ii++) {
+   //prog.innerHTML = prog.innerHTML + "&exist;";
+   //}
+   //for(var ik=i;ik<10;ik++)
+   //{
+   //prog.innerHTML = prog.innerHTML + "_";   
+   //}
+   if (i==10)
+   {
+	var name = "viewdata/num.txt";
+	fetch(name).then(response => {
+	   response.body.getReader().read().then(value => {
+	   var str = strfy(value.value);
+	   //var num = intval(str);
+	   prog.innerHTML = "<a href='https://meshpage.org/view.php?id=" + str + "'>https://meshpage.org/view.php?id=" + str + "</a>";
+	   }
+	   )});
+   }
+}
+
+function formsubmit()
+{
+
+  //var st3 = document.getElementById("formcontentsarray");
+  var at3 = JSON.stringify(array_to_base64(contents_array));
+  //var st4 = document.getElementById("formfilenamearray");
+  var at4 = JSON.stringify(array_to_base64(filename_array));
+  //var st5 = document.getElementById("formnum");
+
+  var contents_length = at3.length;
+  var filename_length = at4.length;
+
+  var data = new FormData();
+  data.append("num",-1);
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST','submit_contents.php', true);
+
+  var submitprogress = 0;
+
+  xhr.onload = function() {
+	     var num = 10;
+	     var step = contents_length/num;
+	     var step2 = filename_length/num;
+  	     	 for(var i=0;i<num;i++) {
+
+		   var start = i*step;
+ 		   var end = start + step;
+		   if (i==num-1) end=contents_length;
+
+  		   var start2 = i*step2;
+  		   var end2 = start2 + step2;
+		   if (i==num-1) end2=filename_length;
+
+  		   var st3_sub = at3.substring(start, end);
+  		   var st4_sub = at4.substring(start2, end2);
+
+  		   var st = serialize_state();
+  		   //var st2 = document.getElementById("formstate");
+  		   //st2.value = st;
+
+  		   //var st5 = document.getElementById("formgfilename");
+  		   var st5_val = JSON.stringify(g_filename);
+
+  		   //var form = document.getElementById("submitcontents");
+  		   //form.submit();
+
+  		   var data = new FormData();
+  		   data.append("num",i);
+  		   data.append("state", st);
+  		   data.append("contents_array", st3_sub);
+  		   data.append("filename_array", st4_sub);
+  		   data.append("g_filename", st5_val);
+  		   var xhr = new XMLHttpRequest();
+  		   xhr.open('POST','submit_contents.php', true);
+		   submitprogressbar(0);
+		   xhr.onload = function()
+		   {
+			submitprogress=submitprogress + 1;
+			submitprogressbar(submitprogress);			
+			
+		   }
+  		   xhr.send(data);
+  		   }
+		   }
+		  
+  xhr.send(data);
+
+
+}
+
+//var form = document.getElementById("submitcontents");
+//form.addEventListener('submit', (event) => {
+//  console.log("EVENTLISTENER");
+  //event.preventDefault();
+
+//});
 
 </script>
