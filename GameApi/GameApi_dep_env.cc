@@ -404,12 +404,13 @@ struct del_map
   }
   void print()
   {
+    /*
     std::map<std::string,std::vector<unsigned char>*>::iterator i = load_url_buffers_async.begin();
     for(;i!=load_url_buffers_async.end();i++)
       {
     	std::pair<std::string,std::vector<unsigned char>*> p = *i;
     	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
-      }
+	}*/
   }
   std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 };
