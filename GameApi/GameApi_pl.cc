@@ -21099,9 +21099,9 @@ private:
   GameApi::SH sh;
 };
 
-GameApi::ML GameApi::PolygonApi::anim_render(AA a, float delta)
-{
-}
+//GameApi::ML GameApi::PolygonApi::anim_render(AA a, float delta)
+//{
+//}
 
 
 class CombineAnim2 : public ForwardFaceCollection
@@ -21170,6 +21170,6 @@ GameApi::P GameApi::PolygonApi::cube_anim(float start_x, float end_x,
   return combine_anim(cube1, cube2, start_time, end_time);
 }
 					  
-GameApi::ARR GameApi::PolygonApi::or_elem_anim(P p1, P p2, float time)
-{
-}
+//GameApi::ARR GameApi::PolygonApi::or_elem_anim(P p1, P p2, float time)
+//{
+//x}
