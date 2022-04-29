@@ -30,7 +30,7 @@ EXPORT GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int 
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new ColorLineCollection(lines, color, color));
 }
-EXPORT GameApi::LI GameApi::LinesApi::change_color(GameApi::LI li, unsigned int color1, unsigned int color2)
+EXPORT GameApi::LI GameApi::LinesApi::change_color2(GameApi::LI li, unsigned int color1, unsigned int color2)
 {
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new ColorLineCollection(lines, color1, color2));
@@ -1422,6 +1422,56 @@ EXPORT void GameApi::LinesApi::update(LLA la, LI l)
   return add_update_lines_array(e, la, arr);
 
 }
+
+class LinesRender : public MainLoopItem
+{
+public:
+  LinesRender(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::LI l, float linewidth) : env(env), ev(ev),l(l),linewidth(linewidth) { ml.id=-1; }
+  void Collect(CollectVisitor &vis) {
+    LineCollection *coll = find_line_array(env, l);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  void Prepare() {
+    lla = ev.lines_api.prepare(l);
+    ml = ev.lines_api.render_ml(ev,lla,linewidth);
+  }
+  void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    if (item)
+    item->execute(e);
+    }
+  }
+  void handle_event(MainLoopEvent &e) {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    if (item)
+    item->handle_event(e);
+    }
+  }
+  std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+    } else { return std::vector<int>(); }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  float linewidth;
+  GameApi::LI l;
+  GameApi::LLA lla;
+  GameApi::ML ml;
+};
+
+EXPORT GameApi::ML GameApi::LinesApi::ml_li_render(EveryApi &ev, LI l, float linewidth)
+{
+  return add_main_loop(e, new LinesRender(e,ev,l,linewidth));
+}
+
 EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   OpenglLowApi *ogl = g_low->ogl;

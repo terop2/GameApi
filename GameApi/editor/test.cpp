@@ -1759,6 +1759,7 @@ void iter(void *arg)
 		//std::cout << "Connect_click: " << j << " " << sz << std::endl;
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
 		if (canvas_item.id==-1) continue;
+
 		BM bm = env->ev->bitmap_api.newbitmap(2,2);
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
@@ -1848,6 +1849,7 @@ void iter(void *arg)
 	    if (sel2>0)
 	      {
 		std::string name;
+		//std::cout << "SEL: " << sel << " " << sel2 << std::endl;
 		switch(sel)
 		  {
 		  case 0:
@@ -1926,21 +1928,26 @@ void iter(void *arg)
 		  };
 		//std::cout << "Chosen label: " << name << std::endl;
 		env->insert_mod_name = name;
-		W ww = { 0 };
+		W ww = { -2 };
 		std::vector<W*> conn;
 		int ssk = 8;
+		std::vector<int> conn2;
 		for(int i=0;i<ssk;i++) {
 		  env->connect_clicks.push_back(ww);
-		  conn.push_back(&env->connect_clicks[env->connect_clicks.size()-1]);
+		  conn2.push_back(env->connect_clicks.size()-1);
+		}
+		for(int i=0;i<ssk;i++) {
+		  conn.push_back(&env->connect_clicks[conn2[i]]);
 		}
 		int uid_num = env->unique_id_counter;
+		//std::cout << "unique_id" << uid_num << std::endl;
 		std::stringstream ss;
 		ss << "uid" << uid_num;
 		std::string uid = ss.str();
 		
 		env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, conn /*env->connect_clicks[env->connect_clicks.size()-1]*/, uid, env->connect_targets);
 		int sk = env->connect_clicks.size()-1;
-		for(;sk>=0;sk--) { if (env->connect_clicks[sk].id==0) env->connect_clicks.pop_back(); else break; }
+		for(;sk>=0;sk--) { if (env->connect_clicks[sk].id==-2) env->connect_clicks.pop_back(); else break; }
 		env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
 		env->insert_ongoing = true;
 	      }

@@ -46,12 +46,12 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "LI", "unsigned int" },
 			 { "", "ffffffff" },
 			 "LI", "lines_api", "change_color"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int, unsigned int))&GameApi::LinesApi::change_color,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int, unsigned int))&GameApi::LinesApi::change_color2,
 			 "change_color2",
 			 { "li", "color_1", "color_2" },
 			 { "LI", "unsigned int", "unsigned int" },
 			 { "", "ffffffff", "ff888888" },
-			 "LI", "lines_api", "change_color"));
+			 "LI", "lines_api", "change_color2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::from_polygon,
 			 "li_from_polygon",
 			 { "poly" },

@@ -1233,8 +1233,8 @@ public:
     float v = ff.get();
     int v2 = (int)v;
     if (v2<0) v2=0;
-    if (v2>9999) v2=9999;
-    ss << std::setfill('0') << std::setw(4) << v2;
+    if (v2>99999) v2=99999;
+    ss << std::setfill('0') << std::setw(5) << v2;
     return ss.str();
   }
 private:

@@ -672,6 +672,75 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 #endif
 #if 1
 
+class GrabSplitter : public Splitter
+{
+public:
+  GrabSplitter(Splitter *next, int sx, int sy) : next(next), sx(sx), sy(sy) {
+    ref = BufferRef::NewBuffer(sx, sy);
+    bitmap = new BitmapFromBuffer(ref);    
+    firsttime = true; }
+  void Init() {
+    next->e = e; next->ev = ev;
+    next->Init();
+  }
+  int Iter() { if (firsttime) {
+      next->Iter();
+      OpenglLowApi *ogl = g_low->ogl;
+      ogl->glReadPixels(0,0,sx,sy,Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
+      firsttime = false;
+    }
+  }
+  void Destroy() { next->Destroy(); }
+  Splitter *NextState(int code) { return this; }
+  void EnvTransfer(Splitter *next) { next->e = e; next->ev = ev; }
+  Bitmap<Color> *get_bitmap() const { return bitmap; }
+private:
+  Splitter *next;
+  Bitmap<Color> *bitmap=0;
+  int sx, sy;
+  bool firsttime;
+  BufferRef ref;
+};
+
+class CombineScreens : public Splitter
+{
+public:
+  CombineScreens(Splitter *s1, Splitter *s2) : s1(s1), s2(s2) {  }
+  void Init() { s1->e = e; s1->ev = ev; s2->e = e; s2->ev = ev; s1->Init(); s2->Init(); }
+  int Iter() { s1->Iter(); return s2->Iter(); }
+  void Destroy() { s1->Destroy(); s2->Destroy(); }
+  Splitter *NextState(int code) { return this; }
+  void EnvTransfer(Splitter *next) { next->e = e; next->ev = ev; }
+private:
+  Splitter *s1, *s2;
+};
+
+EXPORT GameApi::RUN GameApi::TextureApi::combine_screens(RUN r1, RUN r2)
+{
+  Splitter *s1 = find_splitter(e,r1);
+  Splitter *s2 = find_splitter(e,r2);
+  return add_splitter(e, new CombineScreens(s1,s2));
+}
+
+EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
+{
+  float screen_x = ev.mainloop_api.get_screen_sx();
+  float screen_y = ev.mainloop_api.get_screen_sy();
+  
+  Splitter *old = find_splitter(e,r);
+  GrabSplitter *run_new = new GrabSplitter(old,screen_x, screen_y);
+  
+  RUN run = add_splitter(e, run_new);
+
+  BM bm = add_color_bitmap(e, run_new->get_bitmap());
+  
+  ArrayType *arr = new ArrayType;
+  arr->type = 2;
+  arr->vec.push_back(run.id);
+  arr->vec.push_back(bm.id);
+  return add_array(e, arr);
+}
+
 
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 {
@@ -687,7 +756,8 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   e2.in_N = Matrix::Identity();
   txid->render(e2);
 
-  
+  int id2=0;
+  ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id2);
   ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
   int width=256, height=256;
 #ifndef EMSCRIPTEN
@@ -696,10 +766,11 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 #endif
   BufferRef ref = BufferRef::NewBuffer(width, height);
 #ifndef EMSCRIPTEN
-  ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
+  //ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
+  //ogl->glReadPixels(0,0,width,height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
   ogl->glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
 #endif
-  ogl->glBindTexture(Low_GL_TEXTURE_2D, 0);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
 
   int xx = ref.width;
   int yy = ref.height;

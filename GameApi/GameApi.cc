@@ -5969,6 +5969,66 @@ private:
 
 
 
+class ColouredLightsMaterial : public MaterialForward
+{
+public:
+  ColouredLightsMaterial(GameApi::EveryApi &ev, Material *next, float scale, unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8, GameApi::PT pos_1, GameApi::PT pos_2, GameApi::PT pos_3, GameApi::PT pos_4, GameApi::PT pos_5, GameApi::PT pos_6, GameApi::PT pos_7, GameApi::PT pos_8, float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8) : ev(ev), next(next), scale(scale), color_1(color_1), color_2(color_2), color_3(color_3), color_4(color_4), color_5(color_5), color_6(color_6), color_7(color_7), color_8(color_8), pos_1(pos_1), pos_2(pos_2), pos_3(pos_3), pos_4(pos_4), pos_5(pos_5), pos_6(pos_6), pos_7(pos_7), pos_8(pos_8), dist_1(dist_1), dist_2(dist_2), dist_3(dist_3), dist_4(dist_4), dist_5(dist_5), dist_6(dist_6), dist_7(dist_7), dist_8(dist_8) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    //GameApi::P p0 = ev.polygon_api.recalculate_normals(p);
+    //GameApi::P p00 = ev.polygon_api.smooth_normals2(p0);
+    //GameApi::P p1 = ev.polygon_api.color(p0, 0xff000000);
+
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML sh = ev.polygon_api.coloured_lights_shader(ev, ml, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    GameApi::ML sh = ev.polygon_api.coloured_lights_shader(ev, ml, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p.id, ms.id);
+    GameApi::ML sh = ev.polygon_api.coloured_lights_shader(ev, ml, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML sh = ev.polygon_api.coloured_lights_shader(ev, ml, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8);
+    return sh;
+
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh = ev.polygon_api.coloured_lights_shader(ev, ml, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8);
+    return sh;
+
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+  float scale;
+  unsigned int color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8;
+  GameApi::PT pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8;
+  float dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8;
+};
+
+
+
+
 class FlatMaterial : public MaterialForward
 {
 public:
@@ -6682,6 +6742,14 @@ EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new DynLightsMaterial(ev, mat, light_pos_x, light_pos_y, light_pos_z, dist, dyn_point));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::coloured_lights(EveryApi &ev, MT nxt, float scale,
+							  unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
+							  GameApi::PT pos_1, GameApi::PT pos_2, GameApi::PT pos_3, GameApi::PT pos_4, GameApi::PT pos_5, GameApi::PT pos_6, GameApi::PT pos_7, GameApi::PT pos_8,
+							  float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new ColouredLightsMaterial(ev, mat, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2)
 {
@@ -10041,6 +10109,12 @@ GameApi::US GameApi::UberShaderApi::v_point_light(US us)
   return add_uber(e, new V_ShaderCallFunction("point_light", next,"EX_POSITION IN_POSITION"));
 }
 
+GameApi::US GameApi::UberShaderApi::v_coloured_lights(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("coloured_lights", next,"EX_POSITION IN_POSITION"));
+}
+
 GameApi::US GameApi::UberShaderApi::v_snoise(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -10306,7 +10380,7 @@ GameApi::US GameApi::UberShaderApi::f_vertexphong(US us)
 GameApi::US GameApi::UberShaderApi::f_gi(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION"));
+  return add_uber(e, new F_ShaderCallFunction("gi", next,"EX_POSITION GI"));
 }
 GameApi::US GameApi::UberShaderApi::f_fade(US us)
 {
@@ -10412,6 +10486,12 @@ GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("color_from_normals", next,"EX_NORMAL"));
+}
+
+GameApi::US GameApi::UberShaderApi::f_coloured_lights(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("coloured_lights", next,"EX_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_point_light(US us)
@@ -16563,9 +16643,35 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   FI T19=ev.font_api.load_font(font,30,30);
   BM T20=ev.font_api.draw_text_string(T19,"9",5,30);
   FF T21=ev.font_api.fps_fetcher(ev);
-  SF T22=ev.font_api.float_to_string_fetcher(K21);
-  IF T23=ev.font_api.char_fetcher_from_string(K22,"0123456789",3);
+  SF T22=ev.font_api.float_to_string_fetcher(T21);
+  IF T23=ev.font_api.char_fetcher_from_string(T22,"0123456789",3);
   ML T24=ev.font_api.dynamic_character(ev,std::vector<BM>{T2,T4,T6,T8,T10,T12,T14,T16,T18,T20},T23,35*3,0);
+
+
+    FI U1=ev.font_api.load_font(font,30,30);
+  BM U2=ev.font_api.draw_text_string(U1,"0",5,30);
+  FI U3=ev.font_api.load_font(font,30,30);
+  BM U4=ev.font_api.draw_text_string(U3,"1",5,30);
+  FI U5=ev.font_api.load_font(font,30,30);
+  BM U6=ev.font_api.draw_text_string(U5,"2",5,30);
+  FI U7=ev.font_api.load_font(font,30,30);
+  BM U8=ev.font_api.draw_text_string(U7,"3",5,30);
+  FI U9=ev.font_api.load_font(font,30,30);
+  BM U10=ev.font_api.draw_text_string(U9,"4",5,30);
+  FI U11=ev.font_api.load_font(font,30,30);
+  BM U12=ev.font_api.draw_text_string(U11,"5",5,30);
+  FI U13=ev.font_api.load_font(font,30,30);
+  BM U14=ev.font_api.draw_text_string(U13,"6",5,30);
+  FI U15=ev.font_api.load_font(font,30,30);
+  BM U16=ev.font_api.draw_text_string(U15,"7",5,30);
+  FI U17=ev.font_api.load_font(font,30,30);
+  BM U18=ev.font_api.draw_text_string(U17,"8",5,30);
+  FI U19=ev.font_api.load_font(font,30,30);
+  BM U20=ev.font_api.draw_text_string(U19,"9",5,30);
+  FF U21=ev.font_api.fps_fetcher(ev);
+  SF U22=ev.font_api.float_to_string_fetcher(U21);
+  IF U23=ev.font_api.char_fetcher_from_string(U22,"0123456789",4);
+  ML U24=ev.font_api.dynamic_character(ev,std::vector<BM>{U2,U4,U6,U8,U10,U12,U14,U16,U18,U20},U23,35*4,0);
 
   
   
@@ -16579,7 +16685,7 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   //ML K51=ev.move_api.move_ml(ev,K24,K50,1,10.0);
 
 
-  ML I52=ev.mainloop_api.array_ml(ev,std::vector<ML>{I24,I48,K24,T24});
+  ML I52=ev.mainloop_api.array_ml(ev,std::vector<ML>{I24,I48,K24,T24,U24});
   ML I53=ev.sprite_api.turn_to_2d(ev,I52,0.0,0.0,800.0,600.0);
   ML I54=ev.mainloop_api.array_ml(ev,std::vector<ML>{ml,I53});
   return I54;

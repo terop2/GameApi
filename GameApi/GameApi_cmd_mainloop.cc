@@ -375,6 +375,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "PTS" },
 			 { "ev", "" },
 			 "ML", "points_api", "pts_render"));
+  /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::prepare,
 			 "li_prepare",
 			 { "li" },
@@ -387,6 +388,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "LLA", "float" },
 			 { "ev", "", "1.0" },
 			 "ML", "lines_api", "render_ml"));
+  */
+  vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::ml_li_render,
+			 "ml_li_render",
+			 { "ev", "l", "linewidth" },
+			 { "EveryApi&", "LI", "float" },
+			 { "ev", "", "1.0" },
+			 "ML", "lines_api", "ml_li_render"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::sfo_to_ml,
 			 "sfo_render",
@@ -594,6 +602,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML" },
 			 { "ev", "" },
 			 "ML", "mainloop_api", "mouse_roll_zoom"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mouse_roll_zoom2,
+			 "mouse_zoom2",
+			 { "ev", "next" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "ML", "mainloop_api", "mouse_roll_zoom2"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::right_mouse_pan,
 			 "r_mouse_pan",
 			 { "ev", "next" },
@@ -948,5 +963,22 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "ev", "http://tpgames.org/game1_1.pkg", "http://tpgames.org/game1_2.pkg", "http://tpgames.org/game1_3.pkg", "http://tpgames.org/game1_4.pkg", "http://tpgames.org/game1_5.pkg", "http://tpgames.org/game1_6.pkg" },
 			 "ML", "mainloop_api", "memmap_window3"));
   
+
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::grab_screen,
+			 "grab_screen",
+			 { "ev", "r" },
+			 { "EveryApi&", "RUN" },
+			 { "ev", "" },
+			 "RUN,BM", "texture_api", "grab_screen"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::combine_screens,
+			 "combine_screens",
+			 { "r1", "r2" },
+			 { "RUN", "RUN" },
+			 { "", "" },
+			 "RUN", "texture_api", "combine_screens"))
+
+#endif
+    
   return vec;
 }

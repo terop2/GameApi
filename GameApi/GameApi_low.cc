@@ -397,10 +397,10 @@ public:
 
 
   virtual int glGetError() {
-    return Low_GL_NO_ERROR;
-    //int i = ::glGetError(); 
-    //if (i==GL_NO_ERROR) i=Low_GL_NO_ERROR;
-    //return i;
+    //return Low_GL_NO_ERROR;
+    int i = ::glGetError(); 
+    if (i==GL_NO_ERROR) i=Low_GL_NO_ERROR;
+    return i;
   }
   
   virtual void glColor4ub(int r, int g, int b, int a) { 

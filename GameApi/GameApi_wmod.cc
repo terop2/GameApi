@@ -370,8 +370,10 @@ EXPORT GameApi::W GameApi::WModApi::inserted_widget(GuiApi &gui, WM mod2, int id
     {
       GameApiItem *item = functions[i];
       std::string name = item->Name(0);
+      //std::cout << func_name << "==" << name << std::endl;
       if (func_name == name) break;
     }
+  if (i==s) return { -1 };
   GameApiItem *item = functions[i];
   std::string return_type = item->ReturnType(0);
   std::string symbols = item->Symbols();

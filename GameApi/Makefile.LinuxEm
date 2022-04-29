@@ -99,11 +99,11 @@ EMINC1 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/system/include/SDL
 EMINC2 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/system/include
 EMINC3 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/tests/freetype/include
 
-CCFLAGS = -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -std=c++17 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -s DISABLE_EXCEPTION_CATCHING=2  -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g  
-CC2FLAGS = -fno-exceptions -fomit-frame-pointer -flto -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++17 -Wall $(nowarns) -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g  
+CCFLAGS = -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -std=c++17 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g  
+CC2FLAGS = -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++17 -Wall $(nowarns) -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g  
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
-
+# -fno-exceptions
 
 def: $(O2Files) libGameApi.bc
 

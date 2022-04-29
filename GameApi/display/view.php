@@ -6,7 +6,13 @@ include("backend.php");
 header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page.js");
 
-$id=intval($_GET["id"]);
+function unhash($data)
+{
+   return ((intval($data)) ^ 0x26522663) /10001;
+}
+
+$iid = $_GET["id"];
+$id=unhash($_GET["id"]);
 $user = "terop";
 if ($id>0)
 {
@@ -43,11 +49,11 @@ echo "$gfilename";
 echo "</pre>";
 ?>
 
-<script src="https://meshpage.org/vue.js"></script>
+<script src="vue.js"></script>
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
-<apptitle><a href="view.php">The great 3d model viewer</a></apptitle>
+<apptitle><a href="view.php">The 3d model viewer</a></apptitle>
 <br>
 <div style="display:flex">
 <div id="div2" style="display:none"></div>
@@ -156,12 +162,16 @@ Vue.component('appnormals', {
       return { } },
    template: `<div>
        <div class="block blockitem height8 border customfont">
-       Normals:
+       Mode:
         <select name="normals" id="normals-select" v-on:change="$emit('change_model')">
-        <!--option value="-1">Default</option-->
+        <option value="-1">Default</option>
 	<option value="0">Edged normals</option>
         <option value="1">Smooth normals</option>
         <option value="2">File normals</option>
+	<option value="3">Wireframe</option>
+	<option value="4">Wireframe+hidden line removal</option>
+	<option value="5">Wireframe+Edged normals</option>
+	<option value="6">Wireframe+smooth normals</option>
         </select>
        </div></div>`
  });    
@@ -434,7 +444,7 @@ parse_material_type : function(mat)
 filter_material : function(arr,key)
 {
    var arr = store.state.material_db;
-  console.log(arr);
+  //console.log(arr);
   var s = arr.length;
   var res = [];
   for(var i=0;i<s;i++) {
@@ -459,8 +469,8 @@ filter_material : function(arr,key)
 
 
       dragdrop2: function(event) {
-         console.log("DRAGDROP");
-	 console.log(event);
+         //console.log("DRAGDROP");
+	 //console.log(event);
         if (repeat_prev==0) {
         repeat_prev=1;
           this.change_appmodel(1);
@@ -484,7 +494,7 @@ filter_material : function(arr,key)
 	this.state.is_metal="false";
 	this.state.is_plastic="false";
 	this.state.is_textured="false";
-	console.log("change_category:" + val);
+	//console.log("change_category:" + val);
 	if (val==0) { this.state.is_metal="true"; }
 	if (val==1) { this.state.is_plastic="true"; }
 	if (val==2) { this.state.is_textured="true"; }
@@ -492,7 +502,7 @@ filter_material : function(arr,key)
       change_model: function() {
         if (repeat_prev==0) {
         repeat_prev=1;
-        console.log("CHANGE_MODEL");
+        //console.log("CHANGE_MODEL");
 	  if (typeof drop2 == 'function')
             drop2(this.state);
 	    }
@@ -502,8 +512,8 @@ filter_material : function(arr,key)
       change_model3: function(selectfile) {
         if (repeat_prev==0) {
         repeat_prev=1;
-        console.log("CHANGE_MODEL3");
-	console.log(selectfile);
+        //console.log("CHANGE_MODEL3");
+	//console.log(selectfile);
 	if (typeof drop3 =='function')
            drop3(this.state, selectfile);
 	}
@@ -524,7 +534,7 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.material_db = str.split("\n");
    store.state.material_db.pop();
-console.log(store.state.material_db);
+//console.log(store.state.material_db);
    });
 });
 fetch(bor_db).then(response => {
@@ -532,7 +542,7 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.border_db = str.split("\n");
    store.state.border_db.pop();
-   console.log(store.state.border_db);
+   //console.log(store.state.border_db);
    });
 });
 fetch(bck_db).then(response => {
@@ -541,7 +551,7 @@ response.body.getReader().read().then(value=>{
    store.state.background_db = str.split("\n");
    store.state.background_db.pop();
   
-   console.log(store.state.background_db);
+   //console.log(store.state.background_db);
    });
 });
 fetch(mdl_db).then(response => {
@@ -549,7 +559,7 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.model_db = str.split("\n");
    store.state.model_db.pop();
-   console.log(store.state.model_db);
+   //console.log(store.state.model_db);
    });
 });
 
@@ -598,7 +608,7 @@ function find_main_item(arr)
       //if (arr[i].name.substr(-4)==".ply") return i;
    }
    set_label("ERROR: main item not found");
-   console.log("ERROR: main item not found");
+   //console.log("ERROR: main item not found");
    return -1;
 }
 function default_script()
@@ -815,8 +825,8 @@ function find_line_from_material_db(index)
      var elem2 = store.state.material_db[i];
      var cnt = parse_material_count(elem2);
      if (cnt==index) {
-        console.log(cnt);
-	console.log(index);
+        //console.log(cnt);
+	//console.log(index);
      	return store.state.material_db[i];
 	}
   }
@@ -873,14 +883,14 @@ function hex_color_to_number(text)
 	    if (digit2=='d'||digit2=='D') digit=13;
 	    if (digit2=='e'||digit2=='E') digit=14;
 	    if (digit2=='f'||digit2=='F') digit=15;
-	    console.log(digit);
+	    //console.log(digit);
             hash = digit + (hash << 4);
         }
 
         var c = (hash & 0x00FFFFFF);
         //c = c - 16777216;
-        console.log(text);
-	console.log(c.toString(16));
+        //console.log(text);
+	//console.log(c.toString(16));
         return c;
 	} return 0;
 
@@ -899,7 +909,7 @@ function get_metal_roughness(i)
   return parseFloat(str);
 }
 
-function get_material(i)
+function get_material(i,filename)
 {
 // these are all I1 => I2 :: P->P
 var texcoords = "P I2=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);\n";
@@ -914,8 +924,11 @@ var texcoord_objnormals = "P I2=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);
 var normals_select = normals;
 var texcoord_normals_select = texcoord_normals;
 var normals_val = get_normals_value();
-if (normals_val==0) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
-if (normals_val==1) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
+if (normals_val==-1) {
+if (filename.substr(-4)==".glb"||filename.substr(-4)==".obj") { normals_val=2; } else { normals_val=0; }
+}
+if (normals_val==0||normals_val==5) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
+if (normals_val==1||normals_val==6) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
 if (normals_val==2) { normals_select = objnormals; texcoord_normals_select = texcoord_objnormals; }
 
 var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
@@ -962,7 +975,7 @@ function create_script(filename, contents, filenames)
   var mtl_name = find_mtl_name(filenames);
 
   var material_value = get_material_value();
-  var material = get_material(material_value);
+  var material = get_material(material_value, filename);
 
   var background_value = get_background_value();
   var background = get_background(background_value);
@@ -986,6 +999,59 @@ function create_script(filename, contents, filenames)
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
+
+
+  var normals_val = get_normals_value();
+  var border_color = "000000";
+  var border_width = "1.0";
+  var brd = get_border_value();
+  if (brd>=0 && brd<store.state.border_db.length) {
+     var name2 = store.state.border_db[brd];
+     border_color = parse_border_color(name2);
+     border_width = parse_border_width(name2);
+  }
+  if (border_width=="0") border_width="1.0";
+if (normals_val==3)
+  { // wireframe
+  res+= "MT I4=ev.materials_api.m_def(ev);\n"
+
+res+="P I1=ev.polygon_api.get_face_count(I155);\n";
+
+res+="LI I433=ev.lines_api.from_polygon(I1);\n";
+res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width +"/2,5);\n";
+res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
+res+="ML I66=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+
+  } else
+  if (normals_val==4)
+  { // wireframe with hidden surface removal
+
+  res+= "MT I4=ev.materials_api.m_def(ev);\n"
+   res+="P I1=ev.polygon_api.get_face_count(I155);\n";
+res+="P I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
+res+="P I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
+res+="LI I115=ev.lines_api.from_polygon(I114);\n";
+res+="LI I116=ev.lines_api.from_polygon(I124);\n";
+
+res+="P I633=ev.polygon_api.line_to_cone(ev,I115," + border_width +"/2,5);\n";
+res+="P I643=ev.polygon_api.line_to_cone(ev,I116," + border_width +"/2,5);\n";
+res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
+res+="P I743=ev.polygon_api.color(I643,ff" + border_color + ");\n";
+res+="ML I135=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+res+="ML I136=ev.polygon_api.render_vertex_array_ml2(ev,I743);\n";
+
+var color = "000000";
+var bg = get_background_value();
+if (bg>=0&&bg<store.state.background_db.length) {
+  var name2 = store.state.background_db[bg];
+  var name = parse_bg_colour(name2);
+  color = name;
+  }
+
+res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
+res+="ML I156=ev.polygon_api.render_vertex_array_ml2(ev,I145);\n";
+res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
+  } else {
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 
   if (material[1]!="") {
@@ -1004,39 +1070,46 @@ function create_script(filename, contents, filenames)
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
      res+="MT I4=ev.materials_api.gltf_material(ev,"+base_dir+"," + filename + ",0,1);\n";
   } else {
-     //res+="MT I4=ev.materials_api.colour_material(ev,0.9);\n";
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0,0.5);\n";
   }
 
 
-  //if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"))
-     res+="ML I6=ev.materials_api.bind(I2,I4);\n";
-  //else
-  //   res+="ML I6=ev.materials_api.bind(I1,I4);\n";
+  res+="ML I6=ev.materials_api.bind(I2,I4);\n";
 
 
   if ((parseInt(material_value)==0&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
      res="ML I6=ev.mainloop_api.gltf_mesh_all(ev," + base_dir +"," + filename + ");\n";
 
   }
-  res+=border; // outputs I502
+
+
+  if (normals_val==5||normals_val==6) { // wireframe
+
+  res+="LI I433=ev.lines_api.from_polygon(I1);\n";
+  res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width +"/2,5);\n";
+  res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
+  res+="ML I502=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+
+
+  } else {
+    res+=border; // outputs I502
+  }
 
 
   res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I502});\n";
-  //res+="ML I68=ev.mainloop_api.isometric(I66,0.5236,0.5236,-1400.0);\n";
-
+   }
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf") {
     res+="ML I88=ev.mainloop_api.async_gltf(I66,"+base_dir+"," + filename + ");\n";
-    res+="ML I7=ev.mainloop_api.touch_rotate(ev,I88,true,true,0.01,0.01);\n";
+    res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
+    res+="ML I8=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
   } else {
-    res+="ML I7=ev.mainloop_api.touch_rotate(ev,I66,true,true,0.01,0.01);\n";
+    res+="ML I67=ev.mainloop_api.mouse_roll_zoom2(ev,I66);\n";
+    res+="ML I8=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
   }
-  res+="ML I8=ev.mainloop_api.mouse_roll_zoom(ev,I7);\n";
   res+="ML I9=ev.mainloop_api.right_mouse_pan(ev,I8);\n";
   res+=background;
   res+="ML I14=ev.mainloop_api.array_ml(ev,std::vector<ML>{I44,I9});\n";
-  //res+="ML I15=ev.mainloop_api.perspective(ev,I14,90.0,10.1,60000.0);\n";
   res+="RUN I10=ev.blocker_api.game_window2(ev,I14,false,false,0.0,1000000.0);\n";
 
 
@@ -1151,7 +1224,7 @@ var loading_data = 0;
 
 function load_finished(value)
 {
-   console.log("LOAD FINISHED");
+   //console.log("LOAD FINISHED");
    load_files(contents_array,filename_array);
    load_emscripten(store.state,g_filename, contents_array, filename_array);
    set_label("Load finished..");
@@ -1231,7 +1304,7 @@ function drop3(state,selectfileelem)
    var elem2 = document.getElementById(selectfileelem);
    var files2 = elem2.files;
 
-   console.log(files2);
+   //console.log(files2);
    set_model_info(state,"(loading..)");
   set_label("Loading model..");
 
@@ -1402,16 +1475,16 @@ var g_emscripten_running = false;
 function check_em() {
     return function() {
 	g_emscripten_running = true;
-	console.log("EMSCRIPTEN RUNNING");
+	//console.log("EMSCRIPTEN RUNNING");
 	//resize_event(null);
 	//load_file();
 	load_data();
 	if (loading_data==1) {
-	console.log("LOADING DATA");
+	//console.log("LOADING DATA");
 	app.change_appmodel(1);
 	app.change_category();
 	setTimeout(function() {
-	console.log("TIMEOUT");
+	//console.log("TIMEOUT");
 	load_data();
 	app.change_model();
 	load_finished(1);
@@ -1443,7 +1516,7 @@ function emscripten_loading_callback()
 }
 function emscripten_ready_callback(state)
 {
-   console.log("Ready");
+   //console.log("Ready");
    //app.methods.change_appmodel(0);
    if (store.state.appmodel_is_loading == "true") {
       store.state.appmodel_is_loading = "false";
@@ -1486,7 +1559,9 @@ function set_label(label)
    if (wid) wid.innerHTML = label;
 }
 set_label("Loading 3d engine..");
-if (store) load_emscripten(store.state,"");
+if (store) {
+   load_emscripten(store.state,"");
+   }
 
 window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
@@ -1586,11 +1661,11 @@ function load_data()
    if (st.textContent != "") {
     loading_data=1;
    var a_st = st.textContent;
-   console.log(ca.textContent);
+   //console.log(ca.textContent);
    var a_ca = JSON.parse(ca.textContent);
-   console.log(fa.textContent);
+   //console.log(fa.textContent);
    var a_fa = JSON.parse(fa.textContent);
-   console.log(gf.textContent);
+   //console.log(gf.textContent);
    var a_gf = JSON.parse(gf.textContent);
 
    deserialize_state(a_st);
@@ -1628,6 +1703,10 @@ function base64_to_array(arr)
   
 }
 
+function hash(val)
+{
+	return ((val*10001) ^ 0x26522663).toString();
+}
 
 function submitprogressbar(i)
 {
@@ -1646,12 +1725,13 @@ function submitprogressbar(i)
 	fetch(name).then(response => {
 	   response.body.getReader().read().then(value => {
 	   var str = strfy(value.value);
-	   //var num = intval(str);
-	   prog.innerHTML = "<a href='https://meshpage.org/view.php?id=" + str + "'>https://meshpage.org/view.php?id=" + str + "</a>";
+	   var num = parseInt(str);
+	   prog.innerHTML = "<a href='https://meshpage.org/view.php?id=" + hash(num) + "'>https://meshpage.org/view.php?id=" + hash(num) + "</a>";
 	   }
 	   )});
    }
 }
+
 
 function formsubmit()
 {

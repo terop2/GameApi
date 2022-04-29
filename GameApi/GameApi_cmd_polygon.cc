@@ -365,7 +365,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "P", "polygon_api", "substitute"));
 			
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::p_towards_normal,
-			 "towards_notmal",
+			 "towards_normal",
 			 { "p", "amount" },
 			 { "P", "float" },
 			 { "", "0.5" },
