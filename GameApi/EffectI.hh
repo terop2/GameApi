@@ -89,30 +89,13 @@ public:
   virtual Point2d EndTexCoord(int face, int point) const { return TexCoord(face,point); }
   virtual float EndTexCoord3(int face, int point) const { return TexCoord3(face,point); }
 
+  virtual float StartTime() const { return 0.0; }
   virtual float Duration() const { return 1.0; }
 
   virtual int NumTextures() const { return 0; }
   virtual void GenTexture(int num) { }
   virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer = 0;  return ref; }
   virtual int FaceTexture(int face) const { return -1; }
-  //virtual void Pullback() const=0; // should call P functions only
-  //void P(FaceCollection &single);
-  //void P(FaceCollection &coll1, FaceCollection &coll2);
-  //void P(FaceCollection *coll, int size); // needed in or operation
-  //virtual int RangeCount();
-  //virtual Range<int> RangeArray(int count);
-#if 0
-  struct Triplet
-  {
-    P poly_id;
-    int face;
-    int point;
-  };
-  virtual Triplet FaceTriplet(int face, int point) const=0;
-#endif
-#if 0
-  virtual Coords Coordinates() const=0;
-#endif
 };
 
 

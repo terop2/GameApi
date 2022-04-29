@@ -932,6 +932,15 @@ struct Point2d
   friend std::ostream &operator<<(std::ostream &o, const Point2d &p);
   friend std::istream &operator>>(std::istream &i, Point2d &p);
 };
+
+inline bool PointIsInsideTriangle(Point2d p1, Point2d p2, Point2d p3, Point2d p)
+{
+  float det = (p2.x-p1.x)*(p3.y-p1.y) - (p2.y-p1.y)*(p3.x-p1.x);
+  return det * ((p2.x-p1.x)*(p.y-p1.y) - (p2.y-p1.y)*(p.x-p1.x)) >= 0 &&
+    det * ((p3.x-p2.x)*(p.y-p2.y) - (p3.y-p2.y)*(p.x-p2.x))>=0 &&
+    det * ((p1.x-p3.x)*(p.y-p3.y) - (p1.y-p3.y)*(p.x-p3.x))>=0;
+}
+
 bool IsWithInBoundingBox(Point2d p, Point2d top_left, Point2d bottom_right);
 bool LineLineIntersection_Parallel(Point2d l1_p1, Point2d l1_p2,
 			     Point2d l2_p1, Point2d l2_p2);

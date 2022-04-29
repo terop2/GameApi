@@ -390,6 +390,18 @@
 			 { "EveryApi&", "P", "float", "float", "float", "int", "int", "unsigned int", "float", "float", "int" },
 			 { "ev", "", "0.0", "0.0", "0.0", "512", "512", "ff000000", "1.0", "0.5", "0" },
 			 "MT", "materials_api", "shadow2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::coloured_lights,
+			 "m_color_lights",
+			 { "ev", "nxt", "scale", "color_1", "color_2", "color_3", "color_4", "color_5", "color_6", "color_7", "color_8",
+			    "pos_1", "pos_2", "pos_3", "pos_4", "pos_5", "pos_6", "pos_7", "pos_8",
+			    "dist_1", "dist_2", "dist_3", "dist_4", "dist_5", "dist_6", "dist_7", "dist_8" },
+			 { "EveryApi&", "MT", "float", "unsigned int","unsigned int","unsigned int","unsigned int","unsigned int","unsigned int","unsigned int","unsigned int",
+			    "PT","PT","PT","PT","PT","PT","PT","PT",
+			    "float","float","float","float","float","float","float","float"},
+			 { "ev", "", "30.0", "ffffffff", "ff000000","ff000000","ff000000","ff000000","ff000000","ff000000","ff000000",
+			    "","","","","","","","",
+			    "350.0","350.0","350.0","350.0","350.0","350.0","350.0","350.0" },
+			 "MT", "materials_api", "coloured_lights"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
 			 "m_dyn_lights",
 			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },

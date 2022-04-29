@@ -205,12 +205,19 @@ public:
   void Prepare() {
     if (prepare_done) return;
     //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
-    //std::cout << "LoadGLTF: url=" << url << std::endl;
+
+    //try {
+      //std::cout << "LoadGLTF: url=" << url << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; return; }
+    int ssz = vec->end()-vec->begin();
+    if (ssz<1) {
+      std::cout << "LoadGLTF: ssz=" << ssz << std::endl;
+      return;
+    }
     std::vector<char> vec2(vec->begin(), vec->end());
     std::string str(vec->begin(),vec->end());
 
@@ -231,6 +238,7 @@ public:
     if (has_space) {
       sz--;
     }
+    if (sz<0) sz=0;
 #endif
     //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
       tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
@@ -248,12 +256,16 @@ public:
       {
       sz--;
       }
+    if (sz<0) sz=0;
 #endif
-      tiny.LoadBinaryFromMemory(&model, &err, &warn, &vec->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL); 
+    char *ptr2 = &vec2.operator[](0);
+    unsigned char *ptr3 = (unsigned char*)ptr2;
+      tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
     if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
     prepare_done = true;
+    //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
   }
 public:
   GameApi::Env &e;

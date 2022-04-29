@@ -402,6 +402,15 @@ struct del_map
     //delete p.second;
     // }
   }
+  void print()
+  {
+    std::map<std::string,std::vector<unsigned char>*>::iterator i = load_url_buffers_async.begin();
+    for(;i!=load_url_buffers_async.end();i++)
+      {
+    	std::pair<std::string,std::vector<unsigned char>*> p = *i;
+    	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
+      }
+  }
   std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 };
 del_map g_del_map;
@@ -447,6 +456,7 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
     std::string url_str(url);
   std::string url_only(striphomepage(url_str));
   g_del_map.load_url_buffers_async.erase(url_only);
+  std::cout << "g_del_map remove url: " << url_only << std::endl;
   //load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
     //std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
@@ -500,6 +510,7 @@ void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datas
   //std::cout << "url loading complete! " << url_str << std::endl;
   // THIS WAS url_only, but seems to have not worked.
   //std::cout << "g_del_map " << url_only << " = " << (int)buffer << std::endl;
+  //std::cout << "g_del_map add url: " << url_only << std::endl;
   g_del_map.load_url_buffers_async[url_only] = buffer;
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
@@ -629,6 +640,7 @@ void* process(void *ptr)
   std::vector<unsigned char> *buf = load_from_url(url);
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
+  //std::cout << "g_del_map add url(process): " << url2 << std::endl;
   g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
   //pthread_exit(0);
   return 0;
@@ -948,6 +960,8 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	std::string url_only = "load_url.php?url=" + url;
 
 	g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
+	//std::cout << "g_del_map add url: " << url_only << std::endl;
+
 	//async_pending_count--;
 	// std::cout << "g_del_map " << url_only << " = " << (int)g_del_map.load_url_buffers_async[url_only] << std::endl;
 
@@ -1158,6 +1172,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
     }
     //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
+    //std::cout << "g_del_map add url(loadurls): " << url2 << std::endl;
     g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
@@ -1190,18 +1205,32 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 class ASyncDataFetcher : public GameApi::ASyncVec
 {
 public:
-  ASyncDataFetcher(std::vector<unsigned char> *vec) : vec(vec),buf(0),end2(0) { }
-  ASyncDataFetcher(const unsigned char *buf,const unsigned char *end) : buf(buf), end2(end) { }
+  ASyncDataFetcher(std::vector<unsigned char> *vec) : vec(vec),buf(0),end2(0),tmp(0) { }
+  ASyncDataFetcher(const unsigned char *buf,const unsigned char *end) : buf(buf), end2(end),tmp(0) { }
   const unsigned char &operator[](int i) const {
     if (buf && buf+i<end2) return buf[i];
-    return (*vec)[i];
+    if (vec) return (*vec)[i];
+    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //throw 1;
+    return tmp;
   }
-  int size() const { if (buf) return end2-buf; return vec->size(); }
-  const unsigned char *begin() const { if (buf) return buf; return vec->data(); }
-  const unsigned char *end() const { if (end2) return end2; return vec->data() + vec->size(); }
+  int size() const { if (buf) return end2-buf; if (vec) return vec->size();
+    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //throw 1;
+    return 0;  }
+  const unsigned char *begin() const { if (buf) return buf; if (vec) return vec->data();
+    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //throw 1;
+
+    return &tmp; }
+  const unsigned char *end() const { if (end2) return end2; if (vec) return vec->data() + vec->size();
+    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //throw 1;
+    return &tmp+1; }
 private:
   std::vector<unsigned char> *vec;
   const unsigned char *buf, *end2;
+  mutable unsigned char tmp;
 };
 
 GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
@@ -1224,6 +1253,9 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     
     url = "load_url.php?url=" + url;
     //std::cout << "url fetch " << url << std::endl;
+    
+    // g_del_map.print();
+    
     return new ASyncDataFetcher(g_del_map.load_url_buffers_async[url]);
   }
 

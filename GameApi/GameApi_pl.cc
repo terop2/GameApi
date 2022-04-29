@@ -8171,6 +8171,112 @@ private:
   GameApi::SH sh;
 };
 
+
+class ColouredLightsShaderML : public MainLoopItem
+{
+public:
+  ColouredLightsShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float scale, unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8, Point pos_1, Point pos_2, Point pos_3, Point pos_4, Point pos_5, Point pos_6, Point pos_7, Point pos_8, float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8)
+  : env(env), ev(ev), next(next), scale(scale),
+      colors({color_1,color_2,color_3,color_4, color_5, color_6, color_7, color_8}),
+      positions({pos_1,pos_2, pos_3,pos_4,pos_5,pos_6,pos_7,pos_8}),
+      distances({dist_1,dist_2,dist_3,dist_4,dist_5,dist_6,dist_7,dist_8})
+  {
+    firsttime = true;
+  }
+  std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime)
+      {
+	firsttime = false;
+	GameApi::US vertex;
+	vertex.id = ee.us_vertex_shader;
+	if (vertex.id == -1)
+	  {
+	    GameApi::US a0 = ev.uber_api.v_empty();
+	    GameApi::US a1 = ev.uber_api.v_colour(a0);
+	    ee.us_vertex_shader = a1.id;
+	  }
+	vertex.id = ee.us_vertex_shader;
+	GameApi::US a2v = ev.uber_api.v_coloured_lights(vertex);
+	ee.us_vertex_shader = a2v.id;
+
+	GameApi::US fragment;
+	fragment.id = ee.us_fragment_shader;
+	if (fragment.id == -1)
+	  {
+	    GameApi::US a0 = ev.uber_api.f_empty(false);
+	    GameApi::US a1 = ev.uber_api.f_colour(a0);
+	    ee.us_fragment_shader = a1.id;
+	  }
+	fragment.id = ee.us_fragment_shader;
+	//GameApi::US a2f = ev.uber_api.f_color_from_id(fragment, light_color_id);
+	GameApi::US a3f = ev.uber_api.f_coloured_lights(fragment);
+	ee.us_fragment_shader = a3f.id;
+      }
+    std::vector<int> sh_ids = next->shader_id();
+    int s=sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+      sh.id = sh_id;
+      if (sh_id != -1)
+      {
+	ev.shader_api.use(sh);
+	for(int j=0;j<8;j++) {
+	  std::stringstream ss1,ss2,ss3;
+	  ss1 << "c_color[" << j << "]";
+	  ss2 << "c_scale[" << j << "]";
+	  ss3 << "c_positions[" << j << "]";
+	  //std::cout << ss1.str() << "::" << ss2.str() << "::" << ss3.str() << std::endl;
+	  Color c(colors[j]);
+
+	  //char *ptr1 = new char[ss1.str().size()+1];
+	  //std::copy(ss1.str().begin(),ss1.str().end(),ptr1);
+	  
+	  //std::cout << c.rf() << " " << c.gf() << " " << c.bf() << std::endl;
+	  ev.shader_api.set_var(sh, ss1.str().c_str(), c.rf(),c.gf(),c.bf(),1.0);
+	  ev.shader_api.set_var(sh, ss2.str().c_str(), float(scale/distances[j]));
+	  ev.shader_api.set_var(sh, ss3.str().c_str(), positions[j].x, positions[j].y, positions[j].z,0.0);
+	}
+    }
+#ifndef NO_MV
+    GameApi::M m = add_matrix2( env, e.in_MV );
+    GameApi::M m1 = add_matrix2( env, e.in_T );
+    GameApi::M m3 = add_matrix2( env, e.in_P );
+    GameApi::M m2 = add_matrix2( env, e.in_N );
+    ev.shader_api.set_var( sh, "in_MV", m);
+    ev.shader_api.set_var( sh, "in_T", m1);
+    ev.shader_api.set_var( sh, "in_P", m3);
+    ev.shader_api.set_var( sh, "in_N", m2);
+    ev.shader_api.set_var( sh, "time", e.time);
+#endif
+    }
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  float scale;
+  std::vector<unsigned int> colors;
+  std::vector<Point> positions;
+  std::vector<float> distances;
+  bool firsttime;
+  GameApi::SH sh;
+};
+
+
 class ShaderParamML : public MainLoopItem
 {
 public:
@@ -9626,6 +9732,27 @@ EXPORT GameApi::ML GameApi::PolygonApi::spotlight_shader(EveryApi &ev, ML mainlo
   Movement *change = find_move(e, move);
   return add_main_loop(e, new SpotlightShaderML(e,ev, item, light_color_id, change));
 }
+EXPORT GameApi::ML GameApi::PolygonApi::coloured_lights_shader(EveryApi &ev, ML mainloop, float scale,
+							       unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
+							       PT pos_1, PT pos_2, PT pos_3, PT pos_4, PT pos_5, PT pos_6, PT pos_7, PT pos_8,
+							       float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  Point *p1 = find_point(e, pos_1);
+  Point *p2 = find_point(e, pos_2);
+  Point *p3 = find_point(e, pos_3);
+  Point *p4 = find_point(e, pos_4);
+  Point *p5 = find_point(e, pos_5);
+  Point *p6 = find_point(e, pos_6);
+  Point *p7 = find_point(e, pos_7);
+  Point *p8 = find_point(e, pos_8);
+  
+  return add_main_loop(e, new ColouredLightsShaderML(e,ev, item, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8,
+						     *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8,
+						     dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8
+						     ));
+}
+
 #if 0
 EXPORT GameApi::ML GameApi::PolygonApi::ambient_shader(EveryApi &ev, ML mainloop, int ambient_color_id, float ambient_level)
 {
@@ -10577,7 +10704,7 @@ EXPORT GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float s
   FaceCollection *coll = new AnimFaceScale(*i, *pp, scale_x, scale_y, scale_z);
   return add_polygon(e, coll, 1);
 }
-
+/*
 class VolumeObjectFromCutter : public VolumeObject
 {
 public:
@@ -10596,7 +10723,7 @@ EXPORT GameApi::O GameApi::CutterApi::cutter_volume2(CT c)
   Cutter *ct = find_cutter(e,c);
   return add_volume(e, new VolumeObjectFromCutter(ct));
 }
-
+*/
 class CutFaces : public ForwardFaceCollection
 {
 public:
@@ -20640,10 +20767,93 @@ private:
   Matrix mat = Matrix::Identity();
 };
 
+class MouseRollZoom2 : public MainLoopItem
+{
+public:
+  MouseRollZoom2(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next) : e2(e), ev(ev), next(next) { }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_MV = e.in_MV * mat;
+    ee.env = e.env * mat;
+
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s11;
+    s11.id = e.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+
+
+    GameApi::M mat2 = add_matrix2(e2,ee.in_MV);
+    //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    //ev.shader_api.set_var(s11, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+    //ev.shader_api.set_var(s3, "in_iMV", mat2i);
+
+
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+    if (e.type==1027 && e.ch==1)
+      {
+	zoom_pos--; if (zoom_pos<-20) zoom_pos=-20;
+	calc_mat();
+      }
+    if (e.type==1027 && e.ch==-1)
+      {
+	zoom_pos++; if (zoom_pos>10) zoom_pos=10;
+	calc_mat();
+      }
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual void destroy() { }
+  void calc_mat()
+  {
+    float trans = 0.0;
+    //if (zoom_pos<0) { scale-=0.18*(-zoom_pos); }
+    //if (zoom_pos>0) { scale+=0.3*zoom_pos; }
+    if (zoom_pos<0) { trans-=800.0*(-zoom_pos); }
+    if (zoom_pos>0) { trans+=80.0*zoom_pos; }
+    mat = Matrix::Translate(0.0,0.0,trans);
+  }
+private:
+  GameApi::Env &e2;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int zoom_pos = 0;
+  Matrix mat = Matrix::Identity();
+};
+
+
 GameApi::ML GameApi::MainLoopApi::mouse_roll_zoom(EveryApi &ev, ML next)
 {
   MainLoopItem *next2 = find_main_loop(e,next);
   return add_main_loop(e,new MouseRollZoom(e,ev,next2));
+}
+GameApi::ML GameApi::MainLoopApi::mouse_roll_zoom2(EveryApi &ev, ML next)
+{
+  MainLoopItem *next2 = find_main_loop(e,next);
+  return add_main_loop(e,new MouseRollZoom2(e,ev,next2));
 }
 
 class RightMousePan : public MainLoopItem
@@ -20890,5 +21100,76 @@ private:
 };
 
 GameApi::ML GameApi::PolygonApi::anim_render(AA a, float delta)
+{
+}
+
+
+class CombineAnim2 : public ForwardFaceCollection
+{
+public:
+  CombineAnim2(FaceCollection *coll1, FaceCollection *coll2, float start_time, float end_time) : ForwardFaceCollection(*coll1), coll2(coll2), start_time(start_time), end_time(end_time) { }
+  virtual Point EndFacePoint(int face, int point) const { return coll2->FacePoint(face,point); }
+  virtual float StartTime() const { return start_time; }
+  virtual float Duration() const { return end_time-start_time; }
+  virtual void setup_time(float time) { }
+private:
+  FaceCollection *coll2;
+  float start_time, end_time;
+};
+
+GameApi::P GameApi::PolygonApi::combine_anim(P p1, P p2, float start_time, float end_time)
+{
+  FaceCollection *pp1 = find_facecoll(e,p1);
+  FaceCollection *pp2 = find_facecoll(e,p2);
+  return add_polygon2(e, new CombineAnim2(pp1,pp2,start_time,end_time),1);
+}
+
+GameApi::P GameApi::PolygonApi::sphere_anim(float c_x, float c_y, float c_z,
+					    float c2_x, float c2_y, float c2_z,
+					    float r, float r2, float start_time, float end_time, int numfaces1, int numfaces2)
+{
+  PT center = add_point(e, c_x, c_y, c_z);
+  PT center2 = add_point(e, c2_x, c2_y, c2_z);
+  P sph1 = sphere(center, r, numfaces1, numfaces2);
+  P sph2 = sphere(center2, r2, numfaces1, numfaces2);
+  return combine_anim(sph1, sph2, start_time, end_time);
+}
+
+GameApi::P GameApi::PolygonApi::cone_anim(float c_x, float c_y, float c_z,
+					  float d_x, float d_y, float d_z,
+					  float c2_x, float c2_y, float c2_z,
+					  float d2_x, float d2_y, float d2_z,
+					  float r1, float r2,
+					  float r1_2, float r2_2, int numfaces, float start_time, float end_time)
+{
+  PT center = add_point(e, c_x, c_y, c_z);
+  PT center_d = add_point(e, d_x, d_y, d_z);
+  PT center2 = add_point(e, c2_x, c2_y, c2_z);
+  PT center_d2 = add_point(e, d2_x, d2_y, d2_z);
+
+  P sph1 = cone(numfaces, center, center_d, r1, r2);
+  P sph2 = cone(numfaces, center2, center_d2, r1_2, r2_2);
+  return combine_anim(sph1, sph2, start_time, end_time);
+}
+
+GameApi::P GameApi::PolygonApi::cube_anim(float start_x, float end_x,
+					  float start_y, float end_y,
+					  float start_z, float end_z,
+					  float start_x2, float end_x2,
+					  float start_y2, float end_y2,
+					  float start_z2, float end_z2,
+					  float start_time, float end_time)
+{
+  GameApi::P cube1 = cube(start_x, end_x,
+			  start_y, end_y,
+			  start_z, end_z);
+  GameApi::P cube2 = cube(start_x2, end_x2,
+			  start_y2, end_y2,
+			  start_z2, end_z2);
+  
+  return combine_anim(cube1, cube2, start_time, end_time);
+}
+					  
+GameApi::ARR GameApi::PolygonApi::or_elem_anim(P p1, P p2, float time)
 {
 }

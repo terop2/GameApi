@@ -310,6 +310,7 @@ public:
   void end_editor_state();
   ML right_mouse_pan(EveryApi &ev, ML next);
   ML mouse_roll_zoom(EveryApi &ev, ML next);
+  ML mouse_roll_zoom2(EveryApi &ev, ML nect);
   ML perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane);
   ML anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn);
   ML glClear(EveryApi &ev);
@@ -643,7 +644,9 @@ class TextureApi
 {
 public:
 	IMPORT TextureApi(Env &e);
-	IMPORT TX tex_plane(int sx, int sy);
+  IMPORT ARR grab_screen(EveryApi &ev, RUN r);
+  IMPORT RUN combine_screens(RUN r1, RUN r2);
+  IMPORT TX tex_plane(int sx, int sy);
 	IMPORT TX tex_bitmap(BM bm);
 	IMPORT int unique_id();
 	IMPORT TX tex_assign(TX tx, int id, int x, int y, BM bm);
@@ -1449,6 +1452,10 @@ public:
   IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
   IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
+  IMPORT MT coloured_lights(EveryApi &ev, MT nxt, float scale,
+			    unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
+			    PT pos_1, PT pos_2, PT pos_3, PT pos_4, PT pos_5, PT pos_6, PT pos_7, PT pos_8,
+			    float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8);
   IMPORT MT snow(EveryApi &ev, MT nxt, unsigned int color1=0xffaaaaaa, unsigned int color2=0xffeeeeee, unsigned int color3=0xffffffff, float mix_val=0.5f);
   IMPORT MT shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2);
   IMPORT MT shading2(EveryApi &ev, MT nxt, unsigned int color1, unsigned int colo2, unsigned int color3);
@@ -2318,6 +2325,25 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+
+  P combine_anim(P p1, P p2, float start_time, float end_time);
+  P sphere_anim(float c_x, float c_y, float c_z,
+		float c2_x, float c2_y, float c2_z,
+		float r, float r2, float start_time, float end_time, int numfaces1, int numfaces2);
+  P cone_anim(float c_x, float c_y, float c_z,
+	      float d_x, float d_y, float d_z,
+	      float c2_x, float c2_y, float c2_z,
+	      float d2_x, float d2_y, float d2_z,
+	      float r1, float r2,
+	      float r1_2, float r2_2, int numfaces, float start_time, float end_time);
+  P cube_anim(float start_x, float end_x,
+	      float start_y, float end_y,
+	      float start_z, float end_z,
+	      float start_x2, float end_x2,
+	      float start_y2, float end_y2,
+	      float start_z2, float end_z2,
+	      float start_time, float end_time);
+  ARR or_elem_anim(P p1, P p2, float time);
   ML anim_render(AA, float delta);
   ML p_mtl2_prepare(P p);
   ARR material_choose(std::vector<MT> mat, std::vector<P> p);
@@ -2701,6 +2727,10 @@ public:
   IMPORT ML dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT ML shading_shader(EveryApi &ev, ML mainloop,unsigned int level1,unsigned int level2,unsigned int level3, float spec_size=5.0f, bool ambient=true, bool diffuse=true, bool specular=false);
   IMPORT ML spotlight_shader(EveryApi &ev, ML mainloop,int light_color_id, MN move);
+  IMPORT ML coloured_lights_shader(EveryApi &ev, ML mainloop, float scale,
+				   unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
+				   PT pos_1, PT pos_2, PT pos_3, PT pos_4, PT pos_5, PT pos_6, PT pos_7, PT pos_8,
+				   float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8);
   IMPORT ML ambient_shader(EveryApi &ev, ML mainloop,int ambient_color_id,float ambient_level);
   IMPORT ML noise_shader(EveryApi &ev, ML mainloop);
   IMPORT ML custom_shader(EveryApi &ev, ML mainloop, std::string v_shader, std::string f_shader, std::string v_funcname, std::string f_funcname);
@@ -3392,7 +3422,7 @@ public:
   IMPORT LI li_matrix(LI lines, M matrix);
   IMPORT LI color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f);
   IMPORT LI change_color(LI li, unsigned int color);
-  IMPORT LI change_color(LI li, unsigned int color_1, unsigned int color_2);
+  IMPORT LI change_color2(LI li, unsigned int color_1, unsigned int color_2);
 	IMPORT LI from_points(PC points, bool loops);
         IMPORT LI from_points2(PTS start_points, PTS end_points);
         IMPORT LI from_plane(PL plane);
@@ -3425,6 +3455,7 @@ public:
   IMPORT LI random_mesh_quad_lines(EveryApi &ev, P p, int count);
   IMPORT LI lines_from_quads(P p, int sx, int sy);
 
+  IMPORT ML ml_li_render(EveryApi &ev, LI l, float linewidth);
   IMPORT LLA prepare(LI l);
   IMPORT void update(LLA la, LI l);
   IMPORT ML update_ml(LLA la, LI l);
@@ -3605,6 +3636,7 @@ public:
   US v_passall(US us);
   US v_pass_position(US us);
   US v_point_light(US us);
+  US v_coloured_lights(US us);
   US v_snoise(US us);
   US v_light(US us);
   US v_ref(US us);
@@ -3649,6 +3681,7 @@ public:
   US f_color_from_normals(US us);
   US f_color_from_id(US us, int id); // id = [0..9]
   US f_point_light(US us);
+  US f_coloured_lights(US us);
   US f_bands(US us);
   US f_snoise(US us);
   US f_blur(US us); // dangerous operation

@@ -2811,6 +2811,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
 
 
   int rs = ret_type_count(return_type);
+  // std::cout << "RET TYPE" << return_type << "=" << rs << std::endl;
   std::vector<W> vec_ret;
   int ret_sx=0;
   for(int j=0;j<rs;j++) {
@@ -2824,7 +2825,8 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
     set_id(txt_111, uid);
     set_index(txt_111,j);
     set_size2(txt_111,rs);
-    *(connect_click[j]) = txt_111; 
+    *(connect_click[j]) = txt_111;
+    //std::cout << "txt_111 id=" << j << " " << txt_111.id << std::endl;
     W txt_2 = button(size_x(txt_1), size_y(txt_1), c_canvas_item_text_button, c_canvas_item_text_button2 /*0xff330033, 0xff880088*/);
     W txt_3 = layer(txt_2, txt_111);
 
@@ -5214,11 +5216,14 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	  if (pp.first.size()>0 && pp.first[0]=='I' && line_map.find(pp.first)!=line_map.end())
 	    {
 	      int linkage = line_map[pp.first];
+	      //if (!linkage) { std::cout << "Param not found (multiple return)! " << pp.first << std::endl; }
 	      std::stringstream ss;
 	      ss << linkage;
 	      param_linkage = ss.str();
 	      jj = pp.second;
-	    }
+	    } else if (pp.first[0]=='I') {
+	    std::cout << "Param not found (multiple return+find failed)" << pp.first << std::endl;
+	  }
 	  if (param_value.size()>strlen("std::vector<"))
 	    {
 	      //std::cout << "Check Array" << param_value << std::endl;
@@ -5245,12 +5250,14 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 		    if (pp2.first.size()>0 && pp2.first[0]=='I')
 		      {
 			int linkage = line_map[pp2.first];
+			if (!linkage) { std::cout << "ERROR: Param not found! " << pp2.first << std::endl; }
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = ss.str();
 		      } else if (pp2.first.size()>0 && pp2.first[0]=='E')
 		      {
 			int linkage = env_map[pp2.first];
+			if (!linkage) { std::cout << "ERROR: E not found! " << pp2.first << std::endl; }
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = std::string("E") + ss.str();
