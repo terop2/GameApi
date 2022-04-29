@@ -184,7 +184,7 @@ public:
 	set_current_block(-1);
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
 	
-	GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
+	//GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	//scaled_bitmap = ev.cont_bitmap_api.sample(sca, sx/2, sy/2);
@@ -438,9 +438,9 @@ public:
     if (firsttime || changed)
       {
 	rendered_bitmap = ev.font_api.draw_text_string(font, label, x_gap, line_height);
-	int sx = ev.bitmap_api.size_x(rendered_bitmap);
-	int sy = ev.bitmap_api.size_y(rendered_bitmap);
-	GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
+	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	//GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
 	scaled_bitmap = rendered_bitmap; //ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
 	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	firsttime = false;
@@ -591,9 +591,9 @@ public:
     if (firsttime || changed)
       {
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
-	int sx = ev.bitmap_api.size_x(rendered_bitmap);
-	int sy = ev.bitmap_api.size_y(rendered_bitmap);
-	GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
+	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
+	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
+	//GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
 	scaled_bitmap = rendered_bitmap; //ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
 	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
 	firsttime = false;
