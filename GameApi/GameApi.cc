@@ -36,6 +36,8 @@ class Envi_2;
 extern Splitter *g_new_splitter;
 extern Envi_2 *g_new_blocker_env;
 
+extern char *g_user_id;
+
 #define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 
@@ -13077,7 +13079,9 @@ private:
 EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
   ml = ev.mainloop_api.display_background(ev,ml);
-
+  if (std::string(g_user_id)==std::string("TeroPulkkinen")) {
+    ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
+  }
   Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
   return add_blocker(e, blk);
 }
@@ -13087,6 +13091,9 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML 
   float screen_y = ev.mainloop_api.get_screen_sy();
 
   ml = ev.mainloop_api.display_background(ev,ml);
+  if (std::string(g_user_id)==std::string("TeroPulkkinen")) {
+    ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
+  }
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, screen_x, screen_y);
   return add_splitter(e, spl);
 }
@@ -25591,6 +25598,7 @@ KP extern "C" void set_toggle_button(int num, bool value)
   if (num>=0 && num<25) { g_toggle_buttons[num]=value; }
 }
 int g_set_string_int=0;
+int gameapi_id =0;
 KP extern "C" void set_integer(int num, int value)
 {
   //std::cout << "INTEGER " << num << " " << value << std::endl;
@@ -25598,6 +25606,10 @@ KP extern "C" void set_integer(int num, int value)
     g_set_string_int = value;
   }
   if (num>=0 && num<25) { g_integers[num]=value; }
+  if (num==26) {
+    gameapi_id = value;
+  }
+
 }
 KP extern "C" void set_float(int num, float value)
 {
@@ -25614,6 +25626,8 @@ std::string g_set_string_url;
 extern std::vector<const unsigned char*> g_content;
 extern std::vector<const unsigned char*> g_content_end;
 extern std::vector<const char*> g_urls;
+
+char *g_user_id=0;
 
 std::vector<unsigned char *> g_buffers;
 std::vector<int> g_buffer_sizes;
@@ -25682,7 +25696,13 @@ KP extern "C" void set_string(int num, const char *value)
     g_buffers = std::vector<unsigned char*>();
     g_buffer_sizes = std::vector<int>();
   }
-  
+  if (num==5) // user id
+    {
+      delete [] g_user_id;
+      int sz = strlen(value);
+      g_user_id = new char[sz+1];
+      std::copy(value,value+sz+1,g_user_id);
+    }
   //std::string s(value);
   //if (num>=0 && num<25) { g_strings[num]=s; }
 }

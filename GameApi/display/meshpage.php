@@ -295,6 +295,111 @@ function populate_imgs()
       tag2.src = filename;
    }
 }
+function preload_anim(num, file_id)
+{
+  for(var i=0;i<15;i++)
+  {
+   var filename = "http://meshpage.org/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = i.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   var url = filename2;
+
+   const preloadImage = new Image();
+   preloadImage.src=url;
+  }
+}
+function load_anim_pic_reset(num,file_id)
+{
+   var name = "displayimage".concat(num.toString());
+   var imgtag = document.getElementById(name);
+   imgtag.onmousemove = function() { }
+
+   imgtag.src="user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
+
+}
+
+function load_anim_pic(num,file_id)
+{
+   if (!g_emscripten_alive) return;
+   setTimeout(function() { load_anim_pic3(num,file_id); }, 50);
+}
+
+function load_anim_pic3(num,file_id)
+{
+   if (!g_emscripten_alive) return;
+   //console.log("PIC");
+   count = 1;
+   var filename = "http://meshpage.org/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = count.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   var url = filename2;
+
+var request = new XMLHttpRequest();
+   request.open("HEAD", url, false);
+   //console.log("PIC2");
+   request.onload = function() {
+     //console.log(request.status);
+     if (request.status != 404)
+     {
+   //console.log("LOAD");
+	preload_anim(num,file_id);
+        var name = "displayimage".concat(num.toString());
+   	var imgtag = document.getElementById(name);
+   	imgtag.onmousemove = function() { load_anim_pic2(num,file_id); } 
+     } else { }
+     }
+   request.send();
+     
+
+}
+var m_current_filename="";
+function load_anim_pic2(num,file_id)
+{ 
+   if (!g_emscripten_alive) return;
+   var name = "displayimage".concat(num.toString());
+   var imgtag = document.getElementById(name);
+
+   var rect = imgtag.getBoundingClientRect();
+   var left = rect.left + window.scrollX;
+   var top = rect.top + window.scrollY;
+
+   var e = window.event;
+   var posX = e.clientX;
+   var posY = e.clientY;
+   
+
+   var deltaX = posX-left;
+   var deltaY = posY-top;
+  
+   var count = deltaX*15/200;
+   //console.log("START");
+   //console.log(rect);
+   //console.log(left);
+   //console.log(top);
+   //console.log(posX);
+   //console.log(posY);
+   //console.log(deltaX);
+   //console.log(deltaY);
+   if (count<=0) count=0;
+   if (count>14) count=14;
+   //console.log(count.toFixed());
+
+   var filename = "http://meshpage.org/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = count.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   //console.log(filename2);
+   if (m_current_filename!=filename2) {
+      //console.log("FETCH");
+      m_current_filename = filename2;   
+      imgtag.src = filename2;
+   }
+}
 </script>
 <?php
 require_once("user.php");
@@ -353,7 +458,12 @@ $label = get_label( $arr );
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
-   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   //echo "<layer width=\"200\" height=\"150\">";
+   //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
+   //echo "</layer>";
+   //echo "<layer width=\"200\" height=\"150\">";
+   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" onmouseenter=\"load_anim_pic(" . $iii . "," . $ii . ")\" onmouseleave=\"load_anim_pic_reset(" . $iii . "," . $ii . ")\" crossorigin/>";
+   //echo "</layer>";
    // src=\"" . $filename . "\"
    echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
 
@@ -481,11 +591,13 @@ echo "";
     if (g_counter<15)
        setTimeout(login, 50);
  }
+ var g_user_id = "";
  function submit_data(user_id, user_name, user_email)
  {
 
      //console.log("submit_data");
      if (user_id!="" && user_name != "" && user_email !="") {
+        g_user_id = user_id;
      	var res4 = document.getElementById("login_label");
 	res4.style = "font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0;";
      	var res2 = document.getElementById("result2");
@@ -701,7 +813,7 @@ On my laptop I get the following benchmarks(this test: <a href="https://meshpage
 <?php
 require_once("user.php");
 ?>
-<div style="padding: 20px;">
+<div style="padding: 20px; width: 1024px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -733,7 +845,7 @@ visit_counter_inc( "tool" );
 </div>
 </div>
 <p>
-<div style="padding: 20px;">
+<div style="padding: 20px;  width: 1024px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
@@ -757,7 +869,6 @@ visit_counter_inc( "tool" );
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
-      sudo apt-get install zstd<br>
       sudo dpkg -i gameapi-builder_1.0-27.deb<br>
       gameapi-builder
 </div>
@@ -1350,8 +1461,11 @@ function choose_display_timeout(vm)
 }
 
 
+var m_id = 0;
+
 function choose_display(id,label, vm,is_popstate)
 {
+  m_id = id;
   if (!is_popstate) {
   g_last_id = id;
   g_last_label = label;
@@ -1557,9 +1671,13 @@ function show_emscripten(str,hide,indicator,is_async)
 	       if (is_async) {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str],{async:true});
 		  Module.ccall('set_background_mode', null, ['number'], [g_background], {async:true});
+		  Module.ccall('set_integer', null, ['number','number'],[26,m_id], {async:true});
+		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
 		  } else {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
 		  Module.ccall('set_background_mode', null, ['number'], [g_background]);
+		  Module.ccall('set_integer', null, ['number','number'],[26,m_id]);
+		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
 		  }		  
 	   } catch(e) {
 	     console.log(e);
