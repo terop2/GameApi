@@ -382,10 +382,25 @@ void map_enums(int &i)
 }
 
 
+void GLAPIENTRY MessageCallback( GLenum source,
+				 GLenum type,
+				 GLuint id,
+				 GLenum severity,
+				 GLsizei length,
+				 const GLchar *message,
+				 const void *userParam)
+{
+  std::cout << "GL CALLBACK: " << (type==GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "") << std::hex << "type=" << type << " severity=" << severity << " message=" << message << std::dec << std::endl;
+}
+
 class OpenglApi : public OpenglLowApi
 {
 public:
-  virtual void init() { }
+  virtual void init() {
+    //glEnable(GL_DEBUG_OUTPUT);
+    //glDebugMessageCallback(MessageCallback, 0);
+    
+  }
   virtual void cleanup() { }
 
   virtual void glDrawBuffers(int n, const unsigned int *bufs) {

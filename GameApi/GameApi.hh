@@ -644,6 +644,13 @@ class TextureApi
 {
 public:
 	IMPORT TextureApi(Env &e);
+  IMPORT ML grab_to_server(BM bm, int id, int num);
+  IMPORT ML send_screenshots_via_key_to_server(EveryApi &ev, ML ml3, int key, float time_delta, int num);
+  IMPORT ML prepare_key_anim(ML next, std::vector<ML> keyed, int key, float time_delta, std::vector<std::string> filenames);
+  IMPORT ML save_screenshots_via_key(EveryApi &ev, ML ml3, int key, float time_delta, int num);
+  IMPORT ML save_screenshot_via_key(EveryApi &ev, ML ml3, int key, std::string filename);
+  IMPORT BM grab_screen_bitmap(EveryApi &ev);
+  IMPORT ML prepare_key(ML next, ML keyed, int key);
   IMPORT ARR grab_screen(EveryApi &ev, RUN r);
   IMPORT RUN combine_screens(RUN r1, RUN r2);
   IMPORT TX tex_plane(int sx, int sy);
