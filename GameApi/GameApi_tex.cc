@@ -1,5 +1,7 @@
 #include "GameApi_h.hh"
 #include "GameApi_low.hh"
+#include <iomanip>
+
 
 EXPORT GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
 
@@ -689,6 +691,7 @@ public:
       ogl->glReadPixels(0,0,sx,sy,Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
       firsttime = false;
     }
+    return 0;
   }
   void Destroy() { next->Destroy(); }
   Splitter *NextState(int code) { return this; }
@@ -740,6 +743,7 @@ EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
   arr->vec.push_back(bm.id);
   return add_array(e, arr);
 }
+
 
 
 EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
@@ -845,4 +849,279 @@ GameApi::TXID GameApi::TextureApi::bufferref_to_txid(GameApi::TXID old, const Bu
   GameApi::TXID id2;
   id2.id = id;
   return id2;  
+}
+
+
+class KeyPrepare : public MainLoopItem
+{
+public:
+  KeyPrepare(int key, MainLoopItem *next, MainLoopItem *keyed) : key(key), next(next), keyed(keyed) { prepare_done=false; do_prepare=false; }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    next->execute(e);
+    if (do_prepare) {
+      keyed->Prepare();
+      prepare_done = true;
+      do_prepare=false;
+    }
+    if (prepare_done) keyed->execute(e);
+
+    
+
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==0x300 && ch==key) {
+      do_prepare=true;
+    }
+    next->handle_event(e);
+    if (prepare_done) keyed->handle_event(e);
+  }
+private:
+  int key;
+  bool prepare_done;
+  bool do_prepare;
+  MainLoopItem *next, *keyed;
+};
+GameApi::ML GameApi::TextureApi::prepare_key(ML next, ML keyed, int key)
+{
+  MainLoopItem *next_ = find_main_loop(e,next);
+  MainLoopItem *keyed_ = find_main_loop(e,keyed);
+  return add_main_loop(e, new KeyPrepare(key, next_, keyed_));
+}
+
+class KeyPrepareAnim : public MainLoopItem
+{
+public:
+  KeyPrepareAnim(int key, MainLoopItem *next, std::vector<MainLoopItem *> keyed, float time_delta, int num, std::vector<std::string> filenames) : key(key), next(next), keyed(keyed),time_delta(time_delta), num(num), filenames(filenames) { for(int i=0;i<num;i++) prepare_done.push_back(false); do_prepare=false;
+    current=0;
+    
+  }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); current=0; }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); current=0; }
+  virtual void execute(MainLoopEnv &e)
+  {
+    current_time = e.time;
+    next->execute(e);
+    if (do_prepare && e.time>=key_time+current*time_delta/100.0 && current<num) {
+      std::cout << filenames[current] << std::endl;
+      keyed[current]->Prepare();
+      prepare_done[current] = true;
+      current++;
+      if (current>=num)
+	do_prepare=false;
+    }
+    if (current>=1 && current-1<num)
+    if (prepare_done[current-1]) keyed[current-1]->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int ch = e.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+    if (e.type==0x300 && ch==key) {
+      key_time = current_time;
+      do_prepare=true;
+    }
+    next->handle_event(e);
+    if (current>=1&&current-1<num)
+    if (prepare_done[current-1]) keyed[current-1]->handle_event(e);
+  }
+private:
+  int key;
+  std::vector<bool> prepare_done;
+  bool do_prepare;
+  MainLoopItem *next;
+  std::vector<MainLoopItem*> keyed;
+  int current=0;
+  float key_time=0.0;
+  float time_delta=1.0;
+  int num;
+  float current_time=0.0;
+  std::vector<std::string> filenames;
+};
+
+GameApi::ML GameApi::TextureApi::prepare_key_anim(ML next, std::vector<ML> keyed, int key, float time_delta, std::vector<std::string> filenames)
+{
+  MainLoopItem *next_ = find_main_loop(e,next);
+  int s = keyed.size();
+  std::vector<MainLoopItem*> vec;
+  for(int i=0;i<s;i++) {
+    MainLoopItem *keyed_ = find_main_loop(e,keyed[i]);
+    vec.push_back(keyed_);
+  }
+  return add_main_loop(e, new KeyPrepareAnim(key, next_, vec,time_delta,s, filenames));
+}
+
+
+class Prepare_grabscreen : public Bitmap<Color>
+{
+public:
+  Prepare_grabscreen(GameApi::EveryApi &ev, int sx, int sy) : ev(ev), m_sx(sx), m_sy(sy) {
+    if (m_sx==-1) m_sx=ev.mainloop_api.get_screen_sx();
+    if (m_sy==-1) m_sy=ev.mainloop_api.get_screen_sy();
+    //std::cout << "sx=" << m_sx << "sy=" << m_sy << std::endl;
+    ref=BufferRef::NewBuffer(m_sx,m_sy);
+  }
+  virtual int SizeX() const { return m_sx; }
+  virtual int SizeY() const { return m_sy; }
+  virtual Color Map(int x, int y) const
+  {
+    unsigned int col = ref.buffer[x+y*ref.ydelta];
+    unsigned int b = col &0xff0000;
+    unsigned int g = col &0xff00;
+    unsigned int r = col &0xff;
+    unsigned int a = col &0xff000000;
+    b >>= 16;
+    g >>= 8;
+    a >>= 24;
+
+    // THIS CONVERTS TRANSPARENT PIXELS INTO BLACK
+    float mult = a/255.0;
+    b*=mult;
+    g*=mult;
+    r*=mult;
+    a=255;
+    
+    //r >>= 8;
+    r <<= 16;
+    g <<= 8;
+    a <<= 24;
+    unsigned int col2 = a + r+g+b;
+    return col2;
+  }
+  virtual void Prepare()
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    std::cout << "Grabbing.." << std::endl;
+    ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
+    GameApi::SH shader;
+    shader.id = 0;
+    ev.shader_api.unuse(shader);
+    ev.mainloop_api.swapbuffers();
+    while(ogl->glCheckFramebufferStatus(Low_GL_FRAMEBUFFER)!=Low_GL_FRAMEBUFFER_COMPLETE) { }
+    //int err = ogl->glGetError(); std::cout << "err1=" << err << std::endl;
+    ogl->glReadPixels(0,0,m_sx,m_sy,Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, (void*)ref.buffer);
+    //err = ogl->glGetError(); std::cout << "err2=" << err << std::endl;
+    ogl->glFinish();
+    //err = ogl->glGetError(); std::cout << "err3=" << err << std::endl;
+  }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+
+private:
+  GameApi::EveryApi &ev;
+  int m_sx,m_sy;
+  BufferRef ref;
+};
+GameApi::BM GameApi::TextureApi::grab_screen_bitmap(EveryApi &ev)
+{
+  Bitmap<Color> *b = new Prepare_grabscreen(ev,-1,-1);
+  BitmapColorHandle *handle3 = new BitmapColorHandle;
+  handle3->bm = b;
+  BM bm = add_bitmap(e, handle3);
+  return bm;
+}
+
+GameApi::ML GameApi::TextureApi::save_screenshot_via_key(EveryApi &ev, GameApi::ML ml3, int key, std::string filename)
+{
+  GameApi::BM bm = grab_screen_bitmap(ev);
+  GameApi::BM bm2 = ev.bitmap_api.flip_y(bm);
+  GameApi::ML ml2 = ev.bitmap_api.save_png_ml(ev, bm2, filename);
+
+  GameApi::ML ml = prepare_key(ml3, ml2, key);
+  return ml;
+}
+
+void send_grab_to_server(std::vector<unsigned char> data, int id, int num);
+
+void SaveImage(std::vector<unsigned char> &res, BufferRef ref);
+
+class GrabToServer : public MainLoopItem
+{
+public:
+  GrabToServer(Bitmap<Color> *bm, int id, int num) : bm(bm),id(id),num(num) { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  void Prepare()
+  {
+    //bm->Prepare();
+    std::vector<unsigned char> res;
+    BufferFromBitmap buf(*bm);
+    buf.Gen();
+    BufferRef ref = buf.Buffer();
+    SaveImage(res,ref);
+    send_grab_to_server(res, id, num);
+  }
+private:
+  MainLoopItem *next;
+  Bitmap<Color> *bm;
+  int id;
+  int num;
+};
+
+GameApi::ML GameApi::TextureApi::grab_to_server(BM bm, int id, int num)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  return add_main_loop(e, new GrabToServer(b2, id,num));
+}
+
+extern int gameapi_id;
+
+GameApi::ML GameApi::TextureApi::send_screenshots_via_key_to_server(EveryApi &ev, GameApi::ML ml3, int key, float time_delta, int num)
+{
+  int s = num;
+  std::vector<std::string> vec2;
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+  GameApi::BM bm = grab_screen_bitmap(ev);
+  GameApi::BM bm2 = ev.bitmap_api.scale_bitmap(ev, bm, 280, 208);
+  GameApi::BM bm3 = ev.bitmap_api.flip_y(bm2);
+  std::stringstream ss;
+  ss<< "screenshot" << std::setfill('0') << std::setw(3) << i+1 << ".png";
+  //GameApi::ML ml2 = ev.bitmap_api.save_png_ml(ev, bm3, ss.str());
+  GameApi::ML ml2 = ev.texture_api.grab_to_server(bm3,gameapi_id,i);
+  vec.push_back(ml2);
+  vec2.push_back( ss.str() );
+  }
+  GameApi::ML ml = prepare_key_anim(ml3, vec, key, time_delta, vec2);
+  return ml;
+}
+
+GameApi::ML GameApi::TextureApi::save_screenshots_via_key(EveryApi &ev, GameApi::ML ml3, int key, float time_delta, int num)
+{
+  int s = num;
+  std::vector<std::string> vec2;
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+  GameApi::BM bm = grab_screen_bitmap(ev);
+  GameApi::BM bm2 = ev.bitmap_api.scale_bitmap(ev, bm, 280, 208);
+  GameApi::BM bm3 = ev.bitmap_api.flip_y(bm2);
+  std::stringstream ss;
+  ss<< "screenshot" << std::setfill('0') << std::setw(3) << i+1 << ".png";
+  GameApi::ML ml2 = ev.bitmap_api.save_png_ml(ev, bm3, ss.str());
+  vec.push_back(ml2);
+  vec2.push_back(ss.str());
+  }
+  GameApi::ML ml = prepare_key_anim(ml3, vec, key, time_delta, vec2);
+  return ml;
 }

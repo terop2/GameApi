@@ -217,11 +217,11 @@ public:
       {
 	Point2d p = get_pos();
     OpenglLowApi *ogl = g_low->ogl;
-    ogl->glAlphaFunc(Low_GL_LESS, 0.9);
-    ogl->glEnable(Low_GL_ALPHA_TEST);
+    //ogl->glAlphaFunc(Low_GL_LESS, 0.9);
+    //ogl->glEnable(Low_GL_ALPHA_TEST);
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
-	ogl->glDisable(Low_GL_ALPHA_TEST);
+	//ogl->glDisable(Low_GL_ALPHA_TEST);
       }
   }
   int render_to_bitmap()

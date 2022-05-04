@@ -537,6 +537,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "20.0", "0.03" },
 			 "ML", "move_api", "quake_ml2"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::quake_ml3,
 			 "fly_ml",
 			 { "ev", "ship", "world", "speed", "rot_speed", "p_x", "p_y", "p_z" },
@@ -557,6 +558,24 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev" },
 			 "ML", "mainloop_api", "debug_obj"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::prepare_key,
+			 "prepare_key_ml",
+			 { "next", "keyed", "key" },
+			 { "ML", "ML", "int" },
+			 { "", "", "32" },
+			 "ML", "texture_api", "prepare_key"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::save_screenshot_via_key,
+			 "screenshot_key_ml",
+			 { "ev", "ml3", "key", "filename" },
+			 { "EveryApi&", "ML", "int", "std::string" },
+			 { "ev", "", "32", "screenshot.png" },
+			 "ML", "texture_api", "save_screenshot_via_key"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::save_screenshots_via_key,
+			 "screenshots_key_ml",
+			 { "ev", "ml3", "key", "time_delta", "num" },
+			 { "EveryApi&", "ML", "int", "float", "int" },
+			 { "ev", "", "32", "10.0", "15" },
+			 "ML", "texture_api", "save_screenshots_via_key"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
 			 "key_activate_ml",
 			 { "ev", "ml", "mn", "key", "duration" },

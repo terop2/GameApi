@@ -575,6 +575,8 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
+
+  
   //std::cout << "context created" << std::endl;
 
   g_low->ogl->glEnable(Low_GL_MULTISAMPLE);
@@ -601,6 +603,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
 #endif
   OpenglLowApi *ogl = g_low->ogl;
+  ogl->init();
 
   const unsigned char *ptr = ogl->glGetString(Low_GL_VENDOR);
   if (ptr && strlen((const char*)ptr)>4) {
@@ -1682,11 +1685,54 @@ BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf)
 struct savecontext 
 {
   std::ofstream *stream;
+  std::vector<unsigned char> *res;
 };
 void save_write_func(void *context, void *data, int size)
 {
   savecontext *ctx = (savecontext*)context;
   (*ctx->stream).write((const char*)data, size);
+}
+void save_write_func2(void *context, void *data, int size)
+{
+  savecontext *ctx = (savecontext*)context;
+  for(int i=0;i<size;i++)
+    ctx->res->push_back(((const unsigned char*)data)[i]);
+  //(*ctx->res) += std::string((const char*)data, ((const char *)data)+size);
+  //(*ctx->stream).write((const char*)data, size);
+}
+
+void SaveImage(std::vector<unsigned char> &res, BufferRef ref)
+{
+  int x = ref.width;
+  int y = ref.height;
+
+  for(int yy=0;yy<y;yy++)
+    for(int xx=0;xx<x;xx++)
+      {
+	unsigned int val = ref.buffer[xx+yy*ref.ydelta];
+	unsigned int a = val &0xff000000;
+	unsigned int r = val &0xff0000;
+	unsigned int g = val &0x00ff00;
+	unsigned int b = val &0x0000ff;
+	r>>=16;
+	g>>=8;
+
+	b<<=16;
+	g<<=8;
+	val = a+r+g+b;  
+	ref.buffer[xx+yy*ref.ydelta] = val;
+      }
+
+
+  savecontext ctx;
+  ctx.res = &res;
+  //ctx.stream = new std::ofstream(filename.c_str(),ios_base::out|ios_base::binary);
+  stbi_write_png_to_func(&save_write_func2, &ctx, ref.width, ref.height,4,ref.buffer,ref.ydelta*sizeof(unsigned int));
+
+  //ctx.stream->close();
+  //delete ctx.stream;
+  //ctx.stream = 0;
+
 }
 
 

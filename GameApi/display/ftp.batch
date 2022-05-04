@@ -1,4 +1,6 @@
 cd meshpage.org
+put ini_print.php
+put save_grab.php
 put backend.php
 put view.php
 put submit_contents.php
