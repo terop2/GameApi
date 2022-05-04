@@ -1043,7 +1043,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     body_buf[body.size()]=0;
 
 
-    const char * headers[] = { "Content-type", "application/json; charset=UTF-8", 0};
+    const char * headers[] = { /*"Content-type", "application/json; charset=UTF-8",*/ 0};
     
     //std::cout << "url loading started! " << url << std::endl;
 
@@ -1102,7 +1102,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ld->url = oldurl;
     ld->url3 = url3;
 
-    bool is_same_server = is_urls_from_same_server(oldurl,g_window_href);
+    bool is_same_server = true; //is_urls_from_same_server(oldurl,g_window_href);
     bool is_same_server2 = is_urls_from_same_server(oldurl,homepage+"/");
     
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
@@ -2103,3 +2103,63 @@ void web_request(std::string url, std::string params, void (*fptr)(std::string))
 #endif
 }
 #endif
+
+std::vector<unsigned char> convert_to_hexdump(std::vector<unsigned char> s)
+{
+  int ss = s.size();
+  std::vector<unsigned char> res;
+  for(int i=0;i<ss;i++)
+    {
+      unsigned char ch = s[i];
+      unsigned char ch0 = (ch&0xf0)>>4;
+      unsigned char ch1 = (ch&0xf);
+      char *arr = "0123456789abcdef";
+      res.push_back(arr[ch0]);
+      res.push_back(arr[ch1]);
+    }
+  return res;
+}
+
+std::string add_boundaries(std::string s)
+{
+  return std::string("\n\n----kdjfkdjhfdkdkjf\nContent-Disposition: form-data; name=\"description\"\nContent-Type: text/plain\n\n") + s + std::string("\n----kdjfkdjhfdkdkjf--\n"); 
+}
+
+
+void send_grab_to_server(std::vector<unsigned char> data, int id, int num)
+{
+#ifdef EMSCRIPTEN
+
+  int s = data.size();
+  for(int i=0;i<s;i+=1024) {
+    std::vector<unsigned char> data3 = std::vector<unsigned char>(data.begin()+i,data.begin()+std::min(i+1024,s));
+  
+  std::vector<unsigned char> data2 = convert_to_hexdump(data3);
+  
+  emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "PUT");
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+
+    const char *headers[] = { "Content-Type", "undefined", 0};
+    std::stringstream ss;
+    ss << id << "|" << std::setfill('0') << std::setw(3) << num << "|" << i << "|" << std::min(s-1,i+1023) << "|" << s << std::endl;
+    std::string body = ss.str();
+    char *buf = new char[body.size()+data2.size()+1];
+    std::copy(body.begin(), body.end(), buf);
+    std::copy(data2.begin(), data2.end(), buf+body.size());
+
+    //std::string s = std::string(buf,buf+body.size()+data2.size());
+    //std::string s2 = add_boundaries(s);
+    //char *buf2 = new char[s2.size()+1];
+    //std::copy(s2.begin(),s2.end(),buf2);
+    
+    attr.requestData = buf;
+    attr.requestDataSize = body.size()+data2.size();
+    attr.requestHeaders = headers;
+    emscripten_fetch(&attr, "save_grab.php");
+    //delete [] buf;
+
+  }
+#endif
+}

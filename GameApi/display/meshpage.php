@@ -1,5 +1,7 @@
 <?php
 header("Cross-Origin-Opener-Policy: same-origin");
+$site = "https://meshpage.org";
+$assetsite = "https://tpgames.org";
 ?>
 <!DOCTYPE html>
 <html id="html">
@@ -103,7 +105,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 1,
      "item": {
-        "@id": "https://meshpage.org/meshpage?p=3",
+        "@id": "<?php echo $site ?>/meshpage?p=3",
 	"name": "meshpage.org"
 	}
   },
@@ -111,7 +113,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 2,
      "item": {
-        "@id": "https://meshpage.org/meshpage?p=4",
+        "@id": "<?php echo $site ?>/meshpage?p=4",
 	"name": "tool download"
      }
   },
@@ -119,7 +121,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 3,
      "item": {
-        "@id": "https://meshpage.org/meshpage?p=5",
+        "@id": "<?php echo $site ?>/meshpage?p=5",
 	"name": "faq"
      }
   },
@@ -127,7 +129,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 4,
      "item": {
-        "@id": "https://meshpage.org/meshpage?p=6",
+        "@id": "<?php echo $site ?>/meshpage?p=6",
 	"name": "documents"
      }
   },
@@ -135,7 +137,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 5,
      "item": {
-        "@id": "https://meshpage.org/meshpage?p=7",
+        "@id": "<?php echo $site ?>/meshpage?p=7",
 	"name": "about"
      }
   }
@@ -143,7 +145,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 }
 </script>
 <body id="body">
-<script src="https://meshpage.org/vue.js"></script>
+<script src="<?php echo $site ?>/vue.js"></script>
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
 <div id="app">
@@ -295,6 +297,113 @@ function populate_imgs()
       tag2.src = filename;
    }
 }
+function preload_anim(num, file_id)
+{
+  for(var i=0;i<15;i++)
+  {
+   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = i.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   var url = filename2;
+
+   //const preloadImage = new Image();
+   //preloadImage.src=url;
+   var tag = document.getElementById("preload".concat(i.toString()));
+   tag.src = url;
+  }
+}
+function load_anim_pic_reset(num,file_id)
+{
+   var name = "displayimage".concat(num.toString());
+   var imgtag = document.getElementById(name);
+   imgtag.onmousemove = function() { }
+
+   imgtag.src="user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
+
+}
+
+function load_anim_pic(num,file_id)
+{
+   if (!g_emscripten_alive) return;
+   setTimeout(function() { load_anim_pic3(num,file_id); }, 50);
+}
+
+function load_anim_pic3(num,file_id)
+{
+   if (!g_emscripten_alive) return;
+   //console.log("PIC");
+   count = 1;
+   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = count.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   var url = filename2;
+
+var request = new XMLHttpRequest();
+   request.open("HEAD", url, false);
+   //console.log("PIC2");
+   request.onload = function() {
+     //console.log(request.status);
+     if (request.status != 404)
+     {
+   //console.log("LOAD");
+	preload_anim(num,file_id);
+        var name = "displayimage".concat(num.toString());
+   	var imgtag = document.getElementById(name);
+   	imgtag.onmousemove = function() { load_anim_pic2(num,file_id); } 
+     } else { }
+     }
+   request.send();
+     
+
+}
+var m_current_filename="";
+function load_anim_pic2(num,file_id)
+{ 
+   if (!g_emscripten_alive) return;
+   var name = "displayimage".concat(num.toString());
+   var imgtag = document.getElementById(name);
+
+   var rect = imgtag.getBoundingClientRect();
+   var left = rect.left + window.scrollX;
+   var top = rect.top + window.scrollY;
+
+   var e = window.event;
+   var posX = e.clientX;
+   var posY = e.clientY;
+   
+
+   var deltaX = posX-left;
+   var deltaY = posY-top;
+  
+   var count = deltaX*15/200;
+   //console.log("START");
+   //console.log(rect);
+   //console.log(left);
+   //console.log(top);
+   //console.log(posX);
+   //console.log(posY);
+   //console.log(deltaX);
+   //console.log(deltaY);
+   if (count<=0) count=0;
+   if (count>14) count=14;
+   //console.log(count.toFixed());
+
+   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = count.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   //console.log(filename2);
+   if (m_current_filename!=filename2) {
+      //console.log("FETCH");
+      m_current_filename = filename2;   
+      imgtag.src = filename2;
+   }
+}
 </script>
 <?php
 require_once("user.php");
@@ -310,7 +419,15 @@ if ($startpos!="") {
 }
 $dupcache = array();
 echo "<script>var imgarr=[];</script>";
+
+   echo "<div style=\"width:1px; height:1px; visibility:hidden; overflow:hidden\">";
+   for($k=0;$k<15;$k++) {
+      echo "<img id=\"preload" . strval($k) . "\"></img>";
+   }
+   echo "</div>";
+
 $iii=0;
+
 for($i=$start;$cnt<50;$i--)
 {
 $iii++;
@@ -342,7 +459,7 @@ $label = get_label( $arr );
    $filename = "user_data/user_" . $user . "/screenshot" . $ii . ".png";
    $filename2 = "user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    if (file_exists($filename2)) $filename = $filename2;
-   if (!file_exists($filename)) { $filename = "https://tpgames.org/unknown.webp"; }
+   if (!file_exists($filename)) { $filename = "<?php echo $assetsite ?>/unknown.webp"; }
 
 
 
@@ -353,7 +470,13 @@ $label = get_label( $arr );
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
-   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   //echo "<layer width=\"200\" height=\"150\">";
+   //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
+   //echo "</layer>";
+   //echo "<layer width=\"200\" height=\"150\">";
+   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" onmouseenter=\"load_anim_pic(" . $iii . "," . $ii . ")\" onmouseleave=\"load_anim_pic_reset(" . $iii . "," . $ii . ")\" crossorigin/>";
+
+   //echo "</layer>";
    // src=\"" . $filename . "\"
    echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
 
@@ -376,37 +499,37 @@ $label = get_label( $arr );
    echo "<p>";
    echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
    if ($startpos!="")
-      echo "<a href=\"https://meshpage.org/meshpage\">000</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage\">000</a> | ";
    else echo "000 | ";
    if ($startpos!="1")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=1\">050</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=1\">050</a> | ";
    else echo "050 | ";
    if ($startpos!="2")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=2\">100</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=2\">100</a> | ";
    else echo "100 | ";
    if ($startpos!="3")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=3\">150</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=3\">150</a> | ";
    else echo "150 | ";
    if ($startpos!="4")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=4\">200</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=4\">200</a> | ";
    else echo "200 | ";
    if ($startpos!="5")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=5\">250</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=5\">250</a> | ";
    else echo "250 | ";
    if ($startpos!="6")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=6\">300</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=6\">300</a> | ";
    else echo "300 | ";
    if ($startpos!="7")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=7\">350</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=7\">350</a> | ";
    else echo "350 | ";
    if ($startpos!="8")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=8\">400</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=8\">400</a> | ";
    else echo "400 | ";
    if ($startpos!="9")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=9\">450</a> | ";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=9\">450</a> | ";
    else echo "450 | ";
    if ($startpos!="10")
-      echo "<a href=\"https://meshpage.org/meshpage?ps=10\">500</a>";
+      echo "<a href=\"<?php echo $site ?>/meshpage?ps=10\">500</a>";
    else echo "500";
    echo "</div>";
 echo "<br>";
@@ -471,8 +594,12 @@ echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>";
-echo "<br>";
-echo "";
+echo "<br><br><br><hr><br><br><br>";
+echo "PRICES: <ul><li>&euro; 120: 3d model viewer,<br>";
+echo "            <li>&euro; 220: 3d model viewer with drag&drop<br>";
+echo "            <li>&euro; 550: 3d model viewer on custom page<br>";
+echo "            </ul><br>";
+echo " All prices include a copy of 3d engine. Contact via email for more info.<p>";
 ?>
 <script>
  var g_counter = 0;
@@ -481,11 +608,13 @@ echo "";
     if (g_counter<15)
        setTimeout(login, 50);
  }
+ var g_user_id = "";
  function submit_data(user_id, user_name, user_email)
  {
 
      //console.log("submit_data");
      if (user_id!="" && user_name != "" && user_email !="") {
+        g_user_id = user_id;
      	var res4 = document.getElementById("login_label");
 	res4.style = "font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0;";
      	var res2 = document.getElementById("result2");
@@ -524,7 +653,7 @@ echo "";
 function login() {
 	 var res = document.getElementById("result");
 	 if (res==null) onload_button(); else
-	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"https://meshpage.org/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" style=\"display:none\"></iframe>";
+	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" style=\"display:none\"></iframe>";
 	 
 
 
@@ -541,13 +670,13 @@ onload_button();
 <?php
 require_once("user.php");
 list_start("Available documents:");
-list_item("http://tpgames.org/Linux_compile.txt", "Linux compilation");
-list_item("http://tpgames.org/Feature_list.txt", "Builder Feature list");
-list_item("http://tpgames.org/Opengl_chain.txt", "Mesh structure");
-list_item("http://tpgames.org/Math_concepts.txt", "Math concepts");
-list_item("http://tpgames.org/Printer.txt", "3d printer instructions");
-list_item("http://tpgames.org/Skills_to_learn.txt", "Skills to learn");
-list_item("http://tpgames.org/Releasing_animations.txt", "Releasing animations to your web page");
+list_item("<?php echo $assetsite ?>/Linux_compile.txt", "Linux compilation");
+list_item("<?php echo $assetsite ?>/Feature_list.txt", "Builder Feature list");
+list_item("<?php echo $assetsite ?>/Opengl_chain.txt", "Mesh structure");
+list_item("<?php echo $assetsite ?>/Math_concepts.txt", "Math concepts");
+list_item("<?php echo $assetsite ?>/Printer.txt", "3d printer instructions");
+list_item("<?php echo $assetsite ?>/Skills_to_learn.txt", "Skills to learn");
+list_item("<?php echo $assetsite ?>/Releasing_animations.txt", "Releasing animations to your web page");
 list_end();
 ?>
 
@@ -565,11 +694,11 @@ list_end();
 
 <h2>How does the site work?</h2>
 <ul>
-<li><a style="font-size:large;" href="https://meshpage.org/meshpage?p=4">DOWNLOAD</a>: You download the builder tool</a>
-<li><a style="font-size:large;" href="https://tpgames.org/builder_green4_example.webm">CREATE</a>: Create your powerful message with 3d technology
-<li><a style="font-size:large;" href="http://tpgames.org/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
-<li><a style="font-size:large;" href="http://tpgames.org/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
-<li><a style="font-size:large;" href="http://meshpage.org/gameapi_example.php">ENJOY</a>: Then open the animation in your browser
+<li><a style="font-size:large;" href="<?php echo $site ?>/meshpage?p=4">DOWNLOAD</a>: You download the builder tool</a>
+<li><a style="font-size:large;" href="<?php echo $assetsite ?>/builder_green4_example.webm">CREATE</a>: Create your powerful message with 3d technology
+<li><a style="font-size:large;" href="<?php echo $assetsite ?>/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
+<li><a style="font-size:large;" href="<?php echo $assetsite ?>/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
+<li><a style="font-size:large;" href="<?php echo $site ?>/gameapi_example.php">ENJOY</a>: Then open the animation in your browser
 </ul>
 <h2>What are the advantages in your approach?</h2>
 <ul>
@@ -593,7 +722,7 @@ instead of megabytes of video files
 
 <h2>Is there a 3d model viewer that uses your engine?</h2>
 
-Yes. It's <a href="http://meshpage.org/view.php">here</a>
+Yes. It's <a href="<?php echo $site ?>/view.php">here</a>
 
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>
@@ -681,7 +810,7 @@ its possible to fix the problem by using the opengl backend.
 <li>Firefox users: about:config shuold have shared.memory=true
 </ul>
 <h2>What browser should I use?</h2>
-On my laptop I get the following benchmarks(this test: <a href="https://meshpage.org/mesh_display?id=GVILK@032">here</a>(
+On my laptop I get the following benchmarks(this test: <a href="<?php echo $site ?>/mesh_display?id=GVILK@032">here</a>(
 <ul>
 <li>some users have reported 700fps, but with high-end video card
 <li>Brave browser gives about 147fps
@@ -701,13 +830,13 @@ On my laptop I get the following benchmarks(this test: <a href="https://meshpage
 <?php
 require_once("user.php");
 ?>
-<div style="padding: 20px;">
+<div style="padding: 20px; width: 1024px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 10 64-bit</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v27.msi">download msi</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -733,14 +862,14 @@ visit_counter_inc( "tool" );
 </div>
 </div>
 <p>
-<div style="padding: 20px;">
+<div style="padding: 20px;  width: 1024px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux 64-bit amd64</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-27.deb">download deb</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-27.deb">download deb</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -757,7 +886,6 @@ visit_counter_inc( "tool" );
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
-      sudo apt-get install zstd<br>
       sudo dpkg -i gameapi-builder_1.0-27.deb<br>
       gameapi-builder
 </div>
@@ -769,7 +897,7 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Web</span>
-<li><b>Tool url:</b> <a href="https://meshpage.org/gameapi_builder.php">execute tool in web browser</a>
+<li><b>Tool url:</b> <a href="<?php echo $site ?>/gameapi_builder.php">execute tool in web browser</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -786,13 +914,13 @@ visit_counter_inc( "tool" );
 </div>
 -->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v27.msi">
-<img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
+<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">
+<img src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <div>
-<a href="https://tpgames.org/builder_screenshot.webp" target=_blank><img src="https://tpgames.org/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
-<a href="https://tpgames.org/builder_screenshot2.webp" target=_blank><img src="https://tpgames.org/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
-<a href="https://tpgames.org/builder_screenshot3.webp" target=_blank><img src="https://tpgames.org/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $assetsite ?>/builder_screenshot.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $assetsite ?>/builder_screenshot2.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $assetsite ?>/builder_screenshot3.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
 </div>
 </div>
 
@@ -1350,8 +1478,11 @@ function choose_display_timeout(vm)
 }
 
 
+var m_id = 0;
+
 function choose_display(id,label, vm,is_popstate)
 {
+  m_id = id;
   if (!is_popstate) {
   g_last_id = id;
   g_last_label = label;
@@ -1361,14 +1492,14 @@ function choose_display(id,label, vm,is_popstate)
   store.choose("mesh");
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
-  var url = "https://meshpage.org/mesh_pre.php?id=" + label;
+  var url = "<?php echo $site ?>/mesh_pre.php?id=" + label;
 <?php
       $arr = array("username" => "terop", "index" => $_GET["id"]);
       $res = addtext_date($arr);
       echo "var dt = \"$res;\";";
 ?>
-  var url2 = "https://meshpage.org/mesh_addtext.php?id=" + label + "&" + dt;
-  var url3 = "https://meshpage.org/mesh_background.php?id=" + label;
+  var url2 = "<?php echo $site ?>/mesh_addtext.php?id=" + label + "&" + dt;
+  var url3 = "<?php echo $site ?>/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
   if (g_txt[id]===undefined) {
 
@@ -1516,7 +1647,7 @@ function resize_size() {
   return [830,630];
 }
 
-var gameapi_homepageurl = "http://tpgames.org";
+var gameapi_homepageurl = "<?php echo $assetsite ?>";
 
 var g_display_timeout = null;
 function display_cb()
@@ -1557,9 +1688,15 @@ function show_emscripten(str,hide,indicator,is_async)
 	       if (is_async) {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str],{async:true});
 		  Module.ccall('set_background_mode', null, ['number'], [g_background], {async:true});
+		  Module.ccall('set_integer', null, ['number','number'],[26,m_id], {async:true});
+		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
+		  console.log(g_user_id);
 		  } else {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
 		  Module.ccall('set_background_mode', null, ['number'], [g_background]);
+		  Module.ccall('set_integer', null, ['number','number'],[26,m_id]);
+		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
+		  console.log(g_user_id);
 		  }		  
 	   } catch(e) {
 	     console.log(e);
