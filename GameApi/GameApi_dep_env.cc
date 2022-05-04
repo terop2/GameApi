@@ -1043,7 +1043,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     body_buf[body.size()]=0;
 
 
-    const char * headers[] = { "Content-type", "application/json; charset=UTF-8", 0};
+    const char * headers[] = { /*"Content-type", "application/json; charset=UTF-8",*/ 0};
     
     //std::cout << "url loading started! " << url << std::endl;
 
@@ -1102,7 +1102,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     ld->url = oldurl;
     ld->url3 = url3;
 
-    bool is_same_server = is_urls_from_same_server(oldurl,g_window_href);
+    bool is_same_server = true; //is_urls_from_same_server(oldurl,g_window_href);
     bool is_same_server2 = is_urls_from_same_server(oldurl,homepage+"/");
     
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
