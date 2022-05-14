@@ -13079,7 +13079,7 @@ private:
 EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
   ml = ev.mainloop_api.display_background(ev,ml);
-  if (std::string(g_user_id)==std::string("TeroPulkkinen")) {
+  if (g_user_id && std::string(g_user_id)==std::string("TeroPulkkinen")) {
     ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
   }
   Blocker *blk = new MainLoopBlocker_win32_and_emscripten(e,ev,ml,logo, fpscounter, start_time, duration, ev.mainloop_api.get_screen_sx(), ev.mainloop_api.get_screen_sy());
@@ -13091,7 +13091,7 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML 
   float screen_y = ev.mainloop_api.get_screen_sy();
 
   ml = ev.mainloop_api.display_background(ev,ml);
-  if (std::string(g_user_id)==std::string("TeroPulkkinen")) {
+  if (g_user_id && std::string(g_user_id)==std::string("TeroPulkkinen")) {
     ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
   }
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, screen_x, screen_y);
