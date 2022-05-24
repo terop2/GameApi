@@ -72,11 +72,14 @@
 //#define OPENGL_ES 1
 #endif
 
+#ifdef AMD
+#define OPENGL_ES 1
+#endif
 
 //#define WAYLAND 1
 
 #ifdef WAYLAND
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 #endif
 
 

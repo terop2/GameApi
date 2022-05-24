@@ -153,9 +153,13 @@ extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 void stackTrace();
 
+//void* arr[1000000];
+//int pos=0;
+
 #if 0
 void *operator new( std::size_t count)
 {
+#if 0
   static int counter = 0;
   counter++;
   if (counter % 10000==0) {
@@ -167,9 +171,18 @@ void *operator new( std::size_t count)
     stackTrace();
   }
   return malloc(count);
+#endif
+  void *ptr = malloc(count);
+  arr[pos]=ptr;
+  pos++; if (pos>1000000) pos=0;
+  return ptr;
 }
 void operator delete(void* ptr) noexcept
 {
+  bool done=false;
+  int res=-1;
+  for(int i=0;i<pos;i++) if (arr[i]==ptr) { res=i; done=true; }
+  if (done==false && !ptr) { std::printf("double free\n"); stackTrace(); } else if (ptr) { arr[res]=0; }
   free(ptr);
 }
 #endif

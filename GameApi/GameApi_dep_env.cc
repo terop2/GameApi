@@ -1652,8 +1652,15 @@ bool file_exists(std::string filename)
   return f.good();
 }
 
+std::string upgrade_to_https(std::string url)
+{
+  if (url.size()>7 && url.substr(0,7)=="http://") { return "https://" + url.substr(7); }
+  return url;
+}
+
 long long load_size_from_url(std::string url)
 {
+  url = upgrade_to_https(url);
   if (url=="") return 1;
     std::vector<unsigned char> buffer;
     bool succ=false;
@@ -1723,6 +1730,7 @@ public:
 
   virtual void Prepare()
   {
+  url = upgrade_to_https(url);
     size = load_size_from_url(url);
 
     InstallProgress(333, "stream load..", 15);
@@ -1736,6 +1744,7 @@ public:
     succ = file_exists(cmd2);
     std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
 #else
+    //std::cout << "Fetching " << url << std::endl;
     std::string cmd = "curl -s -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
@@ -1914,6 +1923,8 @@ load_url_deleter load_from_url_del;
 
 std::vector<unsigned char> *load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
+    url = upgrade_to_https(url);
+
   if (url.size()==0) { std::vector<unsigned char> *b = new std::vector<unsigned char>(); load_from_url_del.item.push_back(b); return b; }
   //std::cout << "load_from_url: @" << url << "@" << std::endl;
 
@@ -1943,6 +1954,8 @@ std::vector<unsigned char> *load_from_url(std::string url)
     succ = file_exists(cmd2);
     std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
 #else
+    //       std::cout << "Fetching " << url << std::endl;
+
     std::string cmd = "curl -s -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
@@ -2010,6 +2023,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
     if (num>0)
       buffer->reserve(num);
     while(fread(&c,1,1,f)==1) {
+      //std::cout << c;
       i++;
       g_current_size++;
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
