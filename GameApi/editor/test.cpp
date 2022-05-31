@@ -767,6 +767,7 @@ void iter(void *arg)
 
     // handle esc event
     MainLoopApi::Event e;
+    e.ch = 0;
     e.last = true;
     while((e=env->ev->mainloop_api.get_event()).last)
       {

@@ -1,16 +1,22 @@
-cp ini_print.php /home/terop/html/meshpage.org/
-cp save_grab.php /home/terop/html/meshpage.org/
-cp backend.php /home/terop/html/meshpage.org/
-cp view.php /home/terop/html/meshpage.org/
-cp submit_contents.php /home/terop/html/meshpage.org/
-cp meshpage.php /home/terop/html/meshpage.org/
-cp cert.php /home/terop/html/meshpage.org/
-cp cert_linux.php /home/terop/html/meshpage.org/
-cp login.php /home/terop/html/meshpage.org/
-cp oauth2.php /home/terop/html/meshpage.org/
-cp oauth2_callback.php /home/terop/html/meshpage.org/
-cp material_db.txt /home/terop/html/meshpage.org/
-cp border_db.txt /home/terop/html/meshpage.org/
-cp background_db.txt /home/terop/html/meshpage.org/
-cp model_db.txt /home/terop/html/meshpage.org/
+copy_it()
+{
+     cp $1 /home/terop/html/meshpage.org/
+     echo "copying $1 to meshpage.org"
+}
+
+copy_it ini_print.php
+copy_it save_grab.php
+copy_it backend.php 
+copy_it view.php 
+copy_it submit_contents.php 
+copy_it meshpage.php 
+copy_it cert.php 
+copy_it cert_linux.php 
+copy_it login.php 
+copy_it oauth2.php 
+copy_it oauth2_callback.php 
+copy_it material_db.txt 
+copy_it border_db.txt 
+copy_it background_db.txt 
+copy_it model_db.txt 
 echo "SUCCESS"

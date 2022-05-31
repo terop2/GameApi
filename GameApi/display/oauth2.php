@@ -1,14 +1,14 @@
 <?php
 session_start();
 
-include '/home/terop/tpgames.org/oauth2/RandomInterface.php';
-include '/home/terop/tpgames.org/oauth2/Random.php';
-include '/home/terop/tpgames.org/oauth2/AccessToken.php';
+include '/home/terop/html/tpgames.org/oauth2/RandomInterface.php';
+include '/home/terop/html/tpgames.org/oauth2/Random.php';
+include '/home/terop/html/tpgames.org/oauth2/AccessToken.php';
 //include '/home/terop/tpgames.org/oauth2/Exception/OauthException.php';
-include '/home/terop/tpgames.org/oauth2/OAuth2Client.php';
-include '/home/terop/tpgames.org/oauth2/Provider.php';
-include '/home/terop/tpgames.org/oauth2/HttpClientInterface.php';
-include '/home/terop/tpgames.org/oauth2/CurlHttpClient.php';
+include '/home/terop/html/tpgames.org/oauth2/OAuth2Client.php';
+include '/home/terop/html/tpgames.org/oauth2/Provider.php';
+include '/home/terop/html/tpgames.org/oauth2/HttpClientInterface.php';
+include '/home/terop/html/tpgames.org/oauth2/CurlHttpClient.php';
 
 function redirect_post($url, array $data, array $headers = null) {
   $params = [
