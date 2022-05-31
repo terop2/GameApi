@@ -16,6 +16,10 @@ EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)
   p->frame = 0;
   p->time = 0;
   p->count = 0;
+  p->previous_frame_time = 0.0;
+  p->delta_time = 0.0;
+  p->current_time = 0.0;
+  p->frame_time = 0.0;
 }
 EXPORT GameApi::MainLoopApi::~MainLoopApi()
 {
