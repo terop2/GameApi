@@ -47,6 +47,10 @@
 //#define OPENGL_ES 1
 #endif
 
+#ifdef AMD
+#define OPENGL_ES 1
+#endif
+
 #ifdef WINDOWS
 //#define OPENGL_ES 1
 #endif
@@ -54,7 +58,7 @@
 //#define WAYLAND 1
 
 #ifdef WAYLAND
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 #endif
 
 #ifdef EMSCRIPTEN
@@ -2168,7 +2172,7 @@ VARYING_IN " float fog_intensity;\n"
     "   vec4 diff = texture(texsampler_cube[5], n);\n"
 "   vec4 spec = texture(texsampler_cube[6], ref);\n"
 #else
-"   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"#
+"   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
     "   vec4 diff = textureCube(texsampler_cube[5], n);\n"
 "   vec4 spec = textureCube(texsampler_cube[6], ref);\n"
 #endif
