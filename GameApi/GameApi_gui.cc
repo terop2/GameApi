@@ -2587,9 +2587,9 @@ class ClickAreaWidget : public GuiWidgetForward
 public:
   ClickAreaWidget(GameApi::EveryApi &ev, GuiWidget *wid, int area_x, int area_y, int area_width, int area_height, int button_id2) : GuiWidgetForward(ev, { wid } ), area_x(area_x), area_y(area_y), area_width(area_width), area_height(area_height) { done=false;
     selected = false;
+    button_id = button_id2;
     Point2d p = { -666.0, -666.0 };
     update(p, -1, -1, -1,0);
-    button_id = button_id2;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {

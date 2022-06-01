@@ -700,7 +700,7 @@ function redirect_post( $url, array $data, array $headers=null )
      }
   }
   $ctx = stream_context_create($params);
-    $x = 'https://www.meshpage.org/';
+    $x = 'https://meshpage.org/';
     $fp = @fopen( $x . $url, 'rb', false, $ctx);
     if ($fp) { 
        echo @stream_get_contents($fp);
