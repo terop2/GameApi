@@ -347,7 +347,9 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
   std::string url = filepath;
   // remove starting / from file names.
   if (url.size()>0 && url[0]=='/') url=url.substr(1);
-
+  // remove ending \" from the file names
+  if (url.size()>0 && url[url.size()-1]=='\"') url=url.substr(0,url.size()-2);
+  
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
@@ -1153,7 +1155,7 @@ public:
 	res.y = 0.5+int(((unsigned int)(pos_ptr4[1]))&0xff);
 	res.z = 0.5+int(((unsigned int)(pos_ptr4[2]))&0xff);
 	res.w = 0.5+int(((unsigned int)(pos_ptr4[3]))&0xff);
-	//std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+	std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
 	return res;
 	//return int(((unsigned int)(pos_ptr2[num]))&0xff);
       }
@@ -5659,6 +5661,81 @@ extern Matrix g_last_resize;
 
 char key_mapping(char ch, int type);
 
+float fix_num(float x)
+{
+  if (std::isnan(x)) x=0.0;
+  if (std::isinf(x)) x=0.0;
+  return x;
+}
+float fix_num2(float x)
+{
+  if (std::isnan(x)) x=1.0;
+  if (std::isinf(x)) x=1.0;
+  return x;
+}
+
+float fix_rot(int index, float x)
+{
+  if (x>500.0||x<-500.0) { return 0.0; }
+  x=fix_num(x);
+  return x;
+}
+float fix_trans(int index,float x)
+{
+  if (x>5500.0||x<-5500.0) return 0.0;
+  x=fix_num(x);
+  return x;
+}
+float fix_scale(int index, float x)
+{
+  if (x>300.0||x<-300.0) x=1.0;
+  x=fix_num2(x);
+  return x;
+}
+
+float fix_zero(int index, float x)
+{
+  return 0.0;
+}
+float fix_one(int index, float x)
+{
+  x = fix_num2(x);
+  if (x>1000.0||x<-1000.0) x=1.0;
+  return x;
+}
+
+Matrix fix_matrix(Matrix m)
+{
+  m.matrix[0] = fix_scale(0,m.matrix[0]);
+  m.matrix[5] = fix_scale(1+4,m.matrix[5]);
+  m.matrix[10] = fix_scale(2+8,m.matrix[10]);
+  m.matrix[15] = fix_one(3+8+4,m.matrix[15]);
+
+  m.matrix[3] = fix_trans(3,m.matrix[3]);
+  m.matrix[7] = fix_trans(3+4,m.matrix[7]);
+  m.matrix[11] = fix_trans(3+8,m.matrix[11]);
+
+  
+  
+  
+  m.matrix[1] = fix_rot(1,m.matrix[1]);
+  m.matrix[2] = fix_rot(2,m.matrix[2]);
+
+  m.matrix[4] = fix_rot(0+4,m.matrix[4]);
+  m.matrix[6] = fix_rot(2+4,m.matrix[6]);
+
+  m.matrix[8] = fix_rot(0+8,m.matrix[8]);
+  m.matrix[9] = fix_rot(1+8,m.matrix[9]);
+  
+  m.matrix[12] = fix_zero(0+8+4,m.matrix[12]);
+  m.matrix[13] = fix_zero(1+8+4,m.matrix[13]);
+  m.matrix[14] = fix_zero(2+8+4,m.matrix[14]);  return m;
+  //std::cout << "START:"<<std::endl << m << std::endl;
+
+  //std::cout << "END:"<<std::endl << m << std::endl;
+  return m;
+}
+
 class GltfAnimShaderML : public MainLoopItem
 {
 public:
@@ -5878,11 +5955,20 @@ public:
 	    
 	    Matrix ri = Matrix::Inverse(resize);
 
-	    //std::cout << m << std::endl;
+	    //std::cout << m0i << std::endl;
+
+	    //.matrix[3] = 0.0;
+	    //m.matrix[3+4] = 0.0;
+	    //m.matrix[3+8] = 0.0;
 	    
 	    //std::cout << ri << std::endl;
 	    //std::cout << resize << std::endl;
-	    
+
+	    ri = fix_matrix(ri);
+	    m0i= fix_matrix(m0i);
+	    m=fix_matrix(m);
+	    bindm=fix_matrix(bindm);
+	    resize=fix_matrix(resize);
 	    vec.push_back(add_matrix2(env,ri *m0i *m* bindm * resize ));
 	  }
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 640);
