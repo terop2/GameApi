@@ -330,6 +330,7 @@ public:
   ML key_ml(std::vector<ML> vec, std::string keys);
   ML async_url(std::string url, ML ml);
   ARR gltf_anim_skeleton(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int channelk, int num_keyframes);
+  P gltf_scene_p(GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id);
   IMPORT ML memmap_window2(EveryApi &ev, std::string url);
   IMPORT ML memmap_window3(EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6);
   IMPORT ML ml_load_um(EveryApi &ev, std::string url);
@@ -373,12 +374,12 @@ public:
   IMPORT LI gltf_skeleton(EveryApi &ev, std::string base_url, std::string url, int start_node);
   IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id );
   IMPORT ML gltf_mesh_all( EveryApi &ev, std::string base_url, std::string url );
-  IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id );
-  IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id );
+  IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id, std::string keys );
+  IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id, std::string keys );
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
   IMPORT ML gltf_anim2( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
   IMPORT ML gltf_anim4( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
