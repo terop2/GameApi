@@ -347,7 +347,9 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
   std::string url = filepath;
   // remove starting / from file names.
   if (url.size()>0 && url[0]=='/') url=url.substr(1);
-
+  // remove ending \" from the file names
+  if (url.size()>0 && url[url.size()-1]=='\"') url=url.substr(0,url.size()-2);
+  
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
@@ -1153,7 +1155,7 @@ public:
 	res.y = 0.5+int(((unsigned int)(pos_ptr4[1]))&0xff);
 	res.z = 0.5+int(((unsigned int)(pos_ptr4[2]))&0xff);
 	res.w = 0.5+int(((unsigned int)(pos_ptr4[3]))&0xff);
-	//std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+	std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
 	return res;
 	//return int(((unsigned int)(pos_ptr2[num]))&0xff);
       }
@@ -1597,7 +1599,7 @@ public:
     std::cout << "ERROR gltf::mat2inst2" << std::endl;
     GameApi::ML ml;
     ml.id=-1;
-    return ml;
+    return ml; 
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -1614,6 +1616,7 @@ private:
   GameApi::EveryApi &ev;
   float mix;
   float roughness, metallic, base_r, base_g, base_b, base_a, occul;
+  float emiss;
 };
 
 
@@ -1702,6 +1705,10 @@ public:
       tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
       I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
     }
+    if (load->model.materials[material_id].alphaMode=="BLEND") {
+      OpenglLowApi *ogl = g_low->ogl;
+      ogl->glEnable(Low_GL_BLEND);
+    }
     // GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
 
@@ -1729,6 +1736,11 @@ public:
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
     }
+    if (load->model.materials[material_id].alphaMode=="BLEND") {
+      OpenglLowApi *ogl = g_low->ogl;
+      ogl->glEnable(Low_GL_BLEND);
+      //      I18=ev.mainloop_api.blendfunc(I18,2,3);
+    }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
@@ -1753,6 +1765,11 @@ public:
     tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
     tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
+    }
+    if (load->model.materials[material_id].alphaMode=="BLEND") {
+      OpenglLowApi *ogl = g_low->ogl;
+      ogl->glEnable(Low_GL_BLEND);
+      //      I18=ev.mainloop_api.blendfunc(I18,2,3);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
@@ -3372,6 +3389,8 @@ public:
   GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
   GameApi::ML ml = gltf_scene2(env,ev,load,scene_id,keys);
   res= scale_to_gltf_size(env,ev,mesh,ml);    
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
   }
   virtual void execute(MainLoopEnv &e) {
     if (res.id!=-1) {
@@ -5103,9 +5122,72 @@ GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, std::strin
   return gltf_scene4(e,ev,load,scene_id);
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int /*animation*/, std::string keys )
+class GltfSceneAnim : public MainLoopItem
+{
+public:
+  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys) : env(env), ev(ev), base_url(base_url), url(url), scene_id(scene_id), animation(animation), keys(keys) { res.id = -1; }
+
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
+  GameApi::ML ml = gltf_scene3(env,ev,load,scene_id,animation,keys);
+  res= scale_to_gltf_size(env,ev,mesh,ml);
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      return item->shader_id();
+    else return std::vector<int>();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string base_url;
+  std::string url;
+  GameApi::ML res;
+  int scene_id;
+  int animation;
+  std::string keys;
+};
+
+GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys )
 {
 
+#if 0
+  
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
@@ -5117,6 +5199,9 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::s
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
   GameApi::ML ml = gltf_scene3(e,ev,load,scene_id,0, keys);
   return scale_to_gltf_size(e,ev,mesh,ml);
+
+#endif
+  return add_main_loop(e, new GltfSceneAnim(e,ev,base_url,url,scene_id,animation,keys));
 
 }
 
@@ -5853,6 +5938,81 @@ extern Matrix g_last_resize;
 
 char key_mapping(char ch, int type);
 
+float fix_num(float x)
+{
+  if (std::isnan(x)) x=0.0;
+  if (std::isinf(x)) x=0.0;
+  return x;
+}
+float fix_num2(float x)
+{
+  if (std::isnan(x)) x=1.0;
+  if (std::isinf(x)) x=1.0;
+  return x;
+}
+
+float fix_rot(int index, float x)
+{
+  if (x>500.0||x<-500.0) { return 0.0; }
+  x=fix_num(x);
+  return x;
+}
+float fix_trans(int index,float x)
+{
+  if (x>5500.0||x<-5500.0) return 0.0;
+  x=fix_num(x);
+  return x;
+}
+float fix_scale(int index, float x)
+{
+  if (x>300.0||x<-300.0) x=1.0;
+  x=fix_num2(x);
+  return x;
+}
+
+float fix_zero(int index, float x)
+{
+  return 0.0;
+}
+float fix_one(int index, float x)
+{
+  x = fix_num2(x);
+  if (x>1000.0||x<-1000.0) x=1.0;
+  return x;
+}
+
+Matrix fix_matrix(Matrix m)
+{
+  m.matrix[0] = fix_scale(0,m.matrix[0]);
+  m.matrix[5] = fix_scale(1+4,m.matrix[5]);
+  m.matrix[10] = fix_scale(2+8,m.matrix[10]);
+  m.matrix[15] = fix_one(3+8+4,m.matrix[15]);
+
+  m.matrix[3] = fix_trans(3,m.matrix[3]);
+  m.matrix[7] = fix_trans(3+4,m.matrix[7]);
+  m.matrix[11] = fix_trans(3+8,m.matrix[11]);
+
+  
+  
+  
+  m.matrix[1] = fix_rot(1,m.matrix[1]);
+  m.matrix[2] = fix_rot(2,m.matrix[2]);
+
+  m.matrix[4] = fix_rot(0+4,m.matrix[4]);
+  m.matrix[6] = fix_rot(2+4,m.matrix[6]);
+
+  m.matrix[8] = fix_rot(0+8,m.matrix[8]);
+  m.matrix[9] = fix_rot(1+8,m.matrix[9]);
+  
+  m.matrix[12] = fix_zero(0+8+4,m.matrix[12]);
+  m.matrix[13] = fix_zero(1+8+4,m.matrix[13]);
+  m.matrix[14] = fix_zero(2+8+4,m.matrix[14]);  return m;
+  //std::cout << "START:"<<std::endl << m << std::endl;
+
+  //std::cout << "END:"<<std::endl << m << std::endl;
+  return m;
+}
+
 class GltfAnimShaderML : public MainLoopItem
 {
 public:
@@ -6072,11 +6232,20 @@ public:
 	    
 	    Matrix ri = Matrix::Inverse(resize);
 
-	    //std::cout << m << std::endl;
+	    //std::cout << m0i << std::endl;
+
+	    //.matrix[3] = 0.0;
+	    //m.matrix[3+4] = 0.0;
+	    //m.matrix[3+8] = 0.0;
 	    
 	    //std::cout << ri << std::endl;
 	    //std::cout << resize << std::endl;
-	    
+
+	    ri = fix_matrix(ri);
+	    m0i= fix_matrix(m0i);
+	    m=fix_matrix(m);
+	    bindm=fix_matrix(bindm);
+	    resize=fix_matrix(resize);
 	    vec.push_back(add_matrix2(env,ri *m0i *m* bindm * resize ));
 	  }
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 640);
