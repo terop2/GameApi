@@ -3377,6 +3377,8 @@ public:
   GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
   GameApi::ML ml = gltf_scene2(env,ev,load,scene_id,keys);
   res= scale_to_gltf_size(env,ev,mesh,ml);    
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
   }
   virtual void execute(MainLoopEnv &e) {
     if (res.id!=-1) {
@@ -5013,9 +5015,72 @@ GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, std::strin
   return gltf_scene4(e,ev,load,scene_id);
 }
 
+class GltfSceneAnim : public MainLoopItem
+{
+public:
+  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys) : env(env), ev(ev), base_url(base_url), url(url), scene_id(scene_id), animation(animation), keys(keys) { res.id = -1; }
+
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+  load->Prepare();
+  GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
+  GameApi::ML ml = gltf_scene3(env,ev,load,scene_id,animation,keys);
+  res= scale_to_gltf_size(env,ev,mesh,ml);
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
+  }
+  virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      return item->shader_id();
+    else return std::vector<int>();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string base_url;
+  std::string url;
+  GameApi::ML res;
+  int scene_id;
+  int animation;
+  std::string keys;
+};
+
 GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys )
 {
 
+#if 0
+  
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
@@ -5027,6 +5092,9 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::s
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
   GameApi::ML ml = gltf_scene3(e,ev,load,scene_id,animation, keys);
   return scale_to_gltf_size(e,ev,mesh,ml);
+
+#endif
+  return add_main_loop(e, new GltfSceneAnim(e,ev,base_url,url,scene_id,animation,keys));
 
 }
 
