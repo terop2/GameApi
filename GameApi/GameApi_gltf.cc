@@ -2919,7 +2919,7 @@ std::pair<Matrix,Matrix> gltf_node_transform_obj_apply(GameApi::Env &e, GameApi:
   Matrix mv = Matrix::Identity();
   Quarternion q = { float(o.rot_x), float(o.rot_y), float(o.rot_z), float(o.rot_w) };
   Matrix m = Quarternion::QuarToMatrix(q);
-  //Matrix mi = Matrix::Inverse(m);
+  // Matrix mi = Matrix::Inverse(m);
   // Scale
 
   // gltf spec says the order must be scale, rotate, translate
@@ -3049,13 +3049,13 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
 
  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
   GameApi::MN mv = ev.move_api.mn_empty();
+  
   if (int(node->scale.size())==3) {
     double s_x = node->scale[0];
     double s_y = node->scale[1];
     double s_z = node->scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
     }
-  
   if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
     double r_y = node->rotation[1];
@@ -3067,15 +3067,12 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
     }
-
   if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
     double m_y = node->translation[1];
     double m_z = node->translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
   }
-
-  
   if (int(node->matrix.size())==16) {
     double *arr = &node->matrix[0];
     Matrix m;
@@ -4380,6 +4377,63 @@ public:
       tinygltf::Node *node = &load->model.nodes[node_id];
       TransformObject start_obj = gltf_node_transform_obj(node);
       TransformObject end_obj = start_obj;
+      int sz = load->model.animations.size();
+      if (animation<0||animation>=sz) return;
+      
+      tinygltf::Animation *anim3 = &load->model.animations[animation];
+    int s5 = anim3->channels.size();
+      for(int i=s5-1;i>=0;i--) {
+	int channel = i;
+      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      std::string path = chan->target_path;
+      if (chan->target_node == node_id) {
+
+      int ik = time_index;
+      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik);
+      //anims.push_back(anim);
+      anim->Prepare();
+      float *a = 0;
+      float *a2 = 0;
+      int type = -1;
+      a = anim->Amount(ik);
+      a2 = anim->Amount(ik+1);
+      type = anim->Type(time_index);
+
+      if (type==0 && a2 && path=="translation") { // translation
+	start_obj.trans_x =a[0];
+	start_obj.trans_y =a[1];
+	start_obj.trans_z =a[2];
+	end_obj.trans_x =a2[0];
+	end_obj.trans_y =a2[1];
+	end_obj.trans_z =a2[2];
+	
+      }
+
+      if (type==1 && a2 && path=="rotation") { // rotation
+	start_obj.rot_x=a[0];
+	start_obj.rot_y=a[1];
+	start_obj.rot_z=a[2];
+	start_obj.rot_w=a[3];
+	end_obj.rot_x=a2[0];
+	end_obj.rot_y=a2[1];
+	end_obj.rot_z=a2[2];
+	end_obj.rot_w=a2[3];
+	
+	
+
+      }
+
+      if (type==2 && a2 && path=="scale") { // scale
+	start_obj.scale_x=a[0];
+	start_obj.scale_y=a[1];
+	start_obj.scale_z=a[2];
+	end_obj.scale_x=a2[0];
+	end_obj.scale_y=a2[1];
+	end_obj.scale_z=a2[2];
+      } 
+      }
+      }
+      
       next->SetPreviousTimeIndex(node_id, start_obj, end_obj);
     }
   }
@@ -4389,6 +4443,62 @@ public:
       tinygltf::Node *node = &load->model.nodes[node_id];
       TransformObject start_obj = gltf_node_transform_obj(node);
       TransformObject end_obj = start_obj;
+      int sz = load->model.animations.size();
+      if (animation<0||animation>=sz) return;
+      
+      tinygltf::Animation *anim3 = &load->model.animations[animation];
+    int s5 = anim3->channels.size();
+      for(int i=s5-1;i>=0;i--) {
+	int channel = i;
+      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      std::string path = chan->target_path;
+      if (chan->target_node == node_id) {
+
+      int ik = time_index;
+      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik);
+      //anims.push_back(anim);
+      anim->Prepare();
+      //oat *a = 0;
+      float *a2 = 0;
+      int type = -1;
+      //a = anim->Amount(ik);
+      a2 = anim->Amount(0);
+      type = anim->Type(0);
+
+      if (type==0 && a2 && path=="translation") { // translation
+	//start_obj.trans_x =a[0];
+	//start_obj.trans_y =a[1];
+	//start_obj.trans_z =a[2];
+	end_obj.trans_x =a2[0];
+	end_obj.trans_y =a2[1];
+	end_obj.trans_z =a2[2];
+	
+      }
+
+      if (type==1 && a2 && path=="rotation") { // rotation
+	//start_objrot_x=a[0];
+	//start_obj.rot_y=a[1];
+	//start_obj.rot_z=a[2];
+	//start_obj.rot_w=a[3];
+	end_obj.rot_x=a2[0];
+	end_obj.rot_y=a2[1];
+	end_obj.rot_z=a2[2];
+	end_obj.rot_w=a2[3];
+	
+	
+
+      }
+
+      if (type==2 && a2 && path=="scale") { // scale
+	//start_obj.scale_x=a[0];
+	//start_obj.scale_y=a[1];
+	//start_obj.scale_z=a[2];
+	end_obj.scale_x=a2[0];
+	end_obj.scale_y=a2[1];
+	end_obj.scale_z=a2[2];
+      } 
+      }
+      }
       SetPreviousTimeIndex(node_id, start_obj, end_obj);
     } else {
       prev->call_prev_time_index1(this, node_id);
@@ -4468,11 +4578,7 @@ public:
 
     if (has_anim) {
 
-      //Cif (feature_enable[6])
       if (type==0 && a && a2 && path=="translation") { // translation
-	//std::cout << "trans:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << std::endl;
-	//mv2 = ev.move_api.trans2(mv2,a[0]*1,a[1]*1,a[2]*1);
-	//mv = ev.move_api.trans2(mv, a2[0]*1, a2[1]*1, a2[2]*1);
 	start_obj.trans_x =a[0];
 	start_obj.trans_y =a[1];
 	start_obj.trans_z =a[2];
@@ -4480,15 +4586,9 @@ public:
 	end_obj.trans_y =a2[1];
 	end_obj.trans_z =a2[2];
 	
-      } else {
-
       }
 
-#if 1
-      //Cif (feature_enable[7])
       if (type==1 && a && a2 && path=="rotation") { // rotation
-	//std::cout << "rot(s):" << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << std::endl;
-	//std::cout << "rot(t):" << a2[0] << " " << a2[1] << " " << a2[2] << " " << a2[3] << std::endl;
 	start_obj.rot_x=a[0];
 	start_obj.rot_y=a[1];
 	start_obj.rot_z=a[2];
@@ -4502,9 +4602,6 @@ public:
 
       }
 
-#endif
-#if 1
-      //C if (feature_enable[8])
       if (type==2 && a && a2 && path=="scale") { // scale
 	start_obj.scale_x=a[0];
 	start_obj.scale_y=a[1];
@@ -4512,10 +4609,6 @@ public:
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
-	//mv2 = ev.move_api.scale2(mv2,a[0],a[1],a[2]);
-	//mv = ev.move_api.scale2(mv, a2[0],a2[1],a2[2]);
-	//std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
-
       } 
   
       if (type==3) { // weights
@@ -4523,7 +4616,6 @@ public:
 	std::cout << "WEIGHT(s): " <<a[0] << " " << a[1] << " " << a[2] << " "<< a[3] << std::endl;
 	std::cout << "WEIGHT(t): " <<a2[0] << " " << a2[1] << " " << a2[2] << " "<< a2[3] << std::endl;
       }
-#endif
 
     
 #endif
@@ -4889,7 +4981,7 @@ GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf
 }
 
 
-GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id, int animation, std::string keys )
+GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id, int /*animation*/, std::string keys )
 {
   int s2 = load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -5011,7 +5103,7 @@ GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, std::strin
   return gltf_scene4(e,ev,load,scene_id);
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys )
+GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int /*animation*/, std::string keys )
 {
 
   bool is_binary=false;
@@ -5023,7 +5115,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::s
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
-  GameApi::ML ml = gltf_scene3(e,ev,load,scene_id,animation, keys);
+  GameApi::ML ml = gltf_scene3(e,ev,load,scene_id,0, keys);
   return scale_to_gltf_size(e,ev,mesh,ml);
 
 }
