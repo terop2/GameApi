@@ -1100,13 +1100,19 @@ public:
 	unsigned char *pos_ptr = &joints_buf->data[0];
 	int stride2 = joints_bv->byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	unsigned char *pos_ptr2 = (unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
+	unsigned short *pos_ptr2 = (unsigned short*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
 	//vec4 res;
 	//res[0] = pos_ptr2[0];
 	//res[1] = pos_ptr2[1];
 	//res[2] = pos_ptr2[2];
 	//res[3] = pos_ptr2[3];
+
+	unsigned short p1 = pos_ptr2[0];
+	unsigned short p2 = pos_ptr2[1];
+	unsigned short p3 = pos_ptr2[2];
+	unsigned short p4 = pos_ptr2[3];
+	
 	//std::cout << "Attached end" << std::endl;
 	VEC4 res;
 	res.x = 0.5+int(((unsigned int)(pos_ptr2[0]))&0xff);
@@ -1218,7 +1224,7 @@ public:
       }
       }
     } else {
-      //std::cout << "Attached end" << std::endl;
+      std::cout << "Attached end" << std::endl;
       VEC4 res;
       res.x = 0.0;
       res.y = 0.0;
@@ -2864,7 +2870,7 @@ TransformObject gltf_node_transform_obj(tinygltf::Node *node)
     o.trans_y = m_y;
     o.trans_z = m_z;
   }
-
+  //std::cout << node->matrix.size() << std::endl;
   if (int(node->matrix.size())==16) {
     double *arr = &node->matrix[0];
     Matrix m;
@@ -2886,8 +2892,8 @@ Matrix gltf_node_transform_obj_apply(GameApi::Env &e, GameApi::EveryApi &ev, Mat
   Matrix m = Quarternion::QuarToMatrix(q);
   //Matrix mi = Matrix::Inverse(m);
   // Scale
-  mv = mv * m;
   mv = mv * Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
+  mv = mv * m;
   mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
   mv = mv * o.m;
   mv = mv * root;
@@ -3860,6 +3866,13 @@ public:
       output = &model->buffers[output_buf->buffer];
   }
 
+  std::string InterpolationMode() const {
+    if (samp) {
+      return samp->interpolation;
+    }
+    return "";
+  }
+  
   Matrix InverseBindMatrix(int joint) const
   {
     if (bind && bind_acc && bind_buf) { 
@@ -4199,7 +4212,7 @@ extern Matrix g_last_resize;
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
-  GLTFJointMatrices(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640;}
+  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640;}
   ~GLTFJointMatrices() {
     int s = anims.size();
     for(int i=0;i<s;i++) delete anims[i];
@@ -4221,6 +4234,7 @@ public:
       end_t.resize(max_joints);
       root_env.resize(max_joints);
       root_env_2.resize(max_joints);
+      node_ids.resize(max_joints);
       int s = max_joints;
       for(int i=0;i<s;i++) {
 	//GameApi::MN mn = ev.move_api.mn_empty();
@@ -4231,6 +4245,7 @@ public:
 	bindmatrix[i]=Matrix::Identity();
 	start_t[i] = 0.0;
 	end_t[i] = 0.0;
+	node_ids[i]=0;
       }
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
@@ -4255,6 +4270,7 @@ public:
       end_t.resize(max_joints);
       root_env.resize(max_joints);
       root_env_2.resize(max_joints);
+      node_ids.resize(max_joints);
       int s = max_joints;
       for(int i=0;i<s;i++) {
 	//GameApi::MN mn = ev.move_api.mn_empty();
@@ -4265,6 +4281,7 @@ public:
 	bindmatrix[i]=Matrix::Identity();
 	start_t[i] = 0.0;
 	end_t[i] = 0.0;
+	node_ids[i]=0;
       }
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
@@ -4291,10 +4308,46 @@ public:
     return next->shader_id();
   }
 
-  
+  void SetPreviousTimeIndex(int node_id, TransformObject o1, TransformObject o2)
+  {
+    prev_nodes1[node_id]=o1;
+    prev_nodes2[node_id]=o2;
+    //trans1 = o1; trans2 = o2;
+  }
+  void call_prev_time_index1(GLTFJointMatrices *next, int node_id) {
+    //tinygltf::Node *node = &load->model.nodes[node_id];
+
+    bool done = false;
+    for(int i=0;i<node_ids.size();i++) {
+      if(node_id==node_ids[i]) {
+	next->SetPreviousTimeIndex(node_id, jointmatrices_start[i],jointmatrices_end[i]);
+	done = true;
+      }
+    }
+    if (!done && prev) prev->call_prev_time_index1(next,node_id);
+    if (!done && !prev) {
+      tinygltf::Node *node = &load->model.nodes[node_id];
+      TransformObject start_obj = gltf_node_transform_obj(node);
+      TransformObject end_obj = start_obj;
+      next->SetPreviousTimeIndex(node_id, start_obj, end_obj);
+    }
+  }
+  void call_prev_time_index2(int node_id)
+  {
+    if (!prev) {
+      tinygltf::Node *node = &load->model.nodes[node_id];
+      TransformObject start_obj = gltf_node_transform_obj(node);
+      TransformObject end_obj = start_obj;
+      SetPreviousTimeIndex(node_id, start_obj, end_obj);
+    } else {
+      prev->call_prev_time_index1(this, node_id);
+    }
+  }
   Matrix recurse_node(int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
     if (node_id<0 || node_id>=load->model.nodes.size()) return Matrix::Identity();
+
+    call_prev_time_index2(node_id);
     int sz = load->model.animations.size();
     if (animation<0||animation>=sz) return Matrix::Identity();
     
@@ -4303,10 +4356,13 @@ public:
     
     //std::cout << "Node: " << node->name << std::endl;
 
-    TransformObject start_obj = gltf_node_transform_obj(node);
-    TransformObject end_obj = start_obj;
+    TransformObject start_obj = prev_nodes1[node_id]; //gltf_node_transform_obj(node);
+    TransformObject end_obj = prev_nodes2[node_id]; //start_obj;
     //TransformObject parent = start_obj;
-    
+    //std::cout << "Start" << std::endl;
+    //print_transform(start_obj);
+    //std::cout << "End" << std::endl;
+    //print_transform(end_obj);
     int channel = -1;
     tinygltf::Animation *anim3 = &load->model.animations[animation];
     int s5 = anim3->channels.size();
@@ -4321,7 +4377,8 @@ public:
 
 
 	
-    for(int i=s5-1;i>=0;i--) {
+	 for(int i=s5-1;i>=0;i--) {
+	//for(int i=0;i<s5;i++) {
       tinygltf::AnimationChannel *chan = &anim3->channels[i];
       std::string path = chan->target_path;
       if (chan->target_node == node_id) {
@@ -4454,6 +4511,7 @@ public:
       root_env_2[jj] = pos2;
       jointmatrices_start[jj] = start_obj;
       jointmatrices_end[jj] = end_obj;
+      node_ids[jj] = node_id;
     }
     //}
 
@@ -4489,6 +4547,7 @@ public:
   const std::vector<float> *start_time() const { return &start_t; }
   const std::vector<float> *end_time() const { return &end_t; }
 private:
+  GLTFJointMatrices *prev;
   GameApi::Env &env;
   GameApi::EveryApi &ev;
   LoadGltf *load;
@@ -4501,18 +4560,26 @@ private:
   std::vector<Matrix> root_env_2;
   std::vector<TransformObject> jointmatrices_start;
   std::vector<TransformObject> jointmatrices_end;
+  std::vector<int> node_ids;
   std::vector<Matrix> bindmatrix;
   std::vector<float> start_t;
   std::vector<float> end_t;
   bool firsttime;
   bool has_anim;
   std::vector<GLTFAnimation*> anims;
+  std::map<int,TransformObject> prev_nodes1;
+  std::map<int,TransformObject> prev_nodes2;
 };
 
-GameApi::ML gltf_joint_matrices2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
+GameApi::ML gltf_joint_matrices2(GameApi::ML prev, GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
 {
   MainLoopItem *item = find_main_loop(e,next);
-  return add_main_loop(e, new GLTFJointMatrices(e,ev,load, skin_num, animation, time_index, item,has_anim));
+  GLTFJointMatrices *prev2 = 0;
+  if (prev.id!=0) {
+    MainLoopItem *prev1 = find_main_loop(e,prev);
+    prev2 = (GLTFJointMatrices*)prev1;
+  }
+  return add_main_loop(e, new GLTFJointMatrices(prev2,e,ev,load, skin_num, animation, time_index, item,has_anim));
 }
 
 GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
@@ -5311,10 +5378,13 @@ public:
     GameApi::ML ml;
     ml.id = next->mat(p.id);
     std::vector<GameApi::ML> mls;
-    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_start;
+    ml_start.id = 0;
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
     //std::cout << "NUM_TIMEINDEXES: " << num_timeindexes << std::endl;
     for(int i=0;i<num_timeindexes;i++) {
-      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml, true);
+      GameApi::ML prev = i==0?ml_orig:mls[i-1];
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml, true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -5326,9 +5396,12 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id, pts.id);
     std::vector<GameApi::ML> mls;
-    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_start;
+    ml_start.id = 0;
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
     for(int i=0;i<num_timeindexes;i++) {
-      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml, true);
+      GameApi::ML prev = i==0?ml_orig:mls[i-1];
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml, true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key);
@@ -5340,9 +5413,12 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id, ms.id);
     std::vector<GameApi::ML> mls;
-    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_start;
+    ml_start.id = 0;
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
     for(int i=0;i<num_timeindexes;i++) {
-      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml,true);
+      GameApi::ML prev = i==0?ml_orig:mls[i-1];
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml,true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -5354,9 +5430,12 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
     std::vector<GameApi::ML> mls;
-    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_start;
+    ml_start.id = 0;
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
     for(int i=0;i<num_timeindexes;i++) {
-      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml,true);
+      GameApi::ML prev = i==0?ml_orig:mls[i-1];
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml,true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -5367,10 +5446,13 @@ public:
     load->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
-    GameApi::ML ml_orig = gltf_joint_matrices2(e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_start;
+    ml_start.id = 0;
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
     std::vector<GameApi::ML> mls;
     for(int i=0;i<num_timeindexes;i++) {
-      GameApi::ML ml1 = gltf_joint_matrices2(e,ev, load, skin_num, animation, i, ml,true);
+      GameApi::ML prev = i==0?ml_orig:mls[i-1];
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml,true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
