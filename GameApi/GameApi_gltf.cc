@@ -2850,8 +2850,8 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   next[1]=o2.rot_y;
   next[2]=o2.rot_z;
   next[3]=o2.rot_w;
-  spherical_slerp(prev,next,val,res2);
-  //slerp(prev,next,val,res2);
+  //spherical_slerp(prev,next,val,res2);
+  slerp(prev,next,val,res2);
   res.rot_x = res2[0];
   res.rot_y = res2[1];
   res.rot_z = res2[2];
