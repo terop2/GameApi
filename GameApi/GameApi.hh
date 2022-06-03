@@ -501,6 +501,7 @@ public:
   void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   IMPORT ML array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
+  IMPORT ML or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2);
   IMPORT FML array_fml(std::vector<FML> vec);
   //IMPORT ML timing_ml(std::vector<ML> vec, float duration);
   IMPORT ML dyn_points(EveryApi &ev, ML ml, MN move, int pointnum, float pos_x, float pos_y, float pos_z);
