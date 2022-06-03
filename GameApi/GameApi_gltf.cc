@@ -345,10 +345,12 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
   //LoadGltf *data = (LoadGltf*)ptr;
   //std::cout << "ReadWholeFile " << filepath << std::endl;
   std::string url = filepath;
+  //std::cout << "ReadWholeFile: " << url << std::endl;
   // remove starting / from file names.
   if (url.size()>0 && url[0]=='/') url=url.substr(1);
   // remove ending \" from the file names
-  if (url.size()>0 && url[url.size()-1]=='\"') url=url.substr(0,url.size()-2);
+  if (url.size()>0 && url[url.size()-1]=='\"') url=url.substr(0,url.size()-1);
+
   
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
@@ -1161,9 +1163,9 @@ public:
       }
       }
     } else {
-      //std::cout << "Attached end" << std::endl;
+      std::cout << "Attached end" << std::endl;
       VEC4 res;
-      res.x = 0.0;
+      res.x = 0.5+int(mesh_index);
       res.y = 0.0;
       res.z = 0.0;
       res.w = 0.0;
@@ -1172,7 +1174,7 @@ public:
     }
     std::cout << "gltf attach unknown mode: "<< mode << std::endl;
       VEC4 res;
-      res.x = 0.0;
+      res.x = 0.5+int(mesh_index);
       res.y = 0.0;
       res.z = 0.0;
       res.w = 0.0;
@@ -1238,7 +1240,7 @@ public:
     } else {
       std::cout << "Attached end" << std::endl;
       VEC4 res;
-      res.x = 0.0;
+      res.x = 1.0;
       res.y = 0.0;
       res.z = 0.0;
       res.w = 0.0;
@@ -1246,7 +1248,7 @@ public:
     }
     std::cout << "gltf weights unknown mode: "<< mode << std::endl;
     VEC4 res;
-    res.x = 0.0;
+    res.x = 1.0;
     res.y = 0.0;
     res.z = 0.0;
     res.w = 0.0;
@@ -1653,7 +1655,7 @@ public:
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
   GameApi::BM texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(load->model.materials.size())||!has_texture(i)) {
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
     switch(i) {
@@ -3000,7 +3002,7 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
   return mv;
 }
 
-GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id);
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys);
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys);
 GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys);
@@ -3046,7 +3048,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     int mesh_id = node->mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2( e, ev, load, mesh_id );
+      mesh = gltf_mesh2( e, ev, load, mesh_id, 0, keys );
     }
   }
   // todo cameras
@@ -3147,7 +3149,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, Lo
   }
 }
 
-GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id)
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys)
 {
   if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
     int s = load->model.meshes[mesh_id].primitives.size();
@@ -3156,10 +3158,12 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
       GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
       int mat = load->model.meshes[mesh_id].primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
+      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, keys);
+
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2);
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim);
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       mls.push_back(ml);
     }
@@ -3201,8 +3205,8 @@ GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
 class GltfMesh : public MainLoopItem
 {
 public:
-  GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id)
-    :env(env), ev(ev), base_url(base_url), url(url),mesh_id(mesh_id) { res.id=-1; }
+  GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys)
+    :env(env), ev(ev), base_url(base_url), url(url),mesh_id(mesh_id),skin_id(skin_id), keys(keys) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -3223,7 +3227,7 @@ public:
   load->Prepare();
   GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
 
-  GameApi::ML ml = gltf_mesh2(env,ev,load, mesh_id);
+  GameApi::ML ml = gltf_mesh2(env,ev,load, mesh_id, skin_id, keys);
   res = scale_to_gltf_size(env,ev,mesh,ml);
     
   }
@@ -3257,9 +3261,11 @@ private:
   std::string url;
   GameApi::ML res;
   int mesh_id;
+  int skin_id;
+  std::string keys;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id )
+GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys )
 {
 #if 0
   bool is_binary=false;
@@ -3272,10 +3278,10 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string 
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
 
-  GameApi::ML ml = gltf_mesh2(e,ev,load, mesh_id);
+  GameApi::ML ml = gltf_mesh2(e,ev,load, mesh_id, skin_id, keys);
   return scale_to_gltf_size(e,ev,mesh,ml);
 #endif
-  return add_main_loop(e, new GltfMesh(e,ev,base_url,url,mesh_id));
+  return add_main_loop(e, new GltfMesh(e,ev,base_url,url,mesh_id, skin_id, keys));
 }
 
 class GltfNode : public MainLoopItem
@@ -3451,7 +3457,7 @@ GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
   int s = load->model.meshes.size();
   std::vector<GameApi::ML> mls;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_mesh2( e, ev, load, i );
+    GameApi::ML ml = gltf_mesh2( e, ev, load, i, 0, "cvb" );
     mls.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, mls);
@@ -4080,7 +4086,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
       tinygltf::Node *node = &load->model.nodes[target_node];
       //std::cout << "\nNode:" << node->name << std::endl;
       int mesh_id = node->mesh;
-      GameApi::ML ml = gltf_mesh2(e,ev, load, mesh_id);
+      GameApi::ML ml = gltf_mesh2(e,ev, load, mesh_id, 0, "cvb");
       if (channel==-1)
 	{
 	  std::vector<GameApi::ML> vec;
@@ -4312,13 +4318,17 @@ public:
       }
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
-
+      if (load->model.skins.size()==0) {
+	int start_node = 0;
+	recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+      } else {
       int sz = load->model.skins.size();
-    if (skin_num>=0 && skin_num<sz) {
-      tinygltf::Skin *skin = &load->model.skins[skin_num];
-      int start_node = skin->skeleton;
-      recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+      if (skin_num>=0 && skin_num<sz) {
+	tinygltf::Skin *skin = &load->model.skins[skin_num];
+	int start_node = skin->skeleton;
+	recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
      }
+    }
     }
 
   }
@@ -6246,6 +6256,7 @@ public:
 	    m=fix_matrix(m);
 	    bindm=fix_matrix(bindm);
 	    resize=fix_matrix(resize);
+	    //std::cout << m << std::endl;
 	    vec.push_back(add_matrix2(env,ri *m0i *m* bindm * resize ));
 	  }
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 640);
@@ -6358,6 +6369,8 @@ public:
 	else
 	  url2 = base_url + "/" + url2.substr(1,url2.size()-2);
 	//std::cout << "URL:" << url2 << std::endl;
+	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
+
 	g_registered_urls.push_back(url2);
 #ifdef EMSCRIPTEN
 	env.async_load_url(url2,homepage);
