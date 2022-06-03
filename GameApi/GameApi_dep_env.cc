@@ -1659,7 +1659,7 @@ std::string upgrade_to_https(std::string url)
 }
 
 long long load_size_from_url(std::string url)
-{
+{  
   url = upgrade_to_https(url);
   if (url=="") return 1;
     std::vector<unsigned char> buffer;

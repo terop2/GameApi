@@ -78,9 +78,9 @@ std::vector<GameApiItem*> blocker_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh,
 			 "ml_gltf",
-			 { "ev", "base_url", "url", "mesh_id" },
-			 { "EveryApi&", "std::string", "std::string", "int" }, 
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 { "ev", "base_url", "url", "mesh_id", "skin_id", "keys" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "std::string" }, 
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "cvbnm" },
 			 "ML", "mainloop_api", "gltf_mesh"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node,

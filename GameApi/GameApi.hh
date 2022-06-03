@@ -372,7 +372,7 @@ public:
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT LI gltf_skeleton(EveryApi &ev, std::string base_url, std::string url, int start_node);
-  IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id );
+  IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys );
   IMPORT ML gltf_mesh_all( EveryApi &ev, std::string base_url, std::string url );
   IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id, std::string keys );
   IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id, std::string keys );
