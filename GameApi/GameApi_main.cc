@@ -2079,6 +2079,13 @@ EXPORT GameApi::ML GameApi::MainLoopApi::timing_ml(std::vector<ML> vec, float du
   return add_main_loop(e, new TimingMainLoop(vec2));
 }
 */
+EXPORT GameApi::ML GameApi::MainLoopApi::or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2)
+{
+  std::vector<GameApi::ML> vec;
+  vec.push_back(m1);
+  vec.push_back(m2);
+  return array_ml(ev,vec);
+}
 EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(GameApi::EveryApi &ev, std::vector<ML> vec)
 {
   std::vector<MainLoopItem*> vec2;

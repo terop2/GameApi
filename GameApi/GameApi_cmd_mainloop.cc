@@ -169,6 +169,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "0.0", "10.0", "true" },
 			 "ML", "sprite_api", "alt_ml_array"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::or_elem_ml,
+			 "or_elem_ml",
+			 { "ev", "m1", "m2" },
+			 { "EveryApi&", "ML", "ML" },
+			 { "ev", "", "" },
+			 "ML", "mainloop_api", "or_elem_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_ml,
 			 "array_ml",
 			 { "ev", "arr" },
