@@ -1797,6 +1797,7 @@ public:
     if (load->model.materials[material_id].alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
+      //I18 = ev.mainloop_api.transparent(I18);
     }
     // GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
@@ -1828,6 +1829,7 @@ public:
     if (load->model.materials[material_id].alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
+      //I18 = ev.mainloop_api.transparent(I18);
       //      I18=ev.mainloop_api.blendfunc(I18,2,3);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -1858,6 +1860,7 @@ public:
     if (load->model.materials[material_id].alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
+      //I18 = ev.mainloop_api.transparent(I18);
       //      I18=ev.mainloop_api.blendfunc(I18,2,3);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -3317,7 +3320,11 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, Lo
       int mat = load->model.meshes[mesh_id].primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
       GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, keys);
-      GameApi::ML ml = ev.materials_api.bind(p,mat2_anim);
+      Material *mat0 = find_material(e,mat2);
+      GLTF_Material *mat3 = (GLTF_Material*)mat0;
+      GameApi::BM bm = mat3->texture(0); // basecolor
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim);
+      GameApi::ML ml = ev.materials_api.bind(p,mat4);
       mls.push_back(ml);
     }
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
