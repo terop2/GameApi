@@ -4165,7 +4165,7 @@ public:
     if (time_index>=0 && time_index<count) {
       float *arr = (float*) (dt3 + stride*time_index);
       return *arr;
-    } else { return 0.0; }
+    } else { return *(float*)(dt3+stride*(count-1)); }
 
     } else return 0.0;
     
@@ -4192,7 +4192,7 @@ public:
     if (time_index+1>=0 && time_index+1<count) {
       float *arr = (float*) (dt3 + stride*(time_index+1));
       return *arr;
-    } else { return 0.0; }
+    } else { return *(float*)(dt3+stride*(count-1)); }
     } else return 0.0;
   }
 
@@ -4224,8 +4224,14 @@ public:
     // equations from the gltf 2.0 specification chapter Animations.
     
     //assert(output_acc->type==TINYGLTF_TYPE_VEC3);
-    float *arr = (float*) (dt3 + i*stride);
-    return arr;
+    int count = output_acc->count;
+    if (i>=0 && i<count) {
+      float *arr = (float*) (dt3 + i*stride);
+      return arr;
+    } else {
+      float *arr = (float*) (dt3 + (count-1)*stride);
+      return arr;
+    }
     } else { std::cout << "ERROR: output" << std::endl; return arr2; }
   }
   virtual int Type(int i) const
@@ -4461,7 +4467,7 @@ extern Matrix g_last_resize;
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
-  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640;}
+  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640; max_count=0; max_time=0.0; }
   ~GLTFJointMatrices() {
     int s = anims.size();
     for(int i=0;i<s;i++) delete anims[i];
@@ -4510,6 +4516,8 @@ public:
       if (skin_num>=0 && skin_num<sz) {
 	tinygltf::Skin *skin = &load->model.skins[skin_num];
 	int start_node = skin->skeleton;
+	max_count=0;
+	max_time = 0.0;
 	recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
      }
     }
@@ -4552,6 +4560,8 @@ public:
     if (skin_num>=0 && skin_num<sz2) {
       tinygltf::Skin *skin = &load->model.skins[skin_num];
       int start_node = skin->skeleton;
+      max_count =0;
+      max_time = 0.0;
       recurse_node(start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
      }
     }
@@ -4603,13 +4613,13 @@ public:
 
       int ik = time_index;
       GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik, skin_num);
-      //anims.push_back(anim);
+      anims.push_back(anim);
       anim->Prepare();
       float *a = 0;
       float *a2 = 0;
       int type = -1;
-      a = anim->Amount(ik);
-      a2 = anim->Amount(ik+1);
+      a = anim->Amount(ik); if (ik+1>=anim->Count()) a2=anim->Amount(0); else
+	a2 = anim->Amount(ik+1);
       type = anim->Type(time_index);
 
       if (type==0 && a2 && path=="translation") { // translation
@@ -4773,13 +4783,16 @@ public:
       GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik, skin_num);
       anims.push_back(anim);
       anim->Prepare();
+      //if (ik+1>=anim->Count()) return Matrix::Identity();
+      if (anim->end_time()>max_time) { max_time = anim->end_time(); }
       if (jj!=-1) {
-	start_t[jj] = 5.0*anim->start_time();
-	end_t[jj] = 5.0*anim->end_time();
+	start_t[jj] = anim->start_time();
+	end_t[jj] = anim->end_time();
       }
 
       a = anim->Amount(ik);
-      a2 = anim->Amount(ik+1);
+      if (ik+1>=anim->Count()) a2=anim->Amount(0); else
+	a2 = anim->Amount(ik+1);
       type = anim->Type(time_index);
 
       if (jj!=-1) {
@@ -4914,6 +4927,8 @@ public:
   std::vector<Matrix> *bind() { return &bindmatrix; }
   const std::vector<float> *start_time() const { return &start_t; }
   const std::vector<float> *end_time() const { return &end_t; }
+  int get_max_count() const { return max_count; }
+  float get_max_time() const { return max_time; }
 private:
   GLTFJointMatrices *prev;
   GameApi::Env &env;
@@ -4939,6 +4954,8 @@ private:
   std::vector<GLTFAnimation*> anims;
   std::map<int,TransformObject> prev_nodes1;
   std::map<int,TransformObject> prev_nodes2;
+  float max_time;
+  int max_count;
 };
 
 GameApi::ML gltf_joint_matrices2(GameApi::ML prev, GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
@@ -4975,6 +4992,7 @@ public:
     
     tinygltf::Skin *skin = &load->model.skins[skin_num];
     int start_node = skin->skeleton;
+    max_count = 0;
     recurse_node(start_node, 0, Matrix::Identity(), 0 /*anim*/, time_index, -1);
     }
     
@@ -5007,7 +5025,7 @@ public:
     
 
 
-
+    max_count=0;
     recurse_node(start_node, 0, Matrix::Identity(), 0 /*anim*/, time_index, -1);
   //std::cout << "GLTFSkeletonAnim::Prepare() end" << std::endl;
     }
@@ -5192,6 +5210,7 @@ private:
   int start_node;
   std::vector<Point> start_pos, end_pos;
   bool firsttime;
+  int max_count;
 };
 
 GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index)
@@ -6217,7 +6236,7 @@ Matrix fix_matrix(Matrix m)
 class GltfAnimShaderML : public MainLoopItem
 {
 public:
-  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key) { firsttime=true; resize=Matrix::Identity(); 
+  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key) { firsttime=true; resize=Matrix::Identity(); keypressed = false;
 }
   std::vector<int> shader_id() {
     return ml_orig->shader_id();
@@ -6239,6 +6258,7 @@ public:
     */    
     if (ch==key &&e.type==0x300) {
       key_time = ev.mainloop_api.get_time()/1000.0; /*current_time;*/
+      keypressed = true;
     }
     if (items.size()>0)
       items[0]->handle_event(e);
@@ -6274,7 +6294,10 @@ public:
   void execute(MainLoopEnv &e) {
     current_time = e.time;
     float time = e.time-key_time;
+    if(keypressed && max_end_time>0.01 && time>max_end_time) { key_time = ev.mainloop_api.get_time()/1000.0; time=e.time-key_time; }// repeat
 
+
+    
     MainLoopEnv ee = e;
     if (firsttime)
       {
@@ -6323,15 +6346,17 @@ public:
 	    current = -1;
 	    const std::vector<float> *current_start_time=0, *current_end_time=0;
 	    int sz = items.size();
-	    //float max_end_time=0.0;
 	    for(int t=0;t<sz;t++)
 	      {
 		GLTFJointMatrices *joints = (GLTFJointMatrices*)(items[t]);
 		const std::vector<float> *start_time = joints->start_time();
 		const std::vector<float> *end_time = joints->end_time();
-
+		float finish_time = joints->get_max_time();
+		//std::cout << finish_time << std::endl;
+		if (finish_time>max_end_time) max_end_time = finish_time;
+		
 		//int u = end_time->size();
-		//for(int y=0;y<u;y++) if (end_time->operator[](y)>max_end_time) max_end_time=end_time->operator[](y);
+		//if (ii<u && end_time->operator[](ii)>max_end_time) max_end_time=end_time->operator[](ii);
 
 		int ssz = std::min(start_time->size(),end_time->size());
 		if (ii<ssz)
@@ -6343,7 +6368,6 @@ public:
 		      break;
 		    }
 	      }
-	    // if(time>max_end_time) key_time = ev.mainloop_api.get_time()/1000.0; // repeat
 	    if (current==-1) { vec.push_back(add_matrix2(env,Matrix::Identity()));  continue; }
 
 	    
@@ -6353,14 +6377,16 @@ public:
 	    std::vector<TransformObject> *end = joints->end();
 	    std::vector<Matrix> *r = joints->root();
 	    std::vector<Matrix> *r_2 = joints->root2();
-	    std::vector<Matrix> *l = joints->local_trans();
-	    std::vector<Matrix> *l_2 = joints->local_trans2();
+	    //std::vector<Matrix> *l = joints->local_trans();
+	    //std::vector<Matrix> *l_2 = joints->local_trans2();
 	    sz = std::min(start_0->size(),std::min(start->size(),end->size()));
 
 	    float time01 = (time-current_start_time->operator[](ii))/(current_end_time->operator[](ii)-current_start_time->operator[](ii));
 
 	    if (std::isinf(time01)) time01 = 0.0;
-
+	    if (time01<0.0) time01=0.0;
+	    if (time01>1.0) time01=1.0;
+	    
 	    TransformObject start_obj;
 	    if (ii<sz)
 	      start_obj= start->operator[](ii);
@@ -6408,7 +6434,7 @@ public:
 
 	    
 	    Matrix bindm;
-	    if (i<sz)
+	    if (ii<sz)
 	      bindm=bind->operator[](ii);
 	    else bindm = Matrix::Identity();
 	    //std::cout << "START_OBJ:" << std::endl;
@@ -6424,11 +6450,11 @@ public:
 	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
 
 
-	    Matrix ll1 = l->operator[](ii);
-	    Matrix ll2 = l_2->operator[](ii);
+	    //Matrix ll1 = l->operator[](ii);
+	    //Matrix ll2 = l_2->operator[](ii);
 	    
-	    Matrix ll;
-	    for(int j=0;j<16;j++) ll.matrix[j]=(time01)*ll2.matrix[j] + (1.0-time01)*ll1.matrix[j];
+	    //Matrix ll;
+	    //for(int j=0;j<16;j++) ll.matrix[j]=(time01)*ll2.matrix[j] + (1.0-time01)*ll1.matrix[j];
 	    
 
 	    
@@ -6511,6 +6537,8 @@ private:
   Matrix resize;
   static int count;
   static int curr;
+  bool keypressed;
+  float max_end_time=0.0;
 };
 int GltfAnimShaderML::count=2;
 int GltfAnimShaderML::curr=0;
