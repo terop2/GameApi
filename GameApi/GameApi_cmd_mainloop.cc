@@ -582,6 +582,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "int", "float", "int" },
 			 { "ev", "", "32", "10.0", "15" },
 			 "ML", "texture_api", "save_screenshots_via_key"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::send_key_at_time,
+			 "key_at_time",
+			 { "ml", "time", "key" },
+			 { "ML", "float", "int" },
+			 { "", "0.0", "32" },
+			 "ML", "mainloop_api", "send_key_at_time"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
 			 "key_activate_ml",
 			 { "ev", "ml", "mn", "key", "duration" },

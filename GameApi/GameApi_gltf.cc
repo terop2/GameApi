@@ -4474,7 +4474,7 @@ extern Matrix g_last_resize;
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
-  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 640; max_count=0; max_time=0.0; }
+  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 150; max_count=0; max_time=0.0; }
   ~GLTFJointMatrices() {
     int s = anims.size();
     for(int i=0;i<s;i++) delete anims[i];
@@ -6348,7 +6348,7 @@ public:
 	ev.shader_api.use(sh);
 	std::vector<GameApi::M> vec;
 	int sz = 1;
-	for(int ii=0;ii<640;ii++)
+	for(int ii=0;ii<150;ii++)
 	  {
 	    current = -1;
 	    const std::vector<float> *current_start_time=0, *current_end_time=0;
@@ -6487,7 +6487,7 @@ public:
 	    resize=fix_matrix(resize);
 	    vec.push_back(add_matrix2(env,  ri *m0i * m0 *bindm *m *resize  ));
 	  }
-	ev.shader_api.set_var(sh, "jointMatrix", vec, 640);
+	ev.shader_api.set_var(sh, "jointMatrix", vec, 150);
 
       }
 #ifndef NO_MV
@@ -6509,7 +6509,7 @@ public:
       // THIS IS ONLY FOR SITUATION WHEN MODEL DOESNT EXIST.
       MainLoopItem *next = items[0];
       std::vector<GameApi::M> mat;
-      for(int i=0;i<640;i++)
+      for(int i=0;i<150;i++)
 	mat.push_back(add_matrix2(env,Matrix::Identity()));
 
       std::vector<int> sh_ids = next->shader_id();
@@ -6519,7 +6519,7 @@ public:
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 	
-	ev.shader_api.set_var(sh, "jointMatrix", mat,640);
+	ev.shader_api.set_var(sh, "jointMatrix", mat,150);
       }
     ml_orig->execute(ee);
     }

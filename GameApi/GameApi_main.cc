@@ -3147,3 +3147,43 @@ GameApi::ML GameApi::MainLoopApi::disable_z_buffer(ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new DisableZBuffer(item));
 }
+
+class SendKeyAtTime : public MainLoopItem
+{
+public:
+  SendKeyAtTime(MainLoopItem *item, float time, int key) : item(item), time(time), key(key) { done = false;}
+  virtual void logoexecute() { item->logoexecute(); }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e) {
+    if (!done && e.time>time)
+      {
+	MainLoopEvent ee;
+	ee.type = 0x300;
+	ee.ch = key;
+	ee.cursor_pos = Point(0.0,0.0,0.0);
+	ee.button = -1;
+	item->handle_event(ee);
+	done = true;
+      }
+    if (e.time<time) done=false;
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }   
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+  float time;
+  int key;
+  bool done;
+};
+
+GameApi::ML GameApi::MainLoopApi::send_key_at_time(ML ml, float time, int key)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new SendKeyAtTime(item, time, key));
+};
