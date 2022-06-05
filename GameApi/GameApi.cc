@@ -159,7 +159,7 @@ void stackTrace();
 #if 0
 void *operator new( std::size_t count)
 {
-#if 0
+#if 1
   static int counter = 0;
   counter++;
   if (counter % 10000==0) {
@@ -172,17 +172,21 @@ void *operator new( std::size_t count)
   }
   return malloc(count);
 #endif
+#if 0
   void *ptr = malloc(count);
   arr[pos]=ptr;
   pos++; if (pos>1000000) pos=0;
   return ptr;
+#endif
 }
 void operator delete(void* ptr) noexcept
 {
+#if 0
   bool done=false;
   int res=-1;
   for(int i=0;i<pos;i++) if (arr[i]==ptr) { res=i; done=true; }
   if (done==false && !ptr) { std::printf("double free\n"); stackTrace(); } else if (ptr) { arr[res]=0; }
+#endif
   free(ptr);
 }
 #endif
