@@ -230,7 +230,7 @@ public:
     }
     std::vector<char> vec2(vec->begin(), vec->end());
     std::string str(vec->begin(),vec->end());
-
+    delete vec;
     //std::cout << str << std::endl;
     //bool b = false;
     std::string err;
@@ -372,7 +372,8 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
       sz--;
 #endif
     *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
-  return true;
+    delete vec;
+    return true;
 }
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
 {
@@ -6593,6 +6594,7 @@ public:
       GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
       if (!vec) { std::cout << "ASyncGltf::async not ready!" << std::endl; done=false; return; }
     std::string ss(vec->begin(),vec->end());
+    delete vec;
     std::stringstream s(ss);
     std::string line;
     while(std::getline(s,line)) {

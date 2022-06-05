@@ -15346,6 +15346,9 @@ GameApi::ARR GameApi::VoxelApi::voxel_instancing(VX voxel,
 {
   Voxel<int> *vx = find_int_voxel(e, voxel);
   VoxelToPTS *pts = new VoxelToPTS(vx, count, start_x, end_x, start_y, end_y, start_z, end_z);
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(pts));
+  
   int s = count;
   std::vector<int> vec;
   ArrayType *array = new ArrayType;

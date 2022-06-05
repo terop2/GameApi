@@ -407,7 +407,7 @@ public:
 #ifdef GLEW_HACK
 #define glDrawBuffers GLEW_GET_FUN(__glewDrawBuffers)
 #endif
-    glDrawBuffers((GLsizei)n, bufs);
+    ::glDrawBuffers((GLsizei)n, bufs);
   }
 
 

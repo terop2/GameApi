@@ -1634,6 +1634,9 @@ class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
 public:
   ~NetworkedFaceCollectionMTL2() {
+    int ds = del_vec.size();
+    for(int i=0;i<ds;i++)
+      delete del_vec[i];
     int s = buffer.size();
     for(int i=0;i<s;i++)
       {
@@ -1714,6 +1717,7 @@ public:
     //for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
     a_ss.write((const char*)&ptr2->operator[](0),ptr2->size());
     a_ss.close();
+    delete ptr2;
 
     std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
     materials = mat;
@@ -1728,6 +1732,7 @@ public:
       {
 	material_names.push_back(mat[b_i].material_name);
 	CBData *dt = new CBData;
+	del_vec.push_back(dt);
 	dt->t = this;
 	dt->i = b_i;
 	std::string s = mat[b_i].map_Ka;
@@ -1871,6 +1876,7 @@ public:
       }
       bool b = false;
       std::vector<unsigned char> vec2(vec->begin(), vec->end());
+      delete vec;
       BufferRef img = LoadImageFromString(vec2,b);
       //std::cout << "NetworkedFaceCollectionMTL2(Prepare2)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
@@ -1903,6 +1909,7 @@ public:
       }
       bool b = false;
       std::vector<unsigned char> vec2(vec->begin(), vec->end());
+      delete vec;
       BufferRef img = LoadImageFromString(vec2,b);
       //std::cout << "NetworkedFaceCollectionMTL2(PrepareD)::" << img.width << "x" << img.height << "=" << MB(img.width*img.height*sizeof(unsigned int)) << std::endl;
       
@@ -2112,6 +2119,7 @@ public:
 
   std::vector<std::string> d_url;
   std::vector<std::string> bump_url;
+  std::vector<CBData*> del_vec;
   bool load_d, load_bump;
 };
 
@@ -2347,6 +2355,7 @@ public:
   int c = get_current_block();
   set_current_block(-1);
       GameApi::P p = ev.polygon_api.p_ds(ev,ptr->begin(),ptr->end());
+      delete ptr;
       set_current_block(c);
       FaceCollection *coll = find_facecoll(e,p);
       coll->Prepare();
@@ -5260,6 +5269,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     pthread_mutex_destroy(mutex1);
     pthread_mutex_destroy(mutex2);
     pthread_mutex_destroy(mutex3);
+    delete mutex1;
+    delete mutex2;
+    delete mutex3;
     //VertexArraySet *set = new VertexArraySet;
     //RenderVertexArray *arr2 = new RenderVertexArray(*set);
     //arr2->prepare(0);
@@ -11898,7 +11910,9 @@ std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 {
   ResizeFaceCollection *coll2 = new ResizeFaceCollection(coll,true);
   coll2->Prepare();
-  return std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
+  std::pair<float,Point> p = std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
+  delete coll2;
+  return p;
 }
 
 
@@ -14239,7 +14253,7 @@ GameApi::ARR GameApi::PolygonApi::material_choose(std::vector<MT> mat, std::vect
 class ExtractorBitmap : public Bitmap<Color>
 {
 public:
-  ExtractorBitmap(FaceCollection *coll, int i, int start_index) : coll(coll), i(i), start_index(start_index) { bm=0; }
+  ExtractorBitmap(FaceCollection *coll, int i, int start_index) : coll(coll), i(i), start_index(start_index) { bm=0;  }
   virtual int SizeX() const { if (bm) return bm->SizeX(); else return 1; }
   virtual int SizeY() const { if (bm) return bm->SizeY(); else return 1; }
   virtual Color Map(int x, int y) const { if (bm) return bm->Map(x,y); else return Color(0x0); }
@@ -14251,7 +14265,9 @@ public:
   {
     if (i>=coll->NumTextures()) return;
     BufferRef ref = coll->TextureBuf(i);
+    refs.push_back(ref);
     BitmapFromBuffer *buf = new BitmapFromBuffer(ref);
+    bms.push_back(buf);
     bm = buf;
   }
   virtual void Prepare()
@@ -14260,14 +14276,25 @@ public:
       coll->Prepare();
     if (i>=coll->NumTextures()) return;
     BufferRef ref = coll->TextureBuf(i);
+    refs.push_back(ref);
     BitmapFromBuffer *buf = new BitmapFromBuffer(ref);
+    bms.push_back(buf);
     bm = buf;
   }
-  ~ExtractorBitmap() { delete bm; }
+  ~ExtractorBitmap() {
+    int s = refs.size();
+    for(int i=0;i<s;i++)
+      BufferRef::FreeBuffer(refs[i]);
+    int s2 = bms.size();
+    for(int i=0;i<s2;i++) delete bms[i];
+    delete bm;
+  }
 private:
   FaceCollection *coll;
   int i;
   int start_index;
+  std::vector<BufferRef> refs;
+  std::vector<Bitmap<Color>*> bms;
   Bitmap<Color> *bm;
 };
 
