@@ -306,6 +306,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML send_key_at_time(ML ml, float time, int key);
   void start_editor_state();
   void end_editor_state();
   ML right_mouse_pan(EveryApi &ev, ML next);
