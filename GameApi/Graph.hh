@@ -6373,7 +6373,7 @@ public:
 #else
   ref->GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = bm2.SizeX();
   int sy = bm2.SizeY();

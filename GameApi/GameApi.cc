@@ -153,13 +153,25 @@ extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 void stackTrace();
 
-//void* arr[1000000];
+//void* arr[100000000];
+//std::size_t sz[100000000];
 //int pos=0;
 
+size_t current_mem_usage = 0;
+int max_mem_usage=0;
 #if 0
 void *operator new( std::size_t count)
 {
-#if 1
+  current_mem_usage+=count;
+  if (current_mem_usage>max_mem_usage) max_mem_usage=current_mem_usage;
+  char *ptr = (char*)malloc(count);
+  arr[pos]=ptr;
+  sz[pos]=count;
+  pos++;
+  //std::size_t *ptr2 = (std::size_t*)ptr;
+  //*ptr2 = count;
+  return ptr;
+#if 0
   static int counter = 0;
   counter++;
   if (counter % 10000==0) {
@@ -187,6 +199,13 @@ void operator delete(void* ptr) noexcept
   for(int i=0;i<pos;i++) if (arr[i]==ptr) { res=i; done=true; }
   if (done==false && !ptr) { std::printf("double free\n"); stackTrace(); } else if (ptr) { arr[res]=0; }
 #endif
+  //std::size_t *ptr3 = (std::size_t*)ptr2;
+  //current_mem_usage-=*ptr3;
+  bool done = false;
+  for(int i=0;i<1000000;i++)
+    if (arr[i]==ptr) { current_mem_usage-=sz[i]; arr[i]=0; sz[i]=0; done=true; break; }
+  if (!done) stackTrace();
+  
   free(ptr);
 }
 #endif
@@ -19183,7 +19202,7 @@ void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFor
 #else
   buf.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = bm.SizeX();
   int sy = bm.SizeY();

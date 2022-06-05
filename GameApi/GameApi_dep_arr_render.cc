@@ -241,7 +241,7 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 #else
   buf2.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = flip.SizeX();
   int sy = flip.SizeY();

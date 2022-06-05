@@ -4798,7 +4798,7 @@ public:
       {
       int ik = time_index;
       GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik, skin_num);
-      anims.push_back(anim);
+      //anims.push_back(anim);
       anim->Prepare();
       //if (ik+1>=anim->Count()) return Matrix::Identity();
       if (anim->end_time()>max_time) { max_time = anim->end_time(); }

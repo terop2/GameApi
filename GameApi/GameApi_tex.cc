@@ -151,7 +151,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
 #else
   buf.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = flip.SizeX();
   int sy = flip.SizeY();
@@ -265,7 +265,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 #else
 	  buf.GenPrepare();
   
-	  int numthreads = 4;
+	  int numthreads = 8;
 	  ThreadedUpdateTexture threads;
 	  int ssx = flip.SizeX();
 	  int ssy = flip.SizeY();
@@ -345,7 +345,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 #else
   buf.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int ssx = flip.SizeX();
   int ssy = flip.SizeY();
@@ -478,7 +478,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 #else
   buf.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = flip.SizeX();
   int sy = flip.SizeY();
