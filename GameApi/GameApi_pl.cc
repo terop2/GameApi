@@ -4978,7 +4978,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
 
 
 #ifndef BATCHING
-  int num_threads = 1;
+  int num_threads = 8;
   FaceCollection *faces = find_facecoll(e, p);
   ThreadedPrepare prep(faces);
   int s = faces->NumFaces();
@@ -5007,7 +5007,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     }
   add_update_vertex_array(e, va, set, arr2);
 #else // BATCHING
-  int num_threads = 4;
+  int num_threads = 8;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
 
@@ -5155,7 +5155,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #endif // END OF EMSCRIPTEN
     
 #ifndef BATCHING
-    int num_threads = 4;
+    int num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
@@ -5188,7 +5188,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
       }
 #else // BATCHING
-    int num_threads = 4;
+    int num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     
@@ -5390,7 +5390,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array_attribs(GameApi::P p, bool keep, std::vector<int> attribs, std::vector<int> attribi)
 { 
 #ifdef THREADS
-  int num_threads = 4;
+  int num_threads = 8;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
   //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
@@ -16316,7 +16316,7 @@ public:
 #else
   bbm.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = bm->SizeX();
   int sy = bm->SizeY();
@@ -16357,7 +16357,7 @@ public:
 #else
   bbm.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = bm->SizeX();
   int sy = bm->SizeY();

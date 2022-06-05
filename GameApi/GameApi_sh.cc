@@ -80,9 +80,9 @@ extern std::string g_gpu_vendor;
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
   if (g_gpu_vendor.substr(0,4)=="NVID") {
-  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
   } else {
-  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
   }
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
@@ -205,7 +205,8 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f
   std::vector<std::string> f_vec;
   combparse(v_comb, v_vec);
   combparse(f_comb, f_vec);
-  p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod,vertex_c,fragment_c, v_defines, f_defines, v_shader, f_shader);
+  if (p->seq)
+    p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod,vertex_c,fragment_c, v_defines, f_defines, v_shader, f_shader);
   p->count++;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_privs[p->count-1] = p;
