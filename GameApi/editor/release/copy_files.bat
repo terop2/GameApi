@@ -1,3 +1,5 @@
+copy ..\freetype.dll editor\freetype.dll
+copy ..\pthreadGC2.dll editor\pthreadGC2.dll
 copy ..\atlas0.txt editor\atlas0.txt
 copy ..\atlas1.txt editor\atlas1.txt
 copy ..\atlas2.txt editor\atlas2.txt
