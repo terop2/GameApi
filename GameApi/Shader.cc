@@ -148,8 +148,8 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
     }
 
 #endif
-  delete [] strings;
-  delete [] lengths;
+  delete [] strings; strings=0;
+  delete [] lengths; lengths = 0;
   priv = new ShaderPriv;
   priv->handle = handle;
   priv->shader = &shader;
@@ -1095,7 +1095,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 ATTRIBUTE " vec4 JOINTS_0;\n"
 ATTRIBUTE " vec4 WEIGHTS_0;\n"
     //"uniform mat4 inverseBind[64];\n"
-"uniform mat4 jointMatrix[64];\n"
+"uniform mat4 jointMatrix[150];\n"
 "mat4 getSkinningMatrix()\n"
 "{\n"
     "mat4 skin = mat4(0);\n"
@@ -2724,7 +2724,7 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
     
 "#ifdef SKELETON\n"
     //"uniform mat4 inverseBind[64];\n"
-"uniform mat4 jointMatrix[64];\n"
+"uniform mat4 jointMatrix[150];\n"
     "mat4 getSkinningMatrix()\n"
 "{\n"
     "mat4 skin = mat4(0);\n"
@@ -4738,7 +4738,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       pp->shader = v_shader;
       std::string ss = replace_c(*pp /*shader, v_vec, false, false, is_trans, mod, vertex_c, v_defines, false,v_shader*/);
 
-      delete pp;
+      delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
       //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
@@ -4771,8 +4771,8 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       pp->shader = f_shader;
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
-      delete pp;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      delete pp; pp = 0;
+      // std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

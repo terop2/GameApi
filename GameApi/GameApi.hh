@@ -306,6 +306,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML send_key_at_time(ML ml, float time, int key);
   void start_editor_state();
   void end_editor_state();
   ML right_mouse_pan(EveryApi &ev, ML next);
@@ -330,6 +331,7 @@ public:
   ML key_ml(std::vector<ML> vec, std::string keys);
   ML async_url(std::string url, ML ml);
   ARR gltf_anim_skeleton(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int channelk, int num_keyframes);
+  P gltf_scene_p(GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id);
   IMPORT ML memmap_window2(EveryApi &ev, std::string url);
   IMPORT ML memmap_window3(EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6);
   IMPORT ML ml_load_um(EveryApi &ev, std::string url);
@@ -371,14 +373,14 @@ public:
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT LI gltf_skeleton(EveryApi &ev, std::string base_url, std::string url, int start_node);
-  IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id );
+  IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys );
   IMPORT ML gltf_mesh_all( EveryApi &ev, std::string base_url, std::string url );
-  IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id );
-  IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id );
+  IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id, std::string keys );
+  IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id, std::string keys );
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
   IMPORT ML gltf_anim2( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
   IMPORT ML gltf_anim4( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -500,6 +502,7 @@ public:
   void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   IMPORT ML array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
+  IMPORT ML or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2);
   IMPORT FML array_fml(std::vector<FML> vec);
   //IMPORT ML timing_ml(std::vector<ML> vec, float duration);
   IMPORT ML dyn_points(EveryApi &ev, ML ml, MN move, int pointnum, float pos_x, float pos_y, float pos_z);

@@ -16,6 +16,10 @@ EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)
   p->frame = 0;
   p->time = 0;
   p->count = 0;
+  p->previous_frame_time = 0.0;
+  p->delta_time = 0.0;
+  p->current_time = 0.0;
+  p->frame_time = 0.0;
 }
 EXPORT GameApi::MainLoopApi::~MainLoopApi()
 {
@@ -2075,6 +2079,13 @@ EXPORT GameApi::ML GameApi::MainLoopApi::timing_ml(std::vector<ML> vec, float du
   return add_main_loop(e, new TimingMainLoop(vec2));
 }
 */
+EXPORT GameApi::ML GameApi::MainLoopApi::or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2)
+{
+  std::vector<GameApi::ML> vec;
+  vec.push_back(m1);
+  vec.push_back(m2);
+  return array_ml(ev,vec);
+}
 EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(GameApi::EveryApi &ev, std::vector<ML> vec)
 {
   std::vector<MainLoopItem*> vec2;
@@ -3136,3 +3147,43 @@ GameApi::ML GameApi::MainLoopApi::disable_z_buffer(ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new DisableZBuffer(item));
 }
+
+class SendKeyAtTime : public MainLoopItem
+{
+public:
+  SendKeyAtTime(MainLoopItem *item, float time, int key) : item(item), time(time), key(key) { done = false;}
+  virtual void logoexecute() { item->logoexecute(); }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e) {
+    if (!done && e.time>time)
+      {
+	MainLoopEvent ee;
+	ee.type = 0x300;
+	ee.ch = key;
+	ee.cursor_pos = Point(0.0,0.0,0.0);
+	ee.button = -1;
+	item->handle_event(ee);
+	done = true;
+      }
+    if (e.time<time) done=false;
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }   
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+  float time;
+  int key;
+  bool done;
+};
+
+GameApi::ML GameApi::MainLoopApi::send_key_at_time(ML ml, float time, int key)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new SendKeyAtTime(item, time, key));
+};

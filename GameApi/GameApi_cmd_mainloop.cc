@@ -78,22 +78,22 @@ std::vector<GameApiItem*> blocker_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh,
 			 "ml_gltf",
-			 { "ev", "base_url", "url", "mesh_id" },
-			 { "EveryApi&", "std::string", "std::string", "int" }, 
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 { "ev", "base_url", "url", "mesh_id", "skin_id", "keys" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "std::string" }, 
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "cvbnm" },
 			 "ML", "mainloop_api", "gltf_mesh"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node,
 			 "ml_gltf_node",
-			 { "ev", "base_url", "url", "node_id" },
-			 { "EveryApi&", "std::string", "std::string", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 { "ev", "base_url", "url", "node_id", "keys" },
+			 { "EveryApi&", "std::string", "std::string", "int", "std::string" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "cvbnmfghjklertyuiop" },
 			 "ML", "mainloop_api", "gltf_node"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
-			 { "ev", "base_url", "url", "scene_id" },
-			 { "EveryApi&", "std::string", "std::string", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 { "ev", "base_url", "url", "scene_id", "keys" },
+			 { "EveryApi&", "std::string", "std::string", "int", "std::string" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "cvbnmfghjklertyuiop" },
 			 "ML", "mainloop_api", "gltf_scene"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
@@ -124,9 +124,9 @@ std::vector<GameApiItem*> blocker_functions()
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
-			 { "ev", "base_url", "url", "scene_id", "animation" },
-			 { "EveryApi&", "std::string", "std::string", "int", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0" },
+			 { "ev", "base_url", "url", "scene_id", "animation", "keys" },
+			 { "EveryApi&", "std::string", "std::string", "int", "int", "std::string" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "cvbnmfghjklertyuiop" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_gltf,
 			 "async_gltf",
@@ -169,6 +169,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "0.0", "10.0", "true" },
 			 "ML", "sprite_api", "alt_ml_array"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::or_elem_ml,
+			 "or_elem_ml",
+			 { "ev", "m1", "m2" },
+			 { "EveryApi&", "ML", "ML" },
+			 { "ev", "", "" },
+			 "ML", "mainloop_api", "or_elem_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_ml,
 			 "array_ml",
 			 { "ev", "arr" },
@@ -576,6 +582,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "int", "float", "int" },
 			 { "ev", "", "32", "10.0", "15" },
 			 "ML", "texture_api", "save_screenshots_via_key"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::send_key_at_time,
+			 "key_at_time",
+			 { "ml", "time", "key" },
+			 { "ML", "float", "int" },
+			 { "", "0.0", "32" },
+			 "ML", "mainloop_api", "send_key_at_time"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_activate_ml,
 			 "key_activate_ml",
 			 { "ev", "ml", "mn", "key", "duration" },

@@ -1258,12 +1258,12 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 
 		    }
 		  ss+="]";
-		  //std::cout << "Param: " << ss << std::endl;
+		  //std::cout << "Param1: " << ss << std::endl;
 		  params.push_back(ss);
 		}
 	      else
 		{
-		  //std::cout << "Param: " << p << std::endl;
+		  //std::cout << "Param2: " << p << std::endl;
 
 		  params.push_back(p);
 		}

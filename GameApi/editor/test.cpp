@@ -31,6 +31,8 @@ using namespace GameApi;
 extern "C" void _udev_device_get_action() { }
 #endif
 
+
+
 extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
@@ -57,6 +59,15 @@ struct wl_shell_surface;
 extern wl_display *g_wl_display; 
 extern wl_surface *g_wl_surface;
 extern wl_shell_surface *g_wl_shell_surface;
+
+extern int current_mem_usage;
+extern int max_mem_usage;
+
+void mem_summary()
+{
+  std::cout << "Current mem usage: " << current_mem_usage/1024000 << "Mb" << std::endl;
+  std::cout << "Max mem usage: " << max_mem_usage/1024000 << "Mb" << std::endl;
+}
 
 void clear_codegen();
 void InstallProgress(int num, std::string label, int max=15);
@@ -767,11 +778,13 @@ void iter(void *arg)
 
     // handle esc event
     MainLoopApi::Event e;
+    e.ch = 0;
     e.last = true;
     while((e=env->ev->mainloop_api.get_event()).last)
       {
 	old_cursor_pos = e.cursor_pos;
-	if (e.type==256) { exit(0); }
+	if (e.type==256) { mem_summary(); exit(0); }
+	if (e.type==0x300 && e.ch=='m') { mem_summary(); }
 	if (e.type==0x200) {
 	    int sx = g_event_screen_x;
 	    int sy = g_event_screen_y;

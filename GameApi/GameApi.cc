@@ -153,12 +153,24 @@ extern float debug_pos_x, debug_pos_y, debug_pos_z;
 
 void stackTrace();
 
-//void* arr[1000000];
+//void* arr[100000000];
+//std::size_t sz[100000000];
 //int pos=0;
 
+size_t current_mem_usage = 0;
+int max_mem_usage=0;
 #if 0
 void *operator new( std::size_t count)
 {
+  current_mem_usage+=count;
+  if (current_mem_usage>max_mem_usage) max_mem_usage=current_mem_usage;
+  char *ptr = (char*)malloc(count);
+  arr[pos]=ptr;
+  sz[pos]=count;
+  pos++;
+  //std::size_t *ptr2 = (std::size_t*)ptr;
+  //*ptr2 = count;
+  return ptr;
 #if 0
   static int counter = 0;
   counter++;
@@ -172,17 +184,28 @@ void *operator new( std::size_t count)
   }
   return malloc(count);
 #endif
+#if 0
   void *ptr = malloc(count);
   arr[pos]=ptr;
   pos++; if (pos>1000000) pos=0;
   return ptr;
+#endif
 }
 void operator delete(void* ptr) noexcept
 {
+#if 0
   bool done=false;
   int res=-1;
   for(int i=0;i<pos;i++) if (arr[i]==ptr) { res=i; done=true; }
   if (done==false && !ptr) { std::printf("double free\n"); stackTrace(); } else if (ptr) { arr[res]=0; }
+#endif
+  //std::size_t *ptr3 = (std::size_t*)ptr2;
+  //current_mem_usage-=*ptr3;
+  bool done = false;
+  for(int i=0;i<1000000;i++)
+    if (arr[i]==ptr) { current_mem_usage-=sz[i]; arr[i]=0; sz[i]=0; done=true; break; }
+  if (!done) stackTrace();
+  
   free(ptr);
 }
 #endif
@@ -15323,6 +15346,9 @@ GameApi::ARR GameApi::VoxelApi::voxel_instancing(VX voxel,
 {
   Voxel<int> *vx = find_int_voxel(e, voxel);
   VoxelToPTS *pts = new VoxelToPTS(vx, count, start_x, end_x, start_y, end_y, start_z, end_z);
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->deletes.push_back(std::shared_ptr<void>(pts));
+  
   int s = count;
   std::vector<int> vec;
   ArrayType *array = new ArrayType;
@@ -19179,7 +19205,7 @@ void BitmapToSourceBitmap(Bitmap<Color> &bm, SourceBitmap &target, DrawBufferFor
 #else
   buf.GenPrepare();
 
-  int numthreads = 4;
+  int numthreads = 8;
   ThreadedUpdateTexture threads;
   int sx = bm.SizeX();
   int sy = bm.SizeY();
