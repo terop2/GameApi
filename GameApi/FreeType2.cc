@@ -152,6 +152,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   ptr2 = new unsigned char[ptr->size()+1];
   std::copy(ptr->begin(), ptr->end(), ptr2);
   size = ptr->size();
+  delete ptr;
   //loaded_maps[ttf_filename] = ptr2;
   //loaded_sizes[ttf_filename] = size;
   K k;

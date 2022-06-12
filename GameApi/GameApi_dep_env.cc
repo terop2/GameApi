@@ -1659,7 +1659,7 @@ std::string upgrade_to_https(std::string url)
 }
 
 long long load_size_from_url(std::string url)
-{
+{  
   url = upgrade_to_https(url);
   if (url=="") return 1;
     std::vector<unsigned char> buffer;
@@ -1925,7 +1925,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
     url = upgrade_to_https(url);
 
-  if (url.size()==0) { std::vector<unsigned char> *b = new std::vector<unsigned char>(); load_from_url_del.item.push_back(b); return b; }
+    if (url.size()==0) { std::vector<unsigned char> *b = new std::vector<unsigned char>(); /*load_from_url_del.item.push_back(b);*/ return b; }
   //std::cout << "load_from_url: @" << url << "@" << std::endl;
 
   int u = g_urls.size();
@@ -1944,7 +1944,9 @@ std::vector<unsigned char> *load_from_url(std::string url)
     }
   //  std::cout << "load_from_url using network: " << url << std::endl;
   std::vector<unsigned char> *buffer = new std::vector<unsigned char>;
-  load_from_url_del.item.push_back(buffer);
+  // THIS PUSH_BACK causes problems in other threads, because it accewsses
+  // global variable that might not be initialized.
+  //load_from_url_del.item.push_back(buffer);
     bool succ=false;
 #ifdef HAS_POPEN
 
@@ -2012,7 +2014,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
       std::cout << errno << std::endl;
       std::cout << url << std::endl;
       std::vector<unsigned char> *item = new std::vector<unsigned char>();
-      load_from_url_del.item.push_back(item);
+      //load_from_url_del.item.push_back(item);
       return item;
     }
 
