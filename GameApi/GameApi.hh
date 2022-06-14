@@ -308,7 +308,7 @@ public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
   ML save_gltf(TF tf, std::string filename);
-  TF gltf_load(std::string base_url, std::string url);
+  TF gltf_loadKK(std::string base_url, std::string url);
   ML send_key_at_time(ML ml, float time, int key);
   void start_editor_state();
   void end_editor_state();
@@ -323,9 +323,9 @@ public:
   ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
   ML gs_delta(GS gs, ML ml, int p, int n, float delta);
   ML gs_time(GS gs, ML ml, int t);
-  ML gltf_mesh_all_env(EveryApi &ev, std::string base_url, std::string url, BM diffuse, BM specular, BM bfrd);
+  ML gltf_mesh_all_env(EveryApi &ev, TF model0, BM diffuse, BM specular, BM bfrd);
   ML transparent(ML ml);
-  ML async_gltf(ML ml, std::string base_url, std::string url);
+  ML async_gltf(ML ml, TF tf);
   ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
   ML edit_3d(EveryApi &ev, P p, float radius);
   P edit_3d_p(EveryApi &ev);
@@ -333,8 +333,8 @@ public:
   ML choose_ml_from_status(ML connect, ML download, ML prepare);
   ML key_ml(std::vector<ML> vec, std::string keys);
   ML async_url(std::string url, ML ml);
-  ARR gltf_anim_skeleton(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int channelk, int num_keyframes);
-  P gltf_scene_p(GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id);
+  ARR gltf_anim_skeleton(EveryApi &ev, TF model0, int skin_num, int animation, int channelk, int num_keyframes);
+  P gltf_scene_p(GameApi::EveryApi &ev, TF model0, int scene_id);
   IMPORT ML memmap_window2(EveryApi &ev, std::string url);
   IMPORT ML memmap_window3(EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6);
   IMPORT ML ml_load_um(EveryApi &ev, std::string url);
@@ -375,15 +375,15 @@ public:
   IMPORT void switch_to_3d(bool b, SH sh, int screen_width=800., int screen_height = 600);
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
-  IMPORT LI gltf_skeleton(EveryApi &ev, std::string base_url, std::string url, int start_node);
-  IMPORT ML gltf_mesh( EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys );
-  IMPORT ML gltf_mesh_all( EveryApi &ev, std::string base_url, std::string url );
-  IMPORT ML gltf_node( EveryApi &ev, std::string base_url, std::string url, int node_id, std::string keys );
-  IMPORT ML gltf_scene( EveryApi &ev, std::string base_url, std::string url, int scene_id, std::string keys );
+  IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
+  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys );
+  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0 );
+  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys );
+  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys );
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
-  IMPORT ML gltf_anim2( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
-  IMPORT ML gltf_anim4( EveryApi &ev, std::string base_url, std::string url, int animation, int channel);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys);
+  IMPORT ML gltf_anim2( EveryApi &ev, TF model0, int animation, int channel);
+  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -1435,8 +1435,8 @@ public:
   IMPORT MT gltf_material_from_file(EveryApi &ev, std::string url);
   IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next);
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
-  IMPORT MT gltf_anim_material(EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key);
-  IMPORT MT gltf_anim_material2(EveryApi &e, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys);
+  IMPORT MT gltf_anim_material(EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key);
+  IMPORT MT gltf_anim_material2(EveryApi &e, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys);
   IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color);
   IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
@@ -1449,9 +1449,9 @@ public:
   IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
   IMPORT MT texture_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy, float mix);
-  IMPORT MT gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix );
+  IMPORT MT gltf_material( EveryApi &ev, TF model0, int material_id, float mix );
   IMPORT MT gltf_material_manual( EveryApi &ev, float mix, BM, BM, BM,BM,BM,bool,bool,bool,bool,bool,float,float,float,float,float,float,float );
-  IMPORT MT gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
+  IMPORT MT gltf_material_env( EveryApi &ev, TF model0, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
@@ -2370,7 +2370,7 @@ public:
   P combine_textures(P p1, P p2); 
   P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);
   MS identity_pose(int li_size);
-  ARR gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach);
+  ARR gltf_split_faces2(EveryApi &ev, TF model0, int mesh_index, int prim_index, int max_attach);
   
   ARR split_faces(P p, ATT att, int max_attach);
   std::vector<P> orig_pose(EveryApi &ev, P p, LI li, int li_size);
@@ -2402,9 +2402,9 @@ public:
   int poly_size(ARR arr);
   ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
   P normal_darkness(P p, float dark);
-  P gltf_load( EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index );
-  P gltf_load_nr( EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index );
-  BM gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index );
+  P gltf_load( EveryApi &ev, TF model, int mesh_index, int prim_index );
+  P gltf_load_nr( EveryApi &ev, TF model, int mesh_index, int prim_index );
+  BM gltf_load_bitmap( GameApi::EveryApi &ev, TF model, int image_index );
   ARR material_extractor_p(P p, int start_index, int end_index);
   ARR material_extractor_bm(P p, int start_index, int end_index);
   ARR material_extractor_mt(EveryApi &ev, P p, float mix, int start_index, int end_index);

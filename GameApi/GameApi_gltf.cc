@@ -21,55 +21,60 @@ extern std::string gameapi_homepageurl;
 class GLTF_Model : public GLTFModelInterface
 {
 public:
-  GLTF_Model(tinygltf::Model *model) : self(model) { }
+  GLTF_Model(tinygltf::Model *model, std::string base_url, std::string url) : self(model), base_url(base_url), url(url) { }
   virtual void Prepare() { }
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
 
+  virtual std::string BaseUrl() const { return base_url; }
+  virtual std::string Url() const { return url; }
+
+  
   virtual int accessors_size() const { return self->accessors.size(); }
-  virtual tinygltf::Accessor get_accessor(int i) const { return self->accessors[i]; }
+  virtual const tinygltf::Accessor &get_accessor(int i) const { return self->accessors[i]; }
 
   virtual int animations_size() const { return self->animations.size(); }
-  virtual tinygltf::Animation get_animation(int i) const { return self->animations[i]; }
+  virtual const tinygltf::Animation &get_animation(int i) const { return self->animations[i]; }
 
   virtual int buffers_size() const { return self->buffers.size(); }
-  virtual tinygltf::Buffer get_buffer(int i) const { return self->buffers[i]; }
+  virtual const tinygltf::Buffer &get_buffer(int i) const { return self->buffers[i]; }
   
   virtual int bufferviews_size() const { return self->bufferViews.size(); }
-  virtual tinygltf::BufferView get_bufferview(int i) const { return self->bufferViews[i]; }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const { return self->bufferViews[i]; }
   
   virtual int materials_size() const { return self->materials.size(); }
-  virtual tinygltf::Material get_material(int i) const { return self->materials[i]; }
+  virtual const tinygltf::Material &get_material(int i) const { return self->materials[i]; }
   
   virtual int meshes_size() const { return self->meshes.size(); }
-  virtual tinygltf::Mesh get_mesh(int i) const { return self->meshes[i]; }
+  virtual const tinygltf::Mesh &get_mesh(int i) const { return self->meshes[i]; }
 
   virtual int nodes_size() const { return self->nodes.size(); }
-  virtual tinygltf::Node get_node(int i) const { return self->nodes[i]; }
+  virtual const tinygltf::Node &get_node(int i) const { return self->nodes[i]; }
   
   virtual int textures_size() const { return self->textures.size(); }
-  virtual tinygltf::Texture get_texture(int i) const { return self->textures[i]; }
+  virtual const tinygltf::Texture &get_texture(int i) const { return self->textures[i]; }
   
   virtual int images_size() const { return self->images.size(); }
-  virtual tinygltf::Image get_image(int i) const { return self->images[i]; }
+  virtual const tinygltf::Image &get_image(int i) const { return self->images[i]; }
   
   virtual int skins_size() const { return self->skins.size(); }
-  virtual tinygltf::Skin get_skin(int i) const { return self->skins[i]; }
+  virtual const tinygltf::Skin &get_skin(int i) const { return self->skins[i]; }
   
   virtual int samplers_size() const { return self->samplers.size(); }
-  virtual tinygltf::Sampler get_sampler(int i) const { return self->samplers[i]; }
+  virtual const tinygltf::Sampler &get_sampler(int i) const { return self->samplers[i]; }
   
   virtual int cameras_size() const { return self->cameras.size(); }
-  virtual tinygltf::Camera get_camera(int i) const { return self->cameras[i]; }
+  virtual const tinygltf::Camera &get_camera(int i) const { return self->cameras[i]; }
 
   virtual int scenes_size() const { return self->scenes.size(); }
-  virtual tinygltf::Scene get_scene(int i) const { return self->scenes[i]; }
+  virtual const tinygltf::Scene &get_scene(int i) const { return self->scenes[i]; }
 
   virtual int lights_size() const { return self->lights.size(); }
-  virtual tinygltf::Light get_light(int i) const { return self->lights[i]; }
+  virtual const tinygltf::Light &get_light(int i) const { return self->lights[i]; }
   
 private:
   tinygltf::Model *self;
+  std::string base_url, url;
 };
 
 
@@ -79,7 +84,7 @@ void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 
 class LoadGltf;
 
-GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index);
+//GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index);
 
 
 class MatrixMovement : public Movement
@@ -348,7 +353,7 @@ public:
 class GLTF_Model_with_prepare : public GLTF_Model
 {
 public:
-  GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model), load(load), model(model) { }
+  GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { }
   virtual void Prepare() { load->Prepare(); }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare() { load->Prepare(); }
@@ -477,7 +482,7 @@ public:
   void HeavyPrepare()
   {
     if (image_index>=0 && image_index<int(interface->images_size()))
-      img = interface->get_image(image_index);
+      img = &interface->get_image(image_index);
   }
 
   
@@ -485,17 +490,17 @@ public:
   {
     interface->Prepare();
     if (image_index>=0 && image_index<int(interface->images_size()))
-      img = interface->get_image(image_index);
+      img = &interface->get_image(image_index);
   }
 
-  virtual int SizeX() const { return img.width;  }
-  virtual int SizeY() const { return img.height; }
+  virtual int SizeX() const { return img->width;  }
+  virtual int SizeY() const { return img->height; }
   virtual Color Map(int x, int y) const
   {
-    const unsigned char *ptr = &img.image[0];
-    int offset = (x*img.component + y*img.width*img.component)*(img.bits/8);
+    const unsigned char *ptr = &img->image[0];
+    int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
-    if ((img.component==4 ||img.component==3)&& img.bits==8) {
+    if ((img->component==4 ||img->component==3)&& img->bits==8) {
 
 
       unsigned int val = *(unsigned int*)(ptr+offset);
@@ -514,7 +519,7 @@ public:
 
 	return Color(val);
     }
-    if ((img.component==4 ||img.component==3)&& img.bits==16) {
+    if ((img->component==4 ||img->component==3)&& img->bits==16) {
       unsigned short *c0 = (unsigned short*)(ptr+offset);
       unsigned short r = c0[0];
       unsigned short g = c0[1];
@@ -543,7 +548,7 @@ public:
   }
 private:
   GLTFModelInterface *interface;
-  tinygltf::Image img;
+  const tinygltf::Image *img;
   int image_index;
 };
 
@@ -565,7 +570,7 @@ public:
   void HeavyPrepare()
   {
     if (mesh_index>=0 && mesh_index<int(interface->meshes_size()) && prim_index>=0 && prim_index<int(interface->get_mesh(mesh_index).primitives.size())) {
-      tinygltf::Mesh m = interface->get_mesh(mesh_index);
+      const tinygltf::Mesh &m = interface->get_mesh(mesh_index);
       prim = m.primitives[prim_index];
     }
     else { std::cout << "Prim failed!" << std::endl;  return; }
@@ -618,12 +623,12 @@ public:
     //indices_acc = 0;
     indices_done = false;
     if (indices_index!=-1) {
-      indices_acc = interface->get_accessor(indices_index); //&model->accessors[indices_index];
+      indices_acc = &interface->get_accessor(indices_index); //&model->accessors[indices_index];
       indices_done = true;
     }
       
     if (indices_done) {
-      assert(indices_acc.type==TINYGLTF_TYPE_SCALAR);
+      assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
     }
     //std::cout << "gltf component type: " << indices_acc->componentType << std::endl;
     //assert(indices_acc->componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
@@ -632,42 +637,42 @@ public:
     //position_acc = 0;
     position_done = false;
     if (position_index!=-1) {
-      position_acc = interface->get_accessor(position_index); //&model->accessors[position_index];
+      position_acc = &interface->get_accessor(position_index); //&model->accessors[position_index];
       position_done = true;
     }
       
     //normal_acc = 0;
     normal_done = false;
     if (normal_index!=-1) {
-      normal_acc = interface->get_accessor(normal_index); //&model->accessors[normal_index];
+      normal_acc = &interface->get_accessor(normal_index); //&model->accessors[normal_index];
       normal_done = true;
     }
       
     //texcoord_acc = 0;
     texcoord_done = false;
     if (texcoord_index!=-1) {
-      texcoord_acc = interface->get_accessor(texcoord_index); //&model->accessors[texcoord_index];
+      texcoord_acc = &interface->get_accessor(texcoord_index); //&model->accessors[texcoord_index];
       texcoord_done = true;
     }
       
     //color_acc = 0;
     color_done = false; 
     if (color_index!=-1) {
-      color_acc = interface->get_accessor(color_index); //&model->accessors[color_index];
+      color_acc = &interface->get_accessor(color_index); //&model->accessors[color_index];
       color_done = true;
     }
       
     //joints_acc = 0;
     joints_done = false;
     if (joints_index!=-1) {
-      joints_acc = interface->get_accessor(joints_index); //&model->accessors[joints_index];
+      joints_acc = &interface->get_accessor(joints_index); //&model->accessors[joints_index];
       joints_done = true;
     }
 
     //weights_acc = 0;
     weights_done = false;
     if (weights_index!=-1) {
-      weights_acc = interface->get_accessor(weights_index); //&model->accessors[weights_index];
+      weights_acc = &interface->get_accessor(weights_index); //&model->accessors[weights_index];
       weights_done = true;
     }
       
@@ -677,9 +682,9 @@ public:
     //indices_bv = 0;
     indices_bv_done = false;
     if (indices_done) {
-      int view = indices_acc.bufferView;
+      int view = indices_acc->bufferView;
       if (view!=-1) {
-	indices_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	indices_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	indices_bv_done = true;
       }
     }
@@ -687,9 +692,9 @@ public:
     //position_bv = 0;
     position_bv_done = false;
     if (position_done) {
-      int view = position_acc.bufferView;
+      int view = position_acc->bufferView;
       if (view!=-1) {
-	position_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	position_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	position_bv_done = true;
       }
     }
@@ -697,9 +702,9 @@ public:
     //normal_bv = 0;
     normal_bv_done = false;
     if (normal_done) {
-      int view = normal_acc.bufferView;
+      int view = normal_acc->bufferView;
       if (view!=-1) {
-	normal_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	normal_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	normal_bv_done = true;
       }
     }
@@ -707,9 +712,9 @@ public:
     //texcoord_bv = 0;
     texcoord_bv_done = false;
     if (texcoord_done) {
-      int view = texcoord_acc.bufferView;
+      int view = texcoord_acc->bufferView;
       if (view!=-1) {
-	texcoord_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	texcoord_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	texcoord_bv_done = true;
       }
     }
@@ -717,9 +722,9 @@ public:
     //color_bv = 0;
     color_bv_done = false;
     if (color_done) {
-      int view = color_acc.bufferView;
+      int view = color_acc->bufferView;
       if (view!=-1) {
-	color_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	color_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	color_bv_done = true;
       }
     }
@@ -727,9 +732,9 @@ public:
     //joints_bv = 0;
     joints_bv_done = false;
     if (joints_done) {
-      int view = joints_acc.bufferView;
+      int view = joints_acc->bufferView;
       if (view!=-1) {
-	joints_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	joints_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	joints_bv_done = true;
       }
     }
@@ -737,9 +742,9 @@ public:
     //weights_bv = 0;
     weights_bv_done = false;
     if (weights_done) {
-      int view = weights_acc.bufferView;
+      int view = weights_acc->bufferView;
       if (view!=-1) {
-	weights_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	weights_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
 	weights_bv_done = true;
       }
     }
@@ -748,9 +753,9 @@ public:
     //indices_buf = 0;
     indices_buf_done = false;
     if (indices_bv_done) {
-      int buf = indices_bv.buffer;
+      int buf = indices_bv->buffer;
       if (buf!=-1) {
-	indices_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	indices_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	indices_buf_done = true;
       }
     }
@@ -758,9 +763,9 @@ public:
     //position_buf = 0;
     position_buf_done = false;
     if (position_bv_done) {
-      int buf = position_bv.buffer;
+      int buf = position_bv->buffer;
       if (buf!=-1) {
-	position_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	position_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	position_buf_done = true;
       }
     }
@@ -768,9 +773,9 @@ public:
     // normal_buf = 0;
     normal_buf_done = false;
     if (normal_bv_done) {
-      int buf = normal_bv.buffer;
+      int buf = normal_bv->buffer;
       if (buf!=-1) {
-	normal_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	normal_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	normal_buf_done = true;
       }
     }
@@ -778,9 +783,9 @@ public:
     //texcoord_buf = 0;
     texcoord_buf_done = false;
     if (texcoord_bv_done) {
-      int buf = texcoord_bv.buffer;
+      int buf = texcoord_bv->buffer;
       if (buf!=-1) {
-	texcoord_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	texcoord_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	texcoord_buf_done = true;
       }
     }
@@ -788,9 +793,9 @@ public:
     //color_buf = 0;
     color_buf_done = false;
     if (color_bv_done) {
-      int buf = color_bv.buffer;
+      int buf = color_bv->buffer;
       if (buf!=-1) {
-	color_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	color_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	color_buf_done = false;
       }
     }
@@ -798,9 +803,9 @@ public:
     //joints_buf = 0;
     joints_buf_done = false;
     if (joints_bv_done) {
-      int buf = joints_bv.buffer;
+      int buf = joints_bv->buffer;
       if (buf!=-1) {
-	joints_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	joints_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	joints_buf_done = true;
       }
     }
@@ -808,9 +813,9 @@ public:
     //weights_buf = 0;
     weights_buf_done = false;
     if (weights_bv_done) {
-      int buf = weights_bv.buffer;
+      int buf = weights_bv->buffer;
       if (buf!=-1) {
-	weights_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	weights_buf = &interface->get_buffer(buf); //&model->buffers[buf];
 	weights_buf_done = true;
       }
     }
@@ -1021,38 +1026,38 @@ public:
   virtual int NumFaces() const 
   {
     if (mode==TINYGLTF_MODE_TRIANGLES && indices_done) {
-      return indices_acc.count/3;
+      return indices_acc->count/3;
     }
     if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && indices_done) {
-      return indices_acc.count-2;
+      return indices_acc->count-2;
     }
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN) {
       return 1;
     }
     if (mode==TINYGLTF_MODE_TRIANGLES && position_done) {
-      return position_acc.count/3;
+      return position_acc->count/3;
     }
     if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_done) {
-      return position_acc.count-2;
+      return position_acc->count-2;
     }
     std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
     return 0;
   }
   virtual int NumPoints(int face) const { 
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN && indices_done) {
-      return indices_acc.count;
+      return indices_acc->count;
     }
     return 3;
   }
   int get_index(int face, int point) const
   {
-	const unsigned char *ptr = &indices_buf.data[0];
+	const unsigned char *ptr = &indices_buf->data[0];
 	//int size1 = indices_buf->data.size();
-	const unsigned char *ptr2 = ptr + indices_bv.byteOffset;
+	const unsigned char *ptr2 = ptr + indices_bv->byteOffset;
 	//int size2 =indices_bv->byteLength;
-	int stride = indices_bv.byteStride;
+	int stride = indices_bv->byteStride;
 
-	switch(indices_acc.componentType) {
+	switch(indices_acc->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	  if (stride==0) stride=sizeof(unsigned char);
 	  break;
@@ -1072,17 +1077,17 @@ public:
 	    if (stride==0) stride=sizeof(unsigned int); // 3 = num of indices in a ttiangle
 	    break;
 	default:
-	  std::cout << "componentType wrong: " << indices_acc.componentType << std::endl;
+	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
 	  if (stride==0) stride=sizeof(short);
 	  break;
 	};
 
 
 	int comp = face*3+point;
-	const unsigned char *ptr3 = ptr2 + indices_acc.byteOffset + comp*stride;
+	const unsigned char *ptr3 = ptr2 + indices_acc->byteOffset + comp*stride;
 	//int size3 = indices_acc->count;
 	int index = 0;
-	switch(indices_acc.componentType)
+	switch(indices_acc->componentType)
 	  {
 	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	    {
@@ -1131,20 +1136,20 @@ public:
       
 	int index = get_index(face,point);
 
-	const unsigned char *pos_ptr = &position_buf.data[0];
-	int stride2 = position_bv.byteStride;
+	const unsigned char *pos_ptr = &position_buf->data[0];
+	int stride2 = position_bv->byteStride;
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + position_bv.byteOffset + index*stride2 + position_acc.byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + position_bv->byteOffset + index*stride2 + position_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return Point(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// todo, check that this branch works
-	const unsigned char *pos_ptr = &position_buf.data[0];
-	const unsigned char *pos_ptr2 = pos_ptr + position_bv.byteOffset;
-	int stride = position_bv.byteStride;
+	const unsigned char *pos_ptr = &position_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + position_bv->byteOffset;
+	int stride = position_bv->byteStride;
 	if (stride==0) stride=3*sizeof(float);
 	int comp = face*3+point;
-	const unsigned char *pos_ptr3 = pos_ptr2 + position_acc.byteOffset + comp*stride;
+	const unsigned char *pos_ptr3 = pos_ptr2 + position_acc->byteOffset + comp*stride;
 	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return Point(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
@@ -1164,20 +1169,20 @@ public:
       
 	int index = get_index(face,point);
 
-	const unsigned char *pos_ptr = &normal_buf.data[0];
-	int stride2 = normal_bv.byteStride;
+	const unsigned char *pos_ptr = &normal_buf->data[0];
+	int stride2 = normal_bv->byteStride;
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + normal_bv.byteOffset + index*stride2 + normal_acc.byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + normal_bv->byteOffset + index*stride2 + normal_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return -Vector(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// TODO, check that this branch works
-	const unsigned char *pos_ptr = &normal_buf.data[0];
-	const unsigned char *pos_ptr2 = pos_ptr + normal_bv.byteOffset;
-	int stride = normal_bv.byteStride;
+	const unsigned char *pos_ptr = &normal_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + normal_bv->byteOffset;
+	int stride = normal_bv->byteStride;
 	if (stride==0) stride=3*sizeof(float);
 	int comp = face*3+point;
-	const unsigned char *pos_ptr3 = pos_ptr2 + normal_acc.byteOffset + comp*stride;
+	const unsigned char *pos_ptr3 = pos_ptr2 + normal_acc->byteOffset + comp*stride;
 	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return -Vector(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
@@ -1198,20 +1203,20 @@ public:
       
 	int index = get_index(face,point);
 
-	const unsigned char *pos_ptr = &color_buf.data[0];
-	int stride2 = color_bv.byteStride;
+	const unsigned char *pos_ptr = &color_buf->data[0];
+	int stride2 = color_bv->byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	unsigned int *pos_ptr2 = (unsigned int*)(pos_ptr + color_bv.byteOffset + index*stride2 + color_acc.byteOffset); 
+	unsigned int *pos_ptr2 = (unsigned int*)(pos_ptr + color_bv->byteOffset + index*stride2 + color_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return *pos_ptr2;
       } else {
 	// todo, check that this branch works
-	const unsigned char *pos_ptr = &color_buf.data[0];
-	const unsigned char *pos_ptr2 = pos_ptr + color_bv.byteOffset;
-	int stride = color_bv.byteStride;
+	const unsigned char *pos_ptr = &color_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + color_bv->byteOffset;
+	int stride = color_bv->byteStride;
 	if (stride==0) stride=4*sizeof(unsigned char);
 	int comp = face*3+point;
-	const unsigned char *pos_ptr3 = pos_ptr2 + color_acc.byteOffset + comp*stride;
+	const unsigned char *pos_ptr3 = pos_ptr2 + color_acc->byteOffset + comp*stride;
 	const unsigned int *pos_ptr4 = (const unsigned int*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return *pos_ptr4;
       }
@@ -1237,10 +1242,10 @@ public:
       
 	int index = get_index(face,point);
 
-	const unsigned char *pos_ptr = &joints_buf.data[0];
-	int stride2 = joints_bv.byteStride;
+	const unsigned char *pos_ptr = &joints_buf->data[0];
+	int stride2 = joints_bv->byteStride;
 	if (stride2==0) {
-	switch(joints_acc.componentType) {
+	switch(joints_acc->componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	  if (stride2==0) stride2=sizeof(unsigned char);
 	  break;
@@ -1260,11 +1265,11 @@ public:
 	    if (stride2==0) stride2=sizeof(unsigned int); // 3 = num of indices in a ttiangle
 	    break;
 	default:
-	  std::cout << "componentType wrong: " << indices_acc.componentType << std::endl;
+	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
 	  if (stride2==0) stride2=sizeof(short);
 	  break;
 	};
-	switch(joints_acc.type)
+	switch(joints_acc->type)
 	  {
 	  case TINYGLTF_TYPE_SCALAR: break;
 	  case TINYGLTF_TYPE_VEC2: stride2*=2; break;
@@ -1276,8 +1281,8 @@ public:
 	int index2 = 0;
 	int index3 = 0;
 	int index4 = 0;
-	unsigned char *ptr3 = (unsigned char*)(pos_ptr + joints_bv.byteOffset + index*stride2 + joints_acc.byteOffset); 
-	switch(joints_acc.componentType)
+	unsigned char *ptr3 = (unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
+	switch(joints_acc->componentType)
 	  {
 	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	    {
@@ -1351,12 +1356,12 @@ public:
 	return res;
       } else {
 	// todo, check that this branch works
-	const unsigned char *pos_ptr = &joints_buf.data[0];
-	const unsigned char *pos_ptr2 = pos_ptr + joints_bv.byteOffset;
-	int stride = joints_bv.byteStride;
+	const unsigned char *pos_ptr = &joints_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + joints_bv->byteOffset;
+	int stride = joints_bv->byteStride;
 	if (stride==0) stride=4*sizeof(char);
 	int comp = face*3+point;
-	const unsigned char *pos_ptr3 = pos_ptr2 + joints_acc.byteOffset + comp*stride;
+	const unsigned char *pos_ptr3 = pos_ptr2 + joints_acc->byteOffset + comp*stride;
 	const unsigned char *pos_ptr4 = (const unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
 	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
 	//res[0] = pos_ptr4[0];
@@ -1405,10 +1410,10 @@ public:
       
 	int index = get_index(face,point);
 
-	const unsigned char *pos_ptr = &weights_buf.data[0];
-	int stride2 = weights_bv.byteStride;
+	const unsigned char *pos_ptr = &weights_buf->data[0];
+	int stride2 = weights_bv->byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + weights_bv.byteOffset + index*stride2 + weights_acc.byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
 	//vec4 res;
 	//res[0] = pos_ptr2[0];
@@ -1426,8 +1431,8 @@ public:
 	//return pos_ptr2[num];
       } else {
 	// todo, check that this branch works
-	const unsigned char *pos_ptr = &weights_buf.data[0];
-	const unsigned char *pos_ptr2 = pos_ptr + weights_bv.byteOffset;
+	const unsigned char *pos_ptr = &weights_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
 	//int stride = weights_bv->byteStride;
 	//if (stride==0) stride=4*sizeof(char);
 	//int comp = face*3+point;
@@ -1489,20 +1494,20 @@ public:
       
 	int index = get_index(face,point);
 
-	const unsigned char *pos_ptr = &texcoord_buf.data[0];
-	int stride2 = texcoord_bv.byteStride;
+	const unsigned char *pos_ptr = &texcoord_buf->data[0];
+	int stride2 = texcoord_bv->byteStride;
 	if (stride2==0) stride2 = 2*sizeof(float); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + texcoord_bv.byteOffset + index*stride2 + texcoord_acc.byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + texcoord_bv->byteOffset + index*stride2 + texcoord_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return Point(pos_ptr2[0], pos_ptr2[1], 0.0 /*pos_ptr2[2]*/);
       } else {
 	// todo, check that this branch works
-	const unsigned char *pos_ptr = &texcoord_buf.data[0];
-	const unsigned char *pos_ptr2 = pos_ptr + texcoord_bv.byteOffset;
-	int stride = texcoord_bv.byteStride;
+	const unsigned char *pos_ptr = &texcoord_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + texcoord_bv->byteOffset;
+	int stride = texcoord_bv->byteStride;
 	if (stride==0) stride=2*sizeof(float);
 	int comp = face*3+point;
-	const unsigned char *pos_ptr3 = pos_ptr2 + texcoord_acc.byteOffset + comp*stride;
+	const unsigned char *pos_ptr3 = pos_ptr2 + texcoord_acc->byteOffset + comp*stride;
 	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return Point(pos_ptr4[0], pos_ptr4[1], 0.0 /*pos_ptr4[2]*/);
       }
@@ -1526,29 +1531,29 @@ private:
   int joints_index;
   int weights_index;
 
-  tinygltf::Accessor indices_acc;
-  tinygltf::Accessor position_acc;
-  tinygltf::Accessor normal_acc;
-  tinygltf::Accessor texcoord_acc;
-  tinygltf::Accessor color_acc;
-  tinygltf::Accessor joints_acc;
-  tinygltf::Accessor weights_acc;
+  const tinygltf::Accessor *indices_acc;
+  const tinygltf::Accessor *position_acc;
+  const tinygltf::Accessor *normal_acc;
+  const tinygltf::Accessor *texcoord_acc;
+  const tinygltf::Accessor *color_acc;
+  const tinygltf::Accessor *joints_acc;
+  const tinygltf::Accessor *weights_acc;
   
-  tinygltf::BufferView indices_bv;
-  tinygltf::BufferView position_bv;
-  tinygltf::BufferView normal_bv;
-  tinygltf::BufferView texcoord_bv;
-  tinygltf::BufferView color_bv;
-  tinygltf::BufferView joints_bv;
-  tinygltf::BufferView weights_bv;
+  const tinygltf::BufferView *indices_bv;
+  const tinygltf::BufferView *position_bv;
+  const tinygltf::BufferView *normal_bv;
+  const tinygltf::BufferView *texcoord_bv;
+  const tinygltf::BufferView *color_bv;
+  const tinygltf::BufferView *joints_bv;
+  const tinygltf::BufferView *weights_bv;
   
-  tinygltf::Buffer indices_buf;
-  tinygltf::Buffer position_buf;
-  tinygltf::Buffer normal_buf;
-  tinygltf::Buffer texcoord_buf;
-  tinygltf::Buffer color_buf;
-  tinygltf::Buffer joints_buf;
-  tinygltf::Buffer weights_buf;
+  const tinygltf::Buffer *indices_buf;
+  const tinygltf::Buffer *position_buf;
+  const tinygltf::Buffer *normal_buf;
+  const tinygltf::Buffer *texcoord_buf;
+  const tinygltf::Buffer *color_buf;
+  const tinygltf::Buffer *joints_buf;
+  const tinygltf::Buffer *weights_buf;
 
 
 
@@ -1586,21 +1591,23 @@ private:
 
 
 
-GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::string base_url, std::string url, int image_index )
+GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, TF model0, int image_index )
 {
   if (image_index==-1) {
     return ev.bitmap_api.newbitmap(1,1, 0xffffffff);
   }
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   //   new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
-  GLTFImage *img = new GLTFImage( model, image_index );
+  //GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  GLTFImage *img = new GLTFImage( interface, image_index );
   //Bitmap<Color> *img2 = new MemoizeBitmap(*img);
 
   std::stringstream ss;
@@ -1628,7 +1635,7 @@ std::vector<CacheItem> g_bitmap_cache;
 
 
 
-GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int image_index)
+GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int image_index)
 {
   if (image_index==-1) {
     return ev.bitmap_api.newbitmap(1,1,0xffffffff);
@@ -1644,14 +1651,14 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
   //  if (item->url == load->url + ss.str()) { return g_bitmap_cache[i].bitmap; }
   //}
   
-  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  //GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
 
-  GLTFImage *img = new GLTFImage( model, image_index );
+  GLTFImage *img = new GLTFImage( interface, image_index );
 
   //Bitmap<Color> *img2 = new MemoizeBitmap(*img);
 
 
-  Bitmap<Color> *bbm = new BitmapPrepareCache(e, load->url + ss.str(), img);
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, interface->Url() + ss.str(), img);
 
   ::Bitmap<Color> *b = bbm;
   BitmapColorHandle *handle2 = new BitmapColorHandle;
@@ -1667,20 +1674,21 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
   return bm;
 }
 std::map<std::string, bool> g_gltf_cache;
-GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_index, int prim_index )
+GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index )
 {
   int c = get_current_block();
   set_current_block(-1);
-  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
-
+  //GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  GLTFModelInterface *model = interface;
+  
   FaceCollection *faces = new GLTFFaceCollection( model, mesh_index, prim_index );
   GameApi::P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
   confirm_texture_usage(e,p);
-  GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  GameApi::P p2 = ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
-  ss << load->url;
+  ss << model->Url();
   ss << prim_index + mesh_index*50;
   bool b = g_gltf_cache[ss.str()];
   if (b) {
@@ -1696,30 +1704,31 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
 extern Matrix g_last_resize;
 
-GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index)
+GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF model0, int mesh_index, int prim_index)
 {
-
+  GLTFModelInterface *model = find_gltf(e,model0);
+  std::string url = model->Url();
+  
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,model->BaseUrl(),model->Url(),gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   int c = get_current_block();
   set_current_block(-1);
-  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
-
+  //GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
   FaceCollection *faces = new GLTFFaceCollection( model, mesh_index, prim_index );
   P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
 
   confirm_texture_usage(e,p);
-  GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  GameApi::P p2 = ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
-  ss << load->url;
+  ss << model->Url();
   ss << prim_index + mesh_index*50;
   bool b = g_gltf_cache[ss.str()];
   if (b) {
@@ -1734,28 +1743,30 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, std::string
   return p4;
 
 }
-GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index )
+GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF model0, int mesh_index, int prim_index )
 {
+  GLTFModelInterface *model = find_gltf(e,model0);
+  std::string url = model->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   int c = get_current_block();
   set_current_block(-1);
-  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  //GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
   FaceCollection *faces = new GLTFFaceCollection( model, mesh_index, prim_index );
   P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
 
   confirm_texture_usage(e,p);
-  GameApi::P p2 = ev.polygon_api.file_cache(p, load->url, prim_index+mesh_index*50);
+  GameApi::P p2 = ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
-  ss << load->url;
+  ss << model->Url();
   ss << prim_index + mesh_index*50;
   bool b = g_gltf_cache[ss.str()];
   if (b) {
@@ -1873,7 +1884,7 @@ private:
 class GLTF_Material : public MaterialForward
 {
 public:
-  GLTF_Material(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix) { 
+  GLTF_Material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int material_id, float mix) : e(e), ev(ev), interface(interface), material_id(material_id),mix(mix) { 
   }
   int num_indexes() const {
     int s = 5;
@@ -1902,38 +1913,39 @@ public:
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
   GameApi::BM texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())||!has_texture(i)) {
+    if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
+    const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index);
-    case 1: return gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index);
-    case 2: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].normalTexture.index);
-    case 3: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].occlusionTexture.index);
-    case 4: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].emissiveTexture.index);
+    case 0: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.baseColorTexture.index);
+    case 1: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.metallicRoughnessTexture.index);
+    case 2: return gltf_load_bitmap2(e,ev, interface, m.normalTexture.index);
+    case 3: return gltf_load_bitmap2(e,ev, interface, m.occlusionTexture.index);
+    case 4: return gltf_load_bitmap2(e,ev, interface, m.emissiveTexture.index);
     default:
       std::cout << "ERROR: gltf_meterial::texture" << std::endl;
       GameApi::BM bm; bm.id=-1; return bm;
     };
   }
   bool has_texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       return false;
     }
-
+    const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index!=-1;
-    case 1: return load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
-    case 2: return load->model.materials[material_id].normalTexture.index!=-1;
-    case 3: return load->model.materials[material_id].occlusionTexture.index!=-1;
-    case 4: return load->model.materials[material_id].emissiveTexture.index!=-1;
+    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1;
+    case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
+    case 2: return m.normalTexture.index!=-1;
+    case 3: return m.occlusionTexture.index!=-1;
+    case 4: return m.emissiveTexture.index!=-1;
     default: return false;
     };
   }
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    load->Prepare();
+    interface->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
     for(int i=0;i<s;i++) {
@@ -1947,17 +1959,20 @@ public:
 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
-      tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-      tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      const tinygltf::Material &m = interface->get_material(material_id);
+      const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+      const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
       I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
-    }
-    if (load->model.materials[material_id].alphaMode=="BLEND") {
+
+    if (m.alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
       //I18 = ev.mainloop_api.transparent(I18);
+    }
+
     }
     // GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
@@ -1965,7 +1980,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    load->Prepare();
+    interface->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
     for(int i=0;i<s;i++) {
@@ -1978,26 +1993,27 @@ public:
 
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
-
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
-    }
-    if (load->model.materials[material_id].alphaMode=="BLEND") {
+    if (m.alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
       //I18 = ev.mainloop_api.transparent(I18);
       //      I18=ev.mainloop_api.blendfunc(I18,2,3);
+    }
+
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    load->Prepare();
+    interface->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
     for(int i=0;i<s;i++) {
@@ -2009,20 +2025,21 @@ public:
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
-
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+      const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
-    }
-    if (load->model.materials[material_id].alphaMode=="BLEND") {
+    if (m.alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
       //I18 = ev.mainloop_api.transparent(I18);
       //      I18=ev.mainloop_api.blendfunc(I18,2,3);
     }
+    }
+
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
@@ -2048,7 +2065,7 @@ public:
 private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
-  LoadGltf *load;
+  GLTFModelInterface *interface;
   int material_id;
   float mix;
 };
@@ -2452,7 +2469,7 @@ void MAT_CB(void *dt)
 class GLTF_Material_env : public MaterialForward
 {
 public:
-  GLTF_Material_env(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM brfd) : e(e), ev(ev),  load(load), material_id(material_id),mix(mix), diffuse_env(diffuse_env), specular_env(specular_env), bfrd(brfd) { 
+  GLTF_Material_env(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM brfd) : e(e), ev(ev), interface(interface), material_id(material_id),mix(mix), diffuse_env(diffuse_env), specular_env(specular_env), bfrd(brfd) { 
     // TODO, HOW TO CALL PREPARE?
     
   }
@@ -2482,15 +2499,16 @@ public:
     return 8; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive, 6=env_bm
   }
   GameApi::BM texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
+    const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index);
-    case 1: return gltf_load_bitmap2(e,ev, load, load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index);
-    case 2: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].normalTexture.index);
-    case 3: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].occlusionTexture.index);
-    case 4: return gltf_load_bitmap2(e,ev,load, load->model.materials[material_id].emissiveTexture.index);
+    case 0: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.baseColorTexture.index);
+    case 1: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.metallicRoughnessTexture.index);
+    case 2: return gltf_load_bitmap2(e,ev,interface, m.normalTexture.index);
+    case 3: return gltf_load_bitmap2(e,ev,interface, m.occlusionTexture.index);
+    case 4: return gltf_load_bitmap2(e,ev,interface, m.emissiveTexture.index);
     case 5: return diffuse_env;
     case 6: return specular_env;
     case 7: return bfrd;
@@ -2500,16 +2518,16 @@ public:
     };
   }
   bool has_texture(int i) const {
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       return false;
     }
-
+    const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return load->model.materials[material_id].pbrMetallicRoughness.baseColorTexture.index!=-1;
-    case 1: return load->model.materials[material_id].pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
-    case 2: return load->model.materials[material_id].normalTexture.index!=-1;
-    case 3: return load->model.materials[material_id].occlusionTexture.index!=-1;
-    case 4: return load->model.materials[material_id].emissiveTexture.index!=-1;
+    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1;
+    case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
+    case 2: return m.normalTexture.index!=-1;
+    case 3: return m.occlusionTexture.index!=-1;
+    case 4: return m.emissiveTexture.index!=-1;
     case 5: return true;
     case 6: return true;
     case 7: return true;
@@ -2537,7 +2555,7 @@ public:
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    load->Prepare();
+    interface->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
     int s = num_indexes();
@@ -2551,12 +2569,12 @@ public:
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm,types);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
-
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0); // todo base color
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -2565,7 +2583,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    load->Prepare();
+    interface->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
     int s = num_indexes();
@@ -2577,12 +2595,12 @@ public:
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm,types);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
-
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -2590,7 +2608,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    load->Prepare();
+    interface->Prepare();
     std::vector<GameApi::BM> bm;
     std::vector<int> types;
     int s = num_indexes();
@@ -2602,12 +2620,12 @@ public:
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm,types);
     GameApi::ML I18;
-    if (material_id<0 || material_id>=int(load->model.materials.size())) {
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
-
-    tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
-    tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0],r.baseColorFactor[1],r.baseColorFactor[2],r.baseColorFactor[3], o.strength, 1.0);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
@@ -2636,15 +2654,16 @@ public:
 private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
-  LoadGltf *load;
+  //LoadGltf *load;
+  GLTFModelInterface *interface;
   int material_id;
   float mix;
   GameApi::BM diffuse_env, specular_env, bfrd;
 };
 
-GameApi::MT gltf_material2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix )
+GameApi::MT gltf_material2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *model, int material_id, float mix )
   {
-    Material *mat = new GLTF_Material(e,ev, load, material_id, mix);
+    Material *mat = new GLTF_Material(e,ev, model, material_id, mix);
   return add_material(e, mat);
   }
 GameApi::MT gltf_material2_manual( GameApi::Env &e, GameApi::EveryApi &ev, float mix, GameApi::BM baseColor, GameApi::BM metalrough, GameApi::BM normaltexture, GameApi::BM occlusion, GameApi::BM emissive, bool baseColor_b, bool metalrough_b, bool normaltexture_b, bool occlusion_b, bool emissive_b, float roughnessfactor, float metallicfactor, float baseColor_red, float baseColor_green, float baseColor_blue, float baseColor_alpha, float occulsionStrength)
@@ -2663,16 +2682,18 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_from_file( GameApi::EveryApi &e
   return add_material(e, new GLTF_Material_from_file(e,ev, url, gameapi_homepageurl));
 }
 
-GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix )
+GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, TF model0, int material_id, float mix )
   {
+    GLTFModelInterface *model = find_gltf(e,model0);
+    std::string url = model->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  Material *mat = new GLTF_Material(e,ev, load, material_id,mix);
+  Material *mat = new GLTF_Material(e,ev, model, material_id,mix);
   return add_material(e, mat);
 } 
 
@@ -2690,7 +2711,7 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_manual( EveryApi &ev, float mix
 } 
 
 
-GameApi::MT gltf_material_env2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM bfrd)
+GameApi::MT gltf_material_env2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int material_id, float mix, GameApi::BM diffuse_env, GameApi::BM specular_env, GameApi::BM bfrd)
 {
   //bool is_binary=false;
   //if (int(url.size())>3) {
@@ -2699,21 +2720,23 @@ GameApi::MT gltf_material_env2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf
   //}
   //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  Material *mat = new GLTF_Material_env(e,ev, load, material_id,mix, diffuse_env, specular_env, bfrd);
+  Material *mat = new GLTF_Material_env(e,ev, interface, material_id,mix, diffuse_env, specular_env, bfrd);
   return add_material(e, mat);
 
 }
 
-GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, std::string base_url, std::string url, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd )
+GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, TF model0, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd )
 {
+  GLTFModelInterface *model = find_gltf(e,model0);
+  std::string url = model->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  Material *mat = new GLTF_Material_env(e,ev, load, material_id,mix, diffuse_env, specular_env, bfrd);
+  Material *mat = new GLTF_Material_env(e,ev, model, material_id,mix, diffuse_env, specular_env, bfrd);
   return add_material(e, mat);
 
 }
@@ -3219,7 +3242,7 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   return res;
 }
 
-TransformObject gltf_node_transform_obj(tinygltf::Node *node)
+TransformObject gltf_node_transform_obj(const tinygltf::Node *node)
 {
   TransformObject o = gltf_node_default();
   if (int(node->scale.size())==3) {
@@ -3250,7 +3273,7 @@ TransformObject gltf_node_transform_obj(tinygltf::Node *node)
     o.trans_z = m_z;
   }
   if (int(node->matrix.size())==16) {
-    double *arr = &node->matrix[0];
+    const double *arr = &node->matrix[0];
     Matrix m;
       for(int i=0;i<4;i++)
       for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
@@ -3335,41 +3358,42 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
   return mv;
 }
 
-GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys);
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
 
-GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys);
-GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys);
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
+GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys);
 
 
-bool is_child_node(LoadGltf *load, int node_id, int node2)
+bool is_child_node(GLTFModelInterface *interface, int node_id, int node2)
 {
   return true;
 }
 
 
-GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load,  int node_id, std::string keys)
+GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys)
 {
   //if (!load2) load2 = load;
-  int s2 = load->model.nodes.size();
+  int s2 = interface->nodes_size(); //load->model.nodes.size();
   if (!(node_id>=0 && node_id<s2))
     {
     GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
-  tinygltf::Node *node = &load->model.nodes[node_id];
+  // HERE WE HAVE NOT CALLED PREPARE?
+  const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
 
   // Load mesh
-  int ss = load->model.skins.size();
+  int ss = interface->skins_size(); //load->model.skins.size();
   bool done = false;
   GameApi::ML mesh;
   for(int i=0;i<ss;i++) {
-    if (load->model.skins[i].skeleton != -1)
+    if (interface->get_skin(i).skeleton != -1)
       {
-	int mesh_id = node->mesh;
+	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton(e,ev,load, mesh_id, i,keys);
+	  mesh = gltf_mesh2_with_skeleton(e,ev,interface, mesh_id, i,keys);
 	  done = true;
 	}
 	if (done)
@@ -3378,22 +3402,22 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     
   }
   if (!done) {
-    int mesh_id = node->mesh;
+    int mesh_id = node.mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2( e, ev, load, mesh_id, 0, keys );
+      mesh = gltf_mesh2( e, ev, interface, mesh_id, 0, keys );
     }
   }
   // todo cameras
 
   // recurse children
-  int s = node->children.size();
+  int s = node.children.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    int child_id = node->children[i];
+    int child_id = node.children[i];
     if (child_id!=-1) {
       //std::cout << "{";
-      GameApi::ML ml = gltf_node2( e, ev, load, child_id,keys );
+      GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys );
       vec.push_back(ml);
       //std::cout << "}";
     }
@@ -3406,18 +3430,18 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
  GameApi::MN mv = ev.move_api.mn_empty();
  
-  if (int(node->scale.size())==3) {
-    double s_x = node->scale[0];
-    double s_y = node->scale[1];
-    double s_z = node->scale[2];
+  if (int(node.scale.size())==3) {
+    double s_x = node.scale[0];
+    double s_y = node.scale[1];
+    double s_z = node.scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
     //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
   }
-  if (int(node->rotation.size())==4) {
-    double r_x = node->rotation[0];
-    double r_y = node->rotation[1];
-    double r_z = node->rotation[2];
-    double r_w = node->rotation[3];
+  if (int(node.rotation.size())==4) {
+    double r_x = node.rotation[0];
+    double r_y = node.rotation[1];
+    double r_z = node.rotation[2];
+    double r_w = node.rotation[3];
     //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
     Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
     Matrix m = Quarternion::QuarToMatrix(q);
@@ -3425,16 +3449,16 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
     }
-  if (int(node->translation.size())==3) {
-    double m_x = node->translation[0];
-    double m_y = node->translation[1];
-    double m_z = node->translation[2];
+  if (int(node.translation.size())==3) {
+    double m_x = node.translation[0];
+    double m_y = node.translation[1];
+    double m_z = node.translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
     //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
   }
   //std::cout << node->matrix.size();
-  if (int(node->matrix.size())==16) {
-    double *arr = &node->matrix[0];
+  if (int(node.matrix.size())==16) {
+    const double *arr = &node.matrix[0];
     Matrix m;
       for(int i=0;i<4;i++)
       for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
@@ -3450,36 +3474,37 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   return ret;
 }
 
-GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id, std::string keys )
+GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys )
 {
-  int s2 = load->model.scenes.size();
+  int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
     {
     GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
-  tinygltf::Scene *scene = &load->model.scenes[scene_id];
-  int s = scene->nodes.size();
+  const tinygltf::Scene &scene = interface->get_scene(scene_id); //&load->model.scenes[scene_id];
+  int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2( e, ev, load, scene->nodes[i], keys );
+    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys );
     vec.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, vec);
 }
 
-GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys)
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys)
 {
   //g_last_resize=Matrix::Identity();
-  if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
-    int s = load->model.meshes[mesh_id].primitives.size();
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
     std::vector<GameApi::ML> mls;
     for(int i=0;i<s;i++) {
-      GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
-      int mat = load->model.meshes[mesh_id].primitives[i].material;
-      GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
-      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, keys);
+      GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int mat = m.primitives[i].material;
+      GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
+      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 300, mat2, keys);
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
@@ -3496,16 +3521,17 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, Lo
   }
 }
 
-GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, int skin_id, std::string keys)
+GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys)
 {
-  if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
-    int s = load->model.meshes[mesh_id].primitives.size();
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
     std::vector<GameApi::ML> mls;
     for(int i=0;i<s;i++) {
-      GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
-      int mat = load->model.meshes[mesh_id].primitives[i].material;
-      GameApi::MT mat2 = gltf_material2(e, ev, load, mat, 1.0);
-      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, load, skin_id, 300, mat2, keys);
+      GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int mat = m.primitives[i].material;
+      GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
+      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 300, mat2, keys);
 
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
@@ -3523,15 +3549,16 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, 
   }
 }
 
-GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_id, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd)
+GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd)
 {
-  if (mesh_id>=0 && mesh_id<int(load->model.meshes.size())) {
-    int s = load->model.meshes[mesh_id].primitives.size();
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
     std::vector<GameApi::ML> mls;
     for(int i=0;i<s;i++) {
-      GameApi::P p = gltf_load2(e, ev, load, mesh_id, i);
-      int mat = load->model.meshes[mesh_id].primitives[i].material;
-      GameApi::MT mat2 = gltf_material_env2(e, ev, load, mat, 1.0, diffuse, specular, brfd);
+      GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int mat = m.primitives[i].material;
+      GameApi::MT mat2 = gltf_material_env2(e, ev, interface, mat, 1.0, diffuse, specular, brfd);
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
@@ -3552,8 +3579,8 @@ GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *lo
 class GltfMesh : public MainLoopItem
 {
 public:
-  GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys)
-    :env(env), ev(ev), base_url(base_url), url(url),mesh_id(mesh_id),skin_id(skin_id), keys(keys) { res.id=-1; }
+  GltfMesh(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys)
+    :env(env), ev(ev), interface(interface),mesh_id(mesh_id),skin_id(skin_id), keys(keys) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -3563,18 +3590,18 @@ public:
     Prepare();
   }
   virtual void Prepare() {
-
+    std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  load->Prepare();
-  GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
+  interface->Prepare();
+  GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
 
-  GameApi::ML ml = gltf_mesh2(env,ev,load, mesh_id, skin_id, keys);
+  GameApi::ML ml = gltf_mesh2(env,ev,interface, mesh_id, skin_id, keys);
   res = scale_to_gltf_size(env,ev,mesh,ml);
     
   }
@@ -3604,15 +3631,16 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  std::string base_url;
-  std::string url;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
   GameApi::ML res;
   int mesh_id;
   int skin_id;
   std::string keys;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string base_url, std::string url, int mesh_id, int skin_id, std::string keys )
+GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys )
 {
 #if 0
   bool is_binary=false;
@@ -3628,14 +3656,15 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, std::string 
   GameApi::ML ml = gltf_mesh2(e,ev,load, mesh_id, skin_id, keys);
   return scale_to_gltf_size(e,ev,mesh,ml);
 #endif
-  return add_main_loop(e, new GltfMesh(e,ev,base_url,url,mesh_id, skin_id, keys));
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfMesh(e,ev,interface,mesh_id, skin_id, keys));
 }
 
 class GltfNode : public MainLoopItem
 {
 public:
-  GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int node_id, std::string keys)
-    :env(env), ev(ev), base_url(base_url), url(url),node_id(node_id),keys(keys) { res.id=-1; }
+  GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int node_id, std::string keys)
+    :env(env), ev(ev), interface(interface),node_id(node_id),keys(keys) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -3645,17 +3674,17 @@ public:
     Prepare();
   }
   virtual void Prepare() {
-
+    std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  load->Prepare();
-  GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
-  GameApi::ML ml = gltf_node2(env,ev,load,node_id,keys);
+  interface->Prepare();
+  GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
+  GameApi::ML ml = gltf_node2(env,ev,interface,node_id,keys);
   res = scale_to_gltf_size(env,ev,mesh,ml);
 
     
@@ -3689,14 +3718,15 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  std::string base_url;
-  std::string url;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
   GameApi::ML res;
   int node_id;
   std::string keys;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, std::string base_url, std::string url, int node_id, std::string keys )
+GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, TF model0, int node_id, std::string keys )
 {
 #if 0
   bool is_binary=false;
@@ -3712,15 +3742,16 @@ GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, std::string 
   return scale_to_gltf_size(e,ev,mesh,ml);
   //return ml;
 #endif
-  return add_main_loop(e,new GltfNode(e,ev,base_url,url,node_id,keys));
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e,new GltfNode(e,ev,interface,node_id,keys));
 }
 
 
 class GltfScene : public MainLoopItem
 {
 public:
-  GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, std::string keys)
-    :env(env), ev(ev), base_url(base_url), url(url),scene_id(scene_id),keys(keys) { res.id=-1;}
+  GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys)
+    :env(env), ev(ev), interface(interface),scene_id(scene_id),keys(keys) { res.id=-1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -3730,17 +3761,17 @@ public:
     Prepare();
   }
   virtual void Prepare() {
-
+    std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  load->Prepare();
-  GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
-  GameApi::ML ml = gltf_scene2(env,ev,load,scene_id,keys);
+  interface->Prepare();
+  GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
+  GameApi::ML ml = gltf_scene2(env,ev,interface,scene_id,keys);
   res= scale_to_gltf_size(env,ev,mesh,ml);    
   MainLoopItem *item = find_main_loop(env,res);
   item->Prepare();
@@ -3771,14 +3802,15 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  std::string base_url;
-  std::string url;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
   GameApi::ML res;
   int scene_id;
   std::string keys;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, std::string keys )
+GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, TF model0, int scene_id, std::string keys )
 {
   #if 0
   bool is_binary=false;
@@ -3793,29 +3825,30 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, std::string
   GameApi::ML ml = gltf_scene2(e,ev,load,scene_id);
   return scale_to_gltf_size(e,ev,mesh,ml);
 #endif
-  return add_main_loop(e, new GltfScene(e,ev,base_url,url,scene_id,keys));
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfScene(e,ev,interface,scene_id,keys));
   //return ml;
 }
 
 
 
-GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load )
+GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface )
 {
-  int s = load->model.meshes.size();
+  int s = interface->meshes_size(); //load->model.meshes.size();
   std::vector<GameApi::ML> mls;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_mesh2( e, ev, load, i, 0, "cvb" );
+    GameApi::ML ml = gltf_mesh2( e, ev, interface, i, 0, "cvb" );
     mls.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, mls);
 }
 
-GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd )
+GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd )
 {
-  int s = load->model.meshes.size();
+  int s = interface->meshes_size(); //load->model.meshes.size();
   std::vector<GameApi::ML> mls;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_mesh2_env( e, ev, load, i, diffuse,specular,brfd );
+    GameApi::ML ml = gltf_mesh2_env( e, ev, interface, i, diffuse,specular,brfd );
     mls.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, mls);
@@ -3824,8 +3857,8 @@ GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf
 class GltfMeshAll : public MainLoopItem
 {
 public:
-  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url)
-    :env(env), ev(ev), base_url(base_url), url(url) { res.id = -1;}
+  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface)
+    :env(env), ev(ev), interface(interface) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -3835,18 +3868,18 @@ public:
     Prepare();
   }
   virtual void Prepare() {
-
+    std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
       std::string sub = url.substr(url.size()-3);
       if (sub=="glb") is_binary=true;
     }
-    LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+    // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    load->Prepare();
-    GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
+    interface->Prepare();
+    GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
     
-    GameApi::ML ml = gltf_mesh_all2( env, ev, load );
+    GameApi::ML ml = gltf_mesh_all2( env, ev, interface );
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
     if (res.id!=-1) {
@@ -3882,20 +3915,22 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  std::string base_url;
-  std::string url;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
   GameApi::ML res;
 };
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, std::string base_url, std::string url )
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model0 )
 {
-  return add_main_loop(e, new GltfMeshAll(e,ev,base_url,url));
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfMeshAll(e,ev,interface));
 }
 
 class GltfMeshAllEnv : public MainLoopItem
 {
 public:
-  GltfMeshAllEnv(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM bfrd)
-    :env(env), ev(ev), base_url(base_url), url(url), diffuse(diffuse),specular(specular),bfrd(bfrd) { res.id = -1;}
+  GltfMeshAllEnv(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM bfrd)
+    :env(env), ev(ev), interface(interface), diffuse(diffuse),specular(specular),bfrd(bfrd) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -3905,18 +3940,18 @@ public:
     Prepare();
   }
   virtual void Prepare() {
-
+    std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
       std::string sub = url.substr(url.size()-3);
       if (sub=="glb") is_binary=true;
     }
-    LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+    //LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    load->Prepare();
-    GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
+    interface->Prepare();
+    GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
     
-    GameApi::ML ml = gltf_mesh_all2_env( env, ev, load,diffuse,specular,bfrd );
+    GameApi::ML ml = gltf_mesh_all2_env( env, ev, interface,diffuse,specular,bfrd );
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
     if (res.id!=-1) {
@@ -3952,21 +3987,23 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  std::string base_url;
-  std::string url;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
   GameApi::ML res;
   GameApi::BM diffuse, specular, bfrd;
 };
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_env( GameApi::EveryApi &ev, std::string base_url, std::string url, BM diffuse,BM specular, BM bfrd )
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_env( GameApi::EveryApi &ev, TF model0, BM diffuse,BM specular, BM bfrd )
 {
-  return add_main_loop(e, new GltfMeshAllEnv(e,ev,base_url,url,diffuse,specular,bfrd));
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfMeshAllEnv(e,ev,interface,diffuse,specular,bfrd));
 }
 
-
+#if 0
 class GLTFSkeleton : public LineCollection
 {
 public:
-  GLTFSkeleton(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num) : env(env), ev(ev), load(load), skin_num(skin_num) { }
+  GLTFSkeleton(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num) : env(env), ev(ev), interface(interface), skin_num(skin_num) { }
   void Collect(CollectVisitor &vis)
   {
     load->Collect(vis);
@@ -4084,16 +4121,18 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  LoadGltf *load;
+  //LoadGltf *load;
+  GLTFModelInterface *interface;
   int skin_num;
   int start_node;
   std::vector<Point> start_pos, end_pos;
 };
+#endif
 
-
-
+#if 0
 GameApi::LI GameApi::MainLoopApi::gltf_skeleton(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num)
 {
+  /*
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
@@ -4105,19 +4144,23 @@ GameApi::LI GameApi::MainLoopApi::gltf_skeleton(GameApi::EveryApi &ev, std::stri
   GameApi::P p = gltf_load2(e,ev, load, 0,0);
   GameApi::LI li = add_line_array(e, coll); 
   return scale_to_gltf_size_li(e,ev,p,li);
+  */
 }
-
+#endif
 				
-GameApi::ARR GameApi::MainLoopApi::gltf_anim_skeleton(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int /*channel*/, int num_keyframes)
+#if 0
+GameApi::ARR GameApi::MainLoopApi::gltf_anim_skeleton(GameApi::EveryApi &ev, TF model0, int skin_num, int animation, int /*channel*/, int num_keyframes)
 {
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
-  GameApi::P p = gltf_load2(e,ev, load, 0,0);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  GameApi::P p = gltf_load2(e,ev, interface, 0,0);
 
   std::vector<GameApi::LI> vec;
   int s = num_keyframes;
@@ -4125,152 +4168,245 @@ GameApi::ARR GameApi::MainLoopApi::gltf_anim_skeleton(GameApi::EveryApi &ev, std
   array->type=0;
   for(int i=0;i<s-1;i++)
     {
-      GameApi::LI li = gltf_anim_skeleton2(e,ev,load, skin_num, animation, i);
+      GameApi::LI li = gltf_anim_skeleton2(e,ev,interface, skin_num, animation, i);
       GameApi::LI li2 = scale_to_gltf_size_li(e,ev,p,li);
       array->vec.push_back(li2.id);
     }
   return add_array(e, array);
 }
+#endif
+
+struct AnimData
+{
+  const tinygltf::Animation *anim;
+  int current_anim=-1;
+  const tinygltf::Accessor *input_acc;
+  int current_input_acc=-1;
+  const tinygltf::Accessor *output_acc;
+  int current_output_acc=-1;
+  const tinygltf::Accessor *bind_acc;
+  int current_bind_acc=-1;
+  const tinygltf::BufferView *input_buf;
+  int current_input_buf=-1;
+  const tinygltf::BufferView *output_buf;
+  int current_output_buf=-1;
+  const tinygltf::BufferView *bind_buf;
+  int current_bind_buf=-1;
+  const tinygltf::Buffer *input;
+  int current_input=-1;
+  const tinygltf::Buffer *output;
+  int current_output=-1;
+  const tinygltf::Buffer *bind;
+  int current_bind=-1;
+};
+
 
 class GLTFAnimation : public CollectInterface
 {
 public:
-  GLTFAnimation(LoadGltf *load, int animation, int channel, int time_index, int skin) : load(load), animation(animation), channel(channel), time_index(time_index), skin(skin) { }
+  GLTFAnimation(AnimData *dt, GLTFModelInterface *interface, int animation, int channel, int time_index, int skin) : dt(dt), interface(interface), animation(animation), channel(channel), time_index(time_index), skin(skin) { }
   void Collect(CollectVisitor &vis)
   {
-    load->Collect(vis);
+    interface->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
   {
-    model = &load->model;
+    //model = &load->model;
 
-    int sz = model->animations.size();
+    int sz = interface->animations_size(); //model->animations.size();
     if (animation<0||animation>=sz) return;
-    anim = &model->animations[animation];
+    //if (dt->current_anim != animation)
+      dt->anim = &interface->get_animation(animation); //&model->animations[animation];
+      //dt->current_anim = animation;
     //std::cout << "Animation:" << anim->name << std::endl;
-    chan = &anim->channels[channel];
+    chan = &dt->anim->channels[channel];
     int target_node = chan->target_node;
     //std::cout << "Target node:" << target_node << std::endl;
     //std::cout << "Target node name:" << &model->nodes[chan->target_node] << std::endl;
-    tinygltf::Node *n = &model->nodes[target_node];
+    const tinygltf::Node &n = interface->get_node(target_node); //model->nodes[target_node];
 
     //int skin = 0; //n->skin;
-    tinygltf::Skin *s = &model->skins[skin];
-    int inverseBindMatrices = s->inverseBindMatrices;
+    const tinygltf::Skin &s = interface->get_skin(skin); //&model->skins[skin];
+    int inverseBindMatrices = s.inverseBindMatrices;
 
-    int sz2 = model->accessors.size();
-    if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) 
-      bind_acc = &model->accessors[inverseBindMatrices];
-    int sz3 = model->bufferViews.size();
-    if (bind_acc && bind_acc->bufferView>=0 && bind_acc->bufferView<sz3)
-      bind_buf = &model->bufferViews[bind_acc->bufferView];
-    int sz4 = model->buffers.size();
-    if (bind_buf && bind_buf->buffer>=0 && bind_buf->buffer<sz4)
-      bind = &model->buffers[bind_buf->buffer];
-    
+    int sz2 = interface->accessors_size(); //model->accessors.size();
+    bind_acc_done = false;
+    if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) {
+      if (dt->current_bind_acc != inverseBindMatrices)
+	dt->bind_acc = &interface->get_accessor(inverseBindMatrices); //&model->accessors[inverseBindMatrices];
+	dt->current_bind_acc = inverseBindMatrices;
+      bind_acc_done = true;
+    }
+    int sz3 = interface->bufferviews_size(); //model->bufferViews.size();
+    bind_buf_done = false;
+    if (bind_acc_done && dt->bind_acc->bufferView>=0 && dt->bind_acc->bufferView<sz3) {
+      if (dt->current_bind_buf != dt->bind_acc->bufferView)
+      dt->bind_buf = &interface->get_bufferview(dt->bind_acc->bufferView); //&model->bufferViews[bind_acc->bufferView];
+      dt->current_bind_buf=dt->bind_acc->bufferView;
+      bind_buf_done = true;
+    }
+    int sz4 = interface->buffers_size(); //model->buffers.size();
+    bind_done = false;
+    if (bind_buf_done && dt->bind_buf->buffer>=0 && dt->bind_buf->buffer<sz4) {
+      if (dt->current_bind != dt->bind_buf->buffer)
+      dt->bind = &interface->get_buffer(dt->bind_buf->buffer); //&model->buffers[bind_buf->buffer];
+      dt->current_bind = dt->bind_buf->buffer;
+      bind_done = true;
+    }
     //std::cout << "Name:" << n->name << std::endl;
     sampler = chan->sampler;
-    int sz5 = anim->samplers.size();
+    int sz5 = dt->anim->samplers.size();
     if (sampler>=0 && sampler<sz5)
-      samp = &anim->samplers[sampler];
+      samp = &dt->anim->samplers[sampler];
     if (samp) {
       //std::cout << "AnimSampler:" << samp->interpolation << std::endl;
       int input_idx = samp->input;
       //std::cout << "input=" << input_idx << std::endl;
-      int sz = model->accessors.size();
-      if (input_idx>=0 && input_idx<sz)
-	input_acc = &model->accessors[input_idx]; // keyframe times
-      if (input_acc) {
+      int sz = interface->accessors_size(); //model->accessors.size();
+      input_acc_done = false;
+      if (input_idx>=0 && input_idx<sz) {
+	if (dt->current_input_acc != input_idx)
+	dt->input_acc = &interface->get_accessor(input_idx); //&model->accessors[input_idx]; // keyframe times
+	dt->current_input_acc = input_idx;
+	input_acc_done = true;
+      }
+      if (input_acc_done) {
 	//std::cout << "input:" << input_acc->componentType << " " << input_acc->count << " " << input_acc->type << std::endl;
       }
 
       int output_idx = samp->output;
       //std::cout << "output=" << output_idx << std::endl;
-      int sz6 = model->accessors.size();
-      if (output_idx>=0 && output_idx<sz6)
-	output_acc = &model->accessors[output_idx]; // property value changes
-      if (output_acc) {
+      int sz6 = interface->accessors_size(); //model->accessors.size();
+      output_acc_done = false;
+      if (output_idx>=0 && output_idx<sz6) {
+	//if (dt->current_output_acc != output_idx)
+	dt->output_acc = &interface->get_accessor(output_idx); //&model->accessors[output_idx]; // property value changes
+	//dt->current_output_acc = output_idx;
+	output_acc_done = true;
+      }
+      if (output_acc_done) {
 	//std::cout << "output:" << output_acc->componentType << " " << output_acc->count << " " << output_acc->type << " " << std::endl;
       }
 
     }
-    if (input_acc) {
-      input_buf = &model->bufferViews[input_acc->bufferView];
+    input_buf_done = false;
+    if (input_acc_done) {
+      if (dt->current_input_buf != dt->input_acc->bufferView)
+      dt->input_buf = &interface->get_bufferview(dt->input_acc->bufferView); //&model->bufferViews[input_acc->bufferView];
+      dt->current_input_buf = dt->input_acc->bufferView;
+      input_buf_done = true;
     }
-    if (output_acc) {
-      output_buf = &model->bufferViews[output_acc->bufferView];
+    output_buf_done = false;
+    if (output_acc_done) {
+      if (dt->current_output_buf != dt->output_acc->bufferView)
+      dt->output_buf = &interface->get_bufferview(dt->output_acc->bufferView); //&model->bufferViews[output_acc->bufferView];
+      dt->current_output_buf = dt->output_acc->bufferView;
+      output_buf_done = true;
     }
-    if (input_buf)
-      input = &model->buffers[input_buf->buffer];
-    if (output_buf)
-      output = &model->buffers[output_buf->buffer];
+    input_done = false;
+    if (input_buf_done) {
+      if (dt->current_input != dt->input_buf->buffer)
+      dt->input = &interface->get_buffer(dt->input_buf->buffer); //&model->buffers[input_buf->buffer];
+      dt->current_input = dt->input_buf->buffer;
+      input_done = true;
+    }
+    output_done = false;
+    if (output_buf_done) {
+      if (dt->current_output != dt->output_buf->buffer)
+      dt->output = &interface->get_buffer(dt->output_buf->buffer); //&model->buffers[output_buf->buffer];
+      dt->current_output = dt->output_buf->buffer;
+      output_done = true;
+  }
 
   }
   void Prepare() {
-    load->Prepare();
-    model = &load->model;
-
-    int sz = model->animations.size();
+    interface->Prepare();
+    HeavyPrepare();
+    //model = &load->model;
+    /*
+    int sz = interface->animations_size(); //model->animations.size();
     if (animation<0||animation>=sz) return;
-    anim = &model->animations[animation];
+    anim = interface->get_animation(animation); //&model->animations[animation];
     //std::cout << "Animation:" << anim->name << std::endl;
-    chan = &anim->channels[channel];
+    chan = &anim.channels[channel];
     int target_node = chan->target_node;
     //std::cout << "Target node:" << target_node << std::endl;
     //std::cout << "Target node name:" << &model->nodes[chan->target_node] << std::endl;
-    tinygltf::Node *n = &model->nodes[target_node];
+    tinygltf::Node n = interface->get_node(target_node); //&model->nodes[target_node];
 
     //int skin = 0; //n->skin;
-    tinygltf::Skin *s = skin<0 && skin>=model->skins.size() ? NULL : &model->skins[skin];
-    int inverseBindMatrices = s?s->inverseBindMatrices:-1;
+    tinygltf::Skin s;
+    bool skins_done = false;
+    if (skin<0 || skin>=interface->skins_size()) { } else {
+      s = interface->get_skin(skin); //&model->skins[skin];
+      skins_done = true;
+    }
+    int inverseBindMatrices = skins_done?s.inverseBindMatrices:-1;
     //std::cout << "INVERSEBINDMATRICES:" << inverseBindMatrices << std::endl;
-    int sz2 = model->accessors.size();
+    int sz2 = interface->accessors_size(); //model->accessors.size();
     if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) 
-      bind_acc = &model->accessors[inverseBindMatrices];
-    int sz3 = model->bufferViews.size();
-    if (bind_acc && bind_acc->bufferView>=0 && bind_acc->bufferView<sz3)
-      bind_buf = &model->bufferViews[bind_acc->bufferView];
-    int sz4 = model->buffers.size();
-    if (bind_buf && bind_buf->buffer>=0 && bind_buf->buffer<sz4)
-      bind = &model->buffers[bind_buf->buffer];
+      bind_acc = interface->get_accessor(inverseBindMatrices); //&model->accessors[inverseBindMatrices];
+    int sz3 = interface->bufferviews_size(); //model->bufferViews.size();
+    if (bind_acc_done && bind_acc.bufferView>=0 && bind_acc.bufferView<sz3)
+      bind_buf = interface->get_bufferview(bind_acc.bufferView); //&model->bufferViews[bind_acc->bufferView];
+    int sz4 = interface->buffers_size(); //model->buffers.size();
+    if (bind_buf_done && bind_buf.buffer>=0 && bind_buf.buffer<sz4)
+      bind = interface->get_buffer(bind_buf.buffer); //&model->buffers[bind_buf->buffer];
     
     //std::cout << "Name:" << n->name << std::endl;
     sampler = chan->sampler;
-    int sz5 = anim->samplers.size();
+    int sz5 = anim.samplers.size();
     if (sampler>=0 && sampler<sz5)
-      samp = &anim->samplers[sampler];
+      samp = &anim.samplers[sampler];
     if (samp) {
       //std::cout << "AnimSampler:" << samp->interpolation << std::endl;
       int input_idx = samp->input;
       //std::cout << "input=" << input_idx << std::endl;
-      int sz = model->accessors.size();
-      if (input_idx>=0 && input_idx<sz)
-	input_acc = &model->accessors[input_idx]; // keyframe times
-      if (input_acc) {
+      int sz = interface->accessors_size(); //model->accessors.size();
+      input_acc_done = false;
+      if (input_idx>=0 && input_idx<sz) {
+	input_acc = interface->get_accessor(input_idx); //&model->accessors[input_idx]; // keyframe times
+	input_acc_done = true;
+      }
+      if (input_acc_done) {
 	//std::cout << "input:" << input_acc->componentType << " " << input_acc->count << " " << input_acc->type << std::endl;
       }
 
       int output_idx = samp->output;
       //std::cout << "output=" << output_idx << std::endl;
-      int sz2 = model->accessors.size();
-      if (output_idx>=0 && output_idx<sz2)
-	output_acc = &model->accessors[output_idx]; // property value changes
-      if (output_acc) {
+      int sz2 = interface->accessors_size(); //model->accessors.size();
+      output_acc_done = false;
+      if (output_idx>=0 && output_idx<sz2) {
+	output_acc = interface->get_accessor(output_idx); //&model->accessors[output_idx]; // property value changes
+	output_acc_done = true;
+      }
+      if (output_acc_done) {
 	//std::cout << "output:" << output_acc->componentType << " " << output_acc->count << " " << output_acc->type << " " << std::endl;
       }
 
     }
-    if (input_acc) {
-      input_buf = &model->bufferViews[input_acc->bufferView];
+    input_buf_done = false;
+    if (input_acc_done) {
+      input_buf = interface->get_bufferview(input_acc.bufferView); //&model->bufferViews[input_acc->bufferView];
+      input_buf_done = true;
     }
-    if (output_acc) {
-      output_buf = &model->bufferViews[output_acc->bufferView];
+    output_buf_done = false;
+    if (output_acc_done) {
+      output_buf = interface->get_bufferview(output_acc.bufferView); //&model->bufferViews[output_acc->bufferView];
+      output_buf_done = true;
     }
-    if (input_buf)
-      input = &model->buffers[input_buf->buffer];
-    if (output_buf)
-      output = &model->buffers[output_buf->buffer];
+    input_done = false;
+    if (input_buf_done) {
+      input = interface->get_buffer(input_buf.buffer); //&model->buffers[input_buf->buffer];
+      input_done = true;
+    }
+    output_done = false;
+    if (output_buf_done) {
+      output = interface->get_buffer(output_buf.buffer); //&model->buffers[output_buf->buffer];
+      output_done = true;
+    }
+    */
   }
 
   std::string InterpolationMode() const {
@@ -4282,15 +4418,15 @@ public:
   
   Matrix InverseBindMatrix(int joint) const
   {
-    if (bind && bind_acc && bind_buf) { 
-    unsigned char *dt = &bind->data[0];
-    int offset = bind_buf->byteOffset;
+    if (bind_done && bind_acc_done && bind_buf_done) { 
+    const unsigned char *ddt = &dt->bind->data[0];
+    int offset = dt->bind_buf->byteOffset;
     // int length = bind_buf->byteLength;
-    unsigned char *dt2 = dt + offset;
+    const unsigned char *dt2 = ddt + offset;
     
-    int offset2 = bind_acc->byteOffset;
-    int stride = bind_acc->ByteStride(*bind_buf);
-    unsigned char *dt3 = dt2 + offset2 + stride*joint;
+    int offset2 = dt->bind_acc->byteOffset;
+    int stride = dt->bind_acc->ByteStride(*dt->bind_buf);
+    const unsigned char *dt3 = dt2 + offset2 + stride*joint;
     float *dt4 = (float*)dt3;
     Matrix res;
     for(int i=0;i<4;i++)
@@ -4314,19 +4450,19 @@ public:
   
   float start_time() const
   {
-    if (input && input_buf && input_acc) {
+    if (input_done && input_buf_done && input_acc_done) {
     
-    unsigned char *dt = &input->data[0];
-    int offset = input_buf->byteOffset;
+    const unsigned char *ddt = &dt->input->data[0];
+    int offset = dt->input_buf->byteOffset;
     //int length = input_buf->byteLength;
-    unsigned char *dt2 = dt + offset;
-    int stride = input_buf->byteStride;
+    const unsigned char *dt2 = ddt + offset;
+    int stride = dt->input_buf->byteStride;
 
-    int offset2 = input_acc->byteOffset;
-    unsigned char *dt3 = dt2 + offset2;
-    int count = input_acc->count;
-    assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
-    assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
+    int offset2 = dt->input_acc->byteOffset;
+    const unsigned char *dt3 = dt2 + offset2;
+    int count = dt->input_acc->count;
+    assert(dt->input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    assert(dt->input_acc->type==TINYGLTF_TYPE_SCALAR);
     if (stride==0) { stride=sizeof(float); }
     //assert(stride==0);
     if (time_index>=0 && time_index<count) {
@@ -4339,22 +4475,22 @@ public:
   }
   float end_time() const
   {
-    if (input && input_buf && input_acc) {
-    unsigned char *dt = &input->data[0];
-    int offset = input_buf->byteOffset;
+    if (input_done && input_buf_done && input_acc_done) {
+    const unsigned char *ddt = &dt->input->data[0];
+    int offset = dt->input_buf->byteOffset;
     //int length = input_buf->byteLength;
-    unsigned char *dt2 = dt + offset;
-    int stride = input_buf->byteStride;
+    const unsigned char *dt2 = ddt + offset;
+    int stride = dt->input_buf->byteStride;
 
-    int offset2 = input_acc->byteOffset;
-    unsigned char *dt3 = dt2 + offset2;
-    int count = input_acc->count;
-    assert(input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    int offset2 = dt->input_acc->byteOffset;
+    const unsigned char *dt3 = dt2 + offset2;
+    int count = dt->input_acc->count;
+    assert(dt->input_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
     //assert(input_acc->type==TINYGLTF_TYPE_SCALAR);
-    if (stride==0 && input_acc->type==TINYGLTF_TYPE_SCALAR) { stride=sizeof(float); }
-    if (stride==0 && input_acc->type==TINYGLTF_TYPE_VEC2) { stride=2*sizeof(float); }
-    if (stride==0 && input_acc->type==TINYGLTF_TYPE_VEC3) { stride=3*sizeof(float); }
-    if (stride==0 && input_acc->type==TINYGLTF_TYPE_VEC4) { stride=4*sizeof(float); }
+    if (stride==0 && dt->input_acc->type==TINYGLTF_TYPE_SCALAR) { stride=sizeof(float); }
+    if (stride==0 && dt->input_acc->type==TINYGLTF_TYPE_VEC2) { stride=2*sizeof(float); }
+    if (stride==0 && dt->input_acc->type==TINYGLTF_TYPE_VEC3) { stride=3*sizeof(float); }
+    if (stride==0 && dt->input_acc->type==TINYGLTF_TYPE_VEC4) { stride=4*sizeof(float); }
     //assert(stride==0);
     if (time_index+1>=0 && time_index+1<count) {
       float *arr = (float*) (dt3 + stride*(time_index+1));
@@ -4365,33 +4501,33 @@ public:
 
   virtual int Count() const
   {
-    if (output_acc) {
-      int count = output_acc->count;
+    if (output_acc_done) {
+      int count = dt->output_acc->count;
       return count;
     } else return 0;
   }
   virtual float *Amount(int i) const {
     static float arr2[4];
-    if (output && output_buf && output_acc) {
-    unsigned char *dt = &output->data[0];
-    int offset = output_buf->byteOffset;
+    if (output_done && output_buf_done && output_acc_done) {
+    const unsigned char *ddt = &dt->output->data[0];
+    int offset = dt->output_buf->byteOffset;
     //int length = output_buf->byteLength;
-    unsigned char *dt2 = dt + offset;
+    const unsigned char *dt2 = ddt + offset;
     
-    int offset2 = output_acc->byteOffset;
-    unsigned char *dt3 = dt2 + offset2;
-    int stride = output_acc->ByteStride(*output_buf);
+    int offset2 = dt->output_acc->byteOffset;
+    const unsigned char *dt3 = dt2 + offset2;
+    int stride = dt->output_acc->ByteStride(*dt->output_buf);
     //std::cout << "stride: " << stride << " " << output_acc->type << std::endl;
-    if (stride==0 && output_acc->type==TINYGLTF_TYPE_SCALAR) stride = 1*sizeof(float);
-    if (stride==0 && output_acc->type==TINYGLTF_TYPE_VEC2) stride = 2*sizeof(float);
-    if (stride==0 && output_acc->type==TINYGLTF_TYPE_VEC3) stride = 3*sizeof(float);
-    if (stride==0 && output_acc->type==TINYGLTF_TYPE_VEC4) stride = 4*sizeof(float);
-    assert(output_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_SCALAR) stride = 1*sizeof(float);
+    if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_VEC2) stride = 2*sizeof(float);
+    if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_VEC3) stride = 3*sizeof(float);
+    if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_VEC4) stride = 4*sizeof(float);
+    assert(dt->output_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
     // TODO: if componentType != float, then it can be converted to float using
     // equations from the gltf 2.0 specification chapter Animations.
     
     //assert(output_acc->type==TINYGLTF_TYPE_VEC3);
-    int count = output_acc->count;
+    int count = dt->output_acc->count;
     if (i>=0 && i<count) {
       float *arr = (float*) (dt3 + i*stride);
       return arr;
@@ -4403,59 +4539,63 @@ public:
   }
   virtual int Type(int i) const
   {
-    if (chan && output_acc) {
+    if (chan && output_acc_done) {
       std::string t = chan->target_path;
-      if (t=="translation" && output_acc->type==TINYGLTF_TYPE_VEC3) return 0;
-      if (t=="rotation" && output_acc->type==TINYGLTF_TYPE_VEC4) return 1;
-      if (t=="scale" && output_acc->type==TINYGLTF_TYPE_VEC3) return 2;
+      if (t=="translation" && dt->output_acc->type==TINYGLTF_TYPE_VEC3) return 0;
+      if (t=="rotation" && dt->output_acc->type==TINYGLTF_TYPE_VEC4) return 1;
+      if (t=="scale" && dt->output_acc->type==TINYGLTF_TYPE_VEC3) return 2;
       if (t=="weights") return 3;
-      std::cout << "target_path: " << t << " ERROR :" << output_acc->type << std::endl;
+      std::cout << "target_path: " << t << " ERROR :" << dt->output_acc->type << std::endl;
       return -1;
     } else return -1;
   }
   
 private:
-  LoadGltf *load;
-  tinygltf::Model *model=0;
+  AnimData *dt;
+  GLTFModelInterface *interface;
+  //tinygltf::Model *model=0;
   int animation;
-  tinygltf::Animation *anim=0;
   int channel;
-  tinygltf::AnimationChannel *chan=0;
+  const tinygltf::AnimationChannel *chan=0;
   int sampler;
-  tinygltf::AnimationSampler *samp=0;
+  const tinygltf::AnimationSampler *samp=0;
   int time_index;
-  tinygltf::Accessor *input_acc=0;
-  tinygltf::Accessor *output_acc=0;
-  tinygltf::Accessor *bind_acc=0;
-  tinygltf::BufferView *input_buf=0;
-  tinygltf::BufferView *output_buf=0;
-  tinygltf::BufferView *bind_buf=0;
-  tinygltf::Buffer *input=0;
-  tinygltf::Buffer *output=0;
-  tinygltf::Buffer *bind=0;
+
+
+  bool input_acc_done=false;
+  bool output_acc_done = false;
+  bool bind_acc_done=false;
+  bool input_buf_done=false;
+  bool output_buf_done=false;
+  bool bind_buf_done=false;
+  bool input_done=false;
+  bool output_done=false;
+  bool bind_done =false;
+  
   int skin;
 };
 
-GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int animation, int target_node)
+
+GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int animation, int target_node)
 {
   int channel = -1;
-  tinygltf::Animation *anim = &load->model.animations[animation];
-  int s = anim->channels.size();
+  const tinygltf::Animation &anim = interface->get_animation(animation); //&load->model.animations[animation];
+  int s = anim.channels.size();
   GameApi::ML array; array.id = -1;
   
-      tinygltf::Node *node = &load->model.nodes[target_node];
+  const tinygltf::Node &node = interface->get_node(target_node); //&load->model.nodes[target_node];
       //std::cout << "\nNode:" << node->name << std::endl;
-      int mesh_id = node->mesh;
-      GameApi::ML ml = gltf_mesh2(e,ev, load, mesh_id, 0, "cvb");
+      int mesh_id = node.mesh;
+      GameApi::ML ml = gltf_mesh2(e,ev, interface, mesh_id, 0, "cvb");
       if (channel==-1)
 	{
 	  std::vector<GameApi::ML> vec;
-	  int s2 = node->children.size();
+	  int s2 = node.children.size();
 	  //std::vector<GameApi::ML> vec;
 	  for(int i=0;i<s2;i++) {
-	    int child_id = node->children[i];
+	    int child_id = node.children[i];
 	    if (child_id!=-1) {
-	      GameApi::ML ml = gltf_anim3( e, ev, load, animation, child_id );
+	      GameApi::ML ml = gltf_anim3( e, ev, interface, animation, child_id );
 	      vec.push_back(ml);
 	    }
 	  }
@@ -4466,23 +4606,23 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
 	}
 
   for(int j=0;j<s;j++) {
-    tinygltf::AnimationChannel *chan = &anim->channels[j];
+    const tinygltf::AnimationChannel *chan = &anim.channels[j];
     if (chan->target_node == target_node) {
       channel = j;
 
-      
-      GLTFAnimation *anim3 = new GLTFAnimation(load,animation, channel, 0,0);
+      AnimData *dt = new AnimData;
+      GLTFAnimation *anim3 = new GLTFAnimation(dt,interface,animation, channel, 0,0);
       anim3->Prepare();
       int count = anim3->Count();
 
   std::vector<GameApi::ML> vec;
       if (j==0) {
-  int s2 = node->children.size();
+  int s2 = node.children.size();
   //std::vector<GameApi::ML> vec;
   for(int i=0;i<s2;i++) {
-    int child_id = node->children[i];
+    int child_id = node.children[i];
     if (child_id!=-1) {
-      GameApi::ML ml = gltf_anim3( e, ev, load, animation, child_id );
+      GameApi::ML ml = gltf_anim3( e, ev, interface, animation, child_id );
       vec.push_back(ml);
     }
   }
@@ -4492,7 +4632,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
   if (array.id!=-1)
     vec.push_back(array);
   array = ev.mainloop_api.array_ml(ev, vec);
-  
+  AnimData *ddt = new AnimData;
   for(int i=0;i<count-1;i++)
     {
       GameApi::MN current = ev.move_api.mn_empty();
@@ -4500,7 +4640,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
       //int target_node = anim->target_node();
       //if (target_node!=node_idx) continue;
 
-      GLTFAnimation *anim2 = new GLTFAnimation(load,animation, channel, i,0);
+      GLTFAnimation *anim2 = new GLTFAnimation(ddt, interface,animation, channel, i,0);
       anim2->Prepare();
       float start_time = anim2->start_time();
       float end_time = anim2->end_time();
@@ -4641,14 +4781,14 @@ struct PrevNodes
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
-  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 150; max_count=0; max_time=0.0; }
+  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), interface(interface), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 150; max_count=0; max_time=0.0; }
   ~GLTFJointMatrices() {
     int s = anims.size();
     for(int i=0;i<s;i++) delete anims[i];
   }
   void Collect(CollectVisitor &vis)
   {
-    load->Collect(vis);
+    interface->Collect(vis);
     next->Collect(vis);
     vis.register_obj(this);
   }
@@ -4682,19 +4822,21 @@ public:
       }
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
-      if (load->model.skins.size()==0) {
+      if (interface->skins_size()==0) {
 	int start_node = 0;
 	PrevNodes prev2;
-	recurse_node(prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+	AnimData *dt = new AnimData;
+	recurse_node(dt,prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
       } else {
-      int sz = load->model.skins.size();
+	int sz = interface->skins_size();
       if (skin_num>=0 && skin_num<sz) {
-	tinygltf::Skin *skin = &load->model.skins[skin_num];
-	int start_node = skin->skeleton;
+	const tinygltf::Skin &skin = interface->get_skin(skin_num); //&load->model.skins[skin_num];
+	int start_node = skin.skeleton;
 	max_count=0;
 	max_time = 0.0;
 	PrevNodes prev2;
-	recurse_node(prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+	AnimData *dt = new AnimData;
+	recurse_node(dt,prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
      }
     }
     }
@@ -4731,15 +4873,16 @@ public:
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
 
-    load->Prepare();
-    int sz2 = load->model.skins.size();
+    interface->Prepare();
+    int sz2 = interface->skins_size(); //load->model.skins.size();
     if (skin_num>=0 && skin_num<sz2) {
-      tinygltf::Skin *skin = &load->model.skins[skin_num];
-      int start_node = skin->skeleton;
+      const tinygltf::Skin &skin = interface->get_skin(skin_num); //&load->model.skins[skin_num];
+      int start_node = skin.skeleton;
       max_count =0;
       max_time = 0.0;
       PrevNodes prev2;
-      recurse_node(prev2,start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+      AnimData *dt = new AnimData;
+      recurse_node(dt,prev2,start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
      }
     }
   }
@@ -4764,7 +4907,6 @@ public:
   }
   void call_prev_time_index1(PrevNodes &prev2, GLTFJointMatrices *next, int node_id) {
     //tinygltf::Node *node = &load->model.nodes[node_id];
-
     bool done = false;
     for(int i=0;i<node_ids.size();i++) {
       if(node_id==node_ids[i]) {
@@ -4774,22 +4916,23 @@ public:
     }
     //if (!done && prev) prev->call_prev_time_index1(next,node_id);
     if (!done) {
-      tinygltf::Node *node = &load->model.nodes[node_id];
-      TransformObject start_obj = gltf_node_transform_obj(node);
+    AnimData *dt = new AnimData;
+      const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
+      TransformObject start_obj = gltf_node_transform_obj(&node);
       TransformObject end_obj = start_obj;
-      int sz = load->model.animations.size();
+      int sz = interface->animations_size(); //load->model.animations.size();
       if (animation<0||animation>=sz) return;
       
-      tinygltf::Animation *anim3 = &load->model.animations[animation];
-    int s5 = anim3->channels.size();
+      const tinygltf::Animation &anim3 = interface->get_animation(animation); //&load->model.animations[animation];
+    int s5 = anim3.channels.size();
       for(int i=s5-1;i>=0;i--) {
 	int channel = i;
-      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      const tinygltf::AnimationChannel *chan = &anim3.channels[i];
       std::string path = chan->target_path;
       if (chan->target_node == node_id) {
 
       int ik = time_index;
-      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik, skin_num);
+      GLTFAnimation *anim = new GLTFAnimation(dt, interface, animation, channel, ik, skin_num);
       //anims.push_back(anim);
       anim->Prepare();
       float *a = 0;
@@ -4839,22 +4982,23 @@ public:
   void call_prev_time_index2(PrevNodes &prev2,int node_id)
   {
     if (!prev) {
-      tinygltf::Node *node = &load->model.nodes[node_id];
-      TransformObject start_obj = gltf_node_transform_obj(node);
+      const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
+      TransformObject start_obj = gltf_node_transform_obj(&node);
       TransformObject end_obj = start_obj;
-      int sz = load->model.animations.size();
+      int sz = interface->animations_size(); //load->model.animations.size();
       if (animation<0||animation>=sz) return;
       
-      tinygltf::Animation *anim3 = &load->model.animations[animation];
-    int s5 = anim3->channels.size();
+      const tinygltf::Animation &anim3 = interface->get_animation(animation); //&load->model.animations[animation];
+    int s5 = anim3.channels.size();
+    AnimData *dt = new AnimData;
       for(int i=s5-1;i>=0;i--) {
 	int channel = i;
-      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      const tinygltf::AnimationChannel *chan = &anim3.channels[i];
       std::string path = chan->target_path;
       if (chan->target_node == node_id) {
 
       int ik = time_index;
-      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik, skin_num);
+      GLTFAnimation *anim = new GLTFAnimation(dt,interface, animation, channel, ik, skin_num);
       //      anims.push_back(anim);
       anim->Prepare();
       float *a = 0;
@@ -4904,18 +5048,18 @@ public:
       prev->call_prev_time_index1(prev2,this, node_id);
     }
   }
-  Matrix recurse_node(PrevNodes &prev2, int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
+  Matrix recurse_node(AnimData *dt, PrevNodes &prev2, int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
     //std::cout << "{";
-    if (node_id<0 || node_id>=load->model.nodes.size()) return Matrix::Identity();
+    if (node_id<0 || node_id>=interface->nodes_size()) return Matrix::Identity();
    
 
     call_prev_time_index2(prev2,node_id);
-    int sz = load->model.animations.size();
+    int sz = interface->animations_size(); //load->model.animations.size();
     if (animation<0||animation>=sz) return Matrix::Identity();
     
-    tinygltf::Node *node = &load->model.nodes[node_id];
-    if (!node) return Matrix::Identity();
+    const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
+    //if (!node) return Matrix::Identity();
     
     //std::cout << "Node: " << node->name << std::endl;
 
@@ -4927,11 +5071,20 @@ public:
     //std::cout << "End" << std::endl;
     //print_transform(end_obj);
     int channel = -1;
-    tinygltf::Animation *anim3 = &load->model.animations[animation];
+    const tinygltf::Animation *anim3;
+    //int anim3_num=-1;
+    //if (animation!=anim3_num) { 
+      anim3 = &interface->get_animation(animation); //&load->model.animations[animation];
+      //  anim3_num = animation;
+      // }
     int s5 = anim3->channels.size();
       int jj = -1;
-
-	tinygltf::Skin *skin = &load->model.skins[skin_num];
+      const tinygltf::Skin *skin;
+      //static int skin_num2 = -1;
+      //if (skin_num!=skin_num2) {
+	skin = &interface->get_skin(skin_num); //&load->model.skins[skin_num];
+	//	skin_num2=skin_num;
+	//}
 	int s2 = skin->joints.size();
 	//bool doit = false;
 	for(int j=0;j<s2;j++) {
@@ -4942,7 +5095,7 @@ public:
 	
 	//for(int i=s5-1;i>=0;i--) {
 	for(int i=0;i<s5;i++) {
-      tinygltf::AnimationChannel *chan = &anim3->channels[i];
+      const tinygltf::AnimationChannel *chan = &anim3->channels[i];
       std::string path = chan->target_path;
       if (chan->target_node == node_id) {
 	channel = i;
@@ -4957,7 +5110,7 @@ public:
     if (channel!=-1)
       {
       int ik = time_index;
-      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, ik, skin_num);
+      GLTFAnimation *anim = new GLTFAnimation(dt,interface, animation, channel, ik, skin_num);
       //anims.push_back(anim);
       anim->Prepare();
       //if (ik+1>=anim->Count()) return Matrix::Identity();
@@ -5071,10 +5224,10 @@ public:
     //}
 
     // recurse children
-    int s = node->children.size();
+    int s = node.children.size();
     std::vector<GameApi::ML> vec;
     for(int i=0;i<s;i++) {
-      int child_id = node->children[i];
+      int child_id = node.children[i];
       if (child_id!=-1) {
 	//tinygltf::Node *child_node = &load->model.nodes[child_id];
 
@@ -5084,7 +5237,7 @@ public:
 	//int jj = 0;
 	if (doit) {
 
-	  recurse_node( prev2, child_id, 0 /*child_node*/, m.first*pos, m2.first*pos2, 0 /*anim*/, time_index, channel );
+	  recurse_node( dt,prev2, child_id, 0 /*child_node*/, m.first*pos, m2.first*pos2, 0 /*anim*/, time_index, channel );
 	}
       }
     }
@@ -5110,7 +5263,8 @@ private:
   GLTFJointMatrices *prev;
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  LoadGltf *load;
+  //LoadGltf *load;
+  GLTFModelInterface *interface;
   int skin_num;
   int animation;
   int time_index;
@@ -5133,7 +5287,7 @@ private:
   int max_count;
 };
 
-GameApi::ML gltf_joint_matrices2(GameApi::ML prev, GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
+GameApi::ML gltf_joint_matrices2(GameApi::ML prev, GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int time_index, GameApi::ML next, bool has_anim)
 {
   MainLoopItem *item = find_main_loop(e,next);
   GLTFJointMatrices *prev2 = 0;
@@ -5141,7 +5295,7 @@ GameApi::ML gltf_joint_matrices2(GameApi::ML prev, GameApi::Env &e, GameApi::Eve
     MainLoopItem *prev1 = find_main_loop(e,prev);
     prev2 = (GLTFJointMatrices*)prev1;
   }
-  return add_main_loop(e, new GLTFJointMatrices(prev2,e,ev,load, skin_num, animation, time_index, item,has_anim));
+  return add_main_loop(e, new GLTFJointMatrices(prev2,e,ev,interface, skin_num, animation, time_index, item,has_anim));
 }
 
 GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
@@ -5150,7 +5304,7 @@ GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
   GLTFJointMatrices *item2 = (GLTFJointMatrices*)item;
   return item2;
 }
-
+#if 0
 class GLTFSkeletonAnim : public LineCollection
 {
 public:
@@ -5388,27 +5542,27 @@ private:
   int max_count;
 };
 
-GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index)
+GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int time_index)
 {
-  GLTFSkeletonAnim *anim =  new GLTFSkeletonAnim(e, ev, load, skin_num, animation, time_index);
+  GLTFSkeletonAnim *anim =  new GLTFSkeletonAnim(e, ev, interface, skin_num, animation, time_index);
   return add_line_array(e, anim);
 }
+#endif
 
-
-GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id, int /*animation*/, std::string keys )
+GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int /*animation*/, std::string keys )
 {
-  int s2 = load->model.scenes.size();
+  int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
     {
     GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
     }
-  tinygltf::Scene *scene = &load->model.scenes[scene_id];
-  int s = scene->nodes.size();
+  const tinygltf::Scene &scene = interface->get_scene(scene_id); //&load->model.scenes[scene_id];
+  int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2( e, ev, load, scene->nodes[i], keys );
+    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys );
     //GameApi::ML ml = gltf_anim3(e,ev,load,animation, scene->nodes[i]);
     vec.push_back(ml);
   }
@@ -5438,89 +5592,91 @@ GameApi::ML gltf_mesh2_with_skeleton_and_anim( GameApi::Env &e, GameApi::EveryAp
 
 }
 */
-GameApi::P gltf_node4( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int node_id )
+GameApi::P gltf_node4( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int node_id )
 {
-  int s2 = load->model.nodes.size();
+  int s2 = interface->nodes_size(); //load->model.nodes.size();
   if (!(node_id>=0 && node_id<s2))
     {
       return ev.polygon_api.p_empty();
     }
-  tinygltf::Node *node = &load->model.nodes[node_id];
-  int mesh = node->mesh;
-  int s = load->model.meshes[mesh].primitives.size();
+  const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
+  int mesh = node.mesh;
+  int s = interface->get_mesh(mesh).primitives.size();
   std::vector<GameApi::P> vec;
   for(int i=0;i<s;i++) {
-    GameApi::P rend = gltf_load2(e,ev,load, mesh, i);
+    GameApi::P rend = gltf_load2(e,ev,interface, mesh, i);
     vec.push_back(rend);
   }
   
     // handle children
-    int ss = node->children.size();
+    int ss = node.children.size();
     for(int j=0;j<ss;j++) {
-      int child_id = node->children[j];
+      int child_id = node.children[j];
       if (child_id!=-1) {
-	vec.push_back( gltf_node4(e,ev,load,child_id) );
+	vec.push_back( gltf_node4(e,ev,interface,child_id) );
       }
     }
     GameApi::P res = ev.polygon_api.or_array2(vec);
-    if (int(node->translation.size())==3) {
-      double m_x = node->translation[0];
-      double m_y = node->translation[1];
-      double m_z = node->translation[2];
+    if (int(node.translation.size())==3) {
+      double m_x = node.translation[0];
+      double m_y = node.translation[1];
+      double m_z = node.translation[2];
       res = ev.polygon_api.translate(res,m_x,m_y,m_z);
     }
-    if (int(node->rotation.size())==4) {
-      double r_x = node->rotation[0];
-      double r_y = node->rotation[1];
-      double r_z = node->rotation[2];
-      double r_w = node->rotation[3];
+    if (int(node.rotation.size())==4) {
+      double r_x = node.rotation[0];
+      double r_y = node.rotation[1];
+      double r_z = node.rotation[2];
+      double r_w = node.rotation[3];
       Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
       Matrix m = Quarternion::QuarToMatrix(q);
       GameApi::M mm = add_matrix2(e,m);
       res = ev.polygon_api.matrix(res,mm);
     }
-    if (int(node->scale.size())==3) {
-      double s_x = node->scale[0];
-      double s_y = node->scale[1];
-      double s_z = node->scale[2];
+    if (int(node.scale.size())==3) {
+      double s_x = node.scale[0];
+      double s_y = node.scale[1];
+      double s_z = node.scale[2];
       res = ev.polygon_api.scale(res,s_x,s_y,s_z);
     }
     return res;
 }
 
-GameApi::P gltf_scene4( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int scene_id )
+GameApi::P gltf_scene4( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id )
 {
-   int s2 = load->model.scenes.size();
+  int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
     {
       return ev.polygon_api.p_empty();
     }
-  tinygltf::Scene *scene = &load->model.scenes[scene_id];
-  int s = scene->nodes.size();
+  const tinygltf::Scene &scene = interface->get_scene(scene_id); //&load->model.scenes[scene_id];
+  int s = scene.nodes.size();
   std::vector<GameApi::P> vec;
   for(int i=0;i<s;i++) {
-    GameApi::P p = gltf_node4(e,ev,load,i);
+    GameApi::P p = gltf_node4(e,ev,interface,i);
     vec.push_back(p);
   }
   return ev.polygon_api.or_array2(vec);
 }
 
-GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id )
+GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, TF model0, int scene_id )
 {
-    bool is_binary=false;
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  std::string url = interface->Url();
+  bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
-  load->Prepare();
-  return gltf_scene4(e,ev,load,scene_id);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  interface->Prepare();
+  return gltf_scene4(e,ev,interface,scene_id);
 }
 
 class GltfSceneAnim : public MainLoopItem
 {
 public:
-  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys) : env(env), ev(ev), base_url(base_url), url(url), scene_id(scene_id), animation(animation), keys(keys) { res.id = -1; }
+  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys) : env(env), ev(ev), interface(interface), scene_id(scene_id), animation(animation), keys(keys) { res.id = -1; }
 
   virtual void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
@@ -5529,17 +5685,17 @@ public:
     Prepare();
   }
   virtual void Prepare() {
-
+    std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  load->Prepare();
-  GameApi::P mesh = gltf_load2(env,ev, load, 0,0);
-  GameApi::ML ml = gltf_scene3(env,ev,load,scene_id,animation,keys);
+  interface->Prepare();
+  GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
+  GameApi::ML ml = gltf_scene3(env,ev,interface,scene_id,animation,keys);
   res= scale_to_gltf_size(env,ev,mesh,ml);
   MainLoopItem *item = find_main_loop(env,res);
   item->Prepare();
@@ -5570,15 +5726,16 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
-  std::string base_url;
-  std::string url;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
   GameApi::ML res;
   int scene_id;
   int animation;
   std::string keys;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::string base_url, std::string url, int scene_id, int animation, std::string keys )
+GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, TF model0, int scene_id, int animation, std::string keys )
 {
 
 #if 0
@@ -5596,33 +5753,36 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, std::s
   return scale_to_gltf_size(e,ev,mesh,ml);
 
 #endif
-  return add_main_loop(e, new GltfSceneAnim(e,ev,base_url,url,scene_id,animation,keys));
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfSceneAnim(e,ev,interface,scene_id,animation,keys));
 
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, std::string base_url, std::string url, int animation, int channel )
+GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, TF model0, int animation, int channel )
 {
-
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  load->Prepare();
-  GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
+  interface->Prepare();
+  GameApi::P mesh = gltf_load2(e,ev, interface, 0,0);
   std::vector<GameApi::ML> mls;
-    tinygltf::Model *model = &load->model;
-    tinygltf::Animation *anim2 = &model->animations[animation];
+  //tinygltf::Model *model = &load->model;
 
-    
-    GLTFAnimation *anim = new GLTFAnimation(load,animation, channel, 0,0);
+  //tinygltf::Animation anim2 = interface->get_animation(animation); //&model->animations[animation];
+
+  AnimData *dt = new AnimData;
+  GLTFAnimation *anim = new GLTFAnimation(dt,interface,animation, channel, 0,0);
       anim->Prepare();
       
       int target_node = anim->target_node();
       delete anim;
-      GameApi::ML ml = gltf_anim3(e,ev,load,animation, target_node);
+      GameApi::ML ml = gltf_anim3(e,ev,interface,animation, target_node);
     return scale_to_gltf_size(e,ev,mesh,ml);
 }
 
@@ -5632,45 +5792,53 @@ GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, std::string
 class GLTF_Att : public Attach
 {
 public:
-  GLTF_Att( LoadGltf *load, int mesh_index, int prim_index, int num ) : load(load), mesh_index(mesh_index), prim_index(prim_index), num(num) { }
+  GLTF_Att( GLTFModelInterface *interface, int mesh_index, int prim_index, int num ) : interface(interface), mesh_index(mesh_index), prim_index(prim_index), num(num) { }
   void Collect(CollectVisitor &vis)
   {
-    load->Collect(vis);
+    interface->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
   {
-    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
-      prim = &load->model.meshes[mesh_index].primitives[prim_index];
+    if (mesh_index>=0 && mesh_index<int(interface->meshes_size()) && prim_index>=0 && prim_index<int(interface->get_mesh(mesh_index).primitives.size()))
+      prim = const_cast<tinygltf::Primitive*>(&interface->get_mesh(mesh_index).primitives[prim_index]);
     else
       return;
     
     //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
     
-    model = &load->model;
+    //model = &load->model;
     
     mode = prim->mode;
 
     indices_index = prim->indices;
-    indices_acc = 0;
-    if (indices_index!=-1)
-      indices_acc = &model->accessors[indices_index];
+    //indices_acc = 0;
+    indices_acc_done = false;
+    if (indices_index!=-1) {
+      indices_acc = &interface->get_accessor(indices_index); //&model->accessors[indices_index];
+      indices_acc_done = true;
+    }
 
     assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
 
 
-        indices_bv = 0;
-    if (indices_acc) {
+    //indices_bv = 0;
+    indices_bv_done = false;
+    if (indices_acc_done) {
       int view = indices_acc->bufferView;
-      if (view!=-1)
-	indices_bv = &model->bufferViews[view];
+      if (view!=-1) {
+	indices_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
+	indices_bv_done = true;
+      }
     }
 
-    indices_buf = 0;
-    if (indices_bv) {
+    //indices_buf = 0;
+    indices_buf_done = false;
+    if (indices_bv_done) {
       int buf = indices_bv->buffer;
       if (buf!=-1) {
-	indices_buf = &model->buffers[buf];
+	indices_buf = &interface->get_buffer(buf); //&model->buffers[buf];
+	indices_buf_done = true;
       }
     }
 
@@ -5682,27 +5850,34 @@ public:
 
     //std::cout << "joints_index: " << joints_index << std::endl;
     
-    joints_acc = 0;
-    if (joints_index!=-1)
-      joints_acc = &model->accessors[joints_index];
-    
+    //joints_acc = 0;
+    joints_acc_done = false;
+    if (joints_index!=-1) {
+      joints_acc = &interface->get_accessor(joints_index); //&model->accessors[joints_index];
+      joints_acc_done = true;
+    }
     //std::cout << "joints_acc: " << joints_acc << std::endl;
     
-    joints_bv = 0;
-    if (joints_acc) {
+    //joints_bv = 0;
+    joints_bv_done = false;
+    if (joints_acc_done) {
       int view = joints_acc->bufferView;
-      if (view!=-1)
-	joints_bv = &model->bufferViews[view];
+      if (view!=-1) {
+	joints_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
+	joints_bv_done = true;
+      }
     }
     
     //std::cout << "joints_bv: " << joints_bv << std::endl;
 
 
-    joints_buf = 0;
-    if (joints_bv) {
+    //joints_buf = 0;
+    joints_buf_done = false;
+    if (joints_bv_done) {
       int buf = joints_bv->buffer;
       if (buf!=-1) {
-	joints_buf = &model->buffers[buf];
+	joints_buf = &interface->get_buffer(buf); //&model->buffers[buf];
+	joints_buf_done = true;
       }
     }
 
@@ -5716,27 +5891,34 @@ public:
 
     //std::cout << "joints_index: " << joints_index << std::endl;
     
-    weights_acc = 0;
-    if (weights_index!=-1)
-      weights_acc = &model->accessors[weights_index];
-    
+    //weights_acc = 0;
+    weights_acc_done = false;
+    if (weights_index!=-1) {
+      weights_acc = &interface->get_accessor(weights_index); //&model->accessors[weights_index];
+      weights_acc_done = true;
+    }
     //std::cout << "joints_acc: " << joints_acc << std::endl;
     
-    weights_bv = 0;
-    if (weights_acc) {
+    // weights_bv = 0;
+    weights_bv_done = false;
+    if (weights_acc_done) {
       int view = weights_acc->bufferView;
-      if (view!=-1)
-	weights_bv = &model->bufferViews[view];
+      if (view!=-1) {
+	weights_bv = &interface->get_bufferview(view); //&model->bufferViews[view];
+	weights_bv_done = true;
+      }
     }
     
     //std::cout << "joints_bv: " << joints_bv << std::endl;
 
 
-    weights_buf = 0;
-    if (weights_bv) {
+    //weights_buf = 0;
+    weights_buf_done = false;
+    if (weights_bv_done) {
       int buf = weights_bv->buffer;
       if (buf!=-1) {
-	weights_buf = &model->buffers[buf];
+	weights_buf = &interface->get_buffer(buf); //&model->buffers[buf];
+	weights_buf_done = false;
       }
     }
 
@@ -5747,10 +5929,10 @@ public:
   void Prepare()
   {
     
-    load->Prepare();
-    
-    
-    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
+    interface->Prepare();
+    HeavyPrepare();
+    /*    
+    if (mesh_index>=0 && mesh_index<int(interface->meshes_size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
       prim = &load->model.meshes[mesh_index].primitives[prim_index];
     else
       return;
@@ -5850,7 +6032,7 @@ public:
       }
     }
 
-
+    */
     
     //std::cout << "joints_buf: " << joints_buf << std::endl;
 	
@@ -5859,9 +6041,9 @@ public:
 
   int get_index(int face, int point) const
   {
-	unsigned char *ptr = &indices_buf->data[0];
+	const unsigned char *ptr = &indices_buf->data[0];
 	//int size1 = indices_buf->data.size();
-	unsigned char *ptr2 = ptr + indices_bv->byteOffset;
+	const unsigned char *ptr2 = ptr + indices_bv->byteOffset;
 	//int size2 =indices_bv->byteLength;
 	int stride = indices_bv->byteStride;
 
@@ -5892,44 +6074,44 @@ public:
 
 
 	int comp = face*3+point;
-	unsigned char *ptr3 = ptr2 + indices_acc->byteOffset + comp*stride;
+	const unsigned char *ptr3 = ptr2 + indices_acc->byteOffset + comp*stride;
 	//int size3 = indices_acc->count;
 	int index = 0;
 	switch(indices_acc->componentType)
 	  {
 	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	    {
-	      unsigned char *ptr4 = (unsigned char*)ptr3;
+	      const unsigned char *ptr4 = (const unsigned char*)ptr3;
 	      index = *ptr4;
 	      break;
 	    }
 	  case TINYGLTF_COMPONENT_TYPE_BYTE:
 	    {
-	      char *ptr4 = (char*)ptr3;
+	      const char *ptr4 = (const char*)ptr3;
 	      index = *ptr4;
 	      break;
 	    }
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
 	  {
-	  unsigned short *ptr4 = (unsigned short*)ptr3;
+	  const unsigned short *ptr4 = (const unsigned short*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
 	  {
-	  short *ptr4 = (short*)ptr3;
+	  const short *ptr4 = (const short*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
 	case TINYGLTF_COMPONENT_TYPE_INT:
 	  {
-	  int *ptr4 = (int*)ptr3;
+	  const int *ptr4 = (const int*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
 	  {
-	  unsigned int *ptr4 = (unsigned int*)ptr3;
+	  const unsigned int *ptr4 = (const unsigned int*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
@@ -5939,16 +6121,16 @@ public:
 
   virtual int Weights(int face, int point, int num) const
   {
-    if (weights_bv && weights_acc && weights_buf) {
+    if (weights_bv_done && weights_acc_done && weights_buf_done) {
       if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_acc_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &weights_buf->data[0];
+	const unsigned char *pos_ptr = &weights_buf->data[0];
 	int stride2 = weights_bv->byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
+	const float *pos_ptr2 = (const float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
 	//vec4 res;
 	//res[0] = pos_ptr2[0];
@@ -5959,13 +6141,13 @@ public:
 	return pos_ptr2[num];
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &weights_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
+	const unsigned char *pos_ptr = &weights_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
 	int stride = weights_bv->byteStride;
 	if (stride==0) stride=4*sizeof(char);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
-	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
+	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
 	//res[0] = pos_ptr4[0];
 	//res[1] = pos_ptr4[1];
@@ -6002,16 +6184,16 @@ public:
     if (num==-1) return -1;
     
     //std::cout << "Attached start" << std::endl;
-    if (joints_bv && joints_acc && joints_buf) {
+    if (joints_bv_done && joints_acc_done && joints_buf_done) {
       if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_acc_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &joints_buf->data[0];
+	const unsigned char *pos_ptr = &joints_buf->data[0];
 	int stride2 = joints_bv->byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	unsigned char *pos_ptr2 = (unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
+	const unsigned char *pos_ptr2 = (const unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
 	//vec4 res;
 	//res[0] = pos_ptr2[0];
@@ -6022,13 +6204,13 @@ public:
 	return int(((unsigned int)(pos_ptr2[num]))&0xff);
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &joints_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + joints_bv->byteOffset;
+	const unsigned char *pos_ptr = &joints_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + joints_bv->byteOffset;
 	int stride = joints_bv->byteStride;
 	if (stride==0) stride=4*sizeof(char);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + joints_acc->byteOffset + comp*stride;
-	unsigned char *pos_ptr4 = (unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + joints_acc->byteOffset + comp*stride;
+	const unsigned char *pos_ptr4 = (const unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
 	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
 	//res[0] = pos_ptr4[0];
 	//res[1] = pos_ptr4[1];
@@ -6049,7 +6231,7 @@ public:
 
 private:
   tinygltf::Primitive *prim = 0;
-  tinygltf::Model *model =0 ;
+  //tinygltf::Model *model =0 ;
 
   int mode;
 
@@ -6058,47 +6240,63 @@ private:
   int indices_index;
   int joints_index;
   int weights_index;
-  tinygltf::Accessor *indices_acc=0;
-  tinygltf::Accessor *joints_acc=0;
-  tinygltf::Accessor *weights_acc=0;
+  const tinygltf::Accessor *indices_acc;
+  const tinygltf::Accessor *joints_acc;
+  const tinygltf::Accessor *weights_acc;
   
-  tinygltf::BufferView *indices_bv=0;
-  tinygltf::BufferView *joints_bv=0;
-  tinygltf::BufferView *weights_bv=0;
+  const tinygltf::BufferView *indices_bv;
+  const tinygltf::BufferView *joints_bv;
+  const tinygltf::BufferView *weights_bv;
   
-  tinygltf::Buffer *indices_buf=0;
-  tinygltf::Buffer *joints_buf=0;
-  tinygltf::Buffer *weights_buf=0;
+  const tinygltf::Buffer *indices_buf;
+  const tinygltf::Buffer *joints_buf;
+  const tinygltf::Buffer *weights_buf;
+
+
+  bool indices_acc_done=false;
+  bool joints_acc_done=false;
+  bool weights_acc_done=false;
   
-  LoadGltf *load=0;
+  bool indices_bv_done=false;
+  bool joints_bv_done=false;
+  bool weights_bv_done=false;
+  
+  bool indices_buf_done=false;
+  bool joints_buf_done=false;
+  bool weights_buf_done=false;
+
+  
+  GLTFModelInterface *interface;
   int mesh_index;
   int prim_index;
   
 };
 
-GameApi::ATT gltf_attach(GameApi::Env &e, LoadGltf *load, int mesh_index, int prim_index, int num)
+GameApi::ATT gltf_attach(GameApi::Env &e, GLTFModelInterface *interface, int mesh_index, int prim_index, int num)
 {
-  return add_attach(e, new GLTF_Att(load,mesh_index, prim_index, num));
+  return add_attach(e, new GLTF_Att(interface,mesh_index, prim_index, num));
 }
 
-GameApi::ARR gltf_split_faces(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int mesh_index, int prim_index, int max_attach, int num)
+GameApi::ARR gltf_split_faces(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index, int max_attach, int num)
 {
-  GameApi::P p = gltf_load2(e,ev, load, mesh_index, prim_index);
+  GameApi::P p = gltf_load2(e,ev, interface, mesh_index, prim_index);
   GameApi::P p2 = scale_to_gltf_size_p(e,ev, p, p);
-  GameApi::ATT att = gltf_attach(e,load, mesh_index, prim_index, num);
+  GameApi::ATT att = gltf_attach(e,interface, mesh_index, prim_index, num);
   return ev.polygon_api.split_faces(p2, att, max_attach);
 }
 
-GameApi::ARR GameApi::PolygonApi::gltf_split_faces2(EveryApi &ev, std::string base_url, std::string url, int mesh_index, int prim_index, int max_attach)
+GameApi::ARR GameApi::PolygonApi::gltf_split_faces2(EveryApi &ev, TF model0, int mesh_index, int prim_index, int max_attach)
 {
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
 
-  LoadGltf *load = find_gltf_instance(e,base_url, url, gameapi_homepageurl, is_binary);
-  return gltf_split_faces(e, ev,load,mesh_index, prim_index, max_attach, 0); // 0=index of joint to choose from 4 alternatives 0|1|2|3.
+  //LoadGltf *load = find_gltf_instance(e,base_url, url, gameapi_homepageurl, is_binary);
+  return gltf_split_faces(e, ev,interface,mesh_index, prim_index, max_attach, 0); // 0=index of joint to choose from 4 alternatives 0|1|2|3.
 }
 
 
@@ -6106,20 +6304,20 @@ GameApi::ARR GameApi::PolygonApi::gltf_split_faces2(EveryApi &ev, std::string ba
 class GLTF_Animation_Material : public MaterialForward
 {
 public:
-  GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int num_timeindexes, Material *next, int key) : e(e), ev(ev), load(load), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key) { }
+  GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, Material *next, int key) : e(e), ev(ev), interface(interface), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    load->Prepare();
+    interface->Prepare();
     GameApi::ML ml;
     ml.id = next->mat(p.id);
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
-    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
     //std::cout << "NUM_TIMEINDEXES: " << num_timeindexes << std::endl;
     for(int i=0;i<num_timeindexes;i++) {
       GameApi::ML prev = i==0?ml_orig:mls[i-1];
-      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml, true);
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, interface, skin_num, animation, i, ml, true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -6127,16 +6325,16 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
-    load->Prepare();
+    interface->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id, pts.id);
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
-    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
     for(int i=0;i<num_timeindexes;i++) {
       GameApi::ML prev = i==0?ml_orig:mls[i-1];
-      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml, true);
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, interface, skin_num, animation, i, ml, true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key);
@@ -6144,16 +6342,16 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    load->Prepare();
+    interface->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id, ms.id);
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
-    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
     for(int i=0;i<num_timeindexes;i++) {
       GameApi::ML prev = i==0?ml_orig:mls[i-1];
-      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml,true);
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, interface, skin_num, animation, i, ml,true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -6161,16 +6359,16 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    load->Prepare();
+    interface->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
-    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
     for(int i=0;i<num_timeindexes;i++) {
       GameApi::ML prev = i==0?ml_orig:mls[i-1];
-      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml,true);
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, interface, skin_num, animation, i, ml,true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -6178,16 +6376,16 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    load->Prepare();
+    interface->Prepare();
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
     GameApi::ML ml_start;
     ml_start.id = 0;
-    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,load,skin_num,animation,0,ml,false);
+    GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
     std::vector<GameApi::ML> mls;
     for(int i=0;i<num_timeindexes;i++) {
       GameApi::ML prev = i==0?ml_orig:mls[i-1];
-      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, load, skin_num, animation, i, ml,true);
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, interface, skin_num, animation, i, ml,true);
       mls.push_back(ml1);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key);
@@ -6198,7 +6396,7 @@ private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
   Material *next;
-  LoadGltf *load;
+  GLTFModelInterface *interface;
   int skin_num;
   int animation;
   int num_timeindexes;
@@ -6285,20 +6483,20 @@ GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std
 }
 
 
-GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key)
+GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key)
 {
   Material *next_mat = find_material(e,next);
-  Material *mat = new GLTF_Animation_Material(e,ev,load, skin_num, animation, num_timeindexes, next_mat, key);
+  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key);
   return add_material(e, mat);
 }
 
 
-GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys)
+GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys)
 {
   int s = keys.size();
   std::vector<GameApi::MT> vec;
   for(int i=0;i<s;i++) {
-    GameApi::MT mt = gltf_anim_material4(e,ev,load, skin_num, i, num_timeindexes, next, keys[i]);
+    GameApi::MT mt = gltf_anim_material4(e,ev,interface, skin_num, i, num_timeindexes, next, keys[i]);
     vec.push_back(mt);
   }
   return ev.materials_api.m_keys(ev,vec,keys);
@@ -6306,28 +6504,31 @@ GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf
 }
 
 
-GameApi::MT GameApi::MaterialsApi::gltf_anim_material2(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int num_timeindexes, MT next, std::string keys)
+GameApi::MT GameApi::MaterialsApi::gltf_anim_material2(GameApi::EveryApi &ev, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys)
 {
+  //LTFModelInterface *interface = find_gltf(e,model0);
   int s = keys.size();
   std::vector<GameApi::MT> vec;
   for(int i=0;i<s;i++) {
-    GameApi::MT mt = gltf_anim_material(ev,base_url,url, skin_num, i, num_timeindexes, next, keys[i]);
+    GameApi::MT mt = gltf_anim_material(ev,model0, skin_num, i, num_timeindexes, next, keys[i]);
     vec.push_back(mt);
   }
   return m_keys(ev,vec,keys);
 }
 
 
-GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num, int animation, int num_timeindexes, MT next, int key)
+GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key)
 {
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  std::string url = interface->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   Material *next_mat = find_material(e,next);
-  Material *mat = new GLTF_Animation_Material(e,ev,load, skin_num, animation, num_timeindexes, next_mat, key);
+  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key);
   return add_material(e, mat);
 }
 extern Matrix g_last_resize;
@@ -6737,12 +6938,13 @@ extern std::vector<std::string> g_registered_urls;
 class ASyncGltf : public MainLoopItem
 {
 public:
-  ASyncGltf(GameApi::Env &env, MainLoopItem *next, std::string base_url, std::string url, std::string homepage) : env(env) ,next(next), base_url(base_url), url(url), homepage(homepage) {
+  ASyncGltf(GameApi::Env &env, MainLoopItem *next, GLTFModelInterface *interface, std::string homepage) : env(env) ,next(next), interface(interface), homepage(homepage) {
     done = false;
-    env.async_load_callback(url, &ASyncGltfCB, this);
+    env.async_load_callback(interface->Url(), &ASyncGltfCB, this);
   }
   void Prepare2()
   {
+    std::string url = interface->Url();
     //std::cout << "AsyncGltf::PREPARE2" << std::endl;
     if (!done) {
       done = true;
@@ -6764,6 +6966,7 @@ public:
       if (uri=="\"uri\":") {
 	std::string url2;
 	ss2 >> url2;
+	std::string base_url = interface->BaseUrl();
 	if (base_url[base_url.size()-1]=='/')
 	  url2 = base_url + url2.substr(1,url2.size()-2);
 	else
@@ -6797,16 +7000,18 @@ public:
 private:
   GameApi::Env &env;
   MainLoopItem *next;
-  std::string url;
-  std::string base_url;
+  //std::string url;
+  //std::string base_url;
+  GLTFModelInterface *interface;
   std::string homepage;
   bool done;
 };
 
-GameApi::ML GameApi::MainLoopApi::async_gltf(ML ml, std::string base_url, std::string url)
+GameApi::ML GameApi::MainLoopApi::async_gltf(ML ml, TF tf)
 {
   MainLoopItem *next = find_main_loop(e,ml);
-  return add_main_loop(e, new ASyncGltf(e,next, base_url, url, gameapi_homepageurl));
+  GLTFModelInterface *interface = find_gltf(e,tf);
+  return add_main_loop(e, new ASyncGltf(e,next, interface, gameapi_homepageurl));
 }
 
 void ASyncGltfCB(void *data)
@@ -6823,47 +7028,67 @@ public:
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
 
+  virtual std::string BaseUrl() const { return ""; }
+  virtual std::string Url() const { return ""; }
+
+  
   virtual int accessors_size() const { return 0; }
-  virtual tinygltf::Accessor get_accessor(int i) const { tinygltf::Accessor a; return a; }
+  virtual const tinygltf::Accessor &get_accessor(int i) const { return a; }
 
   virtual int animations_size() const { return 0; }
-  virtual tinygltf::Animation get_animation(int i) const { tinygltf::Animation a; return a; }
+  virtual const tinygltf::Animation &get_animation(int i) const { return a2; }
 
   virtual int buffers_size() const { return 0; }
-  virtual tinygltf::Buffer get_buffer(int i) const { tinygltf::Buffer b; return b; }
+  virtual const tinygltf::Buffer &get_buffer(int i) const {  return b; }
 
   virtual int bufferviews_size() const { return 0; }
-  virtual tinygltf::BufferView get_bufferview(int i) const { tinygltf::BufferView v; return v; }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const {  return v; }
 
   virtual int materials_size() const { return 0; }
-  virtual tinygltf::Material get_material(int i) const { tinygltf::Material m; return m; }
+  virtual const tinygltf::Material &get_material(int i) const {  return m; }
 
   virtual int meshes_size() const { return 0; }
-  virtual tinygltf::Mesh get_mesh(int i) const { tinygltf::Mesh m; return m; }
+  virtual const tinygltf::Mesh &get_mesh(int i) const { return m2; }
 
   virtual int nodes_size() const { return 0; }
-  virtual tinygltf::Node get_node(int i) const { tinygltf::Node n; return n; }
+  virtual const tinygltf::Node &get_node(int i) const {  return n; }
 
   virtual int textures_size() const { return 0; }
-  virtual tinygltf::Texture get_texture(int i) const { tinygltf::Texture tx; return tx; }
+  virtual const tinygltf::Texture &get_texture(int i) const { return tx; }
 
   virtual int images_size() const { return 0; }
-  virtual tinygltf::Image get_image(int i) const { tinygltf::Image i2; return i2; }
+  virtual const tinygltf::Image &get_image(int i) const {  return i2; }
 
   virtual int skins_size() const { return 0; }
-  virtual tinygltf::Skin get_skin(int i) const { tinygltf::Skin s; return s; }
+  virtual const tinygltf::Skin &get_skin(int i) const {  return s; }
 
   virtual int samples_size() const { return 0; }
-  virtual tinygltf::Sampler get_sampler(int i) const { tinygltf::Sampler s; return s; }
+  virtual const tinygltf::Sampler &get_sampler(int i) const {  return s2; }
 
   virtual int cameras_size() const { return 0; }
-  virtual tinygltf::Camera get_camera(int i) const { tinygltf::Camera c; return c; }
+  virtual const tinygltf::Camera &get_camera(int i) const {  return c; }
 
   virtual int scenes_size() const { return 0; }
-  virtual tinygltf::Scene get_scene(int i) const { tinygltf::Scene s; return s; }
+  virtual const tinygltf::Scene &get_scene(int i) const {  return s3; }
 
   virtual int lights_size() const { return 0; }
-  virtual tinygltf::Light get_light(int i) const { tinygltf::Light l; return l; }
+  virtual const tinygltf::Light &get_light(int i) const {  return l; }
+
+private:
+  tinygltf::Accessor a;
+  tinygltf::Animation a2;
+  tinygltf::Buffer b;
+  tinygltf::BufferView v;
+  tinygltf::Material m;
+  tinygltf::Mesh m2;
+  tinygltf::Node n;
+  tinygltf::Texture tx;
+  tinygltf::Image i2;
+  tinygltf::Skin s;
+  tinygltf::Sampler s2;
+  tinygltf::Camera c;
+  tinygltf::Scene s3;
+  tinygltf::Light l;
 };
 
 
@@ -6966,7 +7191,7 @@ GameApi::ML GameApi::MainLoopApi::save_gltf(TF tf, std::string filename)
 }
 
 
-GameApi::TF GameApi::MainLoopApi::gltf_load(std::string base_url, std::string url)
+GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string url)
 {
   bool is_binary=false;
   if (int(url.size())>3) {

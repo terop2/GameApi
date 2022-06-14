@@ -127,7 +127,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "[P]", "[MN]", "std::string", "MT" },
 			 { "ev", "", "", "https://tpgames.org/tunnel.sm", "" },
 			 "ML", "mainloop_api", "tunnel_tree"));
-			
+  /*			
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_skeleton,
 			 "li_gltf_ske",
 			 { "ev", "base_url", "url", "start_node" },
@@ -140,11 +140,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int" },
 			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "0", "64" },
 			 "[LI]", "mainloop_api", "gltf_anim_skeleton"));
+  */
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_split_faces2,
 			 "p_gltf_split",
-			 { "ev", "base_url", "url", "mesh_index", "prim_index", "max_attach" },
-			 { "EveryApi&", "std::string", "std::string", "int", "int", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "64" },
+			 { "ev", "tf", "mesh_index", "prim_index", "max_attach" },
+			 { "EveryApi&", "TF", "int", "int", "int" },
+			 { "ev", "", "0", "0", "64" },
 			 "[P]", "polygon_api", "gltf_split_faces2"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::translate,
