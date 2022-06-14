@@ -638,6 +638,7 @@ function get_base_dir(filename)
     res+=s[i];
     if (i!=ss-2) res+="/";
   }
+  if (res[0]=="/") return res.substr(1);
   return res;
 }
 function find_mtl_name(filenames)
@@ -719,7 +720,7 @@ function parse_border_width(brd)
    var arr = brd.split(" ");
    return arr[4];
 }
-function get_border(i,m)
+function get_border(i,m,filename)
 {
   var color = "000000";
   var width = "0";
@@ -744,7 +745,12 @@ function get_border(i,m)
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   //res+= "MT I401=ev.materials_api.m_def(ev);\n"
   res+= "MT I501=ev.materials_api.toon_border(ev,I4," + width + ",ff" + color + ");\n";
+if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
+  //res+= "MT I506=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I501,cvbnmfghjk);\n";
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
+  } else {
+    res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
+}
   res+="ML I502=ev.mainloop_api.depthfunc(I5022,3);\n";
   return res;
 }
@@ -981,7 +987,7 @@ function create_script(filename, contents, filenames)
   var background = get_background(background_value);
 
   var border_value = get_border_value();
-  var border = get_border(border_value,material_value);
+  var border = get_border(border_value,material_value,filename);
 
   if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I155=ev.polygon_api.color_grayscale(I19);\n";
      } else
@@ -994,8 +1000,13 @@ function create_script(filename, contents, filenames)
      } else
   if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
   //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
-  if (filename.substr(-4)==".glb") { res+="P I155=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
-  if (filename.substr(-5)==".gltf") { res+="P I155=ev.polygon_api.gltf_load(ev,"+base_dir+"," + filename + ",0,0);\n"; } else
+  if (filename.substr(-4)==".glb") {
+     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
+     res+="P I155=ev.polygon_api.gltf_load(ev,I154,0,0);\n"; } else
+  if (filename.substr(-5)==".gltf") {
+    res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
+
+     res+="P I155=ev.polygon_api.gltf_load(ev,I154,0,0);\n"; } else
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
@@ -1068,7 +1079,8 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
      res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
   } else
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
-     res+="MT I4=ev.materials_api.gltf_material(ev,"+base_dir+"," + filename + ",0,1);\n";
+     res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1);\n";
+     //res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I40,cvbnmfghjk);\n"
   } else {
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0,0.5);\n";
   }
@@ -1078,7 +1090,7 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
 
 
   if ((parseInt(material_value)==0&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
-     res="ML I6=ev.mainloop_api.gltf_mesh_all(ev," + base_dir +"," + filename + ");\n";
+     res="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
 
   }
 
@@ -1100,7 +1112,7 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
    }
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf") {
-    res+="ML I88=ev.mainloop_api.async_gltf(I66,"+base_dir+"," + filename + ");\n";
+    res+="ML I88=ev.mainloop_api.async_gltf(I66,I154);\n";
     res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
     res+="ML I8=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
   } else {
@@ -1371,7 +1383,7 @@ function drop(ev)
        promise2.then( data => {
            const [files,filenames] = flatten_arrays(data);
 	   //console.log(files);
-	   //console.log(filenames);
+	   console.log(filenames);
            var main_item_num = find_main_item(files);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames[main_item_num];

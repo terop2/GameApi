@@ -65,8 +65,8 @@ extern int max_mem_usage;
 
 void mem_summary()
 {
-  std::cout << "Current mem usage: " << current_mem_usage/1024000 << "Mb" << std::endl;
-  std::cout << "Max mem usage: " << max_mem_usage/1024000 << "Mb" << std::endl;
+  //std::cout << "Current mem usage: " << current_mem_usage/1024000 << "Mb" << std::endl;
+  //std::cout << "Max mem usage: " << max_mem_usage/1024000 << "Mb" << std::endl;
 }
 
 void clear_codegen();
