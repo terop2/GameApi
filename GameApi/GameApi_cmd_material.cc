@@ -302,15 +302,15 @@
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material,
 			 "m_gltf",
-			 { "ev", "base_url", "url", "material_id", "mix" },
-			 { "EveryApi&", "std::string", "std::string", "int", "float" }, 
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "1.0" },
+			 { "ev", "tf", "material_id", "mix" },
+			 { "EveryApi&", "TF", "int", "float" }, 
+			 { "ev", "", "0", "1.0" },
 			 "MT", "materials_api", "gltf_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
 			 "m_gltf_env",
-			 { "ev", "base_url", "url", "material_id", "mix", "diffuse", "specular", "bfrd" },
-			 { "EveryApi&", "std::string", "std::string", "int", "float", "BM", "BM", "BM" }, 
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "1.0", "", "", "" },
+			 { "ev", "tf", "material_id", "mix", "diffuse", "specular", "bfrd" },
+			 { "EveryApi&", "TF", "int", "float", "BM", "BM", "BM" }, 
+			 { "ev", "", "0", "1.0", "", "", "" },
 			 "MT", "materials_api", "gltf_material_env"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_from_file,
 			 "m_gltf_file",
@@ -326,15 +326,15 @@
 			 "MT", "materials_api", "gltf_material_manual"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material,
 			 "m_gltf_anim",
-			 { "ev", "base_url", "url", "skin_num", "animation", "num_timeindexes", "next", "key" },
-			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "MT", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "30", "", "32" },
+			 { "ev", "tf", "skin_num", "animation", "num_timeindexes", "next", "key" },
+			 { "EveryApi&", "TF", "int", "int", "int", "MT", "int" },
+			 { "ev", "", "0", "0", "30", "", "32" },
 			 "MT", "materials_api", "gltf_anim_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material2,
 			 "m_gltf_anim2",
-			 { "ev", "base_url", "url", "skin_num", "num_timeindexes", "next", "keys" },
-			 { "EveryApi&", "std::string", "std::string", "int", "int", "MT", "std::string" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "30", "", "zxcvbnmfghjklertyuiop" },
+			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys" },
+			 { "EveryApi&", "TF", "int", "int", "MT", "std::string" },
+			 { "ev", "", "0", "30", "", "zxcvbnmfghjklertyuiop" },
 			 "MT", "materials_api", "gltf_anim_material2"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,

@@ -1171,6 +1171,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf->size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
+      std::cout << url << std::endl;
     }
     //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
     //std::cout << "g_del_map add url(loadurls): " << url2 << std::endl;
