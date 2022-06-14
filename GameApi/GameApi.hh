@@ -187,6 +187,7 @@ using std::placeholders::_9;
   MAC(WM)
   MAC(FtA)
   MAC(ML)
+  MAC(TF)
 
   template<class T>
   struct A { int id; };
@@ -306,6 +307,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML save_gltf(TF tf, std::string filename);
+  TF gltf_load(std::string base_url, std::string url);
   ML send_key_at_time(ML ml, float time, int key);
   void start_editor_state();
   void end_editor_state();

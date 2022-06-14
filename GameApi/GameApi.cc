@@ -28996,3 +28996,55 @@ GameApi::GS GameApi::MainLoopApi::game_state()
 {
   return add_game_state(e, new GameStateImpl);
 }
+
+
+struct BirdData
+{
+  float height;
+  float gap;
+  bool has_coin;
+  bool has_enemy;
+  int enemy_move_type;
+  bool has_extra_energy;
+};
+BirdData b_empty = { 0.0, 100.0, false, false, 0, false };
+BirdData b_down = { 0.0, 10.0, false, false, 0, false };
+BirdData b_up = { 90.0, 10.0, false, false, 0, false };
+BirdData b_middle = { 50.0, 10.0, false, false, 0, false };
+
+BirdData b2_down = { 0.0, 20.0, false, false, 0, false };
+BirdData b2_up = { 80.0, 20.0, false, false, 0, false };
+BirdData b2_middle = { 40.0, 20.0, false, false, 0, false };
+
+
+
+
+
+struct BirdNode
+{
+  BirdData left,middle,right;
+  int gfx_type;
+  float start_time;
+};
+
+BirdNode n_0 = { b_empty, b_empty, b_empty, 0, 0.0 };
+BirdNode n_1 = { b2_down, b2_middle, b2_up, 0, 30.0 };
+BirdNode n_2 = { b_down, b_middle, b_up,0, 60.0 };
+
+class BirdGame : public MainLoopItem
+{
+public:
+  BirdGame() { }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  
+private:
+  std::vector<BirdNode> nodes;
+  std::vector<Point> bullets;
+  float energy;
+  std::vector<GameApi::ML> objects;
+};

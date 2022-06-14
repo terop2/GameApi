@@ -117,6 +117,17 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *i)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->tf.push_back(i);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(i));
+  GameApi::TF im;
+  im.id = env->tf.size()-1;
+  return im;
+}
+
 GameApi::GC add_gc(GameApi::Env &e, GraphicsContext *gc)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1333,6 +1344,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->tf[tf.id];
 }
 
 GraphicsContext *find_gc(GameApi::Env &e, GameApi::GC gc)

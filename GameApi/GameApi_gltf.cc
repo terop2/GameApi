@@ -1,9 +1,9 @@
+#define TINYGLTF_IMPLEMENTATION
+#include "tiny_gltf.h"
 
 #include "GameApi_h.hh"
 #include "GraphI.hh"
 
-#define TINYGLTF_IMPLEMENTATION
-#include "tiny_gltf.h"
 
 extern std::vector<const char *> g_urls;
 extern std::string gameapi_homepageurl;
@@ -16,6 +16,63 @@ extern std::string gameapi_homepageurl;
   //int s=255;
   //for(int i=0;i<s;i++) feature_enable[i]=true;
 //}
+
+
+class GLTF_Model : public GLTFModelInterface
+{
+public:
+  GLTF_Model(tinygltf::Model *model) : self(model) { }
+  virtual void Prepare() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+
+  virtual int accessors_size() const { return self->accessors.size(); }
+  virtual tinygltf::Accessor get_accessor(int i) const { return self->accessors[i]; }
+
+  virtual int animations_size() const { return self->animations.size(); }
+  virtual tinygltf::Animation get_animation(int i) const { return self->animations[i]; }
+
+  virtual int buffers_size() const { return self->buffers.size(); }
+  virtual tinygltf::Buffer get_buffer(int i) const { return self->buffers[i]; }
+  
+  virtual int bufferviews_size() const { return self->bufferViews.size(); }
+  virtual tinygltf::BufferView get_bufferview(int i) const { return self->bufferViews[i]; }
+  
+  virtual int materials_size() const { return self->materials.size(); }
+  virtual tinygltf::Material get_material(int i) const { return self->materials[i]; }
+  
+  virtual int meshes_size() const { return self->meshes.size(); }
+  virtual tinygltf::Mesh get_mesh(int i) const { return self->meshes[i]; }
+
+  virtual int nodes_size() const { return self->nodes.size(); }
+  virtual tinygltf::Node get_node(int i) const { return self->nodes[i]; }
+  
+  virtual int textures_size() const { return self->textures.size(); }
+  virtual tinygltf::Texture get_texture(int i) const { return self->textures[i]; }
+  
+  virtual int images_size() const { return self->images.size(); }
+  virtual tinygltf::Image get_image(int i) const { return self->images[i]; }
+  
+  virtual int skins_size() const { return self->skins.size(); }
+  virtual tinygltf::Skin get_skin(int i) const { return self->skins[i]; }
+  
+  virtual int samplers_size() const { return self->samplers.size(); }
+  virtual tinygltf::Sampler get_sampler(int i) const { return self->samplers[i]; }
+  
+  virtual int cameras_size() const { return self->cameras.size(); }
+  virtual tinygltf::Camera get_camera(int i) const { return self->cameras[i]; }
+
+  virtual int scenes_size() const { return self->scenes.size(); }
+  virtual tinygltf::Scene get_scene(int i) const { return self->scenes[i]; }
+
+  virtual int lights_size() const { return self->lights.size(); }
+  virtual tinygltf::Light get_light(int i) const { return self->lights[i]; }
+  
+private:
+  tinygltf::Model *self;
+};
+
+
 
 
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
@@ -288,6 +345,19 @@ public:
   bool prepare_done = false;
 };
 
+class GLTF_Model_with_prepare : public GLTF_Model
+{
+public:
+  GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model), load(load), model(model) { }
+  virtual void Prepare() { load->Prepare(); }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() { load->Prepare(); }
+private:
+  LoadGltf *load;
+  tinygltf::Model *model;
+};
+
+
 struct KeyStruct
 {
   std::string key;
@@ -397,38 +467,35 @@ bool WriteImageData(const std::string *basepath, const std::string *filename, ti
 class GLTFImage : public Bitmap<Color>
 {
 public:
-  GLTFImage(LoadGltf *load, int image_index) : load(load), image_index(image_index) { 
+  GLTFImage(GLTFModelInterface *interface, int image_index) : interface(interface), image_index(image_index) { 
   }
   void Collect(CollectVisitor &vis)
   {
-    load->Collect(vis);
+    interface->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
   {
-    img = 0;
-    if (image_index>=0 && image_index<int(load->model.images.size()))
-      img = &load->model.images[image_index];
+    if (image_index>=0 && image_index<int(interface->images_size()))
+      img = interface->get_image(image_index);
   }
 
   
   virtual void Prepare()
   {
-    load->Prepare();
-    img = 0;
-    if (image_index>=0 && image_index<int(load->model.images.size()))
-      img = &load->model.images[image_index];
+    interface->Prepare();
+    if (image_index>=0 && image_index<int(interface->images_size()))
+      img = interface->get_image(image_index);
   }
 
-  virtual int SizeX() const { if (img) return img->width; return 0; }
-  virtual int SizeY() const { if (img) return img->height; return 0; }
+  virtual int SizeX() const { return img.width;  }
+  virtual int SizeY() const { return img.height; }
   virtual Color Map(int x, int y) const
   {
-    if (!img) return Color(0x0);
-    unsigned char *ptr = &img->image[0];
-    int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
+    const unsigned char *ptr = &img.image[0];
+    int offset = (x*img.component + y*img.width*img.component)*(img.bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
-    if ((img->component==4 ||img->component==3)&& img->bits==8) {
+    if ((img.component==4 ||img.component==3)&& img.bits==8) {
 
 
       unsigned int val = *(unsigned int*)(ptr+offset);
@@ -447,7 +514,7 @@ public:
 
 	return Color(val);
     }
-    if ((img->component==4 ||img->component==3)&& img->bits==16) {
+    if ((img.component==4 ||img.component==3)&& img.bits==16) {
       unsigned short *c0 = (unsigned short*)(ptr+offset);
       unsigned short r = c0[0];
       unsigned short g = c0[1];
@@ -475,8 +542,8 @@ public:
     return Color(0x0);
   }
 private:
-  LoadGltf *load;
-  tinygltf::Image *img;
+  GLTFModelInterface *interface;
+  tinygltf::Image img;
   int image_index;
 };
 
@@ -488,24 +555,26 @@ private:
 class GLTFFaceCollection : public FaceCollection
 {
 public:
-  GLTFFaceCollection( LoadGltf *load, int mesh_index, int prim_index) : load(load), mesh_index(mesh_index), prim_index(prim_index) {
+  GLTFFaceCollection( GLTFModelInterface *interface, int mesh_index, int prim_index) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) {
   }
   void Collect(CollectVisitor &vis)
   {
-    load->Collect(vis);
+    interface->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
   {
-    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
-      prim = &load->model.meshes[mesh_index].primitives[prim_index];
+    if (mesh_index>=0 && mesh_index<int(interface->meshes_size()) && prim_index>=0 && prim_index<int(interface->get_mesh(mesh_index).primitives.size())) {
+      tinygltf::Mesh m = interface->get_mesh(mesh_index);
+      prim = m.primitives[prim_index];
+    }
     else { std::cout << "Prim failed!" << std::endl;  return; }
 
     //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
     
-    model = &load->model;
+    //model = interface;
     
-    mode = prim->mode;
+    mode = prim.mode;
 
     //int material = prim->material;
     //tinygltf::Material *mat = 0;
@@ -514,25 +583,25 @@ public:
 
 
     // find indices
-    indices_index = prim->indices;
+    indices_index = prim.indices;
     position_index = -1;
     normal_index = -1;
     texcoord_index = -1;
     color_index = -1;
     joints_index = -1;
     weights_index = -1;
-    if (prim->attributes.find("POSITION") != prim->attributes.end())
-      position_index = prim->attributes["POSITION"];
-    if (prim->attributes.find("NORMAL") != prim->attributes.end())
-      normal_index = prim->attributes["NORMAL"];
-    if (prim->attributes.find("TEXCOORD_0") != prim->attributes.end())
-      texcoord_index = prim->attributes["TEXCOORD_0"];
-    if (prim->attributes.find("COLOR_0") != prim->attributes.end())
-      color_index = prim->attributes["COLOR_0"];
-    if (prim->attributes.find("JOINTS_0") != prim->attributes.end())
-      joints_index = prim->attributes["JOINTS_0"];
-    if (prim->attributes.find("WEIGHTS_0") != prim->attributes.end())
-      weights_index = prim->attributes["WEIGHTS_0"];
+    if (prim.attributes.find("POSITION") != prim.attributes.end())
+      position_index = prim.attributes["POSITION"];
+    if (prim.attributes.find("NORMAL") != prim.attributes.end())
+      normal_index = prim.attributes["NORMAL"];
+    if (prim.attributes.find("TEXCOORD_0") != prim.attributes.end())
+      texcoord_index = prim.attributes["TEXCOORD_0"];
+    if (prim.attributes.find("COLOR_0") != prim.attributes.end())
+      color_index = prim.attributes["COLOR_0"];
+    if (prim.attributes.find("JOINTS_0") != prim.attributes.end())
+      joints_index = prim.attributes["JOINTS_0"];
+    if (prim.attributes.find("WEIGHTS_0") != prim.attributes.end())
+      weights_index = prim.attributes["WEIGHTS_0"];
 
     //if (mat) {
     //  int index = mat->pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
@@ -546,148 +615,203 @@ public:
 
 
     // find Accessors
-    indices_acc = 0;
-    if (indices_index!=-1)
-      indices_acc = &model->accessors[indices_index];
-
-    if (indices_acc) {
-      assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
+    //indices_acc = 0;
+    indices_done = false;
+    if (indices_index!=-1) {
+      indices_acc = interface->get_accessor(indices_index); //&model->accessors[indices_index];
+      indices_done = true;
+    }
+      
+    if (indices_done) {
+      assert(indices_acc.type==TINYGLTF_TYPE_SCALAR);
     }
     //std::cout << "gltf component type: " << indices_acc->componentType << std::endl;
     //assert(indices_acc->componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
 
 
-    position_acc = 0;
-    if (position_index!=-1)
-      position_acc = &model->accessors[position_index];
+    //position_acc = 0;
+    position_done = false;
+    if (position_index!=-1) {
+      position_acc = interface->get_accessor(position_index); //&model->accessors[position_index];
+      position_done = true;
+    }
+      
+    //normal_acc = 0;
+    normal_done = false;
+    if (normal_index!=-1) {
+      normal_acc = interface->get_accessor(normal_index); //&model->accessors[normal_index];
+      normal_done = true;
+    }
+      
+    //texcoord_acc = 0;
+    texcoord_done = false;
+    if (texcoord_index!=-1) {
+      texcoord_acc = interface->get_accessor(texcoord_index); //&model->accessors[texcoord_index];
+      texcoord_done = true;
+    }
+      
+    //color_acc = 0;
+    color_done = false; 
+    if (color_index!=-1) {
+      color_acc = interface->get_accessor(color_index); //&model->accessors[color_index];
+      color_done = true;
+    }
+      
+    //joints_acc = 0;
+    joints_done = false;
+    if (joints_index!=-1) {
+      joints_acc = interface->get_accessor(joints_index); //&model->accessors[joints_index];
+      joints_done = true;
+    }
 
-    normal_acc = 0;
-    if (normal_index!=-1)
-      normal_acc = &model->accessors[normal_index];
-    
-    texcoord_acc = 0;
-    if (texcoord_index!=-1)
-      texcoord_acc = &model->accessors[texcoord_index];
-
-    color_acc = 0;
-    if (color_index!=-1)
-      color_acc = &model->accessors[color_index];
-
-    joints_acc = 0;
-    if (joints_index!=-1)
-      joints_acc = &model->accessors[joints_index];
-
-
-    weights_acc = 0;
-    if (weights_index!=-1)
-      weights_acc = &model->accessors[weights_index];
-
+    //weights_acc = 0;
+    weights_done = false;
+    if (weights_index!=-1) {
+      weights_acc = interface->get_accessor(weights_index); //&model->accessors[weights_index];
+      weights_done = true;
+    }
+      
     
     
     // find BufferViews
-    indices_bv = 0;
-    if (indices_acc) {
-      int view = indices_acc->bufferView;
-      if (view!=-1)
-	indices_bv = &model->bufferViews[view];
+    //indices_bv = 0;
+    indices_bv_done = false;
+    if (indices_done) {
+      int view = indices_acc.bufferView;
+      if (view!=-1) {
+	indices_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	indices_bv_done = true;
+      }
     }
 
-    position_bv = 0;
-    if (position_acc) {
-      int view = position_acc->bufferView;
-      if (view!=-1)
-	position_bv = &model->bufferViews[view];
+    //position_bv = 0;
+    position_bv_done = false;
+    if (position_done) {
+      int view = position_acc.bufferView;
+      if (view!=-1) {
+	position_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	position_bv_done = true;
+      }
     }
 
-    normal_bv = 0;
-    if (normal_acc) {
-      int view = normal_acc->bufferView;
-      if (view!=-1)
-	normal_bv = &model->bufferViews[view];
+    //normal_bv = 0;
+    normal_bv_done = false;
+    if (normal_done) {
+      int view = normal_acc.bufferView;
+      if (view!=-1) {
+	normal_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	normal_bv_done = true;
+      }
     }
 
-    texcoord_bv = 0;
-    if (texcoord_acc) {
-      int view = texcoord_acc->bufferView;
-      if (view!=-1)
-	texcoord_bv = &model->bufferViews[view];
+    //texcoord_bv = 0;
+    texcoord_bv_done = false;
+    if (texcoord_done) {
+      int view = texcoord_acc.bufferView;
+      if (view!=-1) {
+	texcoord_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	texcoord_bv_done = true;
+      }
     }
 
-    color_bv = 0;
-    if (color_acc) {
-      int view = color_acc->bufferView;
-      if (view!=-1)
-	color_bv = &model->bufferViews[view];
+    //color_bv = 0;
+    color_bv_done = false;
+    if (color_done) {
+      int view = color_acc.bufferView;
+      if (view!=-1) {
+	color_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	color_bv_done = true;
+      }
     }
 
-    joints_bv = 0;
-    if (joints_acc) {
-      int view = joints_acc->bufferView;
-      if (view!=-1)
-	joints_bv = &model->bufferViews[view];
+    //joints_bv = 0;
+    joints_bv_done = false;
+    if (joints_done) {
+      int view = joints_acc.bufferView;
+      if (view!=-1) {
+	joints_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	joints_bv_done = true;
+      }
     }
 
-    weights_bv = 0;
-    if (weights_acc) {
-      int view = weights_acc->bufferView;
-      if (view!=-1)
-	weights_bv = &model->bufferViews[view];
+    //weights_bv = 0;
+    weights_bv_done = false;
+    if (weights_done) {
+      int view = weights_acc.bufferView;
+      if (view!=-1) {
+	weights_bv = interface->get_bufferview(view); //&model->bufferViews[view];
+	weights_bv_done = true;
+      }
     }
     
     // find buffers
-    indices_buf = 0;
-    if (indices_bv) {
-      int buf = indices_bv->buffer;
+    //indices_buf = 0;
+    indices_buf_done = false;
+    if (indices_bv_done) {
+      int buf = indices_bv.buffer;
       if (buf!=-1) {
-	indices_buf = &model->buffers[buf];
+	indices_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	indices_buf_done = true;
       }
     }
 
-    position_buf = 0;
-    if (position_bv) {
-      int buf = position_bv->buffer;
+    //position_buf = 0;
+    position_buf_done = false;
+    if (position_bv_done) {
+      int buf = position_bv.buffer;
       if (buf!=-1) {
-	position_buf = &model->buffers[buf];
+	position_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	position_buf_done = true;
       }
     }
 
-    normal_buf = 0;
-    if (normal_bv) {
-      int buf = normal_bv->buffer;
+    // normal_buf = 0;
+    normal_buf_done = false;
+    if (normal_bv_done) {
+      int buf = normal_bv.buffer;
       if (buf!=-1) {
-	normal_buf = &model->buffers[buf];
+	normal_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	normal_buf_done = true;
       }
     }
 
-    texcoord_buf = 0;
-    if (texcoord_bv) {
-      int buf = texcoord_bv->buffer;
+    //texcoord_buf = 0;
+    texcoord_buf_done = false;
+    if (texcoord_bv_done) {
+      int buf = texcoord_bv.buffer;
       if (buf!=-1) {
-	texcoord_buf = &model->buffers[buf];
+	texcoord_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	texcoord_buf_done = true;
       }
     }
 
-    color_buf = 0;
-    if (color_bv) {
-      int buf = color_bv->buffer;
+    //color_buf = 0;
+    color_buf_done = false;
+    if (color_bv_done) {
+      int buf = color_bv.buffer;
       if (buf!=-1) {
-	color_buf = &model->buffers[buf];
+	color_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	color_buf_done = false;
       }
     }
 
-    joints_buf = 0;
-    if (joints_bv) {
-      int buf = joints_bv->buffer;
+    //joints_buf = 0;
+    joints_buf_done = false;
+    if (joints_bv_done) {
+      int buf = joints_bv.buffer;
       if (buf!=-1) {
-	joints_buf = &model->buffers[buf];
+	joints_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	joints_buf_done = true;
       }
     }
 
-    weights_buf = 0;
-    if (weights_bv) {
-      int buf = weights_bv->buffer;
+    //weights_buf = 0;
+    weights_buf_done = false;
+    if (weights_bv_done) {
+      int buf = weights_bv.buffer;
       if (buf!=-1) {
-	weights_buf = &model->buffers[buf];
+	weights_buf = interface->get_buffer(buf); //&model->buffers[buf];
+	weights_buf_done = true;
       }
     }
 
@@ -695,9 +819,10 @@ public:
   
   virtual void Prepare() { 
     //std::cout << "GLTFFaceCollection::Prepare()" << std::endl;
-    load->Prepare();
+    interface->Prepare();
+    HeavyPrepare();
     
-    
+    /*    
     if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
       prim = &load->model.meshes[mesh_index].primitives[prim_index];
     else { std::cout << "Prim failed!" << std::endl;  return; }
@@ -891,43 +1016,43 @@ public:
 	weights_buf = &model->buffers[buf];
       }
     }
-    
+    */    
   }
   virtual int NumFaces() const 
   {
-    if (mode==TINYGLTF_MODE_TRIANGLES && indices_acc) {
-      return indices_acc->count/3;
+    if (mode==TINYGLTF_MODE_TRIANGLES && indices_done) {
+      return indices_acc.count/3;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && indices_acc) {
-      return indices_acc->count-2;
+    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && indices_done) {
+      return indices_acc.count-2;
     }
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN) {
       return 1;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLES && position_acc) {
-      return position_acc->count/3;
+    if (mode==TINYGLTF_MODE_TRIANGLES && position_done) {
+      return position_acc.count/3;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_acc) {
-      return position_acc->count-2;
+    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_done) {
+      return position_acc.count-2;
     }
     std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
     return 0;
   }
   virtual int NumPoints(int face) const { 
-    if (mode==TINYGLTF_MODE_TRIANGLE_FAN && indices_acc) {
-      return indices_acc->count;
+    if (mode==TINYGLTF_MODE_TRIANGLE_FAN && indices_done) {
+      return indices_acc.count;
     }
     return 3;
   }
   int get_index(int face, int point) const
   {
-	unsigned char *ptr = &indices_buf->data[0];
+	const unsigned char *ptr = &indices_buf.data[0];
 	//int size1 = indices_buf->data.size();
-	unsigned char *ptr2 = ptr + indices_bv->byteOffset;
+	const unsigned char *ptr2 = ptr + indices_bv.byteOffset;
 	//int size2 =indices_bv->byteLength;
-	int stride = indices_bv->byteStride;
+	int stride = indices_bv.byteStride;
 
-	switch(indices_acc->componentType) {
+	switch(indices_acc.componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	  if (stride==0) stride=sizeof(unsigned char);
 	  break;
@@ -947,51 +1072,51 @@ public:
 	    if (stride==0) stride=sizeof(unsigned int); // 3 = num of indices in a ttiangle
 	    break;
 	default:
-	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
+	  std::cout << "componentType wrong: " << indices_acc.componentType << std::endl;
 	  if (stride==0) stride=sizeof(short);
 	  break;
 	};
 
 
 	int comp = face*3+point;
-	unsigned char *ptr3 = ptr2 + indices_acc->byteOffset + comp*stride;
+	const unsigned char *ptr3 = ptr2 + indices_acc.byteOffset + comp*stride;
 	//int size3 = indices_acc->count;
 	int index = 0;
-	switch(indices_acc->componentType)
+	switch(indices_acc.componentType)
 	  {
 	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	    {
-	      unsigned char *ptr4 = (unsigned char*)ptr3;
+	      const unsigned char *ptr4 = (const unsigned char*)ptr3;
 	      index = *ptr4;
 	      break;
 	    }
 	  case TINYGLTF_COMPONENT_TYPE_BYTE:
 	    {
-	      char *ptr4 = (char*)ptr3;
+	      const char *ptr4 = (const char*)ptr3;
 	      index = *ptr4;
 	      break;
 	    }
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
 	  {
-	  unsigned short *ptr4 = (unsigned short*)ptr3;
+	  const unsigned short *ptr4 = (const unsigned short*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
 	case TINYGLTF_COMPONENT_TYPE_SHORT:
 	  {
-	  short *ptr4 = (short*)ptr3;
+	  const short *ptr4 = (const short*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
 	case TINYGLTF_COMPONENT_TYPE_INT:
 	  {
-	  int *ptr4 = (int*)ptr3;
+	  const int *ptr4 = (const int*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
 	  {
-	  unsigned int *ptr4 = (unsigned int*)ptr3;
+	  const unsigned int *ptr4 = (const unsigned int*)ptr3;
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
@@ -1000,27 +1125,27 @@ public:
   }
   virtual Point FacePoint(int face, int point) const
   {
-    if (position_bv && position_acc && position_buf) {
+    if (position_bv_done && position_done && position_buf_done) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &position_buf->data[0];
-	int stride2 = position_bv->byteStride;
+	const unsigned char *pos_ptr = &position_buf.data[0];
+	int stride2 = position_bv.byteStride;
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + position_bv->byteOffset + index*stride2 + position_acc->byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + position_bv.byteOffset + index*stride2 + position_acc.byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return Point(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &position_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + position_bv->byteOffset;
-	int stride = position_bv->byteStride;
+	const unsigned char *pos_ptr = &position_buf.data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + position_bv.byteOffset;
+	int stride = position_bv.byteStride;
 	if (stride==0) stride=3*sizeof(float);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + position_acc->byteOffset + comp*stride;
-	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + position_acc.byteOffset + comp*stride;
+	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return Point(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
     }
@@ -1030,30 +1155,30 @@ public:
     std::cout << "gltf FacePoint unknown mode" << std::endl;
     return Point(0.0,0.0,0.0);
   }
-  bool has_normal() const { return normal_bv && normal_acc&&normal_buf; }
+  bool has_normal() const { return normal_bv_done && normal_done && normal_buf_done; }
   virtual Vector PointNormal(int face, int point) const {
-    if (normal_bv && normal_acc && normal_buf) {
+    if (normal_bv_done && normal_done && normal_buf_done) {
 
     if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &normal_buf->data[0];
-	int stride2 = normal_bv->byteStride;
+	const unsigned char *pos_ptr = &normal_buf.data[0];
+	int stride2 = normal_bv.byteStride;
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + normal_bv->byteOffset + index*stride2 + normal_acc->byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + normal_bv.byteOffset + index*stride2 + normal_acc.byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return -Vector(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// TODO, check that this branch works
-	unsigned char *pos_ptr = &normal_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + normal_bv->byteOffset;
-	int stride = normal_bv->byteStride;
+	const unsigned char *pos_ptr = &normal_buf.data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + normal_bv.byteOffset;
+	int stride = normal_bv.byteStride;
 	if (stride==0) stride=3*sizeof(float);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + normal_acc->byteOffset + comp*stride;
-	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + normal_acc.byteOffset + comp*stride;
+	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return -Vector(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
     }
@@ -1067,27 +1192,27 @@ public:
   virtual int AttribI(int face, int point, int id) const { return 0; }
   bool has_color() const { return true; /*color_bv && color_acc && color_buf*/; }
   virtual unsigned int Color(int face, int point) const {
-    if (color_bv && color_acc && color_buf) {
+    if (color_bv_done && color_done && color_buf_done) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &color_buf->data[0];
-	int stride2 = color_bv->byteStride;
+	const unsigned char *pos_ptr = &color_buf.data[0];
+	int stride2 = color_bv.byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	unsigned int *pos_ptr2 = (unsigned int*)(pos_ptr + color_bv->byteOffset + index*stride2 + color_acc->byteOffset); 
+	unsigned int *pos_ptr2 = (unsigned int*)(pos_ptr + color_bv.byteOffset + index*stride2 + color_acc.byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return *pos_ptr2;
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &color_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + color_bv->byteOffset;
-	int stride = color_bv->byteStride;
+	const unsigned char *pos_ptr = &color_buf.data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + color_bv.byteOffset;
+	int stride = color_bv.byteStride;
 	if (stride==0) stride=4*sizeof(unsigned char);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + color_acc->byteOffset + comp*stride;
-	unsigned int *pos_ptr4 = (unsigned int*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + color_acc.byteOffset + comp*stride;
+	const unsigned int *pos_ptr4 = (const unsigned int*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return *pos_ptr4;
       }
     }
@@ -1101,21 +1226,21 @@ public:
   }
   virtual bool has_skeleton() const
   {
-    return joints_bv && joints_acc && joints_buf && weights_bv && weights_acc && weights_buf;
+    return joints_bv_done && joints_done && joints_buf_done && weights_bv_done && weights_done && weights_buf_done;
   }
   virtual VEC4 Joints(int face, int point) const
   {
 
-    if (joints_bv && joints_acc && joints_buf) {
+    if (joints_bv_done && joints_done && joints_buf_done) {
       if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &joints_buf->data[0];
-	int stride2 = joints_bv->byteStride;
+	const unsigned char *pos_ptr = &joints_buf.data[0];
+	int stride2 = joints_bv.byteStride;
 	if (stride2==0) {
-	switch(joints_acc->componentType) {
+	switch(joints_acc.componentType) {
 	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	  if (stride2==0) stride2=sizeof(unsigned char);
 	  break;
@@ -1135,11 +1260,11 @@ public:
 	    if (stride2==0) stride2=sizeof(unsigned int); // 3 = num of indices in a ttiangle
 	    break;
 	default:
-	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
+	  std::cout << "componentType wrong: " << indices_acc.componentType << std::endl;
 	  if (stride2==0) stride2=sizeof(short);
 	  break;
 	};
-	switch(joints_acc->type)
+	switch(joints_acc.type)
 	  {
 	  case TINYGLTF_TYPE_SCALAR: break;
 	  case TINYGLTF_TYPE_VEC2: stride2*=2; break;
@@ -1151,8 +1276,8 @@ public:
 	int index2 = 0;
 	int index3 = 0;
 	int index4 = 0;
-	unsigned char *ptr3 = (unsigned char*)(pos_ptr + joints_bv->byteOffset + index*stride2 + joints_acc->byteOffset); 
-	switch(joints_acc->componentType)
+	unsigned char *ptr3 = (unsigned char*)(pos_ptr + joints_bv.byteOffset + index*stride2 + joints_acc.byteOffset); 
+	switch(joints_acc.componentType)
 	  {
 	  case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
 	    {
@@ -1226,13 +1351,13 @@ public:
 	return res;
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &joints_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + joints_bv->byteOffset;
-	int stride = joints_bv->byteStride;
+	const unsigned char *pos_ptr = &joints_buf.data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + joints_bv.byteOffset;
+	int stride = joints_bv.byteStride;
 	if (stride==0) stride=4*sizeof(char);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + joints_acc->byteOffset + comp*stride;
-	unsigned char *pos_ptr4 = (unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + joints_acc.byteOffset + comp*stride;
+	const unsigned char *pos_ptr4 = (const unsigned char*)pos_ptr3; // 3 = num of components in (x,y,z)
 	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
 	//res[0] = pos_ptr4[0];
 	//res[1] = pos_ptr4[1];
@@ -1274,16 +1399,16 @@ public:
   virtual VEC4 Weights(int face, int point) const
   {
 
-    if (weights_bv && weights_acc && weights_buf) {
+    if (weights_bv_done && weights_done && weights_buf_done) {
       if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &weights_buf->data[0];
-	int stride2 = weights_bv->byteStride;
+	const unsigned char *pos_ptr = &weights_buf.data[0];
+	int stride2 = weights_bv.byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + weights_bv.byteOffset + index*stride2 + weights_acc.byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
 	//vec4 res;
 	//res[0] = pos_ptr2[0];
@@ -1301,8 +1426,8 @@ public:
 	//return pos_ptr2[num];
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &weights_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
+	const unsigned char *pos_ptr = &weights_buf.data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + weights_bv.byteOffset;
 	//int stride = weights_bv->byteStride;
 	//if (stride==0) stride=4*sizeof(char);
 	//int comp = face*3+point;
@@ -1345,7 +1470,7 @@ public:
     
   }
   
-  bool has_texcoord() const { return texcoord_bv&&texcoord_acc&&texcoord_buf; }
+  bool has_texcoord() const { return texcoord_bv_done&&texcoord_done&&texcoord_buf_done; }
   virtual Point2d TexCoord(int face, int point) const { 
     Point p = tex(face,point);
     //std::cout << "TexCoord: " << p.x << " " << p.y << std::endl;
@@ -1358,27 +1483,27 @@ public:
 
   Point tex(int face, int point) const
   {
-    if (texcoord_bv && texcoord_acc && texcoord_buf) {
+    if (texcoord_bv_done && texcoord_done && texcoord_buf_done) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
-      if (indices_buf && indices_bv && indices_acc) {
+      if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
 
-	unsigned char *pos_ptr = &texcoord_buf->data[0];
-	int stride2 = texcoord_bv->byteStride;
+	const unsigned char *pos_ptr = &texcoord_buf.data[0];
+	int stride2 = texcoord_bv.byteStride;
 	if (stride2==0) stride2 = 2*sizeof(float); // 3 = num of components in (x,y,z)
-	float *pos_ptr2 = (float*)(pos_ptr + texcoord_bv->byteOffset + index*stride2 + texcoord_acc->byteOffset); 
+	float *pos_ptr2 = (float*)(pos_ptr + texcoord_bv.byteOffset + index*stride2 + texcoord_acc.byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
 	return Point(pos_ptr2[0], pos_ptr2[1], 0.0 /*pos_ptr2[2]*/);
       } else {
 	// todo, check that this branch works
-	unsigned char *pos_ptr = &texcoord_buf->data[0];
-	unsigned char *pos_ptr2 = pos_ptr + texcoord_bv->byteOffset;
-	int stride = texcoord_bv->byteStride;
+	const unsigned char *pos_ptr = &texcoord_buf.data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + texcoord_bv.byteOffset;
+	int stride = texcoord_bv.byteStride;
 	if (stride==0) stride=2*sizeof(float);
 	int comp = face*3+point;
-	unsigned char *pos_ptr3 = pos_ptr2 + texcoord_acc->byteOffset + comp*stride;
-	float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	const unsigned char *pos_ptr3 = pos_ptr2 + texcoord_acc.byteOffset + comp*stride;
+	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	return Point(pos_ptr4[0], pos_ptr4[1], 0.0 /*pos_ptr4[2]*/);
       }
     }
@@ -1390,8 +1515,8 @@ public:
   }
 
 private:
-  tinygltf::Primitive *prim;
-  tinygltf::Model *model;
+  tinygltf::Primitive prim;
+  //tinygltf::Model *model;
   int mode;
   int indices_index;
   int position_index;
@@ -1401,31 +1526,59 @@ private:
   int joints_index;
   int weights_index;
 
-  tinygltf::Accessor *indices_acc;
-  tinygltf::Accessor *position_acc;
-  tinygltf::Accessor *normal_acc;
-  tinygltf::Accessor *texcoord_acc;
-  tinygltf::Accessor *color_acc;
-  tinygltf::Accessor *joints_acc;
-  tinygltf::Accessor *weights_acc;
+  tinygltf::Accessor indices_acc;
+  tinygltf::Accessor position_acc;
+  tinygltf::Accessor normal_acc;
+  tinygltf::Accessor texcoord_acc;
+  tinygltf::Accessor color_acc;
+  tinygltf::Accessor joints_acc;
+  tinygltf::Accessor weights_acc;
   
-  tinygltf::BufferView *indices_bv;
-  tinygltf::BufferView *position_bv;
-  tinygltf::BufferView *normal_bv;
-  tinygltf::BufferView *texcoord_bv;
-  tinygltf::BufferView *color_bv;
-  tinygltf::BufferView *joints_bv;
-  tinygltf::BufferView *weights_bv;
+  tinygltf::BufferView indices_bv;
+  tinygltf::BufferView position_bv;
+  tinygltf::BufferView normal_bv;
+  tinygltf::BufferView texcoord_bv;
+  tinygltf::BufferView color_bv;
+  tinygltf::BufferView joints_bv;
+  tinygltf::BufferView weights_bv;
   
-  tinygltf::Buffer *indices_buf;
-  tinygltf::Buffer *position_buf;
-  tinygltf::Buffer *normal_buf;
-  tinygltf::Buffer *texcoord_buf;
-  tinygltf::Buffer *color_buf;
-  tinygltf::Buffer *joints_buf;
-  tinygltf::Buffer *weights_buf;
+  tinygltf::Buffer indices_buf;
+  tinygltf::Buffer position_buf;
+  tinygltf::Buffer normal_buf;
+  tinygltf::Buffer texcoord_buf;
+  tinygltf::Buffer color_buf;
+  tinygltf::Buffer joints_buf;
+  tinygltf::Buffer weights_buf;
 
-  LoadGltf *load;
+
+
+
+  bool indices_done=false;
+  bool position_done=false;
+  bool normal_done=false;
+  bool texcoord_done=false;
+  bool color_done=false;
+  bool joints_done=false;
+  bool weights_done=false;
+  
+  bool indices_bv_done=false;
+  bool position_bv_done=false;
+  bool normal_bv_done=false;
+  bool texcoord_bv_done=false;
+  bool color_bv_done=false;
+  bool joints_bv_done=false;
+  bool weights_bv_done=false;
+  
+  bool indices_buf_done=false;
+  bool position_buf_done=false;
+  bool normal_buf_done=false;
+  bool texcoord_buf_done=false;
+  bool color_buf_done=false;
+  bool joints_buf_done=false;
+  bool weights_buf_done=false;
+
+  
+  GLTFModelInterface *interface;
   int mesh_index;
   int prim_index;
 };
@@ -1446,8 +1599,8 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, std::s
 
   LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   //   new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  GLTFImage *img = new GLTFImage( load, image_index );
-
+  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  GLTFImage *img = new GLTFImage( model, image_index );
   //Bitmap<Color> *img2 = new MemoizeBitmap(*img);
 
   std::stringstream ss;
@@ -1491,8 +1644,9 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf 
   //  if (item->url == load->url + ss.str()) { return g_bitmap_cache[i].bitmap; }
   //}
   
+  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
 
-  GLTFImage *img = new GLTFImage( load, image_index );
+  GLTFImage *img = new GLTFImage( model, image_index );
 
   //Bitmap<Color> *img2 = new MemoizeBitmap(*img);
 
@@ -1517,7 +1671,9 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, LoadGltf *load, i
 {
   int c = get_current_block();
   set_current_block(-1);
-  FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
+  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+
+  FaceCollection *faces = new GLTFFaceCollection( model, mesh_index, prim_index );
   GameApi::P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
   confirm_texture_usage(e,p);
@@ -1553,7 +1709,9 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, std::string
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   int c = get_current_block();
   set_current_block(-1);
-  FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
+  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+
+  FaceCollection *faces = new GLTFFaceCollection( model, mesh_index, prim_index );
   P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
 
@@ -1588,7 +1746,8 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, std::string ba
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   int c = get_current_block();
   set_current_block(-1);
-  FaceCollection *faces = new GLTFFaceCollection( load, mesh_index, prim_index );
+  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  FaceCollection *faces = new GLTFFaceCollection( model, mesh_index, prim_index );
   P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
 
@@ -6654,4 +6813,169 @@ void ASyncGltfCB(void *data)
 {
   ASyncGltf *ptr = (ASyncGltf*)data;
   ptr->Prepare2();
+}
+
+
+class GLTFEmpty : public GLTFModelInterface
+{
+public:
+  virtual void Prepare() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+
+  virtual int accessors_size() const { return 0; }
+  virtual tinygltf::Accessor get_accessor(int i) const { tinygltf::Accessor a; return a; }
+
+  virtual int animations_size() const { return 0; }
+  virtual tinygltf::Animation get_animation(int i) const { tinygltf::Animation a; return a; }
+
+  virtual int buffers_size() const { return 0; }
+  virtual tinygltf::Buffer get_buffer(int i) const { tinygltf::Buffer b; return b; }
+
+  virtual int bufferviews_size() const { return 0; }
+  virtual tinygltf::BufferView get_bufferview(int i) const { tinygltf::BufferView v; return v; }
+
+  virtual int materials_size() const { return 0; }
+  virtual tinygltf::Material get_material(int i) const { tinygltf::Material m; return m; }
+
+  virtual int meshes_size() const { return 0; }
+  virtual tinygltf::Mesh get_mesh(int i) const { tinygltf::Mesh m; return m; }
+
+  virtual int nodes_size() const { return 0; }
+  virtual tinygltf::Node get_node(int i) const { tinygltf::Node n; return n; }
+
+  virtual int textures_size() const { return 0; }
+  virtual tinygltf::Texture get_texture(int i) const { tinygltf::Texture tx; return tx; }
+
+  virtual int images_size() const { return 0; }
+  virtual tinygltf::Image get_image(int i) const { tinygltf::Image i2; return i2; }
+
+  virtual int skins_size() const { return 0; }
+  virtual tinygltf::Skin get_skin(int i) const { tinygltf::Skin s; return s; }
+
+  virtual int samples_size() const { return 0; }
+  virtual tinygltf::Sampler get_sampler(int i) const { tinygltf::Sampler s; return s; }
+
+  virtual int cameras_size() const { return 0; }
+  virtual tinygltf::Camera get_camera(int i) const { tinygltf::Camera c; return c; }
+
+  virtual int scenes_size() const { return 0; }
+  virtual tinygltf::Scene get_scene(int i) const { tinygltf::Scene s; return s; }
+
+  virtual int lights_size() const { return 0; }
+  virtual tinygltf::Light get_light(int i) const { tinygltf::Light l; return l; }
+};
+
+
+void write_gltf(GLTFModelInterface *input, tinygltf::Model *model)
+{
+  model->accessors = std::vector<tinygltf::Accessor>();
+  for(int i=0;i<input->accessors_size();i++)
+    model->accessors.push_back(input->get_accessor(i));
+
+  model->animations = std::vector<tinygltf::Animation>();
+  for(int i=0;i<input->animations_size();i++)
+    model->animations.push_back(input->get_animation(i));
+
+  model->buffers = std::vector<tinygltf::Buffer>();
+  for(int i=0;i<input->buffers_size();i++)
+    model->buffers.push_back(input->get_buffer(i));
+
+  model->bufferViews = std::vector<tinygltf::BufferView>();
+  for(int i=0;i<input->bufferviews_size();i++)
+    model->bufferViews.push_back(input->get_bufferview(i));
+
+  model->materials = std::vector<tinygltf::Material>();
+  for(int i=0;i<input->materials_size();i++)
+    model->materials.push_back(input->get_material(i));
+
+  model->meshes = std::vector<tinygltf::Mesh>();
+  for(int i=0;i<input->meshes_size();i++)
+    model->meshes.push_back(input->get_mesh(i));
+
+  model->nodes = std::vector<tinygltf::Node>();
+  for(int i=0;i<input->nodes_size();i++)
+    model->nodes.push_back(input->get_node(i));
+
+  model->textures = std::vector<tinygltf::Texture>();
+  for(int i=0;i<input->textures_size();i++)
+    model->textures.push_back(input->get_texture(i));
+
+  model->images = std::vector<tinygltf::Image>();
+  for(int i=0;i<input->images_size();i++)
+    model->images.push_back(input->get_image(i));
+
+  model->skins = std::vector<tinygltf::Skin>();
+  for(int i=0;i<input->skins_size();i++)
+    model->skins.push_back(input->get_skin(i));
+
+  model->samplers = std::vector<tinygltf::Sampler>();
+  for(int i=0;i<input->samplers_size();i++)
+    model->samplers.push_back(input->get_sampler(i));
+
+  model->cameras = std::vector<tinygltf::Camera>();
+  for(int i=0;i<input->cameras_size();i++)
+    model->cameras.push_back(input->get_camera(i));
+
+  model->scenes = std::vector<tinygltf::Scene>();
+  for(int i=0;i<input->scenes_size();i++)
+    model->scenes.push_back(input->get_scene(i));
+
+  model->lights = std::vector<tinygltf::Light>();
+  for(int i=0;i<input->lights_size();i++)
+    model->lights.push_back(input->get_light(i));
+}
+  
+void save_gltf(GLTFModelInterface *input, std::string filename)
+{
+  bool is_binary=false;
+  if (int(filename.size())>3) {
+    std::string sub = filename.substr(filename.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  
+  tinygltf::TinyGLTF tiny;
+  tinygltf::Model model;
+  write_gltf(input, &model);
+  tiny.WriteGltfSceneToFile(&model, filename, true, true, false, is_binary);
+}
+
+class SaveGLTF : public MainLoopItem
+{
+public:
+  SaveGLTF(GLTFModelInterface *input, std::string filename) : input(input), filename(filename) { }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void Prepare() {
+    input->Prepare();
+    save_gltf(input,filename);
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GLTFModelInterface *input;
+  std::string filename;
+};
+  
+GameApi::ML GameApi::MainLoopApi::save_gltf(TF tf, std::string filename)
+{
+  GLTFModelInterface *i = find_gltf(e,tf);
+  return add_main_loop(e, new SaveGLTF(i, filename));
+}
+
+
+GameApi::TF GameApi::MainLoopApi::gltf_load(std::string base_url, std::string url)
+{
+  bool is_binary=false;
+  if (int(url.size())>3) {
+    std::string sub = url.substr(url.size()-3);
+    if (sub=="glb") is_binary=true;
+  }
+  
+  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
+  GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  GLTFModelInterface *i = (GLTFModelInterface*)model;
+  return add_gltf(e,i);
 }
