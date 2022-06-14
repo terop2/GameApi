@@ -305,6 +305,7 @@ MACRO(GameApi::VFi)
 MACRO(GameApi::FA)
 MACRO(GameApi::PKG)
 MACRO(GameApi::GS)
+MACRO(GameApi::TF)
 #undef MACRO
 
 

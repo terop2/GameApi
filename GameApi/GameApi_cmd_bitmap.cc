@@ -64,9 +64,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_bitmap,
 			 "bm_gltf",
-			 { "ev", "base_url", "url", "image_index" },
-			 { "EveryApi&", "std::string", "std::string", "int" },
-			 { "ev", "http://tpgames.org/", "http://tpgames.org/DamagedHelmet.glb", "0" },
+			 { "ev", "tf", "image_index" },
+			 { "EveryApi&", "TF", "int" },
+			 { "ev", "", "0" },
 			 "BM", "polygon_api", "gltf_load_bitmap"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::sprite_atlas_x,
