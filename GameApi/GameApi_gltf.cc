@@ -426,7 +426,6 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
   // remove ending \" from the file names
   if (url.size()>0 && url[url.size()-1]=='\"') url=url.substr(0,url.size()-1);
 
-  
 #ifndef EMSCRIPTEN
     g_e->async_load_url(url, gameapi_homepageurl);
 #endif
@@ -6969,8 +6968,9 @@ public:
 	std::string base_url = interface->BaseUrl();
 	if (base_url[base_url.size()-1]=='/')
 	  url2 = base_url + url2.substr(1,url2.size()-2);
-	else
+	else if (base_url.size()>0)
 	  url2 = base_url + "/" + url2.substr(1,url2.size()-2);
+	else url2 = url2.substr(1,url2.size()-2);
 	//std::cout << "URL:" << url2 << std::endl;
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
 
