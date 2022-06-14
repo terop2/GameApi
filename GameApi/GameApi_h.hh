@@ -143,6 +143,8 @@
 #include <cmath>
 #include <chrono>
 
+class GLTFModelInterface;
+
 #ifdef ANDROID
 namespace std {
   template<class T>
@@ -765,6 +767,7 @@ struct EnvImpl
   std::vector<Attach*> attach;
   std::vector<GameState*> game_state;
   std::vector<GraphicsContext*> gc;
+  std::vector<GLTFModelInterface*> tf;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1076,6 +1079,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *tf);
 GameApi::GS add_game_state(GameApi::Env &e, GameState *gs);
 GameApi::ATT add_attach(GameApi::Env &e, Attach *att);
 GameApi::PKG add_urlmemmap(GameApi::Env &e, UrlMemoryMap *map);
@@ -1225,6 +1229,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
 GameState *find_game_state(GameApi::Env &e, GameApi::GS gs);
 Attach *find_attach(GameApi::Env &e, GameApi::ATT att);
 UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG p);

@@ -7,6 +7,11 @@
 #include <functional>
 #include "VectorTools.hh"
 
+#ifndef TINYGLTF_IMPLEMENTATION
+#include "tiny_gltf.h"
+#endif
+
+
 namespace GameApi
 {
   class EveryApi;
@@ -2152,6 +2157,58 @@ public:
   virtual float end_time() const=0;
   virtual FaceCollection *get_frame(float time) const=0;
 };
+
+
+class GLTFModelInterface : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  
+  virtual int accessors_size() const=0;
+  virtual tinygltf::Accessor get_accessor(int i) const=0;
+
+  virtual int animations_size() const=0;
+  virtual tinygltf::Animation get_animation(int i) const=0;
+
+  virtual int buffers_size() const=0;
+  virtual tinygltf::Buffer get_buffer(int i) const=0;
+
+  virtual int bufferviews_size() const=0;
+  virtual tinygltf::BufferView get_bufferview(int i) const=0;
+
+  virtual int materials_size() const=0;
+  virtual tinygltf::Material get_material(int i) const=0;
+
+  virtual int meshes_size() const=0;
+  virtual tinygltf::Mesh get_mesh(int i) const=0;
+
+  virtual int nodes_size() const=0;
+  virtual tinygltf::Node get_node(int i) const=0;
+
+  virtual int textures_size() const=0;
+  virtual tinygltf::Texture get_texture(int i) const=0;
+
+  virtual int images_size() const=0;
+  virtual tinygltf::Image get_image(int i) const=0;
+
+  virtual int skins_size() const=0;
+  virtual tinygltf::Skin get_skin(int i) const=0;
+
+  virtual int samplers_size() const=0;
+  virtual tinygltf::Sampler get_sampler(int i) const=0;
+
+  virtual int cameras_size() const=0;
+  virtual tinygltf::Camera get_camera(int i) const=0;
+
+  virtual int scenes_size() const=0;
+  virtual tinygltf::Scene get_scene(int i) const=0;
+
+  virtual int lights_size() const=0;
+  virtual tinygltf::Light get_light(int i) const=0;
+};
+
 
 #endif
 
