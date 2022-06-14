@@ -287,7 +287,6 @@ public:
     }
     std::vector<char> vec2(vec->begin(), vec->end());
     std::string str(vec->begin(),vec->end());
-    delete vec;
     //std::cout << str << std::endl;
     //bool b = false;
     std::string err;
@@ -332,6 +331,7 @@ public:
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
     if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
     prepare_done = true;
+    delete vec;
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
   }
 public:
