@@ -1353,6 +1353,7 @@ public:
     current = empty;
     filled = 0;
   }
+  ~NetworkedFaceCollection() { delete stream; }
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -1375,7 +1376,8 @@ public:
       } else {
       
 #ifdef HAS_POPEN
-      LoadStream *stream = load_from_url_stream(url);
+	delete stream;
+      stream = load_from_url_stream(url);
 #else
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -1396,7 +1398,8 @@ public:
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
     std::vector<unsigned char> vec(ptr->begin(),ptr->end());
-    LoadStream *stream = load_from_vector(vec);
+    delete stream;
+    stream = load_from_vector(vec);
 #endif
     GameApi::P p = ev.polygon_api.load_model_all_no_cache(stream, count);
     FaceCollection *coll = find_facecoll(e, p);
@@ -1438,6 +1441,7 @@ private:
   FaceCollection *empty;
   FaceCollection *filled;
   FaceCollection *current;
+  LoadStream *stream=0;
 };
 
 class NetworkedFaceCollectionMTL : public FaceCollection
@@ -1993,7 +1997,8 @@ public:
 
       
 #ifdef HAS_POPEN
-      LoadStream *stream = load_from_url_stream(url);
+	delete stream;
+	stream = load_from_url_stream(url);
 
 #ifndef EMSCRIPTEN
     e.async_load_url(mtl_url, homepage);
@@ -2042,7 +2047,8 @@ public:
     //ss.write(&ptr->operator[](0),ptr->size());
     //ss.close();
     std::vector<unsigned char> vec(ptr->begin(),ptr->end());
-    LoadStream *stream = load_from_vector(vec);
+    delete stream;
+    stream = load_from_vector(vec);
 #endif
   int c = get_current_block();
   set_current_block(-1);
@@ -2121,6 +2127,7 @@ public:
   std::vector<std::string> bump_url;
   std::vector<CBData*> del_vec;
   bool load_d, load_bump;
+  LoadStream *stream = 0;
 };
 
 void MTL_CB(void *data)
