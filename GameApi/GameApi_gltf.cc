@@ -471,7 +471,8 @@ bool WriteImageData(const std::string *basepath, const std::string *filename, ti
 class GLTFImage : public Bitmap<Color>
 {
 public:
-  GLTFImage(GLTFModelInterface *interface, int image_index) : interface(interface), image_index(image_index) { 
+  GLTFImage(GLTFModelInterface *interface, int image_index) : interface(interface), image_index(image_index) {
+    img = 0;
   }
   void Collect(CollectVisitor &vis)
   {
@@ -492,10 +493,11 @@ public:
       img = &interface->get_image(image_index);
   }
 
-  virtual int SizeX() const { return img->width;  }
-  virtual int SizeY() const { return img->height; }
+  virtual int SizeX() const { if (img) return img->width; return 0; }
+  virtual int SizeY() const { if (img) return img->height; return 0; }
   virtual Color Map(int x, int y) const
   {
+    if (!img) return Color(0x0);
     const unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
