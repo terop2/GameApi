@@ -40,6 +40,8 @@
 </File>
 <File Id='freetypeDLL2' Name='freetype6.dll' DiskId='1' Source='freetype6.dll' KeyPath='no'>
 </File>
+<File Id='freetypeDLL3' Name='freetype.dll' DiskId='1' Source='editor/freetype.dll' KeyPath='no'>
+</File>
 <File Id='holoplayDLL' Name='HoloPlayAPI.dll' DiskId='1' Source='HoloPlayAPI.dll' KeyPath='no'>
 </File>
 <File Id='flacDLL' Name='libFLAC-8.dll' DiskId='1' Source='libFLAC-8.dll' KeyPath='no'>
