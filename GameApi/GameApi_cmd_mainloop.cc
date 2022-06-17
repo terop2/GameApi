@@ -630,7 +630,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "touch_rotate",
 			 { "ev", "ml", "leftright", "topdown", "x_speed", "y_speed" },
 			 { "EveryApi&", "ML", "bool", "bool", "float", "float" },
-			 { "ev", "", "true", "true", "0.01", "0" },
+			 { "ev", "", "true", "true", "0.01", "0.01" },
 			 "ML", "mainloop_api", "touch_rotate"));
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mouse_roll_zoom,
