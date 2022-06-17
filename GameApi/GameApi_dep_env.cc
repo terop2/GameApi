@@ -2130,7 +2130,7 @@ std::vector<unsigned char> convert_to_hexdump(std::vector<unsigned char> s)
       unsigned char ch = s[i];
       unsigned char ch0 = (ch&0xf0)>>4;
       unsigned char ch1 = (ch&0xf);
-      char *arr = "0123456789abcdef";
+      const char *arr = "0123456789abcdef";
       res.push_back(arr[ch0]);
       res.push_back(arr[ch1]);
     }

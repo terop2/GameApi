@@ -324,12 +324,14 @@
 			 { "EveryApi&", "float", "BM", "BM", "BM", "BM", "BM", "bool", "bool", "bool", "bool", "bool", "float", "float", "float", "float", "float", "float", "float" }, 
 			 { "ev", "1.0", "", "", "", "", "", "true", "true", "true", "true", "true", "0.5", "0.5", "0.5", "0.5", "0.5", "1.0", "1.0" },
 			 "MT", "materials_api", "gltf_material_manual"));
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material,
 			 "m_gltf_anim",
 			 { "ev", "tf", "skin_num", "animation", "num_timeindexes", "next", "key" },
 			 { "EveryApi&", "TF", "int", "int", "int", "MT", "int" },
 			 { "ev", "", "0", "0", "30", "", "32" },
 			 "MT", "materials_api", "gltf_anim_material"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material2,
 			 "m_gltf_anim2",
 			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys" },

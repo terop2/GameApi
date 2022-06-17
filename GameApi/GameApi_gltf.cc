@@ -4232,9 +4232,10 @@ public:
     int sz2 = interface->accessors_size(); //model->accessors.size();
     bind_acc_done = false;
     if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) {
-      if (dt->current_bind_acc != inverseBindMatrices)
+      if (dt->current_bind_acc != inverseBindMatrices) {
 	dt->bind_acc = &interface->get_accessor(inverseBindMatrices); //&model->accessors[inverseBindMatrices];
 	dt->current_bind_acc = inverseBindMatrices;
+      }
       bind_acc_done = true;
     }
     int sz3 = interface->bufferviews_size(); //model->bufferViews.size();
@@ -6633,7 +6634,7 @@ public:
     }
     */    
     if (ch==key &&e.type==0x300) {
-      key_time = ev.mainloop_api.get_time()/1000.0; /*current_time;*/
+      key_time = current_time/10.0; //ev.mainloop_api.get_time()/1000.0; /*current_time;*/
       keypressed = true;
     }
     if (items.size()>0)
