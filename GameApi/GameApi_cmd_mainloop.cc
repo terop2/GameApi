@@ -76,19 +76,23 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "http://tpgames.org/test_bm.chai", "100", "100" },
 			 "BM", "bitmap_api", "chai_bm"));
 #endif
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh,
 			 "ml_gltf",
 			 { "ev", "tf", "mesh_id", "skin_id", "keys" },
 			 { "EveryApi&", "TF", "int", "int", "std::string" }, 
 			 { "ev", "", "0", "0", "cvbnm" },
 			 "ML", "mainloop_api", "gltf_mesh"));
+#endif
 #ifndef STABLE
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node,
 			 "ml_gltf_node",
 			 { "ev", "tf", "node_id", "keys" },
 			 { "EveryApi&", "TF", "int", "std::string" },
 			 { "ev", "", "0", "cvbnmfghjklertyuiop" },
 			 "ML", "mainloop_api", "gltf_node"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
 			 { "ev", "tf", "scene_id", "keys" },
@@ -115,12 +119,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "MT" },
 			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0", "0", "0", "" },
 			 "ML", "mainloop_api", "gltf_anim"));*/
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim4,
 			 "ml_gltf_anim",
 			 { "ev", "tf", "animation", "channel" },
 			 { "EveryApi&", "TF", "int", "int" },
 			 { "ev", "", "0", "0" },
 			 "ML", "mainloop_api", "gltf_anim4"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
