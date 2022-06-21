@@ -1488,6 +1488,19 @@ void iter(void *arg)
 			system((std::string("mkdir -p ") + prefix).c_str());
 			
 			prefix+="/";
+
+			//std::ofstream f2((prefix + "lighthttpd.conf").c_str());
+			//f2 << "server.document-root = \"" + prefix + "\"" << std::endl;
+			//f2 << "server.port = 3000" << std::endl;
+			//f2 << "mimetype.assign = (" << std::endl;
+			//f2 << " \".html\" => \"text/html\"" << std::endl;
+			//f2 << ")";
+			//f2.close();
+
+			//std::string cmd2 = "lighttpd -D -f " + prefix + "lighthttpd.conf";
+			//pthread_system(cmd2.c_str());
+			
+			
 			std::ofstream f((prefix + "tst.html").c_str());
 			f << htmlfile;
 			f.close();
