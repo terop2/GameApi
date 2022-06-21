@@ -25459,8 +25459,8 @@ std::string g_emscripten_frame_2(std::string code, std::string homepage) {
     + code +
     "\n</pre>\n"
     "<canvas id=\"canvas\" style=\"border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;\"></canvas>\n"
-    "<script src=\"https://meshpage.org/gameapi.js\"></script>\n"
-    "<script src=\"https://meshpage.org/web_page.js\"></script>\n";
+    "<script src=\"http://meshpage.org/gameapi.js\" crossorigin></script>\n"
+    "<script src=\"http://meshpage.org/web_page.js\" crossorigin></script>\n";
 }
 
 
