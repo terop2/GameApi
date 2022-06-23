@@ -16801,8 +16801,8 @@ public:
     code = replace_str(code, "%3", p3);
     code = replace_str(code, "%4", p4);
     code = replace_str(code, "%5", p5);
-    std::cout << "CODE: " << std::endl;
-    std::cout << code << std::endl;
+    //std::cout << "CODE: " << std::endl;
+    //std::cout << code << std::endl;
     GameApi::ExecuteEnv e2;
     std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
     if (p.second=="P") {
@@ -16941,7 +16941,7 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
  int s3 = p3vec.size();
  int s4 = p4vec.size();
  int s5 = p5vec.size();
- std::cout << s1 << " " << s2 << " " << s3 << " " << s4 << " " << s5 << std::endl;
+ //std::cout << s1 << " " << s2 << " " << s3 << " " << s4 << " " << s5 << std::endl;
  int s12 = std::max(s1,s2);
  int s123 = std::max(s12,s3);
  int s1234 = std::max(s123,s4);
