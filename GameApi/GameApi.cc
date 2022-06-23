@@ -16779,12 +16779,16 @@ public:
     async_pending_count++; async_taken = true;
     //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
 #endif
+    int s = del_p_script.size();
+    for(int i=0;i<s;i++) {
+      if (del_p_script[i]==this) del_p_script[i]=0;
+    }
     // std::cout << "P_script url: " << url << std::endl;
   }
   ~P_script() { e.async_rem_callback(url); del_p_script.push_back(this); }
   void Prepare2() {
     for(int i=0;i<del_p_script.size();i++)
-      if (del_p_script[i]==this) return;
+      if (del_p_script[i]==this) { std::cout << "del_p_script error!" << std::endl; return; }
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage);
@@ -16797,6 +16801,8 @@ public:
     code = replace_str(code, "%3", p3);
     code = replace_str(code, "%4", p4);
     code = replace_str(code, "%5", p5);
+    std::cout << "CODE: " << std::endl;
+    std::cout << code << std::endl;
     GameApi::ExecuteEnv e2;
     std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
     if (p.second=="P") {
@@ -16935,6 +16941,7 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
  int s3 = p3vec.size();
  int s4 = p4vec.size();
  int s5 = p5vec.size();
+ std::cout << s1 << " " << s2 << " " << s3 << " " << s4 << " " << s5 << std::endl;
  int s12 = std::max(s1,s2);
  int s123 = std::max(s12,s3);
  int s1234 = std::max(s123,s4);
