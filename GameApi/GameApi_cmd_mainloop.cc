@@ -867,6 +867,8 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
 #ifndef STABLE
+
+#if 0
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame,
 			 "html_window", 
 			 { "ev", "r", "homepage" },
@@ -879,6 +881,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "EveryApi&", "RUN", "std::string" },
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::small_window,
 			 "sml_window",
 			 { "ev", "ml", "x", "y", "sx", "sy" },
