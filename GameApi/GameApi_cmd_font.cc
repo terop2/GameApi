@@ -367,9 +367,9 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "T", "tree_api", "tree"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::tree_p,
 			 "tree_p",
-			 { "ev", "tree", "vec", "time" },
-			 { "EveryApi&", "T", "[P]", "float" },
-			 { "ev", "", "", "0.0" },
+			 { "ev", "tree", "vec", "time", "percentage" },
+			 { "EveryApi&", "T", "[P]", "float", "float" },
+			 { "ev", "", "", "0.0", "0.5" },
 			 "P", "tree_api", "tree_p"));
   
   return vec;

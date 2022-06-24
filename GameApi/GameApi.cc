@@ -3477,7 +3477,7 @@ GameApi::P execute_one(GameApi::Env &e, GameApi::EveryApi &ev, const std::vector
     return ev.polygon_api.matrix(v[level], add_matrix2(e,m));
   return ev.polygon_api.p_empty();
 }
-GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::vector<GameApi::P> &v, Matrix mm, int current_level, TreeStack *tree2, float time)
+GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::vector<GameApi::P> &v, Matrix mm, int current_level, TreeStack *tree2, float time, float rand_percentage)
 {
   GameApi::P p0 = execute_one(e, ev, v, mm, current_level);
   if (current_level>=tree2->num_levels()-1) return p0;
@@ -3485,12 +3485,24 @@ GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::ve
   int s2 = lvl->num_childs();
   std::vector<GameApi::P> vec;
   vec.push_back(p0);
+  Random r;
   for(int j=0;j<s2;j++)
     {
+      float val = double(r.next())/r.maximum();
+      if (val<rand_percentage) continue;
       Matrix m = lvl->get_child(j,time);
       Matrix m2 = m * mm;
-      GameApi::P p2 = execute_recurse(e, ev, v, m2, current_level+1, tree2, time);
+      GameApi::P p2 = execute_recurse(e, ev, v, m2, current_level+1, tree2, time,rand_percentage);
       vec.push_back(p2);
+    }
+  if (vec.size()==0)
+    {
+      float val = double(r.next())/r.maximum();
+      val*=lvl->num_childs();
+      Matrix m = lvl->get_child(int(val),time);
+      Matrix m2 = m * mm;
+      GameApi::P p2 = execute_recurse(e, ev, v, m2, current_level+1, tree2, time,rand_percentage);
+      vec.push_back(p2);      
     }
   return ev.polygon_api.or_array2(vec);
 }
@@ -3546,10 +3558,10 @@ GameApi::MS GameApi::TreeApi::tree_ms(EveryApi &ev, T tree, float time)
 }
 
 
-GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time)
+GameApi::P GameApi::TreeApi::tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time, float percentage)
 {
   TreeStack *tree2 = find_tree(e, tree);
-  return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time); 
+  return execute_recurse(e, ev, vec, Matrix::Identity(), 0, tree2, time, percentage); 
 }
 
 class RepeatMS : public MatrixArray

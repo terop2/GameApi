@@ -107,6 +107,7 @@
 			 { "BB", "int", "int", "int", "int", "int", "int", "int", "int" },
 			 { "", "255", "255", "255", "255", "0", "0", "0", "0" },
 			 "BM", "bool_bitmap_api", "to_bitmap"));
+
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bool_bitmap_api, &GameApi::BoolBitmapApi::black_white_dithering,
 			 "fb_dither",

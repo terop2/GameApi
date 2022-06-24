@@ -6,7 +6,7 @@ $assetsite = "https://tpgames.org";
 <!DOCTYPE html>
 <html id="html">
 <head>
-<title>meshpage.org -- your favourite 3d web development framework</title>
+<title>meshpage.org&reg; -- your favourite 3d web development framework</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
@@ -409,7 +409,7 @@ function load_anim_pic2(num,file_id)
 require_once("user.php");
 $user="terop";
 $num = read_num( $user );
-page_title("meshpage.org", "your favourite 3d web development framework");
+page_title("meshpage.org&reg;", "your favourite 3d web development framework");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -830,7 +830,7 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 <?php
 require_once("user.php");
 ?>
-<div style="padding: 20px; width: 1024px;">
+<div style="padding: 20px; width: 1324px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -860,15 +860,22 @@ visit_counter_inc( "tool" );
        start menu -> GameApi-Builder v27.0 -> GameApi_Builder v27.0
 </div>
 </div>
+
+<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="margin: 10px;">
+<img src="https://meshpage.org/Windows-Symbol.png" width="200" height="120" crossorigin/>
+</div>
+</div>
+
 </div>
 <p>
-<div style="padding: 20px;  width: 1024px;">
+<div style="padding: 20px;  width: 1324px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
-<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux 64-bit amd64</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 64-bit amd64</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-27.deb">download deb</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
   <ul>
@@ -890,6 +897,16 @@ visit_counter_inc( "tool" );
       gameapi-builder
 </div>
 </div>
+
+
+<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="margin: 15px 50px 15px 50px;">
+<img src="data:image/jpeg;base64,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"
+width="120" height="120" crossorigin/>
+</div>
+</div>
+
+
 </div>
 <!--
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
@@ -1822,7 +1839,7 @@ if ($mobile=="yes") {
   echo "hd-=60;";
 } else {
   echo "wd-=240;";
-  echo "hd-=180;";
+  echo "hd-=240;";
   }
 ?>
   var elem = document.getElementById("display");
