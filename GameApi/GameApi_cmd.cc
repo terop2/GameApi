@@ -28,6 +28,7 @@ MACRO2(GameApi::MT,ev.materials_api.m_def(ev))
 MACRO2(GameApi::C,ev.curve_api.linear(std::vector<GameApi::PT>()))
 MACRO2(GameApi::PD,ev.polygon_dist_api.empty(ev))
 MACRO2(GameApi::WV,ev.waveform_api.wv_empty(1.0))
+MACRO2(GameApi::ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()))
 #undef MACRO2
 
 
@@ -119,7 +120,8 @@ MACRO3(MT,ev.materials_api.m_def(ev))
 MACRO3(C,ev.curve_api.linear(std::vector<GameApi::PT>()))
 MACRO3(PD,ev.polygon_dist_api.empty(ev))
 MACRO3(WV,ev.waveform_api.wv_empty(1.0))
-  return "@";
+MACRO3(ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()));
+ return "@";
 }
 
 int to_int(std::string s) {
