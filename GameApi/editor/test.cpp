@@ -1391,7 +1391,7 @@ void iter(void *arg)
 		        else
 			if (type=="RUN")
 			  {
-
+			    if (id!=1) {
 			    RUN blk;
 			    blk.id = id;
 			  env->env->free_temp_memory();
@@ -1409,8 +1409,8 @@ void iter(void *arg)
 			    env->codegen_button = env->gui->empty();
 			    env->collect_button = env->gui->empty();
 			    env->ev->shader_api.use(env->sh);
+			    }
 			    display = false;
-
 			  }
 		        else
 			if (type=="O")
