@@ -1855,6 +1855,7 @@ public:
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W enum_editor(W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type);
   IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap);
@@ -1867,11 +1868,11 @@ public:
     std::string color;
     std::string s;
   };
-  IMPORT W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy);
+  IMPORT W generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy, W &click_target);
   IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target);
   IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
-  IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm);
+  IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm, std::vector<W> &enum_click_targets);
   IMPORT W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);

@@ -805,13 +805,13 @@ std::vector<GameApiItem*> blocker_functions()
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::depthfunc,
 			 "ogl_depthfunc",
 			 { "ml", "val" },
-			 { "ML", "int" },
+			 { "ML", "{lequal,equal,always,less,greater,gequal}" },
 			 { "", "1" },
 			 "ML", "mainloop_api", "depthfunc"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::blendfunc,
 			 "ogl_blendfunc",
 			 { "ml", "val", "val2" },
-			 { "ML", "int", "int" },
+			 { "ML", "{zero,one,src_color,one_minus_src_color,dst_color,one_minus_dst_color,src_alpha,one_minus_src_alpha,dst_alpha,one_minus_dst_alpha,constant_color,one_minus_constant_color,constant_alpha}", "{zero,one,src_color,one_minus_src_color,dst_color,one_minus_dst_color,src_alpha,one_minus_src_alpha,dst_alpha,one_minus_dst_alpha,constant_color,one_minus_constant_color,constant_alpha}" },
 			 { "", "2", "3" },
 			 "ML", "mainloop_api", "blendfunc"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::disable_z_buffer,
