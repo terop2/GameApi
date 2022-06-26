@@ -588,8 +588,9 @@ public:
       //std::cout << "EDITOR UPDATES2: " << target << std::endl;
     }
 
-    if (firsttime || changed)
+    if (firsttime || changed||externally_set)
       {
+	externally_set=false;
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
@@ -618,6 +619,10 @@ public:
   {
     return rendered_bitmap.id;
   }
+  void set_value(std::string value) { label = value;
+      Conv<T>::set(target, label);
+      externally_set=true;
+  }
 private:
   bool firsttime;
   std::string allowed_chars;
@@ -633,6 +638,7 @@ private:
   int x_gap;
   bool shift;
   bool ctrl;
+  bool externally_set=false;
 };
 
 
@@ -2966,11 +2972,139 @@ EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM
   return w2;
 }
 
+std::vector<std::string> parse_array(std::string s);
+std::vector<std::string> parse_enum_type(std::string type)
+{
+  if (type.size()>2) {
+    if (type[0]=='{' && type[type.size()-1]=='}')
+      {
+	std::string rest = type.substr(1,type.size()-2);
+	return parse_array(rest);
+      }
+  }
+  return std::vector<std::string>();
+}
+
+std::map<int, int> enum_map;
+
+EXPORT GameApi::W GameApi::GuiApi::enum_editor(W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type)
+{
+  std::vector<std::string> arr = parse_enum_type(type);
+  if (target<0||target>=arr.size()) { GameApi::W w; w.id = -1; return w; }
+  
+  //std::stringstream ss;
+  //ss << target << " (" << arr[target] << ")";
+  
+  //  W w = text(ss.str(),atlas,atlas_bm,x_gap);
+  W w = int_editor(target, atlas, atlas_bm, x_gap);
+  W w2 = button(30,30,c_tooltip_button,c_tooltip_button2);
+  W w3 = highlight(w2);
+  W click = click_area(w3, 0,0,30,30, 0);
+  enum_map[click.id]=w.id;
+  click_widget = click;
+  std::stringstream ss;
+  ss << &target;
+  set_id(click_widget,ss.str()); 
+  W layer2 = click;
+  std::vector<W> vec = { w, layer2 };
+  W arr2 = array_x(&vec[0],vec.size(), 5);
+  return arr2;
+}
+static bool enum_clicked=false;
+GameApi::W enum_popup = { 0 };
+GameApi::W enum_click;
+bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2)
+{
+  //std::cout << "enum: " << button << " " << type2 << std::endl;
+  if (enum_clicked==true){
+    //std::cout << "enum_clicked=true" << std::endl;
+    if (button==0&&type2==1025) {
+      //std::cout << "close popup" << std::endl;
+      enum_clicked=false;
+      enum_popup.id = 0;
+    }
+    return true;
+  }
+  GuiWidget *p = find_widget(env,click_widget);
+  if (gui.chosen_item(click_widget) &&button==0 && type2==1025 && !enum_clicked && mouse_x>=p->get_pos().x && mouse_x<=p->get_pos().x+p->get_size().dx && mouse_y>=p->get_pos().y && mouse_y<=p->get_pos().y+p->get_size().dy)
+    {
+      //std::cout << "Chosen" << std::endl;
+      Point2d pp; pp.x = 0.0; pp.y = 0.0;
+      p->update(pp,0,-1,-1,-1);
+      enum_clicked=true;
+      std::vector<std::string> arr = parse_enum_type(type);
+      int s = arr.size();
+      for(int i=0;i<s;i++) {
+	std::stringstream ss;
+	ss << i << ":" << arr[i];
+	arr[i]=ss.str();
+      }
+      areas=std::vector<GameApi::W>();
+      GameApi::W w = gui.popup_menu(mouse_x, mouse_y, arr, atlas, atlas_bm,areas);
+      enum_popup = w;
+      enum_click = click_widget;
+      return true;
+    }
+  return false;
+}
+void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui)
+{
+  if (enum_clicked && enum_popup.id!=0) {
+    gui.render(enum_popup);
+  }
+}
+void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button)
+{
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    GameApi::W w = vec[i];
+    if (w.id==0) continue;
+    std::string val = gui.get_id(w);
+    if (val!="") {
+      /*
+      std::stringstream ss(val);
+      unsigned long ptr;
+      char ch1,ch2;
+      ss >>  ch1 >> ch2 >> std::hex >> ptr;
+      int *ptr2 = (int*)ptr;
+      *ptr2 = i;*/
+    }
+  }
+}
+extern std::map<int,int> int_editor_map;
+void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
+{
+  GuiWidget *w = find_widget(e,enum_click);
+  std::string val = w->get_id();
+  if (val!="") {
+    std::stringstream ss(val);
+    unsigned long ptr;
+    char ch1,ch2;
+    ss >>  ch1 >> ch2 >> std::hex >> ptr;
+    int *ptr2 = (int*)ptr;
+    *ptr2 = value;
+    GameApi::W editor;
+    editor.id = enum_map[enum_click.id];
+    GameApi::W editor2;
+    editor2.id = int_editor_map[editor.id];
+    EditorGuiWidgetAtlas<int> *ed = (EditorGuiWidgetAtlas<int>*)find_widget(e,editor2);
+    std::stringstream ss2;
+    ss2 << value;
+    ed->set_value(ss2.str());
+      Point2d pp; pp.x = 0.0; pp.y = 0.0;
+      ed->update(pp,-1,-1,-1,-1);
+      //std::cout << "SetValue: " << val << "::" << value << std::endl;
+  }
+}
+
+std::map<int, int> int_editor_map;
+
 EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap)
 {
   std::string allowed_chars = "0123456789-";
   W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
+  int_editor_map[w2.id]=w.id;
   return w2;
 }
 
@@ -3388,7 +3522,7 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   return arr_3;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but, FtA atlas_tiny, BM atlas_tiny_bm)
+EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &labels, const std::vector<GameApi::GuiApi::EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_but, W &ok_but, FtA atlas_tiny, BM atlas_tiny_bm, std::vector<W> &vec3)
 {
   assert(vec.size()==labels.size());
   assert(labels.size()==types.size());
@@ -3396,12 +3530,15 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
   int s = vec.size();
   //std::cout << "edit_dialog: " << s << std::endl;
   int size_x1 = 0;
+  //std::vector<W> vec2;
   for(int j=0;j<s;j++)
     {
       std::string label = labels[j];
       W lab = text(label, atlas,atlas_bm, 8);
       int s = size_x(lab);
       if (size_x1 < s) size_x1 = s;
+      GameApi::W w; w.id = 0;
+      vec3.push_back(w);
     }
   for(int i=0;i<s;i++)
     {
@@ -3411,7 +3548,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(const std::vector<std::string> &l
       std::string label = labels[i];
       W lab = text(label, atlas,atlas_bm, 8);
       W lab_2 = right_align(lab, size_x1);
-      W edit = generic_editor(*target, atlas, atlas_bm, type, 2, atlas_tiny, atlas_tiny_bm, size_y(lab));
+      W edit = generic_editor(*target, atlas, atlas_bm, type, 2, atlas_tiny, atlas_tiny_bm, size_y(lab),vec3[i]);
 
       W array2[] = { lab_2, edit };
       W array3 = array_x(&array2[0], 2, 5);
@@ -3586,6 +3723,15 @@ EXPORT GameApi::W GameApi::GuiApi::center_y(W item, int sy)
 }
 std::string FloatExprEval(std::string s);
 
+bool is_enum(std::string type)
+{
+  if (type.size()>2 && type[0]=='{' && type[type.size()-1]=='}')
+    {
+      return true;
+    }
+  return false;
+}
+
 EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string type, const std::string &source)
 {
 
@@ -3603,7 +3749,7 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
       } else { std::cout << "StringStream failed" << std::endl; }
 
     } else
-  if (type=="int")
+    if (type=="int"||is_enum(type))
     {
       std::stringstream ss(source);
       if (ss >> target.i_value) {
@@ -3661,7 +3807,7 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       target = ss.str();
 
     } else
-  if (type=="int")
+    if (type=="int"||is_enum(type))
     {
       int val = source.i_value;
       //std::cout << "Source2: " << val << std::endl;
@@ -3707,7 +3853,7 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
     }
 }
 
-EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy)
+EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy, W &click_target)
 {
   //std::cout << "Generic editor: " << type << std::endl;
   if (type=="EveryApi&")
@@ -3718,6 +3864,12 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EditTypes &target, FtA atlas, 
   if (type=="long")
     {
       W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap);
+      return edit;
+    }
+  if (is_enum(type))
+    {
+      //W click_target;
+      W edit = enum_editor(click_target, target.i_value, atlas, atlas_bm, x_gap, type);
       return edit;
     }
   if (type=="int")

@@ -4867,7 +4867,7 @@ std::string trim(std::string s)
   while(i<s.size() && s[i]==' ') i++;
   int ii = s.size()-1;
   while(ii > 0 && s[ii]==' ') ii--;
-  return s.substr(i,ii-i);
+  return s.substr(i,ii-i+1);
 }
 
 std::vector<std::string> parse_array(std::string s)

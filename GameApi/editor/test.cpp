@@ -31,6 +31,12 @@ using namespace GameApi;
 extern "C" void _udev_device_get_action() { }
 #endif
 
+extern GameApi::W enum_popup;
+extern GameApi::W enum_click;
+bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2);
+void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui);
+void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button);
+void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value);
 
 
 extern std::vector<std::string> g_registered_urls;
@@ -263,6 +269,9 @@ struct Envi {
   float x,y,z;
   std::vector<GuiApi::EditTypes> edit_data;
   W editor;
+  std::vector<W> enum_click_targets;
+  std::vector<GameApi::W> areas;
+  std::vector<std::string> enum_types;
   bool editor_visible;
   W display;
   W mem;
@@ -585,7 +594,8 @@ void render_cb(Envi *env)
      env->gui->render(env->window_decoration);
    }
 
-    
+
+  
     //env->gui->render(env->txt2);
     env->gui->render(env->line);
     //env->gui->render(env->txt);
@@ -621,6 +631,7 @@ void render_cb(Envi *env)
       env->gui->render(env->editor);
    }
 
+  enum_editor_draw(*env->ev, *env->gui);
 
     if (env->progress_visible)
       {
@@ -761,6 +772,7 @@ void iter(void *arg)
       }
     if (env->editor_visible)
       env->gui->render(env->editor);
+  enum_editor_draw(*env->ev, *env->gui);
 
 #endif
     
@@ -804,6 +816,8 @@ void iter(void *arg)
 	//if (e.type==0x300)
 	// std::cout << e.type << " " << e.ch << std::endl;
 
+	enum_editor_handle_event(*env->gui, env->enum_click_targets, e.button);
+	
 	if (e.type==1024 && e.button==-1)
 	  {
 	    env->key_state = true;
@@ -1038,13 +1052,17 @@ void iter(void *arg)
 	}
 
 	{
+	  static bool g_update = true;
+	  if (env->popup_visible==false && e.button != 2) { g_update=true; }
+	  if (g_update && e.button==2) { env->popup_visible=false; }
 	  int s = env->popup_open.size();
 	  for(int i=0;i<s;i++)
 	    {
 	      W w = env->popup_open[i];
 	      int chosen = env->gui->chosen_item(w);
-	      if (chosen==0)
+	      if (chosen==0 && e.button==2 && g_update)
 		{
+		  g_update=false;
 		  //std::cout << "popup open!" << std::endl;
 		  std::string uid = env->gui->get_id(w);
 
@@ -1699,7 +1717,9 @@ void iter(void *arg)
 		    //for(int kk = 0; kk < s; kk++)
 		    //     std::cout << env->vec4[kk] << " " << env->vec4[kk]->i_value << std::endl;
 
-		    env->editor = env->gui->edit_dialog(labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2);
+		    env->enum_click_targets = std::vector<GameApi::W>();
+		    env->editor = env->gui->edit_dialog(labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
+		    env->enum_types = types;
 		    env->gui->set_pos(env->editor, 200,50);
 		    
 		    env->editor_visible = true;
@@ -1714,17 +1734,42 @@ void iter(void *arg)
 	//  {
 	//   env->gui->update(g_progress_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	// }
+	bool update = true;
+	bool update2 = true;
+	if (enum_popup.id!=0) update2=false;
+	int s55 = env->enum_click_targets.size();
+	for(int i=0;i<s55;i++)
+	  {
+	    if (enum_editor_callback(*env->env, *env->gui, env->enum_click_targets[i], env->enum_types[i], env->ev->point_api.pt_x(cursor_pos), env->ev->point_api.pt_y(cursor_pos), env->atlas2, env->atlas_bm2, 5, env->areas, e.button,e.type)) break;
+	    // env->gui->update(env->enum_click_targets[i],cursor_pos,e.button,e.ch,e.type,e.mouse_wheel_y);
+
+	  }
 	
+
+
 	env->gui->update(env->line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	if (env->display_visible)
+	if (enum_popup.id!=0 && update) {
+	  env->gui->update(enum_popup, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+
+
+	}
+	
+	if (env->popup_visible && enum_popup.id==0 && update)
+	  env->gui->update(env->popup_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	if (env->display_visible && enum_popup.id==0 && update)
 	  {
 	    env->gui->update(env->display, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
-	if (env->editor_visible)
+	if (env->editor_visible && enum_popup.id==0 && update)
 	  env->gui->update(env->editor, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	if (env->popup_visible)
-	  env->gui->update(env->popup_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	if (enum_popup.id!=0) update=false;
+	if (env->popup_visible) update=false;
+	if (env->display_visible) update=false;
+	if (env->editor_visible) update=false;
+
+
+	
 	if (e.button == 0 && env->popup_visible) { 
 	  PT pos = cursor_pos;
 	  int x = env->ev->point_api.pt_x(pos);
@@ -1745,7 +1790,28 @@ void iter(void *arg)
 	    }
 	}
 
+	if (e.button == 0 && enum_popup.id!=0) { 
+	  PT pos = cursor_pos;
+	  int x = env->ev->point_api.pt_x(pos);
+	  int y = env->ev->point_api.pt_y(pos);
+	  int px = env->gui->pos_x(enum_popup);
+	  int py = env->gui->pos_y(enum_popup);
+	  int sx = env->gui->size_x(enum_popup);
+	  int sy = env->gui->size_y(enum_popup);
+
+	  if (x>=px && y>=py && x<px+sx && y<py+sy)
+	    {
+	      /* do nothing */
+	    }
+	  else
+	    {
+	      enum_popup.id = 0; 
+	    }
+	}
+
+	
 	//env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	if (update) {
 	env->gui->update(env->scroll_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	//env->gui->update(env->wave, e.cursor_pos, e.button);
 	//env->gui->update(env->gameapi, e.cursor_pos, e.button);
@@ -1772,12 +1838,33 @@ void iter(void *arg)
 	    env->gui->update(env->connect_widget, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	    env->gui->update(env->connect_line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
+	}
 	if (env->has_wayland)
 	  {
 	    env->gui->update(env->window_decoration, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	  }
+
+	if (e.button==0 && e.type==1025 && !update2)
+	  {
+	    int s = env->areas.size();
+	    for(int i=0;i<s;i++)
+	      {
+		//std::cout << "Area" << i << std::endl;
+		W wid = env->areas[i];
+		env->gui->update(wid,cursor_pos,e.button,e.ch,e.type,e.mouse_wheel_y);
+		int clicked = env->gui->chosen_item(wid);
+		//std::cout << "Area " << i << "==" << clicked << std::endl;
+		if (clicked==0)
+		  {
+		    //std::cout << "Clicked" << i << std::endl;
+		    enum_popup.id=0;
+		    enum_set_value(*env->env,enum_click, i);
+
+		  }
+	      }
+	  }
 	
-	if (e.button==0)
+	if (e.button==0 && update)
 	  {
 	int cs = env->connect_clicks.size();
 	for(int ci = 0;ci<cs;ci++)
@@ -1825,13 +1912,14 @@ void iter(void *arg)
 	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
 #endif
 
-	env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
+	if (update)
+	  env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
 	
 	//int area_y = env->gui->size_y(env->array);
 	//std::cout << area_y << std::endl;
 	//env->gui->set_dynamic_param(env->txt2, 0, area_y);
 	
-	if (env->editor_visible)
+	if (env->editor_visible && enum_popup.id==0 && update2)
 	  {
 	    int diag_cancel = env->gui->chosen_item(env->dialog_cancel);
 	    if (diag_cancel==0)
@@ -1864,7 +1952,7 @@ void iter(void *arg)
 	if (e.button==-1) { env->flip_ongoing = false; }
 	
 	int sel = env->gui->chosen_item(env->scroll_area);
-	if (sel != -1 && e.button==0 && e.type==1025 && !env->insert_ongoing)
+	if (sel != -1 && e.button==0 && e.type==1025 && !env->insert_ongoing && update)
 	  {
 	    //std::cout << "Scroll_area: " << sel << std::endl;
 	    W w = env->gui->get_child(env->array, sel);
@@ -1989,6 +2077,7 @@ void iter(void *arg)
 		env->insert_ongoing = true;
 	      }
 	  }
+	if (update) {
 	if (env->insert_ongoing && e.button == -1)
 	  {
 	    env->insert_ongoing2 = true;
@@ -2007,7 +2096,7 @@ void iter(void *arg)
 	    env->connect_ongoing = false;
 	    env->connect_ongoing2 = false;
 	  }
-	
+	}
 
 	//int selected_item = env->gui->chosen_item(env->txt);
 	//int selected_item2 = -1;
