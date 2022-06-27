@@ -16,6 +16,7 @@ cp atlas2.txt gameapi-builder_1.0-$1/usr/share/atlas2.txt
 cp atlas_bm0.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm0.ppm
 cp atlas_bm1.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm1.ppm
 cp atlas_bm2.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm2.ppm
+cp arrow.ppm gameapi-builder_1.0-$1/usr/share/arrow.ppm
 cat control |sed s/25/$1/g >gameapi-builder_1.0-$1/DEBIAN/control
 fi
 if [[ ! $1 ]]; then

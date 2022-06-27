@@ -1718,7 +1718,7 @@ void iter(void *arg)
 		    //     std::cout << env->vec4[kk] << " " << env->vec4[kk]->i_value << std::endl;
 
 		    env->enum_click_targets = std::vector<GameApi::W>();
-		    env->editor = env->gui->edit_dialog(labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
+		    env->editor = env->gui->edit_dialog(*env->ev,labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
 		    env->enum_types = types;
 		    env->gui->set_pos(env->editor, 200,50);
 		    
