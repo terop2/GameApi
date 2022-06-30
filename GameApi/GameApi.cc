@@ -6540,41 +6540,51 @@ public:
   GlowEdgeMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float white_level, float gray_level, float edge_pos) : e(e), ev(ev), next(next), white_level(white_level), gray_level(gray_level), edge_pos(edge_pos) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-    confirm_texture_usage(ev.get_env(),p);
+    GameApi::P p2a = ev.polygon_api.texcoord_manual(p,0,0,1,0,1,1,0,1);
+    
+    confirm_texture_usage(ev.get_env(),p2a);
 
     GameApi::ML ml3;
-    ml3.id = next->mat(p.id);
+    ml3.id = next->mat(p2a.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
     return ml4;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
-    confirm_texture_usage(ev.get_env(),p);
+    GameApi::P p2a = ev.polygon_api.texcoord_manual(p,0,0,1,0,1,1,0,1);
+    
+    confirm_texture_usage(ev.get_env(),p2a);
     GameApi::ML ml3;
-    ml3.id = next->mat_inst(p.id,pts.id);
+    ml3.id = next->mat_inst(p2a.id,pts.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
     return ml4;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    confirm_texture_usage(ev.get_env(),p);
+    GameApi::P p2a = ev.polygon_api.texcoord_manual(p,0,0,1,0,1,1,0,1);
+    
+    confirm_texture_usage(ev.get_env(),p2a);
     GameApi::ML ml3;
-    ml3.id = next->mat_inst_matrix(p.id,ms.id);
+    ml3.id = next->mat_inst_matrix(p2a.id,ms.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
     return ml4;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    confirm_texture_usage(ev.get_env(),p);
+    GameApi::P p2a = ev.polygon_api.texcoord_manual(p,0,0,1,0,1,1,0,1);
+    
+    confirm_texture_usage(ev.get_env(),p2a);
     GameApi::ML ml3;
-    ml3.id = next->mat_inst2(p.id,pta.id);
+    ml3.id = next->mat_inst2(p2a.id,pta.id);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
     return ml4;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    confirm_texture_usage(ev.get_env(),p);
+    GameApi::P p2a = ev.polygon_api.texcoord_manual(p,0,0,1,0,1,1,0,1);
+    
+    confirm_texture_usage(ev.get_env(),p2a);
     GameApi::ML ml3;
-    ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    ml3.id = next->mat_inst_fade(p2a.id,pts.id,flip,start_time,end_time);
     GameApi::ML ml4 = ev.polygon_api.glowedge_shader(ev, ml3, white_level, gray_level, edge_pos);
     return ml4;
   }
@@ -6593,7 +6603,6 @@ public:
   ToonBorderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float border_width, unsigned int color) : e(e), ev(ev), next(next), border_width(border_width), color(color) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
-
     GameApi::ML ml3;
     ml3.id = next->mat(p.id);
     
