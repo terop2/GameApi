@@ -1,12 +1,13 @@
 <?php
 session_start();
-//header("Cross-origin-Resource-Policy: cross-origin");
+header("Cross-origin-Resource-Policy: cross-origin");
+header("Cross-origin-Embedder-Policy: require-corp");
 //header("Access-Control-Allow-Origin: https://meshpage.org");
 //header("Vary: Origin");
 include '/home/terop/html/tpgames.org/oauth2/RandomInterface.php';
 include '/home/terop/html/tpgames.org/oauth2/Random.php';
 include '/home/terop/html/tpgames.org/oauth2/AccessToken.php';
-include '/home/terop/html/tpgames.org/oauth2/Exception/OauthException.php';
+include '/home/terop/html/tpgames.org/oauth2/Exception/OAuthException.php';
 include '/home/terop/html/tpgames.org/oauth2/OAuth2Client.php';
 include '/home/terop/html/tpgames.org/oauth2/Provider.php';
 include '/home/terop/html/tpgames.org/oauth2/HttpClientInterface.php';
@@ -72,7 +73,6 @@ echo "" . $arr["name"] . "%";
 echo "" . $arr["email"] . "%";
 echo "</div>";
 //echo "<script>";
-//echo "const frame = document.getElementById('frm');\n";
-//echo "const cnts = document.getElementById('cnts');\n";
-//echo "frame.contentWindow.postMessage(cnts, 'http://meshpage.org');";
+//echo "var cnts = '" . $arr["user_id"] . "%" . $arr["name"] . "%" . $arr["email"] . "%';";
+//echo "window.postMessage(cnts, 'https://meshpage.org');";
 //echo "</script>";

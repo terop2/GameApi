@@ -2213,5 +2213,40 @@ public:
 };
 
 
+struct BBox
+{
+  int id;
+  float start_x;
+  float end_x;
+  float start_y;
+  float end_y;
+};
+
+class Program;
+
+class ShaderBlock
+{
+public:
+  virtual int NumChildren() const=0;
+  virtual const ShaderBlock *Children(int i) const=0;
+
+  virtual int get_uid() const=0;
+  
+  virtual float start_time() const=0;
+  virtual float end_time() const=0;
+
+  virtual BBox BoundingBox(float time) const=0;
+
+  virtual std::string GetDistField() const=0; // distfield<uid>::((x,y,z,t),(xx,yy))->float
+  virtual std::string GetColor() const=0;     // color<uid>::((x,y,z,t),(xx,yy))->vec4
+  virtual std::string GetNormal() const=0;    // normal<uid>::((x,y,z,t),(xx,yy))->vec3
+  virtual std::string GetTexCoord() const=0;  // texcoord<uid>::((x,y,z,t),(xx,yy))->vec3
+  
+  virtual void set_vars(Program *sh)=0; // get program from SH type.
+  // set_vars must set bbox[id].start_x bbox[id].end_x bbox[id].start_y bbox[id].end_y
+  
+  // use global function: std::string generate_shader_block_shader(const ShaderBlock *block);
+};
+
 #endif
 

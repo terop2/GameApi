@@ -243,6 +243,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "PT", "float", "int", "int" },
 			 { "(0.0,0.0,0.0)",  "100.0", "30", "30" },
 			 "P", "polygon_api", "sphere"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::heightmap2,
+			 "heightmap",
+			 { "bm", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "FB", "float", "float", "float", "float", "float", "float" },
+			 { "", "-300.0", "300.0", "-50.0", "50.0", "-300.0", "300.0" },
+			 "P", "polygon_api", "heightmap2"));
+  
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::plane_map,
 			 "plane_map",

@@ -26,6 +26,12 @@ using namespace GameApi;
 #ifdef WAYLAND
 #include <wayland-client.h>
 #endif
+struct ArrayType
+{
+  int type; // arraytypesinuse
+  std::vector<int> vec;
+};
+
 
 #ifdef LINUX
 extern "C" void _udev_device_get_action() { }
@@ -37,6 +43,7 @@ bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W cli
 void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui);
 void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button);
 void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value);
+ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 
 
 extern std::vector<std::string> g_registered_urls;
@@ -1435,6 +1442,23 @@ void iter(void *arg)
 			  {
 			    O o;
 			    o.id = id;
+P I18=env->ev->polygon_api.cube(-10,10,-10,10,-10,10);
+VX I32=env->ev->voxel_api.blit_voxel(o,30,30,30,-300,300,-300,300,-300,300,-1,0);
+ARR I33=env->ev->voxel_api.voxel_instancing(I32,1,-300,300,-300,300,-300,300);
+ std::vector<int> vec2 = find_array(*env->env,I33)->vec;
+ std::vector<PTS> vec;
+ for(int i=0;i<vec2.size();i++) vec.push_back(vec2[i]);
+ //MT I34=env->ev->materials_api.m_def(*env->ev);
+ //MT I35=env->ev->materials_api.phong(*env->ev,I34,-0.3,0.3,-1.0,0xffff8800,0xff666666,15.0);
+MT I35=env->ev->materials_api.gltf_material3(*env->ev,0.5,0.8,1.0,1.0,1.0,1.0,1.0);
+//MT I35=env->ev->materials_api.snow(*env->ev,I34,0xffaaaa88,0xffeeee88,0xffffff88,0.5);
+ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
+ 			  env->env->free_temp_memory();
+			env->gui->delete_widget(env->mem);
+
+			env->display = env->gui->ml_dialog(I36, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+
+			/*
 			    
 			    P p = env->ev->volume_api.rendercubes3(o, 255,255,255,
 								   -300.0, 300.0,
@@ -1442,7 +1466,7 @@ void iter(void *arg)
 								   -300.0, 300.0);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
+			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);*/
 			  }
 			else
 			  if (type=="FD")

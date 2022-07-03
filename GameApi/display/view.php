@@ -13,6 +13,7 @@ function unhash($data)
 
 $iid = $_GET["id"];
 $id=unhash($_GET["id"]);
+//echo "ID=$id";
 $user = "terop";
 if ($id>0)
 {

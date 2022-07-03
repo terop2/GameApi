@@ -29067,3 +29067,72 @@ private:
   float energy;
   std::vector<GameApi::ML> objects;
 };
+
+
+std::string generate_shader_block_shader(const ShaderBlock *block)
+{
+  std::string res;
+
+  int s = block->NumChildren();
+  for(int i=0;i<s;i++) {
+    const ShaderBlock *child = block->Children(i);
+    generate_shader_block_shader(child);
+  }
+  
+  res+=block->GetDistField();
+  res+=block->GetColor();
+  res+=block->GetNormal();
+  res+=block->GetTexCoord();
+
+  std::stringstream ss;
+  ss << block->get_uid();
+
+  std::stringstream ss2;
+  ss2 << block->start_time();
+  std::stringstream ss3;
+  ss3 << block->end_time();
+
+
+  std::stringstream ss_id,ss_sx,ss_ex,ss_sy,ss_ey;
+  ss_id << block->BoundingBox(0.0).id;
+  
+  
+  res+="float distfield_call" + ss.str() + "(vec4 pt, vec2 pt2) {\n";
+  res+="  if (pt2.x>=bbox[" + ss_id.str() + "].start_x && pt2.x<=bbox[" + ss_id.str() + "].end_x)\n";
+  res+="  if (pt2.y>=bbox[" + ss_id.str() + "].start_y && pt2.y<=bbox[" + ss_id.str() + "].end_y)\n";
+  res+="  if (pt.w>=" + ss2.str() + " && pt.w<=" + ss3.str() + ") {\n";
+  res+="     return distfield" + ss.str() + "(pt,pt2);\n";  
+  res+="}\n";
+  res+="return 30.0;\n";
+  res+="}\n";
+
+  res+="vec4 color_call" + ss.str() + "(vec4 pt, vec2 pt2) {\n";
+  res+="  if (pt2.x>=bbox[" + ss_id.str() + "].start_x && pt2.x<=bbox[" + ss_id.str() + "].end_x)\n";
+  res+="  if (pt2.y>=bbox[" + ss_id.str() + "].start_y && pt2.y<=bbox[" + ss_id.str() + "].end_y)\n";
+  res+="  if (pt.w>=" + ss2.str() + " && pt.w<=" + ss3.str() + ") {\n";
+  res+="     return color" + ss.str() + "(pt,pt2);\n";  
+  res+="}\n";
+  res+="return vec4(1,1,1,1);\n";
+  res+="}\n";
+  
+  res+="vec3 normal_call" + ss.str() + "(vec4 pt, vec2 pt2) {\n";
+  res+="  if (pt2.x>=bbox[" + ss_id.str() + "].start_x && pt2.x<=bbox[" + ss_id.str() + "].end_x)\n";
+  res+="  if (pt2.y>=bbox[" + ss_id.str() + "].start_y && pt2.y<=bbox[" + ss_id.str() + "].end_y)\n";
+  res+="  if (pt.w>=" + ss2.str() + " && pt.w<=" + ss3.str() + ") {\n";
+  res+="     return normal" + ss.str() + "(pt,pt2);\n";  
+  res+="}\n";
+  res+="return vec3(1,1,1);\n";
+  res+="}\n";
+  
+  res+="vec3 texcoord_call" + ss.str() + "(vec4 pt, vec2 pt2) {\n";
+  res+="  if (pt2.x>=bbox[" + ss_id.str() + "].start_x && pt2.x<=bbox[" + ss_id.str() + "].end_x)\n";
+  res+="  if (pt2.y>=bbox[" + ss_id.str() + "].start_y && pt2.y<=bbox[" + ss_id.str() + "].end_y)\n";
+  res+="  if (pt.w>=" + ss2.str() + " && pt.w<=" + ss3.str() + ") {\n";
+  res+="     return texcoord" + ss.str() + "(pt,pt2);\n";  
+  res+="}\n";
+  res+="return vec3(0,0,0);\n";
+  res+="}\n";
+    
+  return res;
+}
+

@@ -1,3 +1,4 @@
+cp cookies.php /home/terop/html/meshpage.org/
 cp mesh_background.php /home/terop/html/meshpage.org/
 cp mesh_addtext.php /home/terop/html/meshpage.org/
 cp builder_display.php /home/terop/html/meshpage.org/
@@ -19,7 +20,7 @@ cp user.php /home/terop/html/meshpage.org/
 cp user_page.php /home/terop/html/meshpage.org/
 cp create_mesh.php /home/terop/html/meshpage.org/
 cp emscripten_frame.php /home/terop/html/meshpage.org/
-cp mesh.php /home/terop/html/meshpage.org/
+#cp mesh.php /home/terop/html/meshpage.org/
 cp mesh_preview.php /home/terop/html/meshpage.org/
 cp action_new_mesh.php /home/terop/html/meshpage.org/
 cp action_progress_mesh.php /home/terop/html/meshpage.org/
