@@ -2339,7 +2339,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
-
+  P heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  FB fractal_mountain(int level, int sx, int sy);
   P combine_anim(P p1, P p2, float start_time, float end_time);
   P sphere_anim(float c_x, float c_y, float c_z,
 		float c2_x, float c2_y, float c2_z,

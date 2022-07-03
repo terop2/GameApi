@@ -264,6 +264,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "int" },
 			 { "256", "256", "0" },
 			 "BM", "bitmap_api", "Indicator"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fractal_mountain,
+			 "fractal_mountain",
+			 { "level", "sx", "sy" },
+			 { "int", "int", "int" },
+			 { "3", "100", "100" },
+			 "FB", "polygon_api", "fractal_mountain"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::lightmap_bitmap,
 			 "lightmap",

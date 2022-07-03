@@ -4634,6 +4634,43 @@ GameApi::BM GameApi::BitmapApi::noise_vectors(int sx, int sy)
 
 }
 
+class FractalMountain : public ContinuousBitmap<float>
+{
+public:
+  FractalMountain(int level) : level(level) {
+    for(int i=0;i<level;i++) {
+      vec.push_back(new NoiseVectors(pow(2,i),pow(2,i)));
+    }
+  }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  virtual float SizeX() const { return 1.0; }
+  virtual float SizeY() const { return 1.0; }
+  virtual float Map(float x, float y) const
+  {
+    float res=0.0;
+    for(int i=0;i<level;i++)
+      {
+	res+=vec[i]->Map(x*vec[i]->SizeX(),y*vec[i]->SizeY()).rf()/level/level;
+      }
+    return res;
+  }
+  virtual void Prepare() { }
+private:
+  int level;
+  std::vector<Bitmap<Color> *> vec;
+};
+
+EXPORT GameApi::FB GameApi::PolygonApi::fractal_mountain(int level, int sx, int sy)
+{
+  if (level>10) level=10;
+  ContinuousBitmap<float> *bm = new FractalMountain(level);
+  Bitmap<float> *bbm = new BitmapFromContinuousBitmap<float>(*bm,sx,sy);
+  FB bm2 = add_float_bitmap(e, bbm);
+  return bm2;
+}
+
+
 class BumpMap : public Bitmap<Color>
 {
 public:

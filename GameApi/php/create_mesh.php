@@ -2,6 +2,9 @@
 
 require_once("user.php");
 
+$arr = choose_user();
+if ($arr["user"]!= "terop_priv") { die(); }
+
 visit_counter_inc("createmesh");
 
 function create_form()
@@ -64,7 +67,7 @@ $id = create_id( $arr );
 
 <?php
 }
-page_header(1);
+page_header_plain(1);
 page_title("creating new mesh","");
 echo "<div class=\"emscripten\">";
 create_form();

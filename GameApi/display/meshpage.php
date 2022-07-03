@@ -70,6 +70,7 @@ require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
+/*
 if ($mobile == "yes") {
   echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
 } else
@@ -92,7 +93,7 @@ if ($nothreads == "yes") {
    }
 }
 echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"  onload=\"this.rel = 'stylesheet'\"/>";
-
+*/
 ?>
 <link rel="preload" href="vue.js" as="script"/>
 
@@ -151,6 +152,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <div id="app">
 <div id="navbar" class="navi">
 <div class="ncenter noselect">
+<a href="JavaScript:void(0);" onClick="resume_cookies()">
 <template v-if="indicator[0]">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
@@ -161,7 +163,27 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
-	
+<template v-if="isIndicator3">
+<svg width="10" height="10">
+<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
+</svg>
+</template>
+<template v-else>
+<svg width="10" height="10">
+<rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
+</svg>
+</template>
+<template v-if="isIndicator2">
+<svg width="10" height="10">
+<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
+</svg>
+</template>
+<template v-else>
+<svg width="10" height="10">
+<rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
+</svg>
+</template>
+</a>	
 <template v-for="bread in main_breadcrumb">
 <div style="font-family: 'calibri', sans-serif" class="link level1">
 <meta itemprop="position" v-bind:content="bread.num"/>
@@ -409,6 +431,9 @@ function load_anim_pic2(num,file_id)
 require_once("user.php");
 $user="terop";
 $num = read_num( $user );
+echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
+echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
+echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
 page_title("meshpage.org&reg;", "your favourite 3d web development framework");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
@@ -586,14 +611,19 @@ if ($connect=="yes") {
 <p>
 <h1>about and contact info</h1>
 <?php
+echo "Create(private): <a href=\"mesh_login.php?return=create_mesh.php\">mesh</a><br>";
+echo "Vault(private): <a href=\"mesh_login.php?return=mesh_hide.php\">vault</a><br>";
 echo "Adverticement: <a href=\"https://www.youtube.com/watch?v=0UF0zIMI2xA&feature=youtu.be\">Video</a><br><p>";
+
+echo "Resume cookie dialog: <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">RESUME</a><br>";
+echo "<script>function resume_cookies() { var c = document.getElementById(\"callout\"); c.style.display=\"block\"; }</script>"; 
 
 echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a><br><p>";
 
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
-echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>";
+echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)";
 echo "<br><br><br><hr><br><br><br>";
 echo "PRICES: <ul><li>&euro; 120: 3d model viewer,<br>";
 echo "            <li>&euro; 220: 3d model viewer with drag&drop<br>";
@@ -629,16 +659,36 @@ echo " All prices include a copy of 3d engine. Contact via email for more info.<
 	if (res5a) res5a.value = user_id;
 	var res6 = document.getElementById("email");
 	if (res6) res6.innerHTML = user_email;
-     } else onload_button();
+
+	app.indicator.pop();
+	app.indicator.push(false);
+	var d = document.getElementById("loginstatus");
+	d.innerHTML = "SUCCESS <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+
+
+     } else {
+	var d = document.getElementById("loginstatus");
+	d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+       onload_button();
+       }
 
  }
  var g_cnts = null;
+//var g_login_label = "";
+//window.addEventListener("message", (event) => {
+//  console.log("MESSAGE");
+//  if (event.origin !== "https://meshpage.org") return;
+//  console.log("DATA");
+//  console.log(event.data);
+//  g_login_label = event.data;
+//}, false);
  function onload_iframe() {
 
      //console.log("LOAD");
+     try {
      var txt = document.getElementById("frm");
      var innerdoc = (txt.contentDocument) ? txt.contentDocument : txt.contentWindow.document;
-     var txt2a = g_cnts || innerdoc.getElementById("cnts");
+     var txt2a = g_cnts||innerdoc.getElementById("cnts");
      if (txt2a) {
      	var txt2 = txt2a.innerHTML;
      	var txts = txt2.split("%");
@@ -647,18 +697,27 @@ echo " All prices include a copy of 3d engine. Contact via email for more info.<
      	var user_email = txts[2];
      	submit_data(user_id, user_name, user_email);
 	}
+     } catch(error) {
+	var d = document.getElementById("loginstatus");
+	d.innerHTML = "FAILED (Certificate missing or expired) <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";            
+     }
 
 }
 
 function login() {
 	 var res = document.getElementById("result");
-	 if (res==null) onload_button(); else
-	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" style=\"display:none\"></iframe>";
+	 if (res==null) {
+	    var d = document.getElementById("loginstatus");
+	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+	    onload_button();
+	    } else
+	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" crossorigin=\"use-credentials\"></iframe>";
+//style=\"display:none\"></iframe>";
 	 
 
 
 }
-onload_button();
+//onload_button(); // not done here because of cookies.
 </script>
 
 </div>
@@ -1171,7 +1230,7 @@ var app = new Vue({
    mounted: function() {
           var vm = this;
      choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
-     start_emscripten(vm);
+     //start_emscripten(vm);
      window.onpopstate = function(e) {
        stop_music();
        var st = e.state;
@@ -1219,7 +1278,7 @@ var app = new Vue({
 	  choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
 	  store.choose('main');
-	  start_emscripten(vm);
+	  //start_emscripten(vm);
 	  //if (pgnum==1)
 	  //   window.history.go(-2);
 	  //else
@@ -1306,6 +1365,10 @@ if ($page!="") {
 },
    beforeDestroy() {
    },
+   computed: {
+      isIndicator2() { return this.indicator[1]; },
+      isIndicator3() { return this.indicator[2]; }
+   },
    methods: {
 
        mesh_display(id,label) {
@@ -1351,7 +1414,7 @@ if ($page!="") {
 		       //{num:7,name: "mesh_login_page", choose:"login",title:"login",link:false}
 		       ],
 		       main_breadcrumb : [],
-		       indicator: [true],
+		       indicator: [true,true,true],
    },
    directives: {
    }
@@ -1620,8 +1683,19 @@ var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
 	       g_emscripten_alive=true;
+//indicator[0]=false; 
+	       var old = indicator[1];
+	       var old2 = indicator[2];
 	       indicator.pop();
+	       indicator.pop();
+	       indicator.pop();
+	       //console.log("INDICATOR:");
+	       //console.log(indicator);
 	       indicator.push(false);
+	       indicator.push(old);
+	       indicator.push(old2);
+	       var d = document.getElementById("engstatus");
+	       d.innerHTML = "SUCCESS <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 	       return;
 	       }
 }
@@ -1768,6 +1842,7 @@ function show_emscripten(str,hide,indicator,is_async)
 //      createContext: function(canvas, useWebGL, setInModule, webGLContextAttribuutes) {
 //            return canvas.getContext("experimental-webgl2",{antialias:false});
 //      },
+      //FS_createPath : (function(a,b,c,d) { }),
       arguments : [
 <?php
 require_once("user.php");
@@ -1789,6 +1864,7 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
   };
 </script>
 <?php
+/*
 require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
@@ -1811,6 +1887,7 @@ if ($nothreads == "yes") {
   echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
   }
 }
+*/
 ?>
 <script>
 window.onresize = resize_event;
@@ -1945,3 +2022,278 @@ function hide_profile(b)
 //});
 
 </script>
+
+<!-- TODO: add nft ownership test before starting timer -->
+<script>
+setTimeout(function() { var d = document.getElementById("monepopup"); d.style.display='block'; }, 500000);
+var url = "https://api.opensea.io/asset/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584/validate";
+function add_script() {
+
+<?php
+require_once("user.php");
+$nothreads = js_no_threads();
+$mobile = js_mobile();
+$highmem = js_highmem();
+if ($mobile == "yes") {
+  echo "var filename = 'web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "';";
+} else
+if ($nothreads == "yes") {
+   if ($highmem == "yes") {
+  echo "var filename = 'web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "';";
+
+   } else {
+  echo "var filename = 'web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "';";
+   }
+} else {
+   if ($highmem == "yes") {
+  echo "var filename = 'web_page_highmem.js?" . filemtime("web_page_highmem.js") . "';";
+
+   } else {
+  echo "var filename = 'web_page.js?" . filemtime("web_page.js") . "';";
+  }
+}
+?>
+
+  const s = document.createElement('script');
+  s.setAttribute('src', filename);
+  s.setAttribute('crossorigin', 'anonymous');
+  document.body.appendChild(s);
+}
+function fetch_wallet() {
+const myHeaders2 = new Headers();
+//myHeaders2.append('Accept', 'application/json');
+//myHeaders2.append('X-API-KEY', ''); // TODO, GET API KEY ONCE HAVE SOME ETH 
+//myHeaders2.append('Access-Control-Expose-Headers', 'X-API-KEY');
+//myHeaders2.append('Origin', 'https://meshpage.org');
+// TODO, sharedArrayBuffer + cors is not working.
+const myReq = new Request(url, {
+      method: 'GET',
+      headers: myHeaders2,
+      mode: 'no-cors',
+      cache: 'no-cache'
+});
+fetch(myReq,{"credentials":"include"}).then((r)=> {
+	//console.log(r);
+	return r.text();
+}).then((t) => {
+   //console.log("T:");
+   //console.log(t);
+   var d = document.getElementById("status");
+   if (t["success"]==false) {
+     d.innerHTML = "FAILED (api key missing) <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+     var old2 = app.indicator[2];
+     app.indicator.pop();
+     app.indicator.pop();
+     app.indicator.push(true);
+     app.indicator.push(old2);
+   } else {
+     d.innerHTML = "SUCCESS (implementation unfinished, waiting for apikey) <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+     var old2 = app.indicator[2];
+     app.indicator.pop();
+     app.indicator.pop();
+     app.indicator.push(false);
+     app.indicator.push(old2);
+     //app.indicator[1]=true;
+   }
+}).catch(function(error) {
+   var d = document.getElementById("status");
+     d.innerHTML = "FAILED (" + error + ") <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";    
+     var old2 = app.indicator[2];
+     app.indicator.pop();
+     app.indicator.pop();
+     app.indicator.push(true);
+     app.indicator.push(old2);
+     //app.indicator[1]=false;
+});
+}
+function set_cookie_status(num)
+{
+   const head = new Headers();
+   const req = new Request("./cookies.php?op=1&value=" + num.toString(10), {
+      method: 'GET',
+      headers: head,
+      cache: 'no-cache'
+      });
+   fetch(req).then((r) => { return r.text(); }).then((t) => { console.log(t); });
+}
+function get_cookie_status()
+{
+   const head = new Headers();
+   const req = new Request("./cookies.php?op=0", {
+      method: 'GET',
+      headers: head,
+      cache: 'no-cache'
+      });
+   fetch(req).then((r)=> {
+       return r.text();
+       }).then((t) => {
+          //console.log("FOUND COOKIE");
+	  //console.log(t);
+	  var t2 = t.trim();
+	  if (t2=="-1") { // no info available
+	    var co = document.getElementById("callout");
+	    co.style.display="block";
+	  } else
+	  if (t2=="0") { // reject cookies
+	     reject_cookies(false);
+	  } else
+	  if (t2=="1") { // accept necessary cookies
+	     accept_necessary_cookies(false)
+	  } else
+	  if (t2=="2") { // accept cookies
+	     accept_cookies(false);
+	  } else
+	  {
+	    console.log("COOKIE SYSTEM BROKEN");
+	  }
+       });
+}
+function remove_cookies(num)
+{
+  const promise = new Promise((resolve,reject) => {
+  if (num==0 || num==1) {
+   const head = new Headers();
+   const req = new Request("./cookies.php?op=2", {
+      method: 'GET',
+      headers: head,
+      cache: 'no-cache'
+      });
+   fetch(req).then((r) => { return r.text(); }).then((t) => { console.log(t); resolve("OK") });    
+  }
+  });
+  return promise;
+}
+function reject_cookies(save)
+{
+   var es = document.getElementById("engstatus");
+   es.innerHTML = "COOKIE REJECTED..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var es = document.getElementById("status");
+   es.innerHTML = "COOKIE REJECTED..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var d = document.getElementById("loginstatus");
+   d.innerHTML = "COOKIE REJECTED..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var co = document.getElementById("callout");
+   co.style.display='none';
+   remove_cookies(0).then((ok) => {
+   if (save==true) { set_cookie_status(0); location.reload(); }
+   });
+}
+function accept_cookies(save)
+{
+   var es = document.getElementById("engstatus");
+   es.innerHTML = "LOADING..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var es = document.getElementById("status");
+   es.innerHTML = "LOADING..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var d = document.getElementById("loginstatus");
+   d.innerHTML = "CHECKING FOR CERTIFICATE..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+
+   onload_button(); // uses cookie for oauth2.
+   var co = document.getElementById("callout");
+   co.style.display='none';
+   add_script();
+   start_emscripten(app);
+   setTimeout(function() { fetch_wallet(); }, 50);
+   if (save==true) { set_cookie_status(2); location.reload(); }
+}
+function accept_necessary_cookies(save)
+{
+   var es = document.getElementById("engstatus");
+   es.innerHTML = "LOADING..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var es = document.getElementById("status");
+   es.innerHTML = "COOKIE REJECTED..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var d = document.getElementById("loginstatus");
+   d.innerHTML = "COOKIE REJECTED..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   var co = document.getElementById("callout");
+   co.style.display='none';
+   add_script();
+   start_emscripten(app);
+   //fetch_wallet();
+   remove_cookies(1).then((ok) => {
+   if (save==true) { set_cookie_status(1); location.reload(); }
+   });
+}
+get_cookie_status();
+</script>
+
+<div id="callout" class="callout" style="display:none">
+  <div class="callout-header">EU Cookie Popup</div>
+  <!--span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span-->
+  <div class="callout-container">
+    <p>We regret to inform you that we need cookies, local filesystem and index database on your computer to keep the site up and running. It's necessary for the correct operation of the site, but hopefully you agree with this usage. We use cookies for these purposes:</p>
+    <p>
+    <ol>
+    <li>storage (emscripten filesystem)
+    <li>functionality (3d engine)
+    <li>identification (login system)
+    <li>monetization (purchase system)
+    </ol>
+    <div class="cnts">
+    <div class="button" onclick="reject_cookies(true)"><b>Reject Cookies</b><br>(none)</div>
+    <div class="button" onclick="accept_necessary_cookies(true)"><b>Accept Necessary Cookies</b><br>(1)(2)</div>
+    <div class="button" onclick="accept_cookies(true)"><b>Accept Cookies</b><br>(1)(2)(3)(4)</div>
+     </div>
+  </div>
+</div>
+
+<div id="monepopup" class="callout" style="display:none">
+  <div class="callout-header">Monetisation popup</div>
+  <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
+  <div class="callout-container">
+    <p>We have designed a way to purchase our technology via nft using ethereum, so now we ask you to purchase it <a href="https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584">here</a></p>
+    <p>You need to have ethereum wallet available, for example <a href="https://www.coinbase.com/wallet">coinbase wallet</a>.
+  </div>
+</div>
+
+
+<style>
+.cnts {
+  height: 100px;
+  margin-left: 15px;
+}
+.button {
+   background: #fff;
+   width: 15%;
+   height: 70px;
+   margin-left: 5px;
+   margin-right: 5px;
+   margin-top: 10px;
+   margin-bottom: 10px;
+   padding: 15px;
+   float: left;
+}
+.button:hover {
+   background: #f88;
+   width: 15%;
+   height: 70px;
+   float: left;
+}
+
+.callout {
+  position: fixed;
+  bottom: 35px;
+  right: 20px;
+  margin-left: 20px;
+  max-width: 500px;
+}
+.callout-header {
+  padding: 25px 15px;
+  background: #555;
+  font-size: 30px;
+  color: white;
+}
+.callout-container {
+  padding: 15px;
+  background-color: #ccc;
+  color: black;
+}
+.closebtn {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+.closebtn:hover {
+  color: lightgrey;
+}
+</style>

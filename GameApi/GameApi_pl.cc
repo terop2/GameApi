@@ -4253,6 +4253,73 @@ EXPORT GameApi::P GameApi::PolygonApi::linear_span(EveryApi &ev, LI li,
 {
   return span(li, ev.matrix_api.trans(dx,dy,dz), num_steps);
 }
+
+
+class HeightMap2 : public FaceCollection
+{
+public:
+  HeightMap2(Bitmap<float> &bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : bm(bm), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const { return (bm.SizeX()-1)*(bm.SizeY()-1); }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int xx = face/bm.SizeX();
+    int yy = face-(xx*bm.SizeX());
+    if (point==1 || point==2) xx++;
+    if (point==2 || point==3) yy++;
+    Point p;
+    p.x = start_x + xx*(end_x-start_x)/bm.SizeX();
+    p.y = start_y + bm.Map(xx,yy)*(end_y-start_y);
+    p.z = start_z + yy*(end_z-start_z)/bm.SizeY();
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face,0);
+    Point p2 = FacePoint(face,1);
+    Point p3 = FacePoint(face,2);
+    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    return v/v.Dist();
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int xx = face/bm.SizeX();
+    int yy = face-(xx*bm.SizeX());
+    if (point==1 || point==2) xx++;
+    if (point==2 || point==3) yy++;
+    Point2d p;
+    p.x = float(xx)/float(bm.SizeX());
+    p.y = float(yy)/float(bm.SizeY());
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+
+private:
+  Bitmap<float> &bm;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+EXPORT GameApi::P GameApi::PolygonApi::heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  Bitmap<float> *bbm = find_float_bitmap(e, bm)->bitmap;
+  return add_polygon2(e, new HeightMap2(*bbm, start_x, end_x, start_y,end_y,start_z, end_z),1);
+}
+
+
+
 EXPORT GameApi::P GameApi::PolygonApi::heightmap(FB bm,
 					  std::function<P (float)> f, float dx, float dz)
 {
