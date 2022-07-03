@@ -327,7 +327,8 @@ public:
     env.async_load_url(url, homepage);
 #endif
     GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
-    
+
+    /*
     filename = "audioA.wav";
     static int index = 0;
     index++;
@@ -339,7 +340,7 @@ public:
       ss.put(vec->operator[](i));
     }
     ss.close();
-
+    */
 
     
     initialized = true;
@@ -373,7 +374,7 @@ public:
       if (ch == key && e.type==0x300) {
 	if (!music_initialized) init_music();
 	if (!initialized2) {
-	  chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(g_low->sdl->SDL_RWFromFile(filename.c_str(), "rb") /*g_low->sdl->SDL_RWFromMem(&vec->operator[](0), vec->size())*/,0);
+	  chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(/*g_low->sdl->SDL_RWFromFile(filename.c_str(), "rb")*/ g_low->sdl->SDL_RWFromMem(&vec->operator[](0), vec->size()),0);
 	  // std::cout << g_low->sdl_mixer->Mix_GetError() << std::endl;
 	  if (!chunk || !chunk->ptr) {
 	    std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
