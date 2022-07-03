@@ -1686,7 +1686,7 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
   GameApi::P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
   confirm_texture_usage(e,p);
-  GameApi::P p2 = ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P p2 = p; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -1726,7 +1726,7 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF
   //p = ev.polygon_api.quads_to_triangles(p);
 
   confirm_texture_usage(e,p);
-  GameApi::P p2 = ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P p2 = p; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -1764,7 +1764,7 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF mo
   //p = ev.polygon_api.quads_to_triangles(p);
 
   confirm_texture_usage(e,p);
-  GameApi::P p2 = ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P p2 = p; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();

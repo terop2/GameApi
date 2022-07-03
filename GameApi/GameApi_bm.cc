@@ -6112,6 +6112,62 @@ private:
   std::string filename;
 };
 
+class LoadRawBitmap2 : public Bitmap<Color>
+{
+public:
+  LoadRawBitmap2(std::string data) : data(data) { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    return Color(bmdata[x+sx*y]);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    std::stringstream ss(data);
+    ss >> sx >> sy;
+    char ch;
+    while(ss.peek()=='\n'||ss.peek()=='\r') ss >> ch;
+    bmdata = new unsigned int[sx*sy];
+    ss.read((char*)bmdata,sx*sy*sizeof(unsigned int));
+  }
+  virtual void Prepare()
+  {
+    std::stringstream ss(data);
+    ss >> sx >> sy;
+    char ch;
+    while(ss.peek()=='\n'||ss.peek()=='\r') ss >> ch;
+    bmdata = new unsigned int[sx*sy];
+    ss.read((char*)bmdata,sx*sy*sizeof(unsigned int));
+    /*
+    std::ifstream ss(filename.c_str(), std::ios_base::in|std::ios_base::binary);
+    ss >> sx >> sy;
+    char ch;
+    while(ss.peek()=='\n'||ss.peek()=='\r') ss >> ch;
+    bmdata = new unsigned int[sx*sy];
+    ss.read((char*)bmdata,sx*sy*sizeof(unsigned int));
+    */
+  }
+private:
+  int sx = 0;
+  int sy = 0;
+  unsigned int *bmdata;
+  std::string data;
+};
+
+GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data)
+{
+  LoadRawBitmap2 *b = new LoadRawBitmap2(data);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  GameApi::BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
 GameApi::BM load_raw_bitmap(GameApi::Env &e, std::string filename)
 {
   LoadRawBitmap *b = new LoadRawBitmap(filename);

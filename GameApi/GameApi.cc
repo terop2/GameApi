@@ -27580,6 +27580,7 @@ public:
       p = ev.polygon_api.load_model_all_no_cache(stream, 300);
     } else {
 
+      // TODO, SOMETHING WRONG HERE; parse_mtl was changed to have data instead of mtl_filename when our filesystem disappeared for cookies
       std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(mtl_filename);
       std::vector<std::string> materials;
       int s = mat.size();
