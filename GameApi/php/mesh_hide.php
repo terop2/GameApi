@@ -8,7 +8,7 @@ $page = intval($pagestr);
 $arr = choose_user();
 if ($arr["user"]!= "terop_priv") { die(); }
 
-page_header(6);
+page_header_plain(6);
 page_title("hidden vault","");
 
 $user = "terop";

@@ -1167,7 +1167,7 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int 
       set_current_block(-1);
         GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, i),1);
 	//GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(stream, i, std::vector<std::string>()), 1);
-      GameApi::P cache = file_cache(model, filename,i);
+	GameApi::P cache = model; //file_cache(model, filename,i);
       set_current_block(c);
       vec.push_back(cache);
     }
@@ -1581,6 +1581,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   if (val) { std::cout << "system returned: " << val << std::endl; }
   start+="/";
 #endif
+  /*
     std::string a_filename = start+a_ss2.str();
     //std::cout << "Saving: " << a_filename << std::endl;
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
@@ -1588,8 +1589,9 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
     //for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
     a_ss.write((const char *)&ptr2->operator[](0),ptr2->size());
     a_ss.close();
-
-    std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
+  */
+    std::string s(&ptr2->operator[](0), &ptr2->operator[](0) + ptr2->size());
+    std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(s /*a_filename*/);
     GameApi::Env &env = ev.get_env();
     int b_s = mat.size();
     std::vector<TXID> vec;
@@ -1716,14 +1718,16 @@ public:
    
   std::string a_filename = start+a_ss2.str();
   //std::cout << "Saving: " << a_filename << std::endl;
+  /*
     std::fstream a_ss(a_filename.c_str(), std::ios_base::binary |std::ios_base::out);
     //int a_s = ptr2->size();
     //for(int a_i=0;a_i<a_s;a_i++) a_ss.put(ptr2->operator[](a_i));
     a_ss.write((const char*)&ptr2->operator[](0),ptr2->size());
     a_ss.close();
+  */
+    std::string s(&ptr2->operator[](0), &ptr2->operator[](0) + ptr2->size());
     delete ptr2;
-
-    std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(a_filename);
+    std::vector<GameApi::MaterialDef> mat = ev.polygon_api.parse_mtl(s /*a_filename*/);
     materials = mat;
     BufferRef ref; ref.buffer=0;
     BufferRef ref2; ref2.buffer=0;
@@ -2483,7 +2487,7 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
   GameApi::P model = add_polygon2(e, new ObjFileFaceCollection(*parser, num),1);
   
       //GameApi::P model = add_polygon2(e, new LoadObjModelFaceCollection(stream, num, std::vector<std::string>()), 1);
-  GameApi::P cache = file_cache(model, filename,num);
+  GameApi::P cache = model; //file_cache(model, filename,num);
   GameApi::P resize = resize_to_correct_size(cache);
   set_current_block(c2);
   return resize;
@@ -12111,7 +12115,7 @@ GameApi::P GameApi::PolygonApi::persistent_cache(P p, std::string filename)
 {
   FaceCollection *coll = find_facecoll(e, p);
   GameApi::P p2 = add_polygon2(e, new PersistentCachePoly(*coll, filename),1);
-  GameApi::P cache = file_cache(p2, filename, 0);
+  GameApi::P cache = p2; //file_cache(p2, filename, 0);
   return cache;
 }
 
@@ -13787,10 +13791,10 @@ std::string str_tolower(std::string s)
  class MTLParser
  {
  public:
-   MTLParser(std::string filename) : filename(filename) { }
+   MTLParser(std::string data) : data(data) { }
    void load_file() {
      int count = -1;
-    std::ifstream ss(filename.c_str());
+     std::stringstream ss(data);
      std::string line;
      GameApi::MaterialDef def2;
 
@@ -13835,15 +13839,15 @@ std::string str_tolower(std::string s)
    }
    std::vector<GameApi::MaterialDef> get() const { return filenames; }
  private:
-   std::string filename;
+   std::string data;
    std::vector<GameApi::MaterialDef> filenames;
    std::string material_name;
 };
 
 // note, this function doesnt go to gameapi builder
-std::vector<GameApi::MaterialDef> GameApi::PolygonApi::parse_mtl(std::string filename)
+std::vector<GameApi::MaterialDef> GameApi::PolygonApi::parse_mtl(std::string data)
 {
-  MTLParser parser(filename);
+  MTLParser parser(data);
   parser.load_file();
   return parser.get();
 }

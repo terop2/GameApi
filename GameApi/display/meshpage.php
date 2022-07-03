@@ -2108,13 +2108,16 @@ fetch(myReq,{"credentials":"include"}).then((r)=> {
 }
 function set_cookie_status(num)
 {
+   var promise = new Promise((resolve,reject) => {
    const head = new Headers();
    const req = new Request("./cookies.php?op=1&value=" + num.toString(10), {
       method: 'GET',
       headers: head,
       cache: 'no-cache'
       });
-   fetch(req).then((r) => { return r.text(); }).then((t) => { console.log(t); });
+   fetch(req).then((r) => { return r.text(); }).then((t) => { resolve("ok"); });
+   });
+   return promise;
 }
 function get_cookie_status()
 {
@@ -2174,7 +2177,9 @@ function reject_cookies(save)
    var co = document.getElementById("callout");
    co.style.display='none';
    remove_cookies(0).then((ok) => {
-   if (save==true) { set_cookie_status(0); location.reload(); }
+   set_cookie_status(0).then((ok2) => {
+      if (save) {  location.reload(); }
+   });
    });
 }
 function accept_cookies(save)
@@ -2192,7 +2197,7 @@ function accept_cookies(save)
    add_script();
    start_emscripten(app);
    setTimeout(function() { fetch_wallet(); }, 50);
-   if (save==true) { set_cookie_status(2); location.reload(); }
+   if (save) { set_cookie_status(2).then((ok)=>{ location.reload();}); }
 }
 function accept_necessary_cookies(save)
 {
@@ -2208,7 +2213,7 @@ function accept_necessary_cookies(save)
    start_emscripten(app);
    //fetch_wallet();
    remove_cookies(1).then((ok) => {
-   if (save==true) { set_cookie_status(1); location.reload(); }
+   if (save) { set_cookie_status(1).then((ok2)=>{ location.reload(); }); }
    });
 }
 get_cookie_status();
@@ -2218,7 +2223,7 @@ get_cookie_status();
   <div class="callout-header">EU Cookie Popup</div>
   <!--span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span-->
   <div class="callout-container">
-    <p>We regret to inform you that we need cookies, local filesystem and index database on your computer to keep the site up and running. It's necessary for the correct operation of the site, but hopefully you agree with this usage. We use cookies for these purposes:</p>
+    <p>We regret to inform you that we need cookies, local filesystem and index database and certificate store on your computer to keep the site up and running. It's necessary for the correct operation of the site, but hopefully you agree with this usage. We use cookies for these purposes:</p>
     <p>
     <ol>
     <li>storage (emscripten filesystem)
