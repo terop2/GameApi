@@ -720,6 +720,11 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM newbitmap_bm(BM bm, unsigned int color);
+  IMPORT BM newbitmap_fb(FB fb, unsigned int color);
+  IMPORT BM newbitmap_bb(BB bb, unsigned int color);
+  IMPORT FB flood_fill(FB fb, float percentage, int x, int y);
+  IMPORT BM flood_fill_color(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color);
   IMPORT CBM scale_bitmap2(BM bm);
   IMPORT ML save_raw(BM bm, std::string filename);
   IMPORT BM lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z);
@@ -1656,6 +1661,7 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
+  IMPORT MN mn_mouse_y(FF fetcher, MN move, float start_x, float end_x, float start_y, float end_y, float start_val, float end_val);
   IMPORT MN whack_a_mole_start(EveryApi &ev, MN prev, float &time);
   IMPORT MN whack_a_mole_rotate_around(EveryApi &ev, MN prev, int num, float &time);
   IMPORT MN whack_a_mole_exit(EveryApi &ev, MN prev, int exit_num, float &time);
@@ -1839,7 +1845,7 @@ public:
   IMPORT W dialog_item(std::string text, BM icon, int sx, int sy);
   IMPORT W dialog_border(W item);
   IMPORT W copy_paste_dialog(SH sh, W &close_button, FI font, FtA atlas, BM atlas_bm, std::string &edit);
-  IMPORT W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
+  IMPORT W bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, FtA atlas_tiny, BM atlas_tiny_bm);
   IMPORT W polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem);
   IMPORT W va_dialog(VA p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);
   IMPORT W ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH sh_arr, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button);

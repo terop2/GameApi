@@ -1259,11 +1259,13 @@ public:
   void Collect(CollectVisitor &vis) {
     bm.Collect(vis);
     bm2.Collect(vis);
+    mask.Collect(vis);
   }
   void HeavyPrepare() { }
   void Prepare() { 
     bm.Prepare();
     bm2.Prepare();
+    mask.Prepare();
   }
 
   virtual int SizeX() const { return bm.SizeX(); }

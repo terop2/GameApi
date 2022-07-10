@@ -2,7 +2,7 @@
 
 require_once("user.php");
 
-page_header(6);
+page_header_plain(6);
 page_title("Vault Result", "");
 $user = "terop";
 $num = read_num( $user );

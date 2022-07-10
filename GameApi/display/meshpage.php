@@ -163,14 +163,19 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
-<template v-if="isIndicator3">
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-<template v-else>
+<template v-if="isIndicator3_2">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
+</svg>
+</template>
+<template v-if="isIndicator3">
+<svg width="10" height="10">
+<rect width="10" height="10" style="fill: #ff8800; stroke-width:0; stroke: rgb(0,0,0);">
+</svg>
+</template>
+<template v-if="isIndicatorNone">
+<svg width="10" height="10">
+<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
 <template v-if="isIndicator2">
@@ -661,14 +666,14 @@ echo " All prices include a copy of 3d engine. Contact via email for more info.<
 	if (res6) res6.innerHTML = user_email;
 
 	app.indicator.pop();
-	app.indicator.push(false);
+	app.indicator.push(2);
 	var d = document.getElementById("loginstatus");
-	d.innerHTML = "SUCCESS <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+	d.innerHTML = "LOGGED IN <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 
 
      } else {
 	var d = document.getElementById("loginstatus");
-	d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+	d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
        onload_button();
        }
 
@@ -699,7 +704,10 @@ echo " All prices include a copy of 3d engine. Contact via email for more info.<
 	}
      } catch(error) {
 	var d = document.getElementById("loginstatus");
-	d.innerHTML = "FAILED (Certificate missing or expired) <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";            
+	d.innerHTML = "GUEST MODE (Certificate missing or expired) <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a></a>";
+	app.indicator.pop();
+	app.indicator.push(1);
+
      }
 
 }
@@ -708,7 +716,7 @@ function login() {
 	 var res = document.getElementById("result");
 	 if (res==null) {
 	    var d = document.getElementById("loginstatus");
-	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 	    onload_button();
 	    } else
 	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" crossorigin=\"use-credentials\"></iframe>";
@@ -1367,11 +1375,14 @@ if ($page!="") {
    },
    computed: {
       isIndicator2() { return this.indicator[1]; },
-      isIndicator3() { return this.indicator[2]; }
+      isIndicator3() { return this.indicator[2]!=2 && this.indicator[2]!=0; },
+      isIndicator3_2() { return this.indicator[2]==2; },
+      isIndicatorNone() { return this.indicator[2]==0; }
    },
    methods: {
 
        mesh_display(id,label) {
+          if (cookie_status==0) return;
 		hide_profile(false);
           var vm = this;
           if (!g_emscripten_alive) { start_timer(id,label,vm); return; }
@@ -1414,7 +1425,7 @@ if ($page!="") {
 		       //{num:7,name: "mesh_login_page", choose:"login",title:"login",link:false}
 		       ],
 		       main_breadcrumb : [],
-		       indicator: [true,true,true],
+		       indicator: [true,true,0],
    },
    directives: {
    }
@@ -2130,8 +2141,8 @@ function get_cookie_status()
    fetch(req).then((r)=> {
        return r.text();
        }).then((t) => {
-          //console.log("FOUND COOKIE");
-	  //console.log(t);
+          console.log("FOUND COOKIE");
+	  console.log(t);
 	  var t2 = t.trim();
 	  if (t2=="-1") { // no info available
 	    var co = document.getElementById("callout");
@@ -2151,6 +2162,7 @@ function get_cookie_status()
 	  }
        });
 }
+var cookie_status = -1;
 function remove_cookies(num)
 {
   const promise = new Promise((resolve,reject) => {
@@ -2168,6 +2180,7 @@ function remove_cookies(num)
 }
 function reject_cookies(save)
 {
+   cookie_status = 0;
    var es = document.getElementById("engstatus");
    es.innerHTML = "COOKIE REJECTED..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
    var es = document.getElementById("status");
@@ -2184,12 +2197,13 @@ function reject_cookies(save)
 }
 function accept_cookies(save)
 {
+   cookie_status = 2;
    var es = document.getElementById("engstatus");
    es.innerHTML = "LOADING..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
    var es = document.getElementById("status");
    es.innerHTML = "LOADING..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
    var d = document.getElementById("loginstatus");
-   d.innerHTML = "CHECKING FOR CERTIFICATE..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+   d.innerHTML = "CHECKING FOR CERTIFICATE..<!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 
    onload_button(); // uses cookie for oauth2.
    var co = document.getElementById("callout");
@@ -2201,6 +2215,8 @@ function accept_cookies(save)
 }
 function accept_necessary_cookies(save)
 {
+   cookie_status = 1;
+
    var es = document.getElementById("engstatus");
    es.innerHTML = "LOADING..<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
    var es = document.getElementById("status");
@@ -2226,10 +2242,10 @@ get_cookie_status();
     <p>We regret to inform you that we need cookies, local filesystem and index database and certificate store on your computer to keep the site up and running. It's necessary for the correct operation of the site, but hopefully you agree with this usage. We use cookies for these purposes:</p>
     <p>
     <ol>
-    <li>storage (emscripten filesystem)
+    <li>storage (emscripten filesystem, preload cache)
     <li>functionality (3d engine)
     <li>identification (login system)
-    <li>monetization (purchase system)
+    <li>monetization (purchase system, wallets)
     </ol>
     <div class="cnts">
     <div class="button" onclick="reject_cookies(true)"><b>Reject Cookies</b><br>(none)</div>

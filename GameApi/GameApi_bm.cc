@@ -301,6 +301,51 @@ EXPORT GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, f
   return bm;
 }
 
+template<class T>
+class NewBitmap_SZ : public Bitmap<Color>
+{
+public:
+  NewBitmap_SZ(Bitmap<T> &next, unsigned int color) : next(next), color(color) { }
+  void Collect(CollectVisitor &vis) { next.Collect(vis); }
+  void HeavyPrepare() { }
+  void Prepare() { next.Prepare(); }
+  int SizeX() const { return next.SizeX(); }
+  int SizeY() const { return next.SizeY(); }
+  Color Map(int x, int y) const { return Color(color); }
+private:
+  Bitmap<T> &next;
+  unsigned int color;
+};
+
+EXPORT GameApi::BM GameApi::BitmapApi::newbitmap_bm(BM bm, unsigned int color)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  Bitmap<Color> *b = new NewBitmap_SZ<::Color>(*b2,color);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}
+EXPORT GameApi::BM GameApi::BitmapApi::newbitmap_fb(FB fb, unsigned int color)
+{
+  Bitmap<float> *b2 = find_float_bitmap(e,fb)->bitmap;
+  Bitmap<Color> *b = new NewBitmap_SZ<float>(*b2,color);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+EXPORT GameApi::BM GameApi::BitmapApi::newbitmap_bb(BB bb, unsigned int color)
+{
+  Bitmap<bool> *b2 = find_bool_bitmap(e,bb)->bitmap;
+  Bitmap<Color> *b = new NewBitmap_SZ<bool>(*b2,color);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
 EXPORT GameApi::BM GameApi::BitmapApi::newbitmap(int sx, int sy, unsigned int color)
 {
   ::Bitmap<Color> *b = new ConstantBitmap_Color(Color(color), sx,sy);
@@ -6278,4 +6323,98 @@ private:
   int sx, sy;
 };
 
+class FloodFill : public Bitmap<float>
+{
+public:
+  FloodFill(Bitmap<float> *bm, float percentage, int x, int y) : bm(bm), percentage(percentage),x(x),y(y) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    bm->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    Prepare();
+  }
+  void Prepare()
+  {
+    sx = bm->SizeX();
+    sy = bm->SizeY();
+    done_bitmap = new bool[sx*sy];
+    result_bitmap = new float[sx*sy];
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++) {
+	done_bitmap[x+y*sx]=false;
+	result_bitmap[x+y*sx]=0.0;
+      }
+    do_all(x,y);
+  }
+  void do_all(int x, int y) {
+    std::vector<int> xx;
+    std::vector<int> yy;
+    xx.push_back(x);
+    yy.push_back(y);
+    while(xx.size()>0) {
+      int x = xx.back();
+      int y = yy.back();
+      xx.pop_back();
+      yy.pop_back();
+      if (x<0||y<0||x>=sx||y>=sy) continue;
+      float c = bm->Map(x,y);
+      if (c>percentage) continue;
+      done_bitmap[x+y*sx] = true;
+      result_bitmap[x+y*sx]=(c-(1.0-percentage))/percentage;
+      if (x>0 && !done_bitmap[x-1+y*sx]) {
+	xx.push_back(x-1);
+	yy.push_back(y);
+      }
+      if (x<sx-1 && !done_bitmap[x+1+y*sx]) {
+	xx.push_back(x+1);
+	yy.push_back(y);
+      }
+      
+      if (y>0 && !done_bitmap[x+(y-1)*sx]) {
+	xx.push_back(x);
+	yy.push_back(y-1);
+      }
+      if (y<sy-1 && !done_bitmap[x+(y+1)*sx]) {
+	xx.push_back(x);
+	yy.push_back(y+1);
+      }
+    }
+  }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  float Map(int x, int y) const {
+    if (!done_bitmap ||!result_bitmap) return 0.0;
+    if (done_bitmap[x+y*sx]) return result_bitmap[x+y*sx];
+    return 1.0;
+  }
+private:
+  Bitmap<float> *bm;
+  bool *done_bitmap=0;
+  float *result_bitmap=0;
+  float percentage;
+  int x,y;
+  int sx,sy;
+};
 
+GameApi::FB GameApi::BitmapApi::flood_fill(FB fb, float percentage, int x, int y)
+{
+  Bitmap<float> *ffb = find_float_bitmap(e,fb)->bitmap;
+  return add_float_bitmap(e, new FloodFill(ffb, percentage, x, y));
+}
+
+GameApi::BM GameApi::BitmapApi::flood_fill_color(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color)
+{
+  //BitmapHandle *handle = find_bitmap(e, bm);
+  //::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  //b2->Prepare();
+  
+  FB fb = ev.float_bitmap_api.from_red(bm);
+  FB fb2 = flood_fill(fb, percentage, x, y);
+  //BM bm2 = newbitmap(b2->SizeX(),b2->SizeY(),color);
+  BM bm2 = newbitmap_fb(fb2,color);
+  BM bm3 = blitbitmap_fb(bm2,bm,0,0,fb2);
+  return bm3;
+}

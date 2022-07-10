@@ -968,6 +968,45 @@ private:
   Fetcher<float> *fetch;
 };
 
+class MouseYMovement : public Movement
+{
+public:
+  MouseYMovement(Fetcher<float> *fetch, Movement *move, float start_x, float end_x, float start_y, float end_y, float start_val, float end_val) : fetch(fetch), move(move), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_val(start_val), end_val(end_val) { }
+  virtual void event(MainLoopEvent &e) {
+    float xx = e.cursor_pos.x;
+    float yy = e.cursor_pos.y;
+    if (xx>=start_x && xx<=end_x && yy>=start_y && yy<=end_y && e.button==0)
+      {
+	state=1;
+      }
+    if (e.button ==-1) state=0;
+    if (state==1) { mouse_x =xx; mouse_y = yy; }
+    move->event(e);
+  }
+  virtual void frame(MainLoopEnv &e) {
+    
+    move->frame(e);
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { move->draw_frame(e); }
+  void draw_event(FrameLoopEvent &e) { move->draw_event(e); }
+  void set_matrix(Matrix m) { }
+  Matrix get_whole_matrix(float time, float delta_time) const {
+    float yy = (mouse_y-start_y)/(end_y-start_y);
+    yy*=(end_val-start_val);
+    yy+=start_val;
+    if (fetch) fetch->set(yy);
+    return Matrix::Translate(0.0,yy,0.0);
+  }
+private:
+  Fetcher<float> *fetch;
+  Movement *move;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_val, end_val;
+  int state=0;
+  float mouse_x=0.0, mouse_y=0.0;
+};
+
 class InterpolateMovement2 : public Movement
 {
 public:
@@ -997,6 +1036,13 @@ EXPORT GameApi::MN GameApi::MovementNode::mn_interpolate(MN mn1, MN mn2, FF valu
   Movement *mn2_a = find_move(e,mn2);
   Fetcher<float> *fetch = find_float_fetcher(e,value);
   return add_move(e, new InterpolateMovement(mn1_a,mn2_a,fetch));
+}
+
+EXPORT GameApi::MN GameApi::MovementNode::mn_mouse_y(FF fetcher, MN move, float start_x, float end_x, float start_y, float end_y, float start_val, float end_val)
+{
+  Fetcher<float> *fetch = find_float_fetcher(e, fetcher);
+  Movement *move2 = find_move(e,move);
+  return add_move(e, new MouseYMovement(fetch, move2,start_x, end_x, start_y, end_y, start_val, end_val));
 }
 
 EXPORT GameApi::MN GameApi::MovementNode::mn_interpolate2(MN mn1, MN mn2, float start_time, float end_time)
