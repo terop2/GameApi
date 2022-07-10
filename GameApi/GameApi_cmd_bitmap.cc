@@ -11,6 +11,24 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "int", "int", "unsigned int" },
 			 { "100", "100", "00000000" },
 			 "BM", "bitmap_api", "newbitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::newbitmap_bm,
+			 "new_bm",
+			 { "bm", "color" },
+			 { "BM", "unsigned int" },
+			 { "", "00000000" },
+			 "BM", "bitmap_api", "newbitmap_bm"));
+    vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::newbitmap_fb,
+			 "new_fb",
+			 { "fb", "color" },
+			 { "FB", "unsigned int" },
+			 { "", "00000000" },
+			 "BM", "bitmap_api", "newbitmap_fb"));
+      vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::newbitmap_bb,
+			 "new_bb",
+			 { "bb", "color" },
+			 { "BB", "unsigned int" },
+			 { "", "00000000" },
+			 "BM", "bitmap_api", "newbitmap_bb"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::script_bitmap,
 			 "bm_expr",
@@ -318,6 +336,18 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "float", "float", "float", "float", "float" },
 			 { "", "0.5", "0.125", "0.125", "0.125", "0.125" },
 			 "BM", "bitmap_api", "simple_blur"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flood_fill,
+			 "floodfill",
+			 { "fb", "percentage", "x", "y" },
+			 { "FB", "float", "int", "int" },
+			 { "", "0.97", "0", "0" },
+			 "FB", "bitmap_api", "flood_fill"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flood_fill_color,
+			 "floodfill_color",
+			 { "ev", "bm", "percentage", "x", "y", "color" },
+			 { "EveryApi&", "BM", "float", "int", "int", "unsigned int" },
+			 { "ev", "", "0.97", "0", "0", "ffff0000" },
+			 "BM", "bitmap_api", "flood_fill_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::calculate_baked_light,
 			 "baked_shadow",
 			 { "texture_p", "scene_p", "texture", "count", "light_pos_x", "light_pos_y", "light_pos_z", "shadow_darkness", "softness" },

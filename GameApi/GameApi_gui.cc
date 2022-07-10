@@ -3483,7 +3483,7 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 
 
 
-EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W&collect_button)
+EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W&collect_button, FtA atlas_tiny, BM atlas_tiny_bm)
 {
     OpenglLowApi *ogl = g_low->ogl;
     ogl->glDisable(Low_GL_DEPTH_TEST);
@@ -3508,6 +3508,11 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
   W bm_4 = layer(bm_3, bm_2);
+
+  std::stringstream ss;
+  ss << "SX:" << ev.bitmap_api.size_x(bm) << " SY:" << ev.bitmap_api.size_y(bm);
+  
+  W sztext = text(ss.str(), atlas_tiny, atlas_tiny_bm);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
@@ -3527,8 +3532,8 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
-  W arr[] = { bm_4, code_6, but_6 };
-  W arr_2 = array_y(&arr[0], 3, 0);
+  W arr[] = { bm_4, sztext, code_6,  but_6 };
+  W arr_2 = array_y(&arr[0], 4, 0);
 
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
   return arr_3;

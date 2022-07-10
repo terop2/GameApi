@@ -24,19 +24,21 @@ function save_cookie_status( $ip_address, $num )
   $contents = file_get_contents($filename);
   $new_contents = "";
   $done = false;
-  if (strpos($contents, $ip_address) !== false) {
+  //if (strpos($contents, $ip_address) !== false) {
      $contents_array = explode(PHP_EOL, $contents);
-     foreach($contents_array as &$record) {
+     foreach($contents_array as $record) {
         if (strpos($record, $ip_address) !== false) {
-	   $new_contents .= $ip_address . " " . $num . "\r";
+	   //var_dump("REPLACE");
+	   $new_contents .= $ip_address . " " . $num . PHP_EOL;
 	   $done = true;
 	} else {
-	   $new_contents .= $record . "\r";
+	   //var_dump("OLD");
+	   $new_contents .= $record . PHP_EOL;
 	}
      }
-  }
+  //}
   if ($done===false) {
-     $new_contents .= $ip_address . " " . $num . "\r";
+     $new_contents .= $ip_address . " " . $num . PHP_EOL;
   }
   file_put_contents($filename, $new_contents);
 }
@@ -47,9 +49,10 @@ function get_cookie_status( $ip_address )
   $contents = file_get_contents($filename);
   if (strpos($contents, $ip_address) !== false) {
      $contents_array = explode(PHP_EOL, $contents);
-     foreach($contents_array as &$record) {
+     foreach($contents_array as $record) {
         if (strpos($record, $ip_address) !== false) {
 	   $result_arr = explode(" ", $record);
+	   //var_dump($record);
 	   return $result_arr[1];
 	 }
      }

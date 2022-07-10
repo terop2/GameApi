@@ -1480,7 +1480,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			      BM bm = env->ev->dist_api.render(fd, pt, u_x, u_y, u_z, 300, 300);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 
 			    }
 		    else
@@ -1491,7 +1491,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			  BM bm2 = env->ev->bitmap_api.intbitmap_bm(bm);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm2, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm2, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 			  
 			} else
 		    if (type=="BM")
@@ -1500,7 +1500,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			bm.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 		      }
 		    else if (type=="HML")
 		      {
@@ -1560,7 +1560,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			//bm.id = id;
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 		      } 
 		    else if (type=="CBM")
 		      {
@@ -1569,7 +1569,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			BM bm = env->ev->cont_bitmap_api.sample(cbm, 200,200);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 
 		      }
 		    else if (type=="BB")
@@ -1579,7 +1579,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 			
 		      }
 		    else if (type=="FB")
@@ -1592,7 +1592,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
 			  env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
 			
 		      }
 		    else if (type=="P")

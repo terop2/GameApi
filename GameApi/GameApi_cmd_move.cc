@@ -49,6 +49,12 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mn_mouse_y,
+			 "mn_mouse_y",
+			 { "fetcher", "next", "start_x", "end_x", "start_y", "end_y", "start_val", "end_val" },
+			 { "FF", "MN", "float", "float", "float", "float", "float", "float" },
+			 { "", "", "0.0", "800.0", "0.0", "1200.0", "0.0", "1200.0" },
+			 "MN", "move_api", "mn_mouse_y"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::pose,
 			 "mn_hmd_pose",
 			 { "next", "pose_in_screen" },
