@@ -723,8 +723,9 @@ public:
   IMPORT BM newbitmap_bm(BM bm, unsigned int color);
   IMPORT BM newbitmap_fb(FB fb, unsigned int color);
   IMPORT BM newbitmap_bb(BB bb, unsigned int color);
-  IMPORT FB flood_fill(FB fb, float percentage, int x, int y);
+  IMPORT FB flood_fill(FB fb, float percentage, int x, int y, bool inv);
   IMPORT BM flood_fill_color(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color);
+  IMPORT BM flood_fill_color_inv(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color);
   IMPORT CBM scale_bitmap2(BM bm);
   IMPORT ML save_raw(BM bm, std::string filename);
   IMPORT BM lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z);
@@ -1782,11 +1783,14 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  IMPORT W alt(std::vector<W> vec, int *choose);
+  IMPORT W dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void *, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap);
   IMPORT W progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec);
   IMPORT void update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec);
   IMPORT void delete_widget(W w);
   IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W empty();
+  IMPORT W alt(GameApi::EveryApi &ev, std::vector<W> vec, int *choose);
   IMPORT W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   IMPORT W icon(BM bitmap);
   IMPORT W icon_shared(BM bitmap, int key);

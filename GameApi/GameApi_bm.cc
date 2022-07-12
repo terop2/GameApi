@@ -6326,7 +6326,12 @@ private:
 class FloodFill : public Bitmap<float>
 {
 public:
-  FloodFill(Bitmap<float> *bm, float percentage, int x, int y) : bm(bm), percentage(percentage),x(x),y(y) { }
+  FloodFill(Bitmap<float> *bm, float percentage, int x, int y, bool inv) : bm(bm), percentage(percentage),x(x),y(y),inv(inv) { }
+  ~FloodFill()
+  {
+    delete [] done_bitmap;
+    delete [] result_bitmap;
+  }
   virtual void Collect(CollectVisitor &vis)
   {
     bm->Collect(vis);
@@ -6334,10 +6339,7 @@ public:
   }
   virtual void HeavyPrepare()
   {
-    Prepare();
-  }
-  void Prepare()
-  {
+    if (!prepare_done) {
     sx = bm->SizeX();
     sy = bm->SizeY();
     done_bitmap = new bool[sx*sy];
@@ -6348,6 +6350,13 @@ public:
 	result_bitmap[x+y*sx]=0.0;
       }
     do_all(x,y);
+    prepare_done = true;
+    }
+  }
+  void Prepare()
+  {
+    bm->Prepare();
+    HeavyPrepare();
   }
   void do_all(int x, int y) {
     std::vector<int> xx;
@@ -6361,9 +6370,16 @@ public:
       yy.pop_back();
       if (x<0||y<0||x>=sx||y>=sy) continue;
       float c = bm->Map(x,y);
-      if (c>percentage) continue;
+      if (inv) {
+	if (c<percentage) continue;
+      } else {
+	if (c>percentage) continue;
+      }
       done_bitmap[x+y*sx] = true;
-      result_bitmap[x+y*sx]=(c-(1.0-percentage))/percentage;
+	if (inv)
+	  result_bitmap[x+y*sx]=1.0-c; //(c-percentage)/(1.0-percentage);
+	else
+	  result_bitmap[x+y*sx]=c; //(c-(1.0-percentage))/percentage;
       if (x>0 && !done_bitmap[x-1+y*sx]) {
 	xx.push_back(x-1);
 	yy.push_back(y);
@@ -6388,6 +6404,7 @@ public:
   float Map(int x, int y) const {
     if (!done_bitmap ||!result_bitmap) return 0.0;
     if (done_bitmap[x+y*sx]) return result_bitmap[x+y*sx];
+    //if (inv) return 0.0;
     return 1.0;
   }
 private:
@@ -6397,23 +6414,29 @@ private:
   float percentage;
   int x,y;
   int sx,sy;
+  bool inv;
+  bool prepare_done=false;
 };
 
-GameApi::FB GameApi::BitmapApi::flood_fill(FB fb, float percentage, int x, int y)
+GameApi::FB GameApi::BitmapApi::flood_fill(FB fb, float percentage, int x, int y, bool inv)
 {
   Bitmap<float> *ffb = find_float_bitmap(e,fb)->bitmap;
-  return add_float_bitmap(e, new FloodFill(ffb, percentage, x, y));
+  return add_float_bitmap(e, new FloodFill(ffb, percentage, x, y, inv));
 }
 
 GameApi::BM GameApi::BitmapApi::flood_fill_color(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color)
 {
-  //BitmapHandle *handle = find_bitmap(e, bm);
-  //::Bitmap<Color> *b2 = find_color_bitmap(handle);
-  //b2->Prepare();
   
   FB fb = ev.float_bitmap_api.from_red(bm);
-  FB fb2 = flood_fill(fb, percentage, x, y);
-  //BM bm2 = newbitmap(b2->SizeX(),b2->SizeY(),color);
+  FB fb2 = flood_fill(fb, percentage, x, y, false);
+  BM bm2 = newbitmap_fb(fb2,color);
+  BM bm3 = blitbitmap_fb(bm2,bm,0,0,fb2);
+  return bm3;
+}
+GameApi::BM GameApi::BitmapApi::flood_fill_color_inv(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color)
+{
+  FB fb = ev.float_bitmap_api.from_red(bm);
+  FB fb2 = flood_fill(fb, percentage, x, y, true);
   BM bm2 = newbitmap_fb(fb2,color);
   BM bm3 = blitbitmap_fb(bm2,bm,0,0,fb2);
   return bm3;

@@ -338,9 +338,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "BM", "bitmap_api", "simple_blur"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flood_fill,
 			 "floodfill",
-			 { "fb", "percentage", "x", "y" },
-			 { "FB", "float", "int", "int" },
-			 { "", "0.97", "0", "0" },
+			 { "fb", "percentage", "x", "y", "inv" },
+			 { "FB", "float", "int", "int", "bool" },
+			 { "", "0.97", "0", "0", "false" },
 			 "FB", "bitmap_api", "flood_fill"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flood_fill_color,
 			 "floodfill_color",
@@ -348,6 +348,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "BM", "float", "int", "int", "unsigned int" },
 			 { "ev", "", "0.97", "0", "0", "ffff0000" },
 			 "BM", "bitmap_api", "flood_fill_color"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::flood_fill_color_inv,
+			 "floodfill_color_inv",
+			 { "ev", "bm", "percentage", "x", "y", "color" },
+			 { "EveryApi&", "BM", "float", "int", "int", "unsigned int" },
+			 { "ev", "", "0.97", "0", "0", "ffff0000" },
+			 "BM", "bitmap_api", "flood_fill_color_inv"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::calculate_baked_light,
 			 "baked_shadow",
 			 { "texture_p", "scene_p", "texture", "count", "light_pos_x", "light_pos_y", "light_pos_z", "shadow_darkness", "softness" },
