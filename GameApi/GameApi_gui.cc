@@ -165,6 +165,160 @@ private:
 };
 
 #ifndef EMSCRIPTEN
+
+class DynamicTextGuiWidget : public GuiWidgetForward
+{
+public:
+  DynamicTextGuiWidget(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::GuiApi &gui, std::string need_letters, std::string *dyn_text, void (*fptr)(void*, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap) : GuiWidgetForward(ev,std::vector<GuiWidget*>()), e(e), ev(ev), gui(gui), need_letters(need_letters), dyn_text(dyn_text), fptr(fptr), user_ptr(user_ptr), atlas(atlas), atlas_bm(atlas_bm), x_gap(x_gap) {
+    check_letters(need_letters);
+  }
+  void add_letter(int ch)
+  {
+    std::string s;
+    s+=char(ch);
+    GameApi::W w = gui.text(s, atlas, atlas_bm, 0);
+    letter_widgets[ch]=w;
+    letter_widgets2.push_back(w);
+    letter_chars2.push_back(ch);
+    GuiWidget *ww = find_widget(e,w);
+    Point2d p; p.x = 0; p.y = 0;
+    ww->update(p,-1,-1,-1,0);
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    fptr(user_ptr, mouse.x, mouse.y, button, ch, type, mouse_wheel_y);
+    int s = letter_widgets2.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::W w = letter_widgets2[i];
+	GuiWidget *ww = find_widget(e,w);
+	ww->update(mouse,button,ch,type,mouse_wheel_y);
+      }
+  }
+  void check_letters(std::string ss)
+  {
+    int s = ss.size();
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      {
+	char ch = ss[i];
+	int ch2 = (int)ch;
+	if (letter_widgets.find(ch2)==letter_widgets.end())
+	  {
+	    add_letter(ch2);
+	  }
+      }
+  }
+  void render()
+  {
+    std::string ss = *dyn_text;
+    check_letters(ss);
+    int s = ss.size();
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      {
+	char ch = ss[i];
+	int ch2 = (int)ch;
+	render_w(pos,letter_widgets[ch2],ch2);
+	GuiWidget *wid = find_widget(e,letter_widgets[ch2]);
+
+	pos+=wid->get_size().dx+x_gap;
+      }
+  }
+  int calc_top(char ch2)
+  {
+    FontAtlasInfo *info = find_font_atlas(e,atlas);
+    FontAtlasGlyphInfo ii = info->char_map[ch2];
+    int top = ii.top;
+    return top;
+  }
+  int calc_all_top()
+  {
+    int s = need_letters.size();
+    int min_delta=0;
+    for(int i=0;i<s;i++)
+      {
+	int delta = calc_top(need_letters[i]);
+	if (delta<min_delta) min_delta=delta;
+      }
+    return -min_delta;
+  }
+  int calc_one_top(char ch)
+  {
+    FontAtlasInfo *info = find_font_atlas(e,atlas);
+    FontAtlasGlyphInfo ii = info->char_map[ch];
+    int top = ii.y;
+    return top;
+  }
+  int calc_all_height()
+  {
+    int s = letter_widgets2.size();
+    int max_height=0;
+    for(int i=0;i<s;i++)
+      {
+	GameApi::W w = letter_widgets2[i];
+	GuiWidget *ww = find_widget(e,w);
+	if (ww->get_size().dy-calc_top(letter_chars2[i])>max_height) max_height=ww->get_size().dy-calc_top(letter_chars2[i]);
+      }
+    return max_height;
+  }
+  int calc_one_height()
+  {
+    char ch = letter_chars2[0];
+    FontAtlasInfo *info = find_font_atlas(e,atlas);
+    FontAtlasGlyphInfo ii = info->char_map[ch];
+    return ii.sy;
+  }
+  void render_w(int p, GameApi::W w, char ch2)
+  {
+    GuiWidget *ww = find_widget(e,w);
+    Point2d pp;
+    pp.x = pos.x+p;
+    pp.y = pos.y +calc_one_height() /*+calc_all_top()*/ /*+calc_one_top(ch2)*/ /*+calc_top(ch2)*/ /*+calc_all_height()*/ -ww->get_size().dy-1;
+    ww->set_pos(pp  /*pos.x + p,pos.y*/);
+    ww->render();
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::GuiApi &gui;
+  std::string need_letters;
+  std::string *dyn_text;
+  std::map<int, GameApi::W> letter_widgets;
+  std::vector<GameApi::W> letter_widgets2;
+  std::string letter_chars2;
+  GameApi::FtA atlas;
+  GameApi::BM atlas_bm;
+  void (*fptr)(void*, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y);
+  void *user_ptr;
+  int x_gap;
+};
+
+class AltGuiWidget : public GuiWidgetForward
+{
+public:
+  AltGuiWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int *choose) : GuiWidgetForward(ev,vec), ev(ev), vec(vec), choose(choose) { }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) {
+      vec[i]->update(mouse,button,ch,type,mouse_wheel_y);
+    }
+  }
+  void render()
+  {
+    int cho = *choose;
+    if (cho>=0&&cho<vec.size())
+	vec[cho]->render();
+  }
+  int render_to_bitmap()
+  { return 0; }
+private:
+  GameApi::EveryApi &ev;
+  std::vector<GuiWidget*> vec;
+  int *choose;
+};
+
 std::map<std::string, int> shared_text;
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -2878,6 +3032,49 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W l_3 = layer(l_2, txt_4);
   return l_3;
 }
+/*
+EXPORT GameApi::W GameApi::GuiApi::dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void *, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm)
+{
+#ifndef EMSCRIPTEN
+  return add_widget(e, new DynamicTextGuiWidget(e,ev,*this, need_letters, dyn_text, fptr, user_ptr, atlas, atlas_bm));
+#else
+  GameApi::W w;
+  w.id = 0;
+  return w;
+#endif
+}
+*/
+EXPORT GameApi::W GameApi::GuiApi::alt(std::vector<W> vec, int *choose)
+{
+#ifndef EMSCRIPTEN
+  std::vector<GuiWidget*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GuiWidget *ww = find_widget(e,vec[i]);
+      vec2.push_back(ww);
+    }
+  return add_widget(e, new AltGuiWidget(ev,vec2,choose));
+#else
+  GameApi::W w;
+  w.id = 0;
+  return w;
+#endif
+  
+    }
+
+
+EXPORT GameApi::W GameApi::GuiApi::dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void*,float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap)
+{
+#ifndef EMSCRIPTEN
+  return add_widget(e, new DynamicTextGuiWidget(e,ev,*this, need_letters,dyn_text,fptr,user_ptr,atlas,atlas_bm,x_gap));
+#else
+  GameApi::W w;
+  w.id = 0;
+  return w;
+#endif
+}
+
 
 EXPORT GameApi::W GameApi::GuiApi::text(std::string label, FtA atlas, BM atlas_bm, int x_gap)
 {
@@ -3483,6 +3680,40 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 
 
 
+struct UserData
+{
+  GameApi::Env *e;
+  GameApi::BM bm;
+  GameApi::W bm_1;
+  float sx;
+  float sy;
+  std::string s;
+};
+
+void user_fptr(void *user_data, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y)
+{
+  UserData *dt = (UserData*)user_data;
+
+  GuiWidget *w = find_widget(*dt->e, dt->bm_1);
+  Point2d pos = w->get_pos();
+  float xx = mouse_x-pos.x;
+  float yy = mouse_y-pos.y;
+  xx/=dt->sx;
+  yy/=dt->sy;
+  BitmapHandle *handle = find_bitmap(*dt->e, dt->bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  int ssx = b2->SizeX();
+  int ssy = b2->SizeY();
+  xx*=ssx;
+  yy*=ssy;
+  std::stringstream ss;
+  if (xx<0 ||xx>=ssx || yy<0 ||yy>=ssy)
+  ss << "      X:() Y:()";
+  else
+  ss << "      X:" << int(xx) << " Y:" << int(yy);
+  dt->s = ss.str();
+}
+
 EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W&collect_button, FtA atlas_tiny, BM atlas_tiny_bm)
 {
     OpenglLowApi *ogl = g_low->ogl;
@@ -3511,8 +3742,19 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
 
   std::stringstream ss;
   ss << "SX:" << ev.bitmap_api.size_x(bm) << " SY:" << ev.bitmap_api.size_y(bm);
+
+  UserData *dt = new UserData;
+  dt->e = &e;
+  dt->bm = bm;
+  dt->bm_1 = bm_1;
+  dt->sx = sx;
+  dt->sy = sy;
+  
   
   W sztext = text(ss.str(), atlas_tiny, atlas_tiny_bm);
+  W mousepoint = dynamic_text("0123456789/XY: ", &dt->s, user_fptr, (void*)dt, atlas_tiny, atlas_tiny_bm, 3);
+  W arr5[] = { sztext, mousepoint};
+  W arr_52 = array_x(&arr5[0], 2, 0);
   
   W but_1 = text("Close", atlas, atlas_bm);
   W but_2 = center_align(but_1, size_x(bm_4));
@@ -3532,7 +3774,7 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
   W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
   codegen_button = code_6;
 
-  W arr[] = { bm_4, sztext, code_6,  but_6 };
+  W arr[] = { bm_4, arr_52, code_6,  but_6 };
   W arr_2 = array_y(&arr[0], 4, 0);
 
   W arr_3 = mouse_move(arr_2, 0,0, size_x(arr_2), size_y(arr_2));
