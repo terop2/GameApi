@@ -45,6 +45,8 @@ void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec,
 void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value);
 ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 
+std::string replace_string(std::string str, char ch, char ch2);
+
 
 extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
@@ -88,6 +90,7 @@ void ProgressBar(int num, int val, int max, std::string label);
 void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
 void pthread_system(std::string str);
 IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
+IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env);
 std::vector<unsigned char> load_from_url(std::string url);
 
 std::string hexify2(std::string s)
@@ -1506,6 +1509,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 		      {
 			
 			display = false;
+			clear_codegen();
 			
 			HML ml;
 			ml.id = id;
@@ -1513,23 +1517,29 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			env->ev->mod_api.codegen_reset_counter();
 
 			std::string htmlfile = find_html2(ml,*env->env);
+			std::string homepage = find_homepage2(ml,*env->env);
 #ifdef WINDOWS
-			std::string drive = getenv("systemdrive");
-			std::string path = getenv("homepath");
-			std::string prefix = drive + path + "\\";
+			//std::string drive = getenv("systemdrive");
+			//std::string path = getenv("homepath");
+			//std::string prefix = drive + path + "\\";
 			
-			std::ofstream f((prefix + "tst.html").c_str());
-			f << htmlfile;
-			f.close();
-			
-			pthread_system((std::string("start ") + prefix + "tst.html").c_str());
+			//std::ofstream f((prefix + "tst.html").c_str());
+			//f << htmlfile;
+			//f.close();
+
+			htmlfile = replace_string(htmlfile,'\n','@');
+			homepage = replace_string(homepage,'\n','@');
+			std::string cmd = std::string("start https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&file='") + htmlfile + std::string("'");
+			//std::cout << cmd << std::endl;
+			if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
+			pthread_system(cmd.c_str());
 			
 #else
-			std::string home = getenv("HOME");
-			std::string prefix = home + "/_gameapi_builder";
-			system((std::string("mkdir -p ") + prefix).c_str());
+			//std::string home = getenv("HOME");
+			//std::string prefix = home + "/_gameapi_builder";
+			//system((std::string("mkdir -p ") + prefix).c_str());
 			
-			prefix+="/";
+			//prefix+="/";
 
 			//std::ofstream f2((prefix + "lighthttpd.conf").c_str());
 			//f2 << "server.document-root = \"" + prefix + "\"" << std::endl;
@@ -1543,11 +1553,14 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			//pthread_system(cmd2.c_str());
 			
 			
-			std::ofstream f((prefix + "tst.html").c_str());
-			f << htmlfile;
-			f.close();
-			std::string cmd = std::string("chromium --user-data-dir=\"") + prefix + "\" " + prefix + "tst.html";
-			std::cout << cmd << std::endl;
+			//std::ofstream f((prefix + "tst.html").c_str());
+			//f << htmlfile;
+			//f.close();
+			htmlfile = replace_string(htmlfile,'\n','@');
+			homepage = replace_string(homepage,'\n','@');
+			std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&file='") + htmlfile + std::string("'\"");
+			if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
+			//std::cout << cmd << std::endl;
 			pthread_system(cmd.c_str());
 			
 #endif

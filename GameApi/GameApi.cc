@@ -17560,6 +17560,55 @@ GameApi::BM GameApi::MainLoopApi::load_BM_script(EveryApi &ev, std::string url, 
   return add_bitmap(e, handle2);
 }
 
+
+
+GameApi::ARR GameApi::MainLoopApi::load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  std::vector<std::string> p1vec = parse_sep(p1,'&');
+  std::vector<std::string> p2vec = parse_sep(p2,'&');
+  std::vector<std::string> p3vec = parse_sep(p3,'&');
+  std::vector<std::string> p4vec = parse_sep(p4,'&');
+  std::vector<std::string> p5vec = parse_sep(p5,'&');
+
+
+  std::string pp1;
+  std::string pp2;
+  std::string pp3;
+  std::string pp4;
+  std::string pp5;
+
+  int s1 = p1vec.size();
+  for(int i=0;i<s1;i++)
+    {
+      int s2 = p2vec.size();
+      for(int j=0;j<s2;j++) {
+	int s3 = p3vec.size();
+	for(int k=0;k<s3;k++) {
+	  int s4 = p4vec.size();
+	  for(int l=0;l<s4;l++)
+	    {
+	      int s5 = p5vec.size();
+	      for(int m=0;m<s5;m++)
+		{
+		  pp1+=p1vec[i]+"&";
+		  pp2+=p2vec[j]+"&";
+		  pp3+=p3vec[k]+"&";
+		  pp4+=p4vec[l]+"&";
+		  pp5+=p5vec[m]+"&";
+		}
+	    }
+	  
+	}	
+      }
+    }
+  pp1.pop_back();
+  pp2.pop_back();
+  pp3.pop_back();
+  pp4.pop_back();
+  pp5.pop_back();
+  return load_BM_script_array(ev,url,pp1,pp2,pp3,pp4,pp5);
+}
+
 GameApi::ARR GameApi::MainLoopApi::load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   std::vector<std::string> p1vec = parse_sep(p1,'&');
@@ -25468,7 +25517,7 @@ std::string g_emscripten_frame_1(std::string code, std::string homepage) {
   return "<embed width=\"830\" height=\"650\" src=\"https://meshpage.org/builder_display.php?code=" + code + "&homepage=" + homepage + "\"/>";
 }
 
-
+/*
 class EmscriptenFrame : public Html
 {
 public:
@@ -25486,12 +25535,6 @@ private:
   std::string codegen;
   std::string homepage;
 };
-std::string find_html2(GameApi::HML ml, GameApi::Env &env)
-{
-  Html *hml = find_html(env,ml);
-  hml->Prepare();
-  return hml->html_file();
-}
 
 GameApi::HML GameApi::MainLoopApi::emscripten_frame(EveryApi &ev, RUN r, std::string homepage)
 {
@@ -25510,7 +25553,8 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame(EveryApi &ev, RUN r, std::st
   }
   return add_html(e, new EmscriptenFrame(output_str,homepage));
 }
-
+*/
+/*
 std::string g_emscripten_frame_2(std::string code, std::string homepage) {
   return
 "    <!-- you need to copy the following files to transfer 3d models\n"
@@ -25536,25 +25580,43 @@ std::string g_emscripten_frame_2(std::string code, std::string homepage) {
     "<script src=\"http://meshpage.org/gameapi.js\" crossorigin></script>\n"
     "<script src=\"http://meshpage.org/web_page.js\" crossorigin></script>\n";
 }
+*/
+
+std::string find_html2(GameApi::HML ml, GameApi::Env &env)
+{
+  Html *hml = find_html(env,ml);
+  hml->Prepare();
+  return hml->script_file();
+}
+std::string find_homepage2(GameApi::HML ml, GameApi::Env &env)
+{
+  Html *hml = find_html(env,ml);
+  hml->Prepare();
+  return hml->homepage();
+}
 
 
 class EmscriptenFrame2 : public Html
 {
 public:
-  EmscriptenFrame2(std::string codegen, std::string homepage) : codegen(codegen), homepage(homepage) { }
+  EmscriptenFrame2(std::string codegen, std::string homepage) : codegen(codegen), hpage(homepage) { }
   void Collect(CollectVisitor &vis)
   {
   }
   void HeavyPrepare() { }
 
   virtual void Prepare() { }
-  virtual std::string html_file() const
+  virtual std::string script_file() const
   {
-    return "<html>" + g_emscripten_frame_2(codegen,homepage) + "</html>";
+    return codegen; //"<html>" + g_emscripten_frame_2(codegen,homepage) + "</html>";
+  }
+  virtual std::string homepage() const
+  {
+    return hpage;
   }
 private:
   std::string codegen;
-  std::string homepage;
+  std::string hpage;
 };
 
 
