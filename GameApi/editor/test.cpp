@@ -48,6 +48,7 @@ ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 
 std::string replace_string(std::string str, char ch, char ch2);
 void send_post_request(std::string url, std::string headers, std::string data);
+std::string replace_str(std::string ste, std::string repl, std::string subst);
 
 extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
@@ -882,7 +883,12 @@ void iter(void *arg)
 		env->ev->mod_api.codegen_reset_counter();
 		clear_codegen();
 		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000,0);
-		std::cout << p.second << std::endl;
+		std::string s = p.second;
+			s = replace_str(s, "&", "&amp;");
+			s = replace_str(s, ">", "&gt;");
+			s = replace_str(s, "<", "&lt;");
+			s = replace_str(s, "\"", "&quot;");
+		std::cout << s << std::endl;
 	      }
 	    int chosen3 = env->gui->chosen_item(env->collect_button);
 	    if (chosen3 == 0)
@@ -1116,8 +1122,13 @@ void iter(void *arg)
 		  std::cout << "CodeGen!" << std::endl;
 		clear_codegen();
 		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
-		std::cout << p.second << std::endl;
-
+		  std::string s = p.second;
+		  s = replace_str(s, "&", "&amp;");
+		  s = replace_str(s, ">", "&gt;");
+		  s = replace_str(s, "<", "&lt;");
+		  s = replace_str(s, "\"", "&quot;");
+		  std::cout << s << std::endl;
+		  
 		}
 	      //}
 	}
@@ -1522,6 +1533,10 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			int val = rand();
 			std::stringstream ss;
 			ss << val;
+			htmlfile = replace_str(htmlfile, "&", "&amp;");
+			htmlfile = replace_str(htmlfile, ">", "&gt;");
+			htmlfile = replace_str(htmlfile, "<", "&lt;");
+			htmlfile = replace_str(htmlfile, "\"", "&quot;");
 #ifdef WINDOWS
 			//std::string drive = getenv("systemdrive");
 			//std::string path = getenv("homepath");

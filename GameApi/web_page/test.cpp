@@ -222,6 +222,7 @@ void set_status(int val, int val_max) {
 }
 
 void initialize_low(int flags);
+std::string replace_str(std::string s, std::string repl, std::string subst);
 
 int call_count=0;
 
@@ -284,6 +285,10 @@ int main(int argc, char *argv[]) {
 	{
 	  std::cout << "Choosing code!" << std::endl;
 	  code = insert_enter(strip_spaces(decode(cmd_args[current_arg+1])));
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&amp;", "&");
 	  current_arg+=2;
 	  continue;
 	} else
