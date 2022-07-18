@@ -18,6 +18,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctime>
 using namespace GameApi;
 #ifndef WINDOWS
 #define WAYLAND 1
@@ -46,7 +47,7 @@ void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value);
 ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 
 std::string replace_string(std::string str, char ch, char ch2);
-
+void send_post_request(std::string url, std::string headers, std::string data);
 
 extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
@@ -1518,6 +1519,9 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 
 			std::string htmlfile = find_html2(ml,*env->env);
 			std::string homepage = find_homepage2(ml,*env->env);
+			int val = rand();
+			std::stringstream ss;
+			ss << val;
 #ifdef WINDOWS
 			//std::string drive = getenv("systemdrive");
 			//std::string path = getenv("homepath");
@@ -1526,12 +1530,13 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			//std::ofstream f((prefix + "tst.html").c_str());
 			//f << htmlfile;
 			//f.close();
-
+			send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss.str() ,"Content-Type: text/plain", htmlfile);
+			
 			htmlfile = replace_string(htmlfile,'\n','@');
 			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("start https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&file='") + htmlfile + std::string("'");
+			std::string cmd = std::string("start https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("");
 			//std::cout << cmd << std::endl;
-			if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
+			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
 			pthread_system(cmd.c_str());
 			
 #else
@@ -1556,10 +1561,13 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			//std::ofstream f((prefix + "tst.html").c_str());
 			//f << htmlfile;
 			//f.close();
+			send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss.str(),"Content-Type: text/plain", htmlfile);
+
+			
 			htmlfile = replace_string(htmlfile,'\n','@');
 			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&file='") + htmlfile + std::string("'\"");
-			if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
+			std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("\"");
+			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
 			//std::cout << cmd << std::endl;
 			pthread_system(cmd.c_str());
 			
@@ -2312,6 +2320,8 @@ int main(int argc, char *argv[]) {
   //clear_counters();
   //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
 
+  srand(time(NULL));
+  
   g_main_thread_id = pthread_self();
   
   update_progress_dialog_cb = &update_progress_dialog_cb_impl;
