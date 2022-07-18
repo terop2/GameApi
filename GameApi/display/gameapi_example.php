@@ -1,6 +1,8 @@
 <?php
   header("Cross-Origin-Opener-Policy: same-origin");
-  $script = $_GET["file"];
+  $id = $_GET["id"];
+  $filename = "./user_data/temp/tmp" . $id . ".txt";
+  $script = file_get_contents($filename);
   $homepage = $_GET["homepage"];
   $new_script = str_replace("@","\n",$script);
   ?>

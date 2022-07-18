@@ -2181,3 +2181,26 @@ void send_grab_to_server(std::vector<unsigned char> data, int id, int num)
 #endif
 }
 
+void send_post_request(std::string url, std::string headers, std::string data)
+{
+#ifndef EMSCRIPTEN
+#ifdef WINDOWS
+  std::string cmd = "..\\curl\\curl.exe -s -N -X POST --url " + url + " -d '" + data + "' -H '" + headers + "'";
+#else
+  std::string cmd = "curl -s -N --url " + url + " -d '" + data + "' -H '" + headers + "'";
+#endif
+
+
+#ifdef __APPLE__
+    FILE *f2 = popen(cmd.c_str(), "r");
+#else
+#ifdef LINUX
+    FILE *f2 = popen(cmd.c_str(), "r");
+#else    
+    FILE *f2 = popen(cmd.c_str(), "rb");
+#endif
+#endif
+
+    while (pclose(f2)<0);
+#endif
+    }
