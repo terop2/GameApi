@@ -5,6 +5,7 @@
 #endif
 
 #include "GameApi_low.hh"
+#include <iomanip>
 
 template<class T>
 void ArrayDelete(T *ptr)
@@ -575,6 +576,46 @@ private:
 EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::string filename, bool alpha, float time)
 {
   return add_main_loop(e, new SaveBitmapML(ev, bm, filename, alpha, time));
+}
+
+
+class SavePngArray : public MainLoopItem
+{
+public:
+  SavePngArray(GameApi::EveryApi &ev, std::vector<GameApi::BM> bms, std::string filename_start, std::string filename_end, bool alpha, float time) : ev(ev), bms(bms), filename_start(filename_start), filename_end(filename_end), alpha(alpha), time(time) { }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+  void Prepare() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (time > e.time*10.0 && time < e.time*10.0 + e.delta_time)
+      {
+	int s = bms.size();
+	for(int i=0;i<s;i++)
+	  {
+	    std::stringstream ss;
+	    ss << filename_start << std::setw(4) << std::setfill('0') << i << filename_end;
+	    //ev.bitmap_api.savebitmap(bms[i], ss.str(), alpha);
+	    ev.bitmap_api.save_png(bms[i], ss.str());
+	  }
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::BM> bms;
+  std::string filename_start, filename_end;
+  bool alpha;
+  float time;
+};
+
+
+EXPORT GameApi::ML GameApi::BitmapApi::savepng_array_ml(EveryApi &ev, std::vector<BM> bms, std::string filename_start, std::string filename_end, bool alpha, float time)
+{
+  return add_main_loop(e, new SavePngArray(ev,bms, filename_start, filename_end, alpha, time));
 }
 
 extern std::vector<const unsigned char*> g_content;
@@ -6440,4 +6481,42 @@ GameApi::BM GameApi::BitmapApi::flood_fill_color_inv(EveryApi &ev, BM bm, float 
   BM bm2 = newbitmap_fb(fb2,color);
   BM bm3 = blitbitmap_fb(bm2,bm,0,0,fb2);
   return bm3;
+}
+
+class GrayToBlack : public Bitmap<Color>
+{
+public:
+  GrayToBlack(Bitmap<Color> *bm, float val) : bm(bm), val(val) { }
+  virtual void Collect(CollectVisitor &vis) { bm->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { bm->Prepare(); }
+  virtual int SizeX() const { return bm->SizeX(); }
+  virtual int SizeY() const { return bm->SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    Color c = bm->Map(x,y);
+    if (c.rf()<val && c.bf()<val && c.gf()<val && c.af()>0.7 && c.rf()-c.bf()<0.1 && c.rf()-c.gf()<0.1)
+      {
+	c.r = 0;
+	c.g = 0;
+	c.b = 0;
+	c.alpha = 255;
+      }
+    return c;
+  }
+
+private:
+  float val;
+  Bitmap<Color> *bm;
+};
+
+GameApi::BM GameApi::BitmapApi::gray_to_black(BM bm, float val)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = new GrayToBlack(b2,val);
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
 }

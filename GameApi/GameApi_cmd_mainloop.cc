@@ -46,6 +46,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
 			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array_comb,
+			 "bm_script_comb",
+			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a&a", "b", "c", "d", "e" },
+			 "[BM]", "mainloop_api", "load_BM_script_array_comb"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script_array,
 			 "p_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
@@ -866,8 +872,18 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2,
+			 "html_window",
+			 { "ev", "r", "homepage" },
+			 { "EveryApi&", "RUN", "std::string" },
+			 { "ev", "", "https://tpgames.org/" },
+			 "HML", "mainloop_api", "emscripten_frame2"));
+
 #ifndef STABLE
 
+
+   
 #if 0
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame,
 			 "html_window", 
@@ -875,12 +891,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "EveryApi&", "RUN", "std::string" },
 			 { "ev", "", "http://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2,
-			 "html_window2",
-			 { "ev", "r", "homepage" },
-			 { "EveryApi&", "RUN", "std::string" },
-			 { "ev", "", "https://tpgames.org/" },
-			 "HML", "mainloop_api", "emscripten_frame2"));
+#endif
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::small_window,
 			 "sml_window",
@@ -888,7 +899,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "EveryApi&", "ML", "int", "int", "int", "int" },
 			 { "ev", "", "100", "100", "320", "200" },
 			 "ML", "mainloop_api", "small_window"));
-#endif
+  //#endif
 //vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::looking_glass,
   //			 "run_looking_glass",
   //			 { "ev", "ml" },

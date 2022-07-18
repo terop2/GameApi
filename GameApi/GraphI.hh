@@ -1841,7 +1841,8 @@ class Html : public CollectInterface
 public:
   virtual ~Html() { }
   virtual void Prepare()=0;
-  virtual std::string html_file() const=0;
+  virtual std::string script_file() const=0;
+  virtual std::string homepage() const=0;
 };
 
 

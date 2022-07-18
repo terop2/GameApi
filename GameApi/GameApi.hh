@@ -538,6 +538,7 @@ public:
   ARR load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ARR load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ARR load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML prepare_pts(ML ml, PTS pts);
   ML depthfunc(ML ml, int val); 
   ML blendfunc(ML ml, int val, int val2);
@@ -720,6 +721,8 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML savepng_array_ml(EveryApi &ev, std::vector<BM> bms, std::string filename_start, std::string filename_end, bool alpha, float time);
+  IMPORT BM gray_to_black(BM bm, float val);
   IMPORT BM newbitmap_bm(BM bm, unsigned int color);
   IMPORT BM newbitmap_fb(FB fb, unsigned int color);
   IMPORT BM newbitmap_bb(BB bb, unsigned int color);

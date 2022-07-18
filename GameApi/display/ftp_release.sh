@@ -19,4 +19,5 @@ copy_it material_db.txt
 copy_it border_db.txt 
 copy_it background_db.txt 
 copy_it model_db.txt 
+copy_it gameapi_example.php
 echo "SUCCESS"

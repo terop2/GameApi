@@ -49,6 +49,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "BM", "std::string" },
 			 { "ev", "", "test.png" },
 			 "ML", "bitmap_api", "save_png_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::savepng_array_ml,
+			 "save_png_arr",
+			 { "ev", "bms", "filename_start", "filename_end", "alpha", "time" },
+			 { "EveryApi&", "[BM]", "std::string", "std::string", "bool", "float" },
+			 { "ev", "", "test", ".png", "false", "1.0" },
+			 "ML", "bitmap_api", "savepng_array_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::save_raw,
 			 "save_raw",
 			 { "bm", "filename" },
@@ -355,6 +361,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "EveryApi&", "BM", "float", "int", "int", "unsigned int" },
 			 { "ev", "", "0.97", "0", "0", "ffff0000" },
 			 "BM", "bitmap_api", "flood_fill_color_inv"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::gray_to_black,
+			 "gray_to_black",
+			 { "bm", "val" },
+			 { "BM", "float" },
+			 { "", "0.7" },
+			 "BM", "bitmap_api", "gray_to_black"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::calculate_baked_light,
 			 "baked_shadow",
