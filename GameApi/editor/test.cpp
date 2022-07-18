@@ -1522,6 +1522,14 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			
 			display = false;
 			clear_codegen();
+
+			time_t now = time(0);
+			char *dt = ctime(&now);
+			tm *gmtm = gmtime(&now);
+			dt = asctime(gmtm);
+			
+			std::string dt2(dt);
+			dt2 = replace_str(dt2, " ", "");
 			
 			HML ml;
 			ml.id = id;
@@ -1549,7 +1557,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			
 			htmlfile = replace_string(htmlfile,'\n','@');
 			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("start https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("");
+			std::string cmd = std::string("start https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("&date=") + dt2;
 			//std::cout << cmd << std::endl;
 			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
 			pthread_system(cmd.c_str());
@@ -1581,7 +1589,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			
 			htmlfile = replace_string(htmlfile,'\n','@');
 			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("\"");
+			std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("&date=") + dt2 + std::string("\"");
 			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
 			//std::cout << cmd << std::endl;
 			pthread_system(cmd.c_str());
