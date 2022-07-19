@@ -17000,6 +17000,12 @@ std::vector<std::string> parse_sep(std::string s, char sep)
 
 GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
+  p1 = replace_str(p1, "&amp;", "&");
+  p2 = replace_str(p2, "&amp;", "&");
+  p3 = replace_str(p3, "&amp;", "&");
+  p4 = replace_str(p4, "&amp;", "&");
+  p5 = replace_str(p5, "&amp;", "&");
+
   std::vector<std::string> p1vec = parse_sep(p1,'&');
   std::vector<std::string> p2vec = parse_sep(p2,'&');
   std::vector<std::string> p3vec = parse_sep(p3,'&');
@@ -17431,6 +17437,11 @@ GameApi::MT GameApi::MainLoopApi::load_MT_script(EveryApi &ev, std::string url, 
 
 GameApi::ARR GameApi::MainLoopApi::load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
+  p1 = replace_str(p1, "&amp;", "&");
+  p2 = replace_str(p2, "&amp;", "&");
+  p3 = replace_str(p3, "&amp;", "&");
+  p4 = replace_str(p4, "&amp;", "&");
+  p5 = replace_str(p5, "&amp;", "&");
   std::vector<std::string> p1vec = parse_sep(p1,'&');
   std::vector<std::string> p2vec = parse_sep(p2,'&');
   std::vector<std::string> p3vec = parse_sep(p3,'&');
@@ -17591,6 +17602,12 @@ GameApi::BM GameApi::MainLoopApi::load_BM_script(EveryApi &ev, std::string url, 
 
 GameApi::ARR GameApi::MainLoopApi::load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
+    p1 = replace_str(p1, "&amp;", "&");
+  p2 = replace_str(p2, "&amp;", "&");
+  p3 = replace_str(p3, "&amp;", "&");
+  p4 = replace_str(p4, "&amp;", "&");
+  p5 = replace_str(p5, "&amp;", "&");
+
   std::vector<std::string> p1vec = parse_sep(p1,'&');
   std::vector<std::string> p2vec = parse_sep(p2,'&');
   std::vector<std::string> p3vec = parse_sep(p3,'&');
@@ -17638,6 +17655,12 @@ GameApi::ARR GameApi::MainLoopApi::load_BM_script_array_comb(EveryApi &ev, std::
 
 GameApi::ARR GameApi::MainLoopApi::load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
+    p1 = replace_str(p1, "&amp;", "&");
+  p2 = replace_str(p2, "&amp;", "&");
+  p3 = replace_str(p3, "&amp;", "&");
+  p4 = replace_str(p4, "&amp;", "&");
+  p5 = replace_str(p5, "&amp;", "&");
+
   std::vector<std::string> p1vec = parse_sep(p1,'&');
   std::vector<std::string> p2vec = parse_sep(p2,'&');
   std::vector<std::string> p3vec = parse_sep(p3,'&');
