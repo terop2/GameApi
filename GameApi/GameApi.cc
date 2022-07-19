@@ -25862,6 +25862,12 @@ KP extern "C" void set_string(int num, const char *value)
   //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
     std::string s(value);
+	  s = replace_str(s, "&lt;", "<");
+	  s = replace_str(s, "&gt;", ">");
+	  s = replace_str(s, "&quot;", "\"");
+	  s = replace_str(s, "&apos;", "\'");
+	  s = replace_str(s, "&amp;", "&");
+    
     s = replace_str(s, "&", "&amp;");
     s = replace_str(s, ">", "&gt;");
     s = replace_str(s, "<", "&lt;");
