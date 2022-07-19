@@ -888,6 +888,7 @@ void iter(void *arg)
 			s = replace_str(s, ">", "&gt;");
 			s = replace_str(s, "<", "&lt;");
 			s = replace_str(s, "\"", "&quot;");
+			s = replace_str(s, "\'", "&apos;");
 		std::cout << s << std::endl;
 	      }
 	    int chosen3 = env->gui->chosen_item(env->collect_button);
@@ -1127,6 +1128,7 @@ void iter(void *arg)
 		  s = replace_str(s, ">", "&gt;");
 		  s = replace_str(s, "<", "&lt;");
 		  s = replace_str(s, "\"", "&quot;");
+		  s = replace_str(s, "\'", "&apos;");
 		  std::cout << s << std::endl;
 		  
 		}
@@ -1545,6 +1547,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			htmlfile = replace_str(htmlfile, ">", "&gt;");
 			htmlfile = replace_str(htmlfile, "<", "&lt;");
 			htmlfile = replace_str(htmlfile, "\"", "&quot;");
+			htmlfile = replace_str(htmlfile, "\'", "&apos;");
 #ifdef WINDOWS
 			//std::string drive = getenv("systemdrive");
 			//std::string path = getenv("homepath");
