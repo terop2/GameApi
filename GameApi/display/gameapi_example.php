@@ -5,6 +5,7 @@
   $script = file_get_contents($filename);
   $homepage = $_GET["homepage"];
   $new_script = str_replace("@","\n",$script);
+  $date = $_GET["date"];
   ?>
 <html>
   <head>
@@ -28,10 +29,10 @@
 <?php echo $new_script ?>
     </pre>
     <pre id="gameapi_modificationdate" style="display:none">
-      04042021
+<?php echo $date ?>
     </pre>
     <canvas id="canvas" style="border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;"></canvas>
-    <script src="gameapi.js?1"></script>
+    <script src="gameapi.js?2"></script>
       
   </body>
 </html>
