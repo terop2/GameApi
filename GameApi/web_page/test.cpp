@@ -288,6 +288,7 @@ int main(int argc, char *argv[]) {
 	  code = replace_str(code, "&lt;", "<");
 	  code = replace_str(code, "&gt;", ">");
 	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
 	  current_arg+=2;
 	  continue;
