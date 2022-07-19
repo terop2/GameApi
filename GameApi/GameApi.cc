@@ -16868,6 +16868,11 @@ public:
     code = replace_str(code, "%3", p3);
     code = replace_str(code, "%4", p4);
     code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
     //std::cout << "CODE: " << std::endl;
     //std::cout << code << std::endl;
     GameApi::ExecuteEnv e2;
@@ -17067,6 +17072,12 @@ public:
       code = replace_str(code, "%3", p3);
       code = replace_str(code, "%4", p4);
       code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
+
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="ML") {
@@ -17164,6 +17175,12 @@ public:
       code = replace_str(code, "%3", p3);
       code = replace_str(code, "%4", p4);
       code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
+
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="MN") {
@@ -17257,6 +17274,11 @@ public:
       code = replace_str(code, "%3", p3);
       code = replace_str(code, "%4", p4);
       code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="MT") {
@@ -17476,6 +17498,11 @@ public:
     code = replace_str(code, "%3", p3);
     code = replace_str(code, "%4", p4);
     code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
     //std::cout << "BM_script: " << code << std::endl;
     GameApi::ExecuteEnv e2;
     std::pair<int, std::string> p = GameApi::execute_codegen(e,ev,code,e2);
