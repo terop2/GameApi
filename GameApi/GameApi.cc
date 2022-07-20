@@ -25771,7 +25771,7 @@ void run_callback(void *ptr)
     //g_everyapi->blocker_api.run(b);
     //std::cout << "ERROR: BLOCKERAPI::run does not set g_everyapi" << std::endl;
   } else {
-    //std::cout << "blk.second==" << blk.second << std::endl;
+    std::cout << "blk.second==" << blk.second << std::endl;
     std::cout << "ERROR: internal error" << std::endl;
   }
 #endif

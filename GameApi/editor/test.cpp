@@ -1556,11 +1556,28 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			//std::ofstream f((prefix + "tst.html").c_str());
 			//f << htmlfile;
 			//f.close();
-			send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss.str() ,"Content-Type: text/plain", htmlfile);
-			
+			int s = htmlfile.size()/3000+1;
+			for(int i=0;i<s;i++)
+			  {
+			    int end = (i+1)*3000;
+			    if (end>htmlfile.size()) end=htmlfile.size();
+			    std::string file = htmlfile.substr(i*3000,end-i*3000);
+			    if (i==0)
+			      send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=0\"" ,"Content-Type:text/plain", file);
+			    else
+			      send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=1\"" ,"Content-Type:text/plain", file);
+			  }
+			/*
+			if (s==0)
+			  {
+			    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"\"" ,"Content-Type:text/plain", htmlfile);
+	
+			  }
+			*/ 
+			    
 			htmlfile = replace_string(htmlfile,'\n','@');
 			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("start https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("&date=") + dt2;
+			std::string cmd = std::string("explorer \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("&date=") + dt2 + std::string("\"");
 			//std::cout << cmd << std::endl;
 			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
 			pthread_system(cmd.c_str());

@@ -6364,11 +6364,11 @@ private:
   int sx, sy;
 };
 
-class FloodFill : public Bitmap<float>
+class FloodFill2 : public Bitmap<float>
 {
 public:
-  FloodFill(Bitmap<float> *bm, float percentage, int x, int y, bool inv) : bm(bm), percentage(percentage),x(x),y(y),inv(inv) { }
-  ~FloodFill()
+  FloodFill2(Bitmap<float> *bm, float percentage, int x, int y, bool inv) : bm(bm), percentage(percentage),x(x),y(y),inv(inv) { }
+  ~FloodFill2()
   {
     delete [] done_bitmap;
     delete [] result_bitmap;
@@ -6462,7 +6462,8 @@ private:
 GameApi::FB GameApi::BitmapApi::flood_fill(FB fb, float percentage, int x, int y, bool inv)
 {
   Bitmap<float> *ffb = find_float_bitmap(e,fb)->bitmap;
-  return add_float_bitmap(e, new FloodFill(ffb, percentage, x, y, inv));
+  Bitmap<float> *ffc = new FloodFill2(ffb, percentage, x,y, inv);
+  return add_float_bitmap(e, ffc);
 }
 
 GameApi::BM GameApi::BitmapApi::flood_fill_color(EveryApi &ev, BM bm, float percentage, int x, int y, unsigned int color)
