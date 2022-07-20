@@ -2181,15 +2181,27 @@ void send_grab_to_server(std::vector<unsigned char> data, int id, int num)
 #endif
 }
 
+void remove_spaces(std::string &s)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]==' ') s[i]='$';
+    }
+}
+
 void send_post_request(std::string url, std::string headers, std::string data)
 {
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
-  std::string cmd = "..\\curl\\curl.exe -s -N -X POST --url " + url + " -d '" + data + "' -H '" + headers + "'";
+  remove_spaces(data);
+  remove_spaces(headers);
+  std::string cmd = "..\\curl\\curl.exe -s -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
 #else
-  std::string cmd = "curl -s -N --url " + url + " -d '" + data + "' -H '" + headers + "'";
+  std::string cmd = "curl -s -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
 #endif
-
+  // std::cout << cmd << std::endl;
+  
 
 #ifdef __APPLE__
     FILE *f2 = popen(cmd.c_str(), "r");

@@ -23,6 +23,7 @@ public:
   virtual void Value(int i)=0;
   virtual void Func(int i1, int i2)=0;
 };
+/*
 void FloodFill(BitmapMod &m, int old_tile, int new_tile)
 {
   std::vector<Pos> p;
@@ -46,7 +47,7 @@ void FloodFill(BitmapMod &m, int old_tile, int new_tile)
       }
   }
 }
-
+*/
 
 void Square(BitmapMod &m, 
 	    int corner_tl, int middle_t, int corner_tr,
