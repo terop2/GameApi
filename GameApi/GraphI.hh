@@ -1382,6 +1382,7 @@ public:
   virtual int PosY() const=0;
 };
 */
+
 class ShaderI
 {
 public:
@@ -1840,6 +1841,7 @@ class Html : public CollectInterface
 {
 public:
   virtual ~Html() { }
+  virtual void SetCB(void(*fptr)(void*), void*data)=0;
   virtual void Prepare()=0;
   virtual std::string script_file() const=0;
   virtual std::string homepage() const=0;
@@ -2247,6 +2249,184 @@ public:
   // set_vars must set bbox[id].start_x bbox[id].end_x bbox[id].start_y bbox[id].end_y
   
   // use global function: std::string generate_shader_block_shader(const ShaderBlock *block);
+};
+
+class Scalar
+{
+public:
+  virtual float get() const=0;
+};
+
+class Vec2
+{
+public:
+  virtual float get_x() const=0;
+  virtual float get_y() const=0;
+};
+
+class Vec3
+{
+public:
+  virtual float get_x() const=0;
+  virtual float get_y() const=0;
+  virtual float get_z() const=0;
+};
+
+class Vec4
+{
+public:
+  virtual float get_x() const=0;
+  virtual float get_y() const=0;
+  virtual float get_z() const=0;
+  virtual float get_w() const=0;
+  float get_r() const { return get_x(); }
+  float get_g() const { return get_y(); }
+  float get_b() const { return get_z(); }
+  float get_a() const { return get_w(); }
+};
+
+class Mat2
+{
+public:
+  virtual float get_mat(int x, int y) const=0;
+};
+class Mat3
+{
+public:
+  virtual float get_mat(int x, int y) const=0;
+};
+class Mat4
+{
+public:
+  virtual float get_mat(int x, int y) const=0;
+};
+
+
+class CollectVisitor2;
+class CollectInterface2
+{
+public:
+  virtual ~CollectInterface2() { }
+  virtual void Collect(CollectVisitor2 &vis)=0;
+};
+
+class CollectVisitor2
+{
+public:
+  virtual ~CollectVisitor2() { }
+  virtual void register_obj(CollectInterface2 *i)=0;
+  virtual void register_child(int num, CollectInterface2 *i)=0;
+};
+
+
+struct FloatBinding
+{
+  std::string key;
+  float *value;
+};
+struct IntBinding
+{
+  std::string key;
+  int *value;
+};
+struct UnsignedIntBinding
+{
+  std::string key;
+  unsigned int *value;
+};
+struct PointBinding
+{
+  std::string key;
+  Point *value;
+};
+
+
+class Bindings
+{
+public:
+  Bindings(const Bindings &c) : f_vec(c.f_vec), i_vec(c.i_vec),u_vec(c.u_vec),p_vec(c.p_vec) { }
+  Bindings(const Bindings &c, FloatBinding n) : f_vec(c.f_vec), i_vec(c.i_vec),u_vec(c.u_vec),p_vec(c.p_vec) { f_vec.push_back(n); }
+  Bindings(const Bindings &c, IntBinding n) : f_vec(c.f_vec), i_vec(c.i_vec),u_vec(c.u_vec),p_vec(c.p_vec) { i_vec.push_back(n); }
+  Bindings(const Bindings &c, UnsignedIntBinding n) : f_vec(c.f_vec), i_vec(c.i_vec), u_vec(c.u_vec),p_vec(c.p_vec) { u_vec.push_back(n); }
+  Bindings(const Bindings &c, PointBinding n) : f_vec(c.f_vec), i_vec(c.i_vec), u_vec(c.u_vec),p_vec(c.p_vec) { p_vec.push_back(n); }
+  Bindings(const Bindings &c1, const Bindings &c2) : f_vec(c1.f_vec), i_vec(c1.i_vec), u_vec(c1.u_vec),p_vec(c1.p_vec) {
+    int fs = c2.F_Size();
+    for(int i=0;i<fs;i++)
+      {
+	f_vec.push_back(c2.F_get(i));
+      }
+    int is = c2.I_Size();
+    for(int i=0;i<is;i++)
+      {
+	i_vec.push_back(c2.I_get(i));
+      }
+    int us = c2.U_Size();
+    for(int i=0;i<us;i++)
+      {
+	u_vec.push_back(c2.U_get(i));
+      }
+    int ps = c2.P_Size();
+    for(int i=0;i<ps;i++)
+      {
+	p_vec.push_back(c2.P_get(i));
+      }
+    
+  }
+  int F_Size() const { return f_vec.size(); }
+  const FloatBinding &F_get(int i) const { return f_vec[i]; }
+  int I_Size() const { return i_vec.size(); }
+  const IntBinding &I_get(int i) const { return i_vec[i]; }
+  int U_Size() const { return u_vec.size(); }
+  const UnsignedIntBinding &U_get(int i) const { return u_vec[i]; }
+  int P_Size() const { return p_vec.size(); }
+  const PointBinding &P_get(int i) const { return p_vec[i]; }
+  void set(GameApi::EveryApi &ev, GameApi::SH sh);
+protected:
+  Bindings() { }
+private:
+  std::vector<FloatBinding> f_vec;
+  std::vector<IntBinding> i_vec;
+  std::vector<UnsignedIntBinding> u_vec;
+  std::vector<PointBinding> p_vec;
+};
+
+
+class ShaderI2 : public CollectInterface2
+{
+public:
+  virtual void set_inner(int num, std::string value)=0; 
+  virtual std::string get_webgl_header() const=0;
+  virtual std::string get_win32_header() const=0;
+  virtual std::string get_webgl_function() const=0;
+  virtual std::string get_win32_function() const=0;
+  virtual Bindings set_var(const Bindings &b)=0;
+  virtual std::string get_flags() const=0;
+  virtual std::string func_name() const=0;
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+
+  // set_inner needs to be called before each call of get_[webgl|win32]_[header|function]()
+};
+class ShaderParameterI
+{
+public:
+  virtual void set_time(float time)=0;
+  //virtual bool enabled() const=0;
+  virtual float param_value_f(int i) const=0;
+  virtual int param_value_i(int i) const=0;
+  virtual unsigned int param_value_u(int i) const=0;
+  virtual Point param_value_p3d(int i) const=0;
+  virtual Point param_value_uvw(int i) const=0;
+};
+
+
+class ASyncTask
+{
+public:
+  virtual int NumTasks() const=0;
+  //virtual void StartTask(int i)=0;
+  //virtual bool TaskFinished(int i) const=0;
+  virtual void DoTask(int i)=0;
 };
 
 #endif

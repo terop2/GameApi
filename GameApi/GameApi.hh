@@ -47,6 +47,8 @@ using std::placeholders::_9;
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(SHP)
+  MAC(SHI)
   MAC(AA)
   MAC(GC)
   MAC(GS)
@@ -263,6 +265,17 @@ public:
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
   IMPORT void async_rem_callback(std::string url);
   IMPORT ASyncVec *get_loaded_async_url(std::string url);
+  IMPORT int add_to_download_bar(std::string filename, const std::vector<unsigned char> &file);
+  IMPORT int download_index_mapping(int index);
+  IMPORT int download_bar_count() const;
+  IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
+  IMPORT std::string get_download_bar_filename(int i) const;
+  IMPORT void remove_download_bar_item(int i);
+
+  IMPORT int start_async(ASyncTask *task);
+  IMPORT int async_mapping(int index);
+  IMPORT void remove_async(int i);
+  IMPORT void async_scheduler();
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
@@ -307,6 +320,16 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML save_deploy(HML h, std::string filename);
+  ML save_script(HML h, std::string filename);
+  HML html_url(std::string url);
+  SHI empty_shaderI();
+  SHI phong_vertex(SHI next);
+  SHI phong_fragment(SHI next, unsigned int ambient, unsigned int highlight, float pow);
+  ML phong_shader3(EveryApi &ev, ML ml, unsigned int ambient, unsigned int highlight, float pow);
+  SHP empty_shp();
+  ML generic_shader(EveryApi &ev, ML ml, SHI vertex, SHI fragment);
+  SHI generic_anim_shader(SHP,std::string, std::string, std::vector<SHI> children);
   ML save_gltf(TF tf, std::string filename);
   TF gltf_loadKK(std::string base_url, std::string url);
   ML send_key_at_time(ML ml, float time, int key);
@@ -364,6 +387,10 @@ public:
   IMPORT ML create_objs(EveryApi &ev, int area_id);
   IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
   IMPORT HML emscripten_frame2(EveryApi &ev, RUN r, std::string homepage);
+  IMPORT HML emscripten_frame2_ML(EveryApi &ev, ML ml, std::string homepage);
+  IMPORT HML emscripten_frame2_P(EveryApi &ev, P p, std::string homepage);
+  IMPORT HML emscripten_frame2_MN(EveryApi &ev, MN mn, std::string homepage);
+  IMPORT HML emscripten_frame2_MT(EveryApi &ev, MT mt, std::string homepage);
   IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="GameApi", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
@@ -529,8 +556,9 @@ public:
   ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
   ML keyboard_toggle(ML m1, ML m2, int key);
   ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
+  P p_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ARR load_P_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ARR load_P_script_array(EveryApi &ev, HML hml /*std::string url*/, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   MN load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   MT load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
@@ -1441,6 +1469,9 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT generic_shader_material0(EveryApi &ev, MT next, std::string, std::string, std::string);
+  IMPORT MT generic_shader_material1(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string);
+  IMPORT MT generic_shader_material2(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string, std::vector<SHI>);
   IMPORT MT gltf_material_from_file(EveryApi &ev, std::string url);
   IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next);
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
@@ -3680,6 +3711,7 @@ public:
   US v_skeletal(US us);
   US v_custom(US us, std::string v_funcname);
   US v_phong(US us);
+  US v_generic(US us, std::string name, std::string flags);
   US v_vertexphong(US us);
   US v_glowedge(US us);
   US v_bump_phong(US us);
@@ -3700,6 +3732,7 @@ public:
   US f_specular(US us);
   US f_phong(US us);
   US f_phong2(US us);
+  US f_generic(US us, std::string name, std::string flags);
   US f_vertexphong(US us);
   US f_glowedge(US us);
   US f_bump_phong(US us);

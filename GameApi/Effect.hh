@@ -10642,7 +10642,7 @@ class ArrayRender
 {
 public:
   ArrayRender(LowApi *g_low) :  g_low(g_low), vertex_array(0), used_vertex_count(0), used_face_count(0), normal_array(0), color_array(0),
-		  tex_coord_array(0), quads(false), index_array(0), texture(0), texture_count(0), textures(0), tex_size_x(0), tex_size_y(0), q_vertex_array(0), q_normal_array(0), q_color_array(0), q_tex_coord_array(0) 
+				tex_coord_array(0), quads(false), index_array(0), texture(0), texture_count(0), textures(0), tex_size_x(0), tex_size_y(0), q_vertex_array(0), q_normal_array(0), q_color_array(0), q_tex_coord_array(0),buffer_allocated(false)
   { 
   }
   ~ArrayRender();
@@ -10698,6 +10698,7 @@ public:
   BufferRef **textures;
   int *tex_size_x;
   int *tex_size_y;
+  bool buffer_allocated;
   unsigned int buffer[5];
   int q_num_vertices;
   float *q_vertex_array; // 3 * float per vertex

@@ -10134,6 +10134,11 @@ GameApi::US GameApi::UberShaderApi::v_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
+GameApi::US GameApi::UberShaderApi::v_generic(US us, std::string name, std::string flags)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction(name, next,flags));
+}
 GameApi::US GameApi::UberShaderApi::v_vertexphong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -10469,6 +10474,11 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"PHONG_TEXTURE EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_generic(US us, std::string name, std::string flags)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction(name, next,flags));
 }
 GameApi::US GameApi::UberShaderApi::f_phong2(US us)
 {
@@ -16832,11 +16842,424 @@ std::string replace_str(std::string val, std::string repl, std::string subst)
   return "ERROR";
 }
 void P_cb(void *data);
+void P2_CB(void *data);
+void HTML_cb(void *data);
+
+class P_script2;
+std::vector<P_script2*> del_p_script;
+
+class HtmlUrl : public Html
+{
+public:
+  HtmlUrl(GameApi::Env &e, std::string url) : e(e), url(url) {
+    e.async_load_callback(url, &HTML_cb, this);
+    //#ifdef EMSCRIPTEN
+    //async_pending_count++; async_taken = true;
+    //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
+    //#endif
+    firsttime = true;
+  }
+  ~HtmlUrl() { e.async_rem_callback(url); }
+  void Prepare2()
+  {
+    Prepare();
+    if (has_cb)
+      {
+	m_fptr(m_data);
+      }
+  }
+  virtual void Prepare()
+  {
+    if (firsttime) {
+      firsttime = false; 
+    homepage2 = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage2);
+#endif
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    code = std::string(vec->begin(), vec->end());
+    }
+  }
+  virtual std::string script_file() const { return code; }
+  virtual std::string homepage() const { return homepage2; }
+  virtual void SetCB(void(*fptr)(void*), void*data)
+  {
+    has_cb = true;
+    m_fptr = fptr;
+    m_data = data;
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+		   
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string code;
+  std::string homepage2;
+  bool has_cb;
+  void (*m_fptr)(void*);
+  void *m_data;
+  bool firsttime;
+};
+void HTML_CB(void *ptr)
+{
+  HtmlUrl *ptr2 = (HtmlUrl*)ptr;
+  ptr2->Prepare2();
+}
+GameApi::HML GameApi::MainLoopApi::html_url(std::string url)
+{
+  return add_html(e,new HtmlUrl(e,url));
+}
+class SaveScript : public MainLoopItem
+{
+public:
+  SaveScript(Html *h2, std::string filename) :h2(h2), filename(filename) { }
+
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void Prepare() {
+#ifndef EMSCRIPTEN
+    std::cout << "Saving.. " << filename << std::endl;
+    h2->Prepare();
+    std::string s = h2->script_file();
+    s = replace_str(s, "@", "\n");
+    s = replace_str(s, "&", "&amp;");
+    s = replace_str(s, ">", "&gt;");
+    s = replace_str(s, "<", "&lt;");
+    s = replace_str(s, "\"", "&quot;");
+    s = replace_str(s, "\'", "&apos;");
+
+    std::ofstream ss(filename.c_str());
+    ss << s;
+    ss.close();
+#endif
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  Html *h2;
+  std::string filename;
+};
+GameApi::ML GameApi::MainLoopApi::save_script(HML h, std::string filename)
+{
+  Html *h2 = find_html(e,h);
+  return add_main_loop(e, new SaveScript(h2,filename));
+}
+
+bool file_exists(std::string file);
+
+class SaveDeployAsync : public ASyncTask
+{
+public:
+  SaveDeployAsync(std::string h2_script, std::string filename) : h2_script(h2_script), filename(filename) { }
+  virtual int NumTasks() const
+  {
+    return 8;
+  }
+  virtual void DoTask(int i)
+  {
+#ifndef EMSCRIPTEN
+#ifdef LINUX
+    switch(i) {
+
+    case 0:
+
+      id = env.add_to_download_bar("gameapi_deploy.zip");
+      
+      std::cout << "Creating tmp directories.." << std::endl;
+      system("mkdir -p ~/.gameapi_builder");
+      env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
+      break;
+    case 1:
+      system("mkdir -p ~/.gameapi_builder/deploy");
+      env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
+      break;
+    case 2:
+      system("mkdir -p ~/.gameapi_builder/deploy/engine");
+      env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
+      break;
+
+    case 3:
+      {
+      //std::cout << "Saving ~/.gameapi-builder/gameapi_script.html" << std::endl;
+	std::string s = h2_script; //h2->script_file();
+      s = replace_str(s, "@", "\n");
+      s = replace_str(s, "&", "&amp;");
+      s = replace_str(s, ">", "&gt;");
+      s = replace_str(s, "<", "&lt;");
+      s = replace_str(s, "\"", "&quot;");
+      s = replace_str(s, "\'", "&apos;");
+
+      std::cout << "Generating script.." << std::endl;
+      std::ofstream ss("~/.gameapi_builder/gameapi_script.html");
+      ss << s;
+      ss.close();
+      env.set_download_progress(env.download_index_mapping(id), 4.0/8.0);
+      }
+    break;
+      
+    case 4:
+      {
+      time_t now = time(0);
+      char *dt = ctime(&now);
+      tm *gmtm = gmtime(&now);
+      dt = asctime(gmtm);
+      
+      std::string dt2(dt);
+      dt2 = replace_str(dt2, " ", "");
+      
+    //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
+      std::cout << "Generating date.." << std::endl;
+      std::ofstream ss2("~/.gameapi_builder/gameapi_date.html");
+      ss2 << dt2;
+      ss2.close();
+
+      env.set_download_progress(env.download_index_mapping(id), 5.0/8.0);
+      }
+      break;
+    case 5:
+      {
+	std::cout << "Copying engine files.." << std::endl;
+	std::string g1 = "../display/gameapi_1.html";
+	std::string g2 = "../display/gameapi_2.html";
+	std::string g3 = "../display/gameapi_3.html";
+	std::string gn = "../display/gameapi_display.zip";
+	if (file_exists("/usr/share/gameapi_1.html")) {
+	  g1 = "/usr/share/gameapi_1.html";
+	  g2 = "/usr/share/gameapi_2.html";
+	  g3 = "/usr/share/gameapi_3.html";
+	  gn = "/usr/share/gameapi_display.zip";
+	}
+	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
+	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
+	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
+	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
+    
+	system(line1.c_str());
+	system(line2.c_str());
+	system(line3.c_str());
+	system(line4.c_str());
+	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
+	break;
+      }
+    case 6:
+      {
+      std::cout << "Deploying..." << std::endl;
+      std::string dep = "./deploy.sh";
+      if (file_exists("/usr/share/deploy.sh"))
+	{
+	  dep = "/usr/share/deploy.sh";
+	}
+      std::string line5 = dep + " ~/.gameapi_builder/gameapi_display.zip";
+      system(line5.c_str());
+      // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
+      
+      env.set_download_progress(env.download_index_mapping(id), 7.0/8.0);
+      break;
+      }
+    case 7:
+      {
+	std::cout << "Saving to ./gameapi_deploy.zip";
+	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
+	std::ifstream ss("~/.gameapi_builder/deploy/gameapi_deploy.zip", std::ios_base::binary);
+	std::vector<unsigned char> vec;
+	char ch;
+	while(ss.get(ch)) {
+	  vec.push_back((unsigned char)ch);
+	}
+	env.set_download_data(env.download_index_mapping(id), vec);
+	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
+	env.set_download_ready(i);
+	std::cout << "ALL OK" << std::endl;
+	break;
+      }
+    };
+#endif
+#ifdef WINDOWS
+    // TODO
+#endif
+#endif
+  }
+private:
+  int id;
+  std::string h2_script; //Html *h2;
+  std::string filename;
+};
+
+class SaveDeploy : public MainLoopItem
+{
+public:
+  SaveDeploy(Html *h2, std::string filename) : h2(h2), filename(filename) { firsttime = true; }
+  ~SaveDeploy()
+  {
+    // not needed.
+    //env.remove_async(env.async_mapping(async_id));
+  }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void Prepare() {
+    if (firsttime) {
+      firsttime = false;
+      h2->Prepare();
+      async_id = env.start_async(new SaveDeployAsync(h2->script_file(),filename));
+    }
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  Html *h2;
+  std::string filename;
+  bool firsttime;
+  //int id;
+  int async_id;
+  };
+
+GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
+{
+  Html *h2 = find_html(e,h);
+  return add_main_loop(e, new SaveDeploy(h2,filename));
+}
 
 
-class P_script;
-std::vector<P_script*> del_p_script;
+class P_script2 : public FaceCollection
+{
+public:
+  P_script2(GameApi::Env &e, GameApi::EveryApi &ev, Html *hml, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), hml(hml), p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) {
+    int s = del_p_script.size();
+    for(int i=0;i<s;i++) {
+      if (del_p_script[i]==this) del_p_script[i]=0;
+    }
+    hml->SetCB(&P2_CB,this);
+  }
+  ~P_script2() { del_p_script.push_back(this); }
+  void Prepare2() {
+    for(int i=0;i<del_p_script.size();i++)
+      if (del_p_script[i]==this) { std::cout << "del_p_script error!" << std::endl; return; }
+    //    std::string homepage = gameapi_homepageurl;
+    //#ifndef EMSCRIPTEN
+    // e.async_load_url(url, homepage);
+    //#endif
+    //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    hml->Prepare();
+    std::string code(hml->script_file());
+    code = replace_str(code, "%1", p1);
+    code = replace_str(code, "%2", p2);
+    code = replace_str(code, "%3", p3);
+    code = replace_str(code, "%4", p4);
+    code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
+    //std::cout << "CODE: " << std::endl;
+    //std::cout << code << std::endl;
+    GameApi::ExecuteEnv e2;
+    std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+    if (p.second=="P") {
+      GameApi::P pp;
+      pp.id = p.first;
+      p_data = pp;
+      coll = find_facecoll(e,p_data);
+      //#ifdef EMSCRIPTEN
+      //if (async_taken)
+      // 	async_pending_count--;
+      //std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
+      //#endif
+      //async_taken=false;
 
+      return;
+    }
+    //#ifdef EMSCRIPTEN
+    //if (async_taken)
+    // async_pending_count--;
+    //std::cout << "async_pending_count inc (P_sctipt) " << async_pending_count << std::endl;
+    //#endif
+    //async_taken = false;
+    //std::cout << "async_pending_count inc (P_sctipt2) " << async_pending_count << std::endl;
+    
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    if (!coll) {
+      Prepare2(); }
+    if (coll)
+      coll->Collect(vis);
+    if (!coll)
+      {
+	GameApi::P pp;
+	pp.id = -1;
+	p_data = pp;
+	coll = 0;
+      }
+  }
+  void HeavyPrepare()
+  {
+  }
+
+  void Prepare() { 
+    if (!coll) { 
+      Prepare2(); }
+    if (coll) {
+      coll->Prepare();
+      return;
+    }
+    GameApi::P pp;
+    pp.id = -1;
+    p_data = pp;
+    coll = 0;
+  }
+
+    virtual bool has_normal() const { if (!coll) return false; return coll->has_normal(); }
+  virtual bool has_attrib() const { if (!coll) return false;return coll->has_attrib(); }
+  virtual bool has_color() const { if (!coll) return false; return coll->has_color(); }
+  virtual bool has_texcoord() const { if (!coll) return false; return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { if (!coll) return false; return coll->has_skeleton(); }
+
+  virtual int NumFaces() const { if (!coll) return 0; return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { if (!coll) return 3; return coll->NumPoints(face); }
+  virtual Point FacePoint(int face, int point) const { if (!coll) return Point(0.0,0.0,0.0); return coll->FacePoint(face,point); }
+  virtual Vector PointNormal(int face, int point) const { if (!coll) return Vector(0.0,0.0,0.0); return coll->PointNormal(face,point); }
+  virtual float Attrib(int face, int point, int id) const { if (!coll) return 0.0; return coll->Attrib(face,point,id); }
+  virtual int AttribI(int face, int point, int id) const { if (!coll) return 0; return coll->AttribI(face,point,id); }
+  virtual unsigned int Color(int face, int point) const { if (!coll) return 0xffffffff; return coll->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { if (!coll) { Point2d p; p.x = 0.0; p.y = 0.0; return p; } return coll->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { if (!coll) return 0.0; return coll->TexCoord3(face,point); }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  //std::string url;
+  Html *hml;
+  std::string p1,p2,p3,p4,p5;
+  GameApi::P p_data;
+  FaceCollection *coll;
+  //bool async_taken;
+};
+void P2_CB(void *ptr)
+{
+  P_script2 *ptr2 = (P_script2*)ptr;
+  ptr2->Prepare2();
+}
+GameApi::P GameApi::MainLoopApi::p_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  Html *h2 = find_html(e,h);
+  return add_polygon2(e, new P_script2(e,ev,h2,p1,p2,p3,p4,p5),1);
+}
+
+#if 0
 class P_script : public FaceCollection
 {
 public:
@@ -16975,6 +17398,7 @@ GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, st
 {
   return add_polygon2(e, new P_script(e,ev,url, p1,p2,p3,p4,p5),1);
 }
+#endif
 
 std::vector<std::string> parse_sep(std::string s, char sep)
 {
@@ -16998,8 +17422,10 @@ std::vector<std::string> parse_sep(std::string s, char sep)
   return vec;
 }
 
-GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, HML h /*std::string url*/, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
+  Html *hml2 = find_html(e, h);
+     
   p1 = replace_str(p1, "&amp;", "&");
   p2 = replace_str(p2, "&amp;", "&");
   p3 = replace_str(p3, "&amp;", "&");
@@ -17039,8 +17465,8 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, std::string
      std::stringstream ss;
      ss << i;
      
-     if (i!=0) { e.async_load_url(url,gameapi_homepageurl); }
-     FaceCollection *coll = new P_script(e,ev,url, k1,k2,k3,k4,k5);
+     //if (i!=0) { e.async_load_url(url,gameapi_homepageurl); }
+     FaceCollection *coll = new P_script2(e,ev,hml2, k1,k2,k3,k4,k5);
      GameApi::P coll_p = add_polygon2(e, coll,1);
      array->vec.push_back(coll_p.id);
    }
@@ -23182,6 +23608,7 @@ public:
   }
   int texture() const
   {
+    return 0;
   }
 private:
   TextureID *i1;
@@ -25652,9 +26079,10 @@ public:
   EmscriptenFrame2(std::string codegen, std::string homepage) : codegen(codegen), hpage(homepage) { }
   void Collect(CollectVisitor &vis)
   {
+    m_fptr(m_data);
   }
   void HeavyPrepare() { }
-
+  virtual void SetCB(void(*fptr)(void*), void*data) { m_fptr = fptr; m_data=data; }
   virtual void Prepare() { }
   virtual std::string script_file() const
   {
@@ -25667,8 +26095,135 @@ public:
 private:
   std::string codegen;
   std::string hpage;
+  void(*m_fptr)(void*);
+  void *m_data;
 };
 
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MT(EveryApi &ev, MT ml, std::string homepage)
+{
+  std::string gen = do_codegen(ev);
+  std::stringstream ss(gen);
+  std::stringstream ss2(gen);
+  std::string line;
+  int line_num = 0;
+  int res_line = 0;
+  while(std::getline(ss2,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="MT") res_line = line_num;
+    line_num++;
+  }
+
+  bool output = true;
+  std::string output_str;
+  line_num = 0;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="MT" || output)
+      output_str+=line+"@";
+    if (line_num == res_line) output=false;
+    line_num++;
+  }
+  return add_html(e, new EmscriptenFrame2(output_str,homepage));
+}
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MN(EveryApi &ev, MN ml, std::string homepage)
+{
+  std::string gen = do_codegen(ev);
+  std::stringstream ss(gen);
+  std::stringstream ss2(gen);
+  std::string line;
+  int line_num = 0;
+  int res_line = 0;
+  while(std::getline(ss2,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="MN") res_line = line_num;
+    line_num++;
+  }
+
+  bool output = true;
+  std::string output_str;
+  line_num = 0;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="MN" || output)
+      output_str+=line+"@";
+    if (line_num == res_line) output=false;
+    line_num++;
+  }
+  return add_html(e, new EmscriptenFrame2(output_str,homepage));
+}
+
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame2_P(EveryApi &ev, P ml, std::string homepage)
+{
+  std::string gen = do_codegen(ev);
+  std::stringstream ss(gen);
+  std::stringstream ss2(gen);
+  std::string line;
+  int line_num = 0;
+  int res_line = 0;
+  while(std::getline(ss2,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="P") res_line = line_num;
+    line_num++;
+  }
+
+  bool output = true;
+  std::string output_str;
+  line_num = 0;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="P" || output)
+      output_str+=line+"@";
+    if (line_num == res_line) output=false;
+    line_num++;
+  }
+  return add_html(e, new EmscriptenFrame2(output_str,homepage));
+}
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std::string homepage)
+{
+  std::string gen = do_codegen(ev);
+  std::stringstream ss(gen);
+  std::stringstream ss2(gen);
+  std::string line;
+  int line_num = 0;
+  int res_line = 0;
+  while(std::getline(ss2,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="ML") res_line = line_num;
+    line_num++;
+  }
+
+  bool output = true;
+  std::string output_str;
+  line_num = 0;
+  while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (s=="ML" || output)
+      output_str+=line+"@";
+    if (line_num == res_line) output=false;
+    line_num++;
+  }
+  return add_html(e, new EmscriptenFrame2(output_str,homepage));
+}
 
 GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::string homepage)
 {

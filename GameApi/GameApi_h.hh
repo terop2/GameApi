@@ -778,6 +778,22 @@ struct EnvImpl
 #endif
   std::vector<Font22> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
+
+  IMPORT int add_to_download_bar(std::string filename); // returns index, must use mapping to put it to i.
+  IMPORT int download_index_mapping(int index);
+  IMPORT int download_bar_count() const;
+  IMPORT void set_download_data(int i, const std::vector<unsigned char> &file);
+  IMPORT void set_download_progress(int i, float percentage);
+  IMPORT void set_download_ready(int i);
+  IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
+  IMPORT std::string get_download_bar_filename(int i) const;
+  IMPORT float get_download_bar_progress(int i) const;
+  IMPORT bool get_download_bar_ready(int i) const;
+  IMPORT void remove_download_bar_item(int i);
+
+  IMPORT void start_async(ASyncTask *task);
+  IMPORT void async_scheduler();
+  
   EXPORT void free_temp_memory()
   {
     //temp_deletes.resize(0);
@@ -1079,6 +1095,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::SHP add_shp(GameApi::Env &e, ShaderParameterI *shp);
+GameApi::SHI add_shaderI(GameApi::Env &e, ShaderI2 *sh);
 GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *tf);
 GameApi::GS add_game_state(GameApi::Env &e, GameState *gs);
 GameApi::ATT add_attach(GameApi::Env &e, Attach *att);
@@ -1229,6 +1247,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ShaderParameterI *find_shp(GameApi::Env &e, GameApi::SHP shp);
+ShaderI2 *find_shaderI(GameApi::Env &e, GameApi::SHI sh);
 GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
 GameState *find_game_state(GameApi::Env &e, GameApi::GS gs);
 Attach *find_attach(GameApi::Env &e, GameApi::ATT att);

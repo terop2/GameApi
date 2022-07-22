@@ -95,6 +95,18 @@ IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
 IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env);
 std::vector<unsigned char> load_from_url(std::string url);
 
+std::string get_last_line(std::string s, char ch)
+{
+  int ss = s.size();
+  int pos = 0;
+  int pos2 = 0;
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]==ch) { pos2=pos; pos = i; }
+    }
+  return s.substr(pos2,pos-pos2);
+}
+
 std::string hexify2(std::string s)
 {
   std::string res;
@@ -1539,6 +1551,39 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 			env->ev->mod_api.codegen_reset_counter();
 
 			std::string htmlfile = find_html2(ml,*env->env);
+			std::string lastline = get_last_line(htmlfile,'@');
+			std::string label,id;
+			std::stringtream ss(lastline);
+			ss >> label >> id;
+			int ii=id.size();
+			for(int i=0;i<ii;i++) { if (id[i]=='=') id=id.substr(0,i); }
+			if (label=="ML")
+			  {
+			    htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id + ",false,false,0.0,1000000.0);@");
+			  }
+			if (label=="P")
+			  {
+			    htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id + ");@";
+			    htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);@";
+
+			  }
+			if (label=="MN")
+			  {
+			    /* TODO
+			M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
+			LI p = env->ev->points_api.matrix_display(*env->ev, m);
+			ML I5=ev.lines_api.ml_li_render(ev,E1,1.0);
+			    */
+			  }
+			if (label=="MT")
+			  {
+			    htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);@";
+			    htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);@";
+			    htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id + ");@";
+			    htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);@");
+			  }
+
+
 			std::string homepage = find_homepage2(ml,*env->env);
 			int val = rand();
 			std::stringstream ss;

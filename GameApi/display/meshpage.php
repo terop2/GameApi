@@ -2141,8 +2141,8 @@ function get_cookie_status()
    fetch(req).then((r)=> {
        return r.text();
        }).then((t) => {
-          console.log("FOUND COOKIE");
-	  console.log(t);
+          //console.log("FOUND COOKIE");
+	  //console.log(t);
 	  var t2 = t.trim();
 	  if (t2=="-1") { // no info available
 	    var co = document.getElementById("callout");

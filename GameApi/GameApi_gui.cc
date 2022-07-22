@@ -3373,6 +3373,80 @@ EXPORT GameApi::W GameApi::GuiApi::copy_paste_dialog(SH sh, W &close_button,FI f
 
 }
 
+
+EXPORT GameApi::W GameApi::GuiApi::directory_view(std::vector<std::string> dir_items, int &selection, std::vector<W> &clicks, FtA atlas, BM atlas_bm)
+{
+  int s = dir_items.size();
+  std::vector<W> vec;
+  for(int i=0;i<s;i++)
+    {
+      W txt = text(dir_items[i], atlas, atlas_bm);
+      W txt2 = highlight(txt);
+      W txt_click = click_area(txt2, 0,0,size_x(txt2),size_y(txt2),0);
+      clicks.push_back(txt_click);
+      vec.push_back(txt_click);
+    }
+  W arr = array_y(&vec[0], vec.size(), 8);
+  return arr;
+}
+
+EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
+{
+}
+
+EXPORT GameApi::W GameApi::GuiApi::download_bar()
+{
+}
+
+EXPORT GameApi::W GameApi::GuiApi::navi_bar(std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm)
+{
+  // tabs and close buttons
+  int s = titles.size();
+  std::vector<W> horiz_bar;
+  for(int i=0;i<s;i++)
+    {
+      W txt = text(titles[i], atlas, atlas_bm);
+      W txt_click = click_area(txt, 0,0,size_x(txt),size_y(txt),0);
+      tab_change_button.push_back(txt_click);
+      W close_button2 = text("x", atlas, atlas_bm);
+      W close_click = click_area(close_button2,0,0,size_x(close_button2),size_y(close_button2),0);
+      close_button.push_back(close_click);
+      horiz_bar.push_back(txt_click);
+      horiz_bar.push_back(close_click);
+    }
+  W new_tab_button2 = text("+", atlas, atlas_bm);
+  W new_tab_click = click_area(new_tab_button2, 0,0,size_x(new_tab_button2), size_y(new_tab_button2),0);
+  new_tab_button = new_tab_click;
+  horiz_bar.push_back(new_tab_click);
+
+  W arr_top = array_x(&horiz_bar[0], horiz_bar.size(), 3);
+
+
+  // back, forward, refresh, url_bar
+  std::vector<W> horiz_bar2;
+  W back_button2 = text("<-", atlas, atlas_bm);
+  W back_click = click_area(back_button2, 0,0, size_x(back_button2), size_y(back_button2),0);
+  back_button = back_click;
+  W forward_button2 = text("->", atlas, atlas_bm);
+  W forward_click = click_area(forward_button2, 0,0,size_x(forward_button2), size_y(forward_button2), 0);
+  forward_button = forward_click;
+  
+  W save_button2 = text("[]", atlas, atlas_bm);
+  W save_click = click_area(save_button2, 0,0,size_x(save_button2),size_y(save_button2),0);
+
+  W url_bar = url_editor(url, atlas, atlas_bm, 3);
+  horiz_bar2.push_back(back_click);
+  horiz_bar2.push_back(forward_click);
+  horiz_bar2.push_back(save_click);
+  horiz_bar2.push_back(url_bar);
+  W arr_middle = array_x(&horiz_bar2[0], horiz_bar2.size(), 6);
+  
+  // bookmarks
+  
+
+  
+}
+
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
 {
   int w = 800;

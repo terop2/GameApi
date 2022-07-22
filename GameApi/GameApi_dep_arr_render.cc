@@ -426,10 +426,12 @@ void ArrayRender::Alloc(int numfaces, int numvertices)
 ArrayRender::~ArrayRender()
 {
   OpenglLowApi *ogl = g_low->ogl;
-  if (texture_count)
+  if (texture_count && texture)
     {
       ogl->glDeleteTextures(texture_count, (const Low_GLuint*)&texture[0]);
+      texture_count = 0;
     }
+  if (buffer_allocated)
   ogl->glDeleteBuffers(5,&buffer[0]);
   delete [] q_vertex_array;
   delete [] q_normal_array;
@@ -599,6 +601,7 @@ void ArrayRender::Prepare()
   ogl->glBindVertexArray(vao[0]);
 #endif
   ogl->glGenBuffers(5, &buffer[0]);
+  buffer_allocated = true;
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[0]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, q_num_vertices*sizeof(float)*3, q_vertex_array, Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffer[1]);
