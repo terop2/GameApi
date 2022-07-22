@@ -21,6 +21,7 @@ class ASyncData;
 class BufferRef;
 class MainLoopEnv;
 class LoadStream;
+  class ASyncTask;
 
 namespace GameApi
 {
@@ -251,7 +252,6 @@ struct ExecuteEnv
 #endif
 
   class ASyncVec;
-  
 class Env
 {
 public:
@@ -265,11 +265,16 @@ public:
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
   IMPORT void async_rem_callback(std::string url);
   IMPORT ASyncVec *get_loaded_async_url(std::string url);
-  IMPORT int add_to_download_bar(std::string filename, const std::vector<unsigned char> &file);
+  IMPORT int add_to_download_bar(std::string filename);
   IMPORT int download_index_mapping(int index);
   IMPORT int download_bar_count() const;
-  IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
+  //IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
+  IMPORT void set_download_data(int i, const std::vector<unsigned char> &file);
+  IMPORT void set_download_progress(int i, float percentage);
+  IMPORT void set_download_ready(int i);
   IMPORT std::string get_download_bar_filename(int i) const;
+  IMPORT float get_download_bar_progress(int i) const;
+  IMPORT bool get_download_bar_ready(int i) const;
   IMPORT void remove_download_bar_item(int i);
 
   IMPORT int start_async(ASyncTask *task);

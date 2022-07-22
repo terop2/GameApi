@@ -341,22 +341,82 @@ EXPORT void GameApi::Env::free_temp_memory()
  env->free_temp_memory();
 
 }
-
-EXPORT void GameApi::Env::add_to_download_bar(std::string filename, const std::vector<unsigned char> &file)
+EXPORT int GameApi::Env::add_to_download_bar(std::string filename)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->add_to_download_bar(filename, file);
+  return env->add_to_download_bar(filename);
+}
+EXPORT int GameApi::Env::download_index_mapping(int index)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->download_index_mapping(index);
 }
 EXPORT int GameApi::Env::download_bar_count() const
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   return env->download_bar_count();
 }
-EXPORT std::vector<unsigned char> *GameApi::Env::get_download_bar_item(int i) const
+EXPORT void GameApi::Env::set_download_data(int i, const std::vector<unsigned char> &file)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  return env->get_download_bar_item(i);
+  return env->set_download_data(i,file);
 }
+EXPORT void GameApi::Env::set_download_progress(int i, float percentage)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->set_download_progress(i,percentage);
+}
+EXPORT void GameApi::Env::set_download_ready(int i)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->set_download_ready(i);
+}
+EXPORT std::string GameApi::Env::get_download_bar_filename(int i) const
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->get_download_bar_filename(i);
+}
+EXPORT float GameApi::Env::get_download_bar_progress(int i) const
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->get_download_bar_progress(i);
+}
+EXPORT bool GameApi::Env::get_download_bar_ready(int i) const
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->get_download_bar_ready(i);
+}
+EXPORT void GameApi::Env::remove_download_bar_item(int i)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->remove_download_bar_item(i);
+}
+EXPORT int GameApi::Env::start_async(ASyncTask *task)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->start_async(task);
+}
+IMPORT int GameApi::Env::async_mapping(int index)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  return env->async_mapping(index);
+}
+IMPORT void GameApi::Env::remove_async(int i)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->remove_async(i);
+}
+EXPORT void GameApi::Env::async_scheduler()
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  env->async_scheduler();
+}
+
+//EXPORT std::vector<unsigned char> *GameApi::Env::get_download_bar_item(int i) const
+//{
+//  ::EnvImpl *env = (::EnvImpl*)envimpl;
+//  return env->get_download_bar_item(i);
+//}
 
 
 void InstallProgress(int num, std::string label, int max);
@@ -2264,7 +2324,7 @@ int EnvImpl::download_index_mapping(int index)
   return -1;
 }
 
-int EnvImpl::add_to_download_bar(std::string filename, const std::vector<unsigned char> &file)
+int EnvImpl::add_to_download_bar(std::string filename)
 {
   static int index = 0;
   index++;
@@ -2274,19 +2334,21 @@ int EnvImpl::add_to_download_bar(std::string filename, const std::vector<unsigne
   g_download_bar_filename.push_back(filename);
   //g_download_bar_data.push_back(new std::vector<unsigned char>(file));
 
-  int pos = g_download_bar_filename.size()-1;
-  save_download(g_download_bar_filename[pos],&file);
   return index;
+}
+void EnvImpl::set_download_data(int i, const std::vector<unsigned char> &file)
+{
+  save_download(g_download_bar_filename[i],&file);
 }
 int EnvImpl::download_bar_count() const
 {
   return g_download_bar_filename.size();
 }
-std::vector<unsigned char> *EnvImpl::get_download_bar_item(int i) const
-{
-  return 0;
+//std::vector<unsigned char> *EnvImpl::get_download_bar_item(int i) const
+//{
+//  return 0;
   //return g_download_bar_data[i];
-}
+//}
 std::string EnvImpl::get_download_bar_filename(int i) const
 {
   return g_download_bar_filename[i];
@@ -2316,17 +2378,17 @@ bool EnvImpl::get_download_bar_ready(int i) const
 {
   return g_download_bar_ready[i];
 }
-
-std::vector<ASyncTask*> tasks;
-std::vector<int> task_location;
-std::vector<TaskData*> task_data;
-
 struct TaskData
 {
   ASyncTask *task;
   int pos;
   bool finished;
 };
+
+std::vector<ASyncTask*> tasks;
+std::vector<int> task_location;
+std::vector<TaskData*> task_data;
+std::vector<int> index_map;
 
 void *async_process(void *ptr)
 {
@@ -2354,11 +2416,32 @@ bool task_finished(int task, int pos)
   return task_data[task]->finished;
 }
 
-void EnvImpl::start_async(ASyncTask *task)
+int EnvImpl::start_async(ASyncTask *task)
 {
+  static int index = 0;
+  index++;
+  index_map.push_back(index);
   tasks.push_back(task);
   task_location.push_back(-1);
   task_data.push_back(new TaskData);
+  return index;
+}
+int EnvImpl::async_mapping(int index)
+{
+  int s = index_map.size();
+  for(int i=0;i<s;i++)
+    {
+      if (index_map[i]==index) return i;
+    }
+  return -1;
+}
+void EnvImpl::remove_async(int i)
+{
+  index_map.erase(index_map.begin()+i);
+  tasks.erase(tasks.begin()+i);
+  task_location.erase(task_location.begin()+i);
+  delete task_data[i];
+  task_data.erase(task_data.begin()+i);
 }
 void EnvImpl::async_scheduler()
 {
