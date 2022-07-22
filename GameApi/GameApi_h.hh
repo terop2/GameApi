@@ -620,6 +620,7 @@ class ArrayElem<GameApi::P>
   static const int i=1;
 };
 
+class ASyncTask;
 struct EnvImpl
 {
   std::vector<Point> pt;
@@ -779,19 +780,21 @@ struct EnvImpl
   std::vector<Font22> fonts;
   static ::EnvImpl *Environment(GameApi::Env *e) { return (EnvImpl*)e->envimpl; }
 
-  IMPORT int add_to_download_bar(std::string filename); // returns index, must use mapping to put it to i.
+  IMPORT int add_to_download_bar(std::string filename); // returns index, must use mapping to put it to i. 
   IMPORT int download_index_mapping(int index);
   IMPORT int download_bar_count() const;
   IMPORT void set_download_data(int i, const std::vector<unsigned char> &file);
   IMPORT void set_download_progress(int i, float percentage);
   IMPORT void set_download_ready(int i);
-  IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
+  //IMPORT std::vector<unsigned char> *get_download_bar_item(int i) const;
   IMPORT std::string get_download_bar_filename(int i) const;
   IMPORT float get_download_bar_progress(int i) const;
   IMPORT bool get_download_bar_ready(int i) const;
   IMPORT void remove_download_bar_item(int i);
 
-  IMPORT void start_async(ASyncTask *task);
+  IMPORT int start_async(ASyncTask *task);
+  IMPORT int async_mapping(int index);
+  IMPORT void remove_async(int i);
   IMPORT void async_scheduler();
   
   EXPORT void free_temp_memory()
