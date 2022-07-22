@@ -50,7 +50,7 @@ CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc Gam
 	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
 	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
 	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc \
-	GameApi_cmd.cc
+	GameApi_cmd.cc cpushader.cc
 
 
 CFiles2 = 
@@ -79,7 +79,7 @@ default: libGameApi.so
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD    libGameApi.so"
-	@g++ -m64 -rdynamic -shared -g $(OFiles) -std=c++17 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@$(CC) -m64 -rdynamic -shared -g $(OFiles) -std=c++17 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
 
 #`pkg-config gtkmm-2.4 --libs` 
 
