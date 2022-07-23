@@ -29,9 +29,9 @@ public:
     s.child = i;
     vec2.push_back(s);
   }
-  void set_inner(ShaderI *shader, int num)
+  void set_inner(ShaderI2 *shader, int num)
   {
-    ShaderI *child = 0;
+    ShaderI2 *child = 0;
     
     int s = vec2.size();
     for(int i=0;i<s;i++)
@@ -39,7 +39,7 @@ public:
 	const ChildSpec &ss = vec2[i];
 	if (ss.parent != shader) continue;
 	int num2 = ss.num;
-	child = ss.child;
+	child = (ShaderI2*)ss.child;
     
 	std::string res;
 	set_inner(child, num);
@@ -85,14 +85,14 @@ void Bindings::set(GameApi::EveryApi &ev, GameApi::SH sh)
 			      ((value&0xff0000)>>16)/255.0,
 			      ((value&0xff00)>>8)/255.0,
 			      ((value&0xff))/255.0,
-			      ((value&0xff000000)>>24)/255.0));
+			      ((value&0xff000000)>>24)/255.0);
       }
      int s4 = p_vec.size();
      for(int i=0;i<s4;i++)
        {
 	 PointBinding b = p_vec[i];
 	 Point value = *b.value;
-	 ev.shader_api.set_var(sh, b.key.c_str(), value);
+	 ev.shader_api.set_var(sh, b.key.c_str(), value.x,value.y,value.z);
        }
 }
 
@@ -189,7 +189,7 @@ public:
   {
     if (type==1 &&i==num&& enabled()) {
       float dt = current_time-start_time/(end_time-start_time);
-      dt*=(end_value_i-start_value_I);
+      dt*=(end_value_i-start_value_i);
       dt+=start_value_i;
       return int(dt);
     }
@@ -236,7 +236,7 @@ public:
 	  dt3 = start_value_uvw.z;
 	} else
 	{
-	  dt3 = end_value.uvw.z;
+	  dt3 = end_value_uvw.z;
 	}
       return Point(dt,dt2,dt3);
     }
@@ -260,7 +260,7 @@ private:
   Point end_value_uvw;
   int type;
 };
-GameApi::SHP GameApi::MainLoopAPi::empty_shp()
+GameApi::SHP GameApi::MainLoopApi::empty_shp()
 {
   return add_shp(e, new EmptyShaderParameter);
 }
@@ -279,15 +279,17 @@ GameApi::SHP GameApi::MainLoopApi::constant_shp_u(SHP next, int num, unsigned in
   ShaderParameterI *i = find_shp(e, next);
   return add_shp(e,new ConstantShaderParameter(i,num,value));
 }
-GameApi::SHP GameApi::MainLoopApi::constant_shp_p3d(SHP next, int num, Point value)
+GameApi::SHP GameApi::MainLoopApi::constant_shp_p3d(SHP next, int num, PT value)
 {
+  Point *pt = find_point(e,value);
   ShaderParameterI *i = find_shp(e, next);
-  return add_shp(e,new ConstantShaderParameter(i,num,value));
+  return add_shp(e,new ConstantShaderParameter(i,num,*pt));
 }
-GameApi::SHP GameApi::MainLoopApi::constant_shp_uvw(SHP next, int num, Point value)
+GameApi::SHP GameApi::MainLoopApi::constant_shp_uvw(SHP next, int num, PT value)
 {
+  Point *pt = find_point(e,value);
   ShaderParameterI *i = find_shp(e, next);
-  return add_shp(e,new ConstantShaderParameter(i,num,value,0));
+  return add_shp(e,new ConstantShaderParameter(i,num,*pt,0));
 }
 
 GameApi::SHP GameApi::MainLoopApi::timed_shp_f(float start_time, float end_time, SHP next, int num, float start_value, float end_value)
@@ -305,15 +307,20 @@ GameApi::SHP GameApi::MainLoopApi::timed_shp_u(float start_time, float end_time,
   ShaderParameterI *i = find_shp(e, next);
   return add_shp(e,new TimedShaderParameter(start_time, end_time, i,num,start_value,end_value));
 }
-GameApi::SHP GameApi::MainLoopApi::timed_shp_p3d(float start_time, float end_time, SHP next, int num, Point start_value, Point end_value)
+GameApi::SHP GameApi::MainLoopApi::timed_shp_p3d(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value)
 {
+  Point *sv = find_point(e,start_value);
+  Point *ev = find_point(e,end_value);
   ShaderParameterI *i = find_shp(e, next);
-  return add_shp(e,new TimedShaderParameter(start_time, end_time, i,num,start_value,end_value));
+  return add_shp(e,new TimedShaderParameter(start_time, end_time, i,num,*sv,*ev));
 }
-GameApi::SHP GameApi::MainLoopApi::timed_shp_uvw(float start_time, float end_time, SHP next, int num, Point start_value, Point end_value)
+GameApi::SHP GameApi::MainLoopApi::timed_shp_uvw(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value)
 {
+  Point *sv = find_point(e,start_value);
+  Point *ev = find_point(e,end_value);
+  
   ShaderParameterI *i = find_shp(e, next);
-  return add_shp(e,new TimedShaderParameter(start_time, end_time, i,num,start_value,end_value,0));
+  return add_shp(e,new TimedShaderParameter(start_time, end_time, i,num,*sv,*ev,0));
 }
 
 
@@ -321,6 +328,7 @@ GameApi::SHP GameApi::MainLoopApi::timed_shp_uvw(float start_time, float end_tim
 class EmptyShaderI : public ShaderI2
 {
 public:
+  virtual void Collect(CollectVisitor2 &vis) { }
   virtual void set_inner(int num, std::string value) { }
   virtual std::string get_webgl_header() const { return ""; }
   virtual std::string get_win32_header() const { return ""; }
@@ -360,7 +368,7 @@ public:
   virtual std::string get_win32_header() const { return ""; }
   virtual std::string get_webgl_function() const
   {
-    return
+    return inner +
       "#ifdef IN_NORMAL\n"
       "#ifdef LIGHTDIR\n"
       "#ifdef EX_NORMAL2\n"
@@ -379,7 +387,7 @@ public:
   }
   virtual std::string get_win32_function() const
   {
-    return
+    return inner+
       "#ifdef IN_NORMAL\n"
       "#ifdef LIGHTDIR\n"
       "#ifdef EX_NORMAL2\n"
@@ -396,16 +404,17 @@ public:
       "#endif\n"
       "#endif\n";      
   }
-  virtual const Bindings &set_var(const Bindings &b) { return b; }
+  virtual Bindings set_var(const Bindings &b) { return b; }
   virtual std::string get_flags() const { return "EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"; }
   virtual std::string func_name() const { return "phong2"; }
 private:
   ShaderI2 *next;
+  std::string inner;
 };
 GameApi::SHI GameApi::MainLoopApi::phong_vertex(SHI next)
 {
-  ShaderI2 *next = find_shaderI(e,next);
-  return add_shaderI(e, new PhongVertex(next));
+  ShaderI2 *next2 = find_shaderI(e,next);
+  return add_shaderI(e, new PhongVertex(next2));
 }
 
 
@@ -413,14 +422,20 @@ class PhongFragment : public ShaderI2
 {
 public:
   PhongFragment(ShaderI2 *next,unsigned int ambient, unsigned int highlight, float pow) : next(next), ambient(ambient), highlight(highlight), pow(pow) { }
+  virtual void Collect(CollectVisitor2 &vis)
+  {
+    next->Collect(vis);
+    vis.register_obj(this);
+    vis.register_child(0, next);
+  }
   virtual void execute(MainLoopEnv &e) { next->execute(e); }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
   virtual void set_inner(int num, std::string value) { inner=value; } 
-  virtual std::string get_webgl_header() const { return ""; }
-  virtual std::string get_win32_header() const { return ""; }
+  virtual std::string get_webgl_header() const { return inner; }
+  virtual std::string get_win32_header() const { return inner; }
   virtual std::string get_webgl_function() const
   {
-return
+return inner+
   "#ifdef EX_NORMAL2\n"
   "#ifdef EX_LIGHTPOS2\n"
   "#ifdef LEVELS\n"
@@ -467,7 +482,7 @@ return
   }
   virtual std::string get_win32_function() const
   {
-    return
+    return inner+
       "#ifdef EX_NORMAL2\n"
       "#ifdef EX_LIGHTPOS2\n"
       "#ifdef LEVELS\n"
@@ -529,12 +544,13 @@ private:
   UnsignedIntBinding ambi_bind = { "level1_color", &ambient };
   UnsignedIntBinding high_bind = { "level2_color", &highlight };
   FloatBinding pow_bind = { "hilight", &pow };
+  std::string inner;
 };
 
 GameApi::SHI GameApi::MainLoopApi::phong_fragment(SHI next, unsigned int ambient, unsigned int highlight, float pow)
 {
-  ShaderI2 *next = find_shaderI(e,next);
-  return add_shaderI(e, new PhongVertex(next,ambient, highlight, pow));
+  ShaderI2 *next2 = find_shaderI(e,next);
+  return add_shaderI(e, new PhongFragment(next2,ambient, highlight, pow));
 }
 
 
@@ -601,17 +617,17 @@ public:
       ee.us_fragment_shader = a0.id;
     }
     fragment2.id = ee.us_fragment_shader;
-    if (ambient) {
-      fragment2 = ev.uber_api.f_generic(fragment2,fragment->get_name(), fragment->get_flags());
-    }
+    //if (ambient) {
+      fragment2 = ev.uber_api.f_generic(fragment2,fragment->func_name(), fragment->get_flags());
+      //}
     ee.us_fragment_shader = fragment2.id;
 #if OPENGL_ES
     ii.set_inner(fragment, 0);
-    std::string header = fragment->get_webgl_header();
+    std::string header2 = fragment->get_webgl_header();
     ii.set_inner(fragment, 1);
-    std::string function = fragment->get_webgl_function();
+    std::string function2 = fragment->get_webgl_function();
 
-    ee.f_shader_functions += header + function;
+    ee.f_shader_functions += header2 + function2;
 #else
     ii.set_inner(fragment, 2);
     std::string header = fragment->get_win32_header();
@@ -637,7 +653,7 @@ public:
 	NewBinding bb;
 	Bindings b = vertex->set_var(bb);
 	Bindings b2 = fragment->set_var(b);
-	b2.set(sh);
+	b2.set(ev,sh);
       }
 
 #ifndef NO_MV
@@ -665,6 +681,9 @@ private:
   ShaderI2 *vertex;
   ShaderI2 *fragment;
   VisitorImpl ii;
+  bool firsttime;
+  bool initialized;
+  GameApi::SH sh;
 };
 GameApi::ML GameApi::MainLoopApi::generic_shader(GameApi::EveryApi &ev, ML ml, SHI vertex, SHI fragment)
 {
@@ -680,6 +699,83 @@ GameApi::ML GameApi::MainLoopApi::phong_shader3(GameApi::EveryApi &ev, ML ml, un
   SHI fragment_next = ev.mainloop_api.empty_shaderI();
   return generic_shader(ev,ml,ev.mainloop_api.phong_vertex(vertex_next),ev.mainloop_api.phong_fragment(fragment_next,ambient,highlight,pow));
 }
+
+
+class MaterialForward : public Material
+{
+public:
+  GameApi::ML call(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = mat(p.id);
+    return ml;
+  }
+  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
+  {
+    GameApi::ML ml;
+    ml.id = mat_inst(p.id,pts.id);
+    return ml;
+  }
+  GameApi::ML call_inst_matrix(GameApi::P p, GameApi::MS ms)
+  {
+    GameApi::ML ml;
+    ml.id = mat_inst_matrix(p.id,ms.id);
+    return ml;
+  }
+
+  int mat(int p) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::ML ml = mat2(p2);
+    return ml.id;
+  }
+  int mat_inst(int p, int pts) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat2_inst(p2,p3);
+    return ml.id;
+  }
+  int mat_inst_matrix(int p, int ms) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::MS p3;
+    p3.id = ms;
+    GameApi::ML ml = mat2_inst_matrix(p2,p3);
+    return ml.id;
+  }
+
+  int mat_inst2(int p, int pta) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTA p3;
+    p3.id = pta;
+    GameApi::ML ml = mat2_inst2(p2,p3);
+    return ml.id;
+
+  }
+  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
+    return ml.id;
+
+  }
+  virtual GameApi::ML mat2(GameApi::P p) const=0;
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
+};
+
 
 
 class PhongMaterial2 : public MaterialForward
@@ -950,7 +1046,7 @@ public:
 	  curr = new Bindings(*curr, f);
 	}
       }
-    
+    return *curr;
   }
   virtual std::string get_flags() const { return ""; }
   virtual std::string func_name() const { return funcname; }
@@ -1025,81 +1121,6 @@ GameApi::SHI GameApi::MainLoopApi::generic_anim_shader(SHP params, std::string f
 }
 void GEN_CB(void*);
 void GEN_CB2(void*);
-
-class MaterialForward : public Material
-{
-public:
-  GameApi::ML call(GameApi::P p) const
-  {
-    GameApi::ML ml;
-    ml.id = mat(p.id);
-    return ml;
-  }
-  GameApi::ML call_inst(GameApi::P p, GameApi::PTS pts)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst(p.id,pts.id);
-    return ml;
-  }
-  GameApi::ML call_inst_matrix(GameApi::P p, GameApi::MS ms)
-  {
-    GameApi::ML ml;
-    ml.id = mat_inst_matrix(p.id,ms.id);
-    return ml;
-  }
-
-  int mat(int p) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::ML ml = mat2(p2);
-    return ml.id;
-  }
-  int mat_inst(int p, int pts) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat2_inst(p2,p3);
-    return ml.id;
-  }
-  int mat_inst_matrix(int p, int ms) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::MS p3;
-    p3.id = ms;
-    GameApi::ML ml = mat2_inst_matrix(p2,p3);
-    return ml.id;
-  }
-
-  int mat_inst2(int p, int pta) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTA p3;
-    p3.id = pta;
-    GameApi::ML ml = mat2_inst2(p2,p3);
-    return ml.id;
-
-  }
-  int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
-  {
-    GameApi::P p2;
-    p2.id = p;
-    GameApi::PTS p3;
-    p3.id = pts;
-    GameApi::ML ml = mat_inst_fade(p2,p3, flip, start_time, end_time);
-    return ml.id;
-
-  }
-  virtual GameApi::ML mat2(GameApi::P p) const=0;
-  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
-  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
-  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
-};
 
 
 class GenericAnimMaterial : public MaterialForward

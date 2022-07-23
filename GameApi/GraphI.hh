@@ -2424,8 +2424,6 @@ class ASyncTask
 {
 public:
   virtual int NumTasks() const=0;
-  //virtual void StartTask(int i)=0;
-  //virtual bool TaskFinished(int i) const=0;
   virtual void DoTask(int i)=0;
 };
 

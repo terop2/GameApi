@@ -325,6 +325,16 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  SHP constant_shp_f(SHP next, int num, float value);
+  SHP constant_shp_i(SHP next, int num, int value);
+  SHP constant_shp_u(SHP next, int num, unsigned int value);
+  SHP constant_shp_p3d(SHP next, int num, PT value);
+  SHP constant_shp_uvw(SHP next, int num, PT value);
+  SHP timed_shp_f(float start_time, float end_time, SHP next, int num, float start_value, float end_value);
+  SHP timed_shp_i(float start_time, float end_time, SHP next, int num, int start_value, int end_value);
+  SHP timed_shp_u(float start_time, float end_time, SHP next, int num, unsigned int start_value, unsigned int end_value);
+  SHP timed_shp_p3d(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);
+  SHP timed_shp_uvw(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);  
   ML save_deploy(HML h, std::string filename);
   ML save_script(HML h, std::string filename);
   HML html_url(std::string url);
@@ -1822,6 +1832,10 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  IMPORT W download_bar();
+  IMPORT W directory_view(std::vector<std::string> dir_items, int &selection, std::vector<W> &clicks, FtA atlas, BM atlas_bm);
+  IMPORT W asset_view(std::string url_or_filename);
+  IMPORT W navi_bar(std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm);
   IMPORT W alt(std::vector<W> vec, int *choose);
   IMPORT W dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void *, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap);
   IMPORT W progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec);
