@@ -285,7 +285,9 @@ std::vector<DllData> load_dlls(std::string filename)
 
 std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url);
 
+
 struct Envi {
+  bool envi_ready=false;
   Env *env;
   EveryApi *ev;
   GuiApi *gui;
@@ -703,11 +705,25 @@ void refresh()
 
   }
 }
-void iter(void *arg)
+
+class BuilderIter
 {
-  Envi *env = (Envi*)arg;
-  //g_progress_halt = true;
-  
+public:
+  virtual void start(void *arg)=0;
+  virtual void render(void *arg)=0;
+  virtual void update(void *arg, MainLoopApi::Event e)=0;
+};
+
+class MainIter : public BuilderIter
+{
+  void start(void *arg)
+  {
+    Envi *env = (Envi*)arg;
+    //g_progress_halt = true;
+    //env->env->async_scheduler();
+    
+    if (!env->envi_ready) return;
+    
 #if 0
   if (env->logo_shown)
     {
@@ -741,6 +757,11 @@ void iter(void *arg)
     //wl_surface_commit(g_wl_surface);
 #endif
   }
+
+  }
+  void render(void *arg)
+  {
+
   
   render_cb(env);
   //env->ev->mainloop_api.clear_3d();
@@ -799,25 +820,21 @@ void iter(void *arg)
   enum_editor_draw(*env->ev, *env->gui);
 
 #endif
-    
-    
-    
+    FinishProgress();
+  }
+ 
+  virtual void update(void *arg, MainLoopApi::Event &e) {
+   
     //env->ev->mainloop_api.fpscounter();
     // swapbuffers
-    env->ev->mainloop_api.swapbuffers();
-    FinishProgress();
-	bool properties_button = false;
-	bool codegen_button = false;
-	bool pkggen_button = false;
-	bool display_button = false;
-	std::string popup_uid;
+    //env->ev->mainloop_api.swapbuffers();
 
     // handle esc event
-    MainLoopApi::Event e;
-    e.ch = 0;
-    e.last = true;
-    while((e=env->ev->mainloop_api.get_event()).last)
-      {
+    //MainLoopApi::Event e;
+    //e.ch = 0;
+    //e.last = true;
+    //while((e=env->ev->mainloop_api.get_event()).last)
+    //  {
 	old_cursor_pos = e.cursor_pos;
 	if (e.type==256) { mem_summary(); exit(0); }
 	if (e.type==0x300 && e.ch=='m') { mem_summary(); }
@@ -1796,8 +1813,8 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 		    env->progress_visible = false;
 		    
 	          }
-	      }
 	  }
+  
 	
 	if (!env->editor_visible)
 	  {
@@ -2249,7 +2266,7 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 	//	//std::cout << selected_item2 << std::endl;
 	//      }
 	//  }
-      }
+
     //float param_x = env->gui->dynamic_param(env->txt2, 0);
     //env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
 	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
@@ -2258,7 +2275,15 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
 	// g_progress_halt = false;
 
-}
+  }
+private:
+  	bool properties_button = false;
+	bool codegen_button = false;
+	bool pkggen_button = false;
+	bool display_button = false;
+	std::string popup_uid;
+};
+  
 float f(float w)
 {
   return cos(w);
@@ -2404,151 +2429,99 @@ extern void (*g_progress_callback)();
 void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>);
 extern void (*update_progress_dialog_cb)(GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>);
 
-int main(int argc, char *argv[]) {
-  //clear_counters();
-  //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
+class ASyncTask
+{
+public:
+  virtual int NumTasks() const=0;
+  virtual void DoTask(int i)=0;
+};
 
-  srand(time(NULL));
-  
-  g_main_thread_id = pthread_self();
-  
-  update_progress_dialog_cb = &update_progress_dialog_cb_impl;
-  
-  //pid_t pid = getpid();
-  //std::cout << "pid: " << (long)pid << std::endl;
-  InstallProgress(888,"init",10);
-  //ProgressBar(888,0,10,"init");
-  set_current_block(-2);
-
-  //g_main_thread = pthread_self();
-
-  std::set_terminate(&terminate_handler);
-  srand(time(NULL));
-  Env *e2 = new Env;
-  Env &e = *e2;
-  EveryApi ev(*e2);
-  
-  
-
-
-  Envi env;
-  env.env = e2;
-  env.ev = &ev;
-  g_env = &env;
-
+class StartMainTask : public ASyncTask
+{
+public:
+  StartMainTask(Env &e, EveryApi &ev, Envi &env, SH sh, int screen_x, int screen_y, std::string filename) : e(e), ev(ev), env(env), sh(sh),gui(e,ev,sh),screen_x(screen_x), screen_y(screen_y), filename(filename) { }
+  virtual int NumTasks() const { }
+  virtual void DoTask(int i) {
+    switch(i) {
+    case 0:
+      {
+	srand(time(NULL));
+	
+	g_main_thread_id = pthread_self();
+	
+	update_progress_dialog_cb = &update_progress_dialog_cb_impl;
+	
+	//pid_t pid = getpid();
+	//std::cout << "pid: " << (long)pid << std::endl;
+	InstallProgress(888,"init",10);
+	//ProgressBar(888,0,10,"init");
+	set_current_block(-2);
+	
+	//g_main_thread = pthread_self();
+	
+	std::set_terminate(&terminate_handler);
+	srand(time(NULL));
+	
+	
 #ifdef WINDOWS
-  //env.dlls = load_dlls("DllList.txt");
+	//env.dlls = load_dlls("DllList.txt");
 #else
-  //env.dlls = load_dlls("DllList_linux.txt");
+	//env.dlls = load_dlls("DllList_linux.txt");
 #endif
-  int screen_x = 1200;
-  int screen_y = 900;
-#ifdef WINDOWS
-  std::string drive = getenv("systemdrive");
-  std::string path = getenv("homepath");
-  std::string filename = drive+path+"\\mod.txt";
-  std::cout << "Loading:" << filename << std::endl;
-#else
-  std::string filename = "mod.txt";
-#endif
-  for(int i=1;i<argc;i++)
-    {
-      if (std::string(argv[i])=="--dump")
-	{
-	  std::string s = ev.mod_api.dump_functions();
-	  std::cout << s << std::endl;
-	  return 0;
-	}
-      if (std::string(argv[i])=="--mg")
-	{
-	  screen_x = 2560;
-	  screen_y = 1600;
-	}
 
-      if (std::string(argv[i])=="--huge")
-	{
-	  screen_x = 1200;
-	  screen_y = 900;
-	}
-      if (std::string(argv[i])=="--mega")
-	{
-	  screen_x = 1920;
-	  screen_y = 1080;
-	}
-      if (std::string(argv[i])=="--small")
-	{
-	  screen_x = 800;
-	  screen_y = 600;
-	}
-      if (std::string(argv[i])=="--vr")
-	{
-	  g_vr_enable = true;
-	  std::string device_id = std::string(argv[i+1]);
-	  g_vr_device_id = 0;
-	  if (device_id=="vive") { g_vr_device_id = 1; }
-	  if (device_id=="oculus") { g_vr_device_id=2; }
+	std::ifstream stream(filename.c_str());
+	if (!stream.is_open())
+	  {
+	    std::ofstream stream2(filename.c_str());
+	    stream2 << "\n\ntest" << std::flush;
+	    stream2.close();
+	  }
+	
 
-	  if (g_vr_device_id==0) g_vr_device_id = 1; else i++;
-	  std::string devices[] = { "None", "Vive", "Oculus" };
-	  std::cout << "Choosing:" << devices[g_vr_device_id] << std::endl;
-	  
-	}
-      if (std::string(argv[i])=="--file")
+	mod = ev.mod_api.load(filename);
+	
+	break;
+      }
+    case 1:
+      {
+      bool has_wayland = false;
+      
+      const char *ee = getenv("XDG_SESSION_TYPE");
+      if (ee)
+	std::cout << "SESSION TYPE:" << ee << std::endl;
+      const char *ee2 = getenv("SDL_VIDEODRIVER");
+      bool has_wayland1 = false;
+      bool has_wayland2 = false;
+      if (ee2 && !strcmp(ee2,"wayland")) {
+	has_wayland1 = true;
+      }
+      if (ee && !strcmp(ee,"wayland")) {
+	has_wayland2 = true;
+      }
+      has_wayland = has_wayland1 && has_wayland2;
+      g_has_wayland = has_wayland;
+      int extra_width = 0;
+      int extra_height = 0;
+      int extra_top = 0;
+      int extra_left = 0;
+      
+      if (has_wayland) {
+	extra_width = 0;
+	extra_height = 10+30;
+	extra_top = 30+5;
+	extra_left = 5;
+      }
+      
+      int display_width = screen_x+extra_width;
+      int display_height = screen_y+extra_height;
+      if (has_wayland)
 	{
-	  filename = std::string(argv[i+1]);
-	  i++;
+	  display_width = -1;
+	  display_height = -1;
 	}
-    }
-  std::ifstream stream(filename.c_str());
-  if (!stream.is_open())
-    {
-      std::ofstream stream2(filename.c_str());
-      stream2 << "\n\ntest" << std::flush;
-      stream2.close();
-    }
-
-
-  WM mod = ev.mod_api.load(filename);
-
-  bool has_wayland = false;
-  
-  const char *ee = getenv("XDG_SESSION_TYPE");
-  if (ee)
-    std::cout << "SESSION TYPE:" << ee << std::endl;
-  const char *ee2 = getenv("SDL_VIDEODRIVER");
-  bool has_wayland1 = false;
-  bool has_wayland2 = false;
-  if (ee2 && !strcmp(ee2,"wayland")) {
-    has_wayland1 = true;
-  }
-  if (ee && !strcmp(ee,"wayland")) {
-    has_wayland2 = true;
-  }
-  has_wayland = has_wayland1 && has_wayland2;
-  g_has_wayland = has_wayland;
-  int extra_width = 0;
-  int extra_height = 0;
-  int extra_top = 0;
-  int extra_left = 0;
-  
-  if (has_wayland) {
-    extra_width = 0;
-    extra_height = 10+30;
-    extra_top = 30+5;
-    extra_left = 5;
-  }
-
-  int display_width = screen_x+extra_width;
-  int display_height = screen_y+extra_height;
-  if (has_wayland)
-    {
-      display_width = -1;
-      display_height = -1;
-    }
-  
-  // initialize window
-  g_original_title = "GameApi Builder -- meshpage.org";
-  ev.mainloop_api.init_window(display_width,display_height,"GameApi Builder -- meshpage.org");
+      
+      // initialize window
+      g_original_title = "GameApi Builder -- meshpage.org";
   if (has_wayland)
     {
       display_width = g_display_width;
@@ -2559,12 +2532,6 @@ int main(int argc, char *argv[]) {
 
   ProgressBar(888,0,5,"init");
   // shader initialization
-  ev.shader_api.load_default();
-  SH sh = ev.shader_api.texture_shader();
-  SH sh_2d = ev.shader_api.texture_shader();
-  SH sh_arr = ev.shader_api.texture_shader();
-  SH sh2 = ev.shader_api.colour_shader();
-  SH sh3 = ev.shader_api.colour_shader();
   // Chunkfive.otf
   Ft font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
   Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
@@ -2651,35 +2618,18 @@ int main(int argc, char *argv[]) {
   std::string a_atlas_bm2 = "atlas_bm2.ppm";
 #endif
   
-  FtA atlas = ev.font_api.load_atlas(a_atlas0);
-  FtA atlas2 = ev.font_api.load_atlas(a_atlas1);
-  FtA atlas3 = ev.font_api.load_atlas(a_atlas2);
-  BM atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0);
-  BM atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
-  BM atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
-
+  atlas = ev.font_api.load_atlas(a_atlas0);
+  atlas2 = ev.font_api.load_atlas(a_atlas1);
+  atlas3 = ev.font_api.load_atlas(a_atlas2);
+  atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0);
+  atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
+  atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
   
-#if 0
-  FB atlas_bm_b = ev.float_bitmap_api.from_red(atlas_bm_a);
-  FB atlas_bm2_b = ev.float_bitmap_api.from_red(atlas_bm2_a);
-  FB atlas_bm3_b = ev.float_bitmap_api.from_red(atlas_bm3_a);
-
-  BM atlas_bm = ev.float_bitmap_api.to_grayscale_color(atlas_bm_b, 255,255,255,255, 0,0,0,0);
-  BM atlas_bm2 = ev.float_bitmap_api.to_grayscale_color(atlas_bm2_b,255,255,255,255, 0,0,0,0);
-  BM atlas_bm3 = ev.float_bitmap_api.to_grayscale_color(atlas_bm3_b, 255,255,255,255, 0,0,0,0);
-#endif
-
-
-  // rest of the initializations
-  ev.mainloop_api.init_3d(sh3, display_width, display_height);
-  ev.mainloop_api.init_3d(sh_arr, display_width, display_height);
-  ev.mainloop_api.init(sh, display_width, display_height);
-  ev.mainloop_api.init(sh2, display_width, display_height);
-  ev.mainloop_api.init(sh_2d, display_width, display_height);
-
+  break;
+    }
+    case 2:
+      {
   
-  
-  GuiApi gui(e, ev, sh);
   g_everyapi_gui = &gui;
   env.gui = &gui;
 
@@ -2790,16 +2740,31 @@ int main(int argc, char *argv[]) {
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
   ProgressBar(888,5,5,"init");
+  break;
+    }
+    case 3:
+      {
   ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
+
+  break;
+      }
+    case 4:
+      {
   
   //ProgressBar(888,7,10,"init");
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
+  break;
+      }
+    case 5:
+      {
   //ProgressBar(888,8,10,"init");
   add_to_canvas(gui, canvas, env.connect_links);
   //print_connect_targets("init", &env);
   //ProgressBar(888,9,10,"init");
-
-
+  break;
+      }
+    case 6:
+      {
   W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y, screen_y);
   //W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
   W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
@@ -2865,26 +2830,304 @@ int main(int argc, char *argv[]) {
   //ev.mainloop_api.display_logo(ev);
 
 
-  ev.mainloop_api.switch_to_3d(false, sh3, screen_x+extra_width, screen_y+extra_height);
-  //ev.mainloop_api.switch_to_3d(false, sh_arr, screen_x, screen_y);
-  ev.shader_api.use(sh);
-  ev.mainloop_api.alpha(true);
 
   env.progress_visible = false;
   env.progress_rest = true;
+  env.envi_ready = true;
+  break;
+      }
+    };
+  }
+private:
+  Env &e;
+  EveryApi &ev;
+  Envi &env;
+  SH sh;
+  GuiApi gui; //(e, ev, sh);
+  WM mod;
+  int screen_x, screen_y;
+  FtA atlas, atlas2, atlas3;
+  BM atlas_bm, atlas_bm2, atlas_bm3;
+  std::string filename;
+};
 
+struct Envi_tabs
+{
+  bool envi_ready=false;
+  Env *env;
+  EveryApi *ev;
+  GuiApi *gui;
+
+  std::vector<std::String> titles;
+  W navi_bar;
+  W back_button;
+  W forward_button;
+  W save_button;
+  W url_button;
+  std::vector<W> close_button;
+  std::Vector<W> tab_change_button;
+  W new_tab_button;
+  FtA atlas;
+  BM atlas_bm;
+};
+
+class Tabs_Gui : public ASyncTask
+{
+public:
+  Tabs_Gui(Env &e, EveryApi &ev, Envi_tabs &env, SH sh, int screen_x, int screen_y) : e(e), ev(ev), env(env), sh(sh), gui(e,ev,sh), screen_x(screen_x), screen_y(screen_y), filename(filename) { } 
+  virtual int NumTasks() const
+  {
+    return 1;
+  }
+  virtual void DoTask(int i)
+ {
+    switch(i) {
+    case 0:
+      {
+#ifdef LINUX
+  std::string a_atlas0;
+  std::string a_atlas1;
+  std::string a_atlas2;
+  std::string a_atlas_bm0;
+  std::string a_atlas_bm1;
+  std::string a_atlas_bm2;
   
-  //print_counters();
-  //ev.mainloop_api.display_logo(ev);
-  //ProgressBar(888,10,10,"init");
-
-#ifndef EMSCRIPTEN
-  while(1) {
-    iter(&env);
+  if (file_exists("./atlas0.txt")) {
+    a_atlas0 = "atlas0.txt";
+    //a_atlas1 = "atlas1.txt";
+    //a_atlas2 = "atlas2.txt";
+    a_atlas_bm0 = "atlas_bm0.ppm";
+    //a_atlas_bm1 = "atlas_bm1.ppm";
+    //a_atlas_bm2 = "atlas_bm2.ppm";
+  } else {
+    a_atlas0 = "/usr/share/atlas0.txt";
+    //a_atlas1 = "/usr/share/atlas1.txt";
+    //a_atlas2 = "/usr/share/atlas2.txt";
+    a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
+    //a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
+    //a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
 #else
-  emscripten_set_main_loop_arg(iter, (void*)&env, 30,1);
+  std::string a_atlas0 = "atlas0.txt";
+  //std::string a_atlas1 = "atlas1.txt";
+  //std::string a_atlas2 = "atlas2.txt";
+  std::string a_atlas_bm0 = "atlas_bm0.ppm";
+  //std::string a_atlas_bm1 = "atlas_bm1.ppm";
+  //std::string a_atlas_bm2 = "atlas_bm2.ppm";
 #endif
+  
+  env->atlas = ev.font_api.load_atlas(a_atlas0);
+  //atlas2 = ev.font_api.load_atlas(a_atlas1);
+  //atlas3 = ev.font_api.load_atlas(a_atlas2);
+  env->atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0);
+  //atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
+  //atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
+  break;
+      }
+    case 1:
+      env->titles = std::vector<std::string>();
+      env->titles.push_back(filename);
+      break;
+    case 2:
+      {
+	env->close_button = std::vector<W>();
+	env->tab_change_button = std::vector<W>();
+	env->navi_bar = gui.navi_bar(env->titles, env->back_button, env->forward_button, env->save_button, filename, env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas, env->atlas_bm);
+	break;
+      }
+      
+    };
+  }
+private:
+  Env &e;
+  EveryApi &ev;
+  Envi_tabs &env;
+  SH sh;
+  GuiApi gui;
+  int screen_x, screen_y;
+  std::string filename;
+
+};
 
 
+void IterAlgo(Env &e, std::vector<BuilderIter*> vec, std::vector<void*> args,EveryApi *ev)
+{
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec[i]->start(args[i]);
+    }
+  int s2 = vec.size();
+  for(int i=0;i<s2;i++)
+    {
+      vec[i]->render(args[i]);
+    }
+  ev->mainloop_api.swapbuffers();
+
+    MainLoopApi::Event e;
+    e.ch = 0;
+    e.last = true;
+    while((e=env->ev->mainloop_api.get_event()).last)
+      {
+	int s3 = vec.size();
+	for(int i=0;i<s3;i++)
+	  {
+	    vec[i]->update(args[i],e);
+	  }
+	
+      }
+
+    e.async_scheduler();    
+}
+
+class IterTab : public BuilderIter
+{
+public:
+  void start(void *arg)
+  {
+    Envi_tabs *env = (Envi_tabs*)arg;
+    //env->env->async_scheduler();
+    
+    if (!env->envi_ready) return;
+    
+    env->ev->shader_api.use(env->sh);
+    
+    if (env->has_wayland) {
+      env->ev->mainloop_api.clear(0x00000000);
+    } else {
+      env->ev->mainloop_api.clear(0xff000000);
+    }
+  }
+  void render(void *arg) {
+    Envi_tabs *env = (Envi_tabs*)arg;
+  // render here
+    env->gui->render(env->navi_bar);
+  }
+  void update(void *arg, MainLoopApi::Event &e)
+  {
+    Envi_tabs *env = (Envi_tabs*)arg;
+  env->gui->update(env->navi_bar, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+  }  
+}
+
+
+class TabsUpdateTask : public ASyncTask
+{
+public:
+  TabsUpdateTask(Tabs_Gui *ptr) : ptr(ptr) { }
+  virtual int NumTasks() const
+  {
+    return 1;
+  }
+  virtual void DoTask(int i) {
+    if (i==0) ptr->DoTask(2); // navibar update
+  }
+};
+
+int main(int argc, char *argv[]) {
+	int screen_x = 1200;
+	int screen_y = 900;
+#ifdef WINDOWS
+	std::string drive = getenv("systemdrive");
+	std::string path = getenv("homepath");
+	std::string filename = drive+path+"\\mod.txt";
+#else
+	std::string filename = "mod.txt";
+#endif
+	std::cout << "Loading:" << filename << std::endl;
+	for(int i=1;i<argc;i++)
+	  {
+	    if (std::string(argv[i])=="--dump")
+	      {
+		std::string s = ev.mod_api.dump_functions();
+		std::cout << s << std::endl;
+		return 0;
+	      }
+	    if (std::string(argv[i])=="--mg")
+	      {
+		screen_x = 2560;
+		screen_y = 1600;
+	      }
+	    
+	    if (std::string(argv[i])=="--huge")
+	      {
+		screen_x = 1200;
+		screen_y = 900;
+	      }
+	    if (std::string(argv[i])=="--mega")
+	      {
+		screen_x = 1920;
+		screen_y = 1080;
+	      }
+	    if (std::string(argv[i])=="--small")
+	      {
+		screen_x = 800;
+		screen_y = 600;
+	      }
+	    if (std::string(argv[i])=="--vr")
+	      {
+		g_vr_enable = true;
+		std::string device_id = std::string(argv[i+1]);
+		g_vr_device_id = 0;
+		if (device_id=="vive") { g_vr_device_id = 1; }
+		if (device_id=="oculus") { g_vr_device_id=2; }
+		
+		if (g_vr_device_id==0) g_vr_device_id = 1; else i++;
+		std::string devices[] = { "None", "Vive", "Oculus" };
+		std::cout << "Choosing:" << devices[g_vr_device_id] << std::endl;
+		
+	      }
+	    if (std::string(argv[i])=="--file")
+	      {
+		filename = std::string(argv[i+1]);
+		i++;
+	      }
+	  }
+
+
+  Env *e2 = new Env;
+  Env &e = *e2;
+  EveryApi ev(*e2);
+  Envi *env = new Envi;
+  Envi_tabs *env_tab = new Envi_tabs;
+  env->env = e2;
+  env->ev = &ev;
+  g_env = env;
+
+  env_tab->env = e2;
+  env_tab->ev = &ev;
+  
+  //clear_counters();
+  //SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T) -1, (SIZE_T)-1);
+  ev.mainloop_api.init_window(display_width,display_height,"GameApi Builder -- meshpage.org");
+  ev.shader_api.load_default();
+  SH sh = ev.shader_api.texture_shader();
+  SH sh_2d = ev.shader_api.texture_shader();
+  SH sh_arr = ev.shader_api.texture_shader();
+  SH sh2 = ev.shader_api.colour_shader();
+  SH sh3 = ev.shader_api.colour_shader();
+
+  // rest of the initializations
+  ev.mainloop_api.init_3d(sh3, display_width, display_height);
+  ev.mainloop_api.init_3d(sh_arr, display_width, display_height);
+  ev.mainloop_api.init(sh, display_width, display_height);
+  ev.mainloop_api.init(sh2, display_width, display_height);
+  ev.mainloop_api.init(sh_2d, display_width, display_height);
+
+  ev.mainloop_api.switch_to_3d(false, sh3, screen_x+extra_width, screen_y+extra_height);
+  ev.shader_api.use(sh);
+  ev.mainloop_api.alpha(true);
+  env.start_async(new Tabs_Gui(e,ev,env_tab,sh,screen_x, screen_y, filename));
+  env.start_async(new StartMainTask(e,ev,env,sh,screen_x,screen_y,filename));
+
+  std::vector<BuilderIter*> nodes;
+  nodes.push_back(new IterTab);
+  nodes.push_back(new MainIter);
+  std::vector<void*> args;
+  args.push_back(&env_tab);
+  args.push_back(&env);
+  
+  while(1) {
+    IterAlgo(e,nodes,args,&ev);
+  }
 }

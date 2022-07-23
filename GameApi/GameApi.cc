@@ -16960,7 +16960,7 @@ bool file_exists(std::string file);
 class SaveDeployAsync : public ASyncTask
 {
 public:
-  SaveDeployAsync(std::string h2_script, std::string filename) : h2_script(h2_script), filename(filename) { }
+  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename) : env(env), h2_script(h2_script), filename(filename) { }
   virtual int NumTasks() const
   {
     return 8;
@@ -17090,6 +17090,7 @@ public:
 #endif
   }
 private:
+  GameApi::Env &env;
   int id;
   std::string h2_script; //Html *h2;
   std::string filename;
@@ -17098,7 +17099,7 @@ private:
 class SaveDeploy : public MainLoopItem
 {
 public:
-  SaveDeploy(Html *h2, std::string filename) : h2(h2), filename(filename) { firsttime = true; }
+  SaveDeploy(GameApi::Env &env, Html *h2, std::string filename) : env(env), h2(h2), filename(filename) { firsttime = true; }
   ~SaveDeploy()
   {
     // not needed.
@@ -17111,13 +17112,14 @@ public:
     if (firsttime) {
       firsttime = false;
       h2->Prepare();
-      async_id = env.start_async(new SaveDeployAsync(h2->script_file(),filename));
+      async_id = env.start_async(new SaveDeployAsync(env,h2->script_file(),filename));
     }
   }
   virtual void execute(MainLoopEnv &e) { }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
+  GameApi::Env &env;
   Html *h2;
   std::string filename;
   bool firsttime;
@@ -17128,7 +17130,7 @@ private:
 GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
 {
   Html *h2 = find_html(e,h);
-  return add_main_loop(e, new SaveDeploy(h2,filename));
+  return add_main_loop(e, new SaveDeploy(e,h2,filename));
 }
 
 

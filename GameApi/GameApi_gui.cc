@@ -3442,9 +3442,12 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(std::vector<std::string> titles, W &
   W arr_middle = array_x(&horiz_bar2[0], horiz_bar2.size(), 6);
   
   // bookmarks
-  
-
-  
+  std::vector<W> vert;
+  vert.push_back(arr_top);
+  vert.push_back(arr_middle);
+  // vert.push_back(arr_bottom);
+  W arr_combine = array_y(&vert[0], vert.size(), 6);
+  return arr_combine;
 }
 
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
