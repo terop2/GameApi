@@ -2285,17 +2285,17 @@ public:
   float get_a() const { return get_w(); }
 };
 
-class Mat2
+class Mat2_a
 {
 public:
   virtual float get_mat(int x, int y) const=0;
 };
-class Mat3
+class Mat3_a
 {
 public:
   virtual float get_mat(int x, int y) const=0;
 };
-class Mat4
+class Mat4_a
 {
 public:
   virtual float get_mat(int x, int y) const=0;
@@ -2380,7 +2380,7 @@ public:
   const UnsignedIntBinding &U_get(int i) const { return u_vec[i]; }
   int P_Size() const { return p_vec.size(); }
   const PointBinding &P_get(int i) const { return p_vec[i]; }
-  void set(GameApi::EveryApi &ev, GameApi::SH sh);
+  void set(GameApi::EveryApi &ev, int sh);
 protected:
   Bindings() { }
 private:

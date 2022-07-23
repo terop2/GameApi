@@ -613,10 +613,12 @@ PT old_cursor_pos;
 
 void render_cb(Envi *env)
 {
-
+  //std::cout << "render_cb" << std::endl;
    if (env->progress_rest) {
+     //std::cout << "progress_rest=true" << std::endl;
   
   if (env->has_wayland) {
+    //std::cout << "has_wayland=true" << std::endl;
      env->gui->render(env->window_decoration);
    }
 
@@ -711,371 +713,290 @@ class BuilderIter
 public:
   virtual void start(void *arg)=0;
   virtual void render(void *arg)=0;
-  virtual void update(void *arg, MainLoopApi::Event e)=0;
+  virtual void update(void *arg, MainLoopApi::Event &e)=0;
 };
 
 class MainIter : public BuilderIter
 {
+public:
   void start(void *arg)
   {
     Envi *env = (Envi*)arg;
     //g_progress_halt = true;
     //env->env->async_scheduler();
-    
+    //std::cout << "MainIter start" << std::endl;
     if (!env->envi_ready) return;
+    //std::cout << "MainIter cont" << std::endl;
     
-#if 0
-  if (env->logo_shown)
-    {
-      bool b = env->ev->mainloop_api.logo_iter();
-      if (b) { env->logo_shown = false; }
-      return;
+    env->ev->shader_api.use(env->sh);
+    
+    if (env->has_wayland) {
+      env->ev->mainloop_api.clear(0x00000000);
+    } else {
+      env->ev->mainloop_api.clear(0xff000000);
     }
-#endif
-
-  env->ev->shader_api.use(env->sh);
-
-  if (env->has_wayland) {
-    env->ev->mainloop_api.clear(0x00000000);
-  } else {
-    env->ev->mainloop_api.clear(0xff000000);
-  }
-
-  if (env->old_window_pos_x != g_window_pos_x || env->old_window_pos_y != g_window_pos_y) {
-    int x = g_window_pos_x;
-    int y = g_window_pos_y;
     
-    env->gui->set_pos(env->window_decoration, x,y);
-    env->gui->set_pos(env->line, x+140-5+env->extra_left,y+env->extra_top);
-    env->gui->set_pos(env->canvas_area, x+140+env->extra_left, y+env->extra_top);
-    env->gui->set_pos(env->scrollbar_x, x+140+env->extra_left, y+env->extra_top+env->screen_y-20);
-    env->gui->set_pos(env->scroll_area, x+env->extra_left, y+env->extra_top);
-    
+    if (env->old_window_pos_x != g_window_pos_x || env->old_window_pos_y != g_window_pos_y) {
+      int x = g_window_pos_x;
+      int y = g_window_pos_y;
+      
+      env->gui->set_pos(env->window_decoration, x,y);
+      env->gui->set_pos(env->line, x+140-5+env->extra_left,y+env->extra_top);
+      env->gui->set_pos(env->canvas_area, x+140+env->extra_left, y+env->extra_top);
+      env->gui->set_pos(env->scrollbar_x, x+140+env->extra_left, y+env->extra_top+env->screen_y-20);
+      env->gui->set_pos(env->scroll_area, x+env->extra_left, y+env->extra_top);
+      
 #ifdef WAYLAND
-    //wl_surface_damage_buffer(g_wl_surface, 0,0,g_display_width, g_display_height);
-    //wl_shell_surface_set_transient(g_wl_shell_surface, g_wl_surface, x,y, 0);
-    //wl_surface_commit(g_wl_surface);
+      //wl_surface_damage_buffer(g_wl_surface, 0,0,g_display_width, g_display_height);
+      //wl_shell_surface_set_transient(g_wl_shell_surface, g_wl_surface, x,y, 0);
+      //wl_surface_commit(g_wl_surface);
 #endif
-  }
-
+    }
+    
   }
   void render(void *arg)
   {
-
-  
-  render_cb(env);
-  //env->ev->mainloop_api.clear_3d();
-#if 0
-    if (env->has_wayland) {
-      env->gui->render(env->window_decoration);
-    }
+    Envi *env = (Envi*)arg;
+    //std::cout << "MainIter::render start" << std::endl;
+    if (!env->envi_ready) return;
+    //std::cout << "MainIter::render cont" << std::endl;
     
-    //env->gui->render(env->txt2);
-    env->gui->render(env->line);
-    //env->gui->render(env->txt);
-    env->gui->render(env->scroll_area);
-    //env->gui->render(env->wave);
-    //env->gui->render(env->gameapi);
-    //env->gui->render(env->test1);
-    env->gui->render(env->canvas_area);
-    env->gui->render(env->scrollbar_x);
-    //env->gui->render(env->scrollbar_y);
-    env->gui->render(env->list_tooltips);
-    if (env->popup_visible)
-      {
-	env->gui->render(env->popup_dialog);
-      }
-    if (env->insert_ongoing)
-      {
-	env->gui->render(env->insert_widget);
-      }
-    if (env->connect_ongoing)
-      {
-	env->gui->render(env->connect_line);
-	env->ev->shader_api.use(env->sh);
-	env->gui->render(env->connect_widget);
-      }
-    //if (env->opened_menu_num != -1)
-    //  {
-	//std::cout << env->opened_menu_num << std::endl;
-    //	env->gui->render(env->menus[env->opened_menu_num]);
-    //  }
-    //int s5 = env->connect_links.size();
-    //for(int i5 = 0;i5<s5;i5++)
-    //  {
-    //	W wid = env->connect_links[i5];
-    //	env->gui->render(wid);
-    //	env->ev->shader_api.use(env->sh);
-    // }
-    if (env->display_visible)
-      {
-	env->gui->render(env->display);
-      }
-    if (env->progress_visible)
-      {
-	env->gui->render(g_progress_dialog);
-      }
-    if (env->editor_visible)
-      env->gui->render(env->editor);
-  enum_editor_draw(*env->ev, *env->gui);
+    
+    render_cb(env);
 
-#endif
     FinishProgress();
   }
  
-  virtual void update(void *arg, MainLoopApi::Event &e) {
-   
-    //env->ev->mainloop_api.fpscounter();
-    // swapbuffers
-    //env->ev->mainloop_api.swapbuffers();
+  virtual void update(void *arg, MainLoopApi::Event &e) { 
+    Envi *env = (Envi*)arg;
+    //std::cout << "MainIter::update start" << std::endl;
+    if (!env->envi_ready) return;
+    //std::cout << "MainIter::update cont" << std::endl;
 
-    // handle esc event
-    //MainLoopApi::Event e;
-    //e.ch = 0;
-    //e.last = true;
-    //while((e=env->ev->mainloop_api.get_event()).last)
-    //  {
-	old_cursor_pos = e.cursor_pos;
-	if (e.type==256) { mem_summary(); exit(0); }
-	if (e.type==0x300 && e.ch=='m') { mem_summary(); }
-	if (e.type==0x200) {
-	    int sx = g_event_screen_x;
-	    int sy = g_event_screen_y;
-	    if (sx!=-1 && sy != -1) {
-	    W w = env->canvas_area;
-	    //GuiWidget *ww = find_widget(*env->env, w);
-	    //Vector2d sz = { sx-140,sy-30 };
-	    //ww->set_size(sz);
-	    //env->gui->set_size(w, sx-140, sy-30);
-	    //env->gui->set_pos(w, 140, 30);
-	    //env->gui->set_pos(env->scrollbar_x, 140, sy-20);
 
-	    }
-	}
-	//std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
-	//if (e.type==1024 && e.button==-1) continue;
-	//if (e.type==0x300)
-	// std::cout << e.type << " " << e.ch << std::endl;
-
-	enum_editor_handle_event(*env->gui, env->enum_click_targets, e.button);
-	
-	if (e.type==1024 && e.button==-1)
-	  {
-	    env->key_state = true;
-	  }
-	if (e.type==1024 && e.button==0 && env->key_state==true)
-	  {
-	    // FIX EMSCRIPTEN EENTS NOT GIVING KEYDOWN EVENTS.
-	    e.type=1025;
-	    env->key_state = false;
-	  }
+    old_cursor_pos = e.cursor_pos;
+    if (e.type==256) { mem_summary(); exit(0); }
+    if (e.type==0x300 && e.ch=='m') { mem_summary(); }
+    if (e.type==0x200) {
+      int sx = g_event_screen_x;
+      int sy = g_event_screen_y;
+      if (sx!=-1 && sy != -1) {
+	W w = env->canvas_area;
 	
 	
-	//std::cout << e.type << " " << e.ch << " " << e.button << std::endl;
-	//std::cout << e.type << std::endl;
-	//std::cout << e.button << std::endl;
-	if (e.ch==1073742048 && e.type == 0x300)
-	  {
-	    env->ctrl = true;
-	  }
-	if (e.ch==1073742048 && e.type == 0x301)
-	  {
-	    env->ctrl = false;
-	  }
-	if (env->ctrl && e.ch==115 && e.type==0x300)
-	  { // Save.
-	    std::cout << "Saving... " << env->filename << std::endl;
+      }
+    }
+
+    enum_editor_handle_event(*env->gui, env->enum_click_targets, e.button);
+    
+    if (e.type==1024 && e.button==-1)
+      {
+	env->key_state = true;
+      }
+    if (e.type==1024 && e.button==0 && env->key_state==true)
+      {
+	// FIX EMSCRIPTEN EENTS NOT GIVING KEYDOWN EVENTS.
+	e.type=1025;
+	env->key_state = false;
+      }
+	
+    
+    
+    if (e.ch==1073742048 && e.type == 0x300)
+      {
+	env->ctrl = true;
+      }
+    if (e.ch==1073742048 && e.type == 0x301)
+      {
+	env->ctrl = false;
+      }
+    if (env->ctrl && e.ch==115 && e.type==0x300)
+      { // Save.
+	std::cout << "Saving... " << env->filename << std::endl;
 	env->ev->mod_api.save(env->mod, env->filename);
 	
-	  }
-	
-	//std::cout << e.ch << std::endl;
+      }
+    
 #ifndef EMSCRIPTEN
-	//if (e.ch==27 && e.type==0x300) { exit(0); }
 #endif
-	if (e.type != 0x300 && e.type != 0x301)
+    if (e.type != 0x300 && e.type != 0x301)
+      {
+	e.ch=-1;
+      }
+    if (env->display_visible)
+      {
+	int chosen = env->gui->chosen_item(env->display_close);
+	if (chosen==0)
 	  {
-	    e.ch=-1;
+	    env->display_visible = false;
 	  }
-	if (env->display_visible)
+	int chosen2 = env->gui->chosen_item(env->codegen_button);
+	if (chosen2 == 0)
 	  {
-	    int chosen = env->gui->chosen_item(env->display_close);
-	    if (chosen==0)
+	    /* code generation here */
+	    std::cout << "CodeGen" << std::endl;
+	    env->ev->mod_api.codegen_reset_counter();
+	    clear_codegen();
+	    std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000,0);
+	    std::string s = p.second;
+	    s = replace_str(s, "&", "&amp;");
+	    s = replace_str(s, ">", "&gt;");
+	    s = replace_str(s, "<", "&lt;");
+	    s = replace_str(s, "\"", "&quot;");
+	    s = replace_str(s, "\'", "&apos;");
+	    std::cout << s << std::endl;
+	  }
+	int chosen3 = env->gui->chosen_item(env->collect_button);
+	if (chosen3 == 0)
+	  {
+
+	  }
+	    
+      }
+    int s = env->delete_key.size();
+    for(int i=0;i<s;i++)
+      {
+	W w = env->delete_key[i];
+	int val = env->gui->chosen_item(w);
+	if (val==0)
+	  {
+	    std::string uid = env->gui->get_id(w);
+	    //std::cout << "Delete" << i << ":" << uid << std::endl;
+	    env->ev->mod_api.delete_by_uid(env->mod, 0, uid);
+	    
+	    int ss1 = env->connect_clicks.size();
+	    for(int i=0;i<ss1;i++)
 	      {
-		env->display_visible = false;
+		W w = env->connect_clicks[i];
+		std::string id = env->gui->get_id(w);
+		//std::cout << id << std::endl;
+		if (id==uid)
+		  {
+		    env->connect_clicks.erase(env->connect_clicks.begin()+i);
+		    ss1--;
+		    i--;
+		  }
 	      }
-	    int chosen2 = env->gui->chosen_item(env->codegen_button);
-	    if (chosen2 == 0)
+	    int ss2 = env->connect_targets.size();
+	    for(int i=0;i<ss2;i++)
 	      {
-		/* code generation here */
-		std::cout << "CodeGen" << std::endl;
-		env->ev->mod_api.codegen_reset_counter();
-		clear_codegen();
-		std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, env->codegen_uid,1000,0);
-		std::string s = p.second;
-			s = replace_str(s, "&", "&amp;");
-			s = replace_str(s, ">", "&gt;");
-			s = replace_str(s, "<", "&lt;");
-			s = replace_str(s, "\"", "&quot;");
-			s = replace_str(s, "\'", "&apos;");
-		std::cout << s << std::endl;
+		W w = env->connect_targets[i];
+		std::string id = env->gui->get_id(w);
+		
+		//std::cout << id << std::endl;
+		std::stringstream ss(id);
+		std::string id1;
+		ss >> id1;
+		if (id1==uid)
+		  {
+		    env->connect_targets.erase(env->connect_targets.begin()+i);
+		    i--;
+		    ss2--;
+		  }
 	      }
-	    int chosen3 = env->gui->chosen_item(env->collect_button);
-	    if (chosen3 == 0)
+	    int ss3 = env->connect_links.size();
+	    for(int i=0;i<ss3;i++)
 	      {
-#if 0
-		/* collect here */
-		//std::cout << "Collect" << std::endl;
-		GameApi::collect_counter(0);
-		CollectResult res = env->ev->mod_api.collect_nodes(*env->ev, env->mod, 0, env->codegen_uid,100);
-		// TODO.
-#endif
+		W w = env->connect_links[i];
+		std::string id = env->gui->get_id(w);
+		//std::cout << id << std::endl;
+		std::stringstream ss(id);
+		std::string id1, id2;
+		ss >> id1 >> id2;
+		if (id1==uid ||id2==uid)
+		  {
+		    env->connect_links.erase(env->connect_links.begin()+i);
+		    i--;
+		    ss3--;
+		  }
+	      }
+	    int ss4 = env->display_clicks.size();
+	    for(int i=0;i<ss4;i++)
+	      {
+		W w = env->display_clicks[i];
+		std::string id = env->gui->get_id(w);
+		//std::cout << id << std::endl;
+		if (id==uid)
+		  {
+		    env->display_clicks.erase(env->display_clicks.begin()+i);
+		    break;
+		  }
+	      }
+	    int ss5 = env->edit_clicks.size();
+	    for(int i=0;i<ss5;i++)
+	      {
+		W w = env->edit_clicks[i];
+		std::string id = env->gui->get_id(w);
+		//std::cout << id << std::endl;
+		if (id==uid)
+		  {
+		    env->edit_clicks.erase(env->edit_clicks.begin()+i);
+		    break;
+		  }
+		
+	      }
+	    int ss6 = env->delete_key.size();
+	    for(int i=0;i<ss6;i++)
+	      {
+		W w = env->delete_key[i];
+		std::string id = env->gui->get_id(w);
+		//std::cout << id << std::endl;
+		if (id==uid)
+		  {
+		    env->delete_key.erase(env->delete_key.begin()+i);
+		    break;
+		  }
+	      }
+	    int ss7 = env->codegen_button_vec.size();
+	    for(int i=0;i<ss7;i++)
+	      {
+		W w = env->codegen_button_vec[i];
+		std::string id = env->gui->get_id(w);
+		if (id==uid)
+		  {
+		    env->codegen_button_vec.erase(env->codegen_button_vec.begin()+i);
+		    break;
+		  }
+	      }
+	    int ss8 = env->popup_open.size();
+	    for(int i=0;i<ss8;i++)
+	      {
+		W w = env->popup_open[i];
+		std::string id = env->gui->get_id(w);
+		if (id==uid)
+		  {
+		    env->popup_open.erase(env->popup_open.begin()+i);
+		    break;
+		  }
+	      }
+	    W item = env->gui->find_canvas_item(env->canvas, uid);
+	    int index = env->gui->canvas_item_index(env->canvas, item);
+	    env->gui->del_canvas_item(env->canvas, index);
+	    
+	    int s = env->gui->num_childs(env->canvas);
+	    for(int i=0;i<s;i++)
+	      {
+		W w = env->gui->get_child(env->canvas, i);
+		std::string id = env->gui->get_id(w);
+		//std::cout << id << std::endl;
+		std::stringstream ss(id);
+		std::string uid1, uid2;
+		ss >> uid1 >> uid2;
+		if (uid1==uid||uid2==uid)
+		  {
+		    env->gui->del_canvas_item(env->canvas, i);
+		    i--;
+		    s--;
+		  }
 	      }
 	    
 	  }
-	int s = env->delete_key.size();
+      }
+
+    if (1)
+      {
+	int s = env->popup_selections.size();
 	for(int i=0;i<s;i++)
-	  {
-	    W w = env->delete_key[i];
-	    int val = env->gui->chosen_item(w);
-	    if (val==0)
-	      {
-		std::string uid = env->gui->get_id(w);
-		//std::cout << "Delete" << i << ":" << uid << std::endl;
-		env->ev->mod_api.delete_by_uid(env->mod, 0, uid);
-
-		int ss1 = env->connect_clicks.size();
-		for(int i=0;i<ss1;i++)
-		  {
-		    W w = env->connect_clicks[i];
-		    std::string id = env->gui->get_id(w);
-		    //std::cout << id << std::endl;
-		    if (id==uid)
-		      {
-			env->connect_clicks.erase(env->connect_clicks.begin()+i);
-			ss1--;
-			i--;
-		      }
-		  }
-		int ss2 = env->connect_targets.size();
-		for(int i=0;i<ss2;i++)
-		  {
-		    W w = env->connect_targets[i];
-		    std::string id = env->gui->get_id(w);
-		    
-		    //std::cout << id << std::endl;
-		    std::stringstream ss(id);
-		    std::string id1;
-		    ss >> id1;
-		    if (id1==uid)
-		      {
-			env->connect_targets.erase(env->connect_targets.begin()+i);
-			i--;
-			ss2--;
-		      }
-		  }
-		int ss3 = env->connect_links.size();
-		for(int i=0;i<ss3;i++)
-		  {
-		    W w = env->connect_links[i];
-		    std::string id = env->gui->get_id(w);
-		    //std::cout << id << std::endl;
-		    std::stringstream ss(id);
-		    std::string id1, id2;
-		    ss >> id1 >> id2;
-		    if (id1==uid ||id2==uid)
-		      {
-			env->connect_links.erase(env->connect_links.begin()+i);
-			i--;
-			ss3--;
-		      }
-		  }
-		int ss4 = env->display_clicks.size();
-		for(int i=0;i<ss4;i++)
-		  {
-		    W w = env->display_clicks[i];
-		    std::string id = env->gui->get_id(w);
-		    //std::cout << id << std::endl;
-		    if (id==uid)
-		      {
-			env->display_clicks.erase(env->display_clicks.begin()+i);
-			break;
-		      }
-		  }
-		int ss5 = env->edit_clicks.size();
-		for(int i=0;i<ss5;i++)
-		  {
-		    W w = env->edit_clicks[i];
-		    std::string id = env->gui->get_id(w);
-		    //std::cout << id << std::endl;
-		    if (id==uid)
-		      {
-			env->edit_clicks.erase(env->edit_clicks.begin()+i);
-			break;
-		      }
-
-		  }
-		int ss6 = env->delete_key.size();
-		for(int i=0;i<ss6;i++)
-		  {
-		    W w = env->delete_key[i];
-		    std::string id = env->gui->get_id(w);
-		    //std::cout << id << std::endl;
-		    if (id==uid)
-		      {
-			env->delete_key.erase(env->delete_key.begin()+i);
-			break;
-		      }
-		  }
-		int ss7 = env->codegen_button_vec.size();
-		for(int i=0;i<ss7;i++)
-		  {
-		    W w = env->codegen_button_vec[i];
-		    std::string id = env->gui->get_id(w);
-		    if (id==uid)
-		      {
-			env->codegen_button_vec.erase(env->codegen_button_vec.begin()+i);
-			break;
-		      }
-		  }
-		int ss8 = env->popup_open.size();
-		for(int i=0;i<ss8;i++)
-		  {
-		    W w = env->popup_open[i];
-		    std::string id = env->gui->get_id(w);
-		    if (id==uid)
-		      {
-			env->popup_open.erase(env->popup_open.begin()+i);
-			break;
-		      }
-		  }
-		W item = env->gui->find_canvas_item(env->canvas, uid);
-		int index = env->gui->canvas_item_index(env->canvas, item);
-		env->gui->del_canvas_item(env->canvas, index);
-		
-		int s = env->gui->num_childs(env->canvas);
-		for(int i=0;i<s;i++)
-		  {
-		    W w = env->gui->get_child(env->canvas, i);
-		    std::string id = env->gui->get_id(w);
-		    //std::cout << id << std::endl;
-		    std::stringstream ss(id);
-		    std::string uid1, uid2;
-		    ss >> uid1 >> uid2;
-		    if (uid1==uid||uid2==uid)
-		      {
-			env->gui->del_canvas_item(env->canvas, i);
-			i--;
-			s--;
-		      }
-		  }
-
-	      }
-	  }
-
-	{
-	  int s = env->popup_selections.size();
-	  for(int i=0;i<s;i++)
 	    {
 	      W w = env->popup_selections[i];
 	      int chosen = env->gui->chosen_item(w);
@@ -1096,926 +1017,889 @@ class MainIter : public BuilderIter
 		  break;
 		}
 	    }
-	}
-
-	{
-	  static bool g_update = true;
-	  if (env->popup_visible==false && e.button != 2) { g_update=true; }
-	  if (g_update && e.button==2) { env->popup_visible=false; }
-	  int s = env->popup_open.size();
-	  for(int i=0;i<s;i++)
-	    {
-	      W w = env->popup_open[i];
-	      int chosen = env->gui->chosen_item(w);
-	      if (chosen==0 && e.button==2 && g_update)
-		{
-		  g_update=false;
-		  //std::cout << "popup open!" << std::endl;
-		  std::string uid = env->gui->get_id(w);
-
-		  PT pos = e.cursor_pos;
-		  float x = env->ev->point_api.pt_x(pos);
-		  float y = env->ev->point_api.pt_y(pos);
-
-		  std::vector<std::string> labels;
-		  labels.push_back("Properties");
-		  labels.push_back("CodeGen");
-		  labels.push_back("Generate Pkg");
-		  labels.push_back("Display");
-		  
-		  W w = env->gui->popup_menu(int(x), int(y), labels, env->atlas, env->atlas_bm, env->popup_selections);
-		  env->popup_dialog = w;
-		  env->popup_visible = true;
-		  int s = env->popup_selections.size();
-		  for(int i=0;i<s;i++)
-		    {
-		      W w = env->popup_selections[i];
-		      env->gui->set_id(w, uid);
-		    }
-
-		}
-	    }
-	}
-
-	if (codegen_button==true)
-	{
-	  codegen_button=false;
-	  std::string uid = popup_uid;
-	  //int s = env->codegen_button_vec.size();
-	  //for(int i=0;i<s;i++)
-	  //  {
-	  //    W w = env->codegen_button_vec[i];
-	  //    std::string uid = env->gui->get_id(w);
-	  //int chosen = env->gui->chosen_item(w);
-	  //  if (chosen==0)
-		{
-		  std::cout << "CodeGen!" << std::endl;
-		clear_codegen();
-		  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
-		  std::string s = p.second;
-		  s = replace_str(s, "&", "&amp;");
-		  s = replace_str(s, ">", "&gt;");
-		  s = replace_str(s, "<", "&lt;");
-		  s = replace_str(s, "\"", "&quot;");
-		  s = replace_str(s, "\'", "&apos;");
-		  std::cout << s << std::endl;
-		  
-		}
-	      //}
-	}
-	if (!env->display_visible && pkggen_button)
+      }
+    if (1)
+      {
+	static bool g_update = true;
+	if (env->popup_visible==false && e.button != 2) { g_update=true; }
+	if (g_update && e.button==2) { env->popup_visible=false; }
+	int s = env->popup_open.size();
+	for(int i=0;i<s;i++)
 	  {
-	    pkggen_button = false;
-	      std::string uid = popup_uid;
-
-	    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
-	    //ProgressBar(933, 7,15, "Execute");
-	    GameApi::ExecuteEnv exeenv;
-	    if (type2 == "ML") {
-	      std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
-	      std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2,0);
-	      
-	      
-
-	      //ProgressBar(933, 15,15, "Execute");
-
-	      //std::cout << "URLS:" << ids.second << std::endl;
-	      std::vector<std::string> urls = ids.second;
-	      urls.insert(urls.begin(),ids2.second.begin(),ids2.second.end());
-	      std::sort(urls.begin(),urls.end());
-	      auto last = std::unique(urls.begin(),urls.end());
-	      urls.erase(last,urls.end());
-	      int s4 = urls.size();
-	      for(int i=0;i<s4;i++) {
-		std::vector<std::string> vec = find_additional_urls(*env->env,*env->ev, urls[i]);
-		int s2 = vec.size();
-		for(int j=0;j<s2;j++) urls.push_back(vec[j]);
+	    W w = env->popup_open[i];
+	    int chosen = env->gui->chosen_item(w);
+	    if (chosen==0 && e.button==2 && g_update)
+	      {
+		g_update=false;
+		//std::cout << "popup open!" << std::endl;
+		std::string uid = env->gui->get_id(w);
+		
+		PT pos = e.cursor_pos;
+		float x = env->ev->point_api.pt_x(pos);
+		float y = env->ev->point_api.pt_y(pos);
+		
+		std::vector<std::string> labels;
+		labels.push_back("Properties");
+		labels.push_back("CodeGen");
+		labels.push_back("Generate Pkg");
+		labels.push_back("Display");
+		
+		W w = env->gui->popup_menu(int(x), int(y), labels, env->atlas, env->atlas_bm, env->popup_selections);
+		env->popup_dialog = w;
+		env->popup_visible = true;
+		int s = env->popup_selections.size();
+		for(int i=0;i<s;i++)
+		  {
+		    W w = env->popup_selections[i];
+		    env->gui->set_id(w, uid);
+		  }
+		
 	      }
-	      std::sort(urls.begin(),urls.end());
-	      auto last2 = std::unique(urls.begin(),urls.end());
-	      urls.erase(last2,urls.end());
-	      //env->env->async_load_all_urls(urls, gameapi_homepageurl);
-
-	      int s3 = urls.size();
-	      for(int i=0;i<s3;i++) {
-		std::cout << "Loading: " << urls[i] << std::endl;
-	      }
-	      
-		clear_codegen();
-	      std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
-
-		  
-		  
-	      
-	    std::string script = p.second;
-	    std::cout << "Saving game.pkg" << std::endl;
-	    save_dd(*env->env, *env->ev, "game.pkg", script, urls);
-	    std::cout << "Saving game.pkg complete" << std::endl;
-	    std::cout << "Saving game_1.pkg complete" << std::endl;
-	    std::cout << "Saving game_2.pkg complete" << std::endl;
-	    std::cout << "Saving game_3.pkg complete" << std::endl;
-	    std::cout << "Saving game_4.pkg complete" << std::endl;
-	    std::cout << "Saving game_5.pkg complete" << std::endl;
-	    std::cout << "Saving game_6.pkg complete" << std::endl;
-
-	    std::cout << "Please upload pkg files to web server, then use pkg_window(slower) or pkg_window2(faster) to load it to builder." << std::endl;
-	    std::cout << "If you are planning to do web build, use codegen from run_window and copy-paste the script from cmd prompt/shell window to gameapi_example.html file." << std::endl;
-	    } else {
-	      std::cout << "ERROR: Box return type needs to be ML" << std::endl;
-	    }
-
 	  }
-	
-	if (!env->display_visible && display_button)
+      }
+
+    if (codegen_button==true)
+      {
+	codegen_button=false;
+	std::string uid = popup_uid;
+	if (1)
 	  {
-	    display_button = false;
-	    {
-	      std::string uid = popup_uid;
-	    //int s = env->display_clicks.size();
-	    //for(int i=0;i<s;i++)
-	    //  {
-	    //	W w = env->display_clicks[i];
-	    //	int chosen = env->gui->chosen_item(w);
-	    //	if (!env->display_visible && chosen==0)
-	    //	  {
-	    //	    std::string uid = env->gui->get_id(w);
-		    
+	    std::cout << "CodeGen!" << std::endl;
+	    clear_codegen();
+	    std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
+	    std::string s = p.second;
+	    s = replace_str(s, "&", "&amp;");
+	    s = replace_str(s, ">", "&gt;");
+	    s = replace_str(s, "<", "&lt;");
+	    s = replace_str(s, "\"", "&quot;");
+	    s = replace_str(s, "\'", "&apos;");
+	    std::cout << s << std::endl;
+	    
+	  }
+      }
+    if (!env->display_visible && pkggen_button)
+      {
+	pkggen_button = false;
+	std::string uid = popup_uid;
+	
+	std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+	//ProgressBar(933, 7,15, "Execute");
+	GameApi::ExecuteEnv exeenv;
+	if (type2 == "ML") {
+	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
+	  std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2,0);
+	  
+	  
+
+	  //ProgressBar(933, 15,15, "Execute");
+	  
+	  //std::cout << "URLS:" << ids.second << std::endl;
+	  std::vector<std::string> urls = ids.second;
+	  urls.insert(urls.begin(),ids2.second.begin(),ids2.second.end());
+	  std::sort(urls.begin(),urls.end());
+	  auto last = std::unique(urls.begin(),urls.end());
+	  urls.erase(last,urls.end());
+	  int s4 = urls.size();
+	  for(int i=0;i<s4;i++) {
+	    std::vector<std::string> vec = find_additional_urls(*env->env,*env->ev, urls[i]);
+	    int s2 = vec.size();
+	    for(int j=0;j<s2;j++) urls.push_back(vec[j]);
+	  }
+	  std::sort(urls.begin(),urls.end());
+	  auto last2 = std::unique(urls.begin(),urls.end());
+	  urls.erase(last2,urls.end());
+	  //env->env->async_load_all_urls(urls, gameapi_homepageurl);
+	  
+	  int s3 = urls.size();
+	  for(int i=0;i<s3;i++) {
+	    std::cout << "Loading: " << urls[i] << std::endl;
+	  }
+	  
+	  clear_codegen();
+	  std::pair<std::string, std::string> p = env->ev->mod_api.codegen(*env->ev, env->mod, 0, uid,1000,0);
+	  
+		  
+	  
+	      
+	  std::string script = p.second;
+	  std::cout << "Saving game.pkg" << std::endl;
+	  save_dd(*env->env, *env->ev, "game.pkg", script, urls);
+	  std::cout << "Saving game.pkg complete" << std::endl;
+	  std::cout << "Saving game_1.pkg complete" << std::endl;
+	  std::cout << "Saving game_2.pkg complete" << std::endl;
+	  std::cout << "Saving game_3.pkg complete" << std::endl;
+	  std::cout << "Saving game_4.pkg complete" << std::endl;
+	  std::cout << "Saving game_5.pkg complete" << std::endl;
+	  std::cout << "Saving game_6.pkg complete" << std::endl;
+	  
+	  std::cout << "Please upload pkg files to web server, then use pkg_window(slower) or pkg_window2(faster) to load it to builder." << std::endl;
+	  std::cout << "If you are planning to do web build, use codegen from run_window and copy-paste the script from cmd prompt/shell window to gameapi_example.html file." << std::endl;
+	} else {
+	  std::cout << "ERROR: Box return type needs to be ML" << std::endl;
+	}
+	
+      }
+	
+    if (!env->display_visible && display_button)
+      {
+	display_button = false;
+	if (1)
+	  {
+	    std::string uid = popup_uid;
+	    if (1)
 	      {
 		//std::cout << "Execute for uid: " << uid << std::endl;
 		env->env->free_temp_memory();
-		    // Execute
+		// Execute
 		//InstallProgress(933, "Execute", 15);
 		//ProgressBar(933, 0,15, "Execute");
 		
-	    env->progress_visible = true;
-	    g_prog_labels = std::vector<std::string>();
-	    g_prog_labels.push_back("");
-	    g_everyapi2 = env->ev;
-	    g_atlas = env->atlas;
-	    g_atlas_bm = env->atlas_bm;
-	    
-	    std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
-		    //ProgressBar(933, 7,15, "Execute");
-		    GameApi::ExecuteEnv exeenv;
-		    if (type2 != "HML") {
-		      std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
-		    //ProgressBar(933, 15,15, "Execute");
-
-		    //std::cout << "URLS:" << ids.second << std::endl;
-		    std::vector<std::string> urls = ids.second;
-		    std::vector<std::string> urls2 = g_registered_urls;
-		    int s = urls2.size();
-		    for(int i=0;i<s;i++) urls.push_back(urls2[i]);
-		    
-		    std::sort(urls.begin(),urls.end());
-		    auto last3 = std::unique(urls.begin(),urls.end());
-		    urls.erase(last3,urls.end());
-		    env->env->async_load_all_urls(urls, gameapi_homepageurl);
-		    }
-		    //int s = urls.size();
-		    //for(int i=0;i<s;i++)
-		    //  {
-		    //	env->env->async_load_url(urls[i], gameapi_homepageurl);
-		    // }
-
-
+		env->progress_visible = true;
+		g_prog_labels = std::vector<std::string>();
+		g_prog_labels.push_back("");
+		g_everyapi2 = env->ev;
+		g_atlas = env->atlas;
+		g_atlas_bm = env->atlas_bm;
+		
+		std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+		//ProgressBar(933, 7,15, "Execute");
+		GameApi::ExecuteEnv exeenv;
+		if (type2 != "HML") {
+		  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
+		  //ProgressBar(933, 15,15, "Execute");
+		  
+		  //std::cout << "URLS:" << ids.second << std::endl;
+		  std::vector<std::string> urls = ids.second;
+		  std::vector<std::string> urls2 = g_registered_urls;
+		  int s = urls2.size();
+		  for(int i=0;i<s;i++) urls.push_back(urls2[i]);
+		  
+		  std::sort(urls.begin(),urls.end());
+		  auto last3 = std::unique(urls.begin(),urls.end());
+		  urls.erase(last3,urls.end());
+		  env->env->async_load_all_urls(urls, gameapi_homepageurl);
+		}
 		    
 		static int g_id = -1;
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
-		    set_codegen_values(env->mod,0,uid,1000);
+		set_codegen_values(env->mod,0,uid,1000);
+		
+		int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
+		set_current_block(-2);
+		
+		
+		
+		if (id==-1) {
+		  std::cout << "Execute failed!" << std::endl;
+		  return;
+		}
+		env->codegen_uid = uid;
+		
+		// display dialog
+		std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
+
+		
 		    
-		    int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
-		    set_current_block(-2);
-	    
-
-	    
-		    if (id==-1) {
-		      std::cout << "Execute failed!" << std::endl;
-		      break;
-		    }
-		    env->codegen_uid = uid;
-
-		    // display dialog
-		    std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
-
-
-		    
-		    bool display = true;
-		    if (type=="BO")
+		bool display = true;
+		if (type=="BO")
+		  {
+		    BO p;
+		    p.id = id;
+		    P p2 = env->ev->bool_api.to_polygon(p);
+		    env->env->free_temp_memory();
+		    env->gui->delete_widget(env->mem);
+		    env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
+		  }
+		else
+		  if (type=="VA")
+		    {
+		      VA p;
+		      p.id = id;
+		      env->ev->polygon_api.print_stat(p);
+		      SH sh;
+		      if (env->ev->polygon_api.is_texture(p))
+			{
+			  if (env->ev->polygon_api.is_array_texture(p))
+			    {
+			      sh = env->sh_arr;
+			    }
+			  else
+			    sh=env->sh;
+			}
+		      else
+			{
+			  sh=env->sh3;
+			}
+		      //std::cout << "ID: " << p.id << std::endl;
+		      env->env->free_temp_memory();
+		      env->gui->delete_widget(env->mem);
+		      env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+		      
+		    } else
+		    if (type=="VX")
 		      {
-			BO p;
-			p.id = id;
-			P p2 = env->ev->bool_api.to_polygon(p);
-			  env->env->free_temp_memory();
+			GameApi::EveryApi &ev = *env->ev;
+			VX vx;
+			vx.id = id;
+			P I12=ev.polygon_api.cube(-10,10,-10,10,-10,10);
+			P I13=ev.polygon_api.cube(-10,10,-10,10,-10,10);
+			P I14=ev.polygon_api.color(I13,0xffff0000);
+			P I15=ev.polygon_api.cube(-10,10,-10,10,-10,10);
+			P I16=ev.polygon_api.color(I15,0xffffff00);
+			//O I17=ev.volume_api.mandelbrot_volume(false,64,0.0);
+			//VX I18=ev.voxel_api.blit_voxel(I17,30,30,30,-200,200,-200,200,-200,200,-1,2);
+			ARR I19=ev.voxel_api.voxel_instancing(vx,3,-300,300,-300,300,-300,300);
+			MT I20=ev.materials_api.m_def(ev);
+			ML I21=ev.voxel_api.voxel_bind(ev,std::vector<P>{I12,I14,I16},arr_to_pts_arr(ev,I19),I20);
+			ML ml = I21;
+			env->env->free_temp_memory();
 			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p2, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
-		      }
-		    else
-		    if (type=="VA")
-		      {
-			VA p;
-			p.id = id;
-			env->ev->polygon_api.print_stat(p);
-			SH sh;
-			if (env->ev->polygon_api.is_texture(p))
-			  {
-			    if (env->ev->polygon_api.is_array_texture(p))
-			      {
-				sh = env->sh_arr;
-			      }
-			    else
-			      sh=env->sh;
-			  }
-			else
-			  {
-			    sh=env->sh3;
-			  }
-			//std::cout << "ID: " << p.id << std::endl;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->va_dialog(p, sh, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			
 			
 		      } else
-		      if (type=="VX")
+		      if (type=="FML")
 			{
-			  GameApi::EveryApi &ev = *env->ev;
-			  VX vx;
-			  vx.id = id;
-			  P I12=ev.polygon_api.cube(-10,10,-10,10,-10,10);
-			  P I13=ev.polygon_api.cube(-10,10,-10,10,-10,10);
-			  P I14=ev.polygon_api.color(I13,0xffff0000);
-			  P I15=ev.polygon_api.cube(-10,10,-10,10,-10,10);
-			  P I16=ev.polygon_api.color(I15,0xffffff00);
-			  //O I17=ev.volume_api.mandelbrot_volume(false,64,0.0);
-			  //VX I18=ev.voxel_api.blit_voxel(I17,30,30,30,-200,200,-200,200,-200,200,-1,2);
-			  ARR I19=ev.voxel_api.voxel_instancing(vx,3,-300,300,-300,300,-300,300);
-			  MT I20=ev.materials_api.m_def(ev);
-			  ML I21=ev.voxel_api.voxel_bind(ev,std::vector<P>{I12,I14,I16},arr_to_pts_arr(ev,I19),I20);
-			  ML ml = I21;
+			  FML ml;
+			  ml.id = id;
+			  
+			  FBU I6=env->ev->low_frame_api.low_framebuffer(ml,4,800,600,0);
+			  RUN blk=env->ev->low_frame_api.low_framebuffer_run(*env->ev,I6,0,800,600);
+			    
+			  
 			  env->env->free_temp_memory();
 			  env->gui->delete_widget(env->mem);
-			  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-
-
-			} else
-			if (type=="FML")
-			  {
-			    FML ml;
-			    ml.id = id;
-			    
-			    FBU I6=env->ev->low_frame_api.low_framebuffer(ml,4,800,600,0);
-			    RUN blk=env->ev->low_frame_api.low_framebuffer_run(*env->ev,I6,0,800,600);
-			    
-
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			int sx = env->ev->mainloop_api.get_screen_sx();
-			int sy = env->ev->mainloop_api.get_screen_sy();
-			//env->ev->mainloop_api.set_screen_size(1200,900);
-			//env->ev->mainloop_api.set_viewport(0,0,1200,900);
-			env->ev->blocker_api.run2(*env->ev,blk);
-			    //env->env->free_to_counts(v);
-			    //env->ev->mainloop_api.set_screen_size(sx,sy);
-			    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
-			    env->display = env->gui->empty();
-			    env->display_close = env->gui->empty();
-			    env->codegen_button = env->gui->empty();
-			    env->collect_button = env->gui->empty();
-			    env->ev->shader_api.use(env->sh);
-			    display = false;
-
-			  } else
-			  if (type=="TF") {
-			    TF tf;
-			    tf.id = id;
-			   
-			    ML ml = env->ev->mainloop_api.gltf_scene_anim(*env->ev,tf,0,0,"cvbnm");
-			    ML ml2 = env->ev->mainloop_api.send_key_at_time(ml,0.0,99);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-
-			  } else
-		      if (type=="ML")
-			{
-			  ML ml;
-			  ml.id = id;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-
-			} else
-		      if (type=="MT")
-			{
-			  MT mat;
-			  mat.id = id;
-			  PT I1=env->ev->point_api.point(0.0,0.0,0.0);
-			  P I2=env->ev->polygon_api.sphere(I1,350,30,30);
-			  MT I4=mat;
-			  ML I5=env->ev->materials_api.bind(I2,I4);
-
-			  ML ml;
-			  ml.id = I5.id;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-
-			} else
-			if (type=="KF")
-			  {
-			    KF kf;
-			    kf.id = id;
-     			  env->env->free_temp_memory();
-   			env->gui->delete_widget(env->mem);
-			ML ml = env->ev->vertex_anim_api.vertex_anim_render(*env->ev, kf);
-
-			env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-
-			  }
-		        else
-			if (type=="BLK")
-			  {
-
-			    BLK blk;
-			    blk.id = id;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			//std::vector<int> v = env->env->store_counts();
-			int sx = env->ev->mainloop_api.get_screen_sx();
-			int sy = env->ev->mainloop_api.get_screen_sy();
-			//env->ev->mainloop_api.set_screen_size(1200,900);
-			//env->ev->mainloop_api.set_viewport(0,0,1200,900);
-			    env->ev->blocker_api.run(blk);
-			    //env->env->free_to_counts(v);
-			    //env->ev->mainloop_api.set_screen_size(sx,sy);
-			    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
-			    env->display = env->gui->empty();
-			    env->display_close = env->gui->empty();
-			    env->codegen_button = env->gui->empty();
-			    env->collect_button = env->gui->empty();
-			    env->ev->shader_api.use(env->sh);
-			    display = false;
-
-			  }
-		        else
-			if (type=="RUN")
-			  {
-			    if (id!=1) {
-			    RUN blk;
-			    blk.id = id;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			int sx = env->ev->mainloop_api.get_screen_sx();
-			int sy = env->ev->mainloop_api.get_screen_sy();
-			//env->ev->mainloop_api.set_screen_size(1200,900);
-			//env->ev->mainloop_api.set_viewport(0,0,1200,900);
-			env->ev->blocker_api.run2(*env->ev,blk);
-			    //env->env->free_to_counts(v);
-			    //env->ev->mainloop_api.set_screen_size(sx,sy);
-			    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
-			    env->display = env->gui->empty();
-			    env->display_close = env->gui->empty();
-			    env->codegen_button = env->gui->empty();
-			    env->collect_button = env->gui->empty();
-			    env->ev->shader_api.use(env->sh);
-			    }
-			    display = false;
-			  }
-		        else
-			if (type=="O")
-			  {
-			    O o;
-			    o.id = id;
-P I18=env->ev->polygon_api.cube(-10,10,-10,10,-10,10);
-VX I32=env->ev->voxel_api.blit_voxel(o,30,30,30,-300,300,-300,300,-300,300,-1,0);
-ARR I33=env->ev->voxel_api.voxel_instancing(I32,1,-300,300,-300,300,-300,300);
- std::vector<int> vec2 = find_array(*env->env,I33)->vec;
- std::vector<PTS> vec;
- for(int i=0;i<vec2.size();i++) vec.push_back(vec2[i]);
- //MT I34=env->ev->materials_api.m_def(*env->ev);
- //MT I35=env->ev->materials_api.phong(*env->ev,I34,-0.3,0.3,-1.0,0xffff8800,0xff666666,15.0);
-MT I35=env->ev->materials_api.gltf_material3(*env->ev,0.5,0.8,1.0,1.0,1.0,1.0,1.0);
-//MT I35=env->ev->materials_api.snow(*env->ev,I34,0xffaaaa88,0xffeeee88,0xffffff88,0.5);
-ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
- 			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-
-			env->display = env->gui->ml_dialog(I36, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-
-			/*
-			    
-			    P p = env->ev->volume_api.rendercubes3(o, 255,255,255,
-								   -300.0, 300.0,
-								   -300.0, 300.0,
-								   -300.0, 300.0);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);*/
-			  }
-			else
-			  if (type=="FD")
-			    {
-			      FD fd;
-			      fd.id = id;
-			      PT pt = env->ev->point_api.point(-300.0, -300.0, -300.0);
-			      V u_x = env->ev->vector_api.vector(600.0, 0.0, 0.0);
-			      V u_y = env->ev->vector_api.vector(0.0, 600.0, 0.0);
-			      V u_z = env->ev->vector_api.vector(0.0, 0.0, 600.0);
-			      BM bm = env->ev->dist_api.render(fd, pt, u_x, u_y, u_z, 300, 300);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
-
-			    }
-		    else
-		      if (type=="IBM")
-			{
-			  IBM bm;
-			  bm.id = id;
-			  BM bm2 = env->ev->bitmap_api.intbitmap_bm(bm);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm2, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+			  int sx = env->ev->mainloop_api.get_screen_sx();
+			  int sy = env->ev->mainloop_api.get_screen_sy();
+			  //env->ev->mainloop_api.set_screen_size(1200,900);
+			  //env->ev->mainloop_api.set_viewport(0,0,1200,900);
+			  env->ev->blocker_api.run2(*env->ev,blk);
+			  //env->env->free_to_counts(v);
+			  //env->ev->mainloop_api.set_screen_size(sx,sy);
+			  //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
+			  env->display = env->gui->empty();
+			  env->display_close = env->gui->empty();
+			  env->codegen_button = env->gui->empty();
+			  env->collect_button = env->gui->empty();
+			  env->ev->shader_api.use(env->sh);
+			  display = false;
 			  
 			} else
-		    if (type=="BM")
-		      {
-			BM bm;
-			bm.id = id;
+			if (type=="TF") {
+			  TF tf;
+			  tf.id = id;
+			  
+			  ML ml = env->ev->mainloop_api.gltf_scene_anim(*env->ev,tf,0,0,"cvbnm");
+			  ML ml2 = env->ev->mainloop_api.send_key_at_time(ml,0.0,99);
 			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
-		      }
-		    else if (type=="HML")
-		      {
-			
-			display = false;
-			clear_codegen();
+			  env->gui->delete_widget(env->mem);
+			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			  
+			} else
+			  if (type=="ML")
+			    {
+			      ML ml;
+			      ml.id = id;
+			      env->env->free_temp_memory();
+			      env->gui->delete_widget(env->mem);
+			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
-			time_t now = time(0);
-			char *dt = ctime(&now);
-			tm *gmtm = gmtime(&now);
-			dt = asctime(gmtm);
-			
-			std::string dt2(dt);
-			dt2 = replace_str(dt2, " ", "");
-			
-			HML ml;
-			ml.id = id;
-			
-			env->ev->mod_api.codegen_reset_counter();
+			    } else
+			    if (type=="MT")
+			      {
+				MT mat;
+				mat.id = id;
+				PT I1=env->ev->point_api.point(0.0,0.0,0.0);
+				P I2=env->ev->polygon_api.sphere(I1,350,30,30);
+				MT I4=mat;
+				ML I5=env->ev->materials_api.bind(I2,I4);
+				
+				ML ml;
+				ml.id = I5.id;
+				env->env->free_temp_memory();
+				env->gui->delete_widget(env->mem);
+				env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
-			std::string htmlfile = find_html2(ml,*env->env);
-			std::string lastline = get_last_line(htmlfile,'@');
-			std::string label,id;
-			std::stringtream ss(lastline);
-			ss >> label >> id;
-			int ii=id.size();
-			for(int i=0;i<ii;i++) { if (id[i]=='=') id=id.substr(0,i); }
-			if (label=="ML")
-			  {
-			    htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id + ",false,false,0.0,1000000.0);@");
-			  }
-			if (label=="P")
-			  {
-			    htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id + ");@";
-			    htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);@";
+			      } else
+			      if (type=="KF")
+				{
+				  KF kf;
+				  kf.id = id;
+				  env->env->free_temp_memory();
+				  env->gui->delete_widget(env->mem);
+				  ML ml = env->ev->vertex_anim_api.vertex_anim_render(*env->ev, kf);
+				  
+				  env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+				  
+				}
+			      else
+				if (type=="BLK")
+				  {
+				    
+				    BLK blk;
+				    blk.id = id;
+				    env->env->free_temp_memory();
+				    env->gui->delete_widget(env->mem);
+				    //std::vector<int> v = env->env->store_counts();
+				    int sx = env->ev->mainloop_api.get_screen_sx();
+				    int sy = env->ev->mainloop_api.get_screen_sy();
+				    //env->ev->mainloop_api.set_screen_size(1200,900);
+				    //env->ev->mainloop_api.set_viewport(0,0,1200,900);
+				    env->ev->blocker_api.run(blk);
+				    //env->env->free_to_counts(v);
+				    //env->ev->mainloop_api.set_screen_size(sx,sy);
+				    //env->ev->mainloop_api.set_viewport(0,0,sx,sy);
+				    env->display = env->gui->empty();
+				    env->display_close = env->gui->empty();
+				    env->codegen_button = env->gui->empty();
+				    env->collect_button = env->gui->empty();
+				    env->ev->shader_api.use(env->sh);
+				    display = false;
+				    
+				  }
+				else
+				  if (type=="RUN")
+				    {
+				      if (id!=1) {
+					RUN blk;
+					blk.id = id;
+					env->env->free_temp_memory();
+					env->gui->delete_widget(env->mem);
+					int sx = env->ev->mainloop_api.get_screen_sx();
+					int sy = env->ev->mainloop_api.get_screen_sy();
+					//env->ev->mainloop_api.set_screen_size(1200,900);
+					//env->ev->mainloop_api.set_viewport(0,0,1200,900);
+					env->ev->blocker_api.run2(*env->ev,blk);
+					//env->env->free_to_counts(v);
+					//env->ev->mainloop_api.set_screen_size(sx,sy);
+					//env->ev->mainloop_api.set_viewport(0,0,sx,sy);
+					env->display = env->gui->empty();
+					env->display_close = env->gui->empty();
+					env->codegen_button = env->gui->empty();
+					env->collect_button = env->gui->empty();
+					env->ev->shader_api.use(env->sh);
+				      }
+				      display = false;
+				    }
+				  else
+				    if (type=="O")
+				      {
+					O o;
+					o.id = id;
+					P I18=env->ev->polygon_api.cube(-10,10,-10,10,-10,10);
+					VX I32=env->ev->voxel_api.blit_voxel(o,30,30,30,-300,300,-300,300,-300,300,-1,0);
+					ARR I33=env->ev->voxel_api.voxel_instancing(I32,1,-300,300,-300,300,-300,300);
+					std::vector<int> vec2 = find_array(*env->env,I33)->vec;
+					std::vector<PTS> vec;
+					for(int i=0;i<vec2.size();i++) vec.push_back(vec2[i]);
+					//MT I34=env->ev->materials_api.m_def(*env->ev);
+					//MT I35=env->ev->materials_api.phong(*env->ev,I34,-0.3,0.3,-1.0,0xffff8800,0xff666666,15.0);
+					MT I35=env->ev->materials_api.gltf_material3(*env->ev,0.5,0.8,1.0,1.0,1.0,1.0,1.0);
+					//MT I35=env->ev->materials_api.snow(*env->ev,I34,0xffaaaa88,0xffeeee88,0xffffff88,0.5);
+					ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
+					env->env->free_temp_memory();
+					env->gui->delete_widget(env->mem);
+					
+					env->display = env->gui->ml_dialog(I36, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
-			  }
-			if (label=="MN")
-			  {
-			    /* TODO
-			M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
-			LI p = env->ev->points_api.matrix_display(*env->ev, m);
-			ML I5=ev.lines_api.ml_li_render(ev,E1,1.0);
-			    */
-			  }
-			if (label=="MT")
-			  {
-			    htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);@";
-			    htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);@";
-			    htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id + ");@";
-			    htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);@");
-			  }
-
-
-			std::string homepage = find_homepage2(ml,*env->env);
-			int val = rand();
-			std::stringstream ss;
-			ss << val;
-			htmlfile = replace_str(htmlfile, "&", "&amp;");
-			htmlfile = replace_str(htmlfile, ">", "&gt;");
-			htmlfile = replace_str(htmlfile, "<", "&lt;");
-			htmlfile = replace_str(htmlfile, "\"", "&quot;");
-			htmlfile = replace_str(htmlfile, "\'", "&apos;");
-#ifdef WINDOWS
-			//std::string drive = getenv("systemdrive");
-			//std::string path = getenv("homepath");
-			//std::string prefix = drive + path + "\\";
-			
-			//std::ofstream f((prefix + "tst.html").c_str());
-			//f << htmlfile;
-			//f.close();
-			int s = htmlfile.size()/3000+1;
-			for(int i=0;i<s;i++)
-			  {
-			    int end = (i+1)*3000;
-			    if (end>htmlfile.size()) end=htmlfile.size();
-			    std::string file = htmlfile.substr(i*3000,end-i*3000);
-			    if (i==0)
-			      send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=0\"" ,"Content-Type:text/plain", file);
-			    else
-			      send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=1\"" ,"Content-Type:text/plain", file);
-			  }
 			/*
-			if (s==0)
-			  {
-			    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"\"" ,"Content-Type:text/plain", htmlfile);
-	
-			  }
-			*/ 
 			    
-			htmlfile = replace_string(htmlfile,'\n','@');
-			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("explorer \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("&date=") + dt2 + std::string("\"");
-			//std::cout << cmd << std::endl;
-			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
-			pthread_system(cmd.c_str());
+			  P p = env->ev->volume_api.rendercubes3(o, 255,255,255,
+			  -300.0, 300.0,
+			  -300.0, 300.0,
+			  -300.0, 300.0);
+			  env->env->free_temp_memory();
+			  env->gui->delete_widget(env->mem);
+			  env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);*/
+				      }
+				    else
+				      if (type=="FD")
+					{
+					  FD fd;
+					  fd.id = id;
+					  PT pt = env->ev->point_api.point(-300.0, -300.0, -300.0);
+					  V u_x = env->ev->vector_api.vector(600.0, 0.0, 0.0);
+					  V u_y = env->ev->vector_api.vector(0.0, 600.0, 0.0);
+					  V u_z = env->ev->vector_api.vector(0.0, 0.0, 600.0);
+					  BM bm = env->ev->dist_api.render(fd, pt, u_x, u_y, u_z, 300, 300);
+					  env->env->free_temp_memory();
+					  env->gui->delete_widget(env->mem);
+					  env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					  
+					}
+				      else
+					if (type=="IBM")
+					  {
+					    IBM bm;
+					    bm.id = id;
+					    BM bm2 = env->ev->bitmap_api.intbitmap_bm(bm);
+					    env->env->free_temp_memory();
+					    env->gui->delete_widget(env->mem);
+					    env->display = env->gui->bitmap_dialog(bm2, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					    
+					  } else
+					  if (type=="BM")
+					    {
+					      BM bm;
+					      bm.id = id;
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					    }
+					  else if (type=="HML")
+					    {
+					      
+					      display = false;
+					      clear_codegen();
+					      
+					      time_t now = time(0);
+					      char *dt = ctime(&now);
+					      tm *gmtm = gmtime(&now);
+					      dt = asctime(gmtm);
+					      
+					      std::string dt2(dt);
+					      dt2 = replace_str(dt2, " ", "");
+			
+					      HML ml;
+					      ml.id = id;
+					      
+					      env->ev->mod_api.codegen_reset_counter();
+
+					      std::string htmlfile = find_html2(ml,*env->env);
+					      std::string lastline = get_last_line(htmlfile,'@');
+					      std::string label,id;
+					      std::stringstream ss(lastline);
+					      ss >> label >> id;
+					      int ii=id.size();
+					      for(int i=0;i<ii;i++) { if (id[i]=='=') id=id.substr(0,i); }
+					      if (label=="ML")
+						{
+						  htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id + ",false,false,0.0,1000000.0);@";
+						}
+					      if (label=="P")
+						{
+						  htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id + ");@";
+						  htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);@";
+						  
+						}
+					      if (label=="MN")
+						{
+						  /* TODO
+						     M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
+						     LI p = env->ev->points_api.matrix_display(*env->ev, m);
+						     ML I5=ev.lines_api.ml_li_render(ev,E1,1.0);
+						  */
+						}
+					      if (label=="MT")
+						{
+						  htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);@";
+						  htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);@";
+						  htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id + ");@";
+						  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);@");
+						}
+
+
+					      std::string homepage = find_homepage2(ml,*env->env);
+					      int val = rand();
+					      std::stringstream ss2;
+					      ss2 << val;
+					      htmlfile = replace_str(htmlfile, "&", "&amp;");
+					      htmlfile = replace_str(htmlfile, ">", "&gt;");
+					      htmlfile = replace_str(htmlfile, "<", "&lt;");
+					      htmlfile = replace_str(htmlfile, "\"", "&quot;");
+					      htmlfile = replace_str(htmlfile, "\'", "&apos;");
+#ifdef WINDOWS
+					      //std::string drive = getenv("systemdrive");
+					      //std::string path = getenv("homepath");
+					      //std::string prefix = drive + path + "\\";
+			
+					      //std::ofstream f((prefix + "tst.html").c_str());
+					      //f << htmlfile;
+					      //f.close();
+					      int s = htmlfile.size()/3000+1;
+					      for(int i=0;i<s;i++)
+						{
+						  int end = (i+1)*3000;
+						  if (end>htmlfile.size()) end=htmlfile.size();
+						  std::string file = htmlfile.substr(i*3000,end-i*3000);
+						  if (i==0)
+						    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=0\"" ,"Content-Type:text/plain", file);
+						  else
+						    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=1\"" ,"Content-Type:text/plain", file);
+						}
+					      /*
+						if (s==0)
+						{
+						send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"\"" ,"Content-Type:text/plain", htmlfile);
+						
+						}
+					      */ 
+					      
+					      htmlfile = replace_string(htmlfile,'\n','@');
+					      homepage = replace_string(homepage,'\n','@');
+					      std::string cmd = std::string("explorer \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+					      //std::cout << cmd << std::endl;
+					      //if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
+					      pthread_system(cmd.c_str());
 			
 #else
-			//std::string home = getenv("HOME");
-			//std::string prefix = home + "/_gameapi_builder";
-			//system((std::string("mkdir -p ") + prefix).c_str());
+					      //std::string home = getenv("HOME");
+					      //std::string prefix = home + "/_gameapi_builder";
+					      //system((std::string("mkdir -p ") + prefix).c_str());
 			
-			//prefix+="/";
+					      //prefix+="/";
 
-			//std::ofstream f2((prefix + "lighthttpd.conf").c_str());
-			//f2 << "server.document-root = \"" + prefix + "\"" << std::endl;
-			//f2 << "server.port = 3000" << std::endl;
-			//f2 << "mimetype.assign = (" << std::endl;
-			//f2 << " \".html\" => \"text/html\"" << std::endl;
-			//f2 << ")";
-			//f2.close();
+					      //std::ofstream f2((prefix + "lighthttpd.conf").c_str());
+					      //f2 << "server.document-root = \"" + prefix + "\"" << std::endl;
+					      //f2 << "server.port = 3000" << std::endl;
+					      //f2 << "mimetype.assign = (" << std::endl;
+					      //f2 << " \".html\" => \"text/html\"" << std::endl;
+					      //f2 << ")";
+					      //f2.close();
 
-			//std::string cmd2 = "lighttpd -D -f " + prefix + "lighthttpd.conf";
-			//pthread_system(cmd2.c_str());
+					      //std::string cmd2 = "lighttpd -D -f " + prefix + "lighthttpd.conf";
+					      //pthread_system(cmd2.c_str());
 			
 			
-			//std::ofstream f((prefix + "tst.html").c_str());
-			//f << htmlfile;
-			//f.close();
-			send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss.str(),"Content-Type: text/plain", htmlfile);
+					      //std::ofstream f((prefix + "tst.html").c_str());
+					      //f << htmlfile;
+					      //f.close();
+					      send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss.str(),"Content-Type: text/plain", htmlfile);
 
 			
-			htmlfile = replace_string(htmlfile,'\n','@');
-			homepage = replace_string(homepage,'\n','@');
-			std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss.str() + std::string("&date=") + dt2 + std::string("\"");
-			//if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
-			//std::cout << cmd << std::endl;
-			pthread_system(cmd.c_str());
+					      htmlfile = replace_string(htmlfile,'\n','@');
+					      homepage = replace_string(homepage,'\n','@');
+					      std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+					      //if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
+					      //std::cout << cmd << std::endl;
+					      pthread_system(cmd.c_str());
 			
 #endif
-		      }
-		    else if (type=="WV")
-		      {
-			WV wv;
-			wv.id = id;
-			BM bm = env->ev->waveform_api.waveform_bitmap(wv,300,100,0x0, 0xffffffff);
-			//bm.id = id;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
-		      } 
-		    else if (type=="CBM")
-		      {
-			CBM cbm;
-			cbm.id = id;
-			BM bm = env->ev->cont_bitmap_api.sample(cbm, 200,200);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
-
-		      }
-		    else if (type=="BB")
-		      {
-			BB bb;
-			bb.id = id;
-			BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					    }
+					  else if (type=="WV")
+					    {
+					      WV wv;
+					      wv.id = id;
+					      BM bm = env->ev->waveform_api.waveform_bitmap(wv,300,100,0x0, 0xffffffff);
+					      //bm.id = id;
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					    } 
+					  else if (type=="CBM")
+					    {
+					      CBM cbm;
+					      cbm.id = id;
+					      BM bm = env->ev->cont_bitmap_api.sample(cbm, 200,200);
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					      
+					    }
+					  else if (type=="BB")
+					    {
+					      BB bb;
+					      bb.id = id;
+					      BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					      
+					    }
+					  else if (type=="FB")
+					    {
+					      FB fb;
+					      fb.id = id;
 			
-		      }
-		    else if (type=="FB")
-		      {
-			FB fb;
-			fb.id = id;
+					      //BB bb = env->ev->float_bitmap_api.to_bool_mod(fb,100.0);
+					      //BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
+					      BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
+					      
+					    }
+					  else if (type=="P")
+					    {
+					      P p;
+					      p.id = id;
+					      env->ev->polygon_api.print_stat(p);
+					      //std::cout << "ID: " << p.id << std::endl;
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
+					    }
+					  else if (type=="MN")
+					    {
+					      MN mn;
+					      mn.id = id;
+					      M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
+					      LI p = env->ev->points_api.matrix_display(*env->ev, m);
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			
-			//BB bb = env->ev->float_bitmap_api.to_bool_mod(fb,100.0);
-			//BM bm = env->ev->bool_bitmap_api.to_bitmap(bb, 255,255,255,255, 0,0,0,0);
-			BM bm = env->ev->float_bitmap_api.to_grayscale_color(fb, 255,255,255,255, 0,0,0,0);
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->bitmap_dialog(bm, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->atlas, env->atlas_bm);
-			
-		      }
-		    else if (type=="P")
-		      {
-			P p;
-			p.id = id;
-			env->ev->polygon_api.print_stat(p);
-			//std::cout << "ID: " << p.id << std::endl;
-			  env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->polygon_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button, env->mem);
-		      }
-		    else if (type=="MN")
-		      {
-			MN mn;
-			mn.id = id;
-			M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
-			LI p = env->ev->points_api.matrix_display(*env->ev, m);
-			env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-			
-		      }
-		    else if (type=="LI")
-		      {
-			LI p;
-			p.id = id;
-			 env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
-			
-		      }
-		    else if (type=="C")
-		      {
-			C p0;
-			p0.id = id;
-			LI p = env->ev->curve_api.to_lines(p0, 40);
-			 env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);
-			
-		      }
-		    else if (type=="PTS")
-		      {
-			PTS p;
-			p.id = id;
-			//std::cout << "PTS NumPoints: " << env->ev->points_api.NumPoints(p) << std::endl;
-			//std::cout << "PTS0: " << env->ev->points_api.pos_x(p,0) << " " << env->ev->points_api.pos_y(p,0) << " " << env->ev->points_api.pos_z(p,0) << std::endl;
-			env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);
-
-		      }
-		    else if (type=="SFO")
-		      {
-			SFO p;
-			p.id = id;
-			env->env->free_temp_memory();
-			env->gui->delete_widget(env->mem);
-			env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y, env->codegen_button, env->collect_button);
-			
-		      }
-		    else 
-		      {
-			display = false;
+					    }
+					  else if (type=="LI")
+					    {
+					      LI p;
+					      p.id = id;
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+					      
+					    }
+					  else if (type=="C")
+					    {
+					      C p0;
+					      p0.id = id;
+					      LI p = env->ev->curve_api.to_lines(p0, 40);
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->lines_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);
+					      
+					    }
+					  else if (type=="PTS")
+					    {
+					      PTS p;
+					      p.id = id;
+					      //std::cout << "PTS NumPoints: " << env->ev->points_api.NumPoints(p) << std::endl;
+					      //std::cout << "PTS0: " << env->ev->points_api.pos_x(p,0) << " " << env->ev->points_api.pos_y(p,0) << " " << env->ev->points_api.pos_z(p,0) << std::endl;
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->pts_dialog(p, env->sh3, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button,env->collect_button);
+					      
+					    }
+					  else if (type=="SFO")
+					    {
+					      SFO p;
+					      p.id = id;
+					      env->env->free_temp_memory();
+					      env->gui->delete_widget(env->mem);
+					      env->display = env->gui->shader_dialog(p, env->display_close, env->atlas3, env->atlas_bm3, env->screen_size_x, env->screen_size_y, env->codegen_button, env->collect_button);
+					      
+					    }
+					  else 
+					    {
+					      display = false;
 #if 0
-			int s = env->dlls.size();
-			bool success = false;
-			for(int i=0;i<s;i++)
-			  {
-			    DllData &d = env->dlls[i];
-			    if (d.type_symbol)
-			    if (type==(*d.type_symbol)())
-			      {
-				(*d.display)(id,0);
-				success = true;
-				break;
-			      }
-			  }
-			if (!success) {
-			  std::cout << "Type not found" << type << std::endl;
-			}
+					      int s = env->dlls.size();
+					      bool success = false;
+					      for(int i=0;i<s;i++)
+						{
+						  DllData &d = env->dlls[i];
+						  if (d.type_symbol)
+						    if (type==(*d.type_symbol)())
+						      {
+							(*d.display)(id,0);
+							success = true;
+							break;
+						      }
+						}
+					      if (!success) {
+						std::cout << "Type not found" << type << std::endl;
+					      }
 #endif
-		      }
-		    if (display)
-		      {
-			env->gui->set_pos(env->display, 200.0, 50.0);
-			env->display_visible = true;
-			  g_env->ev->mainloop_api.end_editor_state();
-
-		      }
-		    env->progress_visible = false;
+					    }
+		if (display)
+		  {
+		    env->gui->set_pos(env->display, 200.0, 50.0);
+		    env->display_visible = true;
+		    g_env->ev->mainloop_api.end_editor_state();
 		    
-	          }
+		  }
+		env->progress_visible = false;
+		
+	      }
 	  }
+      }
   
-	
-	if (!env->editor_visible)
+    
+    if (!env->editor_visible)
+      {
+	//	    int s = env->edit_clicks.size(); //env->gui->num_childs(env->canvas);
+	//for(int i=0;i<s;i++)
+	//{
+	//std::cout << "Child " << i << std::endl;
+	//	W w = //env->gui->get_child(env->canvas, i);
+	//	  env->edit_clicks[i];
+	//	int chosen = env->gui->chosen_item(w);
+	//	if (!env->editor_visible && chosen == 0)
+	if (properties_button==true)
 	  {
-	    //	    int s = env->edit_clicks.size(); //env->gui->num_childs(env->canvas);
-	    //for(int i=0;i<s;i++)
-	    //{
-		//std::cout << "Child " << i << std::endl;
-	    //	W w = //env->gui->get_child(env->canvas, i);
-	    //	  env->edit_clicks[i];
-	    //	int chosen = env->gui->chosen_item(w);
-	    //	if (!env->editor_visible && chosen == 0)
-	    if (properties_button==true)
+	    properties_button = false;
 	    {
-	      properties_button = false;
-		  {
-		    // env->dialog_i1 = i;
-		    std::string uid = popup_uid;
-		    //std::string uid = env->gui->get_id(w);
-		    //std::cout << "Chosen uid: " << uid << std::endl;
-		    env->dialog_uid = uid;
-		    ///std::vector<GuiApi::EditTypes*> vec4;
-		    env->vec4.clear();
-		    env->edit_data.clear();
-		    std::vector<std::string> types;
-		    types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
-		    int s = types.size();
-		    for(int w=0;w<s;w++)
-		      {
-			env->edit_data.push_back(GuiApi::EditTypes());
-		      }
-		    for(int ww = 0;ww<s;ww++)
-		      {
-			env->vec4.push_back(&env->edit_data[ww]);
-		      }
+	      std::string uid = popup_uid;
+	      env->dialog_uid = uid;
+	      env->vec4.clear();
+	      env->edit_data.clear();
+	      std::vector<std::string> types;
+	      types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
+	      int s = types.size();
+	      for(int w=0;w<s;w++)
+		{
+		  env->edit_data.push_back(GuiApi::EditTypes());
+		}
+	      for(int ww = 0;ww<s;ww++)
+		{
+		  env->vec4.push_back(&env->edit_data[ww]);
+		}
+	      
+	      std::vector<std::string> labels;
+	      labels = env->ev->mod_api.labels_from_function(env->mod, 0, uid);
+	      std::vector<std::string*> refs;
+	      refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
+	      
+	      //std::cout << labels << " " << refs << std::endl;
+	      assert(refs.size()==labels.size());
+	      assert(types.size()==labels.size());
+	      for(int e=0;e<s;e++)
+		{
+		  std::string *ref = refs[e];
+		  env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
+		}
+	      
+	      
+	      
+	      env->enum_click_targets = std::vector<GameApi::W>();
+	      env->editor = env->gui->edit_dialog(*env->ev,labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
+	      env->enum_types = types;
+	      env->gui->set_pos(env->editor, 200,50);
+	      
+	      env->editor_visible = true;
 		    
-		    std::vector<std::string> labels;
-		    labels = env->ev->mod_api.labels_from_function(env->mod, 0, uid);
-		    std::vector<std::string*> refs;
-		    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
-		    
-		    //std::cout << labels << " " << refs << std::endl;
-		    assert(refs.size()==labels.size());
-		    assert(types.size()==labels.size());
-		    for(int e=0;e<s;e++)
-		      {
-			std::string *ref = refs[e];
-			env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
-		      }
-		    
-		    //for(int kk = 0; kk < s; kk++)
-		    //     std::cout << env->vec4[kk] << " " << env->vec4[kk]->i_value << std::endl;
-
-		    env->enum_click_targets = std::vector<GameApi::W>();
-		    env->editor = env->gui->edit_dialog(*env->ev,labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
-		    env->enum_types = types;
-		    env->gui->set_pos(env->editor, 200,50);
-		    
-		    env->editor_visible = true;
-		    
-		  }
-	      }
-	  }
-
-	PT cursor_pos = e.cursor_pos;
-
-	//if (env->progress_visible)
-	//  {
-	//   env->gui->update(g_progress_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	// }
-	bool update = true;
-	bool update2 = true;
-	if (enum_popup.id!=0) update2=false;
-	int s55 = env->enum_click_targets.size();
-	for(int i=0;i<s55;i++)
-	  {
-	    if (enum_editor_callback(*env->env, *env->gui, env->enum_click_targets[i], env->enum_types[i], env->ev->point_api.pt_x(cursor_pos), env->ev->point_api.pt_y(cursor_pos), env->atlas2, env->atlas_bm2, 5, env->areas, e.button,e.type)) break;
-	    // env->gui->update(env->enum_click_targets[i],cursor_pos,e.button,e.ch,e.type,e.mouse_wheel_y);
-
-	  }
-	
-
-
-	env->gui->update(env->line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	if (enum_popup.id!=0 && update) {
-	  env->gui->update(enum_popup, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-
-
-	}
-	
-	if (env->popup_visible && enum_popup.id==0 && update)
-	  env->gui->update(env->popup_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	if (env->display_visible && enum_popup.id==0 && update)
-	  {
-	    env->gui->update(env->display, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	  }
-	if (env->editor_visible && enum_popup.id==0 && update)
-	  env->gui->update(env->editor, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	//env->gui->update(env->txt, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	if (enum_popup.id!=0) update=false;
-	if (env->popup_visible) update=false;
-	if (env->display_visible) update=false;
-	if (env->editor_visible) update=false;
-
-
-	
-	if (e.button == 0 && env->popup_visible) { 
-	  PT pos = cursor_pos;
-	  int x = env->ev->point_api.pt_x(pos);
-	  int y = env->ev->point_api.pt_y(pos);
-	  int px = env->gui->pos_x(env->popup_dialog);
-	  int py = env->gui->pos_y(env->popup_dialog);
-	  int sx = env->gui->size_x(env->popup_dialog);
-	  int sy = env->gui->size_y(env->popup_dialog);
-
-	  if (x>=px && y>=py && x<px+sx && y<py+sy)
-	    {
-	      /* do nothing */
 	    }
-	  else
-	    {
-	      env->popup_visible = false; 
-	      env->popup_selections = std::vector<W>();
-	    }
-	}
-
-	if (e.button == 0 && enum_popup.id!=0) { 
-	  PT pos = cursor_pos;
-	  int x = env->ev->point_api.pt_x(pos);
-	  int y = env->ev->point_api.pt_y(pos);
-	  int px = env->gui->pos_x(enum_popup);
-	  int py = env->gui->pos_y(enum_popup);
-	  int sx = env->gui->size_x(enum_popup);
-	  int sy = env->gui->size_y(enum_popup);
-
-	  if (x>=px && y>=py && x<px+sx && y<py+sy)
-	    {
-	      /* do nothing */
-	    }
-	  else
-	    {
-	      enum_popup.id = 0; 
-	    }
-	}
-
-	
-	//env->gui->update(env->txt2, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	if (update) {
-	env->gui->update(env->scroll_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-	//env->gui->update(env->wave, e.cursor_pos, e.button);
-	//env->gui->update(env->gameapi, e.cursor_pos, e.button);
-	//env->gui->update(env->test1, e.cursor_pos, e.button);
-	env->gui->update(env->canvas_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->scrollbar_x, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-	//env->gui->update(env->scrollbar_y, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-	env->gui->update(env->list_tooltips, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	
-	//int s4 = env->connect_links.size();
-	//for(int i4 = 0;i4<s4;i4++)
-	//  {
-	//    W wid = env->connect_links[i4];
-	//    env->gui->update(wid, e.cursor_pos, e.button, e.ch, e.type);
-	//  }
-	
-	
-	if (env->insert_ongoing)
-	  {
-	    env->gui->update(env->insert_widget, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
 	  }
-	if (env->connect_ongoing)
-	  {
-	    env->gui->update(env->connect_widget, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	    env->gui->update(env->connect_line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	  }
-	}
-	if (env->has_wayland)
-	  {
-	    env->gui->update(env->window_decoration, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	  }
+      }
+  
+    PT cursor_pos = e.cursor_pos;
+    
 
-	if (e.button==0 && e.type==1025 && !update2)
+    bool update = true;
+    bool update2 = true;
+    if (enum_popup.id!=0) update2=false;
+    int s55 = env->enum_click_targets.size();
+    for(int i=0;i<s55;i++)
+      {
+	if (enum_editor_callback(*env->env, *env->gui, env->enum_click_targets[i], env->enum_types[i], env->ev->point_api.pt_x(cursor_pos), env->ev->point_api.pt_y(cursor_pos), env->atlas2, env->atlas_bm2, 5, env->areas, e.button,e.type)) break;
+	
+	
+      }
+    
+    
+
+    env->gui->update(env->line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+    if (enum_popup.id!=0 && update) {
+      env->gui->update(enum_popup, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+
+      
+    }
+	
+    if (env->popup_visible && enum_popup.id==0 && update)
+      env->gui->update(env->popup_dialog, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+    if (env->display_visible && enum_popup.id==0 && update)
+      {
+	env->gui->update(env->display, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+      }
+    if (env->editor_visible && enum_popup.id==0 && update)
+      env->gui->update(env->editor, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+    
+    if (enum_popup.id!=0) update=false;
+    if (env->popup_visible) update=false;
+    if (env->display_visible) update=false;
+    if (env->editor_visible) update=false;
+    
+
+	
+    if (e.button == 0 && env->popup_visible) { 
+      PT pos = cursor_pos;
+      int x = env->ev->point_api.pt_x(pos);
+      int y = env->ev->point_api.pt_y(pos);
+      int px = env->gui->pos_x(env->popup_dialog);
+      int py = env->gui->pos_y(env->popup_dialog);
+      int sx = env->gui->size_x(env->popup_dialog);
+      int sy = env->gui->size_y(env->popup_dialog);
+      
+      if (x>=px && y>=py && x<px+sx && y<py+sy)
+	{
+	  /* do nothing */
+	}
+      else
+	{
+	  env->popup_visible = false; 
+	  env->popup_selections = std::vector<W>();
+	}
+    }
+    
+    if (e.button == 0 && enum_popup.id!=0) { 
+      PT pos = cursor_pos;
+      int x = env->ev->point_api.pt_x(pos);
+      int y = env->ev->point_api.pt_y(pos);
+      int px = env->gui->pos_x(enum_popup);
+      int py = env->gui->pos_y(enum_popup);
+      int sx = env->gui->size_x(enum_popup);
+      int sy = env->gui->size_y(enum_popup);
+      
+      if (x>=px && y>=py && x<px+sx && y<py+sy)
+	{
+	  /* do nothing */
+	}
+      else
+	{
+	  enum_popup.id = 0; 
+	}
+    }
+
+    
+
+    if (update) {
+      env->gui->update(env->scroll_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+      
+      env->gui->update(env->canvas_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+      env->gui->update(env->scrollbar_x, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+      
+      env->gui->update(env->list_tooltips, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	
+      
+      if (env->insert_ongoing)
+	{
+	  env->gui->update(env->insert_widget, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	}
+      if (env->connect_ongoing)
+	{
+	  env->gui->update(env->connect_widget, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	  env->gui->update(env->connect_line, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+	}
+    }
+    if (env->has_wayland)
+      {
+	env->gui->update(env->window_decoration, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+      }
+
+    if (e.button==0 && e.type==1025 && !update2)
+      {
+	int s = env->areas.size();
+	for(int i=0;i<s;i++)
 	  {
-	    int s = env->areas.size();
-	    for(int i=0;i<s;i++)
+	    //std::cout << "Area" << i << std::endl;
+	    W wid = env->areas[i];
+	    env->gui->update(wid,cursor_pos,e.button,e.ch,e.type,e.mouse_wheel_y);
+	    int clicked = env->gui->chosen_item(wid);
+	    //std::cout << "Area " << i << "==" << clicked << std::endl;
+	    if (clicked==0)
 	      {
-		//std::cout << "Area" << i << std::endl;
-		W wid = env->areas[i];
-		env->gui->update(wid,cursor_pos,e.button,e.ch,e.type,e.mouse_wheel_y);
-		int clicked = env->gui->chosen_item(wid);
-		//std::cout << "Area " << i << "==" << clicked << std::endl;
-		if (clicked==0)
-		  {
-		    //std::cout << "Clicked" << i << std::endl;
-		    enum_popup.id=0;
-		    enum_set_value(*env->env,enum_click, i);
-
-		  }
+		//std::cout << "Clicked" << i << std::endl;
+		enum_popup.id=0;
+		enum_set_value(*env->env,enum_click, i);
+		
 	      }
 	  }
-	
-	if (e.button==0 && update)
-	  {
+      }
+    
+    if (e.button==0 && update)
+      {
 	int cs = env->connect_clicks.size();
 	for(int ci = 0;ci<cs;ci++)
 	  {
@@ -2029,18 +1913,18 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 		int sz = env->gui->get_size2(wid);
 		if (sz<0||sz>25) sz=1;
 		if (j<0||j>25) j=0;
-
+		
 		//std::cout << "Connect_click: " << j << " " << sz << std::endl;
 		W canvas_item = env->gui->find_canvas_item(env->canvas, uid);
 		if (canvas_item.id==-1) continue;
-
+		
 		BM bm = env->ev->bitmap_api.newbitmap(2,2);
 		W ico_1 = env->gui->icon(bm);
 		env->connect_widget = env->gui->insert_widget(ico_1, std::bind(&connect_target, _1, _2, env));
 		
-		  int yy = 16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz;
-		  if (sz<=1) yy=16+5+4+(env->gui->size_y(canvas_item)-16-16)/2;
-		  env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),yy /*16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz*/,
+		int yy = 16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz;
+		if (sz<=1) yy=16+5+4+(env->gui->size_y(canvas_item)-16-16)/2;
+		env->connect_line = env->gui->line(canvas_item, env->gui->size_x(canvas_item),yy /*16+16+5+4+(env->gui->size_y(canvas_item)-16-16)*j/sz*/,
 						   env->connect_widget, 0, 0, env->sh2, env->sh);
 		
 		env->connect_start_uid = uid;
@@ -2051,237 +1935,205 @@ ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 	      }
 	    
 	  }
-
-	  }
-#if 0
-	float param_x = env->gui->dynamic_param(env->txt2, 0);
-	env->gui->set_dynamic_param(env->scroll_area, 1, param_x);
-	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
-	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
-	//float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
-	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
-#endif
-
-	if (update)
-	  env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
 	
-	//int area_y = env->gui->size_y(env->array);
-	//std::cout << area_y << std::endl;
-	//env->gui->set_dynamic_param(env->txt2, 0, area_y);
-	
-	if (env->editor_visible && enum_popup.id==0 && update2)
+      }
+  
+    
+    if (update)
+      env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
+    
+    //int area_y = env->gui->size_y(env->array);
+    //std::cout << area_y << std::endl;
+    //env->gui->set_dynamic_param(env->txt2, 0, area_y);
+    
+    if (env->editor_visible && enum_popup.id==0 && update2)
+      {
+	int diag_cancel = env->gui->chosen_item(env->dialog_cancel);
+	if (diag_cancel==0)
 	  {
-	    int diag_cancel = env->gui->chosen_item(env->dialog_cancel);
-	    if (diag_cancel==0)
+	    env->editor_visible = false;
+	  }
+	int diag_ok = env->gui->chosen_item(env->dialog_ok);
+	if (diag_ok==0)
+	  {
+	    env->editor_visible = false;
+	    
+	    int i = env->dialog_i1;
+	    std::string uid = env->dialog_uid;
+	    std::vector<std::string*> refs;
+	    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
+	    std::vector<std::string> types;
+	    types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
+	    
+	    int s = refs.size();
+	    for(int i=0;i<s;i++)
 	      {
-		env->editor_visible = false;
-	      }
-	    int diag_ok = env->gui->chosen_item(env->dialog_ok);
-	    if (diag_ok==0)
-	      {
-		env->editor_visible = false;
-		
-		int i = env->dialog_i1;
-		std::string uid = env->dialog_uid;
-		std::vector<std::string*> refs;
-		refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
-		std::vector<std::string> types;
-		types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
-		
-		int s = refs.size();
-		for(int i=0;i<s;i++)
-		  {
-		    std::string *ref = refs[i];
-		    //std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
-		    std::string val = *ref;
-		    env->gui->generic_to_string(*env->vec4[i], types[i], val);
-		    *ref = val;
-		  }
+		std::string *ref = refs[i];
+		//std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
+		std::string val = *ref;
+		env->gui->generic_to_string(*env->vec4[i], types[i], val);
+		*ref = val;
 	      }
 	  }
-	if (e.button==-1) { env->flip_ongoing = false; }
-	
-	int sel = env->gui->chosen_item(env->scroll_area);
-	if (sel != -1 && e.button==0 && e.type==1025 && !env->insert_ongoing && update)
+      }
+    if (e.button==-1) { env->flip_ongoing = false; }
+    
+    int sel = env->gui->chosen_item(env->scroll_area);
+    if (sel != -1 && e.button==0 && e.type==1025 && !env->insert_ongoing && update)
+      {
+	//std::cout << "Scroll_area: " << sel << std::endl;
+	W w = env->gui->get_child(env->array, sel);
+	int sel2 = env->gui->chosen_item(w);
+	//std::cout << "Chosen: " << sel2 << std::endl;
+	if (sel2 == 0 && !env->flip_ongoing)
 	  {
-	    //std::cout << "Scroll_area: " << sel << std::endl;
-	    W w = env->gui->get_child(env->array, sel);
-	    int sel2 = env->gui->chosen_item(w);
-	    //std::cout << "Chosen: " << sel2 << std::endl;
-	    if (sel2 == 0 && !env->flip_ongoing)
+	    //std::cout << "Flip!" << std::endl;
+	    bool b = env->flip_status[sel];
+	    b = !b;
+	    env->flip_status[sel] = b;
+	    
+	    env->gui->select_item(w, b?0:1);
+	    env->flip_ongoing = true;
+	    env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
+	    //env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+	    
+	  }
+	if (sel2>0)
+	  {
+	    std::string name;
+	    //std::cout << "SEL: " << sel << " " << sel2 << std::endl;
+	    switch(sel)
 	      {
-		//std::cout << "Flip!" << std::endl;
-		bool b = env->flip_status[sel];
-		b = !b;
-		env->flip_status[sel] = b;
+	      case 0:
+		name = env->gui->bitmapapi_functions_item_label(sel2-1);
+		break;
+	      case 1: 
+		name = env->gui->boolbitmapapi_functions_item_label(sel2-1);
+		break;
+	      case 2: 
+		name = env->gui->floatbitmapapi_functions_item_label(sel2-1);
+		break;
+	      case 3:
+		name = env->gui->polygonapi_functions_item_label(sel2-1);
+		break;
 		
-		env->gui->select_item(w, b?0:1);
-		env->flip_ongoing = true;
-		env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
-		//env->gui->update(env->scroll_area, e.cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
-
-	      }
-	    if (sel2>0)
-	      {
-		std::string name;
-		//std::cout << "SEL: " << sel << " " << sel2 << std::endl;
-		switch(sel)
-		  {
-		  case 0:
-		    name = env->gui->bitmapapi_functions_item_label(sel2-1);
-		    break;
-		  case 1: 
-		    name = env->gui->boolbitmapapi_functions_item_label(sel2-1);
-		    break;
-		  case 2: 
-		    name = env->gui->floatbitmapapi_functions_item_label(sel2-1);
-		    break;
-		  case 3:
-		    name = env->gui->polygonapi_functions_item_label(sel2-1);
-		    break;
-
-		  case 4:
-		    name = env->gui->shadermoduleapi_functions_item_label(sel2-1);
-		    break;
-		  case 5:
-		    name = env->gui->linesapi_functions_item_label(sel2-1);
-		    break;
-		  case 6:
-		    name = env->gui->pointsapi_functions_item_label(sel2-1);
-		    break;
-		  case 7:
-		    name = env->gui->moveapi_functions_item_label(sel2-1);
-		    break;
-		  case 8:
-		    name = env->gui->pointapi_functions_item_label(sel2-1);
-		    break;
-		  case 9:
-		    name = env->gui->vectorapi_functions_item_label(sel2-1);
-		    break;
-
-		  case 10:
-		    name = env->gui->volumeapi_functions_item_label(sel2-1);
-		    break;
-		  case 11:
-		    name = env->gui->floatvolumeapi_functions_item_label(sel2-1);
-		    break;
-		  case 12:
-		    name = env->gui->colorvolumeapi_functions_item_label(sel2-1);
-		    break;
-		  case 13:
-		    name = env->gui->fontapi_functions_item_label(sel2-1);
-		    break;
-		  case 14:
-		    name = env->gui->textureapi_functions_item_label(sel2-1);
-		    break;
-		  case 15:
-		    name = env->gui->booleanopsapi_functions_item_label(sel2-1);
-		    break;
-		  case 16:
-		    name = env->gui->polygondistapi_functions_item_label(sel2-1);
-		    break;
-		  case 17:
-		    name = env->gui->waveformapi_functions_item_label(sel2-1);
-		    break;
-		  case 18:
-		    name = env->gui->blockerapi_functions_item_label(sel2-1);
-		    break;
-		  case 19:
-		    name = env->gui->framebuffermoduleapi_functions_item_label(sel2-1);
-		    break;
-		    
-		  default:
-		    {
-		      //std::cout << "SEL: " << sel << std::endl;
-		      DllData &d = env->dlls[sel-20];
-		      std::vector<Item*> funcs = (*d.functions)();
-		      Item *item = funcs[sel2-1];
-		      name = item->Name();
-		      break;
-		    }
-
-		  };
-		//std::cout << "Chosen label: " << name << std::endl;
-		env->insert_mod_name = name;
-		W ww = { -2 };
-		std::vector<W*> conn;
-		int ssk = 8;
-		std::vector<int> conn2;
-		for(int i=0;i<ssk;i++) {
-		  env->connect_clicks.push_back(ww);
-		  conn2.push_back(env->connect_clicks.size()-1);
+	      case 4:
+		name = env->gui->shadermoduleapi_functions_item_label(sel2-1);
+		break;
+	      case 5:
+		name = env->gui->linesapi_functions_item_label(sel2-1);
+		break;
+	      case 6:
+		name = env->gui->pointsapi_functions_item_label(sel2-1);
+		break;
+	      case 7:
+		name = env->gui->moveapi_functions_item_label(sel2-1);
+		break;
+	      case 8:
+		name = env->gui->pointapi_functions_item_label(sel2-1);
+		break;
+	      case 9:
+		name = env->gui->vectorapi_functions_item_label(sel2-1);
+		break;
+		
+	      case 10:
+		name = env->gui->volumeapi_functions_item_label(sel2-1);
+		break;
+	      case 11:
+		name = env->gui->floatvolumeapi_functions_item_label(sel2-1);
+		break;
+	      case 12:
+		name = env->gui->colorvolumeapi_functions_item_label(sel2-1);
+		break;
+	      case 13:
+		name = env->gui->fontapi_functions_item_label(sel2-1);
+		break;
+	      case 14:
+		name = env->gui->textureapi_functions_item_label(sel2-1);
+		break;
+	      case 15:
+		name = env->gui->booleanopsapi_functions_item_label(sel2-1);
+		break;
+	      case 16:
+		name = env->gui->polygondistapi_functions_item_label(sel2-1);
+		break;
+	      case 17:
+		name = env->gui->waveformapi_functions_item_label(sel2-1);
+		break;
+	      case 18:
+		name = env->gui->blockerapi_functions_item_label(sel2-1);
+		break;
+	      case 19:
+		name = env->gui->framebuffermoduleapi_functions_item_label(sel2-1);
+		break;
+		
+	      default:
+		{
+		  //std::cout << "SEL: " << sel << std::endl;
+		  DllData &d = env->dlls[sel-20];
+		  std::vector<Item*> funcs = (*d.functions)();
+		  Item *item = funcs[sel2-1];
+		  name = item->Name();
+		  break;
 		}
-		for(int i=0;i<ssk;i++) {
-		  conn.push_back(&env->connect_clicks[conn2[i]]);
-		}
-		int uid_num = env->unique_id_counter;
-		//std::cout << "unique_id" << uid_num << std::endl;
-		std::stringstream ss;
-		ss << "uid" << uid_num;
-		std::string uid = ss.str();
 		
-		env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, conn /*env->connect_clicks[env->connect_clicks.size()-1]*/, uid, env->connect_targets);
-		int sk = env->connect_clicks.size()-1;
-		for(;sk>=0;sk--) { if (env->connect_clicks[sk].id==-2) env->connect_clicks.pop_back(); else break; }
-		env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
-		env->insert_ongoing = true;
-	      }
+	      };
+	    //std::cout << "Chosen label: " << name << std::endl;
+	    env->insert_mod_name = name;
+	    W ww = { -2 };
+	    std::vector<W*> conn;
+	    int ssk = 8;
+	    std::vector<int> conn2;
+	    for(int i=0;i<ssk;i++) {
+	      env->connect_clicks.push_back(ww);
+	      conn2.push_back(env->connect_clicks.size()-1);
+	    }
+	    for(int i=0;i<ssk;i++) {
+	      conn.push_back(&env->connect_clicks[conn2[i]]);
+	    }
+	    int uid_num = env->unique_id_counter;
+	    //std::cout << "unique_id" << uid_num << std::endl;
+	    std::stringstream ss;
+	    ss << "uid" << uid_num;
+	    std::string uid = ss.str();
+	    
+	    env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, conn /*env->connect_clicks[env->connect_clicks.size()-1]*/, uid, env->connect_targets);
+	    int sk = env->connect_clicks.size()-1;
+	    for(;sk>=0;sk--) { if (env->connect_clicks[sk].id==-2) env->connect_clicks.pop_back(); else break; }
+	    env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
+	    env->insert_ongoing = true;
 	  }
-	if (update) {
-	if (env->insert_ongoing && e.button == -1)
-	  {
-	    env->insert_ongoing2 = true;
-	  }
-	if (env->insert_ongoing2 && e.button==0 && e.type==1025)
-	  {
-	    env->insert_ongoing = false;
-	    env->insert_ongoing2 = false;
-	  }
-	if (env->connect_ongoing && e.button == -1)
-	  {
-	    env->connect_ongoing2 = true;
-	  }
-	if (env->connect_ongoing2 && e.button==0 && e.type==1025)
-	  {
-	    env->connect_ongoing = false;
-	    env->connect_ongoing2 = false;
-	  }
+      }
+    if (update) {
+      if (env->insert_ongoing && e.button == -1)
+	{
+	  env->insert_ongoing2 = true;
 	}
-
-	//int selected_item = env->gui->chosen_item(env->txt);
-	//int selected_item2 = -1;
-	//if (selected_item != -1)
-	//  {
-	//    env->opened_menu_num = selected_item;
-	//  }
-	//if (env->opened_menu_num != -1)
-	//  {
-	//    env->gui->update(env->menus[env->opened_menu_num], e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
-	//    if (e.button == -1) { env->state=1; }
-	//    if (e.button==0 && e.type==1025 && env->state==1)
-	//      {
-	//	selected_item2 = env->gui->chosen_item(env->menus[env->opened_menu_num]);
-	//	env->opened_menu_num = -1;
-	//	env->state = 0;
-	//	//std::cout << selected_item2 << std::endl;
-	//      }
-	//  }
-
-    //float param_x = env->gui->dynamic_param(env->txt2, 0);
-    //env->gui->set_dynamic_param(env->scroll_area, 1, 0.0 /* param_x */);
-	float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
-	env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
-	//float param_y1 = env->gui->dynamic_param(env->scrollbar_y, 0);
-	//env->gui->set_dynamic_param(env->canvas_area, 1, param_y1);
-	// g_progress_halt = false;
-
+      if (env->insert_ongoing2 && e.button==0 && e.type==1025)
+	{
+	  env->insert_ongoing = false;
+	  env->insert_ongoing2 = false;
+	}
+      if (env->connect_ongoing && e.button == -1)
+	{
+	  env->connect_ongoing2 = true;
+	}
+      if (env->connect_ongoing2 && e.button==0 && e.type==1025)
+	{
+	  env->connect_ongoing = false;
+	  env->connect_ongoing2 = false;
+	}
+    }
+    float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
+    env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
+    
   }
 private:
-  	bool properties_button = false;
-	bool codegen_button = false;
-	bool pkggen_button = false;
-	bool display_button = false;
-	std::string popup_uid;
+  bool properties_button = false;
+  bool codegen_button = false;
+  bool pkggen_button = false;
+  bool display_button = false;
+  std::string popup_uid;
 };
   
 float f(float w)
@@ -2439,18 +2291,18 @@ public:
 class StartMainTask : public ASyncTask
 {
 public:
-  StartMainTask(Env &e, EveryApi &ev, Envi &env, SH sh, int screen_x, int screen_y, std::string filename) : e(e), ev(ev), env(env), sh(sh),gui(e,ev,sh),screen_x(screen_x), screen_y(screen_y), filename(filename) { }
-  virtual int NumTasks() const { }
+  StartMainTask(Env &e, EveryApi &ev, Envi &env, SH sh,SH sh_2d,SH sh_arr,SH sh2, SH sh3, int screen_x, int screen_y, std::string filename, int argc, char **argv) : e(e), ev(ev), env(env), sh(sh),sh_2d(sh_2d),sh_arr(sh_arr), sh2(sh2), sh3(sh3),gui(e,ev,sh),screen_x(screen_x), screen_y(screen_y), filename(filename), argc(argc), argv(argv) { }
+  virtual int NumTasks() const { return 7; }
   virtual void DoTask(int i) {
+    //std::cout << "DOTASK:" << i << std::endl;
     switch(i) {
     case 0:
       {
 	srand(time(NULL));
 	
-	g_main_thread_id = pthread_self();
 	
 	update_progress_dialog_cb = &update_progress_dialog_cb_impl;
-	
+	 
 	//pid_t pid = getpid();
 	//std::cout << "pid: " << (long)pid << std::endl;
 	InstallProgress(888,"init",10);
@@ -2480,11 +2332,11 @@ public:
 
 	mod = ev.mod_api.load(filename);
 	
-	break;
-      }
-    case 1:
-      {
-      bool has_wayland = false;
+		break;
+	 }
+	case 1:
+	 {
+      has_wayland = false;
       
       const char *ee = getenv("XDG_SESSION_TYPE");
       if (ee)
@@ -2500,10 +2352,11 @@ public:
       }
       has_wayland = has_wayland1 && has_wayland2;
       g_has_wayland = has_wayland;
-      int extra_width = 0;
-      int extra_height = 0;
-      int extra_top = 0;
-      int extra_left = 0;
+      
+      extra_width = 0;
+      extra_height = 0;
+      extra_top = 0;
+      extra_left = 0;
       
       if (has_wayland) {
 	extra_width = 0;
@@ -2533,9 +2386,9 @@ public:
   ProgressBar(888,0,5,"init");
   // shader initialization
   // Chunkfive.otf
-  Ft font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
-  Ft font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
-  Ft font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
+  font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
+  font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
+  font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
 
   std::string fname = "atlas0.txt";
   if (file_exists("/usr/share/atlas0.txt")) {
@@ -2625,7 +2478,7 @@ public:
   atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
   atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
   
-  break;
+    break;
     }
     case 2:
       {
@@ -2669,7 +2522,7 @@ public:
       items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
-  ProgressBar(888,2,5,"init");
+      ProgressBar(888,2,5,"init");
 
       items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
@@ -2678,7 +2531,7 @@ public:
       items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
-  ProgressBar(888,3,5,"init");
+      ProgressBar(888,3,5,"init");
 
       items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
@@ -2691,7 +2544,7 @@ public:
       items.push_back(gui.blockerapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
-  ProgressBar(888,4,5,"init");
+      ProgressBar(888,4,5,"init");
       
 #ifdef WINDOWS
 #if 0
@@ -2714,8 +2567,8 @@ public:
 #endif
 #endif
     }
-  W array = gui.array_y(&items[0], items.size(), 5);
-  W scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
+  array = gui.array_y(&items[0], items.size(), 5);
+  scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
 
   //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
   //gui.set_pos(txt2, gui.size_x(scroll_area), 30);
@@ -2731,17 +2584,19 @@ public:
   // W gameapi_2 = gui.mouse_move(gameapi, 0,0,gui.size_x(gameapi), gui.size_y(gameapi));
   //gui.set_pos(gameapi_2, 200.0, 200.0);
 
-  int sx=1638, sy = 1638;
-  int screen2_x = screen_x-140, screen2_y = screen_y-30;
+  sx = 1638;
+  sy = 1638;
+  screen2_x = screen_x-140;
+  screen2_y = screen_y-30;
 
-  W canvas = gui.canvas(16384,16384);
+  canvas = gui.canvas(16384,16384);
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 100,100);
   //gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), 150,100);
   //for(int i=0;i<200;i++)
   //  gui.canvas_item(canvas, gui.button(30,30, 0xffffffff, 0xff888888), i*30, i*30);
   ProgressBar(888,5,5,"init");
   break;
-    }
+      }
     case 3:
       {
   ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
@@ -2755,22 +2610,22 @@ public:
   ev.mod_api.insert_links(ev, gui, mod, 0, env.connect_links, canvas, env.connect_targets, sh2, sh);
   break;
       }
-    case 5:
+   case 5:
       {
   //ProgressBar(888,8,10,"init");
   add_to_canvas(gui, canvas, env.connect_links);
   //print_connect_targets("init", &env);
   //ProgressBar(888,9,10,"init");
   break;
-      }
+     }
     case 6:
-      {
-  W canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y, screen_y);
+     {
+  canvas_area = gui.scroll_area(canvas, screen2_x, screen2_y, screen_y);
   //W scrollbar_y = gui.scrollbar_y(20, screen2_y-20, sy);
-  W scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
+  scrollbar_x = gui.scrollbar_x(screen2_x-20, 20, sx); 
 
-  W line = gui.rectangle(0.0, 4.0, 0.0, screen_y, 0xffffffff);
-  W decoration = gui.window_decoration(screen_x,screen_y, "GameApi Builder -- meshpage.org", atlas, atlas_bm);
+  line = gui.rectangle(0.0, 4.0, 0.0, screen_y, 0xffffffff);
+  decoration = gui.window_decoration(screen_x,screen_y, "GameApi Builder -- meshpage.org", atlas, atlas_bm);
   gui.set_pos(line, 140-5+extra_left, extra_top);
   gui.set_pos(canvas_area, 140+extra_left, extra_top);
   gui.set_pos(scrollbar_x, 140+extra_left, extra_top+screen_y-20);
@@ -2843,12 +2698,31 @@ private:
   EveryApi &ev;
   Envi &env;
   SH sh;
+  SH sh_2d;
+  SH sh_arr;
+  SH sh2;
+  SH sh3;
   GuiApi gui; //(e, ev, sh);
   WM mod;
   int screen_x, screen_y;
   FtA atlas, atlas2, atlas3;
   BM atlas_bm, atlas_bm2, atlas_bm3;
   std::string filename;
+  bool has_wayland;
+  int extra_width, extra_height;
+  int extra_top, extra_left;
+  W scroll_area;
+  int screen2_x,screen2_y;
+  W array;
+  Ft font, font2, font3;
+  int sx, sy;
+  W canvas;
+  int argc;
+  char **argv;
+  W line;
+  W decoration;
+  W canvas_area;
+  W scrollbar_x;
 };
 
 struct Envi_tabs
@@ -2856,28 +2730,33 @@ struct Envi_tabs
   bool envi_ready=false;
   Env *env;
   EveryApi *ev;
-  GuiApi *gui;
+  GuiApi *gui = 0;
 
-  std::vector<std::String> titles;
-  W navi_bar;
+  std::vector<std::string> titles;
+  W navi_bar= {-1 };
   W back_button;
   W forward_button;
   W save_button;
   W url_button;
   std::vector<W> close_button;
-  std::Vector<W> tab_change_button;
+  std::vector<W> tab_change_button;
   W new_tab_button;
   FtA atlas;
   BM atlas_bm;
+  bool has_wayland;
+  SH sh;
 };
 
 class Tabs_Gui : public ASyncTask
 {
 public:
-  Tabs_Gui(Env &e, EveryApi &ev, Envi_tabs &env, SH sh, int screen_x, int screen_y) : e(e), ev(ev), env(env), sh(sh), gui(e,ev,sh), screen_x(screen_x), screen_y(screen_y), filename(filename) { } 
+  Tabs_Gui(Env &e, EveryApi &ev, Envi_tabs &env, SH sh, SH sh_2d, SH sh_arr, SH  sh2, SH sh3,int screen_x, int screen_y, std::string filename) : e(e), ev(ev), env(&env), sh(sh), sh_2d(sh_2d), sh_arr(sh_arr), sh2(sh2), sh3(sh3), screen_x(screen_x), screen_y(screen_y), filename(filename) {
+    gui = new GuiApi(e,ev,sh);
+    env.gui=gui;
+  } 
   virtual int NumTasks() const
   {
-    return 1;
+    return 3;
   }
   virtual void DoTask(int i)
  {
@@ -2932,7 +2811,8 @@ public:
       {
 	env->close_button = std::vector<W>();
 	env->tab_change_button = std::vector<W>();
-	env->navi_bar = gui.navi_bar(env->titles, env->back_button, env->forward_button, env->save_button, filename, env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas, env->atlas_bm);
+	env->navi_bar = gui->navi_bar(env->titles, env->back_button, env->forward_button, env->save_button, filename, env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas, env->atlas_bm);
+	env->envi_ready=true;
 	break;
       }
       
@@ -2941,16 +2821,20 @@ public:
 private:
   Env &e;
   EveryApi &ev;
-  Envi_tabs &env;
+  Envi_tabs *env;
   SH sh;
-  GuiApi gui;
+  SH sh_2d;
+  SH sh_arr;
+  SH sh2;
+  SH sh3;
+  GuiApi *gui;
   int screen_x, screen_y;
   std::string filename;
 
 };
 
 
-void IterAlgo(Env &e, std::vector<BuilderIter*> vec, std::vector<void*> args,EveryApi *ev)
+void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,EveryApi *ev)
 {
   int s = vec.size();
   for(int i=0;i<s;i++)
@@ -2967,7 +2851,7 @@ void IterAlgo(Env &e, std::vector<BuilderIter*> vec, std::vector<void*> args,Eve
     MainLoopApi::Event e;
     e.ch = 0;
     e.last = true;
-    while((e=env->ev->mainloop_api.get_event()).last)
+    while((e=ev->mainloop_api.get_event()).last)
       {
 	int s3 = vec.size();
 	for(int i=0;i<s3;i++)
@@ -2977,7 +2861,7 @@ void IterAlgo(Env &e, std::vector<BuilderIter*> vec, std::vector<void*> args,Eve
 	
       }
 
-    e.async_scheduler();    
+    ee.async_scheduler();    
 }
 
 class IterTab : public BuilderIter
@@ -2988,7 +2872,9 @@ public:
     Envi_tabs *env = (Envi_tabs*)arg;
     //env->env->async_scheduler();
     
+    //std::cout << "IterTab::start start" << std::endl;
     if (!env->envi_ready) return;
+    //std::cout << "IterTab::start cont" << std::endl;
     
     env->ev->shader_api.use(env->sh);
     
@@ -3000,15 +2886,22 @@ public:
   }
   void render(void *arg) {
     Envi_tabs *env = (Envi_tabs*)arg;
+    //std::cout << "IterTab::render start" << std::endl;
+    if (!env->envi_ready) return;
+    //std::cout << "IterTab::render cont" << std::endl;
   // render here
-    env->gui->render(env->navi_bar);
+    if (env->gui && env->navi_bar.id!=-1)
+      env->gui->render(env->navi_bar);
   }
   void update(void *arg, MainLoopApi::Event &e)
   {
     Envi_tabs *env = (Envi_tabs*)arg;
-  env->gui->update(env->navi_bar, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+    //std::cout << "IterTab::update start" << std::endl;
+    if (!env->envi_ready) return;
+    //std::cout << "IterTab::update cont" << std::endl;
+  env->gui->update(env->navi_bar, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
   }  
-}
+};
 
 
 class TabsUpdateTask : public ASyncTask
@@ -3022,10 +2915,25 @@ public:
   virtual void DoTask(int i) {
     if (i==0) ptr->DoTask(2); // navibar update
   }
+private:
+  Tabs_Gui *ptr;
 };
 
 int main(int argc, char *argv[]) {
-	int screen_x = 1200;
+	g_main_thread_id = pthread_self();
+  Env *e2 = new Env;
+  Env &e = *e2;
+  EveryApi ev(*e2);
+  Envi *env = new Envi;
+  Envi_tabs *env_tab = new Envi_tabs;
+  env->env = e2;
+  env->ev = &ev;
+  env_tab->env = e2;
+  env_tab->ev = &ev;
+  g_env = env;
+
+
+  int screen_x = 1200;
 	int screen_y = 900;
 #ifdef WINDOWS
 	std::string drive = getenv("systemdrive");
@@ -3083,16 +2991,51 @@ int main(int argc, char *argv[]) {
 		i++;
 	      }
 	  }
+      bool has_wayland = false;
+      
+      const char *ee = getenv("XDG_SESSION_TYPE");
+      if (ee)
+	std::cout << "SESSION TYPE:" << ee << std::endl;
+      const char *ee2 = getenv("SDL_VIDEODRIVER");
+      bool has_wayland1 = false;
+      bool has_wayland2 = false;
+      if (ee2 && !strcmp(ee2,"wayland")) {
+	has_wayland1 = true;
+      }
+      if (ee && !strcmp(ee,"wayland")) {
+	has_wayland2 = true;
+      }
+      has_wayland = has_wayland1 && has_wayland2;
+      g_has_wayland = has_wayland;
 
+      int extra_width = 0;
+      int extra_height = 0;
+      int extra_top = 0;
+      int extra_left = 0;
+      
+      if (has_wayland) {
+	extra_width = 0;
+	extra_height = 10+30;
+	extra_top = 30+5;
+	extra_left = 5;
+      }
+      
+      int display_width = screen_x+extra_width;
+      int display_height = screen_y+extra_height;
+      if (has_wayland)
+	{
+	  display_width = -1;
+	  display_height = -1;
+	}
+      
+      // initialize window
+  if (has_wayland)
+    {
+      display_width = g_display_width;
+      display_height = g_display_height;
+    }
 
-  Env *e2 = new Env;
-  Env &e = *e2;
-  EveryApi ev(*e2);
-  Envi *env = new Envi;
-  Envi_tabs *env_tab = new Envi_tabs;
-  env->env = e2;
-  env->ev = &ev;
-  g_env = env;
+	
 
   env_tab->env = e2;
   env_tab->ev = &ev;
@@ -3113,21 +3056,25 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.init(sh, display_width, display_height);
   ev.mainloop_api.init(sh2, display_width, display_height);
   ev.mainloop_api.init(sh_2d, display_width, display_height);
-
+  /*
   ev.mainloop_api.switch_to_3d(false, sh3, screen_x+extra_width, screen_y+extra_height);
   ev.shader_api.use(sh);
   ev.mainloop_api.alpha(true);
-  env.start_async(new Tabs_Gui(e,ev,env_tab,sh,screen_x, screen_y, filename));
-  env.start_async(new StartMainTask(e,ev,env,sh,screen_x,screen_y,filename));
+  */
+  e.start_async(new Tabs_Gui(e,ev,*env_tab,sh,sh_2d,sh_arr,sh2,sh3,screen_x, screen_y, filename));
+  e.start_async(new StartMainTask(e,ev,*env,sh,sh_2d,sh_arr,sh2,sh3,screen_x,screen_y,filename,argc,argv));
 
   std::vector<BuilderIter*> nodes;
-  nodes.push_back(new IterTab);
   nodes.push_back(new MainIter);
+  nodes.push_back(new IterTab);
   std::vector<void*> args;
-  args.push_back(&env_tab);
-  args.push_back(&env);
+  args.push_back(env);
+  args.push_back(env_tab);
   
   while(1) {
     IterAlgo(e,nodes,args,&ev);
   }
+  return 0;
 }
+
+

@@ -2399,6 +2399,8 @@ void *async_process(void *ptr)
 
 void start_task(int task, int pos)
 {
+  tasks[task]->DoTask(pos);
+  /*
   ASyncTask *current_task = tasks[task];
   TaskData *ptr = task_data[task]; //new TaskData;
   ptr->task = current_task;
@@ -2409,11 +2411,13 @@ void start_task(int task, int pos)
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr, 3000);
   pthread_create(&thread_id, &attr, &async_process, (void*)ptr);
+  */
 }
 bool task_finished(int task, int pos)
 {
   if (task_location[task]==-1) return true;
-  return task_data[task]->finished;
+  return true;
+  //return task_data[task]->finished;
 }
 
 int EnvImpl::start_async(ASyncTask *task)

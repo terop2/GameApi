@@ -62,8 +62,10 @@ private:
 
 
 
-void Bindings::set(GameApi::EveryApi &ev, GameApi::SH sh)
+void Bindings::set(GameApi::EveryApi &ev, int ss)
 {
+  GameApi::SH sh;
+  sh.id = ss;
       int s = f_vec.size();
     for(int i=0;i<s;i++)
       {
@@ -653,7 +655,7 @@ public:
 	NewBinding bb;
 	Bindings b = vertex->set_var(bb);
 	Bindings b2 = fragment->set_var(b);
-	b2.set(ev,sh);
+	b2.set(ev,sh.id);
       }
 
 #ifndef NO_MV

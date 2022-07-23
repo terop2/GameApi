@@ -16908,7 +16908,7 @@ private:
   void *m_data;
   bool firsttime;
 };
-void HTML_CB(void *ptr)
+void HTML_cb(void *ptr)
 {
   HtmlUrl *ptr2 = (HtmlUrl*)ptr;
   ptr2->Prepare2();
@@ -17394,7 +17394,6 @@ void P_cb(void *data)
   P_script *script = (P_script*)data;
   script->Prepare2();
 }
-
 
 GameApi::P GameApi::MainLoopApi::load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
@@ -27067,7 +27066,7 @@ GameApi::ML GameApi::MainLoopApi::read_obj_pos(std::string url)
 {
   return add_main_loop(e, new ReadObjPos(e, url, gameapi_homepageurl));
 }
-
+#if 0
 class BindObjType2 : public MainLoopItem
 {
 public:
@@ -27166,9 +27165,10 @@ private:
   bool firsttime;
   bool async_taken;
 };
+#endif
 GameApi::ML GameApi::MainLoopApi::bind_obj_type(GameApi::EveryApi &ev, std::string url)
 {
-  return add_main_loop(e, new BindObjType2(e,ev,url,gameapi_homepageurl));
+  //return add_main_loop(e, new BindObjType2(e,ev,url,gameapi_homepageurl));
 }
 
 

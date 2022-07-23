@@ -731,12 +731,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "std::string" },
 			 { "ev", "https://tpgames.org/landscape.txt" },
 			 "ML", "mainloop_api", "create_landscape"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, (GameApi::ML (GameApi::MainLoopApi::*)(GameApi::EveryApi&,std::string))&GameApi::MainLoopApi::bind_obj_type,
+  /*  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, (GameApi::ML (GameApi::MainLoopApi::*)(GameApi::EveryApi&,std::string))&GameApi::MainLoopApi::bind_obj_type,
 			 "w_objtype",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
 			 { "ev", "https://tpgames.org/objtype.txt" },
-			 "ML", "mainloop_api", "bind_obj_type"));
+			 "ML", "mainloop_api", "bind_obj_type"));*/
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::read_obj_pos,
 			 "w_objpos",
 			 { "url" },
