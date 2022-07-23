@@ -2295,6 +2295,7 @@ public:
   virtual int NumTasks() const { return 7; }
   virtual void DoTask(int i) {
     //std::cout << "DOTASK:" << i << std::endl;
+    //ev.mainloop_api.make_current();
     switch(i) {
     case 0:
       {
@@ -2743,6 +2744,10 @@ struct Envi_tabs
   W new_tab_button;
   FtA atlas;
   BM atlas_bm;
+  FtA atlas2;
+  BM atlas_bm2;
+  FtA atlas3;
+  BM atlas_bm3;
   bool has_wayland;
   SH sh;
 };
@@ -2773,45 +2778,49 @@ public:
   
   if (file_exists("./atlas0.txt")) {
     a_atlas0 = "atlas0.txt";
-    //a_atlas1 = "atlas1.txt";
-    //a_atlas2 = "atlas2.txt";
+    a_atlas1 = "atlas1.txt";
+    a_atlas2 = "atlas2.txt";
     a_atlas_bm0 = "atlas_bm0.ppm";
-    //a_atlas_bm1 = "atlas_bm1.ppm";
-    //a_atlas_bm2 = "atlas_bm2.ppm";
+    a_atlas_bm1 = "atlas_bm1.ppm";
+    a_atlas_bm2 = "atlas_bm2.ppm";
   } else {
     a_atlas0 = "/usr/share/atlas0.txt";
-    //a_atlas1 = "/usr/share/atlas1.txt";
-    //a_atlas2 = "/usr/share/atlas2.txt";
+    a_atlas1 = "/usr/share/atlas1.txt";
+    a_atlas2 = "/usr/share/atlas2.txt";
     a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
-    //a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
-    //a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
+    a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
+    a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
 #else
   std::string a_atlas0 = "atlas0.txt";
-  //std::string a_atlas1 = "atlas1.txt";
-  //std::string a_atlas2 = "atlas2.txt";
+  std::string a_atlas1 = "atlas1.txt";
+  std::string a_atlas2 = "atlas2.txt";
   std::string a_atlas_bm0 = "atlas_bm0.ppm";
-  //std::string a_atlas_bm1 = "atlas_bm1.ppm";
-  //std::string a_atlas_bm2 = "atlas_bm2.ppm";
+  std::string a_atlas_bm1 = "atlas_bm1.ppm";
+  std::string a_atlas_bm2 = "atlas_bm2.ppm";
 #endif
-  
+ 
   env->atlas = ev.font_api.load_atlas(a_atlas0);
-  //atlas2 = ev.font_api.load_atlas(a_atlas1);
-  //atlas3 = ev.font_api.load_atlas(a_atlas2);
+  env->atlas2 = ev.font_api.load_atlas(a_atlas1);
+  env->atlas3 = ev.font_api.load_atlas(a_atlas2);
   env->atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0);
-  //atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
-  //atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
+  env->atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
+  env->atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
   break;
       }
     case 1:
       env->titles = std::vector<std::string>();
       env->titles.push_back(filename);
+      env->titles.push_back("testtab1");
+      env->titles.push_back("testtab2");
+      env->titles.push_back("testtab3");
       break;
     case 2:
       {
 	env->close_button = std::vector<W>();
 	env->tab_change_button = std::vector<W>();
-	env->navi_bar = gui->navi_bar(env->titles, env->back_button, env->forward_button, env->save_button, filename, env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas, env->atlas_bm);
+	int *active_tab = new int(0);
+	env->navi_bar = gui->navi_bar(*env->ev,env->titles, env->back_button, env->forward_button, env->save_button, filename, env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas3, env->atlas_bm3,*active_tab);
 	env->envi_ready=true;
 	break;
       }

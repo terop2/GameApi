@@ -325,6 +325,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  void make_current();
   SHP constant_shp_f(SHP next, int num, float value);
   SHP constant_shp_i(SHP next, int num, int value);
   SHP constant_shp_u(SHP next, int num, unsigned int value);
@@ -1835,7 +1836,7 @@ public:
   IMPORT W download_bar();
   IMPORT W directory_view(std::vector<std::string> dir_items, int &selection, std::vector<W> &clicks, FtA atlas, BM atlas_bm);
   IMPORT W asset_view(std::string url_or_filename);
-  IMPORT W navi_bar(std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm);
+  IMPORT W navi_bar(EveryApi &ev, std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm, int &active_tab);
   IMPORT W alt(std::vector<W> vec, int *choose);
   IMPORT W dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void *, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap);
   IMPORT W progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec);
@@ -1869,6 +1870,7 @@ public:
   IMPORT W highlight(int sx, int sy);
   IMPORT W highlight(W wid);
   IMPORT W margin(W item, int left, int top, int right, int bottom);
+  IMPORT W size(W item, int sx, int sy);
   IMPORT W left_align(W item, int sx);
   IMPORT W right_align(W item, int sx);
   IMPORT W center_align(W item, int sx);
