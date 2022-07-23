@@ -769,6 +769,8 @@ struct EnvImpl
   std::vector<GameState*> game_state;
   std::vector<GraphicsContext*> gc;
   std::vector<GLTFModelInterface*> tf;
+  std::vector<ShaderI2*> shi;
+  std::vector<ShaderParameterI*> shp;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;

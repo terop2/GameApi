@@ -117,6 +117,26 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::SHP add_shp(GameApi::Env &e, ShaderParameterI* i)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->shp.push_back(i);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(i));
+  GameApi::SHP im;
+  im.id = env->shp.size()-1;
+  return im;
+}
+GameApi::SHI add_shaderI(GameApi::Env &e, ShaderI2* i)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->shi.push_back(i);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(i));
+  GameApi::SHI im;
+  im.id = env->shi.size()-1;
+  return im;
+}
 GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1344,6 +1364,18 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+ShaderI2 *find_shaderI(GameApi::Env &e, GameApi::SHI s)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->shi[s.id];
+}
+
+ShaderParameterI *find_shp(GameApi::Env &e, GameApi::SHP s)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->shp[s.id];
 }
 
 GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf)
