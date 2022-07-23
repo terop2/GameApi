@@ -2389,11 +2389,22 @@ std::vector<ASyncTask*> tasks;
 std::vector<int> task_location;
 std::vector<TaskData*> task_data;
 std::vector<int> index_map;
+std::vector<Low_SDL_GLContext> context_map;
+std::vector<bool> valid_context;
 
+extern Low_SDL_Window *sdl_window;
+extern Low_SDL_GLContext g_context;
 void *async_process(void *ptr)
 {
   TaskData *dt = (TaskData*)ptr;
+  if (valid_context[dt->pos])
+    g_low->sdl->SDL_GL_DeleteContext(context_map[dt->pos]);
+  context_map[dt->pos] = g_low->sdl->SDL_GL_CreateContext(sdl_window);
+  g_low->sdl->SDL_GL_MakeCurrent(sdl_window, context_map[dt->pos]);
+  valid_context[dt->pos]=true;
   dt->task->DoTask(dt->pos);
+  g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
+  
   dt->finished = true;
 }
 
@@ -2428,6 +2439,9 @@ int EnvImpl::start_async(ASyncTask *task)
   tasks.push_back(task);
   task_location.push_back(-1);
   task_data.push_back(new TaskData);
+  Low_SDL_GLContext ctx;
+  context_map.push_back(ctx);
+  valid_context.push_back(false);
   return index;
 }
 int EnvImpl::async_mapping(int index)
@@ -2446,6 +2460,7 @@ void EnvImpl::remove_async(int i)
   task_location.erase(task_location.begin()+i);
   delete task_data[i];
   task_data.erase(task_data.begin()+i);
+  context_map.erase(context_map.begin()+i);
 }
 void EnvImpl::async_scheduler()
 {

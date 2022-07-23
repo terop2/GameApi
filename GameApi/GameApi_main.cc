@@ -25,6 +25,13 @@ EXPORT GameApi::MainLoopApi::~MainLoopApi()
 {
   delete (MainLoopPriv*)priv;
 }
+extern Low_SDL_Window *sdl_window;
+extern Low_SDL_GLContext g_context;
+EXPORT void GameApi::MainLoopApi::make_current()
+{
+ int val = g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
+ std::cout << "Makecurrent return:" << val << std::endl;
+}
 EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 {
   g_low->sdl->SDL_ShowCursor(enabled);

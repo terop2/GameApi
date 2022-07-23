@@ -1825,6 +1825,47 @@ public:
 private:
   int l,t,r,b;
 };
+class SizeGuiWidget : public GuiWidgetForward
+{
+public:
+  SizeGuiWidget(GameApi::EveryApi &ev, GuiWidget *w, int sx, int sy) : GuiWidgetForward(ev, { w }), sx(sx), sy(sy) 
+  {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1, -1, -1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+  }
+  void set_size(Vector2d size)
+  {
+    GuiWidgetForward::set_size(size);
+    Vector2d delta = { float(sx), float(sy) };
+    vec[0]->set_size(delta);
+  }
+  void set_pos(Point2d p)
+  {
+    GuiWidgetForward::set_pos(p);
+    //Vector2d v = { float(l), float(t) };
+    //Vector2d vs = vec[0]->get_size();
+    vec[0]->set_pos(p);
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
+    //
+    Vector2d vv = { float(sx), float(sy) };
+    Vector2d vvv = vv;
+    size = vvv;
+  }
+  int chosen_item() const
+  {
+    int val = vec[0]->chosen_item();
+    return val;
+  }
+
+private:
+  int sx,sy;
+};
+
 class LayerGuiWidget : public GuiWidgetForward
 {
 public:
@@ -3398,7 +3439,7 @@ EXPORT GameApi::W GameApi::GuiApi::download_bar()
 {
 }
 
-EXPORT GameApi::W GameApi::GuiApi::navi_bar(std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm)
+EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm, int &active_tab)
 {
   // tabs and close buttons
   int s = titles.size();
@@ -3406,16 +3447,27 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(std::vector<std::string> titles, W &
   for(int i=0;i<s;i++)
     {
       W txt = text(titles[i], atlas, atlas_bm);
-      W txt_click = click_area(txt, 0,0,size_x(txt),size_y(txt),0);
+      W txt2 = margin(txt,10,10,10,10);
+      W txt3 = highlight(txt2);
+      W txt_click = click_area(txt3, 0,0,size_x(txt3),size_y(txt3),0);
       tab_change_button.push_back(txt_click);
       W close_button2 = text("x", atlas, atlas_bm);
-      W close_click = click_area(close_button2,0,0,size_x(close_button2),size_y(close_button2),0);
+      W close_button21 = margin(close_button2,2,2,2,25);
+      W close_button3 = highlight(close_button21);
+      W close_click = click_area(close_button3,0,0,size_x(close_button3),size_y(close_button3),0);
       close_button.push_back(close_click);
-      horiz_bar.push_back(txt_click);
-      horiz_bar.push_back(close_click);
+      std::vector<W> horiz_tab;
+      horiz_tab.push_back(txt_click);
+      horiz_tab.push_back(close_click);
+      W arr_tab = array_x(&horiz_tab[0], horiz_tab.size(), 3);
+      W tab_button = button(size_x(arr_tab),size_y(arr_tab),i==active_tab?c_dialog_button_1:c_canvas_item, i==active_tab?c_dialog_button_2:c_canvas_item2);
+      W tab_layer = layer(tab_button, arr_tab);
+      horiz_bar.push_back(tab_layer);
     }
   W new_tab_button2 = text("+", atlas, atlas_bm);
-  W new_tab_click = click_area(new_tab_button2, 0,0,size_x(new_tab_button2), size_y(new_tab_button2),0);
+  W new_tab_button3 = margin(new_tab_button2,10,10,10,10);
+  W new_tab_button4 = highlight(new_tab_button3);
+  W new_tab_click = click_area(new_tab_button4, 0,0,size_x(new_tab_button4), size_y(new_tab_button4),0);
   new_tab_button = new_tab_click;
   horiz_bar.push_back(new_tab_click);
 
@@ -3425,20 +3477,44 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(std::vector<std::string> titles, W &
   // back, forward, refresh, url_bar
   std::vector<W> horiz_bar2;
   W back_button2 = text("<-", atlas, atlas_bm);
-  W back_click = click_area(back_button2, 0,0, size_x(back_button2), size_y(back_button2),0);
+  W back_button3 = margin(back_button2,30,30,30,30);
+  W back_button31 = highlight(back_button3);
+  W back_button4 = button(size_x(back_button31),size_y(back_button31),c_dialog_button_1, c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
+      W back_layer = layer(back_button4, back_button31);
+
+  W back_click = click_area(back_layer, 0,0, size_x(back_layer), size_y(back_layer),0);
   back_button = back_click;
   W forward_button2 = text("->", atlas, atlas_bm);
-  W forward_click = click_area(forward_button2, 0,0,size_x(forward_button2), size_y(forward_button2), 0);
+  W forward_button3 = margin(forward_button2,30,30,30,30);
+  W forward_button31 = highlight(forward_button3);
+  W forward_button4 = button(size_x(forward_button31),size_y(forward_button31),c_dialog_button_1,c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
+      W forward_layer = layer(forward_button4, forward_button31);
+
+  
+  W forward_click = click_area(forward_layer, 0,0,size_x(forward_layer), size_y(forward_layer), 0);
   forward_button = forward_click;
   
   W save_button2 = text("[]", atlas, atlas_bm);
-  W save_click = click_area(save_button2, 0,0,size_x(save_button2),size_y(save_button2),0);
+  W save_button3 = margin(save_button2,30,30-5-3,30,13+5+3);
+  W save_button31 = highlight(save_button3);
+  W save_button4 = button(size_x(save_button31),size_y(save_button31),c_dialog_button_1,c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
+      W save_layer = layer(save_button4, save_button31);
+
+  W save_click = click_area(save_layer, 0,0,size_x(save_layer),size_y(save_layer),0);
 
   W url_bar = url_editor(url, atlas, atlas_bm, 3);
+  W url_bar2 = center_y(url_bar, 30+20+30);
+  W url_bar21 = size(url_bar2, 630,30+20+30-2-2-1);
+  W url_bar3 = margin(url_bar21,30,0,0,0);
+  W url_bar31 = highlight(url_bar3);
+  W url_bar4 = button(size_x(url_bar31),size_y(url_bar31),c_dialog_button_1,c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
+  W url_bar_layer = layer(url_bar4, url_bar31);
+
+
   horiz_bar2.push_back(back_click);
   horiz_bar2.push_back(forward_click);
   horiz_bar2.push_back(save_click);
-  horiz_bar2.push_back(url_bar);
+  horiz_bar2.push_back(url_bar_layer);
   W arr_middle = array_x(&horiz_bar2[0], horiz_bar2.size(), 6);
   
   // bookmarks
@@ -3447,7 +3523,9 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(std::vector<std::string> titles, W &
   vert.push_back(arr_middle);
   // vert.push_back(arr_bottom);
   W arr_combine = array_y(&vert[0], vert.size(), 6);
-  return arr_combine;
+  W comb_but = button(ev.mainloop_api.get_screen_width(), size_y(arr_combine),0xff228822, 0xff081108);
+  W comb_layer = layer(comb_but,arr_combine);
+  return comb_layer;
 }
 
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
@@ -4280,6 +4358,11 @@ EXPORT GameApi::W GameApi::GuiApi::margin(W w, int l, int t, int r, int b)
 {
   GuiWidget *ww = find_widget(e, w);
   return add_widget(e, new MarginGuiWidget(ev, ww, l, t, r, b));
+}
+EXPORT GameApi::W GameApi::GuiApi::size(W w, int sx, int sy)
+{
+  GuiWidget *ww = find_widget(e, w);
+  return add_widget(e, new SizeGuiWidget(ev, ww, sx,sy));
 }
 EXPORT GameApi::W GameApi::GuiApi::layer(W w1, W w2)
 {
