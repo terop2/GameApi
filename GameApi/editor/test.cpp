@@ -32,6 +32,9 @@ struct ArrayType
   int type; // arraytypesinuse
   std::vector<int> vec;
 };
+class Envi;
+void render_cb(Envi *env);
+void refresh();
 
 
 #ifdef LINUX
@@ -611,102 +614,14 @@ extern int g_async_count2;
 void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls);
 PT old_cursor_pos;
 
-void render_cb(Envi *env)
-{
-  //std::cout << "render_cb" << std::endl;
-   if (env->progress_rest) {
-     //std::cout << "progress_rest=true" << std::endl;
-  
-  if (env->has_wayland) {
-    //std::cout << "has_wayland=true" << std::endl;
-     env->gui->render(env->window_decoration);
-   }
-
-
-  
-    //env->gui->render(env->txt2);
-    env->gui->render(env->line);
-    //env->gui->render(env->txt);
-    env->gui->render(env->scroll_area);
-    //env->gui->render(env->wave);
-    //env->gui->render(env->gameapi);
-    //env->gui->render(env->test1);
-
-    env->gui->render(env->canvas_area);
-    env->gui->render(env->scrollbar_x);
-    //env->gui->render(env->scrollbar_y);
-    env->gui->render(env->list_tooltips);
-    if (env->popup_visible)
-      {
-	env->gui->render(env->popup_dialog);
-      }
-    if (env->insert_ongoing)
-      {
-	env->gui->render(env->insert_widget);
-      }
-    if (env->connect_ongoing)
-      {
-	env->gui->render(env->connect_line);
-	env->ev->shader_api.use(env->sh);
-	env->gui->render(env->connect_widget);
-      }
-    if (env->display_visible)
-      {
-	env->gui->render(env->display);
-      }
-
-    if (env->editor_visible)
-      env->gui->render(env->editor);
-   }
-
-  enum_editor_draw(*env->ev, *env->gui);
-
-    if (env->progress_visible)
-      {
-	env->gui->set_pos(g_progress_dialog, 400,300);
-  PT cursor_pos = old_cursor_pos;
-	int button = -1;
-	int ch = -1;
-	int type = 0;
-	int mouse_wheel_y = 0;
-	env->gui->update(g_progress_dialog, cursor_pos, button, ch, type, mouse_wheel_y);
-
-	env->gui->render(g_progress_dialog);
-      }
-
-}
 
 
 void FinishProgress();
 Envi *g_env;
 extern bool g_progress_halt;
-void refresh()
-{
-  if (g_progress_halt) return;
-  if (g_env && g_env->progress_visible) {
-  g_env->ev->shader_api.use(g_env->sh);
-  if (g_env->has_wayland) {
-    g_env->ev->mainloop_api.clear(0x00000000);
-  } else {
-    g_env->ev->mainloop_api.clear(0xff000000);
-  }
-  g_env->ev->mainloop_api.start_editor_state();
-  PT cursor_pos = old_cursor_pos;
-	int button = -1;
-	int ch = -1;
-	int type = 0;
-	int mouse_wheel_y = 0;
-	if (g_env->progress_rest) {
-  g_env->gui->update(g_env->canvas_area, cursor_pos, button,ch, type, mouse_wheel_y);
-	}
+class IterTab;
+extern IterTab *g_start2;
 
-  render_cb(g_env);
-  g_env->ev->mainloop_api.end_editor_state();
-  g_env->ev->mainloop_api.swapbuffers();
-
-
-  }
-}
 
 class BuilderIter
 {
@@ -2500,6 +2415,7 @@ public:
   g_progress_callback_set = true;
 
   env.progress_visible = true;
+  g_env = &env;
   env.progress_rest = false;
   
   env.progress_visible = true;
@@ -2882,6 +2798,8 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 }
 
 Tabs_Gui *g_start;
+Envi_tabs *g_start_tab;
+IterTab *g_start2;
 
 class TabsUpdateTask : public ASyncTask
 {
@@ -2947,7 +2865,7 @@ public:
     if (env->gui && env->navi_bar.id!=-1)
       env->gui->render(env->navi_bar);
   }
-  void start_new(Envi_tabs *env, int i)
+  bool start_new(Envi_tabs *env, int i)
   {
     if ((*perm_tasks)[i]==0)
       { // must create new content
@@ -2959,7 +2877,9 @@ public:
 	(*perm_nodes)[i]=new MainIter;
 	(*perm_args)[i]=new_envi;
 	env->env->start_async((*perm_tasks)[i]);
+	return true;
       }
+    return false;
   }
   void update(void *arg, MainLoopApi::Event &e)
   {
@@ -2988,11 +2908,14 @@ public:
 		if (num<0) exit(0);
 		(*nodes)[0]=(*perm_nodes)[num];
 		(*args)[0]=(*perm_args)[num];
+		//g_env = (Envi*)((*perm_args)[num]);
+
 		if (!((*nodes)[0]))
 		  {
-		    start_new(env,num);
+		    if (!start_new(env,num)) { g_env=(Envi*)((*perm_args)[num]); }
 		    (*nodes)[0]=(*perm_nodes)[num];
 		    (*args)[0]=(*perm_args)[num];
+		    //g_env = (Envi*)((*perm_args)[num]);
 		  }
 	      } else
 	      if (i<*active_tab) { (*active_tab)--; }
@@ -3008,7 +2931,7 @@ public:
 	int chosen = env->gui->chosen_item(w);
 	if (chosen==0)
 	  {
-	    start_new(env,i);
+	    if (!start_new(env,i)) { g_env = (Envi*)((*perm_args)[i]); }
 	    /*
 	    if ((*perm_tasks)[i]==0)
 	      { // must create new content
@@ -3023,7 +2946,8 @@ public:
 		}*/
 	    (*nodes)[0]=(*perm_nodes)[i];
 	    (*args)[0]=(*perm_args)[i];
-	    
+	    //g_env = (Envi*)((*perm_args)[i]);
+
 	    //std::cout << "CHOSEN" << std::endl;
 	    *active_tab = i;
 	    env->env->start_async(new TabsUpdateTask(g_start));
@@ -3043,6 +2967,99 @@ private:
   IterData *dt;
 };
 
+void render_cb(Envi *env)
+{
+  //std::cout << "render_cb" << std::endl;
+   if (env->progress_rest) {
+     //std::cout << "progress_rest=true" << std::endl;
+  
+  if (env->has_wayland) {
+    //std::cout << "has_wayland=true" << std::endl;
+     env->gui->render(env->window_decoration);
+   }
+
+
+  
+    //env->gui->render(env->txt2);
+    env->gui->render(env->line);
+    //env->gui->render(env->txt);
+    env->gui->render(env->scroll_area);
+    //env->gui->render(env->wave);
+    //env->gui->render(env->gameapi);
+    //env->gui->render(env->test1);
+
+    env->gui->render(env->canvas_area);
+    env->gui->render(env->scrollbar_x);
+    //env->gui->render(env->scrollbar_y);
+    env->gui->render(env->list_tooltips);
+    if (env->popup_visible)
+      {
+	env->gui->render(env->popup_dialog);
+      }
+    if (env->insert_ongoing)
+      {
+	env->gui->render(env->insert_widget);
+      }
+    if (env->connect_ongoing)
+      {
+	env->gui->render(env->connect_line);
+	env->ev->shader_api.use(env->sh);
+	env->gui->render(env->connect_widget);
+      }
+    if (env->display_visible)
+      {
+	env->gui->render(env->display);
+      }
+
+    if (env->editor_visible)
+      env->gui->render(env->editor);
+   }
+
+  enum_editor_draw(*env->ev, *env->gui);
+
+    if (env->progress_visible)
+      {
+	env->gui->set_pos(g_progress_dialog, 400,300);
+  PT cursor_pos = old_cursor_pos;
+	int button = -1;
+	int ch = -1;
+	int type = 0;
+	int mouse_wheel_y = 0;
+	env->gui->update(g_progress_dialog, cursor_pos, button, ch, type, mouse_wheel_y);
+
+	env->gui->render(g_progress_dialog);
+      }
+
+}
+
+void refresh()
+{
+  if (g_progress_halt) return;
+  if (g_env && g_env->progress_visible) {
+  g_env->ev->shader_api.use(g_env->sh);
+  if (g_env->has_wayland) {
+    g_env->ev->mainloop_api.clear(0x00000000);
+  } else {
+    g_env->ev->mainloop_api.clear(0xff000000);
+  }
+  g_env->ev->mainloop_api.start_editor_state();
+  PT cursor_pos = old_cursor_pos;
+	int button = -1;
+	int ch = -1;
+	int type = 0;
+	int mouse_wheel_y = 0;
+	if (g_env->progress_rest) {
+  g_env->gui->update(g_env->canvas_area, cursor_pos, button,ch, type, mouse_wheel_y);
+	}
+
+  render_cb(g_env);
+  g_start2->render(g_start_tab);
+  g_env->ev->mainloop_api.end_editor_state();
+  g_env->ev->mainloop_api.swapbuffers();
+
+
+  }
+}
 
 
 int main(int argc, char *argv[]) {
@@ -3052,6 +3069,7 @@ int main(int argc, char *argv[]) {
   EveryApi ev(*e2);
   Envi *env = new Envi;
   Envi_tabs *env_tab = new Envi_tabs;
+  g_start_tab = env_tab;
   env->env = e2;
   env->ev = &ev;
   env_tab->env = e2;
@@ -3232,7 +3250,7 @@ int main(int argc, char *argv[]) {
   args.push_back(env_tab);
   std::vector<BuilderIter*> nodes;
   nodes.push_back(perm_nodes[0]=new MainIter); 
-  nodes.push_back(new IterTab(active_tab,&nodes,&args,&perm_tasks, &perm_nodes, &perm_args, &iter_dt));
+  nodes.push_back(g_start2 = new IterTab(active_tab,&nodes,&args,&perm_tasks, &perm_nodes, &perm_args, &iter_dt));
   
   while(1) {
     IterAlgo(e,nodes,args,&ev);
