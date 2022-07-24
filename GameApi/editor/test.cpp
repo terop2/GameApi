@@ -1384,7 +1384,7 @@ public:
 					      env->ev->mod_api.codegen_reset_counter();
 
 					      std::string htmlfile = find_html2(ml,*env->env);
-					      std::string lastline = get_last_line(htmlfile,'@');
+					      std::string lastline = get_last_line(htmlfile,'\n');
 					      std::string label,id;
 					      std::stringstream ss(lastline);
 					      ss >> label >> id;
@@ -1392,12 +1392,12 @@ public:
 					      for(int i=0;i<ii;i++) { if (id[i]=='=') id=id.substr(0,i); }
 					      if (label=="ML")
 						{
-						  htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id + ",false,false,0.0,1000000.0);@";
+						  htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id + ",false,false,0.0,1000000.0);\n";
 						}
 					      if (label=="P")
 						{
-						  htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id + ");@";
-						  htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);@";
+						  htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id + ");\n";
+						  htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);\n";
 						  
 						}
 					      if (label=="MN")
@@ -1410,10 +1410,10 @@ public:
 						}
 					      if (label=="MT")
 						{
-						  htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);@";
-						  htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);@";
-						  htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id + ");@";
-						  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);@");
+						  htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);\n";
+						  htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);\n";
+						  htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id + ");\n";
+						  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);\n");
 						}
 
 
@@ -1427,13 +1427,7 @@ public:
 					      htmlfile = replace_str(htmlfile, "\"", "&quot;");
 					      htmlfile = replace_str(htmlfile, "\'", "&apos;");
 #ifdef WINDOWS
-					      //std::string drive = getenv("systemdrive");
-					      //std::string path = getenv("homepath");
-					      //std::string prefix = drive + path + "\\";
-			
-					      //std::ofstream f((prefix + "tst.html").c_str());
-					      //f << htmlfile;
-					      //f.close();
+
 					      int s = htmlfile.size()/3000+1;
 					      for(int i=0;i<s;i++)
 						{
@@ -1441,55 +1435,28 @@ public:
 						  if (end>htmlfile.size()) end=htmlfile.size();
 						  std::string file = htmlfile.substr(i*3000,end-i*3000);
 						  if (i==0)
-						    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=0\"" ,"Content-Type:text/plain", file);
+						    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss2.str()+"&append=0\"" ,"Content-Type:text/plain", file);
 						  else
-						    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"&append=1\"" ,"Content-Type:text/plain", file);
+						    send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss2.str()+"&append=1\"" ,"Content-Type:text/plain", file);
 						}
-					      /*
-						if (s==0)
-						{
-						send_post_request(std::string("\"https://meshpage.org/save_tmp_script.php?id=")+ss.str()+"\"" ,"Content-Type:text/plain", htmlfile);
-						
-						}
-					      */ 
+
 					      
 					      htmlfile = replace_string(htmlfile,'\n','@');
 					      homepage = replace_string(homepage,'\n','@');
 					      std::string cmd = std::string("explorer \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
-					      //std::cout << cmd << std::endl;
-					      //if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)" << std::endl;
+
 					      pthread_system(cmd.c_str());
 			
 #else
-					      //std::string home = getenv("HOME");
-					      //std::string prefix = home + "/_gameapi_builder";
-					      //system((std::string("mkdir -p ") + prefix).c_str());
-			
-					      //prefix+="/";
 
-					      //std::ofstream f2((prefix + "lighthttpd.conf").c_str());
-					      //f2 << "server.document-root = \"" + prefix + "\"" << std::endl;
-					      //f2 << "server.port = 3000" << std::endl;
-					      //f2 << "mimetype.assign = (" << std::endl;
-					      //f2 << " \".html\" => \"text/html\"" << std::endl;
-					      //f2 << ")";
-					      //f2.close();
-
-					      //std::string cmd2 = "lighttpd -D -f " + prefix + "lighthttpd.conf";
-					      //pthread_system(cmd2.c_str());
-			
-			
-					      //std::ofstream f((prefix + "tst.html").c_str());
-					      //f << htmlfile;
-					      //f.close();
-					      send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss.str(),"Content-Type: text/plain", htmlfile);
-
-			
 					      htmlfile = replace_string(htmlfile,'\n','@');
 					      homepage = replace_string(homepage,'\n','@');
+					      send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss2.str(),"Content-Type: text/plain", htmlfile);
+
+			
+
 					      std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
-					      //if (cmd.size()>2048) std::cout << "ERROR: GET REQUEST MAXIMUM SIZE IS 2048 CHARACTERS, CURRENTLY GOING OVER THAT. See https://meshpage.org/meshpage.php?p=5 (How does the site work -section)"<< std::endl ;
-					      //std::cout << cmd << std::endl;
+
 					      pthread_system(cmd.c_str());
 			
 #endif

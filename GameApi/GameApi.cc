@@ -16852,6 +16852,7 @@ class HtmlUrl : public Html
 {
 public:
   HtmlUrl(GameApi::Env &e, std::string url) : e(e), url(url) {
+    has_cb=false;
     e.async_load_callback(url, &HTML_cb, this);
     //#ifdef EMSCRIPTEN
     //async_pending_count++; async_taken = true;
@@ -17143,6 +17144,7 @@ public:
       if (del_p_script[i]==this) del_p_script[i]=0;
     }
     hml->SetCB(&P2_CB,this);
+    coll=0;
   }
   ~P_script2() { del_p_script.push_back(this); }
   void Prepare2() {
