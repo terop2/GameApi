@@ -686,7 +686,7 @@ public:
     Envi *env = (Envi*)arg;
     //std::cout << "MainIter::update start" << std::endl;
     if (!env->envi_ready) return;
-    if (env->ev->point_api.pt_y(e.cursor_pos)<125.0) return;
+    if (env->ev->point_api.pt_y(e.cursor_pos)<125.0-40.0) return;
     //std::cout << "MainIter::update cont" << std::endl;
 
 
@@ -2740,7 +2740,7 @@ public:
       {
 	env->close_button = std::vector<W>();
 	env->tab_change_button = std::vector<W>();
-	env->navi_bar = gui->navi_bar(*env->ev,*filenames, env->back_button, env->forward_button, env->save_button, (*filenames)[*active_tab>=0&&*active_tab<(*filenames).size()?*active_tab:0], env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas3, env->atlas_bm3,*active_tab);
+	env->navi_bar = gui->navi_bar(*env->ev,*filenames, env->back_button, env->forward_button, env->save_button, (*filenames)[*active_tab>=0&&*active_tab<(*filenames).size()?*active_tab:0], env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas2, env->atlas_bm2,*active_tab);
 	env->envi_ready=true;
 	break;
       }

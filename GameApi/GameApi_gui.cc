@@ -3477,7 +3477,7 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
   // back, forward, refresh, url_bar
   std::vector<W> horiz_bar2;
   W back_button2 = text("<-", atlas, atlas_bm);
-  W back_button3 = margin(back_button2,30,30,30,30);
+  W back_button3 = margin(back_button2,10,15,10,15);
   W back_button31 = highlight(back_button3);
   W back_button4 = button(size_x(back_button31),size_y(back_button31),c_dialog_button_1, c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
       W back_layer = layer(back_button4, back_button31);
@@ -3485,7 +3485,7 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
   W back_click = click_area(back_layer, 0,0, size_x(back_layer), size_y(back_layer),0);
   back_button = back_click;
   W forward_button2 = text("->", atlas, atlas_bm);
-  W forward_button3 = margin(forward_button2,30,30,30,30);
+  W forward_button3 = margin(forward_button2,10,15,10,15);
   W forward_button31 = highlight(forward_button3);
   W forward_button4 = button(size_x(forward_button31),size_y(forward_button31),c_dialog_button_1,c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
       W forward_layer = layer(forward_button4, forward_button31);
@@ -3495,7 +3495,7 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
   forward_button = forward_click;
   
   W save_button2 = text("[]", atlas, atlas_bm);
-  W save_button3 = margin(save_button2,30,30-5-3,30,13+5+3);
+  W save_button3 = margin(save_button2,10,10,10,10);
   W save_button31 = highlight(save_button3);
   W save_button4 = button(size_x(save_button31),size_y(save_button31),c_dialog_button_1,c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
       W save_layer = layer(save_button4, save_button31);
@@ -3503,8 +3503,8 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
   W save_click = click_area(save_layer, 0,0,size_x(save_layer),size_y(save_layer),0);
 
   W url_bar = url_editor(url, atlas, atlas_bm, 3);
-  W url_bar2 = center_y(url_bar, 30+20+30);
-  W url_bar21 = size(url_bar2, 630,30+20+30-2-2-1);
+  W url_bar2 = center_y(url_bar, 20+5+20-2-2-1);
+  W url_bar21 = size(url_bar2, 630,20+5+20-2-2-1);
   W url_bar3 = margin(url_bar21,30,0,0,0);
   W url_bar31 = highlight(url_bar3);
   W url_bar4 = button(size_x(url_bar31),size_y(url_bar31),c_dialog_button_1,c_dialog_button_2 /*c_canvas_item, c_canvas_item2*/);
