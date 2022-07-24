@@ -2853,12 +2853,14 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
-      vec[i]->start(args[i]);
+      if (vec[i])
+	vec[i]->start(args[i]);
     }
   int s2 = vec.size();
   for(int i=0;i<s2;i++)
     {
-      vec[i]->render(args[i]);
+      if (vec[i])
+	vec[i]->render(args[i]);
     }
   ev->mainloop_api.swapbuffers();
 
@@ -2870,7 +2872,8 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 	int s3 = vec.size();
 	for(int i=0;i<s3;i++)
 	  {
-	    vec[i]->update(args[i],e);
+	    if (vec[i])
+	      vec[i]->update(args[i],e);
 	  }
 	
       }
@@ -2944,6 +2947,20 @@ public:
     if (env->gui && env->navi_bar.id!=-1)
       env->gui->render(env->navi_bar);
   }
+  void start_new(Envi_tabs *env, int i)
+  {
+    if ((*perm_tasks)[i]==0)
+      { // must create new content
+	Envi *new_envi = new Envi;
+	new_envi->env = env->env;
+	new_envi->ev = env->ev;
+	//std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
+	(*perm_tasks)[i]=new StartMainTask(*dt->env,*dt->ev,*new_envi,dt->sh,dt->sh_2d,dt->sh_arr,dt->sh2,dt->sh3,dt->screen_x,dt->screen_y,(*dt->filenames)[i],dt->argc,dt->argv);
+	(*perm_nodes)[i]=new MainIter;
+	(*perm_args)[i]=new_envi;
+	env->env->start_async((*perm_tasks)[i]);
+      }
+  }
   void update(void *arg, MainLoopApi::Event &e)
   {
     Envi_tabs *env = (Envi_tabs*)arg;
@@ -2971,6 +2988,12 @@ public:
 		if (num<0) exit(0);
 		(*nodes)[0]=(*perm_nodes)[num];
 		(*args)[0]=(*perm_args)[num];
+		if (!((*nodes)[0]))
+		  {
+		    start_new(env,num);
+		    (*nodes)[0]=(*perm_nodes)[num];
+		    (*args)[0]=(*perm_args)[num];
+		  }
 	      } else
 	      if (i<*active_tab) { (*active_tab)--; }
 	    env->env->start_async(new TabsUpdateTask(g_start));
@@ -2985,6 +3008,8 @@ public:
 	int chosen = env->gui->chosen_item(w);
 	if (chosen==0)
 	  {
+	    start_new(env,i);
+	    /*
 	    if ((*perm_tasks)[i]==0)
 	      { // must create new content
 		Envi *new_envi = new Envi;
@@ -2995,7 +3020,7 @@ public:
 		(*perm_nodes)[i]=new MainIter;
 		(*perm_args)[i]=new_envi;
 		env->env->start_async((*perm_tasks)[i]);
-	      }
+		}*/
 	    (*nodes)[0]=(*perm_nodes)[i];
 	    (*args)[0]=(*perm_args)[i];
 	    
