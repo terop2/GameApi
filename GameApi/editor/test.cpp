@@ -771,6 +771,7 @@ public:
     Envi *env = (Envi*)arg;
     //std::cout << "MainIter::update start" << std::endl;
     if (!env->envi_ready) return;
+    if (env->ev->point_api.pt_y(e.cursor_pos)<125.0) return;
     //std::cout << "MainIter::update cont" << std::endl;
 
 
@@ -2755,7 +2756,7 @@ struct Envi_tabs
 class Tabs_Gui : public ASyncTask
 {
 public:
-  Tabs_Gui(Env &e, EveryApi &ev, Envi_tabs &env, SH sh, SH sh_2d, SH sh_arr, SH  sh2, SH sh3,int screen_x, int screen_y, std::vector<std::string> filenames, int *active_tab) : e(e), ev(ev), env(&env), sh(sh), sh_2d(sh_2d), sh_arr(sh_arr), sh2(sh2), sh3(sh3), screen_x(screen_x), screen_y(screen_y), filenames(filenames), active_tab(active_tab) {
+  Tabs_Gui(Env &e, EveryApi &ev, Envi_tabs &env, SH sh, SH sh_2d, SH sh_arr, SH  sh2, SH sh3,int screen_x, int screen_y, std::vector<std::string> *filenames, int *active_tab) : e(e), ev(ev), env(&env), sh(sh), sh_2d(sh_2d), sh_arr(sh_arr), sh2(sh2), sh3(sh3), screen_x(screen_x), screen_y(screen_y), filenames(filenames), active_tab(active_tab) {
     gui = new GuiApi(e,ev,sh);
     env.gui=gui;
   } 
@@ -2810,20 +2811,20 @@ public:
       }
     case 1:
       {
-      env->titles = std::vector<std::string>();
+	//env->titles = std::vector<std::string>();
       //env->titles.push_back(filename);
       //env->titles.push_back("testtab1");
       //env->titles.push_back("testtab2");
       //env->titles.push_back("testtab3");
-      int s = filenames.size();
-      for(int i=0;i<s;i++) env->titles.push_back(filenames[i]);
+      //int s = filenames.size();
+      //for(int i=0;i<s;i++) env->titles.push_back(filenames[i]);
       break;
       }
     case 2:
       {
 	env->close_button = std::vector<W>();
 	env->tab_change_button = std::vector<W>();
-	env->navi_bar = gui->navi_bar(*env->ev,env->titles, env->back_button, env->forward_button, env->save_button, filenames[*active_tab>=0&&*active_tab<filenames.size()?*active_tab:0], env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas3, env->atlas_bm3,*active_tab);
+	env->navi_bar = gui->navi_bar(*env->ev,*filenames, env->back_button, env->forward_button, env->save_button, (*filenames)[*active_tab>=0&&*active_tab<(*filenames).size()?*active_tab:0], env->url_button, env->close_button, env->tab_change_button, env->new_tab_button, std::vector<std::string>{}, std::vector<std::string>{}, env->atlas3, env->atlas_bm3,*active_tab);
 	env->envi_ready=true;
 	break;
       }
@@ -2841,7 +2842,7 @@ private:
   SH sh3;
   GuiApi *gui;
   int screen_x, screen_y;
-  std::vector<std::string> filenames;
+  std::vector<std::string> *filenames;
   std::string filename;
   int *active_tab;
 };
@@ -2950,6 +2951,33 @@ public:
     if (!env->envi_ready) return;
     //std::cout << "IterTab::update cont" << std::endl;
 
+    int s2 = env->close_button.size();
+    for(int i=0;i<s2;i++)
+      {
+	W w = env->close_button[i];
+	int chosen = env->gui->chosen_item(w);
+	if (chosen==0)
+	  {
+	    //std::cout << "ERASE:" << i << std::endl;
+	    (*perm_tasks).erase((*perm_tasks).begin()+i);
+	    (*perm_nodes).erase((*perm_nodes).begin()+i);
+	    (*perm_args).erase((*perm_args).begin()+i);
+	    dt->filenames->erase(dt->filenames->begin()+i);
+	    //dt->titles->erase(dt->titles->begin()+i);
+	    if (i==*active_tab)
+	      {
+		int num = i;
+		if (num>=(*perm_nodes).size()) { num--; (*active_tab)--; }
+		if (num<0) exit(0);
+		(*nodes)[0]=(*perm_nodes)[num];
+		(*args)[0]=(*perm_args)[num];
+	      } else
+	      if (i<*active_tab) { (*active_tab)--; }
+	    env->env->start_async(new TabsUpdateTask(g_start));
+	  }
+      }
+
+    
     int s = env->tab_change_button.size();
     for(int i=0;i<s;i++)
       {
@@ -2962,7 +2990,7 @@ public:
 		Envi *new_envi = new Envi;
 		new_envi->env = env->env;
 		new_envi->ev = env->ev;
-		std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
+		//std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
 		(*perm_tasks)[i]=new StartMainTask(*dt->env,*dt->ev,*new_envi,dt->sh,dt->sh_2d,dt->sh_arr,dt->sh2,dt->sh3,dt->screen_x,dt->screen_y,(*dt->filenames)[i],dt->argc,dt->argv);
 		(*perm_nodes)[i]=new MainIter;
 		(*perm_args)[i]=new_envi;
@@ -3171,7 +3199,7 @@ int main(int argc, char *argv[]) {
   
 
   
-  e.start_async(g_start=new Tabs_Gui(e,ev,*env_tab,sh,sh_2d,sh_arr,sh2,sh3,screen_x, screen_y, filenames,active_tab));
+  e.start_async(g_start=new Tabs_Gui(e,ev,*env_tab,sh,sh_2d,sh_arr,sh2,sh3,screen_x, screen_y, &filenames,active_tab));
   e.start_async(perm_tasks[0]=new StartMainTask(e,ev,*env,sh,sh_2d,sh_arr,sh2,sh3,screen_x,screen_y,filenames[0],argc,argv));
 
   std::vector<void*> args;
