@@ -26082,10 +26082,11 @@ public:
   EmscriptenFrame2(std::string codegen, std::string homepage) : codegen(codegen), hpage(homepage) { }
   void Collect(CollectVisitor &vis)
   {
-    m_fptr(m_data);
+    if (cb_available)
+      m_fptr(m_data);
   }
   void HeavyPrepare() { }
-  virtual void SetCB(void(*fptr)(void*), void*data) { m_fptr = fptr; m_data=data; }
+  virtual void SetCB(void(*fptr)(void*), void*data) { m_fptr = fptr; m_data=data; cb_available = true; }
   virtual void Prepare() { }
   virtual std::string script_file() const
   {
@@ -26100,6 +26101,7 @@ private:
   std::string hpage;
   void(*m_fptr)(void*);
   void *m_data;
+  bool cb_available = false;
 };
 
 

@@ -5496,7 +5496,8 @@ ASyncData async_data[] = {
   { "mainloop_api", "tunnel_tree", 3},
   //{ "mainloop_api", "async_gltf", 2},
   { "materials_api", "gltf_material_from_file", 1},
-  { "mainloop_api", "gltf_loadKK", 1}
+  { "mainloop_api", "gltf_loadKK", 1},
+  { "mainloop_api", "html_url", 0 }
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
