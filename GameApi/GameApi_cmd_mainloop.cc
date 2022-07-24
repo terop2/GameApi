@@ -903,28 +903,28 @@ std::vector<GameApiItem*> blocker_functions()
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_ML,
 			 "html_ml",
 			 { "ev", "r", "homepage" },
-			 { "EveryApi&", "RUN", "std::string" },
+			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2_ML"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_P,
 			 "html_p",
 			 { "ev", "r", "homepage" },
-			 { "EveryApi&", "RUN", "std::string" },
+			 { "EveryApi&", "P", "std::string" },
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2_P"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_MN,
 			 "html_mn",
 			 { "ev", "r", "homepage" },
-			 { "EveryApi&", "RUN", "std::string" },
+			 { "EveryApi&", "MN", "std::string" },
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2_mn"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_MT,
 			 "html_mt",
 			 { "ev", "r", "homepage" },
-			 { "EveryApi&", "RUN", "std::string" },
+			 { "EveryApi&", "MT", "std::string" },
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2_MT"));
   
