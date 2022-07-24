@@ -3235,6 +3235,7 @@ int main(int argc, char *argv[]) {
   int s = filenames.size();
   for(int i=0;i<s;i++)
     {
+
       perm_tasks.push_back(0);
       perm_nodes.push_back(0);
       perm_args.push_back(0);
