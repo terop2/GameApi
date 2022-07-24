@@ -1384,6 +1384,11 @@ public:
 					      env->ev->mod_api.codegen_reset_counter();
 
 					      std::string htmlfile = find_html2(ml,*env->env);
+					      htmlfile = replace_str(htmlfile, "@", "\n");					      
+					      std::cout << htmlfile << std::endl;
+					      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+
+					      htmlfile+='\n';
 					      std::string lastline = get_last_line(htmlfile,'\n');
 					      std::string label,id;
 					      std::stringstream ss(lastline);
