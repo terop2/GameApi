@@ -1385,7 +1385,6 @@ public:
 
 					      std::string htmlfile = find_html2(ml,*env->env);
 					      htmlfile = replace_str(htmlfile, "@", "\n");					      
-					      std::cout << htmlfile << std::endl;
 					      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
 
 					      htmlfile+='\n';
