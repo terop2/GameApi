@@ -51,7 +51,7 @@ CFiles= GameApi_gui.cc GameApi_gltf.cc GameApi_diag.cc Pieces.cc Map.cc VectorTo
 	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
 	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
 	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc \
-	GameApi_cmd.cc
+	GameApi_cmd.cc cpushader.cc
 
 
 

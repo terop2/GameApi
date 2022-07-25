@@ -632,11 +632,11 @@ public:
     ee.f_shader_functions += header2 + function2;
 #else
     ii.set_inner(fragment, 2);
-    std::string header = fragment->get_win32_header();
+    std::string header2 = fragment->get_win32_header();
     ii.set_inner(fragment, 3);
-    std::string function = fragment->get_win32_function();
+    std::string function2 = fragment->get_win32_function();
 
-    ee.f_shader_functions += header + function;
+    ee.f_shader_functions += header2 + function2;
 #endif
     
       }
