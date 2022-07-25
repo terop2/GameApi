@@ -16848,21 +16848,32 @@ void HTML_cb(void *data);
 class P_script2;
 std::vector<P_script2*> del_p_script;
 
+class HtmlUrl;
+std::vector<HtmlUrl*> del_p2_script;
+
 class HtmlUrl : public Html
 {
 public:
   HtmlUrl(GameApi::Env &e, std::string url) : e(e), url(url) {
     has_cb=false;
     e.async_load_callback(url, &HTML_cb, this);
+    int s = del_p2_script.size();
+    for(int i=0;i<s;i++) {
+      if (del_p2_script[i]==this) del_p2_script[i]=0;
+    }
+
     //#ifdef EMSCRIPTEN
     //async_pending_count++; async_taken = true;
     //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
     //#endif
     firsttime = true;
   }
-  ~HtmlUrl() { e.async_rem_callback(url); }
+  ~HtmlUrl() { del_p2_script.push_back(this); /*e.async_rem_callback(url);*/ }
   void Prepare2()
   {
+    for(int i=0;i<del_p2_script.size();i++)
+      if (del_p2_script[i]==this) { std::cout << "del_p_script error!" << std::endl; return; }
+    
     Prepare();
     if (has_cb)
       {
