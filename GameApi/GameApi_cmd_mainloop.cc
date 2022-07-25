@@ -914,12 +914,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2_P"));
 
+  /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_MN,
 			 "html_mn",
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "MN", "std::string" },
 			 { "ev", "", "https://tpgames.org/" },
 			 "HML", "mainloop_api", "emscripten_frame2_mn"));
+  */
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_MT,
 			 "html_mt",

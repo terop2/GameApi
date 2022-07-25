@@ -2859,6 +2859,35 @@ public:
     if (!env->envi_ready) return;
     //std::cout << "IterTab::update cont" << std::endl;
 
+    W w2 = env->new_tab_button;
+    int chosen2 = env->gui->chosen_item(w2);
+    if (chosen2==0)
+      {
+	int ii = 0;
+	std::string s;
+	do {
+	  ii++;
+	  std::stringstream ss;
+	  ss << ii;
+	  s = std::string("mod") + ss.str() + ".txt";
+	} while(file_exists(s));
+	
+	Envi *new_envi = new Envi;
+	new_envi->env = env->env;
+	new_envi->ev = env->ev;
+	//std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
+	(*dt->filenames).push_back(s);
+	(*perm_tasks).push_back(new StartMainTask(*dt->env,*dt->ev,*new_envi,dt->sh,dt->sh_2d,dt->sh_arr,dt->sh2,dt->sh3,dt->screen_x,dt->screen_y,s /*(*dt->filenames)[i]*/,dt->argc,dt->argv));
+	(*perm_nodes).push_back(new MainIter);
+	(*perm_args).push_back(new_envi);
+	int pos = (*perm_tasks).size()-1;
+	env->env->start_async((*perm_tasks)[pos]);	
+	(*nodes)[0]=(*perm_nodes)[pos];
+	(*args)[0]=(*perm_args)[pos];
+	*active_tab = pos;
+	env->env->start_async(new TabsUpdateTask(g_start));
+      }
+    
     int s2 = env->close_button.size();
     for(int i=0;i<s2;i++)
       {
