@@ -22,6 +22,7 @@
 #include "Buffer.hh"
 #include <iostream>
 
+//void stackTrace();
 BufferRef BufferRef::NewBuffer(int width, int height)
 {
   if (width<0) width=0;
@@ -29,6 +30,8 @@ BufferRef BufferRef::NewBuffer(int width, int height)
   if (width==0) { width++; }
   if (height==0) {height++; }
   unsigned int *buffer = new unsigned int[width*height];
+  // std::cout << "BufferRef::NewBuffer(" << width << "*" << height << ")" << std::endl;
+  //stackTrace();
   if (!buffer)
     {
       std::cout << "BufferRef::NewBuffer failed" << std::endl;

@@ -1958,7 +1958,15 @@ public:
     //GameApi::P I10=p; 
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
-    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm);
+    std::vector<std::string> id_labels;
+    for(int i=0;i<s;i++)
+      {
+	std::stringstream ss;
+	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
+	id_labels.push_back(ss.str());
+      }
+    
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm,std::vector<int>(),id_labels);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
@@ -1991,7 +1999,7 @@ public:
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
-
+    
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
@@ -3505,7 +3513,13 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
-      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 300, mat2, keys);
+      GameApi::MT mat2_anim;
+      if (interface->animations_size()!=0) {
+	mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, 100, mat2, keys);
+      } else
+	{
+	  mat2_anim = mat2;
+	}
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
@@ -3532,7 +3546,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
-      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 300, mat2, keys);
+      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 100, mat2, keys);
 
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;

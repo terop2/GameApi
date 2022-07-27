@@ -162,6 +162,7 @@ int max_mem_usage=0;
 #if 0
 void *operator new( std::size_t count)
 {
+#if 0
   current_mem_usage+=count;
   if (current_mem_usage>max_mem_usage) max_mem_usage=current_mem_usage;
   char *ptr = (char*)malloc(count);
@@ -171,7 +172,8 @@ void *operator new( std::size_t count)
   //std::size_t *ptr2 = (std::size_t*)ptr;
   //*ptr2 = count;
   return ptr;
-#if 0
+#endif
+#if 1
   static int counter = 0;
   counter++;
   if (counter % 10000==0) {
@@ -201,10 +203,12 @@ void operator delete(void* ptr) noexcept
 #endif
   //std::size_t *ptr3 = (std::size_t*)ptr2;
   //current_mem_usage-=*ptr3;
+#if 0
   bool done = false;
   for(int i=0;i<1000000;i++)
     if (arr[i]==ptr) { current_mem_usage-=sz[i]; arr[i]=0; sz[i]=0; done=true; break; }
   if (!done) stackTrace();
+#endif
   
   free(ptr);
 }
@@ -16989,6 +16993,7 @@ public:
       
       std::cout << "Creating tmp directories.." << std::endl;
       system("mkdir -p ~/.gameapi_builder");
+      system("chmod a+rwx ~/.gameapi_builder");
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
     case 1:
@@ -17012,8 +17017,10 @@ public:
       s = replace_str(s, "\'", "&apos;");
 
       std::cout << "Generating script.." << std::endl;
-      std::ofstream ss("~/.gameapi_builder/gameapi_script.html");
+      std::string home = getenv("HOME");
+      std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << s;
+      ss << std::flush;
       ss.close();
       env.set_download_progress(env.download_index_mapping(id), 4.0/8.0);
       }
@@ -17031,8 +17038,11 @@ public:
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       std::cout << "Generating date.." << std::endl;
-      std::ofstream ss2("~/.gameapi_builder/gameapi_date.html");
+      system("touch ~/.gameapi_builder/gameapi_date.html");
+      std::string home = getenv("HOME");
+      std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
+      ss2 << std::flush;
       ss2.close();
 
       env.set_download_progress(env.download_index_mapping(id), 5.0/8.0);
@@ -17080,9 +17090,10 @@ public:
       }
     case 7:
       {
-	std::cout << "Saving to ./gameapi_deploy.zip";
+	std::cout << "Saving to ~/.gameapi_builder/Downloads/gameapi_deploy.zip";
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
-	std::ifstream ss("~/.gameapi_builder/deploy/gameapi_deploy.zip", std::ios_base::binary);
+	std::string home = getenv("HOME");
+	std::ifstream ss((home + "/.gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
 	while(ss.get(ch)) {
@@ -26129,6 +26140,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MT(EveryApi &ev, MT ml, std
     std::string s;
     ss2 >> s;
     if (s=="MT") res_line = line_num;
+    if (s=="HML") break;
     line_num++;
   }
 
@@ -26139,6 +26151,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MT(EveryApi &ev, MT ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="MT" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -26160,6 +26173,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MN(EveryApi &ev, MN ml, std
     std::string s;
     ss2 >> s;
     if (s=="MN") res_line = line_num;
+    if (s=="HML") break;
     line_num++;
   }
 
@@ -26170,6 +26184,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MN(EveryApi &ev, MN ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="MN" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -26191,6 +26206,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_P(EveryApi &ev, P ml, std::
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="P") res_line = line_num;
     line_num++;
   }
@@ -26202,6 +26218,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_P(EveryApi &ev, P ml, std::
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="P" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -26222,6 +26239,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="ML") res_line = line_num;
     line_num++;
   }
@@ -26233,6 +26251,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="ML" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -26252,6 +26271,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    if (s=="HML") break;
     if (s=="RUN" || output)
       output_str+=line+"@";
     if (s=="RUN") output=false;

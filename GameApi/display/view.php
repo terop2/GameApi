@@ -1003,7 +1003,9 @@ function create_script(filename, contents, filenames)
   //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     res+="P I155=ev.polygon_api.gltf_load(ev,I154,0,0);\n"; } else
+     res+="P I155=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+
+  } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
 
@@ -1090,8 +1092,12 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
   res+="ML I6=ev.materials_api.bind(I2,I4);\n";
 
 
-  if ((parseInt(material_value)==0&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
-     res="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+  console.log(material_value);
+  console.log(border_value);
+  console.log(filename.substr(-4));
+  console.log(filename.substr(-5));
+  if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
+     res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
 
   }
 
@@ -1332,6 +1338,7 @@ function drop3(state,selectfileelem)
 
      	   var s = files2.length;
      	   for(var i=0;i<s;i++) {
+	   	   console.log(files2[i].name);
 	   	   filenames.push(files2[i].name);
 		   files.push(files2[i]);
 	   }
@@ -1391,6 +1398,8 @@ function drop(ev)
 
 	   old_files = files;
 	   old_filenames = filenames;
+	   console.log(filenames);
+
 	   old_main_item_name = main_item_name;
 
            const promise = extract_contents(store.state,files,filenames,fix_filename(main_item_name));

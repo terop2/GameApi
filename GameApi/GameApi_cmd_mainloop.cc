@@ -1080,6 +1080,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "RUN", "texture_api", "combine_screens"))
 
 #endif
+    vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_deploy,
+			   "save_deploy",
+			   { "h", "filename" },
+			   { "HML", "std::string" },
+			   { "", "gameapi_deploy.zip" },
+			   "ML", "mainloop_api", "save_deploy"));
     
   return vec;
 }
