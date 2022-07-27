@@ -717,7 +717,7 @@ public:
   IMPORT TXID webcam_txid_slow(EveryApi &ev, int num);
   IMPORT TXID webcam_txid_win(EveryApi &ev, int sx, int sy, int num);
   IMPORT ML vr_overlay(TXID id, std::string key, std::string name, int sx, int sy);
-  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>(),bool mipmaps=true);
+  IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>(),bool mipmaps=true, std::vector<std::string> id_labels=std::vector<std::string>());
   IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
 	IMPORT void use(TXID tx, int i = 0);
   IMPORT void use_many(std::vector<TXID> vec, int i=0);
@@ -2776,7 +2776,7 @@ public:
   IMPORT void render_vertex_array_instanced_matrix(ShaderApi &ev, VA va, MSA pta, SH sh, int hide_n = -1); // fast
   IMPORT ML render_vertex_array_ml(EveryApi &ev, VA va);
   IMPORT ML render_vertex_array_ml2(EveryApi &ev, P va);
-  IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
+  IMPORT ML render_vertex_array_ml2_texture(EveryApi &ev, P va, std::vector<BM> vec, std::vector<int> types=std::vector<int>(), std::vector<std::string> id_labels=std::vector<std::string>());
   IMPORT ML render_vertex_array_ml2_texture_id(EveryApi &ev, P va, std::vector<TXID> *vec);
   IMPORT ML render_vertex_array_ml2_cubemap(EveryApi &ev, P va, std::vector<BM> vec);
   IMPORT ML render_vertex_array_ml2_texture2(EveryApi &ev, P p);

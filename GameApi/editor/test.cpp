@@ -3091,6 +3091,17 @@ int main(int argc, char *argv[]) {
 	std::cout << "Loading:" << filename << std::endl;
 	for(int i=1;i<argc;i++)
 	  {
+	    if (std::string(argv[i])=="--help"||std::string(argv[i])=="-h"||std::string(argv[i])=="-?"||std::string(argv[i])=="/?")
+	      {
+		std::cout << "Usage: gameapi-builder <options>" << std::endl;
+		std::cout << "Possible options:" << std::endl;
+		std::cout << "  --file mod.txt    (open a file for editing)" << std::endl;
+		std::cout << "  --mg, --huge, --mega, --small (window size)" << std::endl;
+		std::cout << "  --vr oculus  (choose oculus for vr)" << std::endl;
+		std::cout << "  --vr vive    (choose vive for vr)" << std::endl;
+		std::cout << "  --dump (list all functions)" << std::endl;
+		exit(0);
+	      }
 	    if (std::string(argv[i])=="--dump")
 	      {
 		std::string s = ev.mod_api.dump_functions();

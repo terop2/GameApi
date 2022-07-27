@@ -194,7 +194,26 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
 
   return txid;
 }
-EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps)
+
+struct TXIDCACHE
+{
+  std::string label;
+  GameApi::TXID id;
+};
+std::vector<TXIDCACHE> idcache;
+GameApi::TXID find_txid(std::string label)
+{
+  int s = idcache.size();
+  for(int i=0;i<s;i++)
+    {
+      if (label==idcache[i].label) return idcache[i].id;
+    }
+  GameApi::TXID id;
+  id.id = -1;
+  return id;
+}
+
+EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels)
 {
 
   mipmaps = false;
@@ -212,7 +231,14 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
   for(int i=0;i<s;i++)
     {
       //std::cout << "I=" << i << std::endl;
-
+      if (i<id_labels.size()) {
+	TXID id = find_txid(id_labels[i]);
+	if (id.id!=-1) {
+	  txidvec.push_back(id);
+	  continue;
+	}
+      }
+      
       int type = 0;
       int s3 = types.size();
       if (i>=0 && i<s3) {
@@ -412,7 +438,13 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       GameApi::TXID id2;
       id2.id = ids[i];
       txidvec.push_back(id2);
+      if (i<id_labels.size()) {
+      TXIDCACHE idcacheitem;
+      idcacheitem.label = id_labels[i];
+      idcacheitem.id = id2;
+      idcache.push_back(idcacheitem);
       }
+    }
   assert(txidvec.size()==vec.size());
   return txidvec;
 }
