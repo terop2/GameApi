@@ -1664,7 +1664,7 @@ public:
   }
   void free_extra_mem()
   {
-    std::cout << "FREE_EXTRA_MEM" << std::endl;
+    //std::cout << "FREE_EXTRA_MEM" << std::endl;
     int s = buffer.size();
     for(int i=0;i<s;i++)
       {
