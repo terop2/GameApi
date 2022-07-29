@@ -3435,9 +3435,8 @@ EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 {
 }
 
-EXPORT GameApi::W GameApi::GuiApi::download_bar(/*GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons*/)
+EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab)
 {
-#if 0
   int s = titles.size();
   std::vector<W> horiz_bar;
   for(int i=0;i<s;i++)
@@ -3461,9 +3460,8 @@ EXPORT GameApi::W GameApi::GuiApi::download_bar(/*GameApi::EveryApi &ev, std::ve
       horiz_bar.push_back(tab_layer);
     }
   W arr_top = array_x(&horiz_bar[0], horiz_bar.size(), 3);
-  W arr_top2 = margin(0,ev.mainloop_api.get_screen_height()-size_y(arr_top),0,0);
+  W arr_top2 = margin(arr_top, 0,ev.mainloop_api.get_screen_height()-size_y(arr_top),0,0);
   return arr_top2;
-#endif
 }
 
 EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm, int &active_tab)

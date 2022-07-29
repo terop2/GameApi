@@ -1833,7 +1833,7 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
-  IMPORT W download_bar();
+  IMPORT W download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab);
   IMPORT W directory_view(std::vector<std::string> dir_items, int &selection, std::vector<W> &clicks, FtA atlas, BM atlas_bm);
   IMPORT W asset_view(std::string url_or_filename);
   IMPORT W navi_bar(EveryApi &ev, std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm, int &active_tab);
