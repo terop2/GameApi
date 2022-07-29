@@ -3435,8 +3435,35 @@ EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 {
 }
 
-EXPORT GameApi::W GameApi::GuiApi::download_bar()
+EXPORT GameApi::W GameApi::GuiApi::download_bar(/*GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons*/)
 {
+#if 0
+  int s = titles.size();
+  std::vector<W> horiz_bar;
+  for(int i=0;i<s;i++)
+    {
+      W txt = text(titles[i], atlas, atlas_bm);
+      W txt2 = margin(txt,10,10,10,10);
+      W txt3 = highlight(txt2);
+      W txt_click = click_area(txt3, 0,0,size_x(txt3),size_y(txt3),0);
+      buttons.push_back(txt_click);
+      W close_button2 = text("x", atlas, atlas_bm);
+      W close_button21 = margin(close_button2,2,2,2,25);
+      W close_button3 = highlight(close_button21);
+      W close_click = click_area(close_button3,0,0,size_x(close_button3),size_y(close_button3),0);
+      close_button.push_back(close_click);
+      std::vector<W> horiz_tab;
+      horiz_tab.push_back(txt_click);
+      horiz_tab.push_back(close_click);
+      W arr_tab = array_x(&horiz_tab[0], horiz_tab.size(), 3);
+      W tab_button = button(size_x(arr_tab),size_y(arr_tab),i==active_tab?c_dialog_button_1:c_canvas_item, i==active_tab?c_dialog_button_2:c_canvas_item2);
+      W tab_layer = layer(tab_button, arr_tab);
+      horiz_bar.push_back(tab_layer);
+    }
+  W arr_top = array_x(&horiz_bar[0], horiz_bar.size(), 3);
+  W arr_top2 = margin(0,ev.mainloop_api.get_screen_height()-size_y(arr_top),0,0);
+  return arr_top2;
+#endif
 }
 
 EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm, int &active_tab)

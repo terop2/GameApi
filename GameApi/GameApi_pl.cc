@@ -1241,6 +1241,8 @@ public:
 
     
   }
+  void SetDoneCount(int i) { coll->SetDoneCount(i); }
+  void PrepareDone() { coll->PrepareDone(); }
   void Prepare()
   {
     //std::cout << "PrepareCache: " << id << std::endl;
@@ -1636,6 +1638,7 @@ int CalcUrlIndex(std::string url);
 
 std::vector<std::string> mtl_urls;
 int g_previous_texid_material = 0;
+void stackTrace();
 class NetworkedFaceCollectionMTL2 : public FaceCollection
 {
 public:
@@ -1658,7 +1661,33 @@ public:
       {
   	BufferRef::FreeBuffer(bump_buffer[i3]);
       }
-
+  }
+  void free_extra_mem()
+  {
+    std::cout << "FREE_EXTRA_MEM" << std::endl;
+    int s = buffer.size();
+    for(int i=0;i<s;i++)
+      {
+  	BufferRef::FreeBuffer(buffer[i]);
+      }
+    int s2 = d_buffer.size();
+    for(int i2=0;i2<s2;i2++)
+      {
+  	BufferRef::FreeBuffer(d_buffer[i2]);
+      }
+    int s3 = bump_buffer.size();
+    for(int i3=0;i3<s3;i3++)
+      {
+  	BufferRef::FreeBuffer(bump_buffer[i3]);
+      }
+    
+  }
+  void SetDoneCount(int i) { done_count = i; }
+  void PrepareDone() { /*std::cout << "PrepareDone" << std::endl; stackTrace();*/
+    current->PrepareDone();
+    done_count--;
+    if (done_count<=0)
+      free_extra_mem();
   }
   NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump)
   {
@@ -2132,6 +2161,7 @@ public:
   std::vector<CBData*> del_vec;
   bool load_d, load_bump;
   LoadStream *stream = 0;
+  int done_count=1;
 };
 
 void MTL_CB(void *data)
@@ -2351,13 +2381,22 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() { Prepare(); }
+  void PrepareDone()
+  {
+    //std::cout << "DEL" << std::endl;
+    if (ptr) {
+      ptr->del();
+      delete ptr;
+      ptr=0;
+    }
+  }
   void Prepare()
   {
     if (current==empty) {
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
 #endif
-      GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+      ptr = e.get_loaded_async_url(url);
       if (!ptr) {
 	std::cout << "p_ds_url async not ready yet, failing..." << std::endl;
 	return;
@@ -2366,7 +2405,7 @@ public:
   int c = get_current_block();
   set_current_block(-1);
       GameApi::P p = ev.polygon_api.p_ds(ev,ptr->begin(),ptr->end());
-      delete ptr;
+      //delete ptr;
       set_current_block(c);
       FaceCollection *coll = find_facecoll(e,p);
       coll->Prepare();
@@ -2407,6 +2446,7 @@ private:
   FaceCollection *empty;
   FaceCollection *filled;
   FaceCollection *current;
+  GameApi::ASyncVec *ptr=0;
 };
 
 
@@ -13573,7 +13613,6 @@ public:
     int *array = (int*)ptr;
     return array[face]+point;
   }
-  
 private:
   DiskStore *ds;
   bool ready;
@@ -14113,6 +14152,7 @@ public:
       }
     }
   }
+  void PrepareDone() { coll->PrepareDone(); }
   virtual void Prepare() {
     coll->Prepare();
     if (objs.size()==0) {
@@ -14217,6 +14257,9 @@ GameApi::P GameApi::PolygonApi::texture_splitter2(P p, int val)
 
 GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int end_index)
 {
+  FaceCollection *coll = find_facecoll(e,p);
+  coll->SetDoneCount(end_index-start_index);
+  
   ArrayType *array = new ArrayType;
   array->type = 3;
   for(int i=start_index;i<end_index;i++)
@@ -14403,6 +14446,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
   ArrayType *array4 = find_array(e,arr3);
   ArrayType *array = new ArrayType;
   array->type = 4;
+
+  
   int s = array2->vec.size();
   for(int i=0;i<s;i++) {
     int val = array2->vec[i];
@@ -16767,6 +16812,12 @@ private:
   std::string homepage;
   std::vector<unsigned char> *m_ptr;
 };
+
+void GameApi::PolygonApi::preparedone(P p)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  coll->PrepareDone();
+}
 
 GameApi::P GameApi::PolygonApi::stl_load(std::string url)
 {

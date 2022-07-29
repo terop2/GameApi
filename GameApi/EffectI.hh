@@ -48,7 +48,7 @@ public:
   //virtual float Length() const=0;
 };
 
-
+void stackTrace();
 class FaceCollection : public CollectInterface
 {
 public:
@@ -56,6 +56,8 @@ public:
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
+  virtual void SetDoneCount(int i) { std::cout << "setdonecount not implemented at " << typeid(*this).name() << std::endl; }
+  virtual void PrepareDone() { std::cout << "Preparedone not implemented at " << typeid(*this).name() << std::endl; }
   virtual int NumFaces() const = 0;
   virtual int NumPoints(int face) const=0;
 
