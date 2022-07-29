@@ -7282,7 +7282,8 @@ public:
       item->Collect(vis);
       firsttime = false;
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+  }
   virtual void Prepare()
   {
   }
@@ -7490,6 +7491,7 @@ public:
     obj2->Prepare(); 
     pta = ev.points_api.prepare(pts);
     ev.polygon_api.create_vertex_array_hw(va);
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -7679,6 +7681,7 @@ public:
     obj2->Prepare(); 
     pta = ev.matrices_api.prepare(pts);
     ev.polygon_api.create_vertex_array_hw(va);
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -7870,7 +7873,7 @@ public:
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
     ids = id;
     va = ev.texture_api.bind_many(va, id, types);
-
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -8071,6 +8074,7 @@ public:
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
     ids = id;
     va = ev.texture_api.bind_many(va, id, types);
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -8275,6 +8279,7 @@ public:
     ev.polygon_api.create_vertex_array_hw(va);
     std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
     va = ev.texture_api.bind_many(va, id);
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -8484,6 +8489,7 @@ public:
     ev.polygon_api.create_vertex_array_hw(va);
     std::vector<GameApi::TXID> id = *bm; //ev.texture_api.prepare_many(ev,bm);
     va = ev.texture_api.bind_many(va, id);
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -8707,6 +8713,7 @@ public:
 	if (front.id==0) front=right;
 	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
 	va = ev.texture_api.bind_cubemap(va, id);
+    ev.polygon_api.preparedone(p);
 
       }
     if (changed)
@@ -8918,6 +8925,7 @@ public:
 	if (front.id==0) front=right;
 	GameApi::TXID id = ev.texture_api.prepare_cubemap(ev, right,left,top,bottom,back,front);
 	va = ev.texture_api.bind_cubemap(va, id);
+    ev.polygon_api.preparedone(p);
 
       }
     if (changed)
@@ -9119,6 +9127,7 @@ public:
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
     ids = id;
     va = ev.texture_api.bind_many(va, id);
+    ev.polygon_api.preparedone(p);
 
       }
     if (changed)
@@ -9320,6 +9329,7 @@ public:
     std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm);
     ids = id;
     va = ev.texture_api.bind_many(va, id);
+    ev.polygon_api.preparedone(p);
       }
     if (changed)
       {
@@ -12829,6 +12839,15 @@ public:
   }
   virtual int Iter()
   {
+    static int old_count = 0;
+    if (async_pending_count!=old_count) {
+      old_count = async_pending_count;
+      std::cout << "async_pending_count=" << old_count << std::endl;
+      static int yyyy=0;
+      if (old_count>100)yyyy=1;
+      if (yyyy==1&&old_count==4) async_pending_count=0;
+    }
+    
     {
       Envi_2 *env = (Envi_2*)&envi;
       env->ev->mainloop_api.fpscounter_framestart();
@@ -16972,6 +16991,7 @@ GameApi::ML GameApi::MainLoopApi::save_script(HML h, std::string filename)
 }
 
 bool file_exists(std::string file);
+std::string get_last_line(std::string file, char ch);
 
 class SaveDeployAsync : public ASyncTask
 {
@@ -17016,10 +17036,48 @@ public:
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
 
+      std::string htmlfile = s;
+
+      htmlfile = replace_str(htmlfile, "@", "\n");					      
+      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+      
+      htmlfile+='\n';
+      std::string lastline = get_last_line(htmlfile,'\n');
+      std::string label,id2;
+      std::stringstream ss2(lastline);
+      ss2 >> label >> id2;
+      int ii=id2.size();
+      for(int i=0;i<ii;i++) { if (id2[i]=='=') id2=id2.substr(0,i); }
+      if (label=="ML")
+	{
+	  htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id2 + ",false,false,0.0,1000000.0);\n";
+	}
+      if (label=="P")
+	{
+	  htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id2 + ");\n";
+	  htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);\n";
+	  
+	}
+      if (label=="MN")
+	{
+	  /* TODO
+	     M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
+	     LI p = env->ev->points_api.matrix_display(*env->ev, m);
+	     ML I5=ev.lines_api.ml_li_render(ev,E1,1.0);
+	  */
+	}
+      if (label=="MT")
+	{
+	  htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);\n";
+	  htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);\n";
+	  htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id2 + ");\n";
+	  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);\n");
+	}
+      
       std::cout << "Generating script.." << std::endl;
       std::string home = getenv("HOME");
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
-      ss << s;
+      ss << htmlfile;
       ss << std::flush;
       ss.close();
       env.set_download_progress(env.download_index_mapping(id), 4.0/8.0);

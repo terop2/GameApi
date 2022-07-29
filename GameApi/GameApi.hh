@@ -2896,7 +2896,7 @@ public:
   IMPORT int p_num_textures(P p);
   IMPORT void p_gen_texture(P p, int i);
   IMPORT BM p_texture(P p, int i);
-  
+  IMPORT void preparedone(P p);
 private:
   PolygonApi(const PolygonApi&);
   void operator=(const PolygonApi&);

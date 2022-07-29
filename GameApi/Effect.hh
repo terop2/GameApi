@@ -3001,6 +3001,8 @@ public:
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
   virtual void Prepare() { coll.Prepare(); }
+  virtual void SetDoneCount(int i) { coll.SetDoneCount(i); }
+  virtual void PrepareDone() { coll.PrepareDone(); }
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }
@@ -3040,6 +3042,7 @@ public:
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
   virtual void Prepare() { coll.Prepare(); }
+  virtual void PrepareDone() { coll.PrepareDone(); }
   virtual int NumFaces() const { return coll.NumFaces(); }
   virtual int NumPoints(int face) const { return coll.NumPoints(face); }
   virtual Point FacePoint(int face, int point) const { return coll.FacePoint(face,point); }

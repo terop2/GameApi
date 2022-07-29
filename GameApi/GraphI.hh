@@ -47,6 +47,7 @@ public:
   virtual int size() const=0;
   virtual const unsigned char *begin() const=0;
   virtual const unsigned char *end() const=0;
+  virtual void del()=0;
 };
 }
 

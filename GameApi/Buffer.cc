@@ -79,9 +79,10 @@ void BufferRef::CopyBuffer(BufferRef source, BufferRef target, int xx, int yy, i
     for(int x=0;x<copywidth;x++)
       target.buffer[(rx+x+xx)+(ry+y+yy)*target.ydelta] = source.buffer[(rx+x+(ry+y)*source.ydelta)];
 }
-void BufferRef::FreeBuffer(BufferRef ref)
+void BufferRef::FreeBuffer(BufferRef &ref)
 {
   delete [] ref.buffer;
+  ref.buffer = 0;
 }
 BufferRefMask BufferRefMask::NewBuffer(int width, int height)
 {

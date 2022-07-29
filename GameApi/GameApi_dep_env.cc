@@ -489,6 +489,19 @@ struct del_map
     	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
 	}*/
   }
+  void del_vec(std::vector<unsigned char>* vec)
+  {
+    std::map<std::string,std::vector<unsigned char>*>::iterator it=load_url_buffers_async.begin();
+    for(;it!=load_url_buffers_async.end();it++)
+      {
+	std::vector<unsigned char> *ptr = (*it).second;
+	if (ptr==vec) {
+	  load_url_buffers_async.erase(it);
+	  delete vec;
+	  return;
+	}
+      }
+  }
   std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 };
 del_map g_del_map;
@@ -912,7 +925,7 @@ void idb_onerror_async_cb(void *ptr)
 
 #ifdef EMSCRIPTEN
 void fetch_download_succeed(emscripten_fetch_t *fetch) {
-  //std::cout << "Fetch success: " << fetch->numBytes << std::endl;
+  std::cout << "Fetch success: " << fetch->numBytes << std::endl;
   //std::cout << "Fetch data:" << (unsigned char*)fetch->data << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
@@ -920,7 +933,7 @@ void fetch_download_succeed(emscripten_fetch_t *fetch) {
   emscripten_fetch_close(fetch);
 }
 void fetch_download_failed(emscripten_fetch_t *fetch) {
-  //std::cout << "Fetch failed: " << fetch->numBytes << std::endl;
+  std::cout << "Fetch failed: " << fetch->numBytes << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
   onerror_async_cb(333, (void*)url, 0, "fetch failed!");
@@ -928,7 +941,7 @@ void fetch_download_failed(emscripten_fetch_t *fetch) {
 }
 extern int g_logo_status;
 void fetch_download_progress(emscripten_fetch_t *fetch) {
-  //std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes<< " " << fetch->numBytes << std::endl;
+  std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes<< " " << fetch->numBytes << std::endl;
   int val = 7;
   if (fetch->totalBytes) {
     val = fetch->dataOffset * 15 / fetch->totalBytes;
@@ -1285,7 +1298,11 @@ class ASyncDataFetcher : public GameApi::ASyncVec
 {
 public:
   ASyncDataFetcher(std::vector<unsigned char> *vec) : vec(vec),buf(0),end2(0),tmp(0) { }
-  ASyncDataFetcher(const unsigned char *buf,const unsigned char *end) : buf(buf), end2(end),tmp(0) { }
+  ASyncDataFetcher(const unsigned char *buf,const unsigned char *end) : vec(0), buf(buf), end2(end),tmp(0) { }
+  void del() {
+    g_del_map.del_vec(vec);
+    
+  }
   const unsigned char &operator[](int i) const {
     if (buf && buf+i<end2) return buf[i];
     if (vec) return (*vec)[i];
