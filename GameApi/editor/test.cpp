@@ -1594,7 +1594,7 @@ public:
 					    }
 		if (display)
 		  {
-		    env->gui->set_pos(env->display, 200.0, 200.0);
+		    env->gui->set_pos(env->display, 200.0, 100.0);
 		    env->display_visible = true;
 		    g_env->ev->mainloop_api.end_editor_state();
 		    
@@ -1655,7 +1655,7 @@ public:
 	      env->enum_click_targets = std::vector<GameApi::W>();
 	      env->editor = env->gui->edit_dialog(*env->ev,labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
 	      env->enum_types = types;
-	      env->gui->set_pos(env->editor, 200,200);
+	      env->gui->set_pos(env->editor, 200,100);
 	      
 	      env->editor_visible = true;
 		    
