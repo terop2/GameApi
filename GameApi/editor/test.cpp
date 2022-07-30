@@ -310,6 +310,7 @@ struct Envi {
   W txt;
   W txt2;
   W scroll_area;
+  W scroll_area2;
   W wave;
   W array;
   W chosen_item;
@@ -659,6 +660,7 @@ public:
       env->gui->set_pos(env->line, x+140-5+env->extra_left,y+env->extra_top);
       env->gui->set_pos(env->canvas_area, x+140+env->extra_left, y+env->extra_top);
       env->gui->set_pos(env->scrollbar_x, x+140+env->extra_left, y+env->extra_top+env->screen_y-20);
+      env->gui->set_pos(env->scroll_area2, x+env->extra_left, y+env->extra_top);
       env->gui->set_pos(env->scroll_area, x+env->extra_left, y+env->extra_top);
       
 #ifdef WAYLAND
@@ -1592,7 +1594,7 @@ public:
 					    }
 		if (display)
 		  {
-		    env->gui->set_pos(env->display, 200.0, 50.0);
+		    env->gui->set_pos(env->display, 200.0, 200.0);
 		    env->display_visible = true;
 		    g_env->ev->mainloop_api.end_editor_state();
 		    
@@ -1653,7 +1655,7 @@ public:
 	      env->enum_click_targets = std::vector<GameApi::W>();
 	      env->editor = env->gui->edit_dialog(*env->ev,labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
 	      env->enum_types = types;
-	      env->gui->set_pos(env->editor, 200,50);
+	      env->gui->set_pos(env->editor, 200,200);
 	      
 	      env->editor_visible = true;
 		    
@@ -1742,7 +1744,7 @@ public:
     
 
     if (update) {
-      env->gui->update(env->scroll_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+      env->gui->update(env->scroll_area2, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
       
       env->gui->update(env->canvas_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
       env->gui->update(env->scrollbar_x, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
@@ -2458,12 +2460,15 @@ public:
     }
   array = gui.array_y(&items[0], items.size(), 5);
   scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
-
+  scroll_area2 = gui.bounding_box(scroll_area);
+  
   //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
   //gui.set_pos(txt2, gui.size_x(scroll_area), 30);
 
   gui.set_pos(scroll_area, extra_left, extra_top);
   gui.set_size(scroll_area, 140.0, screen_y);
+  gui.set_pos(scroll_area2, extra_left, extra_top);
+  gui.set_size(scroll_area2, 140.0, screen_y);
   //W wave = gui.waveform(f, 0.0, 3.14159*2.0, -1.5, 1.5, 200, 100, 0xffffffff, 0x00000000);
 
   std::vector<std::string> params;
@@ -2551,6 +2556,7 @@ public:
   env.scrollbar_x = scrollbar_x;
   //env.gameapi = gameapi_2;
   env.scroll_area = scroll_area;
+  env.scroll_area2 = scroll_area2;
   env.window_decoration = decoration;
   //env.menus = menus;
   env.opened_menu_num = -1;
@@ -2601,6 +2607,7 @@ private:
   int extra_width, extra_height;
   int extra_top, extra_left;
   W scroll_area;
+  W scroll_area2;
   int screen2_x,screen2_y;
   W array;
   Ft font, font2, font3;
