@@ -1844,6 +1844,7 @@ public:
   IMPORT void delete_widget(W w);
   IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W empty();
+  IMPORT W bounding_box(W w);
   IMPORT W alt(GameApi::EveryApi &ev, std::vector<W> vec, int *choose);
   IMPORT W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   IMPORT W icon(BM bitmap);

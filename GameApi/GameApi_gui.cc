@@ -1535,6 +1535,32 @@ private:
   bool left,right;
 };
 
+class BoundingBoxWidget : public GuiWidgetForward
+{
+public:
+  BoundingBoxWidget(GuiWidget *next) : GuiWidgetForward(ev, std::vector<GuiWidget*>{next}), next(next) {
+    Point2d p = { -666.0, -666.0 };
+    update(p, -1,-1, -1,0);
+    Point2d p2 = { 0.0, 0.0 };
+    set_pos(p2);
+  }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    if (mouse.x<pos.x) return;
+    if (mouse.y<pos.y) return;
+    if (mouse.x>pos.x+size.dx) return;
+    if (mouse.y>pos.y+size.dy) return;
+    next->update(mouse,button,ch,type,mouse_wheel_y);
+  }
+private:
+  GuiWidget *next;
+};
+GameApi::W GameApi::GuiApi::bounding_box(W w)
+{
+  GuiWidget *ww = find_widget(e,w);
+  return add_widget(e, new BoundingBoxWidget(ww));
+}
+
 class IconGuiWidget : public GuiWidgetForward
 {
 public:
@@ -3071,6 +3097,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W l_1 = layer(l_0, node_22);
   W l_2 = layer(l_1, array_1);
   W l_3 = layer(l_2, txt_4);
+  W l_4 = bounding_box(l_3);
   return l_3;
 }
 /*
