@@ -16955,7 +16955,7 @@ GameApi::HML GameApi::MainLoopApi::html_url(std::string url)
 class SaveScript : public MainLoopItem
 {
 public:
-  SaveScript(Html *h2, std::string filename) :h2(h2), filename(filename) { }
+  SaveScript(GameApi::Env &e, Html *h2, std::string filename) :env(e), h2(h2), filename(filename) { }
 
   virtual void logoexecute() { }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
@@ -16972,22 +16972,28 @@ public:
     s = replace_str(s, "\"", "&quot;");
     s = replace_str(s, "\'", "&apos;");
 
-    std::ofstream ss(filename.c_str());
-    ss << s;
-    ss.close();
+    //std::ofstream ss(filename.c_str());
+    //ss << s;
+    //ss.close();
+    int index = env.add_to_download_bar(filename);
+    int ii = env.download_index_mapping(index);
+    std::vector<unsigned char> vec(s.begin(),s.end());
+    env.set_download_data(ii,vec);
+    env.set_download_ready(ii);
 #endif
   }
   virtual void execute(MainLoopEnv &e) { }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
+  GameApi::Env &env;
   Html *h2;
   std::string filename;
 };
 GameApi::ML GameApi::MainLoopApi::save_script(HML h, std::string filename)
 {
   Html *h2 = find_html(e,h);
-  return add_main_loop(e, new SaveScript(h2,filename));
+  return add_main_loop(e, new SaveScript(e,h2,filename));
 }
 
 bool file_exists(std::string file);
@@ -24445,7 +24451,7 @@ GameApi::ML GameApi::MainLoopApi::looking_glass_full(GameApi::EveryApi &ev, Game
 class SaveFont : public MainLoopItem 
 {
 public:
-  SaveFont(FontInterface *font, std::string chars, std::string filename) : font(font), chars(chars), filename(filename)  
+  SaveFont(GameApi::Env &e, FontInterface *font, std::string chars, std::string filename) : env(e), font(font), chars(chars), filename(filename)  
   {
     firsttime = true;
   }
@@ -24458,7 +24464,8 @@ public:
   {
     if (firsttime) {
       std::cout << "Saving font file to: " << filename << std::endl;
-      std::ofstream ss(filename.c_str());
+      //std::ofstream ss(filename.c_str());
+      std::stringstream ss;
       ss << chars.size() << std::endl;
       int s = chars.size();
       for(int i=0;i<s;i++)
@@ -24477,13 +24484,20 @@ public:
 	      }
 	  ss << std::endl;
 	}
-      ss.close();
+      int index = env.add_to_download_bar(filename);
+      int ii = env.download_index_mapping(index);
+      std::string sk(ss.str());
+      std::vector<unsigned char> vec(sk.begin(),sk.end());
+      env.set_download_data(ii,vec);
+      env.set_download_ready(ii);
+      //ss.close();
       firsttime = false;
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
+  GameApi::Env &env;
   FontInterface *font;
   std::string chars;
   std::string filename;
@@ -24493,7 +24507,7 @@ private:
 GameApi::ML GameApi::FontApi::save_font_dump(FI font, std::string chars, std::string filename)
 {
   FontInterface *fnt = find_font_interface(e,font);
-  return add_main_loop(e, new SaveFont(fnt, chars, filename));
+  return add_main_loop(e, new SaveFont(e,fnt, chars, filename));
 }
 
 class LoadFont : public FontInterface
