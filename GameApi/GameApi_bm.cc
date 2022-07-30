@@ -551,7 +551,7 @@ EXPORT void GameApi::BitmapApi::savebitmap(GameApi::BM bm, std::string filename,
 class SaveBitmapML : public MainLoopItem
 {
 public:
-  SaveBitmapML(GameApi::EveryApi &ev, GameApi::BM bm, std::string filename, bool alpha, float time) : ev(ev), bm(bm), filename(filename), alpha(alpha), time(time) { }
+  SaveBitmapML(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm, std::string filename, bool alpha, float time) : env(env), ev(ev), bm(bm), filename(filename), alpha(alpha), time(time) { }
   void Collect(CollectVisitor &vis)
   {
   }
@@ -561,12 +561,25 @@ public:
   {
     if (time > e.time*10.0 && time < e.time*10.0 + e.delta_time)
       {
-	ev.bitmap_api.savebitmap(bm, filename, alpha);
+	std::string home = getenv("HOME");
+	std::string path = home + "/.gameapi_builder/";
+	ev.bitmap_api.savebitmap(bm, path+filename, alpha);
+	
+	std::ifstream ss((path+filename).c_str());
+        char ch;
+	std::vector<unsigned char> vec;
+	while(ss.get(ch)) { vec.push_back(ch); }
+	ss.close();
+	int bar = env.add_to_download_bar(filename);
+	int ii = env.download_index_mapping(bar);
+	env.set_download_data(ii, vec);
+	env.set_download_ready(ii);
       }
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   GameApi::BM bm;
   std::string filename;
@@ -575,7 +588,7 @@ private:
 };
 EXPORT GameApi::ML GameApi::BitmapApi::savebitmap_ml(EveryApi &ev, BM bm, std::string filename, bool alpha, float time)
 {
-  return add_main_loop(e, new SaveBitmapML(ev, bm, filename, alpha, time));
+  return add_main_loop(e, new SaveBitmapML(e,ev, bm, filename, alpha, time));
 }
 
 
@@ -3904,7 +3917,18 @@ void GameApi::BitmapApi::save_png(BM bm, std::string filename)
   BufferFromBitmap buf(*bbm);
   buf.Gen();
   BufferRef ref = buf.Buffer();
-  SaveImage(ref, filename);
+  std::string home = getenv("HOME");
+  std::string path = home + "/.gameapi_builder/";
+  SaveImage(ref, path+filename);
+  std::ifstream ss((path+filename).c_str());
+  char ch;
+  std::vector<unsigned char> vec;
+  while(ss.get(ch)) { vec.push_back(ch); }
+  ss.close();
+  int bar = e.add_to_download_bar(filename);
+  int ii = e.download_index_mapping(bar);
+  e.set_download_data(ii, vec);
+  e.set_download_ready(ii);
 }
 class SavePngML : public MainLoopItem
 {
@@ -6076,7 +6100,7 @@ GameApi::BM GameApi::BitmapApi::script_bitmap(std::string url, int sx, int sy)
 class SaveRawBitmap : public MainLoopItem
 {
 public:
-  SaveRawBitmap(Bitmap<Color> &bm, std::string filename) : bm(bm), filename(filename) { }
+  SaveRawBitmap(GameApi::Env &env, Bitmap<Color> &bm, std::string filename) : env(env), bm(bm), filename(filename) { }
   void Collect(CollectVisitor &vis)
   {
     bm.Collect(vis);
@@ -6084,7 +6108,8 @@ public:
   }
   void HeavyPrepare()
   {
-    std::ofstream file(filename.c_str(), std::ios_base::out|std::ios_base::binary);
+    //std::ofstream file(filename.c_str(), std::ios_base::out|std::ios_base::binary);
+    std::stringstream file;
     int sx = bm.SizeX();
     int sy = bm.SizeY();
     file << sx << " " << sy << std::endl;
@@ -6095,13 +6120,21 @@ public:
 	unsigned char *cc2 = (unsigned char*)&cc;
 	file << cc2[0] << cc2[1] << cc2[2] << cc2[3];
       }
-    file.close();
+    std::string res = file.str();
+    std::vector<unsigned char> vec(res.begin(),res.end());
+    int bar = env.add_to_download_bar(filename);
+    int ii = env.download_index_mapping(bar);
+    env.set_download_data(ii, vec);
+    env.set_download_ready(ii);
+    
+    //file.close();
   }
   
   virtual void Prepare()
   {
     bm.Prepare();
-    std::ofstream file(filename.c_str(), std::ios_base::out|std::ios_base::binary);
+    //std::ofstream file(filename.c_str(), std::ios_base::out|std::ios_base::binary);
+    std::stringstream file;
     int sx = bm.SizeX();
     int sy = bm.SizeY();
     file << sx << " " << sy << std::endl;
@@ -6112,7 +6145,13 @@ public:
 	unsigned char *cc2 = (unsigned char*)&cc;
 	file << cc2[0] << cc2[1] << cc2[2] << cc2[3];
       }
-    file.close();
+    std::string res = file.str();
+    std::vector<unsigned char> vec(res.begin(),res.end());
+    int bar = env.add_to_download_bar(filename);
+    int ii = env.download_index_mapping(bar);
+    env.set_download_data(ii, vec);
+    env.set_download_ready(ii);
+    //file.close();
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -6121,6 +6160,7 @@ public:
   {
   }
 private:
+  GameApi::Env &env;
   Bitmap<Color> &bm;
   std::string filename;
 };
@@ -6128,26 +6168,27 @@ void save_raw_bitmap(GameApi::Env &e, GameApi::BM bm, std::string filename)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *c = find_color_bitmap(handle);
-  SaveRawBitmap *save = new SaveRawBitmap(*c, filename);
+  SaveRawBitmap *save = new SaveRawBitmap(e,*c, filename);
   save->Prepare();
 }
 
 class SaveRawBitmapML : public MainLoopItem
 {
 public:
-  SaveRawBitmapML(Bitmap<Color> *bm, std::string filename) : bm(bm), filename(filename) { }
+  SaveRawBitmapML(GameApi::Env &env,Bitmap<Color> *bm, std::string filename) : env(env), bm(bm), filename(filename) { }
   void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
   }
   virtual void HeavyPrepare() { Prepare(); }
 
   void Prepare() {
-    SaveRawBitmap *save = new SaveRawBitmap(*bm, filename);
+    SaveRawBitmap *save = new SaveRawBitmap(env,*bm, filename);
     save->Prepare();
   }
   virtual void execute(MainLoopEnv &e) { }
   virtual void handle_event(MainLoopEvent &e) { }
 private:
+  GameApi::Env &env;
   Bitmap<Color> *bm;
   std::string filename;
   
@@ -6156,7 +6197,7 @@ GameApi::ML GameApi::BitmapApi::save_raw(BM bm, std::string filename)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   Bitmap<Color> *bitmap = find_color_bitmap(handle);
-  return add_main_loop(e, new SaveRawBitmapML(bitmap, filename));
+  return add_main_loop(e, new SaveRawBitmapML(e,bitmap, filename));
 }
 
 class LoadRawBitmap : public Bitmap<Color>

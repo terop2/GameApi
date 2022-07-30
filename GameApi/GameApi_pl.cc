@@ -2549,9 +2549,22 @@ public:
     vis.register_obj(this);    
   }
   void HeavyPrepare() { Prepare(); }
-  void Prepare() { 
+  void Prepare() {
+	std::string home = getenv("HOME");
+	std::string path = home + "/.gameapi_builder/";
+    
       std::cout << "Saving " << filename << std::endl;
-      api.save_model(poly, filename);
+      api.save_model(poly, path+filename);
+
+      	std::ifstream ss((path+filename).c_str());
+        char ch;
+	std::vector<unsigned char> vec;
+	while(ss.get(ch)) { vec.push_back(ch); }
+	ss.close();
+	int bar = env.add_to_download_bar(filename);
+	int ii = env.download_index_mapping(bar);
+	env.set_download_data(ii, vec);
+	env.set_download_ready(ii);
   }
   void execute(MainLoopEnv &e)
   {

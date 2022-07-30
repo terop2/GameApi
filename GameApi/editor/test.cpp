@@ -2627,6 +2627,13 @@ struct Envi_tabs
   W forward_button;
   W save_button;
   W url_button;
+  //---
+  W download_bar = { -1 };
+  std::vector<W> db_close_button;
+  std::vector<W> db_buttons;
+  int db_active_tab=0;
+  int old_download_bar_count=0;
+  //---
   std::vector<W> close_button;
   std::vector<W> tab_change_button;
   W new_tab_button;
@@ -2715,6 +2722,20 @@ public:
 	env->envi_ready=true;
 	break;
       }
+    case 3:
+      {
+	int count = env->env->download_bar_count();
+	env->db_close_button = std::vector<W>();
+	env->db_buttons = std::vector<W>();
+	std::vector<std::string> titles;
+	for(int i=0;i<count;i++)
+	  {
+	    titles.push_back(env->env->get_download_bar_filename(i));
+	  }
+	env->download_bar = gui->download_bar(*env->ev, titles, env->db_close_button, env->db_buttons, env->atlas2, env->atlas_bm2, env->db_active_tab);
+	env->old_download_bar_count = count;
+      break;
+      }
       
     };
   }
@@ -2787,6 +2808,22 @@ private:
   Tabs_Gui *ptr;
 };
 
+class DownloadUpdateTask : public ASyncTask
+{
+public:
+  DownloadUpdateTask(Tabs_Gui *ptr) : ptr(ptr) { }
+  virtual int NumTasks() const
+  {
+    return 1;
+  }
+  virtual void DoTask(int i) {
+    if (i==0) ptr->DoTask(3); // downloadbar update
+  }
+private:
+  Tabs_Gui *ptr;
+};
+
+
 struct IterData
 {
   EveryApi *ev;
@@ -2835,6 +2872,9 @@ public:
   // render here
     if (env->gui && env->navi_bar.id!=-1)
       env->gui->render(env->navi_bar);
+
+    if (env->gui && env->download_bar.id!=-1)
+      env->gui->render(env->download_bar);
   }
   bool start_new(Envi_tabs *env, int i)
   {
@@ -2859,6 +2899,14 @@ public:
     if (!env->envi_ready) return;
     //std::cout << "IterTab::update cont" << std::endl;
 
+    int count = env->env->download_bar_count();
+    if (count != env->old_download_bar_count)
+      {
+	env->env->start_async(new DownloadUpdateTask(g_start));
+
+      }
+
+    
     W w2 = env->new_tab_button;
     int chosen2 = env->gui->chosen_item(w2);
     if (chosen2==0)
@@ -2954,8 +3002,11 @@ public:
       
 	  }
       }
-    
-  env->gui->update(env->navi_bar, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+
+    if (env->navi_bar.id!=-1)
+      env->gui->update(env->navi_bar, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+    if (env->download_bar.id!=-1)
+      env->gui->update(env->download_bar, e.cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
   }  
 private:
   int *active_tab;

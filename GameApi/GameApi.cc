@@ -18345,7 +18345,7 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const unsigned char *buf, con
 class SaveDSMain : public MainLoopItem
 {
 public:
-  SaveDSMain(GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : ev(ev), out_file(out_file), p(p) { firsttime = true; }
+  SaveDSMain(GameApi::Env &env, GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : env(env), ev(ev), out_file(out_file), p(p) { firsttime = true; }
   void Collect(CollectVisitor &vis)
   {
   }
@@ -18355,15 +18355,32 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     if (firsttime) {
-      std::cout << "Saving to " << out_file << std::endl;
+      std::string filename = out_file;
+      std::string home = getenv("HOME");
+      std::string path = home + "/.gameapi_builder/";
+
+      std::cout << "Saving to " << path+out_file << std::endl;
       GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
-      ev.mainloop_api.save_ds(out_file, ds);
+      ev.mainloop_api.save_ds(path+out_file, ds);
+
+
+      	std::ifstream ss((path+filename).c_str());
+        char ch;
+	std::vector<unsigned char> vec;
+	while(ss.get(ch)) { vec.push_back(ch); }
+	ss.close();
+	int bar = env.add_to_download_bar(filename);
+	int ii = env.download_index_mapping(bar);
+	env.set_download_data(ii, vec);
+	env.set_download_ready(ii);
+      
       firsttime = false;
     }
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   std::string out_file;
   bool firsttime;
@@ -18372,7 +18389,7 @@ private:
 
 GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p)
 {
-  return add_main_loop(e, new SaveDSMain(ev,output_filename, p));
+  return add_main_loop(e, new SaveDSMain(e,ev,output_filename, p));
 }
 
 std::string GameApi::MainLoopApi::ds_to_string(DS ds)
