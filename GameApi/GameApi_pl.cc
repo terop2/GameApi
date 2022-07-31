@@ -21343,3 +21343,97 @@ GameApi::P GameApi::PolygonApi::cube_anim(float start_x, float end_x,
 //GameApi::ARR GameApi::PolygonApi::or_elem_anim(P p1, P p2, float time)
 //{
 //x}
+
+class FaceCollectionCutter : public ForwardFaceCollection
+{
+public:
+  FaceCollectionCutter(FaceCollection *coll, float start, float end) : ForwardFaceCollection(*coll), coll(coll), start(start), end(end) { }
+
+  virtual int NumFaces() const { return std::max(0,EndFace()-StartFace()); }
+  virtual int NumPoints(int face) const
+  {
+    face+=StartFace();
+    return coll->NumPoints(face);
+  }
+
+  virtual Point FacePoint(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->FacePoint(face,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    face+=StartFace();
+    return coll->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    face+=StartFace();
+    return coll->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->TexCoord3(face,point);
+  }
+  virtual VEC4 Joints(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->Joints(face,point);
+  }
+  virtual VEC4 Weights(int face, int point) const
+  {
+    face+=StartFace();
+    return coll->Weights(face,point);
+  }
+
+  int NumObjects() const { return coll->NumObjects(); }
+  virtual std::pair<int,int> GetObject(int o) const {
+    std::pair<int,int> p = coll->GetObject(o);
+    if (p.first < StartFace()) p.first=StartFace();
+    if (p.first > EndFace()) p.first=EndFace();
+    if (p.second < StartFace()) p.second=StartFace();
+    if (p.second > EndFace()) p.second=EndFace();
+    p.first-=StartFace();
+    p.second-=StartFace();
+    return p;
+  }
+  
+  
+  int StartFace() const {
+    if (start_face!=-1) return start_face;
+    return start_face=int(float(coll->NumFaces())*start);
+  }
+  int EndFace() const {
+    if (end_face!=-1) return end_face;
+    return end_face=int(float(coll->NumFaces())*end);
+  }
+
+
+  
+private:
+  FaceCollection *coll;
+  float start, end;
+  mutable int start_face=-1;
+  mutable int end_face=-1;
+};
+GameApi::P GameApi::PolygonApi::face_cutter(P p, float start, float end)
+{
+  FaceCollection *coll = find_facecoll(e, p);
+  return add_polygon2(e, new FaceCollectionCutter(coll,start,end),1);
+}
