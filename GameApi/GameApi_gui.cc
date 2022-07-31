@@ -2942,13 +2942,31 @@ std::string ret_type_index(std::string return_type, int index)
 
 int progress_lock=0;
 
-EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
+EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max)
 {
   std::string prog = vec[vec.size()-1].substr(0,18);
   std::string rest = vec[vec.size()-1].substr(18);
+  /*
+  BB I3=ev.bool_bitmap_api.bb_empty(300,30);
+  BB I4=ev.bool_bitmap_api.rectangle(I3,0,0,300*val/max,30);
+  BM I5=ev.bool_bitmap_api.to_bitmap(I4,255,255,255,255,0,0,0,0);
+  */
+BB I1=ev.bool_bitmap_api.bb_empty(310,40);
+BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,310,2);
+BB I3=ev.bool_bitmap_api.rectangle(I2,0,0,2,40);
+BB I4=ev.bool_bitmap_api.rectangle(I3,0,38,310,2);
+BB I5=ev.bool_bitmap_api.rectangle(I4,308,0,2,40);
+BM I6=ev.bool_bitmap_api.to_bitmap(I5,255,255,255,255,0,0,0,0);
+BB I7=ev.bool_bitmap_api.bb_empty(300,30);
+BB I8=ev.bool_bitmap_api.rectangle(I7,0,0,300*val/max,30);
+BM I9=ev.bool_bitmap_api.to_bitmap(I8,255,255,255,255,0,0,0,0);
+BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
+
 
   
-  W txt_0 = text(prog, atlas, atlas_bm);
+  BM bm = I10; 
+  //W txt_0 = text(prog, atlas, atlas_bm);
+  W txt_0 = icon(bm);
   W txt_1 = text(rest, atlas, atlas_bm);
   W arr[2] = { txt_0, txt_1 };
   W array_0 = array_y(&arr[0], 2, 5);
@@ -2976,12 +2994,12 @@ EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM
 extern GameApi::GuiApi *g_everyapi_gui;
 
 
-void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v)
+void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v, int val, int max)
 {
-  g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v);
+  g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v,val,max);
 }
 
-void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec)
+void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max)
 {
   if (progress_lock) return;
   static int g_id = -1;
@@ -2990,7 +3008,7 @@ void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM
   int old = get_current_block();
   set_current_block(g_id);
   
-  w = progress_dialog(sx,sy,atlas,atlas_bm, vec);
+  w = progress_dialog(sx,sy,atlas,atlas_bm, vec, val, max);
   
   set_current_block(old);
 }
