@@ -26,6 +26,7 @@ void blocks_success(emscripten_fetch_t *fetch);
 void blocks_failed(emscripten_fetch_t *fetch);
 void chunk_success(emscripten_fetch_t *fetch);
 void chunk_failed(emscripten_fetch_t *fetch);
+void fetch_download_progress(emscripten_fetch_t *fetch);
 
 class FetchInBlocks
 {
@@ -62,7 +63,7 @@ private:
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
-  ProgressBar(sum,val,15,"fetch: "+url_only2);
+  ProgressBar(sum,val,15*5,"fetch: "+url_only2);
   }
 
   }
@@ -77,6 +78,25 @@ public:
       fetch_block(0);
     }
     emscripten_fetch_close(fetch);
+
+    int val = 1;
+    int mult = totalSize/100000;
+    if (mult<1) mult=1;
+    
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,val,15*mult+1,"fetch: "+url_only2);
+  }
+
+
   }
   void size_failed(emscripten_fetch_t *fetch)
   {
@@ -88,8 +108,8 @@ private:
   void fetch_block(int id)
   {
     current_id = id;
-    start = id*1000000;
-    end = (id+1)*1000000;
+    start = id*100000;
+    end = (id+1)*100000;
     if (end>=totalSize) end=totalSize;
     //std::cout << "START CHUNK" << id << " " << start << " " << end << " " << totalSize << std::endl;
     std::stringstream ss;
@@ -107,6 +127,7 @@ private:
     attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess = chunk_success;
     attr.onerror = chunk_failed;
+    //attr.onprogress = fetch_download_progress;
     attr.requestHeaders = headers;
     emscripten_fetch(&attr, url.c_str());
   }
@@ -122,9 +143,12 @@ public:
     }
     emscripten_fetch_close(fetch);
 
-    int val = float(end)*15.0/float(totalSize);
+    int mult = totalSize/100000;
+    if (mult<1) mult=1;
+    
+    int val = 1+float(end)*15.0*mult/float(totalSize);
     if (val<0) val=0;
-    if (val>15) val=15;
+    if (val>15*mult+1) val=15*mult+1;
 
   if (g_logo_status==0)
     g_logo_status = 1;
@@ -140,7 +164,7 @@ public:
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
-  ProgressBar(sum,val,15,"fetch: "+url_only2);
+  ProgressBar(sum,val,15*mult+1,"fetch: "+url_only2);
   }
     
   }
@@ -150,7 +174,7 @@ public:
     failed(data);
     emscripten_fetch_close(fetch);
   }
-private:
+public:
   std::string url;
   std::vector<unsigned char> result;
   int totalSize;
@@ -845,7 +869,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  InstallProgress(sum,url,15);
+  InstallProgress(sum,url,15*5);
   
 
   url = "load_url.php?url=" + url;
@@ -1110,8 +1134,11 @@ void fetch_download_failed(emscripten_fetch_t *fetch) {
   onerror_async_cb(333, (void*)url, 0, "fetch failed!");
   emscripten_fetch_close(fetch);
 }
+
+
+// THis is still used...
 void fetch_download_progress(emscripten_fetch_t *fetch) {
-  std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes<< " " << fetch->numBytes << std::endl;
+  //std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes<< " " << fetch->numBytes << std::endl;
   int val = 7;
   if (fetch->totalBytes) {
     val = fetch->dataOffset * 15 / fetch->totalBytes;
@@ -1144,8 +1171,8 @@ void fetch_download_progress(emscripten_fetch_t *fetch) {
   if (g_logo_status==0)
     g_logo_status = 1;
   
-  LoadData *data =(LoadData*)fetch->userData;
-  const char *url = data->buf3;
+  FetchInBlocks *data =(FetchInBlocks*)fetch->userData;
+  std::string url = data->url;
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
 
@@ -1297,9 +1324,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   sum = sum % 1000;
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
   if (g_del_map.load_url_buffers_async[url2]) { 
-    InstallProgress(sum,url + " (cached)",15);
+    InstallProgress(sum,url + " (cached)",15*5);
   } else {
-  InstallProgress(sum,url,15);
+  InstallProgress(sum,url,15*5);
 
   }
     }
