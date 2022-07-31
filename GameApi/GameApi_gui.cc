@@ -3115,7 +3115,7 @@ EXPORT GameApi::W GameApi::GuiApi::canvas_item_gameapi_node(int sx, int sy, std:
   W l_1 = layer(l_0, node_22);
   W l_2 = layer(l_1, array_1);
   W l_3 = layer(l_2, txt_4);
-  W l_4 = bounding_box(l_3);
+  //W l_4 = bounding_box(l_3);
   return l_3;
 }
 /*
