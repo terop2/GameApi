@@ -35,7 +35,7 @@ struct ArrayType
 class Envi;
 void render_cb(Envi *env);
 void refresh();
-
+void ClearProgress();
 
 #ifdef LINUX
 extern "C" void _udev_device_get_action() { }
@@ -1103,7 +1103,7 @@ public:
 		g_id = add_block();
 		set_current_block(g_id);
 		set_codegen_values(env->mod,0,uid,1000);
-		
+		ClearProgress();
 		int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
 		set_current_block(-2);
 		

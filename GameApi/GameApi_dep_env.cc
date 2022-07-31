@@ -41,7 +41,7 @@ public:
 private:
   void fetch_size()
   {
-    //std::cout << "Start Size" << std::endl; 
+    //std::cout << "fetch_size" << std::endl; 
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
@@ -63,7 +63,7 @@ private:
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
   //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
-  ProgressBar(sum,val,15*5,"fetch: "+url_only2);
+  ProgressBar(sum,val,15*150,"fetch: "+url_only2);
   }
 
   }
@@ -142,6 +142,7 @@ public:
       fetch_block(current_id+1);
     }
     emscripten_fetch_close(fetch);
+    //std::cout << "CHUNK" << current_id << " " << start << " " << end << " " << totalSize << std::endl;
 
     int mult = totalSize/100000;
     if (mult<1) mult=1;
@@ -869,7 +870,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  InstallProgress(sum,url,15*5);
+  InstallProgress(sum,url,15*150);
   
 
   url = "load_url.php?url=" + url;
@@ -1100,6 +1101,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   g_progress_already_done = false;
 
 }
+class FetchInBlocks;
 struct LoadData {
   std::string url;
   std::string url3;
@@ -1235,6 +1237,7 @@ int CalcUrlIndex(std::string url)
   return sum;
 }
 
+#ifdef EMSCRIPTEN
 void fetch_success(void *data)
 {
   LoadData *dt = (LoadData*)data;
@@ -1248,6 +1251,7 @@ void fetch_failed(void *data)
   LoadData *dt = (LoadData*)data;
   delete dt->obj;
 }
+#endif
 
 void ASyncLoader::load_urls(std::string url, std::string homepage)
   {
@@ -1324,9 +1328,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   sum = sum % 1000;
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
   if (g_del_map.load_url_buffers_async[url2]) { 
-    InstallProgress(sum,url + " (cached)",15*5);
+    InstallProgress(sum,url + " (cached)",15*150);
   } else {
-  InstallProgress(sum,url,15*5);
+  InstallProgress(sum,url,15*150);
 
   }
     }
@@ -1611,10 +1615,14 @@ void InstallProgress(int num, std::string label, int max=15)
     if (progress_max[i].num==num) max_done=true;
     if (progress_val[i].num==num) val_done=true;
   }
-  if (!max_done)
+  if (!max_done) {
+    p.value = max;
     progress_max.push_back(p);
-  if (!val_done)
+  }
+  if (!val_done) {
+    p.value = 0;
     progress_val.push_back(p);
+  }
   if (!max_done)
     progress_label.push_back(label);
   SetTicks(num, p.ticks);
@@ -1679,6 +1687,7 @@ int FindProgressVal()
 #endif  
   
   //return res;
+#if 0
   
   int s = progress_val.size();
   float sum = 0.0;
@@ -1690,13 +1699,22 @@ int FindProgressVal()
       float mult = 1.0;
       //if (s<sizeof(progress_val_mult)/sizeof(progress_val_mult[0]))
       //	mult = progress_val_mult[s];
-      float val = float(progress_val[i].value)/15.0;
+      float val = float(progress_val[i].value)/progress_max[i].value;
       val = 1.0-val;
       sum+=val;
       //std::cout << "ProgressVal:" << progress_val[i].num << " " << progress_val[i].value << " " << progress_label[i] << std::endl;
     }
   }
   return (s-sum)*256.0;
+
+#endif
+  int s = progress_val.size();
+  int sum = 0.0;
+  for(int i=0;i<s;i++)
+    {
+      sum+=progress_val[i].value;
+    }
+  return sum;
   
 }
 int g_async_load_count = 0;
@@ -1737,7 +1755,7 @@ int FindProgressMax()
   
   //return res;
   //return g_max2;
-    
+#if 0    
   int s = progress_max.size();
   float sum = 0.0;
   for(int i=0;i<s;i++)
@@ -1754,6 +1772,16 @@ int FindProgressMax()
     }
   //if (s<4) { sum+=15*(4-s); }
   return (s-sum)*256.0;
+#endif
+
+  int s = progress_max.size();
+  int sum = 0.0;
+  for(int i=0;i<s;i++)
+    {
+      sum+=progress_max[i].value;
+    }
+  return sum;
+
 }
 void FinishProgress()
 {
@@ -1800,8 +1828,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   pthread_t curr = pthread_self();
   if (!pthread_equal(curr, g_main_thread_id)) return;
 #endif
-  std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
-  //std::cout << "ProgressBar: '" << label << "'" << std::endl;
+  /// std::cout << "ProgressBar: '" << num << " " << label << " " << val << " " << max << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
   int val_index = -1;
@@ -1815,20 +1842,20 @@ void ProgressBar(int num, int val, int max, std::string label)
     for(int i=0;i<s;i++)
       {
 	int num2 = progress_val[i].num;
-	val_value+=num2;
 	if (num2==num) {
 	  progress_val[i].value = val;
 	  val_index=i;
 	  done = true;
 	}
+	val_value+=progress_val[i].value;
       }
   }
   if (!done) {
       ProgressI p; p.num = num; p.value=0; p.ticks=0;
       p.value = val;
-      progress_max.push_back(p);
-      p.value = max;
       progress_val.push_back(p);
+      p.value = max;
+      progress_max.push_back(p);
       progress_label.push_back(label);
   }
   //std::cout << "P2" << std::endl;
@@ -1838,11 +1865,11 @@ void ProgressBar(int num, int val, int max, std::string label)
   for(int i=0;i<s;i++)
     {
       int num2 = progress_max[i].num;
-      max_value += num2;
       if (num2==num) {
 	progress_max[i].value = max;
 	max_index=i;
       }
+      max_value += progress_max[i].value;
     }
   }
   //std::cout << "P3" << std::endl;
@@ -1850,6 +1877,10 @@ void ProgressBar(int num, int val, int max, std::string label)
   //if (val_index==-1) std::cout << "ProgressError(val): num=" << num << std::endl;
   //if (max_index==-1) std::cout << "ProgressError(max): num=" << num << std::endl;
 
+  //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
+  //std::cout << "Progress3:" << val_value << " " << max_value << std::endl;
+
+  
   int val1 = val_index!=-1?progress_val[val_index].value:0; //FindProgressVal();
   int max1 = max_index!=-1?progress_max[max_index].value:1; //FindProgressMax();
   //int ticks1 = progress_val[val_index].ticks;
