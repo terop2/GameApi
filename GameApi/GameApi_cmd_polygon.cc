@@ -340,6 +340,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P", "float" },
 			 { "", "2.0" },
 			 "P", "polygon_api", "optimize_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::face_cutter,
+			 "p_facecutter",
+			 { "p", "start", "end" },
+			 { "P", "float", "float" },
+			 { "", "0.0", "1.0" },
+			 "P", "polygon_api", "face_cutter"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mix_mesh,
 			 "p_mix",
 			 { "p", "pts", "val" },

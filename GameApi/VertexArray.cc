@@ -93,27 +93,27 @@ void VertexArraySet::free_reserve(int id)
       m_set[id] = new Polys;
       p = m_set[id];  
     }
-  p->tri_polys.clear();
-  p->quad_polys.clear();
-  p->poly_polys.clear();
-  p->tri_polys2.clear();
-  p->quad_polys2.clear();
-  p->poly_polys2.clear();
-  p->tri_normals.clear();
-  p->quad_normals.clear();
-  p->poly_normals.clear();
-  p->tri_color.clear();
-  p->quad_color.clear();
-  p->poly_color.clear();
-  p->tri_texcoord.clear();
-  p->quad_texcoord.clear();
-  p->poly_texcoord.clear();
-  p->tri_joint.clear();
-  p->quad_joint.clear();
-  p->poly_joint.clear();
-  p->tri_weight.clear();
-  p->quad_weight.clear();
-  p->poly_weight.clear();
+  std::vector<Point>().swap(p->tri_polys);
+  std::vector<Point>().swap(p->quad_polys);
+  std::vector<Point>().swap(p->poly_polys);
+  std::vector<Point>().swap(p->tri_polys2);
+  std::vector<Point>().swap(p->quad_polys2);
+  std::vector<Point>().swap(p->poly_polys2);
+  std::vector<Vector>().swap(p->tri_normals);
+  std::vector<Vector>().swap(p->quad_normals);
+  std::vector<Vector>().swap(p->poly_normals);
+  std::vector<float>().swap(p->tri_color);
+  std::vector<float>().swap(p->quad_color);
+  std::vector<float>().swap(p->poly_color);
+  std::vector<Point>().swap(p->tri_texcoord);
+  std::vector<Point>().swap(p->quad_texcoord);
+  std::vector<Point>().swap(p->poly_texcoord);
+  std::vector<VEC4>().swap(p->tri_joint);
+  std::vector<VEC4>().swap(p->quad_joint);
+  std::vector<VEC4>().swap(p->poly_joint);
+  std::vector<VEC4>().swap(p->tri_weight);
+  std::vector<VEC4>().swap(p->quad_weight);
+  std::vector<VEC4>().swap(p->poly_weight);
 }
 void stackTrace();
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)

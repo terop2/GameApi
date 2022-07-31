@@ -64,6 +64,8 @@ public:
     prev_pos.x = 0.0;
     prev_pos.y = 0.0;
     isVisible = true;
+    //old_mouse.x = 0.0;
+    //old_mouse.y = 0.0;
   }
   void hide() { 
     isVisible=false; 
@@ -114,6 +116,8 @@ public:
   }
   virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
+
+    
     int s = vec.size();
     int selected_item = -1;
     for(int i=0;i<s;i++)
@@ -124,8 +128,11 @@ public:
 	
 	Point2d p = w->get_pos();
 	Vector2d s = w->get_size();
-	//if (mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
-	//    mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
+	//if ((mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
+	//     mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
+	//   ||
+	//    (old_mouse.x >= p.x-80 && old_mouse.x < p.x+s.dx+80 &&
+	//     old_mouse.y >= p.y-80 && old_mouse.y < p.y+s.dy+80))
 	  {
 	    w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	  }
@@ -143,6 +150,7 @@ public:
     if (button==-1) {
       current_selected_item = -1;
     }
+    //old_mouse = mouse_pos;
   }
   virtual void render()
   {
@@ -217,6 +225,7 @@ protected:
   int current_selected_item;
   int firsttime;
   Point2d prev_pos;
+  //Point2d old_mouse;
 public:
   std::vector<GuiWidget *> vec;
   bool isVisible;

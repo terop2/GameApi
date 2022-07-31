@@ -1844,6 +1844,7 @@ public:
   IMPORT void delete_widget(W w);
   IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W empty();
+  IMPORT W bounding_box(W w);
   IMPORT W alt(GameApi::EveryApi &ev, std::vector<W> vec, int *choose);
   IMPORT W text(std::string label, FtA atlas, BM atlas_bm, int x_gap=3);
   IMPORT W icon(BM bitmap);
@@ -2404,6 +2405,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P face_cutter(P p, float start, float end);
   P heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   FB fractal_mountain(int level, int sx, int sy);
   P combine_anim(P p1, P p2, float start_time, float end_time);
