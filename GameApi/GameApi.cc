@@ -12779,9 +12779,9 @@ public:
   OpenglLowApi *ogl = g_low->ogl;
   //ClearProgress();
   
-#ifndef EMSCRIPTEN
-  InstallProgress(33344, "collect", 15);
-#endif
+  //#ifndef EMSCRIPTEN
+  InstallProgress(33344, "collect", 15*15);
+  //#endif
   
   
     score = 0;
@@ -12946,10 +12946,10 @@ public:
 
       
       int num = vis_counter;
-#ifndef EMSCRIPTEN
+      //#ifndef EMSCRIPTEN
       if (vis->vec.size()>0)
-	ProgressBar(33344, (15*num/vis->vec.size()), 15, "collect");
-#endif
+	ProgressBar(33344, (15*15*num/vis->vec.size()), 15*15, "collect");
+      //#endif
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
