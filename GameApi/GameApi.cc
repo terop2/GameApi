@@ -1326,8 +1326,11 @@ public:
     // if you change the numbers, change logo_iter too
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
-    
-    float val2 = float(FindProgressVal())/float(FindProgressMax() +0.1);
+
+    float val = float(FindProgressVal());
+    float max = float(FindProgressMax() +0.1);
+    //std::cout << "PROGRESSBAR:" << val << "/" << max << std::endl;
+    float val2 = val/max;
 
     //int val3 = 15*val2;
     //val2 = val3/15.0;
@@ -12774,7 +12777,7 @@ public:
     g_engine_status = 0;
     g_logo_status = 0;
   OpenglLowApi *ogl = g_low->ogl;
-  ClearProgress();
+  //ClearProgress();
   
 #ifndef EMSCRIPTEN
   InstallProgress(33344, "collect", 15);
@@ -12842,7 +12845,7 @@ public:
     static int old_count = 0;
     if (async_pending_count!=old_count) {
       old_count = async_pending_count;
-      std::cout << "async_pending_count=" << old_count << std::endl;
+      //std::cout << "async_pending_count=" << old_count << std::endl;
       static int yyyy=0;
       if (old_count>100)yyyy=1;
       if (yyyy==1&&old_count==4) async_pending_count=0;
@@ -13108,7 +13111,7 @@ public:
   {
     score = 0;
     hidden_score=0;
-  ClearProgress();
+    //ClearProgress();
   }
   void SetTimeout(float duration) {
   }
@@ -26473,9 +26476,11 @@ KP extern "C" void stop_music_playing()
   g_stop_music = true;
 }
 
+void ClearProgress();
 KP extern "C" void set_new_script(const char *script2)
 {
   //std::cout << "set_new_script" << std::endl;
+  ClearProgress();
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;

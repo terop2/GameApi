@@ -234,7 +234,7 @@ extern std::string g_platform;
 
 extern std::string g_window_href;
 extern GameApi::EveryApi *g_everyapi;
-
+void ClearProgress();
 #if 1
 int main(int argc, char *argv[]) {
   call_count++;
@@ -370,6 +370,7 @@ int main(int argc, char *argv[]) {
       ev.shader_api.load_default();
       set_status(4,6);
     }
+  ClearProgress();
   std::pair<int,std::string> blk = mainloop(e, ev);
   set_status(5,6);
   if (blk.second == "RUN") {
