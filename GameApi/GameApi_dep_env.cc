@@ -14,6 +14,177 @@
 //#define idb_disabled 0
 
 
+std::string striphomepage(std::string url);
+std::string stripprefix(std::string s);
+void InstallProgress(int num, std::string label, int max);
+void ProgressBar(int num, int val, int max, std::string label);
+extern int g_logo_status;
+
+
+#ifdef EMSCRIPTEN
+void blocks_success(emscripten_fetch_t *fetch);
+void blocks_failed(emscripten_fetch_t *fetch);
+void chunk_success(emscripten_fetch_t *fetch);
+void chunk_failed(emscripten_fetch_t *fetch);
+
+class FetchInBlocks
+{
+public:
+  FetchInBlocks(std::string url, void(*success)(void*),void(*failed)(void*), void*data) : url(url),success(success),failed(failed),data(data) { }
+  ~FetchInBlocks() { delete [] buf; }
+  void fetch()
+  {
+    fetch_size();
+  }
+  const std::vector<unsigned char> *get() const { return &result; }
+private:
+  void fetch_size()
+  {
+    //std::cout << "Start Size" << std::endl; 
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "POST");
+    attr.userData = (void*)this;
+    attr.attributes = 0;
+    attr.onsuccess = blocks_success;
+    attr.onerror = blocks_failed;
+    emscripten_fetch(&attr, url.c_str());
+
+    int val = 0;
+    
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,val,15,"fetch: "+url_only2);
+  }
+
+  }
+public:
+  void size_success(emscripten_fetch_t *fetch)
+  {
+    totalSize = fetch->totalBytes;
+    //std::cout << "Size Success: " << totalSize << std::endl;
+    if (totalSize==0) size_failed(fetch);
+    else {
+      result.resize(totalSize+1);
+      fetch_block(0);
+    }
+    emscripten_fetch_close(fetch);
+  }
+  void size_failed(emscripten_fetch_t *fetch)
+  {
+    std::cout << "FetchInBlocks::size_failed()" << std::endl;
+    failed(data);
+    emscripten_fetch_close(fetch);
+  }
+private:
+  void fetch_block(int id)
+  {
+    current_id = id;
+    start = id*1000000;
+    end = (id+1)*1000000;
+    if (end>=totalSize) end=totalSize;
+    //std::cout << "START CHUNK" << id << " " << start << " " << end << " " << totalSize << std::endl;
+    std::stringstream ss;
+    ss << "bytes=" << start << "-" << end;
+    std::string res = ss.str();
+    delete [] buf;
+    buf = new char[res.size()+1];
+    std::copy(res.begin(),res.end(),buf);
+    buf[res.size()]=0;
+    const char *headers[] = {"Range", buf, NULL };
+    emscripten_fetch_attr_t attr;
+    emscripten_fetch_attr_init(&attr);
+    strcpy(attr.requestMethod, "POST");
+    attr.userData = (void*)this;
+    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    attr.onsuccess = chunk_success;
+    attr.onerror = chunk_failed;
+    attr.requestHeaders = headers;
+    emscripten_fetch(&attr, url.c_str());
+  }
+public:
+  void fetch_success(emscripten_fetch_t *fetch)
+  {
+    //std::cout << "Chunk Success " << current_id << std::endl;
+    //assert(fetch->numBytes==0||fetch->numBytes==end-start);
+    std::copy(fetch->data, fetch->data+(end-start), &result[start]);
+    if (end==totalSize) { success(data); }
+    else {
+      fetch_block(current_id+1);
+    }
+    emscripten_fetch_close(fetch);
+
+    int val = float(end)*15.0/float(totalSize);
+    if (val<0) val=0;
+    if (val>15) val=15;
+
+  if (g_logo_status==0)
+    g_logo_status = 1;
+
+    
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,val,15,"fetch: "+url_only2);
+  }
+    
+  }
+  void fetch_failed(emscripten_fetch_t *fetch)
+  {
+    std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
+    failed(data);
+    emscripten_fetch_close(fetch);
+  }
+private:
+  std::string url;
+  std::vector<unsigned char> result;
+  int totalSize;
+  void(*success)(void*);
+  void(*failed)(void*);
+  void *data;
+  int start,end;
+  int current_id;
+  char *buf=0;
+};
+void blocks_success(emscripten_fetch_t *fetch)
+{
+  FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
+  ptr->size_success(fetch);
+}
+void blocks_failed(emscripten_fetch_t *fetch)
+{
+  FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
+  ptr->size_failed(fetch);
+}
+void chunk_success(emscripten_fetch_t *fetch)
+{
+  FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
+  ptr->fetch_success(fetch);
+}
+void chunk_failed(emscripten_fetch_t *fetch)
+{
+  FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
+  ptr->fetch_failed(fetch);
+}
+#endif
+
+
+
 std::string g_window_href;
 
 long long load_size_from_url(std::string url);
@@ -419,8 +590,6 @@ EXPORT void GameApi::Env::async_scheduler()
 //}
 
 
-void InstallProgress(int num, std::string label, int max);
-void ProgressBar(int num, int val, int max, std::string label);
 
 
 EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
@@ -460,7 +629,6 @@ EXPORT GameApi::Env::~Env()
 }
 std::string remove_load(std::string s);
 std::vector<unsigned char> *load_from_url(std::string url);
-std::string striphomepage(std::string url);
 
 struct del_map
 {
@@ -489,12 +657,12 @@ struct del_map
     	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
 	}*/
   }
-  void del_vec(std::vector<unsigned char>* vec)
+  void del_vec(const std::vector<unsigned char>* vec)
   {
-    std::map<std::string,std::vector<unsigned char>*>::iterator it=load_url_buffers_async.begin();
+    std::map<std::string,const std::vector<unsigned char>*>::iterator it=load_url_buffers_async.begin();
     for(;it!=load_url_buffers_async.end();it++)
       {
-	std::vector<unsigned char> *ptr = (*it).second;
+	const std::vector<unsigned char> *ptr = (*it).second;
 	if (ptr==vec) {
 	  load_url_buffers_async.erase(it);
 	  delete vec;
@@ -502,7 +670,7 @@ struct del_map
 	}
       }
   }
-  std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+  std::map<std::string, const std::vector<unsigned char>* > load_url_buffers_async;
 };
 del_map g_del_map;
 
@@ -569,17 +737,19 @@ std::string stripprefix(std::string s)
     return s.substr(len,s.size()-len);
   } else return s;
 }
-void onload_async_cb(unsigned int tmp, void *arg, void *data, unsigned int datasize)
+void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned char> *buffer)
 {
   char *url = (char*)arg;
   //std::cout << "onload_async_cb: " << url << std::endl;
 
+  /*
   unsigned char *dataptr = (unsigned char*)data;
   if (datasize==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
       std::cout << url << std::endl;
   }
-  std::vector<unsigned char> *buffer = new std::vector<unsigned char>(dataptr,dataptr+datasize);
+  */
+  //std::vector<unsigned char> *buffer = new std::vector<unsigned char>(dataptr,dataptr+datasize);
   //unsigned char *dataptr = (unsigned char*)data;
   //for(unsigned int i=0;i<datasize;i++) { buffer->push_back(dataptr[i]); }
   
@@ -911,11 +1081,12 @@ struct LoadData {
   std::string url3;
   char *buf2;
   char *buf3;
+  FetchInBlocks *obj;
 };
 
 void idb_onload_async_cb(void *ptr, void* data, int datasize)
 {
-  onload_async_cb(333,ptr,data,datasize);
+  //onload_async_cb(333,ptr,data,datasize);
 }
 void idb_onerror_async_cb(void *ptr)
 {
@@ -929,7 +1100,7 @@ void fetch_download_succeed(emscripten_fetch_t *fetch) {
   //std::cout << "Fetch data:" << (unsigned char*)fetch->data << std::endl;
   LoadData *data =(LoadData*)fetch->userData;
   const char *url = data->buf3;
-  onload_async_cb(333, (void*)url, (void*)fetch->data, fetch->numBytes+1);
+  //onload_async_cb(333, (void*)url, (void*)fetch->data, fetch->numBytes+1);
   emscripten_fetch_close(fetch);
 }
 void fetch_download_failed(emscripten_fetch_t *fetch) {
@@ -939,7 +1110,6 @@ void fetch_download_failed(emscripten_fetch_t *fetch) {
   onerror_async_cb(333, (void*)url, 0, "fetch failed!");
   emscripten_fetch_close(fetch);
 }
-extern int g_logo_status;
 void fetch_download_progress(emscripten_fetch_t *fetch) {
   std::cout << "fetch progress:" << fetch->dataOffset << " " << fetch->totalBytes<< " " << fetch->numBytes << std::endl;
   int val = 7;
@@ -996,6 +1166,7 @@ void fetch_download_progress(emscripten_fetch_t *fetch) {
 void idb_exists(void *arg, int exists)
 {
 #ifdef EMSCRIPTEN
+  /*
   LoadData *ld = (LoadData*)arg;
   //std::cout << "Exists: " << exists << std::endl;
   if (exists && !idb_disabled) {
@@ -1004,11 +1175,12 @@ void idb_exists(void *arg, int exists)
   } else {
     //std::cout << "Loading from wget" << ld->url << std::endl;
     emscripten_async_wget2_data(ld->buf2, "POST", ld->url3.c_str(), (void*)ld->buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
-  }
+    }*/
 #endif
 }
 void idb_error(void *arg)
 {
+  /*
   std::cout << "indexdb error branch, loading wget data again..." << std::endl;
 #ifdef EMSCRIPTEN
   LoadData *ld = (LoadData*)arg;
@@ -1017,6 +1189,7 @@ void idb_error(void *arg)
   LoadData *ld = (LoadData*)arg;
     onerror_async_cb(0,(void*)ld->buf3,0,"");
 #endif
+  */
 }
 std::vector<std::string> g_currently_loading;
 std::string remove_load(std::string s);
@@ -1033,6 +1206,20 @@ int CalcUrlIndex(std::string url)
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
   return sum;
+}
+
+void fetch_success(void *data)
+{
+  LoadData *dt = (LoadData*)data;
+  const char *url = dt->buf3;
+  const std::vector<unsigned char> *vec = dt->obj->get();
+  onload_async_cb(333,(void*)url, vec);
+  // note, the dt->obj is NOT DELETED AT ALL
+}
+void fetch_failed(void *data)
+{
+  LoadData *dt = (LoadData*)data;
+  delete dt->obj;
 }
 
 void ASyncLoader::load_urls(std::string url, std::string homepage)
@@ -1197,6 +1384,10 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
     if (extract_server(oldurl)=="" || is_same_server || is_same_server2) {
+      FetchInBlocks *b = new FetchInBlocks(oldurl,fetch_success,fetch_failed,(void*)ld);
+      ld->obj = b;
+      b->fetch();
+      /*
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
@@ -1216,6 +1407,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     } else {
       emscripten_fetch(&attr, oldurl.c_str());
     }
+      */
     //emscripten_async_wget2_data(buf2, "POST", url3.c_str(), (void*)buf3, 1, &onload_async_cb, &onerror_async_cb, &onprogress_async_cb);
 
     //std::cout << "Fetch end" << std::endl;
@@ -1297,7 +1489,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 class ASyncDataFetcher : public GameApi::ASyncVec
 {
 public:
-  ASyncDataFetcher(std::vector<unsigned char> *vec) : vec(vec),buf(0),end2(0),tmp(0) { }
+  ASyncDataFetcher(const std::vector<unsigned char> *vec) : vec(vec),buf(0),end2(0),tmp(0) { }
   ASyncDataFetcher(const unsigned char *buf,const unsigned char *end) : vec(0), buf(buf), end2(end),tmp(0) { }
   void del() {
     g_del_map.del_vec(vec);
@@ -1324,7 +1516,7 @@ public:
     //throw 1;
     return &tmp+1; }
 private:
-  std::vector<unsigned char> *vec;
+  const std::vector<unsigned char> *vec;
   const unsigned char *buf, *end2;
   mutable unsigned char tmp;
 };
@@ -1581,7 +1773,7 @@ void ProgressBar(int num, int val, int max, std::string label)
   pthread_t curr = pthread_self();
   if (!pthread_equal(curr, g_main_thread_id)) return;
 #endif
-  //std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
+  std::cout << "Progress2: " << num << " " << val << " " << label << " " << max << std::endl;
   //std::cout << "ProgressBar: '" << label << "'" << std::endl;
 
   //std::cout << "PB: " << num << std::endl;
@@ -1725,6 +1917,7 @@ std::string striphomepage(std::string url)
   int s = url.size();
   int i = 0;
   for(;i<s-1;i++) if (url[i]=='&'&&url[i+1]=='h') break;
+  if (i==s-1) i++;
   std::string res = url.substr(0,i);
   //std::cout << "Url without homepage: " << res << std::endl;
   return res;
