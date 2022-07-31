@@ -2905,7 +2905,32 @@ public:
 	env->env->start_async(new DownloadUpdateTask(g_start));
 
       }
+    int s5 = env->db_buttons.size();
+    for(int i=0;i<s5;i++)
+      {
+	W w = env->db_buttons[i];
+	int chosen = env->gui->chosen_item(w);
+	if (chosen==0)
+	  {
+	    env->db_active_tab = i;
+	    env->env->start_async(new DownloadUpdateTask(g_start));
+	  }
+      }
 
+    int s6 = env->db_close_button.size();
+    for(int i=0;i<s6;i++)
+      {
+	W w = env->db_close_button[i];
+	int chosen = env->gui->chosen_item(w);
+	if (chosen==0)
+	  {
+	    env->env->remove_download_bar_item(i);
+	    if (i<env->db_active_tab) { env->db_active_tab--; }
+	    env->env->start_async(new DownloadUpdateTask(g_start));
+	  }
+      }
+
+    
     
     W w2 = env->new_tab_button;
     int chosen2 = env->gui->chosen_item(w2);
@@ -2948,7 +2973,7 @@ public:
 	    (*perm_nodes).erase((*perm_nodes).begin()+i);
 	    (*perm_args).erase((*perm_args).begin()+i);
 	    dt->filenames->erase(dt->filenames->begin()+i);
-	    //dt->titles->erase(dt->titles->begin()+i);
+
 	    if (i==*active_tab)
 	      {
 		int num = i;
@@ -2956,14 +2981,12 @@ public:
 		if (num<0) exit(0);
 		(*nodes)[0]=(*perm_nodes)[num];
 		(*args)[0]=(*perm_args)[num];
-		//g_env = (Envi*)((*perm_args)[num]);
 
 		if (!((*nodes)[0]))
 		  {
 		    if (!start_new(env,num)) { g_env=(Envi*)((*perm_args)[num]); }
 		    (*nodes)[0]=(*perm_nodes)[num];
 		    (*args)[0]=(*perm_args)[num];
-		    //g_env = (Envi*)((*perm_args)[num]);
 		  }
 	      } else
 	      if (i<*active_tab) { (*active_tab)--; }
@@ -2980,23 +3003,10 @@ public:
 	if (chosen==0)
 	  {
 	    if (!start_new(env,i)) { g_env = (Envi*)((*perm_args)[i]); }
-	    /*
-	    if ((*perm_tasks)[i]==0)
-	      { // must create new content
-		Envi *new_envi = new Envi;
-		new_envi->env = env->env;
-		new_envi->ev = env->ev;
-		//std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
-		(*perm_tasks)[i]=new StartMainTask(*dt->env,*dt->ev,*new_envi,dt->sh,dt->sh_2d,dt->sh_arr,dt->sh2,dt->sh3,dt->screen_x,dt->screen_y,(*dt->filenames)[i],dt->argc,dt->argv);
-		(*perm_nodes)[i]=new MainIter;
-		(*perm_args)[i]=new_envi;
-		env->env->start_async((*perm_tasks)[i]);
-		}*/
+
 	    (*nodes)[0]=(*perm_nodes)[i];
 	    (*args)[0]=(*perm_args)[i];
-	    //g_env = (Envi*)((*perm_args)[i]);
 
-	    //std::cout << "CHOSEN" << std::endl;
 	    *active_tab = i;
 	    env->env->start_async(new TabsUpdateTask(g_start));
       

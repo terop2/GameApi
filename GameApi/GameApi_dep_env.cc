@@ -675,7 +675,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  InstallProgress(sum,url,15);
+  InstallProgress(sum,url,15*5);
   
 
   url = "load_url.php?url=" + url;
@@ -1110,9 +1110,9 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   sum = sum % 1000;
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
   if (g_del_map.load_url_buffers_async[url2]) { 
-    InstallProgress(sum,url + " (cached)",15);
+    InstallProgress(sum,url + " (cached)",15*5);
   } else {
-  InstallProgress(sum,url,15);
+  InstallProgress(sum,url,15*5);
 
   }
     }
