@@ -118,9 +118,9 @@ void VertexArraySet::free_reserve(int id)
 void stackTrace();
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)
 {
-  if (tri_count<1 || tri_count>10000000) return;
-  if (quad_count<1 || quad_count>10000000) return;
-  if (poly_count<1 || poly_count>10000000) return;
+  //if (tri_count<1 || tri_count>10000000) return;
+  //if (quad_count<1 || quad_count>10000000) return;
+  //if (poly_count<1 || poly_count>10000000) return;
 
   // if (tri_count==58630) {
   //  stackTrace();
