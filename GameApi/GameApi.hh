@@ -576,8 +576,11 @@ public:
   P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ARR load_P_script_array(EveryApi &ev, HML hml /*std::string url*/, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  ML load_ML_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   MN load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+    MN load_MN_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   MT load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  MT load_MT_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
 
   ARR load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);

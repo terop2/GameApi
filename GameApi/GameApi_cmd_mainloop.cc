@@ -39,25 +39,25 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "p_script2"));
   
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script2,
 			 "ml_script",
-			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
-			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a", "b", "c", "d", "e" },
-			 "ML", "mainloop_api", "load_ML_script"));
+			 { "ev", "hml", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "HML", "std::string", "std::string", "std::string", "std::string", "std::string" },
+			 { "ev", "", "a", "b", "c", "d", "e" },
+			 "ML", "mainloop_api", "load_ML_script2"));
 
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MN_script,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MN_script2,
 			 "mn_script",
-			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
-			 { "EveryApi&", "std::string", "std::string","std::string","std::string","std::string","std::string" },
-			 { "ev", "http://tpgames.org/test_mn.mp", "a", "b", "c","d", "e" },
-			 "MN", "mainloop_api", "load_MN_script"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MT_script,
+			 { "ev", "hml", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "HML", "std::string","std::string","std::string","std::string","std::string" },
+			 { "ev", "", "a", "b", "c","d", "e" },
+			 "MN", "mainloop_api", "load_MN_script2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MT_script2,
 			 "mt_script",
-			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
-			 { "EveryApi&", "std::string", "std::string","std::string","std::string","std::string","std::string" },
-			 { "ev", "http://tpgames.org/test_mt.mp", "a", "b", "c", "d", "e" },
-			 "MT", "mainloop_api", "load_MT_script"));
+			 { "ev", "hml", "%1", "%2", "%3", "%4", "%5" },
+			 { "EveryApi&", "HML", "std::string","std::string","std::string","std::string","std::string" },
+			 { "ev", "", "a", "b", "c", "d", "e" },
+			 "MT", "mainloop_api", "load_MT_script2"));
 
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array,
