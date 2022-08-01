@@ -688,7 +688,8 @@ public:
     Envi *env = (Envi*)arg;
     //std::cout << "MainIter::update start" << std::endl;
     if (!env->envi_ready) return;
-    if (env->ev->point_api.pt_y(e.cursor_pos)<125.0-40.0) return;
+    if (env->ev->point_api.pt_y(e.cursor_pos)<34.0/*125.0-40.0*/) return;
+    if (env->env->download_bar_count()>0 && env->ev->point_api.pt_y(e.cursor_pos)>env->ev->mainloop_api.get_screen_height()-40.0) return;
     //std::cout << "MainIter::update cont" << std::endl;
 
 
