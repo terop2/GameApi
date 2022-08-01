@@ -17596,7 +17596,8 @@ public:
     //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     hml->Prepare();
     std::string code(hml->script_file());
-      code = replace_str(code, "%1", p1);
+    //std::cout << "PREPARE2: " << code << std::endl;
+    code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
       code = replace_str(code, "%4", p4);
@@ -17606,7 +17607,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
-
+	  code = replace_str(code, "@", "\n");
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="ML") {
@@ -17711,6 +17712,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
 
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
@@ -17818,6 +17820,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
 
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
@@ -17919,6 +17922,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
 
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
@@ -18023,6 +18027,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="MT") {
@@ -18126,6 +18131,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="MT") {
@@ -26453,9 +26459,13 @@ void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int leve
   //std::cout << "set_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
 
 }
+void clear_codegen();
 std::string do_codegen(GameApi::EveryApi &ev)
 {
   //std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
+  ev.mod_api.codegen_reset_counter();
+  clear_codegen();
+
   std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level,0); 
   //std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
   return p.second;
