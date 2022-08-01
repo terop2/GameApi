@@ -17568,8 +17568,119 @@ GameApi::ARR GameApi::MainLoopApi::load_P_script_array(EveryApi &ev, HML h /*std
 
 
 void ML_cb(void* data);
+void ML2_cb(void *data);
 void MN_cb(void* data);
+void MN2_cb(void* data);
 void MT_cb(void* data);
+void MT2_cb(void* data);
+
+
+class ML_script2 : public MainLoopItem
+{
+public:
+  ML_script2(GameApi::Env &e, GameApi::EveryApi &ev, Html *hml, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), hml(hml),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
+    //e.async_load_callback(url, &ML_cb, this); 
+       hml->SetCB(&ML2_cb,this);
+#ifdef EMSCRIPTEN
+       //async_pending_count++; async_taken=true;
+       //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+#endif
+  }
+  ~ML_script2() { /*e.async_rem_callback(url);*/ }
+  void Prepare2() {
+    //std::string homepage = gameapi_homepageurl;
+    //#ifndef EMSCRIPTEN
+    //   e.async_load_url(url, homepage);
+    //#endif
+    //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    hml->Prepare();
+    std::string code(hml->script_file());
+    //std::cout << "PREPARE2: " << code << std::endl;
+    code = replace_str(code, "%1", p1);
+      code = replace_str(code, "%2", p2);
+      code = replace_str(code, "%3", p3);
+      code = replace_str(code, "%4", p4);
+      code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
+      GameApi::ExecuteEnv e2;
+      std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+      if (p.second=="ML") {
+	GameApi::ML pp;
+	pp.id = p.first;
+	main2 = find_main_loop(e,pp);
+	main2->Prepare();
+	//#ifdef EMSCRIPTEN
+	//if (async_taken)
+	//  async_pending_count--;
+	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	//#endif
+	//async_taken = false;
+	//main2->execute(e3);
+	//firsttime = false;
+	return;
+      }
+      //GameApi::P pp;
+      //pp.id = -1;
+      main2 = 0;
+      //#ifdef EMSCRIPTEN
+      //if (async_taken)
+      //async_pending_count--;
+      //std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+      //#endif
+      //async_taken = false;
+      //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+
+  }
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+	      
+  void Prepare() {}
+  virtual void execute(MainLoopEnv &e3)
+  {
+    if (firsttime) {
+      if (!main2) {
+#ifdef EMSCRIPTEN
+	//std::cout << "ML_script: script not ready at Prepare()" << std::endl;
+#endif
+      Prepare2();
+      }
+      firsttime = false;
+    }
+    if (main2)
+      main2->execute(e3);
+  }
+
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (main2) {
+      main2->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() { 
+    if (main2) {
+      return main2->shader_id();
+    }
+    return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  //std::string url;
+  Html *hml;
+  std::string p1,p2,p3,p4,p5;
+  bool firsttime;
+  MainLoopItem *main2;
+  bool async_taken;
+};
 
 
 class ML_script : public MainLoopItem
@@ -17601,6 +17712,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
 
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
@@ -17675,6 +17787,112 @@ private:
   bool async_taken;
 };
 
+
+class MN_script2 : public Movement
+{
+public:
+  MN_script2(GameApi::Env &e, GameApi::EveryApi &ev, Html *hml, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), hml(hml),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
+    //e.async_load_callback(url, &MN_cb, this); 
+    hml->SetCB(&MN2_cb, this);
+#ifdef EMSCRIPTEN
+    //  async_pending_count++; async_taken=true;
+#endif
+       //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+  }
+  ~MN_script2() { /*e.async_rem_callback(url);*/ }
+  void Prepare2() {
+    //std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+    //  e.async_load_url(url, homepage);
+#endif
+    //  GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    //  std::string code(vec->begin(), vec->end());
+    hml->Prepare();
+    std::string code(hml->script_file());
+    code = replace_str(code, "%1", p1);
+      code = replace_str(code, "%2", p2);
+      code = replace_str(code, "%3", p3);
+      code = replace_str(code, "%4", p4);
+      code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
+
+      GameApi::ExecuteEnv e2;
+      std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+      if (p.second=="MN") {
+	GameApi::MN pp;
+	pp.id = p.first;
+	main2 = find_move(e,pp);
+	//main2->Prepare();
+#ifdef EMSCRIPTEN
+	//if (async_taken)
+	//  async_pending_count--;
+#endif
+	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	//async_taken = false;
+	//main2->execute(e3);
+	//firsttime = false;
+	return;
+      }
+      //GameApi::P pp;
+      //pp.id = -1;
+      main2 = 0;
+#ifdef EMSCRIPTEN
+      //if (async_taken)
+      //async_pending_count--;
+#endif
+      //async_taken = false;
+      //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+
+  }
+  virtual void event(MainLoopEvent &e)
+  {
+    if (main2) { main2->event(e); }
+  }
+    
+  virtual void frame(MainLoopEnv &e)
+  {
+    if (!main2 && firsttime) { Prepare2(); firsttime=false; }
+    if (main2) { main2->frame(e); }
+  }
+  virtual void draw_event(FrameLoopEvent &e)
+  {
+    if (main2) { main2->draw_event(e); }
+  }
+  virtual void draw_frame(DrawLoopEnv &e)
+  {
+    if (main2) { main2->draw_frame(e); }
+  }
+
+  virtual void set_matrix(Matrix m)
+  {
+    if (main2) { main2->set_matrix(m); }
+  }
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    if (main2) { return main2->get_whole_matrix(time,delta_time); }
+    return Matrix::Identity();
+  }
+
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  //std::string url;
+  Html *hml;
+  std::string p1,p2,p3,p4,p5;
+  bool firsttime;
+  //MainLoopItem *main2;
+  Movement *main2;
+  bool async_taken;
+};
+
+
 class MN_script : public Movement
 {
 public:
@@ -17704,6 +17922,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
 
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
@@ -17774,6 +17993,115 @@ private:
   bool async_taken;
 };
 
+
+class MT_script2 : public Material
+{
+public:
+  MT_script2(GameApi::Env &e, GameApi::EveryApi &ev, Html *hml, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), hml(hml),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
+    //e.async_load_callback(url, &MN_cb, this); 
+    hml->SetCB(&MN2_cb,this);
+#ifdef EMSCRIPTEN
+    // async_pending_count++; async_taken=true;
+#endif
+       //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
+  }
+  ~MT_script2() { /*e.async_rem_callback(url);*/ }
+  void Prepare2() {
+    //std::string homepage = gameapi_homepageurl;
+#ifndef EMSCRIPTEN
+    // e.async_load_url(url, homepage);
+#endif
+    // GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    // std::string code(vec->begin(), vec->end());
+        hml->Prepare();
+    std::string code(hml->script_file());
+
+      code = replace_str(code, "%1", p1);
+      code = replace_str(code, "%2", p2);
+      code = replace_str(code, "%3", p3);
+      code = replace_str(code, "%4", p4);
+      code = replace_str(code, "%5", p5);
+	  code = replace_str(code, "&lt;", "<");
+	  code = replace_str(code, "&gt;", ">");
+	  code = replace_str(code, "&quot;", "\"");
+	  code = replace_str(code, "&apos;", "\'");
+	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
+      GameApi::ExecuteEnv e2;
+      std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
+      if (p.second=="MT") {
+	GameApi::MT pp;
+	pp.id = p.first;
+	main2 = find_material(e,pp);
+	//main2->Prepare();
+#ifdef EMSCRIPTEN
+	//if (async_taken)
+	//  async_pending_count--;
+#endif
+	//std::cout << "async_pending_count dec (ML_sctipr) " << async_pending_count << std::endl;
+	//async_taken = false;
+	//main2->execute(e3);
+	//firsttime = false;
+	return;
+      }
+      //GameApi::P pp;
+      //pp.id = -1;
+      main2 = 0;
+#ifdef EMSCRIPTEN
+      //if (async_taken)
+      //async_pending_count--;
+#endif
+      //async_taken = false;
+      //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+
+  }
+
+  virtual int mat(int p) const
+  {
+    if (!main2 && firsttime) { const_cast<MT_script2*>(this)->Prepare2(); firsttime=false; }
+    if (main2) return main2->mat(p);
+    return 0;
+  }
+  virtual int mat_inst(int p, int pts) const
+  {
+    if (!main2 && firsttime) { const_cast<MT_script2*>(this)->Prepare2(); firsttime=false; }
+    if (main2) return main2->mat_inst(p,pts); 
+    return 0;
+  }
+  virtual int mat_inst_matrix(int p, int ms) const
+  {
+    if (!main2 && firsttime) { const_cast<MT_script2*>(this)->Prepare2(); firsttime=false; }
+    if (main2) return main2->mat_inst_matrix(p,ms);
+    return 0;
+  }
+  virtual int mat_inst2(int p, int pta) const
+  {
+    if (!main2 && firsttime) { const_cast<MT_script2*>(this)->Prepare2(); firsttime=false; }
+    if (main2) return main2->mat_inst2(p,pta);
+    return 0;
+  }
+  virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
+  {
+    if (!main2 && firsttime) { const_cast<MT_script2*>(this)->Prepare2(); firsttime=false; }
+    if (main2) return main2->mat_inst_fade(p,pts,flip,start_time,end_time);
+    return 0;
+  }
+
+
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  //std::string url;
+  Html *hml;
+  std::string p1,p2,p3,p4,p5;
+  mutable bool firsttime;
+  //MainLoopItem *main2;
+  Material *main2;
+  bool async_taken;
+};
+
 class MT_script : public Material
 {
 public:
@@ -17803,6 +18131,7 @@ public:
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+	  code = replace_str(code, "@", "\n");
       GameApi::ExecuteEnv e2;
       std::pair<int,std::string> p = GameApi::execute_codegen(e,ev,code,e2);
       if (p.second=="MT") {
@@ -17882,6 +18211,11 @@ void MT_cb(void *data)
   MT_script *script = (MT_script*)data;
   script->Prepare2();
 }
+void MT2_cb(void *data)
+{
+  MT_script2 *script = (MT_script2*)data;
+  script->Prepare2();
+}
 
 void MN_cb(void *data)
 {
@@ -17893,6 +18227,17 @@ void ML_cb(void *data)
 {
   //std::cout << "ML_cb" << std::endl;
   ML_script *script = (ML_script*)data;
+  script->Prepare2();
+}
+void ML2_cb(void *data)
+{
+  //std::cout << "ML_cb" << std::endl;
+  ML_script2 *script = (ML_script2*)data;
+  script->Prepare2();
+}
+void MN2_cb(void *data)
+{
+  MN_script2 *script = (MN_script2*)data;
   script->Prepare2();
 }
 
@@ -17944,13 +18289,28 @@ GameApi::ML GameApi::MainLoopApi::load_ML_script(EveryApi &ev, std::string url, 
 {
   return add_main_loop(e, new ML_script(e,ev,url,p1,p2,p3,p4,p5));
 }
+GameApi::ML GameApi::MainLoopApi::load_ML_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  Html *hml = find_html(e,h);
+  return add_main_loop(e, new ML_script2(e,ev,hml,p1,p2,p3,p4,p5));
+}
 GameApi::MN GameApi::MainLoopApi::load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   return add_move(e, new MN_script(e,ev,url,p1,p2,p3,p4,p5));
 }
+GameApi::MN GameApi::MainLoopApi::load_MN_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  Html *hml = find_html(e,h);
+  return add_move(e, new MN_script2(e,ev,hml,p1,p2,p3,p4,p5));
+}
 GameApi::MT GameApi::MainLoopApi::load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
   return add_material(e, new MT_script(e,ev,url,p1,p2,p3,p4,p5));
+}
+GameApi::MT GameApi::MainLoopApi::load_MT_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
+{
+  Html *hml = find_html(e,h);
+  return add_material(e, new MT_script2(e,ev,hml,p1,p2,p3,p4,p5));
 }
 
 GameApi::ARR GameApi::MainLoopApi::load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
@@ -26099,9 +26459,13 @@ void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int leve
   //std::cout << "set_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
 
 }
+void clear_codegen();
 std::string do_codegen(GameApi::EveryApi &ev)
 {
   //std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
+  ev.mod_api.codegen_reset_counter();
+  clear_codegen();
+
   std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level,0); 
   //std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
   return p.second;
