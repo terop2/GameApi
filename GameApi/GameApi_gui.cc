@@ -3482,6 +3482,12 @@ EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 
 EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab)
 {
+  if (titles.size()==0)
+    {
+      std::vector<W> vert;
+      W arr_combine = array_y(&vert[0], vert.size(), 6);
+      return arr_combine;
+    }
   int s = titles.size();
   std::vector<W> horiz_bar;
   for(int i=0;i<s;i++)
@@ -3504,8 +3510,17 @@ EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vect
       W tab_layer = layer(tab_button, arr_tab);
       horiz_bar.push_back(tab_layer);
     }
+
   W arr_top = array_x(&horiz_bar[0], horiz_bar.size(), 3);
-  W arr_top2 = margin(arr_top, 0,ev.mainloop_api.get_screen_height()-size_y(arr_top),0,0);
+  std::vector<W> vert;
+  vert.push_back(arr_top);
+  
+  W arr_combine = array_y(&vert[0], vert.size(), 6);
+  W comb_but = button(ev.mainloop_api.get_screen_width(), size_y(arr_combine),0xff228822, 0xff081108);
+  W comb_layer = layer(comb_but,arr_combine);
+
+
+  W arr_top2 = margin(comb_layer, 0,ev.mainloop_api.get_screen_height()-size_y(comb_layer),0,0);
   return arr_top2;
 }
 
@@ -3542,8 +3557,10 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
   horiz_bar.push_back(new_tab_click);
 
   W arr_top = array_x(&horiz_bar[0], horiz_bar.size(), 3);
-
-
+  
+  //return arr_top;
+  
+#if 0  
   // back, forward, refresh, url_bar
   std::vector<W> horiz_bar2;
   W back_button2 = text("<-", atlas, atlas_bm);
@@ -3586,16 +3603,17 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
   horiz_bar2.push_back(save_click);
   horiz_bar2.push_back(url_bar_layer);
   W arr_middle = array_x(&horiz_bar2[0], horiz_bar2.size(), 6);
-  
+#endif
   // bookmarks
   std::vector<W> vert;
   vert.push_back(arr_top);
-  vert.push_back(arr_middle);
+  //vert.push_back(arr_middle);
   // vert.push_back(arr_bottom);
   W arr_combine = array_y(&vert[0], vert.size(), 6);
   W comb_but = button(ev.mainloop_api.get_screen_width(), size_y(arr_combine),0xff228822, 0xff081108);
   W comb_layer = layer(comb_but,arr_combine);
   return comb_layer;
+
 }
 
 EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x, int screen_size_y, W &close_button, FtA atlas, BM atlas_bm, W &codegen_button, W &collect_button, W &mem)
