@@ -3269,6 +3269,10 @@ int main(int argc, char *argv[]) {
   SH sh3 = ev.shader_api.colour_shader();
 
 
+  //ev.mainloop_api.alpha(true);
+  //ev.mainloop_api.transparency(true);
+  //ev.mainloop_api.depth_test(false);
+  
   IterData iter_dt;
   iter_dt.ev = &ev;
   iter_dt.env = e2;
@@ -3294,8 +3298,8 @@ int main(int argc, char *argv[]) {
   /*
   ev.mainloop_api.switch_to_3d(false, sh3, screen_x+extra_width, screen_y+extra_height);
   ev.shader_api.use(sh);
-  ev.mainloop_api.alpha(true);
   */
+  ev.mainloop_api.alpha(true);
   int *active_tab = new int(0);
 
 
