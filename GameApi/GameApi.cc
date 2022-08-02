@@ -17110,9 +17110,9 @@ public:
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       std::cout << "Generating date.." << std::endl;
-      system("touch ~/.gameapi_builder/gameapi_date.html");
+      //system("touch ~/.gameapi_builder/gameapi_date.html");
       std::string home = getenv("HOME");
-      std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
+      std::fstream ss2((home + "/_gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
       ss2.close();
@@ -17123,19 +17123,29 @@ public:
     case 5:
       {
       	std::cout << "Copying engine files.." << std::endl;
-	std::string g1 = "gameapi_1.html";
-	std::string g2 = "gameapi_2.html";
-	std::string g3 = "gameapi_3.html";
-	std::string gn = "gameapi_display.zip";
-	std::string line1 = std::string("copy ") + g1 + " %HOME%/_gameapi_builder/gameapi_1.html";
-	std::string line2 = std::string("copy ") + g2 + " %HOME%/_gameapi_builder/gameapi_2.html";
-	std::string line3 = std::string("copy ") + g3 + " %HOME%/_gameapi_builder/gameapi_3.html";
-	std::string line4 = std::string("copy ") + gn + " %HOME%/_gameapi_builder/gameapi_display.zip";
+	std::string g1 = "..\\display\\gameapi_1.html";
+	std::string g2 = "..\\display\\gameapi_2.html";
+	std::string g3 = "..\\display\\gameapi_3.html";
+	std::string gn = "..\\display\\gameapi_display.zip";
+	std::string gsed = "..\\zip\\sed.exe";
+	if (!file_exists(g1)) {
+	  g1 = "gameapi_1.html";
+	  g2 = "gameapi_2.html";
+	  g3 = "gameapi_3.html";
+	  gn = "gameapi_display.zip";
+	  gsed = "sed.exe";
+	}
+	std::string line1 = std::string("copy ") + g1 + " %HOME%\\_gameapi_builder\\gameapi_1.html";
+	std::string line2 = std::string("copy ") + g2 + " %HOME%\\_gameapi_builder\\gameapi_2.html";
+	std::string line3 = std::string("copy ") + g3 + " %HOME%\\_gameapi_builder\\gameapi_3.html";
+	std::string line4 = std::string("copy ") + gn + " %HOME%\\_gameapi_builder\\gameapi_display.zip";
+	std::string line5 = std::string("copy ") + gsed + " %HOME%\\_gameapi_builder\\sed.exe";
     
 	system(line1.c_str());
 	system(line2.c_str());
 	system(line3.c_str());
 	system(line4.c_str());
+	system(line5.c_str());
 	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
 	break;
       }
@@ -17156,7 +17166,7 @@ public:
 	std::cout << "Saving to %HOME%/_gameapi_builder/Downloads/gameapi_deploy.zip";
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 	std::string home = getenv("HOME");
-	std::ifstream ss((home + "/_gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
+	std::ifstream ss((home + "\\_gameapi_builder\\deploy\\gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
 	while(ss.get(ch)) {
