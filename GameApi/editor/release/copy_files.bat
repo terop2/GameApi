@@ -3,6 +3,8 @@ copy ..\..\display\gameapi_display.zip editor\gameapi_display.zip
 copy ..\..\display\gameapi_1.html editor\gameapi_1.html
 copy ..\..\display\gameapi_2.html editor\gameapi_2.html
 copy ..\..\display\gameapi_3.html editor\gameapi_3.html
+copy ..\..\zip\sed.exe editor\sed.exe
+copy ..\deploy.bat editor\deploy.bat
 copy ..\freetype.dll editor\freetype.dll
 copy ..\pthreadGC2.dll editor\pthreadGC2.dll
 copy ..\atlas0.txt editor\atlas0.txt
