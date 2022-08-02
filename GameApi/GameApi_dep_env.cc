@@ -2662,9 +2662,10 @@ std::vector<Low_SDL_GLContext> context_map;
 std::vector<bool> valid_context;
 
 extern Low_SDL_Window *sdl_window;
-extern Low_SDL_GLContext g_context;
+//extern Low_SDL_GLContext g_context;
 void *async_process(void *ptr)
 {
+  /*
   TaskData *dt = (TaskData*)ptr;
   if (valid_context[dt->pos])
     g_low->sdl->SDL_GL_DeleteContext(context_map[dt->pos]);
@@ -2675,6 +2676,7 @@ void *async_process(void *ptr)
   g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
   
   dt->finished = true;
+  */
 }
 
 void start_task(int task, int pos)
