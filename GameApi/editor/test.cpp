@@ -2873,6 +2873,8 @@ public:
 
     if (env->gui && env->download_bar.id!=-1)
       env->gui->render(env->download_bar);
+
+    counter++;
   }
   bool start_new(Envi_tabs *env, int i)
   {
@@ -2908,11 +2910,34 @@ public:
       {
 	W w = env->db_buttons[i];
 	int chosen = env->gui->chosen_item(w);
-	if (chosen==0)
+	if (state==2 && chosen==0)
+	  {
+	    if (counter<200)
+	      { // double-click on the download bar
+ #ifdef LINUX
+		std::string s = getenv("HOME");
+		pthread_system((std::string("xdg-open ")+s+"/.gameapi_builder/Downloads/").c_str());
+#endif
+#ifdef WINDOWS
+#endif
+	      }
+	    state=0;
+	  }
+	else
+	if (state==1 && chosen==-1)
+	  {
+	    state=2;
+	  }
+	else
+	if (state==0 && chosen==0)
 	  {
 	    env->db_active_tab = i;
 	    env->env->start_async(new DownloadUpdateTask(g_start));
+	    state=1;
+	    counter=0;
 	  }
+
+
       }
 
     int s6 = env->db_close_button.size();
@@ -3024,6 +3049,8 @@ private:
   std::vector<BuilderIter*> *perm_nodes;
   std::vector<void*> *perm_args;
   IterData *dt;
+  int state=0;
+  int counter = 0;
 };
 
 void render_cb(Envi *env)
