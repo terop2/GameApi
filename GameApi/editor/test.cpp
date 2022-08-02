@@ -98,17 +98,7 @@ IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
 IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env);
 std::vector<unsigned char> load_from_url(std::string url);
 
-std::string get_last_line(std::string s, char ch)
-{
-  int ss = s.size();
-  int pos = 0;
-  int pos2 = 0;
-  for(int i=0;i<ss;i++)
-    {
-      if (s[i]==ch) { pos2=pos; pos = i; }
-    }
-  return s.substr(pos2,pos-pos2);
-}
+std::string get_last_line(std::string file, char ch);
 
 std::string hexify2(std::string s)
 {

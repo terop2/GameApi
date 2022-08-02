@@ -17000,7 +17000,17 @@ GameApi::ML GameApi::MainLoopApi::save_script(HML h, std::string filename)
 }
 
 bool file_exists(std::string file);
-std::string get_last_line(std::string file, char ch);
+std::string get_last_line(std::string s, char ch)
+{
+  int ss = s.size();
+  int pos = 0;
+  int pos2 = 0;
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]==ch) { pos2=pos; pos = i; }
+    }
+  return s.substr(pos2,pos-pos2);
+}
 
 class SaveDeployAsync : public ASyncTask
 {
@@ -17013,6 +17023,153 @@ public:
   virtual void DoTask(int i)
   {
 #ifndef EMSCRIPTEN
+#ifdef WINDOWS
+    switch(i) {
+    case 0:
+      id = env.add_to_download_bar("gameapi_deploy.zip");
+      std::cout << "Creating tmp directories.." << std::endl;
+      system("mkdir %HOME%\\_gameapi_builder");
+      env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
+      break;
+    case 1:
+      system("mkdir %HOME%\\_gameapi_builder\\deploy");
+      env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
+      break;
+    case 2:
+      system("mkdir %HOME%\\_gameapi_builder\\deploy\\engine");
+      env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
+      break;
+
+    case 3:
+      {
+	std::string s = h2_script; //h2->script_file();
+      s = replace_str(s, "@", "\n");
+      s = replace_str(s, "&", "&amp;");
+      s = replace_str(s, ">", "&gt;");
+      s = replace_str(s, "<", "&lt;");
+      s = replace_str(s, "\"", "&quot;");
+      s = replace_str(s, "\'", "&apos;");
+
+      std::string htmlfile = s;
+
+      htmlfile = replace_str(htmlfile, "@", "\n");					      
+      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+      
+      htmlfile+='\n';
+      std::string lastline = get_last_line(htmlfile,'\n');
+      std::string label,id2;
+      std::stringstream ss2(lastline);
+      ss2 >> label >> id2;
+      int ii=id2.size();
+      for(int i=0;i<ii;i++) { if (id2[i]=='=') id2=id2.substr(0,i); }
+      if (label=="ML")
+	{
+	  htmlfile+=std::string("RUN I888=ev.blocker_api.game_window2(ev,") + id2 + ",false,false,0.0,1000000.0);\n";
+	}
+      if (label=="P")
+	{
+	  htmlfile+=std::string("ML I888=ev.polygon_api.render_vertex_array_ml2(ev,") + id2 + ");\n";
+	  htmlfile+="RUN I889=ev.blocker_api.game_window2(ev,I888,false,false,0.0,100000.0);\n";
+	  
+	}
+      if (label=="MN")
+	{
+	  /* TODO
+	     M m = env->ev->move_api.get_matrix(mn, 10.0, 0.01);
+	     LI p = env->ev->points_api.matrix_display(*env->ev, m);
+	     ML I5=ev.lines_api.ml_li_render(ev,E1,1.0);
+	  */
+	}
+      if (label=="MT")
+	{
+	  htmlfile+="PT I888=ev.point_api.point(0.0,0.0,0.0);\n";
+	  htmlfile+="P I889=ev.polygon_api.sphere(I888,350,30,30);\n";
+	  htmlfile+=std::string("ML I890=ev.materials_api.bind(I889,") + id2 + ");\n";
+	  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);\n");
+	}
+      
+      std::cout << "Generating script.." << std::endl;
+      std::string home = getenv("HOME");
+      std::fstream ss((home+ "\\_gameapi_builder\\gameapi_script.html").c_str(), std::ofstream::out);
+      ss << htmlfile;
+      ss << std::flush;
+      ss.close();
+            env.set_download_progress(env.download_index_mapping(id), 4.0/8.0);
+      }
+    break;
+      
+    case 4:
+      {
+	      time_t now = time(0);
+      char *dt = ctime(&now);
+      tm *gmtm = gmtime(&now);
+      dt = asctime(gmtm);
+      
+      std::string dt2(dt);
+      dt2 = replace_str(dt2, " ", "");
+      
+    //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
+      std::cout << "Generating date.." << std::endl;
+      system("touch ~/.gameapi_builder/gameapi_date.html");
+      std::string home = getenv("HOME");
+      std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
+      ss2 << dt2;
+      ss2 << std::flush;
+      ss2.close();
+
+      env.set_download_progress(env.download_index_mapping(id), 5.0/8.0);
+      }
+      break;
+    case 5:
+      {
+      	std::cout << "Copying engine files.." << std::endl;
+	std::string g1 = "gameapi_1.html";
+	std::string g2 = "gameapi_2.html";
+	std::string g3 = "gameapi_3.html";
+	std::string gn = "gameapi_display.zip";
+	std::string line1 = std::string("copy ") + g1 + " %HOME%/_gameapi_builder/gameapi_1.html";
+	std::string line2 = std::string("copy ") + g2 + " %HOME%/_gameapi_builder/gameapi_2.html";
+	std::string line3 = std::string("copy ") + g3 + " %HOME%/_gameapi_builder/gameapi_3.html";
+	std::string line4 = std::string("copy ") + gn + " %HOME%/_gameapi_builder/gameapi_display.zip";
+    
+	system(line1.c_str());
+	system(line2.c_str());
+	system(line3.c_str());
+	system(line4.c_str());
+	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
+	break;
+      }
+    case 6:
+      {
+      std::cout << "Deploying..." << std::endl;
+      std::string dep = "deploy.bat";
+      std::string line5 = dep + " %HOME%\\_gameapi_builder\\gameapi_display.zip";
+      system(line5.c_str());
+      // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
+      
+      env.set_download_progress(env.download_index_mapping(id), 7.0/8.0);
+      break;
+      }
+
+    case 7:
+      {
+	std::cout << "Saving to %HOME%/_gameapi_builder/Downloads/gameapi_deploy.zip";
+	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
+	std::string home = getenv("HOME");
+	std::ifstream ss((home + "/_gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
+	std::vector<unsigned char> vec;
+	char ch;
+	while(ss.get(ch)) {
+	  vec.push_back((unsigned char)ch);
+	}
+	env.set_download_data(env.download_index_mapping(id), vec);
+	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
+	env.set_download_ready(i);
+	std::cout << "ALL OK" << std::endl;
+	break;
+      }
+    };
+#endif
 #ifdef LINUX
     switch(i) {
 
@@ -17173,9 +17330,6 @@ public:
 	break;
       }
     };
-#endif
-#ifdef WINDOWS
-    // TODO
 #endif
 #endif
   }
