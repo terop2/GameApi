@@ -2573,9 +2573,9 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
 {
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
-  system("mkdir %HOME%\\_gameapi_builder");
-  system("mkdir %HOME%\\_gameapi_builder\\Downloads");
-  std::string home = getenv("HOME");
+  system("mkdir %TEMP%\\_gameapi_builder");
+  system("mkdir %TEMP%\\_gameapi_builder\\Downloads");
+  std::string home = getenv("TEMP");
   std::string filename_with_path = home + std::string("\\_gameapi_builder\\Downloads\\") + filename;
   std::ofstream ss(filename_with_path.c_str());
   std::string val(vec->begin(),vec->end());

@@ -17028,15 +17028,15 @@ public:
     case 0:
       id = env.add_to_download_bar("gameapi_deploy.zip");
       std::cout << "Creating tmp directories.." << std::endl;
-      system("mkdir %HOME%\\_gameapi_builder");
+      system("mkdir %TEMP%\\_gameapi_builder");
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
     case 1:
-      system("mkdir %HOME%\\_gameapi_builder\\deploy");
+      system("mkdir %TEMP%\\_gameapi_builder\\deploy");
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
     case 2:
-      system("mkdir %HOME%\\_gameapi_builder\\deploy\\engine");
+      system("mkdir %TEMP%\\_gameapi_builder\\deploy\\engine");
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
 
@@ -17089,7 +17089,7 @@ public:
 	}
       
       std::cout << "Generating script.." << std::endl;
-      std::string home = getenv("HOME");
+      std::string home = getenv("TEMP");
       std::fstream ss((home+ "\\_gameapi_builder\\gameapi_script.html").c_str(), std::ofstream::out);
       ss << htmlfile;
       ss << std::flush;
@@ -17111,7 +17111,7 @@ public:
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       std::cout << "Generating date.." << std::endl;
       //system("touch ~/.gameapi_builder/gameapi_date.html");
-      std::string home = getenv("HOME");
+      std::string home = getenv("TEMP");
       std::fstream ss2((home + "/_gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
@@ -17127,25 +17127,25 @@ public:
 	std::string g2 = "..\\display\\gameapi_2.html";
 	std::string g3 = "..\\display\\gameapi_3.html";
 	std::string gn = "..\\display\\gameapi_display.zip";
-	std::string gsed = "..\\zip\\sed.exe";
+	//std::string gsed = "..\\zip\\sed.exe";
 	if (!file_exists(g1)) {
 	  g1 = "gameapi_1.html";
 	  g2 = "gameapi_2.html";
 	  g3 = "gameapi_3.html";
 	  gn = "gameapi_display.zip";
-	  gsed = "sed.exe";
+	  //gsed = "sed.exe";
 	}
-	std::string line1 = std::string("copy ") + g1 + " %HOME%\\_gameapi_builder\\gameapi_1.html";
-	std::string line2 = std::string("copy ") + g2 + " %HOME%\\_gameapi_builder\\gameapi_2.html";
-	std::string line3 = std::string("copy ") + g3 + " %HOME%\\_gameapi_builder\\gameapi_3.html";
-	std::string line4 = std::string("copy ") + gn + " %HOME%\\_gameapi_builder\\gameapi_display.zip";
-	std::string line5 = std::string("copy ") + gsed + " %HOME%\\_gameapi_builder\\sed.exe";
+	std::string line1 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_1.html";
+	std::string line2 = std::string("copy ") + g2 + " %TEMP%\\_gameapi_builder\\gameapi_2.html";
+	std::string line3 = std::string("copy ") + g3 + " %TEMP%\\_gameapi_builder\\gameapi_3.html";
+	std::string line4 = std::string("copy ") + gn + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
+	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
     
 	system(line1.c_str());
 	system(line2.c_str());
 	system(line3.c_str());
 	system(line4.c_str());
-	system(line5.c_str());
+	//system(line5.c_str());
 	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
 	break;
       }
@@ -17153,7 +17153,7 @@ public:
       {
       std::cout << "Deploying..." << std::endl;
       std::string dep = "deploy.bat";
-      std::string line5 = dep + " %HOME%\\_gameapi_builder\\gameapi_display.zip";
+      std::string line5 = dep + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
       system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
       
@@ -17163,9 +17163,9 @@ public:
 
     case 7:
       {
-	std::cout << "Saving to %HOME%/_gameapi_builder/Downloads/gameapi_deploy.zip";
+	std::cout << "Saving to %TEMP%/_gameapi_builder/Downloads/gameapi_deploy.zip";
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
-	std::string home = getenv("HOME");
+	std::string home = getenv("TEMP");
 	std::ifstream ss((home + "\\_gameapi_builder\\deploy\\gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
