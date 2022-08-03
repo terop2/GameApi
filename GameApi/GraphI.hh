@@ -2342,7 +2342,22 @@ struct PointBinding
 };
 
 
-class Bindings
+class BindingsI
+{
+public:
+  virtual int F_Size() const=0;
+  virtual const FloatBinding &F_get(int i) const=0;
+  virtual int I_Size() const=0;
+  virtual const IntBinding &I_get(int i) const=0;
+  virtual int U_Size() const=0;
+  virtual const UnsignedIntBinding &U_get(int i) const=0;
+  virtual int P_Size() const=0;
+  virtual const PointBinding &P_get(int i) const=0;
+
+  virtual void set(GameApi::EveryApi &ev, int sh)=0;
+};
+
+class Bindings : public BindingsI
 {
 public:
   Bindings(const Bindings &c) : f_vec(c.f_vec), i_vec(c.i_vec),u_vec(c.u_vec),p_vec(c.p_vec) { }

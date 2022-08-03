@@ -383,7 +383,7 @@ public:
     
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
     VertexArraySet *s = new VertexArraySet;
-    s->set_reserve(0, end_range-start_range, end_range-start_range, end_range-start_range);
+    s->set_reserve(0, end_range-start_range, end_range-start_range, 0 /*end_range-start_range*/);
     sets.push_back(s);
     FaceCollectionVertexArray2 *va = new FaceCollectionVertexArray2(*faces, *s);
     va2.push_back(va);
