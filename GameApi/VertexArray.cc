@@ -155,11 +155,11 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly
   if (poly_count)
     p->poly_normals.reserve(poly_count*3/3);
   if (tri_count)
-    p->tri_color.reserve(tri_count*3/3); 
+    p->tri_color.reserve(tri_count*3/3*4); 
   if (quad_count)
-    p->quad_color.reserve(quad_count*6/4);
+    p->quad_color.reserve(quad_count*6/4*4);
   if (poly_count)
-    p->poly_color.reserve(poly_count*3/3);
+    p->poly_color.reserve(poly_count*3/3*4);
   if (tri_count)
     p->tri_texcoord.reserve(tri_count*3/3);
   if (quad_count)

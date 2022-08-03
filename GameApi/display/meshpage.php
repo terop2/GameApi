@@ -6,12 +6,12 @@ $assetsite = "https://tpgames.org";
 <!DOCTYPE html>
 <html id="html">
 <head>
-<title>meshpage.org&reg; -- your favourite 3d web development framework</title>
+<title>meshpage.org&reg; -- are you ready to bring the web to next level?</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
- echo '<meta name="description" content="Meshpage allows converting your ideas to 3d for your web page"/>';
+ echo '<meta name="description" content="Meshpage makes the web 3d, one site at the time"/>';
  }
  ?>
 <meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/>
@@ -439,7 +439,7 @@ $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
 echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
-page_title("meshpage.org&reg;", "your favourite 3d web development framework");
+page_title("meshpage.org&reg;", "groundbreaking way to bring the web to next level: 3d.");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -756,7 +756,7 @@ list_end();
 <h2>What is meshpage.org?</h2>
 
 <ul>
-<li>Meshpage is a mechanism to create 3d animations and adding them to your own web page.
+<li>Meshpage is groundbreaking way to bring web to next level. Next generation web will be 3d with meshpage's technology.
 </ul>
 
 <h2>How does the site work?</h2>
@@ -2037,7 +2037,7 @@ function hide_profile(b)
 <!-- TODO: add nft ownership test before starting timer -->
 <script>
 setTimeout(function() { var d = document.getElementById("monepopup"); d.style.display='block'; }, 500000);
-var url = "https://api.opensea.io/asset/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584/validate";
+var url = "TODO"; //"https://api.opensea.io/asset/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584/validate";
 function add_script() {
 
 <?php

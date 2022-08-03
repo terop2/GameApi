@@ -92,7 +92,7 @@ EXPORT void GameApi::FrameBufferApi::bind_screen(vp viewport)
   OpenglLowApi *ogl = g_low->ogl;
 
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER,0);
-  ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
+  //ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, 0);
   
   ogl->glViewport(viewport.viewport[0],viewport.viewport[1],viewport.viewport[2],viewport.viewport[3]);
 }
@@ -164,9 +164,9 @@ public:
     GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
     ogl->glClearColor(0.0,0.0,0.0,0.0);
     ogl->glClear( Low_GL_COLOR_BUFFER_BIT| Low_GL_DEPTH_BUFFER_BIT);
-    ogl->glDisable(Low_GL_DEPTH_TEST);
-    ogl->glEnable(Low_GL_BLEND);
-    //ogl->glDepthMask(Low_GL_TRUE);
+    //ogl->glDisable(Low_GL_DEPTH_TEST);
+    //ogl->glEnable(Low_GL_BLEND);
+    ////ogl->glDepthMask(Low_GL_TRUE);
     MainLoopEnv ee = e;
     
     ee.v_shader_functions = "";
@@ -206,9 +206,9 @@ public:
       //#endif
       ev.fbo_api.bind_screen(viewport);
     ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
-    //ogl->glDisable(Low_GL_DEPTH_TEST);
-    ogl->glEnable(Low_GL_DEPTH_TEST);
-    ogl->glDisable(Low_GL_BLEND);
+    ////ogl->glDisable(Low_GL_DEPTH_TEST);
+    //ogl->glEnable(Low_GL_DEPTH_TEST);
+    //ogl->glDisable(Low_GL_BLEND);
 		  
   }
   int texture() const
