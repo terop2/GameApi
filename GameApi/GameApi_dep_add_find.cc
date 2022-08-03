@@ -116,7 +116,16 @@ void add_b(std::shared_ptr<void> ptr)
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
-
+GameApi::PBO add_pbo(GameApi::Env &e, PixelBufferObject *i)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->pbo.push_back(i);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(i));
+  GameApi::PBO im;
+  im.id = env->pbo.size()-1;
+  return im;
+}
 GameApi::SHP add_shp(GameApi::Env &e, ShaderParameterI* i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1365,7 +1374,11 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 }
-
+PixelBufferObject *find_pbo(GameApi::Env &e, GameApi::PBO p)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->pbo[p.id];
+}
 ShaderI2 *find_shaderI(GameApi::Env &e, GameApi::SHI s)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);

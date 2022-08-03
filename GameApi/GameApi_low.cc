@@ -143,6 +143,8 @@
 #undef glTexSubImage3D
 #undef glGetAttribLocation
 #undef glGenerateMipmap
+#undef glMapBuffer
+#undef glUnmapBuffer
 
 #undef glDepthFunc
 #undef glGenRenderbuffers
@@ -236,6 +238,12 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_PIXEL_PACK_BUFFER: i = GL_PIXEL_PACK_BUFFER; break;
+  case Low_GL_PIXEL_UNPACK_BUFFER: i=GL_PIXEL_UNPACK_BUFFER; break;
+  case Low_GL_STREAM_DRAW: i=GL_STREAM_DRAW; break;
+  case Low_GL_WRITE_ONLY: i=GL_WRITE_ONLY; break;
+  case Low_GL_READ_ONLY: i=GL_READ_ONLY; break;
+
   case Low_GL_VENDOR: i=GL_VENDOR; break;
   case Low_GL_RENDERER: i=GL_RENDERER; break;
   case Low_GL_VERSION: i=GL_VERSION; break;
@@ -1019,6 +1027,25 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
     map_enums(i);
     ::glCullFace(i);
   }
+  void* glMapBuffer(int a, int b)
+  {
+#ifdef GLEW_HACK
+#define glMapBuffer GLEW_GET_FUN(__glewMapBuffer)
+#endif
+    map_enums(a);
+    map_enums(b);
+    return ::glMapBuffer(a,b);
+  }
+  void glUnmapBuffer(int a)
+  {
+#ifdef GLEW_HACK
+#define glUnmapBuffer GLEW_GET_FUN(__glewUnmapBuffer)
+#endif
+    map_enums(a);
+    ::glUnmapBuffer(a);
+  }
+
+  
   void glFramebufferTexture2D(int a, int b, int c, int d, int ptr) { 
 #ifdef GLEW_HACK
 #define glFramebufferTexture2D GLEW_GET_FUN(__glewFramebufferTexture2D)
