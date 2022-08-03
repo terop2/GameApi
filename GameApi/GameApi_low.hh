@@ -138,6 +138,11 @@ enum
     Low_GL_ALPHA_TEST,
     Low_GL_FRONT,
     Low_GL_BACK,
+    Low_GL_PIXEL_PACK_BUFFER,
+    Low_GL_PIXEL_UNPACK_BUFFER,
+    Low_GL_STREAM_DRAW,
+    Low_GL_WRITE_ONLY,
+    Low_GL_READ_ONLY,
     //
     //  OLD STUFF
     // 
@@ -222,6 +227,8 @@ enum {
 #undef glDrawArrays
 #undef glTexImage2D
 #undef glTexSubImage2D
+#undef glMapBuffer
+#undef glUnmapBuffer
 #undef Mix_PlayChannel
 #undef Mix_HaltChannel
 #undef Mix_GetError
@@ -359,6 +366,8 @@ public:
   virtual void glGenerateMipmap(int p)=0;
 
   virtual void glCullFace(int mode)=0;
+  virtual void* glMapBuffer(int a, int b)=0;
+  virtual void glUnmapBuffer(int a)=0;
   
   // Old
   virtual void glEnableClientState(int a)=0;

@@ -2428,5 +2428,14 @@ public:
   virtual void DoTask(int i)=0;
 };
 
+class PixelBufferObject : public CollectInterface
+{
+public:
+  virtual unsigned int Id() const=0;
+  virtual void Prepare()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+};
+
 #endif
 

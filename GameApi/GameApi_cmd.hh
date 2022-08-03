@@ -309,6 +309,7 @@ MACRO(GameApi::PKG)
 MACRO(GameApi::GS)
 MACRO(GameApi::TF)
 MACRO(GameApi::HML)
+MACRO(GameApi::PBO)
 #undef MACRO
 
 
