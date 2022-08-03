@@ -48,6 +48,7 @@ using std::placeholders::_9;
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(PBO)
   MAC(SHP)
   MAC(SHI)
   MAC(AA)
@@ -698,6 +699,11 @@ class TextureApi
 {
 public:
 	IMPORT TextureApi(Env &e);
+  IMPORT PBO create_pbo(int sx, int sy);
+  IMPORT ML upload_bm_to_pbo(BM bm, PBO p);
+  IMPORT ML upload_txid_to_pbo(TXID tx, PBO p); // TODO
+  IMPORT BM pbo_to_bitmap(PBO p);
+  IMPORT TXID pbo_to_txid(PBO p);
   IMPORT ML grab_to_server(BM bm, int id, int num);
   IMPORT ML send_screenshots_via_key_to_server(EveryApi &ev, ML ml3, int key, float time_delta, int num);
   IMPORT ML prepare_key_anim(ML next, std::vector<ML> keyed, int key, float time_delta, std::vector<std::string> filenames);

@@ -2572,6 +2572,18 @@ std::vector<bool> g_download_bar_ready;
 void save_download(std::string filename, const std::vector<unsigned char> *vec)
 {
 #ifndef EMSCRIPTEN
+#ifdef WINDOWS
+  system("mkdir %TEMP%\\_gameapi_builder");
+  system("mkdir %TEMP%\\_gameapi_builder\\Downloads");
+  std::string home = getenv("TEMP");
+  std::string filename_with_path = home + std::string("\\_gameapi_builder\\Downloads\\") + filename;
+  std::ofstream ss(filename_with_path.c_str());
+  std::string val(vec->begin(),vec->end());
+  ss << val;
+  ss << std::flush;
+  ss.close();
+#endif
+#ifdef LINUX
   system("mkdir -p ~/.gameapi_builder");
   system("mkdir -p ~/.gameapi_builder/Downloads");
   std::string home = getenv("HOME");
@@ -2579,7 +2591,9 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
   std::ofstream ss(filename_with_path.c_str());
   std::string val(vec->begin(),vec->end());
   ss << val;
+  ss << std::flush;
   ss.close();
+#endif
 #endif
 }
 
@@ -2662,9 +2676,10 @@ std::vector<Low_SDL_GLContext> context_map;
 std::vector<bool> valid_context;
 
 extern Low_SDL_Window *sdl_window;
-extern Low_SDL_GLContext g_context;
+//extern Low_SDL_GLContext g_context;
 void *async_process(void *ptr)
 {
+  /*
   TaskData *dt = (TaskData*)ptr;
   if (valid_context[dt->pos])
     g_low->sdl->SDL_GL_DeleteContext(context_map[dt->pos]);
@@ -2675,6 +2690,7 @@ void *async_process(void *ptr)
   g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
   
   dt->finished = true;
+  */
 }
 
 void start_task(int task, int pos)

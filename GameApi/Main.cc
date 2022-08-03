@@ -641,9 +641,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
       //SDL_GL_SetSwapInterval(int interval);
     }
 #endif
-   ogl->glEnable(Low_GL_DEPTH_TEST);
-  ogl->glDepthMask(Low_GL_TRUE);
-
+   ogl->glDisable(Low_GL_DEPTH_TEST);
+  ogl->glDepthMask(Low_GL_FALSE);
+  ogl->glDepthFunc(Low_GL_LEQUAL);
+  ogl->glEnable(Low_GL_BLEND);
+  
   ogl->glClearColor( 0, 0, 0, 0 );
   ogl->glViewport(0,0,screenx, screeny);
   ogl->glDisable(Low_GL_CULL_FACE);

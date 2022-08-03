@@ -98,17 +98,7 @@ IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
 IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env);
 std::vector<unsigned char> load_from_url(std::string url);
 
-std::string get_last_line(std::string s, char ch)
-{
-  int ss = s.size();
-  int pos = 0;
-  int pos2 = 0;
-  for(int i=0;i<ss;i++)
-    {
-      if (s[i]==ch) { pos2=pos; pos = i; }
-    }
-  return s.substr(pos2,pos-pos2);
-}
+std::string get_last_line(std::string file, char ch);
 
 std::string hexify2(std::string s)
 {
@@ -2883,6 +2873,8 @@ public:
 
     if (env->gui && env->download_bar.id!=-1)
       env->gui->render(env->download_bar);
+
+    counter++;
   }
   bool start_new(Envi_tabs *env, int i)
   {
@@ -2918,11 +2910,34 @@ public:
       {
 	W w = env->db_buttons[i];
 	int chosen = env->gui->chosen_item(w);
-	if (chosen==0)
+	if (state==2 && chosen==0)
+	  {
+	    if (counter<200)
+	      { // double-click on the download bar
+ #ifdef LINUX
+		std::string s = getenv("HOME");
+		pthread_system((std::string("xdg-open ")+s+"/.gameapi_builder/Downloads/").c_str());
+#endif
+#ifdef WINDOWS
+#endif
+	      }
+	    state=0;
+	  }
+	else
+	if (state==1 && chosen==-1)
+	  {
+	    state=2;
+	  }
+	else
+	if (state==0 && chosen==0)
 	  {
 	    env->db_active_tab = i;
 	    env->env->start_async(new DownloadUpdateTask(g_start));
+	    state=1;
+	    counter=0;
 	  }
+
+
       }
 
     int s6 = env->db_close_button.size();
@@ -3034,6 +3049,8 @@ private:
   std::vector<BuilderIter*> *perm_nodes;
   std::vector<void*> *perm_args;
   IterData *dt;
+  int state=0;
+  int counter = 0;
 };
 
 void render_cb(Envi *env)
@@ -3279,6 +3296,10 @@ int main(int argc, char *argv[]) {
   SH sh3 = ev.shader_api.colour_shader();
 
 
+  //ev.mainloop_api.alpha(true);
+  //ev.mainloop_api.transparency(true);
+  //ev.mainloop_api.depth_test(false);
+  
   IterData iter_dt;
   iter_dt.ev = &ev;
   iter_dt.env = e2;
@@ -3304,8 +3325,8 @@ int main(int argc, char *argv[]) {
   /*
   ev.mainloop_api.switch_to_3d(false, sh3, screen_x+extra_width, screen_y+extra_height);
   ev.shader_api.use(sh);
-  ev.mainloop_api.alpha(true);
   */
+  ev.mainloop_api.alpha(true);
   int *active_tab = new int(0);
 
 

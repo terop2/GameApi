@@ -1157,3 +1157,179 @@ GameApi::ML GameApi::TextureApi::save_screenshots_via_key(EveryApi &ev, GameApi:
   GameApi::ML ml = prepare_key_anim(ml3, vec, key, time_delta, vec2);
   return ml;
 }
+
+class PBOImpl : public PixelBufferObject
+{
+public:
+  PBOImpl(int sx, int sy) : sx(sx), sy(sy) { }
+  virtual void Prepare()
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glGenBuffers(1,&pbo_id);
+    ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER, pbo_id);
+    ogl->glBufferData(Low_GL_PIXEL_UNPACK_BUFFER, sx*sy*sizeof(unsigned int),NULL,Low_GL_STREAM_DRAW);
+  }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+    Prepare();
+  }
+  unsigned int Id() const { return pbo_id; }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+private:
+  unsigned int pbo_id;
+  int sx, sy;
+};
+
+GameApi::PBO GameApi::TextureApi::create_pbo(int sx, int sy)
+{
+  return add_pbo(e, new PBOImpl(sx,sy));
+}
+
+
+class UnpackPBO : public MainLoopItem
+{
+public:
+  UnpackPBO(Bitmap<Color> *bm, PixelBufferObject *obj) : bm(bm), obj(obj) { }
+  virtual void Collect(CollectVisitor &vis) {
+    bm->Collect(vis);
+    obj->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER,obj->Id());
+    void *buf = ogl->glMapBuffer(Low_GL_PIXEL_UNPACK_BUFFER, Low_GL_WRITE_ONLY);
+    unsigned int *buf2 = (unsigned int *)buf;
+    int sx = obj->SizeX();
+    int sy = obj->SizeY();
+    for(int y=0;y<sy;y++)
+      {
+	float yy = float(y)*bm->SizeY()/sy;
+	for(int x=0;x<sx;x++)
+	  {
+	    float xx = float(x)*bm->SizeX()/sx;
+	    Color c = bm->Map(xx,yy);
+	    unsigned int pixel = c.Pixel();
+	    // TODO, MAP COLOURS
+	    buf2[x+y*sx] = pixel;
+	  }
+      }
+    ogl->glUnmapBuffer(Low_GL_PIXEL_UNPACK_BUFFER);
+  }
+  virtual void Prepare() {
+    bm->Prepare();
+    obj->Prepare();
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  Bitmap<Color> *bm;
+  PixelBufferObject *obj;
+};
+GameApi::ML GameApi::TextureApi::upload_bm_to_pbo(BM bm, PBO p)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  PixelBufferObject *obj = find_pbo(e,p);
+  return add_main_loop(e, new UnpackPBO(b2,obj));
+}
+
+
+
+GameApi::ML GameApi::TextureApi::upload_txid_to_pbo(TXID tx, PBO p)
+{
+}
+
+class PboBitmap : public Bitmap<Color>
+{
+public:
+  PboBitmap(PixelBufferObject *pbo) : pbo(pbo) { ref=BufferRef::NewBuffer(1,1); }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare()
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    BufferRef::FreeBuffer(ref);
+    ref=BufferRef::NewBuffer(pbo->SizeX(),pbo->SizeY());
+    ogl->glBindBuffer(Low_GL_PIXEL_PACK_BUFFER,pbo->Id());
+    void *buf = ogl->glMapBuffer(Low_GL_PIXEL_PACK_BUFFER, Low_GL_READ_ONLY);
+    unsigned int *buf2 = (unsigned int *)buf;
+    int sx = ref.width;
+    int sy = ref.height;
+    for(int y=0;y<sy;y++) {
+      for(int x=0;x<sx;x++)
+	{
+	  unsigned int c = buf2[x+y*ref.ydelta];
+	  // TODO, COLOR CONVERSIONS
+	  ref.buffer[x+y*ref.ydelta] = c;
+	}
+    }
+    
+    ogl->glUnmapBuffer(Low_GL_PIXEL_UNPACK_BUFFER);
+  }
+  
+  virtual void Prepare() {
+    pbo->Prepare();
+    HeavyPrepare();
+  }
+  virtual int SizeX() const { return pbo->SizeX(); }
+  virtual int SizeY() const { return pbo->SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    return Color(ref.buffer[x+y*ref.ydelta]);
+  }
+private:
+  PixelBufferObject *pbo;
+  BufferRef ref;
+};
+
+GameApi::BM GameApi::TextureApi::pbo_to_bitmap(PBO p)
+{
+  PixelBufferObject *pbo = find_pbo(e,p);
+  Bitmap<Color> *b = new PboBitmap(pbo);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
+class PBOTextureID : public TextureID
+{
+public:
+  PBOTextureID(PixelBufferObject *pbo) : pbo(pbo) { firsttime = true; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void render(MainLoopEnv &e) {
+    OpenglLowApi *ogl = g_low->ogl;
+
+    if (firsttime) {
+      ogl->glGenTextures(1,(unsigned int *)&id.id);
+      firsttime = false;
+    }
+    ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+    ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER,pbo->Id());
+    
+    ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0, 0, pbo->SizeX(), pbo->SizeY(), Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, 0);
+    
+    ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
+    ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER,0);
+  }
+  int texture() const
+  {
+    if (id.id==-1) return 0;
+    return id.id;
+  }
+private:
+  PixelBufferObject *pbo;
+  GameApi::TXID id = { -1 };
+  int firsttime;
+};
+
+GameApi::TXID GameApi::TextureApi::pbo_to_txid(PBO p)
+{
+  PixelBufferObject *pbo = find_pbo(e,p);
+  return add_txid(e, new PBOTextureID(pbo));
+}

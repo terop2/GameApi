@@ -54,7 +54,7 @@ CFiles=	GameApi2.cc GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc 
 	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
 	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
 	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc \
-	GameApi_cmd.cc
+	GameApi_cmd.cc cpushader.cc
 
 
 WARN = -Wno-unused-function -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-cpp

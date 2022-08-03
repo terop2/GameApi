@@ -124,5 +124,29 @@ std::vector<GameApiItem*> textureapi_functions()
 			 { "ev", "", "0.0", "800", "0.0", "600", "0.0" },
 			 "ML", "fbo_api", "fbo_ml_blit"));
 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::create_pbo,
+			 "pbo_create",
+			 { "sx", "sy" },
+			 { "int", "int" },
+			 { "100", "100" },
+			 "PBO", "texture_api", "create_pbo"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::upload_bm_to_pbo,
+			 "pbo_bm",
+			 { "bm", "pbo" },
+			 { "BM", "PBO" },
+			 { "", "" },
+			 "ML", "texture_api", "upload_bm_to_pbo"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::pbo_to_bitmap,
+			 "pbo_to_bitmap",
+			 { "pbo" },
+			 { "PBO" },
+			 { "" },
+			 "BM", "texture_api", "pbo_to_bitmap"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::pbo_to_txid,
+			 "pbo_to_txid",
+			 { "pbo" },
+			 { "PBO" },
+			 { "" },
+			 "TXID", "texture_api", "pbo_to_txid"));
   return vec;
 }

@@ -6,8 +6,8 @@
         Language='1033' Codepage='1252' Version='1.0.0'>
     <Package Id='*' Keywords='Installer' Description="meshpage.org's GameApi Builder 27.0 Installer"
         Comments='(c) meshpage.org' Manufacturer='Meshpage.org'
-        InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
-
+        InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252'>
+    </Package>
 <Media Id='1' Cabinet='Sample.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
 <Property Id='DiskPrompt' Value="Meshpage's GameApi Builder 27.0 Installation [1]" />
 
@@ -20,7 +20,18 @@
 <Shortcut Id="startmenuBuilder25" Directory="ProgramMenuDir" Name="GameApi_Builder 27.0"
             WorkingDirectory='INSTALLDIR' IconIndex="0" Advertise="yes" />
 </File>
-
+<File Id='zip' Name='gameapi_display.zip' DiskId='1' Source='editor/gameapi_display.zip' KeyPath='no'>
+</File>
+<File Id='h1' Name='gameapi_1.html' DiskId='1' Source='editor/gameapi_1.html' KeyPath='no'>
+</File>
+<File Id='h2' Name='gameapi_2.html' DiskId='1' Source='editor/gameapi_2.html' KeyPath='no'>
+</File>
+<File Id='h3' Name='gameapi_3.html' DiskId='1' Source='editor/gameapi_3.html' KeyPath='no'>
+</File>
+<File Id='sed' Name='sed.exe' DiskId='1' Source='editor/sed.exe' KeyPath='no'>
+</File>
+<File Id='deploy' Name='deploy.bat' DiskId='1' Source='editor/deploy.bat' KeyPath='no'>
+</File>
 <File Id='mod' Name='mod.txt' DiskId='1' Source='mod.txt' KeyPath='no'>
 </File>
 <File Id='bm0' Name='atlas_bm0.ppm' DiskId='1' Source='editor/atlas_bm0.ppm' KeyPath='no'>
@@ -104,10 +115,14 @@
 
 
 
-
-
         </Directory>
 </Directory>
+
+<Directory Id='TempFolder'>
+  <Directory Id='builderdir' Name='_gameapi_builder'>
+  </Directory>
+</Directory>
+
 
     <Directory Id="ProgramMenuFolder" Name="Programs">
         <Directory Id="ProgramMenuDir" Name="GameApi-Builder 27.0">
@@ -120,11 +135,16 @@
 
     <Directory Id="DesktopFolder" Name="Desktop" />
 </Directory>
+    <Component Id="CreateTestFolder" Directory='builderdir' Guid="a1bff1bc-41c0-4963-9cda-570724951ad2">
+    <CreateFolder />
+
+    </Component>
 
 <Feature Id='Complete' Level='1'>
     <ComponentRef Id='MainExecutable' />
     <ComponentRef Id='CurlExecutable' />
     <ComponentRef Id='ProgramMenuDir' />
+    <ComponentRef Id='CreateTestFolder' />
 </Feature>
 
     </Product>
