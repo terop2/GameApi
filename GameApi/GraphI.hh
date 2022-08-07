@@ -2452,5 +2452,83 @@ public:
   virtual int SizeY() const=0;
 };
 
+class TexturedAlternatives
+{
+public:
+  virtual int NumArray() const=0; // a
+  virtual int NumAlts() const=0; // i
+  virtual int Alt(int a, int i) const=0;
+};
+
+class TexturedVoxelArea;
+class TexturedAreaArray
+{
+public:
+  virtual int Size() const=0;
+  virtual TexturedVoxelArea *Index(int i) const=0;
+  virtual int Left(int i) const=0;
+  virtual int Top(int i) const=0;
+  virtual int Right(int i) const=0;
+  virtual int Bottom(int i) const=0;
+  virtual int SX(int i) const=0;
+  virtual int SY(int i) const=0;
+  virtual int SZ(int i) const=0;
+  virtual int Front(int i) const=0;
+  virtual int Back(int i) const=0;
+};
+
+class TexturedVoxelArea
+{
+public:
+  TexturedVoxelArea() { }
+  virtual int Parent() const=0;
+  virtual Bitmap<Color>* texture() const=0;
+  virtual FaceCollection* faces() const=0;
+  virtual int bounding_start_x() const=0;
+  virtual int bounding_end_x() const=0;
+  virtual int bounding_start_y() const=0;
+  virtual int bounding_end_y() const=0;
+  virtual int bounding_start_z() const=0;
+  virtual int bounding_end_z() const=0;
+};
+
+
+class TexturedVoxel
+{
+public:
+  TexturedVoxel(int num) : num(num) { }
+  virtual int SizeX() const { return 192; }
+  virtual int SizeY() const { return num*32; }
+  virtual Color Map(int x, int y) const=0;
+
+  virtual int SX() const=0;
+  virtual int SY() const=0;
+  virtual int SZ() const=0;
+  virtual bool IsEnabled(int x, int y, int z) const { return Map(x,y,z)!=0; }
+  virtual unsigned char Map(int x, int y, int z) const=0;
+private:
+  int num;
+};
+
+class TexturedQuads
+{
+public:
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual Color Map(int x, int y) const=0;
+
+  virtual int Size() const=0;
+  virtual Point P1(int i) const=0;
+  virtual Point P2(int i) const=0;
+  virtual Point P3(int i) const=0;
+  virtual Point P4(int i) const=0;
+  virtual int Type(int i) const=0;
+
+  virtual Point2d start(int type) const=0;
+  virtual Point2d end(int type) const=0;
+};
+
+
+
 #endif
 
