@@ -109,7 +109,7 @@ public: // uniform variable
   void attr_loc(std::string s, int index);
 public:
   ProgramPriv *priv;
-  std::map<const char *, int> locs;
+  std::map<std::string, int> locs;
 };
 
 class TestVertexShader : public ShaderSpec

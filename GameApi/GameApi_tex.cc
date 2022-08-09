@@ -1161,13 +1161,17 @@ GameApi::ML GameApi::TextureApi::save_screenshots_via_key(EveryApi &ev, GameApi:
 class PBOImpl : public PixelBufferObject
 {
 public:
-  PBOImpl(int sx, int sy) : sx(sx), sy(sy) { }
+  PBOImpl(int sx, int sy) : pbo_id(0), sx(sx), sy(sy) { firsttime=true;}
   virtual void Prepare()
   {
-    OpenglLowApi *ogl = g_low->ogl;
-    ogl->glGenBuffers(1,&pbo_id);
-    ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER, pbo_id);
-    ogl->glBufferData(Low_GL_PIXEL_UNPACK_BUFFER, sx*sy*sizeof(unsigned int),NULL,Low_GL_STREAM_DRAW);
+    if (firsttime) {
+      firsttime = false; 
+      OpenglLowApi *ogl = g_low->ogl;
+      ogl->glGenBuffers(1,&pbo_id);
+      ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER, pbo_id);
+      ogl->glBufferData(Low_GL_PIXEL_UNPACK_BUFFER, sx*sy*sizeof(unsigned int),NULL,Low_GL_STREAM_DRAW);
+      ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER, 0);
+    }
   }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare() {
@@ -1179,6 +1183,7 @@ public:
 private:
   unsigned int pbo_id;
   int sx, sy;
+  bool firsttime;
 };
 
 GameApi::PBO GameApi::TextureApi::create_pbo(int sx, int sy)
@@ -1200,6 +1205,12 @@ public:
     OpenglLowApi *ogl = g_low->ogl;
     ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER,obj->Id());
     void *buf = ogl->glMapBuffer(Low_GL_PIXEL_UNPACK_BUFFER, Low_GL_WRITE_ONLY);
+    if (!buf)
+      {
+	std::cout << "UnpackPBO's glMapBuffer failed" << std::endl;
+	  ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER,0);
+	  return;
+      }
     unsigned int *buf2 = (unsigned int *)buf;
     int sx = obj->SizeX();
     int sy = obj->SizeY();
@@ -1216,7 +1227,8 @@ public:
 	  }
       }
     ogl->glUnmapBuffer(Low_GL_PIXEL_UNPACK_BUFFER);
-  }
+  ogl->glBindBuffer(Low_GL_PIXEL_UNPACK_BUFFER,0);
+    }
   virtual void Prepare() {
     bm->Prepare();
     obj->Prepare();
@@ -1247,14 +1259,23 @@ class PboBitmap : public Bitmap<Color>
 {
 public:
   PboBitmap(PixelBufferObject *pbo) : pbo(pbo) { ref=BufferRef::NewBuffer(1,1); }
-  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void Collect(CollectVisitor &vis) {
+    pbo->Collect(vis);
+    vis.register_obj(this);
+  }
   virtual void HeavyPrepare()
   {
     OpenglLowApi *ogl = g_low->ogl;
-    BufferRef::FreeBuffer(ref);
-    ref=BufferRef::NewBuffer(pbo->SizeX(),pbo->SizeY());
     ogl->glBindBuffer(Low_GL_PIXEL_PACK_BUFFER,pbo->Id());
     void *buf = ogl->glMapBuffer(Low_GL_PIXEL_PACK_BUFFER, Low_GL_READ_ONLY);
+    if (!buf) {
+	std::cout << "PboBitmap's glMapBuffer failed" << std::endl;
+	std::cout << ogl->glGetError() << std::endl;
+	ogl->glBindBuffer(Low_GL_PIXEL_PACK_BUFFER,0);
+      return;
+    }
+    BufferRef::FreeBuffer(ref);
+    ref=BufferRef::NewBuffer(pbo->SizeX(),pbo->SizeY());
     unsigned int *buf2 = (unsigned int *)buf;
     int sx = ref.width;
     int sy = ref.height;
@@ -1267,15 +1288,16 @@ public:
 	}
     }
     
-    ogl->glUnmapBuffer(Low_GL_PIXEL_UNPACK_BUFFER);
+    ogl->glUnmapBuffer(Low_GL_PIXEL_PACK_BUFFER);
+    ogl->glBindBuffer(Low_GL_PIXEL_PACK_BUFFER,0);
   }
   
   virtual void Prepare() {
     pbo->Prepare();
     HeavyPrepare();
   }
-  virtual int SizeX() const { return pbo->SizeX(); }
-  virtual int SizeY() const { return pbo->SizeY(); }
+  virtual int SizeX() const { return ref.width; }
+  virtual int SizeY() const { return ref.height; }
   virtual Color Map(int x, int y) const
   {
     return Color(ref.buffer[x+y*ref.ydelta]);

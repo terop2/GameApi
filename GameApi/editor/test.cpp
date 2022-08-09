@@ -3194,6 +3194,11 @@ int main(int argc, char *argv[]) {
 		std::cout << s << std::endl;
 		return 0;
 	      }
+	    if (std::string(argv[i])=="--short")
+	      {
+		screen_x = 1080;
+		screen_y = 1920;
+	      }
 	    if (std::string(argv[i])=="--mg")
 	      {
 		screen_x = 2560;

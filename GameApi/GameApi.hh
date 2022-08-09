@@ -1494,6 +1494,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT phong3_material(EveryApi &ev, MT next, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT generic_shader_material0(EveryApi &ev, MT next, std::string, std::string, std::string);
   IMPORT MT generic_shader_material1(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string);
   IMPORT MT generic_shader_material2(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string, std::vector<SHI>);
