@@ -29,6 +29,14 @@ public:
     s.child = i;
     vec2.push_back(s);
   }
+  void HeavyPrepare()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->HeavyPrepare();
+      }
+  }
   void set_inner(ShaderI2 *shader, int num)
   {
     ShaderI2 *child = 0;
@@ -333,7 +341,8 @@ GameApi::SHP GameApi::MainLoopApi::timed_shp_uvw(float start_time, float end_tim
 
 class EmptyShaderI : public ShaderI2
 {
-public:
+public: 
+  virtual void HeavyPrepare() { }
   virtual void Collect(CollectVisitor2 &vis) { }
   virtual void set_inner(int num, std::string value) { }
   virtual std::string get_webgl_header() const { return ""; }
@@ -358,6 +367,7 @@ class PhongVertex : public ShaderI2
 {
 public:
   PhongVertex(ShaderI2 *next) : next(next) { }
+  virtual void HeavyPrepare() { }
   virtual void Collect(CollectVisitor2 &vis)
   {
     next->Collect(vis);
@@ -431,6 +441,7 @@ class PhongFragment : public ShaderI2
 {
 public:
   PhongFragment(ShaderI2 *next,unsigned int ambient, unsigned int highlight, float pow) : next(next), ambient(ambient), highlight(highlight), pow(pow) { }
+  virtual void HeavyPrepare() { }
   virtual void Collect(CollectVisitor2 &vis)
   {
     next->Collect(vis);
@@ -575,6 +586,7 @@ public:
   GenericShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, ShaderI2 *vertex, ShaderI2 *fragment) : env(env), ev(ev), next(next), vertex(vertex), fragment(fragment) {
     firsttime = true;
     sh.id = -1;
+    initialized=false;
   }
   std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
@@ -590,8 +602,17 @@ public:
     fragment->Collect(ii);
     vis.register_obj(this);
   }
-  void HeavyPrepare() { initialized=true; }
-  void Prepare() { next->Prepare(); initialized=true; }
+  void HeavyPrepare() {
+    if (initialized==false) {
+      ii.HeavyPrepare();
+    }
+    initialized=true;
+  }
+  void Prepare() {
+    next->Prepare();
+    HeavyPrepare();
+    initialized=true;
+  }
   void execute(MainLoopEnv &e)
   {
     vertex->execute(e);
@@ -951,6 +972,7 @@ public:
 	linenum++;	
       }
   }
+  virtual void HeavyPrepare() { }
   virtual void Collect(CollectVisitor2 &vis)
   {
     vis.register_obj(this);
@@ -1120,6 +1142,133 @@ private:
   std::vector<Point> uvws;
   };
 
+void LOAD_CB(void *);
+
+class LoadShader : public ShaderCode
+{
+public:
+  LoadShader(GameApi::Env &env, std::string shader_url, std::string homepage) : env(env), shader_url(shader_url), homepage(homepage) {
+    env.async_load_callback(shader_url, &LOAD_CB, (void*)this);
+  }
+  void Prepare2()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(shader_url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(shader_url);
+    if (!ptr) std::cout << "ERROR: Shader async load error:" << shader_url << std::endl;
+    std::string s(ptr->begin(),ptr->end());
+    shadercode = s;
+  }
+  std::string Code() const { return shadercode; }
+private:
+  GameApi::Env &env;
+  ShaderI2 *next;
+  std::string shader_url;
+  std::string homepage;
+  std::string shadercode;
+};
+
+void LOAD_CB(void *p)
+{
+  LoadShader *sh = (LoadShader*)p;
+  sh->Prepare2();
+}
+GameApi::SHC GameApi::MainLoopApi::load_shader(std::string shader_url)
+{
+  return add_shader_code(e, new LoadShader(e,shader_url,gameapi_homepageurl));
+}
+GameApi::ARR GameApi::MainLoopApi::load_shader2(std::string vertex_url, std::string fragment_url)
+{
+  GameApi::SHC a1 = load_shader(vertex_url);
+  GameApi::SHC a2 = load_shader(fragment_url);
+  ArrayType *array = new ArrayType;
+  array->type=2;
+  array->vec.push_back(a1.id);
+  array->vec.push_back(a2.id);
+  return add_array(e, array);
+}
+class SHIWrapper : public ShaderI2
+{
+public:
+  SHIWrapper(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::SHP params, std::string funcname, ShaderCode *code, std::vector<GameApi::SHI> children) : e(e), ev(ev),params(params), funcname(funcname), code(code), children(children) { }
+  virtual void Collect(CollectVisitor2 &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    res = ev.mainloop_api.generic_anim_shader(params, funcname, code->Code(), children);
+    ShaderI2 *p = find_shaderI(e,res);
+    p->Collect(ii);
+    ii.HeavyPrepare();
+  }
+  void set_inner(int num, std::string value)
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    p->set_inner(num,value);
+  }
+  virtual std::string get_webgl_header() const
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->get_webgl_header();
+  }
+  virtual std::string get_win32_header() const
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->get_win32_header();
+  }
+  virtual std::string get_webgl_function() const
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->get_webgl_function();
+  }
+  virtual std::string get_win32_function() const
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->get_win32_header();
+  }
+  virtual Bindings set_var(const Bindings &b)
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->set_var(b);
+  }
+  virtual std::string get_flags() const
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->get_flags();
+  }
+  virtual std::string func_name() const
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    return p->func_name();
+  }
+  virtual void execute(MainLoopEnv &e2)
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    p->execute(e2);
+  }
+  virtual void handle_event(MainLoopEvent &e2)
+  {
+    ShaderI2 *p = find_shaderI(e,res);
+    p->handle_event(e2);
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::SHP params;
+  std::string funcname;
+  ShaderCode *code;
+  std::vector<GameApi::SHI> children;
+  GameApi::SHI res;
+  VisitorImpl ii;
+};
+GameApi::SHI GameApi::MainLoopApi::generic_anim_shader2(EveryApi &ev, SHP params, std::string funcname, SHC code, std::vector<SHI> children)
+{
+  ShaderCode *code2 = find_shader_code(e,code);
+  return add_shaderI(e, new SHIWrapper(e,ev,params,funcname,code2,children));
+}
 GameApi::SHI GameApi::MainLoopApi::generic_anim_shader(SHP params, std::string funcname, std::string shadercode, std::vector<SHI> children)
 {
   static int counter =0;
@@ -1275,6 +1424,71 @@ void GEN_CB2(void *p)
 {
   GenericAnimMaterial *pp = (GenericAnimMaterial*)p;
   pp->MaterialCallback2();
+}
+
+
+class GenericAnimMaterial_s : public MaterialForward
+{
+public:
+  GenericAnimMaterial_s(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, GameApi::SHI vertex, GameApi::SHI fragment) : e(env), ev(ev), next(next), vertex(vertex), fragment(fragment) {
+  }
+
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    return sh;    
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id,pts.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p.id,ms.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    return sh;
+    
+    
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    return sh;
+    
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    return sh;
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+  GameApi::SHI vertex;
+  GameApi::SHI fragment;
+};
+GameApi::MT GameApi::MaterialsApi::generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment)
+{
+  Material *mat = find_material(e,next);
+  return add_material(e,new GenericAnimMaterial_s(e,ev,mat,vertex,fragment));
 }
 
 GameApi::MT GameApi::MaterialsApi::generic_shader_material0(EveryApi &ev, MT next, std::string funcname, std::string vertexshadercode_url, std::string fragmentshadercode_url)

@@ -157,6 +157,17 @@ GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *i)
   return im;
 }
 
+GameApi::SHC add_shader_code(GameApi::Env &e, ShaderCode *code)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->shc.push_back(code);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(code));
+  GameApi::SHC im;
+  im.id = env->shc.size()-1;
+  return im;
+}
+
 GameApi::GC add_gc(GameApi::Env &e, GraphicsContext *gc)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1373,6 +1384,11 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+ShaderCode *find_shader_code(GameApi::Env &e, GameApi::SHC code)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->shc[code.id];
 }
 PixelBufferObject *find_pbo(GameApi::Env &e, GameApi::PBO p)
 {

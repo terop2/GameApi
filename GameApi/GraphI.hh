@@ -2309,6 +2309,7 @@ class CollectInterface2
 public:
   virtual ~CollectInterface2() { }
   virtual void Collect(CollectVisitor2 &vis)=0;
+  virtual void HeavyPrepare()=0;
 };
 
 class CollectVisitor2
@@ -2406,7 +2407,12 @@ private:
   std::vector<PointBinding> p_vec;
 };
 
-
+class ShaderCode
+{
+public:
+  virtual ~ShaderCode() { }
+  virtual std::string Code() const=0;
+};
 class ShaderI2 : public CollectInterface2
 {
 public:
