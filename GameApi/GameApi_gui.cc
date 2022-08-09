@@ -38,6 +38,7 @@ std::vector<GameApiItem*> fontapi_functions();
 std::vector<GameApiItem*> moveapi_functions();
 std::vector<GameApiItem*> polygonapi_functions();
 std::vector<GameApiItem*> shadermoduleapi_functions();
+std::vector<GameApiItem*> shaderapi_functions();
 std::vector<GameApiItem*> framebuffermoduleapi_functions();
 std::vector<GameApiItem*> textureapi_functions();
 std::vector<GameApiItem*> booleanopsapi_functions();
@@ -6190,6 +6191,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> v3 = boolbitmapapi_functions();
   std::vector<GameApiItem*> v4 = floatbitmapapi_functions();
   std::vector<GameApiItem*> v5 = shadermoduleapi_functions();
+  std::vector<GameApiItem*> v51 = shaderapi_functions();
   std::vector<GameApiItem*> v6 = linesapi_functions();
   std::vector<GameApiItem*> v7 = pointsapi_functions();
   std::vector<GameApiItem*> v8 = pointapi_functions();
@@ -6212,7 +6214,8 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> a3 = append_vectors(a1,a2);
   std::vector<GameApiItem*> a4 = append_vectors(a3, v5);
   std::vector<GameApiItem*> a5 = append_vectors(a4, v6);
-  std::vector<GameApiItem*> a6 = append_vectors(a5, v7);
+  std::vector<GameApiItem*> a51 = append_vectors(a5, v51);
+  std::vector<GameApiItem*> a6 = append_vectors(a51, v7);
   std::vector<GameApiItem*> a7 = append_vectors(a6, v8);
   std::vector<GameApiItem*> a8 = append_vectors(a7, v9);
   std::vector<GameApiItem*> a9 = append_vectors(a8, va);
@@ -6270,6 +6273,13 @@ EXPORT std::string GameApi::GuiApi::fontapi_functions_item_label(int i)
 EXPORT std::string GameApi::GuiApi::shadermoduleapi_functions_item_label(int i)
 {
   std::vector<GameApiItem*> funcs = shadermoduleapi_functions();
+  GameApiItem *item = funcs[i];
+  std::string name = item->Name(0);
+  return name;
+}
+EXPORT std::string GameApi::GuiApi::shaderapi_functions_item_label(int i)
+{
+  std::vector<GameApiItem*> funcs = shaderapi_functions();
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -6475,6 +6485,10 @@ EXPORT GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1
 EXPORT GameApi::W GameApi::GuiApi::shadermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
   return functions_widget(*this, "MaterialsApi", shadermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+}
+EXPORT GameApi::W GameApi::GuiApi::shaderapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+{
+  return functions_widget(*this, "ShaderApi", shaderapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 EXPORT GameApi::W GameApi::GuiApi::framebuffermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {

@@ -772,6 +772,7 @@ struct EnvImpl
   std::vector<ShaderI2*> shi;
   std::vector<ShaderParameterI*> shp;
   std::vector<PixelBufferObject*> pbo;
+  std::vector<ShaderCode*> shc;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1101,6 +1102,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::SHC add_shader_code(GameApi::Env &e, ShaderCode *code);
 GameApi::PBO add_pbo(GameApi::Env &e, PixelBufferObject *pbo);
 GameApi::SHP add_shp(GameApi::Env &e, ShaderParameterI *shp);
 GameApi::SHI add_shaderI(GameApi::Env &e, ShaderI2 *sh);
@@ -1254,6 +1256,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ShaderCode *find_shader_code(GameApi::Env &e, GameApi::SHC code);
 PixelBufferObject *find_pbo(GameApi::Env &e, GameApi::PBO pbo);
 ShaderParameterI *find_shp(GameApi::Env &e, GameApi::SHP shp);
 ShaderI2 *find_shaderI(GameApi::Env &e, GameApi::SHI sh);

@@ -192,7 +192,7 @@ using std::placeholders::_9;
   MAC(FtA)
   MAC(ML)
   MAC(TF)
-
+  MAC(SHC)
   template<class T>
   struct A { int id; };
   MAC(EX)
@@ -326,6 +326,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ARR load_shader2(std::string vertex_url, std::string fragment_url);
+  SHC load_shader(std::string shader_url);
+  SHI generic_anim_shader2(EveryApi &ev, SHP params, std::string funcname, SHC code, std::vector<SHI> children);
   void make_current();
   SHP constant_shp_f(SHP next, int num, float value);
   SHP constant_shp_i(SHP next, int num, int value);
@@ -1495,6 +1498,7 @@ class MaterialsApi
 public:
   MaterialsApi(Env &e) : e(e) { }
   IMPORT MT phong3_material(EveryApi &ev, MT next, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT MT generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment);
   IMPORT MT generic_shader_material0(EveryApi &ev, MT next, std::string, std::string, std::string);
   IMPORT MT generic_shader_material1(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string);
   IMPORT MT generic_shader_material2(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string, std::vector<SHI>);
@@ -1955,6 +1959,7 @@ public:
   IMPORT W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W shaderapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W framebuffermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
@@ -1979,6 +1984,7 @@ public:
   IMPORT std::string polygonapi_functions_item_label(int i);
   IMPORT std::string polygondistapi_functions_item_label(int i);
   IMPORT std::string shadermoduleapi_functions_item_label(int i);
+  IMPORT std::string shaderapi_functions_item_label(int i);
   IMPORT std::string framebuffermoduleapi_functions_item_label(int i);
   IMPORT std::string linesapi_functions_item_label(int i);
   IMPORT std::string pointsapi_functions_item_label(int i);

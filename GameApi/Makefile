@@ -49,7 +49,7 @@ CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc Gam
 	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
 	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
 	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
-	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc \
+	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc \
 	GameApi_cmd.cc cpushader.cc
 
 
