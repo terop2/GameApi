@@ -70,12 +70,14 @@ void Bindings::set(GameApi::EveryApi &ev, int ss)
     for(int i=0;i<s;i++)
       {
 	FloatBinding b = f_vec[i];
+	//std::cout << "FloatBinding:" << b.key << "=" << *b.value << std::endl;
 	ev.shader_api.set_var(sh, b.key.c_str(), *b.value);
       }
     int s2 = i_vec.size();
     for(int i=0;i<s2;i++)
       {
 	IntBinding b = i_vec[i];
+	//std::cout << "IntBinding:" << b.key << "=" << *b.value << std::endl;
 	ev.shader_api.set_var(sh,b.key.c_str(), *b.value);
       }
     int s3 = u_vec.size();
@@ -83,6 +85,7 @@ void Bindings::set(GameApi::EveryApi &ev, int ss)
       {
 	UnsignedIntBinding b = u_vec[i];
 	unsigned int value = *b.value;
+	//std::cout << "UIntBinding:" << b.key << "=" << std::hex << *b.value << std::dec << std::endl;
 	ev.shader_api.set_var(sh, b.key.c_str(),
 			      ((value&0xff0000)>>16)/255.0,
 			      ((value&0xff00)>>8)/255.0,
@@ -94,6 +97,7 @@ void Bindings::set(GameApi::EveryApi &ev, int ss)
        {
 	 PointBinding b = p_vec[i];
 	 Point value = *b.value;
+	 //std::cout << "PointBinding:" << b.key << "= (" << value.x << "," << value.y << "," << value.z << ")" << std::endl;
 	 ev.shader_api.set_var(sh, b.key.c_str(), value.x,value.y,value.z);
        }
 }
@@ -371,29 +375,31 @@ public:
   virtual std::string get_webgl_function() const
   {
     return inner +
-      "#ifdef IN_NORMAL\n"
-      "#ifdef LIGHTDIR\n"
-      "#ifdef EX_NORMAL2\n"
-      "#ifdef EX_LIGHTPOS2\n"
+      //"#ifdef IN_NORMAL\n"
+      //"#ifdef LIGHTDIR\n"
+      //"#ifdef EX_NORMAL2\n"
+      //"#ifdef EX_LIGHTPOS2\n"
       "vec4 phong2(vec4 pos)\n"
       "{\n"
       "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
       "    ex_Normal2 = n;\n"
       "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
       "    return pos;\n"
-      "#endif\n"
-      "#endif\n"
-      "#endif\n"
-      "#endif\n";
+      "}\n";
+      //"#endif\n"
+      //"#endif\n"
+      //"#endif\n"
+      //"#endif\n";
+      ;
 
   }
   virtual std::string get_win32_function() const
   {
     return inner+
-      "#ifdef IN_NORMAL\n"
-      "#ifdef LIGHTDIR\n"
-      "#ifdef EX_NORMAL2\n"
-      "#ifdef EX_LIGHTPOS2\n"
+      //"#ifdef IN_NORMAL\n"
+      //"#ifdef LIGHTDIR\n"
+      //"#ifdef EX_NORMAL2\n"
+      //"#ifdef EX_LIGHTPOS2\n"
       "vec4 phong2(vec4 pos)\n"
       "{\n"
       "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"    
@@ -401,10 +407,11 @@ public:
       "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
       "    return pos;\n"
       "}\n"
-      "#endif\n"
-      "#endif\n"
-      "#endif\n"
-      "#endif\n";      
+      //"#endif\n"
+      //"#endif\n"
+      //"#endif\n"
+      //"#endif\n";
+      ;
   }
   virtual Bindings set_var(const Bindings &b) { return b; }
   virtual std::string get_flags() const { return "EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"; }
@@ -438,96 +445,102 @@ public:
   virtual std::string get_webgl_function() const
   {
 return inner+
-  "#ifdef EX_NORMAL2\n"
-  "#ifdef EX_LIGHTPOS2\n"
-  "#ifdef LEVELS\n"
+  //"#ifdef EX_NORMAL2\n"
+  //"#ifdef EX_LIGHTPOS2\n"
+  //"#ifdef LEVELS\n"
   
-  "float intensity(vec3 dir) {\n"
+  "float rr_intensity(vec3 dir) {\n"
   " float n = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.0,1.0);\n"
   " return n;\n"
   "}\n"
-  "float intensity2(vec3 dir) {\n"
-  " float i=intensity(dir); return pow(i,hilight);\n"
+  "float rr_intensity2(vec3 dir) {\n"
+  " float i=rr_intensity(dir); return pow(i,hilight);\n"
   "}\n"
   
-  "const float GAMMA2=2.2;\n"
-  "const float INV_GAMMA2 = 1.0/GAMMA2;\n"
-  "vec3 LINEARtoSRGB2(vec3 color)\n"
+  "const float rr_GAMMA2=2.2;\n"
+  "const float rr_INV_GAMMA2 = 1.0/rr_GAMMA2;\n"
+  "vec3 rr_LINEARtoSRGB2(vec3 color)\n"
   "{\n"
-  " return pow(color, vec3(INV_GAMMA2));\n"
+  " return pow(color, vec3(rr_INV_GAMMA2));\n"
   "}\n"
-  "vec3 SRGBtoLINEAR2(vec3 srgbIn)\n"
+  "vec3 rr_SRGBtoLINEAR2(vec3 srgbIn)\n"
   "{\n"
-  "  return pow(srgbIn.xyz,vec3(GAMMA2));\n"
+  "  return pow(srgbIn.xyz,vec3(rr_GAMMA2));\n"
   "}\n"
-
+  "uniform vec4 cc1;\n"
+  "uniform vec4 cc2;\n"
   "vec4 phong2(vec4 rgb)\n"
   "{\n"
   "    vec3 c = vec3(0.0,0.0,0.0);\n"
   "    vec3 normal = ex_Normal2;\n"
-  "    c+=SRGBtoLINEAR2(rgb.rgb);\n"
-  "#ifdef PHONG_TEXTURE\n"
-  "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
-  "    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
-  "#endif\n"
-  "#ifndef PHONG_TEXTURE\n"
-  "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb,vec3(1,1,1),0.1));\n"
-  "    c+=intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb);\n"
-  "#endif\n"
+  "    c+=rr_SRGBtoLINEAR2(rgb.rgb);\n"
+  //"#ifdef PHONG_TEXTURE\n"
+  //"    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
+  //"    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
+  //"#endif\n"
+  //"#ifndef PHONG_TEXTURE\n"
+  "    c+=rr_intensity(normal)*rr_SRGBtoLINEAR2(mix(cc1.rgb,vec3(1,1,1),0.1));\n"
+  "    c+=rr_intensity2(normal)*rr_SRGBtoLINEAR2(cc2.rgb);\n"
+  //"#endif\n"
   
   "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
-  "    return vec4(LINEARtoSRGB2(c),rgb.a);\n"
+  //"    return vec4(rr_LINEARtoSRGB2(c),rgb.a);\n"
+  "      return vec4(c,rgb.a);\n"
   "}\n"
-  "#endif\n"
-  "#endif\n"
-  "#endif\n";
+  //"#endif\n"
+  //"#endif\n"
+  //"#endif\n";
+  ;
   }
   virtual std::string get_win32_function() const
   {
     return inner+
-      "#ifdef EX_NORMAL2\n"
-      "#ifdef EX_LIGHTPOS2\n"
-      "#ifdef LEVELS\n"
+      //"#ifdef EX_NORMAL2\n"
+      //"#ifdef EX_LIGHTPOS2\n"
+      //"#ifdef LEVELS\n"
       
-      "float intensity(vec3 dir) {\n"
+      "float rr_intensity(vec3 dir) {\n"
       " float n = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.0,1.0);\n"
       " return n;\n"
       "}\n"
-      "float intensity2(vec3 dir) {\n"
-      " float i=intensity(dir); return pow(i,hilight);\n"
+      "float rr_intensity2(vec3 dir) {\n"
+      " float i=rr_intensity(dir); return pow(i,hilight);\n"
       "}\n"
       
-      "const float GAMMA2=2.2;\n"
-      "const float INV_GAMMA2 = 1.0/GAMMA2;\n"
-      "vec3 LINEARtoSRGB2(vec3 color)\n"
+      "const float rr_GAMMA2=2.2;\n"
+      "const float rr_INV_GAMMA2 = 1.0/rr_GAMMA2;\n"
+      "vec3 rr_LINEARtoSRGB2(vec3 color)\n"
       "{\n"
-      " return pow(color, vec3(INV_GAMMA2));\n"
+      " return pow(color, vec3(rr_INV_GAMMA2));\n"
       "}\n"
-      "vec3 SRGBtoLINEAR2(vec3 srgbIn)\n"
+      "vec3 rr_SRGBtoLINEAR2(vec3 srgbIn)\n"
       "{\n"
-      "  return pow(srgbIn.xyz,vec3(GAMMA2));\n"
+      "  return pow(srgbIn.xyz,vec3(rr_GAMMA2));\n"
       "}\n"
+  "uniform vec4 cc1;\n"
+  "uniform vec4 cc2;\n"
       
       "vec4 phong2(vec4 rgb)\n"
       "{\n"
       "    vec3 c = vec3(0.0,0.0,0.0);\n"
       "    vec3 normal = ex_Normal2;\n"
-      "    c+=SRGBtoLINEAR2(rgb.rgb);\n"
-      "#ifdef PHONG_TEXTURE\n"
-      "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
-      "    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
-      "#endif\n"
-      "#ifndef PHONG_TEXTURE\n"
-      "    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb,vec3(1,1,1),0.1));\n"
-      "    c+=intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb);\n"
-      "#endif\n"
+      "    c+=rr_SRGBtoLINEAR2(rgb.rgb);\n"
+      //"#ifdef PHONG_TEXTURE\n"
+      //"    c+=intensity(normal)*SRGBtoLINEAR2(mix(level1_color.rgb*rgb.rgb,vec3(1,1,1),0.15));\n"
+      //"    c+=mix(intensity2(normal)*SRGBtoLINEAR2(level2_color.rgb),rgb.rgb,0.7);\n"
+      //"#endif\n"
+      //"#ifndef PHONG_TEXTURE\n"
+      "    c+=rr_intensity(normal)*rr_SRGBtoLINEAR2(mix(cc1.rgb,vec3(1,1,1),0.1));\n"
+      "    c+=rr_intensity2(normal)*rr_SRGBtoLINEAR2(cc2.rgb);\n"
+      //"#endif\n"
       
       "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
-      "    return vec4(LINEARtoSRGB2(c),rgb.a);\n"
+      "    return vec4(rr_LINEARtoSRGB2(c),rgb.a);\n"
       "}\n"
-      "#endif\n"
-      "#endif\n"
-      "#endif\n";
+      //"#endif\n"
+      //"#endif\n"
+      //"#endif\n";
+      ;
   }
   virtual Bindings set_var(const Bindings &b)
   {
@@ -543,8 +556,8 @@ private:
   unsigned int ambient;
   unsigned int highlight;
   float pow;
-  UnsignedIntBinding ambi_bind = { "level1_color", &ambient };
-  UnsignedIntBinding high_bind = { "level2_color", &highlight };
+  UnsignedIntBinding ambi_bind = { "cc1", &ambient };
+  UnsignedIntBinding high_bind = { "cc2", &highlight };
   FloatBinding pow_bind = { "hilight", &pow };
   std::string inner;
 };
@@ -646,7 +659,7 @@ public:
      for(int i=0;i<s;i++) {
        int sh_id = sh_ids[i];
      sh.id = sh_id;
-    //std::cout << "sh_id" << sh_id << std::endl;
+     //std::cout << "sh_id" << sh_id << std::endl;
     if (sh_id!=-1)
       {
 	//GameApi::SH sh;
@@ -880,6 +893,12 @@ private:
   unsigned int highlight;
   float pow;
 };
+
+GameApi::MT GameApi::MaterialsApi::phong3_material(EveryApi &ev, MT next, unsigned int ambient, unsigned int highlight, float pow)
+{
+  Material *mat = find_material(e,next);
+  return add_material(e, new PhongMaterial2(e,ev, mat, ambient, highlight, pow));
+}
 
 int find_str(std::string val, std::string repl);
 

@@ -1032,8 +1032,10 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 #ifdef GLEW_HACK
 #define glMapBuffer GLEW_GET_FUN(__glewMapBuffer)
 #endif
+    std::cout << "glMapBuffer(" << a << "," << b << ")" << std::endl;
     map_enums(a);
     map_enums(b);
+    std::cout << "glMapBuffer[mapped](" << a << "," << b << ")" << std::endl;
     return ::glMapBuffer(a,b);
   }
   void glUnmapBuffer(int a)

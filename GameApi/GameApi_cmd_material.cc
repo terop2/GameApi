@@ -265,6 +265,12 @@
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
 			 "MT", "materials_api", "phong2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong3_material,
+			 "m_phong3",
+			 { "ev", "nxt", "ambient", "highlight", "pow" },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "ffff8844", "ffffffff", "5.0" },
+			 "MT", "materials_api", "phong3_material"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::vertex_phong,
 			 "m_vertexphong",
