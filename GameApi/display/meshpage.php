@@ -456,6 +456,9 @@ echo "<script>var imgarr=[];</script>";
    }
    echo "</div>";
 
+//echo "<script src=\"//cdn.jsdelivr.net/npm/eruda\"></script>";
+//echo "<script>eruda.init();</script>";
+
 $iii=0;
 
 for($i=$start;$cnt<50;$i--)

@@ -448,6 +448,7 @@ public:
     std::string s;
     sk >> s;
 
+    if (s=="@") return std::vector<T>();
     //std::cout << "Vector:" << s << std::endl;
     std::vector<T> vec;
     if (s.size()>0 && s[0]!='[')
