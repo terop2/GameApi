@@ -944,6 +944,10 @@ public:
 	std::string word;
 	std::stringstream ss2(line);
 	ss2 >> word;
+	if (word == "//flags:")
+	  {
+	    flags = replace_str(line, "//flags:", "");
+	  }
 	if (word == "//webgl")
 	  {
 	    webgl=true;
@@ -1038,6 +1042,7 @@ public:
   }
   virtual Bindings set_var(const Bindings &b)
   {
+    //std::cout << "set_var.." << std::endl;
     if (m_binding) return *m_binding;
     std::vector<std::string> *ptr;
 #ifdef OPENGL_ES
@@ -1052,6 +1057,11 @@ public:
     uints=std::vector<unsigned int>();
     p3ds=std::vector<Point>();
     uvws=std::vector<Point>();
+    floats.reserve(30);
+    ints.reserve(30);
+    uints.reserve(30);
+    p3ds.reserve(30);
+    uvws.reserve(30);
     for(int i=0;i<s;i++)
       {
 	std::string line = ptr->operator[](i);
@@ -1101,7 +1111,7 @@ public:
     m_binding = curr;
     return *curr;
   }
-  virtual std::string get_flags() const { return ""; }
+  virtual std::string get_flags() const { return flags; }
   virtual std::string func_name() const { return funcname; }
   virtual void execute(MainLoopEnv &e) {
     params->set_time(e.time);
@@ -1151,6 +1161,7 @@ private:
   std::vector<Point> p3ds;
   std::vector<Point> uvws;
   const Bindings *m_binding=0;
+  std::string flags;
 };
 
 void LOAD_CB(void *);
