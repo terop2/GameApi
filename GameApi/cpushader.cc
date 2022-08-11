@@ -192,7 +192,7 @@ public:
   virtual float param_value_f(int i) const
   {
     if (type==0 &&i==num && enabled()) {
-      float dt = current_time-start_time/(end_time-start_time);
+      float dt = (current_time-start_time)/(end_time-start_time);
       dt*=(end_value-start_value);
       dt+=start_value;
       return dt;
@@ -202,7 +202,7 @@ public:
   virtual int param_value_i(int i) const
   {
     if (type==1 &&i==num&& enabled()) {
-      float dt = current_time-start_time/(end_time-start_time);
+      float dt = (current_time-start_time)/(end_time-start_time);
       dt*=(end_value_i-start_value_i);
       dt+=start_value_i;
       return int(dt);
@@ -211,16 +211,19 @@ public:
   }
   virtual unsigned int param_value_u(int i) const
   {
+    //std::cout << "param_value_u" << i << " " << type << " " << num << " " << enabled() << " " << current_time << " " << start_time << " " << end_time << std::endl;
     if (type==2 &&i==num&& enabled()) {
-      float dt = current_time-start_time/(end_time-start_time);
-      return Color::Interpolate(start_value_u, end_value_u, dt);
+      float dt = (current_time-start_time)/(end_time-start_time);
+      unsigned int res = Color::Interpolate(start_value_u, end_value_u, dt);
+      //std::cout << "returning " << std::hex << res << std::dec << std::endl;
+      return res;
     }
     return next->param_value_u(i);
   }
   virtual Point param_value_p3d(int i) const
   {
     if (type==3 &&i==num&& enabled()) {
-      float dt = current_time-start_time/(end_time-start_time);
+      float dt = (current_time-start_time)/(end_time-start_time);
       float dt2 = dt;
       float dt3 = dt;
       dt*=(end_value_p3d.x-start_value_p3d.x);
@@ -236,7 +239,7 @@ public:
   virtual Point param_value_uvw(int i) const
   {
     if (type==2 &&i==num&& enabled()) {
-      float dt = current_time-start_time/(end_time-start_time);
+      float dt = (current_time-start_time)/(end_time-start_time);
       float dt2 = dt;
       float dt3 = dt;
       dt*=(end_value_uvw.x-start_value_uvw.x);
@@ -1035,6 +1038,7 @@ public:
   }
   virtual Bindings set_var(const Bindings &b)
   {
+    if (m_binding) return *m_binding;
     std::vector<std::string> *ptr;
 #ifdef OPENGL_ES
     ptr = &uniform_lines_webgl;
@@ -1042,7 +1046,12 @@ public:
     ptr = &uniform_lines_win32;
 #endif
     int s = ptr->size();
-    const Bindings *curr = &b; 
+    const Bindings *curr = &b;
+    floats=std::vector<float>();
+    ints=std::vector<int>();
+    uints=std::vector<unsigned int>();
+    p3ds=std::vector<Point>();
+    uvws=std::vector<Point>();
     for(int i=0;i<s;i++)
       {
 	std::string line = ptr->operator[](i);
@@ -1089,6 +1098,7 @@ public:
 	  curr = new Bindings(*curr, f);
 	}
       }
+    m_binding = curr;
     return *curr;
   }
   virtual std::string get_flags() const { return ""; }
@@ -1140,7 +1150,8 @@ private:
   std::vector<unsigned int> uints;
   std::vector<Point> p3ds;
   std::vector<Point> uvws;
-  };
+  const Bindings *m_binding=0;
+};
 
 void LOAD_CB(void *);
 
