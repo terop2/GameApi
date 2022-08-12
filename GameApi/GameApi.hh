@@ -3778,6 +3778,7 @@ public:
   US f_phong(US us);
   US f_phong2(US us);
   US f_generic(US us, std::string name, std::string flags);
+  US f_generic_flip(US us, std::string name, std::string flags);
   US f_vertexphong(US us);
   US f_glowedge(US us);
   US f_bump_phong(US us);
