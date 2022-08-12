@@ -10570,6 +10570,11 @@ GameApi::US GameApi::UberShaderApi::f_generic(US us, std::string name, std::stri
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction(name, next,flags));
 }
+GameApi::US GameApi::UberShaderApi::f_generic_flip(US us, std::string name, std::string flags)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunctionFlip(name, next,flags));
+}
 GameApi::US GameApi::UberShaderApi::f_phong2(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -10742,7 +10747,7 @@ GameApi::US GameApi::UberShaderApi::v_custom(US us, std::string v_funcname)
 GameApi::US GameApi::UberShaderApi::f_custom(US us, std::string f_funcname)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,"MANYTEXTURES EX_POSITION IN_TEXCOORD EX_TEXCOORD COLOR_MIX"));
+  return add_uber(e, new F_ShaderCallFunctionFlip(f_funcname, next,"MANYTEXTURES EX_POSITION IN_TEXCOORD EX_TEXCOORD COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)

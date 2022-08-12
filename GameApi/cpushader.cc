@@ -754,12 +754,14 @@ public:
   }
   void Prepare() {
     next->Prepare();
+    fragment->Collect(ii);
     HeavyPrepare();
     initialized=true;
   }
   void execute(MainLoopEnv &e)
   {
     fragment->execute(e);
+    //std::cout << "init=" << initialized << " firsttime=" << firsttime << std::endl;
     if (!initialized) return;
     MainLoopEnv ee = e;
     if (firsttime)
@@ -797,7 +799,7 @@ public:
     }
     fragment2.id = ee.us_fragment_shader;
     //if (ambient) {
-      fragment2 = ev.uber_api.f_generic(fragment2,fragment->func_name(), fragment->get_flags());
+      fragment2 = ev.uber_api.f_generic_flip(fragment2,fragment->func_name(), fragment->get_flags());
       //}
     ee.us_fragment_shader = fragment2.id;
 #if OPENGL_ES

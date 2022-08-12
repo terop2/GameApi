@@ -3226,11 +3226,13 @@ public:
       firsttime = false;
       GameApi::P I1=ev.polygon_api.quad_z(-1024.0,1024.0,-1024.0,1024.0,0.0);
       GameApi::MN mn0 = ev.move_api.mn_empty();
-      GameApi::MN mn = ev.move_api.scale2(mn0,((800-40)*2)/2048.0,((600-40)*2)/2048.0,1.0);
+      GameApi::MN mn = ev.move_api.scale2(mn0,((600-40)*2)/2048.0,((600-40)*2)/2048.0,1.0);
       GameApi::ML scene2 = ev.move_api.move_ml(ev,scene,mn,1,10.0);
       GameApi::TXID I4 = ev.fbo_api.fbo_ml(ev,scene2,2048,2048,false);
       GameApi::TXID I4_depth = ev.fbo_api.depth_ml(ev,scene,2048,2048,false);
       ml = mat->mat(I4.id,I4_depth.id,I1.id);
+      MainLoopItem *item2 = find_main_loop(env,ml);
+      item2->Prepare();
     }
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
