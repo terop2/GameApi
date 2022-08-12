@@ -1385,6 +1385,11 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 }
+ScreenSpaceMaterial *find_screenspace_material(GameApi::Env &e, GameApi::SMT mat)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->ss_mat[mat.id];
+}
 ShaderCode *find_shader_code(GameApi::Env &e, GameApi::SHC code)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1907,6 +1912,15 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+GameApi::SMT add_screenspace_material(GameApi::Env &e, ScreenSpaceMaterial *mat)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->ss_mat.push_back(mat);
+  GameApi::SMT c;
+  c.id = env->ss_mat.size()-1;
+  return c;
 }
 
 GameApi::FFi add_float_field(GameApi::Env &e, FloatField *field)

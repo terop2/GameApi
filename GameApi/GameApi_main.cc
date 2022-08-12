@@ -3203,3 +3203,63 @@ GameApi::ML GameApi::MainLoopApi::send_key_at_time(ML ml, float time, int key)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new SendKeyAtTime(item, time, key));
 };
+
+class ScreenSpace : public MainLoopItem
+{
+public:
+  ScreenSpace(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML scene, ScreenSpaceMaterial *mat) : env(e), ev(ev), scene(scene), mat(mat) { firsttime = true; }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) {
+    MainLoopItem *item = find_main_loop(env,scene);
+    item->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() { mat->Prepare(); }
+  virtual void Prepare() {
+    MainLoopItem *item = find_main_loop(env,scene);
+    item->Prepare();
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+      firsttime = false;
+      GameApi::P I1=ev.polygon_api.quad_z(-1024.0,1024.0,-1024.0,1024.0,0.0);
+      GameApi::MN mn0 = ev.move_api.mn_empty();
+      GameApi::MN mn = ev.move_api.scale2(mn0,((800-40)*2)/2048.0,((600-40)*2)/2048.0,1.0);
+      GameApi::ML scene2 = ev.move_api.move_ml(ev,scene,mn,1,10.0);
+      GameApi::TXID I4 = ev.fbo_api.fbo_ml(ev,scene2,2048,2048,false);
+      GameApi::TXID I4_depth = ev.fbo_api.depth_ml(ev,scene,2048,2048,false);
+      ml = mat->mat(I4.id,I4_depth.id,I1.id);
+    }
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+
+  }
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      return item->shader_id();
+    }
+    return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::ML scene;
+  ScreenSpaceMaterial *mat;
+  GameApi::ML ml = { -1 };
+  bool firsttime;
+};
+
+GameApi::ML GameApi::MainLoopApi::screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material)
+{
+  ScreenSpaceMaterial *smat = find_screenspace_material(e,screenspace_material);
+  return add_main_loop(e, new ScreenSpace(e,ev,scene,smat));
+}
