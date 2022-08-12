@@ -313,6 +313,7 @@ MACRO(GameApi::PBO)
 MACRO(GameApi::SHP)
 MACRO(GameApi::SHI)
 MACRO(GameApi::SHC)
+MACRO(GameApi::SMT)
 #undef MACRO
 
 
