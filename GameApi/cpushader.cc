@@ -1064,6 +1064,10 @@ public:
     uvws.reserve(30);
     for(int i=0;i<s;i++)
       {
+	if (floats.size()>30||ints.size()>30||uints.size()>30||p3ds.size()>30||uvws.size()>30)
+	  {
+	    std::cout << "Warning: Generic shaders not guaranteed to work above 30 uniforms." << std::endl;
+	  }
 	std::string line = ptr->operator[](i);
 	std::stringstream ss(line);
 	std::string uniform;
