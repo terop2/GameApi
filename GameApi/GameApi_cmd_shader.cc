@@ -114,6 +114,30 @@ std::vector<GameApiItem*> shaderapi_functions()
 				 { "ev", "", "", "test", "https://tpgames.org/test.vert", "https://tpgames.org/test.frag", "" },
 			 "MT", "materials_api", "generic_shader_material2"));
 			 
-		 
+
+	  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::screenspace_rendering,
+				 "screenspace",
+				 { "ev", "scene", "s_material" },
+				 { "EveryApi&", "ML", "SMT" },
+				 { "ev", "", "" },
+				 "ML", "mainloop_api", "screenspace_rendering"));
+	  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::ss_def,
+				 "ss_def",
+				 { "ev" },
+				 { "EveryApi&" },
+				 { "ev" },
+				 "SMT", "materials_api", "ss_def"));
+	  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::generic_screenspace_material00,
+				 "ss_generic",
+				 { "ev", "next", "fragment" },
+				 { "EveryApi&", "SMT", "SHI" },
+				 { "ev", "", "" },
+				 "SMT", "materials_api", "generic_screenspace_material00"));
+	  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::screenspace_bloom,
+				 "ss_bloom",
+				 { "ev", "next", "cut_x", "cut_y", "cut_z", "x_amount", "y_amount" },
+				 { "EveryApi&", "SMT", "float", "float", "float", "float", "float" },
+				 { "ev", "", "0.7", "0.7", "0.7", "0.01", "0.01" },
+				 "SMT", "materials_api", "screenspace_bloom"));
 	  return vec;
 }

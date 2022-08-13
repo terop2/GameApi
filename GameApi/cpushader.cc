@@ -724,6 +724,156 @@ private:
   bool initialized;
   GameApi::SH sh;
 };
+
+
+class GenericShaderML_fragment_only : public MainLoopItem
+{
+public:
+  GenericShaderML_fragment_only(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, ShaderI2 *fragment) : env(env), ev(ev), next(next), fragment(fragment) {
+    firsttime = true;
+    sh.id = -1;
+    initialized=false;
+  }
+  std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+    fragment->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    fragment->Collect(ii);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    if (initialized==false) {
+      ii.HeavyPrepare();
+    }
+    initialized=true;
+  }
+  void Prepare() {
+    next->Prepare();
+    fragment->Collect(ii);
+    HeavyPrepare();
+    initialized=true;
+  }
+  void execute(MainLoopEnv &e)
+  {
+    fragment->execute(e);
+    //std::cout << "init=" << initialized << " firsttime=" << firsttime << std::endl;
+    if (!initialized) return;
+    MainLoopEnv ee = e;
+    if (firsttime)
+      {
+	firsttime = false;
+    GameApi::US vertex2;
+    vertex2.id = ee.us_vertex_shader;
+    if (vertex2.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex2.id = ee.us_vertex_shader;
+    //vertex2 = ev.uber_api.v_generic(vertex2,vertex->func_name(),vertex->get_flags());
+    ee.us_vertex_shader = vertex2.id;
+#if OPENGL_ES
+    //ii.set_inner(vertex, 0);
+    //std::string header = vertex->get_webgl_header();
+    //ii.set_inner(vertex, 1);
+    //std::string function = vertex->get_webgl_function();
+    //ee.v_shader_functions += header + function;
+#else
+    // ii.set_inner(vertex, 2);
+    //std::string header = vertex->get_win32_header();
+    //ii.set_inner(vertex, 3);
+    //std::string function = vertex->get_win32_function();
+    //ee.v_shader_functions += header + function;
+#endif
+    
+    GameApi::US fragment2;
+    fragment2.id = ee.us_fragment_shader;
+    if (fragment2.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment2.id = ee.us_fragment_shader;
+    //if (ambient) {
+      fragment2 = ev.uber_api.f_generic_flip(fragment2,fragment->func_name(), fragment->get_flags());
+      //}
+    ee.us_fragment_shader = fragment2.id;
+#if OPENGL_ES
+    ii.set_inner(fragment, 0);
+    std::string header2 = fragment->get_webgl_header();
+    ii.set_inner(fragment, 1);
+    std::string function2 = fragment->get_webgl_function();
+
+    ee.f_shader_functions += header2 + function2;
+#else
+    ii.set_inner(fragment, 2);
+    std::string header2 = fragment->get_win32_header();
+    ii.set_inner(fragment, 3);
+    std::string function2 = fragment->get_win32_function();
+
+    ee.f_shader_functions += header2 + function2;
+#endif
+    
+      }
+    
+	     std::vector<int> sh_ids = next->shader_id();
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+     //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+	
+	NewBinding bb;
+	//Bindings b = vertex->set_var(bb);
+	Bindings b2 = fragment->set_var(bb);
+	b2.set(ev,sh.id);
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  //ShaderI2 *vertex;
+  ShaderI2 *fragment;
+  VisitorImpl ii;
+  bool firsttime;
+  bool initialized;
+  GameApi::SH sh;
+};
+
+GameApi::ML GameApi::MainLoopApi::generic_shader_fragment_only(GameApi::EveryApi &ev, ML ml, SHI fragment)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  ShaderI2 *frag = find_shaderI(e,fragment);
+  return add_main_loop(e, new GenericShaderML_fragment_only(e,ev,next,frag));
+}
+
 GameApi::ML GameApi::MainLoopApi::generic_shader(GameApi::EveryApi &ev, ML ml, SHI vertex, SHI fragment)
 {
   MainLoopItem *next = find_main_loop(e,ml);
@@ -1182,7 +1332,7 @@ public:
   {
     if (firsttime) {
       firsttime = false;
-      std::cout << "LoadShader Loaded " << shader_url << std::endl;
+      //std::cout << "LoadShader Loaded " << shader_url << std::endl;
 #ifndef EMSCRIPTEN
     env.async_load_url(shader_url, homepage);
 #endif
@@ -1480,6 +1630,58 @@ void GEN_CB2(void *p)
 }
 
 
+class ScreenSpaceMaterialForward : public ScreenSpaceMaterial
+{
+public:
+  GameApi::ML call(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  {
+    GameApi::ML ml;
+    ml.id = mat(screen.id,depth.id,fullscreenquad.id);
+    return ml;
+  }
+  int mat(int screen, int depth, int fullscreenquad) const
+  {
+    GameApi::TXID screen2;
+    screen2.id = screen;
+    GameApi::TXID depth2;
+    depth2.id = depth;
+    GameApi::P p2;
+    p2.id = fullscreenquad;
+    GameApi::ML ml = mat2(screen2,depth2,p2);
+    return ml.id;
+    
+  }
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const=0;
+};
+
+
+class GenericScreenSpaceMaterial_s : public ScreenSpaceMaterialForward
+{
+public:
+  GenericScreenSpaceMaterial_s(GameApi::Env &env, GameApi::EveryApi &ev, ScreenSpaceMaterial *next, GameApi::SHI fragment) : e(env), ev(ev), next(next), fragment(fragment) { }
+  void DoPrepares() const
+  {
+    ShaderI2 *f = find_shaderI(e,fragment);
+    f->Collect(ii);
+    ii.HeavyPrepare();
+  }
+  virtual void Prepare() { }
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  {
+    DoPrepares();
+    GameApi::ML ml = next->mat(screen.id, depth.id, fullscreenquad.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader_fragment_only(ev,ml,fragment);
+    return sh;    
+    
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  ScreenSpaceMaterial *next;
+  GameApi::SHI fragment;
+  mutable VisitorImpl ii;
+};
+
 class GenericAnimMaterial_s : public MaterialForward
 {
 public:
@@ -1571,4 +1773,9 @@ GameApi::MT GameApi::MaterialsApi::generic_shader_material2(EveryApi &ev, MT nex
 {
   Material *mat = find_material(e, next);
   return add_material(e,new GenericAnimMaterial(e,ev,mat,params,funcname,vertexshadercode_url,fragmentshadercode_url, gameapi_homepageurl, children));
+}
+GameApi::SMT GameApi::MaterialsApi::generic_screenspace_material00(EveryApi &ev, SMT next_, SHI fragment)
+{
+  ScreenSpaceMaterial *next = find_screenspace_material(e,next_);
+  return add_screenspace_material(e, new GenericScreenSpaceMaterial_s(e,ev,next,fragment));
 }

@@ -99,6 +99,7 @@ using std::placeholders::_9;
   MAC(MS)
   MAC(US)
   MAC(MT)
+  MAC(SMT)
   MAC(TL)
   MAC(MN)
   MAC(CP)
@@ -326,6 +327,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);
   ARR load_shader2(std::string vertex_url, std::string fragment_url);
   SHC load_shader(std::string shader_url);
   SHI generic_anim_shader2(EveryApi &ev, SHP params, std::string funcname, SHC code, std::vector<SHI> children);
@@ -348,6 +350,7 @@ public:
   SHI phong_fragment(SHI next, unsigned int ambient, unsigned int highlight, float pow);
   ML phong_shader3(EveryApi &ev, ML ml, unsigned int ambient, unsigned int highlight, float pow);
   SHP empty_shp();
+  ML generic_shader_fragment_only(EveryApi &ev, ML ml, SHI fragment);
   ML generic_shader(EveryApi &ev, ML ml, SHI vertex, SHI fragment);
   SHI generic_anim_shader(SHP,std::string, std::string, std::vector<SHI> children);
   ML save_gltf(TF tf, std::string filename);
@@ -1497,6 +1500,9 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT SMT ss_def(EveryApi &ev);
+  IMPORT SMT screenspace_bloom(EveryApi &ev, SMT next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount);
+  IMPORT SMT generic_screenspace_material00(EveryApi &ev, SMT next, SHI fragment);
   IMPORT MT phong3_material(EveryApi &ev, MT next, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment);
   IMPORT MT generic_shader_material0(EveryApi &ev, MT next, std::string, std::string, std::string);
@@ -3772,6 +3778,7 @@ public:
   US f_phong(US us);
   US f_phong2(US us);
   US f_generic(US us, std::string name, std::string flags);
+  US f_generic_flip(US us, std::string name, std::string flags);
   US f_vertexphong(US us);
   US f_glowedge(US us);
   US f_bump_phong(US us);

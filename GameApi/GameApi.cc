@@ -41,6 +41,30 @@ extern char *g_user_id;
 #define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 
+class ScreenSpaceMaterialForward : public ScreenSpaceMaterial
+{
+public:
+  GameApi::ML call(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  {
+    GameApi::ML ml;
+    ml.id = mat(screen.id,depth.id,fullscreenquad.id);
+    return ml;
+  }
+  int mat(int screen, int depth, int fullscreenquad) const
+  {
+    GameApi::TXID screen2;
+    screen2.id = screen;
+    GameApi::TXID depth2;
+    depth2.id = depth;
+    GameApi::P p2;
+    p2.id = fullscreenquad;
+    GameApi::ML ml = mat2(screen2,depth2,p2);
+    return ml.id;
+    
+  }
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const=0;
+};
+
 class MaterialForward : public Material
 {
 public:
@@ -3999,6 +4023,55 @@ GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT 
   return add_material(e, new TransparentRenderMaterial(ev,bm,next_mat));
 }
 
+class DefaultScreenSpaceMaterial : public ScreenSpaceMaterialForward
+{
+public:
+  DefaultScreenSpaceMaterial(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual void Prepare() { }
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  {
+    GameApi::MT I5 = ev.materials_api.textureid(ev,screen,1.0);
+    GameApi::ML ml = ev.materials_api.bind(fullscreenquad,I5);
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+};
+
+GameApi::SMT GameApi::MaterialsApi::ss_def(GameApi::EveryApi &ev)
+{
+  return add_screenspace_material(e, new DefaultScreenSpaceMaterial(ev));
+}
+
+class BloomScreenSpaceMaterial : public ScreenSpaceMaterialForward
+{
+public:
+  BloomScreenSpaceMaterial(GameApi::EveryApi &ev, ScreenSpaceMaterial *next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount) : ev(ev), next(next), cut_x(cut_x), cut_y(cut_y), cut_z(cut_z), x_amount(x_amount), y_amount(y_amount) { }
+  virtual void Prepare() { }
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  {
+    GameApi::ML ml = next->mat(screen.id,depth.id,fullscreenquad.id);
+    GameApi::SBM txt = ev.polygon_api.texture_sbm();
+    GameApi::SBM cut = ev.polygon_api.bloom_cut_sbm(txt,cut_x,cut_y,cut_z);
+    GameApi::SBM blurs0 = ev.polygon_api.blur_sbm(cut,x_amount,0);
+    GameApi::SBM blurs = ev.polygon_api.blur_sbm(blurs0,0,y_amount);
+    GameApi::SBM texture = ev.polygon_api.texture_sbm();
+    GameApi::SBM bitmap = ev.polygon_api.combine_sbm(blurs, texture);
+    GameApi::ML ml2 = ev.polygon_api.sbm_texture(ev,ml,bitmap);
+    return ml2;
+  }
+private:
+  GameApi::EveryApi &ev;
+  ScreenSpaceMaterial *next;
+  float cut_x, cut_y, cut_z;
+  float x_amount, y_amount;
+};
+GameApi::SMT GameApi::MaterialsApi::screenspace_bloom(EveryApi &ev, SMT next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount)
+{
+  ScreenSpaceMaterial *mat = find_screenspace_material(e,next);
+  return add_screenspace_material(e, new BloomScreenSpaceMaterial(ev, mat, cut_x, cut_y, cut_z, x_amount, y_amount));
+}
+						      
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -10497,6 +10570,11 @@ GameApi::US GameApi::UberShaderApi::f_generic(US us, std::string name, std::stri
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction(name, next,flags));
 }
+GameApi::US GameApi::UberShaderApi::f_generic_flip(US us, std::string name, std::string flags)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunctionFlip(name, next,flags));
+}
 GameApi::US GameApi::UberShaderApi::f_phong2(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -10669,7 +10747,7 @@ GameApi::US GameApi::UberShaderApi::v_custom(US us, std::string v_funcname)
 GameApi::US GameApi::UberShaderApi::f_custom(US us, std::string f_funcname)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction(f_funcname, next,"MANYTEXTURES EX_POSITION IN_TEXCOORD EX_TEXCOORD COLOR_MIX"));
+  return add_uber(e, new F_ShaderCallFunctionFlip(f_funcname, next,"MANYTEXTURES EX_POSITION IN_TEXCOORD EX_TEXCOORD COLOR_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_light(US us)
