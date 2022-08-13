@@ -970,6 +970,14 @@ public:
   virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const=0;
 };
 
+class ScreenSpaceMaterial
+{
+public:
+  virtual ~ScreenSpaceMaterial() { }
+  virtual void Prepare()=0;
+  virtual int mat(int screen, int depth, int fullscreenquad) const=0;
+};
+
 class ShaderCall
 {
 public:
