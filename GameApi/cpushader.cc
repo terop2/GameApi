@@ -1207,11 +1207,12 @@ public:
     uints=std::vector<unsigned int>();
     p3ds=std::vector<Point>();
     uvws=std::vector<Point>();
-    floats.reserve(30);
-    ints.reserve(30);
-    uints.reserve(30);
-    p3ds.reserve(30);
-    uvws.reserve(30);
+    int alloc = ptr->size();
+    floats.reserve(alloc);
+    ints.reserve(alloc);
+    uints.reserve(alloc);
+    p3ds.reserve(alloc);
+    uvws.reserve(alloc);
     for(int i=0;i<s;i++)
       {
 	if (floats.size()>30||ints.size()>30||uints.size()>30||p3ds.size()>30||uvws.size()>30)
