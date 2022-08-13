@@ -149,7 +149,8 @@ public:
     } else {
       id = ev.fbo_api.tex_id(fbo);
     }
-    bool b = ev.fbo_api.fbo_status(fbo);
+    int count = 30000;
+    while(count>0&&!ev.fbo_api.fbo_status(fbo)) { count--; }
     firsttime = true;
   }
   void handle_event(MainLoopEvent &e)

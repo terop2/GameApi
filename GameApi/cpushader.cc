@@ -1632,25 +1632,29 @@ void GEN_CB2(void *p)
 class ScreenSpaceMaterialForward : public ScreenSpaceMaterial
 {
 public:
-  GameApi::ML call(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  GameApi::ML call(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID pos, GameApi::TXID normal) const
   {
     GameApi::ML ml;
-    ml.id = mat(screen.id,depth.id,fullscreenquad.id);
+    ml.id = mat(screen.id,depth.id,fullscreenquad.id,pos.id,normal.id);
     return ml;
   }
-  int mat(int screen, int depth, int fullscreenquad) const
+  int mat(int screen, int depth, int fullscreenquad, int pos, int normal) const
   {
     GameApi::TXID screen2;
     screen2.id = screen;
     GameApi::TXID depth2;
     depth2.id = depth;
+    GameApi::TXID pos2;
+    pos2.id = pos;
+    GameApi::TXID normal2;
+    normal2.id=normal;
     GameApi::P p2;
     p2.id = fullscreenquad;
-    GameApi::ML ml = mat2(screen2,depth2,p2);
+    GameApi::ML ml = mat2(screen2,depth2,p2,pos2,normal2);
     return ml.id;
     
   }
-  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const=0;
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID pos, GameApi::TXID normal) const=0;
 };
 
 
@@ -1665,10 +1669,10 @@ public:
     ii.HeavyPrepare();
   }
   virtual void Prepare() { }
-  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID position, GameApi::TXID normal) const
   {
     DoPrepares();
-    GameApi::ML ml = next->mat(screen.id, depth.id, fullscreenquad.id);
+    GameApi::ML ml = next->mat(screen.id, depth.id, fullscreenquad.id, position.id, normal.id);
     GameApi::ML sh = ev.mainloop_api.generic_shader_fragment_only(ev,ml,fragment);
     return sh;    
     

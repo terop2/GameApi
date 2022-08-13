@@ -95,6 +95,12 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P", "unsigned int", "unsigned int", "unsigned int", "unsigned int" },
 			 { "", "ffff8844", "ff884422", "ffaa8844", "ffffffff" },
 			 "P", "polygon_api", "color_from_texcoord"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ambient_occulsion_color,
+			 "ao_color",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "ambient_occulsion_color"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::normal_darkness,
 			 "color_darkness",
 			 { "p", "dark" },

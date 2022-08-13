@@ -3481,8 +3481,9 @@ EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 {
 }
 
-EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab)
+EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab, std::vector<float> progress)
 {
+  
   if (titles.size()==0)
     {
       std::vector<W> vert;
@@ -3498,6 +3499,7 @@ EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vect
       W txt3 = highlight(txt2);
       W txt_click = click_area(txt3, 0,0,size_x(txt3),size_y(txt3),0);
       buttons.push_back(txt_click);
+      
       W close_button2 = text("x", atlas, atlas_bm);
       W close_button21 = margin(close_button2,2,2,2,25);
       W close_button3 = highlight(close_button21);
@@ -3507,8 +3509,19 @@ EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vect
       horiz_tab.push_back(txt_click);
       horiz_tab.push_back(close_click);
       W arr_tab = array_x(&horiz_tab[0], horiz_tab.size(), 3);
-      W tab_button = button(size_x(arr_tab),size_y(arr_tab),i==active_tab?c_dialog_button_1:c_canvas_item, i==active_tab?c_dialog_button_2:c_canvas_item2);
-      W tab_layer = layer(tab_button, arr_tab);
+
+
+      float percentage = 0.0;
+      if (progress[i]>0.0)
+	{
+	  percentage = progress[i];
+	}
+      W perc_button = button(size_x(arr_tab)*percentage,size_y(arr_tab),i==active_tab?0xff00ff00:0xff008800, i==active_tab?0xff00ff00:0xff008800);
+      //W back_button = button(size_x(arr_tab),size_y(arr_tab),i==active_tab?c_dialog_button_1:c_canvas_item, i==active_tab?c_dialog_button_2:c_canvas_item2);				       
+      W tab_button = button(size_x(arr_tab),size_y(arr_tab),i==active_tab?0xff004400:0xff002200, i==active_tab?0xff004400:0xff002200);
+      W back_layer = layer(tab_button, perc_button);
+      W tab_layer = layer(back_layer, arr_tab);
+     
       horiz_bar.push_back(tab_layer);
     }
 
