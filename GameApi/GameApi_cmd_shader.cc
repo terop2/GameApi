@@ -91,7 +91,7 @@ std::vector<GameApiItem*> shaderapi_functions()
 			 { "ev", "next", "vertex", "fragment" },
 			 { "EveryApi&", "MT", "SHI", "SHI" },
 			 { "ev", "", "", "" },
-			 "MT", "mainloop_api", "generic_shader_material00"));
+			 "MT", "materials_api", "generic_shader_material00"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::generic_shader_material0,
 			 "m_generic",
 			 { "ev", "next", "funcname", "vertex_url", "fragment_url" },

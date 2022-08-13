@@ -44,25 +44,29 @@ void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 class ScreenSpaceMaterialForward : public ScreenSpaceMaterial
 {
 public:
-  GameApi::ML call(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  GameApi::ML call(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID position, GameApi::TXID normal) const
   {
     GameApi::ML ml;
-    ml.id = mat(screen.id,depth.id,fullscreenquad.id);
+    ml.id = mat(screen.id,depth.id,fullscreenquad.id, position.id, normal.id);
     return ml;
   }
-  int mat(int screen, int depth, int fullscreenquad) const
+  int mat(int screen, int depth, int fullscreenquad, int position, int normal) const
   {
     GameApi::TXID screen2;
     screen2.id = screen;
     GameApi::TXID depth2;
     depth2.id = depth;
+    GameApi::TXID pos2;
+    pos2.id = position;
+    GameApi::TXID normal2;
+    normal2.id = normal;
     GameApi::P p2;
     p2.id = fullscreenquad;
-    GameApi::ML ml = mat2(screen2,depth2,p2);
+    GameApi::ML ml = mat2(screen2,depth2,p2,pos2,normal2);
     return ml.id;
     
   }
-  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const=0;
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID position, GameApi::TXID normal) const=0;
 };
 
 class MaterialForward : public Material
@@ -4028,7 +4032,7 @@ class DefaultScreenSpaceMaterial : public ScreenSpaceMaterialForward
 public:
   DefaultScreenSpaceMaterial(GameApi::EveryApi &ev) : ev(ev) { }
   virtual void Prepare() { }
-  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID position, GameApi::TXID normal) const
   {
     GameApi::MT I5 = ev.materials_api.textureid(ev,screen,1.0);
     GameApi::ML ml = ev.materials_api.bind(fullscreenquad,I5);
@@ -4048,9 +4052,9 @@ class BloomScreenSpaceMaterial : public ScreenSpaceMaterialForward
 public:
   BloomScreenSpaceMaterial(GameApi::EveryApi &ev, ScreenSpaceMaterial *next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount) : ev(ev), next(next), cut_x(cut_x), cut_y(cut_y), cut_z(cut_z), x_amount(x_amount), y_amount(y_amount) { }
   virtual void Prepare() { }
-  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad) const
+  virtual GameApi::ML mat2(GameApi::TXID screen, GameApi::TXID depth, GameApi::P fullscreenquad, GameApi::TXID position, GameApi::TXID normal) const
   {
-    GameApi::ML ml = next->mat(screen.id,depth.id,fullscreenquad.id);
+    GameApi::ML ml = next->mat(screen.id,depth.id,fullscreenquad.id,position.id,normal.id);
     GameApi::SBM txt = ev.polygon_api.texture_sbm();
     GameApi::SBM cut = ev.polygon_api.bloom_cut_sbm(txt,cut_x,cut_y,cut_z);
     GameApi::SBM blurs0 = ev.polygon_api.blur_sbm(cut,x_amount,0);
@@ -17090,10 +17094,16 @@ std::string get_last_line(std::string s, char ch)
   return s.substr(pos2,pos-pos2);
 }
 
+bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
 public:
-  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename) : env(env), h2_script(h2_script), filename(filename) { }
+  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename) : env(env), h2_script(h2_script), filename(filename) { g_update_download_bar=true;
+      id = env.add_to_download_bar("gameapi_deploy.zip");
+      env.set_download_progress(env.download_index_mapping(id), 0.0/8.0);
+
+
+  }
   virtual int NumTasks() const
   {
     return 8;
@@ -17104,7 +17114,6 @@ public:
 #ifdef WINDOWS
     switch(i) {
     case 0:
-      id = env.add_to_download_bar("gameapi_deploy.zip");
       std::cout << "Creating tmp directories.." << std::endl;
       system("mkdir %TEMP%\\_gameapi_builder");
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
@@ -17263,7 +17272,7 @@ public:
 
     case 0:
 
-      id = env.add_to_download_bar("gameapi_deploy.zip");
+      // id = env.add_to_download_bar("gameapi_deploy.zip");
       
       std::cout << "Creating tmp directories.." << std::endl;
       system("mkdir -p ~/.gameapi_builder");

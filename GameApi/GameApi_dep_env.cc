@@ -565,7 +565,7 @@ EXPORT void GameApi::Env::set_download_progress(int i, float percentage)
 EXPORT void GameApi::Env::set_download_ready(int i)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  return env->set_download_ready(i);
+  env->set_download_ready(i);
 }
 EXPORT std::string GameApi::Env::get_download_bar_filename(int i) const
 {

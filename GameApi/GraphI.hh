@@ -975,7 +975,7 @@ class ScreenSpaceMaterial
 public:
   virtual ~ScreenSpaceMaterial() { }
   virtual void Prepare()=0;
-  virtual int mat(int screen, int depth, int fullscreenquad) const=0;
+  virtual int mat(int screen_txid, int depth_txid, int fullscreenquad, int position_txid, int normal_txid) const=0;
 };
 
 class ShaderCall
