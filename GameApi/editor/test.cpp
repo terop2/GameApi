@@ -43,6 +43,7 @@ extern "C" void _udev_device_get_action() { }
 
 extern GameApi::W enum_popup;
 extern GameApi::W enum_click;
+extern bool g_update_download_bar;
 bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2);
 void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui);
 void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button);
@@ -1097,7 +1098,9 @@ public:
 		ClearProgress();
 		int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
 		set_current_block(-2);
-		
+
+		//if (g_update_download_bar)
+		//  env->env->start_async(new DownloadUpdateTask(g_start));
 		
 		
 		if (id==-1) {
@@ -2635,6 +2638,7 @@ struct Envi_tabs
   std::vector<W> db_buttons;
   int db_active_tab=0;
   int old_download_bar_count=0;
+  float old_download_bar_perc=0.0;
   //---
   std::vector<W> close_button;
   std::vector<W> tab_change_button;
@@ -2730,12 +2734,23 @@ public:
 	env->db_close_button = std::vector<W>();
 	env->db_buttons = std::vector<W>();
 	std::vector<std::string> titles;
+	std::vector<float> perc;
+	float new_perc=0.0;
 	for(int i=0;i<count;i++)
 	  {
 	    titles.push_back(env->env->get_download_bar_filename(i));
+	    if (env->env->get_download_bar_ready(i)) {
+	      perc.push_back(-1.0);
+	      new_perc+=100.0;
+	    }
+	    else {
+	      perc.push_back(env->env->get_download_bar_progress(i));
+	      new_perc+=env->env->get_download_bar_progress(i);
+	    }
 	  }
-	env->download_bar = gui->download_bar(*env->ev, titles, env->db_close_button, env->db_buttons, env->atlas2, env->atlas_bm2, env->db_active_tab);
+	env->download_bar = gui->download_bar(*env->ev, titles, env->db_close_button, env->db_buttons, env->atlas2, env->atlas_bm2, env->db_active_tab, perc);
 	env->old_download_bar_count = count;
+	env->old_download_bar_perc = new_perc;
       break;
       }
       
@@ -2903,12 +2918,23 @@ public:
     if (!env->envi_ready) return;
     //std::cout << "IterTab::update cont" << std::endl;
 
-    int count = env->env->download_bar_count();
-    if (count != env->old_download_bar_count)
-      {
-	env->env->start_async(new DownloadUpdateTask(g_start));
 
-      }
+	int count2 = env->env->download_bar_count();
+	float perc = 0.0;
+	for(int i=0;i<count2;i++)
+	  {
+	    if (env->env->get_download_bar_ready(i))
+	      perc+=100.0;
+	    else
+	      perc+=env->env->get_download_bar_progress(i);
+	  }
+
+    
+    int count = env->env->download_bar_count();
+    if (count != env->old_download_bar_count || fabs(perc-env->old_download_bar_perc)>0.001)
+      {
+	env->env->start_async(new DownloadUpdateTask(g_start)); 
+     }
     int s5 = env->db_buttons.size();
     for(int i=0;i<s5;i++)
       {

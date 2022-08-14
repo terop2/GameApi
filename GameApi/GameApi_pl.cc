@@ -21437,3 +21437,65 @@ GameApi::P GameApi::PolygonApi::face_cutter(P p, float start, float end)
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new FaceCollectionCutter(coll,start,end),1);
 }
+
+
+class AmbientOcculsion : public ForwardFaceCollection
+{
+public:
+  AmbientOcculsion(FaceCollection *next) : ForwardFaceCollection(*next), next(next) { }
+  struct Res
+  {
+    bool b;
+    int face;
+    int point;
+  };
+  Res find_match(int face, int point) const
+  {
+    Point px = next->FacePoint(face,point);
+    int faces = next->NumFaces();
+    for(int f=0;f<faces;f++) {
+      if (f==face) continue;
+      int points = next->NumPoints(f);
+      for(int p=0;p<points;p++)
+	{
+	  Point p2 = next->FacePoint(f,p);
+	  if (fabs(px.x-p2.x)<0.1 && fabs(px.y-p2.y)<0.1 && fabs(px.z-p2.z)<0.1) { Res r; r.b = true; r.face=f; r.point=p; return r; }
+	}
+    }
+    Res r2;
+    r2.b = false;
+    return r2;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Res r = find_match(face,point);
+    if (r.b==true)
+      {
+	int face1 = face;
+	int face2 = r.face;
+	int point1 = point;
+	int point2 = r.point;
+	//Point p1 = next->FacePoint(face1,point1);
+	Point p2 = next->FacePoint(face2,point2);
+	//Point pp1 = next->FacePoint(face1,(point1-1)%next->NumPoints(face1));
+	Point pp2 = next->FacePoint(face2,(point2+1)%next->NumPoints(face2));
+	//Vector v1 = pp1-p1;
+	Vector v2 = pp2-p2;
+
+	Vector vv = next->PointNormal(face1,point1);
+	v2/=v2.Dist();
+	vv/=vv.Dist();
+	float a = Vector::Angle(vv,v2);
+	if (fabs(a)<3.14159/2.0) return 0xff000000;
+	if (a>=3.14159*2.0-3.14159/2.0) return 0xff000000;
+      }
+    return 0xffffffff;
+  }
+private:
+  FaceCollection *next;
+};
+GameApi::P GameApi::PolygonApi::ambient_occulsion_color(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e,new AmbientOcculsion(coll),1);
+}
