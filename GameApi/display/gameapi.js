@@ -1,4 +1,15 @@
 
+if (!crossOriginIsolated) {
+    console.log("NOT CROSSORIGIN ISOLATED");
+    console.log("Your web server needs the following configuration to get gameapi builder animations working:");
+    console.log("Header set Access-Control-Allow-Origin \"https://meshpage.org\");
+console.log("Header set Cross-Origin-Embedder-Policy \"require-corp\"");
+console.log("Header set Cross-Origin-Resource-Policy \"same-site\"");
+console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
+console.log("Header set Access-Control-Allow-Headers \"Range\"");
+console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
+
+}
 var pretag = document.getElementById("gameapi_script");
 var data = pretag.innerHTML;
 var pretag2 = document.getElementById("gameapi_modificationdate");
