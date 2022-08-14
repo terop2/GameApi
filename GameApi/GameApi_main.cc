@@ -3228,9 +3228,42 @@ public:
       GameApi::MN mn0 = ev.move_api.mn_empty();
       GameApi::MN mn = ev.move_api.scale2(mn0,((600-40)*2)/2048.0,((600-40)*2)/2048.0,1.0);
       GameApi::ML scene2 = ev.move_api.move_ml(ev,scene,mn,1,10.0);
+
+      
+      // POSITION TXID GENERATION
+      GameApi::MT aI1=ev.materials_api.m_def(ev);
+      GameApi::SHP aI2=ev.mainloop_api.empty_shp();
+      GameApi::ARR aI3=ev.mainloop_api.load_shader2("https://tpgames.org/position.vert","https://tpgames.org/position.frag");
+      ArrayType *arr=find_array(env,aI3);
+      GameApi::SHC o1,o2;
+      o1.id = arr->vec[0];
+      o2.id = arr->vec[1];
+      GameApi::SHI aI4=ev.mainloop_api.generic_anim_shader2(ev,aI2,"position",o1,std::vector<GameApi::SHI>());
+      GameApi::SHI aI5=ev.mainloop_api.generic_anim_shader2(ev,aI2,"position",o2,std::vector<GameApi::SHI>());
+      //GameApi::MT aI6=ev.materials_api.generic_shader_material00(ev,aI1,aI4,aI5);
+      //GameApi::ML aI7=ev.materials_api.bind(I1,aI6);
+      GameApi::ML aI7 = ev.mainloop_api.generic_shader(ev,scene2,aI4,aI5);
+      GameApi::TXID aI8=ev.fbo_api.fbo_ml(ev,aI7,-1,-1,false);
+
+
+      GameApi::MT bI1=ev.materials_api.m_def(ev);
+      GameApi::SHP bI2=ev.mainloop_api.empty_shp();
+      GameApi::ARR bI3=ev.mainloop_api.load_shader2("https://tpgames.org/normal.vert","https://tpgames.org/normal.frag");
+      ArrayType *arr2=find_array(env,bI3);
+      GameApi::SHC bo1,bo2;
+      bo1.id = arr2->vec[0];
+      bo2.id = arr2->vec[1];
+      GameApi::SHI bI4=ev.mainloop_api.generic_anim_shader2(ev,bI2,"normal",bo1,std::vector<GameApi::SHI>());
+      GameApi::SHI bI5=ev.mainloop_api.generic_anim_shader2(ev,bI2,"normal",bo2,std::vector<GameApi::SHI>());
+      //GameApi::MT bI6=ev.materials_api.generic_shader_material00(ev,bI1,bI4,bI5);
+      //GameApi::ML bI7=ev.materials_api.bind(I1,bI6);
+      GameApi::ML bI7 = ev.mainloop_api.generic_shader(ev,scene2,bI4,bI5);
+      GameApi::TXID bI8=ev.fbo_api.fbo_ml(ev,bI7,-1,-1,false);
+
+      
       GameApi::TXID I4 = ev.fbo_api.fbo_ml(ev,scene2,2048,2048,false);
       GameApi::TXID I4_depth = ev.fbo_api.depth_ml(ev,scene,2048,2048,false);
-      ml = mat->mat(I4.id,I4_depth.id,I1.id);
+      ml = mat->mat(I4.id,I4_depth.id,I1.id,aI8.id,bI8.id);
       MainLoopItem *item2 = find_main_loop(env,ml);
       item2->Prepare();
     }
