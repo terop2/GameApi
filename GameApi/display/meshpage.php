@@ -492,7 +492,7 @@ $label = get_label( $arr );
    $filename = "user_data/user_" . $user . "/screenshot" . $ii . ".png";
    $filename2 = "user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    if (file_exists($filename2)) $filename = $filename2;
-   if (!file_exists($filename)) { $filename = "<?php echo $assetsite ?>/unknown.webp"; }
+   if (!file_exists($filename)) { $filename = $assetsite . "/unknown.webp"; }
 
 
 
