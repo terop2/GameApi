@@ -334,12 +334,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "" },
 			 "P", "polygon_api", "or_array2"));
 #ifndef STABLE
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::optimize_mesh,
 			 "p_optimize",
 			 { "p", "max" },
 			 { "P", "float" },
 			 { "", "2.0" },
 			 "P", "polygon_api", "optimize_mesh"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::face_cutter,
 			 "p_facecutter",
 			 { "p", "start", "end" },

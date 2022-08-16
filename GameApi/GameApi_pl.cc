@@ -21499,3 +21499,87 @@ GameApi::P GameApi::PolygonApi::ambient_occulsion_color(P p)
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e,new AmbientOcculsion(coll),1);
 }
+
+class XSplit : public ForwardFaceCollection
+{
+public:
+  XSplit(FaceCollection *coll, float x, float x_0, float x_1) : ForwardFaceCollection(*coll), coll(coll), x(x), x_0(x_0), x_1(x_1) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    if (p.x<x) {
+      p.x-=x;
+      p.x+=x_0;
+    } else
+      {
+	p.x-=x;
+	p.x+=x_1;
+      }
+    return p;
+  }
+private:
+  FaceCollection *coll;
+  float x,x_0,x_1;
+};
+
+class YSplit : public ForwardFaceCollection
+{
+public:
+  YSplit(FaceCollection *coll, float y, float y_0, float y_1) : ForwardFaceCollection(*coll), coll(coll), y(y), y_0(y_0), y_1(y_1) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    if (p.y<y) {
+      p.y-=y;
+      p.y+=y_0;
+    } else
+      {
+	p.y-=y;
+	p.y+=y_1;
+      }
+    return p;
+  }
+private:
+  FaceCollection *coll;
+  float y,y_0,y_1;
+};
+
+class ZSplit : public ForwardFaceCollection
+{
+public:
+  ZSplit(FaceCollection *coll, float z, float z_0, float z_1) : ForwardFaceCollection(*coll), coll(coll), z(z), z_0(z_0), z_1(z_1) { }
+  Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(face,point);
+    if (p.z<z) {
+      p.z-=z;
+      p.z+=z_0;
+    } else
+      {
+	p.z-=z;
+	p.z+=z_1;
+      }
+    return p;
+  }
+private:
+  FaceCollection *coll;
+  float z,z_0,z_1;
+};
+
+
+
+GameApi::P GameApi::PolygonApi::x_split(P p, float x, float x_0, float x_1)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new XSplit(coll,x,x_0,x_1),1);
+}
+GameApi::P GameApi::PolygonApi::y_split(P p, float y, float y_0, float y_1)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new YSplit(coll,y,y_0,y_1),1);
+}
+GameApi::P GameApi::PolygonApi::z_split(P p, float z, float z_0, float z_1)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new ZSplit(coll,z,z_0,z_1),1);
+}

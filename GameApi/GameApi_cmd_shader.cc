@@ -87,10 +87,10 @@ std::vector<GameApiItem*> shaderapi_functions()
 		
 		       
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::generic_shader_material00,
-			 "m_generic_s",
-			 { "ev", "next", "vertex", "fragment" },
-			 { "EveryApi&", "MT", "SHI", "SHI" },
-			 { "ev", "", "", "" },
+			 "m_generic_s", 
+			 { "ev", "next", "vertex", "fragment", "vec" },
+			 { "EveryApi&", "MT", "SHI", "SHI", "[TXID]" },
+			 { "ev", "", "", "", "" },
 			 "MT", "materials_api", "generic_shader_material00"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::generic_shader_material0,
 			 "m_generic",
@@ -129,9 +129,9 @@ std::vector<GameApiItem*> shaderapi_functions()
 				 "SMT", "materials_api", "ss_def"));
 	  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::generic_screenspace_material00,
 				 "ss_generic",
-				 { "ev", "next", "fragment" },
-				 { "EveryApi&", "SMT", "SHI" },
-				 { "ev", "", "" },
+				 { "ev", "next", "vertex", "fragment" },
+				 { "EveryApi&", "SMT", "SHI", "SHI" },
+				 { "ev", "", "","" },
 				 "SMT", "materials_api", "generic_screenspace_material00"));
 	  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::screenspace_bloom,
 				 "ss_bloom",

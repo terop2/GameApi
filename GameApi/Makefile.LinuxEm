@@ -134,12 +134,12 @@ libGameApi_nothreads.bc: $(O2Files_nothreads) $(OFiles_nothreads) Makefile
 
 libGameApi.so: $(OFiles) Makefile
 	@echo g++ libGameApi.so
-	@g++ -shared $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype -lstdc++ 
+	@g++ -shared $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o
 	@echo mingw libGameApi.dll
-	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -shared $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
+	@g++ -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -shared $(O2Files) -DGLEW_STATIC glew.o -o libGameApi.dll -lSDL2 -lSDL2_mixer -lfreetype -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadGC2
 
 subdirs: $(Subdirs)
 

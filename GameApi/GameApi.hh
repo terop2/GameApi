@@ -350,8 +350,8 @@ public:
   SHI phong_fragment(SHI next, unsigned int ambient, unsigned int highlight, float pow);
   ML phong_shader3(EveryApi &ev, ML ml, unsigned int ambient, unsigned int highlight, float pow);
   SHP empty_shp();
-  ML generic_shader_fragment_only(EveryApi &ev, ML ml, SHI fragment);
-  ML generic_shader(EveryApi &ev, ML ml, SHI vertex, SHI fragment);
+  ML generic_shader_fragment_only(EveryApi &ev, ML ml, SHI fragment, std::vector<TXID> vec);
+  ML generic_shader(EveryApi &ev, ML ml, SHI vertex, SHI fragment, std::vector<TXID> vec);
   SHI generic_anim_shader(SHP,std::string, std::string, std::vector<SHI> children);
   ML save_gltf(TF tf, std::string filename);
   TF gltf_loadKK(std::string base_url, std::string url);
@@ -1502,9 +1502,9 @@ public:
   MaterialsApi(Env &e) : e(e) { }
   IMPORT SMT ss_def(EveryApi &ev);
   IMPORT SMT screenspace_bloom(EveryApi &ev, SMT next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount);
-  IMPORT SMT generic_screenspace_material00(EveryApi &ev, SMT next, SHI fragment);
+  IMPORT SMT generic_screenspace_material00(EveryApi &ev, SMT next, SHI vertex, SHI fragment);
   IMPORT MT phong3_material(EveryApi &ev, MT next, unsigned int ambient, unsigned int highlight, float pow);
-  IMPORT MT generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment);
+  IMPORT MT generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment, std::vector<TXID> vec);
   IMPORT MT generic_shader_material0(EveryApi &ev, MT next, std::string, std::string, std::string);
   IMPORT MT generic_shader_material1(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string);
   IMPORT MT generic_shader_material2(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string, std::vector<SHI>);
@@ -2427,6 +2427,10 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P x_split(P p, float x, float x_0, float x_1);
+  P y_split(P p, float y, float y_0, float y_1);
+  P z_split(P p, float z, float z_0, float z_1);
+  P optimize_mesh(P p);
   P ambient_occulsion_color(P p);
   P face_cutter(P p, float start, float end);
   P heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);

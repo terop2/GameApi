@@ -3242,7 +3242,7 @@ public:
       GameApi::SHI aI5=ev.mainloop_api.generic_anim_shader2(ev,aI2,"position",o2,std::vector<GameApi::SHI>());
       //GameApi::MT aI6=ev.materials_api.generic_shader_material00(ev,aI1,aI4,aI5);
       //GameApi::ML aI7=ev.materials_api.bind(I1,aI6);
-      GameApi::ML aI7 = ev.mainloop_api.generic_shader(ev,scene2,aI4,aI5);
+      GameApi::ML aI7 = ev.mainloop_api.generic_shader(ev,scene2,aI4,aI5,std::vector<GameApi::TXID>());
       GameApi::TXID aI8=ev.fbo_api.fbo_ml(ev,aI7,-1,-1,false);
 
 
@@ -3257,7 +3257,7 @@ public:
       GameApi::SHI bI5=ev.mainloop_api.generic_anim_shader2(ev,bI2,"normal",bo2,std::vector<GameApi::SHI>());
       //GameApi::MT bI6=ev.materials_api.generic_shader_material00(ev,bI1,bI4,bI5);
       //GameApi::ML bI7=ev.materials_api.bind(I1,bI6);
-      GameApi::ML bI7 = ev.mainloop_api.generic_shader(ev,scene2,bI4,bI5);
+      GameApi::ML bI7 = ev.mainloop_api.generic_shader(ev,scene2,bI4,bI5, std::vector<GameApi::TXID>());
       GameApi::TXID bI8=ev.fbo_api.fbo_ml(ev,bI7,-1,-1,false);
 
       
