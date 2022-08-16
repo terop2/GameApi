@@ -302,6 +302,26 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "P", "int", "int" },
 			 { "", "5", "5" },
 			 "P", "polygon_api", "splitquads"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::x_split,
+			 "x_split",
+			 { "p", "x", "x_0", "x_1" },
+			 { "P", "float", "float", "float" },
+			 { "", "0.0", "-30.0", "30.0" },
+			 "P", "polygon_api", "x_split"));
+    vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::y_split,
+			 "y_split",
+			 { "p", "y", "y_0", "y_1" },
+			 { "P", "float", "float", "float" },
+			 { "", "0.0", "-30.0", "30.0" },
+			 "P", "polygon_api", "y_split"));
+      vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::z_split,
+			 "z_split",
+			 { "p", "z", "z_0", "z_1" },
+			 { "P", "float", "float", "float" },
+			 { "", "0.0", "-30.0", "30.0" },
+			 "P", "polygon_api", "z_split"));
 #ifndef STABLE
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::shadow,

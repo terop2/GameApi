@@ -586,7 +586,7 @@ GameApi::SHI GameApi::MainLoopApi::phong_fragment(SHI next, unsigned int ambient
 class GenericShaderML : public MainLoopItem
 {
 public:
-  GenericShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, ShaderI2 *vertex, ShaderI2 *fragment) : env(env), ev(ev), next(next), vertex(vertex), fragment(fragment) {
+  GenericShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, ShaderI2 *vertex, ShaderI2 *fragment, std::vector<GameApi::TXID> vec) : env(env), ev(ev), next(next), vertex(vertex), fragment(fragment),txids(vec) {
     firsttime = true;
     sh.id = -1;
     initialized=false;
@@ -597,7 +597,13 @@ public:
     next->handle_event(e);
     vertex->handle_event(e);
     fragment->handle_event(e);
-  }
+	int s = txids.size();
+	for(int i=0;i<s;i++)
+	  {
+	    TextureID *t = find_txid(env, txids[i]);
+	    t->handle_event(e);
+	  }
+      }
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
@@ -693,6 +699,17 @@ public:
 	Bindings b = vertex->set_var(bb);
 	Bindings b2 = fragment->set_var(b);
 	b2.set(ev,sh.id);
+
+	int s = txids.size();
+	for(int i=0;i<s;i++)
+	  {
+	    TextureID *t = find_txid(env, txids[i]);
+	    t->render(e);
+	    std::stringstream ss;
+	    ss << i;
+	    std::string label = "texture" + ss.str();
+	    ev.shader_api.set_var(sh, label.c_str(), t->texture());
+	  }
       }
 
 #ifndef NO_MV
@@ -723,13 +740,14 @@ private:
   bool firsttime;
   bool initialized;
   GameApi::SH sh;
+  std::vector<GameApi::TXID> txids;
 };
 
 
 class GenericShaderML_fragment_only : public MainLoopItem
 {
 public:
-  GenericShaderML_fragment_only(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, ShaderI2 *fragment) : env(env), ev(ev), next(next), fragment(fragment) {
+  GenericShaderML_fragment_only(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, ShaderI2 *fragment, std::vector<GameApi::TXID> vec) : env(env), ev(ev), next(next), fragment(fragment), txids(vec) {
     firsttime = true;
     sh.id = -1;
     initialized=false;
@@ -739,6 +757,14 @@ public:
   {
     next->handle_event(e);
     fragment->handle_event(e);
+
+	int s = txids.size();
+	for(int i=0;i<s;i++)
+	  {
+	    TextureID *t = find_txid(env, txids[i]);
+	    t->handle_event(e);
+	  }
+    
   }
   void Collect(CollectVisitor &vis)
   {
@@ -835,6 +861,19 @@ public:
 	//Bindings b = vertex->set_var(bb);
 	Bindings b2 = fragment->set_var(bb);
 	b2.set(ev,sh.id);
+
+
+	int s = txids.size();
+	for(int i=0;i<s;i++)
+	  {
+	    TextureID *t = find_txid(env, txids[i]);
+	    t->render(e);
+	    std::stringstream ss;
+	    ss << i;
+	    std::string label = "texture" + ss.str();
+	    ev.shader_api.set_var(sh, label.c_str(), t->texture());
+	  }
+	
       }
 
 #ifndef NO_MV
@@ -865,28 +904,29 @@ private:
   bool firsttime;
   bool initialized;
   GameApi::SH sh;
+  std::vector<GameApi::TXID> txids;
 };
 
-GameApi::ML GameApi::MainLoopApi::generic_shader_fragment_only(GameApi::EveryApi &ev, ML ml, SHI fragment)
+GameApi::ML GameApi::MainLoopApi::generic_shader_fragment_only(GameApi::EveryApi &ev, ML ml, SHI fragment, std::vector<TXID> vec)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   ShaderI2 *frag = find_shaderI(e,fragment);
-  return add_main_loop(e, new GenericShaderML_fragment_only(e,ev,next,frag));
+  return add_main_loop(e, new GenericShaderML_fragment_only(e,ev,next,frag, vec));
 }
 
-GameApi::ML GameApi::MainLoopApi::generic_shader(GameApi::EveryApi &ev, ML ml, SHI vertex, SHI fragment)
+GameApi::ML GameApi::MainLoopApi::generic_shader(GameApi::EveryApi &ev, ML ml, SHI vertex, SHI fragment, std::vector<TXID> vec)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   ShaderI2 *ver = find_shaderI(e,vertex);
   ShaderI2 *frag = find_shaderI(e,fragment);
-  return add_main_loop(e, new GenericShaderML(e,ev,next,ver,frag));
+  return add_main_loop(e, new GenericShaderML(e,ev,next,ver,frag,vec));
 }
 
 GameApi::ML GameApi::MainLoopApi::phong_shader3(GameApi::EveryApi &ev, ML ml, unsigned int ambient, unsigned int highlight, float pow)
 {
   SHI vertex_next = ev.mainloop_api.empty_shaderI();
   SHI fragment_next = ev.mainloop_api.empty_shaderI();
-  return generic_shader(ev,ml,ev.mainloop_api.phong_vertex(vertex_next),ev.mainloop_api.phong_fragment(fragment_next,ambient,highlight,pow));
+  return generic_shader(ev,ml,ev.mainloop_api.phong_vertex(vertex_next),ev.mainloop_api.phong_fragment(fragment_next,ambient,highlight,pow),std::vector<GameApi::TXID>());
 }
 
 
@@ -1522,7 +1562,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat(p.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader, std::vector<GameApi::TXID>());
     return sh;
 
     
@@ -1537,7 +1577,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id,pts.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader, std::vector<GameApi::TXID>());
     return sh;
 
   }
@@ -1550,7 +1590,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id,ms.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader, std::vector<GameApi::TXID>());
     return sh;
     
     
@@ -1564,7 +1604,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader, std::vector<GameApi::TXID>());
     return sh;
     
   }
@@ -1578,7 +1618,7 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
 
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader, std::vector<GameApi::TXID>());
     return sh;
 
   }
@@ -1662,9 +1702,11 @@ public:
 class GenericScreenSpaceMaterial_s : public ScreenSpaceMaterialForward
 {
 public:
-  GenericScreenSpaceMaterial_s(GameApi::Env &env, GameApi::EveryApi &ev, ScreenSpaceMaterial *next, GameApi::SHI fragment) : e(env), ev(ev), next(next), fragment(fragment) { }
+  GenericScreenSpaceMaterial_s(GameApi::Env &env, GameApi::EveryApi &ev, ScreenSpaceMaterial *next, GameApi::SHI vertex, GameApi::SHI fragment) : e(env), ev(ev), next(next), vertex(vertex), fragment(fragment) { }
   void DoPrepares() const
   {
+    ShaderI2 *v = find_shaderI(e,vertex);
+    v->Collect(ii);
     ShaderI2 *f = find_shaderI(e,fragment);
     f->Collect(ii);
     ii.HeavyPrepare();
@@ -1674,7 +1716,12 @@ public:
   {
     DoPrepares();
     GameApi::ML ml = next->mat(screen.id, depth.id, fullscreenquad.id, position.id, normal.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader_fragment_only(ev,ml,fragment);
+    std::vector<GameApi::TXID> vec;
+    vec.push_back(screen);
+    vec.push_back(position);
+    vec.push_back(normal);
+    vec.push_back(depth);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex,fragment,vec);
     return sh;    
     
   }
@@ -1682,6 +1729,7 @@ private:
   GameApi::Env &e;
   GameApi::EveryApi &ev;
   ScreenSpaceMaterial *next;
+  GameApi::SHI vertex;
   GameApi::SHI fragment;
   mutable VisitorImpl ii;
 };
@@ -1689,7 +1737,7 @@ private:
 class GenericAnimMaterial_s : public MaterialForward
 {
 public:
-  GenericAnimMaterial_s(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, GameApi::SHI vertex, GameApi::SHI fragment) : e(env), ev(ev), next(next), vertex(vertex), fragment(fragment) {
+  GenericAnimMaterial_s(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, GameApi::SHI vertex, GameApi::SHI fragment, std::vector<GameApi::TXID> vec) : e(env), ev(ev), next(next), vertex(vertex), fragment(fragment), txids(vec) {
   }
 
   void DoPrepares() const
@@ -1706,7 +1754,7 @@ public:
     DoPrepares();
     GameApi::ML ml;
     ml.id = next->mat(p.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment, txids);
     return sh;    
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -1715,7 +1763,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id,pts.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment,txids);
     return sh;
 
   }
@@ -1725,7 +1773,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id,ms.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment,txids);
     return sh;
     
     
@@ -1736,7 +1784,7 @@ public:
 
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment,txids);
     return sh;
     
   }
@@ -1747,7 +1795,7 @@ public:
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
 
-    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment,txids);
     return sh;
   }
 private:
@@ -1757,11 +1805,12 @@ private:
   GameApi::SHI vertex;
   GameApi::SHI fragment;
   mutable VisitorImpl ii;
+  std::vector<GameApi::TXID> txids;
 };
-GameApi::MT GameApi::MaterialsApi::generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment)
+GameApi::MT GameApi::MaterialsApi::generic_shader_material00(EveryApi &ev, MT next, SHI vertex, SHI fragment, std::vector<GameApi::TXID> vec)
 {
   Material *mat = find_material(e,next);
-  return add_material(e,new GenericAnimMaterial_s(e,ev,mat,vertex,fragment));
+  return add_material(e,new GenericAnimMaterial_s(e,ev,mat,vertex,fragment,vec));
 }
 
 GameApi::MT GameApi::MaterialsApi::generic_shader_material0(EveryApi &ev, MT next, std::string funcname, std::string vertexshadercode_url, std::string fragmentshadercode_url)
@@ -1778,8 +1827,8 @@ GameApi::MT GameApi::MaterialsApi::generic_shader_material2(EveryApi &ev, MT nex
   Material *mat = find_material(e, next);
   return add_material(e,new GenericAnimMaterial(e,ev,mat,params,funcname,vertexshadercode_url,fragmentshadercode_url, gameapi_homepageurl, children));
 }
-GameApi::SMT GameApi::MaterialsApi::generic_screenspace_material00(EveryApi &ev, SMT next_, SHI fragment)
+GameApi::SMT GameApi::MaterialsApi::generic_screenspace_material00(EveryApi &ev, SMT next_, SHI vertex, SHI fragment)
 {
   ScreenSpaceMaterial *next = find_screenspace_material(e,next_);
-  return add_screenspace_material(e, new GenericScreenSpaceMaterial_s(e,ev,next,fragment));
+  return add_screenspace_material(e, new GenericScreenSpaceMaterial_s(e,ev,next,vertex,fragment));
 }
