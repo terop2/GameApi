@@ -1,5 +1,6 @@
 
 
+
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -30617,3 +30618,32 @@ std::string generate_shader_block_shader(const ShaderBlock *block)
   return res;
 }
 
+class PrintDeps : public MainLoopItem
+{
+public:
+  PrintDeps(GameApi::Env &e, MainLoopItem *next, int num) : env(e), next(next), num(num) { firsttime = true; }
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) { next->execute(e);
+    if (firsttime) {
+      firsttime = false;
+      env.print_dependencies(num);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+private:
+  GameApi::Env &env;
+  MainLoopItem *next;
+  int num;
+  bool firsttime;
+};
+GameApi::ML GameApi::MainLoopApi::print_deps(ML ml, int num)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new PrintDeps(e,next,num));
+}

@@ -259,6 +259,7 @@ class Env
 public:
   IMPORT Env();
   IMPORT void free_memory();
+  IMPORT void print_dependencies(int num);
   IMPORT std::vector<int> store_counts();
   IMPORT void free_to_counts(std::vector<int> vec);
   IMPORT void free_temp_memory();
@@ -327,6 +328,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML print_deps(ML ml, int num);
   ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);
   ARR load_shader2(std::string vertex_url, std::string fragment_url);
   SHC load_shader(std::string shader_url);
@@ -1886,7 +1888,7 @@ public:
   IMPORT W click_visibility(W area_widget, W hidden_widget);
   IMPORT W click_hide(W widget);
   IMPORT W top_right_corner_match(W wid, W floating); // returns floating
-  IMPORT W or_elem(W w1, W w2);
+  IMPORT W or_elem(W (*w1_func)(void*), W (*w2_func)(void*), void *data);
   IMPORT W rectangle(int start_x, int end_x, int start_y, int end_y, unsigned int color);
   IMPORT W highlight(int sx, int sy);
   IMPORT W highlight(W wid);
@@ -1899,7 +1901,7 @@ public:
   IMPORT W layer(W w1, W w2);
   IMPORT W array_y(W *arr, int size, int y_gap);
   IMPORT W array_x(W *arr, int size, int x_gap);
-  IMPORT W timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx);
+  IMPORT W timed_visibility(W orig, W (*timed_widget_func)(void*),void*data, W insert, float start_duration, float duration, float dx);
   IMPORT W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);
   IMPORT W popup_box(std::string label, std::vector<std::string> options, FtA atlas, BM atlas_bm); 
   IMPORT W popup_box_menu(std::vector<std::string> options, FtA atlas, BM atlas_bm);

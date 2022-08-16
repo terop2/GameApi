@@ -87,7 +87,7 @@ private:
 class TimedWidget : public GuiWidgetForward
 {
 public:
-  TimedWidget(GameApi::EveryApi &ev, GuiWidget *next, GuiWidget *timed, GuiWidgetForward *insert_wid, float start_duration, float duration, float dx) : GuiWidgetForward(ev, {next}), next(next), timed(timed), insert_wid(insert_wid), start_duration(start_duration), duration(duration),dx(dx) 
+  TimedWidget(GameApi::EveryApi &ev, GuiWidget *next, GameApi::W (*timed_func)(void*), void*data, GuiWidgetForward *insert_wid, float start_duration, float duration, float dx) : GuiWidgetForward(ev, {next}), next(next), timed_func(timed_func),data(data), insert_wid(insert_wid), start_duration(start_duration), duration(duration),dx(dx) 
   {
     uid = unique_id();
     state = 0;
@@ -117,6 +117,11 @@ public:
 	Point2d p = next->get_pos();
 	Vector2d ps = next->get_size();
 	Point2d pos = { float(p.x+ps.dx-dx), float(p.y+0.0) };
+	if (!timed)
+	  {
+	    GameApi::W t = timed_func(data);
+	    timed = find_widget(ev.get_env(),t);
+	  }
 	timed->set_pos(pos);
 
 
@@ -154,7 +159,9 @@ public:
 private:
   std::string uid;
   GuiWidget *next;
-  GuiWidget *timed;
+  GuiWidget *timed=0;
+  GameApi::W (*timed_func)(void*);
+  void *data;
   GuiWidgetForward *insert_wid;
   float start_duration;
   float duration;
@@ -2186,7 +2193,7 @@ public:
 	changed = true;
       }
 
-    if (firsttime ||changed)
+    if ((firsttime ||changed) && enabled)
       {
 	Vector2d v = get_size();
 	GameApi::BB bg = ev.bool_bitmap_api.bb_empty(v.dx, v.dy);
@@ -2536,33 +2543,62 @@ private:
   Vector2d delta_vec;
 };
 
-EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W timed_widget, W insert, float start_duration, float duration, float dx)
+EXPORT GameApi::W GameApi::GuiApi::timed_visibility(W orig, W (*timed_widget_func)(void*), void*data, W insert, float start_duration, float duration, float dx)
 {
   GuiWidget *o = find_widget(e,orig);
-  GuiWidget *t = find_widget(e,timed_widget);
+  //GuiWidget *t = find_widget(e,timed_widget);
   GuiWidget *i = find_widget(e, insert);
 #ifdef EMSCRIPTEN
   GuiWidgetForward *ii = static_cast<GuiWidgetForward*>(i);
 #else
   GuiWidgetForward *ii = dynamic_cast<GuiWidgetForward*>(i);
 #endif
-  return add_widget(e, new TimedWidget(ev, o, t, ii, start_duration, duration, dx));
+  return add_widget(e, new TimedWidget(ev, o, timed_widget_func,data, ii, start_duration, duration, dx));
 }
 
 EXPORT GameApi::W GameApi::GuiApi::empty()
 {
   return add_widget(e, new EmptyWidget(ev));
 }
+
+struct ToolTipData
+{
+  GameApi::GuiApi *api;
+  GameApi::W orig;
+  GameApi::W insert;
+  std::string label;
+  GameApi::FtA atlas;
+  GameApi::BM atlas_bm;
+  int x_gap;
+  float dx;
+};
+
+GameApi::W tooltip_func(void *data)
+{
+  ToolTipData *dt = (ToolTipData*)data;
+  GameApi::W w = dt->api->text(dt->label, dt->atlas, dt->atlas_bm, dt->x_gap);
+  GameApi::W w1 = dt->api->margin(w, 5,5,5,5);
+  GameApi::W w2 = dt->api->button(dt->api->size_x(w1),dt->api->size_y(w1), c_tooltip_button, c_tooltip_button2 /*0xff888888, c_dialog_1_2*/);
+  GameApi::W w3 = dt->api->layer(w2,w1);
+  float p_x = dt->api->pos_x(dt->orig) + dt->api->size_x(dt->orig) + 10.0;
+  float p_y = dt->api->pos_y(dt->orig) + 10.0;
+  dt->api->set_pos(w3, p_x, p_y);
+  return w3;
+}
+
 GameApi::W GameApi::GuiApi::tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap, float dx)
 {
-  W w = text(label, atlas, atlas_bm, x_gap);
-  W w1 = margin(w, 5,5,5,5);
-  W w2 = button(size_x(w1),size_y(w1), c_tooltip_button, c_tooltip_button2 /*0xff888888, c_dialog_1_2*/);
-  W w3 = layer(w2,w1);
-  float p_x = pos_x(orig) + size_x(orig) + 10.0;
-  float p_y = pos_y(orig) + 10.0;
-  set_pos(w3, p_x, p_y);
-  W w4 = timed_visibility(orig, w3, insert, 0.3, 400.0, dx);
+  ToolTipData *dt = new ToolTipData;
+  dt->api = this;
+  dt->orig = orig;
+  dt->insert = insert;
+  dt->label = label;
+  dt->atlas = atlas;
+  dt->atlas_bm = atlas_bm;
+  dt->x_gap = x_gap;
+  dt->dx = dx;
+  
+  W w4 = timed_visibility(orig, tooltip_func, (void*)dt, insert, 0.3, 400.0, dx);
   return w4;
 }
 EXPORT GameApi::W GameApi::GuiApi::line(W target1, int delta_x, int delta_y,
@@ -4889,32 +4925,55 @@ private:
 class OrElemGuiWidget : public GuiWidget
 {
 public:
-  OrElemGuiWidget(GuiWidget *w1, GuiWidget *w2) : b(false), w1(w1), w2(w2) { isVisible=true; }
+  OrElemGuiWidget(GameApi::Env &env, GameApi::W (*fptr1)(void*), GameApi::W (*fptr2)(void*), void*data)
+  : env(env), b(false), fptr1(fptr1), fptr2(fptr2),data(data)
+    {
+      
+      isVisible=true;
+    }
   virtual bool is_visible() const { return isVisible; }
-  virtual Point2d get_pos() const { if (b) return w1->get_pos(); else return w2->get_pos(); }
-  virtual Vector2d get_size() const { if (b) return w1->get_size(); else return w2->get_size(); }
-  virtual void set_pos(Point2d pos) { if (b) w1->set_pos(pos); else w2->set_pos(pos); } 
-  virtual void set_size(Vector2d size) { if (b) w1->set_size(size); else w2->set_size(size); }
-  virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y) { if (b) w1->update(mouse_pos, button,ch,type,mouse_wheel_y); else w2->update(mouse_pos, button,ch,type,mouse_wheel_y); }
-  virtual void render() { if (is_visible()) {if (b) w1->render(); else w2->render();}  }
-  virtual int render_to_bitmap() { if (b) return w1->render_to_bitmap(); else return w2->render_to_bitmap(); }
-  virtual void select_item(int item) { if (item==0) b=true; if (item==1) b=false; }
-  virtual int chosen_item() const { if (b) return w1->chosen_item(); else return w2->chosen_item(); }
-  virtual float dynamic_param(int id) const { if (b) return w1->dynamic_param(id); else return w2->dynamic_param(id); }
-  virtual void set_dynamic_param(int id, float val) { if (b) w1->set_dynamic_param(id, val); else w2->set_dynamic_param(id, val); }
-  virtual int child_count() const { if (b) { return w1->child_count(); } else { return w2->child_count(); } }
-  virtual bool content_changed() const { if (b) { return w1->content_changed(); } else { return w2->content_changed(); } }
-  virtual void clear_content_changed() { if (b) { w1->clear_content_changed(); } else { w2->clear_content_changed(); } }
+virtual Point2d get_pos() const { check(); if (b) return w1->get_pos(); else return w2->get_pos(); }
+virtual Vector2d get_size() const { check(); if (b) return w1->get_size(); else return w2->get_size(); }
+virtual void set_pos(Point2d pos) { check(); if (b) w1->set_pos(pos); else w2->set_pos(pos); } 
+virtual void set_size(Vector2d size) { check(); if (b) w1->set_size(size); else w2->set_size(size); }
+virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y) { check(); if (b) w1->update(mouse_pos, button,ch,type,mouse_wheel_y); else w2->update(mouse_pos, button,ch,type,mouse_wheel_y); }
+virtual void render() {  if (is_visible()) { check(); if (b) w1->render(); else w2->render();}  }
+virtual int render_to_bitmap() { check(); if (b) return w1->render_to_bitmap(); else return w2->render_to_bitmap(); }
+virtual void select_item(int item) { check(); if (item==0) b=true; if (item==1) b=false; }
+virtual int chosen_item() const { check(); if (b) return w1->chosen_item(); else return w2->chosen_item(); }
+virtual float dynamic_param(int id) const { check(); if (b) return w1->dynamic_param(id); else return w2->dynamic_param(id); }
+virtual void set_dynamic_param(int id, float val) { check(); if (b) w1->set_dynamic_param(id, val); else w2->set_dynamic_param(id, val); }
+virtual int child_count() const { check(); if (b) { return w1->child_count(); } else { return w2->child_count(); } }
+virtual bool content_changed() const { check(); if (b) { return w1->content_changed(); } else { return w2->content_changed(); } }
+virtual void clear_content_changed() { check(); if (b) { w1->clear_content_changed(); } else { w2->clear_content_changed(); } }
   virtual GuiWidget *child(int num) const
   {
     if (b) { return w1->child(num); }
     else { return w2->child(num); }
   }
-
+void check() const
+{
+  if (b) {
+    if (!w1) {
+      GameApi::W w = fptr1(data);
+      w1 = find_widget(env, w);
+    }
+  }
+  if (!b) {
+    if (!w2) {
+      GameApi::W w = fptr2(data);
+      w2 = find_widget(env,w);
+    }
+  }
+}
 private:
+  GameApi::Env &env;
   bool b;
-  GuiWidget *w1;
-  GuiWidget *w2;
+  mutable GuiWidget *w1=0;
+  mutable GuiWidget *w2=0;
+  GameApi::W (*fptr1)(void*);
+  GameApi::W (*fptr2)(void*);
+  void *data;
   bool isVisible;
 };
 EXPORT GameApi::W GameApi::GuiApi::gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2)
@@ -4924,11 +4983,40 @@ EXPORT GameApi::W GameApi::GuiApi::gradient(int sx, int sy, PT pos_1, PT pos_2, 
   int key = color_1+color_2;
   return icon_shared(bm,key);
 }
+
+struct ButtonCacheItem
+{
+  int sx;
+  int sy;
+  unsigned int color_1;
+  unsigned int color_2;
+  GameApi::BM bm;
+};
+std::vector<ButtonCacheItem*> button_cache;
+ButtonCacheItem* find_from_button_cache(int sx, int sy, unsigned int color_1, unsigned int color_2)
+{
+  int s = button_cache.size();
+  for(int i=0;i<s;i++)
+    {
+      ButtonCacheItem *item = button_cache[i];
+      if (sx==item->sx && sy==item->sy && color_1 == item->color_1 && color_2==item->color_2) return item;
+    }
+  return 0;
+}
+
+
 EXPORT GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, unsigned int color_2)
 {
   //color_2 = color_1;
 
-  PT pt1 = ev.point_api.point(0.0, 0.0, 0.0);
+  ButtonCacheItem *item = find_from_button_cache(sx,sy,color_1,color_2);
+  GameApi::BM res;
+  if (!item)
+    {
+    int c = get_current_block();
+    set_current_block(-2); // dont take ownership of this
+
+      PT pt1 = ev.point_api.point(0.0, 0.0, 0.0);
   PT pt2 = ev.point_api.point(0.0, sy, 0.0);
   BM w = ev.bitmap_api.gradient(pt1, pt2, color_1, color_2, sx,sy);
   unsigned int color_1L = color_1;
@@ -4975,14 +5063,30 @@ EXPORT GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, 
 
   BM w4 = ev.bitmap_api.blitbitmap_bb(w2, w, 0, 0, mask_1);
   BM w5 = ev.bitmap_api.blitbitmap_bb(w4, w3, 0, 0, mask_2);
+    set_current_block(c);
+
+  ButtonCacheItem *item2 = new ButtonCacheItem;
+  item2->sx=sx;
+  item2->sy=sy;
+  item2->color_1 = color_1;
+  item2->color_2 = color_2;
+  item2->bm = w5;
+  button_cache.push_back(item2);
+  res = w5;
+    }
+  else
+    {
+      res = item->bm;
+    }
+
   int key = sx+sy+color_1+color_2;
-  return icon_shared(w5,key);
+  return icon_shared(res,key);
 }
-EXPORT GameApi::W GameApi::GuiApi::or_elem(W w1, W w2)
+EXPORT GameApi::W GameApi::GuiApi::or_elem(W (*w1_func)(void*), W (*w2_func)(void*), void*data)
 {
-  GuiWidget *ww1 = find_widget(e, w1);
-  GuiWidget *ww2 = find_widget(e, w2);
-  return add_widget(e, new OrElemGuiWidget(ww1,ww2));
+  //GuiWidget *ww1 = find_widget(e, w1);
+  //GuiWidget *ww2 = find_widget(e, w2);
+  return add_widget(e, new OrElemGuiWidget(e,w1_func,w2_func,data));
 }
 EXPORT GameApi::W GameApi::GuiApi::scrollbar_y(int sx, int sy, int area_y)
 {
@@ -6401,8 +6505,32 @@ EXPORT std::string GameApi::GuiApi::moveapi_functions_item_label(int i)
   return name;
 }
 
+struct FunctionsData
+{
+  GameApi::GuiApi *gui;
+  std::string label;
+  GameApi::FtA atlas;
+  GameApi::BM atlas_bm;
+  std::vector<std::string> vec2;
+  std::vector<std::string> vec3;
+  GameApi::FtA atlas2;
+  GameApi::BM atlas_bm2;
+  GameApi::W insert;
+  
+};
 
-
+GameApi::W w1_func(void* ptr)
+{
+  FunctionsData *dt = (FunctionsData*)ptr;
+  GameApi::W w = dt->gui->list_item_opened(140-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, dt->insert);
+  return w;
+}
+GameApi::W w2_func(void *ptr)
+{
+  FunctionsData *dt = (FunctionsData*)ptr;
+  GameApi::W w2 = dt->gui->list_item_title(140-5, dt->label, dt->atlas, dt->atlas_bm);
+  return w2;
+}
 
 EXPORT GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert)
 {
@@ -6438,9 +6566,19 @@ EXPORT GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std:
       typestr+=item->ReturnType(0);
       vec3.push_back(typestr);
     }
-  GameApi::W w = gui.list_item_opened(140-5, label, atlas, atlas_bm, vec2, vec3, atlas2, atlas_bm2, insert);
-  GameApi::W w2 = gui.list_item_title(140-5, label, atlas, atlas_bm);
-  GameApi::W or_elem = gui.or_elem(w,w2);
+  FunctionsData *dt = new FunctionsData;
+  dt->gui = &gui;
+  dt->label = label;
+  dt->atlas = atlas;
+  dt->atlas_bm = atlas_bm;
+  dt->vec2 = vec2;
+  dt->vec3 = vec3;
+  dt->atlas2 = atlas2;
+  dt->atlas_bm2 = atlas_bm2;
+  dt->insert = insert;
+  //GameApi::W w = gui.list_item_opened(140-5, label, atlas, atlas_bm, vec2, vec3, atlas2, atlas_bm2, insert);
+  //GameApi::W w2 = gui.list_item_title(140-5, label, atlas, atlas_bm);
+  GameApi::W or_elem = gui.or_elem(w1_func,w2_func,(void*)dt);
   return or_elem;
 }
 

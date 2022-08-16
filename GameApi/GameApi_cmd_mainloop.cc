@@ -705,6 +705,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "P" },
 			 { "" },
 			 "ML", "mainloop_api", "print_stats"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::print_deps,
+			 "print_deps",
+			 { "ml", "num" },
+			 { "ML", "int" },
+			 { "", "10" },
+			 "ML", "mainloop_api", "print_deps"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::joystick_printer,
 			 "joy_printer_ml",
 			 { "ml" },
