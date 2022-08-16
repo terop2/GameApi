@@ -154,6 +154,22 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas(EveryApi &ev, Ft font, FtA atlas
   return bg;
 }
 
+struct FontCacheData
+{
+  GameApi::BM atlas_bm;
+  char ch;
+  GameApi::BM bm;
+};
+std::vector<FontCacheData*> font_cache;
+FontCacheData *find_font_cache_data(GameApi::BM atlas_bm, char ch)
+{
+  int s = font_cache.size();
+  for(int i=0;i<s;i++) { if (atlas_bm.id == font_cache[i]->atlas_bm.id && font_cache[i]->ch == ch) return font_cache[i];
+  }
+  return 0;
+}
+
+
 EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap)
 {
   FontAtlasInfo *info = find_font_atlas(e, atlas);
@@ -163,8 +179,20 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
   for(int i=0;i<sz;i++)
     {
       char ch = str[i];
+      FontCacheData *d = find_font_cache_data(atlas_bm,ch);
+      BM bm;
       FontAtlasGlyphInfo ii = info->char_map[ch];
-      BM bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x, ii.y+ii.top, ii.sx,ii.sy);
+      if (!d) {
+	bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x, ii.y+ii.top, ii.sx,ii.sy);
+	FontCacheData *dd = new FontCacheData;
+	dd->atlas_bm = atlas_bm;
+	dd->ch = ch;
+	dd->bm = bm;
+	font_cache.push_back(dd);
+      } else
+	{
+	  bm = d->bm;
+	}
 	//glyph(font, ch);
       int top = ii.top; //env->fonts[font.id].bm->bitmap_top(ch);
       BitmapHandle *handle = find_bitmap(e,bm);

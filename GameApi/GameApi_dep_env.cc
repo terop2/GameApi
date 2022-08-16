@@ -516,6 +516,13 @@ EXPORT GameApi::Env::Env()
   Global_latest_env = this;
   envimpl = (void*)new ::EnvImpl;
 }
+void print_dependencies(EnvImpl &impl, int num);
+EXPORT void GameApi::Env::print_dependencies(int num)
+{
+  ::EnvImpl *env = (::EnvImpl*)envimpl;
+  ::print_dependencies(*env,num);
+}
+					    
 EXPORT void GameApi::Env::free_memory()
 { 
   ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -2760,3 +2767,4 @@ void EnvImpl::async_scheduler()
 	}
     }
 }
+

@@ -5,6 +5,8 @@
 
 void InstallProgress(int num, std::string label, int max);
 void ProgressBar(int num, int val, int max, std::string label);
+void stackTrace();
+
 
 struct Block
 {
@@ -667,6 +669,7 @@ GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info)
 }
 GameApi::W add_widget(GameApi::Env &e, GuiWidget *w)
 {
+  // stackTrace();
   if (!w)
     {
       std::cout << "add_widget failed" << std::endl;
@@ -785,6 +788,7 @@ GameApi::S add_surface(GameApi::Env &e, SurfaceImpl i)
 
 GameApi::BM add_bitmap3(GameApi::Env &e, BitmapHandle *handle)
 {
+  //stackTrace();
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->bm.push_back(handle);
   GameApi::BM bm;
@@ -805,6 +809,7 @@ GameApi::BM add_bitmap3(GameApi::Env &e, BitmapHandle *handle)
 
 GameApi::BM add_bitmap(GameApi::Env &e, BitmapHandle *handle)
 {
+  //stackTrace();
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->bm.push_back(handle);
   GameApi::BM bm;
@@ -835,6 +840,7 @@ GameApi::BM add_color_bitmap(GameApi::Env &e, Bitmap<Color> *bm)
 }
 GameApi::BM add_color_bitmap2(GameApi::Env &e, Bitmap<Color> *bm)
 {
+  //stackTrace();
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bm;
   if (g_current_block != -2)
@@ -2601,3 +2607,185 @@ Cutter *find_cutter(GameApi::Env &e, GameApi::CT cut)
   EnvImpl *ee = ::EnvImpl::Environment(&e);
   return ee->cutters[cut.id];
 }
+
+struct Dep
+{
+  std::string name;
+  int count;
+};
+bool operator<(const Dep &a1, const Dep &a2)
+{
+  return a1.count>a2.count;
+}
+std::vector<Dep> g_dep;
+template<class T>
+void add_dep(std::vector<T> vec, std::string name) {
+  Dep d;
+  d.name = name;
+  d.count=vec.size();
+  g_dep.push_back(d);
+}
+
+
+
+
+#define DEP(name) \
+  add_dep(impl.name,#name)
+
+
+void print_dependencies(EnvImpl &impl, int num)
+{
+  g_dep=std::vector<Dep>();
+  
+  
+  DEP(pt);
+  DEP(vectors);
+  DEP(colors);
+  DEP(volumes);
+  DEP(floatvolumes);
+  DEP(bm);
+  DEP(bm_array);
+  DEP(bool_bm);
+  DEP(float_bm);
+  DEP(sp);
+  DEP(ln);
+  DEP(spr_pos);
+  DEP(anim);
+  DEP(poly);
+  DEP(func);
+  DEP(surfaces);
+  DEP(ids);
+  DEP(dims);
+  DEP(states);
+  DEP(state_ranges); // ST type points to this array
+  DEP(continuous_bitmaps);
+  DEP(vertex_array);
+  DEP(vertex_array_render);
+  DEP(texture_id);
+  DEP(shader_float_parameter);
+  DEP(shader_int_parameter);
+  
+  DEP(voxels);
+  DEP(voxels2);
+  DEP(timeranges); // statechange time ranges
+  DEP(timerange_vertexarrays); // statechange vertex arrays
+  DEP(shaders);
+  DEP(textures);
+  DEP(tex_quads);
+  DEP(separates);
+  DEP(plane_points);
+  DEP(plane_array);
+  DEP(waveforms);
+  DEP(object_move);
+  DEP(object_move_vertex_array);
+  DEP(layout_data);
+  DEP(layouts);
+  DEP(pointarray);
+  DEP(pointarray3);
+  DEP(pointcollarray);
+  DEP(linearray);
+  DEP(colorvolume);
+  DEP(distvolume);
+  DEP(vectorvolume);
+  DEP(pointsapi_points);
+  DEP(floats);
+  DEP(float_array);
+  DEP(fbos);
+  DEP(samples);
+  DEP(trackers);
+  DEP(tracker_buf);
+  DEP(wavs);
+  DEP(shader_module);
+  DEP(widgets);
+  DEP(gameapi_modules);
+  DEP(font_atlas);
+  DEP(main_loop);
+  DEP(arrays);
+  DEP(exprs);
+  DEP(phys);
+  DEP(tri_strip);
+  DEP(cutters);
+  DEP(boolean_ops);
+  DEP(polydistfield);
+  DEP(handle_array);
+  DEP(template_array);
+  DEP(collision_array);
+  DEP(movement_array);
+  DEP(implicit);
+  DEP(tree_levels);
+  DEP(trees);
+  DEP(materials);
+  DEP(shadercalls);
+  DEP(curves);
+  DEP(matrix_arrays);
+  DEP(matrix_curves);
+  DEP(plane_shapes);
+  DEP(skeletals);
+  DEP(temp_deletes);
+  DEP(polygon_array);
+  DEP(va_array);
+  DEP(mixed);
+  DEP(color_change);
+  DEP(blockers);
+  DEP(splitters);
+  DEP(vertex_anims);
+  DEP(point_transforms);
+  DEP(curve_pos);
+  DEP(arrays2);
+  DEP(int_fetchers);
+  DEP(string_fetchers);
+  DEP(float_fetchers);
+  DEP(point_fetchers);
+  DEP(glyph_interfaces);
+  DEP(font_interfaces);
+  DEP(string_displays);
+  DEP(cmds);
+  DEP(curve_patches);
+  DEP(prop_array);
+  DEP(space_3d);
+  DEP(plane_lines);
+  DEP(plane_points2);
+  DEP(plane_faces);
+  DEP(shader_interface);
+  DEP(cont_floats);
+  DEP(cont_bools);
+  DEP(dyn_change);
+  DEP(polynomials);
+  DEP(shaderbitmaps);
+  DEP(disk_store);
+  DEP(int_bitmaps);
+  DEP(move_input);
+  DEP(curve_group);
+  DEP(mesh_anim);
+  DEP(frame_loop);
+  DEP(frame_buffer);
+  DEP(heavys);
+  DEP(frm_widgets);
+  DEP(voxel_array);
+  DEP(uv);
+  DEP(matrixarray3);
+  DEP(html);
+  DEP(dyn);
+  DEP(vfi);
+  DEP(ffi);
+  DEP(farray);
+  DEP(memblock);
+  DEP(urlmemmap);
+  DEP(attach);
+  DEP(game_state);
+  DEP(gc);
+  DEP(tf);
+  DEP(shi);
+  DEP(shp);
+  DEP(pbo);
+  DEP(shc);
+  DEP(ss_mat);
+
+  std::sort(g_dep.begin(),g_dep.end());
+  int s=g_dep.size();
+  for(int i=0;i<std::min(s,num);i++)
+    {
+      std::cout << g_dep[i].name << ":" << g_dep[i].count << std::endl;
+    }
+}
+#undef DEP
