@@ -17000,6 +17000,7 @@ public:
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     code = std::string(vec->begin(), vec->end());
+    if (code=="") firsttime=true;
     }
   }
   virtual std::string script_file() const { return code; }
