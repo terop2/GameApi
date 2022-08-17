@@ -3,17 +3,17 @@ test
 
 (290,239)sphere uid8056 0 0 1 center:75696438303538:false:-1:0 radius:333530:false:-1:0 numfaces1:3135:false:-1:0 numfaces2:3135:false:-1:0
 (318,389)m_colour uid8057 0 0 1 ev:6576:false:-1:0 mix:30:false:-1:0
-(147,236)point uid8058 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(145,236)point uid8058 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (405,236)color uid8059 0 0 1 orig:75696438303536:false:-1:0 color:6666666666663030:false:-1:0
 (527,358)m_bind uid8060 0 0 1 p:75696439303139:false:-1:0 mat:75696438303631:false:-1:0
 (438,462)m_phong uid8061 0 0 1 ev:6576:false:-1:0 nxt:75696438303537:false:-1:0 light_dir_x:2D302E33:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:31:false:-1:0 ambient:6666383838383838:false:-1:0 highlight:6666666666666666:false:-1:0 pow:3330:false:-1:0
 (300,510)m_def uid8062 0 0 1 ev:6576:false:-1:0
 (274,630)m_bump_phong uid9586 0 0 1 ev:6576:false:-1:0 light_dir_x:2D302E33:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:2D31:false:-1:0 ambient:6666666638383030:false:-1:0 highlight:6666666666666666:false:-1:0 pow:3530:false:-1:0 fb:75696439353837:false:-1:0 bump_width:35:false:-1:0
 (139,621)from_red uid9587 0 0 1 color_bm:75696439353838:false:-1:0
-(69,481)bm_url uid9588 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
-(153,54)bar_chart uid9589 0 0 1 ev:6576:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F746573745F6261722E747874:false:-1:0 start_x:2D333030:false:-1:0 end_x:333030:false:-1:0 start_y:2D333030:false:-1:0 end_y:333030:false:-1:0 start_z:30:false:-1:0 end_z:3430:false:-1:0 per:3830:false:-1:0
+(68,481)bm_url uid9588 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
+(151,54)bar_chart uid9589 0 0 1 ev:6576:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F746573745F6261722E747874:false:-1:0 start_x:2D333030:false:-1:0 end_x:333030:false:-1:0 start_y:2D333030:false:-1:0 end_y:333030:false:-1:0 start_z:30:false:-1:0 end_z:3430:false:-1:0 per:3830:false:-1:0
 (235,-55)pie_chart uid9590 0 0 1 ev:6576:false:-1:0 c_x:30:false:-1:0 c_y:30:false:-1:0 start_angle:2D31:false:-1:0 end_angle:31:false:-1:0 radius:313030:false:-1:0 numsteps:3330:false:-1:0 start_z:30:false:-1:0 end_z:3330:false:-1:0
-(171,968)p_mtl uid14944 0 0 1 ev:6576:false:-1:0 obj_url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612F73706F6E7A612E6F626A:false:-1:0 mtl_url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612F73706F6E7A612E6D746C:false:-1:0 url_prefix:687474703A2F2F747067616D65732E6F72672F73706F6E7A61:false:-1:0 count:31:false:-1:0
+(171,968)p_mtl uid14944 0 0 1 ev:6576:false:-1:0 obj_url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612F73706F6E7A612E6F626A:false:-1:0 mtl_url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612F73706F6E7A612E6D746C:false:-1:0 url_prefix:687474703A2F2F747067616D65732E6F72672F73706F6E7A61:false:-1:0 count:31323030:false:-1:0
 (334,971)p_tex_splitter uid14945 0 0 1 obj:7569643134393434:false:-1:0 start_index:30:false:-1:0 end_index:3136:false:-1:0
 (337,1091)p_tex_splitter uid14946 0 0 1 obj:7569643134393434:false:-1:0 start_index:3136:false:-1:0 end_index:3332:false:-1:0
 (514,958)fix_vertex_order uid14947 0 0 1 p:7569643134393435:false:-1:0
@@ -29,11 +29,11 @@ test
 (891,1330)array_ml uid14957 0 0 1 ev:6576:false:-1:0 arr:5B75696431343935352C75696431343935365D:false:-1:0
 (1047,1352)move_ml uid14958 0 0 1 ev:6576:false:-1:0 ml:7569643134393537:false:-1:0 mn:7569643134393632:false:-1:0 clone_count:31:false:-1:0 time_delta:31302E30:false:-1:0
 (834,1554)mn_empty uid14959 0 0 1
-(960,1554)anim_scale uid14961 0 0 1 next:7569643134393539:false:-1:0 start_time:30:false:-1:0 end_time:313030:false:-1:0 sx:3130:false:-1:0 sy:3130:false:-1:0 sz:3130:false:-1:0
+(959,1554)anim_scale uid14961 0 0 1 next:7569643134393539:false:-1:0 start_time:30:false:-1:0 end_time:313030:false:-1:0 sx:3130:false:-1:0 sy:3130:false:-1:0 sz:3130:false:-1:0
 (1106,1554)mn_translate uid14962 0 0 1 next:7569643134393631:false:-1:0 dx:30:false:-1:0 dy:343230:false:-1:0 dz:30:false:-1:0
 (1179,1346)quake_ml uid14963 0 0 1 ev:6576:false:-1:0 ml:7569643134393538:false:-1:0 speed:35:false:-1:0 rot_speed:302E3032:false:-1:0
 (1298,1350)vr_window uid14964 0 0 1 ev:6576:false:-1:0 ml:7569643134393633:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:302E30:false:-1:0 duration:3130303030302E30:false:-1:0 invert:74727565:false:-1:0 translate:74727565:false:-1:0
-(918,230)run_window uid1419 0 0 1 ev:6576:false:-1:0 ml:75696431343230:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:30:false:-1:0 duration:313030303030:false:-1:0
+(917,230)run_window uid1419 0 0 1 ev:6576:false:-1:0 ml:75696431343230:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:30:false:-1:0 duration:313030303030:false:-1:0
 (779,237)fps_display uid1420 0 0 1 ev:6576:false:-1:0 ml:7569643131383831:false:-1:0 font:687474703A2F2F747067616D65732E6F72672F4368756E6B666976652E6F7466:false:-1:0
 (476,-31)sphere uid1421 0 0 1 center:75696431343232:false:-1:0 radius:333530:false:-1:0 numfaces1:3330:false:-1:0 numfaces2:3330:false:-1:0
 (352,-23)point uid1422 0 0 1 x:323030:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
@@ -41,7 +41,7 @@ test
 (621,655)FI_drawtext uid11690 0 0 1 font:7569643131363839:false:-1:0 str:48656C6C6F:false:-1:0 x_gap:35:false:-1:0 line_height:3330:false:-1:0
 (626,554)FI_largetext uid11691 0 0 1 ev:6576:false:-1:0 font:7569643131363839:false:-1:0 texturl:687474703A2F2F747067616D65732E6F72672F746578745F746573742E747874:false:-1:0 x_gap:35:false:-1:0 line_height:3330:false:-1:0 baseline_separation:2D31:false:-1:0
 (785,558)bm_render uid11692 0 0 1 ev:6576:false:-1:0 bm:7569643131363931:false:-1:0
-(905,558)bm_2d uid11693 0 0 1 ev:6576:false:-1:0 ml:7569643131363932:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
+(903,558)bm_2d uid11693 0 0 1 ev:6576:false:-1:0 ml:7569643131363932:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
 (409,1840)p_url uid11694 0 0 1 ev:6576:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F6578616D706C652E6F626A:false:-1:0 count:3130:false:-1:0
 (408,1975)p_ds_url uid11695 0 0 1 ev:6576:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F73706F6E7A612E6473:false:-1:0
 (407,2109)p_stl uid11696 0 0 1 url:687474703A2F2F747067616D65732E6F72672F746561706F742E73746C:false:-1:0
@@ -62,13 +62,13 @@ test
 (361,3057)flip_normals uid23054 0 0 1 orig:7569643233303531:false:-1:0
 (183,2775)m_gltf_env uid25598 0 0 1 ev:6576:false:-1:0 base_url:687474703A2F2F747067616D65732E6F72672F:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F746D702E676C62:false:-1:0 material_id:30:false:-1:0 mix:31:false:-1:0 diffuse:7569643235363034:false:-1:0 specular:7569643235363034:false:-1:0 bfrd:7569643235363034:false:-1:0
 (203,2665)p_gltf uid25599 0 0 1 ev:6576:false:-1:0 base_url:687474703A2F2F747067616D65732E6F72672F:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F746D702E676C62:false:-1:0 mesh_index:30:false:-1:0 prim_index:30:false:-1:0
-(22,2763)bm_url uid25600 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
-(34,2875)bm_url uid25601 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
-(41,2994)bm_url uid25602 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
+(21,2763)bm_url uid25600 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
+(33,2875)bm_url uid25601 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
+(40,2994)bm_url uid25602 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
 (350,2738)m_bind uid25603 0 0 1 p:7569643235353939:false:-1:0 mat:7569643235353938:false:-1:0
-(151,3175)gradient uid25604 0 0 1 pos_1:7569643235363035:false:-1:0 pos_2:7569643235363036:false:-1:0 color_1:6666666666666666:false:-1:0 color_2:6666303030303030:false:-1:0 sx:323536:false:-1:0 sy:323536:false:-1:0
-(18,3126)point uid25605 0 0 1 x:323536:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
-(23,3234)point uid25606 0 0 1 x:30:false:-1:0 y:323536:false:-1:0 z:30:false:-1:0
+(149,3175)gradient uid25604 0 0 1 pos_1:7569643235363035:false:-1:0 pos_2:7569643235363036:false:-1:0 color_1:6666666666666666:false:-1:0 color_2:6666303030303030:false:-1:0 sx:323536:false:-1:0 sy:323536:false:-1:0
+(17,3126)point uid25605 0 0 1 x:323536:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
+(22,3234)point uid25606 0 0 1 x:30:false:-1:0 y:323536:false:-1:0 z:30:false:-1:0
 (108,3571)vr_webcam_slow uid7619 0 0 1 ev:6576:false:-1:0 num:30:false:-1:0
 (324,3455)fbo_ml uid7621 0 0 1 ev:6576:false:-1:0 txid:75696437363139:false:-1:0 start_x:30:false:-1:0 end_x:31323830:false:-1:0 start_y:30:false:-1:0 end_y:393030:false:-1:0 z:30:false:-1:0
 (464,3453)bm_2d uid7622 0 0 1 ev:6576:false:-1:0 ml:75696437363231:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
@@ -77,11 +77,11 @@ test
 (431,3703)fbo_id uid249 0 0 1 ev:6576:false:-1:0 mainloop:756964323531:false:-1:0 sx:2D31:false:-1:0 sy:2D31:false:-1:0 translate:66616C7365:false:-1:0
 (592,3769)fbo_ml uid250 0 0 1 ev:6576:false:-1:0 txid:756964323439:false:-1:0 start_x:302E30:false:-1:0 end_x:383030:false:-1:0 start_y:302E30:false:-1:0 end_y:363030:false:-1:0 z:302E30:false:-1:0
 (273,3780)move_ml uid251 0 0 1 ev:6576:false:-1:0 ml:756964323438:false:-1:0 mn:756964323533:false:-1:0 clone_count:31:false:-1:0 time_delta:31302E30:false:-1:0
-(28,3842)mn_empty uid252 0 0 1
-(149,3845)mn_translate uid253 0 0 1 next:756964323532:false:-1:0 dx:2D363430:false:-1:0 dy:2D343530:false:-1:0 dz:30:false:-1:0
+(27,3842)mn_empty uid252 0 0 1
+(147,3845)mn_translate uid253 0 0 1 next:756964323532:false:-1:0 dx:2D363430:false:-1:0 dy:2D343530:false:-1:0 dz:30:false:-1:0
 (181,4060)sphere uid456 0 0 1 center:756964343538:false:-1:0 radius:333530:false:-1:0 numfaces1:3330:false:-1:0 numfaces2:3330:false:-1:0
 (187,4193)torus uid457 0 0 1 ev:6576:false:-1:0 numfaces1:3230:false:-1:0 numfaces2:3230:false:-1:0 center:756964343538:false:-1:0 radius1:3235302E30:false:-1:0 radius2:35302E30:false:-1:0
-(30,4132)point uid458 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(29,4132)point uid458 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (313,4059)random_quad uid459 0 0 1 ev:6576:false:-1:0 p:756964343536:false:-1:0 count:33303030:false:-1:0
 (315,4194)random_quad uid460 0 0 1 ev:6576:false:-1:0 p:756964343537:false:-1:0 count:33303030:false:-1:0
 (496,4059)anim_mix_pts uid461 0 0 1 obj1:7569643134313431:false:-1:0 obj2:7569643134313432:false:-1:0 start_val:30:false:-1:0 end_val:31:false:-1:0 start_time:30:false:-1:0 end_time:3430:false:-1:0
@@ -96,16 +96,16 @@ test
 (503,4309)anim_mix_pts uid6070 0 0 1 obj1:756964343539:false:-1:0 obj2:756964343630:false:-1:0 start_val:30:false:-1:0 end_val:31:false:-1:0 start_time:3830:false:-1:0 end_time:313230:false:-1:0
 (689,4269)or_points uid9113 0 0 1 p1:756964343637:false:-1:0 p2:75696436303730:false:-1:0
 (1219,4293)move_ml uid10753 0 0 1 ev:6576:false:-1:0 ml:7569643130373537:false:-1:0 mn:7569643130373535:false:-1:0 clone_count:31:false:-1:0 time_delta:31302E30:false:-1:0
-(1016,4309)anim_rotate uid10755 0 0 1 next:7569643130373536:false:-1:0 start_time:30:false:-1:0 end_time:38303030:false:-1:0 p_x:30:false:-1:0 p_y:30:false:-1:0 p_z:30:false:-1:0 v_x:30:false:-1:0 v_y:31:false:-1:0 v_z:30:false:-1:0 angle:363238:false:-1:0
-(908,4290)mn_empty uid10756 0 0 1
+(1015,4309)anim_rotate uid10755 0 0 1 next:7569643130373536:false:-1:0 start_time:30:false:-1:0 end_time:38303030:false:-1:0 p_x:30:false:-1:0 p_y:30:false:-1:0 p_z:30:false:-1:0 v_x:30:false:-1:0 v_y:31:false:-1:0 v_z:30:false:-1:0 angle:363238:false:-1:0
+(906,4290)mn_empty uid10756 0 0 1
 (1156,4173)repeat_ml uid10757 0 0 1 ev:6576:false:-1:0 ml:756964343632:false:-1:0 duration:3830:false:-1:0
 (1280,4170)run_window uid10758 0 0 1 ev:6576:false:-1:0 ml:7569643130373533:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:302E30:false:-1:0 duration:3130303030302E30:false:-1:0
 (553,5022)baked_shadow uid8249 0 0 1 texture_p:75696438323530:false:-1:0 scene_p:75696438323536:false:-1:0 texture:75696438323537:false:-1:0 count:323030303030:false:-1:0 light_pos_x:2D3330:false:-1:0 light_pos_y:333030:false:-1:0 light_pos_z:30:false:-1:0 shadow_darkness:302E32:false:-1:0 softness:3530:false:-1:0
 (214,4956)sphere uid8250 0 0 1 center:75696438323531:false:-1:0 radius:333530:false:-1:0 numfaces1:3135:false:-1:0 numfaces2:35:false:-1:0
-(72,4953)point uid8251 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(71,4953)point uid8251 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (218,5096)sphere uid8252 0 0 1 center:75696438323533:false:-1:0 radius:333530:false:-1:0 numfaces1:3135:false:-1:0 numfaces2:35:false:-1:0
-(69,5091)point uid8253 0 0 1 x:2D333530:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
-(61,5214)point uid8254 0 0 1 x:333530:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
+(68,5091)point uid8253 0 0 1 x:2D333530:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
+(60,5214)point uid8254 0 0 1 x:333530:false:-1:0 y:30:false:-1:0 z:30:false:-1:0
 (217,5218)sphere uid8255 0 0 1 center:75696438323534:false:-1:0 radius:333530:false:-1:0 numfaces1:3135:false:-1:0 numfaces2:35:false:-1:0
 (351,5180)p_or_elem uid8256 0 0 1 p1:75696438323532:false:-1:0 p2:75696438323535:false:-1:0
 (364,5070)chessboard uid8257 0 0 1 tile_sx:3130:false:-1:0 tile_sy:3130:false:-1:0 count_x:3230:false:-1:0 count_y:3230:false:-1:0 color_1:6666666666666666:false:-1:0 color_2:6666383838383838:false:-1:0
@@ -117,7 +117,7 @@ test
 (777,5249)m_phong uid30765 0 0 1 ev:6576:false:-1:0 nxt:75696438393634:false:-1:0 light_dir_x:30:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:30:false:-1:0 ambient:6666303030303030:false:-1:0 highlight:6666363636363636:false:-1:0 pow:35:false:-1:0
 (771,4941)m_phong uid30766 0 0 1 ev:6576:false:-1:0 nxt:75696438393631:false:-1:0 light_dir_x:30:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:30:false:-1:0 ambient:6666666638383030:false:-1:0 highlight:6666363636363636:false:-1:0 pow:35:false:-1:0
 (233,5611)sphere uid6726 0 0 1 center:75696436373237:false:-1:0 radius:333530:false:-1:0 numfaces1:33:false:-1:0 numfaces2:37:false:-1:0
-(84,5607)point uid6727 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(82,5607)point uid6727 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (477,5736)m_bind uid6728 0 0 1 p:75696436373236:false:-1:0 mat:75696436373239:false:-1:0
 (252,5736)m_flat uid6729 0 0 1 ev:6576:false:-1:0 nxt:75696436373334:false:-1:0 color1:6666383838386666:false:-1:0 color2:6666666634343232:false:-1:0 color3:6666303066666666:false:-1:0
 (134,5734)m_def uid6730 0 0 1 ev:6576:false:-1:0
@@ -126,7 +126,7 @@ test
 (132,5855)m_colour uid6734 0 0 1 ev:6576:false:-1:0 mix:302E35:false:-1:0
 (687,-573)vr_overlay uid23347 0 0 1 txid:7569643138313036:false:-1:0 key:61:false:-1:0 name:7465737469:false:-1:0 sx:383030:false:-1:0 sy:363030:false:-1:0
 (157,-565)vr_webcam_slow uid23348 0 0 1 ev:6576:false:-1:0 num:30:false:-1:0
-(83,-718)chessboard uid23349 0 0 1 tile_sx:3130:false:-1:0 tile_sy:3130:false:-1:0 count_x:3830:false:-1:0 count_y:3830:false:-1:0 color_1:6666666666666666:false:-1:0 color_2:6666383838383838:false:-1:0
+(81,-718)chessboard uid23349 0 0 1 tile_sx:3130:false:-1:0 tile_sy:3130:false:-1:0 count_x:3830:false:-1:0 count_y:3830:false:-1:0 color_1:6666666666666666:false:-1:0 color_2:6666383838383838:false:-1:0
 (504,-722)fbo_id uid23350 0 0 1 ev:6576:false:-1:0 mainloop:7569643233333532:false:-1:0 sx:2D31:false:-1:0 sy:2D31:false:-1:0 translate:66616C7365:false:-1:0
 (225,-715)bm_render uid23351 0 0 1 ev:6576:false:-1:0 bm:7569643233333439:false:-1:0
 (361,-717)bm_2d uid23352 0 0 1 ev:6576:false:-1:0 ml:7569643233333531:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
@@ -147,7 +147,7 @@ test
 (174,6601)vr_webcam_win uid21460 0 0 1 ev:6576:false:-1:0 sx:383030:false:-1:0 sy:363030:false:-1:0 num:30:false:-1:0
 (352,6610)m_texture_id uid21461 0 0 1 ev:6576:false:-1:0 txid:7569643231343630:false:-1:0 mix:31:false:-1:0
 (250,6471)sphere uid21462 0 0 1 center:7569643231343633:false:-1:0 radius:333530:false:-1:0 numfaces1:3330:false:-1:0 numfaces2:3330:false:-1:0
-(119,6478)point uid21463 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(117,6478)point uid21463 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (519,6541)m_bind uid21464 0 0 1 p:7569643231373931:false:-1:0 mat:7569643231343631:false:-1:0
 (573,6399)texcoord_from_normal uid21789 0 0 1 p:7569643231373930:false:-1:0
 (380,6431)recalc_normals uid21790 0 0 1 orig:7569643231343632:false:-1:0
@@ -158,7 +158,7 @@ test
 (556,7035)mn_translate uid9317 0 0 1 next:75696439333136:false:-1:0 dx:2D383030:false:-1:0 dy:343030:false:-1:0 dz:30:false:-1:0
 (707,6998)mn_rotatey uid9318 0 0 1 next:75696439333137:false:-1:0 angle:2D312E3539:false:-1:0
 (849,7041)anim_rotate uid9319 0 0 1 next:75696439333138:false:-1:0 start_time:30:false:-1:0 end_time:302E303031:false:-1:0 p_x:30:false:-1:0 p_y:30:false:-1:0 p_z:30:false:-1:0 v_x:30:false:-1:0 v_y:31:false:-1:0 v_z:30:false:-1:0 angle:312E3539:false:-1:0
-(995,7044)mn_translate uid9320 0 0 1 next:75696439333139:false:-1:0 dx:2D383030:false:-1:0 dy:2D31343030:false:-1:0 dz:30:false:-1:0
+(994,7044)mn_translate uid9320 0 0 1 next:75696439333139:false:-1:0 dx:2D383030:false:-1:0 dy:2D31343030:false:-1:0 dz:30:false:-1:0
 (1157,7008)move_ml uid9321 0 0 1 ev:6576:false:-1:0 ml:75696439333234:false:-1:0 mn:75696439333230:false:-1:0 clone_count:31:false:-1:0 time_delta:31302E30:false:-1:0
 (447,6866)bm_render uid9322 0 0 1 ev:6576:false:-1:0 bm:75696439333134:false:-1:0
 (854,7162)mn_rotatey uid9323 0 0 1 next:75696439333138:false:-1:0 angle:312E3539:false:-1:0
@@ -167,12 +167,12 @@ test
 (699,6656)m_def uid9326 0 0 1 ev:6576:false:-1:0
 (837,6666)m_fade uid9327 0 0 1 ev:6576:false:-1:0 next:75696439333238:false:-1:0 start_time:30:false:-1:0 end_time:35:false:-1:0 start_time2:33303030:false:-1:0 end_time2:34303030:false:-1:0
 (445,6750)m_texture uid9328 0 0 1 ev:6576:false:-1:0 bm:75696439333134:false:-1:0 mix:312E30:false:-1:0
-(910,6850)bm_2d uid9329 0 0 1 ev:6576:false:-1:0 ml:75696439333234:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
+(908,6850)bm_2d uid9329 0 0 1 ev:6576:false:-1:0 ml:75696439333234:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
 (217,7383)new uid28786 0 0 1 sx:3130303030:false:-1:0 sy:3130303030:false:-1:0 color:3030303030303030:false:-1:0
 (346,7382)bm_render uid28787 0 0 1 ev:6576:false:-1:0 bm:7569643238373836:false:-1:0
 (484,7384)bm_2d uid28788 0 0 1 ev:6576:false:-1:0 ml:7569643238373837:false:-1:0 tl_x:302E30:false:-1:0 tl_y:302E30:false:-1:0 br_x:3830302E30:false:-1:0 br_y:3630302E30:false:-1:0
 (268,7754)sphere uid7513 0 0 1 center:75696437353134:false:-1:0 radius:333530:false:-1:0 numfaces1:3330:false:-1:0 numfaces2:3330:false:-1:0
-(122,7757)point uid7514 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(120,7757)point uid7514 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (413,7798)m_bind uid7515 0 0 1 p:75696437353133:false:-1:0 mat:75696437353138:false:-1:0
 (177,7884)m_def uid7516 0 0 1 ev:6576:false:-1:0
 (307,7907)m_fade uid7518 0 0 1 ev:6576:false:-1:0 next:75696437353136:false:-1:0 start_time:302E30:false:-1:0 end_time:31302E30:false:-1:0 start_time2:33302E30:false:-1:0 end_time2:34302E30:false:-1:0
@@ -180,7 +180,7 @@ test
 (313,8181)m_web uid8490 0 0 1 ev:6576:false:-1:0 nxt:75696438343839:false:-1:0 mult:2D35:false:-1:0 linewidth:32:false:-1:0 linecolor:6666303030303030:false:-1:0
 (317,8287)m_bevel uid8491 0 0 1 ev:6576:false:-1:0 nxt:75696438343839:false:-1:0 dir:2D3135:false:-1:0 linewidth:32:false:-1:0
 (563,7978)m_fur uid8492 0 0 1 ev:6576:false:-1:0 nxt:75696438343935:false:-1:0 center:75696438343933:false:-1:0 dist:3130:false:-1:0 max_angle:312E3539:false:-1:0 count:313530303030:false:-1:0 size:32:false:-1:0 cone_numfaces:34:false:-1:0
-(160,8061)point uid8493 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(158,8061)point uid8493 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (499,8199)m_phong uid8494 0 0 1 ev:6576:false:-1:0 nxt:75696438343839:false:-1:0 light_dir_x:2D302E33:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:2D312E30:false:-1:0 ambient:6666666638383030:false:-1:0 highlight:6666363636363636:false:-1:0 pow:352E30:false:-1:0
 (465,8385)m_snow uid8495 0 0 1 ev:6576:false:-1:0 nxt:75696438343839:false:-1:0 color1:6666616161616161:false:-1:0 color2:6666656565656565:false:-1:0 color3:6666666666666666:false:-1:0 mix_val:302E3935:false:-1:0
 (693,8094)m_web uid8496 0 0 1 ev:6576:false:-1:0 nxt:75696438343839:false:-1:0 mult:2D35:false:-1:0 linewidth:32:false:-1:0 linecolor:6666303030303030:false:-1:0
@@ -210,23 +210,23 @@ test
 (641,9103)smooth_normals uid11883 0 0 1 orig::false:-1:0
 (652,9450)m_bloom uid17561 0 0 1 ev:6576:false:-1:0 nxt:7569643138333433:false:-1:0 bm:7569643137353632:false:-1:0 r_cut:302E37:false:-1:0 g_cut:302E37:false:-1:0 b_cut:302E37:false:-1:0 pixel_x:302E3031:false:-1:0 pixel_y:302E3031:false:-1:0
 (496,9497)chessboard uid17562 0 0 1 tile_sx:3130:false:-1:0 tile_sy:3130:false:-1:0 count_x:38:false:-1:0 count_y:38:false:-1:0 color_1:6666666666666666:false:-1:0 color_2:6666303030303030:false:-1:0
-(101,9415)bm_bumpmap uid17563 0 0 1 fb::false:-1:0 h:31302E30:false:-1:0
+(100,9415)bm_bumpmap uid17563 0 0 1 fb::false:-1:0 h:31302E30:false:-1:0
 (787,9370)m_choose_color uid17564 0 0 1 ev:6576:false:-1:0 nxt:7569643138333433:false:-1:0 color:6666666638383434:false:-1:0 mix_val:302E35:false:-1:0
 (317,9391)m_marble uid17565 0 0 1 ev:6576:false:-1:0 nxt:7569643138333432:false:-1:0 count:3330303030:false:-1:0 cubesize:35:false:-1:0
 (225,9152)m_web uid17566 0 0 1 ev:6576:false:-1:0 nxt:7569643138333432:false:-1:0 mult:35:false:-1:0 linewidth:32:false:-1:0 linecolor:6666303030303030:false:-1:0
-(100,9159)m_flat uid17567 0 0 1 ev:6576:false:-1:0 nxt:7569643138333432:false:-1:0 color1:6666383838386666:false:-1:0 color2:6666666634343232:false:-1:0 color3:6666666666666666:false:-1:0
+(99,9159)m_flat uid17567 0 0 1 ev:6576:false:-1:0 nxt:7569643138333432:false:-1:0 color1:6666383838386666:false:-1:0 color2:6666666634343232:false:-1:0 color3:6666666666666666:false:-1:0
 (1437,1352)html_window uid3845 0 0 1 ev:6576:false:-1:0 r:7569643134393634:false:-1:0 homepage:687474703A2F2F747067616D65732E6F72672F:false:-1:0
 (798,2774)run_window uid4691 0 0 1 ev:6576:false:-1:0 ml:7569643139353737:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:302E30:false:-1:0 duration:3130303030302E30:false:-1:0
 (935,2770)html_window uid4692 0 0 1 ev:6576:false:-1:0 r:75696434363931:false:-1:0 homepage:687474703A2F2F747067616D65732E6F72672F:false:-1:0
 (166,10117)ml_gltf_all uid12612 0 0 1 ev:6576:false:-1:0 base_url:66696C653A2F2F643A2F:false:-1:0 url:66696C653A2F2F643A2F53696D706C65536B696E2E676C7466:false:-1:0
 (305,10159)move_ml uid12613 0 0 1 ev:6576:false:-1:0 ml:7569643132363132:false:-1:0 mn:7569643132363134:false:-1:0 clone_count:31:false:-1:0 time_delta:31302E30:false:-1:0
-(56,10254)mn_empty uid12614 0 0 1
+(55,10254)mn_empty uid12614 0 0 1
 (177,10257)mn_scale uid12615 0 0 1 next:7569643132363134:false:-1:0 sx:302E35:false:-1:0 sy:302E35:false:-1:0 sz:302E35:false:-1:0
 (164,9894)p_gltf uid23617 0 0 1 ev:6576:false:-1:0 base_url:66696C653A2F2F643A2F:false:-1:0 url:66696C653A2F2F643A2F53696D706C65536B696E2E676C7466:false:-1:0 mesh_index:30:false:-1:0 prim_index:30:false:-1:0
 (166,10002)m_gltf uid23618 0 0 1 ev:6576:false:-1:0 base_url:66696C653A2F2F643A2F:false:-1:0 url:66696C653A2F2F643A2F53696D706C65536B696E2E676C7466:false:-1:0 material_id:30:false:-1:0 mix:31:false:-1:0
 (301,9961)m_bind uid23619 0 0 1 p:7569643233363137:false:-1:0 mat:7569643233363138:false:-1:0
 (169,9769)ml_gltf_node uid23620 0 0 1 ev:6576:false:-1:0 base_url:66696C653A2F2F643A2F:false:-1:0 url:66696C653A2F2F643A2F53696D706C65536B696E2E676C7466:false:-1:0 node_id:30:false:-1:0
-(126,10760)FI_load uid9900 0 0 1 url:687474703A2F2F747067616D65732E6F72672F4368756E6B666976652E6F7466:false:-1:0 sx:323030:false:-1:0 sy:323030:false:-1:0
+(124,10760)FI_load uid9900 0 0 1 url:687474703A2F2F747067616D65732E6F72672F4368756E6B666976652E6F7466:false:-1:0 sx:323030:false:-1:0 sy:323030:false:-1:0
 (257,10763)FI_drawtext uid9901 0 0 1 font:75696439393030:false:-1:0 str:436F696E73:false:-1:0 x_gap:35:false:-1:0 line_height:3330:false:-1:0
 (114,10630)emptybool uid9902 0 0 1 sx:383030:false:-1:0 sy:323630:false:-1:0
 (253,10634)rectangle uid9903 0 0 1 bg:75696439393032:false:-1:0 x:3230:false:-1:0 y:323330:false:-1:0 width:373330:false:-1:0 height:3330:false:-1:0
@@ -243,9 +243,9 @@ test
 (740,10965)move_ml uid9914 0 0 1 ev:6576:false:-1:0 ml:75696439393132:false:-1:0 mn:75696439393136:false:-1:0 clone_count:31:false:-1:0 time_delta:31302E30:false:-1:0
 (469,11023)mn_empty uid9915 0 0 1
 (589,11025)mn_translate uid9916 0 0 1 next:75696439393135:false:-1:0 dx:323030:false:-1:0 dy:333030:false:-1:0 dz:30:false:-1:0
-(969,10950)run_window uid9917 0 0 1 ev:6576:false:-1:0 ml:75696439393133:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:302E30:false:-1:0 duration:3130303030302E30:false:-1:0
+(968,10950)run_window uid9917 0 0 1 ev:6576:false:-1:0 ml:75696439393133:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:302E30:false:-1:0 duration:3130303030302E30:false:-1:0
 (219,11396)m_edge uid19000 0 0 1 ev:6576:false:-1:0 nxt:7569643139303031:false:-1:0 edge_width:312E393939:false:-1:0 edge_color:6666666666666666:false:-1:0
-(71,11404)m_def uid19001 0 0 1 ev:6576:false:-1:0
+(70,11404)m_def uid19001 0 0 1 ev:6576:false:-1:0
 (313,11515)m_phong uid19002 0 0 1 ev:6576:false:-1:0 nxt:7569643139303031:false:-1:0 light_dir_x:30:false:-1:0 light_dir_y:30:false:-1:0 light_dir_z:2D31:false:-1:0 ambient:6666383832323030:false:-1:0 highlight:6666666666666666:false:-1:0 pow:313530:false:-1:0
 (654,11367)quake_ml2 uid21681 0 0 1 ev:6576:false:-1:0 ml:7569643231363834:false:-1:0 speed:32302E30:false:-1:0 rot_speed:302E3033:false:-1:0
 (323,11283)sphere uid21682 0 0 1 center:7569643231363833:false:-1:0 radius:3130302E30:false:-1:0 numfaces1:3330:false:-1:0 numfaces2:3330:false:-1:0
@@ -259,7 +259,7 @@ test
 (426,11437)m_or_elem uid11380 0 0 1 ev:6576:false:-1:0 mat1:7569643139303030:false:-1:0 mat2:7569643139303032:false:-1:0
 (243,-1439)torus uid18895 0 0 1 ev:6576:false:-1:0 numfaces1:3230:false:-1:0 numfaces2:3230:false:-1:0 center:7569643138383937:false:-1:0 radius1:3235302E30:false:-1:0 radius2:35302E30:false:-1:0
 (248,-1305)cube uid18896 0 0 1 start_x:2D3130302E30:false:-1:0 end_x:3130302E30:false:-1:0 start_y:2D3130302E30:false:-1:0 end_y:3130302E30:false:-1:0 start_z:2D3130302E30:false:-1:0 end_z:3130302E30:false:-1:0
-(117,-1442)point uid18897 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
+(115,-1442)point uid18897 0 0 1 x:302E30:false:-1:0 y:302E30:false:-1:0 z:302E30:false:-1:0
 (583,-1300)m_bind uid18898 0 0 1 p:7569643138393031:false:-1:0 mat:7569643138393030:false:-1:0
 (289,-1188)m_def uid18899 0 0 1 ev:6576:false:-1:0
 (428,-1191)m_phong uid18900 0 0 1 ev:6576:false:-1:0 nxt:7569643138383939:false:-1:0 light_dir_x:30:false:-1:0 light_dir_y:30:false:-1:0 light_dir_z:30:false:-1:0 ambient:6666666638383030:false:-1:0 highlight:6666666666666666:false:-1:0 pow:3535:false:-1:0
@@ -279,7 +279,7 @@ test
 (363,12176)anim_translate uid32639 0 0 1 next:7569643332363338:false:-1:0 start_time:3330:false:-1:0 end_time:3430:false:-1:0 dx:30:false:-1:0 dy:2D333030:false:-1:0 dz:30:false:-1:0
 (530,12195)anim_repeat uid32640 0 0 1 next:7569643332363339:false:-1:0 start_time:30:false:-1:0 repeat_duration:3430:false:-1:0
 (886,11954)run_window uid32641 0 0 1 ev:6576:false:-1:0 ml:7569643332363330:false:-1:0 logo:66616C7365:false:-1:0 fpscounter:66616C7365:false:-1:0 start_time:302E30:false:-1:0 duration:3130303030302E30:false:-1:0
-(70,791)bm_url uid11767 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
+(69,791)bm_url uid11767 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
 (193,794)rot90 uid11768 0 0 1 orig:7569643131373637:false:-1:0
 (326,793)rot90 uid11769 0 0 1 orig:7569643131373638:false:-1:0
 (462,793)rot90 uid11770 0 0 1 orig:7569643131373639:false:-1:0
@@ -307,18 +307,18 @@ test
 (542,-2307)async_url uid21997 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (660,-2306)async_url uid21998 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (789,-2304)async_url uid21999 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
-(913,-2304)async_url uid22000 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
+(911,-2304)async_url uid22000 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (424,-2185)async_url uid22001 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (536,-2198)async_url uid22002 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (660,-2185)async_url uid22003 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (779,-2184)async_url uid22004 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
-(921,-2180)async_url uid22005 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
-(65,-2100)scene_ml uid22006 0 0 1 ev:6576:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F6C616E6473636170652E73636E:false:-1:0 sx:363030:false:-1:0 sy:363030:false:-1:0
+(920,-2180)async_url uid22005 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
+(64,-2100)scene_ml uid22006 0 0 1 ev:6576:false:-1:0 url:687474703A2F2F747067616D65732E6F72672F6C616E6473636170652E73636E:false:-1:0 sx:363030:false:-1:0 sy:363030:false:-1:0
 (419,-2068)async_url uid22007 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (543,-2077)async_url uid22008 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (660,-2065)async_url uid22009 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (780,-2057)async_url uid22010 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
-(920,-2054)async_url uid22011 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
+(919,-2054)async_url uid22011 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (414,-1945)async_url uid22012 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (541,-1945)async_url uid22013 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
 (660,-1945)async_url uid22014 0 0 1 url:68747470733A2F2F747067616D65732E6F72672F:false:-1:0 ml::false:-1:0
@@ -338,19 +338,19 @@ test
 (415,-3648)sphere uid22169 0 0 1 center:7569643232313632:false:-1:0 radius:333530:false:-1:0 numfaces1:3330:false:-1:0 numfaces2:3330:false:-1:0
 (633,-3601)m_bind uid22170 0 0 1 p:7569643232313736:false:-1:0 mat:7569643238353331:false:-1:0
 (470,-3531)m_texture uid22171 0 0 1 ev:6576:false:-1:0 bm::false:-1:0 mix:312E30:false:-1:0
-(50,-3679)bm_url uid22172 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
+(49,-3679)bm_url uid22172 0 0 1 url:687474703A2F2F747067616D65732E6F72672F67616D656170695F6C6F676F2E706E67:false:-1:0
 (172,-3681)repeat uid22173 0 0 1 orig1:7569643232313732:false:-1:0 x_count:35:false:-1:0 y_xount:35:false:-1:0
-(62,-3417)flip_y uid22174 0 0 1 orig:7569643232313733:false:-1:0
+(61,-3417)flip_y uid22174 0 0 1 orig:7569643232313733:false:-1:0
 (755,-3787)texcoord_from_normal uid22176 0 0 1 p:7569643232313738:false:-1:0
 (377,-3769)recalc_normals uid22177 0 0 1 orig:7569643232313639:false:-1:0
 (554,-3766)smooth_normals uid22178 0 0 1 orig:7569643232313737:false:-1:0
 (288,-3657)bm_scale uid25406 0 0 1 ev:6576:false:-1:0 orig:7569643232313733:false:-1:0 sx:31303234:false:-1:0 sy:31303234:false:-1:0
 (681,-3902)color_from_normals uid25407 0 0 1 orig:7569643232313738:false:-1:0
-(27,-3151)texcoord_from_normal uid25408 0 0 1 p::false:-1:0
+(26,-3151)texcoord_from_normal uid25408 0 0 1 p::false:-1:0
 (536,-3484)m_texture_many uid28531 0 0 1 ev:6576:false:-1:0 vec:5B75696432353430365D:false:-1:0 mix:312E30:false:-1:0
 (179,-4483)cube uid30597 0 0 0 start_x:2D3130302E30:false:-1:7914272 end_x:3130302E30:false:-1:7914272 start_y:2D3130302E30:false:-1:7914272 end_y:3130302E30:false:-1:7914272 start_z:2D3130302E30:false:-1:7914272 end_z:3130302E30:false:-1:7914272
 (176,-4376)sphere uid30598 0 0 0 center:7569643330353939:false:-1:0 radius:3130302E30:false:-1:7914272 numfaces1:3330:false:-1:7914272 numfaces2:3330:false:-1:7914272
-(51,-4380)point uid30599 0 0 0 x:302E30:false:-1:7914272 y:302E30:false:-1:7914272 z:302E30:false:-1:7914272
+(50,-4380)point uid30599 0 0 0 x:302E30:false:-1:7914272 y:302E30:false:-1:7914272 z:302E30:false:-1:7914272
 (296,-4487)p_render uid30600 0 0 0 ev:6576:false:-1:7914272 p:7569643330353937:false:-1:0
 (295,-4374)p_render uid30601 0 0 0 ev:6576:false:-1:7914272 p:7569643330353938:false:-1:0
 (421,-4426)array_ml uid30602 0 0 0 ev:6576:false:-1:7914272 arr:5B75696433303630302C75696433303630315D:false:-1:0
@@ -358,30 +358,26 @@ test
 (163,-4231)m_def uid30604 0 0 0 ev:6576:false:-1:7914272
 (809,-5526)ml_gltf_all uid3207 0 0 0 ev:6576:false:-1:7914272 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:7914272 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:7914272
 (832,-5098)run_window uid3209 0 0 0 ev:6576:false:-1:7914272 ml:75696433323230:false:-1:0 logo:66616C7365:false:-1:7914272 fpscounter:66616C7365:false:-1:7914272 start_time:302E30:false:-1:7914272 duration:3130303030302E30:false:-1:7914272
-(388,-5149)move_ml uid3210 0 0 0 ev:6576:false:-1:7914272 ml:75696436303437:false:-1:0 mn:75696433323135:false:-1:0 clone_count:31:false:-1:7914272 time_delta:31302E30:false:-1:7914272
-(98,-5071)mn_empty uid3211 0 0 0
+(388,-5149)move_ml uid3210 0 0 0 ev:6576:false:-1:7914272 ml:756964343830353332353937:false:-1:0 mn:75696433323135:false:-1:0 clone_count:31:false:-1:7914272 time_delta:31302E30:false:-1:7914272
+(97,-5071)mn_empty uid3211 0 0 0
 (234,-5068)mn_scale uid3212 0 0 0 next:75696433323131:false:-1:0 sx:302E3033:false:-1:7914272 sy:302E3033:false:-1:7914272 sz:302E3033:false:-1:7914272
 (517,-5105)touch_rotate uid3213 0 0 0 ev:6576:false:-1:7914272 ml:75696433323130:false:-1:0 leftright:74727565:false:-1:7914272 topdown:74727565:false:-1:7914272 x_speed:302E3031:false:-1:7914272 y_speed:302E3031:false:-1:7914272
 (370,-4998)mn_rotatex uid3214 0 0 0 next:75696433323132:false:-1:0 angle:2D312E3539:false:-1:7914272
 (512,-4975)mn_translate uid3215 0 0 0 next:75696433323134:false:-1:0 dx:313030:false:-1:7914272 dy:2D323030:false:-1:7914272 dz:323030:false:-1:7914272
 (315,-5554)bm_fullscreen uid3216 0 0 0 ev:6576:false:-1:7914272 orig:75696433323137:false:-1:0
-(127,-5561)new uid3217 0 0 0 sx:313030:false:-1:7914272 sy:313030:false:-1:7914272 color:6666383838383838:false:-1:7914272
+(125,-5561)new uid3217 0 0 0 sx:313030:false:-1:7914272 sy:313030:false:-1:7914272 color:6666383838383838:false:-1:7914272
 (499,-5522)bm_render uid3218 0 0 0 ev:6576:false:-1:7914272 bm:75696433323136:false:-1:0
 (670,-5504)bm_2d uid3219 0 0 0 ev:6576:false:-1:7914272 ml:75696433323138:false:-1:0 tl_x:302E30:false:-1:7914272 tl_y:302E30:false:-1:7914272 br_x:3830302E30:false:-1:7914272 br_y:3630302E30:false:-1:7914272
 (792,-5245)array_ml uid3220 0 0 0 ev:6576:false:-1:7914272 arr:5B756964333231392C756964333231335D:false:-1:0
-(515,-5225)async_gltf uid6047 0 0 0 ml:7569643133383632:false:-1:0 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:7914272 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:7914272
-(116,-5177)m_gltf uid13859 0 0 0 ev:6576:false:-1:7914272 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:7914272 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:7914272 material_id:30:false:-1:7914272 mix:302E3935:false:-1:7914272
-(115,-5441)p_gltf uid13860 0 0 0 ev:6576:false:-1:7914272 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:7914272 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:7914272 mesh_index:30:false:-1:7914272 prim_index:30:false:-1:7914272
-(238,-5181)m_phong uid13861 0 0 0 ev:6576:false:-1:7914272 nxt:7569643133383539:false:-1:0 light_dir_x:2D302E33:false:-1:7914272 light_dir_y:302E33:false:-1:7914272 light_dir_z:2D31:false:-1:7914272 ambient:6666666666666666:false:-1:7914272 highlight:6666666666666666:false:-1:7914272 pow:35:false:-1:7914272
-(393,-5273)m_bind uid13862 0 0 0 p:7569643134333739:false:-1:0 mat:7569643133383539:false:-1:0
-(123,-5326)p_gltf_nr uid14378 0 0 0 ev:6576:false:-1:7914272 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:7914272 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:7914272 mesh_index:31:false:-1:7914272 prim_index:30:false:-1:7914272
-(276,-5375)p_or_elem uid14379 0 0 0 p1:7569643133383630:false:-1:0 p2:7569643134333738:false:-1:0
+(238,-5181)m_phong uid13861 0 0 0 ev:6576:false:-1:7914272 nxt::false:-1:0 light_dir_x:2D302E33:false:-1:7914272 light_dir_y:302E33:false:-1:7914272 light_dir_z:2D31:false:-1:7914272 ambient:6666666666666666:false:-1:7914272 highlight:6666666666666666:false:-1:7914272 pow:35:false:-1:7914272
+(393,-5273)m_bind uid13862 0 0 0 p:7569643134333739:false:-1:0 mat:75696431303639373130313130:false:-1:0
+(276,-5375)p_or_elem uid14379 0 0 0 p1:75696431303639373130313038:false:-1:0 p2:75696431303639373130313039:false:-1:0
 (424,-4802)m_gltf_man uid1681031190 0 0 16809983 ev:6576:false:-1:15 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:15 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:15 material_id:30:false:-1:15 mix:302E3935:false:-1:15 baseColor:75696431373433363135353234:false:-1:0 metalrough:75696431373433363135353233:false:-1:0 normal:75696431373433363135353235:false:-1:0 occlusion:75696431373433363135353236:false:-1:0 emissive:75696431373433363135353234:false:-1:0 baseColor_b:74727565:false:-1:15 metalrough_b:74727565:false:-1:15 normal_b:74727565:false:-1:15 occlusion_b:74727565:false:-1:15 emissive_b:74727565:false:-1:15
-(72,-4918)bm_url uid1681031191 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F42617365436F6C6F722E6A706567:false:-1:1
-(57,-4570)bm_url uid1681031192 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F4D6574616C6C69632E6A706567:false:-1:1
-(40,-4800)bm_url uid1681031193 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F4E6F726D616C2E6A706567:false:-1:1
+(71,-4918)bm_url uid1681031191 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F42617365436F6C6F722E6A706567:false:-1:1
+(56,-4570)bm_url uid1681031192 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F4D6574616C6C69632E6A706567:false:-1:1
+(39,-4800)bm_url uid1681031193 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F4E6F726D616C2E6A706567:false:-1:1
 (178,-4706)bm_url uid1681031194 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F414F2E6A706567:false:-1:1
-(73,-4612)bm_url uid1681031195 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F526F7567686E6573732E6A706567:false:-1:1
+(72,-4612)bm_url uid1681031195 0 0 16809983 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F74657874757265732F54585F74656C6570686F6E655F526F7567686E6573732E6A706567:false:-1:1
 (189,-6122)p_url uid1375680562 0 0 16809981 ev:6576:false:-1:3 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F736F757263652F534D5F74656C6570686F6E652E6F626A:false:-1:3 count:3130:false:-1:3
 (284,-6004)m_bind uid1375680564 0 0 16809981 p:75696431333735363830353632:false:-1:0 mat:75696431323537303537363536:false:-1:0
 (717,-6056)mouse_zoom uid1743615516 0 0 16809982 ev:6576:false:-1:2 next:75696431373433363135353137:false:-1:0
@@ -399,3 +395,8 @@ test
 (577,-4756)m_phong uid1257057656 0 0 16809981 ev:6576:false:-1:8 nxt:75696431363831303331313930:false:-1:0 light_dir_x:2D302E33:false:-1:8 light_dir_y:302E33:false:-1:8 light_dir_z:2D31:false:-1:8 ambient:6666666638383030:false:-1:8 highlight:6666383838383838:false:-1:8 pow:35:false:-1:8
 (461,-4894)m_def uid1257057657 0 0 16809981 ev:6576:false:-1:1
 (321,-6128)save_ds uid316900681 0 0 1 ev:6576:false:-1:-1787641776 out_filename:534D2D74656C6570686F6E652E6473:false:-1:-1787641776 poly:75696431333735363830353632:false:-1:0
+(1,-5308)gltf_load uid1069710107 0 0 1 base_url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F:false:-1:1974107840 url:68747470733A2F2F747067616D65732E6F72672F616E74697175655F74656C6570686F6E652F7363656E652E676C7466:false:-1:1974107840
+(133,-5394)p_gltf uid1069710108 0 0 1 ev:6576:false:-1:1974107840 tf:75696431303639373130313037:false:-1:0 mesh_index:30:false:-1:1974107840 prim_index:30:false:-1:1974107840
+(126,-5278)p_gltf_nr uid1069710109 0 0 1 ev:6576:false:-1:1974107840 tf:75696431303639373130313037:false:-1:0 mesh_index:31:false:-1:1974107840 prim_index:30:false:-1:1974107840
+(101,-5175)m_gltf uid1069710110 0 0 1 ev:6576:false:-1:1974107840 tf:75696431303639373130313037:false:-1:0 material_id:30:false:-1:1974107840 mix:312E30:false:-1:1974107840
+(538,-5229)async_gltf uid480532597 0 0 1 ml:7569643133383632:false:-1:0 tf:75696431303639373130313037:false:-1:0
