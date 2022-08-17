@@ -803,7 +803,7 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
   //std::cout << "url loading complete! " << url_str << std::endl;
   // THIS WAS url_only, but seems to have not worked.
   //std::cout << "g_del_map " << url_only << " = " << (int)buffer << std::endl;
-  //std::cout << "g_del_map add url: " << url_only << std::endl;
+  std::cout << "g_del_map add url: " << url_only << std::endl;
   g_del_map.load_url_buffers_async[url_only] = buffer;
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
@@ -1578,7 +1578,13 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
 
     
     url = "load_url.php?url=" + url;
-    //std::cout << "url fetch " << url << std::endl;
+    std::cout << "url fetch " << url << std::endl;
+
+    std::map<std::string,const std::vector<unsigned char>*>::iterator i = g_del_map.load_url_buffers_async.begin();
+    for(;i!=g_del_map.load_url_buffers_async.end();i++) {
+      std::pair<std::string,const std::vector<unsigned char>*> p = *i;
+      std::cout << "DELMAPITEM:" << p.first << std::endl;
+    }
     
     // g_del_map.print();
     

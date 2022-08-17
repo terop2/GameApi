@@ -16212,21 +16212,36 @@ GameApi::ML GameApi::PolygonApi::anim(EveryApi &ev, ML next, MA anim, float star
   return ml;
 }
 
-GameApi::ML GameApi::PolygonApi::anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float end_time, int count)
+class AnimBind : public MainLoopItem
 {
+public:
+  AnimBind(GameApi::PolygonApi *poly, GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML next, GameApi::MA anim, GameApi::MT material, float start_time, float end_time, int count) : poly(poly), env(e), ev(ev), next(next), anim(anim), material(material), start_time(start_time), end_time(end_time), count(count) { firsttime = true; }
+
+  void Collect(CollectVisitor &vis)
+  {
+    MainLoopItem *item = find_main_loop(env,next);
+    item->Collect(vis);
+    vis.register_obj(this);
+  }
+  
+  void HeavyPrepare()
+  {
+    if (firsttime)
+      {
+	firsttime=false;
   start_time/=10.0;
   end_time/=10.0;
 
-  std::vector<P> vec;
+  std::vector<GameApi::P> vec;
   int s = count;
   float delta_time = (end_time-start_time)/float(count);
   for(int i=0;i<s;i++)
     {
-      vec.push_back(meshanim_mesh2(anim, start_time+i*delta_time, start_time+(i+1)*delta_time));
+      vec.push_back(poly->meshanim_mesh2(anim, start_time+i*delta_time, start_time+(i+1)*delta_time));
     }
-  std::vector<ML> vec2;
+  std::vector<GameApi::ML> vec2;
   int s2 = vec.size();
-  Material *mat = find_material(e, material);
+  Material *mat = find_material(env, material);
   for(int i=0;i<s2;i++)
     {
       int ml_id = mat->mat(vec[i].id);
@@ -16234,8 +16249,53 @@ GameApi::ML GameApi::PolygonApi::anim_bind(EveryApi &ev, ML next, MA anim, MT ma
       ml.id = ml_id;
       vec2.push_back(ml /*render_vertex_array_ml2(ev, vec[i])*/);
     }
-  ML ml = choose_time(next, vec2, delta_time);
-  return ml;
+  ml = poly->choose_time(next, vec2, delta_time);
+      }
+  }
+  void Prepare()
+  {
+    MainLoopItem *item = find_main_loop(env,next);
+    item->Prepare();
+    HeavyPrepare();
+  }
+
+  void handle_event(MainLoopEvent &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+  void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->shader_id();
+    }
+    return std::vector<int>(); }
+
+private:
+  GameApi::PolygonApi *poly;
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::ML next;
+  GameApi::MA anim;
+  GameApi::MT material;
+  float start_time, end_time;
+  int count;
+  GameApi::ML ml = { -1 };
+  bool firsttime;
+};
+
+GameApi::ML GameApi::PolygonApi::anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float end_time, int count)
+{
+  return add_main_loop(e, new AnimBind(this,e,ev,next,anim,material,start_time,end_time,count));
 }
 
 class ShadowMap : public ForwardFaceCollection
