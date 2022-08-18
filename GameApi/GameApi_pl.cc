@@ -5294,11 +5294,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #endif // END OF __EMSCRIPTEN_PTHREADS
 #endif // END OF EMSCRIPTEN
     
-#ifndef BATCHING
+#ifndef BATCHING // THREADS=true, BATCHING=false
     int num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
-    //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl; 
+    //std::cout << "FaceColl: " << faces << " " << faces->NumFaces() << std::endl;
     ThreadedPrepare prep(faces);  
     int s = faces->NumFaces();   
     //std::cout << "NumFaces: " << s << std::endl;
@@ -5306,6 +5306,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     int delta_s = s/num_threads+1;
     std::vector<int> vec;
     //std::cout << "NumThreads2: " << num_threads << std::endl;
+    std::cout << "Threads, no batching: numthreads=" << num_threads << std::endl;
     for(int i=0;i<num_threads;i++)
       {  
 	int start_range = i*delta_s; 
@@ -5327,7 +5328,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	//::EnvImpl *env = ::EnvImpl::Environment(&e);
 	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
       }
-#else // BATCHING
+#else // BATCHING=true, THREADS=true
     int num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -5497,17 +5498,19 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     int total_faces = faces->NumFaces();
-    int batch_count = 10;
+    int batch_count = total_faces/100000;
+    if (total_faces<100000) batch_count=30;
     if (total_faces<100) batch_count=1;
     int batch_faces = faces->NumFaces()/batch_count+1;
+    //std::cout << "BATCH COUNTS: " << batch_count << "*" << batch_faces << std::endl;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
-    InstallProgress(3,"batching");
-    for(int i=0;i<batch_count;i++) {
-      ProgressBar(3,i,batch_count,"batching"); 
+    //InstallProgress(3,"batching");
+    for(int i=0;i<batch_count+1;i++) {
+      //ProgressBar(3,i,batch_count,"batching"); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       if (start>total_faces) { start=total_faces; }
@@ -5515,7 +5518,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
       FaceCollectionVertexArray2 arr(*faces, *s);
-      //arr.reserve(0);
+      arr.reserve_fixed2(0,ct2_counts.tri_count,ct2_counts.quad_count,ct2_counts.poly_count);
       arr.copy(start,end);  
       arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
       arr2->update_tri(0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
@@ -6041,13 +6044,13 @@ public:
   }
   void HeavyPrepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p,true);
+      va = ev.polygon_api.create_vertex_array(p,false); // should be true
     }
   }
 
   void Prepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p, true);
+      va = ev.polygon_api.create_vertex_array(p, false); // should be true
     }
   }
   void execute(MainLoopEnv &e)
@@ -6055,7 +6058,7 @@ public:
     if (firsttime)
       {
 	if (va.id==0) {
-	  va = ev.polygon_api.create_vertex_array(p, true);
+	  va = ev.polygon_api.create_vertex_array(p, false); // should be true
 	  std::cout << "Warning: RenderPTex Prepare() not called!" << std::endl;
 	}
 	ev.polygon_api.create_vertex_array_hw(va);
@@ -6220,13 +6223,13 @@ public:
   }
   void HeavyPrepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p,true);
+      va = ev.polygon_api.create_vertex_array(p,false); // should be true
     }
   }
 
   void Prepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p, true);
+      va = ev.polygon_api.create_vertex_array(p, false); // should be true
     }
   }
   void execute(MainLoopEnv &e)
@@ -6234,7 +6237,7 @@ public:
     if (firsttime)
       {
 	if (va.id==0) {
-	  va = ev.polygon_api.create_vertex_array(p, true);
+	  va = ev.polygon_api.create_vertex_array(p, false); // should be true
 	  std::cout << "Warning: RenderPTex_id Prepare() not called!" << std::endl;
 	}
 	ev.polygon_api.create_vertex_array_hw(va);
@@ -6406,13 +6409,13 @@ public:
   }
   void HeavyPrepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p,true);
+      va = ev.polygon_api.create_vertex_array(p,false); // should be true
     }
   }
 
   void Prepare() {
     if (va.id==0){
-	va = ev.polygon_api.create_vertex_array(p, true);
+      va = ev.polygon_api.create_vertex_array(p, false); // should be true
     }
   }
   void execute(MainLoopEnv &e)
@@ -6420,7 +6423,7 @@ public:
     if (firsttime)
       {
 	if (va.id==0) {
-	  va = ev.polygon_api.create_vertex_array(p, true);
+	  va = ev.polygon_api.create_vertex_array(p, false); // should be true
 	  std::cout << "Warning: RenderPTexCubemap Prepare() not called!" << std::endl;
 	}
 
@@ -6602,12 +6605,12 @@ public:
   }
   void HeavyPrepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p,true);
+      va = ev.polygon_api.create_vertex_array(p,false); // should be true
     }
   }
   void Prepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p, true);
+      va = ev.polygon_api.create_vertex_array(p, false); // should be true
     }
   }
   void execute(MainLoopEnv &e)
@@ -6615,7 +6618,7 @@ public:
     if (firsttime)
       {
 	if (va.id==0) {
-	  va = ev.polygon_api.create_vertex_array(p, true);
+	  va = ev.polygon_api.create_vertex_array(p, false); // should be true
 	  std::cout << "Warning: RenderPTex2 Prepare() not called!" << std::endl;
 	}
 
@@ -6803,13 +6806,13 @@ public:
   }
   void HeavyPrepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p,true);
+      va = ev.polygon_api.create_vertex_array(p,false); // should be true
 	ev.polygon_api.clone(va);
     }
   }
   void Prepare() {
     if (va.id==0) {
-	va = ev.polygon_api.create_vertex_array(p,true);
+      va = ev.polygon_api.create_vertex_array(p,false); // should be true
 	ev.polygon_api.clone(va);
     }
   }
@@ -7208,7 +7211,7 @@ public:
   void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
-    if (sh.id==-1) {
+    if (sh.id==-1 && firsttime) {
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
     if (vertex.id==-1) { 
@@ -7235,8 +7238,8 @@ public:
     GameApi::US a2f = ev.uber_api.f_manytexture(fragment);
     ee.us_fragment_shader = a2f.id;
     }
-
-    std::vector<int> sh_ids = next->shader_id();
+    if (sh_ids.size()==0) sh_ids=next->shader_id();
+    // std::vector<int> sh_ids = next->shader_id();
     int s = sh_ids.size();
     for(int i=0;i<s;i++) {
       int sh_id = sh_ids[i];
@@ -7261,6 +7264,7 @@ private:
   GameApi::SH sh;
   bool firsttime;
   float mix;
+  std::vector<int> sh_ids;
 };
 
 class GLTFShaderML : public MainLoopItem
@@ -8896,7 +8900,8 @@ public:
     ee.us_fragment_shader = fragment.id;
 #endif
       }
-     std::vector<int> sh_ids = next->shader_id();
+     if (sh_ids.size()==0) sh_ids = next->shader_id();
+     if (firsttime ||(notupdated&&e.time-timestamp>0.1)|| e.time-timestamp>5.0) { timestamp = e.time; sh_ids = next->shader_id(); if (!firsttime) notupdated=false; }
      int s=sh_ids.size();
      for(int i=0;i<s;i++) {
        int sh_id = sh_ids[i];
@@ -8955,6 +8960,9 @@ private:
   unsigned int highlight;
   float pow;
   bool background_included;
+  std::vector<int> sh_ids;
+  float timestamp=0.0;
+  bool notupdated=true;
 };
 
 

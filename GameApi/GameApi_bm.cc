@@ -671,7 +671,10 @@ void stackTrace()
 #endif
   
 #ifdef EMSCRIPTEN
-  emscripten_run_script("stackTrace()");
+  EM_ASM({
+      stackTrace();
+    });
+  // emscripten_run_script("stackTrace()");
 #endif
 }
 void ProgressBar(int num, int val, int max, std::string label);

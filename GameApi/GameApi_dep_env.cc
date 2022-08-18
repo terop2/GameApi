@@ -1578,14 +1578,15 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
 
     
     url = "load_url.php?url=" + url;
-    std::cout << "url fetch " << url << std::endl;
+    //std::cout << "url fetch " << url << std::endl;
 
+    /*
     std::map<std::string,const std::vector<unsigned char>*>::iterator i = g_del_map.load_url_buffers_async.begin();
     for(;i!=g_del_map.load_url_buffers_async.end();i++) {
       std::pair<std::string,const std::vector<unsigned char>*> p = *i;
-      std::cout << "DELMAPITEM:" << p.first << std::endl;
+      //std::cout << "DELMAPITEM:" << p.first << std::endl;
     }
-    
+    */
     // g_del_map.print();
     
     return new ASyncDataFetcher(g_del_map.load_url_buffers_async[url]);

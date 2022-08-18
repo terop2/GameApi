@@ -7924,7 +7924,12 @@ class RenderInstancedTex : public MainLoopItem
 public:
   RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex() { ev.texture_api.delete_texid(ids); }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() {
+    static std::vector<int> v{shader.id};
+    if (v[0]==shader.id) { return v; }
+    
+    return v=std::vector<int>{shader.id};
+  }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -7938,7 +7943,7 @@ public:
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    va = ev.polygon_api.create_vertex_array(p,true);
+    va = ev.polygon_api.create_vertex_array(p,false); // THIS false is probably wrong, does not display anything.
     initialized=true;
   }
   void execute(MainLoopEnv &e)
