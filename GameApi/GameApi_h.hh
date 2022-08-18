@@ -22,7 +22,8 @@
 //#define THREAD_HEAVY 1
 #ifndef ARM
 #ifndef NO_THREADS
-#define THREADS 1
+// TODO, THIS SHOULD BE ENABLED.
+//#define THREADS 1
 #endif
 #endif
 //#endif

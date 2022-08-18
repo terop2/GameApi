@@ -32,6 +32,14 @@
 #include <fstream>
 #include <vector>
 
+#ifndef ARM
+#ifndef NO_THREADS
+// TODO, THIS SHOULD BE ENABLED.
+//#define THREADS 1
+#endif
+#endif
+
+
 Quad QuadInterpolation(const Quad &q1, const Quad &q2, float val);
 
 
@@ -6331,6 +6339,7 @@ void *thread_func_bitmap(void* data);
 class BufferFromBitmap;
 
 #ifndef ARM
+#ifdef THREADS
 struct ThreadInfo_bitmap
 {
   pthread_t thread_id;
@@ -6353,6 +6362,7 @@ private:
   std::vector<ThreadInfo_bitmap*> ti;
 };
 #endif
+#endif
 
 
 class MeshTexturesImpl : public MeshTextures
@@ -6370,7 +6380,7 @@ public:
 	ref = new BufferFromBitmap(bm2);
 	//	ref->Gen();
 
-#if 0
+#ifndef THREADS
   ref->Gen();
 #else
   ref->GenPrepare();
