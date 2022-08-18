@@ -328,6 +328,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML disable_polygons(ML ml);
   ML print_deps(ML ml, int num);
   ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);
   ARR load_shader2(std::string vertex_url, std::string fragment_url);
