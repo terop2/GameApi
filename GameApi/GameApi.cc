@@ -5,7 +5,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-//#define THREADS 1
+#define THREADS 1
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -1325,8 +1325,8 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
 }
 int g_shows_hundred=0;
 extern int g_logo_shown;
-int FindProgressVal();
-int FindProgressMax();
+long long FindProgressVal();
+long long FindProgressMax();
 class ScaleProgress : public Movement
 {
 public:
@@ -1356,11 +1356,13 @@ public:
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
 
-    float val = float(FindProgressVal());
-    float max = float(FindProgressMax() +0.1);
+    long long val = FindProgressVal();
+    long long max = FindProgressMax();
     //std::cout << "PROGRESSBAR:" << val << "/" << max << std::endl;
-    float val2 = val/max;
-
+    val*=(long long)256;
+    float val2 = float(val/max);
+    val2/=256.0;
+    
     //int val3 = 15*val2;
     //val2 = val3/15.0;
     
@@ -1414,8 +1416,13 @@ public:
     // if you change the numbers, change logo_iter too
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
-    
-    float val2 = float(FindProgressVal())/float(FindProgressMax() +0.1);
+
+    long long v1 = FindProgressVal();
+    long long v2 = FindProgressMax();
+    v1*=(long long)256;
+    float val3 = float(v1/v2);
+    val3/=256.0;
+    float val2 = val3; //float(FindProgressVal())/float(FindProgressMax() +0.1);
 
     //int val3 = 15*val2;
     //val2 = val3/15.0;

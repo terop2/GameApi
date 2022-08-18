@@ -34,8 +34,7 @@
 
 #ifndef ARM
 #ifndef NO_THREADS
-// TODO, THIS SHOULD BE ENABLED.
-//#define THREADS 1
+#define THREADS 1
 #endif
 #endif
 
