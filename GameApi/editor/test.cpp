@@ -2601,7 +2601,7 @@ private:
   FtA atlas, atlas2, atlas3;
   BM atlas_bm, atlas_bm2, atlas_bm3;
   std::string filename;
-  bool has_wayland;
+  bool has_wayland=false;
   int extra_width, extra_height;
   int extra_top, extra_left;
   W scroll_area;
@@ -2649,7 +2649,7 @@ struct Envi_tabs
   BM atlas_bm2;
   FtA atlas3;
   BM atlas_bm3;
-  bool has_wayland;
+  bool has_wayland = false;
   SH sh;
 };
 
@@ -3287,6 +3287,7 @@ int main(int argc, char *argv[]) {
       }
       has_wayland = has_wayland1 && has_wayland2;
       g_has_wayland = has_wayland;
+      env_tab->has_wayland=has_wayland;
 
       int extra_width = 0;
       int extra_height = 0;

@@ -347,7 +347,9 @@ function load_anim_pic_reset(num,file_id)
    var imgtag = document.getElementById(name);
    imgtag.onmousemove = function() { }
 
+ if (file_id!=-1) { 
    imgtag.src="user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
+   }
 
 }
 
@@ -491,8 +493,9 @@ $label = get_label( $arr );
 
    $filename = "user_data/user_" . $user . "/screenshot" . $ii . ".png";
    $filename2 = "user_data/user_" . $user . "/screenshot" . $ii . ".webp";
+   $ik = $ii;
    if (file_exists($filename2)) $filename = $filename2;
-   if (!file_exists($filename)) { $filename = $assetsite . "/unknown.webp"; }
+   if (!file_exists($filename)) { $ik=-1; $filename = $assetsite . "/unknown.webp"; }
 
 
 
@@ -507,7 +510,7 @@ $label = get_label( $arr );
    //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
    //echo "</layer>";
    //echo "<layer width=\"200\" height=\"150\">";
-   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" onmouseenter=\"load_anim_pic(" . $iii . "," . $ii . ")\" onmouseleave=\"load_anim_pic_reset(" . $iii . "," . $ii . ")\" crossorigin/>";
+   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" onmouseenter=\"load_anim_pic(" . $iii . "," . $ii . ")\" onmouseleave=\"load_anim_pic_reset(" . $iii . "," . $ik . ")\" crossorigin/>";
 
    //echo "</layer>";
    // src=\"" . $filename . "\"

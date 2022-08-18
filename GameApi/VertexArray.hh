@@ -247,7 +247,30 @@ Counts CalcCounts(FaceCollection *coll, int start, int end);
 class RenderVertexArray
 {
 public:
-  RenderVertexArray(LowApi *g_low, VertexArraySet &s) : s(s),nodelete(false) { }
+  RenderVertexArray(VertexArraySet &s2, RenderVertexArray &rend)
+    : s(s2), nodelete(false) {
+    int ss = 7;
+    for(int i=0;i<ss;i++)
+      {
+	if (i<3) vao[i]=rend.vao[i];
+	buffers[i]=rend.buffers[i];
+	buffers2[i]=rend.buffers2[i];
+	buffers3[i]=rend.buffers3[i];
+      }
+    tri_count = rend.tri_count;
+    quad_count = rend.quad_count;
+    poly_count = rend.poly_count;
+    pos_buffer = rend.pos_buffer;
+    pos_buffer_matrix = rend.pos_buffer_matrix;
+    attrib_buffer = rend.attrib_buffer;
+    attrib_buffer2 = rend.attrib_buffer2;
+    attrib_buffer2 = rend.attrib_buffer2;
+    attribi_buffer = rend.attribi_buffer;
+    attribi_buffer2 = rend.attribi_buffer2;
+    attribi_buffer2 = rend.attribi_buffer2;
+  }
+  RenderVertexArray(LowApi *g_low, VertexArraySet &s)
+    : s(s),nodelete(false) { }
   void prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
   void update(int id);
   void update_tri(int id, int buffer_id, int start, int end);
@@ -299,6 +322,13 @@ class FaceCollectionVertexArray2
 {
 public:
   FaceCollectionVertexArray2(const FaceCollection &coll, VertexArraySet &s) : coll(coll), s(s) { }
+  void reserve_fixed2(int id, int count_tri, int count_quad, int count_poly)
+  {
+    int tri_count=count_tri*3;
+    int quad_count=count_quad*4;
+    int poly_count=count_poly*3;
+    s.set_reserve(id, tri_count, quad_count, poly_count);
+  }
   void reserve_fixed(int id, int count) {
     //int ss = coll.NumFaces();
     int tri_count=count*3;

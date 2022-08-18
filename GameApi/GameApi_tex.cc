@@ -20,8 +20,9 @@ EXPORT GameApi::VA GameApi::TextureApi::bind(GameApi::VA va, GameApi::TXID tx)
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_ID+tx.id;
-  RenderVertexArray *arr = new RenderVertexArray(g_low, *ns);
-  arr->prepare(0);
+  RenderVertexArray *arr2 = find_vertex_array_render(e,va);
+  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low, *ns*/);
+  //arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TXID tx)
@@ -29,8 +30,9 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TX
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_ID_CUBEMAP+tx.id;
-  RenderVertexArray *arr = new RenderVertexArray(g_low, *ns);
-  arr->prepare(0);
+  RenderVertexArray *arr2 = find_vertex_array_render(e,va);
+  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low, *ns */);
+  //arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec, std::vector<int> types)
@@ -49,9 +51,10 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<Ga
     if (type==1) txid+=SPECIAL_TEX_ID_CUBEMAP;
     ns->texture_many_ids.push_back(txid);
   }
-  RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
-  arr->prepare(0);
-  s->free_memory(); // experimental (move semantics s->ns)
+  RenderVertexArray *arr2 = find_vertex_array_render(e,va);
+  RenderVertexArray *arr = new RenderVertexArray(*ns,*arr2);
+  //arr->prepare(0);
+  //s->free_memory(); // experimental (move semantics s->ns)
   return add_vertex_array(e, ns, arr);
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx)
@@ -59,8 +62,9 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_arr(GameApi::VA va, GameApi::TXA tx
   VertexArraySet *s = find_vertex_array(e, va);
   VertexArraySet *ns = new VertexArraySet(*s);
   ns->texture_id = SPECIAL_TEX_IDA+tx.id;
-  RenderVertexArray *arr = new RenderVertexArray(g_low,*ns);
-  arr->prepare(0);
+  RenderVertexArray *arr2 = find_vertex_array_render(e,va);
+  RenderVertexArray *arr = new RenderVertexArray(*ns, *arr2 /*g_low,*ns*/);
+  //arr->prepare(0);
   return add_vertex_array(e, ns, arr);
 }
 EXPORT int GameApi::TextureApi::unique_id()
@@ -413,26 +417,27 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       
 	ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
 	ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
-#ifdef EMSCRIPTEN
-	if (mipmaps&&power_of_two)
-#endif
+	//#ifdef EMSCRIPTEN
+	//	if (mipmaps&&power_of_two)
+	//#endif
 	    ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
 
 	int filter = mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_LINEAR;
-#if defined(WINDOWS) || defined(LINUX)
+	//#if defined(WINDOWS) || defined(LINUX)
 	filter = Low_GL_LINEAR_MIPMAP_LINEAR;
-#endif
+	//#endif
 	
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,filter);      
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
-#if defined(LINUX)||defined(WINDOWS)
+	//#if defined(LINUX)||defined(WINDOWS)
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_REPEAT); // GL_REPEAT
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_REPEAT); // these cause power-of-two texture requirement in emscripten.
+	/*
 #else
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // GL_REPEAT
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
 #endif	
-	
+	*/
     }
       //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
       GameApi::TXID id2;
