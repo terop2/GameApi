@@ -5,7 +5,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-//#define THREADS 1
+#define THREADS 1
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -1325,8 +1325,8 @@ EXPORT GameApi::MN GameApi::MovementNode::translate(MN next,
 }
 int g_shows_hundred=0;
 extern int g_logo_shown;
-int FindProgressVal();
-int FindProgressMax();
+long long FindProgressVal();
+long long FindProgressMax();
 class ScaleProgress : public Movement
 {
 public:
@@ -1356,11 +1356,13 @@ public:
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
 
-    float val = float(FindProgressVal());
-    float max = float(FindProgressMax() +0.1);
+    long long val = FindProgressVal();
+    long long max = FindProgressMax();
     //std::cout << "PROGRESSBAR:" << val << "/" << max << std::endl;
-    float val2 = val/max;
-
+    val*=(long long)256;
+    float val2 = float(val/max);
+    val2/=256.0;
+    
     //int val3 = 15*val2;
     //val2 = val3/15.0;
     
@@ -1414,8 +1416,13 @@ public:
     // if you change the numbers, change logo_iter too
     //float t = time*50.0/300.0;
     //if (t>50.0) t=50.0;
-    
-    float val2 = float(FindProgressVal())/float(FindProgressMax() +0.1);
+
+    long long v1 = FindProgressVal();
+    long long v2 = FindProgressMax();
+    v1*=(long long)256;
+    float val3 = float(v1/v2);
+    val3/=256.0;
+    float val2 = val3; //float(FindProgressVal())/float(FindProgressMax() +0.1);
 
     //int val3 = 15*val2;
     //val2 = val3/15.0;
@@ -7924,7 +7931,12 @@ class RenderInstancedTex : public MainLoopItem
 public:
   RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex() { ev.texture_api.delete_texid(ids); }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() {
+    static std::vector<int> v{shader.id};
+    if (v[0]==shader.id) { return v; }
+    
+    return v=std::vector<int>{shader.id};
+  }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -7938,7 +7950,7 @@ public:
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    va = ev.polygon_api.create_vertex_array(p,true);
+    va = ev.polygon_api.create_vertex_array(p,false); // THIS false is probably wrong, does not display anything.
     initialized=true;
   }
   void execute(MainLoopEnv &e)
@@ -17000,6 +17012,7 @@ public:
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     code = std::string(vec->begin(), vec->end());
+    if (code=="") firsttime=true;
     }
   }
   virtual std::string script_file() const { return code; }

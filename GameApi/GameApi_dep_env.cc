@@ -147,7 +147,7 @@ public:
     int mult = totalSize/100000;
     if (mult<1) mult=1;
     
-    int val = 1+float(end)*15.0*mult/float(totalSize);
+    int val = 1+((long long)(end))*15.0*mult/(long long)(totalSize);
     if (val<0) val=0;
     if (val>15*mult+1) val=15*mult+1;
 
@@ -178,11 +178,11 @@ public:
 public:
   std::string url;
   std::vector<unsigned char> result;
-  int totalSize;
+  long long totalSize;
   void(*success)(void*);
   void(*failed)(void*);
   void *data;
-  int start,end;
+  long long start,end;
   int current_id;
   char *buf=0;
 };
@@ -1579,7 +1579,14 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     
     url = "load_url.php?url=" + url;
     //std::cout << "url fetch " << url << std::endl;
-    
+
+    /*
+    std::map<std::string,const std::vector<unsigned char>*>::iterator i = g_del_map.load_url_buffers_async.begin();
+    for(;i!=g_del_map.load_url_buffers_async.end();i++) {
+      std::pair<std::string,const std::vector<unsigned char>*> p = *i;
+      //std::cout << "DELMAPITEM:" << p.first << std::endl;
+    }
+    */
     // g_del_map.print();
     
     return new ASyncDataFetcher(g_del_map.load_url_buffers_async[url]);
@@ -1588,7 +1595,7 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
 
 struct ProgressI {
   int num;
-  int value;
+  long long value;
   int ticks;
 };
 void SetTicks(int num, int ticks);
@@ -1657,7 +1664,7 @@ float progress_val_mult[] = { 0.1, 0.3, 0.5, 0.8, 1.0 };
 int g_val2;
 int g_max2;
 
-int FindProgressVal()
+long long FindProgressVal()
 {
 
 #if 0
@@ -1716,16 +1723,16 @@ int FindProgressVal()
 
 #endif
   int s = progress_val.size();
-  int sum = 0.0;
+  long long sum = 0;
   for(int i=0;i<s;i++)
     {
-      sum+=progress_val[i].value;
+      sum+=(long long)progress_val[i].value;
     }
   return sum;
   
 }
 int g_async_load_count = 0;
-int FindProgressMax()
+long long FindProgressMax()
 {
 
 #if 0
@@ -1782,10 +1789,10 @@ int FindProgressMax()
 #endif
 
   int s = progress_max.size();
-  int sum = 0.0;
+  long long sum = 0;
   for(int i=0;i<s;i++)
     {
-      sum+=progress_max[i].value;
+      sum+=(long long)progress_max[i].value;
     }
   return sum;
 

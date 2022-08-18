@@ -1023,6 +1023,7 @@ GameApi::PL add_plane(GameApi::Env &e, PlanePoints2d *sep)
 // takes ownership of PolyHandle*
 GameApi::P add_polygon(GameApi::Env &e, FaceCollPolyHandle *handle)
 {
+  //stackTrace();
   EnvImpl *env = ::EnvImpl::Environment(&e);
   if (g_current_block != -2)
     add_b(std::shared_ptr<void>(handle));
@@ -1069,6 +1070,7 @@ GameApi::P add_polygon(GameApi::Env &e, FaceCollection *coll, int size)
 }
 GameApi::P add_polygon2(GameApi::Env &e, FaceCollection *coll, int size=1)
 {
+  //stackTrace();
   if (g_current_block != -2)
   add_b(std::shared_ptr<void>(coll));
   FaceCollPolyHandle *h = new FaceCollPolyHandle;
