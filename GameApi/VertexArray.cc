@@ -650,6 +650,11 @@ void VertexArraySet::clone(int id_source, int id_target)
   clone_vector(source->quad_joint, target->quad_joint);
   clone_vector(source->poly_joint, target->poly_joint);
 
+  clone_vector(source->tri_weight, target->tri_weight);
+  clone_vector(source->quad_weight, target->quad_weight);
+  clone_vector(source->poly_weight, target->poly_weight);
+
+  
   
   clone_map(source->tri_attribs, target->tri_attribs);
   clone_map(source->quad_attribs, target->quad_attribs);
@@ -1040,6 +1045,7 @@ void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
   } break;
 
 }
+  ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,0);
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif
@@ -3254,7 +3260,6 @@ bool g_use_vertices_only = false;
 
 void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vector<int> attribs, std::vector<int> attribsi)
 {
-  if (!&coll) return;
     //std::cout << "Copy: " << start_range << " " << end_range << std::endl;
     //int ss = coll.NumFaces();
     //std::cout << "NumFaces: " << ss << std::endl;
