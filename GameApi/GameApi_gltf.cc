@@ -1376,7 +1376,7 @@ public:
 	res.y = 0.5+int(((unsigned int)(pos_ptr4[1]))&0xff);
 	res.z = 0.5+int(((unsigned int)(pos_ptr4[2]))&0xff);
 	res.w = 0.5+int(((unsigned int)(pos_ptr4[3]))&0xff);
-	std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
+	//std::cout << "Joints2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
 	return res;
 	//return int(((unsigned int)(pos_ptr2[num]))&0xff);
       }

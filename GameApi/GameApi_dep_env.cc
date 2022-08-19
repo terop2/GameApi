@@ -28,6 +28,16 @@ void chunk_success(emscripten_fetch_t *fetch);
 void chunk_failed(emscripten_fetch_t *fetch);
 void fetch_download_progress(emscripten_fetch_t *fetch);
 
+class FetchInBlocks;
+
+struct FetchInBlocksUserData
+{
+  FetchInBlocks *m_this;
+  int block_num;
+  long long start;
+  long long end;
+};
+
 class FetchInBlocks
 {
 public:
@@ -41,15 +51,18 @@ public:
 private:
   void fetch_size()
   {
+    
+
     //std::cout << "fetch_size" << std::endl; 
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
-    strcpy(attr.requestMethod, "POST");
+    strcpy(attr.requestMethod, "GET");
     attr.userData = (void*)this;
-    attr.attributes = 0;
+    attr.attributes = EMSCRIPTEN_FETCH_REPLACE| EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess = blocks_success;
     attr.onerror = blocks_failed;
-    emscripten_fetch(&attr, url.c_str());
+    std::string url2 = "get_file_size.php?url=" +url; 
+    emscripten_fetch(&attr, url2.c_str());
 
     int val = 0;
     
@@ -70,12 +83,28 @@ private:
 public:
   void size_success(emscripten_fetch_t *fetch)
   {
-    totalSize = fetch->totalBytes;
+    std::string res(fetch->data,fetch->data+fetch->numBytes);
+    //std::cout << "RES: '" << res << "'" << std::endl;
+    std::stringstream ss(res);
+    totalSize = 0;
+    ss >> totalSize;
+    
+    int concurrent_tasks = 16;
+    //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
     if (totalSize==0) size_failed(fetch);
     else {
       result.resize(totalSize+1);
-      fetch_block(0);
+      int t = totalSize/100000+1;
+      blocks_ready.resize(t);
+      //fetch_block(0);
+      int s = t;
+      for(int i=0;i<s;i++) {
+	blocks_ready[i]=0;
+      }
+      for(int i=0;i<std::min(concurrent_tasks,s);i++) {
+	fetch_block(i);
+      }
     }
     emscripten_fetch_close(fetch);
 
@@ -107,7 +136,9 @@ public:
 private:
   void fetch_block(int id)
   {
-    current_id = id;
+    //std::cout << "Fetch Block" << id << std::endl;
+    blocks_ready[id]=2;
+    //current_id = id;
     start = id*100000;
     end = (id+1)*100000;
     if (end>=totalSize) end=totalSize;
@@ -123,8 +154,13 @@ private:
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
-    attr.userData = (void*)this;
-    attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+    FetchInBlocksUserData *dt = new FetchInBlocksUserData;
+    dt->m_this = this;
+    dt->block_num = id;
+    dt->start = start;
+    dt->end = end;
+    attr.userData = (void*)dt;
+    attr.attributes = EMSCRIPTEN_FETCH_REPLACE| EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess = chunk_success;
     attr.onerror = chunk_failed;
     //attr.onprogress = fetch_download_progress;
@@ -134,20 +170,54 @@ private:
 public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
+    FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
     //std::cout << "Chunk Success " << current_id << std::endl;
     //assert(fetch->numBytes==0||fetch->numBytes==end-start);
+    start = ptr->start;
+    end = ptr->end;
     std::copy(fetch->data, fetch->data+(end-start), &result[start]);
-    if (end==totalSize) { success(data); }
-    else {
-      fetch_block(current_id+1);
-    }
+    int num = ptr->block_num;    
+    //std::cout << "Fetch Success:" << num << std::endl;
+    blocks_ready[num]=1;
+    int s = blocks_ready.size();
+    bool fail = false;
+    int next =-1;
+    for(int i=0;i<s;i++)
+      {
+	if (blocks_ready[i]==0) { fail=true; next=i; break; }
+	if (blocks_ready[i]==2) { fail=true; continue; }
+      }
+    if (!fail)
+      {
+	//std::cout << "Fetch Success" << std::endl;
+	success(data);
+      }
+    else
+      {
+	if (next!=-1)
+	  fetch_block(next);
+      }
+    //if (end==totalSize) { success(data); }
+    //else {
+    //  fetch_block(current_id+1);
+    //}
+    delete ptr;
     emscripten_fetch_close(fetch);
     //std::cout << "CHUNK" << current_id << " " << start << " " << end << " " << totalSize << std::endl;
 
-    int mult = totalSize/100000;
+    long long mult = totalSize/100000;
     if (mult<1) mult=1;
+
+    long long end2=0;
+    int s2 = blocks_ready.size();
+    for(int i=0;i<s2;i++)
+      {
+	if (blocks_ready[i]==1)
+	  end2+=(long long)100000;
+      }
     
-    int val = 1+((long long)(end))*15.0*mult/(long long)(totalSize);
+    int val = 1+((long long)(end2))*(long long)15*mult/(long long)(totalSize);
+    //std::cout << "VAL=" << val << std::endl;
     if (val<0) val=0;
     if (val>15*mult+1) val=15*mult+1;
 
@@ -183,8 +253,9 @@ public:
   void(*failed)(void*);
   void *data;
   long long start,end;
-  int current_id;
+  //int current_id;
   char *buf=0;
+  std::vector<int> blocks_ready;
 };
 void blocks_success(emscripten_fetch_t *fetch)
 {
@@ -198,13 +269,13 @@ void blocks_failed(emscripten_fetch_t *fetch)
 }
 void chunk_success(emscripten_fetch_t *fetch)
 {
-  FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
-  ptr->fetch_success(fetch);
+  FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
+  ptr->m_this->fetch_success(fetch);
 }
 void chunk_failed(emscripten_fetch_t *fetch)
 {
-  FetchInBlocks *ptr = (FetchInBlocks*)(fetch->userData);
-  ptr->fetch_failed(fetch);
+  FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
+  ptr->m_this->fetch_failed(fetch);
 }
 #endif
 

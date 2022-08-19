@@ -489,7 +489,7 @@ public:
     RenderVertexArray_bufferids ids;
     r.fetch_buffers(ids);
     VertexArraySet * vs = set;
-    RenderVertexArray rend(g_low, *vs);
+    RenderVertexArray rend(*vs, r /*g_low, *vs*/);
     rend.update_buffers(ids);
     rend.set_no_delete(true);
     rend.update_tri(rend_id, buf, start,end);
