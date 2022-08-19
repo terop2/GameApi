@@ -5271,6 +5271,11 @@ EXPORT void GameApi::PolygonApi::create_vertex_array_hw(GameApi::VA va)
 
 extern bool g_disable_polygons;
 
+
+bool is_texture_usage_confirmed(const FaceCollection *p);
+bool is_texture_usage_confirmed(VertexArraySet *set);
+
+
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
   if (keep) {
@@ -5282,8 +5287,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr.copy(0,faces->NumFaces());  
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0);
-    if (!keep)
-      s->free_memory();
+    //if (!keep)
+    //  s->free_memory();
     return add_vertex_array(e, s, arr2);
   }
   
@@ -5322,6 +5327,22 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	prep.join(vec[i]);
       }
     VertexArraySet *set = prep.collect();
+
+    FaceCollection &coll = *faces;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(set)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+    
+    set->has_normal = has_normal2;
+    set->has_attrib = has_attrib2;
+    set->has_color = has_color2;
+    set->has_texcoord = has_texcoord2;
+    set->has_skeleton = has_skeleton2;
+
+    
+
     RenderVertexArray *arr2 = new RenderVertexArray(g_low,*set);
     arr2->prepare(0);
     if (!keep)
@@ -5344,6 +5365,22 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "NumThreads2: " << num_threads << std::endl;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *set = new VertexArraySet;
+
+    FaceCollection &coll = *faces;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(set)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+    
+    set->has_normal = has_normal2;
+    set->has_attrib = has_attrib2;
+    set->has_color = has_color2;
+    set->has_texcoord = has_texcoord2;
+    set->has_skeleton = has_skeleton2;
+    
+
+
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *set);
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));
     pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
@@ -5412,9 +5449,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //arr2->prepare(0);
     if (!keep)
       {
-	set->free_memory();
-	//::EnvImpl *env = ::EnvImpl::Environment(&e);
-	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
+    	set->free_memory();
     }
     
     
@@ -5436,7 +5471,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0); 
     if (!keep)
-      s->free_memory();
+     s->free_memory();
     return add_vertex_array(e, s, arr2);
 #else // BATCHING
     FaceCollection *faces = find_facecoll(e, p);
@@ -5449,8 +5484,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
-    std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
-    if (ct.tri_count==0 && ct.quad_count==0 && ct.poly_count==0) return;
+    //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
+    //if (ct.tri_count==0 && ct.quad_count==0 && ct.poly_count==0) return;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     //InstallProgress(2,"batching");
     for(int i=0;i<batch_count;i++) {
