@@ -1548,6 +1548,8 @@ void RenderVertexArray::sort_blit(int id, Matrix in_MV)
   update(id);
 #endif
 }
+extern bool g_disable_polygons;
+
 void RenderVertexArray::update(int id)
 { 
   OpenglLowApi *ogl = g_low->ogl;
@@ -1598,7 +1600,8 @@ void RenderVertexArray::update(int id)
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[6]);
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.quad_count(id)*sizeof(float)*4, s.quad_weight_polys(id));
 
-  
+
+  if (!g_disable_polygons) {
 #ifdef VAO
   ogl->glBindVertexArray(vao[2]);
 #endif
@@ -1622,7 +1625,7 @@ void RenderVertexArray::update(int id)
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*4, s.poly_joint_polys(id));
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[6]);
   ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, s.poly_count_f(id)*sizeof(float)*4, s.poly_weight_polys(id));
-
+  }
   
   
 #ifdef VAO
@@ -2702,6 +2705,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
 #endif
     }
 
+    if (!g_disable_polygons) {
 #ifdef VAO
   ogl->glBindVertexArray(vao[2]);
 #endif
@@ -2776,7 +2780,7 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
     ogl->glDisableVertexAttribArray(12);
 #endif
     }
-
+    }
 #ifdef VAO
     ogl->glBindVertexArray(0);
 #endif
