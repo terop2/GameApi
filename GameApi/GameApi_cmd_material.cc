@@ -257,26 +257,26 @@
 			 "m_phong",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong2,
 			 "m_phong2",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong3_material,
 			 "m_phong3",
 			 { "ev", "nxt", "ambient", "highlight", "pow" },
 			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "ffff8844", "ffffffff", "5.0" },
+			 { "ev", "", "ffff8844", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong3_material"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::vertex_phong,
 			 "m_vertexphong",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow", "mix" },
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.0", "0.5" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "30.0", "0.5" },
 			 "MT", "materials_api", "vertex_phong"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::glow_edge,

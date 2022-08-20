@@ -494,7 +494,7 @@ return inner+
   //"#endif\n"
   //"#ifndef PHONG_TEXTURE\n"
   "    c+=rr_intensity(normal)*rr_SRGBtoLINEAR2(mix(cc1.rgb,vec3(1,1,1),0.1));\n"
-  "    c+=rr_intensity2(normal)*rr_SRGBtoLINEAR2(cc2.rgb);\n"
+  "    c=mix(c,rr_SRGBtoLINEAR2(cc2.rgb),rr_intensity2(normal));\n"
   //"#endif\n"
   
   "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
@@ -545,7 +545,7 @@ return inner+
       //"#endif\n"
       //"#ifndef PHONG_TEXTURE\n"
       "    c+=rr_intensity(normal)*rr_SRGBtoLINEAR2(mix(cc1.rgb,vec3(1,1,1),0.1));\n"
-      "    c+=rr_intensity2(normal)*rr_SRGBtoLINEAR2(cc2.rgb);\n"
+      "    c=mix(c,rr_SRGBtoLINEAR2(cc2.rgb),rr_intensity2(normal));\n"
       //"#endif\n"
       
       "     c=clamp(c,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
