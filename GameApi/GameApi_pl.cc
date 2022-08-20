@@ -5287,8 +5287,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr.copy(0,faces->NumFaces());  
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0);
-    //if (!keep)
-    //  s->free_memory();
+    if (!keep)
+      s->free_memory();
     return add_vertex_array(e, s, arr2);
   }
   
@@ -5365,7 +5365,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "NumThreads2: " << num_threads << std::endl;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *set = new VertexArraySet;
-
+    set->check_m_set(0);
+    
     FaceCollection &coll = *faces;
     bool has_normal2 = coll.has_normal();
     bool has_attrib2 = coll.has_attrib();
@@ -5422,8 +5423,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ThreadInfo volatile *ti_global2 = ti_global;
       if (ti_global2) {
 	//std::cout << "transfer"<< std::endl;
-      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count*3, ti_global2->ct2_offsets.tri_count*3 + ti_global2->ct2_counts.tri_count*3); 
-      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count*6, ti_global2->ct2_offsets.quad_count*6 + ti_global2->ct2_counts.quad_count*6);
+	ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count *3, ti_global2->ct2_offsets.tri_count *3 + ti_global2->ct2_counts.tri_count *3); 
+      ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count *6, ti_global2->ct2_offsets.quad_count *6 + ti_global2->ct2_counts.quad_count *6);
       if (!g_disable_polygons)
       ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 2, std::max(ti_global2->ct2_offsets.poly_count-1,0), std::max(ti_global2->ct2_offsets.poly_count-1,0) + (ti_global2->ct2_offsets.poly_count?ti_global2->ct2_counts.poly_count:ti_global2->ct2_counts.poly_count-1));
       }
