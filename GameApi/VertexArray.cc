@@ -3175,7 +3175,8 @@ void *thread_func(void *data)
   return 0;
 #else
   ThreadInfo *ti = (ThreadInfo*)data;
-  int s = 1;
+  int s = (ti->end_range-ti->start_range)/100000;
+  if (s==0) s=1;
   int delta_s = (ti->end_range - ti->start_range)/s + 1;
   for(int i=0;i<s;i++)
     {
