@@ -14532,7 +14532,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
     if ((val2==-1 || val2 == 0) && (val3==-1 || val3==0)) {
       // only textures
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix);
-      array->vec.push_back(mt1.id);
+      GameApi::MT mt2 = ev.materials_api.transparent_material(ev,bm,mt1);
+      array->vec.push_back(mt2.id);
     } else if (val3==-1 || val3==0) {
       // textures and bump
       GameApi::BM bm2;
@@ -14540,7 +14541,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
       GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
-      array->vec.push_back(or_mt.id);
+      GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
+      array->vec.push_back(mt3.id);
     } else if (val2==-1 || val2==0) {
       // textures and d
       GameApi::BM bm2;
@@ -14548,7 +14550,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
       GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
-      array->vec.push_back(or_mt.id);
+      GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
+      array->vec.push_back(mt3.id);
     }
     else {
       // textures, d and bump
@@ -14561,7 +14564,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt3 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},0.5);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
       GameApi::MT or_mt2 = ev.materials_api.combine_materials(ev,or_mt,mt3);
-      array->vec.push_back(or_mt2.id);
+      GameApi::MT mt4 = ev.materials_api.transparent_material(ev,bm3,or_mt2);
+      array->vec.push_back(mt4.id);
 
       /*
       GameApi::BM bm2;
@@ -20088,6 +20092,15 @@ public:
 	    ee.env = m;
 	    ee.has_inverse = true;
 	    ee.in_iMV = Matrix::Transpose(Matrix::Inverse(m2)); // note, this is m2, not m.
+	    ee.in_iMV.matrix[3]=0.0;
+	    ee.in_iMV.matrix[4*1+3]=0.0;
+	    ee.in_iMV.matrix[4*2+3]=0.0;
+	    ee.in_iMV.matrix[4*3+0]=0.0;
+	    ee.in_iMV.matrix[4*3+1]=0.0;
+	    ee.in_iMV.matrix[4*3+2]=0.0;
+	    ee.in_iMV.matrix[4*3+3]=1.0;
+	    
+	    //ee.in_iMV.set_translate(Vector(0.0,0.0,0.0));
 	    item->execute(ee);
 	  }
 	  return;
