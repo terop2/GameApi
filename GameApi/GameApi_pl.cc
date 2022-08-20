@@ -5484,6 +5484,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     int batch_faces = faces->NumFaces()/batch_count+1;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
+    set->check_m_set(0);
+
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     //if (ct.tri_count==0 && ct.quad_count==0 && ct.poly_count==0) return;
@@ -5550,6 +5552,22 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //std::cout << "BATCH COUNTS: " << batch_count << "*" << batch_faces << std::endl;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
+    s->check_m_set(0);
+
+    FaceCollection &coll = *faces;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(s)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+    
+    s->has_normal = has_normal2;
+    s->has_attrib = has_attrib2;
+    s->has_color = has_color2;
+    s->has_texcoord = has_texcoord2;
+    s->has_skeleton = has_skeleton2;
+    
+
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     //if (ct.tri_count==0&&ct.quad_count==0&&ct.poly_count==0) return;
