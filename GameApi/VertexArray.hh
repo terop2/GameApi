@@ -321,7 +321,7 @@ public:
   void reserve_fixed2(int id, int count_tri, int count_quad, int count_poly)
   {
     int tri_count=count_tri*3;
-    int quad_count=count_quad*4;
+    int quad_count=count_quad*6;
     int poly_count=count_poly*3;
     s.set_reserve(id, tri_count, quad_count, poly_count);
   }
