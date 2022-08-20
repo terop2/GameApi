@@ -3856,7 +3856,11 @@ public:
     Point2d t3 = coll->TexCoord(face,2);
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
     ::Color c = texture.Map(center.x*texture.SizeX(), center.y*texture.SizeY());
-    return c.alpha < 250;
+    ::Color c1 = texture.Map(t1.x*texture.SizeX(), t1.y*texture.SizeY());
+    ::Color c2 = texture.Map(t2.x*texture.SizeX(), t2.y*texture.SizeY());
+    ::Color c3 = texture.Map(t3.x*texture.SizeX(), t3.y*texture.SizeY());
+    //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
+    return c.alpha < 250 || c1.alpha<250 ||c2.alpha<250||c3.alpha<250;
   }
   int Mapping(int ii) const
   {
@@ -3931,6 +3935,7 @@ public:
   TransparentRenderMaterial(GameApi::EveryApi &ev, GameApi::BM bm, Material *next) : ev(ev),bm(bm),next(next) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    ev.bitmap_api.prepare(bm);
     GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
     GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
 
@@ -3950,6 +3955,7 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
 
+    ev.bitmap_api.prepare(bm);
     GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
     GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
 
@@ -3969,6 +3975,7 @@ public:
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
 
+    ev.bitmap_api.prepare(bm);
     GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
     GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
 
@@ -3988,6 +3995,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
 
+    ev.bitmap_api.prepare(bm);
     GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
     GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
 
@@ -4006,6 +4014,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    ev.bitmap_api.prepare(bm);
     GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
     GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
 
@@ -10239,7 +10248,7 @@ GameApi::US GameApi::UberShaderApi::v_ambient(US us)
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
+  return add_uber(e, new V_ShaderCallFunction("phong", next,"IN_POSITION EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
 }
 GameApi::US GameApi::UberShaderApi::v_generic(US us, std::string name, std::string flags)
 {
