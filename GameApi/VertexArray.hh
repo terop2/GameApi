@@ -25,7 +25,7 @@ public:
   bool is_texture() { return texture_id!=-1; }
   bool is_array_texture() { return texture_id>= 700000; }
   bool is_many_texture() { return texture_many_ids.size()!=0; }
-  VertexArraySet() : texture_id(-1) { }
+  VertexArraySet() : texture_id(-1),bm_id(0) { }
   VertexArraySet(const VertexArraySet &s)
   {
     std::map<int, Polys*>::iterator it = s.m_set.begin();
@@ -157,10 +157,6 @@ public:
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
   const Point *poly_texcoord_polys(int id) const { return poly_texcoord_count(id) ? &m_set[id]->poly_texcoord[0] : NULL; }
 
-#if 0
-
-  int poly2_texcoord_count(int id, int i) const { return m_set[id]->poly_texcoord[i].size(); }
-#endif  
 
   void check_m_set(int id);
   void free_memory();  
@@ -270,7 +266,7 @@ public:
     attribi_buffer2 = rend.attribi_buffer2;
   }
   RenderVertexArray(LowApi *g_low, VertexArraySet &s)
-    : s(s),nodelete(false) { }
+    : s(s),nodelete(false),tri_count(0), quad_count(0), poly_count(0) { }
   void prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
   void update(int id);
   void update_tri(int id, int buffer_id, int start, int end);
