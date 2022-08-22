@@ -85,17 +85,23 @@ public:
   {
     std::string res(fetch->data,fetch->data+fetch->numBytes);
     //std::cout << "RES: '" << res << "'" << std::endl;
+
+    char ch = res[0];
+    res = res.substr(1);
+
+    if (ch=='B') { mode=1; }
+    
     std::stringstream ss(res);
     totalSize = 0;
     ss >> totalSize;
     
-    int concurrent_tasks = 16;
+    int concurrent_tasks = 1;
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
     if (totalSize==0) size_failed(fetch);
     else {
       result.resize(totalSize+1);
-      int t = totalSize/100000+1;
+      int t = totalSize/1048576+1;
       blocks_ready.resize(t);
       //fetch_block(0);
       int s = t;
@@ -109,7 +115,7 @@ public:
     emscripten_fetch_close(fetch);
 
     int val = 1;
-    int mult = totalSize/100000;
+    int mult = totalSize/1048576;
     if (mult<1) mult=1;
     
   std::string url_str(url);
@@ -139,8 +145,8 @@ private:
     //std::cout << "Fetch Block" << id << std::endl;
     blocks_ready[id]=2;
     //current_id = id;
-    start = id*100000;
-    end = (id+1)*100000;
+    start = id*1048576;
+    end = (id+1)*1048576;
     if (end>=totalSize) end=totalSize;
     //std::cout << "START CHUNK" << id << " " << start << " " << end << " " << totalSize << std::endl;
     std::stringstream ss;
@@ -150,7 +156,8 @@ private:
     buf = new char[res.size()+1];
     std::copy(res.begin(),res.end(),buf);
     buf[res.size()]=0;
-    const char *headers[] = {"Range", buf, NULL };
+    const char *headers[] = {"Range", buf,
+       NULL };
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
     strcpy(attr.requestMethod, "POST");
@@ -164,27 +171,77 @@ private:
     attr.onsuccess = chunk_success;
     attr.onerror = chunk_failed;
     //attr.onprogress = fetch_download_progress;
-    attr.requestHeaders = headers;
-    emscripten_fetch(&attr, url.c_str());
+    if (mode!=1) { 
+      attr.requestHeaders = headers;
+    }
+    if (mode!=1) {
+      emscripten_fetch(&attr, url.c_str());
+    } else { // split tool+brotli can be used to split the files beforehand, 1M blocks
+      int id1 = id / 26;
+      int id2 = id - (id1*26);
+      char *pp = "abcdefghijklmnopqrstuvwxyz";
+      char c1 = pp[id1];
+      char c2 = pp[id2];
+      std::string url2;
+      url2 += url;
+      url2 += ".";
+      url2 += c1;
+      url2 += c2;
+      emscripten_fetch(&attr, url2.c_str());
+    }
   }
 public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
     FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
+    //std::cout << fetch->statusText << std::endl;
+    //std::cout << fetch->status << std::endl;
+    //std::cout << "FETCHED BLOCK: " << fetch->dataOffset << " " << fetch->numBytes << std::endl;
+
+    if (fetch->status==200||fetch->status==206) // OK ONE HAS WRONG SIZE BLOCK IN IT, PARTIAL CONTENT PROBABLY ALSO WORKS WITH THIS CODE
+      {
+	for(int i=0;i<blocks_ready.size();i++)
+	  {
+	    if (blocks_ready[i]!=1) {
+	      start = i*1048576;
+	      end = (i+1)*1048576;
+	      if (start>totalSize) start=totalSize;
+	      if (end>totalSize) end=totalSize;
+	      int dataOffset = fetch->dataOffset;
+	      int numBytes = fetch->numBytes;
+	      if (fetch->status==206||mode==1)
+		{
+		  dataOffset+=ptr->start;
+		}
+	      if (dataOffset<=start && dataOffset+numBytes>=end-1)
+		{
+		  int offset = start-dataOffset;
+		  std::copy(fetch->data+offset, fetch->data+offset+(end-start), &result[start]);
+		  blocks_ready[i]=1;
+		  //std::cout << "BLOCK READY: " << i << std::endl;
+		}
+	    
+	    }
+	  }
+	}
+    
     //std::cout << "Chunk Success " << current_id << std::endl;
     //assert(fetch->numBytes==0||fetch->numBytes==end-start);
-    start = ptr->start;
-    end = ptr->end;
-    std::copy(fetch->data, fetch->data+(end-start), &result[start]);
-    int num = ptr->block_num;    
-    //std::cout << "Fetch Success:" << num << std::endl;
-    blocks_ready[num]=1;
+    /*
+    if (fetch->status==206) { // Partial Content
+      start = ptr->start;
+      end = ptr->end;
+      std::copy(fetch->data, fetch->data+(end-start), &result[start]);
+      int num = ptr->block_num;    
+      std::cout << "Fetch Success:" << num << std::endl;
+      blocks_ready[num]=1;
+      }*/
     int s = blocks_ready.size();
     bool fail = false;
-    int next =-1;
+    std::vector<int> next;
     for(int i=0;i<s;i++)
       {
-	if (blocks_ready[i]==0) { fail=true; next=i; break; }
+	if (blocks_ready[i]==0) { fail=true; next.push_back(i); continue; }
 	if (blocks_ready[i]==2) { fail=true; continue; }
       }
     if (!fail)
@@ -194,8 +251,17 @@ public:
       }
     else
       {
-	if (next!=-1)
-	  fetch_block(next);
+	if (next.size()!=0) {
+	  if (fetch->status==206 && firsttime) {
+	    int s = std::min(next.size(),(unsigned long)8);
+	    for(int i=0;i<s;i++) {
+	      fetch_block(next[i]);
+	    }
+	    firsttime = false;
+	  } else {
+	    fetch_block(next[0]);
+	  }
+	}
       }
     //if (end==totalSize) { success(data); }
     //else {
@@ -205,7 +271,7 @@ public:
     emscripten_fetch_close(fetch);
     //std::cout << "CHUNK" << current_id << " " << start << " " << end << " " << totalSize << std::endl;
 
-    long long mult = totalSize/100000;
+    long long mult = totalSize/1048576;
     if (mult<1) mult=1;
 
     long long end2=0;
@@ -213,7 +279,7 @@ public:
     for(int i=0;i<s2;i++)
       {
 	if (blocks_ready[i]==1)
-	  end2+=(long long)100000;
+	  end2+=(long long)1048576;
       }
     
     int val = 1+((long long)(end2))*(long long)15*mult/(long long)(totalSize);
@@ -256,6 +322,8 @@ public:
   //int current_id;
   char *buf=0;
   std::vector<int> blocks_ready;
+  bool firsttime=true;
+  int mode = 0;
 };
 void blocks_success(emscripten_fetch_t *fetch)
 {

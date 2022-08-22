@@ -20,6 +20,16 @@ namespace GameApi
 
 };
 
+enum DSFlags
+  {
+    DSDisableNormal=0x1,
+    DSDisableColor=0x2,
+    DSDisableTexCoord=0x4,
+    DSDisableTexCoord3=0x8,
+    DSDisableObjects=0x10
+  };
+
+
 class CollectVisitor;
 class CollectInterface
 {

@@ -3785,6 +3785,12 @@ public:
   
   int NumFaces() const
   {
+    if (vec2.size()>0) return vec2[vec2.size()-1];
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    if (vec2.size()>0)
+      return vec2[vec2.size()-1];
+    return 0;
+    /*
     int c=coll->NumFaces();
     int count = 0;
     for(int i=0;i<c;i++)
@@ -3794,6 +3800,7 @@ public:
 	if (b) count++;
       }
     return count;
+    */
   }
   int NumPoints(int face) const
   {
@@ -3851,20 +3858,36 @@ public:
   
   bool is_transparent(int face) const
   {
+    if (sx==-1||sy==-1) {
+      sx = texture.SizeX();
+      sy = texture.SizeY();
+    }
     Point2d t1 = coll->TexCoord(face,0);
-    Point2d t2 = coll->TexCoord(face,1);
+    ::Color c1 = texture.Map(t1.x*sx, t1.y*sy);
+    if (c1.alpha<250) return true;
+    Point2d t2 = coll->TexCoord(face,1);    
+    ::Color c2 = texture.Map(t2.x*sx, t2.y*sy);
+    if (c2.alpha<250) return true;
     Point2d t3 = coll->TexCoord(face,2);
+    ::Color c3 = texture.Map(t3.x*sx, t3.y*sy);
+    if (c3.alpha<250) return true;
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
-    ::Color c = texture.Map(center.x*texture.SizeX(), center.y*texture.SizeY());
-    ::Color c1 = texture.Map(t1.x*texture.SizeX(), t1.y*texture.SizeY());
-    ::Color c2 = texture.Map(t2.x*texture.SizeX(), t2.y*texture.SizeY());
-    ::Color c3 = texture.Map(t3.x*texture.SizeX(), t3.y*texture.SizeY());
+    ::Color c = texture.Map(center.x*sx, center.y*sy);
+    if (c.alpha<250) return true;
     //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
-    return c.alpha < 250 || c1.alpha<250 ||c2.alpha<250||c3.alpha<250;
+    return false;
   }
   int Mapping(int ii) const
   {
     if (vec.size()>0) return vec[ii];
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    return vec[ii];
+
+    return 0;
+  }
+
+  void create_vec()
+  {
     int count=0;
     int num = coll->NumFaces();
     for(int i=0;i<num;i++)
@@ -3873,20 +3896,23 @@ public:
 	if (opaque) b=!b;
 	if (b)
 	  {
-	    vec.push_back(i);
 	    //if (count == ii) return i;
-	  count++;
+	    vec.push_back(i);
+	    vec2.push_back(count);
+	    count++;
 	  }
       }
-    return 0;
   }
-
+  
   
 private:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
   bool opaque;
   mutable std::vector<int> vec;
+  mutable std::vector<int> vec2;
+  mutable int sx=-1;
+  mutable int sy=-1;
 };
 
 GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
@@ -18988,7 +19014,7 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const unsigned char *buf, con
 class SaveDSMain : public MainLoopItem
 {
 public:
-  SaveDSMain(GameApi::Env &env, GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : env(env), ev(ev), out_file(out_file), p(p) { firsttime = true; }
+  SaveDSMain(GameApi::Env &env, GameApi::EveryApi &ev, std::string out_file, GameApi::P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects) : env(env), ev(ev), out_file(out_file), p(p), disable_normal(disable_normal), disable_color(disable_color), disable_texcoord(disable_texcoord), disable_texcoord3(disable_texcoord3), disable_objects(disable_objects) { firsttime = true; }
   void Collect(CollectVisitor &vis)
   {
   }
@@ -19003,7 +19029,13 @@ public:
       std::string path = home + "/.gameapi_builder/";
 
       std::cout << "Saving to " << path+out_file << std::endl;
-      GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
+      int flags = 0;
+      if (disable_normal) flags|=DSDisableNormal;
+      if (disable_color) flags|=DSDisableColor;
+      if (disable_texcoord) flags|=DSDisableTexCoord;
+      if (disable_texcoord3) flags|=DSDisableTexCoord3;
+      if (disable_objects) flags|=DSDisableObjects;
+      GameApi::DS ds = ev.polygon_api.p_ds_inv(p,flags);
       ev.mainloop_api.save_ds(path+out_file, ds);
 
 
@@ -19028,11 +19060,16 @@ private:
   std::string out_file;
   bool firsttime;
   GameApi::P p;
+  bool disable_normal;
+  bool disable_color;
+  bool disable_texcoord;
+  bool disable_texcoord3;
+  bool disable_objects;
 };
 
-GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p)
+GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects)
 {
-  return add_main_loop(e, new SaveDSMain(e,ev,output_filename, p));
+  return add_main_loop(e, new SaveDSMain(e,ev,output_filename, p, disable_normal, disable_color, disable_texcoord, disable_texcoord3, disable_objects));
 }
 
 std::string GameApi::MainLoopApi::ds_to_string(DS ds)
@@ -29082,7 +29119,7 @@ public:
       
       p = ev.polygon_api.load_model_all_no_cache_mtl(stream, 300, materials);
     }
-    
+    // possible problem, p_ds_inv doesnt pass flags
     GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
     res = ev.mainloop_api.ds_to_string(ds);
     //std::cout << "RES:" << res << std::endl;
