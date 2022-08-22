@@ -204,6 +204,7 @@ void Program::push_back(const Shader &shader)
 {
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
+  /*
   int val = g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
     {
@@ -214,6 +215,7 @@ void Program::push_back(const Shader &shader)
     buf[length]=0;
     std::cout << "" << buf << std::endl;
     }
+  */
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -227,9 +229,9 @@ void Program::bind_attrib(int num, std::string name)
 {
   //int val2 = g_low->ogl->glGetError();
   g_low->ogl->glBindAttribLocation(priv->program, num, name.c_str());
-  int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
-    std::cout << "BindAttribLocation ERROR: " << val << std::endl;
+  //int val = g_low->ogl->glGetError();
+  //if (val!=Low_GL_NO_ERROR)
+  //  std::cout << "BindAttribLocation ERROR: " << val << std::endl;
 }
 void Program::detach(const Shader &shader)
 {

@@ -510,7 +510,7 @@ public:
   IMPORT void display_seamless(EveryApi &ev);
   IMPORT ML debug_obj(EveryApi &ev);
   IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
-  IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p);
+  IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects);
   struct Event
   {
     int type;
@@ -2430,6 +2430,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P extract_large_polygons(P p, float minimum_size, bool reverse);
   P x_split(P p, float x, float x_0, float x_1);
   P y_split(P p, float y, float y_0, float y_1);
   P z_split(P p, float z, float z_0, float z_1);
@@ -2566,7 +2567,7 @@ public:
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
   IMPORT P p_ds(EveryApi &ev, const unsigned char *beg, const unsigned char *end);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);
-  IMPORT DS p_ds_inv(P model);
+  IMPORT DS p_ds_inv(P model, int flags=-1); // flags at GameApi_pl.cc/DSFlags
   IMPORT P file_cache(P model, std::string filename, int obj_num);
   IMPORT P resize_to_correct_size(P model);
         IMPORT void save_model(P poly, std::string filename);

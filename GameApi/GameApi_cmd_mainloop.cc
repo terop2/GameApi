@@ -721,7 +721,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "fps_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "fps_display"));
 
 #ifndef STABLE
@@ -766,14 +766,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "score_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "score_display"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::time_display,
 			 "time_display",
 			 { "ev", "ml", "font", "time" },
 			 { "EveryApi&", "ML", "std::string", "float" },
-			 { "ev", "", "http://tpgames.org/Chunkfive.otf", "1000.0" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf", "1000.0" },
 			 "ML", "mainloop_api", "time_display"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::matrix_range_check,
 			 "matrix_range_check",
@@ -792,7 +792,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "restart_screen",
 			 { "ev", "ml", "fontname" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "http://tpgames.org/Chunkfive.otf" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf" },
 			 "ML", "mainloop_api", "restart_screen"));
 			
 #ifndef STABLE

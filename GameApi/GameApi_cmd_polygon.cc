@@ -58,9 +58,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "ML", "polygon_api", "save_model_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_ds_ml,
 			 "save_ds",
-			 { "ev", "out_filename", "poly" },
-			 { "EveryApi&", "std::string", "P" },
-			 { "ev", "test.ds", "" },
+			 { "ev", "out_filename", "poly", "disable_normal", "disable_color", "disable_texcoord", "disable_texcoord3", "disable_objects" },
+			 { "EveryApi&", "std::string", "P","bool", "bool", "bool", "bool", "bool" },
+			 { "ev", "test.ds", "", "false", "false", "false", "false", "false" },
 			 "ML", "mainloop_api", "save_ds_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url,
 			 "p_url",
@@ -418,6 +418,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "remove_faces"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::extract_large_polygons,
+			 "extract_large",
+			 { "p", "minimum_size", "reverse" },
+			 { "P", "float", "bool" },
+			 { "", "50.0", "false" },
+			 "P", "polygon_api", "extract_large_polygons"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
 			 "lod_choose",
 			 { "vec", "name" },
