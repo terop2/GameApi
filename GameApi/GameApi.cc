@@ -3773,6 +3773,53 @@ GameApi::MS GameApi::MatricesApi::interpolate(MS start, MS end, float val)
   return add_matrix_array(e, new InterpolateMS(start_, end_, val));
 }
 
+class TransparentSeparateFaceCollection;
+
+
+struct TransparencyThreadInfo
+{
+  pthread_t thread_id;
+  TransparentSeparateFaceCollection *self;
+  int start_range;
+  int end_range;
+  int thread_num;
+};
+void *trans_thread_func(void *data);
+
+class ThreadedTransparency
+{
+public:
+  ThreadedTransparency(TransparentSeparateFaceCollection *self) : m_this(self) { }
+  int push_thread(int i, int start, int end)
+  {
+    TransparencyThreadInfo *info = new TransparencyThreadInfo;
+    info->self = m_this;
+    info->start_range = start;
+    info->end_range = end;
+    info->thread_num = i;
+
+    infos.push_back(info);
+    
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr,3000);
+    pthread_create(&info->thread_id, &attr, &trans_thread_func, (void*)info);
+
+    pthread_attr_destroy(&attr);
+    
+    return infos.size()-1;
+  }
+  void join(int i)
+  {
+    TransparencyThreadInfo *info = infos[i];
+    void *res;
+    pthread_join(info->thread_id,&res);
+  }
+private:
+  TransparentSeparateFaceCollection *m_this;
+  std::vector<TransparencyThreadInfo *> infos;
+};
+
 class TransparentSeparateFaceCollection : public FaceCollection
 {
 public:
@@ -3785,10 +3832,10 @@ public:
   
   int NumFaces() const
   {
-    if (vec2.size()>0) return vec2[vec2.size()-1];
+    if (m_count!=0) return m_count-1; //vec2[vec2.size()-1];
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
-    if (vec2.size()>0)
-      return vec2[vec2.size()-1];
+    if (m_count!=0)
+      return m_count-1; //vec2[vec2.size()-1];
     return 0;
     /*
     int c=coll->NumFaces();
@@ -3881,39 +3928,87 @@ public:
   {
     if (vec.size()>0) return vec[ii];
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
-    return vec[ii];
+    if (vec.size()>0) return vec[ii];
 
     return 0;
   }
 
   void create_vec()
   {
+    int num_threads = 8;
     int count=0;
     int num = coll->NumFaces();
-    for(int i=0;i<num;i++)
+    //vec.resize(num);
+    //vec2.resize(num);
+    if (num<100) { num_threads=1; }
+    int delta_s = num/num_threads+1;
+    std::vector<int> vec2;
+    ThreadedTransparency prep(this);
+    for(int i=0;i<num_threads;i++)
+      {
+	int start_range = i*delta_s;
+	int end_range = (i+1)*delta_s;
+	if (end_range>num) { end_range=num; }
+	if (i==num_threads-1) { end_range=num; }
+	vec2.push_back(prep.push_thread(i,start_range,end_range));
+      }
+    for(int i=0;i<num_threads;i++)
+      {
+	prep.join(vec2[i]);
+      }
+    vec=collect();
+    //create_vec_range(0,num);
+  }
+
+  std::vector<int> collect()
+  {
+    std::vector<int> res;
+    int s = 8;
+    for(int i=0;i<s;i++)
+      {
+	std::copy(thread_output_vec[i].begin(),thread_output_vec[i].end(),std::back_inserter(res));
+      }
+    return res;
+  }
+  
+  void create_vec_range(int ii, int start, int end)
+  {
+    std::vector<int> &vec=thread_output_vec[ii];
+    int count=0;
+    vec.resize(end-start);
+    for(int i=start;i<end;i++)
       {
 	bool b = is_transparent(i);
 	if (opaque) b=!b;
 	if (b)
 	  {
 	    //if (count == ii) return i;
-	    vec.push_back(i);
-	    vec2.push_back(count);
+	    vec[count]=i;
+	    //vec2[count]=count;
 	    count++;
 	  }
       }
+    m_count += count;
   }
-  
-  
 private:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
   bool opaque;
+  std::vector<int> thread_output_vec[8];
   mutable std::vector<int> vec;
-  mutable std::vector<int> vec2;
+  //mutable std::vector<int> vec2;
   mutable int sx=-1;
   mutable int sy=-1;
+  int m_count=0;
 };
+
+void *trans_thread_func(void *data)
+{
+  TransparencyThreadInfo *info = (TransparencyThreadInfo*)data;
+  info->self->create_vec_range(info->thread_num,info->start_range, info->end_range);
+  return 0;
+}
+
 
 GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
 {
@@ -12803,7 +12898,7 @@ void blocker_iter(void *arg)
 	GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
 	GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	env->ev->mainloop_api.execute_ml(*env->ev,env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
 	if (env->fpscounter)
 	  env->ev->mainloop_api.fpscounter();
@@ -13158,7 +13253,7 @@ public:
     
     //std::cout << "Splitter/execute_ml" << std::endl;
     if (g_prepare_done)
-      env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
     //std::cout << "Splitter/end of execute_ml" << std::endl;
 
     if (env->fpscounter)
@@ -15715,6 +15810,18 @@ public:
     GameApi::SH s3;
     s3.id = e.sh_color;
 
+    std::vector<int> vec = shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH sh;
+	sh.id = vec[i];
+	//Matrix m = find_matrix(env,rot_y2);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", rot_y2);
+      }
+
+    
 #ifndef NO_MV    
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
@@ -15829,6 +15936,18 @@ public:
     GameApi::SH s3;
     s3.id = e.sh_color;
 
+    std::vector<int> vec = shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH sh;
+	sh.id = vec[i];
+	//Matrix m = find_matrix(env,rot_y2);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", rot_y2);
+      }
+
+    
 #ifndef NO_MV
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
@@ -15931,6 +16050,18 @@ public:
     GameApi::SH s3;
     s3.id = e.sh_color;
 
+    std::vector<int> vec = shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH sh;
+	sh.id = vec[i];
+	//Matrix m = find_matrix(env,rot_y2);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", rot_y2);
+      }
+
+    
 #ifndef NO_MV
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
@@ -25407,7 +25538,7 @@ public:
     GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
-      env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+    env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
       firsttime3 = false;
     }
 
@@ -25489,7 +25620,7 @@ public:
     
     firsttime2 = false;
     } else {
-          env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
     }
     if (env->fpscounter)
       env->ev->mainloop_api.fpscounter();

@@ -555,7 +555,7 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
+  void execute_ml(EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   IMPORT ML array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
   IMPORT ML or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2);
