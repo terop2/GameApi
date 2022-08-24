@@ -16,6 +16,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <atomic>
 
 #ifdef LOOKING_GLASS
 #define HP_LOAD_LIBRARY
@@ -3820,6 +3821,8 @@ private:
   std::vector<TransparencyThreadInfo *> infos;
 };
 
+extern pthread_t g_main_thread_id;
+
 class TransparentSeparateFaceCollection : public FaceCollection
 {
 public:
@@ -3832,7 +3835,9 @@ public:
   
   int NumFaces() const
   {
+    //std::cout << "READ m_count=" << m_count << std::endl;
     if (m_count!=0) return m_count-1; //vec2[vec2.size()-1];
+    if (done) return 0;
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
     if (m_count!=0)
       return m_count-1; //vec2[vec2.size()-1];
@@ -3927,6 +3932,7 @@ public:
   int Mapping(int ii) const
   {
     if (vec.size()>0) return vec[ii];
+    if (done) return 0;
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
     if (vec.size()>0) return vec[ii];
 
@@ -3935,6 +3941,20 @@ public:
 
   void create_vec()
   {
+    //pthread_t curr = pthread_self();
+    //if (!pthread_equal(curr, g_main_thread_id))
+    if (1)
+    { // INSIDE THREAD
+	int num = coll->NumFaces();
+	create_vec_range(vec, 0,num);
+	m_count = vec.size();
+	done = true;
+	return;
+      }
+
+
+    
+    //stackTrace();
     int num_threads = 8;
     int count=0;
     int num = coll->NumFaces();
@@ -3957,6 +3977,9 @@ public:
 	prep.join(vec2[i]);
       }
     vec=collect();
+    m_count = vec.size();
+    //std::cout << "SET m_count=" << m_count << std::endl;
+    done = true;
     //create_vec_range(0,num);
   }
 
@@ -3971,9 +3994,9 @@ public:
     return res;
   }
   
-  void create_vec_range(int ii, int start, int end)
+  void create_vec_range(std::vector<int>& vec, int start, int end)
   {
-    std::vector<int> &vec=thread_output_vec[ii];
+    //std::vector<int> &vec=thread_output_vec[ii];
     int count=0;
     vec.resize(end-start);
     for(int i=start;i<end;i++)
@@ -3988,9 +4011,8 @@ public:
 	    count++;
 	  }
       }
-    m_count += count;
   }
-private:
+public:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
   bool opaque;
@@ -3999,13 +4021,15 @@ private:
   //mutable std::vector<int> vec2;
   mutable int sx=-1;
   mutable int sy=-1;
-  int m_count=0;
+  std::atomic<int> m_count=0;
+  bool done=false;
 };
 
 void *trans_thread_func(void *data)
 {
   TransparencyThreadInfo *info = (TransparencyThreadInfo*)data;
-  info->self->create_vec_range(info->thread_num,info->start_range, info->end_range);
+  std::vector<int> &vec=info->self->thread_output_vec[info->thread_num];
+  info->self->create_vec_range(vec,info->start_range, info->end_range);
   return 0;
 }
 
