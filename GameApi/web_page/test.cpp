@@ -236,7 +236,9 @@ extern std::string g_window_href;
 extern GameApi::EveryApi *g_everyapi;
 void ClearProgress();
 #if 1
+extern pthread_t g_main_thread_id;
 int main(int argc, char *argv[]) {
+  g_main_thread_id = pthread_self();
   call_count++;
   std::cout << "CALL COUNT" << call_count << std::endl;
   if (call_count>1) return 0;

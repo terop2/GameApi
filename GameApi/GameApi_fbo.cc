@@ -41,7 +41,7 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(int sx, int sy)
   ogl->glBindTexture(Low_GL_TEXTURE_2D, depth_texture);
   ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
   ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_NEAREST);
-  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_DEPTH_COMPONENT, sx,sy, 0, Low_GL_DEPTH_COMPONENT, Low_GL_UNSIGNED_INT,0);
+  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_DEPTH_COMPONENT32F, sx,sy, 0, Low_GL_DEPTH_COMPONENT, Low_GL_FLOAT,0);
   //ogl->glGenRenderbuffers(1, &depth_texture);
   //ogl->glBindRenderbuffer(Low_GL_RENDERBUFFER, depth_texture);
   //ogl->glRenderbufferStorage(Low_GL_RENDERBUFFER, Low_GL_RGBA, sx, sy);
