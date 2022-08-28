@@ -598,6 +598,7 @@ public:
   ARR load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML prepare_pts(ML ml, PTS pts);
   ML depthfunc(ML ml, int val); 
+  ML depthmask(ML ml, bool b);
   ML blendfunc(ML ml, int val, int val2);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);

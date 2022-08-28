@@ -2752,7 +2752,7 @@ public:
     case 5: ogl->glDepthFunc(Low_GL_GEQUAL); break;
     };
     next->execute(e);
-    ogl->glDepthFunc(Low_GL_LESS);
+    ogl->glDepthFunc(Low_GL_LEQUAL);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
@@ -2763,10 +2763,42 @@ private:
   int i;
 };
 
+class DepthMask : public MainLoopItem
+{
+public:
+  DepthMask(MainLoopItem *next, bool b) : next(next), b(b) { }
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
+  void Prepare() {next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) {
+  OpenglLowApi *ogl = g_low->ogl;
+    if (b) {
+      ogl->glDepthMask(Low_GL_TRUE);
+    } else {
+      ogl->glDepthMask(Low_GL_FALSE);
+    }
+    next->execute(e);
+    ogl->glDepthMask(Low_GL_TRUE);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  bool b;  
+};
+
 GameApi::ML GameApi::MainLoopApi::depthfunc(ML ml, int val)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   return add_main_loop(e, new DepthFunc(next,val));
+}
+
+GameApi::ML GameApi::MainLoopApi::depthmask(ML ml, bool b)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new DepthMask(next,b));
 }
 
 class BlendFunc : public MainLoopItem

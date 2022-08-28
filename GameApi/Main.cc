@@ -642,9 +642,21 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     }
 #endif
 #ifdef WINDOWS
-   ogl->glDisable(Low_GL_DEPTH_TEST);
-   ogl->glDepthMask(Low_GL_FALSE);
+   ogl->glEnable(Low_GL_DEPTH_TEST);
+   //ogl->glDepthMask(Low_GL_FALSE);
   ogl->glDepthFunc(Low_GL_LEQUAL);
+  ogl->glEnable(Low_GL_BLEND);
+#endif
+#ifdef LINUX
+   ogl->glEnable(Low_GL_DEPTH_TEST);
+   //ogl->glDepthMask(Low_GL_FALSE);
+  ogl->glDepthFunc(Low_GL_LEQUAL);
+  ogl->glEnable(Low_GL_BLEND);
+#endif
+#ifdef EMSCRIPTEN
+   ogl->glEnable(Low_GL_DEPTH_TEST);
+   //ogl->glDepthMask(Low_GL_FALSE); // this does disable writing to depth buffer, which isn't right
+   ogl->glDepthFunc(Low_GL_LEQUAL);
   ogl->glEnable(Low_GL_BLEND);
 #endif
   
