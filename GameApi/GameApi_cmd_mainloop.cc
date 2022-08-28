@@ -846,6 +846,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML", "{lequal,equal,always,less,greater,gequal}" },
 			 { "", "1" },
 			 "ML", "mainloop_api", "depthfunc"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::depthmask,
+			 "ogl_depthmask",
+			 { "ml", "b" },
+			 { "ML", "bool" },
+			 { "", "true" },
+			 "ML", "mainloop_api", "depthmask"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::blendfunc,
 			 "ogl_blendfunc",
 			 { "ml", "val", "val2" },
