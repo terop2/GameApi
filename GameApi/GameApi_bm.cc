@@ -561,8 +561,12 @@ public:
   {
     if (time > e.time*10.0 && time < e.time*10.0 + e.delta_time)
       {
+	const char *dd = getenv("BUILDER_DOCKER_DIR");
+	std::string dockerdir = dd?dd:"";
 	std::string home = getenv("HOME");
-	std::string path = home + "/.gameapi_builder/";
+	home+="/";
+	if (dockerdir!="") home=dockerdir;
+	std::string path = home + ".gameapi_builder/";
 	ev.bitmap_api.savebitmap(bm, path+filename, alpha);
 	
 	std::ifstream ss((path+filename).c_str());
@@ -3920,8 +3924,12 @@ void GameApi::BitmapApi::save_png(BM bm, std::string filename)
   BufferFromBitmap buf(*bbm);
   buf.Gen();
   BufferRef ref = buf.Buffer();
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  std::string path = home + "/.gameapi_builder/";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  std::string path = home + ".gameapi_builder/";
   SaveImage(ref, path+filename);
   std::ifstream ss((path+filename).c_str());
   char ch;

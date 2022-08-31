@@ -1454,9 +1454,13 @@ public:
 					      send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss2.str(),"Content-Type: text/plain", htmlfile);
 
 			
-
-					      std::string cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
-
+					      std::string dockerdir = getenv("BUILDER_DOCKER_DIR");
+					      std::string cmd;
+					      if (dockerdir!="") {
+					      cmd = std::string("/usr/share/chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+					      } else {
+					      cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+					      }
 					      pthread_system(cmd.c_str());
 			
 #endif
@@ -3200,7 +3204,9 @@ int main(int argc, char *argv[]) {
 	std::string path = getenv("homepath");
 	std::string filename = drive+path+"\\mod.txt";
 #else
-	std::string filename = "mod.txt";
+	const char *dd = getenv("BUILDER_DOCKER_DIR");
+	std::string dockerdir = dd?dd:"";
+	std::string filename = dockerdir + "mod.txt";
 #endif
 	std::vector<std::string> filenames;
 	

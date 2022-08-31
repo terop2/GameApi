@@ -1182,7 +1182,7 @@ public:
 	GameApi::M in_T = ev.mainloop_api.in_T(ev, true);
 	GameApi::M in_N = ev.mainloop_api.in_N(ev, true);
 	//e.inMV = find_matrix(env, mat);
-	ev.mainloop_api.execute_ml(p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
+	ev.mainloop_api.execute_ml(ev,p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
 	e.type = -1;
 	e.ch = -1;
 	e.button = -1;

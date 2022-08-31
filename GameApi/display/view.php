@@ -752,7 +752,8 @@ if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
   } else {
     res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
 }
-  res+="ML I502=ev.mainloop_api.depthfunc(I5022,3);\n";
+  res+="ML I503=ev.mainloop_api.depthmask(I5022,false);\n";
+  res+="ML I502=ev.mainloop_api.depthfunc(I503,3);\n";
   return res;
 }
 function parse_bg_count(bg)
@@ -938,7 +939,7 @@ if (normals_val==0||normals_val==5) { normals_select = normals; texcoord_normals
 if (normals_val==1||normals_val==6) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
 if (normals_val==2) { normals_select = objnormals; texcoord_normals_select = texcoord_objnormals; }
 
-var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0);\n";
+var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ffffffff,5.0);\n";
 
 if (i==-1) return ["",normals_select];
 ;
@@ -1085,19 +1086,18 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
      res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1);\n";
      //res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I40,cvbnmfghjk);\n"
   } else {
-     res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ff666666,5.0,0.5);\n";
+     res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ffffffff,5.0,0.5);\n";
   }
 
-
-  res+="ML I6=ev.materials_api.bind(I2,I4);\n";
-
-
+    res+="ML I62=ev.materials_api.bind(I2,I4);\n";
+res+="ML I6=ev.mainloop_api.depthfunc(I62,0);\n";
+ 
   console.log(material_value);
   console.log(border_value);
   console.log(filename.substr(-4));
   console.log(filename.substr(-5));
   if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
-     res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
 
   }
 
@@ -1115,7 +1115,7 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
   }
 
 
-  res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I502});\n";
+  res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I502,I6});\n";
    }
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf") {

@@ -11,7 +11,7 @@ cp web_page.js /home/terop/html/meshpage.org/
 cp web_page.wasm /home/terop/html/meshpage.org/
 cp web_page.wasm.br /home/terop/html/meshpage.org/
 cp web_page.wasm.map /home/terop/html/meshpage.org/
-cp pthread-main.js /home/terop/html/meshpage.org/
+#cp pthread-main.js /home/terop/html/meshpage.org/
 cp web_page.worker.js /home/terop/html/meshpage.org/
 cp web_page_lowmem.html /home/terop/html/meshpage.org/
 cp web_page_lowmem.worker.js /home/terop/html/meshpage.org/
@@ -19,7 +19,7 @@ cp web_page_lowmem.data /home/terop/html/meshpage.org/
 cp web_page_lowmem.js /home/terop/html/meshpage.org/
 cp web_page_lowmem.wasm /home/terop/html/meshpage.org/
 cp web_page_lowmem.wasm.br /home/terop/html/meshpage.org/
-cp web_page_lowmem.wasm.mem /home/terop/html/meshpage.org/
+#cp web_page_lowmem.wasm.mem /home/terop/html/meshpage.org/
 cp web_page_nothreads_highmem.html /home/terop/html/meshpage.org/
 cp web_page_nothreads_highmem.data /home/terop/html/meshpage.org/
 cp web_page_nothreads_highmem.js /home/terop/html/meshpage.org/
