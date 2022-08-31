@@ -3829,8 +3829,18 @@ public:
   TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque) : coll(coll), texture(texture),opaque(opaque) { }
 
 
-  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
-  void HeavyPrepare() { }
+  void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  int NumBlocks() const {
+    //if (coll->NumFaces()>1000) return 15; 
+    return 1; }
+  void HeavyPrepare() {
+    current_i++;
+    std::cout << "HeavyPrepare " << current_i << std::endl;
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();    
+  }
   void Prepare() { coll->Prepare(); }
   
   int NumFaces() const
@@ -3946,9 +3956,13 @@ public:
     if (1)
     { // INSIDE THREAD
 	int num = coll->NumFaces();
-	create_vec_range(vec, 0,num);
-	m_count = vec.size();
-	done = true;
+
+	create_vec_range(vec, 0,num); //start_block,end_block);
+	//if (end_block==num) {
+	  //vec=collect2();
+	  m_count = vec.size();
+	  done = true;
+	  //	}
 	return;
       }
 
@@ -3983,6 +3997,17 @@ public:
     //create_vec_range(0,num);
   }
 
+  std::vector<int> collect2()
+  {
+    std::vector<int> res;
+    int s = output_vec.size();
+    for(int i=0;i<s;i++)
+      {
+	std::copy(output_vec[i].begin(),output_vec[i].end(),std::back_inserter(res));
+      }
+    return res;
+  }
+  
   std::vector<int> collect()
   {
     std::vector<int> res;
@@ -4011,18 +4036,21 @@ public:
 	    count++;
 	  }
       }
+    vec.resize(count);
   }
 public:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
   bool opaque;
   std::vector<int> thread_output_vec[8];
+  std::vector<std::vector<int> > output_vec;
   mutable std::vector<int> vec;
   //mutable std::vector<int> vec2;
   mutable int sx=-1;
   mutable int sy=-1;
   std::atomic<int> m_count=0;
   bool done=false;
+  int current_i=0;
 };
 
 void *trans_thread_func(void *data)
@@ -4041,6 +4069,260 @@ GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
   return add_polygon2(e, new TransparentSeparateFaceCollection(coll, *b2, opaque),1);
+}
+
+int choose_texture(FaceCollection *coll, int face)
+{
+  float tex = coll->TexCoord3(face,0);
+  return int(tex+0.3);
+}
+
+
+class TransparentSeparateFaceCollection2 : public FaceCollection
+{
+public:
+  TransparentSeparateFaceCollection2(FaceCollection *coll, std::vector<Bitmap<::Color>*> textures, bool opaque) : coll(coll), textures(textures),opaque(opaque) { }
+
+
+  void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  int NumBlocks() const {
+    //if (coll->NumFaces()>1000) return 15; 
+    return 1; }
+  void HeavyPrepare() {
+    current_i++;
+    std::cout << "HeavyPrepare " << current_i << std::endl;
+    const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();    
+  }
+  void Prepare() { coll->Prepare(); }
+  
+  int NumFaces() const
+  {
+    //std::cout << "READ m_count=" << m_count << std::endl;
+    if (m_count!=0) return m_count-1; //vec2[vec2.size()-1];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();
+    if (m_count!=0)
+      return m_count-1; //vec2[vec2.size()-1];
+    return 0;
+    /*
+    int c=coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<c;i++)
+      {
+	bool b = is_transparent(i);
+	if (opaque) b=!b;
+	if (b) count++;
+      }
+    return count;
+    */
+  }
+  int NumPoints(int face) const
+  {
+    return coll->NumPoints(Mapping(face));
+  }
+  Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(Mapping(face), point);
+  }
+  Point EndFacePoint(int face, int point) const
+  {
+    return coll->EndFacePoint(Mapping(face), point);
+  }
+  unsigned int Color(int face, int point) const
+  {
+    return coll->Color(Mapping(face), point);
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(Mapping(face), point);
+  }
+  float TexCoord3(int face, int point) const
+  {
+    return coll->TexCoord3(Mapping(face), point);
+  }
+
+  Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(Mapping(face), point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(Mapping(face), point, id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(Mapping(face),point,id);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return coll->Joints(Mapping(face),point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return coll->Weights(Mapping(face),point);
+  }
+
+  virtual int NumObjects() const {
+    //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;
+    return coll->NumObjects(); }
+
+  std::pair<int,int> GetObject(int o) const
+  {
+    if (vec.size()==0)
+      const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();
+    std::pair<int,int> p = coll->GetObject(o);
+    
+    
+    return std::make_pair(ReverseMapping(p.first),ReverseMapping(p.second));
+  }
+
+  
+
+  virtual bool has_normal() const { return coll->has_normal(); }
+  virtual bool has_attrib() const { return coll->has_attrib(); }
+  virtual bool has_color() const { return coll->has_color(); }
+  virtual bool has_texcoord() const { return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { return coll->has_skeleton(); }
+
+  
+
+  
+  bool is_transparent(int face) const
+  {
+    int texnum = choose_texture(coll,face);
+    Bitmap<::Color> *texture = texnum>=0&&texnum<textures.size()?textures[texnum]:0;
+    //std::cout << "Texture " << std::hex << (long)texture << " " << texnum << "<" << textures.size()  << std::endl;
+    
+    
+    int s = cache.size();
+    bool needed = true;
+    for(int i=0;i<s;i++) {
+      if (cache[i]==texnum) needed=false;
+    }
+    if (needed && texture) {
+      texture->Prepare();
+      cache.push_back(texnum);
+    }
+    
+    if (texture) {
+      sx = texture->SizeX();
+      sy = texture->SizeY();
+    }
+    if (texture) {
+    Point2d t1 = coll->TexCoord(face,0);
+    ::Color c1 = texture->Map(t1.x*sx, t1.y*sy);
+    if (c1.alpha<250) return true;
+    Point2d t2 = coll->TexCoord(face,1);    
+    ::Color c2 = texture->Map(t2.x*sx, t2.y*sy);
+    if (c2.alpha<250) return true;
+    Point2d t3 = coll->TexCoord(face,2);
+    ::Color c3 = texture->Map(t3.x*sx, t3.y*sy);
+    if (c3.alpha<250) return true;
+    Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
+    ::Color c = texture->Map(center.x*sx, center.y*sy);
+    if (c.alpha<250) return true;
+    //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
+    }
+    return false;
+  }
+  int ReverseMapping(int i) const
+  {
+    return rev[i];
+  }
+
+  int Mapping(int ii) const
+  {
+    if (vec.size()>0) return vec[ii];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();
+    if (vec.size()>0) return vec[ii];
+
+    return 0;
+  }
+
+  void create_vec()
+  {
+    //pthread_t curr = pthread_self();
+    //if (!pthread_equal(curr, g_main_thread_id))
+    if (1)
+    { // INSIDE THREAD
+	int num = coll->NumFaces();
+
+	create_vec_range(vec, rev, 0,num); //start_block,end_block);
+	//if (end_block==num) {
+	  //vec=collect2();
+	  m_count = vec.size();
+	  done = true;
+	  //	}
+	return;
+      }
+  }
+
+  std::vector<int> collect2()
+  {
+    std::vector<int> res;
+    int s = output_vec.size();
+    for(int i=0;i<s;i++)
+      {
+	std::copy(output_vec[i].begin(),output_vec[i].end(),std::back_inserter(res));
+      }
+    return res;
+  }
+  
+  
+  void create_vec_range(std::vector<int>& vec, std::vector<int> &rev, int start, int end)
+  {
+    //std::vector<int> &vec=thread_output_vec[ii];
+    int count=0;
+    vec.resize(end-start);
+    for(int i=start;i<end;i++)
+      {
+	rev.push_back(count);
+	bool b = is_transparent(i);
+	if (opaque) b=!b;
+	if (b)
+	  {
+	    //if (count == ii) return i;
+	    vec[count]=i;
+	    //vec2[count]=count;
+	    count++;
+	  }
+      }
+    vec.resize(count);
+  }
+public:
+  FaceCollection *coll;
+  std::vector<Bitmap<::Color>*> textures;
+  bool opaque;
+  std::vector<int> thread_output_vec[8];
+  std::vector<std::vector<int> > output_vec;
+  std::vector<std::vector<int> > rev_output_vec;
+  mutable std::vector<int> vec;
+  mutable std::vector<int> rev;
+  //mutable std::vector<int> vec2;
+  mutable int sx=-1;
+  mutable int sy=-1;
+  std::atomic<int> m_count=0;
+  bool done=false;
+  int current_i=0;
+  mutable std::vector<int> cache;
+};
+
+
+GameApi::P GameApi::PolygonApi::transparent_separate2(P p, std::vector<BM> vec, bool opaque)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  int s = vec.size();
+  std::vector<Bitmap<::Color>*> vec2;
+  for(int i=0;i<s;i++) {
+    BitmapHandle *handle = find_bitmap(e, vec[i]);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    vec2.push_back(b2);
+  }
+    
+  return add_polygon2(e, new TransparentSeparateFaceCollection2(coll, vec2, opaque),1);
+  
 }
 
 class TransparentMainLoop : public MainLoopItem
@@ -7415,6 +7697,7 @@ public:
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
       item->Collect(vis);
+      firsttime=false;
   }
   void HeavyPrepare() { }
   virtual void Prepare()
@@ -7528,6 +7811,12 @@ public:
   }
   virtual void Prepare()
   {
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      firsttime = false;
+    }
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -12993,6 +13282,13 @@ public:
     if (i>=0 && i<sz && vec[i])
       vec[i]->HeavyPrepare();
   }
+  int count(int i) const
+  {
+    int sz = vec.size();
+    if (i>=0 && i<sz && vec[i])
+      return vec[i]->NumBlocks();
+    return 1;
+  }
 public:
   std::vector<CollectInterface*> vec;
   //int count=0;
@@ -13029,7 +13325,6 @@ public:
   //ClearProgress();
   
   //#ifndef EMSCRIPTEN
-  InstallProgress(33344, "collect", 15*15);
   //#endif
   
   
@@ -13177,27 +13472,38 @@ public:
       item->Collect(*vis);
       //ProgressBar(33344, 0, 30, "collect");
       vis_counter=0;
+      real_counter=0;
       g_prepare_done = true;
-
+      ClearProgress();
+      InstallProgress(33344, "collect", 15*15);
       firsttime = false;
     }
 
     if (vis) {
 	g_logo_status = 2;
 
-      int num2 = (vis->vec.size()/30);
+	int counter = 0;
+	int s = vis->vec.size();
+	for(int i=0;i<s;i++) counter+=vis->count(i);
+	
+      int num2 = (counter/30)+1;
       if (num2<1) num2=1;
       for(int i=0;i<num2;i++) {
 	vis->execute(vis_counter);
-	vis_counter++;
+	vis_counter_before++;
+	real_counter++;
+	if (vis_counter_before>=vis->count(vis_counter)) {
+	  vis_counter_before=0;
+	  vis_counter++;
+	}
       }
 
 
       
-      int num = vis_counter;
+      int num = real_counter;
       //#ifndef EMSCRIPTEN
       if (vis->vec.size()>0)
-	ProgressBar(33344, (15*15*num/vis->vec.size()), 15*15, "collect");
+	ProgressBar(33344, (15*15*num/counter), 15*15, "collect");
       //#endif
       //bool b = false;
       if (gameapi_seamless_url=="") {
@@ -13336,7 +13642,9 @@ private:
   int progress;
   int logo_frame_count=0;
   CollectInterfaceImpl *vis=0;
+  int vis_counter_before=0;
   int vis_counter=0;
+  int real_counter=0;
 };
 
 extern int score;

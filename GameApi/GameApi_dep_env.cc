@@ -2737,10 +2737,19 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
   ss.close();
 #endif
 #ifdef LINUX
-  system("mkdir -p ~/.gameapi_builder");
-  system("mkdir -p ~/.gameapi_builder/Downloads");
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
+  if (dockerdir=="") {
+    system("mkdir -p ~/.gameapi_builder");
+    system("mkdir -p ~/.gameapi_builder/Downloads");
+  } else {
+    system(("mkdir -p " + dockerdir + ".gameapi_builder").c_str());
+    system(("mkdir -p " + dockerdir + ".gameapi_builder/Downloads").c_str());
+  }
   std::string home = getenv("HOME");
-  std::string filename_with_path = home + std::string("/.gameapi_builder/Downloads/") + filename;
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  std::string filename_with_path = home + std::string(".gameapi_builder/Downloads/") + filename;
   std::ofstream ss(filename_with_path.c_str());
   std::string val(vec->begin(),vec->end());
   ss << val;

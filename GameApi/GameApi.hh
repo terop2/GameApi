@@ -2465,6 +2465,7 @@ public:
   ARR p_mtl_materials(EveryApi &ev, P P);
   ARR p_mtl2_materials(EveryApi &ev, P p);
   P get_face_count(P p);
+  P transparent_separate2(P p, std::vector<BM> vec, bool opaque);
   P transparent_separate(P p, BM bm, bool opaque);
   void sort_vertices(VA va, M m);
   P remove_faces(P p);
