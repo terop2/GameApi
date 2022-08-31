@@ -493,6 +493,18 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "", "0.0", "0.0", "100.0", "1" },
 			 "P", "polygon_api", "linear_span"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate,
+			 "transparency_separate",
+			 { "p", "bm", "opaque" },
+			 { "P", "BM", "bool" },
+			 { "", "", "true" },
+			 "P", "polygon_api", "transparent_separate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate2,
+			 "transparency_separate2",
+			 { "p", "bms", "opaque" },
+			 { "P", "[BM]", "bool" },
+			 { "", "", "true" },
+			 "P", "polygon_api", "transparent_separate2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::line_to_cone,
 			 "li_to_cone",
 			 { "ev", "li", "size", "numfaces" },

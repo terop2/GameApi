@@ -36,6 +36,7 @@ class CollectInterface
 public:
   virtual ~CollectInterface() { }
   virtual void Collect(CollectVisitor &vis)=0;
+  virtual int NumBlocks() const { return 1; }
   virtual void HeavyPrepare()=0;
 };
 

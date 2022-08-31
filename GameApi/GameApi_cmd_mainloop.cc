@@ -834,6 +834,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ML", "vertex_anim_api", "vertex_anim_render"));
 
 #endif
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::disable_polygons,
 			 "ogl_disable_polys",
 			 { "ml" },

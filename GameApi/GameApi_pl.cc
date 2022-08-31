@@ -1576,8 +1576,12 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   start=drive+path+"\\";
 #endif
 #ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  start = home + "/.gameapi_builder";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -1736,8 +1740,12 @@ public:
   start=drive+path+"\\";
 #endif
 #ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  start = home + "/.gameapi_builder";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val)
@@ -2065,8 +2073,12 @@ public:
   start=drive+path+"\\";
 #endif
 #ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  start = home + "/.gameapi_builder";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   start+="/";
@@ -2550,10 +2562,14 @@ public:
   }
   void HeavyPrepare() { Prepare(); }
   void Prepare() {
+    const char *dd = getenv("BUILDER_DOCKER_DIR");
+    std::string dockerdir = dd?dd:"";
 	std::string home = getenv("HOME");
-	std::string path = home + "/.gameapi_builder/";
+	home+="/";
+	if (dockerdir!="") home=dockerdir;
+	std::string path = home + ".gameapi_builder/";
     
-      std::cout << "Saving " << filename << std::endl;
+      std::cout << "Saving " << path+filename << std::endl;
       api.save_model(poly, path+filename);
 
       	std::ifstream ss((path+filename).c_str());
@@ -14632,8 +14648,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
     if ((val2==-1 || val2 == 0) && (val3==-1 || val3==0)) {
       // only textures
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix);
-      GameApi::MT mt2 = ev.materials_api.transparent_material(ev,bm,mt1);
-      array->vec.push_back(mt2.id);
+      //GameApi::MT mt2 = ev.materials_api.transparent_material(ev,bm,mt1);
+      array->vec.push_back(mt1.id);
     } else if (val3==-1 || val3==0) {
       // textures and bump
       GameApi::BM bm2;
@@ -14641,8 +14657,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
       GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
-      GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
-      array->vec.push_back(mt3.id);
+      //GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
+      array->vec.push_back(or_mt.id);
     } else if (val2==-1 || val2==0) {
       // textures and d
       GameApi::BM bm2;
@@ -14650,8 +14666,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
       GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
-      GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
-      array->vec.push_back(mt3.id);
+      //GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
+      array->vec.push_back(or_mt.id);
     }
     else {
       // textures, d and bump
@@ -14664,8 +14680,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt3 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},0.5);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
       GameApi::MT or_mt2 = ev.materials_api.combine_materials(ev,or_mt,mt3);
-      GameApi::MT mt4 = ev.materials_api.transparent_material(ev,bm3,or_mt2);
-      array->vec.push_back(mt4.id);
+      //GameApi::MT mt4 = ev.materials_api.transparent_material(ev,bm3,or_mt2);
+      array->vec.push_back(or_mt2.id);
 
       /*
       GameApi::BM bm2;
