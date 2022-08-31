@@ -204,7 +204,8 @@ void Program::push_back(const Shader &shader)
 {
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
-  int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
+  /*
+  int val = g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
@@ -214,6 +215,7 @@ void Program::push_back(const Shader &shader)
     buf[length]=0;
     std::cout << "" << buf << std::endl;
     }
+  */
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -225,11 +227,7 @@ void Program::bind_frag(int num, std::string name)
 }
 void Program::bind_attrib(int num, std::string name)
 {
-  //int val2 = g_low->ogl->glGetError();
   g_low->ogl->glBindAttribLocation(priv->program, num, name.c_str());
-  //int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
-  //if (val!=Low_GL_NO_ERROR)
-  //  std::cout << "BindAttribLocation ERROR: " << val << std::endl;
 }
 void Program::detach(const Shader &shader)
 {
@@ -1048,14 +1046,16 @@ VARYING_OUT " vec2 shadow_position;\n"
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef IN_POSITION\n"
-"vec4 phong(vec4 pos)\n"
-"{\n"
+"uniform mat4 in_View;\n"
+"uniform vec3 in_PhongLightPos;\n"
+    "vec4 phong(vec4 pos)\n"
+    "{\n"
     //"    vec3 pos2 = vec3(in_MV*vec4(in_Position,0.0));\n"
-    "    vec3 n = normalize(mat3(in_iMV)*(in_Normal));\n"
+    "    vec3 n = normalize(mat3(in_View)*mat3(in_iMV)*(in_Normal));\n"
     //"    vec3 h = normalize(normalize(0.0,0.0,-1.0)+normalize(0.0,0.0,-1.0));\n"
     
     "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = vec3(0.0,0.0,-400.0);\n"
+    "    ex_LightPos2 = in_PhongLightPos;\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
@@ -1440,7 +1440,7 @@ VARYING_IN " vec3 ex_LightPos2;\n"
 "#ifdef LEVELS\n"
 
 "float intensity(vec3 dir) {\n"
-    " float val = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.02,1.0);\n"
+    " float val = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.2,1.0);\n"
     //"  val*=0.4;\n"
     //"  val+=1.1*0.4;\n"
     " return val;\n"
@@ -2697,11 +2697,13 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
-"vec4 phong(vec4 pos)\n"
+    "uniform mat4 in_View;\n"
+"uniform vec3 in_PhongLightPos;\n"
+    "vec4 phong(vec4 pos)\n"
 "{\n"
-    "   vec3 n = normalize(mat3(in_iMV)* in_Normal);\n"    
+    "   vec3 n = normalize(mat3(in_View)*mat3(in_iMV)* in_Normal);\n"    
     "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = normalize(vec3(0.0,0.0,-1.0));\n"
+    "    ex_LightPos2 = normalize(in_PhongLightPos);\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
@@ -3687,7 +3689,7 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#ifdef LEVELS\n"
 
 "float intensity(vec3 dir) {\n"
-" float n = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.0,1.0);\n"
+" float n = clamp(dot(normalize(-dir),normalize(ex_LightPos2)),0.2,1.0);\n"
 " return n;\n"
 "}\n"
 "float intensity2(vec3 dir) {\n"

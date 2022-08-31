@@ -1576,8 +1576,12 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   start=drive+path+"\\";
 #endif
 #ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  start = home + "/.gameapi_builder";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -1736,8 +1740,12 @@ public:
   start=drive+path+"\\";
 #endif
 #ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  start = home + "/.gameapi_builder";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val)
@@ -2065,8 +2073,12 @@ public:
   start=drive+path+"\\";
 #endif
 #ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
   std::string home = getenv("HOME");
-  start = home + "/.gameapi_builder";
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder";
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   start+="/";
@@ -2550,10 +2562,14 @@ public:
   }
   void HeavyPrepare() { Prepare(); }
   void Prepare() {
+    const char *dd = getenv("BUILDER_DOCKER_DIR");
+    std::string dockerdir = dd?dd:"";
 	std::string home = getenv("HOME");
-	std::string path = home + "/.gameapi_builder/";
+	home+="/";
+	if (dockerdir!="") home=dockerdir;
+	std::string path = home + ".gameapi_builder/";
     
-      std::cout << "Saving " << filename << std::endl;
+      std::cout << "Saving " << path+filename << std::endl;
       api.save_model(poly, path+filename);
 
       	std::ifstream ss((path+filename).c_str());
@@ -5279,6 +5295,7 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 { 
   if (keep) {
+    //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     VertexArraySet *s = new VertexArraySet;
@@ -5302,6 +5319,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 #endif // END OF EMSCRIPTEN
     
 #ifndef BATCHING // THREADS=true, EMSCRIPTEN=??, BATCHING=false
+      //std::cout << "IMPL#2:BATCHING=false, THREADS=true" << std::endl;
     int num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -5352,6 +5370,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	//env->temp_deletes.push_back(std::shared_ptr<void>( arr2 ) );
       }
 #else // BATCHING=true, EMSCRIPTEN=??, THREADS=true
+    //std::cout << "IMPL#3:BATCHING=true, THREADS=true" << std::endl;
     int num_threads = 8;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -5397,7 +5416,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       {  
 	int start_range = i*delta_s; 
 	int  end_range = (i+1)*delta_s;
-	if (end_range>s) { end_range = s; } 
+	if (end_range>s) { end_range = s; }
+	//std::cout << "THREAD#" << i << "::Range=(" << start_range << ".." << end_range << ")" << std::endl;
 	if (i==num_threads-1) {end_range = s; }
 	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
       }
@@ -5423,6 +5443,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ThreadInfo volatile *ti_global2 = ti_global;
       if (ti_global2) {
 	//std::cout << "transfer"<< std::endl;
+
+	//std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
+	//std::cout << "TRANSFER::ctoffsets(" << ti_global2->ct2_offsets.tri_count << " " << ti_global2->ct2_offsets.quad_count << " " << ti_global2->ct2_offsets.poly_count << ")" << std::endl;
+
+	
 	ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 0, ti_global2->ct2_offsets.tri_count *3, ti_global2->ct2_offsets.tri_count *3 + ti_global2->ct2_counts.tri_count *3); 
       ti_global2->prep->transfer_to_gpu_mem(ti_global2->set, *ti_global2->r, 0, 1, ti_global2->ct2_offsets.quad_count *6, ti_global2->ct2_offsets.quad_count *6 + ti_global2->ct2_counts.quad_count *6);
       if (!g_disable_polygons)
@@ -5463,6 +5488,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   } else {
     //#endif
 #ifndef BATCHING
+      //std::cout << "IMPL#4:BATCHING=false, EMSCRIPTEN=true, THREADS=true" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     VertexArraySet *s = new VertexArraySet;
@@ -5475,6 +5501,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
      s->free_memory();
     return add_vertex_array(e, s, arr2);
 #else // BATCHING
+    // std::cout << "IMPL#5:BATCHING=true, EMSCRIPTEN=true, THREADS=true" << std::endl;
+
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     int total_faces = faces->NumFaces();
@@ -5484,10 +5512,24 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     int batch_faces = faces->NumFaces()/batch_count+1;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
     VertexArraySet *s = new VertexArraySet;
-    set->check_m_set(0);
+    s->check_m_set(0);
 
+    FaceCollection &coll = *faces;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(s)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+    
+    s->has_normal = has_normal2;
+    s->has_attrib = has_attrib2;
+    s->has_color = has_color2;
+    s->has_texcoord = has_texcoord2;
+    s->has_skeleton = has_skeleton2;
+
+    
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
-    //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
+    std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     //if (ct.tri_count==0 && ct.quad_count==0 && ct.poly_count==0) return;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     //InstallProgress(2,"batching");
@@ -5497,10 +5539,15 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       int end = (i+1)*batch_faces;
       if (start>total_faces) { start=total_faces; }
       if (end>total_faces) { end=total_faces; }
-      //std::cout << "BATCH:" << start << " " << end << "::" << total_faces << std::endl;
+      std::cout << "BATCH:" << start << " " << end << "::" << total_faces << std::endl;
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
       FaceCollectionVertexArray2 arr(*faces, *s);
+
+    std::cout << "ct2_Counts: " << ct2_counts.tri_count << " " <<  ct2_counts.quad_count << " " << ct2_counts.poly_count << std::endl;
+    std::cout << "ct2_Offsets: " << ct2_offsets.tri_count << " " <<  ct2_offsets.quad_count << " " << ct2_offsets.poly_count << std::endl;
+
+      
       //arr.reserve(0);
       arr.copy(start,end);
       if (ct2_counts.tri_count!=0)
@@ -5529,6 +5576,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
 #else // THREADS
 #ifndef BATCHING // BATCHING=false, THREADS=false
+  //  std::cout << "IMPL#6:BATCHING=false, THREADS=false" << std::endl;
   FaceCollection *faces = find_facecoll(e, p);
   faces->Prepare();
   VertexArraySet *s = new VertexArraySet;
@@ -5542,12 +5590,14 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
   return add_vertex_array(e, s, arr2);
 
 #else // BATCHING=true, THREADS=false
+  // std::cout << "IMPL#7:BATCHING=true, THREADS=false" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     int total_faces = faces->NumFaces();
     int batch_count = total_faces/100000;
     if (total_faces<100000) batch_count=30;
     if (total_faces<100) batch_count=1;
+    if (batch_count==0) batch_count=1;
     int batch_faces = faces->NumFaces()/batch_count+1;
     //std::cout << "BATCH COUNTS: " << batch_count << "*" << batch_faces << std::endl;
     Counts ct = CalcCounts(faces, 0, faces->NumFaces());
@@ -5580,6 +5630,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //std::cout << "BATCH: " << start << " " << end << std::endl;
       if (start>total_faces) { start=total_faces; }
       if (end>total_faces) { end=total_faces; }
+      //std::cout << "BATCH2: " << start << " " << end << std::endl;
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
       FaceCollectionVertexArray2 arr(*faces, *s);
@@ -8982,12 +9033,8 @@ public:
 	//GameApi::SH sh;
 	ev.shader_api.use(sh);
 
-#if 0
-	// to fix bug in phong and bump phong in linux nvidia drivers.
-	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, 18000.0 /*light_dir.dz*/);
-#else
-	ev.shader_api.set_var(sh, "light_dir", light_dir.dx, light_dir.dy, light_dir.dz);
-#endif
+
+	ev.shader_api.set_var(sh, "in_PhongLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
 	ev.shader_api.set_var(sh, "level1_color",
 			      ((ambient&0xff0000)>>16)/255.0,
 			      ((ambient&0xff00)>>8)/255.0,
@@ -13578,11 +13625,12 @@ GameApi::P GameApi::PolygonApi::curve_to_poly(C c, float start_x, float end_x, f
   return add_polygon2(e, new CurveToPoly(curve, start_x, end_x, start_y, end_y, start_angle, end_angle, numinstances),1);
 }
 
+
 struct DSVertexHeader
 {
   int numfaces;
   int numobjects;
-  int reserved_1=-1;
+  int flags; 
   int reserved_2=-1;
   int reserved_3=-1;
   int reserved_4=-1;
@@ -13614,6 +13662,14 @@ public:
     DSVertexHeader *head = (DSVertexHeader*)ptr;
     return head->numfaces;
   }
+  bool HasFlags() const { return GetFlags()!=-1; }
+  int GetFlags() const {
+    if (!ready) return -1;
+    int num = find_block(6); // header
+    unsigned char *ptr = ds->Block(num);
+    DSVertexHeader *head = (DSVertexHeader*)ptr;
+    return head->flags;
+  }
   int NumPoints(int face) const
   {
     if (!ready) return 0;
@@ -13630,10 +13686,15 @@ public:
     int pos = vertex_index(face,point);
     return array[pos];
   }
-  bool has_normal() const { return true; }
+  bool has_normal() const {
+    if (HasFlags() && (GetFlags() & DSDisableNormal)) return false; 
+    return true;
+  }
   Vector PointNormal(int face, int point) const
   {
     if (!ready) return Vector(0.0,0.0,0.0);
+    if (HasFlags() && GetFlags()&DSDisableNormal)
+      return Vector(0.0,0.0,0.0);
     int num = find_block(3);
     unsigned char *ptr = ds->Block(num);
     Vector *array = (Vector*)ptr;
@@ -13642,20 +13703,29 @@ public:
   }
   float Attrib(int face, int point, int id) const { return 0.0; }
   int AttribI(int face, int point, int id) const { return 0; }
-  bool has_color() const { return true; }
+  bool has_color() const {
+    if (HasFlags() && (GetFlags() & DSDisableColor)) return false; 
+    return true; }
   unsigned int Color(int face, int point) const
   {
     if (!ready) return 0xff000000;
+    if (HasFlags() && GetFlags()&DSDisableColor)
+      return 0xff000000;
     int num = find_block(1);
     unsigned char *ptr = ds->Block(num);
     unsigned int *array = (unsigned int*)ptr;
     int pos = vertex_index(face,point);
     return array[pos];
   }
-  bool has_texcoord() const { return true; }
+  bool has_texcoord() const {
+    if (HasFlags() && (GetFlags() & DSDisableTexCoord)) return false; 
+    return true; }
   Point2d TexCoord(int face, int point) const
   {
     if (!ready) { Point2d p; p.x=0.0; p.y =0.0; return p; }
+    if (HasFlags() && GetFlags()&DSDisableTexCoord) {
+      Point2d p; p.x=0.0; p.y =0.0; return p;
+    }
     int num = find_block(2);
     unsigned char *ptr = ds->Block(num);
     Point2d *array = (Point2d*)ptr;
@@ -13665,6 +13735,9 @@ public:
   float TexCoord3(int face, int point) const
   {
     if (!ready) return 0.0;
+    if (HasFlags() && GetFlags()&DSDisableTexCoord3) {
+      return 0.0;
+    }
     int num = find_block(9);
     unsigned char *ptr = ds->Block(num);
     float *array = (float*)ptr;
@@ -13673,6 +13746,8 @@ public:
   }
   int NumObjects() const {
     if (!ready) return 0;
+    if (HasFlags() && GetFlags()&DSDisableObjects) { return 0; }
+
     int num = find_block(6); // header
     unsigned char *ptr = ds->Block(num);
     DSVertexHeader *head = (DSVertexHeader*)ptr;
@@ -13682,6 +13757,7 @@ public:
   }
   std::pair<int,int> GetObject(int o) const {
     if (!ready) return std::make_pair(0,0);
+    if (HasFlags() && GetFlags()&DSDisableObjects) { return std::make_pair(0,0); }
     int num = find_block(10);
     unsigned char *ptr = ds->Block(num);
     PP *array = (PP*)ptr;
@@ -13720,7 +13796,7 @@ GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const unsigned char *buf, con
 class DiskStoreCollection : public DiskStore
 {
 public:
-  DiskStoreCollection(FaceCollection *coll) : coll(coll) { }
+  DiskStoreCollection(FaceCollection *coll, int flags=-1) : coll(coll),flags(flags) { if (flags==-1) flags=0; }
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -13732,6 +13808,7 @@ public:
     header.numfaces=s;
     int s3 = coll->NumObjects();
     header.numobjects = s3;
+    header.flags = flags;
     int accum = 0;
     InstallProgress(111,"Fetch points", 15);
     pointcounts.reserve(s);
@@ -13745,10 +13822,14 @@ public:
     }
     InstallProgress(112,"Fetch vertex arrays", 15);
     vertex.reserve(s*coll->NumPoints(0));
-    normal.reserve(s*coll->NumPoints(0));
-    color.reserve(s*coll->NumPoints(0));
-    texcoord.reserve(s*coll->NumPoints(0));
-    texcoord3.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableNormal))
+      normal.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableColor))
+      color.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableTexCoord))
+      texcoord.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableTexCoord3))
+      texcoord3.reserve(s*coll->NumPoints(0));
     for(int i=0;i<s;i++)
       {
       if (s/15>0 && i%(s/15)==0) ProgressBar(112,i*15/s,15,"Fetch vertex arrays"); 
@@ -13760,12 +13841,17 @@ public:
 	  Point2d tx = coll->TexCoord(i,j);
 	  float tx3 = coll->TexCoord3(i,j);
 	  vertex.push_back(p);
-	  normal.push_back(n);
-	  color.push_back(c);
-	  texcoord.push_back(tx);
-	  texcoord3.push_back(tx3);
+	  if(!(flags&DSDisableNormal))	  
+	    normal.push_back(n);
+	  if(!(flags&DSDisableColor))	  
+	    color.push_back(c);
+	  if(!(flags&DSDisableTexCoord))
+	    texcoord.push_back(tx);
+	  if(!(flags&DSDisableTexCoord3))
+	    texcoord3.push_back(tx3);
 	}
       }
+    if (!(flags&DSDisableObjects)) {
     int s2 = coll->NumObjects();
     InstallProgress(113,"Fetch objects", 15);
     for(int k=0;k<s2;k++)
@@ -13777,6 +13863,7 @@ public:
 	p2.second = p.second;
 	obj.push_back(p2);
       }
+    }
 
   }
 
@@ -13798,11 +13885,14 @@ public:
       accum +=ss;
     }
     InstallProgress(112,"Fetch vertex arrays", 15);
-    vertex.reserve(s*coll->NumPoints(0));
-    normal.reserve(s*coll->NumPoints(0));
-    color.reserve(s*coll->NumPoints(0));
-    texcoord.reserve(s*coll->NumPoints(0));
-    texcoord3.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableNormal))
+      normal.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableColor))
+      color.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableTexCoord))
+      texcoord.reserve(s*coll->NumPoints(0));
+    if(!(flags&DSDisableTexCoord3))
+      texcoord3.reserve(s*coll->NumPoints(0));
     for(int i=0;i<s;i++)
       {
       if (s/15>0 && i%(s/15)==0) ProgressBar(112,i*15/s,15,"Fetch vertex arrays"); 
@@ -13814,12 +13904,17 @@ public:
 	  Point2d tx = coll->TexCoord(i,j);
 	  float tx3 = coll->TexCoord3(i,j);
 	  vertex.push_back(p);
-	  normal.push_back(n);
-	  color.push_back(c);
-	  texcoord.push_back(tx);
-	  texcoord3.push_back(tx3);
+	  if(!(flags&DSDisableNormal))	  
+	    normal.push_back(n);
+	  if(!(flags&DSDisableColor))	  
+	    color.push_back(c);
+	  if(!(flags&DSDisableTexCoord))
+	    texcoord.push_back(tx);
+	  if(!(flags&DSDisableTexCoord3))
+	    texcoord3.push_back(tx3);
 	}
       }
+    if (!(flags&DSDisableObjects)) {
     int s2 = coll->NumObjects();
     InstallProgress(113,"Fetch objects", 15);
     for(int k=0;k<s2;k++)
@@ -13831,6 +13926,7 @@ public:
 	p2.second = p.second;
 	obj.push_back(p2);
       }
+    }
   }
   int Type() const { return 0; }
   int NumBlocks() const { return 9; }
@@ -13855,11 +13951,11 @@ public:
     case 1: return pointcounts.size()*sizeof(int);
     case 2: return vertexindex.size()*sizeof(int);
     case 3: return vertex.size()*sizeof(Point);
-    case 4: return normal.size()*sizeof(Vector);
-    case 5: return color.size()*sizeof(unsigned int);
-    case 6: return texcoord.size()*sizeof(Point2d);
-    case 7: return texcoord3.size()*sizeof(float);
-    case 8: return obj.size()*sizeof(PP);
+    case 4: if (!(flags&DSDisableNormal)) return normal.size()*sizeof(Vector); else return 0;
+    case 5: if (!(flags&DSDisableColor)) return color.size()*sizeof(unsigned int); else return 0;
+    case 6: if (!(flags&DSDisableTexCoord)) return texcoord.size()*sizeof(Point2d); else return 0;
+    case 7: if (!(flags&DSDisableTexCoord3)) return texcoord3.size()*sizeof(float); else return 0;
+    case 8: if (!(flags&DSDisableObjects)) return obj.size()*sizeof(PP); else return 0;
     };
     return -1;
   }
@@ -13904,12 +14000,13 @@ private:
   std::vector<Point2d> texcoord;
   std::vector<float> texcoord3;
   std::vector<PP> obj;
+  int flags;
 };
 
-GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p)
+GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p, int flags)
 {
   FaceCollection *coll = find_facecoll(e, p);
-  return add_disk_store(e, new DiskStoreCollection(coll));
+  return add_disk_store(e, new DiskStoreCollection(coll,flags));
 }
 
 
@@ -14551,8 +14648,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
     if ((val2==-1 || val2 == 0) && (val3==-1 || val3==0)) {
       // only textures
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},mix);
-      GameApi::MT mt2 = ev.materials_api.transparent_material(ev,bm,mt1);
-      array->vec.push_back(mt2.id);
+      //GameApi::MT mt2 = ev.materials_api.transparent_material(ev,bm,mt1);
+      array->vec.push_back(mt1.id);
     } else if (val3==-1 || val3==0) {
       // textures and bump
       GameApi::BM bm2;
@@ -14560,8 +14657,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
       GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
-      GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
-      array->vec.push_back(mt3.id);
+      //GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
+      array->vec.push_back(or_mt.id);
     } else if (val2==-1 || val2==0) {
       // textures and d
       GameApi::BM bm2;
@@ -14569,8 +14666,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt1 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm2},mix);
       GameApi::MT mt2 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},1.0-mix);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
-      GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
-      array->vec.push_back(mt3.id);
+      //GameApi::MT mt3 = ev.materials_api.transparent_material(ev,bm2,or_mt);
+      array->vec.push_back(or_mt.id);
     }
     else {
       // textures, d and bump
@@ -14583,8 +14680,8 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_mt(GameApi::EveryApi &ev, P
       GameApi::MT mt3 = ev.materials_api.texture_many(ev,std::vector<GameApi::BM>{bm},0.5);
       GameApi::MT or_mt = ev.materials_api.combine_materials(ev,mt1,mt2);
       GameApi::MT or_mt2 = ev.materials_api.combine_materials(ev,or_mt,mt3);
-      GameApi::MT mt4 = ev.materials_api.transparent_material(ev,bm3,or_mt2);
-      array->vec.push_back(mt4.id);
+      //GameApi::MT mt4 = ev.materials_api.transparent_material(ev,bm3,or_mt2);
+      array->vec.push_back(or_mt2.id);
 
       /*
       GameApi::BM bm2;
@@ -21767,4 +21864,149 @@ GameApi::ML GameApi::MainLoopApi::disable_polygons(GameApi::ML ml)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   return add_main_loop(e, new DisablePolygons(next));
+}
+
+class ExtractLargePolygons : public FaceCollection
+{
+public:
+  ExtractLargePolygons(FaceCollection *coll, float size, bool reverse) : coll(coll),size(size),reverse(reverse) { }
+
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
+  void HeavyPrepare() { }
+  void Prepare() { coll->Prepare(); }
+
+  
+  int NumFaces() const
+  {
+    if (vec2.size()>0) return numfaces=vec2[vec2.size()-1];
+    const_cast<ExtractLargePolygons*>(this)->create_vec();
+    if (vec2.size()>0)
+      return numfaces=vec2[vec2.size()-1];
+    return 0;
+  }
+    int NumPoints(int face) const
+  {
+    return coll->NumPoints(Mapping(face));
+  }
+  Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(Mapping(face), point);
+  }
+  Point EndFacePoint(int face, int point) const
+  {
+    return coll->EndFacePoint(Mapping(face), point);
+  }
+  unsigned int Color(int face, int point) const
+  {
+    return coll->Color(Mapping(face), point);
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(Mapping(face), point);
+  }
+  float TexCoord3(int face, int point) const
+  {
+    return coll->TexCoord3(Mapping(face), point);
+  }
+
+  Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(Mapping(face), point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(Mapping(face), point, id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(Mapping(face),point,id);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return coll->Joints(Mapping(face),point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return coll->Weights(Mapping(face),point);
+  }
+  int NumObjects() const { return coll->NumObjects(); }
+  std::pair<int,int> GetObject(int o) const
+  {
+    if (vec.size()==0)
+      const_cast<ExtractLargePolygons*>(this)->create_vec();
+    std::pair<int,int> p = coll->GetObject(o);
+    
+    
+    return std::make_pair(ReverseMapping(p.first),ReverseMapping(p.second));
+  }
+
+  virtual bool has_normal() const { return coll->has_normal(); }
+  virtual bool has_attrib() const { return coll->has_attrib(); }
+  virtual bool has_color() const { return coll->has_color(); }
+  virtual bool has_texcoord() const { return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { return coll->has_skeleton(); }
+
+  
+  int Mapping(int ii) const
+  {
+    if (ii>numfaces) return 0;
+    if (vec.size()>0) return vec[ii];
+    const_cast<ExtractLargePolygons*>(this)->create_vec();
+    return vec[ii];
+  }
+
+  int ReverseMapping(int i) const
+  {
+    return rev[i];
+  }
+  
+  bool is_large(int face) const
+  {
+    int count = coll->NumPoints(face);
+    if (count==3||count==4) {
+      Point p1 = coll->FacePoint(face,0);
+      Point p2 = coll->FacePoint(face,1);
+      Point p3 = coll->FacePoint(face,2);
+      Point p4 = coll->FacePoint(face,3%count);
+      float x_min = std::min(std::min(p1.x,p2.x),std::min(p3.x,p4.x));
+      float y_min = std::min(std::min(p1.y,p2.y),std::min(p3.y,p4.y));
+      float z_min = std::min(std::min(p1.z,p2.z),std::min(p3.z,p4.z));
+      float x_max = std::max(std::max(p1.x,p2.x),std::max(p3.x,p4.x));
+      float y_max = std::max(std::max(p1.y,p2.y),std::max(p3.y,p4.y));
+      float z_max = std::max(std::max(p1.z,p2.z),std::max(p3.z,p4.z));
+      return (x_max-x_min)>size || (y_max-y_min)>size || (z_max-z_min)>size;
+    } else return false;
+  }
+
+  void create_vec()
+  {
+    int count=0;
+    int num = coll->NumFaces();
+    //if (num>10000) num=10000;
+    for(int i=0;i<num;i++)
+      {
+	rev.push_back(count);
+	bool b = is_large(i);
+	if (reverse) b=!b;
+	if (b)
+	  {
+	    //if (count == ii) return i;
+	    vec.push_back(i);
+	    vec2.push_back(count);
+	    count++;
+	  }
+      }
+  }
+private:
+  FaceCollection *coll;
+  float size;
+  bool reverse;
+  std::vector<int> vec;
+  std::vector<int> vec2;
+  std::vector<int> rev;
+  mutable int numfaces=0;
+};
+
+GameApi::P GameApi::PolygonApi::extract_large_polygons(GameApi::P p, float minimum_size, bool reverse)
+{
+  FaceCollection *faces = find_facecoll(e,p);
+  return add_polygon2(e, new ExtractLargePolygons(faces,minimum_size,reverse),1);
 }

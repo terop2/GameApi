@@ -1767,7 +1767,7 @@ GameApi::ML GameApi::MainLoopApi::seq_ml_score(ML ml1, ML ml2, int score)
 }
 extern int g_event_screen_x;
 extern int g_event_screen_y;
-void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
+void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
 {
   int screenx = screen_size_x;
   int screeny = screen_size_y;
@@ -1802,6 +1802,20 @@ void GameApi::MainLoopApi::execute_ml(ML ml, SH color, SH texture, SH texture_2d
   ek.screen_y = 0;
   ek.screen_width = screen_size_x;
   ek.screen_height = screen_size_y;
+
+  std::vector<int> vec = item->shader_id();
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::SH sh;
+      sh.id = vec[i];
+      if (sh.id!=-1) {
+	GameApi::M mat = ev.matrix_api.identity();
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", mat);
+      }
+    }
+  
   item->execute(ek);
 }
 class PrintStats : public MainLoopItem
@@ -2149,7 +2163,7 @@ bool GameApi::MainLoopApi::logo_iter()
   M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
   M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
   M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
-  env->ev->mainloop_api.execute_ml(env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N, get_screen_sx(), get_screen_sy());
+  env->ev->mainloop_api.execute_ml(*env->ev,env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N, get_screen_sx(), get_screen_sy());
   env->ev->mainloop_api.swapbuffers();
   frame_count++;
   if (frame_count>2) {
@@ -2738,7 +2752,7 @@ public:
     case 5: ogl->glDepthFunc(Low_GL_GEQUAL); break;
     };
     next->execute(e);
-    ogl->glDepthFunc(Low_GL_LESS);
+    ogl->glDepthFunc(Low_GL_LEQUAL);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
@@ -2749,10 +2763,42 @@ private:
   int i;
 };
 
+class DepthMask : public MainLoopItem
+{
+public:
+  DepthMask(MainLoopItem *next, bool b) : next(next), b(b) { }
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
+  void Prepare() {next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) {
+  OpenglLowApi *ogl = g_low->ogl;
+    if (b) {
+      ogl->glDepthMask(Low_GL_TRUE);
+    } else {
+      ogl->glDepthMask(Low_GL_FALSE);
+    }
+    next->execute(e);
+    ogl->glDepthMask(Low_GL_TRUE);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  bool b;  
+};
+
 GameApi::ML GameApi::MainLoopApi::depthfunc(ML ml, int val)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   return add_main_loop(e, new DepthFunc(next,val));
+}
+
+GameApi::ML GameApi::MainLoopApi::depthmask(ML ml, bool b)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new DepthMask(next,b));
 }
 
 class BlendFunc : public MainLoopItem

@@ -58,9 +58,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "ML", "polygon_api", "save_model_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_ds_ml,
 			 "save_ds",
-			 { "ev", "out_filename", "poly" },
-			 { "EveryApi&", "std::string", "P" },
-			 { "ev", "test.ds", "" },
+			 { "ev", "out_filename", "poly", "disable_normal", "disable_color", "disable_texcoord", "disable_texcoord3", "disable_objects" },
+			 { "EveryApi&", "std::string", "P","bool", "bool", "bool", "bool", "bool" },
+			 { "ev", "test.ds", "", "false", "false", "false", "false", "false" },
 			 "ML", "mainloop_api", "save_ds_ml"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url,
 			 "p_url",
@@ -418,6 +418,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "remove_faces"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::extract_large_polygons,
+			 "extract_large",
+			 { "p", "minimum_size", "reverse" },
+			 { "P", "float", "bool" },
+			 { "", "50.0", "false" },
+			 "P", "polygon_api", "extract_large_polygons"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::lod_choose,
 			 "lod_choose",
 			 { "vec", "name" },
@@ -487,6 +493,18 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "", "0.0", "0.0", "100.0", "1" },
 			 "P", "polygon_api", "linear_span"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate,
+			 "transparency_separate",
+			 { "p", "bm", "opaque" },
+			 { "P", "BM", "bool" },
+			 { "", "", "true" },
+			 "P", "polygon_api", "transparent_separate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate2,
+			 "transparency_separate2",
+			 { "p", "bms", "opaque" },
+			 { "P", "[BM]", "bool" },
+			 { "", "", "true" },
+			 "P", "polygon_api", "transparent_separate2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::line_to_cone,
 			 "li_to_cone",
 			 { "ev", "li", "size", "numfaces" },

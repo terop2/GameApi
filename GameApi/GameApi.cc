@@ -16,6 +16,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <atomic>
 
 #ifdef LOOKING_GLASS
 #define HP_LOAD_LIBRARY
@@ -3773,18 +3774,85 @@ GameApi::MS GameApi::MatricesApi::interpolate(MS start, MS end, float val)
   return add_matrix_array(e, new InterpolateMS(start_, end_, val));
 }
 
+class TransparentSeparateFaceCollection;
+
+
+struct TransparencyThreadInfo
+{
+  pthread_t thread_id;
+  TransparentSeparateFaceCollection *self;
+  int start_range;
+  int end_range;
+  int thread_num;
+};
+void *trans_thread_func(void *data);
+
+class ThreadedTransparency
+{
+public:
+  ThreadedTransparency(TransparentSeparateFaceCollection *self) : m_this(self) { }
+  int push_thread(int i, int start, int end)
+  {
+    TransparencyThreadInfo *info = new TransparencyThreadInfo;
+    info->self = m_this;
+    info->start_range = start;
+    info->end_range = end;
+    info->thread_num = i;
+
+    infos.push_back(info);
+    
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr,3000);
+    pthread_create(&info->thread_id, &attr, &trans_thread_func, (void*)info);
+
+    pthread_attr_destroy(&attr);
+    
+    return infos.size()-1;
+  }
+  void join(int i)
+  {
+    TransparencyThreadInfo *info = infos[i];
+    void *res;
+    pthread_join(info->thread_id,&res);
+  }
+private:
+  TransparentSeparateFaceCollection *m_this;
+  std::vector<TransparencyThreadInfo *> infos;
+};
+
+extern pthread_t g_main_thread_id;
+
 class TransparentSeparateFaceCollection : public FaceCollection
 {
 public:
   TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque) : coll(coll), texture(texture),opaque(opaque) { }
 
 
-  void Collect(CollectVisitor &vis) { coll->Collect(vis); }
-  void HeavyPrepare() { }
+  void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  int NumBlocks() const {
+    //if (coll->NumFaces()>1000) return 15; 
+    return 1; }
+  void HeavyPrepare() {
+    current_i++;
+    std::cout << "HeavyPrepare " << current_i << std::endl;
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();    
+  }
   void Prepare() { coll->Prepare(); }
   
   int NumFaces() const
   {
+    //std::cout << "READ m_count=" << m_count << std::endl;
+    if (m_count!=0) return m_count-1; //vec2[vec2.size()-1];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    if (m_count!=0)
+      return m_count-1; //vec2[vec2.size()-1];
+    return 0;
+    /*
     int c=coll->NumFaces();
     int count = 0;
     for(int i=0;i<c;i++)
@@ -3794,6 +3862,7 @@ public:
 	if (b) count++;
       }
     return count;
+    */
   }
   int NumPoints(int face) const
   {
@@ -3851,43 +3920,147 @@ public:
   
   bool is_transparent(int face) const
   {
+    if (sx==-1||sy==-1) {
+      sx = texture.SizeX();
+      sy = texture.SizeY();
+    }
     Point2d t1 = coll->TexCoord(face,0);
-    Point2d t2 = coll->TexCoord(face,1);
+    ::Color c1 = texture.Map(t1.x*sx, t1.y*sy);
+    if (c1.alpha<250) return true;
+    Point2d t2 = coll->TexCoord(face,1);    
+    ::Color c2 = texture.Map(t2.x*sx, t2.y*sy);
+    if (c2.alpha<250) return true;
     Point2d t3 = coll->TexCoord(face,2);
+    ::Color c3 = texture.Map(t3.x*sx, t3.y*sy);
+    if (c3.alpha<250) return true;
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
-    ::Color c = texture.Map(center.x*texture.SizeX(), center.y*texture.SizeY());
-    ::Color c1 = texture.Map(t1.x*texture.SizeX(), t1.y*texture.SizeY());
-    ::Color c2 = texture.Map(t2.x*texture.SizeX(), t2.y*texture.SizeY());
-    ::Color c3 = texture.Map(t3.x*texture.SizeX(), t3.y*texture.SizeY());
+    ::Color c = texture.Map(center.x*sx, center.y*sy);
+    if (c.alpha<250) return true;
     //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
-    return c.alpha < 250 || c1.alpha<250 ||c2.alpha<250||c3.alpha<250;
+    return false;
   }
   int Mapping(int ii) const
   {
     if (vec.size()>0) return vec[ii];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    if (vec.size()>0) return vec[ii];
+
+    return 0;
+  }
+
+  void create_vec()
+  {
+    //pthread_t curr = pthread_self();
+    //if (!pthread_equal(curr, g_main_thread_id))
+    if (1)
+    { // INSIDE THREAD
+	int num = coll->NumFaces();
+
+	create_vec_range(vec, 0,num); //start_block,end_block);
+	//if (end_block==num) {
+	  //vec=collect2();
+	  m_count = vec.size();
+	  done = true;
+	  //	}
+	return;
+      }
+
+
+    
+    //stackTrace();
+    int num_threads = 8;
     int count=0;
     int num = coll->NumFaces();
-    for(int i=0;i<num;i++)
+    //vec.resize(num);
+    //vec2.resize(num);
+    if (num<100) { num_threads=1; }
+    int delta_s = num/num_threads+1;
+    std::vector<int> vec2;
+    ThreadedTransparency prep(this);
+    for(int i=0;i<num_threads;i++)
+      {
+	int start_range = i*delta_s;
+	int end_range = (i+1)*delta_s;
+	if (end_range>num) { end_range=num; }
+	if (i==num_threads-1) { end_range=num; }
+	vec2.push_back(prep.push_thread(i,start_range,end_range));
+      }
+    for(int i=0;i<num_threads;i++)
+      {
+	prep.join(vec2[i]);
+      }
+    vec=collect();
+    m_count = vec.size();
+    //std::cout << "SET m_count=" << m_count << std::endl;
+    done = true;
+    //create_vec_range(0,num);
+  }
+
+  std::vector<int> collect2()
+  {
+    std::vector<int> res;
+    int s = output_vec.size();
+    for(int i=0;i<s;i++)
+      {
+	std::copy(output_vec[i].begin(),output_vec[i].end(),std::back_inserter(res));
+      }
+    return res;
+  }
+  
+  std::vector<int> collect()
+  {
+    std::vector<int> res;
+    int s = 8;
+    for(int i=0;i<s;i++)
+      {
+	std::copy(thread_output_vec[i].begin(),thread_output_vec[i].end(),std::back_inserter(res));
+      }
+    return res;
+  }
+  
+  void create_vec_range(std::vector<int>& vec, int start, int end)
+  {
+    //std::vector<int> &vec=thread_output_vec[ii];
+    int count=0;
+    vec.resize(end-start);
+    for(int i=start;i<end;i++)
       {
 	bool b = is_transparent(i);
 	if (opaque) b=!b;
 	if (b)
 	  {
-	    vec.push_back(i);
 	    //if (count == ii) return i;
-	  count++;
+	    vec[count]=i;
+	    //vec2[count]=count;
+	    count++;
 	  }
       }
-    return 0;
+    vec.resize(count);
   }
-
-  
-private:
+public:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
   bool opaque;
+  std::vector<int> thread_output_vec[8];
+  std::vector<std::vector<int> > output_vec;
   mutable std::vector<int> vec;
+  //mutable std::vector<int> vec2;
+  mutable int sx=-1;
+  mutable int sy=-1;
+  std::atomic<int> m_count=0;
+  bool done=false;
+  int current_i=0;
 };
+
+void *trans_thread_func(void *data)
+{
+  TransparencyThreadInfo *info = (TransparencyThreadInfo*)data;
+  std::vector<int> &vec=info->self->thread_output_vec[info->thread_num];
+  info->self->create_vec_range(vec,info->start_range, info->end_range);
+  return 0;
+}
+
 
 GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
 {
@@ -3896,6 +4069,260 @@ GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
   return add_polygon2(e, new TransparentSeparateFaceCollection(coll, *b2, opaque),1);
+}
+
+int choose_texture(FaceCollection *coll, int face)
+{
+  float tex = coll->TexCoord3(face,0);
+  return int(tex+0.3);
+}
+
+
+class TransparentSeparateFaceCollection2 : public FaceCollection
+{
+public:
+  TransparentSeparateFaceCollection2(FaceCollection *coll, std::vector<Bitmap<::Color>*> textures, bool opaque) : coll(coll), textures(textures),opaque(opaque) { }
+
+
+  void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  int NumBlocks() const {
+    //if (coll->NumFaces()>1000) return 15; 
+    return 1; }
+  void HeavyPrepare() {
+    current_i++;
+    std::cout << "HeavyPrepare " << current_i << std::endl;
+    const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();    
+  }
+  void Prepare() { coll->Prepare(); }
+  
+  int NumFaces() const
+  {
+    //std::cout << "READ m_count=" << m_count << std::endl;
+    if (m_count!=0) return m_count-1; //vec2[vec2.size()-1];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();
+    if (m_count!=0)
+      return m_count-1; //vec2[vec2.size()-1];
+    return 0;
+    /*
+    int c=coll->NumFaces();
+    int count = 0;
+    for(int i=0;i<c;i++)
+      {
+	bool b = is_transparent(i);
+	if (opaque) b=!b;
+	if (b) count++;
+      }
+    return count;
+    */
+  }
+  int NumPoints(int face) const
+  {
+    return coll->NumPoints(Mapping(face));
+  }
+  Point FacePoint(int face, int point) const
+  {
+    return coll->FacePoint(Mapping(face), point);
+  }
+  Point EndFacePoint(int face, int point) const
+  {
+    return coll->EndFacePoint(Mapping(face), point);
+  }
+  unsigned int Color(int face, int point) const
+  {
+    return coll->Color(Mapping(face), point);
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(Mapping(face), point);
+  }
+  float TexCoord3(int face, int point) const
+  {
+    return coll->TexCoord3(Mapping(face), point);
+  }
+
+  Vector PointNormal(int face, int point) const
+  {
+    return coll->PointNormal(Mapping(face), point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(Mapping(face), point, id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(Mapping(face),point,id);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return coll->Joints(Mapping(face),point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return coll->Weights(Mapping(face),point);
+  }
+
+  virtual int NumObjects() const {
+    //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;
+    return coll->NumObjects(); }
+
+  std::pair<int,int> GetObject(int o) const
+  {
+    if (vec.size()==0)
+      const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();
+    std::pair<int,int> p = coll->GetObject(o);
+    
+    
+    return std::make_pair(ReverseMapping(p.first),ReverseMapping(p.second));
+  }
+
+  
+
+  virtual bool has_normal() const { return coll->has_normal(); }
+  virtual bool has_attrib() const { return coll->has_attrib(); }
+  virtual bool has_color() const { return coll->has_color(); }
+  virtual bool has_texcoord() const { return coll->has_texcoord(); }
+  virtual bool has_skeleton() const { return coll->has_skeleton(); }
+
+  
+
+  
+  bool is_transparent(int face) const
+  {
+    int texnum = choose_texture(coll,face);
+    Bitmap<::Color> *texture = texnum>=0&&texnum<textures.size()?textures[texnum]:0;
+    //std::cout << "Texture " << std::hex << (long)texture << " " << texnum << "<" << textures.size()  << std::endl;
+    
+    
+    int s = cache.size();
+    bool needed = true;
+    for(int i=0;i<s;i++) {
+      if (cache[i]==texnum) needed=false;
+    }
+    if (needed && texture) {
+      texture->Prepare();
+      cache.push_back(texnum);
+    }
+    
+    if (texture) {
+      sx = texture->SizeX();
+      sy = texture->SizeY();
+    }
+    if (texture) {
+    Point2d t1 = coll->TexCoord(face,0);
+    ::Color c1 = texture->Map(t1.x*sx, t1.y*sy);
+    if (c1.alpha<250) return true;
+    Point2d t2 = coll->TexCoord(face,1);    
+    ::Color c2 = texture->Map(t2.x*sx, t2.y*sy);
+    if (c2.alpha<250) return true;
+    Point2d t3 = coll->TexCoord(face,2);
+    ::Color c3 = texture->Map(t3.x*sx, t3.y*sy);
+    if (c3.alpha<250) return true;
+    Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
+    ::Color c = texture->Map(center.x*sx, center.y*sy);
+    if (c.alpha<250) return true;
+    //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
+    }
+    return false;
+  }
+  int ReverseMapping(int i) const
+  {
+    return rev[i];
+  }
+
+  int Mapping(int ii) const
+  {
+    if (vec.size()>0) return vec[ii];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();
+    if (vec.size()>0) return vec[ii];
+
+    return 0;
+  }
+
+  void create_vec()
+  {
+    //pthread_t curr = pthread_self();
+    //if (!pthread_equal(curr, g_main_thread_id))
+    if (1)
+    { // INSIDE THREAD
+	int num = coll->NumFaces();
+
+	create_vec_range(vec, rev, 0,num); //start_block,end_block);
+	//if (end_block==num) {
+	  //vec=collect2();
+	  m_count = vec.size();
+	  done = true;
+	  //	}
+	return;
+      }
+  }
+
+  std::vector<int> collect2()
+  {
+    std::vector<int> res;
+    int s = output_vec.size();
+    for(int i=0;i<s;i++)
+      {
+	std::copy(output_vec[i].begin(),output_vec[i].end(),std::back_inserter(res));
+      }
+    return res;
+  }
+  
+  
+  void create_vec_range(std::vector<int>& vec, std::vector<int> &rev, int start, int end)
+  {
+    //std::vector<int> &vec=thread_output_vec[ii];
+    int count=0;
+    vec.resize(end-start);
+    for(int i=start;i<end;i++)
+      {
+	rev.push_back(count);
+	bool b = is_transparent(i);
+	if (opaque) b=!b;
+	if (b)
+	  {
+	    //if (count == ii) return i;
+	    vec[count]=i;
+	    //vec2[count]=count;
+	    count++;
+	  }
+      }
+    vec.resize(count);
+  }
+public:
+  FaceCollection *coll;
+  std::vector<Bitmap<::Color>*> textures;
+  bool opaque;
+  std::vector<int> thread_output_vec[8];
+  std::vector<std::vector<int> > output_vec;
+  std::vector<std::vector<int> > rev_output_vec;
+  mutable std::vector<int> vec;
+  mutable std::vector<int> rev;
+  //mutable std::vector<int> vec2;
+  mutable int sx=-1;
+  mutable int sy=-1;
+  std::atomic<int> m_count=0;
+  bool done=false;
+  int current_i=0;
+  mutable std::vector<int> cache;
+};
+
+
+GameApi::P GameApi::PolygonApi::transparent_separate2(P p, std::vector<BM> vec, bool opaque)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  int s = vec.size();
+  std::vector<Bitmap<::Color>*> vec2;
+  for(int i=0;i<s;i++) {
+    BitmapHandle *handle = find_bitmap(e, vec[i]);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    vec2.push_back(b2);
+  }
+    
+  return add_polygon2(e, new TransparentSeparateFaceCollection2(coll, vec2, opaque),1);
+  
 }
 
 class TransparentMainLoop : public MainLoopItem
@@ -7270,6 +7697,7 @@ public:
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
       item->Collect(vis);
+      firsttime=false;
   }
   void HeavyPrepare() { }
   virtual void Prepare()
@@ -7383,6 +7811,12 @@ public:
   }
   virtual void Prepare()
   {
+    if (firsttime) {
+      find_ml();
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      firsttime = false;
+    }
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -12777,7 +13211,7 @@ void blocker_iter(void *arg)
 	GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
 	GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	env->ev->mainloop_api.execute_ml(*env->ev,env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
 	if (env->fpscounter)
 	  env->ev->mainloop_api.fpscounter();
@@ -12848,6 +13282,13 @@ public:
     if (i>=0 && i<sz && vec[i])
       vec[i]->HeavyPrepare();
   }
+  int count(int i) const
+  {
+    int sz = vec.size();
+    if (i>=0 && i<sz && vec[i])
+      return vec[i]->NumBlocks();
+    return 1;
+  }
 public:
   std::vector<CollectInterface*> vec;
   //int count=0;
@@ -12884,7 +13325,6 @@ public:
   //ClearProgress();
   
   //#ifndef EMSCRIPTEN
-  InstallProgress(33344, "collect", 15*15);
   //#endif
   
   
@@ -13032,27 +13472,38 @@ public:
       item->Collect(*vis);
       //ProgressBar(33344, 0, 30, "collect");
       vis_counter=0;
+      real_counter=0;
       g_prepare_done = true;
-
+      ClearProgress();
+      InstallProgress(33344, "collect", 15*15);
       firsttime = false;
     }
 
     if (vis) {
 	g_logo_status = 2;
 
-      int num2 = (vis->vec.size()/30);
+	int counter = 0;
+	int s = vis->vec.size();
+	for(int i=0;i<s;i++) counter+=vis->count(i);
+	
+      int num2 = (counter/30)+1;
       if (num2<1) num2=1;
       for(int i=0;i<num2;i++) {
 	vis->execute(vis_counter);
-	vis_counter++;
+	vis_counter_before++;
+	real_counter++;
+	if (vis_counter_before>=vis->count(vis_counter)) {
+	  vis_counter_before=0;
+	  vis_counter++;
+	}
       }
 
 
       
-      int num = vis_counter;
+      int num = real_counter;
       //#ifndef EMSCRIPTEN
       if (vis->vec.size()>0)
-	ProgressBar(33344, (15*15*num/vis->vec.size()), 15*15, "collect");
+	ProgressBar(33344, (15*15*num/counter), 15*15, "collect");
       //#endif
       //bool b = false;
       if (gameapi_seamless_url=="") {
@@ -13132,7 +13583,7 @@ public:
     
     //std::cout << "Splitter/execute_ml" << std::endl;
     if (g_prepare_done)
-      env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
     //std::cout << "Splitter/end of execute_ml" << std::endl;
 
     if (env->fpscounter)
@@ -13191,7 +13642,9 @@ private:
   int progress;
   int logo_frame_count=0;
   CollectInterfaceImpl *vis=0;
+  int vis_counter_before=0;
   int vis_counter=0;
+  int real_counter=0;
 };
 
 extern int score;
@@ -15689,6 +16142,18 @@ public:
     GameApi::SH s3;
     s3.id = e.sh_color;
 
+    std::vector<int> vec = shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH sh;
+	sh.id = vec[i];
+	//Matrix m = find_matrix(env,rot_y2);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", rot_y2);
+      }
+
+    
 #ifndef NO_MV    
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
@@ -15803,6 +16268,18 @@ public:
     GameApi::SH s3;
     s3.id = e.sh_color;
 
+    std::vector<int> vec = shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH sh;
+	sh.id = vec[i];
+	//Matrix m = find_matrix(env,rot_y2);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", rot_y2);
+      }
+
+    
 #ifndef NO_MV
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
@@ -15905,6 +16382,18 @@ public:
     GameApi::SH s3;
     s3.id = e.sh_color;
 
+    std::vector<int> vec = shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH sh;
+	sh.id = vec[i];
+	//Matrix m = find_matrix(env,rot_y2);
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "in_View", rot_y2);
+      }
+
+    
 #ifndef NO_MV
     ev.shader_api.use(s1);
     ev.shader_api.set_var(s1, "in_MV", res);
@@ -18988,7 +19477,7 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_mem(const unsigned char *buf, con
 class SaveDSMain : public MainLoopItem
 {
 public:
-  SaveDSMain(GameApi::Env &env, GameApi::EveryApi &ev, std::string out_file, GameApi::P p) : env(env), ev(ev), out_file(out_file), p(p) { firsttime = true; }
+  SaveDSMain(GameApi::Env &env, GameApi::EveryApi &ev, std::string out_file, GameApi::P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects) : env(env), ev(ev), out_file(out_file), p(p), disable_normal(disable_normal), disable_color(disable_color), disable_texcoord(disable_texcoord), disable_texcoord3(disable_texcoord3), disable_objects(disable_objects) { firsttime = true; }
   void Collect(CollectVisitor &vis)
   {
   }
@@ -19003,7 +19492,13 @@ public:
       std::string path = home + "/.gameapi_builder/";
 
       std::cout << "Saving to " << path+out_file << std::endl;
-      GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
+      int flags = 0;
+      if (disable_normal) flags|=DSDisableNormal;
+      if (disable_color) flags|=DSDisableColor;
+      if (disable_texcoord) flags|=DSDisableTexCoord;
+      if (disable_texcoord3) flags|=DSDisableTexCoord3;
+      if (disable_objects) flags|=DSDisableObjects;
+      GameApi::DS ds = ev.polygon_api.p_ds_inv(p,flags);
       ev.mainloop_api.save_ds(path+out_file, ds);
 
 
@@ -19028,11 +19523,16 @@ private:
   std::string out_file;
   bool firsttime;
   GameApi::P p;
+  bool disable_normal;
+  bool disable_color;
+  bool disable_texcoord;
+  bool disable_texcoord3;
+  bool disable_objects;
 };
 
-GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p)
+GameApi::ML GameApi::MainLoopApi::save_ds_ml(GameApi::EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects)
 {
-  return add_main_loop(e, new SaveDSMain(e,ev,output_filename, p));
+  return add_main_loop(e, new SaveDSMain(e,ev,output_filename, p, disable_normal, disable_color, disable_texcoord, disable_texcoord3, disable_objects));
 }
 
 std::string GameApi::MainLoopApi::ds_to_string(DS ds)
@@ -25370,7 +25870,7 @@ public:
     GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
-      env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+    env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
       firsttime3 = false;
     }
 
@@ -25452,7 +25952,7 @@ public:
     
     firsttime2 = false;
     } else {
-          env->ev->mainloop_api.execute_ml(env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
     }
     if (env->fpscounter)
       env->ev->mainloop_api.fpscounter();
@@ -29082,7 +29582,7 @@ public:
       
       p = ev.polygon_api.load_model_all_no_cache_mtl(stream, 300, materials);
     }
-    
+    // possible problem, p_ds_inv doesnt pass flags
     GameApi::DS ds = ev.polygon_api.p_ds_inv(p);
     res = ev.mainloop_api.ds_to_string(ds);
     //std::cout << "RES:" << res << std::endl;

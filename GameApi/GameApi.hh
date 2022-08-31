@@ -510,7 +510,7 @@ public:
   IMPORT void display_seamless(EveryApi &ev);
   IMPORT ML debug_obj(EveryApi &ev);
   IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
-  IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p);
+  IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects);
   struct Event
   {
     int type;
@@ -555,7 +555,7 @@ public:
   IMPORT Event get_event();
   void waittof();
   SP screenspace();
-  void execute_ml(ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
+  void execute_ml(EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   IMPORT ML array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
   IMPORT ML or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2);
@@ -598,6 +598,7 @@ public:
   ARR load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   ML prepare_pts(ML ml, PTS pts);
   ML depthfunc(ML ml, int val); 
+  ML depthmask(ML ml, bool b);
   ML blendfunc(ML ml, int val, int val2);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
@@ -2430,6 +2431,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P extract_large_polygons(P p, float minimum_size, bool reverse);
   P x_split(P p, float x, float x_0, float x_1);
   P y_split(P p, float y, float y_0, float y_1);
   P z_split(P p, float z, float z_0, float z_1);
@@ -2463,6 +2465,7 @@ public:
   ARR p_mtl_materials(EveryApi &ev, P P);
   ARR p_mtl2_materials(EveryApi &ev, P p);
   P get_face_count(P p);
+  P transparent_separate2(P p, std::vector<BM> vec, bool opaque);
   P transparent_separate(P p, BM bm, bool opaque);
   void sort_vertices(VA va, M m);
   P remove_faces(P p);
@@ -2566,7 +2569,7 @@ public:
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);
   IMPORT P p_ds(EveryApi &ev, const unsigned char *beg, const unsigned char *end);
   IMPORT P p_ds_url(EveryApi &ev, std::string url);
-  IMPORT DS p_ds_inv(P model);
+  IMPORT DS p_ds_inv(P model, int flags=-1); // flags at GameApi_pl.cc/DSFlags
   IMPORT P file_cache(P model, std::string filename, int obj_num);
   IMPORT P resize_to_correct_size(P model);
         IMPORT void save_model(P poly, std::string filename);

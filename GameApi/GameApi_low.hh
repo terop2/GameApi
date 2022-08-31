@@ -143,6 +143,7 @@ enum
     Low_GL_STREAM_DRAW,
     Low_GL_WRITE_ONLY,
     Low_GL_READ_ONLY,
+    Low_GL_DEPTH_COMPONENT32F,
     //
     //  OLD STUFF
     // 

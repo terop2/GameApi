@@ -477,6 +477,7 @@ void ArrayRender::Alloc(int numfaces, int numvertices, int vertexframes, int nor
 
 void ArrayRender::Prepare()
 {
+  //std::cout << "ArrayRender IMPL#1" << std::endl;
   if (quads)
     {
       q_num_vertices = vertex_array_size*6/4;
