@@ -110,7 +110,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   g_low->ogl->glShaderSource(handle, count, strings, lengths);
   //ProgressBar(111,10,15,shader.Name().c_str());
   g_low->ogl->glCompileShader(handle);
-  int val = g_low->ogl->glGetError();
+  int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
   //ProgressBar(111,15,15,shader.Name().c_str());
 
   if (val!=Low_GL_NO_ERROR)
@@ -204,7 +204,7 @@ void Program::push_back(const Shader &shader)
 {
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
-  int val = g_low->ogl->glGetError();
+  int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
@@ -227,9 +227,9 @@ void Program::bind_attrib(int num, std::string name)
 {
   //int val2 = g_low->ogl->glGetError();
   g_low->ogl->glBindAttribLocation(priv->program, num, name.c_str());
-  int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
-    std::cout << "BindAttribLocation ERROR: " << val << std::endl;
+  //int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
+  //if (val!=Low_GL_NO_ERROR)
+  //  std::cout << "BindAttribLocation ERROR: " << val << std::endl;
 }
 void Program::detach(const Shader &shader)
 {
@@ -272,7 +272,7 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
-  int val = g_low->ogl->glGetError();
+  int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
