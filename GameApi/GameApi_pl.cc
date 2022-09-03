@@ -14316,7 +14316,10 @@ GameApi::ARR GameApi::PolygonApi::material_arr(std::vector<MT> vec, int start_ra
 class TextureSplitter2 : public FaceCollection
 {
 public:
-  TextureSplitter2(FaceCollection *coll, int val) : coll(coll), val(val) { }
+  TextureSplitter2(FaceCollection *coll, int val, int num_slots, int current_slot) : coll(coll), val(val),num_slots(num_slots), current_slot(current_slot)
+  {
+    if (num_slots==0) { num_slots=1; current_slot=0; }
+  }
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -14360,6 +14363,8 @@ public:
     }
   }
   
+
+
   
   virtual int NumFaces() const {
     int s = objs.size();
@@ -14368,7 +14373,10 @@ public:
       std::pair<int,int> p = objs[i];
       count+=p.second-p.first;
     }
-    return count;
+    actual_faces=count/num_slots;
+    if (current_slot==num_slots-1)
+      return count/num_slots + (count - num_slots*(count/num_slots));
+    return count/num_slots;
   }
   int face_to_face(int face) const
   {
@@ -14395,31 +14403,45 @@ public:
   
   virtual int NumPoints(int face) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->NumPoints(face_to_face(face));
   }
   virtual Point FacePoint(int face, int point) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->FacePoint(face_to_face(face),point);
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->PointNormal(face_to_face(face),point);
   }
   virtual float Attrib(int face, int point, int id) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->Attrib(face_to_face(face),point,id);
   }
   virtual int AttribI(int face, int point, int id) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->AttribI(face_to_face(face),point,id);
 
   }
   virtual unsigned int Color(int face, int point) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->Color(face_to_face(face),point);
   }
   virtual Point2d TexCoord(int face, int point) const
   {
+    if (actual_faces==0) NumFaces();
+    face+=current_slot*actual_faces;
     return coll->TexCoord(face_to_face(face),point);
   }
   virtual float TexCoord3(int face, int point) const {
@@ -14435,15 +14457,18 @@ private:
   int val;
   std::pair<int,int> p;
   std::vector<std::pair<int,int> > objs;
+  int num_slots;
+  int current_slot;
+  mutable int actual_faces=0;
 };
 
-GameApi::P GameApi::PolygonApi::texture_splitter2(P p, int val)
+GameApi::P GameApi::PolygonApi::texture_splitter2(P p, int val, int num_slots, int current_slot)
 {
   FaceCollection *coll = find_facecoll(e,p);
-  return add_polygon2(e, new TextureSplitter2(coll,val),1);
+  return add_polygon2(e, new TextureSplitter2(coll,val, num_slots, current_slot),1);
 }
 
-GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int end_index)
+GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int end_index, int num_slots, int current_slot)
 {
   FaceCollection *coll = find_facecoll(e,p);
   coll->SetDoneCount(end_index-start_index);
@@ -14452,7 +14477,7 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int
   array->type = 3;
   for(int i=start_index;i<end_index;i++)
     {
-      GameApi::P p2 = texture_splitter2(p,i);
+      GameApi::P p2 = texture_splitter2(p,i, num_slots, current_slot);
       array->vec.push_back(p2.id);
     }
   
@@ -14485,7 +14510,7 @@ GameApi::ML GameApi::PolygonApi::p_mtl2_prepare(P p)
 GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
 {
   GameApi::P p = p_mtl(ev,obj_url,mtl_url, prefix, count);
-  GameApi::ARR parr = material_extractor_p(p, start_index, end_index);
+  GameApi::ARR parr = material_extractor_p(p, start_index, end_index,1,0);
   GameApi::ARR matarr = p_mtl2_materials(ev,p);
   GameApi::ARR matarr2 = material_extractor_mt(ev,p,mix, start_index, end_index);
   GameApi::ARR bmarr = material_extractor_bm(p, start_index, end_index);
@@ -17618,14 +17643,44 @@ private:
 };
 
 
- GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts)
+struct ProgressMatData
 {
-  int s = std::min(vec.size(),materials.size());
-  std::vector<ML> vec2;
-  for(int i=0;i<s;i++) {
-    vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, materials[i]));
+  int counter;
+  int s;
+  int ii;
+};
+
+bool g_execute_shows_logo=false;
+void progress_mat(void *data)
+{
+  ProgressMatData *dt = (ProgressMatData*)data;
+  if (dt->counter==0)
+    InstallProgress(145+dt->ii, "bind_inst_many", dt->s);
+  dt->counter++;
+  ProgressBar(145+dt->ii,dt->counter,dt->s, "bind_inst_many");
+  if (dt->counter==dt->s) {
+    //g_execute_shows_logo=false;
   }
-  GameApi::ML ml = ev.mainloop_api.array_ml(ev,vec2);
+}
+
+
+GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts, int max_ticks)
+{
+  static int ii=0;
+  ii++;
+  int s = std::min(vec.size(),materials.size());
+  ProgressMatData *counter = new ProgressMatData;
+  counter->counter=0;
+  counter->s = s;
+  counter->ii = ii;
+  std::vector<ML> vec2;
+  //std::cout << "m_bind_inst_many count=" << s << std::endl;
+  for(int i=0;i<s;i++) {
+    MT mat = materials[i];
+    MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
+    vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, mat2));
+  }
+  GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
   return ml;
 }
 
@@ -22010,3 +22065,99 @@ GameApi::P GameApi::PolygonApi::extract_large_polygons(GameApi::P p, float minim
   FaceCollection *faces = find_facecoll(e,p);
   return add_polygon2(e, new ExtractLargePolygons(faces,minimum_size,reverse),1);
 }
+
+/*
+float calc_size(FaceCollection *coll, int obj)
+{
+  std::pair<int,int> p = coll->GetObject(obj);
+  int start = p.first;
+  int end = p.second;
+  float size = 0;
+  for(int f=start;f<end;f++) {
+    int num = coll->NumPoints(f);
+    if (num==0) num=1;
+    Point p1 = coll->FacePoint(f,0);
+    Point p2 = coll->FacePoint(f,1);
+    Point p3 = coll->FacePoint(f,2);
+    Point p4 = coll->FacePoint(f,3%num);
+    Vector v1 = p2-p1;
+    Vector v2 = p3-p2;
+    Vector v3 = p4-p3;
+    Vector v4 = p1-p4;
+    float d1 = v1.Dist();
+    float d2 = v2.Dist();
+    float d3 = v3.Dist();
+    float d4 = v4.Dist();
+    float mm = std::max(std::max(d1,d2),std::max(d3,d4));
+    if (mm>size) size=mm;
+  }
+  return size;
+}
+
+struct K
+{
+  FaceCollection *coll;
+  int i;
+  mutable float size_cache=-666.0;
+};
+bool operator<(const K &k1, const K &k2)
+{
+  float s1 = k1.size_cache>-600.0?k1.size_cache:calc_size(k1.coll,k1.i);
+  float s2 = k2.size_cache>-600.0?k2.size_cache:calc_size(k2.coll,k2.i);
+  k1.size_cache=s1;
+  k2.size_cache=s2;
+  return s1>s2;
+}
+
+
+class SortObjects : public ForwardFaceCollection
+{
+public:
+  SortObjects(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    int s = coll->NumObjects();
+    for(int i=0;i<s;i++) {
+      K k = { coll, i, -666.0 };
+      vec.push_back(k);
+    }
+    std::sort(vec.begin(),vec.end());
+  }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+    HeavyPrepare();
+  }
+  int NumObjects() const { return vec.size(); }
+  std::pair<int,int> GetObject(int o) const {
+    int i = vec[o].i;
+    std::pair<int,int> p = coll->GetObject(i);
+    return p;
+  }
+   
+private:
+  FaceCollection *coll;
+  std::vector<K> vec;
+};
+
+GameApi::ARR GameApi::PolygonApi::sort_objects_based_on_polygon_size(GameApi::P p, std::vector<P> p_vec, std::vector<MT> mat_arr1, std::vector<MT> mat_arr2, std::vector<BM> bmarr)
+{
+  SortObjects *objs = new SortObjects;
+  GameApi::P p2 = add_polygon2(e, objs);
+
+  ArrayType *array2 = new ArrayType;
+  array2->type=0;
+  array2->vec.push_back();
+  GameApi::ARR arr = add_array(e,array2);
+  
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  array->vec.push_back(p2.id);
+  array->vec.push_back(arr.id);
+  return add_array(e,array);
+}
+*/

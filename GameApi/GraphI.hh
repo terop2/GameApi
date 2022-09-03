@@ -38,6 +38,7 @@ public:
   virtual void Collect(CollectVisitor &vis)=0;
   virtual int NumBlocks() const { return 1; }
   virtual void HeavyPrepare()=0;
+  virtual void FirstFrame() { }
 };
 
 class CollectVisitor
@@ -45,6 +46,7 @@ class CollectVisitor
 public:
   virtual ~CollectVisitor() { }
   virtual void register_obj(CollectInterface *i)=0;
+  virtual void register_first_frame(CollectInterface *i)=0;
 };
 
 namespace GameApi
@@ -690,6 +692,7 @@ public:
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
+  virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
