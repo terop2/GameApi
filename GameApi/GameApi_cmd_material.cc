@@ -497,9 +497,9 @@
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_extractor_p,
 			 "ext_p",
-			 { "p", "start_index", "end_index" },
-			 { "P", "int", "int" },
-			 { "", "0", "32" },
+			 { "p", "start_index", "end_index", "num_slots", "current_slot" },
+			 { "P", "int", "int", "int", "int" },
+			 { "", "0", "32", "1", "0" },
 			 "[P]", "polygon_api", "material_extractor_p"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_extractor_bm,
 			 "ext_bm",

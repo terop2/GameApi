@@ -790,6 +790,7 @@ EXPORT void GameApi::MainLoopApi::clear_3d_transparent()
   ogl->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
 }
+bool g_no_clear = false;
 EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
@@ -806,7 +807,11 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   g>>=8;
   ogl->glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
   ogl->glStencilMask(~0);
-  ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  if (g_no_clear) {
+    ogl->glClear( /*Low_GL_COLOR_BUFFER_BIT |*/ Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  } else {
+    ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  }
 #ifndef EMSCRIPTEN
   ogl->glLoadIdentity();
   ogl->glTranslatef(0.375, 0.375, 0.0);
@@ -1947,6 +1952,191 @@ private:
   float current_time;
 };
 #endif
+
+bool g_filter_execute = false;
+int g_filter_start=0;
+int g_filter_end=0;
+extern bool g_execute_shows_logo;
+
+class FirstExecuteFilterMainLoop : public MainLoopItem
+{
+public:
+  FirstExecuteFilterMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<MainLoopItem*> vec) : env(env), ev(ev), vec(vec) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);    
+  }
+  void HeavyPrepare() { }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+  }
+  void logoexecute() {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->logoexecute();
+      }
+  }
+  void execute(MainLoopEnv &e)
+  {
+    int s = vec.size();
+    int start=0;
+    int end= s;
+    if (g_filter_execute)
+      {
+	start = g_filter_start;
+	end = g_filter_end;
+	if (start<0) start=0;
+	if (start>s) start=s;
+	if (end<0) end=0;
+	if (end>s) end=s;
+	if (end==s) {
+	  g_execute_shows_logo=false;
+	}
+      }
+    
+    for(int i=start;i<end;i++)
+      {
+	MainLoopEnv ee = e;
+
+#ifndef NO_MV
+	// here's a block needed to distribute in_MV to different cases.
+	std::vector<int> ids = vec[i]->shader_id();
+	int s = ids.size();
+	for(int j=0;j<s;j++) {
+	  int id = ids[j];
+	  if (id!=-1) {
+	    GameApi::SH sh;
+	    sh.id = id;
+	    GameApi::M m = add_matrix2( env, e.in_MV);
+	    ev.shader_api.use(sh);
+	    ev.shader_api.set_var(sh, "in_MV", m);
+	  }
+	}
+#endif
+	vec[i]->execute(ee);
+      }
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->handle_event(e);
+      }
+  }
+  std::vector<int> shader_id() { 
+    int s = vec.size();
+    std::vector<int> res;
+    for(int i=0;i<s;i++)
+      {
+	std::vector<int> v = vec[i]->shader_id();
+	int ss = v.size();
+	for(int j=0;j<ss;j++)
+	  {
+	    res.push_back(v[j]);
+	  }
+	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
+      }
+    return res; 
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<MainLoopItem*> vec;
+};
+
+class EnsureFrameRateMainLoop : public MainLoopItem
+{
+public:
+  EnsureFrameRateMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<MainLoopItem*> vec, int ticks) : env(env), ev(ev), vec(vec),ticks(ticks) { firsttime=true; }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Collect(vis);    
+  }
+  void HeavyPrepare() { }
+  void Prepare() {
+    int s = vec.size();
+    for(int i=0;i<s;i++) vec[i]->Prepare();
+  }
+  void logoexecute() {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->logoexecute();
+      }
+  }
+  void execute(MainLoopEnv &e)
+  {
+    g_no_clear = true;
+    int s = vec.size();
+	unsigned int t = g_low->sdl->SDL_GetTicks();
+	for(int i=0;i<s;i++) {
+	MainLoopEnv ee = e;
+
+#ifndef NO_MV
+	// here's a block needed to distribute in_MV to different cases.
+	std::vector<int> ids = vec[i]->shader_id();
+	int s = ids.size();
+	for(int j=0;j<s;j++) {
+	  int id = ids[j];
+	  if (id!=-1) {
+	    GameApi::SH sh;
+	    sh.id = id;
+	    GameApi::M m = add_matrix2( env, e.in_MV);
+	    ev.shader_api.use(sh);
+	    ev.shader_api.set_var(sh, "in_MV", m);
+	  }
+	}
+#endif
+	vec[i]->execute(ee);
+	exe_count++;
+	unsigned int t2 = g_low->sdl->SDL_GetTicks();
+	int delta = t2-t;
+	if (firsttime) {
+	  // first execute can do 1 second
+	  if (delta>ticks*600) break;
+	} else {
+	  // rest of the frames are limited to frame rate
+	  if (delta>ticks) break;
+	}
+	}
+	firsttime = false;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->handle_event(e);
+      }
+  }
+  std::vector<int> shader_id() { 
+    int s = vec.size();
+    std::vector<int> res;
+    for(int i=0;i<s;i++)
+      {
+	std::vector<int> v = vec[i]->shader_id();
+	int ss = v.size();
+	for(int j=0;j<ss;j++)
+	  {
+	    res.push_back(v[j]);
+	  }
+	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
+      }
+    return res; 
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<MainLoopItem*> vec;
+  int exe_count=0;
+  int ticks;
+  bool firsttime;
+};
 class ArrayMainLoop : public MainLoopItem
 {
 public:
@@ -1979,8 +2169,8 @@ public:
 	// here's a block needed to distribute in_MV to different cases.
 	std::vector<int> ids = vec[i]->shader_id();
 	int s = ids.size();
-	for(int i=0;i<s;i++) {
-	  int id = ids[i];
+	for(int j=0;j<s;j++) {
+	  int id = ids[j];
 	  if (id!=-1) {
 	    GameApi::SH sh;
 	    sh.id = id;
@@ -2107,7 +2297,7 @@ EXPORT GameApi::ML GameApi::MainLoopApi::or_elem_ml(GameApi::EveryApi &ev, ML m1
   vec.push_back(m2);
   return array_ml(ev,vec);
 }
-EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(GameApi::EveryApi &ev, std::vector<ML> vec)
+EXPORT GameApi::ML GameApi::MainLoopApi::slow_start_array_ml(GameApi::EveryApi &ev, std::vector<ML> vec, int max_ticks)
 {
   std::vector<MainLoopItem*> vec2;
   int s = vec.size();
@@ -2116,7 +2306,33 @@ EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(GameApi::EveryApi &ev, std::ve
       //std::cout << "array_ml id: " << vec[i].id << std::endl;
       vec2.push_back(find_main_loop(e,vec[i]));
     }
+  return add_main_loop(e, new EnsureFrameRateMainLoop(e,ev,vec2,max_ticks));
+}
+EXPORT GameApi::ML GameApi::MainLoopApi::filter_execute_array_ml(GameApi::EveryApi &ev, std::vector<ML> vec)
+{
+  g_execute_shows_logo=true;
+  std::vector<MainLoopItem*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      //std::cout << "array_ml id: " << vec[i].id << std::endl;
+      vec2.push_back(find_main_loop(e,vec[i]));
+    }
+  return add_main_loop(e, new FirstExecuteFilterMainLoop(e,ev,vec2));
+}
+EXPORT GameApi::ML GameApi::MainLoopApi::array_ml(GameApi::EveryApi &ev, std::vector<ML> vec)
+{
+  //return filter_execute_array_ml(ev,vec);
+  
+  std::vector<MainLoopItem*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      //std::cout << "array_ml id: " << vec[i].id << std::endl;
+      vec2.push_back(find_main_loop(e,vec[i]));
+    }
   return add_main_loop(e, new ArrayMainLoop(e,ev,vec2));
+  
 }
 EXPORT GameApi::FML GameApi::MainLoopApi::array_fml(std::vector<FML> vec)
 {
