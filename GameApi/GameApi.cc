@@ -39,6 +39,7 @@ extern Splitter *g_new_splitter;
 extern Envi_2 *g_new_blocker_env;
 
 extern char *g_user_id;
+extern bool g_filter_execute;
 
 #define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
@@ -4519,7 +4520,65 @@ GameApi::SMT GameApi::MaterialsApi::screenspace_bloom(EveryApi &ev, SMT next, fl
   ScreenSpaceMaterial *mat = find_screenspace_material(e,next);
   return add_screenspace_material(e, new BloomScreenSpaceMaterial(ev, mat, cut_x, cut_y, cut_z, x_amount, y_amount));
 }
-						      
+
+class ProgressMaterial : public MaterialForward
+{
+public:
+  ProgressMaterial(Material *next, void (*fptr)(void*), void*data) : next(next), fptr(fptr), data(data) { firsttime=true;}
+  void mark_used() const {
+    if (firsttime) {
+      fptr(data);
+      firsttime=false;
+    }
+  }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    mark_used();
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    mark_used();
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p.id, ms.id);
+    mark_used();
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    mark_used();
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    mark_used();
+    return ml;
+  }
+private:
+  Material *next;
+  void (*fptr)(void*);
+  void*data;
+  mutable bool firsttime;
+};
+
+GameApi::MT GameApi::MaterialsApi::progressmaterial(MT nxt, void (*fptr)(void*), void*data)
+{
+  Material *next = find_material(e,nxt);
+  return add_material(e, new ProgressMaterial(next,fptr,data));
+}
+
 class DefaultMaterial : public MaterialForward
 {
 public:
@@ -7805,9 +7864,12 @@ public:
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
       item->Collect(vis);
+      vis.register_obj(this);
       firsttime = false;
   }
   void HeavyPrepare() {
+    FaceCollection *coll = find_facecoll(env,p);
+    if (coll->NumFaces()==0) disabled=true;
   }
   virtual void Prepare()
   {
@@ -7815,11 +7877,13 @@ public:
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
       item->Prepare();
+      HeavyPrepare();
       firsttime = false;
     }
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (disabled) return;
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
@@ -7832,6 +7896,7 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+    if (disabled) return;
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->handle_event(e);
@@ -7849,6 +7914,7 @@ private:
   GameApi::PTS pts;
   GameApi::ML ml;
   bool firsttime;
+  bool disabled=false;
 };
 
 class BindInstFade : public MainLoopItem
@@ -8029,7 +8095,8 @@ public:
 	ev.points_api.update_from_data(pta, pts);
       }
 
-    GameApi::SH sh;
+    if (firsttime) {
+    
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -8108,7 +8175,7 @@ public:
 	ev.mainloop_api.alpha(true); 
 
       }
-
+    }
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -8159,7 +8226,7 @@ public:
 	}
       }
 
-    
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -8176,6 +8243,7 @@ private:
   bool fade, flip;
   float start_time, end_time;
   bool initialized;
+  GameApi::SH sh;
 };
 
 class RenderInstanced_matrix : public MainLoopItem
@@ -8220,6 +8288,7 @@ public:
       }
 
     GameApi::SH sh;
+    if (firsttime) {
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -8298,7 +8367,7 @@ public:
 	ev.mainloop_api.alpha(true); 
 
       }
-
+    }
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -8351,6 +8420,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -8388,13 +8458,17 @@ public:
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
+    vis.register_first_frame(this);
   }
   void HeavyPrepare() { Prepare(); }
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    va = ev.polygon_api.create_vertex_array(p,false); // THIS false is probably wrong, does not display anything.
+    if (va.id==-1)
+      va = ev.polygon_api.create_vertex_array(p,false);
     initialized=true;
+  }
+  void FirstFrame() {
   }
   void execute(MainLoopEnv &e)
   {
@@ -8410,13 +8484,14 @@ public:
     ids = id;
     va = ev.texture_api.bind_many(va, id, types);
     ev.polygon_api.preparedone(p);
+
       }
     if (changed)
       {
 	ev.points_api.update_from_data(pta, pts);
       }
 
-    GameApi::SH sh;
+    if (firsttime) {
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -8483,6 +8558,7 @@ public:
 	fragment.id = u_f.id; 
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
+	//std::cout << "get_normal_shader " << shader.id << std::endl;
 	if (e.sfo_id==-1)
 	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
 	else
@@ -8491,15 +8567,18 @@ public:
 	    sfo.id = e.sfo_id;
 	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
+	//std::cout << "get_normal_shader#2: " << shader.id << std::endl;
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
       }
 
+    }
+    
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
-	ev.shader_api.use(sh);
+	//ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
@@ -8548,7 +8627,7 @@ public:
       }
 
     
-    if (va.id!=-1)
+    if (va.id!=-1 && !g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
 
@@ -8569,6 +8648,7 @@ private:
   std::vector<int> types;
   bool initialized;
   std::vector<GameApi::TXID> ids;
+  GameApi::SH sh;
 };
 
 
@@ -8618,6 +8698,7 @@ public:
       }
 
     GameApi::SH sh;
+    if (firsttime) {
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -8696,7 +8777,7 @@ public:
 	ev.mainloop_api.alpha(true); 
 
       }
-
+    }
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -8749,7 +8830,7 @@ public:
       }
 
     
-    if (va.id!=-1)
+    if (va.id!=-1 && !g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
 
@@ -8835,6 +8916,7 @@ public:
       }
     
     GameApi::SH sh;
+    if (firsttime) {
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -8913,7 +8995,7 @@ public:
 	ev.mainloop_api.alpha(true); 
 
       }
-
+    }
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -8964,6 +9046,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -9045,6 +9128,7 @@ public:
       }
     
     GameApi::SH sh;
+    if (firsttime) {
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -9123,7 +9207,7 @@ public:
 	ev.mainloop_api.alpha(true); 
 
       }
-
+    }
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -9174,6 +9258,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -9258,6 +9343,7 @@ public:
       }
 
     GameApi::SH sh;
+    if (firsttime) {
     GameApi::US u_v;
     GameApi::US u_f;
     u_v.id = 0;
@@ -9336,7 +9422,7 @@ public:
 	ev.mainloop_api.alpha(true); 
 
       }
-
+    }
     if (shader.id!=-1)
       {
 	//std::cout << "RenderInstanced::USESHADER" << std::endl;
@@ -9387,6 +9473,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.unuse(sh);
   }
@@ -9599,6 +9686,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.unuse(sh);
   }
@@ -9801,6 +9889,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -10002,6 +10091,7 @@ public:
       }
 
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -10169,6 +10259,7 @@ public:
 	}
       }
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -10332,6 +10423,7 @@ public:
 	}
       }
     
+    if (!g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
     ev.shader_api.unuse(sh);
@@ -13268,20 +13360,23 @@ void clear_texture_confirms();
 class CollectInterfaceImpl : public CollectVisitor
 {
 public:
-  void register_obj(CollectInterface *i) {
-    
+  void register_obj(CollectInterface *i) {    
     vec.push_back(i);
-    //if (count==5)
-    //  {
-    //	std::cout << "REG" << std::endl;
-    //  }
-    //count++;
+  }
+  void register_first_frame(CollectInterface *i) {
+    vec2.push_back(i);
   }
   void execute(int i) {
     int sz = vec.size();
     if (i>=0 && i<sz && vec[i])
       vec[i]->HeavyPrepare();
   }
+  void first_frame(int i) {
+    int sz = vec2.size();
+    if (i>=0 && i<sz && vec2[i])
+      vec2[i]->FirstFrame();
+  }
+			   
   int count(int i) const
   {
     int sz = vec.size();
@@ -13291,6 +13386,7 @@ public:
   }
 public:
   std::vector<CollectInterface*> vec;
+  std::vector<CollectInterface*> vec2;
   //int count=0;
 };
 
@@ -13299,6 +13395,18 @@ void ClearProgress();
 extern bool g_stop_music;
 
 extern pthread_t g_main_thread_id;
+
+extern bool g_progress_bar_show_logo;
+extern void (*g_progress_bar_logo_cb)(void*);
+extern void *g_progress_bar_logo_cb_data;
+extern bool g_execute_shows_logo;
+void progress_logo_cb(void*);
+
+extern bool g_filter_execute;
+extern int g_filter_start;
+extern int g_filter_end;
+
+
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -13314,6 +13422,15 @@ public:
   virtual void set_everyapi(GameApi::EveryApi *evi)
   {
     ev = evi;
+  }
+  void show_logo()
+  {
+    bool b = false;
+	if (gameapi_seamless_url=="") {
+	  b = ev->mainloop_api.logo_iter();
+	} else {
+	  b = ev->mainloop_api.seamless_iter();
+	}
   }
   virtual void Init()
   {
@@ -13399,6 +13516,12 @@ public:
       Envi_2 *env = (Envi_2*)&envi;
       env->ev->mainloop_api.fpscounter_framestart();
     }
+
+    {
+      g_progress_bar_logo_cb = &progress_logo_cb;
+      g_progress_bar_logo_cb_data = (void*)this;
+    }
+    
     if (g_stop_music ==true)
       {
 	g_stop_music = false;
@@ -13472,14 +13595,16 @@ public:
       item->Collect(*vis);
       //ProgressBar(33344, 0, 30, "collect");
       vis_counter=0;
+      has_vis = true;
       real_counter=0;
       g_prepare_done = true;
       ClearProgress();
       InstallProgress(33344, "collect", 15*15);
+      InstallProgress(33345, "collect2", 5*15);
       firsttime = false;
     }
 
-    if (vis) {
+    if (has_vis) {
 	g_logo_status = 2;
 
 	int counter = 0;
@@ -13502,6 +13627,7 @@ public:
       
       int num = real_counter;
       //#ifndef EMSCRIPTEN
+      //std::cout << "Counters: " << num << " " << counter << std::endl;
       if (vis->vec.size()>0)
 	ProgressBar(33344, (15*15*num/counter), 15*15, "collect");
       //#endif
@@ -13515,7 +13641,16 @@ public:
 	  env->ev->mainloop_api.seamless_iter();
 	  g_engine_status = 2;
 	}
-      if (vis_counter>=vis->vec.size()) { delete vis; vis=0; }
+      if (vis_counter>=vis->vec.size()) {
+	has_vis = false;	
+	first_frame_count=0;
+	  //delete vis; vis=0;
+
+	// eat all events that were generated during download.
+	//GameApi::MainLoopApi::Event e;
+	//while((e = env->ev->mainloop_api.get_event()).last==true);
+
+      }
       return -1;
     }
     
@@ -13580,10 +13715,49 @@ public:
     GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
     GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
+
+    bool logo_done = false;
+    
+
+    if (vis) {
+      int s = vis->vec2.size();
+      int start = first_frame_count;
+      for(int i=0;i<50;i++) {
+	vis->first_frame(first_frame_count);
+	
+	first_frame_count++;
+	if (first_frame_count>=s) {
+	  delete vis;
+	  vis=0;
+	  break;
+	}
+      }
+      int end = first_frame_count;
+      g_filter_start=start;
+      if (end==0) g_filter_end=s;
+      else
+	g_filter_end=end;
+      if (s==0) s=1;
+      if (s>0) {
+	ProgressBar(33345, 5*15*first_frame_count/s, 5*15, "collect");
+      }
+      show_logo(); logo_done = true;
+    }
+
     
     //std::cout << "Splitter/execute_ml" << std::endl;
+    if (first_execute||g_execute_shows_logo) {
+      //g_progress_bar_show_logo=true;
+      g_filter_execute=true;
+      //std::cout << "g_filter_execute=true" << std::endl;
+    }
     if (g_prepare_done)
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+    //if (first_execute||g_execute_shows_logo) g_progress_bar_show_logo=false;
+    if (g_execute_shows_logo && !logo_done) { show_logo(); logo_done=true; }
+    first_execute=false;
+    g_filter_execute=false;
+    //std::cout << "g_filter_execute=false" << std::endl;
     //std::cout << "Splitter/end of execute_ml" << std::endl;
 
     if (env->fpscounter)
@@ -13600,6 +13774,7 @@ public:
     Envi_2 *env = (Envi_2*)&envi;
     env->ev->mainloop_api.fpscounter_frameready();
     }
+    if (!logo_done)
     env->ev->mainloop_api.swapbuffers();
     g_engine_status = 1;
     //xsogl->glGetError();
@@ -13645,7 +13820,17 @@ private:
   int vis_counter_before=0;
   int vis_counter=0;
   int real_counter=0;
+  bool first_execute=true;
+  bool has_vis = true;
+  int first_frame_count=0;
 };
+
+void progress_logo_cb(void *data)
+{
+  MainLoopSplitter_win32_and_emscripten *ptr = (MainLoopSplitter_win32_and_emscripten*)data;
+  ptr->show_logo();
+}
+
 
 extern int score;
 extern int hidden_score;

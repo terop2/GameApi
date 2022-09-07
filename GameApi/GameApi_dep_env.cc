@@ -1973,6 +1973,10 @@ void SetupProgress(int num, int count)
 
 
 pthread_t g_main_thread_id;
+bool g_progress_bar_show_logo=false;
+void (*g_progress_bar_logo_cb)(void*);
+void *g_progress_bar_logo_cb_data=0;
+
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
@@ -2097,6 +2101,12 @@ void ProgressBar(int num, int val, int max, std::string label)
     
     
 
+#ifdef EMSCRIPTEN
+    if (g_progress_bar_show_logo) {
+      g_progress_bar_logo_cb(g_progress_bar_logo_cb_data);
+      //g_everyapi->mainloop_api.logo_iter();
+    }
+#endif
     
 #ifndef EMSCRIPTEN
     //std::cout << stream.str() << l << stream3.str() << std::flush;

@@ -181,8 +181,12 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_shader(std::string v_format, std::str
   return get_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans, module);
 }
 
+
+
 GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f_format,std::string g_format, std::string v_comb, std::string f_comb, bool trans, SFO module, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
+
+  
   ShaderModule *mod = 0;
   if (module.id!=-1)
     mod = find_shader_module(e, module);
@@ -194,6 +198,7 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f
     fragment_c = find_uber(e, f_c);
 
   ShaderPriv2 *p = (ShaderPriv2*)priv;
+  //std::cout << "p->count=" << p->count << std::endl;
   if (!p->file)
     {
       std::cout << "ERROR: Call Shader::load before get_shader()" << std::endl;
@@ -208,10 +213,13 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f
   if (p->seq)
     p->ids[p->count] = p->seq->GetShader(v_format, f_format, g_format, v_vec, f_vec, trans, mod,vertex_c,fragment_c, v_defines, f_defines, v_shader, f_shader);
   p->count++;
+  //std::cout << "p->count=" << p->count << std::endl;
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->shader_privs[p->count-1] = p;
   GameApi::SH sh;
   sh.id = p->count-1;
+  //std::cout << "returning:" << sh.id << std::endl;
+  
   return sh;
 }
 EXPORT void GameApi::ShaderApi::use(GameApi::SH shader)
