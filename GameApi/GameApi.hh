@@ -328,6 +328,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  
   ML disable_polygons(ML ml);
   ML print_deps(ML ml, int num);
   ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);
@@ -558,6 +559,8 @@ public:
   void execute_ml(EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
   void event_ml(ML ml, const Event &e);
   IMPORT ML array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
+  IMPORT ML slow_start_array_ml(GameApi::EveryApi &ev, std::vector<ML> vec, int max_ticks);
+  IMPORT ML filter_execute_array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
   IMPORT ML or_elem_ml(GameApi::EveryApi &ev, ML m1, ML m2);
   IMPORT FML array_fml(std::vector<FML> vec);
   //IMPORT ML timing_ml(std::vector<ML> vec, float duration);
@@ -1504,6 +1507,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT progressmaterial(MT nxt, void (*fptr)(void*), void*data);
   IMPORT SMT ss_def(EveryApi &ev);
   IMPORT SMT screenspace_bloom(EveryApi &ev, SMT next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount);
   IMPORT SMT generic_screenspace_material00(EveryApi &ev, SMT next, SHI vertex, SHI fragment);
@@ -2507,7 +2511,7 @@ public:
   P gltf_load( EveryApi &ev, TF model, int mesh_index, int prim_index );
   P gltf_load_nr( EveryApi &ev, TF model, int mesh_index, int prim_index );
   BM gltf_load_bitmap( GameApi::EveryApi &ev, TF model, int image_index );
-  ARR material_extractor_p(P p, int start_index, int end_index);
+  ARR material_extractor_p(P p, int start_index, int end_index, int num_slots, int current_slot);
   ARR material_extractor_bm(P p, int start_index, int end_index);
   ARR material_extractor_mt(EveryApi &ev, P p, float mix, int start_index, int end_index);
   MT material_index(EveryApi &ev, std::vector<MT> vec, int index);
@@ -2529,7 +2533,7 @@ public:
   P filter_invisible(P p, float size);
   std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix, int delta=0);
   
-  ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts);
+  ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts, int ticks);
   ML load_scene(EveryApi &ev, std::string url, int sx, int sy);
 
   CG curve_group_from_anim(MA ma, float start_time, float end_time);
@@ -2578,7 +2582,7 @@ public:
   IMPORT P mesh_resize(P p, float start_x, float end_x, float start_y, float end_Y, float start_z, float end_z);
   
   IMPORT P texture_splitter(P p, int start_index, int end_index);
-  IMPORT P texture_splitter2(P p, int num);
+  IMPORT P texture_splitter2(P p, int num, int num_slots, int current_slot);
   IMPORT P replace_texture(P p, BM bm, int num);
   IMPORT P texture_storage(P p, int texture_sx, int texture_sy);
   IMPORT P light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z);

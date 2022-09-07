@@ -3,6 +3,8 @@
 
 #include "GameApi_low.hh"
 
+extern bool g_filter_execute;
+
 int ArrayRender::NumVertices(FaceCollection &coll)
 {
   return coll.NumFaces()*coll.NumPoints(0);
@@ -639,6 +641,7 @@ void ArrayRender::Prepare()
 }
 void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int texcoordframe, int vertex_pos, int vertex_size)
 {
+  if (g_filter_execute) return;
   OpenglLowApi *ogl = g_low->ogl;
 #ifdef VAO
   ogl->glBindVertexArray(vao[0]);
@@ -719,6 +722,7 @@ void ArrayRender::Render(int vertexframe, int normalframe, int colorframe, int t
 
 void ArrayRender::Render(bool normal, bool color, bool texcoord, int vertex_pos, int vertex_size)
 {
+  if (g_filter_execute) return;
   OpenglLowApi *ogl = g_low->ogl;
   ogl->glEnableVertexAttribArray(0);
   ogl->glEnableVertexAttribArray(1);
