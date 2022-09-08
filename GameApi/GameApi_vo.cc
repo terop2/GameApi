@@ -2014,6 +2014,7 @@ public:
 
   virtual void Prepare() { 
     Random r;
+    int dummy_counter = 0;
     for(int i=0;i<numpoints;i++)
       {
 	float xx = r.next_float();
@@ -2029,6 +2030,9 @@ public:
 	bool b = obj->Inside(p);
 	if (b) points.push_back(p);
 	else i--;
+
+	dummy_counter++;
+	if (dummy_counter>numpoints*3) break;
       }
   }
   virtual void HandleEvent(MainLoopEvent &event) { }
