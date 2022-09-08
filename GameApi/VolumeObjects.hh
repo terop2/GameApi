@@ -186,6 +186,28 @@ public:
   virtual ~FloatVolumeObject() { }
 };
 
+class JuliaFloatVolumeObject : public FloatVolumeObject
+{
+public:
+  JuliaFloatVolumeObject(Point2d c, float limit) : c(c),limit(limit) { }
+  float FloatValue(Point x) const;
+private:
+  Point2d c;
+  float limit;
+};
+
+class MandelbrotFloatVolumeObject : public FloatVolumeObject
+{
+public:
+  MandelbrotFloatVolumeObject(Point2d x, float limit) : x(x),limit(limit) { }
+  float FloatValue(Point c) const;
+private:
+  Point2d x;
+  float limit;
+};
+
+
+
 class MinDistFloatVolume : public FloatVolumeObject
 {
 public:

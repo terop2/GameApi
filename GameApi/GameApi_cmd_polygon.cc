@@ -68,12 +68,28 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "std::string", "int" },
 			 { "ev", "http://tpgames.org/example.obj", "10" },
 			 "P", "polygon_api", "p_url"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_nr,
+			 "p_url_nr",
+			 { "ev", "url", "count" },
+			 { "EveryApi&", "std::string", "int" },
+			 { "ev", "http://tpgames.org/example.obj", "10" },
+			 "P", "polygon_api", "p_url_nr"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl,
 			 "p_mtl",
 			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
 			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600" },
 			 "P", "polygon_api", "p_mtl"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_nr,
+			 "p_mtl_nr",
+			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
+			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
+			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600" },
+			 "P", "polygon_api", "p_mtl_nr"));
+  
 #ifndef STABLE
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl2,

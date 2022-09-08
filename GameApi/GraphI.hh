@@ -2557,6 +2557,56 @@ public:
 };
 
 
+class MarchingCubesInputData
+{
+public:
+  virtual int start_x() const=0;
+  virtual int end_x() const=0;
+  virtual int start_y() const=0;
+  virtual int end_y() const=0;
+  virtual int start_z() const=0;
+  virtual int end_z() const=0;
+
+  virtual int startcell_x() const=0;
+  virtual int startcell_y() const=0;
+  virtual int startcell_z() const=0;
+  
+  virtual bool Map(int x, int y, int z) const=0;
+  virtual Vector gradient(int x, int y, int z) const=0;
+};
+
+class MarchingCubesCellInputData
+{
+public:
+  virtual bool Map(bool x, bool y, bool z) const=0;
+  virtual Vector gradient(bool x, bool y, bool z) const=0;
+};
+
+class MarchingCubesCellEdge
+{
+public:
+  virtual bool start(unsigned char c1, unsigned char c2)=0;
+  virtual bool end(unsigned char c1, unsigned char c2)=0;
+  virtual Point pos(unsigned char c1, unsigned char c2)=0;
+  virtual Vector gradient(unsigned char c1, unsigned char c2)=0;
+};
+
+class MarchingCubesCellPolygon
+{
+public:
+  virtual int NumPoints() const=0;
+  virtual Point FacePoint(int point) const=0;
+  virtual Vector PointNormal(int point) const=0;
+};
+
+class MarchingCubesMesh
+{
+public:
+  virtual int NumPolygons(int x, int y, int z) const=0; // returns 0..4
+  virtual MarchingCubesCellPolygon *Polygon(int x, int y, int z, int poly_num) const=0;
+};
+
+
 
 #endif
 

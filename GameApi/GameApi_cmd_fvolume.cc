@@ -96,6 +96,20 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "FO", "float" },
 			 { "", "0.1" },
 			 "VO", "vector_volume_api", "normal2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::julia,
+			 "fo_julia",
+			 { "c_x", "c_y", "limit" },
+			 { "float", "float", "float" },
+			 { "0.4", "0.233", "5.0" },
+			 "FO", "float_volume_api", "julia"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::mandelbrot,
+			 "fo_mandelbrot",
+			 { "x_x", "x_y", "limit" },
+			 { "float", "float", "float" },
+			 { "0.4", "0.233", "5.0" },
+			 "FO", "float_volume_api", "mandelbrot"));
+  
 #if 0
   // doesnt work with threads
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::integrate_render,
