@@ -57,7 +57,7 @@ echo "</pre>";
 
 <apptitle><a href="view.php">The 3d model viewer</a></apptitle>
 <br>
-<div style="display:flex">
+<div style="display:flex" id="dp">
 <div id="div2" style="display:none"></div>
 <!--/div-->
 <div style="margin-left: 30px; float:left; display:block;">
@@ -131,7 +131,7 @@ Vue.component('apptitle', {
        return {
           }
         },
-	template: `<div class="block"><div class='lab'><h1 class="customfont"><slot></slot></h1></div></div>`
+	template: `<div class="block"><div class='lab' id='lab'><h1 class="customfont"><slot></slot></h1></div></div>`
  });
 
 Vue.component('appsubmitbutton', {
@@ -579,7 +579,7 @@ function strfy(arr)
 
 </script>
 <style>
-.lab { width:820px; height: 30px; text-align:center; }
+.lab { width:70%; height: 30px; text-align:center; }
 .canvas { border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px; }
 .block { display: block;   }
 .info { margin: auto; text-align: left; padding: 3px; }
@@ -1594,6 +1594,15 @@ function resize_event(event)
   var wd = window.innerWidth;
   var hd = window.innerHeight;
 
+  var mobile = false;
+  if (navigator.userAgentData.mobile==true) {
+     mobile=true;
+     var d = document.getElementById("dp");
+     d.style="display:block";
+     var d2 = document.getElementById("lab");
+     d2.style="width:100%";
+  }
+
   wd-=120;
   
 
@@ -1612,8 +1621,11 @@ function resize_event(event)
   var scale;
   if (s_x<s_y) scale=s_x; else scale=s_y;
 
+  if (mobile) { scale=wd*3.5/2/w; }
+
   var scale_x = w*scale;
   var scale_y = h*scale;
+
 
   var elem = document.getElementById("canvas");
   elem.style.width = scale_x.toString() + "px";

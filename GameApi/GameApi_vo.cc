@@ -718,6 +718,23 @@ private:
   float start, end;
 };
 
+EXPORT GameApi::FO GameApi::FloatVolumeApi::julia(float c_x, float c_y, float limit)
+{
+  Point2d c;
+  c.x = c_x;
+  c.y = c_y;
+  return add_float_volume(e, new JuliaFloatVolumeObject(c,limit));
+}
+
+EXPORT GameApi::FO GameApi::FloatVolumeApi::mandelbrot(float x_x, float x_y, float limit)
+{
+  Point2d x;
+  x.x = x_x;
+  x.y = x_y;
+  return add_float_volume(e, new MandelbrotFloatVolumeObject(x,limit));
+}
+
+
 EXPORT GameApi::O GameApi::FloatVolumeApi::subvolume(FO f, float start_range, float end_range)
 {
   FloatVolumeObject *ff = find_float_volume(e, f);

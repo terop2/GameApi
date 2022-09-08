@@ -29756,7 +29756,7 @@ public:
 
     GameApi::P p;
     if (!b) {
-      p = ev.polygon_api.load_model_all_no_cache(stream, 300);
+      p = ev.polygon_api.load_model_all_no_cache(stream, 300,false);
     } else {
 
       // TODO, SOMETHING WRONG HERE; parse_mtl was changed to have data instead of mtl_filename when our filesystem disappeared for cookies
@@ -29765,7 +29765,7 @@ public:
       int s = mat.size();
       for(int i=0;i<s;i++) { materials.push_back(mat[i].material_name); }
       
-      p = ev.polygon_api.load_model_all_no_cache_mtl(stream, 300, materials);
+      p = ev.polygon_api.load_model_all_no_cache_mtl(stream, 300, materials,false);
     }
     // possible problem, p_ds_inv doesnt pass flags
     GameApi::DS ds = ev.polygon_api.p_ds_inv(p);

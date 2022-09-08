@@ -8,6 +8,8 @@
 #include <atomic>
 
 
+GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
+extern Matrix g_last_resize;
 
 
 
@@ -1071,16 +1073,16 @@ EXPORT GameApi::P GameApi::PolygonApi::p_empty()
 }
 LoadStream *load_from_vector(std::vector<unsigned char> vec);
 
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename,  int count)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename,  int count, bool nr)
 {
   std::ifstream data(filename.c_str());
   std::vector<unsigned char> vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
   LoadStream *stream = load_from_vector(vec2);
-  return load_model_all_no_cache(stream,count);
+  return load_model_all_no_cache(stream,count,nr);
 }
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(LoadStream *file_data, int count)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(LoadStream *file_data, int count, bool nr)
 {
 
 
@@ -1097,21 +1099,26 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(LoadStream *file_
       vec.push_back(model);
     }
   GameApi::P obj = or_array2(vec);
-  GameApi::P resize = resize_to_correct_size(obj);
-  return resize;
+  if (!nr) {
+    GameApi::P resize = resize_to_correct_size(obj);
+    return resize;
+  } else {
+    GameApi::P resize = resize_to_correct_size2(e,obj,&g_last_resize);
+    return resize;
+  }
 
 }
 
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names, bool nr)
 {
   std::ifstream data(filename.c_str());
   std::vector<unsigned char> vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
   LoadStream *stream = load_from_vector(vec2);
-  return load_model_all_no_cache_mtl(stream,count,material_names);
+  return load_model_all_no_cache_mtl(stream,count,material_names,nr);
 }
-EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *file_data, int count, std::vector<std::string> material_names)
+EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *file_data, int count, std::vector<std::string> material_names, bool nr)
 {
   int s=count;
   if (s>700) {
@@ -1128,8 +1135,13 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *f
 	vec = or_elem(vec,model);
       }
     GameApi::P obj = vec; //or_array2(vec);
-    GameApi::P resize = resize_to_correct_size(obj);
-    return resize;
+    if (!nr) {
+      GameApi::P resize = resize_to_correct_size(obj);
+      return resize;
+    } else {
+      GameApi::P resize = resize_to_correct_size2(e,obj,&g_last_resize);
+      return resize;
+    }
   } else {
     // This eats more memory, but works faster.
     std::vector<P> vec;
@@ -1142,8 +1154,13 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *f
 	vec.push_back(model);
       }
     GameApi::P obj = or_array2(vec);
-    GameApi::P resize = resize_to_correct_size(obj);
-    return resize;      
+    if (!nr) {
+      GameApi::P resize = resize_to_correct_size(obj);
+      return resize;
+    } else {      
+      GameApi::P resize = resize_to_correct_size2(e,obj,&g_last_resize);
+      return resize;
+    }
   }
 }
 
@@ -1350,7 +1367,7 @@ LoadStream *load_from_url_stream(std::string url);
 class NetworkedFaceCollection : public FaceCollection
 {
 public:
-  NetworkedFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage, int count) : e(e), ev(ev), url(url), homepage(homepage), count(count), empty(empty)
+  NetworkedFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage, int count, bool nr) : e(e), ev(ev), url(url), homepage(homepage), count(count), empty(empty),nr(nr)
   {
     current = empty;
     filled = 0;
@@ -1403,7 +1420,7 @@ public:
     delete stream;
     stream = load_from_vector(vec);
 #endif
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache(stream, count);
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache(stream, count,nr);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -1444,12 +1461,13 @@ private:
   FaceCollection *filled;
   FaceCollection *current;
   LoadStream *stream=0;
+  bool nr;
 };
 
 class NetworkedFaceCollectionMTL : public FaceCollection
 {
 public:
-  NetworkedFaceCollectionMTL(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage, int count, std::vector<std::string> material_names) : e(e), ev(ev), url(url), homepage(homepage), count(count), empty(empty), material_names(material_names)
+  NetworkedFaceCollectionMTL(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string url, std::string homepage, int count, std::vector<std::string> material_names, bool nr) : e(e), ev(ev), url(url), homepage(homepage), count(count), empty(empty), material_names(material_names),nr(nr)
   {
     current = empty;
     filled = 0;
@@ -1501,7 +1519,7 @@ public:
     std::vector<unsigned char> vec(ptr->begin(),ptr->end());
     LoadStream *stream = load_from_vector(vec);
 #endif
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
+    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names,nr);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
     current = filled;
@@ -1543,6 +1561,7 @@ private:
   FaceCollection *filled;
   FaceCollection *current;
   std::vector<std::string> material_names;
+  bool nr;
 };
 
 void MTL_CB(void *data);
@@ -1693,7 +1712,7 @@ public:
     if (done_count<=0)
       free_extra_mem();
   }
-  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump)
+  NetworkedFaceCollectionMTL2(GameApi::Env &e, GameApi::EveryApi &ev, FaceCollection *empty, std::string obj_url, std::string homepage, int count, std::string mtl_url, std::string url_prefix, bool cached, bool load_d, bool load_bump, bool nr) : e(e), ev(ev), url(obj_url), homepage(homepage), mtl_url(mtl_url), url_prefix(url_prefix), count(count), empty(empty),load_d(load_d), load_bump(load_bump),nr(nr)
   {
     int id1 = CalcUrlIndex(mtl_url);
     SetupProgress(id1, 15);
@@ -2098,7 +2117,7 @@ public:
   int c = get_current_block();
   set_current_block(-1);
     
-    GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names);
+  GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names,nr);
     set_current_block(c);
     FaceCollection *coll = find_facecoll(e, p);
     filled = coll;
@@ -2174,6 +2193,7 @@ public:
   bool load_d, load_bump;
   LoadStream *stream = 0;
   int done_count=1;
+  bool nr;
 };
 
 void MTL_CB(void *data)
@@ -2470,7 +2490,19 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int 
   set_current_block(-1);
   P p = p_empty();
   FaceCollection *emp = find_facecoll(e, p);
-  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count,false),1); 
+  FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
+  set_current_block(c);
+  return p2;
+}
+EXPORT GameApi::P GameApi::PolygonApi::p_url_nr(EveryApi &ev, std::string url, int count)
+{
+  int c = get_current_block();
+  set_current_block(-1);
+  P p = p_empty();
+  FaceCollection *emp = find_facecoll(e, p);
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollection(e,ev, emp, url, gameapi_homepageurl, count,true),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
   set_current_block(c);
@@ -2482,7 +2514,7 @@ EXPORT GameApi::P GameApi::PolygonApi::p_url_mtl(EveryApi &ev, std::string url, 
   set_current_block(-1);
   P p = p_empty();
   FaceCollection *emp = find_facecoll(e, p);
-  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL(e,ev, emp, url, gameapi_homepageurl, count,material_names),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL(e,ev, emp, url, gameapi_homepageurl, count,material_names,false),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll),1);
   set_current_block(c);
@@ -2499,7 +2531,23 @@ EXPORT GameApi::P GameApi::PolygonApi::p_mtl(EveryApi &ev, std::string obj_url, 
   std::string key = obj_url + mtl_url + prefix + hash.str();
   bool cached = find_data(key)!=-1;
   FaceCollection *emp = find_facecoll(e, p);
-  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,false,false),1); 
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,false,false,false),1); 
+  FaceCollection *coll = find_facecoll(e,p1);
+  GameApi::P p2 = add_polygon2(e, new PrepareCache(e,key,coll),1);
+  set_current_block(c);
+  return p2; // PREPARECACHE DISABLED.
+}
+EXPORT GameApi::P GameApi::PolygonApi::p_mtl_nr(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count)
+{
+  int c = get_current_block();
+  set_current_block(-1);
+  P p = p_empty();
+  std::stringstream hash;
+  hash << g_script_hash;
+  std::string key = obj_url + mtl_url + prefix + hash.str();
+  bool cached = find_data(key)!=-1;
+  FaceCollection *emp = find_facecoll(e, p);
+  GameApi::P p1 = add_polygon2(e, new NetworkedFaceCollectionMTL2(e,ev, emp, obj_url, gameapi_homepageurl, count,mtl_url,prefix,cached,false,false,true),1); 
   FaceCollection *coll = find_facecoll(e,p1);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,key,coll),1);
   set_current_block(c);
@@ -14510,6 +14558,23 @@ GameApi::ML GameApi::PolygonApi::p_mtl2_prepare(P p)
 GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
 {
   GameApi::P p = p_mtl(ev,obj_url,mtl_url, prefix, count);
+  GameApi::ARR parr = material_extractor_p(p, start_index, end_index,1,0);
+  GameApi::ARR matarr = p_mtl2_materials(ev,p);
+  GameApi::ARR matarr2 = material_extractor_mt(ev,p,mix, start_index, end_index);
+  GameApi::ARR bmarr = material_extractor_bm(p, start_index, end_index);
+  GameApi::ML ml = p_mtl2_prepare(p);
+  ArrayType *t = new ArrayType;
+  t->vec.push_back(p.id);
+  t->vec.push_back(parr.id);
+  t->vec.push_back(matarr.id);
+  t->vec.push_back(matarr2.id);
+  t->vec.push_back(bmarr.id);
+  t->vec.push_back(ml.id);
+  return add_array(e,t);
+}
+GameApi::ARR GameApi::PolygonApi::p_mtl2_nr(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
+{
+  GameApi::P p = p_mtl_nr(ev,obj_url,mtl_url, prefix, count);
   GameApi::ARR parr = material_extractor_p(p, start_index, end_index,1,0);
   GameApi::ARR matarr = p_mtl2_materials(ev,p);
   GameApi::ARR matarr2 = material_extractor_mt(ev,p,mix, start_index, end_index);

@@ -2109,7 +2109,9 @@ class FloatVolumeApi
 {
 public:
 	IMPORT FloatVolumeApi(Env &e) : e(e) { }
-	IMPORT FO function(std::function<float(float x, float y, float z)> f);
+  IMPORT FO julia(float c_x, float c_y, float limit);
+  IMPORT FO mandelbrot(float x_x, float x_y, float limit);
+  IMPORT FO function(std::function<float(float x, float y, float z)> f);
 	IMPORT FO from_volume(O o, float false_val, float true_val);
 	IMPORT FO from_float_bitmap(FB bm,float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
 	IMPORT FO distance();
@@ -2561,13 +2563,16 @@ public:
 	IMPORT P p_empty();
         IMPORT P load_model(std::string filename, int obj_num);
   IMPORT P load_model_all(std::string filename, int count);
-  IMPORT P load_model_all_no_cache(std::string filename, int count);
-  IMPORT P load_model_all_no_cache(LoadStream * file_data, int count);
-  IMPORT P load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names);
-  IMPORT P load_model_all_no_cache_mtl(LoadStream * file_data, int count, std::vector<std::string> material_names);
+  IMPORT P load_model_all_no_cache(std::string filename, int count, bool nr);
+  IMPORT P load_model_all_no_cache(LoadStream * file_data, int count, bool nr);
+  IMPORT P load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names, bool nr);
+  IMPORT P load_model_all_no_cache_mtl(LoadStream * file_data, int count, std::vector<std::string> material_names, bool nr);
   IMPORT P p_url(EveryApi &ev, std::string url, int count);
+  IMPORT P p_url_nr(EveryApi &ev, std::string url, int count);
   IMPORT P p_mtl(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
+  IMPORT P p_mtl_nr(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count);
   IMPORT ARR p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix);
+  IMPORT ARR p_mtl2_nr(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix);
   IMPORT ARR p_mtl_d(P p);
   IMPORT ARR p_mtl_bump(P p);
   IMPORT P p_url_mtl(EveryApi &ev, std::string url, int count, std::vector<std::string> material_names);

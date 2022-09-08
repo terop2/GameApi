@@ -331,3 +331,78 @@ Vector FloatVolumeObject::FloatNormal(Point p) const
   Vector vv = { dx,dy,dz };
   return vv;
 }
+
+float JuliaFloatVolumeObject::FloatValue(Point x) const
+{
+  float z = x.z;
+  int zz = z;
+  float zd = z-zz;
+
+  float x_x = x.x;
+  float x_y = x.y;
+  float c_x = c.x;
+  float c_y = c.y;
+  
+  for(int i=0;i<zz;i++) {
+    float aa = x_x*x_x-x_y*x_y;
+    float bb = 2.0*x_x*x_y;
+    aa += c_x;
+    bb += c_y;
+    x_x = aa;
+    x_y = bb;
+  }
+  float start_x = x_x;
+  float start_y = x_y;
+
+    float aa = x_x*x_x-x_y*x_y;
+    float bb = 2.0*x_x*x_y;
+    aa += c_x;
+    bb += c_y;
+    x_x = aa;
+    x_y = bb;
+
+  float end_x = x_x;
+  float end_y = x_y;
+  float middle_x = (1.0-zd)*start_x + zd*end_x;
+  float middle_y = (1.0-zd)*start_y + zd*end_y;
+  float d = sqrt(middle_x*middle_x+middle_y*middle_y)-limit;
+  return d;
+}
+
+float MandelbrotFloatVolumeObject::FloatValue(Point c) const
+{
+  float z = c.z;
+  int zz = z;
+  float zd = z-zz;
+
+  float x_x = x.x;
+  float x_y = x.y;
+  float c_x = c.x;
+  float c_y = c.y;
+  
+  for(int i=0;i<zz;i++) {
+    float aa = x_x*x_x-x_y*x_y;
+    float bb = 2.0*x_x*x_y;
+    aa += c_x;
+    bb += c_y;
+    x_x = aa;
+    x_y = bb;
+  }
+  float start_x = x_x;
+  float start_y = x_y;
+
+    float aa = x_x*x_x-x_y*x_y;
+    float bb = 2.0*x_x*x_y;
+    aa += c_x;
+    bb += c_y;
+    x_x = aa;
+    x_y = bb;
+
+  float end_x = x_x;
+  float end_y = x_y;
+  float middle_x = (1.0-zd)*start_x + zd*end_x;
+  float middle_y = (1.0-zd)*start_y + zd*end_y;
+  float d = sqrt(middle_x*middle_x+middle_y*middle_y)-limit;
+  return d;
+}
+
