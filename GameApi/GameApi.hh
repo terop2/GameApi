@@ -2109,6 +2109,7 @@ class FloatVolumeApi
 {
 public:
 	IMPORT FloatVolumeApi(Env &e) : e(e) { }
+  IMPORT FO light(float dist);
   IMPORT FO julia(float c_x, float c_y, float limit);
   IMPORT FO mandelbrot(float x_x, float x_y, float limit);
   IMPORT FO function(std::function<float(float x, float y, float z)> f);

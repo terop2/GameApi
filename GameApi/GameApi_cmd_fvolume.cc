@@ -90,6 +90,12 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "[FO]", "float" },
 			 { "", "0.01" },
 			 "FO", "float_volume_api", "smooth"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::light,
+			 "fo_light",
+			 { "dist" },
+			 { "float" },
+			 { "600.0" },
+			 "FO", "float_volume_api", "light"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::normal2,
 			 "fo_normal",
 			 { "fo", "stepsize" },

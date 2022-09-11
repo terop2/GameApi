@@ -250,6 +250,8 @@ public:
   virtual int SizeY() const=0;
   virtual int SizeZ() const=0;
   virtual C Map(int x, int y, int z) const=0;
+  virtual unsigned int Color(int x, int y, int z) const { return 0xffffffff; }
+  virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; return v; }
   virtual ~Voxel() { }
 };
 
@@ -1013,6 +1015,7 @@ public:
   virtual int Size() const=0;
   virtual Matrix Index(int i) const=0;
   virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
 };
 
 class PlaneShape
@@ -1297,6 +1300,7 @@ public:
   virtual int NumPoints() const=0;
   virtual Point Pos(int i) const=0;
   virtual unsigned int Color(int i) const=0;
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
   virtual ~PointsApiPoints() {}
 };
 

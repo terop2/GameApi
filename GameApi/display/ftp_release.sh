@@ -3,7 +3,7 @@ copy_it()
      cp $1 /home/terop/html/meshpage.org/
      echo "copying $1 to meshpage.org"
 }
-
+copy_it gameapi.js
 copy_it ini_print.php
 copy_it save_grab.php
 copy_it backend.php 

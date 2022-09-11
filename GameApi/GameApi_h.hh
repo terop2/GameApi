@@ -533,7 +533,8 @@ struct PointArray2
 struct PointArray3
 {
   float *array;
-  unsigned int *color;
+  unsigned int *color=0;
+  Vector *normal=0;
   int numpoints;
   Low_GLuint buffer[2];
   Low_GLuint vao[1];
@@ -542,7 +543,8 @@ struct PointArray3
 struct MatrixArray3
 {
   float *array;
-  unsigned int *color;
+  unsigned int *color=0;
+  Vector *normal=0;
   int numpoints;
   Low_GLuint buffer[2];
   Low_GLuint vao[1];

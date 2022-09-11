@@ -15861,7 +15861,22 @@ public:
     }
     return false_value;
   }
-
+  virtual unsigned int Color(int x, int y, int z) const
+  {
+    float xx = float(x)/sx*(end_x-start_x)+start_x;
+    float yy = float(y)/sy*(end_y-start_y)+start_y;
+    float zz = float(z)/sz*(end_z-start_z)+start_z;
+    Point p(xx,yy,zz);
+    return obj->ColorValue(p).Pixel();
+  }
+  virtual Vector Normal(int x, int y, int z) const
+  {
+    float xx = float(x)/sx*(end_x-start_x)+start_x;
+    float yy = float(y)/sy*(end_y-start_y)+start_y;
+    float zz = float(z)/sz*(end_z-start_z)+start_z;
+    Point p(xx,yy,zz);
+    return obj->Normal(p);
+  }
 private:
   Voxel<int> *next;
   VolumeObject *obj;
@@ -16039,6 +16054,8 @@ public:
     float dy = end_y-start_y;
     float dz = end_z-start_z;
     pts.resize(count);
+    normal.resize(count);
+    color.resize(count);
     for(int i=0;i<sx;i++) {
       p.x = float(i)/sx*dx+start_x;
       for(int j=0;j<sy;j++) {
@@ -16050,22 +16067,22 @@ public:
 	      p.z = float(k)/sz*dz+start_z;
 	      int val_mx = vx->Map(i-1,j,k);
 	      bool b_mx = val_mx>=0 && val_mx<count;
-	      if (!b_mx) { pts[val].push_back(p); continue; }
+	      if (!b_mx) { pts[val].push_back(p); Vector n = vx->Normal(i-1,j,k); normal[val].push_back(n); unsigned int c = vx->Color(i-1,j,k); color[val].push_back(c); continue; }
 	      int val_px = vx->Map(i+1,j,k);
 	      bool b_px = val_px>=0 && val_px<count;
-	      if (!b_px) { pts[val].push_back(p); continue; }
+	      if (!b_px) { pts[val].push_back(p); Vector n = vx->Normal(i+1,j,k); normal[val].push_back(n); unsigned int c = vx->Color(i+1,j,k); color[val].push_back(c); continue; }
 	      int val_my = vx->Map(i,j-1,k);
 	      bool b_my = val_my>=0 && val_my<count;
-	      if (!b_my) { pts[val].push_back(p); continue; }
+	      if (!b_my) { pts[val].push_back(p); Vector n = vx->Normal(i,j-1,k); normal[val].push_back(n); unsigned int c = vx->Color(i,j-1,k); color[val].push_back(c); continue; }
 	      int val_py = vx->Map(i,j+1,k);
 	      bool b_py = val_py>=0 && val_py<count;
-	      if (!b_py) { pts[val].push_back(p); continue; }
+	      if (!b_py) { pts[val].push_back(p); Vector n = vx->Normal(i,j+1,k); normal[val].push_back(n); unsigned int c = vx->Color(i,j+1,k); color[val].push_back(c); continue; }
 	      int val_mz = vx->Map(i,j,k-1);
 	      bool b_mz = val_mz>=0 && val_mz<count;
-	      if (!b_mz) { pts[val].push_back(p); continue; }
+	      if (!b_mz) { pts[val].push_back(p); Vector n = vx->Normal(i,j,k-1); normal[val].push_back(n); unsigned int c = vx->Color(i,j,k-1); color[val].push_back(c); continue; }
 	      int val_pz = vx->Map(i,j,k+1);
 	      bool b_pz = val_pz>=0 && val_pz<count;
-	      if (!b_pz) { pts[val].push_back(p); continue; }
+	      if (!b_pz) { pts[val].push_back(p); Vector n = vx->Normal(i,j,k+1); normal[val].push_back(n); unsigned int c = vx->Color(i,j,k+1); color[val].push_back(c); continue; }
 	    }
 	  }
       }
@@ -16086,6 +16103,8 @@ public:
     float dy = end_y-start_y;
     float dz = end_z-start_z;
     pts.resize(count);
+    normal.resize(count);
+    color.resize(count);
     for(int i=0;i<sx;i++) {
       p.x = float(i)/sx*dx+start_x;
       for(int j=0;j<sy;j++) {
@@ -16097,22 +16116,22 @@ public:
 	      p.z = float(k)/sz*dz+start_z;
 	      int val_mx = vx->Map(i-1,j,k);
 	      bool b_mx = val_mx>=0 && val_mx<count;
-	      if (!b_mx) { pts[val].push_back(p); continue; }
+	      if (!b_mx) { pts[val].push_back(p); Vector n = vx->Normal(i-1,j,k); normal[val].push_back(n); unsigned int c = vx->Color(i-1,j,k); color[val].push_back(c); continue; }
 	      int val_px = vx->Map(i+1,j,k);
 	      bool b_px = val_px>=0 && val_px<count;
-	      if (!b_px) { pts[val].push_back(p); continue; }
+	      if (!b_px) { pts[val].push_back(p); Vector n = vx->Normal(i+1,j,k); normal[val].push_back(n); unsigned int c = vx->Color(i+1,j,k); color[val].push_back(c); continue; }
 	      int val_my = vx->Map(i,j-1,k);
 	      bool b_my = val_my>=0 && val_my<count;
-	      if (!b_my) { pts[val].push_back(p); continue; }
+	      if (!b_my) { pts[val].push_back(p); Vector n = vx->Normal(i,j-1,k); normal[val].push_back(n); unsigned int c = vx->Color(i,j-1,k); color[val].push_back(c); continue; }
 	      int val_py = vx->Map(i,j+1,k);
 	      bool b_py = val_py>=0 && val_py<count;
-	      if (!b_py) { pts[val].push_back(p); continue; }
+	      if (!b_py) { pts[val].push_back(p); Vector n = vx->Normal(i,j+1,k); normal[val].push_back(n); unsigned int c = vx->Color(i,j+1,k); color[val].push_back(c); continue; }
 	      int val_mz = vx->Map(i,j,k-1);
 	      bool b_mz = val_mz>=0 && val_mz<count;
-	      if (!b_mz) { pts[val].push_back(p); continue; }
+	      if (!b_mz) { pts[val].push_back(p); Vector n = vx->Normal(i,j,k-1); normal[val].push_back(n); unsigned int c = vx->Color(i,j,k-1); color[val].push_back(c); continue; }
 	      int val_pz = vx->Map(i,j,k+1);
 	      bool b_pz = val_pz>=0 && val_pz<count;
-	      if (!b_pz) { pts[val].push_back(p); continue; }
+	      if (!b_pz) { pts[val].push_back(p); Vector n = vx->Normal(i,j,k+1); normal[val].push_back(n); unsigned int c = vx->Color(i,j,k+1); color[val].push_back(c); continue; }
 	    }
 	  }
       }
@@ -16122,6 +16141,8 @@ public:
   PointsApiPoints *get(int val);
 public:
   std::vector<std::vector<Point> > pts;
+  std::vector<std::vector<Vector> > normal;
+  std::vector<std::vector<unsigned int> > color;
   Voxel<int> *vx;
   bool prepared;
   int count;
@@ -16154,7 +16175,11 @@ public:
   }
   virtual unsigned int Color(int i) const
   {
-    return 0xffffffff;
+    return pts.color[val][i];
+  }
+  virtual Vector Normal(int i) const
+  {
+    return pts.normal[val][i];
   }
 private:
   VoxelToPTS &pts;

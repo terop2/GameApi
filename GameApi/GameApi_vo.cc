@@ -689,6 +689,11 @@ EXPORT GameApi::FOA GameApi::FloatVolumeApi::prepare(GameApi::FO object,
   return add_point_array(e, arr);
 }
 
+EXPORT GameApi::FO GameApi::FloatVolumeApi::light(float dist)
+{
+  return add_float_volume(e, new LightFloatVolume(dist));
+}
+
 EXPORT void GameApi::FloatVolumeApi::render(FOA array)
 {
   OpenglLowApi *ogl = g_low->ogl;

@@ -186,6 +186,22 @@ public:
   virtual ~FloatVolumeObject() { }
 };
 
+class LightFloatVolume : public FloatVolumeObject
+{
+public:
+  LightFloatVolume(float dist) :dist(dist){ }
+  float FloatValue(Point p) const
+  {
+    float d = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
+    float di = (dist-d)/dist;
+    if (di>1.0) di=1.0;
+    if (di<0.0) di=0.0;
+    return di;
+  }
+private:
+  float dist;
+};
+
 class JuliaFloatVolumeObject : public FloatVolumeObject
 {
 public:

@@ -533,6 +533,7 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p)
   int num = arr2->Size();
   float *array = new float[num*16];
   unsigned int *color = new unsigned int[num];
+  Vector *normal = new Vector[num];
   for(int i=0;i<num;i++) {
     Matrix m = arr2->Index(i);
     float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
@@ -545,11 +546,13 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p)
       array[i*16+j] = m.matrix[j];
     }
     color[i] = swap_color(c);
+    normal[i] = arr2->Normal(i);
   }
   // note, this isnt done like pts, i.e. its not sent to gpu buffers.
   MatrixArray3 *arr = new MatrixArray3;
   arr->array = array;
   arr->color = color;
+  arr->normal = normal;
   arr->numpoints = num;
   return add_matrix_array3(e,arr);
 }
@@ -567,7 +570,8 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
   //ifndef THREADS0
   float *array = new float[numpoints*3];
   unsigned int *color = new unsigned int[numpoints];
-
+  Vector *normal = new Vector[numpoints];
+  
   for(int i=0;i<numpoints;i++)
     {
       Point p = pts->Pos(i);
@@ -576,10 +580,12 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
       array[i*3+1] = p.y;
       array[i*3+2] = p.z;
       color[i] = swap_color(c);
+      normal[i] = pts->Normal(i);
     }
   PointArray3 *arr = new PointArray3;
   arr->array = array;
   arr->color = color;
+  arr->normal = normal;
   arr->numpoints = numpoints;
 #else
   int num_threads = 4;

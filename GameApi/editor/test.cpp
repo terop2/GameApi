@@ -1454,7 +1454,8 @@ public:
 					      send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss2.str(),"Content-Type: text/plain", htmlfile);
 
 			
-					      std::string dockerdir = getenv("BUILDER_DOCKER_DIR");
+					      const char *doc = getenv("BUILDER_DOCKER_DIR");
+					      std::string dockerdir = doc?doc:"";
 					      std::string cmd;
 					      if (dockerdir!="") {
 					      cmd = std::string("/usr/share/chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
