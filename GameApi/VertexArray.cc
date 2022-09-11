@@ -1641,6 +1641,10 @@ void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
   for(int i=0;i<ss;i++) { vao[i]=ids.vao[i]; }
   pos_buffer=ids.pos_buffer;
   pos_buffer_matrix = ids.pos_buffer_matrix;
+  normals_buffer=ids.normals_buffer;
+  normals_buffer_matrix = ids.normals_buffer_matrix;
+  color_buffer=ids.color_buffer;
+  color_buffer_matrix = ids.color_buffer_matrix;
   //int a1 = ids.attrib_buffer.size();
   // todo, attrib & attribi buffers
 
@@ -1699,6 +1703,10 @@ void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
   for(int i=0;i<ss;i++) { ids.vao[i]=vao[i]; }
   ids.pos_buffer=pos_buffer;
   ids.pos_buffer_matrix = pos_buffer_matrix;
+  ids.normals_buffer=normals_buffer;
+  ids.normals_buffer_matrix = normals_buffer_matrix;
+  ids.color_buffer=color_buffer;
+  ids.color_buffer_matrix = color_buffer_matrix;
 
   int a1 = attrib_buffer.size();
   if (a1>0)
@@ -1776,6 +1784,10 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glGenBuffers(1,&buffers[6]);
   ogl->glGenBuffers(1, &pos_buffer);
   ogl->glGenBuffers(1, &pos_buffer_matrix);
+  ogl->glGenBuffers(1, &normals_buffer);
+  ogl->glGenBuffers(1, &normals_buffer_matrix);
+  ogl->glGenBuffers(1, &color_buffer);
+  ogl->glGenBuffers(1, &color_buffer_matrix);
   VertexArraySet::Polys *p = s.m_set[id];
   { // attrib buffers
   int ss = p->tri_attribs.size();
@@ -2173,6 +2185,10 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&buffers[6]);
   ogl->glDeleteBuffers(1,&pos_buffer);
   ogl->glDeleteBuffers(1,&pos_buffer_matrix);
+  ogl->glDeleteBuffers(1,&normals_buffer);
+  ogl->glDeleteBuffers(1,&normals_buffer_matrix);
+  ogl->glDeleteBuffers(1,&color_buffer);
+  ogl->glDeleteBuffers(1,&color_buffer_matrix);
 
   ogl->glDeleteBuffers(1,&buffers2[0]);
   ogl->glDeleteBuffers(1,&buffers2[1]);
@@ -2190,7 +2206,7 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&buffers3[5]);
   ogl->glDeleteBuffers(1,&buffers3[6]);
 }
-void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, int size)
+void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -2200,7 +2216,14 @@ void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, int 
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
 
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
-
+  if (normals) {
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer_matrix );
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
+  }
+  if (colors) {
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+  }
 
 #ifdef VAO
   ogl->glBindVertexArray(vao[1]);
@@ -2208,21 +2231,35 @@ void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, int 
 
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
-
+  if (normals) {
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer_matrix );
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
+  }
+  if (colors) {
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+  }
 #ifdef VAO
   ogl->glBindVertexArray(vao[2]);
 #endif
 
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Matrix) * size, positions, Low_GL_DYNAMIC_DRAW);
-
+  if (normals) {
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer_matrix );
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
+  }
+  if (colors) {
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+  }
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif
 
 
 }
-void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
+void RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -2232,6 +2269,15 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
 
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
+
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+  }
   
 #ifdef VAO
   ogl->glBindVertexArray(vao[1]);
@@ -2240,6 +2286,16 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+  }
+
+  
 
 
   
@@ -2251,6 +2307,14 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+  }
 
 
   
@@ -2262,7 +2326,7 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, int size)
 }
 std::map<Point*,bool> g_inst_map;
 std::map<Matrix*,bool> g_inst_map_matrix;
-void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int size)
+void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
   //std::cout << "render_instanced_matrix: " << size << std::endl;
@@ -2277,6 +2341,14 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   if (g_inst_map_matrix[positions]==false) {
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+    if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer_matrix );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Vector) * size, normals);
+    }
+    if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+    }
   }
   //#ifndef VAO    
   ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
@@ -2364,6 +2436,14 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   if (g_inst_map_matrix[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer_matrix );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Vector) * size, normals);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+  }
   }
 
 
@@ -2454,6 +2534,14 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   if (g_inst_map_matrix[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Matrix) * size, positions);
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer_matrix );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Vector) * size, normals);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+  }
   }
 
   //#ifndef VAO
@@ -2543,7 +2631,7 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, int s
 
 
 }
-void RenderVertexArray::render_instanced(int id, Point *positions, int size)
+void RenderVertexArray::render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
 #ifdef VAO
@@ -2555,6 +2643,14 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   if (g_inst_map[positions]==false) {
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+    if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Vector) * size, normals);
+    }
+    if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+    }
   }
     
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
@@ -2637,6 +2733,14 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   if (g_inst_map[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Vector) * size, normals);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+  }
   }
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   ogl->glVertexAttribDivisor(5, 1);
@@ -2715,6 +2819,14 @@ void RenderVertexArray::render_instanced(int id, Point *positions, int size)
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   if (g_inst_map[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
+  if (normals) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Vector) * size, normals);
+  }
+  if (colors) {
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+  }
   }
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   ogl->glVertexAttribDivisor(5, 1);

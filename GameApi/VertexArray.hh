@@ -223,6 +223,10 @@ struct RenderVertexArray_bufferids
   unsigned int buffers3[7];
   unsigned int pos_buffer;
   unsigned int pos_buffer_matrix;
+  unsigned int normals_buffer;
+  unsigned int normals_buffer_matrix;
+  unsigned int color_buffer;
+  unsigned int color_buffer_matrix;
   std::vector<unsigned int> attrib_buffer;
   std::vector<unsigned int> attrib_buffer2;
   std::vector<unsigned int> attrib_buffer3;
@@ -258,6 +262,10 @@ public:
     poly_count = rend.poly_count;
     pos_buffer = rend.pos_buffer;
     pos_buffer_matrix = rend.pos_buffer_matrix;
+    normals_buffer = rend.normals_buffer;
+    normals_buffer_matrix = rend.normals_buffer_matrix;
+    color_buffer = rend.color_buffer;
+    color_buffer_matrix = rend.color_buffer_matrix;
     attrib_buffer = rend.attrib_buffer;
     attrib_buffer2 = rend.attrib_buffer2;
     attrib_buffer2 = rend.attrib_buffer2;
@@ -272,10 +280,10 @@ public:
   void update_tri(int id, int buffer_id, int start, int end);
   void render(int id);
   void sort_blit(int id, Matrix in_MV);
-  void prepare_instanced(int id, Point *positions, int size);
-  void prepare_instanced_matrix(int id, Matrix *positions, int size);
-  void render_instanced(int id, Point *positions, int size);
-  void render_instanced_matrix(int id, Matrix *positions, int size);
+  void prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
+  void prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
+  void render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
+  void render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
   void update_buffers(RenderVertexArray_bufferids ids);
   void fetch_buffers(RenderVertexArray_bufferids &ids);
   void set_no_delete(bool b) { nodelete=b; }
@@ -293,6 +301,10 @@ public:
   int poly_count;
   unsigned int pos_buffer;
   unsigned int pos_buffer_matrix;
+  unsigned int normals_buffer;
+  unsigned int normals_buffer_matrix;
+  unsigned int color_buffer;
+  unsigned int color_buffer_matrix;
   std::vector<unsigned int> attrib_buffer;
   std::vector<unsigned int> attrib_buffer2;
   std::vector<unsigned int> attrib_buffer3;
