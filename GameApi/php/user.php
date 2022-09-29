@@ -586,6 +586,8 @@ function page_header( $pos )
    echo "</div>";
   //echo "<div class=\"separator\"></div>"; 
    echo "<div class=\"main\">";
+   echo "Once in a while some new technology appears that is so groundbreaking that markets fail to embrace it even though it is clearly the future.<p>";
+   echo "When you combine perfect execution with the groundbreaking technology then you know the future has arrived.";
 }
 function page_title( $str, $desc )
 {
