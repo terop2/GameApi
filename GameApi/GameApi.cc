@@ -8163,7 +8163,7 @@ public:
 	fragment.id = u_f.id; 
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
-	std::cout << "SHADER FUNCTIONS: " << e.v_shader_functions << "--" << e.f_shader_functions << std::endl;
+	//std::cout << "SHADER FUNCTIONS: " << e.v_shader_functions << "--" << e.f_shader_functions << std::endl;
 	if (e.sfo_id==-1)
 	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
 	else
