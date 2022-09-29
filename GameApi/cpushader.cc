@@ -349,9 +349,9 @@ public:
   virtual void Collect(CollectVisitor2 &vis) { }
   virtual void set_inner(int num, std::string value) { }
   virtual std::string get_webgl_header() const { return ""; }
-  virtual std::string get_win32_header() const { return ""; }
+  virtual std::string get_win32_header() const { return "@1"; }
   virtual std::string get_webgl_function() const { return ""; }
-  virtual std::string get_win32_function() const { return ""; }
+  virtual std::string get_win32_function() const { return "@1"; }
   virtual Bindings set_var(const Bindings &b) { return b; }
   virtual std::string get_flags() const { return ""; }
   virtual std::string func_name() const { return ""; }
@@ -640,7 +640,7 @@ public:
     vertex2.id = ee.us_vertex_shader;
     vertex2 = ev.uber_api.v_generic(vertex2,vertex->func_name(),vertex->get_flags());
     ee.us_vertex_shader = vertex2.id;
-#if OPENGL_ES
+#ifdef EMSCRIPTEN
     ii.set_inner(vertex, 0);
     std::string header = vertex->get_webgl_header();
     ii.set_inner(vertex, 1);
@@ -653,6 +653,7 @@ public:
     std::string function = vertex->get_win32_function();
     ee.v_shader_functions += header + function;
 #endif
+    //std::cout << "SHADER FUNCTIONS2: " << ee.v_shader_functions << std::endl;
     
     GameApi::US fragment2;
     fragment2.id = ee.us_fragment_shader;
@@ -666,7 +667,7 @@ public:
       fragment2 = ev.uber_api.f_generic(fragment2,fragment->func_name(), fragment->get_flags());
       //}
     ee.us_fragment_shader = fragment2.id;
-#if OPENGL_ES
+#ifdef EMSCRIPTEN
     ii.set_inner(fragment, 0);
     std::string header2 = fragment->get_webgl_header();
     ii.set_inner(fragment, 1);
@@ -681,6 +682,7 @@ public:
 
     ee.f_shader_functions += header2 + function2;
 #endif
+    // std::cout << "SHADER FUNCTIONS3: " << ee.f_shader_functions << std::endl;
     
       }
     
@@ -828,7 +830,7 @@ public:
       fragment2 = ev.uber_api.f_generic_flip(fragment2,fragment->func_name(), fragment->get_flags());
       //}
     ee.us_fragment_shader = fragment2.id;
-#if OPENGL_ES
+#ifdef EMSCRIPTEN
     ii.set_inner(fragment, 0);
     std::string header2 = fragment->get_webgl_header();
     ii.set_inner(fragment, 1);
@@ -1122,7 +1124,9 @@ public:
   GenericAnimShaderI(ShaderParameterI *params, std::string funcname, std::string shadercode, std::vector<ShaderI2*> child) : params(params), funcname(funcname), shadercode(shadercode), child(child) { }
   void divide()
   {
-    std::string s = shadercode;
+    if (!divide_done) {
+      //std::cout << "DIVIDE: " << shadercode << std::endl;
+      std::string s = shadercode;
     std::stringstream ss(s);
     std::string line;
     bool webgl = false;
@@ -1130,6 +1134,7 @@ public:
     int linenum = 0;
     while(std::getline(ss,line))
       {
+	//std::cout << "LINE: " << line << " " << webgl << " " << win32 << std::endl;
 	if (line=="") continue;
 	std::string word;
 	std::stringstream ss2(line);
@@ -1168,8 +1173,14 @@ public:
 	
 	linenum++;	
       }
+    }
+    //std::cout << "SIZES: " << shader_lines_win32.size() << std::endl;
+    divide_done = true;
   }
-  virtual void HeavyPrepare() { }
+  virtual void HeavyPrepare() {
+    divide();
+
+  }
   virtual void Collect(CollectVisitor2 &vis)
   {
     vis.register_obj(this);
@@ -1192,6 +1203,7 @@ public:
   }
   virtual std::string get_webgl_header() const
   {
+    const_cast<GenericAnimShaderI*>(this)->divide();
     std::string res;
     int s = uniform_lines_webgl.size();
     for(int i=0;i<s;i++)
@@ -1202,6 +1214,7 @@ public:
   }
   virtual std::string get_win32_header() const
   {
+    const_cast<GenericAnimShaderI*>(this)->divide();
     std::string res;
     int s = uniform_lines_win32.size();
     for(int i=0;i<s;i++)
@@ -1212,22 +1225,26 @@ public:
   }
   virtual std::string get_webgl_function() const
   {
+    const_cast<GenericAnimShaderI*>(this)->divide();
     std::string res;
     int s = shader_lines_webgl.size();
     for(int i=0;i<s;i++)
       {
 	res+=shader_lines_webgl[i] + "\n";
       }
+    //std::cout << "WIN32_FUNCTION2:" << res << std::endl;
     return res;
   }
   virtual std::string get_win32_function() const
   {
+    const_cast<GenericAnimShaderI*>(this)->divide();
     std::string res;
     int s = shader_lines_win32.size();
     for(int i=0;i<s;i++)
       {
 	res+=shader_lines_win32[i] + "\n";
       }
+    //std::cout << "WIN32_FUNCTION:" << res << std::endl;
     return res;
   }
   virtual Bindings set_var(const Bindings &b)
@@ -1235,7 +1252,7 @@ public:
     //std::cout << "set_var.." << std::endl;
     if (m_binding) return *m_binding;
     std::vector<std::string> *ptr;
-#ifdef OPENGL_ES
+#ifdef EMSCRIPTEN
     ptr = &uniform_lines_webgl;
 #else
     ptr = &uniform_lines_win32;
@@ -1357,6 +1374,7 @@ private:
   std::vector<Point> uvws;
   const Bindings *m_binding=0;
   std::string flags;
+  bool divide_done=false;
 };
 
 void LOAD_CB(void *);
@@ -1438,28 +1456,28 @@ public:
     if (res.id!=-1) {
     ShaderI2 *p = find_shaderI(e,res);
     return p->get_webgl_header();
-    } else return "";
+    } else return "@";
   }
   virtual std::string get_win32_header() const
   {
     if (res.id!=-1) {
     ShaderI2 *p = find_shaderI(e,res);
     return p->get_win32_header();
-    } else return "";
+    } else return "@";
   }
   virtual std::string get_webgl_function() const
   {
     if (res.id!=-1) {
     ShaderI2 *p = find_shaderI(e,res);
     return p->get_webgl_function();
-    } else return "";
+    } else return "@";
   }
   virtual std::string get_win32_function() const
   {
     if (res.id!=-1) {
     ShaderI2 *p = find_shaderI(e,res);
-    return p->get_win32_header();
-    } else return "";
+    return p->get_win32_function();
+    } else return "@";
   }
   virtual Bindings set_var(const Bindings &b)
   {
@@ -1473,14 +1491,14 @@ public:
     if (res.id!=-1) {
       ShaderI2 *p = find_shaderI(e,res);
       return p->get_flags();
-    } else return "";
+    } else return "@";
   }
   virtual std::string func_name() const
   {
     if (res.id!=-1) {
     ShaderI2 *p = find_shaderI(e,res);
     return p->func_name();
-    } else return "";
+    } else return "@";
   }
   virtual void execute(MainLoopEnv &e2)
   { 

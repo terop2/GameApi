@@ -8163,6 +8163,7 @@ public:
 	fragment.id = u_f.id; 
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
+	std::cout << "SHADER FUNCTIONS: " << e.v_shader_functions << "--" << e.f_shader_functions << std::endl;
 	if (e.sfo_id==-1)
 	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
 	else
@@ -17820,7 +17821,7 @@ bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
 public:
-  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename) : env(env), h2_script(h2_script), filename(filename) { g_update_download_bar=true;
+  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename, std::string homepage) : env(env), h2_script(h2_script), filename(filename), homepage(homepage) { g_update_download_bar=true;
       id = env.add_to_download_bar("gameapi_deploy.zip");
       env.set_download_progress(env.download_index_mapping(id), 0.0/8.0);
 
@@ -17903,6 +17904,12 @@ public:
       ss << htmlfile;
       ss << std::flush;
       ss.close();
+
+      std::fstream ss3((home+"\\_gameapi_builder\\gameapi_homepage.html").c_str(), std::ofstream::out);
+      ss3 << homepage;
+      ss3 << std::flush;
+      ss3.close();
+      
             env.set_download_progress(env.download_index_mapping(id), 4.0/8.0);
       }
     break;
@@ -18065,6 +18072,11 @@ public:
       ss << htmlfile;
       ss << std::flush;
       ss.close();
+
+      std::fstream ss3((home + "/.gameapi_builder/gameapi_homepage.html").c_str(), std::ofstream::out);
+      ss3 << homepage;
+      ss3 << std::flush;
+      ss3.close();
       env.set_download_progress(env.download_index_mapping(id), 4.0/8.0);
       }
     break;
@@ -18157,6 +18169,7 @@ private:
   int id;
   std::string h2_script; //Html *h2;
   std::string filename;
+  std::string homepage;
 };
 
 class SaveDeploy : public MainLoopItem
@@ -18175,7 +18188,7 @@ public:
     if (firsttime) {
       firsttime = false;
       h2->Prepare();
-      async_id = env.start_async(new SaveDeployAsync(env,h2->script_file(),filename));
+      async_id = env.start_async(new SaveDeployAsync(env,h2->script_file(),filename,h2->homepage()));
     }
   }
   virtual void execute(MainLoopEnv &e) { }
