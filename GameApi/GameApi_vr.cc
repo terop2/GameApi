@@ -45,6 +45,14 @@ public:
 #include <emscripten/html5.h>
 #endif
 
+extern Matrix g_last_resize;
+float eye_scale=1.0;
+
+GameApi::ML GameApi::MainLoopApi::vr_scale(GameApi::ML ml, float box300_to_meters_scale)
+{
+  eye_scale = box300_to_meters_scale/600.0;
+  return ml;
+}
 
 
 
