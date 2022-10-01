@@ -2811,7 +2811,9 @@ public:
     next->Prepare();
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
-#endif      
+#endif
+    if (url[url.size()-3]=='o'&&url[url.size()-2]=='g'&&url[url.size()-1]=='g') is_ogg=true; else is_ogg=false;
+    
     GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     //std::cout << "SONG SIZE: "<< ptr->size() << std::endl;
     vec = new std::vector<unsigned char>(ptr->begin(),ptr->end());
@@ -2830,7 +2832,8 @@ public:
       
 #endif
     if (firsttime) {
-      ptr2 = ev.tracker_api.setup_ogg(*vec);
+      // setup ogg can also play mp3s
+      ptr2 = ev.tracker_api.setup_ogg(*vec,is_ogg?0:1);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
       //int s = ptr->size();
       //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
@@ -2856,6 +2859,7 @@ private:
   std::string homepage;
   std::vector<unsigned char> *vec;
   void *ptr2;
+  bool is_ogg=true;
 };
 
 GameApi::ML GameApi::MainLoopApi::load_song(EveryApi &ev, ML next, std::string url)
