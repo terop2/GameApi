@@ -2815,7 +2815,6 @@ public:
     GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     //std::cout << "SONG SIZE: "<< ptr->size() << std::endl;
     vec = new std::vector<unsigned char>(ptr->begin(),ptr->end());
-    ptr2 = ev.tracker_api.setup_ogg(*vec);
     firsttime2 = false;
     }
   }
@@ -2828,8 +2827,10 @@ public:
 #ifdef EMSCRIPTEN
     // web browser wants music to start on click events.
     if (e.button==0||e.type==0x300)
+      
 #endif
     if (firsttime) {
+      ptr2 = ev.tracker_api.setup_ogg(*vec);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
       //int s = ptr->size();
       //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
