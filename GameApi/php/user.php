@@ -664,7 +664,7 @@ function page_footer2()
    echo "<div style=\"position: relative;\">";
    echo "<div style=\"width: 100%; float:left;\">";
    echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3d engine &copy; 2013-2022 Tero Pulkkinen, All rights reserved.<br>";
-   echo "meshpage.org&reg; is a registered trademark of Tero Pulkkinen in finland.</strong></div>";
+   echo "meshpage.org&reg; is a registered trademark of Tero Pulkkinen in tampere.</strong></div>";
    echo "</div>";
    echo "</div>";
    echo "<div style=\"height:80px;\"></div>";
