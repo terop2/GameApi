@@ -214,9 +214,10 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
 #endif
   char *ptr = new char[filename.size()+1];
   std::copy(filename.begin(), filename.end(), ptr);
-#ifndef EMSCRIPTEN
+  //#ifndef EMSCRIPTEN
   Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(ptr);
   g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
+  /*
 #else
   //std::ifstream ss(filename.c_str(), std::ios::binary|std::ios::in);
   //char ch;
@@ -227,13 +228,18 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
 #endif
+  */
 }
 
 //void *g_ogg_chunk;
-void *GameApi::TrackerApi::setup_ogg(const std::vector<unsigned char> &data)
+void *GameApi::TrackerApi::setup_ogg(const std::vector<unsigned char> &data, int type)
 {
   //g_ogg_ops = ops;
+  if (type==0)
     g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_OGG);
+  else if (type==1)
+    g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_MP3);
+    
   g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 
 #ifndef EMSCRIPTEN
