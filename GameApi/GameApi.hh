@@ -969,6 +969,7 @@ class FontApi
 public:
   IMPORT FontApi(Env &e);
   IMPORT ~FontApi();
+  IMPORT ARR choose_screen(float left_x, float right_x, int min_screen, int max_screen);
   IMPORT IF quake_area_fetcher(float start_x, float end_x, float start_z, float end_z);
   IMPORT Ft newfont(std::string filename, int sx, int sy);
   IMPORT BM glyph(Ft font, long idx);
