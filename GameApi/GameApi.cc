@@ -17939,24 +17939,27 @@ public:
     case 5:
       {
       	std::cout << "Copying engine files.." << std::endl;
+	std::string g0 = "..\\display\\gameapi_0.html";
 	std::string g1 = "..\\display\\gameapi_1.html";
 	std::string g2 = "..\\display\\gameapi_2.html";
 	std::string g3 = "..\\display\\gameapi_3.html";
 	std::string gn = "..\\display\\gameapi_display.zip";
 	//std::string gsed = "..\\zip\\sed.exe";
 	if (!file_exists(g1)) {
+	  g0 = "gameapi_0.html";
 	  g1 = "gameapi_1.html";
 	  g2 = "gameapi_2.html";
 	  g3 = "gameapi_3.html";
 	  gn = "gameapi_display.zip";
 	  //gsed = "sed.exe";
 	}
+	std::string line0 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_0.html";
 	std::string line1 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_1.html";
 	std::string line2 = std::string("copy ") + g2 + " %TEMP%\\_gameapi_builder\\gameapi_2.html";
 	std::string line3 = std::string("copy ") + g3 + " %TEMP%\\_gameapi_builder\\gameapi_3.html";
 	std::string line4 = std::string("copy ") + gn + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
-    
+	system(line0.c_str());
 	system(line1.c_str());
 	system(line2.c_str());
 	system(line3.c_str());
@@ -18106,21 +18109,25 @@ public:
     case 5:
       {
 	std::cout << "Copying engine files.." << std::endl;
+	std::string g0 = "../display/gameapi_0.html";
 	std::string g1 = "../display/gameapi_1.html";
 	std::string g2 = "../display/gameapi_2.html";
 	std::string g3 = "../display/gameapi_3.html";
 	std::string gn = "../display/gameapi_display.zip";
 	if (file_exists("/usr/share/gameapi_1.html")) {
+	  g0 = "/usr/share/gameapi_0.html";
 	  g1 = "/usr/share/gameapi_1.html";
 	  g2 = "/usr/share/gameapi_2.html";
 	  g3 = "/usr/share/gameapi_3.html";
 	  gn = "/usr/share/gameapi_display.zip";
 	}
+	std::string line0 = std::string("cp ") + g0 + " ~/.gameapi_builder/gameapi_0.html";
 	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
 	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
 	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
 	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
-    
+
+	system(line0.c_str());
 	system(line1.c_str());
 	system(line2.c_str());
 	system(line3.c_str());
@@ -18136,7 +18143,8 @@ public:
 	{
 	  dep = "/usr/share/deploy.sh";
 	}
-      std::string line5 = dep + " ~/.gameapi_builder/gameapi_display.zip";
+	std::string home = getenv("HOME");
+      std::string line5 = dep + " " + home + "/.gameapi_builder/gameapi_display.zip";
       system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
       
