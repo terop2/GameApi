@@ -1233,6 +1233,82 @@ GameApi::IF GameApi::FontApi::time_fetcher(EveryApi &ev, float start_time)
   return add_int_fetcher(e, new TimeFetcher(ev,start_time));
 }
 
+class ChooseScreen : public Fetcher<int>
+{
+public:
+  ChooseScreen(float left_x, float right_x, int min_screen, int max_screen, Matrix &m)
+    : left_x(left_x), right_x(right_x), min_screen(min_screen), max_screen(max_screen),m(m)
+  {
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
+  virtual void event(MainLoopEvent &e)
+  {
+  }
+  virtual void frame(MainLoopEnv &e) {
+    //Matrix m = e.in_MV;
+    float x_val = m.matrix[3];
+    if (x_val<left_x) counter--;
+    if (x_val>right_x) counter++;
+    if (counter<min_screen) counter=min_screen;
+    if (counter>max_screen) counter=max_screen;
+  }
+
+  void set(int t) { }
+  int get() const {
+    return counter;
+  }
+
+private:
+  int counter=0;
+  float left_x, right_x;
+  int min_screen, max_screen;
+  Matrix &m;
+};
+
+class MoveChooseScreen : public Movement
+{
+public:
+  MoveChooseScreen(float left_x, float right_x, Matrix &m) : left_x(left_x), right_x(right_x),m(m) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) {
+
+    Matrix m2 = e.in_MV;
+    m=m2;
+    float x_val = m2.matrix[3];
+    if (x_val<left_x) delta+=(right_x-left_x);
+    if (x_val>right_x) delta-=(right_x-left_x);
+  }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+
+  void set_matrix(Matrix mm) { }
+  Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    return Matrix::Translate(delta,0.0,0.0);
+  }
+private:
+  float delta=0.0;
+  float left_x;
+  float right_x;
+  Matrix &m;
+};
+
+GameApi::ARR GameApi::FontApi::choose_screen(float left_x, float right_x, int min_screen, int max_screen)
+{
+  Matrix *m = new Matrix;
+  GameApi::IF i = add_int_fetcher(e, new ChooseScreen(left_x, right_x, min_screen, max_screen,*m));
+  GameApi::MN i2 = add_move(e, new MoveChooseScreen(left_x, right_x,*m));
+
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  array->vec.push_back(i.id);
+  array->vec.push_back(i2.id);
+  return add_array(e,array);
+}
+
+
 GameApi::IF GameApi::FontApi::score_fetcher(EveryApi &ev)
 {
   return add_int_fetcher(e, new ScoreFetcher(ev));
