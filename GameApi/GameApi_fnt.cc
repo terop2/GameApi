@@ -1274,7 +1274,7 @@ public:
   virtual void event(MainLoopEvent &e) { }
   virtual void frame(MainLoopEnv &e) {
 
-    Matrix m2 = e.in_MV;
+    Matrix m2 = e.in_MV*Matrix::Translate(delta,0.0,0.0);
     m=m2;
     float x_val = m2.matrix[3];
     if (x_val<left_x) delta+=(right_x-left_x);
