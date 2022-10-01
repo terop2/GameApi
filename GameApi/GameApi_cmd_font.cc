@@ -265,6 +265,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { },
 			 { },
 			 "IF", "font_api", "hmd_state_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::choose_screen,
+			 "choose_screen",
+			 { "left_x", "right_x", "min_screen", "max_screen" },
+			 { "float", "float", "int", "int" },
+			 { "-600.0", "600.0", "0", "4" },
+			 "IF,MN", "font_api", "choose_screen"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::face_fetcher,
 			 "uv_face",

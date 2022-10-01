@@ -1,10 +1,25 @@
 #!/bin/bash
 if [[ $1 ]]; then
-    (cd ~/.gameapi_builder/deploy/engine; unzip -o $1)
-    (cd ~/.gameapi_builder/deploy/engine; cat ./gameapi.js |sed s@web_page@engine/web_page@ >gameapi2.js)
-    (cd ~/.gameapi_builder/deploy/engine; mv gameapi2.js gameapi.js)
-    cat ~/.gameapi_builder/gameapi_0.html ~/.gameapi_builder/gameapi_homepage.html ~/.gameapi_builder/gameapi_1.html ~/.gameapi_builder/gameapi_script.html ~/.gameapi_builder/gameapi_2.html ~/.gameapi_builder/gameapi_date.html ~/.gameapi_builder/gameapi_3.html >~/.gameapi_builder/deploy/gameapi_index.php
-    (cd ~/.gameapi_builder/deploy; zip -r gameapi_deploy.zip gameapi_index.php engine)
+    (cd $HOME/.gameapi_builder/deploy/engine; unzip -o $1)
+    if [ $? -ne 0 ]; then
+	echo "unzip FAIL"
+    fi
+    (cd $HOME/.gameapi_builder/deploy/engine; cat ./gameapi.js |sed s@web_page@engine/web_page@ >gameapi2.js)
+    if [ $? -ne 0 ]; then
+	echo "cat FAIL"
+    fi
+    (cd $HOME/.gameapi_builder/deploy/engine; mv gameapi2.js gameapi.js)
+    if [ $? -ne 0 ]; then
+	echo "mv FAIL"
+    fi
+    cat $HOME/.gameapi_builder/gameapi_0.html $HOME/.gameapi_builder/gameapi_homepage.html $HOME/.gameapi_builder/gameapi_1.html $HOME/.gameapi_builder/gameapi_script.html $HOME/.gameapi_builder/gameapi_2.html $HOME/.gameapi_builder/gameapi_date.html $HOME/.gameapi_builder/gameapi_3.html >$HOME/.gameapi_builder/deploy/gameapi_index.php
+    if [ $? -ne 0 ]; then
+	echo "cat2 FAIL"
+    fi
+    (cd $HOME/.gameapi_builder/deploy; zip -r gameapi_deploy.zip gameapi_index.php engine)
+    if [ $? -ne 0 ]; then
+	echo "zip FAIL"
+    fi
 fi
 if [[ ! $1 ]]; then
     echo "./deploy.sh ./path_to_zip.zip"
