@@ -1636,12 +1636,12 @@ public:
   MLChooser(std::vector<MainLoopItem*> vec, Fetcher<int> &f) : vec(vec),f(f) { firsttime = true; }
   void Collect(CollectVisitor &vis) {
     int s = vec.size();
-    for(int i=0;i<s;i++) { vec[i]->Collect(vis); }
+    for(int i=0;i<s;i++) { if (vec[i]) vec[i]->Collect(vis); }
   }
   void HeavyPrepare() { }
   void Prepare() {
     int s = vec.size();
-    for(int i=0;i<s;i++) { vec[i]->Prepare(); }
+    for(int i=0;i<s;i++) { if (vec[i]) vec[i]->Prepare(); }
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -1650,7 +1650,7 @@ public:
       f.frame(e);
       int val = f.get();
       int s = vec.size();
-      if (val>=0 && val<s) vec[val]->execute(e);
+      if (val>=0 && val<s && vec[val]) vec[val]->execute(e);
     } else {
       int s = vec.size();
       for(int i=0;i<s;i++) vec[i]->execute(e);
@@ -1662,12 +1662,12 @@ public:
     f.event(e);
     int val = f.get();
     int s = vec.size();
-    if (val>=0 && val<s) vec[val]->handle_event(e);
+    if (val>=0 && val<s && vec[val]) vec[val]->handle_event(e);
   }
   virtual std::vector<int> shader_id() {
     int val = f.get();
     int s = vec.size();
-    if (val>=0 && val<s) return vec[val]->shader_id();
+    if (val>=0 && val<s && vec[val]) return vec[val]->shader_id();
     return std::vector<int>();
   }
 private:
