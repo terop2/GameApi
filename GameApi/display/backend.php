@@ -41,6 +41,16 @@ function load_form_gfilename($user, $id)
   $filename = "viewdata/user_" . $user . "/gfilename_" . $id . ".txt";
   return file_get_contents($filename);
 }
+function save_form_gpath($user, $id, $gpath)
+{
+  $filename = "viewdata/user_" . $user . "/gpath_" . $id . ".txt";
+  file_put_contents($filename, $gpath);
+}
+function load_form_gpath($user, $id)
+{
+  $filename = "viewdata/user_" . $user . "/gpath_" . $id . ".txt";
+  return file_get_contents($filename);
+}
 function load_num()
 {
   $filename = "viewdata/num.txt";

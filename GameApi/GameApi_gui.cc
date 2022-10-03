@@ -5963,6 +5963,7 @@ std::pair<std::string, int> parse_multiple_return(std::string param)
   std::stringstream ss(index);
   int ii = 0;
   ss >> ii;
+  std::cout << "ParseMultipleReturn: " << res << " " << ii << std::endl;
   return std::make_pair(res,ii);
 }
 
@@ -6150,7 +6151,7 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 		      //std::cout << "execute_api: " << val2 << std::endl;
 		      vec.push_back(val2);
 		    }
-		    
+		    std::cout << "PARAM vec[jj]=" << jj << " " << vec[jj] << std::endl;
 		    params2.push_back( vec[jj] );
 		  } else {
 		    params2.push_back(link);
@@ -6179,7 +6180,7 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 	      std::vector<std::string> vec;
 	      while(ss2>>val2) { vec.push_back(val2); }
 	      
-	      
+	      std::cout << "LINK: " << jj << " " << vec[jj] << std::endl;
 	      params[i] = vec[jj]; 
 	    }
 	}
@@ -6199,6 +6200,7 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 	    int val2 = t->vec[jj];
 	    std::stringstream ss2;
 	    ss2 << val2;
+	    std::cout << "Return type id=" << val2 << std::endl;
 	    res+=ss2.str();
 	    if (jj!=count-1) res+=" ";
 	  }
