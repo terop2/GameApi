@@ -17944,6 +17944,7 @@ public:
 	std::string g2 = "..\\display\\gameapi_2.html";
 	std::string g3 = "..\\display\\gameapi_3.html";
 	std::string gn = "..\\display\\gameapi_display.zip";
+	std::string gk = "..\\display\\get_file_size.php";
 	//std::string gsed = "..\\zip\\sed.exe";
 	if (!file_exists(g1)) {
 	  g0 = "gameapi_0.html";
@@ -17951,6 +17952,7 @@ public:
 	  g2 = "gameapi_2.html";
 	  g3 = "gameapi_3.html";
 	  gn = "gameapi_display.zip";
+	  gk = "get_file_size.php";
 	  //gsed = "sed.exe";
 	}
 	std::string line0 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_0.html";
@@ -17958,12 +17960,14 @@ public:
 	std::string line2 = std::string("copy ") + g2 + " %TEMP%\\_gameapi_builder\\gameapi_2.html";
 	std::string line3 = std::string("copy ") + g3 + " %TEMP%\\_gameapi_builder\\gameapi_3.html";
 	std::string line4 = std::string("copy ") + gn + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
+	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
 	system(line0.c_str());
 	system(line1.c_str());
 	system(line2.c_str());
 	system(line3.c_str());
 	system(line4.c_str());
+	system(line5.c_str());
 	//system(line5.c_str());
 	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
 	break;
@@ -18114,24 +18118,28 @@ public:
 	std::string g2 = "../display/gameapi_2.html";
 	std::string g3 = "../display/gameapi_3.html";
 	std::string gn = "../display/gameapi_display.zip";
-	if (file_exists("/usr/share/gameapi_1.html")) {
+	std::string gk = "../display/get_file_size.php";
+	if (!file_exists(g1)) {
 	  g0 = "/usr/share/gameapi_0.html";
 	  g1 = "/usr/share/gameapi_1.html";
 	  g2 = "/usr/share/gameapi_2.html";
 	  g3 = "/usr/share/gameapi_3.html";
 	  gn = "/usr/share/gameapi_display.zip";
+	  gk = "/usr/share/get_file_size.php";
 	}
 	std::string line0 = std::string("cp ") + g0 + " ~/.gameapi_builder/gameapi_0.html";
 	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
 	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
 	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
 	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
+	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
 
 	system(line0.c_str());
 	system(line1.c_str());
 	system(line2.c_str());
 	system(line3.c_str());
 	system(line4.c_str());
+	system(line5.c_str());
 	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
 	break;
       }
@@ -18139,7 +18147,7 @@ public:
       {
       std::cout << "Deploying..." << std::endl;
       std::string dep = "./deploy.sh";
-      if (file_exists("/usr/share/deploy.sh"))
+      if (!file_exists(dep))
 	{
 	  dep = "/usr/share/deploy.sh";
 	}
