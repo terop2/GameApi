@@ -20,6 +20,7 @@ cp ../display/gameapi_1.html gameapi-builder_1.0-$1/usr/share/gameapi_1.html
 cp ../display/gameapi_2.html gameapi-builder_1.0-$1/usr/share/gameapi_2.html
 cp ../display/gameapi_3.html gameapi-builder_1.0-$1/usr/share/gameapi_3.html
 cp ../display/gameapi_display.zip gameapi-builder_1.0-$1/usr/share/gameapi_display.zip
+cp ../display/get_file_size.php gameapi-builder_1.0-$1/usr/share/get_file_size.php
 cp deploy.sh gameapi-builder_1.0-$1/usr/share/deploy.sh
 cp arrow.ppm gameapi-builder_1.0-$1/usr/share/arrow.ppm
 cat control |sed s/25/$1/g >gameapi-builder_1.0-$1/DEBIAN/control
