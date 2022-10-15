@@ -22,6 +22,8 @@
 </File>
 <File Id='zip' Name='gameapi_display.zip' DiskId='1' Source='editor/gameapi_display.zip' KeyPath='no'>
 </File>
+<File Id='h0' Name='gameapi_0.html' DiskId='1' Source='editor/gameapi_0.html' KeyPath='no'>
+</File>
 <File Id='h1' Name='gameapi_1.html' DiskId='1' Source='editor/gameapi_1.html' KeyPath='no'>
 </File>
 <File Id='h2' Name='gameapi_2.html' DiskId='1' Source='editor/gameapi_2.html' KeyPath='no'>
