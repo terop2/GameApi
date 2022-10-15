@@ -51,6 +51,11 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef EMSCRIPTEN
+#define OPENGL_ES 1
+#endif
+
+
 #ifdef WINDOWS
 //#define OPENGL_ES 1
 #endif
@@ -64,6 +69,10 @@
 #ifdef EMSCRIPTEN
 #define WEBGL2 1
 #endif
+
+
+
+#define HAS_GL_GETERROR 1
 
 #ifdef WEBGL2
 #define ATTRIBUTE "in"
@@ -110,7 +119,12 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   g_low->ogl->glShaderSource(handle, count, strings, lengths);
   //ProgressBar(111,10,15,shader.Name().c_str());
   g_low->ogl->glCompileShader(handle);
-  int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
+#ifdef HAS_GL_GETERROR
+  int val = g_low->ogl->glGetError();
+#else
+  int val = Low_GL_NO_ERROR;
+#endif
+  
   //ProgressBar(111,15,15,shader.Name().c_str());
 
   if (val!=Low_GL_NO_ERROR)
@@ -129,7 +143,11 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   g_low->ogl->glGetShaderiv(handle, Low_GL_COMPILE_STATUS, &i );
   if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
     int len=0;
+#ifdef HAS_GL_GETERROR
   int val2 = g_low->ogl->glGetError();
+#else
+  int val2 = Low_GL_NO_ERROR;
+#endif
   if (val2!=Low_GL_NO_ERROR)
   {
   char log[255];
@@ -270,7 +288,7 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
-  int val = Low_GL_NO_ERROR; //g_low->ogl->glGetError();
+  int val = g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
@@ -2703,7 +2721,7 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "{\n"
     "   vec3 n = normalize(mat3(in_View)*mat3(in_iMV)* in_Normal);\n"    
     "    ex_Normal2 = n;\n"
-    "    ex_LightPos2 = normalize(in_PhongLightPos);\n"
+    "    ex_LightPos2 = in_PhongLightPos;\n"
 "    return pos;\n"
 "}\n"
 "#endif\n"
@@ -4700,7 +4718,7 @@ std::string replace_c(const replace_c_params &pp)
 		out+="out_Color = rgb";
 	      out+= ss3.str();
 	      } else {
-		out+="out_Color = SRGBtoLINEAR(rgb" + ss3.str() + ")";
+		out+="out_Color = rgb" + ss3.str() + "";
 	      }
 	      }
 #else
@@ -4718,7 +4736,7 @@ std::string replace_c(const replace_c_params &pp)
 	      if (g_gpu_vendor!="NVID") {
 		out+="out_Color = rgb" + ss3.str() + "";
 	      } else {
-		out+="out_Color = SRGBtoLINEAR(rgb" + ss3.str() + ")";
+		out+="out_Color = rgb" + ss3.str() + "";
 	      }
 #endif
 	      out+=";\n";

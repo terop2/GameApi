@@ -104,6 +104,10 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef EMSCRIPTEN
+#define OPENGL_ES 1
+#endif
+
 //#define WAYLAND 1
 
 #ifdef WAYLAND

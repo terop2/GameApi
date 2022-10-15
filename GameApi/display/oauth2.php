@@ -49,8 +49,8 @@ $authorizationRequestUri = $client->getAuthorizationRequestUri(
   'https://meshpage.org/oauth2_callback.php'
   );
 $_SESSION['oauth2_session'] = $authorizationRequestUri;
-http_response_code(302);
-//header("Cross-Origin-Resource-Policy: cross-origin");
+//http_response_code(302);
+header("Cross-Origin-Resource-Policy: cross-origin");
 header("Location: " . $authorizationRequestUri);
 
 //$arr = array('url' => $authorizationRequestUri);

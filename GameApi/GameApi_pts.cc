@@ -400,7 +400,7 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
 
 
   PointArray3 *arr = find_point_array3(e, pta);
-
+  bool slow = false;
   if (numpoints>arr->numpoints) {
     float *array = arr->array;
     unsigned int *color = arr->color;
@@ -408,6 +408,7 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
     delete [] color;
     arr->array = new float[numpoints*3];
     arr->color = new unsigned int[numpoints];
+    slow=true;
   }
   arr->numpoints = numpoints;
 
@@ -424,19 +425,30 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
     }
 
   
-  update(pta);
+  update(pta,slow);
 }
-void GameApi::PointsApi::update(GameApi::PTA pta)
+void GameApi::PointsApi::update(GameApi::PTA pta, bool slow)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
   PointArray3 *arr = find_point_array3(e, pta);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer[0]);
   if (arr->numpoints>0)
+    {
+      if (slow) {
+	ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(float)*3, arr->array, Low_GL_STATIC_DRAW);
+      } else {
     ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(float)*3, arr->array);
+      }
+    }
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, arr->buffer[1]);
-  if (arr->numpoints>0)
+  if (arr->numpoints>0) {
+    if (slow) {
+      ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color, Low_GL_STATIC_DRAW);
+    } else {
     ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
+    }
+  }
 }
 
 

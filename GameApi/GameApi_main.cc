@@ -498,6 +498,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   Matrix m2 = Matrix::Identity();
   prog->set_var("in_MV", m2);
   prog->set_var("in_iMV", Matrix::Transpose(Matrix::Inverse(m2)));
+  prog->set_var("in_View", Matrix::Identity());
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   prog->set_var("in_POS", 0.0f);

@@ -316,7 +316,10 @@ void GameApi::TrackerApi::stop_music_playing()
   std::cout << "TrackerApi::stop_music_playing... SDL_MIXER is disabled" << std::endl;
 #endif
 #else
+
+#ifndef EMSCRIPTEN
   g_low->sdl_mixer->Mix_HaltChannel(-1);
+#endif
   //HTML5_Mix_HaltMusic();
 #endif
 }
