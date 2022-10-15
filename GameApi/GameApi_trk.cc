@@ -188,6 +188,7 @@ EXPORT void GameApi::TrackerApi::play_song(EveryApi &ev, TBUF buf, WAV samples, 
 
 void GameApi::TrackerApi::play_mp3(std::string filename)
 {
+#ifdef USE_SDL_MIXER
   g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_MP3);
   g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 #ifndef EMSCRIPTEN
@@ -199,10 +200,14 @@ void GameApi::TrackerApi::play_mp3(std::string filename)
 #endif
   Low_Mix_Music *mus = g_low->sdl_mixer->Mix_LoadMUS(filename.c_str());
   g_low->sdl_mixer->Mix_PlayMusic(mus, 1);
+#else
+  std::cout << "TrackerApi::play_mp3... SDL_MIXER is disabled" << std::endl;
+#endif
 }
 
 void GameApi::TrackerApi::play_ogg(std::string filename)
 {
+#ifdef USE_SDL_MIXER
   g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_OGG);
   g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 #ifndef EMSCRIPTEN
@@ -229,11 +234,15 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
 #endif
   */
+#else
+  std::cout << "TrackerApi::play_ogg... SDL_MIXER is disabled" << std::endl;
+#endif
 }
 
 //void *g_ogg_chunk;
 void *GameApi::TrackerApi::setup_ogg(const std::vector<unsigned char> &data, int type)
 {
+#ifdef USE_SDL_MIXER
   //g_ogg_ops = ops;
   if (type==0)
     g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_OGG);
@@ -255,19 +264,27 @@ void *GameApi::TrackerApi::setup_ogg(const std::vector<unsigned char> &data, int
 
   //g_ogg_chunk = chunk;
   return (void*)chunk;
+#else
+  std::cout << "TrackerApi::setup_ogg... SDL_MIXER is disabled" << std::endl;
+#endif
+  return 0;
 }
 void GameApi::TrackerApi::play_ogg(void *ptr)
 {
   // const std::vector<unsigned char> *data = (const std::vector<unsigned char> *)g_ogg_ops;
 
+#ifdef USE_SDL_MIXER
   Low_Mix_Chunk *chunk = (Low_Mix_Chunk*)ptr;
 
   
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
-  
+#else
+  std::cout << "TrackerApi::play_ogg(void*)... SDL_MIXER is disabled" << std::endl;
+#endif  
 }
 void GameApi::TrackerApi::play_ogg(const std::vector<unsigned char> &data)
 {
+#ifdef USE_SDL_MIXER
     g_low->sdl_mixer->Mix_Init(Low_MIX_INIT_OGG);
   g_low->sdl_mixer->Mix_OpenAudio(22050, Low_MIX_DEFAULT_FORMAT, 2, 4096);
 #ifndef EMSCRIPTEN
@@ -285,11 +302,23 @@ void GameApi::TrackerApi::play_ogg(const std::vector<unsigned char> &data)
   Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromMem((void*)&data[0], data.size());
   Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
   g_low->sdl_mixer->Mix_PlayChannel(-1, chunk, 0); 
-
+#else
+  std::cout << "TrackerApi::play_ogg(data)... SDL_MIXER is disabled" << std::endl;
+#endif
 }
+extern "C" int HTML5_Mix_HaltMusic();
 void GameApi::TrackerApi::stop_music_playing()
 {
+#ifndef USE_SDL_MIXER_HACK
+#ifdef USE_SDL_MIXER
   g_low->sdl_mixer->Mix_HaltChannel(-1);
+#else
+  std::cout << "TrackerApi::stop_music_playing... SDL_MIXER is disabled" << std::endl;
+#endif
+#else
+  g_low->sdl_mixer->Mix_HaltChannel(-1);
+  //HTML5_Mix_HaltMusic();
+#endif
 }
 
 int music_initialized = 0;
@@ -300,6 +329,7 @@ public:
   void init_music()
   {
     if (!music_initialized) {
+#ifdef USE_SDL_MIXER
       std::cout << g_low->sdl->SDL_GetError() << std::endl;
       int val = g_low->sdl_mixer->Mix_OpenAudio(44100, Low_MIX_DEFAULT_FORMAT, 2, 4096);
       std::cout << "init_music: openaudio returned: " << val << std::endl;
@@ -317,13 +347,15 @@ public:
       std::cout << g_low->sdl->SDL_GetError() << std::endl;
 
 
-      
+#endif      
       music_initialized=1;
     }
   }
   PlayWavViaKeypress(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, std::string url, std::string homepage, int key) : env(env), ev(ev), next(next), url(url), homepage(homepage), key(key) { firsttime=true; initialized=false; chunk = 0; initialized2 = false;
+#ifdef USE_SDL_MIXER
     if (!music_initialized)
       g_low->sdl_mixer->Mix_Init(0);
+#endif
   }
   void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   void HeavyPrepare() { Prepare(); }
@@ -380,7 +412,10 @@ public:
       if (ch == key && e.type==0x300) {
 	if (!music_initialized) init_music();
 	if (!initialized2) {
+#ifdef USE_SDL_MIXER
+
 	  chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(/*g_low->sdl->SDL_RWFromFile(filename.c_str(), "rb")*/ g_low->sdl->SDL_RWFromMem((void*)&vec->operator[](0), vec->size()),0);
+#endif
 	  // std::cout << g_low->sdl_mixer->Mix_GetError() << std::endl;
 	  if (!chunk || !chunk->ptr) {
 	    std::cout << "Invalid wav file/Mix_QuickLoad_WAV failed" << std::endl;
@@ -388,7 +423,9 @@ public:
 	  initialized2 = true;
 	}
 	  
+#ifdef USE_SDL_MIXER
 	g_low->sdl_mixer->Mix_PlayChannel(-1,chunk, 0);
+#endif
 	//std::cout << g_low->sdl_mixer->Mix_GetError() << std::endl;
       }
     }

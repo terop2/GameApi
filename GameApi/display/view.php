@@ -25,7 +25,7 @@ if ($id>0)
   		       $filenamearray = $filenamearray . load_form_filenamearray($user, strval($id) . "_" . strval($i));
   }
   $gfilename = load_form_gfilename($user, $id);
-
+  $gpath = load_form_gpath($user,$id);
 }
 ?>
 <html>
@@ -49,6 +49,13 @@ echo "</pre>";
 echo "<pre id='formgfilename2' style='display:none'>";
 echo "$gfilename";
 echo "</pre>";
+
+echo "<pre id='formgpath2' style='display:none'>";
+echo "$gpath";
+echo "</pre>";
+
+
+
 ?>
 
 <script src="vue.js"></script>
@@ -66,14 +73,17 @@ echo "</pre>";
 <div style="margin-left: 30px; float:left; display:block;">
 <p>
 <appmodel v-bind:is_example="state.appmodel_is_examples"
+	  v-bind:is_link="state.appmodel_is_link"
 	  v-bind:is_selected="state.appmodel_is_selected"
 	  v-bind:is_notselected="state.appmodel_is_notselected"
 	  v-bind:is_loading="state.appmodel_is_loading"
 	  v-bind:is_twoline="state.appmodel_is_twoline"
 	  v-bind:model_info="state.model_info"
 	  v-on:examples_click="change_appmodel(2)"
+	  v-on:link_click="change_appmodel(4)"
 	  v-on:change_model="change_model()"
 	  v-on:change_choose="change_model()"
+	  v-on:change_choose_url="change_model_url()"
 	  v-on:root_handle_drop="change_model3($event)"
 	  v-bind:filename="state.filename"
 	  v-bind:filename1="state.filename1"
@@ -115,6 +125,7 @@ var store = {
       filename: "(no file)",
       filename1: "",
       filename2: "",
+      url: "",
       is_metal: "true",
       is_plastic: "false",
       is_textured: "false",
@@ -144,6 +155,7 @@ Vue.component('appsubmitbutton', {
 	   <input name="contents_array" id="formcontentsarray" type="hidden"/>
 	   <input name="filename_array" id="formfilenamearray" type="hidden"/>
 	   <input name="g_filename" id="formgfilename" type="hidden"/>
+	   <input name="g_path" id="formgpath" type="hidden"/>
 	   <input name="num" id="formnum" type="hidden"/>
 	   </form -->
 	   <button type="button" onclick="formsubmit()">Submit</button>
@@ -297,6 +309,18 @@ Vue.component('appmodel_choose', {
 </select></div>
      `
      });
+Vue.component('appmodel_link', {
+  data: function() {
+     return {
+     }
+     },
+     template: `<div class="border block blockitem height12 customfont">
+     Link<br><input type="url" id="model_url" name="url" v-on:change="$emit('change_model')"/>
+   <button type="button" v-on:click="$emit('change_model')" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
+
+</div>
+     `
+     });
 
 Vue.component('appmodel_loading', {
   data: function() {
@@ -310,7 +334,7 @@ Vue.component('appmodel_notselected', {
    data: function() {
      return { } },
    template: `<div class="border block blockitem height12 customfont">
-   <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a>.</small>
+   <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a><!--or <a href="javascript:;" v-on:click="$emit('link_click')">link</a-->.</small>
    <br><br><small>.STL, .OBJ, .GLB file types supported. See help for materials.</small>
    <button type="button" onclick="clickselectfile()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
    <input id="selectfile" type="file" multiple v-on:change="$emit('handle_drop','selectfile')" style="display:none"/>
@@ -331,7 +355,7 @@ Vue.component('appmodel_selected', {
       });
 
 Vue.component('appmodel', {
-  props: ['is_example', 'is_selected', 'is_notselected', 'is_loading', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
   data: function() {
     return { } },
     template: `<div class="block blockitem">
@@ -341,11 +365,15 @@ Vue.component('appmodel', {
        <div v-if="is_example=='true'">
        <appmodel_choose v-on:change_model="$emit('change_choose')"></appmodel_choose>
        </div>
+       <div v-if="is_link=='true'">
+       <appmodel_link v-on:change_model="$emit('change_choose_url')"></appmodel_link>
+       </div>
        <div v-if="is_selected=='true'">
        <appmodel_selected v-bind:model_info="model_info" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2" v-bind:is_twoline="is_twoline" v-on:handle_drop="$emit('root_handle_drop',$event)"></appmodel_selected>
        </div>
        <div v-if="is_notselected=='true'">
        <appmodel_notselected v-on:examples_click="$emit('examples_click')"
+       			     v-on:link_click="$emit('link_click')"
 			     v-on:handle_drop="$emit('root_handle_drop',$event)"
        ></appmodel_notselected>
        </div>
@@ -485,10 +513,12 @@ filter_material : function(arr,key)
 	 this.state.appmodel_is_selected = "false";
 	 this.state.appmodel_is_examples = "false";
 	 this.state.appmodel_is_loading = "false";
+	 this.state.appmodel_is_link = "false";
          if (val==0) this.state.appmodel_is_notselected = "true";
 	 if (val==1) this.state.appmodel_is_selected = "true";
 	 if (val==2) this.state.appmodel_is_examples = "true";
 	 if (val==3) this.state.appmodel_is_loading = "true";
+	 if (val==4) this.state.appmodel_is_link = "true";
       },
       change_category: function() {
         var elem = document.getElementById("category-select");
@@ -501,6 +531,7 @@ filter_material : function(arr,key)
 	if (val==1) { this.state.is_plastic="true"; }
 	if (val==2) { this.state.is_textured="true"; }
       },
+
       change_model: function() {
         if (repeat_prev==0) {
         repeat_prev=1;
@@ -510,6 +541,13 @@ filter_material : function(arr,key)
 	    }
           this.change_appmodel(1);
 	    repeat_prev = 0;
+      },
+      change_model_url: function() {
+         var inputtag = document.getElementById("model_url");
+	 var url = inputtag.value;
+	 this.state.url = url;
+	 console.log(url);
+	 this.change_model();
       },
       change_model3: function(selectfile) {
         if (repeat_prev==0) {
@@ -980,6 +1018,10 @@ function create_script(filename, contents, filenames)
 {
   var res = "";
 
+  if (g_path!="") {
+    filename = g_path + "/" + filename;
+  }
+
   var base_dir = get_base_dir(filename);
   var mtl_name = find_mtl_name(filenames);
 
@@ -1161,6 +1203,7 @@ function publish_face_count(state)
 var contents_array = [];
 var filename_array = [];
 var g_filename = "";
+var g_path = "";
 
 function set_model_info(state,val)
 {
@@ -1199,15 +1242,54 @@ function set_filename_info(state,filename)
      }
 }
 
-function extract_contents(state,file_array,filenames, filename)
+function extract_contents(state,file_array,filenames, filename, path)
 {
+   g_path = path;
    g_filename = filename;
    set_filename_info(state,g_filename);
+   state.url = g_path;
    if (file_array==""||filenames=="") {
       return new Promise((resolve,reject) => {
            resolve("success");
       });
    }
+   if (path!="") {
+
+   return new Promise((resolve,reject) => {  
+
+   contents_array = [];
+   filename_array = [];
+   var s = file_array.length;
+   var counter = 0;
+   for(var i = 0;i<s;i++) {
+     var file = file_array[i];
+     let fileReader = new FileReader();
+     var f = (fileReader,i) => {
+     fileReader.onload = () => {
+        let fileContents = fileReader.result;
+	var binary = '';
+	var bytes = new Uint8Array( fileContents );
+	//console.log(bytes.length);
+	var len = bytes.byteLength;
+	for(var j=0;j<len;j++) {
+	  binary+= String.fromCharCode(bytes[j]);
+	}
+	//console.log(binary.length);
+	contents_array.push(binary);
+	filename_array.push(fix_filename(filenames[i]));
+	counter++;
+	if (counter==s) resolve("success");
+	}
+     };
+     f(fileReader,i);
+     fileReader.readAsArrayBuffer(path+"/"+file);
+  }
+});
+
+
+
+   }
+
 
    return new Promise((resolve,reject) => {  
 
@@ -1299,6 +1381,7 @@ function flatten_arrays(data)
    }
    return [[data.file],[data.path]];
 }
+var old_main_item_dir = "";
 var old_main_item_name = "";
 var old_files = "";
 var old_filenames = "";
@@ -1306,14 +1389,21 @@ function drop2(state)
 {
    set_filename_info(state,"");
      set_model_info(state,"(loading..)");
-
   var model_val = get_model_value();
   var model = get_model(model_val);
+  var url = state.url;
+  var path = "";
+  if (url!="") {
+     let result = url.lastIndexOf("/");
+     path = url.substr(0,result);
+     model = url.substr(result+1);
+  }
   if (old_main_item_name!="" || model!="") {
+    if (path!="") { old_main_item_dir=path; }
     if (model!="") { old_main_item_name=model; }
     // old_files, old_filenames
     if (state) { state.filename = fix_filename(old_main_item_name); }
-    const promise = extract_contents(state,"","",fix_filename(old_main_item_name));
+    const promise = extract_contents(state,"","",fix_filename(old_main_item_name),path);
     promise.then(load_finished);
     }
 }
@@ -1355,7 +1445,7 @@ function drop3(state,selectfileelem)
 	   old_filenames = filenames;
 	   old_main_item_name = main_item_name;
 
-           const promise = extract_contents(state,files,filenames,fix_filename(main_item_name));
+           const promise = extract_contents(state,files,filenames,fix_filename(main_item_name),"");
            promise.then(load_finished);
 
      });
@@ -1403,7 +1493,7 @@ function drop(ev)
 
 	   old_main_item_name = main_item_name;
 
-           const promise = extract_contents(store.state,files,filenames,fix_filename(main_item_name));
+           const promise = extract_contents(store.state,files,filenames,fix_filename(main_item_name),"");
            promise.then(load_finished);
 
      });
@@ -1693,6 +1783,7 @@ function load_data()
    var ca = document.getElementById("formcontentsarray2");
    var fa = document.getElementById("formfilenamearray2");
    var gf = document.getElementById("formgfilename2");
+   var gp = document.getElementById("formgpath2");
    if (st.textContent != "") {
     loading_data=1;
    var a_st = st.textContent;
@@ -1702,15 +1793,18 @@ function load_data()
    var a_fa = JSON.parse(fa.textContent);
    //console.log(gf.textContent);
    var a_gf = JSON.parse(gf.textContent);
+   var a_gp = JSON.parse(gp.textContent);
 
    deserialize_state(a_st);
    contents_array = base64_to_array(a_ca);
    filename_array = base64_to_array(a_fa);
    g_filename = a_gf;
+   g_path = a_gp;
 
    old_files = contents_array;
    old_filenames = filename_array;
    old_main_item_name = g_filename;
+   old_main_item_dir = g_path;
    }
 }
 
@@ -1810,6 +1904,7 @@ function formsubmit()
 
   		   //var st5 = document.getElementById("formgfilename");
   		   var st5_val = JSON.stringify(g_filename);
+		   var st6_val = JSON.stringify(g_path);
 
   		   //var form = document.getElementById("submitcontents");
   		   //form.submit();
@@ -1820,6 +1915,7 @@ function formsubmit()
   		   data.append("contents_array", st3_sub);
   		   data.append("filename_array", st4_sub);
   		   data.append("g_filename", st5_val);
+		   data.append("g_path", st6_val);
   		   var xhr = new XMLHttpRequest();
   		   xhr.open('POST','submit_contents.php', true);
 		   submitprogressbar(0);

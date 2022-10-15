@@ -3438,6 +3438,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);
   IMPORT P ply_faces(std::string url);
   IMPORT PTS ply_pts(std::string url);
   IMPORT PTS iterate_points(PTS points, VFi field, FA speed);

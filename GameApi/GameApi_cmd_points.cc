@@ -120,6 +120,12 @@
 			 { "P" },
 			 { "" },
 			 "PTS", "points_api", "polygon_face_center_points"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::points_field,
+			 "points_field",
+			 { "start_speed_y", "end_speed_y", "numpoints", "start_x", "end_x", "start_y", "end_y" },
+			 { "float", "float", "int", "float", "float", "float", "float" },
+			 { "3.0", "30.0", "100", "-300.0", "300.0", "-300.0", "300.0" },
+			 "PTS", "points_api", "points_field"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::hemisphere_points,
 			 "hemisphere_pts",

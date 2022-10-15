@@ -2971,3 +2971,64 @@ GameApi::P GameApi::PointsApi::ply_faces(std::string url)
 {
   return add_polygon2(e, new PlyFaceCollection(e,url,gameapi_homepageurl),1);
 }
+
+struct FieldPoint
+{
+  Point current_pos;
+  float speed_y;
+};
+
+class PointsField : public PointsApiPoints
+{
+public:
+  PointsField(float start_speed_y, float end_speed_y, int num_points, float start_x, float end_x, float start_y, float end_y) : start_speed_y(start_speed_y), end_speed_y(end_speed_y), num_points(num_points), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { firsttime = true; }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+    if (firsttime) {
+    int s= num_points;
+    Random r;
+    for(int i=0;i<s;i++)
+      {
+	FieldPoint p;
+	p.current_pos = Point(start_x+i*(end_x-start_x)/num_points,0.0,0.0);
+	float f = double(r.next())/r.maximum();
+	p.speed_y = start_speed_y + f*(end_speed_y-start_speed_y);
+	vec.push_back(p);
+      }
+    firsttime = false;
+    }
+
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i].current_pos.y += vec[i].speed_y;
+	if (vec[i].current_pos.y>end_y) { vec[i].current_pos.y -= (end_y-start_y); }
+	if (vec[i].current_pos.y<start_y) { vec[i].current_pos.y += (end_y-start_y); }
+      }
+    return true;
+  }
+  virtual int NumPoints() const { return vec.size(); }
+  virtual Point Pos(int i) const { return vec[i].current_pos; }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+
+private:
+  float start_speed_y, end_speed_y;
+  int num_points;
+  float start_x, end_x;
+  float start_y, end_y;
+  std::vector<FieldPoint> vec;
+  bool firsttime;
+};
+GameApi::PTS GameApi::PointsApi::points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y)
+{
+  return add_points_api_points(e, new PointsField(start_speed_y, end_speed_y, numpoints, start_x, end_x, start_y, end_y));
+}

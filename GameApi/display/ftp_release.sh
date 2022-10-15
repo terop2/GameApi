@@ -21,4 +21,5 @@ copy_it background_db.txt
 copy_it model_db.txt 
 copy_it gameapi_example.php
 copy_it save_tmp_script.php
+copy_it view_load_file.php
 echo "SUCCESS"

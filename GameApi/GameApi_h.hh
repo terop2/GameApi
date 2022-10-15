@@ -22,7 +22,7 @@
 //#define THREAD_HEAVY 1
 #ifndef ARM
 #ifndef NO_THREADS
-#define THREADS 1
+//#define THREADS 1
 #endif
 #endif
 //#endif
@@ -67,6 +67,9 @@
 #endif
 #endif
 #endif
+
+#define USE_SDL_MIXER 1
+#define USE_SDL_MIXER_HACK 1
 
 //#ifndef RASPI
 #define USE_GLEW 1

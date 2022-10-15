@@ -1,6 +1,6 @@
 
 
-minimal: pthreads_both_nodebug
+#minimal: pthreads_both_nodebug
 
 all: nodebug
 
