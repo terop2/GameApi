@@ -13,6 +13,10 @@
 #define idb_disabled 1
 //#define idb_disabled 0
 
+bool g_disable_polygons=false;
+bool g_filter_execute = false;
+
+
 
 std::string striphomepage(std::string url);
 std::string stripprefix(std::string s);
