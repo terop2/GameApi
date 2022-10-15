@@ -52,6 +52,8 @@ CFiles= GameApi_gui.cc GameApi_gltf.cc GameApi_diag.cc Pieces.cc Map.cc VectorTo
 	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
 	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc \
 	GameApi_cmd.cc cpushader.cc
+	
+OLDCFiles=music.c music_html5.c prerequisites.c
 
 
 
@@ -63,8 +65,10 @@ Subdirs =
 #module1
 
 OFiles = $(patsubst %.cc,objs/%.bc,$(CFiles))
+OOFiles = $(patsubst %.c,objs/%.bc,$(OLDCFiles))
 O2Files = $(patsubst %.cc,objs/%.bc,$(CFiles2))
 OFiles_nothreads = $(patsubst %.cc,objs/nothreads/%.bc,$(CFiles))
+OOFiles_nothreads = $(patsubst %.c,objs/nothreads/%.bc,$(OLDCFiles))
 O2Files_nothreads = $(patsubst %.cc,objs/nothreads/%.bc,$(CFiles2))
 DFiles = $(patsubst %.cc,objs/%.d,$(CFiles)) 
 D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles2)) 
@@ -95,12 +99,15 @@ INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
-EMINC1 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/system/include/SDL
-EMINC2 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/system/include
-EMINC3 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/tests/freetype/include
+EMINC1 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/cache/sysroot/include/SDL
+EMINC2 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/cache/sysroot/include
+EMINC3 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/cache/sysroot/include/freetype2
+SDL_MIXER_MINI1 = sdl_mixer_mini/src
+SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
-CCFLAGS = -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -std=c++17 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags --memory-init-file 0 -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g  
-CC2FLAGS = -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++17 -Wall $(nowarns) -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g  
+CFLAGS =  -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion 
+CCFLAGS =  -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -std=c++17 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion 
+CC2FLAGS =  -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++17 -Wall $(nowarns) -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2)
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
@@ -123,13 +130,13 @@ main.exe: $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo mingw main.exe
 	@$(CCWIN) $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++
 
-libGameApi.bc: $(O2Files) $(OFiles) Makefile
+libGameApi.bc: $(O2Files) $(OFiles) $(OOFiles) Makefile
 	echo em++ libGameApi.bc
-	em++ -shared $(OFiles) $(O2Files) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 
+	em++ -shared $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 
 
-libGameApi_nothreads.bc: $(O2Files_nothreads) $(OFiles_nothreads) Makefile
+libGameApi_nothreads.bc: $(O2Files_nothreads) $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	echo em++ libGameApi_nothreads.bc
-	em++ -shared $(OFiles_nothreads) $(O2Files_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 
+	em++ -shared $(OFiles_nothreads) $(O2Files_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 
 
 
 libGameApi.so: $(OFiles) Makefile
@@ -155,6 +162,7 @@ TAGS: $(CFiles)
 
 CC = em++
 CCWIN = em++
+CCC = emcc
 SED = sed
 RM = rm
 #mingw32-g++
@@ -173,6 +181,11 @@ $(OFiles): objs/%.bc : %.cc
 	@echo em++ $< -o $@
 	@$(CCWIN) -c $(CCFLAGS) $< -o $@
 
+$(OOFiles): objs/%.bc : %.c
+	@echo emcc $< -o $@
+	@$(CCC) -c $(CFLAGS) $< -o $@
+
+
 $(O2Files): objs/%.bc : %.cc
 	@echo mingw $<
 	$(CCWIN) -c $(CCFLAGS) $< -o $@
@@ -181,6 +194,10 @@ $(O2Files): objs/%.bc : %.cc
 $(OFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo em++ $< -o $@
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
+
+$(OOFiles_nothreads): objs/nothreads/%.bc : %.c
+	@echo emcc $< -o $@
+	@$(CCC) -DNO_THREADS -c $(CFLAGS) $< -o $@
 
 $(O2Files_nothreads): objs/nothreads/%.bc : %.cc
 	@echo mingw $<

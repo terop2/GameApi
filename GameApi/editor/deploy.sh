@@ -16,7 +16,8 @@ if [[ $1 ]]; then
     if [ $? -ne 0 ]; then
 	echo "cat2 FAIL"
     fi
-    (cd $HOME/.gameapi_builder/deploy; zip -r gameapi_deploy.zip gameapi_index.php engine)
+    cp $HOME/.gameapi_builder/get_file_size.php $HOME/.gameapi_builder/deploy/get_file_size.php
+    (cd $HOME/.gameapi_builder/deploy; zip -r gameapi_deploy.zip gameapi_index.php get_file_size.php engine)
     if [ $? -ne 0 ]; then
 	echo "zip FAIL"
     fi

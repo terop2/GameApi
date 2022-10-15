@@ -2062,3 +2062,5 @@ GameApi::PTS GameApi::VolumeApi::random_vol_object(O o, float start_x, float end
   VolumeObject *obj = find_volume(e, o);
   return add_points_api_points(e, new RandomVolObject(obj,start_x,end_x, start_y, end_y, start_z, end_z, numpoints));
 }
+
+

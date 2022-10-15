@@ -739,6 +739,7 @@ public:
 	if (chosen==0)
 	  {
 	    env->display_visible = false;
+	    env->ev->tracker_api.stop_music_playing();
 	  }
 	int chosen2 = env->gui->chosen_item(env->codegen_button);
 	if (chosen2 == 0)
@@ -1292,6 +1293,7 @@ public:
 					env->codegen_button = env->gui->empty();
 					env->collect_button = env->gui->empty();
 					env->ev->shader_api.use(env->sh);
+					env->ev->tracker_api.stop_music_playing();
 					//}
 				      display = false;
 				    }
