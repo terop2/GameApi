@@ -109,12 +109,16 @@ function read_browser_support_string( $arr )
 
 function write_browser_support_string2( $status )
 {
+  if ($_SESSION) {
   $_SESSION["pthread"] = $status;
+  }
 }
 function read_browser_support_string2( )
 {
+  if ($_SESSION) {
   if (array_key_exists( "pthread", $_SESSION )) {
     return $_SESSION["pthread"];
+  }
   }
   return "fail";
 }

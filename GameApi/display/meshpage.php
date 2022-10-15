@@ -688,6 +688,7 @@ echo " All prices include a copy of 3d engine. Contact via email for more info.<
 //var g_login_label = "";
 //window.addEventListener("message", (event) => {
 //  console.log("MESSAGE");
+//  console.log(event.origin);
 //  if (event.origin !== "https://meshpage.org") return;
 //  console.log("DATA");
 //  console.log(event.data);
@@ -709,6 +710,7 @@ echo " All prices include a copy of 3d engine. Contact via email for more info.<
      	submit_data(user_id, user_name, user_email);
 	}
      } catch(error) {
+        console.log(error);
 	var d = document.getElementById("loginstatus");
 	d.innerHTML = "GUEST MODE (Certificate missing or expired) <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a></a>";
 	app.indicator.pop();
@@ -725,7 +727,7 @@ function login() {
 	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 	    onload_button();
 	    } else
-	 res.innerHTML="<iframe referrerpolicy=\"origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" crossorigin=\"use-credentials\"></iframe>";
+	 res.innerHTML="<iframe referrerpolicy=\"origin-when-cross-origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" crossorigin=\"use-credentials\"></iframe>";
 //style=\"display:none\"></iframe>";
 	 
 

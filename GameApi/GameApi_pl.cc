@@ -12686,9 +12686,9 @@ GameApi::ML GameApi::PolygonApi::line_to_cone2(EveryApi &ev, LI li, float size, 
   GameApi::PT pp2 = ev.point_api.point(300.0,0.0,0.0);
   GameApi::P p = ev.polygon_api.cone(numfaces,pp1,pp2,size,size);
   //GameApi::P p2 = ev.polygon_api.fix_vertex_order(p);
-  //GameApi::P p3 = ev.polygon_api.recalculate_normals(p2);
+  GameApi::P p3 = ev.polygon_api.recalculate_normals(p);
   //GameApi::P p4 = ev.polygon_api.flip_normals(p3);
-  GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mt);
+  GameApi::ML ml = ev.materials_api.bind_inst_matrix(p3,ms,mt);
   return ml;
 }
 

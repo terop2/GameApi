@@ -76,6 +76,11 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef EMSCRIPTEN
+#define OPENGL_ES 1
+#endif
+
+
 //#define WAYLAND 1
 
 #ifdef WAYLAND
@@ -612,7 +617,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   if (ptr && strlen((const char*)ptr)>4) {
   g_gpu_vendor = std::string(ptr,ptr+4);
   }
-  std::cout << "GPU Vendor: " << ogl->glGetString(Low_GL_VENDOR)<< std::endl;
+  std::cout << "GPU Vendor: " << ogl->glGetString(Low_GL_VENDOR) << "(" << g_gpu_vendor << ")" << std::endl;
   std::cout << "GPU Renderer:" << ogl->glGetString(Low_GL_RENDERER)<< std::endl;
   std::cout << "GPU Version:" << ogl->glGetString(Low_GL_VERSION) << std::endl;
   

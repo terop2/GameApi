@@ -3504,7 +3504,7 @@ public:
   //unsigned int *color_access(PTA pta, int pointnum);
   void update_from_data(PTA array, PTS p);
   void update_from_data(MSA array, MS p);
-  void update(PTA array);
+  void update(PTA array, bool slow=false);
   IMPORT void render(PTA array);
   IMPORT ML render_ml(EveryApi &ev, PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
