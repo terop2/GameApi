@@ -328,7 +328,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  
+  ML vr_scale(ML ml, float);
   ML disable_polygons(ML ml);
   ML print_deps(ML ml, int num);
   ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);

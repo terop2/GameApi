@@ -1954,7 +1954,7 @@ private:
 };
 #endif
 
-bool g_filter_execute = false;
+extern bool g_filter_execute;
 int g_filter_start=0;
 int g_filter_end=0;
 extern bool g_execute_shows_logo;
