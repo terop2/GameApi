@@ -21952,7 +21952,6 @@ GameApi::P GameApi::PolygonApi::z_split(P p, float z, float z_0, float z_1)
   return add_polygon2(e, new ZSplit(coll,z,z_0,z_1),1);
 }
 
-bool g_disable_polygons=false;
 class DisablePolygons : public MainLoopItem
 {
 public:
