@@ -328,6 +328,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  TF glb_load_sketchfab_zip(std::string url_to_zip);
+  TF gltf_load_sketchfab_zip(std::string url_to_zip);
   ML vr_scale(ML ml, float);
   ML disable_polygons(ML ml);
   ML print_deps(ML ml, int num);

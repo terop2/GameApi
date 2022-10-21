@@ -809,28 +809,13 @@ struct del_map
 {
   void del_url(std::string url)
   {
-    //std::vector<unsigned char>* v = load_url_buffers_async[url];
-    //delete v;
-    //load_url_buffers_async[url] = 0;
   }
   ~del_map() {
-    //std::map<std::string,std::vector<unsigned char>*>::iterator i = load_url_buffers_async.begin();
-    //for(;i!=load_url_buffers_async.end();i++)
-    //  {
-    //	std::pair<std::string,std::vector<unsigned char>*> p = *i;
-    //	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
-    //delete p.second;
-    // }
+
   }
   void print()
   {
-    /*
-    std::map<std::string,std::vector<unsigned char>*>::iterator i = load_url_buffers_async.begin();
-    for(;i!=load_url_buffers_async.end();i++)
-      {
-    	std::pair<std::string,std::vector<unsigned char>*> p = *i;
-    	std::cout << std::hex << (long)p.second << "::" << p.first << std::endl;
-	}*/
+
   }
   void del_vec(const std::vector<unsigned char>* vec)
   {
