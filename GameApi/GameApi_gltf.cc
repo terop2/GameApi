@@ -353,13 +353,14 @@ public:
 class GLTF_Model_with_prepare : public GLTF_Model
 {
 public:
-  GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { }
-  virtual void Prepare() { load->Prepare(); }
+  GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
+  virtual void Prepare() { if (firsttime) { load->Prepare(); firsttime=false; } }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
-  virtual void HeavyPrepare() { load->Prepare(); }
+  virtual void HeavyPrepare() { if (firsttime) { load->Prepare(); firsttime=false; } }
 private:
   LoadGltf *load;
   tinygltf::Model *model;
+  bool firsttime;
 };
 
 
@@ -7221,3 +7222,194 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   GLTFModelInterface *i = (GLTFModelInterface*)model;
   return add_gltf(e,i);
 }
+
+
+#include "zip_file.hpp"
+
+struct del_map
+{
+  void del_url(std::string url)
+  {
+  }
+  ~del_map() {
+
+  }
+  void print()
+  {
+
+  }
+  void del_vec(const std::vector<unsigned char>* vec)
+  {
+    std::map<std::string,const std::vector<unsigned char>*>::iterator it=load_url_buffers_async.begin();
+    for(;it!=load_url_buffers_async.end();it++)
+      {
+	const std::vector<unsigned char> *ptr = (*it).second;
+	if (ptr==vec) {
+	  load_url_buffers_async.erase(it);
+	  delete vec;
+	  return;
+	}
+      }
+  }
+  std::map<std::string, const std::vector<unsigned char>* > load_url_buffers_async;
+};
+extern del_map g_del_map;
+
+
+class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
+{
+public:
+  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model) { firsttime=true; }
+  void Prepare() {
+    if (firsttime) {
+    UncompressZip();
+    load->Prepare();
+    firsttime=false;
+    }
+  }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() {
+    if (firsttime) {
+    UncompressZip();
+    load->Prepare();
+    firsttime=false;
+    }
+  }
+  void UncompressZip()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(zip_url, homepage);
+#endif
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
+    if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
+    std::vector<unsigned char> vec2(vec->begin(), vec->end());
+    mz_ulong size = vec->end()-vec->begin();
+    //mz_ulong size2 = 0;
+    //unsigned char *ptr = new unsigned char[size2];
+
+    mz_zip_archive pZip;
+    std::memset(&pZip,0,sizeof(mz_zip_archive));
+
+    mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
+
+    mz_uint num = mz_zip_reader_get_num_files(&pZip);
+    std::cout << "NUMFILES: " << num << std::endl;
+    for(int i=0;i<num;i++)
+      {
+	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
+	if (is_dir) {
+	    char *filename = new char[256];
+	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    delete[] filename;
+	} else
+	  {
+	    char *filename = new char[256];
+	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
+	    std::cout << "Decompressing zip: " << filename << std::endl;
+
+	    size_t sz;
+	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
+	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    free(ptr);
+	    delete[] filename;
+	    
+	    g_del_map.load_url_buffers_async[url] = data;
+	  }
+	
+      }
+    
+  }
+private:
+  GameApi::Env &e;
+  std::string zip_url;
+  std::string homepage;
+  LoadGltf *load;
+  tinygltf::Model *model;	       
+  bool firsttime;
+};
+/*
+class GLB_Model_with_prepare_sketchfab_zip : public GLTF_Model
+{
+public:
+  GLB_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.glb"), zip_url(zip_url), homepage(homepage), load(load), model(model) { }
+  void Prepare() {
+    UncompressZip();
+    load->Prepare();
+  }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() {
+    UncompressZip();
+    load->Prepare();
+  }
+  void UncompressZip()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(zip_url, homepage);
+#endif
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
+    if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
+    std::vector<unsigned char> vec2(vec->begin(), vec->end());
+    mz_ulong size = vec->end()-vec->begin();
+    mz_ulong size2 = 0;
+    unsigned char *ptr = new unsigned char[size2];
+
+    mz_zip_archive pZip;
+    std::memset(&pZip,0,sizeof(mz_zip_archive));
+
+    mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
+
+    mz_uint num = mz_zip_reader_get_num_files(&pZip);
+    for(int i=0;i<num;i++)
+      {
+	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
+	if (is_dir) {
+	    char *filename = new char[256];
+	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    delete[] filename;
+	} else
+	  {
+	    char *filename = new char[256];
+	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
+
+	    size_t sz;
+	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
+	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    free(ptr);
+	    delete[] filename;
+	    
+	    g_del_map.load_url_buffers_async[url] = data;
+	  }
+	
+      }
+    
+  }
+private:
+  GameApi::Env &e;
+  std::string zip_url;
+  std::string homepage;
+  LoadGltf *load;
+  tinygltf::Model *model;	       
+};
+*/
+
+
+GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip)
+{
+  bool is_binary=false;
+  LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.gltf",gameapi_homepageurl,is_binary);
+  GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
+  GLTFModelInterface *i = (GLTFModelInterface*)model;
+  return add_gltf(e,i);
+}
+/*
+GameApi::TF GameApi::MainLoopApi::glb_load_sketchfab_zip(std::string url_to_zip)
+{
+  bool is_binary=true;
+  LoadGltf *load = find_gltf_instance(e,url_to_zip + "/",url_to_zip+"/scene.glb",gameapi_homepageurl,is_binary);
+  GLTF_Model_with_prepare_sketchfab_zip *model = new GLTF_Model_with_prepare_sketchfab_zip(e,url_to_zip, gameapi_homepageurl, load, &load->model);
+  GLTFModelInterface *i = (GLTFModelInterface*)model;
+  return add_gltf(e,i);
+}
+*/

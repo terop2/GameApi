@@ -602,3 +602,91 @@
   return vec;
 
 }
+
+
+#if 0
+// returns comma-separated string, and vectors for parameter name,type and default values
+std::tuple<std::string,std::vector<std::vector<std::string>>,std::vector<std::vector<std::string>>,std::vector<std::vector<std::string>> > get_list_of_functions(std::vector<GameApiItem*> vec, std::string return_type, std::string param_type)
+{
+  std::string res="";
+  int s = vec.size();
+  std::vector<std::vector<std::string>> m_vec1,m_vec2,m_vec3;
+ 
+  for(int i=0;i<s;i++)
+    {
+      GameApiItem *item = vec[i];
+      std::string rettype = item->ReturnType(0);
+      int s2 = item->ParamCount(0);
+      bool is_param=false;
+      int param_num = -1;
+      std::vector<std::string> vec1,vec2,vec3;
+      for(int j=0;j<s2;j++) {
+	if (item->ParamType(0,j)==param_type) { is_param=true; param_num=j; break; } else { vec1.push_back(item->ParamName(0,j)); vec2.push_back(item->ParamType(0,j)); vec3.push_back(item->ParamDefault(0,j));  }
+      }
+      if (is_param && rettype==return_type) {
+	res+=item->Name(0);
+	res+=",";
+	m_vec1.push_back(vec1);
+	m_vec2.push_back(vec2);
+	m_vec3.push_back(vec3);
+      }
+    }
+  res.pop_back();
+  return std::make_tuple(res,m_vec1,m_vec2,m_vec3);
+}
+
+
+GameApi::MT GameApi::MaterialsApi::m_apply(int e, GameApi::MT mt, std::vector<std::string> params)
+{
+  
+}
+
+class ApiItemF2 : public GameApiItem
+{
+public:
+  ApiItemF2(std::tuple<std::string,std::vector<std::vector<std::string>>,std::vector<std::vector<std::string>>,std::vector<std::vector<std::string>> > tuple, std::string return_type, std::string apiname, std::string funcname) : tuple(tuple),return_type(return_type),apiname(apiname), funcname(funcname) { }
+  void change_enum(int i) { m_num = i; }
+  
+  virtual int Count() const { return 1; }
+  virtual std::string Name(int i) const { return name; }
+  virtual int ParamCount(int i) const { return 1+tuple[1].size(); }
+  virtual std::string ParamName(int i, int p) const
+  {
+    if (p==0) {
+      return "choose";
+    }
+    return tuple[1][m_num][p-1];
+  }
+  virtual std::string ParamType(int i, int p) const
+  {
+    if (p==0) {
+      return std::string("{") + tuple[0] + std::string("}");
+    }
+    return tuple[2][m_num][p-1];
+  }
+  virtual std::string ParamDefault(int i, int p) const
+  {
+    if (p==0) {
+      return "0";
+    }
+    return tuple[3][m_num][p-1];
+  }
+  virtual std::string ReturnType(int i) const
+  {
+    return return_type;
+  }
+  virtual std::string ApiName(int i) const { return apiname; }
+  virtual std::string FuncName(int i) const { return funcname; }
+  virtual std::string Symbols() const { return ""; }
+  virtual std::string Comment() const { return ""; }
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)=0;
+  //virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)=0;
+private:
+  std::tuple<std::string,std::vector<std::vector<std::string>>,std::vector<std::vector<std::string>>,std::vector<std::vector<std::string>> > tuple;
+  int m_num = 0;
+  std::string return_type;
+  std::string apiname;
+  std::string funcname;
+};
+#endif
