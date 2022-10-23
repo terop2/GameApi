@@ -499,6 +499,8 @@ public:
   virtual Color Map(int x, int y) const
   {
     if (!img) return Color(0x0);
+    if (x<0||x>=img->width) return Color(0x0);
+    if (y<0||y>=img->height) return Color(0x0);
     const unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
