@@ -4,7 +4,7 @@ ini_set("upload_max_filesize", "100M");
 
 include("backend.php");
 header("Cross-Origin-Opener-Policy: same-origin");
-$date = filemtime("web_page.js");
+$date = filemtime("web_page_highmem.js");
 
 function unhash($data)
 {
@@ -335,7 +335,7 @@ Vue.component('appmodel_notselected', {
      return { } },
    template: `<div class="border block blockitem height12 customfont">
    <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a><!--or <a href="javascript:;" v-on:click="$emit('link_click')">link</a-->.</small>
-   <br><br><small>.STL, .OBJ, .GLB file types supported. See help for materials.</small>
+   <br><br><small>.STL, .OBJ, .GLB, .ZIP file types supported. See help for materials.</small>
    <button type="button" onclick="clickselectfile()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
    <input id="selectfile" type="file" multiple v-on:change="$emit('handle_drop','selectfile')" style="display:none"/>
    </div>`
@@ -399,7 +399,7 @@ Vue.component('appinfo', {
      },
      template: `<div class="block blockitem customfont">
 <h3>Supported file formats</h3>
-.gltf, .glb, .stl, .obj, .mtl, .ds, dirs
+.gltf, .glb, .stl, .obj, .mtl, .ds, dirs, .zip
 <h3>Supported texture formats</h3>
 .jpg, .png</div>
      `});
@@ -640,6 +640,7 @@ function find_main_item(arr)
 {
    var s = arr.length;
    for(var i=0;i<s;i++) {
+      if (arr[i].name.substr(-4)==".zip") return i;
       if (arr[i].name.substr(-4)==".glb") return i;
       if (arr[i].name.substr(-4)==".stl") return i;
       if (arr[i].name.substr(-5)==".gltf") return i;
@@ -972,7 +973,7 @@ var normals_select = normals;
 var texcoord_normals_select = texcoord_normals;
 var normals_val = get_normals_value();
 if (normals_val==-1) {
-if (filename.substr(-4)==".glb"||filename.substr(-4)==".obj") { normals_val=2; } else { normals_val=0; }
+if (filename.substr(-4)==".glb"||filename.substr(-4)==".obj"||filename.substr(-4)==".zip") { normals_val=2; } else { normals_val=0; }
 }
 if (normals_val==0||normals_val==5) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
 if (normals_val==1||normals_val==6) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
@@ -1045,15 +1046,25 @@ function create_script(filename, contents, filenames)
      } else
   if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
   //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
+  if (filename.substr(-4)==".zip") {
+     res+="TF I154=ev.mainloop_api.gltf_load_sketchfab_zip("+filename+");\n"
+     res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     res+="P I155=ev.polygon_api.or_array2(std::vector<P>{I1550});\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+  } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     res+="P I155=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
-
+     res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     res+="P I155=ev.polygon_api.or_array2(std::vector<P>{I1550});\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
+     res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     res+="P I155=ev.polygon_api.or_array2(std::vector<P>{I1550});\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
 
-     res+="P I155=ev.polygon_api.gltf_load(ev,I154,0,0);\n"; } else
+} else
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
@@ -1115,7 +1126,7 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
   if (material[1]!="") {
      res+=material[1];
   } else
-  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
+  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
       res+="P I2=ev.polygon_api.recalculate_normals(I1);\n";
       }
   res+="MT I3=ev.materials_api.m_def(ev);\n";
@@ -1125,21 +1136,23 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
   if (filename.substr(-4)==".obj"&&mtl_name!="") {
      res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
   } else
-  if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
+  if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
      res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1);\n";
      //res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I40,cvbnmfghjk);\n"
   } else {
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ffffffff,5.0,0.5);\n";
   }
 
+ if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"))||material_value!=-1) { 
     res+="ML I62=ev.materials_api.bind(I2,I4);\n";
+    }
 res+="ML I6=ev.mainloop_api.depthfunc(I62,0);\n";
  
   console.log(material_value);
   console.log(border_value);
   console.log(filename.substr(-4));
   console.log(filename.substr(-5));
-  if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf")) {
+  if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
   //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
 
   }
@@ -1161,13 +1174,15 @@ res+="ML I6=ev.mainloop_api.depthfunc(I62,0);\n";
   res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I502,I6});\n";
    }
 
-  if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf") {
+  if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
     res+="ML I88=ev.mainloop_api.async_gltf(I66,I154);\n";
     res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
-    res+="ML I8=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
+    res+="ML I800=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
+    res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
   } else {
     res+="ML I67=ev.mainloop_api.mouse_roll_zoom2(ev,I66);\n";
-    res+="ML I8=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
+    res+="ML I800=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
+    res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
   }
   res+="ML I9=ev.mainloop_api.right_mouse_pan(ev,I8);\n";
   res+=background;
@@ -1522,7 +1537,7 @@ function load_emscripten(state,filename, contents, filenames)
     if (agent.indexOf("Mobile") != -1) mobile = true;
     if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
-    var src = "web_page.js?"+data2;
+    var src = "web_page_highmem.js?"+data2;
     var vstr = agent.substring(idx+8);
     var vnum = parseInt(vstr);
 
