@@ -3515,7 +3515,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       int mat = m.primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
       GameApi::MT mat2_anim;
-      if (interface->animations_size()!=0) {
+      if (interface->animations_size()!=0 && keys.size()>0) {
 	mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, 100, mat2, keys);
       } else
 	{
@@ -3547,7 +3547,10 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
-      GameApi::MT mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 100, mat2, keys);
+      GameApi::MT mat2_anim;
+      if (interface->animations_size()!=0 && keys.size()>0) {
+	mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, 100, mat2, keys);
+      } else { mat2_anim=mat2; }
 
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
@@ -3853,7 +3856,7 @@ GameApi::ML gltf_mesh_all2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInt
   int s = interface->meshes_size(); //load->model.meshes.size();
   std::vector<GameApi::ML> mls;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_mesh2( e, ev, interface, i, 0, "cvb" );
+    GameApi::ML ml = gltf_mesh2( e, ev, interface, i, 0, "" );
     mls.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, mls);
@@ -7313,7 +7316,7 @@ public:
 	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
 	    delete[] filename;
-	    
+	    data->push_back(0); // is this always needed?
 	    g_del_map.load_url_buffers_async[url] = data;
 	  }
 	
