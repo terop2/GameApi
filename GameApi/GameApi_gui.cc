@@ -5417,9 +5417,9 @@ int find_char(const std::string &line, int start_char, char ch, bool braces=true
   for(int i=start_char;i<s;i++)
     {
       if (braces && (line[i]=='(' ||line[i]=='{')) { level++; }
-      if (braces && ((line[i]==')' ||line[i]=='}') && level>0)) { level--; }
 
       if (line[i]==ch && level==0) return i;
+      if (braces && ((line[i]==')' ||line[i]=='}') && level>0)) { level--; }
     }
   return -1;
 }
@@ -5430,7 +5430,6 @@ int find_one(std::string line, int start_char, std::string chars, bool braces=tr
   for(int i=start_char;i<s;i++)
     {
       if (braces && (line[i]=='('||line[i]=='{')) { level++; }
-      if (braces && ((line[i]==')'||line[i]=='}') && level>0)) { level--; }
       int ss = chars.size();
       bool found = false;
       for(int j=0;j<ss;j++)
@@ -5442,6 +5441,7 @@ int find_one(std::string line, int start_char, std::string chars, bool braces=tr
 	      }
 	    }
 	}
+      if (braces && ((line[i]==')'||line[i]=='}') && level>0)) { level--; }
       if (found) { return i; }
     }
   return -1;
