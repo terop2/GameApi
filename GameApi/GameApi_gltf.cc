@@ -31,6 +31,8 @@ public:
   virtual std::string BaseUrl() const { return base_url; }
   virtual std::string Url() const { return url; }
 
+
+  virtual int get_default_scene() const { return self->defaultScene; }
   
   virtual int accessors_size() const { return self->accessors.size(); }
   virtual const tinygltf::Accessor &get_accessor(int i) const { return self->accessors[i]; }
@@ -3848,7 +3850,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, TF model0, 
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   load->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, load, 0,0);
-  GameApi::ML ml = gltf_scene2(e,ev,load,scene_id);
+  GameApi::ML ml = gltf_scene2(e,ev,load,scene_id,mix);
   return scale_to_gltf_size(e,ev,mesh,ml);
 #endif
   GLTFModelInterface *interface = find_gltf(e,model0);
@@ -3904,12 +3906,9 @@ public:
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
     interface->Prepare();
     GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
-    
-<<<<<<< HEAD
-    GameApi::ML ml = gltf_mesh_all2( env, ev, interface,mix );
-=======
-    GameApi::ML ml = gltf_scene2( env, ev, interface,0,"" );
->>>>>>> a37b156b3ddfbd082fb164f2b98a7b4db95b801e
+
+    int scene_id = interface->get_default_scene();
+    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,"",mix );
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
     if (res.id!=-1) {

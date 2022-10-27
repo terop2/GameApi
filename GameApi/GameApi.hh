@@ -328,6 +328,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  MT mainloop_material(EveryApi &ev, ML ml);
   TF glb_load_sketchfab_zip(std::string url_to_zip);
   TF gltf_load_sketchfab_zip(std::string url_to_zip);
   ML vr_scale(ML ml, float);
@@ -375,7 +376,7 @@ public:
   ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
   ML gs_delta(GS gs, ML ml, int p, int n, float delta);
   ML gs_time(GS gs, ML ml, int t);
-  ML gltf_mesh_all_env(EveryApi &ev, TF model0, BM diffuse, BM specular, BM bfrd);
+  ML gltf_mesh_all_env(EveryApi &ev, TF model0, BM diffuse, BM specular, BM bfrd, float mix);
   ML transparent(ML ml);
   ML async_gltf(ML ml, TF tf);
   ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
@@ -432,14 +433,14 @@ public:
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
-  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys );
-  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0 );
-  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys );
-  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys );
+  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix );
+  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix );
+  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix );
+  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix);
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
   IMPORT ML gltf_anim2( EveryApi &ev, TF model0, int animation, int channel);
-  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys);
+  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel, float mix);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -2441,6 +2442,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ML mixshader_shader(EveryApi &ev, ML ml, float mix=0.5);
   P extract_large_polygons(P p, float minimum_size, bool reverse);
   P x_split(P p, float x, float x_0, float x_1);
   P y_split(P p, float y, float y_0, float y_1);
@@ -2871,6 +2873,7 @@ public:
   IMPORT ML toon_shader(EveryApi &ev, ML mainloop);  
   IMPORT ML fade_shader(EveryApi &ev, ML mainloop, float start_time, float end_time, float start_time2, float end_time2);
   IMPORT ML texture_shader(EveryApi &ev, ML mainloop, float mix);
+  IMPORT ML colormix_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_many_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
@@ -3787,6 +3790,7 @@ public:
   US v_bump_phong(US us);
   US v_fog(US us);
   US v_shadow(US us);
+  US v_mix(US us);
   US v_dyn_lights(US us);
   US v_gi(US us);
   US v_gltf(US us);
@@ -3809,6 +3813,7 @@ public:
   US f_bump_phong(US us);
   US f_fog(US us);
   US f_shadow(US us);
+  US f_mix(US us);
   US f_dyn_lights(US us);
   US f_color_from_normals(US us);
   US f_color_from_id(US us, int id); // id = [0..9]

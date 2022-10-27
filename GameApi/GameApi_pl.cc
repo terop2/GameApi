@@ -7287,6 +7287,74 @@ private:
 };
 
 
+class ColorMixShaderML : public MainLoopItem
+{
+public:
+  ColorMixShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix) : ev(ev), next(next), mix(mix) { firsttime=true; }
+  void handle_event(MainLoopEvent &e)
+  {
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    if (firsttime) {
+      firsttime = false;
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    GameApi::US a2 = ev.uber_api.v_mix(vertex);
+    ee.us_vertex_shader = a2.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    GameApi::US a2f = ev.uber_api.f_mix(fragment);
+    ee.us_fragment_shader = a2f.id;
+    }
+
+    std::vector<int> sh_ids = next->shader_id();
+    //std::cout << "sh_id" << sh_id << std::endl;
+    int s = sh_ids.size();
+    for(int i=0;i<s;i++) {
+      int sh_id = sh_ids[i];
+      if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	sh.id = sh_id;
+	ev.shader_api.use(sh);
+	ev.shader_api.set_var(sh, "color_mix3", mix);
+      }
+    }
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+  std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  float mix;
+};
+  
+
 class TextureShaderML : public MainLoopItem
 {
 public:
@@ -10086,6 +10154,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new TextureShaderML(ev, item, mix));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::mixshader_shader(EveryApi &ev, ML mainloop, float mix)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new ColorMixShaderML(ev, item, mix));
 }
  EXPORT GameApi::ML GameApi::PolygonApi::texture_many_shader(EveryApi &ev, ML mainloop, float mix=0.5)
  {

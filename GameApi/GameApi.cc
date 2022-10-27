@@ -5384,7 +5384,18 @@ private:
   float start_time2, end_time2;
 };
 
-
+/*
+class ColorMixMaterial : public MaterialForward
+{
+public:
+  ColorMixMaterial(EveryApi &ev, float mix) : ev(ev), mix(mix) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+};
+*/
 class TextureMaterial : public MaterialForward
 {
 public:
@@ -10822,6 +10833,11 @@ GameApi::US GameApi::UberShaderApi::v_fog(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("fog", next,"EX_POSITION IN_POSITION"));
 }
+GameApi::US GameApi::UberShaderApi::v_mix(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("mixshader", next,""));
+}
 GameApi::US GameApi::UberShaderApi::v_shadow(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -11213,6 +11229,10 @@ GameApi::US GameApi::UberShaderApi::f_fog(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("fog", next,"EX_POSITION"));
+}
+GameApi::US GameApi::UberShaderApi::f_mix(US us) {
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("mixshader", next,"COLOR_MIX"));
 }
 GameApi::US GameApi::UberShaderApi::f_shadow(US us)
 {
@@ -31407,4 +31427,37 @@ GameApi::ML GameApi::MainLoopApi::print_deps(ML ml, int num)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   return add_main_loop(e, new PrintDeps(e,next,num));
+}
+
+
+class MLMaterial : public MaterialForward
+{
+public:
+  MLMaterial(GameApi::EveryApi &ev, GameApi::ML ml) : ev(ev), ml(ml) { }
+  virtual GameApi::ML mat2(GameApi::P p) const { return ml; }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    return ev.move_api.local_move(ev,ml,pts);
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    return ev.move_api.local_move_matrix(ev,ml,ms);
+  }
+    
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    return ml;
+  }
+private:
+  GameApi::EveryApi &ev;
+  GameApi::ML ml;
+};
+
+GameApi::MT GameApi::MainLoopApi::mainloop_material(EveryApi &ev, ML ml)
+{
+  return add_material(e,new MLMaterial(ev, ml));
 }
