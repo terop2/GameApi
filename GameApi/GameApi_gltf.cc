@@ -3430,15 +3430,15 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      //std::cout << "{";
+      std::cout << "{";
       GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys,mix );
       vec.push_back(ml);
-      //std::cout << "}";
+      std::cout << "}";
     }
   }
   if (mesh.id != -1) {
     vec.push_back( mesh );
-    //std::cout << "MESH";
+    std::cout << "MESH";
   }
     
  GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
@@ -3449,14 +3449,14 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     double s_y = node.scale[1];
     double s_z = node.scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-    //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+    std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
   }
   if (int(node.rotation.size())==4) {
     double r_x = node.rotation[0];
     double r_y = node.rotation[1];
     double r_z = node.rotation[2];
     double r_w = node.rotation[3];
-    //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
+    std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
     Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
     Matrix m = Quarternion::QuarToMatrix(q);
     Movement *orig = find_move(e, mv);
@@ -3468,7 +3468,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     double m_y = node.translation[1];
     double m_z = node.translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
-    //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
+    std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
   }
   //std::cout << node->matrix.size();
   if (int(node.matrix.size())==16) {
@@ -3476,7 +3476,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     Matrix m;
       for(int i=0;i<4;i++)
       for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
-      //std::cout << "mat[]";
+      std::cout << "mat[]";
 
       // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
     Movement *orig = find_move(e, mv);
@@ -3905,7 +3905,11 @@ public:
     interface->Prepare();
     GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
     
+<<<<<<< HEAD
     GameApi::ML ml = gltf_mesh_all2( env, ev, interface,mix );
+=======
+    GameApi::ML ml = gltf_scene2( env, ev, interface,0,"" );
+>>>>>>> a37b156b3ddfbd082fb164f2b98a7b4db95b801e
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
     if (res.id!=-1) {
@@ -4026,183 +4030,6 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_env( GameApi::EveryApi &ev, TF m
   GLTFModelInterface *interface = find_gltf(e,model0);
   return add_main_loop(e, new GltfMeshAllEnv(e,ev,interface,diffuse,specular,bfrd,mix));
 }
-
-#if 0
-class GLTFSkeleton : public LineCollection
-{
-public:
-  GLTFSkeleton(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num) : env(env), ev(ev), interface(interface), skin_num(skin_num) { }
-  void Collect(CollectVisitor &vis)
-  {
-    load->Collect(vis);
-    vis.register_obj(this);
-  }
-  void HeavyPrepare()
-  {
-    tinygltf::Skin *skin = &load->model.skins[skin_num];
-    int start_node = skin->skeleton;
-    
-    tinygltf::Node *node = &load->model.nodes[start_node];
-    recurse_node(node, Matrix::Identity(), Point(-300.0,-300.0,-300.0), Point(300.0,300.0,300.0));
-  }
-		   
-  void Prepare() {
-    load->Prepare();
-    tinygltf::Skin *skin = &load->model.skins[skin_num];
-    int start_node = skin->skeleton;
-    
-    tinygltf::Node *node = &load->model.nodes[start_node];
-    recurse_node(node, Matrix::Identity(), Point(-300.0,-300.0,-300.0), Point(300.0,300.0,300.0));
-  }
-  Point recurse_node(tinygltf::Node *node, Matrix mat, Point pos, Point pos_next)
-  {
-    //std::cout << "Node:" << node->name << std::endl;
-    GameApi::MN mv0 = ev.move_api.mn_empty();
-    GameApi::MN mv = mv0; //ev.move_api.matrix(mv0,add_matrix2(env,mat)); // TODO, why does this cause odd shape for the skeleton LI?
-
-    if (int(node->matrix.size())==16) {
-      double *arr = &node->matrix[0];
-      Matrix m;
-      for(int i=0;i<4;i++)
-      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
-      Movement *orig = find_move(env, mv);
-      Movement *mv2 = new MatrixMovement(orig, m);
-      mv = add_move(env, mv2);    
-    }
-
-    if (int(node->scale.size())==3) {
-      double s_x = node->scale[0];
-      double s_y = node->scale[1];
-      double s_z = node->scale[2];
-      mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-      }
-
-    if (int(node->rotation.size())==4) {
-      double r_x = node->rotation[0];
-      double r_y = node->rotation[1];
-      double r_z = node->rotation[2];
-      double r_w = node->rotation[3];
-      Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
-      Matrix m = Quarternion::QuarToMatrix(q);
-      Movement *orig = find_move(env, mv);
-      Movement *mv2 = new MatrixMovement(orig, m);
-      mv = add_move(env, mv2);
-      }
-    
-    if (int(node->translation.size())==3) {
-      double m_x = node->translation[0];
-      double m_y = node->translation[1];
-      double m_z = node->translation[2];
-      mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
-    }
-   
-
-    
-    Movement *move = find_move(env,mv);
-    Matrix m = move->get_whole_matrix(0.0, 1.0);
-    Point pos2 = pos*m;
-    Point pos2_next = pos_next*m;
-    //if (node->mesh != -1) {
-      start_pos.push_back(pos2);
-      end_pos.push_back(pos2_next);
-      //std::cout << "LINETO: " << pos2 << "->" << pos2_next << std::endl;
-	  //}
-
-    // recurse children
-    int s = node->children.size();
-    std::vector<GameApi::ML> vec;
-    for(int i=0;i<s;i++) {
-      int child_id = node->children[i];
-      if (child_id!=-1) {
-	tinygltf::Node *child_node = &load->model.nodes[child_id];
-
-	
-	
-	/*
-	tinygltf::Skin *skin = &load->model.skins[skin_num];
-	int s2 = skin->joints.size();
-	bool doit = false;
-	for(int j=0;j<s2;j++) {
-	  if (skin->joints[j]==child_id) { doit=true; break; }
-	  }*/
-	bool doit = true;
-	if (doit) {
-	  recurse_node( child_node, m, pos2, pos2_next );
-	}
-      }
-    }
-    return pos;
-  }
-
-  virtual int NumLines() const { return start_pos.size(); }
-  virtual Point LinePoint(int line, int point) const
-  {
-    int sz = start_pos.size();
-    int sz2 = end_pos.size();
-    if (line>=0 && line<sz && line<sz2) {
-      if (point==0) return start_pos[line];
-      if (point==1) return end_pos[line];
-    } else return Point(0.0,0.0,0.0);
-    return Point(0.0,0.0,0.0);
-  }
-  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; } 
-private:
-  GameApi::Env &env;
-  GameApi::EveryApi &ev;
-  //LoadGltf *load;
-  GLTFModelInterface *interface;
-  int skin_num;
-  int start_node;
-  std::vector<Point> start_pos, end_pos;
-};
-#endif
-
-#if 0
-GameApi::LI GameApi::MainLoopApi::gltf_skeleton(GameApi::EveryApi &ev, std::string base_url, std::string url, int skin_num)
-{
-  /*
-  bool is_binary=false;
-  if (int(url.size())>3) {
-    std::string sub = url.substr(url.size()-3);
-    if (sub=="glb") is_binary=true;
-  }
-
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
-  LineCollection *coll = new GLTFSkeleton(e,ev, load, skin_num);
-  GameApi::P p = gltf_load2(e,ev, load, 0,0);
-  GameApi::LI li = add_line_array(e, coll); 
-  return scale_to_gltf_size_li(e,ev,p,li);
-  */
-}
-#endif
-				
-#if 0
-GameApi::ARR GameApi::MainLoopApi::gltf_anim_skeleton(GameApi::EveryApi &ev, TF model0, int skin_num, int animation, int /*channel*/, int num_keyframes)
-{
-  GLTFModelInterface *interface = find_gltf(e,model0);
-  std::string url = interface->Url();
-  bool is_binary=false;
-  if (int(url.size())>3) {
-    std::string sub = url.substr(url.size()-3);
-    if (sub=="glb") is_binary=true;
-  }
-
-  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
-  GameApi::P p = gltf_load2(e,ev, interface, 0,0);
-
-  std::vector<GameApi::LI> vec;
-  int s = num_keyframes;
-  ArrayType *array = new ArrayType;
-  array->type=0;
-  for(int i=0;i<s-1;i++)
-    {
-      GameApi::LI li = gltf_anim_skeleton2(e,ev,interface, skin_num, animation, i);
-      GameApi::LI li2 = scale_to_gltf_size_li(e,ev,p,li);
-      array->vec.push_back(li2.id);
-    }
-  return add_array(e, array);
-}
-#endif
 
 struct AnimData
 {
