@@ -178,6 +178,12 @@
 			 { "EveryApi&" },
 			 { "ev" },
 			 "MT", "materials_api", "m_def"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mainloop_material,
+			 "m_ml",
+			 { "ev", "ml" },
+			 { "EveryApi&", "ML" },
+			 { "ev", "" },
+			 "MT", "mainloop_api", "mainloop_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::colour_material,
 			 "m_colour",
 			 { "ev", "mix" },
