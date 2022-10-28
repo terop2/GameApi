@@ -2198,6 +2198,8 @@ public:
 
   virtual std::string BaseUrl() const=0;
   virtual std::string Url() const=0;
+
+  virtual int get_default_scene() const=0;
   
   virtual int accessors_size() const=0;
   virtual const tinygltf::Accessor &get_accessor(int i) const=0;

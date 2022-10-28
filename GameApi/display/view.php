@@ -786,7 +786,8 @@ function get_border(i,m,filename)
   var res = "";
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   //res+= "MT I401=ev.materials_api.m_def(ev);\n"
-  res+= "MT I501=ev.materials_api.toon_border(ev,I4," + width + ",ff" + color + ");\n";
+  res+= "MT I504=ev.materials_api.phong(ev,i4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
 if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
   //res+= "MT I506=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I501,cvbnmfghjk);\n";
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
@@ -1049,21 +1050,23 @@ function create_script(filename, contents, filenames)
   //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
   if (filename.substr(-4)==".zip") {
      res+="TF I154=ev.mainloop_api.gltf_load_sketchfab_zip("+filename+");\n"
-     res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     res+="P I1550=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array2(std::vector<P>{I1550});\n";
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90);\n"; // 0.75
   } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     res+="P I1550=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
+     //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
      res+="P I155=ev.polygon_api.or_array2(std::vector<P>{I1550});\n";
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9);\n";
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
+     res+="P I1550=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array2(std::vector<P>{I1550});\n";
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9);\n";
 
 } else
      {
@@ -1141,20 +1144,29 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
      res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1);\n";
      //res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I40,cvbnmfghjk);\n"
   } else {
-     res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ffffffff,5.0,0.5);\n";
+     res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ff888888,ffffffff,5.0,0.5);\n";
   }
 
  if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"))||material_value!=-1) { 
     res+="ML I62=ev.materials_api.bind(I2,I4);\n";
     }
-res+="ML I6=ev.mainloop_api.depthfunc(I62,0);\n";
+
+    res+="P I771=ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);\n";
+    res+="MT I772=ev.mainloop_api.mainloop_material(ev,I62);\n";
+    //res+="MT I773=ev.materials_api.m_def(ev);\n"
+    res+="MT I774=ev.materials_api.phong(ev,I772,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+    res+="MT I775=ev.materials_api.combine_materials(ev,I774,I774);\n"
+    res+="ML I63=ev.materials_api.bind(I771,I775);\n";
+
+
+res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
  
   console.log(material_value);
   console.log(border_value);
   console.log(filename.substr(-4));
   console.log(filename.substr(-5));
   if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
-  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154);\n";
+  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5);\n";
 
   }
 
@@ -1180,10 +1192,20 @@ res+="ML I6=ev.mainloop_api.depthfunc(I62,0);\n";
     res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
     res+="ML I800=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
+
+
+
   } else {
     res+="ML I67=ev.mainloop_api.mouse_roll_zoom2(ev,I66);\n";
     res+="ML I800=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
+
+    //res+="P I771=ev.polygon_api.cube(-100.0,100.0,-100.0,100.0,-100.0,100.0);\n";
+    //res+="MT I772=ev.mainloop_api.mainloop_material(ev,I801);\n";
+    //res+="MT I773=ev.materials_api.phong(ev,I772,0.0,0.0,1.0,ffff8822,ffff8822,30.0);\n";
+    //res+="ML I8=ev.materials_api.bind(I771,I773);\n";
+
+
   }
   res+="ML I9=ev.mainloop_api.right_mouse_pan(ev,I8);\n";
   res+=background;
@@ -1802,14 +1824,25 @@ function load_data()
    var gp = document.getElementById("formgpath2");
    if (st.textContent != "") {
     loading_data=1;
-   var a_st = st.textContent;
-   //console.log(ca.textContent);
-   var a_ca = JSON.parse(ca.textContent);
-   //console.log(fa.textContent);
-   var a_fa = JSON.parse(fa.textContent);
-   //console.log(gf.textContent);
-   var a_gf = JSON.parse(gf.textContent);
-   var a_gp = JSON.parse(gp.textContent);
+   var a_st = "";
+   if (st.textContent!="")
+      a_st = st.textContent;
+   console.log(ca.textContent);
+   var a_ca = "";
+   if (ca.textContent!="")
+      a_ca = JSON.parse(ca.textContent);
+   console.log(fa.textContent);
+   var a_fa = "";
+   if (fa.textContent!="")
+      a_fa = JSON.parse(fa.textContent);
+   console.log(gf.textContent);
+   var a_gf = "";
+   if (gf.textContent != "")
+      a_gf = JSON.parse(gf.textContent);
+   console.log(gp.textContent);
+   var a_gp = "";
+   if (gp.textContent != "") 
+      a_gp = JSON.parse(gp.textContent);
 
    deserialize_state(a_st);
    contents_array = base64_to_array(a_ca);
@@ -1926,12 +1959,12 @@ function formsubmit()
   		   //form.submit();
 
   		   var data = new FormData();
-  		   data.append("num",i);
   		   data.append("state", st);
   		   data.append("contents_array", st3_sub);
   		   data.append("filename_array", st4_sub);
   		   data.append("g_filename", st5_val);
 		   data.append("g_path", st6_val);
+  		   data.append("num",i);
   		   var xhr = new XMLHttpRequest();
   		   xhr.open('POST','submit_contents.php', true);
 		   submitprogressbar(0);
