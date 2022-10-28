@@ -1,6 +1,7 @@
 <?php
 ini_set("post_max_size", "120M");
 ini_set("upload_max_filesize", "100M");
+ini_set("memory_limit", "1024M");
 
 include("backend.php");
 header("Cross-Origin-Opener-Policy: same-origin");
