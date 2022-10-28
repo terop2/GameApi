@@ -1612,8 +1612,11 @@ function load_files(data_array, filename_array)
 	buffer+=index[low];
     }
     //for(var c = 0;c<15;c++) console.log(buffer[c]);
+    const uint8 = intArrayFromString(buffer,false);
+    
+    
 
-    Module.ccall('set_string', null, ['number', 'string'], [3,buffer], {async:true} );
+    Module.ccall('set_string', null, ['number', 'array'], [3,uint8], {async:true} );
     }
     Module.ccall('set_string', null, ['number', 'string'], [4,""], {async:true} );
 
