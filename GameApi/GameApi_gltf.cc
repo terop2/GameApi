@@ -1048,7 +1048,7 @@ public:
     if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_done) {
       return position_acc->count-2;
     }
-    std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
+    //std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
     return 0;
   }
   virtual int NumPoints(int face) const { 
@@ -3560,15 +3560,15 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      std::cout << "{";
+      //std::cout << "{";
       GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys,mix,o2.second );
       vec.push_back(ml);
-      std::cout << "}";
+      //std::cout << "}";
     }
   }
   if (mesh.id != -1) {
     vec.push_back( mesh );
-    std::cout << "MESH";
+    //std::cout << "MESH";
   }
 
   /*
@@ -3595,14 +3595,14 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     double s_y = node.scale[1];
     double s_z = node.scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-    std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+    //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
   }
   if (int(node.rotation.size())==4) {
     double r_x = node.rotation[0];
     double r_y = node.rotation[1];
     double r_z = node.rotation[2];
     double r_w = node.rotation[3];
-    std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
+    //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
     Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
     Matrix m = Quarternion::QuarToMatrix(q);
     Movement *orig = find_move(e, mv);
@@ -3614,7 +3614,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     double m_y = node.translation[1];
     double m_z = node.translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
-    std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
+    //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
   }
   //std::cout << node->matrix.size();
   if (int(node.matrix.size())==16) {
@@ -3622,7 +3622,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     Matrix m;
       for(int i=0;i<4;i++)
       for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
-      std::cout << "mat[]";
+      //std::cout << "mat[]";
 
       // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
     Movement *orig = find_move(e, mv);
