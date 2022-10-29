@@ -1664,21 +1664,21 @@ public:
   const unsigned char &operator[](int i) const {
     if (buf && buf+i<end2) return buf[i];
     if (vec) return (*vec)[i];
-    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
     //throw 1;
     return tmp;
   }
   int size() const { if (buf) return end2-buf; if (vec) return vec->size();
-    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
     //throw 1;
     return 0;  }
   const unsigned char *begin() const { if (buf) return buf; if (vec) return vec->data();
-    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
     //throw 1;
 
     return &tmp; }
   const unsigned char *end() const { if (end2) return end2; if (vec) return vec->data() + vec->size();
-    std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
+    //std::cout << "ERROR: AsyncDataFetcher returning null string" << std::endl;
     //throw 1;
     return &tmp+1; }
 private:

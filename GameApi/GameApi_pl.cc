@@ -5642,7 +5642,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     int total_faces = faces->NumFaces();
-    int batch_count = total_faces/100000;
+    int batch_count = total_faces/100000+1;
     if (total_faces<100000) batch_count=30;
     if (total_faces<100) batch_count=1;
     if (batch_count==0) batch_count=1;
@@ -5667,7 +5667,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     
 
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
-    //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
+    std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
     //if (ct.tri_count==0&&ct.quad_count==0&&ct.poly_count==0) return;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     //InstallProgress(3,"batching");
@@ -5683,8 +5683,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
       FaceCollectionVertexArray2 arr(*faces, *s);
-      //std::cout << "ct2counts:" << ct2_counts.tri_count << " " << ct2_counts.quad_count << " " << ct2_counts.poly_count << std::endl;
-      //std::cout << "ct2offsets:" << ct2_offsets.tri_count << " " << ct2_offsets.quad_count << " " << ct2_offsets.poly_count << g_disable_polygons << std::endl;
+      std::cout << "ct2counts:" << ct2_counts.tri_count << " " << ct2_counts.quad_count << " " << ct2_counts.poly_count << std::endl;
+      std::cout << "ct2offsets:" << ct2_offsets.tri_count << " " << ct2_offsets.quad_count << " " << ct2_offsets.poly_count << g_disable_polygons << std::endl;
       arr.reserve_fixed2(0,ct2_counts.tri_count,ct2_counts.quad_count,ct2_counts.poly_count);
       arr.copy(start,end);
       if (ct2_counts.tri_count!=0)
