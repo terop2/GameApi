@@ -5671,13 +5671,14 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //if (ct.tri_count==0&&ct.quad_count==0&&ct.poly_count==0) return;
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
     //InstallProgress(3,"batching");
-    for(int i=0;i<batch_count+1;i++) {
+    for(int i=0;i<batch_count;i++) {
       //ProgressBar(3,i,batch_count,"batching"); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
       //std::cout << "BATCH: " << start << " " << end << std::endl;
       if (start>total_faces) { start=total_faces; }
       if (end>total_faces) { end=total_faces; }
+      if (i==batch_count-1) { end=total_faces; }
       //std::cout << "BATCH2: " << start << " " << end << std::endl;
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
