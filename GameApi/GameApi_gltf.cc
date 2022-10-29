@@ -78,6 +78,7 @@ public:
   
 private:
   tinygltf::Model *self;
+public:
   std::string base_url, url;
 };
 
@@ -343,6 +344,7 @@ public:
     delete vec;
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
   }
+  void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
 public:
   GameApi::Env &e;
   std::string base_url;
@@ -7527,7 +7529,6 @@ public:
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
 
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
-    std::cout << "NUMFILES: " << num << std::endl;
     for(int i=0;i<num;i++)
       {
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
@@ -7540,6 +7541,8 @@ public:
 	    char *filename = new char[256];
 	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
 	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
+	    std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
+	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") mainfilename = zip_url + "/" + std::string(filename);
 	    std::cout << "Decompressing zip: " << filename << std::endl;
 
 	    size_t sz;
@@ -7552,6 +7555,12 @@ public:
 	  }
 	
       }
+    if (mainfilename!="")
+      {
+	base_url = zip_url + "/";
+	url = mainfilename;
+	load->set_urls(base_url,url);
+      }
     
   }
 private:
@@ -7561,6 +7570,7 @@ private:
   LoadGltf *load;
   tinygltf::Model *model;	       
   bool firsttime;
+  std::string mainfilename;
 };
 /*
 class GLB_Model_with_prepare_sketchfab_zip : public GLTF_Model
