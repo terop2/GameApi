@@ -3443,10 +3443,10 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      std::cout << "{";
+      //std::cout << "{";
       GameApi::P ml = gltf_node2_p( e, ev, interface, child_id,keys);
       vec.push_back(ml);
-      std::cout << "}";
+      //std::cout << "}";
     }
   }
   if (mesh.id != -1) {

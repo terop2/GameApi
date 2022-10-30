@@ -3847,11 +3847,11 @@ public:
   int NumFaces() const
   {
     //std::cout << "READ m_count=" << m_count << std::endl;
-    if (m_count!=0) return m_count-1; //vec2[vec2.size()-1];
+    if (m_count!=0) return m_count; //vec2[vec2.size()-1];
     if (done) return 0;
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
     if (m_count!=0)
-      return m_count-1; //vec2[vec2.size()-1];
+      return m_count; //vec2[vec2.size()-1];
     return 0;
     /*
     int c=coll->NumFaces();
@@ -3927,16 +3927,16 @@ public:
     }
     Point2d t1 = coll->TexCoord(face,0);
     ::Color c1 = texture.Map(t1.x*sx, t1.y*sy);
-    if (c1.alpha<250) return true;
+    if (c1.alpha<150) return true;
     Point2d t2 = coll->TexCoord(face,1);    
     ::Color c2 = texture.Map(t2.x*sx, t2.y*sy);
-    if (c2.alpha<250) return true;
+    if (c2.alpha<150) return true;
     Point2d t3 = coll->TexCoord(face,2);
     ::Color c3 = texture.Map(t3.x*sx, t3.y*sy);
-    if (c3.alpha<250) return true;
+    if (c3.alpha<150) return true;
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
     ::Color c = texture.Map(center.x*sx, center.y*sy);
-    if (c.alpha<250) return true;
+    if (c.alpha<150) return true;
     //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
     return false;
   }
@@ -4338,8 +4338,15 @@ public:
   {
     g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
     g_low->ogl->glDepthMask(Low_GL_FALSE);
-    next->execute(e);
-    g_low->ogl->glDepthMask(Low_GL_TRUE);
+    //g_low->ogl->glDepthFunc(Low_GL_ALWAYS);
+    //g_low->ogl->glBlendFunc(Low_GL_SRC_ALPHA, Low_GL_ONE_MINUS_SRC_ALPHA);
+    //g_low->ogl->glEnable(Low_GL_CULL_FACE);
+    MainLoopEnv ee = e;
+    ee.depthmask=Low_GL_FALSE;
+    //ee.depthfunc=Low_GL_ALWAYS;
+    next->execute(ee);
+    g_low->ogl->glDepthMask(e.depthmask);
+    //g_low->ogl->glDepthFunc(e.depthfunc);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -4357,10 +4364,94 @@ GameApi::ML GameApi::MainLoopApi::transparent(ML ml)
   MainLoopItem *next = find_main_loop(e,ml);
   return add_main_loop(e, new TransparentMainLoop(next));
 }
+
+
+std::vector<void (*)(void*)> g_transparent_callback_objs;
+std::vector<void*> g_transparent_callback_params;
+std::vector<int> g_transparent_callback_ids;
+std::vector<float> g_transparent_pos;
+void trans_callback(void *obj);
+
+class TransparentCombine : public MainLoopItem
+{
+public:
+  TransparentCombine(MainLoopItem *opaque, MainLoopItem *transparent) : opaque(opaque), transparent(transparent) {
+    static int id=0;
+    id++;
+    g_transparent_callback_objs.push_back(&trans_callback);
+    g_transparent_callback_params.push_back((void*)this);
+    g_transparent_callback_ids.push_back(id);
+    g_transparent_pos.push_back(0.0);
+    m_id=id;
+  }
+  ~TransparentCombine() {
+    int s = g_transparent_callback_objs.size();
+    for(int i=0;i<s;i++) {
+      if (m_id==g_transparent_callback_ids[i]) {
+	g_transparent_callback_objs.erase(g_transparent_callback_objs.begin()+i);
+	g_transparent_callback_params.erase(g_transparent_callback_params.begin()+i);
+	g_transparent_callback_ids.erase(g_transparent_callback_ids.begin()+i);
+	break;
+      }
+    }
+  }
+  virtual void Collect(CollectVisitor &vis) { opaque->Collect(vis); transparent->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare()
+  {
+    opaque->Prepare();
+    transparent->Prepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    ee = e;
+    Matrix m = e.in_MV;
+    //float x = m.matrix[3];
+    //float y = m.matrix[3+4];
+    float z = m.matrix[3+4+4];
+    int s = g_transparent_callback_ids.size();
+    for(int i=0;i<s;i++)
+      {
+        if (m_id == g_transparent_callback_ids[i]) {
+	  g_transparent_pos[i]=z;
+	}
+      }
+    opaque->execute(e);
+  }
+  void execute2()
+  {
+    transparent->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    opaque->handle_event(e);
+    transparent->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return opaque->shader_id(); }
+private:
+  MainLoopItem *opaque;
+  MainLoopItem *transparent;
+  MainLoopEnv ee;
+  int m_id;
+};
+
+void trans_callback(void *obj)
+{
+  TransparentCombine *comb = (TransparentCombine*)obj;
+  comb->execute2();
+}
+GameApi::ML transparent_combine(GameApi::Env &e, GameApi::ML opaque, GameApi::ML trans)
+{
+  MainLoopItem *item = find_main_loop(e,opaque);
+  MainLoopItem *item2 = find_main_loop(e,trans);
+  return add_main_loop(e, new TransparentCombine(item,item2));
+}
+
 class TransparentRenderMaterial : public MaterialForward
 {
 public:
-  TransparentRenderMaterial(GameApi::EveryApi &ev, GameApi::BM bm, Material *next) : ev(ev),bm(bm),next(next) { }
+  TransparentRenderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::BM bm, Material *next) : e(e), ev(ev),bm(bm),next(next) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     ev.bitmap_api.prepare(bm);
@@ -4376,7 +4467,8 @@ public:
     std::vector<GameApi::ML> vec;
     vec.push_back(I13);
     vec.push_back(I15);
-    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    //GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    GameApi::ML I16=transparent_combine(e,vec[0],vec[1]);
     return I16;
     
   }
@@ -4396,7 +4488,8 @@ public:
     std::vector<GameApi::ML> vec;
     vec.push_back(I13);
     vec.push_back(I15);
-    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    GameApi::ML I16=transparent_combine(e,vec[0],vec[1]);
+    // GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
     return I16;
 
   }
@@ -4416,7 +4509,8 @@ public:
     std::vector<GameApi::ML> vec;
     vec.push_back(I13);
     vec.push_back(I15);
-    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    GameApi::ML I16=transparent_combine(e,vec[0],vec[1]);
+    //GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
     return I16;
 
   }
@@ -4436,7 +4530,8 @@ public:
     std::vector<GameApi::ML> vec;
     vec.push_back(I13);
     vec.push_back(I15);
-    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    //GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    GameApi::ML I16=transparent_combine(e,vec[0],vec[1]);
     return I16;
 
   }
@@ -4456,11 +4551,13 @@ public:
     std::vector<GameApi::ML> vec;
     vec.push_back(I13);
     vec.push_back(I15);
-    GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
+    GameApi::ML I16=transparent_combine(e,vec[0],vec[1]);
+    //GameApi::ML I16 = ev.mainloop_api.array_ml(ev, vec);
     return I16;
 
   }
 private:
+  GameApi::Env &e;
   GameApi::EveryApi &ev;
   GameApi::BM bm;
   Material *next;
@@ -4469,7 +4566,7 @@ private:
 GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT next)
 {
   Material *next_mat = find_material(e,next);
-  return add_material(e, new TransparentRenderMaterial(ev,bm,next_mat));
+  return add_material(e, new TransparentRenderMaterial(e,ev,bm,next_mat));
 }
 
 class DefaultScreenSpaceMaterial : public ScreenSpaceMaterialForward
@@ -13427,7 +13524,15 @@ extern bool g_filter_execute;
 extern int g_filter_start;
 extern int g_filter_end;
 
+extern std::vector<void (*)(void*)> g_transparent_callback_objs;
+extern std::vector<void*> g_transparent_callback_params;
+extern std::vector<int> g_transparent_callback_ids;
+extern std::vector<float> g_transparent_pos;
 
+
+bool CompareTrans(int a, int b) {
+  return g_transparent_pos[a]>g_transparent_pos[b];
+}
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -13772,8 +13877,22 @@ public:
       g_filter_execute=true;
       //std::cout << "g_filter_execute=true" << std::endl;
     }
-    if (g_prepare_done)
+    if (g_prepare_done) {
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      if (g_transparent_callback_objs.size()) {
+	int s = g_transparent_callback_objs.size();
+
+	std::vector<int> order;
+	for(int i=0;i<s;i++) order.push_back(i);
+	
+	std::sort(order.begin(),order.end(),CompareTrans);
+	
+	for(int i=0;i<s;i++) {
+	  g_transparent_callback_objs[order[i]](g_transparent_callback_params[order[i]]);
+	}
+
+      }
+    }
     //if (first_execute||g_execute_shows_logo) g_progress_bar_show_logo=false;
     if (g_execute_shows_logo && !logo_done) { show_logo(); logo_done=true; }
     first_execute=false;
@@ -27799,6 +27918,10 @@ bool g_new_blocker_block = false;
 void run_callback(void *ptr)
 {
   const char *script2 = (const char*)ptr;
+  g_transparent_callback_objs.clear();
+  g_transparent_callback_params.clear();
+  g_transparent_callback_ids.clear();
+  g_transparent_pos.clear();
 #ifdef EMSCRIPTEN
   std::string script(script2);
   if (!g_everyapi) { std::cout << "NO g_everyapi" << std::endl; return; }

@@ -118,9 +118,9 @@ void VertexArraySet::free_reserve(int id)
 void stackTrace();
 void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly_count)
 {
-  //if (tri_count<1 || tri_count>10000000) return;
-  //if (quad_count<1 || quad_count>10000000) return;
-  //if (poly_count<1 || poly_count>10000000) return;
+  if (tri_count<1) { tri_count=0; }
+  if (quad_count<1) { quad_count=0; }
+  if (poly_count<1) { poly_count=0; }
 
   // if (tri_count==58630) {
   //  stackTrace();
@@ -1836,6 +1836,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
       attribi_buffer3.push_back(val);
     }
   }
+  if (tri_count) {
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[0]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_polys(id), Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[1]);
@@ -1880,7 +1881,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
 
   }
 
-
+  }
 
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 
@@ -1894,6 +1895,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glGenBuffers(1,&buffers2[4]);
   ogl->glGenBuffers(1,&buffers2[5]);
   ogl->glGenBuffers(1,&buffers2[6]);
+  if (quad_count) {
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[0]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, quad_count*sizeof(float)*3, isnull?0:s.quad_polys(id), Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers2[1]);
@@ -1937,7 +1939,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
     }
 
   }
-
+  }
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 
 
@@ -1952,6 +1954,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   ogl->glGenBuffers(1,&buffers3[4]);
   ogl->glGenBuffers(1,&buffers3[5]);
   ogl->glGenBuffers(1,&buffers3[6]);
+  if (poly_count) {
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[0]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, poly_count*sizeof(float)*3, isnull?0:s.poly_polys(id), Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers3[1]);
@@ -1998,7 +2001,7 @@ void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_co
   }
 
   }
-
+  }
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 
 
