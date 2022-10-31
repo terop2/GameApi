@@ -1920,11 +1920,22 @@ public:
     return last_tex;
   }
 
+  void print_extension_map() const {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    std::map<std::string, tinygltf::Value>::const_iterator i1 = m.extensions.begin();
+    std::map<std::string, tinygltf::Value>::const_iterator i2 = m.extensions.end();
+    for(std::map<std::string,tinygltf::Value>::const_iterator i = i1;i!=i2;i++) {
+      std::pair<std::string,tinygltf::Value> p = *i;
+      std::cout << p.first << " " << p.second.Type() << " " << p.second.GetNumberAsDouble() << std::endl;
+    }
+  }
+  
 
   int num_textures() const {
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
   GameApi::BM texture(int i) const {
+    print_extension_map();
     if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
