@@ -438,8 +438,10 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 #endif
     GameApi::ASyncVec *vec = g_e->get_loaded_async_url(url);
     if (!vec) { std::cout << "ReadWholeFile::async not ready:" << url << std::endl; std::cout << "Please use async_url() to register it to system" << std::endl; return false; } else {
+#ifndef EMSCRIPTEN
       if (!is_in_registered(url))
 	std::cout << "\nWarning: Please note that you might need to add async_url() or async_gltf for " << url << std::endl;
+#endif
     }
     int sz = vec->size();
 #ifdef EMSCRIPTEN
@@ -3452,10 +3454,10 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      std::cout << "{";
+      //std::cout << "{";
       GameApi::P ml = gltf_node2_p( e, ev, interface, child_id,keys);
       vec.push_back(ml);
-      std::cout << "}";
+      //std::cout << "}";
     }
   }
   if (mesh.id != -1) {
@@ -7552,9 +7554,9 @@ public:
 	    char *filename = new char[256];
 	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
 	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
-	    std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
+	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
 	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") mainfilename = zip_url + "/" + std::string(filename);
-	    std::cout << "Decompressing zip: " << filename << std::endl;
+	    //std::cout << "Decompressing zip: " << filename << std::endl;
 
 	    size_t sz;
 	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
@@ -7568,7 +7570,17 @@ public:
       }
     if (mainfilename!="")
       {
-	base_url = zip_url + "/";
+	std::string mainfile1 = "";
+	int s = mainfilename.size();
+	int pos=-1;
+	for(int i=0;i<s;i++) {
+	  if (mainfilename[i]=='/') pos=i;
+	}
+	if (pos != -1) {       
+	  base_url = mainfilename.substr(0,pos+1);
+	} else {
+	  base_url = zip_url + "/";
+	}
 	url = mainfilename;
 	load->set_urls(base_url,url);
       }

@@ -21,7 +21,7 @@ if ($id>0)
   $state = load_form_state($user, $id);
   $contentsarray = "";
   $filenamearray = "";
-  for($i=0;$i<10;$i++) {
+  for($i=0;$i<50;$i++) {
   		       $contentsarray = $contentsarray . load_form_contentsarray($user, strval($id) . "_" . strval($i));
   		       $filenamearray = $filenamearray . load_form_filenamearray($user, strval($id) . "_" . strval($i));
   }
@@ -29,6 +29,7 @@ if ($id>0)
   $gpath = load_form_gpath($user,$id);
 }
 ?>
+<!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
@@ -1726,7 +1727,7 @@ function resize_event(event)
   var hd = window.innerHeight;
 
   var mobile = false;
-  if (navigator.userAgentData.mobile==true) {
+  if (navigator.userAgentData!=null && navigator.userAgentData.mobile==true) {
      mobile=true;
      var d = document.getElementById("dp");
      d.style="display:block";
@@ -1892,7 +1893,7 @@ function hash(val)
 function submitprogressbar(i)
 {
    var prog = document.getElementById("progressbar");
-   prog.innerHTML = "<progress value='"+ i.toString() + "' max='10'></progress>";
+   prog.innerHTML = "<progress value='"+ i.toString() + "' max='50'></progress>";
    //for(var ii=0;ii<i;ii++) {
    //prog.innerHTML = prog.innerHTML + "&exist;";
    //}
@@ -1900,7 +1901,7 @@ function submitprogressbar(i)
    //{
    //prog.innerHTML = prog.innerHTML + "_";   
    //}
-   if (i==10)
+   if (i==50)
    {
 	var name = "viewdata/num.txt";
 	fetch(name).then(response => {
@@ -1934,7 +1935,7 @@ function formsubmit()
   var submitprogress = 0;
 
   xhr.onload = function() {
-	     var num = 10;
+	     var num = 50;
 	     var step = contents_length/num;
 	     var step2 = filename_length/num;
   	     	 for(var i=0;i<num;i++) {

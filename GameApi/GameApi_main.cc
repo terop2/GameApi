@@ -2965,16 +2965,21 @@ public:
   void Prepare() {next->Prepare(); }
   virtual void execute(MainLoopEnv &e) {
   OpenglLowApi *ogl = g_low->ogl;
+  int val = Low_GL_LEQUAL;
     switch(i) {
-    case 0: ogl->glDepthFunc(Low_GL_LEQUAL); break;
-    case 1: ogl->glDepthFunc(Low_GL_EQUAL); break;
-    case 2: ogl->glDepthFunc(Low_GL_ALWAYS); break;
-    case 3: ogl->glDepthFunc(Low_GL_LESS); break;
-    case 4: ogl->glDepthFunc(Low_GL_GREATER); break;
-    case 5: ogl->glDepthFunc(Low_GL_GEQUAL); break;
+    case 0: val=Low_GL_LEQUAL; break;
+    case 1: val=Low_GL_EQUAL; break;
+    case 2: val=Low_GL_ALWAYS; break;
+    case 3: val=Low_GL_LESS; break;
+    case 4: val=Low_GL_GREATER; break;
+    case 5: val=Low_GL_GEQUAL; break;
+    case 6: val=Low_GL_NOTEQUAL; break;
     };
-    next->execute(e);
-    ogl->glDepthFunc(Low_GL_LEQUAL);
+    MainLoopEnv ee = e;
+    ee.depthfunc=val;
+    ogl->glDepthFunc(val);
+    next->execute(ee);
+    ogl->glDepthFunc(e.depthfunc);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
@@ -2999,8 +3004,10 @@ public:
     } else {
       ogl->glDepthMask(Low_GL_FALSE);
     }
-    next->execute(e);
-    ogl->glDepthMask(Low_GL_TRUE);
+    MainLoopEnv ee= e;
+    ee.depthmask=b?Low_GL_TRUE:Low_GL_FALSE;
+    next->execute(ee);
+    ogl->glDepthMask(e.depthmask);
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
