@@ -5642,13 +5642,15 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
     int total_faces = faces->NumFaces();
-    int batch_count = total_faces/100000;
-    if (total_faces<100000) batch_count=30;
+    int batch_count = total_faces/100000+1;
+    if (total_faces<100000) batch_count=1;
     if (total_faces<100) batch_count=1;
     if (batch_count==0) batch_count=1;
-    int batch_faces = faces->NumFaces()/batch_count+1;
-    //std::cout << "BATCH COUNTS: " << batch_count << "*" << batch_faces << std::endl;
-    Counts ct = CalcCounts(faces, 0, faces->NumFaces());
+
+    
+    int batch_faces = total_faces/batch_count+1;
+    if (batch_faces>total_faces) batch_faces=total_faces;
+    Counts ct = CalcCounts(faces, 0, total_faces);
     VertexArraySet *s = new VertexArraySet;
     s->check_m_set(0);
 
@@ -5667,28 +5669,23 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     
 
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
-    //std::cout << "Counts: " << ct.tri_count << " " <<  ct.quad_count << " " << ct.poly_count << std::endl;
-    //if (ct.tri_count==0&&ct.quad_count==0&&ct.poly_count==0) return;
+
     arr2->prepare(0,true,ct.tri_count*3, ct.quad_count*6, std::max(ct.poly_count-1,0));  // SIZES MUST BE KNOWN
-    //InstallProgress(3,"batching");
     for(int i=0;i<batch_count;i++) {
-      //ProgressBar(3,i,batch_count,"batching"); 
       int start = i*batch_faces;
       int end = (i+1)*batch_faces;
-      //std::cout << "BATCH: " << start << " " << end << std::endl;
       if (start>total_faces) { start=total_faces; }
       if (end>total_faces) { end=total_faces; }
       if (i==batch_count-1) { end=total_faces; }
-      //std::cout << "BATCH2: " << start << " " << end << std::endl;
       Counts ct2_counts = CalcCounts(faces, start, end);
       Counts ct2_offsets = CalcOffsets(faces, start);
       FaceCollectionVertexArray2 arr(*faces, *s);
-      //std::cout << "ct2counts:" << ct2_counts.tri_count << " " << ct2_counts.quad_count << " " << ct2_counts.poly_count << std::endl;
-      //std::cout << "ct2offsets:" << ct2_offsets.tri_count << " " << ct2_offsets.quad_count << " " << ct2_offsets.poly_count << g_disable_polygons << std::endl;
+
       arr.reserve_fixed2(0,ct2_counts.tri_count,ct2_counts.quad_count,ct2_counts.poly_count);
       arr.copy(start,end);
       if (ct2_counts.tri_count!=0)
 	arr2->update_tri(0, 0, ct2_offsets.tri_count*3, ct2_offsets.tri_count*3 + ct2_counts.tri_count*3);
+
       if (ct2_counts.quad_count!=0)
 	arr2->update_tri(0, 1, ct2_offsets.quad_count*6, ct2_offsets.quad_count*6 + ct2_counts.quad_count*6);
       if (ct2_counts.poly_count!=0 && !g_disable_polygons)
@@ -12210,12 +12207,12 @@ public:
 private:
   void find_bounding_box()
   {
-    start_x = 300.0;
-      start_y = 300.0;
-      start_z = 300.0;
-      end_x =  -300.0;
-      end_y =  -300.0;
-      end_z =  -300.0; 
+    start_x = 300000.0;
+      start_y = 300000.0;
+      start_z = 300000.0;
+      end_x =  -300000.0;
+      end_y =  -300000.0;
+      end_z =  -300000.0; 
 
     int s = std::min(coll->NumFaces(),1000);
     if (s<1) s=1;
@@ -12234,13 +12231,14 @@ private:
   }
   void handlepoint(Point p)
   {
-    if (p.x<start_x) start_x = p.x;
-    if (p.y<start_y) start_y = p.y;
-    if (p.z<start_z) start_z = p.z;
-    if (p.x>end_x) end_x = p.x;
-    if (p.y>end_y) end_y = p.y;
-    if (p.z>end_z) end_z = p.z;    
+    if (p.x<start_x) { start_x = p.x; }
+    if (p.y<start_y) { start_y = p.y; }
+    if (p.z<start_z) { start_z = p.z; }
+    if (p.x>end_x) { end_x = p.x; }
+    if (p.y>end_y) { end_y = p.y; }
+    if (p.z>end_z) { end_z = p.z; }    
   }
+
   void print_bounding_box()
   {
     //std::cout << "Bounding box:" << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
@@ -12253,9 +12251,9 @@ private:
   }
   void calc_size()
   {
-    size_x = end_x-start_x;
-    size_y = end_y-start_y;
-    size_z = end_z-start_z;
+    size_x = fabs(end_x-start_x);
+    size_y = fabs(end_y-start_y);
+    size_z = fabs(end_z-start_z);
   }
   void calc_matrix()
   {

@@ -11,6 +11,8 @@
 #include "tiny_gltf.h"
 #endif
 
+#include "GameApi_low.hh"
+
 
 namespace GameApi
 {
@@ -635,6 +637,8 @@ struct MainLoopEnv
   // Game properties
   World *current_world = 0;
   ContentCollection *avail_content =0;
+  int depthfunc=Low_GL_LEQUAL;
+  int depthmask=Low_GL_TRUE;
 };
 
 struct FaceID
