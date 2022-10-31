@@ -548,7 +548,7 @@ filter_material : function(arr,key)
          var inputtag = document.getElementById("model_url");
 	 var url = inputtag.value;
 	 this.state.url = url;
-	 console.log(url);
+	 //console.log(url);
 	 this.change_model();
       },
       change_model3: function(selectfile) {
@@ -1160,12 +1160,13 @@ res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
     res+="ML I63=ev.materials_api.bind(I771,I775);\n";
 
 
+  //res+="ML I64=ev.mainloop_api.depthmask(I63,false);\n";
 res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
  
-  console.log(material_value);
-  console.log(border_value);
-  console.log(filename.substr(-4));
-  console.log(filename.substr(-5));
+  //console.log(material_value);
+  //console.log(border_value);
+  //console.log(filename.substr(-4));
+  //console.log(filename.substr(-5));
   if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
   //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5);\n";
 
@@ -1468,7 +1469,7 @@ function drop3(state,selectfileelem)
 
      	   var s = files2.length;
      	   for(var i=0;i<s;i++) {
-	   	   console.log(files2[i].name);
+	   	   //console.log(files2[i].name);
 	   	   filenames.push(files2[i].name);
 		   files.push(files2[i]);
 	   }
@@ -1521,14 +1522,14 @@ function drop(ev)
        promise2.then( data => {
            const [files,filenames] = flatten_arrays(data);
 	   //console.log(files);
-	   console.log(filenames);
+	   //console.log(filenames);
            var main_item_num = find_main_item(files);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames[main_item_num];
 
 	   old_files = files;
 	   old_filenames = filenames;
-	   console.log(filenames);
+	   //console.log(filenames);
 
 	   old_main_item_name = main_item_name;
 
@@ -1831,19 +1832,19 @@ function load_data()
    var a_st = "";
    if (st.textContent!="")
       a_st = st.textContent;
-   console.log(ca.textContent);
+   //console.log(ca.textContent);
    var a_ca = "";
    if (ca.textContent!="")
       a_ca = JSON.parse(ca.textContent);
-   console.log(fa.textContent);
+   //console.log(fa.textContent);
    var a_fa = "";
    if (fa.textContent!="")
       a_fa = JSON.parse(fa.textContent);
-   console.log(gf.textContent);
+   //console.log(gf.textContent);
    var a_gf = "";
    if (gf.textContent != "")
       a_gf = JSON.parse(gf.textContent);
-   console.log(gp.textContent);
+   //console.log(gp.textContent);
    var a_gp = "";
    if (gp.textContent != "") 
       a_gp = JSON.parse(gp.textContent);
