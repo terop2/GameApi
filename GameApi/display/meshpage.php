@@ -799,6 +799,12 @@ instead of megabytes of video files
 
 Yes. It's <a href="<?php echo $site ?>/view.php">here</a>
 
+Useful other sites which you can drag and drop content to the viewer are at least:
+<ul>
+<li><a href="https://sketchfab.com/3d-models?date=week&features=downloadable&sort_by=-likeCount">sketchfab</a>
+<li><a href="https://www.thingiverse.com/">Thingiverse</a>
+</ul>
+
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>
 <li>C++
