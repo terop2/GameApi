@@ -7563,7 +7563,9 @@ public:
 	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
 	    delete[] filename;
+#ifdef EMSCRIPTEN
 	    data->push_back(0); // is this always needed?
+#endif
 	    g_del_map.load_url_buffers_async[url] = data;
 	  }
 	
