@@ -153,7 +153,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "gltf_sketchfab_zip",
 			 { "url_to_zip" },
 			 { "std::string" },
-			 { "https://meshpage.org/test.zip" },
+			 { "https://meshpage.org/lighthouse.zip" },
 			 "TF", "mainloop_api", "gltf_load_sketchfab_zip"));
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::glb_load_sketchfab_zip,
