@@ -1921,14 +1921,85 @@ public:
   }
 
   void print_extension_map() const {
+#if 0
     const tinygltf::Material &m = interface->get_material(material_id);
     std::map<std::string, tinygltf::Value>::const_iterator i1 = m.extensions.begin();
     std::map<std::string, tinygltf::Value>::const_iterator i2 = m.extensions.end();
     for(std::map<std::string,tinygltf::Value>::const_iterator i = i1;i!=i2;i++) {
       std::pair<std::string,tinygltf::Value> p = *i;
-      std::cout << p.first << " " << p.second.Type() << " " << p.second.GetNumberAsDouble() << std::endl;
+      std::cout << p.first << " " << p.second.Type() << " " << p.second.GetNumberAsDouble() << p.second.IsBool() << " " << p.second.IsInt() << " " << p.second.IsNumber() << " " << p.second.IsReal() << " " << p.second.IsString() << " " << p.second.IsBinary() << " " << p.second.IsArray() << " " << p.second.IsObject() << std::endl;
     }
+    
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+
+    std::cout << "SPECGLOSSI:" << specglossi.IsBool() << " " << specglossi.IsInt() << " " << specglossi.IsNumber() << " " << specglossi.IsReal() << " " << specglossi.IsString() << " " << specglossi.IsBinary() << " " << specglossi.IsArray() << " " << specglossi.IsObject() << std::endl;
+    std::vector<std::string> keys = specglossi.Keys();
+    int s = keys.size();
+    for(int i=0;i<s;i++) {
+      std::cout << keys[i] << std::endl;
+    }
+#endif
   }
+
+  float get_diffuse_factor() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return 1.0f;
+    const tinygltf::Value &diffuse = specglossi.Get("diffuseFactor");
+    return diffuse.GetNumberAsDouble();
+  }
+
+  float get_specular_factor() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return 1.0f;
+    const tinygltf::Value &diffuse = specglossi.Get("specularFactor");
+    return diffuse.GetNumberAsDouble();
+  }
+
+  float get_glossiness_factor() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return 1.0f;
+    const tinygltf::Value &diffuse = specglossi.Get("glossinessFactor");
+    return diffuse.GetNumberAsDouble();
+  }
+
+  
+  
+  int get_diffuse_index() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return -1;
+    const tinygltf::Value &diffuse = specglossi.Get("diffuseTexture");
+    return diffuse.GetNumberAsInt();
+  }
+  int get_specglossi_index() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return -1;
+    const tinygltf::Value &s = specglossi.Get("specularGlossinessTexture");
+    return s.GetNumberAsInt();
+  }
+
+  void specglossyprepare(GameApi::EveryApi &ev, GameApi::P p) const
+  {
+    confirm_texture_usage(ev.get_env(),p);
+  }
+  GameApi::ML specglossyshader(GameApi::EveryApi &ev, GameApi::ML ml) const
+  {
+    std::cout << "GLOSSY:" << get_diffuse_factor() << " " << get_glossiness_factor() << " " << get_specular_factor() << std::endl;
+    GameApi::ML tex1 = ev.polygon_api.texture_many_shader(ev, ml, 0.5*get_glossiness_factor()+0.5*(1.0-get_diffuse_factor()));
+
+    GameApi::ML tex2 = ev.polygon_api.phong_shader(ev,tex1, 0.0,0.0,-1.0,0xff000000,0xffffffff, (get_specular_factor())*30.0);
+    return tex2;
+  }
+  
   
 
   int num_textures() const {
@@ -1941,8 +2012,8 @@ public:
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.baseColorTexture.index);
-    case 1: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.metallicRoughnessTexture.index);
+    case 0: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.baseColorTexture.index!=-1?m.pbrMetallicRoughness.baseColorTexture.index:get_diffuse_index());
+    case 1: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1?m.pbrMetallicRoughness.metallicRoughnessTexture.index:get_specglossi_index());
     case 2: return gltf_load_bitmap2(e,ev, interface, m.normalTexture.index);
     case 3: return gltf_load_bitmap2(e,ev, interface, m.occlusionTexture.index);
     case 4: return gltf_load_bitmap2(e,ev, interface, m.emissiveTexture.index);
@@ -1957,7 +2028,7 @@ public:
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1;
+    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1||get_diffuse_index()!=-1;
     case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1;
     case 2: return m.normalTexture.index!=-1;
     case 3: return m.occlusionTexture.index!=-1;
@@ -1980,6 +2051,10 @@ public:
     //GameApi::P I10=p; 
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
 
+    //if (get_diffuse_index()!=-1) {
+    //  specglossyprepare(ev,p);
+    //}
+    
     std::vector<std::string> id_labels;
     for(int i=0;i<s;i++)
       {
@@ -1993,11 +2068,17 @@ public:
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
+      //if (get_diffuse_index()==-1) {
       const tinygltf::Material &m = interface->get_material(material_id);
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
       I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0); // todo base color
 
+      //} else {
+      //	I18 = specglossyshader(ev,I17);
+      //}
+      // const tinygltf::Material &m = interface->get_material(material_id);
+      
     if (m.alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
@@ -2021,16 +2102,25 @@ public:
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+
+    //if (get_diffuse_index()!=-1) {
+    //  specglossyprepare(ev,p);
+    //}
     
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
+      //if (get_diffuse_index()==-1) {
       const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0);
+    //} else {
+    //	I18 = specglossyshader(ev,I17);
+    // }
+    // const tinygltf::Material &m = interface->get_material(material_id);
     if (m.alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);
@@ -2054,15 +2144,25 @@ public:
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+
+    //if (get_diffuse_index()!=-1) {
+    //  specglossyprepare(ev,p);
+    //}
+
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
     } else {
+      // if (get_diffuse_index()==-1) {
       const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0);
+    //} else {
+    //	I18 = specglossyshader(ev,I17);
+    // }
+    //  const tinygltf::Material &m = interface->get_material(material_id);
     if (m.alphaMode=="BLEND") {
       OpenglLowApi *ogl = g_low->ogl;
       ogl->glEnable(Low_GL_BLEND);

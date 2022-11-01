@@ -61,6 +61,7 @@ echo "</pre>";
 ?>
 
 <script src="vue.js"></script>
+<script type="text/javascript" src="zip.min.js"></script>
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 

@@ -797,12 +797,12 @@ instead of megabytes of video files
 
 <h2>Is there a 3d model viewer that uses your engine?</h2>
 
-Yes. It's <a href="<?php echo $site ?>/view.php">here</a>
+Yes. It's <a href="<?php echo $site ?>/view.php" target="_blank">here</a>
 
 Useful other sites which you can drag and drop content to the viewer are at least:
 <ul>
-<li><a href="https://sketchfab.com/3d-models?date=week&features=downloadable&sort_by=-likeCount">sketchfab</a>
-<li><a href="https://www.thingiverse.com/">Thingiverse</a>
+<li><a href="https://sketchfab.com/3d-models?date=week&features=downloadable&sort_by=-likeCount" target="_blank">sketchfab</a>
+<li><a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a>
 </ul>
 
 <h2>What technologies are you using to provide the features of the site?</h2>
