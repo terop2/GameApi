@@ -61,7 +61,6 @@ echo "</pre>";
 ?>
 
 <script src="vue.js"></script>
-<script type="text/javascript" src="zip.min.js"></script>
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
@@ -124,7 +123,7 @@ var store = {
       appmodel_is_notselected: "false",
       appmodel_is_loading: "true",
       appmodel_is_twoline: "0",
-      model_info: "(no model)",
+      model_info: "(prepare to load..)",
       filename: "(no file)",
       filename1: "",
       filename2: "",
@@ -639,16 +638,17 @@ function strfy(arr)
 </style>
 
 <script>
+
 function find_main_item(arr)
 {
    var s = arr.length;
    for(var i=0;i<s;i++) {
-      if (arr[i].name.substr(-4)==".zip") return i;
-      if (arr[i].name.substr(-4)==".glb") return i;
-      if (arr[i].name.substr(-4)==".stl") return i;
-      if (arr[i].name.substr(-5)==".gltf") return i;
-      if (arr[i].name.substr(-3)==".ds") return i;
-      if (arr[i].name.substr(-4)==".obj") return i;
+      if (arr[i].substr(-4)==".zip") return i;
+      if (arr[i].substr(-4)==".glb") return i;
+      if (arr[i].substr(-4)==".stl") return i;
+      if (arr[i].substr(-5)==".gltf") return i;
+      if (arr[i].substr(-3)==".ds") return i;
+      if (arr[i].substr(-4)==".obj") return i;
       //if (arr[i].name.substr(-4)==".ply") return i;
    }
    set_label("ERROR: main item not found");
@@ -1026,6 +1026,8 @@ function create_script(filename, contents, filenames)
   if (g_path!="") {
     filename = g_path + "/" + filename;
   }
+
+
 
   var base_dir = get_base_dir(filename);
   var mtl_name = find_mtl_name(filenames);
@@ -1478,13 +1480,32 @@ function drop3(state,selectfileelem)
            //const [files,filenames] = flatten_arrays(data);
 	   //console.log(files);
 	   //console.log(filenames);
-           var main_item_num = find_main_item(files);
+           var main_item_num = find_main_item(filenames);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames[main_item_num];
+
+/*
+	   var snd_item_num = -1;
+	   var snd_item_name = "";
+	   console.log(main_item_name);
+	   if (main_item_name.substr(-4)==".zip") {
+	      console.log("ZIP UNCOMPRESS");
+	      var zipentries=get_zip_filenames(main_item);
+	      snd_item_num = find_main_item(zipentries);
+	      snd_item_name = zipentries[snd_item_num];
+	      console.log(snd_item_num);
+	      console.log(snd_item_name);
+	   }
+	   */
+
 
 	   old_files = files;
 	   old_filenames = filenames;
 	   old_main_item_name = main_item_name;
+	   /*
+	   old_snd_item_num = snd_item_num;
+	   old_snd_item_name = snd_item_name;
+*/
 
            const promise = extract_contents(state,files,filenames,fix_filename(main_item_name),"");
            promise.then(load_finished);
@@ -1524,16 +1545,33 @@ function drop(ev)
            const [files,filenames] = flatten_arrays(data);
 	   //console.log(files);
 	   //console.log(filenames);
-           var main_item_num = find_main_item(files);
+           var main_item_num = find_main_item(filenames);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames[main_item_num];
+
+/*
+	   var snd_item_num = -1;
+	   var snd_item_name = "";
+	   console.log(main_item_name);
+	   if (main_item_name.substr(-4)==".zip") {
+	      console.log("ZIP UNCOMPRESS");
+	      var zipentries=get_zip_filenames(main_item);
+	      snd_item_num = find_main_item(zipentries);
+	      snd_item_name = zipentries[snd_item_num];
+	      console.log(snd_item_num);
+	      console.log(snd_item_name);
+	   }
+*/
 
 	   old_files = files;
 	   old_filenames = filenames;
 	   //console.log(filenames);
 
 	   old_main_item_name = main_item_name;
-
+	   
+/*	   old_snd_item_num = snd_item_num;
+	   old_snd_item_name = snd_item_name;
+	   */
            const promise = extract_contents(store.state,files,filenames,fix_filename(main_item_name),"");
            promise.then(load_finished);
 
@@ -1855,6 +1893,26 @@ function load_data()
    filename_array = base64_to_array(a_fa);
    g_filename = a_gf;
    g_path = a_gp;
+
+/*
+   var snd_item_num = -1;
+   var snd_item_name = "";
+   console.log(g_filename);
+   if (g_filename.substr(-4)==".zip") {
+      var idx = find_main_item(filename_array);
+      var zip_file = contents_array[idx];
+      console.log("ZIP UNCOMPRESS3");
+      var zipentries = get_zip_filenames(zip_file).then(function(value) {
+      console.log(value);
+	snd_item_num = find_main_item(value);
+      	snd_item_name = zipentries[snd_item_num];
+	old_snd_item_num = snd_item_num;
+   	old_snd_item_name = snd_item_name;
+      console.log(snd_item_num);
+      console.log(snd_item_name);
+      }, function(error) { console.log("ERROR"); console.log(error); });
+   }
+*/
 
    old_files = contents_array;
    old_filenames = filename_array;
