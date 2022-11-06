@@ -208,14 +208,15 @@ bool MandelBulb::Inside(Point px) const
   a_p.x/=300.0; 
   a_p.y/=300.0; 
   a_p.z/=300.0;
+  Point a_p2 = a_p;
   //float dz = 1.0;
   //float m = Vector::DotProduct(a_p,a_p);
   for(int i=0;i<iterations;i++)
     {
-      a_p = Step(a_p);
-      //if (a_p.Dist()>4.0) break;
+      a_p = Step(a_p)+a_p2;
+      if (a_p.Dist()>4.0) break;
     }
-  return (a_p.Dist()>4.0);
+  return (a_p.Dist()<4.0);
 }
 
 Point MandelBulb::Step(Point w)
