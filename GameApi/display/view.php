@@ -788,7 +788,7 @@ function get_border(i,m,filename)
   var res = "";
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   //res+= "MT I401=ev.materials_api.m_def(ev);\n"
-  res+= "MT I504=ev.materials_api.phong(ev,i4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  res+= "MT I504=ev.materials_api.phong(ev,I4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
   res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
 if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
   //res+= "MT I506=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I501,cvbnmfghjk);\n";
@@ -1854,7 +1854,7 @@ function deserialize_state(txt)
   var elem6 = document.getElementById("metal-type-select");
   if (elem6) elem6.value = metal;
   var elem7 = document.getElementById("plastic-type-select");
-  if (elem7) elem7.value = plastic; else console.log("PLASTIC ERROR");
+  if (elem7) elem7.value = plastic; else { /*console.log("PLASTIC ERROR");*/ }
   var elem8 = document.getElementById("textured-type-select");
   if (elem8) elem8.value = textured;
 }

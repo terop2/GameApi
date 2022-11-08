@@ -7561,7 +7561,7 @@ public:
 	//GameApi::SH sh;
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
-	ev.shader_api.set_var(sh, "color_mix", mix);
+	ev.shader_api.set_var(sh, "color_mix4", mix);
 	ev.shader_api.set_var(sh, "u_RoughnessFactor", roughnessfactor);
 	ev.shader_api.set_var(sh, "u_MetallicFactor", metallicfactor);
 	ev.shader_api.set_var(sh, "u_BaseColorFactor", basecolorfactor0,basecolorfactor1,basecolorfactor2, basecolorfactor3);

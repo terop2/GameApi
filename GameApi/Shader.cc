@@ -129,7 +129,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 
   if (val!=Low_GL_NO_ERROR)
     {
-    //std::cout << "glCompileShader ERROR: " << val << std::endl;
+    std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
     int length=0;
     g_low->ogl->glGetShaderInfoLog(handle, 256, &length, &buf[0]);
@@ -154,7 +154,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
   log[len]=0;
   if (len>0)
-    std::cout << std::endl << log << std::endl;
+    std::cout << "SHADER ERROR: " << std::endl << log << std::endl;
   }
   }
   else
@@ -296,7 +296,7 @@ void Program::link()
   g_low->ogl->glGetProgramInfoLog(priv->program, 255, &len, log);
   log[len]=0;
   if (len>0)
-    std::cout << std::endl << log << std::endl;
+    std::cout << "LINK ERROR: " << std::endl << log << std::endl;
   }
 }
 void Program::print_log()
@@ -2320,7 +2320,8 @@ VARYING_IN " float fog_intensity;\n"
     "  }\n"
     "  return vec3(0.0,0.0,0.0);\n"
 "}\n"
-"vec4 gltf(vec4 rgb)\n"
+"uniform float color_mix4;\n"
+    "vec4 gltf(vec4 rgb)\n"
 "{\n"
 "float perceptualRoughness=0.0;\n"
 "float metallic=0.0;\n"
@@ -2328,6 +2329,7 @@ VARYING_IN " float fog_intensity;\n"
 "vec3 diffuseColor=vec3(0);\n"
 "vec3 specularColor=vec3(0.0);\n"
 "vec3 f0 =vec3(0.04);\n"
+"#ifndef SPEC\n"
 "#ifdef GLTF_TEX1\n"
 #ifdef WEBGL2
     "  vec4 mrSample = texture(texsampler[1],ex_TexCoord.xy);\n"
@@ -2349,26 +2351,39 @@ VARYING_IN " float fog_intensity;\n"
 #endif
     
     "#endif\n"
+    "#endif\n"
 
 
 
 "#ifdef SPEC\n"
-"#ifdef GLTF_TEX1\n"
+
+
+"#ifdef GLTF_TEX0\n"
+#ifdef WEBGL2
+    "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+#else
+    "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+#endif
+    
+    "#endif\n"
+
+
+    "#ifdef GLTF_TEX1\n"
 #ifdef WEBGL2
     "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n"
 #else
     "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n"
 #endif
-   " diffuseColor = mrSample2.rgb * (1.0-max(baseColor.r,baseColor.g,baseColor.b));\n"
+   " diffuseColor = mrSample2.rgb * (1.0-max(max(baseColor.r,baseColor.g),baseColor.b));\n"
    " f0 = baseColor.rgb;\n"
-    " metallic = (1.0-baseColor.a);\n"
-    " metallic=metallic*metallic;\n"
+    " perceptualRoughness = (1.0-baseColor.a);\n"
+    //" perceptualRoughness=perceptualRoughness*perceptualRoughness;\n"
     "#endif\n"
     "#ifndef GLTF_TEX1\n"
-   " diffuseColor = vec3(1.0,1.0,1.0)*(1.0-max(baseColor.r,baseColor.g,baseColor.b));\n"
+   " diffuseColor = vec3(1.0,1.0,1.0)*(1.0-max(max(baseColor.r,baseColor.g),baseColor.b));\n"
    " f0 = baseColor.rgb;\n"
-    " metallic = (1.0-baseColor.a);\n"
-    " metallic=metallic*metallic;\n"
+    " perceptualRoughness = (1.0-baseColor.a);\n"
+    //" perceptualRoughnes = sperceptualRoughness*perceptualRoughness;\n"
     "#endif\n"
     "#endif\n"
 
@@ -2441,11 +2456,13 @@ VARYING_IN " float fog_intensity;\n"
     //"   return vec4(vec3(ao),1.0);\n"
     //"   return vec4(vec3(LINEARtoSRGB(emissive),1.0);\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
-"#ifdef SPEC\n"
-    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix), 1.0);\n"
+    "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
+
+    "#ifdef SPEC\n"
+    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix4), 1.0);\n"
 "#endif\n"
 "#ifndef SPEC\n"
-    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix), baseColor.a);\n"
+    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix4), baseColor.a);\n"
 "#endif\n"
 "}\n"
 "#endif\n"
@@ -4134,6 +4151,7 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
     "  }\n"
     "  return vec3(0.0,0.0,0.0);\n"
 "}\n"
+"uniform float color_mix4;\n"
 "vec4 gltf(vec4 rgb)\n"
 "{\n"
 "float perceptualRoughness=0.0;\n"
@@ -4142,6 +4160,7 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "vec3 diffuseColor=vec3(0);\n"
 "vec3 specularColor=vec3(0.0);\n"
 "vec3 f0 =vec3(0.04);\n"
+"#ifndef SPEC\n"
 "#ifdef GLTF_TEX1\n"
 "  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
 "  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
@@ -4157,7 +4176,41 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
     "#endif\n"
+    "#endif\n"
+
+"#ifdef SPEC\n"
+
+
+
+    "#ifdef GLTF_TEX0\n"
+"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+"#endif\n"
+    "#ifndef GLTF_TEX0\n"
+    "  baseColor = u_BaseColorFactor;\n"
+    "#endif\n"
+    
+"#ifdef GLTF_TEX1\n"
+#ifdef WEBGL2
+    "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n"
+#else
+    "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n"
+#endif
+   " diffuseColor = mrSample2.rgb * (1.0-max(baseColor.r,baseColor.g,baseColor.b));\n"
+   " f0 = baseColor.rgb;\n"
+    " perceptualRoughness = (1.0-baseColor.a);\n"
+    //" perceptualRoughness=perceptualRoughness*perceptualRoughness;\n"
+    "#endif\n"
+    "#ifndef GLTF_TEX1\n"
+   " diffuseColor = vec3(1.0,1.0,1.0)*(1.0-max(baseColor.r,baseColor.g,baseColor.b));\n"
+   " f0 = baseColor.rgb;\n"
+    "perceptualRoughness = (1.0-baseColor.a);\n"
+    //"perceptualRoughness=perceptualRoughness*perceptualRoughness;\n"
+    "#endif\n"
+    "#endif\n"
+
+"#ifndef SPEC\n"    
     "  baseColor *= getVertexColor();\n"
+"#endif\n"
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
 "  specularColor = mix(f0, baseColor.rgb, metallic);\n"
 
@@ -4211,7 +4264,15 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
     //"   return vec4(vec3(ao),1.0);\n"
     //"   return vec4(vec3(LINEARtoSRGB(emissive),1.0);\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
-    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix), baseColor.a);\n"
+    "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
+    "#ifdef SPEC\n"
+    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix4), 1.0);\n"
+
+"#endif\n"
+"#ifndef SPEC\n"
+    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix4), baseColor.a);\n"
+"#endif\n"
+
     //"   return vec4(LINEARtoSRGB(color), baseColor.a);\n"
 "}\n"
 "#endif\n"
@@ -4874,7 +4935,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      // std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
