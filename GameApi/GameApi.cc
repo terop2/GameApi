@@ -11271,47 +11271,19 @@ GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex
 {
   ShaderCall *next = find_uber(e, us);
   std::string s;
-  if (tex0||tex1||tex2||tex3||tex4||tex5||tex6||tex7)
-    s+=" ";
-  if (tex0) {
-    s+="GLTF_TEX0";
-    if (tex1||tex2||tex3||tex4||tex5||tex6||tex7)
-      s+=" ";
-  }
-  if (tex1) {
-    s+="GLTF_TEX1";
-    if (tex2||tex3||tex4||tex5||tex6||tex7)
-      s+=" ";
-  }
-  if (tex2) {
-    s+="GLTF_TEX2";
-    if (tex3||tex4||tex5||tex6||tex7)
-      s+=" ";
-  }
-  if (tex3) {
-    s+="GLTF_TEX3";
-    if (tex4||tex5||tex6||tex7)
-      s+=" ";
-  }
-  if (tex4) {
-    s+="GLTF_TEX4";
-    if (tex5||tex6||tex7)
-      s+=" ";
-  }
-  if (tex5) {
-    s+="GLTF_TEX5";
-    if (tex6||tex7) s+=" ";
-  }
-  if (tex6) {
-    s+="GLTF_TEX6";
-    if (tex7) s+=" ";
-  }
-  if (tex7) {
-    s+="GLTF_TEX7";
-  }
-  if (spec) {
-    s+=" SPEC";
-  }
+  //if (tex0||tex1||tex2||tex3||tex4||tex5||tex6||tex7)
+  //  s+=" ";
+  if (tex0) s+=" GLTF_TEX0";
+  if (tex1) s+=" GLTF_TEX1";
+  if (tex2) s+=" GLTF_TEX2";
+  if (tex3) s+=" GLTF_TEX3";
+  if (tex4) s+=" GLTF_TEX4";
+  if (tex5) s+=" GLTF_TEX5";
+  if (tex6) s+=" GLTF_TEX6";
+  if (tex7) s+=" GLTF_TEX7";
+  if (spec) s+=" SPEC";
+  
+  //std::cout << "f_gltf:" << s << std::endl;
   return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD COLOR_MIX GLTF" + s));
 }
 GameApi::US GameApi::UberShaderApi::f_colour_with_mix(US us)
