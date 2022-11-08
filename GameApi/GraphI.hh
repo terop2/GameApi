@@ -639,6 +639,7 @@ struct MainLoopEnv
   ContentCollection *avail_content =0;
   int depthfunc=Low_GL_LEQUAL;
   int depthmask=Low_GL_TRUE;
+  bool cullface=false;
 };
 
 struct FaceID

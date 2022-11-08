@@ -3030,6 +3030,41 @@ GameApi::ML GameApi::MainLoopApi::depthmask(ML ml, bool b)
   return add_main_loop(e, new DepthMask(next,b));
 }
 
+
+class CullFace2 : public MainLoopItem
+{
+public:
+  CullFace2(MainLoopItem *next, bool b) : next(next),b(b) { }
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  void HeavyPrepare() { }
+
+  void Prepare() {next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) {
+    OpenglLowApi *ogl = g_low->ogl;
+    MainLoopEnv ee = e;
+    if (b) {
+      ogl->glEnable(Low_GL_CULL_FACE);
+      ogl->glFrontFace(Low_GL_CCW); // this is ccw because gltf models are odd
+      ee.cullface=true;
+    } else {
+      ogl->glDisable(Low_GL_CULL_FACE);
+      ogl->glFrontFace(Low_GL_CW);
+      ee.cullface=false;
+    }
+    next->execute(ee);
+    ogl->glDisable(Low_GL_CULL_FACE);
+      ogl->glFrontFace(Low_GL_CW);
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  bool b;
+};
+
+
 class BlendFunc : public MainLoopItem
 {
 public:
@@ -3086,7 +3121,12 @@ private:
   int i,i2;
 };
 
-
+GameApi::ML GameApi::MainLoopApi::cullface(ML ml, bool b)
+{
+  MainLoopItem *next = find_main_loop(e,ml);
+  return add_main_loop(e, new CullFace2(next,b));
+  
+}
 GameApi::ML GameApi::MainLoopApi::blendfunc(ML ml, int val, int val2)
 {
   MainLoopItem *next = find_main_loop(e,ml);

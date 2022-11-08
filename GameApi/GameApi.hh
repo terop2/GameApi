@@ -607,6 +607,7 @@ public:
   ML depthfunc(ML ml, int val); 
   ML depthmask(ML ml, bool b);
   ML blendfunc(ML ml, int val, int val2);
+  ML cullface(ML ml, bool b);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
   ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
@@ -2879,7 +2880,7 @@ public:
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
-  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec);
+  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int accexss_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -3836,7 +3837,7 @@ public:
   US f_custom(US us, std::string f_funcname);
   US f_gi(US us);
   US f_colour_with_mix(US us);
-  US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec);
+  US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec, bool unlit);
   US f_fade(US us);
   US f_flip(US us, US us2);
 private:
