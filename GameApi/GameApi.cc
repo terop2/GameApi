@@ -11267,7 +11267,7 @@ GameApi::US GameApi::UberShaderApi::f_fade(US us)
 //{
   
 //}
-GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7)
+GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec)
 {
   ShaderCall *next = find_uber(e, us);
   std::string s;
@@ -11308,6 +11308,9 @@ GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex
   }
   if (tex7) {
     s+="GLTF_TEX7";
+  }
+  if (spec) {
+    s+=" SPEC";
   }
   return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD COLOR_MIX GLTF" + s));
 }
