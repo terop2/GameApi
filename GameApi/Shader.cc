@@ -2349,13 +2349,41 @@ VARYING_IN " float fog_intensity;\n"
 #endif
     
     "#endif\n"
+
+
+
+"#ifdef SPEC\n"
+"#ifdef GLTF_TEX1\n"
+#ifdef WEBGL2
+    "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n"
+#else
+    "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n"
+#endif
+   " diffuseColor = mrSample2.rgb * (1.0-max(baseColor.r,baseColor.g,baseColor.b));\n"
+   " f0 = baseColor.rgb;\n"
+    " metallic = (1.0-baseColor.a);\n"
+    " metallic=metallic*metallic;\n"
+    "#endif\n"
+    "#ifndef GLTF_TEX1\n"
+   " diffuseColor = vec3(1.0,1.0,1.0)*(1.0-max(baseColor.r,baseColor.g,baseColor.b));\n"
+   " f0 = baseColor.rgb;\n"
+    " metallic = (1.0-baseColor.a);\n"
+    " metallic=metallic*metallic;\n"
+    "#endif\n"
+    "#endif\n"
+
+    
+    
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
     "#endif\n"
+"#ifndef SPEC\n"
     "  baseColor *= getVertexColor();\n"
+"#endif\n"
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
 "  specularColor = mix(f0, baseColor.rgb, metallic);\n"
 
+    
     ///    "  baseColor.a = 1.0;\n"
     // use next one if material is unlit
    //"  return vec4(LINEARtoSRGB(baseColor.rgb),baseColor.a);\n"
@@ -2413,7 +2441,12 @@ VARYING_IN " float fog_intensity;\n"
     //"   return vec4(vec3(ao),1.0);\n"
     //"   return vec4(vec3(LINEARtoSRGB(emissive),1.0);\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
+"#ifdef SPEC\n"
+    "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix), 1.0);\n"
+"#endif\n"
+"#ifndef SPEC\n"
     "   return vec4(mix(rgb.rgb,LINEARtoSRGB(color),color_mix), baseColor.a);\n"
+"#endif\n"
 "}\n"
 "#endif\n"
 "#endif\n"
