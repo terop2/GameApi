@@ -158,6 +158,8 @@ enum
     Low_GL_VENDOR,
     Low_GL_RENDERER,
     Low_GL_VERSION,
+    Low_GL_CW,
+    Low_GL_CCW
    
   };
 enum {
@@ -236,6 +238,7 @@ enum {
 #undef emscripten_set_touchend_callback
 #undef emscripten_set_click_callback
 #undef glGenerateMipmap
+#undef glFrontFace
 
 class OpenglLowApi
 {
@@ -367,6 +370,7 @@ public:
   virtual void glGenerateMipmap(int p)=0;
 
   virtual void glCullFace(int mode)=0;
+  virtual void glFrontFace(int mode)=0;
   virtual void* glMapBuffer(int a, int b)=0;
   virtual void glUnmapBuffer(int a)=0;
   

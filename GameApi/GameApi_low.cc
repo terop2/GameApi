@@ -240,6 +240,8 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_CW: i=GL_CW; break;
+  case Low_GL_CCW: i=GL_CCW; break;
   case Low_GL_PIXEL_PACK_BUFFER: i = GL_PIXEL_PACK_BUFFER; break;
   case Low_GL_PIXEL_UNPACK_BUFFER: i=GL_PIXEL_UNPACK_BUFFER; break;
   case Low_GL_STREAM_DRAW: i=GL_STREAM_DRAW; break;
@@ -1030,6 +1032,12 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
     map_enums(i);
     ::glCullFace(i);
   }
+  void glFrontFace(int i)
+  {
+    map_enums(i);
+    ::glFrontFace(i);
+  }
+
   void* glMapBuffer(int a, int b)
   {
 #ifdef GLEW_HACK
