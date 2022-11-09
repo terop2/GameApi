@@ -6502,7 +6502,7 @@ public:
     int f = 0;
     int k = 0;
     int s = NumFaces();
-    if (s<=0||s>500000) return;
+    if (s<=0) return; // there was limit of 200000 here, but it was removed.
     faces_cache.clear();
       faces_num.clear();
 

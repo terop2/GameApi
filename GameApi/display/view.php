@@ -21,7 +21,7 @@ if ($id>0)
   $state = load_form_state($user, $id);
   $contentsarray = "";
   $filenamearray = "";
-  for($i=0;$i<50;$i++) {
+  for($i=0;$i<500;$i++) {
   		       $contentsarray = $contentsarray . load_form_contentsarray($user, strval($id) . "_" . strval($i));
   		       $filenamearray = $filenamearray . load_form_filenamearray($user, strval($id) . "_" . strval($i));
   }
@@ -36,6 +36,7 @@ if ($id>0)
 </head>
 <body>
 <?php
+
 echo "<pre id='formstate2' style='display:none'>";
 echo "$state";
 echo "</pre>";
@@ -690,6 +691,7 @@ function find_mtl_name(filenames)
    var s = filenames.length;
    for(var i=0;i<s;i++) {
       var filename = filenames[i];
+      //console.log(filename);
       if (filename.substr(-4)==".mtl") return filenames[i];
    }
    return "";
@@ -1487,7 +1489,7 @@ function drop3(state,selectfileelem)
 /*
 	   var snd_item_num = -1;
 	   var snd_item_name = "";
-	   console.log(main_item_name);
+	   //console.log(main_item_name);
 	   if (main_item_name.substr(-4)==".zip") {
 	      console.log("ZIP UNCOMPRESS");
 	      var zipentries=get_zip_filenames(main_item);
@@ -1828,6 +1830,7 @@ function serialize_state()
 
 function deserialize_state(txt)
 {
+  //console.log("STATE");
   var ser = JSON.parse(txt);
   var model = ser.model;
   var normals = ser.normals;
@@ -1866,25 +1869,34 @@ function load_data()
    var fa = document.getElementById("formfilenamearray2");
    var gf = document.getElementById("formgfilename2");
    var gp = document.getElementById("formgpath2");
+   //console.log(st.textContent.length);
+   //console.log(ca.textContent.length);
+   //console.log(fa.textContent.length);
+   //console.log(gf.textContent.length);
+   //console.log(gp.textContent.length);
    if (st.textContent != "") {
     loading_data=1;
    var a_st = "";
-   if (st.textContent!="")
+   if (st.textContent !="")
       a_st = st.textContent;
    //console.log(ca.textContent);
    var a_ca = "";
-   if (ca.textContent!="")
+   //console.log("CONTENTSARRAY");
+   if (ca.textContent !="")
       a_ca = JSON.parse(ca.textContent);
    //console.log(fa.textContent);
+   //console.log("FILENAMEARRAY");
    var a_fa = "";
-   if (fa.textContent!="")
+   if (fa.textContent !="")
       a_fa = JSON.parse(fa.textContent);
    //console.log(gf.textContent);
+   //console.log("FILENAME");
    var a_gf = "";
    if (gf.textContent != "")
       a_gf = JSON.parse(gf.textContent);
    //console.log(gp.textContent);
-   var a_gp = "";
+   // console.log("GPATH");
+  var a_gp = "";
    if (gp.textContent != "") 
       a_gp = JSON.parse(gp.textContent);
 
@@ -1921,28 +1933,106 @@ function load_data()
    }
 }
 
+var Base64={
+    _keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+     encode:function(e){
+	var t="";
+	var n,r,i,s,o,u,a;
+	var f=0;
+	e=Base64._utf8_encode(e);
+	while(f<e.length){
+		n=e.charCodeAt(f++);
+		r=e.charCodeAt(f++);
+		i=e.charCodeAt(f++);
+		s=n>>2;
+		o=(n&3)<<4|r>>4;
+		u=(r&15)<<2|i>>6;
+		a=i&63;
+		if(isNaN(r)){u=a=64;}else
+		if(isNaN(i)){a=64;}
+		t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a);}
+		return t;
+		},
+	decode:function(e){
+	    var t="";
+	    var n,r,i;
+	    var s,o,u,a;
+	    var f=0;
+	    e=e.replace(/[^A-Za-z0-9+/=]/g,"");
+	    while(f<e.length){
+	       s=this._keyStr.indexOf(e.charAt(f++));
+	       o=this._keyStr.indexOf(e.charAt(f++));
+	       u=this._keyStr.indexOf(e.charAt(f++));
+	       a=this._keyStr.indexOf(e.charAt(f++));
+	       n=s<<2|o>>4;
+	       r=(o&15)<<4|u>>2;
+	       i=(u&3)<<6|a;
+	       t=t+String.fromCharCode(n);
+	       if(u!=64){t=t+String.fromCharCode(r);}
+	       if(a!=64){t=t+String.fromCharCode(i);}
+	       }
+	       t=Base64._utf8_decode(t);
+	       return t;
+	       },
+	_utf8_encode:function(e){
+	    e=e.replace(/rn/g,"n");
+	    var t="";
+	    for(var n=0;n<e.length;n++){
+	       var r=e.charCodeAt(n);
+	       if(r<128){t+=String.fromCharCode(r);}
+	       else if(r>127&&r<2048){
+	           t+=String.fromCharCode(r>>6|192);
+		   t+=String.fromCharCode(r&63|128);
+		   }
+		   else
+		   {
+		   t+=String.fromCharCode(r>>12|224);
+		   t+=String.fromCharCode(r>>6&63|128);
+		   t+=String.fromCharCode(r&63|128);
+		   }
+		   }
+		   return t;},
+       _utf8_decode:function(e){
+           var t="";
+	   var n=0;
+	   var r=c1=c2=0;
+	   while(n<e.length){
+		r=e.charCodeAt(n);
+		if(r<128){
+			t+=String.fromCharCode(r);
+			n++
+		}else if(r>191&&r<224){
+		   c2=e.charCodeAt(n+1);
+		   t+=String.fromCharCode((r&31)<<6|c2&63);
+		   n+=2
+		}else{
+		   c2=e.charCodeAt(n+1);
+		   c3=e.charCodeAt(n+2);
+		   t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3
+		   }}
+	return t;}}
+
 function array_to_base64(arr)
 {
    var res = [];
    for(var i=0;i<arr.length;i++)
    {
      var val = arr[i];
-     var buffer = btoa(val);
+     var buffer = btoa(val); //Base64.encode(val);
      res.push(buffer);
+     
    }
    return res;
 }
 function base64_to_array(arr)
 {
-  var res = [];
-   for(var i=0;i<arr.length;i++)
-   {
+   var res = [];
+   for(var i=0;i<arr.length;i++) {
      var val = arr[i];
-     var res2 = atob(val);
+     var res2 = atob(val); //Base64.decode(val);
      res.push(res2);
    }
    return res;
-  
 }
 
 function hash(val)
@@ -1953,7 +2043,7 @@ function hash(val)
 function submitprogressbar(i)
 {
    var prog = document.getElementById("progressbar");
-   prog.innerHTML = "<progress value='"+ i.toString() + "' max='50'></progress>";
+   prog.innerHTML = "<progress value='"+ i.toString() + "' max='500'></progress>";
    //for(var ii=0;ii<i;ii++) {
    //prog.innerHTML = prog.innerHTML + "&exist;";
    //}
@@ -1961,7 +2051,7 @@ function submitprogressbar(i)
    //{
    //prog.innerHTML = prog.innerHTML + "_";   
    //}
-   if (i==50)
+   if (i==500)
    {
 	var name = "viewdata/num.txt";
 	fetch(name).then(response => {
@@ -1995,18 +2085,26 @@ function formsubmit()
   var submitprogress = 0;
 
   xhr.onload = function() {
-	     var num = 50;
-	     var step = contents_length/num;
-	     var step2 = filename_length/num;
+  	     //console.log(contents_length);
+	     //console.log(filename_length);
+	     var num = 500;
+	     var step = Math.floor(contents_length/num)+1;
+	     var step2 = Math.floor(filename_length/num)+1;
+	     if (step<1) step=1;
+	     if (step2<1) step2=1;
   	     	 for(var i=0;i<num;i++) {
 
 		   var start = i*step;
  		   var end = start + step;
 		   if (i==num-1) end=contents_length;
+		   if (start>contents_length) start=contents_length;
+		   if (end>contents_length) end=contents_length;
 
   		   var start2 = i*step2;
   		   var end2 = start2 + step2;
 		   if (i==num-1) end2=filename_length;
+		   if (start2>contents_length) start2=contents_length;
+		   if (end2>contents_length) end2=contents_length;
 
   		   var st3_sub = at3.substring(start, end);
   		   var st4_sub = at4.substring(start2, end2);
@@ -2017,6 +2115,7 @@ function formsubmit()
 
   		   //var st5 = document.getElementById("formgfilename");
   		   var st5_val = JSON.stringify(g_filename);
+		   if (g_path=="") { g_path="./"; }
 		   var st6_val = JSON.stringify(g_path);
 
   		   //var form = document.getElementById("submitcontents");
@@ -2025,20 +2124,22 @@ function formsubmit()
   		   var data = new FormData();
   		   data.append("state", st);
   		   data.append("contents_array", st3_sub);
+		   //console.log("CONTENTSARRAYSIZE=");
+		   //console.log(st3_sub.length);
   		   data.append("filename_array", st4_sub);
   		   data.append("g_filename", st5_val);
 		   data.append("g_path", st6_val);
   		   data.append("num",i);
-  		   var xhr = new XMLHttpRequest();
-  		   xhr.open('POST','submit_contents.php', true);
+  		   var xhr2 = new XMLHttpRequest();
+  		   xhr2.open('POST','submit_contents.php', true);	
 		   submitprogressbar(0);
-		   xhr.onload = function()
+		   xhr2.onload = function()
 		   {
 			submitprogress=submitprogress + 1;
 			submitprogressbar(submitprogress);			
 			
 		   }
-  		   xhr.send(data);
+  		   xhr2.send(data);
   		   }
 		   }
 		  

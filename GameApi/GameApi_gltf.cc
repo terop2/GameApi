@@ -839,202 +839,6 @@ public:
     //std::cout << "GLTFFaceCollection::Prepare()" << std::endl;
     interface->Prepare();
     HeavyPrepare();
-    
-    /*    
-    if (mesh_index>=0 && mesh_index<int(load->model.meshes.size()) && prim_index>=0 && prim_index<int(load->model.meshes[mesh_index].primitives.size()))
-      prim = &load->model.meshes[mesh_index].primitives[prim_index];
-    else { std::cout << "Prim failed!" << std::endl;  return; }
-
-    //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
-    
-    model = &load->model;
-    
-    mode = prim->mode;
-
-    //int material = prim->material;
-    //tinygltf::Material *mat = 0;
-    //if (material!=-1)
-    //  mat = &load->model.materials[material];
-
-
-    // find indices
-    indices_index = prim->indices;
-    position_index = -1;
-    normal_index = -1;
-    texcoord_index = -1;
-    color_index = -1;
-    joints_index = -1;
-    weights_index = -1;
-    if (prim->attributes.find("POSITION") != prim->attributes.end())
-      position_index = prim->attributes["POSITION"];
-    if (prim->attributes.find("NORMAL") != prim->attributes.end())
-      normal_index = prim->attributes["NORMAL"];
-    if (prim->attributes.find("TEXCOORD_0") != prim->attributes.end())
-      texcoord_index = prim->attributes["TEXCOORD_0"];
-    if (prim->attributes.find("COLOR_0") != prim->attributes.end())
-      color_index = prim->attributes["COLOR_0"];
-    if (prim->attributes.find("JOINTS_0") != prim->attributes.end())
-      joints_index = prim->attributes["JOINTS_0"];
-    if (prim->attributes.find("WEIGHTS_0") != prim->attributes.end())
-      weights_index = prim->attributes["WEIGHTS_0"];
-
-    //if (mat) {
-    //  int index = mat->pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
-    //  int index_b = mat->pbrMetallicRoughness.baseColorTexture.texCoord;
-    //  int index_n = mat->normalTexture.texCoord;
-    //  int index_o = mat->occlusionTexture.texCoord;
-    //  int index_e = mat->emissiveTexture.texCoord;
-    //  if (index!=-1)
-    //	texcoord_index = index_b;
-    //}
-
-
-    // find Accessors
-    indices_acc = 0;
-    if (indices_index!=-1)
-      indices_acc = &model->accessors[indices_index];
-
-    if (indices_acc) {
-      assert(indices_acc->type==TINYGLTF_TYPE_SCALAR);
-    }
-    //std::cout << "gltf component type: " << indices_acc->componentType << std::endl;
-    //assert(indices_acc->componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
-
-
-    position_acc = 0;
-    if (position_index!=-1)
-      position_acc = &model->accessors[position_index];
-
-    normal_acc = 0;
-    if (normal_index!=-1)
-      normal_acc = &model->accessors[normal_index];
-    
-    texcoord_acc = 0;
-    if (texcoord_index!=-1)
-      texcoord_acc = &model->accessors[texcoord_index];
-
-    color_acc = 0;
-    if (color_index!=-1)
-      color_acc = &model->accessors[color_index];
-
-    joints_acc = 0;
-    if (joints_index!=-1)
-      joints_acc = &model->accessors[joints_index];
-
-
-    weights_acc = 0;
-    if (weights_index!=-1)
-      weights_acc = &model->accessors[weights_index];
-
-    
-    
-    // find BufferViews
-    indices_bv = 0;
-    if (indices_acc) {
-      int view = indices_acc->bufferView;
-      if (view!=-1)
-	indices_bv = &model->bufferViews[view];
-    }
-
-    position_bv = 0;
-    if (position_acc) {
-      int view = position_acc->bufferView;
-      if (view!=-1)
-	position_bv = &model->bufferViews[view];
-    }
-
-    normal_bv = 0;
-    if (normal_acc) {
-      int view = normal_acc->bufferView;
-      if (view!=-1)
-	normal_bv = &model->bufferViews[view];
-    }
-
-    texcoord_bv = 0;
-    if (texcoord_acc) {
-      int view = texcoord_acc->bufferView;
-      if (view!=-1)
-	texcoord_bv = &model->bufferViews[view];
-    }
-
-    color_bv = 0;
-    if (color_acc) {
-      int view = color_acc->bufferView;
-      if (view!=-1)
-	color_bv = &model->bufferViews[view];
-    }
-
-    joints_bv = 0;
-    if (joints_acc) {
-      int view = joints_acc->bufferView;
-      if (view!=-1)
-	joints_bv = &model->bufferViews[view];
-    }
-
-    weights_bv = 0;
-    if (weights_acc) {
-      int view = weights_acc->bufferView;
-      if (view!=-1)
-	weights_bv = &model->bufferViews[view];
-    }
-    
-    // find buffers
-    indices_buf = 0;
-    if (indices_bv) {
-      int buf = indices_bv->buffer;
-      if (buf!=-1) {
-	indices_buf = &model->buffers[buf];
-      }
-    }
-
-    position_buf = 0;
-    if (position_bv) {
-      int buf = position_bv->buffer;
-      if (buf!=-1) {
-	position_buf = &model->buffers[buf];
-      }
-    }
-
-    normal_buf = 0;
-    if (normal_bv) {
-      int buf = normal_bv->buffer;
-      if (buf!=-1) {
-	normal_buf = &model->buffers[buf];
-      }
-    }
-
-    texcoord_buf = 0;
-    if (texcoord_bv) {
-      int buf = texcoord_bv->buffer;
-      if (buf!=-1) {
-	texcoord_buf = &model->buffers[buf];
-      }
-    }
-
-    color_buf = 0;
-    if (color_bv) {
-      int buf = color_bv->buffer;
-      if (buf!=-1) {
-	color_buf = &model->buffers[buf];
-      }
-    }
-
-    joints_buf = 0;
-    if (joints_bv) {
-      int buf = joints_bv->buffer;
-      if (buf!=-1) {
-	joints_buf = &model->buffers[buf];
-      }
-    }
-
-    weights_buf = 0;
-    if (weights_bv) {
-      int buf = weights_bv->buffer;
-      if (buf!=-1) {
-	weights_buf = &model->buffers[buf];
-      }
-    }
-    */    
   }
   virtual int NumFaces() const 
   {
@@ -1143,6 +947,7 @@ public:
   }
   virtual Point FacePoint(int face, int point) const
   {
+
     if (position_bv_done && position_done && position_buf_done) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
       if (indices_buf_done && indices_bv_done && indices_done) {
@@ -1168,7 +973,8 @@ public:
       }
     }
     } else {
-      return Point(0.0,0.0,0.0);
+      std::cout << "GLTFFaceCollection: FacePoint:" << position_bv_done << " " << position_done << " " << position_buf_done << " " << mode << " " << TINYGLTF_MODE_TRIANGLES << " " << indices_buf_done << " " << indices_bv_done << " " << indices_done << std::endl;
+    return Point(0.0,0.0,0.0);
     }
     std::cout << "gltf FacePoint unknown mode" << std::endl;
     return Point(0.0,0.0,0.0);
@@ -3242,7 +3048,9 @@ private:
 
 GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml)
 {
-  return add_main_loop(e, new ScaleToGltf(e,ev,p,ml));
+  //GameApi::ML ml2 = ev.mainloop_api.print_stats(p);
+  GameApi::ML ml3 = add_main_loop(e, new ScaleToGltf(e,ev,p,ml));
+  return ml3;
 }
 
 struct TransformObject
@@ -4260,30 +4068,6 @@ public:
     vis.register_obj(this);
   }
   virtual void HeavyPrepare() {
-    /*
-    interface->Prepare();
-    std::string url = interface->Url();
-    bool is_binary=false;
-    if (int(url.size())>3) {
-      std::string sub = url.substr(url.size()-3);
-      if (sub=="glb") is_binary=true;
-    }
-    // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
-    //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    //interface->Prepare();
-    GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
-
-    int scene_id = interface->get_default_scene();
-    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,"",mix );
-    res = scale_to_gltf_size(env,ev,mesh,ml);
-    */
-    /*
-    if (res.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,res);
-      if (item)
-    	item->Prepare();
-    }
-    */
     Prepare();
   }
   virtual void Prepare() {
@@ -7676,33 +7460,43 @@ public:
     GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
     std::vector<unsigned char> vec2(vec->begin(), vec->end());
-    mz_ulong size = vec->end()-vec->begin();
+    mz_ulong size = vec2.end()-vec2.begin();
     //mz_ulong size2 = 0;
     //unsigned char *ptr = new unsigned char[size2];
+    //std::cout << "ZIP URL=" << zip_url << std::endl;
+    //std::cout << "VECTOR SIZE=" << size << std::endl;
 
+    
     mz_zip_archive pZip;
     std::memset(&pZip,0,sizeof(mz_zip_archive));
 
     mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
 
+    //std::cout << "ZIP STATUS:" << b2 << std::endl;
+    
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
+    //std::cout << "ZIp num=" << num << std::endl;
     for(int i=0;i<num;i++)
       {
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
 	if (is_dir) {
 	    char *filename = new char[256];
+	    *filename=0;
 	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    //std::cout << "DIR:" << filename << std::endl;
 	    delete[] filename;
 	} else
 	  {
 	    char *filename = new char[256];
+	    *filename=0;
 	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; continue; }
 	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
 	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
 	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") mainfilename = zip_url + "/" + std::string(filename);
 	    //std::cout << "Decompressing zip: " << filename << std::endl;
 
-	    size_t sz;
+	    size_t sz=0;
 	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
 	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
@@ -7710,6 +7504,8 @@ public:
 #ifdef EMSCRIPTEN
 	    data->push_back(0); // is this always needed?
 #endif
+	    //	    std::cout << url << "::" << data->size() << std::endl;
+	    
 	    g_del_map.load_url_buffers_async[url] = data;
 	  }
 	

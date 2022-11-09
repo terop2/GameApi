@@ -7,7 +7,6 @@
 #include "GameApi_low.hh"
 #include <atomic>
 
-
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
 extern Matrix g_last_resize;
 
@@ -12182,6 +12181,7 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
+    //stackTrace();
     find_bounding_box();
     print_bounding_box();
     calc_center();
@@ -12191,6 +12191,7 @@ public:
 
   void Prepare()
   {
+    //stackTrace();
     coll->Prepare();
 
     find_bounding_box();
@@ -12225,15 +12226,22 @@ private:
     if (s<1) s=1;
     int step = coll->NumFaces()/s;
     int faces = coll->NumFaces();
+    //std::cout << "FACES:" << step << " " << faces << std::endl;
+    // std::cout << "FACES:" << typeid(*coll).name() << std::endl;
     for(int i=0;i<faces;i+=step)
       {
-	int p = coll->NumPoints(i);
-	for(int j=0;j<p;j++)
-	  {
-	    Point p2 = coll->FacePoint(i,j);
-	    //std::cout << p2 << std::endl;
+	//int p = coll->NumPoints(i);
+	//for(int j=0;j<p;j++)
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point p4 = coll->NumPoints(i)==4 ? coll->FacePoint(i,3) : p1;
+
+	    //std::cout << p1 << " " << p2  << " " << p3 << " " << p4 << std::endl;
+	    handlepoint(p1);
 	    handlepoint(p2);
-	  }
+	    handlepoint(p3);
+	    handlepoint(p4);
       }
   }
   void handlepoint(Point p)
