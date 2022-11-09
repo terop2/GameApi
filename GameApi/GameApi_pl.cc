@@ -3244,6 +3244,211 @@ EXPORT GameApi::P GameApi::PolygonApi::texture(P orig, BM bm, int choose)
   BoxableFaceCollection *coll2 = new TextureElem2(*coll, *req, *coords);
   return add_polygon(e, coll2, 1);
 }
+
+struct FaceRange
+{
+  int start_face;
+  int end_face;
+  int start_obj;
+  int end_obj;
+};
+
+class OrArrayNoMemory : public FaceCollection
+{
+public:
+  OrArrayNoMemory(std::vector<FaceCollection*> vec) : vec(vec) { firsttime = true; }
+  virtual void Collect(CollectVisitor &vis) {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    if (firsttime||ranges.size()==0) {
+    int s = vec.size();
+    int start_face=0;
+    int start_obj=0;
+    for(int i=0;i<s;i++)
+      {
+	int ss = vec[i]->NumFaces();
+	int ss2 = vec[i]->NumObjects();
+	FaceRange r = { start_face, start_face+ss, start_obj, start_obj+ss2 };
+	ranges.push_back(r);
+	start_face+=ss;
+	start_obj+=ss2;
+      }
+    firsttime=false;
+    }
+  }
+  virtual void Prepare()
+  {
+    if (firsttime||ranges.size()==0) {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i]->Prepare();
+      }
+    HeavyPrepare();
+    }
+  }
+  virtual int NumFaces() const
+  {
+    return ranges[ranges.size()-1].end_face;
+  }
+  virtual int NumPoints(int face) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->NumPoints(s.second);
+  }
+
+  std::pair<int,int> split(int face) const
+  {
+    if (ranges.size()==0) { const_cast<OrArrayNoMemory*>(this)->Prepare(); }
+    int s = ranges.size();
+    for(int i=0;i<s;i++)
+      {
+	const FaceRange &r = ranges[i];
+	if (face>=r.start_face && face<r.end_face)
+	  {
+	    return std::make_pair(i,face-r.start_face);
+	  }
+      }
+    return std::make_pair(0,0);
+  }
+
+
+  std::pair<int,int> split_obj(int o) const
+  {
+    if (ranges.size()==0) { const_cast<OrArrayNoMemory*>(this)->Prepare(); }
+    int s = ranges.size();
+    for(int i=0;i<s;i++)
+      {
+	const FaceRange &r = ranges[i];
+	if (o>=r.start_obj && o<r.end_obj)
+	  {
+	    return std::make_pair(i,o-r.start_obj);
+	  }
+      }
+    return std::make_pair(0,0);
+  }
+
+  
+  
+  virtual Point FacePoint(int face, int point) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->FacePoint(s.second,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->PointNormal(s.second,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->Attrib(s.second,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->AttribI(s.second,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->Color(s.second,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->TexCoord(s.second,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->TexCoord3(s.second,point);
+
+  }
+  virtual VEC4 Joints(int face, int point) const {
+
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->Joints(s.second,point);
+    
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->Weights(s.second,point);
+
+  }
+
+
+  virtual Point EndFacePoint(int face, int point) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndFacePoint(s.second,point);
+
+  }
+  virtual Vector EndPointNormal(int face, int point) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndPointNormal(s.second,point);
+  }
+  virtual float EndAttrib(int face, int point, int id) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndAttrib(s.second,point,id);
+  }
+  virtual int EndAttribI(int face, int point, int id) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndAttribI(s.second,point,id);
+  }
+  virtual unsigned int EndColor(int face, int point) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndColor(s.second,point);
+  }
+  virtual Point2d EndTexCoord(int face, int point) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndTexCoord(s.second,point);
+  }
+  virtual float EndTexCoord3(int face, int point) const {
+    std::pair<int,int> s = split(face);
+    return vec[s.first]->EndTexCoord3(s.second,point);
+  }
+
+
+  
+  virtual int NumObjects() const {
+    return ranges[ranges.size()-1].end_obj;
+    
+  }
+  virtual std::pair<int,int> GetObject(int o) const {
+    std::pair<int,int> s = split_obj(o);
+    std::pair<int,int> oo = vec[s.first]->GetObject(s.second);
+    oo.first+=ranges[s.first].start_face;
+    oo.second+=ranges[s.first].start_face;
+    return oo;
+  }
+
+private:
+  std::vector<FaceCollection*> vec;
+  std::vector<FaceRange> ranges;
+  bool firsttime;
+};
+
+
+EXPORT GameApi::P GameApi::PolygonApi::or_array3(std::vector<P> vec)
+{
+  if (vec.size()==0) return p_empty();
+  int s = vec.size();
+  std::vector<FaceCollection*> vec2;
+  for(int i=0;i<s;i++) {
+    FaceCollection *coll = find_facecoll(e,vec[i]);
+    vec2.push_back(coll);
+  }
+  return add_polygon2(e, new OrArrayNoMemory(vec2),1);
+}
+
 EXPORT GameApi::P GameApi::PolygonApi::or_array2(std::vector<P> vec)
 {
   if (vec.size()>0)
