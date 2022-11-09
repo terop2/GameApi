@@ -775,19 +775,15 @@ function get_border(i,m,filename)
      color = parse_border_color(name2);
      width = parse_border_width(name2);
   }
-  /*
-  if (i==1) color="ffffff";
-  if (i==3) color="ffffff";
-  if (i==5) color="ffffff";
-
-  if (i==0 || i==1) width="2";
-  if (i==2 || i==3) width="4";
-  if (i==4 || i==5) width="8";
-*/
+  var res = "";
   var variable = "I2";
   if (m==-1) variable="I1";
+  
+  if (width=="0") {
+   res+="P I5021=ev.polygon_api.recalculate_normals(" + variable + ");\n";
+   res+="ML I5022=ev.polygon_api.render_vertex_array_ml2(ev,I5021);\n"
+  } else {
 
-  var res = "";
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   //res+= "MT I401=ev.materials_api.m_def(ev);\n"
   res+= "MT I504=ev.materials_api.phong(ev,I4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
@@ -797,6 +793,7 @@ if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
   } else {
     res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
+  }
 }
   res+="ML I503=ev.mainloop_api.depthmask(I5022,false);\n";
   res+="ML I502=ev.mainloop_api.depthfunc(I503,3);\n";
