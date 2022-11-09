@@ -3256,8 +3256,9 @@ struct FaceRange
 class OrArrayNoMemory : public FaceCollection
 {
 public:
-  OrArrayNoMemory(std::vector<FaceCollection*> vec) : vec(vec) { firsttime = true; }
+  OrArrayNoMemory(std::vector<FaceCollection*> vec) : vec(vec) { }
   virtual void Collect(CollectVisitor &vis) {
+    //std::cout << "COLLECT" << std::endl;
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
@@ -3267,46 +3268,63 @@ public:
   }
   virtual void HeavyPrepare()
   {
-    if (firsttime||ranges.size()==0) {
+    //std::cout << "HEAVYPREPARE" << std::endl;
     int s = vec.size();
     int start_face=0;
     int start_obj=0;
+    ranges.clear();
     for(int i=0;i<s;i++)
       {
 	int ss = vec[i]->NumFaces();
 	int ss2 = vec[i]->NumObjects();
+	//std::cout << "GOT: " << ss << " " << ss2 << std::endl;
+	//print_objs();
+	if (ss<0) ss=0;
+	if (ss2<0) ss2=0;
+	if (ss>10000000) ss=0; // this is because NumFaces() gives trash if Prepare() has not been done yet.
 	FaceRange r = { start_face, start_face+ss, start_obj, start_obj+ss2 };
 	ranges.push_back(r);
 	start_face+=ss;
 	start_obj+=ss2;
       }
     firsttime=false;
-    }
   }
+  //void print_objs() const {
+  //  int s = vec.size();
+  //  for(int i=0;i<s;i++) std::cout << typeid(*vec[i]).name() << std::endl;
+  //}
   virtual void Prepare()
   {
-    if (firsttime||ranges.size()==0) {
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
 	vec[i]->Prepare();
       }
     HeavyPrepare();
-    }
   }
   virtual int NumFaces() const
   {
-    return ranges[ranges.size()-1].end_face;
+    //std::cout << "NUMFACES" << std::endl;
+    //print_objs();
+    if (ranges.size()==0) const_cast<OrArrayNoMemory*>(this)->HeavyPrepare();
+    if (ranges.size()==0) return 0;
+    int res = ranges[ranges.size()-1].end_face;
+    //std::cout << "NUMFACES END"<< res << std::endl;
+    return res;
   }
   virtual int NumPoints(int face) const
   {
+    //std::cout << "NUMPOINTS" << std::endl;
+    if (ranges.size()==0) const_cast<OrArrayNoMemory*>(this)->HeavyPrepare();
+    if (ranges.size()==0) return 0;
     std::pair<int,int> s = split(face);
     return vec[s.first]->NumPoints(s.second);
   }
 
   std::pair<int,int> split(int face) const
   {
-    if (ranges.size()==0) { const_cast<OrArrayNoMemory*>(this)->Prepare(); }
+    //std::cout << "SPLIT" << std::endl;
+    if (ranges.size()==0) { const_cast<OrArrayNoMemory*>(this)->HeavyPrepare(); }
     int s = ranges.size();
     for(int i=0;i<s;i++)
       {
@@ -3322,7 +3340,8 @@ public:
 
   std::pair<int,int> split_obj(int o) const
   {
-    if (ranges.size()==0) { const_cast<OrArrayNoMemory*>(this)->Prepare(); }
+    //std::cout << "SPLITOBJ" << std::endl;
+    if (ranges.size()==0) { const_cast<OrArrayNoMemory*>(this)->HeavyPrepare(); }
     int s = ranges.size();
     for(int i=0;i<s;i++)
       {
@@ -3419,6 +3438,10 @@ public:
 
   
   virtual int NumObjects() const {
+    //  std::cout << "NUMOBJECTS" << std::endl;
+
+    if (ranges.size()==0) const_cast<OrArrayNoMemory*>(this)->HeavyPrepare();
+    if (ranges.size()==0) return 0;
     return ranges[ranges.size()-1].end_obj;
     
   }
@@ -3444,9 +3467,13 @@ EXPORT GameApi::P GameApi::PolygonApi::or_array3(std::vector<P> vec)
   std::vector<FaceCollection*> vec2;
   for(int i=0;i<s;i++) {
     FaceCollection *coll = find_facecoll(e,vec[i]);
-    vec2.push_back(coll);
+    if (coll)
+      vec2.push_back(coll);
   }
-  return add_polygon2(e, new OrArrayNoMemory(vec2),1);
+  FaceCollection *res;
+  GameApi::P p = add_polygon2(e, res=new OrArrayNoMemory(vec2),1);
+  res->HeavyPrepare();
+  return p;
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::or_array2(std::vector<P> vec)
