@@ -369,6 +369,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "[P]" },
 			 { "" },
 			 "P", "polygon_api", "or_array2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_array3,
+			 "p_or_array_nomem",
+			 { "vec" },
+			 { "[P]" },
+			 { "" },
+			 "P", "polygon_api", "or_array3"));
 #ifndef STABLE
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::optimize_mesh,

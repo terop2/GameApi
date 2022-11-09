@@ -2723,6 +2723,7 @@ public:
   IMPORT P or_elem(P p1, P p2);
   IMPORT P or_array(P *array, int size);
   IMPORT P or_array2(std::vector<P> vec);
+  IMPORT P or_array3(std::vector<P> vec); // no memory usage.
   P or_array_1(P *array, int size);
   IMPORT P and_not_elem(EveryApi &ev, P p1, P p_not, 
 			O o1, O o_not, 

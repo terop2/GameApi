@@ -3436,7 +3436,7 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   // this is perf/memory optimization.
   if (vec.size()==1) array=vec[0]; else
   if (vec.size()==2) array=ev.polygon_api.or_elem(vec[0],vec[1]);
-  else array = ev.polygon_api.or_array2(vec);
+  else array = ev.polygon_api.or_array3(vec);
  
   if (int(node.scale.size())==3) {
     double s_x = node.scale[0];
