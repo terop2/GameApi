@@ -119,15 +119,21 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   g_low->ogl->glShaderSource(handle, count, strings, lengths);
   //ProgressBar(111,10,15,shader.Name().c_str());
   g_low->ogl->glCompileShader(handle);
+
+  int res=0;
+  g_low->ogl->glGetShaderiv(handle, Low_GL_COMPILE_STATUS, &res);
+  //std::cout << "COMPILE STATUS: " << res << std::endl;
+  if (res!=1) {
+
+  
 #ifdef HAS_GL_GETERROR
   int val = g_low->ogl->glGetError();
 #else
   int val = Low_GL_NO_ERROR;
 #endif
-  
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-  if (val!=Low_GL_NO_ERROR)
+  // if (val!=Low_GL_NO_ERROR)
     {
     std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -138,34 +144,8 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
       std::cout << "" << buf << std::endl;
 
   }
-#if 0
-  int i=0;
-  g_low->ogl->glGetShaderiv(handle, Low_GL_COMPILE_STATUS, &i );
-  if (i == 1) { /*std::cout << shader.Name() << " OK" << std::endl;*/ 
-    int len=0;
-#ifdef HAS_GL_GETERROR
-  int val2 = g_low->ogl->glGetError();
-#else
-  int val2 = Low_GL_NO_ERROR;
-#endif
-  if (val2!=Low_GL_NO_ERROR)
-  {
-  char log[255];
-  g_low->ogl->glGetShaderInfoLog(handle, 255, &len, log);
-  log[len]=0;
-  if (len>0)
-    std::cout << "SHADER ERROR: " << std::endl << log << std::endl;
   }
-  }
-  else
-    {
-      int len=0;
-      char buf[255];
-      g_low->ogl->glGetShaderInfoLog(handle, 255, &len, buf);
-      std::cout << shader.Name() << " ERROR: " << buf << std::endl;
-    }
 
-#endif
   delete [] strings; strings=0;
   delete [] lengths; lengths = 0;
   priv = new ShaderPriv;
@@ -288,7 +268,13 @@ void Program::GeomOutputVertices(int i)
 void Program::link()
 {
   g_low->ogl->glLinkProgram(priv->program);
+  /*
+  int res=0;
+  g_low->ogl->glGetProgramiv(priv->program, Low_GL_LINK_STATUS, &res);
+
+  if (res!=1) {
   int val = g_low->ogl->glGetError();
+  std::cout << "LINK ERROR: " << val << std::endl;
   if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
@@ -298,6 +284,8 @@ void Program::link()
   if (len>0)
     std::cout << "LINK ERROR: " << std::endl << log << std::endl;
   }
+  }
+  */
 }
 void Program::print_log()
 {
