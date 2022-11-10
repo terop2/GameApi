@@ -240,6 +240,8 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_LINK_STATUS: i=GL_LINK_STATUS; break;
+    //case Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
   case Low_GL_CW: i=GL_CW; break;
   case Low_GL_CCW: i=GL_CCW; break;
   case Low_GL_PIXEL_PACK_BUFFER: i = GL_PIXEL_PACK_BUFFER; break;
@@ -898,6 +900,15 @@ return ::glCreateShader(shader); }
 #define glUseProgram GLEW_GET_FUN(__glewUseProgram)
 #endif
     ::glUseProgram(p); }
+
+  virtual void glGetProgramiv(unsigned int p, int pname, int *params) {
+#ifdef GLEW_HACK
+#define glGetProgramiv GLEW_GET_FUN(__glewGetProgramiv)
+#endif
+    map_enums(pname);
+    ::glGetProgramiv(p,pname,params); 
+  }
+
   virtual void glGetProgramInfoLog(unsigned int p, int num, int *len, char *buf) { 
 #ifdef GLEW_HACK
 #define glGetProgramInfoLog GLEW_GET_FUN(__glewGetProgramInfoLog)

@@ -3480,9 +3480,12 @@ EXPORT GameApi::P GameApi::PolygonApi::or_array3(std::vector<P> vec)
 
 EXPORT GameApi::P GameApi::PolygonApi::or_array2(std::vector<P> vec)
 {
+  return or_array3(vec);
+  /*
   if (vec.size()>0)
     return or_array(&vec[0],vec.size());
   return p_empty();
+  */
 }
 EXPORT GameApi::P GameApi::PolygonApi::or_array(P *p1, int size)
 {
@@ -6220,7 +6223,7 @@ public:
 
     if (shader.id!=-1)
       {
-	ev.shader_api.use(sh);
+	//ev.shader_api.use(sh);
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
