@@ -2345,6 +2345,9 @@ VARYING_IN " float fog_intensity;\n"
     "#endif\n"
     "#endif\n"
 
+    "#ifndef GLTF_TEX0\n"
+    " baseColor = u_BaseColorFactor;\n"
+    "#endif\n"
 
 
 "#ifdef SPEC\n"
@@ -2359,6 +2362,9 @@ VARYING_IN " float fog_intensity;\n"
     
     "#endif\n"
 
+    "#ifndef GLTF_TEX0\n"
+    " baseColor = u_BaseColorFactor;\n"
+    "#endif\n"
 
     "#ifdef GLTF_TEX1\n"
 #ifdef WEBGL2
