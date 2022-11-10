@@ -3655,7 +3655,7 @@ GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, G
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       mls.push_back(p);
     }
-    GameApi::P ml = ev.polygon_api.or_array2(mls);
+    GameApi::P ml = ev.polygon_api.or_array3(mls);
     return ml;
   } else {
     GameApi::P empty = ev.polygon_api.p_empty();
@@ -3708,7 +3708,7 @@ GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       mls.push_back(p);
     }
-    GameApi::P ml = ev.polygon_api.or_array2( mls);
+    GameApi::P ml = ev.polygon_api.or_array3( mls);
     return ml;
   } else {
     GameApi::P empty = ev.polygon_api.p_empty();

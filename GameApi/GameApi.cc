@@ -4400,7 +4400,7 @@ public:
   virtual void Prepare()
   {
     opaque->Prepare();
-    //transparent->Prepare();
+    transparent->Prepare();
   }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)

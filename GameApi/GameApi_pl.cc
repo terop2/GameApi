@@ -3463,6 +3463,8 @@ private:
 EXPORT GameApi::P GameApi::PolygonApi::or_array3(std::vector<P> vec)
 {
   if (vec.size()==0) return p_empty();
+  if (vec.size()==1) return vec[0];
+  if (vec.size()==2) return or_elem(vec[0],vec[1]);
   int s = vec.size();
   std::vector<FaceCollection*> vec2;
   for(int i=0;i<s;i++) {
@@ -6464,8 +6466,11 @@ public:
 	va = ev.texture_api.bind_many(va, id, types);
       }
 
-
     GameApi::SH sh;
+    GameApi::US u_v;
+    GameApi::US u_f;
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1) {
+
     if (ev.polygon_api.is_texture(va))
       {
 	sh.id = e.sh_texture;
@@ -6479,8 +6484,6 @@ public:
 	sh.id = e.sh_color;
       }
 
-    GameApi::US u_v;
-    GameApi::US u_f;
     u_v.id = 0;
     u_f.id = 0;
     if (e.us_vertex_shader!=-1)
@@ -6536,7 +6539,7 @@ public:
 	  }
       }
 #endif
-
+    }
     if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
       {
 	GameApi::US vertex;

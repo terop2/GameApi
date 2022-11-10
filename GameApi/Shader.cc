@@ -4924,11 +4924,140 @@ std::string add_line_numbers(std::string s)
     }
   return res;
 }
+
+struct ShaderCacheItem
+{
+  std::string v_format, f_format, g_format;
+  std::vector<std::string> v_vec, f_vec;
+  bool is_trans;
+  ShaderModule *mod;
+  ShaderCall *vertex_c, *fragment_c;
+  std::string v_defines, f_defines, v_shader, f_shader;
+
+  std::vector<Shader*> v_shaders;
+  std::vector<Shader*> f_shaders;
+  std::vector<Shader*> g_shaders;
+  
+  friend bool operator==(const ShaderCacheItem &i1,const ShaderCacheItem &i2);
+};
+std::vector<ShaderCacheItem> shader_cache;
+
+bool operator==(const ShaderCacheItem &i1, const ShaderCacheItem &i2)
+{
+  bool b = true;
+  if (i1.vertex_c && i2.vertex_c) {
+    bool a0=i1.vertex_c->func_call()==i2.vertex_c->func_call();
+    
+    
+    bool a1=  i1.vertex_c->define_strings()==i2.vertex_c->define_strings();
+    bool a2=  i1.vertex_c->func_name()==i2.vertex_c->func_name();
+
+    //if (a0==false) std::cout << "K";
+    //if (a1==false) std::cout << "L";
+    //if (a2==false) std::cout << "M";
+
+    b=a1&&a2;
+  }
+  bool b2 = true;
+  if (i1.fragment_c && i2.fragment_c)
+    {
+
+      bool c0=i1.fragment_c->func_call()==i2.fragment_c->func_call();
+      bool c1=i1.fragment_c->define_strings()==i2.fragment_c->define_strings();
+      bool c2=i1.fragment_c->func_name()==i2.fragment_c->func_name();
+      //if (c0==false) std::cout << "Q";
+      //if (c1==false) std::cout << "W";
+      //if (c2==false) std::cout << "E";
+      b2 = c1&&c2;
+	
+	
+
+    }
+  
+  bool b3= i1.v_format==i2.v_format;
+    bool b4=  i1.f_format==i2.f_format;
+    bool b5=  i1.g_format==i2.g_format;
+    bool b6=  i1.v_vec==i2.v_vec;
+    bool b7=  i1.f_vec==i2.f_vec;
+    bool b8=  i1.is_trans==i2.is_trans;
+    bool b9=  i1.mod==i2.mod;
+
+    bool b10=   i1.v_defines==i2.v_defines;
+    bool b11=   i1.f_defines==i2.f_defines;
+    bool b12=   i1.v_shader==i2.v_shader;
+ bool b13=   i1.f_shader==i2.f_shader;
+ /*
+ if (b==false) std::cout << "1";
+ if (b2==false) std::cout << "2";
+ if (b3==false) std::cout << "3";
+ if (b4==false) std::cout << "4";
+ if (b5==false) std::cout << "5";
+ if (b6==false) std::cout << "6";
+ if (b7==false) std::cout << "7";
+ if (b8==false) std::cout << "8";
+ if (b9==false) std::cout << "9";
+ if (b10==false) std::cout << "A";
+ if (b11==false) std::cout << "B";
+ if (b12==false) std::cout << "C";
+ if (b13==false) std::cout << "D";
+ std::cout << i1.fragment_c->func_name() << " " << i2.fragment_c->func_name()<< std::endl;
+ */
+ 
+ return b&&b2&&b3&&b4&&b5&&b6&&b7&&b8&&b9&&b10&&b11&&b12&&b13;
+}
+
+const ShaderCacheItem *find_from_shader_cache(const ShaderCacheItem &i2)
+{
+  int s = shader_cache.size();
+  for(int i=0;i<s;i++)
+    {
+      const ShaderCacheItem &ii=shader_cache[i];
+      if (i2==ii) {
+	return &ii;
+      }
+    }
+  return 0;
+}
+
+
 int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
+  ShaderCacheItem ci;
+  ci.v_format = v_format;
+  ci.f_format = f_format;
+  ci.g_format = g_format;
+  ci.v_vec = v_vec;
+  ci.f_vec = f_vec;
+  ci.is_trans = is_trans;
+  ci.mod = mod;
+  ci.vertex_c = vertex_c;
+  ci.fragment_c = fragment_c;
+  ci.v_defines = v_defines;
+  ci.f_defines = f_defines;
+  ci.v_shader = v_shader;
+  ci.f_shader = f_shader;
+  const ShaderCacheItem *res = find_from_shader_cache(ci); 
+
   int id = progs.size();
   Program *p = new Program;
   progs.push_back(p);
+
+  if (res) {
+    // std::cout << "FOUND FROM SHADER CACHE" << std::endl;
+    int s1 = res->v_shaders.size();
+    for(int i=0;i<s1;i++) p->push_back(*res->v_shaders[i]);
+
+    int s2 = res->f_shaders.size();
+    for(int i=0;i<s2;i++) p->push_back(*res->f_shaders[i]);
+
+    int s3 = res->g_shaders.size();
+    for(int i=0;i<s3;i++) p->push_back(*res->g_shaders[i]);
+    
+    return id;
+  }
+  //   std::cout << "NOT FOUND" << std::endl;
+
+  
   std::string::iterator i = v_format.begin();
   while(i!=v_format.end())
     {
@@ -4958,6 +5087,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
       p->push_back(*sha1);
+      ci.v_shaders.push_back(sha1);
       if (ii!=v_format.end())
 	ii++;
       i = ii;
@@ -4988,6 +5118,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
+      ci.f_shaders.push_back(sha2);
       if (ii!=f_format.end())
 	ii++;
       i = ii;
@@ -5003,11 +5134,12 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       ShaderSpec *spec = new SingletonShaderSpec(shader,g_format);
       Shader *sha2 = new Shader(*spec, false, true);
       p->push_back(*sha2);
+      ci.g_shaders.push_back(sha2);
       if (ii!=g_format.end())
 	ii++;
       i = ii;
     }
-
+  shader_cache.push_back(ci);
   //p->link();
   //p->GeomTypes(5,2); 
   //p->GeomOutputVertices(100000);
