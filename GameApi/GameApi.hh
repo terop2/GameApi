@@ -2881,7 +2881,7 @@ public:
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
-  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false);
+  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false, float emis2_r=0.0, float emis2_g=0.0, float emis2_b=0.0);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int accexss_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);

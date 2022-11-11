@@ -766,6 +766,15 @@ function parse_border_width(brd)
    var arr = brd.split(" ");
    return arr[4];
 }
+function get_border_width(i)
+{
+  var width = "0";
+  if (i>=0 && i<store.state.border_db.length) {
+     var name2 = store.state.border_db[i];
+     width = parse_border_width(name2);
+  }
+  return width;
+}
 function get_border(i,m,filename)
 {
   var color = "000000";
@@ -781,15 +790,14 @@ function get_border(i,m,filename)
   
   if (width=="0") {
    res+="P I5021=ev.polygon_api.recalculate_normals(" + variable + ");\n";
-   res+="ML I5022=ev.polygon_api.render_vertex_array_ml2(ev,I5021);\n"
+   res+="P I5023=ev.polygon_api.color(I5021,0);\n"
+   res+="ML I5022=ev.polygon_api.render_vertex_array_ml2(ev,I5023);\n"
   } else {
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
-  //res+= "MT I401=ev.materials_api.m_def(ev);\n"
   res+= "MT I504=ev.materials_api.phong(ev,I4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
   res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
 if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
-  //res+= "MT I506=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I501,cvbnmfghjk);\n";
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
   } else {
     res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
@@ -1184,7 +1192,7 @@ res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
 
 
   } else {
-    res+=border; // outputs I502
+      res+=border; // outputs I502
   }
 
 
