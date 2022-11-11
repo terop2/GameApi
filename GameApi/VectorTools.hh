@@ -380,6 +380,10 @@ public:
   Color(int r, int g, int b);
   Color(int r, int g, int b, int alpha);
   Color(unsigned int color);
+  Color(Color&&x) : r(std::move(x.r)), g(std::move(x.g)), b(std::move(x.b)), alpha(std::move(x.alpha)) { }
+Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
+  Color &operator=(Color &&x) { r=std::move(x.r); g=std::move(x.g); b=std::move(x.b); alpha=std::move(x.alpha); return *this; }
+  Color &operator=(const Color &x) { r=x.r; g=x.g; b=x.b; alpha=x.alpha; return *this; }
   void check();
 
   friend std::ostream &operator<<(std::ostream &o, const Color &c)
