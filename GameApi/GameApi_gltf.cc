@@ -18,7 +18,7 @@ extern std::string gameapi_homepageurl;
   //for(int i=0;i<s;i++) feature_enable[i]=true;
 //}
 
-static const float baseColorFactor = 1.5;
+static const float baseColorFactor = 1.0;
 
 
 class GLTF_Model : public GLTFModelInterface
@@ -1754,13 +1754,23 @@ public:
     const tinygltf::Value &unlit= (*m.extensions.find("KHR_materials_unlit")).second;
     return unlit.IsObject();
   }
+
+  bool get_sheen() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &unlit= (*m.extensions.find("KHR_materials_sheen")).second;
+    return unlit.IsObject();
+  }
+
+  
   
   Vector get_diffuse_factor() const
   {
     const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
-    if (!specglossi.IsObject()) return Vector(1.0f,1.0f,1.0f);
+    if (!specglossi.IsObject()) return print_vector("diffuse_factor",Vector(1.0f,1.0f,1.0f));
     const tinygltf::Value &diffuse = specglossi.Get("diffuseFactor");
+    if (!diffuse.IsArray()) return print_vector("diffuse_factor",Vector(1.0f,1.0f,1.0f));
     const tinygltf::Value &diff_r = diffuse.Get(0);
     const tinygltf::Value &diff_g = diffuse.Get(1);
     const tinygltf::Value &diff_b = diffuse.Get(2);
@@ -1768,7 +1778,7 @@ public:
     res.dx = diff_r.GetNumberAsDouble();
     res.dy = diff_g.GetNumberAsDouble();
     res.dz = diff_b.GetNumberAsDouble();
-    return res;
+    return print_vector("diffuse_factor",res);
     //return diffuse.GetNumberAsDouble();
   }
 
@@ -1776,8 +1786,9 @@ public:
   {
     const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
-    if (!specglossi.IsObject()) return Vector(1.0f,1.0f,1.0f);
+    if (!specglossi.IsObject()) return print_vector("specular_factor",Vector(0.5f,0.5f,0.5f));
     const tinygltf::Value &diffuse = specglossi.Get("specularFactor");
+    if (!diffuse.IsArray()) return print_vector("specular_factor",Vector(0.5f,0.5f,0.5f));
     const tinygltf::Value &diff_r = diffuse.Get(0);
     const tinygltf::Value &diff_g = diffuse.Get(1);
     const tinygltf::Value &diff_b = diffuse.Get(2);
@@ -1785,19 +1796,42 @@ public:
     res.dx = diff_r.GetNumberAsDouble();
     res.dy = diff_g.GetNumberAsDouble();
     res.dz = diff_b.GetNumberAsDouble();
-    return res;
+    return print_vector("specular_factor",res);
   }
 
   float get_glossiness_factor() const
   {
     const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
-    if (!specglossi.IsObject()) return 1.0f;
+    if (!specglossi.IsObject()) return print_float("glossinessfactor",1.0f);
     const tinygltf::Value &diffuse = specglossi.Get("glossinessFactor");
-    return diffuse.GetNumberAsDouble();
+    float glos = diffuse.GetNumberAsDouble();
+    if (glos<0.04) glos=1.0f;
+    return print_float("glossinessfactor",glos);
   }
 
   
+  bool get_spec() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return false;
+    return true;
+  }
+  int print_int(std::string label, int i) const { /*std::cout << label << ":" << i << std::endl;*/ return i; }
+  float print_float(std::string label, float i) const { /*std::cout << label << ":" << i << std::endl;*/ return i; }
+  Vector print_vector(std::string label, Vector i) const { /*std::cout << label << ":" << i.dx << " " << i.dy << " " << i.dz << std::endl;*/ return i; }
+
+  int get_sheen_index() const
+  {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_sheen")).second;
+    if (!specglossi.IsObject()) return -1;
+    const tinygltf::Value &diffuse = specglossi.Get("sheenColorTexture");
+    if (!diffuse.IsObject()) return -1;
+    const tinygltf::Value &index = diffuse.Get("index");
+    return print_int("sheen index",index.GetNumberAsInt());
+  }
   
   int get_diffuse_index() const
   {
@@ -1805,7 +1839,9 @@ public:
     const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
     if (!specglossi.IsObject()) return -1;
     const tinygltf::Value &diffuse = specglossi.Get("diffuseTexture");
-    return diffuse.GetNumberAsInt();
+    if (!diffuse.IsObject()) return -1;
+    const tinygltf::Value &index = diffuse.Get("index");
+    return print_int("diffuse_index",index.GetNumberAsInt());
   }
   int get_specglossi_index() const
   {
@@ -1813,7 +1849,9 @@ public:
     const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
     if (!specglossi.IsObject()) return -1;
     const tinygltf::Value &s = specglossi.Get("specularGlossinessTexture");
-    return s.GetNumberAsInt();
+    if (!s.IsObject()) return -1;
+    const tinygltf::Value &s2 = s.Get("index");
+    return print_int("specglossi index",s2.GetNumberAsInt());
   }
 
   void specglossyprepare(GameApi::EveryApi &ev, GameApi::P p) const
@@ -1842,8 +1880,19 @@ public:
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.baseColorTexture.index!=-1?m.pbrMetallicRoughness.baseColorTexture.index:get_specglossi_index());
-    case 1: return gltf_load_bitmap2(e,ev, interface, m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1?m.pbrMetallicRoughness.metallicRoughnessTexture.index:get_diffuse_index());
+    case 0: {
+      int index = m.pbrMetallicRoughness.baseColorTexture.index;
+      if (get_spec()) index=get_specglossi_index();
+      if (get_sheen()) index=get_sheen_index();
+      //std::cout << "IMG0=" << index << "(" << get_spec() << "," << get_sheen() << ")" << std::endl;
+      return gltf_load_bitmap2(e,ev, interface, index);
+    }
+    case 1: {
+      int index = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
+      if (get_spec()) index=get_diffuse_index();
+      //std::cout << "IMG1=" << index << "(" << get_spec() << ")" << std::endl;
+      return gltf_load_bitmap2(e,ev, interface, index);
+    }
     case 2: return gltf_load_bitmap2(e,ev, interface, m.normalTexture.index);
     case 3: return gltf_load_bitmap2(e,ev, interface, m.occlusionTexture.index);
     case 4: return gltf_load_bitmap2(e,ev, interface, m.emissiveTexture.index);
@@ -1858,8 +1907,8 @@ public:
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
-    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1||get_specglossi_index()!=-1;
-    case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1||get_diffuse_index()!=-1;
+    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1||(get_spec() && get_specglossi_index()!=-1)||(get_sheen() &&get_sheen_index()!=-1);
+    case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1||(get_spec()&&get_diffuse_index()!=-1);
     case 2: return m.normalTexture.index!=-1;
     case 3: return m.occlusionTexture.index!=-1;
     case 4: return m.emissiveTexture.index!=-1;
@@ -1901,9 +1950,11 @@ public:
     } else {
       //if (get_diffuse_index()==-1) {
       const tinygltf::Material &m = interface->get_material(material_id);
+      std::vector<double> emis=m.emissiveFactor;
+      Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,m.pbrMetallicRoughness.baseColorTexture.index==-1,get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit()); // todo base color
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z); // todo base color
 
       //} else {
       //	I18 = specglossyshader(ev,I17);
@@ -1953,9 +2004,11 @@ public:
     } else {
       //if (get_diffuse_index()==-1) {
       const tinygltf::Material &m = interface->get_material(material_id);
+      std::vector<double> emis=m.emissiveFactor;
+      Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,m.pbrMetallicRoughness.baseColorTexture.index==-1,get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit());
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z);
     //} else {
     //	I18 = specglossyshader(ev,I17);
     // }
@@ -2001,9 +2054,11 @@ public:
     } else {
       // if (get_diffuse_index()==-1) {
       const tinygltf::Material &m = interface->get_material(material_id);
+      std::vector<double> emis=m.emissiveFactor;
+      Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,m.pbrMetallicRoughness.baseColorTexture.index==-1,get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit());
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z);
     //} else {
     //	I18 = specglossyshader(ev,I17);
     // }
