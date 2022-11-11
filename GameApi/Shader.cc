@@ -2369,7 +2369,7 @@ VARYING_IN " float fog_intensity;\n"
     " perceptualRoughness=1.0-u_GlossiFactor;\n"
     "#endif\n"
 
-    "baseColor= clamp(baseColor,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
+    //"baseColor= clamp(baseColor,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
     
     "#ifdef GLTF_TEX1\n"
 #ifdef WEBGL2
@@ -2484,16 +2484,16 @@ VARYING_IN " float fog_intensity;\n"
 "   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor2;\n"
 #endif
 
-"  vec3 emi = vec3(1.0,1.0,1.0)-color;\n"
-"  emi*=emissive;\n"
+   "  vec3 emi = vec3(1.0)-color;\n"
+   "  emi*=emissive;\n"
 "  color+=emi;\n"
 
     //    "   color += emissive;\n"
 "#endif\n"
 
 "#ifndef GLTF_TEX4\n"
-"  vec3 emi = vec3(1.0,1.0,1.0)-color;\n"
-"  emi*=u_EmissiveFactor2;\n"
+    "  vec3 emi = vec3(1.0)-color;\n"
+    "  emi*=u_EmissiveFactor2;\n"
 "  color+=emi;\n"
 "#endif\n"
 
@@ -2508,6 +2508,9 @@ VARYING_IN " float fog_intensity;\n"
     //"   return vec4(vec3(LINEARtoSRGB(emissive),1.0);\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
 
+    // ADD BRIGHTNESS TO THE MODELS
+    "color*=1.5;\n"
+    
     "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
 
     "#ifdef SPEC\n"
