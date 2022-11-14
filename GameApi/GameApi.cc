@@ -28087,6 +28087,8 @@ KP extern "C" void set_string(int num, const char *value)
   if (num==3) {
     unsigned char *data = new unsigned char[g_set_string_int];
     int s = g_set_string_int;
+    std::copy(value,value+s,data);
+      /*
     for(int i=0;i<s;i++) {
       unsigned char ch1 = value[i*2];
       unsigned char ch2 = value[i*2+1];
@@ -28095,7 +28097,9 @@ KP extern "C" void set_string(int num, const char *value)
       if (ch1>='a' && ch1<='f') { ch1-='a'; ch1+=10; }
       if (ch2>='a' && ch2<='f') { ch2-='a'; ch2+=10; }
       data[i] = (int(ch1)<<4)+int(ch2);
+      data[i]=value[i];
     }
+      */
     //std::copy(value,value+g_set_string_int,data);
     g_buffers.push_back(data);
     g_buffer_sizes.push_back(g_set_string_int);

@@ -1652,18 +1652,9 @@ function load_files(data_array, filename_array)
       }
     Module.ccall('set_integer', null, ['number', 'number'], [2,use_sz], {async:true} );
 
-    var buffer = "";
-    var index = "0123456789abcdef";
-    for(var o = 0;o<use_sz;o++) {
-        var low = data3[s+o].charCodeAt(0)&0x0f;
-	var high = (data3[s+o].charCodeAt(0)&0xf0)>>>4;
-	buffer+=index[high];
-	buffer+=index[low];
-    }
-    //for(var c = 0;c<15;c++) console.log(buffer[c]);
-    const uint8 = intArrayFromString(buffer,false);
-    
-    
+    var slice = data3.slice(s,s+use_sz);
+
+    const uint8 = slice.split('').map(function(x) { return x.charCodeAt(0); });
 
     Module.ccall('set_string', null, ['number', 'array'], [3,uint8], {async:true} );
     }
