@@ -842,23 +842,32 @@ public:
   }
   virtual int NumFaces() const 
   {
+    int res=0;
     if (mode==TINYGLTF_MODE_TRIANGLES && indices_done) {
-      return indices_acc->count/3;
+      //std::cout << "NumFaces(0):" << indices_acc->count/3 << std::endl;
+      res=indices_acc->count/3;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && indices_done) {
-      return indices_acc->count-2;
+    if (res==0 && mode==TINYGLTF_MODE_TRIANGLE_STRIP && indices_done) {
+      //std::cout << "NumFaces(1):" << indices_acc->count-2 << std::endl;
+      res=indices_acc->count-2;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLE_FAN) {
-      return 1;
+    if (res==0 && mode==TINYGLTF_MODE_TRIANGLE_FAN) {
+      //std::cout << "NumFaces(3):" << 1 << std::endl;
+      res= 1;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLES && position_done) {
-      return position_acc->count/3;
+    if (res==0 && mode==TINYGLTF_MODE_TRIANGLES && position_done) {
+      //std::cout << "NumFaces(4):" << position_acc->count/3 << std::endl;
+      res=position_acc->count/3;
     }
-    if (mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_done) {
-      return position_acc->count-2;
+    if (res==0 && mode==TINYGLTF_MODE_TRIANGLE_STRIP && position_done) {
+      //std::cout << "NumFaces(5):" << position_acc->count-2 << std::endl;
+      res=position_acc->count-2;
     }
+    if (res>20000000) { std::cout << "ERROR, numfaces too large" << res << std::endl; res=0; }
+    if (res<0) { std::cout << "ERROR, numfaces too small" << res << std::endl; res=0; }
     //std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
-    return 0;
+    //std::cout << "NumFaces(6):" << res << std::endl;
+    return res;
   }
   virtual int NumPoints(int face) const { 
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN && indices_done) {

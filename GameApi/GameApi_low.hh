@@ -345,7 +345,7 @@ public:
   virtual void glLinkProgram(int p)=0;
   virtual void glUseProgram(int p)=0;
   virtual void glGetProgramInfoLog(unsigned int p, int num, int *len, char *buf)=0;
-  virtual void glGetProgramiv(unsigned int p, int pname, int *params)=0;
+  //virtual void glGetProgramiv(unsigned int p, int pname, int *params)=0;
   virtual void glBindFragDataLocation(int p, int num, const char *data)=0;
   virtual void glBindAttribLocation(int p, int num, const char *data)=0;
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype)=0;

@@ -28809,6 +28809,9 @@ private:
 #endif
 GameApi::ML GameApi::MainLoopApi::bind_obj_type(GameApi::EveryApi &ev, std::string url)
 {
+  GameApi::ML ml;
+  ml.id = -1;
+  return ml;
   //return add_main_loop(e, new BindObjType2(e,ev,url,gameapi_homepageurl));
 }
 

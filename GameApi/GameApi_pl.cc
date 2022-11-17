@@ -3281,7 +3281,11 @@ public:
 	//print_objs();
 	if (ss<0) ss=0;
 	if (ss2<0) ss2=0;
-	if (ss>10000000) ss=0; // this is because NumFaces() gives trash if Prepare() has not been done yet.
+	if (ss>10000000) {
+	  std::cout << "Warning: ss>1000000: ss=" << ss << std::endl;
+	  ss=0;
+	  int ss3 = vec[i]->NumFaces();
+	} // this is because NumFaces() gives trash if Prepare() has not been done yet.
 	FaceRange r = { start_face, start_face+ss, start_obj, start_obj+ss2 };
 	ranges.push_back(r);
 	start_face+=ss;
