@@ -6318,7 +6318,7 @@ typedef FunctionImpl2<FaceCollection*, FaceCollection*, int, int, SplitQuads> Sp
 class OrElem2 : public FaceCollection
 {
 public:
-  OrElem2(FaceCollection *coll1, FaceCollection *coll2) : coll1(coll1), coll2(coll2),s(0),s2(0) { }
+  OrElem2(FaceCollection *coll1, FaceCollection *coll2) : coll1(coll1), coll2(coll2),s(0),s1(0),s2(0),oo1(0),oo2(0) { }
   void Collect(CollectVisitor &vis)
   {
     coll1->Collect(vis);
