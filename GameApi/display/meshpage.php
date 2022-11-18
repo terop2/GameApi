@@ -1,5 +1,5 @@
 <?php
-header("Cross-Origin-Opener-Policy: same-origin");
+//header("Cross-Origin-Opener-Policy: same-origin");
 $site = "https://meshpage.org";
 $assetsite = "https://tpgames.org";
 ?>
@@ -106,7 +106,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 1,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage?p=3",
+        "@id": "<?php echo $site ?>/meshpage_3",
 	"name": "meshpage.org"
 	}
   },
@@ -114,7 +114,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 2,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage?p=4",
+        "@id": "<?php echo $site ?>/meshpage_4",
 	"name": "tool download"
      }
   },
@@ -122,7 +122,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 3,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage?p=5",
+        "@id": "<?php echo $site ?>/meshpage_5",
 	"name": "faq"
      }
   },
@@ -130,7 +130,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 4,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage?p=6",
+        "@id": "<?php echo $site ?>/meshpage_6",
 	"name": "documents"
      }
   },
@@ -138,7 +138,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
      "@type": "ListItem",
      "position": 5,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage?p=7",
+        "@id": "<?php echo $site ?>/meshpage_7",
 	"name": "about"
      }
   }
@@ -190,22 +190,20 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </template>
 </a>	
 <template v-for="bread in main_breadcrumb">
-<div style="font-family: 'calibri', sans-serif" class="link level1">
-<meta itemprop="position" v-bind:content="bread.num"/>
 <template v-if="bread.link">
-<b>
-<a class="navi" v-on:click="bread_click($event)"><span>{{ bread.title }}</span></a>
-</b>
+<div style="font-family: 'calibri', sans-serif" class="link level1 highlightedtab">
+<meta itemprop="position" v-bind:content="bread.num"/>
+<a class="navi highlightedtab link" v-on:click="bread_click($event)"><span>{{ bread.title }}</span></a>
 </template>
 <template v-if="!bread.link">
-<a class="navi" v-on:click="bread_click($event)"><span>{{ bread.title }}</span></a>
+<div style="font-family: 'calibri', sans-serif" class="link level1">
+<meta itemprop="position" v-bind:content="bread.num"/>
+<a class="navi link" v-on:click="bread_click($event)"><span>{{ bread.title }}</span></a>
 </template>
 </div>
 </template>
 <div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; display:none;" class="link level1" id="login_label">
-<b>
-<a class="navi" v-on:click="login_click($event)"  id="login_button"><span><div id="login_info">Anonymous</div></span></a>
-</b>
+<a class="navi link" v-on:click="login_click($event)"  id="login_button"><span><div id="login_info">Anonymous</div></span></a>
 </div>
 </div>
 </div>
@@ -499,7 +497,7 @@ $label = get_label( $arr );
 
 
 
-   $url = "/" . $ii; //"meshpage.php?p=2&id=" . $ii; // . "&label=" . $id;
+   $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
    echo "<div class=\"flex-item\" itemscope itemtype=\"http://schema.org/CreativeWork\">";
    echo "<div class=\"highlight\">";
    echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "')\" itemprop=\"url\">";
@@ -769,7 +767,7 @@ list_end();
 
 <h2>How does the site work?</h2>
 <ul>
-<li><a style="font-size:large;" href="<?php echo $site ?>/meshpage?p=4">DOWNLOAD</a>: You download the builder tool</a>
+<li><a style="font-size:large;" href="<?php echo $site ?>/meshpage_4">DOWNLOAD</a>: You download the builder tool</a>
 <li><a style="font-size:large;" href="<?php echo $assetsite ?>/builder_green4_example.webm">CREATE</a>: Create your powerful message with 3d technology
 <li><a style="font-size:large;" href="<?php echo $assetsite ?>/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="<?php echo $assetsite ?>/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
@@ -1309,9 +1307,9 @@ var app = new Vue({
        var pgnum = e.state.page;
 
        var url = window.location.href;
-       var n = url.search("p=");
+       var n = url.search("_");
        var n2 = url.search("page=");
-       var cut = 2;
+       var cut = 1;
        if (n2>n) { n=n2; cut=5; }	 
        var i;
        var res = "";
@@ -1524,6 +1522,7 @@ function choose_bread(txt,breadcrumb)
    var i;
    for(i=0;i<sz;i++) {
       var bread = breadcrumb[i];
+      if (txt=="main" && bread.title=="meshpage.org") bread.link=true; else
       if (bread.title==txt) {
          bread.link = true;
       } else {
@@ -1546,11 +1545,11 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 	 //console.log(choose);
 	 store.choose(choose);
 	 if (breadcrumb.length == first.length) {
-	     window.history.replaceState({page: 2},"title 2", "?p=" + (i+3).toString());
+	     window.history.replaceState({page: 2},"title 2", "/meshpage_" + (i+3).toString());
 	     } else {
 	     if (i==0) {
 	     window.history.back();
-//window.history.replaceState({page: 2},"title 2", "meshpage?p=" + (i+1).toString());
+//window.history.replaceState({page: 2},"title 2", "meshpage_" + (i+1).toString());
 	     }
 	     }
 
@@ -2214,6 +2213,7 @@ function get_cookie_status()
 	  } else
 	  {
 	    console.log("COOKIE SYSTEM BROKEN");
+	    console.log(t2);
 	  }
        });
 }

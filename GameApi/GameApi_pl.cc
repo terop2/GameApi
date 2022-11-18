@@ -3469,6 +3469,7 @@ EXPORT GameApi::P GameApi::PolygonApi::or_array3(std::vector<P> vec)
   if (vec.size()==0) return p_empty();
   if (vec.size()==1) return vec[0];
   if (vec.size()==2) return or_elem(vec[0],vec[1]);
+  if (vec.size()>150) return or_array(&vec[0],vec.size());
   int s = vec.size();
   std::vector<FaceCollection*> vec2;
   for(int i=0;i<s;i++) {

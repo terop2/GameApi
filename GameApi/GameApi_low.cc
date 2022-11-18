@@ -13,7 +13,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-//#define THREADS 1
+#define THREADS 1
 #endif
 #define BATCHING 1
 
