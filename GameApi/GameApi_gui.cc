@@ -2862,11 +2862,11 @@ public:
   {
     GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
 
-    if (done) {selected=false; }
+    if (done) selected=false;
     if (button==-1) {done = false; }
 
     //std::cout << "Update!" << std::endl;
-    //std::cout << button << " " << mouse << " " << pos << " " << area_x << " " << area_y << " " << area_width << " " << area_height << std::endl;
+    //std::cout << button << " " << type << " " << mouse << " " << pos << " " << area_x << " " << area_y << " " << area_width << " " << area_height << std::endl;
     if (!done && button==button_id && type==1025 && mouse.x >= pos.x+area_x && mouse.x < pos.x+area_x+area_width &&
 	mouse.y >= pos.y+area_y && mouse.y < pos.y+area_y+area_height)
       {
@@ -2876,11 +2876,11 @@ public:
       }
     size = vec[0]->get_size();
   }
-  int chosen_item() const { if (selected) return 0; else return -1; }
+  int chosen_item() const { if (selected) { selected=false; return 0; } else return -1; }
 private:
   int area_x, area_y;
   int area_width, area_height;
-  bool selected;
+  mutable bool selected;
   bool done;
   int button_id;
 };

@@ -681,9 +681,13 @@ public:
   virtual void update(void *arg, MainLoopApi::Event &e) { 
     Envi *env = (Envi*)arg;
     //std::cout << "MainIter::update start" << std::endl;
+    //std::cout << "1" << std::endl;
     if (!env->envi_ready) return;
+    //std::cout << "2" << std::endl;
     if (env->ev->point_api.pt_y(e.cursor_pos)<34.0/*125.0-40.0*/) return;
+    //std::cout << "3" << std::endl;
     if (env->env->download_bar_count()>0 && env->ev->point_api.pt_y(e.cursor_pos)>env->ev->mainloop_api.get_screen_height()-40.0) return;
+    //std::cout << "4" << std::endl;
     //std::cout << "MainIter::update cont" << std::endl;
 
 
@@ -934,6 +938,7 @@ public:
       }
     if (1)
       {
+	//std::cout << "e.button=" << e.button << std::endl; 
 	static bool g_update = true;
 	if (env->popup_visible==false && e.button != 2) { g_update=true; }
 	if (g_update && e.button==2) { env->popup_visible=false; }
@@ -942,9 +947,9 @@ public:
 	  {
 	    W w = env->popup_open[i];
 	    int chosen = env->gui->chosen_item(w);
-	    if (chosen==0 && e.button==2 && g_update)
+	    if (chosen==0 && g_update) // chosen==0 already checked e.button==2
 	      {
-		g_update=false;
+		g_update=false; 
 		//std::cout << "popup open!" << std::endl;
 		std::string uid = env->gui->get_id(w);
 		
@@ -2933,7 +2938,9 @@ public:
   {
     Envi_tabs *env = (Envi_tabs*)arg;
     //std::cout << "IterTab::update start" << std::endl;
+    //std::cout << "A" << std::endl;
     if (!env->envi_ready) return;
+    ///std::cout << "B" << std::endl;
     //std::cout << "IterTab::update cont" << std::endl;
 
 
@@ -3225,7 +3232,7 @@ int main(int argc, char *argv[]) {
 #endif
 	std::vector<std::string> filenames;
 	
-	std::cout << "Loading:" << filename << std::endl;
+	//std::cout << "Loading:" << filename << std::endl;
 	for(int i=1;i<argc;i++)
 	  {
 	    if (std::string(argv[i])=="--help"||std::string(argv[i])=="-h"||std::string(argv[i])=="-?"||std::string(argv[i])=="/?")
@@ -3239,11 +3246,21 @@ int main(int argc, char *argv[]) {
 		std::cout << "  --dump (list all functions)" << std::endl;
 		exit(0);
 	      }
-	    if (std::string(argv[i])=="--dump")
+	    if (std::string(argv[i])=="--dump_count")
 	      {
-		std::string s = ev.mod_api.dump_functions();
+		int i = ev.mod_api.dump_functions_count();
+		std::cout << i << std::endl;
+		exit(0);
+	      }
+	    if (std::string(argv[i])=="--dump_get")
+	      {
+		std::string s2 = argv[i+1];
+		std::stringstream ss(s2);
+		int i;
+		ss >> i;
+		std::string s = ev.mod_api.dump_functions(i);
 		std::cout << s << std::endl;
-		return 0;
+		exit(0);
 	      }
 	    if (std::string(argv[i])=="--short")
 	      {
