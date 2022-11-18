@@ -175,8 +175,8 @@ public:
 
 	  std::cout << p_min << " " << p_max << " " << s_min << " " << s_max << std::endl; 
 	  */
-	  // check if widget is inside its parent
-	  if (p.x+s.dx<p0.x || p.x>p0.x+s0.dx || p.y+s.dy<p0.y || p.y>p0.y+s0.dy) continue;
+	  // check if widget is inside its parent (DOESNT WORK)
+	  //if (p.x+s.dx<p0.x || p.x>p0.x+s0.dx || p.y+s.dy<p0.y || p.y>p0.y+s0.dy) continue;
 	  if (p.x + s.dx>=0.0 && p.y+s.dy>=0.0 && p.x<1200.0 && p.y<1000.0)
 	    { // inside screen.
 	      w->render();
