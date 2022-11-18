@@ -41,6 +41,9 @@ void ClearProgress();
 extern "C" void _udev_device_get_action() { }
 #endif
 
+
+bool event_lock=true;
+float event_lock_time=0.0;
 extern GameApi::W enum_popup;
 extern GameApi::W enum_click;
 extern bool g_update_download_bar;
@@ -2793,6 +2796,7 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
       if (vec[i])
 	vec[i]->start(args[i]);
     }
+  if (!event_lock) {
   int s2 = vec.size();
   for(int i=0;i<s2;i++)
     {
@@ -2800,12 +2804,18 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 	vec[i]->render(args[i]);
     }
   ev->mainloop_api.swapbuffers();
-
+  }
     MainLoopApi::Event e;
     e.ch = 0;
     e.last = true;
+    event_lock=true;
+
+    float t = ev->mainloop_api.get_time();
+    if (t>event_lock_time+0.3) event_lock=false;
+    
     while((e=ev->mainloop_api.get_event()).last)
       {
+	event_lock=false;
 	int s3 = vec.size();
 	for(int i=0;i<s3;i++)
 	  {
@@ -2814,7 +2824,8 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 	  }
 	
       }
-
+    if (!event_lock) event_lock_time=ev->mainloop_api.get_time();
+    
     ee.async_scheduler();    
 }
 
@@ -3164,6 +3175,7 @@ void render_cb(Envi *env)
 
 void refresh()
 {
+  if (event_lock) return;
   if (g_progress_halt) return;
   if (g_env && g_env->progress_visible) {
   g_env->ev->shader_api.use(g_env->sh);
