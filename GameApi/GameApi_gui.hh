@@ -159,8 +159,24 @@ public:
       for(int i=0;i<s;i++)
 	{
 	  GuiWidget *w = vec[i];
+	  Point2d p0 = get_pos();
+	  Vector2d s0 = get_size();
 	  Point2d p = w->get_pos();
 	  Vector2d s = w->get_size();
+	  /*
+	  static float p_max=0.0;
+	  static float p_min=100000.0;
+	  static float s_max=0.0;
+	  static float s_min=100000.0;
+	  if (p.y+s.dy>p_max) p_max=p.x+s.dy;
+	  if (p.y<p_min) p_min=p.y;
+	  if (p.y+s.dy>s_max) s_max=p.y+s.dy;
+	  if (p.y<s_min) s_min=p.y;
+
+	  std::cout << p_min << " " << p_max << " " << s_min << " " << s_max << std::endl; 
+	  */
+	  // check if widget is inside its parent
+	  if (p.x+s.dx<p0.x || p.x>p0.x+s0.dx || p.y+s.dy<p0.y || p.y>p0.y+s0.dy) continue;
 	  if (p.x + s.dx>=0.0 && p.y+s.dy>=0.0 && p.x<1200.0 && p.y<1000.0)
 	    { // inside screen.
 	      w->render();

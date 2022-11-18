@@ -4,7 +4,7 @@ ini_set("upload_max_filesize", "100M");
 ini_set("memory_limit", "1024M");
 
 include("backend.php");
-header("Cross-Origin-Opener-Policy: same-origin");
+//header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page_highmem.js");
 
 function unhash($data)
@@ -65,7 +65,7 @@ echo "</pre>";
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
-<apptitle><a href="view.php">The 3d model viewer</a></apptitle>
+<apptitle><a href="view">The 3d model viewer</a></apptitle>
 <br>
 <div style="display:flex" id="dp">
 <div id="div2" style="display:none"></div>
@@ -2054,7 +2054,7 @@ function submitprogressbar(i)
 	   response.body.getReader().read().then(value => {
 	   var str = strfy(value.value);
 	   var num = parseInt(str);
-	   prog.innerHTML = "<a href='https://meshpage.org/view.php?id=" + hash(num) + "'>https://meshpage.org/view.php?id=" + hash(num) + "</a>";
+	   prog.innerHTML = "<a href='https://meshpage.org/view?id=" + hash(num) + "'>https://meshpage.org/view?id=" + hash(num) + "</a>";
 	   }
 	   )});
    }
