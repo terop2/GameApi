@@ -1782,10 +1782,69 @@ std::string json_object(std::vector<NameValue> vec)
   return ss.str();
 }
 
-EXPORT std::string GameApi::WModApi::dump_functions()
-{
-  static std::vector<GameApiItem*> functions = all_functions();
+std::vector<GameApiItem*> polydistfield_functions();
+std::vector<GameApiItem*> waveform_functions();
+std::vector<GameApiItem*> blocker_functions();
+std::vector<GameApiItem*> textureapi_functions();
+std::vector<GameApiItem*> volumeapi_functions();
+std::vector<GameApiItem*> floatvolumeapi_functions();
+std::vector<GameApiItem*> colorvolumeapi_functions();
+std::vector<GameApiItem*> vectorapi_functions();
+std::vector<GameApiItem*> pointapi_functions();
+std::vector<GameApiItem*> fontapi_functions();
+std::vector<GameApiItem*> moveapi_functions();
+std::vector<GameApiItem*> polygonapi_functions();
+std::vector<GameApiItem*> shadermoduleapi_functions();
+std::vector<GameApiItem*> shaderapi_functions();
+std::vector<GameApiItem*> framebuffermoduleapi_functions();
+std::vector<GameApiItem*> textureapi_functions();
+std::vector<GameApiItem*> booleanopsapi_functions();
+std::vector<GameApiItem*> polygonapi_functions1();
+std::vector<GameApiItem*> polygonapi_functions2();
+std::vector<GameApiItem*> linesapi_functions();
+std::vector<GameApiItem*> pointsapi_functions();
+std::vector<GameApiItem*> floatbitmapapi_functions();
+std::vector<GameApiItem*> boolbitmapapi_functions();
+std::vector<GameApiItem*> bitmapapi_functions();
 
+
+EXPORT int GameApi::WModApi::dump_functions_count() { return 21; } 
+EXPORT std::string GameApi::WModApi::dump_functions(int i)
+{
+  static std::vector<GameApiItem*> functions; // = all_functions();
+
+  switch(i) {
+  case 0: functions=bitmapapi_functions(); break;
+  case 1: functions=boolbitmapapi_functions(); break;
+  case 2: functions=floatbitmapapi_functions(); break;
+  case 3: {
+    functions=polygonapi_functions1();
+    std::vector<GameApiItem*> rest = polygonapi_functions2();
+    int s = rest.size();
+    for(int i=0;i<s;i++) functions.push_back(rest[i]);
+    break;
+  }
+  case 4: functions=shadermoduleapi_functions(); break;
+  case 5: functions=shaderapi_functions(); break;
+  case 6: functions=linesapi_functions(); break;
+  case 7: functions=pointsapi_functions(); break;
+  case 8: functions=moveapi_functions(); break;
+  case 9: functions=pointapi_functions(); break;
+  case 10: functions=vectorapi_functions(); break;
+  case 11: functions=volumeapi_functions(); break;
+  case 12: functions=floatvolumeapi_functions(); break;
+  case 13: functions=colorvolumeapi_functions(); break;
+  case 14: functions=fontapi_functions(); break;
+  case 15: functions=textureapi_functions(); break;
+  case 16: functions=booleanopsapi_functions(); break;
+  case 17: functions=polydistfield_functions(); break;
+  case 18: functions=waveform_functions(); break;
+  case 19: functions=blocker_functions(); break;
+  case 20: functions=framebuffermoduleapi_functions(); break;
+  };
+  
+
+  
   int s = functions.size();
   std::vector<NameValue> vec2;
   for(int i=0;i<s;i++)
