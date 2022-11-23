@@ -2445,6 +2445,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P material_face_collection(P base, P material);
   ML mixshader_shader(EveryApi &ev, ML ml, float mix=0.5);
   P extract_large_polygons(P p, float minimum_size, bool reverse);
   P x_split(P p, float x, float x_0, float x_1);

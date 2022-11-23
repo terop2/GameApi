@@ -954,6 +954,26 @@ public:
 	  };
 	return index;
   }
+  BBOX GetBoundingBox(bool &success) const
+  {
+    if (!position_acc) { success=false; BBOX b; return b; }
+    
+   const std::vector<double> &m_min = position_acc->minValues;
+   const std::vector<double> &m_max = position_acc->maxValues;
+
+    if (m_min.size()!=3) { success=false;  BBOX b; return b; }
+    if (m_max.size()!=3) { success=false;  BBOX b; return b; }
+
+    success=true;
+    BBOX bb;
+    bb.start_x = m_min[0];
+    bb.end_x = m_max[0];
+    bb.start_y = m_min[1];
+    bb.end_y = m_max[1];
+    bb.start_z = m_min[2];
+    bb.end_z = m_max[2];
+    return bb;
+  }
   virtual Point FacePoint(int face, int point) const
   {
 
