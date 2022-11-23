@@ -460,6 +460,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "remove_faces"));
+#if 0
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_face_collection,
+			 "slow_material",
+			 { "base", "material" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P", "polygon_api", "material_face_collection"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::extract_large_polygons,
 			 "extract_large",
 			 { "p", "minimum_size", "reverse" },

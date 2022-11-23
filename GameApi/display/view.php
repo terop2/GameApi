@@ -14,6 +14,7 @@ function unhash($data)
 
 $iid = $_GET["id"];
 $id=unhash($_GET["id"]);
+
 //echo "ID=$id";
 $user = "terop";
 if ($id>0)
@@ -2049,14 +2050,17 @@ function submitprogressbar(i)
    //}
    if (i==500)
    {
-	var name = "viewdata/num.txt";
+	var name = "https://meshpage.org/viewdata/num.txt";
 	fetch(name).then(response => {
-	   response.body.getReader().read().then(value => {
+	    response.body.getReader().read().then(value => {
+	   console.log(value);
 	   var str = strfy(value.value);
+	   console.log(str);
 	   var num = parseInt(str);
-	   prog.innerHTML = "<a href='https://meshpage.org/view?id=" + hash(num) + "'>https://meshpage.org/view?id=" + hash(num) + "</a>";
-	   }
-	   )});
+	   console.log(num);
+	   prog.innerHTML = "<a href='https://meshpage.org/view.php?id=" + hash(num) + "'>https://meshpage.org/view.php?id=" + hash(num) + "</a>";
+	   }); });
+	   
    }
 }
 
