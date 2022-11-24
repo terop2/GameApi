@@ -346,14 +346,14 @@ Vue.component('appmodel_link', {
 Vue.component('appmodel_loading', {
   data: function() {
      return { } },
-     template: `<div class="border block blockitem height12 customfont">
+     template: `<div class="border block blockitem height12 customfont prettysmall">
       Loading 3d engine...
       </div>`
       });
 Vue.component('appmodel_model_loading', {
   data: function() {
      return { } },
-     template: `<div class="border block blockitem height12 customfont">
+     template: `<div class="border block blockitem height12 customfont prettysmall">
       Loading 3d model...
       </div>`
       });
