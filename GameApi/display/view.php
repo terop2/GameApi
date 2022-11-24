@@ -81,7 +81,7 @@ req.send();
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
-<apptitle><a href="view">The 3d model viewer</a></apptitle>
+<apptitle><a href="view.php">The 3d model viewer</a></apptitle>
 <br>
 <div style="display:flex" id="dp">
 <div id="div2" style="display:none"></div>
