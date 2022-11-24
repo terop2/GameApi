@@ -790,8 +790,8 @@ function get_border(i,m,filename)
   if (m==-1) variable="I1";
   
   if (width=="0") {
-   res+="P I5021=ev.polygon_api.recalculate_normals(" + variable + ");\n";
-   res+="P I5023=ev.polygon_api.color(I5021,0);\n"
+   //res+="P I5021=ev.polygon_api.recalculate_normals(" + variable + ");\n";
+   res+="P I5023=ev.polygon_api.color(" + variable + ",0);\n"
    res+="ML I5022=ev.polygon_api.render_vertex_array_ml2(ev,I5023);\n"
   } else {
 
@@ -1312,6 +1312,7 @@ function extract_contents(state,file_array,filenames, filename, path)
    filename_array = [];
    var s = file_array.length;
    var counter = 0;
+   var enc = new TextDecoder("x-user-defined");
    for(var i = 0;i<s;i++) {
      var file = file_array[i];
      let fileReader = new FileReader();
@@ -1319,12 +1320,14 @@ function extract_contents(state,file_array,filenames, filename, path)
      fileReader.onload = () => {
         let fileContents = fileReader.result;
 	var binary = '';
+	//console.log(fileContents);
 	var bytes = new Uint8Array( fileContents );
 	//console.log(bytes.length);
-	var len = bytes.byteLength;
-	for(var j=0;j<len;j++) {
-	  binary+= String.fromCharCode(bytes[j]);
-	}
+	binary = enc.decode(bytes);
+	//var len = bytes.byteLength;
+	//for(var j=0;j<len;j++) {
+	//  binary+= String.fromCharCode(bytes[j]);
+	//}
 	//console.log(binary.length);
 	contents_array.push(binary);
 	filename_array.push(fix_filename(filenames[i]));
@@ -1348,6 +1351,7 @@ function extract_contents(state,file_array,filenames, filename, path)
    filename_array = [];
    var s = file_array.length;
    var counter = 0;
+   var enc = new TextDecoder("x-user-defined");
    for(var i = 0;i<s;i++) {
      var file = file_array[i];
      let fileReader = new FileReader();
@@ -1356,16 +1360,19 @@ function extract_contents(state,file_array,filenames, filename, path)
         let fileContents = fileReader.result;
 	var binary = '';
 	var bytes = new Uint8Array( fileContents );
-	//console.log(bytes.length);
-	var len = bytes.byteLength;
-	for(var j=0;j<len;j++) {
-	  binary+= String.fromCharCode(bytes[j]);
-	}
-	//console.log(binary.length);
+	//var len = bytes.byteLength;
+	//for(var j=0;j<len;j++) {
+	//  binary+= String.fromCharCode(bytes[j]);
+	//}
+	binary = enc.decode(bytes);
+	//console.log(bytes);
+	//console.log(binary);
+
 	contents_array.push(binary);
 	filename_array.push(fix_filename(filenames[i]));
 	counter++;
 	if (counter==s) resolve("success");
+	
 	}
      };
      f(fileReader,i);
