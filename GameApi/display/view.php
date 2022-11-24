@@ -544,12 +544,14 @@ filter_material : function(arr,key)
 	 this.state.appmodel_is_selected = "false";
 	 this.state.appmodel_is_examples = "false";
 	 this.state.appmodel_is_loading = "false";
+	 this.state.appmodel_is_model_loading = "false";
 	 this.state.appmodel_is_link = "false";
          if (val==0) this.state.appmodel_is_notselected = "true";
 	 if (val==1) this.state.appmodel_is_selected = "true";
 	 if (val==2) this.state.appmodel_is_examples = "true";
 	 if (val==3) this.state.appmodel_is_loading = "true";
 	 if (val==4) this.state.appmodel_is_link = "true";
+	 if (val==5) this.state.appmodel_is_model_loading = "true";
       },
       change_category: function() {
         var elem = document.getElementById("category-select");
@@ -1707,6 +1709,9 @@ function check_em() {
 	//resize_event(null);
 	//load_file();
 	load_data();
+	if (loading_data==0) {
+	app.change_appmodel(0);	   
+	}
 	if (loading_data==1) {
 	//console.log("LOADING DATA");
 	app.change_appmodel(1);
@@ -1774,6 +1779,7 @@ function emscripten_ready_callback(state)
    //app.methods.change_appmodel(0);
    if (store.state.appmodel_is_loading == "true") {
       store.state.appmodel_is_loading = "false";
+      store.state.appmodel_is_model_loading = "false";
       store.state.appmodel_is_notselected = "true";
       }
    set_label("Ready..");
