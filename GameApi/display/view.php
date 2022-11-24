@@ -11,12 +11,12 @@ function unhash($data)
 {
    return ((intval($data)) ^ 0x26522663) /10001;
 }
-
 $iid = $_GET["id"];
 $id=unhash($_GET["id"]);
 
 //echo "ID=$id";
 $user = "terop";
+/*
 if ($id>0)
 {
   $state = load_form_state($user, $id);
@@ -29,6 +29,7 @@ if ($id>0)
   $gfilename = load_form_gfilename($user, $id);
   $gpath = load_form_gpath($user,$id);
 }
+*/
 ?>
 <!DOCTYPE html>
 <html>
@@ -36,27 +37,41 @@ if ($id>0)
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
 </head>
 <body>
+<script>
+
+var req = new XMLHttpRequest();
+var download_result={};
+var g_download_done = false;
+req.onload = function() {
+   //console.log(this.responseText);
+   download_result=JSON.parse(this.responseText);
+   g_download_done = true;
+}
+req.open("get", "view_fetch.php?id=<?php echo $id ?>", true);
+req.send();
+
+</script>
 <?php
 
-echo "<pre id='formstate2' style='display:none'>";
-echo "$state";
-echo "</pre>";
+//echo "<pre id='formstate2' style='display:none'>";
+//echo "$state";
+//echo "</pre>";
 
-echo "<pre id='formcontentsarray2' style='display:none'>";
-echo "$contentsarray";
-echo "</pre>";
+//echo "<pre id='formcontentsarray2' style='display:none'>";
+//echo "$contentsarray";
+//echo "</pre>";
 
-echo "<pre id='formfilenamearray2' style='display:none'>";
-echo "$filenamearray";
-echo "</pre>";
+//echo "<pre id='formfilenamearray2' style='display:none'>";
+//echo "$filenamearray";
+//echo "</pre>";
 
-echo "<pre id='formgfilename2' style='display:none'>";
-echo "$gfilename";
-echo "</pre>";
+//echo "<pre id='formgfilename2' style='display:none'>";
+//echo "$gfilename";
+//echo "</pre>";
 
-echo "<pre id='formgpath2' style='display:none'>";
-echo "$gpath";
-echo "</pre>";
+//echo "<pre id='formgpath2' style='display:none'>";
+//echo "$gpath";
+//echo "</pre>";
 
 
 
@@ -81,6 +96,7 @@ echo "</pre>";
 	  v-bind:is_selected="state.appmodel_is_selected"
 	  v-bind:is_notselected="state.appmodel_is_notselected"
 	  v-bind:is_loading="state.appmodel_is_loading"
+	  v-bind:is_model_loading="state.appmodel_is_model_loading"
 	  v-bind:is_twoline="state.appmodel_is_twoline"
 	  v-bind:model_info="state.model_info"
 	  v-on:examples_click="change_appmodel(2)"
@@ -124,6 +140,7 @@ var store = {
       appmodel_is_selected: "false",
       appmodel_is_notselected: "false",
       appmodel_is_loading: "true",
+      appmodel_is_model_loading: "false",
       appmodel_is_twoline: "0",
       model_info: "(prepare to load..)",
       filename: "(no file)",
@@ -333,6 +350,13 @@ Vue.component('appmodel_loading', {
       Loading 3d engine...
       </div>`
       });
+Vue.component('appmodel_model_loading', {
+  data: function() {
+     return { } },
+     template: `<div class="border block blockitem height12 customfont">
+      Loading 3d model...
+      </div>`
+      });
 
 Vue.component('appmodel_notselected', {
    data: function() {
@@ -359,12 +383,15 @@ Vue.component('appmodel_selected', {
       });
 
 Vue.component('appmodel', {
-  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'is_model_loading', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
   data: function() {
     return { } },
     template: `<div class="block blockitem">
        <div v-if="is_loading=='true'">
        <appmodel_loading></appmodel_loading>
+       </div>
+       <div v-if="is_model_loading=='true'">
+       <appmodel_model_loading></appmodel_model_loading>
        </div>
        <div v-if="is_example=='true'">
        <appmodel_choose v-on:change_model="$emit('change_choose')"></appmodel_choose>
@@ -1697,11 +1724,37 @@ set_label("Drag & Drop files..");
     }
 }
 
+var g_first_time=true;
+function check_em2_func() {
+      	if (g_first_time) {
+	   console.log("EMSCRIPTEN_READY");
+	   store.state.appmodel_is_loading="false";
+	   store.state.appmodel_is_model_loading="true";
+	   g_first_time=false;
+	}
+        if (g_download_done==true)
+	{
+	   console.log("DOWNLOAD READY");
+	   check_em()();
+	   g_first_time = false;
+	   store.state.appmodel_is_model_loading="false";
+	} else {
+	  setTimeout(check_em2_func,100);
+	}
+}
+
+function check_em2() {
+   console.log("DOWNLOAD WAITING..");
+   return function() {
+      setTimeout(function() { check_em2_func(); },100);
+   }
+}
+
 function check_emscripten_running()
 {
     var canv = document.getElementById("canvas");
     if (Module) {
-	Module['onRuntimeInitialized'] = check_em();
+	Module['onRuntimeInitialized'] = check_em2();
     } else {
 	setTimeout(function() { check_emscripten_running() }, 100);
     }
@@ -1868,41 +1921,46 @@ function deserialize_state(txt)
 
 function load_data()
 {
+/*
    var st = document.getElementById("formstate2");
    var ca = document.getElementById("formcontentsarray2");
    var fa = document.getElementById("formfilenamearray2");
    var gf = document.getElementById("formgfilename2");
    var gp = document.getElementById("formgpath2");
+   */
+   var st = download_result["state"];
+   var ca = download_result["contentsarray"];
+   var fa = download_result["filenamearray"];
+   var gf = download_result["gfilename"];
+   var gp = download_result["gpath"];
    //console.log(st.textContent.length);
    //console.log(ca.textContent.length);
    //console.log(fa.textContent.length);
    //console.log(gf.textContent.length);
    //console.log(gp.textContent.length);
-   if (st.textContent != "") {
+   if (st != "") {
     loading_data=1;
    var a_st = "";
-   if (st.textContent !="")
-      a_st = st.textContent;
-   //console.log(ca.textContent);
+   if (st !="")
+      a_st = st;
    var a_ca = "";
-   //console.log("CONTENTSARRAY");
-   if (ca.textContent !="")
-      a_ca = JSON.parse(ca.textContent);
+   if (ca !="")
+      a_ca = JSON.parse(ca);
    //console.log(fa.textContent);
    //console.log("FILENAMEARRAY");
    var a_fa = "";
-   if (fa.textContent !="")
-      a_fa = JSON.parse(fa.textContent);
+   if (fa !="")
+      a_fa = JSON.parse(fa);
    //console.log(gf.textContent);
    //console.log("FILENAME");
    var a_gf = "";
-   if (gf.textContent != "")
-      a_gf = JSON.parse(gf.textContent);
+   if (gf != "")
+      a_gf = JSON.parse(gf);
    //console.log(gp.textContent);
    // console.log("GPATH");
   var a_gp = "";
-   if (gp.textContent != "") 
-      a_gp = JSON.parse(gp.textContent);
+   if (gp != "") 
+      a_gp = JSON.parse(gp);
 
    deserialize_state(a_st);
    contents_array = base64_to_array(a_ca);
@@ -2022,7 +2080,7 @@ function array_to_base64(arr)
    for(var i=0;i<arr.length;i++)
    {
      var val = arr[i];
-     var buffer = btoa(val); //Base64.encode(val);
+     var buffer = btoa(unescape(encodeURIComponent(val))); //Base64.encode(val);
      res.push(buffer);
      
    }
@@ -2033,7 +2091,7 @@ function base64_to_array(arr)
    var res = [];
    for(var i=0;i<arr.length;i++) {
      var val = arr[i];
-     var res2 = atob(val); //Base64.decode(val);
+     var res2 = decodeURIComponent(escape(atob(val))); //Base64.decode(val);
      res.push(res2);
    }
    return res;
