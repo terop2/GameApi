@@ -954,6 +954,26 @@ public:
 	  };
 	return index;
   }
+  BBOX GetBoundingBox(bool &success) const
+  {
+    if (!position_acc) { success=false; BBOX b; return b; }
+    
+   const std::vector<double> &m_min = position_acc->minValues;
+   const std::vector<double> &m_max = position_acc->maxValues;
+
+    if (m_min.size()!=3) { success=false;  BBOX b; return b; }
+    if (m_max.size()!=3) { success=false;  BBOX b; return b; }
+
+    success=true;
+    BBOX bb;
+    bb.start_x = m_min[0];
+    bb.end_x = m_max[0];
+    bb.start_y = m_min[1];
+    bb.end_y = m_max[1];
+    bb.start_z = m_min[2];
+    bb.end_z = m_max[2];
+    return bb;
+  }
   virtual Point FacePoint(int face, int point) const
   {
 
@@ -988,7 +1008,7 @@ public:
     std::cout << "gltf FacePoint unknown mode" << std::endl;
     return Point(0.0,0.0,0.0);
   }
-  bool has_normal() const { return normal_bv_done && normal_done && normal_buf_done; }
+  bool has_normal() const { return true; /*normal_bv_done && normal_done && normal_buf_done;*/ }
   virtual Vector PointNormal(int face, int point) const {
     if (normal_bv_done && normal_done && normal_buf_done) {
 
@@ -1016,10 +1036,34 @@ public:
       }
     }
     } else {
-      return Vector(0.0,0.0,0.0);
+      if (store_face==face) return store_res;
+    
+      Point p1 = FacePoint(face, 0);
+      Point p2 = FacePoint(face, 1);
+      Point p3 = FacePoint(face, 2);
+      Vector v = Vector::CrossProduct(p2-p1,p3-p1);
+      Vector res = v / v.Dist();
+      store_face = face;
+      store_res = res;
+      return -res;
+    
+      
+      //return Vector(0.0,0.0,0.0);
     }
     std::cout << "gltf PointNormal unknown mode" << std::endl;
-    return Vector(0.0,0.0,0.0);
+
+      if (store_face==face) return store_res;
+    
+      Point p1 = FacePoint(face, 0);
+      Point p2 = FacePoint(face, 1);
+      Point p3 = FacePoint(face, 2);
+      Vector v = Vector::CrossProduct(p2-p1,p3-p1);
+      Vector res = v / v.Dist();
+      store_face = face;
+      store_res = res;
+      return -res;
+
+      // return Vector(0.0,0.0,0.0);
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -1414,6 +1458,9 @@ private:
   GLTFModelInterface *interface;
   int mesh_index;
   int prim_index;
+
+  mutable int store_face;
+  mutable Vector store_res;
 };
 
 
@@ -1513,7 +1560,13 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
   GameApi::P p = add_polygon2(e, faces,1);
   //p = ev.polygon_api.quads_to_triangles(p);
   confirm_texture_usage(e,p);
-  GameApi::P p2 = p; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P pp;
+  bool recalc_normals = !faces->has_normal();
+  if (recalc_normals)
+    pp = ev.polygon_api.recalculate_normals(p);
+  else
+    pp = p;
+  GameApi::P p2 = pp; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -1526,7 +1579,11 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
     g_gltf_cache[ss.str()] = true;
   }
   //GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
-  GameApi::P p3 = ev.polygon_api.flip_normals(p2);
+  GameApi::P p3;
+  if (!recalc_normals)
+    p3 = ev.polygon_api.flip_normals(p2);
+  else
+    p3 = p2;
  return p3;
 }
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
@@ -1553,7 +1610,13 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF
   //p = ev.polygon_api.quads_to_triangles(p);
 
   confirm_texture_usage(e,p);
-  GameApi::P p2 = p; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P pp;
+  bool recalc_normals = !faces->has_normal();
+  if (recalc_normals)
+    pp = ev.polygon_api.recalculate_normals(p);
+  else
+    pp = p;
+  GameApi::P p2 = pp; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -1567,7 +1630,12 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF
   }
 
   GameApi::P p3 = resize_to_correct_size2(e,p2,&g_last_resize);
-  GameApi::P p4 = ev.polygon_api.flip_normals(p3);
+  GameApi::P p4;
+  if (!recalc_normals)
+    p4 = ev.polygon_api.flip_normals(p3);
+  else
+    p4 = p3;
+  //GameApi::P p4 = ev.polygon_api.flip_normals(p3);
   return p4;
 
 }
@@ -1591,7 +1659,13 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF mo
   //p = ev.polygon_api.quads_to_triangles(p);
 
   confirm_texture_usage(e,p);
-  GameApi::P p2 = p; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P pp;
+  bool recalc_normals = !faces->has_normal();
+  if (recalc_normals)
+    pp = ev.polygon_api.recalculate_normals(p);
+  else
+    pp = p;
+  GameApi::P p2 = pp; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -1605,7 +1679,12 @@ GameApi::P GameApi::PolygonApi::gltf_load( GameApi::EveryApi &ev, GameApi::TF mo
   }
 
   GameApi::P p3 = ev.polygon_api.resize_to_correct_size(p2);
-  GameApi::P p4 = ev.polygon_api.flip_normals(p3);
+  GameApi::P p4;
+  if (!recalc_normals)
+    p4 = ev.polygon_api.flip_normals(p3);
+  else
+    p4 = p3;
+  //GameApi::P p4 = ev.polygon_api.flip_normals(p3);
   return p4;
 }
 
@@ -4240,10 +4319,23 @@ public:
     return coll->NumPoints(face);
   }
   virtual Point FacePoint(int face, int point) const {
+    if (cache_face==face) {
+      if (point==0&&cache_0) { return cache_res_0; }
+      if (point==1&&cache_1) { return cache_res_1; }
+      if (point==2&&cache_2) { return cache_res_2; }
+      if (point==3&&cache_3) { return cache_res_3; }
+    } else { cache_0=false; cache_1=false; cache_2=false; cache_3=false; }
     if (res.id==-1) return Point(0.0,0.0,0.0);
     FaceCollection *coll = find_facecoll(env,res);
     if (!coll) return Point(0.0,0.0,0.0);
-    return coll->FacePoint(face,point);
+    Point p = coll->FacePoint(face,point);
+    
+    cache_face=face;
+    if (point==0) { cache_res_0=p; cache_0=true; }
+    if (point==1) { cache_res_1=p; cache_1=true; }
+    if (point==2) { cache_res_2=p; cache_2=true; }
+    if (point==3) { cache_res_3=p; cache_3=true; }
+    return p;
   }
   virtual Vector PointNormal(int face, int point) const
   {
@@ -4345,6 +4437,13 @@ private:
   GameApi::EveryApi &ev;
   GLTFModelInterface *interface;
   GameApi::P res;
+private:
+  mutable int cache_face=-1;
+  mutable Point cache_res_0; mutable bool cache_0=false;
+  mutable Point cache_res_1; mutable bool cache_1=false;
+  mutable Point cache_res_2; mutable bool cache_2=false;
+  mutable Point cache_res_3; mutable bool cache_3=false;
+  
   };
   
 GameApi::P GameApi::MainLoopApi::gltf_mesh_all_p( GameApi::EveryApi &ev, TF model0)

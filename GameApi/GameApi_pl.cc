@@ -3257,6 +3257,33 @@ class OrArrayNoMemory : public FaceCollection
 {
 public:
   OrArrayNoMemory(std::vector<FaceCollection*> vec) : vec(vec) { }
+  BBOX GetBoundingBox(bool &success) const
+  {
+    int s = vec.size();
+    BBOX bb;
+    bb.start_x=30000.0;
+    bb.end_x=-30000.0;
+    bb.start_y=30000.0;
+    bb.end_y=-30000.0;
+    bb.start_z=30000.0;
+    bb.end_z=-30000.0;
+    success=false;
+    bool success2 = true;
+    for(int i=0;i<s;i++) {
+      BBOX b = vec[i]->GetBoundingBox(success2);
+      if (success2) {
+	bb.start_x=std::min(bb.start_x,b.start_x);
+	bb.start_y=std::min(bb.start_y,b.start_y);
+	bb.start_z=std::min(bb.start_z,b.start_z);
+	bb.end_x=std::max(bb.end_x,b.end_x);
+	bb.end_y=std::max(bb.end_y,b.end_y);
+	bb.end_z=std::max(bb.end_z,b.end_z);
+	success=true;
+      }
+    }
+    return bb;
+  }
+
   virtual void Collect(CollectVisitor &vis) {
     //std::cout << "COLLECT" << std::endl;
     int s = vec.size();
@@ -12459,6 +12486,7 @@ public:
 private:
   void find_bounding_box()
   {
+
     start_x = 300000.0;
       start_y = 300000.0;
       start_z = 300000.0;
@@ -12466,22 +12494,17 @@ private:
       end_y =  -300000.0;
       end_z =  -300000.0; 
 
-    int s = std::min(coll->NumFaces(),1000);
+    int s = std::min(coll->NumFaces(),100);
     if (s<1) s=1;
     int step = coll->NumFaces()/s;
     int faces = coll->NumFaces();
-    //std::cout << "FACES:" << step << " " << faces << std::endl;
-    // std::cout << "FACES:" << typeid(*coll).name() << std::endl;
     for(int i=0;i<faces;i+=step)
       {
-	//int p = coll->NumPoints(i);
-	//for(int j=0;j<p;j++)
 	    Point p1 = coll->FacePoint(i,0);
 	    Point p2 = coll->FacePoint(i,1);
 	    Point p3 = coll->FacePoint(i,2);
 	    Point p4 = coll->NumPoints(i)==4 ? coll->FacePoint(i,3) : p1;
 
-	    //std::cout << p1 << " " << p2  << " " << p3 << " " << p4 << std::endl;
 	    handlepoint(p1);
 	    handlepoint(p2);
 	    handlepoint(p3);
@@ -22460,6 +22483,140 @@ GameApi::P GameApi::PolygonApi::extract_large_polygons(GameApi::P p, float minim
   FaceCollection *faces = find_facecoll(e,p);
   return add_polygon2(e, new ExtractLargePolygons(faces,minimum_size,reverse),1);
 }
+
+class MaterialFaceCollection : public FaceCollection
+{
+public:
+  MaterialFaceCollection(FaceCollection *base, FaceCollection *material) : base(base), material(material) { }
+  virtual void Collect(CollectVisitor &vis) {
+    base->Collect(vis);
+    material->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare()
+  {
+    base->Prepare();
+    material->Prepare();
+    HeavyPrepare();
+  }
+
+  virtual int NumFaces() const { return material->NumFaces(); }
+  virtual int NumPoints(int face) const
+  {
+    return material->NumPoints(face);
+  }
+  
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point pos = material->FacePoint(face,point);
+    Point2d txcoord = { pos.x, pos.z };
+    float height = pos.y;
+
+    txcoord.x /=300.0;
+    txcoord.y /=300.0;
+    height/=300.0;
+    
+    int s = base->NumFaces();
+    for(int i=0;i<s;i++)
+      {
+	if (base->NumPoints(i)==3) {
+	  Point2d tx0 = base->TexCoord(i,0);
+	  Point2d tx1 = base->TexCoord(i,1);
+	  Point2d tx2 = base->TexCoord(i,2);
+
+	  bool b1 = PointIsInsideTriangle(tx0,tx1,tx2, txcoord);
+	  if (!b1) continue;
+	  Point bary = TriangleProperties::texture_to_barycentric(tx0,tx1,tx2,txcoord);
+	  
+	  TriangleProperties prop(base->FacePoint(i,0),base->FacePoint(i,1), base->FacePoint(i,2));
+	  Point pt = prop.barycentric_to_point(bary);
+
+	  TriangleProperties prop2(Point(base->PointNormal(i,0)),Point(base->PointNormal(i,1)), Point(base->PointNormal(i,2)));
+	  Point normal0 = prop2.barycentric_to_point(bary);
+	  
+	  Vector normal = normal0;
+	  pt += height*normal;
+	  return pt;
+	  
+	} else if (base->NumPoints(i)==4) {
+	  Point2d a_tx0 = base->TexCoord(i,0);
+	  Point2d a_tx1 = base->TexCoord(i,1);
+	  Point2d a_tx2 = base->TexCoord(i,2);
+
+
+	  bool b1 = PointIsInsideTriangle(a_tx0,a_tx1,a_tx2, txcoord);
+	  if (b1) {
+	    Point bary = TriangleProperties::texture_to_barycentric(a_tx0,a_tx1,a_tx2,txcoord);
+	  
+	    TriangleProperties prop(base->FacePoint(i,0),base->FacePoint(i,1), base->FacePoint(i,2));
+	    Point pt = prop.barycentric_to_point(bary);
+	    
+	    TriangleProperties prop2(Point(base->PointNormal(i,0)),Point(base->PointNormal(i,1)), Point(base->PointNormal(i,2)));
+	    Point normal0 = prop2.barycentric_to_point(bary);
+	    
+	    Vector normal = normal0;
+	    
+	    pt += height*normal;
+	    
+	    return pt;
+	  }
+
+	  
+	  Point2d b_tx1 = base->TexCoord(i,1);
+	  Point2d b_tx2 = base->TexCoord(i,2);
+	  Point2d b_tx3 = base->TexCoord(i,3);
+
+
+	  bool b2 = PointIsInsideTriangle(b_tx1,b_tx2,b_tx3, txcoord);
+	  if (b2) {
+	    Point bary = TriangleProperties::texture_to_barycentric(b_tx1,b_tx2,b_tx3,txcoord);
+	  
+	    TriangleProperties prop(base->FacePoint(i,1),base->FacePoint(i,2), base->FacePoint(i,3));
+	    Point pt = prop.barycentric_to_point(bary);
+	    
+	    TriangleProperties prop2(Point(base->PointNormal(i,1)),Point(base->PointNormal(i,2)), Point(base->PointNormal(i,3)));
+	    Point normal0 = prop2.barycentric_to_point(bary);
+	    
+	    Vector normal = normal0;
+	    
+	    pt += height*normal;
+	    
+	    return pt;
+	  } // if (b1)
+
+	  
+	} //numpoints==4
+      } // for
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p1 = FacePoint(face,0);
+    Point p2 = FacePoint(face,1);
+    Point p3 = FacePoint(face,2);
+    return -Vector::CrossProduct(p2-p1,p3-p1);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return material->Color(face,point); }
+  virtual Point2d TexCoord(int face, int point) const { return material->TexCoord(face,point); }
+  virtual float TexCoord3(int face, int point) const { return material->TexCoord3(face,point); }
+  virtual VEC4 Joints(int face, int point) const { return material->Joints(face,point); }
+  virtual VEC4 Weights(int face, int point) const { return material->Weights(face,point); }
+
+private:
+  FaceCollection *base;
+  FaceCollection *material;
+  
+};
+
+GameApi::P GameApi::PolygonApi::material_face_collection(P base, P material)
+{
+  FaceCollection *coll = find_facecoll(e,base);
+  FaceCollection *coll2 = find_facecoll(e,material);
+  return add_polygon2(e, new MaterialFaceCollection(coll,coll2),1);
+}
+
 
 /*
 float calc_size(FaceCollection *coll, int obj)
