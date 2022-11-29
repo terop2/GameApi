@@ -1,0 +1,429 @@
+// Copyright (c) 2016, Pierre Lebeaupin
+// All rights reserved.
+
+// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+// * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// potential future evolutions:
+// - support abort in all contexts (currently is only guaranteed to work when outside code called by request.onload)
+// - support not invalidating bucket right away, only when new bucket is actually loaded,
+//   to keep serving requests from it if possible; requires serving requests out of order,
+//   be careful not to starve anyone.
+// - support for multiple requests riding the same request for cache load; will require
+//   careful tracking of which requests depend on the cache load request.
+
+var simpleFileCacheLoader = function (upperFileApi, cacheBucketSize) {
+    "use strict";
+
+    if (undefined === cacheBucketSize) {
+        cacheBucketSize = 4096;
+    }
+
+    var deferProcessing = null;
+    var genBottomHandler = null;
+
+    (function () {
+        // Note that the real time savings come less from the reuse of already loaded data
+        // than from the fact we directly call back the next handler ourselves (through
+        // genBottomHandler and todolist): a version of this cache that always called
+        // window.setTimeout to defer processing actually made performance worse. Yes, the
+        // sole purpose of this cache is avoid the crippling overhead each time we get
+        // called back by the web APIs.
+        var pushToTodolist = null;
+
+        genBottomHandler = function (initialProcessing) {
+            return function () {
+                var todolist = [];
+                pushToTodolist = function (processing) {
+                    todolist.push(processing);
+                };
+
+                initialProcessing();
+
+                while (todolist.length > 0) {
+                    (todolist.shift())(); // invoke what was first put in the list
+                }
+
+                pushToTodolist = null;
+            };
+        };
+
+        deferProcessing = function (processing) {
+            if (pushToTodolist !== null) {
+                pushToTodolist(processing);
+            } else {
+                window.setTimeout(genBottomHandler(processing), 0);
+            }
+        };
+    }());
+
+
+    // Note that the following does not wrap an inner byteArray object, as there
+    // is no way for me to catch and forward to it writes made to this object.
+    var pseudoUint8ArrayApiConstructor = function (param) {
+        var that = {};
+        var i;
+
+        // Array-like object compatibility
+        that.length = 0;
+
+        // Needed to create blobs from it
+        that.createLowerLevelCopy = function () {
+            // I can’t reuse the ArrayBufferView used for creation, as this object
+            // may have been modified since then.
+            return upperFileApi.byteArray(that);
+        };
+
+
+        if (typeof param === "number") {
+            var size;
+            for (i = 0; i < param; i += 1) {
+                that[i] = 0;
+                size = i;
+            }
+            that.length = size + 1; // so that it is an integer (param might not be)
+        } else { // is the result of a fileReader object
+            for (i = 0; i < param.getLength(); i += 1) {
+                that[i] = param.getNthByte(i);
+            }
+            that.length = param.getLength();
+        }
+
+        return that;
+    };
+
+
+    var pseudoArrayBufferConstructor = function (param) {
+        var that = {};
+
+        var inner = param; // either a upperFileApi.byteArray or a slice of one
+
+        that.getNthByte = function (idx) {
+            return inner[idx];
+        };
+
+        that.getLength = function () {
+            return inner.length;
+        };
+
+        return that;
+    };
+
+
+    var hiddenCancellableRequestConstructor = function (param) {
+        var that = {};
+
+        var completion = param.completion;
+        var aborted = false;
+        var request = null;
+        var requestBlob = null;
+
+        that.abort = function () {
+            if ((null !== request) && (request.readyState === upperFileApi.LOADING)) {
+                request.abort();
+            }
+            if (null !== requestBlob) {
+                requestBlob.close();
+                requestBlob = null;
+            }
+            aborted = true;
+        };
+
+        request = upperFileApi.fileReader();
+        requestBlob = param.blob.properSlice(param.startPos, param.endPos);
+        requestBlob.close = requestBlob.close || function () {
+            return;
+        };
+        request.onerror = param.onerror;
+        request.onload = genBottomHandler(function () {
+            if (!aborted) {
+                requestBlob.close();
+                requestBlob = null;
+                completion(upperFileApi.byteArray(request.result));
+            }
+        });
+
+        request.readAsArrayBuffer(requestBlob);
+
+        return that;
+    };
+
+    var hiddenFileNodeConstructor = function (param) {
+        var that = {};
+
+        var file = param.file;
+        var bucket = null;
+        var tag = null;
+        var loading = false;
+        var refCount = 1;
+
+        // private subclass:
+        var cancellableRequestForCacheConstructor = function (param2) {
+            var that2 = hiddenCancellableRequestConstructor(param2);
+
+            var superAbort = that2.abort;
+
+            that2.abort = function () {
+                loading = false;
+                superAbort.call(that2);
+            };
+
+            return that2;
+        };
+
+        that.retain = function () {
+            refCount += 1;
+        };
+
+        that.release = function () {
+            refCount -= 1;
+            if (0 === refCount) {
+                if (file.close) {
+                    file.close();
+                }
+            }
+        };
+
+        that.rangeIsInCache = function (startPos, endPos) {
+            return ((tag !== null) && (endPos > startPos) &&
+                    (Math.floor(startPos / cacheBucketSize) === tag) &&
+                    (Math.floor((endPos - 1) / cacheBucketSize) === tag));
+        };
+
+        that.loadIfInCacheSync = function (startPos, endPos) {
+            if (that.rangeIsInCache(startPos, endPos)) {
+                return Array.prototype.slice.call(bucket, startPos % cacheBucketSize,
+                        ((endPos - 1) % cacheBucketSize) + 1);
+            }
+
+            return undefined;
+        };
+
+        that.loadAsync = function (startPos, endPos, onerror, completion) {
+            var putativeTag = Math.floor(startPos / cacheBucketSize);
+            var result = null;
+
+            if (!loading && (endPos > startPos) &&
+                    ((putativeTag + 1) * cacheBucketSize <= file.size) &&
+                    (Math.floor((endPos - 1) / cacheBucketSize) === putativeTag)) {
+                // can be served from the cache once filled
+                result = cancellableRequestForCacheConstructor(
+                    {
+                        blob: file,
+                        startPos: putativeTag * cacheBucketSize,
+                        endPos: (putativeTag + 1) * cacheBucketSize,
+                        onerror: function () {
+                            loading = false;
+                            onerror();
+                        },
+                        completion: function (view) {
+                            loading = false;
+                            bucket = view;
+                            tag = putativeTag;
+
+                            completion(that.loadIfInCacheSync(startPos, endPos));
+                        }
+                    }
+                );
+                loading = true;
+                bucket = null;
+                tag = null;
+            } else {
+                // bypass the cache and serve request directly from the file.
+                result = hiddenCancellableRequestConstructor(
+                    {
+                        blob: file,
+                        startPos: startPos,
+                        endPos: endPos,
+                        onerror: onerror,
+                        completion: completion
+                    }
+                );
+            }
+
+            return result;
+        };
+
+        that.exposeLowerLevelBlob = function () {
+            return file;
+        };
+
+        return that;
+    };
+
+    var pseudoBlobConstructor = null;
+
+    (function () {
+        var temp = function (param) {
+            var that = {};
+
+            var fileNode = param.fileNode;
+            var startPos = param.startPos;
+            var endPos = param.endPos;
+
+            // window.Blob compatibility
+            that.size = param.endPos - param.startPos;
+            that.type = param.type;
+
+            fileNode.retain();
+
+            that.properSlice = function (interStartPos, interEndPos) {
+                var innerParam = {
+                    fileNode: fileNode,
+                    startPos: startPos,
+                    endPos: endPos,
+                    type: ""
+                };
+
+                if (undefined !== interStartPos) {
+                    innerParam.startPos = interStartPos +
+                            ((interStartPos >= 0) ? startPos: endPos);
+
+                    if (undefined !== interEndPos) {
+                        innerParam.endPos = interEndPos +
+                                ((interEndPos >= 0) ? startPos : endPos);
+                    }
+                }
+
+                return pseudoBlobConstructor(innerParam);
+            };
+
+            that.isInCache = function () {
+                return fileNode.rangeIsInCache(startPos, endPos);
+            };
+
+            that.loadIfInCacheSync = function () {
+                return fileNode.loadIfInCacheSync(startPos, endPos);
+            };
+
+            that.loadAsync = function (onerror, completion) {
+                return fileNode.loadAsync(startPos, endPos, onerror, completion);
+            };
+
+            that.close = function () {
+                fileNode.release();
+            };
+
+            that.createLowerLevelCopy = function () {
+                return fileNode.exposeLowerLevelBlob().properSlice(startPos, endPos);
+            };
+
+            return that;
+        };
+
+        pseudoBlobConstructor = temp;
+    }());
+
+    var pseudoBlobFromUpperConstructor = function (inner) {
+        var innerParam = {
+            fileNode: hiddenFileNodeConstructor({
+                file: inner.properSlice()
+            }),
+            startPos: 0,
+            endPos: inner.size,
+            type: inner.type
+        };
+        return pseudoBlobConstructor(innerParam);
+    };
+
+    var pseudoFileReaderConstructor = function () {
+        var that = {};
+
+        var request = null;
+        var aborted = false;
+
+        that.readAsArrayBuffer = function (blob) {
+            aborted = false;
+            // loadAsync can be performed immediately. Otherwise, any further action
+            // will have to be done from a deferred context, at which point the 
+            // situation may have changed so we may have to perform a loadAsync there
+            // anyway.
+            if (!blob.isInCache()) {
+                request = blob.loadAsync(that.onerror, function (contents) {
+                    request = null;
+                    that.result = pseudoArrayBufferConstructor(contents);
+                    that.onload();
+                });
+            } else {
+                deferProcessing(function () {
+                    // We may have been aborted while waiting to be run.
+                    if (!aborted) {
+                        var result = blob.loadIfInCacheSync();
+                        if (undefined !== result) {
+                            that.result = pseudoArrayBufferConstructor(result);
+                            that.onload();
+                        } else {
+                            request = blob.loadAsync(that.onerror, function (contents) {
+                                request = null;
+                                that.result = pseudoArrayBufferConstructor(contents);
+                                that.onload();
+                            });
+                        }
+                    }
+                });
+            }
+        };
+
+        that.abort = function () {
+            // No need to cancel any setTimeout: asuming we even could, it’s going
+            // to fire soon enough that it won’t matter anyway. Same for a task
+            // added to the todolist.
+            aborted = true;
+            if (null !== request) {
+                request.abort();
+                request = null;
+            }
+        };
+
+        return that;
+    };
+
+
+    var pseudoBlobBlobLikeObjectsArrayConstructor = function (param1, param2) {
+        var translatedArray = [];
+        var inner = null;
+
+        Array.prototype.forEach.call(param1, function (item) {
+            translatedArray.push(item.createLowerLevelCopy());
+        });
+
+        if (param2 === undefined) {
+            inner = upperFileApi.blob(translatedArray);
+        } else {
+            inner = upperFileApi.blob(translatedArray, param2);
+        }
+
+        translatedArray.forEach(function (element) {
+            if (element.close) {
+                element.close();
+            }
+        });
+
+
+        var innerParam = {
+            fileNode: hiddenFileNodeConstructor({
+                file: inner
+            }),
+            startPos: 0,
+            endPos: inner.size,
+            type: inner.type
+        };
+
+        return pseudoBlobConstructor(innerParam);
+    };
+
+    return {
+        createCachedCopy: pseudoBlobFromUpperConstructor,
+        createUncachedCopy: function (blob) {
+            return blob.createLowerLevelCopy();
+        },
+        api: {
+            blob: pseudoBlobBlobLikeObjectsArrayConstructor,
+            fileReader: pseudoFileReaderConstructor,
+            byteArray: pseudoUint8ArrayApiConstructor
+        }
+    };
+};
