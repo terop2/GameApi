@@ -62,6 +62,7 @@ echo "</pre>";
 ?>
 
 <script src="vue.js"></script>
+<script src="simple_file_cache"></script>
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
