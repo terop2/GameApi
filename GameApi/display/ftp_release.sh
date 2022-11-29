@@ -20,6 +20,7 @@ copy_it ini_print.php
 copy_it save_grab.php
 copy_it backend.php 
 copy_it view.php 
+copy_it view_fetch.php
 copy_it submit_contents.php 
 copy_it meshpage.php 
 copy_it cert.php 

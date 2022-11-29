@@ -2998,6 +2998,9 @@ class ForwardFaceCollection : public FaceCollection
 {
 public:
   ForwardFaceCollection(FaceCollection &coll) : coll(coll) { }
+  BBOX GetBoundingBox(bool &success) const {
+    return coll.GetBoundingBox(success);
+  }
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
   virtual void Prepare() { coll.Prepare(); }
@@ -3039,6 +3042,10 @@ class ForwardBoxableFaceCollection : public BoxableFaceCollection
 {
 public:
   ForwardBoxableFaceCollection(FaceCollection &coll) : coll(coll) { }
+  BBOX GetBoundingBox(bool &success) const
+  {
+    return coll.GetBoundingBox(success);
+  }
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
   virtual void Prepare() { coll.Prepare(); }
@@ -3133,13 +3140,22 @@ public:
   RecalculateNormals(FaceCollection &coll) : ForwardFaceCollection(coll) { }
   virtual bool has_normal() const { return true; }
   Vector PointNormal(int face, int point) const 
-  { 
+  {
+    if (store_face==face) return store_res;
+    
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
     Vector v = Vector::CrossProduct(p2-p1,p3-p1);
-    return v / v.Dist();
+    Vector res = v / v.Dist();
+    store_face = face;
+    store_res = res;
+    return res;
   }
+private:
+  mutable int store_face=-1;
+  mutable Vector store_res;
+
 };
 class AverageNormals : public ForwardFaceCollection
 {
@@ -6319,6 +6335,36 @@ class OrElem2 : public FaceCollection
 {
 public:
   OrElem2(FaceCollection *coll1, FaceCollection *coll2) : coll1(coll1), coll2(coll2),s(0),s1(0),s2(0),oo1(0),oo2(0) { }
+
+  BBOX GetBoundingBox(bool &success) const
+  {
+    std::vector<FaceCollection*> vec = { coll1, coll2 };
+    int s = vec.size();
+    BBOX bb;
+    bb.start_x=30000.0;
+    bb.end_x=-30000.0;
+    bb.start_y=30000.0;
+    bb.end_y=-30000.0;
+    bb.start_z=30000.0;
+    bb.end_z=-30000.0;
+    success=false;
+    bool success2 = true;
+    for(int i=0;i<s;i++) {
+      BBOX b = vec[i]->GetBoundingBox(success2);
+      if (success2) {
+	bb.start_x=std::min(bb.start_x,b.start_x);
+	bb.start_y=std::min(bb.start_y,b.start_y);
+	bb.start_z=std::min(bb.start_z,b.start_z);
+	bb.end_x=std::max(bb.end_x,b.end_x);
+	bb.end_y=std::max(bb.end_y,b.end_y);
+	bb.end_z=std::max(bb.end_z,b.end_z);
+	success=true;
+      }
+    }
+    return bb;
+  }
+
+
   void Collect(CollectVisitor &vis)
   {
     coll1->Collect(vis);
@@ -6602,6 +6648,34 @@ public:
     }
     return sk;
     
+  }
+
+
+  BBOX GetBoundingBox(bool &success) const
+  {
+    int s = vec.size();
+    BBOX bb;
+    bb.start_x=30000.0;
+    bb.end_x=-30000.0;
+    bb.start_y=30000.0;
+    bb.end_y=-30000.0;
+    bb.start_z=30000.0;
+    bb.end_z=-30000.0;
+    success=false;
+    bool success2 = true;
+    for(int i=0;i<s;i++) {
+      BBOX b = vec[i]->GetBoundingBox(success2);
+      if (success2) {
+	bb.start_x=std::min(bb.start_x,b.start_x);
+	bb.start_y=std::min(bb.start_y,b.start_y);
+	bb.start_z=std::min(bb.start_z,b.start_z);
+	bb.end_x=std::max(bb.end_x,b.end_x);
+	bb.end_y=std::max(bb.end_y,b.end_y);
+	bb.end_z=std::max(bb.end_z,b.end_z);
+	success=true;
+      }
+    }
+    return bb;
   }
 
   
@@ -7521,6 +7595,67 @@ public:
     Vector v = next->PointNormal(face,point);
     return v*m2;
   }
+
+  BBOX GetBoundingBox(bool &success) const
+  {
+    BBOX bb = next->GetBoundingBox(success);
+    Point p1(bb.start_x, bb.start_y, bb.start_z);
+    Point p2(bb.end_x,bb.start_y,bb.start_z);
+    Point p3(bb.start_x,bb.end_y,bb.start_z);
+    Point p4(bb.end_x,bb.end_y,bb.start_z);
+
+    Point p5(bb.start_x, bb.start_y, bb.end_z);
+    Point p6(bb.end_x,bb.start_y,bb.end_z);
+    Point p7(bb.start_x,bb.end_y,bb.end_z);
+    Point p8(bb.end_x,bb.end_y,bb.end_z);
+
+    p1=p1*m;
+    p2=p2*m;
+    p3=p3*m;
+    p4=p4*m;
+    p5=p5*m;
+    p5=p6*m;
+    p6=p7*m;
+    p8=p8*m;
+
+    BBOX res;
+    res.start_x = std::min(std::min(std::min(std::min(p1.x,p2.x),
+			   std::min(p3.x,p4.x)),
+				    std::min(std::min(p5.x,p6.x),
+					     std::min(p6.x,p7.x))),
+			   p8.x);
+    res.end_x = std::max(std::max(std::max(std::max(p1.x,p2.x),
+			   std::max(p3.x,p4.x)),
+				    std::max(std::max(p5.x,p6.x),
+					     std::max(p6.x,p7.x))),
+			   p8.x);
+    
+    res.start_y = std::min(std::min(std::min(std::min(p1.y,p2.y),
+			   std::min(p3.y,p4.y)),
+				    std::min(std::min(p5.y,p6.y),
+					     std::min(p6.y,p7.y))),
+			   p8.y);
+    res.end_y = std::max(std::max(std::max(std::max(p1.y,p2.y),
+			   std::max(p3.y,p4.y)),
+				    std::max(std::max(p5.y,p6.y),
+					     std::max(p6.y,p7.y))),
+			   p8.y);
+    
+    res.start_z = std::min(std::min(std::min(std::min(p1.z,p2.z),
+			   std::min(p3.z,p4.z)),
+				    std::min(std::min(p5.z,p6.z),
+					     std::min(p6.z,p7.z))),
+			   p8.z);
+    res.end_z = std::max(std::max(std::max(std::max(p1.z,p2.z),
+			   std::max(p3.z,p4.z)),
+				    std::max(std::max(p5.z,p6.z),
+					     std::max(p6.z,p7.z))),
+			   p8.z);
+    
+    return res;
+    
+  }
+  
 private:
   FaceCollection *next;
   Matrix m;

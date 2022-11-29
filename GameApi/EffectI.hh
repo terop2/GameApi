@@ -48,6 +48,15 @@ public:
   //virtual float Length() const=0;
 };
 
+struct BBOX {
+  float start_x;
+  float end_x;
+  float start_y;
+  float end_y;
+  float start_z;
+  float end_z;
+};
+
 void stackTrace();
 class FaceCollection : public CollectInterface
 {
@@ -98,6 +107,9 @@ public:
   virtual void GenTexture(int num) { }
   virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer = 0;  return ref; }
   virtual int FaceTexture(int face) const { return -1; }
+
+  virtual BBOX GetBoundingBox(bool &success) const { success=false; BBOX b; return b; }
+
 };
 
 
