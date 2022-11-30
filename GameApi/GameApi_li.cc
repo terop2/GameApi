@@ -2359,10 +2359,27 @@ GameApi::LI GameApi::LinesApi::li_bevel(LI li, P p, float mix)
   return add_line_array(e, new Bevel(lines, faces, mix));
 }
 
+class TowardNormalMainLoop : public MainLoopItem
+{
+public:
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    m=e.in_MV;
+  }
+public:
+  Matrix m;
+};
+
 class TowardsNormal : public ForwardFaceCollection
 {
 public:
-  TowardsNormal(FaceCollection *coll, float amount) : ForwardFaceCollection(*coll), coll(coll), amount(amount) { }
+  TowardsNormal(FaceCollection *coll, float amount, TowardNormalMainLoop *main) : ForwardFaceCollection(*coll), coll(coll), amount(amount),main(main) { }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
@@ -2370,6 +2387,7 @@ public:
     Vector v = coll->PointNormal(face,point);
     v/=v.Dist();
     Point p = coll->FacePoint(face,point);
+    p=p*main->m;
     float d = p.Dist();
     d-=350.0;
     d/=(1200.0-350.0);
@@ -2381,12 +2399,20 @@ public:
 private:
   FaceCollection *coll;
   float amount;
+  TowardNormalMainLoop *main;
 };
 
-GameApi::P GameApi::LinesApi::p_towards_normal(P p, float amount)
+GameApi::ARR GameApi::LinesApi::p_towards_normal(P p, float amount)
 {
   FaceCollection *coll = find_facecoll(e,p);
-  return add_polygon2(e, new TowardsNormal(coll,amount),1);
+  TowardNormalMainLoop *main = new TowardNormalMainLoop;
+  GameApi::P p1 = add_polygon2(e, new TowardsNormal(coll,amount,main),1);
+  GameApi::ML ml2 = add_main_loop(e,main);
+  ArrayType *t = new ArrayType;
+  t->type=2;
+  t->vec.push_back(p1.id);
+  t->vec.push_back(ml2.id);
+  return add_array(e,t);
 }
 
 
