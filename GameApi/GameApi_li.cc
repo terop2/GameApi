@@ -2358,61 +2358,82 @@ GameApi::LI GameApi::LinesApi::li_bevel(LI li, P p, float mix)
   FaceCollection *faces = find_facecoll(e,p);
   return add_line_array(e, new Bevel(lines, faces, mix));
 }
+extern Matrix g_last_resize;
 
-class TowardNormalMainLoop : public MainLoopItem
-{
-public:
-  virtual void Collect(CollectVisitor &vis) { }
-  virtual void HeavyPrepare() { }
-  virtual void Prepare() { }
-  virtual void FirstFrame() { }
-  virtual void handle_event(MainLoopEvent &e) { }
-  virtual std::vector<int> shader_id() { return std::vector<int>(); }
-  virtual void execute(MainLoopEnv &e)
-  {
-    m=e.in_MV;
-  }
-public:
-  Matrix m;
-};
 
 class TowardsNormal : public ForwardFaceCollection
 {
 public:
-  TowardsNormal(FaceCollection *coll, float amount, TowardNormalMainLoop *main) : ForwardFaceCollection(*coll), coll(coll), amount(amount),main(main) { }
-  void Collect(CollectVisitor &vis) { }
-  void HeavyPrepare() { }
+  TowardsNormal(FaceCollection *coll, float amount) : ForwardFaceCollection(*coll), coll(coll), amount(amount) { }
+  void Collect(CollectVisitor &vis) { coll->Collect(vis); vis.register_obj(this); }
+  void HeavyPrepare() {
+
+    start_x = 300000.0;
+      start_y = 300000.0;
+      start_z = 300000.0;
+      end_x =  -300000.0;
+      end_y =  -300000.0;
+      end_z =  -300000.0; 
+
+    
+    int s = std::min(coll->NumFaces(),100);
+    if (s<1) s=1;
+    int step =coll->NumFaces()/s;
+    int faces=coll->NumFaces();
+    for(int i=0;i<faces;i+=step)
+      {
+	Point p1 = coll->FacePoint(i,0);
+	Point p2 = coll->FacePoint(i,1);
+	Point p3 = coll->FacePoint(i,2);
+	Point p4 = coll->NumPoints(i)==4 ? coll->FacePoint(i,3) : p1;
+	handlepoint(p1);
+	handlepoint(p2);
+	handlepoint(p3);
+	handlepoint(p4);
+      }
+  }
+  void handlepoint(Point p)
+  {
+    if (p.x<start_x) { start_x = p.x; }
+    if (p.y<start_y) { start_y = p.y; }
+    if (p.z<start_z) { start_z = p.z; }
+    if (p.x>end_x) { end_x = p.x; }
+    if (p.y>end_y) { end_y = p.y; }
+    if (p.z>end_z) { end_z = p.z; }    
+  }
+  void Prepare()
+  {
+    coll->Prepare();
+    HeavyPrepare();
+  }
   Point FacePoint(int face, int point) const
   {
     Vector v = coll->PointNormal(face,point);
     v/=v.Dist();
     Point p = coll->FacePoint(face,point);
-    p=p*main->m;
     float d = p.Dist();
     d-=350.0;
     d/=(1200.0-350.0);
     if (d<0.0) d=0.0;
     if (d>1.0) d=1.0;
     float amount2 = (1.0-d)*3.0 + d*3.0; // was 40.0
+    float dd = std::max(std::max(end_x-start_x,end_y-start_y),end_z-start_z);
+    amount2/=350.0;
+    amount2*=dd;
     return coll->FacePoint(face,point)+amount*amount2*v;
   }
 private:
   FaceCollection *coll;
   float amount;
-  TowardNormalMainLoop *main;
+  float start_x, start_y, start_z;
+  float end_x,end_y,end_z;
 };
 
-GameApi::ARR GameApi::LinesApi::p_towards_normal(P p, float amount)
+GameApi::P GameApi::LinesApi::p_towards_normal(P p, float amount)
 {
   FaceCollection *coll = find_facecoll(e,p);
-  TowardNormalMainLoop *main = new TowardNormalMainLoop;
-  GameApi::P p1 = add_polygon2(e, new TowardsNormal(coll,amount,main),1);
-  GameApi::ML ml2 = add_main_loop(e,main);
-  ArrayType *t = new ArrayType;
-  t->type=2;
-  t->vec.push_back(p1.id);
-  t->vec.push_back(ml2.id);
-  return add_array(e,t);
+  GameApi::P p1 = add_polygon2(e, new TowardsNormal(coll,amount),1);
+  return p1;
 }
 
 

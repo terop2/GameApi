@@ -441,7 +441,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "p", "amount" },
 			 { "P", "float" },
 			 { "", "0.5" },
-			 "P,ML", "lines_api", "p_towards_normal"));
+			 "P", "lines_api", "p_towards_normal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::slow_calc_lights,
 			 "slow_calc_lights",
 			 { "mesh", "light_dir_x", "light_dir_y", "light_dir_z" },

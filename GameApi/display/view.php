@@ -1164,10 +1164,10 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
-res+="ARR I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
-res+="ARR I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
-res+="LI I115=ev.lines_api.from_polygon(I114[0]);\n";
-res+="LI I116=ev.lines_api.from_polygon(I124[0]);\n";
+res+="P I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
+res+="P I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
+res+="LI I115=ev.lines_api.from_polygon(I114);\n";
+res+="LI I116=ev.lines_api.from_polygon(I124);\n";
 
 //res+="P I633=ev.polygon_api.line_to_cone(ev,I115," + border_width/2 +",5);\n";
 //res+="P I643=ev.polygon_api.line_to_cone(ev,I116," + border_width/2 +",5);\n";
@@ -1176,10 +1176,8 @@ res+="LI I116=ev.lines_api.from_polygon(I124[0]);\n";
 //res+="ML I135=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
 //res+="ML I136=ev.polygon_api.render_vertex_array_ml2(ev,I743);\n";
 
-  res+="ML I1350=ev.polygon_api.line_to_cone2(ev,I115," + border_width/2 +",5,I4);\n"
-  res+="ML I135=ev.mainloop_api.or_elem_ml(ev,I1350,I114[1]);\n"
-  res+="ML I1360=ev.polygon_api.line_to_cone2(ev,I116," + border_width/2 +",5,I4);\n"
-res+="ML I136=ev.mainloop_api.or_elem_ml(ev,I1360,I124[1]);\n"
+  res+="ML I135=ev.polygon_api.line_to_cone2(ev,I115," + border_width/2 +",5,I4);\n"
+  res+="ML I136=ev.polygon_api.line_to_cone2(ev,I116," + border_width/2 +",5,I4);\n"
 
 var color = "000000";
 var bg = get_background_value();
