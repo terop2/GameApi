@@ -39,6 +39,13 @@ if ($id>0)
 <body>
 <script>
 
+var agent = navigator.userAgent;
+var mobile = false;
+var firefox = false;
+if (agent.indexOf("Mobile") != -1) mobile=true;
+if ((idx=agent.indexOf("Firefox")) != -1) firefox=true;
+var firefox_version = parseInt(agent.substring(idx+8));
+
 var req = new XMLHttpRequest();
 var download_result={};
 var g_download_done = false;
@@ -100,6 +107,9 @@ req.send();
 	  v-bind:is_model_loading="state.appmodel_is_model_loading"
 	  v-bind:is_twoline="state.appmodel_is_twoline"
 	  v-bind:model_info="state.model_info"
+	  v-bind:progress_1="state.progress_1"
+	  v-bind:progress_2="state.progress_2"
+	  v-bind:progress_3="state.progress_3"
 	  v-on:examples_click="change_appmodel(2)"
 	  v-on:link_click="change_appmodel(4)"
 	  v-on:change_model="change_model()"
@@ -143,6 +153,9 @@ var store = {
       appmodel_is_loading: "true",
       appmodel_is_model_loading: "false",
       appmodel_is_twoline: "0",
+      progress_1: "0",
+      progress_2: "0",
+      progress_3: "0",
       model_info: "(prepare to load..)",
       filename: "(no file)",
       filename1: "",
@@ -355,7 +368,7 @@ Vue.component('appmodel_model_loading', {
   data: function() {
      return { } },
      template: `<div class="border block blockitem height12 customfont prettysmall">
-      Loading 3d model...
+      Loading 3d model... 
       </div>`
       });
 
@@ -371,20 +384,20 @@ Vue.component('appmodel_notselected', {
    });
 
 Vue.component('appmodel_selected', {
-  props: ['filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  props: ['filename', 'filename1', 'filename2', 'model_info', 'progress_1', 'progress_2', 'progress_3', 'is_twoline'],
   data: function() {
     return { } },
     template: `<div class="border block blockitem height12 customfont">
       <!--appprogress></appprogress-->
       <appfilenameinfo v-bind:is_twoline="is_twoline" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2"></appfilenameinfo>
-      <appmodelinfo v-bind:model_info="model_info"></appmodelinfo>
+      <appmodelinfo v-bind:progress_1="progress_1" v-bind:progress_2="progress_2" v-bind:progress_3="progress_3" v-bind:model_info="model_info"></appmodelinfo>
       <button type="button" onclick="clickselectfile2()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
    <input id="selectfile2" type="file" multiple v-on:change="$emit('handle_drop','selectfile2')" style="display: none;"/>
       </div>`
       });
 
 Vue.component('appmodel', {
-  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'is_model_loading', 'filename', 'filename1', 'filename2', 'model_info', 'is_twoline'],
+  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'is_model_loading', 'filename', 'filename1', 'filename2', 'model_info', 'progress_1', 'progress_2', 'progress_3', 'is_twoline'],
   data: function() {
     return { } },
     template: `<div class="block blockitem">
@@ -401,7 +414,7 @@ Vue.component('appmodel', {
        <appmodel_link v-on:change_model="$emit('change_choose_url')"></appmodel_link>
        </div>
        <div v-if="is_selected=='true'">
-       <appmodel_selected v-bind:model_info="model_info" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2" v-bind:is_twoline="is_twoline" v-on:handle_drop="$emit('root_handle_drop',$event)"></appmodel_selected>
+       <appmodel_selected v-bind:progress_1="progress_1" v-bind:progress_2="progress_2" b-bind:progress_3="progress_3" v-bind:model_info="model_info" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2" v-bind:is_twoline="is_twoline" v-on:handle_drop="$emit('root_handle_drop',$event)"></appmodel_selected>
        </div>
        <div v-if="is_notselected=='true'">
        <appmodel_notselected v-on:examples_click="$emit('examples_click')"
@@ -475,7 +488,7 @@ Vue.component('appfilenameinfo', {
      });
 
 Vue.component('appmodelinfo', {
-  props: ['model_info'],
+  props: ['model_info','progress_1','progress_2','progress_3'],
   data: function() {
      return {
      }
@@ -1079,6 +1092,13 @@ function create_script(filename, contents, filenames)
   var border_value = get_border_value();
   var border = get_border(border_value,material_value,filename);
 
+
+  var normals_val = get_normals_value();
+  var border_color = "000000";
+  var border_width = "1.0";
+  var brd = get_border_value();
+
+
   if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I155=ev.polygon_api.color_grayscale(I19);\n";
      } else
   if (filename.substr(-4)==".obj") {
@@ -1092,34 +1112,32 @@ function create_script(filename, contents, filenames)
   //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
   if (filename.substr(-4)==".zip") {
      res+="TF I154=ev.mainloop_api.gltf_load_sketchfab_zip("+filename+");\n"
-     res+="P I1550=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
-     res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I1550});\n";
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90);\n"; // 0.75
+     res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
+     res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
+     if (normals_val!=3 && normals_val!=4)
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90);\n"; // 0.75
   } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     res+="P I1550=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
+     res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
-     res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I1550});\n";
+     res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
+     if (normals_val!=3 && normals_val!=4)
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9);\n";
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
      //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
-     res+="P I1550=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
-     res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I1550});\n";
+     res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
+     res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
+     if (normals_val!=3 && normals_val!=4)
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9);\n";
-
-} else
+  } else
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
 
 
-  var normals_val = get_normals_value();
-  var border_color = "000000";
-  var border_width = "1.0";
-  var brd = get_border_value();
   if (brd>=0 && brd<store.state.border_db.length) {
      var name2 = store.state.border_db[brd];
      border_color = parse_border_color(name2);
@@ -1131,12 +1149,14 @@ if (normals_val==3)
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
 
 res+="P I1=ev.polygon_api.get_face_count(I155);\n";
-
 res+="LI I433=ev.lines_api.from_polygon(I1);\n";
-res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width +"/2,5);\n";
-res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
-res+="ML I665=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+//res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width/2 +",5);\n";
+//res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
+//res+="ML I66=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+  // doesnt seem to be working
+  res+="ML I665=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I4);\n"
 res+="ML I66=ev.mainloop_api.depthfunc(I665,0);\n";
+res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
   } else
   if (normals_val==4)
@@ -1149,13 +1169,16 @@ res+="ARR I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
 res+="LI I115=ev.lines_api.from_polygon(I114[0]);\n";
 res+="LI I116=ev.lines_api.from_polygon(I124[0]);\n";
 
-res+="P I633=ev.polygon_api.line_to_cone(ev,I115," + border_width +"/2,5);\n";
-res+="P I643=ev.polygon_api.line_to_cone(ev,I116," + border_width +"/2,5);\n";
-res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
-res+="P I743=ev.polygon_api.color(I643,ff" + border_color + ");\n";
-res+="ML I1350=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
-res+="ML I135=ev.mainloop_api.or_elem_ml(ev,I1350,I114[1]);\n"
-res+="ML I1360=ev.polygon_api.render_vertex_array_ml2(ev,I743);\n";
+//res+="P I633=ev.polygon_api.line_to_cone(ev,I115," + border_width/2 +",5);\n";
+//res+="P I643=ev.polygon_api.line_to_cone(ev,I116," + border_width/2 +",5);\n";
+//res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
+//res+="P I743=ev.polygon_api.color(I643,ff" + border_color + ");\n";
+//res+="ML I135=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+//res+="ML I136=ev.polygon_api.render_vertex_array_ml2(ev,I743);\n";
+
+  res+="ML I1350=ev.polygon_api.line_to_cone2(ev,I115," + border_width/2 +",5,I4);\n"
+  res+="ML I135=ev.mainloop_api.or_elem_ml(ev,I1350,I114[1]);\n"
+  res+="ML I1360=ev.polygon_api.line_to_cone2(ev,I116," + border_width/2 +",5,I4);\n"
 res+="ML I136=ev.mainloop_api.or_elem_ml(ev,I1360,I124[1]);\n"
 
 var color = "000000";
@@ -1169,7 +1192,9 @@ if (bg>=0&&bg<store.state.background_db.length) {
 res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
 res+="ML I156=ev.polygon_api.render_vertex_array_ml2(ev,I145);\n";
 res+="ML I665=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
-res+="ML I66=ev.mainloop_api.depthfunc(I665,0);\n";
+res+="ML I666=ev.mainloop_api.depthmask(I665,true);\n";
+res+="ML I66=ev.mainloop_api.depthfunc(I666,0);\n";
+res+="ML I62=ev.mainloop_api.array_ml(ev,srd::vector<ML>{I66});\n"
   } else {
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 
@@ -1221,10 +1246,11 @@ res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
   if (normals_val==5||normals_val==6) { // wireframe
 
   res+="LI I433=ev.lines_api.from_polygon(I1);\n";
-  res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width +"/2,5);\n";
+  res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width/2 +",5);\n";
   res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
   res+="ML I502=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
-
+  //res+="MT I733=ev.materials_api.m_def(ev);\n"
+//res+="ML I502=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I733);\n";
 
   } else {
       res+=border; // outputs I502
@@ -1256,7 +1282,8 @@ res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
   }
   res+="ML I9=ev.mainloop_api.right_mouse_pan(ev,I8);\n";
   res+=background;
-  res+="ML I14=ev.mainloop_api.array_ml(ev,std::vector<ML>{I44,I9});\n";
+  //res+="ML I14=ev.mainloop_api.array_ml(ev,std::vector<ML>{I44,I9});\n";
+  res+="ML I14=ev.mainloop_api.or_elem_ml(ev,I44,I9);\n";
   res+="RUN I10=ev.blocker_api.game_window2(ev,I14,false,false,0.0,1000000.0);\n";
 
 
@@ -1286,6 +1313,7 @@ function publish_face_count(state)
 }
 
 var contents_array = [];
+var contents_array2 = [];
 var filename_array = [];
 var g_filename = "";
 var g_path = "";
@@ -1343,6 +1371,7 @@ function extract_contents(state,file_array,filenames, filename, path)
    return new Promise((resolve,reject) => {  
 
    contents_array = [];
+   contents_array2 = [];
    filename_array = [];
    var s = file_array.length;
    var counter = 0;
@@ -1357,13 +1386,11 @@ function extract_contents(state,file_array,filenames, filename, path)
 	//console.log(fileContents);
 	var bytes = new Uint8Array( fileContents );
 	//console.log(bytes.length);
-	binary = enc.decode(bytes);
-	//var len = bytes.byteLength;
-	//for(var j=0;j<len;j++) {
-	//  binary+= String.fromCharCode(bytes[j]);
-	//}
-	//console.log(binary.length);
+
+        binary = enc.decode(bytes);
+	//console.log(binary);
 	contents_array.push(binary);
+	contents_array2.push(bytes);
 	filename_array.push(fix_filename(filenames[i]));
 	counter++;
 	if (counter==s) resolve("success");
@@ -1382,6 +1409,7 @@ function extract_contents(state,file_array,filenames, filename, path)
    return new Promise((resolve,reject) => {  
 
    contents_array = [];
+   contents_array2 = [];
    filename_array = [];
    var s = file_array.length;
    var counter = 0;
@@ -1394,15 +1422,12 @@ function extract_contents(state,file_array,filenames, filename, path)
         let fileContents = fileReader.result;
 	var binary = '';
 	var bytes = new Uint8Array( fileContents );
-	//var len = bytes.byteLength;
-	//for(var j=0;j<len;j++) {
-	//  binary+= String.fromCharCode(bytes[j]);
-	//}
-	binary = enc.decode(bytes);
+		binary = enc.decode(bytes);
 	//console.log(bytes);
 	//console.log(binary);
 
 	contents_array.push(binary);
+	contents_array2.push(bytes);
 	filename_array.push(fix_filename(filenames[i]));
 	counter++;
 	if (counter==s) resolve("success");
@@ -1419,9 +1444,15 @@ var loading_data = 0;
 function load_finished(value)
 {
    //console.log("LOAD FINISHED");
-   load_files(contents_array,filename_array);
+   load_files(contents_array2,filename_array);
    load_emscripten(store.state,g_filename, contents_array, filename_array);
    set_label("Load finished..");
+   //setTimeout(function() {
+   //	if (Module) {
+	//   var value = Module.ccall('get_integer', 'number', ['number'],[2]);
+	//   store.state.progress_1=(value/100).toString();
+	//}
+   //	}, 1000);
 }
 function fix_filename(filename)
 {
@@ -1675,11 +1706,12 @@ function load_emscripten(state,filename, contents, filenames)
       setTimeout(function() { check_emscripten_ready(state) }, 100);
 }
 
-function load_files(data_array, filename_array)
+function load_files(data_array2, filename_array)
 {
-  var s2 = data_array.length;
+  //console.log(data_array);
+  var s2 = data_array2.length;
   for(var i=0;i<s2;i++) {
-    var data3 = data_array[i];
+    var data3 = data_array2[i];
 
 
     var filename = filename_array[i];
@@ -1695,8 +1727,9 @@ function load_files(data_array, filename_array)
     Module.ccall('set_integer', null, ['number', 'number'], [2,use_sz], {async:true} );
 
     var slice = data3.slice(s,s+use_sz);
+    const uint8 = slice; //slice.split('').map(function(x) { return x.charCodeAt(0); });
 
-    const uint8 = slice.split('').map(function(x) { return x.charCodeAt(0); });
+    //console.log(uint8);
 
     Module.ccall('set_string', null, ['number', 'array'], [3,uint8], {async:true} );
     }
@@ -1944,60 +1977,54 @@ function load_data()
    var fa = download_result["filenamearray"];
    var gf = download_result["gfilename"];
    var gp = download_result["gpath"];
-   //console.log(st.textContent.length);
-   //console.log(ca.textContent.length);
-   //console.log(fa.textContent.length);
-   //console.log(gf.textContent.length);
-   //console.log(gp.textContent.length);
+   //console.log(st.length);
+   //console.log(ca.length);
+   //console.log(fa.length);
+   //console.log(gf.length);
+   //console.log(gp.length);
    if (st != "") {
     loading_data=1;
    var a_st = "";
-   if (st !="")
+   if (st !="" && st != undefined)
       a_st = st;
    var a_ca = "";
-   if (ca !="")
+   //console.log("CONTENTSARRAY");
+   //console.log(ca);
+   if (ca !="" && ca != undefined)
       a_ca = JSON.parse(ca);
    //console.log(fa.textContent);
    //console.log("FILENAMEARRAY");
    var a_fa = "";
-   if (fa !="")
+   if (fa !="" && fa != undefined)
       a_fa = JSON.parse(fa);
    //console.log(gf.textContent);
    //console.log("FILENAME");
    var a_gf = "";
-   if (gf != "")
+   if (gf != "" && gf != undefined)
       a_gf = JSON.parse(gf);
    //console.log(gp.textContent);
-   // console.log("GPATH");
+  //  console.log("GPATH");
   var a_gp = "";
-   if (gp != "") 
+   if (gp != "" && gp != undefined) 
       a_gp = JSON.parse(gp);
+
+
+  // console.log(a_st.length);
+  // console.log(a_ca.length);
+  // console.log(a_fa.length);
+  // console.log(a_gf.length);
+  // console.log(a_gp.length);
+
+
+  //console.log(a_ca[0].length);
 
    deserialize_state(a_st);
    contents_array = base64_to_array(a_ca);
+   contents_array2 = contents_array.map(c => c.split('').map(function(x) { return x.charCodeAt(0); }));
    filename_array = base64_to_array(a_fa);
    g_filename = a_gf;
    g_path = a_gp;
 
-/*
-   var snd_item_num = -1;
-   var snd_item_name = "";
-   console.log(g_filename);
-   if (g_filename.substr(-4)==".zip") {
-      var idx = find_main_item(filename_array);
-      var zip_file = contents_array[idx];
-      console.log("ZIP UNCOMPRESS3");
-      var zipentries = get_zip_filenames(zip_file).then(function(value) {
-      console.log(value);
-	snd_item_num = find_main_item(value);
-      	snd_item_name = zipentries[snd_item_num];
-	old_snd_item_num = snd_item_num;
-   	old_snd_item_name = snd_item_name;
-      console.log(snd_item_num);
-      console.log(snd_item_name);
-      }, function(error) { console.log("ERROR"); console.log(error); });
-   }
-*/
 
    old_files = contents_array;
    old_filenames = filename_array;
@@ -2006,84 +2033,6 @@ function load_data()
    }
 }
 
-var Base64={
-    _keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-     encode:function(e){
-	var t="";
-	var n,r,i,s,o,u,a;
-	var f=0;
-	e=Base64._utf8_encode(e);
-	while(f<e.length){
-		n=e.charCodeAt(f++);
-		r=e.charCodeAt(f++);
-		i=e.charCodeAt(f++);
-		s=n>>2;
-		o=(n&3)<<4|r>>4;
-		u=(r&15)<<2|i>>6;
-		a=i&63;
-		if(isNaN(r)){u=a=64;}else
-		if(isNaN(i)){a=64;}
-		t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a);}
-		return t;
-		},
-	decode:function(e){
-	    var t="";
-	    var n,r,i;
-	    var s,o,u,a;
-	    var f=0;
-	    e=e.replace(/[^A-Za-z0-9+/=]/g,"");
-	    while(f<e.length){
-	       s=this._keyStr.indexOf(e.charAt(f++));
-	       o=this._keyStr.indexOf(e.charAt(f++));
-	       u=this._keyStr.indexOf(e.charAt(f++));
-	       a=this._keyStr.indexOf(e.charAt(f++));
-	       n=s<<2|o>>4;
-	       r=(o&15)<<4|u>>2;
-	       i=(u&3)<<6|a;
-	       t=t+String.fromCharCode(n);
-	       if(u!=64){t=t+String.fromCharCode(r);}
-	       if(a!=64){t=t+String.fromCharCode(i);}
-	       }
-	       t=Base64._utf8_decode(t);
-	       return t;
-	       },
-	_utf8_encode:function(e){
-	    e=e.replace(/rn/g,"n");
-	    var t="";
-	    for(var n=0;n<e.length;n++){
-	       var r=e.charCodeAt(n);
-	       if(r<128){t+=String.fromCharCode(r);}
-	       else if(r>127&&r<2048){
-	           t+=String.fromCharCode(r>>6|192);
-		   t+=String.fromCharCode(r&63|128);
-		   }
-		   else
-		   {
-		   t+=String.fromCharCode(r>>12|224);
-		   t+=String.fromCharCode(r>>6&63|128);
-		   t+=String.fromCharCode(r&63|128);
-		   }
-		   }
-		   return t;},
-       _utf8_decode:function(e){
-           var t="";
-	   var n=0;
-	   var r=c1=c2=0;
-	   while(n<e.length){
-		r=e.charCodeAt(n);
-		if(r<128){
-			t+=String.fromCharCode(r);
-			n++
-		}else if(r>191&&r<224){
-		   c2=e.charCodeAt(n+1);
-		   t+=String.fromCharCode((r&31)<<6|c2&63);
-		   n+=2
-		}else{
-		   c2=e.charCodeAt(n+1);
-		   c3=e.charCodeAt(n+2);
-		   t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3
-		   }}
-	return t;}}
 
 function array_to_base64(arr)
 {

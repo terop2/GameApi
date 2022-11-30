@@ -4548,6 +4548,7 @@ int my_getline(LoadStream *stream, int index, std::string &line)
 
 void OutlineFaces::Prepare()
   {
+    if (firsttime) {
     c.Prepare();
     int faces = c.NumFaces();
     int cc = 0;
@@ -4562,6 +4563,8 @@ void OutlineFaces::Prepare()
 	    cc++;
 	  }
       }
+    firsttime=false;
+    }
   }
   int OutlineFaces::NumLines() const
   {

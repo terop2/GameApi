@@ -3406,6 +3406,7 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
     s.has_color = has_color2;
     s.has_texcoord = has_texcoord2;
     s.has_skeleton = has_skeleton2;
+
     
     for(int i=start_range;i<end_range;i++)
       {
