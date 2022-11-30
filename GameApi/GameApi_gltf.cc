@@ -77,7 +77,7 @@ public:
   virtual int lights_size() const { return self->lights.size(); }
   virtual const tinygltf::Light &get_light(int i) const { return self->lights[i]; }
   
-private:
+public:
   tinygltf::Model *self;
 public:
   std::string base_url, url;
@@ -305,6 +305,7 @@ public:
     if (!is_binary) {
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
+     
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -361,9 +362,9 @@ class GLTF_Model_with_prepare : public GLTF_Model
 {
 public:
   GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
-  virtual void Prepare() { if (firsttime) { load->Prepare(); firsttime=false; } }
+  virtual void Prepare() { if (firsttime) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
-  virtual void HeavyPrepare() { if (firsttime) { load->Prepare(); firsttime=false; } }
+  virtual void HeavyPrepare() { if (firsttime) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
 private:
   LoadGltf *load;
   tinygltf::Model *model;
@@ -4279,9 +4280,6 @@ public:
     vis.register_obj(this);
   }
   virtual void HeavyPrepare() {
-    Prepare();
-  }
-  virtual void Prepare() {
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -4290,7 +4288,7 @@ public:
     }
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    interface->Prepare();
+    //interface->Prepare();
     //GameApi::P mesh = gltf_load2(env,ev, interface, 0,0);
 
     int scene_id = interface->get_default_scene();
@@ -4301,7 +4299,11 @@ public:
       FaceCollection *item = find_facecoll(env,res);
       if (item)
 	item->Prepare();
-    }
+    }    //    Prepare();
+  }
+  virtual void Prepare() {
+    interface->Prepare();
+    HeavyPrepare();
   }
 
   virtual int NumFaces() const
@@ -7605,6 +7607,8 @@ public:
     if (firsttime) {
     UncompressZip();
     load->Prepare();
+    model=&load->model;
+    self=model;
     firsttime=false;
     }
   }
@@ -7613,6 +7617,8 @@ public:
     if (firsttime) {
     UncompressZip();
     load->Prepare();
+    model=&load->model;
+    self=model;
     firsttime=false;
     }
   }
@@ -7660,6 +7666,11 @@ public:
 	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") mainfilename = zip_url + "/" + std::string(filename);
 	    //std::cout << "Decompressing zip: " << filename << std::endl;
 
+	    //if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
+	    // delete [] filename;
+	    //  continue;
+	    //}
+	    
 	    size_t sz=0;
 	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
 	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
@@ -7668,7 +7679,10 @@ public:
 #ifdef EMSCRIPTEN
 	    data->push_back(0); // is this always needed?
 #endif
-	    //	    std::cout << url << "::" << data->size() << std::endl;
+	    // std::cout << url << "::" << data->size() << std::endl;
+	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
+	      delete g_del_map.load_url_buffers_async[url];
+	    }
 	    
 	    g_del_map.load_url_buffers_async[url] = data;
 	  }

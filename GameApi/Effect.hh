@@ -4501,9 +4501,11 @@ class OutlineFaces : public LineCollection
 public:
   OutlineFaces(FaceCollection &c) : c(c) 
   {
+    firsttime=true;
   }
   void Collect(CollectVisitor &vis) { c.Collect(vis); vis.register_obj(this); }
   void HeavyPrepare() {
+    if (firsttime) {
         int faces = c.NumFaces();
     int cc = 0;
     for(int i=0;i<faces;i++)
@@ -4517,6 +4519,8 @@ public:
 	    cc++;
 	  }
       }
+    firsttime = false;
+    }
 
   }
   void Prepare();
@@ -4527,6 +4531,7 @@ private:
   FaceCollection &c;
   std::vector<int> counts;
   std::vector<int> counts2;
+  bool firsttime;
 };
 typedef FunctionImpl0<FaceCollection*, LineCollection*, OutlineFaces> OutlineFacesFunction;
 
