@@ -5032,7 +5032,7 @@ bool operator==(const ShaderCacheItem &i1, const ShaderCacheItem &i2)
  if (b11==false) std::cout << "B";
  if (b12==false) std::cout << "C";
  if (b13==false) std::cout << "D";
- std::cout << i1.fragment_c->func_name() << " " << i2.fragment_c->func_name()<< std::endl;
+ if (i1.fragment_c && i2.fragment_c) std::cout << i1.fragment_c->func_name() << " " << i2.fragment_c->func_name()<< std::endl;
  */
  
  return b&&b2&&b3&&b4&&b5&&b6&&b7&&b8&&b9&&b10&&b11&&b12&&b13;
@@ -5049,6 +5049,18 @@ const ShaderCacheItem *find_from_shader_cache(const ShaderCacheItem &i2)
       }
     }
   return 0;
+}
+
+template<class T>
+std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
+{
+  int s = v.size();
+  for(int i=0;i<s;i++)
+    {
+    o << v[i];
+    if (i!=s-1) { o << ","; }
+    }
+  return o;
 }
 
 
@@ -5074,8 +5086,10 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
   Program *p = new Program;
   progs.push_back(p);
 
+  // std::cout << "Checking: " << v_format << " " << f_format << " " << v_vec << " " << f_vec << std::endl;
+  
   if (res) {
-    // std::cout << "FOUND FROM SHADER CACHE" << std::endl;
+    //std::cout << "FOUND FROM SHADER CACHE" << std::endl;
     int s1 = res->v_shaders.size();
     for(int i=0;i<s1;i++) p->push_back(*res->v_shaders[i]);
 
@@ -5087,7 +5101,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
     
     return id;
   }
-  //   std::cout << "NOT FOUND" << std::endl;
+  // std::cout << "NOT FOUND" << v_vec << " " << f_vec << std::endl;
 
   
   std::string::iterator i = v_format.begin();
@@ -5172,6 +5186,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       i = ii;
     }
   shader_cache.push_back(ci);
+  //std::cout << "ADDING TO CACHE: " << v_format << " " << f_format << "::" << v_vec << " " << f_vec << std::endl;
   //p->link();
   //p->GeomTypes(5,2); 
   //p->GeomOutputVertices(100000);

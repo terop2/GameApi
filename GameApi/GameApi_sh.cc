@@ -155,11 +155,14 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
 
 void combparse(std::string comb, std::vector<std::string> &vec)
 {
+  //std::cout << "COMBPARSE:'" << comb << "'" << std::endl;
   std::string s;
   int ss = comb.size();
+  //std::cout << "COMBSIZE:" << ss << std::endl;
   for(int i=0;i<ss;i++)
     {
       char c = comb[i];
+      if (c==0) break;
       if (c==':')
 	{
 	  vec.push_back(s);
