@@ -8178,6 +8178,8 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare() {
@@ -8380,6 +8382,8 @@ public:
 
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll=find_facecoll(env,p);
+    coll->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare() { Prepare(); }
@@ -8578,6 +8582,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    PointsApiPoints *c2 = find_pointsapi_points(env,pts);
+    c2->Collect(vis);
     vis.register_obj(this);
     vis.register_first_frame(this);
   }
@@ -8786,6 +8794,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    MatrixArray *obj2 = find_matrix_array(env, pts);
+    obj2->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -8989,6 +9001,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    PointsApiPoints *c2 = find_pointsapi_points(env,pts);
+    c2->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -9201,6 +9217,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    MatrixArray *obj2 = find_matrix_array(env, pts);
+    obj2->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -9413,6 +9433,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    obj2->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -9626,6 +9650,11 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    MatrixArray *obj2 = find_matrix_array(env, pts);
+    obj2->Collect(vis);
+
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -9841,6 +9870,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
+    obj2->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -10044,6 +10077,10 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Collect(vis);
+    MatrixArray *obj2 = find_matrix_array(env, pts);
+    obj2->Collect(vis);
     vis.register_obj(this);
   }
   void HeavyPrepare()
@@ -28038,6 +28075,16 @@ KP extern "C" int get_integer(int num)
 {
   if (num==0) return g_global_face_count; // use P get_face_count(P) to set this
   if (num==1) return g_engine_status;
+  if (num==2) {
+    long long val = FindProgressVal();
+    long long max = FindProgressMax();
+    val*=(long long)256;
+    float val2 = float(val/max);
+    val2/=256.0;
+    if (val2<0.001) val2=0.001;
+    if (val2>1.0) val2=1.0;
+    return int(val2*10000.0);
+  }
   return -1;
 }
 std::string g_set_string_url;

@@ -22,6 +22,9 @@ namespace GameApi
 
 };
 
+  
+
+
 enum DSFlags
   {
     DSDisableNormal=0x1,

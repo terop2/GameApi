@@ -3491,6 +3491,9 @@ private:
 };
 
 
+
+
+
 EXPORT GameApi::P GameApi::PolygonApi::or_array3(std::vector<P> vec)
 {
   if (vec.size()==0) return p_empty();
@@ -12941,11 +12944,13 @@ public:
   {
     if (!coll) {
     int s = lines->NumLines();
+    //std::cout << "LINETOCONE: " << s << std::endl;
     std::vector<GameApi::P> vec;
     for(int i=0;i<s;i++)
       {
 	Point p1 = lines->LinePoint(i, 0);
 	Point p2 = lines->LinePoint(i, 1);
+	//std::cout << "LINETOCONE: " << p1 << " " << p2 << std::endl;
 	GameApi::PT pp1 = ev.point_api.point(p1.x,p1.y,p1.z);
 	GameApi::PT pp2 = ev.point_api.point(p2.x,p2.y,p2.z);
 	GameApi::P ct = ev.polygon_api.cone(numfaces, pp1, pp2, size, size);
@@ -12959,11 +12964,13 @@ public:
     lines->Prepare();
     if (!coll) {
       int s = lines->NumLines();
+      //std::cout << "LINETOCONE: " << s << std::endl;
       std::vector<GameApi::P> vec;
       for(int i=0;i<s;i++)
 	{
 	  Point p1 = lines->LinePoint(i, 0);
 	  Point p2 = lines->LinePoint(i, 1);
+	  //std::cout << "LINETOCONE: " << p1 << " " << p2 << std::endl;
 	  GameApi::PT pp1 = ev.point_api.point(p1.x,p1.y,p1.z);
 	  GameApi::PT pp2 = ev.point_api.point(p2.x,p2.y,p2.z);
 	GameApi::P ct = ev.polygon_api.cone(numfaces, pp1, pp2, size, size);
