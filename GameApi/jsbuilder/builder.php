@@ -7,6 +7,7 @@
 <body class="page">
 <div id="hidden_widgets1" style="display:none"></div>
 <div id="hidden_widgets2" style="display:none"></div>
+<canvas id="floating" class="float"></canvas>
 <div horizontal layout start-justified class="horiz">
    <div class="leftpane">
      <div id="menu"></div>
@@ -18,6 +19,9 @@
 </body>
 </html>
 <style>
+.float {
+   position:absolute;
+}
 .page {
       background-color: #000;
 }
@@ -174,7 +178,8 @@ function menu_widgets(titles, arr)
 function click_handler(i,j)
 {
    var val = g_builder_node_data[i][j];
-   console.log(val);
+   //console.log(val);
+   start_drag(val);
 }
 
 var state = {};
@@ -270,6 +275,23 @@ function canvas_gameapi_node(node)
 
    return { "canvas" : canvas };
 }
+function render_drag_node(node_data, pos)
+{
+    var target_scale=1;
+    var orig_scale=6;
+    var main = document.getElementById("floating");
+    main.width=node_width*target_scale;
+    main.height=node_height*target_scale;
+    var ctx = main.getContext("2d");
+    var scale2=6;
+    //ctx.setTransform(1,0,0,1,0,0);
+    var img1 = node_data.canvas2;
+    var img2 = node_data.canvas;
+    var img3 = node_data.canvas3;
+    ctx.drawImage(img1,0,0,node_width*orig_scale,node_title_height*orig_scale,pos["x"],pos["y"],node_width*target_scale,node_title_height*target_scale);
+    ctx.drawImage(img2,0,0,node_width*orig_scale,node_title_height*orig_scale,pos["x"],pos["y"],node_width*target_scale,node_title_height*target_scale);
+    ctx.drawImage(img3,0,0,node_width*orig_scale,(node_height-node_title_height)*orig_scale,pos["x"],pos["y"]+node_title_height*target_scale,node_width*target_scale,(node_height-node_title_height)*target_scale);
+}
 function render_gameapi_node(node_data, pos)
 {
     var target_scale=6;
@@ -287,31 +309,89 @@ function render_gameapi_node(node_data, pos)
 }
 
 
-function drawPixelated(img,context,zoom,x,y){
-  if (!zoom) zoom=4; if (!x) x=0; if (!y) y=0;
-  if (!img.id) img.id = "__img"+(drawPixelated.lastImageId++);
-  var idata = drawPixelated.idataById[img.id];
-  if (!idata){
-    var ctx = document.createElement('canvas').getContext('2d');
-    ctx.width  = img.width;
-    ctx.height = img.height;
-    ctx.drawImage(img,0,0);
-    idata = drawPixelated.idataById[img.id] = ctx.getImageData(0,0,img.width,img.height).data;
-  }
-  for (var x2=0;x2<img.width;++x2){
-    for (var y2=0;y2<img.height;++y2){
-      var i=(y2*img.width+x2)*4;
-      var r=idata[i  ];
-      var g=idata[i+1];
-      var b=idata[i+2];
-      var a=idata[i+3];
-      context.fillStyle = "rgba("+r+","+g+","+b+","+(a/255)+")";
-      context.fillRect(x+x2*zoom, y+y2*zoom, zoom, zoom);
-    }
-  }
-};
-drawPixelated.idataById={};
-drawPixelated.lastImageId=0;
+var drag_node = {};
+
+function drag_move(event)
+{
+   var f = document.getElementById("floating");
+   f.style.left = event.clientX.toString() + "px";
+   f.style.top = event.clientY.toString() + "px";
+   drag_node["x"] = event.clientX;
+   drag_node["y"] = event.clientY;
+   console.log(drag_node);
+}
+
+var click_flag=0;
+
+function drag_click_handler(event)
+{
+      if (click_flag==0) { click_flag=1; } else {
+      console.log("END DRAG");
+      document.removeEventListener('mousemove', drag_move);
+      document.removeEventListener('click', drag_click_handler);
+      click_flag=0;
+      }
+}
+
+function param_types(node)
+{
+   var s = node[4];
+   var pos = 5;
+   var res = [];
+   
+   for(var i=0;i<s;i++) {
+      res.push(node[pos+1]);
+      pos+=3;
+   }
+   return res;
+}
+function param_names(node)
+{
+   var s = node[4];
+   var pos = 5;
+   var res = [];
+   
+   for(var i=0;i<s;i++) {
+      res.push(node[pos]);
+      pos+=3;
+   }
+   return res;
+}
+
+function param_default_vals(node)
+{
+   var s = node[4];
+   var pos = 5;
+   var res = [];
+   
+   for(var i=0;i<s;i++) {
+      res.push(node[pos+2]);
+      pos+=3;
+   }
+   return res;
+}
+
+
+function start_drag(node)
+{
+   console.log("START_DRAG");
+   console.log(node);
+   drag_node["node"] = node;
+
+   var nd = { label: node[0],
+              ret_type: node[1],
+	      param_types: param_types(node),
+	      param_labels: param_names(node)
+	      };
+
+   var n0 = canvas_gameapi_grads();
+   var n = canvas_gameapi_node(nd);
+   var cc = Object.assign({},n0,n);
+   render_drag_node(cc,{"x":0,"y":0});
+   document.addEventListener('click', drag_click_handler);
+   document.addEventListener('mousemove', drag_move);
+}
+
 
 var main = document.getElementById("maincanvas");
 main.width*=6*2;
