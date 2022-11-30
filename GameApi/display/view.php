@@ -85,6 +85,7 @@ req.send();
 ?>
 
 <script src="vue.js"></script>
+
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
 
@@ -1153,7 +1154,8 @@ res+="LI I433=ev.lines_api.from_polygon(I1);\n";
 //res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
 //res+="ML I66=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
   // doesnt seem to be working
-  res+="ML I66=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I4);\n"
+  res+="ML I665=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I4);\n"
+res+="ML I66=ev.mainloop_api.depthfunc(I665,0);\n";
 res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
   } else
@@ -1184,7 +1186,8 @@ if (bg>=0&&bg<store.state.background_db.length) {
 
 res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
 res+="ML I156=ev.polygon_api.render_vertex_array_ml2(ev,I145);\n";
-res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
+res+="ML I665=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
+res+="ML I66=ev.mainloop_api.depthfunc(I665,0);\n";
 res+="ML I62=ev.mainloop_api.array_ml(ev,srd::vector<ML>{I66});\n"
   } else {
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
