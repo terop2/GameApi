@@ -2677,6 +2677,7 @@ public:
 
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
   IMPORT ML line_to_cone2(EveryApi &ev, LI li, float size, int numfaces, MT mt);
+  IMPORT ML line_to_cone3(EveryApi &ev, LI li, float size, int numfaces, MT mt, unsigned int color);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
