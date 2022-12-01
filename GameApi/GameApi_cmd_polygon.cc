@@ -441,7 +441,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "p", "amount" },
 			 { "P", "float" },
 			 { "", "0.5" },
-			 "P,ML", "lines_api", "p_towards_normal"));
+			 "P", "lines_api", "p_towards_normal"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::slow_calc_lights,
 			 "slow_calc_lights",
 			 { "mesh", "light_dir_x", "light_dir_y", "light_dir_z" },
@@ -567,6 +567,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "LI", "float", "int", "MT" },
 			 { "ev", "", "10.0", "15", "" },
 			 "ML", "polygon_api", "line_to_cone2"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::line_to_cone3,
+			 "li_to_cone3",
+			 { "ev", "li", "size", "numfaces", "mt", "color" },
+			 { "EveryApi&", "LI", "float", "int", "MT","unsigned int" },
+			 { "ev", "", "10.0", "15", "", "ffffffff" },
+			 "ML", "polygon_api", "line_to_cone3"));
+  
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::curve_to_poly,
 			 "curve_to_poly",

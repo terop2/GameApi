@@ -2677,6 +2677,7 @@ public:
 
   IMPORT P line_to_cone(EveryApi &ev, LI li, float size, int numfaces);
   IMPORT ML line_to_cone2(EveryApi &ev, LI li, float size, int numfaces, MT mt);
+  IMPORT ML line_to_cone3(EveryApi &ev, LI li, float size, int numfaces, MT mt, unsigned int color);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
@@ -3555,7 +3556,7 @@ public:
   IMPORT LI point_array(std::vector<PT> vec);
   IMPORT LI li_or_array(std::vector<LI> vec);
   IMPORT LI li_bevel(LI li, P p, float mix);
-  IMPORT ARR p_towards_normal(P p, float amount);
+  IMPORT P p_towards_normal(P p, float amount);
   IMPORT LI li_matrix(LI lines, M matrix);
   IMPORT LI color_function(LI lines, std::function<unsigned int(int linenum, bool id)> f);
   IMPORT LI change_color(LI li, unsigned int color);

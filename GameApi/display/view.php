@@ -1150,11 +1150,7 @@ if (normals_val==3)
 
 res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 res+="LI I433=ev.lines_api.from_polygon(I1);\n";
-//res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width/2 +",5);\n";
-//res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
-//res+="ML I66=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
-  // doesnt seem to be working
-  res+="ML I665=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I4);\n"
+  res+="ML I665=ev.polygon_api.line_to_cone3(ev,I433," + border_width/2 + ",5,I4,ff" + border_color + ");\n"
 res+="ML I66=ev.mainloop_api.depthfunc(I665,0);\n";
 res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
@@ -1164,22 +1160,13 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
-res+="ARR I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
-res+="ARR I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
-res+="LI I115=ev.lines_api.from_polygon(I114[0]);\n";
-res+="LI I116=ev.lines_api.from_polygon(I124[0]);\n";
+res+="P I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
+res+="P I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
+res+="LI I115=ev.lines_api.from_polygon(I114);\n";
+res+="LI I116=ev.lines_api.from_polygon(I124);\n";
 
-//res+="P I633=ev.polygon_api.line_to_cone(ev,I115," + border_width/2 +",5);\n";
-//res+="P I643=ev.polygon_api.line_to_cone(ev,I116," + border_width/2 +",5);\n";
-//res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
-//res+="P I743=ev.polygon_api.color(I643,ff" + border_color + ");\n";
-//res+="ML I135=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
-//res+="ML I136=ev.polygon_api.render_vertex_array_ml2(ev,I743);\n";
-
-  res+="ML I1350=ev.polygon_api.line_to_cone2(ev,I115," + border_width/2 +",5,I4);\n"
-  res+="ML I135=ev.mainloop_api.or_elem_ml(ev,I1350,I114[1]);\n"
-  res+="ML I1360=ev.polygon_api.line_to_cone2(ev,I116," + border_width/2 +",5,I4);\n"
-res+="ML I136=ev.mainloop_api.or_elem_ml(ev,I1360,I124[1]);\n"
+  res+="ML I135=ev.polygon_api.line_to_cone3(ev,I115," + border_width/2 +",5,I4,ff" + border_color +");\n"
+  res+="ML I136=ev.polygon_api.line_to_cone3(ev,I116," + border_width/2 +",5,I4,ff" + border_color +");\n"
 
 var color = "000000";
 var bg = get_background_value();
@@ -1190,11 +1177,13 @@ if (bg>=0&&bg<store.state.background_db.length) {
   }
 
 res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
-res+="ML I156=ev.polygon_api.render_vertex_array_ml2(ev,I145);\n";
+res+="MT I199=ev.materials_api.colour_material(ev,1.0);\n"
+res+="ML I156=ev.materials_api.bind(I145,I199);\n"
+
 res+="ML I665=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
 res+="ML I666=ev.mainloop_api.depthmask(I665,true);\n";
 res+="ML I66=ev.mainloop_api.depthfunc(I666,0);\n";
-res+="ML I62=ev.mainloop_api.array_ml(ev,srd::vector<ML>{I66});\n"
+res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
   } else {
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 
@@ -1230,7 +1219,6 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,srd::vector<ML>{I66});\n"
     res+="ML I63=ev.materials_api.bind(I771,I775);\n";
 
 
-  //res+="ML I64=ev.mainloop_api.depthmask(I63,false);\n";
 res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
  
   //console.log(material_value);
@@ -1245,12 +1233,18 @@ res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
 
   if (normals_val==5||normals_val==6) { // wireframe
 
-  res+="LI I433=ev.lines_api.from_polygon(I1);\n";
-  res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width/2 +",5);\n";
-  res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
-  res+="ML I502=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
-  //res+="MT I733=ev.materials_api.m_def(ev);\n"
-//res+="ML I502=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I733);\n";
+res+="P I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
+res+="P I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
+res+="LI I115=ev.lines_api.from_polygon(I114);\n";
+res+="LI I116=ev.lines_api.from_polygon(I124);\n";
+
+  res+="MT I733=ev.materials_api.m_def(ev);\n"
+  res+="ML I135=ev.polygon_api.line_to_cone3(ev,I115," + border_width/2 +",5,I733,ff" + border_color +");\n"
+  res+="ML I136=ev.polygon_api.line_to_cone3(ev,I116," + border_width/2 +",5,I733,ff" + border_color +");\n"
+
+res+="ML I555=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135});\n";
+res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
+
 
   } else {
       res+=border; // outputs I502
@@ -1273,16 +1267,12 @@ res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
     res+="ML I800=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
 
-    //res+="P I771=ev.polygon_api.cube(-100.0,100.0,-100.0,100.0,-100.0,100.0);\n";
-    //res+="MT I772=ev.mainloop_api.mainloop_material(ev,I801);\n";
-    //res+="MT I773=ev.materials_api.phong(ev,I772,0.0,0.0,1.0,ffff8822,ffff8822,30.0);\n";
-    //res+="ML I8=ev.materials_api.bind(I771,I773);\n";
 
 
   }
   res+="ML I9=ev.mainloop_api.right_mouse_pan(ev,I8);\n";
   res+=background;
-  //res+="ML I14=ev.mainloop_api.array_ml(ev,std::vector<ML>{I44,I9});\n";
+
   res+="ML I14=ev.mainloop_api.or_elem_ml(ev,I44,I9);\n";
   res+="RUN I10=ev.blocker_api.game_window2(ev,I14,false,false,0.0,1000000.0);\n";
 
