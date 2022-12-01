@@ -1175,7 +1175,6 @@ res+="LI I116=ev.lines_api.from_polygon(I124);\n";
 //res+="P I743=ev.polygon_api.color(I643,ff" + border_color + ");\n";
 //res+="ML I135=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
 //res+="ML I136=ev.polygon_api.render_vertex_array_ml2(ev,I743);\n";
-
   res+="ML I135=ev.polygon_api.line_to_cone2(ev,I115," + border_width/2 +",5,I4);\n"
   res+="ML I136=ev.polygon_api.line_to_cone2(ev,I116," + border_width/2 +",5,I4);\n"
 
@@ -1245,12 +1244,22 @@ res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
 
   if (normals_val==5||normals_val==6) { // wireframe
 
-  res+="LI I433=ev.lines_api.from_polygon(I1);\n";
-  res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width/2 +",5);\n";
-  res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
-  res+="ML I502=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
-  //res+="MT I733=ev.materials_api.m_def(ev);\n"
+res+="P I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
+res+="P I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
+res+="LI I115=ev.lines_api.from_polygon(I114);\n";
+res+="LI I116=ev.lines_api.from_polygon(I124);\n";
+//  res+="LI I433=ev.lines_api.from_polygon(I1);\n";
+  //res+="P I633=ev.polygon_api.line_to_cone(ev,I433," + border_width/2 +",5);\n";
+  //res+="P I733=ev.polygon_api.color(I633,ff" + border_color + ");\n";
+  //res+="ML I502=ev.polygon_api.render_vertex_array_ml2(ev,I733);\n";
+  res+="MT I733=ev.materials_api.m_def(ev);\n"
+  res+="ML I135=ev.polygon_api.line_to_cone2(ev,I115," + border_width/2 +",5,I733);\n"
+  res+="ML I136=ev.polygon_api.line_to_cone2(ev,I116," + border_width/2 +",5,I733);\n"
+
 //res+="ML I502=ev.polygon_api.line_to_cone2(ev,I433," + border_width/2 + ",5,I733);\n";
+res+="ML I555=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135});\n";
+res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
+
 
   } else {
       res+=border; // outputs I502
