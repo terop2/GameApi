@@ -13039,15 +13039,23 @@ private:
 };
 
 
+GameApi::ML GameApi::PolygonApi::line_to_cone3(EveryApi &ev, LI li, float size, int numfaces, MT mt, unsigned int color)
+{
+  GameApi::MS ms = ev.matrices_api.from_lines_3d(li);
+  GameApi::PT pp1 = ev.point_api.point(0.0,0.0,0.0);
+  GameApi::PT pp2 = ev.point_api.point(300.0,0.0,0.0);
+  GameApi::P p = ev.polygon_api.cone(numfaces,pp1,pp2,size,size);
+  GameApi::P p2 = ev.polygon_api.color(p,color);
+  GameApi::ML ml = ev.materials_api.bind_inst_matrix(p2,ms,mt);
+  return ml;
+}
+
 GameApi::ML GameApi::PolygonApi::line_to_cone2(EveryApi &ev, LI li, float size, int numfaces, MT mt)
 {
   GameApi::MS ms = ev.matrices_api.from_lines_3d(li);
   GameApi::PT pp1 = ev.point_api.point(0.0,0.0,0.0);
   GameApi::PT pp2 = ev.point_api.point(300.0,0.0,0.0);
   GameApi::P p = ev.polygon_api.cone(numfaces,pp1,pp2,size,size);
-  //GameApi::P p2 = ev.polygon_api.fix_vertex_order(p);
-  //GameApi::P p3 = ev.polygon_api.recalculate_normals(p);
-  //GameApi::P p4 = ev.polygon_api.flip_normals(p3);
   GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mt);
   return ml;
 }
