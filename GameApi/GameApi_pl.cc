@@ -2809,10 +2809,63 @@ class TexCoordPlane : public ForwardFaceCollection
 {
 public:
   TexCoordPlane(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  void HeavyPrepare()
+  {
+    find_bounding_box();
+  }
+  void find_bounding_box()
+  {
+
+    a_start_x = 300000.0;
+      a_start_y = 300000.0;
+      a_start_z = 300000.0;
+      a_end_x =  -300000.0;
+      a_end_y =  -300000.0;
+      a_end_z =  -300000.0; 
+
+    int s = std::min(coll->NumFaces(),100);
+    if (s<1) s=1;
+    int step = coll->NumFaces()/s;
+    int faces = coll->NumFaces();
+    for(int i=0;i<faces;i+=step)
+      {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point p4 = coll->NumPoints(i)==4 ? coll->FacePoint(i,3) : p1;
+
+	    handlepoint(p1);
+	    handlepoint(p2);
+	    handlepoint(p3);
+	    handlepoint(p4);
+      }
+  }
+  void handlepoint(Point p)
+  {
+    if (p.x<a_start_x) { a_start_x = p.x; }
+    if (p.y<a_start_y) { a_start_y = p.y; }
+    if (p.z<a_start_z) { a_start_z = p.z; }
+    if (p.x>a_end_x) { a_end_x = p.x; }
+    if (p.y>a_end_y) { a_end_y = p.y; }
+    if (p.z>a_end_z) { a_end_z = p.z; }    
+  }
+
+  void Prepare()
+  {
+    coll->Prepare();
+    HeavyPrepare();
+  }
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
+    p.x-=a_start_x;
+    p.x/=(a_end_x-a_start_x);
+    p.x*=400.0;
+    p.y-=a_start_y;
+    p.y/=(a_end_y-a_start_y);
+    p.y*=400.0;
+    
     p.x-=start_x;
     p.x/=end_x-start_x;
     p.y-=start_y;
@@ -2826,6 +2879,9 @@ private:
   FaceCollection *coll;
   float start_x, end_x;
   float start_y, end_y;
+  float a_start_x, a_end_x;
+  float a_start_y, a_end_y;
+  float a_start_z, a_end_z;
 };
 
 EXPORT GameApi::P GameApi::PolygonApi::texcoord_plane(P orig,
