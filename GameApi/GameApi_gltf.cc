@@ -846,7 +846,7 @@ public:
     int res=0;
     if (mode==TINYGLTF_MODE_TRIANGLES && indices_done) {
       //std::cout << "NumFaces(0):" << indices_acc->count/3 << std::endl;
-      res=indices_acc->count/3;
+      res=indices_acc->count/3;      
     }
     if (res==0 && mode==TINYGLTF_MODE_TRIANGLE_STRIP && indices_done) {
       //std::cout << "NumFaces(1):" << indices_acc->count-2 << std::endl;
@@ -872,7 +872,9 @@ public:
   }
   virtual int NumPoints(int face) const { 
     if (mode==TINYGLTF_MODE_TRIANGLE_FAN && indices_done) {
-      return indices_acc->count;
+      std::cout << "indices_acc->count==" << indices_acc->count << std::endl;
+      return 3;
+      //return indices_acc->count;
     }
     return 3;
   }
@@ -952,6 +954,9 @@ public:
 	  index = *ptr4; // this is the index to the buffer
 	  break;
 	  }
+	  default:
+	    std::cout << "indices_acc->componentType wrong" << indices_acc->componentType << std::endl;
+	    return 0;
 	  };
 	return index;
   }
@@ -989,6 +994,36 @@ public:
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
 	float *pos_ptr2 = (float*)(pos_ptr + position_bv->byteOffset + index*stride2 + position_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
+	switch(position_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_INT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_FLOAT:
+	  return Point(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
+	case TINYGLTF_COMPONENT_TYPE_DOUBLE:
+	  {
+	  const double *pos_ptr4 = (const double*)pos_ptr2; // 3 = num of components in (x,y,z)
+	  return Point(pos_ptr4[0],pos_ptr4[1],pos_ptr4[2]);
+	  }
+	default:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	};
 	return Point(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// todo, check that this branch works
@@ -999,6 +1034,36 @@ public:
 	int comp = face*3+point;
 	const unsigned char *pos_ptr3 = pos_ptr2 + position_acc->byteOffset + comp*stride;
 	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
+	switch(position_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_INT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	case TINYGLTF_COMPONENT_TYPE_FLOAT:
+	  return Point(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
+	case TINYGLTF_COMPONENT_TYPE_DOUBLE:
+	  {
+	  const double *pos_ptr4 = (const double*)pos_ptr3; // 3 = num of components in (x,y,z)
+	  return Point(pos_ptr4[0],pos_ptr4[1],pos_ptr4[2]);
+	  }
+	default:
+	  std::cout << "ERROR at position_acc->componentType" << position_acc->componentType << std::endl;
+	  return Point(0.0,0.0,0.0);
+	};
 	return Point(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
     }
@@ -4321,22 +4386,18 @@ public:
     return coll->NumPoints(face);
   }
   virtual Point FacePoint(int face, int point) const {
-    if (cache_face==face) {
-      if (point==0&&cache_0) { return cache_res_0; }
-      if (point==1&&cache_1) { return cache_res_1; }
-      if (point==2&&cache_2) { return cache_res_2; }
-      if (point==3&&cache_3) { return cache_res_3; }
-    } else { cache_0=false; cache_1=false; cache_2=false; cache_3=false; }
+      if (point==0&&cache_0&&cache_face_0==face) { return cache_res_0; }
+      if (point==1&&cache_1&&cache_face_1==face) { return cache_res_1; }
+      if (point==2&&cache_2&&cache_face_2==face) { return cache_res_2; }
+      if (point==3&&cache_3&&cache_face_3==face) { return cache_res_3; }
     if (res.id==-1) return Point(0.0,0.0,0.0);
     FaceCollection *coll = find_facecoll(env,res);
     if (!coll) return Point(0.0,0.0,0.0);
     Point p = coll->FacePoint(face,point);
-    
-    cache_face=face;
-    if (point==0) { cache_res_0=p; cache_0=true; }
-    if (point==1) { cache_res_1=p; cache_1=true; }
-    if (point==2) { cache_res_2=p; cache_2=true; }
-    if (point==3) { cache_res_3=p; cache_3=true; }
+    if (point==0) { cache_res_0=p; cache_0=true; cache_face_0=face;}
+    if (point==1) { cache_res_1=p; cache_1=true; cache_face_1=face;}
+    if (point==2) { cache_res_2=p; cache_2=true; cache_face_2=face;}
+    if (point==3) { cache_res_3=p; cache_3=true; cache_face_3=face;}
     return p;
   }
   virtual Vector PointNormal(int face, int point) const
@@ -4440,7 +4501,10 @@ private:
   GLTFModelInterface *interface;
   GameApi::P res;
 private:
-  mutable int cache_face=-1;
+  mutable int cache_face_0=-1;
+  mutable int cache_face_1=-1;
+  mutable int cache_face_2=-1;
+  mutable int cache_face_3=-1;
   mutable Point cache_res_0; mutable bool cache_0=false;
   mutable Point cache_res_1; mutable bool cache_1=false;
   mutable Point cache_res_2; mutable bool cache_2=false;

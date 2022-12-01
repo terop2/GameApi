@@ -3306,12 +3306,11 @@ public:
 	int ss2 = vec[i]->NumObjects();
 	//std::cout << "GOT: " << ss << " " << ss2 << std::endl;
 	//print_objs();
-	if (ss<0) ss=0;
-	if (ss2<0) ss2=0;
+	if (ss<0) { std::cout << "ss<0::" << ss << std::endl; ss=1; }
+	if (ss2<0) { std::cout << "ss2<0::" << ss2 << std::endl; ss2=1; }
 	if (ss>10000000) {
 	  std::cout << "Warning: ss>1000000: ss=" << ss << std::endl;
-	  ss=0;
-	  int ss3 = vec[i]->NumFaces();
+	  ss=1;
 	} // this is because NumFaces() gives trash if Prepare() has not been done yet.
 	FaceRange r = { start_face, start_face+ss, start_obj, start_obj+ss2 };
 	ranges.push_back(r);
