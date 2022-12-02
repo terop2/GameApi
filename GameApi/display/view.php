@@ -1213,10 +1213,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
     res+="P I771=ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);\n";
     res+="MT I772=ev.mainloop_api.mainloop_material(ev,I62);\n";
-    //res+="MT I773=ev.materials_api.m_def(ev);\n"
-    res+="MT I774=ev.materials_api.phong(ev,I772,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
-    res+="MT I775=ev.materials_api.combine_materials(ev,I774,I774);\n"
-    res+="ML I63=ev.materials_api.bind(I771,I775);\n";
+    res+="ML I63=ev.materials_api.bind(I771,I772);\n";
 
 
 res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
