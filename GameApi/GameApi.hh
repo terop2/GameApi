@@ -422,7 +422,7 @@ public:
   IMPORT HML emscripten_frame2_P(EveryApi &ev, P p, std::string homepage);
   IMPORT HML emscripten_frame2_MN(EveryApi &ev, MN mn, std::string homepage);
   IMPORT HML emscripten_frame2_MT(EveryApi &ev, MT mt, std::string homepage);
-  IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="3d, the next level technogies to the web", bool vr_init=false);
+  IMPORT void init_window(int screen_width = 800, int screen_height=600, std::string window_title="meshpage.org -- the next technology level for web", bool vr_init=false);
   IMPORT void init(SH sh, int screen_width = 800, int screen_height = 600);
   IMPORT void init_3d(SH sh, int screen_width = 800, int screen_heigth = 600);
   IMPORT void nvidia_init();
