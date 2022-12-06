@@ -2809,6 +2809,11 @@ class TexCoordPlane : public ForwardFaceCollection
 {
 public:
   TexCoordPlane(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
   void HeavyPrepare()
   {
     find_bounding_box();
