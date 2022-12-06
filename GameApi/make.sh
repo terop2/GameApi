@@ -1,1 +1,1 @@
-nice make -j 8
+nice make -j 2
