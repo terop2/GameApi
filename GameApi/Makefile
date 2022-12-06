@@ -69,8 +69,8 @@ Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation
 
-CCFLAGS = -m64 -std=c++17 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
-CC2FLAGS = -m64 -std=c++17 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
+CCFLAGS = -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
+CC2FLAGS = -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -79,7 +79,7 @@ default: libGameApi.so
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD    libGameApi.so"
-	@$(CC) -m64 -rdynamic -shared -g $(OFiles) -std=c++17 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@$(CC) -m64 -rdynamic -shared -g $(OFiles) -std=c++20 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
 
 #`pkg-config gtkmm-2.4 --libs` 
 
@@ -106,7 +106,7 @@ CCWIN = i586-mingw32msvc-g++
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC    $@"
-	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 touch_all:
 	touch GameApi_gui_1.cc

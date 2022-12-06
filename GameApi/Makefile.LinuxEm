@@ -107,8 +107,8 @@ SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
 #-fno-exceptions
 CFLAGS =  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion 
-CCFLAGS = -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -std=c++17 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion 
-CC2FLAGS =  -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++17 -Wall $(nowarns) -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2)
+CCFLAGS = -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -O3 -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion 
+CC2FLAGS =  -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -O3 -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2)
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
@@ -125,7 +125,7 @@ examples: main
 
 main: $(OFiles_examples) Makefile GameApi.hh libGameApi.so
 	@echo g++ main
-	@g++ $(OFiles_examples) -std=c++11 -o main -L. -lGameApi -lGL -lm -lstdc++
+	@g++ $(OFiles_examples) -std=c++20 -o main -L. -lGameApi -lGL -lm -lstdc++
 
 main.exe: $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 	@echo mingw main.exe
@@ -142,7 +142,7 @@ libGameApi_nothreads.bc: $(O2Files_nothreads) $(OFiles_nothreads) $(OOFiles_noth
 
 libGameApi.so: $(OFiles) Makefile
 	@echo g++ libGameApi.so
-	@g++ -shared $(OFiles) -std=c++0x -o libGameApi.so -lSDL2 -lGL -lGLEW -lfreetype -lstdc++ 
+	@g++ -shared $(OFiles) -std=c++20 -o libGameApi.so -lSDL2 -lGL -lGLEW -lfreetype -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o
@@ -210,11 +210,11 @@ glew.o:
 
 
 $(OFiles_examples): objs/%.bc : %.cc GameApi.hh
-	$(CC) -std=c++0x -c -I. $(CCFLAGS) $< -o $@ 
+	$(CC) -std=c++20 -c -I. $(CCFLAGS) $< -o $@ 
 
 $(O2Files_examples): objs/%.bc : %.cc GameApi.hh
 	@echo mingw $<
-	$(CCWIN) -std=c++0x -c -I. $(CC2FLAGS) $< -o $@ 
+	$(CCWIN) -std=c++20 -c -I. $(CC2FLAGS) $< -o $@ 
 
 
 #$(GCHFiles): objs/%.hh.gch : %.hh
