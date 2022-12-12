@@ -461,6 +461,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "P", "MT" },
 			 { "", "" },
 			 "ML", "materials_api", "bind"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::m_bind_many,
+			 "m_bind_many",
+			 { "ev", "vec", "mats", "ticks" },
+			 { "EveryApi&", "[P]", "[MT]", "int" },
+			 { "ev", "", "", "16" },
+			 "ML", "materials_api", "m_bind_many"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst,
 			 "m_bind_inst",
 			 { "p", "pts", "mat" },

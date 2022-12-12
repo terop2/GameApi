@@ -7941,6 +7941,8 @@ public:
 	ev.shader_api.set_var(sh, "texsampler[7]", 10);
 
 #endif
+	//std::cout << tex0 << " " << tex1 << " " << tex2<< " " << tex3<< " " << tex4<< " " << tex5 << std::endl;
+	
 	int count = 0;
 	if (tex0) ev.shader_api.set_var(sh, "texsampler[0]", count);
 	if (tex0) count++;
@@ -12155,6 +12157,15 @@ EXPORT GameApi::LI GameApi::LinesApi::alt(std::vector<LI> v, int index)
   if (v.size()==0) return li_empty();
   int s = v.size();
   if (index<0 ||index>=s) return li_empty();
+  return v[index];
+}
+
+
+EXPORT GameApi::MT GameApi::MaterialsApi::mt_alt(EveryApi &ev, std::vector<MT> v, int index)
+{
+  if (v.size()==0) return mt_empty(ev);
+  int s = v.size();
+  if (index<0 ||index>=s) return mt_empty(ev);
   return v[index];
 }
 
@@ -18189,11 +18200,33 @@ GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> v
   for(int i=0;i<s;i++) {
     MT mat = materials[i];
     MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
-    vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, mat2));
+    vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, mat));
   }
   GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
   return ml;
 }
+
+
+GameApi::ML GameApi::PolygonApi::m_bind_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, int max_ticks)
+{
+  static int ii=0;
+  ii++;
+  int s = std::min(vec.size(),materials.size());
+  ProgressMatData *counter = new ProgressMatData;
+  counter->counter=0;
+  counter->s = s;
+  counter->ii = ii;
+  std::vector<ML> vec2;
+  //std::cout << "m_bind_inst_many count=" << s << std::endl;
+  for(int i=0;i<s;i++) {
+    MT mat = materials[i];
+    MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
+    vec2.push_back(ev.materials_api.bind(vec[i], mat));
+  }
+  GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
+  return ml;
+}
+
 
 
  class SceneDesc : public MainLoopItem

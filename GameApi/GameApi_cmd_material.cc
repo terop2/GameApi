@@ -171,13 +171,20 @@
 			 "SFO", "sh_api", "v_render"));
 #endif
 
-
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::m_def,
 			 "m_def",
 			 { "ev" },
 			 { "EveryApi&" },
 			 { "ev" },
 			 "MT", "materials_api", "m_def"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mt_alt,
+			 "m_alt",
+			 { "ev", "vec", "index" },
+			 { "EveryApi&", "[MT]", "int" },
+			 { "ev", "", "0" },
+			 "MT", "materials_api", "mt_alt"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mainloop_material,
 			 "m_ml",
 			 { "ev", "ml" },
