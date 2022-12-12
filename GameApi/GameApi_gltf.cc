@@ -2030,6 +2030,7 @@ public:
   GameApi::BM texture(int i) const {
     print_extension_map();
     if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
+      //std::cout << "Bad material: i=" << i << " material_id=" << material_id << " has_texture(i)=" << has_texture(i) <<std::endl; 
       return ev.bitmap_api.newbitmap(1,1,0xffffffff);
     }
     const tinygltf::Material &m = interface->get_material(material_id);
@@ -2056,6 +2057,7 @@ public:
     };
   }
   bool has_texture(int i) const {
+    //std::cout << "has_texture materia_id=" << material_id << "<" << interface->materials_size() <<std::endl;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       return false;
     }
@@ -3552,8 +3554,11 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
 }
 
 GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
+GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i) );
 
 GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
+
+GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i));
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix);
@@ -3687,6 +3692,125 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   */
   return array;
 }
+
+
+GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i), bool translate)
+{
+  //if (!load2) load2 = load;
+  int s2 = interface->nodes_size(); //load->model.nodes.size();
+  if (!(node_id>=0 && node_id<s2))
+    {
+      //std::cout << "Empty node" << std::endl;
+      ArrayType *t = new ArrayType;
+      t->type=0;
+      t->vec=std::vector<int>();
+      return add_array(e,t);
+    }
+  // HERE WE HAVE NOT CALLED PREPARE?
+  const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
+
+  // Load mesh
+  int ss = interface->skins_size(); //load->model.skins.size();
+  bool done = false;
+  GameApi::ARR mesh;
+  for(int i=0;i<ss;i++) {
+    if (interface->get_skin(i).skeleton != -1)
+      {
+	int mesh_id = node.mesh;
+	mesh.id = -1;
+	if (mesh_id != -1) {
+	  mesh = gltf_mesh2_with_skeleton_p_arr(e,ev,interface, mesh_id, i,keys,fptr_skeleton);
+	  done = true;
+	}
+	if (done)
+	  break;
+      }
+    
+  }
+  if (!done) {
+    int mesh_id = node.mesh;
+    mesh.id = -1;
+    if (mesh_id!=-1) {
+      mesh = gltf_mesh2_p_arr( e, ev, interface, mesh_id, 0, keys,fptr_mesh);
+    }
+  }
+  // todo cameras
+
+  ArrayType *res_t = find_array(e,mesh);
+  if (!res_t||mesh.id==-1) {
+      res_t = new ArrayType;
+      res_t->type=0;
+      res_t->vec=std::vector<int>();
+  }
+  // recurse children
+  int s = node.children.size();
+  std::vector<GameApi::P> vec;
+  for(int i=0;i<s;i++) {
+    int child_id = node.children[i];
+    if (child_id!=-1) {
+      GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, child_id,keys,fptr_skeleton,fptr_mesh,translate);
+      ArrayType *t = find_array(e,ml);
+      int s3 = t->vec.size();
+      for(int j=0;j<s3;j++) {
+	res_t->vec.push_back(t->vec[j]);
+      }
+    }
+  }
+  if (mesh.id != -1) {
+    //ArrayType *t = find_array(e, mesh);
+    //int s = t->vec.size();
+    //for(int i=0;i<s;i++) res_t->vec.push_back(t->vec[i]);
+    //if (translate)
+    //  res_t->vec.push_back(mesh.id);
+    //else
+    //  res_t->vec.push_back(-1 );
+  }
+
+  int s4 = res_t->vec.size();
+  for(int i=0;i<s4;i++) {
+    GameApi::P array;
+    array.id = res_t->vec[i];
+    //std::cout << translate << " " << array.id << std::endl;
+    if (translate) {
+  if (int(node.scale.size())==3) {
+    double s_x = node.scale[0];
+    double s_y = node.scale[1];
+    double s_z = node.scale[2];
+    array = ev.polygon_api.scale(array, s_x,s_y,s_z);
+  }
+  if (int(node.rotation.size())==4) {
+    double r_x = node.rotation[0];
+    double r_y = node.rotation[1];
+    double r_z = node.rotation[2];
+    double r_w = node.rotation[3];
+    Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
+    Matrix m = Quarternion::QuarToMatrix(q);
+    GameApi::M mm = add_matrix2(e,m);
+    array = ev.polygon_api.matrix(array,mm);
+    }
+  if (int(node.translation.size())==3) {
+    double m_x = node.translation[0];
+    double m_y = node.translation[1];
+    double m_z = node.translation[2];
+    array=ev.polygon_api.translate(array,m_x,m_y,m_z);
+  }
+  if (int(node.matrix.size())==16) {
+    const double *arr = &node.matrix[0];
+    Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+
+      GameApi::M mm = add_matrix2(e,m);
+      array=ev.polygon_api.matrix(array,mm);
+  }
+    }
+  res_t->vec[i]=array.id;
+  }
+  
+
+  return add_array(e,res_t);
+}
+
 
 
 GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, float mix, Matrix root)
@@ -3834,6 +3958,37 @@ GameApi::P gltf_scene2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInter
 }
 
 
+GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys,int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i), bool translate )
+{
+  int s2 = interface->scenes_size(); //load->model.scenes.size();
+  if (!(scene_id>=0 && scene_id<s2))
+    {
+      //std::cout << "Empty scene" << std::endl;
+      ArrayType *array = new ArrayType;
+      array->type=0;
+      array->vec = std::vector<int>();
+      return add_array(e,array);
+    }
+  const tinygltf::Scene &scene = interface->get_scene(scene_id); //&load->model.scenes[scene_id];
+  int s = scene.nodes.size();
+  std::vector<int> vec;
+  for(int i=0;i<s;i++) {
+    GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, scene.nodes[i], keys, fptr_skeleton, fptr_mesh,translate);
+    ArrayType *array = find_array(e,ml);
+    int s2 = array->vec.size();
+    for(int j=0;j<s2;j++)
+      {
+	int id = array->vec[j];
+	vec.push_back(id);
+      }
+  }
+  ArrayType *array = new ArrayType;
+  array->type=0;
+  array->vec = vec;
+  return add_array(e,array);
+}
+
+
 GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
@@ -3871,6 +4026,48 @@ GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, G
     return empty;
   }
 }
+
+int arr_fetch_load(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i)
+{
+  GameApi::P p = gltf_load2(e,ev, interface, mesh_id, i);
+  return p.id;
+}
+int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i)
+{
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+  int mat = m.primitives[i].material;
+  GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
+      Material *mat0 = find_material(e,mat2);
+      GLTF_Material *mat3 = (GLTF_Material*)mat0;
+      GameApi::BM bm = mat3->texture(0); // basecolor
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2);
+  return mat4.id;
+}
+
+GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i))
+{
+  //g_last_resize=Matrix::Identity();
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
+    std::vector<int> mls;
+    for(int i=0;i<s;i++) {
+      //GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int id = fptr(e,ev,interface,mesh_id,i);
+      mls.push_back(id);
+    }
+    ArrayType *t = new ArrayType;
+    t->type=0;
+    t->vec = mls;
+    return add_array(e,t);
+  } else {
+    ArrayType *t = new ArrayType;
+    t->type=0;
+    t->vec = std::vector<int>();
+    return add_array(e,t);
+  }
+}
+
 
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix)
@@ -3925,6 +4122,33 @@ GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   }
 
 }
+
+GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i) )
+{
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
+    std::vector<int> mls;
+    for(int i=0;i<s;i++) {
+      //GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int id = fptr_mesh(e,ev,interface,mesh_id,i);
+      mls.push_back(id);
+    }
+    ArrayType *t = new ArrayType;
+    t->type=0;
+    t->vec = mls;
+    //GameApi::P ml = ev.polygon_api.or_array3( mls);
+    //return ml;
+    return add_array(e,t);
+  } else {
+    ArrayType *t = new ArrayType;
+    t->type=0;
+    t->vec = std::vector<int>();
+    return add_array(e,t);
+  }
+
+}
+
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix)
@@ -4517,6 +4741,348 @@ GameApi::P GameApi::MainLoopApi::gltf_mesh_all_p( GameApi::EveryApi &ev, TF mode
   GLTFModelInterface *interface = find_gltf(e,model0);
   return add_polygon2(e, new GltfMeshAllP(e,ev,interface),1);
 }
+
+class GltfMeshAllPArr : public FaceCollection
+{
+public:
+  GltfMeshAllPArr(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i) : env(env), ev(ev), interface(interface),i(i) { res.id=-1;}
+  virtual void Collect(CollectVisitor &vis) {
+    interface->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    if (firsttime) {
+      interface->Prepare();
+    std::string url = interface->Url();
+    bool is_binary=false;
+    if (int(url.size())>3) {
+      std::string sub = url.substr(url.size()-3);
+      if (sub=="glb") is_binary=true;
+    }
+    if (g_cache.find(interface)==g_cache.end())
+      {
+	int c = get_current_block();
+	set_current_block(-2);
+
+	int scene_id = interface->get_default_scene();
+	GameApi::ARR p = gltf_scene2_p_arr( env, ev, interface,scene_id,"", &arr_fetch_load, &arr_fetch_load,true);
+	ArrayType *t = find_array(env,p);
+	std::vector<GameApi::P> vv;
+	int ss2 = t->vec.size();
+	for(int i=0;i<ss2;i++) { GameApi::P p; p.id = t->vec[i]; if (p.id!=-1) vv.push_back(p); }
+	GameApi::P p2 = ev.polygon_api.or_array3(vv);
+	  //add_polygon2(env, new GltfMeshAllP(env, ev, interface ),1);
+	g_cache[interface]=p;
+	g_cache2[interface]=p2;
+	set_current_block(c);
+      }
+    GameApi::ARR p = g_cache[interface];
+    GameApi::P p2 = g_cache2[interface];
+    //std::cout << "TT:" << p.id << " " << p2.id << std::endl;
+    ArrayType *t = find_array(env,p);
+
+    //int s = t->vec.size();
+    //for(int k=0;k<s;k++) std::cout << t->vec[k] << ",";
+    //std::cout << std::endl;
+
+    
+    //std::cout << "TT:" << i << " " << t->vec.size() << std::endl;
+    if (i>=t->vec.size()) { std::cout << "PArr empty at "<< i << std::endl; return; }
+    GameApi::P p3;
+    p3.id = t->vec[i];
+    //std::cout << "CHOSEN: " <<i << " " << p3.id <<std::endl;
+    res = scale_to_gltf_size_p(env,ev,p2,p3);
+   
+    
+    if (res.id!=-1) {
+      FaceCollection *item = find_facecoll(env,res);
+      if (item)
+	item->Prepare();
+
+      //std::cout << "NUMFACES:" << item->NumFaces() << std::endl; 
+      //if (item->NumFaces()<4) { res.id=-1; }
+    }    //    Prepare();
+    }
+  }
+  virtual void Prepare() {
+    interface->Prepare();
+    HeavyPrepare();
+  }
+
+  virtual int NumFaces() const
+  {
+    if (res.id==-1) return 0;
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0;
+    return coll->NumFaces();
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (res.id==-1) return 0;
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0;
+    return coll->NumPoints(face);
+  }
+  virtual Point FacePoint(int face, int point) const {
+      if (point==0&&cache_0&&cache_face_0==face) { return cache_res_0; }
+      if (point==1&&cache_1&&cache_face_1==face) { return cache_res_1; }
+      if (point==2&&cache_2&&cache_face_2==face) { return cache_res_2; }
+      if (point==3&&cache_3&&cache_face_3==face) { return cache_res_3; }
+    if (res.id==-1) return Point(0.0,0.0,0.0);
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return Point(0.0,0.0,0.0);
+    Point p = coll->FacePoint(face,point);
+    if (point==0) { cache_res_0=p; cache_0=true; cache_face_0=face;}
+    if (point==1) { cache_res_1=p; cache_1=true; cache_face_1=face;}
+    if (point==2) { cache_res_2=p; cache_2=true; cache_face_2=face;}
+    if (point==3) { cache_res_3=p; cache_3=true; cache_face_3=face;}
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (res.id==-1) return Vector(0.0,0.0,0.0);
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return Vector(0.0,0.0,0.0);
+    return coll->PointNormal(face,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (res.id==-1) return 0.0;
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0.0;
+    return coll->Attrib(face,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (res.id==-1) return 0;
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0;
+    return coll->AttribI(face,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (res.id==-1) return 0xffffffff;
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0xffffffff;
+    return coll->Color(face,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (res.id==-1) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { Point2d p; p.x=0.0; p.y=0.0; return p; }
+    return coll->TexCoord(face,point);
+  }
+  virtual float TexCoord3(int face, int point) const
+  {
+    if (res.id==-1) return 0.0;
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0.0;
+    return coll->TexCoord3(face,point);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    if (res.id==-1) { VEC4 v; return v; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { VEC4 v; return v; }
+    return coll->Joints(face,point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    if (res.id==-1) { VEC4 v; return v; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { VEC4 v; return v; }
+    return coll->Weights(face,point);
+  }
+  virtual int NumObjects() const {
+    if (res.id==-1) return 0;
+
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) return 0;
+    return coll->NumObjects();
+  }
+  virtual std::pair<int,int> GetObject(int o) const {
+    if (res.id==-1) { return std::make_pair(0,0); }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { return std::make_pair(0,0); }
+    return coll->GetObject(o);
+  }
+  virtual int NumTextures() const {
+    if (res.id==-1) { return 0; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { return 0; }
+    return coll->NumTextures();
+  }
+  virtual void GenTexture(int num) {
+    if (res.id==-1) { return; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { return; }
+    return coll->GenTexture(num);
+
+  }
+  virtual BufferRef TextureBuf(int num) const {
+    if (res.id==-1) { BufferRef r; return r; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { BufferRef r; return r; }
+    return coll->TextureBuf(num);
+  }
+  virtual int FaceTexture(int face) const {
+    if (res.id==-1) { return 0; }
+    FaceCollection *coll = find_facecoll(env,res);
+    if (!coll) { return 0; }
+    return coll->FaceTexture(face);
+  }
+
+
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GLTFModelInterface *interface;
+  GameApi::P res;
+private:
+  mutable int cache_face_0=-1;
+  mutable int cache_face_1=-1;
+  mutable int cache_face_2=-1;
+  mutable int cache_face_3=-1;
+  mutable Point cache_res_0; mutable bool cache_0=false;
+  mutable Point cache_res_1; mutable bool cache_1=false;
+  mutable Point cache_res_2; mutable bool cache_2=false;
+  mutable Point cache_res_3; mutable bool cache_3=false;
+  int i;
+  static std::map<GLTFModelInterface*,GameApi::ARR> g_cache;
+  static std::map<GLTFModelInterface*,GameApi::P> g_cache2;
+  bool firsttime=true;
+};
+std::map<GLTFModelInterface*,GameApi::ARR> GltfMeshAllPArr::g_cache;
+std::map<GLTFModelInterface*,GameApi::P> GltfMeshAllPArr::g_cache2;
+
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_p_arr( GameApi::EveryApi &ev, TF model0)
+{
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  int s = 100;
+  ArrayType *t = new ArrayType;
+  t->type=0;
+  for(int i=0;i<s;i++)
+    {
+      t->vec.push_back(add_polygon2(e,new GltfMeshAllPArr(e,ev,interface,i),1).id);
+    }
+  return add_array(e,t);
+}
+
+class GltfMeshAllMatArr : public MaterialForward
+{
+public:
+  GltfMeshAllMatArr(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i, float mix) : e(e), ev(ev), interface(interface), i(i),mix(mix) { m_mat=0; firsttime=true; }
+  void create_mat() const
+  {
+    if (firsttime) {
+    if (g_cache.find(interface)==g_cache.end()) {
+	int c = get_current_block();
+	set_current_block(-2);
+      interface->Prepare();
+      int scene_id = interface->get_default_scene();
+      GameApi::ARR arr = gltf_scene2_p_arr(e,ev,interface,scene_id,"",&arr_fetch_material,&arr_fetch_material,false);
+      g_cache[interface]=arr;
+      set_current_block(c);
+    }
+    GameApi::ARR arr= g_cache[interface];
+    ArrayType *t = find_array(e,arr);
+
+    //int s = t->vec.size();
+    //for(int i=0;i<s;i++) std::cout << t->vec[i] << ",";
+    //std::cout << std::endl;
+
+    
+    if (i>=t->vec.size()) { /*std::cout << "MatArr empty at " << i << std::endl;*/  return; }
+    GameApi::MT mt;
+    if (t->vec[i]==-1) {
+      //mt.id = t->vec[i-1];
+      m_mat = 0; //find_material(e,mt); 
+    } else {
+      mt.id = t->vec[i];
+      m_mat = find_material(e,mt);
+    }
+    firsttime=false;
+    }
+  }
+
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    create_mat();
+    GameApi::ML ml = ev.mainloop_api.ml_empty();
+    if (m_mat)
+      ml.id=m_mat->mat(p.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    create_mat();
+    GameApi::ML ml = ev.mainloop_api.ml_empty();
+    if (m_mat)
+    ml.id=m_mat->mat_inst(p.id,pts.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    create_mat();
+    GameApi::ML ml = ev.mainloop_api.ml_empty();
+    if (m_mat)
+    ml.id = m_mat->mat_inst_matrix(p.id,ms.id);
+    return ml;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    create_mat();
+    GameApi::ML ml = ev.mainloop_api.ml_empty();
+    if (m_mat)
+    ml.id = m_mat->mat_inst2(p.id,pta.id);
+    return ml;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const { }
+
+  
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GLTFModelInterface *interface;
+  int i;
+  static std::map<GLTFModelInterface*,GameApi::ARR> g_cache;
+  mutable Material *m_mat;
+  float mix;
+  mutable bool firsttime;
+};
+std::map<GLTFModelInterface*,GameApi::ARR> GltfMeshAllMatArr::g_cache;
+
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_mt_arr( GameApi::EveryApi &ev, TF model0, float mix )
+{
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  int s = 200;
+  ArrayType *t = new ArrayType;
+  t->type=0;
+  for(int i=0;i<s;i++)
+    {
+      t->vec.push_back(add_material(e,new GltfMeshAllMatArr(e,ev,interface,i,mix)).id);
+    }
+  return add_array(e,t);
+}
+
+class EmptyMainLoop : public MainLoopItem
+{
+public:
+    virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+};
+
+GameApi::ML GameApi::MainLoopApi::ml_empty()
+{
+  return add_main_loop(e,new EmptyMainLoop);
+}
+
 
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model0, float mix )
 {

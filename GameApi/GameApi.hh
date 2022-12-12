@@ -328,7 +328,10 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML ml_empty();
   P gltf_mesh_all_p(GameApi::EveryApi&ev, TF model0);
+  ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0);
+  ARR gltf_mesh_all_mt_arr( EveryApi &ev, TF model0, float mix);
   MT mainloop_material(EveryApi &ev, ML ml);
   TF glb_load_sketchfab_zip(std::string url_to_zip);
   TF gltf_load_sketchfab_zip(std::string url_to_zip);

@@ -6,7 +6,7 @@ $assetsite = "https://tpgames.org";
 <!DOCTYPE html>
 <html id="html">
 <head>
-<title>meshpage.org&reg; -- are you ready to bring the web to next level?</title>
+<title>meshpage.org&reg; -- are you ready to bring the web to the next level technologies?</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
@@ -439,7 +439,7 @@ $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
 echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
-page_title("meshpage.org&reg;", "groundbreaking way to bring the web to next level: 3d.");
+page_title("meshpage.org&reg;", "groundbreaking way to bring the next level technologies to the web: 3d.");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;

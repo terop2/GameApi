@@ -318,6 +318,12 @@
 			 { "EveryApi&", "TF", "int", "float" }, 
 			 { "ev", "", "0", "1.0" },
 			 "MT", "materials_api", "gltf_material"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_mt_arr,
+			 "m_gltf_arr",
+			 { "ev", "tf", "mix" },
+			 { "EveryApi&", "TF", "float" },
+			 { "ev", "", "1.0" },
+			 "[MT]", "materials_api", "gltf_mesh_all_mt_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
 			 "m_gltf_env",
 			 { "ev", "tf", "material_id", "mix", "diffuse", "specular", "bfrd" },
