@@ -147,6 +147,41 @@ public:
 };
 
 
+class EmptyMaterial : public MaterialForward
+{
+public:
+  EmptyMaterial(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+private:
+  GameApi::EveryApi &ev;
+};
+
+EXPORT GameApi::MT GameApi::MaterialsApi::mt_empty(EveryApi &ev)
+{
+  return add_material(e,new EmptyMaterial(ev));
+}
+
+
 #ifndef FIRST
 #ifndef SECOND
 #ifndef THIRD
@@ -4574,6 +4609,8 @@ private:
   GameApi::BM bm;
   Material *next;
 };
+
+
 
 GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT next)
 {

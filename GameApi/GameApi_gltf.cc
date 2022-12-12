@@ -2057,11 +2057,11 @@ public:
     };
   }
   bool has_texture(int i) const {
-    //std::cout << "has_texture materia_id=" << material_id << "<" << interface->materials_size() <<std::endl;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       return false;
     }
     const tinygltf::Material &m = interface->get_material(material_id);
+    //std::cout << "has_texture " << i << " materia_id=" << material_id << "<" << interface->materials_size() << " " << get_spec() << " " << get_specglossi_index() << " " << get_sheen() << " " << get_sheen_index() << " " << m.pbrMetallicRoughness.baseColorTexture.index <<std::endl;
     switch(i) {
     case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1||(get_spec() && get_specglossi_index()!=-1)||(get_sheen() &&get_sheen_index()!=-1);
     case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1||(get_spec()&&get_diffuse_index()!=-1);
@@ -3736,6 +3736,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
   }
   // todo cameras
 
+  ArrayType *res_t2 = new ArrayType;
   ArrayType *res_t = find_array(e,mesh);
   if (!res_t||mesh.id==-1) {
       res_t = new ArrayType;
@@ -3752,24 +3753,24 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
       ArrayType *t = find_array(e,ml);
       int s3 = t->vec.size();
       for(int j=0;j<s3;j++) {
-	res_t->vec.push_back(t->vec[j]);
+	res_t2->vec.push_back(t->vec[j]);
       }
     }
   }
   if (mesh.id != -1) {
-    //ArrayType *t = find_array(e, mesh);
-    //int s = t->vec.size();
-    //for(int i=0;i<s;i++) res_t->vec.push_back(t->vec[i]);
+    ArrayType *t = find_array(e, mesh);
+    int s = res_t->vec.size();
+    for(int i=0;i<s;i++) res_t2->vec.push_back(res_t->vec[i]);
     //if (translate)
     //  res_t->vec.push_back(mesh.id);
     //else
     //  res_t->vec.push_back(-1 );
   }
 
-  int s4 = res_t->vec.size();
+  int s4 = res_t2->vec.size();
   for(int i=0;i<s4;i++) {
     GameApi::P array;
-    array.id = res_t->vec[i];
+    array.id = res_t2->vec[i];
     //std::cout << translate << " " << array.id << std::endl;
     if (translate) {
   if (int(node.scale.size())==3) {
@@ -3804,11 +3805,11 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
       array=ev.polygon_api.matrix(array,mm);
   }
     }
-  res_t->vec[i]=array.id;
+  res_t2->vec[i]=array.id;
   }
   
 
-  return add_array(e,res_t);
+  return add_array(e,res_t2);
 }
 
 
@@ -4995,6 +4996,7 @@ public:
     if (i>=t->vec.size()) { /*std::cout << "MatArr empty at " << i << std::endl;*/  return; }
     GameApi::MT mt;
     if (t->vec[i]==-1) {
+      std::cout << "ERROR" << std::endl;
       //mt.id = t->vec[i-1];
       m_mat = 0; //find_material(e,mt); 
     } else {
