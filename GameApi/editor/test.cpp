@@ -42,6 +42,12 @@ extern "C" void _udev_device_get_action() { }
 #endif
 
 
+extern std::vector<void (*)(void*)> g_transparent_callback_objs;
+extern std::vector<void*> g_transparent_callback_params;
+extern std::vector<int> g_transparent_callback_ids;
+extern std::vector<float> g_transparent_pos;
+
+
 bool event_lock=true;
 float event_lock_time=0.0;
 extern GameApi::W enum_popup;
@@ -1069,6 +1075,15 @@ public:
 	      {
 		//std::cout << "Execute for uid: " << uid << std::endl;
 		env->env->free_temp_memory();
+
+
+		// remove transparent callbacks if they're still here.
+		// this can happen if part of the graph that contains
+		// transparent stuff is not deleted properly.
+		g_transparent_callback_objs.clear();
+		g_transparent_callback_params.clear();
+		g_transparent_callback_ids.clear();
+		g_transparent_pos.clear();
 		// Execute
 		//InstallProgress(933, "Execute", 15);
 		//ProgressBar(933, 0,15, "Execute");

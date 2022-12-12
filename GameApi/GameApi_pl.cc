@@ -4198,7 +4198,7 @@ GameApi::P GameApi::PolygonApi::matrix(P orig, M mat)
   FaceCollection *c = find_facecoll(e, orig);
   //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   //env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  if (!c) { return p_empty(); }
   FaceCollection *coll = new MatrixElem(*c, mat2);
   return add_polygon2(e, coll,1);
 
@@ -4209,7 +4209,7 @@ GameApi::P GameApi::PolygonApi::translate_1(P orig, float dx, float dy, float dz
   FaceCollection *c = find_facecoll(e, orig);
   //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   //env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  if (!c) { std::cout << "dynamic cast failed" << orig.id << std::endl; }
   FaceCollection *coll = new MatrixElem(*c, Matrix::Translate(dx,dy,dz));
   return add_polygon2(e, coll,1);
 }
@@ -4220,7 +4220,7 @@ EXPORT GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
   FaceCollection *c = find_facecoll(e, orig);
   //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   //env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  if (!c) { std::cout << "dynamic cast failed" << orig.id << std::endl; }
   FaceCollection *coll = new MatrixElem(*c, Matrix::XRotation(angle));
   return add_polygon(e, coll,1);
 }
@@ -5672,7 +5672,9 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
-{ 
+{
+  
+  
   if (keep) {
     //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
@@ -5755,7 +5757,22 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     faces->Prepare();
     
     ThreadedPrepare prep(faces);  
-    int s = faces->NumFaces();   
+    int s = faces->NumFaces();
+    if (s==0) {
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    VertexArraySet *s = new VertexArraySet;
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    arr.copy(0,faces->NumFaces());  
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr2->prepare(0);
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+
+    }
+    
     //std::cout << "NumFaces: " << s << std::endl;
     if (s<100) { num_threads=1; }
     int delta_s = s/num_threads+1;

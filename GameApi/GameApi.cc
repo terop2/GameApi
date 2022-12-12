@@ -3839,7 +3839,7 @@ public:
     return 1; }
   void HeavyPrepare() {
     current_i++;
-    std::cout << "HeavyPrepare " << current_i << std::endl;
+    //std::cout << "HeavyPrepare " << current_i << std::endl;
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();    
   }
   void Prepare() { coll->Prepare(); }
@@ -4094,7 +4094,7 @@ public:
     return 1; }
   void HeavyPrepare() {
     current_i++;
-    std::cout << "HeavyPrepare " << current_i << std::endl;
+    //std::cout << "HeavyPrepare " << current_i << std::endl;
     const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();    
   }
   void Prepare() { coll->Prepare(); }
@@ -7993,6 +7993,7 @@ public:
   }
   virtual void Prepare()
   {
+    FaceCollection *coll = find_facecoll(env,p);
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
