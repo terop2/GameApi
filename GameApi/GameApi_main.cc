@@ -1255,9 +1255,30 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   SDL_Keymod mod = g_low->sdl->SDL_GetModState();
   if ((val & Low_SDL_BUTTON(1))&&(mod & Low_KMOD_CTRL)) { e2.button = 2; } else
 #endif  	  
-  if (val & Low_SDL_BUTTON(1)) { e2.button = 0; }
-  if (val & Low_SDL_BUTTON(2)) { e2.button = 1; }
-  if (val & Low_SDL_BUTTON(3)) { e2.button = 2; }
+    //if (val & Low_SDL_BUTTON(1)) { e2.button = 0; }
+    //if (val & Low_SDL_BUTTON(2)) { e2.button = 1; }
+    //if (val & Low_SDL_BUTTON(3)) { e2.button = 2; }
+
+    static bool button0=false,button1=false,button2=false;
+    
+    if (event.type==Low_SDL_MOUSEBUTTONDOWN)
+      {
+	if (event.button.button==1) button0=true;
+	if (event.button.button==2) button1=true;
+	if (event.button.button==3) button2=true;
+      }
+  if (event.type==Low_SDL_MOUSEBUTTONUP)
+    {
+	if (event.button.button==1) button0=false;
+	if (event.button.button==2) button1=false;
+	if (event.button.button==3) button2=false;
+    }
+  if (button0) e2.button=0;
+  if (button1) e2.button=1;
+  if (button2) e2.button=2;
+  
+  
+
   static Low_SDL_Joystick *joy1 = g_low->sdl->SDL_JoystickOpen(0);
   //std::cout << "Joystick0:" << joy1 << std::endl;
   unsigned int but1 = g_low->sdl->SDL_JoystickGetButton(joy1, 0);  

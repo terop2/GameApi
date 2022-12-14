@@ -510,6 +510,8 @@ enum
 #define Low_SDL_JOYBALLMOTION 0x601
 #define Low_SDL_JOYBUTTONDOWN 0x603
 #define Low_SDL_JOYBUTTONUP 0x604
+#define Low_SDL_MOUSEBUTTONDOWN 0x401
+#define Low_SDL_MOUSEBUTTONUP 0x402
 
 #define Low_SDL_WINDOWEVENT_EXPOSED 3
 
@@ -543,6 +545,10 @@ struct Low_SDL_Event_Key
 struct Low_SDL_MouseWheelEvent
 {
   int y;
+};
+struct Low_SDL_MouseButtonEvent
+{
+  int button;
 };
 struct Low_SDL_DropEvent
 {
@@ -586,6 +592,7 @@ struct Low_SDL_Event
   Low_SDL_JoyBall jball;
   Low_SDL_JoyAxis jaxis;
   Low_SDL_JoyButton jbutton;
+  Low_SDL_MouseButtonEvent button;
 };
 
 struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
