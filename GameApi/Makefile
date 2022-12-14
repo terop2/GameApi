@@ -69,8 +69,8 @@ Subdirsx = $(patsubst %,%build,$(Subdirs))
 
 WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation
 
-CCFLAGS = -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
-CC2FLAGS = -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) 
+CCFLAGS = -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -Ofast
+CC2FLAGS = -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -Ofast
 #`pkg-config gtkmm-2.4 --cflags`
 
 

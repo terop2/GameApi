@@ -1170,6 +1170,10 @@ class SDLApi : public SDLLowApi
     if (e.type==SDL_DROPFILE)
       event->drop.file = e.drop.file;
 #endif
+    if (e.type==SDL_MOUSEBUTTONDOWN || e.type==SDL_MOUSEBUTTONUP)
+      {
+	event->button.button = e.button.button;
+      }
     if (e.type==SDL_WINDOWEVENT)
       {
 	event->window.event = e.window.event;
