@@ -3670,12 +3670,13 @@ EXPORT GameApi::W GameApi::GuiApi::polygon_dialog(P p, SH sh, int screen_size_x,
 {
   int w = 800;
   int h = 600;
+  /*
   if (g_event_screen_y!=-1) {
     float scale_x = float(g_event_screen_x)/float(screen_size_x);
     float scale_y = float(g_event_screen_y)/float(screen_size_y);
     w*=scale_x;
     h*=scale_y;
-  }
+    }*/
   W bm_1 = poly(p, sh, w,h, screen_size_x,screen_size_y);
   mem = bm_1;
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -3726,13 +3727,14 @@ EXPORT GameApi::W GameApi::GuiApi::va_dialog(VA p, SH sh, int screen_size_x, int
 {
   int w = 800;
   int h = 600;
+  /*
   if (g_event_screen_y!=-1) {
     float scale_x = float(g_event_screen_x)/float(screen_size_x);
     float scale_y = float(g_event_screen_y)/float(screen_size_y);
     w*=scale_x;
     h*=scale_y;
   }
-
+  */
   W bm_1 = va(p, sh, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
@@ -3768,13 +3770,14 @@ EXPORT GameApi::W GameApi::GuiApi::ml_dialog(ML p, SH sh, SH sh2, SH sh_2d, SH s
 {
   int w = 800;
   int h = 600;
+  /*
   if (g_event_screen_y!=-1) {
     float scale_x = float(g_event_screen_x)/float(screen_size_x);
     float scale_y = float(g_event_screen_y)/float(screen_size_y);
     w*=scale_x;
     h*=scale_y;
   }
-
+  */
 
   W bm_1 = ml(p, sh, sh2, sh_2d, sh_arr, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -3814,13 +3817,14 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
 {
   int w = 800;
   int h = 600;
+  /*
   if (g_event_screen_y!=-1) {
     float scale_x = float(g_event_screen_x)/float(screen_x);
     float scale_y = float(g_event_screen_y)/float(screen_y);
     w*=scale_x;
     h*=scale_y;
   }
-
+  */
 
   W bm_1 = shader_plane(p, w,h*h/w, screen_x, screen_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
@@ -3891,13 +3895,14 @@ EXPORT GameApi::W GameApi::GuiApi::lines_dialog(LI p, SH sh, int screen_size_x, 
 {
   int w = 800;
   int h = 600;
+  /*
   if (g_event_screen_y!=-1) {
     float scale_x = float(g_event_screen_x)/float(screen_size_x);
     float scale_y = float(g_event_screen_y)/float(screen_size_y);
     w*=scale_x;
     h*=scale_y;
   }
-
+  */
   W bm_1 = lines(p, sh, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
@@ -3933,13 +3938,14 @@ EXPORT GameApi::W GameApi::GuiApi::pts_dialog(PTS p, SH sh, int screen_size_x, i
 {
   int w = 800;
   int h = 600;
+  /*
   if (g_event_screen_y!=-1) {
     float scale_x = float(g_event_screen_x)/float(screen_size_x);
     float scale_y = float(g_event_screen_y)/float(screen_size_y);
     w*=scale_x;
     h*=scale_y;
   }
-
+  */
   W bm_1 = pts(p, sh, w,h, screen_size_x,screen_size_y);
   W bm_2 = margin(bm_1, 10,10,10,10);
   W bm_3 = button(size_x(bm_2), size_y(bm_2), c_dialog_1, c_dialog_1_2);
