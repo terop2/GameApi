@@ -758,6 +758,48 @@ EXPORT void GameApi::Env::async_scheduler()
   env->async_scheduler();
 }
 
+struct DeleterItem
+{
+  int id;
+  void (*fptr)(void*);
+  void *data;
+};
+
+std::vector<DeleterItem> g_cache_deleter;
+
+EXPORT int register_cache_deleter(void (*fptr)(void*), void *data)
+{
+  static int ids=0;
+  ids++;
+  DeleterItem i;
+  i.id=ids;
+  i.fptr=fptr;
+  i.data=data;
+  g_cache_deleter.push_back(i);
+  return i.id;
+}
+EXPORT void unregister_cache_deleter(int id)
+{
+  int s=g_cache_deleter.size();
+  for(int i=0;i<s;i++)
+    {
+      DeleterItem &ii = g_cache_deleter[i];
+      if (ii.id==id) {
+	g_cache_deleter.erase(g_cache_deleter.begin()+i);
+	return;
+      }
+    }
+}
+EXPORT void clear_all_caches()
+{
+  int s=g_cache_deleter.size();
+  for(int i=0;i<s;i++)
+    {
+      DeleterItem &ii = g_cache_deleter[i];
+      ii.fptr(ii.data);
+    }
+}
+
 //EXPORT std::vector<unsigned char> *GameApi::Env::get_download_bar_item(int i) const
 //{
 //  ::EnvImpl *env = (::EnvImpl*)envimpl;
@@ -833,6 +875,19 @@ struct del_map
   std::map<std::string, const std::vector<unsigned char>* > load_url_buffers_async;
 };
 del_map g_del_map;
+bool g_del_map_deleter_installed=false;
+
+void delmap_cache_deleter(void *)
+{
+  std::map<std::string,const std::vector<unsigned char>* >::iterator i = g_del_map.load_url_buffers_async.begin();
+  for(;i!=g_del_map.load_url_buffers_async.end();i++)
+    {
+      std::pair<std::string, const std::vector<unsigned char>*> p = *i;
+      delete p.second;
+    }
+  g_del_map.load_url_buffers_async.clear();
+}
+
 
 struct ASyncCallback { void (*fptr)(void*); void *data; };
 struct ASyncCallback2 { std::string url; ASyncCallback *cb; };
@@ -932,6 +987,11 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
   // THIS WAS url_only, but seems to have not worked.
   //std::cout << "g_del_map " << url_only << " = " << (int)buffer << std::endl;
   //std::cout << "g_del_map add url: " << url_only << std::endl;
+    if (!g_del_map_deleter_installed)
+      {
+	g_del_map_deleter_installed=true;
+	register_cache_deleter(delmap_cache_deleter,0);
+      }
   g_del_map.load_url_buffers_async[url_only] = buffer;
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
@@ -1062,6 +1122,7 @@ void* process(void *ptr)
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
+
   g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
   //pthread_exit(0);
   return 0;
@@ -1403,7 +1464,12 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
 	std::string url_only = "load_url.php?url=" + url;
 
-	g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
+    if (!g_del_map_deleter_installed)
+      {
+	g_del_map_deleter_installed=true;
+	register_cache_deleter(delmap_cache_deleter,0);
+      }
+    g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
 	//std::cout << "g_del_map add url: " << url_only << std::endl;
 
 	//async_pending_count--;
@@ -1623,6 +1689,11 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     }
     //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
     //std::cout << "g_del_map add url(loadurls): " << url2 << std::endl;
+    if (!g_del_map_deleter_installed)
+      {
+	g_del_map_deleter_installed=true;
+	register_cache_deleter(delmap_cache_deleter,0);
+      }
     g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];

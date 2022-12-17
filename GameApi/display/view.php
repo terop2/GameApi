@@ -1216,7 +1216,8 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
     res+="ML I63=ev.materials_api.bind(I771,I772);\n";
 
 
-res+="ML I6=ev.mainloop_api.depthfunc(I63,0);\n";
+  res+="ML I64=ev.mainloop_api.depthmask(I63,true);\n";
+res+="ML I6=ev.mainloop_api.depthfunc(I64,0);\n";
  
   //console.log(material_value);
   //console.log(border_value);
@@ -1431,6 +1432,10 @@ var loading_data = 0;
 function load_finished(value)
 {
    //console.log("LOAD FINISHED");
+
+   // clear caches
+
+
    load_files(contents_array2,filename_array);
    load_emscripten(store.state,g_filename, contents_array, filename_array);
    set_label("Load finished..");
@@ -1695,7 +1700,10 @@ function load_emscripten(state,filename, contents, filenames)
 
 function load_files(data_array2, filename_array)
 {
-  //console.log(data_array);
+   // clear caches
+   Module.ccall('set_string', null, ['number', 'string'],[6,""]);
+
+//console.log(data_array);
   var s2 = data_array2.length;
   for(var i=0;i<s2;i++) {
     var data3 = data_array2[i];
