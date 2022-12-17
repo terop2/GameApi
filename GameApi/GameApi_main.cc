@@ -8,6 +8,9 @@
 
 #define NO_MV 1
 
+void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset);
+void play_midi(void *ptr);
+
 
 EXPORT GameApi::MainLoopApi::MainLoopApi(Env &e) : frame(0.0), time(0.0), e(e)  
 {
@@ -2935,14 +2938,14 @@ public:
 #endif
     if (firsttime) {
       // setup ogg can also play mp3s
-      ptr2 = ev.tracker_api.setup_midi(*vec,*vec2);
+      ptr2 = setup_midi(*vec,*vec2);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
       //int s = ptr->size();
       //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
       //ss.close();
       //#ifndef EMSCRIPTEN
       //ev.tracker_api.play_ogg("song.ogg");
-      ev.tracker_api.play_midi(ptr2);
+      play_midi(ptr2);
       //#else
 	// std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
       //#endif

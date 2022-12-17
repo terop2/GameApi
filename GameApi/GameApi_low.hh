@@ -497,7 +497,10 @@ enum
     Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT,
     Low_SDL_GL_MULTISAMPLESAMPLES,
     Low_SDL_GL_CONTEXT_FLAGS,
-    Low_SDL_GL_CONTEXT_DEBUG_FLAG
+    Low_SDL_GL_CONTEXT_DEBUG_FLAG,
+    Low_SAMPLE_FREQ,
+    Low_AUDIO_F32LSB,
+    Low_SAMPLE_BUF_SIZE
   };
 
 #define Low_SDL_FINGERDOWN 0x700
@@ -610,6 +613,20 @@ struct Low_SDL_RWops
   void *ptr;
 };
 
+typedef void (*Low_SDL_AudioCallback)(void*, unsigned char*, int);
+
+struct Low_SDL_AudioSpec
+{
+  int freq;
+  int format;
+  unsigned char channels;
+  unsigned char silence;
+  unsigned short samples;
+  unsigned int size;
+  Low_SDL_AudioCallback callback;
+  void *userdata;
+};
+
 class SDLLowApi
 {
 public:
@@ -657,6 +674,9 @@ public:
   virtual void SDL_GetWindowPosition(Low_SDL_Window *window, int *x, int *y)=0;
   virtual char *SDL_GetClipboardText()=0;
   virtual int SDL_SetClipboardText(const char *text)=0;
+  virtual int SDL_OpenAudio(Low_SDL_AudioSpec *desired,
+			    Low_SDL_AudioSpec *obtained)=0;
+  virtual void SDL_PauseAudio(int pause_on)=0;
 };
 
 struct Low_Mix_Chunk

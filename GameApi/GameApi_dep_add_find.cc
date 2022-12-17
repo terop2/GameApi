@@ -1393,6 +1393,19 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 }
+
+ICache *find_cache(GameApi::Env &e, GameApi::CX c)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->caches[c.id];  
+}
+
+IWorld *find_world(GameApi::Env &e, GameApi::W w)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->worlds[w.id];  
+}
+
 ScreenSpaceMaterial *find_screenspace_material(GameApi::Env &e, GameApi::SMT mat)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1920,6 +1933,24 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+GameApi::CX add_cache(GameApi::Env &e, ICache *c)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->caches.push_back(c);
+  GameApi::CX c2;
+  c2.id = env->caches.size()-1;
+  return c2;
+}
+
+GameApi::W add_world(GameApi::Env &e, IWorld *w)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->worlds.push_back(w);
+  GameApi::W c;
+  c.id = env->worlds.size()-1;
+  return c;
 }
 
 GameApi::SMT add_screenspace_material(GameApi::Env &e, ScreenSpaceMaterial *mat)

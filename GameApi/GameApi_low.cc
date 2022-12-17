@@ -159,7 +159,7 @@
 #undef glLoadIdentity
 #undef glTranslatef
 #undef glDrawBuffers
-
+#undef SDL_OpenAudio
 
 #undef Mix_PlayChannel
 #undef Mix_HaltChannel
@@ -184,6 +184,9 @@ void check_err(const char *name)
 
 void map_enums_sdl(unsigned int &i) {
   switch(i) {
+  case Low_SAMPLE_FREQ: i=SAMPLE_FREQ; break;
+  case Low_AUDIO_F32LSB: i=AUDIO_F32LSB; break;
+  case Low_SAMPLE_BUF_SIZE: i=SAMPLE_BUF_SIZE; break;
 
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
@@ -1123,6 +1126,35 @@ class SDLApi : public SDLLowApi
     ::SDL_GetCurrentDisplayMode(index, &m);
     mode->w = m.w;
     mode->h = m.h;
+  }
+  virtual void SDL_PauseAudio(int pause_on) {
+    ::SDL_PauseAudio(pause_on);
+  }
+  virtual int SDL_OpenAudio(Low_SDL_AudioSpec *desired,
+			    Low_SDL_AudioSpec *obtained)
+  {
+    int val = desired->format;
+    map_enums_sdl(val);
+    SDL_AudioSpec des;
+    SDL_AudioSpec obt;
+    des.freq = desired->freq;
+    des.format = val;
+    des.channels = desired->channels;
+    des.silence = desired->silence;
+    des.samples = desired->samples;
+    des.size = desired->size;
+    des.callback = desired->callback;
+    des.userdata = desired->userdata;
+    int val = ::SDL_OpenAudio(&des,&obt);
+    obtained->freq = obt.freq;
+    obtained->format = obt.format==AUDIO_F32_LSB?Low_AUDIO_F32_LSB:-1;
+    obtained->channels = obt.channels;
+    obtained->silence = obt.silence;
+    obtained->samples = obt.samples;
+    obtained->size = obt.size;
+    obtained->callback = obt.callback;
+    obtained->userdata = obt.userdata;
+    return val;
   }
 
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)

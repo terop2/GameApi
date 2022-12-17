@@ -1,9 +1,9 @@
 #include "GameApi_h.hh"
 #include <fstream>
 #include <ios>
-#include "MidiFile.h"
-#include "AudioService.h"
-#include "Patch.h"
+#include <MidiFile.h>
+#include <AudioService.h>
+#include <Patch.h>
 
 class EmptyTracker : public Tracker
 {
@@ -477,12 +477,12 @@ struct DATAPASS
 };
 
 
-void *GameApi::TrackerApi::setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset)
+void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset)
 {
   DATAPASS *pass = new DATAPASS;
   pass->data = &data;
   
-  std::string patch(patchset.begin(),patch.end());
+  std::string patch(patchset.begin(),patchset.end());
   std::stringstream ss(patch);
   
   sf::Patch::init();
@@ -490,42 +490,42 @@ void *GameApi::TrackerApi::setup_midi(const std::vector<unsigned char> &data, co
 
   pass->audio = sf::AudioService::getInstance();
   
-  SDL_AudioSpec asp, audiospec;
-  asp.freq = SAMPLE_FREQ;
-  asp.format = AUDIO_F32LSB;
+  Low_SDL_AudioSpec asp, audiospec;
+  asp.freq = Low_SAMPLE_FREQ;
+  asp.format = Low_AUDIO_F32LSB;
   asp.channels = 2;
-  asp.samples = SAMPLE_BUF_SIZE /8;
-  asp.callback = audio->renderSlice;
+  asp.samples = Low_SAMPLE_BUF_SIZE /8;
+  asp.callback = pass->audio->renderSlice;
   
   if (g_low->sdl->SDL_OpenAudio(&asp, &audiospec) < 0)
     {
-      std::cout << "Couldn't open SDL audio: %s\n", SDL_GetError());
+      std::cout << "Couldn't open SDL audio:" << g_low->sdl->SDL_GetError() << std::endl;
      return 0;
     }
- if (audiospec.format != AUDIO_F32LSB)
+ if (audiospec.format != Low_AUDIO_F32LSB)
    {
      return 0;
    }
   return (void*)pass;
 }
 
-void GameApi::TrackerApi::play_midi(void *ptr)
+void play_midi(void *ptr)
 {
   DATAPASS *pass = (DATAPASS*)ptr;
   if (!pass) return;
   
   mt = new std::thread(&sf::AudioService::midiServer, pass->audio);
-  MidiFile midifile;
+  smf::MidiFile midifile;
   std::string sk(pass->data->begin(),pass->data->end());
   std::stringstream ss(sk);
   midifile.read(ss);
 
-  int tpq = midifile.getTicksPerQuarterNode();
+  int tpq = midifile.getTicksPerQuarterNote();
   midifile.joinTracks();
 
   std::cout << "TICK  DELTA   TRACK   MIDI MESSAGE" << std::endl;
   std::cout << "__________________________________" << std::endl;
-  MidiEvent *mev;
+  smf::MidiEvent *mev;
   int deltatick;
   double tempo = 120.0*tpq/60.0;
   std::cout << "Frames/tick: " << (double)SAMPLE_FREQ/((double)tpq) << std::endl;
@@ -550,12 +550,12 @@ void GameApi::TrackerApi::play_midi(void *ptr)
 	  if (mev->isController()) {
 	    if ((*mev)[1]!=64) goto over;
 	  }
-	  m = new vector<uint8_t>;
+	  m = new std::vector<uint8_t>;
 	  for(int i=0;i<mev->size();i++)
 	    {
 	      m->push_back((uint8_t)(*mev)[i]);
 	    }
-	  audio->midiHandler(deltatick,m,nullptr);
+	  pass->audio->midiHandler(deltatick,m,nullptr);
 	over: ;
 	}
       else if (mev->isTempo())
