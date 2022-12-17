@@ -458,10 +458,14 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
-    return -Vector::CrossProduct(p2-p1,p3-p1);
+    Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -477,6 +481,8 @@ private:
   Point pos;
   Vector u_x;
   Vector u_y;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 EXPORT GameApi::P GameApi::PlaneApi::to_polygon_face(PL pl, PT pos, V u_x, V u_y)
 {
@@ -536,10 +542,14 @@ public:
 
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
-    return -Vector::CrossProduct(p2-p1,p3-p1);
+    Vector v= -Vector::CrossProduct(p2-p1,p3-p1);
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -556,6 +566,8 @@ private:
   Point pos;
   Vector u_x, u_y, u_z;
   float z_mult;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 EXPORT GameApi::P GameApi::PlaneApi::to_polygon(EveryApi &ev, PL pl, PT pos, V u_x, V u_y, V u_z, float z_mult)
 {

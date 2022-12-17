@@ -13,7 +13,7 @@ copy_it()
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
 	scp -o ControlPath=$SSHSOCKET terop@meshpage.org:/home/terop/html/meshpage.org/$1 ./build/
     else
-	if [ "$MACHINE" == "terop-pc" }; then
+	if [ "$MACHINE" == "terop-pc" ]; then
 	    cp /home/terop/html/meshpage.org/$1 ./build/
 	    echo "copying $1 to build directory"
 	else
