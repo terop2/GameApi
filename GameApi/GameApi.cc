@@ -149,6 +149,41 @@ public:
 };
 
 
+class EmptyMaterial : public MaterialForward
+{
+public:
+  EmptyMaterial(GameApi::EveryApi &ev) : ev(ev) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    return ev.mainloop_api.ml_empty();
+  }
+private:
+  GameApi::EveryApi &ev;
+};
+
+EXPORT GameApi::MT GameApi::MaterialsApi::mt_empty(EveryApi &ev)
+{
+  return add_material(e,new EmptyMaterial(ev));
+}
+
+
 #ifndef FIRST
 #ifndef SECOND
 #ifndef THIRD
@@ -3841,7 +3876,7 @@ public:
     return 1; }
   void HeavyPrepare() {
     current_i++;
-    std::cout << "HeavyPrepare " << current_i << std::endl;
+    //std::cout << "HeavyPrepare " << current_i << std::endl;
     const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();    
   }
   void Prepare() { coll->Prepare(); }
@@ -4096,7 +4131,7 @@ public:
     return 1; }
   void HeavyPrepare() {
     current_i++;
-    std::cout << "HeavyPrepare " << current_i << std::endl;
+    //std::cout << "HeavyPrepare " << current_i << std::endl;
     const_cast<TransparentSeparateFaceCollection2*>(this)->create_vec();    
   }
   void Prepare() { coll->Prepare(); }
@@ -4576,6 +4611,8 @@ private:
   GameApi::BM bm;
   Material *next;
 };
+
+
 
 GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT next)
 {
@@ -7995,6 +8032,7 @@ public:
   }
   virtual void Prepare()
   {
+    FaceCollection *coll = find_facecoll(env,p);
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);

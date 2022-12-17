@@ -37,6 +37,8 @@ EXPORT GameApi::VA GameApi::TextureApi::bind_cubemap(GameApi::VA va, GameApi::TX
 }
 EXPORT GameApi::VA GameApi::TextureApi::bind_many(GameApi::VA va, std::vector<GameApi::TXID> vec, std::vector<int> types)
 {
+  //std::cout << "bind_many: " << vec.size() << " " << types.size() << std::endl;
+  
   VertexArraySet *s = find_vertex_array(e, va);
   //RenderVertexArray *arr = find_vertex_array_render(e,va);
   VertexArraySet *ns = new VertexArraySet(*s);
@@ -219,7 +221,7 @@ GameApi::TXID find_txid(std::string label)
 
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels)
 {
-
+  //std::cout << "prepare many: " << vec.size() << " " << types.size() << " " << mipmaps << " " << id_labels.size() << std::endl;
   mipmaps = false;
   
   OpenglLowApi *ogl = g_low->ogl;

@@ -6,7 +6,7 @@ $assetsite = "https://tpgames.org";
 <!DOCTYPE html>
 <html id="html">
 <head>
-<title>meshpage.org&reg; -- are you ready to bring the web to next level?</title>
+<title>meshpage.org&reg; -- are you ready to bring the web to the next level technologies?</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
@@ -439,7 +439,7 @@ $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
 echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
-page_title("meshpage.org&reg;", "groundbreaking way to bring the web to next level: 3d.");
+page_title("meshpage.org&reg;", "groundbreaking way to bring the next level technologies to the web: 3d.");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -632,7 +632,8 @@ echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
-echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)";
+echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)<br>";
+echo "Source Code: <a href=\"https://tpgames.org/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
 echo "<br><br><br><hr><br><br><br>";
 echo "PRICES: <ul><li>&euro; 120: 3d model viewer,<br>";
 echo "            <li>&euro; 220: 3d model viewer with drag&drop<br>";
