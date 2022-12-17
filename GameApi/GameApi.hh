@@ -207,6 +207,7 @@ using std::placeholders::_9;
   MAC(MB)
   MAC(PKG)
   MAC(ATT)
+  MAC(C)
 #undef MAC
   
   //template<class T>
@@ -336,7 +337,10 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML ml_empty();
   P gltf_mesh_all_p(GameApi::EveryApi&ev, TF model0);
+  ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0);
+  ARR gltf_mesh_all_mt_arr( EveryApi &ev, TF model0, float mix);
   MT mainloop_material(EveryApi &ev, ML ml);
   TF glb_load_sketchfab_zip(std::string url_to_zip);
   TF gltf_load_sketchfab_zip(std::string url_to_zip);
@@ -1521,6 +1525,8 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT mt_empty(EveryApi &ev);
+  IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
   IMPORT MT progressmaterial(MT nxt, void (*fptr)(void*), void*data);
   IMPORT SMT ss_def(EveryApi &ev);
   IMPORT SMT screenspace_bloom(EveryApi &ev, SMT next, float cut_x, float cut_y, float cut_z, float x_amount, float y_amount);
@@ -2554,6 +2560,7 @@ public:
   std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix, int delta=0);
   
   ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts, int ticks);
+  ML m_bind_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, int ticks);
   ML load_scene(EveryApi &ev, std::string url, int sx, int sy);
 
   CG curve_group_from_anim(MA ma, float start_time, float end_time);

@@ -4204,7 +4204,7 @@ GameApi::P GameApi::PolygonApi::matrix(P orig, M mat)
   FaceCollection *c = find_facecoll(e, orig);
   //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   //env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  if (!c) { return p_empty(); }
   FaceCollection *coll = new MatrixElem(*c, mat2);
   return add_polygon2(e, coll,1);
 
@@ -4215,7 +4215,7 @@ GameApi::P GameApi::PolygonApi::translate_1(P orig, float dx, float dy, float dz
   FaceCollection *c = find_facecoll(e, orig);
   //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   //env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  if (!c) { std::cout << "dynamic cast failed" << orig.id << std::endl; }
   FaceCollection *coll = new MatrixElem(*c, Matrix::Translate(dx,dy,dz));
   return add_polygon2(e, coll,1);
 }
@@ -4226,7 +4226,7 @@ EXPORT GameApi::P GameApi::PolygonApi::rotatex(P orig, float angle)
   FaceCollection *c = find_facecoll(e, orig);
   //BoxableFaceCollectionConvert *convert = new BoxableFaceCollectionConvert(*c);
   //env->deletes.push_back(std::shared_ptr<void>(convert));  
-  if (!c) { std::cout << "dynamic cast failed" << std::endl; }
+  if (!c) { std::cout << "dynamic cast failed" << orig.id << std::endl; }
   FaceCollection *coll = new MatrixElem(*c, Matrix::XRotation(angle));
   return add_polygon(e, coll,1);
 }
@@ -5697,7 +5697,9 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
-{ 
+{
+  
+  
   if (keep) {
     //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
@@ -5780,7 +5782,22 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     faces->Prepare();
     
     ThreadedPrepare prep(faces);  
-    int s = faces->NumFaces();   
+    int s = faces->NumFaces();
+    if (s==0) {
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    VertexArraySet *s = new VertexArraySet;
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    arr.copy(0,faces->NumFaces());  
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr2->prepare(0);
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+
+    }
+    
     //std::cout << "NumFaces: " << s << std::endl;
     if (s<100) { num_threads=1; }
     int delta_s = s/num_threads+1;
@@ -7949,6 +7966,8 @@ public:
 	ev.shader_api.set_var(sh, "texsampler[7]", 10);
 
 #endif
+	//std::cout << tex0 << " " << tex1 << " " << tex2<< " " << tex3<< " " << tex4<< " " << tex5 << std::endl;
+	
 	int count = 0;
 	if (tex0) ev.shader_api.set_var(sh, "texsampler[0]", count);
 	if (tex0) count++;
@@ -12163,6 +12182,15 @@ EXPORT GameApi::LI GameApi::LinesApi::alt(std::vector<LI> v, int index)
   if (v.size()==0) return li_empty();
   int s = v.size();
   if (index<0 ||index>=s) return li_empty();
+  return v[index];
+}
+
+
+EXPORT GameApi::MT GameApi::MaterialsApi::mt_alt(EveryApi &ev, std::vector<MT> v, int index)
+{
+  if (v.size()==0) return mt_empty(ev);
+  int s = v.size();
+  if (index<0 ||index>=s) return mt_empty(ev);
   return v[index];
 }
 
@@ -18197,11 +18225,33 @@ GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> v
   for(int i=0;i<s;i++) {
     MT mat = materials[i];
     MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
-    vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, mat2));
+    vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, mat));
   }
   GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
   return ml;
 }
+
+
+GameApi::ML GameApi::PolygonApi::m_bind_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, int max_ticks)
+{
+  static int ii=0;
+  ii++;
+  int s = std::min(vec.size(),materials.size());
+  ProgressMatData *counter = new ProgressMatData;
+  counter->counter=0;
+  counter->s = s;
+  counter->ii = ii;
+  std::vector<ML> vec2;
+  //std::cout << "m_bind_inst_many count=" << s << std::endl;
+  for(int i=0;i<s;i++) {
+    MT mat = materials[i];
+    MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
+    vec2.push_back(ev.materials_api.bind(vec[i], mat));
+  }
+  GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
+  return ml;
+}
+
 
 
  class SceneDesc : public MainLoopItem
@@ -22824,3 +22874,186 @@ GameApi::ARR GameApi::PolygonApi::sort_objects_based_on_polygon_size(GameApi::P 
   return add_array(e,array);
 }
 */
+
+class PTSWorld : public IWorld
+{
+public:
+  PTSWorld(PointsApiPoints *points, int type) : points(points), type(type) { }
+  virtual int NumBlocks() const { return points->NumPoints(); }
+  virtual int BlockType(int i) const { return type; }
+  virtual Point BlockPos(int i) const { return points->Pos(i); }
+  virtual Matrix BlockRot(int i) const { return Matrix::Identity(); }  
+private:
+  PointsApiPoints *points;
+  int type;
+};
+
+GameApi::W GameApi::MainLoopApi::pts_world(PTS p, int type)
+{
+  PointsApiPoints *points = find_pointsapi_points(e,p);
+  return add_world(e, new PTSWorld(points,type));
+}
+
+class SingleCache : public ICache
+{
+public:
+  SingleCache(FaceCollection *coll, Material *mat) : coll(coll), mat(mat) { }
+  int Num() const { return 1; }
+  FaceCollection *GetFaces(int i) const { return coll; }
+  Material *GetMaterial(int i) const { return mat; }
+private:
+  FaceCollection *coll;
+  Material *mat;
+};
+
+GameApi::C GameApi::MainLoopApi::cache_one(P p, MT mat2)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  Material *mat = find_material(e,mat2);
+  return add_cache(e, new SingleCache(coll,mat));
+}
+
+
+class ArrayCache : public ICache
+{
+public:
+  ArrayCache(std::vector<ICache*> vec) : vec(vec) { }
+  int Num() const {
+    int count = 0;
+    int s = vec.size();
+    for(int i=0;i<s;i++) count+=vec[i]->Num();
+    return count;
+  }
+  FaceCollection *GetFaces(int i) const {
+    int count = 0;
+    int s = vec.size();
+    for(int ii=0;ii<s;ii++) {
+      int c = vec[ii]->Num();
+      if (i>=count && i<count+c) {
+	return vec[ii]->GetFaces(i-count);
+      }
+      count+=c;
+    }
+    return 0;
+  }
+  Material *GetMaterial(int i) const
+  {
+    int count=0;
+    int s = vec.size();
+    for(int ii=0;ii<s;ii++) {
+      int c = vec[ii]->Num();
+      if (i>=count && i<count+c) {
+	return vec[ii]->GetMaterial(i-count);
+      }
+      count+=c;
+    }
+    return 0;
+  }
+};
+
+GameApi::C GameApi::MainLoopApi::array_cache(std::vector<C> vec)
+{
+  std::vector<ICache*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      ICache *cc = find_cache(e,vec[i]);
+      vec2.push_back(cc);
+    }
+  return add_cache(e, new ArrayCache(vec2));
+}
+
+class SubWorldCache : public ICache
+{
+public:
+  SubWorldCache(ICache *cache, IWorld *world, int start_block, int end_block)
+    : cache(cache), world(world), start_block(start_block), end_block(end_block) { }
+  int Num() const { return end_block-start_block; }
+  FaceCollection *GetFaces(int i) const
+  {
+    Matrix m = world->BlockRot(start_block+i);
+    int type = world->BlockType(start_block+i);
+    Point pos = world->BlockPos(start_block+i);
+    FaceCollection *coll = cache->GetFaces(type);
+    FaceCollection *coll2 = new MatrixFaceCollection(*coll,m*Matrix::Translate(pos.x,pos.y,pos.z));
+    return coll2;
+  }
+  Material *GetMaterial(int i) const
+  {
+    int type = world->BlockType(start_block+i);
+    Material *mat = cache->GetMaterial(type);
+  }
+private:
+  ICache *cache;
+  IWorld *world;
+  int start_block;
+  int end_block;
+};
+GameApi::C GameApi::MainLoopApi::subworld(C c, W w, int start_block, int end_block)
+{
+  ICache *cc = find_cache(e,c);
+  IWorld *ww = find_world(e,w);
+  return add_cache(e, new SubWorldCache(cc,ww,start_block,end_block));
+}
+
+class ArrayWorld : public IWorld
+{
+public:
+  ArrayWorld(std::vector<IWorld*> w) : w(w) { }
+  int NumBlocks() const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int i=0;i<s;i++) count+=w[i]->NumBlocks();
+    return count;
+  }
+  int BlockType(int i) const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int ii=0;ii<s;ii++) {
+      int c = w[ii]->NumBlocks();
+      if (i>=count && i<count+c) {
+	return w[ii]->BlockType(i-count);
+      }
+      count+=c;
+    }
+    return 0;
+  }
+  Point BlockPos(int i) const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int ii=0;ii<s;ii++) {
+      int c = w[ii]->NumBlocks();
+      if (i>=count && i<count+c) {
+	return w[ii]->BlockPos(i-count);
+      }
+      count+=c;
+    }
+    return Point(0.0,0.0,0.0);
+  }
+  Matrix BlockRot(int i) const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int ii=0;ii<s;ii++) {
+      int c = w[ii]->NumBlocks();
+      if (i>=count && i<count+c) {
+	return w[ii]->BlockRot(i-count);
+      }
+      count+=c;
+    }
+    return Matrix::Identity();
+  }
+private:
+  std::vector<IWorld*> w;
+};
+W GameApi::MainLoopApi::array_world(std::vector<W> vec)
+{
+  std::vector<IWorld*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    vec2.push_back(find_world(e,vec[i]));
+  return add_world(e, new ArrayWorld(vec2));
+}

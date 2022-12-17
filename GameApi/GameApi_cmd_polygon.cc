@@ -149,6 +149,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "TF" },
 			 { "ev", "" },
 			 "P", "mainloop_api", "gltf_mesh_all_p"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_p_arr,
+			 "gltf_mesh_all_p_arr",
+			 { "ev", "model" },
+			 { "EveryApi&", "TF" },
+			 { "ev", "" },
+			 "[P]", "mainloop_api", "gltf_mesh_all_p_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_load_sketchfab_zip,
 			 "gltf_sketchfab_zip",
 			 { "url_to_zip" },
