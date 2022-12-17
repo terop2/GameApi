@@ -2870,6 +2870,89 @@ GameApi::ML GameApi::MainLoopApi::load_song(EveryApi &ev, ML next, std::string u
   return add_main_loop(e, new SongML(e,ev, url, nxt, homepage));
 }
 
+class MidiML : public MainLoopItem
+{
+public:
+  MidiML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string url_patchset, MainLoopItem *next, std::string homepage) : env(env), ev(ev), url(url), url_patchset(url_patchset), next(next), homepage(homepage) {
+    firsttime = true;
+    firsttime2 = true;
+    vec=0;
+  }
+  ~MidiML() { delete vec; }
+  void Collect(CollectVisitor &vis) { next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  void Prepare() {
+    if (firsttime2) {
+    next->Prepare();
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+    env.async_load_url(url_patchset, homepage);
+#endif
+    if (url[url.size()-3]=='o'&&url[url.size()-2]=='g'&&url[url.size()-1]=='g') is_ogg=true; else is_ogg=false;
+    
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
+    vec = new std::vector<unsigned char>(ptr->begin(),ptr->end());
+
+    GameApi::ASyncVec *ptr2 = env.get_loaded_async_url(url_patchset);
+    vec2 = new std::vector<unsigned char>(ptr2->begin(),ptr2->end());
+
+    firsttime2 = false;
+    }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+#ifdef EMSCRIPTEN
+    // web browser wants music to start on click events.
+    if (e.button==0||e.type==0x300)
+      
+#endif
+    if (firsttime) {
+      // setup ogg can also play mp3s
+      ptr2 = ev.tracker_api.setup_midi(*vec,*vec2);
+      //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
+      //int s = ptr->size();
+      //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
+      //ss.close();
+      //#ifndef EMSCRIPTEN
+      //ev.tracker_api.play_ogg("song.ogg");
+      ev.tracker_api.play_midi(ptr2);
+      //#else
+	// std::cout << "Warning: ogg playing disabled since it didn't work in emscripten." << std::endl;
+      //#endif
+      firsttime = false;
+    }
+    next->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string url_patchset;
+  bool firsttime;
+  bool firsttime2;
+  MainLoopItem *next;
+  std::string homepage;
+  std::vector<unsigned char> *vec;
+  std::vector<unsigned char> *vec2;
+  void *ptr2;
+  bool is_ogg=true;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::load_midi(EveryApi &ev, ML next, std::string url, std::string url_patchset)
+{
+  MainLoopItem *nxt = find_main_loop(e, next);
+  std::string homepage = ev.mainloop_api.get_homepage_url();
+  return add_main_loop(e, new MidiML(e,ev, url, url_patchset, nxt, homepage));
+}
+
 // note, BM's need to be 100x100 bitmaps
 GameApi::ML GameApi::MainLoopApi::skybox(EveryApi &ev, BM I9_land, BM I15_sky)
 {

@@ -43,6 +43,8 @@ extern bool g_filter_execute;
 
 #define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
+void clear_all_caches();
+int register_cache_deleter(void (*fptr)(void*),void*data);
 
 class ScreenSpaceMaterialForward : public ScreenSpaceMaterial
 {
@@ -11879,10 +11881,14 @@ public:
   bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face,0);
     Point p2 = FacePoint(face,1);
     Point p3 = FacePoint(face,2);
-    return -Vector::CrossProduct(p2-p1, p3-p1);
+    Vector v=-Vector::CrossProduct(p2-p1, p3-p1);
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const
   {
@@ -11910,6 +11916,8 @@ public:
 private:
   CurvePatch &patch;
   int sx,sy;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 EXPORT GameApi::P GameApi::CurveApi::patch_sample(PA patch, int sx, int sy)
 {
@@ -28094,6 +28102,20 @@ extern std::vector<const char*> g_urls;
 
 char *g_user_id=0;
 
+bool g_content_deleter_installed=false;
+void g_content_deleter(void *)
+{
+  int s = g_content.size();
+  for(int i=0;i<s;i++)
+    {
+      const unsigned char *ptr = g_content[i];
+      delete ptr;
+    }
+  g_content.clear();
+  g_content_end.clear();
+  g_urls.clear();
+}
+
 std::vector<unsigned char *> g_buffers;
 std::vector<int> g_buffer_sizes;
 
@@ -28123,6 +28145,13 @@ KP extern "C" void set_string(int num, const char *value)
     return;
   }
   if (num==2) { // use this with num=1
+
+    if (!g_content_deleter_installed)
+      {
+	g_content_deleter_installed=true;
+	register_cache_deleter(g_content_deleter,0);
+      }
+    
     unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
     std::copy(value,value+g_set_string_int,data);
     g_urls.push_back(strdup(g_set_string_url.c_str()));
@@ -28183,6 +28212,10 @@ KP extern "C" void set_string(int num, const char *value)
       int sz = strlen(value);
       g_user_id = new char[sz+1];
       std::copy(value,value+sz+1,g_user_id);
+    }
+  if (num==6) // clear caches
+    {
+        clear_all_caches();
     }
   //std::string s(value);
   //if (num>=0 && num<25) { g_strings[num]=s; }

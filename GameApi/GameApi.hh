@@ -253,6 +253,11 @@ struct ExecuteEnv
 #endif
 #endif
 
+  int register_cache_deleter(void (*fptr)(void*), void *data);
+  void unregister_cache_deleter(int id);
+  void clear_all_caches();
+
+  
   class ASyncVec;
 class Env
 {
@@ -284,6 +289,9 @@ public:
   IMPORT int async_mapping(int index);
   IMPORT void remove_async(int i);
   IMPORT void async_scheduler();
+
+  
+
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
