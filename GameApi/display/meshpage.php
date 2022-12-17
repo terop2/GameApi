@@ -632,7 +632,8 @@ echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
-echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)";
+echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)<br>";
+echo "Source Code: <a href=\"https://tpgames.org/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
 echo "<br><br><br><hr><br><br><br>";
 echo "PRICES: <ul><li>&euro; 120: 3d model viewer,<br>";
 echo "            <li>&euro; 220: 3d model viewer with drag&drop<br>";

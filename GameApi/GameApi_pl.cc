@@ -22838,3 +22838,186 @@ GameApi::ARR GameApi::PolygonApi::sort_objects_based_on_polygon_size(GameApi::P 
   return add_array(e,array);
 }
 */
+
+class PTSWorld : public IWorld
+{
+public:
+  PTSWorld(PointsApiPoints *points, int type) : points(points), type(type) { }
+  virtual int NumBlocks() const { return points->NumPoints(); }
+  virtual int BlockType(int i) const { return type; }
+  virtual Point BlockPos(int i) const { return points->Pos(i); }
+  virtual Matrix BlockRot(int i) const { return Matrix::Identity(); }  
+private:
+  PointsApiPoints *points;
+  int type;
+};
+
+GameApi::W GameApi::MainLoopApi::pts_world(PTS p, int type)
+{
+  PointsApiPoints *points = find_pointsapi_points(e,p);
+  return add_world(e, new PTSWorld(points,type));
+}
+
+class SingleCache : public ICache
+{
+public:
+  SingleCache(FaceCollection *coll, Material *mat) : coll(coll), mat(mat) { }
+  int Num() const { return 1; }
+  FaceCollection *GetFaces(int i) const { return coll; }
+  Material *GetMaterial(int i) const { return mat; }
+private:
+  FaceCollection *coll;
+  Material *mat;
+};
+
+GameApi::C GameApi::MainLoopApi::cache_one(P p, MT mat2)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  Material *mat = find_material(e,mat2);
+  return add_cache(e, new SingleCache(coll,mat));
+}
+
+
+class ArrayCache : public ICache
+{
+public:
+  ArrayCache(std::vector<ICache*> vec) : vec(vec) { }
+  int Num() const {
+    int count = 0;
+    int s = vec.size();
+    for(int i=0;i<s;i++) count+=vec[i]->Num();
+    return count;
+  }
+  FaceCollection *GetFaces(int i) const {
+    int count = 0;
+    int s = vec.size();
+    for(int ii=0;ii<s;ii++) {
+      int c = vec[ii]->Num();
+      if (i>=count && i<count+c) {
+	return vec[ii]->GetFaces(i-count);
+      }
+      count+=c;
+    }
+    return 0;
+  }
+  Material *GetMaterial(int i) const
+  {
+    int count=0;
+    int s = vec.size();
+    for(int ii=0;ii<s;ii++) {
+      int c = vec[ii]->Num();
+      if (i>=count && i<count+c) {
+	return vec[ii]->GetMaterial(i-count);
+      }
+      count+=c;
+    }
+    return 0;
+  }
+};
+
+GameApi::C GameApi::MainLoopApi::array_cache(std::vector<C> vec)
+{
+  std::vector<ICache*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      ICache *cc = find_cache(e,vec[i]);
+      vec2.push_back(cc);
+    }
+  return add_cache(e, new ArrayCache(vec2));
+}
+
+class SubWorldCache : public ICache
+{
+public:
+  SubWorldCache(ICache *cache, IWorld *world, int start_block, int end_block)
+    : cache(cache), world(world), start_block(start_block), end_block(end_block) { }
+  int Num() const { return end_block-start_block; }
+  FaceCollection *GetFaces(int i) const
+  {
+    Matrix m = world->BlockRot(start_block+i);
+    int type = world->BlockType(start_block+i);
+    Point pos = world->BlockPos(start_block+i);
+    FaceCollection *coll = cache->GetFaces(type);
+    FaceCollection *coll2 = new MatrixFaceCollection(*coll,m*Matrix::Translate(pos.x,pos.y,pos.z));
+    return coll2;
+  }
+  Material *GetMaterial(int i) const
+  {
+    int type = world->BlockType(start_block+i);
+    Material *mat = cache->GetMaterial(type);
+  }
+private:
+  ICache *cache;
+  IWorld *world;
+  int start_block;
+  int end_block;
+};
+GameApi::C GameApi::MainLoopApi::subworld(C c, W w, int start_block, int end_block)
+{
+  ICache *cc = find_cache(e,c);
+  IWorld *ww = find_world(e,w);
+  return add_cache(e, new SubWorldCache(cc,ww,start_block,end_block));
+}
+
+class ArrayWorld : public IWorld
+{
+public:
+  ArrayWorld(std::vector<IWorld*> w) : w(w) { }
+  int NumBlocks() const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int i=0;i<s;i++) count+=w[i]->NumBlocks();
+    return count;
+  }
+  int BlockType(int i) const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int ii=0;ii<s;ii++) {
+      int c = w[ii]->NumBlocks();
+      if (i>=count && i<count+c) {
+	return w[ii]->BlockType(i-count);
+      }
+      count+=c;
+    }
+    return 0;
+  }
+  Point BlockPos(int i) const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int ii=0;ii<s;ii++) {
+      int c = w[ii]->NumBlocks();
+      if (i>=count && i<count+c) {
+	return w[ii]->BlockPos(i-count);
+      }
+      count+=c;
+    }
+    return Point(0.0,0.0,0.0);
+  }
+  Matrix BlockRot(int i) const
+  {
+    int s = w.size();
+    int count = 0;
+    for(int ii=0;ii<s;ii++) {
+      int c = w[ii]->NumBlocks();
+      if (i>=count && i<count+c) {
+	return w[ii]->BlockRot(i-count);
+      }
+      count+=c;
+    }
+    return Matrix::Identity();
+  }
+private:
+  std::vector<IWorld*> w;
+};
+W GameApi::MainLoopApi::array_world(std::vector<W> vec)
+{
+  std::vector<IWorld*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    vec2.push_back(find_world(e,vec[i]));
+  return add_world(e, new ArrayWorld(vec2));
+}

@@ -2621,6 +2621,25 @@ public:
 };
 
 
+class IWorld
+{
+public:
+  virtual int NumBlocks() const=0;
+  virtual int BlockType(int i) const=0;
+  virtual Point BlockPos(int i) const=0;
+  virtual Matrix BlockRot(int i) const=0;
+};
+
+class ICache
+{
+public:
+  virtual int Num() const=0;
+  virtual FaceCollection *GetFaces(int i) const=0;
+  virtual Material *GetMaterial(int i) const=0; 
+};
+
+
+
 
 #endif
 
