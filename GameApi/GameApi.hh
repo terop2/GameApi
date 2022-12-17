@@ -207,7 +207,7 @@ using std::placeholders::_9;
   MAC(MB)
   MAC(PKG)
   MAC(ATT)
-  MAC(C)
+  MAC(CX)
 #undef MAC
   
   //template<class T>
@@ -337,6 +337,12 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  W pts_world(PTS p, int type);
+  CX cache_one(P p, MT mt);
+  CX array_cache(std::vector<CX> vec);
+  CX subworld(CX c, W w, int start_block, int end_block);
+  W array_world(std::vector<W> vec);
+  ML load_midi(EveryApi &ev, ML next, std::string url, std::string url_patchset);
   ML ml_empty();
   P gltf_mesh_all_p(GameApi::EveryApi&ev, TF model0);
   ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0);

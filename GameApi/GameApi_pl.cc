@@ -22906,7 +22906,7 @@ private:
   Material *mat;
 };
 
-GameApi::C GameApi::MainLoopApi::cache_one(P p, MT mat2)
+GameApi::CX GameApi::MainLoopApi::cache_one(P p, MT mat2)
 {
   FaceCollection *coll = find_facecoll(e,p);
   Material *mat = find_material(e,mat2);
@@ -22949,9 +22949,11 @@ public:
     }
     return 0;
   }
+private:
+  std::vector<ICache*> vec;
 };
 
-GameApi::C GameApi::MainLoopApi::array_cache(std::vector<C> vec)
+GameApi::CX GameApi::MainLoopApi::array_cache(std::vector<CX> vec)
 {
   std::vector<ICache*> vec2;
   int s = vec.size();
@@ -22975,7 +22977,7 @@ public:
     int type = world->BlockType(start_block+i);
     Point pos = world->BlockPos(start_block+i);
     FaceCollection *coll = cache->GetFaces(type);
-    FaceCollection *coll2 = new MatrixFaceCollection(*coll,m*Matrix::Translate(pos.x,pos.y,pos.z));
+    FaceCollection *coll2 = new MatrixElem(*coll,m*Matrix::Translate(pos.x,pos.y,pos.z));
     return coll2;
   }
   Material *GetMaterial(int i) const
@@ -22989,7 +22991,7 @@ private:
   int start_block;
   int end_block;
 };
-GameApi::C GameApi::MainLoopApi::subworld(C c, W w, int start_block, int end_block)
+GameApi::CX GameApi::MainLoopApi::subworld(CX c, W w, int start_block, int end_block)
 {
   ICache *cc = find_cache(e,c);
   IWorld *ww = find_world(e,w);
@@ -23049,7 +23051,7 @@ public:
 private:
   std::vector<IWorld*> w;
 };
-W GameApi::MainLoopApi::array_world(std::vector<W> vec)
+GameApi::W GameApi::MainLoopApi::array_world(std::vector<W> vec)
 {
   std::vector<IWorld*> vec2;
   int s = vec.size();

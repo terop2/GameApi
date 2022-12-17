@@ -783,6 +783,8 @@ struct EnvImpl
   std::vector<PixelBufferObject*> pbo;
   std::vector<ShaderCode*> shc;
   std::vector<ScreenSpaceMaterial*> ss_mat;
+  std::vector<IWorld*> worlds;
+  std::vector<ICache*> caches;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1112,6 +1114,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::CX add_cache(GameApi::Env &e, ICache *c);
+GameApi::W add_world(GameApi::Env &e, IWorld *w);
 GameApi::SMT add_screenspace_material(GameApi::Env &e, ScreenSpaceMaterial *mat);
 GameApi::SHC add_shader_code(GameApi::Env &e, ShaderCode *code);
 GameApi::PBO add_pbo(GameApi::Env &e, PixelBufferObject *pbo);
@@ -1267,6 +1271,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ICache *find_cache(GameApi::Env &e, GameApi::CX c);
+IWorld *find_world(GameApi::Env &e, GameApi::W w);
 ScreenSpaceMaterial *find_screenspace_material(GameApi::Env &e, GameApi::SMT mat);
 ShaderCode *find_shader_code(GameApi::Env &e, GameApi::SHC code);
 PixelBufferObject *find_pbo(GameApi::Env &e, GameApi::PBO pbo);

@@ -1,0 +1,7 @@
+#!/bin/bash
+(cd hssynth2/synthlib;cmake .)
+(cd hssynth2/synthlib;make -j 8)
+(cd hssynth2/midiplay;cmake .)
+(cd hssynth2/midiplay;make -j 8)
+(cd hssynth2/guisynth;cmake .)
+(cd hssynth2/guisynth;make -j 8)
