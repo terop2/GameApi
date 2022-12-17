@@ -3554,11 +3554,11 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
 }
 
 GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
-GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i) );
+GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix) , float mix);
 
 GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
 
-GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i));
+GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), float mix);
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix);
@@ -3694,7 +3694,7 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
 }
 
 
-GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i), bool translate)
+GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), bool translate, float mix)
 {
   //if (!load2) load2 = load;
   int s2 = interface->nodes_size(); //load->model.nodes.size();
@@ -3719,7 +3719,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton_p_arr(e,ev,interface, mesh_id, i,keys,fptr_skeleton);
+	  mesh = gltf_mesh2_with_skeleton_p_arr(e,ev,interface, mesh_id, i,keys,fptr_skeleton, mix);
 	  done = true;
 	}
 	if (done)
@@ -3731,7 +3731,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
     int mesh_id = node.mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2_p_arr( e, ev, interface, mesh_id, 0, keys,fptr_mesh);
+      mesh = gltf_mesh2_p_arr( e, ev, interface, mesh_id, 0, keys,fptr_mesh,mix);
     }
   }
   // todo cameras
@@ -3749,7 +3749,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, child_id,keys,fptr_skeleton,fptr_mesh,translate);
+      GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, child_id,keys,fptr_skeleton,fptr_mesh,translate,mix);
       ArrayType *t = find_array(e,ml);
       int s3 = t->vec.size();
       for(int j=0;j<s3;j++) {
@@ -3959,7 +3959,7 @@ GameApi::P gltf_scene2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInter
 }
 
 
-GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys,int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i), bool translate )
+GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys,int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), bool translate, float mix )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -3974,7 +3974,7 @@ GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
   int s = scene.nodes.size();
   std::vector<int> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, scene.nodes[i], keys, fptr_skeleton, fptr_mesh,translate);
+    GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, scene.nodes[i], keys, fptr_skeleton, fptr_mesh,translate, mix);
     ArrayType *array = find_array(e,ml);
     int s2 = array->vec.size();
     for(int j=0;j<s2;j++)
@@ -4028,16 +4028,16 @@ GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, G
   }
 }
 
-int arr_fetch_load(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i)
+int arr_fetch_load(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix)
 {
   GameApi::P p = gltf_load2(e,ev, interface, mesh_id, i);
   return p.id;
 }
-int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i)
+int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix)
 {
     const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
   int mat = m.primitives[i].material;
-  GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0);
+  GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, mix);
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
@@ -4045,7 +4045,7 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
   return mat4.id;
 }
 
-GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i))
+GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), float mix)
 {
   //g_last_resize=Matrix::Identity();
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
@@ -4054,7 +4054,7 @@ GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi 
     std::vector<int> mls;
     for(int i=0;i<s;i++) {
       //GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
-      int id = fptr(e,ev,interface,mesh_id,i);
+      int id = fptr(e,ev,interface,mesh_id,i,mix);
       mls.push_back(id);
     }
     ArrayType *t = new ArrayType;
@@ -4124,7 +4124,7 @@ GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
 
 }
 
-GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i) )
+GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), float mix )
 {
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
     const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
@@ -4132,7 +4132,7 @@ GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
     std::vector<int> mls;
     for(int i=0;i<s;i++) {
       //GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
-      int id = fptr_mesh(e,ev,interface,mesh_id,i);
+      int id = fptr_mesh(e,ev,interface,mesh_id,i, mix);
       mls.push_back(id);
     }
     ArrayType *t = new ArrayType;
@@ -4766,7 +4766,7 @@ public:
 	set_current_block(-2);
 
 	int scene_id = interface->get_default_scene();
-	GameApi::ARR p = gltf_scene2_p_arr( env, ev, interface,scene_id,"", &arr_fetch_load, &arr_fetch_load,true);
+	GameApi::ARR p = gltf_scene2_p_arr( env, ev, interface,scene_id,"", &arr_fetch_load, &arr_fetch_load,true, 1.0);
 	ArrayType *t = find_array(env,p);
 	std::vector<GameApi::P> vv;
 	int ss2 = t->vec.size();
@@ -4788,7 +4788,7 @@ public:
 
     
     //std::cout << "TT:" << i << " " << t->vec.size() << std::endl;
-    if (i>=t->vec.size()) { std::cout << "PArr empty at "<< i << std::endl; return; }
+    if (i>=t->vec.size()) { /*std::cout << "PArr empty at "<< i << std::endl;*/ return; }
     GameApi::P p3;
     p3.id = t->vec[i];
     //std::cout << "CHOSEN: " <<i << " " << p3.id <<std::endl;
@@ -4981,7 +4981,7 @@ public:
 	set_current_block(-2);
       interface->Prepare();
       int scene_id = interface->get_default_scene();
-      GameApi::ARR arr = gltf_scene2_p_arr(e,ev,interface,scene_id,"",&arr_fetch_material,&arr_fetch_material,false);
+      GameApi::ARR arr = gltf_scene2_p_arr(e,ev,interface,scene_id,"",&arr_fetch_material,&arr_fetch_material,false, mix);
       g_cache[interface]=arr;
       set_current_block(c);
     }
