@@ -933,11 +933,15 @@ public:
   bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
     Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
-    return v / v.Dist();
+    v/=v.Dist();
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const
@@ -962,6 +966,8 @@ private:
   LineCollection *coll;
   float d1,d2;
   Point center;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 EXPORT GameApi::P GameApi::PolygonApi::dist_from_lines(LI li, float d1, float d2, PT center)
 {
@@ -4642,11 +4648,15 @@ public:
   bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
     Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
-    return v / v.Dist();
+    v/=v.Dist();
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -4689,6 +4699,8 @@ private:
   Matrix m;
   int num_steps;
   std::vector<Matrix> arr;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 EXPORT GameApi::P GameApi::PolygonApi::span(LI li,
 					    M matrix,
@@ -4730,11 +4742,16 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face,0);
     Point p2 = FacePoint(face,1);
     Point p3 = FacePoint(face,2);
     Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
-    return v/v.Dist();
+    v/=v.Dist();
+    store_face=face;
+    store_res=v;
+
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -4762,6 +4779,8 @@ private:
   float start_x, end_x;
   float start_y, end_y;
   float start_z, end_z;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 
 EXPORT GameApi::P GameApi::PolygonApi::heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
@@ -5315,11 +5334,15 @@ public:
   bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
     Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
-    return v / v.Dist();
+    v/=v.Dist();
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -5334,6 +5357,8 @@ public:
   }
 private:
   std::vector<Point> vec;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 EXPORT GameApi::P GameApi::PolygonApi::tri_strip(PT *array, int size)
 {
@@ -20081,11 +20106,15 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face, 0);
     Point p2 = FacePoint(face, 1);
     Point p3 = FacePoint(face, 2);
     Vector v = Vector::CrossProduct(p2-p1,p3-p1);
-    return v / v.Dist();
+    v/=v.Dist();
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -20110,6 +20139,8 @@ private:
   std::vector<int> border_edge;
   Point pi;
   PointsApiPoints *points;
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 
 GameApi::P GameApi::PolygonApi::convex_hull(PTS pts)
@@ -22666,10 +22697,14 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
+    if (store_face==face) return store_res;
     Point p1 = FacePoint(face,0);
     Point p2 = FacePoint(face,1);
     Point p3 = FacePoint(face,2);
-    return -Vector::CrossProduct(p2-p1,p3-p1);
+    Vector v=-Vector::CrossProduct(p2-p1,p3-p1);
+    store_face=face;
+    store_res=v;
+    return v;
   }
   virtual float Attrib(int face, int point, int id) const { return 0.0; }
   virtual int AttribI(int face, int point, int id) const { return 0; }
@@ -22682,7 +22717,8 @@ public:
 private:
   FaceCollection *base;
   FaceCollection *material;
-  
+  mutable int store_face=-1;
+  mutable Vector store_res;
 };
 
 GameApi::P GameApi::PolygonApi::material_face_collection(P base, P material)

@@ -1,0 +1,3 @@
+[submodule "GameApi/hssynth2"]
+	path = GameApi/hssynth2
+	url = https://github.com/henris42/hssynth2.git

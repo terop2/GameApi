@@ -57,6 +57,8 @@ std::string replace_string(std::string str, char ch, char ch2);
 void send_post_request(std::string url, std::string headers, std::string data);
 std::string replace_str(std::string ste, std::string repl, std::string subst);
 
+void clear_all_caches();
+
 extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
@@ -1068,6 +1070,7 @@ public:
 	    if (1)
 	      {
 		//std::cout << "Execute for uid: " << uid << std::endl;
+		clear_all_caches();
 		env->env->free_temp_memory();
 		// Execute
 		//InstallProgress(933, "Execute", 15);
