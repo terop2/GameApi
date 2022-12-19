@@ -542,8 +542,8 @@ void play_midi(void *ptr)
 	{
 	  uint64_t sltime = (uint64_t)(deltatick*tempo);
 	  pass->audio->setSampleTimeTrigger(sltime);
-	  lck.wait(false);
-	  lck.clear();
+	  //lck.wait(false);
+	  //lck.clear();
 	}
       if (!mev->isMeta())
 	{

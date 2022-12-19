@@ -256,7 +256,6 @@ struct ExecuteEnv
 
   int register_cache_deleter(void (*fptr)(void*), void *data);
   void unregister_cache_deleter(int id);
-  void clear_all_caches();
 
   
   class ASyncVec;
