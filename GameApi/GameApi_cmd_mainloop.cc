@@ -903,6 +903,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string", "int" },
 			 { "ev", "", "http://tpgames.org/Clap.wav", "32" },
 			 "ML", "tracker_api", "play_wave_via_keypress"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_midi,
+			 "midi_ml",
+			 { "ev", "next", "url", "url_patchset" },
+			 { "EveryApi&", "ML", "std::string", "std::string" },
+			 { "ev", "", "https://tpgames.org/BRAND3.MID", "https://tpgames.org/default.ptc" },
+			 "ML", "mainloop_api", "load_midi"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
