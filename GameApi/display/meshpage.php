@@ -804,6 +804,26 @@ Useful other sites which you can drag and drop content to the viewer are at leas
 <li><a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a>
 </ul>
 
+<h2>What is the minimal node graph that can be deployed to web?</h2>
+
+<img src="http://tpgames.org/minimal_boxes.png" crossorigin/>
+<p>
+Important part for deployment is the properties of html_run, since it
+contains url to your hosting space, which you need to change. This
+ensures that any urls that you load inside the node graph can be
+fetched from your hosting space. Unrestricted url access is not
+allowed for copyright reasons.
+<p>
+Web server config(.htaccess) should be something like the following: (you should change the url)
+<br>
+<pre>
+Header set Access-Control-Allow-Origin "https://meshpage.org" 
+Header set Cross-Origin-Embedder-Policy "require-corp" 
+Header set Cross-Origin-Resource-Policy "same-site" 
+Header set Cross-Origin-Opener-Policy "same-origin" 
+Header set Access-Control-Allow-Headers "range"
+</pre>
+
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>
 <li>C++

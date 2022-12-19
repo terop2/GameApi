@@ -5,7 +5,7 @@
 #include <cassert>
 #include <iostream>
 #include <sstream>
-
+#include <AudioService.h>
 
 
 #define VIRTUAL_REALITY 1
@@ -1145,16 +1145,16 @@ class SDLApi : public SDLLowApi
     des.size = desired->size;
     des.callback = desired->callback;
     des.userdata = desired->userdata;
-    int val = ::SDL_OpenAudio(&des,&obt);
+    int val2 = ::SDL_OpenAudio(&des,&obt);
     obtained->freq = obt.freq;
-    obtained->format = obt.format==AUDIO_F32_LSB?Low_AUDIO_F32_LSB:-1;
+    obtained->format = obt.format==AUDIO_F32LSB?Low_AUDIO_F32LSB:-1;
     obtained->channels = obt.channels;
     obtained->silence = obt.silence;
     obtained->samples = obt.samples;
     obtained->size = obt.size;
     obtained->callback = obt.callback;
     obtained->userdata = obt.userdata;
-    return val;
+    return val2;
   }
 
   virtual void SDL_SetWindowSize(Low_SDL_Window *window, int w, int h)
