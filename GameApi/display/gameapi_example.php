@@ -1,5 +1,5 @@
 <?php
-  header("Cross-Origin-Opener-Policy: same-origin");
+  //header("Cross-Origin-Opener-Policy: same-origin");
   $id = $_GET["id"];
   $filename = "./user_data/temp/tmp" . $id . ".txt";
   $script = file_get_contents($filename);

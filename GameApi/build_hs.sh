@@ -5,3 +5,5 @@
 (cd hssynth2/midiplay;make -j 8)
 (cd hssynth2/guisynth;cmake .)
 (cd hssynth2/guisynth;make -j 8)
+(cd hssynth2/midiplay/midifile;cmake .)
+(cd hssynth2/midiplay/midifile;make -j 8)
