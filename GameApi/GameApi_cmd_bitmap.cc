@@ -61,6 +61,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "std::string" },
 			 { "", "test.raw" },
 			 "ML", "bitmap_api", "save_raw"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::write_gif_anim,
+			 "save_gif_anim",
+			 { "bms", "filename", "delay" },
+			 { "[BM]", "std::string", "int" },
+			 { "", "output.gif", "100" },
+			 "ML", "bitmap_api", "write_gif_anim"));
 #if 1
   // doesnt work in emscripten, all solutions seem to fail miserably,
   // with emscripten_async_wget didn't work fine.

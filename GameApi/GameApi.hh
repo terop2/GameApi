@@ -809,6 +809,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML write_gif_anim(std::vector<BM> vec, std::string filename, int delay);
   IMPORT ML savepng_array_ml(EveryApi &ev, std::vector<BM> bms, std::string filename_start, std::string filename_end, bool alpha, float time);
   IMPORT BM gray_to_black(BM bm, float val);
   IMPORT BM newbitmap_bm(BM bm, unsigned int color);

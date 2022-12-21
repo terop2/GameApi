@@ -6,6 +6,7 @@
 
 #include "GameApi_low.hh"
 #include <iomanip>
+#include <fstream>
 
 template<class T>
 void ArrayDelete(T *ptr)
@@ -6572,4 +6573,113 @@ GameApi::BM GameApi::BitmapApi::gray_to_black(BM bm, float val)
   handle2->bm = new GrayToBlack(b2,val);
   BM bm2 = add_bitmap(e, handle2);
   return bm2;
+}
+
+
+#include "gif.h"
+class WriteGifAnim : public MainLoopItem
+{
+public:
+  WriteGifAnim(GameApi::Env &e, std::vector<Bitmap<::Color>*> vec, std::string filename, int delay) : e(e), vec(vec),filename(filename), delay(delay) { firsttime=true; }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() {
+    if (firsttime) {
+      firsttime=false;
+
+
+#ifndef EMSCRIPTEN
+#ifdef WINDOWS
+  system("mkdir %TEMP%\\_gameapi_builder");
+  std::string home  = getenv("TEMP");
+  std::string filename_with_path = home + std::string("\\_gameapi_builder\\gif_anim_tmp.gif");
+#endif
+#ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
+  if (dockerdir=="") {
+    system("mkdir -p ~/.gameapi_builder");
+  } else {
+    system(("mkdir -p " + dockerdir + ".gameapi_builder").c_str());
+  }
+  std::string home = getenv("HOME");
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  std::string filename_with_path = home + std::string(".gameapi_builder/gif_anim_tmp.gif");
+#endif
+  
+  int index = e.add_to_download_bar(filename);
+  int ii = e.download_index_mapping(index);
+  
+  ::Bitmap<Color> *b2 = vec[0];
+
+    int sx = b2->SizeX();
+    int sy = b2->SizeY();
+  GifWriter g;
+  GifBegin(&g, filename_with_path.c_str(), sx,sy, delay);
+  
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+    ::Bitmap<Color> *b2 = vec[i];
+
+    int sx = b2->SizeX();
+    int sy = b2->SizeY();
+
+    std::vector<uint8_t> bitmap(sx*sy*4,0);
+    
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  Color c = b2->Map(x,y);
+	  bitmap[x*4+y*sx*4+0]=c.r;
+	  bitmap[x*4+y*sx*4+1]=c.g;
+	  bitmap[x*4+y*sx*4+2]=c.b;
+	  bitmap[x*4+y*sx*4+3]=c.alpha;
+	}
+    GifWriteFrame(&g, bitmap.data(), sx,sy, delay);    
+    e.set_download_progress(ii,float(i+1)/float(s));
+  }
+  GifEnd(&g);
+
+  std::ifstream ss(filename_with_path.c_str(), std::ios_base::binary|std::ios_base::in);
+  std::vector<unsigned char> file_contents;
+  char c;
+  while(ss.get(c))
+    {
+      file_contents.push_back((unsigned char)c);
+    }
+
+  e.set_download_data(ii,file_contents);
+  e.set_download_ready(ii);
+  
+#endif
+      
+    }
+    
+  }
+  virtual void Prepare() {
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GameApi::Env &e;
+  std::vector<Bitmap<::Color>*> vec;
+  bool firsttime;
+  std::string filename;
+  int delay;
+};
+
+GameApi::ML GameApi::BitmapApi::write_gif_anim(std::vector<BM> vec, std::string filename, int delay)
+{
+  int s = vec.size();
+  std::vector<::Bitmap<Color>*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e,vec[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      vec2.push_back(b2);
+    }
+  return add_main_loop(e, new WriteGifAnim(e,vec2,filename,delay));
 }

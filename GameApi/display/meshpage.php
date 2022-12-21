@@ -640,6 +640,16 @@ echo "            <li>&euro; 220: 3d model viewer with drag&drop<br>";
 echo "            <li>&euro; 550: 3d model viewer on custom page<br>";
 echo "            </ul><br>";
 echo " All prices include a copy of 3d engine. Contact via email for more info.<p>";
+echo "<hr>";
+echo "Terms and conditions:<p>";
+echo "<ul>";
+echo "<li>You have explicit permission to use gameapi builder and meshpage for creating 3d model, the node graph, and deploy the end result to a web site of your choice";
+echo "<li>You are not allowed to add copyright infringing content to any url slots inside builder tool. While builder can filter out some of that usage, the checks are not perfect and if that happens, we basically cannot do anything to protect our end users from the content owner's legal actions";
+echo "<li>For children at ages 10-18 years old, gameapi builder provides safe learning environment where it is difficult to do large mistakes like publishing sexual material, copyright infringements or racist brainwashing.";
+echo "<li>GameApi builder and meshpage web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
+echo "<li>Meshpage is not a social media platform. Correct designation is \"Content Creation Tool Provider\" and  \"Web Publishing Enabler\" and also \"Content Publisher\"";
+echo "<li>Standard disclaimers apply, no warranty or ability to return purchased material";
+echo "</ul>";
 ?>
 <script>
  var g_counter = 0;
