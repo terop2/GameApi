@@ -1,6 +1,7 @@
 #include "GameApi_h.hh"
 #include "GameApi_low.hh"
 #include <iomanip>
+#include "EffectI.hh"
 
 
 EXPORT GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
@@ -939,6 +940,7 @@ GameApi::ML GameApi::TextureApi::prepare_key(ML next, ML keyed, int key)
   return add_main_loop(e, new KeyPrepare(key, next_, keyed_));
 }
 
+
 class KeyPrepareAnim : public MainLoopItem
 {
 public:
@@ -1116,6 +1118,40 @@ private:
   int id;
   int num;
 };
+class GrabToBMArray : public MainLoopItem, public Array<int,int>
+{
+public:
+  GrabToBMArray(GameApi::BM bm) : bm(bm) { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  void Prepare() {
+    images.push_back(bm);
+  }
+  int Size() const { return images.size(); }
+  int Index(int i) const { return images[i].id; }
+public:
+  GameApi::BM bm;
+  static std::vector<GameApi::BM> images;
+};
+std::vector<GameApi::BM> GrabToBMArray::images;
+GameApi::ARR GameApi::TextureApi::grab_to_bm_array(BM bm)
+{
+  //BitmapHandle *handle = find_bitmap(e, bm);
+  //::Bitmap<Color> *b2 = find_color_bitmap(handle);
+  GrabToBMArray *arr = new GrabToBMArray(bm);
+
+  ArrayType *t = new ArrayType;
+  t->vec.push_back(add_main_loop(e,arr).id);
+  ArrayType *t2 = new ArrayType;
+  t2->vec2 = arr;
+  GameApi::ARR t22 = add_array(e,t2);
+  t->vec.push_back(t22.id);
+  return add_array(e,t);
+}
+
 
 GameApi::ML GameApi::TextureApi::grab_to_server(BM bm, int id, int num)
 {
@@ -1145,6 +1181,35 @@ GameApi::ML GameApi::TextureApi::send_screenshots_via_key_to_server(EveryApi &ev
   GameApi::ML ml = prepare_key_anim(ml3, vec, key, time_delta, vec2);
   return ml;
 }
+GameApi::ARR GameApi::TextureApi::send_screenshots_via_key_array(EveryApi &ev, GameApi::ML ml3, int key, float time_delta, int num)
+{
+  int s = num;
+  std::vector<std::string> vec2;
+  std::vector<GameApi::ML> vec;
+  GameApi::ARR t2;
+  for(int i=0;i<s;i++) {
+  GameApi::BM bm = grab_screen_bitmap(ev);
+  GameApi::BM bm2 = ev.bitmap_api.scale_bitmap(ev, bm, 280, 208);
+  GameApi::BM bm3 = ev.bitmap_api.flip_y(bm2);
+  std::stringstream ss;
+  //ss<< "screenshot" << std::setfill('0') << std::setw(3) << i+1 << ".png";
+  //GameApi::ML ml2 = ev.bitmap_api.save_png_ml(ev, bm3, ss.str());
+  //GameApi::ML ml2 = ev.texture_api.grab_to_server(bm3,gameapi_id,i);
+  GameApi::ARR ml2 = ev.texture_api.grab_to_bm_array(bm3);
+  ArrayType *type = find_array(e,ml2);
+  GameApi::ML ml3;
+  ml3.id = type->vec[0];
+  t2.id = type->vec[1];
+  vec.push_back(ml3);
+  vec2.push_back( ss.str() );
+  }
+  GameApi::ML ml = prepare_key_anim(ml3, vec, key, time_delta, vec2);
+  ArrayType *t = new ArrayType;
+  t->vec.push_back(ml.id);
+  t->vec.push_back(t2.id);
+  return add_array(e,t);
+}
+
 
 GameApi::ML GameApi::TextureApi::save_screenshots_via_key(EveryApi &ev, GameApi::ML ml3, int key, float time_delta, int num)
 {
