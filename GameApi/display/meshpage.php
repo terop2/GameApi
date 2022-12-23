@@ -620,6 +620,7 @@ if ($connect=="yes") {
 <p>
 <h1>about and contact info</h1>
 <?php
+echo "Introduction: <a href=\"article.php\">article</a><br>";
 echo "Create(private): <a href=\"mesh_login.php?return=create_mesh.php\">mesh</a><br>";
 echo "Vault(private): <a href=\"mesh_login.php?return=mesh_hide.php\">vault</a><br>";
 echo "Adverticement: <a href=\"https://www.youtube.com/watch?v=0UF0zIMI2xA&feature=youtu.be\">Video</a><br><p>";
