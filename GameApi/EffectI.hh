@@ -1,4 +1,7 @@
 
+#ifndef EFFECTI_HH
+#define EFFECTI_HH
+
 #include "VectorTools.hh"
 
 
@@ -152,3 +155,7 @@ public:
   virtual Point EndLinePoint(int line, int point) const { return LinePoint(line,point); }
   virtual unsigned int EndLineColor(int line, int point) const { return LineColor(line,point); }
 };
+
+
+
+#endif
