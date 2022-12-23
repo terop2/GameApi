@@ -15,6 +15,7 @@ void set_current_block(int id);
 int get_current_block();
 void clear_block(int id);
 
+template<class T, class K> class Array;
 
 
 class ASyncData;
@@ -734,6 +735,8 @@ class TextureApi
 {
 public:
 	IMPORT TextureApi(Env &e);
+  IMPORT ARR grab_to_bm_array(BM bm);
+  IMPORT ARR send_screenshots_via_key_array(EveryApi &ev, ML ml3, int key, float time_delta, int num);
   IMPORT PBO create_pbo(int sx, int sy);
   IMPORT ML upload_bm_to_pbo(BM bm, PBO p);
   IMPORT ML upload_txid_to_pbo(TXID tx, PBO p); // TODO
@@ -803,12 +806,16 @@ private:
 };
 #endif
 
+
 #ifdef F_BITMAP_API
 class BitmapApi
 {
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML write_gif_anim2(Array<int,int> *vec, std::string filename, int delay);
+  IMPORT ML gif_anim(EveryApi &ev, ML ml3, int key, float time_delta, int num, std::string filename, int delay);
+  IMPORT ML write_gif_anim(std::vector<BM> vec, std::string filename, int delay);
   IMPORT ML savepng_array_ml(EveryApi &ev, std::vector<BM> bms, std::string filename_start, std::string filename_end, bool alpha, float time);
   IMPORT BM gray_to_black(BM bm, float val);
   IMPORT BM newbitmap_bm(BM bm, unsigned int color);
