@@ -13,6 +13,8 @@
 
 #include "GameApi_low.hh"
 
+template<class T, class K> class Array;
+
 
 namespace GameApi
 {
@@ -1146,10 +1148,12 @@ enum ArrayTypesInUse
 //int array_type_to_int(GameApi::BM b); // the definitions are in gameapi.cc beginning
 //int array_type_to_int(GameApi::P b);
 
+
 struct ArrayType
 {
   int type; // arraytypesinuse
   std::vector<int> vec;
+  Array<int,int> *vec2=0;
 };
 
 template<class T>
