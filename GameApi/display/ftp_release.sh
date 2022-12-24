@@ -18,6 +18,7 @@ finish()
 	scp ${arr[@]} terop@meshpage.org:/home/terop/html/meshpage.org/
     fi
 }
+copy_it pessimist.php
 copy_it article.php
 copy_it gameapi.js
 copy_it ini_print.php
