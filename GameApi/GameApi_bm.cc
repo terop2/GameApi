@@ -6581,7 +6581,19 @@ class WriteGifAnim : public MainLoopItem
 {
 public:
   WriteGifAnim(GameApi::Env &e, Array<int,int> &arr, std::string filename, int delay) : e(e), arr(arr),filename(filename), delay(delay) { firsttime=true; }
-  virtual void Collect(CollectVisitor &vis) { }
+  virtual void Collect(CollectVisitor &vis) {
+    int s = arr.Size();
+    for(int i=0;i<s;i++)
+      {
+	int id = arr.Index(i);
+	GameApi::BM bm;
+	bm.id = id;
+	BitmapHandle *handle = find_bitmap(e, bm);
+	::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	b2->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
   virtual void HeavyPrepare() {
     if (firsttime) {
       firsttime=false;
