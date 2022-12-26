@@ -46,12 +46,12 @@ function load_file()
 	var filename2 = prefilename2.innerText;
 	var data4 = atob(prefiletag2.innerText);
 	
-	console.log("FILE SET");
-	console.log(data3.length);
-	console.log(filename);
-	console.log("FILE SET");
-	console.log(data4.length);
-	console.log(filename2);
+	//console.log("FILE SET");
+	//console.log(data3.length);
+	//console.log(filename);
+	//console.log("FILE SET");
+	//console.log(data4.length);
+	//console.log(filename2);
 	   try {
 	       Module.ccall('set_integer', null, ['number', 'number'], [2,data3.length], { async:true });
 	       Module.ccall('set_string', null, ['number', 'string'], [1,filename] , { async:true });
@@ -104,6 +104,8 @@ function resize_event(event) {
   hd=hd2;
     wd-=60;
     hd-=60;
+    if (wd>800) wd=800;
+    if (hd>600) hd=600;
   var iframe = document.getElementById("canvas");
   if (!iframe) return;
   iframe.style.width = (wd).toString() + "px";
