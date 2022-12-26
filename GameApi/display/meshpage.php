@@ -620,6 +620,7 @@ if ($connect=="yes") {
 <p>
 <h1>about and contact info</h1>
 <?php
+echo "Introduction: <a href=\"article.php\">article</a><br>";
 echo "Create(private): <a href=\"mesh_login.php?return=create_mesh.php\">mesh</a><br>";
 echo "Vault(private): <a href=\"mesh_login.php?return=mesh_hide.php\">vault</a><br>";
 echo "Adverticement: <a href=\"https://www.youtube.com/watch?v=0UF0zIMI2xA&feature=youtu.be\">Video</a><br><p>";
@@ -635,11 +636,7 @@ echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)<br>";
 echo "Source Code: <a href=\"https://tpgames.org/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
 echo "<br><br><br><hr><br><br><br>";
-echo "PRICES: <ul><li>&euro; 120: 3d model viewer,<br>";
-echo "            <li>&euro; 220: 3d model viewer with drag&drop<br>";
-echo "            <li>&euro; 550: 3d model viewer on custom page<br>";
-echo "            </ul><br>";
-echo " All prices include a copy of 3d engine. Contact via email for more info.<p>";
+
 echo "<hr>";
 echo "Terms and conditions:<p>";
 echo "<ul>";
