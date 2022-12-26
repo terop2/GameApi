@@ -785,6 +785,7 @@ struct EnvImpl
   std::vector<ScreenSpaceMaterial*> ss_mat;
   std::vector<IWorld*> worlds;
   std::vector<ICache*> caches;
+  std::vector<Platform*> platforms;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1114,6 +1115,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::PL add_platform(GameApi::Env &e, Platform *pl);
 GameApi::CX add_cache(GameApi::Env &e, ICache *c);
 GameApi::W add_world(GameApi::Env &e, IWorld *w);
 GameApi::SMT add_screenspace_material(GameApi::Env &e, ScreenSpaceMaterial *mat);
@@ -1271,6 +1273,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+Platform *find_platform(GameApi::Env &e, GameApi::PL pl);
 ICache *find_cache(GameApi::Env &e, GameApi::CX c);
 IWorld *find_world(GameApi::Env &e, GameApi::W w);
 ScreenSpaceMaterial *find_screenspace_material(GameApi::Env &e, GameApi::SMT mat);

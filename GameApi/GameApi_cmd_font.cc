@@ -377,6 +377,32 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "T", "[P]", "float", "float" },
 			 { "ev", "", "", "0.0", "0.5" },
 			 "P", "tree_api", "tree_p"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::rect_pl,
+			 "rect_pl",
+			 { "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "x_or_z", "start_or_end_higher" },
+			 { "float", "float", "float", "float", "float", "float", "bool", "bool" },
+			 { "-300.0", "300.0", "-100.0", "-100.0", "-300.0", "300.0", "false", "false" },
+			 "PL", "polygon_api", "rect_pl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::or_elem_pl,
+			 "or_elem_pl",
+			 { "pl1", "pl2" },
+			 { "PL", "PL" },
+			 { "", "" },
+			 "PL", "polygon_api", "or_elem_pl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::array_pl,
+			 "array_pl",
+			 { "arr" },
+			 { "[PL]" },
+			 { "" },
+			 "PL", "polygon_api", "array_pl"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_pl,
+			 "render_pl",
+			 { "pl" },
+			 { "PL" },
+			 { "" },
+			 "P", "polygon_api", "render_pl"));
+			 
+			 
   
   return vec;
 }

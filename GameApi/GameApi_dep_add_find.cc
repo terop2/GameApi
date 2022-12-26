@@ -118,6 +118,17 @@ void add_b(std::shared_ptr<void> ptr)
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
+GameApi::PL add_platform(GameApi::Env &e, Platform *pl)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->platforms.push_back(pl);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(pl));
+  GameApi::PL im;
+  im.id = env->platforms.size()-1;
+  return im;
+}
+
 GameApi::PBO add_pbo(GameApi::Env &e, PixelBufferObject *i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1392,6 +1403,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+}
+
+Platform *find_platform(GameApi::Env &e, GameApi::PL pl)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->platforms[pl.id];  
 }
 
 ICache *find_cache(GameApi::Env &e, GameApi::CX c)
