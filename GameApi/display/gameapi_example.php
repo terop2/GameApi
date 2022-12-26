@@ -31,7 +31,16 @@
     <pre id="gameapi_modificationdate" style="display:none">
 <?php echo $date ?>
     </pre>
+    <div class="center">
     <canvas id="canvas" style="border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px;"></canvas>
+    </div>
+    <style>
+    .center {
+       display: flex;
+       align-items: center;
+       justify-content: center;
+    }
+    </style>
     <script src="gameapi.js?2"></script>
       
   </body>
