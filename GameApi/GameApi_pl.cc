@@ -23059,3 +23059,192 @@ GameApi::W GameApi::MainLoopApi::array_world(std::vector<W> vec)
     vec2.push_back(find_world(e,vec[i]));
   return add_world(e, new ArrayWorld(vec2));
 }
+
+class ArrayPlatform : public Platform
+{
+public:
+  ArrayPlatform(std::vector<Platform*> vec) : vec(vec) { }
+  bool Allow(float x, float z) const
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	Platform *item = vec[i];
+	bool b = item->Allow(x,z);
+	if (b) return true;
+      }
+    return false;
+  }
+  float Height(float x, float z) const
+  {
+    int s = vec.size();
+    float height = -1000000.0;
+    for(int i=0;i<s;i++)
+      {
+	Platform *item = vec[i];
+	bool b = item->Allow(x,z);
+	if (b) {
+	  float h = item->Height(x,z);
+	  if (h>height) height=h;
+	}
+      }
+    return height;
+  }
+  FaceCollection *Render() const
+  {
+    int s = vec.size();
+    std::vector<FaceCollection*> vec2;
+    for(int i=0;i<s;i++)
+      {
+	Platform *item = vec[i];
+	FaceCollection *coll = item->Render();
+	vec2.push_back(coll);
+      }
+    return new OrElem<FaceCollection>(vec2.begin(), vec2.end());
+  }
+private:
+  std::vector<Platform*> vec;
+};
+
+class RectPlatform : public Platform
+{
+public:
+  RectPlatform(float start_x, float end_x,
+	       float start_y, float end_y,
+	       float start_z, float end_z,
+	       bool x_or_z,
+	       bool start_or_end_higher) : m_start_x(start_x), m_end_x(end_x),
+					   m_start_y(start_y), m_end_y(end_y),
+					   m_start_z(start_z), m_end_z(end_z),
+					   m_x_or_z(x_or_z),
+					   m_start_or_end_higher(start_or_end_higher) {}
+  virtual bool Allow(float x, float z) const
+  {
+    if (x>=m_start_x && x<m_end_x)
+      if (z>=m_start_z && z<m_end_z)
+	return true;
+    return false;
+  }
+  virtual float Height(float x, float z) const
+  {
+    float delta_x = x-m_start_x;
+    float delta_z = z-m_start_z;
+    delta_x/=(m_end_x-m_start_x);
+    delta_z/=(m_end_z-m_start_z);
+    float height=0.0;
+    if (m_x_or_z)
+      { // z
+	if (m_start_or_end_higher) { // end higher
+	  height = (1.0-delta_z)*m_start_y + delta_z*m_end_y;
+	}
+	else
+	  { // start higher
+	  height = (1.0-delta_z)*m_end_y + delta_z*m_start_y;
+	  }
+      }
+    else
+      { // x
+	if (m_start_or_end_higher) { // end higher
+	  height = (1.0-delta_x)*m_start_y + delta_x*m_end_y;
+	}
+	else
+	  { // start higher
+	  height = (1.0-delta_x)*m_end_y + delta_x*m_start_y;
+	  }
+      }
+    return height;
+  }
+  virtual FaceCollection *Render() const
+  {
+    Point pp1;
+    Point pp2;
+    Point pp3;
+    Point pp4;
+    pp1.x = m_start_x;
+    pp1.z = m_start_z;
+    pp2.x = m_end_x;
+    pp2.z = m_start_z;
+    pp3.x = m_end_x;
+    pp3.z = m_end_z;
+    pp4.x = m_start_x;
+    pp4.z = m_end_z;
+
+    if (m_x_or_z)
+      {
+	if (m_start_or_end_higher) {
+	  pp1.y = m_start_y;
+	  pp2.y = m_start_y;
+	  pp3.y = m_end_y;
+	  pp4.y = m_end_y;
+	}
+	else
+	  {
+	  pp1.y = m_end_y;
+	  pp2.y = m_end_y;	    
+	  pp3.y = m_start_y;
+	  pp4.y = m_start_y;
+	  }
+      } else
+      {
+	if (m_start_or_end_higher) {
+	  pp2.y = m_end_y;
+	  pp1.y = m_start_y;
+	  pp3.y = m_end_y;
+	  pp4.y = m_start_y;
+	}
+	else
+	  {
+	  pp2.y = m_start_y;
+	  pp1.y = m_end_y;
+	  pp3.y = m_start_y;
+	  pp4.y = m_end_y;
+	  }
+      }
+    return new QuadElem(pp1,pp2,pp3,pp4);
+  }
+private:
+  float m_start_x; float m_end_x;
+  float m_start_y; float m_end_y;
+  float m_start_z; float m_end_z;
+  bool m_x_or_z;
+  bool m_start_or_end_higher;
+};
+
+GameApi::PL GameApi::PolygonApi::array_pl(std::vector<PL> vec)
+{
+  int s = vec.size();
+  std::vector<Platform*> vec2;
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_platform(e,vec[i]));
+    }
+  return add_platform(e, new ArrayPlatform(vec2));
+}
+
+GameApi::PL GameApi::PolygonApi::or_elem_pl(PL pl1, PL pl2)
+{
+  std::vector<PL> vec;
+  vec.push_back(pl1);
+  vec.push_back(pl2);
+  return array_pl(vec);
+}
+
+GameApi::PL GameApi::PolygonApi::rect_pl(float start_x, float end_x,
+				      float start_y, float end_y,
+				      float start_z, float end_z,
+				      bool x_or_z,
+				      bool start_or_end_higher)
+{
+  return add_platform(e, new RectPlatform(start_x, end_x,
+					  start_y, end_y,
+					  start_z, end_z,
+					  x_or_z,
+					  start_or_end_higher));
+}
+				      
+GameApi::P GameApi::PolygonApi::render_pl(PL pl)
+{
+  Platform *plat = find_platform(e,pl);
+  FaceCollection *coll = plat->Render();
+  return add_polygon2(e,coll,1);
+}

@@ -2643,7 +2643,13 @@ public:
 };
 
 
-
+class Platform
+{
+public:
+  virtual bool Allow(float x, float z) const=0;
+  virtual float Height(float x, float z) const=0;
+  virtual FaceCollection *Render() const=0;
+};
 
 #endif
 

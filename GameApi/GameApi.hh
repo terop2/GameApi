@@ -2471,6 +2471,15 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  PL rect_pl(float start_x, float end_x,
+	     float start_y, float end_y,
+	     float start_z, float end_z,
+	     bool x_or_z,
+	     bool start_or_end_higher);
+  PL or_elem_pl(PL pl1, PL pl2);
+  PL array_pl(std::vector<PL> vec);
+	     
+  P render_pl(PL pl);
   P material_face_collection(P base, P material);
   ML mixshader_shader(EveryApi &ev, ML ml, float mix=0.5);
   P extract_large_polygons(P p, float minimum_size, bool reverse);
