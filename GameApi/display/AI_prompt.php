@@ -1,10 +1,11 @@
 <?php
 
 ?>
+<!doctype html>
 <div class="centre">
 <canvas class="canvas" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
 </div>
-<textarea class="input" id="input" rows="1" cols="50"></textarea>
+<textarea class="input" id="input" rows="1" cols="50" contenteditable></textarea>
 
 <style>
 html, body { height: 100%; margin: 0; }
@@ -20,13 +21,17 @@ html, body { height: 100%; margin: 0; }
 }
 </style>
 <script>
+
+
+
 var canv = document.getElementById("canvas");
 var Module = {
    canvas : canv,
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
-   };
+};
+
 
 var g_emscripten_running = false;
 
@@ -47,7 +52,6 @@ function emscripten_loading_callback()
 function emscripten_ready_callback(state)
 {
    console.log("Ready");
-
 }
 
 function check_emscripten_ready(state)
@@ -136,6 +140,7 @@ function load_emscripten(state,filename, contents, filenames)
 
       var script = document.createElement("script");
       script.setAttribute("src", src);
+      script.setAttribute("id", "scripttag");
       document.getElementsByTagName("head")[0].appendChild(script);
       check_if_emscripten_running();
       } else {
@@ -146,6 +151,7 @@ function load_emscripten(state,filename, contents, filenames)
 
 window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
+
 
 function resize_event(event)
 {
