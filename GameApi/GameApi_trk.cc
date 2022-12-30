@@ -319,6 +319,7 @@ void GameApi::TrackerApi::stop_music_playing()
   // TODO thread removal
   g_low->sdl->SDL_PauseAudio(1);
   delete mt;
+  mt=0;
   
 #ifndef USE_SDL_MIXER_HACK
 #ifdef USE_SDL_MIXER
@@ -476,7 +477,6 @@ struct DATAPASS
   sf::AudioService *audio;
 };
 
-
 void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset)
 {
   DATAPASS *pass = new DATAPASS;
@@ -564,7 +564,6 @@ void play_midi(void *ptr)
 	}
       
     }
-  
 }
 
 

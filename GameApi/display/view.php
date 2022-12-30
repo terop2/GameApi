@@ -1695,7 +1695,7 @@ function load_emscripten(state,filename, contents, filenames)
       } else {
       Module.ccall('set_string', null, ['number', 'string'],[0,create_script(filename,contents,filenames)]);
       }
-      setTimeout(function() { check_emscripten_ready(state) }, 100);
+      setTimeout(function() { check_emscripten_ready(state) }, 1000);
 }
 
 function load_files(data_array2, filename_array)
@@ -1825,15 +1825,15 @@ function check_emscripten_ready(state)
     //if (value !== undefined)
     //    console.log('ready: ' . value);
     if (value==2) { emscripten_loading_callback();
-    	 setTimeout(function() { check_emscripten_ready(state) }, 100);
+    	 setTimeout(function() { check_emscripten_ready(state) }, 1000);
     } else
     if (value==1) { emscripten_ready_callback(state); }
     else {
-    	 setTimeout(function() { check_emscripten_ready(state) }, 100);
+    	 setTimeout(function() { check_emscripten_ready(state) }, 1000);
 	 }
 	 } else
 	 {
-    	 setTimeout(function() { check_emscripten_ready(state) }, 100);
+    	 setTimeout(function() { check_emscripten_ready(state) }, 1000);
 	 }
 }
 function clickselectfile2()

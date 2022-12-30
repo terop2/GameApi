@@ -22,7 +22,7 @@
 #endif
 
 #ifndef RASPI
-#define USE_MIX 1
+#undef USE_MIX
 #define USE_TEXTURE_READ 1
 #endif
 
@@ -68,7 +68,7 @@
 #endif
 #endif
 #include "GameApi_h.hh"
-#include <SDL_mixer.h>
+//#include <SDL_mixer.h>
 
 #ifdef WAYLAND
 #include <SDL_syswm.h>
@@ -171,6 +171,12 @@ std::string to_str(int val)
   return ss.str();
 }
 
+struct SDL_EVENT_HACK
+{
+  SDL_Event e;
+  unsigned int cc; // HACK BECAUSE OF SDL EVENT UNION IS HANDLED BADLY IN EMSCRIOPTEN... EMSCRIPTEN WRITES ONE BYTE OUTSIDE OF SDL_Event structure.
+};
+
 void check_err(const char *name)
 {
 #if 0  
@@ -184,9 +190,9 @@ void check_err(const char *name)
 
 void map_enums_sdl(unsigned int &i) {
   switch(i) {
-  case Low_SAMPLE_FREQ: i=SAMPLE_FREQ; break;
-  case Low_AUDIO_F32LSB: i=AUDIO_F32LSB; break;
-  case Low_SAMPLE_BUF_SIZE: i=SAMPLE_BUF_SIZE; break;
+    case Low_SAMPLE_FREQ: i=SAMPLE_FREQ; break;
+    case Low_AUDIO_F32LSB: i=AUDIO_F32LSB; break;
+    case Low_SAMPLE_BUF_SIZE: i=SAMPLE_BUF_SIZE; break;
 
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
@@ -205,9 +211,9 @@ void map_enums_sdl(int &i) {
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
 #ifdef LINUX
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK |SDL_INIT_AUDIO; break;
 #else
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK|SDL_INIT_AUDIO; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK |SDL_INIT_AUDIO; break;
 #endif
 #ifdef EMSCRIPTEN
   case  Low_SDL_GL_CONTEXT_PROFILE_MASK: i=21; /*::SDL_GL_CONTEXT_PROFILE_MASK;*/ break;
@@ -1191,13 +1197,28 @@ class SDLApi : public SDLLowApi
   virtual void SDL_UnlockSurface(Low_SDL_Surface *surf) { ::SDL_UnlockSurface((SDL_Surface*)surf->ptr); }
   virtual void SDL_ShowCursor(bool b) { ::SDL_ShowCursor(b); }
   virtual int SDL_PollEvent(Low_SDL_Event *event) {
-    SDL_Event e;
-    int val = ::SDL_PollEvent((SDL_Event*)&e); 
-    event->type = e.type;
-    event->key.keysym.sym = e.key.keysym.sym;
-    event->wheel.y = e.wheel.y;
-    event->tfinger.x = e.tfinger.x;
-    event->tfinger.y = e.tfinger.y;
+    if (!event) { std::cout << "LOW::SDL_PollEvent called with null pointer" << std::endl; return 0; }
+    //SDL_Event e;
+    SDL_EVENT_HACK h;
+      h.cc=0x55555555;
+    SDL_Event &e = h.e;
+    int val = ::SDL_PollEvent(&e);
+    if (h.cc!=0x55555555) { static bool firsttime=true; if (firsttime) { std::cout << "LOW::SDL_PollEvent write outside of Event struct (maybe you're missing -s USE_SDL=2 in compiling)" << std::endl; firsttime=false; }  }
+
+    if (!val) { return 0; }
+
+	if (event) {
+	event->type = e.type;
+   if (e.type==SDL_KEYDOWN||e.type==SDL_KEYUP) {
+      event->key.keysym.sym = e.key.keysym.sym;
+    }
+    if (e.type==SDL_MOUSEWHEEL) {
+      event->wheel.y = e.wheel.y;
+    }
+    if (e.type==SDL_FINGERDOWN||e.type==SDL_FINGERUP||e.type==SDL_FINGERMOTION) {
+      event->tfinger.x = e.tfinger.x;
+      event->tfinger.y = e.tfinger.y;
+    }
 #ifndef EMSCRIPTEN
     if (e.type==SDL_DROPFILE)
       event->drop.file = e.drop.file;
@@ -1224,7 +1245,7 @@ class SDLApi : public SDLLowApi
     if (e.type==SDL_JOYBUTTONDOWN || e.type==SDL_JOYBUTTONUP) {
       event->jbutton.button = e.jbutton.button;
     }
-
+	}
     return val;
   }
   virtual unsigned int SDL_GetTicks() { return ::SDL_GetTicks(); }
