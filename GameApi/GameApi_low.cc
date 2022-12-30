@@ -1203,7 +1203,7 @@ class SDLApi : public SDLLowApi
       h.cc=0x55555555;
     SDL_Event &e = h.e;
     int val = ::SDL_PollEvent(&e);
-    if (h.cc!=0x55555555) { static bool firsttime=true; if (firsttime) { std::cout << "LOW::SDL_PollEvent write outside of Event struct" << std::endl; firsttime=false; }  }
+    if (h.cc!=0x55555555) { static bool firsttime=true; if (firsttime) { std::cout << "LOW::SDL_PollEvent write outside of Event struct (maybe you're missing -s USE_SDL=2 in compiling)" << std::endl; firsttime=false; }  }
 
     if (!val) { return 0; }
 
