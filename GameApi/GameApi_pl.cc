@@ -6252,7 +6252,7 @@ public:
     shader.id = -1;
     firsttime = true;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -6402,7 +6402,7 @@ public:
     firsttime = true;
     va.id=0;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //  int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -6572,7 +6572,7 @@ public:
     firsttime = true;
     va.id=0;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -6752,7 +6752,7 @@ public:
     firsttime = true;
     va.id=0;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -6938,7 +6938,7 @@ public:
     firsttime = true;
     va.id=0;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -7134,7 +7134,7 @@ public:
     firsttime = true;
     va.id=0;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -7335,7 +7335,7 @@ public:
     firsttime = true;
     va.id = 0;
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //  int shader_id() { return shader.id; }
   void handle_event(MainLoopEvent &e)
   {
@@ -21787,12 +21787,12 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
-    if (e.type==1027 && e.ch==1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1)
       {
 	zoom_pos--; if (zoom_pos<-5) zoom_pos=-5;
 	calc_mat();
       }
-    if (e.type==1027 && e.ch==-1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1)
       {
 	zoom_pos++; if (zoom_pos>5) zoom_pos=5;
 	calc_mat();
@@ -21862,12 +21862,12 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
-    if (e.type==1027 && e.ch==1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1)
       {
 	zoom_pos--; if (zoom_pos<-20) zoom_pos=-20;
 	calc_mat();
       }
-    if (e.type==1027 && e.ch==-1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1)
       {
 	zoom_pos++; if (zoom_pos>10) zoom_pos=10;
 	calc_mat();

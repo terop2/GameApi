@@ -19,19 +19,19 @@
 #
 
 
-CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
-	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
+	 GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
 	FreeType.cc FreeType2.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
 	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
 	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
 	GameApi_fnt.cc GameApi_gr.cc  \
         GameApi_lay.cc \
-	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_li.cc GameApi_mx.cc GameApi_pc.cc \
 	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \

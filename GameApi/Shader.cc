@@ -4974,6 +4974,11 @@ struct ShaderCacheItem
 };
 std::vector<ShaderCacheItem> shader_cache;
 
+void clear_shader_cache()
+{
+  shader_cache.clear();
+}
+
 bool operator==(const ShaderCacheItem &i1, const ShaderCacheItem &i2)
 {
   bool b = true;
@@ -5209,7 +5214,7 @@ void ShaderSeq::use(int i)
   if (progs[i])
     progs[i]->use();
   else
-    std::cout << "Error: progs[i] in ShaderSeq::use is 0" << std::endl;
+    std::cout << "Error: progs[i] i=" << i << " in ShaderSeq::use is 0" << std::endl;
 }
 void ShaderSeq::unuse(int i)
 {

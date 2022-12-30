@@ -491,7 +491,7 @@ public:
     }
   }
   virtual void handle_event(MainLoopEvent &e) { fetch->event(e); }
-  virtual std::vector<int> shader_id() { return std::vector<int>{sh.id}; }
+  virtual std::vector<int> shader_id() { if (sh.id>=0) return std::vector<int>{sh.id}; std::cout << "DynChar rejected sh.id=" << sh.id << std::endl; return std::vector<int>(); }
 
 private:
   GameApi::EveryApi &ev;
@@ -545,7 +545,7 @@ public:
   }
 
   virtual void handle_event(MainLoopEvent &e) { }
-  virtual std::vector<int> shader_id() { return std::vector<int>{sh.id}; }
+  virtual std::vector<int> shader_id() { if (sh.id>=0) return std::vector<int>{sh.id}; std::cout << "DynChar2 rejected" << std::endl; return std::vector<int>(); }
   //virtual int shader_id() { return sh.id; }
 
 private:

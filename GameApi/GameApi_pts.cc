@@ -1026,7 +1026,7 @@ public:
 
   ev.shader_api.unuse(sh);
   }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;

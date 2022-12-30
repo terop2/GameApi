@@ -380,8 +380,30 @@ struct KeyStruct
 
 std::vector<KeyStruct> g_gltf_instances;
 
+bool instance_deleter_installed=false;
+
+int register_cache_deleter(void (*fptr)(void*), void*);
+void del_instances(void*)
+{
+  int s = g_gltf_instances.size();
+  for(int i=0;i<s;i++)
+    {
+      KeyStruct &s = g_gltf_instances[i];
+      delete s.obj;
+    }
+  g_gltf_instances.clear();
+  instance_deleter_installed=false;
+}
+
 LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary)
 {
+
+  if (instance_deleter_installed==false)
+    {
+      register_cache_deleter(&del_instances,(void*)0);
+      instance_deleter_installed=true;
+    }
+  
   std::string key = base_url + ":" + url;
 
   int s = g_gltf_instances.size();

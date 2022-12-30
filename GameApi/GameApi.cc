@@ -8210,7 +8210,7 @@ class RenderInstanced : public MainLoopItem
 {
 public:
   RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -8413,7 +8413,7 @@ class RenderInstanced_matrix : public MainLoopItem
 {
 public:
   RenderInstanced_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -8610,6 +8610,7 @@ public:
   RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() {
+    if (shader.id<=0) return std::vector<int>(); 
     static std::vector<int> v{shader.id};
     if (v[0]==shader.id) { return v; }
     
@@ -8826,7 +8827,7 @@ class RenderInstancedTex_matrix : public MainLoopItem
 public:
   RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex_matrix() { ev.texture_api.delete_texid(ids); }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -9033,7 +9034,7 @@ public:
   RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1; }
   //int shader_id() { return shader.id; }
   ~RenderInstancedTex_id() { if (bm) ev.texture_api.delete_texid(*bm); }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -9249,7 +9250,7 @@ public:
   RenderInstancedTex_id_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1;}
   ~RenderInstancedTex_id_matrix() { if (bm) ev.texture_api.delete_texid(*bm); }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -9465,7 +9466,7 @@ class RenderInstancedCubemap : public MainLoopItem
 public:
   RenderInstancedCubemap(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; va.id = -1; }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -9682,7 +9683,7 @@ class RenderInstancedCubemap_matrix : public MainLoopItem
 public:
   RenderInstancedCubemap_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm)  { firsttime = true; shader.id=-1; va.id=-1; }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -9902,7 +9903,7 @@ public:
   RenderInstancedTex2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; va.id=-1; }
   //int shader_id() { return shader.id; }
   ~RenderInstancedTex2() { ev.texture_api.delete_texid(ids); }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
@@ -10109,7 +10110,7 @@ public:
   RenderInstancedTex2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time)  { firsttime = true; shader.id=-1; va.id = -1; }
   ~RenderInstancedTex2_matrix() { ev.texture_api.delete_texid(ids); }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
     MatrixArray *obj2 = find_matrix_array(env, pts);
@@ -10316,7 +10317,7 @@ class RenderInstanced2 : public MainLoopItem
 public:
   RenderInstanced2(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::VA va, GameApi::PTA pta, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), va(va), pta(pta), fade(fade), flip(flip), start_time(start_time), end_time(end_time) { firsttime = true; shader.id=-1; }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -10480,7 +10481,7 @@ class RenderInstanced2_matrix : public MainLoopItem
 public:
   RenderInstanced2_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::VA va, GameApi::MSA pta, bool fade, bool flip, float start_time, float end_time) : env(e), ev(ev), va(va), pta(pta), fade(fade), flip(flip), start_time(start_time), end_time(end_time) { firsttime = true; shader.id=-1; }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -13159,17 +13160,17 @@ std::vector<GameApi::MX> GameApi::MixedApi::mx_values(MX val)
   return values;
 }
 
-class EmptyEvent : public Event
+class EmptyEvent : public Event3
 {
 public:
   void execute(MainLoopEnv &e) { }
   void handle_event(MainLoopEvent &e) { }
   bool event_triggered() const { return false; }
 };
-class KeyEvent : public Event
+class KeyEvent : public Event3
 {
 public:
-  KeyEvent(Event *next, int key_id, int key_type) : next(next), key_id(key_id), key_type(key_type) { 
+  KeyEvent(Event3 *next, int key_id, int key_type) : next(next), key_id(key_id), key_type(key_type) { 
     trigger = false;
   }
   void execute(MainLoopEnv &e) { return next->execute(e); }
@@ -13187,15 +13188,15 @@ public:
     return t;
   }
 private:
-  Event *next;
+  Event3 *next;
   int key_id;
   int key_type;
   mutable bool trigger;
 };
-class TimerEvent : public Event
+class TimerEvent : public Event3
 {
 public:
-  TimerEvent(Event *next, float time) : next(next), time(time) { 
+  TimerEvent(Event3 *next, float time) : next(next), time(time) { 
     trigger = false;
   }
   
@@ -13216,15 +13217,15 @@ public:
     return t;
   }
 private:
-  Event *next;
+  Event3 *next;
   float time;
   mutable bool trigger;
 };
 
-class DeltaTimerEvent : public Event
+class DeltaTimerEvent : public Event3
 {
 public:
-  DeltaTimerEvent(Event *next, Event *ev, float delta_time) : next(next), ev(ev), delta_time(delta_time) { 
+  DeltaTimerEvent(Event3 *next, Event3 *ev, float delta_time) : next(next), ev(ev), delta_time(delta_time) { 
     state = 0;
     trigger = false;
   }
@@ -13252,8 +13253,8 @@ public:
   }
   
 private:
-  Event *next;
-  Event *ev;
+  Event3 *next;
+  Event3 *ev;
   float delta_time;
   float start_time;
   int state;
@@ -13614,10 +13615,12 @@ public:
   }
   virtual void set_env(GameApi::Env *ei)
   {
+    std::cout << "Setting ENV to " << (int)ei << std::endl;
     e = ei;
   }
   virtual void set_everyapi(GameApi::EveryApi *evi)
   {
+    std::cout << "Setting EVERYAPI to " << (int)evi << std::endl;
     ev = evi;
   }
   void show_logo()
@@ -13685,11 +13688,13 @@ public:
     }
      env.ev->mainloop_api.alpha(true);
      ogl->glEnable(Low_GL_DEPTH_TEST);
+     
      GameApi::MainLoopApi::Event e;
      while((e = env.ev->mainloop_api.get_event()).last==true)
        {
 	 /* this eats all events from queue */
        }
+ 
      g_hide_container.clear();
      g_prepare_done = false;
      firsttime2 = true;
@@ -13785,7 +13790,8 @@ public:
     async_is_done = true;
 
     if (firsttime) {
-      MainLoopItem *item = find_main_loop(env->ev->get_env(),code);
+      GameApi::Env &ee = env->ev->get_env();
+      MainLoopItem *item = find_main_loop(ee,code);
       clear_texture_confirms();
       //item->Prepare();
       vis = new CollectInterfaceImpl;
@@ -13876,11 +13882,14 @@ public:
     
     if (no_draw_count==0)
       env->ev->mainloop_api.clear_3d(0xff000000);
+
+
     
     // handle esc event
     GameApi::MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
+
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
@@ -14268,14 +14277,18 @@ Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
 {
   //if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
-  Splitter *blk2 = (Splitter*)arg;
+  Splitter *blk2 = 0;
+  if (arg)
+    blk2 = (Splitter*)arg;
+  else
+    std::cout << "FAIL: Splitter_iter2 NULL" << std::endl;
 
   if (g_new_splitter) blk2 = g_new_splitter;
   if (g_new_blocker_env) {
     blocker_iter((void*)g_new_blocker_env);
     return;
   }
-  
+  if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return; }  
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
     {
@@ -14840,7 +14853,7 @@ public:
 
   }
   //int shader_id() { return shader.id; }
-  std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>();  }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -27986,6 +27999,7 @@ Splitter *g_new_splitter = 0;
 Envi_2 *g_new_blocker_env = 0;
 Envi_2 *g_pending_blocker_env = 0;
 bool g_new_blocker_block = false;
+void clear_shader_cache();
 void run_callback(void *ptr)
 {
   const char *script2 = (const char*)ptr;
@@ -28001,11 +28015,12 @@ void run_callback(void *ptr)
   g_new_script = script;
   static int g_id = -1;
   if (g_id!=-1) clear_block(g_id);
-  //g_id = add_block();
-  //set_current_block(g_id);
+  clear_shader_cache();
+  g_id = add_block();
+  set_current_block(g_id);
   GameApi::ExecuteEnv e;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
-  //set_current_block(-2);
+  set_current_block(-2);
   //std::cout << "blk.second==" << blk.second << std::endl;
   if (blk.second=="RUN") {
     GameApi::RUN r;
@@ -28147,7 +28162,7 @@ void g_content_deleter(void *)
   for(int i=0;i<s;i++)
     {
       const unsigned char *ptr = g_content[i];
-      delete ptr;
+      delete [] ptr;
     }
   g_content.clear();
   g_content_end.clear();
@@ -30358,8 +30373,11 @@ public:
       g_urls.push_back(urlptr);
       unsigned char *ptr = blk->buffer();
       int sz = blk->size_in_bytes();
-      g_content.push_back(ptr);
-      g_content_end.push_back(ptr+sz);
+      unsigned char *ptr2 = new unsigned char[sz+1];
+      std::copy(ptr,ptr+sz,ptr2);
+      ptr2[sz]=0;
+      g_content.push_back(ptr2);
+      g_content_end.push_back(ptr2+sz);
     }
 
     

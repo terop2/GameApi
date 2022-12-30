@@ -515,6 +515,8 @@ enum
 #define Low_SDL_JOYBUTTONUP 0x604
 #define Low_SDL_MOUSEBUTTONDOWN 0x401
 #define Low_SDL_MOUSEBUTTONUP 0x402
+#define Low_SDL_KEYUP 0x301
+#define Low_SDL_KEYDOWN 0x300
 
 #define Low_SDL_WINDOWEVENT_EXPOSED 3
 
@@ -527,19 +529,19 @@ struct wl_shell_surface;
 
 struct Low_SDL_SysWMinfo
 {
-  wl_display *display;
-  wl_surface *surface;
-  wl_shell_surface *shell_surface;
+  wl_display *display=0;
+  wl_surface *surface=0;
+  wl_shell_surface *shell_surface=0;
 };
 
 struct Low_SDL_DisplayMode
 {
-  int w,h;
+  int w=0,h=0;
 };
 
 struct Low_SDL_Event_KeySym
 {
-  int sym;
+  int sym=-1;
 };
 struct Low_SDL_Event_Key
 {
@@ -547,11 +549,11 @@ struct Low_SDL_Event_Key
 };
 struct Low_SDL_MouseWheelEvent
 {
-  int y;
+  int y=0;
 };
 struct Low_SDL_MouseButtonEvent
 {
-  int button;
+  int button=-1;
 };
 struct Low_SDL_DropEvent
 {
@@ -564,29 +566,29 @@ struct Low_SDL_TouchFingerEvent
 };
 struct Low_SDL_WindowEvent
 {
-  int event;
-  int data1, data2;
+  int event=-1;
+  int data1=-1, data2=-1;
 };
 
 struct Low_SDL_JoyBall
 {
-  int ball;
-  int xrel;
-  int yrel;
+  int ball=-1;
+  int xrel=-1;
+  int yrel=-1;
 };
 struct Low_SDL_JoyAxis
 {
-  int value;
-  int axis;
+  int value=-1;
+  int axis=-1;
 };
 struct Low_SDL_JoyButton
 {
-  int button;
+  int button=-1;
 };
 
 struct Low_SDL_Event
 {
-  int type;
+  int type=-1;
   Low_SDL_Event_Key key;
   Low_SDL_MouseWheelEvent wheel;
   Low_SDL_TouchFingerEvent tfinger;
@@ -604,27 +606,27 @@ typedef void* Low_SDL_GLContext;
 typedef unsigned int Low_SDL_Keymod;
 struct Low_SDL_Joystick
 {
-  void *data;
+  void *data=0;
 };
 //typedef void* Low_SDL_RWops;
 
 struct Low_SDL_RWops
 {
-  void *ptr;
+  void *ptr=0;
 };
 
 typedef void (*Low_SDL_AudioCallback)(void*, unsigned char*, int);
 
 struct Low_SDL_AudioSpec
 {
-  int freq;
-  int format;
-  unsigned char channels;
-  unsigned char silence;
-  unsigned short samples;
-  unsigned int size;
+  int freq=0;
+  int format=0;
+  unsigned char channels=0;
+  unsigned char silence=0;
+  unsigned short samples=0;
+  unsigned int size=0;
   Low_SDL_AudioCallback callback;
-  void *userdata;
+  void *userdata=0;
 };
 
 class SDLLowApi
@@ -681,11 +683,11 @@ public:
 
 struct Low_Mix_Chunk
 {
-  void *ptr;
+  void *ptr=0;
 };
 struct Low_Mix_Music
 {
-  void *ptr;
+  void *ptr=0;
 };
 enum {
   Low_MIX_NONE=0x5600,

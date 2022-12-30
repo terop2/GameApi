@@ -459,7 +459,7 @@ public:
     api.render(l);
     ev.shader_api.unuse(sh);
   }
-  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  virtual std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return shader.id; }
 
 private:
@@ -519,7 +519,7 @@ public:
     api.render(l2);
     ev.shader_api.unuse(sh);
   }
-  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  virtual std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return shader.id; }
 
 private:
@@ -611,7 +611,7 @@ public:
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  virtual std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return -1; }
 
 private:
@@ -704,7 +704,7 @@ public:
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  virtual std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return -1; }
 
 private:
@@ -803,7 +803,7 @@ public:
     api.render_inst(l,pta);
     ev.shader_api.unuse(sh);
   }
-  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  virtual std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return -1; }
 
 private:
@@ -919,7 +919,7 @@ public:
     api.render_inst_matrix(l,pta);
     ev.shader_api.unuse(sh);
   }
-  virtual std::vector<int> shader_id() { return std::vector<int>{shader.id}; }
+  virtual std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   //int shader_id() { return -1; }
 
 private:
