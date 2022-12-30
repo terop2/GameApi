@@ -11,6 +11,7 @@ void stackTrace();
 struct Block
 {
   std::vector<std::shared_ptr<void> > vec;
+#if 0
   ~Block()
   {
     int s = vec.size();
@@ -21,6 +22,7 @@ struct Block
 	//if (i%10==0) {
 	//  ProgressBar(667,i*15/s,15,"Cleanup");
 	//}
+	//std::cout << typeid(decltype(*(vec[i]))).name() << std::endl;
       vec[i].reset();
       }
   //if (s)
@@ -28,7 +30,7 @@ struct Block
     //std::cout << std::endl;
     vec.clear();
   }
-
+#endif
 };
 
 struct G_BLOCK

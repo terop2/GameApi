@@ -27999,6 +27999,7 @@ Splitter *g_new_splitter = 0;
 Envi_2 *g_new_blocker_env = 0;
 Envi_2 *g_pending_blocker_env = 0;
 bool g_new_blocker_block = false;
+void clear_shader_cache();
 void run_callback(void *ptr)
 {
   const char *script2 = (const char*)ptr;
@@ -28014,11 +28015,12 @@ void run_callback(void *ptr)
   g_new_script = script;
   static int g_id = -1;
   if (g_id!=-1) clear_block(g_id);
-  //g_id = add_block();
-  //set_current_block(g_id);
+  clear_shader_cache();
+  g_id = add_block();
+  set_current_block(g_id);
   GameApi::ExecuteEnv e;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
-  //set_current_block(-2);
+  set_current_block(-2);
   //std::cout << "blk.second==" << blk.second << std::endl;
   if (blk.second=="RUN") {
     GameApi::RUN r;
@@ -28160,7 +28162,7 @@ void g_content_deleter(void *)
   for(int i=0;i<s;i++)
     {
       const unsigned char *ptr = g_content[i];
-      delete ptr;
+      delete [] ptr;
     }
   g_content.clear();
   g_content_end.clear();
@@ -30371,8 +30373,11 @@ public:
       g_urls.push_back(urlptr);
       unsigned char *ptr = blk->buffer();
       int sz = blk->size_in_bytes();
-      g_content.push_back(ptr);
-      g_content_end.push_back(ptr+sz);
+      unsigned char *ptr2 = new unsigned char[sz+1];
+      std::copy(ptr,ptr+sz,ptr2);
+      ptr2[sz]=0;
+      g_content.push_back(ptr2);
+      g_content_end.push_back(ptr2+sz);
     }
 
     
