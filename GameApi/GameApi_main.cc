@@ -1123,6 +1123,8 @@ extern int g_resize_event_sy;
 extern Low_SDL_Window *sdl_window;
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
+
+  
   OpenglLowApi *ogl = g_low->ogl;
   Low_SDL_Event event;
   Event e2;
@@ -1135,7 +1137,10 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   int mouse_wheel_y = 0;
   int val = g_low->sdl->SDL_GetMouseState(&x, &y);
   e2.type = event.type;
-  e2.ch = event.key.keysym.sym;
+  if (event.type==Low_SDL_KEYDOWN||event.type==Low_SDL_KEYUP)
+    e2.ch = event.key.keysym.sym;
+  else
+    e2.ch=-1;
   if (event.type==256) { exit(0); }
   std::string filename = "";
   if (event.type==Low_SDL_DROPFILE)
@@ -1810,8 +1815,10 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   //	}
   ////	screenx=screenx*scale_x;
   //	screeny=screeny*scale_y;
-
+  if (ml.id<0) { std::cout << "execute_ml rejected " << ml.id << std::endl; return; }
   MainLoopItem *item = find_main_loop(e, ml);
+  if (!item) { std::cout << "execute_ml rejected item=NULL with ml.id=" << ml.id << std::endl; /*check_main_loop_array(e);*/ return; }
+  if (color.id<0||texture_2d.id<0||texture.id<0) { std::cout << "execute_ml shaders rejected" << std::endl; return; }
   MainLoopEnv ek;
   ek.sh_color = color.id;
   ek.sh_texture_2d = texture_2d.id;
@@ -1833,20 +1840,25 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   ek.screen_width = screen_size_x;
   ek.screen_height = screen_size_y;
 
+  if (item) {
   std::vector<int> vec = item->shader_id();
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
       GameApi::SH sh;
       sh.id = vec[i];
-      if (sh.id!=-1) {
+      if (sh.id>=0) {
 	GameApi::M mat = ev.matrix_api.identity();
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "in_View", mat);
-      }
+      } else
+	{
+	  std::cout << "execute_ml rejected SH " << sh.id << "coming from shader_id()" << std::endl; 
+	}
     }
   
   item->execute(ek);
+  }
 }
 class PrintStats : public MainLoopItem
 {
@@ -1897,15 +1909,23 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
 {
   MainLoopEvent e2;
   e2.type = ee.type;
-  e2.ch = ee.ch;
-  if (e2.type==1027 && e2.ch==0)
+  if (e2.type==Low_SDL_KEYDOWN||e2.type==Low_SDL_KEYUP)
+    e2.ch = ee.ch;
+  else e2.ch=-1;
+  if (e2.type==Low_SDL_MOUSEWHEEL && e2.ch==-1)
     {
       if (ee.mouse_wheel_y<0) e2.ch=-1;
       if (ee.mouse_wheel_y>0) e2.ch=1;
     }
-  e2.cursor_pos = *find_point(e,ee.cursor_pos);
-  e2.button = ee.button;
-  e2.drag_drop_filename = ee.drag_drop_filename;
+  if (ee.cursor_pos.id!=-1) {
+    e2.cursor_pos = *find_point(e,ee.cursor_pos);
+  } else e2.cursor_pos=Point(0.0,0.0,0.0);
+  if (e2.type==Low_SDL_MOUSEBUTTONDOWN||e2.type==Low_SDL_MOUSEBUTTONUP)
+    e2.button = ee.button;
+  else e2.button=-1;
+  if (e2.type==Low_SDL_DROPFILE) {
+    e2.drag_drop_filename = ee.drag_drop_filename;
+  } else e2.drag_drop_filename="";
   e2.joy0_button0 = ee.joy0_button0;
   e2.joy0_button1 = ee.joy0_button1;
   e2.joy0_button2 = ee.joy0_button2;
@@ -1931,9 +1951,11 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   e2.joy0_ball1 = ee.joy0_ball1;
   e2.joy1_ball0 = ee.joy1_ball0;
   e2.joy1_ball1 = ee.joy1_ball1;
-  
+  if (ml.id!=-1) {
   MainLoopItem *item = find_main_loop(e, ml);
-  item->handle_event(e2);
+  if (item)
+    item->handle_event(e2);
+    }
 }
 #if 0
 class TimingMainLoop : public MainLoopItem

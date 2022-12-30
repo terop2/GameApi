@@ -1769,13 +1769,14 @@ function start_emscripten_really(vm)
 }
 function start_emscripten(vm)
 {
-  setTimeout(function() { start_emscripten_really(vm) },100);
+  setTimeout(function() { start_emscripten_really(vm) },1000);
 }
 
 var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
 	       g_emscripten_alive=true;
+
 //indicator[0]=false; 
 	       var old = indicator[1];
 	       var old2 = indicator[2];
@@ -1800,7 +1801,7 @@ function check_emscripten_running(indicator)
    	 //console.log("RUNNING");
 	 } else {
    	 //console.log("TIMEOUT");
-	 setTimeout(function() { check_emscripten_running(indicator) },100);
+	 setTimeout(function() { check_emscripten_running(indicator) },1000);
 	 }
    //console.log("RUNNING");
    //console.log(indicator);
@@ -1823,7 +1824,7 @@ function check_emscripten_running(indicator)
 
 function check_if_emscripten_running(indicator)
 {
-   setTimeout(function() { check_emscripten_running(indicator) },100);
+   setTimeout(function() { check_emscripten_running(indicator) },1000);
 }
 
 

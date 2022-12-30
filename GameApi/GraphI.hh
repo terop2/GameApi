@@ -1078,7 +1078,7 @@ public:
   virtual MixedI *Clone() const=0;
 };
 
-class Event
+class Event3
 {
 public:
   virtual void execute(MainLoopEnv &e)=0;

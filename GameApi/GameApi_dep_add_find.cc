@@ -139,6 +139,7 @@ GameApi::PBO add_pbo(GameApi::Env &e, PixelBufferObject *i)
   im.id = env->pbo.size()-1;
   return im;
 }
+
 GameApi::SHP add_shp(GameApi::Env &e, ShaderParameterI* i)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -169,7 +170,6 @@ GameApi::TF add_gltf(GameApi::Env &e, GLTFModelInterface *i)
   im.id = env->tf.size()-1;
   return im;
 }
-
 GameApi::SHC add_shader_code(GameApi::Env &e, ShaderCode *code)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -180,7 +180,6 @@ GameApi::SHC add_shader_code(GameApi::Env &e, ShaderCode *code)
   im.id = env->shc.size()-1;
   return im;
 }
-
 GameApi::GC add_gc(GameApi::Env &e, GraphicsContext *gc)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -668,6 +667,7 @@ GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
   ml.id = env->main_loop.size()-1;
   return ml;
 }
+
 GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1422,7 +1422,6 @@ IWorld *find_world(GameApi::Env &e, GameApi::W w)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->worlds[w.id];  
 }
-
 ScreenSpaceMaterial *find_screenspace_material(GameApi::Env &e, GameApi::SMT mat)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1960,7 +1959,6 @@ GameApi::CX add_cache(GameApi::Env &e, ICache *c)
   c2.id = env->caches.size()-1;
   return c2;
 }
-
 GameApi::W add_world(GameApi::Env &e, IWorld *w)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -2827,9 +2825,9 @@ void print_dependencies(EnvImpl &impl, int num)
   DEP(tf);
   DEP(shi);
   DEP(shp);
-  DEP(pbo);
-  DEP(shc);
-  DEP(ss_mat);
+  //SSSSDSSEP(pbo);
+  //DssEP(shc);
+  //DssEP(ss_mat);
 
   std::sort(g_dep.begin(),g_dep.end());
   int s=g_dep.size();

@@ -6575,7 +6575,6 @@ GameApi::BM GameApi::BitmapApi::gray_to_black(BM bm, float val)
   return bm2;
 }
 
-
 #include "gif.h"
 class WriteGifAnim : public MainLoopItem
 {
