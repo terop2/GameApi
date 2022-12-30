@@ -1,4 +1,6 @@
 #!/bin/bash
+source /home/terop/cvs/emscripten/emsdk/emsdk_env.sh
+source set_paths_emlinux.sh
 (cd hssynth2/synthlib;cmake .)
 (cd hssynth2/synthlib;make -j 8)
 (cd hssynth2/midiplay;cmake .)

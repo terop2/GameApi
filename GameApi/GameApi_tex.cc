@@ -1118,6 +1118,7 @@ private:
   int id;
   int num;
 };
+#if 0
 class GrabToBMArray : public MainLoopItem, public Array<int,int>
 {
 public:
@@ -1137,8 +1138,10 @@ public:
   static std::vector<GameApi::BM> images;
 };
 std::vector<GameApi::BM> GrabToBMArray::images;
+#endif
 GameApi::ARR GameApi::TextureApi::grab_to_bm_array(BM bm)
 {
+#if 0
   //BitmapHandle *handle = find_bitmap(e, bm);
   //::Bitmap<Color> *b2 = find_color_bitmap(handle);
   GrabToBMArray *arr = new GrabToBMArray(bm);
@@ -1150,6 +1153,7 @@ GameApi::ARR GameApi::TextureApi::grab_to_bm_array(BM bm)
   GameApi::ARR t22 = add_array(e,t2);
   t->vec.push_back(t22.id);
   return add_array(e,t);
+#endif
 }
 
 

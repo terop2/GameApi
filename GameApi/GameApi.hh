@@ -536,20 +536,20 @@ public:
   IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects);
   struct Event
   {
-    int type;
-    int ch;
-    PT cursor_pos;
-    int button;
-    int mouse_wheel_y;
-    bool joy0_button0;
-    bool joy0_button1;
-    bool joy0_button2;
-    bool joy0_button3;
+    int type=-1;
+    int ch=-1;
+    PT cursor_pos={-1};
+    int button=-1;
+    int mouse_wheel_y=0;
+    bool joy0_button0=false;
+    bool joy0_button1=false;
+    bool joy0_button2=false;
+    bool joy0_button3=false;
 
-    bool joy1_button0;
-    bool joy1_button1;
-    bool joy1_button2;
-    bool joy1_button3;
+    bool joy1_button0=false;
+    bool joy1_button1=false;
+    bool joy1_button2=false;
+    bool joy1_button3=false;
 
     int joy0_current_axis=0;
     int joy0_axis0 =0;
@@ -570,8 +570,8 @@ public:
     int joy1_ball1 = 0;
     
     
-    bool last;
-    std::string drag_drop_filename;
+    bool last=false;
+    std::string drag_drop_filename="";
   };
   struct DoubleTapState { DoubleTapState() : start_frame(0), in_between(false) { } int start_frame; bool in_between; };
   IMPORT bool ch_doubletap_detect(Event &e, int exprire_timer_count, int ch, DoubleTapState &state);

@@ -5209,7 +5209,7 @@ void ShaderSeq::use(int i)
   if (progs[i])
     progs[i]->use();
   else
-    std::cout << "Error: progs[i] in ShaderSeq::use is 0" << std::endl;
+    std::cout << "Error: progs[i] i=" << i << " in ShaderSeq::use is 0" << std::endl;
 }
 void ShaderSeq::unuse(int i)
 {
