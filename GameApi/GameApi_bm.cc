@@ -687,11 +687,21 @@ void InstallProgress(int num, std::string label, int max=15);
 
 extern std::string gameapi_homepageurl;
 
+void del_bitmap_cache(void* ptr);
+int register_cache_deleter(void (*fptr)(void*), void*data);
+void unregister_cache_deleter(int id);
+
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
-  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0; }
+  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0;
 
+    id=register_cache_deleter(&del_bitmap_cache,(void*)this);
+  }
+  ~LoadBitmapFromUrl()
+  {
+    unregister_cache_deleter(id);
+  }
   virtual int SizeX() const {
     if (!cbm) { return 100; }
     return cbm->SizeX(); }
@@ -733,7 +743,12 @@ public:
     }
     cbm = new BitmapFromBuffer(img);
     }
-  }    
+  }
+  void del_cache()
+  {
+    BufferRef::FreeBuffer(img);
+    cbm=0;
+  }
 private:
   GameApi::Env &env;
   std::string url;
@@ -741,7 +756,15 @@ private:
   BufferRef img;
   Bitmap<Color> *cbm=0;
   bool load_finished = false;  
+  int id;
 };
+void del_bitmap_cache(void* ptr)
+  {
+    LoadBitmapFromUrl *p = (LoadBitmapFromUrl*)ptr;
+    p->del_cache();
+  }
+
+
 #if 0
 class LoadBitmapFromUrl : public Bitmap<Color>
 {

@@ -4974,6 +4974,11 @@ struct ShaderCacheItem
 };
 std::vector<ShaderCacheItem> shader_cache;
 
+void clear_shader_cache()
+{
+  shader_cache.clear();
+}
+
 bool operator==(const ShaderCacheItem &i1, const ShaderCacheItem &i2)
 {
   bool b = true;
