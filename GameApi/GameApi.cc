@@ -13615,12 +13615,12 @@ public:
   }
   virtual void set_env(GameApi::Env *ei)
   {
-    std::cout << "Setting ENV to " << (int)ei << std::endl;
+    //std::cout << "Setting ENV to " << (int)ei << std::endl;
     e = ei;
   }
   virtual void set_everyapi(GameApi::EveryApi *evi)
   {
-    std::cout << "Setting EVERYAPI to " << (int)evi << std::endl;
+    //std::cout << "Setting EVERYAPI to " << (int)evi << std::endl;
     ev = evi;
   }
   void show_logo()

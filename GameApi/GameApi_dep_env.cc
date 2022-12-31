@@ -1469,7 +1469,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	g_del_map_deleter_installed=true;
 	register_cache_deleter(delmap_cache_deleter,0);
       }
-    std::cout << "g_del_map: " << (int)(g_content[i]) << " " << (int)(g_content_end[i]) << " " << (int)(g_content_end[i]-g_content[i]) << std::endl;
+    //std::cout << "g_del_map: " << (int)(g_content[i]) << " " << (int)(g_content_end[i]) << " " << (int)(g_content_end[i]-g_content[i]) << std::endl;
     g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
 	//std::cout << "g_del_map add url: " << url_only << std::endl;
 
