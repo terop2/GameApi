@@ -687,20 +687,20 @@ void InstallProgress(int num, std::string label, int max=15);
 
 extern std::string gameapi_homepageurl;
 
-void del_bitmap_cache(void* ptr);
-int register_cache_deleter(void (*fptr)(void*), void*data);
-void unregister_cache_deleter(int id);
+//void del_bitmap_cache(void* ptr);
+//int register_cache_deleter(void (*fptr)(void*), void*data);
+//void unregister_cache_deleter(int id);
 
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
   LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0;
 
-    id=register_cache_deleter(&del_bitmap_cache,(void*)this);
+    // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
   }
   ~LoadBitmapFromUrl()
   {
-    unregister_cache_deleter(id);
+    //unregister_cache_deleter(id);
   }
   virtual int SizeX() const {
     if (!cbm) { return 100; }
@@ -758,11 +758,11 @@ private:
   bool load_finished = false;  
   int id;
 };
-void del_bitmap_cache(void* ptr)
-  {
-    LoadBitmapFromUrl *p = (LoadBitmapFromUrl*)ptr;
-    p->del_cache();
-  }
+//void del_bitmap_cache(void* ptr)
+// {
+//    LoadBitmapFromUrl *p = (LoadBitmapFromUrl*)ptr;
+//    p->del_cache();
+//  }
 
 
 #if 0
@@ -1123,6 +1123,8 @@ Bitmap<T> *subbitmap_t(Bitmap<T> *bm, int x, int y, int width, int height)
   Bitmap<T> *sub = new SubBitmap<T>(*bm, x,y,width, height);
   return sub;
 }
+
+//template Bitmap<Color> *subbitmap_t(Bitmap<Color> *bm, int x, int y, int width, int height);
 
 BitmapHandle *subbitmap_h(BitmapHandle *handle, int x, int y, int width, int height)
 {
@@ -6743,4 +6745,332 @@ GameApi::ML GameApi::BitmapApi::gif_anim(EveryApi &ev, ML ml3, int key, float ti
   ArrayType *t2 = find_array(e,arr2);
   GameApi::ML ml4 = write_gif_anim2(t2->vec2, filename, delay);
   return ml4;
+}
+
+
+
+class TileRendererMainLoop : public MainLoopItem
+{
+public:
+  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy) { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare()
+  {
+    int ss = bm.size();
+    for(int kk=0;kk<ss;kk++)
+      {
+	Bitmap<Color>* bm2 = bm[kk];
+	int numtiles = num_tiles_in_bm[kk];
+	
+	int sx= bm2->SizeX()/tile_sx;
+	int sy= bm2->SizeY()/tile_sy;
+	int count=0;
+	for(int y=0;y<sy;y++)
+	  {
+	    for(int x=0;x<sx;x++)
+	      {
+		tiles.push_back(subbitmap_t<Color>(bm2,x*sx,y*sy,sx,sy));
+		count++;
+		if (count==numtiles) break;
+	      }
+	    if (count==numtiles) break;
+	  }
+	int s = tiles.size();
+	for(int i=0;i<s;i++)
+	  {
+	    BitmapColorHandle *handle2 = new BitmapColorHandle;
+	    handle2->bm = tiles[i];
+	    GameApi::BM bm2 = add_bitmap(env, handle2);
+	    bms.push_back(bm2);
+	  }
+	for(int i=0;i<s;i++)
+	  {
+	    GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bms[i]);
+	    GameApi::ML ml2 = ev.sprite_api.turn_to_2d(ev,ml,0,0,800,600);
+	    MainLoopItem *ml3 = find_main_loop(env,ml2);
+	    ml3->Prepare();
+	    mls.push_back(ml2);
+	  }
+      }
+    blk = add_block();
+  }
+  virtual void Prepare() {
+    int s = bm.size();
+    for(int i=0;i<s;i++)
+      bm[i]->Prepare();
+    
+    HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+
+    int sx = t->SizeX();
+    int sy = t->SizeY();
+    int c = get_current_block();
+    set_current_block(blk);
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  int tile = t->Tile(x,y);
+	  if (tile>=0 && tile<mls.size()) {
+	  GameApi::ML tile_bm_ml = mls[tile];
+	  GameApi::MN mn0 = ev.move_api.mn_empty();
+	  GameApi::MN mn = ev.move_api.trans2(mn0, x*sx,y*sy,0);
+	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
+	  MainLoopItem *move_2 = find_main_loop(env,move);
+	  move_2->execute(e);
+	  }
+	}
+    clear_block(blk);
+    recreate_block(blk);
+    set_current_block(c);
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Tiles2d *t;
+  std::vector<Bitmap<Color> *> bm;
+  std::vector<int> num_tiles_in_bm;
+  std::vector<Bitmap<Color> *> tiles;
+  std::vector<GameApi::BM> bms;
+  std::vector<GameApi::ML> mls;
+  int blk;
+  int tile_sx, tile_sy;
+};
+
+class TileRender2d : public TileRenderer2d
+{
+public:
+  TileRender2d(GameApi::Env &env, GameApi::EveryApi &ev, int sx, int sy) :env(env), ev(ev), sx(sx), sy(sy) { }
+  void set_tiles_2d(Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> vec)
+  {
+    m_t = t;
+    m_bm = bm;
+    num_tiles_in_bm=vec;
+  }
+  MainLoopItem *get_renderer() const
+  {
+    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Tiles2d *m_t;
+  std::vector<Bitmap<Color> *> m_bm;
+  std::vector<int> num_tiles_in_bm;
+  int sx,sy;
+};
+
+class NetworkTiles2d : public Tiles2d, public MainLoopItem
+{
+public:
+  NetworkTiles2d(GameApi::Env &env, std::string url, std::string homepage, std::string tiles_string) : env(env), url(url), homepage(homepage), tiles_string(tiles_string) { }
+  int SizeX() const {
+    return sx;
+  }
+  int SizeY() const {
+    return sy;
+  }
+  int Tile(int x, int y) const
+  {
+    return tiles[std::pair<int,int>(x,y)];
+  }
+
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+    std::string data(ptr->begin(),ptr->end());
+    std::stringstream ss(data);
+    std::string line;
+    int linenum = 0;
+    int width=0;
+    while(std::getline(ss,line)) {
+      int s = line.size();
+      width=std::max(width,s);
+      for(int i=0;i<s;i++)
+	{
+	  char ch = line[i];
+	  int s = tiles_string.size();
+	  int pos=-1;
+	  for(int j=0;j<s;j++)
+	    {
+	      if (ch==tiles_string[j]) { pos=j; break; }
+	    }
+	  tiles[std::make_pair(i,linenum)] = pos;
+	}
+
+      linenum++;
+    }
+    sx=width;
+    sy=linenum-1;
+  }
+
+  virtual void Prepare() {
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+  }
+
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  std::string tiles_string;
+
+  int sx;
+  int sy;
+  mutable std::map<std::pair<int,int>,int> tiles;
+};
+
+class PlayerTileMapping : public Tiles2d
+{
+public:
+  PlayerTileMapping(TilePlayer &pl, Tiles2d &next) : pl(pl), next(next) { }
+  virtual int SizeX() const { return next.SizeX(); }
+  virtual int SizeY() const { return next.SizeY(); }
+  virtual int Tile(int x, int y) const
+  {
+    int xx = pl.player_pos_x();
+    int yy = pl.player_pos_y();
+    if (x==xx && y==yy) return pl.player_tile();
+    return next.Tile(x,y);
+  }
+private:
+  TilePlayer &pl;
+  Tiles2d &next;
+};
+
+class PlayerTile : public TilePlayer
+{
+public:
+  PlayerTile(int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, float delta_time, float delta_move_time) : pos_x(start_pos_x), pos_y(start_pos_y), player_start_tile(player_start_tile), player_end_tile(player_end_tile), delta_time(delta_time), delta_move_time(delta_move_time) { tile=player_start_tile; }
+  virtual void SetTiles2d(Tiles2d *t) { }
+  virtual void SetTiles3d(Tiles3d *t) { }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (!move_freeze) {
+	if (e.type==0x300 && e.ch=='w') { pos_y--; move_freeze=true; }
+	if (e.type==0x300 && e.ch=='d') { pos_x++; move_freeze=true; }
+	if (e.type==0x300 && e.ch=='a') { pos_x--; move_freeze=true; }
+	if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; }
+    } else
+      {
+	if (e.type==0x300 && e.ch=='w') { prepare_move_dir_x=0; prepare_move_dir_y=-1; }
+	if (e.type==0x300 && e.ch=='d') { prepare_move_dir_x=1; prepare_move_dir_y=0; }
+	if (e.type==0x300 && e.ch=='a') { prepare_move_dir_x=-1; prepare_move_dir_y=0; }
+	if (e.type==0x300 && e.ch=='s') { prepare_move_dir_x=0; prepare_move_dir_y=1; }
+      }
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (e.time > last_move_time+delta_move_time) {
+      last_move_time = e.time;
+      move_freeze = false;
+
+      if (prepare_move_dir_x!=0||prepare_move_dir_y!=0)
+	{
+	  pos_x += prepare_move_dir_x;
+	  pos_y += prepare_move_dir_y;
+	  move_freeze=true;
+	}
+    }
+    if (e.time > last_change_time+delta_time) {
+      last_change_time = e.time;
+      tile++;
+      if (tile>player_end_tile) { tile-=(player_end_tile-player_start_tile); }
+    }
+  }
+  virtual int player_pos_x() const { return pos_x; }
+  virtual int player_pos_y() const { return pos_y; }
+  virtual int player_pos_z() const { return 0; }
+  virtual int player_tile() const { return tile; }
+  virtual int player_type() const { return 0; } 
+  virtual Point delta_pos() const { return Point(0.0,0.0,0.0); }
+private:
+  int pos_x, pos_y;
+  int player_start_tile, player_end_tile;
+  float last_change_time=0.0;
+  int tile;
+  int prepare_move_dir_x=0;
+  int prepare_move_dir_y=0;
+  bool move_freeze=false;
+  float last_move_time=0.0;
+  float delta_time;
+  float delta_move_time;
+};
+
+class Game : public MainLoopItem
+{
+public:
+  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string homepage, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string), player(start_pos_x, start_pos_y, player_start_tile, player_end_tile, 10.0, 10.0), player_tiles(player, tiles), tile_bm(tile_bm), player_bm(player_bm) { }
+  virtual void Collect(CollectVisitor &vis) {
+    tiles.Collect(vis);
+
+    vis.register_obj(this);
+    
+  }
+  virtual void HeavyPrepare() {
+    tile_bm->Prepare();
+    player_bm->Prepare();
+    std::vector<Bitmap<Color>*> tile_bms;
+    tile_bms.push_back(tile_bm);
+    tile_bms.push_back(player_bm);
+    std::vector<int> tile_counts;
+    tile_counts.push_back(5);
+    tile_counts.push_back(9);
+    render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
+    renderer = render.get_renderer();
+    renderer->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    player.execute(e);
+    renderer->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    player.handle_event(e);
+    renderer->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return renderer->shader_id(); }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  TileRender2d render;
+  NetworkTiles2d tiles;
+  PlayerTile player;
+  PlayerTileMapping player_tiles;
+  Bitmap<Color> *tile_bm;
+  Bitmap<Color> *player_bm;
+  MainLoopItem *renderer;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm)
+{
+  BitmapHandle *handle = find_bitmap(e, tile_bm);
+  ::Bitmap<Color> *tile_bm2 = find_color_bitmap(handle);
+  BitmapHandle *handle3 = find_bitmap(e, player_bm);
+  ::Bitmap<Color> *player_bm2 = find_color_bitmap(handle3);
+  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, gameapi_homepageurl, tiles_string, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2));
 }
