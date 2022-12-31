@@ -795,7 +795,7 @@ struct EnvImpl
   FT_Library lib;
 #endif
   std::vector<Font22> fonts;
-  static ::EnvImpl *Environment(GameApi::Env *e) { if (e) { return (EnvImpl*)e->envimpl; } else { std::cout << "Environment NULL "<< (int)e << std::endl; return 0; } }
+  static ::EnvImpl *Environment(GameApi::Env *e) { if (e) { return (EnvImpl*)e->envimpl; } else { std::cout << "Environment NULL "<< (long)e << std::endl; return 0; } }
 
   IMPORT int add_to_download_bar(std::string filename); // returns index, must use mapping to put it to i. 
   IMPORT int download_index_mapping(int index);
