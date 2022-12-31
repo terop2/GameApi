@@ -930,7 +930,7 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
     std::string url_str(url);
   std::string url_only(striphomepage(url_str));
   g_del_map.load_url_buffers_async.erase(url_only);
-  std::cout << "g_del_map remove url: " << url_only << std::endl;
+  //std::cout << "g_del_map remove url: " << url_only << std::endl;
   //load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
     //std::cout << "ASync pending dec (onerror_async_cb) -->" << async_pending_count << std::endl;
@@ -1469,7 +1469,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	g_del_map_deleter_installed=true;
 	register_cache_deleter(delmap_cache_deleter,0);
       }
-    std::cout << "g_del_map: " << (int)(g_content[i]) << " " << (int)(g_content_end[i]) << " " << (int)(g_content_end[i]-g_content[i]) << std::endl;
+    //std::cout << "g_del_map: " << (int)(g_content[i]) << " " << (int)(g_content_end[i]) << " " << (int)(g_content_end[i]-g_content[i]) << std::endl;
     g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
 	//std::cout << "g_del_map add url: " << url_only << std::endl;
 

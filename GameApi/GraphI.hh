@@ -2651,5 +2651,83 @@ public:
   virtual FaceCollection *Render() const=0;
 };
 
+
+class Tiles2d
+{
+public:
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual int Tile(int x, int y) const=0;
+};
+class Tiles3d
+{
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual int SizeZ() const=0;
+  virtual int Tile(int x, int y, int z) const=0;
+};
+
+class TileRenderer2d
+{
+public:
+  virtual MainLoopItem *get_renderer() const=0;
+  virtual void set_tiles_2d(Tiles2d *t, std::vector<Bitmap<Color>*> bm, std::vector<int> vec)=0;
+};
+
+class TileRenderer3d
+{
+public:
+  virtual MainLoopItem *get_renderer() const=0;
+  virtual void set_tiles_3d(Tiles3d *t) const=0;
+};
+
+class TileActivation
+{
+public:
+  virtual void ActivateTile(int x, int y, int z)=0;
+  virtual void DeactivateTile(int x, int y, int z)=0;
+};
+
+
+class TileBehaviorMap
+{
+public: 
+  virtual void SetTiles2d(Tiles2d *t)=0;
+  virtual void SetTiles3d(Tiles3d *t)=0;
+  virtual int NumBehaviours() const=0;
+  virtual int Tile(int behavior_num) const=0;
+  virtual bool Condition(int behavior_num, int x, int y, int z) const=0;
+  virtual void SubmitActivations(int behavior_num, int x, int y, int z, TileActivation *target) const=0;
+  virtual int TargetTile(int behavior_num) const=0;
+};
+
+class TilePlayer
+{
+public:
+  virtual void SetTiles2d(Tiles2d *t)=0;
+  virtual void SetTiles3d(Tiles3d *t)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual int player_pos_x() const=0;
+  virtual int player_pos_y() const=0;
+  virtual int player_pos_z() const=0;
+  virtual Point delta_pos() const=0;
+  virtual int player_tile() const=0;
+  virtual int player_type() const=0;
+};
+
+class TileEnemies
+{
+public:
+  virtual void SetTiles2d(Tiles2d *t)=0;
+  virtual void SetTiles3d(Tiles3d *t)=0;
+  virtual int NumEnemies() const=0;
+  virtual int enemy_pos_x(int e) const=0;
+  virtual int enemy_pos_y(int e) const=0;
+  virtual int enemy_pos_z(int e) const=0;
+  virtual int enemy_tile(int e) const=0;
+  virtual int enemy_type(int e) const=0;
+  virtual int enemy_behavior_num(int e) const=0;
+};
+
 #endif
 

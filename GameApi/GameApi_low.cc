@@ -1373,6 +1373,7 @@ public:
     c->ptr = m;
     return c;
 #endif
+    return 0;
   }
 
   virtual int Mix_OpenAudio(int rate, int flags, int val, int hup)
@@ -1381,12 +1382,14 @@ public:
     map_enums_mix(flags);
     return ::Mix_OpenAudio(rate,flags,val,hup);
 #endif
+    return 0;
   }
   virtual int Mix_PlayChannel(int channel, Low_Mix_Chunk *mix_chunk, int val)
   {
 #ifdef USE_MIX
     return ::Mix_PlayChannelTimed(channel, (Mix_Chunk*)(mix_chunk->ptr), val,-1);
 #endif
+    return 0;
   }
   virtual void Mix_HaltChannel(int channel)
   {
@@ -1401,6 +1404,7 @@ public:
     c->ptr = ::Mix_QuickLoad_RAW(mem,len);
     return c;
 #endif
+    return 0;
   }
   virtual void Mix_Init(int flags)
   {
@@ -1416,6 +1420,7 @@ public:
     m->ptr = ::Mix_LoadMUS(filename);
     return m;
 #endif
+    return 0;
   }
   virtual void Mix_PlayMusic(Low_Mix_Music *mus, int val)
   {
