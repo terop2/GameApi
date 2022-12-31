@@ -80,6 +80,10 @@ int add_block()
   g_blocks.g_blocks.push_back(new Block);
   return g_blocks.g_blocks.size()-1;
 }
+void recreate_block(int id)
+{
+  g_blocks.g_blocks[id]=new Block;
+}
 void set_current_block(int id)
 {
   g_current_block = id;

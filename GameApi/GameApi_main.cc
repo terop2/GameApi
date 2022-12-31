@@ -1953,6 +1953,7 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   e2.joy1_ball1 = ee.joy1_ball1;
   if (ml.id!=-1) {
   MainLoopItem *item = find_main_loop(e, ml);
+  std::cout << "MainLoopItem item=" << (long)item << std::endl;
   if (item)
     item->handle_event(e2);
     }

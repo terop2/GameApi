@@ -23248,3 +23248,7 @@ GameApi::P GameApi::PolygonApi::render_pl(PL pl)
   FaceCollection *coll = plat->Render();
   return add_polygon2(e,coll,1);
 }
+
+template<class T>
+Bitmap<T> *subbitmap_t(Bitmap<T> *bm, int x, int y, int width, int height);
+
