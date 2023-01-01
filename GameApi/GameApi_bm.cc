@@ -6749,6 +6749,28 @@ GameApi::ML GameApi::BitmapApi::gif_anim(EveryApi &ev, ML ml3, int key, float ti
 
 
 
+GameApi::BM GameApi::BitmapApi::flip_tile_bitmap(BM bm, int sx, int sy, bool is_x)
+{
+  int ssx = size_x(bm);
+  int ssy = size_y(bm);
+  BM res = newbitmap(ssx,ssy,0x00000000);
+  for(int j=0;j<ssy/sy;j++) {
+    for(int i=0;i<ssx/sx;i++)
+      {
+	BM part = subbitmap(bm,i*sx,j*sy,sx,sy);
+	BM flipped;
+	if (is_x) {
+	  flipped = flip_x(part);
+	} else {
+	  flipped = flip_y(part);
+	}
+	res = blitbitmap(res,flipped,i*sx,j*sy);
+      }
+  }
+  return res;
+}
+
+
 class TileRendererMainLoop : public MainLoopItem
 {
 public:
@@ -6764,37 +6786,40 @@ public:
 	
 	int sx= bm2->SizeX()/tile_sx;
 	int sy= bm2->SizeY()/tile_sy;
+	
 	int count=0;
 	for(int y=0;y<sy;y++)
 	  {
 	    for(int x=0;x<sx;x++)
 	      {
-		tiles.push_back(subbitmap_t<Color>(bm2,x*sx,y*sy,sx,sy));
+		tiles.push_back(subbitmap_t<Color>(bm2,x*tile_sx,y*tile_sy,tile_sx,tile_sy));
 		count++;
 		if (count==numtiles) break;
 	      }
 	    if (count==numtiles) break;
 	  }
-	int s = tiles.size();
-	for(int i=0;i<s;i++)
-	  {
-	    BitmapColorHandle *handle2 = new BitmapColorHandle;
-	    handle2->bm = tiles[i];
-	    GameApi::BM bm2 = add_bitmap(env, handle2);
-	    bms.push_back(bm2);
-	  }
-	for(int i=0;i<s;i++)
-	  {
-	    GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bms[i]);
-	    GameApi::ML ml2 = ev.sprite_api.turn_to_2d(ev,ml,0,0,800,600);
-	    MainLoopItem *ml3 = find_main_loop(env,ml2);
-	    ml3->Prepare();
-	    mls.push_back(ml2);
-	  }
       }
-    blk = add_block();
+
+    int s = tiles.size();
+    std::cout << s << std::endl;
+    for(int i=0;i<s;i++)
+      {
+	BitmapColorHandle *handle2 = new BitmapColorHandle;
+	handle2->bm = tiles[i];
+	GameApi::BM bm2 = add_bitmap(env, handle2);
+	bms.push_back(bm2);
+      }
+    for(int i=0;i<s;i++)
+      {
+	GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bms[i]);
+	MainLoopItem *ml3 = find_main_loop(env,ml);
+	ml3->Prepare();
+	mls.push_back(ml);
+      }
+    //blk = add_block();
   }
   virtual void Prepare() {
+    std::cout << "Prepare" << std::endl;
     int s = bm.size();
     for(int i=0;i<s;i++)
       bm[i]->Prepare();
@@ -6802,11 +6827,13 @@ public:
     HeavyPrepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
-
+    //std::cout << "execute" << std::endl;
     int sx = t->SizeX();
     int sy = t->SizeY();
-    int c = get_current_block();
-    set_current_block(blk);
+    //std::cout << "SX: " << sx << " " << sy << std::endl;
+    //int c = get_current_block();
+    //set_current_block(blk);
+    std::vector<GameApi::ML> vec;
     for(int y=0;y<sy;y++)
       for(int x=0;x<sx;x++)
 	{
@@ -6814,15 +6841,34 @@ public:
 	  if (tile>=0 && tile<mls.size()) {
 	  GameApi::ML tile_bm_ml = mls[tile];
 	  GameApi::MN mn0 = ev.move_api.mn_empty();
-	  GameApi::MN mn = ev.move_api.trans2(mn0, x*sx,y*sy,0);
+	  GameApi::MN mn = ev.move_api.trans2(mn0, x*tile_sx,y*tile_sy,0);
 	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
-	  MainLoopItem *move_2 = find_main_loop(env,move);
-	  move_2->execute(e);
+	  vec.push_back(move);
+	  }
+	  
+	}
+
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  int tile2 = t->Tile2(x,y);
+	  Point2d delta = t->Tile2Delta(x,y);
+	  if (tile2>=0 && tile2<mls.size()) {
+	  GameApi::ML tile_bm_ml = mls[tile2];
+	  GameApi::MN mn0 = ev.move_api.mn_empty();
+	  GameApi::MN mn = ev.move_api.trans2(mn0, x*tile_sx+delta.x,y*tile_sy+delta.y,0);
+	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
+	  vec.push_back(move);
 	  }
 	}
-    clear_block(blk);
-    recreate_block(blk);
-    set_current_block(c);
+    GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
+    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,800.0,600.0);
+    MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->execute(e);
+    //std::cout << std::endl;
+    //clear_block(blk);
+    //recreate_block(blk);
+    //set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
@@ -6875,9 +6921,13 @@ public:
   }
   int Tile(int x, int y) const
   {
-    return tiles[std::pair<int,int>(x,y)];
-  }
+    int i = tiles[std::pair<int,int>(x,y)];
+    if (i<0) return 0;
+    return i;
 
+  }
+  int Tile2(int x, int y) const { return -1; }
+  
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -6935,8 +6985,8 @@ private:
   std::string homepage;
   std::string tiles_string;
 
-  int sx;
-  int sy;
+  int sx=0;
+  int sy=0;
   mutable std::map<std::pair<int,int>,int> tiles;
 };
 
@@ -6948,10 +6998,25 @@ public:
   virtual int SizeY() const { return next.SizeY(); }
   virtual int Tile(int x, int y) const
   {
+    return next.Tile(x,y);
+  }
+  virtual int Tile2(int x, int y) const
+  {
     int xx = pl.player_pos_x();
     int yy = pl.player_pos_y();
     if (x==xx && y==yy) return pl.player_tile();
-    return next.Tile(x,y);
+    //if (x==xx && y==yy+1) return 3;
+    return -1;
+  }
+  virtual Point2d Tile2Delta(int x, int y) const
+  {
+    int xx = pl.player_pos_x();
+    int yy = pl.player_pos_y();
+    if (x==xx && y==yy) { Point p = pl.delta_pos(); Point2d p2; p2.x=p.x; p2.y=p.y; return p2; }
+    Point2d p;
+    p.x=0.0;
+    p.y=0.0;
+    return p;
   }
 private:
   TilePlayer &pl;
@@ -6961,48 +7026,88 @@ private:
 class PlayerTile : public TilePlayer
 {
 public:
-  PlayerTile(int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, float delta_time, float delta_move_time) : pos_x(start_pos_x), pos_y(start_pos_y), player_start_tile(player_start_tile), player_end_tile(player_end_tile), delta_time(delta_time), delta_move_time(delta_move_time) { tile=player_start_tile; }
+  PlayerTile(int tile_sx, int tile_sy, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, float delta_time, float delta_move_time) : tile_sx(tile_sx), tile_sy(tile_sy), pos_x(start_pos_x), pos_y(start_pos_y), player_start_tile(player_start_tile), player_end_tile(player_end_tile), delta_time(delta_time), delta_move_time(delta_move_time) { tile=player_start_tile; }
   virtual void SetTiles2d(Tiles2d *t) { }
   virtual void SetTiles3d(Tiles3d *t) { }
   virtual void handle_event(MainLoopEvent &e) {
+      //if (e.type==0x300 && e.ch=='w') { pos_y--; move_freeze=true; y_dir=true; }
+      if (e.type==0x300 && e.ch=='d') { dir_x=1; }
+      if (e.type==0x300 && e.ch=='a') { dir_x=-1; }
+      //if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; y_dir=true; }
+
+      if (e.type==0x301 && e.ch=='d') { dir_x=0; }
+      if (e.type==0x301 && e.ch=='a') { dir_x=0; }
+      
+
     if (!move_freeze) {
-	if (e.type==0x300 && e.ch=='w') { pos_y--; move_freeze=true; }
-	if (e.type==0x300 && e.ch=='d') { pos_x++; move_freeze=true; }
-	if (e.type==0x300 && e.ch=='a') { pos_x--; move_freeze=true; }
-	if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; }
-    } else
+      if (dir_x==1) { if (last_x==-1) { has_flipped=true; } else { has_flipped=false; } move_x=1; move_freeze=true; flip=false; y_dir=false; last_x=1;  }
+      if (dir_x==-1) { if (last_x==1) { has_flipped=true; } else { has_flipped=false; } move_x=-1; move_freeze=true; flip=true; y_dir=false; last_x=-1;  }
+    }
+
+    /*
+    else
       {
 	if (e.type==0x300 && e.ch=='w') { prepare_move_dir_x=0; prepare_move_dir_y=-1; }
 	if (e.type==0x300 && e.ch=='d') { prepare_move_dir_x=1; prepare_move_dir_y=0; }
 	if (e.type==0x300 && e.ch=='a') { prepare_move_dir_x=-1; prepare_move_dir_y=0; }
 	if (e.type==0x300 && e.ch=='s') { prepare_move_dir_x=0; prepare_move_dir_y=1; }
-      }
+	}*/
   }
   virtual void execute(MainLoopEnv &e)
   {
+
+
+
+    if (old_move_freeze!=move_freeze)
+      {
+	last_move_time=e.time;
+	old_move_freeze=move_freeze;
+      }
+    if (old_flip!=flip)
+      {
+	last_move_time=e.time;
+	old_flip=flip;
+      }
+    if (move_freeze && !y_dir) {
+      
+      delta_position = (e.time-last_move_time)/delta_move_time;
+      if (delta_position<0.0) delta_position=0.0;
+      while (delta_position>1.0) { delta_position-=1.0; pos_x+=move_x; }
+      if (flip) delta_position=1.0-delta_position;
+      //if (has_flipped) delta_position=1.0-delta_position;
+    }
     if (e.time > last_move_time+delta_move_time) {
+      //delta_position-=1.0;
+      //pos_x+=move_x;
+      has_flipped=false;
+      move_x=0;
       last_move_time = e.time;
       move_freeze = false;
 
       if (prepare_move_dir_x!=0||prepare_move_dir_y!=0)
 	{
-	  pos_x += prepare_move_dir_x;
-	  pos_y += prepare_move_dir_y;
-	  move_freeze=true;
+	  if (prepare_move_dir_x>0) flip=false;
+	  if (prepare_move_dir_x<0) flip=true;
+	  //pos_x += prepare_move_dir_x;
+	  //pos_y += prepare_move_dir_y;
+	  prepare_move_dir_x=0;
+	  prepare_move_dir_y=0;
+	  //move_freeze=true;
 	}
     }
-    if (e.time > last_change_time+delta_time) {
+    if (move_freeze && !y_dir && e.time > last_change_time+delta_time) {
       last_change_time = e.time;
       tile++;
-      if (tile>player_end_tile) { tile-=(player_end_tile-player_start_tile); }
+      if (tile>=player_end_tile) { tile-=(player_end_tile-player_start_tile); }
+      //std::cout << "TILE: " << tile << " " << player_end_tile << " " << player_start_tile << std::endl;
     }
   }
   virtual int player_pos_x() const { return pos_x; }
   virtual int player_pos_y() const { return pos_y; }
   virtual int player_pos_z() const { return 0; }
-  virtual int player_tile() const { return tile; }
+  virtual int player_tile() const { return !flip?tile:player_end_tile+(tile-player_start_tile); }
   virtual int player_type() const { return 0; } 
-  virtual Point delta_pos() const { return Point(0.0,0.0,0.0); }
+  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),0.0,0.0); }
 private:
   int pos_x, pos_y;
   int player_start_tile, player_end_tile;
@@ -7010,46 +7115,65 @@ private:
   int tile;
   int prepare_move_dir_x=0;
   int prepare_move_dir_y=0;
+  int move_x=0;
   bool move_freeze=false;
   float last_move_time=0.0;
   float delta_time;
   float delta_move_time;
+  bool flip=false;
+  float delta_position=0.0;
+  int tile_sx, tile_sy;
+  bool old_move_freeze=false;
+  bool y_dir=false;
+  bool old_flip=false;
+  int last_x=0;
+  bool has_flipped=false;
+  int dir_x=0;
 };
 
 class Game : public MainLoopItem
 {
 public:
-  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string homepage, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string), player(start_pos_x, start_pos_y, player_start_tile, player_end_tile, 10.0, 10.0), player_tiles(player, tiles), tile_bm(tile_bm), player_bm(player_bm) { }
+  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string homepage, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0), player_tiles(player, tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm) { }
   virtual void Collect(CollectVisitor &vis) {
+    tile_bm->Collect(vis);
+    player_bm->Collect(vis);
     tiles.Collect(vis);
 
     vis.register_obj(this);
     
   }
   virtual void HeavyPrepare() {
-    tile_bm->Prepare();
-    player_bm->Prepare();
     std::vector<Bitmap<Color>*> tile_bms;
     tile_bms.push_back(tile_bm);
     tile_bms.push_back(player_bm);
+    tile_bms.push_back(player_flip_bm);
     std::vector<int> tile_counts;
     tile_counts.push_back(5);
+    tile_counts.push_back(9);
     tile_counts.push_back(9);
     render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
     renderer = render.get_renderer();
     renderer->Prepare();
   }
-  virtual void Prepare() { HeavyPrepare(); }
+  virtual void Prepare() {
+    tile_bm->Prepare();
+    player_bm->Prepare();
+    tiles.Prepare();
+    HeavyPrepare();
+  }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
     player.execute(e);
-    renderer->execute(e);
+    if (renderer)
+      renderer->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     player.handle_event(e);
-    renderer->handle_event(e);
+    if (renderer)
+      renderer->handle_event(e);
   }
   virtual std::vector<int> shader_id() { return renderer->shader_id(); }
 
@@ -7062,7 +7186,8 @@ private:
   PlayerTileMapping player_tiles;
   Bitmap<Color> *tile_bm;
   Bitmap<Color> *player_bm;
-  MainLoopItem *renderer;
+  Bitmap<Color> *player_flip_bm;
+  MainLoopItem *renderer=0;
 };
 
 
@@ -7072,5 +7197,9 @@ GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int t
   ::Bitmap<Color> *tile_bm2 = find_color_bitmap(handle);
   BitmapHandle *handle3 = find_bitmap(e, player_bm);
   ::Bitmap<Color> *player_bm2 = find_color_bitmap(handle3);
-  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, gameapi_homepageurl, tiles_string, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2));
+  GameApi::BM player_flipped = ev.bitmap_api.flip_tile_bitmap(player_bm,64,64,true);
+  BitmapHandle *handle4 = find_bitmap(e, player_flipped);
+  ::Bitmap<Color> *player_bm4 = find_color_bitmap(handle4);
+
+  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, gameapi_homepageurl, tiles_string, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4));
 }

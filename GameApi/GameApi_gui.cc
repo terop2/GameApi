@@ -95,8 +95,8 @@ public:
     update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
-
   }
+  ~TimedWidget() { delete m_tm; }
   void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
     GuiWidgetForward::update(mouse_pos, button, ch, type,mouse_wheel_y);
@@ -127,6 +127,8 @@ public:
 
 	GuiWidget *tm = new TimedWidget2(ev, timed, duration);
 	tm->set_id(uid);
+	delete m_tm;
+	m_tm = tm;
 	insert_wid->vec.push_back(tm);
 	index = insert_wid->vec.size()-1;
       }
@@ -170,6 +172,7 @@ private:
   float state2_time;
   int index;
   float dx;
+  GuiWidget *m_tm=0;
 };
 
 #ifndef EMSCRIPTEN
