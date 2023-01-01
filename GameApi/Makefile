@@ -71,8 +71,8 @@ WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-v
 
 #-fsanitize=undefined -fsanitize-recover=undefined
 
-CCFLAGS = -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -Ofast -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
-CC2FLAGS = -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -Ofast -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CCFLAGS = -ggdb -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CC2FLAGS = -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -DAMD -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -81,7 +81,7 @@ default: libGameApi.so
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD    libGameApi.so"
-	@$(CC) -m64 -rdynamic -shared -g $(OFiles) -std=c++20 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
 
 #`pkg-config gtkmm-2.4 --libs` 
 

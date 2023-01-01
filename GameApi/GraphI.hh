@@ -2658,6 +2658,8 @@ public:
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual int Tile(int x, int y) const=0;
+  virtual int Tile2(int x, int y) const=0;
+  virtual Point2d Tile2Delta(int x, int y) const { Point2d p; p.x = 0.0; p.y=0.0; return p;  }
 };
 class Tiles3d
 {
