@@ -6778,6 +6778,7 @@ public:
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
+    if (tile_sx==0||tile_sy==0) return;
     int ss = bm.size();
     for(int kk=0;kk<ss;kk++)
       {
@@ -6862,7 +6863,7 @@ public:
 	  }
 	}
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
-    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,800.0,600.0);
+    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
     move_2->execute(e);
     //std::cout << std::endl;

@@ -405,9 +405,9 @@ std::vector<GameApiItem*> fontapi_functions()
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::game,
 			 "game_ml",
-			 { "tile_sx", "tile_sy", "url", "tiles_string", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm" },
-			 { "int", "int", "std::string", "std::string", "int", "int", "int", "int", "BM", "BM" },
-			 { "64", "64", "https://tpgames.org/test.map", "abcdefghij", "10", "10", "5", "14", "", "" },
+			 { "ev", "tile_sx", "tile_sy", "url", "tiles_string", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm" },
+			 { "EveryApi&", "int", "int", "std::string", "std::string", "int", "int", "int", "int", "BM", "BM" },
+			 { "ev", "64", "64", "https://tpgames.org/test.map", "abcdefghij", "10", "10", "5", "14", "", "" },
 			 "ML", "mainloop_api", "game"));
   return vec;
 }
