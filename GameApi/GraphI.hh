@@ -2669,10 +2669,18 @@ class Tiles3d
   virtual int Tile(int x, int y, int z) const=0;
 };
 
+class TileScroller
+{
+public:
+  virtual Point get_pos() const=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual void execute(MainLoopEnv &e)=0;
+};
+
 class TileRenderer2d
 {
 public:
-  virtual MainLoopItem *get_renderer() const=0;
+  virtual MainLoopItem *get_renderer(TileScroller *scr) const=0;
   virtual void set_tiles_2d(Tiles2d *t, std::vector<Bitmap<Color>*> bm, std::vector<int> vec)=0;
 };
 
