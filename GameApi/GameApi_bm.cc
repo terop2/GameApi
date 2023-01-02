@@ -728,6 +728,12 @@ public:
       if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string s(vec->begin(), vec->end());
       std::vector<unsigned char> vec2(vec->begin(),vec->end());
+
+      
+      //std::cout << "VEC2 size=" << vec2.size() << std::endl;
+
+      // sometimes we get failures if prepare is called too early, so this is good place to try to recover from it. Next prepare call will have correct data.
+      if (vec2.size()<3) return; 
       
       bool b = false;
       img = LoadImageFromString(vec2, b);
@@ -6749,32 +6755,87 @@ GameApi::ML GameApi::BitmapApi::gif_anim(EveryApi &ev, ML ml3, int key, float ti
 
 
 
+class FlipTileBitmap : public Bitmap<Color>
+{
+public:
+  FlipTileBitmap(GameApi::Env &env, GameApi::BitmapApi *api, GameApi::BM bm, int sx, int sy, bool is_x) :e(env), api(api),bm(bm), sx(sx), sy(sy),is_x(is_x) { firsttime=true; res.id=-1; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    BitmapHandle *handle = find_bitmap(e, bm);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    b2->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  virtual int SizeX() const
+  {
+    if (res.id==-1) return 0;
+    BitmapHandle *handle = find_bitmap(e, res);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    return b2->SizeX();
+  }
+  virtual int SizeY() const
+  {
+    if (res.id==-1) return 0;
+    BitmapHandle *handle = find_bitmap(e, res);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    return b2->SizeY();
+  }
+  virtual Color Map(int x, int y) const
+  {
+    if (res.id==-1) return Color(0x000000);
+    BitmapHandle *handle = find_bitmap(e, res);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    return b2->Map(x,y);
+  }
+  virtual void Prepare()
+  {
+    if (firsttime) {
+      firsttime=false;
+      int ssx = api->size_x(bm);
+      int ssy = api->size_y(bm);
+      res = api->newbitmap(ssx,ssy,0x00000000);
+      for(int j=0;j<ssy/sy;j++) {
+	for(int i=0;i<ssx/sx;i++)
+	  {
+	    GameApi::BM part = api->subbitmap(bm,i*sx,j*sy,sx,sy);
+	    GameApi::BM flipped;
+	    if (is_x) {
+	      flipped = api->flip_x(part);
+	    } else {
+	      flipped = api->flip_y(part);
+	    }
+	    res = api->blitbitmap(res,flipped,i*sx,j*sy);
+	  }
+      }
+    }
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::BitmapApi *api;
+  GameApi::BM bm;
+  int sx;
+  int sy;
+  bool is_x;
+  GameApi::BM res;
+  bool firsttime;
+};
+
 GameApi::BM GameApi::BitmapApi::flip_tile_bitmap(BM bm, int sx, int sy, bool is_x)
 {
-  int ssx = size_x(bm);
-  int ssy = size_y(bm);
-  BM res = newbitmap(ssx,ssy,0x00000000);
-  for(int j=0;j<ssy/sy;j++) {
-    for(int i=0;i<ssx/sx;i++)
-      {
-	BM part = subbitmap(bm,i*sx,j*sy,sx,sy);
-	BM flipped;
-	if (is_x) {
-	  flipped = flip_x(part);
-	} else {
-	  flipped = flip_y(part);
-	}
-	res = blitbitmap(res,flipped,i*sx,j*sy);
-      }
-  }
-  return res;
+  Bitmap<Color> *b = new FlipTileBitmap(e,this,bm,sx,sy,is_x);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = b;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
 }
 
 
 class TileRendererMainLoop : public MainLoopItem
 {
 public:
-  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy) { }
+  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy, TileScroller *scr) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy), scr(scr) { }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
@@ -6787,6 +6848,8 @@ public:
 	
 	int sx= bm2->SizeX()/tile_sx;
 	int sy= bm2->SizeY()/tile_sy;
+
+	std::cout << numtiles << "::" << sx << " " << sy << std::endl;
 	
 	int count=0;
 	for(int y=0;y<sy;y++)
@@ -6799,6 +6862,7 @@ public:
 	      }
 	    if (count==numtiles) break;
 	  }
+	std::cout << "COUNT=" << count << std::endl;
       }
 
     int s = tiles.size();
@@ -6828,6 +6892,8 @@ public:
     HeavyPrepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
+    scr->execute(e);
+    
     //std::cout << "execute" << std::endl;
     int sx = t->SizeX();
     int sy = t->SizeY();
@@ -6835,6 +6901,9 @@ public:
     //int c = get_current_block();
     //set_current_block(blk);
     std::vector<GameApi::ML> vec;
+
+    Point scroll_pos = scr->get_pos();
+
     for(int y=0;y<sy;y++)
       for(int x=0;x<sx;x++)
 	{
@@ -6842,7 +6911,7 @@ public:
 	  if (tile>=0 && tile<mls.size()) {
 	  GameApi::ML tile_bm_ml = mls[tile];
 	  GameApi::MN mn0 = ev.move_api.mn_empty();
-	  GameApi::MN mn = ev.move_api.trans2(mn0, x*tile_sx,y*tile_sy,0);
+	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx,scroll_pos.y+y*tile_sy,0);
 	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
 	  vec.push_back(move);
 	  }
@@ -6851,13 +6920,17 @@ public:
 
     for(int y=0;y<sy;y++)
       for(int x=0;x<sx;x++)
+
 	{
 	  int tile2 = t->Tile2(x,y);
 	  Point2d delta = t->Tile2Delta(x,y);
+	  //if (tile2==5) std::cout << "Blob" << " " << tile2 << " " << mls.size() << std::endl;
 	  if (tile2>=0 && tile2<mls.size()) {
+	    //std::cout << "Tile2:" << x << " " << y << " " << tile2 << std::endl;
+	    //std::cout << "Delta: " << delta.x << " " << delta.y << std::endl;
 	  GameApi::ML tile_bm_ml = mls[tile2];
 	  GameApi::MN mn0 = ev.move_api.mn_empty();
-	  GameApi::MN mn = ev.move_api.trans2(mn0, x*tile_sx+delta.x,y*tile_sy+delta.y,0);
+	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx+delta.x,scroll_pos.y+y*tile_sy+delta.y,0);
 	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
 	  vec.push_back(move);
 	  }
@@ -6871,7 +6944,9 @@ public:
     //recreate_block(blk);
     //set_current_block(c);
   }
-  virtual void handle_event(MainLoopEvent &e) { }
+  virtual void handle_event(MainLoopEvent &e) {
+    scr->handle_event(e);
+  }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 
 private:
@@ -6885,7 +6960,70 @@ private:
   std::vector<GameApi::ML> mls;
   int blk;
   int tile_sx, tile_sy;
+  TileScroller *scr;
 };
+
+class TileScroller2d : public TileScroller
+{
+public:
+  TileScroller2d(TilePlayer *player, float speed, int cell_sx, int cell_sy, int screen_sx, int screen_sy) : player(player), speed(speed), cell_sx(cell_sx), cell_sy(cell_sy), screen_sx(screen_sx), screen_sy(screen_sy) { }
+  virtual Point get_pos() const
+  {
+    return Point(-current_pos.x,-current_pos.y,0);
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float delta_x = target_pos.x-current_pos.x;
+    float delta_y = target_pos.y-current_pos.y;
+    bool rest_x=false;
+    bool rest_y=false;
+    if (fabs(delta_x)<cell_sx) { delta_x=0; rest_x=true; }
+    if (fabs(delta_y)<cell_sy) { delta_y=0; rest_x=true; }
+    if (delta_x>0.0) current_pos.x+=speed;
+    if (delta_x<0.0) current_pos.x-=speed;
+    if (delta_y>0.0) current_pos.y+=speed;
+    if (delta_y<0.0) current_pos.y-=speed;
+
+    
+    int pos_x = player->player_pos_x();
+    int pos_y = player->player_pos_y();
+    pos_x *= cell_sx;
+    pos_y *= cell_sy;
+    pos_x += cell_sx/2;
+    pos_y += cell_sy/2;
+    pos_x -=current_pos.x;
+    pos_y -=current_pos.y;
+    pos_x += player->delta_pos().x;
+    pos_y += player->delta_pos().y;
+
+    
+    
+    if (rest_x) {
+      if (pos_x < screen_sx/10) {
+	target_pos.x -= cell_sx*(screen_sx/cell_sx/2);
+      }
+      if (pos_x > screen_sx*9/10) {
+	target_pos.x += cell_sx*(screen_sx/cell_sx/2);
+      }
+    }
+    if (rest_y) {
+      if (pos_y < screen_sy/10) {
+	target_pos.y -= cell_sy*(screen_sy/cell_sy/2);
+      }
+      if (pos_y > screen_sy*9/10) {
+	target_pos.y += cell_sy*(screen_sy/cell_sy/2);
+      }
+    }
+  }
+private:
+  Point current_pos;
+  Point target_pos;
+  float speed;
+  TilePlayer *player;
+  int cell_sx, cell_sy;
+  int screen_sx, screen_sy;
+  };
 
 class TileRender2d : public TileRenderer2d
 {
@@ -6897,9 +7035,9 @@ public:
     m_bm = bm;
     num_tiles_in_bm=vec;
   }
-  MainLoopItem *get_renderer() const
+  MainLoopItem *get_renderer(TileScroller *scr) const
   {
-    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy);
+    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy,scr);
   }
 private:
   GameApi::Env &env;
@@ -6923,7 +7061,7 @@ public:
   int Tile(int x, int y) const
   {
     int i = tiles[std::pair<int,int>(x,y)];
-    if (i<0) return 0;
+    //if (i<0) return 0;
     return i;
 
   }
@@ -7154,7 +7292,8 @@ public:
     tile_counts.push_back(9);
     tile_counts.push_back(9);
     render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
-    renderer = render.get_renderer();
+    TileScroller *scr = new TileScroller2d(&player, 10.0, 64,64,1200,900);
+    renderer = render.get_renderer(scr);
     renderer->Prepare();
   }
   virtual void Prepare() {
