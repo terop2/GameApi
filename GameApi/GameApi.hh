@@ -2651,6 +2651,7 @@ public:
 	IMPORT P quad_y(float x1, float x2,float y,float z1, float z2);
 	IMPORT P quad_z(float x1, float x2,float y1, float y2,float z);
         IMPORT P fullscreen_quad(EveryApi &ev);
+  IMPORT ML bg_image(EveryApi &ev, BM bm);
   IMPORT P vr_fullscreen_quad(EveryApi &ev, bool is_right);
   IMPORT P tri_strip(PT *array, int size);
         IMPORT P polygon2(std::vector<PT> vec);

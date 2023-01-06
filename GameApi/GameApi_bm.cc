@@ -6835,7 +6835,7 @@ GameApi::BM GameApi::BitmapApi::flip_tile_bitmap(BM bm, int sx, int sy, bool is_
 class TileRendererMainLoop : public MainLoopItem
 {
 public:
-  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy, TileScroller *scr) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy), scr(scr) { }
+  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy, int player_tile_sx, int player_tile_sy, TileScroller *scr) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy), player_tile_sx(player_tile_sx), player_tile_sy(player_tile_sy), scr(scr) { }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
@@ -6845,24 +6845,29 @@ public:
       {
 	Bitmap<Color>* bm2 = bm[kk];
 	int numtiles = num_tiles_in_bm[kk];
-	
-	int sx= bm2->SizeX()/tile_sx;
-	int sy= bm2->SizeY()/tile_sy;
 
-	std::cout << numtiles << "::" << sx << " " << sy << std::endl;
+	int tx=tile_sx;
+	int ty=tile_sy;
+	
+	if (kk==1||kk==2) { tx=player_tile_sx; ty=player_tile_sy; }
+	
+	int sx= bm2->SizeX()/tx;
+	int sy= bm2->SizeY()/ty;
+
+	//std::cout << numtiles << "::" << sx << " " << sy << std::endl;
 	
 	int count=0;
 	for(int y=0;y<sy;y++)
 	  {
 	    for(int x=0;x<sx;x++)
 	      {
-		tiles.push_back(subbitmap_t<Color>(bm2,x*tile_sx,y*tile_sy,tile_sx,tile_sy));
+		tiles.push_back(subbitmap_t<Color>(bm2,x*tx,y*ty,tx,ty));
 		count++;
 		if (count==numtiles) break;
 	      }
 	    if (count==numtiles) break;
 	  }
-	std::cout << "COUNT=" << count << std::endl;
+	//std::cout << "COUNT=" << count << std::endl;
       }
 
     int s = tiles.size();
@@ -6960,6 +6965,7 @@ private:
   std::vector<GameApi::ML> mls;
   int blk;
   int tile_sx, tile_sy;
+  int player_tile_sx, player_tile_sy;
   TileScroller *scr;
 };
 
@@ -7037,7 +7043,7 @@ public:
   }
   MainLoopItem *get_renderer(TileScroller *scr) const
   {
-    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy,scr);
+    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy,sx,sy*2,scr);
   }
 private:
   GameApi::Env &env;
@@ -7246,7 +7252,7 @@ public:
   virtual int player_pos_z() const { return 0; }
   virtual int player_tile() const { return !flip?tile:player_end_tile+(tile-player_start_tile); }
   virtual int player_type() const { return 0; } 
-  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),0.0,0.0); }
+  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),-64.0,0.0); }
 private:
   int pos_x, pos_y;
   int player_start_tile, player_end_tile;
