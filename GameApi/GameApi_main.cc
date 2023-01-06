@@ -3742,3 +3742,9 @@ GameApi::ML GameApi::MainLoopApi::screenspace_rendering(EveryApi &ev, ML scene, 
   ScreenSpaceMaterial *smat = find_screenspace_material(e,screenspace_material);
   return add_main_loop(e, new ScreenSpace(e,ev,scene,smat));
 }
+
+#if 0
+GameApi::ML GameApi::MainLoopApi::custom_element(EveryApi &ev, std::string name, std::string scene_url, std::string param_names, std::string param_types, std::string param_default_values)
+{
+}
+#endif
