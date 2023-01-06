@@ -7144,6 +7144,8 @@ public:
     int xx = pl.player_pos_x();
     int yy = pl.player_pos_y();
     if (x==xx && y==yy) return pl.player_tile();
+
+
     //if (x==xx && y==yy+1) return 3;
     return -1;
   }
@@ -7166,10 +7168,14 @@ class PlayerTile : public TilePlayer
 {
 public:
   PlayerTile(int tile_sx, int tile_sy, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, float delta_time, float delta_move_time) : tile_sx(tile_sx), tile_sy(tile_sy), pos_x(start_pos_x), pos_y(start_pos_y), player_start_tile(player_start_tile), player_end_tile(player_end_tile), delta_time(delta_time), delta_move_time(delta_move_time) { tile=player_start_tile; }
-  virtual void SetTiles2d(Tiles2d *t) { }
+  virtual void SetTiles2d(Tiles2d *t) { tiles=t; }
   virtual void SetTiles3d(Tiles3d *t) { }
   virtual void handle_event(MainLoopEvent &e) {
       //if (e.type==0x300 && e.ch=='w') { pos_y--; move_freeze=true; y_dir=true; }
+    
+    if (e.type==0x300 && e.ch=='w'&&(!jump_ongoing||jump_aborted)) { jump_aborted=false; jump_trigger=true; jump_ongoing=true; jump_state=0; }
+    if (e.type==0x301 && e.ch=='w' && jump_ongoing && (jump_state==0||jump_state==1)) { jump_state=2; jump_trigger=true; jump_max_height=jump_height; jump_aborted=true; }
+    
       if (e.type==0x300 && e.ch=='d') { dir_x=1; }
       if (e.type==0x300 && e.ch=='a') { dir_x=-1; }
       //if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; y_dir=true; }
@@ -7194,8 +7200,35 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (jump_trigger) { jump_start_time=e.time; jump_trigger=false; }
 
-
+    
+    float jump_delta = e.time-jump_start_time;
+    if (jump_ongoing && jump_state==3)
+      {
+	std::cout << "Event3" << std::endl;
+	jump_height=jump_max_height+jump_speed*jump_delta;
+	if(jump_height>0.0) { jump_ongoing=false; jump_height=0.0; }
+      }
+    if (jump_ongoing && jump_state==2)
+      {
+	std::cout << "Event2" << std::endl;
+	jump_height=jump_max_height+jump_speed*jump_delta;
+	if(jump_height>-64.0*0.5) jump_state=3;
+      }
+    if (jump_ongoing && jump_state==1)
+      {
+	std::cout << "Event1" << std::endl;
+	jump_height=-jump_speed*jump_delta;
+	if (jump_height<-64.0*3.0) { jump_state=2; jump_start_time=e.time; jump_max_height=jump_height;}
+      }
+    if (jump_ongoing && jump_state==0)
+      {
+	std::cout << "Event0" << std::endl;
+	jump_height=-jump_speed*jump_delta;
+	if (jump_height<-64.0*0.5) jump_state=1;
+      }
+    std::cout << "Jump state: " << jump_state << " " << jump_height << std::endl;
 
     if (old_move_freeze!=move_freeze)
       {
@@ -7240,13 +7273,44 @@ public:
       if (tile>=player_end_tile) { tile-=(player_end_tile-player_start_tile); }
       //std::cout << "TILE: " << tile << " " << player_end_tile << " " << player_start_tile << std::endl;
     }
+
+    int val = tiles->Tile(player_pos_x(),player_pos_y()+(delta_pos().y+64)/64);
+    std::cout << "VAL=" << val << std::endl;
+    if (fmod(-delta_pos().y,64)>56.0) {
+
+
+    //if (x==int(player_pos_x()) && y==int(pl.player_pos_y()+(pl.delta_pos().y+64)/64)) return 3;
+    
+    if (jump_ongoing && jump_state==2 && val>0)
+      {
+	jump_ongoing=false;
+	pos_y=pos_y+std::ceil(float(delta_pos().y)/64.0)-1;
+	jump_height=0.0;
+      }
+    }
+    if (!jump_ongoing && !fall_ongoing && val<0) {
+      std::cout << "Fall start" << std::endl;
+      fall_ongoing=true;
+      fall_start_time=e.time;
+    }
+    float fall_delta2 = e.time-fall_start_time;
+    if (fall_ongoing)
+      {
+	std::cout << "Fall ongoing" << std::endl;
+	fall_delta=fall_speed*fall_delta2;
+	//if (fmod(-delta_pos().y-fall_delta,64)>56.0) {
+	  int val = tiles->Tile(player_pos_x(),player_pos_y()+(fall_delta+delta_pos().y+64)/64);
+	  std::cout << "VAL2=" << val << std::endl;
+	  if (val>=0) {fall_ongoing=false; pos_y+=std::ceil(fall_delta/64.0);  fall_delta=0.0; }
+	  //}
+      }
   }
   virtual int player_pos_x() const { return pos_x; }
   virtual int player_pos_y() const { return pos_y; }
   virtual int player_pos_z() const { return 0; }
   virtual int player_tile() const { return !flip?tile:player_end_tile+(tile-player_start_tile); }
   virtual int player_type() const { return 0; } 
-  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),0.0,0.0); }
+  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),jump_height+fall_delta,0.0); }
 private:
   int pos_x, pos_y;
   int player_start_tile, player_end_tile;
@@ -7268,6 +7332,22 @@ private:
   int last_x=0;
   bool has_flipped=false;
   int dir_x=0;
+  bool jump_ongoing=false;
+  float jump_height=0.0;
+  float jump_start_time=0.0;
+  float jump_speed=300.0;
+  float jump_max_height=0.0;
+  bool jump_trigger=false;
+  bool jump_aborted=false;
+  int jump_state=0; // 0=going up, displaying 1st
+                    // 1=going up, displaying 2nd
+                    // 2=going down, displaying 3rd
+                    // 3=going down, displaying 4th
+  bool fall_ongoing=false;
+  float fall_delta=0.0;
+  float fall_start_time=0.0;
+  float fall_speed=300.0;
+  Tiles2d *tiles=0;
 };
 
 class Game : public MainLoopItem
@@ -7292,6 +7372,7 @@ public:
     tile_counts.push_back(9);
     tile_counts.push_back(9);
     render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
+    player.SetTiles2d(&tiles);
     TileScroller *scr = new TileScroller2d(&player, 10.0, 64,64,1200,900);
     renderer = render.get_renderer(scr);
     renderer->Prepare();

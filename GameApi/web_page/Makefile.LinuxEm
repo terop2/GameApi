@@ -30,8 +30,8 @@ lowmem: ../libGameApi.bc
 	 #wasm-strip web_page_lowmem.wasm
 	 brotli --quality=5 --force web_page_lowmem.wasm -o web_page_lowmem.wasm.br
 
-both: both_highmem
-#both_middlemem both_lowmem
+both:  both_lowmem
+#both_middlemem both_highmem 
 
 
 # 
