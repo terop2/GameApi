@@ -246,6 +246,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&" },
 			 { "ev" },
 			 "P", "polygon_api", "fullscreen_quad"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bg_image,
+			 "bg_image",
+			 { "ev", "bm" },
+			 { "EveryApi&", "BM" },
+			 { "ev", "" },
+			 "ML", "polygon_api", "bg_image"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bitmapsized_quad,
 			 "quad_bmsize",
