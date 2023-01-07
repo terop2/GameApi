@@ -405,9 +405,9 @@ std::vector<GameApiItem*> fontapi_functions()
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::game,
 			 "game_ml",
-			 { "ev", "tile_sx", "tile_sy", "url", "tiles_string", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm" },
-			 { "EveryApi&", "int", "int", "std::string", "std::string", "int", "int", "int", "int", "BM", "BM" },
-			 { "ev", "64", "64", "https://tpgames.org/test.map", "abcdefghij", "10", "10", "5", "14", "", "" },
+			 { "ev", "tile_sx", "tile_sy", "url", "url2", "tiles_string", "tiles_string2", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm", "ruohikko_bm", "corn_bm", "vesisade_bm", "jump_bm", "font", "status_bm", "splash" },
+			 { "EveryApi&", "int", "int", "std::string", "std::string", "std::string", "std::string", "int", "int", "int", "int", "BM", "BM", "BM", "BM", "BM", "BM", "FI", "BM", "BM" },
+			 { "ev", "64", "64", "https://tpgames.org/test.map", "https://tpgames.org/anim.map", "abcde", "-----abcdefghijklmno", "10", "10", "24", "33", "", "","","","", "", "", "", "" },
 			 "ML", "mainloop_api", "game"));
   return vec;
 }
