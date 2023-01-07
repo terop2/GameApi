@@ -2659,7 +2659,16 @@ public:
   virtual int SizeY() const=0;
   virtual int Tile(int x, int y) const=0;
   virtual int Tile2(int x, int y) const=0;
+  virtual int Tile3(int x, int y) const=0;
   virtual Point2d Tile2Delta(int x, int y) const { Point2d p; p.x = 0.0; p.y=0.0; return p;  }
+  virtual int get_current_move1(int x, int y) const=0;
+  virtual void set_current_move1(int x, int y, int val)=0;
+  virtual int get_current_move2(int x, int y) const=0;
+  virtual void set_current_move2(int x, int y, int val)=0;
+  virtual float get_previous_time(int x, int y) const=0;
+  virtual void set_previous_time(int x, int y, float val)=0;
+  virtual float get_previous_time2(int x, int y) const=0;
+  virtual void set_previous_time2(int x, int y, float val)=0;
 };
 class Tiles3d
 {
@@ -2689,6 +2698,24 @@ class TileRenderer3d
 public:
   virtual MainLoopItem *get_renderer() const=0;
   virtual void set_tiles_3d(Tiles3d *t) const=0;
+};
+
+class TileHudInterface
+{
+public:
+  virtual int get_score() const=0;
+  virtual void set_score(int score)=0;
+  virtual int get_health() const=0;
+  virtual void set_health(int health)=0;
+  virtual int get_lives() const=0;
+  virtual void set_lives(int lives)=0;
+  virtual void set_state(int state)=0;
+};
+
+class TileSplashScreenInterface
+{
+public:
+  virtual bool enabled() const=0;
 };
 
 class TileActivation
@@ -2738,6 +2765,8 @@ public:
   virtual int enemy_type(int e) const=0;
   virtual int enemy_behavior_num(int e) const=0;
 };
+
+
 
 #endif
 

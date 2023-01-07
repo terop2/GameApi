@@ -5,7 +5,6 @@
 #include <cassert>
 #include <iostream>
 #include <sstream>
-#include <AudioService.h>
 
 
 #define VIRTUAL_REALITY 1
@@ -13,7 +12,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-#define THREADS 1
+//#define THREADS 1
 #endif
 #define BATCHING 1
 
@@ -22,9 +21,10 @@
 #endif
 
 #ifndef RASPI
-#undef USE_MIX
+#define USE_MIX 1
 #define USE_TEXTURE_READ 1
 #endif
+
 
 
 #define NO_SDL_GLEXT 
@@ -69,6 +69,12 @@
 #endif
 #include "GameApi_h.hh"
 //#include <SDL_mixer.h>
+
+#ifdef USE_MIX
+#include <SDL_mixer.h>
+#endif
+#include <AudioService.h>
+
 
 #ifdef WAYLAND
 #include <SDL_syswm.h>
@@ -211,9 +217,9 @@ void map_enums_sdl(int &i) {
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
 #ifdef LINUX
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK |SDL_INIT_AUDIO; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
 #else
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK |SDL_INIT_AUDIO; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
 #endif
 #ifdef EMSCRIPTEN
   case  Low_SDL_GL_CONTEXT_PROFILE_MASK: i=21; /*::SDL_GL_CONTEXT_PROFILE_MASK;*/ break;
@@ -1211,6 +1217,7 @@ class SDLApi : public SDLLowApi
 	event->type = e.type;
    if (e.type==SDL_KEYDOWN||e.type==SDL_KEYUP) {
       event->key.keysym.sym = e.key.keysym.sym;
+      if (e.key.repeat!=0) { return 0; }
     }
     if (e.type==SDL_MOUSEWHEEL) {
       event->wheel.y = e.wheel.y;

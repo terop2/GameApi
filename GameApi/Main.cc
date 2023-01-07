@@ -1556,12 +1556,12 @@ BufferRef LoadImageFromString(const std::vector<unsigned char> &buffer, bool &su
   //std::vector<unsigned char> mem;
   //int s = buffer.size();
   //for(int i=0;i<s;i++) mem.push_back(buffer[i]);
-  std::cout << "LoadImageFromString:" << buffer.size() << std::endl;
+  // std::cout << "LoadImageFromString:" << buffer.size() << std::endl;
   
   int x=0,y=0;
   int comp=0;
   stbi_uc * ptr = stbi_load_from_memory(&buffer[0], buffer.size(), &x, &y, &comp, 4);
-  std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
+  //std::cout << "ImageSize: " << x << " " << y << " " << comp << std::endl;
   int sz = x*y*sizeof(int);
   // this is required because stbi allocs it with malloc(), and we should use new.
   unsigned char *buf = new unsigned char[sz];
