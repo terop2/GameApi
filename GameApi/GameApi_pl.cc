@@ -2977,6 +2977,23 @@ EXPORT GameApi::P GameApi::PolygonApi::fullscreen_quad(EveryApi &ev)
   int sy = 600-40; //ev.mainloop_api.get_screen_sy();
   return quad_z(-sx,sx, -sy, sy, 0.0);
 }
+EXPORT GameApi::ML GameApi::PolygonApi::bg_image(EveryApi &ev, BM bm)
+{
+  GameApi::P I1=ev.polygon_api.fullscreen_quad(ev);
+  GameApi::BM I2=bm;
+  GameApi::BM I22=ev.bitmap_api.flip_y(I2);
+  GameApi::MT I3=ev.materials_api.texture(ev,I22,1.0);
+  GameApi::ML I4=ev.materials_api.bind(I1,I3);
+#ifdef EMSCRIPTEN
+  GameApi::MN I5=ev.move_api.mn_empty();
+  GameApi::MN I6=ev.move_api.scale2(I5,1.5,1.5,1);
+  GameApi::ML I7=ev.move_api.move_ml(ev,I4,I6,1,10.0);
+  I4=I7;
+#endif
+  return I4;
+}
+
+
 
 class BitmapSizedQuad : public FaceCollection
 {

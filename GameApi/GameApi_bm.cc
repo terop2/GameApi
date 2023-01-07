@@ -6835,7 +6835,7 @@ GameApi::BM GameApi::BitmapApi::flip_tile_bitmap(BM bm, int sx, int sy, bool is_
 class TileRendererMainLoop : public MainLoopItem
 {
 public:
-  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy, TileScroller *scr) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy), scr(scr) { }
+  TileRendererMainLoop(GameApi::Env &env, GameApi::EveryApi &ev, Tiles2d *t, std::vector<Bitmap<Color> *> bm, std::vector<int> num_tiles_in_bm, int tile_sx, int tile_sy, int player_tile_sx, int player_tile_sy, TileScroller *scr) : env(env), ev(ev), t(t), bm(bm), num_tiles_in_bm(num_tiles_in_bm), tile_sx(tile_sx), tile_sy(tile_sy), player_tile_sx(player_tile_sx), player_tile_sy(player_tile_sy), scr(scr) { }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
@@ -6845,24 +6845,29 @@ public:
       {
 	Bitmap<Color>* bm2 = bm[kk];
 	int numtiles = num_tiles_in_bm[kk];
-	
-	int sx= bm2->SizeX()/tile_sx;
-	int sy= bm2->SizeY()/tile_sy;
 
-	std::cout << numtiles << "::" << sx << " " << sy << std::endl;
+	int tx=tile_sx;
+	int ty=tile_sy;
+	
+	if (kk==4||kk==5||kk==6||kk==7) { tx=player_tile_sx; ty=player_tile_sy; }
+	
+	int sx= bm2->SizeX()/tx;
+	int sy= bm2->SizeY()/ty;
+
+	//std::cout << numtiles << "::" << sx << " " << sy << std::endl;
 	
 	int count=0;
 	for(int y=0;y<sy;y++)
 	  {
 	    for(int x=0;x<sx;x++)
 	      {
-		tiles.push_back(subbitmap_t<Color>(bm2,x*tile_sx,y*tile_sy,tile_sx,tile_sy));
+		tiles.push_back(subbitmap_t<Color>(bm2,x*tx,y*ty,tx,ty));
 		count++;
 		if (count==numtiles) break;
 	      }
 	    if (count==numtiles) break;
 	  }
-	std::cout << "COUNT=" << count << std::endl;
+	//std::cout << "COUNT=" << count << std::endl;
       }
 
     int s = tiles.size();
@@ -6884,7 +6889,7 @@ public:
     //blk = add_block();
   }
   virtual void Prepare() {
-    std::cout << "Prepare" << std::endl;
+    //std::cout << "Prepare" << std::endl;
     int s = bm.size();
     for(int i=0;i<s;i++)
       bm[i]->Prepare();
@@ -6911,7 +6916,7 @@ public:
 	  if (tile>=0 && tile<mls.size()) {
 	  GameApi::ML tile_bm_ml = mls[tile];
 	  GameApi::MN mn0 = ev.move_api.mn_empty();
-	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx,scroll_pos.y+y*tile_sy,0);
+	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx,scroll_pos.y+y*tile_sy+64.0,0);
 	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
 	  vec.push_back(move);
 	  }
@@ -6930,11 +6935,30 @@ public:
 	    //std::cout << "Delta: " << delta.x << " " << delta.y << std::endl;
 	  GameApi::ML tile_bm_ml = mls[tile2];
 	  GameApi::MN mn0 = ev.move_api.mn_empty();
-	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx+delta.x,scroll_pos.y+y*tile_sy+delta.y,0);
+	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx+delta.x,scroll_pos.y+y*tile_sy+delta.y+64.0,0);
 	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
 	  vec.push_back(move);
 	  }
 	}
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx;x++)
+
+	{
+	  int tile2 = t->Tile3(x,y);
+	  //std::cout << tile2 << "," << std::endl;
+	  //if (tile2==5) std::cout << "Blob" << " " << tile2 << " " << mls.size() << std::endl;
+	  if (tile2>=0 && tile2<mls.size()) {
+	    //std::cout << "Tile2:" << x << " " << y << " " << tile2 << std::endl;
+	    //std::cout << "Delta: " << delta.x << " " << delta.y << std::endl;
+	  GameApi::ML tile_bm_ml = mls[tile2];
+	  GameApi::MN mn0 = ev.move_api.mn_empty();
+	  GameApi::MN mn = ev.move_api.trans2(mn0, scroll_pos.x+x*tile_sx,scroll_pos.y+y*tile_sy+64.0,0);
+	  GameApi::ML move = ev.move_api.move_ml(ev, tile_bm_ml, mn, 1, 10);
+	  vec.push_back(move);
+	  
+	  }
+	}
+
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
@@ -6960,7 +6984,183 @@ private:
   std::vector<GameApi::ML> mls;
   int blk;
   int tile_sx, tile_sy;
+  int player_tile_sx, player_tile_sy;
   TileScroller *scr;
+};
+
+class TileHud : public MainLoopItem, public TileHudInterface
+{
+public:
+  TileHud(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::FI font, GameApi::BM status_bm) :env(env), ev(ev), font(font), status_bm(status_bm) { }
+  virtual int get_score() const { return score; }
+  virtual void set_score(int score1) { score=score1; }
+  virtual int get_health() const { return health; }
+  virtual void set_health(int health1) { health=health1; }
+  virtual int get_lives() const { return lives; }
+  virtual void set_lives(int lives1) { lives=lives1; }
+  virtual void set_state(int state1) { state=state1; }
+
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    int s = 10;
+    for(int i=0;i<s;i++)
+      {
+	std::stringstream ss;
+	ss << i;
+	std::string label = ss.str();
+	GameApi::BM bm = ev.font_api.draw_text_string(font,label,5,30);
+	GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bm);
+	MainLoopItem *ml3 = find_main_loop(env,ml);
+	ml3->Prepare();
+	nodes.push_back(ml);
+      }
+    GameApi::BM bm2 = ev.font_api.draw_text_string(font,"Score", 5,30);
+    score_ml = ev.sprite_api.vertex_array_render(ev,bm2);
+    GameApi::BM bm3 = ev.font_api.draw_text_string(font,"Health", 5, 30);
+    health_ml = ev.sprite_api.vertex_array_render(ev,bm3);
+    GameApi::BM bm4 = ev.font_api.draw_text_string(font,"Lives", 5, 30);
+    lives_ml = ev.sprite_api.vertex_array_render(ev,bm4);
+
+
+    GameApi::PT pt1 = ev.point_api.point(0.0,0.0,0.0);
+    GameApi::PT pt2 = ev.point_api.point(0.0,64.0,0.0);
+    GameApi::BM bm_grad = ev.bitmap_api.gradient(pt1,pt2,0xff884422,0xff442211, 1280,64);
+    gradient_ml = ev.sprite_api.vertex_array_render(ev,bm_grad);
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+    std::vector<GameApi::ML> vec;
+    vec.push_back(gradient_ml);
+
+
+    int score_pos = 100.0;
+    int health_pos = 500.0;
+    int lives_pos = 1000.0;
+    
+    std::stringstream ss;
+    ss << score;
+    std::string label = ss.str();
+    int s = label.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::ML tile = nodes[int(label[i]-'0')];
+	GameApi::MN mn0 = ev.move_api.mn_empty();
+	GameApi::MN mn = ev.move_api.trans2(mn0, i*20.0+15.0+score_pos,32.0,0);
+	GameApi::ML move = ev.move_api.move_ml(ev, tile, mn, 1, 10);
+	vec.push_back(move);
+      }
+
+    std::stringstream ss2;
+    ss2 << health;
+    std::string label2 = ss2.str();
+    int s2 = label2.size();
+    for(int i=0;i<s2;i++)
+      {
+	GameApi::ML tile = nodes[int(label2[i]-'0')];
+	GameApi::MN mn0 = ev.move_api.mn_empty();
+	GameApi::MN mn = ev.move_api.trans2(mn0, i*20.0+health_pos+15.0,32.0,0);
+	GameApi::ML move = ev.move_api.move_ml(ev, tile, mn, 1, 10);
+	vec.push_back(move);
+      }
+
+
+    std::stringstream ss3;
+    ss3 << lives;
+    std::string label3 = ss3.str();
+    int s3 = label3.size();
+    for(int i=0;i<s3;i++)
+      {
+	GameApi::ML tile = nodes[int(label3[i]-'0')];
+	GameApi::MN mn0 = ev.move_api.mn_empty();
+	GameApi::MN mn = ev.move_api.trans2(mn0, i*20.0+lives_pos+15.0,32.0,0);
+	GameApi::ML move = ev.move_api.move_ml(ev, tile, mn, 1, 10);
+	vec.push_back(move);
+      }
+
+    GameApi::MN mn0 = ev.move_api.mn_empty();
+    GameApi::MN mn_score = ev.move_api.trans2(mn0,score_pos,3.0,0.0);
+    GameApi::MN mn_health = ev.move_api.trans2(mn0,health_pos,3.0,0.0);
+    GameApi::MN mn_lives = ev.move_api.trans2(mn0,lives_pos,3.0,0.0);
+
+    GameApi::ML ml_score = ev.move_api.move_ml(ev, score_ml, mn_score, 1,10);
+    GameApi::ML ml_health = ev.move_api.move_ml(ev, health_ml, mn_health, 1, 10);
+    GameApi::ML ml_lives = ev.move_api.move_ml(ev, lives_ml, mn_lives, 1, 10);
+    vec.push_back(ml_score);
+    vec.push_back(ml_health);
+    vec.push_back(ml_lives);
+
+    
+    GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
+    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
+    MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->execute(e);    
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  int score=0;
+  int health=100;
+  int lives=3;
+  int state=0;
+  std::vector<GameApi::ML> nodes;
+  GameApi::FI font;
+  GameApi::BM status_bm;
+  GameApi::ML score_ml, health_ml, lives_ml;
+  GameApi::ML gradient_ml;
+};
+
+class TileSplashScreen : public MainLoopItem, public TileSplashScreenInterface
+{
+public:
+  TileSplashScreen(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm) : env(env), ev(ev), bm(bm) { }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  bool enabled() const { return !disable; }
+  virtual void HeavyPrepare() {
+    ml = ev.sprite_api.vertex_array_render(ev,bm);
+    MainLoopItem *ml3 = find_main_loop(env,ml);
+    ml3->Prepare();
+  }
+  virtual void Prepare() {
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+    if (!disable) {
+      BitmapHandle *handle = find_bitmap(env, bm);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      float bm_size = b2->SizeX();
+      float bm_size_y = b2->SizeY();
+    GameApi::MN mn0 = ev.move_api.mn_empty();
+    GameApi::MN mn = ev.move_api.trans2(mn0,(1280-bm_size)/2,(900-bm_size_y)/2,0);
+    GameApi::ML move = ev.move_api.move_ml(ev, ml, mn, 1, 10);
+    
+    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,move,0.0,0.0,1200.0,900.0);
+    MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if ((e.type==0x300 && (e.ch==32||e.ch==13)) || e.button ==0)
+      {
+	disable=true;
+      }
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  bool disable=false;
+  GameApi::BM bm;
+  GameApi::ML ml;
 };
 
 class TileScroller2d : public TileScroller
@@ -7037,7 +7237,7 @@ public:
   }
   MainLoopItem *get_renderer(TileScroller *scr) const
   {
-    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy,scr);
+    return new TileRendererMainLoop(env,ev,m_t, m_bm, num_tiles_in_bm, sx,sy,sx,sy*2,scr);
   }
 private:
   GameApi::Env &env;
@@ -7048,10 +7248,171 @@ private:
   int sx,sy;
 };
 
+class AnimTiles2d : public Tiles2d, public MainLoopItem
+{
+public:
+  AnimTiles2d(GameApi::Env &env, Tiles2d *tiles, std::string tiles_strings, std::string tiles_strings2, std::string url, std::string homepage) : env(env), tiles(tiles), tiles_strings(tiles_strings), tiles_strings2(tiles_strings2), url(url), homepage(homepage) { }
+  int SizeX() const {
+    return tiles->SizeX();
+  }
+  int SizeY() const {
+    return tiles->SizeY();
+  }
+  int Tile(int x, int y) const
+  {
+    int val = tiles->Tile(x,y);
+
+    if (val>=0&&val<tiles_strings.size()) {
+      char ch = tiles_strings[val];
+
+      int s1 = anims.size();
+      for(int i=0;i<s1;i++)
+	{
+	  int s2=anims[i].size();
+	  int pos=-1;
+	  for(int j=0;j<s2;j++)
+	    {
+	      if (ch==anims[i][j]) pos=j;
+	    }
+	  if (pos==-1) continue;
+	  int mv = tiles->get_current_move1(x,y);
+	  float previous_time2 = tiles->get_previous_time(x,y);
+	  if (current_time>previous_time2+pos1[i]) {
+	    //pos++;
+	    mv++;
+	    tiles->set_current_move1(x,y,mv);
+	    //previous_time2 = current_time;
+	    tiles->set_previous_time(x,y,current_time);
+	  }
+	  ch=anims[i][(pos+mv)%(anims[i].size())];
+	}
+
+      int s = tiles_strings.size();
+      for(int i=0;i<s;i++)
+	{
+	  if (ch==tiles_strings[i]) val=i;
+	}
+      
+    }
+    return val;
+    
+  }
+  int Tile2(int x, int y) const { return tiles->Tile2(x,y); }
+  int Tile3(int x, int y) const {
+
+    int val = tiles->Tile3(x,y);
+
+    if (val>=0&&val<tiles_strings2.size()) {
+      char ch = tiles_strings2[val];
+
+      int s1 = anims2.size();
+      for(int i=0;i<s1;i++)
+	{
+	  int s2=anims2[i].size();
+	  int pos=-1;
+	  for(int j=0;j<s2;j++)
+	    {
+	      if (ch==anims2[i][j]) pos=j;
+	    }
+	  if (pos==-1) continue;
+	  int mv = tiles->get_current_move2(x,y);
+	  float previous_time = tiles->get_previous_time2(x,y);
+	  if (current_time>previous_time+pos2[i]) {
+	    mv++;
+	    //pos++;
+	    tiles->set_current_move2(x,y,mv);
+	    tiles->set_previous_time2(x,y,current_time);
+	    //previous_time=current_time;
+	  }
+	  ch=anims2[i][(pos+mv)%(anims2[i].size())];
+	  //std::cout << "CH chosen: " << ch << std::endl;
+	  break;
+	}
+
+      int s = tiles_strings2.size();
+      for(int i=0;i<s;i++)
+	{
+	  if (ch==tiles_strings2[i]) val=i;
+	}      
+    }
+    return val;
+  }
+
+  virtual int get_current_move1(int x, int y) const { return tiles->get_current_move1(x,y); }
+  virtual void set_current_move1(int x, int y, int val)
+  {
+    tiles->set_current_move1(x,y,val);
+  }
+  virtual int get_current_move2(int x, int y) const { return tiles->get_current_move2(x,y); }
+  virtual void set_current_move2(int x, int y, int val)
+  {
+    tiles->set_current_move2(x,y,val);
+  }
+  virtual float get_previous_time(int x, int y) const { return tiles->get_previous_time(x,y); }
+  virtual void set_previous_time(int x, int y, float val) { return tiles->set_previous_time(x,y,val); }
+
+  virtual float get_previous_time2(int x, int y) const { return tiles->get_previous_time2(x,y); }
+  virtual void set_previous_time2(int x, int y, float val) { tiles->set_previous_time2(x,y,val); }
+
+  
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+
+      std::string line;
+      bool mode=false;
+      while(std::getline(ss,line)) {
+	if (line=="@") { mode=true; continue; }
+	std::stringstream ss2(line);
+	float time_delta=1.0;
+	std::string line2;
+	ss2 >> time_delta >> line2;
+	if (!mode) {
+	  anims.push_back(line2);
+	  pos1.push_back(time_delta);
+	} else {
+	  anims2.push_back(line2);
+	  pos2.push_back(time_delta);
+	}
+      }
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    current_time = e.time;
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+private:
+  GameApi::Env &env;
+  Tiles2d *tiles;
+  std::string tiles_strings, tiles_strings2;
+  std::string url;
+  std::string homepage;
+  std::vector<std::string> anims;
+  std::vector<float> pos1;
+  std::vector<std::string> anims2;
+  std::vector<float> pos2;
+  float current_time;
+  //mutable float previous_time=0.0;
+  //mutable float previous_time2=0.0;
+  float time_delta=1.0;
+};
+
 class NetworkTiles2d : public Tiles2d, public MainLoopItem
 {
 public:
-  NetworkTiles2d(GameApi::Env &env, std::string url, std::string homepage, std::string tiles_string) : env(env), url(url), homepage(homepage), tiles_string(tiles_string) { }
+  NetworkTiles2d(GameApi::Env &env, std::string url, std::string homepage, std::string tiles_string, std::string tiles_string2) : env(env), url(url), homepage(homepage), tiles_string(tiles_string), tiles_string2(tiles_string2) { }
   int SizeX() const {
     return sx;
   }
@@ -7066,7 +7427,7 @@ public:
 
   }
   int Tile2(int x, int y) const { return -1; }
-  
+  int Tile3(int x, int y) const { return tiles3[std::pair<int,int>(x,y)]; }
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -7086,8 +7447,13 @@ public:
     std::stringstream ss(data);
     std::string line;
     int linenum = 0;
+    int linenum2=0;
     int width=0;
+    int width2=0;
+    bool mode=false;
     while(std::getline(ss,line)) {
+      if (line=="@") mode=true;
+      if (!mode) {
       int s = line.size();
       width=std::max(width,s);
       for(int i=0;i<s;i++)
@@ -7101,8 +7467,23 @@ public:
 	    }
 	  tiles[std::make_pair(i,linenum)] = pos;
 	}
-
       linenum++;
+      } else { // mode==true
+      int s = line.size();
+      width2=std::max(width2,s);
+      for(int i=0;i<s;i++)
+	{
+	  char ch = line[i];
+	  int s = tiles_string2.size();
+	  int pos=-1;
+	  for(int j=0;j<s;j++)
+	    {
+	      if (ch==tiles_string2[j]) { pos=j; break; }
+	    }
+	  tiles3[std::make_pair(i,linenum2)] = pos;
+	}
+      linenum2++;
+      }
     }
     sx=width;
     sy=linenum-1;
@@ -7117,16 +7498,37 @@ public:
 
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  virtual int get_current_move1(int x, int y) const { return moves1[std::pair<int,int>(x,y)]; }
+  virtual void set_current_move1(int x, int y, int val)
+  {
+    moves1[std::pair<int,int>(x,y)]=val;
+  }
+  virtual int get_current_move2(int x, int y) const { return moves2[std::pair<int,int>(x,y)]; }
+  virtual void set_current_move2(int x, int y, int val)
+  {
+    moves2[std::pair<int,int>(x,y)]=val;
+  }
+  virtual float get_previous_time(int x, int y) const { return time[std::pair<int,int>(x,y)]; }
+    virtual void set_previous_time(int x, int y, float val) { time[std::pair<int,int>(x,y)]=val; }
+
+  virtual float get_previous_time2(int x, int y) const { return time2[std::pair<int,int>(x,y)]; }
+  virtual void set_previous_time2(int x, int y, float val) { time2[std::pair<int,int>(x,y)]=val; }
+
   
 private:
   GameApi::Env &env;
   std::string url;
   std::string homepage;
   std::string tiles_string;
-
+  std::string tiles_string2;
   int sx=0;
   int sy=0;
   mutable std::map<std::pair<int,int>,int> tiles;
+  mutable std::map<std::pair<int,int>,int> tiles3;
+  mutable std::map<std::pair<int,int>,int> moves1;
+  mutable std::map<std::pair<int,int>,int> moves2;
+  mutable std::map<std::pair<int,int>,float> time;
+  mutable std::map<std::pair<int,int>,float> time2;
 };
 
 class PlayerTileMapping : public Tiles2d
@@ -7149,6 +7551,10 @@ public:
     //if (x==xx && y==yy+1) return 3;
     return -1;
   }
+  virtual int Tile3(int x, int y) const
+  {
+    return next.Tile3(x,y);
+  }
   virtual Point2d Tile2Delta(int x, int y) const
   {
     int xx = pl.player_pos_x();
@@ -7159,10 +7565,34 @@ public:
     p.y=0.0;
     return p;
   }
+  virtual int get_current_move1(int x, int y) const { return next.get_current_move1(x,y); }
+  virtual void set_current_move1(int x, int y, int val)
+  {
+    next.set_current_move1(x,y,val);
+  }
+  virtual int get_current_move2(int x, int y) const { return next.get_current_move2(x,y); }
+  virtual void set_current_move2(int x, int y, int val)
+  {
+    next.set_current_move2(x,y,val);
+  }
+  virtual float get_previous_time(int x, int y) const { return next.get_previous_time(x,y); }
+  virtual void set_previous_time(int x, int y, float val) { next.set_previous_time(x,y,val); }
+
+  virtual float get_previous_time2(int x, int y) const { return next.get_previous_time2(x,y); }
+  virtual void set_previous_time2(int x, int y, float val) { next.set_previous_time2(x,y,val); }
+
+  
 private:
   TilePlayer &pl;
   Tiles2d &next;
 };
+
+bool is_transparent_tile(int val)
+{
+  if (val>=5+8 && val<5+8+3) return true;
+  
+  return val<0;
+}
 
 class PlayerTile : public TilePlayer
 {
@@ -7172,22 +7602,25 @@ public:
   virtual void SetTiles3d(Tiles3d *t) { }
   virtual void handle_event(MainLoopEvent &e) {
       //if (e.type==0x300 && e.ch=='w') { pos_y--; move_freeze=true; y_dir=true; }
+
+    //std::cout << "Event:" << e.type << " " << e.ch << std::endl;
+
     
-    if (e.type==0x300 && e.ch=='w'&&(!jump_ongoing||jump_aborted)) { jump_aborted=false; jump_trigger=true; jump_ongoing=true; jump_state=0; }
-    if (e.type==0x301 && e.ch=='w' && jump_ongoing && (jump_state==0||jump_state==1)) { jump_state=2; jump_trigger=true; jump_max_height=jump_height; jump_aborted=true; }
+    if (e.type==0x300 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==32||e.ch==1073741906)&&(!jump_ongoing||jump_aborted)) { jump_aborted=false; jump_trigger=true; jump_ongoing=true; jump_state=0; }
+    if (e.type==0x301 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==32||e.ch==1073741906) && jump_ongoing && (jump_state==0||jump_state==1)) {
+      if (jump_height<-64) {
+	jump_state=2; jump_trigger=true; jump_max_height=jump_height; jump_aborted=true;
+      } else { jump_abort_delayed=true; }
+    }
     
-      if (e.type==0x300 && e.ch=='d') { dir_x=1; }
-      if (e.type==0x300 && e.ch=='a') { dir_x=-1; }
+    if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) { dir_x=1; }
+    if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) { dir_x=-1; }
       //if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; y_dir=true; }
 
-      if (e.type==0x301 && e.ch=='d') { dir_x=0; }
-      if (e.type==0x301 && e.ch=='a') { dir_x=0; }
+    if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) { dir_x=0; }
+    if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) { dir_x=0; }
       
 
-    if (!move_freeze) {
-      if (dir_x==1) { if (last_x==-1) { has_flipped=true; } else { has_flipped=false; } move_x=1; move_freeze=true; flip=false; y_dir=false; last_x=1;  }
-      if (dir_x==-1) { if (last_x==1) { has_flipped=true; } else { has_flipped=false; } move_x=-1; move_freeze=true; flip=true; y_dir=false; last_x=-1;  }
-    }
 
     /*
     else
@@ -7200,35 +7633,45 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
-    if (jump_trigger) { jump_start_time=e.time; jump_trigger=false; }
+    //MainLoopEvent ee;
+    if (!move_freeze) {
+      if (dir_x==1) { if (last_x==-1) { has_flipped=true; } else { has_flipped=false; } move_x=1; move_freeze=true; flip=false; y_dir=false; last_x=1;  }
+      if (dir_x==-1) { if (last_x==1) { has_flipped=true; } else { has_flipped=false; } move_x=-1; move_freeze=true; flip=true; y_dir=false; last_x=-1;  }
+    }
+    //ee.type=771;
+    //ee.ch=-1;
+    //handle_event(ee);
 
+    if (jump_abort_delayed && jump_height<-64) { 	jump_state=2; jump_trigger=true; jump_max_height=jump_height; jump_aborted=true; jump_abort_delayed=false; }
+    if (jump_trigger) { jump_start_time=e.time; jump_trigger=false; }
+    
     
     float jump_delta = e.time-jump_start_time;
     if (jump_ongoing && jump_state==3)
       {
-	std::cout << "Event3" << std::endl;
+	//std::cout << "Event3" << std::endl;
 	jump_height=jump_max_height+jump_speed*jump_delta;
 	if(jump_height>0.0) { jump_ongoing=false; jump_height=0.0; }
       }
     if (jump_ongoing && jump_state==2)
       {
-	std::cout << "Event2" << std::endl;
+	//std::cout << "Event2" << std::endl;
 	jump_height=jump_max_height+jump_speed*jump_delta;
 	if(jump_height>-64.0*0.5) jump_state=3;
       }
     if (jump_ongoing && jump_state==1)
       {
-	std::cout << "Event1" << std::endl;
+	//std::cout << "Event1" << std::endl;
 	jump_height=-jump_speed*jump_delta;
 	if (jump_height<-64.0*3.0) { jump_state=2; jump_start_time=e.time; jump_max_height=jump_height;}
       }
     if (jump_ongoing && jump_state==0)
       {
-	std::cout << "Event0" << std::endl;
+	//std::cout << "Event0" << std::endl;
 	jump_height=-jump_speed*jump_delta;
 	if (jump_height<-64.0*0.5) jump_state=1;
       }
-    std::cout << "Jump state: " << jump_state << " " << jump_height << std::endl;
+    //std::cout << "Jump state: " << jump_state << " " << jump_height << std::endl;
 
     if (old_move_freeze!=move_freeze)
       {
@@ -7274,43 +7717,52 @@ public:
       //std::cout << "TILE: " << tile << " " << player_end_tile << " " << player_start_tile << std::endl;
     }
 
-    int val = tiles->Tile(player_pos_x(),player_pos_y()+(delta_pos().y+64)/64);
-    std::cout << "VAL=" << val << std::endl;
+    int val = tiles->Tile(player_pos_x(),player_pos_y()+(delta_pos().y+64+64)/64);
+    //std::cout << "VAL=" << val << std::endl;
     if (fmod(-delta_pos().y,64)>56.0) {
 
 
     //if (x==int(player_pos_x()) && y==int(pl.player_pos_y()+(pl.delta_pos().y+64)/64)) return 3;
     
-    if (jump_ongoing && jump_state==2 && val>0)
+      if (jump_ongoing && jump_state==2 && !is_transparent_tile(val))
       {
 	jump_ongoing=false;
 	pos_y=pos_y+std::ceil(float(delta_pos().y)/64.0)-1;
 	jump_height=0.0;
       }
     }
-    if (!jump_ongoing && !fall_ongoing && val<0) {
-      std::cout << "Fall start" << std::endl;
+    if (!jump_ongoing && !fall_ongoing && is_transparent_tile(val)) {
+      //std::cout << "Fall start" << std::endl;
       fall_ongoing=true;
       fall_start_time=e.time;
     }
     float fall_delta2 = e.time-fall_start_time;
     if (fall_ongoing)
       {
-	std::cout << "Fall ongoing" << std::endl;
+	//std::cout << "Fall ongoing" << std::endl;
 	fall_delta=fall_speed*fall_delta2;
 	//if (fmod(-delta_pos().y-fall_delta,64)>56.0) {
-	  int val = tiles->Tile(player_pos_x(),player_pos_y()+(fall_delta+delta_pos().y+64)/64);
-	  std::cout << "VAL2=" << val << std::endl;
-	  if (val>=0) {fall_ongoing=false; pos_y+=std::ceil(fall_delta/64.0);  fall_delta=0.0; }
+	  int val = tiles->Tile(player_pos_x(),player_pos_y()+(fall_delta+delta_pos().y+64+64)/64);
+	  //std::cout << "VAL2=" << val << std::endl;
+	  if (!is_transparent_tile(val)) {fall_ongoing=false; pos_y+=std::ceil(fall_delta/64.0);  fall_delta=0.0; }
 	  //}
       }
   }
   virtual int player_pos_x() const { return pos_x; }
   virtual int player_pos_y() const { return pos_y; }
   virtual int player_pos_z() const { return 0; }
-  virtual int player_tile() const { return !flip?tile:player_end_tile+(tile-player_start_tile); }
+  virtual int player_tile() const {
+    int jump_val = 0;
+    if (jump_ongoing && jump_state==0) { jump_val=0; }
+    if (jump_ongoing && jump_state==1) { jump_val=1; }
+    if (jump_ongoing && jump_state==2) { jump_val=2; }
+    if (jump_ongoing && jump_state==3) { jump_val=3; }
+    if (jump_ongoing && !flip) { jump_val+=42; }
+    if (jump_ongoing && flip) { jump_val+=45; }
+    if (jump_ongoing) { return jump_val; }
+    return !flip?tile:player_end_tile+(tile-player_start_tile); }
   virtual int player_type() const { return 0; } 
-  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),jump_height+fall_delta,0.0); }
+  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),jump_height+fall_delta-64,0.0); }
 private:
   int pos_x, pos_y;
   int player_start_tile, player_end_tile;
@@ -7339,6 +7791,7 @@ private:
   float jump_max_height=0.0;
   bool jump_trigger=false;
   bool jump_aborted=false;
+  bool jump_abort_delayed=false;
   int jump_state=0; // 0=going up, displaying 1st
                     // 1=going up, displaying 2nd
                     // 2=going down, displaying 3rd
@@ -7353,24 +7806,37 @@ private:
 class Game : public MainLoopItem
 {
 public:
-  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string homepage, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0), player_tiles(player, tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm) { }
+  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string homepage, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm, Bitmap<Color> *ruohikko_bm, Bitmap<Color> *corn_bm, Bitmap<Color> *vesisade_bm, Bitmap<Color> *jump_bm, Bitmap<Color> *jump_flip_bm, GameApi::FI font, GameApi::BM status_bm, GameApi::BM splash) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string,tiles_string2), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0), anim_tiles(env,&tiles,tiles_string,tiles_string2,url2,homepage), player_tiles(player, anim_tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm), ruohikko_bm(ruohikko_bm), corn_bm(corn_bm), vesisade_bm(vesisade_bm), jump_bm(jump_bm), jump_flip_bm(jump_flip_bm),hud(env,ev,font,status_bm), splashscreen(env,ev,splash) { }
   virtual void Collect(CollectVisitor &vis) {
     tile_bm->Collect(vis);
     player_bm->Collect(vis);
+    jump_bm->Collect(vis);
     tiles.Collect(vis);
-
+    anim_tiles.Collect(vis);
+    hud.Collect(vis);
+    splashscreen.Collect(vis);
     vis.register_obj(this);
     
   }
   virtual void HeavyPrepare() {
     std::vector<Bitmap<Color>*> tile_bms;
     tile_bms.push_back(tile_bm);
+    tile_bms.push_back(ruohikko_bm);
+    tile_bms.push_back(corn_bm);
+    tile_bms.push_back(vesisade_bm);
     tile_bms.push_back(player_bm);
     tile_bms.push_back(player_flip_bm);
+    tile_bms.push_back(jump_bm);
+    tile_bms.push_back(jump_flip_bm);
     std::vector<int> tile_counts;
-    tile_counts.push_back(5);
-    tile_counts.push_back(9);
-    tile_counts.push_back(9);
+    tile_counts.push_back(5); // 0..5
+    tile_counts.push_back(8); // 5..13
+    tile_counts.push_back(3); // 13..16
+    tile_counts.push_back(8); // 16 .. 24
+    tile_counts.push_back(9); // 24 .. 33 
+    tile_counts.push_back(9); // 33 .. 42
+    tile_counts.push_back(3); // 42 .. 45
+    tile_counts.push_back(3); // 45 .. 48
     render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
     player.SetTiles2d(&tiles);
     TileScroller *scr = new TileScroller2d(&player, 10.0, 64,64,1200,900);
@@ -7381,20 +7847,32 @@ public:
     tile_bm->Prepare();
     player_bm->Prepare();
     tiles.Prepare();
+    anim_tiles.Prepare();
+    hud.Prepare();
+    splashscreen.Prepare();
     HeavyPrepare();
   }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
-    player.execute(e);
-    if (renderer)
-      renderer->execute(e);
+      player.execute(e);
+      anim_tiles.execute(e);
+      if (renderer)
+	renderer->execute(e);
+      hud.execute(e);
+    splashscreen.execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    player.handle_event(e);
-    if (renderer)
-      renderer->handle_event(e);
+    if (!splashscreen.enabled()) {
+      player.handle_event(e);
+      anim_tiles.handle_event(e);
+      hud.handle_event(e);
+      if (renderer)
+	renderer->handle_event(e);
+    } else {
+      splashscreen.handle_event(e);
+    }
   }
   virtual std::vector<int> shader_id() { return renderer->shader_id(); }
 
@@ -7404,15 +7882,23 @@ private:
   TileRender2d render;
   NetworkTiles2d tiles;
   PlayerTile player;
+  AnimTiles2d anim_tiles;
   PlayerTileMapping player_tiles;
+  TileHud hud;
+  TileSplashScreen splashscreen;
   Bitmap<Color> *tile_bm;
   Bitmap<Color> *player_bm;
   Bitmap<Color> *player_flip_bm;
+  Bitmap<Color> *ruohikko_bm;
+  Bitmap<Color> *corn_bm;
+  Bitmap<Color> *vesisade_bm;
+  Bitmap<Color> *jump_bm;
+  Bitmap<Color> *jump_flip_bm;
   MainLoopItem *renderer=0;
 };
 
 
-GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm)
+GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM player_jump_bm, FI font, BM status_bm, BM splash)
 {
   BitmapHandle *handle = find_bitmap(e, tile_bm);
   ::Bitmap<Color> *tile_bm2 = find_color_bitmap(handle);
@@ -7422,5 +7908,23 @@ GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int t
   BitmapHandle *handle4 = find_bitmap(e, player_flipped);
   ::Bitmap<Color> *player_bm4 = find_color_bitmap(handle4);
 
-  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, gameapi_homepageurl, tiles_string, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4));
+
+  BitmapHandle *handle5 = find_bitmap(e, ruohikko_bm);
+  ::Bitmap<Color> *ruohikko_bm2 = find_color_bitmap(handle5);
+  BitmapHandle *handle6 = find_bitmap(e, corn_bm);
+  ::Bitmap<Color> *corn_bm2 = find_color_bitmap(handle6);
+
+  BitmapHandle *handle7 = find_bitmap(e, vesisade_bm);
+  ::Bitmap<Color> *vesisade_bm2 = find_color_bitmap(handle7);
+
+  BitmapHandle *handle8 = find_bitmap(e, player_jump_bm);
+  ::Bitmap<Color> *jump_bm2 = find_color_bitmap(handle8);
+
+  GameApi::BM player_jump_flipped = ev.bitmap_api.flip_tile_bitmap(player_jump_bm,64,64,true);
+
+  BitmapHandle *handle9 = find_bitmap(e, player_jump_flipped);
+  ::Bitmap<Color> *jump_bm4 = find_color_bitmap(handle9);
+  
+  
+  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, url2, gameapi_homepageurl, tiles_string, tiles_string2, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4, ruohikko_bm2, corn_bm2,vesisade_bm2, jump_bm2, jump_bm4, font,status_bm, splash));
 }

@@ -637,6 +637,19 @@ echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/t
 echo "Source Code: <a href=\"https://tpgames.org/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
 echo "<br>Yours,<br><img src=\"https://tpgames.org/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
+echo "<br><br>Development history of the project:<br>";
+echo "<img src=\"https://tpgames.org/github_2022.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2021.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2020.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2019.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2018.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2017.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2016.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2015.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2014.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2013.png\" crossorigin></img>";
+echo "<img src=\"https://tpgames.org/github_2012.png\" crossorigin></img>";
+
 echo "<br><br><br><hr><br><br><br>";
 
 echo "<hr>";

@@ -337,7 +337,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  ML game(EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string tiles_string, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm);
+  ML game(EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM jump_bm, FI font, BM status_bm, BM splash);
   W pts_world(PTS p, int type);
   CX cache_one(P p, MT mt);
   CX array_cache(std::vector<CX> vec);
@@ -2651,6 +2651,7 @@ public:
 	IMPORT P quad_y(float x1, float x2,float y,float z1, float z2);
 	IMPORT P quad_z(float x1, float x2,float y1, float y2,float z);
         IMPORT P fullscreen_quad(EveryApi &ev);
+  IMPORT ML bg_image(EveryApi &ev, BM bm);
   IMPORT P vr_fullscreen_quad(EveryApi &ev, bool is_right);
   IMPORT P tri_strip(PT *array, int size);
         IMPORT P polygon2(std::vector<PT> vec);

@@ -2879,6 +2879,7 @@ public:
       
 #endif
     if (firsttime) {
+      std::cout << "Playing music..." << std::endl;
       // setup ogg can also play mp3s
       ptr2 = ev.tracker_api.setup_ogg(*vec,is_ogg?0:1);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
@@ -3742,3 +3743,9 @@ GameApi::ML GameApi::MainLoopApi::screenspace_rendering(EveryApi &ev, ML scene, 
   ScreenSpaceMaterial *smat = find_screenspace_material(e,screenspace_material);
   return add_main_loop(e, new ScreenSpace(e,ev,scene,smat));
 }
+
+#if 0
+GameApi::ML GameApi::MainLoopApi::custom_element(EveryApi &ev, std::string name, std::string scene_url, std::string param_names, std::string param_types, std::string param_default_values)
+{
+}
+#endif
