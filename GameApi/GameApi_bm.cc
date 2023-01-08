@@ -7531,6 +7531,91 @@ private:
   mutable std::map<std::pair<int,int>,float> time2;
 };
 
+class ItemsTile : public MainLoopItem
+{
+public:
+  ItemsTile(GameApi::Env &env, GameApi::EveryApi &ev, TilePlayer &pl, std::string url, std::string homepage, int cell_sx, int cell_sy, TileScroller *scr) : env(env), ev(ev), pl(pl), url(url), homepage(homepage), cell_sx(cell_sx), cell_sy(cell_sy),scr(scr) { }
+
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+      std::string line;
+      while(std::getline(ss,line)) {
+	std::stringstream ss2(line);
+	Item i;
+	ss2 >> i.x >> i.y >> i.type;
+	i.enabled=true;
+	instances.push_back(i);
+      }
+
+      int s3 = item_types.size();
+      for(int i=0;i<s3;i++)
+	{
+	  GameApi::BM bm = item_types[i];
+	  GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bm);
+	  MainLoopItem *ml3 = find_main_loop(env,ml);
+	  ml3->Prepare();
+	  item_types_ml.push_back(ml);
+	}
+      
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Point scroll_pos = scr->get_pos();
+
+    
+    std::vector<GameApi::ML> vec;
+    int s = instances.size();
+    for(int i=0;i<s;i++) {
+      Item &ii = instances[i];
+      int x = ii.x;
+      int y = ii.y;
+      int type = ii.type;
+      GameApi::ML ml = item_types_ml[type];
+      GameApi::MN mn0 = ev.move_api.mn_empty();
+      GameApi::MN mn1 = ev.move_api.trans2(mn0,x*cell_sx+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
+      GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
+      vec.push_back(ml2);
+    }
+    GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
+    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
+    MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->execute(e);
+
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  TilePlayer &pl;
+  Tiles2d *next;
+  std::string url, homepage;
+  std::vector<GameApi::BM> item_types;
+  std::vector<GameApi::ML> item_types_ml;
+  struct Item
+  {
+    int x,y;
+    int type;
+    bool enabled;
+  };
+  std::vector<Item> instances;
+  int cell_sx, cell_sy;
+  TileScroller *scr;
+};
+
 class PlayerTileMapping : public Tiles2d
 {
 public:
@@ -7593,6 +7678,8 @@ bool is_transparent_tile(int val)
   
   return val<0;
 }
+
+
 
 class PlayerTile : public TilePlayer
 {
