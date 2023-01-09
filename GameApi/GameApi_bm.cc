@@ -6886,7 +6886,6 @@ public:
 	ml3->Prepare();
 	mls.push_back(ml);
       }
-    //blk = add_block();
   }
   virtual void Prepare() {
     //std::cout << "Prepare" << std::endl;
@@ -6903,7 +6902,11 @@ public:
     int sx = t->SizeX();
     int sy = t->SizeY();
     //std::cout << "SX: " << sx << " " << sy << std::endl;
-    //int c = get_current_block();
+    int c = get_current_block();
+    //if (blk==-1)
+    //  blk = add_block();
+    //clear_block(blk);
+    //recreate_block(blk);
     //set_current_block(blk);
     std::vector<GameApi::ML> vec;
 
@@ -6965,7 +6968,7 @@ public:
     move_2->execute(e);
     //std::cout << std::endl;
     //clear_block(blk);
-    //recreate_block(blk);
+    //
     //set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) {
@@ -6982,7 +6985,7 @@ private:
   std::vector<Bitmap<Color> *> tiles;
   std::vector<GameApi::BM> bms;
   std::vector<GameApi::ML> mls;
-  int blk;
+  int blk=-1;
   int tile_sx, tile_sy;
   int player_tile_sx, player_tile_sy;
   TileScroller *scr;
@@ -7534,7 +7537,7 @@ private:
 class ItemsTile : public MainLoopItem
 {
 public:
-  ItemsTile(GameApi::Env &env, GameApi::EveryApi &ev, TilePlayer &pl, std::string url, std::string homepage, int cell_sx, int cell_sy, TileScroller *scr) : env(env), ev(ev), pl(pl), url(url), homepage(homepage), cell_sx(cell_sx), cell_sy(cell_sy),scr(scr) { }
+  ItemsTile(GameApi::Env &env, GameApi::EveryApi &ev, TilePlayer &pl, std::string url, std::string homepage, int cell_sx, int cell_sy, TileScroller *scr, std::vector<GameApi::BM> item_types, TileHudInterface &hud) : env(env), ev(ev), pl(pl), url(url), homepage(homepage), cell_sx(cell_sx), cell_sy(cell_sy),scr(scr), item_types(item_types),hud(hud){ }
 
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare() {
@@ -7549,8 +7552,10 @@ public:
       while(std::getline(ss,line)) {
 	std::stringstream ss2(line);
 	Item i;
-	ss2 >> i.x >> i.y >> i.type;
+	if (ss2 >> i.x >> i.y >> i.type) { } else { continue; }
 	i.enabled=true;
+	//std::cout << "LINE:" << line << std::endl;
+	//std::cout << i.x << " " << i.y << " " << i.type << std::endl;
 	instances.push_back(i);
       }
 
@@ -7572,6 +7577,11 @@ public:
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
+
+    int xx = pl.player_pos_x();
+    int yy = pl.player_pos_y();
+    
+    
     Point scroll_pos = scr->get_pos();
 
     
@@ -7581,12 +7591,16 @@ public:
       Item &ii = instances[i];
       int x = ii.x;
       int y = ii.y;
+      if (ii.enabled && x==xx&&y==yy) { ii.enabled=false; hud.set_score(hud.get_score()+1); }
       int type = ii.type;
-      GameApi::ML ml = item_types_ml[type];
-      GameApi::MN mn0 = ev.move_api.mn_empty();
-      GameApi::MN mn1 = ev.move_api.trans2(mn0,x*cell_sx+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
-      GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
-      vec.push_back(ml2);
+      bool enabled = ii.enabled;
+      if (enabled) {
+	GameApi::ML ml = item_types_ml[type];
+	GameApi::MN mn0 = ev.move_api.mn_empty();
+	GameApi::MN mn1 = ev.move_api.trans2(mn0,x*cell_sx+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
+	GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
+	vec.push_back(ml2);
+      }
     }
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
@@ -7614,7 +7628,160 @@ private:
   std::vector<Item> instances;
   int cell_sx, cell_sy;
   TileScroller *scr;
+  TileHudInterface &hud;
 };
+
+
+class EnemyTile : public MainLoopItem
+{
+public:
+  EnemyTile(GameApi::Env &env, GameApi::EveryApi &ev, TilePlayer &pl, std::string url, std::string homepage, int cell_sx, int cell_sy, TileScroller *scr, std::vector<GameApi::BM> item_types, TileHudInterface &hud) : env(env), ev(ev), pl(pl), url(url), homepage(homepage), cell_sx(cell_sx), cell_sy(cell_sy),scr(scr), item_types(item_types),hud(hud){ }
+
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::stringstream ss(s);
+      std::string line;
+      while(std::getline(ss,line)) {
+	std::stringstream ss2(line);
+	Item i;
+	if (ss2 >> i.x0 >> i.x1 >> i.y >> i.type) { } else { continue; }
+	i.x = (i.x0+i.x1)*cell_sx/2;
+	i.dir=false;
+	i.frame=0;
+	i.enabled=true;
+	//std::cout << "LINE:" << line << std::endl;
+	//std::cout << i.x << " " << i.y << " " << i.type << std::endl;
+	instances.push_back(i);
+      }
+
+      int s3 = item_types.size();
+      for(int i=0;i<s3;i++)
+	{
+	  GameApi::BM bm = item_types[i];
+	  int sx = ev.bitmap_api.size_x(bm);
+	  sx/=cell_sx;
+	  std::vector<GameApi::ML> vec_ml;
+	  for(int j=0;j<sx;j++) {
+	    GameApi::BM bm2 = ev.bitmap_api.subbitmap(bm,j*cell_sx,0,cell_sx,cell_sy);
+	    GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bm2);
+	    MainLoopItem *ml3 = find_main_loop(env,ml);
+	    ml3->Prepare();
+	    vec_ml.push_back(ml);
+	  }
+	  item_types_ml.push_back(vec_ml);
+	}
+
+      int s4 = item_types.size();
+      for(int i=0;i<s4;i++)
+	{
+	  GameApi::BM bm = item_types[i];
+	  GameApi::BM bm1 = ev.bitmap_api.flip_tile_bitmap(bm,cell_sx,cell_sy,true);
+	  BitmapHandle *handle = find_bitmap(env, bm);
+	  ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	  b2->Prepare();
+	  
+	  int sx = ev.bitmap_api.size_x(bm);
+	  sx/=cell_sx;
+	  std::vector<GameApi::ML> vec_ml;
+	  for(int j=0;j<sx;j++) {
+	    GameApi::BM bm2 = ev.bitmap_api.subbitmap(bm1,j*cell_sx,0,cell_sx,cell_sy);
+	    GameApi::ML ml = ev.sprite_api.vertex_array_render(ev,bm2);
+	    MainLoopItem *ml3 = find_main_loop(env,ml);
+	    ml3->Prepare();
+	    vec_ml.push_back(ml);
+	  }
+	  item_types_flip_ml.push_back(vec_ml);
+	}
+
+      
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+
+    int xx = pl.player_pos_x();
+    int yy = pl.player_pos_y();
+    
+    
+    Point scroll_pos = scr->get_pos();
+
+    
+    std::vector<GameApi::ML> vec;
+    int s = instances.size();
+    for(int i=0;i<s;i++) {
+      Item &ii = instances[i];
+      float x0 = ii.x0*cell_sx;
+      float x1 = ii.x1*cell_sx;
+      int y = ii.y;
+      int x = ii.x;
+      bool dir = ii.dir;
+      if (ii.enabled && x==xx&&y==yy) { ii.enabled=false; hud.set_lives(hud.get_lives()-1); if (hud.get_lives()==0) { std::cout << "GAME OVER" << std::endl; } }
+      if (dir) x+=1;
+      if (!dir) x-=1;
+      if (x<x0) dir=!dir;
+      if (x>x1) dir=!dir;
+      ii.frame++; if (ii.frame>=item_types_ml[ii.type].size()) ii.frame=0;
+      ii.dir=dir;
+      ii.x=x;
+      int frame=ii.frame;
+      int type = ii.type;
+      bool enabled = ii.enabled;
+      if (enabled) {
+	GameApi::ML ml;
+	if (!ii.dir) {
+	  ml=item_types_flip_ml[type][frame];
+	} else {
+	  ml=item_types_ml[type][frame];
+	}
+	GameApi::MN mn0 = ev.move_api.mn_empty();
+	GameApi::MN mn1 = ev.move_api.trans2(mn0,x+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
+	GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
+	vec.push_back(ml2);
+      }
+   }
+    GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
+    GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
+    MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->execute(e);
+
+  }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  TilePlayer &pl;
+  Tiles2d *next;
+  std::string url, homepage;
+  std::vector<GameApi::BM> item_types;
+  std::vector<std::vector<GameApi::ML> > item_types_ml;
+  std::vector<std::vector<GameApi::ML> > item_types_flip_ml;
+  struct Item
+  {
+    int x0,x1,y;
+    float x;
+    int type;
+    int frame;
+    bool enabled;
+    bool dir;
+  };
+  std::vector<Item> instances;
+  int cell_sx, cell_sy;
+  TileScroller *scr;
+  TileHudInterface &hud;
+};
+
 
 class PlayerTileMapping : public Tiles2d
 {
@@ -7800,7 +7967,7 @@ public:
     if (move_freeze && !y_dir && e.time > last_change_time+delta_time) {
       last_change_time = e.time;
       tile++;
-      if (tile>=player_end_tile) { tile-=(player_end_tile-player_start_tile); }
+      if (tile>=player_end_tile-1) { tile-=(player_end_tile-player_start_tile-1); }
       //std::cout << "TILE: " << tile << " " << player_end_tile << " " << player_start_tile << std::endl;
     }
 
@@ -7814,17 +7981,19 @@ public:
       if (jump_ongoing && jump_state==2 && !is_transparent_tile(val))
       {
 	jump_ongoing=false;
-	pos_y=pos_y+std::ceil(float(delta_pos().y)/64.0)-1;
+	pos_y=pos_y+std::ceil(float(delta_pos().y)/64.0);
 	jump_height=0.0;
       }
     }
+    float fall_delta2 = e.time-fall_start_time;
+    bool curr=false;
     if (!jump_ongoing && !fall_ongoing && is_transparent_tile(val)) {
       //std::cout << "Fall start" << std::endl;
       fall_ongoing=true;
       fall_start_time=e.time;
+      curr=true;
     }
-    float fall_delta2 = e.time-fall_start_time;
-    if (fall_ongoing)
+    if (fall_ongoing && !curr)
       {
 	//std::cout << "Fall ongoing" << std::endl;
 	fall_delta=fall_speed*fall_delta2;
@@ -7834,19 +8003,24 @@ public:
 	  if (!is_transparent_tile(val)) {fall_ongoing=false; pos_y+=std::ceil(fall_delta/64.0);  fall_delta=0.0; }
 	  //}
       }
+
   }
   virtual int player_pos_x() const { return pos_x; }
   virtual int player_pos_y() const { return pos_y; }
   virtual int player_pos_z() const { return 0; }
   virtual int player_tile() const {
+    //std::cout << jump_ongoing << " " << jump_state << " " << fall_ongoing << " " << move_freeze << " " << dir_x << " " << flip << "->";
     int jump_val = 0;
     if (jump_ongoing && jump_state==0) { jump_val=0; }
     if (jump_ongoing && jump_state==1) { jump_val=1; }
     if (jump_ongoing && jump_state==2) { jump_val=2; }
     if (jump_ongoing && jump_state==3) { jump_val=3; }
-    if (jump_ongoing && !flip) { jump_val+=42; }
-    if (jump_ongoing && flip) { jump_val+=45; }
-    if (jump_ongoing) { return jump_val; }
+    if (fall_ongoing) { jump_val=3; }
+    if ((fall_ongoing||jump_ongoing) && !flip) { jump_val+=40; }
+    if ((fall_ongoing||jump_ongoing) && flip) { jump_val+=44; }
+    if (fall_ongoing||jump_ongoing) { /*std::cout << "1::" << jump_val<< std::endl;*/ return jump_val; }
+    if (!move_freeze && dir_x==0) { /*std::cout << "2::" << (!flip?player_end_tile-1:player_end_tile+(player_end_tile-1-player_start_tile)) << std::endl;*/ return !flip?player_end_tile-1:player_end_tile+(player_end_tile-1-player_start_tile); }
+    /*std::cout << "3::" << (!flip?tile:player_end_tile+(tile-player_start_tile)) << std::endl;*/
     return !flip?tile:player_end_tile+(tile-player_start_tile); }
   virtual int player_type() const { return 0; } 
   virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),jump_height+fall_delta-64,0.0); }
@@ -7893,7 +8067,7 @@ private:
 class Game : public MainLoopItem
 {
 public:
-  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string homepage, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm, Bitmap<Color> *ruohikko_bm, Bitmap<Color> *corn_bm, Bitmap<Color> *vesisade_bm, Bitmap<Color> *jump_bm, Bitmap<Color> *jump_flip_bm, GameApi::FI font, GameApi::BM status_bm, GameApi::BM splash) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string,tiles_string2), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0), anim_tiles(env,&tiles,tiles_string,tiles_string2,url2,homepage), player_tiles(player, anim_tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm), ruohikko_bm(ruohikko_bm), corn_bm(corn_bm), vesisade_bm(vesisade_bm), jump_bm(jump_bm), jump_flip_bm(jump_flip_bm),hud(env,ev,font,status_bm), splashscreen(env,ev,splash) { }
+  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3, std::string url4,std::string homepage, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm, Bitmap<Color> *ruohikko_bm, Bitmap<Color> *corn_bm, Bitmap<Color> *vesisade_bm, Bitmap<Color> *jump_bm, Bitmap<Color> *jump_flip_bm, GameApi::FI font, GameApi::BM status_bm, GameApi::BM splash, std::vector<GameApi::BM> item_types, std::vector<GameApi::BM> enemy_types) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string,tiles_string2), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0), anim_tiles(env,&tiles,tiles_string,tiles_string2,url2,homepage), player_tiles(player, anim_tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm), ruohikko_bm(ruohikko_bm), corn_bm(corn_bm), vesisade_bm(vesisade_bm), jump_bm(jump_bm), jump_flip_bm(jump_flip_bm),hud(env,ev,font,status_bm), splashscreen(env,ev,splash), url3(url3), url4(url4), homepage(homepage), item_types(item_types), enemy_types(enemy_types) { }
   virtual void Collect(CollectVisitor &vis) {
     tile_bm->Collect(vis);
     player_bm->Collect(vis);
@@ -7920,15 +8094,19 @@ public:
     tile_counts.push_back(8); // 5..13
     tile_counts.push_back(3); // 13..16
     tile_counts.push_back(8); // 16 .. 24
-    tile_counts.push_back(9); // 24 .. 33 
-    tile_counts.push_back(9); // 33 .. 42
-    tile_counts.push_back(3); // 42 .. 45
-    tile_counts.push_back(3); // 45 .. 48
+    tile_counts.push_back(8); // 24 .. 32 
+    tile_counts.push_back(8); // 32 .. 40
+    tile_counts.push_back(4); // 40 .. 43
+    tile_counts.push_back(4); // 43 .. 47
     render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
     player.SetTiles2d(&tiles);
     TileScroller *scr = new TileScroller2d(&player, 10.0, 64,64,1200,900);
     renderer = render.get_renderer(scr);
     renderer->Prepare();
+    items_tile = new ItemsTile(env,ev,player,url3,homepage,64,64,scr,item_types,hud);
+    items_tile->Prepare();
+    enemy_tile = new EnemyTile(env,ev,player,url4,homepage,64,64,scr,enemy_types, hud);
+    enemy_tile->Prepare();
   }
   virtual void Prepare() {
     tile_bm->Prepare();
@@ -7947,6 +8125,8 @@ public:
       if (renderer)
 	renderer->execute(e);
       hud.execute(e);
+    items_tile->execute(e);
+    enemy_tile->execute(e);
     splashscreen.execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -7957,6 +8137,8 @@ public:
       hud.handle_event(e);
       if (renderer)
 	renderer->handle_event(e);
+      items_tile->handle_event(e);
+      enemy_tile->handle_event(e);
     } else {
       splashscreen.handle_event(e);
     }
@@ -7982,10 +8164,17 @@ private:
   Bitmap<Color> *jump_bm;
   Bitmap<Color> *jump_flip_bm;
   MainLoopItem *renderer=0;
+  std::string url3;
+  std::string url4;
+  std::string homepage;
+  std::vector<GameApi::BM> item_types;
+  ItemsTile *items_tile;
+  std::vector<GameApi::BM> enemy_types;
+  EnemyTile *enemy_tile;
 };
 
 
-GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM player_jump_bm, FI font, BM status_bm, BM splash)
+GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3, std::string url4, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM player_jump_bm, FI font, BM status_bm, BM splash, std::vector<BM> item_types, std::vector<BM> enemy_types)
 {
   BitmapHandle *handle = find_bitmap(e, tile_bm);
   ::Bitmap<Color> *tile_bm2 = find_color_bitmap(handle);
@@ -8013,5 +8202,5 @@ GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int t
   ::Bitmap<Color> *jump_bm4 = find_color_bitmap(handle9);
   
   
-  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, url2, gameapi_homepageurl, tiles_string, tiles_string2, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4, ruohikko_bm2, corn_bm2,vesisade_bm2, jump_bm2, jump_bm4, font,status_bm, splash));
+  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, url2, url3,url4,gameapi_homepageurl, tiles_string, tiles_string2, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4, ruohikko_bm2, corn_bm2,vesisade_bm2, jump_bm2, jump_bm4, font,status_bm, splash,item_types,enemy_types));
 }

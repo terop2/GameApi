@@ -337,7 +337,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  ML game(EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM jump_bm, FI font, BM status_bm, BM splash);
+  ML game(EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3,std::string url4, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM jump_bm, FI font, BM status_bm, BM splash, std::vector<BM> item_types, std::vector<BM> enemy_types);
   W pts_world(PTS p, int type);
   CX cache_one(P p, MT mt);
   CX array_cache(std::vector<CX> vec);
