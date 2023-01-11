@@ -6905,9 +6905,9 @@ public:
     int sx = t->SizeX();
     int sy = t->SizeY();
     //std::cout << "SX: " << sx << " " << sy << std::endl;
-    int c = get_current_block();
-    blk = add_block();
-    set_current_block(blk);
+    //int c = get_current_block();
+    //blk = add_block();
+    //set_current_block(blk);
     std::vector<GameApi::ML> vec;
     scr->execute(e);
 
@@ -6966,12 +6966,12 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
-    move_2->Prepare();
+    //move_2->Prepare();
     move_2->execute(e);
     //std::cout << std::endl;
-    clear_block(blk);
+    //clear_block(blk);
     //
-    set_current_block(c);
+    //set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) {
     scr->handle_event(e);
@@ -7039,9 +7039,9 @@ public:
   virtual void execute(MainLoopEnv &e) {
 
 
-      int c = get_current_block();
-      blk = add_block();
-      set_current_block(blk);
+    //int c = get_current_block();
+      //blk = add_block();
+      //set_current_block(blk);
 
     std::vector<GameApi::ML> vec;
     vec.push_back(gradient_ml);
@@ -7107,10 +7107,10 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
-    move_2->Prepare();
+    //move_2->Prepare();
     move_2->execute(e);
-    clear_block(blk);
-    set_current_block(c);
+    //clear_block(blk);
+    //set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
@@ -7156,19 +7156,19 @@ public:
       ::Bitmap<Color> *b2 = find_color_bitmap(handle);
       float bm_size = b2->SizeX();
       float bm_size_y = b2->SizeY();
-      int c = get_current_block();
-      blk = add_block();
-      set_current_block(blk);
+      //int c = get_current_block();
+      //blk = add_block();
+      //set_current_block(blk);
     GameApi::MN mn0 = ev.move_api.mn_empty();
     GameApi::MN mn = ev.move_api.trans2(mn0,(1280-bm_size)/2,(900-bm_size_y)/2,0);
     GameApi::ML move = ev.move_api.move_ml(ev, ml, mn, 1, 10);
     
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,move,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
-    move_2->Prepare();
+    //move_2->Prepare();
     move_2->execute(e);
-    clear_block(blk);
-    set_current_block(c);
+    //clear_block(blk);
+    //set_current_block(c);
     }
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -7583,6 +7583,7 @@ public:
       while(std::getline(ss,line)) {
 	std::stringstream ss2(line);
 	Item i;
+	i.type=0;
 	if (ss2 >> i.x >> i.y >> i.type) { } else { continue; }
 	i.enabled=true;
 	i.delta_x=0.0;
@@ -7617,9 +7618,9 @@ public:
     
     Point scroll_pos = scr->get_pos();
 
-    int c = get_current_block();
-    blk = add_block();
-    set_current_block(blk);
+    //int c = get_current_block();
+    //blk = add_block();
+    //set_current_block(blk);
     
     std::vector<GameApi::ML> vec;
     int s = instances.size();
@@ -7631,7 +7632,7 @@ public:
       int type = ii.type;
       float delta_x = ii.delta_x;
       bool enabled = ii.enabled;
-      if (enabled) {
+      if (enabled && type>=0 && type<item_types_ml.size()) {
 	GameApi::ML ml = item_types_ml[type];
 	GameApi::MN mn0 = ev.move_api.mn_empty();
 	GameApi::MN mn1 = ev.move_api.trans2(mn0,delta_x+x*cell_sx+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
@@ -7642,10 +7643,10 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
-    move_2->Prepare();
+    //move_2->Prepare();
     move_2->execute(e);
-    clear_block(blk);
-    set_current_block(c);
+    //clear_block(blk);
+    //set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
@@ -7719,6 +7720,7 @@ public:
       while(std::getline(ss,line)) {
 	std::stringstream ss2(line);
 	Item i;
+	i.type=0;
 	if (ss2 >> i.x0 >> i.x1 >> i.y >> i.type) { } else { continue; }
 	i.x = (i.x0+i.x1)*cell_sx/2;
 	i.dir=false;
@@ -7840,9 +7842,9 @@ public:
     Point scroll_pos = scr->get_pos();
 
 
-    int c = get_current_block();
-    blk = add_block();
-    set_current_block(blk);
+    //int c = get_current_block();
+    //blk = add_block();
+    //set_current_block(blk);
 
     
     std::vector<GameApi::ML> vec;
@@ -7920,10 +7922,10 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
-    move_2->Prepare();
+    // move_2->Prepare();
     move_2->execute(e);
-    clear_block(blk);
-    set_current_block(c);
+    //clear_block(blk);
+    //set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
