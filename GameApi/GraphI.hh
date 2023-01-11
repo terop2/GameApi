@@ -2684,6 +2684,7 @@ public:
   virtual Point get_pos() const=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual void execute(MainLoopEnv &e)=0;
+  virtual void reset()=0;
 };
 
 class TileRenderer2d
@@ -2716,6 +2717,18 @@ class TileSplashScreenInterface
 {
 public:
   virtual bool enabled() const=0;
+  virtual void reset()=0;
+};
+class TileSplashScreenCallback
+{
+public:
+  virtual void reset()=0;
+};
+
+class TileEnemyCallback
+{
+public:
+  virtual void add_random_item(int x, int y, float delta_x)=0;
 };
 
 class TileActivation
@@ -2750,6 +2763,10 @@ public:
   virtual Point delta_pos() const=0;
   virtual int player_tile() const=0;
   virtual int player_type() const=0;
+  virtual bool weapon_active() const=0;
+  virtual int player_dir() const=0;
+  virtual bool in_jump() const=0;
+  virtual void kill_player()=0;
 };
 
 class TileEnemies

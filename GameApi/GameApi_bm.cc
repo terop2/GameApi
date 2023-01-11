@@ -6841,6 +6841,7 @@ public:
   {
     if (tile_sx==0||tile_sy==0) return;
     int ss = bm.size();
+    //std::cout << 0 << "::" << 0 << std::endl;
     for(int kk=0;kk<ss;kk++)
       {
 	Bitmap<Color>* bm2 = bm[kk];
@@ -6850,6 +6851,8 @@ public:
 	int ty=tile_sy;
 	
 	if (kk==4||kk==5||kk==6||kk==7) { tx=player_tile_sx; ty=player_tile_sy; }
+	if (kk==8||kk==9) { /* weapon */ tx=player_tile_sx*2; ty=player_tile_sy; }
+	if (kk==10||kk==11) { /* player death */ tx=player_tile_sx*2; ty=player_tile_sy; }
 	
 	int sx= bm2->SizeX()/tx;
 	int sy= bm2->SizeY()/ty;
@@ -6868,6 +6871,7 @@ public:
 	    if (count==numtiles) break;
 	  }
 	//std::cout << "COUNT=" << count << std::endl;
+	//std::cout << kk+1 << "::" << tiles.size() << std::endl;
       }
 
     int s = tiles.size();
@@ -6896,19 +6900,18 @@ public:
     HeavyPrepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
-    scr->execute(e);
     
     //std::cout << "execute" << std::endl;
     int sx = t->SizeX();
     int sy = t->SizeY();
     //std::cout << "SX: " << sx << " " << sy << std::endl;
-    int c = get_current_block();
-    //if (blk==-1)
-    //  blk = add_block();
-    //clear_block(blk);
+    //int c = get_current_block();
+    //if (blk!=-1) clear_block(blk);
+    //blk = add_block();
     //recreate_block(blk);
     //set_current_block(blk);
     std::vector<GameApi::ML> vec;
+    scr->execute(e);
 
     Point scroll_pos = scr->get_pos();
 
@@ -7121,7 +7124,7 @@ private:
 class TileSplashScreen : public MainLoopItem, public TileSplashScreenInterface
 {
 public:
-  TileSplashScreen(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm) : env(env), ev(ev), bm(bm) { }
+  TileSplashScreen(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm, TileSplashScreenCallback *cb) : env(env), ev(ev), bm(bm),cb(cb) { }
   virtual void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
   }
@@ -7157,13 +7160,14 @@ public:
 	disable=true;
       }
   }
-
+  void reset() { disable=false; cb->reset(); }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
   bool disable=false;
   GameApi::BM bm;
   GameApi::ML ml;
+  TileSplashScreenCallback *cb;
 };
 
 class TileScroller2d : public TileScroller
@@ -7218,6 +7222,13 @@ public:
 	target_pos.y += cell_sy*(screen_sy/cell_sy/2);
       }
     }
+  }
+  void reset()
+  {
+    current_pos.x=0.0;
+    current_pos.y=0.0;
+    target_pos.x=0.0;
+    target_pos.y=0.0;
   }
 private:
   Point current_pos;
@@ -7549,16 +7560,19 @@ public:
       std::string s(vec->begin(), vec->end());
       std::stringstream ss(s);
       std::string line;
+      instances.clear();
       while(std::getline(ss,line)) {
 	std::stringstream ss2(line);
 	Item i;
 	if (ss2 >> i.x >> i.y >> i.type) { } else { continue; }
 	i.enabled=true;
+	i.delta_x=0.0;
 	//std::cout << "LINE:" << line << std::endl;
 	//std::cout << i.x << " " << i.y << " " << i.type << std::endl;
 	instances.push_back(i);
       }
-
+      item_types_ml.clear();
+      
       int s3 = item_types.size();
       for(int i=0;i<s3;i++)
 	{
@@ -7593,11 +7607,12 @@ public:
       int y = ii.y;
       if (ii.enabled && x==xx&&y==yy) { ii.enabled=false; hud.set_score(hud.get_score()+1); }
       int type = ii.type;
+      float delta_x = ii.delta_x;
       bool enabled = ii.enabled;
       if (enabled) {
 	GameApi::ML ml = item_types_ml[type];
 	GameApi::MN mn0 = ev.move_api.mn_empty();
-	GameApi::MN mn1 = ev.move_api.trans2(mn0,x*cell_sx+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
+	GameApi::MN mn1 = ev.move_api.trans2(mn0,delta_x+x*cell_sx+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
 	GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
 	vec.push_back(ml2);
       }
@@ -7610,6 +7625,19 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  void add_random_item(int x, int y, float delta_x)
+  {
+    Item i;
+    i.x = x;
+    i.y = y;
+    static int types=-1;
+    types++;
+    if (types>=item_types_ml.size()) types=0;
+    i.type = types;
+    i.enabled=true;
+    i.delta_x=delta_x;
+    instances.push_back(i);
+  }
   
 private:
   GameApi::Env &env;
@@ -7624,6 +7652,7 @@ private:
     int x,y;
     int type;
     bool enabled;
+    float delta_x;
   };
   std::vector<Item> instances;
   int cell_sx, cell_sy;
@@ -7635,10 +7664,24 @@ private:
 class EnemyTile : public MainLoopItem
 {
 public:
-  EnemyTile(GameApi::Env &env, GameApi::EveryApi &ev, TilePlayer &pl, std::string url, std::string homepage, int cell_sx, int cell_sy, TileScroller *scr, std::vector<GameApi::BM> item_types, TileHudInterface &hud) : env(env), ev(ev), pl(pl), url(url), homepage(homepage), cell_sx(cell_sx), cell_sy(cell_sy),scr(scr), item_types(item_types),hud(hud){ }
+  EnemyTile(GameApi::Env &env, GameApi::EveryApi &ev, TilePlayer &pl, std::string url, std::string homepage, int cell_sx, int cell_sy, TileScroller *scr, std::vector<GameApi::BM> item_types, TileHudInterface &hud, TileSplashScreenInterface &splash, std::vector<GameApi::BM> child_death, std::vector<GameApi::BM> child_death_flip, TileEnemyCallback *ene_cb) : env(env), ev(ev), pl(pl), url(url), homepage(homepage), cell_sx(cell_sx), cell_sy(cell_sy),scr(scr), item_types(item_types),hud(hud),splash(splash), child_death(child_death), child_death_flip(child_death_flip),ene_cb(ene_cb) { }
 
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare() {
+    int s1 = child_death.size();
+    for(int i=0;i<s1;i++)
+      {
+	BitmapHandle *handle = find_bitmap(env, child_death[i]);
+	::Bitmap<Color> *b2 = find_color_bitmap(handle);
+	b2->Prepare();
+      }
+    int s2 = child_death_flip.size();
+    for(int i=0;i<s2;i++) {
+      BitmapHandle *handle2 = find_bitmap(env, child_death_flip[i]);
+      ::Bitmap<Color> *b3 = find_color_bitmap(handle2);
+      b3->Prepare();
+    }
+      
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
@@ -7647,6 +7690,7 @@ public:
       std::string s(vec->begin(), vec->end());
       std::stringstream ss(s);
       std::string line;
+      instances.clear();
       while(std::getline(ss,line)) {
 	std::stringstream ss2(line);
 	Item i;
@@ -7655,11 +7699,15 @@ public:
 	i.dir=false;
 	i.frame=0;
 	i.enabled=true;
+	i.death_frame=-1;
+	i.death_frame_after=0;
 	//std::cout << "LINE:" << line << std::endl;
 	//std::cout << i.x << " " << i.y << " " << i.type << std::endl;
 	instances.push_back(i);
       }
-
+      item_types_ml.clear();
+      item_types_flip_ml.clear();
+      
       int s3 = item_types.size();
       for(int i=0;i<s3;i++)
 	{
@@ -7698,6 +7746,38 @@ public:
 	  }
 	  item_types_flip_ml.push_back(vec_ml);
 	}
+      child_d_frames.clear();
+      child_d_frames_flip.clear();
+      int d = child_death.size();
+      for(int i=0;i<d;i++)
+	{
+	  int d_sx = ev.bitmap_api.size_x(child_death[i]);
+	  std::vector<GameApi::ML> frms;
+	  for(int j=0;j<d_sx;j++) {
+	    GameApi::BM sub = ev.bitmap_api.subbitmap(child_death[i], j*cell_sx,0,cell_sx,cell_sy);
+	    GameApi::ML ml=ev.sprite_api.vertex_array_render(ev,sub);
+	    MainLoopItem *ml3 = find_main_loop(env,ml);
+	    ml3->Prepare();
+	    frms.push_back(ml);
+	  }
+	  child_d_frames.push_back(frms);
+	}
+
+
+      int d2 = child_death_flip.size();
+      for(int i=0;i<d2;i++)
+	{
+	  int d_sx = ev.bitmap_api.size_x(child_death_flip[i])/cell_sx;
+	  std::vector<GameApi::ML> frms;
+	  for(int j=0;j<d_sx;j++) {
+	    GameApi::BM sub = ev.bitmap_api.subbitmap(child_death_flip[i], j*cell_sx,0,cell_sx,cell_sy);
+	    GameApi::ML ml=ev.sprite_api.vertex_array_render(ev,sub);
+	    MainLoopItem *ml3 = find_main_loop(env,ml);
+	    ml3->Prepare();
+	    frms.push_back(ml);
+	  }
+	  child_d_frames_flip.push_back(frms);
+	}
 
       
   }
@@ -7708,7 +7788,26 @@ public:
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
-
+    static int m_frame=0;
+    static int m_num=0;
+    m_frame++;
+    if (m_frame==100)
+      {
+	m_frame=0;
+	m_num++;
+	int s = instances.size();
+	if (s)
+	  {
+	    int i = m_num%s;
+	    Item ii = instances[i];
+	    ii.dir=!ii.dir;
+	    ii.death_frame=-1;
+	    ii.frame=0;
+	    instances.push_back(ii);
+	  }
+	
+      }
+    
     int xx = pl.player_pos_x();
     int yy = pl.player_pos_y();
     
@@ -7725,11 +7824,14 @@ public:
       int y = ii.y;
       int x = ii.x;
       bool dir = ii.dir;
-      if (ii.enabled && x==xx&&y==yy) { ii.enabled=false; hud.set_lives(hud.get_lives()-1); if (hud.get_lives()==0) { std::cout << "GAME OVER" << std::endl; } }
-      if (dir) x+=1;
-      if (!dir) x-=1;
-      if (x<x0) dir=!dir;
-      if (x>x1) dir=!dir;
+      if (ii.enabled && ii.death_frame==-1 && !pl.in_jump() && (x+cell_sx/2)/cell_sx==xx&&y==yy) { pl.kill_player(); ii.enabled=false; hud.set_lives(hud.get_lives()-1); if (hud.get_lives()==0) { std::cout << "GAME OVER" << std::endl; splash.reset(); } }
+      if (ii.death_frame==-1) {
+	if (dir) x+=1;
+	if (!dir) x-=1;
+	
+	if (x<x0) dir=!dir;
+	if (x>x1) dir=!dir;
+      }
       ii.frame++; if (ii.frame>=item_types_ml[ii.type].size()) ii.frame=0;
       ii.dir=dir;
       ii.x=x;
@@ -7743,6 +7845,42 @@ public:
 	} else {
 	  ml=item_types_ml[type][frame];
 	}
+	int dd=pl.player_dir();
+	//std::cout << pl.weapon_active() << " " << ii.death_frame << " " << (x+cell_sx/2)/cell_sx << " " << xx-dd << " " << y << " " << yy << std::endl;
+	if (pl.weapon_active() && ii.death_frame==-1 && (x+cell_sx/2)/cell_sx==xx-dd&&y==yy) {
+	  //std::cout << "ANIM_START" << std::endl;
+	  ii.death_frame=0;
+	  ii.death_frame_counter=0;
+	}
+	if (ii.death_frame!=-1)
+	  {
+	    ii.death_frame_counter++;
+	  }
+	if (ii.death_frame!=-1)
+	  {
+	    if (ii.death_frame_counter>10) {
+	      ii.death_frame++;
+	      ii.death_frame_counter=0;
+	    }
+	    if (ii.death_frame>=std::min(child_d_frames[type].size(),child_d_frames_flip[type].size())) {
+	      ii.death_frame=std::min(child_d_frames[type].size(),child_d_frames_flip[type].size())-1;
+
+	      ii.death_frame_after++;
+	      if (ii.death_frame_after>=60)
+		{
+		  ene_cb->add_random_item(ii.x/64,ii.y,std::fmod(ii.x,64.0));
+		  ii.enabled=false;
+		}
+	      
+	    }
+	    if (ii.death_frame!=-1) {
+	    if (!ii.dir) {
+	      ml=child_d_frames_flip[type][ii.death_frame];
+	    } else {
+	      ml=child_d_frames[type][ii.death_frame];
+	    }
+	    }
+	  }
 	GameApi::MN mn0 = ev.move_api.mn_empty();
 	GameApi::MN mn1 = ev.move_api.trans2(mn0,x+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
 	GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
@@ -7763,6 +7901,7 @@ private:
   GameApi::EveryApi &ev;
   TilePlayer &pl;
   Tiles2d *next;
+  TileSplashScreenInterface &splash;
   std::string url, homepage;
   std::vector<GameApi::BM> item_types;
   std::vector<std::vector<GameApi::ML> > item_types_ml;
@@ -7775,11 +7914,19 @@ private:
     int frame;
     bool enabled;
     bool dir;
+    int death_frame;
+    int death_frame_counter;
+    int death_frame_after;
   };
   std::vector<Item> instances;
   int cell_sx, cell_sy;
   TileScroller *scr;
   TileHudInterface &hud;
+  TileEnemyCallback *ene_cb;
+  std::vector<GameApi::BM> child_death;
+  std::vector<GameApi::BM> child_death_flip;
+  std::vector<std::vector<GameApi::ML> > child_d_frames;
+  std::vector<std::vector<GameApi::ML> > child_d_frames_flip;
 };
 
 
@@ -7845,13 +7992,16 @@ bool is_transparent_tile(int val)
   
   return val<0;
 }
-
-
+bool is_not_wall(int val)
+{
+  if (val!=0) return true;
+  return false;
+}
 
 class PlayerTile : public TilePlayer
 {
 public:
-  PlayerTile(int tile_sx, int tile_sy, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, float delta_time, float delta_move_time) : tile_sx(tile_sx), tile_sy(tile_sy), pos_x(start_pos_x), pos_y(start_pos_y), player_start_tile(player_start_tile), player_end_tile(player_end_tile), delta_time(delta_time), delta_move_time(delta_move_time) { tile=player_start_tile; }
+  PlayerTile(int tile_sx, int tile_sy, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, float delta_time, float delta_move_time, TileHudInterface *hud) : tile_sx(tile_sx), tile_sy(tile_sy), pos_x(start_pos_x), pos_y(start_pos_y), player_start_tile(player_start_tile), player_end_tile(player_end_tile), delta_time(delta_time), delta_move_time(delta_move_time),hud(hud) { tile=player_start_tile; }
   virtual void SetTiles2d(Tiles2d *t) { tiles=t; }
   virtual void SetTiles3d(Tiles3d *t) { }
   virtual void handle_event(MainLoopEvent &e) {
@@ -7859,23 +8009,50 @@ public:
 
     //std::cout << "Event:" << e.type << " " << e.ch << std::endl;
 
+    if (death_frame==-1) {
     
-    if (e.type==0x300 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==32||e.ch==1073741906)&&(!jump_ongoing||jump_aborted)) { jump_aborted=false; jump_trigger=true; jump_ongoing=true; jump_state=0; }
-    if (e.type==0x301 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==32||e.ch==1073741906) && jump_ongoing && (jump_state==0||jump_state==1)) {
+    if (e.type==0x300 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906)&&(!jump_ongoing||jump_aborted)) { jump_aborted=false; jump_trigger=true; jump_ongoing=true; jump_state=0; }
+    }
+    if (e.type==0x301 && (e.ch=='w'||e.ch==26||e.ch==82||e.ch==1073741906) && jump_ongoing && (jump_state==0||jump_state==1)) {
       if (jump_height<-64) {
 	jump_state=2; jump_trigger=true; jump_max_height=jump_height; jump_aborted=true;
       } else { jump_abort_delayed=true; }
     }
+    if (death_frame==-1) {
+    if (e.type==0x300 && e.ch==32) { weapon_start = true; }
+    }
+    if (e.type==0x301 && e.ch==32) { weapon_start=false; weapon_ongoing = false; }
+
     
-    if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) { dir_x=1; }
-    if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) { dir_x=-1; }
+    if (death_frame==-1) {
+    if (e.type==0x300 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) {
+      dir_x=1;
+
+      int val_x = tiles->Tile(player_pos_x()+dir_x,player_pos_y()+(delta_pos().y+64)/64);
+      
+      if ((!jump_ongoing &&!is_not_wall(val_x)) ||(jump_ongoing && !is_transparent_tile(val_x))) {
+	dir_x=0;
+      }
+
+    }
+    if (e.type==0x300 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) {
+      dir_x=-1;
+
+      int val_x = tiles->Tile(player_pos_x()+dir_x,player_pos_y()+(delta_pos().y+64)/64);
+      
+      if ((jump_ongoing && !is_transparent_tile(val_x))||(!jump_ongoing && !is_not_wall(val_x))) {
+	dir_x=0;
+      }
+
+    }
+    }
       //if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; y_dir=true; }
 
     if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) { dir_x=0; }
     if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) { dir_x=0; }
       
 
-
+  
     /*
     else
       {
@@ -7887,6 +8064,30 @@ public:
   }
   virtual void execute(MainLoopEnv &e)
   {
+    if (death_frame==-1) { hud->set_health(100); }
+    if (death_frame!=-1)
+      {
+	static int frame=0;
+	frame++;
+	if (frame>=10) {
+	  death_frame++;
+	  if (death_frame>=5) { death_frame=4; } else frame=0;
+
+	  if (death_frame==4 && frame>400) death_frame=-1;
+	  if (death_frame!=-1) { hud->set_health(100-death_frame*20); }
+	}
+	
+      }
+	
+    
+    if (weapon_start) { weapon_ongoing=true; weapon_start_time=e.time; weapon_start=false; }
+    if (weapon_ongoing && e.time>weapon_start_time+100.0)
+      {
+	//std::cout << "TIME" << std::endl;
+	weapon_ongoing=false;
+      }
+    current_weapon = int((e.time-weapon_start_time)*10.0)%4;
+    
     //MainLoopEvent ee;
     if (!move_freeze) {
       if (dir_x==1) { if (last_x==-1) { has_flipped=true; } else { has_flipped=false; } move_x=1; move_freeze=true; flip=false; y_dir=false; last_x=1;  }
@@ -7972,6 +8173,13 @@ public:
     }
 
     int val = tiles->Tile(player_pos_x(),player_pos_y()+(delta_pos().y+64+64)/64);
+    int val_x = dir_x!=0 ? tiles->Tile(player_pos_x()+dir_x,player_pos_y()+(delta_pos().y+64)/64) : -1;
+
+    if ((!jump_ongoing && !is_transparent_tile(val_x)) || (jump_ongoing && !is_not_wall(val_x))) {
+      dir_x=0;
+    }
+    
+    if (player_pos_y()+(delta_pos().y+64+64)/64<3) val=5+8;
     //std::cout << "VAL=" << val << std::endl;
     if (fmod(-delta_pos().y,64)>56.0) {
 
@@ -7999,6 +8207,7 @@ public:
 	fall_delta=fall_speed*fall_delta2;
 	//if (fmod(-delta_pos().y-fall_delta,64)>56.0) {
 	  int val = tiles->Tile(player_pos_x(),player_pos_y()+(fall_delta+delta_pos().y+64+64)/64);
+	  if (player_pos_y()+(delta_pos().y+64+64)/64<3) val=5+8;
 	  //std::cout << "VAL2=" << val << std::endl;
 	  if (!is_transparent_tile(val)) {fall_ongoing=false; pos_y+=std::ceil(fall_delta/64.0);  fall_delta=0.0; }
 	  //}
@@ -8010,6 +8219,27 @@ public:
   virtual int player_pos_z() const { return 0; }
   virtual int player_tile() const {
     //std::cout << jump_ongoing << " " << jump_state << " " << fall_ongoing << " " << move_freeze << " " << dir_x << " " << flip << "->";
+    // std::cout << weapon_ongoing << " " << flip << " " << current_weapon << std::endl;
+    if (death_frame!=-1)
+      {
+	if (flip) {
+	  return death_frame+56+5;
+	} else {
+	  return death_frame+56;
+	}
+      }
+    
+    if (weapon_ongoing)
+      {
+	int val=0;
+	if(flip) {
+	  val=52+current_weapon;
+	} else {
+	  val=48+current_weapon;
+	}
+	return val;
+      }
+    
     int jump_val = 0;
     if (jump_ongoing && jump_state==0) { jump_val=0; }
     if (jump_ongoing && jump_state==1) { jump_val=1; }
@@ -8023,7 +8253,42 @@ public:
     /*std::cout << "3::" << (!flip?tile:player_end_tile+(tile-player_start_tile)) << std::endl;*/
     return !flip?tile:player_end_tile+(tile-player_start_tile); }
   virtual int player_type() const { return 0; } 
-  virtual Point delta_pos() const { return Point(delta_position*tile_sx-(flip?tile_sx:0),jump_height+fall_delta-64,0.0); }
+  virtual Point delta_pos() const {
+    int weapon_delta=0;
+    if (death_frame!=-1&&flip) weapon_delta=-64; else
+    if (weapon_ongoing&&flip) weapon_delta=-64;
+    return Point(weapon_delta+delta_position*tile_sx-(flip?tile_sx:0),jump_height+fall_delta-64,0.0); }
+  void reset()
+  {
+    pos_x=10; pos_y=9;
+    flip=false;
+    jump_ongoing=false;
+    jump_state=0;
+    fall_ongoing=0;
+    jump_height=0.0;
+    last_change_time=0.0;
+    last_move_time=0.0;
+    delta_position=0.0;
+    jump_trigger=false;
+    move_x=0;
+    prepare_move_dir_x=0;
+    prepare_move_dir_y=0;
+    old_move_freeze=false;
+    y_dir=false;
+    old_flip=false;
+    last_x=0;
+    has_flipped=false;
+    dir_x=0;
+    jump_start_time=0.0;
+    jump_aborted=false;
+    jump_abort_delayed=false;
+    fall_delta=0.0;
+    fall_start_time=0.0;
+  }
+  bool weapon_active() const { return weapon_ongoing; }
+  int player_dir() const { return dir_x; }
+  void kill_player() { death_frame=0; }
+  bool in_jump() const { return jump_ongoing; }
 private:
   int pos_x, pos_y;
   int player_start_tile, player_end_tile;
@@ -8062,12 +8327,25 @@ private:
   float fall_start_time=0.0;
   float fall_speed=300.0;
   Tiles2d *tiles=0;
+  bool weapon_start=false;
+  bool weapon_ongoing=false;
+  float weapon_start_time=0.0;
+  int current_weapon=0;
+  int death_frame=-1;
+  TileHudInterface *hud;
 };
 
-class Game : public MainLoopItem
+class Game : public MainLoopItem, public TileSplashScreenCallback, public TileEnemyCallback
 {
 public:
-  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3, std::string url4,std::string homepage, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm, Bitmap<Color> *ruohikko_bm, Bitmap<Color> *corn_bm, Bitmap<Color> *vesisade_bm, Bitmap<Color> *jump_bm, Bitmap<Color> *jump_flip_bm, GameApi::FI font, GameApi::BM status_bm, GameApi::BM splash, std::vector<GameApi::BM> item_types, std::vector<GameApi::BM> enemy_types) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string,tiles_string2), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0), anim_tiles(env,&tiles,tiles_string,tiles_string2,url2,homepage), player_tiles(player, anim_tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm), ruohikko_bm(ruohikko_bm), corn_bm(corn_bm), vesisade_bm(vesisade_bm), jump_bm(jump_bm), jump_flip_bm(jump_flip_bm),hud(env,ev,font,status_bm), splashscreen(env,ev,splash), url3(url3), url4(url4), homepage(homepage), item_types(item_types), enemy_types(enemy_types) { }
+  Game(GameApi::Env &env, GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3, std::string url4,std::string homepage, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, Bitmap<Color> *tile_bm, Bitmap<Color> *player_bm, Bitmap<Color> *player_flip_bm, Bitmap<Color> *ruohikko_bm, Bitmap<Color> *corn_bm, Bitmap<Color> *vesisade_bm, Bitmap<Color> *jump_bm, Bitmap<Color> *jump_flip_bm, GameApi::FI font, GameApi::BM status_bm, GameApi::BM splash, std::vector<GameApi::BM> item_types, std::vector<GameApi::BM> enemy_types, Bitmap<Color> *player_weapon_bm, Bitmap<Color> *player_weapon_flip_bm, std::vector<GameApi::BM> child_death, std::vector<GameApi::BM> child_death_flip, GameApi::BM aku_death, GameApi::BM aku_death_flip) : env(env), ev(ev), render(env,ev,tile_sx,tile_sy), tiles(env,url,homepage,tiles_string,tiles_string2), player(tile_sx,tile_sy,start_pos_x, start_pos_y, player_start_tile, player_end_tile, 0.1/4.0, 1.0/4.0,&hud), anim_tiles(env,&tiles,tiles_string,tiles_string2,url2,homepage), player_tiles(player, anim_tiles), tile_bm(tile_bm), player_bm(player_bm), player_flip_bm(player_flip_bm), ruohikko_bm(ruohikko_bm), corn_bm(corn_bm), vesisade_bm(vesisade_bm), jump_bm(jump_bm), jump_flip_bm(jump_flip_bm),hud(env,ev,font,status_bm), splashscreen(env,ev,splash,this), url3(url3), url4(url4), homepage(homepage), item_types(item_types), enemy_types(enemy_types), player_weapon_bm(player_weapon_bm), player_weapon_flip_bm(player_weapon_flip_bm), child_death(child_death), child_death_flip(child_death_flip) {
+  BitmapHandle *handle5 = find_bitmap(env, aku_death);
+  aku_death2 = find_color_bitmap(handle5);
+  BitmapHandle *handle6 = find_bitmap(env, aku_death_flip);
+  aku_death_flip2 = find_color_bitmap(handle6);
+
+
+  }
   virtual void Collect(CollectVisitor &vis) {
     tile_bm->Collect(vis);
     player_bm->Collect(vis);
@@ -8081,14 +8359,18 @@ public:
   }
   virtual void HeavyPrepare() {
     std::vector<Bitmap<Color>*> tile_bms;
-    tile_bms.push_back(tile_bm);
-    tile_bms.push_back(ruohikko_bm);
-    tile_bms.push_back(corn_bm);
-    tile_bms.push_back(vesisade_bm);
-    tile_bms.push_back(player_bm);
-    tile_bms.push_back(player_flip_bm);
-    tile_bms.push_back(jump_bm);
-    tile_bms.push_back(jump_flip_bm);
+    tile_bms.push_back(tile_bm); // 0
+    tile_bms.push_back(ruohikko_bm); // 1
+    tile_bms.push_back(corn_bm); //2
+    tile_bms.push_back(vesisade_bm); //3
+    tile_bms.push_back(player_bm); //4
+    tile_bms.push_back(player_flip_bm); //5
+    tile_bms.push_back(jump_bm); //6
+    tile_bms.push_back(jump_flip_bm); //7
+    tile_bms.push_back(player_weapon_bm); //8
+    tile_bms.push_back(player_weapon_flip_bm); // 9
+    tile_bms.push_back(aku_death2); // 10
+    tile_bms.push_back(aku_death_flip2); //11
     std::vector<int> tile_counts;
     tile_counts.push_back(5); // 0..5
     tile_counts.push_back(8); // 5..13
@@ -8098,14 +8380,18 @@ public:
     tile_counts.push_back(8); // 32 .. 40
     tile_counts.push_back(4); // 40 .. 43
     tile_counts.push_back(4); // 43 .. 47
+    tile_counts.push_back(4); // 47 .. 51
+    tile_counts.push_back(4); // 51 .. 55
+    tile_counts.push_back(5);
+    tile_counts.push_back(5);
     render.set_tiles_2d(&player_tiles, tile_bms,tile_counts);
     player.SetTiles2d(&tiles);
-    TileScroller *scr = new TileScroller2d(&player, 10.0, 64,64,1200,900);
+    scr = new TileScroller2d(&player, 10.0, 64,64,1200,900);
     renderer = render.get_renderer(scr);
     renderer->Prepare();
     items_tile = new ItemsTile(env,ev,player,url3,homepage,64,64,scr,item_types,hud);
     items_tile->Prepare();
-    enemy_tile = new EnemyTile(env,ev,player,url4,homepage,64,64,scr,enemy_types, hud);
+    enemy_tile = new EnemyTile(env,ev,player,url4,homepage,64,64,scr,enemy_types, hud,splashscreen,child_death, child_death_flip, this);
     enemy_tile->Prepare();
   }
   virtual void Prepare() {
@@ -8144,7 +8430,24 @@ public:
     }
   }
   virtual std::vector<int> shader_id() { return renderer->shader_id(); }
-
+  void reset()
+  {
+    if (items_tile)
+      items_tile->HeavyPrepare();
+    if (enemy_tile)
+      enemy_tile->HeavyPrepare();
+    hud.set_score(0);
+    hud.set_lives(3);
+    hud.set_health(100);
+    player.reset();
+    if (scr)
+      scr->reset();
+  }
+  void add_random_item(int x, int y, float delta_x)
+  {
+    if (items_tile)
+      items_tile->add_random_item(x,y,delta_x);
+  }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -8155,6 +8458,7 @@ private:
   PlayerTileMapping player_tiles;
   TileHud hud;
   TileSplashScreen splashscreen;
+  TileScroller *scr=0;
   Bitmap<Color> *tile_bm;
   Bitmap<Color> *player_bm;
   Bitmap<Color> *player_flip_bm;
@@ -8163,6 +8467,12 @@ private:
   Bitmap<Color> *vesisade_bm;
   Bitmap<Color> *jump_bm;
   Bitmap<Color> *jump_flip_bm;
+  Bitmap<Color> *player_weapon_bm;
+  Bitmap<Color> *player_weapon_flip_bm;
+  std::vector<GameApi::BM> child_death;
+  std::vector<GameApi::BM> child_death_flip;
+  Bitmap<Color> *aku_death2;
+  Bitmap<Color> *aku_death_flip2;
   MainLoopItem *renderer=0;
   std::string url3;
   std::string url4;
@@ -8174,7 +8484,7 @@ private:
 };
 
 
-GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3, std::string url4, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM player_jump_bm, FI font, BM status_bm, BM splash, std::vector<BM> item_types, std::vector<BM> enemy_types)
+GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3, std::string url4, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM player_jump_bm, FI font, BM status_bm, BM splash, std::vector<BM> item_types, std::vector<BM> enemy_types, BM player_weapon_bm, std::vector<BM> child_death, BM aku_death)
 {
   BitmapHandle *handle = find_bitmap(e, tile_bm);
   ::Bitmap<Color> *tile_bm2 = find_color_bitmap(handle);
@@ -8201,6 +8511,31 @@ GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int t
   BitmapHandle *handle9 = find_bitmap(e, player_jump_flipped);
   ::Bitmap<Color> *jump_bm4 = find_color_bitmap(handle9);
   
+
+  BitmapHandle *handle10 = find_bitmap(e, player_weapon_bm);
+  ::Bitmap<Color> *weapon_bm = find_color_bitmap(handle10);
+ 
+  GameApi::BM player_weapon_flipped = ev.bitmap_api.flip_tile_bitmap(player_weapon_bm,128,128,true);
+
+  BitmapHandle *handle11 = find_bitmap(e, player_weapon_flipped);
+  ::Bitmap<Color> *weapon_flip_bm = find_color_bitmap(handle11);
+
+
+  // BitmapHandle *handle12 = find_bitmap(e, child_death);
+  //::Bitmap<Color> *child_death_bm = find_color_bitmap(handle12);
+
+  std::vector<GameApi::BM> death_flip;
+  int s = child_death.size();
+  for(int i=0;i<s;i++) {
+    GameApi::BM child_death_flipped = ev.bitmap_api.flip_tile_bitmap(child_death[i],64,64,true);
+    death_flip.push_back(child_death_flipped);
+  }
   
-  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, url2, url3,url4,gameapi_homepageurl, tiles_string, tiles_string2, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4, ruohikko_bm2, corn_bm2,vesisade_bm2, jump_bm2, jump_bm4, font,status_bm, splash,item_types,enemy_types));
+
+  GameApi::BM aku_death_flip = ev.bitmap_api.flip_tile_bitmap(aku_death,128,128,true);
+  
+  //BitmapHandle *handle13 = find_bitmap(e, child_death_flipped);
+  //::Bitmap<Color> *child_death_flip_bm = find_color_bitmap(handle13);
+  
+  return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, url2, url3,url4,gameapi_homepageurl, tiles_string, tiles_string2, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4, ruohikko_bm2, corn_bm2,vesisade_bm2, jump_bm2, jump_bm4, font,status_bm, splash,item_types,enemy_types, weapon_bm, weapon_flip_bm, child_death, death_flip,aku_death, aku_death_flip));
 }
