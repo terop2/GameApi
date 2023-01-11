@@ -6905,11 +6905,9 @@ public:
     int sx = t->SizeX();
     int sy = t->SizeY();
     //std::cout << "SX: " << sx << " " << sy << std::endl;
-    //int c = get_current_block();
-    //if (blk!=-1) clear_block(blk);
-    //blk = add_block();
-    //recreate_block(blk);
-    //set_current_block(blk);
+    int c = get_current_block();
+    blk = add_block();
+    set_current_block(blk);
     std::vector<GameApi::ML> vec;
     scr->execute(e);
 
@@ -6968,11 +6966,12 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->Prepare();
     move_2->execute(e);
     //std::cout << std::endl;
-    //clear_block(blk);
+    clear_block(blk);
     //
-    //set_current_block(c);
+    set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) {
     scr->handle_event(e);
@@ -7038,6 +7037,12 @@ public:
   virtual void Prepare() { HeavyPrepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
+
+
+      int c = get_current_block();
+      blk = add_block();
+      set_current_block(blk);
+
     std::vector<GameApi::ML> vec;
     vec.push_back(gradient_ml);
 
@@ -7102,7 +7107,10 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
-    move_2->execute(e);    
+    move_2->Prepare();
+    move_2->execute(e);
+    clear_block(blk);
+    set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
@@ -7119,6 +7127,7 @@ private:
   GameApi::BM status_bm;
   GameApi::ML score_ml, health_ml, lives_ml;
   GameApi::ML gradient_ml;
+  int blk=-1;
 };
 
 class TileSplashScreen : public MainLoopItem, public TileSplashScreenInterface
@@ -7140,17 +7149,26 @@ public:
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
     if (!disable) {
+      
+
+      
       BitmapHandle *handle = find_bitmap(env, bm);
       ::Bitmap<Color> *b2 = find_color_bitmap(handle);
       float bm_size = b2->SizeX();
       float bm_size_y = b2->SizeY();
+      int c = get_current_block();
+      blk = add_block();
+      set_current_block(blk);
     GameApi::MN mn0 = ev.move_api.mn_empty();
     GameApi::MN mn = ev.move_api.trans2(mn0,(1280-bm_size)/2,(900-bm_size_y)/2,0);
     GameApi::ML move = ev.move_api.move_ml(ev, ml, mn, 1, 10);
     
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,move,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->Prepare();
     move_2->execute(e);
+    clear_block(blk);
+    set_current_block(c);
     }
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -7168,6 +7186,7 @@ private:
   GameApi::BM bm;
   GameApi::ML ml;
   TileSplashScreenCallback *cb;
+  int blk=-1;
 };
 
 class TileScroller2d : public TileScroller
@@ -7598,6 +7617,9 @@ public:
     
     Point scroll_pos = scr->get_pos();
 
+    int c = get_current_block();
+    blk = add_block();
+    set_current_block(blk);
     
     std::vector<GameApi::ML> vec;
     int s = instances.size();
@@ -7620,8 +7642,10 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->Prepare();
     move_2->execute(e);
-
+    clear_block(blk);
+    set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
@@ -7658,6 +7682,7 @@ private:
   int cell_sx, cell_sy;
   TileScroller *scr;
   TileHudInterface &hud;
+  int blk=-1;
 };
 
 
@@ -7814,6 +7839,11 @@ public:
     
     Point scroll_pos = scr->get_pos();
 
+
+    int c = get_current_block();
+    blk = add_block();
+    set_current_block(blk);
+
     
     std::vector<GameApi::ML> vec;
     int s = instances.size();
@@ -7890,8 +7920,10 @@ public:
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
     GameApi::ML ml4 = ev.sprite_api.turn_to_2d(ev,ml3,0.0,0.0,1200.0,900.0);
     MainLoopItem *move_2 = find_main_loop(env,ml4);
+    move_2->Prepare();
     move_2->execute(e);
-
+    clear_block(blk);
+    set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
@@ -7927,6 +7959,7 @@ private:
   std::vector<GameApi::BM> child_death_flip;
   std::vector<std::vector<GameApi::ML> > child_d_frames;
   std::vector<std::vector<GameApi::ML> > child_d_frames_flip;
+  int blk=-1;
 };
 
 
