@@ -362,6 +362,7 @@ public:
     firsttime = true;
     va.id = -1;
   }
+  ~RenderVertexArray4() { /*if (blk!=-1) clear_block(blk);*/ }
   void handle_event(MainLoopEvent &e)
   {
   }
@@ -370,6 +371,7 @@ public:
   void HeavyPrepare() { }
 
   void Prepare() { }
+  
   void execute(MainLoopEnv &e)
   {
     if (firsttime)
@@ -379,7 +381,11 @@ public:
 	// this can be done only after url loading finished
 	// url loading happens while frames are being updated.
 	//InstallProgress(222,"bitmap",1);
+	int c = get_current_block();
+	blk = add_block();
+	set_current_block(blk);
 	va = ev.sprite_api.create_vertex_array(bm,true);
+	set_current_block(c);
 	//ProgressBar(222,1,1,"bitmap");
 	firsttime = false;
       }
@@ -400,6 +406,7 @@ private:
   GameApi::VA va;
   GameApi::BM bm;
   bool firsttime;
+  int blk=-1;
 };
 
 
