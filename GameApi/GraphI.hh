@@ -2761,8 +2761,10 @@ public:
   virtual int player_pos_y() const=0;
   virtual int player_pos_z() const=0;
   virtual Point delta_pos() const=0;
+  virtual float weapon_delta() const=0;
   virtual int player_tile() const=0;
   virtual int player_type() const=0;
+  virtual bool weapon_at_kill() const=0;
   virtual bool weapon_active() const=0;
   virtual int player_dir() const=0;
   virtual bool in_jump() const=0;
