@@ -5,7 +5,9 @@ $url = $_GET["url"];
 $parse = parse_url($url);
 $host = $parse['host'];
 $mode = false;
-if ($host=="meshpage.org") {
+if (stream_is_local($url)) {
+  $size=filesize($url);
+} else if ($host=="meshpage.org") {
   $path = $parse['path'];
   $filename = "/home/terop/html/meshpage.org" . $path;
   $size = filesize($filename);
@@ -20,6 +22,7 @@ if ($host=="meshpage.org") {
 } else {
   $data = get_headers($url,true);
   $size = isset($data['Content-Length'])?(int) $data['Content-Length']:0;
+  $mode=true;
 }
 $char = 'A';
 if ($mode==true) {
