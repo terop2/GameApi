@@ -2515,7 +2515,7 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
     //ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
     ML I4=ev.mainloop_api.glClear(ev);
     ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
-    return ml;
+    return I5;
   }
 }
 bool is_mobile(GameApi::EveryApi &ev);
