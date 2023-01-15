@@ -18040,6 +18040,90 @@ std::string get_last_line(std::string s, char ch)
   return s.substr(pos2,pos-pos2);
 }
 
+struct UrlItem
+{
+  int index;
+  std::string url;
+};
+std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
+{
+  int ss = s.size();
+  int i=pos;
+  for(;i<ss;i++)
+    {
+      int sk = not_allowed_chars.size();
+      bool found=false;
+      for(int j=0;j<sk;j++)
+	{
+	  if (s[i]==not_allowed_chars[j]) found=true;
+	}
+      if (found) break;
+    }
+  return s.substr(pos,i-pos-1);
+}
+std::vector<UrlItem> find_url_items(std::string s)
+{
+  std::vector<UrlItem> vec;
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      if (i<ss-5 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]==':'&&s[i+5]=='/') {
+	std::string url = find_to_end(s,i,",)");
+	UrlItem ii;
+	ii.index = i;
+	ii.url = url;
+	vec.push_back(ii);
+      }
+      if (i<ss-6 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]=='s'&&s[i+5]==':'&&s[i+6]=='/') {
+	std::string url = find_to_end(s,i,",)");
+	UrlItem ii;
+	ii.index = i;
+	ii.url = url;
+	vec.push_back(ii);
+      }
+      if (i<ss-6 && s[i]=='f'&&s[i+1]=='i'&&s[i+2]=='l'&&s[i+3]=='e'&&s[i+4]==':'&&s[i+5]=='/'&&s[i+6]=='/') {
+	std::string url = find_to_end(s,i,",)");
+	UrlItem ii;
+	ii.index = i;
+	ii.url = url;
+	vec.push_back(ii);
+      }
+    }
+  return vec;
+}
+
+std::string remove_prefix(std::string s)
+{
+  int ss = s.size();
+  int pos=0;
+  for(int i=0;i<ss;i++)
+    {
+      if (s[i]=='/') pos=i;
+    }
+  if (pos==0) return s;
+  return s.substr(pos+1);
+}
+
+std::string deploy_replace_string(std::string val, std::string repl, std::string subst)
+{
+  std::string res;
+  int s = val.size();
+  for(int i=0;i<s;i++)
+    {
+      int ss = repl.size();
+      bool not_found=false;
+      for(int j=0;j<ss;j++)
+	{
+	  if (val[i+j]!=repl[j]) { not_found=true; break; }
+	}
+      if (not_found) { res+=val[i]; continue; }
+      res+=subst;
+      i+=repl.size();
+    }
+  return res;
+}
+
+
 bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
@@ -18083,6 +18167,8 @@ public:
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
 
+      
+      
       std::string htmlfile = s;
 
       htmlfile = replace_str(htmlfile, "@", "\n");					      
@@ -18258,6 +18344,18 @@ public:
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
 
+
+      std::vector<UrlItem> items = find_url_items(s);
+      int si=items.size();
+      for(int i=si-1;i>=0;i--)
+	{
+	  UrlItem ii = items[i];
+	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
+	  std::string curl_string = "(cd ~/.gameapi_builder/deploy;curl " + ii.url + ")";
+	  system(curl_string.c_str());
+	}
+
+      
       std::string htmlfile = s;
 
       htmlfile = replace_str(htmlfile, "@", "\n");					      
