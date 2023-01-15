@@ -680,9 +680,33 @@ function strfy(arr)
 .horizspace { margin-left: 1em; }
 @font-face { font-family: "custom"; src: url("cafe.ttf"); }
 .customfont { font-family: custom; }
+#canvas {
+  background-image: url('https://meshpage.org/load_spinner2.gif');
+  background-size: 100% 100%;
 </style>
 
 <script>
+function enable_spinner(a)
+{
+  //var el = document.getElementById("canvas2");
+  var el2 = document.getElementById("canvas");
+  if (a) {
+    console.log("SPINNER ENABLED");
+    el2.style.backgroundImage = "url('https://meshpage.org/load_spinner2.gif')";
+    el2.style.backgroundSize = "100% 100%";
+} else {
+    console.log("SPINNER DISABLED");
+    //el.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
+   // el.style.backgroundImage = "none";
+   // el.style.backgroundColor = "#000000";
+   // el.style.backgroundSize = "auto auto";
+    //el2.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
+    el2.style.backgroundImage = "none";
+    el2.style.backgroundColor = "#000000";
+    el2.style.backgroundSize = "auto auto";
+    
+  }
+}
 
 function find_main_item(arr)
 {
@@ -885,7 +909,7 @@ function get_background(i)
   if (i==2) color="0088ff";
   if (i==3) console.log("ERROR: custom color not implemented");
   */
-  var background="BM I41=ev.bitmap_api.newbitmap(100,100,ff" + color + ");\nBM I42=ev.bitmap_api.scale_bitmap_fullscreen(ev,I41);\nML I43=ev.sprite_api.vertex_array_render(ev,I42);\nML I44=ev.sprite_api.turn_to_2d(ev,I43,0.0,0.0,800.0,600.0);\n";
+  var background="BM I41=ev.bitmap_api.newbitmap(100,100,ff" + color + ");\nBM I42=ev.bitmap_api.scale_bitmap_fullscreen(ev,I41);\nML I43=ev.sprite_api.vertex_array_render(ev,I42);\nMN I997=ev.move_api.mn_empty();\nMN I998=ev.move_api.scale2(I997,1.5,1.5,1.5);\nML I999=ev.move_api.move_ml(ev,I43,I998,1,10);\nML I44=ev.sprite_api.turn_to_2d(ev,I999,0.0,0.0,800.0,600.0);\n";
   return background;
 }
 
@@ -1682,6 +1706,7 @@ function load_emscripten(state,filename, contents, filenames)
     else if (firefox) src="web_page_nothreads_highmem.js?" + data2;
     if (mobile) src="web_page_lowmem.js?"+data2;
     if (!g_emscripten_running) {
+      enable_spinner(true);
       if (filename=="") {
       Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href];
       } else {
@@ -1738,7 +1763,9 @@ var g_emscripten_running = false;
 function check_em() {
     return function() {
 	g_emscripten_running = true;
-	//console.log("EMSCRIPTEN RUNNING");
+	enable_spinner(false);
+
+//console.log("EMSCRIPTEN RUNNING");
 	//resize_event(null);
 	//load_file();
 	load_data();

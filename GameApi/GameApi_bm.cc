@@ -6890,6 +6890,7 @@ public:
 	ml3->Prepare();
 	mls.push_back(ml);
       }
+    blk = add_block();
   }
   virtual void Prepare() {
     //std::cout << "Prepare" << std::endl;
@@ -6905,9 +6906,8 @@ public:
     int sx = t->SizeX();
     int sy = t->SizeY();
     //std::cout << "SX: " << sx << " " << sy << std::endl;
-    //int c = get_current_block();
-    //blk = add_block();
-    //set_current_block(blk);
+    int c = get_current_block();
+    set_current_block(blk);
     std::vector<GameApi::ML> vec;
     scr->execute(e);
 
@@ -6969,9 +6969,9 @@ public:
     //move_2->Prepare();
     move_2->execute(e);
     //std::cout << std::endl;
-    //clear_block(blk);
-    //
-    //set_current_block(c);
+    clear_block(blk);
+    recreate_block(blk);
+    set_current_block(c);
   }
   virtual void handle_event(MainLoopEvent &e) {
     scr->handle_event(e);
@@ -7686,6 +7686,8 @@ private:
   int blk=-1;
 };
 
+#undef HITBOX
+
 
 class EnemyTile : public MainLoopItem
 {
@@ -7694,6 +7696,13 @@ public:
 
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare() {
+#ifdef HITBOX
+    hitbox=ev.bitmap_api.newbitmap(4,4,0xffffffff);
+    BitmapHandle *handle = find_bitmap(env, hitbox);
+    ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+    b2->Prepare();
+    hitbox_ml=ev.sprite_api.vertex_array_render(ev,hitbox);
+#endif    
     int s1 = child_death.size();
     for(int i=0;i<s1;i++)
       {
@@ -7728,6 +7737,7 @@ public:
 	i.enabled=true;
 	i.death_frame=-1;
 	i.death_frame_after=0;
+	i.start_timer = 0;
 	//std::cout << "LINE:" << line << std::endl;
 	//std::cout << i.x << " " << i.y << " " << i.type << std::endl;
 	instances.push_back(i);
@@ -7830,6 +7840,7 @@ public:
 	    ii.dir=!ii.dir;
 	    ii.death_frame=-1;
 	    ii.frame=0;
+	    ii.start_timer=100;
 	    instances.push_back(ii);
 	  }
 	
@@ -7837,7 +7848,7 @@ public:
     
     int xx = pl.player_pos_x();
     int yy = pl.player_pos_y();
-    
+    int delta_x = pl.delta_pos().x-pl.weapon_delta();
     
     Point scroll_pos = scr->get_pos();
 
@@ -7856,7 +7867,9 @@ public:
       int y = ii.y;
       int x = ii.x;
       bool dir = ii.dir;
-      if (ii.enabled && ii.death_frame==-1 && !pl.in_jump() && (x+cell_sx/2)/cell_sx==xx&&y==yy) { pl.kill_player(); ii.enabled=false; hud.set_lives(hud.get_lives()-1); if (hud.get_lives()==0) { std::cout << "GAME OVER" << std::endl; splash.reset(); } }
+      if (ii.start_timer>0) ii.start_timer--;
+      
+      if (ii.start_timer==0 && ii.enabled && ii.death_frame==-1 && !pl.in_jump() && (x+cell_sx/2)/cell_sx==xx&&y==yy) { pl.kill_player(); ii.enabled=false; hud.set_lives(hud.get_lives()-1); if (hud.get_lives()==0) { std::cout << "GAME OVER" << std::endl; splash.reset(); } }
       if (ii.death_frame==-1) {
 	if (dir) x+=1;
 	if (!dir) x-=1;
@@ -7878,8 +7891,11 @@ public:
 	  ml=item_types_ml[type][frame];
 	}
 	int dd=pl.player_dir();
+	//std::cout << "DIR:" << x << " " << cell_sx<< " " << dd << " " << xx*64 << " " << delta_x << " " << cell_sx/2 << std::endl;
 	//std::cout << pl.weapon_active() << " " << ii.death_frame << " " << (x+cell_sx/2)/cell_sx << " " << xx-dd << " " << y << " " << yy << std::endl;
-	if (pl.weapon_active() && ii.death_frame==-1 && (x+cell_sx/2)/cell_sx==xx-dd&&y==yy) {
+	int hitbox = std::fabs(x+cell_sx/2-(dd*64+(xx)*64+delta_x+cell_sx/2));
+     
+	if (pl.weapon_active() && pl.weapon_at_kill() && ii.death_frame==-1 && hitbox>=0&&hitbox<20&&y==yy) {
 	  //std::cout << "ANIM_START" << std::endl;
 	  ii.death_frame=0;
 	  ii.death_frame_counter=0;
@@ -7917,6 +7933,19 @@ public:
 	GameApi::MN mn1 = ev.move_api.trans2(mn0,x+scroll_pos.x,scroll_pos.y+y*cell_sy+64.0,0.0);
 	GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn1,1,10);
 	vec.push_back(ml2);
+
+       
+#ifdef HITBOX	
+	GameApi::MN h_mn0 = ev.move_api.mn_empty();
+	GameApi::MN h_mn1 = ev.move_api.trans2(h_mn0,x+cell_sx/2-2+scroll_pos.x,y*64-2+scroll_pos.y,0.0);
+	GameApi::ML h_ml2 = ev.move_api.move_ml(ev,hitbox_ml,h_mn1,1,10);
+	vec.push_back(h_ml2);
+	GameApi::MN h2_mn0 = ev.move_api.mn_empty();
+	GameApi::MN h2_mn1 = ev.move_api.trans2(h2_mn0,dd*64+(xx)*64+delta_x+cell_sx/2-2+scroll_pos.x,yy*64-2+scroll_pos.y,0.0);
+	GameApi::ML h2_ml2 = ev.move_api.move_ml(ev,hitbox_ml,h2_mn1,1,10);
+	vec.push_back(h2_ml2);
+#endif	
+	
       }
    }
     GameApi::ML ml3 = ev.mainloop_api.array_ml(ev,vec);
@@ -7951,6 +7980,7 @@ private:
     int death_frame;
     int death_frame_counter;
     int death_frame_after;
+    int start_timer;
   };
   std::vector<Item> instances;
   int cell_sx, cell_sy;
@@ -7962,6 +7992,12 @@ private:
   std::vector<std::vector<GameApi::ML> > child_d_frames;
   std::vector<std::vector<GameApi::ML> > child_d_frames_flip;
   int blk=-1;
+  //MatrixMovement *mat;
+  //MainLoopItem *item;
+#ifdef HITBOX
+  GameApi::BM hitbox;
+  GameApi::ML hitbox_ml;
+#endif
 };
 
 
@@ -8083,8 +8119,8 @@ public:
     }
       //if (e.type==0x300 && e.ch=='s') { pos_y++; move_freeze=true; y_dir=true; }
 
-    if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) { dir_x=0; }
-    if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) { dir_x=0; }
+    if (e.type==0x301 && (e.ch=='d'||e.ch==7||e.ch==79||e.ch==1073741903)) { dir_x=0;  }
+    if (e.type==0x301 && (e.ch=='a'||e.ch==4||e.ch==80||e.ch==1073741904)) { dir_x=0;  }
       
 
   
@@ -8287,7 +8323,13 @@ public:
     if (!move_freeze && dir_x==0) { /*std::cout << "2::" << (!flip?player_end_tile-1:player_end_tile+(player_end_tile-1-player_start_tile)) << std::endl;*/ return !flip?player_end_tile-1:player_end_tile+(player_end_tile-1-player_start_tile); }
     /*std::cout << "3::" << (!flip?tile:player_end_tile+(tile-player_start_tile)) << std::endl;*/
     return !flip?tile:player_end_tile+(tile-player_start_tile); }
-  virtual int player_type() const { return 0; } 
+  virtual int player_type() const { return 0; }
+  virtual float weapon_delta() const {
+    int weapon_delta=0;
+    if (death_frame!=-1&&flip) weapon_delta=-64; else
+    if (weapon_ongoing&&flip) weapon_delta=-64;
+    return weapon_delta;
+  }    
   virtual Point delta_pos() const {
     int weapon_delta=0;
     if (death_frame!=-1&&flip) weapon_delta=-64; else
@@ -8320,8 +8362,12 @@ public:
     fall_delta=0.0;
     fall_start_time=0.0;
   }
+  bool weapon_at_kill() const { return current_weapon==2 || current_weapon==3; }
   bool weapon_active() const { return weapon_ongoing; }
-  int player_dir() const { return dir_x; }
+  int player_dir() const {
+    static int dir_cache=1;
+    if (dir_x!=0) dir_cache=dir_x;
+    return dir_cache; }
   void kill_player() { death_frame=0; }
   bool in_jump() const { return jump_ongoing; }
 private:

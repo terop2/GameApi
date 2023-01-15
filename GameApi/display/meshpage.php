@@ -582,6 +582,7 @@ echo "</script>\n";
 <div class="ems" id="canvas2" style="width:330px; height:247px"></div>
 </div>
 <div class="display" id="display" > <!-- style="display:none" -->
+
 <?php
 require_once("user.php");
 $mobile = js_mobile();
@@ -602,7 +603,9 @@ if ($connect=="yes") {
 }
 ?>
 </div>
-
+<!--div class="spinner">
+<img src="https://tpgames.org/load_spinner.gif" crossorigin></img>
+</div-->
 <p>
 <p>
 <div id="addtext"></div>
@@ -1175,12 +1178,16 @@ text-color: #fff;
   border-width:0px;
   border: 5px solid black;
   border-radius: 10px;
-  background-color: #000000;
+  background-color: #000;
   margin: 0;
   padding: 0;
   width: 820px;
   height: 620px;
   }
+#canvas {
+   background-image: url('https://meshpage.org/load_spinner2.gif');
+   background-size: 100% 100%;
+}
 </style>
 <script>
 
@@ -1791,6 +1798,7 @@ var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
 	       g_emscripten_alive=true;
+	       enable_spinner(false);
 
 //indicator[0]=false; 
 	       var old = indicator[1];
@@ -1875,9 +1883,31 @@ function stop_music()
      Module.ccall('stop_music_playing', null, [], [], { async:true });
    }
 }
+function enable_spinner(a)
+{
+  var el = document.getElementById("canvas2");
+  var el2 = document.getElementById("canvas");
+  if (a) {
+    console.log("SPINNER ENABLED");
+    el.style.backgroundImage = "url('https://meshpage.org/load_spinner2.gif')";
+    el.style.backgroundSize = "100% 100%";
+} else {
+    console.log("SPINNER DISABLED");
+    //el.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
+    el.style.backgroundImage = "none";
+    el.style.backgroundColor = "#000000";
+    el.style.backgroundSize = "auto auto";
+    //el2.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
+    el2.style.backgroundImage = "none";
+    el2.style.backgroundColor = "#000000";
+    el2.style.backgroundSize = "auto auto";
+    
+  }
+}
 
 function show_emscripten(str,hide,indicator,is_async)
 {
+	enable_spinner(true);
 
 	if (typeof fix_keyboard === "function") fix_keyboard(hide);
 
@@ -2046,7 +2076,6 @@ if ($mobile=="yes") {
   iframe2.style.width = (wd).toString() + "px";
   iframe2.style.height = (hd).toString() + "px";
 
-
   //var prog = document.getElementById("prgress");
   //prog.style.width = (wd).toString() + "px";
   //var hdd = 30*hd3;
@@ -2062,6 +2091,7 @@ Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:tru
   }
 
 }
+
 </script>
 <script>
 function connect() {
