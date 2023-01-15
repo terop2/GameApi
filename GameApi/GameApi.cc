@@ -18158,6 +18158,7 @@ public:
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
     case 1:
+      system("rmdir /S %TEMP%\\_gameapi_builder\\deploy");
       system("mkdir %TEMP%\\_gameapi_builder\\deploy");
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
@@ -18176,6 +18177,16 @@ public:
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
 
+      std::vector<UrlItem> items = find_url_items(s);
+      int si=items.size();
+      for(int i=si-1;i>=0;i--)
+	{
+	  UrlItem ii = items[i];
+	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
+	  std::string curl_string = "..\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
+	  std::cout << curl_string << std::endl;
+	  system(curl_string.c_str());
+	}
       
       
       std::string htmlfile = s;
