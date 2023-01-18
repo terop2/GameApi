@@ -18059,7 +18059,7 @@ std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
 	}
       if (found) break;
     }
-  return s.substr(pos,i-pos-1);
+  return s.substr(pos,i-pos);
 }
 std::vector<UrlItem> find_url_items(std::string s)
 {
@@ -18118,9 +18118,18 @@ std::string deploy_replace_string(std::string val, std::string repl, std::string
 	}
       if (not_found) { res+=val[i]; continue; }
       res+=subst;
-      i+=repl.size();
+      i+=repl.size()-1;
     }
   return res;
+}
+
+std::string http_to_https(std::string url)
+{
+  if (url.size()>5 && url[0]=='h' && url[1]=='t' && url[2]=='t' && url[3]=='p' && url[4]!='s')
+    {
+      return std::string("https") + url.substr(4);
+    }
+  return url;
 }
 
 
@@ -18149,6 +18158,7 @@ public:
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
     case 1:
+      system("rmdir /S %TEMP%\\_gameapi_builder\\deploy");
       system("mkdir %TEMP%\\_gameapi_builder\\deploy");
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
@@ -18167,6 +18177,16 @@ public:
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
 
+      std::vector<UrlItem> items = find_url_items(s);
+      int si=items.size();
+      for(int i=si-1;i>=0;i--)
+	{
+	  UrlItem ii = items[i];
+	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
+	  std::string curl_string = "..\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
+	  std::cout << curl_string << std::endl;
+	  system(curl_string.c_str());
+	}
       
       
       std::string htmlfile = s;
@@ -18325,6 +18345,7 @@ public:
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
     case 1:
+      system("rm -rf ~/.gameapi_builder/deploy");
       system("mkdir -p ~/.gameapi_builder/deploy");
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
@@ -18351,7 +18372,8 @@ public:
 	{
 	  UrlItem ii = items[i];
 	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	  std::string curl_string = "(cd ~/.gameapi_builder/deploy;curl " + ii.url + ")";
+	  std::string curl_string = "(cd ~/.gameapi_builder/deploy;curl " + http_to_https(ii.url) + " --output " + remove_prefix(ii.url) + ")";
+	  std::cout << curl_string << std::endl;
 	  system(curl_string.c_str());
 	}
 
@@ -18494,6 +18516,7 @@ public:
 	env.set_download_data(env.download_index_mapping(id), vec);
 	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
 	env.set_download_ready(i);
+	std::cout << std::endl;
 	std::cout << "ALL OK" << std::endl;
 	break;
       }

@@ -55,30 +55,30 @@ finish2()
 rm -rf build
 mkdir build
 start_it
-copy_it web_page.data 
-copy_it web_page.js 
-copy_it web_page.wasm 
-copy_it web_page.worker.js 
+#copy_it web_page.data 
+#copy_it web_page.js 
+#copy_it web_page.wasm 
+#copy_it web_page.worker.js 
 copy_it pthread-main.js 
-copy_it web_page_lowmem.data 
-copy_it web_page_lowmem.js 
-copy_it web_page_lowmem.wasm 
-copy_it web_page_lowmem.worker.js 
+#copy_it web_page_lowmem.data 
+#copy_it web_page_lowmem.js 
+#copy_it web_page_lowmem.wasm 
+#copy_it web_page_lowmem.worker.js 
 copy_it web_page_highmem.data 
 copy_it web_page_highmem.js 
 copy_it web_page_highmem.wasm 
 copy_it web_page_highmem.worker.js 
-copy_it web_page_nothreads.data 
-copy_it web_page_nothreads.js 
-copy_it web_page_nothreads.wasm 
+#copy_it web_page_nothreads.data 
+#copy_it web_page_nothreads.js 
+#copy_it web_page_nothreads.wasm 
 #copy_it web_page_nothreads.worker.js 
 copy_it web_page_lowmem_nothreads.data 
 copy_it web_page_lowmem_nothreads.js 
 copy_it web_page_lowmem_nothreads.wasm 
 #copy_it web_page_lowmem_nothreads.worker.js 
-copy_it web_page_nothreads_highmem.data 
-copy_it web_page_nothreads_highmem.js 
-copy_it web_page_nothreads_highmem.wasm 
+#copy_it web_page_nothreads_highmem.data 
+#copy_it web_page_nothreads_highmem.js 
+#copy_it web_page_nothreads_highmem.wasm 
 #copy_it web_page_nothreads_highmem.worker.js
 finish
 
