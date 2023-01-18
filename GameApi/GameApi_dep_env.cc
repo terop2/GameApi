@@ -102,15 +102,18 @@ public:
     
     std::stringstream ss(res);
     totalSize = 0;
+    chunkSize = 1048576;
     ss >> totalSize;
+    ss >> chunkSize;
     
     int concurrent_tasks = 1;
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
+    if (chunkSize==0) { chunkSize=1048576; }
     if (totalSize==0) { size_failed(fetch); return; }
     else {
       result.resize(totalSize+1);
-      int t = totalSize/1048576+1;
+      int t = totalSize/chunkSize+1;
       blocks_ready.resize(t);
       //fetch_block(0);
       int s = t;
@@ -124,7 +127,7 @@ public:
     emscripten_fetch_close(fetch);
 
     int val = 1;
-    int mult = totalSize/1048576;
+    int mult = totalSize/chunkSize;
     if (mult<1) mult=1;
     
   std::string url_str(url);
@@ -154,8 +157,8 @@ private:
     //std::cout << "Fetch Block" << id << std::endl;
     blocks_ready[id]=2;
     //current_id = id;
-    start = id*1048576;
-    end = (id+1)*1048576;
+    start = id*chunkSize;
+    end = (id+1)*chunkSize;
     if (end>=totalSize) end=totalSize;
     //std::cout << "START CHUNK" << id << " " << start << " " << end << " " << totalSize << std::endl;
     std::stringstream ss;
@@ -214,8 +217,8 @@ public:
 	for(int i=0;i<blocks_ready.size();i++)
 	  {
 	    if (blocks_ready[i]!=1) {
-	      start = i*1048576;
-	      end = (i+1)*1048576;
+	      start = i*chunkSize;
+	      end = (i+1)*chunkSize;
 	      if (start>totalSize) start=totalSize;
 	      if (end>totalSize) end=totalSize;
 	      int dataOffset = fetch->dataOffset;
@@ -282,7 +285,7 @@ public:
     emscripten_fetch_close(fetch);
     //std::cout << "CHUNK" << current_id << " " << start << " " << end << " " << totalSize << std::endl;
 
-    long long mult = totalSize/1048576;
+    long long mult = totalSize/chunkSize;
     if (mult<1) mult=1;
 
     long long end2=0;
@@ -290,7 +293,7 @@ public:
     for(int i=0;i<s2;i++)
       {
 	if (blocks_ready[i]==1)
-	  end2+=(long long)1048576;
+	  end2+=(long long)chunkSize;
       }
     
     int val = 1+((long long)(end2))*(long long)15*mult/(long long)(totalSize);
@@ -326,6 +329,7 @@ public:
   std::string url;
   std::vector<unsigned char> result;
   long long totalSize;
+  long long chunkSize;
   void(*success)(void*);
   void(*failed)(void*);
   void *data;
