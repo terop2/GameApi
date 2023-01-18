@@ -56,7 +56,6 @@ private:
   void fetch_size()
   {
     
-
     //std::cout << "fetch_size" << std::endl; 
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
@@ -65,6 +64,7 @@ private:
     attr.attributes = EMSCRIPTEN_FETCH_REPLACE| EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
     attr.onsuccess = blocks_success;
     attr.onerror = blocks_failed;
+
     std::string url2 = "get_file_size.php?url=" +url; 
     emscripten_fetch(&attr, url2.c_str());
 
@@ -75,7 +75,8 @@ private:
 
   { // progressbar
     std::string url_only2 = stripprefix(url_only);
-  int s = url_only2.size();
+
+    int s = url_only2.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url_only2[i]);
   sum = sum % 1000;
@@ -87,9 +88,13 @@ private:
 public:
   void size_success(emscripten_fetch_t *fetch)
   {
-    std::string res(fetch->data,fetch->data+fetch->numBytes);
+    //std::cout << "size_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << std::endl;
+    if (!fetch || !fetch->data || !fetch->numBytes) { size_failed(fetch); return; } 
+    std::string res(&fetch->data[0],&fetch->data[fetch->numBytes]);
     //std::cout << "RES: '" << res << "'" << std::endl;
 
+    if (res.size()==0) { size_failed(fetch); return; }
+    
     char ch = res[0];
     res = res.substr(1);
 
@@ -102,7 +107,7 @@ public:
     int concurrent_tasks = 1;
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
-    if (totalSize==0) size_failed(fetch);
+    if (totalSize==0) { size_failed(fetch); return; }
     else {
       result.resize(totalSize+1);
       int t = totalSize/1048576+1;
@@ -197,6 +202,8 @@ private:
 public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
+    //std::cout << "fetch_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << std::endl;
+    if (!fetch || !fetch->data || !fetch->numBytes) { fetch_failed(fetch); return; } 
     FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
     //std::cout << fetch->statusText << std::endl;
     //std::cout << fetch->status << std::endl;
@@ -220,7 +227,7 @@ public:
 	      if (dataOffset<=start && dataOffset+numBytes>=end-1)
 		{
 		  int offset = start-dataOffset;
-		  std::copy(fetch->data+offset, fetch->data+offset+(end-start), &result[start]);
+		  std::copy(&fetch->data[offset], &fetch->data[offset+(end-start)], &result[start]);
 		  blocks_ready[i]=1;
 		  //std::cout << "BLOCK READY: " << i << std::endl;
 		}
@@ -948,7 +955,7 @@ std::string stripprefix(std::string s)
 {
   //std::cout << "stripprefix:" << s << std::endl;
   int len = strlen("load_url.php?url=");
-  if (s.size()>0 && s[0]=='l') {
+  if (s.size()>0 && s[0]=='l' && s[1]=='o' && s[2]=='a' && s[3]=='d') {
     return s.substr(len,s.size()-len);
   } else return s;
 }
@@ -1442,10 +1449,39 @@ void fetch_success(void *data)
   onload_async_cb(333,(void*)url, vec);
   // note, the dt->obj is NOT DELETED AT ALL
 }
+void fetch_2_success(emscripten_fetch_t *fetch)
+{
+  std::cout << "2nd attempt successful" << std::endl;
+  LoadData *dt = (LoadData*)(fetch->userData);
+  const char *url = dt->buf3;
+  dt->obj->result = std::vector<unsigned char>(&fetch->data[0],&fetch->data[fetch->numBytes]);
+  const std::vector<unsigned char> *vec = dt->obj->get();  
+  onload_async_cb(333,(void*)url,vec);
+  emscripten_fetch_close(fetch);
+}
+void fetch_2_error(emscripten_fetch_t *fetch)
+{
+  std::cout << "ERROR: 2nd attempt at loading the data failed" << std::endl;
+  emscripten_fetch_close(fetch);
+}
 void fetch_failed(void *data)
 {
   LoadData *dt = (LoadData*)data;
-  delete dt->obj;
+  //delete dt->obj;
+
+  std::cout << "Fetching url failed.. trying again... (it's possible get_file_size.php is not available)  " << std::endl;
+  std::cout << dt->url << std::endl;
+  
+  // TRY AGAIN... (possibly get_size.php missing)
+  emscripten_fetch_attr_t attr;
+  emscripten_fetch_attr_init(&attr);
+  strcpy(attr.requestMethod, "GET");
+  attr.attributes=EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+  attr.onsuccess=fetch_2_success;
+  attr.onerror=fetch_2_error;
+  attr.userData=(void*)dt;
+  emscripten_fetch(&attr,dt->url.c_str());
+
 }
 #endif
 
