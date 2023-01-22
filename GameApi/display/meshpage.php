@@ -237,6 +237,11 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <br><br><br><br><br><br>
 <br><br><br><br><br><br>
 </div>
+<?php
+if ($sitename=="dinoengine.com") {
+  echo "<img class="logo" src="dino3.webp"></img>";
+  }
+?>
 <div id="profile" style="display:none">
 <div style="font-size: 20px;"><span id="log">#</span>(<span id="name">#</span> - <span id="email">#</span>)</div>
 <form action="/update_profile.php" method="post">
@@ -1114,6 +1119,11 @@ width="120" height="120" crossorigin/>
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.logo {
+  position: absolute;
+  right: 0px;
+  top: 37px;
+}
 .tab {
   overflow: hidden;
   border: 1px solid #ccc;
