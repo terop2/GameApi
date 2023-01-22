@@ -204,7 +204,9 @@ libGameDep.dll: $(O2Files_dep) Makefile.win32 glew.o
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameDep.dll
 	@echo mingw libGameApi.dll
-	@g++ -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -Lopenvr -lopenvr_api 
+	@g++ -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -Lopenvr -lopenvr_api
+
+#-L./hssynth2/synthlib -lsynthlib -L./hssynth2/midiplay/midifile -lmidifile
 #-lchaiscript_stdlib-6.1.0
 
 #	@strip libGameApi.dll
