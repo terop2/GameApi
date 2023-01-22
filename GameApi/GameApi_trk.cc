@@ -2,8 +2,11 @@
 #include <fstream>
 #include <ios>
 #include <MidiFile.h>
+
+#ifndef WIN32
 #include <AudioService.h>
 #include <Patch.h>
+#endif
 
 class EmptyTracker : public Tracker
 {
@@ -311,6 +314,7 @@ void GameApi::TrackerApi::play_ogg(const std::vector<unsigned char> &data)
 #endif
 }
 extern "C" int HTML5_Mix_HaltMusic();
+namespace std { class thread; }
 std::thread *mt=0;
 
 void GameApi::TrackerApi::stop_music_playing()
@@ -318,7 +322,7 @@ void GameApi::TrackerApi::stop_music_playing()
   // TODO midi/ SDL_PauseAudio(1)
   // TODO thread removal
   g_low->sdl->SDL_PauseAudio(1);
-  delete mt;
+  //delete mt;
   mt=0;
   
 #ifndef USE_SDL_MIXER_HACK
@@ -470,15 +474,17 @@ GameApi::ML GameApi::TrackerApi::play_wave_via_keypress(EveryApi &ev, ML ml, std
   std::string homepage = gameapi_homepageurl;
   return add_main_loop(e, new PlayWavViaKeypress(e,ev,item, url, homepage, key));
 }
-
+#ifndef WIN32
 struct DATAPASS
 {
   const std::vector<unsigned char> *data;
   sf::AudioService *audio;
 };
+#endif
 
 void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset)
 {
+#ifndef WIN32
   DATAPASS *pass = new DATAPASS;
   pass->data = &data;
   
@@ -507,14 +513,16 @@ void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsig
      return 0;
    }
   return (void*)pass;
+#endif
 }
 
 void play_midi(void *ptr)
 {
+#ifndef WIN32
   DATAPASS *pass = (DATAPASS*)ptr;
   if (!pass) return;
   
-  mt = new std::thread(&sf::AudioService::midiServer, pass->audio);
+  //mt = new std::thread(&sf::AudioService::midiServer, pass->audio);
   smf::MidiFile midifile;
   std::string sk(pass->data->begin(),pass->data->end());
   std::stringstream ss(sk);
@@ -564,6 +572,7 @@ void play_midi(void *ptr)
 	}
       
     }
+#endif
 }
 
 
