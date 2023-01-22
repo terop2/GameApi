@@ -25,7 +25,7 @@ finish()
 }
 #copy_it pessimist.php
 cp meshpage.php games.php
-copy_it dinoengine.png
+copy_it dino3.webp
 copy_it get_file_size.php
 copy_it AI_prompt.php
 copy_it article.php

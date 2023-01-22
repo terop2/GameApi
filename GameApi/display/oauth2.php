@@ -1,6 +1,18 @@
 <?php
 session_start();
 
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
+
+if ($machine=="terop-pc") {
 include '/home/terop/html/tpgames.org/oauth2/RandomInterface.php';
 include '/home/terop/html/tpgames.org/oauth2/Random.php';
 include '/home/terop/html/tpgames.org/oauth2/AccessToken.php';
@@ -9,7 +21,16 @@ include '/home/terop/html/tpgames.org/oauth2/OAuth2Client.php';
 include '/home/terop/html/tpgames.org/oauth2/Provider.php';
 include '/home/terop/html/tpgames.org/oauth2/HttpClientInterface.php';
 include '/home/terop/html/tpgames.org/oauth2/CurlHttpClient.php';
-
+} else {
+include '/home/terop/html/assetsite/oauth2/RandomInterface.php';
+include '/home/terop/html/assetsite/oauth2/Random.php';
+include '/home/terop/html/assetsite/oauth2/AccessToken.php';
+//include '/home/terop/tpgames.org/oauth2/Exception/OauthException.php';
+include '/home/terop/html/assetsite/oauth2/OAuth2Client.php';
+include '/home/terop/html/assetsite/oauth2/Provider.php';
+include '/home/terop/html/assetsite/oauth2/HttpClientInterface.php';
+include '/home/terop/html/assetsite/oauth2/CurlHttpClient.php';
+}
 function redirect_post($url, array $data, array $headers = null) {
   $params = [
     'http' => [

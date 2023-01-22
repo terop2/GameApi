@@ -4,6 +4,18 @@
 require_once("emscripten_frame.php");
 #require_once("source_table.php");
 
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
+
+
 function create_new_user( $username, $passwd )
 {
    mkdir( "./user_data/user_" . $username);
@@ -261,21 +273,22 @@ function viewport_meta( )
 }
 function twitter_meta( $arr, $j )
 {
+  global $sitename;
   $user = $arr["username"];
   $i = $arr["index"];
-  $filename = "https://meshpage.org/user_data/user_" . $user . "/screenshot" . $i . ".webp";
+  $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
   echo "<meta name=\"twitter:card\" content=\"summary\"/>";
   echo "<meta name=\"twitter:image\" content=\"" . $filename . "\"/>";
   $label = get_label($arr);
 
   echo "<meta name=\"twitter:title\" content=\"". $label . "\"/>";
-  echo "<meta name=\"twitter:description\" content=\"Animated 3d model from meshpage.org\"/>";
+  echo "<meta name=\"twitter:description\" content=\"Animated 3d model from " . $sitename . "\"/>";
 }
 function google_meta( $arr, $i )
 {
   $user = $arr["username"];
   $i = $arr["index"];
-  $filename = "https://meshpage.org/user_data/user_" . $user . "/screenshot" . $i . ".webp";
+  $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
   $label = get_label($arr);
   echo '<meta property="og:title" content="' . $label . '"/>';
   echo '<meta property="og:description" content="3d animations"/>';
@@ -297,7 +310,7 @@ function user_frame_clickable( $arr, $i, $noheaders, $seamless, $transparent )
   $hd = $arr["height"];
   $user = $arr["username"];
   $i = $arr["index"];
-  $filename = "https://meshpage.org/user_data/user_" . $user . "/screenshot" . $i . ".png";
+  $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".png";
   $data="<div style=\"position:relative;\"><div style=\"position:absolute; top:0px; left:0px;\"><a href=\"https://www.meshpage.org/mesh_display?id=$id&noheaders=1&width=$wd&height=$hd&seamless=$seamless&transparent=$transparent\" target=\"game_frame\" onclick=\"hide()\"><img id=\"img\" src=\"$filename\" width=\"$width\" height=\"$height\"/></a></div><div><iframe name=\"game_frame\" width=\"$width\" height=\"$height\" style=\"margin:0px 0px 0px 0px; border-style: none;\"></iframe></div></div><script>function hide() { var o=document.getElementById(\"img\"); o.style.display='none'; }</script>";
   echo "$data";
 }
@@ -477,12 +490,13 @@ function analytics( )
 
 function small_page_header_body( $arr2, $num )
 {
+  global $sitename;
   analytics();
   $id = create_id( $arr2 );
   echo "<div itemscope itemtype=\"http://schema.org/BreadcrumbList\" id=\"navbar\" class=\"navi\">";
   echo "<div class=\"ncenter\">";
   highlight_start($num, 0,1);
-  echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_all\"><span itemprop=\"name\">meshpage.org</span></a>";
+  echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_all\"><span itemprop=\"name\">" . $sitename . "</span></a>";
   highlight_end($num,0);
   highlight_start($num, 1,1);
   echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_display?id=" . $id . "\"><span itemprop=\"name\">mesh display</span></a>";
@@ -503,11 +517,12 @@ function small_page_header_body( $arr2, $num )
 }
 function page_header_plain( $pos )
 {
+  global $sitename;
    echo '<!DOCTYPE html>';
    echo "<html>";
    echo "<head>";
-   echo "<title>meshpage.org -- create 3d animations</title>";
-   echo "<meta name=\"description\" content=\"Meshpage is a mechanism to create 3d animations for your webpage\"/>";
+   echo "<title>" . $sitename . " -- create 3d animations</title>";
+   echo "<meta name=\"description\" content=\"" . $sitename . " is a mechanism to create 3d animations for your webpage\"/>";
    echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css\"/>";
    viewport_meta();
    echo "<meta name=\"robots\" content=\"noindex\">";
@@ -516,11 +531,12 @@ function page_header_plain( $pos )
 }
 function page_header( $pos )
 {
+  global $sitename;
    echo '<!DOCTYPE html>';
    echo "<html>";
    echo "<head>";
-   echo "<title>meshpage.org -- create 3d animations</title>";
-   echo "<meta name=\"description\" content=\"Meshpage is a mechanism to create 3d animations for your webpage\"/>";
+   echo "<title>" . $sitename . " -- create 3d animations</title>";
+   echo "<meta name=\"description\" content=\"" . $sitename . " is a mechanism to create 3d animations for your webpage\"/>";
    echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css\"/>";
    viewport_meta();
    echo "<meta name=\"robots\" content=\"noindex\">";
@@ -530,7 +546,7 @@ function page_header( $pos )
    echo "<div itemscope itemtype=\"http://schema.org/BreadcrumbList\" id=\"navbar\" class=\"navi\">";   
    echo "<div class=\"ncenter\">";
    highlight_start($pos, 0,1);
-   echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_all\"><span itemprop=\"name\">meshpage.org</span></a>";
+   echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_all\"><span itemprop=\"name\">" . $sitename . "</span></a>";
    highlight_end($pos,0);
    //echo " || ";
    highlight_start($pos, 1,1);
@@ -581,7 +597,7 @@ function page_header( $pos )
    if ($_SERVER["HTTP_HOST"]=="localhost") {
    echo "<a itemprop=\"item\" class=\"navi right\" href=\"http://localhost/mesh-page/mesh_login_page\"><span itemprop=\"name\">login</span></a>";
    } else {
-   echo "<a itemprop=\"item\" class=\"navi right\" href=\"https://www.meshpage.org/mesh_login_page\"><span itemprop=\"name\">login</span></a>";
+   echo "<a itemprop=\"item\" class=\"navi right\" href=\"" . $site . "/mesh_login_page\"><span itemprop=\"name\">login</span></a>";
    }
    highlight_end($pos,7);
    }
@@ -610,6 +626,7 @@ echo "<div class=\"page_content\">";
 }
 function page_footer2()
 {
+  global $sitename;
   // LOGOS
   echo "<div>";
   // OPENGL LOGO
@@ -668,7 +685,11 @@ function page_footer2()
    echo "<div style=\"position: relative;\">";
    echo "<div style=\"width: 100%; float:left;\">";
    echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3d engine &copy; 2013-2022 Tero Pulkkinen, All rights reserved.<br>";
-   echo "meshpage.org&reg; is a registered trademark of Tero Pulkkinen in tampere.</strong></div>";
+   if ($sitename==="meshpage.org") {
+      echo $sitename . "&reg; is a registered trademark of Tero Pulkkinen in tampere.</strong></div>";
+      } else {
+      echo $sitename . " is a website created in Tampere.</strong></div>";
+      }
    echo "</div>";
    echo "</div>";
    echo "<div style=\"height:80px;\"></div>";
@@ -841,7 +862,7 @@ function redirect_post( $url, array $data, array $headers=null )
      }
   }
   $ctx = stream_context_create($params);
-    $x = 'https://meshpage.org/';
+    $x = $site;
     $fp = @fopen( $x . $url, 'rb', false, $ctx);
     if ($fp) { 
        echo @stream_get_contents($fp);

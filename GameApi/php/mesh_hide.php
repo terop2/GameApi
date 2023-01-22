@@ -1,4 +1,14 @@
 <?php
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
 
 require_once("user.php");
 $pagestr = $_GET["id"];
@@ -68,7 +78,7 @@ $filename = "user_data/user_" . $user . "/screenshot" . $i . ".png";
 $filename2 = "user_data/user_" . $user . "/screenshot" . $i . ".webp";
 if (file_exists($filename2)) $filename = $filename2;
 echo "<p><div width=\"100%\"><div style=\"display: inline-block; *display: inline; vertical-align: top; width: 5%; height: 150px;\"><h1>$i</h1></div><div style=\"display: inline-block; *display: inline; vertical-align: top; width: 20%; height: 150px;\"> <a href=\"mesh.php?id=" . $id . "\"><img width=\"200\" height=\"150\" src=\"" . $filename . "\"/></a></div>";
-echo "<div style=\"display: inline-block; *display: inline; width: 60%; height: 150px;  vertical-align: top;\"><div><a href=\"https://meshpage.org/" . $i . "\">LINK</a>";
+echo "<div style=\"display: inline-block; *display: inline; width: 60%; height: 150px;  vertical-align: top;\"><div><a href=\"" . $site . "/" . $i . "\">LINK</a>";
 echo "<input type=\"hidden\" name=\"" . $i . "_hide\" value=\"off\">";
 echo "<input type=\"checkbox\" name=\"" . $i . "_hide\"";
 

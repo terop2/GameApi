@@ -2,6 +2,18 @@
 
 require_once("user.php");
 
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
+
+
 page_header_plain(6);
 page_title("Vault Result", "");
 $user = "terop";

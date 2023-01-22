@@ -6017,6 +6017,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	      jj = pp.second;
 	    } else if (pp.first[0]=='I') {
 	    std::cout << "Param not found (multiple return+find failed)" << pp.first << std::endl;
+	    std::cout << l.return_type << " " << l.api_name << "::" << l.func_name << std::endl;
 	  }
 	  if (param_value.size()>strlen("std::vector<"))
 	    {
@@ -6034,7 +6035,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 		  while(1) {
 		    int pos2 = find_one(param_value, pos, ",}");
 		    if (pos2==pos+1) break;
-		    if (pos2==-1) { std::cout << "Error=true" << std::endl; error=true; return; }
+		    if (pos2==-1) { std::cout << "Error=true" << std::endl; std::cout << l.return_type << " " << l.api_name << "::" << l.func_name << std::endl; error=true; return; }
 		    std::string param = param_value.substr(pos,pos2-pos);
 		    //std::cout << "ArrParam: " << param << std::endl;
 
@@ -6044,14 +6045,19 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 		    if (pp2.first.size()>0 && pp2.first[0]=='I')
 		      {
 			int linkage = line_map[pp2.first];
-			if (!linkage) { std::cout << "ERROR: Param not found! " << pp2.first << std::endl; }
+			std::map<std::string,int>::iterator ii2 = line_map.find(pp2.first);
+			if (ii2==line_map.end()) {
+			  std::map<std::string,int>::iterator ii=line_map.begin();
+			  for(;ii!=line_map.end();ii++) { std::pair<std::string,int> p=*ii; std::cout << "LINE MAP CONTAINS: (" << p.first << " " << p.second << ")" << std::endl; }
+			  std::cout << "ERROR: Param not found! (multiple return)'" << pp2.first << "'"<< std::endl; std::cout << l.return_type << " " << l.api_name << "::" << l.func_name << std::endl; }
+			 /* THAT !linkage test was broken */
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = ss.str();
 		      } else if (pp2.first.size()>0 && pp2.first[0]=='E')
 		      {
 			int linkage = env_map[pp2.first];
-			if (!linkage) { std::cout << "ERROR: E not found! " << pp2.first << std::endl; }
+			if (!linkage) { std::cout << "ERROR: E not found! " << pp2.first << std::endl; std::cout << l.return_type << " " << l.api_name << "::" << l.func_name << std::endl; }
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = std::string("E") + ss.str();
