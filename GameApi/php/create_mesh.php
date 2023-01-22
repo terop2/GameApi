@@ -1,6 +1,16 @@
 <?php
 
 require_once("user.php");
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
 
 $arr = choose_user();
 if ($arr["user"]!= "terop_priv") { die(); }

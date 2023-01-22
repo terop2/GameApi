@@ -7,6 +7,18 @@ include("backend.php");
 //header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page_highmem.js");
 
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
+
+
 function unhash($data)
 {
    return ((intval($data)) ^ 0x26522663) /10001;
@@ -681,7 +693,7 @@ function strfy(arr)
 @font-face { font-family: "custom"; src: url("cafe.ttf"); }
 .customfont { font-family: custom; }
 #canvas {
-  background-image: url('https://meshpage.org/load_spinner2.gif');
+  background-image: url('load_spinner2.gif');
   background-size: 100% 100%;
 </style>
 
@@ -692,7 +704,7 @@ function enable_spinner(a)
   var el2 = document.getElementById("canvas");
   if (a) {
     console.log("SPINNER ENABLED");
-    el2.style.backgroundImage = "url('https://meshpage.org/load_spinner2.gif')";
+    el2.style.backgroundImage = "url('load_spinner2.gif')";
     el2.style.backgroundSize = "100% 100%";
 } else {
     console.log("SPINNER DISABLED");
@@ -795,7 +807,7 @@ function get_model(i)
    if (i>=0 && i<store.state.model_db.length) {
       var name2 = store.state.model_db[i];
       var name = parse_model_filename(name2);
-      model = "https://tpgames.org/" + name;
+      model = "<?php echo $assetsite ?>/" + name;
    }
 
    //if (i==0) model="https://tpgames.org/wooly_sheep.stl";
@@ -1681,7 +1693,7 @@ function drop(ev)
 var canv = document.getElementById("canvas");
 var Module = {
    canvas : canv,
-   arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href],
+   arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
    };
@@ -1708,9 +1720,9 @@ function load_emscripten(state,filename, contents, filenames)
     if (!g_emscripten_running) {
       enable_spinner(true);
       if (filename=="") {
-      Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href];
+      Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       } else {
-      Module.arguments = [ "--size", "800", "600", "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "https://tpgames.org/", "--href", window.location.href];
+      Module.arguments = [ "--size", "800", "600", "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       }
 
       var script = document.createElement("script");
@@ -2097,7 +2109,7 @@ function submitprogressbar(i)
    //}
    if (i==500)
    {
-	var name = "https://meshpage.org/viewdata/num.txt";
+	var name = "viewdata/num.txt";
 	fetch(name).then(response => {
 	    response.body.getReader().read().then(value => {
 	   console.log(value);
@@ -2105,7 +2117,7 @@ function submitprogressbar(i)
 	   console.log(str);
 	   var num = parseInt(str);
 	   console.log(num);
-	   prog.innerHTML = "<a href='https://meshpage.org/view.php?id=" + hash(num) + "'>https://meshpage.org/view.php?id=" + hash(num) + "</a>";
+	   prog.innerHTML = "<a href='view.php?id=" + hash(num) + "'>https://meshpage.org/view.php?id=" + hash(num) + "</a>";
 	   }); });
 	   
    }

@@ -1,5 +1,17 @@
 <?php
 
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
+
+
 $url = $_GET["url"];
 
 $parse = parse_url($url);
@@ -8,9 +20,13 @@ $mode = false;
 $chunksize = 0;
 if (stream_is_local($url)) {
   $size=filesize($url);
-} else if ($host=="meshpage.org") {
+} else if ($host=="meshpage.org"||$host=="dinoengine.com") {
   $path = $parse['path'];
-  $filename = "/home/terop/html/meshpage.org" . $path;
+  if ($machine=="terop-pc") {
+     $filename = "/home/terop/html/meshpage.org" . $path;
+  } else {
+     $filename = "/home/terop/html" . $path;
+  }   
   $size = filesize($filename);
   $splitfilename = $filename . ".aa.br";
   $splitfilename2 = $filename . ".aa";
@@ -18,7 +34,11 @@ if (stream_is_local($url)) {
   $chunksize = filesize($splitfilename2);
 } else if ($host=="tpgames.org") {
   $path = $parse['path'];
-  $filename = "/home/terop/html/tpgames.org" . $path;
+  if ($machine=="terop-pc") {
+    $filename = "/home/terop/html/tpgames.org" . $path;
+  } else {
+    $filename = "/home/terop/html" . $path;
+  }
   $size = filesize($filename);
   $splitfilename = $filename . ".aa.br";
   $splitfilename2 = $filename . ".aa";
