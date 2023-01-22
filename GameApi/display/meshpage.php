@@ -1,23 +1,31 @@
 <?php
 //header("Cross-Origin-Opener-Policy: same-origin");
-$site = "https://meshpage.org";
-$assetsite = "https://tpgames.org";
+$machine=php_uname("n");
+if ($machine=="terop-pc") {
+   $site = "https://meshpage.org";
+   $assetsite = "https://tpgames.org";
+   $sitename = "meshpage.org";
+   } else {
+   $site = "https://dinoengine.com";
+   $assetsite = "https://dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+   }
 ?>
 <!DOCTYPE html>
 <html id="html">
 <head>
-<title>meshpage.org&reg; -- are you ready to bring the web to the next level technologies?</title>
+<title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
- echo '<meta name="description" content="Meshpage makes the web 3d, one site at the time"/>';
+ echo '<meta name="description" content="<?php echo $sitename ?> makes the web 3d, one site at the time"/>';
  }
  ?>
-<meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/>
+<!-- meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/ -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
-<meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
-<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
+<!--meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/-->
+<!--meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/-->
 <?php
 require_once("user.php");
 function create_id2( $name, $index )
@@ -146,7 +154,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 }
 </script>
 <body id="body">
-<script src="<?php echo $site ?>/vue.js"></script>
+<script src="vue.js"></script>
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
 <div id="app">
@@ -193,12 +201,12 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <template v-if="bread.link">
 <div style="font-family: 'calibri', sans-serif" class="link level1 highlightedtab">
 <meta itemprop="position" v-bind:content="bread.num"/>
-<a class="navi highlightedtab link" v-on:click="bread_click($event)"><span>{{ bread.title }}</span></a>
+<a class="navi highlightedtab link" v-on:click="bread_click($event)"><b><span v-html="bread.title"></span></b></a>
 </template>
 <template v-if="!bread.link">
 <div style="font-family: 'calibri', sans-serif" class="link level1">
 <meta itemprop="position" v-bind:content="bread.num"/>
-<a class="navi link" v-on:click="bread_click($event)"><span>{{ bread.title }}</span></a>
+<a class="navi link" v-on:click="bread_click($event)"><span><b>{{ bread.title }}</b></span></a>
 </template>
 </div>
 </template>
@@ -439,7 +447,7 @@ $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
 echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
-page_title("meshpage.org&reg;", "groundbreaking way to bring the next level technologies to the web: 3d.");
+page_title($sitename, "groundbreaking way to bring the next level technologies to the web: 3d.");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -460,7 +468,7 @@ echo "<script>var imgarr=[];</script>";
 //echo "<script>eruda.init();</script>";
 
 $iii=0;
-
+$counter=0;
 for($i=$start;$cnt<50;$i--)
 {
 $iii++;
@@ -470,11 +478,13 @@ if ($i<=1) {
   $ii = rand(2, $num);
   foreach($dupcache as $i)
   {
+    $counter=$counter+1;
+    if ($counter>30) goto enough;
     if ($i==$ii) goto redo;
   }
   array_push($dupcache, $ii);
 }
-
+enough:
 $arr = array("username" => $user,
              "index" => $ii,
 	     "width" => 200,
@@ -604,7 +614,7 @@ if ($connect=="yes") {
 ?>
 </div>
 <!--div class="spinner">
-<img src="https://tpgames.org/load_spinner.gif" crossorigin></img>
+<img src="<?php echo $assetsite ?>/load_spinner.gif" crossorigin></img>
 </div-->
 <p>
 <p>
@@ -637,32 +647,32 @@ echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)<br>";
-echo "Source Code: <a href=\"https://tpgames.org/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
-echo "<br>Yours,<br><img src=\"https://tpgames.org/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
+echo "Source Code: <a href=\"<?php echo $assetsite ?>/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
+echo "<br>Yours,<br><img src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
 echo "<br><br>Development history of the project:<br>";
-echo "<img src=\"https://tpgames.org/github_2022.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2021.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2020.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2019.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2018.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2017.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2016.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2015.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2014.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2013.png\" crossorigin></img>";
-echo "<img src=\"https://tpgames.org/github_2012.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2022.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2021.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2020.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2019.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2018.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2017.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2016.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2015.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2014.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2013.png\" crossorigin></img>";
+echo "<img src=\"" . $assetsite . "/github_2012.png\" crossorigin></img>";
 
 echo "<br><br><br><hr><br><br><br>";
 
 echo "<hr>";
 echo "Terms and conditions:<p>";
 echo "<ul>";
-echo "<li>You have explicit permission to use gameapi builder and meshpage for creating 3d model, the node graph, and deploy the end result to a web site of your choice";
+echo "<li>You have explicit permission to use gameapi builder and <?php echo $sitename ?> for creating 3d model, the node graph, and deploy the end result to a web site of your choice";
 echo "<li>You are not allowed to add copyright infringing content to any url slots inside builder tool. While builder can filter out some of that usage, the checks are not perfect and if that happens, we basically cannot do anything to protect our end users from the content owner's legal actions";
 echo "<li>For children at ages 10-18 years old, gameapi builder provides safe learning environment where it is difficult to do large mistakes like publishing sexual material, copyright infringements or racist brainwashing.";
-echo "<li>GameApi builder and meshpage web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
-echo "<li>Meshpage is not a social media platform. Correct designation is \"Content Creation Tool Provider\" and  \"Web Publishing Enabler\" and also \"Content Publisher\"";
+echo "<li>GameApi builder and <?php echo $sitename ?> web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
+echo "<li><?php echo $sitename ?> is not a social media platform. Correct designation is \"Content Creation Tool Provider\" and  \"Web Publishing Enabler\" and also \"Content Publisher\"";
 echo "<li>Standard disclaimers apply, no warranty or ability to return purchased material";
 echo "</ul>";
 ?>
@@ -785,10 +795,10 @@ list_end();
 <p>
 <p>
 <h1>frequently asked questions</h1>
-<h2>What is meshpage.org?</h2>
+<h2>What is <?php echo $sitename ?>?</h2>
 
 <ul>
-<li>Meshpage is groundbreaking way to bring web to next level. Next generation web will be 3d with meshpage's technology.
+<li><?php echo $sitename ?> is groundbreaking way to bring web to next level. Next generation web will be 3d with <?php echo $sitename ?>'s technology.
 </ul>
 
 <h2>How does the site work?</h2>
@@ -831,7 +841,7 @@ Useful other sites which you can drag and drop content to the viewer are at leas
 
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
-<img src="http://tpgames.org/minimal_boxes.png" crossorigin/>
+<img src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>
 <p>
 Important part for deployment is the properties of html_run, since it
 contains url to your hosting space, which you need to change. This
@@ -842,7 +852,7 @@ allowed for copyright reasons.
 Web server config(.htaccess) should be something like the following: (you should change the url)
 <br>
 <pre>
-Header set Access-Control-Allow-Origin "https://meshpage.org" 
+Header set Access-Control-Allow-Origin "<?php echo $site ?>" 
 Header set Cross-Origin-Embedder-Policy "require-corp" 
 Header set Cross-Origin-Resource-Policy "same-site" 
 Header set Cross-Origin-Opener-Policy "same-origin" 
@@ -988,7 +998,7 @@ visit_counter_inc( "tool" );
 
 <div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
 <div style="margin: 10px;">
-<img src="https://meshpage.org/Windows-Symbol.png" width="200" height="120" crossorigin/>
+<img src="Windows-Symbol.png" width="200" height="120" crossorigin/>
 </div>
 </div>
 
@@ -1114,6 +1124,9 @@ width="120" height="120" crossorigin/>
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.main {
+  z-index: 1;
+}
 .tab {
   overflow: hidden;
   border: 1px solid #ccc;
@@ -1185,7 +1198,7 @@ text-color: #fff;
   height: 620px;
   }
 #canvas {
-   background-image: url('https://meshpage.org/load_spinner2.gif');
+   background-image: url('load_spinner2.gif');
    background-size: 100% 100%;
 }
 </style>
@@ -1512,10 +1525,10 @@ if ($page!="") {
    },
    data: {
      state: store.state,
-     main_breadcrumb_second: [{num:0,name: "mesh_all", choose:"main", title:"meshpage.org", link:false},
+     main_breadcrumb_second: [{num:0,name: "mesh_all", choose:"main", title:"<?php echo "$sitename"; ?>", link:false},
      {num:1,name:"mesh_display",choose:"mesh",title:"mesh display", link:false},
      ],
-     main_breadcrumb_first: [{num:0,name: "mesh_all", choose:"main", title:"meshpage.org", link:true},
+     main_breadcrumb_first: [{num:0,name: "mesh_all", choose:"main", title:"<?php echo "$sitename"; ?>", link:true},
      		       //{num:1,name: "create_mesh", choose:"create_mesh",title:"create mesh",link:false},
 		       {num:2,name: "mesh_tool", choose:"tool_download",title:"tool download",link:false},
                        {num:3,name: "mesh_faq", choose:"faq",title:"faq",link:false},
@@ -1572,7 +1585,7 @@ function choose_bread(txt,breadcrumb)
    var i;
    for(i=0;i<sz;i++) {
       var bread = breadcrumb[i];
-      if (txt=="main" && bread.title=="meshpage.org") bread.link=true; else
+      if (txt=="main" && bread.title=="<?php echo $sitename ?>") bread.link=true; else
       if (bread.title==txt) {
          bread.link = true;
       } else {
@@ -1608,7 +1621,7 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
       }
    }
 
-      if (txt=='meshpage.org') {
+      if (txt=='<?php echo $sitename ?>') {
           choose_breadlist(0,breadcrumb,first,second);
 	  if (typeof fix_keyboard === "function") fix_keyboard(true);
 	  }
@@ -1889,7 +1902,7 @@ function enable_spinner(a)
   var el2 = document.getElementById("canvas");
   if (a) {
     console.log("SPINNER ENABLED");
-    el.style.backgroundImage = "url('https://meshpage.org/load_spinner2.gif')";
+    el.style.backgroundImage = "url('load_spinner2.gif')";
     el.style.backgroundSize = "100% 100%";
 } else {
     console.log("SPINNER DISABLED");
@@ -2269,8 +2282,8 @@ function get_cookie_status()
    fetch(req).then((r)=> {
        return r.text();
        }).then((t) => {
-          //console.log("FOUND COOKIE");
-	  //console.log(t);
+          console.log("FOUND COOKIE");
+	  console.log(t);
 	  var t2 = t.trim();
 	  if (t2=="-1") { // no info available
 	    var co = document.getElementById("callout");
@@ -2395,6 +2408,10 @@ get_cookie_status();
 
 
 <style>
+.logo {
+  position: relative;
+  z-index: 3;
+}
 .cnts {
   height: 100px;
   margin-left: 15px;
