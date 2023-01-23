@@ -18162,7 +18162,7 @@ public:
     case 1:
       {
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
-      int val2=system("rmdir /S %TEMP%\\_gameapi_builder\\deploy");
+      int val2=system("rmdir /Q /S %TEMP%\\_gameapi_builder\\deploy");
       int val3=system("mkdir %TEMP%\\_gameapi_builder\\deploy");
       if (val2!=0||val3!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
