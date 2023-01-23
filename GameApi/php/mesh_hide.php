@@ -16,7 +16,7 @@ if ($pagestr=="") $pagestr="0";
 $page = intval($pagestr);
 
 $arr = choose_user();
-if ($arr["user"]!= "terop_priv") { die(); }
+if ($arr["user"]!= "terop_priv" && $arr["user"]!="henri_priv") { die(); }
 
 page_header_plain(6);
 page_title("hidden vault","");

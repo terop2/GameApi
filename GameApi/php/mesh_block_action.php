@@ -1,7 +1,7 @@
 <?php
 require_once("user.php");
 $arr = choose_user();
-if ($arr["user"] != "terop_priv") { die(); }
+if ($arr["user"] != "terop_priv" && $arr["user"]!="henri_priv") { die(); }
 
 $id = $_POST["idelem"];
 $val = $_POST["block"];

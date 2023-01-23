@@ -13,7 +13,7 @@ if ($machine=="terop-pc") {
    }
 
 $arr = choose_user();
-if ($arr["user"]!= "terop_priv") { die(); }
+if ($arr["user"]!= "terop_priv" && $arr["user"]!="henri_priv") { die(); }
 
 visit_counter_inc("createmesh");
 

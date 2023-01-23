@@ -572,7 +572,7 @@ function page_header( $pos )
    highlight_end($pos, 5);
 
    $arr = choose_user();
-   if ($arr["user"] == "terop_priv")
+   if ($arr["user"] == "terop_priv" || $arr["user"]=="henri_priv")
    {
    //echo " | ";
    highlight_start($pos,6,1);
@@ -735,6 +735,10 @@ function choose_user()
   if (password_verify("terop_priv", $user))
   {
   return array("user" => "terop_priv");  
+  } else
+  if (password_verify("henri_priv", $user))
+  {
+  return array("user" => "henri_priv");
   }
   else
   {
