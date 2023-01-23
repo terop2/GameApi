@@ -18153,22 +18153,32 @@ public:
 #ifdef WINDOWS
     switch(i) {
     case 0:
-      std::cout << "Creating tmp directories.." << std::endl;
-      system("mkdir %TEMP%\\_gameapi_builder");
+      {
+      std::cout << "Step #1: Creating tmp directories.." << std::endl;
+      int val1 = system("mkdir %TEMP%\\_gameapi_builder");
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
+      }
     case 1:
-      system("rmdir /S %TEMP%\\_gameapi_builder\\deploy");
-      system("mkdir %TEMP%\\_gameapi_builder\\deploy");
+      {
+      std::cout << "Step #2: Creating tmp directories.." << std::endl;
+      int val2=system("rmdir /S %TEMP%\\_gameapi_builder\\deploy");
+      int val3=system("mkdir %TEMP%\\_gameapi_builder\\deploy");
+      if (val2!=0||val3!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
+    }
     case 2:
-      system("mkdir %TEMP%\\_gameapi_builder\\deploy\\engine");
+      {
+      std::cout << "Step #3: Creating tmp directories.." << std::endl;
+      int val4 = system("mkdir %TEMP%\\_gameapi_builder\\deploy\\engine");
+      if (val4!=0) { std::cout << "ERROR: mkdir returned error: " << val4 <<std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
-
+      }
     case 3:
       {
+      std::cout << "Step #4: Fetching assets..." << std::endl;
 	std::string s = h2_script; //h2->script_file();
       s = replace_str(s, "@", "\n");
       s = replace_str(s, "&", "&amp;");
@@ -18183,12 +18193,19 @@ public:
 	{
 	  UrlItem ii = items[i];
 	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	  std::string curl_string = "..\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
+	  std::string curl="..\\curl\\curl.exe";
+	    std::string curl_string;
+	  if (file_exists(curl))
+	    curl_string= "..\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
+	  else
+	    curl_string=".\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
 	  std::cout << curl_string << std::endl;
-	  system(curl_string.c_str());
+	  int val = system(curl_string.c_str());
+	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
 	}
       
-      
+       std::cout << "Step #5: Generating scripts.." << std::endl;
+     
       std::string htmlfile = s;
 
       htmlfile = replace_str(htmlfile, "@", "\n");					      
@@ -18227,7 +18244,7 @@ public:
 	  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);\n");
 	}
       
-      std::cout << "Generating script.." << std::endl;
+      //std::cout << "Generating script.." << std::endl;
       std::string home = getenv("TEMP");
       std::fstream ss((home+ "\\_gameapi_builder\\gameapi_script.html").c_str(), std::ofstream::out);
       ss << htmlfile;
@@ -18245,6 +18262,7 @@ public:
       
     case 4:
       {
+      std::cout << "Step #6: Generating date.." << std::endl;
 	      time_t now = time(0);
       char *dt = ctime(&now);
       tm *gmtm = gmtime(&now);
@@ -18267,7 +18285,7 @@ public:
       break;
     case 5:
       {
-      	std::cout << "Copying engine files.." << std::endl;
+      std::cout << "Step #7: Copying engine files" << std::endl;
 	std::string g0 = "..\\display\\gameapi_0.html";
 	std::string g1 = "..\\display\\gameapi_1.html";
 	std::string g2 = "..\\display\\gameapi_2.html";
@@ -18291,23 +18309,33 @@ public:
 	std::string line4 = std::string("copy ") + gn + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
 	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
-	system(line0.c_str());
-	system(line1.c_str());
-	system(line2.c_str());
-	system(line3.c_str());
-	system(line4.c_str());
-	system(line5.c_str());
+	int val1 = system(line0.c_str());
+	int val2 = system(line1.c_str());
+	int val3 = system(line2.c_str());
+	int val4 = system(line3.c_str());
+	int val5 = system(line4.c_str());
+	int val6 = system(line5.c_str());
+
+	if (val1!=0) { std::cout << "ERROR: " << line0 << " returned ERROR CODE " << val1 << std::endl; ok=false;}
+	if (val2!=0) { std::cout << "ERROR: " << line1 << " returned ERROR CODE " << val2 << std::endl; ok=false;}
+	if (val3!=0) { std::cout << "ERROR: " << line2 << " returned ERROR CODE " << val3 << std::endl; ok=false;}
+	if (val4!=0) { std::cout << "ERROR: " << line3 << " returned ERROR CODE " << val4 << std::endl; ok=false;}
+	if (val5!=0) { std::cout << "ERROR: " << line4 << " returned ERROR CODE " << val5 << std::endl; ok=false;}
+	if (val6!=0) { std::cout << "ERROR: " << line5 << " returned ERROR CODE " << val6 << std::endl; ok=false;}
+
 	//system(line5.c_str());
 	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
 	break;
       }
     case 6:
       {
-      std::cout << "Deploying..." << std::endl;
+      	std::cout << "Step #8: Deploying.." << std::endl;
       std::string dep = "deploy.bat";
       std::string line5 = dep + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
-      system(line5.c_str());
+      int val = system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
+
+      if (val!=0) {std::cout << "ERROR: DEPLOY.BAT returned error " << val << std::endl; ok=false; }
       
       env.set_download_progress(env.download_index_mapping(id), 7.0/8.0);
       break;
@@ -18315,6 +18343,7 @@ public:
 
     case 7:
       {
+      	std::cout << "Step #10: Creating zip file" << std::endl;
 	std::cout << "Saving to %TEMP%/_gameapi_builder/Downloads/gameapi_deploy.zip";
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 	std::string home = getenv("TEMP");
@@ -18327,7 +18356,10 @@ public:
 	env.set_download_data(env.download_index_mapping(id), vec);
 	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
 	env.set_download_ready(i);
-	std::cout << "ALL OK" << std::endl;
+	if (ok)
+	  std::cout << "Step #11: ALL OK" << std::endl;
+	else
+	  std::cout << "Step #11: ERRORS FOUND" << std::endl;
 	break;
       }
     };
@@ -18336,26 +18368,34 @@ public:
     switch(i) {
 
     case 0:
-
+      {
       // id = env.add_to_download_bar("gameapi_deploy.zip");
       
-      std::cout << "Creating tmp directories.." << std::endl;
-      system("mkdir -p ~/.gameapi_builder");
-      system("chmod a+rwx ~/.gameapi_builder");
+      std::cout << "Step #1: Creating tmp directories.." << std::endl;
+      int val1 = system("mkdir -p ~/.gameapi_builder");
+      int val2 = system("chmod a+rwx ~/.gameapi_builder");
+      if (val1!=0||val2!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
-    case 1:
-      system("rm -rf ~/.gameapi_builder/deploy");
-      system("mkdir -p ~/.gameapi_builder/deploy");
+      }
+    case 1: {
+      std::cout << "Step #2: Creating tmp directories.." << std::endl;
+      int val1= system("rm -rf ~/.gameapi_builder/deploy");
+      int val2=system("mkdir -p ~/.gameapi_builder/deploy");
+      if (val1!=0||val2!=0) { std::cout << "ERROR: rm or mkdir returned error:" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
-    case 2:
-      system("mkdir -p ~/.gameapi_builder/deploy/engine");
+    }
+    case 2: {
+      std::cout << "Step #3: Creating tmp directories.." << std::endl;
+      int val=system("mkdir -p ~/.gameapi_builder/deploy/engine");
+      if (val!=0) { std::cout << "ERROR: mkdir returned error:" << val << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
-
+    }
     case 3:
       {
+      std::cout << "Step #4: Fetching assets.." << std::endl;
       //std::cout << "Saving ~/.gameapi-builder/gameapi_script.html" << std::endl;
 	std::string s = h2_script; //h2->script_file();
       s = replace_str(s, "@", "\n");
@@ -18374,9 +18414,11 @@ public:
 	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
 	  std::string curl_string = "(cd ~/.gameapi_builder/deploy;curl " + http_to_https(ii.url) + " --output " + remove_prefix(ii.url) + ")";
 	  std::cout << curl_string << std::endl;
-	  system(curl_string.c_str());
+	  int val = system(curl_string.c_str());
+	  if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 	}
 
+      std::cout << "Step #5: Generating scripts.." << std::endl;
       
       std::string htmlfile = s;
 
@@ -18416,7 +18458,7 @@ public:
 	  htmlfile+=std::string("RUN I891=ev.blocker_api.game_window2(ev,I890,false,false,0.0,1000000.0);\n");
 	}
       
-      std::cout << "Generating script.." << std::endl;
+      //std::cout << "Generating script.." << std::endl;
       std::string home = getenv("HOME");
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << htmlfile;
@@ -18433,6 +18475,7 @@ public:
       
     case 4:
       {
+      std::cout << "Step #6: Generating time.." << std::endl;
       time_t now = time(0);
       char *dt = ctime(&now);
       tm *gmtm = gmtime(&now);
@@ -18442,8 +18485,9 @@ public:
       dt2 = replace_str(dt2, " ", "");
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
-      std::cout << "Generating date.." << std::endl;
-      system("touch ~/.gameapi_builder/gameapi_date.html");
+      //std::cout << "Generating date.." << std::endl;
+      int val = system("touch ~/.gameapi_builder/gameapi_date.html");
+      if (val!=0) {std::cout << "ERROR, date writing" << val << std::endl; ok=false; }
       std::string home = getenv("HOME");
       std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
@@ -18455,7 +18499,8 @@ public:
       break;
     case 5:
       {
-	std::cout << "Copying engine files.." << std::endl;
+      std::cout << "Step #7: Copying engine files.." << std::endl;
+      //std::cout << "Copying engine files.." << std::endl;
 	std::string g0 = "../display/gameapi_0.html";
 	std::string g1 = "../display/gameapi_1.html";
 	std::string g2 = "../display/gameapi_2.html";
@@ -18477,17 +18522,25 @@ public:
 	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
 	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
 
-	system(line0.c_str());
-	system(line1.c_str());
-	system(line2.c_str());
-	system(line3.c_str());
-	system(line4.c_str());
-	system(line5.c_str());
+	int val1=system(line0.c_str());
+	int val2=system(line1.c_str());
+	int val3=system(line2.c_str());
+	int val4=system(line3.c_str());
+	int val5=system(line4.c_str());
+	int val6=system(line5.c_str());
+	if (val1!=0) { std::cout << "ERROR:" << line0 << " returned error " << val1 << std::endl; ok=false;}
+	if (val2!=0) { std::cout << "ERROR:" << line1 << " returned error " << val2 << std::endl; ok=false;}
+	if (val3!=0) { std::cout << "ERROR:" << line2 << " returned error " << val3 << std::endl; ok=false;}
+	if (val4!=0) { std::cout << "ERROR:" << line3 << " returned error " << val4 << std::endl; ok=false;}
+	if (val5!=0) { std::cout << "ERROR:" << line4 << " returned error " << val5 << std::endl; ok=false;}
+	if (val6!=0) { std::cout << "ERROR:" << line5 << " returned error " << val6 << std::endl; ok=false;}
+	
 	env.set_download_progress(env.download_index_mapping(id), 6.0/8.0);
 	break;
       }
     case 6:
       {
+      std::cout << "Step #8: Deploying.." << std::endl;
       std::cout << "Deploying..." << std::endl;
       std::string dep = "./deploy.sh";
       if (!file_exists(dep))
@@ -18496,14 +18549,15 @@ public:
 	}
 	std::string home = getenv("HOME");
       std::string line5 = dep + " " + home + "/.gameapi_builder/gameapi_display.zip";
-      system(line5.c_str());
+      int val = system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
-      
+      if (val!=0) { std::cout << "ERROR:" << line5 << " returned error " << val << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 7.0/8.0);
       break;
       }
     case 7:
       {
+      std::cout << "Step #9: Saving to zip file.." << std::endl;
 	std::cout << "Saving to ~/.gameapi_builder/Downloads/gameapi_deploy.zip";
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 	std::string home = getenv("HOME");
@@ -18517,7 +18571,11 @@ public:
 	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
 	env.set_download_ready(i);
 	std::cout << std::endl;
-	std::cout << "ALL OK" << std::endl;
+	if (ok) {
+	  std::cout << "Step#10: ALL OK" << std::endl;
+	} else {
+	  std::cout << "Step#10: ERRORS FOUND" << std::endl;
+	}
 	break;
       }
     };
@@ -18530,6 +18588,7 @@ private:
   std::string h2_script; //Html *h2;
   std::string filename;
   std::string homepage;
+  bool ok=true;
 };
 
 class SaveDeploy : public MainLoopItem
