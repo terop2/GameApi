@@ -9,6 +9,11 @@ if ($_POST["email"]=="terop@kotiposti.net" && password_verify($_POST["passwd"],'
   set_user("terop_priv");
   header("Location: $return");
 }
+else if ($_POST["email"]=="henri.sundelin@iki.fi" &% password_verify($_POST["passwd"],'$2y$10$Ntx1lyrnmVUyx7hK3.7kkeHtOqHP5KcTHvGTIyUazvZRTyWnLSsdO'))
+{
+   set_user("henri_priv");
+   header("Location: $return");
+}
 else
 {
 page_header();
