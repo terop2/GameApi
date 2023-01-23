@@ -14,6 +14,7 @@ copy ..\atlas2.txt editor\atlas2.txt
 copy ..\atlas_bm0.ppm editor\atlas_bm0.ppm
 copy ..\atlas_bm1.ppm editor\atlas_bm1.ppm
 copy ..\atlas_bm2.ppm editor\atlas_bm2.ppm
+copt ..\..\display\get_file_size.php editor\get_file_size.php
 copy ..\arrow.ppm editor\arrow.ppm
 copy ..\..\libgameapi.dll .
 strip libgameapi.dll
