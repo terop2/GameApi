@@ -2,7 +2,7 @@
 
 require_once("user.php");
 $arr = choose_user();
-if ($arr["user"] != "terop_priv") { die(); }
+if ($arr["user"] != "terop_priv" && $arr["user"]!="henri_priv") { die(); }
 page_header(8);
 page_title("block mesh","");
 $user="terop";
