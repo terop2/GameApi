@@ -20,6 +20,8 @@
 <Shortcut Id="startmenuBuilder25" Directory="ProgramMenuDir" Name="GameApi_Builder 27.0"
             WorkingDirectory='INSTALLDIR' IconIndex="0" Advertise="yes" />
 </File>
+<File Id='filesize' Name='get_file_size.php' DiskId='1' Source='editor/get_file_size.php' KeyPath='no'>
+</File>
 <File Id='zip' Name='gameapi_display.zip' DiskId='1' Source='editor/gameapi_display.zip' KeyPath='no'>
 </File>
 <File Id='h0' Name='gameapi_0.html' DiskId='1' Source='editor/gameapi_0.html' KeyPath='no'>
