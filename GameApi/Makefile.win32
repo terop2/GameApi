@@ -286,40 +286,9 @@ clean:
 	@echo Clean.
 
 
-make_sourcedist:
-	rm -f GameApi.tar.gz
-	rm -rf GameApi
-	mkdir GameApi
-	cp *.cc *.hh GameApi/
-	cp Makefile GameApi/
-	cp Makefile_bindist GameApi/
-	cp COPYING.LESSER GameApi/
-	cp README.INSTALL GameApi/
-	mkdir GameApi/objs
-	tar czvf GameApi.tar.gz GameApi
-	rm -rf GameApi
-
-make_binarydist:
-	rm -f GameApi-binary.tar.gz
-	rm -rf GameApiBinary
-	mkdir GameApiBinary
-	cp libGameApi.so GameApiBinary/
-	cp GameApi.hh GameApiBinary/
-	cp COPYING.LESSER GameApiBinary/
-	cp README.INSTALL GameApiBinary/
-	cp Makefile_bindist GameApiBinary/Makefile
-	tar czvf GameApi-binary.tar.gz GameApiBinary
-	rm -rf GameApiBinary
-
-install:
-	make -f Makefile_bindist install
 
 
-make_commit:
-	git commit -a
 
-make_push:
-	git push ~/cvs/demo-git-push/demo3d.git master
 
 #-include $(DFiles)
 -include $(D2Files)
