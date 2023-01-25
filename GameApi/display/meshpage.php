@@ -1207,8 +1207,17 @@ text-color: #fff;
   height: 620px;
   }
 #canvas {
-   background-image: url('load_spinner2.gif');
+<?php
+if ($sitename=="https://meshpage.org") {
+echo "   background-image: url('load_spinner2.gif');";
+} else
+{
+echo "   background-image: url('dino4.webp');";
+}
+?>
    background-size: 100% 100%;
+   background-repeat: no-repeat;
+   background-position: center;
 }
 </style>
 <script>
@@ -1911,7 +1920,17 @@ function enable_spinner(a)
   var el2 = document.getElementById("canvas");
   if (a) {
     console.log("SPINNER ENABLED");
-    el.style.backgroundImage = "url('load_spinner2.gif')";
+<?php
+if ($sitename=="https://meshpage.org") {
+echo "el.style.backgroundImage = \"url('load_spinner2.gif')\";";
+} else
+{
+echo "el.style.backgroundImage = \"url('dino4.webp')\";";
+}
+?>
+  el.style.backgroundRepeat = "no-repeat";
+  el.style.backgroundPosition = "center";
+
     el.style.backgroundSize = "100% 100%";
 } else {
     console.log("SPINNER DISABLED");
