@@ -1208,7 +1208,7 @@ text-color: #fff;
   }
 #canvas {
 <?php
-if ($sitename=="https://meshpage.org") {
+if ($sitename=="meshpage.org") {
 echo "   background-image: url('load_spinner2.gif');";
 } else
 {
@@ -1461,8 +1461,9 @@ if ($page!="") {
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==2) {
-      echo "setTimeout(delayed_choose_display(vm,g_last_id,g_last_label),100);";
+      echo "setTimeout(delayed_choose_display(vm,g_last_id,g_last_label),1);";
       echo "store.choose(\"mesh\");";
+
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(false);";
       } else
       {
@@ -1576,7 +1577,7 @@ return function() {
        if (!g_emscripten_alive) {
     //console.log("NOT ALIVE");
        if (g_tm_cb) window.clearTimeout(g_tm_cb);
-       g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 100);
+       g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 10);
        return;
        } else {
     //console.log("ALIVE");
@@ -1590,7 +1591,7 @@ return function() {
 function start_timer(id, label, vm)
 {
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
-  store.choose("mesh");
+	  store.choose("mesh");
 
 //console.log("START TIMER");
     if (g_tm_cb) window.clearTimeout(g_tm_cb);
@@ -1675,6 +1676,7 @@ function delayed_choose_display(vm, id, label)
   }
   //console.log(id);
   //console.log(label);
+
    choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
    choose_display(id,label,vm,true);
 
@@ -1740,7 +1742,7 @@ fetch(myBRequest).then((r) => {
    return r.text();
 }).then((t) => {
    if (t=="") t="0";
-   //console.log("BACKGROUND:" + t);
+   console.log("BACKGROUND:" + t);
    g_background = parseInt(t,10);
 });   
 
@@ -1829,7 +1831,6 @@ var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
 	       g_emscripten_alive=true;
-	       enable_spinner(false);
 
 //indicator[0]=false; 
 	       var old = indicator[1];
@@ -1844,6 +1845,8 @@ function check_em(indicator) {
 	       indicator.push(old2);
 	       var d = document.getElementById("engstatus");
 	       d.innerHTML = "SUCCESS <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+	       	setTimeout(function() { enable_spinner(false); },100);
+
 	       return;
 	       }
 }
@@ -1891,10 +1894,12 @@ var gameapi_homepageurl = "<?php echo $assetsite ?>";
 var g_display_timeout = null;
 function display_cb()
 {
+
               var elem = document.getElementById("display");
 	      elem.style.display = "block";
               var elem2 = document.getElementById("display2");
 	      elem2.style.display = "none";
+	      
 	      g_display_timeout = null;
 }
 
@@ -1921,7 +1926,7 @@ function enable_spinner(a)
   if (a) {
     console.log("SPINNER ENABLED");
 <?php
-if ($sitename=="https://meshpage.org") {
+if ($sitename=="meshpage.org") {
 echo "el.style.backgroundImage = \"url('load_spinner2.gif')\";";
 } else
 {
@@ -1948,7 +1953,8 @@ echo "el.style.backgroundImage = \"url('dino4.webp')\";";
 
 function show_emscripten(str,hide,indicator,is_async)
 {
-	enable_spinner(true);
+	if (!g_emscripten_running)
+	  enable_spinner(true);
 
 	if (typeof fix_keyboard === "function") fix_keyboard(hide);
 
@@ -1986,9 +1992,11 @@ function show_emscripten(str,hide,indicator,is_async)
 	
 	var elem = document.getElementById("display");
 	if (!hide) {
+	
 	   elem.style.display = "block";
 	   var elem2 = document.getElementById("display2");
 	   elem2.style.display = "none";
+	   
 
 	}
    	var html = "";

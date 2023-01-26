@@ -23,6 +23,7 @@
 #include <holoplay.h>
 #endif
 #include <cstring>
+#include <cstdio>
 
 extern int g_logo_status;
 extern std::string g_msg_string;
@@ -18061,6 +18062,162 @@ std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
     }
   return s.substr(pos,i-pos);
 }
+bool deploy_find(std::string s, std::string find)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    {
+      int sk=find.size();
+      int found = true;
+      for(int j=0;j<sk;j++)
+	{
+	  if (i+j<ss && s[i+j]!=find[j]) { found=false; break; }
+	}
+      if (!found) continue;
+      return true;
+    }
+  return false;
+}
+std::string find_more_data(std::string line);
+std::string fetch_more_data(std::string url);
+std::string http_to_https(std::string url);
+std::vector<UrlItem> find_url_items(std::string s);
+
+void find_url_items2(std::string s, std::vector<UrlItem> &result)
+{
+  std::stringstream ss(s);
+  std::string line;
+  while(std::getline(ss,line)) {
+    std::string data = find_more_data(line);
+    if (data=="") continue;
+    std::vector<UrlItem> items2 = find_url_items(data);
+    int s = items2.size();
+    for(int i=0;i<s;i++)
+      result.push_back(items2[i]);
+    find_url_items2(data,result);
+  }
+}
+std::string remove_postfix(std::string url)
+{
+  int s = url.size();
+  int pos=-1;
+  for(int i=0;i<s;i++)
+    {
+      if (url[i]=='/') pos=i;
+    }
+  if (pos==-1) return url;
+  return url.substr(0,pos);
+}
+std::string remove_postfix2(std::string url)
+{
+  if (url[url.size()-1]=='\n'||url[url.size()-1]=='\r') return url.substr(0,url.size()-1);
+  return url;;
+}
+std::string find_more_data(std::string line)
+{
+  bool found=false;
+  bool mtl=false;
+  bool gltf=false;
+  if (deploy_find(line,"load_BM_script")) found=true;
+  if (deploy_find(line,"html_url")) found=true;
+  if (deploy_find(line, "p_mtl")) { found=true; mtl=true; }
+  if (deploy_find(line, "gltf_load")) { found=true; gltf=true; }
+  if (found) {
+    std::vector<UrlItem> vec = find_url_items(line);
+    if (vec.size()<1) return "";
+    if (gltf) {
+      if(vec.size()<2) return "";
+      std::string res;
+      UrlItem &ii=vec[1];
+      std::cout << "EXAMINING: " << ii.url << std::endl;
+      std::string data = fetch_more_data(ii.url);
+      std::stringstream ss(data);
+      std::string line;
+      while(std::getline(ss,line)) {
+	std::stringstream ss2(line);
+	std::string key, url_postfix;
+	ss2>>key;
+	//std::cout << "KEY:" << key << std::endl;
+	if (key=="\"uri\":") {
+	  ss2>>url_postfix;
+	  url_postfix=url_postfix.substr(1,url_postfix.size()-2);
+	  if (url_postfix!="")
+	    {
+	      res+=remove_postfix(ii.url)+"/./"+url_postfix + "\n";
+	      std::cout << "FOUND: " << remove_postfix(ii.url) << "/" << url_postfix <<std::endl;
+	    }
+	}
+      }
+      return res;
+    } else
+    if (mtl) {
+      if(vec.size()<2) return "";
+      std::string res;
+      UrlItem &ii = vec[1];
+      std::cout << "EXAMINING: " << ii.url << std::endl;
+      std::string data =fetch_more_data(ii.url);
+      std::stringstream ss(data);
+      std::string line;
+      while(std::getline(ss,line)) {
+	std::stringstream ss2(line);
+	std::string key, url_postfix;
+	ss2>>key;
+	if (key=="map_Ka"||key=="map_Kd"||key=="map_d"||key=="map_bump"||key=="bump") {
+	  ss2>>url_postfix;
+	}
+	if (url_postfix!="")
+	  {
+	    res+=remove_postfix(ii.url)+"/./"+url_postfix + "\n";
+	    std::cout << "FOUND: " << remove_postfix(ii.url) << "/" << url_postfix <<std::endl;
+	  }
+      }
+      return res;
+    } else {
+      UrlItem &ii = vec[0];
+      std::cout << "FOUND: " << ii.url << std::endl;
+      std::string data = fetch_more_data(ii.url);
+      return data;
+    }
+  }
+  return "";
+}
+std::string fetch_more_data(std::string url)
+{
+#ifdef WINDOWS
+  	  std::string curl="..\\curl\\curl.exe";
+	    std::string curl_string;
+	  if (file_exists(curl))
+	    curl_string= "..\\curl\\curl.exe " + http_to_https(url) + "";
+	  else
+	    curl_string=".\\curl\\curl.exe " + http_to_https(url) + "";
+	  std::cout << "SCANNING: " << url << std::endl;
+	  FILE *file = popen(curl_string.c_str(),"rb");
+	  int c;
+	  std::string str;
+	  while(1) {
+	    c=fgetc(file);
+	    if (c==EOF) { break; }
+	    str+=(unsigned char)c;
+	  }
+	  
+	  pclose(file);
+	  return str;
+#endif
+#ifdef LINUX
+	  std::string curl_string = "curl " + http_to_https(url) + "";
+	  std::cout << "SCANNING: "<< url << std::endl;
+	  FILE *file = popen(curl_string.c_str(),"r");
+	  int c;
+	  std::string str;
+	  while(1) {
+	    c=fgetc(file);
+	    if (c==EOF) { break; }
+	    str+=(unsigned char)c;
+	  }
+	  pclose(file);
+	  return str;	  
+#endif
+}
 std::vector<UrlItem> find_url_items(std::string s)
 {
   std::vector<UrlItem> vec;
@@ -18068,21 +18225,21 @@ std::vector<UrlItem> find_url_items(std::string s)
   for(int i=0;i<ss;i++)
     {
       if (i<ss-5 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]==':'&&s[i+5]=='/') {
-	std::string url = find_to_end(s,i,",)");
+	std::string url = find_to_end(s,i,",)\n");
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
 	vec.push_back(ii);
       }
       if (i<ss-6 && s[i]=='h'&&s[i+1]=='t'&&s[i+2]=='t'&&s[i+3]=='p'&&s[i+4]=='s'&&s[i+5]==':'&&s[i+6]=='/') {
-	std::string url = find_to_end(s,i,",)");
+	std::string url = find_to_end(s,i,",)\n");
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
 	vec.push_back(ii);
       }
       if (i<ss-6 && s[i]=='f'&&s[i+1]=='i'&&s[i+2]=='l'&&s[i+3]=='e'&&s[i+4]==':'&&s[i+5]=='/'&&s[i+6]=='/') {
-	std::string url = find_to_end(s,i,",)");
+	std::string url = find_to_end(s,i,",)\n");
 	UrlItem ii;
 	ii.index = i;
 	ii.url = url;
@@ -18130,6 +18287,20 @@ std::string http_to_https(std::string url)
       return std::string("https") + url.substr(4);
     }
   return url;
+}
+
+std::string find_directory(std::string url)
+{
+  int s = url.size();
+  int pos1=-1;
+  int pos2=-1;
+  for(int i=8;i<s-1;i++) {
+    if (url[i]=='/'&&url[i+1]=='.'&&url[i+2]=='/') pos1=i+3;
+    if (url[i]=='/') pos2=i;
+  }
+  if (pos1==-1||pos2==-1) return "";
+  if (pos1>pos2) return "";
+  return url.substr(pos1,pos2-pos1);
 }
 
 
@@ -18188,17 +18359,25 @@ public:
       s = replace_str(s, "\'", "&apos;");
 
       std::vector<UrlItem> items = find_url_items(s);
+      find_url_items2(s,items);
+
       int si=items.size();
       for(int i=si-1;i>=0;i--)
 	{
 	  UrlItem ii = items[i];
+	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
+	  std::string dir = find_directory(ii.url);
+	  if (dir!="") {
+	    int val=system((std::string("mkdir %TEMP%\\_gameapi_builder\\deploy\\")+dir).c_str());
+	    if (val!=0) { std::cout << "ERROR: mkdir returned error " << val << std::endl; ok=false; }
+	  }
 	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
 	  std::string curl="..\\curl\\curl.exe";
 	    std::string curl_string;
 	  if (file_exists(curl))
-	    curl_string= "..\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
+	    curl_string= "..\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + remove_prefix(ii.url) + "";
 	  else
-	    curl_string=".\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + remove_prefix(ii.url) + "";
+	    curl_string=".\\curl\\curl.exe " + http_to_https(ii.url) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + remove_prefix(ii.url) + "";
 	  std::cout << curl_string << std::endl;
 	  int val = system(curl_string.c_str());
 	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
@@ -18407,12 +18586,20 @@ public:
 
 
       std::vector<UrlItem> items = find_url_items(s);
+      find_url_items2(s,items);
+      
       int si=items.size();
       for(int i=si-1;i>=0;i--)
 	{
 	  UrlItem ii = items[i];
+	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
+	  std::string dir = find_directory(ii.url);
+	  if (dir!="") {
+	    int val = system((std::string("mkdir -p ~/.gameapi_builder/deploy/") + dir).c_str());
+	    if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
+	  }
 	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	  std::string curl_string = "(cd ~/.gameapi_builder/deploy;curl " + http_to_https(ii.url) + " --output " + remove_prefix(ii.url) + ")";
+	  std::string curl_string = std::string("(cd ~/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + http_to_https(ii.url) + " --output " + remove_prefix(ii.url) + ")";
 	  std::cout << curl_string << std::endl;
 	  int val = system(curl_string.c_str());
 	  if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
