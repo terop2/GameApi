@@ -663,7 +663,7 @@ Matrix Matrix::Inverse(const Matrix &m)
   float C24 = pow(-1, 2+4)*M24;
 
   float C31 = pow(-1, 3+1)*M31;
-  float C32 = pow(-1.0, 3+2)*M32;
+  float C32 = pow(-1, 3+2)*M32;
   float C33 = pow(-1, 3+3)*M33;
   float C34 = pow(-1, 3+4)*M34;
 
