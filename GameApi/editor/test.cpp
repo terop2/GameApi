@@ -1230,7 +1230,7 @@ public:
 			  TF tf;
 			  tf.id = id;
 			  
-			  ML ml = env->ev->mainloop_api.gltf_scene_anim(*env->ev,tf,0,0,"cvbnm",1.0);
+			  ML ml = env->ev->mainloop_api.gltf_scene_anim(*env->ev,tf,0,0,"cvbnm",1.0,0);
 			  ML ml2 = env->ev->mainloop_api.send_key_at_time(ml,0.0,99);
 			  env->env->free_temp_memory();
 			  env->gui->delete_widget(env->mem);
