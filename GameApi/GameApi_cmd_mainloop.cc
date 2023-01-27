@@ -114,23 +114,23 @@ std::vector<GameApiItem*> blocker_functions()
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node,
 			 "ml_gltf_node",
-			 { "ev", "tf", "node_id", "keys" },
-			 { "EveryApi&", "TF", "int", "std::string" },
-			 { "ev", "", "0", "cvbnmfghjklertyuiop" },
+			 { "ev", "tf", "node_id", "keys","mode" },
+			 { "EveryApi&", "TF", "int", "std::string","int" },
+			 { "ev", "", "0", "cvbnmfghjklertyuiop","0" },
 			 "ML", "mainloop_api", "gltf_node"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
-			 { "ev", "tf", "scene_id", "keys","mix" },
-			 { "EveryApi&", "TF", "int", "std::string","float" },
-			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0" },
+			 { "ev", "tf", "scene_id", "keys","mix","mode" },
+			 { "EveryApi&", "TF", "int", "std::string","float","int" },
+			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0" },
 			 "ML", "mainloop_api", "gltf_scene"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
 			 "ml_gltf_all",
-			 { "ev", "tf","mix" },
-			 { "EveryApi&", "TF","float" },
-			 { "ev", "", "1.0" },
+			 { "ev", "tf","mix","mode" },
+			 { "EveryApi&", "TF","float","int" },
+			 { "ev", "", "1.0","0" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_env,
 			 "ml_gltf_all_env",
@@ -156,9 +156,9 @@ std::vector<GameApiItem*> blocker_functions()
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
-			 { "ev", "tf", "scene_id", "animation", "keys","mix" },
-			 { "EveryApi&", "TF", "int", "int", "std::string","float" },
-			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0" },
+			 { "ev", "tf", "scene_id", "animation", "keys","mix","mode" },
+			 { "EveryApi&", "TF", "int", "int", "std::string","float","int" },
+			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","0" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_gltf,
 			 "async_gltf",

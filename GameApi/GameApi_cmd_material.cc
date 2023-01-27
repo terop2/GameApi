@@ -359,9 +359,9 @@
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material2,
 			 "m_gltf_anim2",
-			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys" },
-			 { "EveryApi&", "TF", "int", "int", "MT", "std::string" },
-			 { "ev", "", "0", "30", "", "zxcvbnmfghjklertyuiop" },
+			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys", "mode" },
+			 { "EveryApi&", "TF", "int", "int", "MT", "std::string", "int" },
+			 { "ev", "", "0", "30", "", "zxcvbnmfghjklertyuiop", "0" },
 			 "MT", "materials_api", "gltf_anim_material2"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,
