@@ -28525,9 +28525,11 @@ char *g_user_id=0;
 bool g_content_deleter_installed=false;
 void g_content_deleter(void *)
 {
+  std::cout << "g_content_deleter" << std::endl;
   int s = g_content.size();
   for(int i=0;i<s;i++)
     {
+      std::cout << "Deleting: " << g_urls[i] << "::" << g_content_end[i]-g_content[i] << std::endl;
       const unsigned char *ptr = g_content[i];
       delete [] ptr;
     }
@@ -28568,12 +28570,13 @@ KP extern "C" void set_string(int num, const char *value)
 
     if (!g_content_deleter_installed)
       {
-	g_content_deleter_installed=true;
-	register_cache_deleter(g_content_deleter,0);
+    g_content_deleter_installed=true;
+    	register_cache_deleter(g_content_deleter,0);
       }
     
     unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
     std::copy(value,value+g_set_string_int,data);
+    std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+g_set_string_int);
@@ -28616,6 +28619,7 @@ KP extern "C" void set_string(int num, const char *value)
       std::copy(g_buffers[i],g_buffers[i]+g_buffer_sizes[i],data+offset);
       offset+=g_buffer_sizes[i];
     }
+    std::cout << "Appending:" << g_set_string_url << "::" << size << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+size);

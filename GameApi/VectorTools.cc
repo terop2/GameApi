@@ -672,8 +672,10 @@ Matrix Matrix::Inverse(const Matrix &m)
   float C43 = pow(-1, 4+3)*M43;
   float C44 = pow(-1, 4+4)*M44;
   float A = det(m);
-  if (A < 0.000001 && A > -0.000001)
-    A = 1.0;
+  if (A < 0.000000001f && A>=0.0f) 
+    A = 0.000000001f;
+  if ( A > -0.000000001f && A<0.0f)
+    A = -0.000000001f;
   Matrix inv = { { C11/A, C21/A, C31/A, C41/A,
 		 C12/A, C22/A, C32/A, C42/A,
 		 C13/A, C23/A, C33/A, C43/A,
