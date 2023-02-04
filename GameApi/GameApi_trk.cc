@@ -315,7 +315,9 @@ void GameApi::TrackerApi::play_ogg(const std::vector<unsigned char> &data)
 }
 extern "C" int HTML5_Mix_HaltMusic();
 namespace std { class thread; }
+#if 0
 std::thread *mt=0;
+#endif
 
 void GameApi::TrackerApi::stop_music_playing()
 {
@@ -323,7 +325,9 @@ void GameApi::TrackerApi::stop_music_playing()
   // TODO thread removal
   g_low->sdl->SDL_PauseAudio(1);
   //delete mt;
+#if 0
   mt=0;
+#endif
   
 #ifndef USE_SDL_MIXER_HACK
 #ifdef USE_SDL_MIXER

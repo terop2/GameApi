@@ -272,6 +272,12 @@ public:
     //tiny.SetImageLoader(&LoadImageData, this);
     //tiny.SetImageWriter(&WriteImageData, this);
   }
+  ~LoadGltf()
+  {
+    if (prepare_done) {
+      
+    }
+  }
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -338,6 +344,7 @@ public:
 #endif
     char *ptr2 = &vec2.operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
+    std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
       tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
@@ -382,28 +389,28 @@ std::vector<KeyStruct> g_gltf_instances;
 
 bool instance_deleter_installed=false;
 
-//int register_cache_deleter(void (*fptr)(void*), void*);
-/*
+int register_cache_deleter(void (*fptr)(void*), void*);
+
 void del_instances(void*)
 {
   int s = g_gltf_instances.size();
   for(int i=0;i<s;i++)
     {
-      KeyStruct &s = g_gltf_instances[i];
+     KeyStruct &s = g_gltf_instances[i];
       delete s.obj;
     }
   g_gltf_instances.clear();
-  instance_deleter_installed=false;
+  //instance_deleter_installed=false;
 }
-*/
+
 LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary)
 {
 
-  //if (instance_deleter_installed==false)
-  //  {
-  //    register_cache_deleter(&del_instances,(void*)0);
-  //    instance_deleter_installed=true;
-  // }
+  if (instance_deleter_installed==false)
+    {
+      register_cache_deleter(&del_instances,(void*)0);
+      instance_deleter_installed=true;
+  }
   
   std::string key = base_url + ":" + url;
 
@@ -7893,11 +7900,27 @@ public:
 	    //m=Matrix::Identity();
 	    // ri=Matrix::Identity();
 	    //resize=Matrix::Identity();
+
+	    // bindm---m
+	    // m0 -- m0i
+	    // inv_m-- inv_bindm
+	    // bind_m -- inv_bindm
+
+	    // m0 -- inv_m
+	    
+	    
 	    Matrix inv_m = Matrix::Inverse(m);
 	    if (mode==0)
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));
-	    else
+	    else if (mode==1)
 	      vec.push_back(add_matrix2(env,   ri*bindm*m*m0i*inv_bindm*resize  ));
+	    else if (mode==2)
+	      vec.push_back(add_matrix2(env, ri*bindm*m0i*m*inv_bindm*resize));
+	    else if (mode==3)
+	      vec.push_back(add_matrix2(env, ri*bindm*m0*inv_m*inv_bindm*resize));
+	    else if (mode==4)
+	      vec.push_back(add_matrix2(env, ri*bindm*m0i*m*m0i*m*inv_bindm*resize));
+	      
 	  }
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 150);
 
@@ -8369,8 +8392,8 @@ public:
 	    
 	    g_del_map.load_url_buffers_async[url] = data;
 	  }
-	
       }
+    mz_zip_reader_end(&pZip);
     if (mainfilename!="")
       {
 	std::string mainfile1 = "";
