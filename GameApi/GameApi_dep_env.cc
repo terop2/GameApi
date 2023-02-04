@@ -884,12 +884,16 @@ struct del_map
       }
   }
   std::map<std::string, const std::vector<unsigned char>* > load_url_buffers_async;
+#ifdef EMSCRIPTEN
+  std::map<std::string, FetchInBlocks*> fetches;
+#endif
 };
 del_map g_del_map;
 bool g_del_map_deleter_installed=false;
 
 void delmap_cache_deleter(void *)
 {
+  std::cout << "delmap_cache_deleter is freeing memory" << std::endl;
   std::map<std::string,const std::vector<unsigned char>* >::iterator i = g_del_map.load_url_buffers_async.begin();
   for(;i!=g_del_map.load_url_buffers_async.end();i++)
     {
@@ -897,6 +901,16 @@ void delmap_cache_deleter(void *)
       delete p.second;
     }
   g_del_map.load_url_buffers_async.clear();
+
+#ifdef EMSCRIPTEN
+  std::map<std::string,FetchInBlocks* >::iterator i = g_del_map.fetches.begin();
+  for(;i!=g_del_map.fetches.end();i++)
+    {
+      std::pair<std::string, FetchInBlocks*> p = *i;
+      delete p.second;
+    }
+  g_del_map.fetches.clear();
+#endif
 }
 
 
@@ -1451,6 +1465,11 @@ void fetch_success(void *data)
   const char *url = dt->buf3;
   const std::vector<unsigned char> *vec = dt->obj->get();
   onload_async_cb(333,(void*)url, vec);
+#ifdef EMSCRIPTEN
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+  g_del_map.fetches[url_only]=dt->obj;
+#endif
   // note, the dt->obj is NOT DELETED AT ALL
 }
 void fetch_2_success(emscripten_fetch_t *fetch)
@@ -1461,6 +1480,11 @@ void fetch_2_success(emscripten_fetch_t *fetch)
   dt->obj->result = std::vector<unsigned char>(&fetch->data[0],&fetch->data[fetch->numBytes]);
   const std::vector<unsigned char> *vec = dt->obj->get();  
   onload_async_cb(333,(void*)url,vec);
+#ifdef EMSCRIPTEN
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+  g_del_map.fetches[url_only]=dt->obj;
+#endif
   emscripten_fetch_close(fetch);
 }
 void fetch_2_error(emscripten_fetch_t *fetch)
