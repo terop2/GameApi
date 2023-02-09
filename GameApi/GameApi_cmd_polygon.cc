@@ -66,28 +66,28 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "p_url",
 			 { "ev", "url", "count" },
 			 { "EveryApi&", "std::string", "int" },
-			 { "ev", "http://tpgames.org/example.obj", "10" },
+			 { "ev", "http://tpgames.org/example.obj@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "10" },
 			 "P", "polygon_api", "p_url"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_nr,
 			 "p_url_nr",
 			 { "ev", "url", "count" },
 			 { "EveryApi&", "std::string", "int" },
-			 { "ev", "http://tpgames.org/example.obj", "10" },
+			 { "ev", "http://tpgames.org/example.obj@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "10" },
 			 "P", "polygon_api", "p_url_nr"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl,
 			 "p_mtl",
 			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
-			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600" },
+			 { "ev", "http://tpgames.org/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza", "600" },
 			 "P", "polygon_api", "p_mtl"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_nr,
 			 "p_mtl_nr",
 			 { "ev", "obj_url", "mtl_url", "url_prefix", "count" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int" },
-			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600" },
+			 { "ev", "http://tpgames.org/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza", "600" },
 			 "P", "polygon_api", "p_mtl_nr"));
   
 #ifndef STABLE
@@ -96,7 +96,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "p_mtl2",
 			 { "ev", "obj_url", "mtl_url", "url_prefix", "count", "start_index", "end_index", "mix" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "int", "int", "int", "float" },
-			 { "ev", "http://tpgames.org/sponza/sponza.ds", "http://tpgames.org/sponza/sponza.mtl", "http://tpgames.org/sponza", "600", "0", "32", "1.0" },
+			 { "ev", "http://tpgames.org/sponza/sponza.ds@cryengine@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza/sponza.mtl@cryengine@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza", "600", "0", "32", "1.0" },
 			 "P,[P],[MT],[MT],[BM],ML", "polygon_api", "p_mtl2"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_mtl_d,
@@ -115,19 +115,19 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "p_ply",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/test.ply" },
+			 { "http://tpgames.org/test.ply@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "P", "points_api", "ply_faces"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url_mtl,
 			 "p_url_mtl",
 			 { "ev", "url", "count", "material_names" },
 			 { "EveryApi&", "std::string", "int", "[std::string]" },
-			 { "ev", "http://tpgames.org/example.obj", "10", "" },
+			 { "ev", "http://tpgames.org/example.obj@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "10", "" },
 			 "P", "polygon_api", "p_url_mtl"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_ds_url,
 			 "p_ds_url",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/sponza.ds" },
+			 { "ev", "http://tpgames.org/sponza.ds@cryengine@https://www.cryengine.com/ce-terms" },
 			 "P", "polygon_api", "p_ds_url"));
 #endif
 
@@ -135,13 +135,13 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "p_stl",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/teapot.stl" },
+			 { "http://tpgames.org/teapot.stl@FinlayMcWalter@https://creativecommons.org/share-your-work/public-domain/cc0/" },
 			 "P", "polygon_api", "stl_load"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_loadKK,
 			 "gltf_load",
 			 { "base_url", "url" },
 			 { "std::string", "std::string" },
-			 { "https://tpgames.org/", "https://tpgames.org/test.glb" },
+			 { "https://tpgames.org/", "https://tpgames.org/test.glb@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "TF", "mainloop_api", "gltf_loadKK"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_p,
 			 "gltf_mesh_all_p",
@@ -159,7 +159,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "gltf_sketchfab_zip",
 			 { "url_to_zip" },
 			 { "std::string" },
-			 { "https://meshpage.org/lighthouse.zip" },
+			 { "https://meshpage.org/lighthouse.zip@CHL@https://creativecommons.org/licenses/by/4.0/" },
 			 "TF", "mainloop_api", "gltf_load_sketchfab_zip"));
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::glb_load_sketchfab_zip,
@@ -186,7 +186,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "p_gltf_scene",
 			 { "ev", "base_url", "url", "scene_id" },
 			 { "EveryApi&", "std::string", "std::string", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "0" },
 			 "P", "polygon_api", "gltf_scene_p"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::alt,
@@ -354,13 +354,13 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "bar_chart",
 			 { "ev", "url", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "per" },
 			 { "EveryApi&", "std::string", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "http://tpgames.org/test_bar.txt", "-300.0", "300.0", "-300.0", "300.0", "0.0", "40.0", "80.0" },
+			 { "ev", "http://tpgames.org/test_bar.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "-300.0", "300.0", "-300.0", "300.0", "0.0", "40.0", "80.0" },
 			 "P", "polygon_api", "bar_chart"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bar_chart2,
 			 "bar_chart2",
 			 { "ev", "url", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z", "per", "per2" },
 			 { "EveryApi&", "std::string", "float", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "http://tpgames.org/test_bar2.txt", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "80.0", "80.0" },
+			 { "ev", "http://tpgames.org/test_bar2.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0", "80.0", "80.0" },
 			 "P", "polygon_api", "bar_chart2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_piechart,
 			 "pie_chart",

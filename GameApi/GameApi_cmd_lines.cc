@@ -8,7 +8,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "li_url",
 			 { "url" },
 			 { "std::string" },
-			 { "https://tpgames.org/li_example.txt" },
+			 { "https://tpgames.org/li_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "LI", "lines_api", "li_url"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::point_array,
 			 "li_points",
