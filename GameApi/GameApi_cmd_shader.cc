@@ -18,7 +18,7 @@ std::vector<GameApiItem*> shaderapi_functions()
 			 "load_shader2",
 			 { "vertex_url", "fragment_url" },
 			 { "std::string", "std::string" },
-			 { "https://tpgames.org/test.vert", "https://tpgames.org/test.frag" },
+			 { "https://tpgames.org/test.vert@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/test.frag@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "SHC,SHC", "mainloop_api", "load_shader2"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::empty_shaderI,
@@ -96,14 +96,14 @@ std::vector<GameApiItem*> shaderapi_functions()
 			 "m_generic",
 			 { "ev", "next", "funcname", "vertex_url", "fragment_url" },
 			 { "EveryApi&", "MT", "std::string", "std::string", "std::string" },
-			 { "ev", "", "test", "https://tpgames.org/test.vert", "https://tpgames.org/test.frag" },
+			 { "ev", "", "test", "https://tpgames.org/test.vert@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/test.frag@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "MT", "materials_api", "generic_shader_material0"));
 			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::generic_shader_material1,
 			 "m_generic_p",
 			 { "ev", "next", "params", "funcname", "vertex_url", "fragment_url" },
 			 { "EveryApi&", "MT", "SHP", "std::string", "std::string", "std::string" },
-			 { "ev", "", "", "test", "https://tpgames.org/test.vert", "https://tpgames.org/test.frag" },
+			 { "ev", "", "", "test", "https://tpgames.org/test.vert@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/test.frag@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "MT", "materials_api", "generic_shader_material1"));
 			 
 			 
@@ -111,7 +111,7 @@ std::vector<GameApiItem*> shaderapi_functions()
 			 "m_generic_pc",
 				 { "ev", "next", "params", "funcname", "vertex_url", "fragment_url", "children" },
 				 { "EveryApi&", "MT", "SHP", "std::string", "std::string", "std::string", "[SHI]" },
-				 { "ev", "", "", "test", "https://tpgames.org/test.vert", "https://tpgames.org/test.frag", "" },
+				 { "ev", "", "", "test", "https://tpgames.org/test.vert@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/test.frag@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "" },
 			 "MT", "materials_api", "generic_shader_material2"));
 			 
 

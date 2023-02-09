@@ -9,7 +9,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "html_url",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/blob_p.mp" },
+			 { "http://tpgames.org/blob_p.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "HML", "mainloop_api", "html_url"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_script,
 			 "save_html",
@@ -21,7 +21,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "bm_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a", "b", "c", "d", "e" },
+			 { "ev", "http://tpgames.org/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
 			 "BM", "mainloop_api", "load_BM_script"));
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script,
@@ -64,13 +64,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 "bm_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 { "ev", "http://tpgames.org/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array_comb,
 			 "bm_script_comb",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/tiiliseina_bm.mp", "a&a", "b", "c", "d", "e" },
+			 { "ev", "http://tpgames.org/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b", "c", "d", "e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array_comb"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script_array,
 			 "p_script_arr",
@@ -83,14 +83,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ml_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/marble_cube_ml.mp", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 { "ev", "http://tpgames.org/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[ML]", "mainloop_api", "load_ML_script_array"));
 #if USE_CHAISCRIPT
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::chai_mainloop,
 			 "ml_chai",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/chai_example.txt" },
+			 { "ev", "http://tpgames.org/chai_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "chai_mainloop"));
 #endif
 
@@ -99,7 +99,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "chai_bm",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://tpgames.org/test_bm.chai", "100", "100" },
+			 { "http://tpgames.org/test_bm.chai@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
 			 "BM", "bitmap_api", "chai_bm"));
 #endif
 #if 0
@@ -170,7 +170,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "scene_ml",
 			 { "ev", "url", "sx", "sy" },
 			 { "EveryApi&", "std::string", "int", "int" },
-			 { "ev", "http://tpgames.org/landscape.scn", "600", "600" },
+			 { "ev", "http://tpgames.org/landscape.scn@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "600", "600" },
 			 "ML", "polygon_api", "load_scene"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_url,
@@ -185,7 +185,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "piechart_ml",
 			 { "ev", "c_x", "c_y", "url", "radius", "numsteps", "start_z", "end_z" },
 			 { "EveryApi&", "float", "float", "std::string", "float", "int", "float", "float" },
-			 { "ev", "0.0", "0.0", "http://tpgames.org/piechart_full.txt", "350.0", "30", "0.0", "40.0" },
+			 { "ev", "0.0", "0.0", "http://tpgames.org/piechart_full.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "350.0", "30", "0.0", "40.0" },
 			 "ML", "polygon_api", "piechart_full"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
@@ -695,7 +695,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "key_playback_ml",
 			 { "ml", "input_url" },
 			 { "ML", "std::string" },
-			 { "", "http://tpgames.org/key_record.txt" },
+			 { "", "http://tpgames.org/key_record.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "playback_keypresses" ));
 #endif
   
@@ -727,7 +727,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "fps_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "fps_display"));
 
 #ifndef STABLE
@@ -772,14 +772,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "score_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "score_display"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::time_display,
 			 "time_display",
 			 { "ev", "ml", "font", "time" },
 			 { "EveryApi&", "ML", "std::string", "float" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf", "1000.0" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "1000.0" },
 			 "ML", "mainloop_api", "time_display"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::matrix_range_check,
 			 "matrix_range_check",
@@ -798,7 +798,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "restart_screen",
 			 { "ev", "ml", "fontname" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf" },
+			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "restart_screen"));
 			
 #ifndef STABLE

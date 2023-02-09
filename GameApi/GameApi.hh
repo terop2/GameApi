@@ -1905,6 +1905,7 @@ public:
   IMPORT void update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max);
   IMPORT void delete_widget(W w);
   IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
+  IMPORT W window_decoration2(int sx, int sy, std::string label, FtA atlas, BM atlas_bm, bool move);
   IMPORT W empty();
   IMPORT W bounding_box(W w);
   IMPORT W alt(GameApi::EveryApi &ev, std::vector<W> vec, int *choose);
@@ -1946,6 +1947,15 @@ public:
   IMPORT W popup_box(std::string label, std::vector<std::string> options, FtA atlas, BM atlas_bm); 
   IMPORT W popup_box_menu(std::vector<std::string> options, FtA atlas, BM atlas_bm);
 
+  IMPORT W license_item(std::string filename, std::string &license_url, std::string &author, FtA atlas, BM atlas_bm, FtA atlas2, BM atlas_bm2);
+  IMPORT W license_dialog(std::vector<std::string> filename,
+			  std::vector<std::string> &license_url,
+			  std::vector<std::string> &author_names,
+			  FtA atlas, BM atlas_bm,
+			  FtA atlas2, BM atlas_bm2,
+			  FtA atlas3, BM atlas_bm3,
+			  W &next_button, W &cancel_button, W &canvas2, W &canvas_area,W &scroll_bar);
+  
   IMPORT W main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   IMPORT W menu(W main_menu, int menu_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
   IMPORT W submenu(W menu, int menu_pane_id, std::vector<std::string> labels, FtA atlas, BM atlas_bm);
@@ -1953,6 +1963,7 @@ public:
   IMPORT W scrollbar_y(int sx, int sy, int area_y);
   IMPORT W scrollbar_x(int sx, int sy, int area_x);
   IMPORT W scroll_area(W orig, int sx, int sy, int screen_y);
+  IMPORT W scroll_area2(W orig, int sx, int sy, int screen_y);
   IMPORT W waveform(std::function<float (float)> f, float start_range, float end_range, float min_value, float max_value, int sx, int sy, unsigned int true_color, unsigned int false_color);
   IMPORT W canvas(int sx, int sy);
   IMPORT W find_canvas_item(W canvas, std::string id);

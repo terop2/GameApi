@@ -34,7 +34,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_expr",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "https://tpgames.org/example_expr_e.mp", "100", "100" },
+			 { "https://tpgames.org/example_expr_e.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
 			 "BM", "bitmap_api", "script_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::loadbitmap,
 			 "load",
@@ -77,20 +77,20 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_url",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/gameapi_logo.png" },
+			 { "http://tpgames.org/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "BM", "bitmap_api", "loadbitmapfromurl"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap,
 			 "bm_fetch",
 			 { "ev", "url", "reload_frame", "texture_unit" },
 			 { "EveryApi&", "std::string", "int", "int" },
-			 { "ev", "http://tpgames.org/gameapi_logo.png", "300000", "0" },
+			 { "ev", "http://tpgames.org/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "300000", "0" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap2,
 			 "bm_fetch2",
 			 { "ev", "url", "url2", "texture_unit", "sx", "sy", "sx2", "sy2" },
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "int" },
-			 { "ev", "http://tpgames.org/gameapi_logo.png", "http://tpgames.org/gameapi_logo.png", "0", "256", "256", "1024", "1024" },
+			 { "ev", "http://tpgames.org/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "http://tpgames.org/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "0", "256", "256", "1024", "1024" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_bitmap,
 			 "bm_gltf",
@@ -400,7 +400,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_world_from_bitmap",
 			 { "ev", "v", "url", "chars", "dx", "dy" },
 			 { "EveryApi&", "[BM]", "std::string", "std::string", "int", "int" },
-			 { "ev", "", "http://tpgames.org/map.txt", ".#", "100", "100" },
+			 { "ev", "", "http://tpgames.org/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", ".#", "100", "100" },
 			 "BM", "bitmap_api", "world_from_bitmap3"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::persistent_cache,
