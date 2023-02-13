@@ -245,7 +245,6 @@ void GameApi::TrackerApi::play_ogg(std::string filename)
   std::cout << "TrackerApi::play_ogg... SDL_MIXER is disabled" << std::endl;
 #endif
 }
-
 //void *g_ogg_chunk;
 void *GameApi::TrackerApi::setup_ogg(const std::vector<unsigned char> &data, int type)
 {
@@ -266,8 +265,10 @@ void *GameApi::TrackerApi::setup_ogg(const std::vector<unsigned char> &data, int
     }
 #endif
 
+  // WE NEED TO GET data into ArrayBuffer...
+
     Low_SDL_RWops *ops = g_low->sdl->SDL_RWFromMem((void*)&data[0], data.size());
-  Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
+    Low_Mix_Chunk *chunk = g_low->sdl_mixer->Mix_LoadWAV_RW(ops, 0);
 
   //g_ogg_chunk = chunk;
   return (void*)chunk;
@@ -315,7 +316,9 @@ void GameApi::TrackerApi::play_ogg(const std::vector<unsigned char> &data)
 }
 extern "C" int HTML5_Mix_HaltMusic();
 namespace std { class thread; }
+#if 0
 std::thread *mt=0;
+#endif
 
 void GameApi::TrackerApi::stop_music_playing()
 {
@@ -323,7 +326,9 @@ void GameApi::TrackerApi::stop_music_playing()
   // TODO thread removal
   g_low->sdl->SDL_PauseAudio(1);
   //delete mt;
+#if 0
   mt=0;
+#endif
   
 #ifndef USE_SDL_MIXER_HACK
 #ifdef USE_SDL_MIXER

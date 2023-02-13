@@ -51,6 +51,34 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
 
 std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name, int j);
 
+struct ApiSplit
+{
+  std::string def;
+  std::string author;
+  std::string license;
+};
+
+inline ApiSplit split_api_default(std::string def)
+{
+  int s = def.size();
+  int pos1=-1;
+  int pos2=-1;
+  int i=0;
+  for(;i<s;i++)
+    {
+      if (def[i]=='@') { pos1=i; i++; break; }
+    }
+  for(;i<s;i++)
+    {
+      if (def[i]=='@') { pos2=i; i++; break; }
+    }
+  ApiSplit spl;
+  spl.def = def.substr(0,pos1);
+  spl.author = pos1!=-1?def.substr(pos1+1,pos2-pos1):"";
+  spl.license = pos2!=-1?def.substr(pos2+1):"";
+  return spl;
+}
+
 
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
@@ -71,12 +99,15 @@ public:
   int ParamCount(int i) const { return param_name.size(); }
   std::string ParamName(int i, int p) const { return param_name[p]; }
   std::string ParamType(int i, int p) const { return param_type[p]; }
-  std::string ParamDefault(int i, int p) const { return param_default[p]; }
+  std::string ParamDefault(int i, int p) const { return split_api_default(param_default[p]).def; }
+  std::string DefaultAuthor(int i, int p) const { return split_api_default(param_default[p]).author; }
+  std::string DefaultLicense(int i, int p) const { return split_api_default(param_default[p]).license; }
   std::string ReturnType(int i) const { return return_type; }
   std::string ApiName(int i) const { return api_name; }
   std::string FuncName(int i) const { return func_name; }
   std::string Symbols() const { return symbols; }
   std::string Comment() const { return comment; }
+
 #if USE_CHAISCRIPT
   static RT chai_cb(GameApiItem *item, GameApi::EveryApi *ev, T (GameApi::EveryApi::*api), P... p) {
     ApiItem<T,RT,P...> *ptr = (ApiItem<T,RT,P...>*)item;

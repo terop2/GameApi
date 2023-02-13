@@ -1260,7 +1260,7 @@ res+="ML I6=ev.mainloop_api.depthfunc(I64,0);\n";
   //console.log(filename.substr(-4));
   //console.log(filename.substr(-5));
   if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
-  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5);\n";
+  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5,0);\n";
 
   }
 
@@ -1536,6 +1536,15 @@ var old_main_item_dir = "";
 var old_main_item_name = "";
 var old_files = "";
 var old_filenames = "";
+	   console.log("Aold_files=");
+	   console.log(old_files);
+	   console.log("Aold_filenames=");
+	   console.log(old_filenames);
+function load_finished2(succ)
+{
+   console.log(succ);
+   load_finished(1);
+}
 function drop2(state)
 {
    set_filename_info(state,"");
@@ -1555,13 +1564,17 @@ function drop2(state)
     // old_files, old_filenames
     if (state) { state.filename = fix_filename(old_main_item_name); }
     const promise = extract_contents(state,"","",fix_filename(old_main_item_name),path);
-    promise.then(load_finished);
+    promise.then(load_finished2);
     }
 }
 
 function drop3(state,selectfileelem)
 {
-   set_filename_info(state,"");
+   console.log("drop3:CLEARING CACHES");
+   Module.ccall('set_string', null, ['number', 'string'],[6,""]);
+
+
+set_filename_info(state,"");
    var elem2 = document.getElementById(selectfileelem);
    var files2 = elem2.files;
 
@@ -1609,6 +1622,10 @@ function drop3(state,selectfileelem)
 
 	   old_files = files;
 	   old_filenames = filenames;
+	   console.log("Bold_files=");
+	   console.log(old_files);
+	   console.log("Bold_filenames=");
+	   console.log(old_filenames);
 	   old_main_item_name = main_item_name;
 	   /*
 	   old_snd_item_num = snd_item_num;
@@ -1626,6 +1643,10 @@ function drop3(state,selectfileelem)
 
 function drop(ev)
 {
+   console.log("CLEARING CACHES");
+   Module.ccall('set_string', null, ['number', 'string'],[6,""]);
+
+
   set_model_info(store.state,"(loading..)");
   set_label("Loading model..");
 
@@ -1673,6 +1694,10 @@ function drop(ev)
 
 	   old_files = files;
 	   old_filenames = filenames;
+	   console.log("Cold_files=");
+	   console.log(old_files);
+	   console.log("Cold_filenames=");
+	   console.log(old_filenames);
 	   //console.log(filenames);
 
 	   old_main_item_name = main_item_name;
@@ -1730,6 +1755,8 @@ function load_emscripten(state,filename, contents, filenames)
       document.getElementsByTagName("head")[0].appendChild(script);
       check_if_emscripten_running();
       } else {
+      // loading contents:
+
       Module.ccall('set_string', null, ['number', 'string'],[0,create_script(filename,contents,filenames)]);
       }
       setTimeout(function() { check_emscripten_ready(state) }, 1000);
@@ -1738,9 +1765,9 @@ function load_emscripten(state,filename, contents, filenames)
 function load_files(data_array2, filename_array)
 {
    // clear caches
-   Module.ccall('set_string', null, ['number', 'string'],[6,""]);
 
-//console.log(data_array);
+  //console.log(data_array2);
+  //console.log(filename_array);
   var s2 = data_array2.length;
   for(var i=0;i<s2;i++) {
     var data3 = data_array2[i];
@@ -1766,6 +1793,7 @@ function load_files(data_array2, filename_array)
     Module.ccall('set_string', null, ['number', 'array'], [3,uint8], {async:true} );
     }
     Module.ccall('set_string', null, ['number', 'string'], [4,""], {async:true} );
+   console.log("DATA SENT");
 
   }
 }
@@ -2062,7 +2090,12 @@ function load_data()
 
    old_files = contents_array;
    old_filenames = filename_array;
-   old_main_item_name = g_filename;
+	   console.log("Dold_files=");
+	   console.log(old_files);
+	   console.log("Dold_filenames=");
+	   console.log(old_filenames);
+
+old_main_item_name = g_filename;
    old_main_item_dir = g_path;
    }
 }
