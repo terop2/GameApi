@@ -37,6 +37,8 @@ void render_cb(Envi *env);
 void refresh();
 void ClearProgress();
 
+std::string remove_prefix(std::string url);
+
 #ifdef LINUX
 extern "C" void _udev_device_get_action() { }
 #endif
@@ -47,6 +49,13 @@ extern std::vector<void*> g_transparent_callback_params;
 extern std::vector<int> g_transparent_callback_ids;
 extern std::vector<float> g_transparent_pos;
 
+extern std::vector<std::vector<std::string> > g_collect_authors;
+extern std::vector<std::vector<std::string> > g_collect_licenses;
+
+
+std::vector<std::string> g_license_filenames;
+std::vector<std::string> g_license_urls;
+std::vector<std::string> g_license_authors;
 
 bool event_lock=true;
 float event_lock_time=0.0;
@@ -291,6 +300,9 @@ std::vector<DllData> load_dlls(std::string filename)
 std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url);
 
 
+
+
+
 struct Envi {
   bool envi_ready=false;
   Env *env;
@@ -305,8 +317,15 @@ struct Envi {
   std::vector<std::string> enum_types;
   bool editor_visible;
   W display;
+  W license_dialog;
+  W license_dialog_next;
+  W license_dialog_cancel;
+  W license_dialog_canvas;
+  W license_dialog_canvas_area;
+  W license_dialog_scrollbar;
   W mem;
   bool display_visible;
+  bool license_dialog_visible;
   bool progress_visible;
   bool progress_rest;
   W txt;
@@ -664,6 +683,7 @@ public:
       env->gui->set_pos(env->scrollbar_x, x+140+env->extra_left, y+env->extra_top+env->screen_y-20);
       //env->gui->set_pos(env->scroll_area2, x+env->extra_left, y+env->extra_top);
       env->gui->set_pos(env->scroll_area, x+env->extra_left, y+env->extra_top);
+
       
 #ifdef WAYLAND
       //wl_surface_damage_buffer(g_wl_surface, 0,0,g_display_width, g_display_height);
@@ -1013,7 +1033,11 @@ public:
 	//ProgressBar(933, 7,15, "Execute");
 	GameApi::ExecuteEnv exeenv;
 	if (type2 == "ML") {
+	  g_collect_authors = std::vector<std::vector<std::string> >();
+	  g_collect_licenses = std::vector<std::vector<std::string> >();
 	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
+	  g_collect_authors = std::vector<std::vector<std::string> >();
+	  g_collect_licenses = std::vector<std::vector<std::string> >();
 	  std::pair<int,std::vector<std::string> > ids2 = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr2, g_async_count2,0);
 	  
 	  
@@ -1066,8 +1090,185 @@ public:
 	}
 	
       }
+
+    static std::string license_uid;
+    bool next_stage=false;
+    bool next_stage2=false;
+    if (!env->display_visible && !env->license_dialog_visible && display_button)
+      {
+
+	std::string uid = popup_uid;
+	std::string s = env->ev->mod_api.get_funcname(env->mod,0,uid);
+	if (s=="save_deploy") {	
+	  env->license_dialog_visible = true;
+	  license_uid=uid;
+	  
+	  GameApi::ExecuteEnv exeenv;
+	  g_collect_authors = std::vector<std::vector<std::string> >();
+	  g_collect_licenses = std::vector<std::vector<std::string> >();
+ 
+	  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
+	  //ProgressBar(933, 15,15, "Execute");
+	  
+	  //std::cout << "URLS:" << ids.second << std::endl;
+	  std::vector<std::string> urls = ids.second;
+	  std::vector<std::string> authors = g_collect_authors.size()>0?g_collect_authors[0]:std::vector<std::string>();
+	  std::vector<std::string> licenses = g_collect_licenses.size()>0?g_collect_licenses[0]:std::vector<std::string>();
+	  std::vector<std::string> urls2 = g_registered_urls;
+	  int s = urls2.size();
+	  for(int i=0;i<s;i++) urls.push_back(urls2[i]);
+	  
+	  //std::sort(urls.begin(),urls.end());
+	  //auto last3 = std::unique(urls.begin(),urls.end());
+	  //urls.erase(last3,urls.end());
+	  
+	  //std::vector<std::string> filenames;
+	  g_license_filenames = std::vector<std::string>();
+	  int s2 = urls.size();
+	  for(int i=0;i<s2;i++) {
+	    g_license_filenames.push_back(remove_prefix(urls[i]));
+	  }
+	  
+	  g_license_urls=licenses; //std::vector<std::string>();
+	  g_license_authors = authors; //std::vector<std::string>();
+	  //static std::vector<std::string> license_urls;
+	  s2=std::min(std::min(int(g_license_urls.size()),int(g_license_authors.size())),s2);
+	  for(int i=0;i<s2;i++) {
+	    if (g_license_urls[i]=="")
+	      g_license_urls[i] = "https://tpgames.org/NO_LICENSE.txt";
+	    if (g_license_authors[i]=="")
+	      g_license_authors[i]= "LoremIpsum";
+	  }
+
+#ifdef WINDOWS
+	    std::string drive = getenv("systemdrive");
+	  std::string path = getenv("homepath");
+	    std::string license_file = drive+path+"\\GAMEAPI_LICENSES.txt";
+#else
+	    const char *dd = getenv("BUILDER_DOCKER_DIR");
+	    std::string dockerdir = dd?dd:"";
+	    std::string license_file = dockerdir+"GAMEAPI_LICENSES.txt";
+#endif
+	  
+	    std::ifstream ss(license_file.c_str());
+	  std::string line;
+	  while(std::getline(ss,line)) {
+	    std::string filename;
+	    std::string url;
+	    std::string author;
+	    std::stringstream ss2(line);
+	    ss2 >> filename >> url >> author;
+	    int sk=g_license_filenames.size();
+	    for(int i=0;i<sk;i++)
+	      {
+		if (g_license_filenames[i]==filename) {
+		  g_license_urls[i]=url;
+		  g_license_authors[i]=author;
+		}
+	      }
+	  }
+	  
+	  if (g_license_filenames.size()>0) {
+	    env->license_dialog = env->gui->license_dialog(g_license_filenames, g_license_urls, g_license_authors, env->atlas, env->atlas_bm, env->atlas2, env->atlas_bm2,env->atlas3, env->atlas_bm3, env->license_dialog_next, env->license_dialog_cancel, env->license_dialog_canvas, env->license_dialog_canvas_area, env->license_dialog_scrollbar);
+	    env->gui->set_pos(env->license_dialog, 200, 100);
+	  } else {
+	    next_stage=true;
+	  }
+	} else { // not save deploy
+	  next_stage=true;
+	}
+      }
+
+    if (env->license_dialog_visible)
+      {
 	
-    if (!env->display_visible && display_button)
+	int chosen = env->gui->chosen_item(env->license_dialog_next);
+	if (chosen==0)
+	  {
+	    popup_uid=license_uid;
+	    next_stage=true;
+	  }
+	int chosen2 = env->gui->chosen_item(env->license_dialog_cancel);
+	if (chosen2==0)
+	  {
+	    env->license_dialog_visible=false;
+	    display_button = false;
+	  }
+      }
+    if (next_stage)
+      {
+	if (env->license_dialog_visible) {
+	    env->license_dialog_visible = false;
+
+
+	    std::vector<std::string> filenames;
+	    std::vector<std::string> urls;
+	    std::vector<std::string> authors;
+	    
+
+#ifdef WINDOWS
+	    std::string drive = getenv("systemdrive");
+	  std::string path = getenv("homepath");
+	    std::string license_file = drive+path+"\\GAMEAPI_LICENSES.txt";
+#else
+	    const char *dd = getenv("BUILDER_DOCKER_DIR");
+	    std::string dockerdir = dd?dd:"";
+	    std::string license_file = dockerdir+"GAMEAPI_LICENSES.txt";
+#endif
+
+	    
+	    std::ifstream ss(license_file.c_str());
+	    std::string line;
+	    while(std::getline(ss,line)) {
+	    std::string filename;
+	    std::string url;
+	    std::string author;
+	    std::stringstream ss2(line);
+	    ss2 >> filename >> url >> author;
+	    filenames.push_back(filename);
+	    urls.push_back(url);
+	    authors.push_back(author);
+	    }
+	    ss.close();
+	    int s = g_license_filenames.size();
+	    int pos = -1;
+	    for(int i=0;i<s;i++)
+	      {
+		int ss = filenames.size();
+		for(int j=0;j<ss;j++)
+		  {
+		    if (g_license_filenames[i]==filenames[j])
+		      {
+			pos = j;
+		      }
+		  }
+		if (pos==-1)
+		  {
+		    filenames.push_back(g_license_filenames[i]);
+		    urls.push_back(g_license_urls[i]);
+		    authors.push_back(g_license_authors[i]);
+		  }
+		else
+		  {
+		    filenames[pos]=g_license_filenames[i];
+		    urls[pos]=g_license_urls[i];
+		    authors[pos]=g_license_authors[i];
+		  }
+	      }
+
+	    std::ofstream ss2(license_file.c_str());
+	    int sr = std::min(filenames.size(),urls.size());
+	    for(int i=0;i<sr;i++)
+	      {
+		ss2 << filenames[i] << " " << urls[i] << " " << authors[i] << std::endl;
+	      }
+	    ss2.close();
+	    
+	}
+	next_stage2 = true;
+      }
+    
+    if (next_stage2)
       {
 	display_button = false;
 	if (1)
@@ -1102,6 +1303,9 @@ public:
 		//ProgressBar(933, 7,15, "Execute");
 		GameApi::ExecuteEnv exeenv;
 		if (type2 != "HML") {
+		  g_collect_authors = std::vector<std::vector<std::string> >();
+		  g_collect_licenses = std::vector<std::vector<std::string> >();
+
 		  std::pair<int,std::vector<std::string> > ids = env->ev->mod_api.collect_urls(*env->ev, env->mod, 0, uid, exeenv, 1000, g_async_ptr, g_async_count,0);
 		  //ProgressBar(933, 15,15, "Execute");
 		  
@@ -1633,7 +1837,7 @@ public:
       }
   
     
-    if (!env->editor_visible)
+    if (!env->editor_visible && !env->license_dialog_visible)
       {
 	//	    int s = env->edit_clicks.size(); //env->gui->num_childs(env->canvas);
 	//for(int i=0;i<s;i++)
@@ -1719,12 +1923,17 @@ public:
       {
 	env->gui->update(env->display, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
       }
+    if (env->license_dialog_visible && enum_popup.id==0 && update)
+      {
+	env->gui->update(env->license_dialog, cursor_pos, e.button, e.ch,e.type,e.mouse_wheel_y);
+      }
     if (env->editor_visible && enum_popup.id==0 && update)
       env->gui->update(env->editor, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
     
     if (enum_popup.id!=0) update=false;
     if (env->popup_visible) update=false;
     if (env->display_visible) update=false;
+    if (env->license_dialog_visible) update=false;
     if (env->editor_visible) update=false;
     
 
@@ -1774,7 +1983,13 @@ public:
       env->gui->update(env->scroll_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
       
       env->gui->update(env->canvas_area, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+      if (env->license_dialog_visible) {
+	env->gui->update(env->license_dialog_canvas_area, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
+      }
       env->gui->update(env->scrollbar_x, cursor_pos, e.button,e.ch, e.type, e.mouse_wheel_y);
+      if (env->license_dialog_visible) {
+	env->gui->update(env->license_dialog_scrollbar, cursor_pos, e.button, e.ch,e.type,e.mouse_wheel_y);
+      }
       
       env->gui->update(env->list_tooltips, cursor_pos, e.button, e.ch, e.type, e.mouse_wheel_y);
 	
@@ -2045,6 +2260,16 @@ public:
     }
     float param_x1 = env->gui->dynamic_param(env->scrollbar_x, 0);
     env->gui->set_dynamic_param(env->canvas_area, 0, param_x1);
+
+    if (env->license_dialog_visible)
+      {
+	// todo, check if this works.
+	float param_y1 = env->gui->dynamic_param(env->license_dialog_scrollbar, 0);
+	env->gui->set_dynamic_param(env->license_dialog_canvas_area, 1, param_y1);
+
+	
+      }
+
     
   }
 private:
@@ -2575,6 +2800,7 @@ public:
   env.display = gui.empty();
   env.mem = gui.empty();
   env.display_visible = false;
+  env.license_dialog_visible=false;
   env.progress_visible = false;
   //env.wave = wave;
   //env.test1 = test1;
@@ -3169,7 +3395,11 @@ void render_cb(Envi *env)
       {
 	env->gui->render(env->display);
       }
-
+    if (env->license_dialog_visible)
+      {
+	env->gui->render(env->license_dialog);
+      }
+    
     if (env->editor_visible)
       env->gui->render(env->editor);
    }
@@ -3210,6 +3440,10 @@ void refresh()
 	int mouse_wheel_y = 0;
 	if (g_env->progress_rest) {
   g_env->gui->update(g_env->canvas_area, cursor_pos, button,ch, type, mouse_wheel_y);
+  if (g_env->license_dialog_visible)
+    {
+      g_env->gui->update(g_env->license_dialog_canvas_area, cursor_pos, button,ch,type,mouse_wheel_y);
+    }
 	}
 
   render_cb(g_env);
