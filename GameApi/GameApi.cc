@@ -5,7 +5,7 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
-//#define THREADS 1
+#define THREADS 1
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -18045,6 +18045,9 @@ struct UrlItem
 {
   int index;
   std::string url;
+  bool is_license=false;
+  std::string licensed_filename;
+  std::string author;
 };
 std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
 {
@@ -18082,6 +18085,69 @@ std::string find_more_data(std::string line);
 std::string fetch_more_data(std::string url);
 std::string http_to_https(std::string url);
 std::vector<UrlItem> find_url_items(std::string s);
+
+std::string remove_prefix(std::string url);
+
+void find_url_items3(std::vector<UrlItem> &result)
+{
+  std::vector<std::string> filenames;
+  std::vector<std::string> urls;
+  std::vector<std::string> authors;
+  std::vector<UrlItem> result2;
+  
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  std::string license_file = drive+path+"\\GAMEAPI_LICENSES.txt";
+#else
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
+  std::string license_file = dockerdir+"GAMEAPI_LICENSES.txt";
+#endif
+
+  
+  std::ifstream ss(license_file.c_str());
+  std::string line;
+  while(std::getline(ss,line)) {
+    std::string filename;
+    std::string url;
+    std::string author;
+    std::stringstream ss2(line);
+    ss2 >> filename >> url >> author;
+    filenames.push_back(filename);
+    urls.push_back(url);
+    authors.push_back(author);
+  }
+  ss.close();
+  
+  int s = result.size();
+  for(int i=0;i<s;i++)
+    {
+      int ss = filenames.size();
+      for(int j=0;j<ss;j++)
+	{
+	  if (filenames[j]==remove_prefix(result[i].url))
+	    {
+	      UrlItem ii;
+	      ii.index=-1;
+	      ii.url=urls[j];
+	      ii.author = authors[j];
+	      ii.is_license=true;
+	      ii.licensed_filename=filenames[j];
+	      result2.push_back(ii);
+	      break;
+	    }
+	}
+    }
+  
+  
+  int sk = result2.size();
+  for(int i=0;i<sk;i++)
+    {
+      result.push_back(result2[i]);
+    }
+  
+}
 
 void find_url_items2(std::string s, std::vector<UrlItem> &result)
 {
@@ -18335,7 +18401,8 @@ public:
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
       int val2=system("rmdir /Q /S %TEMP%\\_gameapi_builder\\deploy");
       int val3=system("mkdir %TEMP%\\_gameapi_builder\\deploy");
-      if (val2!=0||val3!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << std::endl; ok=false; }
+      int val4=system("mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses");
+      if (val2!=0||val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4<< std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
     }
@@ -18360,12 +18427,42 @@ public:
 
       std::vector<UrlItem> items = find_url_items(s);
       find_url_items2(s,items);
+      find_url_items3(items);
 
+      std::ofstream sp("%TEMP%\\_gameapi_builder\\deploy\\license.html");
+      
       int si=items.size();
       for(int i=si-1;i>=0;i--)
 	{
 	  UrlItem ii = items[i];
 	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
+
+	  if (ii.is_license)
+	    {
+	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>" << std::endl;
+
+#if 0
+	      std::string makedir = "mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename;
+	      int val2 = system(makedir);
+	      if (val2!=0) { std::cout << "ERROR: " << makedir << " returned error " << val2 << std::endl; ok=false; }
+	      if (ok) {
+	  std::string curl="..\\curl\\curl.exe";
+	  std::string curl_string;
+	  if (file_exists(curl)) {
+	      curl_string= std::string("..\\curl\\curl.exe ") + http_to_https(ii.url) + " --output %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename + remove_prefix(ii.url) + ")";
+	  } else {
+	      curl_string= std::string(".\\curl\\curl.exe ") + http_to_https(ii.url) + " --output %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename + "\\" + remove_prefix(ii.url) + ")";
+	  }
+	    
+	      int val = system(curl_string.c_str());
+	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
+	      }
+
+#endif
+	    }
+	    
+	  else {
+
 	  std::string dir = find_directory(ii.url);
 	  if (dir!="") {
 	    int val=system((std::string("mkdir %TEMP%\\_gameapi_builder\\deploy\\")+dir).c_str());
@@ -18381,7 +18478,10 @@ public:
 	  std::cout << curl_string << std::endl;
 	  int val = system(curl_string.c_str());
 	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
+	  }
 	}
+
+      sp.close();
       
        std::cout << "Step #5: Generating scripts.." << std::endl;
      
@@ -18561,6 +18661,7 @@ public:
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
       int val1= system("rm -rf ~/.gameapi_builder/deploy");
       int val2=system("mkdir -p ~/.gameapi_builder/deploy");
+      //int val3=system("mkdir -p ~/.gameapi_builder/deploy/licenses");
       if (val1!=0||val2!=0) { std::cout << "ERROR: rm or mkdir returned error:" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
@@ -18587,24 +18688,51 @@ public:
 
       std::vector<UrlItem> items = find_url_items(s);
       find_url_items2(s,items);
+      find_url_items3(items);
+
+      std::string home2 = getenv("HOME");
+      std::ofstream sp((home2 + "/.gameapi_builder/deploy/license.html").c_str());
+
       
       int si=items.size();
       for(int i=si-1;i>=0;i--)
 	{
 	  UrlItem ii = items[i];
 	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
-	  std::string dir = find_directory(ii.url);
-	  if (dir!="") {
-	    int val = system((std::string("mkdir -p ~/.gameapi_builder/deploy/") + dir).c_str());
-	    if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
+	  if (ii.is_license)
+	    {
+	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>" << std::endl;
+
+#if 0
+	      std::string makedir = "mkdir -p ~/.gameapi_builder/deploy/licenses/" + ii.licensed_filename;
+	      int val2 = system(makedir.c_str());
+	      if (val2!=0)
+		{
+		  std::cout << "ERROR:" << makedir << " returned error " << val2 << std::endl; ok=false;
+		}
+	      
+	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl ") + http_to_https(ii.url) + " --output ./licenses/" + ii.licensed_filename + "/" + remove_prefix(ii.url) + ")";
+	      int val = system(curl_string.c_str());
+	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
+#endif
+	    }
+	  else {
+	    std::string dir = find_directory(ii.url);
+	    if (dir!="") {
+	      int val = system((std::string("mkdir -p ~/.gameapi_builder/deploy/") + dir).c_str());
+	      if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
+	    }
+	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
+	    std::string curl_string = std::string("(cd ~/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + http_to_https(ii.url) + " --output " + remove_prefix(ii.url) + ")";
+	    //std::cout << curl_string << std::endl;
+	    int val = system(curl_string.c_str());
+	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 	  }
-	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	  std::string curl_string = std::string("(cd ~/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + http_to_https(ii.url) + " --output " + remove_prefix(ii.url) + ")";
-	  std::cout << curl_string << std::endl;
-	  int val = system(curl_string.c_str());
-	  if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 	}
 
+      sp.flush();
+      sp.close();
+      
       std::cout << "Step #5: Generating scripts.." << std::endl;
       
       std::string htmlfile = s;
@@ -28525,9 +28653,11 @@ char *g_user_id=0;
 bool g_content_deleter_installed=false;
 void g_content_deleter(void *)
 {
+  std::cout << "g_content_deleter" << std::endl;
   int s = g_content.size();
   for(int i=0;i<s;i++)
     {
+      std::cout << "Deleting: " << g_urls[i] << "::" << g_content_end[i]-g_content[i] << std::endl;
       const unsigned char *ptr = g_content[i];
       delete [] ptr;
     }
@@ -28568,12 +28698,13 @@ KP extern "C" void set_string(int num, const char *value)
 
     if (!g_content_deleter_installed)
       {
-	g_content_deleter_installed=true;
-	register_cache_deleter(g_content_deleter,0);
+    g_content_deleter_installed=true;
+    	register_cache_deleter(g_content_deleter,0);
       }
     
     unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
     std::copy(value,value+g_set_string_int,data);
+    std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+g_set_string_int);
@@ -28616,6 +28747,7 @@ KP extern "C" void set_string(int num, const char *value)
       std::copy(g_buffers[i],g_buffers[i]+g_buffer_sizes[i],data+offset);
       offset+=g_buffer_sizes[i];
     }
+    std::cout << "Appending:" << g_set_string_url << "::" << size << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+size);

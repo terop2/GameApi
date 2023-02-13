@@ -476,6 +476,8 @@ public:
   virtual std::string ParamName(int i, int p) const=0;
   virtual std::string ParamType(int i, int p) const=0;
   virtual std::string ParamDefault(int i, int p) const=0;
+  virtual std::string DefaultAuthor(int i, int p) const=0;
+  virtual std::string DefaultLicense(int i, int p) const=0;
   virtual std::string ReturnType(int i) const=0;
   virtual std::string ApiName(int i) const=0;
   virtual std::string FuncName(int i) const=0;

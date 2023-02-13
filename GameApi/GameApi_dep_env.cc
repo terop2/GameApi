@@ -898,15 +898,18 @@ void delmap_cache_deleter(void *)
   for(;i!=g_del_map.load_url_buffers_async.end();i++)
     {
       std::pair<std::string, const std::vector<unsigned char>*> p = *i;
-      delete p.second;
+#ifdef EMSCRIPTEN
+  if (g_del_map.fetches.find(p.first)==g_del_map.fetches.end())
+#endif
+	delete p.second;
     }
   g_del_map.load_url_buffers_async.clear();
 
 #ifdef EMSCRIPTEN
-  std::map<std::string,FetchInBlocks* >::iterator i = g_del_map.fetches.begin();
-  for(;i!=g_del_map.fetches.end();i++)
+  std::map<std::string,FetchInBlocks* >::iterator i2 = g_del_map.fetches.begin();
+  for(;i2!=g_del_map.fetches.end();i2++)
     {
-      std::pair<std::string, FetchInBlocks*> p = *i;
+      std::pair<std::string, FetchInBlocks*> p = *i2;
       delete p.second;
     }
   g_del_map.fetches.clear();
@@ -1017,6 +1020,12 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 	g_del_map_deleter_installed=true;
 	register_cache_deleter(delmap_cache_deleter,0);
       }
+#ifdef EMSCRIPTEN
+    if (g_del_map.fetches.find(url_only)==g_del_map.fetches.end()
+	&& g_del_map.load_url_buffers_async.find(url_only)!=g_del_map.load_url_buffers_async.end()) {
+      delete g_del_map.load_url_buffers_async[url_only];
+    }
+#endif
   g_del_map.load_url_buffers_async[url_only] = buffer;
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
@@ -1148,6 +1157,14 @@ void* process(void *ptr)
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
 
+#ifdef EMSCRIPTEN
+    if (g_del_map.fetches.find(url2)==g_del_map.fetches.end()
+	&& g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) {
+      delete g_del_map.load_url_buffers_async[url2];
+    }
+#endif
+
+  
   g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
   //pthread_exit(0);
   return 0;
@@ -1179,7 +1196,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       std::string url = urls[e];
       std::string url2 = "load_url.php?url=" + url ;
       //std::cout << url2 << std::endl;
-      if (g_del_map.load_url_buffers_async[url2])
+      if (g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end())
 	{
 	  
 	  //ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
@@ -1253,7 +1270,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       void *res;
       std::string url = urls[u+j];
       std::string url2 = "load_url.php?url=" + url ;
-      while (!g_del_map.load_url_buffers_async[url2])
+      while (!(g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()))
 	{
 	  if (g_current_size > last_size+(total_size/15))
 	  {
@@ -1534,6 +1551,13 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	register_cache_deleter(delmap_cache_deleter,0);
       }
     //std::cout << "g_del_map: " << (int)(g_content[i]) << " " << (int)(g_content_end[i]) << " " << (int)(g_content_end[i]-g_content[i]) << std::endl;
+#ifdef EMSCRIPTEN
+    if (g_del_map.fetches.find(url_only)==g_del_map.fetches.end()
+	&& g_del_map.load_url_buffers_async.find(url_only)!=g_del_map.load_url_buffers_async.end()) {
+      delete g_del_map.load_url_buffers_async[url_only];
+    }
+#endif
+
     g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
 	//std::cout << "g_del_map add url: " << url_only << std::endl;
 
@@ -1593,7 +1617,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
-  if (g_del_map.load_url_buffers_async[url2]) { 
+  if (g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) { 
     InstallProgress(sum,url + " (cached)",15*150);
   } else {
   InstallProgress(sum,url,15*150);
@@ -1623,7 +1647,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
   //std::cout << "URL:" << url << std::endl;
     // if we have already loaded the same url, don't load again
-  if (/*load_url_buffers_async[url] ||*/g_del_map.load_url_buffers_async[url_only]) {
+    if (/*load_url_buffers_async[url] ||*/g_del_map.load_url_buffers_async.find(url_only)!=g_del_map.load_url_buffers_async.end()) {
     //std::cout << "URL FROM CACHE" << std::endl;
       ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
       if (cb) {
@@ -1727,7 +1751,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  if (g_del_map.load_url_buffers_async[url2]) { 
+  if (g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) { 
     ProgressBar(sum,0,15,url+" (cached)");
   } else {
     ProgressBar(sum,0,15,url);
@@ -1735,7 +1759,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   }
 
     std::string url2 = "load_url.php?url=" + url ;
-    if (g_del_map.load_url_buffers_async[url2]) { 
+    if (g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) { 
       { // progressbar
 	int s = url.size();
 	int sum=0;
@@ -1759,6 +1783,13 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 	g_del_map_deleter_installed=true;
 	register_cache_deleter(delmap_cache_deleter,0);
       }
+#ifdef EMSCRIPTEN
+    if (g_del_map.fetches.find(url2)==g_del_map.fetches.end()
+	&& g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) {
+      delete g_del_map.load_url_buffers_async[url2];
+    }
+#endif
+
     g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];

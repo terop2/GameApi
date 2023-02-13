@@ -1936,7 +1936,7 @@ function enable_spinner(a)
   var el = document.getElementById("canvas2");
   var el2 = document.getElementById("canvas");
   if (a) {
-    console.log("SPINNER ENABLED");
+  //  console.log("SPINNER ENABLED");
 <?php
 if ($sitename=="meshpage.org") {
 echo "el.style.backgroundImage = \"url('load_spinner2.gif')\";";
@@ -1950,7 +1950,7 @@ echo "el.style.backgroundImage = \"url('dino4.webp')\";";
 
     el.style.backgroundSize = "100% 100%";
 } else {
-    console.log("SPINNER DISABLED");
+   // console.log("SPINNER DISABLED");
     //el.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
     el.style.backgroundImage = "none";
     el.style.backgroundColor = "#000000";
@@ -2330,8 +2330,8 @@ function get_cookie_status()
    fetch(req).then((r)=> {
        return r.text();
        }).then((t) => {
-          console.log("FOUND COOKIE");
-	  console.log(t);
+          //console.log("FOUND COOKIE");
+	  //console.log(t);
 	  var t2 = t.trim();
 	  if (t2=="-1") { // no info available
 	    var co = document.getElementById("callout");

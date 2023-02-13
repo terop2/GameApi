@@ -567,8 +567,8 @@ public:
       const char *chars1 = "";
       const char *chars2 = "";
 #else
-      const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
-      const char *chars2 = "½!\"#¤%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const char *chars1 = "Â§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
+      const char *chars2 = "Å“!\"#â‚¬%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 #endif
       int s = strlen(chars1);
       for(int i=0;i<s;i++)
@@ -714,8 +714,8 @@ public:
       const char *chars1 = "";
       const char *chars2 = "";
 #else
-      const char *chars1 = "§1234567890+',.-abcdefghijklmnopqrstuvwxyz";
-      const char *chars2 = "½!\"#¤%&/()=?*;:_ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const char *chars1 = "abcdefghijklmnopqrstuvwxyz13567890+',.-";
+      const char *chars2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&/()=?*;:_";
 #endif
       int s = strlen(chars1);
       for(int i=0;i<s;i++)
@@ -2979,6 +2979,91 @@ std::string ret_type_index(std::string return_type, int index)
 }
 
 
+EXPORT GameApi::W GameApi::GuiApi::license_item(std::string filename, std::string &license_url, std::string &author_name, FtA atlas, BM atlas_bm, FtA atlas2, BM atlas_bm2)
+{
+  W label = text(filename, atlas2,atlas_bm2);
+  W author_label = text("Author:", atlas, atlas_bm);
+  W author_edit = string_editor("abcdefghijklmnopqrstuvwxyzÃ¤Ã¶Ã¥ABCDEFGHIJKLMNOPQRSTUVWXYZÃ„Ã–Ã…1234567890-_*^@Â£$!#Â¤%&/()=? ", author_name, atlas, atlas_bm,0);
+  W arr_x[] = { author_label, author_edit };
+  W author_x = array_x(&arr_x[0], 2, 0);
+  W author_marg = margin(author_x,5,0,0,0);
+  W license_label = text("License:", atlas, atlas_bm);
+  W edit = url_editor(license_url, atlas, atlas_bm, 3);
+  W arr_x2[] = { license_label, edit };
+  W license_x = array_x(&arr_x2[0],2,0);
+  W marg = margin(license_x,5,0,0,0);
+  std::vector<W> arr0;
+  arr0.push_back(label);
+  arr0.push_back(author_marg);
+  arr0.push_back(marg);
+  W arr = array_y(&arr0[0],3, 3);
+  return arr;
+}
+
+
+EXPORT GameApi::W GameApi::GuiApi::license_dialog(std::vector<std::string> filename, std::vector<std::string> &license_url, std::vector<std::string> &author_name, FtA atlas, BM atlas_bm, FtA atlas2, BM atlas_bm2,FtA atlas3, BM atlas_bm3, W &next_button, W &cancel_button, W &canvas2, W &canvas_area2, W &scroll_bar)
+{
+  int s = std::min(filename.size(),license_url.size());
+  std::vector<W> vec;
+  for(int i=0;i<s;i++)
+    {
+      W item = license_item(filename[i],license_url[i],author_name[i], atlas, atlas_bm,atlas3, atlas_bm3);
+      vec.push_back(item);
+    }
+  W arr = array_y(&vec[0], vec.size(), 3);
+  W cnvs = canvas(800,size_y(arr));
+  W area = scroll_area2(cnvs, 800,400, 900);
+  W cnv_item = canvas_item(cnvs, arr, 0,0);
+  W scrollbar = scrollbar_y(15,400,size_y(arr));
+  scroll_bar = scrollbar;
+  canvas2 = cnvs;
+  canvas_area2=area;
+
+  std::vector<W> xx;
+  xx.push_back(area);
+  xx.push_back(scrollbar);
+  W arr_xx = array_x(&xx[0],2,2);
+
+  int my = 45;
+  int my2 = 10;
+  int mx = 10;
+
+  W marg = margin(arr_xx, mx,my,mx,my2);
+  
+  W bm_4 = marg;
+  
+  W but_1 = text("Next->", atlas3, atlas_bm3);
+  W but_2 = center_align(but_1, size_x(bm_4)/2);
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
+  next_button = but_6;
+
+  W code_1 = text("Cancel", atlas3, atlas_bm3);
+  W code_2 = center_align(code_1, size_x(bm_4)/2);
+  W code_3 = center_y(code_2, 60.0);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
+  W code_41 = highlight(code_4);
+  W code_5 = layer(code_41, code_3);
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
+  cancel_button = code_6;
+
+  W arr_x[] = { code_6, but_6 };
+  W arr_x2 = array_x(&arr_x[0], 2, 0);
+  
+  W arr_y[] = { bm_4, arr_x2 };
+  W arr_2 = array_y(&arr_y[0],2,0);
+
+  W rect = window_decoration2(size_x(arr_xx)+2*mx,size_y(arr_xx)+my2,"Setup license files for assets", atlas2, atlas_bm2,false);
+  W lay = layer(rect,arr_2);
+
+  W arr_3 = mouse_move(lay, 0,0,size_x(arr_xx), 35);
+
+  return arr_3;
+}
+
 
 int progress_lock=0;
 
@@ -3291,7 +3376,7 @@ EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM
 #ifdef EMSCRIPTEN
   std::string allowed_chars="";
 #else
-  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:_";
+  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#â‚¬%&/()=?+\\*^.,-<>|Â§Å“;:_";
 #endif
   W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
   W w2 = highlight(w);
@@ -3464,7 +3549,7 @@ EXPORT GameApi::W GameApi::GuiApi::copy_paste_dialog(SH sh, W &close_button,FI f
 #ifdef EMSCRIPTEN
   std::string allowed_chars= "";
 #else
-  std::string allowed_chars= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#¤%&/()=?\\|<>,.-;:_^~*'åöäÅÖÄ+";
+  std::string allowed_chars= "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#â‚¬%&/()=?\\|<>,.-;:_^~*'Ã¥Ã¶Ã¤Ã…Ã–Ã„+";
 #endif
   W w = multiline_string_editor( allowed_chars, edit, font, 5, 30);
 
@@ -3860,8 +3945,12 @@ EXPORT GameApi::W GameApi::GuiApi::shader_dialog(SFO p, W &close_button, FtA atl
   return arr_3;
 }
 
-
 EXPORT GameApi::W GameApi::GuiApi::window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm)
+{
+  return window_decoration2(sx,sy,label,atlas,atlas_bm,true);
+}
+
+EXPORT GameApi::W GameApi::GuiApi::window_decoration2(int sx, int sy, std::string label, FtA atlas, BM atlas_bm, bool move)
 { // wayland only
   int w = sx;
   int h = sy;
@@ -3871,7 +3960,7 @@ EXPORT GameApi::W GameApi::GuiApi::window_decoration(int sx, int sy, std::string
   W txt_1 = margin(txt, 5,7,5,5);
   W but_1 = button(w+10,35, 0xff888888, 0xff222222);
   W but_2 = margin(but_1,0,0,0,0);
-  W but_3 = window_move(but_2,0,0,w+10,30); 
+  W but_3 = move?window_move(but_2,0,0,w+10,30):but_2; 
   W lay_2 = layer(but_3,txt_1);
 		   
   W mrg = margin(contents, 5,5+30,5,5);
@@ -4454,7 +4543,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 	}
       else 
 	{
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"¤%&?\n,:_";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"â‚¬%&?\n,:_";
       W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
@@ -4568,11 +4657,17 @@ class ScrollBarY : public GuiWidgetForward
 {
 public:
   ScrollBarY(GameApi::EveryApi &ev, GameApi::SH sh, int sx, int sy, int area_y) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), sh(sh), sx(sx), sy(sy), area_y(area_y) { firsttime=true; current_pos = 0.0; following = false; old_area_y = area_y; changed=false; }
+  float clamp(float val, float start, float end)
+  {
+    if (val<start) val=start;
+    if (val>end) val=end;
+    return val;
+  }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     Point2d p = get_pos();
     float size_y = float(sy)/float(area_y)*float(sy-2-2-2-2);
-    float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy-2-2-2-2));
+    float pos_y = current_pos * (float(sy) - clamp(float(sy)/float(area_y),0.0,1.0)*float(sy-2-2-2-2));
     if (button==0 && type == 1025 && !following && mouse.x>=p.x+2+2 && mouse.x<p.x+sx-2-2 && mouse.y>=p.y+pos_y+2+2 && mouse.y<p.y+pos_y+2+2+size_y)
       {
 	following = true;
@@ -4605,8 +4700,8 @@ public:
 	bg = ev.bool_bitmap_api.to_bitmap(b4, 255,255,255,255, 0,0,0,0);
 
 	bg_va = ev.sprite_api.create_vertex_array(bg);
-	GameApi::BB k = ev.bool_bitmap_api.bb_empty(sx-2-2-2-2, float(sy)/float(area_y)*float(sy-2-2-2-2));
-	GameApi::BB k2 = ev.bool_bitmap_api.rectangle(k, 0.0, 0.0, float(sx-2-2-2-2), float(sy)/float(area_y)*float(sy-2-2-2-2));
+	GameApi::BB k = ev.bool_bitmap_api.bb_empty(sx-2-2-2-2, clamp(float(sy)/float(area_y),0.0,1.0)*float(sy-2-2-2-2));
+	GameApi::BB k2 = ev.bool_bitmap_api.rectangle(k, 0.0, 0.0, float(sx-2-2-2-2), clamp(float(sy)/float(area_y),0.0,1.0)*float(sy-2-2-2-2));
 	thumb = ev.bool_bitmap_api.to_bitmap(k2, 255,255,255,255, 0,0,0,0);
 	thumb_va = ev.sprite_api.create_vertex_array(thumb);
 	  }
@@ -4626,7 +4721,7 @@ public:
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x, p.y, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(bg_va);
 
-	float pos_y = current_pos * (float(sy) - float(sy)/float(area_y)*float(sy));
+	float pos_y = current_pos * (float(sy) - clamp(float(sy)/float(area_y),0.0,1.0)*float(sy));
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+2+2+0.5, p.y+pos_y+2+2+0.5, 0.0));
 	ev.sprite_api.render_sprite_vertex_array(thumb_va);
       }
@@ -4843,7 +4938,7 @@ extern int g_event_screen_x;
 class ScrollAreaWidget : public GuiWidgetForward
 {
 public:
-  ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy, int screen_y) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy), screen_y(screen_y) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; 
+  ScrollAreaWidget(GameApi::EveryApi &ev, GameApi::SH sh, GuiWidget *orig, int sx, int sy, int screen_y,bool disable_wheel) : GuiWidgetForward(ev, { orig }), sh(sh), orig(orig), sx(sx), sy(sy), screen_y(screen_y), disable_wheel(disable_wheel) { firsttime = true; Vector2d v = { float(sx),float(sy)}; size = v; top=0.0; left=0.0; 
     mouse_wheel_move=0.0;
 }
   void set_pos(Point2d pos)
@@ -4876,7 +4971,7 @@ public:
 	Point2d mouse = {-666.0, -666.0 };
 	orig->update(mouse, button,ch, type, mouse_wheel_y);
       }
-    if (type==1027 && mouse.x>pos.x && mouse.x<pos.x+size.dx &&
+    if (!disable_wheel && type==1027 && mouse.x>pos.x && mouse.x<pos.x+size.dx &&
 	mouse.y>pos.y && mouse.y<pos.y+size.dy)
       { // mouse wheel
 	//std::cout << "Mouse wheel" << mouse_wheel_y << std::endl;
@@ -4930,6 +5025,7 @@ private:
   float top, left;
   float mouse_wheel_move;
   int screen_y;
+  bool disable_wheel;
 };
 class OrElemGuiWidget : public GuiWidget
 {
@@ -5108,7 +5204,12 @@ EXPORT GameApi::W GameApi::GuiApi::scrollbar_x(int sx, int sy, int area_x)
 EXPORT GameApi::W GameApi::GuiApi::scroll_area(W orig, int sx, int sy, int screen_y)
 {
   GuiWidget *orig_1 = find_widget(e, orig);
-  return add_widget(e, new ScrollAreaWidget(ev, sh, orig_1, sx,sy, screen_y));
+  return add_widget(e, new ScrollAreaWidget(ev, sh, orig_1, sx,sy, screen_y,false));
+}
+EXPORT GameApi::W GameApi::GuiApi::scroll_area2(W orig, int sx, int sy, int screen_y)
+{
+  GuiWidget *orig_1 = find_widget(e, orig);
+  return add_widget(e, new ScrollAreaWidget(ev, sh, orig_1, sx,sy, screen_y,true));
 }
 #if 0
 EXPORT GameApi::W GameApi::GuiApi::canvas_scroll_area(int sx, int sy, int screen_x, int screen_y)

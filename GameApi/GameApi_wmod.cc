@@ -1152,11 +1152,17 @@ std::vector<std::string> combine_vec(std::vector<std::string> v1, std::vector<st
   return vec;
 }
 
+
+std::vector<std::vector<std::string> > g_collect_authors;
+std::vector<std::vector<std::string> > g_collect_licenses;
+
 EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions();
 
   std::vector<std::string> res;
+  std::vector<std::string> authors;
+  std::vector<std::string> licenses;
   
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -1221,6 +1227,10 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		  int val = vals.first;
 		  std::vector<std::string> urls = vals.second;
 		  res = combine_vec(res, urls);
+		  authors = combine_vec(authors,g_collect_authors[g_collect_authors.size()-1]);
+		  licenses = combine_vec(licenses,g_collect_licenses[g_collect_licenses.size()-1]);
+		  g_collect_authors.pop_back();
+		  g_collect_licenses.pop_back();
 		  //if (val==-1) return std::make_pair(-1,res);
 		  std::stringstream sw;
 		  sw << val;
@@ -1246,6 +1256,10 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 			      std::pair<int,std::vector<std::string> > vals = collect_urls(ev, mod2, id, pp.first /*substr*/, exeenv, level-1,arr,arr_size,pp.second);
 			      int val = vals.first;
 			      res = combine_vec(res,vals.second);
+			      authors = combine_vec(authors,g_collect_authors[g_collect_authors.size()-1]);
+			      licenses = combine_vec(licenses,g_collect_licenses[g_collect_licenses.size()-1]);
+			      g_collect_authors.pop_back();
+			      g_collect_licenses.pop_back();
 			      //if (val==-1) return std::make_pair(-1,res);
 			      std::stringstream sw;
 			      sw << val;
@@ -1284,6 +1298,13 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		      //std::cout << "ASYNCDATA: " << name << " " << ptr->func_name << std::endl;
 		      if (fname==ptr->func_name) {
 			res.push_back(params[ptr->param_num]);
+			if (params[ptr->param_num]==item->ParamDefault(0,ptr->param_num)) { // not edited
+			  authors.push_back(item->DefaultAuthor(0,ptr->param_num));
+			  licenses.push_back(item->DefaultLicense(0,ptr->param_num));
+			} else {
+			  authors.push_back("");
+			  licenses.push_back("");
+			}
 		      }
 		    }
 		  
@@ -1291,12 +1312,16 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		  //int val = item->Execute(e, ev, params, exeenv);
 		  //item->EndEnv(exeenv);
 		  //std::cout << "Execute " << name << " returns " << val << std::endl;
+		  g_collect_authors.push_back(authors);
+		  g_collect_licenses.push_back(licenses);
 		  return std::make_pair(-1,res);
 		}
 	    }
 	}
     }
   std::cout << "COLLECTURLS FAILED! " << std::endl;
+  g_collect_authors.push_back(authors);
+  g_collect_licenses.push_back(licenses);
   return std::make_pair(-1,res);
 }
 

@@ -9,7 +9,7 @@
 			 "pts_ply",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/test.ply" },
+			 { "http://tpgames.org/test.ply@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "PTS", "points_api", "ply_pts"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pt_array,
