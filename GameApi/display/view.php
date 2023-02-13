@@ -1151,7 +1151,7 @@ function create_script(filename, contents, filenames)
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0);\n"; // 0.75
   } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
@@ -1159,7 +1159,7 @@ function create_script(filename, contents, filenames)
      //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0);\n";
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
@@ -1167,7 +1167,7 @@ function create_script(filename, contents, filenames)
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0);\n";
   } else
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";

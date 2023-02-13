@@ -8,7 +8,7 @@
 
 <div class="row">
 <div class="title">
-Groundbreaking 3d Engine Solution
+3d Engine Solution
 </div>
 <div class="smalltitle">
 <?php echo date("l d M Y") ?>
@@ -52,6 +52,15 @@ But what should we do to get access to this level technology?
 <li><a href="https://meshpage.org/meshpage_5">faq</a>.
 <li><a href="https://meshpage.org/view.php">model viewer</a>.
 </ul>
+Everyone, sing with me:
+<ul>
+<li>We are the future.
+<li>We are the evil corn children.
+<li>We are the world.
+<li>we are the children.
+<li>we are the ones who make a better day.
+</ul>
+
 </div>
 </div>
 <div class="row">
