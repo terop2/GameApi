@@ -321,7 +321,11 @@ function open_tab(event, label) {
 <div v-if="state.my_animations">
 </div>
 <div id="main_div">
+
+<!--iframe width="560" height="315" src="https://www.youtube.com/embed/0UF0zIMI2xA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe-->
+
 <script>
+/*
 function populate_imgs()
 {
    var s = imgarr.length;
@@ -337,6 +341,8 @@ function populate_imgs()
       tag2.src = filename;
    }
 }
+*/
+/*
 function preload_anim(num, file_id)
 {
   for(var i=0;i<15;i++)
@@ -354,6 +360,7 @@ function preload_anim(num, file_id)
    tag.src = url;
   }
 }
+*/
 function load_anim_pic_reset(num,file_id)
 {
    var name = "displayimage".concat(num.toString());
@@ -365,7 +372,7 @@ function load_anim_pic_reset(num,file_id)
    }
 
 }
-
+/*
 function load_anim_pic(num,file_id)
 {
    if (!g_emscripten_alive) return;
@@ -392,10 +399,10 @@ var request = new XMLHttpRequest();
      if (request.status != 404)
      {
    //console.log("LOAD");
-	preload_anim(num,file_id);
-        var name = "displayimage".concat(num.toString());
-   	var imgtag = document.getElementById(name);
-   	imgtag.onmousemove = function() { load_anim_pic2(num,file_id); } 
+	//preload_anim(num,file_id);
+        //var name = "displayimage".concat(num.toString());
+   	//var imgtag = document.getElementById(name);
+   	//imgtag.onmousemove = function() { load_anim_pic2(num,file_id); } 
      } else { }
      }
    request.send();
@@ -445,7 +452,7 @@ function load_anim_pic2(num,file_id)
       m_current_filename = filename2;   
       imgtag.src = filename2;
    }
-}
+}*/
 </script>
 <?php
 require_once("user.php");
@@ -463,6 +470,7 @@ if ($startpos!="") {
   $start = $num-($startpos*50);
 }
 $dupcache = array();
+/*
 echo "<script>var imgarr=[];</script>";
 
    echo "<div style=\"width:1px; height:1px; visibility:hidden; overflow:hidden\">";
@@ -470,7 +478,7 @@ echo "<script>var imgarr=[];</script>";
       echo "<img id=\"preload" . strval($k) . "\"></img>";
    }
    echo "</div>";
-
+*/
 //echo "<script src=\"//cdn.jsdelivr.net/npm/eruda\"></script>";
 //echo "<script>eruda.init();</script>";
 
@@ -525,11 +533,15 @@ $label = get_label( $arr );
    //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
    //echo "</layer>";
    //echo "<layer width=\"200\" height=\"150\">";
-   echo "<img id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" onmouseenter=\"load_anim_pic(" . $iii . "," . $ii . ")\" onmouseleave=\"load_anim_pic_reset(" . $iii . "," . $ik . ")\" crossorigin/>";
-
+   if (file_exists("user_data/user_terop/screenshot" . $ii . ".webp"))
+   {
+   echo "<img src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   } else {
+   echo "<img src=\"" . $assetsite . "/unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   }
    //echo "</layer>";
    // src=\"" . $filename . "\"
-   echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
+   //echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
 
 
 
@@ -1238,7 +1250,7 @@ function hide_main(b)
   if (b) elem.style="";
   else elem.style="display:none";
   if (b) {
-     populate_imgs();
+     //populate_imgs();
   }
   }
 }
