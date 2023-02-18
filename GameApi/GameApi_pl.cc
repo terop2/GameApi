@@ -9479,6 +9479,188 @@ private:
   bool firsttime;
 };
 
+class NewShadowShaderML_1 : public MainLoopItem
+{
+public:
+  NewShadowShaderML_1(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir) : env(env), ev(ev), next(next), light_dir(light_dir) { firsttime=true; }
+  std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_newshadow_1(vertex);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_newshadow_1(fragment);
+    ee.us_fragment_shader = fragment.id;
+    }
+  
+     if (sh_ids.size()==0) sh_ids = next->shader_id();
+     if (firsttime ||(notupdated&&e.time-timestamp>0.1)|| e.time-timestamp>5.0) { timestamp = e.time; sh_ids = next->shader_id(); if (!firsttime) notupdated=false; }
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+	ev.shader_api.set_var(sh, "in_NewShadowLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Vector light_dir;
+  bool firsttime;
+  std::vector<int> sh_ids;
+  bool notupdated=true;
+  GameApi::SH sh;
+  float timestamp=0.0;
+};
+
+
+class NewShadowShaderML_2 : public MainLoopItem
+{
+public:
+  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level) { firsttime=true; }
+  std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_newshadow_2(vertex);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_newshadow_2(fragment);
+    ee.us_fragment_shader = fragment.id;
+    }
+      
+     if (sh_ids.size()==0) sh_ids = next->shader_id();
+     if (firsttime ||(notupdated&&e.time-timestamp>0.1)|| e.time-timestamp>5.0) { timestamp = e.time; sh_ids = next->shader_id(); if (!firsttime) notupdated=false; }
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+	ev.shader_api.set_var(sh, "in_NewShadowLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
+	  ev.shader_api.set_var(sh, "in_NewShadowDarkLevel", dark_level);
+	  ev.shader_api.set_var(sh, "in_NewShadowLightLevel", light_level);
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  Vector light_dir;
+  float dark_level;
+  float light_level;
+bool firsttime;
+  std::vector<int> sh_ids;
+  bool notupdated=true;
+  GameApi::SH sh;
+  float timestamp=0.0;
+};
+
+
 class PhongShaderML : public MainLoopItem
 {
 public:

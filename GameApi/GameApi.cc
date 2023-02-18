@@ -6280,6 +6280,102 @@ private:
   float obj_size;
 };
 
+class NewShadowMaterial : public MaterialForward
+{
+public:
+  NewShadowMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), dark_level(dark_level), light_level(light_level) { }
+  virtual GameApi::ML mat2(GameApi::P p0) const
+  {
+    GameApi::ML ml1;
+    ml1.id = next->mat(p0.id);
+    GameApi::ML sh1;
+    sh1 = ev.polygon_api.newshadow_shader_1(ev,ml1, light_dir_x, light_dir_y, light_dir_z);
+
+    GameApi::ML ml2;
+    ml2.id = next->mat(p0.id);
+    GameApi::ML sh2;
+    sh2 = ev.polygon_api.newshadow_shader_2(ev,ml2, light_dir_x, light_dir_y, light_dir_z, dark_level, light_level);
+    return ev.mainloop_api.array_ml(ev,{sh1,sh2});
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p0, GameApi::PTS pts) const
+  {
+    GameApi::ML ml1;
+    ml1.id = next->mat_inst(p0.id, pts.id);
+    GameApi::ML sh1;
+    sh1 = ev.polygon_api.newshadow_shader_1(ev,ml1, light_dir_x, light_dir_y, light_dir_z);
+
+
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst(p0.id, pts.id);
+    GameApi::ML sh2;
+    sh2 = ev.polygon_api.newshadow_shader_2(ev,ml2, light_dir_x, light_dir_y, light_dir_z, dark_level, light_level);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(sh1);
+    vec.push_back(sh2);
+    return ev.mainloop_api.array_ml(ev,vec);
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p0, GameApi::MS ms) const
+  {
+    GameApi::ML ml1;
+    ml1.id = next->mat_inst_matrix(p0.id, ms.id);
+    GameApi::ML sh1;
+    sh1 = ev.polygon_api.newshadow_shader_1(ev,ml1, light_dir_x, light_dir_y, light_dir_z);
+
+
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst_matrix(p0.id, ms.id);
+    GameApi::ML sh2;
+    sh2 = ev.polygon_api.newshadow_shader_2(ev,ml2, light_dir_x, light_dir_y, light_dir_z, dark_level, light_level);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(sh1);
+    vec.push_back(sh2);
+    return ev.mainloop_api.array_ml(ev,vec);
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p0, GameApi::PTA pta) const
+  {
+    GameApi::ML ml1;
+    ml1.id = next->mat_inst2(p0.id, pta.id);
+    GameApi::ML sh1;
+    sh1 = ev.polygon_api.newshadow_shader_1(ev,ml1, light_dir_x, light_dir_y, light_dir_z);
+
+
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst2(p0.id, pta.id);
+    GameApi::ML sh2;
+    sh2 = ev.polygon_api.newshadow_shader_2(ev,ml2, light_dir_x, light_dir_y, light_dir_z, dark_level, light_level);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(sh1);
+    vec.push_back(sh2);
+    return ev.mainloop_api.array_ml(ev,vec);
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p0, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml1;
+    ml1.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh1;
+    sh1 = ev.polygon_api.newshadow_shader_1(ev,ml1, light_dir_x, light_dir_y, light_dir_z);
+
+    GameApi::ML ml2;
+    ml2.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh2;
+    sh2 = ev.polygon_api.newshadow_shader_2(ev,ml2, light_dir_x, light_dir_y, light_dir_z, dark_level, light_level);
+    std::vector<GameApi::ML> vec;
+    vec.push_back(sh1);
+    vec.push_back(sh2);
+    return ev.mainloop_api.array_ml(ev,vec);
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Material *next;
+  float light_dir_x;
+  float light_dir_y;
+  float light_dir_z;
+  float dark_level;
+  float light_level;
+};
+
 class PhongMaterial : public MaterialForward
 {
 public:
@@ -7546,6 +7642,12 @@ EXPORT GameApi::MT GameApi::MaterialsApi::snow(EveryApi &ev, MT nxt, unsigned in
 {
   Material *mat = find_material(e, nxt);
   return add_material(e, new SnowMaterial(e,ev, mat, color1, color2, color3, mix_val));
+}
+
+EXPORT GameApi::MT GameApi::MaterialsApi::newshadow(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new NewShadowMaterial(e,ev,mat,light_dir_x, light_dir_y, light_dir_z, dark_level, light_level));
 }
 
 EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
@@ -10971,6 +11073,16 @@ GameApi::US GameApi::UberShaderApi::v_ambient(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("ambient", next,""));
 }
+GameApi::US GameApi::UberShaderApi::v_newshadow_1(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("newshadow_1", next,"IN_POSITION LIGHTDIR"));
+}
+GameApi::US GameApi::UberShaderApi::v_newshadow_2(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("newshadow_2", next,"IN_POSITION LIGHTDIR"));
+}
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -11316,6 +11428,16 @@ GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("glowedge", next,"EX_TEXCOORD"));
+}
+GameApi::US GameApi::UberShaderApi::f_newshadow_1(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"EX_LIGHTPOS2"));
+}
+GameApi::US GameApi::UberShaderApi::f_newshadow_2(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"EX_LIGHTPOS2"));
 }
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
