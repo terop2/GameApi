@@ -976,6 +976,8 @@ VARYING_OUT " vec2 shadow_position;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
+
+    
     /*
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
@@ -2963,6 +2965,8 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#endif\n"
 "#endif\n"
 
+
+    
 "vec4 fade(vec4 pos)\n"
 "{\n"
 "   return pos;\n"

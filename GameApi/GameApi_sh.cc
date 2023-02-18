@@ -1,5 +1,6 @@
 
 #include "GameApi_h.hh"
+#include "GameApi.hh"
 
 EXPORT GameApi::ShaderApi::ShaderApi(Env &e) : e(e)
 {
@@ -60,10 +61,11 @@ EXPORT void GameApi::ShaderApi::set_y_rotation(SH shader, std::string name, floa
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name.c_str(), m);  
 }
-EXPORT void GameApi::ShaderApi::link(GameApi::SH shader)
+EXPORT GameApi::PinIn GameApi::ShaderApi::link(GameApi::SH shader)
 {
-  if (shader.id<0) return;
+  if (shader.id<0) return PinIn();
   link_1(shader);
+  return PinIn();
 }
 EXPORT void GameApi::ShaderApi::print_log(GameApi::SH shader)
 {
@@ -232,9 +234,10 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f
   
   return sh;
 }
-EXPORT void GameApi::ShaderApi::use(GameApi::SH shader)
+EXPORT GameApi::PinIn GameApi::ShaderApi::use(GameApi::SH shader)
 {
   use_1(shader);
+  return PinIn();
 }
 void GameApi::ShaderApi::use_1(GameApi::SH shader)
 {
@@ -244,12 +247,13 @@ void GameApi::ShaderApi::use_1(GameApi::SH shader)
   seq->use(p->ids[shader.id]);
 }
 
-EXPORT void GameApi::ShaderApi::unuse(GameApi::SH shader)
+EXPORT GameApi::PinIn GameApi::ShaderApi::unuse(GameApi::SH shader)
 {
-  if (shader.id<0) { /*std::cout << "unuse shader.id=" << shader.id << " rejected" << std::endl;*/ return; }
+  if (shader.id<0) { /*std::cout << "unuse shader.id=" << shader.id << " rejected" << std::endl;*/ return PinIn(); }
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   seq->unuse(p->ids[shader.id]);
+  return PinIn();
 }
 EXPORT void GameApi::ShaderApi::bind_attrib(GameApi::SH shader, int num, std::string name)
 {
@@ -273,71 +277,78 @@ void GameApi::ShaderApi::bind_attrib_1(GameApi::SH shader, int num, std::string 
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->bind_attrib(num, name);
 }
-EXPORT GameApi::M GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::string name)
+EXPORT GameApi::PinOut<GameApi::M> GameApi::ShaderApi::get_matrix_var(GameApi::SH shader, std::string name)
 {
-  if (shader.id<0) { std::cout << "set_matrix_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return add_matrix(e, new SimpleMatrix(Matrix::Identity())); }
+  if (shader.id<0) { std::cout << "set_matrix_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; GameApi::M m2= add_matrix(e, new SimpleMatrix(Matrix::Identity())); PinOut<GameApi::M> out; out.data=m2; return out; }
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   Matrix m = prog->get_matrix_var(name);
-  return add_matrix(e, new SimpleMatrix(m));
-
+  GameApi::M m2 = add_matrix(e, new SimpleMatrix(m));
+  PinOut<GameApi::M> ret;
+  ret.data=m2;
+  return ret;
 }
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float val)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float val)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, val);
+  return PinIn();
 }
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float x, float y, float z)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float x, float y, float z)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   Point px(x, y, z);
   prog->set_var(name, px);
+  return PinIn();
 }
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float x, float y, float z, float k)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, float x, float y, float z, float k)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
   //std::cout << "Set var float" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, x,y,z,k);
+  return PinIn();
 }
 
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, int val)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, int val)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
   //std::cout << "Set var int" << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, val);
+  return PinIn();
 }
 
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, M matrix)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, M matrix)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
   Matrix mat = find_matrix(e, matrix);
 
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, mat);
+  return PinIn();
 }
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<PT> &m)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<PT> &m)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
   std::vector<Point> v;
   int s=m.size();
   for(int i=0;i<s;i++)
@@ -348,10 +359,11 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, c
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var(name, v);
+  return PinIn();
 }
-EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num)
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num)
 {
-  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return; }
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
 
   std::vector<float> v;
   int s = m.size();
@@ -367,6 +379,7 @@ EXPORT void GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, c
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
   prog->set_var_matrix(name, v);
+  return PinIn();
 }
 
 EXPORT void GameApi::ShaderApi::bindnames(GameApi::SH shader, 
