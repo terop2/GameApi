@@ -144,6 +144,8 @@ enum
     Low_GL_WRITE_ONLY,
     Low_GL_READ_ONLY,
     Low_GL_DEPTH_COMPONENT32F,
+    Low_GL_NONE,
+    Low_GL_RGBA32F,
     //
     //  OLD STUFF
     // 
@@ -287,6 +289,7 @@ public:
   virtual void glGetTexLevelParameteriv(int a, int, int w, int *ptr)=0;
   virtual void glGetTexImage(int a, int, int rgba, int unsign_byte, void *ptr)=0;
   virtual void glReadBuffer(int a)=0;
+  virtual void glDrawBuffer(int s)=0;
   virtual void glDrawBuffers(int n, const unsigned int *bufs)=0;
 
   // blend

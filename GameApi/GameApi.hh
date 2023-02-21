@@ -25,7 +25,7 @@ class BufferRef;
 class MainLoopEnv;
 class LoadStream;
   class ASyncTask;
-
+class NewShadowShaderML_1;
 namespace GameApi
 {
 using std::placeholders::_1;
@@ -1596,7 +1596,8 @@ public:
   IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
   IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
-  IMPORT MT newshadow(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level);
+  IMPORT MT newshadow(EveryApi &ev, MT nxt, P models, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size);
+  IMPORT ML newshadow2(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size); 
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT MT coloured_lights(EveryApi &ev, MT nxt, float scale,
 			    unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
@@ -2913,8 +2914,8 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
-  IMPORT ML newshadow_shader_1(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z);
-  IMPORT ML newshadow_shader_2(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level);
+  IMPORT ML newshadow_shader_1(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float scale);
+  IMPORT ML newshadow_shader_2(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);

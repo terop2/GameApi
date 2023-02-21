@@ -239,16 +239,54 @@ EXPORT BufferRefF GameApi::TextureApi::prepare_fb(FB bitmap, Low_GLuint &id)
       {
 	ref.buffer[x+y*ref.ydelta] = fb->Map(x,y);
       }
+
+  //float *buf = ref.buffer;
+  //ref.buffer= new float[ref.width*ref.height*4];
+  //std::copy(buf,buf+ref.width*ref.height,ref.buffer);
+  //delete [] buf;
+  
   return ref;
 }
 
+
+
 EXPORT GameApi::TXID GameApi::TextureApi::send_fb_to_gpu(BufferRefF ref, Low_GLuint id)
 {
+  static std::vector<Low_GLuint> ids;
+  int s = ids.size();
+  bool succ=false;
+  for(int i=0;i<s;i++)
+    {
+      if (id==ids[i]) { succ=true; break; }
+    }
+  if (!succ) {
+    ids.push_back(id);
+  }
+
   OpenglLowApi *ogl = g_low->ogl;
   assert(ref.width==ref.ydelta);
   
+  
+  //std::cout << "checking error000:" << ogl->glGetError() << std::endl;
   ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
-  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RED, ref.width, ref.height, 0, Low_GL_RED, Low_GL_FLOAT, ref.buffer);
+  //std::cout << "checking error00:" << ogl->glGetError() << std::endl;
+  //std::cout << "SIZE: " << ref.width << " " << ref.height << std::endl;
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_REPEAT); // GL_REPEAT
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_REPEAT); // these cause power-of-two texture requirement in emscripten.
+
+
+  if (!succ) {
+    ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA32F, ref.width, ref.height, 0, Low_GL_RED, Low_GL_FLOAT, ref.buffer);
+  } else {
+    ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, ref.width, ref.height, Low_GL_RED, Low_GL_FLOAT, ref.buffer);
+  }
+
+
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, 0);
+  
+  //std::cout << "checking error:" << ogl->glGetError() << std::endl;
   GameApi::TXID id2;
   id2.id = id;
   return id2;

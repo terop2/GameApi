@@ -9479,10 +9479,12 @@ private:
   bool firsttime;
 };
 
+extern GameApi::M g_view_rot;
+
 class NewShadowShaderML_1 : public MainLoopItem
 {
 public:
-  NewShadowShaderML_1(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir) : env(env), ev(ev), next(next), light_dir(light_dir) { firsttime=true; }
+  NewShadowShaderML_1(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float scale) : env(env), ev(ev), next(next), light_dir(light_dir), scale(scale) { firsttime=true; }
   std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -9491,12 +9493,28 @@ public:
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { } // not called
-  void Prepare() { next->Prepare(); }
+  void HeavyPrepare() {
+    //buf = ev.texture_api.prepare_fb(fbm, texture_id);
+    //txid = ev.texture_api.send_fb_to_gpu(buf, texture_id);
+  } // not called
+  void Prepare() {
+    next->Prepare();
+    HeavyPrepare();
+  }
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e)
   {
+    Vector light_dir2 = light_dir;
+  OpenglLowApi *ogl = g_low->ogl;
+
+  //if (firsttime)
+  //   {
+  //	ogl->glGenFramebuffers(1, &fbo);
+  //	
+  //    }
+    
     MainLoopEnv ee = e;
      if (firsttime)
       {
@@ -9534,7 +9552,7 @@ public:
 	ev.shader_api.use(sh);
 
 
-	ev.shader_api.set_var(sh, "in_NewShadowLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
+	//ev.shader_api.set_var(sh, "in_NewShadowLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
       }
 
 #ifndef NO_MV
@@ -9552,9 +9570,68 @@ public:
      }
 	if (firsttime) 	firsttime = false;
 
-    next->execute(ee);
+	Vector up = { 0.0, 1.0, 0.0 }; // TODO, is this -1 or 1
+	if (fabs(light_dir2.dy)>0.95) up={1.0,0.0,0.0};
+	Vector right = Vector::CrossProduct(light_dir2, up);
+	Vector new_up = Vector::CrossProduct(right, light_dir2);
+	new_up/=new_up.Dist();
+
+	Point eye = Point(400.0*(light_dir2/light_dir2.Dist()));
+
+	Vector dx = Vector::CrossProduct(light_dir2, up);
+	dx/=dx.Dist();
+	dx*=1024/2.0;
+	dx*=scale;
+	Vector dy = new_up;
+	dy/=dy.Dist();
+	dy*=1024/2.0;
+	dy*=scale;
+
+	if (sh.id!=-1) {
+	ev.shader_api.set_var(sh, "in_dx", dx.dx,dx.dy,dx.dz);
+	ev.shader_api.set_var(sh, "in_dy", dy.dx,dy.dy,dy.dz);
+	ev.shader_api.set_var(sh, "in_pp", eye.x,eye.y,eye.z); // in world coords
+	//std::cout << "SHADER1:" << std::endl;
+	//std::cout << "in_dx=" << dx << std::endl;
+	//std::cout << "in_dy=" << dy << std::endl;
+	//std::cout << "in_pp=" << eye << std::endl;
+	
+	ev.shader_api.set_var(sh, "in_scale", scale);
+	//ev.shader_api.set_var(sh, "in_txid", txid.id);
+	}
+	
+	ee.in_P = Matrix::Ortho(-300.0,300.0, -300.0, 300.0, -8000.0, 8000.0);
+	ee.in_T = Matrix::Translate(-eye.x,-eye.y,-eye.z) * Matrix::gluLookAt(eye, Point(0.0,0.0,0.0),  new_up);
+	if (sh.id!=-1) {
+	ev.shader_api.set_var(sh, "in_P", add_matrix2(env,ee.in_P));
+	ev.shader_api.set_var(sh, "in_T", add_matrix2(env,ee.in_T));
+	ev.shader_api.set_var(sh, "in_Mat", add_matrix2(env, Matrix::Translate(eye.x,eye.y,eye.z) * Matrix::gluLookAt(eye, Point(0.0,0.0,0.0),  new_up)));
+	}
+        //ee.in_MV = Matrix::Identity();
+	//std::cout << "checking error999:" << ogl->glGetError() << std::endl;
+	//std::cout << "TEXTURE ID:" << txid.id << std::endl;
+  next->execute(ee);
+	/*
+        ogl->glDisable(Low_GL_MULTISAMPLE);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
+  ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, fbo);
+  ogl->glFramebufferTexture2D( Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, txid.id, 0 );
+  //std::cout << "checking error1:" << ogl->glGetError() << std::endl;
+	//ogl->glDrawBuffer(Low_GL_NONE);
+  //ogl->glDisable(Low_GL_TEXTURE_2D);
+    //std::cout << "checking error2:" << ogl->glGetError() << std::endl;
+    ogl->glFramebufferTexture2D( Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, 0, 0 );
+    	ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
+	//std::cout << "checking error3:" << ogl->glGetError() << std::endl;
+    //ogl->glDrawBuffer(Low_GL_BACK);
+        ogl->glEnable(Low_GL_MULTISAMPLE);
+	*/
+
     ev.shader_api.unuse(sh);
   }
+  //GameApi::TXID get_txid() const { return txid; }
+  //int size_x() const { return buf.width; }
+  //int size_y() const { return buf.height; }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -9565,13 +9642,19 @@ private:
   bool notupdated=true;
   GameApi::SH sh;
   float timestamp=0.0;
+  Low_GLuint texture_id;
+  BufferRefF buf;
+  //GameApi::TXID txid;
+  //GameApi::FB fbm;
+  float scale;
+  Low_GLuint fbo;
 };
 
 
 class NewShadowShaderML_2 : public MainLoopItem
 {
 public:
-  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level) { firsttime=true; }
+  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level, float scale) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level),scale(scale) { firsttime=true; }
   std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -9580,13 +9663,24 @@ public:
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { } // not called
-  void Prepare() { next->Prepare(); }
+  void HeavyPrepare() {
+    //txid = prev->get_txid();
+  } // not called
+  void Prepare() { next->Prepare(); HeavyPrepare(); }
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e)
   {
+
+    Vector light_dir2 = light_dir;
+    
+      OpenglLowApi *ogl = g_low->ogl;
+
     MainLoopEnv ee = e;
+    //if (firsttime) {
+    //  ev.polygon_api.create_vertex_array_hw(va);
+    //}
      if (firsttime)
       {
     GameApi::US vertex;
@@ -9596,6 +9690,7 @@ public:
       ee.us_vertex_shader = a0.id;
     }
     vertex.id = ee.us_vertex_shader;
+    //vertex = ev.uber_api.v_texture(vertex);
     vertex = ev.uber_api.v_newshadow_2(vertex);
     ee.us_vertex_shader = vertex.id;
 
@@ -9606,6 +9701,7 @@ public:
       ee.us_fragment_shader = a0.id;
     }
     fragment.id = ee.us_fragment_shader;
+    //fragment = ev.uber_api.f_texture(fragment);
     fragment = ev.uber_api.f_newshadow_2(fragment);
     ee.us_fragment_shader = fragment.id;
     }
@@ -9623,9 +9719,44 @@ public:
 	ev.shader_api.use(sh);
 
 
-	ev.shader_api.set_var(sh, "in_NewShadowLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
-	  ev.shader_api.set_var(sh, "in_NewShadowDarkLevel", dark_level);
-	  ev.shader_api.set_var(sh, "in_NewShadowLightLevel", light_level);
+	//ev.shader_api.set_var(sh, "in_NewShadowLightPos", light_dir.dx, light_dir.dy, light_dir.dz);
+	//std::cout << "Levels: " << dark_level << " " << light_level << std::endl;
+	  ev.shader_api.set_var(sh, "in_darklevel", dark_level);
+	  ev.shader_api.set_var(sh, "in_lightlevel", light_level);
+
+
+
+	Vector up = { 0.0, 1.0, 0.0 }; // TODO, is this -1 or 1
+	if (fabs(light_dir2.dy)>0.95) up={1.0,0.0,0.0};
+	Vector right = Vector::CrossProduct(light_dir2, up);
+	Vector new_up = Vector::CrossProduct(right, light_dir2);
+	new_up/=new_up.Dist();
+
+	Point eye = Point(400.0*(light_dir2/light_dir2.Dist()));
+
+	Vector dx = Vector::CrossProduct(light_dir2, up);
+	dx/=dx.Dist();
+	dx*=1024/2.0;
+	dx*=scale;
+	Vector dy = new_up;
+	dy/=dy.Dist();
+	dy*=1024/2.0;
+	dy*=scale;
+
+	
+	ev.shader_api.set_var(sh, "in_dx", dx.dx,dx.dy,dx.dz);
+	ev.shader_api.set_var(sh, "in_dy", dy.dx,dy.dy,dy.dz);
+	ev.shader_api.set_var(sh, "in_pp", eye.x,eye.y,eye.z); // in world coords
+	//std::cout << "SHADER2:" << std::endl;
+	//std::cout << "in_dx=" << dx << std::endl;
+	//std::cout << "in_dy=" << dy << std::endl;
+	//std::cout << "in_pp=" << eye << std::endl;
+	
+
+
+	//ev.shader_api.set_var(sh, "in_txid", 0);
+	ev.shader_api.set_var(sh, "in_scale", scale);
+	ev.shader_api.set_var(sh, "in_Mat", add_matrix2(env, Matrix::Translate(eye.x,eye.y,eye.z) * Matrix::gluLookAt(eye, Point(0.0,0.0,0.0),  new_up)));
       }
 
 #ifndef NO_MV
@@ -9643,7 +9774,17 @@ public:
      }
 	if (firsttime) 	firsttime = false;
 
-    next->execute(ee);
+#ifndef EMSCRIPTEN
+	//  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+	//ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+	
+	//ogl->glBindTexture(Low_GL_TEXTURE_2D, txid.id);
+	//ee.in_T = ee.in_T;// * Matrix::Translate(-1.0,1.0,-1.0);
+	next->execute(ee);
+    //ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
+
+  //ogl->glDisable(Low_GL_TEXTURE_2D);
     ev.shader_api.unuse(sh);
   }
 private:
@@ -9653,11 +9794,14 @@ private:
   Vector light_dir;
   float dark_level;
   float light_level;
-bool firsttime;
+  bool firsttime;
   std::vector<int> sh_ids;
   bool notupdated=true;
   GameApi::SH sh;
   float timestamp=0.0;
+  //GameApi::TXID txid;
+  //NewShadowShaderML_1* prev;
+  float scale;
 };
 
 
@@ -10809,6 +10953,17 @@ EXPORT GameApi::ML GameApi::PolygonApi::glowedge_shader(EveryApi &ev, ML mainloo
   return add_main_loop(e, new GlowEdgeShaderML(e, ev, item, white_level, gray_level, edge_pos));
 }
 
+EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_1(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float scale)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new NewShadowShaderML_1(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),scale));
+}
+class NewShadowShaderML_2;
+EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale));
+}
 
 EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {

@@ -305,6 +305,7 @@ public:
   static Matrix Perspective(float fovy, float aspect, float near, float far);
   static Matrix Perspective2(float left, float right, float bottom, float top, float near, float far);
   static Matrix Ortho(float left, float right, float bottom, float top, float near, float far);
+  static Matrix gluLookAt(Point eye, Point center, Vector up); 
   static Matrix SphericalToCartesian(SphericalPoint p);
   static Matrix CartesianToSpherical(Point p);
   static Matrix Identity();
