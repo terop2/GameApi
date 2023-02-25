@@ -220,6 +220,215 @@ GameApi::TXID find_txid(std::string label)
   return id;
 }
 
+
+EXPORT BufferRefF GameApi::TextureApi::prepare_fb(FB bitmap, Low_GLuint &id)
+{
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glGenTextures(1,&id);
+
+  Bitmap<float> *fb = find_float_bitmap(e,bitmap)->bitmap;
+  fb->Prepare();
+
+  BufferRefF ref = BufferRefF::NewBuffer(fb->SizeX(), fb->SizeY());
+  
+  int sx = ref.width;
+  int sy = ref.height;
+
+  for(int y=0;y<sy;y++)
+    for(int x=0;x<sx;x++)
+      {
+	ref.buffer[x+y*ref.ydelta] = fb->Map(x,y);
+      }
+
+  //float *buf = ref.buffer;
+  //ref.buffer= new float[ref.width*ref.height*4];
+  //std::copy(buf,buf+ref.width*ref.height,ref.buffer);
+  //delete [] buf;
+  
+  return ref;
+}
+
+
+
+EXPORT GameApi::TXID GameApi::TextureApi::send_fb_to_gpu(BufferRefF ref, Low_GLuint id)
+{
+  static std::vector<Low_GLuint> ids;
+  int s = ids.size();
+  bool succ=false;
+  for(int i=0;i<s;i++)
+    {
+      if (id==ids[i]) { succ=true; break; }
+    }
+  if (!succ) {
+    ids.push_back(id);
+  }
+
+  OpenglLowApi *ogl = g_low->ogl;
+  assert(ref.width==ref.ydelta);
+  
+  
+  //std::cout << "checking error000:" << ogl->glGetError() << std::endl;
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
+  //std::cout << "checking error00:" << ogl->glGetError() << std::endl;
+  //std::cout << "SIZE: " << ref.width << " " << ref.height << std::endl;
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_REPEAT); // GL_REPEAT
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_REPEAT); // these cause power-of-two texture requirement in emscripten.
+
+
+  if (!succ) {
+    ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA32F, ref.width, ref.height, 0, Low_GL_RED, Low_GL_FLOAT, ref.buffer);
+  } else {
+    ogl->glTexSubImage2D(Low_GL_TEXTURE_2D, 0, 0,0, ref.width, ref.height, Low_GL_RED, Low_GL_FLOAT, ref.buffer);
+  }
+
+
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, 0);
+  
+  //std::cout << "checking error:" << ogl->glGetError() << std::endl;
+  GameApi::TXID id2;
+  id2.id = id;
+  return id2;
+}
+
+
+EXPORT std::vector<BufferRef> GameApi::TextureApi::prepare_many_buf(GameApi::EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels, std::vector<Low_GLuint> &res)
+{
+  OpenglLowApi *ogl = g_low->ogl;
+  res.resize(vec.size());
+  ogl->glGenTextures(vec.size(), &res[0]);
+  
+  std::vector<BufferRef> vec3;
+
+  int s = vec.size();
+  for(int i=0;i<s;i++) {
+
+      int type = 0;
+      int s3 = types.size();
+      if (i>=0 && i<s3) {
+	type = types[i];
+      }
+      
+      if (type==0) {
+      
+      BitmapHandle *handle = find_bitmap(e, vec[i]);
+      Bitmap<Color> *bm = find_color_bitmap(handle);
+      bm->Prepare();
+      FlipColours flip(*bm);
+      BufferFromBitmap buf(flip);
+#ifndef THREADS
+      buf.Gen();
+#else
+      buf.GenPrepare();
+
+      int numthreads = 8;
+      ThreadedUpdateTexture threads;
+      int ssx = flip.SizeX();
+      int ssy = flip.SizeY();
+      int dsy = ssy/numthreads + 1;
+      std::vector<int> ids2;
+      for(int k=0;k<numthreads;k++)
+	{
+	  int start_x = 0;
+	  int end_x = ssx;
+	  int start_y = k*dsy;
+	  int end_y = (k+1)*dsy;
+	  if (start_y>ssy) { start_y = ssy; }
+	  if (end_y>ssy) end_y = ssy;
+	  
+	  if (end_y-start_y > 0)
+	    ids2.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+	}
+      int ss = ids2.size();
+      int ii = i;
+      for(int t=0;t<ss;t++)
+	{
+	  threads.join(ids2[t]);
+	  //ProgressBar(768, ii*4+i,s*4, "texturemany"); 
+	  
+	}
+#endif
+      BufferRef ref = buf.Buffer();
+      buf.clear_with_leak();
+      vec3.push_back(ref);
+      } else { std::cout << "prepare_many_buf doesn't work with cubemaps" << std::endl; return std::vector<BufferRef>(); }
+  }
+  return vec3;
+}
+
+
+EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many_txid(EveryApi &ev, std::vector<BufferRef> vec, std::vector<Low_GLuint> ids, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels)
+{
+  OpenglLowApi *ogl = g_low->ogl;
+  std::vector<GameApi::TXID> txidvec;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      if (i<id_labels.size()) {
+	TXID id = find_txid(id_labels[i]);
+	if (id.id!=-1) {
+	  txidvec.push_back(id);
+	  continue;
+	}
+      }
+
+
+      
+      int type = 0;
+      int s3 = types.size();
+      if (i>=0 && i<s3) {
+	type = types[i];
+      }
+      
+      if (type!=-1) {
+#ifndef EMSCRIPTEN
+	ogl->glClientActiveTexture(Low_GL_TEXTURE0+i);
+#endif
+	ogl->glActiveTexture(Low_GL_TEXTURE0+i);
+      }
+
+      if (type==0) {
+	BufferRef r = vec[i];
+      int sx = r.width;
+      int sy = r.height;
+      bool power_of_two = true;
+      if (!(sx==1 ||sx==2||sx==4||sx==8||sx==16||sx==32||sx==64||sx==128||sx==256||sx==512||sx==1024||sx==2048||sx==4096||sx==8192||sx==16384))
+	power_of_two = false;
+      if (!(sy==1 ||sy==2||sy==4||sy==8||sy==16||sy==32||sy==64||sy==128||sy==256||sy==512||sy==1024||sy==2048||sy==4096||sy==8192||sy==16384))
+	power_of_two = false;
+
+            if (!power_of_two) { /*std::cout << "Warning: texture not in power_of_two, mipmapping is disabled" << std::endl;*/ }
+      
+	ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
+	ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,sx,sy, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, r.buffer);
+	ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
+
+	int filter = mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_LINEAR;
+	filter = Low_GL_LINEAR_MIPMAP_LINEAR;
+	
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,filter);      
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_REPEAT); // GL_REPEAT
+	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_REPEAT); // these cause power-of-two texture requirement in emscripten.
+
+      
+      
+      GameApi::TXID id2;
+      id2.id = ids[i];
+      txidvec.push_back(id2);
+      if (i<id_labels.size()) {
+      TXIDCACHE idcacheitem;
+      idcacheitem.label = id_labels[i];
+      idcacheitem.id = id2;
+      idcache.push_back(idcacheitem);
+      }
+      } else { std::cout << "prepare_many_txid doesnt work with cubemaps" << std::endl; }
+    }
+  return txidvec;
+}
+
+
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels)
 {
   //std::cout << "prepare many: " << vec.size() << " " << types.size() << " " << mipmaps << " " << id_labels.size() << std::endl;
@@ -384,12 +593,12 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
   int ssy = flip.SizeY();
   int dsy = ssy/numthreads + 1;
   std::vector<int> ids2;
-  for(int i=0;i<numthreads;i++)
+  for(int k=0;k<numthreads;k++)
     {
       int start_x = 0;
       int end_x = ssx;
-      int start_y = i*dsy;
-      int end_y = (i+1)*dsy;
+      int start_y = k*dsy;
+      int end_y = (k+1)*dsy;
       if (start_y>ssy) { start_y = ssy; }
       if (end_y>ssy) end_y = ssy;
       
@@ -398,9 +607,9 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
     }
   int ss = ids2.size();
   int ii = i;
-  for(int i=0;i<ss;i++)
+  for(int t=0;t<ss;t++)
     {
-      threads.join(ids2[i]);
+      threads.join(ids2[t]);
       //ProgressBar(768, ii*4+i,s*4, "texturemany"); 
 
     }

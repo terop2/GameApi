@@ -937,9 +937,9 @@ void VertexArraySet::append_to_polys(Polys &target, const Polys &source)
 // buffer_id = 2 polys
 
 
-void RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
+GameApi::PinIn RenderVertexArray::update_tri(int id, int buffer_id, int start, int end)
 {
-  if (start>=end) return;
+  if (start>=end) return GameApi::PinIn();
   OpenglLowApi *ogl = g_low->ogl;
 
   switch(buffer_id) {
@@ -1550,7 +1550,7 @@ void RenderVertexArray::sort_blit(int id, Matrix in_MV)
 }
 extern bool g_disable_polygons;
 
-void RenderVertexArray::update(int id)
+GameApi::PinIn RenderVertexArray::update(int id)
 { 
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -1757,7 +1757,7 @@ void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
 
 extern bool g_disable_polygons;
 
-void RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_count_, int poly_count_)
+GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, int quad_count_, int poly_count_)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -2209,7 +2209,7 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&buffers3[5]);
   ogl->glDeleteBuffers(1,&buffers3[6]);
 }
-void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size)
+GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -2260,9 +2260,9 @@ void RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, Vect
   ogl->glBindVertexArray(0);
 #endif
 
-
+  return GameApi::PinIn();
 }
-void RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
+GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -2325,11 +2325,11 @@ void RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *norm
   ogl->glBindVertexArray(0);
 #endif
 
-
+  return GameApi::PinIn();
 }
 std::map<Point*,bool> g_inst_map;
 std::map<Matrix*,bool> g_inst_map_matrix;
-void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size)
+GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
   //std::cout << "render_instanced_matrix: " << size << std::endl;
@@ -2632,9 +2632,9 @@ void RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, Vecto
     g_inst_map_matrix[positions]=true;
 
 
-
+    return GameApi::PinIn();
 }
-void RenderVertexArray::render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
+GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
 {
   OpenglLowApi *ogl = g_low->ogl;
 #ifdef VAO
@@ -2902,12 +2902,12 @@ void RenderVertexArray::render_instanced(int id, Point *positions, Vector *norma
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
     g_inst_map[positions]=true;
 
-
+    return GameApi::PinIn();
 }
 
 extern bool g_disable_polygons;
 
-void RenderVertexArray::render(int id)
+GameApi::PinIn RenderVertexArray::render(int id)
 {
   VertexArraySet::Polys *p = s.m_set[id];
   OpenglLowApi *ogl = g_low->ogl;
@@ -3176,7 +3176,7 @@ void RenderVertexArray::render(int id)
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 
 
-   
+    return GameApi::PinIn();
   }
 
 void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int attr4,

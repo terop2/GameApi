@@ -370,6 +370,37 @@ Matrix Matrix::Perspective(float fovy, float aspect, float near, float far)
   return r;
 }
 
+Matrix Matrix::gluLookAt(Point eye, Point center, Vector up)
+{
+  Vector F = center-eye;
+  Vector f = F/F.Dist();
+  Vector u = up/up.Dist();
+  Vector s = Vector::CrossProduct(f,u);
+  Vector S = s/s.Dist();
+  Vector uu = Vector::CrossProduct(S,f);
+  Matrix m;
+  m.matrix[0] = S.dx;
+  m.matrix[1] = S.dy;
+  m.matrix[2] = S.dz;
+  m.matrix[3] = 0.0f;
+
+  m.matrix[4] = uu.dx;
+  m.matrix[5] = uu.dy;
+  m.matrix[6] = uu.dz;
+  m.matrix[7] = 0.0f;
+
+  m.matrix[8] = -f.dx;
+  m.matrix[9] = -f.dy;
+  m.matrix[10] = -f.dz;
+  m.matrix[11] = 0.0f;
+
+  m.matrix[12] = 0.0f;
+  m.matrix[13] = 0.0f;
+  m.matrix[14] = 0.0f;
+  m.matrix[15] = 1.0f;
+  return m;
+}
+
 Matrix Matrix::Ortho(float left, float right, float bottom, float top, float near, float far)
 {
   float t_x = (right+left)/(right-left);

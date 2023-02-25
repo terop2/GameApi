@@ -486,6 +486,8 @@ EXPORT void GameApi::MainLoopApi::end_editor_state()
   //ogl->glEnable(Low_GL_DEPTH_TEST);
 }
 
+extern GameApi::M g_view_rot;
+
 EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_height)
 {
   OpenglLowApi *ogl = g_low->ogl;
@@ -502,6 +504,8 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
   prog->set_var("in_MV", m2);
   prog->set_var("in_iMV", Matrix::Transpose(Matrix::Inverse(m2)));
   prog->set_var("in_View", Matrix::Identity());
+  prog->set_var("in_View2", Matrix::Identity());
+  g_view_rot=add_matrix2(e,Matrix::Identity());
   Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
   prog->set_var("in_T", m3);
   prog->set_var("in_POS", 0.0f);
@@ -1802,6 +1806,8 @@ GameApi::ML GameApi::MainLoopApi::seq_ml_score(ML ml1, ML ml2, int score)
 }
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+
+GameApi::M g_view_rot;
 void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
 {
   int screenx = screen_size_x;
@@ -1851,6 +1857,8 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
 	GameApi::M mat = ev.matrix_api.identity();
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "in_View", mat);
+	ev.shader_api.set_var(sh, "in_View2", mat);
+	g_view_rot=mat;
       } else
 	{
 	  std::cout << "execute_ml rejected SH " << sh.id << "coming from shader_id()" << std::endl; 
