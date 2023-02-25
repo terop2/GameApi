@@ -4,6 +4,8 @@
 #define GAMEAPI_HH
 
 #include "deps.hh"
+#include "Buffer.hh"
+#include "GameApi_low.hh"
 #include <string>
 #include <functional>
 #include <vector>
@@ -23,7 +25,7 @@ class BufferRef;
 class MainLoopEnv;
 class LoadStream;
   class ASyncTask;
-
+class NewShadowShaderML_1;
 namespace GameApi
 {
 using std::placeholders::_1;
@@ -38,6 +40,14 @@ using std::placeholders::_9;
 
   class ShaderApi;
 
+
+struct PinIn { }; // empty class for return type of a function which
+                  // sends data to hardware pins, basically opengl pieces.
+template<class T>
+struct PinOut { T data; }; // one-element class that fetches data from pins. Also used for return type of function.
+
+
+  
 #undef rad1
 #undef rad2
 
@@ -736,6 +746,10 @@ class TextureApi
 {
 public:
 	IMPORT TextureApi(Env &e);
+  IMPORT BufferRefF prepare_fb(FB bitmap, Low_GLuint &id);
+  IMPORT TXID send_fb_to_gpu(BufferRefF ref, Low_GLuint id);
+  IMPORT std::vector<BufferRef> prepare_many_buf(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels, std::vector<Low_GLuint> &res);
+  IMPORT std::vector<TXID> prepare_many_txid(EveryApi &ev, std::vector<BufferRef> vec, std::vector<Low_GLuint> ids, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels);
   IMPORT ARR grab_to_bm_array(BM bm);
   IMPORT ARR send_screenshots_via_key_array(EveryApi &ev, ML ml3, int key, float time_delta, int num);
   IMPORT PBO create_pbo(int sx, int sy);
@@ -1582,6 +1596,8 @@ public:
   IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
   IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
+  IMPORT MT newshadow(EveryApi &ev, MT nxt, P models, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size);
+  IMPORT ML newshadow2(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size); 
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT MT coloured_lights(EveryApi &ev, MT nxt, float scale,
 			    unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
@@ -2898,6 +2914,8 @@ public:
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
+  IMPORT ML newshadow_shader_1(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float scale);
+  IMPORT ML newshadow_shader_2(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
@@ -3839,6 +3857,8 @@ public:
   US v_dist_field_mesh(US us, SFO sfo);
   US v_skeletal(US us);
   US v_custom(US us, std::string v_funcname);
+  US v_newshadow_1(US us);
+  US v_newshadow_2(US us);
   US v_phong(US us);
   US v_generic(US us, std::string name, std::string flags);
   US v_vertexphong(US us);
@@ -3860,6 +3880,8 @@ public:
   US f_diffuse(US us);
   US f_ambient(US us);
   US f_specular(US us);
+  US f_newshadow_1(US us);
+  US f_newshadow_2(US us);
   US f_phong(US us);
   US f_phong2(US us);
   US f_generic(US us, std::string name, std::string flags);
@@ -3921,12 +3943,12 @@ public:
   IMPORT SH colour_shader();
   IMPORT SH colour_texture_shader();
   IMPORT SH shader_choice(EveryApi &ev, int i);
-  IMPORT void link(SH shader);
-  IMPORT void use(SH shader);
+  IMPORT PinIn link(SH shader);
+  IMPORT PinIn use(SH shader);
   IMPORT void print_log(SH shader);
   void link_1(SH shader);
   void use_1(SH shader);
-  IMPORT void unuse(SH shader);
+  IMPORT PinIn unuse(SH shader);
   IMPORT void bindnames(GameApi::SH shader,
 			std::string s_vertex,
 			std::string s_normal,
@@ -3938,14 +3960,14 @@ public:
   IMPORT void bind_attrib(GameApi::SH shader, int num, std::string name);
   void bind_attrib_1(GameApi::SH shader, int num, std::string name);
   IMPORT void bind_frag(GameApi::SH shader, int attachment_num, std::string name);
-  IMPORT void set_var(GameApi::SH shader, const char * name, float val);
-  IMPORT void set_var(GameApi::SH shader, const char * name, float x, float y, float z);
-  IMPORT void set_var(GameApi::SH shader, const char *name, float x, float y, float z, float k);
-  IMPORT void set_var(GameApi::SH shader, const char * name, int val);
-  IMPORT void set_var(GameApi::SH shader, const char * name, M matrix);
-  IMPORT void set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num);
-  IMPORT void set_var(GameApi::SH shader, const char * name, const std::vector<PT> &v);
-  IMPORT M get_matrix_var(GameApi::SH shader, std::string name);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, float val);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, float x, float y, float z);
+  IMPORT PinIn set_var(GameApi::SH shader, const char *name, float x, float y, float z, float k);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, int val);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, M matrix);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, const std::vector<PT> &v);
+  IMPORT PinOut<M> get_matrix_var(GameApi::SH shader, std::string name);
 private:
   ShaderApi(const ShaderApi&);
   void operator=(const ShaderApi&);
@@ -4957,12 +4979,12 @@ private:
     {
       PT point = pts.point(x,y,0.0f);
 
-      M mp = shapi.get_matrix_var(sh, "in_P");
-      M m3 = mat.inverse(mp);
+      PinOut<M> mp = shapi.get_matrix_var(sh, "in_P");
+      M m3 = mat.inverse(mp.data);
       PT point1 = mat.mult(point, m3);
 
-      M mp2 = shapi.get_matrix_var(sh, "in_T");
-      M m4 = mat.inverse(mp2);
+      PinOut<M> mp2 = shapi.get_matrix_var(sh, "in_T");
+      M m4 = mat.inverse(mp2.data);
       PT point2 = mat.mult(point1, m4);
 
       M m2 = mat.inverse(m);

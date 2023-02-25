@@ -255,6 +255,8 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_RGBA32F: i=GL_RGBA32F; break;
+  case Low_GL_NONE: i=GL_NONE; break;
   case Low_GL_LINK_STATUS: i=GL_LINK_STATUS; break;
     //case Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
   case Low_GL_CW: i=GL_CW; break;
@@ -445,6 +447,16 @@ public:
     //return Low_GL_NO_ERROR;
     int i = ::glGetError(); 
     if (i==GL_NO_ERROR) i=Low_GL_NO_ERROR;
+    else
+      {
+	if (i==GL_INVALID_ENUM) std::cout << "GL_INVALID_ENUM" << std::endl;
+	if (i==GL_INVALID_VALUE) std::cout << "GL_INVALID_VALUE" << std::endl;
+	if (i==GL_INVALID_OPERATION) std::cout << "GL_INVALID_OPERATION" << std::endl;
+	if (i==GL_INVALID_FRAMEBUFFER_OPERATION) std::cout << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
+	if (i==GL_OUT_OF_MEMORY) std::cout << "GL_OUT_OF_MEMORY" << std::endl;
+	if (i==GL_STACK_UNDERFLOW) std::cout << "GL_STACK_UNDERFLOW" << std::endl;
+	if (i==GL_STACK_OVERFLOW) std::cout << "GL_STACK_OVERFLOW" << std::endl;
+      }
     return i;
   }
   
@@ -649,6 +661,12 @@ public:
     check_err("glReadBuffer");
 #endif
 }
+
+  virtual void glDrawBuffer(int s)
+  {
+    map_enums(s);
+    ::glDrawBuffer(s); 
+  }
   
 
 

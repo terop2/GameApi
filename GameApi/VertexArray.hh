@@ -6,6 +6,7 @@
 #include <map>
 #include "VectorTools.hh"
 #include "Effect.hh"
+#include "GameApi.hh"
 //#include "GameApi_low.hh"
 #ifndef HAS_PTHREAD
 #define HAS_PTHREAD 1
@@ -275,15 +276,15 @@ public:
   }
   RenderVertexArray(LowApi *g_low, VertexArraySet &s)
     : s(s),nodelete(false),tri_count(0), quad_count(0), poly_count(0) { }
-  void prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
-  void update(int id);
-  void update_tri(int id, int buffer_id, int start, int end);
-  void render(int id);
+  GameApi::PinIn prepare(int id, bool isnull=false, int tri_count=-1, int quad_count=-1, int poly_count=-1);
+  GameApi::PinIn update(int id);
+  GameApi::PinIn update_tri(int id, int buffer_id, int start, int end);
+  GameApi::PinIn render(int id);
   void sort_blit(int id, Matrix in_MV);
-  void prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
-  void prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
-  void render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
-  void render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
   void update_buffers(RenderVertexArray_bufferids ids);
   void fetch_buffers(RenderVertexArray_bufferids &ids);
   void set_no_delete(bool b) { nodelete=b; }

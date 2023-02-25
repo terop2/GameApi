@@ -2570,6 +2570,7 @@ public:
     col = r+g+b+a;
   }
   BufferRef Buffer() const { return buf; }
+  void clear_with_leak() { buf.buffer=0; }
 private:
   Bitmap<Color> &t;
   mutable BufferRef buf;
