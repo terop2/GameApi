@@ -1523,7 +1523,7 @@ VARYING_IN " vec3 ex_LightPos2;\n"
 "uniform float in_darklevel;\n"
 "uniform float in_lightlevel;\n"
 "float mod(float x, float y) { return x-y*floor(x/y); } \n"
-"vec4 newshadow_2(vec4 rgb)\n"
+"float newshadow_level()\n"
 "{\n"
 "    vec3 pos = ex_Position;\n"
     //"    vec3 pos2 = vec3(in_Mat * vec4(pos,0.0));\n"
@@ -1547,15 +1547,20 @@ VARYING_IN " vec3 ex_LightPos2;\n"
 "    float level;\n"
 "    if (shade) { level=in_darklevel; }\n"
 "    else { level=in_lightlevel; }\n"
-    " float dd = abs(d-d2)/800.0;\n"
+" return level;\n"
+    // " float dd = abs(d-d2)/800.0;\n"
     //" dd = clamp(dd,-1.0,1.0);\n"
     //"    return vec4(d/800.0,d2/800.0,0.0/800.0,1.0);\n"
     //    //"  return vec4(0.0,0.0/800.0,d/800.0,1.0);\n"
     //"return vec4(tx.x,0.0,0.0,1.0);\n"
     //"return vec4(tx.x,tx.y,0.0,1.0);\n"
     //   "return vec4(d/800.0,dd/800.0,0.0,1.0);\n"
-          "    return vec4((level)*rgb.rgb,1.0);\n"
+    //          "    return vec4((level)*rgb.rgb,1.0);\n"
     //" return rgb;\n"
+"}\n"
+"vec4 newshadow_2(vec4 rgb) {\n"
+"   float level = newshadow_level();\n"
+"   return vec4(level*rgb.rgb,1.0);\n"
 "}\n"
 "#endif\n"
 "#ifdef EX_NORMAL2\n"
@@ -1612,6 +1617,29 @@ VARYING_IN " vec3 ex_LightPos2;\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
+"#ifdef EX_NORMAL2\n"
+"#ifdef EX_LIGHTPOS2\n"
+"#ifdef LEVELS\n"
+"#ifdef EX_POSITION\n"
+"vec4 shadowphong(vec4 rgb)\n"
+"{\n"
+"   vec4 rgb2 = phong(rgb);\n"
+"   float level = newshadow_level();\n"
+"   if (level>0.5) {\n"
+"     float level2 = (level-0.5)*2.0;\n"
+"     vec4 res = vec4((1.0-level2)*rgb.rgb + level2*rgb2.rgb,1.0);\n"
+"     return res;\n"
+"   } else {\n"
+"     vec4 res = vec4(rgb.rgb*(level*2.0),1.0);\n"
+"     return res;\n"
+"   }\n"
+"}\n"
+
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+    
 "#ifdef SKELETON\n"
 "vec4 gltf_anim(vec4 rgb)\n"
 "    {\n"
@@ -4566,6 +4594,33 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
+"#ifdef EX_COLOR\n"
+"#ifdef EX_TEXCOORD\n"
+"#ifdef EX_NORMAL\n"
+"#ifdef EX_POSITION\n"
+"#ifdef COLOR_MIX\n"
+"#ifdef EX_POSITION\n"
+"vec4 shadowgltf(vec4 rgb)\n"
+"{\n"
+"   vec4 rgb2 = gltf(rgb);\n"
+"   float level = newshadow_level();\n"
+"   if (level>0.5) {\n"
+"     float level2 = (level-0.5)*2.0;\n"
+"   vec4 res = (1.0-level2)*rgb + level2*rgb2;\n"
+"     return res;\n"
+"   } else {\n"
+"     return rgb*(level*2.0);\n"
+"   }\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+
+
+    
 "vec4 empty(vec4 rgb)\n"
 "{\n"
 "   return rgb;\n"
@@ -5338,7 +5393,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5370,7 +5425,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
