@@ -1631,7 +1631,7 @@ GameApi::PinIn RenderVertexArray::update(int id)
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif
-
+  return GameApi::PinIn();
 }
 void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
 {
@@ -2170,6 +2170,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
     //tri_count = s.tri_count(id);
     //quad_count = s.quad_count(id);
     //poly_count = s.poly_count_f(id);
+  return GameApi::PinIn();
 }
 void RenderVertexArray::del()
 {
