@@ -56,6 +56,20 @@ public:
   virtual void register_obj(CollectInterface *i)=0;
   virtual void register_first_frame(CollectInterface *i)=0;
 };
+class OGLVisitor;
+class OpenGlNode
+{
+public:
+  OpenGlNode(OGLVisitor &vis); 
+  virtual void Prepare()=0;
+  virtual void Render()=0;
+};
+class OGLVisitor
+{
+public:
+  virtual void register_ogl(OpenGlNode *n)=0;
+};
+inline OpenGlNode::OpenGlNode(OGLVisitor &vis) { vis.register_ogl(this); }
 
 namespace GameApi
 {
