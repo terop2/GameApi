@@ -1859,6 +1859,10 @@ function check_em(indicator) {
 	       d.innerHTML = "SUCCESS <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 	       	setTimeout(function() { enable_spinner(false); },100);
 
+
+		//Module.FS.mkdir('/my_heap');
+		//Module.FS.mount(MEMFS, { files: Module['wasmMemory'].buffer }, '/my_heap');
+
 	       return;
 	       }
 }
