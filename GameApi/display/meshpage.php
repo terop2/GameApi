@@ -2453,8 +2453,8 @@ get_cookie_status();
   <div class="callout-header">Monetisation popup</div>
   <span class="closebtn" onclick="this.parentElement.style.display='none';">&times;</span>
   <div class="callout-container">
-    <p>We have designed a way to purchase our technology via nft using ethereum, so now we ask you to purchase it <a href="https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584">here</a></p>
-    <p>You need to have ethereum wallet available, for example <a href="https://www.coinbase.com/wallet">coinbase wallet</a>.
+    <p>We have designed a way to purchase our technology via nft using ethereum, so now we ask you to purchase it <a href="https://terop.itch.io/gameapi-builder">here with money</a>, <a href="https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584">or here with eth</a></p>
+    <p>For eth, you need to have ethereum wallet available, for example <a href="https://www.coinbase.com/wallet">coinbase wallet</a>.
   </div>
 </div>
 
