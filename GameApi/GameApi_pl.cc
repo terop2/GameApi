@@ -9654,7 +9654,7 @@ private:
 class NewShadowShaderML_2 : public MainLoopItem
 {
 public:
-  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level, float scale) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level),scale(scale) { firsttime=true; }
+  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level, float scale, bool is_phong) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level),scale(scale),is_phong(is_phong) { firsttime=true; }
   std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -9702,7 +9702,7 @@ public:
     }
     fragment.id = ee.us_fragment_shader;
     //fragment = ev.uber_api.f_texture(fragment);
-    fragment = ev.uber_api.f_newshadow_2(fragment);
+    fragment = ev.uber_api.f_newshadow_2(fragment,is_phong);
     ee.us_fragment_shader = fragment.id;
     }
       
@@ -9802,6 +9802,7 @@ private:
   //GameApi::TXID txid;
   //NewShadowShaderML_1* prev;
   float scale;
+  bool is_phong;
 };
 
 
@@ -10959,10 +10960,15 @@ EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_1(EveryApi &ev, ML main
   return add_main_loop(e, new NewShadowShaderML_1(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),scale));
 }
 class NewShadowShaderML_2;
-EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale)
+EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2_phong(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale));
+  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,true));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2_gltf(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,false));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
