@@ -23606,3 +23606,4 @@ GameApi::P GameApi::PolygonApi::render_pl(PL pl)
 template<class T>
 Bitmap<T> *subbitmap_t(Bitmap<T> *bm, int x, int y, int width, int height);
 
+
