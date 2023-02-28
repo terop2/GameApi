@@ -1049,7 +1049,7 @@ GameApi::PinIn RenderVertexArray::update_tri(int id, int buffer_id, int start, i
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif
-
+  return GameApi::PinIn();
 }
 Matrix g_in_MV;
 std::vector<Point> *g_ptr;
