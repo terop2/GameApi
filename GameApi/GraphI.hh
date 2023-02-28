@@ -2803,6 +2803,19 @@ public:
 };
 
 
+// OPENGL PATHS:
+// main-> mainloopapi.init_window -> InitSDL2 -> SDL_CreateWindow
+// phong2()-> PhongMaterial -> PhongShaderML -> ev.shader_api.set_var() -> Program::set_var() ->glUniform 
+//                             PhongShaderML -> ShaderApi::use(SH) -> use_1(sh) -> ShaderSeq::use() -> Program::use() -> glUseProgram
+// m_def() -> DefaultMaterial::mat2 -> MaterialsApi::render_instanced_ml() -> RenderInstanced::execute -> PolygonApi::render_vertex_array_instanced -> RenderVertexArray::render_instanced -> glBufferSubData()
+//  MaterialsApi::texture_many() -> ManyTextureMaterial -> MaterialsApi::render_instanced_ml_texture -> RenderInstancedTex::execute -> TextureApi::prepare_many -> glTexImage2D()
+//  RenderInstanced::execute -> ev.shader_api.get_normal_shader -> get_normal_shader_1 -> bind_attrib_1 -> Program::bind_attrib -> glBindAttribLocation
 
+// PolygonApi::preparepoly(P) -> ArrayRender::Prepare() -> glBindBuffer
+// PolygonApi::renderpoly() -> ArrayRender::Render() -> glDrawArrays
+//                         SpriteApi::create_vertex_array(BM) -> sprite_from_handle2() -> new ArrayRender
+// TextApi::draw_text(std::string,SH) -> SpriteApi::rendersprite(BM,SH) -> SpriteApi::render_sprite3_1(BM,SH) -> RenderSprite() -> ArrayRender::Render()
+// SpriteAPi::create_vertex_array(BM)->RenderVertexArray::prepare(0)
+// SpriteApi::vertex_array_render(BM)->render_sprite_vertex_array_ml(BM) -> RenderVertexArray4::execute() -> render_sprite_vertex_array(va) -> RenderVertexArray::render() -> TextureEnable -> ArrayRender::EnableTexture(frame) -> glActiveTexture() + glBindTexture().
 #endif
 

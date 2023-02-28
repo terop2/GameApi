@@ -684,7 +684,7 @@ function page_footer2()
    echo "<p>";
    echo "<div style=\"position: relative;\">";
    echo "<div style=\"width: 100%; float:left;\">";
-   echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3d engine &copy; 2013-2022 Tero Pulkkinen, All rights reserved.<br>";
+   echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3d engine &copy; 2013-2023 Tero Pulkkinen, All rights reserved.<br>";
    if ($sitename==="meshpage.org") {
       echo $sitename . "&reg; is a registered trademark of Tero Pulkkinen in tampere.</strong></div>";
       } else {
