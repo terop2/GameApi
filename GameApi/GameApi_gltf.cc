@@ -2293,7 +2293,10 @@ private:
   float mix;
 };
 
-
+int get_num_textures(GLTF_Material *mat)
+{
+  return mat->num_textures();
+}
 
 class GLTF_Material_manual : public MaterialForward
 {
