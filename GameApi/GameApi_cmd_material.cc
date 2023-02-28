@@ -392,18 +392,24 @@
 			 "MT", "materials_api", "newshadow"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::newshadow2_phong,
 			 "m_dir_shadow",
-			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size" },
-			 { "EveryApi&", "P", "MT", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "float", "int" },
-			 { "ev", "", "", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "ff884422", "ffffffff", "0.8", "1024" },
-			 "ML", "materials_api", "newshadow2"));
-#if 0
+			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size", "drawmodel" },
+			 { "EveryApi&", "P", "MT", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "float", "int", "bool" },
+			 { "ev", "", "", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "ff884422", "ffffffff", "0.8", "1024", "true" },
+			 "ML", "materials_api", "newshadow2_phong"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::newshadow2_gltf,
+			 "m_gltf_shadow",
+			 { "ev", "model", "shadow_p", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size" },
+			 { "EveryApi&", "TF", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "float", "int" },
+			 { "ev", "", "", "", "-0.3", "-1.0", "-0.3", "0", "1", "ffff8800", "ffffffff", "0.8", "1024" },
+			 "ML", "materials_api", "newshadow2_gltf"));
+  /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_newshadow2,
 			 "m_gltf_shadow",
 			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "scale", "size", "tf" },
 			 { "EveryApi&", "P", "MT", "P", "MT", "float", "float", "float", "float", "float", "float", "int", "TF" },
 			 { "ev", "", "", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "0.8", "1024", "" },
 			 "ML", "materials_api", "gltf_newshadow2"));
-#endif
+  */
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gi,
 			 "m_gi",
