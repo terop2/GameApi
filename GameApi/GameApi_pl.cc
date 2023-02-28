@@ -9654,7 +9654,7 @@ private:
 class NewShadowShaderML_2 : public MainLoopItem
 {
 public:
-  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level, float scale, bool is_phong) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level),scale(scale),is_phong(is_phong) { firsttime=true; }
+  NewShadowShaderML_2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, float dark_level, float light_level, float scale, bool is_phong, int texindex) : env(env), ev(ev), next(next), light_dir(light_dir), dark_level(dark_level), light_level(light_level),scale(scale),is_phong(is_phong),texindex(texindex) { firsttime=true; }
   std::vector<int> shader_id() { return next->shader_id(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -9723,7 +9723,7 @@ public:
 	//std::cout << "Levels: " << dark_level << " " << light_level << std::endl;
 	  ev.shader_api.set_var(sh, "in_darklevel", dark_level);
 	  ev.shader_api.set_var(sh, "in_lightlevel", light_level);
-
+	  ev.shader_api.set_var(sh, "texindex", texindex);
 
 
 	Vector up = { 0.0, 1.0, 0.0 }; // TODO, is this -1 or 1
@@ -9803,6 +9803,7 @@ private:
   //NewShadowShaderML_1* prev;
   float scale;
   bool is_phong;
+  int texindex;
 };
 
 
@@ -10963,12 +10964,12 @@ class NewShadowShaderML_2;
 EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2_phong(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,true));
+  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,true,0));
 }
-EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2_gltf(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale)
+EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2_gltf(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int texindex)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,false));
+  return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,false,texindex));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
