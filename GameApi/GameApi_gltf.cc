@@ -8488,6 +8488,41 @@ private:
 };
 */
 
+std::string fetch_more_data(std::string url);
+
+std::string get_zip_license_file(std::string zipfilename)
+{
+  std::string zip = fetch_more_data(zipfilename);
+  std::vector<unsigned char> vec2(zip.begin(),zip.end());
+  mz_ulong size = zip.end()-zip.begin();
+  mz_zip_archive pZip;
+  std::memset(&pZip,0,sizeof(mz_zip_archive));
+
+  mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
+
+  mz_uint num = mz_zip_reader_get_num_files(&pZip);
+  for(int i=0;i<num;i++) {
+    mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip,i);
+    if (is_dir) continue;
+    char *filename = new char[256];
+    *filename = 0;
+    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+    if (strlen(filename)==0) continue;
+    std::string filename2(filename);
+
+    if (filename2=="license.txt"||filename2=="LICENSE.TXT") {
+      size_t sz=0;
+      void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
+      std::string res = std::string((char*)ptr,((char*)ptr)+sz);
+      free(ptr);
+      delete [] filename;
+      return res;
+    } 
+    delete[] filename;
+  }
+  return "";
+}
+
 
 GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip)
 {

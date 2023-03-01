@@ -52,6 +52,7 @@ extern std::vector<float> g_transparent_pos;
 extern std::vector<std::vector<std::string> > g_collect_authors;
 extern std::vector<std::vector<std::string> > g_collect_licenses;
 
+std::string get_zip_license_file(std::string s);
 
 std::vector<std::string> g_license_filenames;
 std::vector<std::string> g_license_urls;
@@ -1124,13 +1125,37 @@ public:
 	  
 	  //std::vector<std::string> filenames;
 	  g_license_filenames = std::vector<std::string>();
-	  int s2 = urls.size();
-	  for(int i=0;i<s2;i++) {
-	    g_license_filenames.push_back(remove_prefix(urls[i]));
-	  }
-	  
 	  g_license_urls=licenses; //std::vector<std::string>();
 	  g_license_authors = authors; //std::vector<std::string>();
+	  int s2 = urls.size();
+	  for(int i=0;i<s2;i++) {
+	    std::cout << urls[i] << std::endl;
+	    g_license_filenames.push_back(remove_prefix(urls[i]));
+
+	    if (urls[i].substr(urls[i].size()-4,4)==".zip") {
+	      std::cout << "ZIP HANDLING" << std::endl;
+	      std::string contents = get_zip_license_file(urls[i]);
+	      std::stringstream ss(contents);
+	      std::string line;
+	      std::string aut,license;
+	      bool stop=false;
+	      while(std::getline(ss,line)) {
+		std::stringstream ss2(line);
+		std::string star, author,aut2,type,lic,url;
+		ss2 >> star >> author >> aut2 >> type >> lic >> url;
+		stop=true;
+		std::cout << author << std::endl;
+		if (author=="author:") { aut=aut2; if (type[0]!='(') aut+=" " + type; }
+		if (author=="license") { license=lic.substr(1,lic.size()-2); break; }
+		stop=false;
+	      }
+	      if (stop) {
+		g_license_authors[i] = aut;
+		g_license_urls[i]=license;
+	      }
+	    }
+	  }
+	  
 	  //static std::vector<std::string> license_urls;
 	  s2=std::min(std::min(int(g_license_urls.size()),int(g_license_authors.size())),s2);
 	  for(int i=0;i<s2;i++) {
