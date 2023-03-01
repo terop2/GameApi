@@ -391,6 +391,7 @@
 			 { "EveryApi&", "MT", "P", "float", "float", "float", "float", "float", "float", "int" },
 			 { "ev", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "1.0","128|256|512|1024|2048|4096" },
 			 "MT", "materials_api", "newshadow"));
+  */
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::newshadow2_phong,
 			 "m_dir_shadow",
 			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size" },
@@ -452,13 +453,13 @@
 			    "","","","","","","","",
 			    "350.0","350.0","350.0","350.0","350.0","350.0","350.0","350.0" },
 			 "MT", "materials_api", "coloured_lights"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dyn_lights,
 			 "m_dyn_lights",
 			 { "ev", "nxt", "light_pos_x", "light_pos_y", "light_pos_z", "dist", "dyn_point" },
 			 { "EveryApi&", "MT", "float", "float", "float", "float", "int" },
 			 { "ev", "", "0.0", "0.0", "0.0", "500.0", "-1" },
 			 "MT", "materials_api", "dyn_lights"));
-#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::snow,
 			 "m_snow",
 			 { "ev", "nxt", "color1", "color2", "color3", "mix_val" },
