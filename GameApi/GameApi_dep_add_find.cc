@@ -1249,6 +1249,7 @@ TROArray *find_timerange(GameApi::Env &e, GameApi::TR tr);
 
 GameApi::VV add_timerange_vertexarray(GameApi::Env &e, GameApi::TR tr)
 {
+#if 0
   TROArray *arr = find_timerange(e, tr);
   
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1258,6 +1259,7 @@ GameApi::VV add_timerange_vertexarray(GameApi::Env &e, GameApi::TR tr)
   GameApi::VV vv;
   vv.id = env->timerange_vertexarrays.size()-1;
   return vv;
+#endif
 }
 
 GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
@@ -1342,6 +1344,7 @@ GameApi::CO add_color(GameApi::Env &e, int r, int g, int b, int a)
 
 GameApi::E add_event(GameApi::Env &e, const EventInfo &info)
 {
+#if 0
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(env->event_infos));
   SingleEvent *event = new SingleEvent(env->event_infos, info);
@@ -1350,9 +1353,11 @@ GameApi::E add_event(GameApi::Env &e, const EventInfo &info)
   GameApi::E ee;
   ee.id = event->CurrentEventNum();
   return ee;
+#endif
 }
 GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info)
 {
+#if 0
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(env->event_infos));
   LinkageInfo linkage;
@@ -1364,6 +1369,7 @@ GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info
   GameApi::L ee;
   ee.id = link->CurrentLinkNum();
   return ee;  
+#endif
 }
 #if 0
 GameApi::MV add_mv_point(GameApi::Env &e, float x, float y, float z)
@@ -1401,6 +1407,7 @@ GameApi::MV add_line(GameApi::Env &e, GameApi::E start, GameApi::E end,
 
 GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 {
+#if 0
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(env->event_infos));
   PosInfo pos;
@@ -1411,6 +1418,7 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   GameApi::LL ee;
   ee.id = spos->CurrentPosNum();
   return ee;
+#endif
 }
 
 Platform *find_platform(GameApi::Env &e, GameApi::PL pl)

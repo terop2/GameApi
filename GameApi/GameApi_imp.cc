@@ -43,6 +43,7 @@ EXPORT GameApi::IM GameApi::ImplicitApi::im_sphere(float r)
 {
   return add_implicit(e, new SphereImplicitFunction(r));
 }
+#if 0
 class BlobImplicitFunction : public ImplicitFunction3d
 {
 public:
@@ -80,11 +81,14 @@ private:
   float c;
   Point center_1, center_2;
 };
+#endif
 EXPORT GameApi::IM GameApi::ImplicitApi::blob(float c, 
 					      float c_x, float c_y,
 					      float cc_x, float cc_y)
 {
+#if 0
   return add_implicit(e, new BlobImplicitFunction(c,Point(c_x,c_y,0.0), Point(cc_x, cc_y, 0.0)));
+#endif
 }
 
 class TranslateImplicitFunction3d : public ImplicitFunction3d

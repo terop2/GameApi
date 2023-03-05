@@ -1,6 +1,7 @@
 
 #include "GameApi_h.hh"
 
+
 class VariableExpr : public ExprNode
 {
 public:
@@ -173,7 +174,6 @@ GameApi::EX GameApi::ExprApi::cos(GameApi::EX ee)
   ExprNode *n = find_expr(e, ee);
   return add_expr(e, new CosExpr(n));
 }
-
 class ConstantExpr : public ExprNode
 {
 public:

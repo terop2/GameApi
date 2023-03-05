@@ -51,6 +51,7 @@ EXPORT GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, f
 }
 EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy, float dx, float dy)
 {
+#if 0
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bmA = env->fonts[font.id].bm;
   FontGlyphBitmap *bm2 = static_cast<FontGlyphBitmap*>(bmA);
@@ -59,7 +60,9 @@ EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, flo
   FontGlyphBitmap *bm = (FontGlyphBitmap*)coll;
   PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy, dx,dy);
   return add_plane(e, plane);
+#endif
 }
+
 class GlyphChooser : public Bitmap<int>
 {
 public:
@@ -85,8 +88,10 @@ private:
   long idx;
   FontGlyphBitmap &bm;
 };
+
 EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
+
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bmA = env->fonts[font.id].bm;
   FontGlyphBitmap *bm3 = static_cast<FontGlyphBitmap*>(bmA);
@@ -1211,6 +1216,7 @@ private:
   GameApi::EveryApi &ev;
 };
 
+#if 0
 class TimeFetcher : public Fetcher<int>
 {
 public:
@@ -1234,12 +1240,14 @@ private:
   float start_time;
   float time;
 };
-
+#endif
 
 
 GameApi::IF GameApi::FontApi::time_fetcher(EveryApi &ev, float start_time)
 {
+#if 0
   return add_int_fetcher(e, new TimeFetcher(ev,start_time));
+#endif
 }
 
 class ChooseScreen : public Fetcher<int>

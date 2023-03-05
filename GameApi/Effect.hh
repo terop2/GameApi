@@ -4422,6 +4422,7 @@ typedef FunctionImpl0<FaceCollection*, FaceCollection*, FlipNormals> FlipNormals
 
 
 
+#if 0
 class ForwardLineCollection : public LineCollection
 {
 public:
@@ -4436,6 +4437,7 @@ public:
 private:
   LineCollection *coll;
 };
+#endif
 
 class ContinuousLines : public LineCollection
 {
@@ -4460,6 +4462,7 @@ private:
 };
 typedef FunctionImpl1<PointCollection*, LineCollection*, bool, ContinuousLines> ContinuousLinesFunction;
 
+#if 0
 class AnimLines : public LineCollection
 {
 public:
@@ -4503,6 +4506,7 @@ private:
   FaceCollection *p1;
   FaceCollection *p2;
 };
+#endif
 class OutlineFaces : public LineCollection
 {
 public:

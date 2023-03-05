@@ -24,7 +24,9 @@ float GameApi::FunctionApi::get_value(GameApi::F f, float val)
 
 GameApi::F GameApi::FunctionApi::constant(float y)
 {
+#if 0
   return add_function(e, new ConstantFloatFunction(y));
+#endif
 }
 GameApi::F GameApi::FunctionApi::sin()
 {
