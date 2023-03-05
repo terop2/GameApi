@@ -1526,6 +1526,7 @@ private:
   int num;
 };
 
+#if 0
 class PolygonFill : public ContinuousBitmap<bool>
 {
 public:
@@ -1571,29 +1572,30 @@ private:
   Line2dCollection &coll;
   mutable SwapLine2dCollection swapped;
 };
+#endif
 
 class TextureWithHole : public Bitmap<Color>
 {
 public:
-  TextureWithHole(Bitmap<Color> &orig, PointCollection2d &coll) : cont(orig, orig.SizeX(),orig.SizeY()), lines(coll, true), poly(orig.SizeX(), orig.SizeY(), lines), anot(cont, poly), sample(anot, orig.SizeX(), orig.SizeY()) { }
+  TextureWithHole(Bitmap<Color> &orig, PointCollection2d &coll)/* : cont(orig, orig.SizeX(),orig.SizeY()),*/ /*lines(coll, true),*/ /*poly(orig.SizeX(), orig.SizeY(), lines),*/ /*anot(cont, poly),*/ /*sample(anot, orig.SizeX(), orig.SizeY())*/ { }
   void Collect(CollectVisitor &vis)
   {
-    sample.Collect(vis);
+    // sample.Collect(vis);
   }
   void HeavyPrepare() { }
 
-  void Prepare() { sample.Prepare(); }
+  void Prepare() { /*sample.Prepare();*/ }
 
-  int SizeX() const { return sample.SizeX(); }
-  int SizeY() const { return sample.SizeY(); }
-  Color Map(int x, int y) const { return sample.Map(x,y); }
+  int SizeX() const { /*return sample.SizeX();*/ }
+  int SizeY() const { /*return sample.SizeY();*/ }
+  Color Map(int x, int y) const { /*return sample.Map(x,y);*/ }
 
 private:
-  ContinuousBitmapFromBitmap<Color> cont;
-  ContinuousLines2d lines;
-  PolygonFill poly;
-  AndNotColorContinuousBitmap anot;
-  SampleBitmap sample;
+  //ContinuousBitmapFromBitmap<Color> cont;
+  //ContinuousLines2d lines;
+  //PolygonFill poly;
+  //AndNotColorContinuousBitmap anot;
+  //SampleBitmap sample;
 };
 
 class GradientWithHole : public Bitmap<Color>

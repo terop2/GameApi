@@ -697,6 +697,7 @@ private:
 };
 EXPORT GameApi::BB GameApi::PlaneApi::render_bool(GameApi::PL pl, int num, int sx, int sy)
 {
+#if 0
   PlanePoints2d *ptr = find_plane(e, pl);
   PolygonLines *lines = new PolygonLines(*ptr, num);
   ContinuousBitmap<bool> *fill = new PolygonFill(ptr->SizeX(),ptr->SizeY(), *lines);
@@ -705,10 +706,12 @@ EXPORT GameApi::BB GameApi::PlaneApi::render_bool(GameApi::PL pl, int num, int s
   env->deletes.push_back(std::shared_ptr<void>(lines));
   env->deletes.push_back(std::shared_ptr<void>(fill));
   return add_bool_bitmap(e, bm);
+#endif
 }
    
 GameApi::CBM GameApi::PlaneApi::render_continuous(GameApi::PL pl, int num, unsigned int color_0, unsigned int color_1)
 {
+#if 0
   PlanePoints2d *ptr = find_plane(e, pl);
   PolygonLines *lines = new PolygonLines(*ptr, num);
   ContinuousBitmap<bool> *fill = new PolygonFill(ptr->SizeX(),ptr->SizeY(), *lines);
@@ -717,6 +720,7 @@ GameApi::CBM GameApi::PlaneApi::render_continuous(GameApi::PL pl, int num, unsig
   env->deletes.push_back(std::shared_ptr<void>(lines));
   env->deletes.push_back(std::shared_ptr<void>(fill));
   return add_continuous_bitmap(e, fill2);
+#endif
 }
 class FlipYPlane : public PlanePoints2d
 {

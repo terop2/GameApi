@@ -63,11 +63,13 @@ private:
 
 bool is_point_inside_polygon(FacesInPlane *coll, int face, Point2d p, bool *enable_array)
 {
+#if 0
   Lines ll(coll, face,enable_array);
   PolygonFill pf(10000.0,10000.0, ll);
   bool b = pf.Map(p.x,p.y);
   //std::cout << "PolygonFill: " << b << std::endl;
   return b;
+#endif
 }
 
 bool is_line_segment_inside_polygon(FacesInPlane *coll, int face, Point2d line_1, Point2d line_2, bool *enable_array)

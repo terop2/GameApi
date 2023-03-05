@@ -11,6 +11,7 @@ class FontEditorMainWindow : public Gtk::Window
 public:
   bool DragBegin(GdkEventButton *event)
   {
+#if 0
     int posx, posy;
     image.get_pointer(posx,posy);
     //posx-=eventbox.get_allocation().get_x();
@@ -29,9 +30,11 @@ public:
     drag_id = id;
     std::cout << "DragBegin" << std::endl;
     return true;
+ #endif
   }
   bool DragEnd(GdkEventButton *event)
   {
+#if 0
     if (drag_id==-1) return true;
     int posx, posy;
     image.get_pointer(posx,posy);
@@ -50,6 +53,7 @@ public:
     RefreshCharacter(font, ch);
     std::cout << "DragEnd" << std::endl;
     return true;
+#endif
   }
   FontEditorMainWindow(Font *font) 
   {

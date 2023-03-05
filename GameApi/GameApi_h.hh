@@ -342,6 +342,7 @@ private:
   float d;
   int v;
 };
+#if 0
 class LineAnimInt : public AnimInt
 {
 public:
@@ -357,7 +358,7 @@ private:
   int val1,val2;
   float d;
 };
-
+#endif
 
 class AnimPoint3d 
 {
@@ -368,6 +369,7 @@ public:
   virtual ~AnimPoint3d() { }
 };
 
+#if 0
 class SingleAnimPoint : public AnimPoint3d
 {
 public:
@@ -379,6 +381,8 @@ private:
   float d;
   Point v;
 };
+#endif
+#if 0
 class LineAnimPoint : public AnimPoint3d
 {
 public:
@@ -394,7 +398,7 @@ private:
   Point val1,val2;
   float d;
 };
-
+#endif
 
 class AnimFloat 
 {
@@ -405,7 +409,7 @@ public:
   virtual ~AnimFloat() { }
 };
 
-
+#if 0
 class SingleAnimFloat : public AnimFloat
 {
 public:
@@ -417,6 +421,9 @@ private:
   float d;
   float v;
 };
+#endif
+
+#if 0
 class LineAnimFloat : public AnimFloat
 {
 public:
@@ -432,6 +439,7 @@ private:
   float val1,val2;
   float d;
 };
+#endif
 
 struct BoolBitmap
 {
