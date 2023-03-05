@@ -8,6 +8,7 @@
 
 BufferRef RenderFont(Font *font, Array<int, int> &text, int zoomlevel)
 {
+#if 0
   // calculate size of required bitmap
   int xsize = 0;
   int s = text.Size();
@@ -77,5 +78,5 @@ BufferRef RenderFont(Font *font, Array<int, int> &text, int zoomlevel)
     }
   // return bitmap
   return ref;
-
+#endif
 }

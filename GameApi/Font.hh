@@ -208,6 +208,7 @@ public:
 };
 
 
+#if 0
 class GlyphToPointCollection : public PointCollection2d
 {
 public:
@@ -222,7 +223,7 @@ private:
   const FontCharacter &ch;
   int loop;
 };
-
+#endif
 class ChooseColorFunction : public Function<bool, Color>
 {
 public:
@@ -238,6 +239,7 @@ private:
 
 BufferRef RenderFont(Font *font, Array<int, int> &text, int zoomlevel); 
 
+#if 0
 class ScaleFontCharacter : public FontCharacter
 {
 public:
@@ -276,18 +278,18 @@ private:
   float scalex, scaley;
   
 };
-
+#endif
 class ScaleFont : public Font
 {
 public:
-  ScaleFont(Font &f, float scalex, float scaley) : f(f), scalex(scalex), scaley(scaley), ptr(0) { }
+  ScaleFont(Font &f, float scalex, float scaley) : f(f), scalex(scalex), scaley(scaley) /*, ptr(0)*/ { }
   virtual int NumCharacters() const { return f.NumCharacters(); }
   virtual const FontCharacter *FontGlyph(int ch) const
   {
     const FontCharacter* cha = f.FontGlyph(ch);
-    delete ptr;
-    ptr = new ScaleFontCharacter(*cha, scalex, scaley);
-    return ptr;
+    //delete ptr;
+    //ptr = new ScaleFontCharacter(*cha, scalex, scaley);
+    //return ptr;
   }
 
   virtual int Character(int ch) const { return f.Character(ch); }
@@ -299,7 +301,7 @@ public:
 private:
   Font &f;
   float scalex, scaley;
-  mutable ScaleFontCharacter *ptr;
+  //mutable ScaleFontCharacter *ptr;
 };
 
 

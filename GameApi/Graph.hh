@@ -262,6 +262,8 @@ private:
   float rs;
   float re;
 };
+
+#if 0
 class SectionsBoolBitmap : public Bitmap<bool>
 {
 public:
@@ -291,8 +293,9 @@ private:
   float x,y;
   std::function<bool (float)> f;
 };
+#endif
 
-
+#if 0
 class ConicalGradientBitmap : public Bitmap<Color>
 {
 public:
@@ -330,7 +333,7 @@ private:
   float angle1,angle2;
   unsigned int color_1, color_2;
 };
-
+#endif
 
 class PartCircleBoolBitmap : public Bitmap<bool>
 {
@@ -2343,6 +2346,7 @@ private:
   int sx; 
   int sy;
 };
+#if 0
 class UnsignedIntFromBitmap : public Bitmap<unsigned int>
 {
 public:
@@ -2361,6 +2365,9 @@ public:
 private:
   Bitmap<Color> &bm;
 };
+#endif
+
+#if 0
 class BitmapFromUnsignedInt : public Bitmap<Color>
 {
 public:
@@ -2380,7 +2387,7 @@ public:
 private:
   Bitmap<unsigned int> &bm;
 };
-
+#endif
 
 template<class T>
 class BitmapFromFile : public Bitmap<T>
@@ -2883,6 +2890,7 @@ private:
   ContinuousBitmap<bool> &cut_out;
 };
 
+#if 0
 class AndNotContinuousBitmap : public ContinuousBitmap<bool>
 {
 public:
@@ -2906,8 +2914,9 @@ private:
   ContinuousBitmap<bool> &bm;
   ContinuousBitmap<bool> &cut_out;
 };
+#endif
 
-
+#if 0
 class OrContinuousBitmap : public ContinuousBitmap<bool>
 {
 public:
@@ -2963,6 +2972,7 @@ public:
 private:
   std::vector<ContinuousBitmap<bool> *> vec;
 };
+#endif
 
 class TriangleCoordsContinuousBitmap : public ContinuousBitmap<float>
 {
@@ -5664,6 +5674,7 @@ public:
 
 
 
+#if 0
 class ContinuousLines2d : public Line2dCollection
 {
 public:
@@ -5687,6 +5698,7 @@ private:
   PointCollection2d &p;
   bool loops;
 };
+#endif
 
 class LineIn2d : public CurveIn2d
 {

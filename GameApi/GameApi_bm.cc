@@ -60,6 +60,7 @@ public:
     return p2;
   }
 };
+#if 0
 class AlphaColorBitmap : public Bitmap<Color>
 {
 public:
@@ -85,11 +86,12 @@ private:
   Bitmap<Color> &bm;
   unsigned int key;
 };
-
+#endif
 EXPORT GameApi::BMA GameApi::BitmapApi::empty_array()
 {
   return array(NULL, 0);
 }
+#if 0
 class BitmapArrayImpl : public BitmapArray2<Color>
 {
 public:
@@ -123,11 +125,15 @@ private:
   GameApi::BM *m_array;
   int m_size;
 };
+#endif
 GameApi::BMA GameApi::BitmapApi::array(BM *array, int size)
 {
+#if 0
   return add_bitmap_array(e, new BitmapArrayImpl(this, array, size));
+#endif
 }
 
+#if 0
 class BitmapArrayElem : public Bitmap<Color>
 {
 public:
@@ -147,6 +153,7 @@ private:
   BitmapArray2<Color> *arr;
   int i;
 };
+#endif
 EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap(EveryApi &ev, BM orig, int sx, int sy)
 {
   CBM cbm = ev.cont_bitmap_api.from_bitmap(orig, 1.0, 1.0);
@@ -164,12 +171,15 @@ EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap_fullscreen(EveryApi &ev, BM 
 
 EXPORT GameApi::BM GameApi::BitmapApi::array_elem(BMA array, int i)
 {
+#if 0
   BitmapArray2<Color> *arr = find_bitmap_array(e, array);
   return add_color_bitmap2(e, new BitmapArrayElem(arr, i));
+#endif
 }
 
 EXPORT GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_key)
 {
+#if 0
   BitmapHandle *handle = find_bitmap(e, orig);
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
   ::Bitmap<Color> *b = new AlphaColorBitmap(*b2, color_key);
@@ -177,6 +187,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::alpha_color(BM orig, unsigned int color_k
   handle2->bm = b;
   BM bm = add_bitmap(e, handle2);
   return bm;
+#endif
 }
 class ColorRangeBitmap : public Bitmap<Color>
 {
@@ -259,6 +270,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int
   return add_color_bitmap2(e, new GradientBitmap2(pos_1b, pos_2b, color_1, color_2, sx,sy));
 }
 
+#if 0
 class RadialGradient : public Bitmap<Color>
 {
 public:
@@ -291,9 +303,11 @@ private:
   float r1,r2;
   unsigned int color_1, color_2;
 };
+#endif
 
 EXPORT GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2)
 {
+#if 0
   Point *pos_p1 = find_point(e, pos);
   Point2d pos_p = { pos_p1->x, pos_p1->y };
    ::Bitmap<Color> *b = new RadialGradient(sx,sy,pos_p, r1,r2, color_1, color_2);
@@ -301,6 +315,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::radial_gradient(int sx, int sy, PT pos, f
   handle->bm = b;
   BM bm = add_bitmap(e, handle);
   return bm;
+#endif
 }
 
 template<class T>
@@ -407,6 +422,7 @@ private:
 
 EXPORT GameApi::BM GameApi::BitmapApi::transform(BM orig, std::function<unsigned int (int,int, unsigned int)> f)
 {
+#if 0
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   BitmapHandle *handle = find_bitmap(e, orig);
@@ -418,12 +434,15 @@ EXPORT GameApi::BM GameApi::BitmapApi::transform(BM orig, std::function<unsigned
 
   BitmapFromUnsignedInt *bm2 = new BitmapFromUnsignedInt(*trans);
   return add_color_bitmap(e, bm2);
+#endif
 }
 EXPORT GameApi::BM GameApi::BitmapApi::function(std::function<unsigned(int,int)> f, int sx, int sy)
 {
+#if 0
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<unsigned int> *bm = new BitmapFromFunction<unsigned int>(f,sx,sy);  
   return add_color_bitmap(e, new BitmapFromUnsignedInt(*bm));
+#endif
 }
 
 EXPORT GameApi::BM GameApi::BitmapApi::memoize(GameApi::BM bm)
@@ -1498,6 +1517,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::newintbitmap(char *array, int sx, int sy,
 
 EXPORT GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int sy, std::function<unsigned int (char)> f)
 {
+#if 0
   //EveryApi *ev = new EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
@@ -1506,6 +1526,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::newcolorbitmap(char *array, int sx, int s
   env->deletes.push_back(std::shared_ptr<void>(bm));
   handle->bm = new BitmapFromUnsignedInt(*bm);
   return add_bitmap(e, handle);
+#endif
 }
 
 
@@ -1539,9 +1560,9 @@ EXPORT GameApi::BM GameApi::BitmapApi::bitmapandtypes(BM bm, BM (*fptr)(GameApi:
 EXPORT GameApi::IS GameApi::AnimApi::single(int val, float duration)
 {
   AnimImpl i;
-  i.wave_int = new SingleAnimInt(val, duration);
-  i.wave_point = 0;
-  i.wave_float = 0;
+  //i.wave_int = new SingleAnimInt(val, duration);
+  //i.wave_point = 0;
+  //i.wave_float = 0;
   IS is = add_anim(e, i);
   return is;
 }
@@ -1598,6 +1619,7 @@ private:
   Bitmap<Color> &bm;
   bool flip_x, flip_y;
 };
+#if 0
 class DupXBitmap : public Bitmap<Color>
 {
 public:
@@ -1620,14 +1642,17 @@ public:
 private:
   Bitmap<Color> &bm;
 };
+#endif
 EXPORT GameApi::BM GameApi::BitmapApi::dup_x(BM orig)
 {
+#if 0
   BitmapHandle *handle = find_bitmap(e, orig);
   BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
   Bitmap<Color> *rep = new DupXBitmap(*chandle->bm);
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = rep;
   return add_bitmap(e,chandle2);
+#endif
 }
 
 EXPORT GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
@@ -2154,6 +2179,7 @@ private:
   Point2d p1,p2;
   float line_width1, line_width2;
 };
+#if 0
 class EllipseBoolBitmap : public Bitmap<bool>
 {
 public:
@@ -2186,6 +2212,7 @@ private:
   Point2d c1,c2;
   float sum;
 };
+#endif
 EXPORT GameApi::BB GameApi::BoolBitmapApi::line(BB bg, float p_x, float p_y, float p2_x, float p2_y, float line_width1, float line_width2)
 {
   Bitmap<bool> *bm = find_bool_bitmap(e, bg)->bitmap;
@@ -2195,10 +2222,12 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::line(BB bg, float p_x, float p_y, flo
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::ellipse(BB bg, float center_x, float center_y, float center2_x, float center2_y, float sum_of_distances)
 {
+#if 0
   Bitmap<bool> *bm = find_bool_bitmap(e, bg)->bitmap;
   Point2d center = { center_x, center_y };
   Point2d center2 = { center2_x, center2_y };
   return add_bool_bitmap(e, new EllipseBoolBitmap(*bm, center, center2, sum_of_distances));
+#endif
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::circle(BB bg, float center_x, float center_y, float radius)
 {
@@ -2245,12 +2274,16 @@ EXPORT bool GameApi::BoolBitmapApi::boolvalue(BB bm, int x, int y)
   
 EXPORT GameApi::BM GameApi::BitmapApi::conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2)
 {
+#if 0
   return add_color_bitmap2(e, new ConicalGradientBitmap(sx,sy,x,y, angle1,angle2,color_1,color_2));
+#endif
 }
 
 EXPORT GameApi::BB GameApi::BoolBitmapApi::sections(int sx, int sy, float x, float y, std::function<bool (float angle)> f)
 {
+#if 0
   return add_bool_bitmap(e, new SectionsBoolBitmap(sx,sy,x,y,f));
+#endif
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::part_circle(int sx, int sy, float x, float y, float start_angle, float end_angle, float start_rad, float end_rad)
 {
@@ -2511,6 +2544,7 @@ public:
 private:
   Bitmap<Color> &bm;
 };
+#if 0
 class SpaceFillFloatBitmap : public Bitmap<float>
 {
 public:
@@ -2546,12 +2580,15 @@ private:
   int size;
   int sx,sy;
 };
+#endif
 EXPORT GameApi::FB GameApi::FloatBitmapApi::space_fill(PT *array, float *array2, int size, int sx, int sy)
 {
+#if 0
   Point *array3 = new Point[size];
   for(int i=0;i<size;i++)
     array3[i] = *find_point(e, array[i]);
   return add_float_bitmap(e, new SpaceFillFloatBitmap(array3, array2, size, sx,sy));
+#endif
 }
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_green(BM bm)
 {
@@ -2856,6 +2893,7 @@ EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool(GameApi::BB b, float val_t
   return add_float_bitmap(e, new FromBoolBitmap(*bm, val_true, val_false));
 }
 
+#if 0
 class BitmapFromRGBA : public Bitmap<Color>
 {
 public:
@@ -2892,15 +2930,18 @@ private:
   Bitmap<float> &b;
   Bitmap<float> &a;
 };
+#endif
 
 EXPORT GameApi::BM GameApi::FloatBitmapApi::to_color(FB r, FB g, FB b, FB a)
 {
+#if 0
   Bitmap<float> *rb = find_float_bitmap(e,r)->bitmap;
   Bitmap<float> *gb = find_float_bitmap(e,g)->bitmap;
   Bitmap<float> *bb = find_float_bitmap(e,b)->bitmap;
   Bitmap<float> *ab = find_float_bitmap(e,a)->bitmap;
   Bitmap<Color> *bm2 = new BitmapFromRGBA(*rb,*gb,*bb,*ab);
   return add_color_bitmap2(e, bm2);
+#endif
 }
 GameApi::BB GameApi::FloatBitmapApi::to_bool(FB fb, float true_range_start, float true_range_end)
 {
@@ -2908,6 +2949,7 @@ GameApi::BB GameApi::FloatBitmapApi::to_bool(FB fb, float true_range_start, floa
   return add_bool_bitmap(e, new FloatRangeBitmap(*f, true_range_start, true_range_end));
 }
 
+#if 0
 class FloatModBitmap : public Bitmap<bool>
 {
 public:
@@ -2931,11 +2973,14 @@ private:
   Bitmap<float> &fb;
   float mod_value;
 };
+#endif
 
 GameApi::BB GameApi::FloatBitmapApi::to_bool_mod(FB fb, float mod_value)
 {
+#if 0
   Bitmap<float> *f = find_float_bitmap(e,fb)->bitmap;
   return add_bool_bitmap(e, new FloatModBitmap(*f, mod_value));
+#endif
 }
 EXPORT GameApi::FB GameApi::FloatBitmapApi::from_bool_bitmap(BB bm, int csx, int csy)
 {
@@ -2973,6 +3018,7 @@ GameApi::BB GameApi::BoolBitmapApi::function(std::function<bool (int,int)> f, in
 }
 EXPORT GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
 {
+#if 0
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
   Bitmap<bool> *bg = find_bool_bitmap(e, bg2)->bitmap;
@@ -2999,6 +3045,7 @@ EXPORT GameApi::BB GameApi::BoolBitmapApi::polygon(BB bg2, PT *points, int size)
   env->deletes.push_back(std::shared_ptr<void>(sbm));
 
   return add_bool_bitmap(e, sbm2);
+#endif
 }
 
 EXPORT GameApi::ContinuousBitmapApi::ContinuousBitmapApi(Env &e) : e(e) { }
@@ -3007,6 +3054,7 @@ EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::cbm_empty(float x, float y)
 {
   return constant(0x00000000, x, y);
 }
+#if 0
 class DistanceRenderContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
@@ -3038,11 +3086,15 @@ private:
   ColorVolumeObject *colours;
   float sx,sy;
 };
+#endif
+
 GameApi::CBM GameApi::ContinuousBitmapApi::distance_render(FD obj, COV colors, float sx, float sy)
 {
+#if 0
   DistanceRenderable *dist = find_distance(e, obj);
   ColorVolumeObject *colorsI = find_color_volume(e, colors);
   return add_continuous_bitmap(e, new DistanceRenderContinuousBitmap(dist, colorsI, sx,sy));
+#endif
 }
 GameApi::CBM GameApi::ContinuousBitmapApi::constant(unsigned int color, float x, float y)
 {
@@ -3050,7 +3102,7 @@ GameApi::CBM GameApi::ContinuousBitmapApi::constant(unsigned int color, float x,
 }
 
 
-
+#if 0
 struct BiCubicData
 {
 public:
@@ -3138,12 +3190,15 @@ private:
   BiCubicData data;
   BiCubicInterpolate *inter;
 };
-
+#endif
 GameApi::CBM GameApi::ContinuousBitmapApi::bicubic(float f_0, float f_1, float df_0, float df_1,
 						   float ff_0, float ff_1, float dff_0, float dff_1)
 {
+#if 0
   return add_continuous_bitmap(e, new BiCubicInterpolateBitmap(f_0,f_1,df_0,df_1, ff_0, ff_1, dff_0, dff_1));
+#endif
 }
+#if 0
 class FunctionContinuousBitmap : public ContinuousBitmap<Color>
 {
 public:
@@ -3163,6 +3218,7 @@ public:
   std::function<unsigned int (float, float)> f; 
   float sx; float sy;
 };
+#endif
 EXPORT unsigned int GameApi::ContinuousBitmapApi::get_pixel(CBM bitmap, float x, float y)
 {
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, bitmap);
@@ -3174,8 +3230,9 @@ EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::function(std::function<unsigne
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
-
+#if 0
   return add_continuous_bitmap(e, new FunctionContinuousBitmap( f, sx, sy));
+#endif
 }
 EXPORT GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, int sy) // SampleBitmap(CB<Color, int sx,int sy)
 {
@@ -3195,6 +3252,7 @@ EXPORT GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int s
   return add_color_bitmap(e, new BitmapFromContinuousBitmap<Color>(*cbm, sx,sy));
 }
 
+#if 0
 class ComposeSurfaceColor : public ContinuousBitmap<Color>
 {
 public:
@@ -3218,12 +3276,14 @@ private:
   SurfaceImpl *impl;
   ColorVolumeObject *obj;
 };
-
+#endif
 EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::surfacecolor(S s, COV cov)
 {
+#if 0
   SurfaceImpl *impl = find_surface(e, s);
   ColorVolumeObject *obj = find_color_volume(e, cov);
   return add_continuous_bitmap(e, new ComposeSurfaceColor(impl, obj));
+#endif
 }
 EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::from_bitmap(BM bm, float xsize, float ysize)
 {
@@ -3250,6 +3310,7 @@ EXPORT std::vector<GameApi::BM> GameApi::SpriteApi::bitmap_anim(std::function<Ga
     }
   return vec;
 }
+#if 0
 class BitmapAnimML : public MainLoopItem
 {
 public:
@@ -3300,12 +3361,14 @@ private:
   std::vector<float> key_frames;
   float rep_time;
 };
+#endif
 EXPORT GameApi::ML GameApi::SpriteApi::bitmap_anim_ml(EveryApi &ev, std::vector<BM> vec,
 						      std::vector<float> key_frames,
 						      float repeat_time)
 {
- 
+#if 0 
   return add_main_loop(e, new BitmapAnimML(ev, *this, vec, key_frames, repeat_time));
+#endif
 }
 
 
@@ -4010,6 +4073,7 @@ private:
   return add_main_loop(e, new SavePngML(ev, bm, filename));
 }
 
+#if 0
 class AvgBitmap : public Bitmap<Color>
 {
 public:
@@ -4039,9 +4103,10 @@ private:
   Bitmap<Color> &bm1;
   Bitmap<Color> &bm2;
 };
-
+#endif
 GameApi::BM GameApi::BitmapApi::avg(BM bm1, BM bm2)
 {
+#if 0
   BitmapHandle *handle1 = find_bitmap(e, bm1);
   ::Bitmap<Color> *b1 = find_color_bitmap(handle1);
   BitmapHandle *handle2 = find_bitmap(e, bm2);
@@ -4053,6 +4118,7 @@ GameApi::BM GameApi::BitmapApi::avg(BM bm1, BM bm2)
   handle3->bm = b;
   BM bm = add_bitmap(e, handle3);
   return bm;
+#endif
 }
 
 GameApi::BM GameApi::BitmapApi::fix_edges(BM bm)
@@ -6242,7 +6308,7 @@ GameApi::ML GameApi::BitmapApi::save_raw(BM bm, std::string filename)
   Bitmap<Color> *bitmap = find_color_bitmap(handle);
   return add_main_loop(e, new SaveRawBitmapML(e,bitmap, filename));
 }
-
+#if 0
 class LoadRawBitmap : public Bitmap<Color>
 {
 public:
@@ -6281,6 +6347,8 @@ private:
   unsigned int *bmdata;
   std::string filename;
 };
+#endif
+
 
 class LoadRawBitmap2 : public Bitmap<Color>
 {
@@ -6331,6 +6399,7 @@ private:
 
 GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data)
 {
+
   LoadRawBitmap2 *b = new LoadRawBitmap2(data);
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b;
@@ -6340,11 +6409,13 @@ GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data)
 
 GameApi::BM load_raw_bitmap(GameApi::Env &e, std::string filename)
 {
+#if 0
   LoadRawBitmap *b = new LoadRawBitmap(filename);
   BitmapColorHandle *handle2 = new BitmapColorHandle;
   handle2->bm = b;
   GameApi::BM bm = add_bitmap(e, handle2);
   return bm;
+#endif
 }
 
 class CircularGradient : public Bitmap<Color>
@@ -7687,6 +7758,7 @@ private:
 };
 
 #undef HITBOX
+
 
 
 class EnemyTile : public MainLoopItem

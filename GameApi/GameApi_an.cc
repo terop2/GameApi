@@ -100,7 +100,7 @@ EXPORT GameApi::IS GameApi::AnimApi::single(PT point, float duration)
 
   AnimImpl i;
   i.wave_int = 0;
-  i.wave_point = new SingleAnimPoint(pp, duration);
+  //i.wave_point = new SingleAnimPoint(pp, duration);
   i.wave_float = 0;
   IS is = add_anim(e, i);
   return is;  
@@ -110,7 +110,7 @@ EXPORT GameApi::IS GameApi::AnimApi::single(float val, float duration)
   AnimImpl i;
   i.wave_int = 0;
   i.wave_point = 0;
-  i.wave_float = new SingleAnimFloat(val, duration);
+  //i.wave_float = new SingleAnimFloat(val, duration);
   IS is = add_anim(e,i);
   return is;
 }
@@ -118,7 +118,7 @@ EXPORT GameApi::IS GameApi::AnimApi::single(float val, float duration)
 EXPORT GameApi::IS GameApi::AnimApi::line(int val1, int val2, float duration)
 {
   AnimImpl i;
-  i.wave_int = new LineAnimInt(val1,val2, duration);
+  //i.wave_int = new LineAnimInt(val1,val2, duration);
   i.wave_point = 0;
   i.wave_float = 0;
   IS is = add_anim(e, i);
@@ -134,7 +134,7 @@ EXPORT GameApi::IS GameApi::AnimApi::line(PT p1, PT p2, float duration)
 
   AnimImpl i;
   i.wave_int = 0;
-  i.wave_point = new LineAnimPoint(pp, pp2, duration);
+  //i.wave_point = new LineAnimPoint(pp, pp2, duration);
   i.wave_float = 0;
   IS is = add_anim(e, i);
   return is;  
@@ -144,12 +144,13 @@ EXPORT GameApi::IS GameApi::AnimApi::line(float val1, float val2, float duration
   AnimImpl i;
   i.wave_int =0;
   i.wave_point = 0;
-  i.wave_float = new LineAnimFloat(val1, val2, duration);
+  //i.wave_float = new LineAnimFloat(val1, val2, duration);
   IS is = add_anim(e,i);
   return is;
 }
 
 
+#if 0
 class AnimArrayInt : public AnimArray<AnimInt, int>
 {
 public:
@@ -162,14 +163,18 @@ public:
   AnimArrayPoint(GameApi::Env &e, GameApi::IS *array, int size) : AnimArray<AnimPoint3d,Point>(e, array, size) { }
   AnimPoint3d *get(const AnimImpl &c) const { return c.wave_point; }
 };
+#endif
+
+#if 0
 class AnimArrayFloat : public AnimArray<AnimFloat, float>
 {
 public:
   AnimArrayFloat(GameApi::Env &e, GameApi::IS *array, int size) : AnimArray<AnimFloat,float>(e, array, size) { }
   AnimFloat *get(const AnimImpl &c) const { return c.wave_float; }
 };
+#endif
 
-
+#if 0
 class AnimRepeatInt : public AnimRepeat<AnimInt, int>
 {
 public:
@@ -188,34 +193,34 @@ public:
   AnimRepeatFloat(GameApi::Env &e, GameApi::IS val, int count=-1) : AnimRepeat<AnimFloat,float>(e, val, count) { }
   AnimFloat *get(const AnimImpl &c) const { return c.wave_float; }
 };
-
+#endif
 
 
 
 EXPORT GameApi::IS GameApi::AnimApi::seq_line(IS *array, int size)
 {
   AnimImpl i;
-  i.wave_int = new AnimArrayInt(e, array, size);
-  i.wave_point = new AnimArrayPoint(e, array, size);
-  i.wave_float = new AnimArrayFloat(e, array, size);
+  //i.wave_int = new AnimArrayInt(e, array, size);
+  //i.wave_point = new AnimArrayPoint(e, array, size);
+  //i.wave_float = new AnimArrayFloat(e, array, size);
   IS is = add_anim(e,i);
   return is;
 } 
 EXPORT GameApi::IS GameApi::AnimApi::repeat(IS i, int count)
 {
   AnimImpl ii;
-  ii.wave_int = new AnimRepeatInt(e, i, count);
-  ii.wave_point = new AnimRepeatPoint(e, i, count);
-  ii.wave_float = new AnimRepeatFloat(e, i, count);
+  //ii.wave_int = new AnimRepeatInt(e, i, count);
+  //ii.wave_point = new AnimRepeatPoint(e, i, count);
+  //ii.wave_float = new AnimRepeatFloat(e, i, count);
   IS is = add_anim(e,ii);
   return is;
 }
 EXPORT GameApi::IS GameApi::AnimApi::repeat_infinite(IS i)
 {
   AnimImpl ii;
-  ii.wave_int = new AnimRepeatInt(e, i, -1);
-  ii.wave_point = new AnimRepeatPoint(e, i, -1);
-  ii.wave_float = new AnimRepeatFloat(e, i, -1);
+  //ii.wave_int = new AnimRepeatInt(e, i, -1);
+  //ii.wave_point = new AnimRepeatPoint(e, i, -1);
+  //ii.wave_float = new AnimRepeatFloat(e, i, -1);
   IS is = add_anim(e,ii);
   return is;
 }
