@@ -108,9 +108,9 @@ SDL_MIXER_MINI1 = sdl_mixer_mini/src
 SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
 #-fno-exceptions
-CFLAGS =  -O3 -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
-CCFLAGS = -O3 -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
-CC2FLAGS = -O3 -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+CFLAGS = -s DISABLE_EXCEPTION_CATCHING=1 -fno-rtti -fno-exceptions -Oz -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+CCFLAGS = -s DISABLE_EXCEPTION_CATCHING=1 -fno-rtti -fno-exceptions -Oz -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+CC2FLAGS = -s DISABLE_EXCEPTION_CATCHING=1 -fno-rtti -fno-exceptions -Oz -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -g -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
@@ -135,11 +135,11 @@ main.exe: $(O2Files_examples) Makefile GameApi.hh libGameApi.dll
 
 libGameApi.bc: $(O2Files) $(OFiles) $(OOFiles) Makefile
 	echo em++ libGameApi.bc
-	em++ -shared $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
+	em++ -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
 
 libGameApi_nothreads.bc: $(O2Files_nothreads) $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	echo em++ libGameApi_nothreads.bc
-	em++ -shared $(OFiles_nothreads) $(O2Files_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  
+	em++ -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  
 
 
 libGameApi.so: $(OFiles) Makefile

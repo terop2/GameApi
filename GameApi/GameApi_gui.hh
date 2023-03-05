@@ -228,7 +228,7 @@ public:
       {
 	char c = path[i];
 	int val = int(c - '0');
-	GuiWidgetForward *forw = dynamic_cast<GuiWidgetForward*>(vec[val]);
+	GuiWidgetForward *forw = (GuiWidgetForward*)(vec[val]);
 	if (!forw) { return 0; }
 	v = &forw->vec;
       }

@@ -31,20 +31,29 @@ EXPORT GameApi::Ft GameApi::FontApi::newfont(std::string filename, int sx, int s
 }
 EXPORT GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, float sx, float sy)
 {
+  std::cout << "ERROR, glyph_outline error" << std::endl; 
+  // COMMENTED OUT BECAUSE DYNAMIC CAST DISABLED 
+#if 0
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bm = env->fonts[font.id].bm;
+#ifdef EMSCRIPTEN
+  FontGlyphBitmap *bm2 = static_cast<FontGlyphBitmap*>(bm); 
+  LineCollection *bm3 = static_cast<LineCollection*>(bm);
+#else
   FontGlyphBitmap *bm2 = dynamic_cast<FontGlyphBitmap*>(bm); 
   LineCollection *bm3 = dynamic_cast<LineCollection*>(bm);
+#endif
   bm2->load_glyph_outline(idx, sx, sy);
   LineCollection *coll = bm3;
   LineCollection *coll2 = new ForwardLineCollection(coll);
   return add_line_array(e, coll2);
+#endif
 }
 EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy, float dx, float dy)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bmA = env->fonts[font.id].bm;
-  FontGlyphBitmap *bm2 = dynamic_cast<FontGlyphBitmap*>(bmA);
+  FontGlyphBitmap *bm2 = static_cast<FontGlyphBitmap*>(bmA);
   bm2->load_glyph_outline(idx,sx,sy);
   LineCollection *coll = bm2;
   FontGlyphBitmap *bm = (FontGlyphBitmap*)coll;
@@ -80,7 +89,7 @@ EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   Bitmap<int> *bmA = env->fonts[font.id].bm;
-  FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bmA);
+  FontGlyphBitmap *bm3 = static_cast<FontGlyphBitmap*>(bmA);
   //bm3->load_glyph(idx);
   Bitmap<int> *bm4 = new GlyphChooser(idx, *bm3);
   //Bitmap<int> *bm = env->fonts[font.id].bm;
@@ -111,7 +120,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std
       std::cout << ch << std::flush;
       BM bm = glyph(font, ch);
       Bitmap<int> *bmA = env->fonts[font.id].bm;
-      FontGlyphBitmap *bm2 = dynamic_cast<FontGlyphBitmap*>(bmA);
+      FontGlyphBitmap *bm2 = static_cast<FontGlyphBitmap*>(bmA);
       int top = bm2->bitmap_top(ch);
       int xx = x;
       int yy = y*y_delta;
@@ -610,7 +619,7 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
     {
       char ch = alternative_chars[i];
       Bitmap<int> *bm2 = env->fonts[font.id].bm;
-      FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bm2);
+      FontGlyphBitmap *bm3 = static_cast<FontGlyphBitmap*>(bm2);
       int top = bm3->bitmap_top(ch);
 
 
@@ -1762,7 +1771,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x
       char ch = str[i];
       BM bm = glyph(font, ch);
       Bitmap<int> *bm2 = env->fonts[font.id].bm;
-      FontGlyphBitmap *bm3 = dynamic_cast<FontGlyphBitmap*>(bm2);
+      FontGlyphBitmap *bm3 = static_cast<FontGlyphBitmap*>(bm2);
       int top = bm3->bitmap_top(ch);
       BitmapHandle *handle = find_bitmap(e,bm);
       Bitmap<Color> *col = find_color_bitmap(handle);

@@ -10,7 +10,7 @@ EXPORT void GameApi::GridApi::preparegrid(GameApi::BM tile_bitmap, int tile_choo
   BitmapHandle *handle = find_bitmap(e, tile_bitmap);
   int sx = 1;
   int sy = 1;
-  BitmapTileHandle *chandle = dynamic_cast<BitmapTileHandle*>(handle);
+  BitmapTileHandle *chandle = static_cast<BitmapTileHandle*>(handle);
   if (chandle)
     {
       sx = chandle->tile_sx;

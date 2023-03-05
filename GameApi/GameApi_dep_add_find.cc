@@ -1365,6 +1365,7 @@ GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info
   ee.id = link->CurrentLinkNum();
   return ee;  
 }
+#if 0
 GameApi::MV add_mv_point(GameApi::Env &e, float x, float y, float z)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1373,10 +1374,11 @@ GameApi::MV add_mv_point(GameApi::Env &e, float x, float y, float z)
   mv.id = env->dims.size()-1;
   return mv;
 }
+#endif
 NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv);
 EventInfo find_event_info(GameApi::Env &e, GameApi::E ee);
 
-
+#if 0
 GameApi::MV add_line(GameApi::Env &e, GameApi::E start, GameApi::E end, 
 		     GameApi::MV start_mv, GameApi::MV end_mv, int start_choose, int end_choose)
 {
@@ -1395,7 +1397,7 @@ GameApi::MV add_line(GameApi::Env &e, GameApi::E start, GameApi::E end,
   mv.id = env->dims.size()-1;
   return mv;
 }
-
+#endif
 
 GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 {
@@ -2460,32 +2462,42 @@ AnimImpl find_anim(GameApi::Env &e, GameApi::IS i)
 }
 Bitmap<Color> *find_color_bitmap(BitmapHandle *handle, int bbm_choose)
 {
-
+#ifndef EMSCRIPTEN
   BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
   if (ahandle)
     {
       if (bbm_choose != -1 && bbm_choose >=0 && bbm_choose < (int)ahandle->vec.size())
 	  handle = ahandle->vec[bbm_choose];
     }
-
+#endif
+#ifdef EMSCRIPTEN
+   BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
+#else
    BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+#endif
+#ifndef EMSCRIPTEN
    BitmapTileHandle *chandle2 = dynamic_cast<BitmapTileHandle*>(handle);
    if (!chandle && !chandle2) return 0;
+#endif
    if (chandle)
      return chandle->bm;
+#ifndef EMSCRIPTEN
    return chandle2->bm;
+#else
+   return 0;
+#endif
 }
 Bitmap<Pos> *find_pos_bitmap(BitmapHandle *handle, int bbm_choose)
 {
-
+#ifndef EMSCRIPTEN
   BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
   if (ahandle)
     {
       if (bbm_choose != -1 && bbm_choose >=0 && bbm_choose < (int)ahandle->vec.size())
 	  handle = ahandle->vec[bbm_choose];
     }
-
-   BitmapPosHandle *chandle = dynamic_cast<BitmapPosHandle*>(handle);
+#endif
+   BitmapPosHandle *chandle = static_cast<BitmapPosHandle*>(handle);
    if (!chandle) return 0;
    return chandle->bm;
 }

@@ -1118,7 +1118,11 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadposbitmap(std::string filename)
 EXPORT GameApi::BM GameApi::BitmapApi::findtile(GameApi::BM tile_bitmap, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, tile_bitmap);
+#ifdef EMSCRIPTEN
+  BitmapTileHandle *chandle = static_cast<BitmapTileHandle*>(handle);
+#else
   BitmapTileHandle *chandle = dynamic_cast<BitmapTileHandle*>(handle);
+#endif
   int sx = chandle->tile_sx;
   int sy = chandle->tile_sy;
   return subbitmap(tile_bitmap, sx*x, sy*y, sx, sy);
@@ -1134,11 +1138,19 @@ Bitmap<T> *subbitmap_t(Bitmap<T> *bm, int x, int y, int width, int height)
 
 BitmapHandle *subbitmap_h(BitmapHandle *handle, int x, int y, int width, int height)
 {
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *chandle1 = static_cast<BitmapColorHandle*>(handle);
+  BitmapIntHandle *chandle2 = 0; //dynamic_cast<BitmapIntHandle*>(handle);
+  BitmapArrayHandle *chandle3 = 0; //dynamic_cast<BitmapArrayHandle*>(handle);
+  BitmapPosHandle *chandle4 = 0; //dynamic_cast<BitmapPosHandle*>(handle);
+  BitmapTileHandle *chandle5 = 0; //dynamic_cast<BitmapTileHandle*>(handle);
+#else
   BitmapColorHandle *chandle1 = dynamic_cast<BitmapColorHandle*>(handle);
   BitmapIntHandle *chandle2 = dynamic_cast<BitmapIntHandle*>(handle);
   BitmapArrayHandle *chandle3 = dynamic_cast<BitmapArrayHandle*>(handle);
   BitmapPosHandle *chandle4 = dynamic_cast<BitmapPosHandle*>(handle);
   BitmapTileHandle *chandle5 = dynamic_cast<BitmapTileHandle*>(handle);
+#endif
   if (chandle1)
     { // color
       Bitmap<Color> *c = subbitmap_t(chandle1->bm, x,y,width,height);
@@ -1201,11 +1213,19 @@ Bitmap<T> *growbitmap_t(Bitmap<T> *bm, int l, int t, int r, int b,
 } 
 BitmapHandle *growbitmap_h(BitmapHandle *handle, int l, int t, int r, int b)
 {
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *chandle1 = static_cast<BitmapColorHandle*>(handle);
+  BitmapIntHandle *chandle2 = 0; //dynamic_cast<BitmapIntHandle*>(handle);
+  BitmapArrayHandle *chandle3 = 0; //dynamic_cast<BitmapArrayHandle*>(handle);
+  BitmapPosHandle *chandle4 = 0; //dynamic_cast<BitmapPosHandle*>(handle);
+  BitmapTileHandle *chandle5 = 0; //dynamic_cast<BitmapTileHandle*>(handle);
+#else
   BitmapColorHandle *chandle1 = dynamic_cast<BitmapColorHandle*>(handle);
   BitmapIntHandle *chandle2 = dynamic_cast<BitmapIntHandle*>(handle);
   BitmapArrayHandle *chandle3 = dynamic_cast<BitmapArrayHandle*>(handle);
   BitmapPosHandle *chandle4 = dynamic_cast<BitmapPosHandle*>(handle);
   BitmapTileHandle *chandle5 = dynamic_cast<BitmapTileHandle*>(handle);
+#endif
   if (chandle1)
     { // color
       Color elem(0,0,0,0);
@@ -1270,14 +1290,21 @@ EXPORT GameApi::BM GameApi::BitmapApi::growbitmap(GameApi::BM orig, int l, int t
 
 BitmapHandle *modify_bitmap_h(BitmapHandle *orig, BitmapHandle *bm, int x, int y)
 {
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *chandle1 = static_cast<BitmapColorHandle*>(orig);
+  BitmapIntHandle *chandle2 = 0; //dynamic_cast<BitmapIntHandle*>(orig);
+  BitmapArrayHandle *chandle3 = 0; //dynamic_cast<BitmapArrayHandle*>(orig);
+  BitmapPosHandle *chandle4 = 0; //dynamic_cast<BitmapPosHandle*>(orig);
+#else
   BitmapColorHandle *chandle1 = dynamic_cast<BitmapColorHandle*>(orig);
   BitmapIntHandle *chandle2 = dynamic_cast<BitmapIntHandle*>(orig);
   BitmapArrayHandle *chandle3 = dynamic_cast<BitmapArrayHandle*>(orig);
   BitmapPosHandle *chandle4 = dynamic_cast<BitmapPosHandle*>(orig);
+#endif
   //BitmapTileHandle *chandle5 = dynamic_cast<BitmapTileHandle*>(handle);
   if (chandle1)
     { // color
-      BitmapColorHandle *ahandle1 = dynamic_cast<BitmapColorHandle*>(bm);
+      BitmapColorHandle *ahandle1 = static_cast<BitmapColorHandle*>(bm);
       Bitmap<Color> *c = new ModifyBitmap<Color>(*chandle1->bm, *ahandle1->bm, x,y); 
       BitmapColorHandle *handle = new BitmapColorHandle;
       handle->bm = c;
@@ -1285,7 +1312,7 @@ BitmapHandle *modify_bitmap_h(BitmapHandle *orig, BitmapHandle *bm, int x, int y
     }
   if (chandle2)
     { // color
-      BitmapIntHandle *ahandle1 = dynamic_cast<BitmapIntHandle*>(bm);
+      BitmapIntHandle *ahandle1 = static_cast<BitmapIntHandle*>(bm);
       Bitmap<int> *c = new ModifyBitmap<int>(*chandle2->bm, *ahandle1->bm, x,y); 
       BitmapIntHandle *handle = new BitmapIntHandle;
       handle->bm = c;
@@ -1307,7 +1334,7 @@ BitmapHandle *modify_bitmap_h(BitmapHandle *orig, BitmapHandle *bm, int x, int y
 
   if (chandle4)
     { // pos
-      BitmapPosHandle *ahandle1 = dynamic_cast<BitmapPosHandle*>(bm);
+      BitmapPosHandle *ahandle1 = static_cast<BitmapPosHandle*>(bm);
       Bitmap<Pos> *c = new ModifyBitmap<Pos>(*chandle4->bm, *ahandle1->bm, x,y); 
       BitmapPosHandle *handle = new BitmapPosHandle;
       handle->bm = c;
@@ -1359,7 +1386,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::blitbitmap_bb(BM bg, BM orig, int x, int 
 EXPORT int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
-  BitmapIntHandle *handle2 = dynamic_cast<BitmapIntHandle*>(handle);
+  BitmapIntHandle *handle2 = static_cast<BitmapIntHandle*>(handle);
   if (handle2)
     {
       return handle2->bm->Map(x,y);
@@ -1429,7 +1456,11 @@ EXPORT int GameApi::BitmapApi::size_y(BM bm)
 EXPORT unsigned int GameApi::BitmapApi::colorvalue(GameApi::BM orig, int x, int y)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *handle2 = static_cast<BitmapColorHandle*>(handle);
+#else
   BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
+#endif
   if (handle2)
     {
       return handle2->bm->Map(x,y).Pixel();
@@ -1443,8 +1474,13 @@ EXPORT GameApi::BM GameApi::BitmapApi::interpolate_bitmap(GameApi::BM orig1, Gam
   BitmapHandle *handle1 = find_bitmap(e, orig1);
   BitmapHandle *handle2 = find_bitmap(e, orig2);
   BitmapColorHandle *newhandle = new BitmapColorHandle;
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *h1 = static_cast<BitmapColorHandle*>(handle1);
+  BitmapColorHandle *h2 = static_cast<BitmapColorHandle*>(handle2);
+#else
   BitmapColorHandle *h1 = dynamic_cast<BitmapColorHandle*>(handle1);
   BitmapColorHandle *h2 = dynamic_cast<BitmapColorHandle*>(handle2);
+#endif
   newhandle->bm = 0;
   if (h1&&h2)
     {
@@ -1623,7 +1659,7 @@ private:
 EXPORT GameApi::BM GameApi::BitmapApi::dup_x(BM orig)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   Bitmap<Color> *rep = new DupXBitmap(*chandle->bm);
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = rep;
@@ -1633,7 +1669,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::dup_x(BM orig)
 EXPORT GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   Bitmap<Color> *rep = new FlipBitmap(*chandle->bm, true, false);
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = rep;
@@ -1642,7 +1678,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::flip_x(BM orig)
 EXPORT GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   Bitmap<Color> *rep = new FlipBitmap(*chandle->bm, false, true);
 
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
@@ -1652,7 +1688,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::flip_y(BM orig)
 EXPORT GameApi::BM GameApi::BitmapApi::rot90(BM orig)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   Bitmap<Color> *rep = new Rot90Bitmap(*chandle->bm);
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = rep;
@@ -1661,7 +1697,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::rot90(BM orig)
 EXPORT GameApi::BM GameApi::BitmapApi::repeat_bitmap(BM orig, int xcount, int ycount)
 {
   BitmapHandle *handle = find_bitmap(e, orig);
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   if (!chandle) return add_bitmap(e,0);
   RepeatBitmap<Color> *rep = new RepeatBitmap<Color>(*chandle->bm, xcount, ycount);
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
