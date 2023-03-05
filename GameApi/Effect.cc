@@ -2714,6 +2714,7 @@ bool SurfaceEffect::Frame(float time)
 }
 void RingEffect::Init()
 {
+#if 0
   std::pair<Point, Vector> array[] = 
     { 
       std::make_pair(Point(-30.0,-10.0,0.0), Vector(-1.0,-1.0,0.0)),
@@ -2740,7 +2741,7 @@ void RingEffect::Init()
   UpdateVBO(vbo, 1, vbostate, UpdateVertexNormalIndex);
   UpdateVBO(vbo, 2, vbostate, UpdateVertexNormalIndex);
   UpdateVBO(vbo, 3, vbostate, UpdateVertexNormalIndex);
-
+#endif
 }
 bool RingEffect::Frame(float time)
 {

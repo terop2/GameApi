@@ -21,6 +21,7 @@ GameApi::PH GameApi::PhysicsApi::phy_empty()
 {
   return add_physics(e, new EmptyPhysics);
 }
+#if 0
 class AnchorPhysics : public ForwardPhysics
 {
 public:
@@ -35,8 +36,10 @@ private:
   PhysicsNode *node;
   Point p;
 };
+#endif
 GameApi::PhysicsApi::PHI GameApi::PhysicsApi::anchor_point(PH phy, PT pos)
 {
+#if 0
   PhysicsNode *node = find_physics(e, phy);
   Point *pt = find_point(e, pos);
   PHI i;
@@ -44,6 +47,7 @@ GameApi::PhysicsApi::PHI GameApi::PhysicsApi::anchor_point(PH phy, PT pos)
   i.phy = add_physics(e, n); 
   i.id = n->NumAnchors()-1;
   return i;
+#endif
 }
 
 class ForcePhysics : public ForwardPhysics
