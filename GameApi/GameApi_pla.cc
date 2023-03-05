@@ -1,6 +1,10 @@
 
 #include "GameApi_h.hh"
 
+EXPORT GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
+
+#if 0
+
 class PlanePointsFunction : public PlanePoints2d
 {
 public:
@@ -25,7 +29,6 @@ private:
 };
 
 
-EXPORT GameApi::PlaneApi::PlaneApi(Env &e) : e(e) { }
 
 EXPORT GameApi::PL GameApi::PlaneApi::function(GameApi::PT (*fptr)(EveryApi &e, int idx, void*data), int num_points, float sx, float sy, void*data)
 {
@@ -1116,3 +1119,4 @@ GameApi::PP GameApi::NewPlaneApi::trans(PP p, float dx, float dy)
   PlaneShape *next = find_plane_shape(e,p);
   return add_plane_shape(e,new MovePlaneShape(next, dx,dy));
 }
+#endif

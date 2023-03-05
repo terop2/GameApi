@@ -1965,6 +1965,7 @@ private:
 
 
 // Note, coordinates.hh has other surfaces
+#if 0
 class SphereSurfaceIn3d : public SurfaceIn3d
 {
 public:
@@ -1996,6 +1997,7 @@ private:
   Point center;
   float radius;
 };
+#endif
 
 class CurveInSurface : public CurveIn3d
 {
@@ -2310,6 +2312,7 @@ private:
   const CurveIn3d &c2;
 };
 
+#if 0
 class PlaneSurfaceIn3d : public SurfaceIn3d
 {
 public:
@@ -2335,7 +2338,7 @@ private:
   LineIn3d line_y;
   MultiplyCurves mult;
 };
-
+#endif
 
 class AnimCurveIn3d : public CurveIn3d
 {
@@ -3116,7 +3119,7 @@ private:
   Vector ref_vec;
 };
 
-
+#if 0
 class CoordChangeFaceColl : public ForwardFaceCollection
 {
 public:
@@ -3140,7 +3143,7 @@ private:
   bool invert;
   Coords coordchange;
 };
-
+#endif
 class RecalculateNormals : public ForwardFaceCollection
 {
 public:
@@ -3164,6 +3167,8 @@ private:
   mutable Vector store_res;
 
 };
+
+#if 0
 class AverageNormals : public ForwardFaceCollection
 {
 public:
@@ -3206,7 +3211,7 @@ private:
   int sx,sy;
   FaceCollection *coll;
 };
-
+#endif
 class SmoothNormals : public ForwardFaceCollection
 {
 public:
@@ -7832,6 +7837,7 @@ private:
   //Matrix invbox;
 };
 
+#if 0
 class IsChangingFace : public Function<int, bool>
 {
 public:
@@ -7853,6 +7859,7 @@ public:
 private:
   const std::vector<FaceCollection*> &v;
 };
+#endif
 
 #if 0
 class FilterFaces : public ForwardFaceCollection
@@ -9376,6 +9383,7 @@ private:
   float radius2;
 };
 
+#if 0
 class RingElem : public SingleForwardBoxableFaceCollection
 {
 public:
@@ -9414,8 +9422,9 @@ private:
   PointsGrid grid;
   SampleGrid faces;
 };
-typedef FunctionImpl2<PointVectorCollection*, BoxableFaceCollection*, float, int, RingElem> RingElemFunction;
 
+typedef FunctionImpl2<PointVectorCollection*, BoxableFaceCollection*, float, int, RingElem> RingElemFunction;
+#endif
 
 class Blob
 {

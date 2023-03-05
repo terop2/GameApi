@@ -7123,6 +7123,7 @@ private:
   Bitmap<class Color> &tex;
 };
 
+#if 0
 class BitmapSphere : public SurfaceIn3d
 {
 public:
@@ -7161,7 +7162,9 @@ private:
   Point center;
   float radius0, radius1;
 };
+#endif
 
+#if 0
 class ContinuousColorBitmapToFloatBitmap : public ContinuousBitmap<float>
 {
 public:
@@ -7182,7 +7185,9 @@ public:
 private:
   ContinuousBitmap<Color> &bm;
 };
+#endif
 
+#if 0
 class HeightMap3Data : public Bitmap<float>
 {
 public:
@@ -7300,7 +7305,7 @@ private:
   Vector u_x, u_y, u_z;
   mutable int cached_face;
 };
-
+#endif
 class Visitor;
 struct Loop
 {
@@ -8588,6 +8593,7 @@ public:
 
 
 
+#if 0
 class SpacePoints : public PointsApiPoints
 {
 public:
@@ -8624,7 +8630,7 @@ private:
   int sx, sy, sz;
   std::vector<Point> vec;
 };
-
+#endif
 
 
 

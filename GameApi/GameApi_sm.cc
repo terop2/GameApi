@@ -16,6 +16,7 @@ EXPORT GameApi::SM GameApi::SampleCollectionApi::empty()
 {
   return add_sample(e, new EmptySamples);
 }
+#if 0
 class AddSamples : public Samples
 {
 public:
@@ -47,12 +48,15 @@ private:
   int sample_rate;
   int id;
 };
+#endif
 
 EXPORT GameApi::SM GameApi::SampleCollectionApi::add(SM orig, WV wave, int sample_rate, int id)
 {
+#if 0
   Samples *sample = find_samples(e, orig);
   Waveform *wv = find_waveform(e, wave);
   return add_sample(e, new AddSamples(sample, wv, sample_rate, id));
+#endif
 }
 EXPORT void GameApi::SampleCollectionApi::init_audio()
 {
