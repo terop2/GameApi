@@ -25,12 +25,15 @@ void cone(Matrix m, int numfaces, Point p1, Point p2, float rad1, float rad2, Fa
   MatrixElem mm(cn,m);
   s.Add(mm);
 }
+class TexturePlugin;
 void texture_rectangle(Matrix m, TexturePlugin *plugin, FaceStore &s)
 {
+#if 0
   RectangleElem rect(1.0,1.0);
   SimpleTexCoords coords(rect, plugin->Texture());
   TextureElem texture(rect,coords);
   s.Add(texture);
+#endif
 }
 void cylinder(Matrix m, int numfaces, FaceStore &s)
 {
@@ -57,8 +60,8 @@ void matrix(BoxableFaceCollection &coll, Matrix m, FaceStore &s)
 }
 void andnot(BoxableFaceCollection &coll1, BoxableFaceCollection &coll2, FaceStore &s)
 {
-  AndNotElem ae(coll1,coll2);
-  s.Add(ae);
+  //AndNotElem ae(coll1,coll2);
+  //s.Add(ae);
 }
 void rectangle(Matrix m, float x, float y, FaceStore &s)
 {

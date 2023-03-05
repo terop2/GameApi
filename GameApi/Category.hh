@@ -303,8 +303,8 @@ class VolumeObjectVoxelArrow : public virtual RangeProductObject, public virtual
 public:
   void doit()
   {
-    delete voxel;
-    voxel = new VolumeVoxel(*volume, rx,ry,rz);
+    //delete voxel;
+    //voxel = new VolumeVoxel(*volume, rx,ry,rz);
   }
 };
 // (Cube, ContinuousVoxel) -> Voxel

@@ -378,6 +378,7 @@ private:
   VolumeObject *next;
 };
 
+#if 0
 class SphereSurfaceVolume : public VolumeObject
 {
 public:
@@ -397,6 +398,7 @@ private:
   float radius;
   float gap;
 };
+#endif
 
 //#if 0
 class SphereVolume : public VolumeObject
