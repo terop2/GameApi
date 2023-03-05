@@ -7397,6 +7397,7 @@ struct Path2d
 };
 
 
+#if 0
 class Parser2 {
 public:
   Parser2() : currentptr(0), size(0) { }
@@ -7439,7 +7440,9 @@ private:
   char *currentptr;
   int size;
 };
+#endif
 
+#if 0
 template<class T>
 class TypeTraits
 {
@@ -7461,9 +7464,10 @@ public:
   static fptrtype fptr;
 };
 
+#endif
 
 
-
+#if 0
 template<>
 class TypeTraits<float>
 {
@@ -7493,6 +7497,7 @@ public:
   //Point2d (Parser2::*fptr)(std::string, bool &) = &Parser2::ParsePoint2d;
 };
 
+#endif
 
 #if 0
 template<>
@@ -7512,6 +7517,7 @@ class TypeTraits<Array<int,float> >
 #endif
 
 
+#if 0
 class ParseInterface
 {
 public:
@@ -7532,6 +7538,7 @@ private:
   void *res;
   T t;
 };
+#endif
 
 
 struct TestStruct
@@ -7550,7 +7557,7 @@ struct TestStruct
     v.visit(d);
   }
 };
-
+class Parser2;
 void Write(Parser2 *p, char *c, int size, int type, std::string s, bool &success)
 ;
 std::string WhiteSpace(std::string s);
@@ -7614,6 +7621,8 @@ T Parser2::ParseStruct2(std::string s_, bool &success)
   return *(T*)currentptr;
 }
 #endif
+
+#if 0
 template<class T>
 T Parser2::ParseStruct(std::string s_, bool &success)
 {
@@ -7683,7 +7692,7 @@ VectorArray<T> *Parser2::ParseArray2(std::string s_, bool &success)
   success = true;
   return lst;  
 }
-
+#endif
 
 void FontParseTestCases();
 

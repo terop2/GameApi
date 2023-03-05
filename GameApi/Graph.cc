@@ -1272,6 +1272,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2
 }
 #endif
 
+#if 0
 float Parser2::ParseFloat(std::string s_, bool &success)
 {
   std::cout << "ParseFloat: '" << s_ << "'" << std::endl;
@@ -1359,6 +1360,7 @@ Point Parser2::ParsePoint(std::string s_, bool &success)
   p.z = array->Index(2);
   return p;
 }
+#endif
 
 std::string WhiteSpace(std::string s)
 {
@@ -1423,6 +1425,7 @@ void Loop::visit(Visitor &v)
     v.visit(points);
 }
 
+#if 0
 TypeTraits<int>::fptrtype TypeTraits<int>::fptr = &Parser2::ParseInt;
 TypeTraits<bool>::fptrtype TypeTraits<bool>::fptr = &Parser2::ParseBool;
 
@@ -1431,8 +1434,11 @@ TypeTraits<float>::fptrtype TypeTraits<float>::fptr = &Parser2::ParseFloat;
 TypeTraits<Point2d>::fptrtype TypeTraits<Point2d>::fptr = &Parser2::ParsePoint2d;
 TypeTraits<Loop>::fptrtype TypeTraits<Loop>::fptr = &Parser2::ParseLoop;
 
+#endif
+
 void Write(Parser2 *p, char *c, int size, int type, std::string s, bool &success)
 {
+#if 0
   std::cout << "Write: '" << s << "'" << type << std::endl;
 
   switch(type)
@@ -1487,6 +1493,7 @@ void Write(Parser2 *p, char *c, int size, int type, std::string s, bool &success
   std::cout << "Write result: ";
   DumpMem(c,size);
   success = true;
+#endif
 }
 
 int Find(std::string s, char c)
