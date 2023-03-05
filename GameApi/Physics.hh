@@ -429,6 +429,7 @@ private:
   Distance3dPullback<std::pair<std::pair<float,float>, float>, std::pair<float,float>, float> pb; // (RxR)x(R) pullback
 };
 
+#if 0
 class RenderingEquationBitmap : public Bitmap<Point2d>
 {
 public:
@@ -488,6 +489,9 @@ private:
   Point br;
   int sx,sy;
 };
+#endif
+
+#if 0
 class TextureBitmap : public Bitmap<Color>
 {
 public:
@@ -510,7 +514,7 @@ private:
   Bitmap<Point2d> &coords;
   SurfaceIn3d &surface;
 };
-
+#endif
 
 //
 // Some interesting classes follow

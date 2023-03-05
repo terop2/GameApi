@@ -28,6 +28,7 @@ GameApi::PC GameApi::PointCollectionApi::bezier(PT *array, PT *control_array, in
 }
 #endif
 
+#if 0
 class PointCollectionFunction : public PointCollection
 {
 public:
@@ -43,7 +44,10 @@ private:
   std::function<GameApi::PT (int)> f;
   int count;
 };
+#endif
 EXPORT GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::PT (int)> f, int count)
 {
+#if 0
   return add_pointcoll_array(e, new PointCollectionFunction(e, f, count));
+#endif
 }

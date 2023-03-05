@@ -3059,6 +3059,7 @@ GameApi::ML GameApi::MainLoopApi::keyboard_toggle(ML m1, ML m2, int key)
   MainLoopItem *item2 = find_main_loop(e, m2);
   return add_main_loop(e, new KeyboardToggle(item, item2, key));
 }
+#if 0
 class PreparePTS : public MainLoopItem
 {
 public:
@@ -3087,11 +3088,14 @@ private:
   PointsApiPoints *points;
   bool firsttime;
 };
+#endif
 GameApi::ML GameApi::MainLoopApi::prepare_pts(ML ml, PTS pts)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e,ml);
   PointsApiPoints *points = find_pointsapi_points(e, pts);
   return add_main_loop(e, new PreparePTS(item, points));
+#endif
 }
 
 class DepthFunc : public MainLoopItem

@@ -72,9 +72,11 @@ void rectangle(Matrix m, float x, float y, FaceStore &s)
 
 void ring(Matrix m, const PointVectorCollection &points, float x, int steps, FaceStore &s)
 {
+#if 0
   RingElem r(points, x, steps);
   MatrixElem mm(r,m);
   s.Add(mm);
+#endif
 }
 
 void color_poly(Point2d p1, Point2d p2, Point2d p3, Color c1, Color c2, int x, int y, BitmapStore<Color> &s)

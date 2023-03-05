@@ -488,6 +488,7 @@ private:
   std::string context, type;
   PVec vec;
 };
+#if 0
 class UnknownWithChildren : public QMLLoop
 {
 public:
@@ -524,9 +525,11 @@ private:
   PVec vec;
   std::vector<QMLLoop*> children;
 };
+#endif
 
 QMLLoop *create_qml_element(QMLData *dt)
 {
+#if 0
   //std::cout << "create_qml_element" << std::endl;
   std::string type = dt->Type();
   
@@ -581,4 +584,5 @@ QMLLoop *create_qml_element(QMLData *dt)
     return new UnknownWithChildren(context,type2,p_vec,vec);
   }
   return new UnknownWithChildren(context,type2,p_vec,vec);
+#endif
 }

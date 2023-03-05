@@ -17,8 +17,9 @@ Color find_color(const DistanceObject &o, float val, Ray &r, float raydist)
   return o.ColorValue(idx, p);
 }
 
-
+#if 0
 bool operator<(const SeparateRender::Key &k1, const SeparateRender::Key &k2)
 {
   return k1.kx+k1.ky<k2.kx+k2.ky;
 }
+#endif

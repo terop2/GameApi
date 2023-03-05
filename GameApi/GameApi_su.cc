@@ -10,6 +10,7 @@ GameApi::SurfaceApi::~SurfaceApi()
 }
 GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float radius1, BM height)
 {
+#if 0
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
   Point *pp1 = find_point(e,center);
@@ -23,6 +24,7 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   SurfaceImpl i;
   i.surf = sphere;
   return add_surface(e, i);
+#endif
 }
 
 GameApi::PT GameApi::SpaceApi::plus(PT p1, PT p2)
@@ -36,6 +38,7 @@ GameApi::PT GameApi::SpaceApi::plus(PT p1, PT p2)
 GameApi::BM GameApi::SurfaceApi::render(S surf, int sx, int sy,
 				     PT ray_0, PT ray_x, PT ray_y, PT ray_z)
 {
+#if 0
   SurfaceImpl *s = find_surface(e, surf);
   Point *r_0 = find_point(e, ray_0);
   Point *r_x = find_point(e, ray_x);
@@ -54,9 +57,11 @@ GameApi::BM GameApi::SurfaceApi::render(S surf, int sx, int sy,
   BitmapColorHandle *handle = new BitmapColorHandle;
   handle->bm = bm2;
   return add_bitmap(e, handle);
+#endif
 }
 GameApi::S GameApi::SurfaceApi::plane(PT pos, V u_x, V u_y)
 {
+#if 0
   Point *p = find_point(e,pos);
   Vector *u_x1 = find_vector(e,u_x);
   Vector *u_y1 = find_vector(e,u_y);
@@ -64,15 +69,18 @@ GameApi::S GameApi::SurfaceApi::plane(PT pos, V u_x, V u_y)
   SurfaceImpl i;
   i.surf = new PlaneSurfaceIn3d(pl);
   return add_surface(e,i);
+#endif
 }
 
 GameApi::S GameApi::SurfaceApi::sphere(PT center, float radius)
 {
+#if 0
   Point *p = find_point(e, center);
   SphereSurfaceIn3d *surf = new SphereSurfaceIn3d(*p, radius);
   SurfaceImpl i;
   i.surf = surf;
   return add_surface(e,i);
+#endif
 }
 GameApi::S GameApi::SurfaceApi::texture(S orig, BM texture)
 {

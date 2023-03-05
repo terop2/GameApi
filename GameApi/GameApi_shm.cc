@@ -1,6 +1,8 @@
 
 #include "GameApi_h.hh"
 
+#if 0
+
 std::string ToNum(float val)
 {
   std::stringstream ss;
@@ -44,15 +46,18 @@ std::string vec4_to_string(GameApi::Env &e, float x, float y, float z, float a)
   std::string res = "vec4(" + xx + ", " + yy + ", " + zz + ", " + aa + ")";
   return res;
 }
-
+#endif
 std::string unique_id()
 {
+#if 0
   static int val=0;
   val++;
   std::stringstream ss;
   ss << val;
   return ss.str();
+#endif
 }
+#if 0
 std::string funccall_to_string(ShaderModule *mod);
 
 std::string color_funccall_to_string(ShaderModule *mod)
@@ -73,9 +78,11 @@ std::string color_funccall_to_string(ShaderModule *mod)
 
 
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
+#endif
 
 std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val)
 {
+#if 0
   std::string res = mod->ColorFunctionName();
   res+="(";
   int s = mod->NumArgs();
@@ -93,8 +100,9 @@ std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string
     }
   res+=")";
   return res;
+#endif
 }
-
+#if 0
 
 class SphereModule : public ShaderModule
 {
@@ -313,16 +321,21 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::spherical(SFO obj, PT tl, PT br, f
   SFO s4 = bind_arg(s3, "rp", ToNum(rp));
   return s4;
 }
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::cube()
 {
+#if 0
   return add_shader_module(e, new CubeModule);
+#endif
 }
-
 
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::sphere()
 {
+#if 0
   return add_shader_module(e, new SphereModule);
+#endif
 }
+#if 0
 class BindArgModule : public ShaderModule
 {
 public:
@@ -382,24 +395,30 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::bind_arg(SFO obj, std::string name
   ShaderModule *mod = find_shader_module(e, obj);
   return add_shader_module(e, new BindArgModule(*mod, name, value));
 }
-
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::sphere(PT center, float radius)
 {
+#if 0
   SFO sfo = sphere();
   SFO sfo_1 = bind_arg(sfo, "center", vec3_to_string(e, center));
   SFO sfo_2 = bind_arg(sfo_1, "radius", ToNum(radius));
   return sfo_2;
+#endif
 }
-
+#if 0
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::cube(float start_x, float end_x,
 					    float start_y, float end_y,
 					    float start_z, float end_z)
 {
+#if 0
   SFO sfo = cube();
   SFO sfo_1 = bind_arg(sfo, "tl", vec3_to_string(e, start_x, start_y, start_z));
   SFO sfo_2 = bind_arg(sfo_1, "br", vec3_to_string(e, end_x, end_y, end_z));
   return sfo_2;
+#endif
 }
+#if 0
 class ColorToGrayScale : public ShaderModule
 {
 public:
@@ -647,21 +666,32 @@ EXPORT GameApi::SFO GameApi::ShaderModuleApi::grayscale(SFO obj)
   ShaderModule *obj_m = find_shader_module(e, obj);
   return add_shader_module(e, new ColorToGrayScale(obj_m));
 }
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::color_from_normal(SFO obj)
 {
+#if 0
   ShaderModule *obj_m = find_shader_module(e, obj);
   return add_shader_module(e, new ColorFromNormalModule(obj_m));
+#endif
 }
+#if 0
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::render(SFO obj)
 {
+#if 0
   ShaderModule *obj_m = find_shader_module(e, obj);
   return add_shader_module(e, new RenderModule(obj_m));
+#endif
 }
+
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::v_render(SFO obj)
 {
+#if 0
   ShaderModule *obj_m = find_shader_module(e, obj);
   return add_shader_module(e, new V_RenderModule(obj_m));
+#endif
 }
+#if 0
 class RotYModule : public ShaderModule
 {
 public:
@@ -938,12 +968,16 @@ private:
   ShaderModule &m2;
   std::string uid;
 };
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::or_elem(SFO o1, SFO o2)
 {
+#if 0
   ShaderModule *o1_m = find_shader_module(e, o1);
   ShaderModule *o2_m = find_shader_module(e, o2);
   return add_shader_module(e, new OrElemModule(*o1_m, *o2_m));
+#endif
 }
+#if 0
 
 
 class BlendElemModule : public ShaderModule
@@ -1723,25 +1757,32 @@ private:
   std::string uid;
 
 };
+#endif
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::ambient_occulsion(SFO obj, float d, float i)
 {
+#if 0
   ShaderModule *mod = find_shader_module(e,obj);
   SFO ao = add_shader_module(e, new AOModule(mod));
   SFO ao_1 = bind_arg(ao, "i", ToNum(i));
   SFO ao_2 = bind_arg(ao_1, "d", ToNum(d));
   return ao_2;
+#endif
 }
+
 EXPORT GameApi::SFO GameApi::ShaderModuleApi::rounded_cube(float start_x, float end_x,
 						    float start_y, float end_y,
 						    float start_z, float end_z,
 						    float r)
 {
+#if 0
   SFO r_cube = add_shader_module(e, new RoundedCube());
   SFO r_cube_1 = bind_arg(r_cube, "tl", vec3_to_string(e,start_x, start_y, start_z));
   SFO r_cube_2 = bind_arg(r_cube_1, "br", vec3_to_string(e,end_x, end_y, end_z));
   SFO r_cube_3 = bind_arg(r_cube_2, "r", ToNum(r));
   return r_cube_3;
+#endif
 }
+#if 0
 class NoiseModule : public ShaderModule
 {
 public:
@@ -2214,8 +2255,10 @@ GameApi::SFO GameApi::ShaderModuleApi::empty()
 {
   return cube();
 }
+#endif
 GameApi::SFO GameApi::ShaderModuleApi::colormod_from_position(SFO obj, float px, float py, float pz, float sx, float sy, float sz)
 {
+#if 0
   ShaderModule *mod = find_shader_module(e, obj);
   SFO m = add_shader_module(e, new ColorModFromPosition(mod));
   SFO m01 = bind_arg(m, "px", ToNum(px));
@@ -2225,8 +2268,9 @@ GameApi::SFO GameApi::ShaderModuleApi::colormod_from_position(SFO obj, float px,
   SFO m3 = bind_arg(m2, "sy", ToNum(sy));
   SFO m4 = bind_arg(m3, "sz", ToNum(sz));
   return m4;
+#endif
 }
-
+#if 0
 class SFOML : public MainLoopItem
 {
 public:
@@ -2321,8 +2365,12 @@ private:
   GameApi::VA va;
   float sx,sy;
 };
-
+#endif
 GameApi::ML GameApi::ShaderModuleApi::sfo_to_ml(EveryApi &ev, SFO sfo, float sx, float sy)
 {
+#if 0
   return add_main_loop(e, new SFOML(ev, sfo, sx,sy));
+#endif
 }
+#if 0
+#endif
