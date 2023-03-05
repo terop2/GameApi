@@ -144,13 +144,15 @@ public:
   }
 
 
+  #if 0
   template<class T>
   T *GetObj(int obj)
   {
     if (*(infos[obj])!=typeid(T)) return 0;
     return (T*)ptrs[obj];
   }
-
+  #endif
+  
   template<class T>
   void AllocObj(int obj)
   {

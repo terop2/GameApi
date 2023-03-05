@@ -4,30 +4,6 @@
 #include "Graph.hh"
 #include "Serialize.hh"
 
-#if 0
-struct PolyHandle
-{
-  int id;
-  virtual ~PolyHandle() { }
-};
-#endif
-
-struct FaceCollPolyHandle
-{
-  FaceCollPolyHandle() : coll(0), collarray(0), collowned(false), collarrayowned(false) { }
-  int id;
-  FaceCollection *coll; 
-  //FaceCollection **collarray;
-  Array<int, FaceCollection*> *collarray;
-  bool collowned;
-  bool collarrayowned;
-  //int size;
-  bool padding1;
-  bool padding2;
-  ~FaceCollPolyHandle() { /*if (collowned) delete coll; if (collarrayowned) delete collarray;*/ }
-
-};
-
 struct BitmapHandle
 {
   int id;
@@ -74,6 +50,34 @@ struct BitmapTileHandle : public BitmapHandle
   int tile_sx, tile_sy;
   ~BitmapTileHandle() { delete bm; }
 };
+
+struct FaceCollPolyHandle
+{
+  FaceCollPolyHandle() : coll(0), collarray(0), collowned(false), collarrayowned(false) { }
+  int id;
+  FaceCollection *coll; 
+  //FaceCollection **collarray;
+  Array<int, FaceCollection*> *collarray;
+  bool collowned;
+  bool collarrayowned;
+  //int size;
+  bool padding1;
+  bool padding2;
+  ~FaceCollPolyHandle() { /*if (collowned) delete coll; if (collarrayowned) delete collarray;*/ }
+
+};
+
+#if 0
+
+#if 0
+struct PolyHandle
+{
+  int id;
+  virtual ~PolyHandle() { }
+};
+#endif
+
+
 
 
 class ParserPairBase 
@@ -732,6 +736,8 @@ private:
   mutable FaceCollPolyHandle faces; // this one is special
 };
 
+#if 0
+
 template<class T, class K> // T = baseclass, K = derived class
 class DynamicCastParser : public ParserPairConversion<T*, K*>
 {
@@ -741,6 +747,8 @@ public:
   virtual T *Convert_2(K *k) const { return k; }
 
 };
+
+#endif
 
 #if 0
 class PolyHandleParser : public ParserPair<PolyHandle*>
@@ -753,6 +761,8 @@ private:
   
 };
 #endif
+
+#if 0
 class BitmapHandleParser : public ParserPair<BitmapHandle*>
 {
 public:
@@ -829,6 +839,8 @@ private:
   StructParser<Color> color_parser;
   BitmapParser<Color> bm_parser;
 };
+
+#endif
 
 class LinkInfoParser : public ParserPair<LinkInfo>
 {
@@ -1111,4 +1123,4 @@ private:
   StateInfo2Parser stateinfo2_parser;
   StructParser<SeqData> struct_parser;
 };
-
+#endif
