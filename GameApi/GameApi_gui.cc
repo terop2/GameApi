@@ -2656,7 +2656,11 @@ EXPORT GameApi::W GameApi::GuiApi::find_canvas_item(W canvas, std::string id)
 EXPORT int GameApi::GuiApi::canvas_item(W canvas, W item, int x, int y)
 {
   GuiWidget *canvas_1 = find_widget(e, canvas);
+#ifdef EMSCRIPTEN
+  CanvasWidget *canvas_2 = static_cast<CanvasWidget*>(canvas_1);
+#else
   CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
+#endif
   if (!canvas_2) return -1;
   GuiWidget *item_1 = find_widget(e, item);
   canvas_2->push_back(item_1, x, y);
@@ -2665,14 +2669,22 @@ EXPORT int GameApi::GuiApi::canvas_item(W canvas, W item, int x, int y)
 EXPORT void GameApi::GuiApi::del_canvas_item(W canvas, int id)
 {
   GuiWidget *canvas_1 = find_widget(e, canvas);
+#ifdef EMSCRIPTEN
+  CanvasWidget *canvas_2 = static_cast<CanvasWidget*>(canvas_1);
+#else
   CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
+#endif
   if (!canvas_2) return;
   canvas_2->del(id);
 }
 EXPORT int GameApi::GuiApi::canvas_item_index(W canvas, W item)
 {
   GuiWidget *canvas_1 = find_widget(e, canvas);
+#ifdef EMSCRIPTEN
+  CanvasWidget *canvas_2 = static_cast<CanvasWidget*>(canvas_1);
+#else
   CanvasWidget *canvas_2 = dynamic_cast<CanvasWidget*>(canvas_1);
+#endif
   if (!canvas_2) return -1;
   GuiWidget *item_1 = find_widget(e, item);
   return canvas_2->find_index(item_1);

@@ -1596,8 +1596,9 @@ public:
   IMPORT MT fog(EveryApi &ev, MT nxt, float fog_dist, unsigned int dark_color, unsigned int light_color);
   IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
   IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
-  IMPORT MT newshadow(EveryApi &ev, MT nxt, P models, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, bool is_phong);
-  IMPORT ML newshadow2_phong(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size); 
+  IMPORT MT newshadow(EveryApi &ev, MT nxt, P models, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, bool is_phong, int texindex);
+  IMPORT ML newshadow2_phong(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, bool draw_model);
+  IMPORT ML newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size);
   IMPORT ML gltf_newshadow2(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, TF tf); 
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT MT coloured_lights(EveryApi &ev, MT nxt, float scale,
@@ -2917,7 +2918,7 @@ public:
   IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
   IMPORT ML newshadow_shader_1(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float scale);
   IMPORT ML newshadow_shader_2_phong(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
-  IMPORT ML newshadow_shader_2_gltf(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
+  IMPORT ML newshadow_shader_2_gltf(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int texindex);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);

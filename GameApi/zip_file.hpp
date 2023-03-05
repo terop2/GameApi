@@ -5272,7 +5272,7 @@ public:
         
         if(archive_->m_zip_mode != MZ_ZIP_MODE_INVALID)
         {
-            throw std::runtime_error("");
+	  //throw std::runtime_error("");
         }
 
         buffer_.clear();
@@ -5311,7 +5311,7 @@ public:
 
         if(index == -1)
         {
-            throw std::runtime_error("not found");
+	  //throw std::runtime_error("not found");
         }
 
         return getinfo(index);
@@ -5449,7 +5449,7 @@ public:
         char *data = static_cast<char *>(mz_zip_reader_extract_file_to_heap(archive_.get(), info.filename.c_str(), &size, 0));
         if(data == nullptr)
         {
-        throw std::runtime_error("file couldn't be read");
+	  //throw std::runtime_error("file couldn't be read");
         }
         std::string extracted(data, data + size);
         mz_free(data);
@@ -5465,7 +5465,7 @@ public:
     {
         if(archive_->m_zip_mode == MZ_ZIP_MODE_INVALID)
         {
-            throw std::runtime_error("not open");
+	  //throw std::runtime_error("not open");
         }
 
         for(auto &file : infolist())
@@ -5512,7 +5512,7 @@ public:
 
         if(!mz_zip_writer_add_mem(archive_.get(), arcname.c_str(), bytes.data(), bytes.size(), MZ_BEST_COMPRESSION))
         {
-            throw std::runtime_error("write error");
+	  //throw std::runtime_error("write error");
         }
     }
 
@@ -5520,7 +5520,7 @@ public:
     {
         if(info.filename.empty() || info.date_time.year < 1980)
         {
-            throw std::runtime_error("must specify a filename and valid date (year >= 1980");
+	  //throw std::runtime_error("must specify a filename and valid date (year >= 1980");
         }
         
         if(archive_->m_zip_mode != MZ_ZIP_MODE_WRITING)
@@ -5532,7 +5532,7 @@ public:
         
         if(!mz_zip_writer_add_mem_ex(archive_.get(), info.filename.c_str(), bytes.data(), bytes.size(), info.comment.c_str(), static_cast<mz_uint16>(info.comment.size()), MZ_BEST_COMPRESSION, 0, crc))
         {
-            throw std::runtime_error("write error");
+	  //throw std::runtime_error("write error");
         }
     }
 
@@ -5557,7 +5557,7 @@ private:
             
         if(!mz_zip_reader_init_mem(archive_.get(), buffer_.data(), buffer_.size(), 0))
         {
-            throw std::runtime_error("bad zip");
+	  //throw std::runtime_error("bad zip");
         }
     }
 
@@ -5575,7 +5575,7 @@ private:
                 
                 if(!mz_zip_reader_init_mem(&archive_copy, buffer_copy.data(), buffer_copy.size(), 0))
                 {
-                    throw std::runtime_error("bad zip");
+		  //throw std::runtime_error("bad zip");
                 }
                 
                 mz_zip_reader_end(archive_.get());
@@ -5586,14 +5586,14 @@ private:
                 
                 if(!mz_zip_writer_init(archive_.get(), 0))
                 {
-                    throw std::runtime_error("bad zip");
+		  //throw std::runtime_error("bad zip");
                 }
                 
                 for(unsigned int i = 0; i < static_cast<unsigned int>(archive_copy.m_total_files); i++)
                 {
                     if(!mz_zip_writer_add_from_zip_reader(archive_.get(), &archive_copy, i))
                     {
-                        throw std::runtime_error("fail");
+		      //throw std::runtime_error("fail");
                     }
                 }
                 
@@ -5613,7 +5613,7 @@ private:
 
         if(!mz_zip_writer_init(archive_.get(), 0))
         {
-            throw std::runtime_error("bad zip");
+	  //throw std::runtime_error("bad zip");
         }
     }
 
@@ -5648,7 +5648,7 @@ private:
         
         if(position == 3)
         {
-            throw std::runtime_error("didn't find end of central directory signature");
+	  //throw std::runtime_error("didn't find end of central directory signature");
         }
         
         uint16_t length = static_cast<uint16_t>(buffer_[position + 1]);

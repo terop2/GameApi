@@ -1,3 +1,4 @@
+cp mesh_test.php /home/terop/html/meshpage.org/
 cp mesh_display.php /home/terop/html/meshpage.org/
 cp cookies.php /home/terop/html/meshpage.org/
 cp mesh_background.php /home/terop/html/meshpage.org/

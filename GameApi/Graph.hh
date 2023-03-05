@@ -781,7 +781,7 @@ private:
 
 
 
-
+#if 0
 class PointNDim : public NDim<float, Point>
 {
 public:
@@ -803,7 +803,9 @@ public:
 public:
   Point p;
 };
+#endif
 
+#if 0
 template<class I, class B>
 class NextNDim : public NDim<I, B>
 {
@@ -840,7 +842,7 @@ private:
   mutable NDim<I,B> *middle_1;
   mutable NDim<I,B> *middle_2;
 };
-
+#endif
 
 
 template<class C>
@@ -1102,7 +1104,7 @@ private:
   Bitmap<Color> &c2;
   float xx;
 };
-
+#if 0
 class BitmapNDim : public NDim<float, Color>
 {
 public:
@@ -1128,7 +1130,7 @@ private:
   Bitmap<Color> &bm;
   mutable Bitmap<Color> *middle;
 };
-
+#endif
 
 class GraphBitmap : public Bitmap<Color>
 {
@@ -7557,6 +7559,8 @@ int Find(std::string s, char c);
 
 void DumpMem(const char *c, int size);
 
+
+#if 0
 template<class T>
 T Parser2::ParseStruct2(std::string s_, bool &success)
 {
@@ -7609,7 +7613,7 @@ T Parser2::ParseStruct2(std::string s_, bool &success)
   DumpMem(currentptr, sizeof(T));
   return *(T*)currentptr;
 }
-
+#endif
 template<class T>
 T Parser2::ParseStruct(std::string s_, bool &success)
 {
