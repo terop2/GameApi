@@ -391,6 +391,7 @@
 			 { "EveryApi&", "MT", "P", "float", "float", "float", "float", "float", "float", "int" },
 			 { "ev", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "1.0","128|256|512|1024|2048|4096" },
 			 "MT", "materials_api", "newshadow"));
+  */
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::newshadow2_phong,
 			 "m_dir_shadow",
 			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size", "drawmodel" },

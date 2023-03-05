@@ -44,6 +44,7 @@ PolyPriv::~PolyPriv()
 
 Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose)
 {
+#ifndef EMSCRIPTEN
   BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
   if (ahandle)
     {
@@ -72,7 +73,8 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+#endif
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   if (chandle)
     {
       GameApi::BM bm = { handle->id };
@@ -104,16 +106,19 @@ Sprite *sprite_from_handle2(GameApi::Env &e, SpritePriv &env, BitmapHandle *hand
       return ss;
     }
   std::cout << "Unknown bitmap type in sprite_from_handle" << std::endl;
+#ifndef EMSCRIPTEN
   BitmapIntHandle *ihandle = dynamic_cast<BitmapIntHandle*>(handle);
   if (ihandle)
     {
       return 0;
     }
+#endif
   return 0;
 }
 
 Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handle, int bbm_choose)
 {
+#ifndef EMSCRIPTEN
   BitmapArrayHandle *ahandle = dynamic_cast<BitmapArrayHandle*>(handle);
   if (ahandle)
     {
@@ -134,7 +139,8 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       //env2->renders2[handle->id] = new ArrayRender;
       return ss;
     }
-  BitmapColorHandle *chandle = dynamic_cast<BitmapColorHandle*>(handle);
+#endif
+  BitmapColorHandle *chandle = static_cast<BitmapColorHandle*>(handle);
   if (chandle)
     {
       GameApi::BM bm = { handle->id };
@@ -158,11 +164,13 @@ Sprite *sprite_from_handle(GameApi::Env &e, SpritePriv &env, BitmapHandle *handl
       return ss;
     }
   std::cout << "Unknown bitmap type in sprite_from_handle" << std::endl;
+#ifndef EMSCRIPTEN
   BitmapIntHandle *ihandle = dynamic_cast<BitmapIntHandle*>(handle);
   if (ihandle)
     {
       return 0;
     }
+#endif
   return 0;
 }
 

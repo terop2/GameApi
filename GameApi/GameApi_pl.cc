@@ -751,7 +751,7 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_voxel(std::function<P (unsigne
 }
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap2(EveryApi &ev, std::function<P (int c, PT tl, PT tr, PT bl, PT br)> f, BM int_bm, FB float_bm, float dx, float dz, float height)
 {
-  BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
+  BitmapIntHandle *handle = static_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
   if (!handle) { GameApi::P p1 = { 0 }; return p1; }
   Bitmap<int> *bm = handle->bm;
   Bitmap<float> *fbm = find_float_bitmap(e, float_bm)->bitmap;
@@ -806,7 +806,7 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(EveryApi &ev, std::vect
 
   BM int_bm = ev.bitmap_api.newintbitmap(array, ssx,ssy, [&chars](char c) { return index_from_string(c,chars); });
 
-  BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
+  BitmapIntHandle *handle = static_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
   if (!handle) { GameApi::P p1 = { 0 }; return p1; }
 
   Bitmap<int> *bm = handle->bm;
@@ -836,7 +836,7 @@ EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(EveryApi &ev, std::vect
 }
 EXPORT GameApi::P GameApi::PolygonApi::world_from_bitmap(std::function<P (int c)> f, BM int_bm, float dx, float dz, int max_c)
 {
-  BitmapIntHandle *handle = dynamic_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
+  BitmapIntHandle *handle = static_cast<BitmapIntHandle*>(find_bitmap(e, int_bm));
   if (!handle) { GameApi::P p1 = { 0 }; return p1; }
   std::vector<P> pieces;
   for(int i=0;i<max_c;i++)
@@ -4893,7 +4893,7 @@ StateBitmaps * PrepareFaceCollPolyHandle(FaceCollPolyHandle *h2, int bbm_choose)
   int size = 1; //h2->size;
   if (!h2->coll && h2->collarray)
     {
-      VectorArray<FaceCollection*> *ptr = dynamic_cast<VectorArray<FaceCollection*>*>(h2->collarray);
+      VectorArray<FaceCollection*> *ptr = static_cast<VectorArray<FaceCollection*>*>(h2->collarray);
       //std::cout << "Using collarray" << std::endl;
       array2 = ptr->get_whole_array();
       size = ptr->Size();

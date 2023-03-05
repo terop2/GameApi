@@ -120,7 +120,7 @@ void GameApi::EventApi::run_game(GameApi::ST st, int start_state)
 #endif
 }
 
-
+#if 0
 GameApi::MV GameApi::EventApi::point(float x, float y, float z)
 {
   return add_mv_point(e, x,y,z);
@@ -142,6 +142,7 @@ std::string GameApi::EventApi::Serialize(ST states, int start_state)
   SequencerParser parser;
   return parser.Create(&seq);
 }
+#endif
 
 #if 0
 ST GameApi::EventApi::UnSerialize(std::string s)

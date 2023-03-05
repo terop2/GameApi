@@ -11,6 +11,8 @@ template<class T>
 void valuefy(std::string s, T &f);
 
 
+#if 0
+
 class CreationObject
 {
 public:
@@ -36,6 +38,7 @@ private:
   std::string name;
   T t;
 };
+#endif
 
 
 class CreationFunction
@@ -56,6 +59,8 @@ public:
   virtual void Edit(std::string s) { }
 };
 
+
+#if 0
 template<class T>
 class ValueCreationFunction : public CreationFunction
 {
@@ -327,11 +332,14 @@ private:
   R retval;
   std::string name;
 };
-
+#endif
 
 class CreationFunctionArray : public Array<int, CreationFunction*>
 {
 };
+
+
+#if 0
 class DynCreationFunctionArray : public CreationFunctionArray
 {
 public:
@@ -435,6 +443,8 @@ public:
 private:
   VectorArray<CreationFunction*> vec;
 };
+
+#endif
 
 typedef ArrayConvert<CreationFunctionArray, int, CreationFunction*> CreationFunctionArrayConvert;
 

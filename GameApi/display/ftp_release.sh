@@ -19,6 +19,10 @@ finish()
     fi
 }
 #copy_it pessimist.php
+copy_it gameapi_0.html
+copy_it gameapi_1.html
+copy_it gameapi_2.html
+copy_it gameapi_3.html
 copy_it get_file_size.php
 copy_it AI_prompt.php
 copy_it article.php
