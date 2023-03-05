@@ -696,6 +696,7 @@ private:
   Point box;
   float time;
 };
+#if 0
 class BlobParameters : public ShaderParameters
 {
 public:
@@ -716,6 +717,7 @@ private:
   Point center, center2;
   float r;
 };
+#endif
 
 class BlobPiece : public ShaderPiece
 {

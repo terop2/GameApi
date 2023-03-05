@@ -96,6 +96,7 @@ VoxelEffect::~VoxelEffect()
 }
 bool VoxelEffect::Frame(float time)
 {
+#if 0
   OpenglLowApi *ogl = g_low->ogl;
   shader.use();
 
@@ -199,6 +200,7 @@ bool VoxelEffect::Frame(float time)
   ogl->glDisable(Low_GL_TEXTURE_2D);
 
   return false;
+#endif
 }
 
 
@@ -267,6 +269,7 @@ void MapEffect::Init()
 }
 bool MapEffect::Frame(float time)
 {
+#if 0
   OpenglLowApi *ogl = g_low->ogl;
   ogl->glEnable(Low_GL_TEXTURE_2D);
   ogl->glColor4f(1.0,1.0,1.0,0.0);
@@ -332,6 +335,7 @@ bool MapEffect::Frame(float time)
 
   ogl->glPopMatrix();
   return false;
+#endif
 }
 
 SuperParameters odd_1 = { 1.00, 1.00, 7.00, 0.20, 1.70, 1.70 };
@@ -455,6 +459,7 @@ InterpolateMovementEffect::~InterpolateMovementEffect()
 }
 bool InterpolateMovementEffect::Frame(float time)
 {
+#if 0
   shader.use();
   
   Point viewer(0.0, 0.0, 0.0);
@@ -478,6 +483,7 @@ bool InterpolateMovementEffect::Frame(float time)
   //TranslatePaths trans(move); // TimedMatrixPaths
   //DrawVBO(trans, time, vbostate, UpdateAll);
   return false;
+#endif
 }
 
 void GraphEffect::Init()
