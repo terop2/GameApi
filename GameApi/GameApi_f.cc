@@ -3,6 +3,7 @@
 
 GameApi::FloatApi::FloatApi(Env &e) : e(e) { }
 
+#if 0
 class LazySingle : public LazyValue<float>
 {
 public:
@@ -28,23 +29,32 @@ private:
   float *v;
   int pos;
 };
+#endif
 
 GameApi::F GameApi::FloatApi::value(float v)
 {
+#if 0
   return add_float(e, new LazySingle(v));
+#endif
 }
 GameApi::F GameApi::FloatApi::ref(float *v)
 {
+#if 0
   return add_float(e, new LazyRef(v));
+#endif
 }
 GameApi::F GameApi::FloatApi::array_index(float *array, int pos)
 {
+#if 0
   return add_float(e, new LazyIndex(array, pos));
+#endif
 }
 float GameApi::FloatApi::get_value(F f)
 {
+#if 0
   LazyValue<float> *value = find_float(e, f);
   return value->get();
+#endif
 }
 GameApi::FloatArrayApi::FloatArrayApi(Env &e) : e(e) { }
 GameApi::FA GameApi::FloatArrayApi::array(float *array, int size)
@@ -62,6 +72,7 @@ private:
   std::vector<LazyValue<T>*> vec;
 };
 
+#if 0
 class RampArray : public Array<int,float>
 {
 public:
@@ -79,7 +90,9 @@ private:
   float end;
   int steps;
 };
+#endif
 
+#if 0
 class SpanArrays : public Bitmap<Color>
 {
 public:
@@ -101,16 +114,21 @@ private:
   Array<int,float> &a2;
   ContinuousBitmap<Color> *f;
 };
+#endif
 GameApi::BM GameApi::FloatArrayApi::span_arrays(FA fa1, FA fa2, CBM f)
 {
+#if 0
   Array<int,float> *arr1 = find_float_array(e, fa1);
   Array<int,float> *arr2 = find_float_array(e, fa2);
   ContinuousBitmap<Color> *bm = find_continuous_bitmap(e, f);
   return add_color_bitmap2(e, new SpanArrays(*arr1, *arr2, bm));
+#endif
 }
 GameApi::FA GameApi::FloatArrayApi::ramp(float start_value, float end_value, int steps)
 {
+#if 0
   return add_float_array(e, new RampArray(start_value, end_value, steps));
+#endif
 }
 GameApi::FA GameApi::FloatArrayApi::f_array(F *array, int size)
 {

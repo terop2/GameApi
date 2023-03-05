@@ -99,6 +99,7 @@ private:
   int numsamples;
 };
 
+#if 0
 class ViewFustrum
 {
 public:
@@ -140,7 +141,9 @@ private:
   Vector f_bl_tl;
   Vector fd_tl_tl;
 };
+#endif
 
+#if 0
 class ViewGrid
 {
 public:
@@ -202,7 +205,9 @@ private:
   float fz;
   mutable ViewFustrum *view;
 };
+#endif
 
+#if 0
 class VValues : public VolumeValues<float>
 {
 public:
@@ -234,7 +239,9 @@ private:
   ViewGrid *grid;
   ViewFustrum *fustrum;
 };
+#endif
 
+#if 0
 class RenderVolume : public Bitmap<float>
 {
 public:
@@ -265,12 +272,15 @@ private:
   int sx,sy;
   int numsamples;
 };
+#endif
 // TODO, this doesnt seem to work with threading because
 // it deletes the object it uses too early
 GameApi::FB GameApi::FloatVolumeApi::integrate_render(FO obj, int sx, int sy, int numsamples)
 {
+#if 0
   FloatVolumeObject *ff = find_float_volume(e, obj);
   return add_float_bitmap(e, new RenderVolume(*ff, sx,sy,numsamples));
+#endif
 }
 
 #if 0

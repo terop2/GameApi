@@ -5870,6 +5870,7 @@ public:
 private:
   Point2d p1,p2;
 };
+#if 0
 class ConstantFloatFunction : public Function<float,float>
 {
 public:
@@ -5878,6 +5879,7 @@ public:
 private:
   float y;
 };
+#endif
 
 class SplitLines2d : public Line2dCollection
 {
@@ -8267,7 +8269,7 @@ public:
   virtual int count() const=0;
   virtual TRect get(int i) const=0;
 };
-
+#if 0
 class SplitXYLayout : public Layout
 {
 public:
@@ -8391,6 +8393,7 @@ private:
 };
 
 
+
 class RootLayout : public Layout
 {
 public:
@@ -8408,7 +8411,7 @@ public:
 private:
   int sx,sy;
 };
-
+#endif
 
 class Draw
 {
@@ -8456,6 +8459,7 @@ private:
   Draw &next;
   int delta_x, delta_y;
 };
+#if 0
 class DrawEmpty : public Draw
 {
 public:
@@ -8477,7 +8481,9 @@ private:
   int type;
   Point2d tl,br;
 };
+#endif
 
+#if 0
 template<class T>
 class DrawPropTrait { };
 template<>
@@ -8519,6 +8525,7 @@ private:
   std::string type;
   T t;
 };
+#endif
 
 class DrawArray : public Draw
 {

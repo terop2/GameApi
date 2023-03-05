@@ -6,6 +6,8 @@
 #include <vector>
 // gives out 0..255
 struct GlyphPriv;
+
+#if 0
 class FontLineCollectionWrapper : public PlanePoints2d
 {
 public:
@@ -40,7 +42,7 @@ private:
   float m_dx, m_dy;
   std::vector<int> types;
 };
-
+#endif
 namespace GameApi {
   class Env;
 }

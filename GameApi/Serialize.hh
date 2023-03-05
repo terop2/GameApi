@@ -304,6 +304,7 @@ protected:
   Sequencer2 *seq;
 };
 
+#if 0
 class SingleEvent : public Sequencer2Impl
 {
 public:
@@ -319,6 +320,7 @@ private:
   Sequencer2 *seq;
   EventInfo info;
 };
+
 
 class SingleLink : public Sequencer2Impl
 {
@@ -343,7 +345,9 @@ private:
   LinkageInfo linkage;
   LinkInfo info;
 };
+#endif
 
+#if 0
 class SinglePos : public Sequencer2Impl
 {
 public:
@@ -359,6 +363,7 @@ public:
 private:
   PosInfo pos;
 };
+#endif
 class AllStatesSequencer : public Sequencer2Impl
 {
 public:
