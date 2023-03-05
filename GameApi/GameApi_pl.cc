@@ -5233,6 +5233,7 @@ EXPORT GameApi::P GameApi::PolygonApi::attribi_function(P p1, std::function<int 
 
 EXPORT GameApi::P GameApi::PolygonApi::create_static_geometry(GameApi::P *array, int size)
 {
+#if 0
   if (size==0) { std::cout << "Empty array in remove_changing" << std::endl; }
   std::vector<FaceCollection*> vec;
   for(int i=0;i<size;i++)
@@ -5244,9 +5245,11 @@ EXPORT GameApi::P GameApi::PolygonApi::create_static_geometry(GameApi::P *array,
   env->deletes.push_back(std::shared_ptr<void>(func));
   FilterFaces *coll2 = new FilterFaces(*(vec[0]), *func);
   return add_polygon(e, coll2, 1);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::create_dynamic_geometry(GameApi::P *array, int size)
 {
+#if 0
   std::vector<FaceCollection*> vec;
   for(int i=0;i<size;i++)
     {
@@ -5265,6 +5268,7 @@ EXPORT GameApi::P GameApi::PolygonApi::create_dynamic_geometry(GameApi::P *array
   handle->collarrayowned = true;
 
   return add_polygon(e, handle);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_size,
 						 float *n_array, int n_size,

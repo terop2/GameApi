@@ -18491,6 +18491,7 @@ struct UrlItem
   bool is_license=false;
   std::string licensed_filename;
   std::string author;
+  std::string license_contents;
 };
 std::string find_to_end(std::string s, int pos, std::string not_allowed_chars)
 {
@@ -18528,6 +18529,7 @@ std::string find_more_data(std::string line);
 std::string fetch_more_data(std::string url);
 std::string http_to_https(std::string url);
 std::vector<UrlItem> find_url_items(std::string s);
+std::string get_zip_license_file(std::string zipfilename); // impl in gltf
 
 std::string remove_prefix(std::string url);
 
@@ -18566,6 +18568,32 @@ void find_url_items3(std::vector<UrlItem> &result)
   int s = result.size();
   for(int i=0;i<s;i++)
     {
+      std::string name = remove_prefix(result[i].url);
+      if (name.size()>4 && name.substr(name.size()-4,4)==".zip")
+	{
+	  std::string contents = get_zip_license_file(result[i].url);
+	  std::stringstream ss(contents);
+	  std::string line;
+	  std::string aut,aut2;
+	  bool stop=false;
+	  while(std::getline(ss,line)) {
+	    std::stringstream ss2(line);
+	    std::string star, author;
+	    ss2 >> star >> author >> aut >> aut2;
+	    stop=true;
+	    if (author=="author:") break;
+	    stop=false;
+	  }
+	  UrlItem ii;
+	  ii.index = -1;
+	  ii.url = result[i].url;
+	  ii.author = stop?aut+(aut2[0]!='('?aut2:""):"(no author found from zip)";
+	  ii.is_license = true;
+	  ii.licensed_filename = name;
+	  ii.license_contents = contents;
+	  result2.push_back(ii);
+	  continue;
+	}
       int ss = filenames.size();
       for(int j=0;j<ss;j++)
 	{
@@ -18813,6 +18841,8 @@ std::string find_directory(std::string url)
 }
 
 
+
+
 bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
@@ -18882,7 +18912,7 @@ public:
 
 	  if (ii.is_license)
 	    {
-	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>" << std::endl;
+	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>:"<< ii.license_contents << std::endl;
 
 #if 0
 	      std::string makedir = "mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename;
@@ -19144,7 +19174,7 @@ public:
 	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
 	  if (ii.is_license)
 	    {
-	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>" << std::endl;
+	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>" << ii.license_contents << std::endl;
 
 #if 0
 	      std::string makedir = "mkdir -p ~/.gameapi_builder/deploy/licenses/" + ii.licensed_filename;

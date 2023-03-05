@@ -2120,13 +2120,13 @@ struct SphereProperties
 public:
   SphereProperties(Point center, float radius, float gap)
   {
-    volume = new SphereVolume(center, radius);
-    surfacepoints = new SphereSurfaceVolume(center, radius, gap);
-    normals = new SphereNormalContinuousVoxel(center);
+    //volume = new SphereVolume(center, radius);
+    //surfacepoints = new SphereSurfaceVolume(center, radius, gap);
+    //normals = new SphereNormalContinuousVoxel(center);
   }
   SphereVolume *volume; // VolumeObject
-  SphereSurfaceVolume *surfacepoints; // VolumeObject
-  SphereNormalContinuousVoxel *normals; // ContinuousVoxel<Vector>  
+  //SphereSurfaceVolume *surfacepoints; // VolumeObject
+  //SphereNormalContinuousVoxel *normals; // ContinuousVoxel<Vector>  
 };
 ObjectProperties ToObj(SphereProperties &sp);
 Vector Reflect(Point ray_pos, Vector ray_dir, Point hit_pos, Vector normal);

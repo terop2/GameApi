@@ -731,11 +731,12 @@ template<class N, class A>
 class Mul : public Function<std::pair<N,A>, A>, private Function<A, Function<int, A>*>
 {
 public:
-  Mul(Function<std::pair<A,A>, A> &plus, A zero) : exp(plus), zero(zero), expi(this), ptr(0) { }
+  Mul(Function<std::pair<A,A>, A> &plus, A zero) : exp(plus), zero(zero), expi(this) { }
   A Index(std::pair<N,A> &p) const
   {
-    return expi.Index(p);
+    //return expi.Index(p);
   }
+#if 0
   class IteFunc : public Function<int, A>
   {
   public:
@@ -750,20 +751,22 @@ public:
     Function<A,A> *func;
     A zero;
   };
-
+#endif
   Function<int,A> *Index(A a) const
   {
+#if 0
     Function<A,A> *func = exp.Index(a);
     delete ptr;
     ptr = new IteFunc(func, zero);
     return ptr;
+#endif
   }
-  ~Mul() { delete ptr; }
+  ~Mul() { /*delete ptr;*/ }
 private:
   Exponentiation<A,A,A> exp;
   Evaluation<A,A> eval;
   ExponentiationI<A, int, A> expi;
-  IteFunc *ptr;
+  //IteFunc *ptr;
   A zero;
 };
 
@@ -2423,6 +2426,7 @@ public:
 };
 
 
+#if 0
 class TexturePlugin : public FramePlugin
 {
 public:
@@ -2438,6 +2442,7 @@ public:
   BufferRef buf;
   unsigned int texture;
 };
+#endif
 
 void Execute(FrameAnim &f, Low_SDL_Surface *screen);
 BufferRef LoadImage(std::string filename, bool &success);
@@ -2453,6 +2458,7 @@ public:
 };
 
 
+#if 0
 class PointCollectionConvert : public PointCollection
 {
 public:
@@ -2463,22 +2469,23 @@ private:
   const Array<int, Point> &c2;
 };
 typedef FunctionImpl0<Array<int,Point>*, PointCollection*, PointCollectionConvert> PointCollectionConvertFunction;
+#endif
 
 class PointCollectionConvertArray : public Array<int, PointCollection*>
 {
 public:
-  PointCollectionConvertArray(Array<int, Array<int, Point>*> &arr) : arr(arr), convert(0) { }
+  PointCollectionConvertArray(Array<int, Array<int, Point>*> &arr) : arr(arr) { }
   int Size() const { return arr.Size(); }
   PointCollection *Index(int i) const
   {
-    delete convert;
-    convert = new PointCollectionConvert(*arr.Index(i));
-    return convert;
+    //delete convert;
+    //convert = new PointCollectionConvert(*arr.Index(i));
+    //return convert;
   }
-  ~PointCollectionConvertArray() { delete convert; }
+  ~PointCollectionConvertArray() { /*delete convert;*/ }
 private:
   Array<int, Array<int, Point>*> &arr;
-  mutable PointCollectionConvert *convert;
+  //mutable PointCollectionConvert *convert;
 };
 
 
@@ -4958,6 +4965,7 @@ public:
   virtual float Delta(float x) const=0;
   virtual ~WaveformPart() { }
 };
+#if 0
 class ConstantWaveformPart : public WaveformPart
 {
 public:
@@ -4971,6 +4979,7 @@ public:
 private:
   float start_x, end_x, value;
 };
+#endif
 
 class LinWaveformPart : public WaveformPart
 {
@@ -4989,20 +4998,22 @@ private:
 class ArrayWaveform : public Array<int, WaveformPart*>, private WaveformPart
 {
 public:
-  ArrayWaveform(float *array, int size, float samplelength) : array(array), size(size), samplelength(samplelength), part(0) { }
+  ArrayWaveform(float *array, int size, float samplelength) : array(array), size(size), samplelength(samplelength) { }
   int Size() const { return size; }
   WaveformPart *Index(int i) const
   {
+#if 0
     delete part;
     part = new ConstantWaveformPart(samplelength*i, samplelength*(i+1), array[i]);
     return part;
+#endif
   }
   
 private:
   float *array;
   int size;
   float samplelength;
-  mutable ConstantWaveformPart *part;
+  //mutable ConstantWaveformPart *part;
 };
 class ArrayWaveform2 : public Waveform
 {
@@ -5367,22 +5378,24 @@ private:
 class BlobParameterArray : public ShaderParameterArray
 {
 public:
-  BlobParameterArray(PointCollection &center_points, PointCollection &center2_points, FloatArray &radius) : center_points(center_points), center2_points(center2_points), p(0), r(radius) {}
-  ~BlobParameterArray() { delete p; }
+  BlobParameterArray(PointCollection &center_points, PointCollection &center2_points, FloatArray &radius) : center_points(center_points), center2_points(center2_points),  r(radius) {}
+  ~BlobParameterArray() { /*delete p;*/ }
   int Size() const { return std::min(std::min(center_points.Size(), center2_points.Size()), r.Size()); }
   ShaderParameters *Index(int i) const
   {
+#if 0
     Point center = center_points.Index(i);
     Point center2 = center2_points.Index(i);
     float rr = r.Index(i);
     if (!p) { p = new BlobParameters(center, center2,rr); }
     p->set_points(center, center2,rr);
     return p;
+#endif
   }
 private:
   PointCollection &center_points;
   PointCollection &center2_points;
-  mutable BlobParameters *p;
+  //mutable BlobParameters *p;
   FloatArray &r;
 };
 
@@ -5757,7 +5770,7 @@ private:
   bool textures;
 };
 
-
+#if 0
 class FrameFaceCollection : public SingleForwardBoxableFaceCollection
 {
 public:
@@ -5791,7 +5804,7 @@ private:
   const BoxableFaceCollection &coll;
   int frame;
 };
-
+#endif
 
 class BoxableFaceCollectionConvert : public ForwardBoxableFaceCollection
 {
@@ -7837,6 +7850,7 @@ private:
   const std::vector<FaceCollection*> &v;
 };
 
+#if 0
 class FilterFaces : public ForwardFaceCollection
 {
 public:
@@ -7913,7 +7927,9 @@ private:
   FaceCollection &obj;
   Function<int,bool> &func;
 };
+#endif
 
+#if 0
 class SplitPolygons : public FaceCollection
 {
 public:
@@ -7971,6 +7987,8 @@ private:
   std::vector<OneNormal> normals;
   bool b;
 };
+
+#endif
 
 template<class A>
 class MemoizeFunction : public Function<int,A>
@@ -8351,6 +8369,7 @@ private:
 
 #endif
 
+#if 0
 class RemovePolys : public Function<int, bool>
 {
 public:
@@ -8361,6 +8380,9 @@ private:
   IsEqualFunc<FaceType> equal;
   ComposeFunc<int, FaceType, bool> compose;
 };
+#endif
+
+#if 0
 class IntersectFaces : public FaceCollection
 {
 public:
@@ -8392,8 +8414,9 @@ private:
   FilterFaces filter;
   MemoizeFaces memo;
 };
+#endif
 
-
+#if 0
 class AndNotElem : public BoxableFaceCollection
 {
 public:
@@ -8436,7 +8459,7 @@ private:
   SplitPolygons split2;
   OrElem<FaceCollection> or_elem;
 };
-
+#endif
 class RectangleElem : public SingleForwardBoxableFaceCollection
 {
 public:
@@ -10114,6 +10137,8 @@ private:
   float time;
 };
 
+class TexturePlugin;
+
 class RenderToTexture : public OpenGlCommands
 {
 public:
@@ -10125,6 +10150,7 @@ private:
   OpenGlCommands &cmds;
   bool in_precalc;
 };
+
 class ColorCmds : public OpenGlCommands
 {
 public:
