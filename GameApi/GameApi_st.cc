@@ -4,6 +4,7 @@ EXPORT GameApi::TR GameApi::StateChangeApi::init(int paths)
 {
   return add_timerange(e, paths);
 }
+#if 0
 class PFloatRenderer : public Renderer<float>
 {
 public:
@@ -17,6 +18,7 @@ private:
   std::function<GameApi::P (float)> f;
   GameApi::Env &e;
 };
+#endif
 
 EXPORT GameApi::VV GameApi::StateChangeApi::prepareloop(float *array, int arraysize,
 						 std::function<P (float val)> f, float step_duration)
@@ -40,12 +42,14 @@ EXPORT GameApi::TR GameApi::StateChangeApi::linear(TR tr, int path_num, std::fun
 GameApi::TR GameApi::StateChangeApi::linear_1(TR tr, int path_num, std::function<P (float val)> f, float start_v, float end_v, float duration)
 
 {
+#if 0
   TROArray *arr = find_timerange(e, tr);
   TROArray *arr2 = arr->copy();
   arr2->push_back(path_num, 
 		 new DefaultTimeRange<float>(start_v, end_v, duration),
 		 new PFloatRenderer(f,e));
   return add_timerange(e, arr2);
+#endif
 }
 
 EXPORT GameApi::VV GameApi::StateChangeApi::prepare(TR sc)

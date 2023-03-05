@@ -894,6 +894,7 @@ GameApi::P GameApi::PolygonApi::color_distance(P faces, float center_x, float ce
   return add_polygon2(e, new ColorDistance3(face, pt, color_center, color_dist, dist_center, dist_dist),1);
 }
 
+#if 0
 class DistFromLines : public SingleForwardFaceCollection
 {
 public:
@@ -969,11 +970,14 @@ private:
   mutable int store_face=-1;
   mutable Vector store_res;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::dist_from_lines(LI li, float d1, float d2, PT center)
 {
+#if 0
   Point *pt = find_point(e, center);
   LineCollection *lines = find_line_array(e, li);
   return add_polygon2(e, new DistFromLines(lines, d1, d2, *pt), 1);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
 {
@@ -983,6 +987,7 @@ EXPORT GameApi::P GameApi::PolygonApi::triangle(PT p1, PT p2, PT p3)
   FaceCollection *coll = new TriElem(*pp1, *pp2, *pp3);
   return add_polygon(e, coll,1);
 }
+#if 0
 class UnitFaceColl : public ForwardFaceCollection
 {
 public:
@@ -999,15 +1004,19 @@ private:
   Point u_y;
   Point u_z;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::unit_cube(P orig, PT pos, V u_x, V u_y, V u_z)
-{ 
+{
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
  Point *pos_1 = find_point(e, pos);
   Vector *u_x_1 = find_vector(e, u_x);
   Vector *u_y_1 = find_vector(e, u_y);
   Vector *u_z_1 = find_vector(e, u_z);
   return add_polygon(e, new UnitFaceColl(coll, *pos_1, *u_x_1, *u_y_1, *u_z_1), 1);
+#endif
 }
+#if 0
 class UnitToFaceColl : public ForwardFaceCollection
 {
 public:
@@ -1024,17 +1033,20 @@ private:
   Point u_y;
   Point u_z;
 };
-
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::unit_to_cube(P orig, PT pos, V u_x, V u_y, V u_z)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   Point *pos_1 = find_point(e, pos);
   Vector *u_x_1 = find_vector(e, u_x);
   Vector *u_y_1 = find_vector(e, u_y);
   Vector *u_z_1 = find_vector(e, u_z);
   return add_polygon(e, new UnitToFaceColl(coll, *pos_1, *u_x_1, *u_y_1, *u_z_1),1);
+#endif
 }
 
+#if 0
 class UnitToFlexClass : public ForwardFaceCollection
 {
 public:
@@ -1052,11 +1064,13 @@ public:
 private:
   Point bTL, bTR, bBL, bBR, fTL, fTR, fBL, fBR;
 };
+#endif
 
 EXPORT GameApi::P GameApi::PolygonApi::unit_to_flex(P orig, 
 					     PT bTL, PT bTR, PT bBL, PT bBR,
 					     PT fTL, PT fTR, PT fBL, PT fBR)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   Point *bTL1 = find_point(e, bTL);
   Point *bTR1 = find_point(e, bTR);
@@ -1069,6 +1083,7 @@ EXPORT GameApi::P GameApi::PolygonApi::unit_to_flex(P orig,
   Point *fBR1 = find_point(e, fBR);
   return add_polygon(e, new UnitToFlexClass(coll, *bTL1, *bTR1, *bBL1, *bBR1,
 				       *fTL1, *fTR1, *fBL1, *fBR1),1);
+#endif
 }
 
 
@@ -2741,6 +2756,7 @@ private:
   FaceCollection *coll;
 };
 
+#if 0
 class TexCoordCylindar : public ForwardFaceCollection
 {
 public:
@@ -2763,6 +2779,7 @@ private:
   FaceCollection *coll;
   float start_y, end_y;
 };
+#endif
 class TexCoordManual : public ForwardFaceCollection
 {
 public:
@@ -2917,8 +2934,10 @@ EXPORT GameApi::P GameApi::PolygonApi::texcoord_spherical(PT center, P orig)
 }
 EXPORT GameApi::P GameApi::PolygonApi::texcoord_cylindar(P orig, float start_y, float end_y)
 {
+#if 0
   FaceCollection *face = find_facecoll(e, orig);
   return add_polygon(e, new TexCoordCylindar(face,start_y, end_y),1);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::sprite_bind(P p, TX tx, int id)
 {
@@ -3268,6 +3287,7 @@ EXPORT GameApi::P GameApi::PolygonApi::cone(int numfaces, PT p1, PT p2, float ra
 
 EXPORT GameApi::P GameApi::PolygonApi::ring(float sx, float sy, float x, int steps)
 {
+#if 0
   std::pair<Point, Vector> array[] = 
     { 
       std::make_pair(Point(-sx,-sy,0.0), Vector(-1.0,-1.0,0.0)),
@@ -3282,6 +3302,7 @@ EXPORT GameApi::P GameApi::PolygonApi::ring(float sx, float sy, float x, int ste
   env->deletes.push_back(std::shared_ptr<void>(pointvector));
   RingElem *ring = new RingElem(*pointvector, x, steps);
   return add_polygon(e, ring,1);
+#endif
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::shadow(P p, PT pos, V u_x, V u_y, V light_vec)
@@ -4069,6 +4090,7 @@ EXPORT GameApi::P GameApi::PolygonApi::quads_to_triangles(P p)
   FaceCollection *c2 = new QuadsToTris2(c);
   return add_polygon(e,c2,1);
 }
+#if 0
 class SkeletalAnim : public ForwardFaceCollection
 {
 public:
@@ -4089,9 +4111,11 @@ private:
   LineProperties prop;
   LineProperties prop2;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::skeletal_anim(P p, PT p_0, PT p_1,
 						     PT n_0, PT n_1)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   Point *pp_0 = find_point(e,p_0);
   Point *pp_1 = find_point(e,p_1);
@@ -4099,6 +4123,7 @@ EXPORT GameApi::P GameApi::PolygonApi::skeletal_anim(P p, PT p_0, PT p_1,
   Point *nn_1 = find_point(e,n_1);
   FaceCollection *coll2 = new SkeletalAnim(coll, *pp_0, *pp_1, *nn_0, *nn_1);
   return add_polygon(e, coll2, 1);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::color_from_normals(P orig)
 {
@@ -4112,6 +4137,7 @@ EXPORT GameApi::P GameApi::PolygonApi::color_alpha(P orig, unsigned int alpha)
   FaceCollection *c2 = new ColorAlpha(c, alpha);
   return add_polygon2(e, c2, 1);
 }
+#if 0
 class ColorCubeElem : public ForwardFaceCollection
 {
 public:
@@ -4172,6 +4198,7 @@ private:
   Point p_0, p_x, p_y, p_z;
   unsigned int c_0, c_x, c_y, c_z;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::color_cube(P next,
 					   PT p_0,
 					   PT p_x,
@@ -4182,6 +4209,7 @@ EXPORT GameApi::P GameApi::PolygonApi::color_cube(P next,
 					   unsigned int c_y,
 					   unsigned int c_z)
 {
+#if 0  
   Point *pp_0 = find_point(e,p_0);
   Point *pp_x = find_point(e,p_x);
   Point *pp_y = find_point(e,p_y);
@@ -4193,7 +4221,7 @@ EXPORT GameApi::P GameApi::PolygonApi::color_cube(P next,
   if (!c) { std::cout << "dynamic cast failed" << std::endl; }
   FaceCollection *coll = new ColorCubeElem(convert, *pp_0, *pp_x, *pp_y, *pp_z, c_0, c_x, c_y, c_z);
   return add_polygon2(e, coll,1);
-
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::color_faces(P next, 
 					 unsigned int color_1, 
@@ -4295,6 +4323,7 @@ EXPORT GameApi::P GameApi::PolygonApi::scale(P orig, float sx, float sy, float s
 EXPORT GameApi::P GameApi::PolygonApi::move(P orig, PT obj_0, V obj_x, V obj_y, V obj_z,
 				     PT world_0, V world_x, V world_y, V world_z)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   Point *obj0 = find_point(e, obj_0);
   Vector *objx = find_vector(e, obj_x);
@@ -4321,6 +4350,7 @@ EXPORT GameApi::P GameApi::PolygonApi::move(P orig, PT obj_0, V obj_x, V obj_y, 
   env->deletes.push_back(std::shared_ptr<void>(coll2));  
   FaceCollection *coll3 = new CoordChangeFaceColl(coll2, true, world);
   return add_polygon(e, coll3, 1);
+#endif
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::splitquads(P orig, int x_count, int y_count)
@@ -4428,7 +4458,7 @@ EXPORT GameApi::P GameApi::PolygonApi::change_positions(P orig, std::function<PT
 }
 
 
-
+#if 0
 class ChangeNormal2 : public ForwardFaceCollection
 {
 public:
@@ -4443,6 +4473,7 @@ public:
 private:
   std::function<Vector (Vector, int,int)> f;
 };
+#endif
 struct ChangeNormal_data
 {
   GameApi::Env *env;
@@ -4462,7 +4493,7 @@ Vector ChangeNormals_Func(Vector p, int face,int point,void* data)
 EXPORT GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V p, int face, int point)> f)
 {
 #ifndef EMSCRIPTEN
-
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   ChangeNormal_data dt;
   dt.env = &e;
@@ -4479,12 +4510,14 @@ EXPORT GameApi::P GameApi::PolygonApi::change_normals(P orig, std::function<V (V
   FaceCollection *coll2 = new ChangeNormal2(*coll, std::bind(&ChangeNormals_Func, _1, _2, _3, &dt));
   return add_polygon(e, coll2, 1);
 #endif
+#endif
   GameApi::P p;
   p.id = 0;
   return p;
 }
 
 
+#if 0
 class ChangeColor2 : public ForwardFaceCollection
 {
 public:
@@ -4501,6 +4534,7 @@ private:
   std::function<unsigned int ( unsigned int, int,int)> f;
   //void *data;
 };
+#endif
 struct ChangeColor_data
 {
   GameApi::Env *env;
@@ -4517,6 +4551,7 @@ unsigned int ChangeColor_Func(unsigned int p, int face,int point,void* data)
 EXPORT GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsigned int (unsigned int p, int face, int point)> f)
 {
 #ifndef EMSCRIPTEN
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   ChangeColor_data *dt = new ChangeColor_data;
   dt->env = &e;
@@ -4530,11 +4565,13 @@ EXPORT GameApi::P GameApi::PolygonApi::change_colors(P orig, std::function<unsig
   FaceCollection *coll2 = new ChangeColor2(*coll, std::bind(ChangeColor_Func, _1,_2,_3,(void*)dt));
   return add_polygon(e, coll2, 1);
 #endif
+#endif
   GameApi::P p;
   p.id = 0;
   return p;
 }
 
+#if 0
 class ChangeTexture : public ForwardFaceCollection
 {
 public:
@@ -4559,10 +4596,11 @@ private:
   //int size;
   mutable BufferFromBitmap **temp;
 };
-
+#endif
 
 EXPORT GameApi::P GameApi::PolygonApi::change_texture(P orig, std::function<int (int face)> f, BM *array, int size)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   std::vector<Bitmap<Color>*> *vec = new std::vector<Bitmap<Color>*>;
   for(int i=0;i<size;i++)
@@ -4576,6 +4614,7 @@ EXPORT GameApi::P GameApi::PolygonApi::change_texture(P orig, std::function<int 
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   ChangeTexture *tex = new ChangeTexture(*coll, f, &(*vec)[0], size);
   return add_polygon(e, tex, 1);
+#endif
 }
 
 
@@ -4594,9 +4633,11 @@ EXPORT GameApi::P GameApi::PolygonApi::recalculate_normals(P orig)
 }
 EXPORT GameApi::P GameApi::PolygonApi::average_normals(P orig, int sx, int sy)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   FaceCollection *coll2 = new AverageNormals(coll, sx,sy);
   return add_polygon(e, coll2, 1);
+#endif
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::memoize(P orig)
@@ -4621,6 +4662,7 @@ EXPORT GameApi::P GameApi::PolygonApi::circular_span(EveryApi &ev, LI li,
   M m = ev.matrix_api.yrot(delta_angle);
   return span(li, m, num_steps);
 }
+#if 0
 class Span : public SingleForwardFaceCollection
 {
 public:
@@ -4719,14 +4761,17 @@ private:
   mutable int store_face=-1;
   mutable Vector store_res;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::span(LI li,
 					    M matrix,
 					    int num_steps)
 {
+#if 0
   LineCollection *lines = find_line_array(e, li);
   Matrix m = find_matrix(e, matrix);
   FaceCollection *span = new Span(lines, m, num_steps);
   return add_polygon2(e, span, 1);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::linear_span(EveryApi &ev, LI li,
 						   float dx, float dy, float dz,
@@ -4838,6 +4883,7 @@ EXPORT GameApi::P GameApi::PolygonApi::heightmap(BM bm,
 				       float min_y, float max_y,
 				       float min_z, float max_z)
 {
+#if 0
   BitmapHandle *handle = find_bitmap(e, bm);
   ::Bitmap<Color> *bitmap = find_color_bitmap(handle);
   HeightMap3DataImpl *data = new HeightMap3DataImpl(*bitmap);
@@ -4853,6 +4899,7 @@ EXPORT GameApi::P GameApi::PolygonApi::heightmap(BM bm,
   env->deletes.push_back(std::shared_ptr<void>(heightmap));
   MeshFaceCollection *coll = new MeshFaceCollection(*heightmap, 0);
   return add_polygon(e, coll, 1);
+#endif
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::anim_array(P *array, int size)
@@ -5025,6 +5072,7 @@ void GameApi::PolygonApi::renderpoly(P p, int choose, float x, float y, float z)
  ogl->glPopMatrix();
 }
 
+#if 0
 class CountsFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5033,7 +5081,9 @@ public:
 private:
   int numfaces;
 };
+#endif
 
+#if 0
 class CountFuncFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5048,7 +5098,9 @@ private:
   std::function<int (int face)> f; 
   //void *data;
 };
+#endif
 
+#if 0
 class PointFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5066,7 +5118,7 @@ private:
   std::function<GameApi::PT (int face, int point)> f;
   //void *data;
 };
-
+#endif
 
 class NormalFaceCollection : public ForwardFaceCollection
 {
@@ -5087,7 +5139,7 @@ private:
   //void *data;
 };
 
-
+#if 0
 class ColorFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5105,7 +5157,7 @@ private:
   std::function<unsigned int (int face, int point)> f;
   void *data;
 };
-
+#endif
 
 class TexFaceCollection : public ForwardFaceCollection
 {
@@ -5127,6 +5179,7 @@ private:
   //void *data;
 };
 
+#if 0
 class AttribFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5145,7 +5198,6 @@ private:
   std::function<float (int face, int point, int id)> f;
   int idx;
 };
-
 class AttribIFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5166,29 +5218,36 @@ private:
   std::function<int (int face, int point, int id)> f;
   int idx;
 };
+#endif
 
 
 
 EXPORT GameApi::P GameApi::PolygonApi::counts(P p1, int numfaces)
 {
+#if 0
   FaceCollection *poly = find_facecoll(e, p1);
   return add_polygon(e, new CountsFaceCollection(numfaces, poly),1);  
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::count_function(P p1, std::function<int (int face)> f)
-{ 
+{
+#if 0
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new CountFuncFaceCollection(poly, f),1);  
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::point_function(P p1, std::function<PT (int face, int point)> f)
 {
+#if 0
   FaceCollection *poly = find_facecoll(e, p1);
   EveryApi *ev = new EveryApi(e);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new PointFaceCollection(e, poly, f),1);  
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::normal_function(P p1, std::function<V (int face, int point)> f)
 {
@@ -5200,11 +5259,13 @@ EXPORT GameApi::P GameApi::PolygonApi::normal_function(P p1, std::function<V (in
 }
 EXPORT GameApi::P GameApi::PolygonApi::color_function(P p1, std::function<unsigned int (int face, int point)> f)
 {
+#if 0
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new ColorFaceCollection(e, poly,f),1);  
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::texcoord_function(P p1, std::function<PT (int face, int point)> f)
 {
@@ -5216,19 +5277,23 @@ EXPORT GameApi::P GameApi::PolygonApi::texcoord_function(P p1, std::function<PT 
 }
 EXPORT GameApi::P GameApi::PolygonApi::attrib_function(P p1, std::function<float (int face, int point, int idx)> f, int idx)
 {
+#if 0
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new AttribFaceCollection(e, poly, f, idx),1);  
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::attribi_function(P p1, std::function<int (int face, int point, int idx)> f, int idx)
 {
+#if 0
   FaceCollection *poly = find_facecoll(e, p1);
   //EveryApi *ev = new EveryApi(e);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_polygon(e, new AttribIFaceCollection(e, poly, f, idx),1);  
+#endif
 }
 
 EXPORT GameApi::P GameApi::PolygonApi::create_static_geometry(GameApi::P *array, int size)
@@ -5276,6 +5341,7 @@ EXPORT GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_si
 						 float *tex_array, int tex_size,
 						 float **attrib_array, int a_size1, int a_size2)
 {
+#if 0
   FaceCollPolyHandle *handle = new FaceCollPolyHandle;
   handle->coll = new VertexArrayFaceCollection(v_array, v_size,
 					       n_array, n_size,
@@ -5286,6 +5352,7 @@ EXPORT GameApi::P GameApi::PolygonApi::tri_vertex_array(float *v_array, int v_si
   handle->collarray = NULL;
   handle->collarrayowned = false;
   return add_polygon(e, handle);
+#endif
 }
 
 EXPORT int GameApi::PolygonApi::get_tri_vertex_array_frames(P p)
@@ -5342,6 +5409,7 @@ EXPORT void GameApi::PolygonApi::get_tri_vertex_array(P p, int choose, int row,
   *tex_size = vertex_size*2;
 }
 
+#if 0
 class TriStripFaceCollection : public SingleForwardFaceCollection
 {
 public:
@@ -5381,15 +5449,17 @@ private:
   mutable int store_face=-1;
   mutable Vector store_res;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::tri_strip(PT *array, int size)
 {
+#if 0
   std::vector<Point> vec;
   for(int i=0;i<size;i++)
     {
       vec.push_back(*find_point(e, array[i]));
     }
   return add_polygon2(e, new TriStripFaceCollection(vec),1);
-  
+#endif  
 }
 EXPORT GameApi::P GameApi::PolygonApi::polygon2(std::vector<PT> vec)
 {
@@ -5452,7 +5522,7 @@ EXPORT void GameApi::PolygonApi::render_dynamic(GameApi::P p, int array_elem, bo
     }
 }
 
-
+#if 0
 class ColorVoxelFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -5468,9 +5538,11 @@ private:
   mutable Coords cc;
   Point pp;
 };
+#endif
 
 EXPORT GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u_x, V u_y, V u_z)
 {
+#if 0
   Point *pp = find_point(e, p);
   Vector *uu_x = find_vector(e, u_x);
   Vector *uu_y = find_vector(e, u_y);
@@ -5479,7 +5551,9 @@ EXPORT GameApi::P GameApi::PolygonApi::color_voxel(P orig, VX colours, PT p, V u
   FaceCollection *coll = find_facecoll(e, orig);
   Voxel<unsigned int> *v = find_voxel(e, colours);
   return add_polygon(e, new ColorVoxelFaceCollection(*coll, *v, *pp, *uu_x, *uu_y, *uu_z), 1);
+#endif
 }
+#if 0
 class UpdateVA : public MainLoopItem
 {
 public:
@@ -5503,9 +5577,12 @@ private:
   GameApi::P p;
   bool keep;
 };
+#endif
 EXPORT GameApi::ML GameApi::PolygonApi::update_vertex_array_ml(GameApi::VA va, GameApi::P p, bool keep)
 {
+#if 0
   return add_main_loop(e, new UpdateVA(*this, va, p, keep));
+#endif
 }
 EXPORT void GameApi::PolygonApi::update_vertex_array_no_memory(GameApi::VA va, GameApi::P p)
 {
@@ -6225,6 +6302,7 @@ public:
 private:
   int val;
 };
+#if 0
 class DefaultTex : public ForwardFaceCollection
 {
 public:
@@ -6249,10 +6327,13 @@ public:
     
   }
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::texcoord_default(P orig)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, orig);
   return add_polygon2(e, new DefaultTex(coll), 1);
+#endif
 }
 EXPORT GameApi::P GameApi::PolygonApi::choose_texture(P orig, int num)
 {
@@ -7584,6 +7665,7 @@ private:
   bool firsttime;
 };
 
+#if 0
 class CustomShaderML : public MainLoopItem
 {
 public:
@@ -7678,8 +7760,9 @@ private:
   std::string v_shaderstring, f_shaderstring;
   std::string v_funcname, f_funcname;
 };
+#endif
 
-
+#if 0
 class ColorMixShaderML : public MainLoopItem
 {
 public:
@@ -7746,7 +7829,7 @@ private:
   bool firsttime;
   float mix;
 };
-  
+#endif  
 
 class TextureShaderML : public MainLoopItem
 {
@@ -8178,6 +8261,7 @@ private:
 };
 
 
+#if 0
 class LightShaderML : public MainLoopItem
 {
 public:
@@ -8242,6 +8326,7 @@ private:
   GameApi::SH sh;
   bool firsttime;
 };
+#endif
 
 class ToonShaderML : public MainLoopItem
 {
@@ -8684,6 +8769,7 @@ private:
   GameApi::SFO sfo;
 };
 
+#if 0
 class SFOSandboxShader : public MainLoopItem
 {
 public:
@@ -8773,7 +8859,7 @@ private:
   bool firsttime;
   GameApi::SFO sfo;
 };
-
+#endif
 
 class ChooseColorShaderML : public MainLoopItem
 {
@@ -8868,6 +8954,7 @@ private:
   float mix_val;
 };
 
+#if 0
 class SpotlightShaderML : public MainLoopItem
 {
 public:
@@ -8958,8 +9045,9 @@ private:
   bool firsttime;
   GameApi::SH sh;
 };
+#endif
 
-
+#if 0
 class ColouredLightsShaderML : public MainLoopItem
 {
 public:
@@ -9063,7 +9151,7 @@ private:
   bool firsttime;
   GameApi::SH sh;
 };
-
+#endif
 
 class ShaderParamML : public MainLoopItem
 {
@@ -10046,7 +10134,7 @@ private:
 };
 
 
-
+#if 0
 class EdgeShaderML : public MainLoopItem
 {
 public:
@@ -10144,7 +10232,7 @@ private:
   float edge_width;
   unsigned int edge_color;
 };
-
+#endif
 
 class GlobeShaderML : public MainLoopItem
 {
@@ -10600,7 +10688,7 @@ private:
   unsigned int light_color;
 };
 
-
+#if 0
 class ShadowShaderML : public MainLoopItem
 {
 public:
@@ -10723,7 +10811,7 @@ private:
   float mix;
 };
 
-
+#endif
 
 extern std::vector<float> dyn_points_global_x;
 extern std::vector<float> dyn_points_global_y;
@@ -10839,20 +10927,25 @@ EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
 }
 EXPORT GameApi::ML GameApi::PolygonApi::custom_shader(EveryApi &ev, ML mainloop, std::string v_shaderstring, std::string f_shaderstring, std::string v_funcname, std::string f_funcname)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new CustomShaderML(ev, item,v_shaderstring,f_shaderstring,v_funcname,f_funcname));
+#endif
 }
 EXPORT GameApi::ML GameApi::PolygonApi::spotlight_shader(EveryApi &ev, ML mainloop, int light_color_id, MN move)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   Movement *change = find_move(e, move);
   return add_main_loop(e, new SpotlightShaderML(e,ev, item, light_color_id, change));
+#endif
 }
 EXPORT GameApi::ML GameApi::PolygonApi::coloured_lights_shader(EveryApi &ev, ML mainloop, float scale,
 							       unsigned int color_1, unsigned int color_2, unsigned int color_3, unsigned int color_4, unsigned int color_5, unsigned int color_6, unsigned int color_7, unsigned int color_8,
 							       PT pos_1, PT pos_2, PT pos_3, PT pos_4, PT pos_5, PT pos_6, PT pos_7, PT pos_8,
 							       float dist_1, float dist_2, float dist_3, float dist_4, float dist_5, float dist_6, float dist_7, float dist_8)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   Point *p1 = find_point(e, pos_1);
   Point *p2 = find_point(e, pos_2);
@@ -10867,6 +10960,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::coloured_lights_shader(EveryApi &ev, ML 
 						     *p1, *p2, *p3, *p4, *p5, *p6, *p7, *p8,
 						     dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8
 						     ));
+#endif
 }
 
 #if 0
@@ -10888,8 +10982,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::texture_shader(EveryApi &ev, ML mainloop
 }
 EXPORT GameApi::ML GameApi::PolygonApi::mixshader_shader(EveryApi &ev, ML mainloop, float mix)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new ColorMixShaderML(ev, item, mix));
+#endif
 }
  EXPORT GameApi::ML GameApi::PolygonApi::texture_many_shader(EveryApi &ev, ML mainloop, float mix=0.5)
  {
@@ -10914,8 +11010,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::texture_arr_shader(EveryApi &ev, ML main
 
 EXPORT GameApi::ML GameApi::PolygonApi::light_shader(EveryApi &ev, ML mainloop)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new LightShaderML(ev, item));
+#endif
 }
 EXPORT GameApi::ML GameApi::PolygonApi::toon_shader(EveryApi &ev, ML mainloop)
 {
@@ -10939,8 +11037,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::fade_shader(EveryApi &ev, ML mainloop, f
 }
  EXPORT GameApi::ML GameApi::PolygonApi::sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new SFOSandboxShader(e,ev,item,sfo));
+#endif
 }
 EXPORT GameApi::ML GameApi::PolygonApi::skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec)
 {
@@ -10993,8 +11093,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::vertex_phong_shader(EveryApi &ev, ML mai
 }
 EXPORT GameApi::ML GameApi::PolygonApi::edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new EdgeShaderML(e,ev,item,edge_width,edge_color));
+#endif
 }
 EXPORT GameApi::ML GameApi::PolygonApi::globe_shader(EveryApi &ev, ML mainloop, float globe_r)
 {
@@ -11031,8 +11133,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::fog_shader(EveryApi &ev, ML mainloop, fl
 }
 EXPORT GameApi::ML GameApi::PolygonApi::shadow_shader(EveryApi &ev, ML mainloop, int tex_num, float p_x, float p_y, float p_z, unsigned int dark_color, float mix)
 {
+#if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new ShadowShaderML(e,ev,item,tex_num,Point(p_x,p_y,p_z), dark_color,mix));
+#endif
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::dyn_lights_shader(EveryApi &ev, ML mainloop, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
@@ -11720,6 +11824,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
 }
 
 
+#if 0
 class AnimFace : public ForwardFaceCollection
 {
 public:
@@ -11732,14 +11837,18 @@ private:
   //FaceCollection &coll;
   Vector v;
 };
+#endif
 
 EXPORT GameApi::P GameApi::PolygonApi::anim_target_vector(P p, V v)
 {
+#if 0
   FaceCollection *i = find_facecoll(e, p);
   Vector *vv = find_vector(e,v);
   FaceCollection *coll = new AnimFace(*i, *vv);
   return add_polygon(e, coll, 1);
+#endif
 }
+#if 0
 class AnimColl : public ForwardFaceCollection
 {
 public:
@@ -11754,13 +11863,17 @@ private:
   FaceCollection *i1;
   FaceCollection *i2;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::anim_endpoints(P p1, P p2)
 {
+#if 0
   FaceCollection *i1 = find_facecoll(e,p1);
   FaceCollection *i2 = find_facecoll(e,p2);
   FaceCollection *coll = new AnimColl(i1, i2);
   return add_polygon(e, coll, 1);
+#endif
 }
+#if 0
 class AnimInterpolate : public ForwardFaceCollection
 {
 public:
@@ -11808,13 +11921,17 @@ private:
   FaceCollection *coll;
   float val;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::anim_interpolate(P p, float val)
 {
+#if 0
   FaceCollection *i = find_facecoll(e,p);
   FaceCollection *coll = new AnimInterpolate(i, val);
   return add_polygon(e, coll, 1);
+#endif
 }
 
+#if 0
 class AnimFaceScale : public ForwardFaceCollection
 {
 public:
@@ -11832,14 +11949,16 @@ private:
   Point p;
   float scale_x, scale_y, scale_z;
 };
-
+#endif
 
 EXPORT GameApi::P GameApi::PolygonApi::anim_target_scale(P p, PT center, float scale_x, float scale_y, float scale_z)
 {
+#if 0
   FaceCollection *i = find_facecoll(e, p);
   Point *pp = find_point(e, center);
   FaceCollection *coll = new AnimFaceScale(*i, *pp, scale_x, scale_y, scale_z);
   return add_polygon(e, coll, 1);
+#endif
 }
 /*
 class VolumeObjectFromCutter : public VolumeObject
@@ -12057,6 +12176,7 @@ EXPORT GameApi::P GameApi::PolygonApi::intersect(EveryApi &ev, P p1, P p2,
   return or_1;
 
 }
+#if 0
 class TriToQuad : public ForwardFaceCollection
 {
 public:
@@ -12104,10 +12224,13 @@ public:
 private:
   FaceCollection *coll;
 };
+#endif
 EXPORT GameApi::P GameApi::PolygonApi::tri_to_quad(P p)
 {
+#if 0
   FaceCollection *poly = find_facecoll(e, p);
   return add_polygon2(e, new TriToQuad(poly),1);
+#endif
 }
 
 class ColorMapPoly : public SingleForwardFaceCollection
@@ -12863,6 +12986,7 @@ bool invalidate(CacheItem *item, std::string filename, int obj_count)
   return item->filesize != size || item->obj_count != obj_count;
 }
 
+#if 0
 class PrepareCut : public ForwardFaceCollection
 {
 public:
@@ -12876,10 +13000,13 @@ public:
 private:
   FaceCollection *coll;
 };
+#endif
 GameApi::P GameApi::PolygonApi::prepare_cut(P p)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new PrepareCut(coll), 1);
+#endif
 }
 
 std::string cache_id(std::string filename, int obj_count)
@@ -12919,6 +13046,7 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   return model;
 }
 Matrix g_last_resize = Matrix::Identity();
+
 
 class ResizeFaceCollection : public ForwardFaceCollection
 {
@@ -13223,6 +13351,7 @@ GameApi::P GameApi::PolygonApi::build_offsets(P p, std::vector<PT> points)
 }
 
 
+#if 0
 class SplitterFaceCollection : public FaceCollection
 {
 public:
@@ -13258,6 +13387,7 @@ private:
   int start;
   int end;
 };
+#endif
 class TexCoordFromNormal : public ForwardFaceCollection
 {
 public:
@@ -13346,6 +13476,7 @@ GameApi::P GameApi::PolygonApi::texcoord_from_normal2(P p)
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new TexCoordFromNormal2(coll),1);
 }
+#if 0
 class FixTexCoord : public ForwardFaceCollection
 {
 public:
@@ -13397,16 +13528,21 @@ public:
 private:
   FaceCollection *coll;
 };
+#endif
 GameApi::P GameApi::PolygonApi::fix_texcoord(P p)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new FixTexCoord(coll),1);
+#endif
 }
 
 GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new SplitterFaceCollection(*coll, start_face,end_face),1);
+#endif
 }
 
 class LineToCone : public FaceCollection
@@ -14226,6 +14362,7 @@ std::string bloom1_v =
   return custom_shader(ev, mainloop, bloom1_v, bloom1_f, "bloom1", "bloom1");
 }
 
+#if 0
 class LogCoordsFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -14242,11 +14379,14 @@ public:
     return p2;
   }
 };
+#endif
 
 GameApi::P GameApi::PolygonApi::log_coords(P p)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new LogCoordsFaceCollection(coll),1);
+#endif
 }
 
 GameApi::P GameApi::PolygonApi::log_coords2(P p, int x_count, int y_count, float sx, float sy, float sz)
@@ -15379,6 +15519,7 @@ GameApi::ARR GameApi::PolygonApi::material_extractor_p(P p, int start_index, int
   return add_array(e,array);
 }
 
+#if 0
 class P_MTL2_ML : public MainLoopItem
 {
 public:
@@ -15396,10 +15537,13 @@ private:
   GameApi::Env &e;
   GameApi::P p;
 };
+#endif
 
 GameApi::ML GameApi::PolygonApi::p_mtl2_prepare(P p)
 {
+#if 0
   return add_main_loop(e, new P_MTL2_ML(e,p));
+#endif
 }
 
 GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
@@ -16062,7 +16206,8 @@ struct AccelNodeSpec
 {
   int x,y,z;
 };
- 
+
+#if 0
 class GridAccel : public AccelStructure
 {
 public:
@@ -16516,7 +16661,7 @@ private:
   float start_z, end_z;
   AccelNode *grid;
 };
-
+#endif
 std::pair<Point,Point> find_bounds(FaceCollection *coll)
 {
   Point mymin, mymax;
@@ -16649,7 +16794,7 @@ private:
 };
 
  void shadow_color_callback(void *ptr);
-
+#if 0
  class ShadowColor : public ForwardFaceCollection
 {
 public:
@@ -16891,19 +17036,22 @@ private:
   GridAccel *grid;
   AreaCache *cache;
 };
- 
+#endif
+
  void shadow_color_callback(void *ptr)
  {
-   ShadowCB *cb = (ShadowCB*)ptr;
-   int q = cb->current;
-   cb->m_this->ASyncCallback(q);
+   //ShadowCB *cb = (ShadowCB*)ptr;
+   //int q = cb->current;
+   //cb->m_this->ASyncCallback(q);
  }
 
 GameApi::P GameApi::PolygonApi::light_transport(P p, int num, float light_dir_x, float light_dir_y, float light_dir_z)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   Vector light_dir(light_dir_x, light_dir_y, light_dir_z);
   return add_polygon2(e, new ShadowColor(coll, num, light_dir),1);
+#endif
 }
 
 class TextureFromP : public Bitmap<Color>
@@ -17242,6 +17390,7 @@ GameApi::ARR GameApi::PolygonApi::meshanim_anim_meshes(MA ma, float start_time, 
   return add_array(e,array);
 }
 
+#if 0
 class ChooseTime : public MainLoopItem
 {
 public:
@@ -17291,9 +17440,10 @@ private:
   float delta_time;
   bool firsttime;
 };
-
+#endif
 GameApi::ML GameApi::PolygonApi::choose_time(ML next, std::vector<ML> vec, float delta_time)
 {
+#if 0
   MainLoopItem *nxt = find_main_loop(e,next);
   int s = vec.size();
   std::vector<MainLoopItem*> v;
@@ -17303,6 +17453,7 @@ GameApi::ML GameApi::PolygonApi::choose_time(ML next, std::vector<ML> vec, float
       v.push_back(item);
     }
   return add_main_loop(e, new ChooseTime(nxt, v, delta_time));
+#endif
 }
 
 
@@ -17634,6 +17785,7 @@ GameApi::BM GameApi::PolygonApi::shadow_map3(EveryApi &ev, P objs,float p_x, flo
   return bm;
 }
 
+#if 0
 class AddMeshTexture : public ForwardFaceCollection
 {
 public:
@@ -17743,13 +17895,16 @@ private:
   BufferFromBitmap bbm;
   bool firsttime;
 };
+#endif
 
 GameApi::P GameApi::PolygonApi::texture_add(P p, BM bm)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   BitmapHandle *handle = find_bitmap(e, bm);
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
   return add_polygon2(e, new AddMeshTexture(coll, b2),1);
+#endif
 }
 
 
@@ -19375,7 +19530,9 @@ GameApi::ML GameApi::PolygonApi::mesh_anim(GameApi::EveryApi &ev,
 					   std::vector<GameApi::IF> states,
 					   std::string url)
 {
+
   return add_main_loop(e, new MeshAnimFromUrl(e, ev, vec, move, materials, inst, states,url, gameapi_homepageurl));
+
 }
 
 // note, needs to have equal amount of vertices. p_script is good way to generate these
@@ -20565,7 +20722,7 @@ GameApi::P GameApi::PolygonApi::convex_hull(PTS pts)
 }
 
 
-
+#if 0
 class Att : public Attach
 {
 public:
@@ -20627,7 +20784,9 @@ private:
   FaceCollection *coll;
   LineCollection *lines;
 };
+#endif
 
+#if 0
 class AttCache : public Attach
 {
 public:
@@ -20672,23 +20831,29 @@ private:
   FaceCollection *coll;
   std::vector<std::vector<int> > vec;
 };
+#endif
 
 GameApi::ATT GameApi::PolygonApi::find_attach2(P p, LI li)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e,p);
   LineCollection *lines = find_line_array(e,li);
 
   return add_attach(e, new Att(coll,lines));
+#endif
 }
 // NOTE, find_attach and attach_cache need to have the same P instance.
 GameApi::ATT GameApi::PolygonApi::attach_cache(ATT a, P p)
 {
+#if 0
   Attach *att = find_attach(e, a);
   FaceCollection *coll = find_facecoll(e,p);
   return add_attach(e, new AttCache(att, coll));
+#endif
 }
 
 
+#if 0
 class SplitAttachFaces : public FaceCollection
 {
 public:
@@ -20799,11 +20964,14 @@ private:
   std::vector<int> facemap;
   bool &prepared;
 };
+#endif
 GameApi::P split_attach_faces(GameApi::Env &e, GameApi::P p, GameApi::ATT att, int max_attach, int num, bool &prepared)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   Attach *att2 = find_attach(e, att);
   return add_polygon2(e, new SplitAttachFaces(coll, att2, max_attach, num, prepared),1);
+#endif
 }
 
 GameApi::ARR GameApi::PolygonApi::split_faces(P p, ATT att, int max_attach) // max_attach is number of lines in LI
@@ -20824,6 +20992,7 @@ GameApi::ARR GameApi::PolygonApi::split_faces(P p, ATT att, int max_attach) // m
   return add_array(e, array);
 }
 
+#if 0
 class Pose2 : public FaceCollection
 {
 public:
@@ -20948,9 +21117,11 @@ private:
 
   GameApi::P res;
 };
+#endif
 
 std::vector<GameApi::P> GameApi::PolygonApi::orig_pose2(EveryApi &ev, std::vector<P> vec, LI li, int li_size)
 {
+#if 0
   GameApi::MS ms_0 = ev.matrices_api.from_lines_3d(li);
   GameApi::MS ms_inv = ev.matrices_api.inverse_ms(ms_0);
   MatrixArray *mat = find_matrix_array(e, ms_inv);
@@ -20961,6 +21132,7 @@ std::vector<GameApi::P> GameApi::PolygonApi::orig_pose2(EveryApi &ev, std::vecto
       res.push_back(p);
     }
   return res;
+#endif
 }
 
 std::vector<GameApi::P> GameApi::PolygonApi::orig_pose(EveryApi &ev, P p, LI li, int li_size)
@@ -20996,6 +21168,7 @@ std::vector<GameApi::P> GameApi::PolygonApi::orig_pose(EveryApi &ev, P p, LI li,
 GameApi::MS ms_array(GameApi::Env &e, std::vector<Matrix> vec);
 
 
+#if 0
 class NewPose : public MatrixArray
 {
 public:
@@ -21064,12 +21237,15 @@ private:
 
   GameApi::MS res;
 };
+#endif
 
 GameApi::MS GameApi::PolygonApi::new_pose(EveryApi &ev, LI li_orig, LI li)
 {
+#if 0
   //GameApi::MS ms_0 = ev.matrices_api.from_lines_3d(li_orig);
   //GameApi::MS ms_inv = ev.matrices_api.inverse_ms(ms_0);
   return add_matrix_array(e, new NewPose(e,ev,li_orig,li));
+#endif
 }
 
 
@@ -21490,7 +21666,7 @@ bool CompareFaces(int id1, int id2)
   return dist<dist2;
 }
 
-
+#if 0
 class SortFaces : public CollectInterface
 {
 public:
@@ -21547,7 +21723,8 @@ public:
   std::vector<int> vec;
   Vector dir;
 };
-
+#endif
+#if 0
 class FaceCollectionRays : public CollectInterface
 {
 public:
@@ -21615,7 +21792,9 @@ private:
   Vector v;
   SortFaces *sort;
 };
+#endif
 
+#if 0
 class LightMapBitmap : public Bitmap<Color>
 {
 public:
@@ -21720,8 +21899,10 @@ private:
   Point2d t1,t2,t3,t4;
   Vector light_dir;
 };
+#endif
 GameApi::BM GameApi::BitmapApi::lightmap_bitmap(int sx, int sy, P faces, P faces2, int face, float light_dir_x, float light_dir_y, float light_dir_z)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e,faces);
   FaceCollection *coll2 = find_facecoll(e, faces2);
   Bitmap<Color> *b = new LightMapBitmap(sx,sy,coll,coll2,face,Vector(light_dir_x, light_dir_y, light_dir_z));
@@ -21729,6 +21910,7 @@ GameApi::BM GameApi::BitmapApi::lightmap_bitmap(int sx, int sy, P faces, P faces
   handle2->bm = b;
   BM bm = add_bitmap(e, handle2);
   return bm;
+#endif
 }
 
 class CollectBitmap : public CollectInterface
@@ -21836,6 +22018,7 @@ public:
   std::vector<Bitmap<Color>*> vec;
 };
 
+#if 0
 class SponzaFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -21908,10 +22091,13 @@ private:
   std::vector<CollectBitmap*> bms;
   float light_dir_x, light_dir_y, light_dir_z;
 };
+#endif
 GameApi::P GameApi::PolygonApi::slow_calc_lights(GameApi::P p, float light_dir_x, float light_dir_y, float light_dir_z)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new SponzaFaceCollection(coll, light_dir_x, light_dir_y, light_dir_z),1);
+#endif
 }
 
 class CombineTextures : public ForwardFaceCollection
@@ -22364,6 +22550,7 @@ GameApi::P GameApi::PolygonApi::get_face_count(P p)
 }
 
 
+#if 0
 class CombineAnim : public ForwardFaceCollection
 {
 public:
@@ -22373,6 +22560,7 @@ private:
   FaceCollection *coll2;
   
 };
+#endif
 
 extern bool g_use_vertices_only;
 
@@ -22389,7 +22577,7 @@ public:
     end_coll = a->get_frame(end_time);
 
     delete comb;
-    comb = new CombineAnim(start_coll, end_coll);
+    //comb = new CombineAnim(start_coll, end_coll);
 
     delete render;
     render = new RenderVertexArray(g_low, *set);
@@ -22517,6 +22705,7 @@ private:
 //}
 
 
+#if 0
 class CombineAnim2 : public ForwardFaceCollection
 {
 public:
@@ -22529,12 +22718,15 @@ private:
   FaceCollection *coll2;
   float start_time, end_time;
 };
+#endif
 
 GameApi::P GameApi::PolygonApi::combine_anim(P p1, P p2, float start_time, float end_time)
 {
+#if 0
   FaceCollection *pp1 = find_facecoll(e,p1);
   FaceCollection *pp2 = find_facecoll(e,p2);
   return add_polygon2(e, new CombineAnim2(pp1,pp2,start_time,end_time),1);
+#endif
 }
 
 GameApi::P GameApi::PolygonApi::sphere_anim(float c_x, float c_y, float c_z,
@@ -23005,6 +23197,7 @@ GameApi::P GameApi::PolygonApi::extract_large_polygons(GameApi::P p, float minim
   return add_polygon2(e, new ExtractLargePolygons(faces,minimum_size,reverse),1);
 }
 
+#if 0
 class MaterialFaceCollection : public FaceCollection
 {
 public:
@@ -23135,12 +23328,15 @@ private:
   mutable int store_face=-1;
   mutable Vector store_res;
 };
+#endif
 
 GameApi::P GameApi::PolygonApi::material_face_collection(P base, P material)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e,base);
   FaceCollection *coll2 = find_facecoll(e,material);
   return add_polygon2(e, new MaterialFaceCollection(coll,coll2),1);
+#endif
 }
 
 
@@ -23240,6 +23436,7 @@ GameApi::ARR GameApi::PolygonApi::sort_objects_based_on_polygon_size(GameApi::P 
 }
 */
 
+#if 0
 class PTSWorld : public IWorld
 {
 public:
@@ -23252,13 +23449,17 @@ private:
   PointsApiPoints *points;
   int type;
 };
+#endif
 
 GameApi::W GameApi::MainLoopApi::pts_world(PTS p, int type)
 {
+#if 0
   PointsApiPoints *points = find_pointsapi_points(e,p);
   return add_world(e, new PTSWorld(points,type));
+#endif
 }
 
+#if 0
 class SingleCache : public ICache
 {
 public:
@@ -23270,15 +23471,19 @@ private:
   FaceCollection *coll;
   Material *mat;
 };
+#endif
 
 GameApi::CX GameApi::MainLoopApi::cache_one(P p, MT mat2)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e,p);
   Material *mat = find_material(e,mat2);
   return add_cache(e, new SingleCache(coll,mat));
+#endif
 }
 
 
+#if 0
 class ArrayCache : public ICache
 {
 public:
@@ -23317,9 +23522,10 @@ public:
 private:
   std::vector<ICache*> vec;
 };
-
+#endif
 GameApi::CX GameApi::MainLoopApi::array_cache(std::vector<CX> vec)
 {
+#if 0
   std::vector<ICache*> vec2;
   int s = vec.size();
   for(int i=0;i<s;i++)
@@ -23328,8 +23534,10 @@ GameApi::CX GameApi::MainLoopApi::array_cache(std::vector<CX> vec)
       vec2.push_back(cc);
     }
   return add_cache(e, new ArrayCache(vec2));
+#endif
 }
 
+#if 0
 class SubWorldCache : public ICache
 {
 public:
@@ -23356,13 +23564,17 @@ private:
   int start_block;
   int end_block;
 };
+#endif
 GameApi::CX GameApi::MainLoopApi::subworld(CX c, W w, int start_block, int end_block)
 {
+#if 0
   ICache *cc = find_cache(e,c);
   IWorld *ww = find_world(e,w);
   return add_cache(e, new SubWorldCache(cc,ww,start_block,end_block));
+#endif
 }
 
+#if 0
 class ArrayWorld : public IWorld
 {
 public:
@@ -23416,13 +23628,16 @@ public:
 private:
   std::vector<IWorld*> w;
 };
+#endif
 GameApi::W GameApi::MainLoopApi::array_world(std::vector<W> vec)
 {
+#if 0
   std::vector<IWorld*> vec2;
   int s = vec.size();
   for(int i=0;i<s;i++)
     vec2.push_back(find_world(e,vec[i]));
   return add_world(e, new ArrayWorld(vec2));
+#endif
 }
 
 class ArrayPlatform : public Platform
@@ -23471,6 +23686,7 @@ private:
   std::vector<Platform*> vec;
 };
 
+#if 0
 class RectPlatform : public Platform
 {
 public:
@@ -23574,6 +23790,7 @@ private:
   bool m_x_or_z;
   bool m_start_or_end_higher;
 };
+#endif
 
 GameApi::PL GameApi::PolygonApi::array_pl(std::vector<PL> vec)
 {
@@ -23600,11 +23817,13 @@ GameApi::PL GameApi::PolygonApi::rect_pl(float start_x, float end_x,
 				      bool x_or_z,
 				      bool start_or_end_higher)
 {
+#if 0
   return add_platform(e, new RectPlatform(start_x, end_x,
 					  start_y, end_y,
 					  start_z, end_z,
 					  x_or_z,
 					  start_or_end_higher));
+#endif
 }
 				      
 GameApi::P GameApi::PolygonApi::render_pl(PL pl)
