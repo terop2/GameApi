@@ -178,6 +178,7 @@ public:
   virtual float y_sep(Point p) const { return 0.0; }
   virtual float dist_sep(Point p) const { return 0.0; }
 };
+#if 0
 class SeparateX : public Separate
 {
 public:
@@ -203,7 +204,9 @@ private:
   float (*fptr)(float,float,float,void*); 
   void *data;
 };
+#endif
 
+#if 0
 class SeparateDist : public Separate
 {
 public:
@@ -216,7 +219,8 @@ private:
   float (*fptr)(float,float,float,void*); 
   void *data;
 };
-
+#endif
+#if 0
 class SeparateRender : public SingleForwardFaceCollection
 {
 public:
@@ -331,7 +335,7 @@ private:
   //float v_range_start; float v_range_end; float v_step;
   mutable std::map<Key, Point> points;
 };
-
+#endif
 // (x,y,z)|- r
 // 
 // (alfa,beta) |- (x,y,z)
