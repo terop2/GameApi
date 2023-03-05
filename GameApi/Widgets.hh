@@ -512,7 +512,7 @@ private:
 class TextureWidget : public Widget, private Texture
 {
 public:
-  TextureWidget(BufferRef buffer, TextureEvents &events, int screensizex, int screensizey, Render *r) : Widget(r), buffer(buffer), events(events), rectangle(screensizex, screensizey), quads_to_planes(rectangle), texture(buffer), sx(screensizex), sy(screensizey), rectangle2(rectangle, Matrix::Translate(0.0,0.0,0.1)), outline(rectangle2) { }
+  TextureWidget(BufferRef buffer, TextureEvents &events, int screensizex, int screensizey, Render *r) : Widget(r), buffer(buffer), events(events), rectangle(screensizex, screensizey), quads_to_planes(rectangle), sx(screensizex), sy(screensizey), rectangle2(rectangle, Matrix::Translate(0.0,0.0,0.1)), outline(rectangle2) { }
   float XRot() const { return 1.0; }
   float YRot() const { return 1.0; }
   float ZRot() const { return 0.0; }
@@ -542,7 +542,7 @@ private:
   RectangleElem rectangle;
   QuadsToPlanes quads_to_planes;
 
-  TexturePlugin texture;
+  //TexturePlugin texture;
   bool changed, changed2;
   float sx,sy;
   MatrixElem rectangle2;

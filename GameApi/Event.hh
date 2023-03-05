@@ -412,6 +412,7 @@ private:
   int xyz;
 };
 
+#if 0
 class SplineCurve : public CurveIn3d
 { // arr should be increasing float numbers.
   // and there needs to be same amount of points as floats.
@@ -437,6 +438,7 @@ private:
   SplineInterpolation sy;
   SplineInterpolation sz;
 };
+#endif
 
 class CircleMatrixPath : public TimedMatrixPaths
 {
@@ -462,18 +464,18 @@ private:
 class SplineCurves : public Array<int, CurveIn3d*>
 {
 public:
-  SplineCurves(Array<int, PointCollection*> &arr, FloatArray &arr2) : c(0), arr(arr), arr2(arr2){ }
+  SplineCurves(Array<int, PointCollection*> &arr, FloatArray &arr2) : arr(arr), arr2(arr2){ }
   int Size() const { return arr.Size(); }
   CurveIn3d *Index(int i) const
   {
-    delete c;
+    //delete c;
     PointCollection *coll = arr.Index(i);
-    c = new SplineCurve(*coll, arr2);
-    return c;
+    //c = new SplineCurve(*coll, arr2);
+    //return c;
   }
 
 private:
-  mutable SplineCurve *c;
+  //mutable SplineCurve *c;
   Array<int, PointCollection*> &arr;
   FloatArray &arr2;
 };
@@ -507,6 +509,7 @@ private:
   FloatArray &arr;
 };
 
+#if 0
 class LinearInterpolation : public CurveIn3d
 {
 public:
@@ -552,7 +555,7 @@ private:
   Dist1 d;
   InterpolationDistance &dist;
 };
-
+#endif
 class ParallelCurvesPoint : public TimedPointCloud
 {
 public:
@@ -567,6 +570,7 @@ private:
   Array<int, CurveIn3d*> &arr;
 };
 
+#if 0
 class SelectPoints : public PointCollection
 {
 public:
@@ -580,12 +584,13 @@ private:
   Array<int, PointCollection*> &arr;
   int select;
 };
+#endif
 
 class LinearMovement : public TimedPointCloud
 { // All PointCollections to have same number of elements.
   // arr and FloatArray should have same number of elements.
 public:
-  LinearMovement(Array<int, PointCollection*> &arr, FloatArray &time) : arr(arr), /*time(time),*/ lm(*this), points(0), dist(time), interpol(0), parallel(lm) { }
+  LinearMovement(Array<int, PointCollection*> &arr, FloatArray &time) : arr(arr), /*time(time),*/ lm(*this), dist(time), parallel(lm) { }
 public:
   float Length() const { return parallel.Length(); }
   int Size() const { return parallel.Size(); }
@@ -606,11 +611,11 @@ private:
     CurveIn3d *Index(int i) const 
     {
       //if (i>=Size()) i=Size();
-      delete mv.interpol;
-      delete mv.points;
-      mv.points = new SelectPoints(mv.arr, i);
-      mv.interpol = new LinearInterpolation(*mv.points, mv.dist);
-      return mv.interpol;
+      //delete mv.interpol;
+      //delete mv.points;
+      //mv.points = new SelectPoints(mv.arr, i);
+      //mv.interpol = new LinearInterpolation(*mv.points, mv.dist);
+      //return mv.interpol;
     }
     LinearMovement &mv;
   };
@@ -619,9 +624,9 @@ private:
   Array<int, PointCollection*> &arr;
   //FloatArray &time;
   LM lm;
-  SelectPoints *points;          // (Array<int,PointCollection*>, int) => PointCollection 
+  //SelectPoints *points;          // (Array<int,PointCollection*>, int) => PointCollection 
   Dist2 dist;                     // FloatArray => InterpolationDistance
-  LinearInterpolation *interpol; // PointCollection, InterpolationDistance => CurveIn3d
+  //LinearInterpolation *interpol; // PointCollection, InterpolationDistance => CurveIn3d
   ParallelCurvesPoint parallel; // array<int, curvein3d*> => timedpointcloud
 };
 

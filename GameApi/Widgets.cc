@@ -103,6 +103,7 @@ void TextureWidget::HandlePointerMove(Point2d p)
 }
 bool TextureWidget::Frame(float time)
   {
+#if 0
     if (changed) 
       {
 	events.HandleTextureChange(*this);
@@ -124,4 +125,5 @@ bool TextureWidget::Frame(float time)
     RenderOpenGlLines(outline);
     
     return false;
+#endif
   }

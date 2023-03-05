@@ -67,10 +67,12 @@ private:
   CurveMovement move;
 };
 
+
 class ConnectCurves : public CurveIn3d
 {
 public:
-  ConnectCurves(CurveIn3d &curve, CurveIn3d &curve2) : curve(curve), curve2(curve2), p0(curve.Index(curve.Size()*5/6)), p1(curve.Index(curve.Size())), p2(curve2.Index(0.0)), p3(curve2.Index(curve2.Size()*1/6)), vec(&p0, &p3+1), conv(vec), bezier(conv) { }
+#if 0
+  ConnectCurves(CurveIn3d &curve, CurveIn3d &curve2) : curve(curve), curve2(curve2), p0(curve.Index(curve.Size()*5/6)), p1(curve.Index(curve.Size())), p2(curve2.Index(0.0)), p3(curve2.Index(curve2.Size()*1/6)), vec(&p0, &p3+1), bezier(conv) { }
   float Size() const { return curve.Size()+bezier.Size()+curve2.Size(); }
   Point Index(float x) const
   {
@@ -91,8 +93,9 @@ private:
   CurveIn3d &curve, &curve2;
   Point p0,p1,p2,p3;
   VectorArray<Point> vec;
-  PointCollectionConvert conv;
+  //PointCollectionConvert conv;
   BezierCurve bezier;
+#endif
 };
 
 #if 0

@@ -386,6 +386,8 @@ Point Box::BoxPoint(float x, float y, float z) const
   return pp;
 }
 
+#if 0
+
 void TexturePlugin::Init()
 {
   OpenglLowApi *ogl = g_low->ogl;
@@ -426,6 +428,8 @@ void TexturePlugin::End()
     ogl->glDisable(Low_GL_TEXTURE_2D);
     ogl->glEnable(Low_GL_LIGHTING);
 }
+#endif
+
 
 void RenderOpenGlCmds::Execute()
 {
@@ -433,6 +437,7 @@ void RenderOpenGlCmds::Execute()
 }
 void RenderToTexture::PreCalc()
 {
+#if 0
   OpenglLowApi *ogl = g_low->ogl;
   cmds.PreCalc();
   if (in_precalc)
@@ -447,9 +452,11 @@ void RenderToTexture::PreCalc()
       ogl->glViewport(params[0],params[1],params[2],params[3]);
       ogl->glDisable(Low_GL_TEXTURE_2D);
     }
+#endif
 }
 void RenderToTexture::Execute()
 {
+#if 0
   OpenglLowApi *ogl = g_low->ogl;
   if (!in_precalc)
     {
@@ -463,6 +470,7 @@ void RenderToTexture::Execute()
       ogl->glViewport(params[0],params[1],params[2],params[3]);
       ogl->glDisable(Low_GL_TEXTURE_2D);
     }
+#endif
 }
 
 void TransparencyCmds::Execute()
@@ -1896,6 +1904,7 @@ float InterpolateWaveform::Index(float time) const
 
 Point2d SawWaveform::array[3] = { {0.0,0.0},{0.5,1.0},{1.0,0.0} };
 
+#if 0
 void SplitPolygons::DoSplitting()
 {
   
@@ -1947,6 +1956,8 @@ void SplitPolygons::DoSplitting()
     
 
 }
+#endif
+
 
 //#define VBOS
 #define DISPLAY_LISTS
@@ -3300,6 +3311,7 @@ void FrameAnim::RenderOpenGlPoly(const PointCollection &col) { render->RenderPol
 
 void TextureGeneration(FaceCollection &coll, FrameAnimPlugins &plugins)
 {
+#if 0
   int s = coll.NumTextures();
   for(int i=0;i<s;i++)
     {
@@ -3310,6 +3322,8 @@ void TextureGeneration(FaceCollection &coll, FrameAnimPlugins &plugins)
       //plugin->texture = i;
       plugins.plugins.push_back(plugin);
     }
+
+#endif
 }
 
 #if 0

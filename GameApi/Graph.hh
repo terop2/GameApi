@@ -3804,6 +3804,7 @@ private:
 };
 
 
+#if 0
 class SphereNormalContinuousVoxel : public ContinuousVoxel<Vector>
 {
 public:
@@ -3826,7 +3827,7 @@ public:
 private:
   Point center;
 };
-
+#endif
 class ColorCube : public ContinuousVoxel<Color>
 {
 public:
