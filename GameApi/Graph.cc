@@ -511,6 +511,7 @@ bool GraphEffect::Frame(float time)
 
 void ShaderEffect::Init()
 {
+#if 0
   s = seq.GetShader("sphere:surfacemain:crossproduct", "colormain:phong", "");
   seq.use(s);
   Program *prog = seq.prog(s);
@@ -527,7 +528,9 @@ void ShaderEffect::Init()
   SampleSurfaceIn3d faces(*quads.Index(0), 0, 15,15);
   //SampleGrid faces(grid, 0);
   UpdateVBO(faces, vbostate, UpdateAll , vec);
+#endif
 }
+
 bool ShaderEffect::Frame(float time)
 {
   seq.use(s);

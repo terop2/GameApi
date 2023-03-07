@@ -4109,7 +4109,6 @@ private:
   return add_main_loop(e, new SavePngML(ev, bm, filename));
 }
 
-#if 0
 class AvgBitmap : public Bitmap<Color>
 {
 public:
@@ -4139,10 +4138,8 @@ private:
   Bitmap<Color> &bm1;
   Bitmap<Color> &bm2;
 };
-#endif
 GameApi::BM GameApi::BitmapApi::avg(BM bm1, BM bm2)
 {
-#if 0
   BitmapHandle *handle1 = find_bitmap(e, bm1);
   ::Bitmap<Color> *b1 = find_color_bitmap(handle1);
   BitmapHandle *handle2 = find_bitmap(e, bm2);
@@ -4154,7 +4151,6 @@ GameApi::BM GameApi::BitmapApi::avg(BM bm1, BM bm2)
   handle3->bm = b;
   BM bm = add_bitmap(e, handle3);
   return bm;
-#endif
 }
 
 GameApi::BM GameApi::BitmapApi::fix_edges(BM bm)
