@@ -923,6 +923,8 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
 #endif
 #if 1
 
+
+#if 0
 class GrabSplitter : public Splitter
 {
 public:
@@ -953,7 +955,9 @@ private:
   bool firsttime;
   BufferRef ref;
 };
+#endif
 
+#if 0
 class CombineScreens : public Splitter
 {
 public:
@@ -966,16 +970,20 @@ public:
 private:
   Splitter *s1, *s2;
 };
+#endif
 
 EXPORT GameApi::RUN GameApi::TextureApi::combine_screens(RUN r1, RUN r2)
 {
+#if 0
   Splitter *s1 = find_splitter(e,r1);
   Splitter *s2 = find_splitter(e,r2);
   return add_splitter(e, new CombineScreens(s1,s2));
+#endif
 }
 
 EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
 {
+#if 0
   float screen_x = ev.mainloop_api.get_screen_sx();
   float screen_y = ev.mainloop_api.get_screen_sy();
   
@@ -991,6 +999,7 @@ EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
   arr->vec.push_back(run.id);
   arr->vec.push_back(bm.id);
   return add_array(e, arr);
+#endif
 }
 
 
@@ -1149,7 +1158,7 @@ GameApi::ML GameApi::TextureApi::prepare_key(ML next, ML keyed, int key)
   return add_main_loop(e, new KeyPrepare(key, next_, keyed_));
 }
 
-
+#if 0
 class KeyPrepareAnim : public MainLoopItem
 {
 public:
@@ -1205,9 +1214,11 @@ private:
   float current_time=0.0;
   std::vector<std::string> filenames;
 };
+#endif
 
 GameApi::ML GameApi::TextureApi::prepare_key_anim(ML next, std::vector<ML> keyed, int key, float time_delta, std::vector<std::string> filenames)
 {
+#if 0
   MainLoopItem *next_ = find_main_loop(e,next);
   int s = keyed.size();
   std::vector<MainLoopItem*> vec;
@@ -1216,9 +1227,10 @@ GameApi::ML GameApi::TextureApi::prepare_key_anim(ML next, std::vector<ML> keyed
     vec.push_back(keyed_);
   }
   return add_main_loop(e, new KeyPrepareAnim(key, next_, vec,time_delta,s, filenames));
+#endif
 }
 
-
+#if 0
 class Prepare_grabscreen : public Bitmap<Color>
 {
 public:
@@ -1279,13 +1291,17 @@ private:
   int m_sx,m_sy;
   BufferRef ref;
 };
+#endif
+
 GameApi::BM GameApi::TextureApi::grab_screen_bitmap(EveryApi &ev)
 {
+#if 0
   Bitmap<Color> *b = new Prepare_grabscreen(ev,-1,-1);
   BitmapColorHandle *handle3 = new BitmapColorHandle;
   handle3->bm = b;
   BM bm = add_bitmap(e, handle3);
   return bm;
+#endif
 }
 
 GameApi::ML GameApi::TextureApi::save_screenshot_via_key(EveryApi &ev, GameApi::ML ml3, int key, std::string filename)
