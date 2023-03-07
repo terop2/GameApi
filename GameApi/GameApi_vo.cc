@@ -216,7 +216,7 @@ public:
 private:
   std::function<float (float x, float y, float z)> f;
 };
-
+#if 0
 class FunctionColorVolumeObject : public ColorVolumeObject {
 public:
   FunctionColorVolumeObject(std::function<unsigned int (float x, float y, float z)> f) : f(f) { }
@@ -228,7 +228,7 @@ public:
 private:
   std::function<unsigned int (float x, float y, float z)> f;
 };
-
+#endif
 
 class IntersectionPoint : public VolumeObject
 {
@@ -273,9 +273,11 @@ private:
 };
 EXPORT GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p, float x, float y, float z)
 {
+#if 0
   FaceCollection *coll = find_facecoll(e, p);
   Point px(x,y,z);
   return add_volume(e, new FaceCollectionVolume(coll,px));
+#endif
 }
 
 EXPORT void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
@@ -805,12 +807,13 @@ EXPORT GameApi::FO GameApi::FloatVolumeApi::function(std::function<float (float 
 }
 EXPORT GameApi::COV GameApi::ColorVolumeApi::function(std::function<unsigned int (float x, float y, float z)> f)
 {
+#if 0
   //GameApi::EveryApi *ev = new GameApi::EveryApi(e);
   FunctionColorVolumeObject *ff = new FunctionColorVolumeObject(f);
   //::EnvImpl *env = ::EnvImpl::Environment(&e);
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_color_volume(e, ff);
-  
+#endif
 }
 
 class ColorVolumeFromFloatVolume : public ColorVolumeObject
@@ -916,6 +919,8 @@ EXPORT GameApi::BM GameApi::ColorVolumeApi::texture_bm(GameApi::P obj, GameApi::
   Bitmap<Color> *bm = new TextureBitmapFromColorVolume(coll, colors2, face, sx, sy);
   return add_color_bitmap2(e, bm);
 }
+
+#if 0
 class ArrayBM : public Bitmap<Color>
 {
 public:
@@ -942,11 +947,15 @@ private:
   float ssx,ssy;
   float z;
 };
+#endif
+
 EXPORT GameApi::BM GameApi::ColorVolumeApi::array_bm(COV colours, int sx, int sy, float ssx, float ssy, float z)
 {
+#if 0
   ColorVolumeObject *col = find_color_volume(e, colours);
   Bitmap<Color> *bm = new ArrayBM(col, sx,sy,ssx,ssy,z);
   return add_color_bitmap2(e,bm);
+#endif
 }
 
 EXPORT GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, unsigned int col_false)

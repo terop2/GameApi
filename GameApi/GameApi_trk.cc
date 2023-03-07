@@ -8,6 +8,7 @@
 #include <Patch.h>
 #endif
 
+#if 0
 class EmptyTracker : public Tracker
 {
 public:
@@ -23,11 +24,15 @@ private:
   int channels;
   int timeslots;
 };
+#endif
 EXPORT GameApi::TRK GameApi::TrackerApi::empty(int numchannels, int numslots)
 {
+#if 0
   return add_tracker(e, new EmptyTracker(numchannels, numslots));
+#endif
 }
 
+#if 0
 class AudioTracker : public Tracker
 {
 public:
@@ -63,12 +68,17 @@ private:
   int duration;
   int sample;
 };
+#endif
 
 EXPORT GameApi::TRK GameApi::TrackerApi::audio_slot(TRK orig, int channel, int slot, int duration, int sample)
 {
+#if 0
   Tracker *next = find_tracker(e, orig);
   return add_tracker(e, new AudioTracker(next, channel, slot, duration, sample));
+#endif
 }
+
+#if 0
 class ArrayTracker : public Tracker
 {
 public:
@@ -134,8 +144,11 @@ private:
   int size;
 };
 
+#endif
+
 EXPORT GameApi::TRK GameApi::TrackerApi::array(TRK *array, int size)
 {
+#if 0
   std::vector<Tracker*> *vec = new std::vector<Tracker*>;
   for(int i=0;i<size;i++)
     {
@@ -144,6 +157,7 @@ EXPORT GameApi::TRK GameApi::TrackerApi::array(TRK *array, int size)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   env->deletes.push_back(std::shared_ptr<void>(vec));
   return add_tracker(e, new ArrayTracker(&(*vec)[0], size));
+#endif
 }
 EXPORT GameApi::TBUF GameApi::TrackerApi::prepare(TRK trk)
 {
