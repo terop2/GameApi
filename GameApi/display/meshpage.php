@@ -104,7 +104,6 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 */
 ?>
 <link rel="preload" href="vue.js" as="script"/>
-
 </head>
 <script type="application/ld+json">{
   "@context": "http://schema.org",
@@ -155,6 +154,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 </script>
 <body id="body">
 <script src="vue.js"></script>
+
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
 <div id="app">
@@ -1703,6 +1703,7 @@ var g_txt_id = 0;
 var g_txt_cb = null;
 function choose_display_timeout(vm)
 {
+   //console.log("CHOOSE DISPLAY TIMEOUT");
    var vm2 = vm;
    return function() {
 	if (g_txt[g_txt_id]!==undefined) {
@@ -1750,11 +1751,13 @@ const myBRequest = new Request(url3, {
    mode: 'same-origin',
    cache: 'default'
 });
+//console.log("GOING TO BACKGROUND 0");
 fetch(myBRequest).then((r) => {
+    //console.log("GOING TO BACKGROUND");
    return r.text();
 }).then((t) => {
    if (t=="") t="0";
-   console.log("BACKGROUND:" + t);
+   //console.log("BACKGROUND:" + t);
    g_background = parseInt(t,10);
 });   
 
@@ -1839,9 +1842,16 @@ function start_emscripten(vm)
   setTimeout(function() { start_emscripten_really(vm) },1000);
 }
 
+var g_check_em_timeout = null;
+
 var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
+               if (g_check_em_timeout != null)
+  	          clearTimeout(g_check_em_timeout);
+	       g_check_em_timeout = null;
+  	       //console.log("CHECK_EM");
+	       //console.log(Module);
 	       g_emscripten_alive=true;
 
 //indicator[0]=false; 
@@ -1870,7 +1880,12 @@ function check_emscripten_running(indicator)
 {
   var canv = document.getElementById("canvas");
   if (Module) {
+         //console.log(Module);
+     	 //Module.ready().then(_ => check_em(indicator));
+	 //Module['calledRun'] = check_em(indicator);
 	 Module['onRuntimeInitialized'] = check_em(indicator);
+	 g_check_em_timeout = setTimeout(function() { console.log("onRuntimeInitialized didn't trigger in time"); check_em(indicator)(); });
+	 //check_em(indicator);
    	 //console.log("RUNNING");
 	 } else {
    	 //console.log("TIMEOUT");
@@ -1933,6 +1948,7 @@ function stop_music()
 {
    if (g_emscripten_running) {
      Module.ccall('stop_music_playing', null, [], [], { async:true });
+     //Module._stop_music_playing();
    }
 }
 function enable_spinner(a)
@@ -1983,12 +1999,20 @@ function show_emscripten(str,hide,indicator,is_async)
 		  Module.ccall('set_background_mode', null, ['number'], [g_background], {async:true});
 		  Module.ccall('set_integer', null, ['number','number'],[26,m_id], {async:true});
 		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
+		  //Module._set_string(0,str);
+		  //Module._set_background_mode(g_background);
+		  //Module._set_integer(26,m_id);
+		  //Module._set_string(5,g_user_id);
 		  console.log(g_user_id);
 		  } else {
 	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
 		  Module.ccall('set_background_mode', null, ['number'], [g_background]);
 		  Module.ccall('set_integer', null, ['number','number'],[26,m_id]);
 		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
+		  //Module._set_string(0,str);
+		  //Module._set_background_mode(g_background);
+		  //Module._set_integer(26,b_id);
+		  //Module._set_string(5,g_user_id);
 		  console.log(g_user_id);
 		  }		  
 	   } catch(e) {
@@ -2041,13 +2065,11 @@ function show_emscripten(str,hide,indicator,is_async)
 </script>
 <script type="text/javascript">
   var canv = document.getElementById("canvas");
-  var Module = {
-      canvas : canv,
-//      createContext: function(canvas, useWebGL, setInModule, webGLContextAttribuutes) {
-//            return canvas.getContext("experimental-webgl2",{antialias:false});
-//      },
-      //FS_createPath : (function(a,b,c,d) { }),
-      arguments : [
+
+  var Module = { };
+  Module.canvas = canv;
+  Module.arguments = [
+
 <?php
 require_once("user.php");
 $mobile = js_mobile();
@@ -2060,12 +2082,13 @@ echo "\"--size\", \"800\", \"600\",";
 $ua = $_SERVER["HTTP_USER_AGENT"];
 ?>
 
-      "--code", "P I1=ev.polygon_api.p_empty();\nML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\nRUN I3=ev.blocker_api.game_window2(ev,I2,false,false,0.0,100000.0);\n", "--homepage",gameapi_homepageurl,"--platform","<?php echo $ua ?>"],
-      print: (function() {
+      "--code", "P I1=ev.polygon_api.p_empty();\nML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\nRUN I3=ev.blocker_api.game_window2(ev,I2,false,false,0.0,100000.0);\n", "--homepage",gameapi_homepageurl,"--platform","<?php echo $ua ?>"];
+
+Module.print = (function() {
       	     return function(text) {
 	     	       console.log(text);
-		    } })(),      
-  };
+		    } })();
+ 
 </script>
 <?php
 /*
@@ -2074,26 +2097,33 @@ $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
 if ($mobile == "yes") {
-  echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";
+   echo "<script>import Module from './web_page_lowmem_nothreads.js';</script>";
+  //echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";
 } else
 if ($nothreads == "yes") {
    if ($highmem == "yes") {
-  echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
+  //echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
+   echo "<script>import Module from './web_page_nothreads_highmem.js';</script>";
 
    } else {
-  echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
-   }
+ // echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
+   echo "<script>import Module from './web_page_nothreads.js';</script>";
+
+}
 } else {
    if ($highmem == "yes") {
-  echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
+ // echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
+   echo "<script>import Module from './web_page_highmem.js';</script>";
 
    } else {
-  echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
+  //echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
+   echo "<script>import Module from './web_page.js';</script>";
   }
 }
 */
 ?>
 <script>
+
 window.onresize = resize_event;
 window.setTimeout(function() { resize_event(null); },10);
 
@@ -2149,6 +2179,7 @@ if ($mobile=="yes") {
   if (g_emscripten_alive && g_emscripten_running && Module) {
 	   try {
 Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:true});
+	//Module._set_resize_event(wd,hd);
 	   } catch(e) {
 	     console.log(e);
 	   }
@@ -2160,10 +2191,10 @@ Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:tru
 </script>
 <script>
 function connect() {
-   var connection = new RTCPeerConnection({
-       iceServers: [
-         { 'url': 'stun:stun.1.46.32.252.120:424242' }]});
-   const signalingChannel = new SignalingChannel(connection);
+   //var connection = new RTCPeerConnection({
+   //    iceServers: [
+   //      { 'url': 'stun:stun.1.46.32.252.120:424242' }]});
+   //const signalingChannel = new SignalingChannel(connection);
    //console.log("signaling done");
 
    //const config {'iceServers':[{'urls': 'stun:stun.1.46.32.252.120:42424'}]}
@@ -2270,6 +2301,7 @@ const myHeaders2 = new Headers();
 //myHeaders2.append('Access-Control-Expose-Headers', 'X-API-KEY');
 //myHeaders2.append('Origin', 'https://meshpage.org');
 // TODO, sharedArrayBuffer + cors is not working.
+/*
 const myReq = new Request(url, {
       method: 'GET',
       headers: myHeaders2,
@@ -2309,6 +2341,14 @@ fetch(myReq,{"credentials":"include"}).then((r)=> {
      app.indicator.push(old2);
      //app.indicator[1]=false;
 });
+*/
+   var d = document.getElementById("status");
+     d.innerHTML = "SUCCESS (implementation unfinished, waiting for apikey) <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
+     var old2 = app.indicator[2];
+     app.indicator.pop();
+     app.indicator.pop();
+     app.indicator.push(false);
+     app.indicator.push(old2);
 }
 function set_cookie_status(num)
 {

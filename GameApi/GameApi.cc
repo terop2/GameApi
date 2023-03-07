@@ -14166,6 +14166,7 @@ public:
   }
   virtual void Init()
   {
+    need_change2=true;
     g_main_thread_id = pthread_self();
 
     g_engine_status = 0;
@@ -14237,6 +14238,15 @@ public:
   }
   virtual int Iter()
   {
+#ifdef EMSCRIPTEN
+    if (need_change2) {
+      emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+      need_change=true;
+      need_change2=false;
+    }
+#endif
+
+    
     static int old_count = 0;
     if (async_pending_count!=old_count) {
       old_count = async_pending_count;
@@ -14406,6 +14416,12 @@ public:
 			
     if (!g_prepare_done) return -1;
 
+ #ifdef EMSCRIPTEN
+    if (need_change) {
+        emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+    }
+ #endif
+    
     if (firsttime2) {
       env->ev->mainloop_api.reset_time();
       env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
@@ -14575,6 +14591,8 @@ private:
   bool first_execute=true;
   bool has_vis = true;
   int first_frame_count=0;
+  bool need_change=false;
+  bool need_change2=false;
 };
 
 void progress_logo_cb(void *data)

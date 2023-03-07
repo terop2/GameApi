@@ -2,6 +2,22 @@
 all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
+SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1
+
+NOSIZEOPT = -s TOTAL_STACK=200kb
+
+#--closure 1
+#--memoryprofiler
+
+REQUIREDOPT = -g -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']"
+
+STRIP = emstrip --no-strip-all --remove-section=.debug_str --remove-section=.debug_line --remove-section=.debug_abbrev --remove-section=.debug_ranges --remove-section=.debug_loc
+
+#
+#-g   (doesnt work with closure compiler)
+
+ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
+
 # --use-preload-cache
 # --preload-file web_page/logo-connecting.raw --preload-file web_page/logo-downloading.raw --preload-file web_page/logo-preparing.raw
 # -s USE_SDL_MIXER=2 -s USE_OGG=1 -s USE_MP3=1
@@ -14,24 +30,28 @@ all:
 # '__cxa_is_pointer_type', '__cxa_can_catch',
 # -fno-exceptions -s DISABLE_RTTI=1
 # -fimplicit-modules -fimplicit-module-maps
+# -s TOTAL_STACK=20Mb
+# --closure 1
 grow: libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s FILESYSTEM=0 -s FETCH=1 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -s TOTAL_STACK=20Mb -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.html  --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1  -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1 )
+	(cd ..;em++ $(ALLFLAGS)  -s FETCH=1 -s ASSERTIONS=2 --use-preload-cache  --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1  -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.js  --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1  -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 cp web_page.wasm web_page_lowmem.wasm
 	 cp web_page.data web_page_lowmem.data
 	 cp web_page.js web_page_lowmem.js
 	 cp web_page.html web_page_lowmem.html
 	 cp web_page.html.mem web_page_lowmem.html.mem
+	 $(STRIP) web_page_lowmem.wasm
 	 #wasm-strip web_page_lowmem.wasm
 	 brotli --quality=5 --force web_page_lowmem.wasm -o web_page_lowmem.wasm.br
 
 # 
 lowmem: ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -s TOTAL_STACK=20Mb  -L. -Lobs -I. -o web_page/web_page.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1 ) 
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/web_page.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 ) 
 	 cp web_page.wasm web_page_lowmem.wasm
 	 cp web_page.data web_page_lowmem.data
 	 cp web_page.js web_page_lowmem.js
 	 cp web_page.html web_page_lowmem.html
 	 cp web_page.html.mem web_page_lowmem.html.mem
+	 $(STRIP) web_page_lowmem.wasm
 	 #wasm-strip web_page_lowmem.wasm
 	 brotli --quality=5 --force web_page_lowmem.wasm -o web_page_lowmem.wasm.br
 
@@ -41,22 +61,25 @@ both:  both_lowmem
 
 # 
 both_highmem: test.cpp ../libGameApi_nothreads.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=1920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1 -s TOTAL_STACK=20Mb   -L. -Lobs -I. -o web_page/web_page_nothreads_highmem.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']" -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS)  -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s TOTAL_MEMORY=1920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/web_page_nothreads_highmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_nothreads_highmem.wasm
+	 $(STRIP) web_page_nothreads_highmem.wasm
 	 brotli --quality=5 --force web_page_nothreads_highmem.wasm -o web_page_nothreads_highmem.wasm.br
 
 #   
 both_middlemem: test.cpp ../libGameApi_nothreads.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1 -s TOTAL_STACK=20Mb -L. -Lobs -I. -o web_page/web_page_nothreads.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']" -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s TOTAL_MEMORY=920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_nothreads.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_nothreads.wasm
+	 $(STRIP) web_page_nothreads.wasm
 	 brotli --quality=5 --force web_page_nothreads.wasm -o web_page_nothreads.wasm.br
 
 
 
 # 
 both_lowmem: test.cpp ../libGameApi_nothreads.bc
-	      (cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1 -s TOTAL_STACK=20Mb -L. -Lobs -I. -o web_page/web_page_lowmem_nothreads.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_set_background_mode', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	      (cd ..;em++ $(ALLFLAGS)  -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/web_page_lowmem_nothreads.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_lowmem_nothreads.wasm
+	 $(STRIP) web_page_lowmem_nothreads.wasm
 	 brotli --quality=5 --force web_page_lowmem_nothreads.wasm -o web_page_lowmem_nothreads.wasm.br
 
 
@@ -65,21 +88,24 @@ pthreads_both: pthreads_both_highmem
 
 #
 pthreads_both_highmem: test.cpp ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -Oz -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache  -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=1750Mb  -s TOTAL_STACK=20Mb -s WASM=1 --bind -std=c++11 web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_highmem.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_background_mode', '_set_resize_event', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -Oz -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache  -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=1750Mb  --bind -std=c++11 web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_highmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_highmem.wasm
+	 $(STRIP) web_page_highmem.wasm
 	 brotli --quality=5 --force web_page_highmem.wasm -o web_page_highmem.wasm.br
 
 # 
 pthreads_both_middlemem: test.cpp ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=950Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1   -s TOTAL_STACK=20Mb -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_background_mode', '_set_resize_event', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=950Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1   --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page.wasm
+	 $(STRIP) web_page.wasm
 	 brotli --quality=5 --force web_page.wasm -o web_page.wasm.br
 
 
 # 
 pthreads_both_lowmem: test.cpp ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1  -s TOTAL_STACK=20Mb -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2   -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_lowmem.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_background_mode', '_set_resize_event', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1) 
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1   --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2   -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_lowmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 ) 
 	 #wasm-strip web_page_lowmem.wasm
+	 $(STRIP) web_page_lowmem.wasm
 	 brotli --quality=5 --force web_page_lowmem.wasm -o web_page_lowmem.wasm.br
 
 
@@ -91,22 +117,25 @@ both_nodebug: both_nodebug_highmem both_nodebug_middlemem both_nodebug_lowmem
 
 #
 both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=1920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2 -s USE_FREETYPE=1  -s TOTAL_STACK=20Mb  -L. -Lobs -I. -o web_page/web_page_nothreads_highmem.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_set_toggle_button', '_stop_music_playing', '_set_background_mode', '_set_integer', '_set_float', '_set_string', '_set_resize_event', 'cwrap', 'ccall', '_FT_Get_Char_Index', '_FT_Load_Gryph', '_FT_New_Memory_Face', '_FT_Render_Glyph', '_FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s TOTAL_MEMORY=1920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2 -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/web_page_nothreads_highmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_nothreads_highmem.wasm
+	 $(STRIP) web_page_nothreads_highmem.wasm
 	 brotli --quality=5 --force web_page_nothreads_highmem.wasm -o web_page_nothreads_highmem.wasm.br
 
 
 #
 both_nodebug_middlemem: test.cpp ../libGameApi_nothreads.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1 -s TOTAL_STACK=20Mb -L. -Lobs -I. -o web_page/web_page_nothreads.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_set_toggle_button', '_stop_music_playing', '_set_background_mode', '_set_integer', '_set_float', '_set_string', '_set_resize_event', 'cwrap', 'ccall', '_FT_Get_Char_Index', '_FT_Load_Gryph', '_FT_New_Memory_Face', '_FT_Render_Glyph', '_FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -Lhssynth2/synthlib/emscripten -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s TOTAL_MEMORY=920Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_nothreads.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -Lhssynth2/synthlib/emscripten )
 	 #wasm-strip web_page_nothreads.wasm
+	 $(STRIP) web_page_nothreads.wasm
 	 brotli --quality=5 --force web_page_nothreads.wasm -o web_page_nothreads.wasm.br
 
 
 # 
 both_nodebug_lowmem: test.cpp ../libGameApi_nothreads.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1  -s TOTAL_STACK=20Mb -L. -Lobs -I. -o web_page/web_page_lowmem_nothreads.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_set_toggle_button', '_stop_music_playing', '_set_background_mode', '_set_integer', '_set_float', '_set_string', '_set_resize_event', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)   
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache --bind -std=c++11 -Oz web_page/test.cpp libGameApi_nothreads.bc -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/web_page_lowmem_nothreads.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )   
 	 #wasm-strip web_page_lowmem_nothreads.wasm
+	 $(STRIP) web_page_lowmem_nothreads.wasm
 	 brotli --quality=5 --force web_page_lowmem_nothreads.wasm -o web_page_lowmem_nothreads.wasm.br
 
 
@@ -114,20 +143,23 @@ pthreads_both_nodebug: pthreads_both_nodebug_highmem pthreads_both_nodebug_middl
 
 # 
 pthreads_both_nodebug_highmem: test.cpp ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=1950Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1  -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s TOTAL_STACK=20Mb  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/web_page_highmem.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_set_background_mode', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']" -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1) 
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=1950Mb -s FILESYSTEM=0 -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1  --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/web_page_highmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 ) 
 	 #wasm-strip web_page_highmem.wasm
+	 $(STRIP) web_page_highmem.wasm
 	 brotli --quality=5 --force web_page_highmem.wasm -o web_page_highmem.wasm.br
 
 # 
 pthreads_both_nodebug_middlemem: test.cpp ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=950Mb -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1  -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2 -s TOTAL_STACK=20Mb  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_set_background_mode', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']" -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1) 
+	(cd ..;em++ $(ALLFLAGS) -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=950Mb -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1   --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 ) 
 	 #wasm-strip web_page.wasm
+	 $(STRIP) web_page.wasm
 	 brotli --quality=5 --force web_page.wasm -o web_page.wasm.br
 
 # 
 pthreads_both_nodebug_lowmem: test.cpp ../libGameApi.bc
-	(cd ..;em++ -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -g -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1 -s TOTAL_STACK=20Mb -s WASM=1 --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2   -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_lowmem.html --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s "EXPORTED_RUNTIME_METHODS=['UTF8ToString','allocate','ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_set_new_script', '_activate_trigger', '_stop_music_playing', '_set_toggle_button', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_set_background_mode', 'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_get_integer']"  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 -s DISABLE_EXCEPTION_CATCHING=1)
+	(cd ..;em++ $(ALLFLAGS)  -fno-rtti -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache -s NO_EXIT_RUNTIME=1  --bind -std=c++11 -Oz web_page/test.cpp libGameApi.bc -s USE_SDL=2   -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_lowmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_lowmem.wasm
+	 $(STRIP) web_page_lowmem.wasm
 	 brotli --quality=5 --force web_page_lowmem.wasm -o web_page_lowmem.wasm.br
 
 
