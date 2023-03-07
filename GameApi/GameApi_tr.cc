@@ -1,5 +1,6 @@
 #include "GameApi_h.hh"
 
+#if 0
 class OrElemTriStrip : public TriStrip
 {
 public:
@@ -88,6 +89,8 @@ private:
   std::function<GameApi::PT (int)> f;
   int count;
 };
+
+#endif
 class FromPolyTriStrip : public TriStrip
 {
 public:
@@ -167,7 +170,7 @@ EXPORT GameApi::TS GameApi::TriStripApi::from_poly(P poly)
   FaceCollection *coll = find_facecoll(e, poly);
   return add_tri_strip(e, new FromPolyTriStrip(coll));
 }
-
+#if 0
 class LoadTriStrip : public TriStrip
 {
 public:
@@ -367,6 +370,7 @@ EXPORT GameApi::TS GameApi::TriStripApi::or_array(TS *array, int size)
     }
   return add_tri_strip(e, new OrArrayTriStrip(vec));
 }
+#endif
 class TriStripToPoly : public SingleForwardFaceCollection
 {
 public:
@@ -413,6 +417,7 @@ EXPORT GameApi::P GameApi::TriStripApi::to_poly(TS strip)
   TriStrip *ts = find_tri_strip(e, strip);
   return add_polygon2(e, new TriStripToPoly(ts), 1);
 }
+#if 0
 EXPORT void GameApi::TriStripApi::save(TS ts, std::string filename)
 {
   TriStrip *tts = find_tri_strip(e, ts);
@@ -425,3 +430,4 @@ EXPORT void GameApi::TriStripApi::save(TS ts, std::string filename)
     }
   file.close();
 }
+#endif

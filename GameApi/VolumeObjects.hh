@@ -923,6 +923,7 @@ private:
 };
 
 
+#if 0
 class FaceCollectionVolume : public VolumeObject
 {
 public:
@@ -933,7 +934,7 @@ private:
   Point pp;
   Y_Accel accel;
 };
-
+#endif
 
 class Random
 {
