@@ -278,6 +278,7 @@ bool FractalEffect::Frame(float time)
   GetRender()->DrawVBO(vbostate.GetState());
   return false; 
 }
+#if 0
 bool FaceCollectionVolume::Inside(Point p) const
 {
   bool res = false;
@@ -316,6 +317,7 @@ bool FaceCollectionVolume::Inside(Point p) const
     }
   return res;
 }
+#endif
 
 Vector FloatVolumeObject::FloatNormal(Point p) const
 {
