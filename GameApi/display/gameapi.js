@@ -66,9 +66,17 @@ function load_file()
 	
     }
 }
+
+var g_check_em_timeout = null;
+var g_ready_bit=0; // THIS WILL BE CHANGED BY C++ SIDE
+
 function check_em() {
     return function() {
 	g_emscripten_running = true;
+        if (g_check_em_timeout != null)
+            clearTimeout(g_check_em_timeout);
+        g_check_em_timeout = null;
+
 	resize_event(null);
 	load_file();
     }
@@ -79,6 +87,10 @@ function check_emscripten_running()
     var canv = document.getElementById("canvas");
     if (Module) {
 	Module['onRuntimeInitialized'] = check_em();
+    g_check_em_timeout = setTimeout(function() {
+            console.log("waiting for emscripten startup..");
+	    if (g_ready_bit==1) {
+	 	console.log("onRuntimeInitialized didn't trigger in time"); check_em()(); } },1000);
     } else {
 	setTimeout(function() { check_emscripten_running() }, 100);
     }
