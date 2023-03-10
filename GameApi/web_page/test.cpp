@@ -375,6 +375,9 @@ int main(int argc, char *argv[]) {
   ClearProgress();
   std::pair<int,std::string> blk = mainloop(e, ev);
   set_status(5,6);
+#ifdef EMSCRIPTEN
+  emscripten_run_script("g_ready_bit=1");
+#endif
   if (blk.second == "RUN") {
     RUN r;
     r.id = blk.first;
