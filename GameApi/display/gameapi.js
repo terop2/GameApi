@@ -53,13 +53,13 @@ function load_file()
 	//console.log(data4.length);
 	//console.log(filename2);
 	   try {
-	       Module.ccall('set_integer', null, ['number', 'number'], [2,data3.length], { async:true });
-	       Module.ccall('set_string', null, ['number', 'string'], [1,filename] , { async:true });
-	       Module.ccall('set_string', null, ['number', 'string'], [2,data3], { async:true });
+	       Module.ccall("set_integer", null, ["number", "number"], [2,data3.length], { async:true });
+	       Module.ccall("set_string", null, ["number", "string"], [1,filename] , { async:true });
+	       Module.ccall("set_string", null, ["number", "string"], [2,data3], { async:true });
 
-	       Module.ccall('set_integer', null, ['number', 'number'], [2,data4.length], { async:true });
-	       Module.ccall('set_string', null, ['number', 'string'], [1,filename2], { async:true });
-	       Module.ccall('set_string', null, ['number', 'string'], [2,data4], { async:true });
+	       Module.ccall("set_integer", null, ["number", "number"], [2,data4.length], { async:true });
+	       Module.ccall("set_string", null, ["number", "string"], [1,filename2], { async:true });
+	       Module.ccall("set_string", null, ["number", "string"], [2,data4], { async:true });
 	   } catch(e) {
 	     console.log(e);
 	   }
@@ -118,7 +118,7 @@ function resize_event(event) {
 
   if (Module && g_emscripten_running) {
 	   try {
-Module.ccall('set_resize_event', null, ['number', 'number'], [wd,hd], {async:true});
+Module.ccall("set_resize_event", null, ["number", "number"], [wd,hd], {async:true});
 	   } catch(e) {
 	     console.log(e);
 	   }
