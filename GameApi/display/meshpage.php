@@ -878,6 +878,70 @@ Header set Cross-Origin-Opener-Policy "same-origin"
 Header set Access-Control-Allow-Headers "range"
 </pre>
 
+<h2>What about compressing the huge engine files?</h2>
+
+For nice performance speedup for network, you should enable brotli compression in the web server too:
+<br>
+.HTACCESS Changes:
+<pre>
+AddOutputFilterByType BROTLI_COMPRESS text/xml
+AddOutputFilterByType BROTLI_COMPRESS text/css
+AddOutputFilterByType BROTLI_COMPRESS application/xml
+AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
+AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
+AddOutputFilterByType BROTLI_COMPRESS application/javascript
+AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
+AddOutputFilterByType BROTLI_COMPRESS application/wasm
+AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
+AddOutputFilterByType BROTLI_COMPRESS text/plain
+&lt;files *.wasm&gt;
+SetOutputFilter BROTLI_COMPRESS
+&lt;/files&gt;
+&lt;files *.ds.*&gt;
+SetOutputFilter BROTLI_COMPRESS
+&lt;/files&gt;
+&lt;files *.ds&gt;
+SetOutputFilter BROTLI_COMPRESS
+&lt;/files&gt;
+&lt;files *.data&gt;
+SetOutputFilter BROTLI_COMPRESS
+&lt;/files&gt;
+AddType application/wasm wasm
+AddType application/x-gameapi-binary ds
+AddType text/plain mtl
+AddType application/x-font-opentype otf
+</pre>
+Then /etc/apache2/sites-enabled/000-default.conf probably should have:
+<pre>
+       &lt;IfModule mod_brotli.c&gt;
+        AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css text/javascript application/javascipt application/wasm application/x-javascript
+	&lt;/IfModule&gt;
+	&lt;IfModule mod_headers.c&gt;
+	RewriteCond "%{HTTPS:Accept-encoding}" "br"
+	RewriteCond "%{REQUEST_FILENAME}\.br" "-s"
+	RewriteRule "^(.*)\.(wasm)" "$1\.$2\.br" [QSA]
+	RewriteRule "^(.*)\.(ds)\.(..)" "$1\.$2\.$3\.br" [QSA]
+
+	RewriteRule "\.wasm\.br$" "-" [T=application/wasm,E=no-brotli:1]
+	&lt;FilesMatch "(\.wasm\.br)$"&gt;
+	  Header append Content-Encoding br
+	  Header append Vary Accept-Encoding
+	&lt;/FilesMatch&gt;
+	&lt;FilesMatch "(\.ds\...\.br)$"&gt;
+	  Header append Content-Encoding br
+	  Header append Vary Accept-Encoding
+	&lt;/FilesMatch&gt;
+	&lt;/IfModule&gt;
+</pre>
+
+Then you need brotli packages:
+<pre>
+  sudo apt install brotli -y
+  sudo a2enmod brotli
+  sudo systemctl restart apache2
+</ptr>
+
+
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>
 <li>C++
@@ -1843,10 +1907,11 @@ function start_emscripten(vm)
 }
 
 var g_check_em_timeout = null;
-
+var g_ready_bit=0; // THIS WILL BE CHANGED BY C++ SIDE
 var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
+  	       Module['onRuntimeInitialized'] = function() { return function() { } };
                if (g_check_em_timeout != null)
   	          clearTimeout(g_check_em_timeout);
 	       g_check_em_timeout = null;
@@ -1884,7 +1949,10 @@ function check_emscripten_running(indicator)
      	 //Module.ready().then(_ => check_em(indicator));
 	 //Module['calledRun'] = check_em(indicator);
 	 Module['onRuntimeInitialized'] = check_em(indicator);
-	 g_check_em_timeout = setTimeout(function() { console.log("onRuntimeInitialized didn't trigger in time"); check_em(indicator)(); });
+	 g_check_em_timeout = setTimeout(function() {
+	                    console.log("waiting for emscripten startup..");
+	 		    if (g_ready_bit==1) {
+	 		       console.log("onRuntimeInitialized didn't trigger in time"); check_em(indicator)(); } },1000);
 	 //check_em(indicator);
    	 //console.log("RUNNING");
 	 } else {
@@ -2083,12 +2151,10 @@ $ua = $_SERVER["HTTP_USER_AGENT"];
 ?>
 
       "--code", "P I1=ev.polygon_api.p_empty();\nML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\nRUN I3=ev.blocker_api.game_window2(ev,I2,false,false,0.0,100000.0);\n", "--homepage",gameapi_homepageurl,"--platform","<?php echo $ua ?>"];
-
 Module.print = (function() {
       	     return function(text) {
 	     	       console.log(text);
 		    } })();
- 
 </script>
 <?php
 /*

@@ -1847,19 +1847,24 @@ function check_em2_func() {
 	  setTimeout(check_em2_func,100);
 	}
 }
+var g_timer=null;
 
 function check_em2() {
+   if (g_timer!=null) clearTimeout(g_timer);
+   Module['onRuntimeInitialized'] = function() { return function() { } };
    console.log("DOWNLOAD WAITING..");
    return function() {
       setTimeout(function() { check_em2_func(); },100);
    }
 }
 
+var g_ready_bit=0; // c++ side will change this
 function check_emscripten_running()
 {
     var canv = document.getElementById("canvas");
     if (Module) {
 	Module['onRuntimeInitialized'] = check_em2();
+	g_timer = setTimeout(function() { if (g_ready_bit==1) check_em2()(); },1000);
     } else {
 	setTimeout(function() { check_emscripten_running() }, 100);
     }

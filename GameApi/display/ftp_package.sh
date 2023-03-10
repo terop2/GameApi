@@ -67,6 +67,7 @@ copy_it pthread-main.js
 copy_it web_page_highmem.data 
 copy_it web_page_highmem.js 
 copy_it web_page_highmem.wasm 
+copy_it web_page_highmem.wasm.br
 copy_it web_page_highmem.worker.js 
 #copy_it web_page_nothreads.data 
 #copy_it web_page_nothreads.js 
@@ -74,7 +75,8 @@ copy_it web_page_highmem.worker.js
 #copy_it web_page_nothreads.worker.js 
 copy_it web_page_lowmem_nothreads.data 
 copy_it web_page_lowmem_nothreads.js 
-copy_it web_page_lowmem_nothreads.wasm 
+copy_it web_page_lowmem_nothreads.wasm
+copy_it web_page_lowmem_nothreads.wasm.br
 #copy_it web_page_lowmem_nothreads.worker.js 
 #copy_it web_page_nothreads_highmem.data 
 #copy_it web_page_nothreads_highmem.js 
