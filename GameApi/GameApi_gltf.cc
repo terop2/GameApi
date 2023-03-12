@@ -5541,12 +5541,16 @@ public:
     const unsigned char *ddt = &dt->output->data[0];
     int offset = dt->output_buf->byteOffset;
     //int length = output_buf->byteLength;
+    //std::cout << "AMOUNT(" << i << ")" << std::endl;
+    //std::cout << "OFFSET:" << offset << std::endl;
     const unsigned char *dt2 = ddt + offset;
     
     int offset2 = dt->output_acc->byteOffset;
+    //std::cout << "OFFSET2:" << offset2 << std::endl;
     const unsigned char *dt3 = dt2 + offset2;
     int stride = dt->output_acc->ByteStride(*dt->output_buf);
     //std::cout << "stride: " << stride << " " << output_acc->type << std::endl;
+    //std::cout << "stride:" << stride << std::endl;
     if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_SCALAR) stride = 1*sizeof(float);
     if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_VEC2) stride = 2*sizeof(float);
     if (stride==0 && dt->output_acc->type==TINYGLTF_TYPE_VEC3) stride = 3*sizeof(float);
@@ -5557,6 +5561,8 @@ public:
     
     //assert(output_acc->type==TINYGLTF_TYPE_VEC3);
     int count = dt->output_acc->count;
+    //std::cout << "COUNT:" << count << std::endl;
+
     if (i>=0 && i<count) {
       float *arr = (float*) (dt3 + i*stride);
       return arr;

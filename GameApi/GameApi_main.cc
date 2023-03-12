@@ -3777,12 +3777,16 @@ public:
     if (g_inside_ml_widget) {
       g_transparent_indication=true;
     }
+#ifdef EMSCRIPTEN
     gameapi_seamless_url="@";
+#endif
   }
   ~SceneTransparency() {
     g_transparent=false;
     g_transparent_indication=false;
+#ifdef EMSCRIPTEN
     gameapi_seamless_url="";
+#endif
   }
   virtual void Collect(CollectVisitor &vis) { ml->Collect(vis); }
   virtual void HeavyPrepare() { }
