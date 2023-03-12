@@ -281,7 +281,7 @@ public:
   friend Point operator*(const Point &p, const Matrix &m);
   friend Vector operator*(const Vector &v, const Matrix &m);
   friend Matrix operator*(const Matrix &m1, const Matrix &m2);
-  
+  friend Matrix operator+(const Matrix &m1, const Matrix &m2);
 public:
   void operator*=(float v)
   {

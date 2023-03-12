@@ -1458,9 +1458,7 @@ public:
 			if (type=="TF") {
 			  TF tf;
 			  tf.id = id;
-			  
-			  ML ml = env->ev->mainloop_api.gltf_scene_anim(*env->ev,tf,0,0,"cvbnm",1.0,0);
-			  ML ml2 = env->ev->mainloop_api.send_key_at_time(ml,0.0,99);
+			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,0,0);
 			  env->env->free_temp_memory();
 			  env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);

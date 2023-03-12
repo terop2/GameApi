@@ -210,6 +210,14 @@ Vector operator*(const Vector &v, const Matrix &m)
   return r;
 }
 
+Matrix operator+(const Matrix &m1, const Matrix &m2)
+{
+  Matrix res;
+  for(int i=0;i<16;i++)
+    res.matrix[i]=m1.matrix[i]+m2.matrix[i];
+  return res;
+}
+
 Matrix operator*(const Matrix &m1, const Matrix &m2)
 {
   Matrix r;

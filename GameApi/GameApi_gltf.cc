@@ -6085,50 +6085,32 @@ public:
   }
   Matrix recurse_node(AnimData *dt, PrevNodes &prev2, int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
-    //std::cout << "{";
     if (node_id<0 || node_id>=interface->nodes_size()) return Matrix::Identity();
    
 
     call_prev_time_index2(prev2,node_id);
-    int sz = interface->animations_size(); //load->model.animations.size();
+    int sz = interface->animations_size(); 
     if (animation<0||animation>=sz) return Matrix::Identity();
     
-    const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
-    //if (!node) return Matrix::Identity();
-    
-    //std::cout << "Node: " << node->name << std::endl;
+    const tinygltf::Node &node = interface->get_node(node_id); 
 
-    TransformObject start_obj = prev2.prev_nodes1[node_id]; //gltf_node_transform_obj(node);
-    TransformObject end_obj = prev2.prev_nodes2[node_id]; //start_obj;
-    //TransformObject parent = start_obj;
-    //std::cout << "Start" << std::endl;
-    //print_transform(start_obj);
-    //std::cout << "End" << std::endl;
-    //print_transform(end_obj);
+    TransformObject start_obj = prev2.prev_nodes1[node_id]; 
+    TransformObject end_obj = prev2.prev_nodes2[node_id]; 
+
     int channel = -1;
     const tinygltf::Animation *anim3;
-    //int anim3_num=-1;
-    //if (animation!=anim3_num) { 
-      anim3 = &interface->get_animation(animation); //&load->model.animations[animation];
-      //  anim3_num = animation;
-      // }
+      anim3 = &interface->get_animation(animation);
     int s5 = anim3->channels.size();
       int jj = -1;
       const tinygltf::Skin *skin;
-      //static int skin_num2 = -1;
-      //if (skin_num!=skin_num2) {
-	skin = &interface->get_skin(skin_num); //&load->model.skins[skin_num];
-	//	skin_num2=skin_num;
-	//}
+	skin = &interface->get_skin(skin_num);
 	int s2 = skin->joints.size();
-	//bool doit = false;
 	for(int j=0;j<s2;j++) {
 	  if (skin->joints[j]==node_id) { /*doit=true;*/ jj=j; break; }
 	  }
 
 
 	
-	//for(int i=s5-1;i>=0;i--) {
 	for(int i=0;i<s5;i++) {
       const tinygltf::AnimationChannel *chan = &anim3->channels[i];
       std::string path = chan->target_path;
@@ -6146,9 +6128,7 @@ public:
       {
       int ik = time_index;
       GLTFAnimation *anim = new GLTFAnimation(dt,interface, animation, channel, ik, skin_num);
-      //anims.push_back(anim);
       anim->Prepare();
-      //if (ik+1>=anim->Count()) return Matrix::Identity();
       if (anim->end_time()>max_time) { max_time = anim->end_time(); }
       if (jj!=-1) {
 	start_t[jj] = anim->start_time();
@@ -6218,45 +6198,19 @@ public:
     } // for i=s5
     
 
-#if 0
-    
-#endif
 
 
-    //GameApi::MN mv00 = ev.move_api.mn_empty();
-    //GameApi::MN mv0 = ev.move_api.matrix(mv00, add_matrix2(env,pos));
-    //GameApi::MN mv0_2 = ev.move_api.matrix(mv00, add_matrix2(env,pos2));
-    std::pair<Matrix,Matrix> m = gltf_node_transform_obj_apply(env,ev,pos,start_obj /*parent*/);//gltf
-    std::pair<Matrix,Matrix> m2 = gltf_node_transform_obj_apply(env,ev,pos2,end_obj /*parent*/);//gltf
-    // Movement *move = find_move(env,mv);
-    //Matrix m = move->get_whole_matrix(0.0, 1.0);
-    //Movement *move_2 = find_move(env,mv_2);
-    //Matrix m2 = move_2->get_whole_matrix(0.0, 1.0);
-
-    //Point pos2 = pos*m;
-    //if (node->mesh != -1) {
-
-
-    //Point p0;
-    //p0.x = -300.0; p0.y = -300.0; p0.z = -300.0;
-    //Point p1;
-    //p1.x = 300.0; p1.y = 300.0; p1.z = 300.0;
-    //start_pos.push_back(p0*m3);
-    //end_pos.push_back(p1*m);
+    std::pair<Matrix,Matrix> m = gltf_node_transform_obj_apply(env,ev,pos,start_obj );
+    std::pair<Matrix,Matrix> m2 = gltf_node_transform_obj_apply(env,ev,pos2,end_obj );
 
 
     if (jj!=-1) { 
-      //std::cout << "Set matrix " << jj << std::endl;
       root_env[jj] = pos;
       root_env_2[jj] = pos2;
-      //local[jj] = m.first;
-      //local_2[jj] = m2.first;
       jointmatrices_start[jj] = start_obj;
       jointmatrices_end[jj] = end_obj;
       node_ids[jj] = node_id;
-      //std::cout << "NODE[" << jj << "]";
     }
-    //}
 
     // recurse children
     int s = node.children.size();
@@ -6264,7 +6218,6 @@ public:
     for(int i=0;i<s;i++) {
       int child_id = node.children[i];
       if (child_id!=-1) {
-	//tinygltf::Node *child_node = &load->model.nodes[child_id];
 
 	
 	
@@ -6272,23 +6225,17 @@ public:
 	//int jj = 0;
 	if (doit) {
 
-	  recurse_node( dt,prev2, child_id, 0 /*child_node*/, m.first*pos, m2.first*pos2, 0 /*anim*/, time_index, channel );
+	  recurse_node( dt,prev2, child_id, 0 , m.first*pos, m2.first*pos2, 0 , time_index, channel );
 	}
       }
     }
-    //std::cout << "recurse end" << std::endl;
-    //Movement *move2 = find_move(env,mv2);
-    //std::cout << "}";
     return Matrix::Identity(); //move2->get_whole_matrix(0.0,1.0);
-    //return mv;
   }
 public:
   std::vector<TransformObject> *start() { return &jointmatrices_start; }
   std::vector<TransformObject> *end() { return &jointmatrices_end; }
   std::vector<Matrix> *root() { return &root_env; }
   std::vector<Matrix> *root2() { return &root_env_2; }
-  //std::vector<Matrix> *local_trans() { return &local; }
-  //std::vector<Matrix> *local_trans2() { return &local_2; }
   std::vector<Matrix> *bind() { return &bindmatrix; }
   const std::vector<float> *start_time() const { return &start_t; }
   const std::vector<float> *end_time() const { return &end_t; }
@@ -7342,9 +7289,30 @@ class GLTF_Animation_Material : public MaterialForward
 {
 public:
   GLTF_Animation_Material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, Material *next, int key, int mode) : e(e), ev(ev), interface(interface), skin_num(skin_num), animation(animation), num_timeindexes(num_timeindexes), next(next), key(key),mode(mode) { }
+
+  void calc_num_timeindexes() const
+  {
+    int sz = interface->animations_size();
+    if (!(animation>=0 && animation<sz)) return;
+    const tinygltf::Animation &anim = interface->get_animation(animation);
+    int s = anim.channels.size();
+    int count=0;
+    for(int i=0;i<s;i++)
+      {
+	AnimData dt;
+	GLTFAnimation anim(&dt,interface,animation,i,0,skin_num);
+	anim.Prepare();
+	int val = anim.Count();
+	if (val>count) count=val;
+      }
+    num_timeindexes=count;
+  }
+
+  
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     interface->Prepare();
+    calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat(p.id);
     std::vector<GameApi::ML> mls;
@@ -7363,6 +7331,7 @@ public:
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     interface->Prepare();
+    calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id, pts.id);
     std::vector<GameApi::ML> mls;
@@ -7380,6 +7349,7 @@ public:
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     interface->Prepare();
+    calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id, ms.id);
     std::vector<GameApi::ML> mls;
@@ -7397,6 +7367,7 @@ public:
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
     interface->Prepare();
+    calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
     std::vector<GameApi::ML> mls;
@@ -7414,6 +7385,7 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     interface->Prepare();
+    calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
     GameApi::ML ml_start;
@@ -7436,7 +7408,7 @@ private:
   GLTFModelInterface *interface;
   int skin_num;
   int animation;
-  int num_timeindexes;
+  mutable int num_timeindexes;
   int key;
   int mode;
 };
@@ -7797,6 +7769,7 @@ public:
 	    std::vector<TransformObject> *end = joints->end();
 	    std::vector<Matrix> *r = joints->root();
 	    std::vector<Matrix> *r_2 = joints->root2();
+	    std::vector<Matrix> *j_bind = joints->bind();
 	    //std::vector<Matrix> *l = joints->local_trans();
 	    //std::vector<Matrix> *l_2 = joints->local_trans2();
 	    sz = std::min(start_0->size(),std::min(start->size(),end->size()));
@@ -7833,6 +7806,10 @@ public:
 	    else rr2=Matrix::Identity();
 
 	    
+	    Matrix jb;
+	    if (ii<sz)
+	      jb = j_bind->operator[](ii);
+	    else jb=Matrix::Identity();
 	    
 	    TransformObject m0t;
 	    if (ii<sz)
@@ -7842,7 +7819,14 @@ public:
 	    //std::cout << "rr0:" << rr0 << std::endl;
 	    //std::cout << "m0t:" << std::endl;
 	    //print_transform(m0t);
-	    
+
+	    Matrix rr_interpolate = rr;
+	    rr_interpolate*=(1.0-time01);
+	    Matrix rr_interpolate2=rr2;
+	    rr_interpolate2*=time01;
+	    Matrix rr_int = rr_interpolate + rr_interpolate2;
+
+	    // used to use rr0, now uses rr_int
 	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t).second;	    
 	    Matrix m0i = Matrix::Inverse(m0);
 	    //for(int j=0;j<16;j++)
@@ -7917,7 +7901,7 @@ public:
 	    // bind_m -- inv_bindm
 
 	    // m0 -- inv_m
-	    
+	    Matrix inv_jb=Matrix::Inverse(jb);
 	    
 	    Matrix inv_m = Matrix::Inverse(m);
 	    if (mode==0)
@@ -7929,7 +7913,9 @@ public:
 	    else if (mode==3)
 	      vec.push_back(add_matrix2(env, ri*bindm*m0*inv_m*inv_bindm*resize));
 	    else if (mode==4)
-	      vec.push_back(add_matrix2(env, ri*bindm*m0i*m*m0i*m*inv_bindm*resize));
+	      vec.push_back(add_matrix2(env, ri*bindm*m*m0i*inv_jb*resize));
+	    else if (mode==5)
+	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*inv_jb*resize));
 	      
 	  }
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 150);
@@ -8268,8 +8254,29 @@ GameApi::ML GameApi::MainLoopApi::save_gltf(TF tf, std::string filename)
 }
 
 
+extern bool g_deploy_phase;
+
+GameApi::TF GameApi::MainLoopApi::gltf_loadKK2(std::string url)
+{
+  return gltf_loadKK("",url);
+}
+
 GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string url)
 {
+  if (g_deploy_phase) base_url="./";
+  else
+    {
+      int s = url.size();
+      int pos = -1;
+      for(int i=0;i<s;i++)
+	{
+	  if (url[i]=='/') { pos = i; }
+	}
+      if (pos!=-1) {
+	base_url = url.substr(0,pos);
+      }
+    }
+  
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);

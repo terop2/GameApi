@@ -231,7 +231,7 @@ extern int g_event_screen_x;
 extern int g_event_screen_y;
 extern std::string g_platform;
 
-
+extern bool g_deploy_phase;
 extern std::string g_window_href;
 extern GameApi::EveryApi *g_everyapi;
 void ClearProgress();
@@ -299,6 +299,11 @@ int main(int argc, char *argv[]) {
 	  homepageurl = strip_spaces(cmd_args[current_arg+1]);
 	  current_arg+=2;
 	}
+	else
+	  if (check_count(cmd_args, current_arg, 1) && cmd_args[current_arg]=="--deploy") {
+	    g_deploy_phase = true;
+	    current_arg+=1;
+	  }
       else
       if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--screenshot")
 	{

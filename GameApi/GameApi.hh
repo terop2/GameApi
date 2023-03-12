@@ -393,6 +393,7 @@ public:
   SHI generic_anim_shader(SHP,std::string, std::string, std::vector<SHI> children);
   ML save_gltf(TF tf, std::string filename);
   TF gltf_loadKK(std::string base_url, std::string url);
+  TF gltf_loadKK2(std::string url);
   ML send_key_at_time(ML ml, float time, int key);
   void start_editor_state();
   void end_editor_state();

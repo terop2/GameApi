@@ -5829,6 +5829,7 @@ ASyncData async_data[] = {
   //{ "mainloop_api", "async_gltf", 2},
   { "materials_api", "gltf_material_from_file", 1},
   { "mainloop_api", "gltf_loadKK", 1},
+  { "mainloop_api", "gltf_loadKK2", 0},
   { "mainloop_api", "html_url", 0 },
   { "mainloop_api", "gltf_load_sketchfab_zip", 0 },
   { "mainloop_api", "game", 3 },
