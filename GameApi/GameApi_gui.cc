@@ -11,6 +11,8 @@
 #include <emscripten.h>
 #endif
 
+extern bool g_transparent;
+
 extern int g_event_screen_x;
 extern int g_event_screen_y;
 
@@ -880,6 +882,16 @@ public:
 	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+
+	if (!g_transparent) {
+	  g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+	  g_low->ogl->glScissor(pos.x, screen_y-pos.y-sz.dy, sz.dx,sz.dy);
+	  ev.mainloop_api.clear_3d(0xff000000);
+	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+
+	}
+
+	
 	ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
 	ogl->glDisable(Low_GL_DEPTH_TEST);
@@ -976,6 +988,15 @@ public:
 	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+
+	if (!g_transparent) {
+	  g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+	  g_low->ogl->glScissor(pos.x, screen_y-pos.y-sz.dy, sz.dx,sz.dy);
+	  ev.mainloop_api.clear_3d(0xff000000);
+	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+
+	}
+	
 	g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
 	//obj.render();
 	ev.shader_api.set_var(sh, "in_MV", mat);
@@ -1003,6 +1024,7 @@ private:
 extern bool g_is_quake;
 
 bool g_inside_ml_widget;
+extern bool g_transparent;
 
 class MLGuiWidget : public GuiWidgetForward
 {
@@ -1189,6 +1211,13 @@ public:
 	GameApi::M in_T = ev.mainloop_api.in_T(ev, true);
 	GameApi::M in_N = ev.mainloop_api.in_N(ev, true);
 	//e.inMV = find_matrix(env, mat);
+	if (!g_transparent) {
+	  g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+	  g_low->ogl->glScissor(pos.x, screen_y-pos.y-sz.dy, sz.dx,sz.dy);
+	  ev.mainloop_api.clear_3d(0xff000000);
+	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+
+	}
 	ev.mainloop_api.execute_ml(ev,p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
 	e.type = -1;
 	e.ch = -1;
@@ -1432,6 +1461,16 @@ public:
 	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+
+	if (!g_transparent) {
+	  g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+	  g_low->ogl->glScissor(pos.x, screen_y-pos.y-sz.dy, sz.dx,sz.dy);
+	  ev.mainloop_api.clear_3d(0xff000000);
+	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+
+	}
+
+	
 	ogl->glEnable(Low_GL_DEPTH_TEST);
 	//glPointSize(5.0);
 	//ev.mainloop_api.clear_3d();
@@ -1529,6 +1568,14 @@ public:
 	ogl->glViewport(pos.x*scale_x, screen_y*scale_y-pos.y*scale_y-sz.dy*scale_y, sz.dx*scale_x, sz.dy*scale_y);
 	ev.shader_api.use(sh);
 	ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
+	if (!g_transparent) {
+	  g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
+	  g_low->ogl->glScissor(pos.x, screen_y-pos.y-sz.dy, sz.dx,sz.dy);
+	  ev.mainloop_api.clear_3d(0xff000000);
+	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
+
+	}
+
 	ogl->glEnable(Low_GL_DEPTH_TEST);
 	obj.render();
 	ogl->glDisable(Low_GL_DEPTH_TEST);
