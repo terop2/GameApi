@@ -2511,10 +2511,19 @@ GameApi::ML GameApi::MainLoopApi::glClear(GameApi::EveryApi &ev)
   return add_main_loop(e,new Bg(ev));
 }
 
+extern bool g_transparent_indication;
+
 GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
 {
-  if (g_transparent) { 
-    return ml;
+  if (g_transparent) {
+    if (g_transparent_indication) {
+      BM I1 = ev.bitmap_api.chessboard(4,4,get_screen_sx()/4,get_screen_sy()/4,0xff444444,0xff22222);
+    BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
+    ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+    ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
+    ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});  
+    } else 
+      return ml;
   } else {
     //BM I1 = ev.bitmap_api.circular_gradient(256,256, g_background_center[g_background_mode], g_background_edge[g_background_mode]);
     //BM I1=ev.bitmap_api.newbitmap(100,100,0xff000000);
@@ -3755,6 +3764,46 @@ GameApi::ML GameApi::MainLoopApi::screenspace_rendering(EveryApi &ev, ML scene, 
   ScreenSpaceMaterial *smat = find_screenspace_material(e,screenspace_material);
   return add_main_loop(e, new ScreenSpace(e,ev,scene,smat));
 }
+
+extern bool g_inside_ml_widget;
+bool g_transparent_indication;
+extern std::string gameapi_seamless_url;
+
+class SceneTransparency : public MainLoopItem
+{
+public:
+  SceneTransparency(MainLoopItem *ml) : ml(ml) {
+    g_transparent=true;
+    if (g_inside_ml_widget) {
+      g_transparent_indication=true;
+    }
+    gameapi_seamless_url="@";
+  }
+  ~SceneTransparency() {
+    g_transparent=false;
+    g_transparent_indication=false;
+    gameapi_seamless_url="";
+  }
+  virtual void Collect(CollectVisitor &vis) { ml->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+    ml->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { ml->handle_event(e); }
+  virtual std::vector<int> shader_id() { return ml->shader_id(); }
+private:
+  
+  MainLoopItem *ml;
+};
+
+GameApi::ML GameApi::MainLoopApi::scene_transparency(ML scene)
+{
+  MainLoopItem *ml = find_main_loop(e,scene);
+  return add_main_loop(e, new SceneTransparency(ml));
+}
+
 
 #if 0
 GameApi::ML GameApi::MainLoopApi::custom_element(EveryApi &ev, std::string name, std::string scene_url, std::string param_names, std::string param_types, std::string param_default_values)

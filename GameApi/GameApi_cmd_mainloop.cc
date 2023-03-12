@@ -877,6 +877,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ML" },
 			 { "" },
 			 "ML", "mainloop_api", "transparent"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::scene_transparency,
+			 "ogl_scene_transparent",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "scene_transparency"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::perspective,
 			 "ogl_perspective",

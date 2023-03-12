@@ -1002,6 +1002,8 @@ private:
 
 extern bool g_is_quake;
 
+bool g_inside_ml_widget;
+
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
@@ -1020,7 +1022,9 @@ public:
     keys_enabled=true;
     g_is_quake = false;
     firsttime2=true;
+    g_inside_ml_widget=true;
   }
+  ~MLGuiWidget() { g_inside_ml_widget=false; }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     if (firsttime)
