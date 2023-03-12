@@ -49,13 +49,11 @@ std::string vec4_to_string(GameApi::Env &e, float x, float y, float z, float a)
 #endif
 std::string unique_id()
 {
-#if 0
   static int val=0;
   val++;
   std::stringstream ss;
   ss << val;
   return ss.str();
-#endif
 }
 #if 0
 std::string funccall_to_string(ShaderModule *mod);
