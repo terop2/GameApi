@@ -14138,6 +14138,8 @@ bool CompareTrans(int a, int b) {
   return g_transparent_pos[a]>g_transparent_pos[b];
 }
 
+extern bool g_transparent;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -14428,9 +14430,14 @@ public:
       firsttime2 = false;
     }
     
-    if (no_draw_count==0)
-      env->ev->mainloop_api.clear_3d(0xff000000);
-
+    if (no_draw_count==0) {
+      if (!g_transparent) {
+	env->ev->mainloop_api.clear_3d(0xff000000);
+      } else
+	{
+	env->ev->mainloop_api.clear_3d_transparent();
+	}
+    }
 
     
     // handle esc event
