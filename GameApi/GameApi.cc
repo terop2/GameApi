@@ -19192,6 +19192,7 @@ public:
 	std::string g1 = "..\\display\\gameapi_1.html";
 	std::string g2 = "..\\display\\gameapi_2.html";
 	std::string g3 = "..\\display\\gameapi_3.html";
+	std::string g3a = "..\\display\\gameapi_3_seamless.html";
 	std::string gn = "..\\display\\gameapi_display.zip";
 	std::string gk = "..\\display\\get_file_size.php";
 	//std::string gsed = "..\\zip\\sed.exe";
@@ -19200,6 +19201,7 @@ public:
 	  g1 = "gameapi_1.html";
 	  g2 = "gameapi_2.html";
 	  g3 = "gameapi_3.html";
+	  g3a = "gameapi_3_seamless.html";
 	  gn = "gameapi_display.zip";
 	  gk = "get_file_size.php";
 	  //gsed = "sed.exe";
@@ -19208,6 +19210,7 @@ public:
 	std::string line1 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_1.html";
 	std::string line2 = std::string("copy ") + g2 + " %TEMP%\\_gameapi_builder\\gameapi_2.html";
 	std::string line3 = std::string("copy ") + g3 + " %TEMP%\\_gameapi_builder\\gameapi_3.html";
+	std::string line3a = std::string("copy ") + g3a + " %TEMP%\\_gameapi_builder\\gameapi_3_seamless.html";
 	std::string line4 = std::string("copy ") + gn + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
 	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
@@ -19215,6 +19218,7 @@ public:
 	int val2 = system(line1.c_str());
 	int val3 = system(line2.c_str());
 	int val4 = system(line3.c_str());
+	int val4a = system(line3a.c_str());
 	int val5 = system(line4.c_str());
 	int val6 = system(line5.c_str());
 
@@ -19222,6 +19226,7 @@ public:
 	if (val2!=0) { std::cout << "ERROR: " << line1 << " returned ERROR CODE " << val2 << std::endl; ok=false;}
 	if (val3!=0) { std::cout << "ERROR: " << line2 << " returned ERROR CODE " << val3 << std::endl; ok=false;}
 	if (val4!=0) { std::cout << "ERROR: " << line3 << " returned ERROR CODE " << val4 << std::endl; ok=false;}
+	if (val4a!=0) { std::cout << "ERROR: " << line3 << " returned ERROR CODE " << val4a << std::endl; ok=false;}
 	if (val5!=0) { std::cout << "ERROR: " << line4 << " returned ERROR CODE " << val5 << std::endl; ok=false;}
 	if (val6!=0) { std::cout << "ERROR: " << line5 << " returned ERROR CODE " << val6 << std::endl; ok=false;}
 
@@ -19234,6 +19239,10 @@ public:
       	std::cout << "Step #8: Deploying.." << std::endl;
       std::string dep = "deploy.bat";
       std::string line5 = dep + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
+      bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
+      if (is_seamless) {
+	line5 += " seamless";
+      }
       int val = system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
 
@@ -19443,6 +19452,7 @@ public:
 	std::string g1 = "../display/gameapi_1.html";
 	std::string g2 = "../display/gameapi_2.html";
 	std::string g3 = "../display/gameapi_3.html";
+	std::string g3a = "../display/gameapi_3_seamless.html";
 	std::string gn = "../display/gameapi_display.zip";
 	std::string gk = "../display/get_file_size.php";
 	if (!file_exists(g1)) {
@@ -19450,6 +19460,7 @@ public:
 	  g1 = "/usr/share/gameapi_1.html";
 	  g2 = "/usr/share/gameapi_2.html";
 	  g3 = "/usr/share/gameapi_3.html";
+	  g3a = "/usr/share/gameapi_3_seamless.html";
 	  gn = "/usr/share/gameapi_display.zip";
 	  gk = "/usr/share/get_file_size.php";
 	}
@@ -19457,6 +19468,7 @@ public:
 	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
 	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
 	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
+	std::string line3a = std::string("cp ") + g3a + " ~/.gameapi_builder/gameapi_3_seamless.html";
 	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
 	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
 
@@ -19464,12 +19476,14 @@ public:
 	int val2=system(line1.c_str());
 	int val3=system(line2.c_str());
 	int val4=system(line3.c_str());
+	int val4a=system(line3a.c_str());
 	int val5=system(line4.c_str());
 	int val6=system(line5.c_str());
 	if (val1!=0) { std::cout << "ERROR:" << line0 << " returned error " << val1 << std::endl; ok=false;}
 	if (val2!=0) { std::cout << "ERROR:" << line1 << " returned error " << val2 << std::endl; ok=false;}
 	if (val3!=0) { std::cout << "ERROR:" << line2 << " returned error " << val3 << std::endl; ok=false;}
 	if (val4!=0) { std::cout << "ERROR:" << line3 << " returned error " << val4 << std::endl; ok=false;}
+	if (val4a!=0) { std::cout << "ERROR:" << line3a << " returned error " << val4a << std::endl; ok=false;}
 	if (val5!=0) { std::cout << "ERROR:" << line4 << " returned error " << val5 << std::endl; ok=false;}
 	if (val6!=0) { std::cout << "ERROR:" << line5 << " returned error " << val6 << std::endl; ok=false;}
 	
@@ -19487,6 +19501,10 @@ public:
 	}
 	std::string home = getenv("HOME");
       std::string line5 = dep + " " + home + "/.gameapi_builder/gameapi_display.zip";
+      bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
+      if (is_seamless) {
+	line5 += " seamless";
+      }
       int val = system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
       if (val!=0) { std::cout << "ERROR:" << line5 << " returned error " << val << std::endl; ok=false;}
