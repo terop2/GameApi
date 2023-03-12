@@ -29,7 +29,7 @@ var hom = document.getElementById("homepage");
 var hom2 = hom.innerHTML;
 var Module = {
     canvas : canv,
-    arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2, "--href", window.location.href],
+    arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
     print : (function() { return function(text) { console.log(text); } })(),
 };
 load_emscripten();

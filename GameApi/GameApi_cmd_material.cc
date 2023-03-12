@@ -361,7 +361,7 @@
 			 "m_gltf_anim2",
 			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys", "mode" },
 			 { "EveryApi&", "TF", "int", "int", "MT", "std::string", "int" },
-			 { "ev", "", "0", "30", "", "zxcvbnmfghjklertyuiop", "0" },
+			 { "ev", "", "0", "150", "", "zxcvbnmfghjklertyuiop", "0" },
 			 "MT", "materials_api", "gltf_anim_material2"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material3,

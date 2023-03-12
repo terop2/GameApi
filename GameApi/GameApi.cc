@@ -34,6 +34,8 @@ bool is_mobile(GameApi::EveryApi &ev)
   return ev.mainloop_api.get_screen_width() < 700;
 }
 
+bool g_deploy_phase = false;
+
 class Envi_2;
 
 extern Splitter *g_new_splitter;

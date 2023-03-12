@@ -143,6 +143,13 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "std::string", "std::string" },
 			 { "https://tpgames.org/", "https://tpgames.org/test.glb@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "TF", "mainloop_api", "gltf_loadKK"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_loadKK2,
+			 "gltf_load2",
+			 { "url" },
+			 { "std::string" },
+			 { "https://tpgames.org/test.glb@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 "TF", "mainloop_api", "gltf_loadKK2"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_p,
 			 "gltf_mesh_all_p",
 			 { "ev", "model" },
