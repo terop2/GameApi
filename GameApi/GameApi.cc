@@ -18993,13 +18993,65 @@ std::string find_directory(std::string url)
 }
 
 
+int convert_find_ch(std::string s, int pos, char ch)
+{
+  int ss = s.size();
+  for(int i=pos;i<ss;i++) if (s[i]==ch) return i;
+  return -1;
+}
+
+std::string convert_script(std::string script)
+{
+  std::stringstream ss(script);
+  std::string line;
+  int pos = 0;
+  std::string res;
+  while(std::getline(ss,line)) {
+    int param_num=0;
+    int p0 = convert_find_ch(line,pos,'.');
+    int p00 = convert_find_ch(line,p0+1,'.');
+    int p = convert_find_ch(line,p00,'(');
+    int p2 = p;
+    {
+  next:
+    int pp = convert_find_ch(line,p+1,',');
+    if (p!=-1 && pp!=-1)
+      {
+	std::string name = line.substr(p00+1,p2-p00-1);
+	std::string param = line.substr(p+1,pp-p-1);
+	//std::cout << "NAME: " << name << " PARAM:" << param << std::endl;
+	if (name=="gltf_loadKK" && param_num==0)
+	  {
+	    res+=line.substr(0,p+1) + "./" + line.substr(pp) + "\n";
+	  }
+	else if (name=="p_mtl" && param_num==3)
+	  {
+	    res+=line.substr(0,p+1) + "./" + line.substr(pp) + "\n";
+	  }
+	else if (name=="p_mtl_nr" &&param_num==3)
+	  {
+	    res+=line.substr(0,p+1) + "./" + line.substr(pp) + "\n";
+	  }
+	else
+	  {
+	    res+=line + "\n";
+	  }
+	param_num++;
+	p=pp;
+	goto next;
+      }
+    }
+  }
+  return res;
+}
+
 
 
 bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
 public:
-  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename, std::string homepage) : env(env), h2_script(h2_script), filename(filename), homepage(homepage) { g_update_download_bar=true;
+  SaveDeployAsync(GameApi::Env &env, std::string h2_script, std::string filename, std::string homepage, bool use_filename) : env(env), h2_script(h2_script), filename(filename), homepage(homepage),use_filename(use_filename) { g_update_download_bar=true;
       id = env.add_to_download_bar("gameapi_deploy.zip");
       env.set_download_progress(env.download_index_mapping(id), 0.0/8.0);
 
@@ -19257,7 +19309,7 @@ public:
     case 7:
       {
       	std::cout << "Step #10: Creating zip file" << std::endl;
-	std::cout << "Saving to %TEMP%/_gameapi_builder/Downloads/gameapi_deploy.zip";
+	std::cout << "Saving to %TEMP%/_gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 	std::string home = getenv("TEMP");
 	std::ifstream ss((home + "\\_gameapi_builder\\deploy\\gameapi_deploy.zip").c_str(), std::ios_base::binary);
@@ -19410,7 +19462,7 @@ public:
       //std::cout << "Generating script.." << std::endl;
       std::string home = getenv("HOME");
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
-      ss << htmlfile;
+      ss << convert_script(htmlfile);
       ss << std::flush;
       ss.close();
 
@@ -19499,6 +19551,10 @@ public:
       std::string dep = "./deploy.sh";
       if (!file_exists(dep))
 	{
+	  dep = "../editor/deploy.sh";
+	}
+      if (!file_exists(dep))
+	{
 	  dep = "/usr/share/deploy.sh";
 	}
 	std::string home = getenv("HOME");
@@ -19516,8 +19572,10 @@ public:
     case 7:
       {
       std::cout << "Step #9: Saving to zip file.." << std::endl;
-	std::cout << "Saving to ~/.gameapi_builder/Downloads/gameapi_deploy.zip";
+      std::cout << "Saving to ~/.gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
+
+	if (!use_filename) {
 	std::string home = getenv("HOME");
 	std::ifstream ss((home + "/.gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
@@ -19528,6 +19586,13 @@ public:
 	env.set_download_data(env.download_index_mapping(id), vec);
 	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
 	env.set_download_ready(i);
+	} else {
+	  std::cout << "Step #10: copying the zip file to ./" << filename << std::endl;
+	  std::string home = getenv("HOME");
+	  std::string cmd = "cp " + home + "/.gameapi_builder/deploy/gameapi_deploy.zip " + filename;
+	  int val = system(cmd.c_str());
+	  if (val!=0) { std::cout << "ERROR:" << cmd << " returned error " << val << std::endl; ok=false; }
+	}
 	std::cout << std::endl;
 	if (ok) {
 	  std::cout << "Step#10: ALL OK" << std::endl;
@@ -19547,7 +19612,13 @@ private:
   std::string filename;
   std::string homepage;
   bool ok=true;
+  bool use_filename;
 };
+
+void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage)
+{
+  e.start_async(new SaveDeployAsync(e,script,output_filename,homepage,true));
+}
 
 class SaveDeploy : public MainLoopItem
 {
@@ -19565,7 +19636,7 @@ public:
     if (firsttime) {
       firsttime = false;
       h2->Prepare();
-      async_id = env.start_async(new SaveDeployAsync(env,h2->script_file(),filename,h2->homepage()));
+      async_id = env.start_async(new SaveDeployAsync(env,h2->script_file(),filename,h2->homepage(),false));
     }
   }
   virtual void execute(MainLoopEnv &e) { }
