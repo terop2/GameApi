@@ -18807,17 +18807,20 @@ std::string find_more_data(std::string line)
   bool found=false;
   bool mtl=false;
   bool gltf=false;
+  bool small=false;
   if (deploy_find(line,"load_BM_script")) found=true;
   if (deploy_find(line,"html_url")) found=true;
   if (deploy_find(line, "p_mtl")) { found=true; mtl=true; }
   if (deploy_find(line, "gltf_load")) { found=true; gltf=true; }
+  if (deploy_find(line, "gltf_loadKK2")) { found=true; gltf=true; small=true; }
   if (found) {
     std::vector<UrlItem> vec = find_url_items(line);
     if (vec.size()<1) return "";
     if (gltf) {
-      if(vec.size()<2) return "";
+      if(!small && vec.size()<2) return "";
+      if(small && vec.size()<1) return "";
       std::string res;
-      UrlItem &ii=vec[1];
+      UrlItem &ii=vec[small?0:1];
       std::cout << "EXAMINING: " << ii.url << std::endl;
       std::string data = fetch_more_data(ii.url);
       std::stringstream ss(data);
@@ -19035,12 +19038,13 @@ std::string convert_script(std::string script)
 	else
 	  {
 	    res+=line + "\n";
+	    continue;
 	  }
 	param_num++;
 	p=pp;
 	goto next;
-      }
-    }
+      } else { res+=line+"\n"; continue; }
+    } 
   }
   return res;
 }
@@ -19243,6 +19247,7 @@ public:
       {
       std::cout << "Step #7: Copying engine files" << std::endl;
 	std::string g0 = "..\\display\\gameapi_0.html";
+	std::string g0a = "..\\display\\gameapi_0_seamless.html";
 	std::string g1 = "..\\display\\gameapi_1.html";
 	std::string g2 = "..\\display\\gameapi_2.html";
 	std::string g3 = "..\\display\\gameapi_3.html";
@@ -19252,6 +19257,7 @@ public:
 	//std::string gsed = "..\\zip\\sed.exe";
 	if (!file_exists(g1)) {
 	  g0 = "gameapi_0.html";
+	  g0a = "gameapi_0_seamless.html";
 	  g1 = "gameapi_1.html";
 	  g2 = "gameapi_2.html";
 	  g3 = "gameapi_3.html";
@@ -19260,7 +19266,8 @@ public:
 	  gk = "get_file_size.php";
 	  //gsed = "sed.exe";
 	}
-	std::string line0 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_0.html";
+	std::string line0 = std::string("copy ") + g0 + " %TEMP%\\_gameapi_builder\\gameapi_0.html";
+	std::string line0a = std::string("copy ") + g0a + " %TEMP%\\_gameapi_builder\\gameapi_0_seamless.html";
 	std::string line1 = std::string("copy ") + g1 + " %TEMP%\\_gameapi_builder\\gameapi_1.html";
 	std::string line2 = std::string("copy ") + g2 + " %TEMP%\\_gameapi_builder\\gameapi_2.html";
 	std::string line3 = std::string("copy ") + g3 + " %TEMP%\\_gameapi_builder\\gameapi_3.html";
@@ -19269,6 +19276,7 @@ public:
 	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
 	int val1 = system(line0.c_str());
+	int val1a = system(line0a.c_str());
 	int val2 = system(line1.c_str());
 	int val3 = system(line2.c_str());
 	int val4 = system(line3.c_str());
@@ -19277,6 +19285,7 @@ public:
 	int val6 = system(line5.c_str());
 
 	if (val1!=0) { std::cout << "ERROR: " << line0 << " returned ERROR CODE " << val1 << std::endl; ok=false;}
+	if (val1a!=0) { std::cout << "ERROR: " << line0a << " returned ERROR CODE " << val1a << std::endl; ok=false;}
 	if (val2!=0) { std::cout << "ERROR: " << line1 << " returned ERROR CODE " << val2 << std::endl; ok=false;}
 	if (val3!=0) { std::cout << "ERROR: " << line2 << " returned ERROR CODE " << val3 << std::endl; ok=false;}
 	if (val4!=0) { std::cout << "ERROR: " << line3 << " returned ERROR CODE " << val4 << std::endl; ok=false;}
@@ -19503,6 +19512,7 @@ public:
       std::cout << "Step #7: Copying engine files.." << std::endl;
       //std::cout << "Copying engine files.." << std::endl;
 	std::string g0 = "../display/gameapi_0.html";
+	std::string g0a = "../display/gameapi_0_seamless.html";
 	std::string g1 = "../display/gameapi_1.html";
 	std::string g2 = "../display/gameapi_2.html";
 	std::string g3 = "../display/gameapi_3.html";
@@ -19511,6 +19521,7 @@ public:
 	std::string gk = "../display/get_file_size.php";
 	if (!file_exists(g1)) {
 	  g0 = "/usr/share/gameapi_0.html";
+	  g0a = "/usr/share/gameapi_0_seamless.html";
 	  g1 = "/usr/share/gameapi_1.html";
 	  g2 = "/usr/share/gameapi_2.html";
 	  g3 = "/usr/share/gameapi_3.html";
@@ -19519,6 +19530,7 @@ public:
 	  gk = "/usr/share/get_file_size.php";
 	}
 	std::string line0 = std::string("cp ") + g0 + " ~/.gameapi_builder/gameapi_0.html";
+	std::string line0a = std::string("cp ") + g0a + " ~/.gameapi_builder/gameapi_0_seamless.html";
 	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
 	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
 	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
@@ -19527,6 +19539,7 @@ public:
 	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
 
 	int val1=system(line0.c_str());
+	int val1a=system(line0a.c_str());
 	int val2=system(line1.c_str());
 	int val3=system(line2.c_str());
 	int val4=system(line3.c_str());
@@ -19534,6 +19547,7 @@ public:
 	int val5=system(line4.c_str());
 	int val6=system(line5.c_str());
 	if (val1!=0) { std::cout << "ERROR:" << line0 << " returned error " << val1 << std::endl; ok=false;}
+	if (val1a!=0) { std::cout << "ERROR:" << line0a << " returned error " << val1a << std::endl; ok=false;}
 	if (val2!=0) { std::cout << "ERROR:" << line1 << " returned error " << val2 << std::endl; ok=false;}
 	if (val3!=0) { std::cout << "ERROR:" << line2 << " returned error " << val3 << std::endl; ok=false;}
 	if (val4!=0) { std::cout << "ERROR:" << line3 << " returned error " << val4 << std::endl; ok=false;}
@@ -19587,9 +19601,9 @@ public:
 	env.set_download_progress(env.download_index_mapping(id), 8.0/8.0);
 	env.set_download_ready(i);
 	} else {
-	  std::cout << "Step #10: copying the zip file to ./" << filename << std::endl;
+	  std::cout << "Step #10: copying the zip file to " << filename << std::endl;
 	  std::string home = getenv("HOME");
-	  std::string cmd = "cp " + home + "/.gameapi_builder/deploy/gameapi_deploy.zip " + filename;
+	  std::string cmd = "cp -f " + home + "/.gameapi_builder/deploy/gameapi_deploy.zip " + filename;
 	  int val = system(cmd.c_str());
 	  if (val!=0) { std::cout << "ERROR:" << cmd << " returned error " << val << std::endl; ok=false; }
 	}
