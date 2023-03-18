@@ -1048,6 +1048,10 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 <?php
 require_once("user.php");
 ?>
+
+PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>
+
+
 <div style="padding: 20px; width: 1324px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>

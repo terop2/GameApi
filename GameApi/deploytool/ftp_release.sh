@@ -19,3 +19,5 @@ finish()
     fi
 }
 copy_it deploytool
+copy_it ../libGameApi.so
+finish

@@ -13,7 +13,7 @@ if [[ $1 ]]; then
 	echo "mv FAIL"
     fi
     if [[ "$2" == "seamless" ]]; then
-	cat $HOME/.gameapi_builder/gameapi_0.html $HOME/.gameapi_builder/gameapi_homepage.html $HOME/.gameapi_builder/gameapi_1.html $HOME/.gameapi_builder/gameapi_script.html $HOME/.gameapi_builder/gameapi_2.html $HOME/.gameapi_builder/gameapi_date.html $HOME/.gameapi_builder/gameapi_3_seamless.html >$HOME/.gameapi_builder/deploy/index.html
+	cat $HOME/.gameapi_builder/gameapi_0_seamless.html $HOME/.gameapi_builder/gameapi_homepage.html $HOME/.gameapi_builder/gameapi_1.html $HOME/.gameapi_builder/gameapi_script.html $HOME/.gameapi_builder/gameapi_2.html $HOME/.gameapi_builder/gameapi_date.html $HOME/.gameapi_builder/gameapi_3_seamless.html >$HOME/.gameapi_builder/deploy/index.html
     else
         cat $HOME/.gameapi_builder/gameapi_0.html $HOME/.gameapi_builder/gameapi_homepage.html $HOME/.gameapi_builder/gameapi_1.html $HOME/.gameapi_builder/gameapi_script.html $HOME/.gameapi_builder/gameapi_2.html $HOME/.gameapi_builder/gameapi_date.html $HOME/.gameapi_builder/gameapi_3.html >$HOME/.gameapi_builder/deploy/index.html
     fi
