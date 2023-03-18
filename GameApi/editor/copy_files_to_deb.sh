@@ -17,6 +17,7 @@ cp atlas_bm0.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm0.ppm
 cp atlas_bm1.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm1.ppm
 cp atlas_bm2.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm2.ppm
 cp ../display/gameapi_0.html gameapi-builder_1.0-$1/usr/share/gameapi_0.html
+cp ../display/gameapi_0_seamless.html gameapi-builder_1.0-$1/usr/share/gameapi_0_seamless.html
 cp ../display/gameapi_1.html gameapi-builder_1.0-$1/usr/share/gameapi_1.html
 cp ../display/gameapi_2.html gameapi-builder_1.0-$1/usr/share/gameapi_2.html
 cp ../display/gameapi_3.html gameapi-builder_1.0-$1/usr/share/gameapi_3.html

@@ -1,45 +1,61 @@
-cp mesh_test.php /home/terop/html/meshpage.org/
-cp mesh_display.php /home/terop/html/meshpage.org/
-cp cookies.php /home/terop/html/meshpage.org/
-cp mesh_background.php /home/terop/html/meshpage.org/
-cp mesh_addtext.php /home/terop/html/meshpage.org/
-cp builder_display.php /home/terop/html/meshpage.org/
-cp mesh_stats.php /home/terop/html/meshpage.org/
-cp mesh_pre.php /home/terop/html/meshpage.org/
-cp mesh_api.php /home/terop/html/meshpage.org/
-cp mesh_embed.php /home/terop/html/meshpage.org/
-cp mesh_clickable.php /home/terop/html/meshpage.org/
-cp mesh_server.php /home/terop/html/meshpage.org/
-cp mesh_css.css /home/terop/html/meshpage.org/
-cp mesh_css_mobile.css /home/terop/html/meshpage.org/
-cp mesh_hide.php /home/terop/html/meshpage.org/
-cp mesh_hide_action.php /home/terop/html/meshpage.org/
-cp mesh_block.php /home/terop/html/meshpage.org/
-cp mesh_block_action.php /home/terop/html/meshpage.org/
-cp mesh_code.php /home/terop/html/meshpage.org/
-cp mesh_faq.php /home/terop/html/meshpage.org/
-cp user.php /home/terop/html/meshpage.org/
-cp user_page.php /home/terop/html/meshpage.org/
-cp create_mesh.php /home/terop/html/meshpage.org/
-cp emscripten_frame.php /home/terop/html/meshpage.org/
-#cp mesh.php /home/terop/html/meshpage.org/
-cp mesh_preview.php /home/terop/html/meshpage.org/
-cp action_new_mesh.php /home/terop/html/meshpage.org/
-cp action_progress_mesh.php /home/terop/html/meshpage.org/
-cp builder.php /home/terop/html/meshpage.org/
-cp source_table.php /home/terop/html/meshpage.org/
-cp save_screenshot.php /home/terop/html/meshpage.org/
-cp load_url.php /home/terop/html/meshpage.org/
-cp load_date.php /home/terop/html/meshpage.org/
-cp mesh_save.php /home/terop/html/meshpage.org/
-cp mesh_all.php /home/terop/html/meshpage.org/
-cp mesh_tool.php /home/terop/html/meshpage.org/
-cp index.html /home/terop/html/meshpage.org/ 
-cp mesh_about.php /home/terop/html/meshpage.org/
-cp mesh_login.php /home/terop/html/meshpage.org/
-cp mesh_logout.php /home/terop/html/meshpage.org/
-cp mesh_login_result.php /home/terop/html/meshpage.org/
-cp mapping.txt /home/terop/html/meshpage.org/
-cp mesh_tutorial.php /home/terop/html/meshpage.org/
-cp mesh_detect.php /home/terop/html/meshpage.org/
-cp mesh_html.php /home/terop/html/meshpage.org/
+#!/bin/bash
+INDEX=0
+copy_it()
+{
+    MACHINE=`uname -n`
+    if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
+	INDEX=${INDEX}+1
+	arr[${INDEX}]=$1
+     else
+       cp $1 /home/terop/html/meshpage.org/
+       echo "copying $1 to meshpage.org"
+    fi
+}
+finish()
+{
+    MACHINE=`uname -n`
+    if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
+	scp ${arr[@]} terop@meshpage.org:/home/terop/html/meshpage.org/
+    fi
+}
+copy_it gltf_to_zip_result.php
+copy_it gltf_to_zip.php 
+copy_it mesh_display.php 
+copy_it mesh_background.php 
+copy_it mesh_addtext.php 
+copy_it builder_display.php 
+copy_it mesh_stats.php 
+copy_it mesh_pre.php 
+copy_it mesh_api.php 
+copy_it mesh_embed.php 
+copy_it mesh_clickable.php 
+copy_it mesh_server.php 
+copy_it mesh_hide.php 
+copy_it mesh_hide_action.php 
+copy_it mesh_block.php 
+copy_it mesh_block_action.php 
+copy_it mesh_code.php 
+copy_it mesh_faq.php 
+copy_it user.php 
+copy_it user_page.php 
+copy_it create_mesh.php 
+copy_it emscripten_frame.php 
+copy_it mesh_preview.php 
+copy_it action_new_mesh.php 
+copy_it action_progress_mesh.php 
+copy_it builder.php 
+copy_it source_table.php 
+copy_it save_screenshot.php 
+copy_it load_url.php 
+copy_it load_date.php 
+copy_it mesh_save.php 
+copy_it mesh_all.php 
+copy_it mesh_tool.php 
+copy_it mesh_about.php 
+copy_it mesh_login.php 
+copy_it mesh_logout.php 
+copy_it mesh_login_result.php 
+copy_it mesh_tutorial.php 
+copy_it mesh_detect.php 
+copy_it mesh_html.php 
+finish

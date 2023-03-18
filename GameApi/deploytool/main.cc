@@ -4,7 +4,6 @@
 
 #include "GameApi.hh"
 
-using namespace GameApi;
 
 void usage() {
   std::cout << "./deploytool --file input_filename.txt" << std::endl;
@@ -41,9 +40,9 @@ int main(int argc, char *argv[])
   std::cout << " with " << std::endl;
   std::cout << homepage << std::endl;
 
-  Env *e2 = new Env;
-  Env &e = *e2;
-  EveryApi ev(*e2);
+  GameApi::Env *e2 = new GameApi::Env;
+  GameApi::Env &e = *e2;
+  GameApi::EveryApi ev(*e2);
 
   start_async_deploy(e,script,output_filename, homepage);
   for(int i=0;i<100;i++)
