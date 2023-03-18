@@ -44,8 +44,16 @@ $cmd = "(cd ./pp2;LD_LIBRARY_PATH=.. nohup ../deploytool --file ./tmp.txt -o ./t
 shell_exec($cmd);
 
 
+$file3 = file_get_contents("./pp2/test.txt");
 
+$res = str_contains($file3,"ALL OK");
+
+if ($res) {
 $file2 = file_get_contents("./pp2/tmp.zip");
 header("Content-Type: application/zip");
 header("Content-Disposition: attachment; filename=\"deploy.zip\"");
 echo "$file2";
+} else {
+  echo "<pre>$file3";
+  echo "THERE SEEMS TO BE ERRORS!</pre>";
+}
