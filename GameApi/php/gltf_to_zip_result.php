@@ -2,6 +2,12 @@
 
 $gltf = $_POST["gltffile"];
 
+if (strlen($gltf)<4) {
+  echo "<pre>";
+  echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
+} else {
+
+
 $transparent = $_POST["transparent"];
 $zoom = $_POST["zoom"];
 $rotate = $_POST["rotate"];
@@ -56,4 +62,5 @@ echo "$file2";
 } else {
   echo "<pre>$file3";
   echo "THERE SEEMS TO BE ERRORS!</pre>";
+}
 }
