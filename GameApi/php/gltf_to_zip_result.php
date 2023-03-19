@@ -7,13 +7,23 @@ if (strlen($gltf)<4) {
   echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
 } else {
 
+$is_zip = "nope";
+$ext = substr($gltf, -4);
+if ($ext == ".zip")
+{
+  $is_zip = "yes";
+}
+
 
 $transparent = $_POST["transparent"];
 $zoom = $_POST["zoom"];
 $rotate = $_POST["rotate"];
 $pan = $_POST["pan"];
 
-$file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
+if ($is_zip=="yes")
+   $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
+else
+   $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
 $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
 
 if ($zoom=="zoom")
