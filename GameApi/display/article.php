@@ -51,6 +51,7 @@ But what should we do to get access to this level technology?
 <li><a href="https://meshpage.org/meshpage_4">builder tool download</a>.
 <li><a href="https://meshpage.org/meshpage_5">faq</a>.
 <li><a href="https://meshpage.org/view.php">model viewer</a>.
+<li><a href="https://meshpage.org/gltf_to_zip.php">gltf_to_zip converter</a>.
 </ul>
 Everyone, sing with me:
 <ul>
