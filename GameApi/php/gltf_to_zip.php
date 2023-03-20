@@ -3,6 +3,9 @@
 ?>
 
 <html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
+</head>
 <h1>GLTF to ZIP Converter</h1>
 <div class="moveright">+3d engine</div>
 <div class="moveup">
