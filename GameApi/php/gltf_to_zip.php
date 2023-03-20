@@ -6,7 +6,11 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
 </head>
-<h1>GLTF to HostingSpace ZIP Converter</h1>
+<h1>GLTF to ZIP Converter</h1>
+<div class="moveright">+3d engine</div>
+<div class="moveup">
+(gltf file get prepared for hosting/displaying on the web)
+</div>
 
 <form method="POST" action="/gltf_to_zip_result.php">
 <label class="url" for="gltffile">GLTF2.0 File Url:</label>
@@ -22,7 +26,22 @@
 <p>
 <input class="submit" type="submit" value="Submit">
 </form>
+
+Firsttime users should check the server config from our faq: <a href="https://meshpage.org/meshpage_5">faq</a>.<br>
+For advanced users, there's a builder tool available at: <a href="https://meshpage.org/meshpage_4">builder tool</a>.
 <style>
+.moveright {
+   position: relative;
+   top: -42px;
+   left: 340px;
+   display: inline-block;
+}
+.moveup {
+   position: relative;
+   top: -20px;
+   left: -50px;
+   display: inline-block;
+}
 .gltf {
    width: 50%;
    display: inline-block;
