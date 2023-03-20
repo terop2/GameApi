@@ -858,6 +858,10 @@ Useful other sites which you can drag and drop content to the viewer are at leas
 <li><a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a>
 </ul>
 
+<h2>If I just want to deploy simple gltf file?</h2>
+
+Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php">Here</a>.
+
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
 <img src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>

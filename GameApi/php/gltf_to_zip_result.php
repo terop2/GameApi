@@ -2,12 +2,28 @@
 
 $gltf = $_POST["gltffile"];
 
+if (strlen($gltf)<4) {
+  echo "<pre>";
+  echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
+} else {
+
+$is_zip = "nope";
+$ext = substr($gltf, -4);
+if ($ext == ".zip")
+{
+  $is_zip = "yes";
+}
+
+
 $transparent = $_POST["transparent"];
 $zoom = $_POST["zoom"];
 $rotate = $_POST["rotate"];
 $pan = $_POST["pan"];
 
-$file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
+if ($is_zip=="yes")
+   $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
+else
+   $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
 $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
 
 if ($zoom=="zoom")
@@ -44,8 +60,17 @@ $cmd = "(cd ./pp2;LD_LIBRARY_PATH=.. nohup ../deploytool --file ./tmp.txt -o ./t
 shell_exec($cmd);
 
 
+$file3 = file_get_contents("./pp2/test.txt");
 
+$res = str_contains($file3,"ALL OK");
+
+if ($res) {
 $file2 = file_get_contents("./pp2/tmp.zip");
 header("Content-Type: application/zip");
 header("Content-Disposition: attachment; filename=\"deploy.zip\"");
 echo "$file2";
+} else {
+  echo "<pre>$file3";
+  echo "THERE SEEMS TO BE ERRORS!</pre>";
+}
+}
