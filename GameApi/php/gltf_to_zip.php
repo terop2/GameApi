@@ -9,20 +9,22 @@
 <h1>GLTF to ZIP Converter</h1>
 <div class="moveright">+3d engine</div>
 <div class="moveup">
-(gltf file get prepared for hosting/displaying on the web)
+(gltf file get prepared for hosting/displaying/rendering on the web)
 </div>
 
 <form method="POST" action="/gltf_to_zip_result.php">
 <label class="url" for="gltffile">GLTF2.0 File Url:</label>
 <input class="gltf" type="url" id="gltffile" name="gltffile" value=""><br>
 
-(you just need .gltf file url, it'll find all dependencies starting from that file)
+(you just need .gltf file url, it'll find all dependencies starting from that file)<br>
+(or if you got the content from sketchfab, their gltf zip files are acceptable too)
 <br><br>
 
 <input class="cb" type="checkbox" name="transparent" value="trans" checked><div class="label">Transparent</div><br>
+<input class="cb" type="checkbox" name="shadow" value="shadow" checked><div class="label">Shadow</div><br>
 <input class="cb" type="checkbox" name="zoom" value="zoom" checked><div class="label">Zoom</div><br>
 <input class="cb" type="checkbox" name="rotate" value="rotate" checked><div class="label">Rotate</div><br>
-<input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br>
+<!--input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br-->
 <p>
 <input class="submit" type="submit" value="Submit">
 </form>
