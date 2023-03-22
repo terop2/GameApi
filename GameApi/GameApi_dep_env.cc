@@ -106,7 +106,7 @@ public:
     ss >> totalSize;
     ss >> chunkSize;
     
-    int concurrent_tasks = 1;
+    int concurrent_tasks = 4;
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
     if (chunkSize==0) { chunkSize=1048576; }

@@ -18,13 +18,24 @@ if ($ext == ".zip")
 $transparent = $_POST["transparent"];
 $zoom = $_POST["zoom"];
 $rotate = $_POST["rotate"];
-$pan = $_POST["pan"];
+//$pan = $_POST["pan"];
+$pan = "nope";
+$shadow = $_POST["shadow"];
 
 if ($is_zip=="yes")
    $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
 else
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
-$file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
+if ($shadow=="shadow") {
+   $file .= "P I20=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
+   $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+   $file .= "P I22=ev.polygon_api.cube(-300,300,-220,-200,-300,300);\n";
+   $file .= "MT I23=ev.materials_api.colour_material(ev,0.5);\n";
+   $file .= "ML I24=ev.materials_api.newshadow2_phong(ev,I20,I21,I22,I23,-0.3,-1,-0.3,0,1,ff884422,ffffffff,0.8,1024,false);\n";
+   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0);\n";
+   $file .= "ML I2=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
+} else
+  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
 
 if ($zoom=="zoom")
    $file .= "ML I3=ev.mainloop_api.mouse_roll_zoom2(ev,I2);\n";
