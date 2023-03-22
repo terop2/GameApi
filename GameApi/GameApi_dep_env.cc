@@ -1495,6 +1495,8 @@ void fetch_2_success(emscripten_fetch_t *fetch)
   LoadData *dt = (LoadData*)(fetch->userData);
   const char *url = dt->buf3;
   dt->obj->result = std::vector<unsigned char>(&fetch->data[0],&fetch->data[fetch->numBytes]);
+  // hack to fix the download amounts.
+  dt->obj->result.push_back(' ');
   const std::vector<unsigned char> *vec = dt->obj->get();  
   onload_async_cb(333,(void*)url,vec);
 #ifdef EMSCRIPTEN
