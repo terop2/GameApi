@@ -7743,6 +7743,13 @@ public:
 		GLTFJointMatrices *joints = (GLTFJointMatrices*)(items[t]);
 		const std::vector<float> *start_time = joints->start_time();
 		const std::vector<float> *end_time = joints->end_time();
+
+		if (current==-1 && t==0) {
+		  current_start_time=start_time;
+		  current_end_time=end_time;
+		}
+
+		
 		float finish_time = joints->get_max_time();
 		//std::cout << finish_time << std::endl;
 		if (finish_time>max_end_time) max_end_time = finish_time;
@@ -7760,7 +7767,24 @@ public:
 		      break;
 		    }
 	      }
-	    if (current==-1) { vec.push_back(add_matrix2(env,Matrix::Identity()));  continue; }
+	    if (current==-1) {
+	      static std::vector<float> *start_time2 = 0;
+	      static std::vector<float> *end_time2 = 0;
+	      delete start_time2;
+	      delete end_time2;
+	      start_time2 = new std::vector<float>;
+	      end_time2 = new std::vector<float>;
+	      int s = current_start_time->size();
+	      for(int i=0;i<s;i++)
+		start_time2->push_back(current_start_time->operator[](i)+max_end_time);
+	      int s2 = current_end_time->size();
+	      for(int i=0;i<s2;i++)
+		end_time2->push_back(current_end_time->operator[](i)+max_end_time);
+	      
+	      current_start_time = start_time2;
+	      current_end_time = end_time2;
+	      current=0;
+	    }
 
 	    
 	    MainLoopItem *next = items[current];
