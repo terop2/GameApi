@@ -36,46 +36,151 @@ public:
   virtual int get_default_scene() const { return self->defaultScene; }
   
   virtual int accessors_size() const { return self->accessors.size(); }
-  virtual const tinygltf::Accessor &get_accessor(int i) const { return self->accessors[i]; }
+  virtual const tinygltf::Accessor &get_accessor(int i) const {
+    if (i>=0&&i<self->accessors.size())
+	return self->accessors[i];
+    std::cout << "ERROR: get_accessor out of bounds" << std::endl;
+    exit(0);
+  }
 
   virtual int animations_size() const { return self->animations.size(); }
-  virtual const tinygltf::Animation &get_animation(int i) const { return self->animations[i]; }
+  virtual const tinygltf::Animation &get_animation(int i) const {
+    if (i>=0&&i<self->animations.size())
+
+    return self->animations[i];
+    std::cout << "ERROR: get_animation out of bounds" << std::endl;
+    exit(0);
+
+  }
 
   virtual int buffers_size() const { return self->buffers.size(); }
-  virtual const tinygltf::Buffer &get_buffer(int i) const { return self->buffers[i]; }
+  virtual const tinygltf::Buffer &get_buffer(int i) const {
+    if (i>=0&&i<self->buffers.size())
+
+    return self->buffers[i];
+
+    std::cout << "ERROR: get_buffer out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int bufferviews_size() const { return self->bufferViews.size(); }
-  virtual const tinygltf::BufferView &get_bufferview(int i) const { return self->bufferViews[i]; }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const {
+    if (i>=0&&i<self->bufferViews.size())
+
+    return self->bufferViews[i];
+    std::cout << "ERROR: get_bufferview out of bounds" << std::endl;
+    exit(0);
+
+
+  }
   
   virtual int materials_size() const { return self->materials.size(); }
-  virtual const tinygltf::Material &get_material(int i) const { return self->materials[i]; }
+  virtual const tinygltf::Material &get_material(int i) const {
+    if (i>=0&&i<self->materials.size())
+      
+    return self->materials[i];
+
+    std::cout << "ERROR: get_material out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int meshes_size() const { return self->meshes.size(); }
-  virtual const tinygltf::Mesh &get_mesh(int i) const { return self->meshes[i]; }
+  virtual const tinygltf::Mesh &get_mesh(int i) const {
+    if (i>=0&&i<self->meshes.size())
+    return self->meshes[i];
+
+    std::cout << "ERROR: get_mesh out of bounds" << std::endl;
+    exit(0);
+
+	}
 
   virtual int nodes_size() const { return self->nodes.size(); }
-  virtual const tinygltf::Node &get_node(int i) const { return self->nodes[i]; }
+  virtual const tinygltf::Node &get_node(int i) const {
+    if (i>=0&&i<self->nodes.size())
+
+    return self->nodes[i];
+
+    std::cout << "ERROR: get_node out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int textures_size() const { return self->textures.size(); }
-  virtual const tinygltf::Texture &get_texture(int i) const { return self->textures[i]; }
+  virtual const tinygltf::Texture &get_texture(int i) const {
+    if (i>=0&&i<self->textures.size())
+    return self->textures[i];
+
+    std::cout << "ERROR: get_texture out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int images_size() const { return self->images.size(); }
-  virtual const tinygltf::Image &get_image(int i) const { return self->images[i]; }
+  virtual const tinygltf::Image &get_image(int i) const {
+    if (i>=0&&i<self->images.size())
+
+    return self->images[i];
+    std::cout << "ERROR: get_image out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int skins_size() const { return self->skins.size(); }
-  virtual const tinygltf::Skin &get_skin(int i) const { return self->skins[i]; }
+  virtual const tinygltf::Skin &get_skin(int i) const {
+
+        if (i>=0&&i<self->skins.size())
+
+    return self->skins[i];
+
+    std::cout << "ERROR: get_skin out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int samplers_size() const { return self->samplers.size(); }
-  virtual const tinygltf::Sampler &get_sampler(int i) const { return self->samplers[i]; }
+  virtual const tinygltf::Sampler &get_sampler(int i) const {
+    if (i>=0&&i<self->samplers.size())
+
+    return self->samplers[i];
+
+    std::cout << "ERROR: get_sampler out of bounds" << std::endl;
+    exit(0);
+
+  }
   
   virtual int cameras_size() const { return self->cameras.size(); }
-  virtual const tinygltf::Camera &get_camera(int i) const { return self->cameras[i]; }
+  virtual const tinygltf::Camera &get_camera(int i) const {
+    if (i>=0&&i<self->cameras.size())    
+    return self->cameras[i];
+    std::cout << "ERROR: get_camera out of bounds" << std::endl;
+    exit(0);
+
+
+  }
 
   virtual int scenes_size() const { return self->scenes.size(); }
-  virtual const tinygltf::Scene &get_scene(int i) const { return self->scenes[i]; }
+  virtual const tinygltf::Scene &get_scene(int i) const {
+
+    if (i>=0&&i<self->scenes.size())
+    return self->scenes[i];
+
+    std::cout << "ERROR: get_scene out of bounds" << std::endl;
+    exit(0);
+
+  }
 
   virtual int lights_size() const { return self->lights.size(); }
-  virtual const tinygltf::Light &get_light(int i) const { return self->lights[i]; }
+  virtual const tinygltf::Light &get_light(int i) const {
+
+    if (i>=0&&i<self->lights.size())
+    return self->lights[i];
+
+    std::cout << "ERROR: get_light out of bounds" << std::endl;
+    exit(0);
+
+  }
   
 public:
   tinygltf::Model *self;
@@ -6144,7 +6249,7 @@ public:
 	Matrix m2 = Matrix::Identity();
 	if (anim) m2 = anim->InverseBindMatrix(jj);
 	bindmatrix[jj] = m2;
-      }
+      } 
 
       delete anim;
       }
@@ -6286,250 +6391,6 @@ GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
   GLTFJointMatrices *item2 = (GLTFJointMatrices*)item;
   return item2;
 }
-#if 0
-class GLTFSkeletonAnim : public LineCollection
-{
-public:
-  GLTFSkeletonAnim(GameApi::Env &env, GameApi::EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index) : env(env), ev(ev), load(load), skin_num(skin_num), animation(animation), time_index(time_index) { firsttime = true; }
-  void Collect(CollectVisitor &vis)
-  {
-    load->Collect(vis);
-    vis.register_obj(this);
-  }
-  void HeavyPrepare()
-  {
-    if (firsttime) {
-      firsttime = false; 
-    
-    tinygltf::Skin *skin = &load->model.skins[skin_num];
-    int start_node = skin->skeleton;
-    max_count = 0;
-    recurse_node(start_node, 0, Matrix::Identity(), 0 /*anim*/, time_index, -1);
-    }
-    
-  }
-  void Prepare() {
-    if (firsttime) {
-      firsttime = false; 
-      // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
-
-    load->Prepare();
-    
-    tinygltf::Skin *skin = &load->model.skins[skin_num];
-    int start_node = skin->skeleton;
-
-    //int channel = -1;
-    //tinygltf::Animation *anim3 = &load->model.animations[animation];
-    //int s = anim3->channels.size();
-    //for(int i=0;i<s;i++) {
-    //tinygltf::AnimationChannel *chan = &anim3->channels[i];
-    //if (chan->target_node == start_node) {
-    //  channel = i;
-    //}
-    // }
-  
-    //GLTFAnimation *anim=0;
-  //if (channel!=-1) {
-  //  anim = new GLTFAnimation(load, animation, channel, 0);
-  //  anim->Prepare();
-  //}
-    
-
-
-    max_count=0;
-    recurse_node(start_node, 0, Matrix::Identity(), 0 /*anim*/, time_index, -1);
-  //std::cout << "GLTFSkeletonAnim::Prepare() end" << std::endl;
-    }
-  }
-  Matrix recurse_node(int node_id, tinygltf::Node * /*node*/, Matrix pos, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
-  {
-    std::cout << "node_num = " << node_id << " { " << std::endl;
-    tinygltf::Node *node = &load->model.nodes[node_id];
-    
-    //std::cout << "Node: " << node->name << std::endl;
-    GameApi::MN mv00 = ev.move_api.mn_empty();
-    GameApi::MN mv0 = ev.move_api.matrix(mv00, add_matrix2(env,pos));
-    GameApi::MN mv = gltf_node_transform(env,ev,node,mv0); //ev.move_api.mn_empty();
-
-    GameApi::MN mv2 = mv;
-
-
-
-    int channel = -1;
-    tinygltf::Animation *anim3 = &load->model.animations[animation];
-    int s5 = anim3->channels.size();
-    for(int i=s5-1;i>=0;i--) {
-      tinygltf::AnimationChannel *chan = &anim3->channels[i];
-      std::string path = chan->target_path;
-      if (chan->target_node == node_id) {
-	channel = i;
-
-	tinygltf::Skin *skin = &load->model.skins[skin_num];
-	int s2 = skin->joints.size();
-	//bool doit = false;
-	//int jj = -1;
-	for(int j=0;j<s2;j++) {
-	  if (skin->joints[j]==node_id) { /*doit=true;*/ /*jj=j;*/ break; }
-	  }
-
-
-	
-#if 1
-    float *a = 0;
-    float *a2 = 0;
-    int type = -1;
-    if (channel!=-1)
-      {
-      int i = time_index;
-      GLTFAnimation *anim = new GLTFAnimation(load, animation, channel, i, skin_num);
-      anim->Prepare();
-
-      a = anim->Amount(i);
-      a2 = anim->Amount(i+1);
-      type = anim->Type(time_index);
-      delete anim;
-#if 0
-      Matrix m2 = Matrix::Identity();
-      if (anim) m2 = anim->InverseBindMatrix(jj);
-      mv = ev.move_api.matrix(mv, add_matrix2(env,m2));
-      
-      Matrix m3 = Matrix::Identity();
-      if (anim) m3 = anim->InverseBindMatrix(jj);
-      mv2 = ev.move_api.matrix(mv2, add_matrix2(env,m3));
-#endif
-      
-      }
-
-
-
-    
-    if (type==0 && a && a2 && path=="translation") { // translation
-	//std::cout << "trans:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << std::endl;
-	mv2 = ev.move_api.trans2(mv2,a[0]*1,a[1]*1,a[2]*1);
-	mv = ev.move_api.trans2(mv, a2[0]*1, a2[1]*1, a2[2]*1);
-	//pos3+=Vector(a2[0]-a[0],a2[1]-a[1],a2[2]-a[2]);
-      } else {
-
-      }
-
-#if 1
-    if (type==1 && a && a2 && path=="rotation") { // rotation
-	Quarternion q,q2;
-	q.x = float(a[0]);
-	q.y = float(a[1]);
-	q.z = float(a[2]);
-	q.w = float(a[3]);
-	q2.x = float(a2[0]);
-	q2.y = float(a2[1]);
-	q2.z = float(a2[2]);
-	q2.w = float(a2[3]);
-	Matrix m = Quarternion::QuarToMatrix(q);
-	Matrix m2 = Quarternion::QuarToMatrix(q2);
-	//m = Matrix::Inverse(m);
-	//m2 = Matrix::Inverse(m2);
-	GameApi::M m_ = add_matrix2(env,m);
-	mv2 = ev.move_api.matrix(mv2,m_);
-	GameApi::M m2_ = add_matrix2(env, m2);
-	mv = ev.move_api.matrix(mv, m2_);
-	//std::cout << "Rot:" << a[0] << "->" << a2[0] << " " << a[1] << "->" << a2[1] << " " << a[2] << "->" << a2[2] << " " << a[3] << "->" << a2[3] << std::endl;
-	//std::cout << "IRot:" << res2[0] << " " << res2[1] << " " << res2[2] << " " << res2[3] << std::endl;
-      }
-
-#endif
-#if 1
-    if (type==2 && a && a2 && path=="scale") { // scale
-	mv2 = ev.move_api.scale2(mv2,a[0],a[1],a[2]);
-	mv = ev.move_api.scale2(mv, a2[0],a2[1],a2[2]);
-	//std::cout << "Sc:" << a[0] << "->" << a2[0] << " " << a[1] << "->" <<a2[1] << " " << a[2] << "->" << a2[2] << " " << std::endl;
-
-      } 
-  
-      if (type==3) { // weights
-      }
-#endif
-
-    
-#endif
-
-      }
-    }
-
-
-      Movement *move = find_move(env,mv);
-    Matrix m = move->get_whole_matrix(0.0, 1.0);
-
-    Movement *move3 = find_move(env,mv2);
-    Matrix m3 = move3->get_whole_matrix(0.0, 1.0);
-
-    //Point pos2 = pos*m;
-    //if (node->mesh != -1) {
-
-
-    Point p0;
-    p0.x = -300.0; p0.y = -300.0; p0.z = -300.0;
-    Point p1;
-    p1.x = 300.0; p1.y = 300.0; p1.z = 300.0;
-    start_pos.push_back(p0*m3);
-    end_pos.push_back(p1*m);
-    //}
-
-    // recurse children
-    int s = node->children.size();
-    std::vector<GameApi::ML> vec;
-    for(int i=0;i<s;i++) {
-      int child_id = node->children[i];
-      if (child_id!=-1) {
-	//tinygltf::Node *child_node = &load->model.nodes[child_id];
-
-	
-	
-	bool doit = true;
-	//int jj = 0;
-	if (doit) {
-
-	  recurse_node( child_id, 0 /*child_node*/, m, 0 /*anim*/, time_index, channel );
-	}
-      }
-    }
-    //std::cout << "recurse end" << std::endl;
-    std::cout << "node_num = " << node_id << " } " << std::endl;
-    Movement *move2 = find_move(env,mv2);
-    return move2->get_whole_matrix(0.0,1.0);
-    //return mv;
-  }
-
-  virtual int NumLines() const { return start_pos.size(); }
-  virtual Point LinePoint(int line, int point) const
-  {
-    //       std::cout << "LinePoint start" << std::endl;
-
-    if (line>=0 && line<start_pos.size() && line<end_pos.size()) {
-      if (point==0) return start_pos[line];
-      if (point==1) return end_pos[line];
-    } else return Point(0.0,0.0,0.0);
-    return Point(0.0,0.0,0.0);
-  }
-  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; } 
-private:
-  GameApi::Env &env;
-  GameApi::EveryApi &ev;
-  LoadGltf *load;
-  int skin_num;
-  int animation;
-  //int channel;
-  int time_index;
-  int start_node;
-  std::vector<Point> start_pos, end_pos;
-  bool firsttime;
-  int max_count;
-};
-
-GameApi::LI gltf_anim_skeleton2(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int time_index)
-{
-  GLTFSkeletonAnim *anim =  new GLTFSkeletonAnim(e, ev, interface, skin_num, animation, time_index);
-  return add_line_array(e, anim);
-}
-#endif
 
 GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int /*animation*/, std::string keys, float mix, int mode )
 {
@@ -6721,22 +6582,6 @@ private:
 
 GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix,int mode )
 {
-
-#if 0
-  
-  bool is_binary=false;
-  if (int(url.size())>3) {
-    std::string sub = url.substr(url.size()-3);
-    if (sub=="glb") is_binary=true;
-  }
-  LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
-  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-  load->Prepare();
-  GameApi::P mesh = gltf_scene2_p(e,ev, load, 0,0);
-  GameApi::ML ml = gltf_scene3(e,ev,load,scene_id,0, keys,mode);
-  return scale_to_gltf_size(e,ev,mesh,ml);
-
-#endif
   GLTFModelInterface *interface = find_gltf(e,model0);
   return add_main_loop(e, new GltfSceneAnim(e,ev,interface,scene_id,animation,keys,mix,mode));
 
@@ -6751,14 +6596,9 @@ GameApi::ML GameApi::MainLoopApi::gltf_anim4( GameApi::EveryApi &ev, TF model0, 
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
   }
-  //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
-  //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   interface->Prepare();
   GameApi::P mesh = gltf_load2(e,ev, interface, 0,0);
   std::vector<GameApi::ML> mls;
-  //tinygltf::Model *model = &load->model;
-
-  //tinygltf::Animation anim2 = interface->get_animation(animation); //&model->animations[animation];
 
   AnimData *dt = new AnimData;
   GLTFAnimation *anim = new GLTFAnimation(dt,interface,animation, channel, 0,0);
@@ -7625,6 +7465,8 @@ Matrix fix_matrix(Matrix m)
   return m;
 }
 
+extern Matrix g_last_resize2;
+
 class GltfAnimShaderML : public MainLoopItem
 {
 public:
@@ -7928,6 +7770,15 @@ public:
 	    Matrix inv_jb=Matrix::Inverse(jb);
 	    
 	    Matrix inv_m = Matrix::Inverse(m);
+
+
+	    //std::cout << "ri" << ri << std::endl;
+	    //std::cout << "m0i" << m0i << std::endl;
+	    //std::cout << "m0" << m0 << std::endl;
+	    //std::cout << "bindm" << bindm << std::endl;
+	    //std::cout << "m" << m << std::endl;
+	    //std::cout << "resize" << resize << std::endl;
+	    
 	    if (mode==0)
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));
 	    else if (mode==1)
