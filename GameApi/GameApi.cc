@@ -29328,11 +29328,14 @@ KP extern "C" void stop_music_playing()
   g_stop_music = true;
 }
 
+extern Matrix g_last_resize;
+
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2)
 {
   //std::cout << "set_new_script" << std::endl;
   ClearProgress();
+  g_last_resize=Matrix::Identity();
   g_mainloop_ptr = (void*)script2;
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;
