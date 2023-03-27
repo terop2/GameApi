@@ -18,6 +18,7 @@ finish()
 	scp ${arr[@]} terop@meshpage.org:/home/terop/html/meshpage.org/
     fi
 }
+copy_it item_to_zip_result.php
 copy_it gltf_to_zip_result.php
 copy_it gltf_to_zip.php 
 copy_it mesh_display.php 
