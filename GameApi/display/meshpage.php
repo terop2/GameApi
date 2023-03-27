@@ -482,6 +482,8 @@ echo "<script>var imgarr=[];</script>";
 //echo "<script src=\"//cdn.jsdelivr.net/npm/eruda\"></script>";
 //echo "<script>eruda.init();</script>";
 
+echo "<script>var g_focus=false;</script>";
+
 $iii=0;
 $counter=0;
 for($i=$start;$cnt<50;$i--)
@@ -550,7 +552,14 @@ $label = get_label( $arr );
    echo "</div>";
    echo "</div>";
 
-   echo "<div style=\"font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
+   echo "<div style=\"width: 85%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
+   echo "<div class=\"zipbutton\">";
+   echo "<form id=\"form" . $ii . "\" method=\"POST\" action=\"/item_to_zip_result.php\">";
+   echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
+   echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
+   echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
+   echo "</form>";
+   echo "</div>";
    echo "</a>";
    echo "</div>";
    echo "</div>";
@@ -1215,6 +1224,11 @@ width="120" height="120" crossorigin/>
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.zipbutton {
+   position: relative;
+   left: 174px;
+   top: -24px;
+}
 .logo {
   position: absolute;
   right: -4px;
@@ -1601,6 +1615,11 @@ if ($page!="") {
    methods: {
 
        mesh_display(id,label) {
+       	  if (g_focus) {
+       	  var frm = document.getElementById("form" + id.toString());
+	  frm.submit();
+          return;
+          }
           if (cookie_status==0) return;
 		hide_profile(false);
           var vm = this;
