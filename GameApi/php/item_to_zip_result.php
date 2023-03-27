@@ -17,7 +17,9 @@ $code = user_code($arr2, 0);
 file_put_contents("./pp2/tmp.txt", $code);
 file_put_contents("./pp2/tmp.zip", "");
 
-$homepage = "https://tpgames.org/";
+$homepage = load_homepage($arr2);
+$label = get_label($arr2);
+$label = str_replace(" ","_",$label);
 
 $cmd = "(cd ./pp2;LD_LIBRARY_PATH=.. nohup ../deploytool --file ./tmp.txt -o ./tmp.zip --homepage " . $homepage . " > test.txt 2>&1)";
 
@@ -30,7 +32,7 @@ $res = str_contains($file3, "ALL OK");
 if ($res) {
   $file2 = file_get_contents("./pp2/tmp.zip");
   header("Content-Type: application/zip");
-  header("Content-Disposition: attachment; filename=\"deploy.zip\"");
+  header("Content-Disposition: attachment; filename=\"" . $label . ".zip\"");
   echo "$file2";
 } else {
   echo "<pre>$file3";
