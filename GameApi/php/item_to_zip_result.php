@@ -36,6 +36,10 @@ $sys = 0;
 $attr = 0;
 
 if ($res) {
+  $sz = filesize("./pp2/tmp.zip");
+  if ($sz < 50000000) {
+
+
   $za = new ZipArchive;
   $za->open("./pp2/tmp.zip",0);
   $idx = $za->locateName("license.html");
@@ -51,8 +55,11 @@ if ($res) {
     header("Content-Disposition: attachment; filename=\"" . $label . ".zip\"");
     echo "$file2";
   } else {
-     echo "<pre>ERRORS FOUND, ZIP COULDN'T BE UPDATED</pre>";
+     echo "<pre>$file3 ERRORS FOUND, ZIP COULDN'T BE UPDATED</pre>";
   }
+ } else {
+     echo "<pre>$file3 ERRORS FOUND, ZIP FILE TOO LARGE</pre>"; 
+ }
 
 } else {
   echo "<pre>$file3";
