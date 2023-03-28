@@ -2,6 +2,12 @@
 
 require_once("user.php");
 
+
+function set_status($val)
+{
+   file_put_contents("./pp2/tmp.zip.status", strval($val));
+}
+
 $itemnum = $_POST["itemnum"];
 $itemid = $_POST["itemid"];
 
@@ -27,6 +33,8 @@ $cmd = "(cd ./pp2;LD_LIBRARY_PATH=.. nohup ../deploytool --file ./tmp.txt -o ./t
 
 shell_exec($cmd);
 
+set_status(8);
+
 $file3 = file_get_contents("./pp2/test.txt");
 $stat = stat("./pp2/test.txt");
 
@@ -40,6 +48,7 @@ if ($res) {
   if ($sz < 50000000) {
 
 
+  set_status(9);
   $za = new ZipArchive;
   $za->open("./pp2/tmp.zip",0);
   $idx = $za->locateName("license.html");
@@ -47,15 +56,20 @@ if ($res) {
   //$za->deleteName("license.html");
   $za->addFromString("license.html", "<!DOCTYPE html><html><head></head><body>" . $addtext . "</body></html>");
   if ($za->close()) {
+  set_status(10);
+
     $za2 = new ZipArchive;
     $za2->open("./pp2/tmp.zip",ZipArchive::FL_RECOMPRESS);
     $za2->close();
     $file2 = file_get_contents("./pp2/tmp.zip");
+    set_status(11);
+
     header("Content-Type: application/zip");
     header("Content-Disposition: attachment; filename=\"" . $label . ".zip\"");
     echo "$file2";
   } else {
      echo "<pre>$file3 ERRORS FOUND, ZIP COULDN'T BE UPDATED</pre>";
+    set_status(11);
   }
  } else {
      echo "<pre>$file3 ERRORS FOUND, ZIP FILE TOO LARGE</pre>"; 
@@ -64,4 +78,5 @@ if ($res) {
 } else {
   echo "<pre>$file3";
   echo "THERE SEEMS TO BE ERRORS!</pre>";
+    set_status(11);
 }

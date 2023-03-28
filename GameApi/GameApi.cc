@@ -19059,6 +19059,14 @@ std::string deploy_truncate(std::string s)
   return s;
 }
 
+void deploy_set_status_file(std::string output_filename, int status)
+{
+  std::string filename = output_filename + ".status";
+  std::ofstream ss(filename.c_str());
+  ss << status;
+  ss.close();
+}
+
 
 
 bool g_update_download_bar = false;
@@ -19354,7 +19362,7 @@ public:
     case 0:
       {
       // id = env.add_to_download_bar("gameapi_deploy.zip");
-      
+	if (use_filename) deploy_set_status_file(filename,0);
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
       int val1 = system("mkdir -p ~/.gameapi_builder");
       int val2 = system("chmod a+rwx ~/.gameapi_builder");
@@ -19363,6 +19371,7 @@ public:
       break;
       }
     case 1: {
+	if (use_filename) deploy_set_status_file(filename,1);
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
       int val1= system("rm -rf ~/.gameapi_builder/deploy");
       int val2=system("mkdir -p ~/.gameapi_builder/deploy");
@@ -19372,6 +19381,7 @@ public:
       break;
     }
     case 2: {
+	if (use_filename) deploy_set_status_file(filename,2);
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
       int val=system("mkdir -p ~/.gameapi_builder/deploy/engine");
       if (val!=0) { std::cout << "ERROR: mkdir returned error:" << val << std::endl; ok=false;}
@@ -19380,6 +19390,7 @@ public:
     }
     case 3:
       {
+	if (use_filename) deploy_set_status_file(filename,3);
       std::cout << "Step #4: Fetching assets.." << std::endl;
       //std::cout << "Saving ~/.gameapi-builder/gameapi_script.html" << std::endl;
 	std::string s = h2_script; //h2->script_file();
@@ -19495,6 +19506,7 @@ public:
       
     case 4:
       {
+	if (use_filename) deploy_set_status_file(filename,4);
       std::cout << "Step #6: Generating time.." << std::endl;
       time_t now = time(0);
       char *dt = ctime(&now);
@@ -19519,6 +19531,7 @@ public:
       break;
     case 5:
       {
+	if (use_filename) deploy_set_status_file(filename,5);
       std::cout << "Step #7: Copying engine files.." << std::endl;
       //std::cout << "Copying engine files.." << std::endl;
 	std::string g0 = "../display/gameapi_0.html";
@@ -19570,6 +19583,7 @@ public:
       }
     case 6:
       {
+	if (use_filename) deploy_set_status_file(filename,6);
       std::cout << "Step #8: Deploying.." << std::endl;
       std::cout << "Deploying..." << std::endl;
       std::string dep = "./deploy.sh";
@@ -19595,6 +19609,7 @@ public:
       }
     case 7:
       {
+	if (use_filename) deploy_set_status_file(filename,7);
       std::cout << "Step #9: Saving to zip file.." << std::endl;
       std::cout << "Saving to ~/.gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
