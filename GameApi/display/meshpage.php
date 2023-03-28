@@ -560,6 +560,9 @@ $label = get_label( $arr );
    echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
    echo "</form>";
    echo "</div>";
+   echo "<div id=\"zipprogress" . $ii . "\" style=\"display:none\">";
+   echo "<progress class=\"zipbutton zipmargin\" id=\"zipprog" . $ii . "\" max=\"11\" value=\"0\">70%</progress>";
+   echo "</div>";
    echo "</a>";
    echo "</div>";
    echo "</div>";
@@ -1229,6 +1232,9 @@ width="120" height="120" crossorigin/>
    left: 174px;
    top: -24px;
 }
+.zipmargin {
+   z-index: 100;
+}
 .logo {
   position: absolute;
   right: -4px;
@@ -1465,6 +1471,59 @@ function create_id2( name, index )
 }
 
 
+function zip_progress3(id)
+{
+  return function() {
+   		     var el = document.getElementById("zipprogress" + id.toString());
+		     el.style="display:none";   
+		     var el2 = document.getElementById("zipprog" + id.toString());
+   		     el2.value = "0";
+  }
+}
+
+var g_zip_count = 0;
+function zip_progress2(id)
+{
+   console.log("ZIPPROGRESS2");
+  return function() {
+   console.log("ZIPPROGRESS3");
+   var el = document.getElementById("zipprog" + id.toString());
+   g_zip_count++;
+   if (el.value!="11" && g_zip_count<10) {
+ const myHeaders3 = new Headers();
+ const myBRequest = new Request("find_zip_status.php", {
+   method: 'GET',
+   headers: myHeaders3,
+   mode: 'same-origin',
+   cache: 'default'
+});
+   fetch(myBRequest).then((r) => {
+      return r.text();
+}).then((t) => {
+   var el = document.getElementById("zipprog" + id.toString());
+   el.value = t;
+});
+   window.setTimeout(zip_progress2(id),500);
+} else {
+   window.setTimeout(zip_progress3(id),2000);
+		     
+}
+}
+}
+
+function zip_progress(id)
+{
+   console.log("ZIPPROGRESS0");
+   return function() {
+   console.log("ZIPPROGRESS1");
+   		     var el = document.getElementById("zipprogress" + id.toString());
+   		     el.style="";
+		     g_zip_count=0;
+		     window.setTimeout(zip_progress2(id),500);		     
+		     }
+}
+
+
 var app = new Vue({
    el: '#app',
    mounted: function() {
@@ -1618,6 +1677,7 @@ if ($page!="") {
        	  if (g_focus) {
        	  var frm = document.getElementById("form" + id.toString());
 	  frm.submit();
+	  window.setTimeout(zip_progress(id),10);
           return;
           }
           if (cookie_status==0) return;
