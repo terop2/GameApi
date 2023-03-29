@@ -36,6 +36,8 @@ bool is_mobile(GameApi::EveryApi &ev)
 
 bool g_deploy_phase = false;
 
+std::string gameapi_temp_dir = "@";
+
 class Envi_2;
 
 extern Splitter *g_new_splitter;
@@ -19069,6 +19071,7 @@ void deploy_set_status_file(std::string output_filename, int status)
 
 
 
+
 bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
 {
@@ -19091,16 +19094,31 @@ public:
     case 0:
       {
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
-      int val1 = system("mkdir %TEMP%\\_gameapi_builder");
+      std::string str1 = "mkdir %TEMP%\\_gameapi_builder";
+      if (gameapi_temp_dir!="@")
+	{
+	  str1 = deploy_replace_string(str1,"%TEMP%",gameapi_temp_dir);
+	}
+      int val1 = system(str1.c_str());
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
       }
     case 1:
       {
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
-      int val2=system("rmdir /Q /S %TEMP%\\_gameapi_builder\\deploy");
-      int val3=system("mkdir %TEMP%\\_gameapi_builder\\deploy");
-      int val4=system("mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses");
+      std::string str2 = "rmdir /Q /S %TEMP%\\_gameapi_builder\\deploy";
+      std::string str3 = "mkdir %TEMP%\\_gameapi_builder\\deploy";
+      std::string str4 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses";
+
+      if (gameapi_temp_dir!="@")
+	{
+	  str2 = deploy_replace_string(str2,"%TEMP%",gameapi_temp_dir);
+	  str3 = deploy_replace_string(str3,"%TEMP%",gameapi_temp_dir);
+	  str4 = deploy_replace_string(str4,"%TEMP%",gameapi_temp_dir);
+	}
+	int val2=system(str2.c_str());
+	int val3=system(str3.c_str());
+	int val4=system(str4.c_str());
       if (val2!=0||val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4<< std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
@@ -19108,7 +19126,13 @@ public:
     case 2:
       {
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
-      int val4 = system("mkdir %TEMP%\\_gameapi_builder\\deploy\\engine");
+      std::string str5 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\engine";
+      if (gameapi_temp_dir!="@")
+	{
+	  str5 = deploy_replace_string(str5,"%TEMP%",gameapi_temp_dir);
+	}
+      
+      int val4 = system(str5.c_str());
       if (val4!=0) { std::cout << "ERROR: mkdir returned error: " << val4 <<std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
@@ -19128,7 +19152,13 @@ public:
       find_url_items2(s,items);
       find_url_items3(items);
 
-      std::ofstream sp("%TEMP%\\_gameapi_builder\\deploy\\license.html");
+      std::string str6 = "%TEMP%\\_gameapi_builder\\deploy\\license.html";
+      if (gameapi_temp_dir!="@")
+	{
+	  str6 = deploy_replace_string(str6,"%TEMP%",gameapi_temp_dir);
+	}
+      
+      std::ofstream sp(str6.c_str());
       
       int si=items.size();
       for(int i=si-1;i>=0;i--)
@@ -19140,31 +19170,19 @@ public:
 	    {
 	      sp << ii.licensed_filename << " created by " << ii.author << " and licensed via <a href=\"" << ii.url << "\">" << remove_prefix(ii.url) << "</a>:"<< ii.license_contents << std::endl;
 
-#if 0
-	      std::string makedir = "mkdir %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename;
-	      int val2 = system(makedir);
-	      if (val2!=0) { std::cout << "ERROR: " << makedir << " returned error " << val2 << std::endl; ok=false; }
-	      if (ok) {
-	  std::string curl="..\\curl\\curl.exe";
-	  std::string curl_string;
-	  if (file_exists(curl)) {
-	    curl_string= std::string("..\\curl\\curl.exe ") + deploy_truncate(http_to_https(ii.url)) + " --output %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename + deploy_truncate(remove_prefix(ii.url)) + ")";
-	  } else {
-	    curl_string= std::string(".\\curl\\curl.exe ") + deploy_truncate(http_to_https(ii.url)) + " --output %TEMP%\\_gameapi_builder\\deploy\\licenses\\" + ii.licensed_filename + "\\" + deploy_truncate(remove_prefix(ii.url)) + ")";
-	  }
-	    
-	      int val = system(curl_string.c_str());
-	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
-	      }
-
-#endif
 	    }
 	    
 	  else {
 
 	  std::string dir = find_directory(ii.url);
 	  if (dir!="") {
-	    int val=system((std::string("mkdir %TEMP%\\_gameapi_builder\\deploy\\")+dir).c_str());
+	    std::string str7 = std::string("mkdir %TEMP%\\_gameapi_builder\\deploy\\")+dir;
+      if (gameapi_temp_dir!="@")
+	{
+	  str7 = deploy_replace_string(str7,"%TEMP%",gameapi_temp_dir);
+	}
+	    
+	    int val=system(str7.c_str());
 	    if (val!=0) { std::cout << "ERROR: mkdir returned error " << val << std::endl; ok=false; }
 	  }
 	  s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
@@ -19175,6 +19193,11 @@ public:
 	  else
 	    curl_string=".\\curl\\curl.exe " + deploy_truncate(http_to_https(ii.url)) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(ii.url)) + "";
 	  std::cout << curl_string << std::endl;
+      if (gameapi_temp_dir!="@")
+	{
+	  curl_string = deploy_replace_string(curl_string,"%TEMP%",gameapi_temp_dir);
+	}
+
 	  int val = system(curl_string.c_str());
 	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
 	  }
@@ -19224,6 +19247,12 @@ public:
       
       //std::cout << "Generating script.." << std::endl;
       std::string home = getenv("TEMP");
+      if (gameapi_temp_dir!="@")
+	{
+	  home=gameapi_temp_dir;
+	}
+
+      
       std::fstream ss((home+ "\\_gameapi_builder\\gameapi_script.html").c_str(), std::ofstream::out);
       ss << htmlfile;
       ss << std::flush;
@@ -19253,6 +19282,11 @@ public:
       std::cout << "Generating date.." << std::endl;
       //system("touch ~/.gameapi_builder/gameapi_date.html");
       std::string home = getenv("TEMP");
+       if (gameapi_temp_dir!="@")
+	{
+	  home = gameapi_temp_dir;
+	}
+
       std::fstream ss2((home + "/_gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
@@ -19293,6 +19327,20 @@ public:
 	std::string line4 = std::string("copy ") + gn + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
 	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
+
+      if (gameapi_temp_dir!="@")
+	{
+	  line0 = deploy_replace_string(line0,"%TEMP%",gameapi_temp_dir);
+	  line0a = deploy_replace_string(line0a,"%TEMP%",gameapi_temp_dir);
+	  line1 = deploy_replace_string(line1,"%TEMP%",gameapi_temp_dir);
+	  line2 = deploy_replace_string(line2,"%TEMP%",gameapi_temp_dir);
+	  line3 = deploy_replace_string(line3,"%TEMP%",gameapi_temp_dir);
+	  line3a = deploy_replace_string(line3a,"%TEMP%",gameapi_temp_dir);
+	  line4 = deploy_replace_string(line4,"%TEMP%",gameapi_temp_dir);
+	  line5 = deploy_replace_string(line5,"%TEMP%",gameapi_temp_dir);
+	}
+
+	
 	int val1 = system(line0.c_str());
 	int val1a = system(line0a.c_str());
 	int val2 = system(line1.c_str());
@@ -19320,10 +19368,18 @@ public:
       	std::cout << "Step #8: Deploying.." << std::endl;
       std::string dep = "deploy.bat";
       std::string line5 = dep + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
+      if (gameapi_temp_dir!="@") {
+	  line5 = deploy_replace_string(line5,"%TEMP%",gameapi_temp_dir);
+      }
+      
       bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
       if (is_seamless) {
 	line5 += " seamless";
-      }
+      } else { line5+=" noseamless"; }
+      if (gameapi_temp_dir!="@")
+	{
+	  line5 += std::string(" ") + gameapi_temp_dir; 
+	}
       int val = system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
 
@@ -19336,9 +19392,15 @@ public:
     case 7:
       {
       	std::cout << "Step #10: Creating zip file" << std::endl;
-	std::cout << "Saving to %TEMP%/_gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
-	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
+
 	std::string home = getenv("TEMP");
+       if (gameapi_temp_dir!="@")
+	{
+	  home = gameapi_temp_dir;
+	}	
+	std::cout << "Saving to " + home + "/_gameapi_builder/Downloads/gameapi_deploy.zip" << std::endl;
+	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
+
 	std::ifstream ss((home + "\\_gameapi_builder\\deploy\\gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
