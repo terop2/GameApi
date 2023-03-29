@@ -3478,6 +3478,7 @@ void refresh()
   }
 }
 
+extern std::string gameapi_temp_dir;
 
 int main(int argc, char *argv[]) {
 	g_main_thread_id = pthread_self();
@@ -3519,6 +3520,7 @@ int main(int argc, char *argv[]) {
 		std::cout << "  --vr oculus  (choose oculus for vr)" << std::endl;
 		std::cout << "  --vr vive    (choose vive for vr)" << std::endl;
 		std::cout << "  --dump (list all functions)" << std::endl;
+		std::cout << "  --tempdir <dir> (choose temporary dir)" << std::endl;
 		exit(0);
 	      }
 	    if (std::string(argv[i])=="--dump_count")
@@ -3580,6 +3582,11 @@ int main(int argc, char *argv[]) {
 	      {
 		filename = std::string(argv[i+1]);
 		filenames.push_back(filename);
+		i++;
+	      }
+	    if (std::string(argv[i])=="--tempdir")
+	      {
+		gameapi_temp_dir=std::string(argv[i+1]);
 		i++;
 	      }
 	  }
