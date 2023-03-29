@@ -1484,12 +1484,10 @@ function zip_progress3(id)
 var g_zip_count = 0;
 function zip_progress2(id)
 {
-   console.log("ZIPPROGRESS2");
   return function() {
-   console.log("ZIPPROGRESS3");
    var el = document.getElementById("zipprog" + id.toString());
    g_zip_count++;
-   if (el.value!="11" && g_zip_count<10) {
+   if (el.value!="11" && g_zip_count<50) {
  const myHeaders3 = new Headers();
  const myBRequest = new Request("find_zip_status.php", {
    method: 'GET',
@@ -1513,9 +1511,7 @@ function zip_progress2(id)
 
 function zip_progress(id)
 {
-   console.log("ZIPPROGRESS0");
    return function() {
-   console.log("ZIPPROGRESS1");
    		     var el = document.getElementById("zipprogress" + id.toString());
    		     el.style="";
 		     g_zip_count=0;

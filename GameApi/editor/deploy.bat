@@ -1,4 +1,5 @@
 @echo off
+if "%3"!="" set "TEMP=%3"
 if "%1"=="" ECHO deploy path_to_zip_file
 if "%1"=="" GOTO END
 set "OLDDIR=%CD%"
