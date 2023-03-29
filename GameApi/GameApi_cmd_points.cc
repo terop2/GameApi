@@ -334,5 +334,23 @@
 			 { "ev", "", "0.0" },
 			 "MS", "tree_api", "tree_ms"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::ms_file,
+			 "ms_file",
+			 { "url", "use_type" },
+			 { "std::string", "int" },
+			 { "https://tpgames.org/test.ms", "0" },
+			 "MS", "matrices_api", "ms_file"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files,
+			 "render_ms_files",
+			 { "ev", "p", "mat", "url", "start_type", "end_type" },
+			 { "EveryApi&", "[P]", "MT", "std::string", "int", "int" },
+			 { "ev", "", "", "https://tpgames.org/test.ms", "0", "1" },
+			 "ML", "matrices_api", "render_ms_files"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files2,
+			 "render_ms_files2",
+			 { "ev", "p", "mat", "url", "start_type", "end_type" },
+			 { "EveryApi&", "[P]", "[MT]", "std::string", "int", "int" },
+			 { "ev", "", "", "https://tpgames.org/test.ms", "0", "1" },
+			 "ML", "matrices_api", "render_ms_files"));
   return vec;
 }

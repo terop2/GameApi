@@ -3695,6 +3695,205 @@ GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::ve
     }
   return ev.polygon_api.or_array2(vec);
 }
+
+class MS_file : public MatrixArray
+{
+public:
+  MS_file(GameApi::Env &env, std::string url, std::string homepage, int use_type) : env(env), url(url), homepage(homepage), use_type(use_type) { }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  void Prepare() { HeavyPrepare(); }
+  void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string ss(ptr->begin(), ptr->end());
+    std::stringstream ss2(ss);
+    std::string line;
+    float x,y,z,scale_x,scale_y,scale_z,rot_y,type;
+    while(std::getline(ss2,line)) {
+      std::stringstream ss3(line);
+      ss3 >> x >> y >> z >> scale_x >> scale_y >> scale_z >> rot_y >> type;
+      if (use_type==type)
+	{
+	  Item i;
+	  i.x = x;
+	  i.y = y;
+	  i.z = z;
+	  i.scale_x = scale_x;
+	  i.scale_y = scale_y;
+	  i.scale_z = scale_z;
+	  i.rot_y = rot_y;
+	  vec.push_back(i);
+	}
+    }
+  }
+  int Size() const { return vec.size(); }
+  Matrix Index(int i) const
+  {
+    Item ii = vec[i];
+    return Matrix::Scale(ii.scale_x,ii.scale_y,ii.scale_z)*Matrix::YRotation(ii.rot_y)*Matrix::Translate(ii.x,ii.y,ii.z);
+  }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  int use_type;
+  struct Item {
+    float x,y,z;
+    float scale_x,scale_y,scale_z;
+    float rot_y;
+  };
+  std::vector<Item> vec;
+};
+GameApi::MS GameApi::MatricesApi::ms_file(std::string url, int use_type)
+{
+  return add_matrix_array(e,new MS_file(e,url,gameapi_homepageurl,use_type));
+}
+
+class RenderMSFiles : public MainLoopItem
+{
+public:
+  RenderMSFiles(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, GameApi::MT mat, std::string url, int start_type, int end_type) : env(env), ev(ev), p(p), mat(mat), url(url), start_type(start_type), end_type(end_type) { scene2.id=-1; }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    for(int i=start_type;i<end_type;i++)
+      {
+	matrices.push_back(ev.matrices_api.ms_file(url,i));
+      }
+    for(int i=0;i<end_type-start_type;i++)
+      {
+	GameApi::MS ms = matrices[i];
+	MatrixArray *arr = find_matrix_array(env,ms);
+	arr->Prepare();
+      }
+    for(int i=0;i<end_type-start_type;i++) {
+      scene.push_back(ev.materials_api.bind_inst_matrix(p[i],matrices[i],mat));
+    }
+    scene2 = ev.mainloop_api.array_ml(ev,scene);
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
+
+    }
+    return std::vector<int>();
+    
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  int start_type;
+  int end_type;
+  std::vector<GameApi::P> p;
+  GameApi::MT mat;
+  std::vector<GameApi::MS> matrices;
+  std::vector<GameApi::ML> scene;
+  GameApi::ML scene2;
+};
+
+class RenderMSFiles2 : public MainLoopItem
+{
+public:
+  RenderMSFiles2(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, std::vector<GameApi::MT> mat, std::string url, int start_type, int end_type) : env(env), ev(ev), p(p), mat(mat), url(url), start_type(start_type), end_type(end_type) { scene2.id=-1; }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    for(int i=start_type;i<end_type;i++)
+      {
+	matrices.push_back(ev.matrices_api.ms_file(url,i));
+      }
+    for(int i=0;i<end_type-start_type;i++)
+      {
+	GameApi::MS ms = matrices[i];
+	MatrixArray *arr = find_matrix_array(env,ms);
+	arr->Prepare();
+      }
+    for(int i=0;i<end_type-start_type;i++) {
+      scene.push_back(ev.materials_api.bind_inst_matrix(p[i],matrices[i],mat[i]));
+    }
+    scene2 = ev.mainloop_api.array_ml(ev,scene);
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (scene2.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,scene2);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  int start_type;
+  int end_type;
+  std::vector<GameApi::P> p;
+  std::vector<GameApi::MT> mat;
+  std::vector<GameApi::MS> matrices;
+  std::vector<GameApi::ML> scene;
+  GameApi::ML scene2;
+};
+
+
+GameApi::ML GameApi::MatricesApi::render_ms_files(GameApi::EveryApi &ev, std::vector<P> p, MT mat, std::string url, int start_type, int end_type)
+{
+  return add_main_loop(e,new RenderMSFiles(e,ev,p,mat,url,start_type,end_type));
+}
+GameApi::ML GameApi::MatricesApi::render_ms_files2(GameApi::EveryApi &ev, std::vector<P> p, std::vector<MT> mat, std::string url, int start_type, int end_type)
+{
+  return add_main_loop(e,new RenderMSFiles2(e,ev,p,mat,url,start_type,end_type));
+}
+
+
+
 class MS_array : public MatrixArray
 {
 public:

@@ -3499,6 +3499,9 @@ class MatricesApi
 {
 public:
   MatricesApi(Env &e) :e(e) { }
+  IMPORT MS ms_file(std::string url, int use_type);
+  IMPORT ML render_ms_files(EveryApi &ev, std::vector<P> p, MT mat, std::string url, int start_type, int end_type);
+  IMPORT ML render_ms_files2(EveryApi &ev, std::vector<P> p, std::vector<MT> mat, std::string url, int start_type, int end_type);
   IMPORT MS interpolate(MS start, MS end, float val);
   IMPORT MS inverse_ms(MS ms);
   IMPORT MS from_points(PTS pts);
