@@ -655,6 +655,7 @@ public:
     set_pos(p2);
     shift=false;
     ctrl=false;
+    altgr=false;
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -713,37 +714,43 @@ public:
       g_low->sdl->SDL_SetClipboardText(label.c_str());
       changed=true;
     }
+    //std::cout << "PART1:" << (int)ch << "==" << (char)ch << std::endl;
     if (shift) { 
 #ifdef EMSCRIPTEN
-      const char *chars1 = "";
-      const char *chars2 = "";
+      const unsigned char *chars1 = (unsigned char*)"";
+      const unsigned char *chars2 = (unsigned char*)"";
 #else
-      const char *chars1 = "abcdefghijklmnopqrstuvwxyz13567890+',.-";
-      const char *chars2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&/()=?*;:_";
+      const unsigned char *chars1 = (unsigned char*)"abcdefghijklmnopqrstuvwxyz13567890+',.-";
+      const unsigned char *chars2 = (unsigned char*)"ABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&/()=?*;:_";
 #endif
-      int s = strlen(chars1);
+      int s = strlen((const char*)chars1);
       for(int i=0;i<s;i++)
 	{
-	  if (ch == chars1[i]) ch=chars2[i];
+	  if (ch == chars1[i]) ch=(unsigned char)(chars2[i]);
 	}
       if (ch==45) ch='_';
       //ch = std::toupper(ch); 
     }
+    //std::cout << "PART2:" << (int)ch << "==" << (char)ch << std::endl;
 
-    if (altgr) { 
+    if (altgr) {
 #ifdef EMSCRIPTEN
-      const char *chars1 = "";
-      const char *chars2 = "";
+      const unsigned char *chars1 = (unsigned char*)"";
+      const unsigned char *chars2 = (unsigned char*)"";
 #else
-      const char *chars1 = "0235789+'";
-      const char *chars2 = "}@£${[]\\¸";
+      const unsigned char *chars1 = (unsigned char*)"024789+'3";
+      const unsigned char *chars2 = (unsigned char*)"}@${[]\\¸£";
 #endif
-      int s = strlen(chars1);
+      int s = strlen((const char*)chars1);
       for(int i=0;i<s;i++)
 	{
-	  if (ch == chars1[i]) ch=chars2[i];
+	  if (ch == chars1[i]) {
+	    ch=(unsigned char)(chars2[i]);
+	    break;
+	  }
 	}
     }
+    //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
 
     
     if (active && type==768 && !changed)
@@ -758,13 +765,14 @@ public:
 		break;
 	      }
 	  }
+	if (!changed) {
 	if ((ch==8 ||ch==42) && label.size()>0)
 	  {
 	    label.erase(label.begin()+(label.size()-1));
 	    changed = true;
 	  }
+	}
       }
-
     // note, spaces are not allowed.
     if (active) {
       //std::cout << "EDITOR UPDATES: " << label << std::endl;
