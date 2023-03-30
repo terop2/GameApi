@@ -675,6 +675,8 @@ public:
     if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; }
     if (type==768 && (ch==1073742048||ch==1073742052)) { ctrl = true; }
     if (type==769 && (ch==1073742048||ch==1073742052)) { ctrl = false; }
+    if (type==768 && (ch==1073742054)) { altgr=true; }
+    if (type==769 && (ch==1073742054)) { altgr=false; }
 
     if (firsttime)
       {
@@ -727,6 +729,23 @@ public:
       if (ch==45) ch='_';
       //ch = std::toupper(ch); 
     }
+
+    if (altgr) { 
+#ifdef EMSCRIPTEN
+      const char *chars1 = "";
+      const char *chars2 = "";
+#else
+      const char *chars1 = "0235789+'";
+      const char *chars2 = "}@£${[]\\¸";
+#endif
+      int s = strlen(chars1);
+      for(int i=0;i<s;i++)
+	{
+	  if (ch == chars1[i]) ch=chars2[i];
+	}
+    }
+
+    
     if (active && type==768 && !changed)
       {
 	int s = allowed_chars.size();
@@ -805,6 +824,7 @@ private:
   int x_gap;
   bool shift;
   bool ctrl;
+  bool altgr;
   bool externally_set=false;
 };
 
