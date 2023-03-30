@@ -37,7 +37,7 @@
 // 1) GameApi_h.hh
 // 2) Main.cc
 // 3) Shader.cc
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 
 #ifdef RASPI
 #define OPENGL_ES 1
@@ -635,17 +635,19 @@ ShaderFile::ShaderFile(std::string filename)
 #endif 
 //#define OLD_SHADER 1
 
-ShaderFile::ShaderFile()
+std::string get_uber_shader(bool oldshader, bool webgl2, bool emscripten, bool apple)
 {
-#ifdef OLD_SHADER
-  std::string s =
-"//V: comb\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "#extension GL_ARB_gpu_shader5 : enable\n"
+  std::string s = "";
+  
+  if (oldshader) {
+    s+="//V: comb\n";
+    if (webgl2) {
+      s+="#version 300 es\n";
+    } else {
+      s+="#version 100\n";
+    }
+   
+    s+="#extension GL_ARB_gpu_shader5 : enable\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
     "precision highp float;\n"
 "uniform mat4 in_P;\n"
@@ -693,10 +695,7 @@ VARYING_OUT " vec3 ex_Normal2;\n"
 "#ifdef EX_LIGHTPOS2\n"
 VARYING_OUT " vec3 ex_LightPos2;\n"
     "#endif\n"
-#if 0
-"varying vec3 ex_Normal3;\n"
-"varying vec3 ex_LightPos3;\n"
-#endif
+
 "#ifdef VERTEX_LEVELS\n"
 "uniform vec4 level1_color;\n"
 "uniform vec4 level2_color;\n"
@@ -978,20 +977,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "#endif\n"
 
     
-    /*
-"#ifdef EX_TEXCOORD\n"
-"#ifdef IN_TEXCOORD\n"
-"in float in_object_id;\n"
-"out float object_id;\n"
-"vec4 objectids(vec4 pos)\n"
-"{\n"
-"  ex_TexCoord = in_TexCoord;\n"
-"  object_id = in_object_id;\n"
-    "  return pos;\n"
-"}\n"
-"#endif\n"
-"#endif\n"
-    */
+
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
 "vec4 manytextures(vec4 pos)\n"
@@ -1328,13 +1314,14 @@ VARYING_OUT " vec3 eye;\n"
 "//C:\n"
 "}\n"
 "\n"
-"//V: empty\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "uniform mat4 in_P;\n"
+      "//V: empty\n";
+    if (webgl2) {
+      s+="#version 300 es\n";
+    } else {
+      s+="#version 100\n";
+    }
+    
+    s+="uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
 ATTRIBUTE " vec3 in_Position;\n"
@@ -1345,33 +1332,35 @@ ATTRIBUTE " vec3 in_Position;\n"
 "  gl_Position = v;\n"
 "}\n"
 "\n"
-"//F: comb\n"
-#ifdef EMSCRIPTEN
-"#version 300 es\n"
-#else
-"#version 100\n"
-#endif
-
-#ifndef EMSCRIPTEN
-#ifndef __APPLE__
-"#ifdef TEXTURE_ARRAY\n"
+      "//F: comb\n";
+    if (emscripten) {
+      s+="#version 300 es\n";
+    } else {
+      s+="#version 100\n";
+    }
+    if (!emscripten) {
+      if (!apple) {
+s+="#ifdef TEXTURE_ARRAY\n"
 "#extension GL_EXT_texture_array : enable\n"
-"#endif\n"
-#endif
-#endif
-"#ifdef GLTF\n"
-#ifdef WEBGL2
-#else
-    "#extension GL_OES_standard_derivatives : enable\n"
-"#extension GL_NV_shadow_samplers_cube : enable\n"
-#endif
-"#endif\n"
-"precision highp float;\n"
-#ifdef WEBGL2
-    "out vec4 out_Color;\n"
-#endif
+  "#endif\n";
+      }
+      
+    }
 
-    "uniform float time;\n"
+    s+="#ifdef GLTF\n";
+    if (webgl2) {
+    } else {
+   s+= "#extension GL_OES_standard_derivatives : enable\n"
+     "#extension GL_NV_shadow_samplers_cube : enable\n";
+    }
+    
+s+="#endif\n"
+  "precision highp float;\n";
+ if (webgl2) {
+   s+="out vec4 out_Color;\n";
+ }
+
+    s+="uniform float time;\n"
 VARYING_IN " vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
     //"out vec4 out_Color;\n"
@@ -1394,11 +1383,7 @@ VARYING_IN " vec3 ex_Normal2;\n"
 "#ifdef EX_LIGHTPOS2\n"
 VARYING_IN " vec3 ex_LightPos2;\n"
     "#endif\n"
-#if 0
-"varying vec3 ex_Normal3;\n"
-"varying vec3 ex_LightPos3;\n"
-"uniform vec3 light_dir;\n"
-#endif
+
 "#ifdef COLOR_ARRAY\n"
 "uniform vec4 color_array[10];\n"
 "#endif\n"
@@ -1416,15 +1401,15 @@ VARYING_IN " vec3 ex_LightPos2;\n"
 "uniform float hilight;\n"	  
 
     "uniform sampler2D tex;\n"
-"uniform sampler2D in_txid;\n"
-#ifndef EMSCRIPTEN
-#ifndef __APPLE__
-"#ifdef TEXTURE_ARRAY\n"
+      "uniform sampler2D in_txid;\n";
+    if (!emscripten) {
+      if (!apple) {
+s+="#ifdef TEXTURE_ARRAY\n"
 "uniform sampler2DArray texarr;\n"
-"#endif\n"
-#endif
-#endif
-"#ifdef SPECULAR_SIZE\n"
+  "#endif\n";
+      }
+    }
+s+="#ifdef SPECULAR_SIZE\n"
 "uniform float specular_size;\n"
 "#endif\n"
 "#ifdef COLOR_MIX\n"
@@ -1535,13 +1520,13 @@ VARYING_IN " vec3 ex_LightPos2;\n"
     //"    tx_y=clamp(tx_y,-1.0,1.0);\n"
     //"    vec2 tx = vec2(tx_x/2.0+1.0,tx_y/2.0+1.0);\n"
     "vec2 tx=vec2(1.0-((tx_x+1.0)/2.0),(tx_y+1.0)/2.0);\n"
-"    tx=clamp(tx,vec2(0.0,0.0),vec2(1.0,1.0));\n"
-#ifdef WEBGL2
-    "    float d;\n"
+  "    tx=clamp(tx,vec2(0.0,0.0),vec2(1.0,1.0));\n";
+ if (webgl2) {
+   s+= "    float d;\n"
     "if (texindex==0)\n"
-    "       d = texture(texsampler[0] /*in_txid*/,tx).r*800.0;\n"
-#if 0
-    "if (texindex==1)\n"
+     "       d = texture(texsampler[0] /*in_txid*/,tx).r*800.0;\n";
+   if (0) {
+   s+= "if (texindex==1)\n"
     "       d = texture(texsampler[1] /*in_txid*/,tx).r*800.0;\n"
     "if (texindex==2)\n"
     "       d = texture(texsampler[2] /*in_txid*/,tx).r*800.0;\n"
@@ -1572,14 +1557,15 @@ VARYING_IN " vec3 ex_LightPos2;\n"
     "if (texindex==15)\n"
     "       d = texture(texsampler[15] /*in_txid*/,tx).r*800.0;\n"
     "if (texindex==16)\n"
-    "       d = texture(texsampler[16] /*in_txid*/,tx).r*800.0;\n"
-#endif    
-#else
-    "    float d;\n"
+     "       d = texture(texsampler[16] /*in_txid*/,tx).r*800.0;\n";
+   }
+ } else { // !webgl2
+ 
+    s+="    float d;\n"
     "if (texindex==0)\n"
-    " d= texture2D(texsampler[0] /*in_txid*/,tx).r*800.0;\n"
-#if 0
-    "if (texindex==1)\n"
+      " d= texture2D(texsampler[0] /*in_txid*/,tx).r*800.0;\n";
+    if (0) {
+   s+= "if (texindex==1)\n"
     " d= texture2D(texsampler[1] /*in_txid*/,tx).r*800.0;\n"
 
     "if (texindex==2)\n"
@@ -1609,10 +1595,11 @@ VARYING_IN " vec3 ex_LightPos2;\n"
     "if (texindex==14)\n"
     " d= texture2D(texsampler[14] /*in_txid*/,tx).r*800.0;\n"
     "if (texindex==15)\n"
-    " d= texture2D(texsampler[15] /*in_txid*/,tx).r*800.0;\n"
-#endif
-#endif
-"    float d2 = length(pos - (in_pp + tx_x*(in_dx) + tx_y*(in_dy)));\n"
+     " d= texture2D(texsampler[15] /*in_txid*/,tx).r*800.0;\n";
+    }
+ }
+
+ s+="    float d2 = length(pos - (in_pp + tx_x*(in_dx) + tx_y*(in_dy)));\n"
     "   d2=clamp(d2,0.0,800.0);\n"
 "    bool shade = d2 < d;\n"
 "    float level;\n"
@@ -1766,12 +1753,13 @@ VARYING_IN " vec3 eye;\n"
 "vec4 bump_phong(vec4 rgb)\n"
     "{\n"
     "    vec3 c = vec3(0.0,0.0,0.0);\n"
-    "    vec3 n = ex_Normal2;\n"
-#ifdef WEBGL2
-    "    vec3 n2 = texture(texsampler[0],ex_TexCoord.xy).rgb;\n"
-#else
-    "    vec3 n2 = texture2D(texsampler[0],ex_TexCoord.xy).rgb;\n"
-#endif
+   "    vec3 n = ex_Normal2;\n";
+ if (webgl2) {
+   s+="    vec3 n2 = texture(texsampler[0],ex_TexCoord.xy).rgb;\n";
+ } else {
+   s+=   "    vec3 n2 = texture2D(texsampler[0],ex_TexCoord.xy).rgb;\n";
+ }
+ s+=
     "    n2-=vec3(0.5,0.5,0.5);\n"
     "    n2*=2.0;\n"
     "    vec3 normal=normalmix(n,n2);\n"
@@ -1824,9 +1812,9 @@ VARYING_IN " vec2 shadow_position;\n"
 "vec4 shadow(vec4 rgb)\n"
 "{\n"
 "   vec2 f = shadow_position;\n"
-"   vec4 tx = vec4(0.0,0.0,0.0,0.0);\n"
-#ifdef WEBGL2
-"   if (shadow_tex<0.7) tx=texture(texsampler[0],f); else\n"
+   "   vec4 tx = vec4(0.0,0.0,0.0,0.0);\n";
+ if (webgl2) {
+s+="   if (shadow_tex<0.7) tx=texture(texsampler[0],f); else\n"
 "   if (shadow_tex<1.7) tx=texture(texsampler[1],f); else\n"
 "   if (shadow_tex<2.7) tx=texture(texsampler[2],f); else\n"
 "   if (shadow_tex<3.7) tx=texture(texsampler[3],f); else\n"
@@ -1840,9 +1828,9 @@ VARYING_IN " vec2 shadow_position;\n"
 "   if (shadow_tex<11.7) tx=texture(texsampler[11],f); else\n"
 "   if (shadow_tex<12.7) tx=texture(texsampler[12],f); else\n"
 "   if (shadow_tex<13.7) tx=texture(texsampler[13],f); else\n"
-    "     tx=texture(texsampler[14],f);\n"
-#else
-"   if (shadow_tex<0.7) tx=texture2D(texsampler[0],f); else\n"
+  "     tx=texture(texsampler[14],f);\n";
+ } else {
+s+="   if (shadow_tex<0.7) tx=texture2D(texsampler[0],f); else\n"
 "   if (shadow_tex<1.7) tx=texture2D(texsampler[1],f); else\n"
 "   if (shadow_tex<2.7) tx=texture2D(texsampler[2],f); else\n"
 "   if (shadow_tex<3.7) tx=texture2D(texsampler[3],f); else\n"
@@ -1856,9 +1844,10 @@ VARYING_IN " vec2 shadow_position;\n"
 "   if (shadow_tex<11.7) tx=texture2D(texsampler[11],f); else\n"
 "   if (shadow_tex<12.7) tx=texture2D(texsampler[12],f); else\n"
 "   if (shadow_tex<13.7) tx=texture2D(texsampler[13],f); else\n"
-    "     tx=texture2D(texsampler[14],f);\n"
-#endif
-    "   float alpha = tx.r;\n"
+  "     tx=texture2D(texsampler[14],f);\n";
+  }
+
+ s+=   "   float alpha = tx.r;\n"
 "   float visibility = 1.0;\n"
 "   if (alpha>0.5) visibility = 0.5;\n"
 "   rgb = shadow_dark+visibility*rgb;\n"
@@ -2066,22 +2055,21 @@ VARYING_IN " float fog_intensity;\n"
 "  vec2 t_my = ex_TexCoord.xy + vec2(0.0,-0.005);\n"
 "  vec2 t_px = ex_TexCoord.xy + vec2(0.005,0.0);\n"
 "  vec2 t_py = ex_TexCoord.xy + vec2(0.0,0.005);\n"
-"\n"
-#ifdef WEBGL2
-    "   vec4 tex2 = texture(tex, ex_TexCoord.xy);\n"
+   "\n";
+ if (webgl2) {
+  s+=  "   vec4 tex2 = texture(tex, ex_TexCoord.xy);\n"
     "   vec4 tex_mx = texture(tex, t_mx);	\n"
 "   vec4 tex_my = texture(tex, t_my);	\n"
 "   vec4 tex_px = texture(tex, t_px);	\n"
-"   vec4 tex_py = texture(tex, t_py);\n"
-#else
-    "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
+    "   vec4 tex_py = texture(tex, t_py);\n";
+ } else {
+  s+=  "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
     "   vec4 tex_mx = texture2D(tex, t_mx);	\n"
 "   vec4 tex_my = texture2D(tex, t_my);	\n"
 "   vec4 tex_px = texture2D(tex, t_px);	\n"
-"   vec4 tex_py = texture2D(tex, t_py);\n"
-#endif
-
-"   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
+    "   vec4 tex_py = texture2D(tex, t_py);\n";
+    }
+s+= "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "   vec4 t2 = mix(tex_my, tex_py, 0.5);\n"
 "   vec4 t12 = mix(t1,t2,0.5);\n"
 "   vec4 t12t = mix(t12,tex2,0.5);\n"   	
@@ -2156,13 +2144,13 @@ VARYING_IN " float fog_intensity;\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef COLOR_MIX\n"
 "vec4 texture_impl(vec4 rgb)\n"
-"{\n"
-#ifdef WEBGL2
-    "   vec4 t = texture(tex, ex_TexCoord.xy);\n"
-#else
-    "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
-#endif
-    "   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
+  "{\n";
+ if (webgl2) {
+   s+=  "   vec4 t = texture(tex, ex_TexCoord.xy);\n";
+ } else {
+   s+=  "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n";
+ }
+ s+=   "   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
     //"   return vec4(mix(rgb.rgb, texture2D(tex, ex_TexCoord.xy).rgb, color_mix),1.0);\n"
 "}\n"
 "#endif\n"
@@ -2170,13 +2158,13 @@ VARYING_IN " float fog_intensity;\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef CUBEMAPTEXTURES\n"
 "vec4 cubemaptextures(vec4 rgb)\n"
-"{\n"
-#ifdef WEBGL2
-    "  vec4 tex = texture(cubesampler,ex_TexCoord.xyz);\n"
-#else
-    "  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n"
-#endif
-    "  return mix(vec4(0.0,0.0,0.0,1.0),rgb, color_mix)+mix(vec4(0.0,0.0,0.0,1.0),tex,color_mix2);\n"
+   "{\n";
+ if (webgl2) {
+   s+=  "  vec4 tex = texture(cubesampler,ex_TexCoord.xyz);\n";
+ } else {
+   s+=   "  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n";
+ }
+s+=    "  return mix(vec4(0.0,0.0,0.0,1.0),rgb, color_mix)+mix(vec4(0.0,0.0,0.0,1.0),tex,color_mix2);\n"
 "}\n"
 "#endif\n"
 "#endif\n"
@@ -2224,9 +2212,9 @@ VARYING_IN " float fog_intensity;\n"
     "#ifdef EX_TEXCOORD\n"
 "#ifdef MANYTEXTURES\n"
 "vec4 manytextures(vec4 rgb)\n"
-"{\n"
-#ifdef WEBGL2
-    "  if (ex_TexCoord.z<0.7)\n"
+  "{\n";
+ if (webgl2) {
+  s+=  "  if (ex_TexCoord.z<0.7)\n"
 "  { vec4 t = texture(texsampler[0],ex_TexCoord.xy);\n"
     //"    if (t.a<0.5) discard;\n"
     "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
@@ -2298,10 +2286,10 @@ VARYING_IN " float fog_intensity;\n"
 "  if (ex_TexCoord.z<14.7)\n"
 "  { vec4 t = texture(texsampler[14],ex_TexCoord.xy);\n"
     //"    if (t.a<0.5) discard;\n"
-"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
-    //"  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n"
-#else
-    "  if (ex_TexCoord.z<0.7)\n"
+    "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n";
+    //"  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n";
+    } else {
+s+=    "  if (ex_TexCoord.z<0.7)\n"
 "  { vec4 t = texture2D(texsampler[0],ex_TexCoord.xy);\n"
     //"    if (t.a<0.5) discard;\n"
     "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
@@ -2373,10 +2361,11 @@ VARYING_IN " float fog_intensity;\n"
 "  if (ex_TexCoord.z<14.7)\n"
 "  { vec4 t = texture2D(texsampler[14],ex_TexCoord.xy);\n"
     //"    if (t.a<0.5) discard;\n"
-"  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n"
-    //"  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n"
-#endif
-    "}\n"
+  "  return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a); }\n";
+    //"  return mix(rgb, texture2D(texsampler[14],ex_TexCoord.xy), color_mix);\n";
+  }
+
+s+=    "}\n"
 "#endif\n"
 "#endif\n"
 "const float GAMMA=2.2;\n"
@@ -2432,17 +2421,17 @@ VARYING_IN " float fog_intensity;\n"
 "{\n"
 "   float NdotV = clamp(dot(n,v), 0.0, 1.0);\n"
 "   vec3 ref = normalize(reflect(-v,n));\n"
-"   vec2 bfrdsample = clamp(vec2(NdotV, info.perceptualRoughness), vec2(0.0,0.0), vec2(1.0,1.0));\n"
-#ifdef WEBGL2
-"   vec2 bfrd = texture(texsampler[7], bfrdsample).rg;\n"
+  "   vec2 bfrdsample = clamp(vec2(NdotV, info.perceptualRoughness), vec2(0.0,0.0), vec2(1.0,1.0));\n";
+ if (webgl2) {
+s+="   vec2 bfrd = texture(texsampler[7], bfrdsample).rg;\n"
     "   vec4 diff = texture(texsampler_cube[5], n);\n"
-"   vec4 spec = texture(texsampler_cube[6], ref);\n"
-#else
-"   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
+  "   vec4 spec = texture(texsampler_cube[6], ref);\n";
+ } else {
+s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
     "   vec4 diff = textureCube(texsampler_cube[5], n);\n"
-"   vec4 spec = textureCube(texsampler_cube[6], ref);\n"
-#endif
-"   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
+  "   vec4 spec = textureCube(texsampler_cube[6], ref);\n";
+ }
+s+="   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
 "   vec3 specLight = SRGBtoLINEAR(spec).rgb;\n"
     "   vec3 diffuse = diffLight * info.diffuseColor;\n"
     "   vec3 specular = specLight * (info.specularColor * bfrd.x + bfrd.y);\n"
@@ -2469,13 +2458,13 @@ VARYING_IN " float fog_intensity;\n"
 "   t = normalize(t-ng*dot(ng,t));\n"
 "   vec3 b = normalize(cross(ng,t));\n"
 "   mat3 tbn = mat3(t,b,ng);\n"
-"#ifdef GLTF_TEX2\n"
-#ifdef WEBGL2
-    "   vec3 n = texture(texsampler[2], uv).rgb;\n"
-#else
-    "   vec3 n = texture2D(texsampler[2], uv).rgb;\n"
-#endif
-    "   n = normalize(tbn*((2.0*n-1.0) * vec3(u_NormalScale,u_NormalScale,1.0)));\n"
+  "#ifdef GLTF_TEX2\n";
+ if (webgl2) {
+   s+=  "   vec3 n = texture(texsampler[2], uv).rgb;\n";
+ } else {
+   s+=  "   vec3 n = texture2D(texsampler[2], uv).rgb;\n";
+ }
+  s+=  "   n = normalize(tbn*((2.0*n-1.0) * vec3(u_NormalScale,u_NormalScale,1.0)));\n"
 "   return n;\n"
 "#endif\n"
 "   return normalize(ex_Normal);\n"
@@ -2537,27 +2526,26 @@ VARYING_IN " float fog_intensity;\n"
 "vec3 f0 =vec3(0.04);\n"
 "float specAlpha=1.0;\n"
 "#ifndef SPEC\n"
-"#ifdef GLTF_TEX1\n"
-#ifdef WEBGL2
-    "  vec4 mrSample = texture(texsampler[1],ex_TexCoord.xy);\n"
-#else
-    "  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
-#endif
-    "  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
+    "#ifdef GLTF_TEX1\n";
+  if (webgl2) {
+    s+=  "  vec4 mrSample = texture(texsampler[1],ex_TexCoord.xy);\n";
+  } else {
+    s+=  "  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n";
+  }
+  s+= "  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
 "  metallic = mrSample.b * u_MetallicFactor;\n"
 "#endif\n"
     "#ifndef GLTF_TEX1\n"
     "  metallic = u_MetallicFactor;\n"
     "  perceptualRoughness = u_RoughnessFactor;\n"
     "#endif\n"
-"#ifdef GLTF_TEX0\n"
-#ifdef WEBGL2
-    "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
-#else
-    "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
-#endif
-    
-    "#endif\n"
+    "#ifdef GLTF_TEX0\n";
+  if (webgl2) {
+    s+=  "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n";
+  } else {
+    s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n";
+  }
+  s+="#endif\n"
     "#endif\n"
 
     "#ifndef GLTF_TEX0\n"
@@ -2568,13 +2556,14 @@ VARYING_IN " float fog_intensity;\n"
 "#ifdef SPEC\n"
 
 
-"#ifdef GLTF_TEX0\n"
-#ifdef WEBGL2
-    "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy))* vec4(u_SpecFactor,1.0);\n"
-#else
-    "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * vec4(u_SpecFactor,1.0);\n"
-#endif
-    " perceptualRoughness = 1.0-u_GlossiFactor;\n" 
+    "#ifdef GLTF_TEX0\n";
+  if (webgl2) {
+    s+=  "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy))* vec4(u_SpecFactor,1.0);\n";
+  } else {
+    s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * vec4(u_SpecFactor,1.0);\n";
+  }
+
+s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n" 
     
     "#endif\n"
 
@@ -2585,13 +2574,13 @@ VARYING_IN " float fog_intensity;\n"
 
     //"baseColor= clamp(baseColor,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
     
-    "#ifdef GLTF_TEX1\n"
-#ifdef WEBGL2
-    "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n"
-#else
-    "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n"
-#endif
-    "mrSample2.r *= u_DiffFactor.r;\n"
+  "#ifdef GLTF_TEX1\n";
+ if (webgl2) {
+   s+= "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n";
+ } else {
+   s+=  "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n";
+ }
+  s+=  "mrSample2.r *= u_DiffFactor.r;\n"
     "mrSample2.g *= u_DiffFactor.g;\n"
     "mrSample2.b *= u_DiffFactor.b;\n"
 
@@ -2678,27 +2667,28 @@ VARYING_IN " float fog_intensity;\n"
     // TODO LIGHTS
 "   float ao=1.0;\n"
     //"#ifndef SPEC\n"
-    "#ifdef GLTF_TEX3\n"
-#ifdef WEBGL2
-"   ao = texture(texsampler[3], ex_TexCoord.xy).r;\n"
-#else
-"   ao = texture2D(texsampler[3], ex_TexCoord.xy).r;\n"
-#endif
-    "   color = mix(color, color*ao, u_OcculsionStrength);\n"
+    "#ifdef GLTF_TEX3\n";
+  if (webgl2) {
+    s+="   ao = texture(texsampler[3], ex_TexCoord.xy).r;\n";
+  } else {
+    s+="   ao = texture2D(texsampler[3], ex_TexCoord.xy).r;\n";
+  }
+s+=    "   color = mix(color, color*ao, u_OcculsionStrength);\n"
 "#endif\n"
     //"#endif\n"
 "   vec3 emissive = vec3(0);\n"
 
     
     //"#ifndef SPEC\n"
-"#ifdef GLTF_TEX4\n"
-#ifdef WEBGL2
-"   emissive = SRGBtoLINEAR(texture(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor2;\n"
-#else
-"   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor2;\n"
-#endif
+  "#ifdef GLTF_TEX4\n";
+ if (webgl2) {
 
-   "  vec3 emi = vec3(1.0)-color;\n"
+   s+="   emissive = SRGBtoLINEAR(texture(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor2;\n";
+ } else {
+   s+="   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor2;\n";
+ }
+
+s+=   "  vec3 emi = vec3(1.0)-color;\n"
    "  emi*=emissive;\n"
 "  color+=emi;\n"
 
@@ -2744,21 +2734,22 @@ VARYING_IN " float fog_intensity;\n"
 "#ifdef TEXTURE_ARRAY\n"
 "#ifdef COLOR_MIX\n"
 "vec4 texture_arr(vec4 rgb)\n"
-"{\n"
-#ifdef EMSCRIPTEN
-"   return rgb;\n"
-#else
-#ifndef __APPLE__
-#ifdef WEBGL2
-    "   return mix(rgb, textureArray(texarr, ex_TexCoord), color_mix);\n"
-#else
-    "   return mix(rgb, texture2DArray(texarr, ex_TexCoord), color_mix);\n"
-#endif
-#else
-"   return rgb;\n"
-#endif
-#endif
-"}\n"
+  "{\n";
+ if (emscripten) {
+   s+="   return rgb;\n";
+ } else {
+   if (!apple) {
+     if (webgl2) {
+       s+=  "   return mix(rgb, textureArray(texarr, ex_TexCoord), color_mix);\n";
+     } else {
+       s+="   return mix(rgb, texture2DArray(texarr, ex_TexCoord), color_mix);\n";
+     }
+   } else { // apple
+     s+="   return rgb;\n";
+   }
+ } // emscripten
+s+=
+ "}\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
@@ -2795,13 +2786,14 @@ VARYING_IN " float fog_intensity;\n"
 "{\n"
 "//C:\n"
 "}\n"
-"//V: screen\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "precision highp float;\n"
+  "//V: screen\n";
+ if (webgl2) {
+   s+=
+     "#version 300 es\n";
+ } else {
+   s+=  "#version 100\n";
+ }
+ s+= "precision highp float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -2815,13 +2807,13 @@ VARYING_IN " vec2 XY;\n"
 "  XY = in_Normal.xy;\n"
 "  gl_Position = in_P * in_T * in_MV *vec4(in_Position,1.0);\n"
 "}\n"
-"//F: screen\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "precision highp float;\n"
+   "//F: screen\n";
+ if (webgl2) {
+   s+=   "#version 300 es\n";
+ } else {
+   s+=   "#version 100\n";
+ }
+s+="precision highp float;\n"
 VARYING_IN " vec2 XY;\n"
 
     "uniform float time;\n"
@@ -2851,13 +2843,13 @@ VARYING_IN " vec2 XY;\n"
 "  mainImage(color, XY);\n"
 "  gl_FragColor = color;\n"
 "}\n"
-"//V: colour\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-"/*layout(location=0)*/ " ATTRIBUTE " vec3 in_Position;\n"
+  "//V: colour\n";
+ if (webgl2) {
+   s+="#version 300 es\n";
+ } else {
+   s+=   "#version 100\n";
+ }
+s+="/*layout(location=0)*/ " ATTRIBUTE " vec3 in_Position;\n"
 "/*layout(location=1)*/ " ATTRIBUTE " vec3 in_Normal;\n"
 "/*layout(location=2)*/ " ATTRIBUTE " vec3 in_Color;\n"
 "/*layout(location=3)*/ " ATTRIBUTE " vec3 in_TexCoord;\n"
@@ -2871,13 +2863,13 @@ VARYING_OUT " vec3 ex_Color;\n"
 "   gl_Position = in_P * in_T * in_MV * vec4(in_Position,1.0);\n"
 "   ex_Color = in_Color;\n"
 "}\n"
-"//F: colour\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "precision highp float;\n"
+  "//F: colour\n";
+ if (webgl2) {
+   s+=  "#version 300 es\n";
+ } else {
+   s+=  "#version 100\n";
+ }
+ s+=   "precision highp float;\n"
 VARYING_IN " vec3 ex_Color;\n"
     "//T:\n"
 "void main(void)\n"
@@ -2885,13 +2877,13 @@ VARYING_IN " vec3 ex_Color;\n"
 "   gl_FragColor = vec4(ex_Color,1.0);\n"
 "}\n"
 "\n"
-"//F: empty\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "precision highp float;\n" 
+   "//F: empty\n";
+ if (webgl2) {
+   s+=    "#version 300 es\n";
+ } else {
+   s+=   "#version 100\n";
+ }
+s+=    "precision highp float;\n" 
 VARYING_IN " vec3 ex_Color;\n"
     "//T:\n"
 "void main(void)\n"
@@ -2899,13 +2891,13 @@ VARYING_IN " vec3 ex_Color;\n"
 "   gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n"
 "}\n"
 "\n"
-"//V: texture\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "/*layout(location=0)*/ in vec3 in_Position;\n"
+  "//V: texture\n";
+ if (webgl2) {
+   s+=  "#version 300 es\n";
+ } else {
+   s+="#version 100\n";
+ }
+ s+=   "/*layout(location=0)*/ in vec3 in_Position;\n"
 "/*layout(location=1)*/ in vec3 in_Normal;\n"
 "/*layout(location=2)*/ in vec3 in_Color;\n"
 "/*layout(location=3)*/ in vec3 in_TexCoord;\n"
@@ -2919,35 +2911,34 @@ VARYING_IN " vec3 ex_Color;\n"
 "   gl_Position = in_P * in_T * in_MV *  vec4(in_Position,1.0);\n"
 "   ex_TexCoord = in_TexCoord;\n"
 "}\n"
-"//F: texture\n"
-#ifdef WEBGL2
-    "#version 300 es\n"
-#else
-    "#version 100\n"
-#endif
-    "//precision highp float;\n"
+   "//F: texture\n";
+ if (webgl2) {
+   s+=  "#version 300 es\n";
+ } else {
+   s+="#version 100\n";
+ }
+ s+=   "//precision highp float;\n"
 "uniform sampler2D tex;\n"
 ATTRIBUTE " vec3 ex_TexCoord;\n"
     //" vec4 out_Color;\n"
 "//T:\n"
 "void main(void)\n"
-"{\n"
-#ifdef WEBGL2
-    "   out_Color = texture(tex, ex_TexCoord.xy);\n"
-#else
-    "   gl_FragColor = texture2D(tex, ex_TexCoord.xy);\n"
-#endif
-    "}\n";
-#else
-  std::string s =
-"//V: comb\n"
-#ifdef EMSCRIPTEN
-"#version 300 es\n"
-#else
+   "{\n";
+ if (webgl2) {
+   s+=   "   out_Color = texture(tex, ex_TexCoord.xy);\n";
+ } else {
+   s+=   "   gl_FragColor = texture2D(tex, ex_TexCoord.xy);\n";
+ }
+ s+=  "}\n";
+  } else { // OLDSHADER
+    s+="//V: comb\n";
+    if (emscripten) {
+      s+="#version 300 es\n";
+    } else {
     //"#version 330\n"
-    "#version 460\n"
-#endif
-"precision highp float;\n"
+      s+="#version 460\n";
+    }
+s+="precision highp float;\n"
     //   "uniform float globe_r;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
@@ -2998,10 +2989,6 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#ifdef EX_LIGHTPOS2\n"
 "out vec3 ex_LightPos2;\n"
 "#endif\n"
-#if 0
-"out vec3 ex_Normal3;\n"
-"out vec3 ex_LightPos3;\n"
-#endif
 "#ifdef LIGHTDIR\n"
 "in vec3 light_dir;\n"
 "#endif\n"
@@ -3614,14 +3601,14 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "//C:\n"
 "}\n"
 "\n"
-"//F: comb\n"
-#ifdef EMSCRIPTEN
-"#version 300 es\n"
-#else
+  "//F: comb\n";
+ if (emscripten) {
+   s+="#version 300 es\n";
+ } else {
     //"#version 330\n"
-    "#version 460\n"
-#endif
-"#ifdef CUBEMAPTEXTURES\n"
+   s+=   "#version 460\n";
+ }
+s+="#ifdef CUBEMAPTEXTURES\n"
 "#extension GL_NV_shadow_samplers_cube : enable\n"
 "#endif\n"
 "#ifdef GLTF\n"
@@ -3650,16 +3637,6 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#ifdef EX_LIGHTPOS2\n"
 "in vec3 ex_LightPos2;\n"
 "#endif\n"
-#if 0
-"in vec3 ex_Normal3;\n"
-"in vec3 ex_LightPos3;\n"
-#endif
-#if 0
-"uniform mat4 in_P;\n"
-"uniform mat4 in_MV;\n"
-"uniform mat4 in_T;\n"
-"uniform mat4 in_N;\n"
-#endif
 "#ifdef COLOR_ARRAY\n"
 "uniform vec4 color_array[10];\n"
 "#endif\n"
@@ -3905,22 +3882,22 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "  vec2 t_my = ex_TexCoord.xy + vec2(0.0,-0.005);\n"
 "  vec2 t_px = ex_TexCoord.xy + vec2(0.005,0.0);\n"
 "  vec2 t_py = ex_TexCoord.xy + vec2(0.0,0.005);\n"
-"\n"
-#ifdef WEBGL2
-    "   vec4 tex2 = texture(tex, ex_TexCoord.xy);\n"
+  "\n";
+ if (webgl2) {
+ s+=   "   vec4 tex2 = texture(tex, ex_TexCoord.xy);\n"
     "   vec4 tex_mx = texture(tex, t_mx);	\n"
 "   vec4 tex_my = texture(tex, t_my);	\n"
 "   vec4 tex_px = texture(tex, t_px);	\n"
-"   vec4 tex_py = texture(tex, t_py);\n"
-#else
-    "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
+   "   vec4 tex_py = texture(tex, t_py);\n";
+ } else {
+s+=    "   vec4 tex2 = texture2D(tex, ex_TexCoord.xy);\n"
     "   vec4 tex_mx = texture2D(tex, t_mx);	\n"
 "   vec4 tex_my = texture2D(tex, t_my);	\n"
 "   vec4 tex_px = texture2D(tex, t_px);	\n"
-"   vec4 tex_py = texture2D(tex, t_py);\n"
-#endif
+  "   vec4 tex_py = texture2D(tex, t_py);\n";
+ }
 
-"   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
+s+="   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "   vec4 t2 = mix(tex_my, tex_py, 0.5);\n"
 "   vec4 t12 = mix(t1,t2,0.5);\n"
 "   vec4 t12t = mix(t12,tex2,0.5);\n"   	
@@ -4048,13 +4025,14 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef CUBEMAPTEXTURES\n"
 "vec4 cubemaptextures(vec4 rgb)\n"
-"{\n"
-#ifdef WEBGL2
-    "  vec4 tex = texture(cubesampler,ex_TexCoord.xyz);\n"
-#else
-    "  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n"
-#endif
-    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0,0.0),tex.rgb,color_mix2),1.0);\n"
+  "{\n";
+ if (webgl2) {
+
+   s+=   "  vec4 tex = texture(cubesampler,ex_TexCoord.xyz);\n";
+ } else {
+   s+=  "  vec4 tex = textureCube(cubesampler,ex_TexCoord.xyz);\n";
+ }
+s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0,0.0),tex.rgb,color_mix2),1.0);\n"
     //"  return mix(vec4(0.0,0.0,0.0,1.0),rgb, color_mix)+mix(vec4(0.0,0.0,0.0,1.0),tex,color_mix2);\n"
 "}\n"
 "#endif\n"
@@ -4110,13 +4088,13 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "    vec3 pos = ex_Position;\n"
 "    float tx_x = find_projection_length(pos,in_dx);\n"
 "    float tx_y = find_projection_length(pos,in_dy);\n"
-"    vec2 tx = vec2(tx_x,tx_y);\n"
-#ifdef WEBGL2
-"    float d = texture(in_txid,tx).r;\n"
-#else
-"    float d = texture2D(in_txid,tx).r;\n"
-#endif
-"    float d2 = length(pos - (in_pos + tx_x*dx + tx_y*dy));\n"
+  "    vec2 tx = vec2(tx_x,tx_y);\n";
+ if (webgl2) {
+   s+="    float d = texture(in_txid,tx).r;\n";
+ } else {
+   s+="    float d = texture2D(in_txid,tx).r;\n";
+ }
+s+="    float d2 = length(pos - (in_pos + tx_x*dx + tx_y*dy));\n"
 "    bool shade = d2 > d;\n"
 "    float level;\n"
 "    if (shade) { level=in_NewShadowDarkLevel; }\n"
@@ -4423,17 +4401,17 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "{\n"
 "   float NdotV = clamp(dot(n,v), 0.0, 1.0);\n"
 "   vec3 ref = normalize(reflect(-v,n));\n"
-"   vec2 bfrdsample = clamp(vec2(NdotV, info.perceptualRoughness), vec2(0.0,0.0), vec2(1.0,1.0));\n"
-#ifdef WEBGL2
-"   vec2 bfrd = texture(texsampler[7], bfrdsample).rg;\n"
+  "   vec2 bfrdsample = clamp(vec2(NdotV, info.perceptualRoughness), vec2(0.0,0.0), vec2(1.0,1.0));\n";
+ if (webgl2) {
+s+="   vec2 bfrd = texture(texsampler[7], bfrdsample).rg;\n"
 "   vec4 diff = texture(texsampler_cube[5], n);\n"
-"   vec4 spec = texture(texsampler_cube[6], ref);\n"
-#else
-"   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
+  "   vec4 spec = texture(texsampler_cube[6], ref);\n";
+ } else {
+s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 "   vec4 diff = textureCube(texsampler_cube[5], n);\n"
-"   vec4 spec = textureCube(texsampler_cube[6], ref);\n"
-#endif
-    "   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
+  "   vec4 spec = textureCube(texsampler_cube[6], ref);\n";
+ }
+ s+= "   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
 "   vec3 specLight = SRGBtoLINEAR(spec).rgb;\n"
     "   vec3 diffuse = diffLight * info.diffuseColor;\n"
     "   vec3 specular = specLight * (info.specularColor * bfrd.x + bfrd.y);\n"
@@ -4553,13 +4531,13 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
     "  baseColor = u_BaseColorFactor;\n"
     "#endif\n"
     
-"#ifdef GLTF_TEX1\n"
-#ifdef WEBGL2
-    "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n"
-#else
-    "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n"
-#endif
-        "mrSample2.r *= u_DiffFactor.r;\n"
+   "#ifdef GLTF_TEX1\n";
+ if (webgl2) {
+   s+=   "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n";
+ } else {
+   s+=   "  vec4 mrSample2 = texture2D(texsampler[1],ex_TexCoord.xy);\n";
+ }
+s+=        "mrSample2.r *= u_DiffFactor.r;\n"
     "mrSample2.g *= u_DiffFactor.g;\n"
     "mrSample2.b *= u_DiffFactor.b;\n"
 
@@ -4825,8 +4803,28 @@ ATTRIBUTE " vec3 ex_TexCoord;\n"
 "{\n"
 "   out_Color = texture2D(texture, ex_TexCoord.xy);\n"
   "}\n";
-#endif
+  }
+  return s;
+}
 
+ShaderFile::ShaderFile() {
+  bool oldshader=false;
+  bool webgl2 = false;
+  bool emscripten = false;
+  bool apple = false;
+#ifdef OLD_SHADER
+  oldshader=true;
+#endif
+#ifdef WEBGL2
+  webgl2 = true;
+#endif
+#ifdef EMSCRIPTEN
+  emscripten=true;
+#endif
+#ifdef __APPLE__
+  apple=true;
+#endif
+  std::string s = get_uber_shader(oldshader, webgl2, emscripten, apple);
   std::stringstream file;
   file << s;
   std::string line;
@@ -5464,7 +5462,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+        std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5496,7 +5494,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+        std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
