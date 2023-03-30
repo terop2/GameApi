@@ -2580,7 +2580,7 @@ public:
 	  std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ ";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $";
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 8*font_scale,12*font_scale, 25*font_scale);
