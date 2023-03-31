@@ -3698,6 +3698,483 @@ GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::ve
   return ev.polygon_api.or_array2(vec);
 }
 
+class MS_split
+{
+public:
+  MS_split(Voxel<int> *vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) {
+    p = Point(start_x,start_y,start_z);
+    dx = Vector((end_x-start_x)/vx->SizeX(),0.0,0.0);
+    dy = Vector(0.0,(end_y-start_y)/vx->SizeY(),0.0);
+    dz = Vector(0.0,0.0,(end_z-start_z)/vx->SizeZ());
+
+    firsttime=true;
+  }
+
+  void Prepare() {
+    if (firsttime) {
+      x.resize(end_type-start_type);
+      y.resize(end_type-start_type);
+      z.resize(end_type-start_type);
+      int sx = vx->SizeX();
+      int sy = vx->SizeY();
+      int sz = vx->SizeZ();
+      for(int zz=0;zz<sz;zz++)
+	for(int yy=0;yy<sy;yy++)
+	  for(int xx=0;xx<sx;xx++) {
+	    int type= vx->Map(xx,yy,zz);
+	    if (type!=0) {
+	      type-=start_type;
+	      x[type].push_back(xx);
+	      y[type].push_back(yy);
+	      z[type].push_back(zz);
+	    }
+	  }
+      firsttime=false;
+    }
+  }
+  int Size(int type) const {
+    if (type>=start_type && type<end_type)
+      return x[type-start_type].size();
+    return 0;
+  }
+  Matrix Index(int type, int i) const {
+    if (type>=start_type && type<end_type) {
+      int xx = x[type-start_type][i];
+      int yy = y[type-start_type][i];
+      int zz = z[type-start_type][i];
+      Point pos = p+xx*dx+yy*dy+zz*dz;
+      return Matrix::Translate(pos.x,pos.y,pos.z);
+    }
+    return Matrix::Identity();
+  }
+private:
+  Voxel<int> *vx;
+  int start_type, end_type;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  Point p;
+  Vector dx,dy,dz;
+  std::vector<std::vector<int> > x,y,z;
+  bool firsttime;
+};
+
+class MS_split_interface : public MatrixArray
+{
+public:
+  MS_split_interface(MS_split *split, int type) : split(split), type(type) { }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  void Prepare() { HeavyPrepare(); }
+  void HeavyPrepare()
+  {
+    split->Prepare(); // this can be heavy, but isn't always.
+  }
+  int Size() const { return split->Size(type); }
+  Matrix Index(int i) const
+  {
+    return split->Index(type,i);
+  }
+private:
+  MS_split *split;
+  int type;
+};
+GameApi::MS split_interface(GameApi::Env &e, MS_split *split, int type)
+{
+  return add_matrix_array(e,new MS_split_interface(split,type));
+}
+
+
+class RenderMSFilesSI : public MainLoopItem
+{
+public:
+  RenderMSFilesSI(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, GameApi::MT mat, GameApi::VX vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : env(env), ev(ev), p(p), mat(mat), vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { scene2.id=-1; firsttime=true;}
+  ~RenderMSFilesSI() { delete split; split=0; }
+  virtual void Collect(CollectVisitor &vis) {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Collect(vis);
+    
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    if (firsttime) {
+    Voxel<int> *vxx = find_int_voxel(env,vx);
+    split = new MS_split(vxx,start_type,end_type,start_x,end_x,start_y,end_y,start_z,end_z);
+    for(int i=start_type;i<end_type;i++)
+      {
+	matrices.push_back(split_interface(env,split,i));
+      }
+    for(int i=0;i<end_type-start_type;i++)
+      {
+	GameApi::MS ms = matrices[i];
+	MatrixArray *arr = find_matrix_array(env,ms);
+	arr->Prepare();
+      }
+    for(int i=0;i<end_type-start_type;i++) {
+      scene.push_back(ev.materials_api.bind_inst_matrix(p[i],matrices[i],mat));
+    }
+    scene2 = ev.mainloop_api.array_ml(ev,scene);
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->Prepare();
+    firsttime=false;
+    }
+  }
+  virtual void Prepare() {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Prepare();
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Prepare();
+      }
+
+    HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
+
+    }
+    return std::vector<int>();
+    
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::VX vx;
+  int start_type;
+  int end_type;
+  std::vector<GameApi::P> p;
+  GameApi::MT mat;
+  std::vector<GameApi::MS> matrices;
+  std::vector<GameApi::ML> scene;
+  GameApi::ML scene2;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  MS_split *split=0;
+  bool firsttime;
+};
+GameApi::ML GameApi::MatricesApi::render_ms_files_si(GameApi::EveryApi &ev, std::vector<P> p, MT mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+
+  return add_main_loop(e, new RenderMSFilesSI(e,ev,p,mat,voxel,start_type,end_type,start_x,end_x,start_y,end_y,start_z,end_z));
+}
+
+
+class RenderMSFiles2SI : public MainLoopItem
+{
+public:
+  RenderMSFiles2SI(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, std::vector<GameApi::MT> mat, GameApi::VX vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : env(env), ev(ev), p(p), mat(mat), vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { scene2.id=-1; firsttime=true; }
+  ~RenderMSFiles2SI() { delete split; split=0; }
+  virtual void Collect(CollectVisitor &vis) {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Collect(vis);
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    if (firsttime) {
+    Voxel<int> *vxx = find_int_voxel(env,vx);
+    split = new MS_split(vxx,start_type,end_type,start_x,end_x,start_y,end_y,start_z,end_z);
+    for(int i=start_type;i<end_type;i++)
+      {
+	matrices.push_back(split_interface(env,split,i));
+      }
+
+    for(int i=0;i<end_type-start_type;i++)
+      {
+	GameApi::MS ms = matrices[i];
+	MatrixArray *arr = find_matrix_array(env,ms);
+	arr->Prepare();
+      }
+    for(int i=0;i<end_type-start_type;i++) {
+      scene.push_back(ev.materials_api.bind_inst_matrix(p[i],matrices[i],mat[i]));
+    }
+    scene2 = ev.mainloop_api.array_ml(ev,scene);
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->Prepare();
+    firsttime=false;
+    }
+  }
+  virtual void Prepare() {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Prepare();
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Prepare();
+      }
+    HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (scene2.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,scene2);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::VX vx;
+  int start_type;
+  int end_type;
+  std::vector<GameApi::P> p;
+  std::vector<GameApi::MT> mat;
+  std::vector<GameApi::MS> matrices;
+  std::vector<GameApi::ML> scene;
+  GameApi::ML scene2;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  MS_split *split=0;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::MatricesApi::render_ms_files2_si(GameApi::EveryApi &ev, std::vector<P> p, std::vector<MT> mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+
+  return add_main_loop(e, new RenderMSFiles2SI(e,ev,p,mat,voxel,start_type,end_type,start_x,end_x,start_y,end_y,start_z,end_z));
+}
+
+
+
+class MS_interface : public MatrixArray
+{
+public:
+  MS_interface(Voxel<int> *vx, int type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx),type(type) {
+    p = Point(start_x,start_y,start_z);
+    dx = Vector((end_x-start_x)/vx->SizeX(),0.0,0.0);
+    dy = Vector(0.0,(end_y-start_y)/vx->SizeY(),0.0);
+    dz = Vector(0.0,0.0,(end_z-start_z)/vx->SizeZ());
+
+    firsttime=true;
+  }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  void Prepare() { HeavyPrepare(); }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+    int sx = vx->SizeX();
+    int sy = vx->SizeY();
+    int sz = vx->SizeZ();
+    for(int zz=0;zz<sz;zz++)
+      for(int yy=0;yy<sy;yy++)
+	for(int xx=0;xx<sx;xx++)
+	  if (vx->Map(xx,yy,zz)==type)
+	    { x.push_back(xx); y.push_back(yy); z.push_back(zz); }
+    firsttime=false;
+    }
+  }
+  int Size() const { return x.size(); }
+  Matrix Index(int i) const
+  {
+    //int sx = vx->SizeX();
+    int xx = x[i];
+    int yy = y[i];
+    int zz = z[i];
+    Point pos = p+xx*dx+yy*dy+zz*dz;
+    return Matrix::Translate(pos.x,pos.y,pos.z);
+  }
+private:
+  Voxel<int> *vx;
+  int type;
+  Point p;
+  Vector dx,dy,dz;
+  std::vector<int> x,y,z;
+  bool firsttime;
+};
+GameApi::MS GameApi::MatricesApi::ms_interface(VX vox, int type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  Voxel<int> *voxel = find_int_voxel(e,vox);
+  return add_matrix_array(e, new MS_interface(voxel,type,start_x,end_x,start_y,end_y, start_z,end_z));
+}
+
+
+class RenderMSFilesI : public MainLoopItem
+{
+public:
+  RenderMSFilesI(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, GameApi::MT mat, GameApi::VX vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : env(env), ev(ev), p(p), mat(mat), vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { scene2.id=-1; }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    for(int i=start_type;i<end_type;i++)
+      {
+	matrices.push_back(ev.matrices_api.ms_interface(vx,i,start_x,end_x,start_y,end_y,start_z,end_z));
+      }
+    for(int i=0;i<end_type-start_type;i++)
+      {
+	GameApi::MS ms = matrices[i];
+	MatrixArray *arr = find_matrix_array(env,ms);
+	arr->Prepare();
+      }
+    for(int i=0;i<end_type-start_type;i++) {
+      scene.push_back(ev.materials_api.bind_inst_matrix(p[i],matrices[i],mat));
+    }
+    scene2 = ev.mainloop_api.array_ml(ev,scene);
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
+
+    }
+    return std::vector<int>();
+    
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::VX vx;
+  int start_type;
+  int end_type;
+  std::vector<GameApi::P> p;
+  GameApi::MT mat;
+  std::vector<GameApi::MS> matrices;
+  std::vector<GameApi::ML> scene;
+  GameApi::ML scene2;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+class RenderMSFiles2I : public MainLoopItem
+{
+public:
+  RenderMSFiles2I(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, std::vector<GameApi::MT> mat, GameApi::VX vx, int start_type, int end_type) : env(env), ev(ev), p(p), mat(mat), vx(vx), start_type(start_type), end_type(end_type) { scene2.id=-1; }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    for(int i=start_type;i<end_type;i++)
+      {
+	matrices.push_back(ev.matrices_api.ms_interface(vx,i,start_x,end_x,start_y,end_y,start_z,end_z));
+      }
+    for(int i=0;i<end_type-start_type;i++)
+      {
+	GameApi::MS ms = matrices[i];
+	MatrixArray *arr = find_matrix_array(env,ms);
+	arr->Prepare();
+      }
+    for(int i=0;i<end_type-start_type;i++) {
+      scene.push_back(ev.materials_api.bind_inst_matrix(p[i],matrices[i],mat[i]));
+    }
+    scene2 = ev.mainloop_api.array_ml(ev,scene);
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (scene2.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,scene2);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (scene2.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,scene2);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::VX vx;
+  int start_type;
+  int end_type;
+  std::vector<GameApi::P> p;
+  std::vector<GameApi::MT> mat;
+  std::vector<GameApi::MS> matrices;
+  std::vector<GameApi::ML> scene;
+  GameApi::ML scene2;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+
+
 class MS_file : public MatrixArray
 {
 public:
@@ -3756,6 +4233,7 @@ GameApi::MS GameApi::MatricesApi::ms_file(std::string url, int use_type)
 {
   return add_matrix_array(e,new MS_file(e,url,gameapi_homepageurl,use_type));
 }
+
 
 class RenderMSFiles : public MainLoopItem
 {
