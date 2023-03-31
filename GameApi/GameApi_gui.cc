@@ -5910,7 +5910,9 @@ ASyncData async_data[] = {
   { "mainloop_api", "game", 3 },
   { "mainloop_api", "game", 4 },
   { "mainloop_api", "game", 5 },
-  { "mainloop_api", "game", 6 }
+  { "mainloop_api", "game", 6 },
+  { "matrices_api", "render_ms_files", 3 },
+  { "matrices_api", "render_ms_files2", 3 }
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
