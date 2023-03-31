@@ -174,6 +174,8 @@ void ArrayRender::UpdateAllTextures(MeshTextures &tex)
 //#ifndef EMSCRIPTEN
 #ifndef ARM
 #ifdef THREADS
+
+
 void *thread_func_bitmap(void* data);
 void *thread_func_bitmap(void *data)
 {

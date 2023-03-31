@@ -2,14 +2,14 @@
 all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
-SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz -g
+SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz -g 
 
 NOSIZEOPT = -s TOTAL_STACK=200kb -g
 
 #--closure 1
 #--memoryprofiler
 
-REQUIREDOPT = -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']"
+REQUIREDOPT = -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1
 
 STRIP = emstrip --no-strip-all --remove-section=.debug_str --remove-section=.debug_line --remove-section=.debug_abbrev --remove-section=.debug_ranges --remove-section=.debug_loc
 
