@@ -340,15 +340,32 @@
 			 { "std::string", "int" },
 			 { "https://tpgames.org/test.ms", "0" },
 			 "MS", "matrices_api", "ms_file"));
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files_si,
+			 "minecraft_render_vx",
+			 { "ev", "default_cubes", "default_material", "voxel", "start_type", "end_type", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "EveryApi&", "[P]", "MT", "VX", "int", "int", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "", "0", "1", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
+			 "ML", "matrices_api", "render_ms_files_si"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files2_si,
+			 "minecraft_render2_vx",
+			 { "ev", "default_cubes", "default_materials", "voxel", "start_type", "end_type", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "EveryApi&", "[P]", "[MT]", "VX", "int", "int", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "", "0", "1", "-300.0", "300.0", "-300.0", "300.0", "-300.0", "300.0" },
+			 "ML", "matrices_api", "render_ms_files2_si"));
+  
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files,
-			 "render_ms_files",
-			 { "ev", "p", "mat", "url", "start_type", "end_type" },
+			 "minecraft_render_file",
+			 { "ev", "default_cubes", "default_material", "url", "start_type", "end_type" },
 			 { "EveryApi&", "[P]", "MT", "std::string", "int", "int" },
 			 { "ev", "", "", "https://tpgames.org/test.ms", "0", "1" },
 			 "ML", "matrices_api", "render_ms_files"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files2,
-			 "render_ms_files2",
-			 { "ev", "p", "mat", "url", "start_type", "end_type" },
+			 "minecraft_render_file2",
+			 { "ev", "default_cubes", "default_materials", "url", "start_type", "end_type" },
 			 { "EveryApi&", "[P]", "[MT]", "std::string", "int", "int" },
 			 { "ev", "", "", "https://tpgames.org/test.ms", "0", "1" },
 			 "ML", "matrices_api", "render_ms_files"));
