@@ -74,14 +74,16 @@
 
 #define HAS_GL_GETERROR 1
 
-#ifdef WEBGL2
-#define ATTRIBUTE "in"
-#define VARYING_IN "in"
-#define VARYING_OUT "out"
-#else
-#define ATTRIBUTE "attribute"
-#define VARYING_IN "varying"
-#define VARYING_OUT "varying"
+#if 0
+//#ifdef WEBGL2
+//#define ATTRIBUTE "in"
+//#define VARYING_IN "in"
+//#define VARYING_OUT "out"
+//#else
+//#define ATTRIBUTE "attribute"
+//#define VARYING_IN "varying"
+//#define VARYING_OUT "varying"
+//#endif
 #endif
 
 std::string funccall_to_string(ShaderModule *mod);
@@ -637,6 +639,18 @@ ShaderFile::ShaderFile(std::string filename)
 
 std::string get_uber_shader(bool oldshader, bool webgl2, bool emscripten, bool apple)
 {
+  std::string ATTRIBUTE="in";
+  std::string VARYING_IN="in";
+  std::string VARYING_OUT="out";
+
+  if (!webgl2) {
+    ATTRIBUTE="attribute";
+    VARYING_IN="varying";
+    VARYING_OUT="varying";
+  }
+  
+
+  
   std::string s = "";
   
   if (oldshader) {
@@ -647,9 +661,9 @@ std::string get_uber_shader(bool oldshader, bool webgl2, bool emscripten, bool a
       s+="#version 100\n";
     }
    
-    s+="#extension GL_ARB_gpu_shader5 : enable\n"
+    //s+="#extension GL_ARB_gpu_shader5 : enable\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
-    "precision highp float;\n"
+  s+=  "precision highp float;\n"
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -659,41 +673,41 @@ std::string get_uber_shader(bool oldshader, bool webgl2, bool emscripten, bool a
 "#endif\n"
 "uniform float in_POS;\n"
 "uniform float time;\n"
-"#ifdef INST\n"
-ATTRIBUTE " vec3 in_InstPos;\n"
+"#ifdef INST\n" +
+ATTRIBUTE + " vec3 in_InstPos;\n"
 "#endif\n"
-"#ifdef INSTMAT\n"
-ATTRIBUTE " mat4 in_InstMat;\n"
+"#ifdef INSTMAT\n" +
+ATTRIBUTE +" mat4 in_InstMat;\n"
+"#endif\n" +
+ATTRIBUTE + " vec3 in_Position;\n" +
+ATTRIBUTE + " vec3 in_Position2;\n"
+"#ifdef IN_NORMAL\n" +
+ATTRIBUTE + " vec3 in_Normal;\n"
 "#endif\n"
-ATTRIBUTE " vec3 in_Position;\n"
-ATTRIBUTE " vec3 in_Position2;\n"
-"#ifdef IN_NORMAL\n"
-ATTRIBUTE " vec3 in_Normal;\n"
-"#endif\n"
-"#ifdef IN_COLOR\n"
-ATTRIBUTE " vec4 in_Color;\n"
+"#ifdef IN_COLOR\n" +
+ATTRIBUTE + " vec4 in_Color;\n"
 "#endif\n"
 "#ifdef IN_TEXCOORD\n"
-ATTRIBUTE " vec3 in_TexCoord;\n"
++ ATTRIBUTE + " vec3 in_TexCoord;\n"
 "#endif\n"
 "#ifdef EX_TEXCOORD\n"
-VARYING_OUT " vec3 ex_TexCoord;\n"
++ VARYING_OUT + " vec3 ex_TexCoord;\n"
     "#endif\n"
-"#ifdef EX_COLOR\n"
-VARYING_OUT " vec4 ex_Color;\n"
+"#ifdef EX_COLOR\n" +
+VARYING_OUT + " vec4 ex_Color;\n"
     "#endif\n"
     //"flat varying vec4 ex_FlatColor;\n"
 "#ifdef EX_NORMAL\n"
-VARYING_OUT " vec3 ex_Normal;\n"
++ VARYING_OUT + " vec3 ex_Normal;\n"
     "#endif\n"
 "#ifdef EX_POSITION\n"
-VARYING_OUT " vec3 ex_Position;\n"
++ VARYING_OUT + " vec3 ex_Position;\n"
     "#endif\n"
 "#ifdef EX_NORMAL2\n"
-VARYING_OUT " vec3 ex_Normal2;\n"
++ VARYING_OUT + " vec3 ex_Normal2;\n"
     "#endif\n"
 "#ifdef EX_LIGHTPOS2\n"
-VARYING_OUT " vec3 ex_LightPos2;\n"
++ VARYING_OUT + " vec3 ex_LightPos2;\n"
     "#endif\n"
 
 "#ifdef VERTEX_LEVELS\n"
@@ -705,8 +719,8 @@ VARYING_OUT " vec3 ex_LightPos2;\n"
 "#ifdef LIGHTDIR\n"
 "uniform vec3 light_dir;\n"
 "#endif\n"
-VARYING_OUT " float fog_intensity;\n"
-VARYING_OUT " vec2 shadow_position;\n"
++ VARYING_OUT + " float fog_intensity;\n"
++ VARYING_OUT + " vec2 shadow_position;\n"
     "#template LIGHTPOS\n"
 "#ifdef LIGHTPOS\n"
 "uniform vec3 lightpos@;\n"
@@ -823,7 +837,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
 "  return pos;\n"
 "}\n"
@@ -857,7 +871,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
 "  return pos;\n"
 "}\n"
@@ -872,7 +886,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
 "   return pos;\n"
 "}\n"
@@ -903,7 +917,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
 "   return pos;\n"
 "}\n"
@@ -924,7 +938,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
 "  ex_Normal = in_Normal;\n"
 "  return pos;\n"
@@ -1048,7 +1062,7 @@ VARYING_OUT " vec2 shadow_position;\n"
     "  ex_Position = in_Position + in_InstPos;\n" //mat3(in_View2)*mat3(in_iMV)*(in_Position + in_InstPos);\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-    "  ex_Position = in_Position * in_InstMat;\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
+    "  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
 "#endif\n"
 "  return pos;\n"
 "}\n"
@@ -1063,7 +1077,7 @@ VARYING_OUT " vec2 shadow_position;\n"
 "  ex_Position = in_Position + in_InstPos;\n" //mat3(in_View2)*mat3(in_iMV)*(in_Position + in_InstPos);\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position*in_InstMat;\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
+"  ex_Position = vec3(vec4(in_Position,0.0)*in_InstMat);\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
 "#endif\n"
 "  return pos;\n"
 "}\n"
@@ -1141,8 +1155,8 @@ VARYING_OUT " vec2 shadow_position;\n"
 "#endif\n"
     
 "#ifdef SKELETON\n"
-ATTRIBUTE " vec4 JOINTS_0;\n"
-ATTRIBUTE " vec4 WEIGHTS_0;\n"
++ ATTRIBUTE + " vec4 JOINTS_0;\n"
++ ATTRIBUTE + " vec4 WEIGHTS_0;\n"
     //"uniform mat4 inverseBind[64];\n"
 "uniform mat4 jointMatrix[150];\n"
 "mat4 getSkinningMatrix()\n"
@@ -1166,7 +1180,7 @@ ATTRIBUTE " vec4 WEIGHTS_0;\n"
 "#ifdef IN_NORMAL\n"
 "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
-VARYING_OUT " vec3 eye;\n"
++ VARYING_OUT + " vec3 eye;\n"
     "vec4 edge(vec4 pos)\n"
 "{\n"
     "    vec3 n = normalize(mat3(in_iMV)*in_Normal);\n"
@@ -1290,7 +1304,7 @@ VARYING_OUT " vec3 eye;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
     "    ex_Normal = normalize(mat3(in_iMV)*in_Normal);\n"
 
@@ -1324,7 +1338,7 @@ VARYING_OUT " vec3 eye;\n"
     s+="uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
-ATTRIBUTE " vec3 in_Position;\n"
++ ATTRIBUTE + " vec3 in_Position;\n"
 "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -1361,7 +1375,7 @@ s+="#endif\n"
  }
 
     s+="uniform float time;\n"
-VARYING_IN " vec4 ex_Color;\n"
++ VARYING_IN + " vec4 ex_Color;\n"
     //"flat varying vec4 ex_FlatColor;\n"
     //"out vec4 out_Color;\n"
     //"uniform mat4 in_P;\n"
@@ -1369,19 +1383,19 @@ VARYING_IN " vec4 ex_Color;\n"
     //"uniform mat4 in_T;\n"
     //"uniform mat4 in_N;\n"
 "#ifdef EX_TEXCOORD\n"
-VARYING_IN    " vec3 ex_TexCoord;\n"
++ VARYING_IN +   " vec3 ex_TexCoord;\n"
     "#endif\n"
 "#ifdef EX_NORMAL\n"
-VARYING_IN " vec3 ex_Normal;\n"
++ VARYING_IN + " vec3 ex_Normal;\n"
     "#endif\n"
 "#ifdef EX_POSITION\n"
-VARYING_IN " vec3 ex_Position;\n"
++ VARYING_IN + " vec3 ex_Position;\n"
     "#endif\n"
 "#ifdef EX_NORMAL2\n"
-VARYING_IN " vec3 ex_Normal2;\n"
++ VARYING_IN + " vec3 ex_Normal2;\n"
     "#endif\n"
 "#ifdef EX_LIGHTPOS2\n"
-VARYING_IN " vec3 ex_LightPos2;\n"
++ VARYING_IN + " vec3 ex_LightPos2;\n"
     "#endif\n"
 
 "#ifdef COLOR_ARRAY\n"
@@ -1708,7 +1722,7 @@ s+="#ifdef SPECULAR_SIZE\n"
 "#ifdef EX_POSITION\n"
 "uniform float edge_width;\n"
 "uniform vec4 edge_color;\n"
-VARYING_IN " vec3 eye;\n"
++ VARYING_IN + " vec3 eye;\n"
     "vec4 edge(vec4 rgb)\n"
 "{\n"
     "    vec3 view = eye;\n" //-ex_Position + vec3(0.0,0.0,-4000.0);\n"
@@ -1806,7 +1820,7 @@ VARYING_IN " vec3 eye;\n"
 "#endif\n"
 
 "#ifdef MANYTEXTURES\n"
-VARYING_IN " vec2 shadow_position;\n"
++ VARYING_IN + " vec2 shadow_position;\n"
     "uniform vec4 shadow_dark;\n"
 "uniform float shadow_tex;\n"
 "vec4 shadow(vec4 rgb)\n"
@@ -1855,7 +1869,7 @@ s+="   if (shadow_tex<0.7) tx=texture2D(texsampler[0],f); else\n"
 "}\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
-VARYING_IN " float fog_intensity;\n"
++ VARYING_IN + " float fog_intensity;\n"
     "uniform vec4 fog_dark;\n"
 "uniform vec4 fog_light;\n"
 "vec4 fog(vec4 rgb)\n"
@@ -2797,9 +2811,9 @@ s+=
 "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
-ATTRIBUTE " vec3 in_Normal;\n"
-ATTRIBUTE " vec3 in_Position;\n"
-VARYING_IN " vec2 XY;\n"
++ ATTRIBUTE + " vec3 in_Normal;\n"
++ ATTRIBUTE + " vec3 in_Position;\n"
++ VARYING_IN + " vec2 XY;\n"
     "\n"
 "//T:\n"
 "void main(void)\n"
@@ -2814,7 +2828,7 @@ VARYING_IN " vec2 XY;\n"
    s+=   "#version 100\n";
  }
 s+="precision highp float;\n"
-VARYING_IN " vec2 XY;\n"
++ VARYING_IN + " vec2 XY;\n"
 
     "uniform float time;\n"
 "uniform float time2;\n"
@@ -2849,11 +2863,11 @@ VARYING_IN " vec2 XY;\n"
  } else {
    s+=   "#version 100\n";
  }
-s+="/*layout(location=0)*/ " ATTRIBUTE " vec3 in_Position;\n"
-"/*layout(location=1)*/ " ATTRIBUTE " vec3 in_Normal;\n"
-"/*layout(location=2)*/ " ATTRIBUTE " vec3 in_Color;\n"
-"/*layout(location=3)*/ " ATTRIBUTE " vec3 in_TexCoord;\n"
-VARYING_OUT " vec3 ex_Color;\n"
+s+="/*layout(location=0)*/ " + ATTRIBUTE + " vec3 in_Position;\n"
+"/*layout(location=1)*/ " + ATTRIBUTE + " vec3 in_Normal;\n"
+"/*layout(location=2)*/ " + ATTRIBUTE + " vec3 in_Color;\n"
+"/*layout(location=3)*/ " + ATTRIBUTE + " vec3 in_TexCoord;\n"
++ VARYING_OUT + " vec3 ex_Color;\n"
     "uniform mat4 in_P;\n"
 "uniform mat4 in_MV;\n"
 "uniform mat4 in_T;\n"
@@ -2870,7 +2884,7 @@ VARYING_OUT " vec3 ex_Color;\n"
    s+=  "#version 100\n";
  }
  s+=   "precision highp float;\n"
-VARYING_IN " vec3 ex_Color;\n"
++ VARYING_IN + " vec3 ex_Color;\n"
     "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -2884,7 +2898,7 @@ VARYING_IN " vec3 ex_Color;\n"
    s+=   "#version 100\n";
  }
 s+=    "precision highp float;\n" 
-VARYING_IN " vec3 ex_Color;\n"
++ VARYING_IN + " vec3 ex_Color;\n"
     "//T:\n"
 "void main(void)\n"
 "{\n"
@@ -2919,7 +2933,7 @@ VARYING_IN " vec3 ex_Color;\n"
  }
  s+=   "//precision highp float;\n"
 "uniform sampler2D tex;\n"
-ATTRIBUTE " vec3 ex_TexCoord;\n"
++ ATTRIBUTE + " vec3 ex_TexCoord;\n"
     //" vec4 out_Color;\n"
 "//T:\n"
 "void main(void)\n"
@@ -3580,7 +3594,7 @@ s+="precision highp float;\n"
 "  ex_Position = in_Position + in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n"
-"  ex_Position = in_Position * in_InstMat;\n"
+"  ex_Position = vec3(vec4(in_Position,0.0) * in_InstMat);\n"
 "#endif\n"
 "  ex_Normal = normalize(mat3(in_iMV)*in_Normal);\n"
 "   ex_Color = in_Color;\n"
@@ -4827,6 +4841,9 @@ ShaderFile::ShaderFile() {
   apple=true;
 #endif
 
+  if (g_gpu_vendor=="AMD") {
+    oldshader=true;
+  }
 
   if (!(g_gpu_vendor=="NVID" || g_gpu_vendor=="AMD"))
     { // intel gfx cards didn't support newer shaders
@@ -4933,6 +4950,35 @@ struct replace_c_params
 
 std::string replace_c(const replace_c_params &pp)
 {
+  bool oldshader=false;
+  bool webgl2 = false;
+  bool emscripten = false;
+  bool apple = false;
+#ifdef OLD_SHADER
+  oldshader=true;
+#endif
+#ifdef WEBGL2
+  webgl2 = true;
+#endif
+#ifdef EMSCRIPTEN
+  emscripten=true;
+#endif
+#ifdef __APPLE__
+  apple=true;
+#endif
+
+  if (g_gpu_vendor=="AMD") {
+    oldshader=true;
+  }
+
+  if (!(g_gpu_vendor=="NVID" || g_gpu_vendor=="AMD"))
+    { // intel gfx cards didn't support newer shaders
+      oldshader=true;
+    }
+
+
+
+  
   std::string s = pp.s;
   std::vector<std::string> comb = pp.comb;
   bool is_fragment= pp.is_fragment;
@@ -5187,21 +5233,21 @@ std::string replace_c(const replace_c_params &pp)
 		std::stringstream ss3;
 		ss3 << num2;
 
-#ifdef OLD_SHADER
-#ifdef WEBGL2
+		if (oldshader) {
+		  if (webgl2) {
 		if (is_fbo)
 		  out += "gl_FragData[0] = rgb"; // TODO, fbo's probably not working.
 		else
 		  out+="out_Color = rgb";
-#else
+		  } else {
 		if (is_fbo)
 		  out += "gl_FragData[0] = rgb";
 		else
 		  out+="gl_FragColor = rgb";
-#endif
-#else
+		  }
+		} else {
 		out+="out_Color = rgb";
-#endif
+		}
 		out+= ss3.str();
 		out+=";\n";
 		
@@ -5233,10 +5279,9 @@ std::string replace_c(const replace_c_params &pp)
 		}
 	      std::stringstream ss3;
 	      ss3 << s;
-	      
-#ifdef OLD_SHADER
 
-#ifdef WEBGL2
+	      if (oldshader) {
+		if (webgl2) {
 	      if (is_fbo) {
 		out += "gl_FragData[0] = rgb"; // TODO
 	      out+= ss3.str();
@@ -5249,7 +5294,7 @@ std::string replace_c(const replace_c_params &pp)
 		out+="out_Color = rgb" + ss3.str() + "";
 	      }
 	      }
-#else
+		} else {
 	      if (is_fbo) {
 		out += "gl_FragData[0] = rgb";
 	      out+= ss3.str();
@@ -5258,15 +5303,15 @@ std::string replace_c(const replace_c_params &pp)
 		out+="gl_FragColor = rgb";
 	      out+= ss3.str();
 	      }
-#endif
+		}
 
-#else
+	      } else {
 	      if (g_gpu_vendor!="NVID") {
 		out+="out_Color = rgb" + ss3.str() + "";
 	      } else {
 		out+="out_Color = rgb" + ss3.str() + "";
 	      }
-#endif
+	      }
 	      out+=";\n";
 		}
 	    }
@@ -5472,7 +5517,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //     std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5504,7 +5549,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //        std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

@@ -3701,7 +3701,7 @@ GameApi::P execute_recurse(GameApi::Env &e, GameApi::EveryApi &ev, const std::ve
 class MS_split
 {
 public:
-  MS_split(Voxel<unsigned int> *vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) {
+  MS_split(Voxel<int> *vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) {
     p = Point(start_x,start_y,start_z);
     dx = Vector((end_x-start_x)/vx->SizeX(),0.0,0.0);
     dy = Vector(0.0,(end_y-start_y)/vx->SizeY(),0.0);
@@ -3748,7 +3748,7 @@ public:
     return Matrix::Identity();
   }
 private:
-  Voxel<unsigned int> *vx;
+  Voxel<int> *vx;
   int start_type, end_type;
   float start_x, end_x;
   float start_y, end_y;
@@ -3792,12 +3792,21 @@ public:
   RenderMSFilesSI(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, GameApi::MT mat, GameApi::VX vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : env(env), ev(ev), p(p), mat(mat), vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { scene2.id=-1; firsttime=true;}
   ~RenderMSFilesSI() { delete split; split=0; }
   virtual void Collect(CollectVisitor &vis) {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Collect(vis);
+    
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Collect(vis);
+      }
     vis.register_obj(this);
   }
   virtual void HeavyPrepare()
   {
     if (firsttime) {
-    Voxel<unsigned int> *vxx = find_voxel(env,vx);
+    Voxel<int> *vxx = find_int_voxel(env,vx);
     split = new MS_split(vxx,start_type,end_type,start_x,end_x,start_y,end_y,start_z,end_z);
     for(int i=start_type;i<end_type;i++)
       {
@@ -3818,7 +3827,17 @@ public:
     firsttime=false;
     }
   }
-  virtual void Prepare() { HeavyPrepare(); }
+  virtual void Prepare() {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Prepare();
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Prepare();
+      }
+
+    HeavyPrepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
@@ -3876,12 +3895,20 @@ public:
   RenderMSFiles2SI(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::P> p, std::vector<GameApi::MT> mat, GameApi::VX vx, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : env(env), ev(ev), p(p), mat(mat), vx(vx), start_type(start_type), end_type(end_type), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { scene2.id=-1; firsttime=true; }
   ~RenderMSFiles2SI() { delete split; split=0; }
   virtual void Collect(CollectVisitor &vis) {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Collect(vis);
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Collect(vis);
+      }
     vis.register_obj(this);
   }
   virtual void HeavyPrepare()
   {
     if (firsttime) {
-    Voxel<unsigned int> *vxx = find_voxel(env,vx);
+    Voxel<int> *vxx = find_int_voxel(env,vx);
     split = new MS_split(vxx,start_type,end_type,start_x,end_x,start_y,end_y,start_z,end_z);
     for(int i=start_type;i<end_type;i++)
       {
@@ -3903,7 +3930,16 @@ public:
     firsttime=false;
     }
   }
-  virtual void Prepare() { HeavyPrepare(); }
+  virtual void Prepare() {
+    Voxel<int> *vvx = find_int_voxel(env,vx);
+    vvx->Prepare();
+    int s = p.size();
+    for(int i=0;i<s;i++)
+      {
+	FaceCollection *coll = find_facecoll(env,p[i]);
+	coll->Prepare();
+      }
+    HeavyPrepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
@@ -3953,7 +3989,7 @@ GameApi::ML GameApi::MatricesApi::render_ms_files2_si(GameApi::EveryApi &ev, std
 class MS_interface : public MatrixArray
 {
 public:
-  MS_interface(Voxel<unsigned int> *vx, int type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx),type(type) {
+  MS_interface(Voxel<int> *vx, int type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx),type(type) {
     p = Point(start_x,start_y,start_z);
     dx = Vector((end_x-start_x)/vx->SizeX(),0.0,0.0);
     dy = Vector(0.0,(end_y-start_y)/vx->SizeY(),0.0);
@@ -3990,7 +4026,7 @@ public:
     return Matrix::Translate(pos.x,pos.y,pos.z);
   }
 private:
-  Voxel<unsigned int> *vx;
+  Voxel<int> *vx;
   int type;
   Point p;
   Vector dx,dy,dz;
@@ -3999,7 +4035,7 @@ private:
 };
 GameApi::MS GameApi::MatricesApi::ms_interface(VX vox, int type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
-  Voxel<unsigned int> *voxel = find_voxel(e,vox);
+  Voxel<int> *voxel = find_int_voxel(e,vox);
   return add_matrix_array(e, new MS_interface(voxel,type,start_x,end_x,start_y,end_y, start_z,end_z));
 }
 
