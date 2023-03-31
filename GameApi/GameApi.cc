@@ -9768,7 +9768,7 @@ private:
 class RenderInstancedTex : public MainLoopItem
 {
 public:
-  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types),id_labels(id_labels)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() {
     if (shader.id<=0) return std::vector<int>(); 
@@ -9811,7 +9811,7 @@ public:
       {
     pta = ev.points_api.prepare(pts);
     ev.polygon_api.create_vertex_array_hw(va);
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types,true,id_labels);
     ids = id;
     va = ev.texture_api.bind_many(va, id, types);
     ev.polygon_api.preparedone(p);
@@ -9980,13 +9980,14 @@ private:
   bool initialized;
   std::vector<GameApi::TXID> ids;
   GameApi::SH sh;
+  std::vector<std::string> id_labels;
 };
 
 
 class RenderInstancedTex_matrix : public MainLoopItem
 {
 public:
-  RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types),id_labels(id_labels)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex_matrix() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
@@ -10022,7 +10023,7 @@ public:
       {
     pta = ev.matrices_api.prepare(pts);
     ev.polygon_api.create_vertex_array_hw(va);
-    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types);
+    std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bm,types,true,id_labels);
     ids = id;
     va = ev.texture_api.bind_many(va, id, types);
     ev.polygon_api.preparedone(p);
@@ -10186,6 +10187,7 @@ private:
   std::vector<int> types;
   bool initialized;
   std::vector<GameApi::TXID> ids;
+  std::vector<std::string> id_labels;
 };
 
 
@@ -11815,9 +11817,9 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml(GameApi::EveryApi 
   return ml2;
 #endif
 }
-EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture(GameApi::EveryApi &ev, P p, PTS pts, std::vector<BM> bm, std::vector<int> types)
+EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture(GameApi::EveryApi &ev, P p, PTS pts, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels)
 {
-  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, false,false,0.0,0.0,bm, types));
+  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, false,false,0.0,0.0,bm, types,id_labels));
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture_id(GameApi::EveryApi &ev, P p, PTS pts, std::vector<TXID> *bm)
 {
@@ -11847,9 +11849,9 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_matrix(GameApi::Ev
   return ml2;
 #endif
 }
-EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture_matrix(GameApi::EveryApi &ev, P p, MS pts, std::vector<BM> bm, std::vector<int> types)
+EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture_matrix(GameApi::EveryApi &ev, P p, MS pts, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels)
 {
-  return add_main_loop(e, new RenderInstancedTex_matrix(e, ev, p,pts, false,false,0.0,0.0,bm, types));
+  return add_main_loop(e, new RenderInstancedTex_matrix(e, ev, p,pts, false,false,0.0,0.0,bm, types,id_labels));
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_texture_id_matrix(GameApi::EveryApi &ev, P p, MS pts, std::vector<TXID> *bm)
 {
@@ -11884,7 +11886,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_fade(GameApi::Ever
 }
 EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced_ml_fade_texture(GameApi::EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> bm)
 {
-  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, true,flip,start_time,end_time,bm,std::vector<int>()));  
+  return add_main_loop(e, new RenderInstancedTex(e, ev, p,pts, true,flip,start_time,end_time,bm,std::vector<int>(),std::vector<std::string>()));  
 }
 
 
