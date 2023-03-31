@@ -2221,6 +2221,7 @@ public:
     //I13.id = next->mat(p.id);
     //GameApi::P I10=p; 
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    confirm_texture_usage(ev.get_env(),p);
 
     //I10 = ev.polygon_api.fix_vertex_order(I10);
     //if (get_diffuse_index()!=-1) {
@@ -2282,6 +2283,7 @@ public:
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    confirm_texture_usage(ev.get_env(),p);
 
     //I10 = ev.polygon_api.fix_vertex_order(I10);
     
@@ -2340,6 +2342,7 @@ public:
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    confirm_texture_usage(ev.get_env(),p);
     //I10 = ev.polygon_api.fix_vertex_order(I10);
 
     //if (get_diffuse_index()!=-1) {
