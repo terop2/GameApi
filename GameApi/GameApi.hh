@@ -1637,12 +1637,12 @@ public:
   IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
   IMPORT ML render_instanced_ml_matrix(EveryApi &ev, P p, MS pts);
   IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
-  IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
+  IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>(), std::vector<std::string> id_labels=std::vector<std::string>());
   IMPORT ML render_instanced_ml_texture_id(EveryApi &ev, P p, PTS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
   IMPORT ML render_instanced_ml_texture2(EveryApi &ev, P p, PTS pts);
   //--
-  IMPORT ML render_instanced_ml_texture_matrix(EveryApi &ev, P p, MS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>());
+  IMPORT ML render_instanced_ml_texture_matrix(EveryApi &ev, P p, MS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>(), std::vector<std::string> id_labels=std::vector<std::string>());
   IMPORT ML render_instanced_ml_texture_id_matrix(EveryApi &ev, P p, MS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap_matrix(EveryApi &ev, P p, MS pts, std::vector<BM> vec);
   IMPORT ML render_instanced_ml_texture2_matrix(EveryApi &ev, P p, MS pts);

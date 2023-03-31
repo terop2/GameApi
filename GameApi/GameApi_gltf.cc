@@ -2288,8 +2288,15 @@ public:
     //if (get_diffuse_index()!=-1) {
     //  specglossyprepare(ev,p);
     //}
+    std::vector<std::string> id_labels;
+    for(int i=0;i<s;i++)
+      {
+	std::stringstream ss;
+	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
+	id_labels.push_back(ss.str());
+      }
     
-    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm, std::vector<int>(),id_labels);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
@@ -2339,7 +2346,16 @@ public:
     //  specglossyprepare(ev,p);
     //}
 
-    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm);
+    
+    std::vector<std::string> id_labels;
+    for(int i=0;i<s;i++)
+      {
+	std::stringstream ss;
+	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
+	id_labels.push_back(ss.str());
+      }
+    
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm,std::vector<int>(),id_labels);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
