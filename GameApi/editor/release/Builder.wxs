@@ -26,11 +26,15 @@
 </File>
 <File Id='h0' Name='gameapi_0.html' DiskId='1' Source='editor/gameapi_0.html' KeyPath='no'>
 </File>
+<File Id='h0a' Name='gameapi_0_seamless.html' DiskId='1' Source='editor/gameapi_0_seamless.html' KeyPath='no'>
+</File>
 <File Id='h1' Name='gameapi_1.html' DiskId='1' Source='editor/gameapi_1.html' KeyPath='no'>
 </File>
 <File Id='h2' Name='gameapi_2.html' DiskId='1' Source='editor/gameapi_2.html' KeyPath='no'>
 </File>
 <File Id='h3' Name='gameapi_3.html' DiskId='1' Source='editor/gameapi_3.html' KeyPath='no'>
+</File>
+<File Id='h3a' Name='gameapi_3_seamless.html' DiskId='1' Source='editor/gameapi_3_seamless.html' KeyPath='no'>
 </File>
 <File Id='sed' Name='sed.exe' DiskId='1' Source='editor/sed.exe' KeyPath='no'>
 </File>
