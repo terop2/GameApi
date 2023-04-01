@@ -1067,6 +1067,9 @@ require_once("user.php");
 
 PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>
 
+MOST RECENT RELEASE: WIN <?php echo date("F d Y", filemtime("./GameApi-Builder-v27.msi")) ?> <br>
+MOST RECENT RELEASE: LINUX <?php echo date("F d Y", filemtime("./gameapi-builder_1.0-27.deb")) ?> <br>
+
 
 <div style="padding: 20px; width: 1324px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">

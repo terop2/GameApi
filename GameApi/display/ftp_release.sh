@@ -15,7 +15,7 @@ finish()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr[@]} terop@meshpage.org:/home/terop/html/meshpage.org/
+	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/html/meshpage.org/
     fi
 }
 #copy_it pessimist.php
