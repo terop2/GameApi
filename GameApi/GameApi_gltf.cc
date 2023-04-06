@@ -449,7 +449,7 @@ public:
 #endif
     char *ptr2 = &vec2.operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
-    std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
+    //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
       tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
