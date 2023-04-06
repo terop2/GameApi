@@ -1066,9 +1066,25 @@ require_once("user.php");
 ?>
 
 PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>
+<p><br>
+MOST RECENT RELEASE: WIN: 
+<?php
+$start_time = filemtime("./GameApi-Builder-v27.msi");
+$end_time = time();
+$delta = floor(($end_time - $start_time)/60/60/24);
+echo "(" . $delta . " days ago)";
+?>
+ <br>
+MOST RECENT RELEASE: LINUX: 
 
-MOST RECENT RELEASE: WIN <?php echo date("F d Y", filemtime("./GameApi-Builder-v27.msi")) ?> <br>
-MOST RECENT RELEASE: LINUX <?php echo date("F d Y", filemtime("./gameapi-builder_1.0-27.deb")) ?> <br>
+<?php
+$start_time = filemtime("./gameapi-builder_1.0-27.deb");
+$end_time = time();
+$delta = floor(($end_time - $start_time)/60/60/24);
+echo "(" . $delta . " days ago)";
+?>
+
+<br>
 
 
 <div style="padding: 20px; width: 1324px;">
@@ -1076,7 +1092,7 @@ MOST RECENT RELEASE: LINUX <?php echo date("F d Y", filemtime("./gameapi-builder
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
-<li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 10 64-bit</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 11 64-bit</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
