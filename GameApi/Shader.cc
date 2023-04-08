@@ -1084,6 +1084,24 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "#endif\n"
 "#endif\n"
 
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+"vec4 water(vec4 pos)\n"
+"{\n"
+"    ex_Position = in_Position;\n" //vec3(mat3(in_View2)*mat3(in_iMV)*in_Position);\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n" //mat3(in_View2)*mat3(in_iMV)*(in_Position + in_InstPos);\n"
+"#endif\n"
+"#ifdef INSTMAT\n"
+"  ex_Position = vec3(vec4(in_Position,0.0)*in_InstMat);\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
+"#endif\n"
+"  return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+
+
+    
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -1517,6 +1535,7 @@ s+="#ifdef SPECULAR_SIZE\n"
 "}\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
+"#ifdef NEWSHADOW\n"
 "uniform float in_darklevel;\n"
 "uniform float in_lightlevel;\n"
 "uniform int texindex;\n"
@@ -1631,6 +1650,23 @@ s+="#ifdef SPECULAR_SIZE\n"
 "vec4 newshadow_2(vec4 rgb) {\n"
 "   float level = newshadow_level();\n"
 "   return vec4(level*rgb.rgb,1.0);\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#ifdef EX_POSITION\n"
+"uniform vec3 water_center;\n"
+"uniform float wave_mult;\n"
+"uniform float wave_time;\n"
+"uniform vec4 water_color1;\n"
+"uniform vec4 water_color2;\n"
+"uniform vec4 water_color3;\n"
+"vec4 water(vec4 rgb)\n"
+"{\n"
+"    float d = length(ex_Position-water_center);\n"
+"    float s = sin(d*wave_mult+wave_time);\n"
+"    s/=2.0; s+=0.5;\n"
+   "    if (s<0.5) { return mix(water_color1,water_color2,s*2.0); }\n"
+"    return mix(water_color2,water_color3,(s-0.5)*2.0);\n"
 "}\n"
 "#endif\n"
 "#ifdef EX_NORMAL2\n"
@@ -5644,7 +5680,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //   std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //    std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5676,7 +5712,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //     std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //           std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

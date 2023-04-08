@@ -8335,6 +8335,55 @@ EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vect
   return add_array(e,array);
 }
 
+class WaterMaterial : public MaterialForward
+{
+public:
+  WaterMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, unsigned int color1, unsigned int color2, unsigned int color3, float center_x, float center_y, float center_z, float wave_mult, float time_mult) : e(e), ev(ev), next(next), color1(color1), color2(color2), color3(color3), center_x(center_x), center_y(center_y), center_z(center_z), wave_mult(wave_mult), time_mult(time_mult) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+
+    GameApi::ML ml3;
+    ml3.id = next->mat(p.id);
+    GameApi::ML ml4 = ev.polygon_api.water_shader(ev, ml3, color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst(p.id,pts.id);
+    GameApi::ML ml4 = ev.polygon_api.water_shader(ev, ml3, color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_matrix(p.id,ms.id);
+    GameApi::ML ml4 = ev.polygon_api.water_shader(ev, ml3, color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult);
+    return ml4;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst2(p.id,pta.id);
+    GameApi::ML ml4 = ev.polygon_api.water_shader(ev, ml3, color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult);
+    return ml4;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    GameApi::ML ml4 = ev.polygon_api.water_shader(ev, ml3, color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult);
+    return ml4;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+  unsigned int color1, color2,color3;
+  float center_x, center_y, center_z;
+  float wave_mult, time_mult;
+};
+
 class GlowEdgeMaterial : public MaterialForward
 {
 public:
@@ -8490,6 +8539,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::glow_edge(EveryApi &ev, MT next, float
 {
   Material *mat = find_material(e,next);
   return add_material(e, new GlowEdgeMaterial(e,ev,mat,light_level, gray_level, edge_pos));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::water(EveryApi &ev, MT next, unsigned int color1, unsigned int color2, unsigned int color3, float center_x, float center_y, float center_z, float wave_mult, float time_mult)
+{
+  Material *mat = find_material(e,next);
+  return add_material(e, new WaterMaterial(e,ev,mat,color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult));
 }
 
 EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color)
@@ -12088,6 +12142,12 @@ GameApi::US GameApi::UberShaderApi::v_empty()
 {
   return add_uber(e, new EmptyV());
 }
+GameApi::US GameApi::UberShaderApi::v_water(US us)
+{
+  ShaderCall *next = find_uber(e,us);
+  return add_uber(e, new V_ShaderCallFunction("water", next, "IN_POSITION EX_POSITION"));
+}
+					 
 GameApi::US GameApi::UberShaderApi::v_edge(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -12444,6 +12504,11 @@ GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
   ShaderCall *next = find_uber(e,us);
   ShaderModule *mod = find_shader_module(e, sfo);
   return add_uber(e, new V_DistFieldMesh(next,mod));
+}
+GameApi::US GameApi::UberShaderApi::f_water(US us)
+{
+  ShaderCall *next = find_uber(e,us);
+  return add_uber(e, new F_ShaderCallFunction("water", next,"EX_POSITION"));  
 }
 GameApi::US GameApi::UberShaderApi::f_edge(US us)
 {
