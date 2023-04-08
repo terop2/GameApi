@@ -9473,6 +9473,118 @@ private:
 };
 
 
+class WaterShaderML : public MainLoopItem
+{
+public:
+  WaterShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, unsigned int color1, unsigned int color2, unsigned int color3, Point center, float wave_mult, float time_mult) : env(env), ev(ev), next(next), color1(color1), color2(color2), color3(color3), center(center), wave_mult(wave_mult), time_mult(time_mult) {
+    firsttime = true;
+    sh.id = -1;
+
+
+  }
+
+  std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &e) {
+    MainLoopEnv ee = e;
+    if (firsttime)
+      {
+
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_water(vertex);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_water(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif	
+      }
+     std::vector<int> sh_ids = next->shader_id();
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+	ev.shader_api.set_var(sh, "water_color1",
+			      ((color1&0xff0000)>>16)/255.0,
+			      ((color1&0xff00)>>8)/255.0,
+			      ((color1&0xff))/255.0,
+			      ((color1&0xff000000)>>24)/255.0);				ev.shader_api.set_var(sh, "water_color2",
+			      ((color2&0xff0000)>>16)/255.0,
+			      ((color2&0xff00)>>8)/255.0,
+			      ((color2&0xff))/255.0,
+			      ((color2&0xff000000)>>24)/255.0);
+		ev.shader_api.set_var(sh, "water_color3",
+			      ((color3&0xff0000)>>16)/255.0,
+			      ((color3&0xff00)>>8)/255.0,
+			      ((color3&0xff))/255.0,
+			      ((color3&0xff000000)>>24)/255.0);	
+	ev.shader_api.set_var(sh, "water_center", center.x, center.y,center.z);
+	ev.shader_api.set_var(sh, "wave_mult", wave_mult);
+	ev.shader_api.set_var(sh, "wave_time", time_mult*e.time);
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+
+    
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  unsigned int color1, color2,color3;
+  Point center;
+  float wave_mult;
+  float time_mult;
+  GameApi::SH sh;
+  bool firsttime;
+};
+
 class GlowEdgeShaderML : public MainLoopItem
 {
 public:
@@ -11057,6 +11169,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::glowedge_shader(EveryApi &ev, ML mainloo
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new GlowEdgeShaderML(e, ev, item, white_level, gray_level, edge_pos));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::water_shader(EveryApi &ev, ML mainloop, unsigned int color1, unsigned int color2, unsigned int color3, float center_x, float center_y, float center_z, float wave_mult, float time_mult)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new WaterShaderML(e, ev, item, color1,color2,color3,Point(center_x,center_y,center_z), wave_mult, time_mult));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_1(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, float scale)

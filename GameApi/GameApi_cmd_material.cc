@@ -292,6 +292,12 @@
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "30.0", "0.5" },
 			 "MT", "materials_api", "vertex_phong"));
 #ifndef STABLE
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::water,
+			 "m_water",
+			 { "ev", "nxt", "color1", "color2", "color3", "center_x", "center_y", "center_z", "wave_mult", "time_mult" },
+			 { "EveryApi&", "MT", "unsigned int", "unsigned int", "unsigned int", "float", "float", "float", "float", "float" },
+			 { "ev", "", "ff2288ff", "ff0055ff", "ff0011ff", "0.0", "0.0", "0.0", "0.1", "-5" },
+			 "MT", "materials_api", "water"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::glow_edge,
 			 "m_glowedge",
 			 { "ev", "nxt", "light_level", "gray_level", "edge_pos" },

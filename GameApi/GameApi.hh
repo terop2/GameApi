@@ -1588,6 +1588,9 @@ public:
   IMPORT MT gltf_material_env( EveryApi &ev, TF model0, int material_id, float mix, BM diffuse_env, BM specular_env, BM bfrd);
   IMPORT MT gltf_material3( EveryApi &ev, float roughness, float metallic, float base_r, float base_g, float base_b, float base_a, float mix);
   IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
+  IMPORT MT water(EveryApi &ev, MT next, unsigned int color1, unsigned int color2, unsigned int color3, float center_x, float center_y, float center_z, float wave_mult, float time_mult);
+
+  
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
@@ -2917,6 +2920,7 @@ public:
   IMPORT ML dist_field_mesh_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML mesh_color_shader(EveryApi &ev, ML mainloop, SFO sfo);
   IMPORT ML sfo_sandbox_shader(EveryApi &ev, ML mainloop, SFO sfo);
+  IMPORT ML water_shader(EveryApi &ev, ML mainloop, unsigned int color1, unsigned int color2, unsigned int color3, float center_x, float center_y, float center_z, float wave_mult, float time_mult);
   IMPORT ML glowedge_shader(EveryApi &ev, ML mainloop, float white_level, float gray_level, float edge_pos);
   IMPORT ML newshadow_shader_1(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float scale);
   IMPORT ML newshadow_shader_2_phong(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
@@ -3841,6 +3845,7 @@ class UberShaderApi
 public:
   UberShaderApi(Env &e) : e(e) {}
   US v_empty();
+  US v_water(US us);
   US v_edge(US us);
   US v_gltf_anim(US us);
   US v_globe(US us);
@@ -3884,6 +3889,7 @@ public:
   US v_gltf(US us);
   US v_colour_with_mix(US us);
   US v_fade(US us);
+  US f_water(US us);
   US f_edge(US us);
   US f_gltf_anim(US us);
   US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
