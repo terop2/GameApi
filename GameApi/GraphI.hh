@@ -732,6 +732,14 @@ public:
   }
 };
 
+class Timing : public MainLoopItem
+{
+public:
+  virtual float end_time() const=0;
+  virtual float delta_time() const=0;
+  virtual Timing *clone() const=0;
+};
+
 enum FrameBufferFormat
   {
     F_Mono1,

@@ -124,6 +124,18 @@ void add_b(std::shared_ptr<void> ptr)
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
+
+GameApi::TT add_timing(GameApi::Env &e, Timing *t)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->timings.push_back(t);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(t));
+  GameApi::TT im;
+  im.id = env->timings.size()-1;
+  return im;
+}
+
 GameApi::PL add_platform(GameApi::Env &e, Platform *pl)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1419,6 +1431,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 #endif
+}
+
+Timing *find_timing(GameApi::Env &e, GameApi::TT tm)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->timings[tm.id];  
 }
 
 Platform *find_platform(GameApi::Env &e, GameApi::PL pl)
