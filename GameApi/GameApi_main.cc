@@ -3809,6 +3809,164 @@ GameApi::ML GameApi::MainLoopApi::scene_transparency(ML scene)
 }
 
 
+
+class Timing2 : public Timing
+{
+public:
+  Timing2(GameApi::Env &env, float duration, GameApi::ML show, GameApi::TT link) : env(env), duration(duration), show(show), link(link),valid(true),is_switch(false)
+  {
+    Timing *item = find_timing(env,link);
+    Timing *timing = item;
+    start_time2 = timing->end_time(); //+timing->delta_time();
+    end_time2 = start_time2+duration; //+timing->delta_time();
+  }
+  Timing2(GameApi::Env &env, float duration, GameApi::ML show, GameApi::ML show2, GameApi::TT link, int switch_dir) : env(env), duration(duration), show(show), show2(show2), link(link), valid(true),is_switch(true),switch_dir(switch_dir)
+  {
+    Timing *item = find_timing(env,link);
+    Timing *timing = item;
+    start_time2 = timing->end_time(); //+timing->delta_time();
+    end_time2 = start_time2+duration; //+timing->delta_time();
+  }
+  Timing2(GameApi::Env &e) : env(e),valid(false),is_switch(false) { start_time2=0.0; end_time2=0.0; }
+  float end_time() const 
+  {
+    return end_time2;
+  }
+  float delta_time() const
+  {
+    if (valid) {
+    Timing *item = find_timing(env,link);
+    Timing *timing = item;
+    //if (is_switch) {
+    //  return end_time2-start_time2+timing->delta_time();
+    //}
+    return timing->delta_time();
+    } else return 0.0;
+  }
+  Timing* clone() const { return new Timing2(env,duration,show,link); }
+
+  virtual void Collect(CollectVisitor &vis)
+  {
+    if (valid) {
+    MainLoopItem *item = find_main_loop(env,show);
+    item->Collect(vis);
+    if (is_switch) {
+      MainLoopItem *item = find_main_loop(env,show2);
+      item->Collect(vis);
+    }
+    Timing *t = find_timing(env,link);
+    t->Collect(vis);
+    }
+  }
+  virtual void HeavyPrepare() {}
+  virtual void Prepare()
+  {
+    if (valid) {
+    MainLoopItem *item = find_main_loop(env,show);
+    item->Prepare();
+    if (is_switch) {
+      MainLoopItem *item = find_main_loop(env,show2);
+      item->Prepare();
+    }
+    Timing *t = find_timing(env,link);
+    t->Prepare();
+    }
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (valid) {
+    if (e.time>=start_time2 && e.time<=end_time2) {
+      in_timerange=true;
+      MainLoopItem *item = find_main_loop(env,show);
+      //MainLoopEnv ee = e;
+      //ee.time = e.time-start_time2;
+      item->execute(e);
+      if (is_switch) {
+	MainLoopItem *item = find_main_loop(env,show2);
+	item->execute(e);
+      }
+    } else {
+      in_timerange=false;
+      Timing *item = find_timing(env,link);
+      MainLoopEnv ee = e;
+      ee.time = e.time+delta_time();
+      item->execute(ee);
+    }
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+    {
+      if (valid && in_timerange) {
+    MainLoopItem *item = find_main_loop(env,show);
+    item->handle_event(e);
+      } else if (valid && !in_timerange) {
+	Timing *item = find_timing(env,link);
+	item->handle_event(e);
+	
+      }
+    }
+  virtual std::vector<int> shader_id() {
+    if (valid && in_timerange) {
+    MainLoopItem *item = find_main_loop(env,show);
+    return item->shader_id();
+    } else if (valid && !in_timerange) {
+      Timing *item = find_timing(env,link);
+      return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+ GameApi::Env &env;
+ float duration;
+ GameApi::ML show;
+ GameApi::ML show2;
+ GameApi::TT link;
+ float start_time2;
+ float end_time2;
+ bool valid;
+ bool in_timerange;
+ bool is_switch;
+ int switch_dir;
+};
+
+
+GameApi::TT GameApi::MainLoopApi::timing_start()
+{
+  return add_timing(e, new Timing2(e));
+}
+
+GameApi::TT GameApi::MainLoopApi::timing(float duration, TT link, ML show)
+{
+  return add_timing(e, new Timing2(e,duration,show,link));
+}
+GameApi::TT GameApi::MainLoopApi::timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir)
+{
+  Timing *t = find_timing(e,link);
+  float start_time = t->end_time();
+
+  float move_amount = 1800.0;
+  
+  GameApi::MN I1 = ev.move_api.mn_empty();
+  GameApi::MN I2 = ev.move_api.translate(I1, start_time, (start_time+duration), move_amount, 0.0, 0.0); 
+
+  GameApi::MN AI1 = ev.move_api.mn_empty();
+  GameApi::MN AI11 = ev.move_api.trans2(AI1,-move_amount,0.0,0.0);
+  GameApi::MN AI2 = ev.move_api.translate(AI11, start_time, (start_time+duration), move_amount, 0.0, 0.0); 
+
+  GameApi::ML new_show = ev.move_api.move_ml(ev,show, I2, 1, 10.0);
+  GameApi::ML new_show2 = ev.move_api.move_ml(ev,show2, AI2, 1, 10.0);
+  
+  return add_timing(e, new Timing2(e,duration,new_show,new_show2,link,switch_dir));
+}
+
+GameApi::ML GameApi::MainLoopApi::timing_exit(TT link)
+{
+  Timing *t = find_timing(e,link)->clone();
+  MainLoopItem *item = (MainLoopItem*)t;
+  return add_main_loop(e,item);
+}
+
+
 #if 0
 GameApi::ML GameApi::MainLoopApi::custom_element(EveryApi &ev, std::string name, std::string scene_url, std::string param_names, std::string param_types, std::string param_default_values)
 {
