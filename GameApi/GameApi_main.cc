@@ -2587,6 +2587,9 @@ GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data);
 #include "editor/logo-preparing.inc"
 #include "editor/logo-downloading.inc"
 
+extern bool g_has_fullscreen_button;
+
+
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
@@ -2608,7 +2611,13 @@ MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
 MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
-ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ if (g_has_fullscreen_button)
+   {
+     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
+     I7 = ev.mainloop_api.array_ml(ev,std::vector<ML>{I7,ml});
+   }
+
+ ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
 
     
 //    ML I19=ev.sprite_api.vertex_array_render(ev,I18);
@@ -2641,7 +2650,13 @@ MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
 MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
-ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ if (g_has_fullscreen_button)
+   {
+     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
+     I7 = ev.mainloop_api.array_ml(ev,std::vector<ML>{I7,ml});
+   }
+
+ ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
 
     
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
@@ -2672,6 +2687,14 @@ MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
 MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
+
+ if (g_has_fullscreen_button)
+   {
+     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
+     I7 = ev.mainloop_api.array_ml(ev,std::vector<ML>{I7,ml});
+   }
+
+ 
 ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
 
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
@@ -2743,6 +2766,9 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
  I26=ev.mainloop_api.array_ml(ev,std::vector<ML>{I12,I23});
   }
   ML I17a = ev.mainloop_api.array_ml(ev,std::vector<ML>{I26, I18});
+
+
+
   I17a = ev.mainloop_api.display_background(ev,I17a);
 
  ML res = I17a;
@@ -2785,6 +2811,8 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  ev.mainloop_api.init_3d(texture);
  ev.mainloop_api.init_3d(texture_2d);
  ev.mainloop_api.init_3d(arr);
+
+ 
  LogoEnv *env = new LogoEnv;
  env->ev = &ev;
  env->res = res;

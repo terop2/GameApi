@@ -503,7 +503,8 @@ enum
     Low_SDL_GL_CONTEXT_DEBUG_FLAG,
     Low_SAMPLE_FREQ,
     Low_AUDIO_F32LSB,
-    Low_SAMPLE_BUF_SIZE
+    Low_SAMPLE_BUF_SIZE,
+    Low_SDL_WINDOW_FULLSCREEN
   };
 
 #define Low_SDL_FINGERDOWN 0x700
@@ -658,7 +659,9 @@ public:
   virtual Low_SDL_Surface* SDL_GetWindowSurface(Low_SDL_Window *win)=0;
   virtual Low_SDL_Window* SDL_CreateWindow(const char *title, int x, int y, int width, int height, unsigned int flags2)=0;
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window)=0;
+  virtual void SDL_SetWindowFullscreen(Low_SDL_Window *window, int val)=0;
   virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context)=0;
+  virtual void SDL_GetWindowSize(Low_SDL_Window *window, int *w, int *h)=0;
   //virtual void SDL_GL_SwapBuffers()=0;
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)=0;
