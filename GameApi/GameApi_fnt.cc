@@ -2016,3 +2016,78 @@ private:
   float start_x, end_x;
   float start_y, end_y;
 };
+
+class FullscreenButton : public MainLoopItem
+{
+public:
+  FullscreenButton(GameApi::Env &env, GameApi::EveryApi &ev) : env(env), ev(ev) { }
+
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+    GameApi::BB I1=ev.bool_bitmap_api.bb_empty(15,15);
+    GameApi::BB I2=ev.bool_bitmap_api.rectangle(I1,0,0,5,2);
+    GameApi::BB I3=ev.bool_bitmap_api.rectangle(I2,0,0,2,15);
+    GameApi::BB I4=ev.bool_bitmap_api.rectangle(I3,0,13,5,2);
+    GameApi::BM I5=ev.bool_bitmap_api.to_bitmap(I4,255,255,255,255,0,0,0,0);
+    GameApi::BM I6=ev.bitmap_api.flip_x(I5);
+    GameApi::BM I7=ev.bitmap_api.blitbitmap(I5,I6,0,0);
+    GameApi::BM I8=ev.bitmap_api.scale_to_size(I7,50);
+    GameApi::ML I9=ev.sprite_api.vertex_array_render(ev,I8);
+    GameApi::MN I10=ev.move_api.mn_empty();
+    GameApi::MN I11=ev.move_api.trans2(I10,1140,844,0);
+    GameApi::ML I12=ev.move_api.move_ml(ev,I9,I11,1,10.0);
+    GameApi::ML I13=ev.sprite_api.turn_to_2d(ev,I12,0.0,0.0,800.0,600.0);
+    ml = I13;
+    
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void Prepare() {
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (e.button==0 && e.cursor_pos.x>=1140 && e.cursor_pos.x<=1140+50 &&
+	e.cursor_pos.y>=844 && e.cursor_pos.y<=844+50)
+      {
+	req_state=!req_state;
+      }
+    if (e.type==0x300 && e.ch==27) { req_state=false; }
+#ifdef EMSCRIPTEN
+    if (req_state!=current_state) {
+      if (req_state==true) {
+	emscripten_request_fullscreen("canvas", false);
+	current_state=true;
+      } else
+	{
+	  emscripten_exit_fullscreen();
+	  current_state=false;
+	}
+      
+
+    }
+				   
+#endif
+  }
+  virtual std::vector<int> shader_id() {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::ML ml;
+  bool current_state=false;
+  bool req_state=false;
+};
+
+GameApi::ML GameApi::MainLoopApi::fullscreen_button(EveryApi &ev)
+{
+  return add_main_loop(e, new FullscreenButton(e,ev));
+}
