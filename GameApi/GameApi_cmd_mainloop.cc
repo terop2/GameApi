@@ -800,7 +800,15 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string" },
 			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "restart_screen"));
-			
+
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::fullscreen_button,
+			 "fullscreen_button",
+			 { "ev" },
+			 { "EveryApi&" },
+			 { "ev" },
+			 "ML", "mainloop_api", "fullscreen_button"));
+  
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::skeletal_api, &GameApi::Skeletal::skeletal_bind,
 			 "skeletal_bind",
