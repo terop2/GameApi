@@ -1718,6 +1718,7 @@ function drop(ev)
 var canv = document.getElementById("canvas");
 var Module = {
    canvas : canv,
+   locateFile : (function(path) { return path+"?<?php echo filemtime("web_page_highmem.js") ?>"; }),
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
