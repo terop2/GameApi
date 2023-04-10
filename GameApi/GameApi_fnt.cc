@@ -2032,6 +2032,8 @@ KP extern "C" void set_resize_event(int sx, int sy);
 
 bool g_has_fullscreen_button=false;
 
+#ifdef EMSCRIPTEN
+
 EM_JS(void, call_fullscreen, (), {
     var el = document.getElementById("canvas");
     el.requestFullscreen();
@@ -2039,7 +2041,7 @@ EM_JS(void, call_fullscreen, (), {
 EM_JS(void, call_exit_fullscreen, (), {
     document.exitFullscreen();
   });
-
+#endif
 
 class FullscreenButton : public MainLoopItem
 {
@@ -2107,7 +2109,7 @@ public:
 	int w=800;
 	int h=600;
 	//g_low->sdl->SDL_GetWindowSize(sdl_window, &w,&h);
-	std::cout << "RESIZING TO:" << w << "x" << h << std::endl; 
+	//std::cout << "RESIZING TO:" << w << "x" << h << std::endl; 
 	set_resize_event(w,h);
 	current_state=true;
       } else
