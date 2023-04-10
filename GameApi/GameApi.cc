@@ -12196,12 +12196,12 @@ GameApi::US GameApi::UberShaderApi::v_ambient(US us)
 GameApi::US GameApi::UberShaderApi::v_newshadow_1(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("newshadow_1", next,"IN_POSITION EX_POSITION LIGHTDIR"));
+  return add_uber(e, new V_ShaderCallFunction("newshadow_1", next,"IN_POSITION EX_POSITION LIGHTDIR NEWSHADOW"));
 }
 GameApi::US GameApi::UberShaderApi::v_newshadow_2(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("newshadow_2", next,"IN_POSITION EX_POSITION LIGHTDIR"));
+  return add_uber(e, new V_ShaderCallFunction("newshadow_2", next,"IN_POSITION EX_POSITION LIGHTDIR NEWSHADOW"));
 }
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
