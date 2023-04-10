@@ -2,6 +2,9 @@
 #include "GameApi_h.hh"
 #include <iostream>
 #include <iomanip>
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
 
 struct FontPriv
 {
@@ -2041,6 +2044,7 @@ EM_JS(void, call_fullscreen, (), {
 EM_JS(void, call_exit_fullscreen, (), {
     document.exitFullscreen();
   });
+
 #endif
 
 class FullscreenButton : public MainLoopItem
@@ -2063,8 +2067,9 @@ public:
     GameApi::MN I10=ev.move_api.mn_empty();
     GameApi::MN I11=ev.move_api.trans2(I10,1140,844,0);
     GameApi::ML I12=ev.move_api.move_ml(ev,I9,I11,1,10.0);
-    GameApi::ML I13=ev.sprite_api.turn_to_2d(ev,I12,0.0,0.0,800.0,600.0);
-    ml = I13;
+    GameApi::ML I13=ev.sprite_api.turn_to_2d(ev,I12,0.0,0.0,1200.0,900.0);
+    GameApi::ML I14=ev.mainloop_api.disable_z_buffer(I13);
+    ml = I14;
     
     MainLoopItem *item = find_main_loop(env,ml);
     item->Prepare();
@@ -2074,25 +2079,30 @@ public:
   }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
-    if (current_state==false) {
       if (ml.id!=-1) {
 	MainLoopItem *item = find_main_loop(env,ml);
 	item->execute(e);
       }
-    }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
 
     //std::cout << e.button << " " << e.cursor_pos.x << " " << e.cursor_pos.y << " " << e.type << " " << e.ch << std::endl;
 
+    bool b=false;
 #ifdef EMSCRIPTEN
-    if (e.button==0 && e.cursor_pos.x>=750 && e.cursor_pos.x<=750+50 &&
-	e.cursor_pos.y>=550 && e.cursor_pos.y<=550+50)
+    if (current_state==true) {
+      b = e.button==0 && e.cursor_pos.x>=675 && e.cursor_pos.x<=675+50 &&
+	e.cursor_pos.y>=550 && e.cursor_pos.y<=550+50;
+    } else {
+      b = e.button==0 && e.cursor_pos.x>=750 && e.cursor_pos.x<=750+50 &&
+	e.cursor_pos.y>=550 && e.cursor_pos.y<=550+50;
+    }
 #else
-    if (e.button==0 && e.cursor_pos.x>=1140 && e.cursor_pos.x<=1140+50 &&
-	e.cursor_pos.y>=844 && e.cursor_pos.y<=844+50)
+    b = e.button==0 && e.cursor_pos.x>=1140 && e.cursor_pos.x<=1140+50 &&
+      e.cursor_pos.y>=844 && e.cursor_pos.y<=844+50;
 #endif
+      if (b)
       {
 	req_state=!req_state;
       }

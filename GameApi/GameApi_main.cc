@@ -2429,13 +2429,23 @@ bool GameApi::MainLoopApi::logo_iter()
 {
   LogoEnv *env = logo_env;
   if (!env) return false;
-  /*GameApi::MainLoopApi::Event event =*/ env->ev->mainloop_api.get_event();
+  /*GameApi::MainLoopApi::Event event =*/ //env->ev->mainloop_api.get_event();
+    GameApi::MainLoopApi::Event e;
+    while((e = env->ev->mainloop_api.get_event()).last==true)
+      {
+	  env->ev->mainloop_api.event_ml(env->res, e);
+      }
+
+
+
   env->ev->mainloop_api.clear_3d();
   M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
   M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
   M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
   env->ev->mainloop_api.execute_ml(*env->ev,env->res, env->color, env->texture, env->texture_2d, env->arr,in_MV, in_T, in_N, get_screen_sx(), get_screen_sy());
   env->ev->mainloop_api.swapbuffers();
+
+  
   frame_count++;
   if (frame_count>2) {
     return true;
@@ -2611,11 +2621,6 @@ MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
 MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
- if (g_has_fullscreen_button)
-   {
-     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
-     I7 = ev.mainloop_api.array_ml(ev,std::vector<ML>{I7,ml});
-   }
 
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
 
@@ -2650,11 +2655,6 @@ MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
 MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
- if (g_has_fullscreen_button)
-   {
-     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
-     I7 = ev.mainloop_api.array_ml(ev,std::vector<ML>{I7,ml});
-   }
 
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
 
@@ -2687,12 +2687,6 @@ MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
 MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
-
- if (g_has_fullscreen_button)
-   {
-     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
-     I7 = ev.mainloop_api.array_ml(ev,std::vector<ML>{I7,ml});
-   }
 
  
 ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
@@ -2772,6 +2766,15 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
   I17a = ev.mainloop_api.display_background(ev,I17a);
 
  ML res = I17a;
+
+ if (g_has_fullscreen_button)
+   {
+     GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
+     res = ev.mainloop_api.array_ml(ev,std::vector<ML>{res,ml});
+   }
+
+
+
 #else
 BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
  FI I19 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 80,80);
@@ -2812,6 +2815,8 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  ev.mainloop_api.init_3d(texture_2d);
  ev.mainloop_api.init_3d(arr);
 
+  MainLoopItem *item = find_main_loop(e,res);
+ item->Prepare();
  
  LogoEnv *env = new LogoEnv;
  env->ev = &ev;
