@@ -2,9 +2,9 @@
 all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
-SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz
+SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz -g 
 
-NOSIZEOPT = -s TOTAL_STACK=200kb
+NOSIZEOPT = -s TOTAL_STACK=200kb -g
 
 #--closure 1
 #--memoryprofiler
@@ -16,7 +16,7 @@ STRIP = echo emstrip --no-strip-all --remove-section=.debug_str --remove-section
 #
 #-g   (doesnt work with closure compiler)
 
-ALLFLAGS = $(NOSIZEOPT) $(REQUIREDOPT)
+ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
 
 # --use-preload-cache
 # --preload-file web_page/logo-connecting.raw --preload-file web_page/logo-downloading.raw --preload-file web_page/logo-preparing.raw

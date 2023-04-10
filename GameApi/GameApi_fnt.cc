@@ -2017,11 +2017,36 @@ private:
   float start_y, end_y;
 };
 
+extern Low_SDL_Window *sdl_window;
+extern int g_resize_event_sx;
+extern int g_resize_event_sy;
+
+#ifdef EMSCRIPTEN
+#define KP EMSCRIPTEN_KEEPALIVE
+#else
+#define KP
+#endif
+
+
+KP extern "C" void set_resize_event(int sx, int sy);
+
+bool g_has_fullscreen_button=false;
+
+EM_JS(void, call_fullscreen, (), {
+    var el = document.getElementById("canvas");
+    el.requestFullscreen();
+  });
+EM_JS(void, call_exit_fullscreen, (), {
+    document.exitFullscreen();
+  });
+
+
 class FullscreenButton : public MainLoopItem
 {
 public:
-  FullscreenButton(GameApi::Env &env, GameApi::EveryApi &ev) : env(env), ev(ev) { }
-
+  FullscreenButton(GameApi::Env &env, GameApi::EveryApi &ev) : env(env), ev(ev) { g_has_fullscreen_button=true; ml.id=-1; }
+  ~FullscreenButton() { g_has_fullscreen_button=false; }
+  
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare() {
     GameApi::BB I1=ev.bool_bitmap_api.bb_empty(15,15);
@@ -2047,25 +2072,50 @@ public:
   }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->execute(e);
+    if (current_state==false) {
+      if (ml.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,ml);
+	item->execute(e);
+      }
+    }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+
+    //std::cout << e.button << " " << e.cursor_pos.x << " " << e.cursor_pos.y << " " << e.type << " " << e.ch << std::endl;
+
+#ifdef EMSCRIPTEN
+    if (e.button==0 && e.cursor_pos.x>=750 && e.cursor_pos.x<=750+50 &&
+	e.cursor_pos.y>=550 && e.cursor_pos.y<=550+50)
+#else
     if (e.button==0 && e.cursor_pos.x>=1140 && e.cursor_pos.x<=1140+50 &&
 	e.cursor_pos.y>=844 && e.cursor_pos.y<=844+50)
+#endif
       {
 	req_state=!req_state;
       }
+    if (e.type==0x300 && e.ch==1073741892) { req_state=true; }
     if (e.type==0x300 && e.ch==27) { req_state=false; }
 #ifdef EMSCRIPTEN
     if (req_state!=current_state) {
       if (req_state==true) {
-	emscripten_request_fullscreen("canvas", false);
+	old_sx = g_resize_event_sx;
+	old_sy = g_resize_event_sy;
+	//emscripten_request_fullscreen("canvas", false);
+	//g_low->sdl->SDL_SetWindowFullscreen(sdl_window, Low_SDL_WINDOW_FULLSCREEN);
+	call_fullscreen();
+	int w=800;
+	int h=600;
+	//g_low->sdl->SDL_GetWindowSize(sdl_window, &w,&h);
+	std::cout << "RESIZING TO:" << w << "x" << h << std::endl; 
+	set_resize_event(w,h);
 	current_state=true;
       } else
 	{
-	  emscripten_exit_fullscreen();
+	  //emscripten_exit_fullscreen();
+	  //g_low->sdl->SDL_SetWindowFullscreen(sdl_window, 0);
+	  call_exit_fullscreen();
+	  set_resize_event(old_sx,old_sy);
 	  current_state=false;
 	}
       
@@ -2075,8 +2125,10 @@ public:
 #endif
   }
   virtual std::vector<int> shader_id() {
-    MainLoopItem *item = find_main_loop(env,ml);
-    return item->shader_id();
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      return item->shader_id();
+    } else return std::vector<int>();
   }
 
 private:
@@ -2085,6 +2137,7 @@ private:
   GameApi::ML ml;
   bool current_state=false;
   bool req_state=false;
+  int old_sx, old_sy;
 };
 
 GameApi::ML GameApi::MainLoopApi::fullscreen_button(EveryApi &ev)

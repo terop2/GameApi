@@ -208,6 +208,7 @@ void map_enums_sdl(unsigned int &i) {
 }
 void map_enums_sdl(int &i) {
   switch(i) {
+  case Low_SDL_WINDOW_FULLSCREEN: i=SDL_WINDOW_FULLSCREEN; break;
   case Low_SDL_WINDOWPOS_CENTERED: i=SDL_WINDOWPOS_CENTERED; break;
   case Low_SDL_WINDOWPOS_CENTERED_DISPLAY: i=SDL_WINDOWPOS_CENTERED_DISPLAY(1); break;
 #ifndef EMSCRIPTEN
@@ -1195,12 +1196,20 @@ class SDLApi : public SDLLowApi
   {
     ::SDL_SetWindowPosition((SDL_Window*)(window->ptr),x,y);
   }
+  virtual void SDL_GetWindowSize(Low_SDL_Window *window, int *w, int *h)
+    {
+      ::SDL_GetWindowSize((SDL_Window*)(window->ptr),w,h);
+    }
 								       
   virtual void SDL_GetWindowPosition(Low_SDL_Window *window, int *x, int *y)
   {
     ::SDL_GetWindowPosition((SDL_Window*)(window->ptr),x,y);
   }
-
+  virtual void SDL_SetWindowFullscreen(Low_SDL_Window *window, int val)
+  {
+    map_enums_sdl(val);
+    ::SDL_SetWindowFullscreen((SDL_Window*)(window->ptr),val);
+  }
   
   virtual char *SDL_GetClipboardText() {
     return ::SDL_GetClipboardText();
