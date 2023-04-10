@@ -5,6 +5,32 @@ std::vector<GameApiItem*> blocker_functions()
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_start,
+			 "t_start",
+			 { },
+			 { },
+			 { },
+			 "TT", "mainloop_api", "timing_start"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing,
+			 "t_time",
+			 { "duration", "link", "show" },
+			 { "float", "TT", "ML" },
+			 { "5.0", "", "" },
+			 "TT", "mainloop_api", "timing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_switch,
+			 "t_time_switch",
+			 { "ev", "duration", "link", "show", "show2", "switch_dir" },
+			 { "EveryApi&", "float", "TT", "ML", "ML", "int" },
+			 { "ev", "5.0", "", "", "", "0" },
+			 "TT", "mainloop_api", "timing_switch"));
+			 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_exit,
+			 "t_exit",
+			 { "link" },
+			 { "TT" },
+			 { "" },
+			 "ML", "mainloop_api", "timing_exit"));
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::html_url,
 			 "html_url",
 			 { "url" },
