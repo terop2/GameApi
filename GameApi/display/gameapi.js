@@ -1,4 +1,5 @@
 
+
 if (!crossOriginIsolated) {
     console.log("NOT CROSSORIGIN ISOLATED");
     console.log("Your web server needs the following configuration to get gameapi builder animations working:");
@@ -29,117 +30,67 @@ var hom = document.getElementById("homepage");
 var hom2 = hom.innerHTML;
 var Module = {
     canvas : canv,
-    locateFile : (function(path) { return path+"?" + data2;}),
     arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
     print : (function() { return function(text) { console.log(text); } })(),
 };
-load_emscripten();
-window.onresize = resize_event;
-window.setTimeout(function() { resize_event(null); },10);
-check_if_emscripten_running();
 var g_emscripten_running = false;
 function load_file()
 {
     if (prefiletag) {
-	var filename = prefilename.innerText;
-	var data3 = atob(prefiletag.innerText);
+        var filename = prefilename.innerText;
+        var data3 = atob(prefiletag.innerText);
+       var filename2 = prefilename2.innerText;
+        var data4 = atob(prefiletag2.innerText);
 
-	var filename2 = prefilename2.innerText;
-	var data4 = atob(prefiletag2.innerText);
-	
-	//console.log("FILE SET");
-	//console.log(data3.length);
-	//console.log(filename);
-	//console.log("FILE SET");
-	//console.log(data4.length);
-	//console.log(filename2);
-	   try {
-	       Module.ccall("set_integer", null, ["number", "number"], [2,data3.length], { async:true });
-	       Module.ccall("set_string", null, ["number", "string"], [1,filename] , { async:true });
-	       Module.ccall("set_string", null, ["number", "string"], [2,data3], { async:true });
+                                                                         
+           try {
+               Module.ccall("set_integer", null, ["number", "number"], [2,data3.length], { async:true });
+               Module.ccall("set_string", null, ["number", "string"], [1,filename] , { async:true });
+               Module.ccall("set_string", null, ["number", "string"], [2,data3], { async:true });
 
-	       Module.ccall("set_integer", null, ["number", "number"], [2,data4.length], { async:true });
-	       Module.ccall("set_string", null, ["number", "string"], [1,filename2], { async:true });
-	       Module.ccall("set_string", null, ["number", "string"], [2,data4], { async:true });
-	   } catch(e) {
-	     console.log(e);
-	   }
-	
+               Module.ccall("set_integer", null, ["number", "number"], [2,data4.length], { async:true });
+               Module.ccall("set_string", null, ["number", "string"], [1,filename2], { async:true });
+               Module.ccall("set_string", null, ["number", "string"], [2,data4], { async:true });
+           } catch(e) {
+             console.log(e);
+           }
     }
 }
 
 var g_check_em_timeout = null;
-var g_ready_bit=0; // THIS WILL BE CHANGED BY C++ SIDE
+var g_ready_bit=0; // THIS WILL BE CHANGED BY C++ SIDE                                                                                                  
 
 function check_em() {
     return function() {
-	g_emscripten_running = true;
+        g_emscripten_running = true;
         if (g_check_em_timeout != null)
             clearTimeout(g_check_em_timeout);
         g_check_em_timeout = null;
 
-	resize_event(null);
-	load_file();
+        resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null);
+        load_file();
     }
 }
 
 function check_emscripten_running()
 {
+    console.log("HEP");
     var canv = document.getElementById("canvas");
     if (Module) {
-	Module['onRuntimeInitialized'] = check_em();
+        Module['onRuntimeInitialized'] = check_em();
     g_check_em_timeout = setTimeout(function() {
             console.log("waiting for emscripten startup..");
-	    if (g_ready_bit==1) {
-	 	console.log("onRuntimeInitialized didn't trigger in time"); check_em()(); } },1000);
+            if (g_ready_bit==1) {
+                console.log("onRuntimeInitialized didn't trigger in time"); check_em()(); } },1000);
     } else {
-	setTimeout(function() { check_emscripten_running() }, 100);
+        setTimeout(function() { check_emscripten_running() }, 100);
     }
 }
 function check_if_emscripten_running()
 {
+    console.log("FOO");
     setTimeout(function() { check_emscripten_running() },100);
 }
-
-function resize_event(event) {
-  var wd = window.innerWidth;
-  var hd = window.innerHeight;
-  var wd2 = wd/800.0;
-  var hd2 = hd/600.0;
-  if (wd2>hd2) wd2=hd2; else
-  if (hd2>wd2) hd2=wd2;
-
-  var hd3 = hd2;
-
-  wd2*=800.0;
-  hd2*=600.0;
-  wd=wd2;
-  hd=hd2;
-    wd-=60;
-    hd-=60;
-    if (wd>800) wd=800;
-    if (hd>600) hd=600;
-  var iframe = document.getElementById("canvas");
-  if (!iframe) return;
-  iframe.style.width = (wd).toString() + "px";
-  iframe.style.height = (hd).toString() + "px";
-
-  //var prog = document.getElementById("prgress");
-  //prog.style.width = (wd).toString() + "px";
-  //var hdd = 30*hd3;
-//prog.style.height = hdd.toString() + "px";
-
-  if (Module && g_emscripten_running) {
-	   try {
-Module.ccall("set_resize_event", null, ["number", "number"], [wd,hd], {async:true});
-	   } catch(e) {
-	     console.log(e);
-	   }
-
-  }
-
-}
-
 function load_emscripten()
 {
     var agent = navigator.userAgent;
@@ -149,16 +100,19 @@ function load_emscripten()
     if (agent.indexOf("Mobile") != -1) mobile = true;
     if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
-    var src = "web_page_highmem.js?"+data2;
+    var src = "engine/web_page_highmem.js?"+data2;
     var vstr = agent.substring(idx+8);
     var vnum = parseInt(vstr);
-    
+
     if (firefox && vnum<=78)
-	src="web_page_lowmem_nothreads.js?" + data2;
-    else if (firefox) src="web_page_highmem.js?" + data2;
-    if (mobile) src="web_page_lowmem_nothreads.js?"+data2;
-    
+        src="engine/web_page_lowmem_nothreads.js?" + data2;
+    else if (firefox) src="engine/web_page_highmem.js?" + data2;
+    if (mobile) src="engine/web_page_lowmem_nothreads.js?"+data2;
+
     var script = document.createElement("script");
     script.setAttribute("src", src);
     document.getElementsByTagName("head")[0].appendChild(script);
 }
+load_emscripten();
+                                                                        
+check_if_emscripten_running();
