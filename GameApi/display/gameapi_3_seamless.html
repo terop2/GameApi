@@ -48,8 +48,7 @@ function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,en
               c.style.height = (hd).toString() + "px";
               c.style.left = (delta_x + cc.offsetLeft + (cc.clientWidth-wd)/2).toString() + "px";
               c.style.top = (delta_y + cc.offsetTop + (cc.clientHeight-hd)/2).toString() + "px";
-          } else window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); }, 100\
-);
+          } else window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); }, 100);
       }
 }
 
