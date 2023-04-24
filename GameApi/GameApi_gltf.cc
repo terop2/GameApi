@@ -723,12 +723,11 @@ public:
       const tinygltf::Mesh &m = interface->get_mesh(mesh_index);
       prim = m.primitives[prim_index];
     }
-    else { std::cout << "Prim failed!" << std::endl;  return; }
+    else { std::cout << "Prim failed!" << std::endl; return; }
 
     //std::cout << "MESH: " << load->model.meshes[mesh_index].name << std::endl;
     
     //model = interface;
-    
     mode = prim.mode;
 
     //int material = prim->material;

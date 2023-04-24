@@ -20,8 +20,9 @@
 (or if you got the content from sketchfab, their gltf zip files are acceptable too)
 <br><br>
 
-<input class="cb" type="checkbox" name="transparent" value="trans" checked><div class="label">Transparent</div><br>
-<input class="cb" type="checkbox" name="shadow" value="shadow" checked><div class="label">Shadow</div><br>
+<input class="cb" type="checkbox" name="transparent" value="trans"><div class="label">Transparent Canvas</div><br>
+<input class="cb" type="checkbox" name="shadow" value="shadow"><div class="label">Shadow</div><br>
+<input class="cb" type="checkbox" name="anim" value="anim"><div class="label">Gltf Animation</div><br>
 <input class="cb" type="checkbox" name="zoom" value="zoom" checked><div class="label">Zoom</div><br>
 <input class="cb" type="checkbox" name="rotate" value="rotate" checked><div class="label">Rotate</div><br>
 <!--input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br-->
