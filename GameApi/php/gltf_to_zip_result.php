@@ -29,12 +29,34 @@ else
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
 if ($shadow=="shadow") {
    $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
-   $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+   $file .= "MT I210=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+if ($anim=="anim") {
+   $file .= "MT I21=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I210,c,0);\n";
+
+   $file .= "MT I202=ev.materials_api.m_def(ev);\n";
+   $file .= "MT I212=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I202,c,0);\n";
+
+} else {
+  $file .= "MT I21=ev.materials_api.mt_alt(ev,std::vector<MT>{I210},0);\n";
+}
    $file .= "P I22=ev.polygon_api.cube(-300,300,-220,-200,-300,300);\n";
    $file .= "MT I23=ev.materials_api.colour_material(ev,0.5);\n";
-   $file .= "ML I24=ev.materials_api.newshadow2_phong(ev,I20,I21,I22,I23,-0.3,-1,-0.3,0,1,ff884422,ffffffff,0.8,1024,false);\n";
+   $file .= "ML I24=ev.materials_api.newshadow2_phong(ev,I20,I21,I22,I23,-0.3,-1,-0.3,0,1,ff884422,ffffffff,0.8,1024,false,I212);\n";
+if ($anim=="anim") {
+  $file .= "P I201=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
+  $file .= "MT I211=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+  $file .= "MT I221=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I211,c,0);\n";
+  $file .= "ML I25=ev.materials_api.bind(I201,I221);\n";
+
+} else {
    $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0);\n";
+}
+if ($anim=="anim") {
+   $file .= "ML I27=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
+   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I27,0.0,99);\n";
+} else {
    $file .= "ML I2=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
+}
 } else
 if ($anim=="anim") {
   $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";

@@ -4,7 +4,7 @@ if [[ $1 ]]; then
     if [ $? -ne 0 ]; then
 	echo "unzip FAIL"
     fi
-    (cd $HOME/.gameapi_builder/deploy/engine; cat ./gameapi.js |sed s@web_page@engine/web_page@ >gameapi2.js)
+    (cd $HOME/.gameapi_builder/deploy/engine; cat ./gameapi.js >gameapi2.js)
     if [ $? -ne 0 ]; then
 	echo "cat FAIL"
     fi
