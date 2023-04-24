@@ -21,13 +21,14 @@ $rotate = $_POST["rotate"];
 //$pan = $_POST["pan"];
 $pan = "nope";
 $shadow = $_POST["shadow"];
+$anim = $_POST["anim"];
 
 if ($is_zip=="yes")
    $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
 else
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
 if ($shadow=="shadow") {
-   $file .= "P I20=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
+   $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
    $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1);\n";
    $file .= "P I22=ev.polygon_api.cube(-300,300,-220,-200,-300,300);\n";
    $file .= "MT I23=ev.materials_api.colour_material(ev,0.5);\n";
@@ -35,6 +36,13 @@ if ($shadow=="shadow") {
    $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0);\n";
    $file .= "ML I2=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
 } else
+if ($anim=="anim") {
+  $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
+  $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+  $file .= "MT I22=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I21,c,0);\n";
+  $file .= "ML I23=ev.materials_api.bind(I20,I22);\n";
+  $file .= "ML I2=ev.mainloop_api.send_key_at_time(I23,0.0,99);\n";
+} else 
   $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
 
 if ($zoom=="zoom")
