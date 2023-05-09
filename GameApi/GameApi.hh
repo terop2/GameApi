@@ -473,6 +473,7 @@ public:
   IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
   IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, int mode );
   IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,int mode );
+  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, int mode, std::string keys);
   IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, int mode );
   IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,int mode);
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
