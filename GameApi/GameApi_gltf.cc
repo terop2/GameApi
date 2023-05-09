@@ -3463,12 +3463,24 @@ float quar_dot(float *a0, float *a1)
   return res;
 }
 
+float bound(float x)
+{
+  if (x<-1.0) x=-1.0f;
+  if (x>1.0) x=1.0f;
+  return x;
+}
+
+void lerp(float *v0, float *v1, float t, float *res);
 void spherical_slerp(float *vk, float *vk1, float t, float *res)
 {
   // This comes from gltf2.0 specification for LINEAR rotation interpolation
-  float a = acos(fabs(quar_dot(vk,vk1)));
-  float s = quar_dot(vk,vk1)/fabs(quar_dot(vk,vk1));
 
+  float a0 = quar_dot(vk,vk1);
+  float a1 = fabs(a0);
+  float a2 = acos(bound(a1));
+  float a = a2; //acos(fabs(quar_dot(vk,vk1)));
+  if (a<0.0001) { lerp(vk,vk1,t,res); return; }
+  float s = quar_dot(vk,vk1)/fabs(quar_dot(vk,vk1));
   for(int i=0;i<4;i++) res[i] = sin(a*(1.0-t))/sin(a)*vk[i] + s*sin(a*t)/sin(a)*vk1[i];
 }
 void lerp(float *v0, float *v1, float t, float *res)
@@ -3563,12 +3575,12 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   next[1]=o2.rot_y;
   next[2]=o2.rot_z;
   next[3]=o2.rot_w;
-  //spherical_slerp(prev,next,val,res2);
-  quar_normalize(prev);
-  quar_normalize(next);
-  lerp(prev,next,val,res2);
+  //quar_normalize(prev);
+  //quar_normalize(next);
+  spherical_slerp(prev,next,val,res2);
+  //lerp(prev,next,val,res2);
   //step_interpolate(prev,next,res2);
-  quar_normalize(res2);
+  //quar_normalize(res2);
   //fix_nan_inf(res2,next);
   res.rot_x = res2[0];
   res.rot_y = res2[1];
