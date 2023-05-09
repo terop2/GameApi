@@ -23,14 +23,35 @@
 <input class="cb" type="checkbox" name="transparent" value="trans"><div class="label">Transparent Canvas</div><br>
 <input class="cb" type="checkbox" name="bigscreen" value="bigscreen"><div class="label">Bigscreen Support</div><br>
 <input class="cb" type="checkbox" name="shadow" value="shadow"><div class="label">Shadow</div><br>
-<input class="cb" type="checkbox" name="anim" value="anim"><div class="label">Gltf Animation</div><br>
-<input class="cb" type="checkbox" name="large" value="large"><div class="label">Large Model</div><br>
+<input id="anim" class="cb" type="checkbox" name="anim" value="anim" onchange="anim_change()"><div class="label">Gltf Animation</div><br>
+<input id="large" class="cb" type="checkbox" name="large" value="large" onchange="large_change()"><div class="label">Large Model</div><br>
 <input class="cb" type="checkbox" name="zoom" value="zoom" checked><div class="label">Zoom</div><br>
 <input class="cb" type="checkbox" name="rotate" value="rotate" checked><div class="label">Rotate</div><br>
 <!--input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br-->
 <p>
 <input class="submit" type="submit" value="Submit">
 </form>
+
+<script>
+function anim_change()
+{
+  var el = document.getElementById("anim");
+  if (el.checked==true)
+  {
+  var el2 = document.getElementById("large");
+  el2.checked=false;
+  }
+}
+function large_change()
+{
+  var el = document.getElementById("large");
+  if (el.checked==true)
+  {
+  var el2 = document.getElementById("anim");
+  el2.checked=false;
+  }
+}
+</script>
 
 Firsttime users should check the server config from our faq: <a href="https://meshpage.org/meshpage_5">faq</a>.<br>
 For advanced users, there's a builder tool available at: <a href="https://meshpage.org/meshpage_4">builder tool</a>.
