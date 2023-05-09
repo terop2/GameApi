@@ -796,6 +796,7 @@ struct EnvImpl
   std::vector<ICache*> caches;
   std::vector<Platform*> platforms;
   std::vector<Timing*> timings;
+  std::vector<GlobalIlluminationData*> globalillumination;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1125,6 +1126,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::GI add_gi(GameApi::Env &e, GlobalIlluminationData *dt);
 GameApi::TT add_timing(GameApi::Env &e, Timing *tm);
 GameApi::PL add_platform(GameApi::Env &e, Platform *pl);
 GameApi::CX add_cache(GameApi::Env &e, ICache *c);
@@ -1284,6 +1286,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi);
 Timing *find_timing(GameApi::Env &e, GameApi::TT tm);
 Platform *find_platform(GameApi::Env &e, GameApi::PL pl);
 ICache *find_cache(GameApi::Env &e, GameApi::CX c);

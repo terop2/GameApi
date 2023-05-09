@@ -22,6 +22,8 @@ $rotate = $_POST["rotate"];
 $pan = "nope";
 $shadow = $_POST["shadow"];
 $anim = $_POST["anim"];
+$bigscreen = $_POST["bigscreen"];
+$large = $_POST["large"];
 
 if ($is_zip=="yes")
    $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
@@ -43,10 +45,15 @@ if ($anim=="anim") {
    $file .= "MT I23=ev.materials_api.colour_material(ev,0.5);\n";
    $file .= "ML I24=ev.materials_api.newshadow2_phong(ev,I20,I21,I22,I23,-0.3,-1,-0.3,0,1,ff884422,ffffffff,0.8,1024,false,I212);\n";
 if ($anim=="anim") {
+  if ($large!="large") {
   $file .= "P I201=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
   $file .= "MT I211=ev.materials_api.gltf_material(ev,I1,0,1);\n";
   $file .= "MT I221=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I211,c,0);\n";
   $file .= "ML I25=ev.materials_api.bind(I201,I221);\n";
+  } else {
+
+  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c);\n";
+ }
 
 } else {
    $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0);\n";
@@ -59,11 +66,16 @@ if ($anim=="anim") {
 }
 } else
 if ($anim=="anim") {
+  if ($large!="large") {
   $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
   $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1);\n";
   $file .= "MT I22=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I21,c,0);\n";
   $file .= "ML I23=ev.materials_api.bind(I20,I22);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I23,0.0,99);\n";
+ } else {
+  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c);\n";
+  $file .= "ML I2=ev.mainloop_api.send_key_at_time(I20,0.0,99);\n";
+  }
 } else 
   $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
 
@@ -87,8 +99,15 @@ if ($transparent=="trans")
 else
    $file .= "ML I6=ev.mainloop_api.array_ml(ev,std::vector<ML>{I5});\n";
 
-$file .= "ML I7=ev.mainloop_api.async_gltf(I6,I1);\n";
-$file .= "RUN I8=ev.blocker_api.game_window2(ev,I7,false,false,0.0,100000.0);\n";
+if ($bigscreen=="bigscreen") {
+   $file .= "ML I70=ev.mainloop_api.fullscreen_button(ev);\n";
+   $file .= "ML I7=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I70});\n";
+   }
+else
+   $file .= "ML I7=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6});\n";
+
+$file .= "ML I8=ev.mainloop_api.async_gltf(I7,I1);\n";
+$file .= "RUN I9=ev.blocker_api.game_window2(ev,I8,false,false,0.0,100000.0);\n";
 
 file_put_contents("./pp2/tmp.txt",$file);
 file_put_contents("./pp2/tmp.zip","");

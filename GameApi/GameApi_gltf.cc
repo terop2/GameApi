@@ -4016,6 +4016,12 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   // recurse children
   int s = node.children.size();
   std::vector<GameApi::ML> vec;
+  //std::cout << "CHILDREN:";
+  //for(int i=0;i<s;i++) {
+  //  int child_id = node.children[i];
+  //  std::cout << child_id << ",";
+  // }
+  //std::cout << std::endl;
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
@@ -4230,6 +4236,7 @@ GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi 
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode)
 {
+  //std::cout << "MESH2: " << mesh_id << std::endl;
   //g_last_resize=Matrix::Identity();
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
     const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
@@ -4654,8 +4661,8 @@ GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
 class GltfMeshAll : public MainLoopItem
 {
 public:
-  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, int mode)
-    :env(env), ev(ev), interface(interface),mix(mix),mode(mode) { res.id = -1;}
+  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, int mode, std::string keys)
+    :env(env), ev(ev), interface(interface),mix(mix),mode(mode),keys(keys) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -4678,7 +4685,7 @@ public:
     int scene_id = interface->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
 
-    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,"",mix,mode );
+    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,mode );
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
     if (res.id!=-1) {
@@ -4720,6 +4727,7 @@ private:
   GameApi::ML res;
   float mix;
   int mode;
+  std::string keys;
 };
 
 class GltfMeshAllP : public FaceCollection
@@ -5250,7 +5258,12 @@ GameApi::ML GameApi::MainLoopApi::ml_empty()
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model0, float mix, int mode )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode));
+  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode,""));
+}
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, int mode, std::string keys)
+{
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode,keys));
 }
 
 class GltfMeshAllEnv : public MainLoopItem
@@ -7796,6 +7809,10 @@ public:
 	    //std::cout << "bindm" << bindm << std::endl;
 	    //std::cout << "m" << m << std::endl;
 	    //std::cout << "resize" << resize << std::endl;
+
+	    //Matrix rr0_inv = Matrix::Inverse(rr0);
+	    //Matrix rr_int_inv = Matrix::Inverse(rr_int);
+
 	    
 	    if (mode==0)
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));

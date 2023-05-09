@@ -23954,3 +23954,25 @@ template<class T>
 Bitmap<T> *subbitmap_t(Bitmap<T> *bm, int x, int y, int width, int height);
 
 
+
+// Here's needed functions for GI
+
+bool ray_obj_intersection(GameApi::P p, Point pos, Vector dir)
+{
+}
+
+void GenerateSemiSphere(Vector dir, std::vector<Vector> &dir, int num)
+{
+}
+
+GameApi::GI GameApi::PolygonApi::generate_gi(int num, P p)
+{
+}
+
+GameApi::GA GameApi::PolygonApi::update_gi_percentage(GI gi, P scene)
+{
+}
+
+void GameApi::PolygonApi::pass_to_shader(GI gi)
+{
+}
