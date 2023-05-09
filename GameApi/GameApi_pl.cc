@@ -23957,6 +23957,8 @@ Bitmap<T> *subbitmap_t(Bitmap<T> *bm, int x, int y, int width, int height);
 
 // Here's needed functions for GI
 
+#if 0
+
 bool ray_obj_intersection(GameApi::P p, Point pos, Vector dir)
 {
 }
@@ -23976,3 +23978,4 @@ GameApi::GA GameApi::PolygonApi::update_gi_percentage(GI gi, P scene)
 void GameApi::PolygonApi::pass_to_shader(GI gi)
 {
 }
+#endif

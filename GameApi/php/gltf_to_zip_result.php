@@ -30,7 +30,11 @@ if ($is_zip=="yes")
 else
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
 if ($shadow=="shadow") {
-   $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
+   if ($large!="large") {
+      $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
+      } else {
+      $file .= "P I20=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
+      }
    $file .= "MT I210=ev.materials_api.gltf_material(ev,I1,0,1);\n";
 if ($anim=="anim") {
    $file .= "MT I21=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I210,c,0);\n";
@@ -40,6 +44,7 @@ if ($anim=="anim") {
 
 } else {
   $file .= "MT I21=ev.materials_api.mt_alt(ev,std::vector<MT>{I210},0);\n";
+  $file .= "MT I212=ev.materials_api.m_def(ev);\n";
 }
    $file .= "P I22=ev.polygon_api.cube(-300,300,-220,-200,-300,300);\n";
    $file .= "MT I23=ev.materials_api.colour_material(ev,0.5);\n";
