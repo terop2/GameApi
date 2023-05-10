@@ -74,7 +74,7 @@ function check_em() {
 
 function check_emscripten_running()
 {
-    console.log("HEP");
+    //console.log("HEP");
     var canv = document.getElementById("canvas");
     if (Module) {
         Module['onRuntimeInitialized'] = check_em();
@@ -88,7 +88,7 @@ function check_emscripten_running()
 }
 function check_if_emscripten_running()
 {
-    console.log("FOO");
+    //console.log("FOO");
     setTimeout(function() { check_emscripten_running() },100);
 }
 function load_emscripten()
