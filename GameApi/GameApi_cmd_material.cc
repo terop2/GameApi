@@ -266,6 +266,12 @@
 			 { "ev", "", "ffaaaaaa", "ffeeeeee", "ffffffff" },
 			 "MT", "materials_api", "shading2"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::adjust,
+			 "m_adjust",
+			 { "ev", "nxt", "color", "dark", "light" },
+			 { "EveryApi&", "MT", "unsigned int", "float", "float" },
+			 { "ev", "", "ffffffff", "0.0", "1.0" },
+			 "MT", "materials_api", "adjust"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong,
 			 "m_phong",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },

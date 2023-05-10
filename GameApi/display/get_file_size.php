@@ -43,7 +43,10 @@ if (stream_is_local($url)) {
   $splitfilename = $filename . ".aa.br";
   $splitfilename2 = $filename . ".aa";
   $mode = file_exists($splitfilename);
-  $chunksize = filesize($splitfilename2);
+  if ($mode)
+     $chunksize = filesize($splitfilename2);
+  else
+     $chunksize = filesize($filename);
 } else {
   $data = get_headers($url,true);
   $size = isset($data['Content-Length'])?(int) $data['Content-Length']:0;

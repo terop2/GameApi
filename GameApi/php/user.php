@@ -428,7 +428,7 @@ function js_highmem()
   $firefox = strpos($ua, "Firefox") ? true : false;
   $match2 = false;
   preg_match( "#Firefox/(.+?)\.#", $ua, $match2 );
-  $firefox_version = $match2[1];
+  if ($firefox) $firefox_version = $match2[1];
 
   if ($firefox && $firefox_version <=78) { return "no"; }
   return "yes";
