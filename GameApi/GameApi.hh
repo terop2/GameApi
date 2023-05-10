@@ -1597,6 +1597,7 @@ public:
   IMPORT MT glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos);
   IMPORT MT water(EveryApi &ev, MT next, unsigned int color1, unsigned int color2, unsigned int color3, float center_x, float center_y, float center_z, float wave_mult, float time_mult);
 
+  IMPORT MT adjust(EveryApi &ev, MT nxt, unsigned int ad_color, float ad_dark, float ad_light);
   
   IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT MT phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
@@ -2932,6 +2933,7 @@ public:
   IMPORT ML newshadow_shader_1(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float scale);
   IMPORT ML newshadow_shader_2_phong(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
   IMPORT ML newshadow_shader_2_gltf(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int texindex);
+  IMPORT ML adjust_shader(EveryApi &ev, ML mainloop, unsigned int ad_color, float ad_dark, float ad_light);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
@@ -3884,6 +3886,7 @@ public:
   US v_newshadow_1(US us);
   US v_newshadow_2(US us);
   US v_phong(US us);
+  US v_adjust(US us);
   US v_generic(US us, std::string name, std::string flags);
   US v_vertexphong(US us);
   US v_glowedge(US us);
@@ -3907,6 +3910,7 @@ public:
   US f_specular(US us);
   US f_newshadow_1(US us);
   US f_newshadow_2(US us, bool is_phong);
+  US f_adjust(US us);
   US f_phong(US us);
   US f_phong2(US us);
   US f_generic(US us, std::string name, std::string flags);
