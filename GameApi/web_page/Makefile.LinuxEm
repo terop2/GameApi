@@ -2,9 +2,9 @@
 all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
-SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz -g 
+SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz
 
-NOSIZEOPT = -s TOTAL_STACK=200kb -g
+NOSIZEOPT = -s TOTAL_STACK=200kb
 
 #--closure 1
 #--memoryprofiler

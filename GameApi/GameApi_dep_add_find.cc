@@ -1433,6 +1433,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
 }
 
+GameApi::GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->globalillumination[gi.id];  
+}
+
 Timing *find_timing(GameApi::Env &e, GameApi::TT tm)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1983,6 +1989,15 @@ NDim<float,Point> *find_dim(GameApi::Env &e, GameApi::MV mv)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->dims[mv.id];
+}
+
+GameApi::GI add_gi(GameApi::Env &e, GameApi::GlobalIlluminationData *dt)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->globalillumination.push_back(dt);
+  GameApi::GI c2;
+  c2.id = env->globalillumination.size()-1;
+  return c2;
 }
 
 GameApi::CX add_cache(GameApi::Env &e, ICache *c)

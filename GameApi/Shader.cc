@@ -1100,7 +1100,10 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "#endif\n"
 "#endif\n"
 
-
+"vec4 adjust(vec4 pos)\n"
+    "{\n"
+    "   return pos;\n"
+    "}\n"
     
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
@@ -1669,6 +1672,18 @@ s+="#ifdef SPECULAR_SIZE\n"
 "    return mix(water_color2,water_color3,(s-0.5)*2.0);\n"
 "}\n"
 "#endif\n"
+
+"uniform vec4 ad_color;\n"
+"uniform float ad_light;\n"
+"uniform float ad_dark;\n"
+"vec4 adjust(vec4 rgb)\n"
+   "{\n"
+   "   vec3 cc = ad_color.rgb*rgb.rgb;\n"
+   "   cc *= (ad_light-ad_dark);\n"
+   "   cc += vec3(ad_dark,ad_dark,ad_dark);\n"
+   "   return vec4(cc,rgb.a);\n"
+   "}\n"   
+   
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
@@ -3106,7 +3121,13 @@ s+="precision highp float;\n"
 "#endif\n"
 "#endif\n"
 
-    
+
+"vec4 adjust(vec4 pos)\n"
+    "{\n"
+    "   return pos;\n"
+    "}\n"
+
+  
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_NORMAL2\n"
@@ -4257,6 +4278,18 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
 "#endif\n"
 
 
+"uniform vec4 ad_color;\n"
+"uniform float ad_light;\n"
+"uniform float ad_dark;\n"
+"vec4 adjust(vec4 rgb)\n"
+   "{\n"
+   "   vec3 cc = ad_color.rgb*rgb.rgb;\n"
+   "   cc *= (ad_light-ad_dark);\n"
+   "   cc += vec3(ad_dark,ad_dark,ad_dark);\n"
+   "   return vec4(cc,rgb.a);\n"
+   "}\n"
+
+   
    
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
@@ -5688,7 +5721,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //    std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+          std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5720,7 +5753,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //           std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+                 std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

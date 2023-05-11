@@ -3823,7 +3823,7 @@ public:
   }
   virtual void Collect(CollectVisitor &vis) { ml->Collect(vis); }
   virtual void HeavyPrepare() { }
-  virtual void Prepare() { }
+  virtual void Prepare() { ml->Prepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e) {
     ml->execute(e);
