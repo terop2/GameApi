@@ -5381,10 +5381,13 @@ std::string replace_c(const replace_c_params &pp)
 		  int num = call->index(0);
 		  std::string s = call->func_call();
 		  out+=s;
+		  int num2 = num + 1;
+		  std::string s2 = call->func_call2(num2);
+		  out+=s2;
 		  //std::cout << s << std::endl;
 
 		  std::stringstream ss3;
-		  ss3 << num+1;
+		  ss3 << num2;
 		  out+="gl_Position = in_P * in_T * in_MV * pos";
 		  out+=ss3.str();
 		  out+=";\n";
@@ -5721,7 +5724,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-          std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //          std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5753,7 +5756,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-                 std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //               std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
