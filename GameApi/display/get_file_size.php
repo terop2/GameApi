@@ -46,7 +46,7 @@ if (stream_is_local($url)) {
   if ($mode)
      $chunksize = filesize($splitfilename2);
   else
-     $chunksize = filesize($filename);
+     $chunksize = 0;
 } else {
   $data = get_headers($url,true);
   $size = isset($data['Content-Length'])?(int) $data['Content-Length']:0;

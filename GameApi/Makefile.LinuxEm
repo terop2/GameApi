@@ -19,7 +19,7 @@
 #
 
 
-allopts = -Oz -g
+allopts = -Oz
 # -Oz
 
 nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor
