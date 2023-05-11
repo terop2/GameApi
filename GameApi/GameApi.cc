@@ -12051,7 +12051,7 @@ public:
     return out;
   }
   std::string func_call2(int &index) const {
-    return "";
+    return next->func_call2(index);
   }
   std::string define_strings() const { 
     std::string s1 = defines;
@@ -12108,6 +12108,55 @@ private:
   mutable int id;
   std::string defines;
 };
+
+class V_ShaderCallFunctionFlip : public ShaderCall
+{
+public:
+  V_ShaderCallFunctionFlip(std::string funcname, ShaderCall *next, std::string defines) : funcname(funcname), next(next),defines(defines) { }
+  int index(int base) const {
+    id = next->index(base);
+    return id;
+  }
+  virtual std::string func_name() const { return funcname; }
+
+  std::string func_call() const
+  {
+    std::string out;
+    out+=next->func_call();
+    return out;
+  }
+  std::string func_call2(int &index) const {
+    std::string out;
+    out+=next->func_call2(index);
+    std::stringstream ss;
+    int i = index;
+    ss << i+1;
+    std::stringstream ss2;
+    ss2 << i;
+    out+="vec4 pos";
+    out+=ss.str();
+    out+=" = ";
+    out+=funcname;
+    out+="(pos";
+    out+=ss2.str();
+    out+=");\n";
+    index++;
+    return out;
+  }
+  std::string define_strings() const { 
+    std::string s1 = defines;
+    std::string s2 = next->define_strings();
+    std::string m = (s1=="" ||s2=="") ? "" : " ";
+    return s1 + m + s2; 
+  }
+private:
+  std::string funcname;
+  ShaderCall *next;
+  mutable int id;
+  std::string defines;
+};
+
+
 class F_ShaderCallFunctionFlip : public ShaderCall
 {
 public:
@@ -12220,7 +12269,7 @@ GameApi::US GameApi::UberShaderApi::v_edge(US us)
 GameApi::US GameApi::UberShaderApi::v_gltf_anim(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("gltf_anim", next, "SKELETON"));
+  return add_uber(e, new V_ShaderCallFunctionFlip("gltf_anim", next, "SKELETON"));
 }
 GameApi::US GameApi::UberShaderApi::v_globe(US us)
 {
