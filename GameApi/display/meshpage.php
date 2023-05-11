@@ -2447,14 +2447,14 @@ if ($nothreads == "yes") {
   echo "var filename = 'web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "';";
 
    } else {
-  echo "var filename = 'web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "';";
+  echo "var filename = 'web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "';";
    }
 } else {
    if ($highmem == "yes") {
   echo "var filename = 'web_page_highmem.js?" . filemtime("web_page_highmem.js") . "';";
 
    } else {
-  echo "var filename = 'web_page.js?" . filemtime("web_page.js") . "';";
+  echo "var filename = 'web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "';";
   }
 }
 ?>
