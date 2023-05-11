@@ -3479,7 +3479,7 @@ void spherical_slerp(float *vk, float *vk1, float t, float *res)
   float a1 = fabs(a0);
   float a2 = acos(bound(a1));
   float a = a2; //acos(fabs(quar_dot(vk,vk1)));
-  if (a<0.0001) { lerp(vk,vk1,t,res); return; }
+  if (fabs(a)<0.0001) { lerp(vk,vk1,t,res); return; }
   float s = quar_dot(vk,vk1)/fabs(quar_dot(vk,vk1));
   for(int i=0;i<4;i++) res[i] = sin(a*(1.0-t))/sin(a)*vk[i] + s*sin(a*t)/sin(a)*vk1[i];
 }
@@ -3575,12 +3575,12 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   next[1]=o2.rot_y;
   next[2]=o2.rot_z;
   next[3]=o2.rot_w;
-  //quar_normalize(prev);
-  //quar_normalize(next);
+  quar_normalize(prev);
+  quar_normalize(next);
   spherical_slerp(prev,next,val,res2);
   //lerp(prev,next,val,res2);
   //step_interpolate(prev,next,res2);
-  //quar_normalize(res2);
+  quar_normalize(res2);
   //fix_nan_inf(res2,next);
   res.rot_x = res2[0];
   res.rot_y = res2[1];
@@ -7809,8 +7809,8 @@ public:
 	    //std::cout << "m" << m << std::endl;
 	    //std::cout << "resize" << resize << std::endl;
 
-	    Matrix rr0_inv = Matrix::Inverse(rr0);
-	    Matrix rr_int_inv = Matrix::Inverse(rr_int);
+	    //Matrix rr0_inv = Matrix::Inverse(rr0);
+	    //Matrix rr_int_inv = Matrix::Inverse(rr_int);
 	    
 	    if (mode==0)
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));
