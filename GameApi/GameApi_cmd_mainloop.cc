@@ -158,6 +158,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "TF","float","int" },
 			 { "ev", "", "1.0","0" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
+			 "ml_gltf_all_anim",
+			 { "ev", "tf","mix","mode", "keys" },
+			 { "EveryApi&", "TF","float","int","std::string" },
+			 { "ev", "", "1.0","0", "c" },
+			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_env,
 			 "ml_gltf_all_env",
 			 { "ev", "tf", "diffuse", "specular", "bfrd","mix" },

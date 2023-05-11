@@ -5,7 +5,9 @@
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
+#ifndef NO_THREADS
 //#define THREADS 1
+#endif
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
@@ -7289,6 +7291,62 @@ private:
   GameApi::MT shadow_mat;
 };
 
+class AdjustMaterial : public MaterialForward
+{
+public:
+  AdjustMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, unsigned int ad_color, float ad_dark, float ad_light) : env(env), ev(ev), next(next), ad_color(ad_color), ad_dark(ad_dark), ad_light(ad_light) { }
+  virtual GameApi::ML mat2(GameApi::P p0) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat(p0.id);
+    GameApi::ML sh;
+    sh = ev.polygon_api.adjust_shader(ev, ml, ad_color, ad_dark, ad_light);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p0, GameApi::PTS pts) const
+  {
+        GameApi::ML ml;
+    ml.id = next->mat_inst(p0.id, pts.id);
+    GameApi::ML sh;
+    sh = ev.polygon_api.adjust_shader(ev, ml, ad_color, ad_dark, ad_light);
+    return sh;
+
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p0, GameApi::MS ms) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p0.id, ms.id);
+    GameApi::ML sh;
+    sh = ev.polygon_api.adjust_shader(ev, ml, ad_color, ad_dark, ad_light);
+    return sh;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p0, GameApi::PTA pta) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p0.id, pta.id);
+    GameApi::ML sh;
+    sh = ev.polygon_api.adjust_shader(ev, ml, ad_color, ad_dark, ad_light);
+    return sh;
+
+  }
+
+  virtual GameApi::ML mat_inst_fade(GameApi::P p0, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
+    GameApi::ML sh;
+    sh = ev.polygon_api.adjust_shader(ev, ml, ad_color, ad_dark, ad_light);
+    return sh;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Material *next;
+  unsigned int ad_color;
+  float ad_dark;
+  float ad_light;
+};
+
 class PhongMaterial : public MaterialForward
 {
 public:
@@ -8754,7 +8812,11 @@ ML I12=ev.mainloop_api.or_elem_ml(ev,I5,I11);
 }
 
 
-
+EXPORT GameApi::MT GameApi::MaterialsApi::adjust(EveryApi &ev, MT nxt, unsigned int ad_color, float ad_dark, float ad_light)
+{
+  Material *mat = find_material(e, nxt);
+  return add_material(e, new AdjustMaterial(e, ev, mat, ad_color, ad_dark, ad_light));
+}
 EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   Material *mat = find_material(e, nxt);
@@ -12204,6 +12266,11 @@ GameApi::US GameApi::UberShaderApi::v_newshadow_2(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("newshadow_2", next,"IN_POSITION EX_POSITION LIGHTDIR NEWSHADOW"));
 }
+GameApi::US GameApi::UberShaderApi::v_adjust(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("adjust", next,""));
+}
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -12573,6 +12640,11 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"PHONG_TEXTURE EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+}
+GameApi::US GameApi::UberShaderApi::f_adjust(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunctionFlip("adjust", next,""));
 }
 GameApi::US GameApi::UberShaderApi::f_generic(US us, std::string name, std::string flags)
 {

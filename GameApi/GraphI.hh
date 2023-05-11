@@ -74,6 +74,17 @@ inline OpenGlNode::OpenGlNode(OGLVisitor &vis) { vis.register_ogl(this); }
 namespace GameApi
 {
 
+
+class GlobalIlluminationData
+{
+public:
+  virtual int Size() const=0;
+  virtual Point Pos(int i) const=0;
+  virtual Vector Normal(int i) const=0;
+  //virtual float radius(int i) const=0;
+  virtual float Percentage(int i) const=0;
+};
+  
 class ASyncVec
 {
 public:
