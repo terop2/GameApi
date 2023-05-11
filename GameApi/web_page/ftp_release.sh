@@ -22,9 +22,9 @@ cp web_page_highmem.wasm.br /home/terop/html/meshpage.org/
 #cp web_page_lowmem.wasm.mem /home/terop/html/meshpage.org/
 #cp web_page_nothreads_highmem.html /home/terop/html/meshpage.org/
 #cp web_page_nothreads_highmem.data /home/terop/html/meshpage.org/
-#cp web_page_nothreads_highmem.js /home/terop/html/meshpage.org/
-#cp web_page_nothreads_highmem.wasm /home/terop/html/meshpage.org/
-#cp web_page_nothreads_highmem.wasm.br /home/terop/html/meshpage.org/
+cp web_page_nothreads_highmem.js /home/terop/html/meshpage.org/
+cp web_page_nothreads_highmem.wasm /home/terop/html/meshpage.org/
+cp web_page_nothreads_highmem.wasm.br /home/terop/html/meshpage.org/
 #cp web_page_nothreads_highmem.wasm.map /home/terop/html/meshpage.org/
 #cp web_page_nothreads.html /home/terop/html/meshpage.org/
 #cp web_page_nothreads.data /home/terop/html/meshpage.org/
