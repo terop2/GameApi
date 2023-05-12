@@ -42,6 +42,8 @@ struct FetchInBlocksUserData
   long long end;
 };
 
+extern bool g_concurrent_download;
+
 class FetchInBlocks
 {
 public:
@@ -55,7 +57,10 @@ public:
 private:
   void fetch_size()
   {
-    
+    if (!g_concurrent_download) {
+      failed(data);
+      return;
+    }
     //std::cout << "fetch_size" << std::endl; 
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
@@ -1521,13 +1526,61 @@ void fetch_2_error(emscripten_fetch_t *fetch)
   std::cout << "ERROR: 2nd attempt at loading the data failed" << std::endl;
   emscripten_fetch_close(fetch);
 }
+void fetch_2_progress(emscripten_fetch_t *fetch)
+{
+
+  if (g_logo_status==0)
+    g_logo_status = 1;
+
+  
+  LoadData *dt = (LoadData*)(fetch->userData);
+  float perc=0.0;
+  if (fetch->totalBytes) {
+    perc = (fetch->dataOffset+fetch->numBytes) * 100.0 / fetch->totalBytes;
+  } else {
+    perc = float(fetch->dataOffset + fetch->numBytes)*100.0/ float(1024)/float(1024)/float(4);
+  }
+  std::cout << "dataoffset = " << fetch->dataOffset << std::endl;
+  std::cout << "numbytes = " << fetch->numBytes << std::endl;
+  std::cout << "totalbytes = " << fetch->totalBytes << std::endl;
+  std::cout << "PROGRESS:" << perc << std::endl;
+  std::string url_str(dt->url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+  int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,15*150*perc/100.0+1,15*150,"fetch: "+url_only2);
+  }
+
+  
+}
 void fetch_failed(void *data)
 {
   LoadData *dt = (LoadData*)data;
   //delete dt->obj;
 
-  std::cout << "Fetching url failed.. trying again... (it's possible get_file_size.php is not available)  " << std::endl;
-  std::cout << dt->url << std::endl;
+  //std::cout << "Fetching url failed.. trying again... (it's possible get_file_size.php is not available)  " << std::endl;
+  //std::cout << dt->url << std::endl;
+
+  std::string url_str(dt->url);
+  std::string url_only(striphomepage(url_str));
+
+  { // progressbar
+    std::string url_only2 = stripprefix(url_only);
+
+    int s = url_only2.size();
+  int sum=0;
+  for(int i=0;i<s;i++) sum+=int(url_only2[i]);
+  sum = sum % 1000;
+  //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
+  ProgressBar(sum,0,15*150,"fetch: "+url_only2);
+  }
+
   
   // TRY AGAIN... (possibly get_size.php missing)
   emscripten_fetch_attr_t attr;
@@ -1536,6 +1589,7 @@ void fetch_failed(void *data)
   attr.attributes=EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
   attr.onsuccess=fetch_2_success;
   attr.onerror=fetch_2_error;
+  attr.onprogress=fetch_2_progress;
   attr.userData=(void*)dt;
   emscripten_fetch(&attr,dt->url.c_str());
 

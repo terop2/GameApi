@@ -33,6 +33,8 @@ var Module = {
     arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
     print : (function() { return function(text) { console.log(text); } })(),
 };
+  Module.locateFile = function(path) { return "engine/" + path+"?"+data2; }
+
 var g_emscripten_running = false;
 function load_file()
 {

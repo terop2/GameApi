@@ -930,6 +930,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "float", "float" ,"float" },
 			 { "ev", "", "80.0", "10.1", "60000.0" },
 			 "ML", "mainloop_api", "perspective"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::concurrent_download,
+			 "concurrent_download",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "concurrent_download"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::get_face_count,
 			 "eng_face_count",
 			 { "p" },
