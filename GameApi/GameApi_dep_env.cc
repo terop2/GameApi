@@ -321,9 +321,18 @@ public:
   }
   void fetch_failed(emscripten_fetch_t *fetch)
   {
-    std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
-    failed(data);
-    emscripten_fetch_close(fetch);
+    failcount++;
+    if (failcount>10) {
+      std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
+      failed(data);
+      emscripten_fetch_close(fetch);
+    }
+    else
+      {
+	FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
+	int blk = ptr->block_num;
+	fetch_block(blk);
+      }
   }
 public:
   std::string url;
@@ -339,6 +348,7 @@ public:
   std::vector<int> blocks_ready;
   bool firsttime=true;
   int mode = 0;
+  int failcount=0;
 };
 void blocks_success(emscripten_fetch_t *fetch)
 {
