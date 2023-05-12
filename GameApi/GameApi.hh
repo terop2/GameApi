@@ -348,6 +348,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML concurrent_download(ML ml);
   ML fullscreen_button(EveryApi &ev);
   TT timing_start();
   TT timing(float duration, TT link, ML show);

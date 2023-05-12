@@ -3999,6 +3999,31 @@ GameApi::ML GameApi::MainLoopApi::timing_exit(TT link)
   return add_main_loop(e,item);
 }
 
+bool g_concurrent_download=false;
+
+class ConcurrentDownload : public MainLoopItem
+{
+public:
+  ConcurrentDownload(MainLoopItem *next) : next(next) {
+    g_concurrent_download=1;
+  }
+  ~ConcurrentDownload() { g_concurrent_download=0; }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) { next->execute(e); }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::MainLoopApi::concurrent_download(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new ConcurrentDownload(item));
+}
+
 
 #if 0
 GameApi::ML GameApi::MainLoopApi::custom_element(EveryApi &ev, std::string name, std::string scene_url, std::string param_names, std::string param_types, std::string param_default_values)

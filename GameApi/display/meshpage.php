@@ -1,5 +1,6 @@
 <?php
 //header("Cross-Origin-Opener-Policy: same-origin");
+header("Access-Control-Allow-Headers: Range");
 $machine=php_uname("n");
 if ($machine=="terop-pc") {
    $site = "https://meshpage.org";
