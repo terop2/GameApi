@@ -1125,6 +1125,8 @@ extern int g_resize_event_sx;
 extern int g_resize_event_sy;
 
 extern Low_SDL_Window *sdl_window;
+
+#if 0
 bool g_event_first = true;
 
 
@@ -1181,8 +1183,11 @@ EM_BOOL em_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *data)
 
 bool g_disable_storing=false;
 
+#endif
+
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
+#if 0
   static GameApi::MainLoopApi::Event stored;
   if (g_give_stored)
     {
@@ -1193,8 +1198,9 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       g_disable_storing=false;
       return stored2;
     }
+#endif
 
-
+#if 0
   if (g_event_first)
     {
 #ifdef EMSCRIPTEN
@@ -1203,6 +1209,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 #endif
       g_event_first=false;
     }
+
+#endif
   
   OpenglLowApi *ogl = g_low->ogl;
   Low_SDL_Event event;
@@ -1286,7 +1294,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   //  swapbuffers();
   //}
   
-  if (event.type==Low_SDL_MOUSEWHEEL && !g_event_override)
+  if (event.type==Low_SDL_MOUSEWHEEL)
     {
       Low_SDL_MouseWheelEvent *ptr = &event.wheel;
       mouse_wheel_y = ptr->y;
@@ -1411,7 +1419,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 
 
-
+#if 0
   if (g_event_override && !g_disable_storing) {
     static float dy = 0.0;
     static float old_dy = 0.0;
@@ -1430,7 +1438,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     if (e2.type==Low_SDL_MOUSEWHEEL) { e2.mouse_wheel_y = g_mouse_wheel; }
       g_event_handled=true;
   }
-
+#endif
   
   //std::cout << "EVENT:" << e2.type << " " << e2.ch << " " << e2.mouse_wheel_y << std::endl;
   
