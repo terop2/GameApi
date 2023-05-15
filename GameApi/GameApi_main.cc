@@ -1125,15 +1125,92 @@ extern int g_resize_event_sx;
 extern int g_resize_event_sy;
 
 extern Low_SDL_Window *sdl_window;
+bool g_event_first = true;
+
+
+
+bool g_event_override=false;
+float g_delta_y = 0;
+bool g_event_handled=true;
+
+float current_yy=0.0;
+double current_y=0.0;
+float g_event_time=0.0;
+float g_event_time2=0.0;
+
+int positive_count=0;
+int negative_count=0;
+
+bool g_give_stored=false;
+#ifdef EMSCRIPTEN
+EM_BOOL em_cb(int eventType, const EmscriptenWheelEvent *wheelEvent, void *data)
+{
+  double deltaX = wheelEvent->deltaX;
+  double deltaY = wheelEvent->deltaY;
+  double deltaZ = wheelEvent->deltaZ;
+  //std::cout << "EM_CB: eventtype=" << eventType << std::endl;
+  //std::cout << "EM_CB: deltaX=" << deltaX << std::endl;
+  //std::cout << "EM_CB: deltaY=" << deltaY << std::endl;
+  //std::cout << "EM_CB: deltaZ=" << deltaZ << std::endl;
+  
+  int dir = 0;
+  if (deltaY > 110.0) dir=1;
+  if (deltaY < -110.0) dir=-1;
+  if (deltaY > 220.0) dir=2;
+  if (deltaY < -220.0) dir=-2;
+  if (deltaY > -110.0 && deltaY < 110.0)
+    {
+      //std::cout << g_event_time << " -- " << g_event_time2 << std::endl;
+      //float delta = deltaY-current_yy;
+      //current_yy=deltaY;
+      current_y += deltaY;
+      g_delta_y = current_y;
+      g_event_override=true;
+      g_event_handled=false;
+      return 1;
+    }
+  if (dir!=0) {
+    current_y += dir*110.0;
+    g_delta_y = current_y;
+    g_event_override=true;
+    g_event_handled=false;
+  }
+  return 1;
+}
+#endif
+
+bool g_disable_storing=false;
+
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
+  static GameApi::MainLoopApi::Event stored;
+  if (g_give_stored)
+    {
+      GameApi::MainLoopApi::Event stored2= stored;
+      g_give_stored=false;
+      g_disable_storing=true;
+      stored=get_event();
+      g_disable_storing=false;
+      return stored2;
+    }
 
+
+  if (g_event_first)
+    {
+#ifdef EMSCRIPTEN
+      //std::cout << "EM_CB: installing callback" << std::endl;
+      emscripten_set_wheel_callback("canvas", 0, false, &em_cb);
+#endif
+      g_event_first=false;
+    }
   
   OpenglLowApi *ogl = g_low->ogl;
   Low_SDL_Event event;
   Event e2;
   int last = g_low->sdl->SDL_PollEvent(&event);
   e2.last = last!=0;
+  //float t = get_time();
+  //g_event_time = t;
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //e2.current_time = p->current_time;
   //e2.delta_time = p->delta_time;
@@ -1209,11 +1286,16 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   //  swapbuffers();
   //}
   
-  if (event.type==Low_SDL_MOUSEWHEEL)
+  if (event.type==Low_SDL_MOUSEWHEEL && !g_event_override)
     {
       Low_SDL_MouseWheelEvent *ptr = &event.wheel;
       mouse_wheel_y = ptr->y;
+      //std::cout << "MouseWheel:" << mouse_wheel_y << std::endl;
     }
+
+  bool handled=true;
+  
+
   if (event.type==Low_SDL_JOYAXISMOTION) {
     //if ((event.jaxis.value < -3200) || (event.jaxis.value>3200)) {
       if (event.jaxis.axis == 0) e2.joy0_axis0 = event.jaxis.value;
@@ -1305,6 +1387,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.joy0_button3 = but4==1;
   e2.mouse_wheel_y = mouse_wheel_y;
 
+  //std::cout << "MOUSE RESULT: " << mouse_wheel_y << std::endl;
+  
   static Low_SDL_Joystick *joy2 = g_low->sdl->SDL_JoystickOpen(1);
   //std::cout << "Joystick1:" << joy2 << std::endl;
 
@@ -1325,6 +1409,31 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   e2.joy1_button2 = a_but3==1;
   e2.joy1_button3 = a_but4==1;
 
+
+
+
+  if (g_event_override && !g_disable_storing) {
+    static float dy = 0.0;
+    static float old_dy = 0.0;
+    dy-=g_delta_y;
+    float delta = dy-old_dy;
+    //mouse_wheel_y = dy;
+    g_delta_y=0;
+    current_y=0.0;
+    //std::cout << "Delta: " << delta << std::endl;
+
+    static int g_mouse_wheel = 0;
+    
+    if (e2.type==Low_SDL_MOUSEWHEEL) { e2.mouse_wheel_y = g_mouse_wheel; }
+    if (delta>120.0) { stored=e2; e2.last=false; e2.type =Low_SDL_MOUSEWHEEL; e2.ch=1; g_mouse_wheel++; old_dy -= 120.0; g_give_stored=true;}
+    if (delta<-120.0) { stored=e2; e2.last=false; e2.type =Low_SDL_MOUSEWHEEL; e2.ch=-1; g_mouse_wheel--; old_dy += 120.0; g_give_stored=true; }
+    if (e2.type==Low_SDL_MOUSEWHEEL) { e2.mouse_wheel_y = g_mouse_wheel; }
+      g_event_handled=true;
+  }
+
+  
+  //std::cout << "EVENT:" << e2.type << " " << e2.ch << " " << e2.mouse_wheel_y << std::endl;
+  
   return e2;
 }
 class SeqML : public MainLoopItem
@@ -3997,6 +4106,31 @@ GameApi::ML GameApi::MainLoopApi::timing_exit(TT link)
   Timing *t = find_timing(e,link)->clone();
   MainLoopItem *item = (MainLoopItem*)t;
   return add_main_loop(e,item);
+}
+
+bool g_concurrent_download=false;
+
+class ConcurrentDownload : public MainLoopItem
+{
+public:
+  ConcurrentDownload(MainLoopItem *next) : next(next) {
+    g_concurrent_download=1;
+  }
+  ~ConcurrentDownload() { g_concurrent_download=0; }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void execute(MainLoopEnv &e) { next->execute(e); }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::MainLoopApi::concurrent_download(ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new ConcurrentDownload(item));
 }
 
 

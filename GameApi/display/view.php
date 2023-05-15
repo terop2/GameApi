@@ -1,8 +1,9 @@
 <?php
+
 ini_set("post_max_size", "120M");
 ini_set("upload_max_filesize", "100M");
 ini_set("memory_limit", "1024M");
-
+header("Access-Control-Allow-Headers: Range");
 include("backend.php");
 //header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page_highmem.js");
@@ -1742,7 +1743,8 @@ function load_emscripten(state,filename, contents, filenames)
     if (firefox && vnum<=78)
 	src="web_page_nothreads.js?" + data2;
     else if (firefox) src="web_page_nothreads_highmem.js?" + data2;
-    if (mobile) src="web_page_lowmem.js?"+data2;
+    if (mobile) src="web_page_lowmem_nothreads.js?"+data2;
+    if (!crossOriginIsolated && !mobile) src="web_page_nothreads_highmem.js?" + data2;
     if (!g_emscripten_running) {
       enable_spinner(true);
       if (filename=="") {
