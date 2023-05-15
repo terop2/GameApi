@@ -1018,6 +1018,13 @@ In addition to these external stuff, we have internal development in the followi
 <li>esc exits the application
 <li>esc (in blk_window) exits the full screen mode
 </ul>
+<h2>Trackpads, touchpads and drawing tablets do not work with the technology?</h2>
+This is known problem, but we don't have solution to the problem. The emscripten_set_wheel_callback() function sends events<br> that are not suitable for getting the trackpad to work properly. In ubuntu, we've found that changing settings in gnome and<br> disabling "two finger scroll" and enabling "edge scroll" can help it a little, but our current recommendation is to disable<br> the trackpad's completely from gnome settings.
+
+The main problem is visible in zoom feature, when mouse wheel is being mapped to the zooming of the 3d models. The trackpad's are not able to simulate mouse wheel accurately/consistently enough and we were unable to figure out why gnome's "two finger scroll" sends always positive deltaY, when both negative and positive values should be available in the callback.
+
+We haven't checked what needs to be done to get trackpads working in windows.
+
 <h2>What tools you should try immediately?</h2>
 <ul>
 <li>m_snow, m_flat for shading
