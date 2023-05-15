@@ -23916,7 +23916,6 @@ private:
   std::vector<Platform*> vec;
 };
 
-#if 0
 class RectPlatform : public Platform
 {
 public:
@@ -24020,7 +24019,6 @@ private:
   bool m_x_or_z;
   bool m_start_or_end_higher;
 };
-#endif
 
 GameApi::PL GameApi::PolygonApi::array_pl(std::vector<PL> vec)
 {
@@ -24047,13 +24045,11 @@ GameApi::PL GameApi::PolygonApi::rect_pl(float start_x, float end_x,
 				      bool x_or_z,
 				      bool start_or_end_higher)
 {
-#if 0
   return add_platform(e, new RectPlatform(start_x, end_x,
 					  start_y, end_y,
 					  start_z, end_z,
 					  x_or_z,
 					  start_or_end_higher));
-#endif
 }
 				      
 GameApi::P GameApi::PolygonApi::render_pl(PL pl)

@@ -1540,10 +1540,10 @@ void fetch_2_progress(emscripten_fetch_t *fetch)
   } else {
     perc = float(fetch->dataOffset + fetch->numBytes)*100.0/ float(1024)/float(1024)/float(4);
   }
-  std::cout << "dataoffset = " << fetch->dataOffset << std::endl;
-  std::cout << "numbytes = " << fetch->numBytes << std::endl;
-  std::cout << "totalbytes = " << fetch->totalBytes << std::endl;
-  std::cout << "PROGRESS:" << perc << std::endl;
+  //std::cout << "dataoffset = " << fetch->dataOffset << std::endl;
+  //std::cout << "numbytes = " << fetch->numBytes << std::endl;
+  //std::cout << "totalbytes = " << fetch->totalBytes << std::endl;
+  //std::cout << "PROGRESS:" << perc << std::endl;
   std::string url_str(dt->url);
   std::string url_only(striphomepage(url_str));
 
