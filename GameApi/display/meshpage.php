@@ -1021,9 +1021,18 @@ In addition to these external stuff, we have internal development in the followi
 <h2>Trackpads, touchpads and drawing tablets do not work with the technology?</h2>
 This is known problem, but we don't have solution to the problem. The emscripten_set_wheel_callback() function sends events<br> that are not suitable for getting the trackpad to work properly. In ubuntu, we've found that changing settings in gnome and<br> disabling "two finger scroll" and enabling "edge scroll" can help it a little, but our current recommendation is to disable<br> the trackpad's completely from gnome settings.
 
-The main problem is visible in zoom feature, when mouse wheel is being mapped to the zooming of the 3d models. The trackpad's are not able to simulate mouse wheel accurately/consistently enough and we were unable to figure out why gnome's "two finger scroll" sends always positive deltaY, when both negative and positive values should be available in the callback.
+The main problem is visible in zoom feature, when mouse wheel is being mapped to the zooming of the 3d models. The trackpad's<br> are not able to simulate mouse wheel accurately/consistently enough and we were unable to figure out why gnome's "two finger scroll"<br> sends always positive deltaY, when both negative and positive values should be available in the callback.
 
 We haven't checked what needs to be done to get trackpads working in windows.
+
+<h2>Why isn't sounds/music working?</h2>
+
+Current status of sound/music routines is that pthreads and sounds are
+not working at the same time.<br>Thus to get sound working, you need
+to disable pthreads, and get slower prepare time in 3d model loading
+phase. This can be done by not enabling crossOriginIsolation,<br> then the
+scripts will automatically fall back to non-threaded version of the
+code.
 
 <h2>What tools you should try immediately?</h2>
 <ul>
