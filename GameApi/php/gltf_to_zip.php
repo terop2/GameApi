@@ -73,7 +73,7 @@ function shadow_change()
 </script>
 
 Firsttime users should check the server config from our faq: <a href="https://meshpage.org/meshpage_5">faq</a>.<br>
-For advanced users, there's a builder tool available at: <a href="https://meshpage.org/meshpage_4">builder tool</a>.
+For advanced users, there's a builder tool available at: <a href="https://meshpage.org/meshpage_4">builder tool</a>.<br>
 HINT: &lt;embed src="index.html" width="830" height="630"/&gt; to embed it to your main article.
 <style>
 .moveright {
