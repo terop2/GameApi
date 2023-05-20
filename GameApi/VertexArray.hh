@@ -17,6 +17,29 @@
 struct LowApi;
 extern LowApi *g_low;
 
+#ifdef NO_PREPARE_RENDER
+
+class Dyn : public VertexArrayDyn
+{
+public:
+  Dyn(VertexArrays *arr);
+  void prepare(int i);
+  void update(int i);
+  void ready();
+  void render();
+  void set_texture(std::vector<GameApi::TXID> vec);
+private:
+  VertexArrays *arr;
+  bool firsttime;
+  unsigned int vao[1];
+  unsigned int buffers[11];
+  unsigned int indices_buffer;
+  bool enabled[11];
+  std::vector<GameApi::TXID> textures;
+};
+#endif
+
+
 class VertexArraySet
 {
 public:

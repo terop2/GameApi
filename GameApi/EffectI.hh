@@ -61,6 +61,66 @@ struct BBOX {
 };
 
 void stackTrace();
+
+class VertexArrayDyn
+{
+public:
+  virtual void prepare(int i)=0;
+  virtual void update(int i)=0; // i=0..9
+  virtual void render()=0;
+};
+
+
+enum VertexArrayEnum {
+  VA_Position=0,
+  VA_Normal,
+  VA_TexCoord_0,
+  VA_TexCoord_1,
+  VA_Color_0,
+  VA_Color_1,
+  VA_Joints_0,
+  VA_Joints_1,
+  VA_Weights_0,
+  VA_Weights_1
+};
+enum VA_ComponentType
+  {
+    VA_BYTE,
+    VA_UBYTE,
+    VA_SHORT,
+    VA_USHORT,
+    VA_INT,
+    VA_UINT,
+    VA_FLOAT,
+    VA_DOUBLE,
+    VA_INVALID
+  };
+class VertexArrays : public CollectInterface
+{
+public:
+  virtual ~VertexArrays() { }
+  virtual std::string enabled() const=0;
+  virtual int Num(VertexArrayEnum i) const=0;
+  virtual int NumIndices() const=0;
+  virtual unsigned int *Indices() const=0;
+  virtual size_t Stride(VertexArrayEnum i) const=0;
+  virtual void *Attrib(VertexArrayEnum i) const=0;
+  virtual VA_ComponentType ComponentType(VertexArrayEnum i) const=0;
+
+  //old
+  //virtual void *Position() const=0; // i=0
+  //virtual void *Normal() const=0;  // i=1
+  //virtual void *TexCoord_0() const=0; // i=2
+  //virtual void *TexCoord_1() const=0; // i=3
+  //virtual void *Color_0() const=0;   // i=4
+  //virtual void *Color_1() const=0;   // i=5
+  //virtual void *Joints_0() const=0;    // i=6
+  //virtual unsigned short *Joints_0s() const=0; //i=6
+  //virtual void *Joints_1() const=0;    // i=7
+  //virtual void *Weights_0() const=0;   // i=8
+  //virtual void *Weights_1() const=0;   // i=9
+};
+
 class FaceCollection : public CollectInterface
 {
 public:

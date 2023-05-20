@@ -369,7 +369,6 @@ public:
   Vector u_y;
 };
 
-
 class Color
 {
 public:

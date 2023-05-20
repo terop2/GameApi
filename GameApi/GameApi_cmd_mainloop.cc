@@ -192,6 +192,37 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "TF", "int", "int", "std::string","float","int" },
 			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","0" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
+
+
+#ifdef NO_PREPARE_RENDER
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_nop,
+			 "tf_nop",
+			 { "ev", "tf", "mesh_index", "prim_index", "mix" },
+			 { "EveryApi&", "TF", "int", "int", "float" },
+			 { "ev", "", "0","0", "0.5" },
+			 "ML","mainloop_api", "gltf_material_nop"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_mesh,
+			 "tf_material",
+			 { "ev", "tf", "mesh_index", "mix" },
+			 { "EveryApi&", "TF", "int", "float" },
+			 { "ev", "", "0", "0.5" },
+			 "ML", "mainloop_api", "gltf_material_mesh"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node2,
+			 "tf_node",
+			 { "ev", "tf","node_id", "mix" },
+			 { "EveryApi&", "TF", "int", "float" },
+			 { "ev", "", "0", "0.5" },
+			 "ML", "mainloop_api", "gltf_node2"));
+		       
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene2,
+			 "tf_scene2",
+			 { "ev", "tf", "scene_id", "mix" },
+			 { "EveryApi&", "TF","int", "float" },
+			 { "ev", "", "0", "0.5" },
+			 "ML", "mainloop_api", "gltf_scene2"));
+
+#endif
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_gltf,
 			 "async_gltf",
 			 { "ml", "tf" },
