@@ -53,17 +53,14 @@ But what should we do to get access to this level technology?
 <li><a href="https://meshpage.org/view.php">model viewer</a>.
 <li><a href="https://meshpage.org/gltf_to_zip.php">gltf_to_zip converter</a>.
 </ul>
-Everyone, sing with me:
-<ul>
-<li>We are the future.
-<li>We are the evil corn children.
-<li>We are the world.
-<li>we are the children.
-<li>we are the ones who make a better day.
-</ul>
+
 
 </div>
 </div>
+
+<p>
+<embed src="https://meshpage.org/tmp99/index.html" width="830" height="630" crossorigin/>
+
 <div class="row">
 <div class="column">
 <img src="https://tpgames.org/builder_screenshot.png" width="100%" crossorigin>
