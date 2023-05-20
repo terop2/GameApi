@@ -876,6 +876,10 @@ Useful other sites which you can drag and drop content to the viewer are at leas
 
 Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php">Here</a>.
 
+<h2>Now, if I got index.html, how do I embed it to my article</h2>
+
+&lt;embed src="index.html" width="830" height="630"&gt;
+
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
 <img src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>
@@ -958,7 +962,6 @@ Then you need brotli packages:
   sudo a2enmod brotli
   sudo systemctl restart apache2
 </ptr>
-
 
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>

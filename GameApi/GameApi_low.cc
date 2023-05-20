@@ -113,6 +113,7 @@
 #undef glTexSubImage3d
 #undef glDrawArraysInstanced
 #undef glDrawArrays
+#undef glDrawElements
 #undef glGenFramebuffers
 #undef glBindFramebuffer
 #undef glBindRenderbuffer
@@ -275,7 +276,9 @@ void map_enums(int &i)
   case Low_GL_VERSION: i=GL_VERSION; break;
   case Low_GL_CULL_FACE: i=GL_CULL_FACE; break;
   case Low_GL_ARRAY_BUFFER: i=GL_ARRAY_BUFFER; break;
+  case Low_GL_ELEMENT_ARRAY_BUFFER: i=GL_ELEMENT_ARRAY_BUFFER; break;
   case Low_GL_FLOAT: i=GL_FLOAT; break;
+  case Low_GL_UNSIGNED_SHORT: i=GL_UNSIGNED_SHORT; break;
   case Low_GL_INT: i=GL_INT; break;
   case Low_GL_FALSE: i=GL_FALSE; break;
   case Low_GL_TRIANGLES: i=GL_TRIANGLES; break; 
@@ -816,7 +819,13 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     ::glDrawArrays(tri2,a,b); 
     check_err("glDrawArrays");
 }
- 
+  virtual void glDrawElements(int tri, int a, int type, void *indices) {
+    map_enums(tri);
+    map_enums(type);
+    unsigned int tri2 = (unsigned int)tri;
+    ::glDrawElements(tri2,a,type,indices);
+    check_err("glDrawElements");
+  }
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { 
     map_enums(rgba);

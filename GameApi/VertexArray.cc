@@ -3490,3 +3490,267 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
       
     //std::cout << "Copy returns" << std::endl;
   }
+
+#ifdef NO_PREPARE_RENDER
+
+void check_error(std::string loc)
+{
+  int val = g_low->ogl->glGetError();
+  if (val!=Low_GL_NO_ERROR) {
+    std::cout << loc << " " << val << std::endl;
+  }
+}
+
+
+Dyn::Dyn(VertexArrays *arr) : arr(arr) { firsttime=true;}
+void Dyn::set_texture(std::vector<GameApi::TXID> vec)
+{
+  //  std::cout << "Dyn::set_texture()" << std::endl;
+  textures=vec;
+}
+void Dyn::prepare(int i)
+  {
+    // std::cout << "Dyn::Prepare()" << std::endl;
+  OpenglLowApi *ogl = g_low->ogl;
+
+  if (i<0||i>9) return;
+    enabled[i]=true;
+    void *data =0;
+    void *indi_data=0;
+    size_t sz=0;
+    bool joint_s=false;
+    switch(i) {
+    case 0: data=arr->Attrib(VA_Position); sz=sizeof(float)*3; break;
+    case 1: data=arr->Attrib(VA_Normal); sz=sizeof(float)*3; break;
+    case 2: data=arr->Attrib(VA_TexCoord_0); sz=sizeof(float)*3; break;
+    case 3: data=arr->Attrib(VA_TexCoord_1); sz=sizeof(float)*3; break;
+    case 4: data=arr->Attrib(VA_Color_0); sz=sizeof(float)*4; break;
+    case 5: data=arr->Attrib(VA_Color_1); sz=sizeof(float)*4; break;
+    case 6:
+      data=arr->Attrib(VA_Joints_0); sz=sizeof(float)*4;
+      if (arr->ComponentType(VA_Joints_0)==VA_USHORT) {
+	sz=sizeof(unsigned short)*4; joint_s=true;
+      }
+      break;
+    case 7: data=arr->Attrib(VA_Joints_1); sz=sizeof(float)*4; break;
+    case 8: data=arr->Attrib(VA_Weights_0); sz=sizeof(float)*4; break;
+    case 9: data=arr->Attrib(VA_Weights_1); sz=sizeof(float)*4; break;
+    }
+    indi_data=arr->Indices();
+
+    if (firsttime) {
+#ifdef VAO
+      check_error("before");
+      ogl->glGenVertexArrays(1,&vao[0]);
+  check_error("genvertexarray");
+#endif
+    }
+#ifdef VAO
+  ogl->glBindVertexArray(vao[0]);
+  check_error("bindvertexarray_aftergen");
+#endif
+
+    if (firsttime) {
+      
+      ogl->glGenBuffers(1,&buffers[0]);
+      ogl->glGenBuffers(1,&buffers[1]);
+      ogl->glGenBuffers(1,&buffers[2]);
+      ogl->glGenBuffers(1,&buffers[3]);
+      ogl->glGenBuffers(1,&buffers[4]);
+      ogl->glGenBuffers(1,&buffers[5]);
+      ogl->glGenBuffers(1,&buffers[6]);
+      ogl->glGenBuffers(1,&buffers[7]);
+      ogl->glGenBuffers(1,&buffers[8]);
+      ogl->glGenBuffers(1,&buffers[9]);
+      ogl->glGenBuffers(1,&buffers[10]);
+      
+      ogl->glGenBuffers(1,&indices_buffer);
+  check_error("genbuffers");
+      
+      firsttime=false;
+    }
+    int num = arr->Num(VertexArrayEnum(i));
+
+#if 0
+    std::string arr4[] = { "POSITION", "NORMAL", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0", "COLOR_1", "JOINTS_0", "JOINTS_1", "WEIGHTS_0", "WEIGHTS_1" };
+      std::cout << "DATA " << i << "(" << arr4[i] << ")" << std::endl;
+      if (joint_s) {
+	int s = std::min(int(num*sz/sizeof(unsigned short)),30);
+	for(int i=0;i<s;i++) std::cout << ((unsigned short*)data)[i] << ",";
+      } else {
+	int s = std::min(int(num*sz/sizeof(float)),30);
+	for(int i=0;i<s;i++) std::cout << ((float*)data)[i] << ",";
+      }
+	
+      std::cout << std::endl;
+#endif
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[i]);
+  check_error("bindbuffer");
+    ogl->glBufferData(Low_GL_ARRAY_BUFFER, joint_s?num*sz/sizeof(float):num*sz/sizeof(unsigned short), data, Low_GL_STATIC_DRAW);
+  check_error("glbufferdata");
+
+    std::string arr3[] = { "POSITION", "NORMAL", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0", "COLOR_1", "JOINTS_0", "JOINTS_1", "WEIGHTS_0", "WEIGHTS_1" };
+    std::cout << "NUMDATA " << i << "(" << arr3[i] << ") = " << num << std::endl;
+
+    
+    
+#ifdef VAO
+    int arr2[] = { 0, 1, 2, 13, 3, 14, 11, 15, 12,16 };
+    int stride = arr->Stride(VertexArrayEnum(i));
+    if (joint_s) {
+      ogl->glVertexAttribPointer(arr2[i],sz/sizeof(unsigned short), Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, stride, 0);
+    }
+    else
+      {
+      ogl->glVertexAttribPointer(arr2[i],sz/sizeof(float), Low_GL_FLOAT, Low_GL_FALSE, stride, 0);
+      }
+      check_error("vertexattribpointer");
+
+
+    if (i==0)
+      {
+	int num2 = arr->NumIndices();
+	//std::cout << "NUMINDICES: " << num2 << std::endl;
+	unsigned int *indices = arr->Indices();
+	ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+  check_error("bindbuffer2");
+	ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, num2*sizeof(unsigned int), indices, Low_GL_STATIC_DRAW);
+  check_error("bufferdata2");
+      }
+    
+    //if (i==0)
+    //  {
+    //	ogl->glVertexAttribPointer(17,3,Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0, 0);
+    // }
+    
+#endif
+
+    
+    
+#ifdef VAO
+    ogl->glBindVertexArray(0);
+#endif
+  check_error("bindvertexarray0");
+
+
+
+  }
+void Dyn::update(int i)
+  {
+    //std::cout << "Dyn::Update()" << std::endl;
+  OpenglLowApi *ogl = g_low->ogl;
+    void *data =0;
+    size_t sz=0;
+    switch(i) {
+    case 0: data=arr->Attrib(VA_Position); sz=sizeof(float)*3; break;
+    case 1: data=arr->Attrib(VA_Normal); sz=sizeof(float)*3; break;
+    case 2: data=arr->Attrib(VA_TexCoord_0); sz=sizeof(float)*3; break;
+    case 3: data=arr->Attrib(VA_TexCoord_1); sz=sizeof(float)*3; break;
+    case 4: data=arr->Attrib(VA_Color_0); sz=sizeof(float)*4; break;
+    case 5: data=arr->Attrib(VA_Color_1); sz=sizeof(float)*4; break;
+    case 6: data=arr->Attrib(VA_Joints_0); sz=sizeof(float)*4;
+      if (arr->ComponentType(VA_Joints_0)==VA_USHORT) sz=sizeof(unsigned short)*4;
+      break;
+    case 7: data=arr->Attrib(VA_Joints_1); sz=sizeof(float)*4; break;
+    case 8: data=arr->Attrib(VA_Weights_0); sz=sizeof(float)*4; break;
+    case 9: data=arr->Attrib(VA_Weights_1); sz=sizeof(float)*4; break;
+    }
+#ifdef VAO
+  ogl->glBindVertexArray(vao[0]);
+#endif
+  int num = arr->Num(VertexArrayEnum(i));
+    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[i]);
+    ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0,num*sz, data);
+
+    
+
+
+#ifdef VAO
+  ogl->glBindVertexArray(0);
+#endif
+  }
+void Dyn::ready()
+  {
+    //std::cout << "Dyn::Ready()" << std::endl;
+    OpenglLowApi *ogl = g_low->ogl;
+    check_error("beforeready");
+#ifdef VAO
+  ogl->glBindVertexArray(vao[0]);
+#endif
+  check_error("bindvertexarray_afterready");
+
+#ifndef VAO
+  std::cout << "Warning: VAO is not enabled in emscripten => code doesn't work yet" << std::endl;
+#endif
+  
+#ifdef VAO
+    int arr[] = { 0, 1, 2, 13, 3, 14, 11, 15, 12,16 };
+    for(int i=0;i<9;i++)
+      {
+	if (enabled[i]) {
+	  int index = arr[i];
+	  ogl->glEnableVertexAttribArray(index);
+	  check_error("enablevertexattribarray");
+	}
+      }
+#endif
+#ifdef VAO
+  ogl->glBindVertexArray(0);
+#endif
+  check_error("bindvertexarray_afterready2");
+
+  }
+void Dyn::render()
+  {
+    // std::cout << "Dyn::Render()" << std::endl;
+  OpenglLowApi *ogl = g_low->ogl;
+  check_error("beforerender");
+#ifdef VAO
+  ogl->glBindVertexArray(vao[0]);
+#endif
+  check_error("bindvertexarray_render");
+
+  int s = textures.size();
+    for(int i=0;i<s;i++)
+      {
+       GameApi::TXID id = textures[i];
+       ogl->glActiveTexture(Low_GL_TEXTURE0 + i);
+  check_error("activetexture");
+       ogl->glBindTexture(Low_GL_TEXTURE_2D, id.id);
+  check_error("bindtexture");
+       }
+
+
+    //int arr2[] = { 0, 1, 2, 13, 3, 14, 11, 15, 12,16 };
+    int num = arr->Num(VA_Position);
+    unsigned int *indices = arr->Indices();
+    if (indices) {
+      //std::cout << "INDICES" << std::endl;
+      //for(int i=0;i<num/3;i++)
+      //std::cout << indices[i] << ",";
+      //std::cout << std::endl;
+      int numindices = arr->NumIndices();
+      //std::cout << "NUMINDICES: " << numindices << std::endl;
+      ogl->glDrawElements(Low_GL_TRIANGLES, numindices/3, Low_GL_UNSIGNED_INT, indices);
+  check_error("drawelements");
+    } else {
+      ogl->glDrawArrays(Low_GL_TRIANGLES, 0, num/3);
+  check_error("drawarrays");
+    }
+#ifdef VAO
+  ogl->glBindVertexArray(0);
+#endif
+  check_error("bindvertexarray0");
+
+
+    int s2 = textures.size();
+    for(int i=0;i<s2;i++)
+      {
+       ogl->glActiveTexture(Low_GL_TEXTURE0 + i);
+       ogl->glBindTexture(Low_GL_TEXTURE_2D, 0);
+    }
+  check_error("bindtexture0");
+
+  }
+
+#endif

@@ -348,6 +348,12 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
+  ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
+  ML gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix);
+  ML gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix);
+  ML gltf_node2(EveryApi &ev, TF tf, int node_id, float mix);
+  ML gltf_scene2(EveryApi &ev, TF tf, int scene_id, float mix);
   ML concurrent_download(ML ml);
   ML fullscreen_button(EveryApi &ev);
   TT timing_start();

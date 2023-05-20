@@ -43,6 +43,7 @@ public:
     exit(0);
   }
 
+  
   virtual int animations_size() const { return self->animations.size(); }
   virtual const tinygltf::Animation &get_animation(int i) const {
     if (i>=0&&i<self->animations.size())
@@ -702,10 +703,1586 @@ private:
   int image_index;
 };
 
+GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int image_index);
+
+
+#ifdef NO_PREPARE_RENDER
+
+class GLTFVertexArrays : public VertexArrays
+{
+public:
+  GLTFVertexArrays( GLTFModelInterface *interface, int mesh_id, int prim_id ) : interface(interface), mesh_id(mesh_id), prim_id(prim_id) { }
+  virtual void Collect(CollectVisitor& vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { interface->Prepare(); }
+  void Prepare() { HeavyPrepare(); }
+  std::string enabled() const
+  {
+    std::string res;
+    const char *l=0;
+    for(int i=0;i<9;i++) {
+      switch(i) {
+      case 0: l="POSITION"; break;
+      case 1: l="NORMAL"; break;
+      case 2: l="TEXCOORD_0"; break;
+      case 3: l="TEXCOORD_1"; break;
+      case 4: l="COLOR_0"; break;
+      case 5: l="COLOR_1"; break;
+      case 6: l="JOINTS_0"; break;
+      case 7: l="JOINTS_1"; break;
+      case 8: l="WEIGHTS_0"; break;
+      case 9: l="WEIGHTS_1"; break;
+      };
+
+      const tinygltf::Mesh &mesh = interface->get_mesh( mesh_id );
+      tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
+      int position_index = -1;
+      if (prim.attributes.find(l) != prim.attributes.end())
+	{
+	  char ch=' ';
+	  std::string st = "pntTcCjJw";
+	  res+=st[i];
+	}
+    }
+    return res;
+  }
+  virtual int Num(VertexArrayEnum i) const
+  {
+    const char *l;
+    switch(i) {
+    case 0: l="POSITION"; break;
+    case 1: l="NORMAL"; break;
+    case 2: l="TEXCOORD_0"; break;
+    case 3: l="TEXCOORD_1"; break;
+    case 4: l="COLOR_0"; break;
+    case 5: l="COLOR_1"; break;
+    case 6: l="JOINTS_0"; break;
+    case 7: l="JOINTS_1"; break;
+    case 8: l="WEIGHTS_0"; break;
+    case 9: l="WEIGHTS_1"; break;
+    };
+    
+      Data d = get_data(interface,mesh_id,prim_id,l);
+      return d.count;
+  }
+  virtual int NumIndices() const
+  {
+      Data d = get_indices_data(interface,mesh_id,prim_id);
+      return d.count;
+  }
+  struct Data {
+    size_t offset;
+    int componentType;
+    size_t count;
+    int type;
+    size_t offset2;
+    size_t length;
+    size_t stride;
+    int target;
+    const unsigned char *buf;
+  };
+  static Data get_indices_data(GLTFModelInterface *interface, int mesh_id, int prim_id)
+  {
+    const tinygltf::Mesh &mesh = interface->get_mesh( mesh_id );
+    tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
+    int indices = prim.indices;
+
+    const tinygltf::Accessor &acc = interface->get_accessor(indices);
+    int bufferviewindex = acc.bufferView;
+    size_t offset = acc.byteOffset;
+    int componentType = acc.componentType;
+    size_t count = acc.count;
+    int type = acc.type;
+
+    const tinygltf::BufferView &bf = interface->get_bufferview(bufferviewindex);
+    int bufferindex = bf.buffer;
+    size_t offset2 = bf.byteOffset;
+    size_t length = bf.byteLength;
+    size_t stride = bf.byteStride;
+    int target = bf.target;
+    
+    const tinygltf::Buffer &b = interface->get_buffer(bufferindex);
+    const unsigned char *buf = &b.data[0];
+	Data d;
+	d.offset = offset;
+	d.componentType = componentType;
+	d.count = count;
+	d.type=type;
+	d.offset2 = offset2;
+	d.length=length;
+	d.stride=stride;
+	d.target=target;
+	d.buf = buf;
+	return d;
+
+  }
+
+  static std::string print_component_type(int val)
+  {
+    std::stringstream ss;
+    ss << val;
+    std::string num=ss.str();
+    if (val==TINYGLTF_COMPONENT_TYPE_BYTE) return "BYTE" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) return "UNSIGNED BYTE" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_SHORT) return "SHORT" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) return "UNSIGNED SHORT" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_INT) return "INT" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT) return "UNSIGNED INT" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_FLOAT) return "FLOAT" +num;
+    if (val==TINYGLTF_COMPONENT_TYPE_DOUBLE) return "DOUBLE" +num;
+    return "UNKNOWN" +num;
+  }
+  static Data get_data(GLTFModelInterface *interface, int mesh_id, int prim_id, const char *label )
+  {
+    const tinygltf::Mesh &mesh = interface->get_mesh( mesh_id );
+    tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
+    int position_index = -1;
+    if (prim.attributes.find(label) != prim.attributes.end())
+      position_index = prim.attributes[label];
+    //std::cout << "Found " << position_index << std::endl;
+    if (position_index!=-1)
+      {
+	const tinygltf::Accessor &acc = interface->get_accessor(position_index);
+	int bufferviewindex = acc.bufferView;
+	size_t offset = acc.byteOffset;
+	int componentType = acc.componentType;
+	size_t count = acc.count;
+	int type = acc.type;
+
+
+	//std::cout << bufferviewindex << " " << offset << " " << print_component_type(componentType) << " " << count <<" " << type << std::endl;
+	  
+	const tinygltf::BufferView &bf = interface->get_bufferview(bufferviewindex);
+	int bufferindex = bf.buffer;
+	size_t offset2 = bf.byteOffset;
+	size_t length = bf.byteLength;
+	size_t stride = bf.byteStride;
+	int target = bf.target;
+
+	//std::cout << bufferindex << " " << offset2 << " " << length << " " << stride << " " << target << std::endl;
+	
+	const tinygltf::Buffer &b = interface->get_buffer(bufferindex);
+	const unsigned char *buf = &b.data[0];
+	
+	Data d;
+	d.offset = offset;
+	d.componentType = componentType;
+	d.count = count;
+	d.type=type;
+	d.offset2 = offset2;
+	d.length=length;
+	d.stride=stride;
+	d.target=target;
+	d.buf = buf;
+	return d;
+      }
+    std::cout << "MESH DOESNT HAVE POSITION DATA, exiting.." << std::endl;
+    exit(0);
+  }
+  virtual size_t Stride(VertexArrayEnum i) const
+  {
+    const char *l = 0;
+    switch(i) {
+    case 0: l="POSITION"; break;
+    case 1: l="NORMAL"; break;
+    case 2: l="TEXCOORD_0"; break;
+    case 3: l="TEXCOORD_1"; break;
+    case 4: l="COLOR_0"; break;
+    case 5: l="COLOR_1"; break;
+    case 6: l="JOINTS_0"; break;
+    case 7: l="JOINTS_1"; break;
+    case 8: l="WEIGHTS_0"; break;
+    case 9: l="WEIGHTS_1"; break;
+    };
+    if (l) {
+      Data d = get_data(interface,mesh_id,prim_id,l);
+      return d.stride;
+    }
+    return 0;
+  }
+  virtual unsigned int *Indices() const
+  {
+    Data d = get_indices_data(interface,mesh_id,prim_id);
+    return (unsigned int*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VA_ComponentType ComponentType(VertexArrayEnum i) const
+  {
+    const char *l = 0;
+    switch(i) {
+    case 0: l="POSITION"; break;
+    case 1: l="NORMAL"; break;
+    case 2: l="TEXCOORD_0"; break;
+    case 3: l="TEXCOORD_1"; break;
+    case 4: l="COLOR_0"; break;
+    case 5: l="COLOR_1"; break;
+    case 6: l="JOINTS_0"; break;
+    case 7: l="JOINTS_1"; break;
+    case 8: l="WEIGHTS_0"; break;
+    case 9: l="WEIGHTS_1"; break;
+    };
+    if (l) {
+      Data d = get_data(interface,mesh_id,prim_id,l);
+      switch(d.componentType) {
+      case TINYGLTF_COMPONENT_TYPE_BYTE: return VA_BYTE;
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: return VA_UBYTE;
+      case TINYGLTF_COMPONENT_TYPE_SHORT: return VA_SHORT;
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: return VA_USHORT;
+      case TINYGLTF_COMPONENT_TYPE_INT: return VA_INT;
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: return VA_UINT;
+      case TINYGLTF_COMPONENT_TYPE_FLOAT: return VA_FLOAT;
+      case TINYGLTF_COMPONENT_TYPE_DOUBLE: return VA_DOUBLE;
+      };
+    }
+    return VA_INVALID;
+  }
+  virtual void *Attrib(VertexArrayEnum i) const {
+    void *data = 0;
+    switch(i) {
+    case 0: data=Position(); break;
+    case 1: data=Normal(); break;
+    case 2: data=TexCoord_0(); break;
+    case 3: data=TexCoord_1(); break;
+    case 4: data=Color_0(); break;
+    case 5: data=Color_1(); break;
+    case 6: data=Joints_0(); break;
+    case 7: data=Joints_1(); break;
+    case 8: data=Weights_0(); break;
+    case 9: data=Weights_1(); break;
+    };
+    return data;
+  }
+private:
+  virtual Point *Position() const { // i=0
+    Data d = get_data(interface, mesh_id,prim_id, "POSITION");
+    return (Point*)(d.buf + d.offset + d.offset2);
+  }
+  virtual Vector *Normal() const {  // i=1
+    Data d = get_data(interface, mesh_id,prim_id, "NORMAL");
+    return (Vector*)(d.buf + d.offset + d.offset2);
+  }
+  virtual Vector *TexCoord_0() const { // i=2
+    Data d = get_data(interface, mesh_id,prim_id, "TEXCOORD_0");
+    return (Vector*)(d.buf + d.offset + d.offset2);
+  }
+  virtual Vector *TexCoord_1() const {  // i=3
+    Data d = get_data(interface, mesh_id,prim_id, "TEXCOORD_1");
+    return (Vector*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VEC4 *Color_0() const { // i=4
+    Data d = get_data(interface, mesh_id,prim_id, "COLOR_0");
+    return (VEC4*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VEC4 *Color_1() const {   // i=5
+    Data d = get_data(interface, mesh_id,prim_id, "COLOR_1");
+    return (VEC4*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VEC4 *Joints_0() const {    // i=6
+    Data d = get_data(interface, mesh_id,prim_id, "JOINTS_0");
+    return (VEC4*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VEC4 *Joints_1() const {    // i=7
+    Data d = get_data(interface, mesh_id,prim_id, "JOINTS_1");
+    return (VEC4*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VEC4 *Weights_0() const {   // i=8
+    Data d = get_data(interface, mesh_id,prim_id, "WEIGHTS_0");
+    return (VEC4*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VEC4 *Weights_1() const {   // i=9
+    Data d = get_data(interface, mesh_id,prim_id, "WEIGHTS_1");
+    return (VEC4*)(d.buf + d.offset + d.offset2);
+  }
+private:
+  GLTFModelInterface *interface;
+  int mesh_id;
+  int prim_id;
+};
+
+class PrimRender : public MainLoopItem
+{
+public:
+  PrimRender(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels) : env(env), ev(ev), gltf(interface,mesh_index,prim_index), dyn(&gltf), interface(interface), mesh_index(mesh_index), prim_index(prim_index),bms(bm),types(types),id_labels(id_labels) { firsttime = true; }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+
+    
+    
+    std::string s = gltf.enabled();
+    //std::cout << "ENabled: " << s << std::endl;
+    int sz = s.size();
+    for(int i=0;i<sz;i++)
+      {
+	char ch = s[i];
+	int ii=0;
+	switch(ch) {
+	case 'p': ii=0; break;
+	case 'n': ii=1; break;
+	case 't': ii=2; break;
+	case 'T': ii=3; break;
+	case 'c': ii=4; break;
+	case 'C': ii=5; break;
+	case 'j': ii=6; break;
+	case 'J': ii=7; break;
+	case 'w': ii=8; break;
+	case 'W': ii=9; break;
+	};
+	dyn.prepare(ii);
+      }
+    dyn.ready();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (firsttime) {
+    
+    GameApi::US u_v;
+    GameApi::US u_f;
+    u_v.id = 0;
+    u_f.id = 0;
+    if (e.us_vertex_shader!=-1)
+      u_v.id = e.us_vertex_shader;
+    if (e.us_fragment_shader!=-1)
+      u_f.id = e.us_fragment_shader;
+    if (firsttime)
+      {
+	if (u_v.id == 0)
+	  u_v = ev.uber_api.v_empty();
+	if (u_f.id == 0)
+	  u_f = ev.uber_api.f_empty(true);
+      }
+#if 0
+    if (ev.polygon_api.is_texture(va))
+      {
+	sh.id = e.sh_texture;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      u_v = ev.uber_api.v_texture(u_v);
+	    if (e.us_fragment_shader==-1)
+	      u_f = ev.uber_api.f_texture(u_f);
+	  }
+	if (ev.polygon_api.is_array_texture(va))
+	  {
+	    sh.id = e.sh_array_texture;
+	      if (firsttime)
+	      {
+		if (e.us_vertex_shader==-1)
+		  u_v = ev.uber_api.v_texture_arr(u_v);
+		if (e.us_fragment_shader==-1)
+		  u_f = ev.uber_api.f_texture_arr(u_f);
+	      }
+	  }
+      }
+    else
+      {
+	sh.id = e.sh_color;
+	if (firsttime)
+	  {
+	    if (e.us_vertex_shader==-1)
+	      {
+		u_v = ev.uber_api.v_colour(u_v);
+		//u_v = ev.uber_api.v_light(u_v);
+	      }
+	    if (e.us_fragment_shader==-1)
+	      {
+		u_f = ev.uber_api.f_colour(u_f);
+		//u_f = ev.uber_api.f_light(u_f);
+	      }
+	  }
+      }
+#endif
+    //std::cout << "RenderInstanced::Execute" << std::endl;
+    if (firsttime || shader.id==-1)
+      {
+	//std::cout << "RenderInstanced::SHADER" << std::endl;
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = u_v.id; 
+	fragment.id = u_f.id; 
+	GameApi::US vertex2 = vertex;
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
+
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+    }
+
+
+    ev.shader_api.use(shader);
+    	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, e.in_P);
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	if (e.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, e.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_P", m3);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "time", e.time);
+	sh = shader;
+
+    
+    
+    if (firsttime) {
+      std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev,bms,types,true,id_labels);
+      dyn.set_texture(id);
+      firsttime=false;
+    }
+    dyn.render();
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  
+  std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
+private:
+  GameApi::Env &env;
+  GameApi::SH shader;
+  GameApi::SH sh;
+  GameApi::EveryApi &ev;
+  GLTFVertexArrays gltf;
+  Dyn dyn;
+  GLTFModelInterface *interface;
+  int mesh_index;
+  int prim_index;
+  std::vector<GameApi::BM> bms;
+  std::vector<int> types;
+  std::vector<std::string> id_labels;
+  bool firsttime;
+};
+
+GameApi::ML GameApi::MainLoopApi::prim_render(EveryApi &ev,TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels)
+{
+  GLTFModelInterface *interface = find_gltf(e,tf);
+  return add_main_loop(e, new PrimRender(e,ev,interface,mesh_index,prim_index,bm,types,id_labels));
+
+}
+
+GameApi::ML GameApi::MainLoopApi::mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels)
+{
+  GLTFModelInterface *interface = find_gltf(e,tf);
+  interface->Prepare();
+  const tinygltf::Mesh &mesh = interface->get_mesh( mesh_index );
+  int s = mesh.primitives.size();
+  std::vector<GameApi::ML> mls;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::ML ml = prim_render(ev,tf,mesh_index,i,bm,types,id_labels);
+      mls.push_back(ml);
+    }
+  return ev.mainloop_api.array_ml(ev,mls);
+}
+
+
+class GLTF_Material_noP : public MainLoopItem
+{
+public:
+  GLTF_Material_noP(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int mesh_index, int prim_id, float mix) : env(env), ev(ev), tf(tf), mesh_index(mesh_index), prim_id(prim_id), mix(mix)
+  {
+  }
+  void setup()
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+  interface->Prepare();
+    const tinygltf::Mesh &mesh = interface->get_mesh( mesh_index );
+    tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
+    material_id = prim.material;
+    indices_id = prim.indices;
+    mode = prim.mode;
+  }
+
+  bool get_unlit() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &unlit= (*m.extensions.find("KHR_materials_unlit")).second;
+    return unlit.IsObject();
+  }
+
+  bool get_sheen() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &unlit= (*m.extensions.find("KHR_materials_sheen")).second;
+    return unlit.IsObject();
+  }
+
+  int print_int(std::string label, int i) const { /*std::cout << label << ":" << i << std::endl;*/ return i; }
+  float print_float(std::string label, float i) const { /*std::cout << label << ":" << i << std::endl;*/ return i; }
+  Vector print_vector(std::string label, Vector i) const { /*std::cout << label << ":" << i.dx << " " << i.dy << " " << i.dz << std::endl;*/ return i; }
+  
+  
+  Vector get_diffuse_factor() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return print_vector("diffuse_factor",Vector(1.0f,1.0f,1.0f));
+    const tinygltf::Value &diffuse = specglossi.Get("diffuseFactor");
+    if (!diffuse.IsArray()) return print_vector("diffuse_factor",Vector(1.0f,1.0f,1.0f));
+    const tinygltf::Value &diff_r = diffuse.Get(0);
+    const tinygltf::Value &diff_g = diffuse.Get(1);
+    const tinygltf::Value &diff_b = diffuse.Get(2);
+    Vector res;
+    res.dx = diff_r.GetNumberAsDouble();
+    res.dy = diff_g.GetNumberAsDouble();
+    res.dz = diff_b.GetNumberAsDouble();
+    return print_vector("diffuse_factor",res);
+    //return diffuse.GetNumberAsDouble();
+  }
+
+  Vector get_specular_factor() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return print_vector("specular_factor",Vector(0.5f,0.5f,0.5f));
+    const tinygltf::Value &diffuse = specglossi.Get("specularFactor");
+    if (!diffuse.IsArray()) return print_vector("specular_factor",Vector(0.5f,0.5f,0.5f));
+    const tinygltf::Value &diff_r = diffuse.Get(0);
+    const tinygltf::Value &diff_g = diffuse.Get(1);
+    const tinygltf::Value &diff_b = diffuse.Get(2);
+    Vector res;
+    res.dx = diff_r.GetNumberAsDouble();
+    res.dy = diff_g.GetNumberAsDouble();
+    res.dz = diff_b.GetNumberAsDouble();
+    return print_vector("specular_factor",res);
+  }
+
+  float get_glossiness_factor() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return print_float("glossinessfactor",1.0f);
+    const tinygltf::Value &diffuse = specglossi.Get("glossinessFactor");
+    float glos = diffuse.GetNumberAsDouble();
+    if (glos<0.04) glos=1.0f;
+    return print_float("glossinessfactor",glos);
+  }
+
+  
+  bool get_spec() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return false;
+    return true;
+  }
+
+  int get_sheen_index() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_sheen")).second;
+    if (!specglossi.IsObject()) return -1;
+    const tinygltf::Value &diffuse = specglossi.Get("sheenColorTexture");
+    if (!diffuse.IsObject()) return -1;
+    const tinygltf::Value &index = diffuse.Get("index");
+    return print_int("sheen index",index.GetNumberAsInt());
+  }
+  
+  int get_diffuse_index() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return -1;
+    const tinygltf::Value &diffuse = specglossi.Get("diffuseTexture");
+    if (!diffuse.IsObject()) return -1;
+    const tinygltf::Value &index = diffuse.Get("index");
+    return print_int("diffuse_index",index.GetNumberAsInt());
+  }
+  int get_specglossi_index() const
+  {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::Value &specglossi = (*m.extensions.find("KHR_materials_pbrSpecularGlossiness")).second;
+    if (!specglossi.IsObject()) return -1;
+    const tinygltf::Value &s = specglossi.Get("specularGlossinessTexture");
+    if (!s.IsObject()) return -1;
+    const tinygltf::Value &s2 = s.Get("index");
+    return print_int("specglossi index",s2.GetNumberAsInt());
+  }
+
+  
+  int num_indexes() const {
+    int s = 5;
+    int count = 0;
+    for(int i=0;i<s;i++) {
+      if (has_texture(i)) count++;
+    }
+    return count;
+  }
+  int map_index(int j) const
+  {
+    int s = 5;
+    int count = 0;
+    int last_tex = 0;
+    for(int i=0;i<s;i++) {
+      if (has_texture(i)) last_tex=i;
+      if (has_texture(i) && count==j)
+	return i;
+      if (has_texture(i)) count++;
+    }
+    return last_tex;
+  }
+  int num_textures() const {
+    return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
+  }
+  GameApi::BM texture(int i) const {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+  //print_extension_map();
+    if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
+      //std::cout << "Bad material: i=" << i << " material_id=" << material_id << " has_texture(i)=" << has_texture(i) <<std::endl; 
+      return ev.bitmap_api.newbitmap(1,1,0xffffffff);
+    }
+    const tinygltf::Material &m = interface->get_material(material_id);
+    switch(i) {
+    case 0: {
+      int index = m.pbrMetallicRoughness.baseColorTexture.index;
+      if (get_spec()) index=get_specglossi_index();
+      if (get_sheen()) index=get_sheen_index();
+      //std::cout << "IMG0=" << index << "(" << get_spec() << "," << get_sheen() << ")" << std::endl;
+      return gltf_load_bitmap2(env,ev, interface, index);
+    }
+    case 1: {
+      int index = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
+      if (get_spec()) index=get_diffuse_index();
+      //std::cout << "IMG1=" << index << "(" << get_spec() << ")" << std::endl;
+      return gltf_load_bitmap2(env,ev, interface, index);
+    }
+    case 2: return gltf_load_bitmap2(env,ev, interface, m.normalTexture.index);
+    case 3: return gltf_load_bitmap2(env,ev, interface, m.occlusionTexture.index);
+    case 4: return gltf_load_bitmap2(env,ev, interface, m.emissiveTexture.index);
+    default:
+      std::cout << "ERROR: gltf_meterial::texture" << std::endl;
+      GameApi::BM bm; bm.id=-1; return bm;
+    };
+  }
+  bool has_texture(int i) const {
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
+      return false;
+    }
+    const tinygltf::Material &m = interface->get_material(material_id);
+    //std::cout << "has_texture " << i << " materia_id=" << material_id << "<" << interface->materials_size() << " " << get_spec() << " " << get_specglossi_index() << " " << get_sheen() << " " << get_sheen_index() << " " << m.pbrMetallicRoughness.baseColorTexture.index <<std::endl;
+    switch(i) {
+    case 0: return m.pbrMetallicRoughness.baseColorTexture.index!=-1||(get_spec() && get_specglossi_index()!=-1)||(get_sheen() &&get_sheen_index()!=-1);
+    case 1: return m.pbrMetallicRoughness.metallicRoughnessTexture.index!=-1||(get_spec()&&get_diffuse_index()!=-1);
+    case 2: return m.normalTexture.index!=-1;
+    case 3: return m.occlusionTexture.index!=-1;
+    case 4: return m.emissiveTexture.index!=-1;
+    default: return false;
+    };
+  }
+
+  virtual void Collect(CollectVisitor &vis) {
+    std::cout << "Collect" << std::endl;
+  GLTFModelInterface *interface = find_gltf(env,tf);
+    interface->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    setup();
+    std::cout << "HeavyPrepare" << std::endl;
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    std::vector<GameApi::BM> bm;
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(j));
+    }
+
+    std::vector<std::string> id_labels;
+    for(int i=0;i<s;i++)
+      {
+	std::stringstream ss;
+	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
+	id_labels.push_back(ss.str());
+      }
+
+
+    ml = ev.mainloop_api.prim_render(ev,tf,mesh_index,prim_id,bm,std::vector<int>(),id_labels);
+
+      const tinygltf::Material &m = interface->get_material(material_id);
+      std::vector<double> emis=m.emissiveFactor;
+      Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
+      const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+      const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
+      ml=ev.polygon_api.gltf_shader(ev, ml, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z); // todo base color
+     
+
+    
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void Prepare() {
+    //std::cout << "Prepare" << std::endl;
+    HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    //std::cout << "Execute" << std::endl;
+    if (ml.id!=-1) {
+      //std::cout << "Execute(real)" << std::endl;
+
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    //std::cout << "handleevent" << std::endl;
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    //std::cout << "shader_id" << std::endl;
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int mesh_index;
+  int material_id;
+  int prim_id;
+  int indices_id; // TODO
+  int mode; // TODO
+  float mix;
+  GameApi::ML ml = { -1 };
+};
+GameApi::ML GameApi::MainLoopApi::gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix)
+{
+  return add_main_loop(e, new GLTF_Material_noP(e,ev,tf,mesh_index, prim_id, mix));
+}
+GameApi::ML GameApi::MainLoopApi::gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix)
+{
+
+  GLTFModelInterface *interface = find_gltf(e,tf);
+  interface->Prepare();
+  const tinygltf::Mesh &mesh = interface->get_mesh( mesh_index );
+  int s = mesh.primitives.size();
+  std::vector<GameApi::ML> mls;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::ML ml = gltf_material_nop(ev,tf,mesh_index,i,mix);
+      mls.push_back(ml);
+    }
+  return ev.mainloop_api.array_ml(ev,mls);
+}
 
 
 
 
+class GLTF_SKIN;
+
+GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int skin_id, float mix);
+
+class GLTF_Node_impl : public MainLoopItem
+{
+public:
+  GLTF_Node_impl(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int node_index, float mix) : env(env), ev(ev), tf(tf), node_index(node_index)
+  {
+  }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare();
+
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->handle_event(e);
+    }
+
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->shader_id();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int node_index;
+  float mix;
+  std::vector<GameApi::ML> children;
+  GameApi::ML mesh;
+  GLTF_SKIN *skin=0;
+  GameApi::ML skin_root = { -1 };
+  GameApi::ML res = { -1 };
+};
+
+GameApi::ML GameApi::MainLoopApi::gltf_node2(EveryApi &ev, TF tf, int node_id, float mix)
+{
+  return add_main_loop(e, new GLTF_Node_impl(e,ev,tf,node_id,mix));
+}
+
+class GLTF_Scene : public MainLoopItem
+{
+public:
+  GLTF_Scene(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int scene_id, float mix) : env(env), ev(ev), tf(tf), scene_id(scene_id), mix(mix) { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare()
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Scene &scene = interface->get_scene( scene_id );
+    std::vector<int> vec = scene.nodes;
+    int s = vec.size();
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<s;i++)
+      {
+	mls.push_back(ev.mainloop_api.gltf_node2(ev,tf,vec[i],mix));
+      }
+    ml = ev.mainloop_api.array_ml(ev,mls);
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,ml);
+    return item->shader_id();
+    }
+    return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int scene_id;
+  float mix;
+  GameApi::ML ml = { -1 };
+};
+
+GameApi::ML GameApi::MainLoopApi::gltf_scene2(EveryApi &ev, TF tf, int scene_id, float mix)
+{
+  return add_main_loop(e, new GLTF_Scene(e,ev,tf,scene_id,mix));
+}
+
+class GLTF_Buffer
+{
+public:
+  GLTF_Buffer(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int buf) : env(env), ev(ev), tf(tf), buf(buf) { }
+  ~GLTF_Buffer() { }
+  const std::vector<unsigned char> &get_data() const {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Buffer &buffer = interface->get_buffer( buf );
+    return buffer.data;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int buf;
+};
+
+class GLTF_BufferView
+{
+public:
+  GLTF_BufferView(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int bv) : env(env), ev(ev), tf(tf), bv(bv) { }
+  ~GLTF_BufferView() { delete m_buf; }
+  const unsigned char *buf() const {
+    gen();
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::BufferView &bufferview = interface->get_bufferview( bv );
+    const std::vector<unsigned char> &data = m_buf->get_data();
+    const unsigned char *ptr = &data[0];
+    ptr+=bufferview.byteOffset;
+    return ptr;
+  }
+  size_t stride() const {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::BufferView &bufferview = interface->get_bufferview( bv );
+    return bufferview.byteStride;
+  }
+  size_t size() const {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::BufferView &bufferview = interface->get_bufferview( bv );
+    return bufferview.byteLength;
+  }
+  int target() const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::BufferView &bufferview = interface->get_bufferview( bv );
+    return bufferview.target;
+  }
+private:
+  void gen() const {
+    if (!m_buf) {
+      GLTFModelInterface *interface = find_gltf(env,tf);
+      const tinygltf::BufferView &bufferview = interface->get_bufferview( bv );
+      int buf = bufferview.buffer;
+      m_buf = new GLTF_Buffer(env,ev,tf,buf);
+    }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int bv;
+  mutable GLTF_Buffer *m_buf=0;
+};
+
+class GLTF_Accessor
+{
+public:
+  GLTF_Accessor(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int acc) : env(env), ev(ev), tf(tf), acc(acc) { }
+  ~GLTF_Accessor() { delete m_bv; }
+  int type() const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    return accessor.type;
+  }
+  int size() const {
+    size_t sz=4;
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    switch(accessor.componentType) {
+    case TINYGLTF_COMPONENT_TYPE_BYTE: sz=1; break;
+    case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: sz=1; break;
+    case TINYGLTF_COMPONENT_TYPE_SHORT: sz=2; break;
+    case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: sz=2; break;
+    case TINYGLTF_COMPONENT_TYPE_INT: sz=4; break;
+    case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: sz=4; break;
+    case TINYGLTF_COMPONENT_TYPE_FLOAT: sz=4; break;
+    case TINYGLTF_COMPONENT_TYPE_DOUBLE: sz=8; break;
+    }
+    size_t sz2 = m_bv->size();
+    assert(sz2/sz==accessor.count);
+    return accessor.count;
+  }
+  void map(int index, char **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_BYTE);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  char *ptr = (char*)buf;
+	  *output = ptr+index;
+	} else {
+	  char *ptr = (char*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf float accessor" << acc<< std::endl;
+  }
+  void map(int index, unsigned char **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  unsigned char *ptr = (unsigned char*)buf;
+	  *output = ptr+index;
+	} else {
+	  unsigned char *ptr = (unsigned char*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf float accessor" << acc<< std::endl;
+
+  }
+  void map(int index, short **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_SHORT);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  short *ptr = (short*)buf;
+	  *output = ptr+index;
+	} else {
+	  short *ptr = (short*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf float accessor" << acc<< std::endl;
+  }
+  void map(int index, unsigned short **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  unsigned short *ptr = (unsigned short*)buf;
+	  *output = ptr+index;
+	} else {
+	  unsigned short *ptr = (unsigned short*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf unsigned short accessor" << acc<< std::endl;
+  }
+  void map(int index, int **output) const
+  {
+        GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_INT);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  int *ptr = (int*)buf;
+	  *output = ptr+index;
+	} else {
+	  int *ptr = (int*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf int accessor" << acc<< std::endl;
+
+  }
+  void map(int index, unsigned int **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  unsigned int *ptr = (unsigned int*)buf;
+	  *output = ptr+index;
+	} else {
+	  unsigned int *ptr = (unsigned int*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf unsigned int accessor" << acc<< std::endl;
+
+  }
+  void map(int index, float **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    int target = m_bv->target();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  float *ptr = (float*)buf;
+	  *output = ptr+index;
+	} else {
+	  float *ptr = (float*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf float accessor" << acc<< std::endl;
+  }
+  void map(int index, double **output) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+    
+    gen();
+    const unsigned char *buf = m_bv->buf();
+    size_t stride = m_bv->stride();
+    size_t sz = m_bv->size();
+    buf += accessor.byteOffset;
+    assert(accessor.componentType==TINYGLTF_COMPONENT_TYPE_DOUBLE);
+    size_t count = accessor.count;
+    if (index>=0 && index<count)
+      {
+	if (stride==0) {
+	  double *ptr = (double*)buf;
+	  *output = ptr+index;
+	} else {
+	  double *ptr = (double*)(buf + stride*index);
+	  *output = ptr;
+	}
+      }
+    else std::cout << "ERROR in gltf float accessor" << acc<< std::endl;
+  }
+
+  int target() const
+  {
+    gen();
+    int t = m_bv->target();
+    return t; 
+  }
+  void gen() const {
+    if (!m_bv) {
+      GLTFModelInterface *interface = find_gltf(env,tf);
+      const tinygltf::Accessor &accessor = interface->get_accessor( acc );
+      int bv = accessor.bufferView;
+      m_bv = new GLTF_BufferView(env,ev,tf,bv);
+    }
+  }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int acc;
+  mutable GLTF_BufferView *m_bv=0;
+};
+
+class GLTF_SKIN
+{
+public:
+  GLTF_SKIN(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int skin_id, float mix) : env(env), ev(ev), tf(tf), skin_id(skin_id), mix(mix) { }
+  ~GLTF_SKIN() { delete bind_acc; }
+  Matrix inverse_bind(int joint) const {
+    gen();
+    float *ptr;
+    bind_acc->map(joint,&ptr);
+    Matrix res;
+    for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++)
+	res.matrix[i+j*4] = ptr[j+i*4];
+    return res;
+  }
+  int root_node() const {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Skin &skin = interface->get_skin( skin_id );
+    return skin.skeleton;
+  }
+
+  int joint_num(int node) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Skin &skin = interface->get_skin( skin_id );
+    int s = skin.joints.size();
+    for(int i=0;i<s;i++) if (skin.joints[i]==node) return i;
+    return -1;
+  }
+  bool is_joint(int node) const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Skin &skin = interface->get_skin( skin_id );
+    int s = skin.joints.size();
+    for(int i=0;i<s;i++) if (skin.joints[i]==node) return true;
+    return false;
+  }
+  void gen() const
+  {
+    if (!bind_acc)
+      {
+	GLTFModelInterface *interface = find_gltf(env,tf);
+	const tinygltf::Skin &skin = interface->get_skin( skin_id );
+	bind_acc=new GLTF_Accessor(env,ev,tf,skin.inverseBindMatrices);
+      }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int skin_id;
+  float mix;
+  mutable GLTF_Accessor *bind_acc=0;
+};
+GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int skin_id, float mix)
+{
+  return new GLTF_SKIN(e,ev,tf,skin_id, mix);
+}
+
+
+  void GLTF_Node_impl::HeavyPrepare()
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Node &node = interface->get_node( node_index );
+    const std::vector<int> &child = node.children;
+    int s = child.size();
+    for(int i=0;i<s;i++)
+      {
+	children.push_back(ev.mainloop_api.gltf_node2(ev,tf,child[i],mix));
+      }
+    mesh = ev.mainloop_api.gltf_material_mesh(ev,tf,node.mesh,mix);
+    if (node.skin!=-1)
+      skin = gltf_skin(env,ev,tf,node.skin,mix);
+
+    int skin_root_id = skin->root_node();
+    skin_root = ev.mainloop_api.gltf_node2(ev,tf,skin_root_id, mix);
+    
+    std::vector<GameApi::ML> mls = children;
+    mls.push_back(mesh);
+
+    GameApi::MN mv = ev.move_api.mn_empty();
+  if (int(node.scale.size())==3) {
+    double s_x = node.scale[0];
+    double s_y = node.scale[1];
+    double s_z = node.scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+    //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+  }
+  if (int(node.rotation.size())==4) {
+    double r_x = node.rotation[0];
+    double r_y = node.rotation[1];
+    double r_z = node.rotation[2];
+    double r_w = node.rotation[3];
+    //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
+    Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
+    Matrix m = Quarternion::QuarToMatrix(q);
+    Movement *orig = find_move(env, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(env, mv2);
+    }
+  if (int(node.translation.size())==3) {
+    double m_x = node.translation[0];
+    double m_y = node.translation[1];
+    double m_z = node.translation[2];
+    mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+    //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
+  }
+  //std::cout << node->matrix.size();
+  if (int(node.matrix.size())==16) {
+    const double *arr = &node.matrix[0];
+    Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+      //std::cout << "mat[]";
+
+      // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+    Movement *orig = find_move(env, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(env, mv2);    
+  }
+
+  // SKINNING
+
+  if (skin && skin->is_joint(node_index)) {
+    int joint = skin->joint_num(node_index);
+    Matrix m = skin->inverse_bind(joint);
+    
+      // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+    Movement *orig = find_move(env, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(env, mv2);    
+  }
+  // END OF SKINNING
+
+
+  GameApi::ML ml = ev.mainloop_api.array_ml(ev,mls);
+  res = ev.move_api.move_ml(ev,ml,mv,1,10.0);
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
+  }
+
+class GLTF_Animation_Sampler
+{
+public:
+  GLTF_Animation_Sampler(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int anim, int sampler) : env(env), ev(ev), tf(tf), m_anim(anim), m_sampler(sampler) {
+    
+  }
+  ~GLTF_Animation_Sampler() { delete inp_acc; delete out_acc; }
+  int count() const
+  {
+    int count = 0;
+    int type = out_acc->type();
+    switch(type)
+      {
+      case TINYGLTF_TYPE_SCALAR: count=1; break;
+      case TINYGLTF_TYPE_VEC2: count=2; break;
+      case TINYGLTF_TYPE_VEC3: count=3; break;
+      case TINYGLTF_TYPE_VEC4: count=4; break;
+      case TINYGLTF_TYPE_MAT2: count=4; break;
+      case TINYGLTF_TYPE_MAT3: count=9; break;
+      case TINYGLTF_TYPE_MAT4: count=16; break;
+      };
+    return count;
+  }
+  float *map(float in) const
+  {
+    gen();
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Animation &anims = interface->get_animation( m_anim );
+    const tinygltf::AnimationSampler &sampler = anims.samplers[ m_sampler ];
+    if (sampler.interpolation=="LINEAR")
+      {
+	int sz = std::min(inp_acc->size(),out_acc->size());
+	for(int i=0;i<sz-1;i++)
+	  {
+	    float *ptr=0;
+	    inp_acc->map(i,&ptr);
+	    float val=*ptr;
+	    inp_acc->map(i+1,&ptr);
+	    float val2=*ptr;
+	    float x = ((in-val)/(val2-val));
+	    if (in>=val && in<val2) {
+	      int type = out_acc->type();
+	      int count = 0;
+	      switch(type)
+		{
+		case TINYGLTF_TYPE_SCALAR: count=1; break;
+		case TINYGLTF_TYPE_VEC2: count=2; break;
+		case TINYGLTF_TYPE_VEC3: count=3; break;
+		case TINYGLTF_TYPE_VEC4: count=4; break;
+		case TINYGLTF_TYPE_MAT2: count=4; break;
+		case TINYGLTF_TYPE_MAT3: count=9; break;
+		case TINYGLTF_TYPE_MAT4: count=16; break;
+		};
+	      float *ptr=0;
+	      out_acc->map(i,&ptr);
+	      float *ptr2=0;
+	      out_acc->map(i+1,&ptr2);
+	      for(int i=0;i<count;i++) {
+		float out =ptr[i];
+		float out2 = ptr2[i];
+		tmp[i]=(1.0-x)*out+x*out2;
+	      }
+	      return &tmp[0];
+	    }
+	  }
+	return 0;
+      }
+    if (sampler.interpolation=="STEP")
+      {
+	int sz = std::min(inp_acc->size(),out_acc->size());
+	for(int i=0;i<sz-1;i++)
+	  {
+	    float *ptr=0;
+	    inp_acc->map(i,&ptr);
+	    float val=*ptr;
+	    inp_acc->map(i+1,&ptr);
+	    float val2=*ptr;
+	    if (in>=val && in<val2) {
+	      float x = ((in-val)/(val2-val));
+	      if (x<0.5) {
+		float *ptr=0;
+		out_acc->map(i,&ptr);
+		return ptr;
+	      } else {
+		float *ptr=0;
+		out_acc->map(i+1,&ptr);
+		return ptr;
+	      }
+	    }
+	  }
+	return 0;
+      }
+    if (sampler.interpolation=="CUBICSPLINE")
+      { // TODO
+	std::cout << "NO cubicspline animation sampler implemented" << std::endl;
+      }
+    
+  }
+  void gen() const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Animation &anims = interface->get_animation( m_anim );
+    const tinygltf::AnimationSampler &sampler = anims.samplers[ m_sampler ];
+    int input = sampler.input;
+    int output = sampler.output;
+    if (!inp_acc) {
+      inp_acc = new GLTF_Accessor(env,ev,tf,input);
+    }
+    if (!out_acc) {
+      out_acc = new GLTF_Accessor(env,ev,tf,output);
+    }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int m_anim;
+  int m_sampler;
+  mutable GLTF_Accessor *inp_acc=0;
+  mutable GLTF_Accessor *out_acc=0;
+  mutable float tmp[16];
+};
+
+class GLTF_AnimChannel
+{
+public:
+  GLTF_AnimChannel(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int anim, int anim_chan) : env(env),ev(ev), tf(tf), anim(anim), anim_chan(anim_chan) { }
+  std::string type() const { return m_target_path; }
+  int node() const { return m_node; }
+  void push_to_node(float time)
+  {
+    gen();
+    float *val = m_samp->map(time);
+    int node_id = m_node;
+    if (m_target_path=="translation")
+      {
+	m_m_x=val[0];
+	m_m_y=val[1];
+	m_m_z=val[2];
+      }
+    if (m_target_path=="rotation")
+      {
+	m_r_x = val[0];
+	m_r_y = val[1];
+	m_r_z = val[2];
+	m_r_w = val[3];
+      }
+    if (m_target_path=="scale")
+      {
+	m_s_x = val[0];
+	m_s_y = val[1];
+	m_s_z = val[2];
+      }
+    if (m_target_path=="weights")
+      {
+	m_w1=val[0];
+	m_w2=val[1];
+	m_w3=val[2];
+	m_w4=val[3];
+      }
+  }
+  void get_scale(double *s_x, double *s_y, double *s_z) { *s_x = m_s_x; *s_y=m_s_y; *s_z=m_s_z; }
+  void get_rotation(double *r_x, double *r_y, double *r_z, double *r_w)
+  {
+    *r_x = m_r_x; *r_y=m_r_y; *r_z = m_r_z; *r_w=m_r_w;
+  }
+  void get_tranlation(double *m_x, double *m_y, double *m_z)
+  {
+    *m_x = m_m_x;
+    *m_y = m_m_y;
+    *m_z = m_m_z;
+  }
+  void get_weights(double *w1, double *w2, double *w3, double *w4)
+  {
+    *w1 = m_w1;
+    *w2 = m_w2;
+    *w3 = m_w3;
+    *w4 = m_w4;
+  }
+  void gen() const
+  {
+    GLTFModelInterface *interface = find_gltf(env,tf);
+    const tinygltf::Animation &anims = interface->get_animation( anim );
+    const tinygltf::AnimationChannel &chan = anims.channels[ anim_chan ];
+
+    int sampler = chan.sampler;
+    m_node = chan.target_node;
+    m_target_path = chan.target_path;
+    if (!m_samp) {
+      m_samp = new GLTF_Animation_Sampler(env,ev,tf,anim,sampler);
+    }
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  int anim;
+  int anim_chan;
+  mutable GLTF_Animation_Sampler *m_samp;
+  mutable int m_node;
+  mutable std::string m_target_path;
+  double m_s_x; // scale
+  double m_s_y;
+  double m_s_z;
+  double m_r_x; // rotation
+  double m_r_y;
+  double m_r_z;
+  double m_r_w;
+  double m_m_x; // translation
+  double m_m_y;
+  double m_m_z;
+  double m_w1,m_w2,m_w3,m_w4; // weights
+};
+
+GLTF_AnimChannel *anim_channel(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int anim, int anim_channel_id)
+{
+  return new GLTF_AnimChannel(env,ev,tf,anim, anim_channel_id);
+}
+
+#endif // NO_PREPARE_RENDER
 
 class GLTFFaceCollection : public FaceCollection
 {
@@ -7772,7 +9349,7 @@ public:
 
 	    
 	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj).second;
-	    Matrix m = mv;
+	    Matrix m = mv; // TODO, THIS SHOULD BE MULTIPLIED BY BINDM
 	    //m = m * mr;
 	    
 	    Matrix ri = Matrix::Inverse(resize);

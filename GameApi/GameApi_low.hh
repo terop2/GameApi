@@ -146,6 +146,8 @@ enum
     Low_GL_DEPTH_COMPONENT32F,
     Low_GL_NONE,
     Low_GL_RGBA32F,
+    Low_GL_ELEMENT_ARRAY_BUFFER,
+    Low_GL_UNSIGNED_SHORT,
     //
     //  OLD STUFF
     // 
@@ -231,6 +233,7 @@ enum {
 #undef glDepthFunc
 #undef glAlphaFunc
 #undef glDrawArrays
+#undef glDrawElements
 #undef glTexImage2D
 #undef glTexSubImage2D
 #undef glMapBuffer
@@ -318,6 +321,7 @@ public:
   virtual void glDisableVertexAttribArray(int a)=0;
   virtual void glDrawArraysInstanced(int tri, int, unsigned int, unsigned int)=0;
   virtual void glDrawArrays(int tri, int, unsigned int)=0;
+  virtual void glDrawElements(int tri, int a, int type, void *indices)=0;
   
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr)=0;

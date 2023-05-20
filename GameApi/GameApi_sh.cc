@@ -155,6 +155,11 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
   bind_attrib_1(sh, 7, "in_InstMat"); // also uses 7,8,9,10
   bind_attrib_1(sh, 11, "JOINTS_0");
   bind_attrib_1(sh, 12, "WEIGHTS_0");
+  bind_attrib_1(sh, 13, "in_TexCoord2");
+  bind_attrib_1(sh, 14, "in_Color2");
+  bind_attrib_1(sh, 15, "JOINTS_1");
+  bind_attrib_1(sh, 16, "WEIGHTS_1");
+  bind_attrib_1(sh, 17, "INDICES");
   link_1(sh);
   use_1(sh);
   set_default_projection_1(sh, "in_P");

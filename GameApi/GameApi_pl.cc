@@ -22606,7 +22606,7 @@ public:
     next->Collect(vis);
   }
   virtual void HeavyPrepare() { }
-  virtual void Prepare() { }
+  virtual void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     MainLoopEnv ee = e;
