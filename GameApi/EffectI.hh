@@ -173,6 +173,7 @@ public:
 
   virtual BBOX GetBoundingBox(bool &success) const { success=false; BBOX b; return b; }
 
+  virtual bool IsMatrixElem() const { return false; }
 };
 
 

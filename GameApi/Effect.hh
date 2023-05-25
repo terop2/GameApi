@@ -7596,31 +7596,53 @@ private:
 class MatrixElem : public ForwardFaceCollection
 {
 public:
-  MatrixElem(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) {  }
+  MatrixElem(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) { skip=false; }
+  virtual bool IsMatrixElem() const { return true; }
     void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+    m2 = get_matrix();
+    next2 = get_next();
+    skip=true;
+  }
 
-  virtual void Prepare() { next->Prepare(); }
-  virtual int NumFaces() const { return next->NumFaces(); }
-  virtual int NumPoints(int face) const { return next->NumPoints(face); }
+  virtual void Prepare() { next->Prepare(); HeavyPrepare(); }
+  virtual int NumFaces() const { if (skip) return next2->NumFaces(); return next->NumFaces(); }
+  virtual int NumPoints(int face) const { if (skip) return next2->NumPoints(face); return next->NumPoints(face); }
   virtual Point FacePoint(int face, int point) const
   {
-    Point p = next->FacePoint(face,point);
-    return p*m; 
+    if (skip) {
+      Point p = next2->FacePoint(face,point);
+      return p*m2;
+    } else {
+      Point p = next->FacePoint(face,point);
+      return p*m;
+    }
   }
   virtual Point EndFacePoint(int face, int point) const
   {
-    Point p = next->EndFacePoint(face,point);
-    return p*m;  
+    if (skip) {
+      Point p = next2->EndFacePoint(face,point);
+      return p*m2;
+    } else {
+      Point p = next->EndFacePoint(face,point);
+      return p*m;
+    }
   }
   virtual Vector PointNormal(int face, int point) const
   {
-    Matrix m2 = Matrix::KeepRotation(m);
-    Vector v = next->PointNormal(face,point);
-    return v*m2;
+    if (skip) {
+      Matrix m3 = Matrix::KeepRotation(m2);
+      Vector v = next2->PointNormal(face,point);
+      return v*m3;
+    } else {
+      Matrix m3 = Matrix::KeepRotation(m);
+      Vector v = next->PointNormal(face,point);
+      return v*m3;
+    }
   }
 
   BBOX GetBoundingBox(bool &success) const
@@ -7682,10 +7704,28 @@ public:
     return res;
     
   }
-  
+  // This is optimization that skips some MatrixElem nodes if there's many
+  Matrix get_matrix() const
+  {
+    bool b = next->IsMatrixElem();
+    if (b) {
+      return static_cast<MatrixElem*>(next)->get_matrix()*m;
+    } else return m;
+    
+  }
+  FaceCollection *get_next() const
+  {
+    bool b = next->IsMatrixElem();
+    if (b) {
+      return static_cast<MatrixElem*>(next)->get_next();
+    } else return next;
+  }
 private:
   FaceCollection *next;
   Matrix m;
+  bool skip;
+  FaceCollection *next2;
+  Matrix m2;
 };
 typedef FunctionImpl1<BoxableFaceCollection*, BoxableFaceCollection*, Matrix, MatrixElem> MatrixElemFunction;
 
