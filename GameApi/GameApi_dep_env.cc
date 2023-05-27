@@ -2982,6 +2982,7 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
   home+="/";
   if (dockerdir!="") home=dockerdir;
   std::string filename_with_path = home + std::string(".gameapi_builder/Downloads/") + filename;
+  std::cout << "Saving to " << filename_with_path << std::endl;
   std::ofstream ss(filename_with_path.c_str());
   std::string val(vec->begin(),vec->end());
   ss << val;
@@ -3003,6 +3004,7 @@ int EnvImpl::download_index_mapping(int index)
 
 int EnvImpl::add_to_download_bar(std::string filename)
 {
+  std::cout << "Saving to " << filename << std::endl;
   static int index = 0;
   index++;
   g_download_bar_index.push_back(index);

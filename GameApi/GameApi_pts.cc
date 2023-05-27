@@ -3080,3 +3080,36 @@ GameApi::PTS GameApi::PointsApi::points_field(float start_speed_y, float end_spe
 {
   return add_points_api_points(e, new PointsField(start_speed_y, end_speed_y, numpoints, start_x, end_x, start_y, end_y));
 }
+
+
+class EmptyPTS : public PointsApiPoints
+{
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+
+  void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) {
+  }
+  virtual bool Update(MainLoopEnv &e) {
+    return false;
+  }
+
+  virtual int NumPoints() const { return 0; }
+  virtual Point Pos(int i) const
+  {
+    return Point(0.0,0.0,0.0);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return 0x000000;
+  }
+
+
+  
+};
+
+GameApi::PTS GameApi::PointsApi::pts_alt(std::vector<PTS> vec, int index)
+{
+  if (index>=0 && index<vec.size()) return vec[index];
+  return add_points_api_points(e,new EmptyPTS);
+}
