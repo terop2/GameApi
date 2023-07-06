@@ -139,6 +139,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
       BitmapHandle *handle = find_bitmap(e, vec[i]);
       Bitmap<Color> *bm = find_color_bitmap(handle);
 
+      if (!bm) { std::cout << "bitmap NULL in prepare_cubemap" << std::endl; continue; }
 
       if (sizex==-1) sizex=bm->SizeX();
       if (sizey==-1) sizey=bm->SizeY();
