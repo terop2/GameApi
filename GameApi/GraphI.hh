@@ -214,6 +214,9 @@ public:
   virtual C Map(int x, int y) const=0;
   virtual void Prepare()=0;
   virtual ~Bitmap() { }
+
+  virtual bool IsDirectSTBIImage() const { return false; }
+  virtual bool IsDirectGltfImage() const { return false; }
 };
 
 class MemoryBlock : public CollectInterface

@@ -2530,12 +2530,14 @@ public:
     int sy = t.SizeY();
     buf = BufferRef::NewBuffer(sx, sy);
     //std::cout << "BufferFromBitmap:" << sx << "x" << sy << "=" << MB(sx*sy*sizeof(unsigned int)) << std::endl;
-    for(int y=0;y<sy;y++)
+    for(int y=0;y<sy;y++) {
+      int dd = y*buf.ydelta;
       for(int x=0;x<sx;x++)
 	{
 	  unsigned int color = t.Map(x,y).Pixel();
-	  buf.buffer[x+y*buf.ydelta] = color;
+	  buf.buffer[dd+x] = color;
 	}
+    }
   }
   void GenPrepare() const
   {
@@ -2543,15 +2545,42 @@ public:
     buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
     //std::cout << "BufferFromBitmap:" << t.SizeX() << "x" << t.SizeY() << "=" << MB(t.SizeX()*t.SizeY()*sizeof(unsigned int)) << std::endl;
   }
+  void Gen(int start_x, int end_x, int start_y, int end_y) const;
+  /* MOVED TO GameApi_gltf.cc 
   void Gen(int start_x, int end_x, int start_y, int end_y) const
   {
-    for(int y=start_y;y<end_y;y++)
+    if (t.IsDirectGltfImage())
+      {
+	FlipColours *bm1 = (FlipColours*)&t;
+	BitmapPrepareCache *cache = (BitmapPrepareCache*)&bm1.c;
+	GLTFImage *img=(GLTFImage*)cache->bm;
+	const tinygltf::Image *img2 = img->img;
+
+	for(int y=start_y;y<end_y;y++) {
+	  int dd = y*buf.ydelta;
+	  int offset2 = y*img->width*img->component * (img->bits/8);
+	  for(int x=start_x;x<end_x;x++)
+	    {
+	      int offset = (x*img->component)*(img->bits/8);
+
+	      unsigned int color = *(unsigned int*)&img2->image[x+offset+offset2];
+	      buf.buffer[dd+x] = color;
+	    }
+	}	
+	return;
+      }
+
+    
+    for(int y=start_y;y<end_y;y++) {
+      int dd = y*buf.ydelta;
       for(int x=start_x;x<end_x;x++)
 	{
 	  unsigned int color = t.Map(x,y).Pixel();
-	  buf.buffer[x+y*buf.ydelta] = color;
+	  buf.buffer[dd+x] = color;
 	}
+    }
   }
+  */
   void FlipBytes() {
     BufferRef::FreeBuffer(buf);
     buf = BufferRef::NewBuffer(t.SizeX(), t.SizeY());
@@ -2621,8 +2650,9 @@ public:
     //std::cout << std::hex << v << std::dec << " " << std::endl;
     return Color(v);
   }
+  virtual bool IsDirectGltfImage() const { return c.IsDirectGltfImage(); }
 
-private:
+public:
   Bitmap<Color> &c;
 };
 

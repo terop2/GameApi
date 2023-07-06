@@ -341,7 +341,9 @@ public:
   {
     return get_bm()->Map(x,y);
   }
-private:
+  virtual bool IsDirectSTBIImage() const { return bm->IsDirectSTBIImage(); }
+  virtual bool IsDirectGltfImage() const { return bm->IsDirectGltfImage(); }
+public:
   GameApi::Env &e;
   std::string id;
   Bitmap<Color> *bm;
@@ -697,11 +699,296 @@ public:
     std::cout << "GLTF Image format not recognized" << std::endl;
     return Color(0x0);
   }
-private:
+  virtual bool IsDirectGltfImage() const { return true; }
+public:
   GLTFModelInterface *interface;
   const tinygltf::Image *img;
   int image_index;
 };
+
+
+class LoadBitmapFromUrl : public Bitmap<Color>
+{
+public:
+  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0;
+
+    // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
+  }
+  ~LoadBitmapFromUrl()
+  {
+    //unregister_cache_deleter(id);
+  }
+  virtual int SizeX() const {
+    if (!cbm) { return 100; }
+    return cbm->SizeX(); }
+  virtual int SizeY() const {
+    if (!cbm) { return 100; } 
+    return cbm->SizeY(); }
+  virtual Color Map(int x, int y) const { 
+    if (!cbm) { return Color(0xffffffff); }
+    return cbm->Map(x,y); }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    Prepare();
+  }
+  void Prepare()
+  {
+    if (!cbm) {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+      std::vector<unsigned char> vec2(vec->begin(),vec->end());
+
+      
+      //std::cout << "VEC2 size=" << vec2.size() << std::endl;
+
+      // sometimes we get failures if prepare is called too early, so this is good place to try to recover from it. Next prepare call will have correct data.
+      if (vec2.size()<3) return; 
+      
+      bool b = false;
+      img = LoadImageFromString(vec2, b);
+      
+    if (b==false) {
+      img = BufferRef::NewBuffer(10,10);
+      for(int x=0;x<10;x++)
+	for(int y=0;y<10;y++)
+	  {
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	  }
+      //std::cout << "ERROR: File not found: " << filename << std::endl;
+    }
+    cbm = new BitmapFromBuffer(img);
+    }
+  }
+  void del_cache()
+  {
+    BufferRef::FreeBuffer(img);
+    cbm=0;
+  }
+  virtual bool IsDirectSTBIImage() const { return true; }
+public:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  BufferRef img;
+  Bitmap<Color> *cbm=0;
+  bool load_finished = false;  
+  int id;
+};
+
+EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
+{
+  int c = get_current_block();
+  set_current_block(-1);
+  Bitmap<Color> *bm = new LoadBitmapFromUrl(e,url,gameapi_homepageurl);
+  Bitmap<Color> *bbm = new BitmapPrepareCache(e, url, bm);
+  BitmapColorHandle *handle = new BitmapColorHandle;
+  handle->bm = bbm;
+  BM bm2 = add_bitmap(e, handle);
+  set_current_block(c);
+  return bm2;
+}
+
+
+void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
+{
+#if 0
+  if (t.IsDirectSTBIImage())
+    { // FAST PATH FOR STB IMAGE
+      //std::cout << "STBFASTPATH" << std::endl;
+      FlipColours *bm1 = (FlipColours*)&t;
+      BitmapPrepareCache *cache = (BitmapPrepareCache*)&bm1->c;
+      LoadBitmapFromUrl *url = (LoadBitmapFromUrl*)cache->get_bm();
+      BufferRef img = url->img;
+      for(int y=start_y;y<end_y;y++) {
+	int dd = y*buf.ydelta;
+	int dd2= y*img.ydelta;
+	for(int x=start_x;x<end_x;x++)
+	  {
+	    unsigned int val = img.buffer[dd2+x];
+	      unsigned int a = val &0xff000000;
+	      unsigned int r = val &0xff0000;
+	      unsigned int g = val &0x00ff00;
+	      unsigned int b = val &0x0000ff;
+	      r>>=16;
+	      g>>=8;
+	      
+	      b<<=16;
+	      g<<=8;
+	      val = a+r+g+b; 
+
+    unsigned int val_a = val&0xff000000;
+    unsigned int val_r = val&0x00ff0000;
+    unsigned int val_g = val&0x0000ff00;
+    unsigned int val_b = val&0x000000ff;
+    val_a >>= 24;
+    val_r >>= 16;
+    val_g >>= 8;
+    val_b >>= 0;
+
+    // These are opengl RGBA format
+    val_a <<= 24;
+    val_b <<= 16;
+    val_g <<= 8;
+    val_r <<= 0;
+    unsigned int v = val_r+val_g+val_b+val_a;
+
+	    
+	    buf.buffer[dd+x] = v;
+	  }
+      }
+      return;
+    }
+#endif
+  if (t.IsDirectGltfImage())
+    { // FAST PATH FOR GLTF IMAGE
+      FlipColours *bm1 = (FlipColours*)&t;
+      BitmapPrepareCache *cache = (BitmapPrepareCache*)&bm1->c;
+      GLTFImage *img=(GLTFImage*)cache->get_bm();
+      const tinygltf::Image *img2 = img->img;
+
+      //std::cout << img2->component << " " << img2->bits << std::endl;
+
+      //std::cout << img2->name << std::endl;
+      //std::cout << img2->width << " " << img2->height << std::endl;
+      //std::cout << img2->name << "::" << img2->width << " " << img2->height << " " << img2->component << " " << img2->bits << " " << img2->pixel_type << std::endl;
+      if (img2 && (img2->component==4 ||img2->component==3)&& img2->bits==8) {
+
+	//std::cout << "GLTFFASTPATH" << std::endl;
+      
+	for(int y=start_y;y<end_y;y++) {
+	  int dd = y*buf.ydelta;
+	  int offset2 = y*img2->width*img2->component * (img2->bits/8);
+	  for(int x=start_x;x<end_x;x++)
+	    {
+	      int offset = (x*img2->component)*(img2->bits/8);
+
+	      unsigned int val = *(unsigned int*)&img2->image[offset+offset2];
+	      
+	      unsigned int a = val &0xff000000;
+	      unsigned int r = val &0xff0000;
+	      unsigned int g = val &0x00ff00;
+	      unsigned int b = val &0x0000ff;
+	      r>>=16;
+	      g>>=8;
+	      
+	      b<<=16;
+	      g<<=8;
+	      val = a+r+g+b; 
+	      //val = Color(val).Pixel();
+
+
+    unsigned int val_a = val&0xff000000;
+    unsigned int val_r = val&0x00ff0000;
+    unsigned int val_g = val&0x0000ff00;
+    unsigned int val_b = val&0x000000ff;
+    val_a >>= 24;
+    val_r >>= 16;
+    val_g >>= 8;
+    val_b >>= 0;
+
+    // These are opengl RGBA format
+    val_a <<= 24;
+    val_b <<= 16;
+    val_g <<= 8;
+    val_r <<= 0;
+    unsigned int v = val_r+val_g+val_b+val_a;
+
+	      
+	      buf.buffer[dd+x] = v;
+	    }
+	}
+	return;
+
+
+      }
+    
+        if (img2 && (img2->component==4 ||img2->component==3)&& img2->bits==16) {
+	  std::cout << "GLTFFASTPATH2" << std::endl;
+
+	for(int y=start_y;y<end_y;y++) {
+	  int dd = y*buf.ydelta;
+	  int offset2 = y*img2->width*img2->component * (img2->bits/8);
+	  for(int x=start_x;x<end_x;x++)
+	    {
+	      int offset = (x*img2->component)*(img2->bits/8);
+
+	      unsigned short *c0 = (unsigned short*)&img2->image[offset+offset2];
+      unsigned short r = c0[0];
+      unsigned short g = c0[1];
+      unsigned short b = c0[2];
+      unsigned short a = c0[3];
+      r>>=8;
+      g>>=8;
+      b>>=8;
+      a>>=8;
+      unsigned int aa = a;
+      unsigned int rr = r;
+      unsigned int gg = g;
+      unsigned int bb = b;
+
+	rr>>=16;
+	gg>>=8;
+
+	bb<<=16;
+	gg<<=8;
+	unsigned int val = aa+rr+gg+bb; 
+	      unsigned int val2 = Color(val).Pixel();
+
+
+	    unsigned int val_a = val2&0xff000000;
+    unsigned int val_r = val2&0x00ff0000;
+    unsigned int val_g = val2&0x0000ff00;
+    unsigned int val_b = val2&0x000000ff;
+    val_a >>= 24;
+    val_r >>= 16;
+    val_g >>= 8;
+    val_b >>= 0;
+
+    // These are opengl RGBA format
+    val_a <<= 24;
+    val_b <<= 16;
+    val_g <<= 8;
+    val_r <<= 0;
+    unsigned int v = val_r+val_g+val_b+val_a;
+
+	
+	      buf.buffer[dd+x] = v;
+	    
+	  }
+	}
+	return;
+	}
+	//std::cout << "GLTFSLOWPATH" << std::endl;
+  for(int y=start_y;y<end_y;y++) {
+    int dd = y*buf.ydelta;
+    for(int x=start_x;x<end_x;x++)
+      {
+	unsigned int color = t.Map(x,y).Pixel();
+	buf.buffer[dd+x] = color;
+      }
+  }
+	return;
+    }
+  
+  //std::cout << "ORDISLOWPATH" << std::endl;
+  for(int y=start_y;y<end_y;y++) {
+    int dd = y*buf.ydelta;
+    for(int x=start_x;x<end_x;x++)
+      {
+	unsigned int color = t.Map(x,y).Pixel();
+	buf.buffer[dd+x] = color;
+      }
+  }
+   
+}
+
 
 GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int image_index);
 

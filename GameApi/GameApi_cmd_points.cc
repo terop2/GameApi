@@ -4,6 +4,13 @@
  std::vector<GameApiItem*> pointsapi_functions()
 {
   std::vector<GameApiItem*> vec;
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_alt,
+			 "pts_alt",
+			 { "vec", "index" },
+			 { "[PTS]", "int" },
+			 { "", "0" },
+			 "PTS", "points_api", "pts_alt"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::ply_pts,
 			 "pts_ply",
