@@ -712,79 +712,7 @@ extern std::string gameapi_homepageurl;
 //int register_cache_deleter(void (*fptr)(void*), void*data);
 //void unregister_cache_deleter(int id);
 
-class LoadBitmapFromUrl : public Bitmap<Color>
-{
-public:
-  LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0;
 
-    // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
-  }
-  ~LoadBitmapFromUrl()
-  {
-    //unregister_cache_deleter(id);
-  }
-  virtual int SizeX() const {
-    if (!cbm) { return 100; }
-    return cbm->SizeX(); }
-  virtual int SizeY() const {
-    if (!cbm) { return 100; } 
-    return cbm->SizeY(); }
-  virtual Color Map(int x, int y) const { 
-    if (!cbm) { return Color(0xffffffff); }
-    return cbm->Map(x,y); }
-  void Collect(CollectVisitor &vis)
-  {
-    vis.register_obj(this);
-  }
-  void HeavyPrepare() {
-    Prepare();
-  }
-  void Prepare()
-  {
-    if (!cbm) {
-#ifndef EMSCRIPTEN
-      env.async_load_url(url, homepage);
-#endif
-      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
-      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
-      std::string s(vec->begin(), vec->end());
-      std::vector<unsigned char> vec2(vec->begin(),vec->end());
-
-      
-      //std::cout << "VEC2 size=" << vec2.size() << std::endl;
-
-      // sometimes we get failures if prepare is called too early, so this is good place to try to recover from it. Next prepare call will have correct data.
-      if (vec2.size()<3) return; 
-      
-      bool b = false;
-      img = LoadImageFromString(vec2, b);
-      
-    if (b==false) {
-      img = BufferRef::NewBuffer(10,10);
-      for(int x=0;x<10;x++)
-	for(int y=0;y<10;y++)
-	  {
-	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
-	  }
-      //std::cout << "ERROR: File not found: " << filename << std::endl;
-    }
-    cbm = new BitmapFromBuffer(img);
-    }
-  }
-  void del_cache()
-  {
-    BufferRef::FreeBuffer(img);
-    cbm=0;
-  }
-private:
-  GameApi::Env &env;
-  std::string url;
-  std::string homepage;
-  BufferRef img;
-  Bitmap<Color> *cbm=0;
-  bool load_finished = false;  
-  int id;
-};
 //void del_bitmap_cache(void* ptr)
 // {
 //    LoadBitmapFromUrl *p = (LoadBitmapFromUrl*)ptr;
@@ -1032,13 +960,15 @@ public:
   {
     return get_bm()->Map(x,y);
   }
+  virtual bool IsDirectSTBIImage() const { std::cout << "PRepareCachedirect" << std::endl; return get_bm()->IsDirectSTBIImage(); }
+  virtual bool IsDirectGltfImage() const { return get_bm()->IsDirectGltfImage(); }
 private:
   GameApi::Env &e;
   std::string id;
   Bitmap<Color> *bm;
   mutable Bitmap<Color> *bm_cache=0;
 };
-
+/* moved to GameApi_gltf.cc 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 {
   int c = get_current_block();
@@ -1050,7 +980,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
   BM bm2 = add_bitmap(e, handle);
   set_current_block(c);
   return bm2;
-}
+  }*/
 std::string MB(long num);
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmap(std::string filename)
