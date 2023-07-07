@@ -7084,6 +7084,9 @@ public:
 	if (bm.size()>3) bottom = bm[3];
 	if (bm.size()>4) back = bm[4];
 	if (bm.size()>5) front = bm[5];
+	//std::cout << "bm array size=" << bm.size() << std::endl;
+	int s = bm.size();
+	for(int i=0;i<s;i++) std::cout << bm[i].id << std::endl;
 	if (left.id==0) left=right;
 	if (top.id==0) top=right;
 	if (bottom.id==0) bottom=right;
@@ -13278,6 +13281,13 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
 Matrix g_last_resize = Matrix::Identity();
 
 
+void resize_reset();
+void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p);
+GameApi::ML resize_model(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML ml);
+
+
+
+
 class ResizeFaceCollection : public ForwardFaceCollection
 {
 public:
@@ -13424,6 +13434,34 @@ GameApi::P GameApi::PolygonApi::resize_to_correct_size(P model)
   FaceCollection *coll = find_facecoll(e, model);
   return add_polygon2(e, new ResizeFaceCollection(coll,false),1);
 }
+
+
+Matrix g_resize_mat;
+bool g_resize_mat_done=false;
+void resize_reset() { g_resize_mat=Matrix::Identity(); g_resize_mat_done=false; }
+void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  ResizeFaceCollection *resize = new ResizeFaceCollection(coll,false);
+  resize->Prepare();
+  Matrix m;
+  if (!g_resize_mat_done) {
+    m = resize->get_matrix();
+    g_resize_mat = m;
+    g_resize_mat_done = true;
+  }
+}
+
+GameApi::ML resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML ml)
+{
+  assert(g_resize_mat_done);
+  Matrix m = g_resize_mat;
+  GameApi::MN mn = ev.move_api.mn_empty();
+  mn = ev.move_api.matrix(mn,add_matrix2(e,m));
+  return ev.move_api.move_ml(ev,ml,mn,1,0.0);
+}
+
+
 
 class PersistentCachePoly : public FaceCollection
 {
@@ -18977,7 +19015,8 @@ GameApi::ML GameApi::PolygonApi::m_bind_inst_many(EveryApi &ev, std::vector<P> v
     MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
     vec2.push_back(ev.materials_api.bind_inst(vec[i], pts, mat));
   }
-  GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
+  //GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
+  GameApi::ML ml = ev.mainloop_api.array_ml(ev,vec2);
   return ml;
 }
 
@@ -18998,7 +19037,8 @@ GameApi::ML GameApi::PolygonApi::m_bind_many(EveryApi &ev, std::vector<P> vec, s
     MT mat2 = ev.materials_api.progressmaterial(mat,&progress_mat,(void*)counter);
     vec2.push_back(ev.materials_api.bind(vec[i], mat));
   }
-  GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
+  //GameApi::ML ml = ev.mainloop_api.filter_execute_array_ml(ev,vec2);
+  GameApi::ML ml = ev.mainloop_api.array_ml(ev,vec2);
   return ml;
 }
 
@@ -24088,3 +24128,4 @@ void GameApi::PolygonApi::pass_to_shader(GI gi)
 {
 }
 #endif
+

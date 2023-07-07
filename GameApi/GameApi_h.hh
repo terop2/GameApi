@@ -1,5 +1,8 @@
 #ifndef GAMEAPI_H_H
 #define GAMEAPI_H_H
+
+#define NO_PREPARE_RENDER 1
+
 #ifndef LINUX
 #ifndef RASPI
 // this is also in Main.cc
