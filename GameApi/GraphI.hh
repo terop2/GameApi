@@ -215,7 +215,6 @@ public:
   virtual void Prepare()=0;
   virtual ~Bitmap() { }
 
-  virtual bool IsDirectSTBIImage() const { return false; }
   virtual bool IsDirectGltfImage() const { return false; }
 };
 
@@ -2689,6 +2688,7 @@ public:
   virtual float Height(float x, float z) const=0;
   virtual FaceCollection *Render() const=0;
 };
+
 
 
 class Tiles2d

@@ -126,20 +126,33 @@ EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
   return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
 }
-EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format,std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines)
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format,std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines, bool is_new)
 {
   GameApi::US us1 = { -1 };
-  return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans,mod, us1,us1, v_defines, f_defines,"","");
-}
-EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines)
-{
-  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines,"","");
+  if (!is_new) {
+    return get_normal_shader_1(v_format, f_format, g_format, v_comb, f_comb, trans,mod, us1,us1, v_defines, f_defines,"","");
+  } else {
+    return get_normal_shader_1_new(v_format, f_format, g_format, v_comb, f_comb, trans,mod, us1,us1, v_defines, f_defines,"","");
+  }
 }
 
-EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans, SFO mod, std::string v_defines, std::string f_defines)
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines, bool is_new)
 {
-  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines, v_shader, f_shader);
+  if (!is_new) {
+    return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines,"","");
+  } else {
+    return get_normal_shader_1_new(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines,"","");
+  }
 }
+EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans, SFO mod, std::string v_defines, std::string f_defines, bool is_new)
+{
+  if (!is_new) {
+  return get_normal_shader_1(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines, v_shader, f_shader);
+  } else {
+  return get_normal_shader_1_new(v_format, f_format, g_format, "", "", trans,mod, v_comb, f_comb,v_defines,f_defines, v_shader, f_shader);
+  }
+}
+
 
 GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
@@ -151,15 +164,41 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
   bind_attrib_1(sh, 3, "in_TexCoord");
   bind_attrib_1(sh, 4, "in_Position2");
   bind_attrib_1(sh, 5, "in_InstPos");
-  bind_attrib_1(sh, 6, "bone_id");
+  //bind_attrib_1(sh, 6, "bone_id");
   bind_attrib_1(sh, 7, "in_InstMat"); // also uses 7,8,9,10
   bind_attrib_1(sh, 11, "JOINTS_0");
   bind_attrib_1(sh, 12, "WEIGHTS_0");
   bind_attrib_1(sh, 13, "in_TexCoord2");
   bind_attrib_1(sh, 14, "in_Color2");
   bind_attrib_1(sh, 15, "JOINTS_1");
-  bind_attrib_1(sh, 16, "WEIGHTS_1");
-  bind_attrib_1(sh, 17, "INDICES");
+  //bind_attrib_1(sh, 6, "WEIGHTS_1");
+  //bind_attrib_1(sh, 14, "INDICES");
+  //bind_attrib_1(sh, 6, "in_LightAmount");
+  link_1(sh);
+  use_1(sh);
+  set_default_projection_1(sh, "in_P");
+  return sh;
+}
+GameApi::SH GameApi::ShaderApi::get_normal_shader_1_new(std::string v_format, std::string f_format, std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
+{
+  SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines, v_shader, f_shader);
+  //const int vertex_id = 7;
+  bind_attrib_1(sh, 0, "in_Position");
+  bind_attrib_1(sh, 1, "in_Normal");
+  bind_attrib_1(sh, 2, "in_Color");
+  bind_attrib_1(sh, 3, "in_TexCoord");
+  bind_attrib_1(sh, 4, "in_Position2");
+  bind_attrib_1(sh, 5, "in_InstPos");
+  //bind_attrib_1(sh, 6, "bone_id");
+  bind_attrib_1(sh, 7, "in_InstMat"); // also uses 7,8,9,10
+  bind_attrib_1(sh, 11, "JOINTS_0");
+  bind_attrib_1(sh, 12, "WEIGHTS_0");
+  //bind_attrib_1(sh, 13, "in_TexCoord2");
+  //bind_attrib_1(sh, 14, "in_Color2");
+  bind_attrib_1(sh, 15, "JOINTS_1");
+  bind_attrib_1(sh, 13, "WEIGHTS_1");
+  bind_attrib_1(sh, 14, "INDICES");
+  bind_attrib_1(sh, 6, "in_LightAmount");
   link_1(sh);
   use_1(sh);
   set_default_projection_1(sh, "in_P");

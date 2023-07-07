@@ -148,6 +148,8 @@ enum
     Low_GL_RGBA32F,
     Low_GL_ELEMENT_ARRAY_BUFFER,
     Low_GL_UNSIGNED_SHORT,
+    Low_GL_BYTE,
+    Low_GL_DOUBLE,
     //
     //  OLD STUFF
     // 

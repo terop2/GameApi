@@ -3520,22 +3520,22 @@ void Dyn::prepare(int i)
     size_t sz=0;
     bool joint_s=false;
     switch(i) {
-    case 0: data=arr->Attrib(VA_Position); sz=sizeof(float)*3; break;
-    case 1: data=arr->Attrib(VA_Normal); sz=sizeof(float)*3; break;
-    case 2: data=arr->Attrib(VA_TexCoord_0); sz=sizeof(float)*3; break;
-    case 3: data=arr->Attrib(VA_TexCoord_1); sz=sizeof(float)*3; break;
-    case 4: data=arr->Attrib(VA_Color_0); sz=sizeof(float)*4; break;
-    case 5: data=arr->Attrib(VA_Color_1); sz=sizeof(float)*4; break;
+    case 0: data=arr->Attrib(VA_Position); sz=sizeof(float)*arr->ComponentCount(VA_Position);; break;
+    case 1: data=arr->Attrib(VA_Normal); sz=sizeof(float)*arr->ComponentCount(VA_Normal);; break;
+    case 2: data=arr->Attrib(VA_TexCoord_0); sz=sizeof(float)*arr->ComponentCount(VA_TexCoord_0); break;
+    case 3: data=arr->Attrib(VA_TexCoord_1); sz=sizeof(float)*arr->ComponentCount(VA_TexCoord_1); break;
+    case 4: data=arr->Attrib(VA_Color_0); sz=sizeof(float)*arr->ComponentCount(VA_Color_0); break;
+    case 5: data=arr->Attrib(VA_Color_1); sz=sizeof(float)*arr->ComponentCount(VA_Color_1); break;
     case 6:
       data=arr->Attrib(VA_Joints_0); sz=sizeof(float)*4;
       if (arr->ComponentType(VA_Joints_0)==VA_USHORT) {
-	sz=sizeof(unsigned short)*4; joint_s=true;
+	sz=sizeof(unsigned short)*arr->ComponentCount(VA_Joints_0); joint_s=true;
       }
       break;
-    case 7: data=arr->Attrib(VA_Joints_1); sz=sizeof(float)*4; break;
-    case 8: data=arr->Attrib(VA_Weights_0); sz=sizeof(float)*4; break;
-    case 9: data=arr->Attrib(VA_Weights_1); sz=sizeof(float)*4; break;
-    }
+    case 7: data=arr->Attrib(VA_Joints_1); sz=sizeof(float)*arr->ComponentCount(VA_Joints_1); break;
+    case 8: data=arr->Attrib(VA_Weights_0); sz=sizeof(float)*arr->ComponentCount(VA_Weights_0); break;
+    case 9: data=arr->Attrib(VA_Weights_1); sz=sizeof(float)*arr->ComponentCount(VA_Weights_1); break;
+    };
     indi_data=arr->Indices();
 
     if (firsttime) {
@@ -3571,7 +3571,7 @@ void Dyn::prepare(int i)
     }
     int num = arr->Num(VertexArrayEnum(i));
 
-#if 0
+#if 1
     std::string arr4[] = { "POSITION", "NORMAL", "TEXCOORD_0", "TEXCOORD_1", "COLOR_0", "COLOR_1", "JOINTS_0", "JOINTS_1", "WEIGHTS_0", "WEIGHTS_1" };
       std::cout << "DATA " << i << "(" << arr4[i] << ")" << std::endl;
       if (joint_s) {
@@ -3595,7 +3595,7 @@ void Dyn::prepare(int i)
     
     
 #ifdef VAO
-    int arr2[] = { 0, 1, 2, 13, 3, 14, 11, 15, 12,16 };
+    int arr2[] = { 0, 1, 3, 13, 2, 14, 11, 15, 12,6 };
     int stride = arr->Stride(VertexArrayEnum(i));
     if (joint_s) {
       ogl->glVertexAttribPointer(arr2[i],sz/sizeof(unsigned short), Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, stride, 0);
@@ -3610,18 +3610,37 @@ void Dyn::prepare(int i)
     if (i==0)
       {
 	int num2 = arr->NumIndices();
+	
 	//std::cout << "NUMINDICES: " << num2 << std::endl;
-	unsigned int *indices = arr->Indices();
+	unsigned char *indices = arr->Indices();
 	ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
   check_error("bindbuffer2");
-	ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, num2*sizeof(unsigned int), indices, Low_GL_STATIC_DRAW);
+    size_t sz = sizeof(unsigned short);
+    int low = Low_GL_UNSIGNED_SHORT;
+    VA_ComponentType tt = arr->IndicesComponentType();
+    switch(tt) {
+    case VA_BYTE: sz = sizeof(char); low=Low_GL_BYTE; break;
+    case VA_UBYTE: sz=sizeof(unsigned char); low=Low_GL_UNSIGNED_BYTE; break;
+    case VA_SHORT: sz=sizeof(short); low=Low_GL_SHORT; break;
+    case VA_USHORT: sz=sizeof(unsigned short); low=Low_GL_UNSIGNED_SHORT; break;
+    case VA_INT: sz=sizeof(int); low=Low_GL_INT; break;
+    case VA_UINT: sz=sizeof(unsigned int); low=Low_GL_UNSIGNED_INT; break;
+    case VA_FLOAT: sz=sizeof(float); low=Low_GL_FLOAT; break;
+    case VA_DOUBLE: sz=sizeof(double); low=Low_GL_DOUBLE; break;
+      case VA_INVALID: sz=sizeof(char); low=Low_GL_BYTE; break;
+    };
+
+
+  if (i==0)
+      {
+    	//ogl->glVertexAttribPointer(14,3,low, Low_GL_FALSE, 0, 0);
+     }
+
+    ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, num2*sz, indices, Low_GL_STATIC_DRAW);
   check_error("bufferdata2");
       }
     
-    //if (i==0)
-    //  {
-    //	ogl->glVertexAttribPointer(17,3,Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0, 0);
-    // }
+    
     
 #endif
 
@@ -3684,7 +3703,7 @@ void Dyn::ready()
 #endif
   
 #ifdef VAO
-    int arr[] = { 0, 1, 2, 13, 3, 14, 11, 15, 12,16 };
+    int arr[] = { 0, 1, 3, 13, 2, 14, 11, 15, 12,6 };
     for(int i=0;i<9;i++)
       {
 	if (enabled[i]) {
@@ -3721,9 +3740,22 @@ void Dyn::render()
        }
 
 
+#ifdef VAO
+    int arr3[] = { 0, 1, 3, 13, 2, 14, 11, 15, 12,6 };
+    for(int i=0;i<9;i++)
+      {
+	if (enabled[i]) {
+	  int index = arr3[i];
+	  ogl->glEnableVertexAttribArray(index);
+	  check_error("enablevertexattribarray");
+	}
+      }
+#endif
+
+    
     //int arr2[] = { 0, 1, 2, 13, 3, 14, 11, 15, 12,16 };
     int num = arr->Num(VA_Position);
-    unsigned int *indices = arr->Indices();
+    unsigned char *indices = arr->Indices();
     if (indices) {
       //std::cout << "INDICES" << std::endl;
       //for(int i=0;i<num/3;i++)
@@ -3731,12 +3763,47 @@ void Dyn::render()
       //std::cout << std::endl;
       int numindices = arr->NumIndices();
       //std::cout << "NUMINDICES: " << numindices << std::endl;
-      ogl->glDrawElements(Low_GL_TRIANGLES, numindices/3, Low_GL_UNSIGNED_INT, indices);
+      ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+
+
+    size_t sz = sizeof(unsigned short);
+    int low = Low_GL_UNSIGNED_SHORT;
+    VA_ComponentType tt = arr->IndicesComponentType();
+    switch(tt) {
+    case VA_BYTE: sz = sizeof(char); low=Low_GL_UNSIGNED_BYTE; break;
+    case VA_UBYTE: sz=sizeof(unsigned char); low=Low_GL_UNSIGNED_BYTE; break;
+    case VA_SHORT: sz=sizeof(short); low=Low_GL_UNSIGNED_SHORT; break;
+    case VA_USHORT: sz=sizeof(unsigned short); low=Low_GL_UNSIGNED_SHORT; break;
+    case VA_INT: sz=sizeof(int); low=Low_GL_UNSIGNED_INT; break;
+    case VA_UINT: sz=sizeof(unsigned int); low=Low_GL_UNSIGNED_INT; break;
+      case VA_FLOAT: sz=sizeof(float); low=Low_GL_FLOAT; break;
+      case VA_DOUBLE: sz=sizeof(double); low=Low_GL_DOUBLE; break;
+      case VA_INVALID: sz=sizeof(char); low=Low_GL_UNSIGNED_BYTE; break;
+    };
+
+    std::cout << "DRAWELEMENTS: " << numindices << " " << low << std::endl;
+    if (numindices/3>0)
+      ogl->glDrawElements(Low_GL_TRIANGLES, numindices/3, low, 0);
   check_error("drawelements");
     } else {
       ogl->glDrawArrays(Low_GL_TRIANGLES, 0, num/3);
   check_error("drawarrays");
     }
+
+
+
+#ifdef VAO
+    int arr4[] = { 0, 1, 3, 13, 2, 14, 11, 15, 12,6 };
+    for(int i=0;i<9;i++)
+      {
+	if (enabled[i]) {
+	  int index = arr4[i];
+	  ogl->glDisableVertexAttribArray(index);
+	  check_error("disablevertexattribarray");
+	}
+      }
+#endif
+
 #ifdef VAO
   ogl->glBindVertexArray(0);
 #endif

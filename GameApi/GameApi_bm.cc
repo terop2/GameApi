@@ -960,7 +960,6 @@ public:
   {
     return get_bm()->Map(x,y);
   }
-  virtual bool IsDirectSTBIImage() const { std::cout << "PRepareCachedirect" << std::endl; return get_bm()->IsDirectSTBIImage(); }
   virtual bool IsDirectGltfImage() const { return get_bm()->IsDirectGltfImage(); }
 private:
   GameApi::Env &e;
@@ -4751,6 +4750,7 @@ GameApi::ARR GameApi::BitmapApi::cubemap(BM bm)
   array->vec.push_back(bm_bot.id);
   array->vec.push_back(bm_back.id);
   array->vec.push_back(bm_f.id);
+  //std::cout << "CUBEMAP SIZE:" << array->vec.size() << std::endl;
   return add_array(e, array);
 }
 

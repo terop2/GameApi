@@ -462,7 +462,9 @@ public:
 	  {
 	    std::string substr = s.substr(prev, i-prev);
 	    std::stringstream sk1(substr);
+	    //std::cout << "SUBSTR:" << substr << std::endl;
 	    std::string t = cls.from_stream(sk1, ev);
+	    //std::cout << "RESULT:" << t << std::endl;
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -518,7 +520,9 @@ public:
 	  {
 	    std::string substr = s.substr(prev, i-prev);
 	    std::stringstream sk1(substr);
+	    // std::cout << "SUBSTR:" << substr << ":" << std::endl;
 	    T t = cls.from_stream(sk1, ev);
+	    //std::cout << "RESULT:" << t.id << std::endl;
 	    vec.push_back(t);
 	    prev=i+1;
 	    if (s[i]==']') { break; }
@@ -591,12 +595,15 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
       ss << s[i] << " ";
     }
 #endif
-  //std::cout << "FuncCall: " << ss.str() << std::endl;
+  // std::cout << "FuncCall: " << ss.str() << std::endl;
 
   //std::stringstream ss2(ss.str());
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream2<P>(ss,ev)...);
 
+  //std::cout << "RETURN:" << val.id << std::endl;
+  //std::cout << "RETURN TYPE:" << return_type << std::endl;
+  
 #if 0
   if (return_type.size()>2 && return_type[0]=='[' && return_type[return_type.size()-1]==']')
     { // array return type

@@ -6,14 +6,18 @@ require_once("emscripten_frame.php");
 
 $machine=php_uname("n");
 if ($machine=="terop-pc") {
-   $site = "https://meshpage.org";
+   $site = "meshpage.org";
    $assetsite = "https://tpgames.org";
    $sitename = "meshpage.org";
    } else {
-   $site = "https://dinoengine.com";
+   $site = "dinoengine.com";
    $assetsite = "https://dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
    }
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   if ("$siteprefix"!="ssh.") $siteprefix="";
+   $site = "https://" . $siteprefix . $site;
 
 
 function create_new_user( $username, $passwd )

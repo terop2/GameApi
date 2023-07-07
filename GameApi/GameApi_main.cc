@@ -2372,7 +2372,8 @@ public:
 	int ss = v.size();
 	for(int j=0;j<ss;j++)
 	  {
-	    res.push_back(v[j]);
+	    if (v[j]>0)
+	      res.push_back(v[j]);
 	  }
 	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
       }

@@ -348,6 +348,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
   ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
   ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
   ML gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix);
@@ -3967,12 +3968,14 @@ public:
   IMPORT void load_default();
   IMPORT void load(std::string filename);
   IMPORT SH get_shader(std::string v_format, std::string f_format, std::string g_format,std::string v_comb="", std::string f_comb="", bool trans=true, SFO module={-1} );
-  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD");
-  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
-  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="");
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", bool is_new=false);
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format,US v_comb, US f_comb, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="", bool is_new=false);
+  IMPORT SH get_normal_shader(std::string v_format, std::string f_format, std::string g_format, US v_comb, US f_comb, std::string v_shader, std::string f_shader, bool trans=true, SFO mod={-1}, std::string v_defines="", std::string f_defines="", bool is_new=false);
   SH get_shader_1(std::string v_format, std::string f_format, std::string g_format,
 		  std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod={-1}, US v_c={-1}, US f_c={-1}, std::string v_defines="IN_NORMAL IN_COLOR IN_TEXCOORD IN_POSITION EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD EX_POSITION", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
   SH get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,
+			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
+    SH get_normal_shader_1_new(std::string v_format, std::string f_format, std::string g_format,
 			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
   IMPORT SH texture_shader();
   IMPORT SH texture_array_shader();
