@@ -195,7 +195,7 @@ std::vector<GameApiItem*> blocker_functions()
 
 
 #ifdef NO_PREPARE_RENDER
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_nop,
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_nop_resize,
 			 "tf_nop",
 			 { "ev", "tf", "mesh_index", "prim_index", "mix" },
 			 { "EveryApi&", "TF", "int", "int", "float" },

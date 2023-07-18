@@ -2,6 +2,8 @@
 #ifndef VERTEXARRAY_HH
 #define VERTEXARRAY_HH
 
+#define NO_PREPARE_RENDER 1
+
 #include <vector>
 #include <map>
 #include "VectorTools.hh"

@@ -6347,6 +6347,7 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 	      int idx = 0;
 	      ss >> idx;
 	      int s = vecvec[idx].params.size();
+	      //std::cout << "PARAMS_SIZE:" << s << std::endl;
 	      std::vector<std::string> params2;
 	      for(int i=0;i<s;i++)
 		{
@@ -6415,7 +6416,7 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 	    int val2 = t->vec[jj];
 	    std::stringstream ss2;
 	    ss2 << val2;
-	    std::cout << "Return type id=" << val2 << std::endl;
+	    //std::cout << "Return type id=" << val2 << std::endl;
 	    res+=ss2.str();
 	    if (jj!=count-1) res+=" ";
 	  }

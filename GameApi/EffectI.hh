@@ -102,11 +102,13 @@ public:
   virtual std::string enabled() const=0;
   virtual int Num(VertexArrayEnum i) const=0;
   virtual int NumIndices() const=0;
-  virtual unsigned int *Indices() const=0;
+  virtual unsigned char *Indices() const=0;
+  virtual VA_ComponentType IndicesComponentType() const=0;
+  
   virtual size_t Stride(VertexArrayEnum i) const=0;
   virtual void *Attrib(VertexArrayEnum i) const=0;
   virtual VA_ComponentType ComponentType(VertexArrayEnum i) const=0;
-
+  virtual int ComponentCount(VertexArrayEnum i) const=0;
   //old
   //virtual void *Position() const=0; // i=0
   //virtual void *Normal() const=0;  // i=1
@@ -148,6 +150,7 @@ public:
   virtual float TexCoord3(int face, int point) const { return 0.0; }
   virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
   virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual float LightAmount(int face, int point) const { return 0.5; }
   
   virtual int NumObjects() const {
     //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;

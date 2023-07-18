@@ -259,6 +259,8 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case  Low_GL_BYTE: i=GL_BYTE; break;
+  case  Low_GL_DOUBLE: i=GL_DOUBLE; break;
   case Low_GL_RGBA32F: i=GL_RGBA32F; break;
   case Low_GL_NONE: i=GL_NONE; break;
   case Low_GL_LINK_STATUS: i=GL_LINK_STATUS; break;

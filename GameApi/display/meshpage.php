@@ -2,15 +2,21 @@
 //header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
 $machine=php_uname("n");
+$siteprefix = "";
 if ($machine=="terop-pc") {
-   $site = "https://meshpage.org";
-   $assetsite = "https://tpgames.org";
+   $site = "meshpage.org";
+   $assetsite = "tpgames.org";
    $sitename = "meshpage.org";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   if ("$siteprefix"!="ssh.") $siteprefix="";
    } else {
-   $site = "https://dinoengine.com";
-   $assetsite = "https://dinoengine.com/assetsite";
+   $site = "dinoengine.com";
+   $assetsite = "dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
    }
+   $site = "https://" . $siteprefix . $site;
+   $assetsite = "https://" . $siteprefix . $assetsite;
 ?>
 <!DOCTYPE html>
 <html id="html">
@@ -700,7 +706,7 @@ echo "<br><br><br><hr><br><br><br>";
 echo "<hr>";
 echo "Terms and conditions:<p>";
 echo "<ul>";
-echo "<li>You have explicit permission to use gameapi builder and <?php echo $sitename ?> for creating 3d model, the node graph, and deploy the end result to a web site of your choice";
+echo "<li>You have explicit permission to use gameapi builder and <?php echo $sitename ?> for creating 3d model, the node graph, and deploy the end result to a web site of your choice. From builder tool you also have our permission to take screengrabs and videos using external screen grabbing software.";
 echo "<li>You are not allowed to add copyright infringing content to any url slots inside builder tool. While builder can filter out some of that usage, the checks are not perfect and if that happens, we basically cannot do anything to protect our end users from the content owner's legal actions";
 echo "<li>For children at ages 10-18 years old, gameapi builder provides safe learning environment where it is difficult to do large mistakes like publishing sexual material, copyright infringements or racist brainwashing.";
 echo "<li>GameApi builder and <?php echo $sitename ?> web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
@@ -1929,6 +1935,7 @@ function choose_display(id,label, vm,is_popstate)
   var url2 = "<?php echo $site ?>/mesh_addtext.php?id=" + label + "&" + dt;
   var url3 = "<?php echo $site ?>/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
+  console.log(url3);
   if (g_txt[id]===undefined) {
 
 const myHeaders3 = new Headers();

@@ -341,7 +341,6 @@ public:
   {
     return get_bm()->Map(x,y);
   }
-  virtual bool IsDirectSTBIImage() const { return bm->IsDirectSTBIImage(); }
   virtual bool IsDirectGltfImage() const { return bm->IsDirectGltfImage(); }
 public:
   GameApi::Env &e;
@@ -771,7 +770,6 @@ public:
     BufferRef::FreeBuffer(img);
     cbm=0;
   }
-  virtual bool IsDirectSTBIImage() const { return true; }
 public:
   GameApi::Env &env;
   std::string url;
@@ -1009,7 +1007,7 @@ public:
   {
     std::string res;
     const char *l=0;
-    for(int i=0;i<9;i++) {
+    for(int i=0;i<10;i++) {
       switch(i) {
       case 0: l="POSITION"; break;
       case 1: l="NORMAL"; break;
@@ -1022,7 +1020,11 @@ public:
       case 8: l="WEIGHTS_0"; break;
       case 9: l="WEIGHTS_1"; break;
       };
-
+      if (!(mesh_id>=0 && mesh_id<interface->meshes_size()))
+	{
+	  std::cout << "Mesh default to empty" << std::endl;
+	  return "";
+	}
       const tinygltf::Mesh &mesh = interface->get_mesh( mesh_id );
       tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
       int position_index = -1;
@@ -1062,6 +1064,7 @@ public:
   struct Data {
     size_t offset;
     int componentType;
+    int componentSize;
     size_t count;
     int type;
     size_t offset2;
@@ -1072,6 +1075,12 @@ public:
   };
   static Data get_indices_data(GLTFModelInterface *interface, int mesh_id, int prim_id)
   {
+      if (!(mesh_id>=0 && mesh_id<interface->meshes_size()))
+	{
+	  std::cout << "get_indices_data::Mesh default to empty"<< mesh_id << std::endl;
+	  exit(0);
+	}
+
     const tinygltf::Mesh &mesh = interface->get_mesh( mesh_id );
     tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
     int indices = prim.indices;
@@ -1080,6 +1089,7 @@ public:
     int bufferviewindex = acc.bufferView;
     size_t offset = acc.byteOffset;
     int componentType = acc.componentType;
+    //std::cout << "INDICES accessor componenttype=" << print_component_type(componentType) << std::endl;
     size_t count = acc.count;
     int type = acc.type;
 
@@ -1101,7 +1111,7 @@ public:
 	d.length=length;
 	d.stride=stride;
 	d.target=target;
-	d.buf = buf;
+	d.buf = buf;	
 	return d;
 
   }
@@ -1123,6 +1133,11 @@ public:
   }
   static Data get_data(GLTFModelInterface *interface, int mesh_id, int prim_id, const char *label )
   {
+      if (!(mesh_id>=0 && mesh_id<interface->meshes_size()))
+	{
+	  std::cout << "get_indices_data::Mesh default to empty"<< mesh_id << std::endl;
+	  exit(0);
+	}
     const tinygltf::Mesh &mesh = interface->get_mesh( mesh_id );
     tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
     int position_index = -1;
@@ -1189,10 +1204,52 @@ public:
     }
     return 0;
   }
-  virtual unsigned int *Indices() const
+  virtual unsigned char *Indices() const
   {
     Data d = get_indices_data(interface,mesh_id,prim_id);
-    return (unsigned int*)(d.buf + d.offset + d.offset2);
+    return (unsigned char*)(d.buf + d.offset + d.offset2);
+  }
+  virtual VA_ComponentType IndicesComponentType() const
+  {
+      Data d = get_indices_data(interface,mesh_id,prim_id);
+      switch(d.componentType) {
+      case TINYGLTF_COMPONENT_TYPE_BYTE: return VA_BYTE;
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE: return VA_UBYTE;
+      case TINYGLTF_COMPONENT_TYPE_SHORT: return VA_SHORT;
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: return VA_USHORT;
+      case TINYGLTF_COMPONENT_TYPE_INT: return VA_INT;
+      case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT: return VA_UINT;
+      case TINYGLTF_COMPONENT_TYPE_FLOAT: return VA_FLOAT;
+      case TINYGLTF_COMPONENT_TYPE_DOUBLE: return VA_DOUBLE;
+      };
+    return VA_INVALID;
+  }
+  virtual int ComponentCount(VertexArrayEnum i) const
+  {
+        const char *l = 0;
+    switch(i) {
+    case 0: l="POSITION"; break;
+    case 1: l="NORMAL"; break;
+    case 2: l="TEXCOORD_0"; break;
+    case 3: l="TEXCOORD_1"; break;
+    case 4: l="COLOR_0"; break;
+    case 5: l="COLOR_1"; break;
+    case 6: l="JOINTS_0"; break;
+    case 7: l="JOINTS_1"; break;
+    case 8: l="WEIGHTS_0"; break;
+    case 9: l="WEIGHTS_1"; break;
+    };
+    if (l) {
+      Data d = get_data(interface,mesh_id,prim_id,l);
+      switch(d.type) {
+      case TINYGLTF_TYPE_VEC2: return 2;
+      case TINYGLTF_TYPE_VEC3: return 3;
+      case TINYGLTF_TYPE_VEC4: return 4;
+      case TINYGLTF_TYPE_SCALAR: return 1;
+      default:
+	std::cout << "TINYGLTF_TYPE_ error" << std::endl;
+      }
+    }
   }
   virtual VA_ComponentType ComponentType(VertexArrayEnum i) const
   {
@@ -1390,7 +1447,7 @@ public:
 	vertex.id = u_v.id; 
 	fragment.id = u_f.id; 
 	GameApi::US vertex2 = vertex;
-	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
+	shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions,true);
 
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
@@ -1459,6 +1516,11 @@ GameApi::ML GameApi::MainLoopApi::mesh_render(EveryApi &ev, TF tf, int mesh_inde
 {
   GLTFModelInterface *interface = find_gltf(e,tf);
   interface->Prepare();
+      if (!(mesh_index>=0 && mesh_index<interface->meshes_size()))
+	{
+	  std::cout << "get_indices_data::Mesh default to empty"<< mesh_index << std::endl;
+	  exit(0);
+	}
   const tinygltf::Mesh &mesh = interface->get_mesh( mesh_index );
   int s = mesh.primitives.size();
   std::vector<GameApi::ML> mls;
@@ -1481,6 +1543,11 @@ public:
   {
   GLTFModelInterface *interface = find_gltf(env,tf);
   interface->Prepare();
+      if (!(mesh_index>=0 && mesh_index<interface->meshes_size()))
+	{
+	  std::cout << "get_indices_data::Mesh default to empty"<< mesh_index<< std::endl;
+	  exit(0);
+	}
     const tinygltf::Mesh &mesh = interface->get_mesh( mesh_index );
     tinygltf::Primitive &prim = const_cast<tinygltf::Primitive&>(mesh.primitives[ prim_id ]);
     material_id = prim.material;
@@ -1759,13 +1826,27 @@ private:
 };
 GameApi::ML GameApi::MainLoopApi::gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix)
 {
-  return add_main_loop(e, new GLTF_Material_noP(e,ev,tf,mesh_index, prim_id, mix));
+   GameApi::ML ml = add_main_loop(e, new GLTF_Material_noP(e,ev,tf,mesh_index, prim_id, mix));
+   return ml;
 }
+
+void resize_reset();
+void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p);
+GameApi::ML resize_model(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML ml);
+
+
+
+
 GameApi::ML GameApi::MainLoopApi::gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix)
 {
 
   GLTFModelInterface *interface = find_gltf(e,tf);
   interface->Prepare();
+      if (!(mesh_index>=0 && mesh_index<interface->meshes_size()))
+	{
+	  std::cout << "get_indices_data::Mesh default to empty"<< mesh_index << std::endl;
+	  exit(0);
+	}
   const tinygltf::Mesh &mesh = interface->get_mesh( mesh_index );
   int s = mesh.primitives.size();
   std::vector<GameApi::ML> mls;
@@ -1822,7 +1903,7 @@ private:
   int node_index;
   float mix;
   std::vector<GameApi::ML> children;
-  GameApi::ML mesh;
+  GameApi::ML mesh = { -1 };
   GLTF_SKIN *skin=0;
   GameApi::ML skin_root = { -1 };
   GameApi::ML res = { -1 };
@@ -1841,14 +1922,26 @@ public:
   virtual void HeavyPrepare()
   {
     GLTFModelInterface *interface = find_gltf(env,tf);
-    const tinygltf::Scene &scene = interface->get_scene( scene_id );
-    std::vector<int> vec = scene.nodes;
-    int s = vec.size();
+    bool use_default=false;
+    if (scene_id==-1) use_default=true;
+    int s2 = interface->scenes_size(); //load->model.scenes.size();
+    if (!(scene_id>=0 && scene_id<s2)) {
+      use_default=true;
+    }
     std::vector<GameApi::ML> mls;
-    for(int i=0;i<s;i++)
-      {
-	mls.push_back(ev.mainloop_api.gltf_node2(ev,tf,vec[i],mix));
-      }
+    if (!use_default) {
+      const tinygltf::Scene &scene = interface->get_scene( scene_id );
+      std::vector<int> vec = scene.nodes;
+      int s = vec.size();
+      for(int i=0;i<s;i++)
+	{
+	  mls.push_back(ev.mainloop_api.gltf_node2(ev,tf,vec[i],mix));
+	}
+    } else {
+      std::cout << "Scene defaulting to node 0" << std::endl;
+      // default to node 0 
+      mls.push_back(ev.mainloop_api.gltf_node2(ev,tf,0,mix));
+    }
     ml = ev.mainloop_api.array_ml(ev,mls);
     MainLoopItem *item = find_main_loop(env,ml);
     item->Prepare();
@@ -2271,37 +2364,56 @@ GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int
 
   void GLTF_Node_impl::HeavyPrepare()
   {
+    if (node_index==-1) return;
     GLTFModelInterface *interface = find_gltf(env,tf);
-    const tinygltf::Node &node = interface->get_node( node_index );
-    const std::vector<int> &child = node.children;
+    const tinygltf::Node *node; // = &interface->get_node( node_index );
+    std::vector<GameApi::ML> mls;
+    bool use_default=false;
+    if (!(node_index>=0 && node_index<interface->nodes_size()))
+      {
+	std::cout << "Node defaulting to mesh 0" << std::endl;
+	use_default=true;
+      }
+    if (!use_default) {
+      node = &interface->get_node( node_index );
+      const std::vector<int> &child = node->children;
     int s = child.size();
     for(int i=0;i<s;i++)
       {
 	children.push_back(ev.mainloop_api.gltf_node2(ev,tf,child[i],mix));
       }
-    mesh = ev.mainloop_api.gltf_material_mesh(ev,tf,node.mesh,mix);
-    if (node.skin!=-1)
-      skin = gltf_skin(env,ev,tf,node.skin,mix);
-
-    int skin_root_id = skin->root_node();
-    skin_root = ev.mainloop_api.gltf_node2(ev,tf,skin_root_id, mix);
-    
-    std::vector<GameApi::ML> mls = children;
-    mls.push_back(mesh);
+    if (node->mesh!=-1)
+      mesh = ev.mainloop_api.gltf_material_mesh(ev,tf,node->mesh,mix);
+    if (node->skin!=-1)
+      skin = gltf_skin(env,ev,tf,node->skin,mix);
+    if (skin) {
+      int skin_root_id = skin->root_node();
+      skin_root = ev.mainloop_api.gltf_node2(ev,tf,skin_root_id, mix);
+    }
+    mls = children;
+    if (mesh.id!=-1)
+      mls.push_back(mesh);
+    } else
+      {
+	// default to mesh 0
+	mesh = ev.mainloop_api.gltf_material_mesh(ev,tf,0,mix);
+	mls.push_back(mesh);
+      }
 
     GameApi::MN mv = ev.move_api.mn_empty();
-  if (int(node.scale.size())==3) {
-    double s_x = node.scale[0];
-    double s_y = node.scale[1];
-    double s_z = node.scale[2];
+    if (!use_default) {
+  if (int(node->scale.size())==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
     //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
   }
-  if (int(node.rotation.size())==4) {
-    double r_x = node.rotation[0];
-    double r_y = node.rotation[1];
-    double r_z = node.rotation[2];
-    double r_w = node.rotation[3];
+  if (int(node->rotation.size())==4) {
+    double r_x = node->rotation[0];
+    double r_y = node->rotation[1];
+    double r_z = node->rotation[2];
+    double r_w = node->rotation[3];
     //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
     Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
     Matrix m = Quarternion::QuarToMatrix(q);
@@ -2309,16 +2421,16 @@ GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(env, mv2);
     }
-  if (int(node.translation.size())==3) {
-    double m_x = node.translation[0];
-    double m_y = node.translation[1];
-    double m_z = node.translation[2];
+  if (int(node->translation.size())==3) {
+    double m_x = node->translation[0];
+    double m_y = node->translation[1];
+    double m_z = node->translation[2];
     mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
     //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
   }
   //std::cout << node->matrix.size();
-  if (int(node.matrix.size())==16) {
-    const double *arr = &node.matrix[0];
+  if (int(node->matrix.size())==16) {
+    const double *arr = &node->matrix[0];
     Matrix m;
       for(int i=0;i<4;i++)
       for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
@@ -2342,7 +2454,7 @@ GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int
     mv = add_move(env, mv2);    
   }
   // END OF SKINNING
-
+    }
 
   GameApi::ML ml = ev.mainloop_api.array_ml(ev,mls);
   res = ev.move_api.move_ml(ev,ml,mv,1,10.0);
@@ -3528,6 +3640,16 @@ private:
   mutable Vector store_res;
 };
 
+
+GameApi::ML GameApi::MainLoopApi::gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix)
+{
+  GLTFModelInterface *interface = find_gltf(e,tf);
+   GameApi::ML ml = add_main_loop(e, new GLTF_Material_noP(e,ev,tf,mesh_index, prim_id, mix));
+   resize_reset();
+   GameApi::P p = add_polygon2(e, new GLTFFaceCollection(interface,mesh_index,prim_id),1);
+   calc_resize_model(e,ev,p);
+   return resize_model(e,ev,ml);
+}
 
 
 
@@ -6009,6 +6131,7 @@ GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
       array->vec = std::vector<int>();
       return add_array(e,array);
     }
+
   const tinygltf::Scene &scene = interface->get_scene(scene_id); //&load->model.scenes[scene_id];
   int s = scene.nodes.size();
   std::vector<int> vec;
