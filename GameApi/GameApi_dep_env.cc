@@ -17,6 +17,7 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 
 
+int g_async_pending_count_failures=0;
 
 std::string striphomepage(std::string url);
 std::string stripprefix(std::string s);
@@ -965,6 +966,7 @@ std::string striphomepage(std::string);
 void onprogress_async_cb(unsigned int tmp, void *, int, int) { }
 void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
 {
+  g_async_pending_count_failures++; std::cout << "FAIL: async_pending_count_failure" << std::endl;
   std::cout << "ERROR: url loading error! " << std::endl;
   if (!arg) return;
   std::cout << str << std::endl;
@@ -1523,6 +1525,7 @@ void fetch_2_success(emscripten_fetch_t *fetch)
 }
 void fetch_2_error(emscripten_fetch_t *fetch)
 {
+  g_async_pending_count_failures++; std::cout << "FAIL: async_pending_count_failure" << std::endl;
   std::cout << "ERROR: 2nd attempt at loading the data failed" << std::endl;
   emscripten_fetch_close(fetch);
 }

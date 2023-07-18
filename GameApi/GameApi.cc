@@ -4619,9 +4619,10 @@ public:
   void HeavyPrepare() {
     current_i++;
     //std::cout << "HeavyPrepare " << current_i << std::endl;
-    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();    
+    if (m_count==0)
+      const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();    
   }
-  void Prepare() { coll->Prepare(); }
+  void Prepare() { coll->Prepare(); HeavyPrepare(); }
   
   int NumFaces() const
   {
@@ -6469,6 +6470,7 @@ public:
   CubemapTextureMaterial(GameApi::EveryApi &ev, std::vector<GameApi::BM> bm, float mix, float mix2) : ev(ev), bm(bm), mix(mix),mix2(mix2) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    //std::cout << "bm2 size=" << bm.size() << std::endl;
     confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; 
     GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_cubemap(ev,I10,bm);
@@ -6478,6 +6480,7 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    //std::cout << "bm2 size=" << bm.size() << std::endl;
     confirm_texture_usage(ev.get_env(),p);
     //GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap(ev,p,pts,bm);
@@ -6487,6 +6490,7 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    //std::cout << "bm2 size=" << bm.size() << std::endl;
     confirm_texture_usage(ev.get_env(),p);
     GameApi::ML I17=ev.materials_api.render_instanced_ml_cubemap_matrix(ev,p,ms,bm);
     GameApi::ML I18=ev.polygon_api.texture_cubemap_shader(ev, I17,mix,mix2);
@@ -6496,6 +6500,7 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    //std::cout << "bm2 size=" << bm.size() << std::endl;
     // NOT WORKING
     confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
@@ -6512,6 +6517,7 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    //std::cout << "bm2 size=" << bm.size() << std::endl;
     confirm_texture_usage(ev.get_env(),p);
     GameApi::P I10=p; //ev.polygon_api.cube(0.0,100.0,0.0,100.0,0.0,100.0);
     //GameApi::P I11=ev.polygon_api.texcoord_manual(I10,0,0,1,0,1,1,0,1);
@@ -15009,6 +15015,7 @@ bool CompareTrans(int a, int b) {
 }
 
 extern bool g_transparent;
+extern int g_async_pending_count_failures;
 
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
@@ -15038,6 +15045,7 @@ public:
   }
   virtual void Init()
   {
+    g_async_pending_count_failures=0;
     need_change2=true;
     g_main_thread_id = pthread_self();
 
@@ -15110,6 +15118,10 @@ public:
   }
   virtual int Iter()
   {
+
+    static std::string status = "";
+    static std::string old_status = "";
+    
 #ifdef EMSCRIPTEN
     if (need_change2) {
       emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
@@ -15125,7 +15137,7 @@ public:
       //std::cout << "async_pending_count=" << old_count << std::endl;
       static int yyyy=0;
       if (old_count>100)yyyy=1;
-      if (yyyy==1&&old_count==4) async_pending_count=0;
+      if (yyyy==1&&old_count<4+g_async_pending_count_failures)  async_pending_count=0;
     }
     
     {
@@ -15166,7 +15178,20 @@ public:
     FinishProgress();
     Envi_2 *env = (Envi_2*)&envi;
 
-
+    if (debug_enabled) {
+    
+      if (status != old_status)
+	{
+	  std::cout << status << std::endl;
+	  old_status = status;
+	}
+      status="";
+      
+      if (async_pending_count > 0) status+="ASYNC ";
+      if (g_async_pending_count_failures >0) status+="ASYNC_FAIL ";
+      
+    }
+    
     //std::cout << "async: " << async_pending_count << std::endl;
     if ((async_pending_count > 0 && !async_is_done)||no_draw_count>0) { env->logo_shown = true; }
     if (async_pending_count != async_pending_count_previous)
@@ -15176,16 +15201,19 @@ public:
       }
     if (env->logo_shown)
       {
+	if (debug_enabled) status += "LOGO_SHOWN ";
 	bool b = false;
 
-	if (async_pending_count==0 && no_draw_count==0) { g_logo_shown ++;
+	if (async_pending_count<=g_async_pending_count_failures && no_draw_count==0) { g_logo_shown ++;
 	}
 
 
 	if (gameapi_seamless_url=="") {
 	  logo_frame_count++;
 	  b = env->ev->mainloop_api.logo_iter();
+	  if (debug_enabled) status += "LOGO_ITER ";
 	} else {
+	  if (debug_enabled) status += "LOGO_SEAMLESS ";
 	  b = env->ev->mainloop_api.seamless_iter();
 	}
 
@@ -15194,16 +15222,31 @@ public:
 	g_engine_status = 2;
 	
 	// b &&
-	if (b && async_pending_count==0 && no_draw_count==0) { env->logo_shown = false;
+	if (b && async_pending_count<=g_async_pending_count_failures && no_draw_count==0) { env->logo_shown = false;
+	  if (debug_enabled) status += "LOGO_EXIT ";
 	}
 	//if (g_shows_hundred) { env->logo_shown=false; }
-	if (async_pending_count==0 && no_draw_count>0) { /* pass through */}
-	else
-	  return -1;
+	if (async_pending_count<=g_async_pending_count_failures && no_draw_count>0) { /* pass through */}
+	else {
+	  bool pass_through=false;
+	  static int async_old = -1;
+	  static int count=300;
+	  if (async_pending_count!=async_old) {
+	    async_old=async_pending_count;
+	    count=300;
+	  } else {
+	    count--; if (count<0) { async_pending_count=0; no_draw_count=0; pass_through=true; env->logo_shown=false;
+	      if (debug_enabled) status += "LOGO_EXIT2 ";
+	    }
+	  }
+	  if (!pass_through)
+	    return -1;
+	}
       }
     async_is_done = true;
 
     if (firsttime) {
+      if (debug_enabled) status += "FIRSTTIME ";
       GameApi::Env &ee = env->ev->get_env();
       MainLoopItem *item = find_main_loop(ee,code);
       clear_texture_confirms();
@@ -15222,6 +15265,7 @@ public:
     }
 
     if (has_vis) {
+      if (debug_enabled) status += "HAS_VIS ";
 	g_logo_status = 2;
 
 	int counter = 0;
@@ -15272,6 +15316,7 @@ public:
     }
     
     if (!g_prepare_done) {
+      if (debug_enabled) status += "!G_PREPARE_DONE ";
       int num = progress /100;
       //ProgressBar(777, progress++, num*100+100, "prepare");
       //bool b = false;
@@ -15290,17 +15335,20 @@ public:
 
  #ifdef EMSCRIPTEN
     if (need_change) {
+      if (debug_enabled) status += "NEED_CHANGE ";
         emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
     }
  #endif
     
     if (firsttime2) {
+      if (debug_enabled) status += "FIRSTTIME2 ";
       env->ev->mainloop_api.reset_time();
       env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       firsttime2 = false;
     }
     
     if (no_draw_count==0) {
+      if (debug_enabled) status+="NO_DRAW_COUNT0 ";
       if (!g_transparent) {
 	env->ev->mainloop_api.clear_3d(0xff000000);
       } else
@@ -15311,6 +15359,7 @@ public:
 
     
     // handle esc event
+    if (debug_enabled) status+="EVENT ";
     GameApi::MainLoopApi::Event e;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
@@ -15351,6 +15400,7 @@ public:
     
 
     if (vis) {
+      status+="VIS ";
       int s = vis->vec2.size();
       int start = first_frame_count;
       for(int i=0;i<50;i++) {
@@ -15378,11 +15428,13 @@ public:
     
     //std::cout << "Splitter/execute_ml" << std::endl;
     if (first_execute||g_execute_shows_logo) {
+      if (debug_enabled) status+="FILTER_EXECUTE ";
       //g_progress_bar_show_logo=true;
       g_filter_execute=true;
       //std::cout << "g_filter_execute=true" << std::endl;
     }
     if (g_prepare_done) {
+      if (debug_enabled) status+="PREPARE_DONE ";
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
       if (g_transparent_callback_objs.size()) {
 	int s = g_transparent_callback_objs.size();
@@ -15399,7 +15451,7 @@ public:
       }
     }
     //if (first_execute||g_execute_shows_logo) g_progress_bar_show_logo=false;
-    if (g_execute_shows_logo && !logo_done) { show_logo(); logo_done=true; }
+    if (g_execute_shows_logo && !logo_done) { if (debug_enabled) status+="SHOW_LOGO"; show_logo(); logo_done=true; }
     first_execute=false;
     g_filter_execute=false;
     //std::cout << "g_filter_execute=false" << std::endl;
@@ -15419,8 +15471,20 @@ public:
     Envi_2 *env = (Envi_2*)&envi;
     env->ev->mainloop_api.fpscounter_frameready();
     }
-    if (!logo_done)
+    if (!logo_done) {
+      if (debug_enabled) status+="SWAPBUFFERS ";
+
+    if (debug_enabled) {
+      debug_enabled=false;
+    
+      if (status != old_status)
+	{
+	  std::cout << status << std::endl;
+	  old_status = status;
+	}
+    }
     env->ev->mainloop_api.swapbuffers();
+    }
     g_engine_status = 1;
     //xsogl->glGetError();
     return -1;
@@ -15470,6 +15534,7 @@ private:
   int first_frame_count=0;
   bool need_change=false;
   bool need_change2=false;
+  bool debug_enabled=true;
 };
 
 void progress_logo_cb(void *data)
