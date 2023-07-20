@@ -6098,8 +6098,16 @@ void LoadUrls(const CodeGenLine &line, std::string homepage)
 #endif
 #endif
 }
+extern bool g_concurrent_download;
+
 void LoadUrls_codegen(GameApi::Env &env, std::vector<CodeGenLine> vec, std::string homepage)
 {
+  int s2 = vec.size();
+  for(int i=0;i<s2;i++) {
+    CodeGenLine l = vec[i];
+    if (l.func_name=="concurrent_download") { g_concurrent_download=true; }
+  }
+  
   int s = vec.size();
   for(int i=0;i<s;i++) {
     CodeGenLine l = vec[i];

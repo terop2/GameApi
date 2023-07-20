@@ -1935,7 +1935,7 @@ function choose_display(id,label, vm,is_popstate)
   var url2 = "<?php echo $site ?>/mesh_addtext.php?id=" + label + "&" + dt;
   var url3 = "<?php echo $site ?>/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
-  console.log(url3);
+  //console.log(url3);
   if (g_txt[id]===undefined) {
 
 const myHeaders3 = new Headers();
@@ -2080,9 +2080,9 @@ function check_emscripten_running(indicator)
 	 //Module['calledRun'] = check_em(indicator);
 	 Module['onRuntimeInitialized'] = check_em(indicator);
 	 g_check_em_timeout = setTimeout(function() {
-	                    console.log("waiting for emscripten startup..");
+	                    //console.log("waiting for emscripten startup..");
 	 		    if (g_ready_bit==1) {
-	 		       console.log("onRuntimeInitialized didn't trigger in time"); check_em(indicator)(); } },1000);
+	 		       /* console.log("onRuntimeInitialized didn't trigger in time");*/  check_em(indicator)(); } },1000);
 	 //check_em(indicator);
    	 //console.log("RUNNING");
 	 } else {

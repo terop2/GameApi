@@ -4123,9 +4123,9 @@ class ConcurrentDownload : public MainLoopItem
 {
 public:
   ConcurrentDownload(MainLoopItem *next) : next(next) {
-    g_concurrent_download=1;
+    g_concurrent_download=true;
   }
-  ~ConcurrentDownload() { g_concurrent_download=0; }
+  ~ConcurrentDownload() { g_concurrent_download=false; }
   virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { next->Prepare(); }

@@ -2,7 +2,7 @@
 
 $gltf = $_POST["gltffile"];
 
-if (strlen($gltf)<4) {
+if (strlen($gltf)<4||(substr($gltf,-3)!="zip"&&substr($gltf,-3)!="glb"&&substr($gltf,-4)!="gltf")) {
   echo "<pre>";
   echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
 } else {

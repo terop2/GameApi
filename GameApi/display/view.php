@@ -52,6 +52,17 @@ if ($id>0)
 <body>
 <script>
 
+function json_stringify(val)
+{
+   return JSON.stringify(val);
+}
+
+function json_parse(val)
+{
+   return JSON.parse(val);
+}
+
+
 var agent = navigator.userAgent;
 var mobile = false;
 var firefox = false;
@@ -64,7 +75,7 @@ var download_result={};
 var g_download_done = false;
 req.onload = function() {
    //console.log(this.responseText);
-   download_result=JSON.parse(this.responseText);
+   download_result=json_parse(this.responseText);
    g_download_done = true;
 }
 req.open("get", "view_fetch.php?id=<?php echo $id ?>", true);
@@ -1996,13 +2007,13 @@ function serialize_state()
 	 plastic : elem3 && elem3.value,
 	 textured : elem4 && elem4.value
    };
-   return JSON.stringify(ser);
+   return json_stringify(ser);
 }
 
 function deserialize_state(txt)
 {
   //console.log("STATE");
-  var ser = JSON.parse(txt);
+  var ser = json_parse(txt);
   var model = ser.model;
   var normals = ser.normals;
   var border = ser.border;
@@ -2061,22 +2072,22 @@ function load_data()
    //console.log("CONTENTSARRAY");
    //console.log(ca);
    if (ca !="" && ca != undefined)
-      a_ca = JSON.parse(ca);
+      a_ca = json_parse(ca);
    //console.log(fa.textContent);
    //console.log("FILENAMEARRAY");
    var a_fa = "";
    if (fa !="" && fa != undefined)
-      a_fa = JSON.parse(fa);
+      a_fa = json_parse(fa);
    //console.log(gf.textContent);
    //console.log("FILENAME");
    var a_gf = "";
    if (gf != "" && gf != undefined)
-      a_gf = JSON.parse(gf);
+      a_gf = json_parse(gf);
    //console.log(gp.textContent);
   //  console.log("GPATH");
   var a_gp = "";
    if (gp != "" && gp != undefined) 
-      a_gp = JSON.parse(gp);
+      a_gp = json_parse(gp);
 
 
   // console.log(a_st.length);
@@ -2109,13 +2120,16 @@ old_main_item_name = g_filename;
 }
 
 
+
+
+
 function array_to_base64(arr)
 {
    var res = [];
    for(var i=0;i<arr.length;i++)
    {
      var val = arr[i];
-     var buffer = btoa(unescape(encodeURIComponent(val))); //Base64.encode(val);
+     var buffer = btoa(unescape(encodeURIComponent(val)));
      res.push(buffer);
      
    }
@@ -2126,8 +2140,8 @@ function base64_to_array(arr)
    var res = [];
    for(var i=0;i<arr.length;i++) {
      var val = arr[i];
-     var res2 = decodeURIComponent(escape(atob(val))); //Base64.decode(val);
-     res.push(res2);
+     var res4 = decodeURIComponent(escape(atob(val)));
+     res.push(res4);
    }
    return res;
 }
@@ -2169,9 +2183,9 @@ function formsubmit()
 {
 
   //var st3 = document.getElementById("formcontentsarray");
-  var at3 = JSON.stringify(array_to_base64(contents_array));
+  var at3 = json_stringify(array_to_base64(contents_array));
   //var st4 = document.getElementById("formfilenamearray");
-  var at4 = JSON.stringify(array_to_base64(filename_array));
+  var at4 = json_stringify(array_to_base64(filename_array));
   //var st5 = document.getElementById("formnum");
 
   var contents_length = at3.length;
@@ -2180,7 +2194,8 @@ function formsubmit()
   var data = new FormData();
   data.append("num",-1);
   var xhr = new XMLHttpRequest();
-  xhr.open('POST','submit_contents.php', true);
+  xhr.responseType = 'arraybuffer';
+  xhr.open('POST','https://ssh.meshpage.org/submit_contents.php', true);
 
   var submitprogress = 0;
 
@@ -2214,9 +2229,9 @@ function formsubmit()
   		   //st2.value = st;
 
   		   //var st5 = document.getElementById("formgfilename");
-  		   var st5_val = JSON.stringify(g_filename);
+  		   var st5_val = json_stringify(g_filename);
 		   if (g_path=="") { g_path="./"; }
-		   var st6_val = JSON.stringify(g_path);
+		   var st6_val = json_stringify(g_path);
 
   		   //var form = document.getElementById("submitcontents");
   		   //form.submit();
@@ -2231,7 +2246,8 @@ function formsubmit()
 		   data.append("g_path", st6_val);
   		   data.append("num",i);
   		   var xhr2 = new XMLHttpRequest();
-  		   xhr2.open('POST','submit_contents.php', true);	
+		   xhr2.responseType = 'arraybuffer';
+  		   xhr2.open('POST','https://ssh.meshpage.org/submit_contents.php', true);	
 		   submitprogressbar(0);
 		   xhr2.onload = function()
 		   {

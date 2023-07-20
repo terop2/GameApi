@@ -58,10 +58,7 @@ public:
 private:
   void fetch_size()
   {
-    if (!g_concurrent_download) {
-      failed(data);
-      return;
-    }
+
     //std::cout << "fetch_size" << std::endl; 
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
@@ -99,6 +96,8 @@ public:
     std::string res(&fetch->data[0],&fetch->data[fetch->numBytes]);
     //std::cout << "RES: '" << res << "'" << std::endl;
 
+
+    
     if (res.size()==0) { size_failed(fetch); return; }
     
     char ch = res[0];
@@ -116,8 +115,21 @@ public:
     //totalSize = fetch->totalBytes;
     //std::cout << "Size Success: " << totalSize << std::endl;
     if (chunkSize==0) { chunkSize=1048576; }
-    if (totalSize==0) { size_failed(fetch); return; }
+    if (totalSize==0) { size_failed(fetch); return; }    
     else {
+
+      // std::cout << "FETCH_SIZE:" << std::endl;
+      if (!g_concurrent_download) {
+	//std::cout << "FAILED IMMEDIATELY" << std::endl;
+	failed_after_size(fetch,totalSize);
+	return;
+      }
+      //std::cout << "FETCHIND SIZE" << std::endl;
+
+      
+
+
+      
       result.resize(totalSize+1);
       int t = totalSize/chunkSize+1;
       blocks_ready.resize(t);
@@ -157,6 +169,7 @@ public:
     failed(data);
     emscripten_fetch_close(fetch);
   }
+  void failed_after_size(emscripten_fetch_t *fetch, int sz);
 private:
   void fetch_block(int id)
   {
@@ -1363,7 +1376,19 @@ struct LoadData {
   char *buf2;
   char *buf3;
   FetchInBlocks *obj;
+  int final_file_size=-1;
 };
+
+void FetchInBlocks::failed_after_size(emscripten_fetch_t *fetch, int sz)
+  {
+    LoadData *dt = (LoadData*)data;
+    dt->final_file_size = sz;
+    
+    //std::cout << "Concurrent load disabled -> loading normal way" << std::endl;
+    failed(data);
+    emscripten_fetch_close(fetch);
+  }
+
 
 void idb_onload_async_cb(void *ptr, void* data, int datasize)
 {
@@ -1508,12 +1533,16 @@ void fetch_success(void *data)
 }
 void fetch_2_success(emscripten_fetch_t *fetch)
 {
-  std::cout << "2nd attempt successful" << std::endl;
+  //std::cout << "2nd attempt successful" << std::endl;
   LoadData *dt = (LoadData*)(fetch->userData);
   const char *url = dt->buf3;
   dt->obj->result = std::vector<unsigned char>(&fetch->data[0],&fetch->data[fetch->numBytes]);
   // hack to fix the download amounts.
-  dt->obj->result.push_back(' ');
+  //std::cout << "FETCH2SUCCESS:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
+  if (dt->final_file_size!=-1 && fetch->numBytes != dt->final_file_size) {
+    std::cout << "Size Compare:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
+     dt->obj->result.push_back(' ');
+  }
   const std::vector<unsigned char> *vec = dt->obj->get();  
   onload_async_cb(333,(void*)url,vec);
 #ifdef EMSCRIPTEN
