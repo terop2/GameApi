@@ -361,7 +361,7 @@ bool WriteWholeFile(std::string *err, const std::string &filepath, const std::ve
 
 GameApi::Env *g_e = 0;
 
-
+extern bool g_concurrent_download;
 
 class LoadGltf : public CollectInterface
 {
@@ -418,7 +418,8 @@ public:
     if (!is_binary) {
       //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
       int sz = str.size();
-     
+
+      if (g_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -431,11 +432,13 @@ public:
     }
     if (sz<0) sz=0;
 #endif
+      }
     //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
       tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
+      if (g_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -449,6 +452,7 @@ public:
       }
     if (sz<0) sz=0;
 #endif
+      }
     char *ptr2 = &vec2.operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
     //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
@@ -562,6 +566,11 @@ std::string ExpandFilePath(const std::string &str, void *ptr)
   return str;
 }
 bool is_in_registered(std::string url);
+
+extern bool g_concurrent_download;
+
+int g_requestedBytes;
+
 bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
@@ -584,6 +593,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 #endif
     }
     int sz = vec->size();
+    if (g_concurrent_download) {
 #ifdef EMSCRIPTEN
     int s = g_urls.size();
     bool has_space = true;
@@ -594,6 +604,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     if (has_space)
       sz--;
 #endif
+    }
     *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
     delete vec;
     return true;
@@ -10308,7 +10319,9 @@ public:
 	    free(ptr);
 	    delete[] filename;
 #ifdef EMSCRIPTEN
+#if 0
 	    data->push_back(0); // is this always needed?
+#endif
 #endif
 	    // std::cout << url << "::" << data->size() << std::endl;
 	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {

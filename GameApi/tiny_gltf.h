@@ -4070,7 +4070,7 @@ static bool ParseBuffer(Buffer *buffer, std::string *err, const json &o,
         std::string decoded_uri = dlib::urldecode(buffer->uri);
         if (!LoadExternalFile(&buffer->data, err, /* warn */ nullptr,
                               decoded_uri, basedir, /* required */ true,
-                              byteLength, /* checkSize */ true, fs)) {
+                              byteLength, /* checkSize */ false, fs)) {
           return false;
         }
       }
@@ -4115,7 +4115,7 @@ static bool ParseBuffer(Buffer *buffer, std::string *err, const json &o,
       std::string decoded_uri = dlib::urldecode(buffer->uri);
       if (!LoadExternalFile(&buffer->data, err, /* warn */ nullptr, decoded_uri,
                             basedir, /* required */ true, byteLength,
-                            /* checkSize */ true, fs)) {
+                            /* checkSize */ false, fs)) {
         return false;
       }
     }

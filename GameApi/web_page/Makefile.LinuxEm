@@ -2,9 +2,11 @@
 all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
-SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz -g
+#-s MAXIMUM_MEMORY=4GB -s ALLOW_MEMORY_GROWTH=1  // doesnt work in firefox.
 
-NOSIZEOPT = -s TOTAL_STACK=200kb -g
+SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz 
+
+NOSIZEOPT = -s TOTAL_STACK=200kb
 
 #--closure 1
 #--memoryprofiler
@@ -88,7 +90,7 @@ pthreads_both: pthreads_both_highmem
 
 #
 pthreads_both_highmem: test.cpp ../libGameApi.bc
-	(cd ..;em++ $(ALLFLAGS) -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache  -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=1750Mb  --bind -std=c++11 web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_highmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
+	(cd ..;em++ $(ALLFLAGS) -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30 -s FILESYSTEM=0  -s ASSERTIONS=2 --use-preload-cache  -s NO_EXIT_RUNTIME=1 -s TOTAL_MEMORY=3750Mb  --bind -std=c++11 web_page/test.cpp libGameApi.bc -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/web_page_highmem.js --memory-init-file 0 -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	 #wasm-strip web_page_highmem.wasm
 	 $(STRIP) web_page_highmem.wasm
 	 brotli --quality=5 --force web_page_highmem.wasm -o web_page_highmem.wasm.br
