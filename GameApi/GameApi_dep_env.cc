@@ -1379,6 +1379,7 @@ struct LoadData {
   int final_file_size=-1;
 };
 
+#ifdef EMSCRIPTEN
 void FetchInBlocks::failed_after_size(emscripten_fetch_t *fetch, int sz)
   {
     LoadData *dt = (LoadData*)data;
@@ -1388,7 +1389,7 @@ void FetchInBlocks::failed_after_size(emscripten_fetch_t *fetch, int sz)
     failed(data);
     emscripten_fetch_close(fetch);
   }
-
+#endif
 
 void idb_onload_async_cb(void *ptr, void* data, int datasize)
 {
