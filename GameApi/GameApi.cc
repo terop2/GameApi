@@ -19433,6 +19433,8 @@ std::vector<P_script2*> del_p_script;
 class HtmlUrl;
 std::vector<HtmlUrl*> del_p2_script;
 
+std::vector<unsigned char> *load_from_url(std::string url);
+
 class HtmlUrl : public Html
 {
 public:
@@ -19473,10 +19475,19 @@ public:
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
     code = std::string(vec->begin(), vec->end());
+    //std::cout << "HTMLURL:" << code << std::endl;
     if (code=="") firsttime=true;
     }
   }
-  virtual std::string script_file() const { return code; }
+  virtual std::string script_file() const {
+    std::cout << "GOT SCRIPT FILE:" << code << std::endl;
+    if (code.size()<120) {
+      std::cout << "LOADING FROM URL: " << url << std::endl;
+      std::vector<unsigned char> *file = load_from_url(url);
+      code=std::string(file->begin(), file->end());
+      std::cout << "GOT:" << code << std::endl;
+    }
+    return code; }
   virtual std::string homepage() const { return homepage2; }
   virtual void SetCB(void(*fptr)(void*), void*data)
   {
@@ -19496,7 +19507,7 @@ public:
 private:
   GameApi::Env &e;
   std::string url;
-  std::string code;
+  mutable std::string code;
   std::string homepage2;
   bool has_cb;
   void (*m_fptr)(void*);
@@ -20019,6 +20030,9 @@ public:
   }
   virtual void DoTask(int i)
   {
+    //std::cout << "H2_script:" << h2_script << std::endl;
+    
+    
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
     switch(i) {
@@ -20079,6 +20093,8 @@ public:
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
 
+      
+      
       std::vector<UrlItem> items = find_url_items(s);
       find_url_items2(s,items);
       find_url_items3(items);
@@ -20183,6 +20199,10 @@ public:
 	  home=gameapi_temp_dir;
 	}
 
+      //std::cout << "______SCRIPT HERE_______________" << std::endl;
+      //std::cout << htmlfile << std::endl;
+      //std::cout << "______SCRIPT ENDS_______________" << std::endl;
+      
       
       std::fstream ss((home+ "\\_gameapi_builder\\gameapi_script.html").c_str(), std::ofstream::out);
       ss << htmlfile;
@@ -20483,6 +20503,12 @@ public:
 	}
       
       //std::cout << "Generating script.." << std::endl;
+
+      //std::cout << "______SCRIPT HERE_______________" << std::endl;
+      //std::cout << htmlfile << std::endl;
+      //std::cout << "______SCRIPT ENDS_______________" << std::endl;
+
+      
       std::string home = getenv("HOME");
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << convert_script(htmlfile);
@@ -30091,12 +30117,13 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MT(EveryApi &ev, MT ml, std
   std::string line;
   int line_num = 0;
   int res_line = 0;
+  int res2_line=0;
   while(std::getline(ss2,line)) {
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
     if (s=="MT") res_line = line_num;
-    if (s=="HML") break;
+    if (s=="HML") res2_line=line_num;
     line_num++;
   }
 
@@ -30107,7 +30134,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MT(EveryApi &ev, MT ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (line_num==res2_line) break;
     if (s=="MT" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -30124,12 +30151,13 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MN(EveryApi &ev, MN ml, std
   std::string line;
   int line_num = 0;
   int res_line = 0;
+  int res2_line=0;
   while(std::getline(ss2,line)) {
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
     if (s=="MN") res_line = line_num;
-    if (s=="HML") break;
+    if (s=="HML") res2_line=line_num;
     line_num++;
   }
 
@@ -30140,7 +30168,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_MN(EveryApi &ev, MN ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (line_num==res2_line) break;
     if (s=="MN" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -30158,11 +30186,12 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_P(EveryApi &ev, P ml, std::
   std::string line;
   int line_num = 0;
   int res_line = 0;
+  int res2_line=0;
   while(std::getline(ss2,line)) {
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (s=="HML") res2_line=line_num;
     if (s=="P") res_line = line_num;
     line_num++;
   }
@@ -30174,7 +30203,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_P(EveryApi &ev, P ml, std::
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (line_num==res2_line) break;
     if (s=="P" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -30191,11 +30220,12 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std
   std::string line;
   int line_num = 0;
   int res_line = 0;
+  int res2_line=0;
   while(std::getline(ss2,line)) {
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (s=="HML") res2_line=line_num;
     if (s=="ML") res_line = line_num;
     line_num++;
   }
@@ -30207,7 +30237,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (res2_line==line_num) break;
     if (s=="ML" || output)
       output_str+=line+"@";
     if (line_num == res_line) output=false;
@@ -30220,14 +30250,25 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
 {
   std::string gen = do_codegen(ev);
   std::stringstream ss(gen);
+  std::stringstream ss3(gen);
   std::string line;
   bool output = true;
   std::string output_str;
-  while(std::getline(ss,line)) {
+  int line_num=0;
+  int res2_line=0;
+  while(std::getline(ss3,line)) {
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    if (s=="HML") break;
+    if (s=="HML") res2_line=line_num;
+    line_num++;
+  }
+  line_num=0;
+    while(std::getline(ss,line)) {
+    std::stringstream ss2(line);
+    std::string s;
+    ss2 >> s;
+    if (line_num==res2_line) break;
     if (s=="RUN" || output)
       output_str+=line+"@";
     if (s=="RUN") output=false;

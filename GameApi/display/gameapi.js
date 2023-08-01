@@ -69,7 +69,7 @@ function check_em() {
             clearTimeout(g_check_em_timeout);
         g_check_em_timeout = null;
 
-        resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null);
+        //resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null);
         load_file();
     }
 }
