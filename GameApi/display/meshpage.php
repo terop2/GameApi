@@ -846,7 +846,7 @@ list_end();
 <li><a style="font-size:large;" href="<?php echo $assetsite ?>/builder_green4_example.webm">CREATE</a>: Create your powerful message with 3d technology
 <li><a style="font-size:large;" href="<?php echo $assetsite ?>/Releasing_codegen.txt">CODEGEN</a>: You get piece of c++-like code representing animation
 <li><a style="font-size:large;" href="<?php echo $assetsite ?>/Releasing_animations.txt">PUBLISH</a>: place 3d engine to your web server
-<li><a style="font-size:large;" href="<?php echo $site ?>/gameapi_example.html">ENJOY</a>: Then open the animation in your browser
+<li><a style="font-size:large;" href="<?php echo $site ?>/engine2/index.html">ENJOY</a>: Then open the animation in your browser
 </ul>
 <h2>What are the advantages in your approach?</h2>
 <ul>
