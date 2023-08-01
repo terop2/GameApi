@@ -41,7 +41,7 @@
        justify-content: center;
     }
     </style>
-    <script src="gameapi.js?2"></script>
+    <script src="gameapi.js?<?php echo $date ?>"></script>
       
   </body>
 </html>

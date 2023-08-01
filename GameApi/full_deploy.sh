@@ -13,6 +13,7 @@ make -f Makefile.LinuxEm clean
 cp editor/gameapi-builder_1.0-27.deb docker/
 #(cd docker;sudo docker build -t builder-test:latest .)
 (cd docker;./build_tar.sh)
+cp web_page/web_page* /home/terop/html/meshpage.org/
 scp docker/gameapi-builder-docker-container.tar.gz terop@ssh.meshpage.org:/home/terop/html/meshpage.org/
 scp docker/gameapi-builder-docker-container.tar.gz terop@ssh.meshpage.org:/home/terop/html/tpgames.org/
 scp editor/gameapi-builder_1.0-27.deb terop@ssh.meshpage.org:/home/terop/html/meshpage.org/
