@@ -68,7 +68,11 @@ private:
     attr.onsuccess = blocks_success;
     attr.onerror = blocks_failed;
 
-    std::string url2 = "get_file_size.php?url=" +url; 
+    unsigned int r = rand();
+    std::stringstream ss;
+    ss << r;
+    
+    std::string url2 = "https://ssh.meshpage.org/get_file_size.php?" + ss.str() + "&url=" +url; 
     emscripten_fetch(&attr, url2.c_str());
 
     int val = 0;

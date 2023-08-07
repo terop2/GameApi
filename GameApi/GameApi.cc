@@ -22100,6 +22100,9 @@ public:
     blocks = (FileBlock*)&buf[sizeof(FileHeader)];
     wholefile = (unsigned char*)&buf[0];
     valid = header->d=='d' && header->s=='s';
+    //std::cout << "LoadDS:" << header->d << header->s << std::endl;
+    //for(int i=0;i<sizeof(FileHeader);i++)
+    //  std::cout << std::hex << (int)(buf[i]) << buf[i]<< std::endl;
   }
   int Type() const { return header->type; }
   int NumBlocks() const { return valid ? header->numblocks : 0; }

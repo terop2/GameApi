@@ -2436,11 +2436,12 @@ public:
   void PrepareDone()
   {
     //std::cout << "DEL" << std::endl;
-    if (ptr) {
-      ptr->del();
-      delete ptr;
-      ptr=0;
-    }
+    // TODO HOW TO DELETE THESE?
+    //if (ptr) {
+    //  ptr->del();
+    // delete ptr;
+    //  ptr=0;
+    //}
   }
   void Prepare()
   {
@@ -14961,6 +14962,7 @@ public:
   int NumFaces() const {
     if (!ready) return 0;
     int num = find_block(6); // header
+    if (num<0) return 0;
     unsigned char *ptr = ds->Block(num);
     DSVertexHeader *head = (DSVertexHeader*)ptr;
     return head->numfaces;
@@ -14969,6 +14971,7 @@ public:
   int GetFlags() const {
     if (!ready) return -1;
     int num = find_block(6); // header
+    if (num<0) return -1;
     unsigned char *ptr = ds->Block(num);
     DSVertexHeader *head = (DSVertexHeader*)ptr;
     return head->flags;
@@ -14977,6 +14980,7 @@ public:
   {
     if (!ready) return 0;
     int num = find_block(7);
+    if (num<0) return 0;
     unsigned char *ptr = ds->Block(num);
     int *array = (int*)ptr;
     return array[face];
@@ -14984,6 +14988,7 @@ public:
   Point FacePoint(int face, int point) const {
     if (!ready) return Point(0.0,0.0,0.0);
     int num = find_block(0);
+    if (num<0) return Point(0.0,0.0,0.0);
     unsigned char *ptr = ds->Block(num);
     Point *array = (Point*)ptr;
     int pos = vertex_index(face,point);
@@ -14999,6 +15004,7 @@ public:
     if (HasFlags() && GetFlags()&DSDisableNormal)
       return Vector(0.0,0.0,0.0);
     int num = find_block(3);
+    if (num<0) return Vector(0.0,0.0,0.0);
     unsigned char *ptr = ds->Block(num);
     Vector *array = (Vector*)ptr;
     int pos = vertex_index(face,point);
@@ -15015,6 +15021,7 @@ public:
     if (HasFlags() && GetFlags()&DSDisableColor)
       return 0xff000000;
     int num = find_block(1);
+    if (num<0) return 0xff000000;
     unsigned char *ptr = ds->Block(num);
     unsigned int *array = (unsigned int*)ptr;
     int pos = vertex_index(face,point);
@@ -15030,6 +15037,7 @@ public:
       Point2d p; p.x=0.0; p.y =0.0; return p;
     }
     int num = find_block(2);
+    if (num<0) { Point2d p; p.x=0.0; p.y=0.0; return p; }
     unsigned char *ptr = ds->Block(num);
     Point2d *array = (Point2d*)ptr;
     int pos = vertex_index(face,point);
@@ -15042,6 +15050,7 @@ public:
       return 0.0;
     }
     int num = find_block(9);
+    if (num<0) return 0.0;
     unsigned char *ptr = ds->Block(num);
     float *array = (float*)ptr;
     int pos = vertex_index(face,point);
@@ -15052,6 +15061,7 @@ public:
     if (HasFlags() && GetFlags()&DSDisableObjects) { return 0; }
 
     int num = find_block(6); // header
+    if (num<0) return 0;
     unsigned char *ptr = ds->Block(num);
     DSVertexHeader *head = (DSVertexHeader*)ptr;
     //std::cout << "NUMOBJECTS:" << head->numobjects << std::endl;
@@ -15062,6 +15072,7 @@ public:
     if (!ready) return std::make_pair(0,0);
     if (HasFlags() && GetFlags()&DSDisableObjects) { return std::make_pair(0,0); }
     int num = find_block(10);
+    if (num<0) return std::make_pair(0,0);
     unsigned char *ptr = ds->Block(num);
     PP *array = (PP*)ptr;
     PP obj = array[o]; 
@@ -15071,7 +15082,11 @@ public:
   int find_block(int id) const
   {
     int s = ds->NumBlocks();
-    for(int i=0;i<s;i++) { if (ds->BlockType(i)==id) return i; }
+    //std::cout << "FINDBLOCK:" << id << " " << s << std::endl;
+    if (s==0) std::cout << "DSFaceCollection failed for NumBlocks==0 which means that file is not valid" << std::endl;
+    for(int i=0;i<s;i++) {
+      //std::cout << "FB:" << i << " " << id << " " << ds->BlockType(i) << std::endl;
+      if (ds->BlockType(i)==id) return i; }
     std::cout << "DSFaceCollection: couldnt find block " << id << std::endl;
     for(int i=0;i<s;i++) { std::cout << "Block type: " << ds->BlockType(i) << std::endl; }
     return -1;
