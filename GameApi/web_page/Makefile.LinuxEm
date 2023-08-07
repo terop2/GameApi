@@ -4,9 +4,9 @@ all:
 
 #-s MAXIMUM_MEMORY=4GB -s ALLOW_MEMORY_GROWTH=1  // doesnt work in firefox.
 
-SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz 
+SIZEOPT=-fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=200kb -s DISABLE_EXCEPTION_CATCHING=1 -Oz -g
 
-NOSIZEOPT = -s TOTAL_STACK=200kb
+NOSIZEOPT = -s TOTAL_STACK=200kb -g
 
 #--closure 1
 #--memoryprofiler

@@ -221,9 +221,9 @@ void map_enums_sdl(int &i) {
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
 #ifdef LINUX
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE; break;
 #else
-  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE|SDL_INIT_JOYSTICK; break;
+  case Low_SDL_INIT_VIDEO_NOPARACHUTE_JOYSTICK: i=SDL_INIT_VIDEO|SDL_INIT_NOPARACHUTE; break;
 #endif
 #ifdef EMSCRIPTEN
   case  Low_SDL_GL_CONTEXT_PROFILE_MASK: i=21; /*::SDL_GL_CONTEXT_PROFILE_MASK;*/ break;
@@ -1220,8 +1220,9 @@ class SDLApi : public SDLLowApi
   }
   virtual void SDL_SetWindowFullscreen(Low_SDL_Window *window, int val)
   {
-    map_enums_sdl(val);
-    ::SDL_SetWindowFullscreen((SDL_Window*)(window->ptr),val);
+    std::cout << "ERROR: SDL_SetWindowFullscreen disabled" << std::endl;
+    //map_enums_sdl(val);
+    //::SDL_SetWindowFullscreen((SDL_Window*)(window->ptr),val);
   }
   
   virtual char *SDL_GetClipboardText() {

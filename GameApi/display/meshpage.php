@@ -2265,7 +2265,7 @@ function show_emscripten(str,hide,indicator,is_async)
   var canv = document.getElementById("canvas");
 
   var Module = { };
-  Module.canvas = canv;
+Module.canvas = canv;
   Module.locateFile = function(path) { return path+"?<?php echo filemtime("web_page_highmem.js") ?>"; }
 Module.arguments = [
 

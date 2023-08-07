@@ -20,7 +20,7 @@ $mode = false;
 $chunksize = 0;
 if (stream_is_local($url)) {
   $size=filesize($url);
-} else if ($host=="meshpage.org"||$host=="dinoengine.com") {
+} else if ($host=="meshpage.org"||$host=="ssh.meshpage.org"||$host=="dinoengine.com") {
   $path = $parse['path'];
   if ($machine=="terop-pc") {
      $filename = "/home/terop/html/meshpage.org" . $path;
@@ -31,8 +31,10 @@ if (stream_is_local($url)) {
   $splitfilename = $filename . ".aa.br";
   $splitfilename2 = $filename . ".aa";
   $mode = file_exists($splitfilename);
-  $chunksize = filesize($splitfilename2);
-} else if ($host=="tpgames.org") {
+  if ($mode==true) {
+    $chunksize = filesize($splitfilename2);
+    }
+} else if ($host=="tpgames.org"||$host=="ssh.tpgames.org") {
   $path = $parse['path'];
   if ($machine=="terop-pc") {
     $filename = "/home/terop/html/tpgames.org" . $path;
@@ -43,8 +45,9 @@ if (stream_is_local($url)) {
   $splitfilename = $filename . ".aa.br";
   $splitfilename2 = $filename . ".aa";
   $mode = file_exists($splitfilename);
-  if ($mode)
+  if ($mode==true) {
      $chunksize = filesize($splitfilename2);
+     }
   else
      $chunksize = 0;
 } else {
