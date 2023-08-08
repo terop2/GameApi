@@ -155,6 +155,10 @@
 
 class GLTFModelInterface;
 
+void async_pending_plus(std::string label, std::string info);
+void async_pending_minus(std::string label, std::string info);
+
+
 #ifdef ANDROID
 namespace std {
   template<class T>

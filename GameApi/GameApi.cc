@@ -15009,6 +15009,9 @@ extern std::vector<void*> g_transparent_callback_params;
 extern std::vector<int> g_transparent_callback_ids;
 extern std::vector<float> g_transparent_pos;
 
+extern std::vector<std::string> async_labels;
+extern std::vector<std::string> async_infos;
+
 
 bool CompareTrans(int a, int b) {
   return g_transparent_pos[a]>g_transparent_pos[b];
@@ -15137,7 +15140,7 @@ public:
       //std::cout << "async_pending_count=" << old_count << std::endl;
       static int yyyy=0;
       if (old_count>100)yyyy=1;
-      if (yyyy==1&&old_count<4+g_async_pending_count_failures) { async_pending_count=0;
+      if (yyyy==1&&old_count<0+g_async_pending_count_failures) { async_pending_count=0;
 	std::cout << "Special sanmiguel exit code activated" << std::endl;
       }
     }
@@ -15240,6 +15243,12 @@ public:
 	    //std::cout << "TICK " << count << std::endl;
 	    count--; if (count<0) { 
 	      std::cout << "ASyncPendingCountDrift:" << async_pending_count << std::endl;
+	      int s = async_labels.size();
+	      for(int i=0;i<s;i++)
+		{
+		  std::cout << async_labels[i] << "::" << async_infos[i] << " ";
+		}
+	      std::cout << std::endl;
 	      std::cout << "Special async pending count logo exit" << std::endl;
 	      if (debug_enabled) status += "LOGO_EXIT2 ";
 	      async_pending_count=0; no_draw_count=0; pass_through=true; env->logo_shown=false;	    }
@@ -34043,4 +34052,25 @@ private:
 GameApi::MT GameApi::MainLoopApi::mainloop_material(EveryApi &ev, ML ml)
 {
   return add_material(e,new MLMaterial(ev, ml));
+}
+
+std::vector<std::string> async_labels;
+std::vector<std::string> async_infos;
+
+void async_pending_plus(std::string label, std::string info)
+{
+  async_labels.push_back(label);
+  async_infos.push_back(info);
+}
+void async_pending_minus(std::string label, std::string info)
+{
+  int s = async_labels.size();
+  for(int i=0;i<s;i++)
+    {
+      if (label==async_labels[i] && info==async_infos[i]) {
+	async_labels.erase(async_labels.begin()+i);
+	async_infos.erase(async_infos.begin()+i);
+	break;
+      }
+    }
 }

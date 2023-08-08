@@ -1752,6 +1752,7 @@ public:
     if (!cached3) {
     e.async_load_callback(mtl_url, &MTL2_CB, (void*)this);
 #ifdef EMSCRIPTEN
+    async_pending_plus("MTL2","");
     async_pending_count++;
     //std::cout << "NetworkedFaceCollectionMTL2 asyncpending++" << async_pending_count << std::endl;
 #endif
@@ -1826,24 +1827,32 @@ public:
 	std::string s3 = mat[b_i].map_bump;
 
 	
-	
+	bool skip=false;
 	dt->url = convert_slashes(url_prefix+"/"+s);
+	if (dt->url.size()>0 && dt->url[dt->url.size()-1]=='/')
+	  {
+	    skip=true;
+	    //std::cout << "skipping " << b_i << std::endl;
+	  }
+	unsigned int r = rand();
+	std::stringstream ss;
+	ss << r;
+	dt->url+="?" + ss.str();
 	std::string url2 = convert_slashes(url_prefix+"/"+s2);
 	dt->d_url = url2;
 	std::string url3 = convert_slashes(url_prefix+"/"+s3);
 	dt->bump_url = url3;
-	buffer.push_back(ref);
-	d_buffer.push_back(ref2);
-	bump_buffer.push_back(ref3);
-
-	if (s=="") {
+	  buffer.push_back(ref);
+	  d_buffer.push_back(ref2);
+	  bump_buffer.push_back(ref3);
+	if (s==""||skip) {
 	  Prepare2_color(b_i, mat[b_i]);
 	}
 
 	//std::cout << "set_callback: " << dt->url << std::endl;
     if (!g_use_texid_material)
       {
-	if (s!="") {
+	if (s!=""&&!skip) {
 	flags.push_back(1);
 	e.async_load_callback(dt->url, &MTL_CB, (void*)dt);
 #ifdef EMSCRIPTEN
@@ -1859,8 +1868,7 @@ public:
 #else
 	urls.push_back(dt->url);
 #endif
-
-	}
+	} else { flags.push_back(0); }
 	
 	if (load_d && s2!="") {
 	d_flags.push_back(1);
@@ -1876,7 +1884,7 @@ public:
 	  //  }
 	  //}
 #endif
-	}
+	} else { d_flags.push_back(0); }
 	
 	if (load_bump && s3!="") {
 	bump_flags.push_back(1);
@@ -1893,21 +1901,28 @@ public:
 	  //
 	//e.async_load_url(url3, homepage);
 #endif
-	}
+	} else { bump_flags.push_back(0); }
       }
 #ifndef EMSCRIPTEN
 	//Prepare2(dt->url,b_i);
 #endif
 #ifdef EMSCRIPTEN
-    if (!g_use_texid_material)
+    if (!g_use_texid_material) {
+      if (!skip) {
     	async_pending_count++;
+	async_pending_plus("texid_material", dt->url);
+      }
+    }
     //std::cout << "NetworkedFaceCollectionMTL2(1) asyncpending++"<< async_pending_count << std::endl;
 #endif
 
     if (!g_use_texid_material)
 	if (load_d && s2!="") {
 #ifdef EMSCRIPTEN
+	  {
     async_pending_count++;
+    async_pending_plus("load_d", dt->d_url);
+	  }
     //std::cout << "NetworkedFaceCollectionMTL2(2) asyncpending++" << async_pending_count << std::endl;
 #endif
 	}
@@ -1915,6 +1930,7 @@ public:
 	if (load_bump && s3!="") {
 #ifdef EMSCRIPTEN
     async_pending_count++;
+    async_pending_plus("load_bump", dt->bump_url);
     //std::cout << "NetworkedFaceCollectionMTL2(3) asyncpending++" << async_pending_count << std::endl;
 #endif
 	}
@@ -1931,6 +1947,7 @@ public:
 #endif
 #ifdef EMSCRIPTEN
     async_pending_count--;
+    async_pending_minus("MTL2","");
     //std::cout << "NetworkedFaceCollectionMTL2 asyncpending--" << async_pending_count << std::endl;
 #endif
     done_mtl=true;
@@ -1978,7 +1995,7 @@ public:
       //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
 
 #ifdef EMSCRIPTEN
-      if (flags[i]==1) { async_pending_count--; flags[i]=0; }
+      if (flags[i]==1) { async_pending_minus("texid_material",url); async_pending_count--; flags[i]=0; } else { std::cout << "flags[i] failure " << i << " " << url << std::endl; }
       //std::cout << "NetworkedFaceCollectionMTL2(flags) asyncpending--" << async_pending_count << std::endl;
 #endif
 
@@ -2011,7 +2028,7 @@ public:
       //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
 
 #ifdef EMSCRIPTEN
-      if (d_flags[i]==1) { async_pending_count--; d_flags[i]=0; }
+      if (d_flags[i]==1) { async_pending_minus("load_d",url); async_pending_count--; d_flags[i]=0; }
       //std::cout << "NetworkedFaceCollectionMTL2(d_flags) asyncpending--" << async_pending_count << std::endl;
 #endif
 
@@ -2045,7 +2062,7 @@ public:
       //std::cout << "p_mtl prepare2 " << url << " " << i << std::endl;
 
 #ifdef EMSCRIPTEN
-      if (bump_flags[i]==1) { async_pending_count--; bump_flags[i]=0; }
+      if (bump_flags[i]==1) { async_pending_minus("load_bump",url); async_pending_count--; bump_flags[i]=0; }
       //std::cout << "NetworkedFaceCollectionMTL2(bump_flags) asyncpending--" << async_pending_count << std::endl;
 
 #endif
