@@ -15083,12 +15083,18 @@ public:
   {
     int s = ds->NumBlocks();
     //std::cout << "FINDBLOCK:" << id << " " << s << std::endl;
-    if (s==0) std::cout << "DSFaceCollection failed for NumBlocks==0 which means that file is not valid" << std::endl;
+    static bool once=false;
+    if (s==0&&!once) { std::cout << "DSFaceCollection failed for NumBlocks==0 which means that file is not valid" << std::endl;
+      once=true;
+      // emscripten_run_script("jsStackTrace()");
+    }
     for(int i=0;i<s;i++) {
       //std::cout << "FB:" << i << " " << id << " " << ds->BlockType(i) << std::endl;
       if (ds->BlockType(i)==id) return i; }
-    std::cout << "DSFaceCollection: couldnt find block " << id << std::endl;
+    static bool once2 = false;
+    if (!once2) { std::cout << "DSFaceCollection: couldnt find block " << id << std::endl; once2=true; 
     for(int i=0;i<s;i++) { std::cout << "Block type: " << ds->BlockType(i) << std::endl; }
+    }
     return -1;
   }
   int vertex_index(int face, int point) const

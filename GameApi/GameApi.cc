@@ -15137,7 +15137,9 @@ public:
       //std::cout << "async_pending_count=" << old_count << std::endl;
       static int yyyy=0;
       if (old_count>100)yyyy=1;
-      if (yyyy==1&&old_count<4+g_async_pending_count_failures)  async_pending_count=0;
+      if (yyyy==1&&old_count<4+g_async_pending_count_failures) { async_pending_count=0;
+	std::cout << "Special sanmiguel exit code activated" << std::endl;
+      }
     }
     
     {
@@ -15230,14 +15232,17 @@ public:
 	else {
 	  bool pass_through=false;
 	  static int async_old = -1;
-	  static int count=300;
+	  static int count=600;
 	  if (async_pending_count!=async_old) {
 	    async_old=async_pending_count;
-	    count=300;
+	    count=600;
 	  } else {
-	    count--; if (count<0) { async_pending_count=0; no_draw_count=0; pass_through=true; env->logo_shown=false;
+	    //std::cout << "TICK " << count << std::endl;
+	    count--; if (count<0) { 
+	      std::cout << "ASyncPendingCountDrift:" << async_pending_count << std::endl;
+	      std::cout << "Special async pending count logo exit" << std::endl;
 	      if (debug_enabled) status += "LOGO_EXIT2 ";
-	    }
+	      async_pending_count=0; no_draw_count=0; pass_through=true; env->logo_shown=false;	    }
 	  }
 	  if (!pass_through)
 	    return -1;
@@ -15479,7 +15484,7 @@ public:
     
       if (status != old_status)
 	{
-	  //std::cout << status << std::endl;
+	  // std::cout << status << std::endl;
 	  old_status = status;
 	}
     }
@@ -30520,7 +30525,7 @@ KP extern "C" void set_string(int num, const char *value)
     
     unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
     std::copy(value,value+g_set_string_int,data);
-    std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
+    //std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+g_set_string_int);
@@ -30563,7 +30568,7 @@ KP extern "C" void set_string(int num, const char *value)
       std::copy(g_buffers[i],g_buffers[i]+g_buffer_sizes[i],data+offset);
       offset+=g_buffer_sizes[i];
     }
-    std::cout << "Appending:" << g_set_string_url << "::" << size << std::endl;
+    //std::cout << "Appending:" << g_set_string_url << "::" << size << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+size);

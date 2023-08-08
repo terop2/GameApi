@@ -210,25 +210,33 @@ private:
       attr.requestHeaders = headers;
     }
     if (mode!=1) {
-      emscripten_fetch(&attr, url.c_str());
+      char *ptr = new char[url.size()+1];
+      std::copy(url.begin(),url.end(),ptr);
+      ptr[url.size()]=0;
+
+      
+      emscripten_fetch(&attr, ptr);
     } else { // split tool+brotli can be used to split the files beforehand, 1M blocks
       int id1 = id / 26;
       int id2 = id - (id1*26);
       char *pp = "abcdefghijklmnopqrstuvwxyz";
       char c1 = pp[id1];
       char c2 = pp[id2];
-      std::string url2;
-      url2 += url;
+      //std::string url2;
+      url2 = url;
       url2 += ".";
       url2 += c1;
       url2 += c2;
-      emscripten_fetch(&attr, url2.c_str());
+      char *ptr = new char[url2.size()+1];
+      std::copy(url2.begin(),url2.end(),ptr);
+      ptr[url2.size()]=0;
+      emscripten_fetch(&attr, ptr);
     }
   }
 public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
-    //std::cout << "fetch_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << std::endl;
+    // std::cout << "fetch_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << " " << fetch->status << std::endl;
     if (!fetch || !fetch->data || !fetch->numBytes) { fetch_failed(fetch); return; } 
     FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
     //std::cout << fetch->statusText << std::endl;
@@ -239,6 +247,7 @@ public:
       {
 	for(int i=0;i<blocks_ready.size();i++)
 	  {
+	    //std::cout << blocks_ready[i] << " ";
 	    if (blocks_ready[i]!=1) {
 	      start = i*chunkSize;
 	      end = (i+1)*chunkSize;
@@ -250,18 +259,23 @@ public:
 		{
 		  dataOffset+=ptr->start;
 		}
+	      //std::cout << "FETCH:" << start << " " << end << " " << dataOffset << " " << numBytes << std::endl;
 	      if (dataOffset<=start && dataOffset+numBytes>=end-1)
 		{
 		  int offset = start-dataOffset;
 		  std::copy(&fetch->data[offset], &fetch->data[offset+(end-start)], &result[start]);
 		  blocks_ready[i]=1;
 		  //std::cout << "BLOCK READY: " << i << std::endl;
-		}
+		  //} else {
+	      //int offset = start-dataOffset;
+	      //std::copy(&fetch->data[offset], &fetch->data[offset+std::min(numBytes,end-start)], &result[start]);
+	    }
 	    
 	    }
 	  }
-	}
-    
+	//std::cout << "kk" << std::endl;
+  
+  }
     //std::cout << "Chunk Success " << current_id << std::endl;
     //assert(fetch->numBytes==0||fetch->numBytes==end-start);
     /*
@@ -278,12 +292,14 @@ public:
     std::vector<int> next;
     for(int i=0;i<s;i++)
       {
+	//std::cout << blocks_ready[i] << " ";
 	if (blocks_ready[i]==0) { fail=true; next.push_back(i); continue; }
 	if (blocks_ready[i]==2) { fail=true; continue; }
       }
+    //std::cout << "kk" << std::endl;
     if (!fail)
       {
-	//std::cout << "Fetch Success" << std::endl;
+	//std::cout << "Exiting via Success" << std::endl;
 	success(data);
       }
     else
@@ -344,6 +360,7 @@ public:
   }
   void fetch_failed(emscripten_fetch_t *fetch)
   {
+    std::cout << "fetch_failed" << std::endl;
     failcount++;
     if (failcount>10) {
       std::cout << "FetchInBlocks::chunk_failed()" << std::endl;
@@ -359,6 +376,7 @@ public:
   }
 public:
   std::string url;
+  std::string url2;
   std::vector<unsigned char> result;
   long long totalSize;
   long long chunkSize;
