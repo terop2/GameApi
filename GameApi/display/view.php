@@ -1582,7 +1582,7 @@ function drop2(state)
 
 function drop3(state,selectfileelem)
 {
-   console.log("drop3:CLEARING CACHES");
+   //console.log("drop3:CLEARING CACHES");
    Module.ccall('set_string', null, ['number', 'string'],[6,""]);
 
 
@@ -1655,7 +1655,7 @@ set_filename_info(state,"");
 
 function drop(ev)
 {
-   console.log("CLEARING CACHES");
+   //console.log("CLEARING CACHES");
    Module.ccall('set_string', null, ['number', 'string'],[6,""]);
 
 
@@ -1807,7 +1807,7 @@ function load_files(data_array2, filename_array)
     Module.ccall('set_string', null, ['number', 'array'], [3,uint8], {async:true} );
     }
     Module.ccall('set_string', null, ['number', 'string'], [4,""], {async:true} );
-   console.log("DATA SENT");
+   //console.log("DATA SENT");
 
   }
 }
