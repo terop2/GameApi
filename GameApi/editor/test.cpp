@@ -1458,7 +1458,7 @@ public:
 			if (type=="TF") {
 			  TF tf;
 			  tf.id = id;
-			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,0,0);
+			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,0,0,0.0,0.0,-400.0);
 			  env->env->free_temp_memory();
 			  env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
@@ -1563,7 +1563,7 @@ public:
 					for(int i=0;i<vec2.size();i++) vec.push_back(vec2[i]);
 					//MT I34=env->ev->materials_api.m_def(*env->ev);
 					//MT I35=env->ev->materials_api.phong(*env->ev,I34,-0.3,0.3,-1.0,0xffff8800,0xff666666,15.0);
-					MT I35=env->ev->materials_api.gltf_material3(*env->ev,0.5,0.8,1.0,1.0,1.0,1.0,1.0);
+					MT I35=env->ev->materials_api.gltf_material3(*env->ev,0.5,0.8,1.0,1.0,1.0,1.0,1.0,0.0,0.0,-400.0);
 					//MT I35=env->ev->materials_api.snow(*env->ev,I34,0xffaaaa88,0xffeeee88,0xffffff88,0.5);
 					ML I36=env->ev->voxel_api.voxel_bind(*env->ev,std::vector<P>{I18},vec,I35);
 					env->env->free_temp_memory();
