@@ -8779,11 +8779,11 @@ GameApi::MT get_texture_count(GameApi::Env &e, GLTF_Material *mat1, NewShadowMat
 EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt)
 {
   P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);
-  MT I3=ev.materials_api.gltf_material(ev,I1,0,1);
+  MT I3=ev.materials_api.gltf_material(ev,I1,0,1,light_dir_x,light_dir_y,light_dir_z);
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
   MT I5=shadow_mt; //ev.materials_api.colour_material(ev,0.5);
   ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,dark_color,light_color,scale,size,false,shadow2_mt);
-  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0);
+  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
 }

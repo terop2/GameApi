@@ -35,7 +35,7 @@ if ($shadow=="shadow") {
       } else {
       $file .= "P I20=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
       }
-   $file .= "MT I210=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+   $file .= "MT I210=ev.materials_api.gltf_material(ev,I1,0,1,0,0,-400);\n";
 if ($anim=="anim") {
    $file .= "MT I21=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I210,c,0);\n";
 
@@ -52,16 +52,16 @@ if ($anim=="anim") {
 if ($anim=="anim") {
   if ($large!="large") {
   $file .= "P I201=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
-  $file .= "MT I211=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+  $file .= "MT I211=ev.materials_api.gltf_material(ev,I1,0,1,0,0,-400);\n";
   $file .= "MT I221=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I211,c,0);\n";
   $file .= "ML I25=ev.materials_api.bind(I201,I221);\n";
   } else {
 
-  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c);\n";
+  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c,0,0,-400);\n";
  }
 
 } else {
-   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0);\n";
+   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,0,0,-400);\n";
 }
 if ($anim=="anim") {
    $file .= "ML I27=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
@@ -73,16 +73,16 @@ if ($anim=="anim") {
 if ($anim=="anim") {
   if ($large!="large") {
   $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
-  $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1);\n";
+  $file .= "MT I21=ev.materials_api.gltf_material(ev,I1,0,1,0,0,-400);\n";
   $file .= "MT I22=ev.materials_api.gltf_anim_material2(ev,I1,0,230,I21,c,0);\n";
   $file .= "ML I23=ev.materials_api.bind(I20,I22);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I23,0.0,99);\n";
  } else {
-  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c);\n";
+  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c,0,0,-400);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I20,0.0,99);\n";
   }
 } else 
-  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0);\n";
+  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,0,0,-400);\n";
 
 if ($zoom=="zoom")
    $file .= "ML I3=ev.mainloop_api.mouse_roll_zoom2(ev,I2);\n";
