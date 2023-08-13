@@ -2714,6 +2714,8 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
 
     // 0.0, 0.0, 400.0
     "  color = getPointShade(light_dir2 /*vec3(0.0,0.0,400.0)*/ /*+ex_Position/100.0*/, materialInfo, normal, view);\n"
+    //" color*=baseColor.rgb;\n"
+    " color+=baseColor.rgb/2.0;\n"
     //"#ifdef SPEC\n"
     //" color = diffuseColor;\n"
     //"#endif\n"
@@ -4779,9 +4781,9 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
     "#endif\n"
     "#endif\n"
 
-    //"#ifndef SPEC\n"    
+    "#ifndef SPEC\n"    
     "  baseColor *= getVertexColor();\n"
-    //"#endif\n"
+    "#endif\n"
 "#ifndef SPEC\n"
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
 "#endif\n"
@@ -4809,13 +4811,15 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
     "    specularEnvironmentR90,\n"
     "    specularColor\n"
     "    );\n"
-"    vec3 color = vec3(0.0,0.0,0.0);\n"
+  "    vec3 color = vec3(0.0,0.0,0.0);\n"
     "    vec3 normal = getNormal();\n"
     "    vec3 view = vec3(0.0,0.0,1.0);\n"
 
     // 0.0, 0.0,400.0
     "  color = getPointShade(light_dir2 /*+ex_Position/100.0*/, materialInfo, normal, view);\n"
-
+  //"  color*=baseColor.rgb;\n"
+  "color+=baseColor.rgb/2.0;\n"
+  
 "#ifdef GLTF_TEX5\n"
 "#ifdef GLTF_TEX6\n"
 "#ifdef GLTF_TEX7\n"
