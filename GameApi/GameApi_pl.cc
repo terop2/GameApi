@@ -8072,7 +8072,7 @@ public:
 	ev.shader_api.set_var(sh, "u_GlossiFactor", glossi_factor);
 	ev.shader_api.set_var(sh, "u_EmissiveFactor2", emis2.x,emis2.y,emis2.z);
 	// remove texsamplers so that cubesampler would work
-	ev.shader_api.set_var(sh, "light_dir2", -light_dir2.dx, -light_dir2.dy, -light_dir2.dz);
+	ev.shader_api.set_var(sh, "light_dir2", light_dir2.dx, light_dir2.dy, light_dir2.dz);
 	//std::cout << "SETTING LIGHT DIR:" << -light_dir2.dx << " " << -light_dir2.dy << " " << -light_dir2.dz << std::endl;
 #if 1
 	ev.shader_api.set_var(sh, "texsampler_cube[0]", 9);

@@ -276,13 +276,13 @@
 			 "m_phong",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "0.0", "0.0", "1.0", "ffff8800", "ffffffff", "30.0" },
+			 { "ev", "", "400.0", "-400.0", "300.0", "ffff8800", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong2,
 			 "m_phong2",
 			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
 			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ffffffff", "30.0" },
+			 { "ev", "", "400.0", "-400.0", "300.0", "ffff8800", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong3_material,
 			 "m_phong3",
@@ -335,13 +335,13 @@
 			 "m_gltf",
 			 { "ev", "tf", "material_id", "mix", "light_x", "light_y", "light_z" },
 			 { "EveryApi&", "TF", "int", "float", "float" ,"float", "float" }, 
-			 { "ev", "", "0", "1.0", "0.0", "0.0", "-400.0" },
+			 { "ev", "", "0", "1.0", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_mt_arr,
 			 "m_gltf_arr",
 			 { "ev", "tf", "mix", "light_dir_x", "light_dir_y", "light_dir_z" },
 			 { "EveryApi&", "TF", "float", "float", "float", "float" },
-			 { "ev", "", "1.0", "0.0", "0.0", "-400.0" },
+			 { "ev", "", "1.0", "400.0", "-400.0", "300.0" },
 			 "[MT]", "materials_api", "gltf_mesh_all_mt_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
 			 "m_gltf_env",
@@ -353,13 +353,13 @@
 			 "m_gltf_file",
 			 { "ev", "url", "light_dir_x", "light_dir_y", "light_dir_z" },
 			 { "EveryApi&", "std::string","float", "float", "float" },
-			 { "ev", "https://tpgames.org/materials/wood.mat@AmbientCG@https://docs.ambientcg.com/books/website-licensing/page/license-information", "0.0", "0.0", "-400.0" },
+			 { "ev", "https://tpgames.org/materials/wood.mat@AmbientCG@https://docs.ambientcg.com/books/website-licensing/page/license-information", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material_from_file"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_manual,
 			 "m_gltf_man",
 			 { "ev", "mix", "baseColor", "metalrough", "normal", "occlusion", "emissive", "baseColor_b", "metalrough_b", "normal_b", "occlusion_b", "emissive_b", "roughnessfactor", "metallicfactor", "base_r", "base_g", "base_b", "base_a", "occulsionstrength", "light_dir_x", "light_dir_y", "light_dir_z" },
 			 { "EveryApi&", "float", "BM", "BM", "BM", "BM", "BM", "bool", "bool", "bool", "bool", "bool", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float" }, 
-			 { "ev", "1.0", "", "", "", "", "", "true", "true", "true", "true", "true", "0.5", "0.5", "0.5", "0.5", "0.5", "1.0", "1.0", "0.0", "0.0", "-400.0" },
+			 { "ev", "1.0", "", "", "", "", "", "true", "true", "true", "true", "true", "0.5", "0.5", "0.5", "0.5", "0.5", "1.0", "1.0", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material_manual"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material,
@@ -380,7 +380,7 @@
 			 "m_material",
 			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix", "light_dir_x", "light_dir_y", "light_dir_z" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float" },
-			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0", "0.0", "0.0", "-400.0" },
+			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material3"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bump_phong,
