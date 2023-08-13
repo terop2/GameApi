@@ -4701,22 +4701,41 @@ public:
   
   bool is_transparent(int face) const
   {
+    //return false;
     if (sx==-1||sy==-1) {
       sx = texture.SizeX();
       sy = texture.SizeY();
     }
     Point2d t1 = coll->TexCoord(face,0);
+    if (t1.x<0.0) t1.x=0.0;
+    if (t1.x>1.0) t1.x=1.0;
+    if (t1.y<0.0) t1.y=0.0;
+    if (t1.y>1.0) t1.y=1.0;
     ::Color c1 = texture.Map(t1.x*sx, t1.y*sy);
-    if (c1.alpha<150) return true;
+    //std::cout << c1.alpha << std::endl;
+    //if (c1.alpha<120) return true;
     Point2d t2 = coll->TexCoord(face,1);    
+    if (t2.x<0.0) t2.x=0.0;
+    if (t2.x>1.0) t2.x=1.0;
+    if (t2.y<0.0) t2.y=0.0;
+    if (t2.y>1.0) t2.y=1.0;
     ::Color c2 = texture.Map(t2.x*sx, t2.y*sy);
-    if (c2.alpha<150) return true;
+    //if (c2.alpha<120) return true;
     Point2d t3 = coll->TexCoord(face,2);
+    if (t3.x<0.0) t3.x=0.0;
+    if (t3.x>1.0) t3.x=1.0;
+    if (t3.y<0.0) t3.y=0.0;
+    if (t3.y>1.0) t3.y=1.0;
+
     ::Color c3 = texture.Map(t3.x*sx, t3.y*sy);
-    if (c3.alpha<150) return true;
+    //if (c3.alpha<120) return true;
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
+    if (center.x<0.0) center.x=0.1;
+    if (center.x>1.0) center.x=0.9;
+    if (center.y<0.0) center.y=0.1;
+    if (center.y>1.0) center.y=0.9;
     ::Color c = texture.Map(center.x*sx, center.y*sy);
-    if (c.alpha<150) return true;
+    if (c.alpha>0 && c.alpha<250) return true;
     //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
     return false;
   }
@@ -5156,6 +5175,7 @@ class TransparentCombine : public MainLoopItem
 {
 public:
   TransparentCombine(MainLoopItem *opaque, MainLoopItem *transparent) : opaque(opaque), transparent(transparent) {
+    /*
     static int id=0;
     id++;
     g_transparent_callback_objs.push_back(&trans_callback);
@@ -5163,8 +5183,10 @@ public:
     g_transparent_callback_ids.push_back(id);
     g_transparent_pos.push_back(0.0);
     m_id=id;
+    */
   }
   ~TransparentCombine() {
+    /*
     int s = g_transparent_callback_objs.size();
     for(int i=0;i<s;i++) {
       if (m_id==g_transparent_callback_ids[i]) {
@@ -5174,6 +5196,7 @@ public:
 	break;
       }
     }
+    */
   }
   virtual void Collect(CollectVisitor &vis) { opaque->Collect(vis); transparent->Collect(vis); }
   virtual void HeavyPrepare() { }
@@ -5186,6 +5209,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     ee = e;
+    /*
     Matrix m = e.in_MV;
     //float x = m.matrix[3];
     //float y = m.matrix[3+4];
@@ -5197,23 +5221,27 @@ public:
 	  g_transparent_pos[i]=z;
 	}
       }
+    */
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glEnable(Low_GL_DEPTH_TEST);
     opaque->execute(e);
+    transparent->execute(e);
+    ogl->glEnable(Low_GL_DEPTH_TEST);
   }
   void execute2()
   {
+    /*
     OpenglLowApi *ogl = g_low->ogl;
+    ogl->glEnable(Low_GL_BLEND);
+    ogl->glBlendFunc(Low_GL_SRC_ALPHA, Low_GL_ONE_MINUS_SRC_ALPHA);
+    ogl->glDisable(Low_GL_DEPTH_TEST);
+    ogl->glDepthMask(Low_GL_FALSE);
+    ogl->glDepthFunc(Low_GL_LESS);
+    transparent->execute(ee);
+    ogl->glDepthMask(Low_GL_TRUE);
     ogl->glDepthFunc(ee.depthfunc);
     ogl->glDepthMask(ee.depthmask);
-    if (ee.cullface) {
-      ogl->glEnable(Low_GL_CULL_FACE);
-      ogl->glFrontFace(Low_GL_CW);
-    } else {
-      ogl->glDisable(Low_GL_CULL_FACE);
-      ogl->glFrontFace(Low_GL_CW);
-    }
-    transparent->execute(ee);
-    ogl->glDisable(Low_GL_CULL_FACE);
-    ogl->glFrontFace(Low_GL_CW);
+    */
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -15014,7 +15042,7 @@ extern std::vector<std::string> async_infos;
 
 
 bool CompareTrans(int a, int b) {
-  return g_transparent_pos[a]>g_transparent_pos[b];
+  return g_transparent_pos[a]<g_transparent_pos[b];
 }
 
 extern bool g_transparent;

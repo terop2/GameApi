@@ -2728,7 +2728,7 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
 "#endif\n"
 
 "#ifdef UNLIT\n"
-    "color = baseColor.rgb;\n"
+    "color = baseColor.rgb/2.0;\n"
 "#endif\n"
 
 
@@ -4846,7 +4846,7 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
 
 "#ifdef UNLIT\n"
-    "color = baseColor.rgb;\n"
+    "color = baseColor.rgb/2.0;\n"
 "#endif\n"
     
     "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
