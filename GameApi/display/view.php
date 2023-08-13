@@ -1100,9 +1100,9 @@ if (i==-1) return ["",normals_select];
  var rough = get_metal_roughness(i);
  var roughstr = rough.toString();
 
- var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1,0.0,0.0,-400.0);\n";
+ var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1,-400.0,400.0,400.0);\n";
 
- var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1,0.0,0.0,-400.0);\n";
+ var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1,-400.0,400.0,400.0);\n";
 
 
 var line = find_line_from_material_db(i);
@@ -1113,7 +1113,7 @@ if (parse_material_type(line)=='Plastic') return [plastic,normals_select];
 
 
 var tex_url = parse_material_url(line);
-var textured_material = "MT I4=ev.materials_api.gltf_material_from_file(ev," + tex_url + ",0.0,0.0,-400.0);\n";
+var textured_material = "MT I4=ev.materials_api.gltf_material_from_file(ev," + tex_url + ",-400.0,400.0,400.0);\n";
 if (parse_material_type(line)=='Textured') return [textured_material,texcoord_normals_select];
 
 return [phongmaterial,normals_select];
@@ -1163,7 +1163,7 @@ function create_script(filename, contents, filenames)
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,0.0,0.0,-400.0);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0);\n"; // 0.75
   } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
@@ -1171,7 +1171,7 @@ function create_script(filename, contents, filenames)
      //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,0.0,0.0,-400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
@@ -1179,7 +1179,7 @@ function create_script(filename, contents, filenames)
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,0.0,0.0,-400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
   } else
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
@@ -1249,7 +1249,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
      res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
   } else
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
-     res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1,0.0,0.0,-400.0);\n";
+     res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
      //res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I40,cvbnmfghjk);\n"
   } else {
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ff888888,ffffffff,5.0,0.5);\n";
@@ -1272,7 +1272,7 @@ res+="ML I6=ev.mainloop_api.depthfunc(I64,0);\n";
   //console.log(filename.substr(-4));
   //console.log(filename.substr(-5));
   if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
-  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5,0,0.0,0.0,-400.0);\n";
+  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5,0,-400.0,400.0,400.0);\n";
 
   }
 
