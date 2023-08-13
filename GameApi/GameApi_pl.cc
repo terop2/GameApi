@@ -6841,7 +6841,6 @@ public:
 	ev.shader_api.set_var(shader, "in_N", m2);
 	ev.shader_api.set_var(shader, "time", e.time);
 	sh = shader;
-
 	api.sort_vertices(va,m);
 
       }

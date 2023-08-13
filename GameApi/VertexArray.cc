@@ -1527,7 +1527,7 @@ void sort_vertex()
 }
 void RenderVertexArray::sort_blit(int id, Matrix in_MV)
 {
-#if 0
+#if 1
   g_in_MV = in_MV;
   g_ptr = &(s.m_set[id]->tri_polys);
   g_ptr_normal = s.has_normal ? &(s.m_set[id]->tri_normals) : 0;
