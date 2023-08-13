@@ -18,7 +18,15 @@ extern std::string gameapi_homepageurl;
   //for(int i=0;i<s;i++) feature_enable[i]=true;
 //}
 
-static const float baseColorFactor = 1.0;
+static const float baseColorFactor = 0.8;
+
+float baseColorChange(float val)
+{
+  //val/=(1.0/0.3);
+  //val+=0.3;
+  //std::cout << "BASECOLOR:" << val << std::endl;
+  return val;
+}
 
 
 class GLTF_Model : public GLTFModelInterface
@@ -1786,7 +1794,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-      ml=ev.polygon_api.gltf_shader(ev, ml, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z); // todo base color
+      ml=ev.polygon_api.gltf_shader(ev, ml, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z); // todo base color
      
 
     
@@ -4244,7 +4252,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx, light_dir.dy, light_dir.dz); // todo base color
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx, light_dir.dy, light_dir.dz); // todo base color
 
       //} else {
       //	I18 = specglossyshader(ev,I17);
@@ -4306,7 +4314,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz);
     //} else {
     //	I18 = specglossyshader(ev,I17);
     // }
@@ -4366,7 +4374,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz);
     //} else {
     //	I18 = specglossyshader(ev,I17);
     // }
@@ -4925,7 +4933,7 @@ public:
     const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false); // todo base color
+    I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false); // todo base color
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
@@ -4951,7 +4959,7 @@ public:
     const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
@@ -4976,7 +4984,7 @@ public:
     const tinygltf::Material &m = interface->get_material(material_id);
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, r.baseColorFactor[0]*baseColorFactor,r.baseColorFactor[1]*baseColorFactor,r.baseColorFactor[2]*baseColorFactor,1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false);
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
