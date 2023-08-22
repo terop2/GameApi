@@ -282,6 +282,7 @@ public:
   friend Vector operator*(const Vector &v, const Matrix &m);
   friend Matrix operator*(const Matrix &m1, const Matrix &m2);
   friend Matrix operator+(const Matrix &m1, const Matrix &m2);
+  static bool has_nan(const Matrix &m);
 public:
   void operator*=(float v)
   {

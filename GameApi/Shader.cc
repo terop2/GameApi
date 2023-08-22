@@ -2715,7 +2715,7 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     // 0.0, 0.0, 400.0
     "  color = getPointShade(light_dir2 /*vec3(0.0,0.0,400.0)*/ /*+ex_Position/100.0*/, materialInfo, normal, view);\n"
     //" color*=baseColor.rgb;\n"
-    " color+=baseColor.rgb/8.0;\n"
+    " color+=baseColor.rgb/4.0;\n"
     //"#ifdef SPEC\n"
     //" color = diffuseColor;\n"
     //"#endif\n"
@@ -2728,7 +2728,7 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
 "#endif\n"
 
 "#ifdef UNLIT\n"
-    "color = baseColor.rgb/2.0;\n"
+    "color = baseColor.rgb/4.0;\n"
 "#endif\n"
 
 
@@ -4818,7 +4818,7 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
     // 0.0, 0.0,400.0
     "  color = getPointShade(light_dir2 /*+ex_Position/100.0*/, materialInfo, normal, view);\n"
   //"  color*=baseColor.rgb;\n"
-  "color+=baseColor.rgb/8.0;\n"
+  "color+=baseColor.rgb/4.0;\n"
   
 "#ifdef GLTF_TEX5\n"
 "#ifdef GLTF_TEX6\n"
@@ -4846,7 +4846,7 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
 
 "#ifdef UNLIT\n"
-    "color = baseColor.rgb/2.0;\n"
+    "color = baseColor.rgb/4.0;\n"
 "#endif\n"
     
     "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
