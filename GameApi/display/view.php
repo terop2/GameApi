@@ -876,6 +876,9 @@ function get_border(i,m,filename)
      color = parse_border_color(name2);
      width = parse_border_width(name2);
   }
+
+  var anim_value = true;
+
   var res = "";
   var variable = "I2";
   if (m==-1) variable="I1";
@@ -887,8 +890,16 @@ function get_border(i,m,filename)
   } else {
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
-  res+= "MT I504=ev.materials_api.phong(ev,I4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
-  res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
+  var five = "";
+  if (anim_value) five="5";
+  res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  if (anim_value==true) { 
+    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
+     // res+="MT I501=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I505,cvb,0);\n";
+      } else {
+    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
+      }
+
 if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
   } else {
@@ -1140,6 +1151,7 @@ function create_script(filename, contents, filenames)
   var border_value = get_border_value();
   var border = get_border(border_value,material_value,filename);
 
+  var anim_value = true;
 
   var normals_val = get_normals_value();
   var border_color = "000000";
@@ -1163,23 +1175,39 @@ function create_script(filename, contents, filenames)
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
+     	{
+	if (anim_value==true) {
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvb,-400.0,400.0,400.0);\n"; // 0.75
+	} else {
         res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0);\n"; // 0.75
+	}
+	}
   } else
   if (filename.substr(-4)==".glb") {
      res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
-     if (normals_val!=3 && normals_val!=4)
+     if (normals_val!=3 && normals_val!=4) {
+	if (anim_value==true) {
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvb,-400.0,400.0,400.0);\n";
+     } else {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
+     }
+     }
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I154=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
      //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I154);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
-     if (normals_val!=3 && normals_val!=4)
+     if (normals_val!=3 && normals_val!=4) {
+     if (anim_value==true) {
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvb,-400.0,400.0,400.0);\n";
+     } else {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
+     }
+     }
   } else
      {
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
@@ -1249,8 +1277,12 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
      res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
   } else
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
-     res+="MT I4=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
-     //res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I40,cvbnmfghjk);\n"
+     var five="";
+     if (anim_value==true) { five="5"; }
+     res+="MT I" + five + "4=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
+    if (anim_value==true) { 
+      res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I54,cvb,0);\n";
+      }
   } else {
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ff888888,ffffffff,5.0,0.5);\n";
   }
@@ -1320,7 +1352,13 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
   res+=background;
 
   res+="ML I14=ev.mainloop_api.or_elem_ml(ev,I44,I9);\n";
-  res+="RUN I10=ev.blocker_api.game_window2(ev,I14,false,false,0.0,1000000.0);\n";
+  var variable = "I14";
+  if (anim_value==true) {
+  res+="ML I15=ev.mainloop_api.send_key_at_time(I14,0.0,99);\n"
+  variable="I15";
+  }
+  
+  res+="RUN I10=ev.blocker_api.game_window2(ev," + variable + ",false,false,0.0,1000000.0);\n";
 
 
 return res;  

@@ -2,3 +2,4 @@
 1 BoomBox.glb BoomBox
 2 Duck.glb Duck
 3 Astronaut.glb Astronaut
+4 CesiumMan.glb CesiumMan

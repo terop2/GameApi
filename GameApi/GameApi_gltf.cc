@@ -18,7 +18,7 @@ extern std::string gameapi_homepageurl;
   //for(int i=0;i<s;i++) feature_enable[i]=true;
 //}
 
-static const float baseColorFactor = 0.8;
+static const float baseColorFactor = 1.0;
 
 float baseColorChange(float val)
 {
@@ -2426,7 +2426,7 @@ GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int
     double s_y = node->scale[1];
     double s_z = node->scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-    //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+    std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
   }
   if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
@@ -2630,6 +2630,7 @@ public:
       }
     if (m_target_path=="scale")
       {
+	//std::cout << "SCALE:" << val[0] << " " << val[1] << " " << val[2] << std::endl;
 	m_s_x = val[0];
 	m_s_y = val[1];
 	m_s_z = val[2];
@@ -5432,6 +5433,13 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
 
 struct TransformObject
 {
+  TransformObject() : scale_x(1.0), scale_y(1.0), scale_z(1.0),
+		      rot_x(0.0), rot_y(0.0), rot_z(0.0), rot_w(0.0),
+		      trans_x(0.0), trans_y(0.0), trans_z(0.0), m(Matrix::Identity()) { }
+  TransformObject(const TransformObject&o) : scale_x(o.scale_x), scale_y(o.scale_y), scale_z(o.scale_z),
+				       rot_x(o.rot_x), rot_y(o.rot_y), rot_z(o.rot_z), rot_w(o.rot_w),
+				       trans_x(o.trans_x), trans_y(o.trans_y), trans_z(o.trans_z),
+				       m(o.m) { }
   double scale_x, scale_y, scale_z;
   double rot_x, rot_y, rot_z, rot_w;
   double trans_x, trans_y, trans_z;
@@ -5571,6 +5579,9 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   res.scale_y = val*o2.scale_y + (1.0-val)*o.scale_y;
   res.scale_z = val*o2.scale_z + (1.0-val)*o.scale_z;
 
+
+  //std::cout << "SCALE2:" << res.scale_x << " " << res.scale_y << " " << res.scale_z << std::endl;
+
   
   float prev[4];
   float next[4];
@@ -5625,6 +5636,8 @@ TransformObject gltf_node_transform_obj(const tinygltf::Node *node)
     o.scale_x = s_x;
     o.scale_y = s_y;
     o.scale_z = s_z;
+    //std::cout << "SCALE3:" << s_x << " " << s_y << " " << s_z << std::endl;
+
   }
   if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
@@ -5662,8 +5675,11 @@ std::pair<Matrix,Matrix> gltf_node_transform_obj_apply(GameApi::Env &e, GameApi:
   TransformObject o = o2;
   //GameApi::MN mv = ev.move_api.mn_empty();
   Matrix mv = Matrix::Identity();
+
+
+  //std::cout << "quar:" << o.rot_x << " " << o.rot_y << " " << o.rot_z << " " << o.rot_w << std::endl;
   
-    float d = sqrt(o.rot_x*o.rot_x+o.rot_y*o.rot_y+o.rot_z*o.rot_z+o.rot_w*o.rot_w);
+  float d = sqrt(o.rot_x*o.rot_x+o.rot_y*o.rot_y+o.rot_z*o.rot_z +o.rot_w*o.rot_w);
   o.rot_x/=d;
   o.rot_y/=d;
   o.rot_z/=d;
@@ -5671,14 +5687,18 @@ std::pair<Matrix,Matrix> gltf_node_transform_obj_apply(GameApi::Env &e, GameApi:
   
   Quarternion q = { float(o.rot_x), float(o.rot_y), float(o.rot_z), float(o.rot_w) };
   Matrix m = Quarternion::QuarToMatrix(q);
+  //std::cout << "objapply: " << m << std::endl;
   // Matrix mi = Matrix::Inverse(m);
   // Scale
 
   // gltf spec says the order must be scale, rotate, translate
   mv = mv * Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
-  mv = mv * m;
+  //std::cout << "Scale4: " << o.scale_x << " " << o.scale_y << " " << o.scale_z << std::endl;
+  if (!Matrix::has_nan(m))
+    mv = mv * m;
   mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
-  mv = mv * o.m;
+  if (!Matrix::has_nan(o.m))
+    mv = mv * o.m;
   //mv = mv*root; // * root;
 
 
@@ -5693,7 +5713,14 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
 
 
   /* TODO, WHY REMOVING THESE TRANSLATIONS BREAK THE MODEL */
-    if (int(node->rotation.size())==4) {
+  if (int(node->scale.size())==3) {
+    double s_x = node->scale[0];
+    double s_y = node->scale[1];
+    double s_z = node->scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+    //std::cout << "Scale5:" << s_x << " " << s_y << " " << s_z << std::endl;
+    }
+  if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
     double r_y = node->rotation[1];
     double r_z = node->rotation[2];
@@ -5704,12 +5731,7 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
     Movement *mv2 = new MatrixMovement(orig, m);
     mv = add_move(e, mv2);
     }
-  if (int(node->scale.size())==3) {
-    double s_x = node->scale[0];
-    double s_y = node->scale[1];
-    double s_z = node->scale[2];
-    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
-    }
+
   if (int(node->translation.size())==3) {
     double m_x = node->translation[0];
     double m_y = node->translation[1];
@@ -5835,6 +5857,7 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
     double s_y = node.scale[1];
     double s_z = node.scale[2];
     array = ev.polygon_api.scale(array, s_x,s_y,s_z);
+    //std::cout << "Scale6:" << s_x << " " << s_y << " " << s_z << std::endl;
   }
   if (int(node.rotation.size())==4) {
     double r_x = node.rotation[0];
@@ -5956,6 +5979,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
     double s_y = node.scale[1];
     double s_z = node.scale[2];
     array = ev.polygon_api.scale(array, s_x,s_y,s_z);
+    //std::cout << "Scale7:" << s_x << " " << s_y << " " << s_z << std::endl;
   }
   if (int(node.rotation.size())==4) {
     double r_x = node.rotation[0];
@@ -6082,6 +6106,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     double s_z = node.scale[2];
     mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
     //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+    //std::cout << "Scale8:" << s_x << " " << s_y << " " << s_z << std::endl;
   }
   if (int(node.rotation.size())==4) {
     double r_x = node.rotation[0];
@@ -7424,9 +7449,11 @@ public:
     const tinygltf::Node &n = interface->get_node(target_node); //model->nodes[target_node];
 
     //int skin = 0; //n->skin;
-    const tinygltf::Skin &s = interface->get_skin(skin); //&model->skins[skin];
-    int inverseBindMatrices = s.inverseBindMatrices;
-
+    int inverseBindMatrices=-1;
+    if (skin>=0 && skin<interface->skins_size()) {
+      const tinygltf::Skin &s = interface->get_skin(skin); //&model->skins[skin];
+      inverseBindMatrices = s.inverseBindMatrices;
+    }
     int sz2 = interface->accessors_size(); //model->accessors.size();
     bind_acc_done = false;
     if (inverseBindMatrices!=-1 && inverseBindMatrices>=0 && inverseBindMatrices<sz2) {
@@ -7631,10 +7658,11 @@ public:
       for(int j=0;j<4;j++)
 	res.matrix[i+j*4] = dt4[j+i*4];
     //std::cout << "Joint " << joint << "::" << res << std::endl;
+    //std::cout << "Joint " << joint << "::" << res << std::endl;
     return res;
     } else {
-      //std::cout << std::endl << "Joint FAIL " << joint << std::endl;
-      //std::cout << "REASON: " << bind << " " << bind_acc << " " << bind_buf << std::endl;
+      std::cout << std::endl << "Joint FAIL " << joint << std::endl;
+      std::cout << "REASON: " << bind_done << " " << bind_acc_done << " " << bind_buf_done << std::endl;
       return Matrix::Identity();
     }
   }
@@ -7880,6 +7908,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
 	{
 	  //std::cout << "Scale: " << a[0] << " " << a[1] << " " << a[2] << std::endl;
 	  current = ev.move_api.scale2(current, a[0],a[1],a[2]);
+	  //std::cout << "Scale9:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
 	}
       if (type==3) // weights
 	{
@@ -7920,6 +7949,7 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
 	{
 	  //std::cout << "b_Scale: " << b[0] << " " << b[1] << " " << b[2] << std::endl;
 	  current2 = ev.move_api.scale2(current2, b[0],b[1],b[2]);
+	  //std::cout << "Scale10:" << b[0] << " " << b[1] << " " << b[2] << std::endl;
 	}
       if (b_type==3) // weights
 	{
@@ -7928,8 +7958,8 @@ GameApi::ML gltf_anim3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       array = ev.move_api.move_ml(ev, array, res, 1, 10.0);
     }
 
-
-  
+  delete dt;
+  delete ddt;
     }
   }
 
@@ -7978,8 +8008,27 @@ extern Matrix g_last_resize;
 
 struct PrevNodes
 {
-  std::map<int,TransformObject> prev_nodes1;
-  std::map<int,TransformObject> prev_nodes2;
+  //std::map<int,TransformObject,std::less<int> > prev_nodes1;
+  //std::map<int,TransformObject,std::less<int> > prev_nodes2;
+
+  std::vector<std::pair<int,TransformObject> > prev_nodes1;
+  std::vector<std::pair<int,TransformObject> > prev_nodes2;
+  TransformObject find1(int ii) {
+    int sz = prev_nodes1.size();
+    for(int i=0;i<sz;i++)
+      {
+	if (prev_nodes1[i].first == ii) return prev_nodes1[i].second;
+      }
+    return TransformObject();
+  }
+  TransformObject find2(int ii) {
+    int sz = prev_nodes2.size();
+    for(int i=0;i<sz;i++)
+      {
+	if (prev_nodes2[i].first == ii) return prev_nodes2[i].second;
+      }
+    return TransformObject();
+  }
 };
 
 class GLTFJointMatrices : public MainLoopItem
@@ -8028,9 +8077,12 @@ public:
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
       if (interface->skins_size()==0) {
 	int start_node = 0;
-	PrevNodes prev2;
+	PrevNodes *prev2 = new PrevNodes;
 	AnimData *dt = new AnimData;
-	recurse_node(dt,prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+    fill_binds(dt);
+	recurse_node(dt,*prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+	delete dt;
+	delete prev2;
       } else {
 	int sz = interface->skins_size();
       if (skin_num>=0 && skin_num<sz) {
@@ -8038,10 +8090,13 @@ public:
 	int start_node = skin.skeleton;
 	max_count=0;
 	max_time = 0.0;
-	PrevNodes prev2;
+	PrevNodes *prev2 = new PrevNodes;
 	AnimData *dt = new AnimData;
-	recurse_node(dt,prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
-     }
+    fill_binds(dt);
+	recurse_node(dt,*prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+	delete dt;
+	delete prev2;
+      }
     }
     }
 
@@ -8084,9 +8139,12 @@ public:
       int start_node = skin.skeleton;
       max_count =0;
       max_time = 0.0;
-      PrevNodes prev2;
+      PrevNodes *prev2 = new PrevNodes;
       AnimData *dt = new AnimData;
-      recurse_node(dt,prev2,start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+    fill_binds(dt);
+      recurse_node(dt,*prev2,start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+      delete prev2;
+      delete dt;
      }
     }
   }
@@ -8105,21 +8163,29 @@ public:
 
   void SetPreviousTimeIndex(PrevNodes &prev2,int node_id, TransformObject o1, TransformObject o2)
   {
-    prev2.prev_nodes1[node_id]=o1;
-    prev2.prev_nodes2[node_id]=o2;
+    //std::cout << "timeindex:" << node_id << std::endl;
+    //print_transform(o1);
+    //print_transform(o2);
+    //std::cout << (int)&prev2 << std::endl;
+    prev2.prev_nodes1.push_back(std::make_pair(node_id,o1));
+    //std::cout << "1" << std::endl;
+    prev2.prev_nodes2.push_back(std::make_pair(node_id,o2));
+    //std::cout << "3" << std::endl;
     //trans1 = o1; trans2 = o2;
   }
   void call_prev_time_index1(PrevNodes &prev2, GLTFJointMatrices *next, int node_id) {
     //tinygltf::Node *node = &load->model.nodes[node_id];
     bool done = false;
     for(int i=0;i<node_ids.size();i++) {
+      //if (i<max_joints) {
       if(node_id==node_ids[i]) {
 	next->SetPreviousTimeIndex(prev2,node_id, jointmatrices_start[i],jointmatrices_end[i]);
 	done = true;
-      }
+	}
+      // }
     }
     //if (!done && prev) prev->call_prev_time_index1(next,node_id);
-    if (!done) {
+    if (!done && node_id>=0 && node_id<interface->nodes_size()) {
     AnimData *dt = new AnimData;
       const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
       TransformObject start_obj = gltf_node_transform_obj(&node);
@@ -8145,7 +8211,6 @@ public:
       a = anim->Amount(ik); if (ik+1>=anim->Count()) a2=anim->Amount(0); else
 	a2 = anim->Amount(ik+1);
       type = anim->Type(time_index);
-      delete anim;
       if (type==0 && a2 && path=="translation") { // translation
 	start_obj.trans_x =a[0];
 	start_obj.trans_y =a[1];
@@ -8177,10 +8242,20 @@ public:
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
-      } 
+	//std::cout << "Scale11a:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
+	//std::cout << "Scale11b:" << a2[0] << " " << a2[1] << " " << a2[2] << std::endl;
+
+      }
+      if (type==3 && path=="weights") { std::cout << "Weights not implemented in anim2" << std::endl; }
+      delete anim;
       }
       }
       next->SetPreviousTimeIndex(prev2,node_id, start_obj, end_obj);
+      //next->SetPreviousTimeIndex(prev2,node_id,TransformObject(),TransformObject());
+      delete dt;
+    } else {
+      // node_id bad.
+      next->SetPreviousTimeIndex(prev2,node_id,TransformObject(),TransformObject());
     }
   }
   void call_prev_time_index2(PrevNodes &prev2,int node_id)
@@ -8189,6 +8264,7 @@ public:
       const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
       TransformObject start_obj = gltf_node_transform_obj(&node);
       TransformObject end_obj = start_obj;
+#if 1
       int sz = interface->animations_size(); //load->model.animations.size();
       if (animation<0||animation>=sz) return;
       
@@ -8244,47 +8320,104 @@ public:
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
-      } 
+	//std::cout << "Scale12a:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
+	//std::cout << "Scale12b:" << a2[0] << " " << a2[1] << " " << a2[2] << std::endl;
+      }
+      if (type==3 && path=="weights") {
+	std::cout << "Weights not implemented in anim" << std::endl;
       }
       }
+      }
+#endif
       SetPreviousTimeIndex(prev2,node_id, start_obj, end_obj);
+      //delete dt;
     } else {
       prev->call_prev_time_index1(prev2,this, node_id);
     }
   }
+  void fill_binds(AnimData *dt)
+  {
+    if (animation>=0 && animation<interface->animations_size()) {
+    const tinygltf::Animation *anim3;
+      anim3 = &interface->get_animation(animation);
+      const tinygltf::Skin *skin=0;
+      if (skin_num>=0 && skin_num<interface->skins_size()) {
+	skin = &interface->get_skin(skin_num);
+      }
+      int channel = 0;
+      int ik = time_index;
+      GLTFAnimation *anim = new GLTFAnimation(dt,interface, animation, channel, ik, skin_num);
+      anim->Prepare();
+
+      if (skin) { 
+	int s2 = skin->joints.size();
+	for(int i=0;i<s2;i++)
+	  {
+	Matrix m2 = Matrix::Identity();
+	if (anim) m2 = anim->InverseBindMatrix(i);
+	//std::cout << "Set Bind:" << i << " == " << m2 << std::endl;
+	bindmatrix[i] = m2;
+	    
+	  }
+      }
+      delete anim;
+    }
+  }
   Matrix recurse_node(AnimData *dt, PrevNodes &prev2, int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
+    //std::cout << "Target node: " << node_id << std::endl;
     if (node_id<0 || node_id>=interface->nodes_size()) return Matrix::Identity();
    
 
     call_prev_time_index2(prev2,node_id);
     int sz = interface->animations_size(); 
     if (animation<0||animation>=sz) return Matrix::Identity();
-    
+
+    //std::cout << "GETNODE:" << node_id << std::endl;
     const tinygltf::Node &node = interface->get_node(node_id); 
 
-    TransformObject start_obj = prev2.prev_nodes1[node_id]; 
-    TransformObject end_obj = prev2.prev_nodes2[node_id]; 
+    TransformObject start_obj = prev2.find1(node_id); //prev_nodes1[node_id]; 
+    TransformObject end_obj = prev2.find2(node_id); //prev_nodes2[node_id]; 
 
     int channel = -1;
     const tinygltf::Animation *anim3;
       anim3 = &interface->get_animation(animation);
     int s5 = anim3->channels.size();
       int jj = -1;
-      const tinygltf::Skin *skin;
+      const tinygltf::Skin *skin=0;
+      if (skin_num>=0 && skin_num<interface->skins_size()) {
 	skin = &interface->get_skin(skin_num);
+      }
+      if (skin) {
 	int s2 = skin->joints.size();
 	for(int j=0;j<s2;j++) {
+	  //std::cout << "Compare:" << skin->joints[j] << "==" << node_id << std::endl;
 	  if (skin->joints[j]==node_id) { /*doit=true;*/ jj=j; break; }
 	  }
+      }
+      //std::cout << "Found jj:" << jj << std::endl;
+      //if (jj==-1) {
+      //	if (node_id<max_joints) {
+      //	  jj=node_id;
+      // 	}
+      //}
 
-
-	
+      
 	for(int i=0;i<s5;i++) {
       const tinygltf::AnimationChannel *chan = &anim3->channels[i];
       std::string path = chan->target_path;
+
       if (chan->target_node == node_id) {
 	channel = i;
+
+      int ik = time_index;
+      GLTFAnimation *anim = new GLTFAnimation(dt,interface, animation, channel, ik, skin_num);
+      anim->Prepare();
+      //if (jj!=-1) {
+      // 	Matrix m2 = Matrix::Identity();
+      // 	if (anim) m2 = anim->InverseBindMatrix(jj);
+      // 	bindmatrix[jj] = m2;
+      //} 
 
 
 
@@ -8295,9 +8428,6 @@ public:
     int type = -1;
     if (channel!=-1)
       {
-      int ik = time_index;
-      GLTFAnimation *anim = new GLTFAnimation(dt,interface, animation, channel, ik, skin_num);
-      anim->Prepare();
       if (anim->end_time()>max_time) { max_time = anim->end_time(); }
       if (jj!=-1) {
 	start_t[jj] = anim->start_time();
@@ -8309,11 +8439,6 @@ public:
 	a2 = anim->Amount(ik+1);
       type = anim->Type(time_index);
 
-      if (jj!=-1) {
-	Matrix m2 = Matrix::Identity();
-	if (anim) m2 = anim->InverseBindMatrix(jj);
-	bindmatrix[jj] = m2;
-      } 
 
       delete anim;
       }
@@ -8351,6 +8476,8 @@ public:
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
+	//std::cout << "Scale13a:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
+	//std::cout << "Scale13b:" << a2[0] << " " << a2[1] << " " << a2[2] << std::endl;
 	//std::cout << "sc[" << a[0] << "," << a[1] << "," << a[2] << "->" << a2[0] << "," << a2[1] << "," << a2[2] << "]";
       } 
   
@@ -8394,7 +8521,7 @@ public:
 	//int jj = 0;
 	if (doit) {
 
-	  recurse_node( dt,prev2, child_id, 0 , m.first*pos, m2.first*pos2, 0 , time_index, channel );
+	  recurse_node( dt,prev2, child_id, 0 , m.second /*m.first*/ /*pos*/, m2.second /*m2.first*/ /*pos2*/, 0 , time_index, channel );
 	}
       }
     }
@@ -8545,6 +8672,7 @@ GameApi::P gltf_node4( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       double s_y = node.scale[1];
       double s_z = node.scale[2];
       res = ev.polygon_api.scale(res,s_x,s_y,s_z);
+      //std::cout << "Scale14:" << s_x << " " << s_y << " " << s_z << std::endl;
     }
     return res;
 }
@@ -9220,6 +9348,7 @@ public:
     calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat(p.id);
+    if (num_timeindexes==0) { return ml; }
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
@@ -9239,6 +9368,7 @@ public:
     calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst(p.id, pts.id);
+    if (num_timeindexes==0) { return ml; }
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
@@ -9257,6 +9387,7 @@ public:
     calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst_matrix(p.id, ms.id);
+    if (num_timeindexes==0) { return ml; }
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
@@ -9275,6 +9406,7 @@ public:
     calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst2(p.id, pta.id);
+    if (num_timeindexes==0) { return ml; }
     std::vector<GameApi::ML> mls;
     GameApi::ML ml_start;
     ml_start.id = 0;
@@ -9293,6 +9425,7 @@ public:
     calc_num_timeindexes();
     GameApi::ML ml;
     ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    if (num_timeindexes==0) { return ml; }
     GameApi::ML ml_start;
     ml_start.id = 0;
     GameApi::ML ml_orig = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
@@ -9313,7 +9446,7 @@ private:
   GLTFModelInterface *interface;
   int skin_num;
   int animation;
-  mutable int num_timeindexes;
+  mutable int num_timeindexes=0;
   int key;
   int mode;
 };
@@ -9837,6 +9970,16 @@ public:
 	    Matrix inv_m = Matrix::Inverse(m);
 
 
+	    if (Matrix::has_nan(ri)) ri=Matrix::Identity();
+	    if (Matrix::has_nan(m0i)) m0i=Matrix::Identity();
+	    if (Matrix::has_nan(m0)) m0=Matrix::Identity();
+	    if (Matrix::has_nan(bindm)) bindm=Matrix::Identity();
+	    if (Matrix::has_nan(m)) m=Matrix::Identity();
+	    if (Matrix::has_nan(resize)) resize=Matrix::Identity();
+
+
+	    
+	    
 	    //std::cout << "ri" << ri << std::endl;
 	    //std::cout << "m0i" << m0i << std::endl;
 	    //std::cout << "m0" << m0 << std::endl;
@@ -9848,7 +9991,7 @@ public:
 	    //Matrix rr_int_inv = Matrix::Inverse(rr_int);
 	    
 	    if (mode==0)
-	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));
+	      vec.push_back(add_matrix2(env, ri*m0i* m0*bindm*m*resize));
 	    else if (mode==1)
 	      vec.push_back(add_matrix2(env,   ri*bindm*m*m0i*inv_bindm*resize  ));
 	    else if (mode==2)
