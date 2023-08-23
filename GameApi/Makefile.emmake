@@ -1,9 +1,10 @@
 
 
+	
+
 minimal: pthreads_both_nodebug both
 
 all: nodebug
-
 
 nodebug: pthreads_both_nodebug both_nodebug
 

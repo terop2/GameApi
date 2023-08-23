@@ -30350,6 +30350,37 @@ Envi_2 *g_new_blocker_env = 0;
 Envi_2 *g_pending_blocker_env = 0;
 bool g_new_blocker_block = false;
 void clear_shader_cache();
+
+std::string qq_strip_spaces(std::string data)
+{
+  std::string res;
+  int s = data.size();
+  for(int i=0;i<s-1;i++)
+    {
+      char c1 = data[i];
+      char c2 = data[i+1];
+      if (c1==' ' && c2==' ') { }
+      else { res+=c1; }
+    }
+  char c3 = data[s-1];
+  res+=c3;
+  while(res[0]==' ') res = res.substr(1);
+  while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
+  return res;
+}
+
+std::string qq_insert_enter(std::string s)
+{
+  if (s.length()>0)
+    {
+      char c = s[s.size()-1];
+      if (c>='0'&&c<='9') s+=");";
+      if (c==')') s+=";";
+      if (c!='\n') s+='\n';
+    }
+  return s;
+}
+
 void run_callback(void *ptr)
 {
   const char *script2 = (const char*)ptr;
@@ -30359,6 +30390,7 @@ void run_callback(void *ptr)
   g_transparent_pos.clear();
 #ifdef EMSCRIPTEN
   std::string script(script2);
+  script = qq_insert_enter(qq_strip_spaces(script));
   if (!g_everyapi) { std::cout << "NO g_everyapi" << std::endl; return; }
   //std::cout << "NEW SCRIPT" << std::endl;
   //std::cout << script << std::endl;
@@ -30369,6 +30401,7 @@ void run_callback(void *ptr)
   g_id = add_block();
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
+  std::cout << "FINAL CODE:" << script << std::endl;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
   //std::cout << "blk.second==" << blk.second << std::endl;
