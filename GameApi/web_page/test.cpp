@@ -204,6 +204,8 @@ std::string insert_enter(std::string s)
   if (s.length()>0)
     {
       char c = s[s.size()-1];
+      if (c>='0'&&c<='9') s+=");";
+      if (c==')') s+=";";
       if (c!='\n') s+='\n';
     }
   return s;
@@ -292,6 +294,8 @@ int main(int argc, char *argv[]) {
 	  code = replace_str(code, "&quot;", "\"");
 	  code = replace_str(code, "&apos;", "\'");
 	  code = replace_str(code, "&amp;", "&");
+
+
 	  current_arg+=2;
 	  continue;
 	} else
