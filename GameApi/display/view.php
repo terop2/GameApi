@@ -891,7 +891,7 @@ function get_border(i,m,filename)
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   var five = "";
-  if (anim_value) five="5";
+  if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") five="5";
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
   if (anim_value==true) { 
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
@@ -1271,9 +1271,11 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
       }
   res+="MT I3=ev.materials_api.m_def(ev);\n";
   if (material[0]!="") {
+     res+="MT I54=ev.materials_api.m_def(ev);\n";
      res+=material[0];
   } else
   if (filename.substr(-4)==".obj"&&mtl_name!="") {
+     res+="MT I54=ev.materials_api.m_def(ev);\n";
      res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
   } else
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
