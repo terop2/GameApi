@@ -8029,6 +8029,20 @@ struct PrevNodes
   }
 };
 
+std::vector<MainLoopItem*> g_joint_cache;
+void add_joint_cache(MainLoopItem *item)
+{
+  g_joint_cache.push_back(item);
+}
+bool find_joint_cache(MainLoopItem *item)
+{
+  int s = g_joint_cache.size();
+  for(int i=0;i<s;i++) {
+    if (item==g_joint_cache[i]) return true;
+  }
+  return false;
+}
+
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
@@ -8117,7 +8131,6 @@ public:
   {
     if (firsttime) {
       max_joints=calc_max_joints();
-    next->Prepare();
       jointmatrices_start.resize(max_joints);
       jointmatrices_end.resize(max_joints);
       bindmatrix.resize(max_joints);
@@ -8159,6 +8172,11 @@ public:
       delete prev2;
       delete dt;
      }
+    if (!find_joint_cache(next)) {
+      // skip prepare if we've seen this before.
+      next->Prepare();
+      add_joint_cache(next);
+    }
     }
   }
 
@@ -8418,9 +8436,9 @@ public:
       
 	for(int i=0;i<s5;i++) {
       const tinygltf::AnimationChannel *chan = &anim3->channels[i];
-      std::string path = chan->target_path;
 
       if (chan->target_node == node_id) {
+	std::string path = chan->target_path;
 	channel = i;
 
       int ik = time_index;
@@ -9559,13 +9577,211 @@ private:
   int cache_key;
 };
 
+char key_mapping(char ch, int type);
+
+class CacheMLmat : public MainLoopItem
+{
+public:
+  CacheMLmat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), vec(vec),i(i),keys(keys) { firsttime=true; firsttime2=false; ml.id=-1;}
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    char ch = key_mapping(e.ch,e.type);
+    if (firsttime && i<keys.size() && ch==keys[i]) {
+      ml.id = vec[i]->mat(p.id);
+      firsttime = false;
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+    }
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+    
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  std::vector<Material*> vec;
+  bool firsttime;
+  bool firsttime2;
+  GameApi::ML ml;
+  GameApi::P p;
+  int i;
+  std::string keys;
+};
+/*
+std::vector<GameApi::ML> cache_creation_mat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec)
+{
+  int s = vec.size();
+  std::vector<GameApi::ML> res;
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = new CacheMLmat(env,p,vec,i);
+      res.push_back(add_main_loop(env,item));
+    }
+  return res;
+}
+*/
+class CacheMLmatinst : public MainLoopItem
+{
+public:
+  CacheMLmatinst(GameApi::Env &env, GameApi::P p, GameApi::PTS pts, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), pts(pts), vec(vec),i(i), keys(keys) { firsttime=true; firsttime2=false; ml.id=-1;}
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    char ch = key_mapping(e.ch,e.type);
+    if (firsttime && i<keys.size() && ch==keys[i]) {
+      ml.id = vec[i]->mat_inst(p.id,pts.id);
+      firsttime = false;
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+    }
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+    
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  std::vector<Material*> vec;
+  bool firsttime;
+  bool firsttime2;
+  GameApi::ML ml;
+  GameApi::P p;
+  GameApi::PTS pts;
+  int i;
+  std::string keys;
+};
+
+class CacheMLmatinstmatrix : public MainLoopItem
+{
+public:
+  CacheMLmatinstmatrix(GameApi::Env &env, GameApi::P p, GameApi::MS ms, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), ms(ms), vec(vec),i(i),keys(keys) { firsttime=true; firsttime2=false;ml.id=-1;}
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    char ch = key_mapping(e.ch,e.type);
+    if (firsttime && i<keys.size() && ch==keys[i]) {
+      ml.id = vec[i]->mat_inst_matrix(p.id,ms.id);
+      firsttime = false;
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+    }
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->handle_event(e);
+    }
+  }
+    
+  virtual std::vector<int> shader_id() {
+    if (ml.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,ml);
+      return item->shader_id();
+    } else return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  std::vector<Material*> vec;
+  bool firsttime;
+  bool firsttime2;
+  GameApi::ML ml;
+  GameApi::P p;
+  GameApi::MS ms;
+  int i;
+  std::string keys;
+};
+
+
+std::vector<GameApi::ML> cache_creation_mat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec, std::string keys)
+{
+  int s = vec.size();
+  std::vector<GameApi::ML> res;
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = new CacheMLmat(env,p,vec,i,keys);
+      res.push_back(add_main_loop(env,item));
+    }
+  return res;
+}
+
+std::vector<GameApi::ML> cache_creation_matinst(GameApi::Env &env, GameApi::P p,GameApi::PTS pts, std::vector<Material*> vec, std::string keys)
+{
+  int s = vec.size();
+  std::vector<GameApi::ML> res;
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = new CacheMLmatinst(env,p,pts,vec,i,keys);
+      res.push_back(add_main_loop(env,item));
+    }
+  return res;
+}
+
+std::vector<GameApi::ML> cache_creation_matinstmatrix(GameApi::Env &env, GameApi::P p, GameApi::MS ms, std::vector<Material*> vec, std::string keys)
+{
+  int s = vec.size();
+  std::vector<GameApi::ML> res;
+  for(int i=0;i<s;i++)
+    {
+      MainLoopItem *item = new CacheMLmatinstmatrix(env,p,ms,vec,i,keys);
+      res.push_back(add_main_loop(env,item));
+    }
+  return res;
+}
+
+
+
 
 class KeysMaterial : public MaterialForward
 {
 public:
-  KeysMaterial(GameApi::EveryApi &ev, std::vector<Material*> vec, std::string keys) : ev(ev), vec(vec), keys(keys) { }
+  KeysMaterial(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<Material*> vec, std::string keys) : env(env), ev(ev), vec(vec), keys(keys) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+    /*
     int s = vec.size();
     std::vector<GameApi::ML> vec2;
     for(int i=0;i<s;i++) {
@@ -9573,30 +9789,33 @@ public:
       ml.id = vec[i]->mat(p.id);
       vec2.push_back(ml);
     }
-    return ev.mainloop_api.key_ml(vec2, keys);
+    */
+    return ev.mainloop_api.key_ml(cache_creation_mat(env,p,vec,keys), keys);
   }
   
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
+    /*
     int s = vec.size();
     std::vector<GameApi::ML> vec2;
     for(int i=0;i<s;i++) {
       GameApi::ML ml;
       ml.id = vec[i]->mat_inst(p.id, pts.id);
       vec2.push_back(ml);
-    }
-    return ev.mainloop_api.key_ml(vec2, keys);
+      }*/
+    return ev.mainloop_api.key_ml(cache_creation_matinst(env,p,pts,vec,keys), keys);
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    /*
     int s = vec.size();
     std::vector<GameApi::ML> vec2;
     for(int i=0;i<s;i++) {
       GameApi::ML ml;
       ml.id = vec[i]->mat_inst_matrix(p.id, ms.id);
       vec2.push_back(ml);
-    }
-    return ev.mainloop_api.key_ml(vec2, keys);
+      }*/
+    return ev.mainloop_api.key_ml(cache_creation_matinstmatrix(env,p,ms,vec,keys), keys);
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
@@ -9622,6 +9841,7 @@ public:
   }
   
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   std::vector<Material*> vec;
   std::string keys;
@@ -9635,7 +9855,7 @@ GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std
     {
       vec2.push_back(find_material(e,vec[i]));
     }
-  return add_material(e,new KeysMaterial(ev, vec2, keys));
+  return add_material(e,new KeysMaterial(e,ev, vec2, keys));
 }
 
 
