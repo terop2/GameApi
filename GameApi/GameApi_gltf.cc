@@ -6290,9 +6290,21 @@ GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi 
 int gltf_mesh2_calc_max_timeindexes(GLTFModelInterface *interface, int animation, int skin_num);
 
 
+std::vector<GLTFModelInterface*> g_interface_id;
+
+int get_cache_id(GLTFModelInterface *interface)
+{
+  int s = g_interface_id.size();
+  for(int i=0;i<s;i++) if (g_interface_id[i]==interface) return i;
+  g_interface_id.push_back(interface);
+  return g_interface_id.size()-1;
+}
+
+
+
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation)
 {
-  int cache_id = (int)interface;
+  int cache_id = get_cache_id(interface);
   //std::cout << "MESH2: " << mesh_id << std::endl;
   //g_last_resize=Matrix::Identity();
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
@@ -6383,7 +6395,7 @@ GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation)
 {
-  int cache_id = (int)interface;
+  int cache_id = get_cache_id(interface);
   
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
     const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
@@ -9673,7 +9685,7 @@ GameApi::MT GameApi::MaterialsApi::gltf_anim_material(GameApi::EveryApi &ev, TF 
   }
   //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   Material *next_mat = find_material(e,next);
-  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,animation+(int)interface);
+  Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,animation+get_cache_id(interface));
   return add_material(e, mat);
 }
 extern Matrix g_last_resize;
