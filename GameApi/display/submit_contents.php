@@ -1,7 +1,7 @@
 <?php
 include "backend.php";
 echo "<pre>";
-//print_r($_POST);
+print_r($_POST);
 
 $num = $_POST["num"];
 if ($num==-1) {

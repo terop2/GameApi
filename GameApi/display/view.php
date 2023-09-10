@@ -895,7 +895,7 @@ function get_border(i,m,filename)
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
   if (anim_value==true) { 
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
-     // res+="MT I501=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I505,cvb,0);\n";
+     // res+="MT I501=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I505,cvbnmdfghjklertyuiop,0);\n";
       } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
       }
@@ -1177,7 +1177,7 @@ function create_script(filename, contents, filenames)
      if (normals_val!=3 && normals_val!=4)
      	{
 	if (anim_value==true) {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvb,-400.0,400.0,400.0);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n"; // 0.75
 	} else {
         res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0);\n"; // 0.75
 	}
@@ -1190,7 +1190,7 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvb,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n";
      } else {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
      }
@@ -1203,7 +1203,7 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
      if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvb,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n";
      } else {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
      }
@@ -1283,7 +1283,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
      if (anim_value==true) { five="5"; }
      res+="MT I" + five + "4=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
     if (anim_value==true) { 
-      res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I54,cvb,0);\n";
+      res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I54,cvbnmdfghjklertyuiop,0);\n";
       }
   } else {
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,-1.0,ff888888,ffffffff,5.0,0.5);\n";
@@ -2204,7 +2204,7 @@ function submitprogressbar(i)
    //}
    if (i==500)
    {
-	var name = "viewdata/num.txt";
+	var name = "https://ssh.meshpage.org/viewdata/num.txt";
 	fetch(name).then(response => {
 	    response.body.getReader().read().then(value => {
 	   console.log(value);
