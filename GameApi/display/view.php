@@ -2191,6 +2191,8 @@ function hash(val)
 	return ((val*10001) ^ 0x26522663).toString();
 }
 
+var g_url_id = 0;
+
 function submitprogressbar(i)
 {
    var prog = document.getElementById("progressbar");
@@ -2204,6 +2206,7 @@ function submitprogressbar(i)
    //}
    if (i==500)
    {
+   /*
 	var name = "https://ssh.meshpage.org/viewdata/num.txt";
 	fetch(name).then(response => {
 	    response.body.getReader().read().then(value => {
@@ -2211,9 +2214,11 @@ function submitprogressbar(i)
 	   var str = strfy(value.value);
 	   console.log(str);
 	   var num = parseInt(str);
-	   console.log(num);
-	   prog.innerHTML = "<a href='view.php?id=" + hash(num) + "'>https://meshpage.org/view.php?id=" + hash(num) + "</a>";
-	   }); });
+	   console.log(num);*/
+	   console.log("URLID:");
+	     console.log(g_url_id);
+	   prog.innerHTML = "<a href='view.php?id=" + hash(g_url_id) + "'>https://meshpage.org/view.php?id=" + hash(g_url_id) + "</a>";
+/*	   }); });*/
 	   
    }
 }
@@ -2234,12 +2239,16 @@ function formsubmit()
   var data = new FormData();
   data.append("num",-1);
   var xhr = new XMLHttpRequest();
-  xhr.responseType = 'arraybuffer';
-  xhr.open('POST','https://ssh.meshpage.org/submit_contents.php', true);
+  //xhr.responseType = 'arraybuffer';
+  xhr.open('POST','https://ssh.meshpage.org/submit_contents.php', false);
 
   var submitprogress = 0;
 
   xhr.onload = function() {
+  	     var resp = xhr.response;
+	     console.log(resp);
+	     g_url_id = parseInt(resp,10);
+	     console.log(g_url_id);
   	     //console.log(contents_length);
 	     //console.log(filename_length);
 	     var num = 500;

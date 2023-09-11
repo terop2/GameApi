@@ -1,14 +1,15 @@
 <?php
 include "backend.php";
-echo "<pre>";
-print_r($_POST);
+//print_r($_POST);
 
 $num = $_POST["num"];
 if ($num==-1) {
 $id = load_num();
 $id = $id + 1;
 save_num($id);
+echo "$id";
 } else {
+echo "<pre>";
 $id = load_num();
 $id2 = strval($id) . "_" . strval($num);
 $state = $_POST["state"];
