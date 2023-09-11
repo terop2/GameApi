@@ -33245,8 +33245,8 @@ char key_mapping(char ch, int type)
   
 #endif
 #ifdef EMSCRIPTEN
-  if (ch>=4 && ch<=4+26) { res=ch-4; res+='a'; }
-  if (ch>=30 && ch<=38) { res=ch-30; res+='1'; }
+  if (ch>=4 && ch<=4+26) { res=ch-4; res+='a'; return res; }
+  if (ch>=30 && ch<=38) { res=ch-30; res+='1'; return res; }
   if (ch==39) res='0';
   if (ch==44) res=32;
 #endif

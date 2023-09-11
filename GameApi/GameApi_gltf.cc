@@ -8046,7 +8046,7 @@ bool find_joint_cache(MainLoopItem *item)
 class GLTFJointMatrices : public MainLoopItem
 {
 public:
-  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), interface(interface), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 150; max_count=0; max_time=0.0; }
+  GLTFJointMatrices(GLTFJointMatrices *prev, GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int time_index, MainLoopItem *next, bool has_anim) : prev(prev), env(env), ev(ev), interface(interface), skin_num(skin_num), animation(animation), time_index(time_index),next(next), has_anim(has_anim) { firsttime=true; max_joints = 200; max_count=0; max_time=0.0; }
   ~GLTFJointMatrices() {
     int s = anims.size();
     for(int i=0;i<s;i++) delete anims[i];
@@ -9582,14 +9582,23 @@ char key_mapping(char ch, int type);
 class CacheMLmat : public MainLoopItem
 {
 public:
-  CacheMLmat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), vec(vec),i(i),keys(keys) { firsttime=true; firsttime2=false; ml.id=-1;}
+  CacheMLmat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), vec(vec),i(i),keys(keys) { firsttime=true;  firsttime2=true; ml.id=-1;}
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime2 && i==0) {
+      ml.id = vec[i]->mat(p.id);
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      
+      firsttime = false;
+      firsttime2=false;
+    }
     if (ml.id!=-1) {
+      //std::cout << "execute " << i << std::endl;
       MainLoopItem *item = find_main_loop(env,ml);
       item->execute(e);
     }
@@ -9597,7 +9606,8 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
     char ch = key_mapping(e.ch,e.type);
-    if (firsttime && i<keys.size() && ch==keys[i]) {
+    if (firsttime && i<keys.size() && e.type==0x300 && ch==keys[i]) {
+      //std::cout << "prepare3 " << i << std::endl;
       ml.id = vec[i]->mat(p.id);
       firsttime = false;
       MainLoopItem *item = find_main_loop(env,ml);
@@ -9641,13 +9651,21 @@ std::vector<GameApi::ML> cache_creation_mat(GameApi::Env &env, GameApi::P p, std
 class CacheMLmatinst : public MainLoopItem
 {
 public:
-  CacheMLmatinst(GameApi::Env &env, GameApi::P p, GameApi::PTS pts, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), pts(pts), vec(vec),i(i), keys(keys) { firsttime=true; firsttime2=false; ml.id=-1;}
+  CacheMLmatinst(GameApi::Env &env, GameApi::P p, GameApi::PTS pts, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), pts(pts), vec(vec),i(i), keys(keys) { firsttime=true; firsttime2=true; ml.id=-1;}
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
+    if (firsttime2 && i==0) {
+      ml.id = vec[i]->mat(p.id);
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      
+      firsttime = false;
+      firsttime2=false;
+    }
     if (ml.id!=-1) {
       MainLoopItem *item = find_main_loop(env,ml);
       item->execute(e);
@@ -9656,7 +9674,8 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
     char ch = key_mapping(e.ch,e.type);
-    if (firsttime && i<keys.size() && ch==keys[i]) {
+    if (firsttime && i<keys.size() && e.type==0x300 && ch==keys[i]) {
+      //std::cout << "prepare2 " << i << std::endl;
       ml.id = vec[i]->mat_inst(p.id,pts.id);
       firsttime = false;
       MainLoopItem *item = find_main_loop(env,ml);
@@ -9689,14 +9708,21 @@ private:
 class CacheMLmatinstmatrix : public MainLoopItem
 {
 public:
-  CacheMLmatinstmatrix(GameApi::Env &env, GameApi::P p, GameApi::MS ms, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), ms(ms), vec(vec),i(i),keys(keys) { firsttime=true; firsttime2=false;ml.id=-1;}
+  CacheMLmatinstmatrix(GameApi::Env &env, GameApi::P p, GameApi::MS ms, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), ms(ms), vec(vec),i(i),keys(keys) { firsttime=true; firsttime2=true; ml.id=-1;}
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
-
+    if (firsttime2 && i==0) {
+      ml.id = vec[i]->mat(p.id);
+      MainLoopItem *item = find_main_loop(env,ml);
+      item->Prepare();
+      
+      firsttime = false;
+      firsttime2=false;
+    }
     if (ml.id!=-1) {
       MainLoopItem *item = find_main_loop(env,ml);
       item->execute(e);
@@ -9705,7 +9731,8 @@ public:
   virtual void handle_event(MainLoopEvent &e)
   {
     char ch = key_mapping(e.ch,e.type);
-    if (firsttime && i<keys.size() && ch==keys[i]) {
+    if (firsttime && i<keys.size() && e.type==0x300 && ch==keys[i]) {
+      //std::cout << "prepare " << i << std::endl;
       ml.id = vec[i]->mat_inst_matrix(p.id,ms.id);
       firsttime = false;
       MainLoopItem *item = find_main_loop(env,ml);
@@ -10102,7 +10129,7 @@ public:
 	ev.shader_api.use(sh);
 	std::vector<GameApi::M> vec;
 	int sz = 1;
-	int iisz = 150;
+	int iisz = 200;
 	for(int ii=0;ii<iisz;ii++)
 	  {
 	    current = -1;
@@ -10335,7 +10362,7 @@ public:
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*inv_jb*resize));
 	      
 	  }
-	ev.shader_api.set_var(sh, "jointMatrix", vec, 150);
+	ev.shader_api.set_var(sh, "jointMatrix", vec, 200);
 
       }
 #ifndef NO_MV
@@ -10357,7 +10384,7 @@ public:
       // THIS IS ONLY FOR SITUATION WHEN MODEL DOESNT EXIST.
       MainLoopItem *next = items[0];
       std::vector<GameApi::M> mat;
-      for(int i=0;i<150;i++)
+      for(int i=0;i<200;i++)
 	mat.push_back(add_matrix2(env,Matrix::Identity()));
 
       std::vector<int> sh_ids = next->shader_id();
@@ -10367,7 +10394,7 @@ public:
 	sh.id = sh_id;
 	ev.shader_api.use(sh);
 	
-	ev.shader_api.set_var(sh, "jointMatrix", mat, 150);
+	ev.shader_api.set_var(sh, "jointMatrix", mat, 200);
       }
     ml_orig->execute(ee);
     }
