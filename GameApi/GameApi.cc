@@ -30467,9 +30467,20 @@ KP extern "C" void stop_music_playing()
 
 extern Matrix g_last_resize;
 
+#include <emscripten/val.h>
+
 void ClearProgress();
-KP extern "C" void set_new_script(const char *script2)
+KP extern "C" void set_new_script(const char *script2_)
 {
+  emscripten::val v = emscripten::val::u8string(script2_);
+  std::string script2_a = v.as<std::string>(); 
+
+  char *ptr = new char[script2_a.size()+1];
+  std::copy(script2_a.begin(),script2_a.end(),ptr);
+  
+  const char *script2 = ptr;
+  
+  
   //std::cout << "set_new_script" << std::endl;
   ClearProgress();
   g_last_resize=Matrix::Identity();
