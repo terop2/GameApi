@@ -30571,11 +30571,15 @@ void g_content_deleter(void *)
 std::vector<unsigned char *> g_buffers;
 std::vector<int> g_buffer_sizes;
 
-KP extern "C" void set_string(int num, const char *value)
+KP extern "C" void set_string(int num, const char *value_)
 {
+  emscripten::val v = emscripten::val::u8string(value_);
+  std::string value = v.as<std::string>();
+  
+  
   //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
-    std::string s(value);
+    std::string s(value_);
 	  s = replace_str(s, "&lt;", "<");
 	  s = replace_str(s, "&gt;", ">");
 	  s = replace_str(s, "&quot;", "\"");
@@ -30588,7 +30592,7 @@ KP extern "C" void set_string(int num, const char *value)
     s = replace_str(s, "\"", "&quot;");
     s = replace_str(s, "\'", "&apos;");
     std::cout << s << std::endl;
-    set_new_script(value);      
+    set_new_script(value_);      
     return;
   }
   if (num==1) { // use this with num=2
@@ -30605,7 +30609,7 @@ KP extern "C" void set_string(int num, const char *value)
       }
     
     unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
-    std::copy(value,value+g_set_string_int,data);
+    std::copy(value.begin(),value.begin()+g_set_string_int,data);
     //std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
@@ -30616,7 +30620,7 @@ KP extern "C" void set_string(int num, const char *value)
   if (num==3) {
     unsigned char *data = new unsigned char[g_set_string_int];
     int s = g_set_string_int;
-    std::copy(value,value+s,data);
+    std::copy(value.begin(),value.begin()+s,data);
       /*
     for(int i=0;i<s;i++) {
       unsigned char ch1 = value[i*2];
@@ -30663,9 +30667,9 @@ KP extern "C" void set_string(int num, const char *value)
   if (num==5) // user id
     {
       delete [] g_user_id;
-      int sz = strlen(value);
+      int sz = value.size();
       g_user_id = new char[sz+1];
-      std::copy(value,value+sz+1,g_user_id);
+      std::copy(value.begin(),value.begin()+sz+1,g_user_id);
     }
   if (num==6) // clear caches
     {
