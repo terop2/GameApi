@@ -10065,6 +10065,7 @@ public:
   void HeavyPrepare()
   {
     resize = g_last_resize; // this communicates with resize_to_correct_size()
+    resizei = Matrix::Inverse(resize);
   }
   void Prepare() {
     int s = items.size();
@@ -10075,6 +10076,7 @@ public:
     if (ml_orig)
       ml_orig->Prepare();
     resize = g_last_resize; // this communicates with resize_to_correct_size()
+    resizei = Matrix::Inverse(resize);
   }
   void logoexecute() {
     items[0]->logoexecute();
@@ -10288,7 +10290,7 @@ public:
 	    Matrix m = mv; // TODO, THIS SHOULD BE MULTIPLIED BY BINDM
 	    //m = m * mr;
 	    
-	    Matrix ri = Matrix::Inverse(resize);
+	    Matrix ri = resizei; //Matrix::Inverse(resize);
 
 	    //std::cout << m0i << std::endl;
 
@@ -10307,7 +10309,7 @@ public:
 	    //m=fix_matrix(m);
 	    //bindm=Matrix::Inverse(bindm);
 	    //bindm=fix_matrix(bindm);
-	    Matrix inv_bindm = Matrix::Inverse(bindm);
+	    //Matrix inv_bindm = Matrix::Inverse(bindm);
 	    //inv_bindm=fix_matrix(inv_bindm);
 	    //std::cout << "RESIZE:";
 	    //resize=fix_matrix(resize);
@@ -10323,9 +10325,9 @@ public:
 	    // bind_m -- inv_bindm
 
 	    // m0 -- inv_m
-	    Matrix inv_jb=Matrix::Inverse(jb);
+	    //Matrix inv_jb=Matrix::Inverse(jb);
 	    
-	    Matrix inv_m = Matrix::Inverse(m);
+	    //Matrix inv_m = Matrix::Inverse(m);
 
 	    
 	    if (Matrix::has_nan(ri)) { ri=Matrix::Identity();  }
@@ -10350,6 +10352,7 @@ public:
 	    
 	    if (mode==0)
 	      vec.push_back(add_matrix2(env, ri*m0i* m0*bindm*m*resize));
+	    /*
 	    else if (mode==1)
 	      vec.push_back(add_matrix2(env,   ri*bindm*m*m0i*inv_bindm*resize  ));
 	    else if (mode==2)
@@ -10360,7 +10363,7 @@ public:
 	      vec.push_back(add_matrix2(env, ri*bindm*m*m0i*inv_jb*resize));
 	    else if (mode==5)
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*inv_jb*resize));
-	      
+	    */
 	  }
 	ev.shader_api.set_var(sh, "jointMatrix", vec, 200);
 
@@ -10417,6 +10420,7 @@ private:
   bool firsttime;
   GameApi::SH sh;
   Matrix resize;
+  Matrix resizei;
   static int count;
   static int curr;
   bool keypressed;
@@ -10464,8 +10468,8 @@ public:
     delete vec;
     std::stringstream s(ss);
     std::string line;
+    std::string uri;
     while(std::getline(s,line)) {
-      std::string uri;
       std::stringstream ss2(line);
       ss2>> uri;
       //std::cout << "\'" << uri << "\'" << std::endl;
