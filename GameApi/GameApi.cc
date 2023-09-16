@@ -30467,6 +30467,8 @@ KP extern "C" void stop_music_playing()
 
 extern Matrix g_last_resize;
 
+
+#ifdef EMSCRIPTEN
 #include <emscripten/val.h>
 
 void ClearProgress();
@@ -30499,6 +30501,9 @@ KP extern "C" void set_new_script(const char *script2_)
     g_script_hash = hash;
     
 }
+#else
+KP extern "C" void set_new_script(const char *script2_) { }
+#endif
 
 KP  extern "C" void activate_trigger(int num)
 {
