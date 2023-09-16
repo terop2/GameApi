@@ -5730,6 +5730,8 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
 
 CodeGenLine parse_codegen_line(std::string line)
 {
+  //std::cout << "Parse:" << line << std::endl;
+  
   CodeGenLine error = { "@", "@", "@", "@", { } };
   int first_space = find_char(line, 0, ' ');
   if (first_space==-1) { std::cout << "parse_codegen_line: first space error: " << line << std::endl; return error; }
@@ -6138,7 +6140,7 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
       CodeGenLineErrorCheck(l, funcs);
       if (l.return_type=="@") {
 	std::cout << "ERROR:" << line << std::endl;
-	error_line_num = line_num; return std::vector<CodeGenLine>(); }
+	error_line_num = line_num; return vec; }
       //LoadUrls(l, homepage);
       //LoadUrls_async(env,l, homepage);
       vec.push_back(l);

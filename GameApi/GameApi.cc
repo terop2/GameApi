@@ -30401,7 +30401,7 @@ void run_callback(void *ptr)
   g_id = add_block();
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
-  std::cout << "FINAL CODE:" << script << std::endl;
+  //std::cout << "FINAL CODE:" << script << std::endl;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
   //std::cout << "blk.second==" << blk.second << std::endl;
@@ -30608,19 +30608,21 @@ KP extern "C" void set_string(int num, const char *value)
     	register_cache_deleter(g_content_deleter,0);
       }
     
-    unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
+    unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int+1];
     std::copy(value,value+g_set_string_int,data);
+    data[g_set_string_int]=0;
     //std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
-    g_content_end.push_back(data+g_set_string_int);
+    g_content_end.push_back(data+g_set_string_int+1);
     //std::cout << "g_content set" << std::endl;
     return;
   }
   if (num==3) {
-    unsigned char *data = new unsigned char[g_set_string_int];
+    unsigned char *data = new unsigned char[g_set_string_int+1];
     int s = g_set_string_int;
     std::copy(value,value+s,data);
+    data[s]=0;
       /*
     for(int i=0;i<s;i++) {
       unsigned char ch1 = value[i*2];
@@ -30635,7 +30637,7 @@ KP extern "C" void set_string(int num, const char *value)
       */
     //std::copy(value,value+g_set_string_int,data);
     g_buffers.push_back(data);
-    g_buffer_sizes.push_back(g_set_string_int);
+    g_buffer_sizes.push_back(g_set_string_int+1);
     //std::cout << "Buffer:" << g_set_string_int << std::endl;
     return;
   }
