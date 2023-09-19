@@ -19,7 +19,7 @@
 #
 
 
-allopts = -Oz -g -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0
+allopts = -Oz -g -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fsanitize=address
 # -Oz
 
 nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor

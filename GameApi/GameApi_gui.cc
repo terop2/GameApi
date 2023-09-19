@@ -6216,6 +6216,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	    {
 	      int linkage = line_map[pp.first];
 	      //if (!linkage) { std::cout << "Param not found (multiple return)! " << pp.first << std::endl; }
+	      //std::cout << "LINKAGE1" << linkage << std::endl;
 	      std::stringstream ss;
 	      ss << linkage;
 	      param_linkage = ss.str();
@@ -6263,6 +6264,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 		      {
 			int linkage = env_map[pp2.first];
 			if (!linkage) { std::cout << "ERROR: E not found! " << pp2.first << std::endl; std::cout << l.return_type << " " << l.api_name << "::" << l.func_name << std::endl; }
+			//std::cout << "LINKAGE2" << linkage << std::endl;
 			std::stringstream ss;
 			ss << linkage;
 			param_linkage = std::string("E") + ss.str();
@@ -6275,6 +6277,7 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 		    if (param_value[pos2]=='}') break;
 		  }
 		  vectors.push_back(vec);
+		  //std::cout << "LINKAGE3" << vectors.size()-1 << std::endl;
 		  std::stringstream ss;
 		  ss << vectors.size()-1;
 		  param_linkage = std::string("%") + ss.str();

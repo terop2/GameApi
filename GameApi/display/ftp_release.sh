@@ -50,5 +50,6 @@ copy_it save_tmp_script.php
 copy_it view_load_file.php
 copy_it zip.min.js
 copy_it simple_file_cache
+copy_it gameapi_display.zip
 finish
 echo "SUCCESS"
