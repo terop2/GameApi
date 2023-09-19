@@ -30474,10 +30474,12 @@ extern Matrix g_last_resize;
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2_)
 {
+  if (!script2_) return;
   emscripten::val v = emscripten::val::u8string(script2_);
   std::string script2_a = v.as<std::string>(); 
 
   char *ptr = new char[script2_a.size()+1];
+  if (!ptr) return;
   std::copy(script2_a.begin(),script2_a.end(),ptr);
   ptr[script2_a.size()]=0;
   
@@ -30579,12 +30581,14 @@ std::vector<int> g_buffer_sizes;
 
 KP extern "C" void set_string(int num, const char *value_)
 {
-emscripten::val v = emscripten::val::u8string(value_);
-  std::string script2_a;  
-  std::vector<unsigned char> script2_b;
+
+#ifdef EMSCRIPTEN
   size_t ptr_size=0;
   char *ptr=0;
   if (num!=3) {
+emscripten::val v = emscripten::val::u8string(value_);
+  std::string script2_a;  
+  //std::vector<unsigned char> script2_b;
       script2_a = v.as<std::string>();
       ptr = new char[script2_a.size()+1];
       std::copy(script2_a.begin(),script2_a.end(),ptr);
@@ -30595,8 +30599,8 @@ emscripten::val v = emscripten::val::u8string(value_);
     ptr = const_cast<char*>(value_);
     ptr_size=g_set_string_int;
     //  ptr_size=script2_b.size();
-  }
-      
+}
+  if (!ptr) { std::cout << "ptr in set_string() NULL, skipping " << num << std::endl; return; }
   //std::cout << "NUM:" << num << std::endl;
   //for(int i=0;i<std::min(size_t(30),ptr_size);i++) std::cout << std::dec << (unsigned int)(unsigned char)ptr[i] << ",";
   //std::cout << std::endl;
@@ -30699,6 +30703,7 @@ emscripten::val v = emscripten::val::u8string(value_);
     }
     //std::cout << "Combine:" << size << std::endl;
     unsigned char *data = new unsigned char[size+1];
+    if (!data) return;
     data[size]=0; // null terminate for models that have text strings.
     int offset = 0;
     for(int i=0;i<s;i++) {
@@ -30721,6 +30726,7 @@ emscripten::val v = emscripten::val::u8string(value_);
       delete [] g_user_id;
       int sz = ptr_size; //strlen(value);
       g_user_id = new char[sz+1];
+      if (!g_user_id) return;
       std::copy(value,value+sz+1,g_user_id);
     }
   if (num==6) // clear caches
@@ -30729,6 +30735,7 @@ emscripten::val v = emscripten::val::u8string(value_);
     }
   //std::string s(value);
   //if (num>=0 && num<25) { g_strings[num]=s; }
+#endif
 }
 
 int g_resize_event_sx = -1;

@@ -2193,21 +2193,27 @@ function show_emscripten(str,hide,indicator,is_async)
 	   str+="\n";
 	   try {
 	       if (is_async) {
-	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str],{async:true});
+
+	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str],{async:false});
 		  Module.ccall('set_background_mode', null, ['number'], [g_background], {async:true});
 		  Module.ccall('set_integer', null, ['number','number'],[26,m_id], {async:true});
+
+
 		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
+		  Module._free(pointer1);
 		  //Module._set_string(0,str);
 		  //Module._set_background_mode(g_background);
 		  //Module._set_integer(26,m_id);
 		  //Module._set_string(5,g_user_id);
 		  console.log(g_user_id);
 		  } else {
-	       	  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
+
+		  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
 		  Module.ccall('set_background_mode', null, ['number'], [g_background]);
 		  Module.ccall('set_integer', null, ['number','number'],[26,m_id]);
+
 		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
-		  //Module._set_string(0,str);
+//Module._set_string(0,str);
 		  //Module._set_background_mode(g_background);
 		  //Module._set_integer(26,b_id);
 		  //Module._set_string(5,g_user_id);

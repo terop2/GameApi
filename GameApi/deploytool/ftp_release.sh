@@ -20,4 +20,5 @@ finish()
 }
 copy_it deploytool
 copy_it ../libGameApi.so
+copy_it ../display/gameapi_display.zip
 finish
