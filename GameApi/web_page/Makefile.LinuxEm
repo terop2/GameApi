@@ -1,9 +1,10 @@
 
+
 all:
 	@echo "choose either grow, lowmem, both or pthreads_grow"
 
 #-s MAXIMUM_MEMORY=4GB -s ALLOW_MEMORY_GROWTH=1  // doesnt work in firefox.
-
+#-fsanitize=address (causes slowness/fps broken)
 
 PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30
 
@@ -14,7 +15,7 @@ NOSIZEOPT = -s TOTAL_STACK=400kb -g
 #--closure 1
 #--memoryprofiler
 # 
-REQUIREDOPT = -fsanitize=address -s ASSERTIONS=2 -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1 -s USE_SDL_MIXER=2
+REQUIREDOPT = -s ASSERTIONS=2 -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1 -s USE_SDL_MIXER=2
 
 STRIP = echo emstrip --no-strip-all --remove-section=.debug_str --remove-section=.debug_line --remove-section=.debug_abbrev --remove-section=.debug_ranges --remove-section=.debug_loc
 

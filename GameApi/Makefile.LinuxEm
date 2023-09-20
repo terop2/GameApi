@@ -18,8 +18,9 @@
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+# -fsanitize=address (causes slowness/breaks fps)
 
-allopts = -Oz -g -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fsanitize=address
+allopts = -Oz -g -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0
 # -Oz
 
 nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor
@@ -306,6 +307,8 @@ $(O2Files_examples): objs/%.bc : %.cc GameApi.hh
 clean:
 	@$(RM) -rf objs/*.bc objs/*.bc objs/*.gch objs/*.gch2
 	@$(RM) -rf objs/nothreads/*.bc objs/nothreads/*.bc objs/nothreads/*.gch objs/nothreads/*.gch2
+	@$(RM) -rf objs/draco/attributes/*.bc objs/draco/compression/*.bc objs/draco/core/*.bc objs/draco/mesh/*.bc objs/draco/metadata/*.bc objs/draco/point_cloud/*.bc objs/draco/texture/*.bc
+	@$(RM) -rf objs/nothreads/draco/attributes/*.bc objs/nothreads/draco/compression/*.bc objs/nothreads/draco/core/*.bc objs/nothreads/draco/mesh/*.bc objs/nothreads/draco/metadata/*.bc objs/nothreads/draco/point_cloud/*.bc objs/nothreads/draco/texture/*.bc
 	@$(RM) main
 	@$(RM) libGameApi.bc libGameApi_nothreads.bc
 	@echo Clean.
