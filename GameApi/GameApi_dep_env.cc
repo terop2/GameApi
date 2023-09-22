@@ -195,7 +195,7 @@ private:
        NULL };
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
-    strcpy(attr.requestMethod, "POST");
+    strcpy(attr.requestMethod, "GET");
     FetchInBlocksUserData *dt = new FetchInBlocksUserData;
     dt->m_this = this;
     dt->block_num = id;
