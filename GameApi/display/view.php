@@ -1409,6 +1409,7 @@ function set_filename_info(state,filename)
    else
       res = filename.substr(pos+1);   
    }
+   res = undo_base64(res);
    if (res.length>13) {
       if (res.length>16) {
       	  state.appmodel_is_twoline = "2";
@@ -1646,7 +1647,7 @@ set_filename_info(state,"");
      	   var s = files2.length;
      	   for(var i=0;i<s;i++) {
 	   	   //console.log(files2[i].name);
-	   	   filenames.push(files2[i].name);
+	   	   filenames.push(do_base64(files2[i].name));
 		   files.push(files2[i]);
 	   }
 
@@ -1724,40 +1725,24 @@ function drop(ev)
        });
        promise2.then( data => {
            const [files,filenames] = flatten_arrays(data);
-	   //console.log(files);
-	   //console.log(filenames);
-           var main_item_num = find_main_item(filenames);
-	   var main_item = files[main_item_num];
-           var main_item_name = filenames[main_item_num];
 
-/*
-	   var snd_item_num = -1;
-	   var snd_item_name = "";
-	   console.log(main_item_name);
-	   if (main_item_name.substr(-4)==".zip") {
-	      console.log("ZIP UNCOMPRESS");
-	      var zipentries=get_zip_filenames(main_item);
-	      snd_item_num = find_main_item(zipentries);
-	      snd_item_name = zipentries[snd_item_num];
-	      console.log(snd_item_num);
-	      console.log(snd_item_name);
+	   var filenames2 = [];
+	   var s = filenames.length;
+	   for(var i=0;i<s;i++)
+	   {
+	      filenames2.push(do_base64(filenames[i]));
 	   }
-*/
+
+           var main_item_num = find_main_item(filenames2);
+	   var main_item = files[main_item_num];
+           var main_item_name = filenames2[main_item_num];
 
 	   old_files = files;
-	   old_filenames = filenames;
-	   console.log("Cold_files=");
-	   console.log(old_files);
-	   console.log("Cold_filenames=");
-	   console.log(old_filenames);
-	   //console.log(filenames);
+	   old_filenames = filenames2;
 
 	   old_main_item_name = main_item_name;
 	   
-/*	   old_snd_item_num = snd_item_num;
-	   old_snd_item_name = snd_item_name;
-	   */
-           const promise = extract_contents(store.state,files,filenames,fix_filename(main_item_name),"");
+           const promise = extract_contents(store.state,files,filenames2,fix_filename(main_item_name),"");
            promise.then(load_finished);
 
      });
@@ -1811,7 +1796,8 @@ function load_emscripten(state,filename, contents, filenames)
       } else {
       // loading contents:
 
-      Module.ccall('set_string', null, ['number', 'string'],[0,create_script(filename,contents,filenames)]);
+      var script = create_script(filename,contents,filenames);
+      Module.ccall('set_string', null, ['number', 'string'],[0,script]);
       }
       setTimeout(function() { check_emscripten_ready(state) }, 1000);
 }
@@ -1830,23 +1816,30 @@ function load_files(data_array2, filename_array)
     var filename = filename_array[i];
     var sz = data3.length;
 
-    Module.ccall('set_string', null, ['number', 'string'], [1,filename], {async:true} );
+    Module.ccall('set_string', null, ['number', 'string'], [1,filename], {async:false} );
 
     for(var s=0;s<sz;s+=40960) {
       var use_sz = 40960;
       if (s>=sz-40960) {
         use_sz=sz-s;
       }
-    Module.ccall('set_integer', null, ['number', 'number'], [2,use_sz], {async:true} );
+    Module.ccall('set_integer', null, ['number', 'number'], [2,use_sz], {async:false} );
 
-    var slice = data3.slice(s,s+use_sz);
-    const uint8 = slice; //slice.split('').map(function(x) { return x.charCodeAt(0); });
+    var sli = data3.slice(s,s+use_sz);
+    //console.log(sli);
+    const uint8 = sli; //.split('').map(function(x) { return x.charCodeAt(0); });
 
     //console.log(uint8);
 
-    Module.ccall('set_string', null, ['number', 'array'], [3,uint8], {async:true} );
+    let pointer = Module._malloc( uint8.length );
+    Module.HEAP8.set( uint8, pointer );
+    //for(var t=0;t<uint8.length;i++)
+    //	    Module.HEAP8[((pointer+t)>>0)] = uint8[t];
+    
+    Module.ccall('set_string', null, ['number', 'number'], [3,pointer], {async:false} );
+    //Module._free( pointer );
     }
-    Module.ccall('set_string', null, ['number', 'string'], [4,""], {async:true} );
+    Module.ccall('set_string', null, ['number', 'string'], [4,""], {async:false} );
    //console.log("DATA SENT");
 
   }
@@ -2160,6 +2153,41 @@ old_main_item_name = g_filename;
 }
 
 
+
+function do_base64(data)
+{
+
+	var s = data.length;
+	var pos = -1;
+	for(var i=0;i<s;i++) {
+	  if (data[i]=='.') pos=i;
+	}
+	if (pos==-1) { return data; }
+	var data2 = data.substring(0,pos);
+	var data3 = data.substring(pos+1);
+	return btoa(unescape(encodeURIComponent(data2))) + "." + data3;
+}
+
+
+function undo_base64(data)
+{
+
+	var s = data.length;
+	var pos = -1;
+	for(var i=0;i<s;i++) {
+	  if (data[i]=='.') pos=i;
+	}
+	if (pos==-1) { return data; }
+	var data2 = data.substring(0,pos);
+	var data3 = data.substring(pos+1);
+	try {
+	    //console.log(data2);
+	    data2 = decodeURIComponent(escape(atob(data2)));
+	    } catch(dd)
+	    {
+	    }
+	return data2 + "." + data3;
+}
 
 
 

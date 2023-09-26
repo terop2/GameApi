@@ -11,6 +11,7 @@ make -f Makefile.LinuxEm clean
 (cd editor;./copy_files_to_deb.sh 27)
 (cd editor;./make_deb.sh 27)
 cp editor/gameapi-builder_1.0-27.deb docker/
+sudo dpkg -i editor/gameapi-builder_1.0-27.deb
 #(cd docker;sudo docker build -t builder-test:latest .)
 (cd docker;./build_tar.sh)
 cp web_page/web_page* /home/terop/html/meshpage.org/
