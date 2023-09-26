@@ -30401,7 +30401,7 @@ void run_callback(void *ptr)
   g_id = add_block();
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
-  std::cout << "FINAL CODE:" << script << std::endl;
+  //std::cout << "FINAL CODE:" << script << std::endl;
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
   //std::cout << "blk.second==" << blk.second << std::endl;
@@ -30467,9 +30467,25 @@ KP extern "C" void stop_music_playing()
 
 extern Matrix g_last_resize;
 
+
+#ifdef EMSCRIPTEN
+#include <emscripten/val.h>
+
 void ClearProgress();
-KP extern "C" void set_new_script(const char *script2)
+KP extern "C" void set_new_script(const char *script2_)
 {
+  if (!script2_) return;
+  emscripten::val v = emscripten::val::u8string(script2_);
+  std::string script2_a = v.as<std::string>(); 
+
+  char *ptr = new char[script2_a.size()+1];
+  if (!ptr) return;
+  std::copy(script2_a.begin(),script2_a.end(),ptr);
+  ptr[script2_a.size()]=0;
+  
+  const char *script2 = ptr;
+  
+  
   //std::cout << "set_new_script" << std::endl;
   ClearProgress();
   g_last_resize=Matrix::Identity();
@@ -30488,6 +30504,9 @@ KP extern "C" void set_new_script(const char *script2)
     g_script_hash = hash;
     
 }
+#else
+KP extern "C" void set_new_script(const char *script2_) { }
+#endif
 
 KP  extern "C" void activate_trigger(int num)
 {
@@ -30560,8 +30579,58 @@ void g_content_deleter(void *)
 std::vector<unsigned char *> g_buffers;
 std::vector<int> g_buffer_sizes;
 
-KP extern "C" void set_string(int num, const char *value)
+KP extern "C" void set_string(int num, const char *value_)
 {
+
+#ifdef EMSCRIPTEN
+  size_t ptr_size=0;
+  char *ptr=0;
+  if (num!=3) {
+emscripten::val v = emscripten::val::u8string(value_);
+  std::string script2_a;  
+  //std::vector<unsigned char> script2_b;
+      script2_a = v.as<std::string>();
+      ptr = new char[script2_a.size()+1];
+      std::copy(script2_a.begin(),script2_a.end(),ptr);
+      ptr[script2_a.size()]=0;
+      ptr_size=script2_a.size();
+  } else {
+    //script2_b = emscripten::vecFromJSArray<unsigned char>(v);
+    ptr = const_cast<char*>(value_);
+    ptr_size=g_set_string_int;
+    //  ptr_size=script2_b.size();
+}
+  if (!ptr) { std::cout << "ptr in set_string() NULL, skipping " << num << std::endl; return; }
+  //std::cout << "NUM:" << num << std::endl;
+  //for(int i=0;i<std::min(size_t(30),ptr_size);i++) std::cout << std::dec << (unsigned int)(unsigned char)ptr[i] << ",";
+  //std::cout << std::endl;
+
+  
+  /*
+  
+
+
+  std::string script2_a;  
+  std::vector<char> script2_b;
+  char *ptr=0;
+  if (num!=3) {
+  } else {
+    //script2_b = 
+    
+    ptr_size=strlen(value_);
+    ptr = new char[ptr_size+1];
+    std::copy(value_,value_+ptr_size+1,ptr);
+  }
+  */
+  const char *value = value_;
+  //size_t ptr_size=strlen(value_);
+  
+
+  
+  //emscripten::val v = emscripten::val::u8string(value_);
+  //std::string value = v.as<std::string>();
+  
+  
   //std::cout << "STRING " << num << " " << value << std::endl;
   if (num==0) {
     std::string s(value);
@@ -30593,12 +30662,13 @@ KP extern "C" void set_string(int num, const char *value)
     	register_cache_deleter(g_content_deleter,0);
       }
     
-    unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int];
+    unsigned char *data = (unsigned char*)new unsigned char[g_set_string_int+1];
     std::copy(value,value+g_set_string_int,data);
+    data[g_set_string_int]=0;
     //std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
-    g_content_end.push_back(data+g_set_string_int);
+    g_content_end.push_back(data+g_set_string_int+1);
     //std::cout << "g_content set" << std::endl;
     return;
   }
@@ -30606,6 +30676,7 @@ KP extern "C" void set_string(int num, const char *value)
     unsigned char *data = new unsigned char[g_set_string_int];
     int s = g_set_string_int;
     std::copy(value,value+s,data);
+    //data[s]=0;
       /*
     for(int i=0;i<s;i++) {
       unsigned char ch1 = value[i*2];
@@ -30632,6 +30703,7 @@ KP extern "C" void set_string(int num, const char *value)
     }
     //std::cout << "Combine:" << size << std::endl;
     unsigned char *data = new unsigned char[size+1];
+    if (!data) return;
     data[size]=0; // null terminate for models that have text strings.
     int offset = 0;
     for(int i=0;i<s;i++) {
@@ -30652,8 +30724,9 @@ KP extern "C" void set_string(int num, const char *value)
   if (num==5) // user id
     {
       delete [] g_user_id;
-      int sz = strlen(value);
+      int sz = ptr_size; //strlen(value);
       g_user_id = new char[sz+1];
+      if (!g_user_id) return;
       std::copy(value,value+sz+1,g_user_id);
     }
   if (num==6) // clear caches
@@ -30662,6 +30735,7 @@ KP extern "C" void set_string(int num, const char *value)
     }
   //std::string s(value);
   //if (num>=0 && num<25) { g_strings[num]=s; }
+#endif
 }
 
 int g_resize_event_sx = -1;
