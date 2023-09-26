@@ -561,7 +561,7 @@ $label = get_label( $arr );
 
    echo "<div style=\"width: 85%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
    echo "<div class=\"zipbutton\">";
-   echo "<form id=\"form" . $ii . "\" method=\"POST\" action=\"/item_to_zip_result.php\">";
+   echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
    echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
    echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
    echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
@@ -2022,6 +2022,7 @@ function set_keyboard_focus_to_iframe()
 }
 function start_emscripten_really(vm)
 {
+	 console.log(ASM_CONSTS);
      var str = "";
      str+="P I1=ev.polygon_api.p_empty();\n";
      str+="ML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\n";
@@ -2200,12 +2201,6 @@ function show_emscripten(str,hide,indicator,is_async)
 
 
 		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
-		  Module._free(pointer1);
-		  //Module._set_string(0,str);
-		  //Module._set_background_mode(g_background);
-		  //Module._set_integer(26,m_id);
-		  //Module._set_string(5,g_user_id);
-		  console.log(g_user_id);
 		  } else {
 
 		  Module.ccall('set_string', null, ['number', 'string'],[0,str]);
@@ -2213,11 +2208,6 @@ function show_emscripten(str,hide,indicator,is_async)
 		  Module.ccall('set_integer', null, ['number','number'],[26,m_id]);
 
 		  Module.ccall('set_string', null, ['number', 'string'],[5,g_user_id]);
-//Module._set_string(0,str);
-		  //Module._set_background_mode(g_background);
-		  //Module._set_integer(26,b_id);
-		  //Module._set_string(5,g_user_id);
-		  console.log(g_user_id);
 		  }		  
 	   } catch(e) {
 	     console.log(e);

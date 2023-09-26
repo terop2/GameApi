@@ -1647,7 +1647,7 @@ set_filename_info(state,"");
      	   var s = files2.length;
      	   for(var i=0;i<s;i++) {
 	   	   //console.log(files2[i].name);
-	   	   filenames.push(do_base64(files2[i].name));
+	   	   filenames.push(files2[i].name);
 		   files.push(files2[i]);
 	   }
 
@@ -1657,6 +1657,9 @@ set_filename_info(state,"");
            var main_item_num = find_main_item(filenames);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames[main_item_num];
+
+	   main_item_name=do_base64(main_item_name);
+	   filenames[main_item_num]=do_base64(filenames[main_item_num]);
 
 /*
 	   var snd_item_num = -1;
@@ -1730,12 +1733,15 @@ function drop(ev)
 	   var s = filenames.length;
 	   for(var i=0;i<s;i++)
 	   {
-	      filenames2.push(do_base64(filenames[i]));
+	      filenames2.push(filenames[i]);
 	   }
 
            var main_item_num = find_main_item(filenames2);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames2[main_item_num];
+
+	   main_item_name = do_base64(main_item_name);
+	   filenames2[main_item_num]=do_base64(filenames2[main_item_num]);
 
 	   old_files = files;
 	   old_filenames = filenames2;

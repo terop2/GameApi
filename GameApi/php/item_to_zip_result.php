@@ -1,5 +1,5 @@
 <?php
-
+ini_set('memory_limit', '1024M');
 require_once("user.php");
 
 
@@ -8,8 +8,8 @@ function set_status($val)
    file_put_contents("./pp2/tmp.zip.status", strval($val));
 }
 
-$itemnum = $_POST["itemnum"];
-$itemid = $_POST["itemid"];
+$itemnum = $_GET["itemnum"];
+$itemid = $_GET["itemid"];
 
 $arr = decode_id( $itemid );
 
@@ -45,7 +45,7 @@ $attr = 0;
 
 if ($res) {
   $sz = filesize("./pp2/tmp.zip");
-  if ($sz < 50000000) {
+  if ($sz < 950000000) {
 
 
   set_status(9);
