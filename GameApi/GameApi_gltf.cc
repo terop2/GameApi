@@ -6,6 +6,9 @@
 #include "GraphI.hh"
 #include "VectorTools.hh"
 
+// not working because tinygltf doesn't allow it.
+//#define CONCURRENT_IMAGE_DECODE 1
+
 
 extern std::vector<const char *> g_urls;
 extern std::string gameapi_homepageurl;
@@ -385,7 +388,9 @@ public:
       (void*)this
     };
     tiny.SetFsCallbacks(fs);
-    //tiny.SetImageLoader(&LoadImageData, this);
+#ifdef CONCURRENT_IMAGE_DECODE
+    tiny.SetImageLoader(&LoadImageData, this);
+#endif
     //tiny.SetImageWriter(&WriteImageData, this);
   }
   ~LoadGltf()
@@ -624,8 +629,178 @@ bool WriteWholeFile(std::string *err, const std::string &filepath, const std::ve
   //std::cout << "WriteWholeFile" << filepath << std::endl;
   return false;
 }
+
+#ifdef CONCURRENT_IMAGE_DECODE
+
+struct ThreadInfo_gltf_bitmap
+{
+  pthread_t thread_id;
+  tinygltf::Image *image;
+  int req_width;
+  int req_height;
+  const unsigned char *bytes;
+  int size;
+};
+void *thread_func_gltf_bitmap(void *data2)
+{
+  ThreadInfo_gltf_bitmap *bm = (ThreadInfo_gltf_bitmap*)data2;
+
+  int image_idx = 0;
+  tinygltf::Image *image = bm->image;
+  int req_width = bm->req_width;
+  int req_height = bm->req_height;
+  const unsigned char *bytes = bm->bytes;
+  int size = bm->size;
+
+
+  std::string res;
+  std::string *err = &res;
+  std::string *warn = &res;
+  
+
+  
+  (void)warn;
+
+  //tinygltf::LoadImageDataOption option;
+  //if (user_data) {
+  //  option = *reinterpret_cast<LoadImageDataOption *>(user_data);
+  //}
+
+  int w = 0, h = 0, comp = 0, req_comp = 0;
+
+  unsigned char *data = nullptr;
+
+  // preserve_channels true: Use channels stored in the image file.
+  // false: force 32-bit textures for common Vulkan compatibility. It appears
+  // that some GPU drivers do not support 24-bit images for Vulkan
+  req_comp = 0; //option.preserve_channels ? 0 : 4;
+  int bits = 8;
+  int pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+
+  // It is possible that the image we want to load is a 16bit per channel image
+  // We are going to attempt to load it as 16bit per channel, and if it worked,
+  // set the image data accodingly. We are casting the returned pointer into
+  // unsigned char, because we are representing "bytes". But we are updating
+  // the Image metadata to signal that this image uses 2 bytes (16bits) per
+  // channel:
+  if (stbi_is_16_bit_from_memory(bytes, size)) {
+    data = reinterpret_cast<unsigned char *>(
+        stbi_load_16_from_memory(bytes, size, &w, &h, &comp, req_comp));
+    if (data) {
+      bits = 16;
+      pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT;
+    }
+  }
+
+  // at this point, if data is still NULL, it means that the image wasn't
+  // 16bit per channel, we are going to load it as a normal 8bit per channel
+  // mage as we used to do:
+  // if image cannot be decoded, ignore parsing and keep it by its path
+  // don't break in this case
+  // FIXME we should only enter this function if the image is embedded. If
+  // image->uri references
+  // an image file, it should be left as it is. Image loading should not be
+  // mandatory (to support other formats)
+  if (!data) data = stbi_load_from_memory(bytes, size, &w, &h, &comp, req_comp);
+  if (!data) {
+    // NOTE: you can use `warn` instead of `err`
+    if (err) {
+      (*err) +=
+          "Unknown image format. STB cannot decode image data for image[" +
+          std::to_string(image_idx) + "] name = \"" + image->name + "\".\n";
+    }
+    return 0;
+  }
+
+  if ((w < 1) || (h < 1)) {
+    stbi_image_free(data);
+    if (err) {
+      (*err) += "Invalid image data for image[" + std::to_string(image_idx) +
+                "] name = \"" + image->name + "\"\n";
+    }
+    return 0;
+  }
+
+  if (req_width > 0) {
+    if (req_width != w) {
+      stbi_image_free(data);
+      if (err) {
+        (*err) += "Image width mismatch for image[" +
+                  std::to_string(image_idx) + "] name = \"" + image->name +
+                  "\"\n";
+      }
+      return 0;
+    }
+  }
+
+  if (req_height > 0) {
+    if (req_height != h) {
+      stbi_image_free(data);
+      if (err) {
+        (*err) += "Image height mismatch. for image[" +
+                  std::to_string(image_idx) + "] name = \"" + image->name +
+                  "\"\n";
+      }
+      return 0;
+    }
+  }
+
+  if (req_comp != 0) {
+    // loaded data has `req_comp` channels(components)
+    comp = req_comp;
+  }
+
+  image->width = w;
+  image->height = h;
+  image->component = comp;
+  image->bits = bits;
+  image->pixel_type = pixel_type;
+  std::cout << "w:" << w << " h:" << h << " comp:" << comp << " bits:" << bits << std::endl;
+  std::cout << "image:" << (long)image << std::endl;
+  image->image.resize(static_cast<size_t>(w * h * comp) * size_t(bits / 8));
+  //std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
+  stbi_image_free(data);
+
+
+  delete [] bm->bytes;
+  
+  return 0;
+
+
+}
+void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size)
+{
+  image->width = req_width;
+  image->height = req_height;
+  image->component = 3;
+  image->bits = 8;
+  image->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+  
+  ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
+  info->image = image;
+  info->req_width = req_width;
+  info->req_height = req_height;
+  unsigned char *bytes2 = new unsigned char[size];
+  std::copy(bytes, bytes+size,bytes2);
+  info->bytes = bytes2;
+  info->size = size;
+
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setstacksize(&attr,300000);
+  pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
+  
+}
+
+#endif
+
+
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
+#ifdef CONCURRENT_IMAGE_DECODE
+  start_gltf_bitmap_thread(image, req_width, req_height, bytes, size);
+  return true;
+#endif
   //LoadGltf *data = (LoadGltf*)ptr;
   //std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
   return false;
@@ -10450,11 +10625,19 @@ class ASyncGltf : public MainLoopItem
 public:
   ASyncGltf(GameApi::Env &env, MainLoopItem *next, GLTFModelInterface *interface, std::string homepage) : env(env) ,next(next), interface(interface), homepage(homepage) {
     done = false;
-    env.async_load_callback(interface->Url(), &ASyncGltfCB, this);
+    std::string url = interface->Url();
+    if (url.substr(url.size()-4,4)!=".glb") {
+      env.async_load_callback(interface->Url(), &ASyncGltfCB, this);
+      }
   }
   void Prepare2()
   {
     std::string url = interface->Url();
+
+    // this algo not needed in glb files since they have no urls to outside.
+    if (url.substr(url.size()-4,4)==".glb") return;
+
+    
     //std::cout << "AsyncGltf::PREPARE2" << std::endl;
     if (!done) {
       done = true;
