@@ -1,5 +1,6 @@
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_ENABLE_DRACO 1
+#define TINYGLTF_USE_CPP14 1
 #include "tiny_gltf.h"
 
 #include "GameApi_h.hh"
