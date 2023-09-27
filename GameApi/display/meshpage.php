@@ -2030,7 +2030,7 @@ function set_keyboard_focus_to_iframe()
 }
 function start_emscripten_really(vm)
 {
-	 console.log(ASM_CONSTS);
+//	 console.log(ASM_CONSTS);
      var str = "";
      str+="P I1=ev.polygon_api.p_empty();\n";
      str+="ML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\n";

@@ -1810,10 +1810,6 @@ function load_emscripten(state,filename, contents, filenames)
 
 function load_files(data_array2, filename_array)
 {
-   // clear caches
-
-  //console.log(data_array2);
-  //console.log(filename_array);
   var s2 = data_array2.length;
   for(var i=0;i<s2;i++) {
     var data3 = data_array2[i];
@@ -1832,21 +1828,15 @@ function load_files(data_array2, filename_array)
     Module.ccall('set_integer', null, ['number', 'number'], [2,use_sz], {async:false} );
 
     var sli = data3.slice(s,s+use_sz);
-    //console.log(sli);
-    const uint8 = sli; //.split('').map(function(x) { return x.charCodeAt(0); });
-
-    //console.log(uint8);
+    const uint8 = sli; 
 
     let pointer = Module._malloc( uint8.length );
     Module.HEAP8.set( uint8, pointer );
-    //for(var t=0;t<uint8.length;i++)
-    //	    Module.HEAP8[((pointer+t)>>0)] = uint8[t];
     
     Module.ccall('set_string', null, ['number', 'number'], [3,pointer], {async:false} );
-    //Module._free( pointer );
+    Module._free( pointer );
     }
     Module.ccall('set_string', null, ['number', 'string'], [4,""], {async:false} );
-   //console.log("DATA SENT");
 
   }
 }
