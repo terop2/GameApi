@@ -5814,8 +5814,7 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
-  
-  
+
   if (keep) {
     //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);

@@ -4707,27 +4707,27 @@ public:
       sy = texture.SizeY();
     }
     Point2d t1 = coll->TexCoord(face,0);
-    if (t1.x<0.0) t1.x=0.0;
-    if (t1.x>1.0) t1.x=1.0;
-    if (t1.y<0.0) t1.y=0.0;
-    if (t1.y>1.0) t1.y=1.0;
-    ::Color c1 = texture.Map(t1.x*sx, t1.y*sy);
+    //if (t1.x<0.0) t1.x=0.0;
+    //if (t1.x>1.0) t1.x=1.0;
+    //if (t1.y<0.0) t1.y=0.0;
+    //if (t1.y>1.0) t1.y=1.0;
+    // ::Color c1 = texture.Map(t1.x*sx, t1.y*sy);
     //std::cout << c1.alpha << std::endl;
     //if (c1.alpha<120) return true;
     Point2d t2 = coll->TexCoord(face,1);    
-    if (t2.x<0.0) t2.x=0.0;
-    if (t2.x>1.0) t2.x=1.0;
-    if (t2.y<0.0) t2.y=0.0;
-    if (t2.y>1.0) t2.y=1.0;
-    ::Color c2 = texture.Map(t2.x*sx, t2.y*sy);
+    //if (t2.x<0.0) t2.x=0.0;
+    //if (t2.x>1.0) t2.x=1.0;
+    //if (t2.y<0.0) t2.y=0.0;
+    //if (t2.y>1.0) t2.y=1.0;
+    //::Color c2 = texture.Map(t2.x*sx, t2.y*sy);
     //if (c2.alpha<120) return true;
     Point2d t3 = coll->TexCoord(face,2);
-    if (t3.x<0.0) t3.x=0.0;
-    if (t3.x>1.0) t3.x=1.0;
-    if (t3.y<0.0) t3.y=0.0;
-    if (t3.y>1.0) t3.y=1.0;
+    //if (t3.x<0.0) t3.x=0.0;
+    //if (t3.x>1.0) t3.x=1.0;
+    //if (t3.y<0.0) t3.y=0.0;
+    //if (t3.y>1.0) t3.y=1.0;
 
-    ::Color c3 = texture.Map(t3.x*sx, t3.y*sy);
+    //::Color c3 = texture.Map(t3.x*sx, t3.y*sy);
     //if (c3.alpha<120) return true;
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
     if (center.x<0.0) center.x=0.1;
@@ -12291,7 +12291,7 @@ GameApi::US GameApi::UberShaderApi::v_empty()
 GameApi::US GameApi::UberShaderApi::v_water(US us)
 {
   ShaderCall *next = find_uber(e,us);
-  return add_uber(e, new V_ShaderCallFunction("water", next, "IN_POSITION EX_POSITION"));
+  return add_uber(e, new V_ShaderCallFunction("water", next, "IN_POSITION EX_POSITION WATER"));
 }
 					 
 GameApi::US GameApi::UberShaderApi::v_edge(US us)
@@ -12352,7 +12352,7 @@ GameApi::US GameApi::UberShaderApi::v_newshadow_2(US us)
 GameApi::US GameApi::UberShaderApi::v_adjust(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("adjust", next,""));
+  return add_uber(e, new V_ShaderCallFunction("adjust", next,"ADJUST"));
 }
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
@@ -12659,7 +12659,7 @@ GameApi::US GameApi::UberShaderApi::v_dist_field_mesh(US us, SFO sfo)
 GameApi::US GameApi::UberShaderApi::f_water(US us)
 {
   ShaderCall *next = find_uber(e,us);
-  return add_uber(e, new F_ShaderCallFunction("water", next,"EX_POSITION"));  
+  return add_uber(e, new F_ShaderCallFunction("water", next,"EX_POSITION WATER"));  
 }
 GameApi::US GameApi::UberShaderApi::f_edge(US us)
 {
@@ -12703,7 +12703,7 @@ GameApi::US GameApi::UberShaderApi::f_diffuse(US us)
 GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("glowedge", next,"EX_TEXCOORD"));
+  return add_uber(e, new F_ShaderCallFunction("glowedge", next,"EX_TEXCOORD GLOWEDGE"));
 }
 GameApi::US GameApi::UberShaderApi::f_newshadow_1(US us)
 {
@@ -12727,7 +12727,7 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
 GameApi::US GameApi::UberShaderApi::f_adjust(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunctionFlip("adjust", next,""));
+  return add_uber(e, new F_ShaderCallFunctionFlip("adjust", next,"ADJUST"));
 }
 GameApi::US GameApi::UberShaderApi::f_generic(US us, std::string name, std::string flags)
 {
@@ -12759,7 +12759,7 @@ GameApi::US GameApi::UberShaderApi::f_gi(US us)
 GameApi::US GameApi::UberShaderApi::f_fade(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunctionFlip("fade", next,""));
+  return add_uber(e, new F_ShaderCallFunctionFlip("fade", next,"FADE"));
 }
 //GameApi::US GameApi::UberShaderApi::f_flip(US us, US us2)
 //{
@@ -12788,7 +12788,7 @@ GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex
 GameApi::US GameApi::UberShaderApi::f_colour_with_mix(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("colour_with_mix", next,"EX_COLOR COLOR_MIX"));
+  return add_uber(e, new F_ShaderCallFunction("colour_with_mix", next,"EX_COLOR COLOR_MIX COLOUR_WITH_MIX"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_bump_phong(US us)
@@ -12799,11 +12799,11 @@ GameApi::US GameApi::UberShaderApi::f_bump_phong(US us)
 GameApi::US GameApi::UberShaderApi::f_fog(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("fog", next,"EX_POSITION"));
+  return add_uber(e, new F_ShaderCallFunction("fog", next,"EX_POSITION FOG"));
 }
 GameApi::US GameApi::UberShaderApi::f_mix(US us) {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("mixshader", next,"COLOR_MIX"));
+  return add_uber(e, new F_ShaderCallFunction("mixshader", next,"COLOR_MIX MIXSHADER"));
 }
 GameApi::US GameApi::UberShaderApi::f_shadow(US us)
 {
@@ -12839,13 +12839,13 @@ GameApi::US GameApi::UberShaderApi::f_specular(US us)
 GameApi::US GameApi::UberShaderApi::f_color_from_normals(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next,"EX_NORMAL"));
+  return add_uber(e, new F_ShaderCallFunction("color_from_normals", next,"EX_NORMAL COLOR_FROM_NORMALS"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_coloured_lights(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("coloured_lights", next,"EX_POSITION"));
+  return add_uber(e, new F_ShaderCallFunction("coloured_lights", next,"EX_POSITION COLOURED_LIGHTS"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_point_light(US us)
@@ -12868,19 +12868,19 @@ GameApi::US GameApi::UberShaderApi::f_bands(US us)
 GameApi::US GameApi::UberShaderApi::f_snoise(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("snoise", next,"EX_POSITION"));
+  return add_uber(e, new F_ShaderCallFunction("snoise", next,"EX_POSITION SNOISE"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_blur(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("blur", next,"EX_TEXCOORD"));
+  return add_uber(e, new F_ShaderCallFunction("blur", next,"EX_TEXCOORD BLUR"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_ref(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("ref", next,"EX_POSITION EX_NORMAL"));
+  return add_uber(e, new F_ShaderCallFunction("ref", next,"EX_POSITION EX_NORMAL REF"));
 }
 GameApi::US GameApi::UberShaderApi::v_custom(US us, std::string v_funcname)
 {
@@ -12897,19 +12897,19 @@ GameApi::US GameApi::UberShaderApi::f_custom(US us, std::string f_funcname)
 GameApi::US GameApi::UberShaderApi::f_light(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("light", next,""));
+  return add_uber(e, new F_ShaderCallFunction("light", next,"LIGHT"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_toon(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("toon", next,"EX_NORMAL"));
+  return add_uber(e, new F_ShaderCallFunction("toon", next,"EX_NORMAL TOON"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_texture(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("texture_impl", next,"EX_TEXCOORD COLOR_MIX"));
+  return add_uber(e, new F_ShaderCallFunction("texture_impl", next,"EX_TEXCOORD COLOR_MIX TEXTURE_IMPL"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_manytexture(US us)
@@ -12935,7 +12935,7 @@ GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
 GameApi::US GameApi::UberShaderApi::f_colour(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("colour", next,"EX_COLOR"));
+  return add_uber(e, new F_ShaderCallFunction("colour", next,"EX_COLOR COLOUR_SHADER"));
 }
 GameApi::US GameApi::UberShaderApi::f_choose_color(US us)
 {

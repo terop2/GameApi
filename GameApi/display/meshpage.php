@@ -906,6 +906,14 @@ Header set Cross-Origin-Opener-Policy "same-origin"
 Header set Access-Control-Allow-Headers "range"
 </pre>
 
+<h2>How to setup http cache with the engine?</h2>
+
+We recommend in .htaccess:
+<pre>
+Header set Cache-Control "max-age=604800, immutable"
+</pre>
+(this avoids small problem with browsers deciding different caching strategy for .wasm and .js files and serving mismatched files for the users, causing EM_ASM crashes)
+
 <h2>What about compressing the huge engine files?</h2>
 
 For nice performance speedup for network, you should enable brotli compression in the web server too:

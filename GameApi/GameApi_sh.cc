@@ -88,23 +88,23 @@ extern std::string g_gpu_vendor;
 EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
 {
   if (g_gpu_vendor.substr(0,4)=="NVID") {
-  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT","","");
   } else {
-  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT","","");
   }
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_arr:light:light", "texture_arr:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX LIGHT","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_many_shader()
 {
-  return get_normal_shader_1("comb", "comb", "", "manytextures:light:light", "manytextures:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "MANYTEXTURES EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "", "manytextures:light:light", "manytextures:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "MANYTEXTURES EX_TEXCOORD COLOR_MIX LIGHT","","");
 }
 
 EXPORT GameApi::SH GameApi::ShaderApi::colour_shader()
 {
-  return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light", true, {-1}, {-1}, {-1}, "EX_COLOR IN_COLOR", "EX_COLOR","","");
+  return get_normal_shader_1("comb", "comb", "","colour:light:light", "colour:light:light", true, {-1}, {-1}, {-1}, "EX_COLOR IN_COLOR", "EX_COLOR COLOUR_SHADER LIGHT","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
 {
@@ -124,7 +124,7 @@ EXPORT GameApi::SH GameApi::ShaderApi::shader_choice(EveryApi &ev, int i)
 }
 EXPORT GameApi::SH GameApi::ShaderApi::colour_texture_shader()
 {
-  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX","","");
+  return get_normal_shader_1("comb", "comb", "","colour:texture:light:light", "colour:texture:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT COLOUR_SHADER","","");
 }
 EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, std::string f_format,std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, std::string v_defines, std::string f_defines, bool is_new)
 {

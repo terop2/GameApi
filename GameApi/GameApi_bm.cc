@@ -694,13 +694,10 @@ void stackTrace()
   free(strings);
 #endif
 
-#if 0
 #ifdef EMSCRIPTEN
   EM_ASM({
-      stackTrace();
+      console.log(new Error().stack);
     });
-  // emscripten_run_script("stackTrace()");
-#endif
 #endif
 }
 void ProgressBar(int num, int val, int max, std::string label);
