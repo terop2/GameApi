@@ -4172,11 +4172,96 @@ private:
 };
 
 
+class BlendMainLoop : public MainLoopItem
+{
+public:
+  BlendMainLoop(MainLoopItem *next, bool enable) : next(next),b(enable) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e) {
+    OpenglLowApi *ogl = g_low->ogl;
+    if (b)
+      ogl->glEnable(Low_GL_BLEND);
+    else
+      ogl->glDisable(Low_GL_BLEND);
+    next->execute(e);
+    ogl->glEnable(Low_GL_BLEND);
+    
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+  bool b;
+};
+GameApi::ML blendmainloop(GameApi::Env &e, GameApi::ML ml, bool b)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e,new BlendMainLoop(item,b));
+}
+
+bool g_global_is_transparent=false;
+
+class TransMainLoop : public MainLoopItem
+{
+public:
+  TransMainLoop(MainLoopItem *next, bool enable) : next(next),is_transparent(enable) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void FirstFrame() { }
+
+  virtual void execute(MainLoopEnv &e) {
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual bool IsTransparent() const { return is_transparent; }
+private:
+  MainLoopItem *next;
+  bool b;
+  bool is_transparent;
+};
+GameApi::ML transmainloop(GameApi::Env &e, GameApi::ML ml, bool b)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e,new TransMainLoop(item,b));
+}
+
+class TransFaceCollection : public ForwardFaceCollection
+{
+public:
+  TransFaceCollection(FaceCollection *next) : next(next), ForwardFaceCollection(*next) { }
+  virtual Point FacePoint(int face, int point) const { if (face==0) stackTrace(); return next->FacePoint(face,point); }
+  virtual bool IsTransparent() const { std::cout << "TRUE" << std::endl; return true; }
+private:
+  FaceCollection *next;
+};
+GameApi::P transfaces(GameApi::Env &e, GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new TransFaceCollection(coll),1);
+}
+
 
 class GLTF_Material : public MaterialForward
 {
 public:
   GLTF_Material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int material_id, float mix, Vector light_dir) : e(e), ev(ev), interface(interface), material_id(material_id),mix(mix), light_dir(light_dir) { 
+  }
+  bool IsTransparent() const
+  {
+    if (material_id>=0 && material_id<int(interface->materials_size())) {
+      const tinygltf::Material &m = interface->get_material(material_id);
+      const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+      if (r.baseColorFactor[3]<0.9)
+	{
+	  return true;
+	}
+    }
+    return false;
   }
   int num_indexes() const {
     int s = 5;
@@ -4393,6 +4478,9 @@ public:
 
   virtual GameApi::ML mat2(GameApi::P p) const
   {
+
+
+
     interface->Prepare();
     std::vector<GameApi::BM> bm;
     int s = num_indexes();
@@ -4400,6 +4488,9 @@ public:
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+
+
+
     //GameApi::ML I13;
     //I13.id = next->mat(p.id);
     //GameApi::P I10=p; 
@@ -4436,11 +4527,15 @@ public:
       //	I18 = specglossyshader(ev,I17);
       //}
       // const tinygltf::Material &m = interface->get_material(material_id);
-      
+
+
     if (m.alphaMode=="BLEND") {
-      OpenglLowApi *ogl = g_low->ogl;
-      ogl->glEnable(Low_GL_BLEND);
+      //OpenglLowApi *ogl = g_low->ogl;
+      //ogl->glEnable(Low_GL_BLEND);
       //I18 = ev.mainloop_api.transparent(I18);
+      I18 = blendmainloop(e,I18,true);
+    } else {
+      I18 = blendmainloop(e,I18,false);
     }
 
     if (m.doubleSided==true) {
@@ -4463,6 +4558,9 @@ public:
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+
+
+
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
@@ -4498,11 +4596,15 @@ public:
     // }
     // const tinygltf::Material &m = interface->get_material(material_id);
     if (m.alphaMode=="BLEND") {
-      OpenglLowApi *ogl = g_low->ogl;
-      ogl->glEnable(Low_GL_BLEND);
+      //OpenglLowApi *ogl = g_low->ogl;
+      //ogl->glEnable(Low_GL_BLEND);
       //I18 = ev.mainloop_api.transparent(I18);
       //      I18=ev.mainloop_api.blendfunc(I18,2,3);
-    }
+      I18 = blendmainloop(e,I18,true);
+    } else
+      {
+      I18 = blendmainloop(e,I18,false);
+      }
     if (m.doubleSided==true) {
       I18 = ev.mainloop_api.cullface(I18,false);
     } else {
@@ -4522,6 +4624,9 @@ public:
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+
+
+
     //GameApi::ML I13;
     //I13.id = next->mat_inst(p.id,pts.id);
     GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
@@ -4558,10 +4663,13 @@ public:
     // }
     //  const tinygltf::Material &m = interface->get_material(material_id);
     if (m.alphaMode=="BLEND") {
-      OpenglLowApi *ogl = g_low->ogl;
-      ogl->glEnable(Low_GL_BLEND);
+      //OpenglLowApi *ogl = g_low->ogl;
+      //ogl->glEnable(Low_GL_BLEND);
       //I18 = ev.mainloop_api.transparent(I18);
       //      I18=ev.mainloop_api.blendfunc(I18,2,3);
+      I18 = blendmainloop(e,I18,true);
+    } else {
+      I18 = blendmainloop(e,I18,false);
     }
     if (m.doubleSided==true) {
       I18 = ev.mainloop_api.cullface(I18,false);
@@ -4599,6 +4707,7 @@ private:
   int material_id;
   float mix;
   Vector light_dir;
+  bool is_transparent=false;
 };
 
 int get_num_textures(GLTF_Material *mat)
@@ -6433,7 +6542,9 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2);
+      bool is_transparent = mat3->IsTransparent();
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2, is_transparent);
+      return mat2.id; // TEST REMOVED TRANSPARENCY
   return mat4.id;
 }
 
@@ -6509,7 +6620,9 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim);
+      bool is_transparent = mat3->IsTransparent();
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       mls.push_back(ml);
     }
@@ -6598,7 +6711,9 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim);
+      bool is_transparent = mat3->IsTransparent();
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       mls.push_back(ml);
     }
@@ -6624,7 +6739,9 @@ GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInt
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2);
+      bool is_transparent = mat3->IsTransparent();
+      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2,is_transparent);
+      //GameApi::ML ml = ev.materials_api.bind(p,mat2); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       mls.push_back(ml);
     }

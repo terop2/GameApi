@@ -3013,6 +3013,7 @@ public:
   }
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
+  virtual bool IsTransparent() const { return coll.IsTransparent(); }
   virtual void Prepare() { coll.Prepare(); }
   virtual void SetDoneCount(int i) { coll.SetDoneCount(i); }
   virtual void PrepareDone() { coll.PrepareDone(); }
@@ -3058,6 +3059,7 @@ public:
   }
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
+  virtual bool IsTransparent() const { return coll.IsTransparent(); }
   virtual void Prepare() { coll.Prepare(); }
   virtual void PrepareDone() { coll.PrepareDone(); }
   virtual int NumFaces() const { return coll.NumFaces(); }
