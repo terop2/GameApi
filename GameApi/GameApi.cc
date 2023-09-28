@@ -4603,10 +4603,11 @@ private:
 
 extern pthread_t g_main_thread_id;
 
+
 class TransparentSeparateFaceCollection : public FaceCollection
 {
 public:
-  TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque) : coll(coll), texture(texture),opaque(opaque) { }
+  TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque, bool force_transparent) : coll(coll), texture(texture),opaque(opaque), force_transparent(force_transparent) { }
 
 
   void Collect(CollectVisitor &vis) {
@@ -4701,6 +4702,8 @@ public:
   
   bool is_transparent(int face) const
   {
+    if (force_transparent) return true;
+    
     //return false;
     if (sx==-1||sy==-1) {
       sx = texture.SizeX();
@@ -4735,6 +4738,8 @@ public:
     if (center.y<0.0) center.y=0.1;
     if (center.y>1.0) center.y=0.9;
     ::Color c = texture.Map(center.x*sx, center.y*sy);
+    // std::cout << c.alpha << std::endl;
+    // stackTrace();
     if (c.alpha>0 && c.alpha<250) return true;
     //std::cout << face << " " << c.alpha << " " << c1.alpha << " " << c2.alpha << " " << c2.alpha << std::endl;
     return false;
@@ -4851,6 +4856,7 @@ public:
   std::atomic<int> m_count=0;
   bool done=false;
   int current_i=0;
+  bool force_transparent=false;
 };
 
 void *trans_thread_func(void *data)
@@ -4862,13 +4868,13 @@ void *trans_thread_func(void *data)
 }
 
 
-GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque)
+GameApi::P GameApi::PolygonApi::transparent_separate(P p, BM bm, bool opaque, bool force_transparent)
 {
   FaceCollection *coll = find_facecoll(e,p);
   BitmapHandle *handle = find_bitmap(e, bm);
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
 
-  return add_polygon2(e, new TransparentSeparateFaceCollection(coll, *b2, opaque),1);
+  return add_polygon2(e, new TransparentSeparateFaceCollection(coll, *b2, opaque, force_transparent),1);
 }
 
 int choose_texture(FaceCollection *coll, int face)
@@ -5011,14 +5017,14 @@ public:
     }
     if (texture) {
     Point2d t1 = coll->TexCoord(face,0);
-    ::Color c1 = texture->Map(t1.x*sx, t1.y*sy);
-    if (c1.alpha<250) return true;
+    //::Color c1 = texture->Map(t1.x*sx, t1.y*sy);
+    //if (c1.alpha<250) return true;
     Point2d t2 = coll->TexCoord(face,1);    
-    ::Color c2 = texture->Map(t2.x*sx, t2.y*sy);
-    if (c2.alpha<250) return true;
+    //::Color c2 = texture->Map(t2.x*sx, t2.y*sy);
+    //if (c2.alpha<250) return true;
     Point2d t3 = coll->TexCoord(face,2);
-    ::Color c3 = texture->Map(t3.x*sx, t3.y*sy);
-    if (c3.alpha<250) return true;
+    //::Color c3 = texture->Map(t3.x*sx, t3.y*sy);
+    //if (c3.alpha<250) return true;
     Point2d center = { float((t1.x+t2.x+t3.x)/3.0), float((t1.y+t2.y+t3.y)/3.0) };
     ::Color c = texture->Map(center.x*sx, center.y*sy);
     if (c.alpha<250) return true;
@@ -5224,8 +5230,15 @@ public:
     */
     OpenglLowApi *ogl = g_low->ogl;
     ogl->glEnable(Low_GL_DEPTH_TEST);
+    //ogl->glDisable(Low_GL_BLEND);
+    //ogl->glDisable(Low_GL_DEPTH_TEST);
     opaque->execute(e);
+    ogl->glDepthMask(Low_GL_FALSE);
+    //ogl->glEnable(Low_GL_BLEND);
     transparent->execute(e);
+    ogl->glDepthMask(Low_GL_TRUE);
+    //ogl->glDisable(Low_GL_BLEND);
+    //ogl->glDepthMask(Low_GL_TRUE);
     ogl->glEnable(Low_GL_DEPTH_TEST);
   }
   void execute2()
@@ -5268,15 +5281,90 @@ GameApi::ML transparent_combine(GameApi::Env &e, GameApi::ML opaque, GameApi::ML
   return add_main_loop(e, new TransparentCombine(item,item2));
 }
 
+
+class DepthTestDisable : public MainLoopItem
+{
+public:
+  DepthTestDisable(MainLoopItem *item) : item(item) { }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    g_low->ogl->glDisable(Low_GL_DEPTH_TEST);
+    item->execute(e);
+    g_low->ogl->glEnable(Low_GL_DEPTH_TEST);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  MainLoopItem *item;
+};
+GameApi::ML depth_test_disable(GameApi::Env &e, GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e,new DepthTestDisable(item));
+}
+
+class TransparentRenderMaterial2 : public MaterialForward
+{
+public:
+  TransparentRenderMaterial2(GameApi::Env &e, GameApi::EveryApi &ev, Material *next) : e(e), ev(ev), next(next) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat(p.id);
+    I13 = depth_test_disable(e,I13);
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst(p.id,pts.id);
+    I13 = depth_test_disable(e,I13);
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst_matrix(p.id,ms.id);
+    I13 = depth_test_disable(e,I13);
+    return I13;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst2(p.id,pta.id);
+    I13 = depth_test_disable(e,I13);
+    return I13;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML I13;
+    I13.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
+    I13 = depth_test_disable(e,I13);
+    return I13;
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  Material *next;
+};
+
 class TransparentRenderMaterial : public MaterialForward
 {
 public:
-  TransparentRenderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::BM bm, Material *next) : e(e), ev(ev),bm(bm),next(next) { }
+  TransparentRenderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::BM bm, Material *next, bool is_transparent) : e(e), ev(ev),bm(bm),next(next),is_transparent(is_transparent) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat(p_opaque.id);
@@ -5296,8 +5384,8 @@ public:
   {
 
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst(p_opaque.id,pts.id);
@@ -5317,8 +5405,8 @@ public:
   {
 
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst_matrix(p_opaque.id,ms.id);
@@ -5338,8 +5426,8 @@ public:
   {
 
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst2(p_opaque.id,pta.id);
@@ -5358,8 +5446,8 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
     ev.bitmap_api.prepare(bm);
-    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true);
-    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false);
+    GameApi::P p_opaque = ev.polygon_api.transparent_separate(p,bm, true,is_transparent);
+    GameApi::P p_trans = ev.polygon_api.transparent_separate(p,bm, false,is_transparent);
 
     GameApi::ML I13;
     I13.id = next->mat_inst_fade(p_opaque.id,pts.id,flip,start_time,end_time);
@@ -5381,14 +5469,20 @@ private:
   GameApi::EveryApi &ev;
   GameApi::BM bm;
   Material *next;
+  bool is_transparent;
 };
 
 
 
-GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT next)
+GameApi::MT GameApi::MaterialsApi::transparent_material(EveryApi &ev, BM bm, MT next, bool is_transparent)
 {
   Material *next_mat = find_material(e,next);
-  return add_material(e, new TransparentRenderMaterial(e,ev,bm,next_mat));
+  return add_material(e, new TransparentRenderMaterial(e,ev,bm,next_mat,is_transparent));
+
+  // TEST (doesnt work)
+  //Material *next_mat = find_material(e,next);
+  //return add_material(e, new TransparentRenderMaterial2(e,ev,next_mat));
+
 }
 
 class DefaultScreenSpaceMaterial : public ScreenSpaceMaterialForward

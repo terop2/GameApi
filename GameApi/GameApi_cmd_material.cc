@@ -242,9 +242,9 @@
 			 "MT", "materials_api", "texture_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::transparent_material,
 			 "m_transparent",
-			 { "ev", "bm", "next" },
-			 { "EveryApi&", "BM", "MT" },
-			 { "ev", "", "" },
+			 { "ev", "bm", "next", "force" },
+			 { "EveryApi&", "BM", "MT", "bool" },
+			 { "ev", "", "", "false" },
 			 "MT", "materials_api", "transparent_material"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::skeletal,

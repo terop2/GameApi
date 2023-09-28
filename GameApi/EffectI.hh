@@ -123,6 +123,8 @@ public:
   //virtual void *Weights_1() const=0;   // i=9
 };
 
+void stackTrace();
+
 class FaceCollection : public CollectInterface
 {
 public:
@@ -151,6 +153,8 @@ public:
   virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
   virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
   virtual float LightAmount(int face, int point) const { return 0.5; }
+
+  virtual bool IsTransparent() const { return false; }
   
   virtual int NumObjects() const {
     //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;

@@ -1582,7 +1582,7 @@ public:
   IMPORT MT generic_shader_material1(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string);
   IMPORT MT generic_shader_material2(EveryApi &ev, MT next, SHP params, std::string, std::string, std::string, std::vector<SHI>);
   IMPORT MT gltf_material_from_file(EveryApi &ev, std::string url, float light_dir_x, float light_dir_y, float light_dir_z);
-  IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next);
+  IMPORT MT transparent_material(EveryApi &ev, BM bm, MT next, bool is_transparent);
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key, int mode);
   IMPORT MT gltf_anim_material2(EveryApi &e, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys,int mode);
@@ -2569,7 +2569,7 @@ public:
   ARR p_mtl2_materials(EveryApi &ev, P p);
   P get_face_count(P p);
   P transparent_separate2(P p, std::vector<BM> vec, bool opaque);
-  P transparent_separate(P p, BM bm, bool opaque);
+  P transparent_separate(P p, BM bm, bool opaque, bool force_transparent);
   void sort_vertices(VA va, M m);
   P remove_faces(P p);
   P combine_textures(P p1, P p2); 
