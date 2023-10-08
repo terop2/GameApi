@@ -2663,6 +2663,160 @@ class PointCollection2d : public Array<int, Point2d>
 
 typedef ArrayConvert<PointCollection2d, int, Point2d> PointCollection2dConvert;
 
+class PointArrayPointCollection2d : public PointCollection2d
+{
+public:
+  PointArrayPointCollection2d(std::vector<Point2d> vec) : vec(vec) { }
+  int Size() const { return vec.size(); }
+  Point2d Index(int i) const { return vec[i]; }
+private:
+  std::vector<Point2d> vec;
+};
+
+class Bezier2d : public CurveIn2d
+{
+public:
+  Bezier2d(PointCollection2d &p) : p(p) { }
+  Point2d Index(float pos) const
+  {
+    int count = p.NumPoints();
+    Vector2d val(0.0,0.0);
+    for(int i=0;i<count;i++)
+      {
+	val += bin(pos,i,count-1)*Vector2d(p.Points(i));
+      }
+    return Point2d(val);
+  }
+  float bin(float pos, int i, int n) const
+  {
+    return float(ni(n,i)) * pow(double(pos), double(i))*pow(double(1.0-pos),double(n-i));
+  }
+  int ni(int n, int i) const
+  {
+    if (i==0) return 1;
+    if (n==i) return 1;
+    return n1(n-1,i-1)+no(n-1,i);
+  }
+  float Size() const
+  {
+    return 1.0;
+  }
+private:
+  PointCollection2d &p;
+};
+
+class BezierPointCollection2d : public PointCollection2d
+{
+public:
+  BezierPointCollection2d(PointCollection2d &p, int count) : p(p),bez(p),sample(bez,count,bez.Size()) { }
+  int Size() const { return count; }
+  Point2d Index(int i) const {
+    return sample.Index(i);
+  }
+private:
+  PointCollection2d &p;
+  Bezier2d bez;
+  SampleCurveIn2d sample;
+};
+
+class OrPointCollection2d : public PointCollection2d
+{
+public:
+  OrPointCollection2d(PointCollection2d &p1, PointCollection2d &p2) : p1(p1), p2(p2) { }
+  int Size() const { return p1.Size()+p2.Size(); }
+  Point2d Index(int i) const
+  {
+    if (i>=0 && i<p1.Size()) return p1.Index(i);
+    return p2.Index(i-p1.Size());
+  }
+private:
+  PointCollection2d &p1, &p2;
+};
+
+class OrArrayPointCollection2d : public PointCollection2d
+{
+public:
+  OrArrayPointCollecion2d(std::vector<PointCollection2d*> vec) : vec(vec) { }
+  int Size() const
+  {
+    int sz = vec.size();
+    int res=0;
+    for(int i=0;i<sz;i++) res+=vec[i]->Size();
+    return res;
+  }
+  Point2d Index(int i) const
+  {
+    int s = vec.size();
+    int sz=0;
+    for(int ii=0;ii<s;ii++)
+      {
+	int sz0 = sz;
+	sz+=vec[ii]->Size();
+	int sz1 = sz;
+	if (i>=sz0 && i<sz1) {
+	  return vec[ii]->Index(i-sz0);
+	}
+      }
+    Point2d p = { 0.0,0.0 };
+    return p;
+  }
+};
+
+class ClosedLoopPointCollection2d : public PointCollection2d
+{
+public:
+  ClosedLoopPointCollection2d(PointCollection2d &coll) : coll(coll) { }
+  int Size() const { return coll.Size()+1; }
+  Point2d Index(int i) const { if (i==Size()-1) return coll.Index(0); return coll.Index(i); }
+private:
+  PointCollection2d &coll;
+};
+
+class PlanePointCollectionFrom2d : public PointCollection
+{
+public:
+  PlanePointCollectionFrom2d(PointCollection2d &coll, float z) : coll(coll), z(z) { }
+  int Size() const { return coll.Size(); }
+  Point Index(int i) const { Point2d p = coll.Index(i); return Point(p.x,p.y,z); }
+private:
+  PointCollection2d &coll;
+  float z;
+};
+
+class LinkPointCollections : public FaceCollection
+{
+public:
+  LinkPointCollections(PointCollection &p1, PointCollection &p2) : p1(p1), p2(p2) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  void Prepare() { }
+  int NumFaces() const { return std::min(p1.Size(),p2.Size()); }
+  int NumPoints(int face) const { return 4; }
+  Point FacePoint(int face, int point) const
+  {
+    switch(point) {
+    case 0: return p1.Index(face);
+    case 1: return p1.Index((face+1)%NumFaces());
+    case 2: return p2.Index((face+1)%NumFaces());
+    case 3: return p2.Index(face);
+    default:
+      std::cout << "Error at LinkPointCollections" << std::endl;
+    };
+    return Point(0.0,0.0,0.0);
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    return -CrossProduct(FacePoint(face,(point+1)%NumPoints(face))-FacePoint(face,point),
+			 FacePoint(face,(point+3)%NumPoints(face))-FacePoint(face,point));
+  }
+  unsigned int Color(int face, int point) const { return 0xffffffff; }
+  Point2d TexCoord(int face,int point) const { Point2d p={0.0,0.0}; return p; }
+  float TexCoord3(int face, int point) const { return 0.0; }
+private:
+  PointCollection &p1, &p2;
+};
+
+
 class TriPointCollection2d : public PointCollection2d
 {
 public:
@@ -2776,6 +2930,8 @@ private:
   float end_x;
   int x_numpoints;
 };
+
+
 #undef max
 class MaxCurve : public Function<float,float>
 {
