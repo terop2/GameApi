@@ -5,6 +5,8 @@
 std::vector<GameApiItem*> colorvolumeapi_functions()
 {
   std::vector<GameApiItem*> vec;
+
+#if 0
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::color_volume_api, &GameApi::ColorVolumeApi::from_float_volume,
 			 "cov_from_fo",
@@ -43,6 +45,7 @@ std::vector<GameApiItem*> colorvolumeapi_functions()
 			 { "COV", "COV" },
 			 { "", "" },
 			 "COV", "color_volume_api", "or_cov"));
+#endif
 #endif
 #endif
   return vec;

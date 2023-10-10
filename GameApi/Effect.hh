@@ -2679,13 +2679,13 @@ public:
   Bezier2d(PointCollection2d &p) : p(p) { }
   Point2d Index(float pos) const
   {
-    int count = p.NumPoints();
-    Vector2d val(0.0,0.0);
+    int count = p.Size();
+    Point2d val = { 0.0,0.0 };
     for(int i=0;i<count;i++)
       {
-	val += bin(pos,i,count-1)*Vector2d(p.Points(i));
+	val += bin(pos,i,count-1)*Vector2d::FromPoint(p.Index(i));
       }
-    return Point2d(val);
+    return val;
   }
   float bin(float pos, int i, int n) const
   {
@@ -2695,7 +2695,7 @@ public:
   {
     if (i==0) return 1;
     if (n==i) return 1;
-    return n1(n-1,i-1)+no(n-1,i);
+    return ni(n-1,i-1)+ni(n-1,i);
   }
   float Size() const
   {
@@ -2705,19 +2705,6 @@ private:
   PointCollection2d &p;
 };
 
-class BezierPointCollection2d : public PointCollection2d
-{
-public:
-  BezierPointCollection2d(PointCollection2d &p, int count) : p(p),bez(p),sample(bez,count,bez.Size()) { }
-  int Size() const { return count; }
-  Point2d Index(int i) const {
-    return sample.Index(i);
-  }
-private:
-  PointCollection2d &p;
-  Bezier2d bez;
-  SampleCurveIn2d sample;
-};
 
 class OrPointCollection2d : public PointCollection2d
 {
@@ -2736,7 +2723,7 @@ private:
 class OrArrayPointCollection2d : public PointCollection2d
 {
 public:
-  OrArrayPointCollecion2d(std::vector<PointCollection2d*> vec) : vec(vec) { }
+  OrArrayPointCollection2d(std::vector<PointCollection2d*> vec) : vec(vec) { }
   int Size() const
   {
     int sz = vec.size();
@@ -2760,6 +2747,8 @@ public:
     Point2d p = { 0.0,0.0 };
     return p;
   }
+private:
+  std::vector<PointCollection2d*> vec;
 };
 
 class ClosedLoopPointCollection2d : public PointCollection2d
@@ -2806,7 +2795,7 @@ public:
   }
   Vector PointNormal(int face, int point) const
   {
-    return -CrossProduct(FacePoint(face,(point+1)%NumPoints(face))-FacePoint(face,point),
+    return -Vector::CrossProduct(FacePoint(face,(point+1)%NumPoints(face))-FacePoint(face,point),
 			 FacePoint(face,(point+3)%NumPoints(face))-FacePoint(face,point));
   }
   unsigned int Color(int face, int point) const { return 0xffffffff; }
@@ -2889,6 +2878,22 @@ private:
   int count;
   float length;
 };
+
+class BezierPointCollection2d : public PointCollection2d
+{
+public:
+  BezierPointCollection2d(PointCollection2d &p, int count) : p(p),bez(p),sample(bez,count,bez.Size()),count(count) { }
+  int Size() const { return count; }
+  Point2d Index(int i) const {
+    return sample.Index(i);
+  }
+private:
+  PointCollection2d &p;
+  Bezier2d bez;
+  SampleCurveIn2d sample;
+  int count;
+};
+
 
 class PolyFromCurve2d : public PointCollection2d
 {

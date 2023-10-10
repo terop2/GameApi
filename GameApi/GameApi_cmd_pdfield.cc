@@ -5,6 +5,7 @@ std::vector<GameApiItem*> polydistfield_functions()
 {
   std::vector<GameApiItem*> vec;
 #ifndef STABLE
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_dist_api, &GameApi::PolygonDistanceField::create_pd,
 			 "create_pd",
 			 { "mesh", "dist_field" },
@@ -72,6 +73,7 @@ std::vector<GameApiItem*> polydistfield_functions()
 			 { "ev", "", "" },
 			 "MT", "poly_dist_api", "mesh_color_from_sfo"));
  
+#endif
 #endif
   return vec;
 }

@@ -5,6 +5,7 @@
 std::vector<GameApiItem*> vectorapi_functions()
 {
   std::vector<GameApiItem*> vec;
+#if 0
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_api, &GameApi::VectorApi::vector,
 			 "vector",
@@ -165,6 +166,7 @@ std::vector<GameApiItem*> vectorapi_functions()
 			 { "", "", "0" },
 			 "ML", "mainloop_api", "gs_time"));
   
+#endif
 #endif  
   return vec;
 }
