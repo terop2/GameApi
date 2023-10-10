@@ -735,7 +735,27 @@ VARYING_OUT + " vec4 ex_Color;\n"
     // NOTE: ADDING MORE uniform or attribute or varying varibles does not work, and gives black screen
 "//M:\n"
 "//B:\n"
-"#ifdef SKELETAL\n"
+
+
+"#ifdef WATER\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+    "vec4 water(vec4 pos)\n"
+"{\n"
+"    ex_Position = in_Position;\n" //vec3(mat3(in_View2)*mat3(in_iMV)*in_Position);\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n" //mat3(in_View2)*mat3(in_iMV)*(in_Position + in_InstPos);\n"
+"#endif\n"
+"#ifdef INSTMAT\n"
+"  ex_Position = vec3(vec4(in_Position,0.0)*in_InstMat);\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
+"#endif\n"
+"  return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"    
+
+    "#ifdef SKELETAL\n"
 "vec4 skeletal(vec4 pos)\n"
 "{\n"
 "    mat4 m = bones[bone_id];\n"
@@ -990,7 +1010,6 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "#endif\n"
 "#endif\n"
 
-    
 
 "#ifdef EX_TEXCOORD\n"
 "#ifdef IN_TEXCOORD\n"
@@ -1053,6 +1072,7 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "#endif\n"
 "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
+"#ifdef NEWSHADOW\n"
 "uniform mat4 in_View2;\n"
 
 "vec4 newshadow_1(vec4 pos)\n"
@@ -1068,8 +1088,10 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
     "#ifdef IN_POSITION\n"
 "#ifdef EX_POSITION\n"
+"#ifdef NEWSHADOW\n"
 "vec4 newshadow_2(vec4 pos)\n"
 "{\n"
 "    ex_Position = in_Position;\n" //vec3(mat3(in_View2)*mat3(in_iMV)*in_Position);\n"
@@ -1083,24 +1105,9 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "}\n"
 "#endif\n"
 "#endif\n"
+"#endif\n"
 
-"#ifdef IN_POSITION\n"
-"#ifdef EX_POSITION\n"
-"#ifdef WATER\n"
-    "vec4 water(vec4 pos)\n"
-"{\n"
-"    ex_Position = in_Position;\n" //vec3(mat3(in_View2)*mat3(in_iMV)*in_Position);\n"
-"#ifdef INST\n"
-"  ex_Position = in_Position + in_InstPos;\n" //mat3(in_View2)*mat3(in_iMV)*(in_Position + in_InstPos);\n"
-"#endif\n"
-"#ifdef INSTMAT\n"
-"  ex_Position = vec3(vec4(in_Position,0.0)*in_InstMat);\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
-"#endif\n"
-"  return pos;\n"
-"}\n"
-"#endif\n"
-"#endif\n"
-"#endif\n"
+
 "#ifdef ADJUST\n"
     "vec4 adjust(vec4 pos)\n"
     "{\n"
@@ -1459,7 +1466,29 @@ s+="#ifdef SPECULAR_SIZE\n"
 "uniform vec4 c_color[8];\n"
 
 "#endif\n"
-"#ifdef CHOOSE_COLOR\n"
+
+
+"#ifdef WATER\n"
+"#ifdef EX_POSITION\n"
+"uniform vec3 water_center;\n"
+"uniform float wave_mult;\n"
+"uniform float wave_time;\n"
+"uniform vec4 water_color1;\n"
+"uniform vec4 water_color2;\n"
+"uniform vec4 water_color3;\n"
+"vec4 water(vec4 rgb)\n"
+"{\n"
+"    float d = length(ex_Position-water_center);\n"
+"    float s = sin(d*wave_mult+wave_time);\n"
+"    s/=2.0; s+=0.5;\n"
+   "    if (s<0.5) { return mix(water_color1,water_color2,s*2.0); }\n"
+"    return mix(water_color2,water_color3,(s-0.5)*2.0);\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+
+
+  "#ifdef CHOOSE_COLOR\n"
 "uniform vec4 color_choice;\n"
 "uniform float mix_val;\n"
 "vec4 choose_color(vec4 rgb)\n"
@@ -1659,24 +1688,6 @@ s+="#ifdef SPECULAR_SIZE\n"
 "vec4 newshadow_2(vec4 rgb) {\n"
 "   float level = newshadow_level();\n"
 "   return vec4(level*rgb.rgb,1.0);\n"
-"}\n"
-"#endif\n"
-"#endif\n"
-"#ifdef EX_POSITION\n"
-"#ifdef WATER\n"
-"uniform vec3 water_center;\n"
-"uniform float wave_mult;\n"
-"uniform float wave_time;\n"
-"uniform vec4 water_color1;\n"
-"uniform vec4 water_color2;\n"
-"uniform vec4 water_color3;\n"
-"vec4 water(vec4 rgb)\n"
-"{\n"
-"    float d = length(ex_Position-water_center);\n"
-"    float s = sin(d*wave_mult+wave_time);\n"
-"    s/=2.0; s+=0.5;\n"
-   "    if (s<0.5) { return mix(water_color1,water_color2,s*2.0); }\n"
-"    return mix(water_color2,water_color3,(s-0.5)*2.0);\n"
 "}\n"
 "#endif\n"
 "#endif\n"
@@ -3187,6 +3198,26 @@ s+="precision highp float;\n"
 "#endif\n"
 "#endif\n"
 
+
+"#ifdef WATER\n"
+"#ifdef IN_POSITION\n"
+"#ifdef EX_POSITION\n"
+    "vec4 water(vec4 pos)\n"
+"{\n"
+"    ex_Position = in_Position;\n" //vec3(mat3(in_View2)*mat3(in_iMV)*in_Position);\n"
+"#ifdef INST\n"
+"  ex_Position = in_Position + in_InstPos;\n" //mat3(in_View2)*mat3(in_iMV)*(in_Position + in_InstPos);\n"
+"#endif\n"
+"#ifdef INSTMAT\n"
+"  ex_Position = vec3(vec4(in_Position,0.0)*in_InstMat);\n" //mat3(in_View2)*mat3(in_iMV)* (in_Position * in_InstMat);\n"
+"#endif\n"
+"  return pos;\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"    
+
+  
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_COLOR\n"
@@ -3803,6 +3834,27 @@ s+="#ifdef CUBEMAPTEXTURES\n"
     
     //"//M:\n"
 
+
+"#ifdef WATER\n"
+"#ifdef EX_POSITION\n"
+"uniform vec3 water_center;\n"
+"uniform float wave_mult;\n"
+"uniform float wave_time;\n"
+"uniform vec4 water_color1;\n"
+"uniform vec4 water_color2;\n"
+"uniform vec4 water_color3;\n"
+"vec4 water(vec4 rgb)\n"
+"{\n"
+"    float d = length(ex_Position-water_center);\n"
+"    float s = sin(d*wave_mult+wave_time);\n"
+"    s/=2.0; s+=0.5;\n"
+   "    if (s<0.5) { return mix(water_color1,water_color2,s*2.0); }\n"
+"    return mix(water_color2,water_color3,(s-0.5)*2.0);\n"
+"}\n"
+"#endif\n"
+"#endif\n"
+
+  
 "#ifdef CHOOSE_COLOR\n"
 "uniform vec4 color_choice;\n"
 "uniform float mix_val;\n"
@@ -4166,6 +4218,7 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
 "#endif\n"
 
 "#ifdef EX_POSITION\n"
+"#ifdef NEWSHADOW\n"
 "uniform vec3 in_dx;\n"
 "uniform vec3 in_dy;\n"
 "uniform vec3 in_pp;\n"
@@ -4180,8 +4233,10 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
 "   return len;\n"
 "}\n"
 "#endif\n"
+"#endif\n"
 "#ifdef EX_POSITION\n"
-"vec4 newshadow_1(vec4 rgb)\n"
+"#ifdef NEWSHADOW\n"
+  "vec4 newshadow_1(vec4 rgb)\n"
 "{\n"
 "    vec3 pos = ex_Position;\n"
 "    float tx_x = find_projection_length(pos,in_dx)/in_scale;\n"
@@ -4196,6 +4251,7 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
     "   dist=clamp(dist,0.0,800.0);\n"
 "    return vec4(dist/800.0,dist/800.0,dist/800.0,1.0);\n"
 "}\n"
+"#endif\n"
 "#endif\n"
 "#ifdef EX_POSITION\n"
 "#ifdef NEWSHADOW\n"
@@ -5344,6 +5400,10 @@ std::string replace_c(const replace_c_params &pp)
 	  if (call)
 	    strings += " " + call->define_strings();
 	  std::stringstream ss2(strings);
+
+
+	  //std::cout << "Strings:" << strings << std::endl;
+
 	  std::string s2;
 	  bool b = true;
 	  while(ss2>>s2)
@@ -5351,11 +5411,18 @@ std::string replace_c(const replace_c_params &pp)
 	      if (s2==s)
 		{
 		  b = false;
+		  //std::cout << "Success:" << s2 << "==" << s << " -> false" << std::endl;
 		  break;
 		}
 	    }
+	  if (b) {
+	    //std::cout << "// Exclude " << s << std::endl;
+	  } else {
+	    //std::cout << "// Include " << s << std::endl;
+	  };
 	  current_bools.push_back(b?1:0);
 	  if (b) {
+	    //std::cout << "Push " << s << std::endl;
 	    current_define.push_back(s);
 	  }
 	  continue;
@@ -5372,16 +5439,26 @@ std::string replace_c(const replace_c_params &pp)
 	  std::stringstream ss2(strings);
 	  std::string s2;
 	  bool b = false;
+
+	  //std::cout << "Strings:" << strings << std::endl;
+	  
 	  while(ss2>>s2)
 	    {
 	      if (s2==s)
 		{
+		  //std::cout << "Success:" << s2 << "==" << s << " -> true" << std::endl;
 		  b = true;
 		  break;
 		}
 	    }
+	  if (b) {
+	    //std::cout << "// Exclude ndef " << s << std::endl;
+	  } else {
+	    //std::cout << "// Include ndef " << s << std::endl;
+	  };
 	  current_bools.push_back(b?1:0);
 	  if (b) {
+	    //  std::cout << "Push " << s << std::endl;
 	    current_define.push_back(s);
 	  }
 	  continue;
@@ -5391,8 +5468,10 @@ std::string replace_c(const replace_c_params &pp)
 	  if (current_bools.size()>0)
 	    {
 	    int b = current_bools[current_bools.size()-1];
-	    if (b)
+	    if (b) {
+	      //std::cout << "Pop:" << current_define[current_define.size()-1] << std::endl;
 	      current_define.pop_back();
+	    }
 	    current_bools.pop_back();
 	    }
 	  continue;
@@ -5574,6 +5653,15 @@ std::string replace_c(const replace_c_params &pp)
 	  out+= "\n";
 	}
     }
+
+  /*
+  if  (current_define.size()!=0)
+    {
+      std::cout << "ERROR:" << std::endl;
+      int s=current_define.size();
+      for(int i=0;i<s;i++) std::cout << "STACK STILL HAS:" << current_define[i] << std::endl;
+    }
+  */
   return out;
 }
 std::string add_line_numbers(std::string s)
@@ -5768,7 +5856,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //                     std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                        std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -5800,7 +5888,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //                           std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                               std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

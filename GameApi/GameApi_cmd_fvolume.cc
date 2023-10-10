@@ -29,6 +29,7 @@ std::vector<GameApiItem*> bitmapapi_functions();
 std::vector<GameApiItem*> floatvolumeapi_functions()
 {
   std::vector<GameApiItem*> vec;
+#if 0
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::from_volume,
 			 "fo_from_volume",
@@ -304,6 +305,6 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "40.0", "40.0", "50", "50", "50.0", "50.0" },
 			 "P", "dist_api", "distance_poly_sph", "[B]", "Sometimes gives bad result"));
 #endif
-  
+#endif  
   return vec;
 }

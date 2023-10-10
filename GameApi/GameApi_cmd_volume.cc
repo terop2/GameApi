@@ -170,6 +170,8 @@ std::vector<GameApiItem*> volumeapi_functions()
 #endif
 
 #ifndef STABLE
+
+#if 0
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::implicit_api, &GameApi::ImplicitApi::im_sphere,
 			 "im_sphere",
@@ -235,6 +237,8 @@ std::vector<GameApiItem*> volumeapi_functions()
 			 { "", "300.0", "300.0", "255", "255", "0.5", "0.5" },
 			 "BM", "implicit_api", "render_lower_color"));
 
+#endif
+  
 #endif
   return vec;
 }
