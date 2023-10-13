@@ -1148,6 +1148,7 @@ public:
   virtual void Init()=0;
   virtual int Iter()=0;
   virtual void Destroy()=0;
+  virtual bool NoMainLoop() const { return false; }
   virtual Splitter* NextState(int code) { return this; }
   virtual void EnvTransfer(Splitter *next) { next->e = e; next->ev = ev; }
 };

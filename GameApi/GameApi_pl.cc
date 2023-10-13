@@ -22644,18 +22644,21 @@ public:
 
 
     next->execute(ee);
+    counter++;
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1 /*&& counter>3*/)
       {
 	zoom_pos--; if (zoom_pos<-5) zoom_pos=-5;
 	calc_mat();
+	counter=0;
       }
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1 /*&& counter>3*/)
       {
 	zoom_pos++; if (zoom_pos>5) zoom_pos=5;
 	calc_mat();
+	counter=0;
       }
   }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
@@ -22673,6 +22676,7 @@ private:
   MainLoopItem *next;
   int zoom_pos = 0;
   Matrix mat = Matrix::Identity();
+  int counter=0;
 };
 
 class MouseRollZoom2 : public MainLoopItem
@@ -22719,18 +22723,21 @@ public:
 
 
     next->execute(ee);
+    counter++;
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1 /*&& counter>3*/)
       {
 	zoom_pos--; if (zoom_pos<-20) zoom_pos=-20;
 	calc_mat();
+	counter=0;
       }
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1 /*&& counter>3*/)
       {
 	zoom_pos++; if (zoom_pos>10) zoom_pos=10;
 	calc_mat();
+	counter=0;
       }
   }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
@@ -22750,6 +22757,7 @@ private:
   MainLoopItem *next;
   int zoom_pos = 0;
   Matrix mat = Matrix::Identity();
+  int counter=0;
 };
 
 

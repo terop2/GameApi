@@ -15937,7 +15937,9 @@ void splitter_iter2(void *arg)
       }
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
-      emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
+      if (!next->NoMainLoop()) {
+	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
+      }
 #else
       splitter_current = next;
 #endif
@@ -15960,7 +15962,9 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 #ifdef VIRTUAL_REALITY
   vr_run2(spl2);
 #else
-  emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+  if (spl2->NoMainLoop()) { } else {
+    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+  }
 #endif
 #else
   while(splitter_current) {

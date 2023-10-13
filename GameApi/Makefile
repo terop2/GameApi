@@ -107,6 +107,10 @@ draco/compression/attributes/kd_tree_attributes_encoder.cc \
 draco/metadata/geometry_metadata.cc  draco/metadata/metadata_encoder.cc       draco/metadata/property_table.cc     \
 draco/metadata/metadata.cc     \
 draco/metadata/metadata_decoder.cc          draco/metadata/structural_metadata.cc \
+webgpu.cc
+
+#lib/lib_webgpu.cc \
+#lib/lib_webgpu_cpp20.cc
 
 
 CFiles2 = 
