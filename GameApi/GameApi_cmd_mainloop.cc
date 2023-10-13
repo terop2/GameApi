@@ -992,6 +992,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML", "std::string", "std::string" },
 			 { "ev", "", "https://tpgames.org/BRAND3.MID", "https://tpgames.org/default.ptc" },
 			 "ML", "mainloop_api", "load_midi"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::android_resize,
+			 "android_resize",
+			 { "ev", "ml", "mult" },
+			 { "EveryApi&", "ML", "float" },
+			 { "ev", "", "1.0" },
+			 "ML", "mainloop_api", "android_resize"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",

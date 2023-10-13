@@ -27,13 +27,31 @@
 #include <cstring>
 #include <cstdio>
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 extern int g_logo_status;
 extern std::string g_msg_string;
 extern int g_global_face_count;
 extern int g_engine_status;
+extern std::string g_gpu_vendor;
+
+#ifdef EMSCRIPTEN
+bool is_mobile_1()
+{
+  int screen_width = EM_ASM_INT( return screen.availWidth; );
+  return screen_width<545;
+}
+
+#else
+bool is_mobile_1() { return false; }
+#endif
+
+
 bool is_mobile(GameApi::EveryApi &ev)
 {
-  return ev.mainloop_api.get_screen_width() < 700;
+  return is_mobile_1() || ev.mainloop_api.get_screen_width() < 800 ||(g_gpu_vendor != "NVID" && g_gpu_vendor != "AMD" && g_gpu_vendor != "WebK");
 }
 
 bool g_deploy_phase = false;
@@ -34305,5 +34323,22 @@ void async_pending_minus(std::string label, std::string info)
 	async_infos.erase(async_infos.begin()+i);
 	break;
       }
+    }
+}
+
+GameApi::ML GameApi::MainLoopApi::android_resize(GameApi::EveryApi &ev, ML ml, float mult)
+{
+  if (is_mobile(ev))
+    {
+      MN I7=ev.move_api.mn_empty();
+      MN I8=ev.move_api.scale2(I7,3*mult,3*mult,3*mult);
+      MN I9=ev.move_api.rotatex(I8,-0.3*mult);
+      MN I10=ev.move_api.trans2(I9,0,-80,0*mult);
+      ML I11=ev.move_api.move_ml(ev,ml,I10,1,10.0);
+      return I11;
+    }
+  else
+    {
+      return ml;
     }
 }
