@@ -349,6 +349,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML android_resize(EveryApi &ev, ML ml, float mult);
   ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
   ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
   ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
