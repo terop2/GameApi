@@ -1006,7 +1006,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
-
+   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::webgpu_window,
+			  "webgpu_window",
+			  { "ev", "ml" },
+			  { "EveryApi&", "ML" },
+			  { "ev", "" },
+			  "RUN", "blocker_api", "webgpu_window"));
+   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2,
 			 "html_run",
 			 { "ev", "r", "homepage" },

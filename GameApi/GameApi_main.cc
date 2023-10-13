@@ -2037,10 +2037,12 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   if (e2.type==Low_SDL_KEYDOWN||e2.type==Low_SDL_KEYUP)
     e2.ch = ee.ch;
   else e2.ch=-1;
+  //std::cout << "Type=" << ee.type << " " << (int)e2.ch << std::endl;
   if (e2.type==Low_SDL_MOUSEWHEEL && e2.ch==-1)
     {
-      if (ee.mouse_wheel_y<0) e2.ch=-1;
-      if (ee.mouse_wheel_y>0) e2.ch=1;
+      //std::cout << "MOUSE_WHEEL:" << ee.mouse_wheel_y << std::endl;
+      if (ee.mouse_wheel_y<0) e2.ch=-1; else
+	if (ee.mouse_wheel_y>0) e2.ch=1; else e2.ch=-666;
     }
   if (ee.cursor_pos.id!=-1) {
     e2.cursor_pos = *find_point(e,ee.cursor_pos);

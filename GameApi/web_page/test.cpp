@@ -25,6 +25,7 @@ void onprogress(unsigned int, void*, int)
 
 bool find_string(std::string s, std::string s2)
 {
+  //std::cout << "FIND_STRING:" << s << "==" << s2 << std::endl;
   int ss=s.size()-s2.size();
   int sk = s2.size();
   for(int i=0;i<ss;i++)
@@ -356,7 +357,7 @@ int main(int argc, char *argv[]) {
 
 
   // initialize window
-  if (!find_string(code, "low_framebuffer_run"))
+  if (!find_string(code, "low_framebuffer_run") && !find_string(code, "webgpu_window"))
     {
       bool vr_init=true;
       if (!find_string(code, "vr_window")) {
@@ -376,7 +377,7 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.mainloop_api.set_seamless_url(seamless_url);
 
-  if (!find_string(code, "low_framebuffer_run"))
+  if (!find_string(code, "low_framebuffer_run") && !find_string(code, "webgpu_window"))
     {
       ev.shader_api.load_default();
       set_status(4,6);

@@ -635,11 +635,15 @@ echo "</script>\n";
 require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
+
+echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\" tabindex=-1></canvas>";
+
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
 } else {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
 }
+
 
 if ($connect=="yes") {
   echo "Connect ID: <div contentEditable=\"true\">enter id</div>";
@@ -2083,6 +2087,10 @@ function check_em(indicator) {
 function check_emscripten_running(indicator)
 {
   var canv = document.getElementById("canvas");
+  //var canv2 = document.querySelector("#canvas");
+  //var ctx = canv2.getContext("webgpu");
+  //console.log("WEBGPUCONTEXT:");
+  //console.log(ctx);
   if (Module) {
          //console.log(Module);
      	 //Module.ready().then(_ => check_em(indicator));
@@ -2304,21 +2312,21 @@ if ($mobile == "yes") {
 if ($nothreads == "yes") {
    if ($highmem == "yes") {
   //echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
-   echo "<script>import Module from './web_page_nothreads_highmem.js';</script>";
+   echo "<script async>import Module from './web_page_nothreads_highmem.js';</script>";
 
    } else {
  // echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
-   echo "<script>import Module from './web_page_nothreads.js';</script>";
+   echo "<script async>import Module from './web_page_nothreads.js';</script>";
 
 }
 } else {
    if ($highmem == "yes") {
  // echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
-   echo "<script>import Module from './web_page_highmem.js';</script>";
+   echo "<script async>import Module from './web_page_highmem.js';</script>";
 
    } else {
   //echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
-   echo "<script>import Module from './web_page.js';</script>";
+   echo "<script async>import Module from './web_page.js';</script>";
   }
 }
 */
@@ -2371,6 +2379,12 @@ if ($mobile=="yes") {
   if (!iframe2) return;
   iframe2.style.width = (wd).toString() + "px";
   iframe2.style.height = (hd).toString() + "px";
+
+  var iframe3 = document.getElementById("gpucanvas");
+  if (!iframe3) return;
+  iframe3.style.width = (wd).toString() + "px";
+  iframe3.style.height = (hd).toString() + "px";
+
 
   //var prog = document.getElementById("prgress");
   //prog.style.width = (wd).toString() + "px";
@@ -2491,6 +2505,7 @@ if ($nothreads == "yes") {
 ?>
 
   const s = document.createElement('script');
+  s.setAttribute('async', '');
   s.setAttribute('src', filename);
   s.setAttribute('crossorigin', 'anonymous');
   document.body.appendChild(s);
