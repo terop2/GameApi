@@ -725,6 +725,15 @@ struct MainLoopEvent
 };
 
 
+class MainLoopItemWGPU : public CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+};
 
 class MainLoopItem : public CollectInterface
 {

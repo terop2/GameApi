@@ -204,6 +204,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(WM)
   MAC(FtA)
   MAC(ML)
+  MAC(GML)
   MAC(TF)
   MAC(SHC)
   template<class T>
@@ -331,7 +332,7 @@ public:
   IMPORT BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
   IMPORT void run(BLK blk);
-  IMPORT RUN webgpu_window(EveryApi &ev, ML ml);
+  IMPORT RUN webgpu_window(EveryApi &ev, GML ml);
   IMPORT RUN game_window2(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT RUN game_window_2nd_display(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT RUN vr_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float dura, bool invert, bool translate);

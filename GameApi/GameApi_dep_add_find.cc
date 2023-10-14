@@ -675,6 +675,16 @@ GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr)
   a.id = env->arrays.size()-1;
   return a;
 }
+GameApi::ML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->wgpu_main_loop.push_back(item);
+  if (g_current_block != -2)
+  add_b(std::shared_ptr<void>(item));
+  GameApi::ML ml;
+  ml.id = env->wgpu_main_loop.size()-1;
+  return ml;
+}
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1886,6 +1896,11 @@ MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->main_loop[ml.id];
+}
+MainLoopItemWGPU *find_main_loop_wgpu(GameApi::Env &e, GameApi::GML ml)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->wgpu_main_loop[ml.id];
 }
 FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft)
 {
