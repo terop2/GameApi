@@ -804,6 +804,7 @@ struct EnvImpl
   std::vector<Platform*> platforms;
   std::vector<Timing*> timings;
   std::vector<GameApi::GlobalIlluminationData*> globalillumination;
+  std::vector<MainLoopItemWGPU*> wgpu_main_loop;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1221,6 +1222,7 @@ GameApi::EX add_expr(GameApi::Env &e, ExprNode *n);
 template<class T>
 GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr);
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item);
+GameApi::GML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item);
 GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info);
 GameApi::W add_widget(GameApi::Env &e, GuiWidget *w);
 void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w);
@@ -1372,6 +1374,7 @@ ExprNode *find_expr(GameApi::Env &e, GameApi::EX n);
 template<class T>
 std::vector<T> *find_array(GameApi::Env &e, GameApi::A<T> arr);
 MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml);
+MainLoopItemWGPU *find_main_loop_wgpu(GameApi::Env &e, GameApi::GML ml);
 FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft);
 ShaderModule *find_shader_module(GameApi::Env &e, GameApi::SFO sfo);
 GuiWidget *find_widget(GameApi::Env &e, GameApi::W w);

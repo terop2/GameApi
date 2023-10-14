@@ -1335,7 +1335,8 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
    }
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
-    res+="ML I88=ev.mainloop_api.async_gltf(I66,I154);\n";
+    res+="ML I67=ev.mainloop_api.android_resize(ev,I66,1.0);\n";
+    res+="ML I88=ev.mainloop_api.async_gltf(I67,I154);\n";
     res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
     res+="ML I800=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
@@ -1343,7 +1344,8 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
 
 
   } else {
-    res+="ML I67=ev.mainloop_api.mouse_roll_zoom2(ev,I66);\n";
+    res+="ML I67=ev.mainloop_api.android_resize(ev,I66,1.0);\n";
+    res+="ML I68=ev.mainloop_api.mouse_roll_zoom2(ev,I67);\n";
     res+="ML I800=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
 

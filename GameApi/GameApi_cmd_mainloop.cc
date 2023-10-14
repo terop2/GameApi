@@ -1015,7 +1015,7 @@ std::vector<GameApiItem*> blocker_functions()
    vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::webgpu_window,
 			  "webgpu_window",
 			  { "ev", "ml" },
-			  { "EveryApi&", "ML" },
+			  { "EveryApi&", "GML" },
 			  { "ev", "" },
 			  "RUN", "blocker_api", "webgpu_window"));
    
