@@ -2526,6 +2526,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P polygon_fetch(P p);
   PL rect_pl(float start_x, float end_x,
 	     float start_y, float end_y,
 	     float start_z, float end_z,

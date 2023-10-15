@@ -223,6 +223,12 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "quads_to_triangles"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::polygon_fetch,
+			 "p_fetch",
+			 { "p" },
+			 { "P" },
+			 { "" },
+			 "P", "polygon_api", "polygon_fetch"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::quad,
 			 "quad",
 			 { "p1", "p2", "p3", "p4" },
