@@ -1,4 +1,4 @@
-  
+
 #include "VertexArray.hh"
 
 //#define NO_SDL_GLEXT
@@ -3821,3 +3821,219 @@ void Dyn::render()
   }
 
 #endif
+
+class PolysFaceCollection : public FaceCollection
+{
+public:
+  PolysFaceCollection(VertexArraySet::Polys &polys) : polys(polys) { }
+  void Collect(CollectVisitor &vis) { }
+  void HeavyPrepare() { }
+  void Prepare() { }
+
+  int NumFaces() const { int faces = polys.tri_polys.size()/3 + polys.quad_polys.size()/6*2;
+    if (!g_disable_polygons) {
+      faces+=polys.poly_polys.size()-3;
+    }
+    return faces; }
+  int NumPoints(int face) const { return 3; /* TODO polygons */ }
+
+  Point FacePoint(int face, int point) const
+  {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_polys.size()/3) return Point(0.0,0.0,0.0);
+      return polys.quad_polys[face*3+point];
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3)
+      {
+	if (!g_disable_polygons) {
+	  face-=polys.tri_polys.size()/3;
+	  face-=polys.quad_polys.size()/3;
+	  return polys.poly_polys[face+point];
+	}
+    return Point(0.0,0.0,0.0);
+      }
+    // triangles
+      if (face>=polys.tri_polys.size()/3) return Point(0.0,0.0,0.0);
+	return polys.tri_polys[face*3+point];
+      
+
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      
+      if (face>=polys.quad_normals.size()/3) return Vector(0.0,0.0,0.0);
+      return polys.quad_normals[face*3+point];
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3)
+      {
+	// triangles
+    if (!g_disable_polygons) {
+      face-=polys.tri_polys.size()/3;
+      face-=polys.quad_polys.size()/3;
+      return polys.poly_normals[face+point];
+      
+    }
+    return Vector(0.0,0.0,0.0);
+      }
+      if (face>=polys.tri_normals.size()/3) return Vector(0.0,0.0,0.0);
+	return polys.tri_normals[face*3+point];
+      
+
+  }
+  float Attrib(int face, int point, int id) const { return 0.0; }
+  int AttribI(int face, int point, int id) const { return 0; }
+  unsigned int Color(int face, int point) const {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_color.size()/4/3) return 0x0;
+      float red = polys.quad_color[face*3*4+point*4+0];
+      float green = polys.quad_color[face*3*4+point*4+1];
+      float blue = polys.quad_color[face*3*4+point*4+2];
+      float alpha = polys.quad_color[face*3*4+point*4+3];
+      ::Color c(red,green,blue,alpha);
+      return c.Pixel();
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3)
+      {
+    if (!g_disable_polygons) {
+      face-=polys.tri_polys.size()/3;
+      face-=polys.quad_polys.size()/3;
+      float red = polys.poly_color[face*4+point*4+0];
+      float green = polys.poly_color[face*4+point*4+1];
+      float blue = polys.poly_color[face*4+point*4+2];
+      float alpha = polys.poly_color[face*4+point*4+3];
+      ::Color c(red,green,blue,alpha);
+      return c.Pixel();
+      
+    }
+    return 0x00;
+      }
+      if (face>=polys.tri_color.size()/4/3) return 0x0;
+      float red = polys.tri_color[face*4*3+point*4+0];
+      float green = polys.tri_color[face*4*3+point*4+1];
+      float blue = polys.tri_color[face*4*3+point*4+2];
+      float alpha = polys.tri_color[face*4*3+point*4+3];
+      ::Color c(red,green,blue,alpha);
+      return c.Pixel();
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_texcoord.size()/3) { Point2d p; p.x = 0.0; p.y=0.0; return p; }
+      Point2d p;
+      p.x = polys.quad_texcoord[face*3+point].x;
+      p.y = polys.quad_texcoord[face*3+point].y;
+      return p;
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      if (!g_disable_polygons) {
+	face-=polys.tri_polys.size()/3;
+	face-=polys.quad_polys.size()/3;
+	Point2d p;
+	p.x =  polys.poly_texcoord[face+point].x;
+	p.y =  polys.poly_texcoord[face+point].y;
+	return p;
+      }
+    Point2d p; p.x = 0.0; p.y = 0.0; return p;
+    }
+    if (face>=polys.tri_texcoord.size()/3) { Point2d p; p.x = 0.0; p.y=0.0; return p; }
+    Point2d p;
+    p.x = polys.tri_texcoord[face*3+point].x;
+    p.y = polys.tri_texcoord[face*3+point].y;
+    return p;
+  
+
+  }
+  float TexCoord3(int face, int point) {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_texcoord.size()/3) { return 0.0; }
+      return polys.quad_texcoord[face*3+point].z;
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      if (!g_disable_polygons) {
+	face-=polys.tri_polys.size()/3;
+	face-=polys.quad_polys.size()/3;
+	return polys.poly_texcoord[face+point].z; 
+      }
+    return 0.0;
+    }
+      if (face>=polys.tri_texcoord.size()/3) { return 0.0; }
+      return polys.tri_texcoord[face*3+point].z;
+  }
+  VEC4 Joints(int face, int point) {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_joint.size()/3) { VEC4 v; return v; }
+      return polys.quad_joint[face*3+point];
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      if (!g_disable_polygons) {
+	face-=polys.tri_polys.size()/3;
+	face-=polys.quad_polys.size()/3;
+	return polys.poly_joint[face+point];
+      }
+    VEC4 v; return v;
+    }
+      if (face>=polys.tri_joint.size()/3) { VEC4 v; return v; }
+      return polys.tri_joint[face*3+point];
+
+  }
+  VEC4 Weights(int face, int point) const
+  {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_weight.size()/3) { VEC4 v; return v; }
+      return polys.quad_weight[face*3+point];
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      if (!g_disable_polygons) {
+	face-=polys.tri_polys.size()/3;
+	face-=polys.quad_polys.size()/3;
+	return polys.poly_weight[face+point];
+      
+      }
+    VEC4 v; return v;
+    }
+    if (face>=polys.tri_weight.size()/3) { VEC4 v; return v; }
+      return polys.tri_weight[face*3+point];
+
+  }
+  Point EndFacePoint(int face, int point) const
+  {
+    if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+      // quads
+      face-=polys.tri_polys.size()/3;
+      if (face>=polys.quad_polys2.size()/3) { return Point(0.0,0.0,0.0); }
+      
+      return polys.quad_polys2[face*3+point];
+    } else if (face>=polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
+    if (!g_disable_polygons) {
+      face-=polys.tri_polys.size()/3;
+      face-=polys.quad_polys.size()/3;
+      return polys.poly_polys2[face+point];
+    }
+    return Point(0.0,0.0,0.0);
+    }
+	// triangles
+	if (face>=polys.tri_polys2.size()/3) { return Point(0.0,0.0,0.0); }
+	return polys.tri_polys2[face*3+point];
+
+  }
+private:
+  VertexArraySet::Polys &polys;
+};
+
+GameApi::P GameApi::PolygonApi::polygon_fetch(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  coll->Prepare();
+  VertexArraySet *set = new VertexArraySet;
+  FaceCollectionVertexArray2 *arr = new FaceCollectionVertexArray2(*coll,*set);
+  arr->copy(0,coll->NumFaces());
+  VertexArraySet::Polys *pp = set->m_set[0];
+  return add_polygon2(e, new PolysFaceCollection(*pp),1);
+}

@@ -675,13 +675,13 @@ GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr)
   a.id = env->arrays.size()-1;
   return a;
 }
-GameApi::ML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item)
+GameApi::GML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
   env->wgpu_main_loop.push_back(item);
   if (g_current_block != -2)
   add_b(std::shared_ptr<void>(item));
-  GameApi::ML ml;
+  GameApi::GML ml;
   ml.id = env->wgpu_main_loop.size()-1;
   return ml;
 }

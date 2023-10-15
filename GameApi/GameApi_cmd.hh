@@ -257,6 +257,7 @@ public:\
   return bm;\
   }\
 };
+MACRO(GameApi::GML)
 MACRO(GameApi::BM)
 MACRO(GameApi::FtA)
 MACRO(GameApi::FD)
