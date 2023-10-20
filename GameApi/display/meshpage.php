@@ -994,6 +994,7 @@ Then you need brotli packages:
 <li>openvr
 <li>holoplay
 <li>tiny_gltf
+<li>draco
 <li>(normal browser environment)
 </ul>
 In addition to these external stuff, we have internal development in the following modules:
