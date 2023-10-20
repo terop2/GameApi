@@ -3029,7 +3029,9 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    if (url[url.size()-3]=='o'&&url[url.size()-2]=='g'&&url[url.size()-1]=='g') is_ogg=true; else is_ogg=false;
+    if (tolower(url[url.size()-3])=='o'&&tolower(url[url.size()-2])=='g'&&tolower(url[url.size()-1])=='g') is_ogg=true; else is_ogg=false;
+
+    if (!is_ogg) { std::cout << "WARNING: MP3 PLAYING DOESN'T WORK. USE OGG FILES." << std::endl; }
     
     GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     //std::cout << "SONG SIZE: "<< ptr->size() << std::endl;
@@ -3051,7 +3053,7 @@ public:
     if (firsttime) {
       std::cout << "Playing music..." << std::endl;
       // setup ogg can also play mp3s
-      ptr2 = ev.tracker_api.setup_ogg(*vec,is_ogg?0:1);
+      ptr2 = ev.tracker_api.setup_ogg(*vec,is_ogg?1:2);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
       //int s = ptr->size();
       //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
