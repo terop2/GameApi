@@ -24176,3 +24176,435 @@ void GameApi::PolygonApi::pass_to_shader(GI gi)
 }
 #endif
 
+class ColourSpaceToI : public ColourSpaceI
+{
+public:
+  ColourSpaceToI(ColourSpace &val, int sx, int sy, int sz) : val(val),sx(sx),sy(sy),sz(sz) { }
+  virtual unsigned int Map(int x, int y, int z, float t) const
+  {
+    float xx = val.start_x()+(val.end_x()-val.start_x())*float(x)/float(sx);
+    float yy = val.start_y()+(val.end_y()-val.start_y())*float(y)/float(sy);
+    float zz = val.start_z()+(val.end_z()-val.start_z())*float(z)/float(sz);
+    return val.Map(xx,yy,zz,t);
+  }
+  virtual int size_x() const { return sx; }
+  virtual int size_y() const { return sy; }
+  virtual int size_z() const { return sz; }
+  virtual float start_t() const { return val.start_t(); }
+  virtual float end_t() const { return val.end_t(); }
+private:
+  ColourSpace &val;
+  int sx,sy,sz;
+};
+
+class ColorSpaceFaceCollection2 : public FaceCollection
+{
+public:
+  ColorSpaceFaceCollection2(ColourSpaceI &colours, Point center, Vector u_x, Vector u_y, Vector u_z, float current_t) : colours(colours), center(center), u_x(u_x), u_y(u_y), u_z(u_z), current_t(current_t) { }
+
+  struct FaceId {
+    int dir;
+    int x;
+    int y;
+    int z;
+  };
+  FaceId split_face(int face) const
+  {
+    FaceId id;
+    
+    int sdir = 3;
+    int sx = colours.size_x()-1;
+    int sy = colours.size_y()-1;
+    int sz = colours.size_z()-1;
+
+    id.dir = face / (sx*sy*sz);
+    int delta0 = face - id.dir*sx*sy*sz;
+
+    int x = delta0 / (sy*sz);
+    int delta1 = delta0 - x*sy*sz;
+
+    int y = delta1 / sz;
+    int delta2 = delta1 - y*sz;
+
+    int z = delta2;
+    
+    
+    id.x = x;
+    id.y = y;
+    id.z = z;
+    return id;
+  }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const
+  {
+    return 3*(colours.size_x()-1)*(colours.size_y()-1)*(colours.size_z()-1);
+  }
+  
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    Point plot = id.x*u_x + id.y*u_y + id.z*u_z;
+    if (id.dir==0)
+      {
+	plot += u_z/2;
+	plot -= u_x/2;
+	if (point==0) return plot;
+	plot+=u_x;
+	if (point==1) return plot;
+	plot+=u_y;
+	if (point==2) return plot;
+	plot-=u_x;
+	if (point==3) return plot;
+      }
+    if (id.dir==1)
+      {
+	plot +=u_z/2;
+	plot +=u_x/2;
+	if (point==0) return plot;
+	plot+=u_y;
+	if (point==1) return plot;
+	plot+=u_z;
+	if (point==2) return plot;
+	plot-=u_y;
+	if (point==3) return plot;
+      }
+    if (id.dir==2)
+      {
+	plot -=u_z/2;
+	plot -=u_y/2;
+	if (point==0) return plot;
+	plot+=u_y;
+	if (point==1) return plot;
+	plot-=u_x;
+	if (point==2) return plot;
+	plot-=u_y;
+	if (point==3) return plot;
+      }
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    if (id.dir==0) return Vector(0.0,0.0,-1.0);
+    if (id.dir==1) return Vector(0.0,-1.0,0.0);
+    if (id.dir==2) return Vector(-1.0,0.0,0.0);
+    return Vector(0.0,0.0,1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    int delta_x = 0;
+    int delta_y = 0;
+    if (point==1||point==2) delta_x=1;
+    if (point==2||point==3) delta_y=1;
+    if (id.dir==0) {
+      return colours.Map(id.x+delta_x,id.y+delta_y,id.z,current_t);
+    } else if (id.dir==1)
+      {
+      return colours.Map(id.x+delta_x,id.y,id.z+delta_y,current_t);
+      } else if (id.dir==2)
+      {
+      return colours.Map(id.x,id.y+delta_x,id.z+delta_y,current_t);
+      }
+    return 0xffff00ff;
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; return p; }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+private:
+  ColourSpaceI &colours;
+  Point center;
+  Vector u_x, u_y, u_z;
+  float current_t;
+};
+
+
+class ColorSpaceFaceCollection : public FaceCollection
+{
+public:
+  ColorSpaceFaceCollection(ColourSpaceI &colours, Point center, Vector u_x, Vector u_y, Vector u_z, float current_t) : colours(colours),center(center), u_x(u_x),u_y(u_y),u_z(u_z),current_t(current_t) { }
+  Point pos(int x, int y, int z) const { return center+(x-colours.size_x()/2)*u_x+(y-colours.size_y()/2)*u_y+(z-colours.size_z()/2)*u_z; }
+  bool is_face_x(int x, int y, int z) const
+  {
+    unsigned int c0 = colours.Map(x,y,z,current_t);
+    unsigned int c1 = colours.Map(x+1,y,z,current_t);
+    //if (c0!=c1) std::cout << "YUP" << std::endl;
+    return c0!=c1;
+  }
+  bool is_face_y(int x, int y, int z) const
+  {
+    unsigned int c0 = colours.Map(x,y,z,current_t);
+    unsigned int c1 = colours.Map(x,y+1,z,current_t);
+    //if (c0!=c1) std::cout << "YUP" << std::endl;
+    return c0!=c1;
+  }
+  bool is_face_z(int x, int y, int z) const
+  {
+    unsigned int c0 = colours.Map(x,y,z,current_t);
+    unsigned int c1 = colours.Map(x,y,z+1,current_t);
+    //if (c0!=c1) std::cout << "YUP" << std::endl;
+    return c0!=c1;
+  }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const
+  {
+    return 3*(colours.size_x()-1)*(colours.size_y()-1)*(colours.size_z()-1);
+  }
+  struct FaceId {
+    int dir;
+    int x;
+    int y;
+    int z;
+  };
+  FaceId split_face(int face) const
+  {
+    FaceId id;
+    
+    int sdir = 3;
+    int sx = colours.size_x()-1;
+    int sy = colours.size_y()-1;
+    int sz = colours.size_z()-1;
+
+    id.dir = face / (sx*sy*sz);
+    int delta0 = face - id.dir*sx*sy*sz;
+
+    int x = delta0 / (sy*sz);
+    int delta1 = delta0 - x*sy*sz;
+
+    int y = delta1 / sz;
+    int delta2 = delta1 - y*sz;
+
+    int z = delta2;
+    
+    
+    id.x = x;
+    id.y = y;
+    id.z = z;
+    return id;
+  }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    //if (face % 2==0) return pos(id.x,id.y,id.z);
+    int delta_x = 0;
+    int delta_y = 0;
+    if (point==1||point==2) delta_x=1;
+    if (point==2||point==3) delta_y=1;
+    if (id.dir==0) {
+      if (!is_face_x(id.x,id.y,id.z)&& !is_face_y(id.x,id.y,id.z)) return pos(id.x,id.y,id.z);
+      Point p = pos(id.x+delta_x,id.y+delta_y,id.z);
+      return p;
+    } else if (id.dir==1)
+      {
+	if (!is_face_x(id.x,id.y,id.z)&& !is_face_z(id.x,id.y,id.z)) return pos(id.x,id.y,id.z);
+	Point p= pos(id.x+delta_x,id.y,id.z+delta_y);
+	return p;
+      } else if (id.dir==2)
+      {
+	if (!is_face_y(id.x,id.y,id.z)&& !is_face_z(id.x,id.y,id.z)) return pos(id.x,id.y,id.z);
+	Point p = pos(id.x,id.y+delta_x,id.z+delta_y);
+	return p;
+      }
+    Point p = pos(id.x,id.y,id.z);
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    if (id.dir==0) return Vector(0.0,0.0,-1.0);
+    if (id.dir==1) return Vector(0.0,-1.0,0.0);
+    if (id.dir==2) return Vector(-1.0,0.0,0.0);
+    return Vector(0.0,0.0,1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    int delta_x = 0;
+    int delta_y = 0;
+    if (point==1||point==2) delta_x=1;
+    if (point==2||point==3) delta_y=1;
+    if (id.dir==0) {
+      return colours.Map(id.x+delta_x,id.y+delta_y,id.z,current_t);
+    } else if (id.dir==1)
+      {
+      return colours.Map(id.x+delta_x,id.y,id.z+delta_y,current_t);
+      } else if (id.dir==2)
+      {
+      return colours.Map(id.x,id.y+delta_x,id.z+delta_y,current_t);
+      }
+    return 0xffff00ff;
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; return p; }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+private:
+  ColourSpaceI &colours;
+  Point center;
+  Vector u_x;
+  Vector u_y;
+  Vector u_z;
+  float current_t;
+};
+
+
+class ColourSpace_Function : public ColourSpace
+{
+public:
+  ColourSpace_Function(std::function<unsigned int(float,float,float,float)> f, float s_x, float e_x, float s_y, float e_y, float s_z, float e_z, float s_t, float e_t) : f(f), s_x(s_x), e_x(e_x), s_y(s_y), e_y(e_y), s_z(s_z), e_z(e_z), s_t(s_t), e_t(e_t) { }
+  virtual unsigned int Map(float x, float y, float z, float t) const
+  {
+    return f(x,y,z,y);
+  }
+  virtual float start_x() const { return s_x; }
+  virtual float end_x() const { return e_x; }
+  virtual float start_y() const { return s_y; }
+  virtual float end_y() const { return e_y; }
+  virtual float start_z() const { return s_z; }
+  virtual float end_z() const { return e_z; }
+  virtual float start_t() const { return s_t; }
+  virtual float end_t() const { return e_t; }
+private:
+  std::function<unsigned int(float,float,float,float)> f;
+  float s_x, e_x;
+  float s_y, e_y;
+  float s_z, e_z;
+  float s_t, e_t;
+};
+
+unsigned int colourspace_sphere(float x, float y, float z, float t)
+{
+  float dist = x*x+y*y+z*z;
+  unsigned int i =  x*x+y*y+z*z<t*t ? 0xffffffff : 0xff008800;
+  //std::cout << x << " " << y << " " << z << " " << t << " " << std::hex << i << std::endl;
+  i+=dist*300;
+  return i;
+}
+
+GameApi::CS GameApi::PolygonApi::colourspace_sphere2()
+{
+  return colourspace_func(&colourspace_sphere,-1.0,1.0, -1.0, 1.0, -1.0, 1.0, 0.0, 600.0);
+}
+
+class ColourSpace_OrElem : public ColourSpace
+{
+public:
+  ColourSpace_OrElem(ColourSpace &cs1, float delta_t, ColourSpace &cs2, float delta_t2) : cs1(cs1), cs2(cs2),delta_t(delta_t), delta_t2(delta_t2) { }
+  virtual unsigned int Map(float x, float y, float z, float t) const
+  {
+    unsigned int c1 = cs1.Map(x,y,z,t);
+    unsigned int c2 = cs2.Map(x,y,z,t);
+    unsigned int alpha1 = (c1 &0xff000000)>>24;
+    unsigned int alpha2 = (c2 &0xff000000)>>24;
+    float alpha1f = alpha1/255.0;
+    float alpha2f = alpha2/255.0;
+    float sum = alpha1f+alpha2f;
+    float delta1 = alpha1f/sum;
+    float delta2 = alpha2f/sum;
+    Color cc1(c1);
+    Color cc2(c2);
+    cc1*=delta1;
+    cc2*=delta2;
+    return (cc1+cc2).Pixel();
+  }
+  virtual float start_x() const { return std::max(cs1.start_x(),cs2.start_x()); }
+  virtual float end_x() const { return std::min(cs1.end_x(),cs2.end_x()); }
+  virtual float start_y() const { return std::max(cs1.start_y(),cs2.start_y()); }
+  virtual float end_y() const { return std::min(cs1.end_y(),cs2.end_y()); }
+  virtual float start_z() const { return std::max(cs1.start_z(),cs2.start_z()); }
+  virtual float end_z() const { return std::min(cs1.end_z(),cs2.end_z()); }
+  virtual float start_t() const { return std::max(delta_t+cs1.start_t(),delta_t2+cs2.start_t()); }
+  virtual float end_t() const { return std::min(delta_t+cs1.end_t(),delta_t2+cs2.end_t()); }
+private:
+  ColourSpace &cs1;
+  ColourSpace &cs2;
+  float delta_t;
+  float delta_t2;
+};
+
+GameApi::CS GameApi::PolygonApi::colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2)
+{
+  ColourSpace *cs1 = find_colourspace(e,cs);
+  ColourSpace *cs2_ = find_colourspace(e,cs2);
+  return add_colourspace(e,new ColourSpace_OrElem(*cs1,delta_t,*cs2_,delta_t2));
+}
+
+GameApi::CS GameApi::PolygonApi::colourspace_func(std::function<unsigned int (float,float,float,float)> f, float s_x, float e_x, float s_y, float e_y, float s_z, float e_z, float s_t, float e_t)
+{
+  return add_colourspace(e,new ColourSpace_Function(f,s_x,e_x,s_y,e_y,s_z,e_z,s_t,e_t));
+}
+
+GameApi::CSI GameApi::PolygonApi::colourspace_sample(CS i, int sx, int sy, int sz)
+{
+  ColourSpace *col = find_colourspace(e,i);
+  return add_colourspaceI(e, new ColourSpaceToI(*col,sx,sy,sz));
+}
+
+GameApi::P GameApi::PolygonApi::colourspace_facecoll(CSI i, float t)
+{
+  ColourSpaceI *col = find_colourspaceI(e,i);
+  return add_polygon2(e, new ColorSpaceFaceCollection2(*col,Point(0.0,0.0,0.0), Vector(3.5*4,0.0,0.0), Vector(0.0,3.5*4,0.0), Vector(0.0,0.0,3.5*4),t),1);
+}
+
+class FaceCollectionTo2 : public FaceCollection2
+{
+public:
+  enum Fields {
+    EFacePoint=0x1,
+    EEndFacePoint=0x2,
+    EPointNormal=0x4,
+    EColor=0x8,
+    ETexCoord=0x10,
+    ETexCoord3=0x20,
+    EJoint=0x40,
+    EWeight=0x80
+  };
+  FaceCollectionTo2(FaceCollection *coll, Fields flags=Fields(EFacePoint+EEndFacePoint+EPointNormal+EColor+ETexCoord+ETexCoord3+EJoint+EWeight)) : coll(coll),flags(flags) { }
+  virtual void Collect(CollectVisitor &vis) { return coll->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { return coll->NumPoints(face); }
+  virtual Vertex Face(int face, int point) const
+  {
+    Vertex v;
+    if (flags&EFacePoint)
+      v.facepoint = coll->FacePoint(face,point);
+    if (flags&EEndFacePoint)
+      v.end_facepoint = coll->EndFacePoint(face,point);
+    if (flags&EPointNormal)
+      v.pointnormal = coll->PointNormal(face,point);
+    if (flags&EColor)
+      v.color = coll->Color(face,point);
+    if (flags&ETexCoord)
+      v.texcoord = coll->TexCoord(face,point);
+    if (flags&ETexCoord3)
+      v.texcoord3 = coll->TexCoord3(face,point);
+    if (flags&EJoint)
+      v.joint = coll->Joints(face,point);
+    if (flags&EWeight)
+      v.weight = coll->Weights(face,point);
+    return v;
+  }
+
+private:
+  FaceCollection *coll;
+  Fields flags;
+};
+/*
+GameApi::P2 GameApi::PolygonApi::facecoll_to_2(GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new FaceCollectionTo2(coll),1);
+}
+*/

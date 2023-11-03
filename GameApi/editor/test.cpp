@@ -462,12 +462,12 @@ void connect_target(int x, int y, Envi *envi)
 	  ss >> num;
 	  
 	  std::string funcname = envi->ev->mod_api.get_funcname(envi->mod, 0, uid);
-	  std::vector<int> vec = envi->ev->mod_api.indexes_from_funcname(funcname);
+	  std::vector<int> vec = envi->ev->mod_api.indexes_from_funcname(*envi->ev,funcname);
 	  int real_index = vec[num];
 	  //std::cout << "Real index: " << real_index << std::endl;
 	  bool is_array = false;
 	  bool is_array_return = false; // TODO
-	  bool b = envi->ev->mod_api.typecheck(envi->mod, 0, envi->connect_start_uid, uid, real_index, envi->connect_start_j, is_array, is_array_return);
+	  bool b = envi->ev->mod_api.typecheck(*envi->ev,envi->mod, 0, envi->connect_start_uid, uid, real_index, envi->connect_start_j, is_array, is_array_return);
 	  bool erase = false;
 	  if (b) 
 	    {
@@ -594,7 +594,7 @@ void callback_func(int x, int y, Envi *envi)
   envi->popup_open.push_back(popup_open);
 
 
-  std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(envi->insert_mod_name);
+  std::vector<std::pair<std::string,std::string> > vec = envi->ev->mod_api.defaults_from_function(*envi->ev,envi->insert_mod_name);
   std::vector<GameApi::WModApi::InsertParam> vec2;
   int s = vec.size();
   for(int i=0;i<s;i++)
@@ -1030,7 +1030,7 @@ public:
 	pkggen_button = false;
 	std::string uid = popup_uid;
 	
-	std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+	std::string type2 = env->ev->mod_api.return_type(*env->ev,env->mod, 0, uid);
 	//ProgressBar(933, 7,15, "Execute");
 	GameApi::ExecuteEnv exeenv;
 	if (type2 == "ML") {
@@ -1324,7 +1324,7 @@ public:
 		g_atlas = env->atlas;
 		g_atlas_bm = env->atlas_bm;
 		
-		std::string type2 = env->ev->mod_api.return_type(env->mod, 0, uid);
+		std::string type2 = env->ev->mod_api.return_type(*env->ev,env->mod, 0, uid);
 		//ProgressBar(933, 7,15, "Execute");
 		GameApi::ExecuteEnv exeenv;
 		if (type2 != "HML") {
@@ -1366,7 +1366,7 @@ public:
 		env->codegen_uid = uid;
 		
 		// display dialog
-		std::string type = env->ev->mod_api.return_type(env->mod, 0, uid);
+		std::string type = env->ev->mod_api.return_type(*env->ev,env->mod, 0, uid);
 
 		
 		    
@@ -1879,7 +1879,7 @@ public:
 	      env->vec4.clear();
 	      env->edit_data.clear();
 	      std::vector<std::string> types;
-	      types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
+	      types = env->ev->mod_api.types_from_function(*env->ev,env->mod, 0, uid);
 	      int s = types.size();
 	      for(int w=0;w<s;w++)
 		{
@@ -1891,9 +1891,9 @@ public:
 		}
 	      
 	      std::vector<std::string> labels;
-	      labels = env->ev->mod_api.labels_from_function(env->mod, 0, uid);
+	      labels = env->ev->mod_api.labels_from_function(*env->ev,env->mod, 0, uid);
 	      std::vector<std::string*> refs;
-	      refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
+	      refs = env->ev->mod_api.refs_from_function(*env->ev,env->mod, 0, uid);
 	      
 	      //std::cout << labels << " " << refs << std::endl;
 	      assert(refs.size()==labels.size());
@@ -2115,9 +2115,9 @@ public:
 	    int i = env->dialog_i1;
 	    std::string uid = env->dialog_uid;
 	    std::vector<std::string*> refs;
-	    refs = env->ev->mod_api.refs_from_function(env->mod, 0, uid);
+	    refs = env->ev->mod_api.refs_from_function(*env->ev,env->mod, 0, uid);
 	    std::vector<std::string> types;
-	    types = env->ev->mod_api.types_from_function(env->mod, 0, uid);
+	    types = env->ev->mod_api.types_from_function(*env->ev,env->mod, 0, uid);
 	    
 	    int s = refs.size();
 	    for(int i=0;i<s;i++)
@@ -2218,7 +2218,7 @@ public:
 		name = env->gui->waveformapi_functions_item_label(sel2-1);
 		break;
 	      case 19:
-		name = env->gui->blockerapi_functions_item_label(sel2-1);
+		name = env->gui->blockerapi_functions_item_label(*env->ev,sel2-1);
 		break;
 	      case 20:
 		name = env->gui->framebuffermoduleapi_functions_item_label(sel2-1);
@@ -2254,7 +2254,7 @@ public:
 	    ss << "uid" << uid_num;
 	    std::string uid = ss.str();
 	    
-	    env->chosen_item = env->ev->mod_api.inserted_widget(*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, conn /*env->connect_clicks[env->connect_clicks.size()-1]*/, uid, env->connect_targets);
+	    env->chosen_item = env->ev->mod_api.inserted_widget(*env->ev,*env->gui, env->mod, 0, env->atlas, env->atlas_bm, name, conn /*env->connect_clicks[env->connect_clicks.size()-1]*/, uid, env->connect_targets);
 	    int sk = env->connect_clicks.size()-1;
 	    for(;sk>=0;sk--) { if (env->connect_clicks[sk].id==-2) env->connect_clicks.pop_back(); else break; }
 	    env->insert_widget = env->gui->insert_widget(env->chosen_item, std::bind(&callback_func, _1, _2, env));
@@ -2711,7 +2711,7 @@ public:
       items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.blockerapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.blockerapi_functions_list_item(ev,atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
       items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
 
       ProgressBar(888,4,5,"init");
@@ -2772,7 +2772,7 @@ public:
       }
     case 3:
       {
-  ev.mod_api.insert_to_canvas(gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
+	ev.mod_api.insert_to_canvas(ev,gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
 
   break;
       }
@@ -3535,7 +3535,7 @@ int main(int argc, char *argv[]) {
 		std::stringstream ss(s2);
 		int i;
 		ss >> i;
-		std::string s = ev.mod_api.dump_functions(i);
+		std::string s = ev.mod_api.dump_functions(ev,i);
 		std::cout << s << std::endl;
 		exit(0);
 	      }

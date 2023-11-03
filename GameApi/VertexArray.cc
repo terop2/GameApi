@@ -3947,7 +3947,7 @@ public:
   
 
   }
-  float TexCoord3(int face, int point) {
+  float TexCoord3(int face, int point) const {
     if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
       // quads
       face-=polys.tri_polys.size()/3;
@@ -3964,7 +3964,7 @@ public:
       if (face>=polys.tri_texcoord.size()/3) { return 0.0; }
       return polys.tri_texcoord[face*3+point].z;
   }
-  VEC4 Joints(int face, int point) {
+  VEC4 Joints(int face, int point) const {
     if (face>=polys.tri_polys.size()/3 && face<polys.tri_polys.size()/3 + polys.quad_polys.size()/3) {
       // quads
       face-=polys.tri_polys.size()/3;

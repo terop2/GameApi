@@ -59,6 +59,8 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(CS)
+  MAC(CSI)
   MAC(TT)
   MAC(PBO)
   MAC(SHP)
@@ -2074,12 +2076,12 @@ public:
   IMPORT W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W blockerapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W blockerapi_functions_list_item(GameApi::EveryApi &ev, FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
 
   IMPORT std::string bitmapapi_functions_item_label(int i);
   IMPORT std::string waveformapi_functions_item_label(int i);
-  IMPORT std::string blockerapi_functions_item_label(int i);
+  IMPORT std::string blockerapi_functions_item_label(GameApi::EveryApi &ev, int i);
   IMPORT std::string boolbitmapapi_functions_item_label(int i);
   IMPORT std::string floatbitmapapi_functions_item_label(int i);
   IMPORT std::string polygonapi_functions_item_label(int i);
@@ -2122,7 +2124,7 @@ public:
   IMPORT int size_x(W w);
   IMPORT int size_y(W w);
 
-  IMPORT std::vector<std::pair<std::string,std::string> > get_functions_mapping();
+  IMPORT std::vector<std::pair<std::string,std::string> > get_functions_mapping(GameApi::EveryApi &ev);
 private:
   Env &e;
   EveryApi &ev;
@@ -2146,18 +2148,18 @@ class WModApi
 public:
   WModApi(Env &e) : e(e) { }
   IMPORT int dump_functions_count();
-  IMPORT std::string dump_functions(int i);
+  IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
   IMPORT WM load(std::string filename);
   IMPORT void save(WM mod, std::string ilename);
-  IMPORT void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
+  IMPORT void insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
   IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);
   IMPORT void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
-  IMPORT W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params);
-  IMPORT std::vector<int> indexes_from_funcname(std::string funcname);
-  IMPORT std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
-  IMPORT std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
-  IMPORT std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
-  IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
+  IMPORT W inserted_widget(GameApi::EveryApi &ev, GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params);
+  IMPORT std::vector<int> indexes_from_funcname(GameApi::EveryApi &ev, std::string funcname);
+  IMPORT std::vector<std::string> types_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string> labels_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string*> refs_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(GameApi::EveryApi &ev, std::string module_name);
   struct InsertParam {
     std::string first;
     std::string second;
@@ -2175,7 +2177,7 @@ public:
   IMPORT std::vector<std::string> parse_param_array(std::string s);
   IMPORT std::pair<std::string,int> parse_multiple_return_uid(std::string s, bool &success);
   IMPORT std::string generate_param_array(std::vector<std::string> v);
-  IMPORT bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return);
+  IMPORT bool typecheck(GameApi::EveryApi &ev, WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return);
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j);
@@ -2185,7 +2187,7 @@ public:
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   IMPORT void codegen_reset_counter();
   IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j);
-  IMPORT std::string return_type(WM mod2, int id, std::string line_uid);
+  IMPORT std::string return_type(GameApi::EveryApi &ev, WM mod2, int id, std::string line_uid);
   IMPORT void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
   Env &e;
@@ -2526,6 +2528,11 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  CS colourspace_sphere2();
+  CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);
+  CS colourspace_func(std::function<unsigned int (float,float,float,float)> f, float sx, float ex, float sy, float ey, float sz, float ez, float st, float et);
+  CSI colourspace_sample(CS i, int sx, int sy, int sz);
+  P colourspace_facecoll(CSI i, float t);
   P polygon_fetch(P p);
   PL rect_pl(float start_x, float end_x,
 	     float start_y, float end_y,

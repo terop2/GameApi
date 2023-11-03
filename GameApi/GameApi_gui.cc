@@ -26,10 +26,10 @@ int strlen(const char *);
 int ret_type_count(std::string return_type);
 
 std::string unique_id_apiitem();
-std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
-std::vector<GameApiItem*> blocker_functions();
+std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> textureapi_functions();
 std::vector<GameApiItem*> volumeapi_functions();
 std::vector<GameApiItem*> floatvolumeapi_functions();
@@ -6124,7 +6124,7 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
   int line_num = 0;
   error_line_num = 0;
   std::vector<CodeGenLine> vec;
-  static std::vector<GameApiItem*> funcs = all_functions();
+  static std::vector<GameApiItem*> funcs = all_functions(ev);
   std::string homepage = ev.mainloop_api.get_homepage_url();
   while((idx=find_char(text, idx, '\n'))!= -1)
     {
@@ -6466,7 +6466,7 @@ std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::
   bool err2 = false;
   add_params_linkage(vec,vecvec,err2, envmap);
   if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
-  static std::vector<GameApiItem*> functions = all_functions();
+  static std::vector<GameApiItem*> functions = all_functions(ev);
   link_api_items(vec, functions);
   std::vector<int> val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
   std::string homepage = ev.mainloop_api.get_homepage_url();
@@ -6532,7 +6532,7 @@ std::vector<GameApiItem*> append_vectors(std::vector<GameApiItem*> vec1, std::ve
 
 
 EXPORT std::vector<GameApiItem*> global_functions;
-std::vector<GameApiItem*> all_functions()
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev)
 {
   std::vector<GameApiItem*> v1 = bitmapapi_functions();
   std::vector<GameApiItem*> v2 = polygonapi_functions();
@@ -6554,7 +6554,7 @@ std::vector<GameApiItem*> all_functions()
   std::vector<GameApiItem*> vh = moveapi_functions();
   std::vector<GameApiItem*> vi = polydistfield_functions();
   std::vector<GameApiItem*> vj = waveform_functions();
-  std::vector<GameApiItem*> vk = blocker_functions();
+  std::vector<GameApiItem*> vk = blocker_functions(ev);
   std::vector<GameApiItem*> vl = framebuffermoduleapi_functions();
   
   std::vector<GameApiItem*> a1 = append_vectors(v1,v2);
@@ -6594,9 +6594,9 @@ EXPORT std::string GameApi::GuiApi::waveformapi_functions_item_label(int i)
   std::string name = item->Name(0);
   return name;
 }
-EXPORT std::string GameApi::GuiApi::blockerapi_functions_item_label(int i)
+EXPORT std::string GameApi::GuiApi::blockerapi_functions_item_label(EveryApi &ev, int i)
 {
-  std::vector<GameApiItem*> funcs = blocker_functions();
+  std::vector<GameApiItem*> funcs = blocker_functions(ev);
   GameApiItem *item = funcs[i];
   std::string name = item->Name(0);
   return name;
@@ -6823,9 +6823,9 @@ EXPORT GameApi::W GameApi::GuiApi::waveformapi_functions_list_item(FtA atlas1, B
 {
   return functions_widget(*this, "WaveformApi", waveform_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
-EXPORT GameApi::W GameApi::GuiApi::blockerapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
+EXPORT GameApi::W GameApi::GuiApi::blockerapi_functions_list_item(GameApi::EveryApi &ev, FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
 {
-  return functions_widget(*this, "MainLoopApi", blocker_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
+  return functions_widget(*this, "MainLoopApi", blocker_functions(ev), atlas1, atlas_bm1, atlas2, atlas_bm2, insert);
 }
 
 EXPORT GameApi::W GameApi::GuiApi::textureapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert)
@@ -6963,11 +6963,11 @@ EXPORT void GameApi::GuiApi::delete_widget(W w)
   add_update_widget(e, w, ww);
 }
 
-std::vector<std::pair<std::string,std::string> > GameApi::GuiApi::get_functions_mapping()
+std::vector<std::pair<std::string,std::string> > GameApi::GuiApi::get_functions_mapping(GameApi::EveryApi &ev)
 {
   std::vector<std::pair<std::string,std::string> > vec;
 
-  static std::vector<GameApiItem*> funcs = all_functions();
+  static std::vector<GameApiItem*> funcs = all_functions(ev);
   int s = funcs.size();
   for(int i=0;i<s;i++)
     {

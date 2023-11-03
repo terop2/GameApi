@@ -1,17 +1,21 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
-std::vector<GameApiItem*> blocker_functions()
+std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
 
   std::vector<GameApiItem*> vec;
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_start,
-			 "t_start",
-			 { },
-			 { },
-			 { },
-			 "TT", "mainloop_api", "timing_start"));
+  			 "t_start",
+  			 { },
+  			 { },
+  			 { },
+  			 "TT", "mainloop_api", "timing_start"));
+  
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing,
+
 			 "t_time",
 			 { "duration", "link", "show" },
 			 { "float", "TT", "ML" },
