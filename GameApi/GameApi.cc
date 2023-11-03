@@ -24381,7 +24381,7 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 #include <chaiscript/language/chaiscript_common.hpp>
 #include <chaiscript/dispatchkit/bootstrap.hpp>
 #endif
-std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 
 std::vector<GameApi::BM> conv_bm(GameApi::EveryApi *ev, GameApi::ARR arr)
 {
@@ -24728,7 +24728,7 @@ void register_chai_types(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)
 	chai->add(chaiscript::fun(&conv_p),"conv_p");
 	chai->add(chaiscript::fun(&conv_pts),"conv_pts");
 	chai->add(chaiscript::fun(&conv_ml),"conv_ml");
-    static std::vector<GameApiItem*> functions = all_functions();
+    static std::vector<GameApiItem*> functions = all_functions(*ev);
     int s = functions.size();
     for(int i=0;i<s;i++) {
       GameApiItem *item = functions[i];
@@ -33482,14 +33482,19 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+    //std::cout << "KEYML_handleevent:";
     int ch = key_mapping(e.ch,e.type);
+    //std::cout << "'" << ch << "'" << std::endl;
     int s = keys.size();
-    for(int i=0;i<s;i++)
-      if (ch==keys[i]) {
-	if (i>=0 && i<items.size())
+    for(int i=0;i<s;i++)  {
+      //std::cout << "Compare:" << ch << "==" << (int)(keys[i]) << std::endl;
+      if (ch==int(keys[i])) {
+	if (i>=0 && i<items.size()) {
 	  current_item = i;
-	break;
+	  break;
+	}
       }
+    }
     if (current_item>=0 && current_item<items.size())
     items[current_item]->handle_event(e);
   }

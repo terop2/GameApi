@@ -148,3 +148,25 @@ std::string unique_id_apiitem()
   ss << id;
   return std::string("I") + ss.str();
 }
+
+ApiSplit split_api_default(std::string def)
+{
+  int s = def.size();
+  int pos1=-1;
+  int pos2=-1;
+  int i=0;
+  for(;i<s;i++)
+    {
+      if (def[i]=='@') { pos1=i; i++; break; }
+    }
+  for(;i<s;i++)
+    {
+      if (def[i]=='@') { pos2=i; i++; break; }
+    }
+  ApiSplit spl;
+  spl.def = def.substr(0,pos1);
+  spl.author = pos1!=-1?def.substr(pos1+1,pos2-pos1):"";
+  spl.license = pos2!=-1?def.substr(pos2+1):"";
+  return spl;
+}
+

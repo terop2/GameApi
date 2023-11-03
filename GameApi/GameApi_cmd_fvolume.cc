@@ -1,10 +1,10 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
-std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
-std::vector<GameApiItem*> blocker_functions();
+std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> textureapi_functions();
 std::vector<GameApiItem*> volumeapi_functions();
 std::vector<GameApiItem*> floatvolumeapi_functions();
@@ -29,6 +29,37 @@ std::vector<GameApiItem*> bitmapapi_functions();
 std::vector<GameApiItem*> floatvolumeapi_functions()
 {
   std::vector<GameApiItem*> vec;
+
+#if 0
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::colourspace_sphere2,
+			 "cs_sphere",
+			 { },
+			 { },
+			 { },
+			 "CS", "polygon_api", "colourspace_sphere2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::colourspace_or_elem,
+			 "cs_or_elem",
+			 { "cs1", "delta_t", "cs2", "delta_t2" },
+			 { "CS", "float", "CS", "float" },
+			 { "", "0.0", "", "0.0" },
+			 "CS", "polygon_api", "colourspace_or_elem"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::colourspace_sample,
+			 "cs_sample",
+			 { "cs", "sx", "sy", "sz" },
+			 { "CS", "int", "int", "int" },
+			 { "", "30", "30", "30" },
+			 "CSI", "polygon_api", "colourspace_sample"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::colourspace_facecoll,
+			 "cs_faces",
+			 { "csi", "t" },
+			 { "CSI", "float" },
+			 { "", "350.0" },
+			 "P", "polygon_api", "colourspace_facecoll"));
+
+
+#endif
+  
 #if 0
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_volume_api, &GameApi::FloatVolumeApi::from_volume,

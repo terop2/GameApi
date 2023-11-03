@@ -125,6 +125,27 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace *cs)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->colourspaces.push_back(cs);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(cs));
+  GameApi::CS im;
+  im.id = env->colourspaces.size()-1;
+  return im;
+}
+GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI *cs)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->colourspacesI.push_back(cs);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(cs));
+  GameApi::CSI im;
+  im.id = env->colourspacesI.size()-1;
+  return im;
+}
+
 GameApi::TT add_timing(GameApi::Env &e, Timing *t)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1441,6 +1462,17 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 #endif
+}
+
+ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->colourspaces[cs.id];  
+}
+ColourSpaceI *find_colourspaceI(GameApi::Env &e, GameApi::CSI cs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->colourspacesI[cs.id];  
 }
 
 GameApi::GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi)

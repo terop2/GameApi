@@ -805,6 +805,8 @@ struct EnvImpl
   std::vector<Timing*> timings;
   std::vector<GameApi::GlobalIlluminationData*> globalillumination;
   std::vector<MainLoopItemWGPU*> wgpu_main_loop;
+  std::vector<ColourSpace*> colourspaces;
+  std::vector<ColourSpaceI*> colourspacesI;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1134,6 +1136,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace * cs);
+GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI * csi);
 GameApi::GI add_gi(GameApi::Env &e, GameApi::GlobalIlluminationData *dt);
 GameApi::TT add_timing(GameApi::Env &e, Timing *tm);
 GameApi::PL add_platform(GameApi::Env &e, Platform *pl);
@@ -1295,6 +1299,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs);
+ColourSpaceI *find_colourspaceI(GameApi::Env &e, GameApi::CSI csi);
 GameApi::GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi);
 Timing *find_timing(GameApi::Env &e, GameApi::TT tm);
 Platform *find_platform(GameApi::Env &e, GameApi::PL pl);

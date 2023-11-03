@@ -880,6 +880,7 @@ Useful other sites which you can drag and drop content to the viewer are at leas
 <ul>
 <li><a href="https://sketchfab.com/3d-models?date=week&features=downloadable&sort_by=-likeCount" target="_blank">sketchfab</a>
 <li><a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a>
+<li><a href="https://polyhaven.com/" target="_blank">PolyHaven</a>
 </ul>
 
 <h2>If I just want to deploy simple gltf file?</h2>

@@ -125,6 +125,38 @@ public:
 
 void stackTrace();
 
+class FaceCollection2 : public CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  struct Vertex
+  {
+    Point facepoint;
+    Point end_facepoint;
+    Vector pointnormal;
+    unsigned int color;
+    Point2d texcoord;
+    float texcoord3;
+    VEC4 joint;
+    VEC4 weight;
+  };
+
+  virtual int NumFaces() const = 0;
+  virtual int NumPoints(int face) const=0;
+  virtual Vertex Face(int face, int point) const=0;
+
+  virtual int NumObjects() const { return 1; }
+  virtual std::pair<int,int> GetObject(int o) const {
+    return std::make_pair(0,NumFaces());
+  }
+  virtual int NumTextures() const { return 0; }
+  virtual void GenTexture(int num) { }
+  virtual BufferRef TextureBuf(int num) const { BufferRef ref; ref.buffer=0; return ref; }
+  virtual int FaceTexture(int face) const { return -1; }
+};
+
 class FaceCollection : public CollectInterface
 {
 public:

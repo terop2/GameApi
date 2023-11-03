@@ -9900,8 +9900,9 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    char ch = key_mapping(e.ch,e.type);
-    if (firsttime && i<keys.size() && e.type==0x300 && ch==keys[i]) {
+    int ch = key_mapping(e.ch,e.type);
+    //if (e.type==0x300) std::cout << "CH2: i=" << i << " -- " << ch << "==" << int(keys[i]) << " @@ " << std::hex << e.type << "==0x300" << std::endl;
+    if (firsttime && (i<keys.size() && e.type==0x300 && ch==int(keys[i]))) {
       //std::cout << "prepare3 " << i << std::endl;
       ml.id = vec[i]->mat(p.id);
       firsttime = false;
@@ -10320,6 +10321,8 @@ class GltfAnimShaderML : public MainLoopItem
 {
 public:
   GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key, int mode) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key),mode(mode) { firsttime=true; resize=Matrix::Identity(); keypressed = false;
+    current_time=key_time=ev.mainloop_api.get_time()/1000.0;
+    //keypressed =true;
 }
   std::vector<int> shader_id() {
     return ml_orig->shader_id();
