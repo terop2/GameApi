@@ -261,13 +261,13 @@ nothreads: dirs $(O2Files_nothreads) libGameApi_nothreads.bc
 
 examples: main
 
-fixmissing:
+fixmissing: check_emscripten_exists
 
-libGameApi.bc: check_emscripten_exists fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
+libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 	echo "  em++ libGameApi.bc"
 	@em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
 
-libGameApi_nothreads.bc: check_emscripten_exists fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
+libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	echo "  em++ libGameApi_nothreads.bc"
 	@em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
 
@@ -291,66 +291,62 @@ RM = rm
 #mingw32-g++
 
 
-compilers: check_emscripten_exists
-	   echo "COMPILER CHECK OK"
 
-.PHONY: compilers check_emscripten_exists
+.PHONY: check_emscripten_exists
 
-$(DFiles): objs/%.d: check_compiler_exists %.cc
-	@echo "  Deps $< -o $@"
+$(DFiles): objs/%.d: %.cc
 	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
-$(D2Files): objs/%.d2: check_compiler_exists %.cc
-	@echo "  Deps $< -o $@"
+$(D2Files): objs/%.d2: %.cc
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
-$(OFiles): objs/%.bc : check_compiler_exists %.cc
+$(OFiles): objs/%.bc : %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
-$(DOFiles): objs/%.bc : check_compiler_exists %.cc
+$(DOFiles): objs/%.bc : %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 	    
 
-$(OOFiles): objs/%.bc : check_compiler_exists %.c
+$(OOFiles): objs/%.bc : %.c
 	@echo "  emcc  $@"
 	@$(CCC) -c $(CFLAGS) $(pthread_opts) $< -o $@
 
 
-$(O2Files): objs/%.bc : check_compiler_exists %.cc
+$(O2Files): objs/%.bc : %.cc
 	@echo "  mingw $<"
 	$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
 
-$(OFiles_nothreads): objs/nothreads/%.bc : check_compiler_exists %.cc
+$(OFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
-$(DOFiles_nothreads): objs/nothreads/%.bc : check_compiler_exists %.cc
+$(DOFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
-$(OOFiles_nothreads): objs/nothreads/%.bc : check_compiler_exists %.c
+$(OOFiles_nothreads): objs/nothreads/%.bc : %.c
 	@echo "  emcc  $@"
 	@$(CCC) -DNO_THREADS -c $(CFLAGS) $< -o $@
 
-$(O2Files_nothreads): objs/nothreads/%.bc : check_compiler_exists %.cc
+$(O2Files_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  mingw $<"
 	$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
-glew.o: check_compiler_exists
+glew.o:
 	$(CCWIN) -c $(CC2FLAGS) d:\cvs\glew-1.10.0\src\glew.c -o glew.o
 
 
-$(OFiles_examples): objs/%.bc : check_compiler_exists %.cc GameApi.hh
+$(OFiles_examples): objs/%.bc : %.cc GameApi.hh
 	$(CC) -std=c++20 -c -I. $(CCFLAGS) $< -o $@ 
 
-$(O2Files_examples): objs/%.bc : check_compiler_exists %.cc GameApi.hh
+$(O2Files_examples): objs/%.bc : %.cc GameApi.hh
 	@echo mingw $<
 	$(CCWIN) -std=c++20 -c -I. $(CC2FLAGS) $< -o $@ 
 
