@@ -22,16 +22,31 @@
 LIBPATH=/usr/lib/x86_64-linux-gnu/
 GL_PATH=$(LIBPATH)
 GL_NAME=libGL.so
+GL_CFLAGS=`pkg-config --cflags gl`
+GL_PKGCONFIG = `pkg-config --libs gl`
+GL_PKGCONFIG ?= $(GL_PATH)$(GL_NAME)
 SDL_PATH=$(LIBPATH)
 SDL_NAME=libSDL2-2.0.so
+SDL_CFLAGS=`pkg-config --cflags sdl2`
+SDL_PKGCONFIG=`pkg-config --libs sdl2`
+SDL_PKGCONFIG ?= $(SDL_PATH)$(SDL_NAME)
 SDL_MIXER_PATH=$(SDL_PATH)
 SDL_MIXER_NAME=libSDL2_mixer-2.0.so
+SDL_MIXER_CFLAGS=`pkg-config --cflags SDL2_mixer`
+SDL_MIXER_PKGCONFIG=`pkg-config --libs SDL2_mixer`
+SDL_MIXER_PKGCONFIG ?= $(SDL_MIXER_PATH)$(SDL_MIXER_NAME)
 GLEW_PATH=$(LIBPATH)
 GLEW_NAME=libGLEW.so.2.2
+GLEW_CFLAGS=`pkg-config --cflags glew`
+GLEW_PKGCONFIG = `pkg-config --libs glew`
+GLEW_PKGCONFIG ?= $(GLEW_PATH)$(GLEW_NAME)
 FREETYPE_PATH=$(LIBPATH)
 FREETYPE_NAME=libfreetype.so
+FREETYPE_CFLAGS=`pkg-config --cflags freetype2`
+FREETYPE_PKGCONFIG=`pkg-config --libs freetype2`
+FREETYPE_PKGCONFIG ?= $(FREETYPE_PATH)$(FREETYPE_NAME)
 
-
+LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
 
 CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
@@ -144,21 +159,43 @@ Subdirsx = $(patsubst %,%build,$(Subdirs))
 WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment
 
 #-fsanitize=undefined -fsanitize-recover=undefined
+#  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
-CCFLAGS = -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
-CC2FLAGS = -I. -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
+CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
 #`pkg-config gtkmm-2.4 --cflags`
+
 
 
 default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out
 
 
 check_compile:
+ifeq ($(SDL_PKGCONFIG),$(SDL_PATH)$(SDL_NAME))
 	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST   libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libsdl2=OK"
+endif
+ifeq ($(SDL_MIXER_PKGCONFIG),$(SDL_MIXER_PATH)$(SDL_MIXER_NAME))
 	@test -f $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) && echo "  TEST   libsdl2_mixer=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_MIXER_PATH=$(SDL_MIXER_PATH) SDL_MIXER_NAME=$(SDL_MIXER_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libSDL2_mixer=OK"
+endif
+ifeq ($(GL_PKGCONFIG),$(GL_PATH)$(GL_NAME))
 	@test -f $(GL_PATH)$(GL_NAME) && echo "  TEST   libGL=OK" || (echo "  TEST libGL=FAIL\n NOTE: recommended command: make -j 8 GL_PATH=$(GL_PATH) GL_NAME=$(GL_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libGL=OK"
+endif
+ifeq ($(GLEW_PKGCONFIG),$(GLEW_PATH)$(GLEW_NAME))
 	@test -f $(GLEW_PATH)$(GLEW_NAME) && echo "  TEST   libGLEW=OK" || (echo "  TEST libGLEW=FAIL\n NOTE: recommended command: make -j 8 GLEW_PATH=$(GLEW_PATH) GLEW_NAME=$(GLEW_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libGLEW=OK"
+endif
+ifeq ($(FREETYPE_PKGCONFIG),$(FREETYPE_PATH)$(FREETYPE_NAME))
 	@test -f $(FREETYPE_PATH)$(FREETYPE_NAME) && echo "  TEST   libfreetype=OK" || (echo "  TEST libfreetype=FAIL\n NOTE: recommended command: make -j 8 FREETYPE_PATH=$(FREETYPE_PATH) FREETYPE_NAME=$(FREETYPE_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libfreetype=OK"
+endif
 
 dirs:
 	@echo "  MKDIR  objs"
@@ -195,7 +232,8 @@ dirs:
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so $(SDL_PATH)$(SDL_NAME) $(GL_PATH)$(GL_NAME) $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) $(GLEW_PATH)$(GLEW_NAME) $(FREETYPE_PATH)$(FREETYPE_NAME) -lstdc++ -lwayland-client
+	@echo "FLAGS: $(LDFLAGS)"
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client
 
 .PHONY: dirs
 
@@ -226,7 +264,7 @@ deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
 	@(cd deploytool; make -f Makefile)
 
 editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
-	@(cd editor; make -f Makefile.Linux)
+	@(cd editor; make -f Makefile.Linux LDFLAGS="$(LDFLAGS)")
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
