@@ -232,7 +232,6 @@ dirs:
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@echo "FLAGS: $(LDFLAGS)"
 	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client
 
 .PHONY: dirs
