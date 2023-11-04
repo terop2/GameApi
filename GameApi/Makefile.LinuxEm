@@ -28,7 +28,7 @@ allopts = -Oz -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -gsplit-dwarf -gpu
 
 pthread_opts = -s USE_PTHREADS=1
 
-nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor
+nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor -Wno-deprecated-volatile -Wno-implicit-const-int-float-conversion -Wno-overloaded-virtual -Wno-uninitialized -Wno-self-assign-field -Wno-writable-strings -Wno-delete-abstract-non-virtual-dtor 
 
 CFiles=  GameApi_gltf.cc GameApi_diag.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
