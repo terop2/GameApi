@@ -193,25 +193,31 @@ def: dirs $(O2Files) libGameApi.bc
 
 dirs:
 	mkdir -p objs
+	mkdir -p objs/lib
 	mkdir -p objs/draco/attributes
 	mkdir -p objs/draco/compression
 	mkdir -p objs/draco/compression/attributes
+	mkdir -p objs/draco/compression/attributes/prediction_schemes
 	mkdir -p objs/draco/compression/bit_coders
 	mkdir -p objs/draco/compression/entropy
 	mkdir -p objs/draco/compression/mesh
 	mkdir -p objs/draco/compression/point_cloud
+	mkdir -p objs/draco/compression/point_cloud/algorithms
 	mkdir -p objs/draco/core
 	mkdir -p objs/draco/mesh
 	mkdir -p objs/draco/point_cloud
 	mkdir -p objs/draco/metadata
 	mkdir -p objs/nothreads
+	mkdir -p objs/nothreads/lib
 	mkdir -p objs/nothreads/draco/attributes
 	mkdir -p objs/nothreads/draco/compression
 	mkdir -p objs/nothreads/draco/compression/attributes
+	mkdir -p objs/nothreads/draco/compression/attributes/prediction_schemes
 	mkdir -p objs/nothreads/draco/compression/bit_coders
 	mkdir -p objs/nothreads/draco/compression/entropy
 	mkdir -p objs/nothreads/draco/compression/mesh
 	mkdir -p objs/nothreads/draco/compression/point_cloud
+	mkdir -p objs/nothreads/draco/compression/point_cloud/algorithms
 	mkdir -p objs/nothreads/draco/core
 	mkdir -p objs/nothreads/draco/mesh
 	mkdir -p objs/nothreads/draco/point_cloud
