@@ -136,7 +136,7 @@ CC2FLAGS = -I. -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: dirs libGameApi.so deploytool/deploytool
+default: dirs libGameApi.so deploytool/deploytool editor/a.out
 
 dirs:
 	@echo "  MKDIR objs"
@@ -202,6 +202,9 @@ CCWIN = i586-mingw32msvc-g++
 
 deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
 	@(cd deploytool; make -f Makefile)
+
+editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
+	@(cd editor; make -f Makefile.Linux)
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC    $@"
