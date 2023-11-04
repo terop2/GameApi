@@ -140,13 +140,16 @@ default: dirs libGameApi.so deploytool/deploytool
 
 dirs:
 	mkdir -p objs
+	mkdir -p objs/lib
 	mkdir -p objs/draco/attributes
 	mkdir -p objs/draco/compression
 	mkdir -p objs/draco/compression/attributes
+	mkdir -p objs/draco/compression/attributes/prediction_schemes
 	mkdir -p objs/draco/compression/bit_coders
 	mkdir -p objs/draco/compression/entropy
 	mkdir -p objs/draco/compression/mesh
 	mkdir -p objs/draco/compression/point_cloud
+	mkdir -p objs/draco/compression/point_cloud/algorithms
 	mkdir -p objs/draco/core
 	mkdir -p objs/draco/mesh
 	mkdir -p objs/draco/point_cloud
@@ -156,6 +159,8 @@ dirs:
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD    libGameApi.so"
 	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+
+.PHONY: dirs
 
 #`pkg-config gtkmm-2.4 --libs` 
 
