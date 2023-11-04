@@ -129,7 +129,7 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
-WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare
+WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment
 
 #-fsanitize=undefined -fsanitize-recover=undefined
 
