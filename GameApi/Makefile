@@ -24,27 +24,37 @@ GL_PATH=$(LIBPATH)
 GL_NAME=libGL.so
 GL_CFLAGS=`pkg-config --cflags gl`
 GL_PKGCONFIG = `pkg-config --libs gl`
-GL_PKGCONFIG ?= $(GL_PATH)$(GL_NAME)
+ifndef GL_PKGCONFIG
+GL_PKGCONFIG = $(GL_PATH)$(GL_NAME)
+endif
 SDL_PATH=$(LIBPATH)
 SDL_NAME=libSDL2-2.0.so
 SDL_CFLAGS=`pkg-config --cflags sdl2`
 SDL_PKGCONFIG=`pkg-config --libs sdl2`
-SDL_PKGCONFIG ?= $(SDL_PATH)$(SDL_NAME)
+ifndef SDL_PKGCONFIG
+SDL_PKGCONFIG = $(SDL_PATH)$(SDL_NAME)
+endif
 SDL_MIXER_PATH=$(SDL_PATH)
 SDL_MIXER_NAME=libSDL2_mixer-2.0.so
 SDL_MIXER_CFLAGS=`pkg-config --cflags SDL2_mixer`
 SDL_MIXER_PKGCONFIG=`pkg-config --libs SDL2_mixer`
-SDL_MIXER_PKGCONFIG ?= $(SDL_MIXER_PATH)$(SDL_MIXER_NAME)
+ifndef SDL_MIXER_PKGCONFIG
+SDL_MIXER_PKGCONFIG = $(SDL_MIXER_PATH)$(SDL_MIXER_NAME)
+endif
 GLEW_PATH=$(LIBPATH)
 GLEW_NAME=libGLEW.so.2.2
 GLEW_CFLAGS=`pkg-config --cflags glew`
 GLEW_PKGCONFIG = `pkg-config --libs glew`
-GLEW_PKGCONFIG ?= $(GLEW_PATH)$(GLEW_NAME)
+ifndef GLEW_PKGCONFIG
+GLEW_PKGCONFIG = $(GLEW_PATH)$(GLEW_NAME)
+endif
 FREETYPE_PATH=$(LIBPATH)
 FREETYPE_NAME=libfreetype.so
 FREETYPE_CFLAGS=`pkg-config --cflags freetype2`
 FREETYPE_PKGCONFIG=`pkg-config --libs freetype2`
-FREETYPE_PKGCONFIG ?= $(FREETYPE_PATH)$(FREETYPE_NAME)
+ifndef FREETYPE_PKGCONFIG
+FREETYPE_PKGCONFIG = $(FREETYPE_PATH)$(FREETYPE_NAME)
+endif
 
 LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
 
@@ -171,27 +181,27 @@ default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out
 
 
 check_compile:
-ifeq ($(SDL_PKGCONFIG),$(SDL_PATH)$(SDL_NAME))
+ifeq ($(shell echo $(SDL_PKGCONFIG)),)
 	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST   libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
 else
 	@echo "  PKGCNF libsdl2=OK"
 endif
-ifeq ($(SDL_MIXER_PKGCONFIG),$(SDL_MIXER_PATH)$(SDL_MIXER_NAME))
-	@test -f $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) && echo "  TEST   libsdl2_mixer=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_MIXER_PATH=$(SDL_MIXER_PATH) SDL_MIXER_NAME=$(SDL_MIXER_NAME)"; exit 1)
+ifeq ($(shell echo $(SDL_MIXER_PKGCONFIG)),)
+	@test -f $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) && echo "  TEST   libsdl2_mixer=OK" || (echo "  TEST libsdl2_mixer=FAIL\n NOTE: recommended command: make -j 8 SDL_MIXER_PATH=$(SDL_MIXER_PATH) SDL_MIXER_NAME=$(SDL_MIXER_NAME)"; exit 1)
 else
 	@echo "  PKGCNF libSDL2_mixer=OK"
 endif
-ifeq ($(GL_PKGCONFIG),$(GL_PATH)$(GL_NAME))
+ifeq ($(shell echo $(GL_PKGCONFIG)),)
 	@test -f $(GL_PATH)$(GL_NAME) && echo "  TEST   libGL=OK" || (echo "  TEST libGL=FAIL\n NOTE: recommended command: make -j 8 GL_PATH=$(GL_PATH) GL_NAME=$(GL_NAME)"; exit 1)
 else
 	@echo "  PKGCNF libGL=OK"
 endif
-ifeq ($(GLEW_PKGCONFIG),$(GLEW_PATH)$(GLEW_NAME))
+ifeq ($(shell echo $(GLEW_PKGCONFIG)),)
 	@test -f $(GLEW_PATH)$(GLEW_NAME) && echo "  TEST   libGLEW=OK" || (echo "  TEST libGLEW=FAIL\n NOTE: recommended command: make -j 8 GLEW_PATH=$(GLEW_PATH) GLEW_NAME=$(GLEW_NAME)" ; exit 1)
 else
 	@echo "  PKGCNF libGLEW=OK"
 endif
-ifeq ($(FREETYPE_PKGCONFIG),$(FREETYPE_PATH)$(FREETYPE_NAME))
+ifeq ($(shell echo $(FREETYPE_PKGCONFIG)),)
 	@test -f $(FREETYPE_PATH)$(FREETYPE_NAME) && echo "  TEST   libfreetype=OK" || (echo "  TEST libfreetype=FAIL\n NOTE: recommended command: make -j 8 FREETYPE_PATH=$(FREETYPE_PATH) FREETYPE_NAME=$(FREETYPE_NAME)" ; exit 1)
 else
 	@echo "  PKGCNF libfreetype=OK"
