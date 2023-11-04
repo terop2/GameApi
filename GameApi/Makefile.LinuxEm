@@ -304,7 +304,7 @@ $(DOFiles): objs/%.bc : %.cc
 	    
 
 $(OOFiles): objs/%.bc : %.c
-	@echo "  emcc $< -o $@"
+	@echo "  emcc  $@"
 	@$(CCC) -c $(CFLAGS) $(pthread_opts) $< -o $@
 
 
@@ -323,7 +323,7 @@ $(DOFiles_nothreads): objs/nothreads/%.bc : %.cc
 
 
 $(OOFiles_nothreads): objs/nothreads/%.bc : %.c
-	@echo "  emcc $< -o $@"
+	@echo "  emcc  $@"
 	@$(CCC) -DNO_THREADS -c $(CFLAGS) $< -o $@
 
 $(O2Files_nothreads): objs/nothreads/%.bc : %.cc
