@@ -296,61 +296,61 @@ compilers: check_emscripten_exists
 
 .PHONY: compilers check_emscripten_exists
 
-$(DFiles): objs/%.d: %.cc
+$(DFiles): objs/%.d: check_compiler_exists %.cc
 	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
-$(D2Files): objs/%.d2: %.cc
+$(D2Files): objs/%.d2: check_compiler_exists %.cc
 	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
-$(OFiles): objs/%.bc : %.cc
+$(OFiles): objs/%.bc : check_compiler_exists %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
-$(DOFiles): objs/%.bc : %.cc
+$(DOFiles): objs/%.bc : check_compiler_exists %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 	    
 
-$(OOFiles): objs/%.bc : %.c
+$(OOFiles): objs/%.bc : check_compiler_exists %.c
 	@echo "  emcc  $@"
 	@$(CCC) -c $(CFLAGS) $(pthread_opts) $< -o $@
 
 
-$(O2Files): objs/%.bc : %.cc
+$(O2Files): objs/%.bc : check_compiler_exists %.cc
 	@echo "  mingw $<"
 	$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
 
-$(OFiles_nothreads): objs/nothreads/%.bc : %.cc
+$(OFiles_nothreads): objs/nothreads/%.bc : check_compiler_exists %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
-$(DOFiles_nothreads): objs/nothreads/%.bc : %.cc
+$(DOFiles_nothreads): objs/nothreads/%.bc : check_compiler_exists %.cc
 	@echo "  em++  $@"
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
-$(OOFiles_nothreads): objs/nothreads/%.bc : %.c
+$(OOFiles_nothreads): objs/nothreads/%.bc : check_compiler_exists %.c
 	@echo "  emcc  $@"
 	@$(CCC) -DNO_THREADS -c $(CFLAGS) $< -o $@
 
-$(O2Files_nothreads): objs/nothreads/%.bc : %.cc
+$(O2Files_nothreads): objs/nothreads/%.bc : check_compiler_exists %.cc
 	@echo "  mingw $<"
 	$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
-glew.o:
+glew.o: check_compiler_exists
 	$(CCWIN) -c $(CC2FLAGS) d:\cvs\glew-1.10.0\src\glew.c -o glew.o
 
 
-$(OFiles_examples): objs/%.bc : %.cc GameApi.hh
+$(OFiles_examples): objs/%.bc : check_compiler_exists %.cc GameApi.hh
 	$(CC) -std=c++20 -c -I. $(CCFLAGS) $< -o $@ 
 
-$(O2Files_examples): objs/%.bc : %.cc GameApi.hh
+$(O2Files_examples): objs/%.bc : check_compiler_exists %.cc GameApi.hh
 	@echo mingw $<
 	$(CCWIN) -std=c++20 -c -I. $(CC2FLAGS) $< -o $@ 
 
