@@ -22,10 +22,10 @@ Running the software:
   ./a.out
 
 Dependent packages (ubuntu):
-  apt-get install libsdl2-2.0-0
-  apt-get install libfreetype6
-  apt-get install libsdl2-mixer-2.0-0
-  apt-get install libglew2.2
+  apt-get install libsdl2-dev
+  apt-get install libfreetype6-dev
+  apt-get install libsdl2-mixer-dev
+  apt-get install libglew-dev
   apt-get install curl
   apt-get install libstdc++0
   apt-get install libc6
