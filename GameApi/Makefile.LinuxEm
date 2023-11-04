@@ -194,7 +194,10 @@ CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomi
 
 def: dirs $(O2Files) libGameApi.bc
 
-dirs:
+check_emscripten_exists:
+	@test -f $(EMSCRIPTEN_PATH)/emsdk && echo "  TEST   emscripten=OK" || (echo "  TEST   emscripten=FAIL\n NOTE: recommended command: ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten"; exit 1)
+
+dirs: check_emscripten_exists
 	@echo "  MKDIR objs"
 	@mkdir -p objs
 	@echo "  MKDIR objs/lib"
@@ -260,11 +263,11 @@ examples: main
 
 fixmissing:
 
-libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
+libGameApi.bc: check_emscripten_exists fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 	echo "  em++ libGameApi.bc"
 	@em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
 
-libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
+libGameApi_nothreads.bc: check_emscripten_exists fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	echo "  em++ libGameApi_nothreads.bc"
 	@em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
 
@@ -288,18 +291,17 @@ RM = rm
 #mingw32-g++
 
 
-compilers:
-	source $(EMSCRIPTEN_PATH)/emsdk_env.sh
-	source set_paths_emlinux.sh
+compilers: check_emscripten_exists
+	   echo "COMPILER CHECK OK"
 
-.PHONY: compilers
+.PHONY: compilers check_emscripten_exists
 
-$(DFiles): objs/%.d: compilers %.cc
+$(DFiles): objs/%.d: %.cc
 	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
-$(D2Files): objs/%.d2: compilers %.cc
+$(D2Files): objs/%.d2: %.cc
 	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
@@ -357,7 +359,6 @@ clean:
 	@$(RM) -rf objs/nothreads/*.bc objs/nothreads/*.bc objs/nothreads/*.gch objs/nothreads/*.gch2
 	@$(RM) -rf objs/draco/attributes/*.bc objs/draco/compression/*.bc objs/draco/core/*.bc objs/draco/mesh/*.bc objs/draco/metadata/*.bc objs/draco/point_cloud/*.bc objs/draco/texture/*.bc objs/draco/compression/attributes/*.bc
 	@$(RM) -rf objs/nothreads/draco/attributes/*.bc objs/nothreads/draco/compression/*.bc objs/nothreads/draco/core/*.bc objs/nothreads/draco/mesh/*.bc objs/nothreads/draco/metadata/*.bc objs/nothreads/draco/point_cloud/*.bc objs/nothreads/draco/texture/*.bc objs/nothreads/draco/compression/attributes/*.bc
-	@$(RM) main
 	@$(RM) libGameApi.bc libGameApi_nothreads.bc
 	@echo Clean.
 
