@@ -19,6 +19,8 @@
 #
 
 
+
+
 CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
@@ -127,7 +129,7 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
-WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict
+WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare
 
 #-fsanitize=undefined -fsanitize-recover=undefined
 
@@ -207,7 +209,7 @@ editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
 	@(cd editor; make -f Makefile.Linux)
 
 $(OFiles): objs/%.o : %.cc
-	@echo "  CC    $@"
+	@echo "  CC     $@"
 	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 touch_all:
