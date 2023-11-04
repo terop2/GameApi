@@ -192,22 +192,68 @@ CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomi
 def: dirs $(O2Files) libGameApi.bc
 
 dirs:
-	mkdir -p objs
-	mkdir -p objs/lib
-	mkdir -p objs/draco/attributes
-	mkdir -p objs/draco/compression
-	mkdir -p objs/draco/compression/attributes
-	mkdir -p objs/draco/compression/attributes/prediction_schemes
-	mkdir -p objs/draco/compression/bit_coders
-	mkdir -p objs/draco/compression/entropy
-	mkdir -p objs/draco/compression/mesh
-	mkdir -p objs/draco/compression/point_cloud
-	mkdir -p objs/draco/compression/point_cloud/algorithms
-	mkdir -p objs/draco/core
-	mkdir -p objs/draco/mesh
-	mkdir -p objs/draco/point_cloud
-	mkdir -p objs/draco/metadata
-	mkdir -p objs/nothreads
+	@echo "  MKDIR objs"
+	@mkdir -p objs
+	@echo "  MKDIR objs/lib"
+	@mkdir -p objs/lib
+	@echo "  MKDIR objs/draco/attributes"
+	@mkdir -p objs/draco/attributes
+	@echo "  MKDIR objs/draco/compression"
+	@mkdir -p objs/draco/compression
+	@echo "  MKDIR objs/draco/compression/attributes"
+	@mkdir -p objs/draco/compression/attributes
+	@echo "  MKDIR objs/draco/compression/attributes/prediction_schemes"
+	@mkdir -p objs/draco/compression/attributes/prediction_schemes
+	@echo "  MKDIR objs/draco/compression/bit_coders"
+	@mkdir -p objs/draco/compression/bit_coders
+	@echo "  MKDIR objs/draco/compression/entropy"
+	@mkdir -p objs/draco/compression/entropy
+	@echo "  MKDIR objs/draco/compression/mesh"
+	@mkdir -p objs/draco/compression/mesh
+	@echo "  MKDIR objs/draco/compression/point_cloud"
+	@mkdir -p objs/draco/compression/point_cloud
+	@echo "  MKDIR objs/draco/compression/point_cloud/algorithms"
+	@mkdir -p objs/draco/compression/point_cloud/algorithms
+	@echo "  MKDIR objs/draco/core"
+	@mkdir -p objs/draco/core
+	@echo "  MKDIR objs/draco/mesh"
+	@mkdir -p objs/draco/mesh
+	@echo "  MKDIR objs/draco/point_cloud"
+	@mkdir -p objs/draco/point_cloud
+	@echo "  MKDIR objs/draco/metadata"
+	@mkdir -p objs/draco/metadata
+
+	@echo "  MKDIR objs/nothreads/lib"
+	@mkdir -p objs/nothreads/lib
+	@echo "  MKDIR objs/nothreads/draco/attributes"
+	@mkdir -p objs/nothreads/draco/attributes
+	@echo "  MKDIR objs/nothreads/draco/compression"
+	@mkdir -p objs/nothreads/draco/compression
+	@echo "  MKDIR objs/nothreads/draco/compression/attributes"
+	@mkdir -p objs/nothreads/draco/compression/attributes
+	@echo "  MKDIR objs/nothreads/draco/compression/attributes/prediction_schemes"
+	@mkdir -p objs/nothreads/draco/compression/attributes/prediction_schemes
+	@echo "  MKDIR objs/nothreads/draco/compression/bit_coders"
+	@mkdir -p objs/nothreads/draco/compression/bit_coders
+	@echo "  MKDIR objs/nothreads/draco/compression/entropy"
+	@mkdir -p objs/nothreads/draco/compression/entropy
+	@echo "  MKDIR objs/nothreads/draco/compression/mesh"
+	@mkdir -p objs/nothreads/draco/compression/mesh
+	@echo "  MKDIR objs/nothreads/draco/compression/point_cloud"
+	@mkdir -p objs/nothreads/draco/compression/point_cloud
+	@echo "  MKDIR objs/nothreads/draco/compression/point_cloud/algorithms"
+	@mkdir -p objs/nothreads/draco/compression/point_cloud/algorithms
+	@echo "  MKDIR objs/nothreads/draco/core"
+	@mkdir -p objs/nothreads/draco/core
+	@echo "  MKDIR objs/nothreads/draco/mesh"
+	@mkdir -p objs/nothreads/draco/mesh
+	@echo "  MKDIR objs/nothreads/draco/point_cloud"
+	@mkdir -p objs/nothreads/draco/point_cloud
+	@echo "  MKDIR objs/nothreads/draco/metadata"
+	@mkdir -p objs/nothreads/draco/metadata
+
+
+mkdir -p objs/nothreads
 	mkdir -p objs/nothreads/lib
 	mkdir -p objs/nothreads/draco/attributes
 	mkdir -p objs/nothreads/draco/compression
