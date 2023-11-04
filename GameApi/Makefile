@@ -19,6 +19,18 @@
 #
 
 
+LIBPATH=/usr/lib/x86_64-linux-gnu/
+GL_PATH=$(LIBPATH)
+GL_NAME=libGL.so
+SDL_PATH=$(LIBPATH)
+SDL_NAME=libSDL2-2.0.so
+SDL_MIXER_PATH=$(SDL_PATH)
+SDL_MIXER_NAME=libSDL2_mixer-2.0.so
+GLEW_PATH=$(LIBPATH)
+GLEW_NAME=libGLEW.so.2.2
+FREETYPE_PATH=$(LIBPATH)
+FREETYPE_NAME=libfreetype.so
+
 
 
 CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
@@ -138,7 +150,15 @@ CC2FLAGS = -I. -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: dirs libGameApi.so deploytool/deploytool editor/a.out
+default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out
+
+
+check_compile:
+	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
+	@test -f $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) && echo "  TEST libsdl2_mixer=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_MIXER_PATH=$(SDL_MIXER_PATH) SDL_MIXER_NAME=$(SDL_MIXER_NAME)"; exit 1)
+	@test -f $(GL_PATH)$(GL_NAME) && echo "  TEST libGL=OK" || (echo "  TEST libGL=FAIL\n NOTE: recommended command: make -j 8 GL_PATH=$(GL_PATH) GL_NAME=$(GL_NAME)"; exit 1)
+	@test -f $(GLEW_PATH)$(GLEW_NAME) && echo "  TEST libGLEW=OK" || (echo "  TEST libGLEW=FAIL\n NOTE: recommended command: make -j 8 GLEW_PATH=$(GLEW_PATH) GLEW_NAME=$(GLEW_NAME)" ; exit 1)
+	@test -f $(FREETYPE_PATH)$(FREETYPE_NAME) && echo "  TEST libfreetype=OK" || (echo "  TEST libfreetype=FAIL\n NOTE: recommended command: make -j 8 FREETYPE_PATH=$(FREETYPE_PATH) FREETYPE_NAME=$(FREETYPE_NAME)" ; exit 1)
 
 dirs:
 	@echo "  MKDIR  objs"
@@ -175,7 +195,7 @@ dirs:
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so $(SDL_PATH)$(SDL_NAME) $(GL_PATH)$(GL_NAME) $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) $(GLEW_PATH)$(GLEW_NAME) $(FREETYPE_PATH)$(FREETYPE_NAME) -lstdc++ -lwayland-client
 
 .PHONY: dirs
 
