@@ -20,3 +20,10 @@ To compile (windows):
 Running the software:
   cd editor
   ./a.out
+
+Important urls:
+  https://meshpage.org                  (main web site)
+  https://meshpage.org/meshpage_4       (download newest builder tool binaries)
+  https://meshpage.org/view.php         (3d model viewer)
+  https://meshpage.org/gltf_to_zip.php  (gltf to html5 zip converter)
+ 
