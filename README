@@ -21,6 +21,9 @@ Running the software:
   cd editor
   ./a.out
 
+Dependent packages (ubuntu):
+  apt-get install 
+
 Important urls:
   https://meshpage.org                  (main web site)
   https://meshpage.org/meshpage_4       (download newest builder tool binaries)
