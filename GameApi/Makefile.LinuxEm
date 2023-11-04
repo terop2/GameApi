@@ -20,6 +20,9 @@
 
 # -fsanitize=address (causes slowness/breaks fps)
 
+
+EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
+
 allopts = -Oz -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -gsplit-dwarf -gpubnames
 # -Oz
 
@@ -175,9 +178,9 @@ INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
 INC5WIN = d:\cvs\freetype\include
 INC6WIN = d:\cvs\freetype\include\freetype2
 INC7WIN = d:\cvs\pthread\pre-built.2\include
-EMINC1 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/cache/sysroot/include/SDL
-EMINC2 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/cache/sysroot/include
-EMINC3 = /home/terop/cvs/emscripten/emsdk/upstream/emscripten/cache/sysroot/include/freetype2
+EMINC1 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include/SDL
+EMINC2 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include
+EMINC3 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include/freetype2
 SDL_MIXER_MINI1 = sdl_mixer_mini/src
 SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
@@ -284,12 +287,19 @@ SED = sed
 RM = rm
 #mingw32-g++
 
-$(DFiles): objs/%.d: %.cc
+
+compilers:
+	source $(EMSCRIPTEN_PATH)/emsdk_env.sh
+	source set_paths_emlinux.sh
+
+.PHONY: compilers
+
+$(DFiles): objs/%.d: compilers %.cc
 	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
-$(D2Files): objs/%.d2: %.cc
+$(D2Files): objs/%.d2: compilers %.cc
 	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
