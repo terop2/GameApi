@@ -139,21 +139,36 @@ CC2FLAGS = -I. -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$
 default: dirs libGameApi.so deploytool/deploytool
 
 dirs:
-	mkdir -p objs
-	mkdir -p objs/lib
-	mkdir -p objs/draco/attributes
-	mkdir -p objs/draco/compression
-	mkdir -p objs/draco/compression/attributes
-	mkdir -p objs/draco/compression/attributes/prediction_schemes
-	mkdir -p objs/draco/compression/bit_coders
-	mkdir -p objs/draco/compression/entropy
-	mkdir -p objs/draco/compression/mesh
-	mkdir -p objs/draco/compression/point_cloud
-	mkdir -p objs/draco/compression/point_cloud/algorithms
-	mkdir -p objs/draco/core
-	mkdir -p objs/draco/mesh
-	mkdir -p objs/draco/point_cloud
-	mkdir -p objs/draco/metadata
+	@echo "  MKDIR objs"
+	@mkdir -p objs
+	@echo "  MKDIR objs/lib"
+	@mkdir -p objs/lib
+	@echo "  MKDIR objs/draco/attributes"
+	@mkdir -p objs/draco/attributes
+	@echo "  MKDIR objs/draco/compression"
+	@mkdir -p objs/draco/compression
+	@echo "  MKDIR objs/draco/compression/attributes"
+	@mkdir -p objs/draco/compression/attributes
+	@echo "  MKDIR objs/draco/compression/attributes/prediction_schemes"
+	@mkdir -p objs/draco/compression/attributes/prediction_schemes
+	@echo "  MKDIR objs/draco/compression/bit_coders"
+	@mkdir -p objs/draco/compression/bit_coders
+	@echo "  MKDIR objs/draco/compression/entropy"
+	@mkdir -p objs/draco/compression/entropy
+	@echo "  MKDIR objs/draco/compression/mesh"
+	@mkdir -p objs/draco/compression/mesh
+	@echo "  MKDIR objs/draco/compression/point_cloud"
+	@mkdir -p objs/draco/compression/point_cloud
+	@echo "  MKDIR objs/draco/compression/point_cloud/algorithms"
+	@mkdir -p objs/draco/compression/point_cloud/algorithms
+	@echo "  MKDIR objs/draco/core"
+	@mkdir -p objs/draco/core
+	@echo "  MKDIR objs/draco/mesh"
+	@mkdir -p objs/draco/mesh
+	@echo "  MKDIR objs/draco/point_cloud"
+	@mkdir -p objs/draco/point_cloud
+	@echo "  MKDIR objs/draco/metadata"
+	@mkdir -p objs/draco/metadata
 
 
 libGameApi.so: $(OFiles) Makefile
