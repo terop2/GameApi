@@ -1,0 +1,8 @@
+
+compiling the linux version:
+  make -j 8
+
+
+compiling the emscripten version:
+  ./emmake.sh
+
