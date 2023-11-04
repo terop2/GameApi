@@ -222,7 +222,6 @@ dirs:
 	@mkdir -p objs/draco/point_cloud
 	@echo "  MKDIR objs/draco/metadata"
 	@mkdir -p objs/draco/metadata
-
 	@echo "  MKDIR objs/nothreads/lib"
 	@mkdir -p objs/nothreads/lib
 	@echo "  MKDIR objs/nothreads/draco/attributes"
@@ -252,24 +251,6 @@ dirs:
 	@echo "  MKDIR objs/nothreads/draco/metadata"
 	@mkdir -p objs/nothreads/draco/metadata
 
-
-mkdir -p objs/nothreads
-	mkdir -p objs/nothreads/lib
-	mkdir -p objs/nothreads/draco/attributes
-	mkdir -p objs/nothreads/draco/compression
-	mkdir -p objs/nothreads/draco/compression/attributes
-	mkdir -p objs/nothreads/draco/compression/attributes/prediction_schemes
-	mkdir -p objs/nothreads/draco/compression/bit_coders
-	mkdir -p objs/nothreads/draco/compression/entropy
-	mkdir -p objs/nothreads/draco/compression/mesh
-	mkdir -p objs/nothreads/draco/compression/point_cloud
-	mkdir -p objs/nothreads/draco/compression/point_cloud/algorithms
-	mkdir -p objs/nothreads/draco/core
-	mkdir -p objs/nothreads/draco/mesh
-	mkdir -p objs/nothreads/draco/point_cloud
-	mkdir -p objs/nothreads/draco/metadata
-
-
 nothreads: dirs $(O2Files_nothreads) libGameApi_nothreads.bc
 
 examples: main
@@ -277,12 +258,12 @@ examples: main
 fixmissing:
 
 libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
-	echo em++ libGameApi.bc
-	em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
+	echo "  em++ libGameApi.bc"
+	@em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
 
 libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
-	echo em++ libGameApi_nothreads.bc
-	em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
+	echo "  em++ libGameApi_nothreads.bc"
+	@em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
 
 subdirs: $(Subdirs)
 
@@ -304,49 +285,49 @@ RM = rm
 #mingw32-g++
 
 $(DFiles): objs/%.d: %.cc
-	@echo Deps $< -o $@
+	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CCFLAGS) $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(D2Files): objs/%.d2: %.cc
-	@echo Deps $< -o $@
+	@echo "  Deps $< -o $@"
 	@$(CCWIN) -M $(CC2FLAGS) $< \
 	|$(SED) 's,\($*\)\.bc[ :]*,objs/\1.bc $@ : ,g' > $@
 
 $(OFiles): objs/%.bc : %.cc
-	@echo em++ $< -o $@
+	@echo "  em++  $@"
 	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
 $(DOFiles): objs/%.bc : %.cc
-	@echo em++  $< -o $@
+	@echo "  em++  $@"
 	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 	    
 
 $(OOFiles): objs/%.bc : %.c
-	@echo emcc $< -o $@
+	@echo "  emcc $< -o $@"
 	@$(CCC) -c $(CFLAGS) $(pthread_opts) $< -o $@
 
 
 $(O2Files): objs/%.bc : %.cc
-	@echo mingw $<
+	@echo "  mingw $<"
 	$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
 
 $(OFiles_nothreads): objs/nothreads/%.bc : %.cc
-	@echo em++ $< -o $@
+	@echo "  em++  $@"
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 $(DOFiles_nothreads): objs/nothreads/%.bc : %.cc
-	@echo em++ $< -o $@
+	@echo "  em++  $@"
 	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
 $(OOFiles_nothreads): objs/nothreads/%.bc : %.c
-	@echo emcc $< -o $@
+	@echo "  emcc $< -o $@"
 	@$(CCC) -DNO_THREADS -c $(CFLAGS) $< -o $@
 
 $(O2Files_nothreads): objs/nothreads/%.bc : %.cc
-	@echo mingw $<
+	@echo "  mingw $<"
 	$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
