@@ -195,7 +195,7 @@ CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomi
 def: dirs $(O2Files) libGameApi.bc
 
 check_emscripten_exists:
-	@test -f $(EMSCRIPTEN_PATH)/emsdk && echo "  TEST   emscripten=OK" || (echo "  TEST   emscripten=FAIL\n NOTE: recommended command: ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten"; exit 1)
+	@test -f $(EMSCRIPTEN_PATH)/emsdk && echo "  TEST   emscripten=OK" || (echo "  TEST   emscripten=FAIL\n NOTE: recommended command: ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory"; exit 1)
 
 dirs: check_emscripten_exists
 	@echo "  MKDIR objs"
