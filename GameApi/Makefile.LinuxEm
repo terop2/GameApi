@@ -192,7 +192,7 @@ CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomi
 def: dirs $(O2Files) libGameApi.bc
 
 dirs:
-    	mkdir -p objs
+	mkdir -p objs
 	mkdir -p objs/draco/attributes
 	mkdir -p objs/draco/compression
 	mkdir -p objs/draco/compression/attributes
@@ -218,7 +218,7 @@ dirs:
 	mkdir -p objs/nothreads/draco/metadata
 
 
-nothreads: $(O2Files_nothreads) libGameApi_nothreads.bc
+nothreads: dirs $(O2Files_nothreads) libGameApi_nothreads.bc
 
 examples: main
 
