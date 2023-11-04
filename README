@@ -8,7 +8,7 @@ Choose correct directory:
    cd GameApi
 
 To compile (linux):
-  make -j 8
+  make -j 8 LIBPATH=/usr/lib/x86_64-linux-gnu/
 
 To compile (emscripten):
   ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
