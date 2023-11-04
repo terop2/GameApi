@@ -17,3 +17,6 @@ To compile (windows):
   set_paths_git.bat
   make.bat
 
+Running the software:
+  cd editor
+  ./a.out
