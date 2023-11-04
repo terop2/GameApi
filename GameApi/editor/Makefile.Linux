@@ -1,6 +1,6 @@
 
 all:
-	@echo "   LD   a.out"
+	@echo "  LD    editor/a.out"
 	@g++ -m64 -DLINUX -fPIC -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client -L../hssynth2/synthlib -lsynthlib -L../hssynth2/midiplay/midifile -lmidifile -lasound
 
 
