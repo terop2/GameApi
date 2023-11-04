@@ -136,7 +136,21 @@ CC2FLAGS = -I. -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: libGameApi.so deploytool/deploytool
+default: dirs libGameApi.so deploytool/deploytool
+
+dirs:
+	mkdir -p objs
+	mkdir -p objs/draco/attributes
+	mkdir -p objs/draco/compression
+	mkdir -p objs/draco/compression/attributes
+	mkdir -p objs/draco/compression/bit_coders
+	mkdir -p objs/draco/compression/entropy
+	mkdir -p objs/draco/compression/mesh
+	mkdir -p objs/draco/compression/point_cloud
+	mkdir -p objs/draco/core
+	mkdir -p objs/draco/mesh
+	mkdir -p objs/draco/point_cloud
+	mkdir -p objs/draco/metadata
 
 
 libGameApi.so: $(OFiles) Makefile
