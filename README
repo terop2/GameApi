@@ -1,1 +1,19 @@
-Documentation url: http://sivut.koti.soon.fi/~terop/GameApi.html
+
+    GameApi Builder and meshpage.org
+    --------------------------------
+
+We proudly present a 3d modelling tool and web site for displaying 3d models.
+
+Choose correct directory:
+   cd GameApi
+
+To compile (linux):
+  make -j 8
+
+To compile (emscripten):
+  ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
+
+To compile (windows):
+  set_paths_git.bat
+  make.bat
+
