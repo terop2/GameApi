@@ -189,7 +189,34 @@ CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomi
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
 
-def: $(O2Files) libGameApi.bc
+def: dirs $(O2Files) libGameApi.bc
+
+dirs:
+    	mkdir -p objs
+	mkdir -p objs/draco/attributes
+	mkdir -p objs/draco/compression
+	mkdir -p objs/draco/compression/attributes
+	mkdir -p objs/draco/compression/bit_coders
+	mkdir -p objs/draco/compression/entropy
+	mkdir -p objs/draco/compression/mesh
+	mkdir -p objs/draco/compression/point_cloud
+	mkdir -p objs/draco/core
+	mkdir -p objs/draco/mesh
+	mkdir -p objs/draco/point_cloud
+	mkdir -p objs/draco/metadata
+	mkdir -p objs/nothreads
+	mkdir -p objs/nothreads/draco/attributes
+	mkdir -p objs/nothreads/draco/compression
+	mkdir -p objs/nothreads/draco/compression/attributes
+	mkdir -p objs/nothreads/draco/compression/bit_coders
+	mkdir -p objs/nothreads/draco/compression/entropy
+	mkdir -p objs/nothreads/draco/compression/mesh
+	mkdir -p objs/nothreads/draco/compression/point_cloud
+	mkdir -p objs/nothreads/draco/core
+	mkdir -p objs/nothreads/draco/mesh
+	mkdir -p objs/nothreads/draco/point_cloud
+	mkdir -p objs/nothreads/draco/metadata
+
 
 nothreads: $(O2Files_nothreads) libGameApi_nothreads.bc
 
@@ -210,7 +237,7 @@ subdirs: $(Subdirs)
 $(Subdirs):
 	$(MAKE) -C $@
 
-.PHONY: subdirs $(Subdirs)
+.PHONY: dirs subdirs $(Subdirs)
 
 ctags: TAGS
 
