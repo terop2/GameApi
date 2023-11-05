@@ -352,6 +352,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML disable_matrices(EveryApi &ev, ML ml, int size);
+  ML hires_ml(EveryApi &ev, ML I3, int size);
+  ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
   ML android_resize(EveryApi &ev, ML ml, float mult);
   ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
   ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
@@ -1575,6 +1578,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT hires(EveryApi &ev, MT mat, int size);
   IMPORT MT mt_empty(EveryApi &ev);
   IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
   IMPORT MT progressmaterial(MT nxt, void (*fptr)(void*), void*data);

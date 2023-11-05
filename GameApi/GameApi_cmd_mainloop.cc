@@ -5,6 +5,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::hires_ml,
+			 "hires_ml",
+			 { "ev", "I3", "size" },
+			 { "EveryApi&", "ML", "int" },
+			 { "ev", "", "2048" },
+			 "ML", "mainloop_api", "hires_ml"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_start,
   			 "t_start",
@@ -457,6 +463,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced2_ml","","Can be used for dynamic changes for pta"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::render_txid,
+			 "p_render_txid",
+			 { "ev", "p1", "I7" },
+			 { "EveryApi&", "P", "TXID" },
+			 { "ev", "", "" },
+			 "ML", "mainloop_api", "render_txid"));
 #if 0
   // doesnt work in emscripten
 
