@@ -4,8 +4,8 @@
 #include <MidiFile.h>
 
 #ifndef WIN32
-#include <AudioService.h>
-#include <Patch.h>
+//#include <AudioService.h>
+//#include <Patch.h>
 #endif
 
 #if 0
@@ -494,15 +494,18 @@ GameApi::ML GameApi::TrackerApi::play_wave_via_keypress(EveryApi &ev, ML ml, std
   return add_main_loop(e, new PlayWavViaKeypress(e,ev,item, url, homepage, key));
 }
 #ifndef WIN32
+#if 0
 struct DATAPASS
 {
   const std::vector<unsigned char> *data;
   sf::AudioService *audio;
 };
 #endif
+#endif
 
 void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset)
 {
+#if 0
 #ifndef WIN32
   DATAPASS *pass = new DATAPASS;
   pass->data = &data;
@@ -510,8 +513,8 @@ void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsig
   std::string patch(patchset.begin(),patchset.end());
   std::stringstream ss(patch);
   
-  sf::Patch::init();
-  sf::Patch::loadPatchSet(ss);
+  //sf::Patch::init();
+  //sf::Patch::loadPatchSet(ss);
 
   pass->audio = sf::AudioService::getInstance();
   
@@ -533,10 +536,12 @@ void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsig
    }
   return (void*)pass;
 #endif
+#endif
 }
 
 void play_midi(void *ptr)
 {
+#if 0
 #ifndef WIN32
   DATAPASS *pass = (DATAPASS*)ptr;
   if (!pass) return;
@@ -591,6 +596,7 @@ void play_midi(void *ptr)
 	}
       
     }
+#endif
 #endif
 }
 

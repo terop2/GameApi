@@ -7172,6 +7172,145 @@ private:
   float obj_size;
 };
 
+
+class DisableMatrices : public MainLoopItem
+{
+public:
+  DisableMatrices(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, int size) :env(env),ev(ev),next(next),size(size){ }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_MV = Matrix::Identity();
+    ee.in_iMV = Matrix::Identity();
+
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s11;
+    s11.id = e.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+    GameApi::M mat2 = add_matrix2(env,ee.in_MV);
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    //ev.shader_api.set_var(s11, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+
+    
+    
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int size;
+};
+
+GameApi::ML GameApi::MainLoopApi::disable_matrices(EveryApi &ev, ML ml, int size)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new DisableMatrices(e,ev,item,size));
+}
+
+GameApi::ML GameApi::MainLoopApi::render_txid(EveryApi &ev, P p1, TXID I7, int size)
+{
+  confirm_texture_usage(ev.get_env(),p1);
+  GameApi::VA va0 = ev.polygon_api.create_vertex_array(p1,true);
+  GameApi::VA va = ev.texture_api.bind(va0,I7);
+  GameApi::ML ml2 = ev.polygon_api.render_vertex_array_ml(ev,va);
+  GameApi::ML ml22 = ev.mainloop_api.disable_matrices(ev,ml2,size);
+  GameApi::ML ml32 = ev.texture_api.forward_to_txid(va,ml22,I7);
+  return ml32;
+}
+
+
+class Hires : public MaterialForward
+{
+public:
+  Hires(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, int size) : env(env), ev(ev), next(next), size(size) {
+    std::cout << "Warning: Hires rendering is not working in emscripten." << std::endl;
+  }
+  virtual GameApi::ML mat2(GameApi::P p0) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat(p0.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);
+    return ml32;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p0, GameApi::PTS pts) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst(p0.id,pts.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    return ml32;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p0, GameApi::MS ms) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_matrix(p0.id,ms.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    return ml32;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p0, GameApi::PTA pta) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst2(p0.id,pta.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    return ml32;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p0, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_fade(p0.id,pts.id,flip,start_time,end_time);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    return ml32;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Material *next;
+  int size;
+};
+GameApi::MT GameApi::MaterialsApi::hires(EveryApi &ev, MT mat, int size)
+{
+  Material *next = find_material(e,mat);
+  return add_material(e, new Hires(e,ev,next,size));
+}
+
+GameApi::ML GameApi::MainLoopApi::hires_ml(EveryApi &ev, ML I3, int size)
+{
+  P I1=ev.polygon_api.p_empty();
+  MT I4=ev.mainloop_api.mainloop_material(ev,I3);
+  MT I5=ev.materials_api.hires(ev,I4,size);
+  ML I6=ev.materials_api.bind(I1,I5);
+  return I6;
+}
+
 class NewShadowShaderML_1;
 
 class NewShadowMaterial : public MaterialForward

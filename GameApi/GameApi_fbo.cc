@@ -76,6 +76,8 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   */
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
 }
+
+
 EXPORT GameApi::FrameBufferApi::vp GameApi::FrameBufferApi::bind_fbo(FBO buffer)
 {
   OpenglLowApi *ogl = g_low->ogl;

@@ -1332,7 +1332,7 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
 
 
   res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I502,I6});\n";
-   }
+}
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
     res+="ML I67=ev.mainloop_api.android_resize(ev,I66,1.0);\n";
@@ -1362,7 +1362,9 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
   variable="I15";
   }
   
-  res+="RUN I10=ev.blocker_api.game_window2(ev," + variable + ",false,false,0.0,1000000.0);\n";
+ // 
+//res+="ML I11=ev.mainloop_api.hires_ml(ev," + variable + ", 4096);\n";
+  res+="RUN I12=ev.blocker_api.game_window2(ev," + variable + ",false,false,0.0,1000000.0);\n";
 
 
 return res;  
