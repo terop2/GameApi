@@ -1,7 +1,9 @@
 #include "GameApi_h.hh"
 #include <fstream>
 #include <ios>
+#if 0
 #include <MidiFile.h>
+#endif
 
 #ifndef WIN32
 //#include <AudioService.h>
