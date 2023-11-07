@@ -7,9 +7,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
   std::vector<GameApiItem*> vec;
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::hires_ml,
 			 "hires_ml",
-			 { "ev", "I3", "size" },
-			 { "EveryApi&", "ML", "int" },
-			 { "ev", "", "2048" },
+			 { "ev", "I3", "size", "numsamples", "blur_radius" },
+			 { "EveryApi&", "ML", "int", "int", "float" },
+			 { "ev", "", "8192", "320", "0.001" },
 			 "ML", "mainloop_api", "hires_ml"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_start,
