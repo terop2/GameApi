@@ -49,7 +49,6 @@ copy_it model_db.txt
 copy_it gameapi_example.php
 copy_it save_tmp_script.php
 copy_it view_load_file.php
-copy_it zip.min.js
 copy_it simple_file_cache
 finish
 echo "SUCCESS"
