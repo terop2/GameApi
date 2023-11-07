@@ -1,4 +1,11 @@
 
+To download the repo, just use:
+  git clone https://github.com/terop2/GameApi.git
+  cd GameApi
+  cd hssynth2
+  git submodule update --init --recursive
+
+
 Choose correct directory:
    cd GameApi
 
