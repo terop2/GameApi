@@ -7242,7 +7242,7 @@ GameApi::ML GameApi::MainLoopApi::render_txid(EveryApi &ev, P p1, TXID I7, int s
 class Hires : public MaterialForward
 {
 public:
-  Hires(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, int size) : env(env), ev(ev), next(next), size(size) {
+  Hires(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, int size, int numsamples, float blur_radius) : env(env), ev(ev), next(next), size(size),numsamples(numsamples), blur_radius(blur_radius) {
     std::cout << "Warning: Hires rendering is not working in emscripten." << std::endl;
   }
   virtual GameApi::ML mat2(GameApi::P p0) const
@@ -7252,7 +7252,8 @@ public:
     ml3.id = next->mat(p0.id);
     GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
     GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);
-    return ml32;
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p0, GameApi::PTS pts) const
   {
@@ -7261,7 +7262,8 @@ public:
     ml3.id = next->mat_inst(p0.id,pts.id);
     GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
     GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
-    return ml32;
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p0, GameApi::MS ms) const
   {
@@ -7270,7 +7272,8 @@ public:
     ml3.id = next->mat_inst_matrix(p0.id,ms.id);
     GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
     GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
-    return ml32;
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p0, GameApi::PTA pta) const
   {
@@ -7279,7 +7282,8 @@ public:
     ml3.id = next->mat_inst2(p0.id,pta.id);
     GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
     GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
-    return ml32;
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p0, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
@@ -7288,25 +7292,28 @@ public:
     ml3.id = next->mat_inst_fade(p0.id,pts.id,flip,start_time,end_time);
     GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
     GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
-    return ml32;
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
   }
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
   Material *next;
   int size;
+  int numsamples;
+  float blur_radius;
 };
-GameApi::MT GameApi::MaterialsApi::hires(EveryApi &ev, MT mat, int size)
+GameApi::MT GameApi::MaterialsApi::hires(EveryApi &ev, MT mat, int size, int numsamples, float blur_radius)
 {
   Material *next = find_material(e,mat);
-  return add_material(e, new Hires(e,ev,next,size));
+  return add_material(e, new Hires(e,ev,next,size,numsamples,blur_radius));
 }
 
-GameApi::ML GameApi::MainLoopApi::hires_ml(EveryApi &ev, ML I3, int size)
+GameApi::ML GameApi::MainLoopApi::hires_ml(EveryApi &ev, ML I3, int size, int num_samples, float blur_radius)
 {
   P I1=ev.polygon_api.p_empty();
   MT I4=ev.mainloop_api.mainloop_material(ev,I3);
-  MT I5=ev.materials_api.hires(ev,I4,size);
+  MT I5=ev.materials_api.hires(ev,I4,size,num_samples,blur_radius);
   ML I6=ev.materials_api.bind(I1,I5);
   return I6;
 }
@@ -7631,6 +7638,7 @@ private:
   float ad_dark;
   float ad_light;
 };
+
 
 class PhongMaterial : public MaterialForward
 {
@@ -12605,6 +12613,11 @@ GameApi::US GameApi::UberShaderApi::v_adjust(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("adjust", next,"ADJUST"));
 }
+GameApi::US GameApi::UberShaderApi::v_blurred_render(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("blurred_render", next,"EX_TEXCOORD IN_TEXCOORD BLURRED_RENDER"));
+}
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -12975,6 +12988,13 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"PHONG_TEXTURE EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
 }
+
+GameApi::US GameApi::UberShaderApi::f_blurred_render(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("blurred_render", next,"EX_TEXCOORD COLOR_MIX BLURRED_RENDER"));
+}
+
 GameApi::US GameApi::UberShaderApi::f_adjust(US us)
 {
   ShaderCall *next = find_uber(e, us);

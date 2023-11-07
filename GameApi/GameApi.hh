@@ -353,7 +353,7 @@ public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
   ML disable_matrices(EveryApi &ev, ML ml, int size);
-  ML hires_ml(EveryApi &ev, ML I3, int size);
+  ML hires_ml(EveryApi &ev, ML I3, int size, int numsamples, float blur_radius);
   ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
   ML android_resize(EveryApi &ev, ML ml, float mult);
   ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
@@ -1578,7 +1578,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
-  IMPORT MT hires(EveryApi &ev, MT mat, int size);
+  IMPORT MT hires(EveryApi &ev, MT mat, int size, int numsampled, float blur_radius);
   IMPORT MT mt_empty(EveryApi &ev);
   IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
   IMPORT MT progressmaterial(MT nxt, void (*fptr)(void*), void*data);
@@ -2532,6 +2532,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+ 
   CS colourspace_sphere2();
   CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);
   CS colourspace_func(std::function<unsigned int (float,float,float,float)> f, float sx, float ex, float sy, float ey, float sz, float ez, float st, float et);
@@ -2957,6 +2958,7 @@ public:
   IMPORT ML newshadow_shader_2_phong(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
   IMPORT ML newshadow_shader_2_gltf(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int texindex);
   IMPORT ML adjust_shader(EveryApi &ev, ML mainloop, unsigned int ad_color, float ad_dark, float ad_light);
+  IMPORT ML blurred_render_shader(EveryApi &ev, ML mainloop, int numsamples, float blur_radius);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
@@ -3910,6 +3912,7 @@ public:
   US v_newshadow_1(US us);
   US v_newshadow_2(US us);
   US v_phong(US us);
+  US v_blurred_render(US us);
   US v_adjust(US us);
   US v_generic(US us, std::string name, std::string flags);
   US v_vertexphong(US us);
@@ -3936,6 +3939,7 @@ public:
   US f_newshadow_2(US us, bool is_phong);
   US f_adjust(US us);
   US f_phong(US us);
+  US f_blurred_render(US us);
   US f_phong2(US us);
   US f_generic(US us, std::string name, std::string flags);
   US f_generic_flip(US us, std::string name, std::string flags);

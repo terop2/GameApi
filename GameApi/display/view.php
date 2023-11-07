@@ -1346,7 +1346,7 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
   } else {
     res+="ML I67=ev.mainloop_api.android_resize(ev,I66,1.0);\n";
     res+="ML I68=ev.mainloop_api.mouse_roll_zoom2(ev,I67);\n";
-    res+="ML I800=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
+    res+="ML I800=ev.mainloop_api.touch_rotate(ev,I68,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
 
 
