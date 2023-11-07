@@ -180,8 +180,8 @@
 			 "MT", "materials_api", "m_def"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::hires,
 			 "m_hires",
-			 { "ev", "mat", "size" },
-			 { "EveryApi&", "MT", "128|256|512|1024|2048" },
+			 { "ev", "mat", "size", "numsamples", "blur_radius" },
+			 { "EveryApi&", "MT", "int","int", "float" },
 			 { "ev", "", "2048" },
 			 "MT", "materials_api", "hires"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mt_alt,
