@@ -4,6 +4,8 @@
 
 We proudly present a 3d modelling tool and web site for displaying 3d models.
 
+ ![builder][https://tpgames.org/prog.png]
+
 To download the repo, just use:
   git clone https://github.com/terop2/GameApi.git
 
@@ -43,4 +45,7 @@ Important urls:
   https://meshpage.org/meshpage_4       (download newest builder tool binaries)
   https://meshpage.org/view.php         (3d model viewer)
   https://meshpage.org/gltf_to_zip.php  (gltf to html5 zip converter)
-  https://meshpage.org/meshpage_5       (FAQ) 
+  https://meshpage.org/meshpage_5       (FAQ)
+
+Welcome to our world,
+ ![face][https://tpgames.org/avatar.png]
