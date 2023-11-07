@@ -1,15 +1,19 @@
 #!/bin/bash
-var="$1"
-start=${var%=*}
-end=${var#*=}
-path=/home/terop/cvs/emscripten/emsdk/
-if [ "$start" = "EMSCRIPTEN_PATH" ]
+if [ "$EMSCRIPTEN_PATH" = "" ]
 then
-    path=$end
-else
-    echo "Defaulting emscripten path to /home/terop/cvs/emscripten/emsdk/, use EMSCRIPTEN_PATH=hhh to change."
+   EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
+   var="$1"
+   start=${var%=*}
+   end=${var#*=}
+   if [ "$start" = "EMSCRIPTEN_PATH" ]
+   then
+       EMSCRIPTEN_PATH=$end
+   else
+      echo "Defaulting emscripten path to /home/terop/cvs/emscripten/emsdk/, use EMSCRIPTEN_PATH=hhh to change."
+   fi
 fi
-source ${path}/emsdk_env.sh
+
+source ${EMSCRIPTEN_PATH}/emsdk_env.sh
 source set_paths_emlinux.sh
 if [ "$1" = "clean" ]
 then
