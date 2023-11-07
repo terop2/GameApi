@@ -7,6 +7,7 @@ We proudly present a 3d modelling tool and web site for displaying 3d models.
 To download the repo, just use:
   git clone https://github.com/terop2/GameApi.git
   cd GameApi
+  cd GameApi
   cd hssynth2
   git submodule update --init --recursive
 
