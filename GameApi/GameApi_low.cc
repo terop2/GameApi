@@ -75,7 +75,9 @@
 #ifdef USE_MIX
 #include <SDL_mixer.h>
 #endif
+#if 0
 #include <AudioService.h>
+#endif
 
 
 #ifdef WAYLAND
@@ -199,10 +201,12 @@ void check_err(const char *name)
 
 void map_enums_sdl(unsigned int &i) {
   switch(i) {
+#if 0
     case Low_SAMPLE_FREQ: i=SAMPLE_FREQ; break;
     case Low_AUDIO_F32LSB: i=AUDIO_F32LSB; break;
     case Low_SAMPLE_BUF_SIZE: i=SAMPLE_BUF_SIZE; break;
-
+#endif
+      
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
