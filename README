@@ -2,7 +2,11 @@
     GameApi Builder and meshpage.org
     --------------------------------
 
-We proudly present a 3d modelling tool and web site for displaying 3d models.
+We proudly present a 3d modelling tool, 3d engine and web site for
+displaying 3d models.
+
+Our best feature is gltf rendering and its eventual deployment in web, but our
+tools are slightly more flexible than just focusing on gltf area.
 
 To download the repo, just use:
   git clone https://github.com/terop2/GameApi.git
