@@ -10,6 +10,8 @@ To download the repo, just use:
   cd GameApi
   cd hssynth2
   git submodule update --init --recursive
+  cd ..
+  cd ..
 
 Choose correct directory:
    cd GameApi
