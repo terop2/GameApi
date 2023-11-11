@@ -13,7 +13,7 @@ tools are slightly more flexible than just focusing on gltf area.
 
 
 ### Download the repo
-  git clone https://github.com/terop2/GameApi.git
+  - git clone https://github.com/terop2/GameApi.git
 
 ### Dependent packages (ubuntu)
   - apt-get install libsdl2-dev
