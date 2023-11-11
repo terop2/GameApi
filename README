@@ -63,10 +63,16 @@ Deploy Process#1:
 API access:
     LINK: link to the libGameApi.so or libGameApi.bc library.
     CALL:
+      #include "GameApi.hh"
       std::string code= "SCRIPT FROM CODEGEN HERE";
       Env e2;
       EveryApi ev(e);
       ExecuteEnv e;
+      ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
+      ev.mainloop_api.set_screen_size(w_width, w_height);
+      ev.mainloop_api.set_homepage_url(homepageurl);
+      ev.mainloop_api.set_seamless_url(seamless_url);
+      ev.shader_api.load_default();
       std::pair<int,std::string> blk = GameApi::execute_codegen(e2, ev, code, e);
       if (blk.second == "RUN") {
       	 RUN r;
@@ -81,5 +87,5 @@ API access:
        }
 
 DEPLOYTOOL ACCESS:
-      cd deploytool
-      LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
+  cd deploytool
+  LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
