@@ -11,17 +11,17 @@ tools are slightly more flexible than just focusing on gltf area.
   git clone https://github.com/terop2/GameApi.git
 
 ## Dependent packages (ubuntu)
-  apt-get install libsdl2-dev
-  apt-get install libfreetype6-dev
-  apt-get install libsdl2-mixer-dev
-  apt-get install libglew-dev
-  apt-get install curl
-  apt-get install libstdc++0
-  apt-get install libc6
-  apt-get install libgcc-s1
-  apt-get install unzip
-  apt-get install zip
-  apt-get install tar
+  - apt-get install libsdl2-dev
+  - apt-get install libfreetype6-dev
+  - apt-get install libsdl2-mixer-dev
+  - apt-get install libglew-dev
+  - apt-get install curl
+  - apt-get install libstdc++0
+  - apt-get install libc6
+  - apt-get install libgcc-s1
+  - apt-get install unzip
+  - apt-get install zip
+  - apt-get install tar
 
 ## Choose correct directory
   ```cd GameApi```
