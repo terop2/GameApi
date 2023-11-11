@@ -60,4 +60,26 @@ Deploy Process#1:
  EMBED: use <embed src="dir/index.html" width="830" height="630"/> to embed the 3d model to your html article
  ENJOY: open the article in web browser via url
 
- 
+API access:
+    LINK: link to the libGameApi.so or libGameApi.bc library.
+    CALL:
+      std::string code= "SCRIPT FROM CODEGEN HERE";
+      Env e2;
+      EveryApi ev(e);
+      ExecuteEnv e;
+      std::pair<int,std::string> blk = GameApi::execute_codegen(e2, ev, code, e);
+      if (blk.second == "RUN") {
+      	 RUN r;
+    	 r.id = blk.first;
+    	 ev.blocker_api.run2(ev,r);
+       } else if (blk.second=="OK") {
+         BLK b;
+         b.id = blk.first;
+         ev.blocker_api.run(b);
+       } else {
+         std::cout << "ERROR: internal error" << std::endl;
+       }
+
+DEPLOYTOOL ACCESS:
+      cd deploytool
+      LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
