@@ -63,7 +63,7 @@ How we normally push our code to hosting space:
  - CREATE: use our technology to create the 3d model display
  - DEPLOY: get a .zip file from gltf_to_zip converter, builder tool(save_deploy) or meshpage.org web site
  - UNZIP: unzip the zip file to a new directory in your hosting space
- - EMBED: use <embed src="dir/index.html" width="830" height="630"/> to embed the 3d model to your html article
+ - EMBED: use `<embed src="dir/index.html" width="830" height="630"/>` to embed the 3d model to your html article
  - ENJOY: open the article in web browser via url
 
 ### API access:
