@@ -25,26 +25,30 @@ Dependent packages (ubuntu):
   apt-get install tar
 
 Choose correct directory:
-   cd GameApi
+   `cd GameApi`
 
 To compile (linux):
-  make -j 8
+  `make -j 8`
 
 To compile (emscripten):
-  ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
+ `./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory`
 
 To compile (windows):
+  ```
   set_paths_git.bat
   make.bat
+  ```
 
 Running the software:
+  ```
   cd editor
   ./a.out
+  ```
 
 How we normally push our code to hosting space
        (contains fixed ssh paths, which you might need to change):
        ((requires apache + php + emscripten + linux g++ compilers))
-  # ./full_deploy.sh
+ `# ./full_deploy.sh`
 
 Important urls:
   https://meshpage.org                  (main web site)
@@ -63,6 +67,7 @@ Deploy Process#1:
 API access:
     LINK: link to the libGameApi.so or libGameApi.bc library.
     CALL:
+      ```
       #include "GameApi.hh"
       std::string code= "SCRIPT FROM CODEGEN HERE";
       Env e2;
@@ -85,7 +90,10 @@ API access:
        } else {
          std::cout << "ERROR: internal error" << std::endl;
        }
+       ```
 
 DEPLOYTOOL ACCESS:
+  ```
   cd deploytool
   LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
+  ```
