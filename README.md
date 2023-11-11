@@ -7,6 +7,8 @@ displaying 3d models.
 Our best feature is gltf rendering and its eventual deployment in web, but our
 tools are slightly more flexible than just focusing on gltf area.
 
+<img src="https://tpgames.org/builder_mini.png"/>
+
 ### Download the repo
   git clone https://github.com/terop2/GameApi.git
 
@@ -95,3 +97,6 @@ How we normally push our code to hosting space:
   cd deploytool
   LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
   ```
+
+Yours, 
+<img src="https://tpgames.org/avatar.png"/>
