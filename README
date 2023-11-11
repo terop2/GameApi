@@ -43,6 +43,7 @@ Running the software:
 
 How we normally push our code to hosting space
        (contains fixed ssh paths, which you might need to change):
+       ((requires apache + php))
   ./full_deploy.sh
 
 Important urls:
