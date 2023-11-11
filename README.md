@@ -7,7 +7,7 @@ displaying 3d models.
 Our best feature is gltf rendering and its eventual deployment in web, but our
 tools are slightly more flexible than just focusing on gltf area.
 
-### download the repo
+### Download the repo
   git clone https://github.com/terop2/GameApi.git
 
 ### Dependent packages (ubuntu)
@@ -90,7 +90,7 @@ How we normally push our code to hosting space:
        }
        ```
 
-### DEPLOYTOOL ACCESS:
+### Deploytool access:
   ```
   cd deploytool
   LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
