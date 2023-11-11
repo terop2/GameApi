@@ -24,17 +24,16 @@ tools are slightly more flexible than just focusing on gltf area.
   - apt-get install tar
 
 ```
-Choose correct directory
+Choose correct directory:
   cd GameApi
 
-To compile (linux)
+To compile (linux):
   make -j 8
 
-To compile (emscripten)
+To compile (emscripten):
  ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
 
-To compile (windows)
-  
+To compile (windows):
   set_paths_git.bat
   make.bat
 
@@ -42,8 +41,8 @@ Running the software:
   cd editor
   ./a.out
 
-How we normally push our code to hosting space
- \# ./full_deploy.sh
+How we normally push our code to hosting space:
+  # ./full_deploy.sh
 ```
 
 ### Important urls:
