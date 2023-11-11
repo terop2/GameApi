@@ -23,31 +23,28 @@ tools are slightly more flexible than just focusing on gltf area.
   - apt-get install zip
   - apt-get install tar
 
-### Choose correct directory
-  ```cd GameApi```
+```
+Choose correct directory
+  cd GameApi
 
-### To compile (linux)
-  ```make -j 8```
+To compile (linux)
+  make -j 8
 
-### To compile (emscripten)
- ```./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory```
+To compile (emscripten)
+ ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
 
-### To compile (windows)
-  ```
+To compile (windows)
+  
   set_paths_git.bat
   make.bat
-  ```
 
-### Running the software:
-  ```
+Running the software:
   cd editor
   ./a.out
-  ```
 
-### How we normally push our code to hosting space
- ```
- # ./full_deploy.sh
- ```
+How we normally push our code to hosting space
+ \# ./full_deploy.sh
+```
 
 ### Important urls:
   - https://meshpage.org                  (main web site)
