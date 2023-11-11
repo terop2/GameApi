@@ -45,9 +45,9 @@ tools are slightly more flexible than just focusing on gltf area.
   ```
 
 ### How we normally push our code to hosting space
-       (contains fixed ssh paths, which you might need to change):
-       ((requires apache + php + emscripten + linux g++ compilers))
- ```# ./full_deploy.sh```
+ ```
+ # ./full_deploy.sh
+ ```
 
 ### Important urls:
   - https://meshpage.org                  (main web site)
@@ -66,6 +66,7 @@ tools are slightly more flexible than just focusing on gltf area.
 ### API access:
     - LINK: link to the libGameApi.so or libGameApi.bc library.
     - CALL:
+    
       ```
       #include "GameApi.hh"
       std::string code= "SCRIPT FROM CODEGEN HERE";
