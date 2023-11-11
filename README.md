@@ -23,6 +23,8 @@ tools are slightly more flexible than just focusing on gltf area.
   - apt-get install zip
   - apt-get install tar
 
+
+### Compiling
 ```
 Choose correct directory:
   cd GameApi
