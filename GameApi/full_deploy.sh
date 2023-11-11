@@ -7,6 +7,7 @@ make -f Makefile.LinuxEm clean
 (cd web_page;./ftp_release.sh)
 (cd display;./ftp_release.sh)
 (cd display;./ftp_package.sh)
+(cd php;./ftp.sh)
 (cd deploytool;./ftp_release.sh)
 (cd editor;./copy_files_to_deb.sh 27)
 (cd editor;./make_deb.sh 27)
