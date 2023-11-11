@@ -7,10 +7,10 @@ displaying 3d models.
 Our best feature is gltf rendering and its eventual deployment in web, but our
 tools are slightly more flexible than just focusing on gltf area.
 
-## download the repo
+### download the repo
   git clone https://github.com/terop2/GameApi.git
 
-## Dependent packages (ubuntu)
+### Dependent packages (ubuntu)
   - apt-get install libsdl2-dev
   - apt-get install libfreetype6-dev
   - apt-get install libsdl2-mixer-dev
@@ -23,47 +23,47 @@ tools are slightly more flexible than just focusing on gltf area.
   - apt-get install zip
   - apt-get install tar
 
-## Choose correct directory
+### Choose correct directory
   ```cd GameApi```
 
-## To compile (linux)
+### To compile (linux)
   ```make -j 8```
 
-## To compile (emscripten)
+### To compile (emscripten)
  ```./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory```
 
-## To compile (windows)
+### To compile (windows)
   ```
   set_paths_git.bat
   make.bat
   ```
 
-## Running the software:
+### Running the software:
   ```
   cd editor
   ./a.out
   ```
 
-## How we normally push our code to hosting space
+### How we normally push our code to hosting space
        (contains fixed ssh paths, which you might need to change):
        ((requires apache + php + emscripten + linux g++ compilers))
  ```# ./full_deploy.sh```
 
-## Important urls:
+### Important urls:
   - https://meshpage.org                  (main web site)
   - https://meshpage.org/meshpage_4       (download newest builder tool binaries)
   - https://meshpage.org/view.php         (3d model viewer)
   - https://meshpage.org/gltf_to_zip.php  (gltf to html5 zip converter)
   - https://meshpage.org/meshpage_5       (FAQ)
   
-## Deploy Process#1:
+### Deploy Process#1:
  - CREATE: use our technology to create the 3d model display
  - DEPLOY: get a .zip file from gltf_to_zip converter, builder tool(save_deploy) or meshpage.org web site
  - UNZIP: unzip the zip file to a new directory in your hosting space
  - EMBED: use <embed src="dir/index.html" width="830" height="630"/> to embed the 3d model to your html article
  - ENJOY: open the article in web browser via url
 
-## API access:
+### API access:
     - LINK: link to the libGameApi.so or libGameApi.bc library.
     - CALL:
       ```
@@ -91,7 +91,7 @@ tools are slightly more flexible than just focusing on gltf area.
        }
        ```
 
-## DEPLOYTOOL ACCESS:
+### DEPLOYTOOL ACCESS:
   ```
   cd deploytool
   LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
