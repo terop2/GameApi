@@ -41,6 +41,9 @@ Running the software:
   cd editor
   ./a.out
 
+How we normally push our code to hosting space
+       (contains fixed ssh paths, which you might need to change):
+  ./full_deploy.sh
 
 Important urls:
   https://meshpage.org                  (main web site)
