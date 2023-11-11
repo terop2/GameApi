@@ -7,7 +7,7 @@ copy_it()
 	INDEX=${INDEX}+1
 	arr[${INDEX}]=$1
      else
-       cp $1 /home/terop/html/meshpage.org/
+       scp $1 terop@ssh.meshpage.org:/home/terop/html/meshpage.org/
        echo "copying $1 to meshpage.org"
     fi
 }
