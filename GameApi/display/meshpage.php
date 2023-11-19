@@ -1107,7 +1107,7 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 require_once("user.php");
 ?>
 
-PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>
+PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a> (LGPL/GPL)
 <p><br>
 MOST RECENT RELEASE: WIN: 
 <?php
