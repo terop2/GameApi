@@ -6,7 +6,7 @@ copy_it()
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
 	INDEX=${INDEX}+1
 	arr[${INDEX}]=$1
-    else if [ "$MACHINE" == "terop-pc" ]; then
+    elif [ "$MACHINE" == "terop-pc" ]; then
 	INDEX=${INDEX}+1
 	arr[${INDEX}]=$1
     else
