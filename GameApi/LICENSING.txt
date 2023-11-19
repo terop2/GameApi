@@ -26,6 +26,7 @@ Here's story of how licensing in gameapi wprks.
        - SDL2: zlib license
        - SDL2_image: zlib license
        - SDL2_mixer: zlib license
+       - tinygltf: MIT license
    (sdl2_image is not really used in gameapi, but there might still be some
     code left which uses the library, since we use stb_image currently for
     this purpose)
