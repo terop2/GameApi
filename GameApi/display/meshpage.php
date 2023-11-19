@@ -716,8 +716,8 @@ echo "<li>For children at ages 10-18 years old, gameapi builder provides safe le
 echo "<li>GameApi builder and <?php echo $sitename ?> web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
 echo "<li><?php echo $sitename ?> is not a social media platform. Correct designation is \"Content Creation Tool Provider\" and  \"Web Publishing Enabler\" and also \"Content Publisher\"";
 echo "<li>Standard disclaimers apply, no warranty or ability to return purchased material";
-echo "<li>How we handle licensing is that we have chosen LGPL to be our main license, but because some assets are GPL, the whole thing needs to be distributed under GPL. ";
-echo "<li>External modules have their own licenses, including GPLv2, GPLv3, SIL Open Font license v1.10, CC0 creative commons license, zlib license, MIT license, Apache licese, public domain or no license required.
+echo "<li>How we handle licensing is that we have chosen LGPLv3 to be our main license, but because some assets are GPL, the whole thing needs to be distributed under GPLv3. ";
+echo "<li>External modules have their own licenses, including GPLv2, GPLv3, SIL Open Font license v1.10, CC0 creative commons license, zlib license, MIT license, Apache licese, public domain or no license required.";
 echo "</ul>";
 ?>
 <script>

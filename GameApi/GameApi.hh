@@ -1837,6 +1837,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN rotate_around_axis(MN next, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle);
   IMPORT MN matrix(MN next, M mat);
   IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
