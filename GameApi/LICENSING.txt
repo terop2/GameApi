@@ -22,11 +22,14 @@ Here's story of how licensing in gameapi wprks.
        - libfreetype: FTL or GPLv2
        - FreeSans.ttf file: GPLv3
        - Chunkfive.otf: SIL Open Font License v1.10
-       - stb_image: CC0: Creative Commons Zero v1.0 Universal
+       - stb_image and stb_image_write: CC0: Creative Commons Zero v1.0 Universal
        - SDL2: zlib license
        - SDL2_image: zlib license
        - SDL2_mixer: zlib license
        - tinygltf: MIT license
+       - draco: Apache license
+       - zip_file.hpp: MIT license
+       
    (sdl2_image is not really used in gameapi, but there might still be some
     code left which uses the library, since we use stb_image currently for
     this purpose)
