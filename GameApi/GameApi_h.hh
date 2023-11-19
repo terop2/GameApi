@@ -218,7 +218,7 @@ void recreate_block(int id);
 
 #if 0
 void *operator new( std::size_t count);
-void operator delete(void* ptr) noexcept;
+void operator delete(void* ptr, size_t sz) noexcept;
 #endif
 
 std::string unique_id();

@@ -49,6 +49,13 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "MN", "float" },
 			 { "", "0.0" },
 			 "MN", "move_api", "rotatez"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rotate_around_axis,
+			 "mn_rotate_axis",
+			 { "next", "p_x", "p_y", "p_z", "v_x", "v_y", "v_z", "angle" },
+			 { "MN", "float", "float", "float", "float", "float", "float", "float" },
+			 { "", "0","0","0","0", "1","0","3.14159" },
+			 "MN", "move_api", "rotate_around_axis"));
+			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mn_mouse_y,
 			 "mn_mouse_y",
 			 { "fetcher", "next", "start_x", "end_x", "start_y", "end_y", "start_val", "end_val" },
