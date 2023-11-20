@@ -21,3 +21,4 @@ finish()
 copy_it dump_docs
 copy_it ../libGameApi.so
 copy_it parser
+copy_it dump.txt
