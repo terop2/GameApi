@@ -1,0 +1,5 @@
+
+all:
+	g++ -std=c++11 dump_functions.cc -o dump_functionso
+	g++ -std=c++11 parser.cc -o parser
+	g++ -std=c++11 file_gen.cc -o file_gen
