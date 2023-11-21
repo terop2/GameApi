@@ -2,5 +2,5 @@
 all:
 	g++ -std=c++11 parser.cc -o parser
 	g++ -std=c++11 headerparser.cc -o headerparser
-	g++ -std=c++11 file_gen.cc -o file_gen
+	#g++ -std=c++11 file_gen.cc -o file_gen
 	g++ -std=c++11 addfindparser.cc -o addfindparser

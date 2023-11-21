@@ -66,4 +66,5 @@ copy_it mesh_login_result.php
 copy_it mesh_tutorial.php 
 copy_it mesh_detect.php 
 copy_it mesh_html.php 
+copy_it mesh_doc.php
 finish

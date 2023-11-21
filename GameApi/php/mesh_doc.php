@@ -4,8 +4,17 @@ $num1 = $_GET["menu"];
 $num2 = $_GET["submenu"];
 $flag = $_GET["select"];
 
-$cmd = "./dump_docs " . $num1 . " " . $num2 . " " . $flag;
+$cmd1 = "./dump_docs " . $num1;
+$cmd2 = "./dump_docs " . $num1 . " " . $num2;
+$cmd3 = "./dump_docs " . $num1 . " " . $num2 . " " . $flag;
 
-$res = shell_exec($cmd);
+$res1 = shell_exec($cmd1);
+$res2 = shell_exec($cmd2);
+$res3 = shell_exec($cmd3);
 
-echo "$res";
+echo "$res1";
+echo "<hr>";
+echo "$res2";
+echo "<hr><pre>";
+echo "$res3";
+echo "</pre>";
