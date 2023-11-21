@@ -830,6 +830,7 @@ list_item($assetsite . "/Math_concepts.txt", "Math concepts");
 list_item($assetsite . "/Printer.txt", "3d printer instructions");
 list_item($assetsite . "/Skills_to_learn.txt", "Skills to learn");
 list_item($assetsite . "/Releasing_animations.txt", "Releasing animations to your web page");
+list_item("https://ssh.meshpage.org/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
 list_end();
 ?>
 
@@ -982,6 +983,7 @@ Then you need brotli packages:
   sudo a2enmod brotli
   sudo systemctl restart apache2
 </ptr>
+
 
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>

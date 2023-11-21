@@ -1,5 +1,5 @@
 
-#include "GameApi_h.hh"
+#include "../GameApi_h.hh"
 
 int main(int argc, char **argv)
 {
@@ -10,7 +10,7 @@ int main(int argc, char **argv)
   ss>>value;
 
 
-  GameApi::Env env;
-  GameApi::EveryApi ev(env);
-  ev.wmod_api.dump_functions_for_docs(ev,value);
+  GameApi::Env *env = new GameApi::Env;
+  GameApi::EveryApi *ev = new GameApi::EveryApi(*env);
+  ev->mod_api.dump_functions_for_docs(*ev,value);
 }

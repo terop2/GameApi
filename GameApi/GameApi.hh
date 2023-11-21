@@ -2152,6 +2152,7 @@ class WModApi
 {
 public:
   WModApi(Env &e) : e(e) { }
+  IMPORT void dump_functions_for_docs(GameApi::EveryApi &ev, int i);
   IMPORT int dump_functions_count();
   IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
   IMPORT WM load(std::string filename);
