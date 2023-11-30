@@ -293,10 +293,10 @@ public:
 		for(int k=0;k<ss1;k++) {
 		if (classes[j].classname==link[k])
 		  {
-		    std::cout << "#ifndef CLASS_" + classes[j].classname << std::endl;
-		    std::cout << "#define CLASS_" + classes[j].classname << std::endl;
+		    //std::cout << "#ifndef CLASS_" + classes[j].classname << std::endl;
+		    //std::cout << "#define CLASS_" + classes[j].classname << std::endl;
 		    std::cout << classes[j].contents << std::endl;
-		    std::cout << "#endif" << std::endl;
+		    //std::cout << "#endif" << std::endl;
 		  }
 		}
 	      }
