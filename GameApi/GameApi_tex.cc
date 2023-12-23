@@ -1005,8 +1005,10 @@ EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
 
 
 
-EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
+EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(GameApi::EveryApi &ev, TXID tx)
 {
+  std::cout << "TextureApi::to_bitmap() doesn't work in emscripten." << std::endl;
+  
   OpenglLowApi *ogl = g_low->ogl;
   //EnvImpl *env = ::EnvImpl::Environment(&e);
 
@@ -1027,11 +1029,36 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
   ogl->glGetTexLevelParameteriv(Low_GL_TEXTURE_2D, 0, Low_GL_TEXTURE_WIDTH, &width);
   ogl->glGetTexLevelParameteriv(Low_GL_TEXTURE_2D, 0, Low_GL_TEXTURE_HEIGHT, &height);
 #endif
+  std::cout << "TEXTURE_SIZE:" << width << " " << height << std::endl;
   BufferRef ref = BufferRef::NewBuffer(width, height);
 #ifndef EMSCRIPTEN
-  //ogl->glReadBuffer( Low_GL_COLOR_ATTACHMENT0 );
-  //ogl->glReadPixels(0,0,width,height, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
-  ogl->glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
+  if (txid->is_fbo()) {
+    unsigned int offscreen_framebuffer;
+    unsigned int my_texture;
+    
+    ogl->glGenFramebuffers(1, &offscreen_framebuffer);
+    ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, offscreen_framebuffer);
+    ogl->glGenTextures(1, &my_texture);
+    ogl->glBindTexture(Low_GL_TEXTURE_2D, my_texture);
+    ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, width, height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, NULL);
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_LINEAR);
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_LINEAR);
+
+    ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D,id, 0);
+    int err=-1;
+    while((err=ogl->glCheckFramebufferStatus(Low_GL_FRAMEBUFFER))!=Low_GL_FRAMEBUFFER_COMPLETE) { std::cout << "ERROR:" << err << std::endl;}
+
+   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, offscreen_framebuffer);
+   ogl->glViewport(0,0,width,height);
+   ogl->glReadPixels(0,0,width,height,Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
+
+   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
+   ogl->glViewport(0,0,ev.mainloop_api.get_screen_sx(),ev.mainloop_api.get_screen_sy());
+   
+   
+  } else {
+    ogl->glGetTexImage( Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
+  }
 #endif
   ogl->glBindTexture(Low_GL_TEXTURE_2D, id2);
 
@@ -1041,14 +1068,24 @@ EXPORT GameApi::BM GameApi::TextureApi::to_bitmap(TXID tx)
     for(int x = 0; x<xx; x++)
       {
 	unsigned int col = ref.buffer[x+y*ref.ydelta];
-	int r = col &0xff0000;
-	int g = col &0xff00;
-	int b = col &0xff;
-	r >>= 16;
-	g >>= 8;
-	b <<= 16;
-	g <<= 8;
-	unsigned int col2 = (col & 0xff000000) + r+g+b;
+	unsigned int r = col &0xff000000;
+	unsigned int g = col &0xff0000;
+	unsigned int b = col &0xff00;
+	unsigned int a = col &0xff;
+	r >>=24;
+	g >>=16;
+	b >>=8;
+
+	a <<=24;
+	r <<=16;
+	g <<=8;
+	b <<=0;
+	
+	//r >>= 16;
+	//g >>= 8;
+	//r <<= 16;
+	//g <<= 8;
+	unsigned int col2 =  a+ r+g+b;
 	ref.buffer[x+y*ref.ydelta] = col2;
       }
   
@@ -1646,6 +1683,7 @@ public:
     if (id.id==-1) return 0;
     return id.id;
   }
+  bool is_fbo() const { return true; }
 private:
   PixelBufferObject *pbo;
   GameApi::TXID id = { -1 };
