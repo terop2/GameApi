@@ -1450,6 +1450,7 @@ public:
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual void render(MainLoopEnv &e)=0;
   virtual int texture() const=0;
+  virtual bool is_fbo() const=0;
 };
 
 class WorldSpec

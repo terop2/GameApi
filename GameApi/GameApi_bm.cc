@@ -6719,15 +6719,16 @@ public:
 	  bitmap[x*4+y*sx*4+2]=c.b;
 	  bitmap[x*4+y*sx*4+3]=c.alpha;
 	}
+    std::cout << "Writing frame:" << sx << " " << sy << std::endl;
     GifWriteFrame(&g, bitmap.data(), sx,sy, delay);    
     e.set_download_progress(ii,float(i+1)/float(s));
   }
   GifEnd(&g);
 
-  std::ifstream ss(filename_with_path.c_str(), std::ios_base::binary|std::ios_base::in);
+  std::ifstream ss(filename_with_path.c_str(), std::ios::binary|std::ios::in);
   std::vector<unsigned char> file_contents;
   char c;
-  while(ss.get(c))
+  while(ss.read(&c,1))
     {
       file_contents.push_back((unsigned char)c);
     }

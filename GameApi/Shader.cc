@@ -5920,8 +5920,8 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
   ci.f_vec = f_vec;
   ci.is_trans = is_trans;
   ci.mod = mod;
-  ci.vertex_c = vertex_c;
-  ci.fragment_c = fragment_c;
+  ci.vertex_c = 0; //vertex_c;
+  ci.fragment_c = 0; //fragment_c;
   ci.v_defines = v_defines;
   ci.f_defines = f_defines;
   ci.v_shader = v_shader;

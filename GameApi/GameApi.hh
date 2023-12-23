@@ -816,7 +816,7 @@ public:
         IMPORT VA bind_cubemap(VA va, TXID id);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
-        IMPORT BM to_bitmap(TXID id);
+  IMPORT BM to_bitmap(EveryApi &ev, TXID id);
   IMPORT ML forward_to_txid(VA va, ML mainloop, TXID id);
 private:
   TextureApi(const TextureApi&);

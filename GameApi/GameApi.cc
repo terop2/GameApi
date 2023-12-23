@@ -27998,6 +27998,7 @@ public:
     id = *(GameApi::TXID*)txid;
     return id.id;
   }
+  bool is_fbo() const { return false; }
 private:
   HeavyOperation *heavy;
   int heavycount;
