@@ -593,7 +593,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   
   //std::cout << "context created" << std::endl;
 
-  g_low->ogl->glEnable(Low_GL_MULTISAMPLE);
+  //g_low->ogl->glEnable(Low_GL_MULTISAMPLE);
   
 #ifdef WAYLAND
   Low_SDL_SysWMinfo info;
