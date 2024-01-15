@@ -5371,6 +5371,17 @@ struct replace_c_params
   std::string shader;
 };
 
+bool is_in_defines(std::string defines, std::string label)
+{
+  std::stringstream ss(defines);
+  std::string word;
+  bool res = false;
+  while(ss>>word) {
+    if (label==word) { res=true; }
+  }
+  return res;
+}
+
 std::string replace_c(const replace_c_params &pp)
 {
   bool oldshader=false;
@@ -5630,14 +5641,18 @@ std::string replace_c(const replace_c_params &pp)
 
 		  std::stringstream ss3;
 		  ss3 << num2;
-		  out+="gl_Position = in_P * in_T * in_MV * pos";
+		  out+="gl_Position = in_P * in_T * in_MV *pos"; // 
 		  out+=ss3.str();
 		  out+=";\n";
 		  
 		}
 	      else
 		{
-	      out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+		  //if (is_in_defines(pp.defines,"IN_POSITION")) {
+		    out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+		    //} else {
+		    //  out+="vec3 p = vec3(0.0,0.0,0.0);";
+		    // }
 	      out+="vec4 pos0 =  vec4(p,1.0);\n";
 	      int s = comb.size();
 	      for(int i=0;i<s;i++)
@@ -5664,7 +5679,7 @@ std::string replace_c(const replace_c_params &pp)
 		}
 	      std::stringstream ss3;
 	      ss3 << s;
-	      out+="gl_Position = in_P * in_T * in_MV * pos";
+	      out+="gl_Position = in_P * in_T * in_MV *pos"; //  
 	      out+=ss3.str();
 	      out+=";\n";
 		}
@@ -5921,8 +5936,8 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
   ci.f_vec = f_vec;
   ci.is_trans = is_trans;
   ci.mod = mod;
-  ci.vertex_c = 0; //vertex_c;
-  ci.fragment_c = 0; //fragment_c;
+  ci.vertex_c = vertex_c;
+  ci.fragment_c = fragment_c;
   ci.v_defines = v_defines;
   ci.f_defines = f_defines;
   ci.v_shader = v_shader;

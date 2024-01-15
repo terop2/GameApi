@@ -18,14 +18,14 @@ source set_paths_emlinux.sh
 if [ "$1" = "clean" ]
 then
     emcc --clear-cache
-    nice make -j 1 -f Makefile.emmake
+    nice make -j 2 -f Makefile.emmake
 else
     if [ "$2" = "clean" ]
     then
 	emcc --clear-cache
-	nice make -j 1 -f Makefile.emmake
+	nice make -j 2 -f Makefile.emmake
     else
-	nice make -j 1 -f Makefile.emmake $1 $2 $3
+	nice make -j 2 -f Makefile.emmake $1 $2 $3
     fi
 fi
 #make -j 8 -f Makefile.LinuxEm
