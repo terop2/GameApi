@@ -13018,15 +13018,15 @@ GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
 GameApi::US GameApi::UberShaderApi::f_newshadow_1(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"EX_POSITION NEWSHADOW"));
+  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"IN_POSITION EX_POSITION NEWSHADOW"));
 }
 GameApi::US GameApi::UberShaderApi::f_newshadow_2(US us, bool is_phong)
 {
   ShaderCall *next = find_uber(e, us);
   if (is_phong) {
-    return add_uber(e, new F_ShaderCallFunction("shadowphong", next,"EX_POSITION NEWSHADOW"));
+    return add_uber(e, new F_ShaderCallFunction("shadowphong", next,"IN_POSITION EX_POSITION NEWSHADOW"));
   } else {
-    return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"EX_POSITION NEWSHADOW"));
+    return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"IN_POSITION EX_POSITION NEWSHADOW"));
   }
 }
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
