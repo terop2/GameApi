@@ -7,8 +7,13 @@ displaying 3d models.
 Our best feature is gltf rendering and its eventual deployment in web, but our
 tools are slightly more flexible than just focusing on gltf area.
 
+<img src="https://tpgames.org/builder_mini.png" width="320px" height="300px"/>
+<img src="https://tpgames.org/sanmiguel.png" width="320px" height="300px"/>
+<img src="https://tpgames.org/suitcase.png" width="320px" height="300px"/>
+
+
 ### Download the repo
-  git clone https://github.com/terop2/GameApi.git
+  - git clone https://github.com/terop2/GameApi.git
 
 ### Dependent packages (ubuntu)
   - apt-get install libsdl2-dev
@@ -58,7 +63,7 @@ How we normally push our code to hosting space:
  - CREATE: use our technology to create the 3d model display
  - DEPLOY: get a .zip file from gltf_to_zip converter, builder tool(save_deploy) or meshpage.org web site
  - UNZIP: unzip the zip file to a new directory in your hosting space
- - EMBED: use <embed src="dir/index.html" width="830" height="630"/> to embed the 3d model to your html article
+ - EMBED: use `<embed src="dir/index.html" width="830" height="630"/>` to embed the 3d model to your html article
  - ENJOY: open the article in web browser via url
 
 ### API access:
@@ -95,3 +100,7 @@ How we normally push our code to hosting space:
   cd deploytool
   LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
   ```
+
+Yours,
+
+<img src="https://tpgames.org/avatar.png" width="80px" height="80px"/>

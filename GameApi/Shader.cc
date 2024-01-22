@@ -204,9 +204,9 @@ void Program::push_back(const Shader &shader)
 {
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
-  /*
-  int val = g_low->ogl->glGetError();
-  if (val!=Low_GL_NO_ERROR)
+  
+  //int val = g_low->ogl->glGetError();
+  //if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
     char buf[256];
@@ -215,7 +215,7 @@ void Program::push_back(const Shader &shader)
     buf[length]=0;
     std::cout << "" << buf << std::endl;
     }
-  */
+  
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -277,7 +277,7 @@ void Program::link()
   if (res!=1) {
   int val = g_low->ogl->glGetError();
   std::cout << "LINK ERROR: " << val << std::endl;
-  if (val!=Low_GL_NO_ERROR)
+  if (val!=Low_GL_NO_ERROR)*/
   {
   int len=0;
   char log[255];
@@ -286,6 +286,7 @@ void Program::link()
   if (len>0)
     std::cout << "LINK ERROR: " << std::endl << log << std::endl;
   }
+  /*
   }
   */
 }
@@ -5370,6 +5371,17 @@ struct replace_c_params
   std::string shader;
 };
 
+bool is_in_defines(std::string defines, std::string label)
+{
+  std::stringstream ss(defines);
+  std::string word;
+  bool res = false;
+  while(ss>>word) {
+    if (label==word) { res=true; }
+  }
+  return res;
+}
+
 std::string replace_c(const replace_c_params &pp)
 {
   bool oldshader=false;
@@ -5629,14 +5641,18 @@ std::string replace_c(const replace_c_params &pp)
 
 		  std::stringstream ss3;
 		  ss3 << num2;
-		  out+="gl_Position = in_P * in_T * in_MV * pos";
+		  out+="gl_Position = in_P * in_T * in_MV *pos"; // 
 		  out+=ss3.str();
 		  out+=";\n";
 		  
 		}
 	      else
 		{
-	      out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+		  //if (is_in_defines(pp.defines,"IN_POSITION")) {
+		    out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+		    //} else {
+		    //  out+="vec3 p = vec3(0.0,0.0,0.0);";
+		    // }
 	      out+="vec4 pos0 =  vec4(p,1.0);\n";
 	      int s = comb.size();
 	      for(int i=0;i<s;i++)
@@ -5663,7 +5679,7 @@ std::string replace_c(const replace_c_params &pp)
 		}
 	      std::stringstream ss3;
 	      ss3 << s;
-	      out+="gl_Position = in_P * in_T * in_MV * pos";
+	      out+="gl_Position = in_P * in_T * in_MV *pos"; //  
 	      out+=ss3.str();
 	      out+=";\n";
 		}

@@ -250,8 +250,49 @@ void stackTrace();
 //std::size_t sz[100000000];
 //int pos=0;
 
+
+size_t printed_mem_usage=0;
 size_t current_mem_usage = 0;
-int max_mem_usage=0;
+size_t max_mem_usage=0;
+#if 0
+void *operator new( std::size_t count)
+{
+  current_mem_usage+=count;
+  max_mem_usage+=count;
+
+  if (abs(long(printed_mem_usage-current_mem_usage))>1000000)
+    {
+      if (current_mem_usage>1024000000)
+	printf("MEM:%lf Gb MAX:%lf Gb\n",double(current_mem_usage)/1024000000.0,double(max_mem_usage)/1024000000.0);
+      else
+      if (current_mem_usage>1024000)
+	printf("MEM:%lf Mb MAX:%lf Mb\n",double(current_mem_usage)/1024000.0,double(max_mem_usage)/1024000.0);
+      else
+	printf("MEM:%lf kb MAX:%lf kb\n",double(current_mem_usage)/1024.0,double(max_mem_usage)/1024.0);
+	
+      printed_mem_usage=current_mem_usage;
+    }
+  
+  void *ptr = malloc(count);
+  return ptr;
+}
+void operator delete(void* ptr, size_t sz) noexcept
+{
+  current_mem_usage-=sz;
+  free(ptr);
+
+  /*
+  if (access[1]==0xf0f0f0) {
+    
+  char *ptr2 = (char*)ptr;
+  ptr2-=sizeof(int)+sizeof(int);
+  free(ptr2);
+  }
+  else free(ptr);*/
+}
+
+#endif
+
 #if 0
 void *operator new( std::size_t count)
 {
@@ -2027,6 +2068,11 @@ EXPORT GameApi::MN GameApi::MovementNode::rotatez(MN next, float angle)
 {
   Movement *nxt = find_move(e, next);
   return add_move(e, new MatrixMovement(nxt, Matrix::ZRotation(angle)));  
+}
+EXPORT GameApi::MN GameApi::MovementNode::rotate_around_axis(MN next, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z),angle)));  
 }
 class TimeRepeatMovement : public Movement
 {
@@ -12972,15 +13018,15 @@ GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
 GameApi::US GameApi::UberShaderApi::f_newshadow_1(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"EX_POSITION NEWSHADOW"));
+  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"IN_POSITION EX_POSITION NEWSHADOW"));
 }
 GameApi::US GameApi::UberShaderApi::f_newshadow_2(US us, bool is_phong)
 {
   ShaderCall *next = find_uber(e, us);
   if (is_phong) {
-    return add_uber(e, new F_ShaderCallFunction("shadowphong", next,"EX_POSITION NEWSHADOW"));
+    return add_uber(e, new F_ShaderCallFunction("shadowphong", next,"IN_POSITION EX_POSITION NEWSHADOW"));
   } else {
-    return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"EX_POSITION NEWSHADOW"));
+    return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"IN_POSITION EX_POSITION NEWSHADOW"));
   }
 }
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
@@ -27952,6 +27998,7 @@ public:
     id = *(GameApi::TXID*)txid;
     return id.id;
   }
+  bool is_fbo() const { return false; }
 private:
   HeavyOperation *heavy;
   int heavycount;

@@ -92,9 +92,9 @@ std::vector<GameApiItem*> textureapi_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::to_bitmap,
 			 "tx_to_bitmap",
-			 { "txid" },
-			 { "TXID" },
-			 { "" },
+			 { "ev", "txid" },
+			 { "EveryApi&", "TXID" },
+			 { "ev","" },
 			 "BM", "texture_api", "to_bitmap"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::fbo_ml,

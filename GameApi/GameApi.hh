@@ -816,7 +816,7 @@ public:
         IMPORT VA bind_cubemap(VA va, TXID id);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
-        IMPORT BM to_bitmap(TXID id);
+  IMPORT BM to_bitmap(EveryApi &ev, TXID id);
   IMPORT ML forward_to_txid(VA va, ML mainloop, TXID id);
 private:
   TextureApi(const TextureApi&);
@@ -1837,6 +1837,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN rotate_around_axis(MN next, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle);
   IMPORT MN matrix(MN next, M mat);
   IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
@@ -2151,6 +2152,7 @@ class WModApi
 {
 public:
   WModApi(Env &e) : e(e) { }
+  IMPORT void dump_functions_for_docs(GameApi::EveryApi &ev, int i);
   IMPORT int dump_functions_count();
   IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
   IMPORT WM load(std::string filename);

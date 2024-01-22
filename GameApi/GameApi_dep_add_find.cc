@@ -1700,6 +1700,7 @@ public:
   int texture() const { return id; }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual void render(MainLoopEnv &e) { }
+  virtual bool is_fbo() const { return false; }
 private:
   int id;
 };

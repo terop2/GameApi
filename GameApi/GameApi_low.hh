@@ -166,7 +166,8 @@ enum
     Low_GL_VERSION,
     Low_GL_CW,
     Low_GL_CCW,
-    Low_GL_LINK_STATUS
+    Low_GL_LINK_STATUS,
+    Low_GL_READ_BUFFER
   };
 enum {
     Low_GL_COLOR_BUFFER_BIT=1, // glClear
