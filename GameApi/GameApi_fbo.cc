@@ -155,6 +155,7 @@ public:
     while(count>0&&!ev.fbo_api.fbo_status(fbo)) { count--; }
     firsttime = true;
   }
+  bool is_fbo() const { return true; }
   void handle_event(MainLoopEvent &e)
   {
     item->handle_event(e);
@@ -177,8 +178,8 @@ public:
     ee.f_shader_functions = "";
     ee.v_shader_funcnames.clear();
     ee.f_shader_funcnames.clear();
-    ee.us_vertex_shader=-1;
-    ee.us_fragment_shader=-1;
+    ee.us_vertex_shader=0;
+    ee.us_fragment_shader=0;
     ee.screen_x = 0;
     ee.screen_y = 0;
     

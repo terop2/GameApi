@@ -263,6 +263,7 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_READ_BUFFER: i=GL_READ_BUFFER; break;
   case  Low_GL_BYTE: i=GL_BYTE; break;
   case  Low_GL_DOUBLE: i=GL_DOUBLE; break;
   case Low_GL_RGBA32F: i=GL_RGBA32F; break;
@@ -650,12 +651,10 @@ public:
 #endif
   }
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
-#ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(w);
-    //::glGetTexLevelParameteriv(a,b,w,ptr); 
+    ::glGetTexLevelParameteriv(a,b,w,ptr); 
     check_err("glGetTexLevelParameteriv");
-#endif
 }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { 
 #ifdef USE_TEXTURE_READ

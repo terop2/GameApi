@@ -1834,6 +1834,55 @@ std::vector<GameApiItem*> bitmapapi_functions();
 
 
 EXPORT int GameApi::WModApi::dump_functions_count() { return 21; } 
+
+EXPORT void GameApi::WModApi::dump_functions_for_docs(GameApi::EveryApi &ev, int i)
+{
+  static std::vector<GameApiItem*> functions; // = all_functions();
+
+  switch(i) {
+  case 0: functions=bitmapapi_functions(); break;
+  case 1: functions=boolbitmapapi_functions(); break;
+  case 2: functions=floatbitmapapi_functions(); break;
+  case 3: {
+    functions=polygonapi_functions1();
+    std::vector<GameApiItem*> rest = polygonapi_functions2();
+    int s = rest.size();
+    for(int i=0;i<s;i++) functions.push_back(rest[i]);
+    break;
+  }
+  case 4: functions=shadermoduleapi_functions(); break;
+  case 5: functions=shaderapi_functions(); break;
+  case 6: functions=linesapi_functions(); break;
+  case 7: functions=pointsapi_functions(); break;
+  case 8: functions=moveapi_functions(); break;
+  case 9: functions=pointapi_functions(); break;
+  case 10: functions=vectorapi_functions(); break;
+  case 11: functions=volumeapi_functions(); break;
+  case 12: functions=floatvolumeapi_functions(); break;
+  case 13: functions=colorvolumeapi_functions(); break;
+  case 14: functions=fontapi_functions(); break;
+  case 15: functions=textureapi_functions(); break;
+  case 16: functions=booleanopsapi_functions(); break;
+  case 17: functions=polydistfield_functions(); break;
+  case 18: functions=waveform_functions(); break;
+  case 19: functions=blocker_functions(ev); break;
+  case 20: functions=framebuffermoduleapi_functions(); break;
+  };
+
+  int s = functions.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string name = functions[i]->Name(0);
+      //ss << name << std::endl;
+      std::string rettype = functions[i]->ReturnType(0);
+      std::string apiname = functions[i]->ApiName(0);
+      std::string funcname = functions[i]->FuncName(0);
+
+      std::cout << name <<" " << apiname << " " << funcname << std::endl;
+    }
+      
+}
+
 EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i)
 {
   static std::vector<GameApiItem*> functions; // = all_functions();

@@ -2,7 +2,7 @@
 all:
 	g++ -std=c++11 parser.cc -o parser.exe
 	g++ -std=c++11 headerparser.cc -o headerparser.exe
-	g++ -std=c++11 -DWINDOWS file_gen.cc -o file_gen.exe
+	#g++ -std=c++11 -DWINDOWS file_gen.cc -o file_gen.exe
 	g++ -std=c++11 addfindparser.cc -o addfindparser.exe
 
 compile:

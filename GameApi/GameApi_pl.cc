@@ -13320,7 +13320,7 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   TXID id = ev.fbo_api.tex_id(fbo);
   //glDisable(GL_DEPTH_TEST);
   //glViewport(0,0,screen_width, screen_height);
-  BM bm = ev.texture_api.to_bitmap(id);
+  BM bm = ev.texture_api.to_bitmap(ev,id);
   BM bm2 = ev.bitmap_api.color_range(bm, 0x90ffffff, 0x00000000, 0xffffffff, 0x00000000);
   return bm2; 
 }
