@@ -3,7 +3,7 @@
 header("Access-Control-Allow-Headers: Range");
 $machine=php_uname("n");
 $siteprefix = "";
-if ($machine=="terop-pc") {
+if ($machine=="terop-pc2") {
    $site = "meshpage.org";
    $assetsite = "tpgames.org";
    $sitename = "meshpage.org";
