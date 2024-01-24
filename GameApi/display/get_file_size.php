@@ -1,7 +1,7 @@
 <?php
 
 $machine=php_uname("n");
-if ($machine=="terop-pc") {
+if ($machine=="terop-pc2") {
    $site = "https://meshpage.org";
    $assetsite = "https://tpgames.org";
    $sitename = "meshpage.org";
@@ -22,7 +22,7 @@ if (stream_is_local($url)) {
   $size=filesize($url);
 } else if ($host=="meshpage.org"||$host=="ssh.meshpage.org"||$host=="dinoengine.com") {
   $path = $parse['path'];
-  if ($machine=="terop-pc") {
+  if ($machine=="terop-pc2") {
      $filename = "/home/terop/html/meshpage.org" . $path;
   } else {
      $filename = "/home/terop/html" . $path;
@@ -36,7 +36,7 @@ if (stream_is_local($url)) {
     }
 } else if ($host=="tpgames.org"||$host=="ssh.tpgames.org") {
   $path = $parse['path'];
-  if ($machine=="terop-pc") {
+  if ($machine=="terop-pc2") {
     $filename = "/home/terop/html/tpgames.org" . $path;
   } else {
     $filename = "/home/terop/html" . $path;

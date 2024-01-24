@@ -9,7 +9,7 @@ include("backend.php");
 $date = filemtime("web_page_highmem.js");
 
 $machine=php_uname("n");
-if ($machine=="terop-pc") {
+if ($machine=="terop-pc2") {
    $site = "https://meshpage.org";
    $assetsite = "https://tpgames.org";
    $sitename = "meshpage.org";
