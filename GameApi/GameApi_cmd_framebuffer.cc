@@ -15,7 +15,7 @@
 			 "fr_sprite_array",
 			 { "name", "url", "bms", "mn", "x", "y", "fmt", "start_time" },
 			 { "std::string", "std::string", "[BM]", "MN", "int", "int", "int", "float" },
-			 { "a_tmp1", "http://tpgames.org/pos_lst.sp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "", "0", "0", "1", "0.0" },
+			 { "a_tmp1", "http://meshpage.org/assets/pos_lst.sp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "", "0", "0", "1", "0.0" },
 			 "FML", "low_frame_api", "low_sprite_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::dynamic_character_frame,
 			 "fr_sprite_choose",
@@ -45,19 +45,19 @@
 			 "fr_build_world",
 			 { "ml", "url", "chars", "x", "y" },
 			 { "FML", "std::string", "std::string", "int", "int" },
-			 { "", "http://tpgames.org/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", ".#", "0", "0" },
+			 { "", "http://meshpage.org/assets/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", ".#", "0", "0" },
 			 "FML", "low_frame_api", "low_build_world"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_enemy_draw,
 			 "fr_enemy_draw",
 			 { "bm", "url", "fmt", "speed" },
 			 { "BM", "std::string", "int", "float" },
-			 { "", "http://tpgames.org/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03" },
+			 { "", "http://meshpage.org/assets/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03" },
 			 "FML", "low_frame_api", "low_enemy_draw"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_enemy_draw2,
 			 "fr_enemy_draw2",
 			 { "bm", "url", "fmt", "speed", "time_delta", "time_duration" },
 			 { "[BM]", "std::string", "int", "float", "int", "int" },
-			 { "", "http://tpgames.org/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03", "1", "8" },
+			 { "", "http://meshpage.org/assets/enemy0.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "1", "0.03", "1", "8" },
 			 "FML", "low_frame_api", "low_enemy_draw2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_fml,
 			 "array_fml",
@@ -87,13 +87,13 @@
   //			 "fr_print_qml",
   //			 { "url" },
   //			 { "std::string" },
-  //			 { "http://tpgames.org/wearable.qml" },
+  //			 { "http://meshpage.org/assets/wearable.qml" },
   //			 "FML", "low_frame_api", "qml_print"));
   //vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::qml_create_node,
   //			 "fr_create_qml",
   //			 { "url" },
   //			 { "std::string" },
-  //			 { "http://tpgames.org/wearable.qml" },
+  //			 { "http://meshpage.org/assets/wearable.qml" },
   //			 "FML", "low_frame_api", "qml_create_node"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::low_framebuffer,
 			 "fr_framebuffer",
@@ -117,7 +117,7 @@
 			 "w_layout",
 			 { "vec", "url" },
 			 { "[W]", "std::string" },
-			 { "", "http://tpgames.org/testlayout.lay@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "", "http://meshpage.org/assets/testlayout.lay@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "W", "low_frame_api", "w_layout"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::low_frame_api, &GameApi::LowFrameBufferApi::w_rect,
 			 "w_rect",

@@ -5,16 +5,16 @@ $machine=php_uname("n");
 $siteprefix = "";
 if ($machine=="terop-pc2") {
    $site = "meshpage.org";
-   $assetsite = "tpgames.org";
+   $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
    $siteprefix=$_SERVER['HTTP_HOST'];
    $siteprefix=substr($siteprefix,0,4);
    if ("$siteprefix"!="ssh.") $siteprefix="";
-   } else {
+} else {
    $site = "dinoengine.com";
    $assetsite = "dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
-   }
+}
    $site = "https://" . $siteprefix . $site;
    $assetsite = "https://" . $siteprefix . $assetsite;
 ?>
@@ -26,7 +26,7 @@ if ($machine=="terop-pc2") {
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
- echo '<meta name="description" content="<?php echo $sitename ?> makes the web 3d, one site at the time"/>';
+ echo '<meta name="description" content="meshpage.org makes the web 3d, one site at the time"/>';
  }
  ?>
 <!-- meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/ -->
@@ -693,6 +693,7 @@ echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v27.tar.gz\">
 echo "<br>Yours,<br><img src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
 echo "<br><br>Development history of the project:<br>";
+echo "<img src=\"" . $assetsite . "/github_2023.png\" crossorigin></img>";
 echo "<img src=\"" . $assetsite . "/github_2022.png\" crossorigin></img>";
 echo "<img src=\"" . $assetsite . "/github_2021.png\" crossorigin></img>";
 echo "<img src=\"" . $assetsite . "/github_2020.png\" crossorigin></img>";

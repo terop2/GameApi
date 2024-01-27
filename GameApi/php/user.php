@@ -7,7 +7,7 @@ require_once("emscripten_frame.php");
 $machine=php_uname("n");
 if ($machine=="terop-pc2") {
    $site = "meshpage.org";
-   $assetsite = "https://tpgames.org";
+   $assetsite = "https://meshpage.org/assets";
    $sitename = "meshpage.org";
    } else {
    $site = "dinoengine.com";

@@ -13,7 +13,7 @@ copy_it()
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
 	scp -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org:/home/terop/html/meshpage.org/$1 ./build/
     else
-	if [ "$MACHINE" == "terop-pc" ]; then
+	if [ "$MACHINE" == "terop-pc2" ]; then
 	    cp /home/terop/html/meshpage.org/$1 ./build/
 	    echo "copying $1 to build directory"
 	else
@@ -28,7 +28,7 @@ copy_it2()
 	INDEX2=${INDEX2}+1
 	arr2[${INDEX2}]=$1
     else
-	if [ "$MACHINE" == "terop-pc" ]; then
+	if [ "$MACHINE" == "terop-pc2" ]; then
 	    cp $1 /home/terop/html/meshpage.org/
 	    echo "copying $1 to build directory"
 	else
