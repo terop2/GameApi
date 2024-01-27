@@ -150,7 +150,8 @@ STRIP = echo emstrip --no-strip-all --remove-section=name
 #-g   (doesnt work with closure compiler)
 
 ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
-PTHREADOPT2 = $(PTHREADOPT)
+PTHREADOPT2 =
+#$(PTHREADOPT)
 
 
 # --use-preload-cache

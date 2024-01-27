@@ -17,7 +17,7 @@ if ($homepage=="") $homepage=$p[1];
 
 $domain = parse_url( $homepage );
 $domain2 = parse_url( $url );
-if (($domain['host'] == $domain2['host'] || $domain2['host']=="tpgames.org") && $domain['host'] != "")
+if (($domain['host'] == $domain2['host'] || $domain2['host']=="meshpage.org/assets") && $domain['host'] != "")
 {
    $data = file_get_contents( $url );
    //$time = getlastmod();

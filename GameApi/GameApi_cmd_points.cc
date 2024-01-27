@@ -16,7 +16,7 @@
 			 "pts_ply",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/test.ply@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "http://meshpage.org/assets/test.ply@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "PTS", "points_api", "ply_pts"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pt_array,
@@ -345,7 +345,7 @@
 			 "ms_file",
 			 { "url", "use_type" },
 			 { "std::string", "int" },
-			 { "https://tpgames.org/test.ms", "0" },
+			 { "https://meshpage.org/assets/test.ms", "0" },
 			 "MS", "matrices_api", "ms_file"));
 
 
@@ -368,13 +368,13 @@
 			 "minecraft_render_file",
 			 { "ev", "default_cubes", "default_material", "url", "start_type", "end_type" },
 			 { "EveryApi&", "[P]", "MT", "std::string", "int", "int" },
-			 { "ev", "", "", "https://tpgames.org/test.ms", "0", "1" },
+			 { "ev", "", "", "https://meshpage.org/assets/test.ms", "0", "1" },
 			 "ML", "matrices_api", "render_ms_files"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::render_ms_files2,
 			 "minecraft_render_file2",
 			 { "ev", "default_cubes", "default_materials", "url", "start_type", "end_type" },
 			 { "EveryApi&", "[P]", "[MT]", "std::string", "int", "int" },
-			 { "ev", "", "", "https://tpgames.org/test.ms", "0", "1" },
+			 { "ev", "", "", "https://meshpage.org/assets/test.ms", "0", "1" },
 			 "ML", "matrices_api", "render_ms_files"));
   return vec;
 }

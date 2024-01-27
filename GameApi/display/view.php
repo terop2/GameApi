@@ -9,15 +9,21 @@ include("backend.php");
 $date = filemtime("web_page_highmem.js");
 
 $machine=php_uname("n");
+$siteprefix = "";
 if ($machine=="terop-pc2") {
-   $site = "https://meshpage.org";
-   $assetsite = "https://tpgames.org";
+   $site = "meshpage.org";
+   $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   if ("$siteprefix"!="ssh.") $siteprefix="";   
    } else {
    $site = "https://dinoengine.com";
    $assetsite = "https://dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
    }
+   $site = "https://" . $siteprefix . $site;
+   $assetsite = "https://" . $siteprefix . $assetsite;
 
 
 function unhash($data)
@@ -822,10 +828,10 @@ function get_model(i)
       model = "<?php echo $assetsite ?>/" + name;
    }
 
-   //if (i==0) model="https://tpgames.org/wooly_sheep.stl";
-   //if (i==1) model="https://tpgames.org/BoomBox.glb";
-   //if (i==2) model="https://tpgames.org/Duck.glb";
-   //if (i==3) model="https://tpgames.org/Astronaut.glb";
+   //if (i==0) model="https://meshpage.org/assets/wooly_sheep.stl";
+   //if (i==1) model="https://meshpage.org/assets/BoomBox.glb";
+   //if (i==2) model="https://meshpage.org/assets/Duck.glb";
+   //if (i==3) model="https://meshpage.org/assets/Astronaut.glb";
    return model;
 }
 function get_normals_value()
