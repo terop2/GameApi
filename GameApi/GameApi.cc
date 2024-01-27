@@ -20740,8 +20740,13 @@ public:
       // id = env.add_to_download_bar("gameapi_deploy.zip");
 	if (use_filename) deploy_set_status_file(filename,0);
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
-      int val1 = system("mkdir -p ~/.gameapi_builder");
-      int val2 = system("chmod a+rwx ~/.gameapi_builder");
+
+      std::string home = getenv("HOME");
+      std::string cmd1 = "mkdir -p "+home+"/.gameapi_builder";
+      std::string cmd2 = "chmod a+rwx " + home + "/.gameapi_builder";
+      
+      int val1 = system(cmd1.c_str());
+      int val2 = system(cmd2.c_str());
       if (val1!=0||val2!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
@@ -20749,8 +20754,11 @@ public:
     case 1: {
 	if (use_filename) deploy_set_status_file(filename,1);
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
-      int val1= system("rm -rf ~/.gameapi_builder/deploy");
-      int val2=system("mkdir -p ~/.gameapi_builder/deploy");
+      std::string home = getenv("HOME");
+      std::string cmd1 = std::string("rm -rf ") + home + std::string("/.gameapi_builder/deploy");
+      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy";
+      int val1= system(cmd1.c_str());
+      int val2=system(cmd2.c_str());
       //int val3=system("mkdir -p ~/.gameapi_builder/deploy/licenses");
       if (val1!=0||val2!=0) { std::cout << "ERROR: rm or mkdir returned error:" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
@@ -20759,7 +20767,9 @@ public:
     case 2: {
 	if (use_filename) deploy_set_status_file(filename,2);
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
-      int val=system("mkdir -p ~/.gameapi_builder/deploy/engine");
+      std::string home = getenv("HOME");
+      std::string cmd1 = "mkdir -p " + home + "/.gameapi_builder/deploy/engine";
+      int val=system(cmd1.c_str());
       if (val!=0) { std::cout << "ERROR: mkdir returned error:" << val << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
@@ -20811,11 +20821,15 @@ public:
 	  else {
 	    std::string dir = find_directory(ii.url);
 	    if (dir!="") {
-	      int val = system((std::string("mkdir -p ~/.gameapi_builder/deploy/") + dir).c_str());
+	      std::string home = getenv("HOME");
+
+	      int val = system((std::string("mkdir -p ") + home + std::string("/.gameapi_builder/deploy/") + dir).c_str());
 	      if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
 	    }
 	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	    std::string curl_string = std::string("(cd ~/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
+	    std::string home = getenv("HOME");
+
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
@@ -20900,10 +20914,12 @@ public:
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       //std::cout << "Generating date.." << std::endl;
-      int val = system("touch ~/.gameapi_builder/gameapi_date.html");
-      if (val!=0) {std::cout << "ERROR, date writing" << val << std::endl; ok=false; }
       std::string home = getenv("HOME");
-      std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
+
+      int val = system((std::string("touch ") + home + std::string("/.gameapi_builder/gameapi_date.html")).c_str());
+      if (val!=0) {std::cout << "ERROR, date writing" << val << std::endl; ok=false; }
+      std::string home2 = getenv("HOME");
+      std::fstream ss2((home2 + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
       ss2.close();
@@ -20934,14 +20950,16 @@ public:
 	  gn = "/usr/share/gameapi_display.zip";
 	  gk = "/usr/share/get_file_size.php";
 	}
-	std::string line0 = std::string("cp ") + g0 + " ~/.gameapi_builder/gameapi_0.html";
-	std::string line0a = std::string("cp ") + g0a + " ~/.gameapi_builder/gameapi_0_seamless.html";
-	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
-	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
-	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
-	std::string line3a = std::string("cp ") + g3a + " ~/.gameapi_builder/gameapi_3_seamless.html";
-	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
-	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
+      std::string home = getenv("HOME");
+
+	std::string line0 = std::string("cp ") + g0 + " " + home + "/.gameapi_builder/gameapi_0.html";
+	std::string line0a = std::string("cp ") + g0a + " " + home + "/.gameapi_builder/gameapi_0_seamless.html";
+	std::string line1 = std::string("cp ") + g1 + " " + home + "/.gameapi_builder/gameapi_1.html";
+	std::string line2 = std::string("cp ") + g2 + " " + home + "/.gameapi_builder/gameapi_2.html";
+	std::string line3 = std::string("cp ") + g3 + " " + home + "/.gameapi_builder/gameapi_3.html";
+	std::string line3a = std::string("cp ") + g3a + " " + home + "/.gameapi_builder/gameapi_3_seamless.html";
+	std::string line4 = std::string("cp ") + gn + " " + home + "/.gameapi_builder/gameapi_display.zip";
+	std::string line5 = std::string("cp ") + gk + " " + home + "/.gameapi_builder/get_file_size.php";
 
 	int val1=system(line0.c_str());
 	int val1a=system(line0a.c_str());
