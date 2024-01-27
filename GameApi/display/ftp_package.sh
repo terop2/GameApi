@@ -11,10 +11,10 @@ copy_it()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org:/home/terop/html/meshpage.org/$1 ./build/
+	scp -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org:/home/terop/meshpage.org/$1 ./build/
     else
 	if [ "$MACHINE" == "terop-pc2" ]; then
-	    cp /home/terop/html/meshpage.org/$1 ./build/
+	    cp /home/terop/meshpage.org/$1 ./build/
 	    echo "copying $1 to build directory"
 	else
 	    scp https://ssh.meshpage.org/$1 ./build/
@@ -29,7 +29,7 @@ copy_it2()
 	arr2[${INDEX2}]=$1
     else
 	if [ "$MACHINE" == "terop-pc2" ]; then
-	    cp $1 /home/terop/html/meshpage.org/
+	    cp $1 /home/terop/meshpage.org/
 	    echo "copying $1 to build directory"
 	else
 	    echo "NOT COPYING $1 SINCE YOU'RE NOT IN OUR DEV COMPUTER"
@@ -47,7 +47,7 @@ finish2()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr2[@]} terop@ssh.meshpage.org:/home/terop/html/meshpage.org/
+	scp ${arr2[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
     fi
 
 }
