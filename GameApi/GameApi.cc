@@ -20203,7 +20203,7 @@ std::string fetch_more_data(std::string url)
 	  return str;
 #endif
 #ifdef LINUX
-	  std::string curl_string = "curl " + http_to_https(url) + "";
+	  std::string curl_string = "curl --http1.1 " + http_to_https(url) + "";
 	  std::cout << "SCANNING: "<< url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"r");
 	  int c;
@@ -20741,20 +20741,20 @@ public:
 	if (use_filename) deploy_set_status_file(filename,0);
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
 
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string cmd1 = "mkdir -p "+home+"/.gameapi_builder";
       std::string cmd2 = "chmod a+rwx " + home + "/.gameapi_builder";
       
       int val1 = system(cmd1.c_str());
       int val2 = system(cmd2.c_str());
-      if (val1!=0||val2!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
+      if (val1!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
       }
     case 1: {
 	if (use_filename) deploy_set_status_file(filename,1);
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string cmd1 = std::string("rm -rf ") + home + std::string("/.gameapi_builder/deploy");
       std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy";
       int val1= system(cmd1.c_str());
@@ -20767,7 +20767,7 @@ public:
     case 2: {
 	if (use_filename) deploy_set_status_file(filename,2);
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string cmd1 = "mkdir -p " + home + "/.gameapi_builder/deploy/engine";
       int val=system(cmd1.c_str());
       if (val!=0) { std::cout << "ERROR: mkdir returned error:" << val << std::endl; ok=false;}
@@ -20792,7 +20792,7 @@ public:
       find_url_items2(s,items);
       find_url_items3(items);
 
-      std::string home2 = getenv("HOME");
+      std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::ofstream sp((home2 + "/.gameapi_builder/deploy/license.html").c_str());
 
       
@@ -20813,7 +20813,7 @@ public:
 		  std::cout << "ERROR:" << makedir << " returned error " << val2 << std::endl; ok=false;
 		}
 	      
-	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(ii.url)) + ")";
+	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(ii.url)) + ")";
 	      int val = system(curl_string.c_str());
 	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 #endif
@@ -20821,15 +20821,15 @@ public:
 	  else {
 	    std::string dir = find_directory(ii.url);
 	    if (dir!="") {
-	      std::string home = getenv("HOME");
+	      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
 	      int val = system((std::string("mkdir -p ") + home + std::string("/.gameapi_builder/deploy/") + dir).c_str());
 	      if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
 	    }
 	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	    std::string home = getenv("HOME");
+	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
-	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
@@ -20886,7 +20886,7 @@ public:
       //std::cout << "______SCRIPT ENDS_______________" << std::endl;
 
       
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << convert_script(htmlfile);
       ss << std::flush;
@@ -20914,11 +20914,11 @@ public:
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       //std::cout << "Generating date.." << std::endl;
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
       int val = system((std::string("touch ") + home + std::string("/.gameapi_builder/gameapi_date.html")).c_str());
       if (val!=0) {std::cout << "ERROR, date writing" << val << std::endl; ok=false; }
-      std::string home2 = getenv("HOME");
+      std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::fstream ss2((home2 + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
@@ -20950,7 +20950,7 @@ public:
 	  gn = "/usr/share/gameapi_display.zip";
 	  gk = "/usr/share/get_file_size.php";
 	}
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
 	std::string line0 = std::string("cp ") + g0 + " " + home + "/.gameapi_builder/gameapi_0.html";
 	std::string line0a = std::string("cp ") + g0a + " " + home + "/.gameapi_builder/gameapi_0_seamless.html";
@@ -20995,7 +20995,7 @@ public:
 	{
 	  dep = "/usr/share/deploy.sh";
 	}
-	std::string home = getenv("HOME");
+	std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string line5 = dep + " " + home + "/.gameapi_builder/gameapi_display.zip";
       bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
       if (is_seamless) {
@@ -21015,7 +21015,7 @@ public:
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 
 	if (!use_filename) {
-	std::string home = getenv("HOME");
+	std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 	std::ifstream ss((home + "/.gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
@@ -21027,7 +21027,7 @@ public:
 	env.set_download_ready(i);
 	} else {
 	  std::cout << "Step #10: copying the zip file to " << filename << std::endl;
-	  std::string home = getenv("HOME");
+	  std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 	  std::string cmd = "cp -f " + home + "/.gameapi_builder/deploy/gameapi_deploy.zip " + filename;
 	  int val = system(cmd.c_str());
 	  if (val!=0) { std::cout << "ERROR:" << cmd << " returned error " << val << std::endl; ok=false; }
@@ -22601,7 +22601,7 @@ public:
   {
     if (firsttime) {
       std::string filename = out_file;
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string path = home + "/.gameapi_builder/";
 
       std::cout << "Saving to " << path+out_file << std::endl;
