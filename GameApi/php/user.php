@@ -5,20 +5,23 @@ require_once("emscripten_frame.php");
 #require_once("source_table.php");
 
 $machine=php_uname("n");
+$siteprefix = "";
 if ($machine=="terop-pc2") {
    $site = "meshpage.org";
-   $assetsite = "https://meshpage.org/assets";
+   $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   if ("$siteprefix"!="ssh.") $siteprefix="";
+
    } else {
    $site = "dinoengine.com";
    $assetsite = "https://dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
    }
-   $siteprefix=$_SERVER['HTTP_HOST'];
-   $siteprefix=substr($siteprefix,0,4);
-   if ("$siteprefix"!="ssh.") $siteprefix="";
+   
    $site = "https://" . $siteprefix . $site;
-
+   $assetsite = "https://" . $siteprefix . $assetsite;
 
 function create_new_user( $username, $passwd )
 {

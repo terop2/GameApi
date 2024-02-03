@@ -13,23 +13,23 @@ if ($machine=="terop-pc2") {
    }
 
 if ($machine=="terop-pc2") {
-include '/home/terop/html/meshpage.org/assets/oauth2/RandomInterface.php';
-include '/home/terop/html/meshpage.org/assets/oauth2/Random.php';
-include '/home/terop/html/meshpage.org/assets/oauth2/AccessToken.php';
+include '/home/terop/meshpage.org/assets/oauth2/RandomInterface.php';
+include '/home/terop/meshpage.org/assets/oauth2/Random.php';
+include '/home/terop/meshpage.org/assets/oauth2/AccessToken.php';
 //include '/home/terop/meshpage.org/assets/oauth2/Exception/OauthException.php';
-include '/home/terop/html/meshpage.org/assets/oauth2/OAuth2Client.php';
-include '/home/terop/html/meshpage.org/assets/oauth2/Provider.php';
-include '/home/terop/html/meshpage.org/assets/oauth2/HttpClientInterface.php';
-include '/home/terop/html/meshpage.org/assets/oauth2/CurlHttpClient.php';
+include '/home/terop/meshpage.org/assets/oauth2/OAuth2Client.php';
+include '/home/terop/meshpage.org/assets/oauth2/Provider.php';
+include '/home/terop/meshpage.org/assets/oauth2/HttpClientInterface.php';
+include '/home/terop/meshpage.org/assets/oauth2/CurlHttpClient.php';
 } else {
-include '/home/terop/html/assetsite/oauth2/RandomInterface.php';
-include '/home/terop/html/assetsite/oauth2/Random.php';
-include '/home/terop/html/assetsite/oauth2/AccessToken.php';
+include '/home/terop/meshpage.org/assets/oauth2/RandomInterface.php';
+include '/home/terop/meshpage.org/assets/oauth2/Random.php';
+include '/home/terop/meshpage.org/assets/oauth2/AccessToken.php';
 //include '/home/terop/meshpage.org/assets/oauth2/Exception/OauthException.php';
-include '/home/terop/html/assetsite/oauth2/OAuth2Client.php';
-include '/home/terop/html/assetsite/oauth2/Provider.php';
-include '/home/terop/html/assetsite/oauth2/HttpClientInterface.php';
-include '/home/terop/html/assetsite/oauth2/CurlHttpClient.php';
+include '/home/terop/meshpage.org/assets/oauth2/OAuth2Client.php';
+include '/home/terop/meshpage.org/assets/oauth2/Provider.php';
+include '/home/terop/meshpage.org/assets/oauth2/HttpClientInterface.php';
+include '/home/terop/meshpage.org/assets/oauth2/CurlHttpClient.php';
 }
 function redirect_post($url, array $data, array $headers = null) {
   $params = [

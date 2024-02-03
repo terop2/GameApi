@@ -9,6 +9,7 @@ if ($machine=="terop-pc2") {
    $sitename = "meshpage.org";
    $siteprefix=$_SERVER['HTTP_HOST'];
    $siteprefix=substr($siteprefix,0,4);
+   echo "SITEPREFIX: $siteprefix";
    if ("$siteprefix"!="ssh.") $siteprefix="";
 } else {
    $site = "dinoengine.com";
@@ -17,6 +18,8 @@ if ($machine=="terop-pc2") {
 }
    $site = "https://" . $siteprefix . $site;
    $assetsite = "https://" . $siteprefix . $assetsite;
+echo "SITE:" . $site;
+echo "ASSETSITE:" . $assetsite
 ?>
 <!DOCTYPE html>
 <html id="html">
