@@ -17,6 +17,9 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 
 
+extern std::string g_window_href;
+extern std::string gameapi_homepageurl;
+
 int g_async_pending_count_failures=0;
 
 std::string striphomepage(std::string url);
@@ -71,8 +74,16 @@ private:
     unsigned int r = rand();
     std::stringstream ss;
     ss << r;
+
+    std::string url0 = gameapi_homepageurl;
+    int res=0;
+    int ss2 = url0.size();
+    for(int i=0;i<ss2;i++) if (url0[i]=='/') res=i;
+    std::string url1 = url0.substr(0,res);
+
+    if (url1=="") url1="https://ssh.meshpage.org"; // this doesnt really work, since it gives CORS problem
     
-    std::string url2 = "https://ssh.meshpage.org/get_file_size.php?" + ss.str() + "&url=" +url; 
+    std::string url2 = url1+"/get_file_size.php?" + ss.str() + "&url=" +url; 
     emscripten_fetch(&attr, url2.c_str());
 
     int val = 0;
