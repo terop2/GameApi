@@ -7,9 +7,9 @@ displaying 3d models.
 Our best feature is gltf rendering and its eventual deployment in web, but our
 tools are slightly more flexible than just focusing on gltf area.
 
-<img src="https://tpgames.org/builder_mini.png" width="320px" height="300px"/>
-<img src="https://tpgames.org/sanmiguel.png" width="320px" height="300px"/>
-<img src="https://tpgames.org/suitcase.png" width="320px" height="300px"/>
+<img src="https://meshpage.org/assets/builder_mini.png" width="320px" height="300px"/>
+<img src="https://meshpage.org/assets/sanmiguel.png" width="320px" height="300px"/>
+<img src="https://meshpage.org/assets/suitcase.png" width="320px" height="300px"/>
 
 
 ### Download the repo
@@ -103,4 +103,4 @@ How we normally push our code to hosting space:
 
 Yours,
 
-<img src="https://tpgames.org/avatar.png" width="80px" height="80px"/>
+<img src="https://meshpage.org/assets/avatar.png" width="80px" height="80px"/>
