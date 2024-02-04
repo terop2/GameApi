@@ -584,37 +584,37 @@ $label = get_label( $arr );
    echo "<p>";
    echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
    if ($startpos!="")
-      echo "<a href=\"" . $site . "/meshpage\">000</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php\">000</a> | ";
    else echo "000 | ";
    if ($startpos!="1")
-      echo "<a href=\"" . $site . "/meshpage?ps=1\">050</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=1\">050</a> | ";
    else echo "050 | ";
    if ($startpos!="2")
-      echo "<a href=\"" . $site . "/meshpage?ps=2\">100</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=2\">100</a> | ";
    else echo "100 | ";
    if ($startpos!="3")
-      echo "<a href=\"" . $site . "/meshpage?ps=3\">150</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=3\">150</a> | ";
    else echo "150 | ";
    if ($startpos!="4")
-      echo "<a href=\"" . $site . "/meshpage?ps=4\">200</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=4\">200</a> | ";
    else echo "200 | ";
    if ($startpos!="5")
-      echo "<a href=\"" . $site . "/meshpage?ps=5\">250</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=5\">250</a> | ";
    else echo "250 | ";
    if ($startpos!="6")
-      echo "<a href=\"" . $site . "/meshpage?ps=6\">300</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=6\">300</a> | ";
    else echo "300 | ";
    if ($startpos!="7")
-      echo "<a href=\"" . $site . "/meshpage?ps=7\">350</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=7\">350</a> | ";
    else echo "350 | ";
    if ($startpos!="8")
-      echo "<a href=\"" . $site . "/meshpage?ps=8\">400</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=8\">400</a> | ";
    else echo "400 | ";
    if ($startpos!="9")
-      echo "<a href=\"" . $site . "/meshpage?ps=9\">450</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=9\">450</a> | ";
    else echo "450 | ";
    if ($startpos!="10")
-      echo "<a href=\"" . $site . "/meshpage?ps=10\">500</a>";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=10\">500</a>";
    else echo "500";
    echo "</div>";
 echo "<br>";
