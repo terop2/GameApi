@@ -20,7 +20,7 @@ finish()
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
 	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
     fi
-    if [ "$MACHINE" == "terop-pc" ]; then
+    if [ "$MACHINE" == "terop-pc2" ]; then
 	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
     fi
 }
