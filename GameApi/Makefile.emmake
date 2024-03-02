@@ -12,9 +12,11 @@ debug: pthreads_both both
 
 libGameApi.bc:
 	$(MAKE) -j 8 -f Makefile.LinuxEm
+	touch libGameApi.bc
 
 libGameApi_nothreads.bc:
 	$(MAKE) -j 8 -f Makefile.LinuxEm nothreads
+	touch libGameApi_nothreads.bc
 
 pthreads_both : libGameApi.bc
 	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm pthreads_both)
@@ -28,4 +30,4 @@ pthreads_both_nodebug : libGameApi.bc
 both_nodebug : libGameApi_nothreads.bc
 	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm both)
 
-.PHONY: all nodebug debug pthreads_both both pthreads_both_nodebug both_nodebug libGameApi.bc libGameApi_nothreads.bc
+.PHONY: all nodebug debug pthreads_both both pthreads_both_nodebug both_nodebug minimal libGameApi.bc libGameApi_nothreads.bc
