@@ -1445,7 +1445,7 @@ public:
   virtual void Mix_HaltChannel(int channel)
   {
 #ifdef USE_MIX
-    // ::Mix_HaltChannel(channel);
+     ::Mix_HaltChannel(channel);
 #endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
