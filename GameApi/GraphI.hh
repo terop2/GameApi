@@ -2881,6 +2881,22 @@ public:
 };
 
 
+struct Pixel2
+{
+  int x,y;
+  unsigned int *pixel;
+};
+
+class PixelAllocator
+{
+public:
+  virtual Pixel2 Alloc()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual Bitmap<Color> *get_all() const=0;
+  virtual Bitmap<Color> *get_xy() const=0;
+};
+
 
 #endif
 

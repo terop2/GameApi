@@ -1,5 +1,4 @@
 
-
 CFiles=  GameApi_gltf.cc GameApi_diag.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
@@ -150,8 +149,7 @@ STRIP = echo emstrip --no-strip-all --remove-section=name
 #-g   (doesnt work with closure compiler)
 
 ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
-PTHREADOPT2 =
-#$(PTHREADOPT)
+PTHREADOPT2 = $(PTHREADOPT)
 
 
 # --use-preload-cache
