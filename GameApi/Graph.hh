@@ -34,7 +34,7 @@
 
 #ifndef ARM
 #ifndef NO_THREADS
-//#define THREADS 1
+#define THREADS 1
 #endif
 #endif
 

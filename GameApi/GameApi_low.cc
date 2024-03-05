@@ -13,7 +13,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
 #ifndef NO_THREADS
-//#define THREADS 1
+#define THREADS 1
 #endif
 #endif
 #define BATCHING 1
@@ -1445,7 +1445,8 @@ public:
   virtual void Mix_HaltChannel(int channel)
   {
 #ifdef USE_MIX
-     ::Mix_HaltChannel(channel);
+    // doesn't work but halts the engine...
+    //::Mix_HaltChannel(channel);
 #endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
