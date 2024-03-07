@@ -42,7 +42,10 @@ $context = stream_context_create($opts);
 $s = file_get_contents("https://auth.euderco.net/userdata?access_token=" . $accessToken->getToken(), false, $context);
 error_log($s);
 $arr = json_decode($s,true);
-echo "<!DOCTYPE html>";
+
+//$var = $arr["user_id"] . "%" . $arr["name"] . "%" . $arr["email"] . "%";
+//postMessage($var,"https://meshpage.org");
+
 echo "<div id=\"cnts\">" . $arr["user_id"] . "%";
 echo "" . $arr["name"] . "%";
 echo "" . $arr["email"] . "%";
