@@ -1,5 +1,5 @@
 <?php
-//header("Cross-Origin-Opener-Policy: same-origin");
+header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
 $machine=php_uname("n");
 $siteprefix = "";
@@ -32,10 +32,10 @@ if ($page!="2") {
  echo '<meta name="description" content="meshpage.org makes the web 3d, one site at the time"/>';
  }
  ?>
-<!-- meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/ -->
+<meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/ -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
-<!--meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/-->
-<!--meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/-->
+<meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/-->
+<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/-->
 <?php
 require_once("user.php");
 function create_id2( $name, $index )
@@ -469,8 +469,8 @@ require_once("user.php");
 $user="terop";
 $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
-echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
-echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
+echo "<div style=\"display:none\">LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span></div><br>";
+echo "<div style=\"display:none\">PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span></div>";
 page_title($sitename, "groundbreaking way to bring the next level technologies to the web: 3d.");
 echo "<div class=\"flex-container\">";
 $cnt = 0;
@@ -776,6 +776,11 @@ echo "</ul>";
 //  console.log(event.data);
 //  g_login_label = event.data;
 //}, false);
+
+
+
+
+/*
  function onload_iframe() {
 
      //console.log("LOAD");
@@ -801,18 +806,21 @@ echo "</ul>";
      }
 
 }
-
+*/
 function login() {
+/*
 	 var res = document.getElementById("result");
 	 if (res==null) {
 	    var d = document.getElementById("loginstatus");
 	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
 	    onload_button();
-	    } else
-	 res.innerHTML="<iframe referrerpolicy=\"origin-when-cross-origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" crossorigin=\"use-credentials\"></iframe>";
+	    } else {
+
+	 res.innerHTML="<iframe src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\"></iframe>";
+	 }
 //style=\"display:none\"></iframe>";
 	 
-
+*/
 
 }
 //onload_button(); // not done here because of cookies.
