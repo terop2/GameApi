@@ -23,10 +23,11 @@
 
 EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
 
-allopts = -O0 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -gsplit-dwarf -gpubnames
-# -Oz
+allopts = -O0 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti
+# -Oz -gsplit-dwarf -gpubnames
 
-pthread_opts = -s USE_PTHREADS=1
+pthread_opts =
+#-s USE_PTHREADS=1
 
 nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor -Wno-deprecated-volatile -Wno-implicit-const-int-float-conversion -Wno-overloaded-virtual -Wno-uninitialized -Wno-self-assign-field -Wno-writable-strings -Wno-delete-abstract-non-virtual-dtor -Wno-unused-result
 

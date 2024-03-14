@@ -13,7 +13,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
 #ifndef NO_THREADS
-#define THREADS 1
+//#define THREADS 1
 #endif
 #endif
 #define BATCHING 1
@@ -1175,7 +1175,7 @@ class SDLApi : public SDLLowApi
     mode->h = m.h;
   }
   virtual void SDL_PauseAudio(int pause_on) {
-    ::SDL_PauseAudio(pause_on);
+    //::SDL_PauseAudio(pause_on);
   }
   virtual int SDL_OpenAudio(Low_SDL_AudioSpec *desired,
 			    Low_SDL_AudioSpec *obtained)
@@ -1500,7 +1500,7 @@ public:
   virtual void Mix_AllocateChannels(int i)
   {
 #ifdef USE_MIX
-    // ::Mix_AllocateChannels(i);
+     ::Mix_AllocateChannels(i);
 #endif
   }
 
