@@ -6,7 +6,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
 #ifndef NO_THREADS
-#define THREADS 1
+//#define THREADS 1
 #endif
 #endif
 #ifdef EMSCRIPTEN
@@ -12362,6 +12362,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced2_ml_fade(GameApi::Eve
 }
 
 
+
 class V_ShaderCallFunction : public ShaderCall
 {
 public:
@@ -12413,10 +12414,14 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  bool is_fragment() const { return true; }
   std::string func_name() const { return funcname; }
   std::string func_call() const
   {
     std::string out;
+    if (!next->is_fragment()) {
+      std::cout << "ERROR:" << funcname << " " << next->func_name() << std::endl;
+    }
     out+=next->func_call();
     std::stringstream ss;
     int i = id;
@@ -12570,6 +12575,7 @@ public:
   EmptyF(bool transparent) : transparent(transparent) { id = -1; }
   int index(int base) const { id = base; return base; }
   virtual std::string func_name() const { return "emptyF"; }
+  virtual bool is_fragment() const { return true; }
 
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
@@ -30802,7 +30808,7 @@ KP extern "C" void set_background_mode(int i)
 bool g_stop_music = false;
 KP extern "C" void stop_music_playing()
 {
-  g_stop_music = true;
+  //g_stop_music = true;
 }
 
 extern Matrix g_last_resize;

@@ -9746,7 +9746,7 @@ public:
       {
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
-    if (vertex.id==-1) { 
+    if (vertex.id==-1||vertex.id==0) { 
       GameApi::US a0 = ev.uber_api.v_empty();
       ee.us_vertex_shader = a0.id;
     }
@@ -9755,14 +9755,17 @@ public:
     ee.us_vertex_shader = vertex.id;
 
     GameApi::US fragment;
+    //std::cout << "FRAG:" << ee.us_fragment_shader << std::endl;
     fragment.id = ee.us_fragment_shader;
-    if (fragment.id==-1) { 
+    if (fragment.id==-1||fragment.id==0) { 
       GameApi::US a0 = ev.uber_api.f_empty(false);
       ee.us_fragment_shader = a0.id;
+      //std::cout << "FRAG2:" << ee.us_fragment_shader << std::endl;
     }
     fragment.id = ee.us_fragment_shader;
     fragment = ev.uber_api.f_newshadow_1(fragment);
     ee.us_fragment_shader = fragment.id;
+    //std::cout << "FRAG3:" << ee.us_fragment_shader << std::endl;
     }
   
      if (sh_ids.size()==0) sh_ids = next->shader_id();

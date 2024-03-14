@@ -1,6 +1,9 @@
 <?php
 header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 $machine=php_uname("n");
 $siteprefix = "";
 if ($machine=="terop-pc2") {
@@ -9,7 +12,7 @@ if ($machine=="terop-pc2") {
    $sitename = "meshpage.org";
    $siteprefix=$_SERVER['HTTP_HOST'];
    $siteprefix=substr($siteprefix,0,4);
-   echo "SITEPREFIX: $siteprefix";
+   //echo "SITEPREFIX: $siteprefix";
    if ("$siteprefix"!="ssh.") $siteprefix="";
 } else {
    $site = "dinoengine.com";
@@ -18,11 +21,11 @@ if ($machine=="terop-pc2") {
 }
    $site = "https://" . $siteprefix . $site;
    $assetsite = "https://" . $siteprefix . $assetsite;
-echo "SITE:" . $site;
-echo "ASSETSITE:" . $assetsite
+//echo "SITE:" . $site;
+//echo "ASSETSITE:" . $assetsite
 ?>
 <!DOCTYPE html>
-<html id="html">
+<html id="html"  style="background-color: #eee; overflow: auto;">
 <head>
 <title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
 <?php
@@ -32,10 +35,10 @@ if ($page!="2") {
  echo '<meta name="description" content="meshpage.org makes the web 3d, one site at the time"/>';
  }
  ?>
-<meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/ -->
+<meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
-<meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/-->
-<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/-->
+<meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
+<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
 <?php
 require_once("user.php");
 function create_id2( $name, $index )
@@ -88,30 +91,6 @@ require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
-/*
-if ($mobile == "yes") {
-  echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
-} else
-if ($nothreads == "yes") {
-   if ($highmem == "yes") {
-   echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "\" as=\"script\"/>";
-
-  echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.worker.js?" . filemtime("web_page_nothreads_highmem_worker.js") . "\" as=\"script\" crossorigin/>";
-
-  } else {
-   echo "<link rel=\"preload\" href=\"web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "\" as=\"script\"/>";
-
-  echo "<link rel=\"preload\" href=\"web_page_nothreads.worker.js?" . filemtime("web_page_nothreads_worker.js") . "\" as=\"script\" crossorigin/>";
-  }
-} else {
-   if ($highmem == "yes") {
-   echo "<link rel=\"preload\" href=\"web_page_highmem.js?" . filemtime("web_page_highmem.js") . "\" as=\"script\" crossorigin/>";
-   } else {
-   echo "<link rel=\"preload\" href=\"web_page.js?" . filemtime("web_page.js") . "\" as=\"script\" crossorigin/>";
-   }
-}
-echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"  onload=\"this.rel = 'stylesheet'\"/>";
-*/
 ?>
 <link rel="preload" href="vue.js" as="script"/>
 </head>
@@ -162,7 +141,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
   ]
 }
 </script>
-<body id="body">
+<body id="body" style="overflow:hidden">
 <script src="vue.js"></script>
 
 <div id="result" style="display:none"></div>
@@ -181,7 +160,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
-<template v-if="isIndicator3_2">
+<!--template v-if="isIndicator3_2">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
@@ -205,7 +184,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
-</template>
+</template-->
 </a>	
 <template v-for="bread in main_breadcrumb">
 <template v-if="bread.link">
@@ -332,7 +311,6 @@ function open_tab(event, label) {
 </div>
 <div id="main_div">
 
-<!--iframe width="560" height="315" src="https://www.youtube.com/embed/0UF0zIMI2xA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe-->
 
 <script>
 /*
@@ -382,87 +360,6 @@ function load_anim_pic_reset(num,file_id)
    }
 
 }
-/*
-function load_anim_pic(num,file_id)
-{
-   if (!g_emscripten_alive) return;
-   setTimeout(function() { load_anim_pic3(num,file_id); }, 50);
-}
-
-function load_anim_pic3(num,file_id)
-{
-   if (!g_emscripten_alive) return;
-   //console.log("PIC");
-   count = 1;
-   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
-   var num2 = file_id.toString();
-   var str = count.toFixed().toString();
-   while (str.length<3) str="0".concat(str);
-   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
-   var url = filename2;
-
-var request = new XMLHttpRequest();
-   request.open("HEAD", url, false);
-   //console.log("PIC2");
-   request.onload = function() {
-     //console.log(request.status);
-     if (request.status != 404)
-     {
-   //console.log("LOAD");
-	//preload_anim(num,file_id);
-        //var name = "displayimage".concat(num.toString());
-   	//var imgtag = document.getElementById(name);
-   	//imgtag.onmousemove = function() { load_anim_pic2(num,file_id); } 
-     } else { }
-     }
-   request.send();
-     
-
-}
-var m_current_filename="";
-function load_anim_pic2(num,file_id)
-{ 
-   if (!g_emscripten_alive) return;
-   var name = "displayimage".concat(num.toString());
-   var imgtag = document.getElementById(name);
-
-   var rect = imgtag.getBoundingClientRect();
-   var left = rect.left + window.scrollX;
-   var top = rect.top + window.scrollY;
-
-   var e = window.event;
-   var posX = e.clientX;
-   var posY = e.clientY;
-   
-
-   var deltaX = posX-left;
-   var deltaY = posY-top;
-  
-   var count = deltaX*15/200;
-   //console.log("START");
-   //console.log(rect);
-   //console.log(left);
-   //console.log(top);
-   //console.log(posX);
-   //console.log(posY);
-   //console.log(deltaX);
-   //console.log(deltaY);
-   if (count<=0) count=0;
-   if (count>14) count=14;
-   //console.log(count.toFixed());
-
-   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
-   var num2 = file_id.toString();
-   var str = count.toFixed().toString();
-   while (str.length<3) str="0".concat(str);
-   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
-   //console.log(filename2);
-   if (m_current_filename!=filename2) {
-      //console.log("FETCH");
-      m_current_filename = filename2;   
-      imgtag.src = filename2;
-   }
-}*/
 </script>
 <?php
 require_once("user.php");
@@ -480,17 +377,6 @@ if ($startpos!="") {
   $start = $num-($startpos*50);
 }
 $dupcache = array();
-/*
-echo "<script>var imgarr=[];</script>";
-
-   echo "<div style=\"width:1px; height:1px; visibility:hidden; overflow:hidden\">";
-   for($k=0;$k<15;$k++) {
-      echo "<img id=\"preload" . strval($k) . "\"></img>";
-   }
-   echo "</div>";
-*/
-//echo "<script src=\"//cdn.jsdelivr.net/npm/eruda\"></script>";
-//echo "<script>eruda.init();</script>";
 
 echo "<script>var g_focus=false;</script>";
 
@@ -648,19 +534,8 @@ echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" wi
 }
 
 
-if ($connect=="yes") {
-  echo "Connect ID: <div contentEditable=\"true\">enter id</div>";
-  echo "<button type=\"button\" onclick=\"join_click()\">Join</button>";
-  echo "<br>";
-  echo "Game Name: <div contentEditable=\"true\"></div><button onclick=\"new_game_click()\" type=\"button\">New Game</button>";
-  echo "<div id=\"displayconnectid\"></div>";
-} else {
-}
 ?>
 </div>
-<!--div class="spinner">
-<img src="<?php echo $assetsite ?>/load_spinner.gif" crossorigin></img>
-</div-->
 <p>
 <p>
 <div id="addtext"></div>
@@ -732,98 +607,14 @@ echo "</ul>";
        setTimeout(login, 50);
  }
  var g_user_id = "";
- function submit_data(user_id, user_name, user_email)
- {
-
-     //console.log("submit_data");
-     if (user_id!="" && user_name != "" && user_email !="") {
-        g_user_id = user_id;
-     	var res4 = document.getElementById("login_label");
-	res4.style = "font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0;";
-     	var res2 = document.getElementById("result2");
-     	res2.innerHTML = user_name;
-     	var res3 = document.getElementById("login_info");
-     	res3.innerHTML = user_id;
-	var res4 = document.getElementById("log");
-	if (res4) res4.innerHTML = user_id;
-	var res5 = document.getElementById("name");
-	if (res5) res5.innerHTML = user_name;
-	var res5a = document.getElementById("nickname");
-	if (res5a) res5a.value = user_id;
-	var res6 = document.getElementById("email");
-	if (res6) res6.innerHTML = user_email;
-
-	app.indicator.pop();
-	app.indicator.push(2);
-	var d = document.getElementById("loginstatus");
-	d.innerHTML = "LOGGED IN <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
-
-
-     } else {
-	var d = document.getElementById("loginstatus");
-	d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
-       onload_button();
-       }
-
- }
  var g_cnts = null;
-//var g_login_label = "";
-//window.addEventListener("message", (event) => {
-//  console.log("MESSAGE");
-//  console.log(event.origin);
-//  if (event.origin !== "https://meshpage.org") return;
-//  console.log("DATA");
-//  console.log(event.data);
-//  g_login_label = event.data;
-//}, false);
 
 
 
 
-/*
- function onload_iframe() {
-
-     //console.log("LOAD");
-     try {
-     var txt = document.getElementById("frm");
-     var innerdoc = (txt.contentDocument) ? txt.contentDocument : txt.contentWindow.document;
-     var txt2a = g_cnts||innerdoc.getElementById("cnts");
-     if (txt2a) {
-     	var txt2 = txt2a.innerHTML;
-     	var txts = txt2.split("%");
-     	var user_id = txts[0];
-     	var user_name = txts[1];
-     	var user_email = txts[2];
-     	submit_data(user_id, user_name, user_email);
-	}
-     } catch(error) {
-        console.log(error);
-	var d = document.getElementById("loginstatus");
-	d.innerHTML = "GUEST MODE (Certificate missing or expired) <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a></a>";
-	app.indicator.pop();
-	app.indicator.push(1);
-
-     }
-
-}
-*/
 function login() {
-/*
-	 var res = document.getElementById("result");
-	 if (res==null) {
-	    var d = document.getElementById("loginstatus");
-	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
-	    onload_button();
-	    } else {
-
-	 res.innerHTML="<iframe src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\"></iframe>";
-	 }
-//style=\"display:none\"></iframe>";
-	 
-*/
 
 }
-//onload_button(); // not done here because of cookies.
 </script>
 
 </div>
@@ -1161,9 +952,16 @@ $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
 ?>
-<br>
-
-<div style="padding: 20px; width: 1324px;">
+<br><br>
+CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
+<a href="<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img src="<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/world_transform.webp" target=_blank><img src="<?php echo $site ?>/world_transform.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/subtle_calmness.webp" target=_blank><img src="<?php echo $site ?>/subtle_calmness.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/city_building.webp" target=_blank><img src="<?php echo $site ?>/city_building.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/investor.webp" target=_blank><img src="<?php echo $site ?>/investor.webp" width="200" height="200" crossorigin></img></a>
+<br><br>
+DOWNLOADING THE ACTUAL PRODUCT OFFERING:
+<div style="padding: 0px; width: 1324px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -1202,7 +1000,7 @@ visit_counter_inc( "tool" );
 
 </div>
 <p>
-<div style="padding: 20px;  width: 1324px;">
+<div style="padding: 0px;  width: 1324px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
@@ -1242,7 +1040,7 @@ width="120" height="120" crossorigin/>
 </div>
 
 <p>
-<div style="padding: 20px;  width: 1324px;">
+<div style="padding: 0px;  width: 1324px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
@@ -1307,8 +1105,11 @@ width="120" height="120" crossorigin/>
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
 <a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">
 <img src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
+<br><p>
+WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
 
 <div>
+
 <a href="<?php echo $assetsite ?>/builder_screenshot.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
 <a href="<?php echo $assetsite ?>/builder_screenshot2.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
 <a href="<?php echo $assetsite ?>/builder_screenshot3.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
@@ -2512,7 +2313,7 @@ function hide_profile(b)
 
 <!-- TODO: add nft ownership test before starting timer -->
 <script>
-setTimeout(function() { var d = document.getElementById("monepopup"); d.style.display='block'; }, 500000);
+//setTimeout(function() { var d = document.getElementById("monepopup"); d.style.display='block'; }, 500000);
 var url = "TODO"; //"https://api.opensea.io/asset/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584/validate";
 function add_script() {
 
@@ -2616,8 +2417,61 @@ function set_cookie_status(num)
    });
    return promise;
 }
+function check_country_cookies_async()
+{
+   const head3 = new Headers();
+   const req3 = new Request("https://api.country.is/");
+return new Promise((resolve) => {
+   fetch(req3).then((r)=> {
+      return r.text();
+      }).then((ip) => {
+      const json = JSON.parse(ip);
+      const country = json["country"];
+      console.log(country);
+      if (country=="AT"||
+      	 country=="BE"||
+	country=="BG"||
+	country=="HR"||
+	country=="CY" ||
+	country=="CZ"||
+	country=="FI"||
+	country=="DK"||
+	country=="EE"||
+	country=="FR"||
+	country=="DE"||
+	country=="GR"||
+	country=="HU"||
+	country=="IE"||
+	country=="IT"||
+	country=="LV"||
+	country=="LT"||
+	country=="LU"||
+	country=="MT"||
+	country=="NL"||
+	country=="PL"||
+	country=="PT"||
+	country=="RO"||
+	country=="SK"||
+	country=="SI"||
+	country=="ES"||
+	country=="SE"||
+	country=="EU")
+      {
+	resolve("false");
+      } else {
+	resolve("true");
+      }
+      });
+});
+}
+//async function check_country_cookies()
+//{
+//   const result = await check_country_cookies_async();
+//   return result;
+//}
 function get_cookie_status()
 {
+
    const head = new Headers();
    const req = new Request("./cookies.php?op=0", {
       method: 'GET',
@@ -2630,15 +2484,24 @@ function get_cookie_status()
           //console.log("FOUND COOKIE");
 	  //console.log(t);
 	  var t2 = t.trim();
+	    var pg = "<?php echo $page ?>";
 	  if (t2=="-1") { // no info available
-	    var co = document.getElementById("callout");
-	    co.style.display="block";
+	    if (!(pg==""||pg=="0"||pg=="3")) {
+	       accept_cookies(false);
+	    } else {
+	    check_country_cookies_async().then(function(a){
+	    accept_cookies(false);
+		}, function(a) {
+		var co = document.getElementById("callout");
+	        co.style.display="block";
+		});
+		}
 	  } else
 	  if (t2=="0") { // reject cookies
 	     reject_cookies(false);
 	  } else
 	  if (t2=="1") { // accept necessary cookies
-	     accept_necessary_cookies(false)
+	     accept_necessary_cookies(false);
 	  } else
 	  if (t2=="2") { // accept cookies
 	     accept_cookies(false);
@@ -2648,6 +2511,8 @@ function get_cookie_status()
 	    console.log(t2);
 	  }
        });
+	
+
 }
 var cookie_status = -1;
 function remove_cookies(num)
@@ -2697,7 +2562,7 @@ function accept_cookies(save)
    co.style.display='none';
    add_script();
    start_emscripten(app);
-   setTimeout(function() { fetch_wallet(); }, 50);
+   //setTimeout(function() { fetch_wallet(); }, 50);
    if (save) { set_cookie_status(2).then((ok)=>{ location.reload();}); }
 }
 function accept_necessary_cookies(save)

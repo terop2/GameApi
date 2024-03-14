@@ -52,6 +52,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
 #undef rad2
 
 
+  
 #define MAC(name) \
   struct name { int id;\
   name(const name &i) : id(i.id) { } \
@@ -59,6 +60,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(US)
   MAC(CS)
   MAC(CSI)
   MAC(TT)
@@ -111,7 +113,6 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(AS)
   MAC(MC)
   MAC(MS)
-  MAC(US)
   MAC(MT)
   MAC(SMT)
   MAC(TL)
