@@ -134,9 +134,9 @@ all:
 
 PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30
 
-SIZEOPT=-O0 -fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all 
+SIZEOPT=-O0 -fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=1800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all 
 
-NOSIZEOPT = -s TOTAL_STACK=800kb -gpubnames
+NOSIZEOPT = -s TOTAL_STACK=1800kb -gpubnames
 
 #--closure 1
 #--memoryprofiler
@@ -149,8 +149,7 @@ STRIP = echo emstrip --no-strip-all --remove-section=name
 #-g   (doesnt work with closure compiler)
 
 ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
-PTHREADOPT2 =
-#$(PTHREADOPT)
+PTHREADOPT2 = $(PTHREADOPT)
 
 
 # --use-preload-cache

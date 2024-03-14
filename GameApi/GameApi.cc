@@ -6,7 +6,7 @@
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
 #ifndef NO_THREADS
-//#define THREADS 1
+#define THREADS 1
 #endif
 #endif
 #ifdef EMSCRIPTEN
@@ -30679,6 +30679,8 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
+#define KP_DEBUG 1
+
 bool g_execute_callback = false;
 void (*g_mainloop_callback)(void *ptr);
 void *g_mainloop_ptr = 0;
@@ -30699,6 +30701,9 @@ void clear_shader_cache();
 
 std::string qq_strip_spaces(std::string data)
 {
+#ifdef KP_DEBUG
+  std::cout << "qq_strip start" << std::endl;
+#endif
   std::string res;
   int s = data.size();
   for(int i=0;i<s-1;i++)
@@ -30712,11 +30717,17 @@ std::string qq_strip_spaces(std::string data)
   res+=c3;
   while(res[0]==' ') res = res.substr(1);
   while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
+#ifdef KP_DEBUG
+  std::cout << "qq_strip end" << res.size() << std::endl;
+#endif
   return res;
 }
 
 std::string qq_insert_enter(std::string s)
 {
+#ifdef KP_DEBUG
+  std::cout << "qq_insert_enter start" << std::endl;
+#endif
   if (s.length()>0)
     {
       char c = s[s.size()-1];
@@ -30724,6 +30735,10 @@ std::string qq_insert_enter(std::string s)
       if (c==')') s+=";";
       if (c!='\n') s+='\n';
     }
+#ifdef KP_DEBUG
+  std::cout << "qq_insert_enter end" << std::endl;
+  std::cout << s << std::endl;
+#endif
   return s;
 }
 
@@ -30742,15 +30757,21 @@ void run_callback(void *ptr)
   //std::cout << script << std::endl;
   g_new_script = script;
   static int g_id = -1;
-  if (g_id!=-1) clear_block(g_id);
+  // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
+  //if (g_id!=-1) clear_block(g_id);
+  // END OF TODO.
   clear_shader_cache();
   g_id = add_block();
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
-  //std::cout << "FINAL CODE:" << script << std::endl;
+#ifdef KP_DEBUG
+  std::cout << "FINAL CODE:" << script << std::endl;
+#endif
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
-  //std::cout << "blk.second==" << blk.second << std::endl;
+#ifdef KP_DEBUG
+  std::cout << "blk.second==" << blk.second << std::endl;
+#endif
   if (blk.second=="RUN") {
     GameApi::RUN r;
     r.id = blk.first;
