@@ -5651,11 +5651,11 @@ std::string replace_c(const replace_c_params &pp)
 		}
 	      else
 		{
-		  if (is_in_defines(pp.defines,"IN_POSITION")) {
+		  //if (is_in_defines(pp.defines,"IN_POSITION")) {
 		    out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
-		    } else {
-		      out+="vec3 p = vec3(0.0,0.0,0.0);";
-		     }
+		    //  } else {
+		    //  out+="vec3 p = vec3(0.0,0.0,0.0);";
+		    // }
 	      out+="vec4 pos0 =  vec4(p,1.0);\n";
 	      int s = comb.size();
 	      for(int i=0;i<s;i++)
