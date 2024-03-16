@@ -30679,7 +30679,7 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
-#define KP_DEBUG 1
+//#define KP_DEBUG 1
 
 bool g_execute_callback = false;
 void (*g_mainloop_callback)(void *ptr);
@@ -30829,7 +30829,7 @@ KP extern "C" void set_background_mode(int i)
 bool g_stop_music = false;
 KP extern "C" void stop_music_playing()
 {
-  //g_stop_music = true;
+  g_stop_music = true;
 }
 
 extern Matrix g_last_resize;
