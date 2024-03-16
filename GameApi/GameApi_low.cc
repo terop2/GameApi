@@ -1175,7 +1175,7 @@ class SDLApi : public SDLLowApi
     mode->h = m.h;
   }
   virtual void SDL_PauseAudio(int pause_on) {
-    //::SDL_PauseAudio(pause_on);
+    ::SDL_PauseAudio(pause_on);
   }
   virtual int SDL_OpenAudio(Low_SDL_AudioSpec *desired,
 			    Low_SDL_AudioSpec *obtained)
@@ -1445,8 +1445,7 @@ public:
   virtual void Mix_HaltChannel(int channel)
   {
 #ifdef USE_MIX
-    // doesn't work but halts the engine...
-    //::Mix_HaltChannel(channel);
+    ::Mix_HaltChannel(channel);
 #endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
