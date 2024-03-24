@@ -1142,6 +1142,7 @@ WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
    border-style: outset;
    border-width: 3px;
    margin: 5px;
+   background-color: #fff;
 }
 .butinner:hover {
    background-color: #ccf;
