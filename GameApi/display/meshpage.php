@@ -369,6 +369,10 @@ echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</
 echo "<div style=\"display:none\">LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span></div><br>";
 echo "<div style=\"display:none\">PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span></div>";
 page_title($sitename, "groundbreaking way to bring the next level technologies to the web: 3d.");
+echo "<div class=\"buttons\">";
+echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/view.php'\">3d model viewer</button>";
+echo "</div>";
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -1123,6 +1127,25 @@ WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.buttons {
+   position: absolute;
+   right: 10px;
+   top: 50px;
+   display: flex;
+   width: 300px;
+}
+.butinner {
+   padding: 20px 20px 20px 20px;
+   width: 300px;
+   float: left;
+   border-radius: 14px;
+   border-style: outset;
+   border-width: 3px;
+   margin: 5px;
+}
+.butinner:hover {
+   background-color: #ccf;
+}
 .zipbutton {
    position: relative;
    left: 174px;
