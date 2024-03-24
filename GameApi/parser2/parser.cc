@@ -340,7 +340,8 @@ private:
   std::vector<Function> functions;
 };
 
-std::string filenames[]= { 
+std::string filenames[]= {
+  "GraphI.hh", "EffectI.hh",
   "GameApi.cc","GameApi_pl.cc",
   "VectorTools.hh", "Buffer.hh",				      
   "Intersect.hh", "Bitmap.hh", "Effect2.hh", "Shader.hh", "VolumeObjects.hh", "VolumeObjects.cc",

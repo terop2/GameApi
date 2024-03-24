@@ -9,7 +9,7 @@ echo "<div class=\"emscripten\">";
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 10 64-bit</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/GameApi-Builder-v26.msi">download msi</a>
+<li><b>Download url:</b> <a href="https://meshpage.org/assets/GameApi-Builder-v26.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -33,7 +33,7 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux 64-bit amd64</span>
-<li><b>Download url:</b> <a href="https://tpgames.org/gameapi-builder_1.0-26.deb">download deb</a>
+<li><b>Download url:</b> <a href="https://meshpage.org/assets/gameapi-builder_1.0-26.deb">download deb</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -71,13 +71,13 @@ visit_counter_inc( "tool" );
 </div>
 <p>
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="https://tpgames.org/GameApi-Builder-v26.msi">
-<img src="https://tpgames.org/gameapi-builder-screenshot2.png" width="901" height="199"></a>
+<a itemprop="downloadUrl" href="https://meshpage.org/assets/GameApi-Builder-v26.msi">
+<img src="https://meshpage.org/assets/gameapi-builder-screenshot2.png" width="901" height="199"></a>
 
 <div>
-<a href="https://tpgames.org/builder_screenshot.png" target=_blank><img src="https://tpgames.org/builder_screenshot.png" width="300" height="200"></img></a>
-<a href="https://tpgames.org/builder_screenshot2.png" target=_blank><img src="https://tpgames.org/builder_screenshot2.png" width="300" height="200"></img></a>
-<a href="https://tpgames.org/builder_screenshot3.png" target=_blank><img src="https://tpgames.org/builder_screenshot3.png" width="300" height="200"></img></a>
+<a href="https://meshpage.org/assets/builder_screenshot.png" target=_blank><img src="https://meshpage.org/assets/builder_screenshot.png" width="300" height="200"></img></a>
+<a href="https://meshpage.org/assets/builder_screenshot2.png" target=_blank><img src="https://meshpage.org/assets/builder_screenshot2.png" width="300" height="200"></img></a>
+<a href="https://meshpage.org/assets/builder_screenshot3.png" target=_blank><img src="https://meshpage.org/assets/builder_screenshot3.png" width="300" height="200"></img></a>
 </div>
 
 <?php

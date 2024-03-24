@@ -356,8 +356,10 @@ void GameApi::TrackerApi::stop_music_playing()
 
 #ifndef EMSCRIPTEN
   g_low->sdl_mixer->Mix_HaltChannel(-1);
+#else
+  g_low->sdl_mixer->Mix_HaltChannel(-1);
+  std::cout << "TrackerApi::stop_music_playing... running under emscriten" << std::endl;
 #endif
-  //HTML5_Mix_HaltMusic();
 #endif
 }
 

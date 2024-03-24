@@ -9,15 +9,21 @@ include("backend.php");
 $date = filemtime("web_page_highmem.js");
 
 $machine=php_uname("n");
-if ($machine=="terop-pc") {
-   $site = "https://meshpage.org";
-   $assetsite = "https://tpgames.org";
+$siteprefix = "";
+if ($machine=="terop-pc2") {
+   $site = "meshpage.org";
+   $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   if ("$siteprefix"!="ssh.") $siteprefix="";   
    } else {
    $site = "https://dinoengine.com";
    $assetsite = "https://dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
    }
+   $site = "https://" . $siteprefix . $site;
+   $assetsite = "https://" . $siteprefix . $assetsite;
 
 
 function unhash($data)
@@ -822,10 +828,10 @@ function get_model(i)
       model = "<?php echo $assetsite ?>/" + name;
    }
 
-   //if (i==0) model="https://tpgames.org/wooly_sheep.stl";
-   //if (i==1) model="https://tpgames.org/BoomBox.glb";
-   //if (i==2) model="https://tpgames.org/Duck.glb";
-   //if (i==3) model="https://tpgames.org/Astronaut.glb";
+   //if (i==0) model="https://meshpage.org/assets/wooly_sheep.stl";
+   //if (i==1) model="https://meshpage.org/assets/BoomBox.glb";
+   //if (i==2) model="https://meshpage.org/assets/Duck.glb";
+   //if (i==3) model="https://meshpage.org/assets/Astronaut.glb";
    return model;
 }
 function get_normals_value()
@@ -2245,7 +2251,7 @@ function submitprogressbar(i)
 	   console.log(num);*/
 	   console.log("URLID:");
 	     console.log(g_url_id);
-	   prog.innerHTML = "<a href='view.php?id=" + hash(g_url_id) + "'>https://meshpage.org/view.php?id=" + hash(g_url_id) + "</a>";
+	   prog.innerHTML = "<a href='<?php echo $site ?>/view.php?id=" + hash(g_url_id) + "'><?php echo $site ?>/view.php?id=" + hash(g_url_id) + "</a>";
 /*	   }); });*/
 	   
    }
@@ -2268,7 +2274,7 @@ function formsubmit()
   data.append("num",-1);
   var xhr = new XMLHttpRequest();
   //xhr.responseType = 'arraybuffer';
-  xhr.open('POST','https://ssh.meshpage.org/submit_contents.php', false);
+  xhr.open('POST','<?php echo $site ?>/submit_contents.php', false);
 
   var submitprogress = 0;
 
@@ -2324,7 +2330,7 @@ function formsubmit()
   		   data.append("num",i);
   		   var xhr2 = new XMLHttpRequest();
 		   xhr2.responseType = 'arraybuffer';
-  		   xhr2.open('POST','https://ssh.meshpage.org/submit_contents.php', true);	
+  		   xhr2.open('POST','<?php echo $site ?>/submit_contents.php', true);	
 		   submitprogressbar(0);
 		   xhr2.onload = function()
 		   {

@@ -157,7 +157,7 @@
 			 "load_map",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/examplemap.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "http://meshpage.org/assets/examplemap.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "IBM", "bitmap_api", "intbitmap_loader"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intbitmap_bm,

@@ -1,6 +1,8 @@
 <?php
 ini_set('memory_limit', '2048M');
 
+print shell_exec( 'whoami' );
+
 $gltf = $_POST["gltffile"];
 
 if (strlen($gltf)<4||(substr($gltf,-3)!="zip"&&substr($gltf,-3)!="glb"&&substr($gltf,-4)!="gltf")) {

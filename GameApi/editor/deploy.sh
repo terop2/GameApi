@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ "$HOME" == "" ]; then
+    HOME=/home/www-data
+fi
+
 if [[ $1 ]]; then
     (cd $HOME/.gameapi_builder/deploy/engine; unzip -o $1)
     if [ $? -ne 0 ]; then

@@ -10,7 +10,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "newfont",
 			 { "file", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://tpgames.org/FreeSans.ttf", "20", "20" },
+			 { "http://meshpage.org/assets/FreeSans.ttf", "20", "20" },
 			 "Ft", "font_api", "newfont"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph,
@@ -150,7 +150,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_load",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "200", "200" },
+			 { "http://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "200", "200" },
 			 "FI", "font_api", "load_font"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::draw_text_string,
 			 "FI_drawtext",
@@ -162,7 +162,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_largetext",
 			 { "ev", "font", "texturl", "x_gap", "line_height", "baseline_separation" },
 			 { "EveryApi&", "FI", "std::string", "int", "int", "int" },
-			 { "ev", "", "http://tpgames.org/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
+			 { "ev", "", "http://meshpage.org/assets/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
 			 "BM", "font_api", "draw_text_large"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_font_dump,
 			 "FI_save_dump",
@@ -174,7 +174,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_load_dump",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/font.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "http://meshpage.org/assets/font.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "FI", "font_api", "load_font_dump"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::bm_array_id,
 			 "bm_array_id",
@@ -205,7 +205,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "ml_anim",
 			 { "ev", "url", "p1", "p2", "p3", "p4", "p5", "dyn" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string", "IF" },
-			 { "ev", "http://tpgames.org/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a/a", "b/b", "c/c", "d/d", "e/e", "" },
+			 { "ev", "http://meshpage.org/assets/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a/a", "b/b", "c/c", "d/d", "e/e", "" },
 			 "ML", "mainloop_api", "anim_ML"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::key_ml,
@@ -257,7 +257,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "if_statemachine",
 			 { "url", "states" },
 			 { "std::string", "std::string" },
-			 { "http://tpgames.org/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4" },
+			 { "http://meshpage.org/assets/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4" },
 			 "IF", "mainloop_api", "state_int_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::hmd_state_fetcher,
 			 "if_hmd",
@@ -407,7 +407,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "game_ml",
 			 { "ev", "tile_sx", "tile_sy", "url", "url2", "url3", "url4", "tiles_string", "tiles_string2", "start_pos_x", "start_pos_y", "player_start_tile", "player_end_tile", "tile_bm", "player_bm", "ruohikko_bm", "corn_bm", "vesisade_bm", "jump_bm", "font", "status_bm", "splash", "item_types", "enemy_types", "weapon_bm", "child_death", "aku_death" },
 			 { "EveryApi&", "int", "int", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string", "int", "int", "int", "int", "BM", "BM", "BM", "BM", "BM", "BM", "FI", "BM", "BM", "[BM]", "[BM]", "BM","[BM]", "BM" },
-			 { "ev", "64", "64", "https://tpgames.org/test.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/anim.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/items.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://tpgames.org/enemy.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "abcde--------ghi", "-----abcdefghijklmno", "10", "10", "24", "33", "", "","","","", "", "", "", "", "","","","","" },
+			 { "ev", "64", "64", "https://meshpage.org/assets/test.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://meshpage.org/assets/anim.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://meshpage.org/assets/items.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "https://meshpage.org/assets/enemy.map@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "abcde--------ghi", "-----abcdefghijklmno", "10", "10", "24", "33", "", "","","","", "", "", "", "", "","","","","" },
 			 "ML", "mainloop_api", "game"));
   return vec;
 }

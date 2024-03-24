@@ -1060,6 +1060,7 @@ public:
   virtual std::string func_call2(int &index) const=0;
   virtual std::string define_strings() const=0;
   virtual std::string func_name() const=0;
+  virtual bool is_fragment() const { return false; }
 };
 
 class MatrixArray : public CollectInterface
@@ -2880,6 +2881,22 @@ public:
   virtual float end_t() const=0;
 };
 
+
+struct Pixel2
+{
+  int x,y;
+  unsigned int *pixel;
+};
+
+class PixelAllocator
+{
+public:
+  virtual Pixel2 Alloc()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual Bitmap<Color> *get_all() const=0;
+  virtual Bitmap<Color> *get_xy() const=0;
+};
 
 
 #endif
