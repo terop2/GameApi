@@ -5384,6 +5384,9 @@ bool is_in_defines(std::string defines, std::string label)
 
 std::string replace_c(const replace_c_params &pp)
 {
+  //std::cout << "REPLACE_C:" << pp.is_fragment << " " << pp.is_transparent << std::endl;
+
+  
   bool oldshader=false;
   bool webgl2 = false;
   bool emscripten = false;
@@ -5650,7 +5653,7 @@ std::string replace_c(const replace_c_params &pp)
 		{
 		  //if (is_in_defines(pp.defines,"IN_POSITION")) {
 		    out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
-		    //} else {
+		    //  } else {
 		    //  out+="vec3 p = vec3(0.0,0.0,0.0);";
 		    // }
 	      out+="vec4 pos0 =  vec4(p,1.0);\n";
@@ -6022,7 +6025,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //                               std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                                std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

@@ -12362,6 +12362,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced2_ml_fade(GameApi::Eve
 }
 
 
+
 class V_ShaderCallFunction : public ShaderCall
 {
 public:
@@ -12413,10 +12414,14 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  bool is_fragment() const { return true; }
   std::string func_name() const { return funcname; }
   std::string func_call() const
   {
     std::string out;
+    if (!next->is_fragment()) {
+      std::cout << "ERROR:" << funcname << " " << next->func_name() << std::endl;
+    }
     out+=next->func_call();
     std::stringstream ss;
     int i = id;
@@ -12570,6 +12575,7 @@ public:
   EmptyF(bool transparent) : transparent(transparent) { id = -1; }
   int index(int base) const { id = base; return base; }
   virtual std::string func_name() const { return "emptyF"; }
+  virtual bool is_fragment() const { return true; }
 
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
@@ -20203,7 +20209,7 @@ std::string fetch_more_data(std::string url)
 	  return str;
 #endif
 #ifdef LINUX
-	  std::string curl_string = "curl " + http_to_https(url) + "";
+	  std::string curl_string = "curl --http1.1 " + http_to_https(url) + "";
 	  std::cout << "SCANNING: "<< url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"r");
 	  int c;
@@ -20740,17 +20746,25 @@ public:
       // id = env.add_to_download_bar("gameapi_deploy.zip");
 	if (use_filename) deploy_set_status_file(filename,0);
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
-      int val1 = system("mkdir -p ~/.gameapi_builder");
-      int val2 = system("chmod a+rwx ~/.gameapi_builder");
-      if (val1!=0||val2!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
+
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::string cmd1 = "mkdir -p "+home+"/.gameapi_builder";
+      std::string cmd2 = "chmod a+rwx " + home + "/.gameapi_builder";
+      
+      int val1 = system(cmd1.c_str());
+      int val2 = system(cmd2.c_str());
+      if (val1!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
       }
     case 1: {
 	if (use_filename) deploy_set_status_file(filename,1);
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
-      int val1= system("rm -rf ~/.gameapi_builder/deploy");
-      int val2=system("mkdir -p ~/.gameapi_builder/deploy");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::string cmd1 = std::string("rm -rf ") + home + std::string("/.gameapi_builder/deploy");
+      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy";
+      int val1= system(cmd1.c_str());
+      int val2=system(cmd2.c_str());
       //int val3=system("mkdir -p ~/.gameapi_builder/deploy/licenses");
       if (val1!=0||val2!=0) { std::cout << "ERROR: rm or mkdir returned error:" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
@@ -20759,7 +20773,9 @@ public:
     case 2: {
 	if (use_filename) deploy_set_status_file(filename,2);
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
-      int val=system("mkdir -p ~/.gameapi_builder/deploy/engine");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::string cmd1 = "mkdir -p " + home + "/.gameapi_builder/deploy/engine";
+      int val=system(cmd1.c_str());
       if (val!=0) { std::cout << "ERROR: mkdir returned error:" << val << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
@@ -20782,7 +20798,7 @@ public:
       find_url_items2(s,items);
       find_url_items3(items);
 
-      std::string home2 = getenv("HOME");
+      std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::ofstream sp((home2 + "/.gameapi_builder/deploy/license.html").c_str());
 
       
@@ -20803,7 +20819,7 @@ public:
 		  std::cout << "ERROR:" << makedir << " returned error " << val2 << std::endl; ok=false;
 		}
 	      
-	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(ii.url)) + ")";
+	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(ii.url)) + ")";
 	      int val = system(curl_string.c_str());
 	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 #endif
@@ -20811,11 +20827,15 @@ public:
 	  else {
 	    std::string dir = find_directory(ii.url);
 	    if (dir!="") {
-	      int val = system((std::string("mkdir -p ~/.gameapi_builder/deploy/") + dir).c_str());
+	      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+	      int val = system((std::string("mkdir -p ") + home + std::string("/.gameapi_builder/deploy/") + dir).c_str());
 	      if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
 	    }
 	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	    std::string curl_string = std::string("(cd ~/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
+	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
@@ -20872,7 +20892,7 @@ public:
       //std::cout << "______SCRIPT ENDS_______________" << std::endl;
 
       
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << convert_script(htmlfile);
       ss << std::flush;
@@ -20900,10 +20920,12 @@ public:
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       //std::cout << "Generating date.." << std::endl;
-      int val = system("touch ~/.gameapi_builder/gameapi_date.html");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+      int val = system((std::string("touch ") + home + std::string("/.gameapi_builder/gameapi_date.html")).c_str());
       if (val!=0) {std::cout << "ERROR, date writing" << val << std::endl; ok=false; }
-      std::string home = getenv("HOME");
-      std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
+      std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::fstream ss2((home2 + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
       ss2.close();
@@ -20934,14 +20956,16 @@ public:
 	  gn = "/usr/share/gameapi_display.zip";
 	  gk = "/usr/share/get_file_size.php";
 	}
-	std::string line0 = std::string("cp ") + g0 + " ~/.gameapi_builder/gameapi_0.html";
-	std::string line0a = std::string("cp ") + g0a + " ~/.gameapi_builder/gameapi_0_seamless.html";
-	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
-	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
-	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
-	std::string line3a = std::string("cp ") + g3a + " ~/.gameapi_builder/gameapi_3_seamless.html";
-	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
-	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+	std::string line0 = std::string("cp ") + g0 + " " + home + "/.gameapi_builder/gameapi_0.html";
+	std::string line0a = std::string("cp ") + g0a + " " + home + "/.gameapi_builder/gameapi_0_seamless.html";
+	std::string line1 = std::string("cp ") + g1 + " " + home + "/.gameapi_builder/gameapi_1.html";
+	std::string line2 = std::string("cp ") + g2 + " " + home + "/.gameapi_builder/gameapi_2.html";
+	std::string line3 = std::string("cp ") + g3 + " " + home + "/.gameapi_builder/gameapi_3.html";
+	std::string line3a = std::string("cp ") + g3a + " " + home + "/.gameapi_builder/gameapi_3_seamless.html";
+	std::string line4 = std::string("cp ") + gn + " " + home + "/.gameapi_builder/gameapi_display.zip";
+	std::string line5 = std::string("cp ") + gk + " " + home + "/.gameapi_builder/get_file_size.php";
 
 	int val1=system(line0.c_str());
 	int val1a=system(line0a.c_str());
@@ -20977,7 +21001,7 @@ public:
 	{
 	  dep = "/usr/share/deploy.sh";
 	}
-	std::string home = getenv("HOME");
+	std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string line5 = dep + " " + home + "/.gameapi_builder/gameapi_display.zip";
       bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
       if (is_seamless) {
@@ -20997,7 +21021,7 @@ public:
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 
 	if (!use_filename) {
-	std::string home = getenv("HOME");
+	std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 	std::ifstream ss((home + "/.gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
@@ -21009,7 +21033,7 @@ public:
 	env.set_download_ready(i);
 	} else {
 	  std::cout << "Step #10: copying the zip file to " << filename << std::endl;
-	  std::string home = getenv("HOME");
+	  std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 	  std::string cmd = "cp -f " + home + "/.gameapi_builder/deploy/gameapi_deploy.zip " + filename;
 	  int val = system(cmd.c_str());
 	  if (val!=0) { std::cout << "ERROR:" << cmd << " returned error " << val << std::endl; ok=false; }
@@ -22583,7 +22607,7 @@ public:
   {
     if (firsttime) {
       std::string filename = out_file;
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string path = home + "/.gameapi_builder/";
 
       std::cout << "Saving to " << path+out_file << std::endl;
@@ -30655,6 +30679,8 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
+//#define KP_DEBUG 1
+
 bool g_execute_callback = false;
 void (*g_mainloop_callback)(void *ptr);
 void *g_mainloop_ptr = 0;
@@ -30675,6 +30701,9 @@ void clear_shader_cache();
 
 std::string qq_strip_spaces(std::string data)
 {
+#ifdef KP_DEBUG
+  std::cout << "qq_strip start" << std::endl;
+#endif
   std::string res;
   int s = data.size();
   for(int i=0;i<s-1;i++)
@@ -30688,11 +30717,17 @@ std::string qq_strip_spaces(std::string data)
   res+=c3;
   while(res[0]==' ') res = res.substr(1);
   while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
+#ifdef KP_DEBUG
+  std::cout << "qq_strip end" << res.size() << std::endl;
+#endif
   return res;
 }
 
 std::string qq_insert_enter(std::string s)
 {
+#ifdef KP_DEBUG
+  std::cout << "qq_insert_enter start" << std::endl;
+#endif
   if (s.length()>0)
     {
       char c = s[s.size()-1];
@@ -30700,6 +30735,10 @@ std::string qq_insert_enter(std::string s)
       if (c==')') s+=";";
       if (c!='\n') s+='\n';
     }
+#ifdef KP_DEBUG
+  std::cout << "qq_insert_enter end" << std::endl;
+  std::cout << s << std::endl;
+#endif
   return s;
 }
 
@@ -30718,15 +30757,21 @@ void run_callback(void *ptr)
   //std::cout << script << std::endl;
   g_new_script = script;
   static int g_id = -1;
-  if (g_id!=-1) clear_block(g_id);
+  // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
+  //if (g_id!=-1) clear_block(g_id);
+  // END OF TODO.
   clear_shader_cache();
   g_id = add_block();
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
-  //std::cout << "FINAL CODE:" << script << std::endl;
+#ifdef KP_DEBUG
+  std::cout << "FINAL CODE:" << script << std::endl;
+#endif
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
-  //std::cout << "blk.second==" << blk.second << std::endl;
+#ifdef KP_DEBUG
+  std::cout << "blk.second==" << blk.second << std::endl;
+#endif
   if (blk.second=="RUN") {
     GameApi::RUN r;
     r.id = blk.first;

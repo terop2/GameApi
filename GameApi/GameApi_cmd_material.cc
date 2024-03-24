@@ -231,7 +231,7 @@
 			 "m_mtl_many",
 			 { "ev", "mtl_url", "url_prefix", "mix", "start_range", "end_range" },
 			 { "EveryApi&", "std::string", "std::string", "float", "int", "int" },
-			 { "ev", "http://tpgames.org/sponza/sponza.mtl@crytek@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza", "1", "0", "15" },
+			 { "ev", "http://meshpage.org/assets/sponza/sponza.mtl@crytek@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "1", "0", "15" },
 			 "MT", "materials_api", "many_texture_id_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
 			 "m_texture_cubemap",
@@ -359,7 +359,7 @@
 			 "m_gltf_file",
 			 { "ev", "url", "light_dir_x", "light_dir_y", "light_dir_z" },
 			 { "EveryApi&", "std::string","float", "float", "float" },
-			 { "ev", "https://tpgames.org/materials/wood.mat@AmbientCG@https://docs.ambientcg.com/books/website-licensing/page/license-information", "400.0", "-400.0", "300.0" },
+			 { "ev", "https://meshpage.org/assets/materials/wood.mat@AmbientCG@https://docs.ambientcg.com/books/website-licensing/page/license-information", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material_from_file"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_manual,
 			 "m_gltf_man",

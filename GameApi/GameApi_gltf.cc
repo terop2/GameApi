@@ -1588,9 +1588,9 @@ public:
       u_f.id = e.us_fragment_shader;
     if (firsttime)
       {
-	if (u_v.id == 0)
+	if (u_v.id == 0||u_v.id==-1)
 	  u_v = ev.uber_api.v_empty();
-	if (u_f.id == 0)
+	if (u_f.id == 0||u_f.id==-1)
 	  u_f = ev.uber_api.f_empty(true);
       }
 #if 0

@@ -72,7 +72,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "mn_statemachine",
 			 { "mn", "url", "states", "x_speeds", "y_speeds", "z_speeds" },
 			 { "MN", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "", "http://tpgames.org/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4", "0.0&-1.0&0.0&0.0&1.0", "0.0&0.0&-1.0&1.0&0.0", "0.0&0.0&0.0&0.0&0.0" },
+			 { "", "http://meshpage.org/assets/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4", "0.0&-1.0&0.0&0.0&1.0", "0.0&0.0&-1.0&1.0&0.0", "0.0&0.0&0.0&0.0&0.0" },
 			 "MN", "mainloop_api", "state_speed_movement"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::scale_progress,
 			 "mn_scale_progress",
@@ -119,39 +119,39 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "mesh_anim",
 			 { "ev", "faces", "move", "materials", "inst", "states", "url" },
 			 { "EveryApi&", "[P]", "[MN]", "[MT]", "[MS]", "[IF]", "std::string" },
-			 { "ev", "", "", "", "", "","https://tpgames.org/gameapi_anim.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "ev", "", "", "", "", "","https://meshpage.org/assets/gameapi_anim.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "polygon_api", "mesh_anim"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ske_anim,
 			 "ske_anim",
 			 { "ev", "mesh", "orig_pose", "li_size", "url", "new_poses", "material" },
 			 { "EveryApi&", "P", "LI", "int", "std::string", "[LI]", "MT" },
-			 { "ev", "", "", "30", "https://tpgames.org/ske_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "" },
+			 { "ev", "", "", "30", "https://meshpage.org/assets/ske_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "" },
 			 "ML", "polygon_api", "ske_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::ske_anim2,
 			 "ske_anim2",
 			 { "ev", "mesh", "orig_pose", "li_size", "url", "new_poses", "material" },
 			 { "EveryApi&", "[P]", "LI", "int", "std::string", "[LI]", "MT" },
-			 { "ev", "", "", "30", "https://tpgames.org/ske_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "" },
+			 { "ev", "", "", "30", "https://meshpage.org/assets/ske_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "", "" },
 			 "ML", "polygon_api", "ske_anim2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::tunnel_tree,
 			 "tunnel_tree",
 			 { "ev", "faces", "moves", "url", "mat2" },
 			 { "EveryApi&", "[P]", "[MN]", "std::string", "MT" },
-			 { "ev", "", "", "https://tpgames.org/tunnel.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "" },
+			 { "ev", "", "", "https://meshpage.org/assets/tunnel.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "" },
 			 "ML", "mainloop_api", "tunnel_tree"));
   /*			
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_skeleton,
 			 "li_gltf_ske",
 			 { "ev", "base_url", "url", "start_node" },
 			 { "EveryApi&", "std::string", "std::string", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0" },
+			 { "ev", "https://meshpage.org/assets/", "https://meshpage.org/assets/test.glb", "0" },
 			 "LI", "mainloop_api", "gltf_skeleton"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim_skeleton,
 			 "li_gltf_aske",
 			 { "ev", "base_url", "url", "skin_num", "animation", "channel", "num_keyframes" },
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int" },
-			 { "ev", "https://tpgames.org/", "https://tpgames.org/test.glb", "0", "0", "0", "64" },
+			 { "ev", "https://meshpage.org/assets/", "https://meshpage.org/assets/test.glb", "0", "0", "0", "64" },
 			 "[LI]", "mainloop_api", "gltf_anim_skeleton"));
   */
 

@@ -8654,3 +8654,124 @@ GameApi::ML GameApi::MainLoopApi::game(GameApi::EveryApi &ev, int tile_sx, int t
   
   return add_main_loop(e, new Game(e,ev,tile_sx, tile_sy, url, url2, url3,url4,gameapi_homepageurl, tiles_string, tiles_string2, start_pos_x, start_pos_y, player_start_tile, player_end_tile, tile_bm2, player_bm2, player_bm4, ruohikko_bm2, corn_bm2,vesisade_bm2, jump_bm2, jump_bm4, font,status_bm, splash,item_types,enemy_types, weapon_bm, weapon_flip_bm, child_death, death_flip,aku_death, aku_death_flip));
 }
+
+class BitmapFromPixelAllocator : public Bitmap<Color>
+{
+public:
+  BitmapFromPixelAllocator(PixelAllocator *pixel) : pixel(pixel) { }
+  virtual int SizeX() const {
+    int val = iCache->SizeX();
+    return val;
+  }
+  virtual int SizeY() const
+  {
+    int val = iCache->SizeY();
+    return val;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    Color val = iCache->Map(x,y);
+    return val;
+  }
+  virtual void Prepare()
+  {
+    iCache = pixel->get_all();
+  }
+  ~BitmapFromPixelAllocator() { delete iCache; }
+private:
+  PixelAllocator *pixel;
+  Bitmap<Color> *iCache=0;
+};
+
+class BitmapMapFromPixelAllocator : public Bitmap<Pos>
+{
+public:
+  BitmapMapFromPixelAllocator(PixelAllocator *pixel) : pixel(pixel) { }
+  int SizeX() const {
+    return pixel->SizeX();
+  }
+  int SizeY() const
+  {
+    return pixel->SizeY();
+  }
+  Pos Map(int x, int y) const
+  {
+    Pos p;
+    Color c = iCache->Map(x,y);
+    p.y = c.alpha*256 + c.r;
+    p.x = c.g*256 + c.b;
+    return p;
+  }
+  virtual void Prepare()
+  {
+    iCache = pixel->get_all();
+  }
+private:
+  PixelAllocator *pixel;
+  Bitmap<Color> *iCache;
+};
+
+class ShaderBitmapFromPixelAllocator : public Bitmap<Color>
+{
+  virtual int SizeX() const {
+    int val = iCache->SizeX();
+    return val;
+  }
+  virtual int SizeY() const
+  {
+    int val = iCache->SizeY();
+    return val;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    Color val = iCache->Map(x,y);
+    return val;
+  }
+  virtual void Prepare()
+  {
+    iCache = pixel->get_xy();
+  }
+  ~ShaderBitmapFromPixelAllocator() { delete iCache; }
+private:
+  PixelAllocator *pixel;
+  Bitmap<Color> *iCache=0;  
+};
+
+class BitmapPixelAllocator : public PixelAllocator
+{
+public:
+  BitmapPixelAllocator(int x, int y)
+  {
+    ref = BufferRef::NewBuffer(x,y);
+    //iCache = new Bitmap<Color>(x,y);
+    iPos = BufferRef::NewBuffer(x,y);
+    sx=x;
+    sy=y;
+  }
+  Bitmap<Color> *get_all() const { return new BitmapFromBuffer(ref); }
+  Bitmap<Color> *get_xy() const { return new BitmapFromBuffer(iPos); }
+  int SizeX() const { return sx; }
+  int SizeY() const { return sy; }
+  
+  Pixel2 Alloc(int x, int y) {
+    current_x++;
+    if (current_x>=sx) { current_x=0; current_y++; }
+    if (current_y>=sy) { current_y--; current_x=sx-1; }
+    Pixel2 p;
+    p.x = current_x;
+    p.y = current_y;
+    p.pixel = ref.buffer + current_y*ref.ydelta + current_x;
+    
+    int pix = x + y*256*256;
+    iPos.buffer[current_x+current_y*iPos.ydelta] = pix; 
+    return p;
+  }
+private:
+  BufferRef ref;
+  BufferRef iPos;
+  //Bitmap<Color> *iCache;
+  //Bitmap<Color> *iPosition;
+  int sx,sy;
+  int current_y;
+  int current_x;
+};

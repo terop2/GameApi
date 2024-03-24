@@ -8,7 +8,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "li_url",
 			 { "url" },
 			 { "std::string" },
-			 { "https://tpgames.org/li_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "https://meshpage.org/assets/li_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "LI", "lines_api", "li_url"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::point_array,
 			 "li_points",
@@ -158,7 +158,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "li_import_icf",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/" },
+			 { "ev", "http://meshpage.org/assets/" },
 			 "LI", "lines_api", "import_ifc"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::line,

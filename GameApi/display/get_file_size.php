@@ -1,9 +1,9 @@
 <?php
 
 $machine=php_uname("n");
-if ($machine=="terop-pc") {
+if ($machine=="terop-pc2") {
    $site = "https://meshpage.org";
-   $assetsite = "https://tpgames.org";
+   $assetsite = "https://meshpage.org/assets";
    $sitename = "meshpage.org";
    } else {
    $site = "https://dinoengine.com";
@@ -22,10 +22,10 @@ if (stream_is_local($url)) {
   $size=filesize($url);
 } else if ($host=="meshpage.org"||$host=="ssh.meshpage.org"||$host=="dinoengine.com") {
   $path = $parse['path'];
-  if ($machine=="terop-pc") {
-     $filename = "/home/terop/html/meshpage.org" . $path;
+  if ($machine=="terop-pc2") {
+     $filename = "/home/terop/meshpage.org" . $path;
   } else {
-     $filename = "/home/terop/html" . $path;
+     $filename = "/home/terop/" . $path;
   }   
   $size = filesize($filename);
   $splitfilename = $filename . ".aa.br";
@@ -34,12 +34,12 @@ if (stream_is_local($url)) {
   if ($mode==true) {
     $chunksize = filesize($splitfilename2);
     }
-} else if ($host=="tpgames.org"||$host=="ssh.tpgames.org") {
+} else if ($host=="meshpage.org/assets"||$host=="ssh.meshpage.org/assets") {
   $path = $parse['path'];
-  if ($machine=="terop-pc") {
-    $filename = "/home/terop/html/tpgames.org" . $path;
+  if ($machine=="terop-pc2") {
+    $filename = "/home/terop/meshpage.org/assets" . $path;
   } else {
-    $filename = "/home/terop/html" . $path;
+    $filename = "/home/terop" . $path;
   }
   $size = filesize($filename);
   $splitfilename = $filename . ".aa.br";

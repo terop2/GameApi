@@ -2525,10 +2525,10 @@ void save_raw_bitmap(GameApi::Env &e, GameApi::BM bm, std::string filename);
 void GameApi::MainLoopApi::save_logo(EveryApi &ev)
 {
   BM I1=ev.bitmap_api.newbitmap(500,300,0x00000000);
-  Ft I2=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
+  Ft I2=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",80,80);
   BM I3=ev.font_api.font_string(I2,"qtamoVR",5);
   BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
-  Ft I5=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
+  Ft I5=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",18,18);
   BM I6=ev.font_api.font_string(I5,"Loading",5);
   BM I7=ev.bitmap_api.blitbitmap(I4,I6,80,88);
   ev.bitmap_api.savebitmap(I7, "logo.ppm", true);
@@ -2897,15 +2897,15 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
 
 #else
 BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
- FI I19 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 80,80);
+ FI I19 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 80,80);
  BM I20 = ev.font_api.draw_text_string(I19, "GameApi", 5, 30);
 
- //Ft I19=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
+ //Ft I19=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",80,80);
  //BM I20=ev.font_api.font_string(I19,"GameApi",5);
 BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
-//Ft I22=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
+//Ft I22=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",18,18);
 //BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
- FI I22 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 18,18);
+ FI I22 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 18,18);
  BM I23 = ev.font_api.draw_text_string(I22, "Win32Edition", 5, 30);
 BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
  P I25=ev.polygon_api.color_map(I24,0.0,500,0.0,300.0,0);
@@ -3854,7 +3854,7 @@ public:
       // POSITION TXID GENERATION
       GameApi::MT aI1=ev.materials_api.m_def(ev);
       GameApi::SHP aI2=ev.mainloop_api.empty_shp();
-      GameApi::ARR aI3=ev.mainloop_api.load_shader2("https://tpgames.org/position.vert","https://tpgames.org/position.frag");
+      GameApi::ARR aI3=ev.mainloop_api.load_shader2("https://meshpage.org/assets/position.vert","https://meshpage.org/assets/position.frag");
       ArrayType *arr=find_array(env,aI3);
       GameApi::SHC o1,o2;
       o1.id = arr->vec[0];
@@ -3869,7 +3869,7 @@ public:
 
       GameApi::MT bI1=ev.materials_api.m_def(ev);
       GameApi::SHP bI2=ev.mainloop_api.empty_shp();
-      GameApi::ARR bI3=ev.mainloop_api.load_shader2("https://tpgames.org/normal.vert","https://tpgames.org/normal.frag");
+      GameApi::ARR bI3=ev.mainloop_api.load_shader2("https://meshpage.org/assets/normal.vert","https://meshpage.org/assets/normal.frag");
       ArrayType *arr2=find_array(env,bI3);
       GameApi::SHC bo1,bo2;
       bo1.id = arr2->vec[0];
