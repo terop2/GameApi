@@ -2419,6 +2419,8 @@ function set_cookie_status(num)
 }
 function check_country_cookies_async()
 {
+return new Promise((resolve) => { resolve("true"); });
+/*
    const head3 = new Headers();
    const req3 = new Request("https://api.country.is/");
 return new Promise((resolve) => {
@@ -2463,6 +2465,7 @@ return new Promise((resolve) => {
       }
       });
 });
+*/
 }
 //async function check_country_cookies()
 //{
