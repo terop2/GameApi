@@ -15,25 +15,76 @@
 
 <form method="POST" action="/gltf_to_zip_result.php">
 <label class="url" for="gltffile">GLTF2.0 File Url:</label>
-<input class="gltf" type="url" id="gltffile" name="gltffile" value=""><br>
+<input class="gltf" type="url" id="gltffile" name="gltffile" value="" onchange="file_change()"><br>
 
 (you just need .gltf file url, it'll find all dependencies starting from that file)<br>
 (or if you got the content from sketchfab, their gltf zip files are acceptable too)
 <br><br>
 
-<input class="cb" type="checkbox" name="transparent" value="trans"><div class="label">Transparent Canvas</div><br>
-<input class="cb" type="checkbox" name="bigscreen" value="bigscreen"><div class="label">Bigscreen Support</div><br>
+<input id="transparent" class="cb" type="checkbox" name="transparent" value="trans"><div class="label">Transparent Canvas</div><br>
+<input id="bigscreen" class="cb" type="checkbox" name="bigscreen" value="bigscreen"><div class="label">Bigscreen Support</div><br>
 <input id="shadow" class="cb" type="checkbox" name="shadow" value="shadow" onchange="shadow_change()"><div class="label">Shadow</div><br>
 <input id="anim" class="cb" type="checkbox" name="anim" value="anim" onchange="anim_change()"><div class="label">Gltf Animation</div><br>
 <input id="large" class="cb" type="checkbox" name="large" value="large" onchange="large_change()"><div class="label">Large Model</div><br>
-<input class="cb" type="checkbox" name="zoom" value="zoom" checked><div class="label">Zoom</div><br>
-<input class="cb" type="checkbox" name="rotate" value="rotate" checked><div class="label">Rotate</div><br>
+<input id="sketchfab" class="cb" type="checkbox" name="sketchfab" value="sketchfab" onchange="sketchfab_change()"><div class="label checked">Sketchfab zip</div><br>
+<input id="zoom" class="cb" type="checkbox" name="zoom" value="zoom" checked><div class="label">Zoom</div><br>
+<input id="rotate" class="cb" type="checkbox" name="rotate" value="rotate" checked><div class="label">Rotate</div><br>
 <!--input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br-->
 <p>
 <input class="submit" type="submit" value="Convert to HTML5">
 </form>
 
 <script>
+function file_change()
+{
+  var el3 = document.getElementById("gltffile");
+  var name = el3.value;
+  var ext = name.substring(name.length-4);
+  if (ext==".zip") {
+    var el3 = document.getElementById("sketchfab");
+    el3.disabled=false;
+  } else {
+    var el3 = document.getElementById("sketchfab");
+    el3.disabled=true;
+    el3.checked=true;
+    sketchfab_change();
+  }
+}
+function sketchfab_change()
+{
+  var el3 = document.getElementById("sketchfab");
+  if (el3.checked==true) {
+  var el2aaa = document.getElementById("transparent");
+  el2aaa.disabled=false;
+  var el2aa = document.getElementById("bigscreen");
+  el2aa.disabled=false;
+  var el2a = document.getElementById("shadow");
+  el2a.disabled=false;
+  var el2b = document.getElementById("anim");
+  el2b.disabled=false;
+  var el2c = document.getElementById("large");
+  el2c.disabled=false;
+  var el2d = document.getElementById("zoom");
+  el2d.disabled=false;
+  var el2e = document.getElementById("rotate");
+  el2e.disabled=false;
+  } else {
+  var el2aaa = document.getElementById("transparent");
+  el2aaa.disabled=true;
+  var el2aa = document.getElementById("bigscreen");
+  el2aa.disabled=true;
+  var el2a = document.getElementById("shadow");
+  el2a.disabled=true;
+  var el2b = document.getElementById("anim");
+  el2b.disabled=true;
+  var el2c = document.getElementById("large");
+  el2c.disabled=true;
+  var el2d = document.getElementById("zoom");
+  el2d.disabled=true;
+  var el2e = document.getElementById("rotate");
+  el2e.disabled=true;
+  }
+}
 function anim_change()
 {
   var el3 = document.getElementById("shadow");
