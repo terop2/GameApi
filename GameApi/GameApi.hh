@@ -353,6 +353,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  HML load_zip2(EveryApi &ev, std::string zip_url);
+  HML load_zip_assets2(std::string zip_url);
   ML load_zip(EveryApi &ev, std::string zip_url);
   ML load_zip_assets(std::string zip_url);
   ML disable_matrices(EveryApi &ev, ML ml, int size);
