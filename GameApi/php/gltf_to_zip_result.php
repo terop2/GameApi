@@ -17,6 +17,13 @@ if ($ext == ".zip")
   $is_zip = "yes";
 }
 
+$pos = strrpos($gltf, '/');
+$gltf_filename = substr($gltf, $pos+1);
+
+$pos2 = strrpos($gltf_filename,'.');
+$without_ext = substr($gltf_filename,0,$pos2);
+$gltf_filename = $without_ext . "_html5.zip";
+
 
 $transparent = $_POST["transparent"];
 $zoom = $_POST["zoom"];
@@ -140,7 +147,7 @@ $res = str_contains($file3,"ALL OK");
 if ($res) {
 $file2 = file_get_contents("./pp2/tmp.zip");
 header("Content-Type: application/zip");
-header("Content-Disposition: attachment; filename=\"deploy.zip\"");
+header("Content-Disposition: attachment; filename=\"$gltf_filename\"");
 echo "$file2";
 } else {
   echo "<pre>$file3";
