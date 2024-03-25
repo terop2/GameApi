@@ -99,6 +99,11 @@ class VertexArrays : public CollectInterface
 {
 public:
   virtual ~VertexArrays() { }
+
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  
   virtual std::string enabled() const=0;
   virtual int Num(VertexArrayEnum i) const=0;
   virtual int NumIndices() const=0;

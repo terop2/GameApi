@@ -1540,6 +1540,9 @@ private:
   int prim_id;
 };
 
+
+
+
 class PrimRender : public MainLoopItem
 {
 public:
@@ -11128,14 +11131,16 @@ public:
 	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
 	if (is_dir) {
 	    char *filename = new char[256];
-	    *filename=0;
+	    for(int j=0;j<256;j++)
+	      filename[j]=0;
 	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
 	    //std::cout << "DIR:" << filename << std::endl;
 	    delete[] filename;
 	} else
 	  {
 	    char *filename = new char[256];
-	    *filename=0;
+	    for(int j=0;j<256;j++)
+	      filename[j]=0;
 	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
 	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; continue; }
 	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
@@ -11194,6 +11199,146 @@ private:
   bool firsttime;
   std::string mainfilename;
 };
+
+int find_indexhtml_string(std::string data, std::string str);
+
+extern std::vector<const unsigned char*> g_content;
+extern std::vector<const unsigned char*> g_content_end;
+extern std::vector<const char*> g_urls;
+
+
+class GameApi_Zip_loadassets : public MainLoopItem
+{
+public:
+  GameApi_Zip_loadassets(GameApi::Env &e, std::string zip_url, std::string homepage) : e(e), zip_url(zip_url), homepage(homepage){ firsttime=true; }
+  void Prepare() {
+    if (firsttime) {
+    UncompressZip();
+    firsttime=false;
+    }
+  }
+  void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  void HeavyPrepare() {
+    if (firsttime) {
+    UncompressZip();
+    firsttime=false;
+    }
+  }
+  void execute(MainLoopEnv &e) { }
+  void handle_event(MainLoopEvent &e) { }
+  
+  void UncompressZip()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(zip_url, homepage);
+#endif
+    GameApi::ASyncVec *vec = e.get_loaded_async_url(zip_url);
+    if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
+    std::vector<unsigned char> vec2(vec->begin(), vec->end());
+    mz_ulong size = vec2.end()-vec2.begin();
+    //mz_ulong size2 = 0;
+    //unsigned char *ptr = new unsigned char[size2];
+    //std::cout << "ZIP URL=" << zip_url << std::endl;
+    //std::cout << "VECTOR SIZE=" << size << std::endl;
+
+    
+    mz_zip_archive pZip;
+    std::memset(&pZip,0,sizeof(mz_zip_archive));
+
+    mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
+
+    //std::cout << "ZIP STATUS:" << b2 << std::endl;
+    
+    mz_uint num = mz_zip_reader_get_num_files(&pZip);
+    //std::cout << "ZIp num=" << num << std::endl;
+    for(int i=0;i<num;i++)
+      {
+	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
+	if (is_dir) {
+	    char *filename = new char[256];
+	    for(int j=0;j<256;j++)
+	      filename[j]=0;
+	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    //std::cout << "DIR:" << filename << std::endl;
+	    delete[] filename;
+	} else
+	  {
+	    char *filename = new char[256];
+	    for(int j=0;j<256;j++)
+	      filename[j]=0;
+	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; continue; }
+	    std::string url = /*"load_url.php?url=" + zip_url + "/" +*/ std::string(filename);
+	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
+	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") mainfilename = zip_url + "/" + std::string(filename);
+	    //std::cout << "Decompressing zip: " << filename << std::endl;
+
+	    //if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
+	    // delete [] filename;
+	    //  continue;
+	    //}
+	    
+	    size_t sz=0;
+	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
+	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    free(ptr);
+	    delete[] filename;
+
+	    // std::cout << url << "::" << data->size() << std::endl;
+	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
+	      delete g_del_map.load_url_buffers_async[url];
+	    }
+	    if (find_indexhtml_string(url,"/")==-1) {
+	      //std::cout << "URL:" << url << std::endl;
+	      g_del_map.load_url_buffers_async[url] = data;
+	      g_content.push_back(&data->operator[](0));
+	      g_content_end.push_back(&(*data->end()));
+	      char *buf = new char[url.size()+1];
+	      std::copy(url.begin(),url.end(),buf);
+	      buf[url.size()]=0;
+	      g_urls.push_back(buf);
+	      
+	    }
+	  }
+      }
+    mz_zip_reader_end(&pZip);
+    if (mainfilename!="")
+      {
+	/*
+	std::string mainfile1 = "";
+	int s = mainfilename.size();
+	int pos=-1;
+	for(int i=0;i<s;i++) {
+	  if (mainfilename[i]=='/') pos=i;
+	}
+	*/
+	/*
+	if (pos != -1) {       
+	  base_url = mainfilename.substr(0,pos+1);
+	} else {
+	  base_url = zip_url + "/";
+	}
+	url = mainfilename;
+	*/
+	//load->set_urls(base_url,url);
+      }
+    
+  }
+private:
+  GameApi::Env &e;
+  std::string zip_url;
+  std::string homepage;
+  //LoadGltf *load;
+  //tinygltf::Model *model;	       
+  bool firsttime;
+  std::string mainfilename;
+};
+
+GameApi::ML GameApi::MainLoopApi::load_zip_assets(std::string zip_url)
+{
+  return add_main_loop(e,new GameApi_Zip_loadassets(e,zip_url, gameapi_homepageurl));
+}
+
 /*
 class GLB_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
@@ -11294,6 +11439,128 @@ std::string get_zip_license_file(std::string zipfilename)
   }
   return "";
 }
+
+std::string get_zip_indexhtml_file(std::string zipfilename)
+{
+  std::string zip = fetch_more_data(zipfilename);
+  std::vector<unsigned char> vec2(zip.begin(),zip.end());
+  mz_ulong size = zip.end()-zip.begin();
+  mz_zip_archive pZip;
+  std::memset(&pZip,0,sizeof(mz_zip_archive));
+
+  mz_bool b2 = mz_zip_reader_init_mem(&pZip, &vec2[0], size, 0);
+
+  mz_uint num = mz_zip_reader_get_num_files(&pZip);
+  for(int i=0;i<num;i++) {
+    mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip,i);
+    if (is_dir) continue;
+    char *filename = new char[256];
+    *filename = 0;
+    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
+    if (strlen(filename)==0) continue;
+    std::string filename2(filename);
+
+    if (filename2=="index.html") {
+      size_t sz=0;
+      void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
+      std::string res = std::string((char*)ptr,((char*)ptr)+sz);
+      free(ptr);
+      delete [] filename;
+      return res;
+    } 
+    delete[] filename;
+  }
+  return "";
+}
+
+int find_indexhtml_string(std::string data, std::string str)
+{
+  int s = data.size();
+  s-=str.size();
+  int s2 = str.size();
+  for(int i=0;i<s;i++) {
+    bool found = true;
+    for(int j=0;j<s2;j++)
+      {
+	if (data[i+j] != str[j]) { found = false; break; }
+      }
+    if (found) {
+      return i+str.size();
+    }
+  }
+  return -1;
+}
+
+std::string parse_zip_indexhtml(std::string data)
+{
+  int pos1 = find_indexhtml_string(data, "<pre id=\"gameapi_script\" style=\"display:none\">");
+  if (pos1==-1) return "";
+  std::string data2 = data.substr(pos1);
+  int pos2 = find_indexhtml_string(data2, "</pre>");
+  if (pos2==-1) return "";
+  pos2-=std::string("</pre>").size();
+  return data.substr(pos1+1,pos2-1);
+}
+
+std::string replace_str(std::string val, std::string repl, std::string subst);
+
+bool load_zip(GameApi::Env &e, GameApi::EveryApi &ev, std::string url_to_zip)
+{
+  std::string index = get_zip_indexhtml_file(url_to_zip);
+  if (index=="") { return false; }
+
+  std::string parse = parse_zip_indexhtml(index);
+  if (parse=="") { return false; }
+  	  parse = replace_str(parse, "&lt;", "<");
+	  parse = replace_str(parse, "&gt;", ">");
+	  parse = replace_str(parse, "&quot;", "\"");
+	  parse = replace_str(parse, "&apos;", "\'");
+	  parse = replace_str(parse, "&amp;", "&");
+  GameApi::ExecuteEnv ee;
+  std::pair<int,std::string> blk = GameApi::execute_codegen(e,ev, parse, ee);
+  if (blk.second == "RUN") {
+    GameApi::RUN r;
+    r.id = blk.first;
+    ev.blocker_api.run2(ev,r);
+  } else if (blk.second=="OK")
+    {
+      GameApi::BLK b;
+      b.id = blk.first;
+      ev.blocker_api.run(b);
+    } else
+    {
+      std::cout << "ERROR: internal error" << std::endl;
+      return false;
+    }
+  return true;
+}
+
+
+
+class LoadZip : public MainLoopItem
+{
+public:
+  LoadZip(GameApi::Env &env, GameApi::EveryApi &ev, std::string zip_url) : env(env), ev(ev), zip_url(zip_url) { }
+  virtual void Collect(CollectVisitor &vis) {vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare(); }
+  virtual void Prepare() {
+    bool b = load_zip(env, ev, zip_url);
+  }
+  virtual void execute(MainLoopEnv &e) { } 
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string zip_url;
+};
+GameApi::ML GameApi::MainLoopApi::load_zip(EveryApi &ev, std::string zip_url)
+{
+  GameApi::ML ml1 = load_zip_assets(zip_url);
+  GameApi::ML ml2 = add_main_loop(e, new LoadZip(e,ev,zip_url));
+  return or_elem_ml(ev,ml1,ml2);
+}
+
 
 
 GameApi::TF GameApi::MainLoopApi::gltf_load_sketchfab_zip(std::string url_to_zip)

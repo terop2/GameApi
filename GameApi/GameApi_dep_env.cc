@@ -1671,7 +1671,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
-      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      //std::cout << "ASyncLoader::load_urls::" << remove_load(url) << " " << g_urls[i] << std::endl;
       if (remove_load(url)==g_urls[i]) { 
 	//std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
@@ -1992,7 +1992,7 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
   for(int i=0;i<u;i++)
     {
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
-      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      // std::cout << "get_loaded_data:" << remove_load(url) << " " << g_urls[i] << std::endl;
 
       if (remove_load(url)==std::string(g_urls[i])) { 
 	//std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
@@ -2729,7 +2729,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
   for(int i=0;i<u;i++)
     {
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
-      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      //std::cout << "LOADFROMURL:" << remove_load(url) << " " << g_urls[i] << std::endl;
       if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//load_from_url_del.item.push_back(vec);

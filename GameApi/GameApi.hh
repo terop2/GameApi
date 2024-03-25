@@ -353,6 +353,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML load_zip(EveryApi &ev, std::string zip_url);
+  ML load_zip_assets(std::string zip_url);
   ML disable_matrices(EveryApi &ev, ML ml, int size);
   ML hires_ml(EveryApi &ev, ML I3, int size, int numsamples, float blur_radius);
   ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
