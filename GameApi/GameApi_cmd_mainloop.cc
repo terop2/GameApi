@@ -5,6 +5,20 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip,
+			 "load_gameapi_zip",
+			 { "ev", "zip_url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://meshpage.org/assets/" },
+			 "ML", "mainloop_api", "load_zip"));
+  /*
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip_assets,
+			 "load_gameapi_zip_assets",
+			 { "zip_url" },
+			 { "std::string" },
+			 { "" },
+			 "ML", "mainloop_api", "load_zip_assets"));
+  */
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::hires_ml,
 			 "hires_ml",
 			 { "ev", "I3", "size", "numsamples", "blur_radius" },
