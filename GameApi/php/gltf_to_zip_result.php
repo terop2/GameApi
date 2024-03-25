@@ -27,11 +27,15 @@ $shadow = $_POST["shadow"];
 $anim = $_POST["anim"];
 $bigscreen = $_POST["bigscreen"];
 $large = $_POST["large"];
+$sketchfab = $_POST["sketchfab"];
 
-if ($is_zip=="yes")
+if ($is_zip=="yes" && $sketchfab=="sketchfab")
    $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
-else
+else if ($sketchfab=="sketchfab")
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
+if ($is_zip=="yes" && $sketchfab!="sketchfab") {
+   $file = "ML I8=ev.mainloop_api.load_zip(ev," . $gltf . ");\n";   
+} else {
 if ($shadow=="shadow") {
    if ($large!="large") {
       $file .= "P I20=ev.polygon_api.gltf_load(ev,I1,0,0);\n";
@@ -115,6 +119,7 @@ else
    $file .= "ML I7=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6});\n";
 
 $file .= "ML I8=ev.mainloop_api.async_gltf(I7,I1);\n";
+}
 $file .= "RUN I9=ev.blocker_api.game_window2(ev,I8,false,false,0.0,100000.0);\n";
 
 file_put_contents("./pp2/tmp.txt",$file);
