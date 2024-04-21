@@ -7,6 +7,8 @@ mkdir -p gameapi-builder_1.0-$1/usr/lib
 mkdir -p gameapi-builder_1.0-$1/usr/share
 mkdir -p gameapi-builder_1.0-$1/DEBIAN
 cp a.out gameapi-builder_1.0-$1/usr/bin/gameapi-builder
+cp ../cmdline/gameapi_cmdline gameapi-builder_1.0-$1/usr/bin/gameapi_cmdline
+cp ../deploytool/deploytool gameapi-builder_1.0-$1/usr/bin/gameapi_deploytool
 cp ../libGameApi.so gameapi-builder_1.0-$1/usr/lib/libGameApi.so
 strip gameapi-builder_1.0-$1/usr/bin/gameapi-builder
 strip gameapi-builder_1.0-$1/usr/lib/libGameApi.so
@@ -25,7 +27,7 @@ cp ../display/gameapi_3_seamless.html gameapi-builder_1.0-$1/usr/share/gameapi_3
 cp ../display/gameapi_display.zip gameapi-builder_1.0-$1/usr/share/gameapi_display.zip
 cp ../display/get_file_size.php gameapi-builder_1.0-$1/usr/share/get_file_size.php
 cp deploy.sh gameapi-builder_1.0-$1/usr/share/deploy.sh
-cp arrow.ppm gameapi-builder_1.0-$1/usr/share/arrow.ppm
+cp arrow.ppm gameapi-builder_1.0-$1/usr/share/arrow.pp
 cat control |sed s/25/$1/g >gameapi-builder_1.0-$1/DEBIAN/control
 fi
 if [[ ! $1 ]]; then
