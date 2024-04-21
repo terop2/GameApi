@@ -177,7 +177,7 @@ CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREET
 
 
 
-default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out
+default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
 
 
 check_compile:
@@ -271,6 +271,9 @@ CCWIN = i586-mingw32msvc-g++
 
 deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
 	@(cd deploytool; make -f Makefile)
+
+cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.so
+	@(cd cmdline; make -f Makefile)
 
 editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
 	@(cd editor; make -f Makefile.Linux LDFLAGS="$(LDFLAGS)")
