@@ -19849,12 +19849,12 @@ public:
     }
   }
   virtual std::string script_file() const {
-    std::cout << "GOT SCRIPT FILE:" << code << std::endl;
+    //std::cout << "GOT SCRIPT FILE:" << code << std::endl;
     if (code.size()<120) {
-      std::cout << "LOADING FROM URL: " << url << std::endl;
+      //std::cout << "LOADING FROM URL: " << url << std::endl;
       std::vector<unsigned char> *file = load_from_url(url);
       code=std::string(file->begin(), file->end());
-      std::cout << "GOT:" << code << std::endl;
+      //std::cout << "GOT:" << code << std::endl;
     }
     return code; }
   virtual std::string homepage() const { return homepage2; }
