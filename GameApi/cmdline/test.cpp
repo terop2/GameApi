@@ -292,9 +292,18 @@ int main(int argc, char *argv[]) {
 	    std::ifstream file(arg.c_str());
 	    std::string res;
 	    std::string line;
+	    std::string start;
+	    int pos =0;
 	    while(std::getline(file,line)) {
+	      std::stringstream ss(line);
+	      ss >> start;
 	      res+=line+"\n";
+	      if (start=="RUN" || start=="BLK") {
+		pos = res.size();
+	      }
 	    }
+	    if (pos==0) { std::cout << "RUN not found from the script" << std::endl; return 0; }
+	    res=res.substr(0,pos);
 	    code = insert_enter(strip_spaces(decode(res)));
 	  code = replace_str(code, "&lt;", "<");
 	  code = replace_str(code, "&gt;", ">");
