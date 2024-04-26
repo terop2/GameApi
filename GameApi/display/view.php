@@ -912,8 +912,8 @@ if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
     res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
   }
 }
-  res+="ML I503=ev.mainloop_api.depthmask(I5022,false);\n";
-  res+="ML I502=ev.mainloop_api.depthfunc(I503,3);\n";
+  res+="ML I503=ev.mainloop_api.depthmask(I5022,true);\n";
+  res+="ML I502=ev.mainloop_api.depthfunc(I503,0);\n";
   return res;
 }
 function parse_bg_count(bg)
