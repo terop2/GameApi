@@ -1,11 +1,13 @@
+
+
+#include "GameApi_h.hh"
+#include "GraphI.hh"
+#include "VectorTools.hh"
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_ENABLE_DRACO 1
 #define TINYGLTF_USE_CPP14 1
 #include "tiny_gltf.h"
 
-#include "GameApi_h.hh"
-#include "GraphI.hh"
-#include "VectorTools.hh"
 
 // not working because tinygltf doesn't allow it.
 //#define CONCURRENT_IMAGE_DECODE 1
