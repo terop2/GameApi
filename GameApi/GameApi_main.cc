@@ -3340,7 +3340,7 @@ GameApi::ML GameApi::MainLoopApi::depthmask(ML ml, bool b)
 class CullFace2 : public MainLoopItem
 {
 public:
-  CullFace2(MainLoopItem *next, bool b) : next(next),b(b) { }
+  CullFace2(MainLoopItem *next, bool b, bool is_gltf) : next(next),b(b),is_gltf(is_gltf) { }
   void Collect(CollectVisitor &vis) { next->Collect(vis); }
   void HeavyPrepare() { }
 
@@ -3350,7 +3350,11 @@ public:
     MainLoopEnv ee = e;
     if (b) {
       ogl->glEnable(Low_GL_CULL_FACE);
-      ogl->glFrontFace(Low_GL_CCW); // this is ccw because gltf models are odd
+      if (is_gltf) {
+	ogl->glFrontFace(Low_GL_CCW); // this is ccw because gltf models are odd
+      } else {
+	ogl->glFrontFace(Low_GL_CW); // this is ccw because gltf models are odd
+      }
       ee.cullface=true;
     } else {
       ogl->glDisable(Low_GL_CULL_FACE);
@@ -3368,6 +3372,7 @@ public:
 private:
   MainLoopItem *next;
   bool b;
+  bool is_gltf;
 };
 
 
@@ -3427,10 +3432,10 @@ private:
   int i,i2;
 };
 
-GameApi::ML GameApi::MainLoopApi::cullface(ML ml, bool b)
+GameApi::ML GameApi::MainLoopApi::cullface(ML ml, bool b, bool gltf)
 {
   MainLoopItem *next = find_main_loop(e,ml);
-  return add_main_loop(e, new CullFace2(next,b));
+  return add_main_loop(e, new CullFace2(next,b,gltf));
   
 }
 GameApi::ML GameApi::MainLoopApi::blendfunc(ML ml, int val, int val2)

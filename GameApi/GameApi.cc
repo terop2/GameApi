@@ -8848,7 +8848,7 @@ public:
 class ToonBorderMaterial : public MaterialForward
 {
 public:
-  ToonBorderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float border_width, unsigned int color) : e(e), ev(ev), next(next), border_width(border_width), color(color) { }
+  ToonBorderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float border_width, unsigned int color, bool is_gltf) : e(e), ev(ev), next(next), border_width(border_width), color(color),is_gltf(is_gltf) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::ML ml3;
@@ -8861,7 +8861,7 @@ public:
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
 
     //ml.id = next->mat(p2.id);
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8875,7 +8875,7 @@ public:
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8889,7 +8889,7 @@ public:
     //GameApi::ML ml;
     //ml.id = next->mat_inst_matrix(p2.id, ms.id);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_matrix(ev, p3, ms);
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8905,7 +8905,7 @@ public:
     GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8920,7 +8920,7 @@ public:
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p3, pts, flip, start_time, end_time);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml3,ml2});
 
   }
@@ -8932,6 +8932,7 @@ private:
   Material *next;
   float border_width;
   unsigned int color;
+  bool is_gltf;
 };
 EXPORT GameApi::MT GameApi::MaterialsApi::glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos)
 {
@@ -8944,10 +8945,10 @@ EXPORT GameApi::MT GameApi::MaterialsApi::water(EveryApi &ev, MT next, unsigned 
   return add_material(e, new WaterMaterial(e,ev,mat,color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult));
 }
 
-EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color)
+EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color, bool is_gltf)
 {
   Material *mat = find_material(e, next);
-  return add_material(e, new ToonBorderMaterial(e,ev,mat,border_width,color));
+  return add_material(e, new ToonBorderMaterial(e,ev,mat,border_width,color,is_gltf));
 }
 
 EXPORT GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
@@ -32466,7 +32467,7 @@ GameApi::P GameApi::PolygonApi::toon_outline(P p, float border_width)
 class CullFace : public MainLoopItem
 {
 public:
-  CullFace(MainLoopItem *item, bool b) : item(item), b(b) { }
+  CullFace(MainLoopItem *item, bool b, bool is_gltf) : item(item), b(b), is_gltf(is_gltf) { }
   void Collect(CollectVisitor &vis)
   {
     item->Collect(vis);
@@ -32477,10 +32478,17 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     OpenglLowApi *ogl = g_low->ogl;
-    if (b)
-      ogl->glCullFace(Low_GL_BACK);
-    else
-      ogl->glCullFace(Low_GL_FRONT);
+    if (is_gltf) {
+      if (b)
+	ogl->glCullFace(Low_GL_BACK);
+      else
+	ogl->glCullFace(Low_GL_FRONT);
+    } else {
+      if (b)
+	ogl->glCullFace(Low_GL_FRONT);
+      else
+	ogl->glCullFace(Low_GL_BACK);
+    }
     ogl->glEnable(Low_GL_CULL_FACE);
     item->execute(e);
     ogl->glDisable(Low_GL_CULL_FACE);
@@ -32494,11 +32502,12 @@ public:
 private:
   MainLoopItem *item;
   bool b;
+  bool is_gltf;
 };
-GameApi::ML GameApi::PolygonApi::cullface(ML ml, bool is_back)
+GameApi::ML GameApi::PolygonApi::cullface(ML ml, bool is_back, bool is_gltf)
 {
   MainLoopItem *item = find_main_loop(e,ml);
-  return add_main_loop(e, new CullFace(item, is_back));
+  return add_main_loop(e, new CullFace(item, is_back,is_gltf));
 }
 
 template<class T>

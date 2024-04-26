@@ -325,9 +325,9 @@
 			 "[MT]", "materials_api", "m_apply_phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::toon_border,
 			 "m_toon_border",
-			 { "ev", "next", "border_width", "border_color" },
-			 { "EveryApi&", "MT", "float", "unsigned int" },
-			 { "ev", "", "2.00", "ffffffff" },
+			 { "ev", "next", "border_width", "border_color", "is_gltf" },
+			 { "EveryApi&", "MT", "float", "unsigned int", "bool" },
+			 { "ev", "", "2.00", "ffffffff", "false" },
 			 "MT", "materials_api", "toon_border"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::edge,

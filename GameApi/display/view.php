@@ -899,11 +899,13 @@ function get_border(i,m,filename)
   var five = "";
   if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") five="5";
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  var gltf = ",false";
+  if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf=",true"; }
   if (anim_value==true) { 
-    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
+    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
      // res+="MT I501=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I505,cvbnmdfghjklertyuiop,0);\n";
       } else {
-    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
+    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
       }
 
 if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {

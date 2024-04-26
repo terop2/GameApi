@@ -666,7 +666,7 @@ public:
   ML depthfunc(ML ml, int val); 
   ML depthmask(ML ml, bool b);
   ML blendfunc(ML ml, int val, int val2);
-  ML cullface(ML ml, bool b);
+  ML cullface(ML ml, bool b, bool is_gltf);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
   ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
@@ -1600,7 +1600,7 @@ public:
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key, int mode);
   IMPORT MT gltf_anim_material2(EveryApi &e, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys,int mode);
-  IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color);
+  IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color, bool is_gltf);
   IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
   IMPORT MT skeletal(EveryApi &ev);
@@ -2612,7 +2612,7 @@ public:
   P convex_hull(PTS pts);
   P optimize_mesh(P p, float max);
   P toon_outline(P p, float border_width);
-  ML cullface(ML ml, bool b);
+  ML cullface(ML ml, bool b, bool is_gltf);
   P substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal);
   ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
   ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);
