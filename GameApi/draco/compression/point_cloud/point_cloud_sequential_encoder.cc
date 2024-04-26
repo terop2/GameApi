@@ -17,6 +17,8 @@
 #include "draco/compression/attributes/linear_sequencer.h"
 #include "draco/compression/attributes/sequential_attribute_encoders_controller.h"
 
+static int foobar302=0;
+
 namespace draco {
 
 Status PointCloudSequentialEncoder::EncodeGeometryData() {

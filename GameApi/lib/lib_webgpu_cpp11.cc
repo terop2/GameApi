@@ -3,6 +3,8 @@
 // Default initializers for WebGPU descriptors, using C++11 standard.
 // If you are using C++20, prefer to add lib_webgpu_cpp20.cpp instead to your project.
 
+static int foobar667=0;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

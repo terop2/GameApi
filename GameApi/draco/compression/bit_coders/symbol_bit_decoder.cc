@@ -2,6 +2,8 @@
 
 #include "draco/compression/entropy/symbol_decoding.h"
 
+static int foobar6=0;
+
 namespace draco {
 
 bool SymbolBitDecoder::StartDecoding(DecoderBuffer *source_buffer) {
