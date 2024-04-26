@@ -4544,9 +4544,9 @@ public:
     }
 
     if (m.doubleSided==true) {
-      I18 = ev.mainloop_api.cullface(I18,false);
+      I18 = ev.mainloop_api.cullface(I18,false,true);
     } else {
-      I18 = ev.mainloop_api.cullface(I18,true);
+      I18 = ev.mainloop_api.cullface(I18,true,true);
     }
     
     }
@@ -4611,9 +4611,9 @@ public:
       I18 = blendmainloop(e,I18,false);
       }
     if (m.doubleSided==true) {
-      I18 = ev.mainloop_api.cullface(I18,false);
+      I18 = ev.mainloop_api.cullface(I18,false, true);
     } else {
-      I18 = ev.mainloop_api.cullface(I18,true);
+      I18 = ev.mainloop_api.cullface(I18,true, true);
     }
 
     }
@@ -4677,9 +4677,9 @@ public:
       I18 = blendmainloop(e,I18,false);
     }
     if (m.doubleSided==true) {
-      I18 = ev.mainloop_api.cullface(I18,false);
+      I18 = ev.mainloop_api.cullface(I18,false, true);
     } else {
-      I18 = ev.mainloop_api.cullface(I18,true);
+      I18 = ev.mainloop_api.cullface(I18,true, true);
     }
     }
 
