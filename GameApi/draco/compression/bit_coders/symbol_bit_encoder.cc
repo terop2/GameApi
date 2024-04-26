@@ -2,6 +2,8 @@
 
 #include "draco/compression/entropy/symbol_encoding.h"
 
+static int foobar11=0;
+
 namespace draco {
 
 void SymbolBitEncoder::EncodeLeastSignificantBits32(int nbits, uint32_t value) {

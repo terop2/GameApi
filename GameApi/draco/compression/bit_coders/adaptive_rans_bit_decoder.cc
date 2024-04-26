@@ -16,6 +16,8 @@
 
 #include "draco/compression/bit_coders/adaptive_rans_bit_coding_shared.h"
 
+static int foobar2=0;
+
 namespace draco {
 
 AdaptiveRAnsBitDecoder::AdaptiveRAnsBitDecoder() : p0_f_(0.5) {}

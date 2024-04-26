@@ -23,10 +23,12 @@
 
 EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
 
-allopts = -O3 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -flto -s INLINING_LIMIT=1
+allopts = -DNO_THREADS -O3 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -flto -s INLINING_LIMIT=1
 # -Oz -gsplit-dwarf -gpubnames
 
-pthread_opts = -s USE_PTHREADS=1 -pthread
+yes_pthread_opts = -s USE_PTHREADS=1 -pthread
+no_pthread_opts = -DNO_THREADS
+pthread_opts = $(yes_pthread_opts)
 
 nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor -Wno-deprecated-volatile -Wno-implicit-const-int-float-conversion -Wno-overloaded-virtual -Wno-uninitialized -Wno-self-assign-field -Wno-writable-strings -Wno-delete-abstract-non-virtual-dtor -Wno-unused-result
 
@@ -115,10 +117,12 @@ draco/compression/attributes/kd_tree_attributes_encoder.cc \
 draco/metadata/geometry_metadata.cc  draco/metadata/metadata_encoder.cc       draco/metadata/property_table.cc     \
 draco/metadata/metadata.cc     \
 draco/metadata/metadata_decoder.cc          draco/metadata/structural_metadata.cc \
-draco/compression/attributes/attributes_decoder.cc \
-lib/lib_webgpu.cc \
-lib/lib_webgpu_cpp20.cc \
-webgpu.cc
+draco/compression/attributes/attributes_decoder.cc
+
+#lib/lib_webgpu.cc \
+#lib/lib_webgpu_cpp20.cc \
+#webgpu.cc
+
 
 DEBUGFILES = FreeType.cc FreeType2.cc GameApi_gui.cc GameApi.cc GameApi_bm.cc \
 	GameApi_pl.cc GameApi_trk.cc  GameApi_li.cc GameApi_main.cc \

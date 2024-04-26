@@ -16,6 +16,8 @@
 
 #include "draco/metadata/metadata_decoder.h"
 
+static int foobar103=0;
+
 namespace draco {
 
 PointCloudDecoder::PointCloudDecoder()

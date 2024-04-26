@@ -22,6 +22,8 @@
 #include "draco/core/bit_utils.h"
 #include "draco/core/macros.h"
 
+static int foobar33=0;
+
 namespace draco {
 
 constexpr int32_t kMaxTagSymbolBitLength = 32;

@@ -19,6 +19,8 @@
 #include "draco/compression/entropy/symbol_decoding.h"
 #include "draco/core/varint_decoding.h"
 
+static int foobar100=0;
+
 namespace draco {
 
 MeshSequentialDecoder::MeshSequentialDecoder() {}

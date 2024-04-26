@@ -1,5 +1,7 @@
 #include "lib_webgpu.h"
 
+static int foobar555=0;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

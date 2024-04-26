@@ -27,6 +27,8 @@
 #include "draco/compression/mesh/traverser/traverser_base.h"
 #include "draco/mesh/corner_table_iterators.h"
 
+static int foobar88=0;
+
 namespace draco {
 
 // Types of "free" edges that are used during topology decoding.

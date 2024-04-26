@@ -16,6 +16,8 @@
 
 #include "draco/compression/point_cloud/algorithms/point_cloud_types.h"
 
+static int foobar808=0;
+
 namespace draco {
 
 template class IntegerPointsKdTreeEncoder<Point3ui, 0>;

@@ -14,6 +14,8 @@
 //
 #include "draco/compression/attributes/prediction_schemes/prediction_scheme_encoder_factory.h"
 
+static int foobar=0;
+
 namespace draco {
 
 PredictionSchemeMethod SelectPredictionMethod(

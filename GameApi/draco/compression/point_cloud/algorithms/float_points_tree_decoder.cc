@@ -21,6 +21,8 @@
 #include "draco/core/math_utils.h"
 #include "draco/core/quantization_utils.h"
 
+static int foobar601=0;
+
 namespace draco {
 
 struct Converter {
