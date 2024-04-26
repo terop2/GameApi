@@ -8861,7 +8861,7 @@ public:
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
 
     //ml.id = next->mat(p2.id);
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8875,7 +8875,7 @@ public:
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8889,7 +8889,7 @@ public:
     //GameApi::ML ml;
     //ml.id = next->mat_inst_matrix(p2.id, ms.id);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_matrix(ev, p3, ms);
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8905,7 +8905,7 @@ public:
     GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8920,7 +8920,7 @@ public:
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p3, pts, flip, start_time, end_time);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml3,ml2});
 
   }
