@@ -62,8 +62,8 @@
 #endif
 #ifndef DEPS
 #ifdef SDL2_USED
-#include <SDL.h>
-#include <SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #else
 #include <SDL/SDL.h> 
 #include <SDL/SDL_opengl.h>
@@ -73,7 +73,7 @@
 //#include <SDL_mixer.h>
 
 #ifdef USE_MIX
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #endif
 #if 0
 #include <AudioService.h>

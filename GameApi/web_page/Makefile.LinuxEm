@@ -169,7 +169,7 @@ PTHREADOPT2 = $(PTHREADOPT)
 # --closure 1
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
 grow: ../libGameApi.bc
-	(cd ..;em++ $(ALLFLAGS)  -s FETCH=1  --use-preload-cache  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -I. -o web_page/web_page.js  -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1  -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
+	(cd ..;em++ $(ALLFLAGS)  -s FETCH=1  --use-preload-cache  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -o web_page/web_page.js  -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1  -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
 	 cp web_page.wasm web_page_lowmem.wasm
 	 cp web_page.data web_page_lowmem.data
 	 cp web_page.js web_page_lowmem.js

@@ -175,13 +175,13 @@ LIB4WIN = e:\cvs
 LIB5WIN = d:\cvs\SDL2_image-2.0.0\i686-w64-mingw32\lib
 LIB6WIN = d:\cvs\glew-1.10.0\lib
 LIB7WIN = d:\cvs\pthread\pre-built.2\lib\x86
-INC1WIN = d:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2
-INC2WIN = d:\cvs\glew-1.10.0/include
-INC3WIN = d:\cvs\SDL2_image-2.0.0/i686-w64-mingw32/include\sdl2
-INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
-INC5WIN = d:\cvs\freetype\include
-INC6WIN = d:\cvs\freetype\include\freetype2
-INC7WIN = d:\cvs\pthread\pre-built.2\include
+#INC1WIN = d:\cvs\SDL2-2.0.1\i686-w64-mingw32\include\sdl2
+#INC2WIN = d:\cvs\glew-1.10.0/include
+#INC3WIN = d:\cvs\SDL2_image-2.0.0/i686-w64-mingw32/include\sdl2
+#INC4WIN = d:\cvs\SDL2-2.0.1/i686-w64-mingw32/include/SDL2
+#INC5WIN = d:\cvs\freetype\include
+#INC6WIN = d:\cvs\freetype\include\freetype2
+#INC7WIN = d:\cvs\pthread\pre-built.2\include
 EMINC1 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include/SDL
 EMINC2 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include
 EMINC3 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include/freetype2
@@ -189,7 +189,7 @@ SDL_MIXER_MINI1 = sdl_mixer_mini/src
 SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
 #-fno-exceptions
-CFLAGS = $(allopts) -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+CFLAGS = $(allopts) -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
 CCFLAGS = $(allopts) -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
 CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
