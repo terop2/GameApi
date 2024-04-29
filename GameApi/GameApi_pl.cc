@@ -18620,7 +18620,7 @@ public:
 
   int map_point(int face, int point) const
   {
-    if (!is_clockwise(face)) return point;
+    if (is_clockwise(face)) return point;
     return coll->NumPoints(face)-point-1;
   }
 
@@ -22758,7 +22758,7 @@ public:
     next->handle_event(e);
     if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1 /*&& counter>3*/)
       {
-	zoom_pos--; if (zoom_pos<-5) zoom_pos=-5;
+	zoom_pos--; if (zoom_pos<-1) zoom_pos=-1;
 	calc_mat();
 	counter=0;
       }
@@ -22837,13 +22837,13 @@ public:
     next->handle_event(e);
     if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1 /*&& counter>3*/)
       {
-	zoom_pos--; if (zoom_pos<-20) zoom_pos=-20;
+	zoom_pos--; if (zoom_pos<-13) zoom_pos=-13;
 	calc_mat();
 	counter=0;
       }
     if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1 /*&& counter>3*/)
       {
-	zoom_pos++; if (zoom_pos>10) zoom_pos=10;
+	zoom_pos++; if (zoom_pos>5) zoom_pos=5;
 	calc_mat();
 	counter=0;
       }
@@ -22855,7 +22855,7 @@ public:
     float trans = 0.0;
     //if (zoom_pos<0) { scale-=0.18*(-zoom_pos); }
     //if (zoom_pos>0) { scale+=0.3*zoom_pos; }
-    if (zoom_pos<0) { trans-=800.0*(-zoom_pos); }
+    if (zoom_pos<0) { trans-=80.0*(-zoom_pos); }
     if (zoom_pos>0) { trans+=80.0*zoom_pos; }
     mat = Matrix::Translate(0.0,0.0,trans);
   }
