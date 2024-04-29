@@ -28468,7 +28468,7 @@ public:
     Program *prog = find_shader_program(env, sh_color);
     prog->use(); // 80.0, 10.1, 60000.0
     
-    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 60000.0);
+    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 1600.0);
     //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
     prog->set_var("in_P", m);
     ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);

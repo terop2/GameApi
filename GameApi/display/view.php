@@ -899,11 +899,12 @@ function get_border(i,m,filename)
   var five = "";
   if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") five="5";
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
   var gltf = ",false";
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf=",true"; }
   if (anim_value==true) { 
+     //res+="MT I5011=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I504,cvbnmdfghjklertyuiop,0);\n";
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
-     // res+="MT I501=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I505,cvbnmdfghjklertyuiop,0);\n";
       } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
       }
@@ -914,8 +915,8 @@ if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
     res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
   }
 }
-  res+="ML I503=ev.mainloop_api.depthmask(I5022,true);\n";
-  res+="ML I502=ev.mainloop_api.depthfunc(I503,0);\n";
+  res+="ML I503=ev.mainloop_api.depthmask(I5022,false);\n";
+  res+="ML I502=ev.mainloop_api.depthfunc(I503,3);\n";
   return res;
 }
 function parse_bg_count(bg)
@@ -1167,13 +1168,15 @@ function create_script(filename, contents, filenames)
   var brd = get_border_value();
 
 
-  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I155=ev.polygon_api.color_grayscale(I19);\n";
+  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I16=ev.polygon_api.fix_vertex_order(I19);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
   if (filename.substr(-4)==".obj") {
      if (mtl_name=="") {
-       res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n";
+       res+="P I122=ev.polygon_api.p_url(ev," + filename + ",350);\n";
+       res+="P I155=ev.polygon_api.fix_vertex_order(I122);\n";
        } else {
-       res+="P I155=ev.polygon_api.p_mtl(ev," + filename +"," + mtl_name +"," + base_dir + ",600);\n";
+       res+="P I122=ev.polygon_api.p_mtl(ev," + filename +"," + mtl_name +"," + base_dir + ",600);\n";
+       res+="P I155=ev.polygon_api.fix_vertex_order(I122);\n";
        }
      } else
   if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
