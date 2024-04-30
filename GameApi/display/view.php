@@ -873,7 +873,24 @@ function get_border_width(i)
   }
   return width;
 }
-function get_border(i,m,filename)
+function get_is_animated()
+{
+
+   var s = contents_array2.length;
+   for(var i=0;i<s;i++) {
+      var filename = filename_array[i];
+      if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
+      var contents = contents_array2[i];
+      let str = new TextDecoder().decode(contents);
+      return str.includes("\"animations\"");
+      }
+  }
+       
+     // TODO, how to handle zip files.
+  return false;
+}
+
+function get_border(i,m,filename,border_avoid)
 {
   var color = "000000";
   var width = "0";
@@ -883,7 +900,7 @@ function get_border(i,m,filename)
      width = parse_border_width(name2);
   }
 
-  var anim_value = true;
+  var anim_value = get_is_animated();
 
   var res = "";
   var variable = "I2";
@@ -897,7 +914,7 @@ function get_border(i,m,filename)
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   var five = "";
-  if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") five="5";
+  if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
   //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
   var gltf = ",false";
@@ -1158,7 +1175,6 @@ function create_script(filename, contents, filenames)
   var background = get_background(background_value);
 
   var border_value = get_border_value();
-  var border = get_border(border_value,material_value,filename);
 
   var anim_value = true;
 
@@ -1166,6 +1182,14 @@ function create_script(filename, contents, filenames)
   var border_color = "000000";
   var border_width = "1.0";
   var brd = get_border_value();
+  var border_avoid = false;
+
+  if (brd>=0 && brd<store.state.border_db.length) {
+     var name2 = store.state.border_db[brd];
+     border_color = parse_border_color(name2);
+     border_width = parse_border_width(name2);
+  }
+
 
 
   if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I16=ev.polygon_api.fix_vertex_order(I19);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
@@ -1188,9 +1212,11 @@ function create_script(filename, contents, filenames)
      if (normals_val!=3 && normals_val!=4)
      	{
 	if (anim_value==true) {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n"; // 0.75
+	border_avoid = true;
 	} else {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n"; // 0.75
+	border_avoid=true;
 	}
 	}
   } else
@@ -1201,9 +1227,11 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      }
      }
   } else
@@ -1214,9 +1242,11 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
      if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      }
      }
   } else
@@ -1224,6 +1254,8 @@ function create_script(filename, contents, filenames)
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
 
+
+  var border = get_border(border_value,material_value,filename,border_avoid);
 
   if (brd>=0 && brd<store.state.border_db.length) {
      var name2 = store.state.border_db[brd];
