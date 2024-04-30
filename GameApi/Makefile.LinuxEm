@@ -30,7 +30,7 @@ yes_pthread_opts = -s USE_PTHREADS=1 -pthread
 no_pthread_opts = -DNO_THREADS
 pthread_opts = $(yes_pthread_opts)
 
-nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor -Wno-deprecated-volatile -Wno-implicit-const-int-float-conversion -Wno-overloaded-virtual -Wno-uninitialized -Wno-self-assign-field -Wno-writable-strings -Wno-delete-abstract-non-virtual-dtor -Wno-unused-result
+nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor -Wno-deprecated-volatile -Wno-implicit-const-int-float-conversion -Wno-overloaded-virtual -Wno-uninitialized -Wno-self-assign-field -Wno-writable-strings -Wno-delete-abstract-non-virtual-dtor -Wno-unused-result -Wno-unused-command-line-argument
 
 CFiles=  GameApi_gltf.cc GameApi_diag.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
