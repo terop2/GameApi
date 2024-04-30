@@ -881,7 +881,11 @@ function get_is_animated()
       var filename = filename_array[i];
       if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
       var contents = contents_array2[i];
-      let str = new TextDecoder().decode(contents);
+      var length = contents.length;
+      var buffer = new ArrayBuffer( length );
+      var view = new Uint8Array(buffer);
+      for(var i=0;i<length;i++) { view[i] = contents[i]; }
+      let str = new TextDecoder().decode(buffer);
       return str.includes("\"animations\"");
       }
   }
