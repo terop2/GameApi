@@ -1448,10 +1448,14 @@ class TextureID
 {
 public:
   virtual ~TextureID() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual void render(MainLoopEnv &e)=0;
   virtual int texture() const=0;
   virtual bool is_fbo() const=0;
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 };
 
 class WorldSpec

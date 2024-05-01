@@ -65,6 +65,7 @@ enum
     Low_GL_TRUE, // glDepthMask
     Low_GL_TEXTURE_BINDING_2D, // glGetIntegerv
     Low_GL_RGBA, // glGetTexImage 3rd param, glReadPixels 5th param
+    Low_GL_RGB,
     Low_GL_SCISSOR_TEST, // glEnable/glDisable
     Low_GL_FRAMEBUFFER_COMPLETE, // glCheckFramebufferStatus return value
     Low_GL_NEAREST, // glTexParameteri 3rd param

@@ -6280,22 +6280,30 @@ public:
   ForwardRenderToTextureId(VertexArraySet *s, MainLoopItem *next, TextureID *id) : s(s), next(next), id(id) { }
   void Collect(CollectVisitor &vis)
   {
+    id->Collect(vis);
     next->Collect(vis);
   }
   void HeavyPrepare() { }
-  void Prepare() { next->Prepare(); }
+  void Prepare() { id->Prepare(); next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     id->render(e);
-    s->texture_id = SPECIAL_TEX_ID+id->texture();
+    int ss = s->texture_id;
+    s->texture_id = SPECIAL_TEX_ID+ id->texture();
     next->execute(e);
+    s->texture_id = ss;
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     id->handle_event(e);
     next->handle_event(e);
   }
-  std::vector<int> shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() {
+    std::vector<int> v = id->shader_id();
+    std::vector<int> v2 = next->shader_id();
+    int s = v2.size();
+    for(int i=0;i<s;i++) v.push_back(v2[i]);
+    return v; }
   //virtual int shader_id() { return next->shader_id(); }
 
 private:
@@ -32447,21 +32455,75 @@ GameApi::PTS GameApi::MainLoopApi::whack_a_mole_explosion(GameApi::EveryApi &ev)
 class ToonOutlineFaceCollection : public ForwardFaceCollection
 {
 public:
-  ToonOutlineFaceCollection(FaceCollection *coll, float border_width) : ForwardFaceCollection(*coll), coll(coll),border_width(border_width) { }
+  ToonOutlineFaceCollection(FaceCollection *coll, float border_width) : ForwardFaceCollection(*coll), coll(coll),border_width(border_width) { div=1.0; }
   void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+
+    max_x=-10000.0;
+    min_x=10000.0;
+    max_y=-10000.0;
+    min_y=10000.0;
+    max_z=-10000.0;
+    min_z=10000.0;
+    int s = coll->NumFaces();
+    if (s>100) s=100;
+    int step=1;
+    if (s==100) step=coll->NumFaces()/100;
+    for(int i=0;i<s;i+=step)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++) {
+	  Point p = coll->FacePoint(i,0);
+	  if (p.x>max_x) max_x=p.x;
+	  if (p.y>max_y) max_y=p.y;
+	  if (p.z>max_z) max_z=p.z;
+	  if (p.x<min_x) min_x=p.x;
+	  if (p.y<min_y) min_y=p.y;
+	  if (p.z<min_z) min_z=p.z;
+	}
+      }
+    if (s<1) {
+      Point p = { 0.0,0.0,0.0 };
+	  if (p.x>max_x) max_x=p.x;
+	  if (p.y>max_y) max_y=p.y;
+	  if (p.z>max_z) max_z=p.z;
+	  if (p.x<min_x) min_x=p.x;
+	  if (p.y<min_y) min_y=p.y;
+	  if (p.z<min_z) min_z=p.z;
+    }
+    div =400.0*(1.0/fabs(std::max(std::max(max_x-min_x,max_y-min_y),max_z-min_z)));
+    //if (div>=1799.0) div=1799.0;
+    if (div<=1.0) div=1.0;
+    //std::cout << "MINMAX_x:" << min_x << " " << max_x << std::endl;
+    //std::cout << "MINMAX_y:" << min_y << " " << max_y << std::endl;
+    //std::cout << "MINMAX_z:" << min_z << " " << max_z << std::endl;
+    //std::cout << "DIV:" << div << std::endl;
+  }
+  void Prepare() {
+    coll->Prepare();
+    HeavyPrepare();    
+  }
   virtual Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
     Vector v = coll->PointNormal(face,point);
-    v/=v.Dist();
+    //v/=v.Dist();
+    if (div>=0.1) {
+      v/=div;
+      v*=2.0;
+    }
     p += v*border_width;
     return p;
   }
 private:
   FaceCollection *coll;
   float border_width;
+  float max_x, max_y, max_z;
+  float min_x, min_y, min_z;
+  float div;
 };
 GameApi::P GameApi::PolygonApi::toon_outline(P p, float border_width)
 {

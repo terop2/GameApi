@@ -960,6 +960,35 @@ EXPORT void GameApi::MainLoopApi::finish()
   OpenglLowApi *ogl = g_low->ogl;
   ogl->glFinish();
 }
+EXPORT void GameApi::MainLoopApi::check_glerrors(std::string context)
+{
+
+  OpenglLowApi *ogl = g_low->ogl;
+  int e = -1;
+  MainLoopPriv *pp = (MainLoopPriv*)priv;
+  int i = 0;
+  while(i<100&& ((e=ogl->glGetError()) != 0)) {
+    i++;
+    if (e!=0 && e != pp->last_error)
+      {
+	std::string error="";
+	switch(e) {
+	case 0x500: error="GL_INVALID_ENUM"; break;
+	case 0x501: error="GL_INVALID_VALUE"; break;
+	case 0x502: error="GL_INVALID_OPERATION"; break;
+	case 0x503: error="GL_STACK_OVERFLOW"; break;
+	case 0x504: error="GL_STACK_UNDERFLOW"; break;
+	case 0x505: error="GL_OUT_OF_MEMORY"; break;
+	case 0x506: error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+	case 0x507: error="GL_CONTEXT_LOST"; break;
+	case 0x8031: error="GL_TABLE_TOO_LARGE"; break;
+	};
+	pp->last_error = e;
+	std::cout << context << ":"<< std::hex << e << ":" << error << std::endl;
+      }
+  }
+  
+}
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
 #if 0

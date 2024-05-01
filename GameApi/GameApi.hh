@@ -353,6 +353,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  void check_glerrors(std::string context);
   HML load_zip2(EveryApi &ev, std::string zip_url);
   HML load_zip_assets2(std::string zip_url);
   ML load_zip(EveryApi &ev, std::string zip_url);
@@ -4081,7 +4082,7 @@ class FrameBufferApi
 public:
   struct vp { int viewport[4]; };
   IMPORT FrameBufferApi(Env &e) : e(e) { }
-  IMPORT FBO create_fbo(int sx, int sy);
+  IMPORT FBO create_fbo(EveryApi &ev, int sx, int sy);
   IMPORT void config_fbo(FBO buffer);
   IMPORT vp bind_fbo(FBO buffer);
   IMPORT void bind_screen(vp viewport);
