@@ -13300,7 +13300,7 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   //ev.mainloop_api.switch_to_3d(true, sh, screen_width, screen_height);
   ogl->glEnable(Low_GL_DEPTH_TEST);
  
- FBO fbo = ev.fbo_api.create_fbo(sx,sy);
+  FBO fbo = ev.fbo_api.create_fbo(ev,sx,sy);
   ev.fbo_api.config_fbo(fbo);
   GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
 
