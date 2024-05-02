@@ -32461,7 +32461,8 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
-
+#if 0
+    
     max_x=-10000.0;
     min_x=10000.0;
     max_y=-10000.0;
@@ -32501,6 +32502,7 @@ public:
     //std::cout << "MINMAX_y:" << min_y << " " << max_y << std::endl;
     //std::cout << "MINMAX_z:" << min_z << " " << max_z << std::endl;
     //std::cout << "DIV:" << div << std::endl;
+#endif
   }
   void Prepare() {
     coll->Prepare();
@@ -32510,11 +32512,11 @@ public:
   {
     Point p = coll->FacePoint(face,point);
     Vector v = coll->PointNormal(face,point);
-    //v/=v.Dist();
-    if (div>=0.1) {
-      v/=div;
-      v*=2.0;
-    }
+    v/=v.Dist();
+    //if (div>=0.1) {
+    //  v/=div;
+    //  v*=2.0;
+    //}
     p += v*border_width;
     return p;
   }

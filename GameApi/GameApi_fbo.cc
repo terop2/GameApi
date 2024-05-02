@@ -79,7 +79,7 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
 
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
   ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, priv->texture, 0);
-  //ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, priv->depthbuffer,0);
+  ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, priv->depthbuffer,0);
   
   /*
   int ii = Low_GL_COLOR_ATTACHMENT0;
@@ -181,7 +181,7 @@ public:
 class FBOTextureID : public TextureID
 {
 public:
-  FBOTextureID(GameApi::EveryApi &ev, MainLoopItem *item, int sx, int sy, bool translate, bool is_depth) : ev(ev), item(item), sx(sx), sy(sy),translate(translate), is_depth(is_depth)
+  FBOTextureID(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *item, int sx, int sy, bool translate, bool is_depth) : env(env), ev(ev), item(item), sx(sx), sy(sy),translate(translate), is_depth(is_depth)
   {
     firsttime2=true;
     firsttime=true;
@@ -228,7 +228,7 @@ public:
     }
 
     
-    std::cout << sx << " " << sy << std::endl;
+    // std::cout << sx << " " << sy << std::endl;
     fbo = ev.fbo_api.create_fbo(ev,sx,sy);
     ev.mainloop_api.check_glerrors("create_fbo");
     ev.fbo_api.config_fbo(fbo);
@@ -255,7 +255,7 @@ public:
     //ogl->glGetIntegerv(Low_GL_TEXTURE_BINDING_2D, &id2);
     //ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
     GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
-    ogl->glClearColor(0.0,0.0,1.0,1.0);
+    ogl->glClearColor(0.0,0.0,0.0,1.0);
     ogl->glClear( Low_GL_COLOR_BUFFER_BIT| Low_GL_DEPTH_BUFFER_BIT);
     ogl->glEnable(Low_GL_DEPTH_TEST);
     //ogl->glDepthFunc(Low_GL_LESS);
@@ -292,6 +292,49 @@ public:
       ee.env = Matrix::Identity();
       }
 
+
+    if (shader.id==-1 && e.us_vertex_shader!=-1 && e.us_fragment_shader!=-1)
+      {
+	GameApi::US vertex;
+	GameApi::US fragment;
+	vertex.id = e.us_vertex_shader;
+	fragment.id = e.us_fragment_shader;
+	if (e.sfo_id==-1)
+	  {
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+	  }
+	else
+	  {
+	    GameApi::SFO sfo;
+	    sfo.id = e.sfo_id;
+	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
+	  }
+	ev.mainloop_api.init_3d(shader);
+	ev.mainloop_api.alpha(true); 
+
+      }
+
+    
+    if (shader.id!=-1)
+      {
+    GameApi::M m = add_matrix2( env, ee.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, ee.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, ee.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, ee.in_P);
+	ev.shader_api.use(shader);
+	ev.shader_api.set_var(shader, "in_MV", m);
+	if (ee.has_inverse) {
+	  GameApi::M m4 = add_matrix2(env, ee.in_iMV);	  
+	  ev.shader_api.set_var(shader, "in_iMV", m4);
+	} else
+	  ev.shader_api.set_var(shader, "in_iMV", ev.matrix_api.transpose(ev.matrix_api.inverse(m)));
+
+	ev.shader_api.set_var(shader, "in_T", m1);
+	ev.shader_api.set_var(shader, "in_P", m3);
+	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "time", e.time);
+      }
+    
     //#ifndef EMSCRIPTEN
     //ogl->glDisable(Low_GL_MULTISAMPLE);
     //#endif
@@ -312,7 +355,7 @@ public:
 
     FBOPriv *priv = find_fbo(ev.get_env(), fbo);
     if (priv==0) return 0;
-    std::cout << "ID=" << std::dec << priv->texture << std::endl;
+    //std::cout << "ID=" << std::dec << priv->texture << std::endl;
   ogl->glBindTexture(Low_GL_TEXTURE_2D, priv->texture);
     return priv->texture;
   /*
@@ -321,6 +364,7 @@ public:
   */
   }
 private:
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   MainLoopItem *item;
   GameApi::FBO fbo;
@@ -330,16 +374,17 @@ private:
   bool firsttime2;
   bool translate;
   bool is_depth;
+  GameApi::SH shader = { -1 };
 };
 GameApi::TXID GameApi::FrameBufferApi::fbo_ml(EveryApi &ev, GameApi::ML mainloop, int sx, int sy, bool translate)
 {
   MainLoopItem *ml = find_main_loop(e, mainloop);
-  return add_txid(e, new FBOTextureID(ev,ml,sx,sy, translate, false));
+  return add_txid(e, new FBOTextureID(e,ev,ml,sx,sy, translate, false));
 }
 GameApi::TXID GameApi::FrameBufferApi::depth_ml(EveryApi &ev, GameApi::ML mainloop, int sx, int sy, bool translate)
 {
   MainLoopItem *ml = find_main_loop(e, mainloop);
-  return add_txid(e, new FBOTextureID(ev,ml,sx,sy, translate, true));
+  return add_txid(e, new FBOTextureID(e,ev,ml,sx,sy, translate, true));
 }
 class FBOML : public MainLoopItem
 {
