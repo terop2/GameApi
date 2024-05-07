@@ -175,14 +175,12 @@ void ArrayRender::UpdateAllTextures(MeshTextures &tex)
 #ifndef ARM
 #ifdef THREADS
 
+void *(*g_thread_func_bitmap)(void *data);
 
 void *thread_func_bitmap(void* data);
-void *thread_func_bitmap(void *data)
+void *thread_func_bitmap2(void* data)
 {
-  ThreadInfo_bitmap *ti = (ThreadInfo_bitmap*)data;
-  ti->buffer->Gen(ti->start_x, ti->end_x, ti->start_y, ti->end_y);
-  //pthread_exit(NULL);
-  return 0;
+  return g_thread_func_bitmap(data);
 }
 
 int ThreadedUpdateTexture::push_thread(BufferFromBitmap* bm, int start_x, int end_x, int start_y, int end_y)
@@ -200,7 +198,7 @@ int ThreadedUpdateTexture::push_thread(BufferFromBitmap* bm, int start_x, int en
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     pthread_attr_setstacksize(&attr, 3000000);
-    pthread_create(&info->thread_id, &attr, &thread_func_bitmap, (void*)info);
+    pthread_create(&info->thread_id, &attr, &thread_func_bitmap2, (void*)info);
     pthread_attr_destroy(&attr);
     return buffers.size()-1;
   }
