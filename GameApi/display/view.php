@@ -9,15 +9,21 @@ include("backend.php");
 $date = filemtime("web_page_highmem.js");
 
 $machine=php_uname("n");
-if ($machine=="terop-pc") {
-   $site = "https://meshpage.org";
-   $assetsite = "https://tpgames.org";
+$siteprefix = "";
+if ($machine=="terop-pc2") {
+   $site = "meshpage.org";
+   $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   if ("$siteprefix"!="ssh.") $siteprefix="";   
    } else {
    $site = "https://dinoengine.com";
    $assetsite = "https://dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
    }
+   $site = "https://" . $siteprefix . $site;
+   $assetsite = "https://" . $siteprefix . $assetsite;
 
 
 function unhash($data)
@@ -822,10 +828,10 @@ function get_model(i)
       model = "<?php echo $assetsite ?>/" + name;
    }
 
-   //if (i==0) model="https://tpgames.org/wooly_sheep.stl";
-   //if (i==1) model="https://tpgames.org/BoomBox.glb";
-   //if (i==2) model="https://tpgames.org/Duck.glb";
-   //if (i==3) model="https://tpgames.org/Astronaut.glb";
+   //if (i==0) model="https://meshpage.org/assets/wooly_sheep.stl";
+   //if (i==1) model="https://meshpage.org/assets/BoomBox.glb";
+   //if (i==2) model="https://meshpage.org/assets/Duck.glb";
+   //if (i==3) model="https://meshpage.org/assets/Astronaut.glb";
    return model;
 }
 function get_normals_value()
@@ -867,7 +873,28 @@ function get_border_width(i)
   }
   return width;
 }
-function get_border(i,m,filename)
+function get_is_animated()
+{
+
+   var s = contents_array2.length;
+   for(var i=0;i<s;i++) {
+      var filename = filename_array[i];
+      if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
+      var contents = contents_array2[i];
+      var length = contents.length;
+      var buffer = new ArrayBuffer( length );
+      var view = new Uint8Array(buffer);
+      for(var i=0;i<length;i++) { view[i] = contents[i]; }
+      let str = new TextDecoder().decode(buffer);
+      return str.includes("\"animations\"");
+      }
+  }
+       
+     // TODO, how to handle zip files.
+  return false;
+}
+
+function get_border(i,m,filename,border_avoid)
 {
   var color = "000000";
   var width = "0";
@@ -877,7 +904,7 @@ function get_border(i,m,filename)
      width = parse_border_width(name2);
   }
 
-  var anim_value = true;
+  var anim_value = get_is_animated();
 
   var res = "";
   var variable = "I2";
@@ -891,13 +918,16 @@ function get_border(i,m,filename)
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   var five = "";
-  if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") five="5";
+  if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
+  var gltf = ",false";
+  if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf=",true"; }
   if (anim_value==true) { 
-    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
-     // res+="MT I501=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I505,cvbnmdfghjklertyuiop,0);\n";
+     //res+="MT I5011=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I504,cvbnmdfghjklertyuiop,0);\n";
+    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
       } else {
-    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + ");\n";
+    res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
       }
 
 if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
@@ -1149,7 +1179,6 @@ function create_script(filename, contents, filenames)
   var background = get_background(background_value);
 
   var border_value = get_border_value();
-  var border = get_border(border_value,material_value,filename);
 
   var anim_value = true;
 
@@ -1157,15 +1186,25 @@ function create_script(filename, contents, filenames)
   var border_color = "000000";
   var border_width = "1.0";
   var brd = get_border_value();
+  var border_avoid = false;
+
+  if (brd>=0 && brd<store.state.border_db.length) {
+     var name2 = store.state.border_db[brd];
+     border_color = parse_border_color(name2);
+     border_width = parse_border_width(name2);
+  }
 
 
-  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I155=ev.polygon_api.color_grayscale(I19);\n";
+
+  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I19=ev.polygon_api.color_from_normals(I18);\nP I16=ev.polygon_api.fix_vertex_order(I19);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
   if (filename.substr(-4)==".obj") {
      if (mtl_name=="") {
-       res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n";
+       res+="P I122=ev.polygon_api.p_url(ev," + filename + ",350);\n";
+       res+="P I155=ev.polygon_api.fix_vertex_order(I122);\n";
        } else {
-       res+="P I155=ev.polygon_api.p_mtl(ev," + filename +"," + mtl_name +"," + base_dir + ",600);\n";
+       res+="P I122=ev.polygon_api.p_mtl(ev," + filename +"," + mtl_name +"," + base_dir + ",600);\n";
+       res+="P I155=ev.polygon_api.fix_vertex_order(I122);\n";
        }
      } else
   if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
@@ -1177,9 +1216,11 @@ function create_script(filename, contents, filenames)
      if (normals_val!=3 && normals_val!=4)
      	{
 	if (anim_value==true) {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.90,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n"; // 0.75
+	border_avoid = true;
 	} else {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.90,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n"; // 0.75
+	border_avoid=true;
 	}
 	}
   } else
@@ -1190,9 +1231,11 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      }
      }
   } else
@@ -1203,9 +1246,11 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
      if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I154,0.9,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I154,0.9,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ");\n";
+     border_avoid=true;
      }
      }
   } else
@@ -1213,6 +1258,8 @@ function create_script(filename, contents, filenames)
 	res+="P I155=ev.polygon_api.cube(-300,300,-300,300,-300,300);\n";
 	}
 
+
+  var border = get_border(border_value,material_value,filename,border_avoid);
 
   if (brd>=0 && brd<store.state.border_db.length) {
      var name2 = store.state.border_db[brd];
@@ -1227,8 +1274,8 @@ if (normals_val==3)
 res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 res+="LI I433=ev.lines_api.from_polygon(I1);\n";
   res+="ML I665=ev.polygon_api.line_to_cone3(ev,I433," + border_width/2 + ",5,I4,ff" + border_color + ");\n"
-res+="ML I66=ev.mainloop_api.depthfunc(I665,0);\n";
-res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
+res+="ML I767=ev.mainloop_api.depthfunc(I665,0);\n";
+res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
 
   } else
   if (normals_val==4)
@@ -1258,8 +1305,8 @@ res+="ML I156=ev.materials_api.bind(I145,I199);\n"
 
 res+="ML I665=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
 res+="ML I666=ev.mainloop_api.depthmask(I665,true);\n";
-res+="ML I66=ev.mainloop_api.depthfunc(I666,0);\n";
-res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
+res+="ML I767=ev.mainloop_api.depthfunc(I666,0);\n";
+res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   } else {
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 
@@ -1299,7 +1346,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I66});\n"
 
 
   res+="ML I64=ev.mainloop_api.depthmask(I63,true);\n";
-res+="ML I6=ev.mainloop_api.depthfunc(I64,0);\n";
+res+="ML I6=ev.mainloop_api.depthfunc(I64,3);\n";
  
   //console.log(material_value);
   //console.log(border_value);
@@ -1330,12 +1377,13 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
       res+=border; // outputs I502
   }
 
-
-  res+="ML I66=ev.mainloop_api.array_ml(ev,std::vector<ML>{I502,I6});\n";
-   }
+  // I502
+  res+="ML I767=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I502});\n";
+}
 
   if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
-    res+="ML I88=ev.mainloop_api.async_gltf(I66,I154);\n";
+    res+="ML I67=ev.mainloop_api.android_resize(ev,I767,1.0);\n";
+    res+="ML I88=ev.mainloop_api.async_gltf(I67,I154);\n";
     res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
     res+="ML I800=ev.mainloop_api.touch_rotate(ev,I89,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
@@ -1343,8 +1391,9 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
 
 
   } else {
-    res+="ML I67=ev.mainloop_api.mouse_roll_zoom2(ev,I66);\n";
-    res+="ML I800=ev.mainloop_api.touch_rotate(ev,I67,true,true,0.01,0.01);\n";
+    res+="ML I67=ev.mainloop_api.android_resize(ev,I767,1.0);\n";
+    res+="ML I68=ev.mainloop_api.mouse_roll_zoom2(ev,I67);\n";
+    res+="ML I800=ev.mainloop_api.touch_rotate(ev,I68,true,true,0.01,0.01);\n";
     res+="ML I8=ev.mainloop_api.disable_polygons(I800);\n";
 
 
@@ -1360,7 +1409,9 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
   variable="I15";
   }
   
-  res+="RUN I10=ev.blocker_api.game_window2(ev," + variable + ",false,false,0.0,1000000.0);\n";
+ // 
+//res+="ML I11=ev.mainloop_api.hires_ml(ev," + variable + ", 4096);\n";
+  res+="RUN I12=ev.blocker_api.game_window2(ev," + variable + ",false,false,0.0,1000000.0);\n";
 
 
 return res;  
@@ -2241,7 +2292,7 @@ function submitprogressbar(i)
 	   console.log(num);*/
 	   console.log("URLID:");
 	     console.log(g_url_id);
-	   prog.innerHTML = "<a href='view.php?id=" + hash(g_url_id) + "'>https://meshpage.org/view.php?id=" + hash(g_url_id) + "</a>";
+	   prog.innerHTML = "<a href='<?php echo $site ?>/view.php?id=" + hash(g_url_id) + "'><?php echo $site ?>/view.php?id=" + hash(g_url_id) + "</a>";
 /*	   }); });*/
 	   
    }
@@ -2264,7 +2315,7 @@ function formsubmit()
   data.append("num",-1);
   var xhr = new XMLHttpRequest();
   //xhr.responseType = 'arraybuffer';
-  xhr.open('POST','https://ssh.meshpage.org/submit_contents.php', false);
+  xhr.open('POST','<?php echo $site ?>/submit_contents.php', false);
 
   var submitprogress = 0;
 
@@ -2320,7 +2371,7 @@ function formsubmit()
   		   data.append("num",i);
   		   var xhr2 = new XMLHttpRequest();
 		   xhr2.responseType = 'arraybuffer';
-  		   xhr2.open('POST','https://ssh.meshpage.org/submit_contents.php', true);	
+  		   xhr2.open('POST','<?php echo $site ?>/submit_contents.php', true);	
 		   submitprogressbar(0);
 		   xhr2.onload = function()
 		   {

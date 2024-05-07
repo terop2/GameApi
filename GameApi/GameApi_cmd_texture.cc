@@ -2,10 +2,10 @@
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
 
-std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
-std::vector<GameApiItem*> blocker_functions();
+std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> textureapi_functions();
 std::vector<GameApiItem*> volumeapi_functions();
 std::vector<GameApiItem*> floatvolumeapi_functions();
@@ -92,9 +92,9 @@ std::vector<GameApiItem*> textureapi_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::to_bitmap,
 			 "tx_to_bitmap",
-			 { "txid" },
-			 { "TXID" },
-			 { "" },
+			 { "ev", "txid" },
+			 { "EveryApi&", "TXID" },
+			 { "ev","" },
 			 "BM", "texture_api", "to_bitmap"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::fbo_api, &GameApi::FrameBufferApi::fbo_ml,

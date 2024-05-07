@@ -1,0 +1,42 @@
+
+To download the repo, just use:
+  git clone https://github.com/terop2/GameApi.git
+  
+Dependent packages (ubuntu):
+  apt-get install libsdl2-dev
+  apt-get install libfreetype6-dev
+  apt-get install libsdl2-mixer-dev
+  apt-get install libglew-dev
+  apt-get install curl
+  apt-get install libstdc++0
+  apt-get install libc6
+  apt-get install libgcc-s1
+  apt-get install unzip
+  apt-get install zip
+  apt-get install tar
+
+Choose correct directory:
+   cd GameApi
+
+To compile (linux):
+   make -j 8
+
+To compile (emscripten):
+  ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
+
+To compile (windows):
+  set_paths_git.bat
+  make.bat
+
+Running the software:
+  cd editor
+  ./a.out
+
+
+Important urls:
+  https://meshpage.org                  (main web site)
+  https://meshpage.org/meshpage_4       (download newest builder tool binaries)
+  https://meshpage.org/view.php         (3d model viewer)
+  https://meshpage.org/gltf_to_zip.php  (gltf to html5 zip converter)
+  https://meshpage.org/meshpage_5       (FAQ)
+  

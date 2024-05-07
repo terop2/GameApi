@@ -18,6 +18,8 @@
 #include "draco/compression/mesh/mesh_edgebreaker_traversal_predictive_decoder.h"
 #include "draco/compression/mesh/mesh_edgebreaker_traversal_valence_decoder.h"
 
+static int foobar66=0;
+
 namespace draco {
 
 MeshEdgebreakerDecoder::MeshEdgebreakerDecoder() {}

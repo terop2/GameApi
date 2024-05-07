@@ -1,17 +1,53 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
-std::vector<GameApiItem*> blocker_functions()
+std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::ml_empty,
+			 "ml_empty",
+			 { },
+			 { },
+			 { },
+			 "ML", "mainloop_api", "ml_empty")); 
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip2,
+			 "load_gameapi_zip2",
+			 { "ev", "zip_url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://meshpage.org/assets/" },
+			 "HML", "mainloop_api", "load_zip2"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip,
+			 "load_gameapi_zip",
+			 { "ev", "zip_url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "https://meshpage.org/assets/" },
+			 "ML", "mainloop_api", "load_zip"));
+  /*
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_zip_assets,
+			 "load_gameapi_zip_assets",
+			 { "zip_url" },
+			 { "std::string" },
+			 { "" },
+			 "ML", "mainloop_api", "load_zip_assets"));
+  */
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::hires_ml,
+			 "hires_ml",
+			 { "ev", "I3", "size", "numsamples", "blur_radius" },
+			 { "EveryApi&", "ML", "int", "int", "float" },
+			 { "ev", "", "8192", "320", "0.001" },
+			 "ML", "mainloop_api", "hires_ml"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_start,
-			 "t_start",
-			 { },
-			 { },
-			 { },
-			 "TT", "mainloop_api", "timing_start"));
+  			 "t_start",
+  			 { },
+  			 { },
+  			 { },
+  			 "TT", "mainloop_api", "timing_start"));
+  
+
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing,
+
 			 "t_time",
 			 { "duration", "link", "show" },
 			 { "float", "TT", "ML" },
@@ -35,7 +71,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "html_url",
 			 { "url" },
 			 { "std::string" },
-			 { "http://tpgames.org/blob_p.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "http://meshpage.org/assets/blob_p.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "HML", "mainloop_api", "html_url"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_script,
 			 "save_html",
@@ -47,14 +83,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "bm_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
+			 { "ev", "http://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
 			 "BM", "mainloop_api", "load_BM_script"));
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script,
 			 "p_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/blob_p.mp", "a", "b", "c", "d", "e" },
+			 { "ev", "http://meshpage.org/assets/blob_p.mp", "a", "b", "c", "d", "e" },
 			 "P", "mainloop_api", "load_P_script"));
   */
 
@@ -90,13 +126,13 @@ std::vector<GameApiItem*> blocker_functions()
 			 "bm_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 { "ev", "http://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_BM_script_array_comb,
 			 "bm_script_comb",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b", "c", "d", "e" },
+			 { "ev", "http://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b", "c", "d", "e" },
 			 "[BM]", "mainloop_api", "load_BM_script_array_comb"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_P_script_array,
 			 "p_script_arr",
@@ -109,14 +145,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ml_script_arr",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
+			 { "ev", "http://meshpage.org/assets/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a&a", "b&b", "c&c", "d&d", "e&e" },
 			 "[ML]", "mainloop_api", "load_ML_script_array"));
 #if USE_CHAISCRIPT
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::chai_mainloop,
 			 "ml_chai",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/chai_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "ev", "http://meshpage.org/assets/chai_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "chai_mainloop"));
 #endif
 
@@ -125,7 +161,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "chai_bm",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://tpgames.org/test_bm.chai@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
+			 { "http://meshpage.org/assets/test_bm.chai@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
 			 "BM", "bitmap_api", "chai_bm"));
 #endif
 #if 0
@@ -147,22 +183,22 @@ std::vector<GameApiItem*> blocker_functions()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
-			 { "ev", "tf", "scene_id", "keys","mix","mode","light_dir_x", "light_dir_y", "light_dir_z" },
-			 { "EveryApi&", "TF", "int", "std::string","float","int", "float", "float", "float" },
-			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0" },
+			 { "ev", "tf", "scene_id", "keys","mix","mode","light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color" },
+			 { "EveryApi&", "TF", "int", "std::string","float","int", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000" },
 			 "ML", "mainloop_api", "gltf_scene"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
 			 "ml_gltf_all",
-			 { "ev", "tf","mix","mode", "light_dir_x", "light_dir_y", "light_dir_z" },
-			 { "EveryApi&", "TF","float","int", "float", "float", "float" },
-			 { "ev", "", "1.0","0", "400.0", "-400.0", "300.0" },
+			 { "ev", "tf","mix","mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color" },
+			 { "EveryApi&", "TF","float","int", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "", "1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
 			 "ml_gltf_all_anim",
-			 { "ev", "tf","mix","mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z" },
-			 { "EveryApi&", "TF","float","int","std::string", "float", "float", "float" },
-			 { "ev", "", "1.0","0", "c", "400.0", "-400.0", "300.0" },
+			 { "ev", "tf","mix","mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color" },
+			 { "EveryApi&", "TF","float","int","std::string", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "", "1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000" },
 			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_env,
 			 "ml_gltf_all_env",
@@ -175,7 +211,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "ml_gltf_anim",
 			 { "ev", "base_url", "url", "animation", "channel", "mesh_index", "prim_index", "mat" },
 			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "MT" },
-			 { "ev", "http://tpgames.org/", "http://tpgames.org/test.glb", "0", "0", "0", "0", "" },
+			 { "ev", "http://meshpage.org/assets/", "http://meshpage.org/assets/test.glb", "0", "0", "0", "0", "" },
 			 "ML", "mainloop_api", "gltf_anim"));*/
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim4,
@@ -188,9 +224,9 @@ std::vector<GameApiItem*> blocker_functions()
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
-			 { "ev", "tf", "scene_id", "animation", "keys","mix","mode", "light_dir_x", "light_dir_y", "light_dir_z" },
-			 { "EveryApi&", "TF", "int", "int", "std::string","float","int", "float", "float", "float" },
-			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0" },
+			 { "ev", "tf", "scene_id", "animation", "keys","mix","mode", "light_dir_x", "light_dir_y", "light_dir_z","border_width", "border_color" },
+			 { "EveryApi&", "TF", "int", "int", "std::string","float","int", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
 
 
@@ -233,14 +269,14 @@ std::vector<GameApiItem*> blocker_functions()
 			 "scene_ml",
 			 { "ev", "url", "sx", "sy" },
 			 { "EveryApi&", "std::string", "int", "int" },
-			 { "ev", "http://tpgames.org/landscape.scn@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "600", "600" },
+			 { "ev", "http://meshpage.org/assets/landscape.scn@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "600", "600" },
 			 "ML", "polygon_api", "load_scene"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_url,
 			 "async_url",
 			 { "url", "ml" },
 			 { "std::string", "ML" },
-			 { "https://tpgames.org/", "" },
+			 { "https://meshpage.org/assets/", "" },
 			 "ML", "mainloop_api", "async_url"));
 		     
 #ifndef STABLE
@@ -248,7 +284,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "piechart_ml",
 			 { "ev", "c_x", "c_y", "url", "radius", "numsteps", "start_z", "end_z" },
 			 { "EveryApi&", "float", "float", "std::string", "float", "int", "float", "float" },
-			 { "ev", "0.0", "0.0", "http://tpgames.org/piechart_full.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "350.0", "30", "0.0", "40.0" },
+			 { "ev", "0.0", "0.0", "http://meshpage.org/assets/piechart_full.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "350.0", "30", "0.0", "40.0" },
 			 "ML", "polygon_api", "piechart_full"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
@@ -453,6 +489,12 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced2_ml","","Can be used for dynamic changes for pta"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::render_txid,
+			 "p_render_txid",
+			 { "ev", "p1", "I7" },
+			 { "EveryApi&", "P", "TXID" },
+			 { "ev", "", "" },
+			 "ML", "mainloop_api", "render_txid"));
 #if 0
   // doesnt work in emscripten
 
@@ -758,7 +800,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "key_playback_ml",
 			 { "ml", "input_url" },
 			 { "ML", "std::string" },
-			 { "", "http://tpgames.org/key_record.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "", "http://meshpage.org/assets/key_record.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "ML", "mainloop_api", "playback_keypresses" ));
 #endif
   
@@ -790,7 +832,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "fps_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
+			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "fps_display"));
 
 #ifndef STABLE
@@ -798,25 +840,25 @@ std::vector<GameApiItem*> blocker_functions()
 			 "w_areatype",
 			 { "ev", "url", "heightmap", "top_texture", "side_texture" },
 			 { "EveryApi&", "std::string", "FB", "BM", "BM" },
-			 { "ev", "https://tpgames.org/areatype.txt", "", "", "" },
+			 { "ev", "https://meshpage.org/assets/areatype.txt", "", "", "" },
 			 "ML", "mainloop_api", "parse_areatype"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_landscape,
 			 "w_landscape",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "https://tpgames.org/landscape.txt" },
+			 { "ev", "https://meshpage.org/assets/landscape.txt" },
 			 "ML", "mainloop_api", "create_landscape"));
   /*  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, (GameApi::ML (GameApi::MainLoopApi::*)(GameApi::EveryApi&,std::string))&GameApi::MainLoopApi::bind_obj_type,
 			 "w_objtype",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "https://tpgames.org/objtype.txt" },
+			 { "ev", "https://meshpage.org/assets/objtype.txt" },
 			 "ML", "mainloop_api", "bind_obj_type"));*/
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::read_obj_pos,
 			 "w_objpos",
 			 { "url" },
 			 { "std::string" },
-			 { "https://tpgames.org/objpos.txt" },
+			 { "https://meshpage.org/assets/objpos.txt" },
 			 "ML", "mainloop_api", "read_obj_pos"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::create_objs,
 			 "w_objs",
@@ -835,20 +877,20 @@ std::vector<GameApiItem*> blocker_functions()
 			 "score_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
+			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "score_display"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::time_display,
 			 "time_display",
 			 { "ev", "ml", "font", "time" },
 			 { "EveryApi&", "ML", "std::string", "float" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "1000.0" },
+			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "1000.0" },
 			 "ML", "mainloop_api", "time_display"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::matrix_range_check,
 			 "matrix_range_check",
 			 { "ev", "ml", "ml2", "url" },
 			 { "EveryApi&", "ML", "ML", "std::string" },
-			 { "ev", "", "", "http://tpgames.org/test_data.txt" },
+			 { "ev", "", "", "http://meshpage.org/assets/test_data.txt" },
 			 "ML", "mainloop_api", "matrix_range_check"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::restart_game,
@@ -861,7 +903,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "restart_screen",
 			 { "ev", "ml", "fontname" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
+			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "restart_screen"));
 
 
@@ -978,20 +1020,26 @@ std::vector<GameApiItem*> blocker_functions()
 			 "song_ml",
 			 { "ev", "next", "url" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "http://tpgames.org/piano_variations.ogg" },
+			 { "ev", "", "http://meshpage.org/assets/piano_variations.ogg" },
 			 "ML", "mainloop_api", "load_song"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::tracker_api, &GameApi::TrackerApi::play_wave_via_keypress,
 			 "sound_ml",
 			 { "ev", "ml", "url", "key" },
 			 { "EveryApi&", "ML", "std::string", "int" },
-			 { "ev", "", "http://tpgames.org/Clap.wav", "32" },
+			 { "ev", "", "http://meshpage.org/assets/Clap.wav", "32" },
 			 "ML", "tracker_api", "play_wave_via_keypress"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_midi,
 			 "midi_ml",
 			 { "ev", "next", "url", "url_patchset" },
 			 { "EveryApi&", "ML", "std::string", "std::string" },
-			 { "ev", "", "https://tpgames.org/BRAND3.MID", "https://tpgames.org/default.ptc" },
+			 { "ev", "", "https://meshpage.org/assets/BRAND3.MID", "https://meshpage.org/assets/default.ptc" },
 			 "ML", "mainloop_api", "load_midi"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::android_resize,
+			 "android_resize",
+			 { "ev", "ml", "mult" },
+			 { "EveryApi&", "ML", "float" },
+			 { "ev", "", "1.0" },
+			 "ML", "mainloop_api", "android_resize"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::game_window, 
 			 "blk_window",
@@ -1006,26 +1054,34 @@ std::vector<GameApiItem*> blocker_functions()
 			 { "EveryApi&", "ML","bool","bool", "float", "float" },
 			 { "ev", "","false","false", "0.0", "100000.0" },
 			 "RUN", "blocker_api", "game_window2"));
-
+#if 0
+   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::webgpu_window,
+			  "webgpu_window",
+			  { "ev", "ml" },
+			  { "EveryApi&", "GML" },
+			  { "ev", "" },
+			  "RUN", "blocker_api", "webgpu_window"));
+#endif
+   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2,
 			 "html_run",
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "RUN", "std::string" },
-			 { "ev", "", "https://tpgames.org/" },
+			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame2"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_ML,
 			 "html_ml",
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://tpgames.org/" },
+			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame2_ML"));
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_P,
 			 "html_p",
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "P", "std::string" },
-			 { "ev", "", "https://tpgames.org/" },
+			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame2_P"));
 
   /*
@@ -1033,7 +1089,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "html_mn",
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "MN", "std::string" },
-			 { "ev", "", "https://tpgames.org/" },
+			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame2_mn"));
   */
 
@@ -1041,7 +1097,7 @@ std::vector<GameApiItem*> blocker_functions()
 			 "html_mt",
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "MT", "std::string" },
-			 { "ev", "", "https://tpgames.org/" },
+			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame2_MT"));
   
 #ifndef STABLE
@@ -1053,7 +1109,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "html_window", 
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "RUN", "std::string" },
-			 { "ev", "", "http://tpgames.org/" },
+			 { "ev", "", "http://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame"));
 #endif
 #endif
@@ -1168,14 +1224,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "pkg_window",
 			 { "ev", "url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "http://tpgames.org/game1.pkg" },
+			 { "ev", "http://meshpage.org/assets/game1.pkg" },
 			 "ML", "mainloop_api", "memmap_window2"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::memmap_window3,
 			 "pkg_window2",
 			 { "ev", "url_1", "url_2", "url_3", "url_4", "url_5", "url_6" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://tpgames.org/game1_1.pkg", "http://tpgames.org/game1_2.pkg", "http://tpgames.org/game1_3.pkg", "http://tpgames.org/game1_4.pkg", "http://tpgames.org/game1_5.pkg", "http://tpgames.org/game1_6.pkg" },
+			 { "ev", "http://meshpage.org/assets/game1_1.pkg", "http://meshpage.org/assets/game1_2.pkg", "http://meshpage.org/assets/game1_3.pkg", "http://meshpage.org/assets/game1_4.pkg", "http://meshpage.org/assets/game1_5.pkg", "http://meshpage.org/assets/game1_6.pkg" },
 			 "ML", "mainloop_api", "memmap_window3"));
   
 

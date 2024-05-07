@@ -27,13 +27,31 @@
 #include <cstring>
 #include <cstdio>
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#endif
+
 extern int g_logo_status;
 extern std::string g_msg_string;
 extern int g_global_face_count;
 extern int g_engine_status;
+extern std::string g_gpu_vendor;
+
+#ifdef EMSCRIPTEN
+bool is_mobile_1()
+{
+  int screen_width = EM_ASM_INT( return screen.availWidth; );
+  return screen_width<545;
+}
+
+#else
+bool is_mobile_1() { return false; }
+#endif
+
+
 bool is_mobile(GameApi::EveryApi &ev)
 {
-  return ev.mainloop_api.get_screen_width() < 700;
+  return is_mobile_1() || ev.mainloop_api.get_screen_width() < 800 ||(g_gpu_vendor != "NVID" && g_gpu_vendor != "AMD" && g_gpu_vendor != "WebK");
 }
 
 bool g_deploy_phase = false;
@@ -232,8 +250,49 @@ void stackTrace();
 //std::size_t sz[100000000];
 //int pos=0;
 
+
+size_t printed_mem_usage=0;
 size_t current_mem_usage = 0;
-int max_mem_usage=0;
+size_t max_mem_usage=0;
+#if 0
+void *operator new( std::size_t count)
+{
+  current_mem_usage+=count;
+  max_mem_usage+=count;
+
+  if (abs(long(printed_mem_usage-current_mem_usage))>1000000)
+    {
+      if (current_mem_usage>1024000000)
+	printf("MEM:%lf Gb MAX:%lf Gb\n",double(current_mem_usage)/1024000000.0,double(max_mem_usage)/1024000000.0);
+      else
+      if (current_mem_usage>1024000)
+	printf("MEM:%lf Mb MAX:%lf Mb\n",double(current_mem_usage)/1024000.0,double(max_mem_usage)/1024000.0);
+      else
+	printf("MEM:%lf kb MAX:%lf kb\n",double(current_mem_usage)/1024.0,double(max_mem_usage)/1024.0);
+	
+      printed_mem_usage=current_mem_usage;
+    }
+  
+  void *ptr = malloc(count);
+  return ptr;
+}
+void operator delete(void* ptr, size_t sz) noexcept
+{
+  current_mem_usage-=sz;
+  free(ptr);
+
+  /*
+  if (access[1]==0xf0f0f0) {
+    
+  char *ptr2 = (char*)ptr;
+  ptr2-=sizeof(int)+sizeof(int);
+  free(ptr2);
+  }
+  else free(ptr);*/
+}
+
+#endif
+
 #if 0
 void *operator new( std::size_t count)
 {
@@ -2009,6 +2068,11 @@ EXPORT GameApi::MN GameApi::MovementNode::rotatez(MN next, float angle)
 {
   Movement *nxt = find_move(e, next);
   return add_move(e, new MatrixMovement(nxt, Matrix::ZRotation(angle)));  
+}
+EXPORT GameApi::MN GameApi::MovementNode::rotate_around_axis(MN next, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle)
+{
+  Movement *nxt = find_move(e, next);
+  return add_move(e, new MatrixMovement(nxt, Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z),angle)));  
 }
 class TimeRepeatMovement : public Movement
 {
@@ -6216,22 +6280,30 @@ public:
   ForwardRenderToTextureId(VertexArraySet *s, MainLoopItem *next, TextureID *id) : s(s), next(next), id(id) { }
   void Collect(CollectVisitor &vis)
   {
+    id->Collect(vis);
     next->Collect(vis);
   }
   void HeavyPrepare() { }
-  void Prepare() { next->Prepare(); }
+  void Prepare() { id->Prepare(); next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     id->render(e);
-    s->texture_id = SPECIAL_TEX_ID+id->texture();
+    int ss = s->texture_id;
+    s->texture_id = SPECIAL_TEX_ID+ id->texture();
     next->execute(e);
+    s->texture_id = ss;
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     id->handle_event(e);
     next->handle_event(e);
   }
-  std::vector<int> shader_id() { return next->shader_id(); }
+  std::vector<int> shader_id() {
+    std::vector<int> v = id->shader_id();
+    std::vector<int> v2 = next->shader_id();
+    int s = v2.size();
+    for(int i=0;i<s;i++) v.push_back(v2[i]);
+    return v; }
   //virtual int shader_id() { return next->shader_id(); }
 
 private:
@@ -7154,6 +7226,152 @@ private:
   float obj_size;
 };
 
+
+class DisableMatrices : public MainLoopItem
+{
+public:
+  DisableMatrices(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, int size) :env(env),ev(ev),next(next),size(size){ }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+    ee.in_MV = Matrix::Identity();
+    ee.in_iMV = Matrix::Identity();
+
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s11;
+    s11.id = e.sh_texture_2d;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = e.sh_color;
+    GameApi::M mat2 = add_matrix2(env,ee.in_MV);
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+    //ev.shader_api.set_var(s1, "in_iMV", mat2i);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+    //ev.shader_api.set_var(s11, "in_iMV", mat2i);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+    //ev.shader_api.set_var(s2, "in_iMV", mat2i);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+
+    
+    
+    next->execute(ee);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int size;
+};
+
+GameApi::ML GameApi::MainLoopApi::disable_matrices(EveryApi &ev, ML ml, int size)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new DisableMatrices(e,ev,item,size));
+}
+
+GameApi::ML GameApi::MainLoopApi::render_txid(EveryApi &ev, P p1, TXID I7, int size)
+{
+  confirm_texture_usage(ev.get_env(),p1);
+  GameApi::VA va0 = ev.polygon_api.create_vertex_array(p1,true);
+  GameApi::VA va = ev.texture_api.bind(va0,I7);
+  GameApi::ML ml2 = ev.polygon_api.render_vertex_array_ml(ev,va);
+  GameApi::ML ml22 = ev.mainloop_api.disable_matrices(ev,ml2,size);
+  GameApi::ML ml32 = ev.texture_api.forward_to_txid(va,ml22,I7);
+  return ml32;
+}
+
+
+class Hires : public MaterialForward
+{
+public:
+  Hires(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, int size, int numsamples, float blur_radius) : env(env), ev(ev), next(next), size(size),numsamples(numsamples), blur_radius(blur_radius) {
+    std::cout << "Warning: Hires rendering is not working in emscripten." << std::endl;
+  }
+  virtual GameApi::ML mat2(GameApi::P p0) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat(p0.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p0, GameApi::PTS pts) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst(p0.id,pts.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p0, GameApi::MS ms) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_matrix(p0.id,ms.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p0, GameApi::PTA pta) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst2(p0.id,pta.id);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p0, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::P I1 = ev.polygon_api.fullscreen_quad(ev);    
+    GameApi::ML ml3;
+    ml3.id = next->mat_inst_fade(p0.id,pts.id,flip,start_time,end_time);
+    GameApi::TXID I7=ev.fbo_api.fbo_ml(ev,ml3,size,size,false);
+    GameApi::ML ml32 = ev.mainloop_api.render_txid(ev,I1,I7,size);    
+    GameApi::ML ml33 = ev.polygon_api.blurred_render_shader(ev,ml32,numsamples,blur_radius);
+    return ml33;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  Material *next;
+  int size;
+  int numsamples;
+  float blur_radius;
+};
+GameApi::MT GameApi::MaterialsApi::hires(EveryApi &ev, MT mat, int size, int numsamples, float blur_radius)
+{
+  Material *next = find_material(e,mat);
+  return add_material(e, new Hires(e,ev,next,size,numsamples,blur_radius));
+}
+
+GameApi::ML GameApi::MainLoopApi::hires_ml(EveryApi &ev, ML I3, int size, int num_samples, float blur_radius)
+{
+  P I1=ev.polygon_api.p_empty();
+  MT I4=ev.mainloop_api.mainloop_material(ev,I3);
+  MT I5=ev.materials_api.hires(ev,I4,size,num_samples,blur_radius);
+  ML I6=ev.materials_api.bind(I1,I5);
+  return I6;
+}
+
 class NewShadowShaderML_1;
 
 class NewShadowMaterial : public MaterialForward
@@ -7474,6 +7692,7 @@ private:
   float ad_dark;
   float ad_light;
 };
+
 
 class PhongMaterial : public MaterialForward
 {
@@ -8637,7 +8856,7 @@ public:
 class ToonBorderMaterial : public MaterialForward
 {
 public:
-  ToonBorderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float border_width, unsigned int color) : e(e), ev(ev), next(next), border_width(border_width), color(color) { }
+  ToonBorderMaterial(GameApi::Env &e, GameApi::EveryApi &ev, Material *next, float border_width, unsigned int color, bool is_gltf) : e(e), ev(ev), next(next), border_width(border_width), color(color),is_gltf(is_gltf) { }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
     GameApi::ML ml3;
@@ -8645,12 +8864,13 @@ public:
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
+    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
 
     //ml.id = next->mat(p2.id);
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8661,10 +8881,11 @@ public:
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst(p2.id, pts.id);
+    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8674,11 +8895,12 @@ public:
     ml3.id = next->mat_inst_matrix(p.id,ms.id);
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_matrix(p2.id, ms.id);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_matrix(ev, p3, ms);
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8690,11 +8912,12 @@ public:
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst2(p2.id, pta.id);
+    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
@@ -8706,10 +8929,11 @@ public:
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_fade(p2.id, pts.id, flip, start_time, end_time);
+    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p3, pts, flip, start_time, end_time);
 
-    GameApi::ML ml2 = ev.polygon_api.cullface(ml, false);
+    GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml3,ml2});
 
   }
@@ -8721,6 +8945,7 @@ private:
   Material *next;
   float border_width;
   unsigned int color;
+  bool is_gltf;
 };
 EXPORT GameApi::MT GameApi::MaterialsApi::glow_edge(EveryApi &ev, MT next, float light_level, float gray_level, float edge_pos)
 {
@@ -8733,10 +8958,10 @@ EXPORT GameApi::MT GameApi::MaterialsApi::water(EveryApi &ev, MT next, unsigned 
   return add_material(e, new WaterMaterial(e,ev,mat,color1,color2,color3,center_x,center_y,center_z,wave_mult,time_mult));
 }
 
-EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color)
+EXPORT GameApi::MT GameApi::MaterialsApi::toon_border(EveryApi &ev, MT next, float border_width, unsigned int color, bool is_gltf)
 {
   Material *mat = find_material(e, next);
-  return add_material(e, new ToonBorderMaterial(e,ev,mat,border_width,color));
+  return add_material(e, new ToonBorderMaterial(e,ev,mat,border_width,color,is_gltf));
 }
 
 EXPORT GameApi::MT GameApi::MaterialsApi::skeletal(EveryApi &ev)
@@ -8905,7 +9130,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
   MT I5=shadow_mt; //ev.materials_api.colour_material(ev,0.5);
   ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,dark_color,light_color,scale,size,false,shadow2_mt);
-  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z);
+  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
 }
@@ -12151,6 +12376,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::render_instanced2_ml_fade(GameApi::Eve
 }
 
 
+
 class V_ShaderCallFunction : public ShaderCall
 {
 public:
@@ -12202,10 +12428,14 @@ public:
     id = next->index(base)+1;
     return id;
   }
+  bool is_fragment() const { return true; }
   std::string func_name() const { return funcname; }
   std::string func_call() const
   {
     std::string out;
+    if (!next->is_fragment()) {
+      std::cout << "ERROR:" << funcname << " " << next->func_name() << std::endl;
+    }
     out+=next->func_call();
     std::stringstream ss;
     int i = id;
@@ -12359,6 +12589,7 @@ public:
   EmptyF(bool transparent) : transparent(transparent) { id = -1; }
   int index(int base) const { id = base; return base; }
   virtual std::string func_name() const { return "emptyF"; }
+  virtual bool is_fragment() const { return true; }
 
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
@@ -12447,6 +12678,11 @@ GameApi::US GameApi::UberShaderApi::v_adjust(US us)
 {
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("adjust", next,"ADJUST"));
+}
+GameApi::US GameApi::UberShaderApi::v_blurred_render(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new V_ShaderCallFunction("blurred_render", next,"EX_TEXCOORD IN_TEXCOORD BLURRED_RENDER"));
 }
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
@@ -12802,15 +13038,15 @@ GameApi::US GameApi::UberShaderApi::f_glowedge(US us)
 GameApi::US GameApi::UberShaderApi::f_newshadow_1(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"EX_POSITION NEWSHADOW"));
+  return add_uber(e, new F_ShaderCallFunction("newshadow_1", next,"IN_POSITION EX_POSITION NEWSHADOW"));
 }
 GameApi::US GameApi::UberShaderApi::f_newshadow_2(US us, bool is_phong)
 {
   ShaderCall *next = find_uber(e, us);
   if (is_phong) {
-    return add_uber(e, new F_ShaderCallFunction("shadowphong", next,"EX_POSITION NEWSHADOW"));
+    return add_uber(e, new F_ShaderCallFunction("shadowphong", next,"IN_POSITION EX_POSITION NEWSHADOW"));
   } else {
-    return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"EX_POSITION NEWSHADOW"));
+    return add_uber(e, new F_ShaderCallFunction("newshadow_2", next,"IN_POSITION EX_POSITION NEWSHADOW"));
   }
 }
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
@@ -12818,6 +13054,13 @@ GameApi::US GameApi::UberShaderApi::f_phong(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new F_ShaderCallFunction("phong", next,"PHONG_TEXTURE EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
 }
+
+GameApi::US GameApi::UberShaderApi::f_blurred_render(US us)
+{
+  ShaderCall *next = find_uber(e, us);
+  return add_uber(e, new F_ShaderCallFunction("blurred_render", next,"EX_TEXCOORD COLOR_MIX BLURRED_RENDER"));
+}
+
 GameApi::US GameApi::UberShaderApi::f_adjust(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -15937,7 +16180,9 @@ void splitter_iter2(void *arg)
       }
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
-      emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
+      if (!next->NoMainLoop()) {
+	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
+      }
 #else
       splitter_current = next;
 #endif
@@ -15960,7 +16205,9 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 #ifdef VIRTUAL_REALITY
   vr_run2(spl2);
 #else
-  emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+  if (spl2->NoMainLoop()) { } else {
+    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+  }
 #endif
 #else
   while(splitter_current) {
@@ -19616,12 +19863,12 @@ public:
     }
   }
   virtual std::string script_file() const {
-    std::cout << "GOT SCRIPT FILE:" << code << std::endl;
+    //std::cout << "GOT SCRIPT FILE:" << code << std::endl;
     if (code.size()<120) {
-      std::cout << "LOADING FROM URL: " << url << std::endl;
+      //std::cout << "LOADING FROM URL: " << url << std::endl;
       std::vector<unsigned char> *file = load_from_url(url);
       code=std::string(file->begin(), file->end());
-      std::cout << "GOT:" << code << std::endl;
+      //std::cout << "GOT:" << code << std::endl;
     }
     return code; }
   virtual std::string homepage() const { return homepage2; }
@@ -19976,7 +20223,7 @@ std::string fetch_more_data(std::string url)
 	  return str;
 #endif
 #ifdef LINUX
-	  std::string curl_string = "curl " + http_to_https(url) + "";
+	  std::string curl_string = "curl --http1.1 " + http_to_https(url) + "";
 	  std::cout << "SCANNING: "<< url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"r");
 	  int c;
@@ -20513,17 +20760,25 @@ public:
       // id = env.add_to_download_bar("gameapi_deploy.zip");
 	if (use_filename) deploy_set_status_file(filename,0);
       std::cout << "Step #1: Creating tmp directories.." << std::endl;
-      int val1 = system("mkdir -p ~/.gameapi_builder");
-      int val2 = system("chmod a+rwx ~/.gameapi_builder");
-      if (val1!=0||val2!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
+
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::string cmd1 = "mkdir -p "+home+"/.gameapi_builder";
+      std::string cmd2 = "chmod a+rwx " + home + "/.gameapi_builder";
+      
+      int val1 = system(cmd1.c_str());
+      int val2 = system(cmd2.c_str());
+      if (val1!=0) {std::cout << "ERROR: mkdir or chmod returned error" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 1.0/8.0);
       break;
       }
     case 1: {
 	if (use_filename) deploy_set_status_file(filename,1);
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
-      int val1= system("rm -rf ~/.gameapi_builder/deploy");
-      int val2=system("mkdir -p ~/.gameapi_builder/deploy");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::string cmd1 = std::string("rm -rf ") + home + std::string("/.gameapi_builder/deploy");
+      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy";
+      int val1= system(cmd1.c_str());
+      int val2=system(cmd2.c_str());
       //int val3=system("mkdir -p ~/.gameapi_builder/deploy/licenses");
       if (val1!=0||val2!=0) { std::cout << "ERROR: rm or mkdir returned error:" << val1 << " " << val2 << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
@@ -20532,7 +20787,9 @@ public:
     case 2: {
 	if (use_filename) deploy_set_status_file(filename,2);
       std::cout << "Step #3: Creating tmp directories.." << std::endl;
-      int val=system("mkdir -p ~/.gameapi_builder/deploy/engine");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::string cmd1 = "mkdir -p " + home + "/.gameapi_builder/deploy/engine";
+      int val=system(cmd1.c_str());
       if (val!=0) { std::cout << "ERROR: mkdir returned error:" << val << std::endl; ok=false;}
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
@@ -20555,7 +20812,7 @@ public:
       find_url_items2(s,items);
       find_url_items3(items);
 
-      std::string home2 = getenv("HOME");
+      std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::ofstream sp((home2 + "/.gameapi_builder/deploy/license.html").c_str());
 
       
@@ -20576,7 +20833,7 @@ public:
 		  std::cout << "ERROR:" << makedir << " returned error " << val2 << std::endl; ok=false;
 		}
 	      
-	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(ii.url)) + ")";
+	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(ii.url)) + ")";
 	      int val = system(curl_string.c_str());
 	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 #endif
@@ -20584,11 +20841,15 @@ public:
 	  else {
 	    std::string dir = find_directory(ii.url);
 	    if (dir!="") {
-	      int val = system((std::string("mkdir -p ~/.gameapi_builder/deploy/") + dir).c_str());
+	      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+	      int val = system((std::string("mkdir -p ") + home + std::string("/.gameapi_builder/deploy/") + dir).c_str());
 	      if (val!=0) { std::cout << "ERROR: mkdir returned error: " << val << std::endl; ok=false; }
 	    }
 	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
-	    std::string curl_string = std::string("(cd ~/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
+	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(ii.url)) + ")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
@@ -20645,7 +20906,7 @@ public:
       //std::cout << "______SCRIPT ENDS_______________" << std::endl;
 
       
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << convert_script(htmlfile);
       ss << std::flush;
@@ -20673,10 +20934,12 @@ public:
       
     //std::cout << "Saving ~/.gameapi-builder/gameapi_date.html" << std::endl;
       //std::cout << "Generating date.." << std::endl;
-      int val = system("touch ~/.gameapi_builder/gameapi_date.html");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+      int val = system((std::string("touch ") + home + std::string("/.gameapi_builder/gameapi_date.html")).c_str());
       if (val!=0) {std::cout << "ERROR, date writing" << val << std::endl; ok=false; }
-      std::string home = getenv("HOME");
-      std::fstream ss2((home + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
+      std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
+      std::fstream ss2((home2 + "/.gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
       ss2 << dt2;
       ss2 << std::flush;
       ss2.close();
@@ -20707,14 +20970,16 @@ public:
 	  gn = "/usr/share/gameapi_display.zip";
 	  gk = "/usr/share/get_file_size.php";
 	}
-	std::string line0 = std::string("cp ") + g0 + " ~/.gameapi_builder/gameapi_0.html";
-	std::string line0a = std::string("cp ") + g0a + " ~/.gameapi_builder/gameapi_0_seamless.html";
-	std::string line1 = std::string("cp ") + g1 + " ~/.gameapi_builder/gameapi_1.html";
-	std::string line2 = std::string("cp ") + g2 + " ~/.gameapi_builder/gameapi_2.html";
-	std::string line3 = std::string("cp ") + g3 + " ~/.gameapi_builder/gameapi_3.html";
-	std::string line3a = std::string("cp ") + g3a + " ~/.gameapi_builder/gameapi_3_seamless.html";
-	std::string line4 = std::string("cp ") + gn + " ~/.gameapi_builder/gameapi_display.zip";
-	std::string line5 = std::string("cp ") + gk + " ~/.gameapi_builder/get_file_size.php";
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+	std::string line0 = std::string("cp ") + g0 + " " + home + "/.gameapi_builder/gameapi_0.html";
+	std::string line0a = std::string("cp ") + g0a + " " + home + "/.gameapi_builder/gameapi_0_seamless.html";
+	std::string line1 = std::string("cp ") + g1 + " " + home + "/.gameapi_builder/gameapi_1.html";
+	std::string line2 = std::string("cp ") + g2 + " " + home + "/.gameapi_builder/gameapi_2.html";
+	std::string line3 = std::string("cp ") + g3 + " " + home + "/.gameapi_builder/gameapi_3.html";
+	std::string line3a = std::string("cp ") + g3a + " " + home + "/.gameapi_builder/gameapi_3_seamless.html";
+	std::string line4 = std::string("cp ") + gn + " " + home + "/.gameapi_builder/gameapi_display.zip";
+	std::string line5 = std::string("cp ") + gk + " " + home + "/.gameapi_builder/get_file_size.php";
 
 	int val1=system(line0.c_str());
 	int val1a=system(line0a.c_str());
@@ -20750,7 +21015,7 @@ public:
 	{
 	  dep = "/usr/share/deploy.sh";
 	}
-	std::string home = getenv("HOME");
+	std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string line5 = dep + " " + home + "/.gameapi_builder/gameapi_display.zip";
       bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
       if (is_seamless) {
@@ -20770,7 +21035,7 @@ public:
 	//system("cp ~/.gameapi_builder/deploy/gameapi_deploy.zip .");
 
 	if (!use_filename) {
-	std::string home = getenv("HOME");
+	std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 	std::ifstream ss((home + "/.gameapi_builder/deploy/gameapi_deploy.zip").c_str(), std::ios_base::binary);
 	std::vector<unsigned char> vec;
 	char ch;
@@ -20782,7 +21047,7 @@ public:
 	env.set_download_ready(i);
 	} else {
 	  std::cout << "Step #10: copying the zip file to " << filename << std::endl;
-	  std::string home = getenv("HOME");
+	  std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 	  std::string cmd = "cp -f " + home + "/.gameapi_builder/deploy/gameapi_deploy.zip " + filename;
 	  int val = system(cmd.c_str());
 	  if (val!=0) { std::cout << "ERROR:" << cmd << " returned error " << val << std::endl; ok=false; }
@@ -22356,7 +22621,7 @@ public:
   {
     if (firsttime) {
       std::string filename = out_file;
-      std::string home = getenv("HOME");
+      std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string path = home + "/.gameapi_builder/";
 
       std::cout << "Saving to " << path+out_file << std::endl;
@@ -24359,7 +24624,7 @@ void DrawGouraudTri(FrameBuffer *buf, DrawBufferFormat format, Point *points, un
 #include <chaiscript/language/chaiscript_common.hpp>
 #include <chaiscript/dispatchkit/bootstrap.hpp>
 #endif
-std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 
 std::vector<GameApi::BM> conv_bm(GameApi::EveryApi *ev, GameApi::ARR arr)
 {
@@ -24706,7 +24971,7 @@ void register_chai_types(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai)
 	chai->add(chaiscript::fun(&conv_p),"conv_p");
 	chai->add(chaiscript::fun(&conv_pts),"conv_pts");
 	chai->add(chaiscript::fun(&conv_ml),"conv_ml");
-    static std::vector<GameApiItem*> functions = all_functions();
+    static std::vector<GameApiItem*> functions = all_functions(*ev);
     int s = functions.size();
     for(int i=0;i<s;i++) {
       GameApiItem *item = functions[i];
@@ -27771,6 +28036,7 @@ public:
     id = *(GameApi::TXID*)txid;
     return id.id;
   }
+  bool is_fbo() const { return false; }
 private:
   HeavyOperation *heavy;
   int heavycount;
@@ -28215,7 +28481,7 @@ public:
     Program *prog = find_shader_program(env, sh_color);
     prog->use(); // 80.0, 10.1, 60000.0
     
-    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 60000.0);
+    Matrix m = Matrix::Perspective(120.0*double(sy)/double(sx), (double)sx/sy, 10.1, 1600.0);
     //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
     prog->set_var("in_P", m);
     ogl->glViewport(corner_x+x,screen_y-corner_y-sy-y, sx, sy);
@@ -30427,6 +30693,8 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
+//#define KP_DEBUG 1
+
 bool g_execute_callback = false;
 void (*g_mainloop_callback)(void *ptr);
 void *g_mainloop_ptr = 0;
@@ -30447,6 +30715,9 @@ void clear_shader_cache();
 
 std::string qq_strip_spaces(std::string data)
 {
+#ifdef KP_DEBUG
+  std::cout << "qq_strip start" << std::endl;
+#endif
   std::string res;
   int s = data.size();
   for(int i=0;i<s-1;i++)
@@ -30460,11 +30731,17 @@ std::string qq_strip_spaces(std::string data)
   res+=c3;
   while(res[0]==' ') res = res.substr(1);
   while(res[res.size()-1]==' ') res = res.substr(0,res.size()-1);
+#ifdef KP_DEBUG
+  std::cout << "qq_strip end" << res.size() << std::endl;
+#endif
   return res;
 }
 
 std::string qq_insert_enter(std::string s)
 {
+#ifdef KP_DEBUG
+  std::cout << "qq_insert_enter start" << std::endl;
+#endif
   if (s.length()>0)
     {
       char c = s[s.size()-1];
@@ -30472,6 +30749,10 @@ std::string qq_insert_enter(std::string s)
       if (c==')') s+=";";
       if (c!='\n') s+='\n';
     }
+#ifdef KP_DEBUG
+  std::cout << "qq_insert_enter end" << std::endl;
+  std::cout << s << std::endl;
+#endif
   return s;
 }
 
@@ -30490,15 +30771,21 @@ void run_callback(void *ptr)
   //std::cout << script << std::endl;
   g_new_script = script;
   static int g_id = -1;
-  if (g_id!=-1) clear_block(g_id);
+  // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
+  //if (g_id!=-1) clear_block(g_id);
+  // END OF TODO.
   clear_shader_cache();
   g_id = add_block();
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
-  //std::cout << "FINAL CODE:" << script << std::endl;
+#ifdef KP_DEBUG
+  std::cout << "FINAL CODE:" << script << std::endl;
+#endif
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
   set_current_block(-2);
-  //std::cout << "blk.second==" << blk.second << std::endl;
+#ifdef KP_DEBUG
+  std::cout << "blk.second==" << blk.second << std::endl;
+#endif
   if (blk.second=="RUN") {
     GameApi::RUN r;
     r.id = blk.first;
@@ -32168,21 +32455,77 @@ GameApi::PTS GameApi::MainLoopApi::whack_a_mole_explosion(GameApi::EveryApi &ev)
 class ToonOutlineFaceCollection : public ForwardFaceCollection
 {
 public:
-  ToonOutlineFaceCollection(FaceCollection *coll, float border_width) : ForwardFaceCollection(*coll), coll(coll),border_width(border_width) { }
+  ToonOutlineFaceCollection(FaceCollection *coll, float border_width) : ForwardFaceCollection(*coll), coll(coll),border_width(border_width) { div=1.0; }
   void Collect(CollectVisitor &vis) {
+    coll->Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+#if 0
+    
+    max_x=-10000.0;
+    min_x=10000.0;
+    max_y=-10000.0;
+    min_y=10000.0;
+    max_z=-10000.0;
+    min_z=10000.0;
+    int s = coll->NumFaces();
+    if (s>100) s=100;
+    int step=1;
+    if (s==100) step=coll->NumFaces()/100;
+    for(int i=0;i<s;i+=step)
+      {
+	int ss = coll->NumPoints(i);
+	for(int j=0;j<ss;j++) {
+	  Point p = coll->FacePoint(i,0);
+	  if (p.x>max_x) max_x=p.x;
+	  if (p.y>max_y) max_y=p.y;
+	  if (p.z>max_z) max_z=p.z;
+	  if (p.x<min_x) min_x=p.x;
+	  if (p.y<min_y) min_y=p.y;
+	  if (p.z<min_z) min_z=p.z;
+	}
+      }
+    if (s<1) {
+      Point p = { 0.0,0.0,0.0 };
+	  if (p.x>max_x) max_x=p.x;
+	  if (p.y>max_y) max_y=p.y;
+	  if (p.z>max_z) max_z=p.z;
+	  if (p.x<min_x) min_x=p.x;
+	  if (p.y<min_y) min_y=p.y;
+	  if (p.z<min_z) min_z=p.z;
+    }
+    div =400.0*(1.0/fabs(std::max(std::max(max_x-min_x,max_y-min_y),max_z-min_z)));
+    //if (div>=1799.0) div=1799.0;
+    if (div<=1.0) div=1.0;
+    //std::cout << "MINMAX_x:" << min_x << " " << max_x << std::endl;
+    //std::cout << "MINMAX_y:" << min_y << " " << max_y << std::endl;
+    //std::cout << "MINMAX_z:" << min_z << " " << max_z << std::endl;
+    //std::cout << "DIV:" << div << std::endl;
+#endif
+  }
+  void Prepare() {
+    coll->Prepare();
+    HeavyPrepare();    
+  }
   virtual Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
     Vector v = coll->PointNormal(face,point);
     v/=v.Dist();
+    //if (div>=0.1) {
+    //  v/=div;
+    //  v*=2.0;
+    //}
     p += v*border_width;
     return p;
   }
 private:
   FaceCollection *coll;
   float border_width;
+  float max_x, max_y, max_z;
+  float min_x, min_y, min_z;
+  float div;
 };
 GameApi::P GameApi::PolygonApi::toon_outline(P p, float border_width)
 {
@@ -32193,7 +32536,7 @@ GameApi::P GameApi::PolygonApi::toon_outline(P p, float border_width)
 class CullFace : public MainLoopItem
 {
 public:
-  CullFace(MainLoopItem *item, bool b) : item(item), b(b) { }
+  CullFace(MainLoopItem *item, bool b, bool is_gltf) : item(item), b(b), is_gltf(is_gltf) { }
   void Collect(CollectVisitor &vis)
   {
     item->Collect(vis);
@@ -32204,10 +32547,17 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     OpenglLowApi *ogl = g_low->ogl;
-    if (b)
-      ogl->glCullFace(Low_GL_BACK);
-    else
-      ogl->glCullFace(Low_GL_FRONT);
+    if (is_gltf) {
+      if (b)
+	ogl->glCullFace(Low_GL_BACK);
+      else
+	ogl->glCullFace(Low_GL_FRONT);
+    } else {
+      if (b)
+	ogl->glCullFace(Low_GL_FRONT);
+      else
+	ogl->glCullFace(Low_GL_BACK);
+    }
     ogl->glEnable(Low_GL_CULL_FACE);
     item->execute(e);
     ogl->glDisable(Low_GL_CULL_FACE);
@@ -32221,11 +32571,12 @@ public:
 private:
   MainLoopItem *item;
   bool b;
+  bool is_gltf;
 };
-GameApi::ML GameApi::PolygonApi::cullface(ML ml, bool is_back)
+GameApi::ML GameApi::PolygonApi::cullface(ML ml, bool is_back, bool is_gltf)
 {
   MainLoopItem *item = find_main_loop(e,ml);
-  return add_main_loop(e, new CullFace(item, is_back));
+  return add_main_loop(e, new CullFace(item, is_back,is_gltf));
 }
 
 template<class T>
@@ -33460,14 +33811,19 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+    //std::cout << "KEYML_handleevent:";
     int ch = key_mapping(e.ch,e.type);
+    //std::cout << "'" << ch << "'" << std::endl;
     int s = keys.size();
-    for(int i=0;i<s;i++)
-      if (ch==keys[i]) {
-	if (i>=0 && i<items.size())
+    for(int i=0;i<s;i++)  {
+      //std::cout << "Compare:" << ch << "==" << (int)(keys[i]) << std::endl;
+      if (ch==int(keys[i])) {
+	if (i>=0 && i<items.size()) {
 	  current_item = i;
-	break;
+	  break;
+	}
       }
+    }
     if (current_item>=0 && current_item<items.size())
     items[current_item]->handle_event(e);
   }
@@ -34301,5 +34657,22 @@ void async_pending_minus(std::string label, std::string info)
 	async_infos.erase(async_infos.begin()+i);
 	break;
       }
+    }
+}
+
+GameApi::ML GameApi::MainLoopApi::android_resize(GameApi::EveryApi &ev, ML ml, float mult)
+{
+  if (is_mobile(ev))
+    {
+      MN I7=ev.move_api.mn_empty();
+      MN I8=ev.move_api.scale2(I7,3*mult,3*mult,3*mult);
+      MN I9=ev.move_api.rotatex(I8,-0.3*mult);
+      MN I10=ev.move_api.trans2(I9,0,-80,0*mult);
+      ML I11=ev.move_api.move_ml(ev,ml,I10,1,10.0);
+      return I11;
+    }
+  else
+    {
+      return ml;
     }
 }

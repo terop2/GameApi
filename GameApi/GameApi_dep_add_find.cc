@@ -119,10 +119,35 @@ void clear_block(int id)
 }
 void add_b(std::shared_ptr<void> ptr)
 {
+  if (g_current_block!=-1 && !g_blocks.g_blocks[g_current_block])
+    {
+      recreate_block(g_current_block);
+    }
   if (g_current_block!=-1)
     g_blocks.g_blocks[g_current_block]->vec.push_back(ptr);
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
+}
+
+GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace *cs)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->colourspaces.push_back(cs);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(cs));
+  GameApi::CS im;
+  im.id = env->colourspaces.size()-1;
+  return im;
+}
+GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI *cs)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->colourspacesI.push_back(cs);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(cs));
+  GameApi::CSI im;
+  im.id = env->colourspacesI.size()-1;
+  return im;
 }
 
 GameApi::TT add_timing(GameApi::Env &e, Timing *t)
@@ -674,6 +699,16 @@ GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr)
   GameApi::A<T> a;
   a.id = env->arrays.size()-1;
   return a;
+}
+GameApi::GML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->wgpu_main_loop.push_back(item);
+  if (g_current_block != -2)
+  add_b(std::shared_ptr<void>(item));
+  GameApi::GML ml;
+  ml.id = env->wgpu_main_loop.size()-1;
+  return ml;
 }
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item)
 {
@@ -1433,6 +1468,17 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
 }
 
+ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->colourspaces[cs.id];  
+}
+ColourSpaceI *find_colourspaceI(GameApi::Env &e, GameApi::CSI cs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->colourspacesI[cs.id];  
+}
+
 GameApi::GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1658,6 +1704,7 @@ public:
   int texture() const { return id; }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual void render(MainLoopEnv &e) { }
+  virtual bool is_fbo() const { return false; }
 private:
   int id;
 };
@@ -1886,6 +1933,11 @@ MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->main_loop[ml.id];
+}
+MainLoopItemWGPU *find_main_loop_wgpu(GameApi::Env &e, GameApi::GML ml)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->wgpu_main_loop[ml.id];
 }
 FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft)
 {

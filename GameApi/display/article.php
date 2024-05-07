@@ -63,13 +63,13 @@ But what should we do to get access to this level technology?
 
 <div class="row">
 <div class="column">
-<img src="https://tpgames.org/builder_screenshot.png" width="100%" crossorigin>
+<img src="https://meshpage.org/assets/builder_screenshot.png" width="100%" crossorigin>
 </div>
 <div class="column">
-<img src="https://tpgames.org/builder_screenshot2.png" width="100%" crossorigin>
+<img src="https://meshpage.org/assets/builder_screenshot2.png" width="100%" crossorigin>
 </div>
 <div class="column">
-<img src="https://tpgames.org/builder_screenshot3.png" width="100%" crossorigin>
+<img src="https://meshpage.org/assets/builder_screenshot3.png" width="100%" crossorigin>
 </div>
 </div>
 

@@ -19,6 +19,8 @@
 
 #include "draco/compression/entropy/rans_symbol_decoder.h"
 
+static int foobar44=0;
+
 namespace draco {
 
 template <template <int> class SymbolDecoderT>

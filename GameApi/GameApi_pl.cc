@@ -9746,7 +9746,7 @@ public:
       {
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
-    if (vertex.id==-1) { 
+    if (vertex.id==-1||vertex.id==0) { 
       GameApi::US a0 = ev.uber_api.v_empty();
       ee.us_vertex_shader = a0.id;
     }
@@ -9755,14 +9755,17 @@ public:
     ee.us_vertex_shader = vertex.id;
 
     GameApi::US fragment;
+    //std::cout << "FRAG:" << ee.us_fragment_shader << std::endl;
     fragment.id = ee.us_fragment_shader;
-    if (fragment.id==-1) { 
+    if (fragment.id==-1||fragment.id==0) { 
       GameApi::US a0 = ev.uber_api.f_empty(false);
       ee.us_fragment_shader = a0.id;
+      //std::cout << "FRAG2:" << ee.us_fragment_shader << std::endl;
     }
     fragment.id = ee.us_fragment_shader;
     fragment = ev.uber_api.f_newshadow_1(fragment);
     ee.us_fragment_shader = fragment.id;
+    //std::cout << "FRAG3:" << ee.us_fragment_shader << std::endl;
     }
   
      if (sh_ids.size()==0) sh_ids = next->shader_id();
@@ -10136,6 +10139,104 @@ private:
   bool notupdated=true;
   std::vector<int> sh_ids;
   float timestamp=0.0;
+};
+
+class BlurredRenderML : public MainLoopItem
+{
+public:
+  BlurredRenderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, int numsamples, float blur_radius) : env(env), ev(ev), next(next), numsamples(numsamples), blur_radius(blur_radius) {
+    firsttime=true;
+    sh.id=-1;
+  }
+  std::vector<int> shader_id() { return next->shader_id(); 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    vertex = ev.uber_api.v_blurred_render(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_blurred_render(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+     if (sh_ids.size()==0) sh_ids = next->shader_id();
+     if (firsttime ||(notupdated&&e.time-timestamp>0.1)|| e.time-timestamp>5.0) { timestamp = e.time; sh_ids = next->shader_id(); if (!firsttime) notupdated=false; }
+     int s=sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+	ev.shader_api.set_var(sh, "blur_num_samples", numsamples);
+	ev.shader_api.set_var(sh, "blur_radius", blur_radius);
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	if (firsttime) 	firsttime = false;
+
+    next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  GameApi::SH sh;
+  bool firsttime;
+  int numsamples;
+  float blur_radius;
+  std::vector<int> sh_ids;
+  float timestamp=0.0;
+  bool notupdated=true;
 };
 
 
@@ -11319,6 +11420,13 @@ EXPORT GameApi::ML GameApi::PolygonApi::newshadow_shader_2_gltf(EveryApi &ev, ML
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new NewShadowShaderML_2(e,ev,item,Vector(light_dir_x,light_dir_y,light_dir_z),dark_level,light_level,scale,false,texindex));
+}
+
+EXPORT GameApi::ML GameApi::PolygonApi::blurred_render_shader(EveryApi &ev, ML mainloop, int numsamples, float blur_radius)
+{
+  MainLoopItem *item = find_main_loop(e, mainloop);
+  return add_main_loop(e, new BlurredRenderML(e, ev, item, numsamples, blur_radius));
+  
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
@@ -13192,7 +13300,7 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   //ev.mainloop_api.switch_to_3d(true, sh, screen_width, screen_height);
   ogl->glEnable(Low_GL_DEPTH_TEST);
  
- FBO fbo = ev.fbo_api.create_fbo(sx,sy);
+  FBO fbo = ev.fbo_api.create_fbo(ev,sx,sy);
   ev.fbo_api.config_fbo(fbo);
   GameApi::FrameBufferApi::vp viewport = ev.fbo_api.bind_fbo(fbo);
 
@@ -13215,7 +13323,7 @@ GameApi::BM GameApi::PolygonApi::renderpolytobitmap(EveryApi &ev, P p, SH sh, fl
   TXID id = ev.fbo_api.tex_id(fbo);
   //glDisable(GL_DEPTH_TEST);
   //glViewport(0,0,screen_width, screen_height);
-  BM bm = ev.texture_api.to_bitmap(id);
+  BM bm = ev.texture_api.to_bitmap(ev,id);
   BM bm2 = ev.bitmap_api.color_range(bm, 0x90ffffff, 0x00000000, 0xffffffff, 0x00000000);
   return bm2; 
 }
@@ -18512,7 +18620,7 @@ public:
 
   int map_point(int face, int point) const
   {
-    if (!is_clockwise(face)) return point;
+    if (is_clockwise(face)) return point;
     return coll->NumPoints(face)-point-1;
   }
 
@@ -22644,18 +22752,21 @@ public:
 
 
     next->execute(ee);
+    counter++;
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1 /*&& counter>3*/)
       {
-	zoom_pos--; if (zoom_pos<-5) zoom_pos=-5;
+	zoom_pos--; if (zoom_pos<-1) zoom_pos=-1;
 	calc_mat();
+	counter=0;
       }
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1 /*&& counter>3*/)
       {
 	zoom_pos++; if (zoom_pos>5) zoom_pos=5;
 	calc_mat();
+	counter=0;
       }
   }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
@@ -22673,6 +22784,7 @@ private:
   MainLoopItem *next;
   int zoom_pos = 0;
   Matrix mat = Matrix::Identity();
+  int counter=0;
 };
 
 class MouseRollZoom2 : public MainLoopItem
@@ -22719,18 +22831,21 @@ public:
 
 
     next->execute(ee);
+    counter++;
   }
   virtual void handle_event(MainLoopEvent &e) {
     next->handle_event(e);
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==1 /*&& counter>3*/)
       {
-	zoom_pos--; if (zoom_pos<-20) zoom_pos=-20;
+	zoom_pos--; if (zoom_pos<-13) zoom_pos=-13;
 	calc_mat();
+	counter=0;
       }
-    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1)
+    if (e.type==Low_SDL_MOUSEWHEEL && e.ch==-1 /*&& counter>3*/)
       {
-	zoom_pos++; if (zoom_pos>10) zoom_pos=10;
+	zoom_pos++; if (zoom_pos>5) zoom_pos=5;
 	calc_mat();
+	counter=0;
       }
   }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
@@ -22740,7 +22855,7 @@ public:
     float trans = 0.0;
     //if (zoom_pos<0) { scale-=0.18*(-zoom_pos); }
     //if (zoom_pos>0) { scale+=0.3*zoom_pos; }
-    if (zoom_pos<0) { trans-=800.0*(-zoom_pos); }
+    if (zoom_pos<0) { trans-=80.0*(-zoom_pos); }
     if (zoom_pos>0) { trans+=80.0*zoom_pos; }
     mat = Matrix::Translate(0.0,0.0,trans);
   }
@@ -22750,6 +22865,7 @@ private:
   MainLoopItem *next;
   int zoom_pos = 0;
   Matrix mat = Matrix::Identity();
+  int counter=0;
 };
 
 
@@ -24168,3 +24284,435 @@ void GameApi::PolygonApi::pass_to_shader(GI gi)
 }
 #endif
 
+class ColourSpaceToI : public ColourSpaceI
+{
+public:
+  ColourSpaceToI(ColourSpace &val, int sx, int sy, int sz) : val(val),sx(sx),sy(sy),sz(sz) { }
+  virtual unsigned int Map(int x, int y, int z, float t) const
+  {
+    float xx = val.start_x()+(val.end_x()-val.start_x())*float(x)/float(sx);
+    float yy = val.start_y()+(val.end_y()-val.start_y())*float(y)/float(sy);
+    float zz = val.start_z()+(val.end_z()-val.start_z())*float(z)/float(sz);
+    return val.Map(xx,yy,zz,t);
+  }
+  virtual int size_x() const { return sx; }
+  virtual int size_y() const { return sy; }
+  virtual int size_z() const { return sz; }
+  virtual float start_t() const { return val.start_t(); }
+  virtual float end_t() const { return val.end_t(); }
+private:
+  ColourSpace &val;
+  int sx,sy,sz;
+};
+
+class ColorSpaceFaceCollection2 : public FaceCollection
+{
+public:
+  ColorSpaceFaceCollection2(ColourSpaceI &colours, Point center, Vector u_x, Vector u_y, Vector u_z, float current_t) : colours(colours), center(center), u_x(u_x), u_y(u_y), u_z(u_z), current_t(current_t) { }
+
+  struct FaceId {
+    int dir;
+    int x;
+    int y;
+    int z;
+  };
+  FaceId split_face(int face) const
+  {
+    FaceId id;
+    
+    int sdir = 3;
+    int sx = colours.size_x()-1;
+    int sy = colours.size_y()-1;
+    int sz = colours.size_z()-1;
+
+    id.dir = face / (sx*sy*sz);
+    int delta0 = face - id.dir*sx*sy*sz;
+
+    int x = delta0 / (sy*sz);
+    int delta1 = delta0 - x*sy*sz;
+
+    int y = delta1 / sz;
+    int delta2 = delta1 - y*sz;
+
+    int z = delta2;
+    
+    
+    id.x = x;
+    id.y = y;
+    id.z = z;
+    return id;
+  }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const
+  {
+    return 3*(colours.size_x()-1)*(colours.size_y()-1)*(colours.size_z()-1);
+  }
+  
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    Point plot = id.x*u_x + id.y*u_y + id.z*u_z;
+    if (id.dir==0)
+      {
+	plot += u_z/2;
+	plot -= u_x/2;
+	if (point==0) return plot;
+	plot+=u_x;
+	if (point==1) return plot;
+	plot+=u_y;
+	if (point==2) return plot;
+	plot-=u_x;
+	if (point==3) return plot;
+      }
+    if (id.dir==1)
+      {
+	plot +=u_z/2;
+	plot +=u_x/2;
+	if (point==0) return plot;
+	plot+=u_y;
+	if (point==1) return plot;
+	plot+=u_z;
+	if (point==2) return plot;
+	plot-=u_y;
+	if (point==3) return plot;
+      }
+    if (id.dir==2)
+      {
+	plot -=u_z/2;
+	plot -=u_y/2;
+	if (point==0) return plot;
+	plot+=u_y;
+	if (point==1) return plot;
+	plot-=u_x;
+	if (point==2) return plot;
+	plot-=u_y;
+	if (point==3) return plot;
+      }
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    if (id.dir==0) return Vector(0.0,0.0,-1.0);
+    if (id.dir==1) return Vector(0.0,-1.0,0.0);
+    if (id.dir==2) return Vector(-1.0,0.0,0.0);
+    return Vector(0.0,0.0,1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    int delta_x = 0;
+    int delta_y = 0;
+    if (point==1||point==2) delta_x=1;
+    if (point==2||point==3) delta_y=1;
+    if (id.dir==0) {
+      return colours.Map(id.x+delta_x,id.y+delta_y,id.z,current_t);
+    } else if (id.dir==1)
+      {
+      return colours.Map(id.x+delta_x,id.y,id.z+delta_y,current_t);
+      } else if (id.dir==2)
+      {
+      return colours.Map(id.x,id.y+delta_x,id.z+delta_y,current_t);
+      }
+    return 0xffff00ff;
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; return p; }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+private:
+  ColourSpaceI &colours;
+  Point center;
+  Vector u_x, u_y, u_z;
+  float current_t;
+};
+
+
+class ColorSpaceFaceCollection : public FaceCollection
+{
+public:
+  ColorSpaceFaceCollection(ColourSpaceI &colours, Point center, Vector u_x, Vector u_y, Vector u_z, float current_t) : colours(colours),center(center), u_x(u_x),u_y(u_y),u_z(u_z),current_t(current_t) { }
+  Point pos(int x, int y, int z) const { return center+(x-colours.size_x()/2)*u_x+(y-colours.size_y()/2)*u_y+(z-colours.size_z()/2)*u_z; }
+  bool is_face_x(int x, int y, int z) const
+  {
+    unsigned int c0 = colours.Map(x,y,z,current_t);
+    unsigned int c1 = colours.Map(x+1,y,z,current_t);
+    //if (c0!=c1) std::cout << "YUP" << std::endl;
+    return c0!=c1;
+  }
+  bool is_face_y(int x, int y, int z) const
+  {
+    unsigned int c0 = colours.Map(x,y,z,current_t);
+    unsigned int c1 = colours.Map(x,y+1,z,current_t);
+    //if (c0!=c1) std::cout << "YUP" << std::endl;
+    return c0!=c1;
+  }
+  bool is_face_z(int x, int y, int z) const
+  {
+    unsigned int c0 = colours.Map(x,y,z,current_t);
+    unsigned int c1 = colours.Map(x,y,z+1,current_t);
+    //if (c0!=c1) std::cout << "YUP" << std::endl;
+    return c0!=c1;
+  }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const
+  {
+    return 3*(colours.size_x()-1)*(colours.size_y()-1)*(colours.size_z()-1);
+  }
+  struct FaceId {
+    int dir;
+    int x;
+    int y;
+    int z;
+  };
+  FaceId split_face(int face) const
+  {
+    FaceId id;
+    
+    int sdir = 3;
+    int sx = colours.size_x()-1;
+    int sy = colours.size_y()-1;
+    int sz = colours.size_z()-1;
+
+    id.dir = face / (sx*sy*sz);
+    int delta0 = face - id.dir*sx*sy*sz;
+
+    int x = delta0 / (sy*sz);
+    int delta1 = delta0 - x*sy*sz;
+
+    int y = delta1 / sz;
+    int delta2 = delta1 - y*sz;
+
+    int z = delta2;
+    
+    
+    id.x = x;
+    id.y = y;
+    id.z = z;
+    return id;
+  }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    //if (face % 2==0) return pos(id.x,id.y,id.z);
+    int delta_x = 0;
+    int delta_y = 0;
+    if (point==1||point==2) delta_x=1;
+    if (point==2||point==3) delta_y=1;
+    if (id.dir==0) {
+      if (!is_face_x(id.x,id.y,id.z)&& !is_face_y(id.x,id.y,id.z)) return pos(id.x,id.y,id.z);
+      Point p = pos(id.x+delta_x,id.y+delta_y,id.z);
+      return p;
+    } else if (id.dir==1)
+      {
+	if (!is_face_x(id.x,id.y,id.z)&& !is_face_z(id.x,id.y,id.z)) return pos(id.x,id.y,id.z);
+	Point p= pos(id.x+delta_x,id.y,id.z+delta_y);
+	return p;
+      } else if (id.dir==2)
+      {
+	if (!is_face_y(id.x,id.y,id.z)&& !is_face_z(id.x,id.y,id.z)) return pos(id.x,id.y,id.z);
+	Point p = pos(id.x,id.y+delta_x,id.z+delta_y);
+	return p;
+      }
+    Point p = pos(id.x,id.y,id.z);
+    return p;
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    if (id.dir==0) return Vector(0.0,0.0,-1.0);
+    if (id.dir==1) return Vector(0.0,-1.0,0.0);
+    if (id.dir==2) return Vector(-1.0,0.0,0.0);
+    return Vector(0.0,0.0,1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    FaceId id = split_face(face);
+    int delta_x = 0;
+    int delta_y = 0;
+    if (point==1||point==2) delta_x=1;
+    if (point==2||point==3) delta_y=1;
+    if (id.dir==0) {
+      return colours.Map(id.x+delta_x,id.y+delta_y,id.z,current_t);
+    } else if (id.dir==1)
+      {
+      return colours.Map(id.x+delta_x,id.y,id.z+delta_y,current_t);
+      } else if (id.dir==2)
+      {
+      return colours.Map(id.x,id.y+delta_x,id.z+delta_y,current_t);
+      }
+    return 0xffff00ff;
+  }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; return p; }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+private:
+  ColourSpaceI &colours;
+  Point center;
+  Vector u_x;
+  Vector u_y;
+  Vector u_z;
+  float current_t;
+};
+
+
+class ColourSpace_Function : public ColourSpace
+{
+public:
+  ColourSpace_Function(std::function<unsigned int(float,float,float,float)> f, float s_x, float e_x, float s_y, float e_y, float s_z, float e_z, float s_t, float e_t) : f(f), s_x(s_x), e_x(e_x), s_y(s_y), e_y(e_y), s_z(s_z), e_z(e_z), s_t(s_t), e_t(e_t) { }
+  virtual unsigned int Map(float x, float y, float z, float t) const
+  {
+    return f(x,y,z,y);
+  }
+  virtual float start_x() const { return s_x; }
+  virtual float end_x() const { return e_x; }
+  virtual float start_y() const { return s_y; }
+  virtual float end_y() const { return e_y; }
+  virtual float start_z() const { return s_z; }
+  virtual float end_z() const { return e_z; }
+  virtual float start_t() const { return s_t; }
+  virtual float end_t() const { return e_t; }
+private:
+  std::function<unsigned int(float,float,float,float)> f;
+  float s_x, e_x;
+  float s_y, e_y;
+  float s_z, e_z;
+  float s_t, e_t;
+};
+
+unsigned int colourspace_sphere(float x, float y, float z, float t)
+{
+  float dist = x*x+y*y+z*z;
+  unsigned int i =  x*x+y*y+z*z<t*t ? 0xffffffff : 0xff008800;
+  //std::cout << x << " " << y << " " << z << " " << t << " " << std::hex << i << std::endl;
+  i+=dist*300;
+  return i;
+}
+
+GameApi::CS GameApi::PolygonApi::colourspace_sphere2()
+{
+  return colourspace_func(&colourspace_sphere,-1.0,1.0, -1.0, 1.0, -1.0, 1.0, 0.0, 600.0);
+}
+
+class ColourSpace_OrElem : public ColourSpace
+{
+public:
+  ColourSpace_OrElem(ColourSpace &cs1, float delta_t, ColourSpace &cs2, float delta_t2) : cs1(cs1), cs2(cs2),delta_t(delta_t), delta_t2(delta_t2) { }
+  virtual unsigned int Map(float x, float y, float z, float t) const
+  {
+    unsigned int c1 = cs1.Map(x,y,z,t);
+    unsigned int c2 = cs2.Map(x,y,z,t);
+    unsigned int alpha1 = (c1 &0xff000000)>>24;
+    unsigned int alpha2 = (c2 &0xff000000)>>24;
+    float alpha1f = alpha1/255.0;
+    float alpha2f = alpha2/255.0;
+    float sum = alpha1f+alpha2f;
+    float delta1 = alpha1f/sum;
+    float delta2 = alpha2f/sum;
+    Color cc1(c1);
+    Color cc2(c2);
+    cc1*=delta1;
+    cc2*=delta2;
+    return (cc1+cc2).Pixel();
+  }
+  virtual float start_x() const { return std::max(cs1.start_x(),cs2.start_x()); }
+  virtual float end_x() const { return std::min(cs1.end_x(),cs2.end_x()); }
+  virtual float start_y() const { return std::max(cs1.start_y(),cs2.start_y()); }
+  virtual float end_y() const { return std::min(cs1.end_y(),cs2.end_y()); }
+  virtual float start_z() const { return std::max(cs1.start_z(),cs2.start_z()); }
+  virtual float end_z() const { return std::min(cs1.end_z(),cs2.end_z()); }
+  virtual float start_t() const { return std::max(delta_t+cs1.start_t(),delta_t2+cs2.start_t()); }
+  virtual float end_t() const { return std::min(delta_t+cs1.end_t(),delta_t2+cs2.end_t()); }
+private:
+  ColourSpace &cs1;
+  ColourSpace &cs2;
+  float delta_t;
+  float delta_t2;
+};
+
+GameApi::CS GameApi::PolygonApi::colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2)
+{
+  ColourSpace *cs1 = find_colourspace(e,cs);
+  ColourSpace *cs2_ = find_colourspace(e,cs2);
+  return add_colourspace(e,new ColourSpace_OrElem(*cs1,delta_t,*cs2_,delta_t2));
+}
+
+GameApi::CS GameApi::PolygonApi::colourspace_func(std::function<unsigned int (float,float,float,float)> f, float s_x, float e_x, float s_y, float e_y, float s_z, float e_z, float s_t, float e_t)
+{
+  return add_colourspace(e,new ColourSpace_Function(f,s_x,e_x,s_y,e_y,s_z,e_z,s_t,e_t));
+}
+
+GameApi::CSI GameApi::PolygonApi::colourspace_sample(CS i, int sx, int sy, int sz)
+{
+  ColourSpace *col = find_colourspace(e,i);
+  return add_colourspaceI(e, new ColourSpaceToI(*col,sx,sy,sz));
+}
+
+GameApi::P GameApi::PolygonApi::colourspace_facecoll(CSI i, float t)
+{
+  ColourSpaceI *col = find_colourspaceI(e,i);
+  return add_polygon2(e, new ColorSpaceFaceCollection2(*col,Point(0.0,0.0,0.0), Vector(3.5*4,0.0,0.0), Vector(0.0,3.5*4,0.0), Vector(0.0,0.0,3.5*4),t),1);
+}
+
+class FaceCollectionTo2 : public FaceCollection2
+{
+public:
+  enum Fields {
+    EFacePoint=0x1,
+    EEndFacePoint=0x2,
+    EPointNormal=0x4,
+    EColor=0x8,
+    ETexCoord=0x10,
+    ETexCoord3=0x20,
+    EJoint=0x40,
+    EWeight=0x80
+  };
+  FaceCollectionTo2(FaceCollection *coll, Fields flags=Fields(EFacePoint+EEndFacePoint+EPointNormal+EColor+ETexCoord+ETexCoord3+EJoint+EWeight)) : coll(coll),flags(flags) { }
+  virtual void Collect(CollectVisitor &vis) { return coll->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { coll->Prepare(); }
+  virtual int NumFaces() const { return coll->NumFaces(); }
+  virtual int NumPoints(int face) const { return coll->NumPoints(face); }
+  virtual Vertex Face(int face, int point) const
+  {
+    Vertex v;
+    if (flags&EFacePoint)
+      v.facepoint = coll->FacePoint(face,point);
+    if (flags&EEndFacePoint)
+      v.end_facepoint = coll->EndFacePoint(face,point);
+    if (flags&EPointNormal)
+      v.pointnormal = coll->PointNormal(face,point);
+    if (flags&EColor)
+      v.color = coll->Color(face,point);
+    if (flags&ETexCoord)
+      v.texcoord = coll->TexCoord(face,point);
+    if (flags&ETexCoord3)
+      v.texcoord3 = coll->TexCoord3(face,point);
+    if (flags&EJoint)
+      v.joint = coll->Joints(face,point);
+    if (flags&EWeight)
+      v.weight = coll->Weights(face,point);
+    return v;
+  }
+
+private:
+  FaceCollection *coll;
+  Fields flags;
+};
+/*
+GameApi::P2 GameApi::PolygonApi::facecoll_to_2(GameApi::P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new FaceCollectionTo2(coll),1);
+}
+*/

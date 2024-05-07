@@ -14,6 +14,8 @@
 //
 #include "draco/compression/bit_coders/direct_bit_encoder.h"
 
+static int foobar3=0;
+
 namespace draco {
 
 DirectBitEncoder::DirectBitEncoder() : local_bits_(0), num_local_bits_(0) {}

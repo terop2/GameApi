@@ -28,6 +28,8 @@
 #include "draco/mesh/corner_table_iterators.h"
 #include "draco/mesh/mesh_misc_functions.h"
 
+static int foobar101=0;
+
 namespace draco {
 // TODO(draco-eng) consider converting 'typedef' to 'using' and deduplicate.
 typedef CornerIndex CornerIndex;

@@ -13,6 +13,6 @@
 13 Plastic White ffffff 0.2
 14 Plastic Green 00ff00 0.2
 15 Plastic Magenta ff00ff 0.2
-16 Textured wood http://tpgames.org/materials/wood.mat
-17 Textured bricks http://tpgames.org/materials/bricks.mat
-18 Textured bricks2 http://tpgames.org/materials/bricks2.mat
+16 Textured wood http://meshpage.org/assets/materials/wood.mat
+17 Textured bricks http://meshpage.org/assets/materials/bricks.mat
+18 Textured bricks2 http://meshpage.org/assets/materials/bricks2.mat

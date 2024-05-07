@@ -17,6 +17,9 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 
 
+extern std::string g_window_href;
+extern std::string gameapi_homepageurl;
+
 int g_async_pending_count_failures=0;
 
 std::string striphomepage(std::string url);
@@ -71,8 +74,16 @@ private:
     unsigned int r = rand();
     std::stringstream ss;
     ss << r;
+
+    std::string url0 = gameapi_homepageurl;
+    int res=0;
+    int ss2 = url0.size();
+    for(int i=0;i<ss2;i++) if (url0[i]=='/') res=i;
+    std::string url1 = url0.substr(0,res);
+
+    if (url1=="") url1="https://ssh.meshpage.org"; // this doesnt really work, since it gives CORS problem
     
-    std::string url2 = "https://ssh.meshpage.org/get_file_size.php?" + ss.str() + "&url=" +url; 
+    std::string url2 = url1+"/get_file_size.php?" + ss.str() + "&url=" +url; 
     emscripten_fetch(&attr, url2.c_str());
 
     int val = 0;
@@ -1660,7 +1671,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
-      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      //std::cout << "ASyncLoader::load_urls::" << remove_load(url) << " " << g_urls[i] << std::endl;
       if (remove_load(url)==g_urls[i]) { 
 	//std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
@@ -1981,7 +1992,7 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
   for(int i=0;i<u;i++)
     {
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
-      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      // std::cout << "get_loaded_data:" << remove_load(url) << " " << g_urls[i] << std::endl;
 
       if (remove_load(url)==std::string(g_urls[i])) { 
 	//std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
@@ -2718,7 +2729,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
   for(int i=0;i<u;i++)
     {
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
-      //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
+      //std::cout << "LOADFROMURL:" << remove_load(url) << " " << g_urls[i] << std::endl;
       if (remove_load(url)==g_urls[i]) { 
 	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
 	//load_from_url_del.item.push_back(vec);

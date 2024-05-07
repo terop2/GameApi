@@ -87,6 +87,8 @@ public:
     int flag_level = 0;
     std::vector<std::pair<std::string,std::string> > dep;
     bool is_api = false;
+    int line_count=0;
+    int block_count=0;
     while(std::getline(ss,line,'\n')) {
       is_api=false;
       //int ch_b = find(line, "//");
@@ -138,8 +140,10 @@ public:
 	}
       }
       int ch2 = find(line, apiname);
+      line_count++;
       if (ch2!=-1 && apiname!="" && type==-1)
 	{
+	  //std::cout << "LINE_ACCEPTED:" << line << ";;" << apiname << "'" << line_count << std::endl;
 	  int ch4 = find(line,"(");
 	  if (ch4!=-1) {
 	  type=2;
@@ -179,7 +183,14 @@ public:
 	  //std::cout << count << "}" << std::endl;
 	  count--;
 	  if (count<0) count=0;
+
+	  if (count>0) {
+	    block_count++;
+	    if (block_count>140) { count=0; block_count=0; }
+	  }
+	  
 	  //std::cout << "I:" << count << ":" << type << ":" << line << std::endl;
+	  //std::cout << count << " :: " << line << std::endl;
 	  if (count==0) {
 	    if (type==1)
 	      {
@@ -210,7 +221,7 @@ public:
 		dep=std::vector<std::pair<std::string,std::string> >();
 		type=-1;
 	      }
-	  }
+	    }
 	}
       prev_line=line;
     }
@@ -268,6 +279,7 @@ public:
     for(int i=0;i<s;i++)
       {
 	Function f = functions[i];
+	//std::cout << f.funcsignature << std::endl;
 	int pos = find(f.funcsignature, "::" + funcname+"(");
 	if (pos!=-1)
 	  {
@@ -281,10 +293,10 @@ public:
 		for(int k=0;k<ss1;k++) {
 		if (classes[j].classname==link[k])
 		  {
-		    std::cout << "#ifndef CLASS_" + classes[j].classname << std::endl;
-		    std::cout << "#define CLASS_" + classes[j].classname << std::endl;
+		    //std::cout << "#ifndef CLASS_" + classes[j].classname << std::endl;
+		    //std::cout << "#define CLASS_" + classes[j].classname << std::endl;
 		    std::cout << classes[j].contents << std::endl;
-		    std::cout << "#endif" << std::endl;
+		    //std::cout << "#endif" << std::endl;
 		  }
 		}
 	      }
@@ -328,21 +340,22 @@ private:
   std::vector<Function> functions;
 };
 
-std::string filenames[]= { 
-  //"VectorTools.hh", "Buffer.hh",				      
-  //"Intersect.hh", "Bitmap.hh", "Effect2.hh", "Shader.hh", "VolumeObjects.hh", "VolumeObjects.cc",
-  //"Tree.hh", "Event.hh", "ObjectCreator.hh", "IntersectObject.hh",
-  //"Widgets.hh", "Category.hh", "Plane.hh","Coordinates.hh", "Triangle.hh", "Game.hh",
-  //"Editor.hh","Web.hh", "Functions.hh", "ShaderExpr.hh", "Font.hh", "FontEditor.hh",
-  //"FreeType.hh", "FreeType2.hh", "VertexArray.hh", "StateChange.hh", "DistanceObject.hh", "GameRunner.hh",
-  //"Graph.hh", "Effect.hh", 
-  "GameApi.cc",
+std::string filenames[]= {
+  "GraphI.hh", "EffectI.hh",
+  "GameApi.cc","GameApi_pl.cc",
+  "VectorTools.hh", "Buffer.hh",				      
+  "Intersect.hh", "Bitmap.hh", "Effect2.hh", "Shader.hh", "VolumeObjects.hh", "VolumeObjects.cc",
+  "Tree.hh", "Event.hh", "ObjectCreator.hh", "IntersectObject.hh",
+  "Widgets.hh", "Category.hh", "Plane.hh","Coordinates.hh", "Triangle.hh", "Game.hh",
+  "Editor.hh","Web.hh", "Functions.hh", "ShaderExpr.hh", "Font.hh", "FontEditor.hh",
+  "FreeType.hh", "FreeType2.hh", "VertexArray.hh", "StateChange.hh", "DistanceObject.hh", "GameRunner.hh",
+  "Graph.hh", "Effect.hh",
   "GameApi_an.cc","GameApi_bm.cc","GameApi_co.cc","GameApi_dr.cc","GameApi_ev.cc",
   "GameApi_ex.cc","GameApi_fbo.cc","GameApi_f.cc","GameApi_fn.cc",
   "GameApi_fnt.cc","GameApi_gr.cc","GameApi_gui.cc",
   "GameApi_lay.cc",		  
   "GameApi_li.cc","GameApi_main.cc","GameApi_mx.cc","GameApi_pc.cc",
-  "GameApi_phy.cc","GameApi_pla.cc","GameApi_pl.cc","GameApi_pt.cc",
+  "GameApi_phy.cc","GameApi_pla.cc","GameApi_pt.cc",
   "GameApi_pts.cc","GameApi_sh.cc","GameApi_shm.cc","GameApi_sm.cc",
   "GameApi_spa.cc","GameApi_sp.cc","GameApi_st.cc","GameApi_su.cc",
   "GameApi_tex.cc","GameApi_tr.cc","GameApi_trk.cc","GameApi_tx.cc", 
@@ -350,6 +363,8 @@ std::string filenames[]= {
   "GameApi_wv.cc","GameApi_vx.cc","GameApi_cut.cc","GameApi_in.cc",
   "GameApi_imp.cc","GameApi_plane.cc","GameApi_integrator.cc" ,
   "GameApi_diag.cc", "GameApi_gltf.cc", "GameApi_vo.hh"
+
+
 };
 
 
@@ -463,6 +478,9 @@ int main(int argc, char *argv[])
   std::string apiname = convertapiname(argv[1]);
   std::string funcname = argv[2];
 
+  std::cout << "// FINDING: " << apiname << " " << funcname << std::endl;
+  std::cout << std::endl;
+  
   Parser p(apiname);
   int s = sizeof(filenames)/sizeof(filenames[0]);
   for(int i=0;i<s;i++)
@@ -470,7 +488,7 @@ int main(int argc, char *argv[])
       std::string filename = filenames[i];
       //      std::cout << "Filename: " << filename << std::endl;
 
-      p.parse(std::string("../") + filename);
+      p.parse(std::string("/home/terop/cvs/GameApi/GameApi/") + filename);
     }
   
   p.print(funcname);

@@ -725,6 +725,15 @@ struct MainLoopEvent
 };
 
 
+class MainLoopItemWGPU : public CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void execute(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+};
 
 class MainLoopItem : public CollectInterface
 {
@@ -1051,6 +1060,7 @@ public:
   virtual std::string func_call2(int &index) const=0;
   virtual std::string define_strings() const=0;
   virtual std::string func_name() const=0;
+  virtual bool is_fragment() const { return false; }
 };
 
 class MatrixArray : public CollectInterface
@@ -1148,6 +1158,7 @@ public:
   virtual void Init()=0;
   virtual int Iter()=0;
   virtual void Destroy()=0;
+  virtual bool NoMainLoop() const { return false; }
   virtual Splitter* NextState(int code) { return this; }
   virtual void EnvTransfer(Splitter *next) { next->e = e; next->ev = ev; }
 };
@@ -1437,9 +1448,14 @@ class TextureID
 {
 public:
   virtual ~TextureID() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual void render(MainLoopEnv &e)=0;
   virtual int texture() const=0;
+  virtual bool is_fbo() const=0;
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
 };
 
 class WorldSpec
@@ -2839,5 +2855,53 @@ public:
 // TextApi::draw_text(std::string,SH) -> SpriteApi::rendersprite(BM,SH) -> SpriteApi::render_sprite3_1(BM,SH) -> RenderSprite() -> ArrayRender::Render()
 // SpriteAPi::create_vertex_array(BM)->RenderVertexArray::prepare(0)
 // SpriteApi::vertex_array_render(BM)->render_sprite_vertex_array_ml(BM) -> RenderVertexArray4::execute() -> render_sprite_vertex_array(va) -> RenderVertexArray::render() -> TextureEnable -> ArrayRender::EnableTexture(frame) -> glActiveTexture() + glBindTexture().
+
+
+
+class ColourSpace
+{
+public:
+  virtual ~ColourSpace() { }
+  virtual unsigned int Map(float x, float y, float z, float t) const=0;
+  virtual float start_x() const=0;
+  virtual float end_x() const=0;
+  virtual float start_y() const=0;
+  virtual float end_y() const=0;
+  virtual float start_z() const=0;
+  virtual float end_z() const=0;
+  virtual float start_t() const=0;
+  virtual float end_t() const=0;
+};
+
+class ColourSpaceI
+{
+public:
+  virtual ~ColourSpaceI() { }
+  virtual unsigned int Map(int x, int y, int z, float t) const=0;
+  virtual int size_x() const=0;
+  virtual int size_y() const=0;
+  virtual int size_z() const=0;
+  virtual float start_t() const=0;
+  virtual float end_t() const=0;
+};
+
+
+struct Pixel2
+{
+  int x,y;
+  unsigned int *pixel;
+};
+
+class PixelAllocator
+{
+public:
+  virtual Pixel2 Alloc()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual Bitmap<Color> *get_all() const=0;
+  virtual Bitmap<Color> *get_xy() const=0;
+};
+
+
 #endif
 

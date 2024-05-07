@@ -27,6 +27,8 @@
 #include "draco/compression/mesh/traverser/traverser_base.h"
 #include "draco/mesh/corner_table_iterators.h"
 
+static int foobar88=0;
+
 namespace draco {
 
 // Types of "free" edges that are used during topology decoding.
@@ -920,7 +922,7 @@ int MeshEdgebreakerDecoderImpl<TraversalDecoder>::DecodeConnectivity(
   int num_vertices = corner_table_->num_vertices();
   // If any vertex was marked as isolated, we want to remove it from the corner
   // table to ensure that all vertices in range <0, num_vertices> are valid.
-  for (const VertexIndex invalid_vert : invalid_vertices) {
+  for (const VertexIndex &invalid_vert : invalid_vertices) {
     // Find the last valid vertex and swap it with the isolated vertex.
     VertexIndex src_vert(num_vertices - 1);
     while (corner_table_->LeftMostCorner(src_vert) == kInvalidCornerIndex) {

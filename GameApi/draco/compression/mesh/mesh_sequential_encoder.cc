@@ -21,6 +21,8 @@
 #include "draco/compression/entropy/symbol_encoding.h"
 #include "draco/core/varint_encoding.h"
 
+static int foobar102=0;
+
 namespace draco {
 
 MeshSequentialEncoder::MeshSequentialEncoder() {}

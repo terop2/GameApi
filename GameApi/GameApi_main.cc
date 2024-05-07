@@ -497,7 +497,7 @@ EXPORT void GameApi::MainLoopApi::init_3d(SH sh, int screen_width, int screen_he
 
   Program *prog = find_shader_program(e, sh);
   prog->use(); // 80.0, 10.1, 60000.0
-  Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0); // 10.1 60000.0
+  Matrix m = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 1600.0); // 10.1 60000.0
   //Matrix m = Matrix::Perspective2(-300.0, 300.0, -300.0, 300.0, 1.0, 610.0);
   prog->set_var("in_P", m);
   Matrix m2 = Matrix::Identity();
@@ -733,7 +733,7 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
       ogl->glEnable(Low_GL_DEPTH_TEST);
       // 10.1, 60000.0
       Matrix m = Matrix::Perspective(80.0, (double)screenx/screeny, 10.1,
-				     60000.0);
+				     1600.0);
       Matrix m3 = Matrix::Translate(0.0,0.0,-500.0);
       prog->use();
       prog->set_var("in_P", m);
@@ -959,6 +959,35 @@ EXPORT void GameApi::MainLoopApi::finish()
 {
   OpenglLowApi *ogl = g_low->ogl;
   ogl->glFinish();
+}
+EXPORT void GameApi::MainLoopApi::check_glerrors(std::string context)
+{
+
+  OpenglLowApi *ogl = g_low->ogl;
+  int e = -1;
+  MainLoopPriv *pp = (MainLoopPriv*)priv;
+  int i = 0;
+  while(i<100&& ((e=ogl->glGetError()) != 0)) {
+    i++;
+    if (e!=0 && e != pp->last_error)
+      {
+	std::string error="";
+	switch(e) {
+	case 0x500: error="GL_INVALID_ENUM"; break;
+	case 0x501: error="GL_INVALID_VALUE"; break;
+	case 0x502: error="GL_INVALID_OPERATION"; break;
+	case 0x503: error="GL_STACK_OVERFLOW"; break;
+	case 0x504: error="GL_STACK_UNDERFLOW"; break;
+	case 0x505: error="GL_OUT_OF_MEMORY"; break;
+	case 0x506: error="GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+	case 0x507: error="GL_CONTEXT_LOST"; break;
+	case 0x8031: error="GL_TABLE_TOO_LARGE"; break;
+	};
+	pp->last_error = e;
+	std::cout << context << ":"<< std::hex << e << ":" << error << std::endl;
+      }
+  }
+  
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
@@ -1955,7 +1984,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   ek.in_MV = find_matrix(e, in_MV);
   ek.in_T = find_matrix(e, in_T);
   ek.in_N = find_matrix(e, in_N);
-  ek.in_P = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 60000.0); // 10.1, 60000.0
+  ek.in_P = Matrix::Perspective(90.0*double(screeny)/double(screenx), (double)screenx/screeny, 10.1, 1600.0); // 10.1, 60000.0
   ek.time = get_time()/1000.0;
   ek.delta_time = get_delta_time();
   ek.screen_x = 0;
@@ -2037,10 +2066,12 @@ void GameApi::MainLoopApi::event_ml(ML ml, const Event &ee)
   if (e2.type==Low_SDL_KEYDOWN||e2.type==Low_SDL_KEYUP)
     e2.ch = ee.ch;
   else e2.ch=-1;
+  //std::cout << "Type=" << ee.type << " " << (int)e2.ch << std::endl;
   if (e2.type==Low_SDL_MOUSEWHEEL && e2.ch==-1)
     {
-      if (ee.mouse_wheel_y<0) e2.ch=-1;
-      if (ee.mouse_wheel_y>0) e2.ch=1;
+      //std::cout << "MOUSE_WHEEL:" << ee.mouse_wheel_y << std::endl;
+      if (ee.mouse_wheel_y<0) e2.ch=-1; else
+	if (ee.mouse_wheel_y>0) e2.ch=1; else e2.ch=-666;
     }
   if (ee.cursor_pos.id!=-1) {
     e2.cursor_pos = *find_point(e,ee.cursor_pos);
@@ -2523,10 +2554,10 @@ void save_raw_bitmap(GameApi::Env &e, GameApi::BM bm, std::string filename);
 void GameApi::MainLoopApi::save_logo(EveryApi &ev)
 {
   BM I1=ev.bitmap_api.newbitmap(500,300,0x00000000);
-  Ft I2=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
+  Ft I2=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",80,80);
   BM I3=ev.font_api.font_string(I2,"qtamoVR",5);
   BM I4=ev.bitmap_api.blitbitmap(I1,I3,0,0);
-  Ft I5=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
+  Ft I5=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",18,18);
   BM I6=ev.font_api.font_string(I5,"Loading",5);
   BM I7=ev.bitmap_api.blitbitmap(I4,I6,80,88);
   ev.bitmap_api.savebitmap(I7, "logo.ppm", true);
@@ -2895,15 +2926,15 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
 
 #else
 BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
- FI I19 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 80,80);
+ FI I19 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 80,80);
  BM I20 = ev.font_api.draw_text_string(I19, "GameApi", 5, 30);
 
- //Ft I19=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",80,80);
+ //Ft I19=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",80,80);
  //BM I20=ev.font_api.font_string(I19,"GameApi",5);
 BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
-//Ft I22=ev.font_api.newfont("http://tpgames.org/FreeSans.ttf",18,18);
+//Ft I22=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",18,18);
 //BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
- FI I22 = ev.font_api.load_font("http://tpgames.org/FreeSans.ttf", 18,18);
+ FI I22 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 18,18);
  BM I23 = ev.font_api.draw_text_string(I22, "Win32Edition", 5, 30);
 BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
  P I25=ev.polygon_api.color_map(I24,0.0,500,0.0,300.0,0);
@@ -2952,7 +2983,7 @@ GameApi::M GameApi::MainLoopApi::in_P(EveryApi &ev, bool is_3d)
   int screeny = get_screen_height();
   if (is_3d)
     {
-      return ev.matrix_api.perspective(80.0, (double)screenx/screeny, 10.1, 60000.0);
+      return ev.matrix_api.perspective(80.0, (double)screenx/screeny, 10.1, 600.0);
     }
   else
     {
@@ -3027,7 +3058,9 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url, homepage);
 #endif
-    if (url[url.size()-3]=='o'&&url[url.size()-2]=='g'&&url[url.size()-1]=='g') is_ogg=true; else is_ogg=false;
+    if (tolower(url[url.size()-3])=='o'&&tolower(url[url.size()-2])=='g'&&tolower(url[url.size()-1])=='g') is_ogg=true; else is_ogg=false;
+
+    if (!is_ogg) { std::cout << "WARNING: MP3 PLAYING DOESN'T WORK. USE OGG FILES." << std::endl; }
     
     GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
     //std::cout << "SONG SIZE: "<< ptr->size() << std::endl;
@@ -3049,7 +3082,7 @@ public:
     if (firsttime) {
       std::cout << "Playing music..." << std::endl;
       // setup ogg can also play mp3s
-      ptr2 = ev.tracker_api.setup_ogg(*vec,is_ogg?0:1);
+      ptr2 = ev.tracker_api.setup_ogg(*vec,is_ogg?1:2);
       //std::ofstream ss("song.ogg", std::ofstream::out | std::ofstream::binary);
       //int s = ptr->size();
       //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
@@ -3336,7 +3369,7 @@ GameApi::ML GameApi::MainLoopApi::depthmask(ML ml, bool b)
 class CullFace2 : public MainLoopItem
 {
 public:
-  CullFace2(MainLoopItem *next, bool b) : next(next),b(b) { }
+  CullFace2(MainLoopItem *next, bool b, bool is_gltf) : next(next),b(b),is_gltf(is_gltf) { }
   void Collect(CollectVisitor &vis) { next->Collect(vis); }
   void HeavyPrepare() { }
 
@@ -3346,7 +3379,11 @@ public:
     MainLoopEnv ee = e;
     if (b) {
       ogl->glEnable(Low_GL_CULL_FACE);
-      ogl->glFrontFace(Low_GL_CCW); // this is ccw because gltf models are odd
+      if (is_gltf) {
+	ogl->glFrontFace(Low_GL_CCW); // this is ccw because gltf models are odd
+      } else {
+	ogl->glFrontFace(Low_GL_CW); // this is ccw because gltf models are odd
+      }
       ee.cullface=true;
     } else {
       ogl->glDisable(Low_GL_CULL_FACE);
@@ -3364,6 +3401,7 @@ public:
 private:
   MainLoopItem *next;
   bool b;
+  bool is_gltf;
 };
 
 
@@ -3423,10 +3461,10 @@ private:
   int i,i2;
 };
 
-GameApi::ML GameApi::MainLoopApi::cullface(ML ml, bool b)
+GameApi::ML GameApi::MainLoopApi::cullface(ML ml, bool b, bool gltf)
 {
   MainLoopItem *next = find_main_loop(e,ml);
-  return add_main_loop(e, new CullFace2(next,b));
+  return add_main_loop(e, new CullFace2(next,b,gltf));
   
 }
 GameApi::ML GameApi::MainLoopApi::blendfunc(ML ml, int val, int val2)
@@ -3850,7 +3888,7 @@ public:
       // POSITION TXID GENERATION
       GameApi::MT aI1=ev.materials_api.m_def(ev);
       GameApi::SHP aI2=ev.mainloop_api.empty_shp();
-      GameApi::ARR aI3=ev.mainloop_api.load_shader2("https://tpgames.org/position.vert","https://tpgames.org/position.frag");
+      GameApi::ARR aI3=ev.mainloop_api.load_shader2("https://meshpage.org/assets/position.vert","https://meshpage.org/assets/position.frag");
       ArrayType *arr=find_array(env,aI3);
       GameApi::SHC o1,o2;
       o1.id = arr->vec[0];
@@ -3865,7 +3903,7 @@ public:
 
       GameApi::MT bI1=ev.materials_api.m_def(ev);
       GameApi::SHP bI2=ev.mainloop_api.empty_shp();
-      GameApi::ARR bI3=ev.mainloop_api.load_shader2("https://tpgames.org/normal.vert","https://tpgames.org/normal.frag");
+      GameApi::ARR bI3=ev.mainloop_api.load_shader2("https://meshpage.org/assets/normal.vert","https://meshpage.org/assets/normal.frag");
       ArrayType *arr2=find_array(env,bI3);
       GameApi::SHC bo1,bo2;
       bo1.id = arr2->vec[0];

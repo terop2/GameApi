@@ -85,15 +85,15 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   
   // hmd=false
   // right eye, eye=false
-  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43 = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,600.0,false);
   TXID I44 = ev.fbo_api.fbo_ml(ev,I43,fbo_x,fbo_y,false);
   // left eye, eye=true
-  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  ML I66 = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,600.0, false);
   TXID I67 = ev.fbo_api.fbo_ml(ev,I66,fbo_x,fbo_y,false);
 
-  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);
+  ML I43a = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,600.0,false);
   TXID I44a = ev.fbo_api.fbo_ml(ev,I43a,fbo_x,fbo_y,false);
-  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,60000.0, false);
+  ML I66a = ev.mainloop_api.setup_hmd_projection(ev,ml,true,false,10.1,600.0, false);
   TXID I67a = ev.fbo_api.fbo_ml(ev,I66a,fbo_x,fbo_y,false);
   ML res = ev.blocker_api.vr_submit_ml(ev,ml, I67,I44,invert,translate);
   ML I70a = ev.blocker_api.vr_submit(ev, I67a,I44a );
@@ -106,10 +106,10 @@ EXPORT GameApi::RUN GameApi::BlockerApi::vr_window(GameApi::EveryApi &ev, ML ml,
   // hmd=true
 
   // RIGHT EYE eye=false
-  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,60.1,60000.0,false);
+  ML I43_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,60.1,600.0,false);
   TXID I44_b = ev.fbo_api.fbo_ml(ev,I43_b,fbo_x,fbo_y,false);
   // LEFT EYE eye=true
-  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,60000.0, false);
+  ML I66_b = ev.mainloop_api.setup_hmd_projection(ev,ml,true, false,10.1,600.0, false);
   TXID I67_b = ev.fbo_api.fbo_ml(ev,I66_b,fbo_x,fbo_y,false);
 
   //ML I43a_b = ev.mainloop_api.setup_hmd_projection(ev,ml,false,false,10.1,60000.0,false);

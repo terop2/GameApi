@@ -218,7 +218,7 @@ void recreate_block(int id);
 
 #if 0
 void *operator new( std::size_t count);
-void operator delete(void* ptr) noexcept;
+void operator delete(void* ptr, size_t sz) noexcept;
 #endif
 
 std::string unique_id();
@@ -804,6 +804,9 @@ struct EnvImpl
   std::vector<Platform*> platforms;
   std::vector<Timing*> timings;
   std::vector<GameApi::GlobalIlluminationData*> globalillumination;
+  std::vector<MainLoopItemWGPU*> wgpu_main_loop;
+  std::vector<ColourSpace*> colourspaces;
+  std::vector<ColourSpaceI*> colourspacesI;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1133,6 +1136,8 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace * cs);
+GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI * csi);
 GameApi::GI add_gi(GameApi::Env &e, GameApi::GlobalIlluminationData *dt);
 GameApi::TT add_timing(GameApi::Env &e, Timing *tm);
 GameApi::PL add_platform(GameApi::Env &e, Platform *pl);
@@ -1221,6 +1226,7 @@ GameApi::EX add_expr(GameApi::Env &e, ExprNode *n);
 template<class T>
 GameApi::A<T> add_array(GameApi::Env &e, std::vector<T> *arr);
 GameApi::ML add_main_loop(GameApi::Env &e, MainLoopItem *item);
+GameApi::GML add_main_loop_wgpu(GameApi::Env &e, MainLoopItemWGPU *item);
 GameApi::FtA add_font_atlas(GameApi::Env &e, FontAtlasInfo *info);
 GameApi::W add_widget(GameApi::Env &e, GuiWidget *w);
 void add_update_widget(GameApi::Env &e, GameApi::W widget, GuiWidget *w);
@@ -1293,6 +1299,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs);
+ColourSpaceI *find_colourspaceI(GameApi::Env &e, GameApi::CSI csi);
 GameApi::GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi);
 Timing *find_timing(GameApi::Env &e, GameApi::TT tm);
 Platform *find_platform(GameApi::Env &e, GameApi::PL pl);
@@ -1372,6 +1380,7 @@ ExprNode *find_expr(GameApi::Env &e, GameApi::EX n);
 template<class T>
 std::vector<T> *find_array(GameApi::Env &e, GameApi::A<T> arr);
 MainLoopItem *find_main_loop(GameApi::Env &e, GameApi::ML ml);
+MainLoopItemWGPU *find_main_loop_wgpu(GameApi::Env &e, GameApi::GML ml);
 FontAtlasInfo *find_font_atlas(GameApi::Env &e, GameApi::FtA ft);
 ShaderModule *find_shader_module(GameApi::Env &e, GameApi::SFO sfo);
 GuiWidget *find_widget(GameApi::Env &e, GameApi::W w);

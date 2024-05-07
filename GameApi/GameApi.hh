@@ -52,6 +52,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
 #undef rad2
 
 
+  
 #define MAC(name) \
   struct name { int id;\
   name(const name &i) : id(i.id) { } \
@@ -59,6 +60,9 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(US)
+  MAC(CS)
+  MAC(CSI)
   MAC(TT)
   MAC(PBO)
   MAC(SHP)
@@ -109,7 +113,6 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(AS)
   MAC(MC)
   MAC(MS)
-  MAC(US)
   MAC(MT)
   MAC(SMT)
   MAC(TL)
@@ -204,6 +207,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(WM)
   MAC(FtA)
   MAC(ML)
+  MAC(GML)
   MAC(TF)
   MAC(SHC)
   template<class T>
@@ -331,6 +335,7 @@ public:
   IMPORT BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
   IMPORT void run(BLK blk);
+  IMPORT RUN webgpu_window(EveryApi &ev, GML ml);
   IMPORT RUN game_window2(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT RUN game_window_2nd_display(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT RUN vr_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float dura, bool invert, bool translate);
@@ -348,6 +353,15 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  void check_glerrors(std::string context);
+  HML load_zip2(EveryApi &ev, std::string zip_url);
+  HML load_zip_assets2(std::string zip_url);
+  ML load_zip(EveryApi &ev, std::string zip_url);
+  ML load_zip_assets(std::string zip_url);
+  ML disable_matrices(EveryApi &ev, ML ml, int size);
+  ML hires_ml(EveryApi &ev, ML I3, int size, int numsamples, float blur_radius);
+  ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
+  ML android_resize(EveryApi &ev, ML ml, float mult);
   ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
   ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
   ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
@@ -479,15 +493,15 @@ public:
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
-  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation );
-  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z );
-  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z);
-  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation );
-  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation);
+  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color );
+  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color );
+  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color );
+  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color );
+  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation , float border_width, unsigned int border_color );
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
   IMPORT ML gltf_anim2( EveryApi &ev, TF model0, int animation, int channel);
-  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z);
+  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -653,7 +667,7 @@ public:
   ML depthfunc(ML ml, int val); 
   ML depthmask(ML ml, bool b);
   ML blendfunc(ML ml, int val, int val2);
-  ML cullface(ML ml, bool b);
+  ML cullface(ML ml, bool b, bool is_gltf);
   ML record_keypresses(ML ml, std::string output_filename);
   ML playback_keypresses(ML ml, std::string input_url);
   ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
@@ -808,7 +822,7 @@ public:
         IMPORT VA bind_cubemap(VA va, TXID id);
 	IMPORT VA bind_arr(VA va, TXA tx);
         IMPORT TXA prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy);
-        IMPORT BM to_bitmap(TXID id);
+  IMPORT BM to_bitmap(EveryApi &ev, TXID id);
   IMPORT ML forward_to_txid(VA va, ML mainloop, TXID id);
 private:
   TextureApi(const TextureApi&);
@@ -1570,6 +1584,7 @@ class MaterialsApi
 {
 public:
   MaterialsApi(Env &e) : e(e) { }
+  IMPORT MT hires(EveryApi &ev, MT mat, int size, int numsampled, float blur_radius);
   IMPORT MT mt_empty(EveryApi &ev);
   IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
   IMPORT MT progressmaterial(MT nxt, void (*fptr)(void*), void*data);
@@ -1586,7 +1601,7 @@ public:
   IMPORT MT m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys);
   IMPORT MT gltf_anim_material(EveryApi &ev, TF model0, int skin_num, int animation, int num_timeindexes, MT next, int key, int mode);
   IMPORT MT gltf_anim_material2(EveryApi &e, TF model0, int skin_num, int num_timeindexes, MT next, std::string keys,int mode);
-  IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color);
+  IMPORT MT toon_border(EveryApi &ev, MT next, float border_width, unsigned int color, bool is_gltf);
   IMPORT ARR material_pack_1(EveryApi &ev);
   IMPORT MT m_def(EveryApi &ev);
   IMPORT MT skeletal(EveryApi &ev);
@@ -1828,6 +1843,7 @@ public:
   IMPORT MN rotatex(MN next, float angle);
   IMPORT MN rotatey(MN next, float angle);
   IMPORT MN rotatez(MN next, float angle);
+  IMPORT MN rotate_around_axis(MN next, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle);
   IMPORT MN matrix(MN next, M mat);
   IMPORT MN pose(MN next, bool pose_in_screen);
   IMPORT MN debug_translate(MN next);
@@ -2071,12 +2087,12 @@ public:
   IMPORT W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
   IMPORT W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W blockerapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W blockerapi_functions_list_item(GameApi::EveryApi &ev, FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
 
 
   IMPORT std::string bitmapapi_functions_item_label(int i);
   IMPORT std::string waveformapi_functions_item_label(int i);
-  IMPORT std::string blockerapi_functions_item_label(int i);
+  IMPORT std::string blockerapi_functions_item_label(GameApi::EveryApi &ev, int i);
   IMPORT std::string boolbitmapapi_functions_item_label(int i);
   IMPORT std::string floatbitmapapi_functions_item_label(int i);
   IMPORT std::string polygonapi_functions_item_label(int i);
@@ -2119,7 +2135,7 @@ public:
   IMPORT int size_x(W w);
   IMPORT int size_y(W w);
 
-  IMPORT std::vector<std::pair<std::string,std::string> > get_functions_mapping();
+  IMPORT std::vector<std::pair<std::string,std::string> > get_functions_mapping(GameApi::EveryApi &ev);
 private:
   Env &e;
   EveryApi &ev;
@@ -2142,19 +2158,20 @@ class WModApi
 {
 public:
   WModApi(Env &e) : e(e) { }
+  IMPORT void dump_functions_for_docs(GameApi::EveryApi &ev, int i);
   IMPORT int dump_functions_count();
-  IMPORT std::string dump_functions(int i);
+  IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
   IMPORT WM load(std::string filename);
   IMPORT void save(WM mod, std::string ilename);
-  IMPORT void insert_to_canvas(GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
+  IMPORT void insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
   IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);
   IMPORT void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
-  IMPORT W inserted_widget(GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params);
-  IMPORT std::vector<int> indexes_from_funcname(std::string funcname);
-  IMPORT std::vector<std::string> types_from_function(WM mod, int id, std::string funcname);
-  IMPORT std::vector<std::string> labels_from_function(WM mod, int id, std::string funcname);
-  IMPORT std::vector<std::string*> refs_from_function(WM mod, int id, std::string funcname);
-  IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(std::string module_name);
+  IMPORT W inserted_widget(GameApi::EveryApi &ev, GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params);
+  IMPORT std::vector<int> indexes_from_funcname(GameApi::EveryApi &ev, std::string funcname);
+  IMPORT std::vector<std::string> types_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string> labels_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string*> refs_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(GameApi::EveryApi &ev, std::string module_name);
   struct InsertParam {
     std::string first;
     std::string second;
@@ -2172,7 +2189,7 @@ public:
   IMPORT std::vector<std::string> parse_param_array(std::string s);
   IMPORT std::pair<std::string,int> parse_multiple_return_uid(std::string s, bool &success);
   IMPORT std::string generate_param_array(std::vector<std::string> v);
-  IMPORT bool typecheck(WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return);
+  IMPORT bool typecheck(GameApi::EveryApi &ev, WM mod2, int id, std::string uid1, std::string uid2, int param_index, int ret_index, bool &is_array, bool &is_array_return);
   IMPORT void insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh);
 
   IMPORT int execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j);
@@ -2182,7 +2199,7 @@ public:
   IMPORT CollectResult collect_nodes(EveryApi &ev, WM mod2, int id, std::string line_uid, int level);
   IMPORT void codegen_reset_counter();
   IMPORT std::pair<std::string, std::string> codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j);
-  IMPORT std::string return_type(WM mod2, int id, std::string line_uid);
+  IMPORT std::string return_type(GameApi::EveryApi &ev, WM mod2, int id, std::string line_uid);
   IMPORT void delete_by_uid(WM mod2, int id, std::string line_uid);
 private:
   Env &e;
@@ -2523,6 +2540,13 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+ 
+  CS colourspace_sphere2();
+  CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);
+  CS colourspace_func(std::function<unsigned int (float,float,float,float)> f, float sx, float ex, float sy, float ey, float sz, float ez, float st, float et);
+  CSI colourspace_sample(CS i, int sx, int sy, int sz);
+  P colourspace_facecoll(CSI i, float t);
+  P polygon_fetch(P p);
   PL rect_pl(float start_x, float end_x,
 	     float start_y, float end_y,
 	     float start_z, float end_z,
@@ -2589,7 +2613,7 @@ public:
   P convex_hull(PTS pts);
   P optimize_mesh(P p, float max);
   P toon_outline(P p, float border_width);
-  ML cullface(ML ml, bool b);
+  ML cullface(ML ml, bool b, bool is_gltf);
   P substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal);
   ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
   ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);
@@ -2942,6 +2966,7 @@ public:
   IMPORT ML newshadow_shader_2_phong(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale);
   IMPORT ML newshadow_shader_2_gltf(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int texindex);
   IMPORT ML adjust_shader(EveryApi &ev, ML mainloop, unsigned int ad_color, float ad_dark, float ad_light);
+  IMPORT ML blurred_render_shader(EveryApi &ev, ML mainloop, int numsamples, float blur_radius);
   IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
@@ -3895,6 +3920,7 @@ public:
   US v_newshadow_1(US us);
   US v_newshadow_2(US us);
   US v_phong(US us);
+  US v_blurred_render(US us);
   US v_adjust(US us);
   US v_generic(US us, std::string name, std::string flags);
   US v_vertexphong(US us);
@@ -3921,6 +3947,7 @@ public:
   US f_newshadow_2(US us, bool is_phong);
   US f_adjust(US us);
   US f_phong(US us);
+  US f_blurred_render(US us);
   US f_phong2(US us);
   US f_generic(US us, std::string name, std::string flags);
   US f_generic_flip(US us, std::string name, std::string flags);
@@ -4055,7 +4082,7 @@ class FrameBufferApi
 public:
   struct vp { int viewport[4]; };
   IMPORT FrameBufferApi(Env &e) : e(e) { }
-  IMPORT FBO create_fbo(int sx, int sy);
+  IMPORT FBO create_fbo(EveryApi &ev, int sx, int sy);
   IMPORT void config_fbo(FBO buffer);
   IMPORT vp bind_fbo(FBO buffer);
   IMPORT void bind_screen(vp viewport);

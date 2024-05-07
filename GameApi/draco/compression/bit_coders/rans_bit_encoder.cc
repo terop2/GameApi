@@ -18,6 +18,8 @@
 #include "draco/core/bit_utils.h"
 #include "draco/core/varint_encoding.h"
 
+static int foobar10=0;
+
 namespace draco {
 
 RAnsBitEncoder::RAnsBitEncoder() : local_bits_(0), num_local_bits_(0) {}
