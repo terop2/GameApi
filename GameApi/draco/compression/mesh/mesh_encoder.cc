@@ -14,6 +14,8 @@
 //
 #include "draco/compression/mesh/mesh_encoder.h"
 
+static int foobar66=0;
+
 namespace draco {
 
 MeshEncoder::MeshEncoder() : mesh_(nullptr), num_encoded_faces_(0) {}

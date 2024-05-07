@@ -165,8 +165,8 @@ $codearr = explode("\n",$code . "\n");
 //var_dump($codearr);
 //var_dump("test2");
 
-$classes = load_classes("https://tpgames.org/data.txt");
-$funcs = load_funcs("https://tpgames.org/data2.txt");
+$classes = load_classes("https://meshpage.org/assets/data.txt");
+$funcs = load_funcs("https://meshpage.org/assets/data2.txt");
 
 foreach($codearr as $item) {
   $arr = explode(".",$item);

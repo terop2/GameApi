@@ -16,6 +16,8 @@
 
 #include "draco/compression/attributes/kd_tree_attributes_encoder.h"
 
+static int foobar306=0;
+
 namespace draco {
 
 Status PointCloudKdTreeEncoder::EncodeGeometryData() {

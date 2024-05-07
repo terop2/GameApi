@@ -19,6 +19,45 @@
 #
 
 
+LIBPATH=/usr/lib/x86_64-linux-gnu/
+GL_PATH=$(LIBPATH)
+GL_NAME=libGL.so
+GL_CFLAGS=`pkg-config --cflags gl`
+GL_PKGCONFIG = `pkg-config --libs gl`
+ifndef GL_PKGCONFIG
+GL_PKGCONFIG = $(GL_PATH)$(GL_NAME)
+endif
+SDL_PATH=$(LIBPATH)
+SDL_NAME=libSDL2-2.0.so
+SDL_CFLAGS=`pkg-config --cflags sdl2`
+SDL_PKGCONFIG=`pkg-config --libs sdl2`
+ifndef SDL_PKGCONFIG
+SDL_PKGCONFIG = $(SDL_PATH)$(SDL_NAME)
+endif
+SDL_MIXER_PATH=$(SDL_PATH)
+SDL_MIXER_NAME=libSDL2_mixer-2.0.so
+SDL_MIXER_CFLAGS=`pkg-config --cflags SDL2_mixer`
+SDL_MIXER_PKGCONFIG=`pkg-config --libs SDL2_mixer`
+ifndef SDL_MIXER_PKGCONFIG
+SDL_MIXER_PKGCONFIG = $(SDL_MIXER_PATH)$(SDL_MIXER_NAME)
+endif
+GLEW_PATH=$(LIBPATH)
+GLEW_NAME=libGLEW.so.2.2
+GLEW_CFLAGS=`pkg-config --cflags glew`
+GLEW_PKGCONFIG = `pkg-config --libs glew`
+ifndef GLEW_PKGCONFIG
+GLEW_PKGCONFIG = $(GLEW_PATH)$(GLEW_NAME)
+endif
+FREETYPE_PATH=$(LIBPATH)
+FREETYPE_NAME=libfreetype.so
+FREETYPE_CFLAGS=`pkg-config --cflags freetype2`
+FREETYPE_PKGCONFIG=`pkg-config --libs freetype2`
+ifndef FREETYPE_PKGCONFIG
+FREETYPE_PKGCONFIG = $(FREETYPE_PATH)$(FREETYPE_NAME)
+endif
+
+LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
+
 CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
@@ -107,6 +146,10 @@ draco/compression/attributes/kd_tree_attributes_encoder.cc \
 draco/metadata/geometry_metadata.cc  draco/metadata/metadata_encoder.cc       draco/metadata/property_table.cc     \
 draco/metadata/metadata.cc     \
 draco/metadata/metadata_decoder.cc          draco/metadata/structural_metadata.cc \
+webgpu.cc
+
+#lib/lib_webgpu.cc \
+#lib/lib_webgpu_cpp20.cc
 
 
 CFiles2 = 
@@ -123,21 +166,85 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
-WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict
+WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct
 
 #-fsanitize=undefined -fsanitize-recover=undefined
+#  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
-CCFLAGS = -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
-CC2FLAGS = -I. -ggdb -m64 -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DLINUX -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
+CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: libGameApi.so deploytool/deploytool
+
+default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
+
+
+check_compile:
+ifeq ($(shell echo $(SDL_PKGCONFIG)),)
+	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST   libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libsdl2=OK"
+endif
+ifeq ($(shell echo $(SDL_MIXER_PKGCONFIG)),)
+	@test -f $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) && echo "  TEST   libsdl2_mixer=OK" || (echo "  TEST libsdl2_mixer=FAIL\n NOTE: recommended command: make -j 8 SDL_MIXER_PATH=$(SDL_MIXER_PATH) SDL_MIXER_NAME=$(SDL_MIXER_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libSDL2_mixer=OK"
+endif
+ifeq ($(shell echo $(GL_PKGCONFIG)),)
+	@test -f $(GL_PATH)$(GL_NAME) && echo "  TEST   libGL=OK" || (echo "  TEST libGL=FAIL\n NOTE: recommended command: make -j 8 GL_PATH=$(GL_PATH) GL_NAME=$(GL_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libGL=OK"
+endif
+ifeq ($(shell echo $(GLEW_PKGCONFIG)),)
+	@test -f $(GLEW_PATH)$(GLEW_NAME) && echo "  TEST   libGLEW=OK" || (echo "  TEST libGLEW=FAIL\n NOTE: recommended command: make -j 8 GLEW_PATH=$(GLEW_PATH) GLEW_NAME=$(GLEW_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libGLEW=OK"
+endif
+ifeq ($(shell echo $(FREETYPE_PKGCONFIG)),)
+	@test -f $(FREETYPE_PATH)$(FREETYPE_NAME) && echo "  TEST   libfreetype=OK" || (echo "  TEST libfreetype=FAIL\n NOTE: recommended command: make -j 8 FREETYPE_PATH=$(FREETYPE_PATH) FREETYPE_NAME=$(FREETYPE_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libfreetype=OK"
+endif
+
+dirs:
+	@echo "  MKDIR  objs"
+	@mkdir -p objs
+	@echo "  MKDIR  objs/lib"
+	@mkdir -p objs/lib
+	@echo "  MKDIR  objs/draco/attributes"
+	@mkdir -p objs/draco/attributes
+	@echo "  MKDIR  objs/draco/compression"
+	@mkdir -p objs/draco/compression
+	@echo "  MKDIR  objs/draco/compression/attributes"
+	@mkdir -p objs/draco/compression/attributes
+	@echo "  MKDIR  objs/draco/compression/attributes/prediction_schemes"
+	@mkdir -p objs/draco/compression/attributes/prediction_schemes
+	@echo "  MKDIR  objs/draco/compression/bit_coders"
+	@mkdir -p objs/draco/compression/bit_coders
+	@echo "  MKDIR  objs/draco/compression/entropy"
+	@mkdir -p objs/draco/compression/entropy
+	@echo "  MKDIR  objs/draco/compression/mesh"
+	@mkdir -p objs/draco/compression/mesh
+	@echo "  MKDIR  objs/draco/compression/point_cloud"
+	@mkdir -p objs/draco/compression/point_cloud
+	@echo "  MKDIR  objs/draco/compression/point_cloud/algorithms"
+	@mkdir -p objs/draco/compression/point_cloud/algorithms
+	@echo "  MKDIR  objs/draco/core"
+	@mkdir -p objs/draco/core
+	@echo "  MKDIR  objs/draco/mesh"
+	@mkdir -p objs/draco/mesh
+	@echo "  MKDIR  objs/draco/point_cloud"
+	@mkdir -p objs/draco/point_cloud
+	@echo "  MKDIR  objs/draco/metadata"
+	@mkdir -p objs/draco/metadata
 
 
 libGameApi.so: $(OFiles) Makefile
-	@echo "  LD    libGameApi.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.2 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+	@echo "  LD     libGameApi.so"
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client
+
+.PHONY: dirs
 
 #`pkg-config gtkmm-2.4 --libs` 
 
@@ -165,8 +272,14 @@ CCWIN = i586-mingw32msvc-g++
 deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
 	@(cd deploytool; make -f Makefile)
 
+cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.so
+	@(cd cmdline; make -f Makefile)
+
+editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
+	@(cd editor; make -f Makefile.Linux LDFLAGS="$(LDFLAGS)")
+
 $(OFiles): objs/%.o : %.cc
-	@echo "  CC    $@"
+	@echo "  CC     $@"
 	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 touch_all:
@@ -177,7 +290,6 @@ touch_all:
 
 clean:
 	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
-	@rm main
 	@echo Clean.
 
 

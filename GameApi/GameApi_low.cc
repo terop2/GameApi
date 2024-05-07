@@ -62,8 +62,8 @@
 #endif
 #ifndef DEPS
 #ifdef SDL2_USED
-#include <SDL.h>
-#include <SDL_opengl.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #else
 #include <SDL/SDL.h> 
 #include <SDL/SDL_opengl.h>
@@ -73,9 +73,11 @@
 //#include <SDL_mixer.h>
 
 #ifdef USE_MIX
-#include <SDL_mixer.h>
+#include <SDL2/SDL_mixer.h>
 #endif
+#if 0
 #include <AudioService.h>
+#endif
 
 
 #ifdef WAYLAND
@@ -199,10 +201,12 @@ void check_err(const char *name)
 
 void map_enums_sdl(unsigned int &i) {
   switch(i) {
+#if 0
     case Low_SAMPLE_FREQ: i=SAMPLE_FREQ; break;
     case Low_AUDIO_F32LSB: i=AUDIO_F32LSB; break;
     case Low_SAMPLE_BUF_SIZE: i=SAMPLE_BUF_SIZE; break;
-
+#endif
+      
   case Low_SDL_WINDOW_SHOWN: i=SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN; break;
   case Low_SDL_WINDOW_OPENGL_SHOWN_RESIZEABLE: i=SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN |SDL_WINDOW_RESIZABLE; break;
@@ -259,6 +263,7 @@ void map_enums_sdl(int &i) {
 void map_enums(int &i)
 {
   switch(i) {
+  case Low_GL_READ_BUFFER: i=GL_READ_BUFFER; break;
   case  Low_GL_BYTE: i=GL_BYTE; break;
   case  Low_GL_DOUBLE: i=GL_DOUBLE; break;
   case Low_GL_RGBA32F: i=GL_RGBA32F; break;
@@ -334,6 +339,7 @@ void map_enums(int &i)
   case    Low_GL_TRUE: i=GL_TRUE; break;
   case    Low_GL_TEXTURE_BINDING_2D:  i=GL_TEXTURE_BINDING_2D; break;
   case    Low_GL_RGBA: i=GL_RGBA; break;
+  case Low_GL_RGB: i=GL_RGB; break;
   case    Low_GL_SCISSOR_TEST:  i=GL_SCISSOR_TEST; break;
   case    Low_GL_FRAMEBUFFER_COMPLETE: i=GL_FRAMEBUFFER_COMPLETE; break;
   case    Low_GL_NEAREST: i=GL_NEAREST; break;
@@ -646,12 +652,10 @@ public:
 #endif
   }
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
-#ifdef USE_TEXTURE_READ
     map_enums(a);
     map_enums(w);
-    //::glGetTexLevelParameteriv(a,b,w,ptr); 
+    ::glGetTexLevelParameteriv(a,b,w,ptr); 
     check_err("glGetTexLevelParameteriv");
-#endif
 }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { 
 #ifdef USE_TEXTURE_READ
@@ -1442,7 +1446,7 @@ public:
   virtual void Mix_HaltChannel(int channel)
   {
 #ifdef USE_MIX
-    // ::Mix_HaltChannel(channel);
+    ::Mix_HaltChannel(channel);
 #endif
   }
   virtual Low_Mix_Chunk *Mix_QuickLoad_RAW(unsigned char *mem, int len)
@@ -1496,7 +1500,7 @@ public:
   virtual void Mix_AllocateChannels(int i)
   {
 #ifdef USE_MIX
-    // ::Mix_AllocateChannels(i);
+     ::Mix_AllocateChannels(i);
 #endif
   }
 

@@ -27,7 +27,7 @@ html, body { height: 100%; margin: 0; }
 var canv = document.getElementById("canvas");
 var Module = {
    canvas : canv,
-   arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href],
+   arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://meshpage.org/assets/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
 };
@@ -133,9 +133,9 @@ function load_emscripten(state,filename, contents, filenames)
     if (mobile) src="web_page_lowmem.js?"+data2;
     if (!g_emscripten_running) {
       if (filename=="") {
-      Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://tpgames.org/", "--href", window.location.href];
+      Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://meshpage.org/assets/", "--href", window.location.href];
       } else {
-      Module.arguments = [ "--size", "800", "600", "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "https://tpgames.org/", "--href", window.location.href];
+      Module.arguments = [ "--size", "800", "600", "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "https://meshpage.org/assets/", "--href", window.location.href];
       }
 
       var script = document.createElement("script");

@@ -178,6 +178,12 @@
 			 { "EveryApi&" },
 			 { "ev" },
 			 "MT", "materials_api", "m_def"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::hires,
+			 "m_hires",
+			 { "ev", "mat", "size", "numsamples", "blur_radius" },
+			 { "EveryApi&", "MT", "int","int", "float" },
+			 { "ev", "", "2048" },
+			 "MT", "materials_api", "hires"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mt_alt,
 			 "m_alt",
 			 { "ev", "vec", "index" },
@@ -225,7 +231,7 @@
 			 "m_mtl_many",
 			 { "ev", "mtl_url", "url_prefix", "mix", "start_range", "end_range" },
 			 { "EveryApi&", "std::string", "std::string", "float", "int", "int" },
-			 { "ev", "http://tpgames.org/sponza/sponza.mtl@crytek@https://www.cryengine.com/ce-terms", "http://tpgames.org/sponza", "1", "0", "15" },
+			 { "ev", "http://meshpage.org/assets/sponza/sponza.mtl@crytek@https://www.cryengine.com/ce-terms", "http://meshpage.org/assets/sponza", "1", "0", "15" },
 			 "MT", "materials_api", "many_texture_id_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture_cubemap,
 			 "m_texture_cubemap",
@@ -319,9 +325,9 @@
 			 "[MT]", "materials_api", "m_apply_phong"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::toon_border,
 			 "m_toon_border",
-			 { "ev", "next", "border_width", "border_color" },
-			 { "EveryApi&", "MT", "float", "unsigned int" },
-			 { "ev", "", "2.00", "ffffffff" },
+			 { "ev", "next", "border_width", "border_color", "is_gltf" },
+			 { "EveryApi&", "MT", "float", "unsigned int", "bool" },
+			 { "ev", "", "2.00", "ffffffff", "false" },
 			 "MT", "materials_api", "toon_border"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::edge,
@@ -353,7 +359,7 @@
 			 "m_gltf_file",
 			 { "ev", "url", "light_dir_x", "light_dir_y", "light_dir_z" },
 			 { "EveryApi&", "std::string","float", "float", "float" },
-			 { "ev", "https://tpgames.org/materials/wood.mat@AmbientCG@https://docs.ambientcg.com/books/website-licensing/page/license-information", "400.0", "-400.0", "300.0" },
+			 { "ev", "https://meshpage.org/assets/materials/wood.mat@AmbientCG@https://docs.ambientcg.com/books/website-licensing/page/license-information", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material_from_file"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_manual,
 			 "m_gltf_man",

@@ -135,7 +135,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 #endif
   //ProgressBar(111,15,15,shader.Name().c_str());
 
-  // if (val!=Low_GL_NO_ERROR)
+  if (val!=Low_GL_NO_ERROR)
     {
     std::cout << "glCompileShader ERROR: " << val << std::endl;
     char buf[256];
@@ -204,8 +204,14 @@ void Program::push_back(const Shader &shader)
 {
   //std::cout << "AttachShader: " << shader.priv->handle << std::endl;
   g_low->ogl->glAttachShader/*ObjectARB*/(priv->program, shader.priv->handle);
-  /*
+  
+#ifdef HAS_GL_GETERROR
   int val = g_low->ogl->glGetError();
+#else
+  int val = Low_GL_NO_ERROR;
+#endif
+
+  //int val = g_low->ogl->glGetError();
   if (val!=Low_GL_NO_ERROR)
     {
       //std::cout << "glAttachShader ERROR: " << val << std::endl;
@@ -215,7 +221,7 @@ void Program::push_back(const Shader &shader)
     buf[length]=0;
     std::cout << "" << buf << std::endl;
     }
-  */
+  
   priv->shaders.push_back(&shader);
   shader.priv->programs.push_back(this);
 }
@@ -275,8 +281,17 @@ void Program::link()
   g_low->ogl->glGetProgramiv(priv->program, Low_GL_LINK_STATUS, &res);
 
   if (res!=1) {
+
+
   int val = g_low->ogl->glGetError();
   std::cout << "LINK ERROR: " << val << std::endl;
+  */
+
+  #ifdef HAS_GL_GETERROR
+  int val = g_low->ogl->glGetError();
+#else
+  int val = Low_GL_NO_ERROR;
+#endif
   if (val!=Low_GL_NO_ERROR)
   {
   int len=0;
@@ -286,6 +301,7 @@ void Program::link()
   if (len>0)
     std::cout << "LINK ERROR: " << std::endl << log << std::endl;
   }
+  /*
   }
   */
 }
@@ -1135,6 +1151,19 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "#endif\n"
 "#endif\n"
 
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_TEXCOORD\n"
+"#ifdef BLURRED_RENDER\n"
+    
+"vec4 blurred_render(vec4 pos)\n"
+"{\n"
+    " ex_TexCoord = in_TexCoord;\n"
+    "return pos;\n"
+    "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
+    
 "#ifdef IN_NORMAL\n"
 "#ifdef LIGHTDIR\n"
 "#ifdef EX_COLOR\n"
@@ -1704,7 +1733,49 @@ s+="#ifdef SPECULAR_SIZE\n"
    "   return vec4(cc,rgb.a);\n"
    "}\n"   
 "#endif\n"
+
+"#ifdef EX_TEXCOORD\n"
+"#ifdef COLOR_MIX\n"
+"#ifdef BLURRED_RENDER\n"
+"uniform int blur_num_samples;\n"
+"uniform float blur_radius;\n"
+
+"const float GAMMA3=2.2;\n"
+"const float INV_GAMMA3 = 1.0/GAMMA3;\n"
+"vec4 V_LINEARtoSRGB3(vec4 color)\n"
+"{\n"
+" return vec4(pow(color.xyz, vec3(INV_GAMMA3)),color.a);\n"
+"}\n"
+"vec4 V_SRGBtoLINEAR3(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA3)),srgbIn.a);\n"
+"}\n"
+
+   "vec4 blurred_render(vec4 rgb)\n"
+"{\n"
+" vec4 t2=vec4(0.0,0.0,0.0,0.0);\n"
+"  for(int i=0;i<blur_num_samples;i++)\n"
+" {\n"
+ " vec2 delta = vec2(blur_radius*cos(float(i)*3.14159265*2.0/float(blur_num_samples)),"
+   "		     blur_radius*sin(float(i)*3.14159265*2.0/float(blur_num_samples)));";
    
+ if (webgl2) {
+   s+=  "   vec4 t = V_SRGBtoLINEAR3(texture(tex, ex_TexCoord.xy+delta));\n";
+ } else {
+   s+=  "   vec4 t = V_SRGBtoLINEAR3(texture2D(tex, ex_TexCoord.xy+delta));\n";
+ }
+s+=""
+  " t2+=t;\n"
+"}\n"
+  " t2/=float(blur_num_samples);\n"
+  "   return V_LINEARtoSRGB3(vec4(mix(rgb.rgb, t2.rgb, color_mix),t2.a));\n"
+  //" return t2;
+  "}\n"
+
+"#endif\n"
+"#endif\n"
+"#endif\n"
+  
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
 "#ifdef LEVELS\n"
@@ -2250,7 +2321,9 @@ s+= "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef COLOR_MIX\n"
 "#ifdef TEXTURE_IMPL\n"
-"vec4 texture_impl(vec4 rgb)\n"
+
+
+  "vec4 texture_impl(vec4 rgb)\n"
   "{\n";
  if (webgl2) {
    s+=  "   vec4 t = texture(tex, ex_TexCoord.xy);\n";
@@ -3178,6 +3251,20 @@ s+="precision highp float;\n"
     "{\n"
     "   return pos;\n"
     "}\n"
+
+
+"#ifdef EX_TEXCOORD\n"
+"#ifdef IN_TEXCOORD\n"
+"#ifdef BLURRED_RENDER\n"
+    
+"vec4 blurred_render(vec4 pos)\n"
+"{\n"
+    " ex_TexCoord = in_TexCoord;\n"
+    "return pos;\n"
+    "}\n"
+"#endif\n"
+"#endif\n"
+"#endif\n"
 
   
 "#ifdef IN_NORMAL\n"
@@ -4139,7 +4226,9 @@ s+="   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "}\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef COLOR_MIX\n"
-"vec4 texture_impl(vec4 rgb)\n"
+
+
+  "vec4 texture_impl(vec4 rgb)\n"
 "{\n"
 "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
 "   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
@@ -4387,6 +4476,51 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
    "}\n"
 
    
+"#ifdef EX_TEXCOORD\n"
+"#ifdef COLOR_MIX\n"
+"#ifdef BLURRED_RENDER\n"
+"uniform int blur_num_samples;\n"
+"uniform float blur_radius;\n"
+
+
+"const float GAMMA3=2.2;\n"
+"const float INV_GAMMA3 = 1.0/GAMMA3;\n"
+"vec4 V_LINEARtoSRGB3(vec4 color)\n"
+"{\n"
+" return vec4(pow(color.xyz, vec3(INV_GAMMA3)),color.a);\n"
+"}\n"
+"vec4 V_SRGBtoLINEAR3(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA3)),srgbIn.a);\n"
+"}\n"
+
+   "vec4 blurred_render(vec4 rgb)\n"
+"{\n"
+" vec4 t2=vec4(0.0,0.0,0.0,0.0);\n"
+"  for(int i=0;i<blur_num_samples;i++)\n"
+" {\n"
+ " vec2 delta = vec2(blur_radius*cos(i*3.14159265*2.0/blur_num_samples),"
+   "		     blur_radius*sin(i*3.14159265*2.0/blur_num_samples));";
+   
+ if (webgl2) {
+   s+=  "   vec4 t = V_SRGBtoLINEAR3(texture(tex, ex_TexCoord.xy+delta));\n";
+ } else {
+   s+=  "   vec4 t = V_SRGBtoLINEAR3(texture2D(tex, ex_TexCoord.xy+delta));\n";
+ }
+s+=""
+  //" t2=max(t2,t);\n"
+    " t2+=t;\n"
+"}\n"
+  " t2/=blur_num_samples;\n"
+  "   return V_LINEARtoSRGB3(vec4(mix(rgb.rgb, t2.rgb, color_mix),t2.a));\n"
+  //" return t2;
+  "}\n"
+
+"#endif\n"
+"#endif\n"
+"#endif\n"
+
+
    
 "#ifdef EX_NORMAL2\n"
 "#ifdef EX_LIGHTPOS2\n"
@@ -5252,8 +5386,22 @@ struct replace_c_params
   std::string shader;
 };
 
+bool is_in_defines(std::string defines, std::string label)
+{
+  std::stringstream ss(defines);
+  std::string word;
+  bool res = false;
+  while(ss>>word) {
+    if (label==word) { res=true; }
+  }
+  return res;
+}
+
 std::string replace_c(const replace_c_params &pp)
 {
+  //std::cout << "REPLACE_C:" << pp.is_fragment << " " << pp.is_transparent << std::endl;
+
+  
   bool oldshader=false;
   bool webgl2 = false;
   bool emscripten = false;
@@ -5511,14 +5659,18 @@ std::string replace_c(const replace_c_params &pp)
 
 		  std::stringstream ss3;
 		  ss3 << num2;
-		  out+="gl_Position = in_P * in_T * in_MV * pos";
+		  out+="gl_Position = in_P * in_T * in_MV *pos"; // 
 		  out+=ss3.str();
 		  out+=";\n";
 		  
 		}
 	      else
 		{
-	      out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+		  //if (is_in_defines(pp.defines,"IN_POSITION")) {
+		    out+="vec3 p = mix(in_Position, in_Position2, in_POS);\n";
+		    //  } else {
+		    //  out+="vec3 p = vec3(0.0,0.0,0.0);";
+		    // }
 	      out+="vec4 pos0 =  vec4(p,1.0);\n";
 	      int s = comb.size();
 	      for(int i=0;i<s;i++)
@@ -5545,7 +5697,7 @@ std::string replace_c(const replace_c_params &pp)
 		}
 	      std::stringstream ss3;
 	      ss3 << s;
-	      out+="gl_Position = in_P * in_T * in_MV * pos";
+	      out+="gl_Position = in_P * in_T * in_MV *pos"; //  
 	      out+=ss3.str();
 	      out+=";\n";
 		}
@@ -5888,7 +6040,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //                               std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                                std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

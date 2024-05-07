@@ -65,7 +65,7 @@ if ($res) {
     set_status(11);
 
     header("Content-Type: application/zip");
-    header("Content-Disposition: attachment; filename=\"" . $label . ".zip\"");
+    header("Content-Disposition: attachment; filename=\"" . $label . "_html5.zip\"");
     echo "$file2";
   } else {
      echo "<pre>$file3 ERRORS FOUND, ZIP COULDN'T BE UPDATED</pre>";

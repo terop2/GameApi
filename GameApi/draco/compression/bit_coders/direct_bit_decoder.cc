@@ -14,6 +14,8 @@
 //
 #include "draco/compression/bit_coders/direct_bit_decoder.h"
 
+static int foobar7=0;
+
 namespace draco {
 
 DirectBitDecoder::DirectBitDecoder() : pos_(bits_.end()), num_used_bits_(0) {}

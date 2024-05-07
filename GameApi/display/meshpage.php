@@ -1,38 +1,44 @@
 <?php
-//header("Cross-Origin-Opener-Policy: same-origin");
+header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 $machine=php_uname("n");
 $siteprefix = "";
-if ($machine=="terop-pc") {
+if ($machine=="terop-pc2") {
    $site = "meshpage.org";
-   $assetsite = "tpgames.org";
+   $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
    $siteprefix=$_SERVER['HTTP_HOST'];
    $siteprefix=substr($siteprefix,0,4);
+   //echo "SITEPREFIX: $siteprefix";
    if ("$siteprefix"!="ssh.") $siteprefix="";
-   } else {
+} else {
    $site = "dinoengine.com";
    $assetsite = "dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
-   }
+}
    $site = "https://" . $siteprefix . $site;
    $assetsite = "https://" . $siteprefix . $assetsite;
+//echo "SITE:" . $site;
+//echo "ASSETSITE:" . $assetsite
 ?>
 <!DOCTYPE html>
-<html id="html">
+<html id="html"  style="background-color: #eee; overflow: auto;">
 <head>
 <title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
- echo '<meta name="description" content="<?php echo $sitename ?> makes the web 3d, one site at the time"/>';
+ echo '<meta name="description" content="meshpage.org makes the web 3d, one site at the time"/>';
  }
  ?>
-<!-- meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/ -->
+<meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
-<!--meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/-->
-<!--meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/-->
+<meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
+<meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
 <?php
 require_once("user.php");
 function create_id2( $name, $index )
@@ -85,30 +91,6 @@ require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
-/*
-if ($mobile == "yes") {
-  echo "<link rel=\"preload\" href=\"web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "\" as=\"script\"/>";
-} else
-if ($nothreads == "yes") {
-   if ($highmem == "yes") {
-   echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "\" as=\"script\"/>";
-
-  echo "<link rel=\"preload\" href=\"web_page_nothreads_highmem.worker.js?" . filemtime("web_page_nothreads_highmem_worker.js") . "\" as=\"script\" crossorigin/>";
-
-  } else {
-   echo "<link rel=\"preload\" href=\"web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "\" as=\"script\"/>";
-
-  echo "<link rel=\"preload\" href=\"web_page_nothreads.worker.js?" . filemtime("web_page_nothreads_worker.js") . "\" as=\"script\" crossorigin/>";
-  }
-} else {
-   if ($highmem == "yes") {
-   echo "<link rel=\"preload\" href=\"web_page_highmem.js?" . filemtime("web_page_highmem.js") . "\" as=\"script\" crossorigin/>";
-   } else {
-   echo "<link rel=\"preload\" href=\"web_page.js?" . filemtime("web_page.js") . "\" as=\"script\" crossorigin/>";
-   }
-}
-echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" as=\"style\"  onload=\"this.rel = 'stylesheet'\"/>";
-*/
 ?>
 <link rel="preload" href="vue.js" as="script"/>
 </head>
@@ -159,7 +141,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
   ]
 }
 </script>
-<body id="body">
+<body id="body" style="overflow:hidden">
 <script src="vue.js"></script>
 
 <div id="result" style="display:none"></div>
@@ -178,7 +160,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
-<template v-if="isIndicator3_2">
+<!--template v-if="isIndicator3_2">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
@@ -202,7 +184,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
-</template>
+</template-->
 </a>	
 <template v-for="bread in main_breadcrumb">
 <template v-if="bread.link">
@@ -255,7 +237,7 @@ echo "<link rel=\"preload\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . 
 <?php
 if ($sitename=="dinoengine.com") {
   echo "<div class=\"logo\">";
-  echo "<img src=\"dino3.webp\" width=\"200\" height=\"150\"></img>";
+  echo "<img loading=\"lazy\" src=\"dino3.webp\" width=\"200\" height=\"150\"></img>";
   echo "</div>";
   }
 ?>
@@ -329,7 +311,6 @@ function open_tab(event, label) {
 </div>
 <div id="main_div">
 
-<!--iframe width="560" height="315" src="https://www.youtube.com/embed/0UF0zIMI2xA" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe-->
 
 <script>
 /*
@@ -379,96 +360,19 @@ function load_anim_pic_reset(num,file_id)
    }
 
 }
-/*
-function load_anim_pic(num,file_id)
-{
-   if (!g_emscripten_alive) return;
-   setTimeout(function() { load_anim_pic3(num,file_id); }, 50);
-}
-
-function load_anim_pic3(num,file_id)
-{
-   if (!g_emscripten_alive) return;
-   //console.log("PIC");
-   count = 1;
-   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
-   var num2 = file_id.toString();
-   var str = count.toFixed().toString();
-   while (str.length<3) str="0".concat(str);
-   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
-   var url = filename2;
-
-var request = new XMLHttpRequest();
-   request.open("HEAD", url, false);
-   //console.log("PIC2");
-   request.onload = function() {
-     //console.log(request.status);
-     if (request.status != 404)
-     {
-   //console.log("LOAD");
-	//preload_anim(num,file_id);
-        //var name = "displayimage".concat(num.toString());
-   	//var imgtag = document.getElementById(name);
-   	//imgtag.onmousemove = function() { load_anim_pic2(num,file_id); } 
-     } else { }
-     }
-   request.send();
-     
-
-}
-var m_current_filename="";
-function load_anim_pic2(num,file_id)
-{ 
-   if (!g_emscripten_alive) return;
-   var name = "displayimage".concat(num.toString());
-   var imgtag = document.getElementById(name);
-
-   var rect = imgtag.getBoundingClientRect();
-   var left = rect.left + window.scrollX;
-   var top = rect.top + window.scrollY;
-
-   var e = window.event;
-   var posX = e.clientX;
-   var posY = e.clientY;
-   
-
-   var deltaX = posX-left;
-   var deltaY = posY-top;
-  
-   var count = deltaX*15/200;
-   //console.log("START");
-   //console.log(rect);
-   //console.log(left);
-   //console.log(top);
-   //console.log(posX);
-   //console.log(posY);
-   //console.log(deltaX);
-   //console.log(deltaY);
-   if (count<=0) count=0;
-   if (count>14) count=14;
-   //console.log(count.toFixed());
-
-   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
-   var num2 = file_id.toString();
-   var str = count.toFixed().toString();
-   while (str.length<3) str="0".concat(str);
-   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
-   //console.log(filename2);
-   if (m_current_filename!=filename2) {
-      //console.log("FETCH");
-      m_current_filename = filename2;   
-      imgtag.src = filename2;
-   }
-}*/
 </script>
 <?php
 require_once("user.php");
 $user="terop";
 $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
-echo "LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span><br>";
-echo "PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span>";
+echo "<div style=\"display:none\">LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span></div><br>";
+echo "<div style=\"display:none\">PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span></div>";
 page_title($sitename, "groundbreaking way to bring the next level technologies to the web: 3d.");
+echo "<div class=\"buttons\">";
+echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/view.php'\">3d model viewer</button>";
+echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "</div>";
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -477,17 +381,6 @@ if ($startpos!="") {
   $start = $num-($startpos*50);
 }
 $dupcache = array();
-/*
-echo "<script>var imgarr=[];</script>";
-
-   echo "<div style=\"width:1px; height:1px; visibility:hidden; overflow:hidden\">";
-   for($k=0;$k<15;$k++) {
-      echo "<img id=\"preload" . strval($k) . "\"></img>";
-   }
-   echo "</div>";
-*/
-//echo "<script src=\"//cdn.jsdelivr.net/npm/eruda\"></script>";
-//echo "<script>eruda.init();</script>";
 
 echo "<script>var g_focus=false;</script>";
 
@@ -544,9 +437,9 @@ $label = get_label( $arr );
    //echo "<layer width=\"200\" height=\"150\">";
    if (file_exists("user_data/user_terop/screenshot" . $ii . ".webp"))
    {
-   echo "<img src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   echo "<img loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
    } else {
-   echo "<img src=\"" . $assetsite . "/unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   echo "<img loading=\"lazy\" src=\"" . $assetsite . "/unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
    }
    //echo "</layer>";
    // src=\"" . $filename . "\"
@@ -581,37 +474,37 @@ $label = get_label( $arr );
    echo "<p>";
    echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
    if ($startpos!="")
-      echo "<a href=\"" . $site . "/meshpage\">000</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php\">000</a> | ";
    else echo "000 | ";
    if ($startpos!="1")
-      echo "<a href=\"" . $site . "/meshpage?ps=1\">050</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=1\">050</a> | ";
    else echo "050 | ";
    if ($startpos!="2")
-      echo "<a href=\"" . $site . "/meshpage?ps=2\">100</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=2\">100</a> | ";
    else echo "100 | ";
    if ($startpos!="3")
-      echo "<a href=\"" . $site . "/meshpage?ps=3\">150</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=3\">150</a> | ";
    else echo "150 | ";
    if ($startpos!="4")
-      echo "<a href=\"" . $site . "/meshpage?ps=4\">200</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=4\">200</a> | ";
    else echo "200 | ";
    if ($startpos!="5")
-      echo "<a href=\"" . $site . "/meshpage?ps=5\">250</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=5\">250</a> | ";
    else echo "250 | ";
    if ($startpos!="6")
-      echo "<a href=\"" . $site . "/meshpage?ps=6\">300</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=6\">300</a> | ";
    else echo "300 | ";
    if ($startpos!="7")
-      echo "<a href=\"" . $site . "/meshpage?ps=7\">350</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=7\">350</a> | ";
    else echo "350 | ";
    if ($startpos!="8")
-      echo "<a href=\"" . $site . "/meshpage?ps=8\">400</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=8\">400</a> | ";
    else echo "400 | ";
    if ($startpos!="9")
-      echo "<a href=\"" . $site . "/meshpage?ps=9\">450</a> | ";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=9\">450</a> | ";
    else echo "450 | ";
    if ($startpos!="10")
-      echo "<a href=\"" . $site . "/meshpage?ps=10\">500</a>";
+      echo "<a href=\"" . $site . "/meshpage.php?ps=10\">500</a>";
    else echo "500";
    echo "</div>";
 echo "<br>";
@@ -635,25 +528,18 @@ echo "</script>\n";
 require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
+
+echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\" tabindex=-1></canvas>";
+
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
 } else {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
 }
 
-if ($connect=="yes") {
-  echo "Connect ID: <div contentEditable=\"true\">enter id</div>";
-  echo "<button type=\"button\" onclick=\"join_click()\">Join</button>";
-  echo "<br>";
-  echo "Game Name: <div contentEditable=\"true\"></div><button onclick=\"new_game_click()\" type=\"button\">New Game</button>";
-  echo "<div id=\"displayconnectid\"></div>";
-} else {
-}
+
 ?>
 </div>
-<!--div class="spinner">
-<img src="<?php echo $assetsite ?>/load_spinner.gif" crossorigin></img>
-</div-->
 <p>
 <p>
 <div id="addtext"></div>
@@ -684,22 +570,23 @@ echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
-echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a> (private repo)<br>";
+echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a><br>";
 echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
-echo "<br>Yours,<br><img src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
-//echo "<a href=\"https://stackexchange.com/users/429879\"><img src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
+echo "<br>Yours,<br><img loading=\"lazy\" src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
+//echo "<a href=\"https://stackexchange.com/users/429879\"><img loading=\"lazy\" src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
 echo "<br><br>Development history of the project:<br>";
-echo "<img src=\"" . $assetsite . "/github_2022.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2021.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2020.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2019.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2018.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2017.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2016.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2015.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2014.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2013.png\" crossorigin></img>";
-echo "<img src=\"" . $assetsite . "/github_2012.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2023.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2022.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2021.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2020.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2019.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2018.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2017.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2016.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2015.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2014.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2013.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2012.png\" crossorigin></img>";
 
 echo "<br><br><br><hr><br><br><br>";
 
@@ -712,7 +599,8 @@ echo "<li>For children at ages 10-18 years old, gameapi builder provides safe le
 echo "<li>GameApi builder and <?php echo $sitename ?> web site does not create additional communication channels for human communication. This is to ensure that our end users do not suffer communication overload";
 echo "<li><?php echo $sitename ?> is not a social media platform. Correct designation is \"Content Creation Tool Provider\" and  \"Web Publishing Enabler\" and also \"Content Publisher\"";
 echo "<li>Standard disclaimers apply, no warranty or ability to return purchased material";
-echo "<li>How we handle licensing is that we try to use the licenses that each community is natively using. So open source folks gets open source license, and commercial people get commercial licenses. Different directions (from our point of view) get different licensing. You can consider it \"Eat your own dogfood\" style license. If commercial people want to move to use open source license, they need to find from open source community where our software is available via open source licensing. That find operation is necessary. When our own web sites distribute the software, license is dependent on who is asking for a license. It is important to note that there can be different kind of users in the marketplace and we try to cover all use scenarios. Asking us for a license is easiest way to get a license that is suitable for that purpose and use case. This is why there is no licenses available in the web page, but we try to handle all license requests manually as quickly as possible. Software upgrades are following the same licensing that was originally agreed, so there will be people downloading the software via different licensing terms.";
+echo "<li>How we handle licensing is that we have chosen LGPLv3 to be our main license, but because some assets are GPL, the whole thing needs to be distributed under GPLv3. ";
+echo "<li>External modules have their own licenses, including GPLv2, GPLv3, SIL Open Font license v1.10, CC0 creative commons license, zlib license, MIT license, Apache licese, public domain or no license required.";
 echo "</ul>";
 ?>
 <script>
@@ -723,90 +611,14 @@ echo "</ul>";
        setTimeout(login, 50);
  }
  var g_user_id = "";
- function submit_data(user_id, user_name, user_email)
- {
-
-     //console.log("submit_data");
-     if (user_id!="" && user_name != "" && user_email !="") {
-        g_user_id = user_id;
-     	var res4 = document.getElementById("login_label");
-	res4.style = "font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0;";
-     	var res2 = document.getElementById("result2");
-     	res2.innerHTML = user_name;
-     	var res3 = document.getElementById("login_info");
-     	res3.innerHTML = user_id;
-	var res4 = document.getElementById("log");
-	if (res4) res4.innerHTML = user_id;
-	var res5 = document.getElementById("name");
-	if (res5) res5.innerHTML = user_name;
-	var res5a = document.getElementById("nickname");
-	if (res5a) res5a.value = user_id;
-	var res6 = document.getElementById("email");
-	if (res6) res6.innerHTML = user_email;
-
-	app.indicator.pop();
-	app.indicator.push(2);
-	var d = document.getElementById("loginstatus");
-	d.innerHTML = "LOGGED IN <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
-
-
-     } else {
-	var d = document.getElementById("loginstatus");
-	d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
-       onload_button();
-       }
-
- }
  var g_cnts = null;
-//var g_login_label = "";
-//window.addEventListener("message", (event) => {
-//  console.log("MESSAGE");
-//  console.log(event.origin);
-//  if (event.origin !== "https://meshpage.org") return;
-//  console.log("DATA");
-//  console.log(event.data);
-//  g_login_label = event.data;
-//}, false);
- function onload_iframe() {
 
-     //console.log("LOAD");
-     try {
-     var txt = document.getElementById("frm");
-     var innerdoc = (txt.contentDocument) ? txt.contentDocument : txt.contentWindow.document;
-     var txt2a = g_cnts||innerdoc.getElementById("cnts");
-     if (txt2a) {
-     	var txt2 = txt2a.innerHTML;
-     	var txts = txt2.split("%");
-     	var user_id = txts[0];
-     	var user_name = txts[1];
-     	var user_email = txts[2];
-     	submit_data(user_id, user_name, user_email);
-	}
-     } catch(error) {
-        console.log(error);
-	var d = document.getElementById("loginstatus");
-	d.innerHTML = "GUEST MODE (Certificate missing or expired) <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a></a>";
-	app.indicator.pop();
-	app.indicator.push(1);
 
-     }
 
-}
 
 function login() {
-	 var res = document.getElementById("result");
-	 if (res==null) {
-	    var d = document.getElementById("loginstatus");
-	    d.innerHTML = "NO CERTIFICATE INSTALLED TO BROWSER.. <!--a href=\"https://enroll.euderco.net/static/index.html\">?</a-->|<a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">?</a>";
-	    onload_button();
-	    } else
-	 res.innerHTML="<iframe referrerpolicy=\"origin-when-cross-origin\" src=\"<?php echo $site ?>/oauth2.php\" id=\"frm\" onload=\"onload_iframe()\" crossorigin=\"use-credentials\"></iframe>";
-//style=\"display:none\"></iframe>";
-	 
-
 
 }
-//onload_button(); // not done here because of cookies.
 </script>
 
 </div>
@@ -825,6 +637,7 @@ list_item($assetsite . "/Math_concepts.txt", "Math concepts");
 list_item($assetsite . "/Printer.txt", "3d printer instructions");
 list_item($assetsite . "/Skills_to_learn.txt", "Skills to learn");
 list_item($assetsite . "/Releasing_animations.txt", "Releasing animations to your web page");
+list_item("https://ssh.meshpage.org/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
 list_end();
 ?>
 
@@ -876,6 +689,19 @@ Useful other sites which you can drag and drop content to the viewer are at leas
 <ul>
 <li><a href="https://sketchfab.com/3d-models?date=week&features=downloadable&sort_by=-likeCount" target="_blank">sketchfab</a>
 <li><a href="https://www.thingiverse.com/" target="_blank">Thingiverse</a>
+<li><a href="https://polyhaven.com/" target="_blank">PolyHaven</a>
+</ul>
+
+Useful other sites with gltf viewing capability in web:
+<ul>
+<li>modelviewer.dev
+<li>sketchfab's 3d engine
+<li>three.js
+<li>meshpage.org's gltf_to_zip converter
+<li>babylon.js
+<li>playcanvas viewer
+<li>loading the file in unity then using their webgl port
+<li>loading the file in unreal engine using their webgl port
 </ul>
 
 <h2>If I just want to deploy simple gltf file?</h2>
@@ -888,7 +714,7 @@ Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php
 
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
-<img src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>
+<img loading="lazy" src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>
 <p>
 Important part for deployment is the properties of html_run, since it
 contains url to your hosting space, which you need to change. This
@@ -977,6 +803,7 @@ Then you need brotli packages:
   sudo systemctl restart apache2
 </ptr>
 
+
 <h2>What technologies are you using to provide the features of the site?</h2>
 <ul>
 <li>C++
@@ -990,6 +817,7 @@ Then you need brotli packages:
 <li>openvr
 <li>holoplay
 <li>tiny_gltf
+<li>draco
 <li>(normal browser environment)
 </ul>
 In addition to these external stuff, we have internal development in the following modules:
@@ -1100,7 +928,7 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 require_once("user.php");
 ?>
 
-PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>
+PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a> (LGPL/GPL)
 <p><br>
 MOST RECENT RELEASE: WIN: 
 <?php
@@ -1120,9 +948,24 @@ echo "(" . $delta . " days ago)";
 ?>
 
 <br>
+MOST RECENT RELEASE: SOURCECODE: 
 
-
-<div style="padding: 20px; width: 1324px;">
+<?php
+$start_time = filemtime("./GameApi-sourcecode-v27.tar.gz");
+$end_time = time();
+$delta = floor(($end_time - $start_time)/60/60/24);
+echo "(" . $delta . " days ago)";
+?>
+<br><br>
+CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
+<a href="<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/world_transform.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/world_transform.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/subtle_calmness.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/subtle_calmness.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/city_building.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/city_building.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $site ?>/investor.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/investor.webp" width="200" height="200" crossorigin></img></a>
+<br><br>
+DOWNLOADING THE ACTUAL PRODUCT OFFERING:
+<div style="padding: 0px; width: 1324px;">
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
@@ -1155,13 +998,13 @@ visit_counter_inc( "tool" );
 
 <div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
 <div style="margin: 10px;">
-<img src="Windows-Symbol.png" width="200" height="120" crossorigin/>
+<img loading="lazy" src="Windows-Symbol.png" width="200" height="120" crossorigin/>
 </div>
 </div>
 
 </div>
 <p>
-<div style="padding: 20px;  width: 1324px;">
+<div style="padding: 0px;  width: 1324px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
@@ -1193,7 +1036,7 @@ visit_counter_inc( "tool" );
 
 <div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
-<img src="data:image/png;base64,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"
+<img loading="lazy" src="data:image/png;base64,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"
 width="120" height="120" crossorigin/>
 </div>
 </div>
@@ -1201,7 +1044,7 @@ width="120" height="120" crossorigin/>
 </div>
 
 <p>
-<div style="padding: 20px;  width: 1324px;">
+<div style="padding: 0px;  width: 1324px;">
 <div></div>
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
 <ul>
@@ -1235,7 +1078,7 @@ width="120" height="120" crossorigin/>
 
 <div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
-<img src="data:image/png;base64,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" width="120" height="120" crossorigin/>
+<img loading="lazy" src="data:image/png;base64,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" width="120" height="120" crossorigin/>
 </div>
 </div>
 
@@ -1265,12 +1108,15 @@ width="120" height="120" crossorigin/>
 -->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
 <a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">
-<img src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
+<img loading="lazy" src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
+<br><p>
+WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
 
 <div>
-<a href="<?php echo $assetsite ?>/builder_screenshot.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
-<a href="<?php echo $assetsite ?>/builder_screenshot2.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
-<a href="<?php echo $assetsite ?>/builder_screenshot3.webp" target=_blank><img src="<?php echo $assetsite ?>/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
+
+<a href="<?php echo $assetsite ?>/builder_screenshot.webp" target=_blank><img loading="lazy" src="<?php echo $assetsite ?>/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $assetsite ?>/builder_screenshot2.webp" target=_blank><img loading="lazy" src="<?php echo $assetsite ?>/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $assetsite ?>/builder_screenshot3.webp" target=_blank><img loading="lazy" src="<?php echo $assetsite ?>/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
 </div>
 </div>
 
@@ -1281,6 +1127,26 @@ width="120" height="120" crossorigin/>
 </div> <!-- app.. vue ends here -->
 </body>
 <style>
+.buttons {
+   position: absolute;
+   right: 10px;
+   top: 50px;
+   display: flex;
+   width: 300px;
+}
+.butinner {
+   padding: 20px 20px 20px 20px;
+   width: 300px;
+   float: left;
+   border-radius: 14px;
+   border-style: outset;
+   border-width: 3px;
+   margin: 5px;
+   background-color: #fff;
+}
+.butinner:hover {
+   background-color: #ccf;
+}
 .zipbutton {
    position: relative;
    left: 174px;
@@ -2083,6 +1949,10 @@ function check_em(indicator) {
 function check_emscripten_running(indicator)
 {
   var canv = document.getElementById("canvas");
+  //var canv2 = document.querySelector("#canvas");
+  //var ctx = canv2.getContext("webgpu");
+  //console.log("WEBGPUCONTEXT:");
+  //console.log(ctx);
   if (Module) {
          //console.log(Module);
      	 //Module.ready().then(_ => check_em(indicator));
@@ -2304,21 +2174,21 @@ if ($mobile == "yes") {
 if ($nothreads == "yes") {
    if ($highmem == "yes") {
   //echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
-   echo "<script>import Module from './web_page_nothreads_highmem.js';</script>";
+   echo "<script async>import Module from './web_page_nothreads_highmem.js';</script>";
 
    } else {
  // echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
-   echo "<script>import Module from './web_page_nothreads.js';</script>";
+   echo "<script async>import Module from './web_page_nothreads.js';</script>";
 
 }
 } else {
    if ($highmem == "yes") {
  // echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
-   echo "<script>import Module from './web_page_highmem.js';</script>";
+   echo "<script async>import Module from './web_page_highmem.js';</script>";
 
    } else {
   //echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
-   echo "<script>import Module from './web_page.js';</script>";
+   echo "<script async>import Module from './web_page.js';</script>";
   }
 }
 */
@@ -2371,6 +2241,12 @@ if ($mobile=="yes") {
   if (!iframe2) return;
   iframe2.style.width = (wd).toString() + "px";
   iframe2.style.height = (hd).toString() + "px";
+
+  var iframe3 = document.getElementById("gpucanvas");
+  if (!iframe3) return;
+  iframe3.style.width = (wd).toString() + "px";
+  iframe3.style.height = (hd).toString() + "px";
+
 
   //var prog = document.getElementById("prgress");
   //prog.style.width = (wd).toString() + "px";
@@ -2461,7 +2337,7 @@ function hide_profile(b)
 
 <!-- TODO: add nft ownership test before starting timer -->
 <script>
-setTimeout(function() { var d = document.getElementById("monepopup"); d.style.display='block'; }, 500000);
+//setTimeout(function() { var d = document.getElementById("monepopup"); d.style.display='block'; }, 500000);
 var url = "TODO"; //"https://api.opensea.io/asset/0x2953399124f0cbb46d2cbacd8a89cf0599974963/63044780828468072905070356195984022355064566916094515504044574281931983783584/validate";
 function add_script() {
 
@@ -2491,6 +2367,7 @@ if ($nothreads == "yes") {
 ?>
 
   const s = document.createElement('script');
+  s.setAttribute('async', '');
   s.setAttribute('src', filename);
   s.setAttribute('crossorigin', 'anonymous');
   document.body.appendChild(s);
@@ -2564,8 +2441,64 @@ function set_cookie_status(num)
    });
    return promise;
 }
+function check_country_cookies_async()
+{
+return new Promise((resolve) => { resolve("true"); });
+/*
+   const head3 = new Headers();
+   const req3 = new Request("https://api.country.is/");
+return new Promise((resolve) => {
+   fetch(req3).then((r)=> {
+      return r.text();
+      }).then((ip) => {
+      const json = JSON.parse(ip);
+      const country = json["country"];
+      console.log(country);
+      if (country=="AT"||
+      	 country=="BE"||
+	country=="BG"||
+	country=="HR"||
+	country=="CY" ||
+	country=="CZ"||
+	country=="FI"||
+	country=="DK"||
+	country=="EE"||
+	country=="FR"||
+	country=="DE"||
+	country=="GR"||
+	country=="HU"||
+	country=="IE"||
+	country=="IT"||
+	country=="LV"||
+	country=="LT"||
+	country=="LU"||
+	country=="MT"||
+	country=="NL"||
+	country=="PL"||
+	country=="PT"||
+	country=="RO"||
+	country=="SK"||
+	country=="SI"||
+	country=="ES"||
+	country=="SE"||
+	country=="EU")
+      {
+	resolve("false");
+      } else {
+	resolve("true");
+      }
+      });
+});
+*/
+}
+//async function check_country_cookies()
+//{
+//   const result = await check_country_cookies_async();
+//   return result;
+//}
 function get_cookie_status()
 {
+
    const head = new Headers();
    const req = new Request("./cookies.php?op=0", {
       method: 'GET',
@@ -2578,15 +2511,24 @@ function get_cookie_status()
           //console.log("FOUND COOKIE");
 	  //console.log(t);
 	  var t2 = t.trim();
+	    var pg = "<?php echo $page ?>";
 	  if (t2=="-1") { // no info available
-	    var co = document.getElementById("callout");
-	    co.style.display="block";
+	    if (!(pg==""||pg=="0"||pg=="3")) {
+	       accept_cookies(false);
+	    } else {
+	    check_country_cookies_async().then(function(a){
+	    accept_cookies(false);
+		}, function(a) {
+		var co = document.getElementById("callout");
+	        co.style.display="block";
+		});
+		}
 	  } else
 	  if (t2=="0") { // reject cookies
 	     reject_cookies(false);
 	  } else
 	  if (t2=="1") { // accept necessary cookies
-	     accept_necessary_cookies(false)
+	     accept_necessary_cookies(false);
 	  } else
 	  if (t2=="2") { // accept cookies
 	     accept_cookies(false);
@@ -2596,6 +2538,8 @@ function get_cookie_status()
 	    console.log(t2);
 	  }
        });
+	
+
 }
 var cookie_status = -1;
 function remove_cookies(num)
@@ -2645,7 +2589,7 @@ function accept_cookies(save)
    co.style.display='none';
    add_script();
    start_emscripten(app);
-   setTimeout(function() { fetch_wallet(); }, 50);
+   //setTimeout(function() { fetch_wallet(); }, 50);
    if (save) { set_cookie_status(2).then((ok)=>{ location.reload();}); }
 }
 function accept_necessary_cookies(save)

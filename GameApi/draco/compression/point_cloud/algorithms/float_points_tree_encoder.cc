@@ -20,6 +20,8 @@
 #include "draco/compression/point_cloud/algorithms/dynamic_integer_points_kd_tree_encoder.h"
 #include "draco/core/math_utils.h"
 
+static int foobar603=0;
+
 namespace draco {
 
 const uint32_t FloatPointsTreeEncoder::version_ = 3;

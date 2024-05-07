@@ -1,10 +1,10 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 #include "GameApi_cmd.hh"
-std::vector<GameApiItem*> all_functions();
+std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> polydistfield_functions();
 std::vector<GameApiItem*> waveform_functions();
-std::vector<GameApiItem*> blocker_functions();
+std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev);
 std::vector<GameApiItem*> textureapi_functions();
 std::vector<GameApiItem*> volumeapi_functions();
 std::vector<GameApiItem*> floatvolumeapi_functions();

@@ -5,6 +5,8 @@
 
 #include "draco/compression/entropy/rans_symbol_coding.h"
 
+static int foobar22=0;
+
 namespace draco {
 
 int64_t ComputeShannonEntropy(const uint32_t *symbols, int num_symbols,

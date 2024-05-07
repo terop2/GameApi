@@ -18,6 +18,8 @@
 #include "draco/core/bit_utils.h"
 #include "draco/core/varint_decoding.h"
 
+static int foobar5=0;
+
 namespace draco {
 
 RAnsBitDecoder::RAnsBitDecoder() : prob_zero_(0) {}

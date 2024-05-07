@@ -14,6 +14,8 @@
 //
 #include "draco/compression/mesh/mesh_decoder.h"
 
+static int foobar55=0;
+
 namespace draco {
 
 MeshDecoder::MeshDecoder() : mesh_(nullptr) {}
