@@ -8,7 +8,7 @@
 
 
 #define VIRTUAL_REALITY 1
-#define SDL2_USED  
+#define SDL2_USED
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
 #ifndef EMSCRIPTEN
@@ -61,6 +61,10 @@
 #endif
 #endif
 #ifndef DEPS
+#ifdef WINDOWS
+#include <SDL.h> 
+#include <SDL_opengl.h>
+#else
 #ifdef SDL2_USED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
@@ -69,11 +73,16 @@
 #include <SDL/SDL_opengl.h>
 #endif
 #endif
+#endif
 #include "GameApi_h.hh"
 //#include <SDL_mixer.h>
 
 #ifdef USE_MIX
+#ifdef WINDOWS
+#include <SDL_mixer.h>
+#else
 #include <SDL2/SDL_mixer.h>
+#endif
 #endif
 #if 0
 #include <AudioService.h>
