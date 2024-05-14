@@ -1,9 +1,9 @@
 <?php
 header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
+//header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+//header("Cache-Control: post-check=0, pre-check=0", false);
+//header("Pragma: no-cache");
 $machine=php_uname("n");
 $siteprefix = "";
 if ($machine=="terop-pc2") {

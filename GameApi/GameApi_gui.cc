@@ -5685,12 +5685,12 @@ void CodeGenLineErrorCheck(const CodeGenLine &line, std::vector<GameApiItem*> fu
 	  if (item->ParamCount(0) != int(line.params.size()))
 	    {
 	      std::cout << "ERROR: Param arity problem" << std::endl;
-	      std::cout << item->ApiName(0) << "::" << item->FuncName(0) << "(";
+	      std::cout << item->ParamCount(0)<< "!=" << line.params.size() << " -- " << item->ApiName(0) << "::" << item->FuncName(0) << "(";
 	      int ss = item->ParamCount(0);
-	      for(int i=0;i<ss;i++)
+	      for(int ii=0;ii<ss;ii++)
 		{
-		  std::cout << item->ParamType(0,i);
-		  if (i!=ss-1) std::cout << " ";
+		  std::cout << item->ParamType(0,ii);
+		  if (ii!=ss-1) std::cout << " ";
 		}
 	      std::cout << ");" << std::endl;
 	      int ss2 = line.params.size();
