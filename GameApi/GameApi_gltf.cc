@@ -1,4 +1,5 @@
 
+int hhhh_gggg=1;
 
 #include "GameApi_h.hh"
 #include "GraphI.hh"

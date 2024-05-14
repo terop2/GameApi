@@ -88,7 +88,7 @@ test
 (859,4126)m_bind_inst uid462 0 0 1 p:756964343639:false:-1:0 pts:756964343637:false:-1:0 mat:756964343635:false:-1:0
 (667,3987)cube uid463 0 0 1 start_x:2D3130:false:-1:0 end_x:3130:false:-1:0 start_y:2D3130:false:-1:0 end_y:3130:false:-1:0 start_z:2D3130:false:-1:0 end_z:3130:false:-1:0
 (686,4414)m_def uid464 0 0 1 ev:6576:false:-1:0
-(860,4404)m_phong uid465 0 0 1 ev:6576:false:-1:0 nxt:756964343634:false:-1:0 light_dir_x:2D302E33:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:2D312E30:false:-1:0 ambient:6666666638383030:false:-1:0 highlight:6666363636363636:false:-1:0 pow:352E30:false:-1:0
+(860,4404)m_phong uid465 0 0 1 ev:6576:false:-1:0 nxt:756964343634:false:-1:0 light_dir_x:302E33:false:-1:0 light_dir_y:302E33:false:-1:0 light_dir_z:31:false:-1:0 ambient:6666666638383030:false:-1:0 highlight:6666666666666666:false:-1:0 pow:35:false:-1:0
 (498,4178)anim_mix_pts uid466 0 0 1 obj1:7569643134313432:false:-1:0 obj2:7569643134313431:false:-1:0 start_val:30:false:-1:0 end_val:31:false:-1:0 start_time:3430:false:-1:0 end_time:3830:false:-1:0
 (656,4128)or_points uid467 0 0 1 p1:756964343631:false:-1:0 p2:756964343636:false:-1:0
 (801,4470)m_material uid468 0 0 1 ev:6576:false:-1:0 roughness:302E35:false:-1:0 metallic:302E38:false:-1:0 base_r:31:false:-1:0 base_g:31:false:-1:0 base_b:31:false:-1:0 base_a:31:false:-1:0 mix:30:false:-1:0
