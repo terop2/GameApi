@@ -158,9 +158,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "P", "mainloop_api", "gltf_mesh_all_p"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_p_arr,
 			 "gltf_mesh_all_p_arr",
-			 { "ev", "model" },
-			 { "EveryApi&", "TF" },
-			 { "ev", "" },
+			 { "ev", "model", "light_dir_x", "light_dir_y", "light_dir_z" },
+			 { "EveryApi&", "TF", "float", "float", "float" },
+			 { "ev", "", "1.0", "1.0", "1.0" },
 			 "[P]", "mainloop_api", "gltf_mesh_all_p_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_load_sketchfab_zip,
 			 "gltf_sketchfab_zip",
@@ -570,9 +570,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate,
 			 "transparency_separate",
-			 { "p", "bm", "opaque" },
-			 { "P", "BM", "bool" },
-			 { "", "", "true" },
+			 { "p", "bm", "opaque", "force_transparent" },
+			 { "P", "BM", "bool", "bool" },
+			 { "", "", "true", "false" },
 			 "P", "polygon_api", "transparent_separate"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::transparent_separate2,
 			 "transparency_separate2",

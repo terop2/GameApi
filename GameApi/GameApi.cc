@@ -8864,7 +8864,7 @@ public:
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
-    std::cout << "toon color: " << std::hex << color << std::endl;
+    //std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
@@ -8881,7 +8881,7 @@ public:
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst(p2.id, pts.id);
-    std::cout << "toon color: " << std::hex << color << std::endl;
+    ///std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
 
@@ -8895,7 +8895,7 @@ public:
     ml3.id = next->mat_inst_matrix(p.id,ms.id);
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
-    std::cout << "toon color: " << std::hex << color << std::endl;
+    //  std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_matrix(p2.id, ms.id);
@@ -8912,7 +8912,7 @@ public:
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst2(p2.id, pta.id);
-    std::cout << "toon color: " << std::hex << color << std::endl;
+    //    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
@@ -8929,7 +8929,7 @@ public:
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_fade(p2.id, pts.id, flip, start_time, end_time);
-    std::cout << "toon color: " << std::hex << color << std::endl;
+    //    std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p3, pts, flip, start_time, end_time);
 

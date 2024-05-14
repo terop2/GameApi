@@ -182,7 +182,7 @@
 			 "m_hires",
 			 { "ev", "mat", "size", "numsamples", "blur_radius" },
 			 { "EveryApi&", "MT", "int","int", "float" },
-			 { "ev", "", "2048" },
+			 { "ev", "", "2048", "1", "4.0" },
 			 "MT", "materials_api", "hires"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::mt_alt,
 			 "m_alt",
