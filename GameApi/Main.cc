@@ -469,18 +469,21 @@ IMPORT void    check_vr_overlay_init();
 
 void *thread_func_bitmap(void *data)
 {
+#ifdef THREADS
   ThreadInfo_bitmap *ti = (ThreadInfo_bitmap*)data;
   ti->buffer->Gen(ti->start_x, ti->end_x, ti->start_y, ti->end_y);
   //pthread_exit(NULL);
   return 0;
+#endif
 }
 
 extern void *(*g_thread_func_bitmap)(void *data);
 
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init)
 {
-
+#ifdef THREADS
   g_thread_func_bitmap=&thread_func_bitmap;
+#endif
   
   initialize_low(0);
 

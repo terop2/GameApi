@@ -88,9 +88,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap2,
 			 "bm_fetch2",
-			 { "ev", "url", "url2", "texture_unit", "sx", "sy", "sx2", "sy2" },
-			 { "EveryApi&", "std::string", "std::string", "int", "int", "int", "int", "int" },
-			 { "ev", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "0", "256", "256", "1024", "1024" },
+			 { "ev", "url", "url2", "time", "texture_unit", "sx", "sy", "sx2", "sy2" },
+			 { "EveryApi&", "std::string", "std::string", "float", "int", "int", "int", "int", "int" },
+			 { "ev", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "0.0", "0", "256", "256", "1024", "1024" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::gltf_load_bitmap,
 			 "bm_gltf",

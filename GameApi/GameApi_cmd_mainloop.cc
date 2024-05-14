@@ -183,9 +183,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
-			 { "ev", "tf", "scene_id", "keys","mix","mode","light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color" },
-			 { "EveryApi&", "TF", "int", "std::string","float","int", "float", "float", "float", "float", "unsigned int" },
-			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000" },
+			 { "ev", "tf", "scene_id", "keys","mix","mode","light_dir_x", "light_dir_y", "light_dir_z", "animation","border_width", "border_color" },
+			 { "EveryApi&", "TF", "int", "std::string","float","int", "float", "float", "float", "int", "float", "unsigned int" },
+			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0", "0.0", "ff000000" },
 			 "ML", "mainloop_api", "gltf_scene"));
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
@@ -491,9 +491,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::render_txid,
 			 "p_render_txid",
-			 { "ev", "p1", "I7" },
-			 { "EveryApi&", "P", "TXID" },
-			 { "ev", "", "" },
+			 { "ev", "p1", "I7", "size" },
+			 { "EveryApi&", "P", "TXID", "int" },
+			 { "ev", "", "", "1024" },
 			 "ML", "mainloop_api", "render_txid"));
 #if 0
   // doesnt work in emscripten
@@ -592,9 +592,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "ML", "polygon_api", "m_bind_inst_many"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::mesh_anim_display_inst,
 			 "m_bind_anim",
-			 { "ev", "mesh", "val", "move", "mat", "inst", "repeat_time" },
-			 { "EveryApi&", "P", "FF", "MN", "MT", "MS", "float" },
-			 { "ev", "", "", "", "", "", "10000.0" },
+			 { "ev", "mesh", "val", "move", "mat", "inst" },
+			 { "EveryApi&", "P", "FF", "MN", "MT", "MS" },
+			 { "ev", "", "", "", "", "" },
 			 "ML", "polygon_api", "mesh_anim_display_inst"));
 #ifndef STABLE			 
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,

@@ -63,6 +63,22 @@ struct ApiSplit
 
 ApiSplit split_api_default(std::string def);
 
+
+template<std::size_t ...>
+struct add_all : std::integral_constant< std::size_t,0 > { };
+
+template<std::size_t X, std::size_t ... Xs>
+struct add_all<X,Xs...> : std::integral_constant< std::size_t, X+add_all<Xs...>::value> { };
+
+
+inline bool print_if_false(const bool assertion, std::string msg) {
+    if(!assertion) {
+        // endl to flush
+        std::cout << msg << std::endl;
+    }
+    return assertion;
+}
+
 template<class T, class RT, class... P>
 class ApiItem : public GameApiItem
 {
@@ -79,7 +95,11 @@ public:
       return_type(ret_type), api_name(api_name), func_name(func_name), symbols(symbols), comment(comment) { }
   int Count() const { return 1; }
   std::string Name(int i) const { return name; }
-  int ParamCount(int i) const { return param_name.size(); }
+  int ParamCount(int i) const {
+    assert(print_if_false(sizeof...(P) == param_name.size(),"ERROR: param_name array size problems: " + api_name + "::" + name));
+    assert(print_if_false(sizeof...(P) == param_type.size(),"ERROR: param_type array size problems: " + api_name + "::" + name));
+    assert(print_if_false(sizeof...(P) == param_default.size(),"ERROR: param_default array size problems: " + name));
+    return param_name.size(); }
   std::string ParamName(int i, int p) const { return param_name[p]; }
   std::string ParamType(int i, int p) const { return param_type[p]; }
   std::string ParamDefault(int i, int p) const { return split_api_default(param_default[p]).def; }

@@ -29,7 +29,7 @@
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::from_float_volume,
 			 "from_float_volume",
 			 { "volume", "numpoints", "start_x", "start_y", "start_z", "end_x", "end_y", "end_z" },
-			 { "FO", "int", "float", "float", "float", "float", "float", "float", "float" },
+			 { "FO", "int", "float", "float", "float", "float", "float", "float" },
 			 { "", "1000", "0.0", "0.0", "0.0", "100.0", "100.0", "100.0" },
 			 "PTS", "points_api", "from_float_volume"));
 #endif
