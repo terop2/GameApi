@@ -2757,6 +2757,14 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   int y = 0;
   int width = 500;
   int height = 300;
+  float div_x = 1;
+  float div_y = 1;
+  if (is_mobile(ev)) {
+    width=200;
+    height=100;
+    div_x=2.5;
+    div_y=2.2;
+  }
 
   std::string s = std::string(logo_connecting_raw,logo_connecting_raw+logo_connecting_raw_len);
   BM I7A = load_raw_bitmap2(e, s /*"web_page/logo-connecting.raw"*/);
@@ -2764,11 +2772,11 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   ML I17A;
   {
 
-BM I2=ev.bitmap_api.scale_bitmap(ev,I7aA,500,300);
+BM I2=ev.bitmap_api.scale_bitmap(ev,I7aA,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
-MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30)/div_x,(250-20+100)/div_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
@@ -2798,11 +2806,11 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
   ML I17B;
   {
     
-BM I2=ev.bitmap_api.scale_bitmap(ev,I7aB,500,300);
+BM I2=ev.bitmap_api.scale_bitmap(ev,I7aB,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
-MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30)/div_x,(250-20+100)/div_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
@@ -2830,11 +2838,11 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
   ML I17C;
   {
 
-BM I2=ev.bitmap_api.scale_bitmap(ev,I7aC,500,300);
+BM I2=ev.bitmap_api.scale_bitmap(ev,I7aC,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
  MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
-MN I6=ev.move_api.trans2(I5,220-40-15+30,250-20+100,0);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30)/div_x,(250-20+100)/div_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  
@@ -2977,8 +2985,19 @@ ML I34=ev.move_api.move_ml(ev,I30,I33);
  logo_env = env;
  frame_count = 0;
 }
+
+extern  Matrix g_in_P;
+extern bool g_in_P_used;
+
 GameApi::M GameApi::MainLoopApi::in_P(EveryApi &ev, bool is_3d)
 {
+  if (g_in_P_used)
+    {
+      return add_matrix2(ev.get_env(),g_in_P);
+    }
+
+
+
   int screenx = get_screen_width();
   int screeny = get_screen_height();
   if (is_3d)

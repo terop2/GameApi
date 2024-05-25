@@ -78,8 +78,8 @@ struct Envi {
   SH color_sh;
   SH texture_sh;
   SH arr_texture_sh;
-  int screen_width = 800;
-  int screen_height = 600;
+  int screen_width = 1280;
+  int screen_height = 900;
   BLK blk;
 };
 
@@ -240,6 +240,9 @@ extern GameApi::EveryApi *g_everyapi;
 void ClearProgress();
 #if 1
 extern pthread_t g_main_thread_id;
+extern Low_SDL_Window *sdl_window;
+
+
 int main(int argc, char *argv[]) {
   g_main_thread_id = pthread_self();
   call_count++;
@@ -259,8 +262,8 @@ int main(int argc, char *argv[]) {
 
   g_everyapi = &ev;
   
-  int w_width = 800;
-  int w_height = 600;
+  int w_width = 1280;
+  int w_height = 900;
   std::string seamless_url="";
   int current_arg = 1; // start after the current filename
   while(cmd_args.size()-current_arg > 0)
@@ -393,8 +396,8 @@ int main(int argc, char *argv[]) {
       set_status(2,6);
       ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
       set_status(3,6);
-      g_event_screen_x = -1;
-      g_event_screen_y = -1;
+      g_event_screen_x = w_width; // was -1
+      g_event_screen_y = w_height;
     }
   else
     {
@@ -404,6 +407,14 @@ int main(int argc, char *argv[]) {
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.mainloop_api.set_seamless_url(seamless_url);
 
+
+#ifndef LINUX
+           g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
+#endif
+  OpenglLowApi *ogl = g_low->ogl;
+           ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+
+  
   if (!find_string(code, "low_framebuffer_run") && !find_string(code, "webgpu_window"))
     {
       ev.shader_api.load_default();
