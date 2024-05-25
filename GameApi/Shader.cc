@@ -237,10 +237,12 @@ void Program::bind_attrib(int num, std::string name)
 }
 void Program::detach(const Shader &shader)
 {
-  std::cout << "detach " << shader.priv->shader->Name() << std::endl;
+  //std::cout << "detach " << shader.priv->shader->Name() << std::endl;
+#if 0
   g_low->ogl->glDetachShader /*ObjectARB*/(priv->program, shader.priv->handle); 
   priv->shaders.erase(std::remove(priv->shaders.begin(), priv->shaders.end(),&shader), priv->shaders.end());
   shader.priv->programs.erase(std::remove(shader.priv->programs.begin(), shader.priv->programs.end(), this), shader.priv->programs.end());
+#endif
 }
 void Program::GeomTypes(int input, int output)
 {

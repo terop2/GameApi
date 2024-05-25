@@ -15413,6 +15413,8 @@ public:
   }
   virtual void Init()
   {
+    next_step=false;
+    next_step1 = 0;
     g_async_pending_count_failures=0;
     need_change2=true;
     g_main_thread_id = pthread_self();
@@ -15639,7 +15641,7 @@ public:
       g_prepare_done = true;
       ClearProgress();
       InstallProgress(33344, "collect", 15*15);
-      InstallProgress(33345, "collect2", 5*15);
+      //InstallProgress(33345, "collect2", 15*15);
       firsttime = false;
     }
 
@@ -15670,6 +15672,14 @@ public:
       //std::cout << "Counters: " << num << " " << counter << std::endl;
       if (vis->vec.size()>0)
 	ProgressBar(33344, (15*15*num/counter), 15*15, "collect");
+      //if (num>=counter) next_step=true;
+
+      //if (next_step)
+      //	{
+      //	  next_step1++;
+	  //ProgressBar(33345, (15*15*next_step1/100),15*15, "collect2");
+      //}
+
       //#endif
       //bool b = false;
       if (gameapi_seamless_url=="") {
@@ -15799,7 +15809,7 @@ public:
 	g_filter_end=end;
       if (s==0) s=1;
       if (s>0) {
-	ProgressBar(33345, 5*15*first_frame_count/s, 5*15, "collect");
+	//ProgressBar(33345, 5*15*first_frame_count/s, 5*15, "collect");
       }
       show_logo(); logo_done = true;
     }
@@ -15914,6 +15924,8 @@ private:
   bool need_change=false;
   bool need_change2=false;
   bool debug_enabled=true;
+  bool next_step=false;
+  int next_step1 = 0;
 };
 
 void progress_logo_cb(void *data)

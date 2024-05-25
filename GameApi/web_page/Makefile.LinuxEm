@@ -135,14 +135,14 @@ all:
 
 PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=30
 
-SIZEOPT=-Oz -fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=1800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all -emit-llvm
+SIZEOPT=-Oz -fno-rtti -fno-exceptions -s FILESYSTEM=0 -s TOTAL_STACK=1800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all
 
 NOSIZEOPT = -s TOTAL_STACK=1800kb -gpubnames
 
 #--closure 1
 #--memoryprofiler
 # 
-REQUIREDOPT = -fno-rtti -s ASSERTIONS=2 -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1 -s USE_SDL_MIXER=2 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE='stackTrace'
+REQUIREDOPT = -emit-llvm -fno-rtti -s ASSERTIONS=2 -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1 -s USE_SDL_MIXER=2 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE='stackTrace'
 
 STRIP = echo emstrip --no-strip-all --remove-section=name
 

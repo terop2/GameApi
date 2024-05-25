@@ -6609,7 +6609,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0,light_dir);
-      GameApi::MT mat3 = ev.materials_api.toon_border(ev,mat2,border_width,border_color,true);
+      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,true):mat2;
 
       GameApi::MT mat2_anim;
       if (interface->animations_size()!=0 && keys.size()>0) {
@@ -6709,7 +6709,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
       GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, mix,light_dir);
-            GameApi::MT mat3 = ev.materials_api.toon_border(ev,mat2,border_width,border_color,true);
+      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,true):mat2;
 
       GameApi::MT mat2_anim;
       if (interface->animations_size()!=0 && keys.size()>0) {
