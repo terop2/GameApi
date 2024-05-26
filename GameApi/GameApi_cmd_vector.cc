@@ -5,14 +5,14 @@
 std::vector<GameApiItem*> vectorapi_functions()
 {
   std::vector<GameApiItem*> vec;
-#if 0
-#ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_api, &GameApi::VectorApi::vector,
 			 "vector",
 			 { "dx", "dy", "dz" },
 			 { "float", "float", "float" },
 			 { "0.0", "0.0", "0.0" },
 			 "V", "vector_api", "vector"));
+#if 0
+#ifndef STABLE
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::player,
 			 "player",
