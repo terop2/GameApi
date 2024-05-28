@@ -3840,6 +3840,8 @@ void VBOObjects::DisableTexture()
 }
 #endif
 
+#if 0
+
 void FaceCollectionBuffer::CalculateSizes()
 {
   int vertex_count = 0;
@@ -3878,6 +3880,11 @@ void FaceCollectionBuffer::CalculateSizes()
   color_size = color_count;
   texcoord_size = tex_count;
 }
+
+#endif
+
+
+#if 0
 void FaceCollectionBuffer::CreateBuffers()
 {
   vertex_buffer = new Buffer<float>(vertex_size);
@@ -4112,12 +4119,16 @@ void RenderBuffers::Render(bool quads, int start_elem, int vertex_size)
       ogl->glDrawArrays(Low_GL_TRIANGLES, start_elem, vertex_size);
     }
 }
+#endif
+
 #if 0
 void RenderBuffers::RenderOne(int start_elem, int vertex_size)
 {
   ogl->glDrawArrays(Low_GL_POLYGON, start_elem, vertex_size);
 }
 #endif
+
+#if 0
 
 void RenderBuffers::DisableAll()
 {
@@ -4149,6 +4160,8 @@ void RenderBuffers::DisableAll()
   color=false;
   texcoord=false;
 }
+
+#endif
 
 Point ShadowFaceCollection::FacePoint(int face, int point) const
 {
