@@ -165,6 +165,7 @@ void Shader::print_log() const
 }
 Shader::~Shader()
 {
+#if 0
   std::vector<Program*> vec(priv->programs.begin(), priv->programs.end());
   for(std::vector<Program*>::iterator i = vec.begin();i!=vec.end();i++)
     {
@@ -172,6 +173,7 @@ Shader::~Shader()
     }
   g_low->ogl->glDeleteShader(priv->handle);
   delete priv;
+#endif
 }
 
 

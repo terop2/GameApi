@@ -11542,6 +11542,8 @@ void AllocToNativeArray(Array<int,T> &arr, T** result)
     }
 }
 
+
+#if 0
 class FaceCollectionBuffer
 {
 public:
@@ -11594,6 +11596,8 @@ private:
   bool vertex,normal,color,texcoord;
   std::vector<int> attrib_ids;
 };
+
+#endif
 
 // shader time has to reset on state change
 // 1) Empty in vertex array solves problems

@@ -70,6 +70,8 @@ public:
   virtual ~BufferRefReq() { }
 };
 
+#if 0
+
 template<class T>
 struct Buffer
 {
@@ -128,6 +130,6 @@ inline void AnimBuffer(const Buffer<float> &buf, const Buffer<float> &buf2, Buff
       resbuf[i]=bufbuf[i]*val+buf2buf[i]*m;
     }
 }
-
+#endif
 
 #endif
