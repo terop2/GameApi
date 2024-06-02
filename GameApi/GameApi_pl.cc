@@ -13746,7 +13746,6 @@ GameApi::P GameApi::PolygonApi::build_offsets(P p, std::vector<PT> points)
 }
 
 
-#if 0
 class SplitterFaceCollection : public FaceCollection
 {
 public:
@@ -13782,7 +13781,6 @@ private:
   int start;
   int end;
 };
-#endif
 class TexCoordFromNormal : public ForwardFaceCollection
 {
 public:
@@ -13934,7 +13932,7 @@ GameApi::P GameApi::PolygonApi::fix_texcoord(P p)
 
 GameApi::P GameApi::PolygonApi::split_p(P p, int start_face, int end_face)
 {
-#if 0
+#if 1
   FaceCollection *coll = find_facecoll(e, p);
   return add_polygon2(e, new SplitterFaceCollection(*coll, start_face,end_face),1);
 #endif
