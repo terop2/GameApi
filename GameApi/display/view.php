@@ -918,7 +918,7 @@ function get_border(i,m,filename,border_avoid)
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   var five = "";
-  if (anim_value && filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
+  if (/*anim_value &&*/ filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
   res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
   //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,-400.0,400.0,400.0);\n";
   var gltf = ",false";
@@ -1274,7 +1274,7 @@ if (normals_val==3)
 res+="P I1=ev.polygon_api.get_face_count(I155);\n";
 res+="LI I433=ev.lines_api.from_polygon(I1);\n";
   res+="ML I665=ev.polygon_api.line_to_cone3(ev,I433," + border_width/2 + ",5,I4,ff" + border_color + ");\n"
-res+="ML I767=ev.mainloop_api.depthfunc(I665,0);\n";
+res+="ML I767=ev.mainloop_api.depthfunc(I665,3);\n";
 res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
 
   } else
@@ -1305,7 +1305,7 @@ res+="ML I156=ev.materials_api.bind(I145,I199);\n"
 
 res+="ML I665=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
 res+="ML I666=ev.mainloop_api.depthmask(I665,true);\n";
-res+="ML I767=ev.mainloop_api.depthfunc(I666,0);\n";
+res+="ML I767=ev.mainloop_api.depthfunc(I666,3);\n";
 res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   } else {
    res+="P I1=ev.polygon_api.get_face_count(I155);\n";
@@ -1370,7 +1370,7 @@ res+="LI I116=ev.lines_api.from_polygon(I124);\n";
   res+="ML I136=ev.polygon_api.line_to_cone3(ev,I116," + border_width/2 +",5,I733,ff" + border_color +");\n"
 
 res+="ML I555=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135});\n";
-res+="ML I502=ev.mainloop_api.depthfunc(I555,0);\n";
+res+="ML I502=ev.mainloop_api.depthfunc(I555,3);\n";
 
 
   } else {

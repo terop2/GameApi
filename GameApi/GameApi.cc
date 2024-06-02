@@ -8862,6 +8862,13 @@ public:
   {
     GameApi::ML ml3;
     ml3.id = next->mat(p.id);
+    //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
+    //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
+    //GameApi::ML ml3210 = ev.mainloop_api.blendfunc(ml321,6,7);
+
+    GameApi::ML ml3210 = ml3;
+    
+    //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
@@ -8870,14 +8877,21 @@ public:
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
 
+    
     //ml.id = next->mat(p2.id);
     GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
-    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
+    //GameApi::ML ml22 = ev.mainloop_api.depthfunc(ml2, 2); // 2=always
+    //GameApi::ML ml221 = ev.mainloop_api.depthmask(ml22,false);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3210});
 
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
+    std::cout << "display:mat2_inst" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst(p.id,pts.id);
+    //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
+    //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
+    //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
@@ -8886,14 +8900,22 @@ public:
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
 
+
+
     GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
+    //GameApi::ML ml22 = ev.mainloop_api.depthmask(ml2,false);
+    //GameApi::ML ml221 = ev.mainloop_api.depthfunc(ml22, 2); // 2=always
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
+    std::cout << "display:mat2_inst_matrix" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst_matrix(p.id,ms.id);
+    //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
+    //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
+    //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //  std::cout << "toon color: " << std::hex << color << std::endl;
@@ -8901,14 +8923,22 @@ public:
     //GameApi::ML ml;
     //ml.id = next->mat_inst_matrix(p2.id, ms.id);
     GameApi::ML ml = ev.materials_api.render_instanced_ml_matrix(ev, p3, ms);
+
+
     GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
+    //GameApi::ML ml22 = ev.mainloop_api.depthmask(ml2,false);
+    //GameApi::ML ml221 = ev.mainloop_api.depthfunc(ml22, 2);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
+    std::cout << "display:inst2" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst2(p.id,pta.id);
+    //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
+    //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
+    //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
     
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
@@ -8918,15 +8948,22 @@ public:
     GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
     GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
 
+
+
     GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
+    //GameApi::ML ml22 = ev.mainloop_api.depthmask(ml2,false);
+    //GameApi::ML ml221 = ev.mainloop_api.depthfunc(ml22, 2);
     return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
+    std::cout << "display:inst_fade" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
-    
+    //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
+    // GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
+   
     GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_fade(p2.id, pts.id, flip, start_time, end_time);
@@ -8935,7 +8972,9 @@ public:
     GameApi::ML ml = ev.materials_api.render_instanced_ml_fade(ev, p3, pts, flip, start_time, end_time);
 
     GameApi::ML ml2 = ev.polygon_api.cullface(ml, true, is_gltf);
-    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml3,ml2});
+    //GameApi::ML ml22 = ev.mainloop_api.depthmask(ml2,false);
+    //GameApi::ML ml221 = ev.mainloop_api.depthfunc(ml22, 2);
+    return ev.mainloop_api.array_ml(ev, std::vector<GameApi::ML>{ml2,ml3});
 
   }
 

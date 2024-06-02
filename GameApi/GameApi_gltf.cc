@@ -6637,7 +6637,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
-      mls.push_back(ml3);
+      mls.push_back(ml);
     }
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
     return ml;
@@ -6733,7 +6733,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
-      mls.push_back(ml3);
+      mls.push_back(ml);
     }
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
     return ml;
