@@ -1405,8 +1405,9 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,3);\n";
   res+="ML I14=ev.mainloop_api.or_elem_ml(ev,I44,I9);\n";
   var variable = "I14";
   if (anim_value==true) {
-  res+="ML I15=ev.mainloop_api.send_key_at_time(I14,0.0,99);\n"
-  variable="I15";
+  res+="ML I15=ev.mainloop_api.send_key_at_time(I14,0.01,99);\n"
+  res+="ML I16=ev.mainloop_api.send_key_at_time(I15,0.02,99);\n"
+  variable="I16";
   }
   
  // 
