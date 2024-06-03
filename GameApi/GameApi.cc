@@ -8853,6 +8853,7 @@ public:
   float gray_level;
   float edge_pos;
 };
+std::pair<float,Point> find_mesh_scale(FaceCollection *coll);
 
 class ToonBorderMaterial : public MaterialForward
 {
@@ -8869,8 +8870,13 @@ public:
     GameApi::ML ml3210 = ml3;
     
     //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
+
+    Matrix m;
+    FaceCollection *coll = find_facecoll(e,p);
+    std::pair<float,Point> pp = find_mesh_scale(coll);
+    //std::cout << pp.first << std::endl;
     
-    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width/pp.first);
     //GameApi::ML ml;
     //std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
@@ -8886,14 +8892,17 @@ public:
 
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
-    std::cout << "display:mat2_inst" << std::endl;
+    //std::cout << "display:mat2_inst" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst(p.id,pts.id);
     //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
     //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
     //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
+    Matrix m;
+    FaceCollection *coll = find_facecoll(e,p);
+    std::pair<float,Point> pp = find_mesh_scale(coll);
     
-    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width/pp.first);
     //GameApi::ML ml;
     //ml.id = next->mat_inst(p2.id, pts.id);
     ///std::cout << "toon color: " << std::hex << color << std::endl;
@@ -8910,14 +8919,17 @@ public:
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
-    std::cout << "display:mat2_inst_matrix" << std::endl;
+    //std::cout << "display:mat2_inst_matrix" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst_matrix(p.id,ms.id);
     //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
     //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
     //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
+    Matrix m;
+    FaceCollection *coll = find_facecoll(e,p);
+    std::pair<float,Point> pp = find_mesh_scale(coll);
     
-    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width/pp.first);
     //  std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     //GameApi::ML ml;
@@ -8933,14 +8945,17 @@ public:
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
   {
-    std::cout << "display:inst2" << std::endl;
+    //std::cout << "display:inst2" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst2(p.id,pta.id);
     //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
     //GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
     //GameApi::ML ml32 = ev.mainloop_api.blendfunc(ml3,3,2);
     
-    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    Matrix m;
+    FaceCollection *coll = find_facecoll(e,p);
+    std::pair<float,Point> pp = find_mesh_scale(coll);
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width/pp.first);
     //GameApi::ML ml;
     //ml.id = next->mat_inst2(p2.id, pta.id);
     //    std::cout << "toon color: " << std::hex << color << std::endl;
@@ -8958,13 +8973,16 @@ public:
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
   {
-    std::cout << "display:inst_fade" << std::endl;
+    // std::cout << "display:inst_fade" << std::endl;
     GameApi::ML ml3;
     ml3.id = next->mat_inst_fade(p.id,pts.id,flip,start_time,end_time);
     //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
     // GameApi::ML ml321 = ev.mainloop_api.depthmask(ml32,true);
    
-    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width);
+    Matrix m;
+    FaceCollection *coll = find_facecoll(e,p);
+    std::pair<float,Point> pp = find_mesh_scale(coll);
+    GameApi::P p2 = ev.polygon_api.toon_outline(p,border_width/pp.first);
     //GameApi::ML ml;
     //ml.id = next->mat_inst_fade(p2.id, pts.id, flip, start_time, end_time);
     //    std::cout << "toon color: " << std::hex << color << std::endl;
