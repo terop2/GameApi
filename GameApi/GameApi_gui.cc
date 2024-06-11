@@ -6410,7 +6410,12 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 	      while(ss2>>val2) { vec.push_back(val2); }
 	      
 	      //std::cout << "LINK: " << jj << " " << vec[jj] << std::endl;
-	      params[i] = vec[jj]; 
+	      if (jj>=0 && jj<vec.size())
+		params[i] = vec[jj];
+	      else
+		{ params[i] = ""; std::cout << "ERROR: vec[jj] access outside bounds! (gameapi_gui.cc) jj=" << jj << " and i=" << i << std::endl;
+		  std::cout << l.api_name << "::" << l.func_name << std::endl;
+		}
 	    }
 	}
       
