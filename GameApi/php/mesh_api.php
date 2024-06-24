@@ -138,7 +138,7 @@ function print_data($classes, $funcs, $apiname, $funcname)
 	      }
            }
 	}
-
+echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />";
 $data = $_GET["id"];
 //var_dump($data);
 $arr = decode_id( $data );
