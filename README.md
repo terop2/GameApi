@@ -98,7 +98,7 @@ How we normally push our code to hosting space:
 ### Deploytool access:
   ```
   cd deploytool
-  LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://tpgames.org
+  LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://meshpage.org/assets/
   ```
 
 ### cmdline access:
