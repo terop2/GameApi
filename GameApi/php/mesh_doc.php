@@ -12,6 +12,7 @@ $res1 = shell_exec($cmd1);
 $res2 = shell_exec($cmd2);
 $res3 = shell_exec($cmd3);
 
+echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
 echo "$res1";
 echo "<hr>";
 echo "$res2";

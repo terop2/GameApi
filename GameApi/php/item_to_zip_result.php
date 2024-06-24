@@ -49,7 +49,7 @@ if ($res) {
 
 
   set_status(9);
-  $za = new ZipArchive;
+  $za = new \ZipArchive;
   $za->open("./pp2/tmp.zip",0);
   $idx = $za->locateName("license.html");
   $za->deleteIndex($idx);
