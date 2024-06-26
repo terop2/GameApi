@@ -1293,6 +1293,7 @@ res+="LI I116=ev.lines_api.from_polygon(I124);\n";
 
 var color = "000000";
 var bg = get_background_value();
+var out = "I4";
 if (bg>=0&&bg<store.state.background_db.length) {
   var name2 = store.state.background_db[bg];
   var name = parse_bg_colour(name2);
@@ -1320,6 +1321,10 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   if (material[0]!="") {
      res+="MT I54=ev.materials_api.m_def(ev);\n";
      res+=material[0];
+     var gltf = ",false";
+     if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf = ",true"; }
+     res+="MT I46=ev.materials_api.toon_border(ev,I4," + border_width + ",ff" + border_color +gltf + ");\n";
+     out = "I46";
   } else
   if (filename.substr(-4)==".obj"&&mtl_name!="") {
      res+="MT I54=ev.materials_api.m_def(ev);\n";
@@ -1337,7 +1342,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   }
 
  if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"))||material_value!=-1) { 
-    res+="ML I62=ev.materials_api.bind(I2,I4);\n";
+    res+="ML I62=ev.materials_api.bind(I2," + out + ");\n";
     }
 
     res+="P I771=ev.polygon_api.cube(-300.0,300.0,-300.0,300.0,-300.0,300.0);\n";
