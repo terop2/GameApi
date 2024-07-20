@@ -742,6 +742,7 @@ function find_main_item(arr)
 {
    var s = arr.length;
    for(var i=0;i<s;i++) {
+      console.log(arr[i]);
       if (arr[i].substr(-4)==".zip") return i;
       if (arr[i].substr(-4)==".glb") return i;
       if (arr[i].substr(-4)==".stl") return i;
@@ -750,6 +751,7 @@ function find_main_item(arr)
       if (arr[i].substr(-4)==".obj") return i;
       //if (arr[i].name.substr(-4)==".ply") return i;
    }
+   console.log("ERROR: main item not found");
    set_label("ERROR: main item not found");
    //console.log("ERROR: main item not found");
    return -1;
@@ -1196,7 +1198,7 @@ function create_script(filename, contents, filenames)
 
 
 
-  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
+  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
   if (filename.substr(-4)==".obj") {
      if (mtl_name=="") {
@@ -1702,8 +1704,9 @@ set_filename_info(state,"");
      const promise2 = new Promise( resolve => {
 
      	   var s = files2.length;
+	   console.log(s);
      	   for(var i=0;i<s;i++) {
-	   	   //console.log(files2[i].name);
+	   	   console.log(files2[i].name);
 	   	   filenames.push(files2[i].name);
 		   files.push(files2[i]);
 	   }
@@ -1770,14 +1773,20 @@ function drop(ev)
 
   var files = [];
   var filenames = [];
-  if (ev.dataTransfer.items) {
+  if (ev.dataTransfer.files) {
      const promise2 = new Promise( resolve => {
 
      	   var s = ev.dataTransfer.items.length;
 	   var promises = [];
+	   console.log(s);
+	   var fl = ev.dataTransfer.items;
+	   var ff = ev.dataTransfer.files;
      	   for(var i=0;i<s;i++) {
-       	   	   var item = ev.dataTransfer.items[i].webkitGetAsEntry();
+	   	   var item = ev.dataTransfer.items[i].webkitGetAsEntry();		   
+
+		   //console.log(ev.dataTransfer.items[i]);
        		   if (item) {
+		   console.log(item);
 		   promises.push(traverseFileTree(item));
 	  	   }
 		   }
@@ -1788,8 +1797,10 @@ function drop(ev)
 
 	   var filenames2 = [];
 	   var s = filenames.length;
+	   console.log(s);
 	   for(var i=0;i<s;i++)
 	   {
+		console.log(filenames[i]);
 	      filenames2.push(filenames[i]);
 	   }
 
@@ -2288,7 +2299,7 @@ function submitprogressbar(i)
    if (i==500)
    {
    /*
-	var name = "https://ssh.meshpage.org/viewdata/num.txt";
+	var name = "https://meshpage.org/viewdata/num.txt";
 	fetch(name).then(response => {
 	    response.body.getReader().read().then(value => {
 	   console.log(value);

@@ -421,6 +421,18 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "EveryApi&", "ML","float", "float", "float", "float" },
 			 { "ev", "", "0.0", "0.0", "800.0", "600.0" },
 			 "ML", "sprite_api", "turn_to_2d"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::turn_to_meters_default,
+			 "meters_default",
+			 { "ev", "ml", "p" },
+			 { "EveryApi&", "ML", "P" },
+			 { "ev", "", ""},
+			 "ML", "mainloop_api", "turn_to_meters_default"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::turn_to_meters,
+			 "meters_scale",
+			 { "ev", "ml", "sx1","sx2", "sy1","sy2", "sz1","sz2" },
+			 { "EveryApi&", "ML", "float", "float", "float","float", "float", "float" },
+			 { "ev", "", "-400","400", "-400","400", "-400","400" },
+			 "ML", "mainloop_api", "turn_to_meters"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::scale_2d_screen,
 			 "bm_2d_screen_scale",
