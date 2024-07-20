@@ -353,6 +353,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML disable_resize(ML ml);
+  ML turn_to_meters_default(EveryApi &ev, ML ml, P p);
+  ML turn_to_meters(EveryApi &ev, ML ml, float sx1,float sx2, float sy1,float sy2, float sz1,float sz2);
   void check_glerrors(std::string context);
   HML load_zip2(EveryApi &ev, std::string zip_url);
   HML load_zip_assets2(std::string zip_url);

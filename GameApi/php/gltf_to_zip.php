@@ -32,6 +32,7 @@
 <!--input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br-->
 <p>
 <input class="submit" type="submit" value="Convert to HTML5">
+<?php echo file_get_contents("./pp2/tmp.count") ?>
 </form>
 
 <script>

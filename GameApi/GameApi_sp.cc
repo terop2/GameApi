@@ -264,6 +264,42 @@ private:
   int rect_sx, rect_sy;
 };
 
+extern bool g_resize_disabled;
+
+class TurnToMeters : public MainLoopItem
+{
+public:
+  TurnToMeters(GameApi::EveryApi &ev, MainLoopItem *next, float sx1,float sx2, float sy1,float sy2, float sz1,float sz2) : ev(ev), next(next), sx1(sx1),sx2(sx2),sy1(sy1),sy2(sy2),sz1(sz1),sz2(sz2) {
+    g_resize_disabled=true;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis) {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    MainLoopEnv ee = e;
+    ee.in_MV = e.in_MV*Matrix::Scale(400.0/((sx2-sx1)/2.0),400.0/((sy2-sy1)/2.0),400.0/((sz2-sz1)/2.0))*Matrix::Translate((sx1+sx2)/2,(sy1+sy2)/2,(sz1+sz2)/2);
+    ee.env = e.env*Matrix::Scale(400.0/(sx2-sx1),400.0/(sy2-sy1),400.0/(sz2-sz1))*Matrix::Translate((sx1+sx2)/2,(sy1+sy2)/2,(sz1+sz2)/2);
+    next->execute(ee);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  float sx1,sy1,sz1;
+  float sx2,sy2,sz2;
+};
+
+
 class AltMLArray : public MainLoopItem
 {
 public:
@@ -345,6 +381,119 @@ EXPORT GameApi::ML GameApi::SpriteApi::turn_to_2d(EveryApi &ev, ML ml, float tl_
   Point2d tl = { tl_x, tl_y };
   Point2d br = { br_x, br_y };
   return add_main_loop(e, new TurnTo2d(ev,next,tl,br));
+}
+
+EXPORT GameApi::ML GameApi::MainLoopApi::turn_to_meters(EveryApi &ev, ML ml, float sx1, float sx2, float sy1,float sy2, float sz1,float sz2)
+{
+  MainLoopItem *next = find_main_loop(e, ml);
+  return add_main_loop(e, new TurnToMeters(ev,next,sx1,sx2,sy1,sy2,sz1,sz2));
+}
+
+class TurnToMetersDefault : public MainLoopItem
+{
+public:
+  TurnToMetersDefault(GameApi::EveryApi &ev, MainLoopItem *next, FaceCollection *coll) : ev(ev), next(next), coll(coll) {
+    g_resize_disabled=true;
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis) {
+    next->Collect(vis);
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    find_bounding_box();
+    calc_bounds();
+  }
+
+  void Prepare() { next->Prepare(); coll->Prepare(); HeavyPrepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    MainLoopEnv ee = e;
+    ee.in_MV = e.in_MV*Matrix::Scale(400.0/((sx2-sx1)/2.0),400.0/((sy2-sy1)/2.0),400.0/((sz2-sz1)/2.0))*Matrix::Translate((sx1+sx2)/2,(sy1+sy2)/2,(sz1+sz2)/2);
+    ee.env = e.env*Matrix::Scale(400.0/(sx2-sx1),400.0/(sy2-sy1),400.0/(sz2-sz1))*Matrix::Translate((sx1+sx2)/2,(sy1+sy2)/2,(sz1+sz2)/2);
+    next->execute(ee);
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+  void find_bounding_box()
+  {
+
+    start_x = 300000.0;
+      start_y = 300000.0;
+      start_z = 300000.0;
+      end_x =  -300000.0;
+      end_y =  -300000.0;
+      end_z =  -300000.0; 
+
+    int s = std::min(coll->NumFaces(),100);
+    if (s<1) s=1;
+    int step = coll->NumFaces()/s;
+    int faces = coll->NumFaces();
+    for(int i=0;i<faces;i+=step)
+      {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point p4 = coll->NumPoints(i)==4 ? coll->FacePoint(i,3) : p1;
+
+	    handlepoint(p1);
+	    handlepoint(p2);
+	    handlepoint(p3);
+	    handlepoint(p4);
+      }
+  }
+  void handlepoint(Point p)
+  {
+    if (p.x<start_x) { start_x = p.x; }
+    if (p.y<start_y) { start_y = p.y; }
+    if (p.z<start_z) { start_z = p.z; }
+    if (p.x>end_x) { end_x = p.x; }
+    if (p.y>end_y) { end_y = p.y; }
+    if (p.z>end_z) { end_z = p.z; }    
+  }
+  void calc_bounds()
+  {
+    float center_x = (end_x+start_x)/2;
+    float center_y = (end_y+start_y)/2;
+    float center_z = (end_z+start_z)/2;
+    float delta_x = fabs(end_x-start_x);
+    float delta_y = fabs(end_y-start_y);
+    float delta_z = fabs(end_z-start_z);
+
+    float max = delta_x > delta_y ? delta_x : delta_y;
+    float max2 = delta_z > max ? delta_z : max;
+
+    max2 *= 1.3;
+
+    sx1 = center_x - max2/2;
+    sx2 = center_x + max2/2;
+    sy1 = center_y - max2/2;
+    sy2 = center_y + max2/2;
+    sz1 = center_z - max2/2;
+    sz2 = center_z + max2/2;
+  }
+  
+private:
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  FaceCollection *coll;
+  float start_x, start_y, start_z;
+  float end_x, end_y, end_z;
+  float sx1,sy1,sz1;
+  float sx2,sy2,sz2;
+};
+
+
+EXPORT GameApi::ML GameApi::MainLoopApi::turn_to_meters_default(EveryApi &ev, ML ml, P p)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_main_loop(e, new TurnToMetersDefault(ev,item,coll));
 }
 
 EXPORT GameApi::SpriteApi::~SpriteApi()

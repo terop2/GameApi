@@ -1,6 +1,14 @@
 <?php
 ini_set('memory_limit', '2048M');
 
+$countname = "./pp2/tmp.count";
+$num = file_get_contents($countname);
+$num2 = intval($num) + 1;
+$str = sprintf('%05d',$num2);
+echo "$str";
+file_put_contents($countname,$str);
+
+
 $gltf = $_POST["gltffile"];
 
 if (strlen($gltf)<4||(substr($gltf,-3)!="zip"&&substr($gltf,-3)!="glb"&&substr($gltf,-4)!="gltf")) {

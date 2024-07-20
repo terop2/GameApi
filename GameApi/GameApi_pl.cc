@@ -13413,6 +13413,14 @@ void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p);
 GameApi::ML resize_model(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML ml);
 
 
+bool g_resize_disabled=false;
+
+GameApi::ML GameApi::MainLoopApi::disable_resize(GameApi::ML ml)
+{
+  g_resize_disabled=true;
+  return ml;
+}
+
 
 
 class ResizeFaceCollection : public ForwardFaceCollection
@@ -13449,14 +13457,26 @@ public:
   }
   Point FacePoint(int face, int point) const
   {
-    Point p = coll->FacePoint(face,point);
-    if (ext_flag) return p*(*ext_mat);
-    return p*m_m;
+    // METHOD DISABLED
+    if (g_resize_disabled) {
+      Point p = coll->FacePoint(face,point);
+      if (ext_flag) return p; //*(*ext_mat);
+      return p; //*m_m;
+    } else {
+      Point p = coll->FacePoint(face,point);
+      if (ext_flag) return p*(*ext_mat);
+      return p*m_m;
+    }
   }
 public:
   Matrix get_matrix() const {
+    if (g_resize_disabled) {
+    // METHOD DISABLED
+    return Matrix::Identity();
+    } else {
     if (ext_flag) { return *ext_mat; }
     return m_m;
+    }
   }
 
 private:
@@ -13543,11 +13563,17 @@ public:
 };
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 {
+  if (g_resize_disabled) {
+    return std::make_pair(1.0,Point(0.0,0.0,0.0));
+  } else {
+  // METHOD DISABLED
+  
   ResizeFaceCollection *coll2 = new ResizeFaceCollection(coll,true);
   coll2->Prepare();
   std::pair<float,Point> p = std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
   delete coll2;
   return p;
+  }
 }
 
 
@@ -13573,7 +13599,10 @@ void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p)
   resize->Prepare();
   Matrix m;
   if (!g_resize_mat_done) {
-    m = resize->get_matrix();
+    if (!g_resize_disabled)
+      m = resize->get_matrix(); // METHOD DISABLED
+    else
+      m=Matrix::Identity();
     g_resize_mat = m;
     g_resize_mat_done = true;
   }
@@ -13582,7 +13611,7 @@ void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p)
 GameApi::ML resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::ML ml)
 {
   assert(g_resize_mat_done);
-  Matrix m = g_resize_mat;
+  Matrix m = g_resize_disabled?Matrix::Identity():g_resize_mat; 
   GameApi::MN mn = ev.move_api.mn_empty();
   mn = ev.move_api.matrix(mn,add_matrix2(e,m));
   return ev.move_api.move_ml(ev,ml,mn,1,0.0);
