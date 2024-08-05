@@ -23,7 +23,7 @@
 
 EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
 
-allopts = -DNO_THREADS -Oz -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -emit-llvm
+allopts = -Oz -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -emit-llvm
 # -Oz -gsplit-dwarf -gpubnames
 
 yes_pthread_opts = -s USE_PTHREADS=1 -pthread

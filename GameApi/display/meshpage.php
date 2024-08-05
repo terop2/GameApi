@@ -732,6 +732,15 @@ Header set Cross-Origin-Opener-Policy "same-origin"
 Header set Access-Control-Allow-Headers "range"
 </pre>
 
+Additionally, you should have in the page where iframe or embed is in, the following header definition:
+<pre>
+  &lt;?php
+     header("Cross-Origin-Opener-Policy: same-origin");
+  ?&gt;
+</pre>
+Apparently this needs to be in the page itself and not in the .htaccess to get SharedArrayBuffer and pthreads working.
+
+
 <h2>How to setup http cache with the engine?</h2>
 
 We recommend in .htaccess:
