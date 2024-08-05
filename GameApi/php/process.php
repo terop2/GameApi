@@ -1,5 +1,7 @@
 <?php
 
+header("Cross-Origin-Opener-Policy: same-origin");
+
 $labels = array("3D Model Viewer", "GLTF to HTML5 ZIP", "Full Customisation", "Examples");
 $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
 $alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
@@ -18,12 +20,13 @@ echo "<head>";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
 echo "</head>";
 echo "<body>";
+//echo "SEO_KEYWORDS: meshpage.org offers unique way to do physically based rendering via runtime processing of 3d assets from normal gltf 2.0 files. The 3d models are created in blender and its gltf exporter and passed to our asset delivery system. This uses khronos group gltf 2.0 standard and can render 3d models from multiple sources, including blender and sketchfab.";
 echo "<div class=\"grid_container\">";
 echo "<div class=\"grid_item1_a width620\">";
 echo "<h1 class=\"customfont fontsize\" align=\"center\">meshpage.org</h1>";
 echo "<h4 class=\"customfont label_a\" align=\"center\" style=\"position: relative; top: 150px; left: -250px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h4>";
-echo "</div><div class=\"grid_item3_a width620\">";
-echo "<embed src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: hidden\">";
+echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
+echo "<iframe allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>>";
 echo "</div>";
 echo "</div>";
 echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>.";
@@ -54,6 +57,9 @@ if (substr_count($descs[$i],"<br>")>=3) {
 }
 echo "</div>";
 echo "<style>";
+echo ".noscrollbars {";
+echo "  overflow-x: visible; overflow-y: visible;";
+echo "}";
 echo ".fontsize {";
 echo "   font-size: 80px;";
 echo "}";
@@ -136,6 +142,9 @@ echo "}";
 echo ".width620 {";
 echo "  width: 680px;";
 echo "}";
+echo ".height620 {";
+echo "  height: 680px;";
+echo "}";
 
 
 echo ".grid_item2 {";
@@ -165,7 +174,7 @@ echo "   justify-content: left;";
 echo "   justify-items: left;";
 echo "   text-decoration-line: none;";
 echo "   color: black;";
-echo "   height: 100px;";
+echo "   height: 250px;";
 echo "}";
 echo "@media only screen and (max-width: 780px) {";
 echo ".grid_item3 {";
@@ -188,5 +197,10 @@ echo "</div>";
 echo "<script>(function () {var sc=document.createElement('script');sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=3771512&variant_id=sf';var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();";
 echo "</script>";
 echo "<!-- End SF Tag -->";
+echo "<script>";
+echo "(function() {";
+echo "  if (!crossOriginIsolated) console.log(\"MAIN WINDOW not crossorigin isolated\"); else console.log(\"MAIN WINDOW OK\");";
+echo "})();";
+echo "</script>";
 echo "</body>";
 echo "</html>";

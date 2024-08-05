@@ -111,10 +111,10 @@ int main(int argc, char **argv)
   std::string script = 
     "<script>\n"
     "function menu_click(num,num2) {\n"
-    "    window.location.href=\"https://ssh.meshpage.org/mesh_doc.php?menu=\" + num.toString() + \"&submenu=\" + num2.toString() + \"&select=select&" + r.str() +"\" ;"
+    "    window.location.href=\"https://meshpage.org/mesh_doc.php?menu=\" + num.toString() + \"&submenu=\" + num2.toString() + \"&select=select&" + r.str() +"\" ;"
     "}\n"
     "function menu_click2(num,num2) {\n"
-    "    window.location.href=\"https://ssh.meshpage.org/mesh_doc.php?menu=\" + num.toString() + \"&submenu=\" + num2.toString()+\"&select=select&" + r.str() +"\";\n"
+    "    window.location.href=\"https://meshpage.org/mesh_doc.php?menu=\" + num.toString() + \"&submenu=\" + num2.toString()+\"&select=select&" + r.str() +"\";\n"
     "}\n"
     "</script>"
     ;
