@@ -143,6 +143,20 @@ $highmem = js_highmem();
 </script>
 <body id="body" style="overflow:hidden">
 <script src="vue.js"></script>
+<script>
+if (!crossOriginIsolated) {
+    console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
+    console.log("Your web server needs the following configuration to get gameapi builder animations working:");
+    console.log("Header set Access-Control-Allow-Origin https://meshpage.org");
+console.log("Header set Cross-Origin-Embedder-Policy \"require-corp\"");
+console.log("Header set Cross-Origin-Resource-Policy \"same-site\"");
+console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
+console.log("Header set Access-Control-Allow-Headers \"Range\"");
+console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
+
+}
+
+</script>
 
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
