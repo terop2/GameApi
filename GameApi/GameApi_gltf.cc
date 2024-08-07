@@ -435,9 +435,12 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr);
 
 
+
 struct ThreadInfo_gltf_bitmap
 {
+#ifdef THREADS
   pthread_t thread_id;
+#endif
   tinygltf::Image *image;
   int req_width;
   int req_height;
@@ -446,7 +449,6 @@ struct ThreadInfo_gltf_bitmap
   GLTFImageDecoder *decoder;
   int decoder_item;
 };
-
 
 GameApi::Env *g_e = 0;
 
@@ -478,8 +480,10 @@ public:
     };
     tiny.SetFsCallbacks(fs);
     //#ifdef CONCURRENT_IMAGE_DECODE
+#ifdef THREADS
     if (url.substr(url.size()-3,3)!="glb")
       tiny.SetImageLoader(&LoadImageData, this);
+#endif
     //#endif
     //tiny.SetImageWriter(&WriteImageData, this);
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
@@ -570,6 +574,7 @@ public:
     //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
 
 
+ #ifdef THREADS
  #ifdef EMSCRIPTEN
     // wait for all threads to finish
     int ss = current_gltf_threads.size();
@@ -580,6 +585,7 @@ public:
       }
     
     current_gltf_threads.clear();
+ #endif
  #endif
 
     if (!prepreprepare_done) {
@@ -1004,6 +1010,8 @@ class GLTFImageDecoder;
 
 void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item)
 {
+#ifdef THREADS
+  
   image->width = req_width;
   image->height = req_height;
   image->component = 3;
@@ -1027,11 +1035,10 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   pthread_attr_init(&attr);
   pthread_attr_setstacksize(&attr,300000);
   pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
-  
-}
-#ifdef CONCURRENT_IMAGE_DECODE
 
 #endif
+  
+}
  
 
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
@@ -12250,11 +12257,23 @@ void GLTFImageDecoder::start_decode_process(FILEID id, int req_width, int req_he
 {
   //std::cout << "start_process:" << id.id << std::endl;
   tinygltf::Image *img = new tinygltf::Image;
+#ifdef THREADS
 #ifdef EMSCRIPTEN
   
   start_gltf_bitmap_thread(img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id);
 #else
   // not-emscripten -> do syncronous version
+  ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
+  info->image = img;
+  info->req_width = req_width;
+  info->req_height = req_height;
+  info->decoder = this;
+  info->decoder_item = id.id;
+  info->bytes = &(files2[id]->operator[](0));
+  info->size = files2[id]->size();
+  thread_func_gltf_bitmap((void*)info);
+#endif
+#else
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
   info->image = img;
   info->req_width = req_width;
