@@ -993,8 +993,12 @@ void *thread_func_gltf_bitmap(void *data2)
   if (bm->decoder->decode_cb[id])
     bm->decoder->decode_cb[id](bm->decoder->decode_user_data[id]);
 
+#ifdef THREADS
+#ifdef EMSCRIPTEN
   delete bm->decoder->files2[id];
   bm->decoder->files2[id]=0;
+#endif
+#endif
   
   async_pending_count--;
   
