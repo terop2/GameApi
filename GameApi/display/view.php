@@ -5,7 +5,7 @@ ini_set("upload_max_filesize", "100M");
 ini_set("memory_limit", "1024M");
 header("Access-Control-Allow-Headers: Range");
 include("backend.php");
-//header("Cross-Origin-Opener-Policy: same-origin");
+header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page_highmem.js");
 
 $machine=php_uname("n");
@@ -115,6 +115,20 @@ req.send();
 ?>
 
 <script src="vue.js"></script>
+<script>
+if (!crossOriginIsolated) {
+    console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
+    console.log("Your web server needs the following configuration to get gameapi builder animations working:");
+    console.log("Header set Access-Control-Allow-Origin https://meshpage.org");
+console.log("Header set Cross-Origin-Embedder-Policy \"require-corp\"");
+console.log("Header set Cross-Origin-Resource-Policy \"same-site\"");
+console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
+console.log("Header set Access-Control-Allow-Headers \"Range\"");
+console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
+
+}
+
+</script>
 
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">

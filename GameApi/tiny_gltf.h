@@ -2306,7 +2306,7 @@ static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
     }
     return false;
   }
-
+  /*
   size_t sz = buf.size();
   if (sz == 0) {
     if (failMsgOut) {
@@ -2314,7 +2314,8 @@ static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
     }
     return false;
   }
-
+  */
+  /*
   if (checkSize) {
     if (reqBytes == sz) {
       out->swap(buf);
@@ -2329,7 +2330,7 @@ static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
       return false;
     }
   }
-
+  */
   out->swap(buf);
   return true;
 }
@@ -3854,7 +3855,8 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
       // If the image cannot be loaded, keep uri as image->uri.
       return true;
     }
-
+    if (img.empty()) { img.push_back(' '); }
+    /*
     if (img.empty()) {
       if (warn) {
         (*warn) += "Image data is empty for image[" +
@@ -3863,8 +3865,8 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
       }
       return false;
     }
+    */
   }
-
   if (*LoadImageData == nullptr) {
     if (err) {
       (*err) += "No LoadImageData callback specified.\n";
