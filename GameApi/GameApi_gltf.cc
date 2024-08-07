@@ -11377,6 +11377,19 @@ struct del_map
 };
 extern del_map g_del_map;
 
+class GLTF_Model_with_prepare_sketchfab_zip;
+
+struct ZipThreadData
+{
+#ifdef THREADS
+  pthread_t thread_id;
+#endif
+  GLTF_Model_with_prepare_sketchfab_zip *obj;
+  int i;
+  mz_zip_archive *pZip;
+};
+
+void *thread_sketchfab_zip(void *data);
 
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
@@ -11425,51 +11438,32 @@ public:
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
+    std::vector<ZipThreadData*> thread_data;
     for(int i=0;i<num;i++)
       {
-	mz_bool is_dir = mz_zip_reader_is_file_a_directory(&pZip, i);
-	if (is_dir) {
-	    char *filename = new char[256];
-	    for(int j=0;j<256;j++)
-	      filename[j]=0;
-	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
-	    //std::cout << "DIR:" << filename << std::endl;
-	    delete[] filename;
-	} else
-	  {
-	    char *filename = new char[256];
-	    for(int j=0;j<256;j++)
-	      filename[j]=0;
-	    mz_uint err = mz_zip_reader_get_filename(&pZip, i, filename, 256);
-	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; continue; }
-	    std::string url = "load_url.php?url=" + zip_url + "/" + std::string(filename);
-	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
-	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") mainfilename = zip_url + "/" + std::string(filename);
-	    //std::cout << "Decompressing zip: " << filename << std::endl;
 
-	    //if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
-	    // delete [] filename;
-	    //  continue;
-	    //}
-	    
-	    size_t sz=0;
-	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
-	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
-	    free(ptr);
-	    delete[] filename;
-#ifdef EMSCRIPTEN
-#if 0
-	    data->push_back(0); // is this always needed?
+	ZipThreadData *info = new ZipThreadData;
+	info->obj = this;
+	info->i = i;
+	info->pZip = &pZip;
+#ifdef THREADS
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr,300000);
+	pthread_create(&info->thread_id, &attr, &thread_sketchfab_zip, (void*)info);
+	thread_data.push_back(info);
+#else
+	thread_sketchfab_zip((void*)info);
 #endif
-#endif
-	    // std::cout << url << "::" << data->size() << std::endl;
-	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
-	      delete g_del_map.load_url_buffers_async[url];
-	    }
-	    
-	    g_del_map.load_url_buffers_async[url] = data;
-	  }
       }
+#ifdef THREADS
+    for(int i2=0;i2<num;i2++)
+      {
+	ZipThreadData *info = thread_data[i2];
+	void *res;
+	pthread_join(thread_data[i2]->thread_id, &res);
+      }
+#endif
     mz_zip_reader_end(&pZip);
     if (mainfilename!="")
       {
@@ -11489,7 +11483,7 @@ public:
       }
     
   }
-private:
+public:
   GameApi::Env &e;
   std::string zip_url;
   std::string homepage;
@@ -11498,6 +11492,60 @@ private:
   bool firsttime;
   std::string mainfilename;
 };
+
+void *thread_sketchfab_zip(void *data)
+{
+  ZipThreadData *dt = (ZipThreadData*)data;
+  GLTF_Model_with_prepare_sketchfab_zip *obj = dt->obj;
+  mz_zip_archive *pZip = dt->pZip;
+  int i = dt->i;
+  
+	mz_bool is_dir = mz_zip_reader_is_file_a_directory(pZip, i);
+	if (is_dir) {
+	    char *filename = new char[256];
+	    for(int j=0;j<256;j++)
+	      filename[j]=0;
+	    mz_uint err = mz_zip_reader_get_filename(pZip, i, filename, 256);
+	    //std::cout << "DIR:" << filename << std::endl;
+	    delete[] filename;
+	} else
+	  {
+	    char *filename = new char[256];
+	    for(int j=0;j<256;j++)
+	      filename[j]=0;
+	    mz_uint err = mz_zip_reader_get_filename(pZip, i, filename, 256);
+	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; return 0; }
+	    std::string url = "load_url.php?url=" + obj->zip_url + "/" + std::string(filename);
+	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
+	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") obj->mainfilename = obj->zip_url + "/" + std::string(filename);
+	    //std::cout << "Decompressing zip: " << filename << std::endl;
+
+	    //if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
+	    // delete [] filename;
+	    //  continue;
+	    //}
+	    
+	    size_t sz=0;
+	    void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
+	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    free(ptr);
+	    delete[] filename;
+#ifdef EMSCRIPTEN
+#if 0
+	    data->push_back(0); // is this always needed?
+#endif
+#endif
+	    // std::cout << url << "::" << data->size() << std::endl;
+	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
+	      delete g_del_map.load_url_buffers_async[url];
+	    }
+	    
+	    g_del_map.load_url_buffers_async[url] = data;
+	  }
+
+	return 0;
+}
+
 
 int find_indexhtml_string(std::string data, std::string str);
 
