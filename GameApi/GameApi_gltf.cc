@@ -512,7 +512,9 @@ public:
     std::string filename = decoder->get_fetch_filename(id);
     //std::cout << "PrePrePrepare()" << filename << std::endl;
     FILEID iid = decoder->add_file(*vec,filename);
+#ifdef THREADS
     delete vec;
+#endif
     async_pending_count++;
     decoder->start_decode_process(iid,256,256);
     }
@@ -791,11 +793,13 @@ int g_requestedBytes;
 
 bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
 {
+#ifdef THREADS
   if (filepath.substr(filepath.size()-3,3)=="glb"||
       filepath.substr(filepath.size()-3,3)=="bin"||
       filepath.substr(filepath.size()-4,4)=="gltf")
     {
-  
+#endif
+      
   //LoadGltf *data = (LoadGltf*)ptr;
   //std::cout << "ReadWholeFile " << filepath << std::endl;
   std::string url = filepath;
@@ -831,12 +835,14 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
     *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
     delete vec;
     return true;
+#ifdef THREADS
     } else
     {
       // png files are loaded via different route.
       *out = std::vector<unsigned char>();
       return true;
     }
+#endif
 } 
 bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
 {
