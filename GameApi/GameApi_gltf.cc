@@ -47,7 +47,7 @@ public:
   void fetch_all_files(GameApi::Env &e, const std::vector<FETCHID> &ids);
   void set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data);
   std::vector<unsigned char> *get_file(GameApi::Env &e, FETCHID id);
-  FILEID add_file(std::vector<unsigned char> &vec, std::string filename);
+  FILEID add_file(std::vector<unsigned char> *vec, std::string filename);
   FILEID find_file(std::string filename);
   void start_decode_process(FILEID id, int req_width, int req_height);
   //void decode_file(FILEID id);
@@ -490,6 +490,8 @@ public:
   }
   ~LoadGltf()
   {
+    delete decoder;
+    decoder=0;
     e.async_rem_callback(url);
     if (prepare_done) {
       
@@ -508,13 +510,14 @@ public:
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
     std::vector<unsigned char> *vec = decoder->get_file(e,id);
+    if (!vec) return;
     //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
     std::string filename = decoder->get_fetch_filename(id);
     //std::cout << "PrePrePrepare()" << filename << std::endl;
-    FILEID iid = decoder->add_file(*vec,filename);
-#ifdef THREADS
-    delete vec;
-#endif
+    FILEID iid = decoder->add_file(vec,filename);
+    //#ifdef THREADS
+    //delete vec;
+    //#endif
     async_pending_count++;
     decoder->start_decode_process(iid,256,256);
     }
@@ -678,7 +681,7 @@ public:
   tinygltf::TinyGLTF tiny;
   tinygltf::Model model;
   bool prepare_done = false;
-  GLTFImageDecoder *decoder;
+  GLTFImageDecoder *decoder=0;
   bool preprepare_done = false;
   bool prepreprepare_done = false;
   std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
@@ -722,27 +725,44 @@ bool instance_deleter_installed=false;
 
 int register_cache_deleter(void (*fptr)(void*), void*);
 
-/*
+
 void del_instances(void*)
 {
   int s = g_gltf_instances.size();
   for(int i=0;i<s;i++)
     {
      KeyStruct &s = g_gltf_instances[i];
-      delete s.obj;
+     //std::cout << "POINTER:" << (int)s.obj << std::endl;
+     delete s.obj->decoder;
+     s.obj->decoder = 0;
+     s.obj->model.accessors.clear();
+     s.obj->model.animations.clear();
+     s.obj->model.buffers.clear();
+     s.obj->model.bufferViews.clear();
+     s.obj->model.materials.clear();
+     s.obj->model.meshes.clear();
+     s.obj->model.nodes.clear();
+     s.obj->model.textures.clear();
+     s.obj->model.images.clear();
+     s.obj->model.skins.clear();
+     s.obj->model.samplers.clear();
+     s.obj->model.cameras.clear();
+     s.obj->model.scenes.clear();
+     s.obj->model.lights.clear();
+     
     }
   g_gltf_instances.clear();
   //instance_deleter_installed=false;
 }
-*/
+
 LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary)
 {
 
-  //if (instance_deleter_installed==false)
-  //  {
-  //    register_cache_deleter(&del_instances,(void*)0);
-  //    instance_deleter_installed=true;
-  //}
+  if (instance_deleter_installed==false)
+    {
+      register_cache_deleter(&del_instances,(void*)0);
+      instance_deleter_installed=true;
+  }
   
   std::string key = base_url + ":" + url;
 
@@ -11527,6 +11547,7 @@ void *thread_sketchfab_zip(void *data)
 	    
 	    size_t sz=0;
 	    void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
+	    if (sz<1) sz=1;
 	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
 	    delete[] filename;
@@ -12165,7 +12186,7 @@ GLTFImageDecoder::~GLTFImageDecoder()
     std::map<FILEID,std::vector<unsigned char> *>::iterator i2 = decoded_files.begin();
     for(;i2!=decoded_files.end();i2++)
       {
-	delete (*i2).second;
+	(*i2).second->clear();
       }
     std::map<FILEID,tinygltf::Image*>::iterator i3 = decoded_image.begin();
     for(;i3!=decoded_image.end();i3++)
@@ -12301,13 +12322,13 @@ FILEID GLTFImageDecoder::find_file(std::string filename)
   std::cout << "ERROR, GLTFImageDecoder::find_file()" << std::endl;
   return id;
 }
-FILEID GLTFImageDecoder::add_file(std::vector<unsigned char> &vec, std::string filename)
+FILEID GLTFImageDecoder::add_file(std::vector<unsigned char> *vec, std::string filename)
 {
   //std::cout << "add_file:" << filename << std::endl;
   FILEID id = get_new_file_id();
   //std::cout << "add_file:" << id.id << "::" << filename << std::endl;
   assert(!files2[id]);
-  files2[id] = new std::vector<unsigned char>(vec.begin(),vec.end());
+  files2[id] = vec; //new std::vector<unsigned char>(vec.begin(),vec.end());
   filenames2[id] = filename;
   return id;
 }
