@@ -3789,11 +3789,13 @@ public:
 	for(int yy=0;yy<sy;yy++)
 	  for(int xx=0;xx<sx;xx++) {
 	    int type= vx->Map(xx,yy,zz);
-	    if (type!=0) {
+	    //if (type!=-1) {
 	      type-=start_type;
+	      if (type>=0&&type<x.size()&&type<y.size()&&type<z.size()) {
 	      x[type].push_back(xx);
 	      y[type].push_back(yy);
 	      z[type].push_back(zz);
+	      //}
 	    }
 	  }
       firsttime=false;
