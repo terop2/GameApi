@@ -4,7 +4,13 @@
  std::vector<GameApiItem*> pointsapi_functions()
 {
   std::vector<GameApiItem*> vec;
-
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::load_points,
+			 "pts_load",
+			 { "url" },
+			 { "std::string" },
+			 { "https://meshpage.org/test.pts" },
+			 "PTS", "points_api", "load_points"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_alt,
 			 "pts_alt",
 			 { "vec", "index" },

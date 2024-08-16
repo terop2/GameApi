@@ -143,6 +143,20 @@ $highmem = js_highmem();
 </script>
 <body id="body" style="overflow:hidden">
 <script src="vue.js"></script>
+<script>
+if (!crossOriginIsolated) {
+    console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
+    console.log("Your web server needs the following configuration to get gameapi builder animations working:");
+    console.log("Header set Access-Control-Allow-Origin https://meshpage.org");
+console.log("Header set Cross-Origin-Embedder-Policy \"require-corp\"");
+console.log("Header set Cross-Origin-Resource-Policy \"same-site\"");
+console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
+console.log("Header set Access-Control-Allow-Headers \"Range\"");
+console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
+
+}
+
+</script>
 
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
@@ -637,7 +651,7 @@ list_item($assetsite . "/Math_concepts.txt", "Math concepts");
 list_item($assetsite . "/Printer.txt", "3d printer instructions");
 list_item($assetsite . "/Skills_to_learn.txt", "Skills to learn");
 list_item($assetsite . "/Releasing_animations.txt", "Releasing animations to your web page");
-list_item("https://ssh.meshpage.org/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
+list_item("https://meshpage.org/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
 list_end();
 ?>
 
@@ -731,6 +745,15 @@ Header set Cross-Origin-Resource-Policy "same-site"
 Header set Cross-Origin-Opener-Policy "same-origin" 
 Header set Access-Control-Allow-Headers "range"
 </pre>
+
+Additionally, you should have in the page where iframe or embed is in, the following header definition:
+<pre>
+  &lt;?php
+     header("Cross-Origin-Opener-Policy: same-origin");
+  ?&gt;
+</pre>
+Apparently this needs to be in the page itself and not in the .htaccess to get SharedArrayBuffer and pthreads working.
+
 
 <h2>How to setup http cache with the engine?</h2>
 

@@ -4,6 +4,8 @@
 #include "EffectI.hh"
 
 
+
+
 EXPORT GameApi::TextureApi::TextureApi(GameApi::Env &e) : e(e) { count=0; }
 
 EXPORT GameApi::TX GameApi::TextureApi::tex_plane(int sx, int sy)

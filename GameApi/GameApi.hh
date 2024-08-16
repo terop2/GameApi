@@ -353,6 +353,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML disable_resize(ML ml);
+  ML turn_to_meters_default(EveryApi &ev, ML ml, P p);
+  ML turn_to_meters(EveryApi &ev, ML ml, float sx1,float sx2, float sy1,float sy2, float sz1,float sz2);
   void check_glerrors(std::string context);
   HML load_zip2(EveryApi &ev, std::string zip_url);
   HML load_zip_assets2(std::string zip_url);
@@ -3575,6 +3578,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS load_points(std::string url);
   IMPORT PTS pts_alt(std::vector<PTS> vec, int index);
   IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);
   IMPORT P ply_faces(std::string url);

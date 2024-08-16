@@ -81,7 +81,7 @@ private:
     for(int i=0;i<ss2;i++) if (url0[i]=='/') res=i;
     std::string url1 = url0.substr(0,res);
 
-    if (url1=="") url1="https://ssh.meshpage.org"; // this doesnt really work, since it gives CORS problem
+    if (url1=="") url1="https://meshpage.org"; // this doesnt really work, since it gives CORS problem
     
     std::string url2 = url1+"/get_file_size.php?" + ss.str() + "&url=" +url; 
     emscripten_fetch(&attr, url2.c_str());

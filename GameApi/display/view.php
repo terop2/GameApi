@@ -5,7 +5,7 @@ ini_set("upload_max_filesize", "100M");
 ini_set("memory_limit", "1024M");
 header("Access-Control-Allow-Headers: Range");
 include("backend.php");
-//header("Cross-Origin-Opener-Policy: same-origin");
+header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("web_page_highmem.js");
 
 $machine=php_uname("n");
@@ -115,6 +115,20 @@ req.send();
 ?>
 
 <script src="vue.js"></script>
+<script>
+if (!crossOriginIsolated) {
+    console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
+    console.log("Your web server needs the following configuration to get gameapi builder animations working:");
+    console.log("Header set Access-Control-Allow-Origin https://meshpage.org");
+console.log("Header set Cross-Origin-Embedder-Policy \"require-corp\"");
+console.log("Header set Cross-Origin-Resource-Policy \"same-site\"");
+console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
+console.log("Header set Access-Control-Allow-Headers \"Range\"");
+console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
+
+}
+
+</script>
 
 <div id="app">
 <appdragdroparea v-on:dragdrop="dragdrop2($event)">
@@ -721,11 +735,11 @@ function enable_spinner(a)
   //var el = document.getElementById("canvas2");
   var el2 = document.getElementById("canvas");
   if (a) {
-    console.log("SPINNER ENABLED");
+    //console.log("SPINNER ENABLED");
     el2.style.backgroundImage = "url('load_spinner2.gif')";
     el2.style.backgroundSize = "100% 100%";
 } else {
-    console.log("SPINNER DISABLED");
+    //console.log("SPINNER DISABLED");
     //el.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
    // el.style.backgroundImage = "none";
    // el.style.backgroundColor = "#000000";
@@ -742,6 +756,7 @@ function find_main_item(arr)
 {
    var s = arr.length;
    for(var i=0;i<s;i++) {
+      //console.log(arr[i]);
       if (arr[i].substr(-4)==".zip") return i;
       if (arr[i].substr(-4)==".glb") return i;
       if (arr[i].substr(-4)==".stl") return i;
@@ -750,6 +765,7 @@ function find_main_item(arr)
       if (arr[i].substr(-4)==".obj") return i;
       //if (arr[i].name.substr(-4)==".ply") return i;
    }
+   console.log("ERROR: main item not found");
    set_label("ERROR: main item not found");
    //console.log("ERROR: main item not found");
    return -1;
@@ -1196,7 +1212,7 @@ function create_script(filename, contents, filenames)
 
 
 
-  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I18=ev.polygon_api.recalculate_normals(I17);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
+  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
   if (filename.substr(-4)==".obj") {
      if (mtl_name=="") {
@@ -1646,13 +1662,13 @@ var old_main_item_dir = "";
 var old_main_item_name = "";
 var old_files = "";
 var old_filenames = "";
-	   console.log("Aold_files=");
-	   console.log(old_files);
-	   console.log("Aold_filenames=");
-	   console.log(old_filenames);
+	   //console.log("Aold_files=");
+	   //console.log(old_files);
+	   //console.log("Aold_filenames=");
+	   //console.log(old_filenames);
 function load_finished2(succ)
 {
-   console.log(succ);
+   //console.log(succ);
    load_finished(1);
 }
 function drop2(state)
@@ -1702,6 +1718,7 @@ set_filename_info(state,"");
      const promise2 = new Promise( resolve => {
 
      	   var s = files2.length;
+	   //console.log(s);
      	   for(var i=0;i<s;i++) {
 	   	   //console.log(files2[i].name);
 	   	   filenames.push(files2[i].name);
@@ -1735,10 +1752,10 @@ set_filename_info(state,"");
 
 	   old_files = files;
 	   old_filenames = filenames;
-	   console.log("Bold_files=");
-	   console.log(old_files);
-	   console.log("Bold_filenames=");
-	   console.log(old_filenames);
+	   //console.log("Bold_files=");
+	   //console.log(old_files);
+	   //console.log("Bold_filenames=");
+	   //console.log(old_filenames);
 	   old_main_item_name = main_item_name;
 	   /*
 	   old_snd_item_num = snd_item_num;
@@ -1770,14 +1787,20 @@ function drop(ev)
 
   var files = [];
   var filenames = [];
-  if (ev.dataTransfer.items) {
+  if (ev.dataTransfer.files) {
      const promise2 = new Promise( resolve => {
 
      	   var s = ev.dataTransfer.items.length;
 	   var promises = [];
+	   //console.log(s);
+	   var fl = ev.dataTransfer.items;
+	   var ff = ev.dataTransfer.files;
      	   for(var i=0;i<s;i++) {
-       	   	   var item = ev.dataTransfer.items[i].webkitGetAsEntry();
+	   	   var item = ev.dataTransfer.items[i].webkitGetAsEntry();		   
+
+		   //console.log(ev.dataTransfer.items[i]);
        		   if (item) {
+		   //console.log(item);
 		   promises.push(traverseFileTree(item));
 	  	   }
 		   }
@@ -1788,8 +1811,10 @@ function drop(ev)
 
 	   var filenames2 = [];
 	   var s = filenames.length;
+	   //console.log(s);
 	   for(var i=0;i<s;i++)
 	   {
+		//console.log(filenames[i]);
 	      filenames2.push(filenames[i]);
 	   }
 
@@ -1815,6 +1840,7 @@ function drop(ev)
 </script>
 
 <script>
+
 var canv = document.getElementById("canvas");
 var Module = {
    canvas : canv,
@@ -1932,14 +1958,14 @@ set_label("Drag & Drop files..");
 var g_first_time=true;
 function check_em2_func() {
       	if (g_first_time) {
-	   console.log("EMSCRIPTEN_READY");
+	   //console.log("EMSCRIPTEN_READY");
 	   store.state.appmodel_is_loading="false";
 	   store.state.appmodel_is_model_loading="true";
 	   g_first_time=false;
 	}
         if (g_download_done==true)
 	{
-	   console.log("DOWNLOAD READY");
+	   //console.log("DOWNLOAD READY");
 	   check_em()();
 	   g_first_time = false;
 	   store.state.appmodel_is_model_loading="false";
@@ -1952,7 +1978,7 @@ var g_timer=null;
 function check_em2() {
    if (g_timer!=null) clearTimeout(g_timer);
    Module['onRuntimeInitialized'] = function() { return function() { } };
-   console.log("DOWNLOAD WAITING..");
+  // console.log("DOWNLOAD WAITING..");
    return function() {
       setTimeout(function() { check_em2_func(); },100);
    }
@@ -2195,10 +2221,10 @@ function load_data()
 
    old_files = contents_array;
    old_filenames = filename_array;
-	   console.log("Dold_files=");
-	   console.log(old_files);
-	   console.log("Dold_filenames=");
-	   console.log(old_filenames);
+	   //console.log("Dold_files=");
+	   //console.log(old_files);
+	   //console.log("Dold_filenames=");
+	   //console.log(old_filenames);
 
 old_main_item_name = g_filename;
    old_main_item_dir = g_path;
@@ -2243,6 +2269,34 @@ function undo_base64(data)
 }
 
 
+function encodeBase64(val) {
+    let uint8Array = new TextEncoder().encode(val);
+    let chunkSize = 0x8000; // 32 KB chunks
+    let result = '';
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        let chunk = uint8Array.subarray(i, i + chunkSize);
+        result += String.fromCharCode.apply(null, chunk);
+    }
+    return btoa(result);
+}
+
+
+
+function decodeBase64(encoded) {
+    // Step 1: Decode Base64 to a binary string
+    let binaryString = atob(encoded);
+    
+    // Step 2: Create a Uint8Array from the binary string
+    let uint8Array = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+    }
+
+    // Step 3: Decode the Uint8Array to a string using TextDecoder
+    let decodedString = new TextDecoder().decode(uint8Array);
+    
+    return decodedString;
+}
 
 function array_to_base64(arr)
 {
@@ -2251,10 +2305,11 @@ function array_to_base64(arr)
    {
      var val = arr[i];
      var buffer = btoa(unescape(encodeURIComponent(val)));
+     //var buffer = encodeBase64(val);
      res.push(buffer);
-     
    }
    return res;
+
 }
 function base64_to_array(arr)
 {
@@ -2262,9 +2317,11 @@ function base64_to_array(arr)
    for(var i=0;i<arr.length;i++) {
      var val = arr[i];
      var res4 = decodeURIComponent(escape(atob(val)));
+     //var res4 = decodeBase64(val);
      res.push(res4);
    }
    return res;
+  
 }
 
 function hash(val)
@@ -2288,16 +2345,16 @@ function submitprogressbar(i)
    if (i==500)
    {
    /*
-	var name = "https://ssh.meshpage.org/viewdata/num.txt";
+	var name = "https://meshpage.org/viewdata/num.txt";
 	fetch(name).then(response => {
 	    response.body.getReader().read().then(value => {
-	   console.log(value);
+	   //console.log(value);
 	   var str = strfy(value.value);
-	   console.log(str);
+	   //console.log(str);
 	   var num = parseInt(str);
 	   console.log(num);*/
-	   console.log("URLID:");
-	     console.log(g_url_id);
+	   //console.log("URLID:");
+	   //  console.log(g_url_id);
 	   prog.innerHTML = "<a href='<?php echo $site ?>/view.php?id=" + hash(g_url_id) + "'><?php echo $site ?>/view.php?id=" + hash(g_url_id) + "</a>";
 /*	   }); });*/
 	   
@@ -2327,9 +2384,9 @@ function formsubmit()
 
   xhr.onload = function() {
   	     var resp = xhr.response;
-	     console.log(resp);
+	     //console.log(resp);
 	     g_url_id = parseInt(resp,10);
-	     console.log(g_url_id);
+	     //console.log(g_url_id);
   	     //console.log(contents_length);
 	     //console.log(filename_length);
 	     var num = 500;
