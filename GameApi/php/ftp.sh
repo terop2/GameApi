@@ -24,6 +24,7 @@ finish()
 	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
     fi
 }
+copy_it feat.php
 copy_it ad.php
 copy_it process.php
 copy_it find_zip_status.php
