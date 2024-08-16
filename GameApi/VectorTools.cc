@@ -889,6 +889,7 @@ unsigned int Color::Average(std::vector<unsigned int> vec)
 }
 void Color::check()
 {
+#if 0
     bool bb = (r>255) ||(g>255)||(b>255)||(alpha>255)||(r<0)||(g<0)||(b<0)||(alpha<0);
     if(bb) {
       r = r %511;
@@ -904,6 +905,7 @@ void Color::check()
     if (b<0) { b=-b; }
     if (alpha<0) { alpha=-alpha;  }
     }
+#endif
 }
 
 Matrix Matrix::Transpose(const Matrix &m)

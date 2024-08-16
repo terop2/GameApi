@@ -89,6 +89,7 @@ public:
     bool is_api = false;
     int line_count=0;
     int block_count=0;
+      bool accept_class=true;
     while(std::getline(ss,line,'\n')) {
       is_api=false;
       //int ch_b = find(line, "//");
@@ -103,6 +104,7 @@ public:
       int ch = find(line, "class ");
       if (ch!=-1 && type==-1)
       {
+	accept_class=true;
 	type=1;
 	std::string label = ch+6<line.size()?line.substr(ch+6):"";
 	std::string chars = " _abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -111,6 +113,15 @@ public:
 	classname = trim(classname);
 	class_name = classname;
 
+	//if (class_name=="FaceCollection") {
+	//  std::cout << "ACCEPT:" << pos << label.substr(pos,1) << "@@" << label << std::endl;
+	//  std::cout << line << std::endl;
+	//}
+	char ch2r = label.substr(pos,1)[0];
+	if (ch2r==','||ch2r==';'||ch2r=='>')
+	  accept_class=false;
+	
+	
 	if (count!=0) {
 	  //std::cout << "//Level error near: " << class_name << std::endl;
 	}
@@ -199,7 +210,9 @@ public:
 		cls.classname = class_name;
 		cls.contents = data1;
 		cls.dep = dep;
-		classes.push_back(cls);
+		if (accept_class) {
+		  classes.push_back(cls);
+		}
 		sign="";
 		data1="";
 		type=-1;
@@ -295,7 +308,53 @@ public:
 		  {
 		    //std::cout << "#ifndef CLASS_" + classes[j].classname << std::endl;
 		    //std::cout << "#define CLASS_" + classes[j].classname << std::endl;
-		    std::cout << classes[j].contents << std::endl;
+
+		    std::string s = classes[j].contents;
+		    std::vector<std::string> res;
+		    res.push_back(s);
+		  repeat:
+		    int val = find(s,": public");
+		    if (val!=-1)
+		      {
+			std::string ss2 = s.substr(val+9,s.size()-val-9);
+			int val2 = find(ss2,"\n");
+			if (val2 != -1)
+			  {
+			    std::string baseclass = ss2.substr(0,val2);
+			    int val3 = find(baseclass,"<");
+			    if (val3!=-1)
+			      {
+				int val4 = find(baseclass,">");
+				if (val4!=-1) {
+				  baseclass = baseclass.substr(0,val3);
+				}
+			      }
+			    //std::cout << "BASECLASS:++" << baseclass << "++" << std::endl;
+			    
+			    for(int jj=0;jj<ss;jj++)
+			      {
+				//std::cout << classes[jj].classname << " ";
+				if (classes[jj].classname==baseclass)
+				  {
+				    //std::cout << "REPEAT" << std::endl;
+				    s=classes[jj].contents;
+				    res.push_back(s);
+				    //std::cout << classes[jj].contents;
+				    goto repeat;
+				  }
+			      }
+			    
+			  }
+		      }
+
+
+		    int sk = res.size();
+		    for(int i=0;i<sk;i++)
+		      {
+			std::cout << res[sk-i-1] << std::endl;
+		      }
+		    
+		    //std::cout << classes[j].contents << std::endl;
 		    //std::cout << "#endif" << std::endl;
 		  }
 		}
@@ -341,7 +400,7 @@ private:
 };
 
 std::string filenames[]= {
-  "GraphI.hh", "EffectI.hh",
+  "GraphI.hh", "EffectI.hh", "GameApi_gltf.cc",
   "GameApi.cc","GameApi_pl.cc",
   "VectorTools.hh", "Buffer.hh",				      
   "Intersect.hh", "Bitmap.hh", "Effect2.hh", "Shader.hh", "VolumeObjects.hh", "VolumeObjects.cc",
@@ -362,7 +421,7 @@ std::string filenames[]= {
   "GameApi_vbo.cc","GameApi_ve.cc","GameApi_vo.cc","GameApi_wmod.cc",
   "GameApi_wv.cc","GameApi_vx.cc","GameApi_cut.cc","GameApi_in.cc",
   "GameApi_imp.cc","GameApi_plane.cc","GameApi_integrator.cc" ,
-  "GameApi_diag.cc", "GameApi_gltf.cc", "GameApi_vo.hh"
+  "GameApi_diag.cc",  "GameApi_vo.hh"
 
 
 };
