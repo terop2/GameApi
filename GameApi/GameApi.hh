@@ -3578,6 +3578,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS load_points(std::string url);
   IMPORT PTS pts_alt(std::vector<PTS> vec, int index);
   IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);
   IMPORT P ply_faces(std::string url);

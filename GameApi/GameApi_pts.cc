@@ -41,6 +41,72 @@ private:
   int sx,sy;
 };
 #endif
+
+extern std::string gameapi_homepageurl;
+
+class LoadPoints : public PointsApiPoints
+{
+public:
+  LoadPoints(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url), homepage(homepage) { }
+
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+  void Prepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+    std::string ptr2(ptr->begin(), ptr->end());
+    std::stringstream ss(ptr2);
+
+    std::string line;
+    vec.clear();
+    while(std::getline(ss,line)) {
+      std::stringstream ss2(line);
+      float x=0.0,y=0.0,z=0.0;
+      unsigned int color = 0xffffffff;
+      ss2 >> x >> y >> z >> std::hex >> color >> std::dec;
+      Elem e;
+      e.x = x; e.y = y; e.z = z; e.color=color;
+      vec.push_back(e);
+    }
+  }
+
+  virtual int NumPoints() const { return vec.size(); }
+  virtual Point Pos(int i) const { return Point(vec[i].x,vec[i].y,vec[i].z); }
+  virtual unsigned int Color(int i) const
+  {
+    return vec[i].color;
+  }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+
+  
+private:
+  GameApi::Env &e;
+  std::string url, homepage;
+  struct Elem
+  {
+    float x,y,z;
+    unsigned int color;
+  };
+  std::vector<Elem> vec;
+};
+GameApi::PTS GameApi::PointsApi::load_points(std::string url)
+{
+  return add_points_api_points(e,new LoadPoints(e,url,gameapi_homepageurl));
+}
+
 class OrPoints : public PointsApiPoints
 {
 public:
