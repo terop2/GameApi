@@ -12,6 +12,15 @@ tools are slightly more flexible than just focusing on gltf area.
 <img src="https://meshpage.org/assets/suitcase.png" width="320px" height="300px"/>
 
 
+### Change your web page
+'''
+<img src="xxx.jpg"/>
+
+to
+
+<iframe src="xxxzipdir/index.html" width="830" height="630"/>
+'''
+
 ### Download the repo
   - git clone https://github.com/terop2/GameApi.git
 
