@@ -21,6 +21,8 @@ to
 <iframe src="xxxzipdir/index.html" width="830" height="630"/>
 ```
 
+You can find the index.html from the generated .zip files.
+
 ### Download the repo
   - git clone https://github.com/terop2/GameApi.git
 
