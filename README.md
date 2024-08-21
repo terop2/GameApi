@@ -14,7 +14,7 @@ tools are slightly more flexible than just focusing on gltf area.
 
 ### Change your web page
 ```
-\<img src="xxx.jpg"/\>
+<img src="xxx.jpg"/>
 
 to
 
