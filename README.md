@@ -18,7 +18,7 @@ tools are slightly more flexible than just focusing on gltf area.
 
 to
 
-<iframe src="xxxzipdir/index.html" width="830" height="630"/>
+<iframe scrolling="no" src="xxxzipdir/index.html" width="830" height="630"/>
 ```
 
 You can find the index.html from the generated .zip files.
