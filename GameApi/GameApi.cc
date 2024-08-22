@@ -15794,6 +15794,9 @@ public:
       env->ev->mainloop_api.reset_time();
       env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       firsttime2 = false;
+#ifdef EMSCRIPTEN
+      emscripten_run_script("if (Module.gameapi_cb) Module.gameapi_cb()");
+#endif
     }
     
     if (no_draw_count==0) {
@@ -18104,6 +18107,83 @@ private:
 GameApi::VX GameApi::VoxelApi::empty_voxel(int sx, int sy, int sz)
 {
   return add_int_voxel(e, new EmptyVoxel(sx,sy,sz));
+}
+
+class VoxelFromBitmap : public Voxel<int>
+{
+public:
+  VoxelFromBitmap(GameApi::Env &e, std::vector<Bitmap<::Color> *> vec, std::string url, std::string homepage) : e(e), bm_vec(vec), url(url), homepage(homepage) { }
+  void Collect(CollectVisitor &vis)
+  {
+    int s = bm_vec.size();
+    for(int i=0;i<s;i++)
+      bm_vec[i]->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+    std::string ss(ptr->begin(), ptr->end());
+    std::stringstream ss2(ss);
+    std::string line;
+    vec.clear();
+    while(std::getline(ss2,line)) {
+      std::stringstream ss3(line);
+      int r,g,b,a;
+      ss3 >> r >> g >> b >> a;
+      ::Color c(r,g,b,a);
+      vec.push_back(c);
+    }
+    
+  }
+
+  void Prepare() {
+    int s = bm_vec.size();
+    for(int i=0;i<s;i++)
+      bm_vec[i]->Prepare();
+    HeavyPrepare();
+  }
+  virtual int SizeX() const { return bm_vec[0]->SizeX(); }
+  virtual int SizeY() const { return bm_vec.size(); }
+  virtual int SizeZ() const { return bm_vec[0]->SizeY(); }
+  virtual int Map(int x, int y, int z) const
+  {
+    if (y>=0&&y<bm_vec.size()) {
+      Bitmap<::Color> *bm = bm_vec[y];
+      if (x>=0 && x<SizeX()) {
+	if (z>=0 && z<SizeZ()) {
+	  ::Color c = bm->Map(x,z);
+	  int ss = vec.size();
+	  for(int i=0;i<ss;i++)
+	    {
+	      if (vec[i]==c) { return i; }
+	    }
+	  return -1;
+	}
+      }
+    }
+  }
+private:
+  GameApi::Env &e;
+  std::string url, homepage;
+  std::vector<::Color> vec;
+  std::vector<Bitmap<::Color> *> bm_vec;
+};
+
+GameApi::VX GameApi::VoxelApi::voxel_from_bitmaps(std::vector<GameApi::BM> vec, std::string url)
+{
+  std::vector<Bitmap<::Color> *> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e,vec[i]);
+      vec2.push_back(find_color_bitmap(handle));
+    }
+  return add_int_voxel(e,new VoxelFromBitmap(e,vec2,url,gameapi_homepageurl));
 }
 class VoxelLandscape : public Voxel<int>
 {

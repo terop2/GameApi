@@ -72,7 +72,7 @@
 
 
 
-#define HAS_GL_GETERROR 1
+//#define HAS_GL_GETERROR 1
 
 #if 0
 //#ifdef WEBGL2
@@ -122,6 +122,7 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
   //ProgressBar(111,10,15,shader.Name().c_str());
   g_low->ogl->glCompileShader(handle);
 
+#ifdef HAS_GL_GETERROR
   int res=0;
   g_low->ogl->glGetShaderiv(handle, Low_GL_COMPILE_STATUS, &res);
   //std::cout << "COMPILE STATUS: " << res << std::endl;
@@ -147,7 +148,8 @@ Shader::Shader(ShaderSpec &shader, bool vertex, bool geom)
 
   }
   }
-
+#endif
+  
   delete [] strings; strings=0;
   delete [] lengths; lengths = 0;
   priv = new ShaderPriv;
