@@ -724,6 +724,13 @@ Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
   float gf() const { return g/255.0; }
   float bf() const { return b/255.0; }
   float af() const { return alpha/255.0; }
+  friend bool operator==(const Color &c1, const Color &c2)
+  {
+    return c1.r==c2.r &&
+      c1.g == c2.g &&
+      c1.b == c2.b &&
+      c1.alpha == c2.alpha;
+  }
 public:
   int r,g,b; // each component 0.255
   int alpha;

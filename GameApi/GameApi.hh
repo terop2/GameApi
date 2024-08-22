@@ -3456,6 +3456,7 @@ class VoxelApi
   // NxNxN->RGB
 public:
   IMPORT VoxelApi(Env &e);
+  IMPORT VX voxel_from_bitmaps(std::vector<BM> vec, std::string url);
   IMPORT VX function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
   IMPORT unsigned int get_pixel(VX v, int x, int y, int z);
   IMPORT BM sw_rays(O volume, VX colours, int sx, int sy, float vx, float vy, float vz, float z);

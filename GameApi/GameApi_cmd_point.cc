@@ -62,6 +62,12 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "", "." },
 			 "PLF", "move_api", "cmd_to_plf"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::voxel_from_bitmaps,
+			 "vx_from_bm",
+			 { "vec", "url" },
+			 { "[BM]", "std::string" },
+			 { "", "https://meshpage.org/test.col" },
+			 "VX", "voxel_api", "voxel_from_bitmaps"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::empty_voxel,
 			 "vx_empty",
 			 { "sx", "sy", "sz" },
