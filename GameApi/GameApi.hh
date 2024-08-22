@@ -531,6 +531,7 @@ public:
   IMPORT void outline_second();
   IMPORT void outline_third();
   IMPORT void outline_disable();
+  //IMPORT void reset_time();
   IMPORT float get_time();
   IMPORT void advance_time(float val);
   IMPORT float get_delta_time();

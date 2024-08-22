@@ -26,7 +26,7 @@ echo "<div class=\"grid_item1_a width620\">";
 echo "<h1 class=\"customfont fontsize\" align=\"center\">meshpage.org</h1>";
 echo "<h4 class=\"customfont label_a\" align=\"center\" style=\"position: relative; top: 150px; left: -250px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h4>";
 echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
-echo "<iframe allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>>";
+echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>";
 echo "</div>";
 echo "</div>";
 echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>.";
@@ -57,6 +57,11 @@ if (substr_count($descs[$i],"<br>")>=3) {
 }
 echo "</div>";
 echo "<style>";
+echo "::-webkit-scrollbar {";
+echo "    width: 0px;";
+echo "    height: 0px;";
+echo "}";
+
 echo ".noscrollbars {";
 echo "  overflow-x: visible; overflow-y: visible;";
 echo "}";
