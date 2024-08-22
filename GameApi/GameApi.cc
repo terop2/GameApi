@@ -1756,14 +1756,24 @@ public:
   void set_matrix(Matrix m) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if (time<start_time) { return next->get_whole_matrix(time, delta_time); }
-    if (time>=end_time) { return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle)*next->get_whole_matrix(time, delta_time); }
-    float d = time - start_time;
+    if ((firsttime && delta_time < 1.0f)||time<last_time) {
+      time_begin = time;
+      firsttime = false;
+    }
+    last_time = time;
+    //std::cout << time << " " << delta_time << std::endl;
+    //if (delta_time>1.0) { return next->get_whole_matrix(time,delta_time); }
+    if (time-time_begin<start_time) { return next->get_whole_matrix(time, delta_time); }
+    if (time-time_begin>=end_time) { return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), angle)*next->get_whole_matrix(time, delta_time); }
+    float d = time - time_begin - start_time;
     d/=(end_time-start_time); // [0..1]
     return Matrix::RotateAroundAxisPoint(Point(p_x,p_y,p_z),Vector(v_x,v_y,v_z), d*angle)*next->get_whole_matrix(time, delta_time);
   }
 private:
   Movement *next;
+  mutable float last_time;
+  mutable float time_begin=0.0f;
+  mutable bool firsttime=true;
   float start_time, end_time;
   float p_x,p_y,p_z;
   float v_x,v_y,v_z;
@@ -15885,6 +15895,10 @@ public:
       g_filter_execute=true;
       //std::cout << "g_filter_execute=true" << std::endl;
     }
+
+    
+
+    
     if (g_prepare_done) {
       if (debug_enabled) status+="PREPARE_DONE ";
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
@@ -15902,6 +15916,8 @@ public:
 
       }
     }
+
+    
     //if (first_execute||g_execute_shows_logo) g_progress_bar_show_logo=false;
     if (g_execute_shows_logo && !logo_done) { if (debug_enabled) status+="SHOW_LOGO"; show_logo(); logo_done=true; }
     first_execute=false;
@@ -15909,6 +15925,7 @@ public:
     //std::cout << "g_filter_execute=false" << std::endl;
     //std::cout << "Splitter/end of execute_ml" << std::endl;
 
+    
     if (env->fpscounter)
       env->ev->mainloop_api.fpscounter();
     if (env->ev->mainloop_api.get_time()/1000.0*10.0 > env->timeout)
@@ -15923,6 +15940,12 @@ public:
     Envi_2 *env = (Envi_2*)&envi;
     env->ev->mainloop_api.fpscounter_frameready();
     }
+
+    // if (env->ev->mainloop_api.get_time()<3200.0f)
+    //  std::cout << env->ev->mainloop_api.get_time() << std::endl;
+    //if (env->ev->mainloop_api.get_time()<400.0f) return -1;
+
+    
     if (!logo_done) {
       if (debug_enabled) status+="SWAPBUFFERS ";
 

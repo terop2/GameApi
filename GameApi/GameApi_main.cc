@@ -896,6 +896,12 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
     }
 }
 
+//EXPORT void GameApi::MainLoopApi::reset_time()
+//{
+//  MainLoopPriv *pp = (MainLoopPriv*)priv;
+//  time = pp->frame_time;
+//}
+
 EXPORT float GameApi::MainLoopApi::get_time()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
