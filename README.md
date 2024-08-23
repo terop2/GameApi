@@ -112,13 +112,13 @@ How we normally push our code to hosting space:
   LD_LIBRARY_PATH=.. ./deploytool --file input_script.txt -o output_zip.zip --homepage=https://meshpage.org/assets/
   ```
 
-### cmdline access:
+### Cmdline access:
   ```
   cd cmdline
   LD_LIBRARY_PATH=.. ./gameapi_cmdline --file input_script.txt
   ```
 
-### license
+### License
 
 LGPL/GPL
 
