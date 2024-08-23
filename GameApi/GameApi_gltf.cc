@@ -507,6 +507,7 @@ public:
   }
   void PrePrePrepare(int i, FETCHID id)
   {
+    if (!decoder) return;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
     std::vector<unsigned char> *vec = decoder->get_file(e,id);
@@ -523,6 +524,7 @@ public:
     }
   }
   void PrePrepare() {
+    if (!decoder) return;
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
       //std::cout << "PrePrepare()" << url << std::endl;
@@ -726,6 +728,7 @@ bool instance_deleter_installed=false;
 int register_cache_deleter(void (*fptr)(void*), void*);
 
 
+#ifdef EMSCRIPTEN
 void del_instances(void*)
 {
   int s = g_gltf_instances.size();
@@ -754,15 +757,17 @@ void del_instances(void*)
   g_gltf_instances.clear();
   //instance_deleter_installed=false;
 }
+#endif
 
 LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary)
 {
-
+#ifdef EMSCRIPTEN
   if (instance_deleter_installed==false)
     {
       register_cache_deleter(&del_instances,(void*)0);
       instance_deleter_installed=true;
   }
+#endif
   
   std::string key = base_url + ":" + url;
 
@@ -2068,7 +2073,7 @@ public:
   }
 
   int print_int(std::string label, int i) const { /*std::cout << label << ":" << i << std::endl;*/ return i; }
-  float print_float(std::string label, float i) const { /*std::cout << label << ":" << i << std::endl;*/ return i; }
+  float print_float(std::string label, float i) const { /*std::cout << label << ":" << i << stsd::endl;*/ return i; }
   Vector print_vector(std::string label, Vector i) const { /*std::cout << label << ":" << i.dx << " " << i.dy << " " << i.dz << std::endl;*/ return i; }
   
   
@@ -11075,10 +11080,20 @@ public:
       env.async_load_callback(interface->Url(), &ASyncGltfCB, this);
       }
   }
+  //~ASyncGltf()
+  //{
+  //  if (interface)
+  //    env.async_rem_callback(interface->Url());
+  //}
   void Prepare2()
   {
+    if (!interface) return;
     std::string url = interface->Url();
 
+    if (interface)
+      env.async_rem_callback(interface->Url());
+
+    
     // this algo not needed in glb files since they have no urls to outside.
     if (url.substr(url.size()-4,4)==".glb") return;
 
@@ -11126,9 +11141,9 @@ public:
     
   }
 
-  virtual void Collect(CollectVisitor &vis) { Prepare2(); next->Collect(vis); }
-  virtual void HeavyPrepare() { }
-  virtual void Prepare() { Prepare2(); next->Prepare(); }
+  virtual void Collect(CollectVisitor &vis) {  next->Collect(vis); vis.register_obj(this); }
+  virtual void HeavyPrepare() { Prepare2(); }
+  virtual void Prepare() { next->Prepare(); HeavyPrepare(); }
   virtual void execute(MainLoopEnv &e) { next->execute(e); }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
   virtual std::vector<int> shader_id() {
@@ -11138,10 +11153,10 @@ public:
   
 private:
   GameApi::Env &env;
-  MainLoopItem *next;
+  MainLoopItem *next=0;
   //std::string url;
   //std::string base_url;
-  GLTFModelInterface *interface;
+  GLTFModelInterface *interface=0;
   std::string homepage;
   bool done;
 };
@@ -11150,7 +11165,11 @@ GameApi::ML GameApi::MainLoopApi::async_gltf(ML ml, TF tf)
 {
   MainLoopItem *next = find_main_loop(e,ml);
   GLTFModelInterface *interface = find_gltf(e,tf);
-  return add_main_loop(e, new ASyncGltf(e,next, interface, gameapi_homepageurl));
+  int c = get_current_block();
+  set_current_block(-1);
+  GameApi::ML ml2 = add_main_loop(e, new ASyncGltf(e,next, interface, gameapi_homepageurl));
+  set_current_block(c);
+  return ml2;
 }
 
 void ASyncGltfCB(void *data)
@@ -11362,7 +11381,11 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
-  return add_gltf(e,i);
+      int c = get_current_block();
+      set_current_block(-1);
+  GameApi::TF tf = add_gltf(e,i);
+  set_current_block(c);
+  return tf;
 }
 
 
@@ -12178,6 +12201,8 @@ int gltf_mesh2_calc_max_timeindexes(GLTFModelInterface *interface, int animation
 
 GLTFImageDecoder::~GLTFImageDecoder()
 {
+#ifndef WIN32
+#ifndef LINUX
       std::map<FILEID,std::vector<unsigned char> *>::iterator i = files2.begin();
     for(;i!=files2.end();i++)
       {
@@ -12193,7 +12218,8 @@ GLTFImageDecoder::~GLTFImageDecoder()
       {
 	delete (*i3).second;
       }
-
+#endif
+#endif
 }
 
 
