@@ -1311,15 +1311,25 @@ public:
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
+    if ((firsttime && delta_time < 1.0f)||time<last_time) {
+      time_begin = time;
+      firsttime = false;
+    }
+    last_time = time;
+
+
     if (time<start_time) { Matrix m=Matrix::Identity(); return next?next->get_whole_matrix(time, delta_time):m; }
     if (time>=end_time) { Matrix m=Matrix::Identity(); return Matrix::Translate(dx,dy,dz)*(next?next->get_whole_matrix(time,delta_time):m); }
-    float d = time - start_time;
+    float d = time - time_begin- start_time;
     //if (fabs(end_time-start_time)>0.01)
       d/=(end_time-start_time);
     return Matrix::Translate(dx*d,dy*d,dz*d)*(next?next->get_whole_matrix(time, delta_time):Matrix::Identity());
   }
 private:
   Movement *next;
+  mutable float time_begin=0.0f;
+  mutable float last_time=0.0f;
+  mutable bool firsttime=true;
   float start_time, end_time;
   float dx,dy,dz;
 };
@@ -2097,13 +2107,23 @@ public:
   void set_matrix(Matrix mm) { }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
+    if ((firsttime && delta_time < 1.0f)||time<last_time) {
+      time_begin = time;
+      firsttime = false;
+    }
+    last_time = time;
+
+
     if (time < start_time) { return m->get_whole_matrix(time, delta_time); }
-    float d = time - start_time;
+    float d = time - time_begin - start_time;
     float dd = fmod(d,repeat_duration);
     return m->get_whole_matrix(start_time+dd, delta_time);
   }
 private:
   Movement *m;
+  mutable float time_begin=0.0f;
+  mutable float last_time=0.0f;
+  mutable bool firsttime=true;
   float start_time;
   float repeat_duration;
 };
@@ -2582,8 +2602,8 @@ public:
     firsttime2 = false;
     start_time = 0.0; //ev.mainloop_api.get_time();
   }
-  void reset_time() {
-    start_time = ev.mainloop_api.get_time();
+  void reset_time(float time) {
+    start_time = time*1000.0; //ev.mainloop_api.get_time();
   }
   //int shader_id() { return next->shader_id(); }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
@@ -2607,10 +2627,11 @@ public:
 
     if (firsttime) {
       firsttime2 = true;
+      //reset_time(env.time);
     }
     if (!firsttime && firsttime2)
       {
-	reset_time();
+	reset_time(env.time);
 	firsttime2 = false;
       }
     firsttime = false;
@@ -2628,6 +2649,9 @@ public:
     //s4.id = next->shader_id();
 		    
     float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
+    //if (time<last_time) time=last_time;
+    //last_time = time;
+    //std::cout << time << std::endl;
     GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
     //Matrix mat_i = find_matrix(e, mat);
     //std::cout << mat_i << std::endl;
@@ -2699,6 +2723,7 @@ private:
   float time_delta;
   bool firsttime;
   bool firsttime2;
+  float last_time=0.0f;
 };
 
 
@@ -20664,6 +20689,14 @@ public:
 	}
       
       std::ofstream sp(str6.c_str());
+
+
+      sp << "3D Engine (C) Tero Pulkkinen" << std::endl;
+      sp << "Licensed under LGPL/GPL license. " << std::endl
+      sp << "See https://github.com/terop2/GameApi for source code" << std::endl;
+      sp << "No warranty" << std::endl;
+      sp << std::endl;
+      
       
       int si=items.size();
       for(int i=si-1;i>=0;i--)
@@ -20989,6 +21022,13 @@ public:
 
       std::string home2 = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::ofstream sp((home2 + "/.gameapi_builder/deploy/license.html").c_str());
+
+
+      sp << "3D Engine (C) Tero Pulkkinen" << std::endl;
+      sp << "Licensed under LGPL/GPL license. " << std::endl;
+      sp << "See https://github.com/terop2/GameApi for source code" << std::endl;
+      sp << "No warranty" << std::endl;
+      sp << std::endl;
 
       
       int si=items.size();

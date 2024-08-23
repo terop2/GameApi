@@ -27,6 +27,9 @@ echo "<h1 class=\"customfont fontsize\" align=\"center\">meshpage.org</h1>";
 echo "<h4 class=\"customfont label_a\" align=\"center\" style=\"position: relative; top: 150px; left: -250px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h4>";
 echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
 echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>";
+echo "<div style=\"position:absolute; top:150px; left:400px;\">";
+echo "<a href=\"https://meshpage.org/punk/punk.zip\">punk.zip</a>(<a href=\"#punkauthor\">*</a>)";
+echo "</div>";
 echo "</div>";
 echo "</div>";
 echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>.";
@@ -56,6 +59,9 @@ if (substr_count($descs[$i],"<br>")>=3) {
 
 }
 echo "</div>";
+
+
+
 echo "<style>";
 echo "::-webkit-scrollbar {";
 echo "    width: 0px;";
@@ -170,7 +176,9 @@ echo "   color: black;";
 echo "   height: 75px;";
 echo "}";
 echo ".grid_item3_a {";
-echo "  display: block;";
+echo "  display: inline;";
+echo "   position: absolute;";
+echo "  top: 57px; left: 450px; ";
 echo "  grid-column: 3/3;";
 //echo "   margin: 25px 5px 5px 0px;";
 echo "   padding: 5px; ";
@@ -202,6 +210,23 @@ echo "</div>";
 echo "<script>(function () {var sc=document.createElement('script');sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=3771512&variant_id=sf';var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();";
 echo "</script>";
 echo "<!-- End SF Tag -->";
+echo "<footer id=\"punkauthor\">";
+echo "*) \"Punk_free\" (<a href=\"https://skfb.ly/6QYqU\">https://skfb.ly/6QYqU</a>) by moxstudios is licensed under Creative Commons Attribution (<a href=\"http://creativecommons.org/licenses/by/4.0/\">http://creativecommons.org/licenses/by/4.0/</a>).";
+echo "</footer>";
+
+  // COPYRIGHT NOTICE
+   echo "<div style=\"height:20px;\"></div>";
+   echo "<p>";
+   echo "<div style=\"position: relative;\">";
+   echo "<div style=\"width: 100%; float:left;\">";
+   echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3D engine &copy; 2013-2024 Tero Pulkkinen, All rights reserved.<br>";
+echo "Licensed under LGPL/GPL license. See source code at <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>.<br>";
+echo "meshpage.org" . "&reg; is a registered trademark of Tero Pulkkinen in Tampere.</strong></div>";
+   echo "</div>";
+   echo "</div>";
+   echo "</div>";
+echo "<p><p><p><p><p><p><p><br><br><br><br><br>";
+
 echo "<script>";
 echo "(function() {";
 echo "  if (!crossOriginIsolated) console.log(\"MAIN WINDOW not crossorigin isolated\"); else console.log(\"MAIN WINDOW OK\");";
