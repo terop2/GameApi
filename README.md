@@ -118,7 +118,7 @@ How we normally push our code to hosting space:
   LD_LIBRARY_PATH=.. ./gameapi_cmdline --file input_script.txt
   ```
 
-### License
+### License:
 
 LGPL/GPL
 
