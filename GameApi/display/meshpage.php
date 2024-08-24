@@ -645,7 +645,7 @@ function login() {
 require_once("user.php");
 list_start("Available documents:");
 list_item($assetsite . "/Linux_compile.txt", "Linux compilation");
-list_item($assetsite . "/feat.php", "Builder Feature list");
+list_item($site . "/feat.php", "Builder Feature list");
 list_item($assetsite . "/Opengl_chain.txt", "Mesh structure");
 list_item($assetsite . "/Math_concepts.txt", "Math concepts");
 list_item($assetsite . "/Printer.txt", "3d printer instructions");
