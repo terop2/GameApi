@@ -724,7 +724,7 @@ Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php
 
 <h2>Now, if I got index.html, how do I embed it to my article</h2>
 
-&lt;embed src="index.html" width="830" height="630"&gt;
+&lt;iframe scrolling="no" src="index.html" width="830" height="630"&gt;
 
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
