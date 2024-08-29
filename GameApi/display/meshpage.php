@@ -957,7 +957,9 @@ PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referr
 MOST RECENT RELEASE: WIN: 
 <?php
 $version_win = file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT');
-$start_time = filemtime('./GameApi-Builder-v$version_win.msi');
+$version_win = substr($version_win, 0, -1);
+echo "v." . $version_win . " ";
+$start_time = filemtime("./GameApi-Builder-v" . $version_win . ".msi");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
@@ -967,7 +969,9 @@ MOST RECENT RELEASE: LINUX:
 
 <?php
 $version = file_get_contents('https://meshpage.org/assets/VERSION.TXT');
-$start_time = filemtime("./gameapi-builder_1.0-$version.deb");
+$version = substr($version, 0, -1);
+echo "v." . $version  . " ";
+$start_time = filemtime("./gameapi-builder_1.0-" . $version . ".deb");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
@@ -978,7 +982,9 @@ MOST RECENT RELEASE: SOURCECODE:
 
 <?php
 $version_source = file_get_contents('https://meshpage.org/assets/VERSION_SOURCE.TXT');
-$start_time = filemtime("./GameApi-sourcecode-v$version_source.tar.gz");
+$version_source = substr($version_source, 0, -1);
+echo "v." . $version_source . " ";
+$start_time = filemtime("./GameApi-sourcecode-v" . $version_source . ".tar.gz");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
