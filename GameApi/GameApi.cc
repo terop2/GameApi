@@ -15829,11 +15829,16 @@ public:
       env->ev->mainloop_api.reset_time();
       env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       firsttime2 = false;
+    }
+
+    if (cb_counter<12) {
+      cb_counter++;
+      if (cb_counter==3) {
 #ifdef EMSCRIPTEN
       emscripten_run_script("if (Module.gameapi_cb) Module.gameapi_cb()");
 #endif
+      }
     }
-    
     if (no_draw_count==0) {
       if (debug_enabled) status+="NO_DRAW_COUNT0 ";
       if (!g_transparent) {
@@ -15926,6 +15931,7 @@ public:
     
     if (g_prepare_done) {
       if (debug_enabled) status+="PREPARE_DONE ";
+      if (cb_counter==1||cb_counter>2)
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
       if (g_transparent_callback_objs.size()) {
 	int s = g_transparent_callback_objs.size();
@@ -16037,6 +16043,7 @@ private:
   bool debug_enabled=true;
   bool next_step=false;
   int next_step1 = 0;
+  int cb_counter=0;
 };
 
 void progress_logo_cb(void *data)
