@@ -585,7 +585,8 @@ echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a><br>";
-echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v27.tar.gz\">GameApi-sourcecode-v27.tar.gz</a>.";
+$version_source = file_get_contents('https://meshpage.org/assets/VERSION_SOURCE.TXT');
+echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v$version_source.tar.gz\">GameApi-sourcecode-v$version_source.tar.gz</a>.";
 echo "<br>Yours,<br><img loading=\"lazy\" src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img loading=\"lazy\" src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
 echo "<br><br>Development history of the project:<br>";
@@ -955,7 +956,8 @@ PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referr
 <p><br>
 MOST RECENT RELEASE: WIN: 
 <?php
-$start_time = filemtime("./GameApi-Builder-v27.msi");
+$version_win = file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT');
+$start_time = filemtime('./GameApi-Builder-v$version_win.msi');
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
@@ -964,7 +966,8 @@ echo "(" . $delta . " days ago)";
 MOST RECENT RELEASE: LINUX: 
 
 <?php
-$start_time = filemtime("./gameapi-builder_1.0-27.deb");
+$version = file_get_contents('https://meshpage.org/assets/VERSION.TXT');
+$start_time = filemtime("./gameapi-builder_1.0-$version.deb");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
@@ -974,7 +977,8 @@ echo "(" . $delta . " days ago)";
 MOST RECENT RELEASE: SOURCECODE: 
 
 <?php
-$start_time = filemtime("./GameApi-sourcecode-v27.tar.gz");
+$version_source = file_get_contents('https://meshpage.org/assets/VERSION_SOURCE.TXT');
+$start_time = filemtime("./GameApi-sourcecode-v$version_source.tar.gz");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
@@ -994,7 +998,7 @@ DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 11 64-bit</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">download msi</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating">
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -1015,7 +1019,7 @@ visit_counter_inc( "tool" );
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
       (doubleclick msi file to install it)<br>
-       start menu -> GameApi-Builder v27.0 -> GameApi_Builder v27.0
+       start menu -> GameApi-Builder v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.0 -> GameApi_Builder v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.0
 </div>
 </div>
 
@@ -1034,7 +1038,7 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 64-bit amd64</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-27.deb">download deb</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.deb">download deb</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -1051,7 +1055,7 @@ visit_counter_inc( "tool" );
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
-      sudo dpkg -i gameapi-builder_1.0-27.deb<br>
+      sudo dpkg -i gameapi-builder_1.0-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.deb<br>
       gameapi-builder
 </div>
 </div>
@@ -1075,7 +1079,7 @@ width="120" height="120" crossorigin/>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-container.tar.gz">download tar.gz</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-container-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
   <ul>
   <li>Rating: <span itemprop="ratingValue">5.0</span>
@@ -1130,7 +1134,7 @@ width="120" height="120" crossorigin/>
 </div>
 -->
 <link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v27.msi">
+<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">
 <img loading="lazy" src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 <br><p>
 WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
