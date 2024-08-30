@@ -727,6 +727,14 @@ Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php
 
 &lt;iframe scrolling="no" src="index.html" width="830" height="630"&gt;
 
+<h2>I want smooth transition from jpg/png/webp to the 3d engine</h2>
+
+There's now a callback for that purpose
+<pre>
+  Module.gameapi_cb = function()
+   { var d = document.getElementById("img"); d.style="display:none"; }
+</pre>
+
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
 <img loading="lazy" src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>

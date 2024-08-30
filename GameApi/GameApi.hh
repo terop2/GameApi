@@ -1959,6 +1959,9 @@ public:
   IMPORT W asset_view(std::string url_or_filename);
   IMPORT W navi_bar(EveryApi &ev, std::vector<std::string> titles, W &back_button, W &forward_button, W &save_button, std::string &url, W &url_button, std::vector<W> &close_button, std::vector<W> &tab_change_button, W &new_tab_button, std::vector<std::string> bookmark_labels, std::vector<std::string> bookmark_urls, FtA atlas, BM atlas_bm, int &active_tab);
   IMPORT W alt(std::vector<W> vec, int *choose);
+  IMPORT W overlap(EveryApi &ev, std::vector<W> vec);
+  IMPORT W asset_item(EveryApi &ev, std::string jpg_url, std::string jpg_display_name, FtA atlas, BM atlas_bm);
+  IMPORT W asset_dialog(EveryApi &ev, std::vector<std::string> jpg_urls, std::vector<std::string> jpg_display_names,W &select_button, W &cancel_button, FtA atlas, BM atlas_bm);
   IMPORT W dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void *, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap);
   IMPORT W progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max);
   IMPORT void update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max);
