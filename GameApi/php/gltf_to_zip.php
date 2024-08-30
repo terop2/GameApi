@@ -21,7 +21,7 @@
 (or if you got the content from sketchfab, their gltf zip files are acceptable too)
 <br><br>
 
-<input id="transparent" class="cb" type="checkbox" name="transparent" value="trans"><div class="label">Transparent Canvas</div><br>
+<input id="transparent" class="cb" type="checkbox" name="transparent" value="trans" onchange="trans_change()"><div class="label">Transparent Canvas</div><br>
 <input id="bigscreen" class="cb" type="checkbox" name="bigscreen" value="bigscreen"><div class="label">Bigscreen Support</div><br>
 <input id="shadow" class="cb" type="checkbox" name="shadow" value="shadow" onchange="shadow_change()"><div class="label">Shadow</div><br>
 <input id="anim" class="cb" type="checkbox" name="anim" value="anim" onchange="anim_change()"><div class="label">Gltf Animation</div><br>
@@ -35,7 +35,21 @@
 <?php echo file_get_contents("./pp2/tmp.count") ?>
 </form>
 
+<img id="trans" style="position:absolute; top: 200px; left:300px;" width="320px" height="200px" src="https://meshpage.org/ab_black.png"/>
+
 <script>
+function trans_change()
+{
+  var el = document.getElementById("transparent");
+  if (el.checked==true)
+  {
+     var el2 = document.getElementById("trans");
+     el2.src="https://meshpage.org/ab_transparent.png";
+  } else {
+     var el2 = document.getElementById("trans");
+     el2.src="https://meshpage.org/ab_black.png";
+  }
+}
 function file_change()
 {
   var el3 = document.getElementById("gltffile");
