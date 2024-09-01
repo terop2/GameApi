@@ -40,20 +40,20 @@ class GLTFImageDecoder
 public:
   GLTFImageDecoder(std::string url_prefix, LoadGltf *load) : url_prefix(url_prefix),load(load) { }
   ~GLTFImageDecoder();
-  std::vector<std::string> scan_gltf_file(std::vector<unsigned char> &vec);
+  std::vector<std::string> scan_gltf_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &vec);
   FETCHID fetch_file(GameApi::Env &e, std::string filename);
   std::string get_fetch_filename(FETCHID id);
   std::vector<FETCHID> fetch_ids(const std::vector<std::string> &filenames);
   void fetch_all_files(GameApi::Env &e, const std::vector<FETCHID> &ids);
   void set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data);
-  std::vector<unsigned char> *get_file(GameApi::Env &e, FETCHID id);
-  FILEID add_file(std::vector<unsigned char> *vec, std::string filename);
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_file(GameApi::Env &e, FETCHID id);
+  FILEID add_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec, std::string filename);
   FILEID find_file(std::string filename);
   void start_decode_process(FILEID id, int req_width, int req_height);
   //void decode_file(FILEID id);
   bool is_decoded(FILEID id);
   void set_decode_callback(FILEID id, void (*fptr)(void*), void *user_data);
-  std::vector<unsigned char> *get_decoded_file(FILEID id);
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_decoded_file(FILEID id);
   IMAGEID convert_to_image(std::vector<unsigned char> &vec);
   Bitmap<Color> *get_converted_image(IMAGEID id);
 public:
@@ -61,15 +61,15 @@ public:
   LoadGltf *load;
   std::string url_prefix;
   std::map<FETCHID,std::string> filenames;
-  std::map<FETCHID,std::vector<unsigned char> *> files;
+  std::map<FETCHID,std::vector<unsigned char, GameApiAllocator<unsigned char> > *> files;
   std::map<FETCHID,void (*)(void*)> fetch_cb;
   std::map<FILEID, std::string> filenames2;
-  std::map<FILEID, std::vector<unsigned char> *> files2;
-  std::map<FILEID, std::vector<unsigned char> *> decoded_files;
+  std::map<FILEID, std::vector<unsigned char, GameApiAllocator<unsigned char> > *> files2;
+  std::map<FILEID, std::vector<unsigned char, GameApiAllocator<unsigned char> > *> decoded_files;
   std::map<FILEID, tinygltf::Image*> decoded_image;
   std::map<FILEID, void (*)(void*)> decode_cb;
   std::map<FILEID, void*> decode_user_data;
-  std::map<IMAGEID,std::vector<unsigned char> *> image_data;
+  std::map<IMAGEID,std::vector<unsigned char, GameApiAllocator<unsigned char> > *> image_data;
   std::map<IMAGEID,Bitmap<Color> *> images;
 };
 
@@ -431,8 +431,8 @@ bool WriteImageData(const std::string *basepath, const std::string *filename, ti
 
 bool FileExists(const std::string &abs_filename, void *ptr);
 std::string ExpandFilePath(const std::string &str, void *ptr);
-bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr);
-bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr);
+bool ReadWholeFile(std::vector<unsigned char,GameApiAllocator<unsigned char> > *out, std::string *err, const std::string &filepath, void *ptr);
+bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char,GameApiAllocator<unsigned char> > &contents, void *ptr);
 
 
 
@@ -510,7 +510,7 @@ public:
     if (!decoder) return;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
-    std::vector<unsigned char> *vec = decoder->get_file(e,id);
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
     if (!vec) return;
     //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
     std::string filename = decoder->get_fetch_filename(id);
@@ -534,7 +534,7 @@ public:
 #endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    std::vector<unsigned char> vec3(vec->begin(), vec->end());
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
     std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
 
     //int ss = image_filenames.size();
@@ -816,7 +816,7 @@ extern bool g_concurrent_download;
 
 int g_requestedBytes;
 
-bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std::string &filepath, void *ptr)
+bool ReadWholeFile(std::vector<unsigned char,GameApiAllocator<unsigned char> > *out, std::string *err, const std::string &filepath, void *ptr)
 {
 #ifdef THREADS
   if (filepath.substr(filepath.size()-3,3)=="glb"||
@@ -857,19 +857,19 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err, const std:
       sz--;
 #endif
     }
-    *out = std::vector<unsigned char>(vec->begin(),vec->begin()+sz);
+    *out = std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(),vec->begin()+sz);
     delete vec;
     return true;
 #ifdef THREADS
     } else
     {
       // png files are loaded via different route.
-      *out = std::vector<unsigned char>();
+      *out = std::vector<unsigned char,GameApiAllocator<unsigned char> >();
       return true;
     }
 #endif
 } 
-bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char> &contents, void *ptr)
+bool WriteWholeFile(std::string *err, const std::string &filepath, const std::vector<unsigned char,GameApiAllocator<unsigned char> > &contents, void *ptr)
 {
   //LoadGltf *data = (LoadGltf*)ptr;
   //std::cout << "WriteWholeFile" << filepath << std::endl;
@@ -1006,7 +1006,7 @@ void *thread_func_gltf_bitmap(void *data2)
   image->pixel_type = pixel_type;
   //std::cout << "w:" << w << " h:" << h << " comp:" << comp << " bits:" << bits << std::endl;
   //std::cout << "image:" << (long)image << std::endl;
-  image->image.resize(static_cast<size_t>(w * h * comp) * size_t(bits / 8));
+  image->image.resize(static_cast<uint64_t>(w * h * comp) * size_t(bits / 8));
   std::copy(data, data + w * h * comp * (bits / 8), image->image.begin());
   stbi_image_free(data);
 
@@ -1085,7 +1085,7 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
   //std::cout << "FIND_FILE:" << url << std::endl;
   FILEID id = dt->decoder->find_file(url);
   if (dt->decoder->is_decoded(id)) {
-    std::vector<unsigned char> *ptr2 = dt->decoder->get_decoded_file(id);
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
     image->image = *ptr2;
     image->width = dt->decoder->decoded_image[id]->width;
@@ -2489,7 +2489,7 @@ class GLTF_Buffer
 public:
   GLTF_Buffer(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int buf) : env(env), ev(ev), tf(tf), buf(buf) { }
   ~GLTF_Buffer() { }
-  const std::vector<unsigned char> &get_data() const {
+  const std::vector<unsigned char,GameApiAllocator<unsigned char> > &get_data() const {
     GLTFModelInterface *interface = find_gltf(env,tf);
     const tinygltf::Buffer &buffer = interface->get_buffer( buf );
     return buffer.data;
@@ -2510,7 +2510,7 @@ public:
     gen();
     GLTFModelInterface *interface = find_gltf(env,tf);
     const tinygltf::BufferView &bufferview = interface->get_bufferview( bv );
-    const std::vector<unsigned char> &data = m_buf->get_data();
+    const std::vector<unsigned char, GameApiAllocator<unsigned char> > &data = m_buf->get_data();
     const unsigned char *ptr = &data[0];
     ptr+=bufferview.byteOffset;
     return ptr;
@@ -12203,12 +12203,12 @@ GLTFImageDecoder::~GLTFImageDecoder()
 {
 #ifndef WIN32
 #ifndef LINUX
-      std::map<FILEID,std::vector<unsigned char> *>::iterator i = files2.begin();
+  std::map<FILEID,std::vector<unsigned char,GameApiAllocator<unsigned char> > *>::iterator i = files2.begin();
     for(;i!=files2.end();i++)
       {
 	delete (*i).second;
       }
-    std::map<FILEID,std::vector<unsigned char> *>::iterator i2 = decoded_files.begin();
+    std::map<FILEID,std::vector<unsigned char,GameApiAllocator<unsigned char> > *>::iterator i2 = decoded_files.begin();
     for(;i2!=decoded_files.end();i2++)
       {
 	(*i2).second->clear();
@@ -12223,7 +12223,7 @@ GLTFImageDecoder::~GLTFImageDecoder()
 }
 
 
-std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned char> &vec)
+std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned char,GameApiAllocator<unsigned char> > &vec)
 {
   std::string s(vec.begin(),vec.end());
   std::stringstream ss(s);
@@ -12326,13 +12326,13 @@ void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fp
   e.async_load_callback(url, fptr, user_data);
 }
 
-std::vector<unsigned char> *GLTFImageDecoder::get_file(GameApi::Env &e, FETCHID id)
+std::vector<unsigned char,GameApiAllocator<unsigned char> > *GLTFImageDecoder::get_file(GameApi::Env &e, FETCHID id)
 {
   std::string url = filenames[id];
   //std::cout << "get_file:" << url << std::endl;
   GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
   //std::cout << "FILE SIZE:" << vec->size() << std::endl;
-  return new std::vector<unsigned char>(vec->begin(),vec->end());
+  return new std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(),vec->end());
 }
 FILEID GLTFImageDecoder::find_file(std::string filename)
 {
@@ -12348,7 +12348,7 @@ FILEID GLTFImageDecoder::find_file(std::string filename)
   std::cout << "ERROR, GLTFImageDecoder::find_file()" << std::endl;
   return id;
 }
-FILEID GLTFImageDecoder::add_file(std::vector<unsigned char> *vec, std::string filename)
+FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec, std::string filename)
 {
   //std::cout << "add_file:" << filename << std::endl;
   FILEID id = get_new_file_id();
@@ -12404,7 +12404,7 @@ bool GLTFImageDecoder::is_decoded(FILEID id)
 {
   return decoded_files[id]!=0;
 }
-std::vector<unsigned char> *GLTFImageDecoder::get_decoded_file(FILEID id)
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *GLTFImageDecoder::get_decoded_file(FILEID id)
 {
   return decoded_files[id];
 }

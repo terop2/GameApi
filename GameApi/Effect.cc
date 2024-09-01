@@ -4215,7 +4215,7 @@ int my_getline(LoadStream *stream, int index, std::string &line)
   //  if (vec[i]=='\n') { line=std::string(&vec[index],&vec[i]); return i+1; }
   // }
   //return -1;
-  std::vector<unsigned char> vec;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > vec;
   bool b = stream->get_line(vec);
   if (!b) return -1;
   line = std::string(vec.begin(),vec.end());
