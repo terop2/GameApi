@@ -5,7 +5,37 @@
 #include <vector>
 #include <utility>
 #include <functional>
+#include <cstdint>
 #include "VectorTools.hh"
+
+
+template<class T>
+class GameApiAllocator
+{
+public:
+  static uint64_t m_free_mem;
+  
+  typedef T* pointer;
+  typedef const T* const_pointer;
+  typedef void* void_pointer;
+  typedef const void* const_void_pointer;
+  typedef T value_type;
+  typedef uint64_t size_type;
+  typedef int64_t difference_type;
+  T* allocate(uint64_t sz) { *free_mem-=sz; return (T*)malloc(sz); }
+  void deallocate(T *ptr, uint64_t sz) { *free_mem+=sz; return free((void*)ptr); }
+  uint64_t max_size() const { return *free_mem; }
+  friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
+  friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
+  GameApiAllocator() : free_mem(&m_free_mem) { }
+  GameApiAllocator(const GameApiAllocator &a) : free_mem(a.free_mem) { }
+private:
+  uint64_t *free_mem;
+};
+
+template<class T>
+uint64_t GameApiAllocator<T>::m_free_mem = std::numeric_limits<uint64_t>::max();
+
 
 #ifndef TINYGLTF_IMPLEMENTATION
 #include "tiny_gltf.h"
@@ -2093,8 +2123,8 @@ public:
   virtual void Prepare()=0;
   virtual LoadStream *Clone()=0;
   virtual bool get_ch(unsigned char &ch)=0;
-  virtual bool get_line(std::vector<unsigned char> &line)=0;
-  virtual bool get_file(std::vector<unsigned char> &file)=0;
+  virtual bool get_line(std::vector<unsigned char, GameApiAllocator<unsigned char> > &line)=0;
+  virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)=0;
 };
 
 class PlayerStrings
