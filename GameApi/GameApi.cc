@@ -483,11 +483,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
 
 EXPORT GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
 {
-  priv = (void*) new GridPriv;
+  //priv = (void*) new GridPriv;
 }
 EXPORT GameApi::GridApi::~GridApi()
 {
-  delete (GridPriv*)priv;
+  //delete (GridPriv*)priv;
 }
 
 EXPORT GameApi::BM GameApi::WaveformApi::waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color)
