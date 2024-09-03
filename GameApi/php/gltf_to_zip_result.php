@@ -14,6 +14,11 @@ $gltf = $_POST["gltffile"];
 if (strlen($gltf)<4||(substr($gltf,-3)!="zip"&&substr($gltf,-3)!="glb"&&substr($gltf,-4)!="gltf")) {
   echo "<pre>";
   echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
+  $logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
+$fp = fopen("./pp2/tmp.log","a+");
+fwrite($fp, $logstr);
+fclose($fp);
+
 } else {
 
 $is_zip = "nope";
@@ -155,8 +160,21 @@ $file2 = file_get_contents("./pp2/tmp.zip");
 header("Content-Type: application/zip");
 header("Content-Disposition: attachment; filename=\"$gltf_filename\"");
 echo "$file2";
+
+$logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . " -> SUCCESS\n";
+$fp = fopen("./pp2/tmp.log","a+");
+fwrite($fp, $logstr);
+fclose($fp);
+
+
 } else {
   echo "<pre>$file3";
   echo "THERE SEEMS TO BE ERRORS!</pre>";
+
+$logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
+$fp = fopen("./pp2/tmp.log","a+");
+fwrite($fp, $logstr);
+fclose($fp);
+
 }
 }
