@@ -10,6 +10,10 @@ console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
 console.log("Header set Access-Control-Allow-Headers \"Range\"");
 console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
 
+    console.log("ADDITIONAL INFO: Your document should have in php the following line:");
+    console.log("   header(\"Cross-Origin-Opener-Policy: same-origin\");");
+
+    
 }
 var pretag = document.getElementById("gameapi_script");
 var data = pretag.innerHTML;
