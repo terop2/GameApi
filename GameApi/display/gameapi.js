@@ -106,15 +106,15 @@ function load_emscripten()
     if (agent.indexOf("Mobile") != -1) mobile = true;
     if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
-    var src = "engine/web_page_highmem.js?"+data2;
+    var src = "engine/engine_highmem.js?"+data2;
     var vstr = agent.substring(idx+8);
     var vnum = parseInt(vstr);
 
     if (firefox && vnum<=78)
-        src="engine/web_page_lowmem_nothreads.js?" + data2;
-    else if (firefox) src="engine/web_page_highmem.js?" + data2;
-    if (mobile) src="engine/web_page_lowmem_nothreads.js?"+data2;
-    if (!crossOriginIsolated && !mobile) src="engine/web_page_nothreads_highmem.js?"+data2;
+        src="engine/engine_lowmem_nothreads.js?" + data2;
+    else if (firefox) src="engine/engine_highmem.js?" + data2;
+    if (mobile) src="engine/engine_lowmem_nothreads.js?"+data2;
+    if (!crossOriginIsolated && !mobile) src="engine/engine_nothreads_highmem.js?"+data2;
     var script = document.createElement("script");
     script.setAttribute("src", src);
     document.getElementsByTagName("head")[0].appendChild(script);

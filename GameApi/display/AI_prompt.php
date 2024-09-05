@@ -123,14 +123,14 @@ function load_emscripten(state,filename, contents, filenames)
     if (agent.indexOf("Mobile") != -1) mobile = true;
     if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
-    var src = "web_page_highmem.js?"+data2;
+    var src = "engine_highmem.js?"+data2;
     var vstr = agent.substring(idx+8);
     var vnum = parseInt(vstr);
 
     if (firefox && vnum<=78)
-	src="web_page_nothreads.js?" + data2;
-    else if (firefox) src="web_page_nothreads_highmem.js?" + data2;
-    if (mobile) src="web_page_lowmem.js?"+data2;
+	src="engine_nothreads.js?" + data2;
+    else if (firefox) src="engine_nothreads_highmem.js?" + data2;
+    if (mobile) src="engine_lowmem.js?"+data2;
     if (!g_emscripten_running) {
       if (filename=="") {
       Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "https://meshpage.org/assets/", "--href", window.location.href];
