@@ -49,8 +49,9 @@ $sketchfab = $_POST["sketchfab"];
 
 if ($is_zip=="yes" && $sketchfab=="sketchfab")
    $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
-else if ($sketchfab=="sketchfab")
+else {
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
+   }
 if ($is_zip=="yes" && $sketchfab!="sketchfab") {
    $file = "ML I8=ev.mainloop_api.load_zip(ev," . $gltf . ");\n";   
 } else {
