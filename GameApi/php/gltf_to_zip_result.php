@@ -82,11 +82,11 @@ if ($anim=="anim") {
   $file .= "ML I25=ev.materials_api.bind(I201,I221);\n";
   } else {
 
-  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c,-400,400,400);\n";
+  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c,-400,400,400,0.0,ff000000);\n";
  }
 
 } else {
-   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,-400,400,400);\n";
+   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,-400,400,400,0.0,ff000000);\n";
 }
 if ($anim=="anim") {
    $file .= "ML I27=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
@@ -103,11 +103,11 @@ if ($anim=="anim") {
   $file .= "ML I23=ev.materials_api.bind(I20,I22);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I23,0.0,99);\n";
  } else {
-  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c,-400,400,400);\n";
+  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c,-400,400,400,0.0,ff000000);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I20,0.0,99);\n";
   }
 } else 
-  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,-400,400,400);\n";
+  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,-400,400,400,0.0,ff000000);\n";
 
 if ($zoom=="zoom")
    $file .= "ML I3=ev.mainloop_api.mouse_roll_zoom2(ev,I2);\n";
