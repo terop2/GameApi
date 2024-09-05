@@ -15,7 +15,7 @@ cp editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb docker/
 sudo dpkg -i editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb
 #(cd docker;sudo docker build -t builder-test:latest .)
 (cd docker;./build_tar.sh `cat ../VERSION.TXT`)
-scp web_page/web_page* terop@ssh.meshpage.org:/home/terop/meshpage.org/
+scp web_page/engine* terop@ssh.meshpage.org:/home/terop/meshpage.org/
 scp docker/gameapi-builder-docker-container.tar.gz terop@ssh.meshpage.org:/home/terop/meshpage.org/gameapi-builder-docker-container-`cat ./VERSION.TXT`.tar.gz
 scp docker/gameapi-builder-docker-container.tar.gz terop@ssh.meshpage.org:/home/terop/meshpage.org/assets/gameapi-builder-docker-container-`cat ./VERSION.TXT`.tar.gz
 scp editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb terop@ssh.meshpage.org:/home/terop/meshpage.org/

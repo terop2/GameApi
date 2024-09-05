@@ -64,28 +64,28 @@ copy_it pthread-main.js
 #copy_it web_page_lowmem.js 
 #copy_it web_page_lowmem.wasm 
 #copy_it web_page_lowmem.worker.js 
-copy_it web_page_highmem.data 
-copy_it web_page_highmem.js 
-copy_it web_page_highmem.wasm 
-copy_it web_page_highmem.dwp
-copy_it web_page_highmem.wasm.br
-copy_it web_page_highmem.worker.js 
+copy_it engine_highmem.data 
+copy_it engine_highmem.js 
+copy_it engine_highmem.wasm 
+copy_it engine_highmem.dwp
+copy_it engine_highmem.wasm.br
+copy_it engine_highmem.worker.js 
 #copy_it web_page_nothreads.data 
 #copy_it web_page_nothreads.js 
 #copy_it web_page_nothreads.wasm 
 #copy_it web_page_nothreads.worker.js 
-copy_it web_page_lowmem_nothreads.data 
-copy_it web_page_lowmem_nothreads.js 
-copy_it web_page_lowmem_nothreads.wasm
-copy_it web_page_lowmem_nothreads.dwp
-copy_it web_page_lowmem_nothreads.wasm.br
+copy_it engine_lowmem_nothreads.data 
+copy_it engine_lowmem_nothreads.js 
+copy_it engine_lowmem_nothreads.wasm
+copy_it engine_lowmem_nothreads.dwp
+copy_it engine_lowmem_nothreads.wasm.br
 #copy_it web_page_lowmem_nothreads.worker.js 
-copy_it web_page_nothreads_highmem.data 
-copy_it web_page_nothreads_highmem.js 
-copy_it web_page_nothreads_highmem.wasm 
-copy_it web_page_nothreads_highmem.dwp
-copy_it web_page_nothreads_highmem.wasm.br
-copy_it web_page_nothreads_highmem.worker.js
+copy_it engine_nothreads_highmem.data 
+copy_it engine_nothreads_highmem.js 
+copy_it engine_nothreads_highmem.wasm 
+copy_it engine_nothreads_highmem.dwp
+copy_it engine_nothreads_highmem.wasm.br
+copy_it engine_nothreads_highmem.worker.js
 finish
 
 cp gameapi_example.html build/gameapi_example.html
