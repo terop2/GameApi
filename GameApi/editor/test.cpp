@@ -3297,7 +3297,22 @@ public:
 	  ii++;
 	  std::stringstream ss;
 	  ss << ii;
-	  s = std::string("mod") + ss.str() + ".txt";
+
+	  std::string out;
+#ifdef WINDOWS
+	std::string drive = getenv("systemdrive");
+	std::string path = getenv("homepath");
+	//std::string filename = drive+path+"\\mod.txt";
+	out = drive+path+"\\";
+#else
+	const char *dd = getenv("BUILDER_DOCKER_DIR");
+	std::string dockerdir = dd?dd:"";
+	//std::string filename = dockerdir + "mod.txt";
+	out = dockerdir;
+#endif
+
+	  
+	  s = out+std::string("mod") + ss.str() + ".txt";
 	} while(file_exists(s));
 	
 	Envi *new_envi = new Envi;
