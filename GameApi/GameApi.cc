@@ -20699,7 +20699,7 @@ public:
 
 
       sp << "3D Engine (C) Tero Pulkkinen" << std::endl;
-      sp << "Licensed under LGPL/GPL license. " << std::endl
+      sp << "Licensed under LGPL/GPL license. " << std::endl;
       sp << "See https://github.com/terop2/GameApi for source code" << std::endl;
       sp << "No warranty" << std::endl;
       sp << std::endl;
