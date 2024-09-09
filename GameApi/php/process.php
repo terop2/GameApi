@@ -21,6 +21,9 @@ echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
 echo "</head>";
 echo "<body>";
 //echo "SEO_KEYWORDS: meshpage.org offers unique way to do physically based rendering via runtime processing of 3d assets from normal gltf 2.0 files. The 3d models are created in blender and its gltf exporter and passed to our asset delivery system. This uses khronos group gltf 2.0 standard and can render 3d models from multiple sources, including blender and sketchfab.";
+
+//echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
+
 echo "<div class=\"grid_container\">";
 echo "<div class=\"grid_item1_a width620\">";
 echo "<div>";
@@ -30,7 +33,7 @@ echo "</div>";
 echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
 echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>";
 echo "<div class=\"customfont\" style=\"position:absolute; top:150px; left:400px;\">";
-echo "<a href=\"https://meshpage.org/punk/punk.zip\">punk.zip</a>(<a href=\"#punkauthor\">*</a>)";
+echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)";
 echo "</div>";
 echo "</div>";
 echo "</div>";
@@ -214,8 +217,8 @@ echo "</div>";
 echo "<script>(function () {var sc=document.createElement('script');sc.async=true;sc.src='https://b.sf-syn.com/badge_js?sf_id=3771512&variant_id=sf';var p=document.getElementsByTagName('script')[0];p.parentNode.insertBefore(sc, p);})();";
 echo "</script>";
 echo "<!-- End SF Tag -->";
-echo "<footer style=\"position: static; margin-left: 27px;\" class=\"customfont\" id=\"punkauthor\">";
-echo "*) \"Punk_free\" (<a href=\"https://skfb.ly/6QYqU\">https://skfb.ly/6QYqU</a>) by moxstudios is licensed under Creative Commons Attribution (<a href=\"http://creativecommons.org/licenses/by/4.0/\">http://creativecommons.org/licenses/by/4.0/</a>).";
+echo "<footer style=\"position: static; margin-left: 27px;\" class=\"customfont\" id=\"gnomeauthor\">";
+echo "*) \"Mesh Garden Gnome\" (<a href=\"https://skfb.ly/D9Fq\">https://skfb.ly/D9Fq</a>) by Seth Berrier is licensed under Creative Commons Attribution (<a href=\"http://creativecommons.org/licenses/by/4.0/\">http://creativecommons.org/licenses/by/4.0/</a>).";
 echo "</footer>";
 
   // COPYRIGHT NOTICE
