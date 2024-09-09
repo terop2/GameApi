@@ -2181,7 +2181,7 @@ function show_emscripten(str,hide,indicator,is_async)
 
   var Module = { };
 Module.canvas = canv;
-  Module.locateFile = function(path) { return path+"?<?php echo filemtime("web_page_highmem.js") ?>"; }
+  Module.locateFile = function(path) { return path+"?<?php echo filemtime("engine_highmem.js") ?>"; }
 Module.arguments = [
 
 <?php
@@ -2209,27 +2209,27 @@ $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
 if ($mobile == "yes") {
-   echo "<script>import Module from './web_page_lowmem_nothreads.js';</script>";
-  //echo "<script src='web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "'></script>";
+   echo "<script>import Module from './engine_lowmem_nothreads.js';</script>";
+  //echo "<script src='engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "'></script>";
 } else
 if ($nothreads == "yes") {
    if ($highmem == "yes") {
-  //echo "<script src='web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "'></script>";
-   echo "<script async>import Module from './web_page_nothreads_highmem.js';</script>";
+  //echo "<script src='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "'></script>";
+   echo "<script async>import Module from './engine_nothreads_highmem.js';</script>";
 
    } else {
- // echo "<script src='web_page_nothreads.js?" . filemtime("web_page_nothreads.js") . "'></script>";
-   echo "<script async>import Module from './web_page_nothreads.js';</script>";
+ // echo "<script src='engine_nothreads.js?" . filemtime("engine_nothreads.js") . "'></script>";
+   echo "<script async>import Module from './engine_nothreads.js';</script>";
 
 }
 } else {
    if ($highmem == "yes") {
- // echo "<script src='web_page_highmem.js?" . filemtime("web_page_highmem.js") . "' crossorigin='anonymous'></script>";
-   echo "<script async>import Module from './web_page_highmem.js';</script>";
+ // echo "<script src='engine_highmem.js?" . filemtime("engine_highmem.js") . "' crossorigin='anonymous'></script>";
+   echo "<script async>import Module from './engine_highmem.js';</script>";
 
    } else {
-  //echo "<script src='web_page.js?" . filemtime("web_page.js") . "' crossorigin='anonymous'></script>";
-   echo "<script async>import Module from './web_page.js';</script>";
+  //echo "<script src='engine.js?" . filemtime("engine.js") . "' crossorigin='anonymous'></script>";
+   echo "<script async>import Module from './engine.js';</script>";
   }
 }
 */
@@ -2388,21 +2388,21 @@ $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
 if ($mobile == "yes") {
-  echo "var filename = 'web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "';";
+  echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
 } else
 if ($nothreads == "yes") {
    if ($highmem == "yes") {
-  echo "var filename = 'web_page_nothreads_highmem.js?" . filemtime("web_page_nothreads_highmem.js") . "';";
+  echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
    } else {
-  echo "var filename = 'web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "';";
+  echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
    }
 } else {
    if ($highmem == "yes") {
-  echo "var filename = 'web_page_highmem.js?" . filemtime("web_page_highmem.js") . "';";
+  echo "var filename = 'engine_highmem.js?" . filemtime("engine_highmem.js") . "';";
 
    } else {
-  echo "var filename = 'web_page_lowmem_nothreads.js?" . filemtime("web_page_lowmem_nothreads.js") . "';";
+  echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
   }
 }
 ?>

@@ -483,11 +483,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
 
 EXPORT GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
 {
-  priv = (void*) new GridPriv;
+  //priv = (void*) new GridPriv;
 }
 EXPORT GameApi::GridApi::~GridApi()
 {
-  delete (GridPriv*)priv;
+  //delete (GridPriv*)priv;
 }
 
 EXPORT GameApi::BM GameApi::WaveformApi::waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color)
@@ -33142,7 +33142,7 @@ public:
     //std::cout << "get_ch:" << ch << std::endl;
     return true;
   }
-  virtual bool get_line(std::vector<unsigned char> &line)
+  virtual bool get_line(std::vector<unsigned char,GameApiAllocator<unsigned char> > &line)
   {
     if (pos>=size) return false;
     unsigned char ch;
@@ -33152,7 +33152,7 @@ public:
     //std::cout << "get_line:" << std::string(line.begin(),line.end()) << std::endl;
     return b;
   }
-  virtual bool get_file(std::vector<unsigned char> &file)
+  virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)
   {
     for(int i=pos;i<size;i++) file.push_back(buffer[i]);
     //std::cout << "get_file" << std::endl;
@@ -33164,7 +33164,7 @@ private:
   unsigned char *buffer;
   int size;
 };
-LoadStream *load_from_vector(std::vector<unsigned char> vec);
+LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
 
 bool is_obj_or_mtl(MemoryBlock *blk, std::string &mtl_filename)
@@ -33208,7 +33208,7 @@ public:
     std::cout << "ObjToDSMemBlock::Prepare()" << std::endl;
     blk->Prepare();
     unsigned char *buf = blk->buffer();
-    std::vector<unsigned char> vec(buf,buf+blk->size_in_bytes());
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(buf,buf+blk->size_in_bytes());
     LoadStream *stream = load_from_vector(vec);
 
     GameApi::P p;

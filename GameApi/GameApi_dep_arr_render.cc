@@ -428,6 +428,7 @@ void ArrayRender::Alloc(int numfaces, int numvertices)
 ArrayRender::~ArrayRender()
 {
   OpenglLowApi *ogl = g_low->ogl;
+  if (!g_low||!ogl) return;
   if (texture_count && texture)
     {
       ogl->glDeleteTextures(texture_count, (const Low_GLuint*)&texture[0]);

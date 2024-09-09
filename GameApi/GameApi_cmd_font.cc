@@ -150,7 +150,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_load",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "200", "200" },
+			 { "http://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "20", "20" },
 			 "FI", "font_api", "load_font"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::draw_text_string,
 			 "FI_drawtext",

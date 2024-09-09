@@ -57,7 +57,7 @@ public:
   {
     fetch_size();
   }
-  const std::vector<unsigned char> *get() const { return &result; }
+  const std::vector<unsigned char, GameApiAllocator<unsigned char> > *get() const { return &result; }
 private:
   void fetch_size()
   {
@@ -388,7 +388,7 @@ public:
 public:
   std::string url;
   std::string url2;
-  std::vector<unsigned char> result;
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > result;
   long long totalSize;
   long long chunkSize;
   void(*success)(void*);
@@ -919,7 +919,7 @@ EXPORT GameApi::Env::~Env()
   delete (::EnvImpl*)envimpl;
 }
 std::string remove_load(std::string s);
-std::vector<unsigned char> *load_from_url(std::string url);
+std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url);
 
 struct del_map
 {
@@ -933,12 +933,12 @@ struct del_map
   {
 
   }
-  void del_vec(const std::vector<unsigned char>* vec)
+  void del_vec(const std::vector<unsigned char, GameApiAllocator<unsigned char> >* vec)
   {
-    std::map<std::string,const std::vector<unsigned char>*>::iterator it=load_url_buffers_async.begin();
+    std::map<std::string,const std::vector<unsigned char, GameApiAllocator<unsigned char> >*>::iterator it=load_url_buffers_async.begin();
     for(;it!=load_url_buffers_async.end();it++)
       {
-	const std::vector<unsigned char> *ptr = (*it).second;
+	const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr = (*it).second;
 	if (ptr==vec) {
 	  load_url_buffers_async.erase(it);
 	  delete vec;
@@ -946,7 +946,7 @@ struct del_map
 	}
       }
   }
-  std::map<std::string, const std::vector<unsigned char>* > load_url_buffers_async;
+  std::map<std::string, const std::vector<unsigned char, GameApiAllocator<unsigned char> >* > load_url_buffers_async;
 #ifdef EMSCRIPTEN
   std::map<std::string, FetchInBlocks*> fetches;
 #endif
@@ -957,10 +957,10 @@ bool g_del_map_deleter_installed=false;
 void delmap_cache_deleter(void *)
 {
   std::cout << "delmap_cache_deleter is freeing memory" << std::endl;
-  std::map<std::string,const std::vector<unsigned char>* >::iterator i = g_del_map.load_url_buffers_async.begin();
+  std::map<std::string,const std::vector<unsigned char, GameApiAllocator<unsigned char>>* >::iterator i = g_del_map.load_url_buffers_async.begin();
   for(;i!=g_del_map.load_url_buffers_async.end();i++)
     {
-      std::pair<std::string, const std::vector<unsigned char>*> p = *i;
+      std::pair<std::string, const std::vector<unsigned char, GameApiAllocator<unsigned char> >*> p = *i;
 #ifdef EMSCRIPTEN
   if (g_del_map.fetches.find(p.first)==g_del_map.fetches.end())
 #endif
@@ -1044,7 +1044,7 @@ std::string stripprefix(std::string s)
     return s.substr(len,s.size()-len);
   } else return s;
 }
-void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned char> *buffer)
+void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *buffer)
 {
   char *url = (char*)arg;
   //std::cout << "onload_async_cb: " << url << std::endl;
@@ -1142,7 +1142,7 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 
 }
 
-std::vector<unsigned char> *load_from_url(std::string url);
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url);
 
 struct CallbackDel
 {
@@ -1216,7 +1216,7 @@ void* process(void *ptr)
   ProcessData *dt = (ProcessData*)ptr;
   std::string url = dt->url;
   pthread_detach(pthread_self());
-  std::vector<unsigned char> *buf = load_from_url(url);
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url);
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
@@ -1557,7 +1557,7 @@ void fetch_success(void *data)
 {
   LoadData *dt = (LoadData*)data;
   const char *url = dt->buf3;
-  const std::vector<unsigned char> *vec = dt->obj->get();
+  const std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = dt->obj->get();
   onload_async_cb(333,(void*)url, vec);
 #ifdef EMSCRIPTEN
   std::string url_str(url);
@@ -1571,14 +1571,14 @@ void fetch_2_success(emscripten_fetch_t *fetch)
   //std::cout << "2nd attempt successful" << std::endl;
   LoadData *dt = (LoadData*)(fetch->userData);
   const char *url = dt->buf3;
-  dt->obj->result = std::vector<unsigned char>(&fetch->data[0],&fetch->data[fetch->numBytes]);
+  dt->obj->result = std::vector<unsigned char,GameApiAllocator<unsigned char> >(&fetch->data[0],&fetch->data[fetch->numBytes]);
   // hack to fix the download amounts.
   //std::cout << "FETCH2SUCCESS:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
   if (dt->final_file_size!=-1 && fetch->numBytes != dt->final_file_size) {
     std::cout << "Size Compare:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
      dt->obj->result.push_back(' ');
   }
-  const std::vector<unsigned char> *vec = dt->obj->get();  
+  const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = dt->obj->get();  
   onload_async_cb(333,(void*)url,vec);
 #ifdef EMSCRIPTEN
   std::string url_str(url);
@@ -1691,7 +1691,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
     }
 #endif
 
-    g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char>(g_content[i],g_content_end[i]);
+    g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i],g_content_end[i]);
 	//std::cout << "g_del_map add url: " << url_only << std::endl;
 
 	//async_pending_count--;
@@ -1903,7 +1903,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       return; }
     //std::cout << "Loading url: " << url <<std::endl;
-    std::vector<unsigned char> *buf = load_from_url(url);
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url);
     //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf->size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
@@ -1955,7 +1955,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 class ASyncDataFetcher : public GameApi::ASyncVec
 {
 public:
-  ASyncDataFetcher(const std::vector<unsigned char> *vec) : vec(vec),buf(0),end2(0),tmp(0) { }
+  ASyncDataFetcher(const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec) : vec(vec),buf(0),end2(0),tmp(0) { }
   ASyncDataFetcher(const unsigned char *buf,const unsigned char *end) : vec(0), buf(buf), end2(end),tmp(0) { }
   void del() {
     g_del_map.del_vec(vec);
@@ -1982,7 +1982,7 @@ public:
     //throw 1;
     return &tmp+1; }
 private:
-  const std::vector<unsigned char> *vec;
+  const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec;
   const unsigned char *buf, *end2;
   mutable unsigned char tmp;
 };
@@ -2460,7 +2460,7 @@ long long load_size_from_url(std::string url)
 {  
   url = upgrade_to_https(url);
   if (url=="") return 1;
-    std::vector<unsigned char> buffer;
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
 #ifdef WINDOWS
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
@@ -2484,7 +2484,7 @@ long long load_size_from_url(std::string url)
     FILE *f2 = popen(cmdsize.c_str(), "rb");
 #endif
 #endif
-    std::vector<unsigned char> vec2;
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
     unsigned char c2;
     while(fread(&c2,1,1,f2)==1) {
       vec2.push_back(c2);
@@ -2580,7 +2580,7 @@ public:
   ssize_t getline(char** line, size_t*sz, FILE *f)
   {
     //std::cout << "getline" << std::endl;
-    std::vector<unsigned char> vec;
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > vec;
     unsigned char ch='a';
     long long i = 0;
     bool succ = false;
@@ -2606,7 +2606,7 @@ public:
     return *sz;
   }
 #endif
-  virtual bool get_line(std::vector<unsigned char> &line)
+  virtual bool get_line(std::vector<unsigned char, GameApiAllocator<unsigned char> > &line)
   {
 #ifdef HAS_POPEN
     if (f) {
@@ -2616,7 +2616,7 @@ public:
       if (!buf_line) return false;
       if (sz==-1) return false;
       line.clear();
-      line=std::vector<unsigned char>(buf_line,buf_line+sz);
+      line=std::vector<unsigned char, GameApiAllocator<unsigned char> >(buf_line,buf_line+sz);
       for(int i=0;i<sz;i++) {
 	currentpos++;
       	  if (size/15>0 && currentpos % (size/15)==0) {
@@ -2631,7 +2631,7 @@ public:
     return false;
 #endif
   }
-  virtual bool get_file(std::vector<unsigned char> &file)
+  virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)
   {
 #ifdef HAS_POPEN
     if (f) {
@@ -2656,7 +2656,7 @@ private:
 class LoadStream2 : public LoadStream
 {
 public:
-  LoadStream2(std::vector<unsigned char> vec) : vec(vec) { }
+  LoadStream2(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec) : vec(vec) { }
   virtual LoadStream *Clone()
   {
     return new LoadStream2(vec);
@@ -2675,7 +2675,7 @@ public:
       return true;
     } else { return false; }
   }
-  virtual bool get_line(std::vector<unsigned char> &line)
+  virtual bool get_line(std::vector<unsigned char, GameApiAllocator<unsigned char> > &line)
   {
     if (pos==vec.end()) return false;
     line.clear();
@@ -2684,14 +2684,14 @@ public:
     //std::cout << "LINE: " << std::string(line.begin(),line.end()) << std::endl;
     return true;
   }
-  virtual bool get_file(std::vector<unsigned char> &file)
+  virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)
   {
     file = vec;
     return true;
   }
 private:
-  std::vector<unsigned char>::iterator pos;
-  std::vector<unsigned char> vec;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> >::iterator pos;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > vec;
 };
 
 LoadStream *load_from_url_stream(std::string url)
@@ -2700,7 +2700,7 @@ LoadStream *load_from_url_stream(std::string url)
     stream->Prepare();  
   return stream;
 }
-LoadStream *load_from_vector(std::vector<unsigned char> vec)
+LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec)
 {
   LoadStream *stream = new LoadStream2(vec);
   stream->Prepare();
@@ -2711,7 +2711,7 @@ extern std::string g_msg_string;
 
 struct load_url_deleter
 {
-  std::vector<std::vector<unsigned char> *> item;
+  std::vector<std::vector<unsigned char, GameApiAllocator<unsigned char> > *> item;
   ~load_url_deleter() {
     int s = item.size();
     for(int i=0;i<s;i++) delete item[i];
@@ -2719,11 +2719,11 @@ struct load_url_deleter
 };
 load_url_deleter load_from_url_del;
 
-std::vector<unsigned char> *load_from_url(std::string url)
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
     url = upgrade_to_https(url);
 
-    if (url.size()==0) { std::vector<unsigned char> *b = new std::vector<unsigned char>(); /*load_from_url_del.item.push_back(b);*/ return b; }
+    if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
   //std::cout << "load_from_url: @" << url << "@" << std::endl;
 
   int u = g_urls.size();
@@ -2732,7 +2732,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
       //std::cout << remove_load(url) << " " << g_urls[i] << std::endl;
       //std::cout << "LOADFROMURL:" << remove_load(url) << " " << g_urls[i] << std::endl;
       if (remove_load(url)==g_urls[i]) { 
-	std::vector<unsigned char> *vec = new std::vector<unsigned char>(g_content[i], g_content_end[i]);
+	std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i], g_content_end[i]);
 	//load_from_url_del.item.push_back(vec);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
 	g_current_size+=vec->size();
@@ -2741,7 +2741,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
       }
     }
   //  std::cout << "load_from_url using network: " << url << std::endl;
-  std::vector<unsigned char> *buffer = new std::vector<unsigned char>;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buffer = new std::vector<unsigned char, GameApiAllocator<unsigned char> >;
   // THIS PUSH_BACK causes problems in other threads, because it accewsses
   // global variable that might not be initialized.
   //load_from_url_del.item.push_back(buffer);
@@ -2772,7 +2772,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
     FILE *f2 = popen(cmdsize.c_str(), "rb");
 #endif
 #endif
-    std::vector<unsigned char> vec2;
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
     unsigned char c2;
     while(fread(&c2,1,1,f2)==1) {
       
@@ -2811,7 +2811,7 @@ std::vector<unsigned char> *load_from_url(std::string url)
       std::cout << "popen failed#2" << std::endl;
       std::cout << errno << std::endl;
       std::cout << url << std::endl;
-      std::vector<unsigned char> *item = new std::vector<unsigned char>();
+      std::vector<unsigned char, GameApiAllocator<unsigned char> > *item = new std::vector<unsigned char, GameApiAllocator<unsigned char> >();
       //load_from_url_del.item.push_back(item);
       return item;
     }
