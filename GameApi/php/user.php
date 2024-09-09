@@ -756,7 +756,7 @@ function choose_user()
 }
 function js_id()
 {
-  $filename = "web_page.js";
+  $filename = "engine.js";
   $tag = md5_file( $filename );
   return $tag;
 }
@@ -810,7 +810,7 @@ function js_version( $user_arr )
 }
 function js_etag( $arr )
 {
-  $filename = "web_page.js";
+  $filename = "engine.js";
   $val = filemtime( $filename );
   $etag = md5_file( $filename );
   $etag2 = md5_file( "mesh.php" );

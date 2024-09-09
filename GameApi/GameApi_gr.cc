@@ -5,6 +5,7 @@
 
 EXPORT void GameApi::GridApi::preparegrid(GameApi::BM tile_bitmap, int tile_choose)
 {
+#if 0
   GridPriv *p = (GridPriv*)priv;
   p->last_id = tile_bitmap.id;
   BitmapHandle *handle = find_bitmap(e, tile_bitmap);
@@ -25,10 +26,12 @@ EXPORT void GameApi::GridApi::preparegrid(GameApi::BM tile_bitmap, int tile_choo
 
   ArrayRender *rend = &((GridPriv*)priv)->rend;
   PrepareGrid(*bitmap, sx, sy, *rend);
+#endif
 }
 
 EXPORT void GameApi::GridApi::rendergrid(GameApi::BM grid, int grid_choose, float top_x, float top_y)
 {
+#if 0
   GridPriv *p = (GridPriv*)priv;
   int cellsx = p->cellsx[p->last_id];
   int cellsy = p->cellsy[p->last_id];
@@ -37,4 +40,5 @@ EXPORT void GameApi::GridApi::rendergrid(GameApi::BM grid, int grid_choose, floa
   ::Bitmap<Pos> *bitmap = find_pos_bitmap(handle);
   if (!bitmap) { std::cout << "rendergrid bitmap==NULL" << std::endl; return; }
   RenderGrid(*bitmap, top_x, top_y, cellsx, cellsy, p->rend, 0,0, 10,10);
+#endif
 }

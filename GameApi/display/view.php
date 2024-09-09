@@ -6,7 +6,7 @@ ini_set("memory_limit", "1024M");
 header("Access-Control-Allow-Headers: Range");
 include("backend.php");
 header("Cross-Origin-Opener-Policy: same-origin");
-$date = filemtime("web_page_highmem.js");
+$date = filemtime("engine_highmem.js");
 
 $machine=php_uname("n");
 $siteprefix = "";
@@ -297,7 +297,7 @@ Vue.component('appmaterial', {
 		 <option value="1">Plastic</option>
 		 <option value="2">Textured</option>
 		 </div>
-		 <div v-if="is_metal=='true'">
+		 <div v-show="is_metal=='true'">
 		 Type<br>
 		 <div class="horizspace customfont">
 		 <select name="type" id="metal-type-select" v-on:change="$emit('change_model')">
@@ -308,7 +308,7 @@ Vue.component('appmaterial', {
 		 </select>
 		 </div>
 		 </div>
-		 <div v-if="is_plastic=='true'">
+		 <div v-show="is_plastic=='true'">
 		 Type<br>
 		 <div class="horizspace customfont">
 		 <select name="type" id="plastic-type-select" v-on:change="$emit('change_model')">
@@ -320,7 +320,7 @@ Vue.component('appmaterial', {
 		 </div>
 		 </div>
 
-		 <div v-if="is_textured=='true'">
+		 <div v-show="is_textured=='true'">
 		 Type<br>
 		 <div class="horizspace customfont">
 		 <select name="type" id="textured-type-select" v-on:change="$emit('change_model')">
@@ -554,6 +554,12 @@ var app = new Vue({
 
    },
    methods: {
+   handle_changes : function()
+   {
+    this.$emit('change_model');
+    this.$emit('change_category');
+    
+   },
 parse_material_type : function(mat)
 {
    var arr = mat.split(" ");
@@ -1844,7 +1850,7 @@ function drop(ev)
 var canv = document.getElementById("canvas");
 var Module = {
    canvas : canv,
-   locateFile : (function(path) { return path+"?<?php echo filemtime("web_page_highmem.js") ?>"; }),
+   locateFile : (function(path) { return path+"?<?php echo filemtime("engine_highmem.js") ?>"; }),
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
@@ -1861,15 +1867,15 @@ function load_emscripten(state,filename, contents, filenames)
     if (agent.indexOf("Mobile") != -1) mobile = true;
     if ((idx=agent.indexOf("Firefox")) != -1) firefox = true;
 
-    var src = "web_page_highmem.js?"+data2;
+    var src = "engine_highmem.js?"+data2;
     var vstr = agent.substring(idx+8);
     var vnum = parseInt(vstr);
 
     if (firefox && vnum<=78)
-	src="web_page_nothreads.js?" + data2;
-    else if (firefox) src="web_page_nothreads_highmem.js?" + data2;
-    if (mobile) src="web_page_lowmem_nothreads.js?"+data2;
-    if (!crossOriginIsolated && !mobile) src="web_page_nothreads_highmem.js?" + data2;
+	src="engine_nothreads.js?" + data2;
+    else if (firefox) src="engine_nothreads_highmem.js?" + data2;
+    if (mobile) src="engine_lowmem_nothreads.js?"+data2;
+    if (!crossOriginIsolated && !mobile) src="engine_nothreads_highmem.js?" + data2;
     if (!g_emscripten_running) {
       enable_spinner(true);
       if (filename=="") {
@@ -1935,6 +1941,7 @@ function check_em() {
 	//resize_event(null);
 	//load_file();
 	load_data();
+	app.handle_changes();
 	if (loading_data==0) {
 	app.change_appmodel(0);	   
 	}
@@ -2101,6 +2108,14 @@ function resize_event(event)
 
 }
 
+function prettyStringifyObject(obj) {
+  let result = ''
+  for (const key in obj) {
+    result = `${result}${result !== '' ? ', ' : ''}${key}: ${Array.isArray(obj[key]) ? `[${obj[key]}]` : obj[key]}`
+  }
+  return `{${result}}`
+}
+
 function serialize_state()
 {
    var elem = document.getElementById("category-select");
@@ -2119,6 +2134,7 @@ function serialize_state()
 	 plastic : elem3 && elem3.value,
 	 textured : elem4 && elem4.value
    };
+   console.log(prettyStringifyObject(ser));
    return json_stringify(ser);
 }
 
@@ -2135,6 +2151,8 @@ function deserialize_state(txt)
   var plastic = ser.plastic;
   var textured = ser.textured;
   //var mat = ser.material;
+
+  console.log(ser + " " + model + " " + normals + " " + border + " " + bg + " " + cat + " " + metal + " " + plastic + " " + textured);
 
   var elem5 = document.getElementById("category-select");
   if (elem5) elem5.value = cat;

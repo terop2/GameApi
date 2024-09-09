@@ -332,6 +332,32 @@ private:
   int *choose;
 };
 
+
+class OverlapGuiWidget : public GuiWidgetForward
+{
+public:
+  OverlapGuiWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : GuiWidgetForward(ev,vec), ev(ev), vec(vec) { }
+  void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++) {
+      vec[i]->update(mouse,button,ch,type,mouse_wheel_y);
+    }
+  }
+  void render()
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+	vec[i]->render();
+  }
+  int render_to_bitmap()
+  { return 0; }
+private:
+  GameApi::EveryApi &ev;
+  std::vector<GuiWidget*> vec;
+};
+
+
 std::map<std::string, int> shared_text;
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -3092,6 +3118,85 @@ EXPORT GameApi::W GameApi::GuiApi::license_item(std::string filename, std::strin
 }
 
 
+EXPORT GameApi::W GameApi::GuiApi::asset_item(EveryApi &ev, std::string jpg_url, std::string jpg_display_name, FtA atlas, BM atlas_bm)
+{
+  W label = text(jpg_display_name, atlas,atlas_bm);
+  W label_margin = margin(label, 120, 15, 15, 15);
+  BM bm = ev.bitmap_api.loadbitmapfromurl(jpg_url);
+  BM bm2 = ev.bitmap_api.scale_bitmap(ev, bm, 30, 30);
+  W icon_contents = icon(bm2);
+  W icon_margin = margin(icon_contents, 15,5,120+15,5);
+  std::vector<W> vec;
+  vec.push_back(label_margin);
+  vec.push_back(icon_margin);
+  W over = overlap(ev,vec);
+  return over;
+}
+
+EXPORT GameApi::W GameApi::GuiApi::asset_dialog(EveryApi &ev, std::vector<std::string> jpg_urls, std::vector<std::string> jpg_display_names,W &select_button, W &cancel_button, FtA atlas, BM atlas_bm)
+{
+  int s = std::min(jpg_urls.size(),jpg_display_names.size());
+  std::vector<W> vec;
+  for(int i=0;i<s;i++)
+    {
+      W item = asset_item(ev,jpg_urls[i], jpg_display_names[i],atlas, atlas_bm);
+      vec.push_back(item);
+    }
+  W arr = array_y(&vec[0], vec.size(), 3);
+  W cnvs = canvas(800,size_y(arr));
+  W area = scroll_area2(cnvs, 800,400, 900);
+  W cnv_item = canvas_item(cnvs, arr, 0,0);
+  W scrollbar = scrollbar_y(15,400,size_y(arr));
+  //scroll_bar = scrollbar;
+  //canvas2 = cnvs;
+  //canvas_area2=area;
+
+  std::vector<W> xx;
+  xx.push_back(area);
+  xx.push_back(scrollbar);
+  W arr_xx = array_x(&xx[0],2,2);
+
+  int my = 45;
+  int my2 = 10;
+  int mx = 10;
+
+  W marg = margin(arr_xx, mx,my,mx,my2);
+  
+  W bm_4 = marg;
+  
+  W but_1 = text("Select", atlas, atlas_bm);
+  W but_2 = center_align(but_1, size_x(bm_4)/2);
+  W but_3 = center_y(but_2, 60.0);
+  W but_4 = button(size_x(but_3), size_y(but_3), c_dialog_button_1, c_dialog_button_2);
+  W but_41 = highlight(but_4);
+  W but_5 = layer(but_41, but_3);
+  W but_6 = click_area(but_5, 0,0,size_x(but_5), size_y(but_5),0);
+  select_button = but_6;
+
+  W code_1 = text("Cancel", atlas, atlas_bm);
+  W code_2 = center_align(code_1, size_x(bm_4)/2);
+  W code_3 = center_y(code_2, 60.0);
+  W code_4 = button(size_x(code_3), size_y(code_3), c_dialog_button_1, c_dialog_button_2);
+  W code_41 = highlight(code_4);
+  W code_5 = layer(code_41, code_3);
+  W code_6 = click_area(code_5, 0,0,size_x(code_5), size_y(code_5),0);
+  cancel_button = code_6;
+
+  W arr_x[] = { code_6, but_6 };
+  W arr_x2 = array_x(&arr_x[0], 2, 0);
+  
+  W arr_y[] = { bm_4, arr_x2 };
+  W arr_2 = array_y(&arr_y[0],2,0);
+
+  W rect = window_decoration2(size_x(arr_xx)+2*mx,size_y(arr_xx)+my2,"Select asset to use", atlas, atlas_bm,false);
+  W lay = layer(rect,arr_2);
+
+  W arr_3 = mouse_move(lay, 0,0,size_x(arr_xx), 35);
+
+  return arr_3;
+  
+}
+
 EXPORT GameApi::W GameApi::GuiApi::license_dialog(std::vector<std::string> filename, std::vector<std::string> &license_url, std::vector<std::string> &author_name, FtA atlas, BM atlas_bm, FtA atlas2, BM atlas_bm2,FtA atlas3, BM atlas_bm3, W &next_button, W &cancel_button, W &canvas2, W &canvas_area2, W &scroll_bar)
 {
   int s = std::min(filename.size(),license_url.size());
@@ -3346,6 +3451,23 @@ EXPORT GameApi::W GameApi::GuiApi::dynamic_text(std::string need_letters, std::s
 #endif
 }
 */
+EXPORT GameApi::W GameApi::GuiApi::overlap(GameApi::EveryApi &ev, std::vector<W> vec)
+{
+#ifndef EMSCRIPTEN
+  std::vector<GuiWidget*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GuiWidget *ww = find_widget(e,vec[i]);
+      vec2.push_back(ww);
+    }
+  return add_widget(e, new OverlapGuiWidget(ev,vec2));
+#else
+  GameApi::W w;
+  w.id = 0;
+  return w;
+#endif
+}
 EXPORT GameApi::W GameApi::GuiApi::alt(std::vector<W> vec, int *choose)
 {
 #ifndef EMSCRIPTEN
