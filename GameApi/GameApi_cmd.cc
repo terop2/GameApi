@@ -30,6 +30,7 @@ MACRO2(GameApi::PD,ev.polygon_dist_api.empty(ev))
 MACRO2(GameApi::WV,ev.waveform_api.wv_empty(1.0))
 MACRO2(GameApi::ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()))
 MACRO2(GameApi::CFB,ev.float_bitmap_api.X_bitmap(300.0,300.0))
+MACRO2(GameApi::FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20))
 #undef MACRO2
 
 
