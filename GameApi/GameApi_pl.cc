@@ -1091,12 +1091,12 @@ EXPORT GameApi::P GameApi::PolygonApi::p_empty()
 {
   return add_polygon(e,new EmptyBoxableFaceCollection, 1);
 }
-LoadStream *load_from_vector(std::vector<unsigned char> vec);
+LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(std::string filename,  int count, bool nr)
 {
   std::ifstream data(filename.c_str());
-  std::vector<unsigned char> vec2;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
   LoadStream *stream = load_from_vector(vec2);
@@ -1132,7 +1132,7 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache(LoadStream *file_
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(std::string filename, int count, std::vector<std::string> material_names, bool nr)
 {
   std::ifstream data(filename.c_str());
-  std::vector<unsigned char> vec2;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
   LoadStream *stream = load_from_vector(vec2);
@@ -1184,12 +1184,12 @@ EXPORT GameApi::P GameApi::PolygonApi::load_model_all_no_cache_mtl(LoadStream *f
   }
 }
 
-LoadStream *load_from_vector(std::vector<unsigned char> vec);
+LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model_all(std::string filename, int count)
 {
   std::ifstream data(filename.c_str());
-  std::vector<unsigned char> vec2;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
 
@@ -1436,7 +1436,7 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > vec(ptr->begin(),ptr->end());
     delete stream;
     stream = load_from_vector(vec);
 #endif
@@ -1536,7 +1536,7 @@ public:
     //int s = ptr->size();
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.close();
-    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > vec(ptr->begin(),ptr->end());
     LoadStream *stream = load_from_vector(vec);
 #endif
     GameApi::P p = ev.polygon_api.load_model_all_no_cache_mtl(stream, count,material_names,nr);
@@ -2147,7 +2147,7 @@ public:
     //for(int i=0;i<s;i++) ss.put(ptr->operator[](i));
     //ss.write(&ptr->operator[](0),ptr->size());
     //ss.close();
-    std::vector<unsigned char> vec(ptr->begin(),ptr->end());
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > vec(ptr->begin(),ptr->end());
     delete stream;
     stream = load_from_vector(vec);
 #endif
@@ -2606,12 +2606,12 @@ EXPORT GameApi::P GameApi::PolygonApi::p_ds_url(EveryApi &ev, std::string url)
   return p2;
 }
 
-LoadStream *load_from_vector(std::vector<unsigned char> vec);
+LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
 EXPORT GameApi::P GameApi::PolygonApi::load_model(std::string filename, int num)
 {
   std::ifstream data(filename.c_str());
-  std::vector<unsigned char> vec2;
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
   char c;
   while(data.get(c)) vec2.push_back(c);
 
@@ -13645,7 +13645,7 @@ public:
 	}
       std::cout << "Loading " << filename << std::endl;
       std::ifstream data(filename.c_str());
-      std::vector<unsigned char> vec2;
+      std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
       char c;
       while(data.get(c)) vec2.push_back(c);
 

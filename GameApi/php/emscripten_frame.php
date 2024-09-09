@@ -49,7 +49,7 @@ if ($lowmem == 0) {
    $lowfile = "_lowmem"; 
    }
 }
-$filename = "web_page" . $version . $lowfile . $nothfile . ".js?" . js_id();
+$filename = "engine" . $version . $lowfile . $nothfile . ".js?" . js_id();
 $homepage = trim(preg_replace('/\s+/', ' ', $homepage));
 $user="terop";
 $index = $arr["index"];
