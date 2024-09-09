@@ -28,6 +28,7 @@ public:
   }
   void render(MainLoopEnv &e) {
   }
+  bool is_fbo() const { return false; }
   int texture() const
   {
     id = ev.texture_api.bufferref_to_txid(id, seq.Buffer());
