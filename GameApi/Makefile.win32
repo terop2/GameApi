@@ -113,7 +113,7 @@ draco/metadata/metadata.cc     \
 draco/metadata/metadata_decoder.cc          draco/metadata/structural_metadata.cc \
 
 
-WARN = -Wno-unused-function -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-cpp -Wno-return-type -Wno-unused-but-set-variable
+WARN = -Wno-unused-function -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-cpp -Wno-return-type -Wno-unused-but-set-variable -Wno-misleading-indentation -Wno-bool-compare
 
 CFiles2 = Main.cc
 
@@ -164,8 +164,8 @@ INC7WIN = $(CVSPATH)\pthread
 INC8WIN = $(CVSPATH)\sdl2_mixer\SDL2_mixer-2.0.4\x86_64-w64-mingw32/include/sdl2
 #INC10WIN = chai\ChaiScript-6.1.0\include
 
-CCFLAGS = -I. -m64 -O3 -DWINDOWS -g -std=c++17 -fPIC -Wall -I./objs -I/usr/include/freetype2 -pthread -DHAVE_STRUCT_TIMESPEC -fno-var-tracking-assignments -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
-CC2FLAGS = -I. -m64 -O3 -DWINDOWS -g -std=c++17 -fPIC -Wall -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -pthread -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -ftrack-macro-expansion=0 -Iholoplay -Lholoplay -fno-var-tracking-assignments -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CCFLAGS = -I. -m64 -O3 -DWINDOWS -g -std=c++17 -fPIC -Wall -I./objs -I/usr/include/freetype2 -DHAVE_STRUCT_TIMESPEC -fno-var-tracking-assignments -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -pthread
+CC2FLAGS = -I. -m64 -O3 -DWINDOWS -g -std=c++17 -fPIC -Wall -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -ftrack-macro-expansion=0 -Iholoplay -Lholoplay -fno-var-tracking-assignments -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -pthread
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -256,11 +256,11 @@ libGameApi.so: $(OFiles) Makefile libGameApi_dep.so
 
 libGameDep.dll: $(O2Files_dep) Makefile.win32 glew.o
 	@echo mingw libGameDep.dll
-	@g++ -m64 -Wa,-mbig-obj -std=c++17 -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api
+	@g++ -m64 -Wa,-mbig-obj -std=c++17 -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api -pthread
 
 libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameDep.dll
 	@echo mingw libGameApi.dll
-	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -pthread -Lopenvr -lopenvr_api
+	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api -pthread
 
 #-L./hssynth2/synthlib -lsynthlib -L./hssynth2/midiplay/midifile -lmidifile
 #-lchaiscript_stdlib-6.1.0

@@ -1,0 +1,159 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+    <Product Name='GameApi Builder 27.0' Manufacturer='Meshpage.org'
+        Id='631B880B-C747-4DD9-A3EB-11F592F88934' 
+        UpgradeCode='45B17325-7538-4921-9250-B6D4DAF648EE'
+        Language='1033' Codepage='1252' Version='1.0.0'>
+    <Package Id='*' Keywords='Installer' Description="meshpage.org's GameApi Builder 27.0 Installer"
+        Comments='(c) meshpage.org' Manufacturer='Meshpage.org'
+        InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252'>
+    </Package>
+<Media Id='1' Cabinet='Sample.cab' EmbedCab='yes' DiskPrompt='CD-ROM #1' />
+<Property Id='DiskPrompt' Value="Meshpage's GameApi Builder 27.0 Installation [1]" />
+
+<Directory Id='TARGETDIR' Name='SourceDir'>
+<Directory Id='ProgramFilesFolder' Name='PFiles'>
+      <Directory Id='INSTALLDIR' Name='GameApi-Builder-v27.0'>
+
+<Component Id='MainExecutable' Guid='43DF8D2F-F891-4CF3-9711-CB32E8074ACE'>
+<File Id='builderEXE' Name='gameapi_builder.exe' DiskId='1' Source='editor/edit.exe' KeyPath='yes'>
+<Shortcut Id="startmenuBuilder25" Directory="ProgramMenuDir" Name="GameApi_Builder 27.0"
+            WorkingDirectory='INSTALLDIR' IconIndex="0" Advertise="yes" />
+</File>
+<File Id='filesize' Name='get_file_size.php' DiskId='1' Source='editor/get_file_size.php' KeyPath='no'>
+</File>
+<File Id='zip' Name='gameapi_display.zip' DiskId='1' Source='editor/gameapi_display.zip' KeyPath='no'>
+</File>
+<File Id='h0' Name='gameapi_0.html' DiskId='1' Source='editor/gameapi_0.html' KeyPath='no'>
+</File>
+<File Id='h0a' Name='gameapi_0_seamless.html' DiskId='1' Source='editor/gameapi_0_seamless.html' KeyPath='no'>
+</File>
+<File Id='h1' Name='gameapi_1.html' DiskId='1' Source='editor/gameapi_1.html' KeyPath='no'>
+</File>
+<File Id='h2' Name='gameapi_2.html' DiskId='1' Source='editor/gameapi_2.html' KeyPath='no'>
+</File>
+<File Id='h3' Name='gameapi_3.html' DiskId='1' Source='editor/gameapi_3.html' KeyPath='no'>
+</File>
+<File Id='h3a' Name='gameapi_3_seamless.html' DiskId='1' Source='editor/gameapi_3_seamless.html' KeyPath='no'>
+</File>
+<File Id='sed' Name='sed.exe' DiskId='1' Source='editor/sed.exe' KeyPath='no'>
+</File>
+<File Id='deploy' Name='deploy.bat' DiskId='1' Source='editor/deploy.bat' KeyPath='no'>
+</File>
+<File Id='mod' Name='mod.txt' DiskId='1' Source='mod.txt' KeyPath='no'>
+</File>
+<File Id='bm0' Name='atlas_bm0.ppm' DiskId='1' Source='editor/atlas_bm0.ppm' KeyPath='no'>
+</File>
+<File Id='bm1' Name='atlas_bm1.ppm' DiskId='1' Source='editor/atlas_bm1.ppm' KeyPath='no'>
+</File>
+<File Id='bm2' Name='atlas_bm2.ppm' DiskId='1' Source='editor/atlas_bm2.ppm' KeyPath='no'>
+</File>
+<File Id='atlas0' Name='atlas0.txt' DiskId='1' Source='editor/atlas0.txt' KeyPath='no'>
+</File>
+<File Id='atlas1' Name='atlas1.txt' DiskId='1' Source='editor/atlas1.txt' KeyPath='no'>
+</File>
+<File Id='atlas2' Name='atlas2.txt' DiskId='1' Source='editor/atlas2.txt' KeyPath='no'>
+</File>
+
+<File Id='freetypeDLL' Name='freetype-6.dll' DiskId='1' Source='freetype-6.dll' KeyPath='no'>
+</File>
+<File Id='freetypeDLL2' Name='freetype6.dll' DiskId='1' Source='freetype6.dll' KeyPath='no'>
+</File>
+<File Id='freetypeDLL3' Name='freetype.dll' DiskId='1' Source='editor/freetype.dll' KeyPath='no'>
+</File>
+<File Id='holoplayDLL' Name='HoloPlayAPI.dll' DiskId='1' Source='HoloPlayAPI.dll' KeyPath='no'>
+</File>
+<File Id='flacDLL' Name='libFLAC-8.dll' DiskId='1' Source='libFLAC-8.dll' KeyPath='no'>
+</File>
+<File Id='libfreetypeDLL' Name='libfreetype-6.dll' DiskId='1' Source='libfreetype-6.dll' KeyPath='no'>
+</File>
+<File Id='gameapiDLL' Name='libgameapi.dll' DiskId='1' Source='libgameapi.dll' KeyPath='no'>
+</File>
+<File Id='gamedepDLL' Name='libgamedep.dll' DiskId='1' Source='libgamedep.dll' KeyPath='no'>
+</File>
+<File Id='gccDLL' Name='libgcc_s_dw2-1.dll' DiskId='1' Source='libgcc_s_dw2-1.dll' KeyPath='no'>
+</File>
+<File Id='gcc2DLL' Name='libgcc_s_seh-1.dll' DiskId='1' Source='libgcc_s_seh-1.dll' KeyPath='no'>
+</File>
+<File Id='jpegDLL' Name='libjpeg-9.dll' DiskId='1' Source='libjpeg-9.dll' KeyPath='no'>
+</File>
+<File Id='mikmodDLL' Name='libmikmod-2.dll' DiskId='1' Source='libmikmod-2.dll' KeyPath='no'>
+</File>
+<File Id='modplugDLL' Name='libmodplug-1.dll' DiskId='1' Source='libmodplug-1.dll' KeyPath='no'>
+</File>
+<File Id='oggDLL' Name='libogg-0.dll' DiskId='1' Source='libogg-0.dll' KeyPath='no'>
+</File>
+<File Id='pngDLL' Name='libpng16-16.dll' DiskId='1' Source='libpng16-16.dll' KeyPath='no'>
+</File>
+<File Id='stdcppDLL' Name='libstdc++-6.dll' DiskId='1' Source='libstdc++-6.dll' KeyPath='no'>
+</File>
+<File Id='tiffDLL' Name='libtiff-5.dll' DiskId='1' Source='libtiff-5.dll' KeyPath='no'>
+</File>
+<File Id='vorbisDLL' Name='libvorbis-0.dll' DiskId='1' Source='libvorbis-0.dll' KeyPath='no'>
+</File>
+<File Id='vorbisfileDLL' Name='libvorbisfile-3.dll' DiskId='1' Source='libvorbisfile-3.dll' KeyPath='no'>
+</File>
+<File Id='webpDLL' Name='libwebp-4.dll' DiskId='1' Source='libwebp-4.dll' KeyPath='no'>
+</File>
+<File Id='winpthreadDLL' Name='libwinpthread-1.dll' DiskId='1' Source='libwinpthread-1.dll' KeyPath='no'>
+</File>
+<File Id='openvrDLL' Name='openvr_api.dll' DiskId='1' Source='openvr_api.dll' KeyPath='no'>
+</File>
+<File Id='pthreadDLL' Name='pthreadGC2.dll' DiskId='1' Source='pthreadGC2.dll' KeyPath='no'>
+</File>
+<File Id='pthreadvcDLL' Name='pthreadVC2.dll' DiskId='1' Source='pthreadVC2.dll' KeyPath='no'>
+</File>
+<File Id='sdlDLL' Name='SDL2.dll' DiskId='1' Source='SDL2.dll' KeyPath='no'>
+</File>
+<File Id='sdlimageDLL' Name='SDL2_image.dll' DiskId='1' Source='SDL2_image.dll' KeyPath='no'>
+</File>
+<File Id='sdlmixerDLL' Name='SDL2_mixer.dll' DiskId='1' Source='SDL2_mixer.dll' KeyPath='no'>
+</File>
+<File Id='smpeg2DLL' Name='smpeg2.dll' DiskId='1' Source='smpeg2.dll' KeyPath='no'>
+</File>
+<File Id='zlibDLL' Name='zlib1.dll' DiskId='1' Source='zlib1.dll' KeyPath='no'>
+</File>
+</Component>
+<Directory Id='curldir' Name='curl'>
+<Component Id='CurlExecutable' Guid='79581D3E-A778-4897-B679-093F7FDB9CB6'>
+<File Id='curl' Name='curl.exe' DiskId='1' Source='curl/curl.exe' KeyPath='no'>
+</File>
+</Component>
+</Directory>
+
+
+
+        </Directory>
+</Directory>
+
+<Directory Id='TempFolder'>
+  <Directory Id='builderdir' Name='_gameapi_builder'>
+  </Directory>
+</Directory>
+
+
+    <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="GameApi-Builder 27.0">
+            <Component Id="ProgramMenuDir" Guid="D6331123-4764-4483-BF5A-1433B7CFFCC6">
+                <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+                <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+            </Component>
+        </Directory>
+    </Directory>
+
+    <Directory Id="DesktopFolder" Name="Desktop" />
+</Directory>
+    <Component Id="CreateTestFolder" Directory='builderdir' Guid="a1bff1bc-41c0-4963-9cda-570724951ad2">
+    <CreateFolder />
+
+    </Component>
+
+<Feature Id='Complete' Level='1'>
+    <ComponentRef Id='MainExecutable' />
+    <ComponentRef Id='CurlExecutable' />
+    <ComponentRef Id='ProgramMenuDir' />
+    <ComponentRef Id='CreateTestFolder' />
+</Feature>
+
+    </Product>
+</Wix>

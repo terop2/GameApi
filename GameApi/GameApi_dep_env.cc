@@ -884,6 +884,7 @@ EXPORT void clear_all_caches()
 
 EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
 {
+  std::cout << "async_load_url " << url << std::endl;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
   env->async_loader->load_urls(url, homepage);
 
