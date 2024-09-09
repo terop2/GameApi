@@ -483,11 +483,11 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
 
 EXPORT GameApi::GridApi::GridApi(GameApi::Env &e) : e(e)
 {
-  priv = (void*) new GridPriv;
+  //priv = (void*) new GridPriv;
 }
 EXPORT GameApi::GridApi::~GridApi()
 {
-  delete (GridPriv*)priv;
+  //delete (GridPriv*)priv;
 }
 
 EXPORT GameApi::BM GameApi::WaveformApi::waveform_bitmap(WV wave, int sx, int sy, unsigned int true_color, unsigned int false_color)
@@ -15829,11 +15829,16 @@ public:
       env->ev->mainloop_api.reset_time();
       env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       firsttime2 = false;
+    }
+
+    if (cb_counter<12) {
+      cb_counter++;
+      if (cb_counter==3) {
 #ifdef EMSCRIPTEN
       emscripten_run_script("if (Module.gameapi_cb) Module.gameapi_cb()");
 #endif
+      }
     }
-    
     if (no_draw_count==0) {
       if (debug_enabled) status+="NO_DRAW_COUNT0 ";
       if (!g_transparent) {
@@ -15926,6 +15931,7 @@ public:
     
     if (g_prepare_done) {
       if (debug_enabled) status+="PREPARE_DONE ";
+      if (cb_counter==1||cb_counter>2)
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
       if (g_transparent_callback_objs.size()) {
 	int s = g_transparent_callback_objs.size();
@@ -16037,6 +16043,7 @@ private:
   bool debug_enabled=true;
   bool next_step=false;
   int next_step1 = 0;
+  int cb_counter=0;
 };
 
 void progress_logo_cb(void *data)
@@ -33135,7 +33142,7 @@ public:
     //std::cout << "get_ch:" << ch << std::endl;
     return true;
   }
-  virtual bool get_line(std::vector<unsigned char> &line)
+  virtual bool get_line(std::vector<unsigned char,GameApiAllocator<unsigned char> > &line)
   {
     if (pos>=size) return false;
     unsigned char ch;
@@ -33145,7 +33152,7 @@ public:
     //std::cout << "get_line:" << std::string(line.begin(),line.end()) << std::endl;
     return b;
   }
-  virtual bool get_file(std::vector<unsigned char> &file)
+  virtual bool get_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &file)
   {
     for(int i=pos;i<size;i++) file.push_back(buffer[i]);
     //std::cout << "get_file" << std::endl;
@@ -33157,7 +33164,7 @@ private:
   unsigned char *buffer;
   int size;
 };
-LoadStream *load_from_vector(std::vector<unsigned char> vec);
+LoadStream *load_from_vector(std::vector<unsigned char, GameApiAllocator<unsigned char> > vec);
 
 
 bool is_obj_or_mtl(MemoryBlock *blk, std::string &mtl_filename)
@@ -33201,7 +33208,7 @@ public:
     std::cout << "ObjToDSMemBlock::Prepare()" << std::endl;
     blk->Prepare();
     unsigned char *buf = blk->buffer();
-    std::vector<unsigned char> vec(buf,buf+blk->size_in_bytes());
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(buf,buf+blk->size_in_bytes());
     LoadStream *stream = load_from_vector(vec);
 
     GameApi::P p;

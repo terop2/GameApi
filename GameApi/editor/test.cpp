@@ -39,6 +39,8 @@ void ClearProgress();
 
 std::string remove_prefix(std::string url);
 
+int find_str(std::string s, std::string el);
+
 #ifdef LINUX
 extern "C" void _udev_device_get_action() { }
 #endif
@@ -1458,9 +1460,9 @@ public:
 			if (type=="TF") {
 			  TF tf;
 			  tf.id = id;
-			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,0,0,0.0,0.0,-400.0,0,0xff00000);
-			  env->env->free_temp_memory();
-			  env->gui->delete_widget(env->mem);
+			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,0,400.0,-400.0,300.0,0,0xff00000);
+			  //env->env->free_temp_memory();
+			  //env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  
 			} else
@@ -1708,14 +1710,22 @@ public:
 					      homepage = replace_string(homepage,'\n','@');
 					      send_post_request(std::string("https://meshpage.org/save_tmp_script.php?id=")+ss2.str(),"Content-Type: text/plain", htmlfile);
 
+					      std::string name = "gameapi_example.php";
+					      int pos = find_str(htmlfile,"scene_transparency");
+					      if (pos!=-1)
+						{
+						  name = "gameapi_example_transparent.php";
+						}
+					      
+					      
 			
 					      const char *doc = getenv("BUILDER_DOCKER_DIR");
 					      std::string dockerdir = doc?doc:"";
 					      std::string cmd;
 					      if (dockerdir!="") {
-					      cmd = std::string("/usr/share/chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+					      cmd = std::string("/usr/share/chromium \"https://meshpage.org/" + name + "?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
 					      } else {
-					      cmd = std::string("chromium \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+					      cmd = std::string("chromium \"https://meshpage.org/" + name + "?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
 					      }
 					      pthread_system(cmd.c_str());
 			

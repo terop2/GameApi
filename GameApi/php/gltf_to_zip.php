@@ -21,7 +21,7 @@
 (or if you got the content from sketchfab, their gltf zip files are acceptable too)
 <br><br>
 
-<input id="transparent" class="cb" type="checkbox" name="transparent" value="trans"><div class="label">Transparent Canvas</div><br>
+<input id="transparent" class="cb" type="checkbox" name="transparent" value="trans" onchange="trans_change()"><div class="label">Transparent Canvas</div><br>
 <input id="bigscreen" class="cb" type="checkbox" name="bigscreen" value="bigscreen"><div class="label">Bigscreen Support</div><br>
 <input id="shadow" class="cb" type="checkbox" name="shadow" value="shadow" onchange="shadow_change()"><div class="label">Shadow</div><br>
 <input id="anim" class="cb" type="checkbox" name="anim" value="anim" onchange="anim_change()"><div class="label">Gltf Animation</div><br>
@@ -35,7 +35,21 @@
 <?php echo file_get_contents("./pp2/tmp.count") ?>
 </form>
 
+<img id="trans" style="position:absolute; top: 200px; left:300px;" width="320px" height="200px" src="https://meshpage.org/ab_black.png"/>
+
 <script>
+function trans_change()
+{
+  var el = document.getElementById("transparent");
+  if (el.checked==true)
+  {
+     var el2 = document.getElementById("trans");
+     el2.src="https://meshpage.org/ab_transparent.png";
+  } else {
+     var el2 = document.getElementById("trans");
+     el2.src="https://meshpage.org/ab_black.png";
+  }
+}
 function file_change()
 {
   var el3 = document.getElementById("gltffile");
@@ -130,6 +144,7 @@ HINT#2: For advanced users, there's a builder tool available at: <a href="https:
 HINT#3: &lt;iframe scrolling="no" src="index.html" width="830" height="630"/&gt; to embed it to your main article.<br>
 HINT#4: Changing the canvas dimensions is possible if you modify both the embed and index.html<br>
 HINT#5: You can get the source code (needed for LGPL/GPL) from <a href="https://github.com/terop2/GameApi">https://github.com/terop2/GameApi</a>.<br>
+HINT#6: Urls from google drive doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
 <style>
 .moveright {
    position: relative;

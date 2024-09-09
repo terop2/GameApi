@@ -14,6 +14,11 @@ $gltf = $_POST["gltffile"];
 if (strlen($gltf)<4||(substr($gltf,-3)!="zip"&&substr($gltf,-3)!="glb"&&substr($gltf,-4)!="gltf")) {
   echo "<pre>";
   echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
+  $logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
+$fp = fopen("./pp2/tmp.log","a+");
+fwrite($fp, $logstr);
+fclose($fp);
+
 } else {
 
 $is_zip = "nope";
@@ -44,8 +49,9 @@ $sketchfab = $_POST["sketchfab"];
 
 if ($is_zip=="yes" && $sketchfab=="sketchfab")
    $file = "TF I1=ev.mainloop_api.gltf_load_sketchfab_zip(" . $gltf . ");\n";
-else if ($sketchfab=="sketchfab")
+else {
    $file = "TF I1=ev.mainloop_api.gltf_loadKK2(" . $gltf . ");\n";
+   }
 if ($is_zip=="yes" && $sketchfab!="sketchfab") {
    $file = "ML I8=ev.mainloop_api.load_zip(ev," . $gltf . ");\n";   
 } else {
@@ -77,11 +83,11 @@ if ($anim=="anim") {
   $file .= "ML I25=ev.materials_api.bind(I201,I221);\n";
   } else {
 
-  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c,-400,400,400);\n";
+  $file .= "ML I25=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,c,-400,400,400,0.0,ff000000);\n";
  }
 
 } else {
-   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,-400,400,400);\n";
+   $file .= "ML I25=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,-400,400,400,0.0,ff000000);\n";
 }
 if ($anim=="anim") {
    $file .= "ML I27=ev.mainloop_api.or_elem_ml(ev,I24,I25);\n";
@@ -98,11 +104,11 @@ if ($anim=="anim") {
   $file .= "ML I23=ev.materials_api.bind(I20,I22);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I23,0.0,99);\n";
  } else {
-  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c,-400,400,400);\n";
+  $file .= "ML I20=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1.0,0,c,-400,400,400,0.0,ff000000);\n";
   $file .= "ML I2=ev.mainloop_api.send_key_at_time(I20,0.0,99);\n";
   }
 } else 
-  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,-400,400,400);\n";
+  $file .= "ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,-400,400,400,0.0,ff000000);\n";
 
 if ($zoom=="zoom")
    $file .= "ML I3=ev.mainloop_api.mouse_roll_zoom2(ev,I2);\n";
@@ -155,8 +161,21 @@ $file2 = file_get_contents("./pp2/tmp.zip");
 header("Content-Type: application/zip");
 header("Content-Disposition: attachment; filename=\"$gltf_filename\"");
 echo "$file2";
+
+$logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . " -> SUCCESS\n";
+$fp = fopen("./pp2/tmp.log","a+");
+fwrite($fp, $logstr);
+fclose($fp);
+
+
 } else {
   echo "<pre>$file3";
   echo "THERE SEEMS TO BE ERRORS!</pre>";
+
+$logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
+$fp = fopen("./pp2/tmp.log","a+");
+fwrite($fp, $logstr);
+fclose($fp);
+
 }
 }

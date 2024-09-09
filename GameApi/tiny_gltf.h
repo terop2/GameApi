@@ -53,6 +53,8 @@
 #ifndef TINY_GLTF_H_
 #define TINY_GLTF_H_
 
+#include "GraphI.hh"
+
 #include <array>
 #include <cassert>
 #include <cmath>  // std::fabs
@@ -640,7 +642,7 @@ struct Image {
   int bits;        // bit depth per channel. 8(byte), 16 or 32.
   int pixel_type;  // pixel type(TINYGLTF_COMPONENT_TYPE_***). usually
                    // UBYTE(bits = 8) or USHORT(bits = 16)
-  std::vector<unsigned char> image;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > image;
   int bufferView;        // (required if no uri)
   std::string mimeType;  // (required if no uri) ["image/jpeg", "image/png",
                          // "image/bmp", "image/gif"]
@@ -1054,7 +1056,7 @@ class Node {
 
 struct Buffer {
   std::string name;
-  std::vector<unsigned char> data;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > data;
   std::string
       uri;  // considered as required here but not in the spec (need to clarify)
             // uri is not decoded(e.g. whitespace may be represented as %20)
@@ -1228,7 +1230,7 @@ typedef std::string (*ExpandFilePathFunction)(const std::string &, void *);
 ///
 /// ReadWholeFileFunction type. Signature for custom filesystem callbacks.
 ///
-typedef bool (*ReadWholeFileFunction)(std::vector<unsigned char> *,
+  typedef bool (*ReadWholeFileFunction)(std::vector<unsigned char, ::GameApiAllocator<unsigned char> > *,
                                       std::string *, const std::string &,
                                       void *);
 
@@ -1236,7 +1238,7 @@ typedef bool (*ReadWholeFileFunction)(std::vector<unsigned char> *,
 /// WriteWholeFileFunction type. Signature for custom filesystem callbacks.
 ///
 typedef bool (*WriteWholeFileFunction)(std::string *, const std::string &,
-                                       const std::vector<unsigned char> &,
+                                       const std::vector<unsigned char, ::GameApiAllocator<unsigned char> > &,
                                        void *);
 
 ///
@@ -1266,11 +1268,11 @@ bool FileExists(const std::string &abs_filename, void *);
 ///
 std::string ExpandFilePath(const std::string &filepath, void *userdata);
 
-bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
+  bool ReadWholeFile(std::vector<unsigned char, ::GameApiAllocator<unsigned char> > *out, std::string *err,
                    const std::string &filepath, void *);
 
 bool WriteWholeFile(std::string *err, const std::string &filepath,
-                    const std::vector<unsigned char> &contents, void *);
+                    const std::vector<unsigned char, ::GameApiAllocator<unsigned char > > &contents, void *);
 #endif
 
 ///
@@ -2266,7 +2268,7 @@ static const std::string urldecode(const std::string &str) {
 }  // namespace dlib
 // --- dlib end --------------------------------------------------------------
 
-static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
+  static bool LoadExternalFile(std::vector<unsigned char, ::GameApiAllocator<unsigned char> > *out, std::string *err,
                              std::string *warn, const std::string &filename,
                              const std::string &basedir, bool required,
                              size_t reqBytes, bool checkSize, FsCallbacks *fs) {
@@ -2295,7 +2297,7 @@ static bool LoadExternalFile(std::vector<unsigned char> *out, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> buf;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > buf;
   std::string fileReadErr;
   bool fileRead =
       fs->ReadWholeFile(&buf, &fileReadErr, filepath, fs->user_data);
@@ -2482,7 +2484,7 @@ bool WriteImageData(const std::string *basepath, const std::string *filename,
 
   // Write image to temporary buffer
   std::string header;
-  std::vector<unsigned char> data;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > data;
 
   if (ext == "png") {
     if ((image->bits != 8) ||
@@ -2665,7 +2667,7 @@ std::string ExpandFilePath(const std::string &filepath, void *) {
 #endif
 }
 
-bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
+  bool ReadWholeFile(std::vector<unsigned char, ::GameApiAllocator<unsigned char> > *out, std::string *err,
                    const std::string &filepath, void *) {
 #ifdef TINYGLTF_ANDROID_LOAD_FROM_ASSETS
   if (asset_manager) {
@@ -2746,7 +2748,7 @@ bool ReadWholeFile(std::vector<unsigned char> *out, std::string *err,
 }
 
 bool WriteWholeFile(std::string *err, const std::string &filepath,
-                    const std::vector<unsigned char> &contents, void *) {
+                    const std::vector<unsigned char, ::GameApiAllocator<unsigned char> > &contents, void *) {
 #ifdef _WIN32
 #if defined(__GLIBCXX__)  // mingw
   int file_descriptor = _wopen(UTF8ToWchar(filepath).c_str(),
@@ -2866,7 +2868,7 @@ bool IsDataURI(const std::string &in) {
   return false;
 }
 
-bool DecodeDataURI(std::vector<unsigned char> *out, std::string &mime_type,
+  bool DecodeDataURI(std::vector<unsigned char, ::GameApiAllocator<unsigned char> > *out, std::string &mime_type,
                    const std::string &in, size_t reqBytes, bool checkSize) {
   std::string header = "data:application/octet-stream;base64,";
   std::string data;
@@ -3825,7 +3827,7 @@ static bool ParseImage(Image *image, const int image_idx, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> img;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > img;
 
   if (IsDataURI(uri)) {
     if (!DecodeDataURI(&img, image->mimeType, uri, 0, false)) {
@@ -4381,7 +4383,7 @@ static bool ParseAccessor(Accessor *accessor, std::string *err, const json &o,
 #ifdef TINYGLTF_ENABLE_DRACO
 
 static void DecodeIndexBuffer(draco::Mesh *mesh, size_t componentSize,
-                              std::vector<uint8_t> &outBuffer) {
+                              std::vector<uint8_t, ::GameApiAllocator<uint8_t> > &outBuffer) {
   if (componentSize == 4) {
     assert(sizeof(mesh->face(draco::FaceIndex(0))[0]) == componentSize);
     memcpy(outBuffer.data(), &mesh->face(draco::FaceIndex(0))[0],
@@ -4410,7 +4412,7 @@ static void DecodeIndexBuffer(draco::Mesh *mesh, size_t componentSize,
 template <typename T>
 static bool GetAttributeForAllPoints(draco::Mesh *mesh,
                                      const draco::PointAttribute *pAttribute,
-                                     std::vector<uint8_t> &outBuffer) {
+                                     std::vector<uint8_t,::GameApiAllocator<uint8_t> > &outBuffer) {
   size_t byteOffset = 0;
   T values[4] = {0, 0, 0, 0};
   for (draco::PointIndex i(0); i < mesh->num_points(); ++i) {
@@ -4429,7 +4431,7 @@ static bool GetAttributeForAllPoints(draco::Mesh *mesh,
 
 static bool GetAttributeForAllPoints(uint32_t componentType, draco::Mesh *mesh,
                                      const draco::PointAttribute *pAttribute,
-                                     std::vector<uint8_t> &outBuffer) {
+                                     std::vector<uint8_t, ::GameApiAllocator<uint8_t> > &outBuffer) {
   bool decodeResult = false;
   switch (componentType) {
     case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
@@ -6167,7 +6169,7 @@ bool TinyGLTF::LoadASCIIFromFile(Model *model, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> data;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > data;
   std::string fileerr;
   bool fileread = fs.ReadWholeFile(&data, &fileerr, filename, fs.user_data);
   if (!fileread) {
@@ -6281,7 +6283,7 @@ bool TinyGLTF::LoadBinaryFromFile(Model *model, std::string *err,
     return false;
   }
 
-  std::vector<unsigned char> data;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > data;
   std::string fileerr;
   bool fileread = fs.ReadWholeFile(&data, &fileerr, filename, fs.user_data);
   if (!fileread) {
@@ -6516,7 +6518,7 @@ static void SerializeValue(const std::string &key, const Value &value,
   }
 }
 
-static void SerializeGltfBufferData(const std::vector<unsigned char> &data,
+  static void SerializeGltfBufferData(const std::vector<unsigned char, ::GameApiAllocator<unsigned char> > &data,
                                     json &o) {
   std::string header = "data:application/octet-stream;base64,";
   if (data.size() > 0) {
@@ -6530,7 +6532,7 @@ static void SerializeGltfBufferData(const std::vector<unsigned char> &data,
   }
 }
 
-static bool SerializeGltfBufferData(const std::vector<unsigned char> &data,
+  static bool SerializeGltfBufferData(const std::vector<unsigned char,GameApiAllocator<unsigned char> > &data,
                                     const std::string &binFilename) {
 #ifdef _WIN32
 #if defined(__GLIBCXX__)  // mingw
@@ -6781,7 +6783,7 @@ static void SerializeGltfAsset(Asset &asset, json &o) {
 }
 
 static void SerializeGltfBufferBin(Buffer &buffer, json &o,
-                                   std::vector<unsigned char> &binBuffer) {
+                                   std::vector<unsigned char, ::GameApiAllocator<unsigned char> > &binBuffer) {
   SerializeNumberProperty("byteLength", buffer.data.size(), o);
   binBuffer = buffer.data;
 
@@ -7526,7 +7528,7 @@ static bool WriteGltfFile(const std::string &output,
 
 static void WriteBinaryGltfStream(std::ostream &stream,
                                   const std::string &content,
-                                  const std::vector<unsigned char> &binBuffer) {
+                                  const std::vector<unsigned char,GameApiAllocator<unsigned char> > &binBuffer) {
   const std::string header = "glTF";
   const int version = 2;
 
@@ -7591,7 +7593,7 @@ static void WriteBinaryGltfStream(std::ostream &stream,
 
 static void WriteBinaryGltfFile(const std::string &output,
                                 const std::string &content,
-                                const std::vector<unsigned char> &binBuffer) {
+                                const std::vector<unsigned char,GameApiAllocator<unsigned char> > &binBuffer) {
 #ifdef _WIN32
 #if defined(_MSC_VER)
   std::ofstream gltfFile(UTF8ToWchar(output).c_str(), std::ios::binary);
@@ -7619,7 +7621,7 @@ bool TinyGLTF::WriteGltfSceneToStream(Model *model, std::ostream &stream,
   SerializeGltfModel(model, output);
 
   // BUFFERS
-  std::vector<unsigned char> binBuffer;
+  std::vector<unsigned char, ::GameApiAllocator<unsigned char> > binBuffer;
   if (model->buffers.size()) {
     json buffers;
     JsonReserveArray(buffers, model->buffers.size());
@@ -7686,7 +7688,7 @@ bool TinyGLTF::WriteGltfSceneToFile(Model *model, const std::string &filename,
 
   // BUFFERS
   std::vector<std::string> usedUris;
-  std::vector<unsigned char> binBuffer;
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > binBuffer;
   if (model->buffers.size()) {
     json buffers;
     JsonReserveArray(buffers, model->buffers.size());
