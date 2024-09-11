@@ -7,7 +7,7 @@
 #include <functional>
 #include <cstdint>
 #include "VectorTools.hh"
-
+#include "Buffer.hh"
 
 template<class T>
 class GameApiAllocator
@@ -246,6 +246,13 @@ public:
   virtual ~Bitmap() { }
 
   virtual bool IsDirectGltfImage() const { return false; }
+
+  virtual bool HasBatchMap() const { return false; }
+  virtual BufferRef BatchMap(int start_x, int end_x, int start_y, int end_y) const
+  {
+    BufferRef ref = BufferRef::NewBuffer(1,1);
+    return ref;
+  }
 };
 
 class MemoryBlock : public CollectInterface

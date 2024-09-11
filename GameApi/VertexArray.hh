@@ -51,9 +51,24 @@ public:
   bool is_texture() { return texture_id!=-1; }
   bool is_array_texture() { return texture_id>= 700000; }
   bool is_many_texture() { return texture_many_ids.size()!=0; }
-  VertexArraySet() : texture_id(-1),bm_id(0) { }
+  VertexArraySet() : texture_id(-1),bm_id(0) { ref.numfaces=0;
+    ref.color=0;
+    ref.facepoint=0;
+    ref.facepoint2=0;
+    ref.texcoords=0;
+    ref.joints=0;
+    ref.weights=0;
+
+  }
   VertexArraySet(const VertexArraySet &s)
   {
+    ref.numfaces=0;
+    ref.color=0;
+    ref.facepoint=0;
+    ref.facepoint2=0;
+    ref.texcoords=0;
+    ref.joints=0;
+    ref.weights=0;
     std::map<int, Polys*>::iterator it = s.m_set.begin();
     for(;it!=s.m_set.end();it++)
       {
@@ -68,6 +83,7 @@ public:
     has_texcoord = s.has_texcoord;
     has_skeleton = s.has_skeleton;
   }
+  void SetRef(FaceBufferRef r) { ref = r; }
   void clear_poly_and_poly2(int id);
   void clear_arrays()
   {
@@ -85,6 +101,17 @@ public:
   void free_reserve(int id);
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
+  void push_poly_with_indices(int id, int num, Point *points, unsigned int *indexes);
+  void push_poly2_with_indices(int id, int num, Point *points, unsigned int *indexes);
+
+  void push_normal_with_indices(int id, int num, Vector *vectors, unsigned int *indexes);
+  void push_attrib_with_indices(int id, int attrib_id, int num, float *attribs, unsigned int *indexes);
+  void push_attribi_with_indices(int id, int attrib_id, int num, int *attribi, unsigned int *indexes);
+  void push_color_with_indices(int id, int num, unsigned int *colors, unsigned int *indexes);
+  void push_texcoord_with_indices(int id, int num, Point *points, unsigned int *indexes);
+  void push_joint_with_indices(int id, int num, VEC4 *points, unsigned int *indexes);
+  void push_weight_with_indices(int id, int num, VEC4 *points, unsigned int *indexes); 
+
   void push_poly(int id, int num, Point *points);
   void push_poly2(int id, int num, Point *points);
   void push_normal(int id, int num, Vector *vectors);
@@ -98,12 +125,25 @@ public:
   void split_color(std::vector<float> &vec, unsigned int color);
 
   // way to get data out
-  int tri_count(int id) const { return m_set[id]->tri_polys.size(); }
-  int tri_count2(int id) const { return m_set[id]->tri_polys2.size(); }
-  Point *tri_polys(int id) { return tri_count(id) ? &m_set[id]->tri_polys[0] : NULL; }
-  const Point *tri_polys2(int id) const { return tri_count2(id) ? &m_set[id]->tri_polys2[0] : NULL; }
-  int quad_count(int id) const { return m_set[id]->quad_polys.size(); }
-  int quad_count2(int id) const { return m_set[id]->quad_polys2.size(); }
+  int tri_count(int id) const {
+    //if (ref.numfaces!=0) return ref.numvertices;
+    return m_set[id]->tri_polys.size(); }
+  int tri_count2(int id) const {
+    //if (ref.numfaces!=0) return ref.numvertices;
+    return m_set[id]->tri_polys2.size(); }
+  Point *tri_polys(int id) {
+    //if (ref.numfaces!=0) return ref.facepoint;
+    return tri_count(id) ? &m_set[id]->tri_polys[0] : NULL;
+  }
+  const Point *tri_polys2(int id) const {
+    //if (ref.numfaces!=0) return ref.facepoint2;
+    return tri_count2(id) ? &m_set[id]->tri_polys2[0] : NULL; }
+  int quad_count(int id) const {
+    //if (ref.numfaces!=0) return 0; // QUADS NOT SUPPORTED IN GLTF
+    return m_set[id]->quad_polys.size(); }
+  int quad_count2(int id) const {
+    //if (ref.numfaces!=0) return 0;
+    return m_set[id]->quad_polys2.size(); }
   const Point *quad_polys(int id) const { return quad_count(id) ? &m_set[id]->quad_polys[0] : NULL; }
   const Point *quad_polys2(int id) const { return quad_count2(id) ? &m_set[id]->quad_polys2[0] : NULL; }
   int poly_count_f(int id) const { return m_set[id]->poly_polys.size(); }
@@ -115,8 +155,16 @@ public:
   int poly2_count(int id, int i) const { return m_set[id]->poly_polys[i].size(); }
 #endif
 
-  int tri_normal_count(int id) const { return m_set[id]->tri_normals.size(); }
-  const Vector *tri_normal_polys(int id) const { return tri_normal_count(id) ? &m_set[id]->tri_normals[0] : NULL; }
+  const unsigned char *indices_char() const { return ref.indices_char; }
+  const unsigned short *indices_short() const { return ref.indices_short; }
+  const unsigned int *indices_int() const { return ref.indices_int; }
+  
+  int tri_normal_count(int id) const {
+    //if (ref.numfaces!=0) return ref.numvertices;    
+    return m_set[id]->tri_normals.size(); }
+  const Vector *tri_normal_polys(int id) const {
+    //if (ref.numfaces!=0) return ref.pointnormal;
+    return tri_normal_count(id) ? &m_set[id]->tri_normals[0] : NULL; }
   int quad_normal_count(int id) const { return m_set[id]->quad_normals.size(); }
   const Vector *quad_normal_polys(int id) const { return quad_normal_count(id) ? &m_set[id]->quad_normals[0] : NULL; }
   int poly_normal_count(int id) const { return m_set[id]->poly_normals.size(); }
@@ -145,8 +193,12 @@ public:
 
 #endif
 
-  int tri_color_count(int id) const { return m_set[id]->tri_color.size(); }
-  const float *tri_color_polys(int id) const { return tri_color_count(id) ? &m_set[id]->tri_color[0] : NULL; }
+  int tri_color_count(int id) const {
+    //if (ref.numfaces!=0) return ref.numvertices; TODO, COLOURS NOT GOING OK IN GLTF    
+    return m_set[id]->tri_color.size(); }
+  const float *tri_color_polys(int id) const {
+    //if (ref.numfaces!=0) return ref.color; TODO, COLOURS NOT GOING OK IN GLTF
+    return tri_color_count(id) ? &m_set[id]->tri_color[0] : NULL; }
   int quad_color_count(int id) const { return m_set[id]->quad_color.size(); }
   const float *quad_color_polys(int id) const { return quad_color_count(id) ? &m_set[id]->quad_color[0] : NULL; }
   int poly_color_count(int id) const { return m_set[id]->poly_color.size(); }
@@ -154,16 +206,25 @@ public:
 
 
 
-  int tri_joint_count(int id) const { return m_set[id]->tri_joint.size(); }
-  const VEC4 *tri_joint_polys(int id) const { return tri_joint_count(id) ? &m_set[id]->tri_joint[0] : NULL; }
+  int tri_joint_count(int id) const {
+    //if (ref.numfaces!=0) return ref.numvertices;
+    return m_set[id]->tri_joint.size(); }
+  const VEC4 *tri_joint_polys(int id) const {
+    //if (ref.numfaces!=0) return ref.joints;
+
+    return tri_joint_count(id) ? &m_set[id]->tri_joint[0] : NULL; }
   int quad_joint_count(int id) const { return m_set[id]->quad_joint.size(); }
   const VEC4 *quad_joint_polys(int id) const { return quad_joint_count(id) ? &m_set[id]->quad_joint[0] : NULL; }
   int poly_joint_count(int id) const { return m_set[id]->poly_joint.size(); }
   const VEC4 *poly_joint_polys(int id) const { return poly_joint_count(id) ? &m_set[id]->poly_joint[0] : NULL; }
 
 
-  int tri_weight_count(int id) const { return m_set[id]->tri_weight.size(); }
-  const VEC4 *tri_weight_polys(int id) const { return tri_weight_count(id) ? &m_set[id]->tri_weight[0] : NULL; }
+  int tri_weight_count(int id) const {
+    //if (ref.numfaces!=0) return ref.numvertices;
+    return m_set[id]->tri_weight.size(); }
+  const VEC4 *tri_weight_polys(int id) const {
+    //if (ref.numfaces!=0) return ref.weights;
+    return tri_weight_count(id) ? &m_set[id]->tri_weight[0] : NULL; }
   int quad_weight_count(int id) const { return m_set[id]->quad_weight.size(); }
   const VEC4 *quad_weight_polys(int id) const { return quad_weight_count(id) ? &m_set[id]->quad_weight[0] : NULL; }
   int poly_weight_count(int id) const { return m_set[id]->poly_weight.size(); }
@@ -177,7 +238,9 @@ public:
 #endif
 
   int tri_texcoord_count(int id) const { return m_set[id]->tri_texcoord.size(); }
-  Point *tri_texcoord_polys(int id) { return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
+  Point *tri_texcoord_polys(int id) {
+    //if (ref.numfaces!=0) return ref.texcoords;
+    return tri_texcoord_count(id) ? &m_set[id]->tri_texcoord[0] : NULL; }
   int quad_texcoord_count(int id) const { return m_set[id]->quad_texcoord.size(); }
   Point *quad_texcoord_polys(int id) { return quad_texcoord_count(id) ? &m_set[id]->quad_texcoord[0] : NULL; }
   int poly_texcoord_count(int id) const { return m_set[id]->poly_texcoord.size(); }
@@ -239,6 +302,7 @@ public:
   bool has_color=true;
   bool has_texcoord=true;
   bool has_skeleton=false;
+  FaceBufferRef ref;
 };
 
 struct RenderVertexArray_bufferids
@@ -259,6 +323,7 @@ struct RenderVertexArray_bufferids
   std::vector<unsigned int> attribi_buffer;
   std::vector<unsigned int> attribi_buffer2;
   std::vector<unsigned int> attribi_buffer3;
+  unsigned int indices_buffer;
 };
 
 struct Counts {
@@ -308,6 +373,7 @@ public:
   void sort_blit(int id, Matrix in_MV);
   GameApi::PinIn prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
   GameApi::PinIn prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn prepare_indices(int id, const unsigned char *ind1, const unsigned short *ind2, const unsigned int *ind3, int facecount);
   GameApi::PinIn render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
   GameApi::PinIn render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
   void update_buffers(RenderVertexArray_bufferids ids);
@@ -337,6 +403,7 @@ public:
   std::vector<unsigned int> attribi_buffer;
   std::vector<unsigned int> attribi_buffer2;
   std::vector<unsigned int> attribi_buffer3;
+  unsigned int indices_buffer;
   bool nodelete;
 };
 

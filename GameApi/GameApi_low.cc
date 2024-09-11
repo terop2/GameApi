@@ -125,6 +125,7 @@
 #undef glDrawArraysInstanced
 #undef glDrawArrays
 #undef glDrawElements
+#undef glDrawElementsInstanced
 #undef glGenFramebuffers
 #undef glBindFramebuffer
 #undef glBindRenderbuffer
@@ -199,7 +200,7 @@ struct SDL_EVENT_HACK
 
 void check_err(const char *name)
 {
-#if 0  
+#if 1  
   GLenum e = 0;
   while((e=glGetError())!=GL_NO_ERROR)
     {
@@ -840,6 +841,17 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     unsigned int tri2 = (unsigned int)tri;
     ::glDrawElements(tri2,a,type,indices);
     check_err("glDrawElements");
+  }
+  virtual void glDrawElementsInstanced(int tri, int a, int type, void *indices, int size) {
+    map_enums(tri);
+    map_enums(type);
+    unsigned int tri2 = (unsigned int)tri;
+#ifdef EMSCRIPTEN
+    ::glDrawElementsInstanced(tri2,a,type,indices,size);
+#else
+    ::glDrawElementsInstancedNV(tri2,a,type,indices,size);
+#endif
+    check_err("glDrawElementsInstanced");
   }
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { 

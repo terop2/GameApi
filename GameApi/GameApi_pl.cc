@@ -3376,6 +3376,11 @@ struct FaceRange
   int end_obj;
 };
 
+std::ostream &operator<<(std::ostream &o, VEC4 v)
+{
+  o << "(" << v.x << " " << v.y << " " << v.z << " " << v.w << ")";
+}
+
 class OrArrayNoMemory : public FaceCollection
 {
 public:
@@ -3606,6 +3611,178 @@ public:
     return oo;
   }
 
+  bool HasBatchMap() const {
+    bool b = true;
+    int s = vec.size();
+    for(int i=0;i<s;i++) b&=vec[i]->HasBatchMap();
+    return b;
+  }
+
+  unsigned char *combine_indices_char(unsigned char *p1, unsigned char *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static unsigned char *p=0;
+    p=new unsigned char[numfaces1*3+numfaces2*3];
+    std::copy(p1,p1+numfaces1*3,p);
+    int i = 0;
+    for(;i<numfaces2;i++)
+      {
+	p[(numfaces1+i)*3+0] = numvertices1 + p2[i*3+0];
+	p[(numfaces1+i)*3+1] = numvertices1 + p2[i*3+1];
+	p[(numfaces1+i)*3+2] = numvertices1 + p2[i*3+2];
+      }
+    return p;
+  }
+  unsigned short *combine_indices_short(unsigned short *p1, unsigned short *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static unsigned short *p=0;
+    p=new unsigned short[numfaces1*3+numfaces2*3];
+    std::copy(p1,p1+numfaces1*3,p);
+    int i = 0;
+    for(;i<numfaces2;i++)
+      {
+	p[(numfaces1+i)*3+0] = numvertices1 + p2[i*3+0];
+	p[(numfaces1+i)*3+1] = numvertices1 + p2[i*3+1];
+	p[(numfaces1+i)*3+2] = numvertices1 + p2[i*3+2];
+	//p[(numfaces1+i)*3] = numvertices1 + p2[i];
+      }
+    return p;
+  }
+  unsigned int *combine_indices_int(unsigned int *p1, unsigned int *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static unsigned int *p=0;
+    p=new unsigned int[numfaces1*3+numfaces2*3];
+    std::copy(p1,p1+numfaces1*3,p);
+    int i = 0;
+    for(;i<numfaces2;i++)
+      {
+	p[(numfaces1+i)*3+0] = numvertices1 + p2[i*3+0];
+	p[(numfaces1+i)*3+1] = numvertices1 + p2[i*3+1];
+	p[(numfaces1+i)*3+2] = numvertices1 + p2[i*3+2];
+	//p[(numfaces1+i)*3] = numvertices1 + p2[i];
+      }
+    return p;
+  }
+  
+  Point *combine_pos(Point *p1, Point *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static Point *p=0;
+    p=new Point[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  Point *combine_pos2(Point *p1, Point *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static Point *p=0;
+    p=new Point[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  Vector *combine_normal(Vector *p1, Vector *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static Vector *p=0;
+    p=new Vector[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  unsigned int *combine_color(unsigned int *p1, unsigned int *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static unsigned int *p=0;
+    p=new unsigned int[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  Point *combine_texcoord(Point *p1, Point *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static Point *p=0;
+    p=new Point[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  VEC4 *combine_joints(VEC4 *p1, VEC4 *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static VEC4 *p=0;
+    p=new VEC4[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;    
+  }
+  VEC4 *combine_weights(VEC4 *p1, VEC4 *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    static VEC4 *p=0;
+    p=new VEC4[numvertices1+numvertices2];
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;    
+  }
+  template<class T>
+  void swap2( T**ptr, T*val) const
+  {
+    //delete [] (*ptr);
+    (*ptr)=val;
+  }
+
+  FaceBufferRef BatchMap(int start_x, int end_x) const
+  {
+    if (vec.size()==0) { FaceBufferRef r; r.numfaces=0; return r; }
+    std::vector<FaceBufferRef> vec2;
+    int s = vec.size();
+    int num = 0;
+    for(int i=0;i<s;i++)
+      {
+	if (start_x>=0 && end_x>=0) {
+	  FaceBufferRef r = vec[i]->BatchMap(start_x,end_x);
+	  start_x-=r.numfaces;
+	  end_x-=r.numfaces;
+	  num+=r.numfaces;
+	  vec2.push_back(r);
+	} else if (start_x<0 && end_x>=0)
+	  {
+	  FaceBufferRef r = vec[i]->BatchMap(0,end_x);
+	  start_x-=r.numfaces;
+	  end_x-=r.numfaces;
+	  num+=r.numfaces;
+	  vec2.push_back(r);
+	  }
+      }
+    static FaceBufferRef result;
+    result = vec2[0];
+    int s2 = vec2.size();
+    for(int i=1;i<s2;i++)
+      {
+	swap2(&result.facepoint,combine_pos(result.facepoint,vec2[i].facepoint,result.numvertices,vec2[i].numvertices));
+	swap2(&result.facepoint2,combine_pos2(result.facepoint2,vec2[i].facepoint2,result.numvertices,vec2[i].numvertices));
+	swap2(&result.pointnormal, combine_normal(result.pointnormal,vec2[i].pointnormal,result.numvertices,vec2[i].numvertices));
+	swap2(&result.color,combine_color(result.color,vec2[i].color,result.numvertices,vec2[i].numvertices));
+	swap2(&result.texcoords, combine_texcoord(result.texcoords,vec2[i].texcoords,result.numvertices,vec2[i].numvertices));
+	swap2(&result.joints,combine_joints(result.joints,vec2[i].joints,result.numvertices,vec2[i].numvertices));
+	swap2(&result.weights,combine_weights(result.weights,vec2[i].weights,result.numvertices,vec2[i].numvertices));
+
+	result.indices_int = combine_indices_int(result.indices_int, vec2[i].indices_int, result.numfaces, vec2[i].numfaces, result.numvertices, vec2[i].numvertices);
+	result.indices_short = combine_indices_short(result.indices_short, vec2[i].indices_short, result.numfaces, vec2[i].numfaces, result.numvertices, vec2[i].numvertices);
+	result.indices_char = combine_indices_char(result.indices_char, vec2[i].indices_char, result.numfaces, vec2[i].numfaces, result.numvertices, vec2[i].numvertices);
+
+	result.numfaces += vec2[i].numfaces;
+	result.numvertices += vec2[i].numvertices;
+      }
+    
+    return result;
+  }
+  
 private:
   std::vector<FaceCollection*> vec;
   std::vector<FaceRange> ranges;
@@ -5815,6 +5992,139 @@ bool is_texture_usage_confirmed(VertexArraySet *set);
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
 
+    FaceCollection *faces2 = find_facecoll(e, p);
+    if (faces2->HasBatchMap()) {
+    //std::cout << "IMPL#1:KEEP" << std::endl;
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+    VertexArraySet *s = new VertexArraySet;
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    //arr.copy(0,faces->NumFaces());  
+    FaceBufferRef ref = faces->BatchMap(0,faces->NumFaces());
+
+    int s2 = faces->NumFaces();
+    for(int i=0;i<s2;i++)
+      {
+	if (ref.indices_int)
+	  {
+	    if (ref.facepoint)
+	      s->push_poly_with_indices(0,3,ref.facepoint,ref.indices_int+i*3);
+	    if (ref.facepoint2)
+	      s->push_poly2_with_indices(0,3,ref.facepoint2,ref.indices_int+i*3);
+	    if (ref.pointnormal)
+	      s->push_normal_with_indices(0,3,ref.pointnormal,ref.indices_int+i*3);
+	    if (ref.color)
+	      s->push_color_with_indices(0,3,ref.color,ref.indices_int+i*3);
+	    
+	    if (ref.texcoords)
+	      s->push_texcoord_with_indices(0,3,ref.texcoords,ref.indices_int+i*3);
+	    if (ref.joints)
+	      s->push_joint_with_indices(0,3,ref.joints,ref.indices_int+i*3);
+	    if (ref.weights)
+	      s->push_weight_with_indices(0,3,ref.weights,ref.indices_int+i*3);
+	  }
+	else
+	  {
+	    if (ref.facepoint)
+	      s->push_poly(0,3,ref.facepoint+i*3);
+	    if (ref.facepoint2)
+	      s->push_poly2(0,3,ref.facepoint2+i*3);
+	    if (ref.pointnormal)
+	      s->push_normal(0,3,ref.pointnormal+i*3);
+	    if (ref.color)
+	      s->push_color(0,3,ref.color+i*3);
+	    if (ref.texcoords)
+	      s->push_texcoord(0,3,ref.texcoords+i*3);
+	    if (ref.joints)
+	      s->push_joint(0,3,ref.joints+i*3);
+	    if (ref.weights)
+	      s->push_weight(0,3,ref.weights+i*3);
+	  }
+      }
+
+
+	
+
+
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr2->prepare(0);
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+  }
+
+  
+  /*
+    FaceCollection *faces2 = find_facecoll(e, p);
+    if (faces2->HasBatchMap())
+      {
+    FaceCollection *faces = find_facecoll(e, p);
+    faces->Prepare();
+
+
+
+
+    VertexArraySet *s = new VertexArraySet;
+
+
+    FaceCollection &coll = *faces;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(s)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+    
+    s->has_normal = has_normal2;
+    s->has_attrib = has_attrib2;
+    s->has_color = has_color2;
+    s->has_texcoord = has_texcoord2;
+    s->has_skeleton = has_skeleton2;
+
+    
+
+    FaceCollectionVertexArray2 arr(*faces, *s);
+    arr.reserve(0);
+    FaceBufferRef ref = faces->BatchMap(0,faces->NumFaces());
+    //s->SetRef(ref);
+    //arr.copy(0,faces->NumFaces());
+
+    int s2 = faces->NumFaces();
+    for(int i=0;i<s2;i++)
+      {
+    if (ref.facepoint && ref.indices_int)
+      {
+	s->push_poly_with_indices(0,3,ref.facepoint,ref.indices_int+i*3);
+      }
+    else if (ref.facepoint)
+    s->push_poly(0,3,ref.facepoint+i*3);
+    if (ref.facepoint2 && ref.indices_int)
+      {
+	s->push_poly2_with_indices(0,3,ref.facepoint2,ref.indices_int+i*3);
+      }
+    else if (ref.facepoint2)
+    s->push_poly2(0,3,ref.facepoint2+i*3);
+    if (ref.pointnormal)
+    s->push_normal(0,3,ref.pointnormal+i*3);
+    if (ref.color)
+    s->push_color(0,3,ref.color+i*3);
+    if (ref.texcoords)
+    s->push_texcoord(0,3,ref.texcoords+i*3);
+    if (ref.joints)
+    s->push_joint(0,3,ref.joints+i*3);
+    if (ref.weights)
+    s->push_weight(0,3,ref.weights+i*3);
+      }
+    RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
+    arr2->prepare(0);
+    //arr2->prepare_indices(0,ref.indices_char,ref.indices_short,ref.indices_int, ref.numfaces);
+    //arr2->tri_count = ref.numvertices;
+    if (!keep)
+      s->free_memory();
+    return add_vertex_array(e, s, arr2);
+}
+  */
+  
   if (keep) {
     //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);

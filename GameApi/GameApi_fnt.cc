@@ -187,6 +187,86 @@ FontCacheData *find_font_cache_data(GameApi::BM atlas_bm, char ch)
 }
 
 
+class FontAtlasStringFaceCollection : public FaceCollection
+{
+public:
+  FontAtlasStringFaceCollection(GameApi::Env &e, std::vector<GameApi::BM> vec, std::vector<FontAtlasGlyphInfo> info, int x_gap, GameApi::BM atlas_bm) : e(e), vec(vec), info(info), x_gap(x_gap), atlas_bm(atlas_bm) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const { return std::min(vec.size(),info.size()); }
+  virtual int NumPoints(int face) const { return 4; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int s = vec.size();
+    Point topleft = { 0.0, 0.0, 0.0 };
+    for(int i=0;i<face;i++)
+      {
+	Bitmap<::Color> *bbm = find_bitmap2(e,vec[i]);
+	topleft.x+=bbm->SizeX() + x_gap;
+      }
+    topleft.y = info[face].top;
+
+    if (point==1||point==2) topleft.x+=find_bitmap2(e,vec[face])->SizeX();
+    if (point==2||point==3) topleft.y+=find_bitmap2(e,vec[face])->SizeY();
+    
+    return topleft;
+  }
+  virtual Vector PointNormal(int face, int point) const { return Vector(0.0,0.0,-1.0); }
+  virtual float Attrib(int face, int point, int id) const { return 0.0f; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Point2d topleft = { float(info[face].x), float(info[face].y+info[face].top) };
+    if (point==1||point==2) topleft.x+=find_bitmap2(e,vec[face])->SizeX();
+    if (point==2||point==3) topleft.y+=find_bitmap2(e,vec[face])->SizeY();
+    topleft.x/=(float)find_bitmap2(e,atlas_bm)->SizeX();
+    topleft.y/=(float)find_bitmap2(e,atlas_bm)->SizeY();
+    return topleft;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+private:
+  GameApi::Env &e;
+  std::vector<GameApi::BM> vec;
+  std::vector<FontAtlasGlyphInfo> info;
+  int x_gap;
+  GameApi::BM atlas_bm;
+};
+
+EXPORT GameApi::P GameApi::FontApi::font_string_from_atlas_opengl_pipeline(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap)
+{
+  FontAtlasInfo *info = find_font_atlas(e, atlas);
+  int sz = str.length();
+  std::vector<BM> vec;
+  std::vector<FontAtlasGlyphInfo> vec2;
+  for(int i=0;i<sz;i++)
+    {
+      char ch = str[i];
+      FontCacheData *d = find_font_cache_data(atlas_bm,ch);
+      BM bm;
+      FontAtlasGlyphInfo ii = info->char_map[ch];
+      if (!d) {
+	bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x, ii.y+ii.top, ii.sx,ii.sy);
+	FontCacheData *dd = new FontCacheData;
+	dd->atlas_bm = atlas_bm;
+	dd->ch = ch;
+	dd->bm = bm;
+	font_cache.push_back(dd);
+      } else
+	{
+	  bm = d->bm;
+	}
+      
+      vec.push_back(bm);
+      vec2.push_back(ii);      
+    }
+  return add_polygon2(e,new FontAtlasStringFaceCollection(e,vec,vec2,x_gap,atlas_bm),1);
+}
+
+
 EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap)
 {
   FontAtlasInfo *info = find_font_atlas(e, atlas);

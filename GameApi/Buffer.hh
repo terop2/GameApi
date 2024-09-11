@@ -30,6 +30,7 @@ struct BufferRef
   unsigned int ydelta;
   static BufferRef SubBuffer(BufferRef old, int x, int y, int width, int height)
 ;
+  static BufferRef NewBufferWithoutAlloc(unsigned int *buf, unsigned int width, unsigned int height, unsigned int ydelta);
   static BufferRef NewBuffer(int width, int height);
   static void FreeBuffer(BufferRef &ref);
   static void CopyBuffer(BufferRef source, BufferRef target, int x, int y, int rx, int ry, int rex, int rey);

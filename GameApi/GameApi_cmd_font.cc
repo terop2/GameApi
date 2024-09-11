@@ -6,12 +6,6 @@ std::vector<GameApiItem*> fontapi_functions()
 {
   std::vector<GameApiItem*> vec;
 #if 0
-  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::newfont,
-			 "newfont",
-			 { "file", "sx", "sy" },
-			 { "std::string", "int", "int" },
-			 { "http://meshpage.org/assets/FreeSans.ttf", "20", "20" },
-			 "Ft", "font_api", "newfont"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::glyph,
 			 "glyph",
@@ -61,24 +55,6 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "BB", "font_api", "glyph_bb"));
 #endif
 #if 1
-  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas_info,
-			 "atlas_info",
-			 { "ev", "font", "chars", "sx", "sy", "y_delta" },
-			 { "EveryApi&", "Ft", "std::string", "float", "float", "int" },
-			 { "ev", "", "0123456789", "30", "30", "40" },
-			 "FtA", "font_api", "font_atlas_info"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas,
-			 "font_atlas",
-			 { "ev", "font", "atlas", "sx", "sy" },
-			 { "EveryApi&", "Ft", "FtA", "float", "float" },
-			 { "ev", "", "", "30", "30" },
-			 "BM", "font_api", "font_atlas"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_from_atlas,
-			 "font_string2",
-			 { "ev", "atlas", "atlas_bm", "str", "x_gap" },
-			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
-			 { "ev", "", "", "Hello", "5" },
-			 "BM", "font_api", "font_string_from_atlas"));
 #endif
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_atlas,
@@ -176,6 +152,45 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "std::string" },
 			 { "http://meshpage.org/assets/font.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "FI", "font_api", "load_font_dump"));
+
+
+#if 0
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::newfont,
+			 "newfont",
+			 { "file", "sx", "sy" },
+			 { "std::string", "int", "int" },
+			 { "http://meshpage.org/assets/Chunkfive.otf", "20", "20" },
+			 "Ft", "font_api", "newfont"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas_info,
+			 "atlas_info",
+			 { "ev", "font", "chars", "sx", "sy", "y_delta" },
+			 { "EveryApi&", "Ft", "std::string", "float", "float", "int" },
+			 { "ev", "", "0123456789", "30", "30", "40" },
+			 "FtA", "font_api", "font_atlas_info"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas,
+			 "font_atlas",
+			 { "ev", "font", "atlas", "sx", "sy" },
+			 { "EveryApi&", "Ft", "FtA", "float", "float" },
+			 { "ev", "", "", "30", "30" },
+			 "BM", "font_api", "font_atlas"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_from_atlas,
+			 "font_string2",
+			 { "ev", "atlas", "atlas_bm", "str", "x_gap" },
+			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
+			 { "ev", "", "", "Hello", "5" },
+			 "BM", "font_api", "font_string_from_atlas"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_from_atlas_opengl_pipeline,
+			 "font_string_p",
+			 { "ev", "atlas", "atlas_bm", "str", "x_gap" },
+			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
+			 { "ev", "", "", "Hello", "3.0" },
+			 "P", "font_api", "font_string_from_atlas_opengl_pipeline"));
+
+#endif
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::bm_array_id,
 			 "bm_array_id",
 			 { "vec" },

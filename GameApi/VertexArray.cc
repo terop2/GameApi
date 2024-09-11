@@ -181,6 +181,50 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly
     p->poly_weight.reserve(poly_count*3/3);
 
 }
+void VertexArraySet::push_poly_with_indices(int id, int num, Point *points, unsigned int *indexes)
+{
+
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num < 3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_polys.push_back(points[indexes[0]]);
+      p->tri_polys.push_back(points[indexes[1]]);
+      p->tri_polys.push_back(points[indexes[2]]);
+    }
+  else if (num==4)
+    {
+      p->quad_polys.push_back(points[indexes[0]]);
+      p->quad_polys.push_back(points[indexes[1]]);
+      p->quad_polys.push_back(points[indexes[2]]);
+      p->quad_polys.push_back(points[indexes[0]]);
+      p->quad_polys.push_back(points[indexes[2]]);
+      p->quad_polys.push_back(points[indexes[3]]);
+    }
+  else
+    {
+      if (p->poly_polys.size()!=0)
+	{
+	  p->poly_polys.push_back(points[indexes[0]]);
+	}
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_polys.push_back(points[indexes[i]]);
+	  p->poly_polys.push_back(points[indexes[j]]);
+	}
+      if (p->poly_polys.size()!=0)
+	p->poly_polys.push_back(p->poly_polys[p->poly_polys.size()-1]);
+    }
+
+}
 void VertexArraySet::push_poly(int id, int num, Point *points)
 {
   Polys *p = m_set[id];
@@ -222,6 +266,52 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
       if (p->poly_polys.size()!=0)
 	p->poly_polys.push_back(p->poly_polys[p->poly_polys.size()-1]);
     }
+}
+
+
+void VertexArraySet::push_poly2_with_indices(int id, int num, Point *points, unsigned int *indexes)
+{
+
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num < 3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_polys2.push_back(points[indexes[0]]);
+      p->tri_polys2.push_back(points[indexes[1]]);
+      p->tri_polys2.push_back(points[indexes[2]]);
+    }
+  else if (num==4)
+    {
+      p->quad_polys2.push_back(points[indexes[0]]);
+      p->quad_polys2.push_back(points[indexes[1]]);
+      p->quad_polys2.push_back(points[indexes[2]]);
+      p->quad_polys2.push_back(points[indexes[0]]);
+      p->quad_polys2.push_back(points[indexes[2]]);
+      p->quad_polys2.push_back(points[indexes[3]]);
+    }
+  else
+    {
+      if (p->poly_polys.size()!=0)
+	{
+	  p->poly_polys2.push_back(points[indexes[0]]);
+	}
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_polys2.push_back(points[indexes[i]]);
+	  p->poly_polys2.push_back(points[indexes[j]]);
+	}
+      if (p->poly_polys2.size()!=0)
+	p->poly_polys2.push_back(p->poly_polys2[p->poly_polys2.size()-1]);
+    }
+
 }
 
 void VertexArraySet::push_poly2(int id, int num, Point *points)
@@ -270,7 +360,51 @@ void VertexArraySet::push_poly2(int id, int num, Point *points)
 }
 
 
+void VertexArraySet::push_normal_with_indices(int id, int num, Vector *points, unsigned int *indices)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3)
+    return;
+  else
+  if (num == 3)
+    {
+      p->tri_normals.push_back(points[indices[0]]);
+      p->tri_normals.push_back(points[indices[1]]);
+      p->tri_normals.push_back(points[indices[2]]);
+    }
+  else if (num==4)
+    {
+      p->quad_normals.push_back(points[indices[0]]);
+      p->quad_normals.push_back(points[indices[1]]);
+      p->quad_normals.push_back(points[indices[2]]);
+      p->quad_normals.push_back(points[indices[0]]);
+      p->quad_normals.push_back(points[indices[2]]);
+      p->quad_normals.push_back(points[indices[3]]);
+    }
+  else
+    {
+      if (p->poly_normals.size()!=0)
+	{
+	  p->poly_normals.push_back(points[indices[0]]);
+	}
 
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_normals.push_back(points[indices[i]]);
+	  p->poly_normals.push_back(points[indices[j]]);
+	}
+      p->poly_normals.push_back(p->poly_normals[p->poly_normals.size()-1]);
+
+    }
+
+}
 void VertexArraySet::push_normal(int id, int num, Vector *points)
 {
   Polys *p = m_set[id];
@@ -424,6 +558,48 @@ void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
   //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << std::endl;
 }
 
+void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *points, unsigned int *indices)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3) return;
+  else
+  if (num == 3)
+    {
+      split_color(p->tri_color, points[indices[0]]);
+      split_color(p->tri_color, points[indices[1]]);
+      split_color(p->tri_color, points[indices[2]]);
+    }
+  else if (num==4)
+    {
+      split_color(p->quad_color, points[indices[0]]);
+      split_color(p->quad_color, points[indices[1]]);
+      split_color(p->quad_color, points[indices[2]]);
+      split_color(p->quad_color, points[indices[0]]);
+      split_color(p->quad_color, points[indices[2]]);
+      split_color(p->quad_color, points[indices[3]]);
+    }
+  else
+    {
+      if (p->poly_color.size()!=0)
+	{
+	  split_color(p->poly_color, points[indices[0]]);
+	}
+
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  split_color(p->poly_color,points[indices[i]]);
+	  split_color(p->poly_color,points[indices[j]]);
+	}
+      split_color(p->poly_color, points[indices[num/2]]); // todo, check if correct
+    }
+}
 void VertexArraySet::push_color(int id, int num, unsigned int *points)
 {
   Polys *p = m_set[id];
@@ -468,7 +644,52 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
 }
 
 
+void VertexArraySet::push_joint_with_indices(int id, int num, VEC4 *points, unsigned int *indices)
+{
 
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_joint.push_back(points[indices[0]]);
+      p->tri_joint.push_back(points[indices[1]]);
+      p->tri_joint.push_back(points[indices[2]]);
+    }
+  else if (num==4)
+    {
+      //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      p->quad_joint.push_back(points[indices[0]]);
+      p->quad_joint.push_back(points[indices[1]]);
+      p->quad_joint.push_back(points[indices[2]]);
+      p->quad_joint.push_back(points[indices[0]]);
+      p->quad_joint.push_back(points[indices[2]]);
+      p->quad_joint.push_back(points[indices[3]]);
+    }
+  else
+    {
+      if (p->poly_joint.size()!=0)
+	{
+	  p->poly_joint.push_back(points[indices[0]]);
+	}
+
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_joint.push_back(points[indices[i]]);
+	  p->poly_joint.push_back(points[indices[j]]);
+	}
+      p->poly_joint.push_back(p->poly_joint[p->poly_joint.size()-1]);
+
+    }
+
+}
 void VertexArraySet::push_joint(int id, int num, VEC4 *points)
 {
 
@@ -516,6 +737,51 @@ void VertexArraySet::push_joint(int id, int num, VEC4 *points)
 
 }
 
+void VertexArraySet::push_weight_with_indices(int id, int num, VEC4 *points, unsigned int *indices)
+{
+
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_weight.push_back(points[indices[0]]);
+      p->tri_weight.push_back(points[indices[1]]);
+      p->tri_weight.push_back(points[indices[2]]);
+    }
+  else if (num==4)
+    {
+      //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      p->quad_weight.push_back(points[indices[0]]);
+      p->quad_weight.push_back(points[indices[1]]);
+      p->quad_weight.push_back(points[indices[2]]);
+      p->quad_weight.push_back(points[indices[0]]);
+      p->quad_weight.push_back(points[indices[2]]);
+      p->quad_weight.push_back(points[indices[3]]);
+    }
+  else
+    {
+      if (p->poly_weight.size()!=0)
+	{
+	  p->poly_weight.push_back(points[indices[0]]);
+	}
+
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_weight.push_back(points[indices[i]]);
+	  p->poly_weight.push_back(points[indices[j]]);
+	}
+      p->poly_weight.push_back(p->poly_weight[p->poly_weight.size()-1]);
+
+    }
+}
 void VertexArraySet::push_weight(int id, int num, VEC4 *points)
 {
 
@@ -563,7 +829,51 @@ void VertexArraySet::push_weight(int id, int num, VEC4 *points)
 
 }
 
+void VertexArraySet::push_texcoord_with_indices(int id, int num, Point *points, unsigned int *indices)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      p = m_set[id];
+    }
+  if (num<3) return;
+  else
+  if (num == 3)
+    {
+      p->tri_texcoord.push_back(points[indices[0]]);
+      p->tri_texcoord.push_back(points[indices[1]]);
+      p->tri_texcoord.push_back(points[indices[2]]);
+    }
+  else if (num==4)
+    {
+      //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      p->quad_texcoord.push_back(points[indices[0]]);
+      p->quad_texcoord.push_back(points[indices[1]]);
+      p->quad_texcoord.push_back(points[indices[2]]);
+      p->quad_texcoord.push_back(points[indices[0]]);
+      p->quad_texcoord.push_back(points[indices[2]]);
+      p->quad_texcoord.push_back(points[indices[3]]);
+    }
+  else
+    {
+      if (p->poly_texcoord.size()!=0)
+	{
+	  p->poly_texcoord.push_back(points[indices[0]]);
+	}
 
+      int s = num;
+      int j = s-1;
+      for(int i=0;i<num/2;i++,j--)
+	{
+	  p->poly_texcoord.push_back(points[indices[i]]);
+	  p->poly_texcoord.push_back(points[indices[j]]);
+	}
+      p->poly_texcoord.push_back(p->poly_texcoord[p->poly_texcoord.size()-1]);
+
+    }
+
+}
 void VertexArraySet::push_texcoord(int id, int num, Point *points)
 {
   Polys *p = m_set[id];
@@ -1648,6 +1958,8 @@ void RenderVertexArray::update_buffers(RenderVertexArray_bufferids ids)
   //int a1 = ids.attrib_buffer.size();
   // todo, attrib & attribi buffers
 
+  indices_buffer = ids.indices_buffer;
+  
 
   int a1 = ids.attrib_buffer.size();
   if (a1>0)
@@ -1708,6 +2020,8 @@ void RenderVertexArray::fetch_buffers(RenderVertexArray_bufferids &ids)
   ids.color_buffer=color_buffer;
   ids.color_buffer_matrix = color_buffer_matrix;
 
+  ids.indices_buffer = indices_buffer;
+  
   int a1 = attrib_buffer.size();
   if (a1>0)
     ids.attrib_buffer.resize(a1);
@@ -1788,6 +2102,8 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   ogl->glGenBuffers(1, &normals_buffer_matrix);
   ogl->glGenBuffers(1, &color_buffer);
   ogl->glGenBuffers(1, &color_buffer_matrix);
+  if (s.ref.numfaces!=0)
+    ogl->glGenBuffers(1, &indices_buffer);
   VertexArraySet::Polys *p = s.m_set[id];
   { // attrib buffers
   int ss = p->tri_attribs.size();
@@ -1842,7 +2158,11 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[1]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_normal_polys(id), Low_GL_STATIC_DRAW);
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[2]);
-  ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*4, isnull?0:s.tri_color_polys(id), Low_GL_STATIC_DRAW);
+  //if (s.ref.color) {
+  //  ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(unsigned int), isnull?0:s.tri_color_polys(id), Low_GL_STATIC_DRAW);
+  //} else {
+    ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*4, isnull?0:s.tri_color_polys(id), Low_GL_STATIC_DRAW);
+    //}
   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[3]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*3, isnull?0:s.tri_texcoord_polys(id), Low_GL_STATIC_DRAW);
 
@@ -1854,6 +2174,17 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
   ogl->glBufferData(Low_GL_ARRAY_BUFFER, tri_count*sizeof(float)*4, isnull?0:s.tri_weight_polys(id), Low_GL_STATIC_DRAW);
 
+  if (s.ref.numfaces!=0)
+    {
+    ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+    if (s.ref.indices_char)
+      ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, s.ref.numfaces*sizeof(unsigned char)*3, s.ref.indices_char, Low_GL_STATIC_DRAW);
+    if (s.ref.indices_short)
+      ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, s.ref.numfaces*sizeof(unsigned short)*3, s.ref.indices_short, Low_GL_STATIC_DRAW);
+    if (s.ref.indices_int)
+      ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, s.ref.numfaces*sizeof(unsigned int)*3, s.ref.indices_int, Low_GL_STATIC_DRAW);
+    }
+  
   
   {
   // ATTRIB STARTS HERE
@@ -2031,6 +2362,16 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
     ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
 
+
+    ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+  if (s.ref.indices_char)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0, 0);
+  if (s.ref.indices_short)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, 0, 0);
+  if (s.ref.indices_int)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0,0);
+  ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, 0);
+  
     
     int counter=8;
 
@@ -2193,7 +2534,9 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&normals_buffer_matrix);
   ogl->glDeleteBuffers(1,&color_buffer);
   ogl->glDeleteBuffers(1,&color_buffer_matrix);
-
+  if (s.ref.numfaces!=0)
+    ogl->glDeleteBuffers(1,&indices_buffer);
+  
   ogl->glDeleteBuffers(1,&buffers2[0]);
   ogl->glDeleteBuffers(1,&buffers2[1]);
   ogl->glDeleteBuffers(1,&buffers2[2]);
@@ -2262,6 +2605,33 @@ GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *posit
 #endif
 
   return GameApi::PinIn();
+}
+GameApi::PinIn RenderVertexArray::prepare_indices(int id, const unsigned char *ind1, const unsigned short *ind2, const unsigned int *ind3, int facecount)
+{
+  if (s.ref.numfaces!=0)
+    {
+      std::cout << "FACECOUNT:" << facecount << std::endl;
+  OpenglLowApi *ogl = g_low->ogl;
+#ifdef VAO
+  ogl->glBindVertexArray(vao[0]);
+#endif
+  ogl->glBindBuffer( Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer );
+
+  if (ind1)
+    ogl->glBufferData( Low_GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned char) * facecount*3, ind1, Low_GL_STATIC_DRAW);
+
+  if (ind2)
+    ogl->glBufferData( Low_GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned short) * facecount*3, ind2, Low_GL_STATIC_DRAW);
+
+  if (ind3)
+    ogl->glBufferData( Low_GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * facecount*3, ind3, Low_GL_STATIC_DRAW);
+
+#ifdef VAO
+    ogl->glBindVertexArray(0);
+#endif
+    }
+  return GameApi::PinIn();
+  
 }
 GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size)
 {
@@ -2359,6 +2729,12 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
   ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
   ogl->glVertexAttribPointer(9, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*8));
   ogl->glVertexAttribPointer(10, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*12));
+  if (s.ref.indices_char)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, sizeof(unsigned char)*3, (void*)0);
+  if (s.ref.indices_short)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, sizeof(unsigned short)*3, (void*)0);
+  if (s.ref.indices_int)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_INT, Low_GL_FALSE, sizeof(unsigned int)*3, (void*)0);
   ogl->glVertexAttribDivisor(7, 1);
   ogl->glVertexAttribDivisor(8, 1);
   ogl->glVertexAttribDivisor(9, 1);
@@ -2397,6 +2773,12 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
     ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
 
+    if (s.ref.numfaces) {
+    ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+    ogl->glVertexAttribPointer(13, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+    
 #endif
 
 #if 1
@@ -2413,8 +2795,20 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     ogl->glEnableVertexAttribArray(11);
     ogl->glEnableVertexAttribArray(12);
     }
+    if (s.ref.numfaces!=0)
+      ogl->glEnableVertexAttribArray(13);
 #endif
 
+    if (s.ref.numfaces!=0)
+      {
+	if (s.ref.indices_char)
+	  ogl->glDrawElementsInstanced(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_BYTE, s.ref.indices_char, size);
+	if (s.ref.indices_short)
+	  ogl->glDrawElementsInstanced(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_SHORT, s.ref.indices_short, size);
+	if (s.ref.indices_int)
+	  ogl->glDrawElementsInstanced(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_INT, s.ref.indices_int, size);
+      }
+    else
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
       //std::cout << "InstancingTRI: " << tri_count << " " << size << std::endl;
 
@@ -2428,6 +2822,10 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     ogl->glDisableVertexAttribArray(8);
     ogl->glDisableVertexAttribArray(9);
     ogl->glDisableVertexAttribArray(10);
+    ogl->glDisableVertexAttribArray(11);
+    ogl->glDisableVertexAttribArray(12);
+    if (s.ref.numfaces!=0)
+      ogl->glDisableVertexAttribArray(13);
 #endif  
     }
 
@@ -2625,11 +3023,11 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     ogl->glDisableVertexAttribArray(12);
 #endif
     }
-
+ 
 #ifdef VAO
     ogl->glBindVertexArray(0);
 #endif
-    ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
+   ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
     g_inst_map_matrix[positions]=true;
 
 
@@ -2658,9 +3056,19 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
   }
     
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+  if (s.ref.indices_char)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0, (void*)0);
+  if (s.ref.indices_short)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, 0, (void*)0);
+  if (s.ref.indices_int)
+    ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0, (void*)0);
+
+
   ogl->glVertexAttribDivisor(5, 1);
   ogl->glEnableVertexAttribArray(5);
 
+
+  
   // END INSTANCED
 
   ogl->glVertexAttribDivisor(0, 0);
@@ -2692,6 +3100,16 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
     ogl->glVertexAttribPointer(11, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, buffers[6]);
     ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
+    if (s.ref.numfaces!=0)
+      {
+	ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+	if (s.ref.indices_char)
+	ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0, 0);
+	if (s.ref.indices_short)
+	ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, 0, 0);
+	if (s.ref.indices_int)
+	ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0, 0);
+      }
 
 #endif
 
@@ -2709,9 +3127,25 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
       ogl->glEnableVertexAttribArray(11);
       ogl->glEnableVertexAttribArray(12);
     }
+    if (s.ref.numfaces!=0)
+      ogl->glEnableVertexAttribArray(13);
 #endif
 
-      ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
+    if (s.ref.numfaces!=0)
+      {
+
+	//std::cout << (int)s.ref.indices_char << " " << (int)s.ref.indices_short << " " << (int)s.ref.indices_int << "::" << s.ref.numfaces << " " << s.ref.numvertices << " " << size << std::endl;
+
+	if (s.ref.indices_char)
+	  ogl->glDrawElementsInstanced(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_BYTE, s.ref.indices_char, size);
+	if (s.ref.indices_short)
+	  ogl->glDrawElementsInstanced(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_SHORT, s.ref.indices_short, size);
+	if (s.ref.indices_int)
+	  ogl->glDrawElementsInstanced(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_INT, s.ref.indices_int, size);
+      }
+    else
+
+    ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
       //std::cout << "InstancingTRI: " << tri_count << " " << size << std::endl;
 
 #if 1
@@ -2724,6 +3158,8 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
     ogl->glDisableVertexAttribArray(11);
     ogl->glDisableVertexAttribArray(12);
+    if (s.ref.numfaces!=0)
+      ogl->glDisableVertexAttribArray(13);
 
 #endif  
     }
@@ -2994,6 +3430,17 @@ GameApi::PinIn RenderVertexArray::render(int id)
     }
 
 #endif
+
+    if (s.ref.numfaces!=0)
+      {
+	if (s.ref.indices_char)
+	  ogl->glDrawElements(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_BYTE, s.ref.indices_char);
+	if (s.ref.indices_short)
+	  ogl->glDrawElements(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_SHORT, s.ref.indices_short);
+	if (s.ref.indices_int)
+	  ogl->glDrawElements(Low_GL_TRIANGLES, s.ref.numfaces, Low_GL_UNSIGNED_INT, s.ref.indices_int);
+      }
+    else
       ogl->glDrawArrays(Low_GL_TRIANGLES, 0, tri_count);
 #if 1
     ogl->glDisableVertexAttribArray(0);
@@ -3213,7 +3660,18 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
     ogl->glVertexAttribPointer(attr2, 3, Low_GL_FLOAT,  Low_GL_FALSE, 0, (Low_GLvoid*)s2.tri_normal_polys(id));
     ogl->glVertexAttribPointer(attr3, 4, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0, (Low_GLvoid*)s2.tri_color_polys(id));
     ogl->glVertexAttribPointer(attr4, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, (Low_GLvoid*)s2.tri_texcoord_polys(id));
-
+    
+    if (s1.ref.numfaces!=0)
+      {
+	if (s1.ref.indices_char)
+	  ogl->glDrawElements(Low_GL_TRIANGLES, s1.ref.numfaces, Low_GL_UNSIGNED_BYTE, s1.ref.indices_char);
+	if (s1.ref.indices_short)
+	  ogl->glDrawElements(Low_GL_TRIANGLES, s1.ref.numfaces, Low_GL_UNSIGNED_SHORT, s1.ref.indices_short);
+	if (s1.ref.indices_int)
+	  ogl->glDrawElements(Low_GL_TRIANGLES, s1.ref.numfaces, Low_GL_UNSIGNED_INT, s1.ref.indices_int);
+      }
+    else
+   
     ogl->glDrawArrays(Low_GL_TRIANGLES, 0, s1.tri_count(id));
     // quads
     //glVertexPointer(3, GL_FLOAT, 0, (GLvoid*)s1.quad_polys(id));
@@ -3391,6 +3849,12 @@ bool g_use_vertices_only = false;
 
 void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vector<int> attribs, std::vector<int> attribsi)
 {
+  if (s.ref.numfaces!=0)
+    {
+      return; // don't do copy if we have faster gltf path.
+    }
+  
+  
     //std::cout << "Copy: " << start_range << " " << end_range << std::endl;
     //int ss = coll.NumFaces();
     //std::cout << "NumFaces: " << ss << std::endl;
@@ -3563,8 +4027,8 @@ void Dyn::prepare(int i)
       ogl->glGenBuffers(1,&buffers[8]);
       ogl->glGenBuffers(1,&buffers[9]);
       ogl->glGenBuffers(1,&buffers[10]);
-      
-      ogl->glGenBuffers(1,&indices_buffer);
+      //if (s.ref.numfaces)
+      //	ogl->glGenBuffers(1,&indices_buffer);
   check_error("genbuffers");
       
       firsttime=false;

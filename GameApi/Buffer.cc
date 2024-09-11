@@ -23,6 +23,16 @@
 #include <iostream>
 
 //void stackTrace();
+BufferRef BufferRef::NewBufferWithoutAlloc(unsigned int *buf, unsigned int width, unsigned int height, unsigned int ydelta)
+{
+  BufferRef r;
+  r.buffer = buf;
+  r.width = width;
+  r.height = height;
+  r.ydelta = ydelta;
+  return r;
+}
+
 BufferRef BufferRef::NewBuffer(int width, int height)
 {
   if (width<0) width=0;

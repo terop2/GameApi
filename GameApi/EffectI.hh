@@ -162,6 +162,25 @@ public:
   virtual int FaceTexture(int face) const { return -1; }
 };
 
+
+struct FaceBufferRef
+{
+  int numfaces;
+  int numvertices;
+  
+  unsigned char *indices_char;
+  unsigned short *indices_short;
+  unsigned int *indices_int;
+  
+  Point *facepoint;
+  Point *facepoint2;
+  Vector *pointnormal;
+  unsigned int *color;
+  Point *texcoords;
+  VEC4 *joints;
+  VEC4 *weights;
+};
+
 class FaceCollection : public CollectInterface
 {
 public:
@@ -218,6 +237,12 @@ public:
   virtual BBOX GetBoundingBox(bool &success) const { success=false; BBOX b; return b; }
 
   virtual bool IsMatrixElem() const { return false; }
+
+  virtual bool HasBatchMap() const { return false; }
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef r; r.numfaces=0; return r;
+  }
 };
 
 
