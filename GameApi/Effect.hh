@@ -4583,6 +4583,27 @@ public:
   }
   float Attrib(int face, int point, int id) const { return coll.Attrib(face,point,id); }
   int AttribI(int face, int point, int id) const { return coll.AttribI(face,point,id); }
+  virtual bool HasBatchMap() const
+  {
+    return coll.HasBatchMap();
+  }
+  void change_normal(Vector **pos, int numvertices) const
+  {
+    static Vector *pos2=0;
+    delete [] pos2;
+    pos2 = new Vector[numvertices];
+    for(int i=0;i<numvertices;i++)
+      {
+	pos2[i] = -(*pos)[i];
+      }
+    *pos = pos2;
+  }
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef r = coll.BatchMap(start_face,end_face);
+    change_normal(&r.pointnormal,r.numvertices);
+    return r;
+  }
 private:
   FaceCollection &coll;
 };
@@ -7883,6 +7904,93 @@ public:
       return static_cast<MatrixElem*>(next)->get_next();
     } else return next;
   }
+  virtual bool HasBatchMap() const
+  {
+
+    if (skip) {
+      return next2->HasBatchMap();
+    } else {
+      return next->HasBatchMap();
+     }
+
+   }
+  void change_pos(Point **pos, int numvertices) const
+  {
+    if (*pos==0) return;
+    static Point *pos2=0;
+    //delete [] pos2;
+    pos2 = new Point[numvertices];
+    if (skip) {
+      for(int i=0;i<numvertices;i++)
+	{
+	  pos2[i] = (*pos)[i]*m2;
+	}
+    } else {
+      for(int i=0;i<numvertices;i++)
+	{
+	  pos2[i] = (*pos)[i]*m;
+	}
+    }
+    *pos = pos2;
+  }
+  void change_pos2(Point **pos, int numvertices) const
+  {
+    if (*pos==0) return;
+    static Point *pos2=0;
+    //delete [] pos2;
+    pos2 = new Point[numvertices];
+    if (skip) {
+      for(int i=0;i<numvertices;i++)
+	{
+	  pos2[i] = (*pos)[i]*m2;
+	}
+    } else {
+      for(int i=0;i<numvertices;i++)
+	{
+	  pos2[i] = (*pos)[i]*m;
+	}
+    }
+    *pos = pos2;
+  }
+  void change_normal(Vector **pos, int numvertices) const
+  {
+    if (*pos==0) return;
+    static Vector *pos2=0;
+    //delete [] pos2;
+    pos2 = new Vector[numvertices];
+    if (skip) {
+      Matrix m3 = Matrix::KeepRotation(m2);
+      for(int i=0;i<numvertices;i++)
+	{
+	  pos2[i] = (*pos)[i]*m3;
+	}
+    } else {
+      Matrix m3 = Matrix::KeepRotation(m);
+      for(int i=0;i<numvertices;i++)
+	{
+	  pos2[i] = (*pos)[i]*m3;
+	}
+    }
+    *pos = pos2;
+  }
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    if (skip) {
+      FaceBufferRef r = next2->BatchMap(start_face,end_face);
+      change_pos(&r.facepoint,r.numvertices);
+      change_pos2(&r.facepoint2,r.numvertices);
+      change_normal(&r.pointnormal,r.numvertices);
+      return r;
+    } else {
+      FaceBufferRef r = next->BatchMap(start_face,end_face); 
+      change_pos(&r.facepoint,r.numvertices);
+      change_pos2(&r.facepoint2,r.numvertices);
+      change_normal(&r.pointnormal,r.numvertices);
+      return r;
+     }
+
+  }
+
 private:
   FaceCollection *next;
   Matrix m;

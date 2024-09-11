@@ -418,6 +418,8 @@ public:
     return get_bm()->Map(x,y);
   }
   virtual bool IsDirectGltfImage() const { return bm->IsDirectGltfImage(); }
+  virtual bool HasBatchMap() const { return bm->HasBatchMap(); }
+  virtual BufferRef BatchMap(int start_x, int end_x, int start_y, int end_y) const { return bm->BatchMap(start_x, end_x, start_y, end_y); }
 public:
   GameApi::Env &e;
   std::string id;
@@ -1197,6 +1199,15 @@ public:
     return Color(0x0);
   }
   virtual bool IsDirectGltfImage() const { return true; }
+  virtual bool HasBatchMap() const {
+    if (img->bits==8&&img->component==4)
+      return true;
+    return false;
+  }
+  virtual BufferRef BatchMap(int start_x, int end_x, int start_y, int end_y) const
+  {
+    return BufferRef::NewBufferWithoutAlloc(((unsigned int*)&img->image[0]) + start_x + start_y*img->width, end_x-start_x, end_y-start_y, img->width);
+  }
 public:
   GLTFModelInterface *interface;
   const tinygltf::Image *img;
@@ -4070,6 +4081,168 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
+  bool HasBatchMap() const { return false; /*mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT;*/ } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef ref;
+    ref.numfaces = indices_acc->count/3;
+    ref.numvertices = position_acc->count;
+    ref.indices_char = 0;
+    ref.indices_short =0;
+    ref.indices_int = 0;
+    ref.facepoint=0;
+    ref.facepoint2=0;
+    ref.pointnormal=0;
+    ref.color=0;
+    ref.texcoords=0;
+    ref.joints=0;
+    ref.weights=0;
+    
+    if (indices_buf_done && indices_bv_done && indices_done)
+    {
+      int stride = indices_bv->byteStride;
+	switch(indices_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	  if (stride==0) stride=sizeof(unsigned char);
+	  break;
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+	  if (stride==0) stride=sizeof(char);
+	  break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+	    if (stride==0) stride=sizeof(unsigned short); // 3 = num of indices in a ttiangle
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+	    if (stride==0) stride=sizeof(short); // 3 = num of indices in a ttiangle
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_INT:
+	    if (stride==0) stride=sizeof(int); // 3 = num of indices in a ttiangle
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+	    if (stride==0) stride=sizeof(unsigned int); // 3 = num of indices in a ttiangle
+	    break;
+	default:
+	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
+	  if (stride==0) stride=sizeof(short);
+	  break;
+	};
+
+      
+	const void *ptr = (unsigned char*)(&indices_buf->data[0]) + indices_bv->byteOffset + indices_acc->byteOffset + start_face*stride;
+
+      
+	switch(indices_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+	case TINYGLTF_COMPONENT_TYPE_BYTE:
+	  ref.indices_char = (unsigned char*)ptr;
+	  break;
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+	case TINYGLTF_COMPONENT_TYPE_SHORT:
+	  ref.indices_short = (unsigned short*)ptr;
+	    break;
+	case TINYGLTF_COMPONENT_TYPE_INT:
+	case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+	  ref.indices_int = (unsigned int*)ptr;
+	    break;
+	default:
+	  std::cout << "componentType wrong: " << indices_acc->componentType << std::endl;
+	  if (stride==0) stride=sizeof(short);
+	  break;
+	};
+    }
+
+    if (position_done)
+    {
+    int stride = position_bv->byteStride;
+    if (stride==0) stride=3*sizeof(float);
+    ref.facepoint = (Point*)((unsigned char*)(&position_buf->data[0]) + position_bv->byteOffset + position_acc->byteOffset + start_face*stride);
+    }
+    ref.facepoint2 = 0;
+
+    if (normal_done)
+    {
+    int stride = normal_bv->byteStride;
+    if (stride==0) stride=3*sizeof(float);
+    int s = normal_acc->count;
+    //std::cout << "NORMALS_LENGTH:" << s << std::endl;
+    ref.pointnormal = new Vector[s];
+    int byteOffset = normal_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride;
+    for(int i=0;i<s;i++)
+      {
+	// NOTE - is IMPORTANT HERE, IT CAUSES THE WHOLE LOOP
+	ref.pointnormal[i] = -((Vector*)((unsigned char*)(&normal_buf->data[0]) + byteOffset))[i];
+      }
+    
+    //ref.pointnormal = (Vector*)((unsigned char*)(&normal_buf->data[0]) + normal_bv->byteOffset + normal_acc->byteOffset + start_face*stride);
+    }
+
+    if (color_done)
+    {
+    int stride = color_bv->byteStride;
+    if (stride==0) stride=4*sizeof(unsigned char);
+    ref.color = (unsigned int*)((unsigned char*)(&color_buf->data[0]) + color_bv->byteOffset + color_acc->byteOffset + start_face*stride);
+    }
+
+    if (texcoord_done)
+    {
+    int stride = texcoord_bv->byteStride;
+    if (stride==0) stride=2*sizeof(float);
+    int s = texcoord_acc->count;
+    ref.texcoords = new Point[s];
+    int byteOffset = texcoord_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride;
+    for(int i=0;i<s;i++)
+      {
+	ref.texcoords[i] = Point(((Point2d*)((unsigned char*)&texcoord_buf->data[0] + byteOffset))[i].x,
+				   ((Point2d*)((unsigned char*)&texcoord_buf->data[0] + byteOffset))[i].y,
+				   0.0);
+      }
+    //ref.texcoords = (Point*)((unsigned char*)(&texcoord_buf->data[0]) + texcoord_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride);
+
+
+    /*
+    std::cout << std::hex << ref.color[ref.indices_int[0]] << std::dec << std::endl;
+    std::cout << std::hex << ref.color[ref.indices_int[1]] << std::dec<< std::endl;
+    std::cout << std::hex << ref.color[ref.indices_int[2]] << std::dec << std::endl;
+
+    std::cout << ref.texcoords[ref.indices_int[0]] << std::endl;
+    std::cout << ref.texcoords[ref.indices_int[1]] << std::endl;
+    std::cout << ref.texcoords[ref.indices_int[2]] << std::endl;
+
+    std::cout << ref.pointnormal[ref.indices_int[0]] << std::endl;
+    std::cout << ref.pointnormal[ref.indices_int[1]] << std::endl;
+    std::cout << ref.pointnormal[ref.indices_int[2]] << std::endl;
+
+    */
+    
+    /*
+    std::cout << result.joints[result.indices_int[0]] << std::endl;
+    std::cout << result.joints[result.indices_int[1]] << std::endl;
+    std::cout << result.joints[result.indices_int[2]] << std::endl;
+
+    std::cout << result.weights[result.indices_int[0]] << std::endl;
+    std::cout << result.weights[result.indices_int[1]] << std::endl;
+    std::cout << result.weights[result.indices_int[2]] << std::endl;
+    */
+
+    
+    }
+
+    if (joints_done)
+    {
+    int stride = joints_bv->byteStride;
+    if (stride==0) stride=4*sizeof(unsigned char);
+    ref.joints = (VEC4*)((&joints_buf->data[0]) + joints_bv->byteOffset + joints_acc->byteOffset + start_face*stride);
+    }
+
+    if (weights_done)
+    {
+    int stride = weights_bv->byteStride;
+    if (stride==0) stride=4*sizeof(unsigned char);
+    ref.weights = (VEC4*)((&weights_buf->data[0]) + weights_bv->byteOffset + weights_acc->byteOffset + start_face*stride);
+    }
+
+    return ref;
+  }
+  
 private:
   tinygltf::Primitive prim;
   //tinygltf::Model *model;
@@ -5925,6 +6098,20 @@ public:
     } else return 0.0;
   }
 
+  virtual bool HasBatchMap() const
+  {
+    if (res.id==-1) { return false; }
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->HasBatchMap();
+  }
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    if (res.id==-1) { FaceBufferRef r; r.numfaces=0; return r; }
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->BatchMap(start_face,end_face);
+  }
+
+  
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -7560,8 +7747,19 @@ public:
     if (!coll) { return 0; }
     return coll->FaceTexture(face);
   }
-
-
+  virtual bool HasBatchMap() const
+  {
+    if (res.id==-1) { return false; }
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->HasBatchMap();
+  }
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    if (res.id==-1) { FaceBufferRef r; r.numfaces=0; return r; }
+    FaceCollection *coll = find_facecoll(env,res);
+    return coll->BatchMap(start_face,end_face);
+  }
+  
 
 private:
   GameApi::Env &env;

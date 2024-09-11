@@ -502,13 +502,22 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       if (bm->SizeX() != sizex) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
       if (bm->SizeY() != sizey) { std::cout << "Warning: Cubemap textures need to be same size" << std::endl; }
 
+
+      BufferRef buf;
+      
+      if (bm->HasBatchMap())
+	{
+	  buf = bm->BatchMap(0,bm->SizeX(),0,bm->SizeY());
+	}
+      else {
+      
 	  FlipColours flip(*bm);
-	  BufferFromBitmap buf(flip);
+	  BufferFromBitmap newbuf(flip);
 #ifndef THREADS
-	  buf.Gen();
+	  newbuf.Gen();
 	  //ProgressBar(768, i*4+4,s*4, "texturemany"); 
 #else
-	  buf.GenPrepare();
+	  newbuf.GenPrepare();
   
 	  int numthreads = 8;
 	  ThreadedUpdateTexture threads;
@@ -526,7 +535,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	      if (end_y>ssy) end_y = ssy;
 	      
 	      if (end_y-start_y > 0)
-		ids2.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
+		ids2.push_back(threads.push_thread(&newbuf, start_x, end_x, start_y, end_y));
 	    }
 	  int ss = ids2.size();
 	  for(int t=0;t<ss;t++)
@@ -536,6 +545,8 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	    }
 #endif
 
+	  buf = newbuf.Buffer();
+      }
 	  
 	  //      buf.Gen();
 	  
@@ -548,7 +559,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	    power_of_two = false;
 	  if (!power_of_two) std::cout << "Warning: cubemaps not power of two size" << std::endl;
 	  //std::cout << "Size:" << bm->SizeX() << " " << bm->SizeY() << std::endl;
-	  ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+j,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+	  ogl->glTexImage2D(Low_GL_TEXTURE_CUBE_MAP_POSITIVE_X+j,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.buffer);
 	  if (mipmaps&&power_of_two)
 	    ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
 

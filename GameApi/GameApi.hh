@@ -1062,6 +1062,7 @@ public:
   IMPORT FtA font_atlas_info(EveryApi &ev,Ft font, std::string chars, float sx, float sy, int y_delta);
   IMPORT BM font_atlas(EveryApi &ev, Ft font, FtA atlas, float sx, float sy);
   IMPORT BM font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap);
+  IMPORT P font_string_from_atlas_opengl_pipeline(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap);
   IMPORT void save_atlas(FtA atlas, std::string filename);
   IMPORT FtA  load_atlas(std::string filename);
   IMPORT ARR font_string_array(Ft font, std::string s, int x_gap);

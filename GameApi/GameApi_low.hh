@@ -238,6 +238,7 @@ enum {
 #undef glAlphaFunc
 #undef glDrawArrays
 #undef glDrawElements
+#undef glDrawElementsInstanced
 #undef glTexImage2D
 #undef glTexSubImage2D
 #undef glMapBuffer
@@ -326,6 +327,7 @@ public:
   virtual void glDrawArraysInstanced(int tri, int, unsigned int, unsigned int)=0;
   virtual void glDrawArrays(int tri, int, unsigned int)=0;
   virtual void glDrawElements(int tri, int a, int type, void *indices)=0;
+  virtual void glDrawElementsInstanced(int tri, int a, int type, void *indices, int size)=0;
   
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr)=0;
