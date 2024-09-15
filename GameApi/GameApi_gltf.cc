@@ -9,6 +9,17 @@ int hhhh_gggg=1;
 #define TINYGLTF_USE_CPP14 1
 #include "tiny_gltf.h"
 
+
+template<class T>
+void print(std::string label, T *ptr)
+{
+  int s = 4;
+  std::cout << label << ":";
+  for(int i=0;i<s;i++) std::cout << ptr[i];
+  std::cout << std::endl;
+}
+
+
 class LoadGltf;
 // not working because tinygltf doesn't allow it.
 //#define CONCURRENT_IMAGE_DECODE 1
@@ -4081,7 +4092,7 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
-  bool HasBatchMap() const { return false; /*mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT;*/ } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
   FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef ref;
@@ -4165,11 +4176,12 @@ public:
     int s = normal_acc->count;
     //std::cout << "NORMALS_LENGTH:" << s << std::endl;
     ref.pointnormal = new Vector[s];
-    int byteOffset = normal_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride;
+    int byteOffset = normal_bv->byteOffset + normal_acc->byteOffset + start_face*stride;
     for(int i=0;i<s;i++)
       {
 	// NOTE - is IMPORTANT HERE, IT CAUSES THE WHOLE LOOP
 	ref.pointnormal[i] = -((Vector*)((unsigned char*)(&normal_buf->data[0]) + byteOffset))[i];
+	//SHOULD BE OK std::cout << "NORMAL:" << i << "--" << ref.pointnormal[i] << std::endl;
       }
     
     //ref.pointnormal = (Vector*)((unsigned char*)(&normal_buf->data[0]) + normal_bv->byteOffset + normal_acc->byteOffset + start_face*stride);
@@ -4198,10 +4210,10 @@ public:
     //ref.texcoords = (Point*)((unsigned char*)(&texcoord_buf->data[0]) + texcoord_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride);
 
 
+    //std::cout << std::hex << ref.color[ref.indices_int[0]] << std::dec << std::endl;
+    //std::cout << std::hex << ref.color[ref.indices_int[1]] << std::dec<< std::endl;
+    //std::cout << std::hex << ref.color[ref.indices_int[2]] << std::dec << std::endl;
     /*
-    std::cout << std::hex << ref.color[ref.indices_int[0]] << std::dec << std::endl;
-    std::cout << std::hex << ref.color[ref.indices_int[1]] << std::dec<< std::endl;
-    std::cout << std::hex << ref.color[ref.indices_int[2]] << std::dec << std::endl;
 
     std::cout << ref.texcoords[ref.indices_int[0]] << std::endl;
     std::cout << ref.texcoords[ref.indices_int[1]] << std::endl;

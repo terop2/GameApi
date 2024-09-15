@@ -123,6 +123,7 @@ public:
   void push_weight(int id, int num, VEC4 *points); 
   
   void split_color(std::vector<float> &vec, unsigned int color);
+  void split_color2(std::vector<float> &vec, unsigned int color);
 
   // way to get data out
   int tri_count(int id) const {

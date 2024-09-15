@@ -4590,11 +4590,13 @@ public:
   void change_normal(Vector **pos, int numvertices) const
   {
     static Vector *pos2=0;
-    delete [] pos2;
+    //delete [] pos2;
     pos2 = new Vector[numvertices];
     for(int i=0;i<numvertices;i++)
       {
 	pos2[i] = -(*pos)[i];
+	//if (i<20)
+	//std::cout << "FLIPNORMAL:" << pos2[i] << std::endl;
       }
     *pos = pos2;
   }
@@ -7788,6 +7790,7 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
+    //std::cout << "MatrixElem::HEAVYPREPARE" << std::endl;
     m2 = get_matrix();
     next2 = get_next();
     skip=true;
@@ -7963,12 +7966,17 @@ public:
       for(int i=0;i<numvertices;i++)
 	{
 	  pos2[i] = (*pos)[i]*m3;
+	  //if (i<30)
+	  //std::cout << "MatrixElem:" << pos2[i] << std::endl;
 	}
     } else {
       Matrix m3 = Matrix::KeepRotation(m);
+      //std::cout << m3 << std::endl;
       for(int i=0;i<numvertices;i++)
 	{
 	  pos2[i] = (*pos)[i]*m3;
+	  //if (i<30)
+	  //std::cout << "MatrixElem2:" << (*pos)[i] << "->" << pos2[i] << std::endl;
 	}
     }
     *pos = pos2;

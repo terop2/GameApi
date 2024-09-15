@@ -292,9 +292,16 @@ Matrix Matrix::XRotation(float rot)
 
 Matrix Matrix::KeepRotation(const Matrix &m)
 {
-  Matrix r = { { m.matrix[0], m.matrix[1], m.matrix[2], 0.0,
-	       m.matrix[4], m.matrix[5], m.matrix[6], 0.0,
-	       m.matrix[8], m.matrix[9], m.matrix[10], 0.0,
+  Vector mx = { m.matrix[0], m.matrix[4], m.matrix[8] };
+  Vector my = { m.matrix[1], m.matrix[5], m.matrix[9] };
+  Vector mz = { m.matrix[2], m.matrix[6], m.matrix[10] };
+  //mx /= mx.Dist();
+  //my /= my.Dist();
+  //mz /= mz.Dist();
+  
+  Matrix r = { { mx.dx, my.dx, mz.dx, 0.0,
+		   mx.dy, my.dy, mz.dy, 0.0,
+		   mx.dz, my.dz, mz.dz, 0.0,
 	       0.0, 0.0, 0.0, 1.0 } };
   return r;
 }

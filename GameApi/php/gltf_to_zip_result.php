@@ -11,7 +11,9 @@ file_put_contents($countname,$str);
 
 $gltf = $_POST["gltffile"];
 
-if (strlen($gltf)<4||(substr($gltf,-3)!="zip"&&substr($gltf,-3)!="glb"&&substr($gltf,-4)!="gltf")) {
+$gltf2 = explode('?',$gltf)[0];
+
+if (strlen($gltf2)<4||(substr($gltf2,-3)!="zip"&&substr($gltf2,-3)!="glb"&&substr($gltf2,-4)!="gltf")) {
   echo "<pre>";
   echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
   $logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
@@ -22,14 +24,14 @@ fclose($fp);
 } else {
 
 $is_zip = "nope";
-$ext = substr($gltf, -4);
+$ext = substr($gltf2, -4);
 if ($ext == ".zip")
 {
   $is_zip = "yes";
 }
 
-$pos = strrpos($gltf, '/');
-$gltf_filename = substr($gltf, $pos+1);
+$pos = strrpos($gltf2, '/');
+$gltf_filename = substr($gltf2, $pos+1);
 
 $pos2 = strrpos($gltf_filename,'.');
 $without_ext = substr($gltf_filename,0,$pos2);

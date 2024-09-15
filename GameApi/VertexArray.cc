@@ -557,6 +557,29 @@ void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
   target.push_back(falpha);
   //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << std::endl;
 }
+void VertexArraySet::split_color2(std::vector<float> &target, unsigned int color)
+{
+  unsigned int alpha = color & 0xff;
+  unsigned int red = color & 0xff000000;
+  unsigned int green = color & 0xff0000;
+  unsigned int blue = color & 0xff00;
+
+  //alpha >>= 24;
+  red >>= 24;
+  green >>= 16;
+  blue >>=8;
+  
+  float falpha = float(alpha)/256.0;
+  float fred = float(red)/256.0;
+  float fgreen = float(green)/256.0;
+  float fblue = float(blue)/256.0;
+
+  target.push_back(fred);
+  target.push_back(fgreen);
+  target.push_back(fblue);
+  target.push_back(falpha);
+  //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << std::endl;
+}
 
 void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *points, unsigned int *indices)
 {
@@ -570,34 +593,34 @@ void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *poin
   else
   if (num == 3)
     {
-      split_color(p->tri_color, points[indices[0]]);
-      split_color(p->tri_color, points[indices[1]]);
-      split_color(p->tri_color, points[indices[2]]);
+      split_color2(p->tri_color, points[indices[0]]);
+      split_color2(p->tri_color, points[indices[1]]);
+      split_color2(p->tri_color, points[indices[2]]);
     }
   else if (num==4)
     {
-      split_color(p->quad_color, points[indices[0]]);
-      split_color(p->quad_color, points[indices[1]]);
-      split_color(p->quad_color, points[indices[2]]);
-      split_color(p->quad_color, points[indices[0]]);
-      split_color(p->quad_color, points[indices[2]]);
-      split_color(p->quad_color, points[indices[3]]);
+      split_color2(p->quad_color, points[indices[0]]);
+      split_color2(p->quad_color, points[indices[1]]);
+      split_color2(p->quad_color, points[indices[2]]);
+      split_color2(p->quad_color, points[indices[0]]);
+      split_color2(p->quad_color, points[indices[2]]);
+      split_color2(p->quad_color, points[indices[3]]);
     }
   else
     {
       if (p->poly_color.size()!=0)
 	{
-	  split_color(p->poly_color, points[indices[0]]);
+	  split_color2(p->poly_color, points[indices[0]]);
 	}
 
       int s = num;
       int j = s-1;
       for(int i=0;i<num/2;i++,j--)
 	{
-	  split_color(p->poly_color,points[indices[i]]);
-	  split_color(p->poly_color,points[indices[j]]);
+	  split_color2(p->poly_color,points[indices[i]]);
+	  split_color2(p->poly_color,points[indices[j]]);
 	}
-      split_color(p->poly_color, points[indices[num/2]]); // todo, check if correct
+      split_color2(p->poly_color, points[indices[num/2]]); // todo, check if correct
     }
 }
 void VertexArraySet::push_color(int id, int num, unsigned int *points)
