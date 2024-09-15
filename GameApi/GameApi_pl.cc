@@ -10,6 +10,14 @@
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
 extern Matrix g_last_resize;
 
+template<class T>
+void print(std::string label, T *ptr)
+{
+  int s = 4;
+  std::cout << label << ":";
+  for(int i=0;i<s;i++) std::cout << ptr[i];
+  std::cout << std::endl;
+}
 
 
 #define NO_MV 1
@@ -3779,7 +3787,7 @@ public:
 	result.numfaces += vec2[i].numfaces;
 	result.numvertices += vec2[i].numvertices;
       }
-    
+    //print("POINTNORMAL", result.pointnormal);
     return result;
   }
   
@@ -4009,7 +4017,7 @@ public:
 class ColorAlpha : public ForwardFaceCollection
 {
 public:
-  ColorAlpha(FaceCollection *coll, unsigned int alpha) : ForwardFaceCollection(*coll), alpha(alpha) { }
+  ColorAlpha(FaceCollection *coll, unsigned int alpha) : ForwardFaceCollection(*coll), alpha(alpha),coll(coll) { }
   bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
@@ -4018,8 +4026,37 @@ public:
     c = c | (alpha << 24);
     return c;
   }
+
+  virtual bool HasBatchMap() const { return coll->HasBatchMap(); }
+  
+  void change_color(unsigned int **pos, int numvertices) const
+  {
+    static unsigned int *pos2=0;
+    //delete [] pos2;
+    pos2 = new unsigned int[numvertices];
+    for(int i=0;i<numvertices;i++)
+      {
+	unsigned int c = (*pos)[i];
+	c = c & 0xffffff00; // NOTE HERE COLOURS ARE WRONG ORDER
+	c = c | alpha;
+	pos2[i] = c;
+	//if (i<20)
+	//std::cout << "FLIPNORMAL:" << pos2[i] << std::endl;
+      }
+    *pos = pos2;
+  }
+
+  
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef r = coll->BatchMap(start_face,end_face);
+    change_color(&r.color,r.numvertices);
+    return r;
+  }
+
 private:
   unsigned int alpha;
+  FaceCollection *coll;
 };
 class ColorFromNormals : public ForwardFaceCollection
 {
@@ -5989,11 +6026,13 @@ bool is_texture_usage_confirmed(const FaceCollection *p);
 bool is_texture_usage_confirmed(VertexArraySet *set);
 
 
+
 EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool keep)
 {
 
     FaceCollection *faces2 = find_facecoll(e, p);
     if (faces2->HasBatchMap()) {
+      std::cout << "BatchMap rendering" << std::endl;
     //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -6008,21 +6047,45 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       {
 	if (ref.indices_int)
 	  {
-	    if (ref.facepoint)
+	    if (ref.facepoint) {
 	      s->push_poly_with_indices(0,3,ref.facepoint,ref.indices_int+i*3);
-	    if (ref.facepoint2)
+	      //if (i<20)
+	      //print("facepoint",ref.facepoint);
+	    }
+	    if (ref.facepoint2) {
 	      s->push_poly2_with_indices(0,3,ref.facepoint2,ref.indices_int+i*3);
-	    if (ref.pointnormal)
+	      //if (i<20)
+	      //print("facepoint2",ref.facepoint2);
+	    }
+	    if (ref.pointnormal) {
 	      s->push_normal_with_indices(0,3,ref.pointnormal,ref.indices_int+i*3);
-	    if (ref.color)
+	      //if (i<20)
+	      //print("pointnormal",ref.pointnormal);
+	    }
+	    if (ref.color) {
 	      s->push_color_with_indices(0,3,ref.color,ref.indices_int+i*3);
+	      //if (i<20) {
+	      //std::cout << std::hex;
+	      //print("color",ref.color);
+	      //std::cout << std::dec;
+	      //}
+	    }
 	    
-	    if (ref.texcoords)
+	    if (ref.texcoords) {
 	      s->push_texcoord_with_indices(0,3,ref.texcoords,ref.indices_int+i*3);
-	    if (ref.joints)
+	      //if (i<20)
+	      //print("texcoord",ref.texcoords);
+	    }
+	    if (ref.joints) {
 	      s->push_joint_with_indices(0,3,ref.joints,ref.indices_int+i*3);
-	    if (ref.weights)
-	      s->push_weight_with_indices(0,3,ref.weights,ref.indices_int+i*3);
+	      //if (i<20)
+	      //print("joints",ref.joints);
+	    }
+	    if (ref.weights) {
+	      s->push_weight_with_indices(0,3,ref.weights,ref.indices_int+i*3);	
+	      //if (i<20)
+	      //print("weigthts",ref.weights);
+	    }
 	  }
 	else
 	  {
@@ -6054,6 +6117,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     return add_vertex_array(e, s, arr2);
   }
 
+      std::cout << "Normal rendering" << std::endl;
   
   /*
     FaceCollection *faces2 = find_facecoll(e, p);
