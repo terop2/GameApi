@@ -2548,7 +2548,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
- 
+  P no_batch_map(P p);
   CS colourspace_sphere2();
   CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);
   CS colourspace_func(std::function<unsigned int (float,float,float,float)> f, float sx, float ex, float sy, float ey, float sz, float ez, float st, float et);

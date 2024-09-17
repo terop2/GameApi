@@ -1,5 +1,13 @@
 <?php
 
+  $logstr = $_SERVER["HTTP_REFERER"];
+if ($logstr != "https://meshpage.org/process.php" && $logstr != "")
+{
+$fp = fopen("./pp2/referer.log","a+");
+fwrite($fp, "CONVERTER " . $logstr);
+fclose($fp);
+}
+
 ?>
 
 <html>

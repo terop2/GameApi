@@ -4092,7 +4092,7 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
-  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  bool HasBatchMap() const { return false; /*mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT;*/ } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
   FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef ref;

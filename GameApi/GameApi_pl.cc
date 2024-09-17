@@ -25131,3 +25131,15 @@ GameApi::P2 GameApi::PolygonApi::facecoll_to_2(GameApi::P p)
   return add_polygon2(e, new FaceCollectionTo2(coll),1);
 }
 */
+
+class NoBatchMap : public ForwardFaceCollection
+{
+public:
+  NoBatchMap(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  bool HasBatchMap() const { return false; }
+};
+GameApi::P GameApi::PolygonApi::no_batch_map(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new NoBatchMap(coll),1);
+}

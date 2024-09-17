@@ -8917,6 +8917,7 @@ public:
     //GameApi::ML ml;
     //std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
+    //GameApi::P p4 = ev.polygon_api.no_batch_map(p3);
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
 
