@@ -12,6 +12,14 @@ $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with
 	       "and there's plenty<br> of examples to learn<br> the scripting language");
 
 
+  $logstr = $_SERVER["HTTP_REFERER"];
+if ($logstr != "https://meshpage.org/assets/homepage/homepage.php" && $logstr != "")
+{
+$fp = fopen("./pp2/referer.log","a+");
+fwrite($fp, "MAINPAGE " . $logstr);
+fclose($fp);
+}
+
 echo "<!DOCTYPE html>";
 echo "<html lang=\"en\">";
 echo "<meta name=\"description\" content=\"Every web page on the planet needs to be converted from plain 2d to rich and powerful 3d format, now with our 3d tools the conversion is easier than ever. We just need to dip into your gltf file collection.\">";
@@ -32,8 +40,33 @@ echo "<h2 class=\"customfont label_a\" align=\"left\" style=\"position: relative
 echo "</div>";
 echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
 echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>";
-echo "<div class=\"customfont\" style=\"position:absolute; top:150px; left:400px;\">";
+echo "<div class=\"customfont\" style=\"position:absolute; top:-30px; left:310px;\">";
 echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)";
+echo "<pre style=\"font-size: 9px;\">";
+echo "TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/punk/mesh_garden_gnome.glb);\n";
+echo "P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
+echo "P I3=ev.polygon_api.color_alpha(I2,ff);\n";
+echo "MT I4=ev.materials_api.colour_material(ev,0);\n";
+echo "MT I5=ev.materials_api.toon_border(ev,I4,2,ff000000,true);\n";
+echo "MT I6=ev.materials_api.gltf_material(ev,I1,0,1.5,400,-400,300);\n";
+echo "MT I7=ev.materials_api.combine_materials(ev,I4,I6);\n";
+echo "MT I8=ev.materials_api.combine_materials(ev,I5,I7);\n";
+echo "MT I9=ev.materials_api.colour_material(ev,0.1);\n";
+echo "MT I100=ev.materials_api.phong(ev,I9,30,-30,300,ff000000,ffffffff,120);\n";
+echo "MT I110=ev.materials_api.combine_materials(ev,I8,I100);\n";
+echo "ML I120=ev.materials_api.bind(I3,I110);\n";
+echo "MN I10=ev.move_api.mn_empty();\n";
+echo "MN I11=ev.move_api.scale2(I10,2,2,2);\n";
+echo "MN I12=ev.move_api.rotate(I11,0,30,0,0,0,0,1,0,1.57);\n";
+echo "MN I13=ev.move_api.rotate(I12,30,100,0,0,0,0,1,0,-3.141);\n";
+echo "MN I14=ev.move_api.rotate(I13,100,130,0,0,0,0,1,0,1.57);\n";
+echo "MN I15=ev.move_api.time_repeat(I14,0,130);\n";
+echo "ML I16=ev.move_api.move_ml(ev,I120,I15,1,10.0);\n";
+echo "ML I17=ev.mainloop_api.scene_transparency(I16);\n";
+echo "ML I18=ev.mainloop_api.async_gltf(I17,I1);\n";
+echo "RUN I19=ev.blocker_api.game_window2(ev,I18,false,false,0.0,100000.0);\n";
+echo "</pre>";
+    
 echo "</div>";
 echo "</div>";
 echo "</div>";
