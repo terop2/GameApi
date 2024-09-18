@@ -11776,7 +11776,7 @@ public:
 
 void *thread_sketchfab_zip(void *data)
 {
-  std::cout << "Thread sketchfab zip" << std::endl;
+  //std::cout << "Thread sketchfab zip" << std::endl;
   ZipThreadData *dt = (ZipThreadData*)data;
   GLTF_Model_with_prepare_sketchfab_zip *obj = dt->obj;
   mz_zip_archive *pZip = dt->pZip;
