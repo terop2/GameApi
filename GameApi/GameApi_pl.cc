@@ -4096,7 +4096,7 @@ public:
       {
 	unsigned int c = (*pos)[i];
 	c = c & 0xffffff00; // NOTE HERE COLOURS ARE WRONG ORDER
-	c = c | alpha;
+	c = c | (alpha&0xff);
 	pos2[i] = c;
 	//if (i<20)
 	//std::cout << "FLIPNORMAL:" << pos2[i] << std::endl;

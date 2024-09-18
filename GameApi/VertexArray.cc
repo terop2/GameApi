@@ -546,10 +546,10 @@ void VertexArraySet::split_color(std::vector<float> &target, unsigned int color)
   red >>= 16;
   green >>= 8;
   
-  float falpha = float(alpha)/256.0;
-  float fred = float(red)/256.0;
-  float fgreen = float(green)/256.0;
-  float fblue = float(blue)/256.0;
+  float falpha = float(alpha)/255.0;
+  float fred = float(red)/255.0;
+  float fgreen = float(green)/255.0;
+  float fblue = float(blue)/255.0;
 
   target.push_back(fred);
   target.push_back(fgreen);
@@ -569,16 +569,16 @@ void VertexArraySet::split_color2(std::vector<float> &target, unsigned int color
   green >>= 16;
   blue >>=8;
   
-  float falpha = float(alpha)/256.0;
-  float fred = float(red)/256.0;
-  float fgreen = float(green)/256.0;
-  float fblue = float(blue)/256.0;
+  float falpha = float(alpha)/255.0;
+  float fred = float(red)/255.0;
+  float fgreen = float(green)/255.0;
+  float fblue = float(blue)/255.0;
 
   target.push_back(fred);
   target.push_back(fgreen);
   target.push_back(fblue);
   target.push_back(falpha);
-  //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << std::endl;
+  //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << " " << falpha << std::endl;
 }
 
 void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *points, unsigned int *indices)
