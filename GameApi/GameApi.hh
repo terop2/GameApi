@@ -4094,6 +4094,7 @@ public:
   IMPORT FrameBufferApi(Env &e) : e(e) { }
   IMPORT FBO create_fbo(EveryApi &ev, int sx, int sy);
   IMPORT void config_fbo(FBO buffer);
+  IMPORT void unconfig_fbo(FBO buffer);
   IMPORT vp bind_fbo(FBO buffer);
   IMPORT void bind_screen(vp viewport);
   IMPORT TXID tex_id(FBO buffer);
