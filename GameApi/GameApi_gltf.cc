@@ -3218,6 +3218,8 @@ public:
 			    delete [] m_p1[i];
     int s2 = m_p2.size(); for(int i=0;i<s2;i++)
 			    delete [] m_p2[i];
+    int s3 = m_p3.size(); for(int i=0;i<s3;i++)
+			    delete [] m_p3[i];
   }
   void Collect(CollectVisitor &vis)
   {
@@ -4196,9 +4198,25 @@ public:
 
     if (color_done)
     {
-    int stride = color_bv->byteStride;
-    if (stride==0) stride=4*sizeof(unsigned char);
-    ref.color = (unsigned int*)((unsigned char*)(&color_buf->data[0]) + color_bv->byteOffset + color_acc->byteOffset + start_face*stride);
+      bool done = false;
+    if (color_bv_done && color_done && color_buf_done) {
+    if (mode==TINYGLTF_MODE_TRIANGLES) {
+      done =true;
+      
+      int stride = color_bv->byteStride;
+      if (stride==0) stride=4*sizeof(unsigned char);
+      ref.color = (unsigned int*)((unsigned char*)(&color_buf->data[0]) + color_bv->byteOffset + color_acc->byteOffset + start_face*stride);
+    }
+    }
+    if (!done)
+      {
+	int s = color_acc->count;
+	m_p3.push_back(ref.color = new unsigned int[s]);
+	std::memset(ref.color,0xff, sizeof(unsigned int)*s);
+	
+      }
+
+    
     }
 
     if (texcoord_done)
@@ -4334,6 +4352,7 @@ private:
   mutable Vector store_res;
   mutable std::vector<Vector *> m_p1;
   mutable std::vector<Point*> m_p2;
+  mutable std::vector<unsigned int*> m_p3;
 };
 
 
