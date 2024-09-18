@@ -3393,6 +3393,29 @@ class OrArrayNoMemory : public FaceCollection
 {
 public:
   OrArrayNoMemory(std::vector<FaceCollection*> vec) : vec(vec) { }
+  ~OrArrayNoMemory()
+  {
+    int s1 = m_p1.size(); for(int i=0;i<s1;i++)
+			    delete [] m_p1[i];
+    int s2 = m_p2.size(); for(int i=0;i<s2;i++)
+			    delete [] m_p2[i];
+    int s3 = m_p3.size(); for(int i=0;i<s3;i++)
+			    delete [] m_p3[i];
+    int s4 = m_p4.size(); for(int i=0;i<s4;i++)
+			    delete [] m_p4[i];
+    int s5 = m_p5.size(); for(int i=0;i<s5;i++)
+			    delete [] m_p5[i];
+    int s6 = m_p6.size(); for(int i=0;i<s6;i++)
+			    delete [] m_p6[i];
+    int s7 = m_p7.size(); for(int i=0;i<s7;i++)
+			    delete [] m_p7[i];
+    int s8 = m_p8.size(); for(int i=0;i<s8;i++)
+			    delete [] m_p8[i];
+    int s9 = m_p9.size(); for(int i=0;i<s9;i++)
+			    delete [] m_p9[i];
+    int s10 = m_p10.size(); for(int i=0;i<s10;i++)
+			      delete [] m_p10[i];
+  }
   BBOX GetBoundingBox(bool &success) const
   {
     int s = vec.size();
@@ -3629,8 +3652,10 @@ public:
   unsigned char *combine_indices_char(unsigned char *p1, unsigned char *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static unsigned char *p=0;
-    p=new unsigned char[numfaces1*3+numfaces2*3];
+    //static unsigned char *p=0;
+    //delete [] m_p1;
+    unsigned char *p;
+    m_p1.push_back(p=new unsigned char[numfaces1*3+numfaces2*3]);
     std::copy(p1,p1+numfaces1*3,p);
     int i = 0;
     for(;i<numfaces2;i++)
@@ -3644,8 +3669,10 @@ public:
   unsigned short *combine_indices_short(unsigned short *p1, unsigned short *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static unsigned short *p=0;
-    p=new unsigned short[numfaces1*3+numfaces2*3];
+    //static unsigned short *p=0;
+    //delete [] m_p2;
+    unsigned short *p;
+    m_p2.push_back(p=new unsigned short[numfaces1*3+numfaces2*3]);
     std::copy(p1,p1+numfaces1*3,p);
     int i = 0;
     for(;i<numfaces2;i++)
@@ -3660,8 +3687,10 @@ public:
   unsigned int *combine_indices_int(unsigned int *p1, unsigned int *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static unsigned int *p=0;
-    p=new unsigned int[numfaces1*3+numfaces2*3];
+    //static unsigned int *p=0;
+    //delete [] m_p3;
+    unsigned int *p;
+    m_p3.push_back(p=new unsigned int[numfaces1*3+numfaces2*3]);
     std::copy(p1,p1+numfaces1*3,p);
     int i = 0;
     for(;i<numfaces2;i++)
@@ -3677,8 +3706,10 @@ public:
   Point *combine_pos(Point *p1, Point *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static Point *p=0;
-    p=new Point[numvertices1+numvertices2];
+    //static Point *p=0;
+    //delete [] m_p4;
+    Point *p;
+    m_p4.push_back(p=new Point[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;
@@ -3686,8 +3717,10 @@ public:
   Point *combine_pos2(Point *p1, Point *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static Point *p=0;
-    p=new Point[numvertices1+numvertices2];
+    //static Point *p=0;
+    //delete [] m_p5;
+    Point *p;
+    m_p5.push_back(p=new Point[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;
@@ -3695,8 +3728,10 @@ public:
   Vector *combine_normal(Vector *p1, Vector *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static Vector *p=0;
-    p=new Vector[numvertices1+numvertices2];
+    //static Vector *p=0;
+    //delete [] m_p6;
+    Vector *p;
+    m_p6.push_back(p=new Vector[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;
@@ -3704,8 +3739,10 @@ public:
   unsigned int *combine_color(unsigned int *p1, unsigned int *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static unsigned int *p=0;
-    p=new unsigned int[numvertices1+numvertices2];
+    //static unsigned int *p=0;
+    //delete [] m_p7;
+    unsigned int *p;
+    m_p7.push_back(p=new unsigned int[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;
@@ -3713,8 +3750,10 @@ public:
   Point *combine_texcoord(Point *p1, Point *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static Point *p=0;
-    p=new Point[numvertices1+numvertices2];
+    //static Point *p=0;
+    //delete [] m_p8;
+    Point *p;
+    m_p8.push_back(p=new Point[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;
@@ -3722,8 +3761,10 @@ public:
   VEC4 *combine_joints(VEC4 *p1, VEC4 *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static VEC4 *p=0;
-    p=new VEC4[numvertices1+numvertices2];
+    //static VEC4 *p=0;
+    //delete [] m_p9;
+    VEC4 *p;
+    m_p9.push_back(p=new VEC4[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;    
@@ -3731,8 +3772,10 @@ public:
   VEC4 *combine_weights(VEC4 *p1, VEC4 *p2, int numvertices1, int numvertices2) const
   {
     if (!p1||!p2) return 0;
-    static VEC4 *p=0;
-    p=new VEC4[numvertices1+numvertices2];
+    //static VEC4 *p=0;
+    //delete [] m_p10;
+    VEC4 *p;
+    m_p10.push_back(p=new VEC4[numvertices1+numvertices2]);
     std::copy(p1,p1+numvertices1,p);
     std::copy(p2,p2+numvertices2,p+numvertices1);
     return p;    
@@ -3795,6 +3838,16 @@ private:
   std::vector<FaceCollection*> vec;
   std::vector<FaceRange> ranges;
   bool firsttime;
+  mutable std::vector<unsigned char *> m_p1;
+  mutable std::vector<unsigned short *> m_p2;
+  mutable std::vector<unsigned int *> m_p3;
+  mutable std::vector<Point *> m_p4;
+  mutable std::vector<Point *> m_p5;
+  mutable std::vector<Vector *> m_p6;
+  mutable std::vector<unsigned int *> m_p7;
+  mutable std::vector<Point *> m_p8;
+  mutable std::vector<VEC4 *> m_p9;
+  mutable std::vector<VEC4 *> m_p10;
 };
 
 
@@ -4018,6 +4071,11 @@ class ColorAlpha : public ForwardFaceCollection
 {
 public:
   ColorAlpha(FaceCollection *coll, unsigned int alpha) : ForwardFaceCollection(*coll), alpha(alpha),coll(coll) { }
+  ~ColorAlpha()
+  {
+    int s1 = m_p1.size(); for(int i=0;i<s1;i++)
+			    delete [] m_p1[i];
+  }
   bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
@@ -4033,7 +4091,7 @@ public:
   {
     static unsigned int *pos2=0;
     //delete [] pos2;
-    pos2 = new unsigned int[numvertices];
+    m_p1.push_back(pos2 = new unsigned int[numvertices]);
     for(int i=0;i<numvertices;i++)
       {
 	unsigned int c = (*pos)[i];
@@ -4057,6 +4115,7 @@ public:
 private:
   unsigned int alpha;
   FaceCollection *coll;
+  mutable std::vector<unsigned int *> m_p1;
 };
 class ColorFromNormals : public ForwardFaceCollection
 {

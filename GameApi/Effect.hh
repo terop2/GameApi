@@ -4573,6 +4573,7 @@ class FlipNormals : public ForwardFaceCollection
 {
 public:
   FlipNormals(FaceCollection &coll) : ForwardFaceCollection(coll), coll(coll) { }
+  ~FlipNormals() { delete [] pos2; }
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
   int NumFaces() const { return coll.NumFaces(); }
@@ -4589,8 +4590,8 @@ public:
   }
   void change_normal(Vector **pos, int numvertices) const
   {
-    static Vector *pos2=0;
-    //delete [] pos2;
+    //static Vector *pos2=0;
+    delete [] pos2;
     pos2 = new Vector[numvertices];
     for(int i=0;i<numvertices;i++)
       {
@@ -4608,6 +4609,7 @@ public:
   }
 private:
   FaceCollection &coll;
+  mutable Vector *pos2=0;
 };
 typedef FunctionImpl0<FaceCollection*, FaceCollection*, FlipNormals> FlipNormalsFunction;
 
@@ -7783,6 +7785,15 @@ class MatrixElem : public ForwardFaceCollection
 {
 public:
   MatrixElem(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) { skip=false; }
+  ~MatrixElem()
+  {
+    int s1 = pos2_1.size(); for(int i=0;i<s1;i++)
+			      delete [] pos2_1[i];
+    int s2 = pos2_2.size(); for(int i=0;i<s2;i++)
+			      delete [] pos2_2[i];
+    int s3 = pos2_3.size(); for(int i=0;i<s3;i++)
+			      delete [] pos2_3[i];
+  }
   virtual bool IsMatrixElem() const { return true; }
     void Collect(CollectVisitor &vis)
   {
@@ -7920,9 +7931,10 @@ public:
   void change_pos(Point **pos, int numvertices) const
   {
     if (*pos==0) return;
-    static Point *pos2=0;
+    //static Point *pos2=0;
     //delete [] pos2;
-    pos2 = new Point[numvertices];
+    Point *pos2;
+    pos2_1.push_back(pos2 = new Point[numvertices]);
     if (skip) {
       for(int i=0;i<numvertices;i++)
 	{
@@ -7939,9 +7951,10 @@ public:
   void change_pos2(Point **pos, int numvertices) const
   {
     if (*pos==0) return;
-    static Point *pos2=0;
+    //static Point *pos2=0;
     //delete [] pos2;
-    pos2 = new Point[numvertices];
+    Point *pos2;
+    pos2_2.push_back(pos2 = new Point[numvertices]);
     if (skip) {
       for(int i=0;i<numvertices;i++)
 	{
@@ -7958,9 +7971,10 @@ public:
   void change_normal(Vector **pos, int numvertices) const
   {
     if (*pos==0) return;
-    static Vector *pos2=0;
+    //static Vector *pos2=0;
     //delete [] pos2;
-    pos2 = new Vector[numvertices];
+    Vector *pos2;
+    pos2_3.push_back(pos2 = new Vector[numvertices]);
     if (skip) {
       Matrix m3 = Matrix::KeepRotation(m2);
       for(int i=0;i<numvertices;i++)
@@ -8005,6 +8019,9 @@ private:
   bool skip;
   FaceCollection *next2;
   Matrix m2;
+  mutable std::vector<Point*> pos2_1;
+  mutable std::vector<Point*> pos2_2;
+  mutable std::vector<Vector*> pos2_3;
 };
 typedef FunctionImpl1<BoxableFaceCollection*, BoxableFaceCollection*, Matrix, MatrixElem> MatrixElemFunction;
 

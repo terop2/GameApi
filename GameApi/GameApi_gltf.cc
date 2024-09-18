@@ -3212,6 +3212,13 @@ class GLTFFaceCollection : public FaceCollection
 public:
   GLTFFaceCollection( GLTFModelInterface *interface, int mesh_index, int prim_index) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) {
   }
+  ~GLTFFaceCollection()
+  {
+    int s1 = m_p1.size(); for(int i=0;i<s1;i++)
+			    delete [] m_p1[i];
+    int s2 = m_p2.size(); for(int i=0;i<s2;i++)
+			    delete [] m_p2[i];
+  }
   void Collect(CollectVisitor &vis)
   {
     interface->Collect(vis);
@@ -4092,7 +4099,7 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
-  bool HasBatchMap() const { return false; /*mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT;*/ } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
   FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef ref;
@@ -4175,7 +4182,7 @@ public:
     if (stride==0) stride=3*sizeof(float);
     int s = normal_acc->count;
     //std::cout << "NORMALS_LENGTH:" << s << std::endl;
-    ref.pointnormal = new Vector[s];
+    m_p1.push_back(ref.pointnormal = new Vector[s]);
     int byteOffset = normal_bv->byteOffset + normal_acc->byteOffset + start_face*stride;
     for(int i=0;i<s;i++)
       {
@@ -4199,7 +4206,7 @@ public:
     int stride = texcoord_bv->byteStride;
     if (stride==0) stride=2*sizeof(float);
     int s = texcoord_acc->count;
-    ref.texcoords = new Point[s];
+    m_p2.push_back(ref.texcoords = new Point[s]);
     int byteOffset = texcoord_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride;
     for(int i=0;i<s;i++)
       {
@@ -4325,6 +4332,8 @@ private:
 
   mutable int store_face;
   mutable Vector store_res;
+  mutable std::vector<Vector *> m_p1;
+  mutable std::vector<Point*> m_p2;
 };
 
 
