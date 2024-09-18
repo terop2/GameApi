@@ -90,7 +90,17 @@ EXPORT void GameApi::FrameBufferApi::config_fbo(FBO buffer)
   */
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
 }
+EXPORT void GameApi::FrameBufferApi::unconfig_fbo(FBO buffer)
+{
+  OpenglLowApi *ogl = g_low->ogl;
 
+  FBOPriv *priv = find_fbo(e, buffer);
+  ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, priv->fbo_name);
+  ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_COLOR_ATTACHMENT0, Low_GL_TEXTURE_2D, 0, 0);
+  ogl->glFramebufferTexture2D(Low_GL_FRAMEBUFFER, Low_GL_DEPTH_ATTACHMENT, Low_GL_TEXTURE_2D, 0,0);
+  ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, 0);
+
+}
 
 EXPORT GameApi::FrameBufferApi::vp GameApi::FrameBufferApi::bind_fbo(FBO buffer)
 {
@@ -347,7 +357,9 @@ public:
     ////ogl->glDisable(Low_GL_DEPTH_TEST);
     ogl->glEnable(Low_GL_DEPTH_TEST);
     ogl->glEnable(Low_GL_BLEND);
-		  
+
+    ev.fbo_api.unconfig_fbo(fbo);
+    
   }
   int texture() const
   {

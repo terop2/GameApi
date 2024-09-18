@@ -15196,7 +15196,7 @@ GameApi::P GameApi::PolygonApi::log_coords2(P p, int x_count, int y_count, float
 class SphericalWave : public ForwardFaceCollection
 {
 public:
-  SphericalWave(FaceCollection *coll, float r1, float fr_1, float r2, float fr_2) : ForwardFaceCollection(*coll), r1(r1), r2(r2), fr_1(fr_1), fr_2(fr_2) { }
+  SphericalWave(FaceCollection *coll, float r1, float fr_1, float r2, float fr_2) : ForwardFaceCollection(*coll), r1(r1), r2(r2), fr_1(fr_1), fr_2(fr_2), coll(coll) { }
   void Collect(CollectVisitor &vis) { coll->Collect(vis); }
   void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
