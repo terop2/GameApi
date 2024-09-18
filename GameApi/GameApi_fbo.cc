@@ -358,7 +358,7 @@ public:
     ogl->glEnable(Low_GL_DEPTH_TEST);
     ogl->glEnable(Low_GL_BLEND);
 
-    ev.fbo_api.unconfig_fbo(fbo);
+    //ev.fbo_api.unconfig_fbo(fbo);
     
   }
   int texture() const
