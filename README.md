@@ -46,9 +46,11 @@ Choose correct directory:
   cd GameApi
 
 To compile (linux):
+  make clean     // only in full build
   make -j 8
 
 To compile (emscripten):
+ make -f Makefile.LinuxEm clean  // only in full build
  ./emmake.sh EMSCRIPTEN_PATH=path_to_emscripten_emsdk_directory
 
 To compile (windows):
