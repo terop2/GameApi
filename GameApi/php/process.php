@@ -22,7 +22,7 @@ fclose($fp);
 
 echo "<!DOCTYPE html>";
 echo "<html lang=\"en\">";
-echo "<meta name=\"description\" content=\"Every web page on the planet needs to be converted from plain 2d to rich and powerful 3d format, now with our 3d tools the conversion is easier than ever. We just need to dip into your gltf file collection.\">";
+echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">";
 echo "<title>A way to display your 3d models on the web -- jpg of 3d</title>";
 echo "<head>";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";

@@ -4710,7 +4710,11 @@ class TransparentSeparateFaceCollection : public FaceCollection
 {
 public:
   TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque, bool force_transparent) : coll(coll), texture(texture),opaque(opaque), force_transparent(force_transparent) { }
-
+  ~TransparentSeparateFaceCollection()
+  {
+    int s1 = m_p1.size(); for(int i=0;i<s1;i++)
+			    delete[] m_p1[i];
+  }
 
   void Collect(CollectVisitor &vis) {
     coll->Collect(vis);
@@ -4855,7 +4859,16 @@ public:
 
     return 0;
   }
-
+  /*
+  int RevMapping(int ii) const
+  {
+    if (vec2.size()>0) return vec2[ii];
+    if (done) return 0;
+    const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    if (vec2.size()>0) return vec2[ii];
+    return 0;
+  }
+  */
   void create_vec()
   {
     //pthread_t curr = pthread_self();
@@ -4931,6 +4944,7 @@ public:
     //std::vector<int> &vec=thread_output_vec[ii];
     int count=0;
     vec.resize(end-start);
+    //vec2.resize(end-start);
     for(int i=start;i<end;i++)
       {
 	bool b = is_transparent(i);
@@ -4939,12 +4953,40 @@ public:
 	  {
 	    //if (count == ii) return i;
 	    vec[count]=i;
+	    //vec2[i-start]=count;
 	    //vec2[count]=count;
 	    count++;
 	  }
+	//else vec2[i-start]=count;
       }
     vec.resize(count);
   }
+  /*
+  bool HasBatchMap() const { return coll->HasBatchMap(); }
+  unsigned int *filter_indices_int(unsigned int *indices_int) const
+  {
+    unsigned int *p;
+    int s = NumFaces();
+    m_p1.push_back(p = new unsigned int[s*3]);
+
+    for(int i=0;i<s;i++)
+      {
+	int pos = Mapping(i);
+	p[i*3+0] = indices_int[pos*3+0];
+	p[i*3+1] = indices_int[pos*3+1];
+	p[i*3+2] = indices_int[pos*3+2];
+      }
+    return p;
+  }
+
+  FaceBufferRef BatchMap(int start, int end) const
+  {
+    FaceBufferRef r = coll->BatchMap(start,end);
+    r.indices_int = filter_indices_int(r.indices_int);
+    r.numfaces = NumFaces();
+    return r;
+  }
+  */
 public:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
@@ -4952,6 +4994,7 @@ public:
   std::vector<int> thread_output_vec[8];
   std::vector<std::vector<int> > output_vec;
   mutable std::vector<int> vec;
+  mutable std::vector<int> vec2;
   //mutable std::vector<int> vec2;
   mutable int sx=-1;
   mutable int sy=-1;
@@ -4959,6 +5002,7 @@ public:
   bool done=false;
   int current_i=0;
   bool force_transparent=false;
+  mutable std::vector<unsigned int*> m_p1;
 };
 
 void *trans_thread_func(void *data)
