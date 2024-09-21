@@ -10,6 +10,7 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 
 
+
 template<class T>
 void print(std::string label, T *ptr)
 {
@@ -719,7 +720,7 @@ class GLTF_Model_with_prepare : public GLTF_Model
 public:
   GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
   virtual void Prepare() { if (firsttime) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
-  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
 private:
   LoadGltf *load;
