@@ -15609,9 +15609,10 @@ public:
     } else {
 	env.ev->mainloop_api.advance_time(env.start_time/10.0*1000.0);
     }
-     env.ev->mainloop_api.alpha(true);
+    
+    env.ev->mainloop_api.alpha(true);
      ogl->glEnable(Low_GL_DEPTH_TEST);
-     
+    
      GameApi::MainLoopApi::Event e;
      while((e = env.ev->mainloop_api.get_event()).last==true)
        {
@@ -15976,8 +15977,10 @@ public:
     
     if (g_prepare_done) {
       if (debug_enabled) status+="PREPARE_DONE ";
-      if (cb_counter==1||cb_counter>2)
-      env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      if (cb_counter==1||cb_counter>2) {
+	//	env->ev->shader_api.use(env->color_sh);
+	env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+      }
       if (g_transparent_callback_objs.size()) {
 	int s = g_transparent_callback_objs.size();
 
@@ -16240,7 +16243,7 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML 
   ml = ev.mainloop_api.display_background(ev,ml);
   if (g_user_id && std::string(g_user_id)==std::string("TeroPulkkinen")) {
     ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
-  }
+    }
   Splitter *spl = new MainLoopSplitter_win32_and_emscripten(ml,logo, fpscounter, start_time, duration, screen_x, screen_y);
   return add_splitter(e, spl);
 }

@@ -200,7 +200,7 @@ struct SDL_EVENT_HACK
 
 void check_err(const char *name)
 {
-#if 0
+#if 1
   GLenum e = 0;
   while((e=glGetError())!=GL_NO_ERROR)
     {
