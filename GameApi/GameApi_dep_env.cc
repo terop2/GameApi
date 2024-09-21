@@ -2457,7 +2457,8 @@ std::string upgrade_to_https(std::string url)
 }
 
 long long load_size_from_url(std::string url)
-{  
+{
+  //std::cout << "POPEN1 " << url << std::endl;
   url = upgrade_to_https(url);
   if (url=="") return 1;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
@@ -2474,7 +2475,6 @@ long long load_size_from_url(std::string url)
 #endif
     long long num = 1;
     if (succ) {
-
 #ifdef __APPLE__
     FILE *f2 = popen(cmdsize.c_str(), "r");
 #else
@@ -2506,6 +2506,7 @@ long long load_size_from_url(std::string url)
       }
     }
     }
+    //std::cout << "POPEN1 END" << url << std::endl;
     return num;
 }
 
@@ -2528,6 +2529,8 @@ public:
 
   virtual void Prepare()
   {
+    //std::cout << "POPEN2 " << url << std::endl;
+    
   url = upgrade_to_https(url);
     size = load_size_from_url(url);
 
@@ -2565,6 +2568,7 @@ public:
       //std::cout << errno << std::endl;
       //std::cout << url << std::endl;
     }
+    //std::cout << "POPEN2 END " << url << std::endl;
   }
   virtual bool get_ch(unsigned char &ch)
   {
@@ -2721,7 +2725,9 @@ load_url_deleter load_from_url_del;
 
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
-    url = upgrade_to_https(url);
+  //std::cout << "POPEN3 " << url << std::endl;
+
+  url = upgrade_to_https(url);
 
     if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
   //std::cout << "load_from_url: @" << url << "@" << std::endl;
@@ -2874,10 +2880,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       buffer->push_back(c); }
     pclose(f);
       }
+    //std::cout << "POPEN3 END " << url << std::endl;
     return buffer;
 #else
     // no popen
 #endif
+    //  std::cout << "POPEN3b END " << url << std::endl;
     return buffer;
 }
 
