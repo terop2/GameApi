@@ -1,4 +1,3 @@
-
 #include "GameApi_h.hh"
 #include <chrono>
 
@@ -2686,7 +2685,8 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
     BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
     ML I3=ev.sprite_api.vertex_array_render(ev,I2);
     ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
-    ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});  
+    ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
+    return I5;
     } else 
       return ml;
   } else {
@@ -2699,6 +2699,7 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
     ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
     return I5;
   }
+  return ml;
 }
 bool is_mobile(GameApi::EveryApi &ev);
 
