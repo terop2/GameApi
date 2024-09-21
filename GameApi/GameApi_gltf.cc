@@ -11704,6 +11704,13 @@ public:
     if (!vec) { std::cout << "gltf_load_sketchfab_zip ASync not ready!" << std::endl; return; }
     std::vector<unsigned char> vec2(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
+
+    std::cout << "Zip size: " << size << std::endl;
+    if (size>250000000) {
+      std::cout << "Zip File too large! -> exiting..." << std::endl;
+      return;
+	}
+
     //mz_ulong size2 = 0;
     //unsigned char *ptr = new unsigned char[size2];
     //std::cout << "ZIP URL=" << zip_url << std::endl;
