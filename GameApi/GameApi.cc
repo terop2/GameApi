@@ -28860,7 +28860,7 @@ std::vector<GameApi::ML> append_vec(std::vector<GameApi::ML> vec, std::vector<Ga
   return vec;
 }
 
-#if 0
+#if 1
 class FilterPrepares : public MainLoopItem
 {
 public:
@@ -28892,7 +28892,7 @@ private:
 #endif
 GameApi::ML filter_prepares(GameApi::Env &e, GameApi::ML ml)
 {
-#if 0
+#if 1
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new FilterPrepares(item));
 #endif
