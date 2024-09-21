@@ -304,6 +304,8 @@ void ArrayRender::EnableTexture(int num)
 }
 void ArrayRender::DisableTexture()
 {
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glBindTexture(Low_GL_TEXTURE_2D, 0);
   //ogl->glDisable(Low_GL_TEXTURE_2D);
 }
 void ArrayRender::UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int> p, int frame)
