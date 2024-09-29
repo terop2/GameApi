@@ -202,6 +202,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
   ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE); 
   ogl->glTexParameteri(Low_GL_TEXTURE_CUBE_MAP,Low_GL_TEXTURE_WRAP_R, Low_GL_CLAMP_TO_EDGE); 
 
+  
   return txid;
 }
 
@@ -835,6 +836,7 @@ EXPORT void GameApi::TextureApi::unuse(TXID tx)
 {
   OpenglLowApi *ogl = g_low->ogl;
   ogl->glDisable(Low_GL_TEXTURE_2D);
+  ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
 }
 
 EXPORT void GameApi::TextureApi::delete_texid(TXID tx)

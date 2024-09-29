@@ -10298,7 +10298,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes);
     return ml2;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -10330,7 +10330,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes);
     return ml2;
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
@@ -10362,7 +10362,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes);
     return ml2;
   }
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
@@ -10390,7 +10390,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes);
     return ml2;
   }
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
@@ -10421,7 +10421,7 @@ public:
     }
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
-    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode);
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes);
     return ml2;
   }
 
@@ -10748,7 +10748,7 @@ GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std
 }
 
 
-GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key,int mode, int inst)
+GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key,int mode, int inst, int timeid)
 {
   Material *next_mat = find_material(e,next);
   Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,inst);
@@ -10762,7 +10762,7 @@ GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
   std::vector<GameApi::MT> vec;
   for(int i=0;i<s;i++) {
     int mm = gltf_mesh2_calc_max_timeindexes(interface,i,skin_num);
-    GameApi::MT mt = gltf_anim_material4(e,ev,interface, skin_num, i, mm /*num_timeindexes*/, next, keys[i],mode,inst);
+    GameApi::MT mt = gltf_anim_material4(e,ev,interface, skin_num, i, mm /*num_timeindexes*/, next, keys[i],mode,inst,mm);
     vec.push_back(mt);
   }
   return ev.materials_api.m_keys(ev,vec,keys);
@@ -10883,10 +10883,12 @@ Matrix fix_matrix(Matrix m)
 
 extern Matrix g_last_resize2;
 
+int g_time_id;
+
 class GltfAnimShaderML : public MainLoopItem
 {
 public:
-  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key, int mode) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key),mode(mode) { firsttime=true; resize=Matrix::Identity(); keypressed = false;
+  GltfAnimShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *ml_orig, std::vector<MainLoopItem*> items, int key, int mode, int id) : env(env), ev(ev), ml_orig(ml_orig),items(items), key(key),mode(mode),id(id) { firsttime=true; resize=Matrix::Identity(); keypressed = false;
     current_time=key_time=ev.mainloop_api.get_time()/1000.0;
     //keypressed =true;
 }
@@ -10945,10 +10947,29 @@ public:
   void logoexecute() {
     items[0]->logoexecute();
   }
+  struct TimeStore { int id; float time; };
   void execute(MainLoopEnv &e) {
     current_time = e.time;
     float time = e.time-key_time;
-    if(keypressed && max_end_time>0.01 && time>max_end_time) { key_time = ev.mainloop_api.get_time()/1000.0; time=e.time-key_time; }// repeat
+    static std::vector<TimeStore> timevec;
+    int s = timevec.size();
+    bool timedone = false;
+    for(int i=0;i<s;i++)
+      {
+	TimeStore &tv = timevec[i];
+	if (tv.id==id+300*g_time_id) {
+	  time = tv.time;
+	  timedone = true;
+	}
+      }
+    if(keypressed && max_end_time>0.01 && time>max_end_time) { key_time = ev.mainloop_api.get_time()/1000.0; time=e.time-key_time; timevec.clear(); }// repeat
+    if (!timedone)
+      {
+	TimeStore t;
+	t.id = id+300*g_time_id;
+	t.time = time;
+	timevec.push_back(t);
+      }
 
 
     
@@ -11290,10 +11311,11 @@ private:
   bool keypressed;
   float max_end_time=0.0;
   int mode;
+  int id;
 };
 int GltfAnimShaderML::count=2;
 int GltfAnimShaderML::curr=0;
-EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key,int mode)
+EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key,int mode, int timeid)
 {
   int s = mls.size();
   std::vector<MainLoopItem*> items;
@@ -11302,7 +11324,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, 
     items.push_back(item);
   }
   MainLoopItem *orig = find_main_loop(e,ml_orig);
-  return add_main_loop(e, new GltfAnimShaderML(e,ev,orig,items, key,mode));
+  return add_main_loop(e, new GltfAnimShaderML(e,ev,orig,items, key,mode,timeid));
 }
 
 void ASyncGltfCB(void *data);

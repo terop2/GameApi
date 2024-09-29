@@ -49,6 +49,8 @@ bool is_mobile_1() { return false; }
 #endif
 
 
+extern int g_time_id;
+
 bool is_mobile(GameApi::EveryApi &ev)
 {
   if (g_gpu_vendor=="Mozi") return false;
@@ -6373,6 +6375,8 @@ public:
     int ss = s->texture_id;
     s->texture_id = SPECIAL_TEX_ID+ id->texture();
     next->execute(e);
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glBindTexture(Low_GL_TEXTURE_2D, 0); // to fix opengl state leak from fbo.
     s->texture_id = ss;
   }
   virtual void handle_event(MainLoopEvent &e)
@@ -15422,6 +15426,7 @@ void blocker_iter(void *arg)
   env->ev->mainloop_api.fpscounter_frameready();
 	}
     env->ev->mainloop_api.swapbuffers();
+    g_time_id++;
     g_engine_status = 1;
     //    ogl->glGetError();
 }
@@ -16038,6 +16043,7 @@ public:
 	}
     }
     env->ev->mainloop_api.swapbuffers();
+    g_time_id ++;
     }
     g_engine_status = 1;
     //xsogl->glGetError();
