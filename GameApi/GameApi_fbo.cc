@@ -410,7 +410,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     id->render(e);
-    int ii = id->texture();
+    int ii = id->texture(); // this call does glBindTexture()
     GameApi::TXID iid;
     iid.id = ii;
     if (firsttime)
@@ -459,6 +459,8 @@ public:
     //ev.texture_api.use(iid,0);
     //ev.sprite_api.render_sprite_vertex_array(va);
     ev.polygon_api.render_vertex_array(va2);
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glBindTexture(Low_GL_TEXTURE_2D,0); // fix opengl state leak
   }
   virtual void handle_event(MainLoopEvent &e)
   {
