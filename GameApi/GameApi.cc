@@ -21143,6 +21143,14 @@ public:
 	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
+	    std::ifstream sj(deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))).c_str());
+	    std::string line;
+	    while(std::getline(sj,line))
+	      {
+		int val = find_str(line,"404 Not Found");
+		if(val!=-1) { std::cout << "ERROR: url " << ii.url << " Returned 404" << std::endl; ok=false; }
+	      }
+										
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 	  }
 	}
