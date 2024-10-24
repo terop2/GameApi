@@ -15,7 +15,7 @@ $gltf2 = explode('?',$gltf)[0];
 
 if (strlen($gltf2)<4||(substr($gltf2,-3)!="zip"&&substr($gltf2,-3)!="glb"&&substr($gltf2,-4)!="gltf")) {
   echo "<pre>";
-  echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED</pre>";
+  echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED(should be .zip,.glb or .gltf)</pre>";
   $logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
 $fp = fopen("./pp2/tmp.log","a+");
 fwrite($fp, $logstr);
