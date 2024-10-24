@@ -2548,6 +2548,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  ML fade_pic(EveryApi &ev, BM bm1, float start_time, float transition_time, float end_time, float end_transition_time,
+	      BM bm2, float start2_time, float transition2_time, float end2_time, float end2_transition_time);
   P no_batch_map(P p);
   CS colourspace_sphere2();
   CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);

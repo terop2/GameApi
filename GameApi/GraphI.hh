@@ -14,6 +14,8 @@ class GameApiAllocator
 {
 public:
   static uint64_t m_free_mem;
+  static uint64_t m_changed_mem;
+  static uint64_t m_used_mem;
   
   typedef T* pointer;
   typedef const T* const_pointer;
@@ -22,19 +24,46 @@ public:
   typedef T value_type;
   typedef uint64_t size_type;
   typedef int64_t difference_type;
-  T* allocate(uint64_t sz) { *free_mem-=sz; return (T*)malloc(sz); }
-  void deallocate(T *ptr, uint64_t sz) { *free_mem+=sz; return free((void*)ptr); }
+  void print() const
+  {
+#if 1
+    if (*changed_mem >100000)
+      {
+	if (*used_mem>1024000000) {
+	  printf("MEM:%lf Gb MAX:%lf Gb\n",double(*used_mem)/1024000000.0,double(*free_mem)/1024000000.0);
+	}
+	else {
+	  if (*used_mem>1024000) {
+	printf("MEM:%lf Mb MAX:%lf Mb\n",double(*used_mem)/1024000.0,double(*free_mem)/1024000.0);
+	  }
+	  else {
+	printf("MEM:%lf kb MAX:%lf kb\n",double(*used_mem)/1024.0,double(*free_mem)/1024.0);
+	  }
+	}
+
+	*changed_mem = 0;
+      }
+#endif
+  }
+  T* allocate(uint64_t sz) { *free_mem-=sz*sizeof(T); *changed_mem+=sz*sizeof(T); *used_mem+=sz*sizeof(T); print(); return (T*)malloc(sz*sizeof(T)); }
+  void deallocate(T *ptr, uint64_t sz) { *free_mem+=sz*sizeof(T); *changed_mem+=sz*sizeof(T); print(); *used_mem-=sz*sizeof(T); return free((void*)ptr); }
   uint64_t max_size() const { return *free_mem; }
   friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
   friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
-  GameApiAllocator() : free_mem(&m_free_mem) { }
-  GameApiAllocator(const GameApiAllocator &a) : free_mem(a.free_mem) { }
+  GameApiAllocator() : free_mem(&m_free_mem), changed_mem(&m_changed_mem),used_mem(&m_used_mem) { }
+  GameApiAllocator(const GameApiAllocator &a) : free_mem(a.free_mem), changed_mem(&m_changed_mem), used_mem(&m_used_mem) { }
 private:
   uint64_t *free_mem;
+  uint64_t *changed_mem;
+  uint64_t *used_mem;
 };
 
 template<class T>
 uint64_t GameApiAllocator<T>::m_free_mem = std::numeric_limits<uint64_t>::max();
+template<class T>
+uint64_t GameApiAllocator<T>::m_changed_mem = 0;
+template<class T>
+uint64_t GameApiAllocator<T>::m_used_mem = 0;
 
 
 #ifndef TINYGLTF_IMPLEMENTATION

@@ -265,6 +265,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ML", "TF" },
 			 { "", "" },
 			 "ML", "mainloop_api", "async_gltf"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fade_pic,
+			 "fade_pic",
+			 { "ev", "bm1", "start_time", "transition_time", "end_time", "end_transition_time", "bm2", "start2_time", "transition2_time", "end2_time", "end2_transition_time" },
+			 { "EveryApi&", "BM", "float", "float", "float", "float", "BM", "float", "float", "float", "float" },
+			 { "ev", "", "0", "20", "50", "20", "", "50", "20", "100", "20" },
+			 "ML", "polygon_api", "fade_pic"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_scene,
 			 "scene_ml",
 			 { "ev", "url", "sx", "sy" },

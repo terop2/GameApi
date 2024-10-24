@@ -21140,15 +21140,21 @@ public:
 	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
 	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
-	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output " + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 \"") + deploy_truncate(http_to_https(ii.url)) + "\" --output " + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
-	    std::ifstream sj(deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))).c_str());
+	    std::string fn = home + "/.gameapi_builder/deploy/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
+	    std::cout << "READING OUTPUT:" << fn << std::endl;
+	    std::ifstream sj(fn.c_str());
 	    std::string line;
 	    while(std::getline(sj,line))
 	      {
 		int val = find_str(line,"404 Not Found");
-		if(val!=-1) { std::cout << "ERROR: url " << ii.url << " Returned 404" << std::endl; ok=false; }
+		int val2 = find_str(line,"Dropbox - 400");
+		int val3 = find_str(line,"<!DOCTYPE html");
+		int val4 = find_str(line,"<!DOCTYPE HTML");
+		int val5 = find_str(line,"<html");
+		if(val!=-1 || val2!=-1||val3!=-1||val4!=-1||val5!=-1) { std::cout << "ERROR: url " << ii.url << " Returned error" << std::endl; ok=false; }
 	      }
 										
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}

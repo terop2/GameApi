@@ -25240,3 +25240,17 @@ GameApi::P GameApi::PolygonApi::no_batch_map(P p)
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new NoBatchMap(coll),1);
 }
+
+GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float start_time, float transition_time, float end_time, float end_transition_time,
+					  BM bm2, float start2_time, float transition2_time, float end2_time, float end2_transition_time)
+{
+  P I1=ev.polygon_api.quad_z(-600,600,-600,600,0);
+  MT I2=ev.materials_api.texture(ev,bm1,1.0);
+  MT I3=ev.materials_api.fade(ev,I2,start_time,start_time+transition_time,end_time,end_time+end_transition_time);
+  ML I4=ev.materials_api.bind(I1,I3);
+  MT I5=ev.materials_api.texture(ev,bm2,1.0);
+  MT I6=ev.materials_api.fade(ev,I5,start2_time,start2_time+transition2_time,end2_time,end2_time+end2_transition_time);
+  ML I7=ev.materials_api.bind(I1,I6);
+  ML I8=ev.mainloop_api.or_elem_ml(ev,I4,I7);
+  return I8;
+}
