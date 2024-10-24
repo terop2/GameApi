@@ -10,7 +10,7 @@ copy_it()
 	INDEX=${INDEX}+1
 	arr[${INDEX}]=$1
     else
-       scp $1 terop@ssh.meshpage.org:/home/terop/meshpage.org/
+       scp $1 terop@meshpage.org:/home/terop/meshpage.org/
        echo "copying $1 to meshpage.org"
     fi
 }
@@ -18,10 +18,10 @@ finish()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
+	scp ${arr[@]} terop@meshpage.org:/home/terop/meshpage.org/
     fi
     if [ "$MACHINE" == "terop-pc2" ]; then
-	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
+	scp ${arr[@]} terop@meshpage.org:/home/terop/meshpage.org/
     fi
 }
 copy_it feat.php
