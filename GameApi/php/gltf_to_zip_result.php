@@ -174,7 +174,7 @@ fclose($fp);
   echo "<pre>$file3";
   echo "THERE SEEMS TO BE ERRORS!</pre>";
 
-$logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
+$logstr = "$file3" . "\n" . $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
 $fp = fopen("./pp2/tmp.log","a+");
 fwrite($fp, $logstr);
 fclose($fp);
