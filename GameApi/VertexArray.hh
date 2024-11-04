@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <map>
+#include "MyMap.hh"
 #include "VectorTools.hh"
 #include "Effect.hh"
 #include "GameApi.hh"
@@ -69,7 +70,7 @@ public:
     ref.texcoords=0;
     ref.joints=0;
     ref.weights=0;
-    std::map<int, Polys*>::iterator it = s.m_set.begin();
+    std::mymap<int, Polys*>::iterator it = s.m_set.begin();
     for(;it!=s.m_set.end();it++)
       {
 	m_set[(*it).first] = new Polys(*(*it).second);
@@ -87,7 +88,7 @@ public:
   void clear_poly_and_poly2(int id);
   void clear_arrays()
   {
-    std::map<int, Polys*>::iterator it = m_set.begin();
+    std::mymap<int, Polys*>::iterator it = m_set.begin();
     for(;it!=m_set.end();it++)
       {
 	delete m_set[(*it).first];
@@ -285,19 +286,19 @@ public:
     
 
     
-    std::map<int,std::vector<float> > tri_attribs;
-    std::map<int,std::vector<float> > quad_attribs;
-    std::map<int,std::vector<float> > poly_attribs;
+    std::mymap<int,std::vector<float> > tri_attribs;
+    std::mymap<int,std::vector<float> > quad_attribs;
+    std::mymap<int,std::vector<float> > poly_attribs;
 
-    std::map<int,std::vector<int> > tri_attribsi;
-    std::map<int,std::vector<int> > quad_attribsi;
-    std::map<int,std::vector<int> > poly_attribsi;
+    std::mymap<int,std::vector<int> > tri_attribsi;
+    std::mymap<int,std::vector<int> > quad_attribsi;
+    std::mymap<int,std::vector<int> > poly_attribsi;
 
   };
 public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
 
-  mutable std::map<int, Polys*> m_set;
+  mutable std::mymap<int, Polys*> m_set;
   bool has_normal=true;
   bool has_attrib=false;
   bool has_color=true;
