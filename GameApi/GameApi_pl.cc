@@ -4064,12 +4064,49 @@ EXPORT GameApi::P GameApi::PolygonApi::color_lambert(P orig, unsigned int color,
 class ColorElem2 : public ForwardFaceCollection
 {
 public:
-  ColorElem2(FaceCollection *coll, unsigned int col) : ForwardFaceCollection(*coll), col(col) { }
+  ColorElem2(FaceCollection *coll, unsigned int col) : ForwardFaceCollection(*coll), col(col),coll(coll) { }
   virtual std::string name() const { return "ColorElem2"; }
+
+  ~ColorElem2()
+  {
+    int s1 = m_p1.size(); for(int i=0;i<s1;i++)
+			    delete [] m_p1[i];
+  }
+
   bool has_color() const { return true; }
   unsigned int Color(int face, int point) const {return col; }
+
+
+  virtual bool HasBatchMap() const { return coll->HasBatchMap(); }
+  
+  void change_color(unsigned int **pos, int numvertices) const
+  {
+    static unsigned int *pos2=0;
+    //delete [] pos2;
+    m_p1.push_back(pos2 = new unsigned int[numvertices]);
+    for(int i=0;i<numvertices;i++)
+      {
+	unsigned int c = col;
+	pos2[i] = c;
+	//if (i<20)
+	//std::cout << "FLIPNORMAL:" << pos2[i] << std::endl;
+      }
+    *pos = pos2;
+  }
+
+  
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef r = coll->BatchMap(start_face,end_face);
+    change_color(&r.color,r.numvertices);
+    return r;
+  }
+
 private:
   unsigned int col;
+  FaceCollection *coll;
+  mutable std::vector<unsigned int *> m_p1;
+
 };
 
 EXPORT GameApi::P GameApi::PolygonApi::color(P next, unsigned int color)
@@ -23613,6 +23650,17 @@ public:
     coll->Prepare();
     g_global_face_count = coll->NumFaces();
   }
+  bool HasBatchMap() const {
+    return coll->HasBatchMap();
+  }
+  virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef r = coll->BatchMap(start_face,end_face);
+    return r;
+  }
+
+
+  
 private:
   FaceCollection *coll;
 };
