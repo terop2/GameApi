@@ -949,11 +949,11 @@ void clone_vector(std::vector<T> &source, std::vector<T> &target)
   for(int i=0;i<s;i++) target.push_back(source[i]);
 }
 template<class T>
-void clone_map(std::map<int, std::vector<T>> &source,
-	       std::map<int, std::vector<T>> &target)
+void clone_map(std::mymap<int, std::vector<T>> &source,
+	       std::mymap<int, std::vector<T>> &target)
 {
   target.clear();
-  typename std::map<int,std::vector<T>>::iterator i=source.begin();
+  typename std::mymap<int,std::vector<T>>::iterator i=source.begin();
   for(;i!=source.end();i++)
     {
       target[(*i).first] = (*i).second;
@@ -1012,7 +1012,7 @@ void VertexArraySet::apply_change(DynamicChange *change, int id_source, int id_t
 }
 VertexArraySet::~VertexArraySet()
 {
-    std::map<int,Polys*>::iterator it = m_set.begin();
+    std::mymap<int,Polys*>::iterator it = m_set.begin();
     for(;it!=m_set.end();it++)
       {
 	Polys *ptr = (*it).second;
@@ -1022,7 +1022,7 @@ VertexArraySet::~VertexArraySet()
 void VertexArraySet::free_memory()
 {
 #if 1
-  std::map<int,Polys*>::iterator i;
+  std::mymap<int,Polys*>::iterator i;
   for(i=m_set.begin();i!=m_set.end();i++)
     {
       Polys *poly = (*i).second;
@@ -1077,10 +1077,10 @@ void VertexArraySet::free_memory()
 #endif
 }
 template<class T>
-void append_from_map(const std::map<int,std::vector<T> > &m,
-		     std::map<int,std::vector<T> > &m2)
+void append_from_map(const std::mymap<int,std::vector<T> > &m,
+		     std::mymap<int,std::vector<T> > &m2)
 {
-  typename std::map<int,std::vector<T> >::const_iterator i = m.begin();
+  typename std::mymap<int,std::vector<T> >::const_iterator i = m.begin();
   for(;i!=m.end();i++) 
     {
     int s = ((*i).second).size();
@@ -2212,7 +2212,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   {
   // ATTRIB STARTS HERE
   int ss = p->tri_attribs.size();
-  std::map<int,std::vector<float> >::iterator ii = p->tri_attribs.begin();
+  std::mymap<int,std::vector<float> >::iterator ii = p->tri_attribs.begin();
   for(int i=0;i<ss;i++)
     {
       ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, attrib_buffer[i]);
@@ -2225,7 +2225,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   {
   // ATTRIBI start here
   int ss = p->tri_attribsi.size();
-  std::map<int,std::vector<int> >::iterator ii = p->tri_attribsi.begin();
+  std::mymap<int,std::vector<int> >::iterator ii = p->tri_attribsi.begin();
   for(int i=0;i<ss;i++)
     {
       ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, attribi_buffer[i]);
@@ -2272,7 +2272,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   
   {
   int ss = p->quad_attribs.size();
-  std::map<int,std::vector<float> >::iterator ii = p->quad_attribs.begin();
+  std::mymap<int,std::vector<float> >::iterator ii = p->quad_attribs.begin();
   for(int i=0;i<ss;i++)
     {
       ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, attrib_buffer2[i]);
@@ -2282,7 +2282,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   }
   {
   int ss = p->quad_attribsi.size();
-  std::map<int,std::vector<int> >::iterator ii = p->quad_attribsi.begin();
+  std::mymap<int,std::vector<int> >::iterator ii = p->quad_attribsi.begin();
   for(int i=0;i<ss;i++)
     {
       //std::cout << "Quad Attribi" << std::endl;
@@ -2332,7 +2332,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   {
 #if 1
   int ss = p->poly_attribs.size();
-  std::map<int,std::vector<float> >::iterator ii = p->poly_attribs.begin();
+  std::mymap<int,std::vector<float> >::iterator ii = p->poly_attribs.begin();
   for(int i=0;i<ss;i++)
     {
       ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, attrib_buffer3[i]);
@@ -2344,7 +2344,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   {
 #if 1 
   int ss = p->poly_attribsi.size();
-  std::map<int,std::vector<int> >::iterator ii = p->poly_attribsi.begin();
+  std::mymap<int,std::vector<int> >::iterator ii = p->poly_attribsi.begin();
   for(int i=0;i<ss;i++)
     {
       ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, attribi_buffer3[i]);

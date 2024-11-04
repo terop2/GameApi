@@ -152,6 +152,8 @@
 #include <memory>
 #include <cmath>
 #include <chrono>
+#include "MyMap.hh"
+
 
 class GLTFModelInterface;
 

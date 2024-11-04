@@ -25254,3 +25254,5 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
   ML I8=ev.mainloop_api.or_elem_ml(ev,I4,I7);
   return I8;
 }
+
+
