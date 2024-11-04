@@ -4718,6 +4718,10 @@ public:
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
 			    delete[] m_p1[i];
+    int s2 = m_p2.size(); for(int i=0;i<s2;i++)
+			    delete[] m_p2[i];
+    int s3 = m_p3.size(); for(int i=0;i<s3;i++)
+			    delete[] m_p3[i];
   }
 
   void Collect(CollectVisitor &vis) {
@@ -4952,25 +4956,34 @@ public:
     for(int i=start;i<end;i++)
       {
 	bool b = is_transparent(i);
-	if (opaque) b=!b;
+	if (opaque) { b=!b; } else { }
 	if (b)
 	  {
+	    //std::cout << "r";
 	    //if (count == ii) return i;
 	    vec[count]=i;
 	    //vec2[i-start]=count;
 	    //vec2[count]=count;
 	    count++;
+	  } else
+	  {
+	    //std::cout << "n";
 	  }
+	   
 	//else vec2[i-start]=count;
       }
+    //std::cout << "---" << std::endl;
     vec.resize(count);
   }
+
   /*
   bool HasBatchMap() const { return coll->HasBatchMap(); }
   unsigned int *filter_indices_int(unsigned int *indices_int) const
   {
+    if (!indices_int) return 0;
+    if (vec.size()==0) const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
     unsigned int *p;
-    int s = NumFaces();
+    int s = vec.size();
     m_p1.push_back(p = new unsigned int[s*3]);
 
     for(int i=0;i<s;i++)
@@ -4983,11 +4996,53 @@ public:
     return p;
   }
 
+  unsigned short *filter_indices_short(unsigned short *indices_short) const
+  {
+    if (!indices_short) return 0;
+    if (vec.size()==0) const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    unsigned short *p;
+    int s = vec.size();
+    m_p2.push_back(p = new unsigned short[s*3]);
+
+    for(int i=0;i<s;i++)
+      {
+	int pos = Mapping(i);
+	p[i*3+0] = indices_short[pos*3+0];
+	p[i*3+1] = indices_short[pos*3+1];
+	p[i*3+2] = indices_short[pos*3+2];
+      }
+    return p;
+  }
+
+  unsigned char *filter_indices_char(unsigned char *indices_char) const
+  {
+    if (!indices_char) return 0;
+    if (vec.size()==0) const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
+    unsigned char *p;
+    int s = vec.size();
+    m_p3.push_back(p = new unsigned char[s*3]);
+
+    for(int i=0;i<s;i++)
+      {
+	int pos = Mapping(i);
+	p[i*3+0] = indices_char[pos*3+0];
+	p[i*3+1] = indices_char[pos*3+1];
+	p[i*3+2] = indices_char[pos*3+2];
+      }
+    return p;
+  }
+
+  
+  
   FaceBufferRef BatchMap(int start, int end) const
   {
+    if (vec.size()==0) const_cast<TransparentSeparateFaceCollection*>(this)->create_vec();
     FaceBufferRef r = coll->BatchMap(start,end);
     r.indices_int = filter_indices_int(r.indices_int);
-    r.numfaces = NumFaces();
+    r.indices_short = filter_indices_short(r.indices_short);
+    r.indices_char = filter_indices_char(r.indices_char);
+    r.numfaces = vec.size();
+    std::cout<< "TransparentSeparate:" << r.numfaces << " " << r.numvertices << std::endl;
     return r;
   }
   */
@@ -5007,6 +5062,8 @@ public:
   int current_i=0;
   bool force_transparent=false;
   mutable std::vector<unsigned int*> m_p1;
+  mutable std::vector<unsigned short*> m_p2;
+  mutable std::vector<unsigned char*> m_p3;
 };
 
 void *trans_thread_func(void *data)

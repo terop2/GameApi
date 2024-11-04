@@ -239,7 +239,7 @@ public:
 
   virtual bool IsMatrixElem() const { return false; }
 
-  virtual bool HasBatchMap() const { return false; }
+  virtual bool HasBatchMap() const { std::cout << "HasBatchMap returning false: " << name() << std::endl; return false; }
   virtual FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef r; r.numfaces=0; return r;

@@ -6092,6 +6092,26 @@ public:
   virtual std::pair<int,int> GetObject(int o) const {
     return std::make_pair(0,NumFaces()); }
 
+  bool HasBatchMap() const {
+    return true;
+  }
+    virtual FaceBufferRef BatchMap(int start_face, int end_face) const
+  {
+    FaceBufferRef r;
+    r.numfaces = 0;
+    r.numvertices = 0;
+    r.indices_char = new unsigned char[1];
+    r.indices_short = new unsigned short[1];
+    r.indices_int = new unsigned int[1];
+    r.facepoint = new Point[1];
+    r.facepoint2 = new Point[1];
+    r.pointnormal = new Vector[1];
+    r.color = new unsigned int[1];
+    r.texcoords = new Point[1];
+    r.joints = new VEC4[1];
+    r.weights = new VEC4[1];
+    return r;
+  }
 };
 
 void AttachBoxes(const BoxCollection &c, const std::vector<Boxable*> &v);
@@ -6567,6 +6587,31 @@ public:
   OrElem2(FaceCollection *coll1, FaceCollection *coll2) : coll1(coll1), coll2(coll2),s(0),s1(0),s2(0),oo1(0),oo2(0) { }
   virtual std::string name() const { return "OrElem2"; }
 
+  ~OrElem2()
+  {
+    int s1 = m_p1.size(); for(int i=0;i<s1;i++)
+			    delete [] m_p1[i];
+    int s2 = m_p2.size(); for(int i=0;i<s2;i++)
+			    delete [] m_p2[i];
+    int s3 = m_p3.size(); for(int i=0;i<s3;i++)
+			    delete [] m_p3[i];
+    int s4 = m_p4.size(); for(int i=0;i<s4;i++)
+			    delete [] m_p4[i];
+    int s5 = m_p5.size(); for(int i=0;i<s5;i++)
+			    delete [] m_p5[i];
+    int s6 = m_p6.size(); for(int i=0;i<s6;i++)
+			    delete [] m_p6[i];
+    int s7 = m_p7.size(); for(int i=0;i<s7;i++)
+			    delete [] m_p7[i];
+    int s8 = m_p8.size(); for(int i=0;i<s8;i++)
+			    delete [] m_p8[i];
+    int s9 = m_p9.size(); for(int i=0;i<s9;i++)
+			    delete [] m_p9[i];
+    int s10 = m_p10.size(); for(int i=0;i<s10;i++)
+			      delete [] m_p10[i];
+  }
+
+  
   BBOX GetBoundingBox(bool &success) const
   {
     std::vector<FaceCollection*> vec = { coll1, coll2 };
@@ -6747,6 +6792,202 @@ public:
 
   }
 
+
+  bool HasBatchMap() const {
+    bool b = true;
+    std::vector<FaceCollection*> vec = { coll1, coll2 };
+    int s = vec.size();
+    for(int i=0;i<s;i++) b&=vec[i]->HasBatchMap();
+    return b;
+  }
+
+  unsigned char *combine_indices_char(unsigned char *p1, unsigned char *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static unsigned char *p=0;
+    //delete [] m_p1;
+    unsigned char *p;
+    m_p1.push_back(p=new unsigned char[numfaces1*3+numfaces2*3]);
+    std::copy(p1,p1+numfaces1*3,p);
+    int i = 0;
+    for(;i<numfaces2;i++)
+      {
+	p[(numfaces1+i)*3+0] = numvertices1 + p2[i*3+0];
+	p[(numfaces1+i)*3+1] = numvertices1 + p2[i*3+1];
+	p[(numfaces1+i)*3+2] = numvertices1 + p2[i*3+2];
+      }
+    return p;
+  }
+  unsigned short *combine_indices_short(unsigned short *p1, unsigned short *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static unsigned short *p=0;
+    //delete [] m_p2;
+    unsigned short *p;
+    m_p2.push_back(p=new unsigned short[numfaces1*3+numfaces2*3]);
+    std::copy(p1,p1+numfaces1*3,p);
+    int i = 0;
+    for(;i<numfaces2;i++)
+      {
+	p[(numfaces1+i)*3+0] = numvertices1 + p2[i*3+0];
+	p[(numfaces1+i)*3+1] = numvertices1 + p2[i*3+1];
+	p[(numfaces1+i)*3+2] = numvertices1 + p2[i*3+2];
+	//p[(numfaces1+i)*3] = numvertices1 + p2[i];
+      }
+    return p;
+  }
+  unsigned int *combine_indices_int(unsigned int *p1, unsigned int *p2, int numfaces1, int numfaces2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static unsigned int *p=0;
+    //delete [] m_p3;
+    unsigned int *p;
+    m_p3.push_back(p=new unsigned int[numfaces1*3+numfaces2*3]);
+    std::copy(p1,p1+numfaces1*3,p);
+    int i = 0;
+    for(;i<numfaces2;i++)
+      {
+	p[(numfaces1+i)*3+0] = numvertices1 + p2[i*3+0];
+	p[(numfaces1+i)*3+1] = numvertices1 + p2[i*3+1];
+	p[(numfaces1+i)*3+2] = numvertices1 + p2[i*3+2];
+	//p[(numfaces1+i)*3] = numvertices1 + p2[i];
+      }
+    return p;
+  }
+  
+  Point *combine_pos(Point *p1, Point *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static Point *p=0;
+    //delete [] m_p4;
+    Point *p;
+    m_p4.push_back(p=new Point[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  Point *combine_pos2(Point *p1, Point *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static Point *p=0;
+    //delete [] m_p5;
+    Point *p;
+    m_p5.push_back(p=new Point[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  Vector *combine_normal(Vector *p1, Vector *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static Vector *p=0;
+    //delete [] m_p6;
+    Vector *p;
+    m_p6.push_back(p=new Vector[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  unsigned int *combine_color(unsigned int *p1, unsigned int *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static unsigned int *p=0;
+    //delete [] m_p7;
+    unsigned int *p;
+    m_p7.push_back(p=new unsigned int[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  Point *combine_texcoord(Point *p1, Point *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static Point *p=0;
+    //delete [] m_p8;
+    Point *p;
+    m_p8.push_back(p=new Point[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;
+  }
+  VEC4 *combine_joints(VEC4 *p1, VEC4 *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static VEC4 *p=0;
+    //delete [] m_p9;
+    VEC4 *p;
+    m_p9.push_back(p=new VEC4[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;    
+  }
+  VEC4 *combine_weights(VEC4 *p1, VEC4 *p2, int numvertices1, int numvertices2) const
+  {
+    if (!p1||!p2) return 0;
+    //static VEC4 *p=0;
+    //delete [] m_p10;
+    VEC4 *p;
+    m_p10.push_back(p=new VEC4[numvertices1+numvertices2]);
+    std::copy(p1,p1+numvertices1,p);
+    std::copy(p2,p2+numvertices2,p+numvertices1);
+    return p;    
+  }
+  template<class T>
+  void swap2( T**ptr, T*val) const
+  {
+    //delete [] (*ptr);
+    (*ptr)=val;
+  }
+
+  FaceBufferRef BatchMap(int start_x, int end_x) const
+  {
+    std::vector<FaceCollection*> vec = { coll1, coll2 };
+    if (vec.size()==0) { FaceBufferRef r; r.numfaces=0; return r; }
+    std::vector<FaceBufferRef> vec2;
+    int s = vec.size();
+    int num = 0;
+    for(int i=0;i<s;i++)
+      {
+	if (start_x>=0 && end_x>=0) {
+	  FaceBufferRef r = vec[i]->BatchMap(start_x,end_x);
+	  start_x-=r.numfaces;
+	  end_x-=r.numfaces;
+	  num+=r.numfaces;
+	  vec2.push_back(r);
+	} else if (start_x<0 && end_x>=0)
+	  {
+	  FaceBufferRef r = vec[i]->BatchMap(0,end_x);
+	  start_x-=r.numfaces;
+	  end_x-=r.numfaces;
+	  num+=r.numfaces;
+	  vec2.push_back(r);
+	  }
+      }
+    static FaceBufferRef result;
+    result = vec2[0];
+    int s2 = vec2.size();
+    for(int i=1;i<s2;i++)
+      {
+	swap2(&result.facepoint,combine_pos(result.facepoint,vec2[i].facepoint,result.numvertices,vec2[i].numvertices));
+	swap2(&result.facepoint2,combine_pos2(result.facepoint2,vec2[i].facepoint2,result.numvertices,vec2[i].numvertices));
+	swap2(&result.pointnormal, combine_normal(result.pointnormal,vec2[i].pointnormal,result.numvertices,vec2[i].numvertices));
+	swap2(&result.color,combine_color(result.color,vec2[i].color,result.numvertices,vec2[i].numvertices));
+	swap2(&result.texcoords, combine_texcoord(result.texcoords,vec2[i].texcoords,result.numvertices,vec2[i].numvertices));
+	swap2(&result.joints,combine_joints(result.joints,vec2[i].joints,result.numvertices,vec2[i].numvertices));
+	swap2(&result.weights,combine_weights(result.weights,vec2[i].weights,result.numvertices,vec2[i].numvertices));
+
+	result.indices_int = combine_indices_int(result.indices_int, vec2[i].indices_int, result.numfaces, vec2[i].numfaces, result.numvertices, vec2[i].numvertices);
+	result.indices_short = combine_indices_short(result.indices_short, vec2[i].indices_short, result.numfaces, vec2[i].numfaces, result.numvertices, vec2[i].numvertices);
+	result.indices_char = combine_indices_char(result.indices_char, vec2[i].indices_char, result.numfaces, vec2[i].numfaces, result.numvertices, vec2[i].numvertices);
+
+	result.numfaces += vec2[i].numfaces;
+	result.numvertices += vec2[i].numvertices;
+      }
+    //print("POINTNORMAL", result.pointnormal);
+    return result;
+  }
+
+  
 private:
   FaceCollection *coll1;
   FaceCollection *coll2;
@@ -6755,6 +6996,17 @@ private:
   int s2;
   int oo1;
   int oo2;
+  mutable std::vector<unsigned char *> m_p1;
+  mutable std::vector<unsigned short *> m_p2;
+  mutable std::vector<unsigned int *> m_p3;
+  mutable std::vector<Point *> m_p4;
+  mutable std::vector<Point *> m_p5;
+  mutable std::vector<Vector *> m_p6;
+  mutable std::vector<unsigned int *> m_p7;
+  mutable std::vector<Point *> m_p8;
+  mutable std::vector<VEC4 *> m_p9;
+  mutable std::vector<VEC4 *> m_p10;
+
 };
 
 template<class T>
@@ -6771,6 +7023,8 @@ public:
     vec.push_back(o3);
     vec.push_back(o4);
   }
+
+  
   virtual std::string name() const { return "OrElem"; }
 
   void update_faces_cache() const
