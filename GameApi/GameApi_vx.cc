@@ -81,6 +81,8 @@ public:
   {
     browse();
   }
+  virtual std::string name() const { return "VoxelBoxes"; }
+
   void browse()
   {
     int sx = c->SizeX();

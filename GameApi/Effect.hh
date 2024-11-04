@@ -3263,6 +3263,8 @@ class ShadowFaceCollection : public ForwardFaceCollection
 {
 public:
   ShadowFaceCollection(FaceCollection &coll, Point pos, Vector u_x, Vector u_y, Vector light_vec) : ForwardFaceCollection(coll), pos(pos), u_x(u_x), u_y(u_y), light_vec(light_vec) { }
+  virtual std::string name() const { return "ShadowFaceCollection"; }
+
   virtual Point FacePoint(int face, int point) const;
 private:
   Point pos;
@@ -3275,6 +3277,8 @@ class ReflectFaceCollection : public ForwardFaceCollection
 {
 public:
   ReflectFaceCollection(FaceCollection &coll, Point pos, Vector u_x, Vector u_y, Vector ref_vec) : ForwardFaceCollection(coll), pos(pos), u_x(u_x), u_y(u_y), ref_vec(ref_vec) { }
+  virtual std::string name() const { return "ReflectFaceCollection"; }
+
   virtual Point FacePoint(int face, int point) const;
 private:
   Point pos;
@@ -3311,6 +3315,8 @@ class RecalculateNormals : public ForwardFaceCollection
 {
 public:
   RecalculateNormals(FaceCollection &coll) : ForwardFaceCollection(coll) { }
+  virtual std::string name() const { return "RecalculateNormals"; }
+
   virtual bool has_normal() const { return true; }
   Vector PointNormal(int face, int point) const 
   {
@@ -4574,6 +4580,8 @@ class FlipNormals : public ForwardFaceCollection
 public:
   FlipNormals(FaceCollection &coll) : ForwardFaceCollection(coll), coll(coll) { }
   ~FlipNormals() { delete [] pos2; }
+  virtual std::string name() const { return "FlipNormals"; }
+
   void Collect(CollectVisitor &vis) { coll.Collect(vis); }
   void HeavyPrepare() { }
   int NumFaces() const { return coll.NumFaces(); }
@@ -5865,6 +5873,7 @@ class FaceCollectionStore : public SingleForwardBoxableFaceCollection, public Fa
 {
 public:
   FaceCollectionStore() : facecount(0),texturecount(0), textures(false) { }
+  virtual std::string name() const { return "FaceCollectionStore"; }
   void SetTextures(bool b) { textures = b; }
   void Collect(CollectVisitor &vis)
   {
@@ -6007,6 +6016,8 @@ class BoxableFaceCollectionConvert : public ForwardBoxableFaceCollection
 {
 public:
   BoxableFaceCollectionConvert(FaceCollection &coll) : ForwardBoxableFaceCollection(coll), coll(coll) { }
+  virtual std::string name() const { return "BoxableFaceCollectionConvert"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll.Collect(vis);
@@ -6054,6 +6065,8 @@ private:
 class EmptyBoxableFaceCollection : public SingleForwardBoxableFaceCollection
 {
 public:
+  virtual std::string name() const { return "EmptyBoxableFaceCollection"; }
+
   void SetBox(Matrix b) { }
   void Prepare() { }
   virtual int NumFaces() const { return 0; }
@@ -6249,6 +6262,7 @@ class SampleSurfaceIn3d : public SingleForwardFaceCollection, public TextureCoor
 {
 public:
   SampleSurfaceIn3d(const SurfaceIn3d &surf, int texture, int x, int y) : surf(surf), texture(texture), x(x), y(y) { }
+  virtual std::string name() const { return "SampleSurfaceIn3d"; }
   void Collect(CollectVisitor &vis) {
     //const_cast<SurfaceIn3d&>(surf).Collect(vis);
     vis.register_obj(this);
@@ -6459,6 +6473,7 @@ class SplitQuads : public ForwardFaceCollection
 {
 public:
   SplitQuads(FaceCollection &faces, int x, int y) : ForwardFaceCollection(faces), surf(faces), faces(faces), x(x), y(y) { }
+  virtual std::string name() const { return "SplitQuads"; }
   void Collect(CollectVisitor &vis) { faces.Collect(vis); }
   void HeavyPrepare() { }
   void Prepare() { faces.Prepare(); }
@@ -6550,6 +6565,7 @@ class OrElem2 : public FaceCollection
 {
 public:
   OrElem2(FaceCollection *coll1, FaceCollection *coll2) : coll1(coll1), coll2(coll2),s(0),s1(0),s2(0),oo1(0),oo2(0) { }
+  virtual std::string name() const { return "OrElem2"; }
 
   BBOX GetBoundingBox(bool &success) const
   {
@@ -6755,6 +6771,7 @@ public:
     vec.push_back(o3);
     vec.push_back(o4);
   }
+  virtual std::string name() const { return "OrElem"; }
 
   void update_faces_cache() const
   {
@@ -7048,6 +7065,7 @@ class QuadElem : public SingleForwardBoxableFaceCollection
 {
 public:
   QuadElem(Point p1, Point p2, Point p3, Point p4) : p1(p1), p2(p2), p3(p3), p4(p4) { }
+  virtual std::string name() const { return "QuadElem"; }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   virtual void SetBox(Matrix b) { /*box = b;*/ }
@@ -7119,6 +7137,8 @@ class TriElem : public SingleForwardBoxableFaceCollection
 {
 public:
   TriElem(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) { }
+  virtual std::string name() const { return "TriElem"; }
+
   virtual void SetBox(Matrix b) { /*box = b;*/ }
   virtual int NumFaces() const { return 1; }
   virtual int NumPoints(int face) const { return 3; }
@@ -7183,6 +7203,7 @@ class PolygonElem : public SingleForwardBoxableFaceCollection
 {
 public:
   PolygonElem() { }
+  virtual std::string name() const { return "PolygonElem"; }
   void push_back(Point p) { points.push_back(p); }
   virtual int NumFaces() const { return 1; }
   virtual int NumPoints(int face) const { return points.size(); }
@@ -7235,6 +7256,8 @@ public:
 	   Point p222) : p111(p111), p112(p112), p121(p121),
 			 p122(p122), p211(p211), p212(p212),
 			 p221(p221), p222(p222) { }
+  virtual std::string name() const { return "CubeElem"; }
+
   virtual Coords coord() const
   {
     Coords c;
@@ -7304,6 +7327,7 @@ typedef FunctionImplT0<BoxableFaceCollection*, CubeElem> CubeElemFunction;
 class CylinderElem : public SingleForwardBoxableFaceCollection, public CoordSource
 {
 public:
+  virtual std::string name() const { return "CylinderElem"; }
   virtual Coords coord() const
   {
     Coords c;
@@ -7368,6 +7392,7 @@ class DiskElem : public SingleForwardBoxableFaceCollection
 {
 public:
   DiskElem(int numfaces, float disk_pos) :  numfaces(numfaces), disk_pos(disk_pos) { }
+  virtual std::string name() const { return "DiskElem"; }
     void Collect(CollectVisitor &vis)
   {
   }
@@ -7568,6 +7593,8 @@ class ColorElem : public ForwardBoxableFaceCollection
 {
 public:
   ColorElem(BoxableFaceCollection &next, unsigned int color) : ForwardBoxableFaceCollection(next), next(next) , color(color) { }
+  virtual std::string name() const { return "ColorElem"; }
+
   void Collect(CollectVisitor &vis)
   {
     const_cast<BoxableFaceCollection&>(next).Collect(vis);
@@ -7621,6 +7648,8 @@ public:
 		unsigned int color_3,
 		unsigned int color_4
 		) : ForwardBoxableFaceCollection(next), next(next) , color_1(color_1), color_2(color_2), color_3(color_3), color_4(color_4) { }
+  virtual std::string name() const { return "ColorFaceElem"; }
+
   virtual void SetBox(Matrix b) { /*const_cast<BoxableFaceCollection&>(next).SetBox(b);*/ }
   virtual int NumFaces() const { return next.NumFaces(); }
   virtual int NumPoints(int face) const { return next.NumPoints(face); }
@@ -7722,6 +7751,7 @@ class TextureElem2 : public ForwardBoxableFaceCollection
 {
 public:
   TextureElem2(FaceCollection &next, BufferRefReq &ref, TextureCoords &coords) : ForwardBoxableFaceCollection(next), next(next), ref(ref), coords(coords) { }
+  virtual std::string name() const { return "TextureElem2"; }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   virtual void SetBox(Matrix b) { /*const_cast<BoxableFaceCollection&>(next).SetBox(b);*/ }
@@ -7785,6 +7815,7 @@ class MatrixElem : public ForwardFaceCollection
 {
 public:
   MatrixElem(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) { skip=false; }
+  virtual std::string name() const { return "MatrixElem"; }
   ~MatrixElem()
   {
     int s1 = pos2_1.size(); for(int i=0;i<s1;i++)
@@ -8397,6 +8428,7 @@ public:
   //MemoizeFaces(const MemoizeFaces &c) : c(c.c), numfaces(c.numfaces), numpoints(c.numpoints), facepoint(c.facepoint), color(c.color), normal(c.normal), facetexture(c.facetexture),mutex(PTHREAD_MUTEX_INITIALIZER)
   //{
   // }
+  virtual std::string name() const { return "MemoizeFaces"; }
     void Collect(CollectVisitor &vis)
   {
     c.Collect(vis);
@@ -8811,6 +8843,7 @@ class RectangleElem : public SingleForwardBoxableFaceCollection
 {
 public:
   RectangleElem(float x, float y) : x(x/2.0), y(y/2.0) { }
+  virtual std::string name() const { return "RectangleElem"; }
   void Collect(CollectVisitor &vis)
   {
   }
@@ -9011,6 +9044,8 @@ class SphereElem : public SingleForwardBoxableFaceCollection
 public:
   SphereElem(int numfaces, int numfaces2) :  numfaces(numfaces), numfaces2(numfaces2), center(Point(0.0,0.0,0.0)), radius(1.0) { }
   SphereElem(Point center, float radius, int numfaces1, int numfaces2);
+  virtual std::string name() const { return "SphereElem"; }
+
   virtual void SetBox(Matrix b) { /*box = b; inverted=false; */}
   void Collect(CollectVisitor &vis)
   {
@@ -9081,6 +9116,7 @@ class ConeElem : public SingleForwardBoxableFaceCollection
 public:
   ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2);
   ConeElem(int numfaces, Point p1, Point p2, float rad1, float rad2, Plane pl1_, Plane pl2_);
+  virtual std::string name() const { return "ConeElem"; }
     void Collect(CollectVisitor &vis)
   {
   }
@@ -9435,6 +9471,8 @@ class SampleGrid : public SingleForwardFaceCollection, public TextureCoords
 {
 public:
   SampleGrid(GridIn3d &grid, int texture) : grid(grid), texture(texture) { }
+  virtual std::string name() const { return "SampleGrid"; }
+
   int Texture(int face) const { return texture; }
   Point2d TexCoord(int face, int point) const
   {
@@ -9652,6 +9690,7 @@ public:
 	    Vector uu_x, Vector uu_y, float radius2)
     : numfaces1(numfaces1), numfaces2(numfaces2), center(center), u_x(u_x), u_y(u_y), radius1(radius1),
       uu_x(uu_x), uu_y(uu_y), radius2(radius2) { }
+  virtual std::string name() const { return "TorusElem"; }
 
   virtual int NumFaces() const { return numfaces1*numfaces2; }
   virtual int NumPoints(int face) const { return 4; }
@@ -11319,6 +11358,8 @@ class MeshFaceCollection : public SingleForwardFaceCollection
 public:
   MeshFaceCollection(Mesh &mesh, int framenum) : mesh(mesh), texcoord(0), framenum(framenum) { }
   MeshFaceCollection(Mesh &mesh, MeshTexCoords &coord, int framenum) : mesh(mesh), texcoord(&coord), framenum(framenum) { }
+  virtual std::string name() const { return "MeshFaceCollection"; }
+
   void Collect(CollectVisitor &vis)
   {
   }

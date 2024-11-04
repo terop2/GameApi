@@ -5640,6 +5640,7 @@ public:
   {
     res.id = -1;
   }
+  virtual std::string name() const { return "PWorld"; }
   void Collect(CollectVisitor &vis)
   {
     Bitmap<int> *bm = find_int_bitmap(env, world);

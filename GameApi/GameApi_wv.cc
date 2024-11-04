@@ -9,6 +9,7 @@ public:
 		  float radius, int num_samples, int num_waves)
     : w(w), start_angle(start_angle), end_angle(end_angle),
       radius(radius), num_samples(num_samples), num_waves(num_waves) { }
+  virtual std::string name() const { return "WaveformPolygon"; }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
 

@@ -411,6 +411,8 @@ class ObjFileFaceCollection : public FaceCollection
 {
 public:
   ObjFileFaceCollection(ObjFileParser &parser, int obj_num) : parser(parser), obj_num(obj_num) { }
+  virtual std::string name() const { return "ObjFileFaceCollection"; }
+
   void Collect(CollectVisitor &vis)
   {
     parser.Collect(vis);
@@ -877,6 +879,8 @@ class ColorDistance3 : public ForwardFaceCollection
 {
 public:
   ColorDistance3(FaceCollection *faces, Point center, unsigned int color_center, unsigned int color_dist, float dist_center, float dist_dist) : ForwardFaceCollection(*faces), center(center), color_center(color_center), color_dist(color_dist), dist_center(dist_center), dist_dist(dist_dist) { }
+  virtual std::string name() const { return "ColorDistance3"; }
+
   bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
@@ -1237,6 +1241,8 @@ class PrepareCache : public FaceCollection
 {
 public:
   PrepareCache(GameApi::Env &e, std::string id, FaceCollection *coll) : e(e), id(id), coll(coll) {}
+  virtual std::string name() const { return "PrepareCache"; }
+
   FaceCollection *get_coll2() const {
     if (coll_cache) return coll_cache;
     int num = find_data(id);
@@ -1400,6 +1406,8 @@ public:
     current = empty;
     filled = 0;
   }
+  virtual std::string name() const { return "NetworkedFaceCollection"; }
+
   ~NetworkedFaceCollection() { delete stream; }
   void Collect(CollectVisitor &vis)
   {
@@ -1500,6 +1508,7 @@ public:
     current = empty;
     filled = 0;
   }
+  virtual std::string name() const { return "NetworkedFaceCollectionMTL"; }
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -1713,6 +1722,8 @@ public:
   	BufferRef::FreeBuffer(bump_buffer[i3]);
       }
   }
+  virtual std::string name() const { return "NetworkedFaceCollectionMTL2"; }
+
   void free_extra_mem()
   {
     //std::cout << "FREE_EXTRA_MEM" << std::endl;
@@ -2453,6 +2464,8 @@ public:
     current = empty;
     filled = 0;
   }
+  virtual std::string name() const { return "NetworkedFaceCollectionDS"; }
+
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -2724,6 +2737,8 @@ public:
     q.p2.y /= float(sy);
     //std::cout << "P1: " << q.p1 << " P2: " << q.p2 << std::endl;
   }
+  virtual std::string name() const { return "TexCoordQuadFaceCollection"; }
+
   bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const 
   { 
@@ -2762,6 +2777,7 @@ class TexCoordSpherical : public ForwardFaceCollection
 public:
   TexCoordSpherical(Point center, FaceCollection *coll) : ForwardFaceCollection(*coll), center(center), coll(coll) { }
   bool has_texcoord() const { return true; }
+  virtual std::string name() const { return "TexCoordSpherical"; }
   
   virtual Point2d TexCoord(int face, int point) const { 
       Point p = ForwardFaceCollection::FacePoint(face,point);
@@ -2819,6 +2835,8 @@ public:
 					   p3_x(p3_x), p3_y(p3_y),
 					   p4_x(p4_x), p4_y(p4_y) { }
 
+  virtual std::string name() const { return "TexCoordManual"; }
+
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
@@ -2858,6 +2876,8 @@ class TexCoordPlane : public ForwardFaceCollection
 {
 public:
   TexCoordPlane(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
+  virtual std::string name() const { return "TexCoordPlane"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -3044,6 +3064,7 @@ class BitmapSizedQuad : public FaceCollection
 {
 public:
   BitmapSizedQuad(GameApi::Env &e, GameApi::PolygonApi *pl, Bitmap<::Color> *bm) : e(e), pl(pl), bm(bm) { }
+  virtual std::string name() const { return "BitmapSizedQuad"; }
 
   void Collect(CollectVisitor &vis)
   {
@@ -3393,6 +3414,8 @@ class OrArrayNoMemory : public FaceCollection
 {
 public:
   OrArrayNoMemory(std::vector<FaceCollection*> vec) : vec(vec) { }
+  virtual std::string name() const { return "OrArrayNoMemory"; }
+
   ~OrArrayNoMemory()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -3906,6 +3929,8 @@ class MixColorFaceColl : public ForwardFaceCollection
 {
 public:
   MixColorFaceColl(FaceCollection *c1, FaceCollection *c2, float val) : ForwardFaceCollection(*c1), c1(c1), c2(c2),val(val) { }
+  virtual std::string name() const { return "MixColorFaceColl"; }
+
   void Collect(CollectVisitor &vis)
   {
     c1->Collect(vis);
@@ -3930,6 +3955,7 @@ class MaxColorFaceColl : public ForwardFaceCollection
 {
 public:
   MaxColorFaceColl(FaceCollection *c1, FaceCollection *c2) : ForwardFaceCollection(*c1), c1(c1), c2(c2) { }
+  virtual std::string name() const { return "MaxColorFaceColl"; }
   void Collect(CollectVisitor &vis)
   {
     c1->Collect(vis);
@@ -3952,6 +3978,7 @@ class MinColorFaceColl : public ForwardFaceCollection
 {
 public:
   MinColorFaceColl(FaceCollection *c1, FaceCollection *c2) : ForwardFaceCollection(*c1), c1(c1), c2(c2) { }
+  virtual std::string name() const { return "MinColorFaceColl"; }
   void Collect(CollectVisitor &vis)
   {
     c1->Collect(vis);
@@ -3998,6 +4025,8 @@ public:
   {
     light_dir /= light_dir.Dist();
   }
+  virtual std::string name() const { return "Lambert"; }
+
   bool has_color() const { return true; }
   unsigned int Color(int face, int point) const
   {
@@ -4036,6 +4065,7 @@ class ColorElem2 : public ForwardFaceCollection
 {
 public:
   ColorElem2(FaceCollection *coll, unsigned int col) : ForwardFaceCollection(*coll), col(col) { }
+  virtual std::string name() const { return "ColorElem2"; }
   bool has_color() const { return true; }
   unsigned int Color(int face, int point) const {return col; }
 private:
@@ -4052,6 +4082,8 @@ class ColorGrayScale : public ForwardFaceCollection
 {
 public:
   ColorGrayScale(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  virtual std::string name() const { return "ColorGrayScale"; }
+
   bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
@@ -4071,6 +4103,8 @@ class ColorAlpha : public ForwardFaceCollection
 {
 public:
   ColorAlpha(FaceCollection *coll, unsigned int alpha) : ForwardFaceCollection(*coll), alpha(alpha),coll(coll) { }
+    virtual std::string name() const { return "ColorAlpha"; }
+
   ~ColorAlpha()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -4121,6 +4155,8 @@ class ColorFromNormals : public ForwardFaceCollection
 {
 public:
   ColorFromNormals(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  virtual std::string name() const { return "ColorFromNormals"; }
+
   bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
@@ -4142,6 +4178,8 @@ class ColorRangeFaceCollection : public ForwardFaceCollection
 {
 public: 
   ColorRangeFaceCollection(FaceCollection *coll, unsigned int source_upper, unsigned int source_lower, unsigned int upper_range, unsigned int lower_range) : ForwardFaceCollection(*coll), coll(coll), source_upper(source_upper), source_lower(source_lower), upper_range(upper_range), lower_range(lower_range) { }
+  virtual std::string name() const { return "ColorRangeFaceCollection"; }
+
   bool has_color() const { return true; }
   virtual unsigned int Color(int face, int point) const
   {
@@ -4170,6 +4208,7 @@ class QuadsToTris2 : public ForwardFaceCollection
 {
 public:
   QuadsToTris2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "QuadsToTris2"; }
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -4331,6 +4370,7 @@ class FlipPolygonOrder : public ForwardFaceCollection
 {
 public:
   FlipPolygonOrder(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "FlipPolygonOrder"; }
 
   virtual int NumFaces() const { return coll->NumFaces(); }
   virtual int NumPoints(int face) const
@@ -4703,6 +4743,8 @@ class ChangePoints2 : public ForwardFaceCollection
 public:
   ChangePoints2(FaceCollection &coll, std::function<Point (Point, int,int)> f)
     : ForwardFaceCollection(coll), f(f) { }
+  virtual std::string name() const { return "ChangePoints2"; }
+
   virtual Point FacePoint(int face, int point) const 
   {
     return f(ForwardFaceCollection::FacePoint(face,point),
@@ -5076,6 +5118,8 @@ class HeightMap2 : public FaceCollection
 {
 public:
   HeightMap2(Bitmap<float> &bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : bm(bm), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { }
+  virtual std::string name() const { return "HeightMap2"; }
+
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
@@ -5415,6 +5459,8 @@ class NormalFaceCollection : public ForwardFaceCollection
 {
 public:
   NormalFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<GameApi::V (int face, int point)> f) : ForwardFaceCollection(*next), e(e), f(f) { }
+  virtual std::string name() const { return "NormalFaceCollection"; }
+
   bool has_normal() const { return true; }
   virtual Vector PointNormal(int face, int point) const
   {
@@ -5454,6 +5500,8 @@ class TexFaceCollection : public ForwardFaceCollection
 {
 public:
   TexFaceCollection(GameApi::Env &e, FaceCollection *next, std::function<GameApi::PT (int face, int point)> f) : ForwardFaceCollection(*next), e(e), f(f) { }
+  virtual std::string name() const { return "TexFaceCollection"; }
+
   bool has_texcoord() const { return true; }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -6745,6 +6793,7 @@ class ChooseTex : public ForwardFaceCollection
 {
 public:
   ChooseTex(FaceCollection *coll, int val) : ForwardFaceCollection(*coll),val(val) { }
+  virtual std::string name() const { return "ChooseTex"; }
   bool has_texcoord() const { return true; }
   virtual float TexCoord3(int face, int point) const { 
     return float(val)+0.5f;
@@ -12816,6 +12865,7 @@ class CutFaces : public ForwardFaceCollection
 public:
   CutFaces(FaceCollection *i, VolumeObject *oo, Cutter *cut) : ForwardFaceCollection(*i), i(i), oo(oo), cut(cut) { cut_them(); compress(); }
   
+  virtual std::string name() const { return "CutFaces"; }
   
   void cut_them()
   {
@@ -13068,6 +13118,8 @@ class ColorMapPoly : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly(Bitmap<::Color> *bm, Point pos, Vector u_x, Vector u_y) : bm(bm), pos(pos), u_x(u_x), u_y(u_y) { prepared = false; }
+  virtual std::string name() const { return "ColorMapPoly"; }
+
   void Collect(CollectVisitor &vis)
   {
     bm->Collect(vis);
@@ -13142,6 +13194,7 @@ class ColorMapPoly2 : public SingleForwardFaceCollection
 {
 public:
   ColorMapPoly2(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm),fb(fb), pos(pos), u_x(u_x), u_y(u_y) { u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); }
+  virtual std::string name() const { return "ColorMapPoly2"; }
   void Collect(CollectVisitor &vis)
   {
     bm->Collect(vis);
@@ -13209,6 +13262,7 @@ public:
   ColorMapPoly2_cyl(Bitmap<::Color> *bm, Bitmap<float> *fb, Point pos, Vector u_x, Vector u_y) : bm(bm), fb(fb), pos(pos), u_x(u_x), u_y(u_y) {
     u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
   }
+  virtual std::string name() const { return "ColorMapPoly2_cyl"; }
   void Collect(CollectVisitor &vis)
   {
     bm->Collect(vis);
@@ -13282,6 +13336,7 @@ public:
     u_z = Vector::CrossProduct(u_x,u_y); u_z/=u_z.Dist(); 
     u_z *= u_x.Dist();
   }
+  virtual std::string name() const { return "ColorMapPoly2_sph"; }
   void Collect(CollectVisitor &vis)
   {
     bm->Collect(vis);
@@ -13537,6 +13592,8 @@ public:
 	if (side(false, i2)) { choose.push_back(1); faces.push_back(i2); }
       }
   }
+  virtual std::string name() const { return "SubPolyChange"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll1->Collect(vis);
@@ -13642,6 +13699,8 @@ public:
     GameApi::PT center2 = ev.point_api.point(center.x, center.y, center.z);
     fd = ev.dist_api.fd_sphere(center2, r);
   }
+  virtual std::string name() const { return "TexCoordSpherical2"; }
+
   void Collect(CollectVisitor &vis) { coll->Collect(vis); }
   void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
@@ -13688,6 +13747,7 @@ public:
       color_bl(color_bl), color_br(color_br) 
   {
   }
+  virtual std::string name() const { return "ColorFromTexcoord"; }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   bool has_color() const { return true; }
@@ -13715,6 +13775,8 @@ class DeformFaceCollection : public ForwardFaceCollection
 {
 public:
   DeformFaceCollection(FaceCollection *obj, VolumeObject *bools, Vector v) : ForwardFaceCollection(*obj), obj(obj), bools(bools), v(v) {}
+  virtual std::string name() const { return "DeformFaceCollection"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
@@ -13901,6 +13963,7 @@ public:
   {
   }
   ResizeFaceCollection(FaceCollection *coll, Matrix *m) : ForwardFaceCollection(*coll), coll(coll), ext_flag(true),ext_mat(m) { }
+  virtual std::string name() const { return "ResizeFaceCollection"; }
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -14094,6 +14157,7 @@ class PersistentCachePoly : public FaceCollection
 {
 public:
   PersistentCachePoly(FaceCollection &c, std::string filename) : c(c), filename(filename),res(0) { }
+  virtual std::string name() const { return "PersistentCachePoly"; }
   
   void Collect(CollectVisitor &vis)
   {
@@ -14208,6 +14272,8 @@ class BuildOffsets : public ForwardFaceCollection
 {
 public:
   BuildOffsets(FaceCollection *coll, std::vector<Point> vec) : ForwardFaceCollection(*coll), coll(coll), vec(vec) { }
+  virtual std::string name() const { return "BuildOffsets"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
@@ -14250,6 +14316,8 @@ class SplitterFaceCollection : public FaceCollection
 {
 public:
   SplitterFaceCollection(FaceCollection &coll, int start, int end) : coll(coll), start(start), end(end) { }
+  virtual std::string name() const { return "SplitterFaceCollection"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll.Collect(vis);
@@ -14285,6 +14353,8 @@ class TexCoordFromNormal : public ForwardFaceCollection
 {
 public:
   TexCoordFromNormal(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "TexCoordFromNormal"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
@@ -14341,6 +14411,7 @@ class TexCoordFromNormal2 : public ForwardFaceCollection
 {
 public:
   TexCoordFromNormal2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "TexCoordFromNormal2"; }
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
@@ -14442,6 +14513,7 @@ class LineToCone : public FaceCollection
 {
 public:
   LineToCone(GameApi::Env &e, GameApi::EveryApi &ev, LineCollection *coll2, float size, int numfaces) : e(e), ev(ev), lines(coll2),size(size),numfaces(numfaces) { coll=0; }
+  virtual std::string name() const { return "LineToCone"; }
   void Collect(CollectVisitor &vis)
   {
     lines->Collect(vis);
@@ -14725,6 +14797,8 @@ class SphNormals : public ForwardFaceCollection
 {
 public:
   SphNormals(FaceCollection *coll, Point pt) : ForwardFaceCollection(*coll), coll(coll), pt(pt) { }
+  virtual std::string name() const { return "SphNormals"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   bool has_normal() const { return true; }
@@ -15294,6 +15368,8 @@ class SphericalWave : public ForwardFaceCollection
 {
 public:
   SphericalWave(FaceCollection *coll, float r1, float fr_1, float r2, float fr_2) : ForwardFaceCollection(*coll), r1(r1), r2(r2), fr_1(fr_1), fr_2(fr_2), coll(coll) { }
+  virtual std::string name() const { return "SphericalWave"; }
+
   void Collect(CollectVisitor &vis) { coll->Collect(vis); }
   void HeavyPrepare() { }
   Point FacePoint(int face, int point) const
@@ -15504,6 +15580,8 @@ class CurveToPoly : public FaceCollection
 {
 public:
   CurveToPoly(Curve<Point> *curve, float start_x, float end_x, float start_y, float end_y, float start_angle, float end_angle, int numinstances) : curve(curve), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_angle(start_angle), end_angle(end_angle), numinstances(numinstances) {}
+  virtual std::string name() const { return "CurveToPoly"; }
+
   void Collect(CollectVisitor &vis)
   {
   }
@@ -15576,6 +15654,8 @@ class DSFaceCollection : public FaceCollection
 {
 public:
   DSFaceCollection(DiskStore *ds) :ds(ds) { ready=false; }
+  virtual std::string name() const { return "DSFaceCollection"; }
+
   void Collect(CollectVisitor &vis)
   {
     ds->Collect(vis);
@@ -16107,6 +16187,8 @@ GameApi::BM GameApi::PolygonApi::p_texture(P p, int i)
  {
  public:
    FaceCollectionSplitter(FaceCollection *coll, int start_index, int end_index) : coll(coll), start_index(start_index), end_index(end_index) { firsttime = true; }
+  virtual std::string name() const { return "FaceCollectionSplitter"; }
+
    void Collect(CollectVisitor &vis)
    {
      coll->Collect(vis);
@@ -16268,6 +16350,8 @@ public:
   {
     if (num_slots==0) { num_slots=1; current_slot=0; }
   }
+  virtual std::string name() const { return "TextureSplitter2"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -16703,6 +16787,8 @@ public:
     std::cout << "TextureStorage::" << buf.width << "x" << buf.height << "=" << MB(buf.width*buf.height*sizeof(unsigned int)) << std::endl;
 
   }
+  virtual std::string name() const { return "TextureStorage"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -16821,6 +16907,8 @@ class ReplaceTexture : public ForwardFaceCollection
 {
 public:
   ReplaceTexture(FaceCollection *coll, Bitmap<::Color> *bm, int num) : ForwardFaceCollection(*coll), coll(coll), bm(bm),num2(num) {}
+  virtual std::string name() const { return "ReplaceTexture"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   virtual int NumTextures() const { return coll->NumTextures(); }
@@ -16896,6 +16984,8 @@ class MeshResize : public ForwardFaceCollection
 {
 public:
   MeshResize(FaceCollection *coll, Point start, Point end) : ForwardFaceCollection(*coll), coll(coll), start(start), end(end) { }
+  virtual std::string name() const { return "MeshResize"; }
+
   void Collect(CollectVisitor &vis)
   {
     ForwardFaceCollection::Collect(vis);
@@ -16998,6 +17088,9 @@ class SmoothNormals2 : public ForwardFaceCollection
 public:
   SmoothNormals2(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { firsttime = true; }
   struct Data { Data() : v{0.01,0.01,0.01}, count(0) { } Vector v; int count; };
+
+  virtual std::string name() const { return "SmoothNormals2"; }
+
   
   void Collect(CollectVisitor &vis)
   {
@@ -18028,6 +18121,8 @@ class NormalToTexCoord : public ForwardFaceCollection
 {
 public:
   NormalToTexCoord(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "NormalToTexCoord"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   bool has_texcoord() const { return true; }
@@ -18183,6 +18278,8 @@ class MeshFromMeshAnim : public FaceCollection
 {
 public:
   MeshFromMeshAnim(MeshAnim *anim, float time) : anim(anim), time(time) { }
+  virtual std::string name() const { return "MeshFromMeshAnim"; }
+
   void Collect(CollectVisitor &vis)
   {
     anim->Collect(vis);
@@ -18230,6 +18327,7 @@ class MeshFromMeshAnim2 : public FaceCollection
 {
 public:
   MeshFromMeshAnim2(MeshAnim *anim, float time1, float time2) : anim(anim), time1(time1), time2(time2) { }
+  virtual std::string name() const { return "MeshFromMeshAnim2"; }
   void Collect(CollectVisitor &vis)
   {
     anim->Collect(vis);
@@ -18482,6 +18580,8 @@ class ShadowMap : public ForwardFaceCollection
 {
 public:
   ShadowMap(FaceCollection *next, Point pos,int sx, int sy) : ForwardFaceCollection(*next), next(next), pos(pos),sx(sx),sy(sy) {}
+  virtual std::string name() const { return "ShadowMap"; }
+
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
@@ -18953,6 +19053,8 @@ class STLFaceCollection : public FaceCollection
 {
 public:
   STLFaceCollection(GameApi::Env &e, std::string url, std::string homepage) : e(e), url(url),homepage(homepage) { m_ptr=0; }
+  virtual std::string name() const { return "STLFaceCollection"; }
+
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -19096,6 +19198,8 @@ class FixVertexOrder : public ForwardFaceCollection
 {
 public:
   FixVertexOrder(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "FixVertexOrder"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -19154,6 +19258,8 @@ class FilterInvisible : public ForwardFaceCollection
 {
 public:
   FilterInvisible(FaceCollection *coll, float size) : ForwardFaceCollection(*coll), coll(coll), size(size) { firsttime = true; }
+  virtual std::string name() const { return "FilterInvisible"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -19252,13 +19358,15 @@ void lod_unlock()
  class LodChoose : public ForwardFaceCollection
 {
 public:
-  LodChoose(std::vector<FaceCollection*> vec, std::string name) : ForwardFaceCollection(*vec[0]), vec(vec),name(name) { }
+  LodChoose(std::vector<FaceCollection*> vec, std::string name) : ForwardFaceCollection(*vec[0]), vec(vec),name2(name) { }
+  virtual std::string name() const { return "LodChoose"; }
+
   int find_val(std::string name) const
   {
     lod_lock();
     int s = g_lod.size();
     for(int i=0;i<s;i++) {
-      if (g_lod[i].name==name) {
+      if (g_lod[i].name==name2) {
 	int val = g_lod[i].value;
 	int sk = vec.size();
 	lod_unlock();
@@ -19271,7 +19379,7 @@ public:
   }
   void Collect(CollectVisitor &vis)
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       vec[pos]->Collect(vis);
     
@@ -19282,27 +19390,27 @@ public:
   
   virtual void Prepare()
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       vec[pos]->Prepare();
   }
   virtual int NumFaces() const 
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->NumFaces();
     return 0;
   }
   virtual int NumPoints(int face) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->NumPoints(face);
     return 0;
   }
   virtual Point FacePoint(int face, int point) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->FacePoint(face,point);
     Point p{0.0,0.0,0.0};
@@ -19310,7 +19418,7 @@ public:
   }
   virtual Vector PointNormal(int face, int point) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->PointNormal(face,point);
     Vector p{0.0,0.0,0.0};
@@ -19319,28 +19427,28 @@ public:
   }
   virtual float Attrib(int face, int point, int id) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->Attrib(face,point,id);
     return 0.0;
   }
   virtual int AttribI(int face, int point, int id) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->AttribI(face,point,id);
     return 0;
   }
   virtual unsigned int Color(int face, int point) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->Color(face,point);
     return 0x00000000;
   }
   virtual Point2d TexCoord(int face, int point) const
   {
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->TexCoord(face,point);
     Point2d p;
@@ -19349,14 +19457,14 @@ public:
     return p;
   }
   virtual float TexCoord3(int face, int point) const { 
-    int pos = find_val(name);
+    int pos = find_val(name2);
     if (pos!=-1)
       return vec[pos]->TexCoord3(face,point);
     return 0.0;
   }
 private:
   std::vector<FaceCollection*> vec;
-  std::string name;
+  std::string name2;
 };
 
  GameApi::P GameApi::PolygonApi::lod_choose(std::vector<P> vec, std::string name)
@@ -19372,79 +19480,81 @@ private:
 class LodSet : public ForwardFaceCollection
 {
 public:
-  LodSet(FaceCollection *coll, std::string name, int val) : ForwardFaceCollection(*coll), coll(coll),name(name), val(val) { }
+  LodSet(FaceCollection *coll, std::string name, int val) : ForwardFaceCollection(*coll), coll(coll),name2(name), val(val) { }
+  virtual std::string name() const { return "LodSet"; }
+
   void Collect(CollectVisitor &vis)
   {
-    add_name(name,val);
+    add_name(name2,val);
     coll->Collect(vis);
-    rem_name(name);
+    rem_name(name2);
   }
   void HeavyPrepare() { }
   virtual void Prepare() { 
-    add_name(name,val);
+    add_name(name2,val);
     coll->Prepare();
-    rem_name(name);
+    rem_name(name2);
   }
   virtual int NumFaces() const 
   {
-    add_name(name,val);
+    add_name(name2,val);
     int v = coll->NumFaces();
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual int NumPoints(int face) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     int v = coll->NumPoints(face);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual Point FacePoint(int face, int point) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     Point v = coll->FacePoint(face,point);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual Vector PointNormal(int face, int point) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     Vector v = coll->PointNormal(face,point);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual float Attrib(int face, int point, int id) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     float v = coll->Attrib(face,point,id);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual int AttribI(int face, int point, int id) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     int v = coll->AttribI(face,point,id);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual unsigned int Color(int face, int point) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     unsigned int v = coll->Color(face,point);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual Point2d TexCoord(int face, int point) const
   {
-    add_name(name,val);
+    add_name(name2,val);
     Point2d v = coll->TexCoord(face,point);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
   virtual float TexCoord3(int face, int point) const { 
-    add_name(name,val);
+    add_name(name2,val);
     float v = coll->TexCoord3(face,point);
-    rem_name(name);
+    rem_name(name2);
     return v;
   }
 
@@ -19472,7 +19582,7 @@ public:
 
 private:
   FaceCollection *coll;
-  std::string name;
+  std::string name2;
   int val;
 };
  GameApi::P GameApi::PolygonApi::lod_set(P p, std::string name, int val)
@@ -19519,6 +19629,8 @@ class TexCoord_subarea : public ForwardFaceCollection
 public:
   TexCoord_subarea(FaceCollection *coll, float start_x, float end_x, float start_y, float end_y) : ForwardFaceCollection(*coll), coll(coll), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y) { }
 public:
+  virtual std::string name() const { return "TexCoord_subarea"; }
+
   void Collect(CollectVisitor &vis) { coll->Collect(vis); }
   void HeavyPrepare() { }
   virtual Point2d TexCoord(int face, int point) const
@@ -19966,6 +20078,8 @@ class NormalDarkness : public ForwardFaceCollection
 {
 public:
   NormalDarkness(FaceCollection *coll, float dark) : ForwardFaceCollection(*coll), coll(coll),dark(dark) { }
+  virtual std::string name() const { return "NormalDarkness"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   virtual unsigned int Color(int face, int point) const
@@ -20004,6 +20118,8 @@ class GradientColor : public ForwardFaceCollection
 {
 public:
   GradientColor(FaceCollection *coll, Point pt, Vector v, unsigned int start_color, unsigned int end_color) : ForwardFaceCollection(*coll), coll(coll), pt(pt), v(v), start_color(start_color), end_color(end_color) { }
+  virtual std::string name() const { return "GradientColor"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   virtual unsigned int Color(int face, int point) const
@@ -20038,6 +20154,10 @@ public:
   {
     li->Collect(vis);
   }
+
+  virtual std::string name() const { return "LinesFaceCollection"; }
+
+  
   void HeavyPrepare() { }
   virtual void Prepare() { li->Prepare(); }
   virtual int NumFaces() const { return li->NumLines(); }
@@ -20092,6 +20212,8 @@ class MixMesh : public ForwardFaceCollection
 {
 public:
   MixMesh(FaceCollection *coll, PointsApiPoints *pts, float val) : ForwardFaceCollection(*coll), coll(coll), pts(pts), val(val) { }
+  virtual std::string name() const { return "MixMesh"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   virtual Point FacePoint(int face, int point) const
@@ -20456,6 +20578,8 @@ class MeshElem : public FaceCollection
 {
 public:
   MeshElem(FaceCollection *face1, FaceCollection *face2) : face1(face1), face2(face2) { }
+  virtual std::string name() const { return "MeshElem"; }
+
   void Collect(CollectVisitor &vis)
   {
     face1->Collect(vis);
@@ -20765,6 +20889,8 @@ class Block : public FaceCollection
 {
 public:
   Block(FaceCollection *coll, float pos_x, float pos_z, int x, int z, float delta_x, float delta_z) : coll(coll), pos_x(pos_x), pos_z(pos_z), x(x),z(z), delta_x(delta_x),delta_z(delta_z) { }
+  virtual std::string name() const { return "Block"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -21034,6 +21160,8 @@ class SubstituteQuadWithMesh : public FaceCollection
 {
 public:
   SubstituteQuadWithMesh(FaceCollection *coll1, FaceCollection *coll2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal) : coll1(coll1), coll2(coll2), start_x(start_x), end_x(end_x), start_y(start_y),end_y(end_y),start_z(start_z),end_z(end_z),normal(normal) { }
+  virtual std::string name() const { return "SubstituteQuadWithMesh"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll1->Collect(vis);
@@ -21137,7 +21265,8 @@ class OptimizeMesh : public FaceCollection
 {
 public:
   OptimizeMesh(FaceCollection *coll, float max) : coll(coll),max(max) {}
-  
+   virtual std::string name() const { return "OptimizeMesh"; }
+ 
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -21440,6 +21569,7 @@ class ConvexHull : public FaceCollection
 {
 public:
   ConvexHull(PointsApiPoints *points) : points(points) { }
+  virtual std::string name() const { return "ConvexHull"; }
 
   float signedVolume(Point a, Point b, Point c, Point d) const
   {
@@ -22368,6 +22498,8 @@ class MatrixElem44 : public ForwardFaceCollection
 {
 public:
   MatrixElem44(FaceCollection &next, Matrix m) : ForwardFaceCollection(next), next(&next), m(m) {  }
+  virtual std::string name() const { return "MatrixElem44"; }
+
   void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
@@ -22448,6 +22580,7 @@ class RemoveFaces : public FaceCollection
 {
 public:
   RemoveFaces(FaceCollection *next) : coll(next) { firsttime=true; }
+  virtual std::string name() const { return "RemoveFaces"; }
 
   virtual bool has_normal() const { return true; }
   virtual bool has_attrib() const { return false; }
@@ -23019,6 +23152,8 @@ class CombineTextures : public ForwardFaceCollection
 {
 public:
   CombineTextures(FaceCollection *coll1, FaceCollection *coll2) : ForwardFaceCollection(*coll1), coll1(coll1), coll2(coll2) { }
+  virtual std::string name() const { return "CombineTextures"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll1->Collect(vis);
@@ -23463,6 +23598,8 @@ class PublishFaceCount : public ForwardFaceCollection
 {
 public:
   PublishFaceCount(FaceCollection *coll) : ForwardFaceCollection(*coll), coll(coll) { }
+  virtual std::string name() const { return "PublishFaceCount"; }
+
   void Collect(CollectVisitor &vis)
   {
     coll->Collect(vis);
@@ -23720,6 +23857,7 @@ class FaceCollectionCutter : public ForwardFaceCollection
 {
 public:
   FaceCollectionCutter(FaceCollection *coll, float start, float end) : ForwardFaceCollection(*coll), coll(coll), start(start), end(end) { }
+  virtual std::string name() const { return "FaceCollectionCutter"; }
 
   virtual int NumFaces() const { return std::max(0,EndFace()-StartFace()); }
   virtual int NumPoints(int face) const
@@ -23815,6 +23953,8 @@ class AmbientOcculsion : public ForwardFaceCollection
 {
 public:
   AmbientOcculsion(FaceCollection *next) : ForwardFaceCollection(*next), next(next) { }
+  virtual std::string name() const { return "AmbientOcculsion"; }
+
   struct Res
   {
     bool b;
@@ -23876,6 +24016,8 @@ class XSplit : public ForwardFaceCollection
 {
 public:
   XSplit(FaceCollection *coll, float x, float x_0, float x_1) : ForwardFaceCollection(*coll), coll(coll), x(x), x_0(x_0), x_1(x_1) { }
+  virtual std::string name() const { return "XSplit"; }
+
   Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -23898,6 +24040,8 @@ class YSplit : public ForwardFaceCollection
 {
 public:
   YSplit(FaceCollection *coll, float y, float y_0, float y_1) : ForwardFaceCollection(*coll), coll(coll), y(y), y_0(y_0), y_1(y_1) { }
+  virtual std::string name() const { return "YSplit"; }
+
   Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -23920,6 +24064,7 @@ class ZSplit : public ForwardFaceCollection
 {
 public:
   ZSplit(FaceCollection *coll, float z, float z_0, float z_1) : ForwardFaceCollection(*coll), coll(coll), z(z), z_0(z_0), z_1(z_1) { }
+  virtual std::string name() const { return "ZSplit"; }
   Point FacePoint(int face, int point) const
   {
     Point p = coll->FacePoint(face,point);
@@ -23993,6 +24138,7 @@ class ExtractLargePolygons : public FaceCollection
 {
 public:
   ExtractLargePolygons(FaceCollection *coll, float size, bool reverse) : coll(coll),size(size),reverse(reverse) { }
+  virtual std::string name() const { return "ExtractLargePolygons"; }
 
   void Collect(CollectVisitor &vis) { coll->Collect(vis); }
   void HeavyPrepare() { }
@@ -24828,6 +24974,8 @@ public:
     int y;
     int z;
   };
+  virtual std::string name() const { return "ColorSpaceFaceCollection2"; }
+
   FaceId split_face(int face) const
   {
     FaceId id;
@@ -25233,6 +25381,8 @@ class NoBatchMap : public ForwardFaceCollection
 {
 public:
   NoBatchMap(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
+  virtual std::string name() const { return "NoBatchMap"; }
+
   bool HasBatchMap() const { return false; }
 };
 GameApi::P GameApi::PolygonApi::no_batch_map(P p)

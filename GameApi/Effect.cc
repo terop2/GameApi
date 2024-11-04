@@ -3095,6 +3095,8 @@ class HeightMapPolygons : public BoxableFaceCollection
 {
 public:
   HeightMapPolygons(Bitmap<Point> &pos) : tr(pos.SizeX(),pos.SizeY()), faces(tr, pos) { }
+    virtual std::string name() const { return "HeightMapPolygons"; }
+
     void Collect(CollectVisitor &vis)
   {
     faces.Collect(vis);

@@ -1614,6 +1614,8 @@ class LineProduct : public SingleForwardFaceCollection
 {
 public:
   LineProduct(LineCollection *coll, LineCollection *coll2) : coll(coll), coll2(coll2) { }
+  virtual std::string name() const { return "LineProduct"; }
+
   void Collect(CollectVisitor &vis) { coll->Collect(vis); coll2->Collect(vis); }
   void HeavyPrepare() { }
 
@@ -2396,6 +2398,8 @@ class TowardsNormal : public ForwardFaceCollection
 {
 public:
   TowardsNormal(FaceCollection *coll, float amount) : ForwardFaceCollection(*coll), coll(coll), amount(amount) { }
+  virtual std::string name() const { return "TowardsNormal"; }
+
   void Collect(CollectVisitor &vis) { coll->Collect(vis); vis.register_obj(this); }
   void HeavyPrepare() {
 

@@ -3213,6 +3213,7 @@ class GLTFFaceCollection : public FaceCollection
 public:
   GLTFFaceCollection( GLTFModelInterface *interface, int mesh_index, int prim_index) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) {
   }
+  virtual std::string name() const { return "GLTFFaceCollection"; }
   ~GLTFFaceCollection()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -4753,6 +4754,8 @@ class TransFaceCollection : public ForwardFaceCollection
 {
 public:
   TransFaceCollection(FaceCollection *next) : next(next), ForwardFaceCollection(*next) { }
+  virtual std::string name() const { return "TransFaceCollection"; }
+
   virtual Point FacePoint(int face, int point) const { if (face==0) stackTrace(); return next->FacePoint(face,point); }
   virtual bool IsTransparent() const { std::cout << "TRUE" << std::endl; return true; }
 private:
@@ -6009,6 +6012,8 @@ class ScaleToGLTF_p : public FaceCollection
 {
 public:
   ScaleToGLTF_p(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::P p2) : env(e), ev(ev), p(p), p2(p2) { res.id=-1; }
+  virtual std::string name() const { return "ScaleToGLTF_p"; }
+
   void Collect(CollectVisitor &vis)
   {
   FaceCollection *coll = find_facecoll(env,p);
@@ -7636,6 +7641,7 @@ class GltfMeshAllP : public FaceCollection
 {
 public:
   GltfMeshAllP(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface) : env(env), ev(ev), interface(interface) { res.id=-1;}
+  virtual std::string name() const { return "GltfMeshAllP"; }
   virtual void Collect(CollectVisitor &vis) {
     interface->Collect(vis);
     vis.register_obj(this);
@@ -7829,6 +7835,8 @@ class GltfMeshAllPArr : public FaceCollection
 {
 public:
   GltfMeshAllPArr(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i, Vector light_dir) : env(env), ev(ev), interface(interface),i(i),light_dir(light_dir) { res.id=-1;}
+  virtual std::string name() const { return "GltfMeshAllPArr"; }
+
   virtual void Collect(CollectVisitor &vis) {
     interface->Collect(vis);
     vis.register_obj(this);

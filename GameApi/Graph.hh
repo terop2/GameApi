@@ -3499,6 +3499,7 @@ class QuadArrayElem : public SingleForwardBoxableFaceCollection
 {
 public:
   QuadArrayElem(Array<int, Quad> &array) : voxel(array) { }
+  virtual std::string name() const { return "QuadArrayElem"; }
 
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
@@ -5188,6 +5189,8 @@ class FacesFromMap : public BoxableFaceCollection
 {
 public:
   FacesFromMap(Bitmap<bool> &mymap, Bitmap<Point> &pos) : mymap(mymap), pos(pos) { Refresh(); }
+  virtual std::string name() const { return "FacesFromMap"; }
+
   void Collect(CollectVisitor &vis)
   {
     mymap.Collect(vis);

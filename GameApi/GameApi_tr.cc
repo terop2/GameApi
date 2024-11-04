@@ -375,6 +375,8 @@ class TriStripToPoly : public SingleForwardFaceCollection
 {
 public:
   TriStripToPoly(TriStrip *ts) : ts(ts) { }
+  virtual std::string name() const { return "TriStripToPoly"; }
+
   virtual int NumFaces() const {
     int s = ts->Size();
     if (s==0) return 0;

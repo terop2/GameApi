@@ -4313,6 +4313,8 @@ class PolysFaceCollection : public FaceCollection
 {
 public:
   PolysFaceCollection(VertexArraySet::Polys &polys) : polys(polys) { }
+  virtual std::string name() const { return "PolysFaceCollection"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
   void Prepare() { }
