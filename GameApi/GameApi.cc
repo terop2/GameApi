@@ -4712,6 +4712,8 @@ class TransparentSeparateFaceCollection : public FaceCollection
 {
 public:
   TransparentSeparateFaceCollection(FaceCollection *coll, Bitmap<::Color> &texture, bool opaque, bool force_transparent) : coll(coll), texture(texture),opaque(opaque), force_transparent(force_transparent) { }
+  virtual std::string name() const { return "TransparentSeparateFaceCollection"; }
+
   ~TransparentSeparateFaceCollection()
   {
     int s1 = m_p1.size(); for(int i=0;i<s1;i++)
@@ -5036,6 +5038,7 @@ class TransparentSeparateFaceCollection2 : public FaceCollection
 {
 public:
   TransparentSeparateFaceCollection2(FaceCollection *coll, std::vector<Bitmap<::Color>*> textures, bool opaque) : coll(coll), textures(textures),opaque(opaque) { }
+  virtual std::string name() const { return "TransparentSeparateFaceCollection2"; }
 
 
   void Collect(CollectVisitor &vis) {
@@ -13779,6 +13782,7 @@ class PatchSample : public FaceCollection
 {
 public:
   PatchSample(CurvePatch &patch, int sx, int sy) : patch(patch), sx(sx), sy(sy) { }
+  virtual std::string name() const { return "PatchSample"; }
   void Collect(CollectVisitor &vis)
   {
   }
@@ -16507,6 +16511,7 @@ class ChangePos : public ForwardFaceCollection
 {
 public:
   ChangePos(FaceCollection &coll, FaceCollection &orig, PointTransform &trans, float delta_time, bool dif) : ForwardFaceCollection(coll), coll(coll), orig(orig), trans(trans), delta_time(delta_time), dif(dif) { }
+  virtual std::string name() const { return "ChangePos"; }
   void Collect(CollectVisitor &vis) {
     coll.Collect(vis); orig.Collect(vis);
   }
@@ -21433,6 +21438,8 @@ public:
     hml->SetCB(&P2_CB,this);
     coll=0;
   }
+    virtual std::string name() const { return "P_script2"; }
+
   ~P_script2() { del_p_script.push_back(this); }
   void Prepare2() {
     for(int i=0;i<del_p_script.size();i++)
@@ -32766,6 +32773,7 @@ public:
     coll->Collect(vis);
     vis.register_obj(this);
   }
+  virtual std::string name() const { return "ToonOutlineFaceCollection"; }
   void HeavyPrepare() {
 #if 0
     

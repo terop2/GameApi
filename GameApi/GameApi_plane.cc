@@ -389,6 +389,8 @@ class PLFaces : public FaceCollection
 {
 public:
   PLFaces(FacesInPlane *pl) : pl(pl) { }
+  virtual std::string name() const { return "PLFaces"; }
+
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
 

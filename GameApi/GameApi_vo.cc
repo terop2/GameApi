@@ -304,6 +304,8 @@ public:
 	       float start_y, float end_y,
 	       float start_z, float end_z
 	       ) : e(e), o(o), sx(sx), sy(sy), sz(sz), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z) { Iterate(); }
+  virtual std::string name() const { return "RenderCubes3"; }
+
   void Iterate()
   {
     float world_x = end_x-start_x;
@@ -1826,6 +1828,8 @@ class NormalVectorVolumeFaceColl : public ForwardFaceCollection
 {
 public:
   NormalVectorVolumeFaceColl(FaceCollection *coll, VectorVolumeObject *s) : ForwardFaceCollection(*coll), s(s) { }
+  virtual std::string name() const { return "NormalVectorVolumeFaceColl"; }
+
   virtual Vector PointNormal(int face, int point) const { 
     Point p = ForwardFaceCollection::FacePoint(face,point);
     Vector v = s->VectorValue(p);

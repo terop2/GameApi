@@ -9,6 +9,7 @@ public:
   BarChart(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per) : env(env), ev(ev), url(url), homepage(homepage), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), per(per) { 
     result.id = -1;
   }
+  virtual std::string name() const { return "BarChart"; }
   void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -114,6 +115,7 @@ public:
   BarChart2(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per_x, float per_y) : env(env), ev(ev), url(url), homepage(homepage), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z), per_x(per_x), per_y(per_y) {
     result.id = -1;
   }
+  virtual std::string name() const { return "BarChart2"; }
     void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);

@@ -254,6 +254,7 @@ class FaceCollectionFromTriArray : public SingleForwardFaceCollection
 {
 public:
   FaceCollectionFromTriArray(const TriArray &arr) : arr(arr) { } 
+  virtual std::string name() const { return "FaceCollectionFromTriArray"; }
   void Collect(CollectVisitor &vis)
   {
   }

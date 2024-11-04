@@ -191,6 +191,8 @@ class FontAtlasStringFaceCollection : public FaceCollection
 {
 public:
   FontAtlasStringFaceCollection(GameApi::Env &e, std::vector<GameApi::BM> vec, std::vector<FontAtlasGlyphInfo> info, int x_gap, GameApi::BM atlas_bm) : e(e), vec(vec), info(info), x_gap(x_gap), atlas_bm(atlas_bm) { }
+  virtual std::string name() const { return "FontAtlasStringFaceCollection"; }
+
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }

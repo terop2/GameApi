@@ -2926,6 +2926,8 @@ class PlyFaceCollection : public FaceCollection
 {
 public:
   PlyFaceCollection(GameApi::Env &e, std::string url, std::string homepage) : load(e,url,homepage) { }
+  virtual std::string name() const { return "PlyFaceCollection"; }
+
   void Collect(CollectVisitor &vis) { load.Collect(vis); }
   void HeavyPrepare() { }
   virtual void Prepare() { load.Prepare(); }
