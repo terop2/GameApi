@@ -4976,7 +4976,7 @@ public:
     vec.resize(count);
   }
 
-  /*
+  
   bool HasBatchMap() const { return coll->HasBatchMap(); }
   unsigned int *filter_indices_int(unsigned int *indices_int) const
   {
@@ -5042,10 +5042,10 @@ public:
     r.indices_short = filter_indices_short(r.indices_short);
     r.indices_char = filter_indices_char(r.indices_char);
     r.numfaces = vec.size();
-    std::cout<< "TransparentSeparate:" << r.numfaces << " " << r.numvertices << std::endl;
+    //std::cout<< "TransparentSeparate:" << r.numfaces << " " << r.numvertices << std::endl;
     return r;
   }
-  */
+  
 public:
   FaceCollection *coll;
   Bitmap<::Color> &texture;
