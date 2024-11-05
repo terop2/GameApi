@@ -11,7 +11,7 @@ int hhhh_gggg=1;
 
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
-
+extern bool g_glb_animated;
 
 template<class T>
 void print(std::string label, T *ptr)
@@ -63,7 +63,7 @@ public:
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_file(GameApi::Env &e, FETCHID id);
   FILEID add_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec, std::string filename);
   FILEID find_file(std::string filename);
-  void start_decode_process(FILEID id, int req_width, int req_height);
+  void start_decode_process(FETCHID fetch_id, FILEID id, int req_width, int req_height);
   //void decode_file(FILEID id);
   bool is_decoded(FILEID id);
   void set_decode_callback(FILEID id, void (*fptr)(void*), void *user_data);
@@ -464,6 +464,7 @@ struct ThreadInfo_gltf_bitmap
   int size;
   GLTFImageDecoder *decoder;
   int decoder_item;
+  std::string url;
 };
 
 GameApi::Env *g_e = 0;
@@ -480,6 +481,8 @@ struct LoadGltf2_data
 void LoadGltf3_cb(void*);
 void LoadGltf2_cb(void*);
 void LoadGltf_cb(void *);
+
+int find_str(std::string val, std::string repl);
 
 class LoadGltf : public CollectInterface
 {
@@ -536,11 +539,12 @@ public:
     //delete vec;
     //#endif
     async_pending_count++;
-    decoder->start_decode_process(iid,256,256);
+    decoder->start_decode_process(id,iid,256,256);
     }
   }
   void PrePrepare() {
     if (!decoder) return;
+    if (preprepare_done) return;
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
       //std::cout << "PrePrepare()" << url << std::endl;
@@ -553,6 +557,9 @@ public:
     std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
     g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
+
+
+
     
     std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
 
@@ -639,6 +646,19 @@ public:
     }
     std::vector<char> vec2(vec->begin(), vec->end());
     std::string str(vec->begin(),vec->end());
+
+
+    bool is_animated = false;
+    {
+    int val = find_str(str,"\"animations\"");
+    if (val!=-1)
+      {
+	is_animated=true;
+	g_glb_animated=true;
+      }
+    }
+
+
     //std::cout << str << std::endl;
     //bool b = false;
     std::string err;
@@ -902,12 +922,15 @@ class GLTFImageDecoder;
 
 void *thread_func_gltf_bitmap(void *data2)
 {
-  // std::cout << "START_DECODING_IN_THREAD" << std::endl;
   
   ThreadInfo_gltf_bitmap *bm = (ThreadInfo_gltf_bitmap*)data2;
 
   int image_idx = 0;
   tinygltf::Image *image = bm->image;
+
+  //std::cout << "START_DECODING_IN_THREAD" << bm->url << std::endl;
+
+  
   int req_width = bm->req_width;
   int req_height = bm->req_height;
   const unsigned char *bytes = bm->bytes;
@@ -1033,7 +1056,7 @@ void *thread_func_gltf_bitmap(void *data2)
   delete [] bm->bytes;
 
 
-  // std::cout << "DECODING DONE" << image->uri << std::endl;
+  //std::cout << "DECODING DONE" << bm->url << std::endl;
   
   FILEID id;
   id.id = bm->decoder_item;
@@ -1062,7 +1085,7 @@ class GLTFImageDecoder;
 //std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
 
 
-void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item)
+void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url)
 {
 #ifdef THREADS
   
@@ -1073,6 +1096,7 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   image->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
   
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
+  info->url = url;
   info->image = image;
   info->req_width = req_width;
   info->req_height = req_height;
@@ -1093,7 +1117,23 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
 #endif
   
 }
- 
+
+void gltf_join_threads(GLTFImageDecoder *decoder)
+{
+#ifdef THREADS
+#ifdef EMSCRIPTEN
+    int ss = decoder->load->current_gltf_threads.size();
+    for(int i=0;i<ss;i++)
+      {
+	void *res;
+	pthread_join(decoder->load->current_gltf_threads[i]->thread_id,&res);
+      }
+    
+    decoder->load->current_gltf_threads.clear();
+#endif
+#endif
+}
+
 
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
@@ -1103,6 +1143,11 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
   url+=image->uri;
   //std::cout << "FIND_FILE:" << url << std::endl;
   FILEID id = dt->decoder->find_file(url);
+  //if (!dt->decoder->is_decoded(id)) {
+    //std::cout << "JOINING BITMAP THREADS!" << std::endl;
+  //  gltf_join_threads(dt->decoder);
+  // }
+  //FILEID id2 = dt->decoder->find_file(url);
   if (dt->decoder->is_decoded(id)) {
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
     //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
@@ -1113,7 +1158,7 @@ bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err
     image->pixel_type = dt->decoder->decoded_image[id]->pixel_type;
     image->bits = dt->decoder->decoded_image[id]->bits;
     //std::cout << "OUTPUT:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
-  } else { std::cout << "FILE WAS NOT DECODED YET:" << dt->base_url + image->uri << std::endl; }
+  } else { std::cout << "FILE WAS NOT DECODED YET:" << dt->decoder->load->current_gltf_threads.size() << "::" << dt->base_url + image->uri << std::endl; }
   //#ifdef CONCURRENT_IMAGE_DECODE
   //start_gltf_bitmap_thread(image, req_width, req_height, bytes, size);
   //return true;
@@ -3215,6 +3260,7 @@ GLTF_AnimChannel *anim_channel(GameApi::Env &env, GameApi::EveryApi &ev, GameApi
 
 unsigned long g_glb_file_size=0;
 unsigned long g_zip_file_size=0;
+bool g_glb_animated=false;
 
 
 class GLTFFaceCollection : public FaceCollection
@@ -4112,7 +4158,7 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
-  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT && g_glb_file_size<50000000 && g_zip_file_size<50000000; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT && g_glb_file_size<50000000 && g_zip_file_size<50000000 && g_glb_animated==false; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
   FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef ref;
@@ -12529,7 +12575,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned c
   while(std::getline(ss,line)) {
     std::stringstream ss2(line);
     ss2 >> uri;
-    //std::cout << uri << std::endl;
+    //std::cout << "@" << uri << "@" << std::endl;
     if (uri=="\"uri\":") {
       	std::string url2;
 	ss2 >> url2;
@@ -12539,7 +12585,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned c
 	else if (base_url.size()>0)
 	  url2 = base_url + "/" + url2.substr(1,url2.size()-2);
 	else url2 = url2.substr(1,url2.size()-2);
-	//std::cout << "URL:" << url2 << std::endl;
+	std::cout << "URL:" << url2 << std::endl;
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
 
 	//std::cout << "COMPARE:" << url2.substr(url2.size()-3,3) << std::endl;
@@ -12547,6 +12593,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned c
 	  vec2.push_back(url2);
     }
   }
+  std::cout << "FOUND:" << vec2.size() << std::endl;
   return vec2;
 }
 
@@ -12605,7 +12652,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
       filenames_.push_back(filenames[ids[i]]);
     }
 
-  
+  std::cout << "FETCH:" << filenames_.size() << std::endl;
   e.async_load_all_urls(filenames_, gameapi_homepageurl);
 
       int sd = filenames_.size();
@@ -12654,14 +12701,14 @@ FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<uns
   filenames2[id] = filename;
   return id;
 }
-void GLTFImageDecoder::start_decode_process(FILEID id, int req_width, int req_height)
+void GLTFImageDecoder::start_decode_process(FETCHID fetch_id, FILEID id, int req_width, int req_height)
 {
   //std::cout << "start_process:" << id.id << std::endl;
   tinygltf::Image *img = new tinygltf::Image;
 #ifdef THREADS
 #ifdef EMSCRIPTEN
-  
-  start_gltf_bitmap_thread(img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id);
+  std::string filename = get_fetch_filename(fetch_id);
+  start_gltf_bitmap_thread(img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename);
 #else
   // not-emscripten -> do syncronous version
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
