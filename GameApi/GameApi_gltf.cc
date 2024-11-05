@@ -4219,7 +4219,14 @@ public:
       }
 
     
-    }
+    } else
+      {
+	int s = position_acc->count;
+	m_p3.push_back(ref.color = new unsigned int[s]);
+	std::memset(ref.color,0xff, sizeof(unsigned int)*s);
+
+      }
+    //std::cout << "GLTFFaceCollection::color=" << (int)ref.color << std::endl;
 
     if (texcoord_done)
     {
@@ -4236,15 +4243,16 @@ public:
       }
     //ref.texcoords = (Point*)((unsigned char*)(&texcoord_buf->data[0]) + texcoord_bv->byteOffset + texcoord_acc->byteOffset + start_face*stride);
 
-
-    //std::cout << std::hex << ref.color[ref.indices_int[0]] << std::dec << std::endl;
-    //std::cout << std::hex << ref.color[ref.indices_int[1]] << std::dec<< std::endl;
-    //std::cout << std::hex << ref.color[ref.indices_int[2]] << std::dec << std::endl;
     /*
+    std::cout << "COLORGLTF:" << std::hex << ref.color[ref.indices_int[0]] << std::dec << std::endl;
+    std::cout << std::hex << ref.color[ref.indices_int[1]] << std::dec<< std::endl;
+    std::cout << std::hex << ref.color[ref.indices_int[2]] << std::dec << std::endl;
 
-    std::cout << ref.texcoords[ref.indices_int[0]] << std::endl;
+    std::cout << "TEXCOORDGLTF:" << ref.texcoords[ref.indices_int[0]] << std::endl;
     std::cout << ref.texcoords[ref.indices_int[1]] << std::endl;
     std::cout << ref.texcoords[ref.indices_int[2]] << std::endl;
+    */
+    /*
 
     std::cout << ref.pointnormal[ref.indices_int[0]] << std::endl;
     std::cout << ref.pointnormal[ref.indices_int[1]] << std::endl;

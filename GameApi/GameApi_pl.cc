@@ -4086,7 +4086,9 @@ public:
     m_p1.push_back(pos2 = new unsigned int[numvertices]);
     for(int i=0;i<numvertices;i++)
       {
-	unsigned int c = col;
+	unsigned int c = col; // NOTE, COLOURS IN WRONG ORDER HERE
+	c<<=8;
+	c|=((c&0xff000000)>>24);
 	pos2[i] = c;
 	//if (i<20)
 	//std::cout << "FLIPNORMAL:" << pos2[i] << std::endl;
@@ -6183,10 +6185,27 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     VertexArraySet *s = new VertexArraySet;
     FaceCollectionVertexArray2 arr(*faces, *s);
     arr.reserve(0);
-    //arr.copy(0,faces->NumFaces());  
+    //arr.copy(0,faces->NumFaces());
+
+
+    FaceCollection &coll = *faces;
+    bool has_normal2 = coll.has_normal();
+    bool has_attrib2 = coll.has_attrib();
+    bool has_color2 = coll.has_color();
+    bool has_texcoord2 = coll.has_texcoord() && (is_texture_usage_confirmed(s)||is_texture_usage_confirmed(&coll));
+    bool has_skeleton2 = coll.has_skeleton();
+    
+    s->has_normal = has_normal2;
+    s->has_attrib = has_attrib2;
+    s->has_color = has_color2;
+    s->has_texcoord = has_texcoord2;
+    s->has_skeleton = has_skeleton2;
+
+    
     FaceBufferRef ref = faces->BatchMap(0,faces->NumFaces());
 
-    int s2 = faces->NumFaces();
+    int s2 = ref.numfaces;
+    //std::cout << "BATCHMAP RENDER: " << s2 << std::endl;
     for(int i=0;i<s2;i++)
       {
 	if (ref.indices_int)
@@ -6256,10 +6275,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0);
-    if (!keep)
+    if (!keep) {
       s->free_memory();
+    }
     return add_vertex_array(e, s, arr2);
-  }
+    }
 
       std::cout << "Normal rendering" << std::endl;
   
@@ -6343,8 +6363,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     arr.copy(0,faces->NumFaces());  
     RenderVertexArray *arr2 = new RenderVertexArray(g_low, *s);
     arr2->prepare(0);
-    if (!keep)
+    if (!keep) {
       s->free_memory();
+    }
     return add_vertex_array(e, s, arr2);
   }
   
@@ -25431,7 +25452,7 @@ public:
   NoBatchMap(FaceCollection *coll) : ForwardFaceCollection(*coll) { }
   virtual std::string name() const { return "NoBatchMap"; }
 
-  bool HasBatchMap() const { return false; }
+  bool HasBatchMap() const { std::cout << "NoBatchMap: " << name() << std::endl; return false; }
 };
 GameApi::P GameApi::PolygonApi::no_batch_map(P p)
 {
