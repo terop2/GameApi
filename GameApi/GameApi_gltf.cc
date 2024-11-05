@@ -9,6 +9,8 @@ int hhhh_gggg=1;
 #define TINYGLTF_USE_CPP14 1
 #include "tiny_gltf.h"
 
+extern unsigned long g_glb_file_size;
+extern unsigned long g_zip_file_size;
 
 
 template<class T>
@@ -549,6 +551,9 @@ public:
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
+
+    g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
+    
     std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
 
     //int ss = image_filenames.size();
@@ -3208,6 +3213,10 @@ GLTF_AnimChannel *anim_channel(GameApi::Env &env, GameApi::EveryApi &ev, GameApi
 
 #endif // NO_PREPARE_RENDER
 
+unsigned long g_glb_file_size=0;
+unsigned long g_zip_file_size=0;
+
+
 class GLTFFaceCollection : public FaceCollection
 {
 public:
@@ -4103,7 +4112,7 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
-  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT && g_glb_file_size<50000000 && g_zip_file_size<50000000; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
   FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef ref;
@@ -11744,6 +11753,8 @@ public:
     std::vector<unsigned char> vec2(vec->begin(), vec->end());
     mz_ulong size = vec2.end()-vec2.begin();
 
+    g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
+    
     std::cout << "Zip size: " << size << std::endl;
     if (size>250000000) {
       std::cout << "Zip File too large! -> exiting..." << std::endl;
