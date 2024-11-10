@@ -181,7 +181,15 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly
     p->poly_weight.reserve(poly_count*3/3);
 
 }
-void VertexArraySet::push_poly_with_indices(int id, int num, Point *points, unsigned int *indexes)
+
+bool range_check(int i, int points_num)
+{
+  if (i>=0 && i<points_num) return true;
+  std::cout << "range_check failed: " << i << "@@" << points_num << std::endl;
+  return false;
+}
+
+  void VertexArraySet::push_poly_with_indices(int id, int num, Point *points, unsigned int *indexes, int points_num)
 {
 
   Polys *p = m_set[id];
@@ -194,18 +202,29 @@ void VertexArraySet::push_poly_with_indices(int id, int num, Point *points, unsi
   else
   if (num == 3)
     {
+      if (range_check(indexes[0],points_num))
+      if (range_check(indexes[1],points_num))
+      if (range_check(indexes[2],points_num))
+	{
       p->tri_polys.push_back(points[indexes[0]]);
       p->tri_polys.push_back(points[indexes[1]]);
       p->tri_polys.push_back(points[indexes[2]]);
+	}
     }
   else if (num==4)
     {
+      if (range_check(indexes[0],points_num))
+      if (range_check(indexes[1],points_num))
+      if (range_check(indexes[2],points_num))
+      if (range_check(indexes[3],points_num))
+	{
       p->quad_polys.push_back(points[indexes[0]]);
       p->quad_polys.push_back(points[indexes[1]]);
       p->quad_polys.push_back(points[indexes[2]]);
       p->quad_polys.push_back(points[indexes[0]]);
       p->quad_polys.push_back(points[indexes[2]]);
       p->quad_polys.push_back(points[indexes[3]]);
+	}
     }
   else
     {
@@ -269,7 +288,7 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
 }
 
 
-void VertexArraySet::push_poly2_with_indices(int id, int num, Point *points, unsigned int *indexes)
+void VertexArraySet::push_poly2_with_indices(int id, int num, Point *points, unsigned int *indexes, int points_num)
 {
 
   Polys *p = m_set[id];
@@ -282,18 +301,29 @@ void VertexArraySet::push_poly2_with_indices(int id, int num, Point *points, uns
   else
   if (num == 3)
     {
+      if (range_check(indexes[0],points_num))
+      if (range_check(indexes[1],points_num))
+      if (range_check(indexes[2],points_num))
+	{
       p->tri_polys2.push_back(points[indexes[0]]);
       p->tri_polys2.push_back(points[indexes[1]]);
       p->tri_polys2.push_back(points[indexes[2]]);
+	}
     }
   else if (num==4)
     {
+      if (range_check(indexes[0],points_num))
+      if (range_check(indexes[1],points_num))
+      if (range_check(indexes[2],points_num))
+      if (range_check(indexes[3],points_num))
+	{
       p->quad_polys2.push_back(points[indexes[0]]);
       p->quad_polys2.push_back(points[indexes[1]]);
       p->quad_polys2.push_back(points[indexes[2]]);
       p->quad_polys2.push_back(points[indexes[0]]);
       p->quad_polys2.push_back(points[indexes[2]]);
       p->quad_polys2.push_back(points[indexes[3]]);
+	}
     }
   else
     {
@@ -360,7 +390,7 @@ void VertexArraySet::push_poly2(int id, int num, Point *points)
 }
 
 
-void VertexArraySet::push_normal_with_indices(int id, int num, Vector *points, unsigned int *indices)
+void VertexArraySet::push_normal_with_indices(int id, int num, Vector *points, unsigned int *indices, int points_num)
 {
   Polys *p = m_set[id];
   if (!p)
@@ -373,18 +403,29 @@ void VertexArraySet::push_normal_with_indices(int id, int num, Vector *points, u
   else
   if (num == 3)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+	{
       p->tri_normals.push_back(points[indices[0]]);
       p->tri_normals.push_back(points[indices[1]]);
       p->tri_normals.push_back(points[indices[2]]);
+	}
     }
   else if (num==4)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+      if (range_check(indices[3],points_num))
+	{
       p->quad_normals.push_back(points[indices[0]]);
       p->quad_normals.push_back(points[indices[1]]);
       p->quad_normals.push_back(points[indices[2]]);
       p->quad_normals.push_back(points[indices[0]]);
       p->quad_normals.push_back(points[indices[2]]);
       p->quad_normals.push_back(points[indices[3]]);
+	}
     }
   else
     {
@@ -581,7 +622,7 @@ void VertexArraySet::split_color2(std::vector<float> &target, unsigned int color
   //std::cout << "Color value" << fred << " " << fgreen << " " << fblue << " " << falpha << std::endl;
 }
 
-void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *points, unsigned int *indices)
+void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *points, unsigned int *indices, int points_num)
 {
   Polys *p = m_set[id];
   if (!p)
@@ -593,18 +634,29 @@ void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *poin
   else
   if (num == 3)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+	{
       split_color2(p->tri_color, points[indices[0]]);
       split_color2(p->tri_color, points[indices[1]]);
       split_color2(p->tri_color, points[indices[2]]);
+	}
     }
   else if (num==4)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+      if (range_check(indices[3],points_num))
+	{
       split_color2(p->quad_color, points[indices[0]]);
       split_color2(p->quad_color, points[indices[1]]);
       split_color2(p->quad_color, points[indices[2]]);
       split_color2(p->quad_color, points[indices[0]]);
       split_color2(p->quad_color, points[indices[2]]);
       split_color2(p->quad_color, points[indices[3]]);
+	}
     }
   else
     {
@@ -667,7 +719,7 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
 }
 
 
-void VertexArraySet::push_joint_with_indices(int id, int num, VEC4 *points, unsigned int *indices)
+void VertexArraySet::push_joint_with_indices(int id, int num, VEC4 *points, unsigned int *indices, int points_num)
 {
 
   Polys *p = m_set[id];
@@ -680,19 +732,30 @@ void VertexArraySet::push_joint_with_indices(int id, int num, VEC4 *points, unsi
   else
   if (num == 3)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+	{
       p->tri_joint.push_back(points[indices[0]]);
       p->tri_joint.push_back(points[indices[1]]);
       p->tri_joint.push_back(points[indices[2]]);
+	}
     }
   else if (num==4)
     {
       //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+      if (range_check(indices[3],points_num))
+	{
       p->quad_joint.push_back(points[indices[0]]);
       p->quad_joint.push_back(points[indices[1]]);
       p->quad_joint.push_back(points[indices[2]]);
       p->quad_joint.push_back(points[indices[0]]);
       p->quad_joint.push_back(points[indices[2]]);
       p->quad_joint.push_back(points[indices[3]]);
+	}
     }
   else
     {
@@ -760,7 +823,7 @@ void VertexArraySet::push_joint(int id, int num, VEC4 *points)
 
 }
 
-void VertexArraySet::push_weight_with_indices(int id, int num, VEC4 *points, unsigned int *indices)
+void VertexArraySet::push_weight_with_indices(int id, int num, VEC4 *points, unsigned int *indices, int points_num)
 {
 
   Polys *p = m_set[id];
@@ -773,19 +836,30 @@ void VertexArraySet::push_weight_with_indices(int id, int num, VEC4 *points, uns
   else
   if (num == 3)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+	{
       p->tri_weight.push_back(points[indices[0]]);
       p->tri_weight.push_back(points[indices[1]]);
       p->tri_weight.push_back(points[indices[2]]);
+	}
     }
   else if (num==4)
     {
       //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+      if (range_check(indices[3],points_num))
+	{
       p->quad_weight.push_back(points[indices[0]]);
       p->quad_weight.push_back(points[indices[1]]);
       p->quad_weight.push_back(points[indices[2]]);
       p->quad_weight.push_back(points[indices[0]]);
       p->quad_weight.push_back(points[indices[2]]);
       p->quad_weight.push_back(points[indices[3]]);
+	}
     }
   else
     {
@@ -852,7 +926,7 @@ void VertexArraySet::push_weight(int id, int num, VEC4 *points)
 
 }
 
-void VertexArraySet::push_texcoord_with_indices(int id, int num, Point *points, unsigned int *indices)
+void VertexArraySet::push_texcoord_with_indices(int id, int num, Point *points, unsigned int *indices, int points_num)
 {
   Polys *p = m_set[id];
   if (!p)
@@ -864,19 +938,30 @@ void VertexArraySet::push_texcoord_with_indices(int id, int num, Point *points, 
   else
   if (num == 3)
     {
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+	{
       p->tri_texcoord.push_back(points[indices[0]]);
       p->tri_texcoord.push_back(points[indices[1]]);
       p->tri_texcoord.push_back(points[indices[2]]);
+	}
     }
   else if (num==4)
     {
       //std::cout << "Vertex: " << points[0] << " " << points[1] << " " << points[2] << " " << points[3] << std::endl;
+      if (range_check(indices[0],points_num))
+      if (range_check(indices[1],points_num))
+      if (range_check(indices[2],points_num))
+      if (range_check(indices[3],points_num))
+	{
       p->quad_texcoord.push_back(points[indices[0]]);
       p->quad_texcoord.push_back(points[indices[1]]);
       p->quad_texcoord.push_back(points[indices[2]]);
       p->quad_texcoord.push_back(points[indices[0]]);
       p->quad_texcoord.push_back(points[indices[2]]);
       p->quad_texcoord.push_back(points[indices[3]]);
+	}
     }
   else
     {
