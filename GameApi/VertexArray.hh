@@ -102,16 +102,16 @@ public:
   void free_reserve(int id);
   // id is the vertex array num to be used 0 = beginning, 1 = end
   // num is the number of points (all calls should share same num)
-  void push_poly_with_indices(int id, int num, Point *points, unsigned int *indexes);
-  void push_poly2_with_indices(int id, int num, Point *points, unsigned int *indexes);
+  void push_poly_with_indices(int id, int num, Point *points, unsigned int *indexes, int points_num);
+  void push_poly2_with_indices(int id, int num, Point *points, unsigned int *indexes, int points_num);
 
-  void push_normal_with_indices(int id, int num, Vector *vectors, unsigned int *indexes);
+  void push_normal_with_indices(int id, int num, Vector *vectors, unsigned int *indexes, int points_num);
   void push_attrib_with_indices(int id, int attrib_id, int num, float *attribs, unsigned int *indexes);
   void push_attribi_with_indices(int id, int attrib_id, int num, int *attribi, unsigned int *indexes);
-  void push_color_with_indices(int id, int num, unsigned int *colors, unsigned int *indexes);
-  void push_texcoord_with_indices(int id, int num, Point *points, unsigned int *indexes);
-  void push_joint_with_indices(int id, int num, VEC4 *points, unsigned int *indexes);
-  void push_weight_with_indices(int id, int num, VEC4 *points, unsigned int *indexes); 
+  void push_color_with_indices(int id, int num, unsigned int *colors, unsigned int *indexes, int points_num);
+  void push_texcoord_with_indices(int id, int num, Point *points, unsigned int *indexes, int points_num);
+  void push_joint_with_indices(int id, int num, VEC4 *points, unsigned int *indexes, int points_num);
+  void push_weight_with_indices(int id, int num, VEC4 *points, unsigned int *indexes, int points_num); 
 
   void push_poly(int id, int num, Point *points);
   void push_poly2(int id, int num, Point *points);

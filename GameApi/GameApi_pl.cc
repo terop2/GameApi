@@ -6211,22 +6211,22 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	if (ref.indices_int)
 	  {
 	    if (ref.facepoint) {
-	      s->push_poly_with_indices(0,3,ref.facepoint,ref.indices_int+i*3);
+	      s->push_poly_with_indices(0,3,ref.facepoint,ref.indices_int+i*3,ref.numvertices);
 	      //if (i<20)
 	      //print("facepoint",ref.facepoint);
 	    }
 	    if (ref.facepoint2) {
-	      s->push_poly2_with_indices(0,3,ref.facepoint2,ref.indices_int+i*3);
+	      s->push_poly2_with_indices(0,3,ref.facepoint2,ref.indices_int+i*3,ref.numvertices);
 	      //if (i<20)
 	      //print("facepoint2",ref.facepoint2);
 	    }
 	    if (ref.pointnormal) {
-	      s->push_normal_with_indices(0,3,ref.pointnormal,ref.indices_int+i*3);
+	      s->push_normal_with_indices(0,3,ref.pointnormal,ref.indices_int+i*3,ref.numvertices);
 	      //if (i<20)
 	      //print("pointnormal",ref.pointnormal);
 	    }
 	    if (ref.color) {
-	      s->push_color_with_indices(0,3,ref.color,ref.indices_int+i*3);
+	      s->push_color_with_indices(0,3,ref.color,ref.indices_int+i*3,ref.numvertices);
 	      //if (i<20) {
 	      //std::cout << std::hex;
 	      //print("color",ref.color);
@@ -6235,17 +6235,17 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	    }
 	    
 	    if (ref.texcoords) {
-	      s->push_texcoord_with_indices(0,3,ref.texcoords,ref.indices_int+i*3);
+	      s->push_texcoord_with_indices(0,3,ref.texcoords,ref.indices_int+i*3,ref.numvertices);
 	      //if (i<20)
 	      //print("texcoord",ref.texcoords);
 	    }
 	    if (ref.joints) {
-	      s->push_joint_with_indices(0,3,ref.joints,ref.indices_int+i*3);
+	      s->push_joint_with_indices(0,3,ref.joints,ref.indices_int+i*3,ref.numvertices);
 	      //if (i<20)
 	      //print("joints",ref.joints);
 	    }
 	    if (ref.weights) {
-	      s->push_weight_with_indices(0,3,ref.weights,ref.indices_int+i*3);	
+	      s->push_weight_with_indices(0,3,ref.weights,ref.indices_int+i*3,ref.numvertices);	
 	      //if (i<20)
 	      //print("weigthts",ref.weights);
 	    }
@@ -13928,8 +13928,12 @@ public:
 };
 int filesize(std::string filename)
 {
-  std::ifstream in(filename, std::ifstream::ate|std::ifstream::binary);
-  return in.tellg();
+  //std::ifstream in(filename, std::ifstream::ate|std::ifstream::binary);
+  //return in.tellg();
+  int s = filename.size();
+  int sum = 0;
+  for(int i=0;i<s;i++) sum+=int(filename[i]);
+  return sum;
 }
 bool invalidate(CacheItem *item, std::string filename, int obj_count)
 {
@@ -13990,11 +13994,12 @@ GameApi::P GameApi::PolygonApi::file_cache(P model, std::string filename, int ob
   CacheItem *item2 = new CacheItem;
   cache_del.vec.push_back(item2);
   item2->filename = filename;
-  item2->obj = memoize(prepare_cut(model));
+  P p2 = memoize(model);
+  item2->obj = prepare_cut(p2);
   item2->filesize = filesize(filename);
   item2->obj_count = obj_count;
   cache_map[cache_id(filename,obj_count)]=item2;
-  return model;
+  return p2;
 }
 Matrix g_last_resize = Matrix::Identity();
 

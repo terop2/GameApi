@@ -22,6 +22,9 @@ void print(std::string label, T *ptr)
   std::cout << std::endl;
 }
 
+class GLTF_Model_with_prepare;
+std::vector<GLTF_Model_with_prepare*> g_model_del_items;
+std::vector<std::string> g_deleted_urls;
 
 class LoadGltf;
 // not working because tinygltf doesn't allow it.
@@ -127,6 +130,7 @@ public:
   
   virtual int accessors_size() const { return self->accessors.size(); }
   virtual const tinygltf::Accessor &get_accessor(int i) const {
+    if (!self) { std::cout << "SELF FAIL(accessor)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->accessors.size())
 	return self->accessors[i];
     std::cout << "ERROR: get_accessor out of bounds" << std::endl;
@@ -136,6 +140,7 @@ public:
   
   virtual int animations_size() const { return self->animations.size(); }
   virtual const tinygltf::Animation &get_animation(int i) const {
+    if (!self) { std::cout << "SELF FAIL(animation)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->animations.size())
 
     return self->animations[i];
@@ -146,6 +151,7 @@ public:
 
   virtual int buffers_size() const { return self->buffers.size(); }
   virtual const tinygltf::Buffer &get_buffer(int i) const {
+    if (!self) { std::cout << "SELF FAIL(buffer)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->buffers.size())
 
     return self->buffers[i];
@@ -157,6 +163,7 @@ public:
   
   virtual int bufferviews_size() const { return self->bufferViews.size(); }
   virtual const tinygltf::BufferView &get_bufferview(int i) const {
+    if (!self) { std::cout << "SELF FAIL(bufferview)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->bufferViews.size())
 
     return self->bufferViews[i];
@@ -168,6 +175,7 @@ public:
   
   virtual int materials_size() const { return self->materials.size(); }
   virtual const tinygltf::Material &get_material(int i) const {
+    if (!self) { std::cout << "SELF FAIL(material)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->materials.size())
       
     return self->materials[i];
@@ -179,6 +187,7 @@ public:
   
   virtual int meshes_size() const { return self->meshes.size(); }
   virtual const tinygltf::Mesh &get_mesh(int i) const {
+    if (!self) { std::cout << "SELF FAIL(mesh)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->meshes.size())
     return self->meshes[i];
 
@@ -189,6 +198,7 @@ public:
 
   virtual int nodes_size() const { return self->nodes.size(); }
   virtual const tinygltf::Node &get_node(int i) const {
+    if (!self) { std::cout << "SELF FAIL(node)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->nodes.size())
 
     return self->nodes[i];
@@ -200,6 +210,7 @@ public:
   
   virtual int textures_size() const { return self->textures.size(); }
   virtual const tinygltf::Texture &get_texture(int i) const {
+    if (!self) { std::cout << "SELF FAIL(texture)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->textures.size())
     return self->textures[i];
 
@@ -210,6 +221,7 @@ public:
   
   virtual int images_size() const { return self->images.size(); }
   virtual const tinygltf::Image &get_image(int i) const {
+    if (!self) { std::cout << "SELF FAIL(image)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->images.size())
 
     return self->images[i];
@@ -220,6 +232,7 @@ public:
   
   virtual int skins_size() const { return self->skins.size(); }
   virtual const tinygltf::Skin &get_skin(int i) const {
+    if (!self) { std::cout << "SELF FAIL(skin)" << url<< std::endl; exit(0); }
 
         if (i>=0&&i<self->skins.size())
 
@@ -232,6 +245,7 @@ public:
   
   virtual int samplers_size() const { return self->samplers.size(); }
   virtual const tinygltf::Sampler &get_sampler(int i) const {
+    if (!self) { std::cout << "SELF FAIL(sampler)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->samplers.size())
 
     return self->samplers[i];
@@ -243,6 +257,7 @@ public:
   
   virtual int cameras_size() const { return self->cameras.size(); }
   virtual const tinygltf::Camera &get_camera(int i) const {
+    if (!self) { std::cout << "SELF FAIL(camera)" << url<< std::endl; exit(0); }
     if (i>=0&&i<self->cameras.size())    
     return self->cameras[i];
     std::cout << "ERROR: get_camera out of bounds" << std::endl;
@@ -253,6 +268,7 @@ public:
 
   virtual int scenes_size() const { return self->scenes.size(); }
   virtual const tinygltf::Scene &get_scene(int i) const {
+    if (!self) { std::cout << "SELF FAIL(scene)" << url<< std::endl; exit(0); }
 
     if (i>=0&&i<self->scenes.size())
     return self->scenes[i];
@@ -264,6 +280,7 @@ public:
 
   virtual int lights_size() const { return self->lights.size(); }
   virtual const tinygltf::Light &get_light(int i) const {
+    if (!self) { std::cout << "SELF FAIL(light)" << url << std::endl; exit(0); }
 
     if (i>=0&&i<self->lights.size())
     return self->lights[i];
@@ -433,7 +450,7 @@ public:
   }
   virtual bool IsDirectGltfImage() const { return bm->IsDirectGltfImage(); }
   virtual bool HasBatchMap() const { return bm->HasBatchMap(); }
-  virtual BufferRef BatchMap(int start_x, int end_x, int start_y, int end_y) const { return bm->BatchMap(start_x, end_x, start_y, end_y); }
+  virtual BufferRef BatchMap(int start_x, int end_x, int start_y, int end_y) const { return get_bm()->BatchMap(start_x, end_x, start_y, end_y); }
 public:
   GameApi::Env &e;
   std::string id;
@@ -509,6 +526,7 @@ public:
   }
   ~LoadGltf()
   {
+    g_deleted_urls.push_back(url);
     delete decoder;
     decoder=0;
     e.async_rem_callback(url);
@@ -744,12 +762,12 @@ class GLTF_Model_with_prepare : public GLTF_Model
 {
 public:
   GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
-  virtual void Prepare() { if (firsttime) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+  virtual void Prepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
-  virtual void HeavyPrepare() { if (firsttime) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
-private:
-  LoadGltf *load;
-  tinygltf::Model *model;
+  virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+public:
+  LoadGltf *load=0;
+  tinygltf::Model *model=0;
   bool firsttime;
 };
 
@@ -770,6 +788,15 @@ int register_cache_deleter(void (*fptr)(void*), void*);
 #ifdef EMSCRIPTEN
 void del_instances(void*)
 {
+  int s2 = g_model_del_items.size();
+  for(int ii=0;ii<s2;ii++)
+    {
+      GLTF_Model_with_prepare* item = g_model_del_items[ii];
+      item->load = 0;
+      item->model = 0;
+      item->self = 0;
+    }
+  
   int s = g_gltf_instances.size();
   for(int i=0;i<s;i++)
     {
@@ -4158,12 +4185,23 @@ public:
     return Point(0.0,0.0,0.0);
   }
 
-  bool HasBatchMap() const { return mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT && g_glb_file_size<50000000 && g_zip_file_size<50000000 && g_glb_animated==false; } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
+  bool HasBatchMap() const {
+    /*
+    int s = g_deleted_urls.size();
+    for(int i=0;i<s;i++)
+      {
+	if (g_deleted_urls[i]==interface->Url())
+	  {
+	    return false;
+	  }
+      }
+    */
+    return false; /*mode==TINYGLTF_MODE_TRIANGLES && position_acc->componentType==TINYGLTF_COMPONENT_TYPE_FLOAT && g_glb_file_size<50000000 && g_zip_file_size<50000000 && g_glb_animated==false;*/ } // HERE CAN ENABLE THE GLTF OPTIMIZATION FOR VERTEX ARRAYS, IT IS NOT FULLY WORKING YET.
   FaceBufferRef BatchMap(int start_face, int end_face) const
   {
     FaceBufferRef ref;
     ref.numfaces = indices_acc->count/3;
-    ref.numvertices = position_acc->count;
+    ref.numvertices = position_acc->count/3;
     ref.indices_char = 0;
     ref.indices_short =0;
     ref.indices_int = 0;
@@ -4533,7 +4571,7 @@ GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
     pp = ev.polygon_api.recalculate_normals(p);
   else
     pp = p;
-  GameApi::P p2 = pp; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P p2 = pp; //ev.polygon_api.file_cache(pp, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -4583,7 +4621,7 @@ GameApi::P GameApi::PolygonApi::gltf_load_nr( GameApi::EveryApi &ev, GameApi::TF
     pp = ev.polygon_api.recalculate_normals(p);
   else
     pp = p;
-  GameApi::P p2 = pp; //ev.polygon_api.file_cache(p, model->Url(), prim_index+mesh_index*50);
+  GameApi::P p2 = pp; //ev.polygon_api.file_cache(pp, model->Url(), prim_index+mesh_index*50);
   set_current_block(c);
   std::stringstream ss;
   ss << model->Url();
@@ -11712,6 +11750,7 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
   
   LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   GLTF_Model_with_prepare *model = new GLTF_Model_with_prepare(load, &load->model);
+  g_model_del_items.push_back(model);
   GLTFModelInterface *i = (GLTFModelInterface*)model;
       int c = get_current_block();
       set_current_block(-1);
