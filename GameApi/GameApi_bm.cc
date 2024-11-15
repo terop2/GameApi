@@ -672,15 +672,18 @@ std::vector<unsigned char> *load_from_url(std::string url);
 extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 
 #ifdef LINUX
+#ifndef ANDROID
 #include <execinfo.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #endif
+#endif
 
 void stackTrace()
 {
 #ifdef LINUX
+#ifndef ANDROID
 #define BT_BUF_SIZE 100
   int j,nptrs;
   void *buffer[BT_BUF_SIZE];
@@ -692,6 +695,7 @@ void stackTrace()
     printf("%s\n", strings[j]);
   }
   free(strings);
+#endif
 #endif
 
 #ifdef EMSCRIPTEN

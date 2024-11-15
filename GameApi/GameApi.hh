@@ -20,9 +20,9 @@ void clear_block(int id);
 template<class T, class K> class Array;
 
 
-class ASyncData;
-class BufferRef;
-class MainLoopEnv;
+struct ASyncData;
+struct BufferRef;
+struct MainLoopEnv;
 class LoadStream;
   class ASyncTask;
 class NewShadowShaderML_1;

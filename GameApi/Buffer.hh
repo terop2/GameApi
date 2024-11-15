@@ -21,6 +21,12 @@
 
 #ifndef BUFFER_HH
 #define BUFFER_HH
+
+#ifdef ANDROID
+#include "android.hh"
+#endif
+
+
 #include <algorithm>
 struct BufferRef
 {
