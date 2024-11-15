@@ -326,6 +326,7 @@ EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
 {
 #ifndef EMSCRIPTEN
 #ifndef __APPLE__
+#ifndef ANDROID
   MainLoopPriv *p = (MainLoopPriv*)priv;
   std::chrono::time_point<std::chrono::high_resolution_clock> time;
   time = std::chrono::system_clock::now();
@@ -349,6 +350,7 @@ EXPORT void GameApi::MainLoopApi::profile(std::string label, bool start)
       p->profile_count[label]++;
       p->profile_sums[label]+=count;
     }
+#endif
 #endif
 #endif
 }

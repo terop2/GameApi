@@ -162,6 +162,7 @@ void async_pending_minus(std::string label, std::string info);
 
 
 #ifdef ANDROID
+#if 0
 namespace std {
   template<class T>
   std::string to_string(const T &t) { std::stringstream ss; ss << t; return ss.str(); }
@@ -174,6 +175,7 @@ namespace std {
 };
   extern int errno;
 #define UINT64_MAX 0xffffffffffffffffL
+#endif
 #endif
 
 

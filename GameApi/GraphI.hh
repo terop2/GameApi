@@ -77,7 +77,7 @@ template<class T, class K> class Array;
 
 namespace GameApi
 {
-  class EveryApi;
+  struct EveryApi;
   struct FloatExprEnv { std::string name; float value; };
   struct IntExprEnv { std::string name; int value; };
 
@@ -531,7 +531,7 @@ private:
 };
 namespace GameApi
 {
-  class ExecuteEnv;
+  struct ExecuteEnv;
   class Env;
 };
 

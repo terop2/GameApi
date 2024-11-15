@@ -1,4 +1,6 @@
 
+
+
 #include "GameApi_low.hh"
 
 #ifndef ARM
@@ -27,6 +29,9 @@
 #define USE_TEXTURE_READ 1
 #endif
 
+#ifdef ANDROID
+#undef USE_MIX
+#endif
 
 
 #define NO_SDL_GLEXT 
@@ -99,8 +104,17 @@
 #endif
 
 #ifdef LINUX
+#ifndef ANDROID
 #define GLEW_HACK
 #endif
+#endif
+
+
+#define COLONCOLON ::
+#ifdef ANDROID
+#define COLONCOLON
+#endif
+
 
 #undef glBindAttribLocation
 #undef glActiveTexture
@@ -184,6 +198,7 @@
 
 #undef Mix_PlayChannel
 #undef Mix_HaltChannel
+
 
 std::string to_str(int val)
 {
@@ -276,18 +291,23 @@ void map_enums(int &i)
   case Low_GL_READ_BUFFER: i=GL_READ_BUFFER; break;
   case  Low_GL_BYTE: i=GL_BYTE; break;
   case  Low_GL_DOUBLE: i=GL_DOUBLE; break;
+#ifndef ANDROID
   case Low_GL_RGBA32F: i=GL_RGBA32F; break;
+#endif
   case Low_GL_NONE: i=GL_NONE; break;
   case Low_GL_LINK_STATUS: i=GL_LINK_STATUS; break;
     //case Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
   case Low_GL_CW: i=GL_CW; break;
   case Low_GL_CCW: i=GL_CCW; break;
+#ifndef ANDROID
   case Low_GL_PIXEL_PACK_BUFFER: i = GL_PIXEL_PACK_BUFFER; break;
   case Low_GL_PIXEL_UNPACK_BUFFER: i=GL_PIXEL_UNPACK_BUFFER; break;
+#endif
   case Low_GL_STREAM_DRAW: i=GL_STREAM_DRAW; break;
+#ifndef ANDROID
   case Low_GL_WRITE_ONLY: i=GL_WRITE_ONLY; break;
   case Low_GL_READ_ONLY: i=GL_READ_ONLY; break;
-
+#endif
   case Low_GL_VENDOR: i=GL_VENDOR; break;
   case Low_GL_RENDERER: i=GL_RENDERER; break;
   case Low_GL_VERSION: i=GL_VERSION; break;
@@ -331,7 +351,9 @@ void map_enums(int &i)
 
   case    Low_GL_TEXTURE_2D: i=GL_TEXTURE_2D; break;
 #ifndef USE_GLES2
+#ifndef ANDROID
   case    Low_GL_TEXTURE_2D_ARRAY: i=GL_TEXTURE_2D_ARRAY; break;
+#endif
 #endif
   case    Low_GL_TEXTURE_CUBE_MAP: i=GL_TEXTURE_CUBE_MAP; break;
   case    Low_GL_LINEAR: i=GL_LINEAR; break;
@@ -354,7 +376,9 @@ void map_enums(int &i)
   case    Low_GL_FRAMEBUFFER_COMPLETE: i=GL_FRAMEBUFFER_COMPLETE; break;
   case    Low_GL_NEAREST: i=GL_NEAREST; break;
   case    Low_GL_DEPTH_COMPONENT16: i=GL_DEPTH_COMPONENT16; break;
+#ifndef ANDROID
   case Low_GL_DEPTH_COMPONENT32F: i=GL_DEPTH_COMPONENT32F; break;
+#endif
   case Low_GL_DEPTH_COMPONENT: i=GL_DEPTH_COMPONENT; break;
   case    Low_GL_DEPTH_ATTACHMENT:  i=GL_DEPTH_ATTACHMENT; break;
   case    Low_GL_COLOR_ATTACHMENT0: i=GL_COLOR_ATTACHMENT0; break;
@@ -411,23 +435,31 @@ void map_enums(int &i)
   case Low_GL_RGBA8: i=GL_RGBA8; break;
   case Low_GL_MULTISAMPLE: i=GL_MULTISAMPLE; break;
 #ifndef USE_GLES2
+#ifndef ANDROID
   case  Low_GL_GEOMETRY_SHADER: i=GL_GEOMETRY_SHADER; break;
+#endif
 #endif
   case   Low_GL_VERTEX_SHADER: i=GL_VERTEX_SHADER; break;
   case   Low_GL_FRAGMENT_SHADER: i=GL_FRAGMENT_SHADER; break;
   case   Low_GL_COMPILE_STATUS: i=GL_COMPILE_STATUS; break;
 #ifndef USE_GLES2
+#ifndef ANDROID
   case   Low_GL_LINES_ADJACENCY_EXT: i=GL_LINES_ADJACENCY_EXT; break;
   case   Low_GL_TRIANGLES_ADJACENCY_EXT: i=GL_TRIANGLES_ADJACENCY_EXT; break;
 #endif
+#endif
   case   Low_GL_LINE_STRIP: i=GL_LINE_STRIP; break;
 #ifndef USE_GLES2
+#ifndef ANDROID
   case   Low_GL_GEOMETRY_INPUT_TYPE_EXT: i=GL_GEOMETRY_INPUT_TYPE_EXT; break;
   case   Low_GL_GEOMETRY_VERTICES_OUT_EXT: i=GL_GEOMETRY_VERTICES_OUT_EXT; break;
 #endif
+#endif
   case   Low_GL_NO_ERROR: i=GL_NO_ERROR; break;
 #ifndef USE_GLES2
+#ifndef ANDROID
   case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
+#endif
 #endif
 
   default: break;
@@ -446,7 +478,7 @@ void GLAPIENTRY MessageCallback( GLenum source,
 				 const GLchar *message,
 				 const void *userParam)
 {
-  std::cout << "GL CALLBACK: " << (type==GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "") << std::hex << "type=" << type << " severity=" << severity << " message=" << message << std::dec << std::endl;
+  //std::cout << "GL CALLBACK: " << (type==GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "") << std::hex << "type=" << type << " severity=" << severity << " message=" << message << std::dec << std::endl;
 }
 
 class OpenglApi : public OpenglLowApi
@@ -463,13 +495,13 @@ public:
 #ifdef GLEW_HACK
 #define glDrawBuffers GLEW_GET_FUN(__glewDrawBuffers)
 #endif
-    ::glDrawBuffers((GLsizei)n, bufs);
+    COLONCOLON glDrawBuffers((GLsizei)n, bufs);
   }
 
 
   virtual int glGetError() {
     //return Low_GL_NO_ERROR;
-    int i = ::glGetError(); 
+    int i = COLONCOLON glGetError(); 
     if (i==GL_NO_ERROR) i=Low_GL_NO_ERROR;
     else
       {
@@ -490,24 +522,24 @@ public:
   virtual void glColor4f(float r, float g, float b, float a) { 
     //::glColor4f(r,g,b,a);    check_err("glColor4f");
  }
-  virtual void glClearColor(float r, float g, float b, float a) { ::glClearColor(r,g,b,a);    check_err("glClearColor");
+  virtual void glClearColor(float r, float g, float b, float a) { COLONCOLON glClearColor(r,g,b,a);    check_err("glClearColor");
  }
   virtual void glClear(int bits) { 
     GLenum e = 0;
     if (bits & Low_GL_COLOR_BUFFER_BIT) e|=GL_COLOR_BUFFER_BIT;
     if (bits & Low_GL_DEPTH_BUFFER_BIT) e|=GL_DEPTH_BUFFER_BIT;
     if (bits & Low_GL_STENCIL_BUFFER_BIT) e|=GL_STENCIL_BUFFER_BIT;
-    ::glClear(e);    check_err("glClear");
+    COLONCOLON glClear(e);    check_err("glClear");
  }
-  virtual void glDepthMask(int a) { map_enums(a); ::glDepthMask(a);    check_err("glDepthMask");
+  virtual void glDepthMask(int a) { map_enums(a); COLONCOLON glDepthMask(a);    check_err("glDepthMask");
  }
-  virtual void glStencilMask(int a) { map_enums(a); ::glStencilMask(a);    check_err("glStencilMask");
+  virtual void glStencilMask(int a) { map_enums(a); COLONCOLON glStencilMask(a);    check_err("glStencilMask");
  }
   virtual void glStencilOp(int keep, int keep2, int repl) {
     map_enums(keep);
     map_enums(keep2);
     map_enums(repl);
-    ::glStencilOp(keep,keep2, repl); 
+    COLONCOLON glStencilOp(keep,keep2, repl); 
     check_err("glStencilOp");
 
 }
@@ -515,7 +547,7 @@ public:
     map_enums(notequal);
     map_enums(a);
     map_enums(b);
-    ::glStencilFunc(notequal, a,b); 
+    COLONCOLON glStencilFunc(notequal, a,b); 
     check_err("glStencilFunc");
 
 }
@@ -528,7 +560,7 @@ public:
 }
   virtual void glClearStencil(int val) { 
     map_enums(val);
-    ::glClearStencil(val); 
+    COLONCOLON glClearStencil(val); 
     check_err("glClearStencil");
 
 }
@@ -546,40 +578,40 @@ public:
   virtual void glEnable(int val) { 
     map_enums(val);
     check_err("before glEnable");
-    ::glEnable(val); 
+    COLONCOLON glEnable(val); 
     check_err("glEnable");
 
 }
   virtual void glDisable(int val) { 
     map_enums(val);
     //check_err("before glDisable" + to_str(val));
-    ::glDisable(val);
+    COLONCOLON glDisable(val);
     //check_err("glDisable" + to_str(val));
 
  }
   virtual void glGetFloatv(int val, float *params) { 
     map_enums(val);
-    ::glGetFloatv(val,params);
+    COLONCOLON glGetFloatv(val,params);
     check_err("glGetFloatv");
 
  }
 
   // viewports
-  virtual void glViewport(int x, int y, unsigned int w, unsigned int h) { ::glViewport(x,y,w,h); }
+  virtual void glViewport(int x, int y, unsigned int w, unsigned int h) { COLONCOLON glViewport(x,y,w,h); }
 
   // textures
   virtual void glGenTextures(int val, unsigned int *tex) { 
-    ::glGenTextures(val,tex);
+    COLONCOLON glGenTextures(val,tex);
     check_err("glGenTexture");
 
  }
-  virtual void glDeleteTextures(int val, const unsigned int *tex) { ::glDeleteTextures(val,tex); 
+  virtual void glDeleteTextures(int val, const unsigned int *tex) { COLONCOLON glDeleteTextures(val,tex); 
     check_err("glDeleteTextures");
 
 }
   virtual void glBindTexture(int ID, int tex) { 
     map_enums(ID);
-    ::glBindTexture(ID,tex); 
+    COLONCOLON glBindTexture(ID,tex); 
     check_err("glBindTexture");
 
 }
@@ -588,7 +620,7 @@ public:
     map_enums(b);
     map_enums(f);
     map_enums(g);
-    ::glTexImage2D(ID,a,b,c,d,e,f,g,ptr); 
+    COLONCOLON glTexImage2D(ID,a,b,c,d,e,f,g,ptr); 
     check_err("glTexImage2D");
 
 }
@@ -596,27 +628,27 @@ public:
     map_enums(ID);
     map_enums(e);
     map_enums(f);
-    ::glTexSubImage2D(ID,a,b,bb,c,d,e,f,ptr); 
+    COLONCOLON glTexSubImage2D(ID,a,b,bb,c,d,e,f,ptr); 
     check_err("glTexSubImage2D");
 
 }
   virtual void glCopyTexImage2D(int ID, int a,int b,int c,int d, int e,int f, int ptr) { 
     map_enums(ID);
     map_enums(b);
-    ::glCopyTexImage2D(ID,a,b,c,d,e,f,ptr); 
+    COLONCOLON glCopyTexImage2D(ID,a,b,c,d,e,f,ptr); 
     check_err("glCopyTexImage2D");
 }
   virtual void glTexParameteri(int ID, int a,int b) {
     map_enums(ID);
     map_enums(a);
     map_enums(b);
-    ::glTexParameteri(ID,a,b); 
+    COLONCOLON glTexParameteri(ID,a,b); 
     check_err("glTexParameteri");
 }
   virtual void glHint(int hint, int value) { 
     map_enums(hint);
     map_enums(value);
-    ::glHint(hint,value); 
+    COLONCOLON glHint(hint,value); 
     check_err("glHint");
 
 }
@@ -625,7 +657,7 @@ public:
 #define glActiveTexture GLEW_GET_FUN(__glewActiveTexture)
 #endif
     map_enums(a);
-    ::glActiveTexture(a); 
+    COLONCOLON glActiveTexture(a); 
     check_err("glActiveTexture");
   }
   virtual void glClientActiveTexture(int a) { 
@@ -664,7 +696,7 @@ public:
   virtual void glGetTexLevelParameteriv(int a, int b, int w, int *ptr) { 
     map_enums(a);
     map_enums(w);
-    ::glGetTexLevelParameteriv(a,b,w,ptr); 
+    COLONCOLON glGetTexLevelParameteriv(a,b,w,ptr); 
     check_err("glGetTexLevelParameteriv");
 }
   virtual void glGetTexImage(int a, int b, int rgba, int unsign_byte, void *ptr) { 
@@ -687,7 +719,7 @@ public:
   virtual void glDrawBuffer(int s)
   {
     map_enums(s);
-    ::glDrawBuffer(s); 
+    COLONCOLON glDrawBuffer(s); 
   }
   
 
@@ -696,28 +728,28 @@ public:
   virtual void glBlendFunc(int val, int val2) { 
     map_enums(val);
     map_enums(val2);
-::glBlendFunc(val,val2); 
+COLONCOLON glBlendFunc(val,val2); 
     check_err("glBlendFunc");
 
 }
   
   // scissor
   virtual void glScissor(float x, float y, float w, float h) { 
-    ::glScissor(x,y,w,h); }
+    COLONCOLON glScissor(x,y,w,h); }
 
   // vertex arrays
   virtual void glGenBuffers(int i, unsigned int *buffers) { 
 #ifdef GLEW_HACK
 #define glGenBuffers GLEW_GET_FUN(__glewGenBuffers)
 #endif
-::glGenBuffers(i,buffers); 
+COLONCOLON glGenBuffers(i,buffers); 
     check_err("glGenBuffers");
   }
   virtual void glDeleteBuffers(int count, const unsigned int *buffers) { 
 #ifdef GLEW_HACK
 #define glDeleteBuffers GLEW_GET_FUN(__glewDeleteBuffers)
 #endif
-::glDeleteBuffers(count,buffers); 
+COLONCOLON glDeleteBuffers(count,buffers); 
     check_err("glDeleteBuffers");
   }
   virtual void glBindBuffer(int a, unsigned int data) { 
@@ -725,7 +757,7 @@ public:
 #define glBindBuffer GLEW_GET_FUN(__glewBindBuffer)
 #endif
     map_enums(a);
-::glBindBuffer(a,data); 
+COLONCOLON glBindBuffer(a,data); 
     check_err("glBindBuffer");
   }
   virtual void glBufferData(int a, int size, const void *ptr, int static_draw) { 
@@ -734,7 +766,7 @@ public:
 #endif
     map_enums(a);
     map_enums(static_draw);
-    ::glBufferData(a,size,ptr,static_draw); 
+    COLONCOLON glBufferData(a,size,ptr,static_draw); 
     check_err("glBufferData");
   }
   virtual void glBufferSubData(int a, int b, int c, const void* d) { 
@@ -742,7 +774,7 @@ public:
 #define glBufferSubData GLEW_GET_FUN(__glewBufferSubData)
 #endif
     map_enums(a);
-::glBufferSubData(a,b,c,d);
+COLONCOLON glBufferSubData(a,b,c,d);
     check_err("glBufferSubData");
   }
   virtual void glVertexAttribPointer(int a, int b, int gl_float, int boolean, unsigned int c, const void *ptr) { 
@@ -751,7 +783,7 @@ public:
 #endif
     map_enums(gl_float);
     map_enums(boolean);
-::glVertexAttribPointer(a,b,gl_float,boolean,c,ptr); 
+COLONCOLON glVertexAttribPointer(a,b,gl_float,boolean,c,ptr); 
     check_err("glVertexAttribPointer");
   }
 virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, const void *ptr) {
@@ -770,7 +802,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glVertexAttribDivisor GLEW_GET_FUN(__glewVertexAttribDivisor)
 #endif
-    ::glVertexAttribDivisor(a,b); 
+    COLONCOLON glVertexAttribDivisor(a,b); 
     check_err("glVertexAttribDivisor");
 #endif
   }
@@ -779,7 +811,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glGenVertexArrays GLEW_GET_FUN(__glewGenVertexArrays)
 #endif
-    ::glGenVertexArrays(i,arr); 
+    COLONCOLON glGenVertexArrays(i,arr); 
     check_err("glGenVertexArrays");
 #endif
   }
@@ -788,7 +820,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glDeleteVertexArrays GLEW_GET_FUN(__glewDeleteVertexArrays)
 #endif
-::glDeleteVertexArrays(count,vao);
+ COLONCOLON glDeleteVertexArrays(count,vao);
 #endif
   }
   virtual void glBindVertexArray(int vao) { 
@@ -796,7 +828,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glBindVertexArray GLEW_GET_FUN(__glewBindVertexArray)
 #endif
-::glBindVertexArray(vao); 
+COLONCOLON glBindVertexArray(vao); 
     check_err("glBindVertexArray");
 #endif
   }
@@ -804,14 +836,14 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glEnableVertexAttribArray GLEW_GET_FUN(__glewEnableVertexAttribArray)
 #endif
-::glEnableVertexAttribArray(a); 
+COLONCOLON glEnableVertexAttribArray(a); 
     check_err("glEnableVertexAttribArray");
   }
   virtual void glDisableVertexAttribArray(int a) { 
 #ifdef GLEW_HACK
 #define glDisableVertexAttribArray GLEW_GET_FUN(__glewDisableVertexAttribArray)
 #endif
-::glDisableVertexAttribArray(a); 
+COLONCOLON glDisableVertexAttribArray(a); 
     check_err("glDisableVertexAttribArray");
   }
   virtual void glDrawArraysInstanced(int tri, int a, unsigned int b, unsigned int c) { 
@@ -820,7 +852,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #define glDrawArraysInstanced GLEW_GET_FUN(__glewDrawArraysInstanced)
 #endif
     map_enums(tri);
-::glDrawArraysInstanced(tri,a,b,c); 
+COLONCOLON glDrawArraysInstanced(tri,a,b,c); 
     check_err("glDrawArraysInstanced");
 #else
     glDrawArrays(tri,a,b);
@@ -832,14 +864,14 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     //#endif
     map_enums(tri);
     unsigned int tri2 = (unsigned int)tri;
-    ::glDrawArrays(tri2,a,b); 
+    COLONCOLON glDrawArrays(tri2,a,b); 
     check_err("glDrawArrays");
 }
   virtual void glDrawElements(int tri, int a, int type, void *indices) {
     map_enums(tri);
     map_enums(type);
     unsigned int tri2 = (unsigned int)tri;
-    ::glDrawElements(tri2,a,type,indices);
+    COLONCOLON glDrawElements(tri2,a,type,indices);
     check_err("glDrawElements");
   }
   virtual void glDrawElementsInstanced(int tri, int a, int type, void *indices, int size) {
@@ -847,9 +879,13 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     map_enums(type);
     unsigned int tri2 = (unsigned int)tri;
 #ifdef EMSCRIPTEN
-    ::glDrawElementsInstanced(tri2,a,type,indices,size);
+    COLONCOLON glDrawElementsInstanced(tri2,a,type,indices,size);
 #else
-    ::glDrawElementsInstancedNV(tri2,a,type,indices,size);
+#ifdef ANDROID
+    COLONCOLON glDrawElementsInstanced(tri2,a,type,indices,size);
+#else
+    COLONCOLON glDrawElementsInstancedNV(tri2,a,type,indices,size);
+#endif
 #endif
     check_err("glDrawElementsInstanced");
   }
@@ -857,7 +893,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { 
     map_enums(rgba);
     map_enums(mode);
-::glReadPixels(x,y,w,h,rgba,mode,ptr); 
+COLONCOLON glReadPixels(x,y,w,h,rgba,mode,ptr); 
     check_err("glReadPixels");
 
 }
@@ -867,37 +903,37 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #ifdef GLEW_HACK
 #define glGenFramebuffers GLEW_GET_FUN(__glewGenFramebuffers) 
 #endif
-::glGenFramebuffers(i,fbo_id); 
+COLONCOLON glGenFramebuffers(i,fbo_id); 
     check_err("glGenFramebuffers");
 }
   virtual void glGenRenderbuffers(int i, unsigned int *rbo_id) { 
 #ifdef GLEW_HACK
 #define glGenRenderbuffers GLEW_GET_FUN(__glewGenRenderbuffers)
 #endif
-::glGenRenderbuffers(i,rbo_id); 
+COLONCOLON glGenRenderbuffers(i,rbo_id); 
     check_err("glGenRenderbuffers");
 }
-  virtual void glDeleteRenderBuffers(int i, unsigned int *rbo) { ::glDeleteRenderbuffers(i,rbo); check_err("glDeleteRenderBuffers"); }
-  virtual void glDeleteFrameBuffers(int i, unsigned int *fbo) { ::glDeleteFramebuffers(i,fbo); check_err("glDeleteFrameBuffers"); }
+  virtual void glDeleteRenderBuffers(int i, unsigned int *rbo) { COLONCOLON glDeleteRenderbuffers(i,rbo); check_err("glDeleteRenderBuffers"); }
+  virtual void glDeleteFrameBuffers(int i, unsigned int *fbo) { COLONCOLON glDeleteFramebuffers(i,fbo); check_err("glDeleteFrameBuffers"); }
   virtual void glBindFramebuffer(int a, int fbo_id) { 
 #ifdef GLEW_HACK
 #define glBindFramebuffer GLEW_GET_FUN(__glewBindFramebuffer)
 #endif
     map_enums(a);
-    ::glBindFramebuffer(a,fbo_id); check_err("glBindFrameBuffer"); }
+    COLONCOLON glBindFramebuffer(a,fbo_id); check_err("glBindFrameBuffer"); }
   virtual void glBindRenderbuffer(int a, int fbo_id) { 
 #ifdef GLEW_HACK
 #define glBindRenderbuffer GLEW_GET_FUN(__glewBindRenderbuffer)
 #endif
     map_enums(a);
-    ::glBindRenderbuffer(a,fbo_id); check_err("glBindRenderbuffer"); }
+    COLONCOLON glBindRenderbuffer(a,fbo_id); check_err("glBindRenderbuffer"); }
   virtual void glRenderbufferStorage(int a, int d, int sx, int sy) { 
 #ifdef GLEW_HACK
 #define glRenderbufferStorage GLEW_GET_FUN(__glewRenderbufferStorage)
 #endif
     map_enums(a);
     map_enums(d);
-    ::glRenderbufferStorage(a,d,sx,sy); check_err("glRenderbufferStorage"); }
+    COLONCOLON glRenderbufferStorage(a,d,sx,sy); check_err("glRenderbufferStorage"); }
   virtual void glFramebufferRenderbuffer(int a, int d, int r, unsigned int tex) { 
 #ifdef GLEW_HACK
 #define glFramebufferRenderbuffer GLEW_GET_FUN(__glewFramebufferRenderbuffer)
@@ -905,7 +941,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     map_enums(a);
     map_enums(d);
     map_enums(r);
-    ::glFramebufferRenderbuffer(a,d,r,tex); check_err("glFramebufferRenderbuffer"); }
+    COLONCOLON glFramebufferRenderbuffer(a,d,r,tex); check_err("glFramebufferRenderbuffer"); }
   
   // shaders
   virtual unsigned int glCreateShader(int shader) { 
@@ -913,79 +949,79 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #define glCreateShader GLEW_GET_FUN(__glewCreateShader)
 #endif
     map_enums(shader);
-return ::glCreateShader(shader); }
+return COLONCOLON glCreateShader(shader); }
   virtual void glShaderSource(int h, int c, const char **strings, int *lengths) { 
 #ifdef GLEW_HACK
 #define glShaderSource GLEW_GET_FUN(__glewShaderSource)
 #endif
-::glShaderSource(h,c,strings,lengths); }
+COLONCOLON glShaderSource(h,c,strings,lengths); }
   virtual void glCompileShader(int h) { 
 #ifdef GLEW_HACK
 #define glCompileShader GLEW_GET_FUN(__glewCompileShader)
 #endif
-::glCompileShader(h); }
+COLONCOLON glCompileShader(h); }
   virtual void glGetShaderInfoLog(unsigned int h, int val, int *length, char *buf) { 
 #ifdef GLEW_HACK
 #define glGetShaderInfoLog GLEW_GET_FUN(__glewGetShaderInfoLog)
 #endif
-::glGetShaderInfoLog(h,val,length,buf); }
+COLONCOLON glGetShaderInfoLog(h,val,length,buf); }
   virtual void glGetShaderiv(int handle, int gl_compile_status, int *ptr) { 
 #ifdef GLEW_HACK
 #define glGetShaderiv GLEW_GET_FUN(__glewGetShaderiv)
 #endif
     map_enums(gl_compile_status);
-::glGetShaderiv(handle,gl_compile_status, ptr); }
+COLONCOLON glGetShaderiv(handle,gl_compile_status, ptr); }
   virtual void glDeleteShader(int h) { 
 #ifdef GLEW_HACK
 #define glDeleteShader GLEW_GET_FUN(__glewDeleteShader)
 #endif
-::glDeleteShader(h); }
+COLONCOLON glDeleteShader(h); }
   
   // programs
   virtual int glCreateProgram() {
 #ifdef GLEW_HACK
 #define glCreateProgram GLEW_GET_FUN(__glewCreateProgram)
 #endif
-      return ::glCreateProgram(); }
+      return COLONCOLON glCreateProgram(); }
   virtual void glDeleteProgram(int p) { 
 #ifdef GLEW_HACK
 #define glDeleteProgram GLEW_GET_FUN(__glewDeleteProgram)
 #endif
-::glDeleteProgram(p); }
+COLONCOLON glDeleteProgram(p); }
   virtual  void glAttachShader(int p, int h) { 
 #ifdef GLEW_HACK
 #define glAttachShader GLEW_GET_FUN(__glewAttachShader)
 #endif
-::glAttachShader(p,h); }
+COLONCOLON glAttachShader(p,h); }
   virtual void glDetachShader(int p, int h) { 
 #ifdef GLEW_HACK
 #define glDetachShader GLEW_GET_FUN(__glewDetachShader)
 #endif
-::glDetachShader(p,h); }
+COLONCOLON glDetachShader(p,h); }
   virtual void glLinkProgram(int p) { 
 #ifdef GLEW_HACK
 #define glLinkProgram GLEW_GET_FUN(__glewLinkProgram)
 #endif
-::glLinkProgram(p); }
+COLONCOLON glLinkProgram(p); }
   virtual void glUseProgram(int p) { 
 #ifdef GLEW_HACK
 #define glUseProgram GLEW_GET_FUN(__glewUseProgram)
 #endif
-    ::glUseProgram(p); }
+    COLONCOLON glUseProgram(p); }
 
   virtual void glGetProgramiv(unsigned int p, int pname, int *params) {
 #ifdef GLEW_HACK
 #define glGetProgramiv GLEW_GET_FUN(__glewGetProgramiv)
 #endif
     map_enums(pname);
-    ::glGetProgramiv(p,pname,params); 
+    COLONCOLON glGetProgramiv(p,pname,params); 
   }
 
   virtual void glGetProgramInfoLog(unsigned int p, int num, int *len, char *buf) { 
 #ifdef GLEW_HACK
 #define glGetProgramInfoLog GLEW_GET_FUN(__glewGetProgramInfoLog)
 #endif
-::glGetProgramInfoLog(p,num,len,buf); }
+COLONCOLON glGetProgramInfoLog(p,num,len,buf); }
   virtual void glBindFragDataLocation(int p, int num, const char *data) { 
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
@@ -998,7 +1034,7 @@ return ::glCreateShader(shader); }
 #ifdef GLEW_HACK
 #define glBindAttribLocation GLEW_GET_FUN(__glewBindAttribLocation)
 #endif
-::glBindAttribLocation(p,num,data); 
+COLONCOLON glBindAttribLocation(p,num,data); 
   }
   virtual void glProgramParameteriEXT(int p, int geom, int inputtype) { 
 #ifndef USE_GLES2
@@ -1017,73 +1053,73 @@ return ::glCreateShader(shader); }
 #define glGetUniformLocation GLEW_GET_FUN(__glewGetUniformLocation)
 #endif
 
-    return ::glGetUniformLocation(p,data); }
+    return COLONCOLON glGetUniformLocation(p,data); }
 virtual int glGetAttribLocation(int program, const char *data) {
 #ifdef GLEW_HACK
 #define glGetAttribLocation GLEW_GET_FUN(__glewGetAttribLocation)
 #endif
-  return ::glGetAttribLocation(program, data);
+  return COLONCOLON glGetAttribLocation(program, data);
 }
 virtual void glUniform1f(int loc, float val) { 
 #ifdef GLEW_HACK
 #define glUniform1f GLEW_GET_FUN(__glewUniform1f)
 #endif
-  ::glUniform1f(loc,val);
+  COLONCOLON glUniform1f(loc,val);
 }
 virtual void glUniform1i(int loc, int val) { 
 #ifdef GLEW_HACK
 #define glUniform1i GLEW_GET_FUN(__glewUniform1i)
 #endif
-  ::glUniform1i(loc,val);
+  COLONCOLON glUniform1i(loc,val);
 }
   virtual void glUniform2f(int loc, float val, float val2) { 
 #ifdef GLEW_HACK
 #define glUniform2f GLEW_GET_FUN(__glewUniform2f)
 #endif
-    ::glUniform2f(loc,val,val2);
+    COLONCOLON glUniform2f(loc,val,val2);
   }
   virtual void glUniform3f(int loc, float val, float val2, float val3) { 
 #ifdef GLEW_HACK
 #define glUniform3f GLEW_GET_FUN(__glewUniform3f)
 #endif
-    ::glUniform3f(loc, val, val2, val3);
+    COLONCOLON glUniform3f(loc, val, val2, val3);
   }
   virtual void glUniform4f(int loc, float val, float val2, float val3, float val4) { 
 #ifdef GLEW_HACK
 #define glUniform4f GLEW_GET_FUN(__glewUniform4f)
 #endif
-    ::glUniform4f(loc,val,val2,val3, val4);
+    COLONCOLON glUniform4f(loc,val,val2,val3, val4);
   }
   virtual void glUniform1iv(int loc, int count, int *array) { 
 #ifdef GLEW_HACK
 #define glUniform1iv GLEW_GET_FUN(__glewUniform1iv)
 #endif
-    ::glUniform1iv(loc,count,array);
+    COLONCOLON glUniform1iv(loc,count,array);
   }
   virtual void glUniform1fv(int loc, int count, float *array) { 
 #ifdef GLEW_HACK
 #define glUniform1fv GLEW_GET_FUN(__glewUniform1fv)
 #endif
-    ::glUniform1fv(loc,count,array); }
+    COLONCOLON glUniform1fv(loc,count,array); }
   virtual void glUniformMatrix4fv(int loc, unsigned int count, int boolean, const float *matrix) { 
 #ifdef GLEW_HACK
 #define glUniformMatrix4fv GLEW_GET_FUN(__glewUniformMatrix4fv)
 #endif
     map_enums(boolean);
-    ::glUniformMatrix4fv(loc,count,boolean,matrix);
+    COLONCOLON glUniformMatrix4fv(loc,count,boolean,matrix);
   }
   virtual void glUniform3fv(int loc, int count, float *arr) { 
 #ifdef GLEW_HACK
 #define glUniform3fv GLEW_GET_FUN(__glewUniform3fv)
 #endif
-    ::glUniform3fv(loc,count,arr);
+    COLONCOLON glUniform3fv(loc,count,arr);
   }
   
 virtual void glGetUniformfv(int p, int loc, float *arr) {
 #ifdef GLEW_HACK
 #define glGetUniformfv GLEW_GET_FUN(__glewGetUniformfv)
 #endif
-  ::glGetUniformfv(p,loc,arr);
+  COLONCOLON glGetUniformfv(p,loc,arr);
 }
 
   virtual void glGenerateMipmap(int p) {
@@ -1091,13 +1127,13 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 #define glGenerateMipmap GLEW_GET_FUN(__glewGenerateMipmap)
 #endif
   map_enums(p);
-  ::glGenerateMipmap(p);
+  COLONCOLON glGenerateMipmap(p);
   }
 
 
   // Old
   virtual void glEnableClientState(int a) { /*::glEnableClientState(a);*/ }
-  virtual void glLineWidth(float i) { ::glLineWidth(i); }
+  virtual void glLineWidth(float i) { COLONCOLON glLineWidth(i); }
   virtual void glPushMatrix() { /*::glPushMatrix();*/ }
   virtual void glPopMatrix() { /*::glPopMatrix();*/ }
   virtual void glMultMatrixf(float *mat) { /*::glMultMatrixf(mat);*/ }
@@ -1105,20 +1141,20 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
   // rest
   void glDepthFunc(int i) { 
     map_enums(i);
-    ::glDepthFunc(i); }
+    COLONCOLON glDepthFunc(i); }
   void glAlphaFunc(int i, float val) {
     map_enums(i);
-    ::glAlphaFunc(i,val);
+    COLONCOLON glAlphaFunc(i,val);
   }
   void glCullFace(int i)
   {
     map_enums(i);
-    ::glCullFace(i);
+    COLONCOLON glCullFace(i);
   }
   void glFrontFace(int i)
   {
     map_enums(i);
-    ::glFrontFace(i);
+    COLONCOLON glFrontFace(i);
   }
 
   void* glMapBuffer(int a, int b)
@@ -1130,7 +1166,7 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
     map_enums(a);
     map_enums(b);
     std::cout << "glMapBuffer[mapped](" << a << "," << b << ")" << std::endl;
-    return ::glMapBuffer(a,b);
+    return COLONCOLON glMapBuffer(a,b);
   }
   void glUnmapBuffer(int a)
   {
@@ -1138,7 +1174,7 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 #define glUnmapBuffer GLEW_GET_FUN(__glewUnmapBuffer)
 #endif
     map_enums(a);
-    ::glUnmapBuffer(a);
+    COLONCOLON glUnmapBuffer(a);
   }
 
   
@@ -1149,25 +1185,25 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
     map_enums(a);
     map_enums(b);
     map_enums(c);
-    ::glFramebufferTexture2D(a,b,c,d,ptr); 
+    COLONCOLON glFramebufferTexture2D(a,b,c,d,ptr); 
 }
 void glGetIntegerv(int i, int *ptr) { 
     map_enums(i);
-    ::glGetIntegerv(i,ptr); }
+    COLONCOLON glGetIntegerv(i,ptr); }
   int glCheckFramebufferStatus(int i) { 
 #ifdef GLEW_HACK
 #define glCheckFramebufferStatus GLEW_GET_FUN(__glewCheckFramebufferStatus)
 #endif
     map_enums(i);
-    int val = ::glCheckFramebufferStatus(i); 
+    int val = COLONCOLON glCheckFramebufferStatus(i); 
     if (val==GL_FRAMEBUFFER_COMPLETE) val=Low_GL_FRAMEBUFFER_COMPLETE;
     return val;
 
       }
-  void glFinish() { ::glFinish(); }
+  void glFinish() { COLONCOLON glFinish(); }
   const unsigned char *glGetString( int name ) { 
     map_enums(name);
-    return ::glGetString(name); }
+    return COLONCOLON glGetString(name); }
 
   void glMatrixLoadIdentityEXT(int i) { }
   void glMatrixMode(int i) { }

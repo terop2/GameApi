@@ -18,66 +18,255 @@
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-android_ndk = /home/terop/cvs/ndk/android-ndk-r9b
 
-android_compiler = $(android_ndk)/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/bin/arm-linux-androideabi-
+CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
 
-CROSS_COMPILE=$(android_compiler)
+ANDROID_FLAGS=-DANDROID -static-libstdc++ -D_FORTIFY_SOURCE=2 -I/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
 
-CC = $(CROSS_COMPILE)g++
-INC = $(android_ndk)/platforms/android-19/arch-arm/usr/include
-CXX_INC = $(android_ndk)/sources/cxx-stl/gnu-libstdc++/4.8/include
-CXX_INC2 = $(android_ndk)/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi/include
+LIBPATH=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/
+#/usr/lib/x86_64-linux-gnu/
+GL_PATH=$(LIBPATH)
+GL_NAME=libGL.so
+GL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/include
+#`pkg-config --cflags gl`
+GL_PKGCONFIG = -L/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/objs/.libs
+#`pkg-config --libs gl`
+ifndef GL_PKGCONFIG
+GL_PKGCONFIG = $(GL_PATH)$(GL_NAME)
+endif
+SDL_PATH=$(LIBPATH)
+SDL_NAME=libSDL2-2.0.so
+SDL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2/include
+#`pkg-config --cflags sdl2`
+SDL_PKGCONFIG= -L/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2/lib
+#`pkg-config --libs sdl2`
+ifndef SDL_PKGCONFIG
+SDL_PKGCONFIG = $(SDL_PATH)$(SDL_NAME)
+endif
+SDL_MIXER_PATH=$(SDL_PATH)
+SDL_MIXER_NAME=libSDL2_mixer-2.0.so
+SDL_MIXER_CFLAGS= -I.
+#`pkg-config --cflags SDL2_mixer`
+SDL_MIXER_PKGCONFIG= -L.
+#`pkg-config --libs SDL2_mixer`
+ifndef SDL_MIXER_PKGCONFIG
+SDL_MIXER_PKGCONFIG = $(SDL_MIXER_PATH)$(SDL_MIXER_NAME)
+endif
+GLEW_PATH=$(LIBPATH)
+GLEW_NAME=libGLEW.so.2.2
+GLEW_CFLAGS= -I.
+#`pkg-config --cflags glew`
+GLEW_PKGCONFIG = -L.
+#`pkg-config --libs glew`
+ifndef GLEW_PKGCONFIG
+GLEW_PKGCONFIG = $(GLEW_PATH)$(GLEW_NAME)
+endif
+FREETYPE_PATH=$(LIBPATH)
+FREETYPE_NAME=libfreetype.so
+FREETYPE_CFLAGS= -I.
+#`pkg-config --cflags freetype2`
+FREETYPE_PKGCONFIG= -L.
+#`pkg-config --libs freetype2`
+ifndef FREETYPE_PKGCONFIG
+FREETYPE_PKGCONFIG = $(FREETYPE_PATH)$(FREETYPE_NAME)
+endif
+
+WARNINGOPTS = -Wno-unused-private-field
 
 
-CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui_1.cc GameApi_gui_2.cc GameApi_gui_3.cc GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc \
+LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
+
+CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
 	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
-	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
+	 GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
         GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
 	FreeType.cc FreeType2.cc VertexArray.cc StateChange.cc DistanceObject.cc GameRunner.cc \
 	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
 	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
 	GameApi_fnt.cc GameApi_gr.cc  \
         GameApi_lay.cc \
-	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
+	GameApi_li.cc GameApi_mx.cc GameApi_pc.cc \
 	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
         GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc \
+	GameApi_cmd_move.cc \
+	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
+	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
+	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
+	GameApi_cmd_cvolume.cc       GameApi_cmd_polygon2.cc \
+	GameApi_cmd_fbitmap.cc       GameApi_cmd_polygon.cc \
+	GameApi_cmd_font.cc          GameApi_cmd_framebuffer.cc \
+	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
+	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
+	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
+	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc \
+	GameApi_cmd.cc cpushader.cc \
+draco/attributes/attribute_octahedron_transform.cc    draco/attributes/geometry_attribute.cc \
+draco/attributes/attribute_quantization_transform.cc  draco/attributes/point_attribute.cc \
+draco/attributes/attribute_transform.cc \
+draco/compression/decode.cc                          draco/compression/encode.cc         \
+draco/compression/draco_compression_options.cc       draco/compression/expert_encode.cc \
+draco/compression/attributes/attributes_decoder.cc \
+draco/compression/attributes/attributes_encoder.cc \
+draco/compression/attributes/sequential_attribute_decoder.cc \
+draco/compression/attributes/sequential_attribute_decoders_controller.cc \
+draco/compression/attributes/sequential_attribute_encoder.cc \
+draco/compression/attributes/sequential_attribute_encoders_controller.cc \
+draco/compression/attributes/sequential_integer_attribute_decoder.cc \
+draco/compression/attributes/sequential_integer_attribute_encoder.cc \
+draco/compression/attributes/sequential_normal_attribute_decoder.cc \
+draco/compression/attributes/sequential_normal_attribute_encoder.cc \
+draco/compression/attributes/sequential_quantization_attribute_decoder.cc \
+draco/compression/attributes/sequential_quantization_attribute_encoder.cc \
+draco/compression/attributes/prediction_schemes/prediction_scheme_encoder_factory.cc \
+draco/compression/bit_coders/adaptive_rans_bit_decoder.cc  draco/compression/bit_coders/direct_bit_encoder.cc   \
+draco/compression/bit_coders/adaptive_rans_bit_encoder.cc  draco/compression/bit_coders/rans_bit_decoder.cc    draco/compression/bit_coders/symbol_bit_decoder.cc \
+draco/compression/bit_coders/direct_bit_decoder.cc         draco/compression/bit_coders/rans_bit_encoder.cc    draco/compression/bit_coders/symbol_bit_encoder.cc \
+draco/compression/entropy/shannon_entropy.cc       draco/compression/entropy/symbol_encoding.cc \
+draco/compression/entropy/symbol_decoding.cc \
+draco/compression/mesh/mesh_decoder.cc                \
+draco/compression/mesh/mesh_edgebreaker_decoder.cc       draco/compression/mesh/mesh_encoder.cc \
+draco/compression/mesh/mesh_edgebreaker_decoder_impl.cc  \
+draco/compression/mesh/mesh_edgebreaker_encoder.cc       draco/compression/mesh/mesh_sequential_decoder.cc \
+draco/compression/mesh/mesh_edgebreaker_encoder_impl.cc  draco/compression/mesh/mesh_sequential_encoder.cc \
+draco/compression/point_cloud/point_cloud_decoder.cc        \
+draco/compression/point_cloud/point_cloud_encoder.cc \
+draco/compression/point_cloud/point_cloud_sequential_decoder.cc \
+draco/compression/point_cloud/point_cloud_kd_tree_decoder.cc \
+draco/compression/point_cloud/point_cloud_sequential_encoder.cc \
+draco/compression/point_cloud/point_cloud_kd_tree_encoder.cc \
+draco/compression/point_cloud/algorithms/dynamic_integer_points_kd_tree_decoder.cc  draco/compression/point_cloud/algorithms/float_points_tree_encoder.cc \
+draco/compression/point_cloud/algorithms/dynamic_integer_points_kd_tree_encoder.cc  draco/compression/point_cloud/algorithms/integer_points_kd_tree_decoder.cc \
+draco/compression/point_cloud/algorithms/float_points_tree_decoder.cc               draco/compression/point_cloud/algorithms/integer_points_kd_tree_encoder.cc \
+draco/core/bit_utils.cc               draco/core/divide.cc            draco/core/options.cc \
+draco/core/bounding_box.cc            draco/core/quantization_utils.cc \
+draco/core/draco_types.cc      \
+draco/core/cycle_timer.cc             draco/core/encoder_buffer.cc    draco/core/status.cc \
+draco/core/data_buffer.cc             draco/core/hash_utils.cc     \
+draco/core/decoder_buffer.cc       \
+draco/mesh/corner_table.cc                 draco/mesh/mesh_misc_functions.cc    draco/mesh/mesh_splitter.cc \
+draco/mesh/mesh_are_equivalent.cc          draco/mesh/mesh_stripifier.cc \
+draco/mesh/mesh_attribute_corner_table.cc  \
+draco/mesh/mesh.cc                         draco/mesh/mesh_utils.cc \
+draco/mesh/mesh_cleanup.cc                \
+draco/mesh/triangle_soup_mesh_builder.cc \
+draco/mesh/mesh_features.cc  \
+draco/point_cloud/point_cloud_builder.cc       draco/point_cloud/point_cloud.cc \
+draco/compression/attributes/kd_tree_attributes_decoder.cc \
+draco/compression/attributes/kd_tree_attributes_encoder.cc \
+draco/metadata/geometry_metadata.cc  draco/metadata/metadata_encoder.cc       draco/metadata/property_table.cc     \
+draco/metadata/metadata.cc     \
+draco/metadata/metadata_decoder.cc          draco/metadata/structural_metadata.cc \
+webgpu.cc
+
+#lib/lib_webgpu.cc \
+#lib/lib_webgpu_cpp20.cc
+
 
 CFiles2 = 
 
 Subdirs = 
 #module1
 
-OFiles = $(patsubst %.cc,android-objs/%.o,$(CFiles) $(CFiles2))
-O2Files = $(patsubst %.cc,android-objs/%.obj,$(CFiles) $(CFiles2))
-DFiles = $(patsubst %.cc,android-objs/%.d,$(CFiles) $(CFiles2)) 
-D2Files = $(patsubst %.cc,android-objs/%.d2,$(CFiles) $(CFiles2)) 
+OFiles = $(patsubst %.cc,androidobjs/objs/%.o,$(CFiles) $(CFiles2))
+O2Files = $(patsubst %.cc,androidobjs/objs/%.obj,$(CFiles) $(CFiles2))
+DFiles = $(patsubst %.cc,androidobjs/objs/%.d,$(CFiles) $(CFiles2)) 
+D2Files = $(patsubst %.cc,androidobjs/objs/%.d2,$(CFiles) $(CFiles2)) 
 HFiles = $(patsubst %.cc,%.hh,$(CFiles))
-#GCHFiles = $(patsubst %.cc,android-objs/%.hh.gch,$(CFiles))
-#GCH2Files = $(patsubst %.cc,android-objs/%.hh.gch2,$(CFiles))
+#GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
+#GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
-WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function
+WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct
 
-CCFLAGS = -fPIC -Wall -I./android-objs -DANDROID -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I$(INC) -I$(CXX_INC) -I$(CXX_INC2)
-CC2FLAGS = -Wall -I./android-objs -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC -DANDROID -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I$(INC) -I$(CXX_INC) -I$(CXX_INC2)
+#-fsanitize=undefined -fsanitize-recover=undefined
+#  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
+
+#-I/usr/include/freetype2 -I/usr/include/SDL2
+# -Ichai/ChaiScript-6.1.0/include
+#
+CCFLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./androidobjs/objs  -DLINUX  -lpthread -pthread -Wno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
+CC2FLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./androidobjs/objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: libGameApi.so
+
+default: check_compile dirs libGameApi.la deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
 
 
-libGameApi.so: $(OFiles) Makefile
-	@echo "  LD    libGameApi.so"
-	@$(CC) -m64 -rdynamic -shared -g $(OFiles) -std=c++0x -o libGameApi.so /usr/lib/x86_64-linux-gnu/libSDL2-2.0.so /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2_mixer-2.0.so /usr/lib/x86_64-linux-gnu/libGLEW.so.2.1 /usr/lib/x86_64-linux-gnu/libfreetype.so -lstdc++ -lwayland-client
+check_compile:
+ifeq ($(shell echo $(SDL_PKGCONFIG)),)
+	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST   libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libsdl2=OK"
+endif
+ifeq ($(shell echo $(SDL_MIXER_PKGCONFIG)),)
+	@test -f $(SDL_MIXER_PATH)$(SDL_MIXER_NAME) && echo "  TEST   libsdl2_mixer=OK" || (echo "  TEST libsdl2_mixer=FAIL\n NOTE: recommended command: make -j 8 SDL_MIXER_PATH=$(SDL_MIXER_PATH) SDL_MIXER_NAME=$(SDL_MIXER_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libSDL2_mixer=OK"
+endif
+ifeq ($(shell echo $(GL_PKGCONFIG)),)
+	@test -f $(GL_PATH)$(GL_NAME) && echo "  TEST   libGL=OK" || (echo "  TEST libGL=FAIL\n NOTE: recommended command: make -j 8 GL_PATH=$(GL_PATH) GL_NAME=$(GL_NAME)"; exit 1)
+else
+	@echo "  PKGCNF libGL=OK"
+endif
+ifeq ($(shell echo $(GLEW_PKGCONFIG)),)
+	@test -f $(GLEW_PATH)$(GLEW_NAME) && echo "  TEST   libGLEW=OK" || (echo "  TEST libGLEW=FAIL\n NOTE: recommended command: make -j 8 GLEW_PATH=$(GLEW_PATH) GLEW_NAME=$(GLEW_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libGLEW=OK"
+endif
+ifeq ($(shell echo $(FREETYPE_PKGCONFIG)),)
+	@test -f $(FREETYPE_PATH)$(FREETYPE_NAME) && echo "  TEST   libfreetype=OK" || (echo "  TEST libfreetype=FAIL\n NOTE: recommended command: make -j 8 FREETYPE_PATH=$(FREETYPE_PATH) FREETYPE_NAME=$(FREETYPE_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libfreetype=OK"
+endif
+
+dirs:
+	@echo "  MKDIR  androidobjs/objs"
+	@mkdir -p androidobjs/objs
+	@echo "  MKDIR  androidobjs/objs/lib"
+	@mkdir -p androidobjs/objs/lib
+	@echo "  MKDIR  androidobjs/objs/draco/attributes"
+	@mkdir -p androidobjs/objs/draco/attributes
+	@echo "  MKDIR  androidobjs/objs/draco/compression"
+	@mkdir -p androidobjs/objs/draco/compression
+	@echo "  MKDIR  androidobjs/objs/draco/compression/attributes"
+	@mkdir -p androidobjs/objs/draco/compression/attributes
+	@echo "  MKDIR  androidobjs/objs/draco/compression/attributes/prediction_schemes"
+	@mkdir -p androidobjs/objs/draco/compression/attributes/prediction_schemes
+	@echo "  MKDIR  androidobjs/objs/draco/compression/bit_coders"
+	@mkdir -p androidobjs/objs/draco/compression/bit_coders
+	@echo "  MKDIR  androidobjs/objs/draco/compression/entropy"
+	@mkdir -p androidobjs/objs/draco/compression/entropy
+	@echo "  MKDIR  androidobjs/objs/draco/compression/mesh"
+	@mkdir -p androidobjs/objs/draco/compression/mesh
+	@echo "  MKDIR  androidobjs/objs/draco/compression/point_cloud"
+	@mkdir -p androidobjs/objs/draco/compression/point_cloud
+	@echo "  MKDIR  androidobjs/objs/draco/compression/point_cloud/algorithms"
+	@mkdir -p androidobjs/objs/draco/compression/point_cloud/algorithms
+	@echo "  MKDIR  androidobjs/objs/draco/core"
+	@mkdir -p androidobjs/objs/draco/core
+	@echo "  MKDIR  androidobjs/objs/draco/mesh"
+	@mkdir -p androidobjs/objs/draco/mesh
+	@echo "  MKDIR  androidobjs/objs/draco/point_cloud"
+	@mkdir -p androidobjs/objs/draco/point_cloud
+	@echo "  MKDIR  androidobjs/objs/draco/metadata"
+	@mkdir -p androidobjs/objs/draco/metadata
+
+
+libGameApi.la: $(OFiles) Makefile
+	@echo "  LD     libGameApi.la"
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.la  $(LDFLAGS) -lstdc++
+	#-lwayland-client
+
+.PHONY: dirs
 
 #`pkg-config gtkmm-2.4 --libs` 
 
@@ -93,16 +282,28 @@ libGameApi.so: $(OFiles) Makefile
 #TAGS: $(CFiles)
 #	etags -o TAGS -l c++ $(CFiles)
 
+CC = $(CROSS_COMPILE)armv7a-linux-androideabi30-clang++
+#x86_64-linux-android30-clang++
+CCWIN = i586-mingw32msvc-g++
 
-#$(DFiles): android-objs/%.d: %.cc
+#$(DFiles): objs/%.d: %.cc
 #	@echo "  DEP    $@"
 #	@$(CC) -M $(CCFLAGS) $< \
-#	|sed 's,\($*\)\.o[ :]*,android-objs/\1.o $@ : ,g' > $@
+#	|sed 's,\($*\)\.o[ :]*,objs/\1.o $@ : ,g' > $@
 
 
-$(OFiles): android-objs/%.o : %.cc
-	@echo "  CC    $@"
-	@$(CC) -std=c++0x -g -c $(CCFLAGS) $< -o $@
+deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.la
+	@(cd deploytool; make -f Makefile)
+
+cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.la
+	@(cd cmdline; make -f Makefile)
+
+editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.la
+	@(cd editor; make -f Makefile.Linux LDFLAGS="$(LDFLAGS)")
+
+$(OFiles): androidobjs/objs/%.o : %.cc
+	@echo "  CC     $@"
+	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 touch_all:
 	touch GameApi_gui_1.cc
@@ -111,7 +312,7 @@ touch_all:
 
 
 clean:
-	@rm -rf android-objs/*.o android-objs/*.obj android-objs/*.d android-objs/*.d2 android-objs/*.gch android-objs/*.gch2
+	@rm -rf androidobjs/objs/*.o androidobjs/objs/*.obj androidobjs/objs/*.d androidobjs/objs/*.d2 androidobjs/objs/*.gch androidobjs/objs/*.gch2
 	@echo Clean.
 
 
