@@ -1,6 +1,121 @@
 <?php
 ini_set('memory_limit', '2048M');
 
+
+function getGoogleDriveFileInfo($fileId) {
+    // Create metadata URL
+    $metadataUrl = "https://drive.google.com/uc?id=" . $fileId . "&export=download";
+    
+    // Initialize cURL
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $metadataUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HEADER, true);
+    curl_setopt($ch, CURLOPT_NOBODY, true); // HEAD request only
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    
+    // Execute request
+    $response = curl_exec($ch);
+    
+    // Parse headers
+    $contentDisposition = '';
+    $contentType = '';
+    
+    // Get headers
+    $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+    $headers = substr($response, 0, $headerSize);
+    
+    // Parse Content-Disposition header
+    if (preg_match('/Content-Disposition:.*filename="([^"]+)"/', $headers, $matches)) {
+        $filename = $matches[1];
+    } else if (preg_match('/Content-Disposition:.*filename\*=UTF-8\'\'(.+)/', $headers, $matches)) {
+        $filename = urldecode($matches[1]);
+    }
+    
+    // Get Content-Type
+    if (preg_match('/Content-Type: (.+)/', $headers, $matches)) {
+        $contentType = trim($matches[1]);
+    }
+    
+    curl_close($ch);
+    
+    // Extract extension from filename
+    $extension = '';
+    if (!empty($filename)) {
+        $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    }
+    
+    // If no extension found from filename, try to determine from content type
+    if (empty($extension) && !empty($contentType)) {
+        $mimeToExt = [
+            'model/gltf+json' => 'gltf',
+            'model/gltf-binary' => 'glb',
+            'application/octet-stream' => 'glb', // Common for binary files
+        ];
+        
+        $extension = $mimeToExt[$contentType] ?? '';
+    }
+    
+    return [
+        'filename' => $filename ?? '',
+        'extension' => $extension,
+        'contentType' => $contentType
+    ];
+}
+
+function getGoogleDriveFileContent($url) {
+    // Extract file ID from URL
+    $fileId = '';
+    if (preg_match('/\/file\/d\/([^\/]+)/', $url, $matches)) {
+        $fileId = $matches[1];
+    } else if (preg_match('/id=([^&]+)/', $url, $matches)) {
+        $fileId = $matches[1];
+    } else {
+        throw new Exception("Invalid Google Drive URL format");
+    }
+    
+    // Get file info first
+    $fileInfo = getGoogleDriveFileInfo($fileId);
+
+    // Create download URL
+    $downloadUrl = "https://drive.google.com/uc?export=download&id=" . $fileId;
+/*
+    
+    // Initialize cURL
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $downloadUrl);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_COOKIEJAR, 'cookie.txt');
+    curl_setopt($ch, CURLOPT_COOKIEFILE, 'cookie.txt');
+    
+    $response = curl_exec($ch);
+    
+    // Handle large file warning
+    if (strpos($response, 'virus scan warning') !== false) {
+        preg_match('/"downloadUrl":"([^"]+)"/', $response, $matches);
+        if (isset($matches[1])) {
+            $confirmUrl = str_replace('\\u003d', '=', str_replace('\\u0026', '&', $matches[1]));
+            curl_setopt($ch, CURLOPT_URL, $confirmUrl);
+            $response = curl_exec($ch);
+        }
+    }
+    
+    if (curl_errno($ch)) {
+        throw new Exception('cURL error: ' . curl_error($ch));
+    }
+    
+    curl_close($ch);
+*/    
+    return [
+        'content' => "",
+	'download' => $downloadUrl,
+        'fileInfo' => $fileInfo
+    ];
+}
+
 $countname = "./pp2/tmp.count";
 $num = file_get_contents($countname);
 $num2 = intval($num) + 1;
@@ -10,10 +125,20 @@ file_put_contents($countname,$str);
 
 
 $gltf = $_POST["gltffile"];
+$ext = "";
+if (strpos($gltf,'drive.google.com') !== false) {
+   $arr = getGoogleDriveFileContents($gltf);
+   $fileinfo = $arr['fileInfo'];
+   $ext = $fileinfo['extension'];
+   $gltf = $arr['download'];
+}
 
 $gltf2 = explode('?',$gltf)[0];
+if($ext=="") {
+$ext = substr($gltf2, -4);
+}
 
-if (strlen($gltf2)<4||(substr($gltf2,-3)!="zip"&&substr($gltf2,-3)!="glb"&&substr($gltf2,-4)!="gltf")) {
+if (strlen($ext)<4||(substr($ext,-3)!="zip"&&substr($ext,-3)!="glb"&&substr($ext,-4)!="gltf")) {
   echo "<pre>";
   echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED(should be .zip,.glb or .gltf)</pre>";
   $logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
@@ -24,7 +149,7 @@ fclose($fp);
 } else {
 
 $is_zip = "nope";
-$ext = substr($gltf2, -4);
+
 if ($ext == ".zip")
 {
   $is_zip = "yes";
