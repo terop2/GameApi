@@ -20837,6 +20837,8 @@ public:
       sp << "But for licensing sake, we must mention that in the process of attaching 3d engine" << std::endl;
       sp << "we might change the display if our engine fails to support some of the features" << std::endl;
       sp << "used in the model data formats. Perfect result is not required in this work." << std::endl;
+      sp << "The process of displaying the models in the internet is how our 3d engine adapts" << std::endl;
+      sp << "the downloaded .zip or .glb/.gltf files. We add ability to display them on internet web pages." << std::endl;
       sp << std::endl;
       
       int si=items.size();
@@ -21174,6 +21176,9 @@ public:
       sp << "But for licensing sake, we must mention that in the process of attaching 3d engine" << std::endl;
       sp << "we might change the display if our engine fails to support some of the features" << std::endl;
       sp << "used in the model data formats. Perfect result is not required in this work." << std::endl;
+      sp << "The process of displaying the models in the internet is how our 3d engine adapts" << std::endl;
+      sp << "the downloaded .zip or .glb/.gltf files. We add ability to display them on internet web pages." << std::endl;
+
 	sp << std::endl;
 
       
