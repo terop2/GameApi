@@ -4013,10 +4013,10 @@ public:
 	//if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
 
 	VEC4 res;
-	res.x = 0.5+int(((unsigned int)(index1))&0xff);
-	res.y = 0.5+int(((unsigned int)(index2))&0xff);
-	res.z = 0.5+int(((unsigned int)(index3))&0xff);
-	res.w = 0.5+int(((unsigned int)(index4))&0xff);
+	res.x = 0.5+ int(((unsigned int)(index1))); // REMOVED &0XFF from these.
+	res.y = 0.5+ int(((unsigned int)(index2)));
+	res.z = 0.5+ int(((unsigned int)(index3)));
+	res.w = 0.5+ int(((unsigned int)(index4)));
 	//std::cout << "Joints: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
 
 	return res;
@@ -4078,7 +4078,16 @@ public:
 
 	const unsigned char *pos_ptr = &weights_buf->data[0];
 	int stride2 = weights_bv->byteStride;
-	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
+	if (stride2==0) { stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
+	switch(weights_acc->type)
+	  {
+	  case TINYGLTF_TYPE_SCALAR: break;
+	  case TINYGLTF_TYPE_VEC2: stride2*=2; break;
+	  case TINYGLTF_TYPE_VEC3: stride2*=3; break;
+	  case TINYGLTF_TYPE_VEC4: stride2*=4; break;
+	  };
+
+	}
 	float *pos_ptr2 = (float*)(pos_ptr + weights_bv->byteOffset + index*stride2 + weights_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << std::hex << int(pos_ptr2[0]) << "," << int(pos_ptr2[1]) << "," << int(pos_ptr2[2]) << "," << int(pos_ptr2[3]) << std::endl;
 	//vec4 res;
@@ -4099,11 +4108,12 @@ public:
 	// todo, check that this branch works
 	const unsigned char *pos_ptr = &weights_buf->data[0];
 	const unsigned char *pos_ptr2 = pos_ptr + weights_bv->byteOffset;
-	//int stride = weights_bv->byteStride;
-	//if (stride==0) stride=4*sizeof(char);
-	//int comp = face*3+point;
-	//unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
-	//float *pos_ptr4 = (float*)pos_ptr3; // 3 = num of components in (x,y,z)
+
+	int stride = weights_bv->byteStride;
+	if (stride==0) stride=4*sizeof(char);
+	int comp = face*3+point;
+	const unsigned char *pos_ptr3 = pos_ptr2 + weights_acc->byteOffset + comp*stride;
+	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
 	//std::cout << face << " " << point << "::" << int(pos_ptr4[0]) << std::endl;
 	//res[0] = pos_ptr4[0];
 	//res[1] = pos_ptr4[1];
@@ -4112,9 +4122,9 @@ public:
 	//return res;
 	//std::cout << "Attached end" << std::endl;
 	VEC4 res;
-	res.x = pos_ptr2[0];
-	res.y = pos_ptr2[1];
-	res.z = pos_ptr2[2];
+	res.x = pos_ptr4[0];
+	res.y = pos_ptr4[1];
+	res.z = pos_ptr4[2];
 	res.w = pos_ptr2[3];
 	//std::cout << "Weights2: " << face << " " << point << "::" << res.x << ","<< res.y << "," << res.z << "," << res.w << std::endl;
 	return res;
@@ -9075,6 +9085,8 @@ public:
 	AnimData *dt = new AnimData;
     fill_binds(dt);
 	recurse_node(dt,*prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+
+	check_joints();
 	delete dt;
 	delete prev2;
       } else {
@@ -9088,6 +9100,7 @@ public:
 	AnimData *dt = new AnimData;
     fill_binds(dt);
 	recurse_node(dt,*prev2, start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+	check_joints();
 	delete dt;
 	delete prev2;
       }
@@ -9121,7 +9134,7 @@ public:
 	bindmatrix[i]=Matrix::Identity();
 	start_t[i] = 0.0;
 	end_t[i] = 0.0;
-	node_ids[i]=0;
+	node_ids[i]=-1;
       }
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
@@ -9137,6 +9150,7 @@ public:
       AnimData *dt = new AnimData;
     fill_binds(dt);
       recurse_node(dt,*prev2,start_node, 0, Matrix::Identity(), Matrix::Identity(), 0 /*anim*/, time_index, -1);
+	check_joints();
       delete prev2;
       delete dt;
      }
@@ -9391,7 +9405,12 @@ public:
 	int s2 = skin->joints.size();
 	for(int j=0;j<s2;j++) {
 	  //std::cout << "Compare:" << skin->joints[j] << "==" << node_id << std::endl;
-	  if (skin->joints[j]==node_id) { /*doit=true;*/ jj=j; break; }
+	  if (jj!=-1 && skin->joints[j]==node_id)
+	    {
+	      jj=-1;
+	      break;
+	    }
+	  if (skin->joints[j]==node_id) { /*doit=true;*/ jj=j; }
 	  }
       }
       //std::cout << "Found jj:" << jj << std::endl;
@@ -9498,14 +9517,14 @@ public:
     std::pair<Matrix,Matrix> m = gltf_node_transform_obj_apply(env,ev,pos,start_obj );
     std::pair<Matrix,Matrix> m2 = gltf_node_transform_obj_apply(env,ev,pos2,end_obj );
 
-
+    
     if (jj!=-1 && jj>=0 && jj<max_joints) { 
       root_env[jj] = pos;
       root_env_2[jj] = pos2;
       jointmatrices_start[jj] = start_obj;
       jointmatrices_end[jj] = end_obj;
       node_ids[jj] = node_id;
-    }
+    } 
 
     // recurse children
     int s = node.children.size();
@@ -9525,6 +9544,14 @@ public:
       }
     }
     return Matrix::Identity(); //move2->get_whole_matrix(0.0,1.0);
+  }
+  void check_joints()
+  {
+    int s = node_ids.size();
+    for(int i=0;i<s;i++)
+      {
+	if (node_ids[i]==-1) { node_ids[i]=0; std::cout << "INDEX #" << i << " is not filled in gltf anim" << std::endl; }
+      }
   }
 public:
   std::vector<TransformObject> *start() { return &jointmatrices_start; }
@@ -11124,8 +11151,11 @@ public:
 
 	ev.shader_api.use(sh);
 	std::vector<GameApi::M> vec;
+	std::vector<GameApi::M> vec_bindm;
+	std::vector<GameApi::M> vec_resize;
+	std::vector<GameApi::M> vec_resizei;
 	int sz = 1;
-	int iisz = 200;
+	int iisz = r_0->size();
 	for(int ii=0;ii<iisz;ii++)
 	  {
 	    current = -1;
@@ -11197,6 +11227,9 @@ public:
 	    if (std::isinf(time01)) time01 = 0.0;
 	    if (time01<0.0) time01=0.0;
 	    if (time01>1.0) time01=1.0;
+
+
+	    int good_node = sz-1;
 	    
 	    TransformObject start_obj;
 	    if (ii<sz)
@@ -11258,7 +11291,10 @@ public:
 	    Matrix bindm;
 	    if (ii<sz)
 	      bindm=bind->operator[](ii);
-	    else bindm = Matrix::Identity();
+	    else { bindm = Matrix::Identity();
+	    }
+	      
+	    
 	    //std::cout << "START_OBJ:" << std::endl;
 	    //print_transform(start_obj);
 	    //std::cout << "END_OBJ:" << std::endl;
@@ -11345,7 +11381,12 @@ public:
 	    //Matrix rr_int_inv = Matrix::Inverse(rr_int);
 	    
 	    if (mode==0)
-	      vec.push_back(add_matrix2(env, ri*m0i* m0*bindm*m*resize));
+	      {// m0i*m0
+		vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));
+	      //vec_bindm.push_back(add_matrix2(env, bindm));
+	      //vec_resize.push_back(add_matrix2(env,resize));
+	      //vec_resizei.push_back(add_matrix2(env,resizei));
+	      }
 	    /*
 	    else if (mode==1)
 	      vec.push_back(add_matrix2(env,   ri*bindm*m*m0i*inv_bindm*resize  ));
@@ -11359,8 +11400,16 @@ public:
 	      vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*inv_jb*resize));
 	    */
 	  }
-	ev.shader_api.set_var(sh, "jointMatrix", vec, 200);
-
+	//vec.push_back(vec.operator[](vec.size()-1));
+	ev.shader_api.set_var(sh, "jointMatrix", vec, std::min(vec.size(),size_t(200)));
+	//ev.shader_api.set_var(sh, "bindMatrix", vec_bindm, std::min(vec_bindm.size(),size_t(200)));
+	//ev.shader_api.set_var(sh, "resize", vec_resize, std::min(vec_resize.size(),size_t(200)));
+	//ev.shader_api.set_var(sh, "resizei", vec_resizei, std::min(vec_resizei.size(),size_t(200)));
+	{
+	  static bool ftime=false;
+	  if (!ftime)
+	  if (vec.size()>size_t(200)) { std::cout << "number of joint matrices exceeds shader maximum array size of 200 in jointMatrix variable" << std::endl; ftime=true; }
+	}
       }
 #ifndef NO_MV
 	GameApi::M m = add_matrix2( env, e.in_MV);
