@@ -10377,6 +10377,23 @@ public:
     num_timeindexes=count;
   }
 
+  GameApi::LI draw_pose( GameApi::Env &env, std::vector<GameApi::ML> mls )
+  {
+    MainLoopItem *item = find_main_loop( env, mls[0] );
+    GLTFJointMatrices *mat = (GLTFJointMatrices*)item;
+    const std::vector<Matrix> &joint = mat->bind();
+    std::vector<Point> vec;
+    for(size_t i=0;i<joint.size();i++)
+      {
+	const Matrix &m = joint[i];
+	Point p = { m.matrix[3], m.matrix[3+4], m.matrix[3+8] };
+	vec.push_back(p);
+      }
+    return add_line_array(e, new PointArrayLineCollection(vec));
+  }
+
+  
+
   
   virtual GameApi::ML mat2(GameApi::P p) const
   {
@@ -10408,6 +10425,9 @@ public:
     mls_add_to_cache(cache_key,ml_orig,ml,mls);
     }
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig,mls,key,mode,num_timeindexes);
+    GameApi::LI li = draw_pose( e, mls ); // DEBUG
+    GameApi::ML ml3 = ev.lines_api.render_ml2(ev, li, 2.0); // DEBUG
+    return ev.mainloop_api.array_ml(ev,{ml2,ml3}); // DEBUG
     return ml2;
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
@@ -11234,115 +11254,37 @@ public:
 	      m0t = start_0->operator[](ii);
 	    else m0t = gltf_node_default();
 
-	    //std::cout << "rr0:" << rr0 << std::endl;
-	    //std::cout << "m0t:" << std::endl;
-	    //print_transform(m0t);
-
 	    Matrix rr_interpolate = rr;
 	    rr_interpolate*=(1.0-time01);
 	    Matrix rr_interpolate2=rr2;
 	    rr_interpolate2*=time01;
 	    Matrix rr_int = rr_interpolate + rr_interpolate2;
 
-	    // used to use rr0, now uses rr_int
 	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t).second;	    
 	    Matrix m0i = Matrix::Inverse(m0);
-	    //for(int j=0;j<16;j++)
-	    //  if (isnan(m0i.matrix[j])||isinf(m0i.matrix[j])) m0i.matrix[j]=0.0;
-	    //std::cout << "m0:" << m0 << std::endl;
-	    //std::cout << "m0i:" << m0i << std::endl;
-	    
 
-
-	    
 	    Matrix bindm;
 	    if (ii<sz)
 	      bindm=bind->operator[](ii);
 	    else bindm = Matrix::Identity();
-	    //std::cout << "START_OBJ:" << std::endl;
-	    //print_transform(start_obj);
-	    //std::cout << "END_OBJ:" << std::endl;
-	    //print_transform(end_obj);
 	    
 	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
-	    //std::cout << "RESULT_OBJ:" << std::endl;
-	    //print_transform(obj);
 
 	    Matrix mr;
 	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
 
 
-	    //Matrix ll1 = l->operator[](ii);
-	    //Matrix ll2 = l_2->operator[](ii);
-	    
-	    //Matrix ll;
-	    //for(int j=0;j<16;j++) ll.matrix[j]=(time01)*ll2.matrix[j] + (1.0-time01)*ll1.matrix[j];
-	    
-
-	    
 	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj).second;
 	    Matrix m = mv; // TODO, THIS SHOULD BE MULTIPLIED BY BINDM
-	    //m = m * mr;
 	    
 	    Matrix ri = resizei; //Matrix::Inverse(resize);
 
-	    //std::cout << m0i << std::endl;
-
-	    //.matrix[3] = 0.0;
-	    //m.matrix[3+4] = 0.0;
-	    //m.matrix[3+8] = 0.0;
-	    
-	    //std::cout <<"BINDM:"<< std::endl << bindm << std::endl;
-	    //std::cout << "M:" << std::endl << m << std::endl;
-
-	    //std::cout << "RI:";
-	    //ri = fix_matrix(ri);
-	    //std::cout << "M0I:";
-	    //m0i= fix_matrix(m0i);
-	    //std::cout << "M:";
-	    //m=fix_matrix(m);
-	    //bindm=Matrix::Inverse(bindm);
-	    //bindm=fix_matrix(bindm);
-	    //Matrix inv_bindm = Matrix::Inverse(bindm);
-	    //inv_bindm=fix_matrix(inv_bindm);
-	    //std::cout << "RESIZE:";
-	    //resize=fix_matrix(resize);
-	    //std::swap(resize,ri);
-	    //bindm=Matrix::Identity();
-	    //m=Matrix::Identity();
-	    // ri=Matrix::Identity();
-	    //resize=Matrix::Identity();
-
-	    // bindm---m
-	    // m0 -- m0i
-	    // inv_m-- inv_bindm
-	    // bind_m -- inv_bindm
-
-	    // m0 -- inv_m
-	    //Matrix inv_jb=Matrix::Inverse(jb);
-	    
-	    //Matrix inv_m = Matrix::Inverse(m);
-
-	    
 	    if (Matrix::has_nan(ri)) { ri=Matrix::Identity();  }
 	    if (Matrix::has_nan(m0i)) { m0i=Matrix::Identity(); }
 	    if (Matrix::has_nan(m0)) { m0=Matrix::Identity(); }
 	    if (Matrix::has_nan(bindm)) { bindm=Matrix::Identity(); }
 	    if (Matrix::has_nan(m)) {  m=Matrix::Identity();  }
 	    if (Matrix::has_nan(resize)) { resize=Matrix::Identity(); }
-	    
-
-	    
-	    
-	    //std::cout << "ri" << ri << std::endl;
-	    //std::cout << "m0i" << m0i << std::endl;
-	    //std::cout << "m0" << m0 << std::endl;
-	    //std::cout << "bindm" << bindm << std::endl;
-	    //std::cout << "m" << m << std::endl;
-	    //std::cout << "resize" << resize << std::endl;
-
-	    //Matrix rr0_inv = Matrix::Inverse(rr0);
-	    //Matrix rr_int_inv = Matrix::Inverse(rr_int);
 	    
 	    if (mode==0)
 	      vec.push_back(add_matrix2(env, ri*m0i* m0*bindm*m*resize));
