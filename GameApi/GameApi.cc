@@ -20833,13 +20833,19 @@ public:
       sp << "Licensed under LGPL/GPL license. " << std::endl;
       sp << "See https://github.com/terop2/GameApi for source code" << std::endl;
       sp << "No warranty" << std::endl;
+      sp << "Our 3d engine tries to reproduce displayed 3d models as well as possible" << std::endl;
+      sp << "But for licensing sake, we must mention that in the process of attaching 3d engine" << std::endl;
+      sp << "we might change the display if our engine fails to support some of the features" << std::endl;
+      sp << "used in the model data formats. Perfect result is not required in this work." << std::endl;
+      sp << "The process of displaying the models in the internet is how our 3d engine adapts" << std::endl;
+      sp << "the downloaded .zip or .glb/.gltf files. We add ability to display them on internet web pages." << std::endl;
       sp << std::endl;
-      
       
       int si=items.size();
       for(int i=si-1;i>=0;i--)
 	{
 	  UrlItem ii = items[i];
+	  ii.url = replace_str(ii.url,"&amp;","&");
 	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
 
 	  if (ii.is_license)
@@ -20865,9 +20871,9 @@ public:
 	  std::string curl="..\\curl\\curl.exe";
 	    std::string curl_string;
 	  if (file_exists(curl))
-	    curl_string= "..\\curl\\curl.exe " + deploy_truncate(http_to_https(ii.url)) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "";
+	    curl_string= "..\\curl\\curl.exe \"" + deploy_truncate(http_to_https(ii.url)) + "\" --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "";
 	  else
-	    curl_string=".\\curl\\curl.exe " + deploy_truncate(http_to_https(ii.url)) + " --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "";
+	    curl_string=".\\curl\\curl.exe \"" + deploy_truncate(http_to_https(ii.url)) + "\" --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "";
 	  std::cout << curl_string << std::endl;
       if (gameapi_temp_dir!="@")
 	{
@@ -21166,13 +21172,22 @@ public:
       sp << "Licensed under LGPL/GPL license. " << std::endl;
       sp << "See https://github.com/terop2/GameApi for source code" << std::endl;
       sp << "No warranty" << std::endl;
-      sp << std::endl;
+      sp << "Our 3d engine tries to reproduce displayed 3d models as well as possible" << std::endl;
+      sp << "But for licensing sake, we must mention that in the process of attaching 3d engine" << std::endl;
+      sp << "we might change the display if our engine fails to support some of the features" << std::endl;
+      sp << "used in the model data formats. Perfect result is not required in this work." << std::endl;
+      sp << "The process of displaying the models in the internet is how our 3d engine adapts" << std::endl;
+      sp << "the downloaded .zip or .glb/.gltf files. We add ability to display them on internet web pages." << std::endl;
+
+	sp << std::endl;
 
       
       int si=items.size();
       for(int i=si-1;i>=0;i--)
 	{
 	  UrlItem ii = items[i];
+	  ii.url = replace_str(ii.url,"&amp;","&");
+
 	  if (ii.url[ii.url.size()-1]=='/') continue; // ignore directories
 	  if (ii.is_license)
 	    {
