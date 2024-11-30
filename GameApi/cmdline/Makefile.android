@@ -1,0 +1,59 @@
+
+CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
+CC = $(CROSS_COMPILE)aarch64-linux-android30-clang++
+#armv7a-linux-androideabi30-clang++
+
+ANDROID_HOME = /home/terop/Android/Sdk
+
+all:
+	@echo "  LD   cmdline/gameapi_cmdline"
+	@cp ../libGameApi.la libGameApi.so
+	@$(CC) test.cpp -o libgameapi_cmdline.so -I.. -L. -lGameApi
+	@mkdir -p src/main/jniLibs/arm64-v8a
+	@mkdir -p src/main/jniLibs/armeabi-v7a
+	@cp libgameapi_cmdline.so src/main/jniLibs/arm64-v8a/
+	@cp libGameApi.so src/main/jniLibs/arm64-v8a/
+	@cp ../androiddeps/SDL/build/build/.libs/libSDL2-2.0.so src/main/jniLibs/arm64-v8a/libSDL2-2.0.so
+	@cp ../androiddeps/freetype-2.13.3/build/.libs/libfreetype.so src/main/jniLibs/arm64-v8a/libfreetype.so
+	@mkdir -p src/main/java/org/libsdl/app
+	@cp ../androiddeps/SDL/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java src/main/java/org/libsdl/app/SDLActivity.java
+	@mkdir -p res/mipmap-hdpi
+	@mkdir -p res/mipmap-mdpi
+	@mkdir -p res/mipmap-xhdpi
+	@mkdir -p res/mipmap-xxhdpi
+	@mkdir -p assets
+	@mkdir -p lib/arm64-v8a
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libm.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libdl.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libGLESv1_CM.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libGLESv2.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/liblog.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libandroid.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/30/libc.so lib/arm64-v8a/
+	@cp $(ANDROID_HOME)/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so lib/arm64-v8a/
+	@cp libGameApi.so lib/arm64-v8a/
+	@cp ../androiddeps/SDL/build/build/.libs/libSDL2-2.0.so lib/arm64-v8a/libSDL2.so
+	@cp ../androiddeps/freetype-2.13.3/build/.libs/libfreetype.so lib/arm64-v8a/
+	@cp libgameapi_cmdline.so lib/arm64-v8a/
+	@cp script.txt assets/
+	@$(ANDROID_HOME)/build-tools/33.0.0/aapt2 compile --dir res/ -o compiled_resources/
+	@$(ANDROID_HOME)/build-tools/33.0.0/aapt2 link -o unsigned.apk -I $(ANDROID_HOME)/platforms/android-33/android.jar --java src --shared-lib --manifest AndroidManifest.xml -A assets compiled_resources/*.flat
+	@zip -r unsigned.apk lib/arm64-v8a/libm.so
+	@zip -r unsigned.apk lib/arm64-v8a/libdl.so
+	@zip -r unsigned.apk lib/arm64-v8a/libGLESv1_CM.so
+	@zip -r unsigned.apk lib/arm64-v8a/libGLESv2.so
+	@zip -r unsigned.apk lib/arm64-v8a/liblog.so
+	@zip -r unsigned.apk lib/arm64-v8a/libandroid.so
+	@zip -r unsigned.apk lib/arm64-v8a/libc.so
+	@zip -r unsigned.apk lib/arm64-v8a/libc++_shared.so
+	@zip -r unsigned.apk lib/arm64-v8a/libgameapi_cmdline.so
+	@zip -r unsigned.apk lib/arm64-v8a/libfreetype.so
+	@zip -r unsigned.apk lib/arm64-v8a/libGameApi.so
+	@zip -r unsigned.apk lib/arm64-v8a/libSDL2.so
+	@zip -r unsigned.apk res/values/strings.xml
+	@zip -r unsigned.apk src/org/meshpage/gameapi/R.java
+	@zip -r unsigned.apk src/main/java/org/libsdl/app/SDLActivity.java
+	@$(ANDROID_HOME)/build-tools/33.0.0/zipalign -v 4 unsigned.apk aligned.apk
+	@$(ANDROID_HOME)/build-tools/33.0.0/apksigner sign --ks debug.keystore aligned.apk
+	@mv aligned.apk gameapi_cmdline.apk
+	@$(ANDROID_HOME)/cmdline-tools/latest/bin/apkanalyzer apk summary gameapi_cmdline.apk

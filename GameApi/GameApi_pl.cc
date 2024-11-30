@@ -6178,7 +6178,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 
     FaceCollection *faces2 = find_facecoll(e, p);
     if (faces2->HasBatchMap()) {
-      std::cout << "BatchMap rendering" << std::endl;
+      //std::cout << "BatchMap rendering" << std::endl;
     //std::cout << "IMPL#1:KEEP" << std::endl;
     FaceCollection *faces = find_facecoll(e, p);
     faces->Prepare();
@@ -6281,7 +6281,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     return add_vertex_array(e, s, arr2);
     }
 
-      std::cout << "Normal rendering" << std::endl;
+    //   std::cout << "Normal rendering" << std::endl;
   
   /*
     FaceCollection *faces2 = find_facecoll(e, p);

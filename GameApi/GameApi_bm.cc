@@ -8780,3 +8780,119 @@ private:
   int current_y;
   int current_x;
 };
+
+
+#if 0
+
+struct CompressedImage
+{
+  int size_x;
+  int size_y;
+  float error_percentage;
+  typedef std::vector<CompressedImageSlot*> CompressedImageScanLine;
+  std::vector<CompressedImageScanLine *> slots_image;
+};
+
+struct CompressedImageSlot
+{
+  CompressedImageSpan *red, *green, *blue, *alpha;
+};
+struct CompressedImageSpan
+{
+  int split;
+  int length;
+  std::vector<unsigned char> buf;
+};
+
+
+enum ImageComponent
+  {
+    ERed,
+    EGreen,
+    EBlue,
+    EAlpha
+  };
+
+class ImageCompress
+{
+public:
+  ImageCompress(Bitmap<Color> &bm) : bm(bm) { }
+
+  std::tuple<float,int,bool> count_span_length(int component, int x, int y, float split) const
+  {
+    float avg = 0.0;
+    for(int i=0;;i++)
+      {
+	Color c = bm.Map(x+i,y);
+	float val=0.0;
+	if (component==ERed)
+	  {
+	    val=c.rf();
+	  }
+	if (component==EGreen)
+	  {
+	    val=c.gf();
+	  }
+	if (component==EBlue)
+	  {
+	    val=c.bf();
+	  }
+	if (component==EAlpha)
+	  {
+	    val=c.af();
+	  }
+	avg +=val;
+	if (std::fabs(val-avg)>split) { avg/=i+1; return std::tuple<float,int,bool>(avg,i,false); }
+	if (x+i>=bm.SizeX()) { avg/=i+1; return std::tuple<float,int,bool>(avg,i,true); }
+      }
+  }
+  std::vector<signed char> *generate_span(int component, int x, int y, float split, std::tuple<float,int,bool> t)
+  {
+    std::vector<signed char> *buf = new std::vector<signed char>();
+    for(int i=0;i<t[1];i++)
+      {
+	Color c = bm.Map(x+i,y);
+	float val=0.0;
+	if (component==ERed)
+	  {
+	    val=c.rf();
+	  }
+	if (component==EGreen)
+	  {
+	    val=c.gf();
+	  }
+	if (component==EBlue)
+	  {
+	    val=c.bf();
+	  }
+	if (component==EAlpha)
+	  {
+	    val=c.af();
+	  }
+	buf->push_back( (val-t[0])/split*127 );
+      }
+  }
+
+  
+  CompressedImage *get_data_0() const
+  {
+  }
+  std::vector<unsigned char> *get_data() const
+  {
+  }
+private:
+  Bitmap<Color> &bm;
+};
+
+class ImageDecompress : public Bitmap<Color>
+{
+public:
+  ImageDecompress(std::vector<unsigned char> *vec) : vec(vec) { }
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual C Map(int x, int y) const=0;
+  virtual void Prepare()=0;
+private:
+  std::vector<unsigned char> *vec;
+};
+#endif

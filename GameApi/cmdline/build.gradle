@@ -1,0 +1,23 @@
+apply plugin: 'com.android.application'
+
+System.setProperty("javax.net.ssl.trustStore", "/etc/ssl/certs/java/cacerts")
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.4.2'
+    }
+}
+
+android {
+	compileSdkVersion 33
+	defaultConfig {
+		      applicationId "org.meshpage.gameapi"
+		      minSdkVersion 21
+		      targetSdkVersion 33
+		     }
+	}
+	

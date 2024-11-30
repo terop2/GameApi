@@ -30,14 +30,14 @@ public:
     if (*changed_mem >100000)
       {
 	if (*used_mem>1024000000) {
-	  printf("MEM:%lf Gb MAX:%lf Gb\n",double(*used_mem)/1024000000.0,double(*free_mem)/1024000000.0);
+	  //printf("MEM:%lf Gb MAX:%lf Gb\n",double(*used_mem)/1024000000.0,double(*free_mem)/1024000000.0);
 	}
 	else {
 	  if (*used_mem>1024000) {
-	printf("MEM:%lf Mb MAX:%lf Mb\n",double(*used_mem)/1024000.0,double(*free_mem)/1024000.0);
+	    //printf("MEM:%lf Mb MAX:%lf Mb\n",double(*used_mem)/1024000.0,double(*free_mem)/1024000.0);
 	  }
 	  else {
-	printf("MEM:%lf kb MAX:%lf kb\n",double(*used_mem)/1024.0,double(*free_mem)/1024.0);
+	    //printf("MEM:%lf kb MAX:%lf kb\n",double(*used_mem)/1024.0,double(*free_mem)/1024.0);
 	  }
 	}
 
@@ -2971,3 +2971,182 @@ public:
 
 #endif
 
+
+#if 0
+
+template<class T>
+class ParamInput
+{
+public:
+  virtual int NumParams() const=0;
+  virtual void SetParam(int i, T val)=0;
+};
+
+template<class T>
+class ParamData
+{
+  std::vector<T> vec;
+};
+
+
+template<class T>
+class ParamOutput
+{
+public:
+  virtual int NumOutputs() const=0;
+  virtual T GetOutput(int i) const=0;
+};
+
+template<class T>
+class IdParam : public ParamInput<T>,
+		public ParamData<T>,
+		public ParamOutput<T>
+{
+public:
+  
+};
+
+struct ChangeEnv
+{
+};
+
+
+template<class T>
+class ArrayI : public ParamInput<T>, ParamOutput<T>
+{
+public: // ctors
+  ArrayI() : vec() { }
+  ArrayI(const std::vector<T> &ref) : vec(ref) { }
+
+public: // decide dimensions
+  void set_dimension(int i)
+  {
+    vec.resize(i);
+  }
+  
+public: // inputs
+  virtual int NumParams() const { return vec.size(); }
+  virtual void SetParam(int i, T val) {
+    if (i>=vec.size()) vec.resize(i+1);
+    vec[i]=val;
+  }
+
+public: // decisions
+  virtual void ApplyChange(ChangeEnv &env) { DoChange(vec,env); }
+  virtual void DoChange(std::vector<T> &ref, ChangeEnv &env)=0;
+  
+public: // outputs
+  virtual int NumOutputs() const { return vec.size(); }
+  virtual T GetOutput(int i) const
+  {
+    if (i>=vec.size()) return T();
+    return vec[i];
+  }
+
+private: // storage
+  std::vector<T> vec;
+};
+
+template<class T>
+class DefaultFunction : public Function<float,T>
+{
+public:
+  virtual T Map(float val) const { return T(); }
+};
+
+
+template<class T>
+class CurveI
+{
+public:
+  CurveI() : curve(DefaultFunction), length(1.0), m_change_points(new ArrayI) { }
+  CurveI(const Function<float,T> &ref) : m_curve(&ref), m_length(1.0), m_change_points(new ArrayI) { }
+  CurveI(const Function<float,T> &ref, float length) : m_curve(&ref), m_length(length), m_change_points(new ArrayI) { }
+  CurveI(const Function<float,T> &ref, float length, const ArrayI<float> &change_points) : m_curve(&ref), m_length(length), m_change_points(&change_points) { }
+public:
+  void set_length(float length)
+  {
+    m_length = length;
+  }
+
+public:
+  virtual int Length() const { return m_length; }
+  virtual void SetCurve(Function<float,T> &curve) { m_curve = &curve; } 
+
+public:
+  virtual void ApplyChange(const ChangeEnv &env) { DoChange(&m_curve, &m_length, env); }
+  virtual void DoChange(Function<float,T> **func, float *len, const ChangeEnv &env)=0;
+
+public:
+  virtual int GetLength() const { return m_length; }
+  
+private:
+  Function<float,T> *m_curve;
+  float m_length;
+  ArrayI<float> *m_change_points;
+};
+
+class ConstantFunction : public Function<float, T>
+{
+public:
+  ConstantFunction(T t) : t(t) { }
+  T Map(float /*val*/) const { return t; }
+private:
+  T t;
+};
+
+class LineFunction : public Function<float,T>
+{
+public:
+  LineFunction(Function<float,T> *next_level,
+	       float start_float, float end_float, T start, T end) : next_level(next_level),
+								     start_float(start_float), end_float(end_float),
+								     start(start), end(end) { }
+  T Map(float val) const
+  {
+    if (val<start_float || val>=end_float) return next_level->Map(val);
+
+    float val2 = val;
+    val2 -= start_float;
+    val2 /= end_float-start_float;
+    // now val2 \in [0..1]
+    return (1.0-val2) * start + val2*end;
+  }
+private:
+  Function<float, T> *next_level;
+  float start_float, end_float;
+  T start,end;
+};
+
+class CircleFunction : public Function<float,T>
+{
+public:
+  CircleFunction(Function<float,T> *next_level,
+		 float start_float, float end_float,
+		 T start, T end,
+		 float radius, bool flip)
+    : next_level(next_level),
+      start_float(start_float), end_float(end_float),
+      start(start), end(end),
+      radius(radius), flip(flip) { }
+  T Map(float val) const
+  {
+    if (val<start_float || val>=end_float) return next_level->Map(val);
+
+    float val2 = val;
+    val2 -= start_float;
+    val2 /= end_float-start_float;
+    // now val2 \in [0..1]
+
+    // TODO
+    
+    
+  }
+
+private:
+  Function<float, T> *next_level;
+  float start_float, end_float;
+  T start,end;
+  float radius; bool flip;
+};
+#endif
