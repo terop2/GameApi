@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.meshpage.gameapi">
+
+    <!-- Add permissions your app needs -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+	    <uses-sdk
+		android:minSdkVersion="16"
+		android:targetSdkVersion="33" />
+
+    
+    <application
+        android:allowBackup="true"
+        android:label="GameAPI Cmdline"
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+
+        <!-- This is the main SDL activity that will load your native code -->
+        <activity
+            android:name="org.libsdl.app.SDLActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize"
+            android:label="GameAPI Cmdline">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- This meta-data helps SDL find your main library -->
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="gameapi_cmdline" />
+	    <meta-data
+                android:name="SDL_CMDLINE"
+                android:value="--file assets/script.txt --size 800 600" />
+        </activity>
+    </application>
+</manifest>

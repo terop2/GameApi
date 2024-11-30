@@ -2284,13 +2284,15 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
 
   if (s.ref.numfaces!=0)
     {
-    ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+      /*
+     ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
     if (s.ref.indices_char)
       ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, s.ref.numfaces*sizeof(unsigned char)*3, s.ref.indices_char, Low_GL_STATIC_DRAW);
     if (s.ref.indices_short)
       ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, s.ref.numfaces*sizeof(unsigned short)*3, s.ref.indices_short, Low_GL_STATIC_DRAW);
     if (s.ref.indices_int)
       ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, s.ref.numfaces*sizeof(unsigned int)*3, s.ref.indices_int, Low_GL_STATIC_DRAW);
+      */
     }
   
   
@@ -2471,6 +2473,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
     ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
 
 
+    /*
     ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
   if (s.ref.indices_char)
     ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0, 0);
@@ -2479,7 +2482,7 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
   if (s.ref.indices_int)
     ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0,0);
   ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, 0);
-  
+    */
     
     int counter=8;
 
@@ -2723,6 +2726,7 @@ GameApi::PinIn RenderVertexArray::prepare_indices(int id, const unsigned char *i
 #ifdef VAO
   ogl->glBindVertexArray(vao[0]);
 #endif
+  /*
   ogl->glBindBuffer( Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer );
 
   if (ind1)
@@ -2734,6 +2738,8 @@ GameApi::PinIn RenderVertexArray::prepare_indices(int id, const unsigned char *i
   if (ind3)
     ogl->glBufferData( Low_GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * facecount*3, ind3, Low_GL_STATIC_DRAW);
 
+  */
+    
 #ifdef VAO
     ogl->glBindVertexArray(0);
 #endif
@@ -2882,9 +2888,11 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
 
     if (s.ref.numfaces) {
+      /*
     ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
     ogl->glVertexAttribPointer(13, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, 0);
+      */
     }
     
 #endif
@@ -3210,6 +3218,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
     ogl->glVertexAttribPointer(12, 4, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
     if (s.ref.numfaces!=0)
       {
+	/*
 	ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
 	if (s.ref.indices_char)
 	ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_BYTE, Low_GL_FALSE, 0, 0);
@@ -3217,7 +3226,8 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 	ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_SHORT, Low_GL_FALSE, 0, 0);
 	if (s.ref.indices_int)
 	ogl->glVertexAttribPointer(13, 3, Low_GL_UNSIGNED_INT, Low_GL_FALSE, 0, 0);
-      }
+	*/
+	}
 
 #endif
 
@@ -4185,7 +4195,7 @@ void Dyn::prepare(int i)
 	
 	//std::cout << "NUMINDICES: " << num2 << std::endl;
 	unsigned char *indices = arr->Indices();
-	ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+	//ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
   check_error("bindbuffer2");
     size_t sz = sizeof(unsigned short);
     int low = Low_GL_UNSIGNED_SHORT;
@@ -4208,7 +4218,7 @@ void Dyn::prepare(int i)
     	//ogl->glVertexAttribPointer(14,3,low, Low_GL_FALSE, 0, 0);
      }
 
-    ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, num2*sz, indices, Low_GL_STATIC_DRAW);
+  //ogl->glBufferData(Low_GL_ELEMENT_ARRAY_BUFFER, num2*sz, indices, Low_GL_STATIC_DRAW);
   check_error("bufferdata2");
       }
     
@@ -4335,7 +4345,7 @@ void Dyn::render()
       //std::cout << std::endl;
       int numindices = arr->NumIndices();
       //std::cout << "NUMINDICES: " << numindices << std::endl;
-      ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+      //ogl->glBindBuffer(Low_GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
 
 
     size_t sz = sizeof(unsigned short);

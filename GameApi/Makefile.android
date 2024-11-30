@@ -29,7 +29,7 @@ GL_PATH=$(LIBPATH)
 GL_NAME=libGL.so
 GL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/include
 #`pkg-config --cflags gl`
-GL_PKGCONFIG = -L/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/objs/.libs
+GL_PKGCONFIG = -L/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/build/.libs
 #`pkg-config --libs gl`
 ifndef GL_PKGCONFIG
 GL_PKGCONFIG = $(GL_PATH)$(GL_NAME)

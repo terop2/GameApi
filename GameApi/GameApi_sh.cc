@@ -410,7 +410,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
 
   std::vector<float> v;
-  int s = m.size();
+  int s = std::min(m.size(),size_t(num));
   for(int i=0;i<s;i++)
     {
       Matrix mm = find_matrix(e,m[i]);
