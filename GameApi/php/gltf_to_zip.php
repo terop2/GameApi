@@ -60,18 +60,18 @@ function trans_change()
 }
 function file_change()
 {
-  var el3 = document.getElementById("gltffile");
-  var name = el3.value;
-  var ext = name.substring(name.length-4);
-  if (ext==".zip") {
-    var el3 = document.getElementById("sketchfab");
-    el3.disabled=false;
-  } else {
-    var el3 = document.getElementById("sketchfab");
-    el3.disabled=true;
-    el3.checked=true;
-    sketchfab_change();
-  }
+  //var el3 = document.getElementById("gltffile");
+  //var name = el3.value;
+  //var ext = name.substring(name.length-4);
+  //if (ext==".zip") {
+  //  var el3 = document.getElementById("sketchfab");
+  //  el3.disabled=false;
+  //} else {
+  //  var el3 = document.getElementById("sketchfab");
+  //  el3.disabled=true;
+  //  el3.checked=true;
+  //  sketchfab_change();
+  //}
 }
 function sketchfab_change()
 {

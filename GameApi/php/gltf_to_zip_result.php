@@ -25,11 +25,11 @@ function getGoogleDriveFileInfo($fileId) {
     // Get headers
     $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     $headers = substr($response, 0, $headerSize);
-    
+
     // Parse Content-Disposition header
-    if (preg_match('/Content-Disposition:.*filename="([^"]+)"/', $headers, $matches)) {
+    if (preg_match('/[cC]ontent-[dD]isposition:.*filename="([^"]+)"/', $headers, $matches)) {
         $filename = $matches[1];
-    } else if (preg_match('/Content-Disposition:.*filename\*=UTF-8\'\'(.+)/', $headers, $matches)) {
+    } else if (preg_match('/[cC]ontent-[dD]isposition:.*filename\*=UTF-8\'\'(.+)/', $headers, $matches)) {
         $filename = urldecode($matches[1]);
     }
     
@@ -80,6 +80,7 @@ function getGoogleDriveFileContent($url) {
 
     // Create download URL
     $downloadUrl = "https://drive.google.com/uc?export=download&id=" . $fileId;
+
 /*
     
     // Initialize cURL
@@ -125,13 +126,17 @@ file_put_contents($countname,$str);
 
 
 $gltf = $_POST["gltffile"];
+$gltf3 = $gltf;
 $ext = "";
 if (strpos($gltf,'drive.google.com') !== false) {
-   $arr = getGoogleDriveFileContents($gltf);
+   $arr = getGoogleDriveFileContent($gltf);
    $fileinfo = $arr['fileInfo'];
+   $filename = $fileinfo['filename'];
    $ext = $fileinfo['extension'];
    $gltf = $arr['download'];
 }
+
+$gltf = str_replace("&amp;","&",$gltf);
 
 $gltf2 = explode('?',$gltf)[0];
 if($ext=="") {
@@ -140,7 +145,14 @@ $ext = substr($gltf2, -4);
 
 if (strlen($ext)<4||(substr($ext,-3)!="zip"&&substr($ext,-3)!="glb"&&substr($ext,-4)!="gltf")) {
   echo "<pre>";
-  echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED(should be .zip,.glb or .gltf)</pre>";
+  echo "ERROR, SOMETHING WRONG WITH THE URL YOU ENTERED(should be .zip,.glb or .gltf)\n";
+  echo "URL WAS:$gltf3\n";
+  echo "GLTF URL WAS: $gltf\n";
+  echo "FILENAME WAS: $filename\n";
+  echo "EXTENSION WAS: $ext</pre>";
+  echo "FILEINFO WAS:";
+  print_r($fileinfo,TRUE);
+  echo "\n";
   $logstr = $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
 $fp = fopen("./pp2/tmp.log","a+");
 fwrite($fp, $logstr);
@@ -298,6 +310,13 @@ fclose($fp);
 } else {
   echo "<pre>$file3";
   echo "THERE SEEMS TO BE ERRORS!</pre>";
+  echo "URL WAS:$gltf3\n";
+  echo "GLTF URL WAS: $gltf\n";
+  echo "FILENAME WAS: $filename\n";
+  echo "EXTENSION WAS: $ext</pre>";
+  echo "FILEINFO WAS:";
+  print_r($fileinfo,TRUE);
+  echo "\n";
 
 $logstr = "$file3" . "\n" . $_POST["gltffile"] . " " . $transparent . " " . $zoom . " " . $rotate . " " . $pan . " " . $shadow . " " . $anim . " " . $bigscreen . " " . $sketchfab . "-> FAIL\n";
 $fp = fopen("./pp2/tmp.log","a+");

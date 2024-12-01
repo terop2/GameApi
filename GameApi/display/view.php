@@ -395,7 +395,7 @@ Vue.component('appmodel_link', {
      },
      template: `<div class="border block blockitem height12 customfont">
      Link<br><input type="url" id="model_url" name="url" v-on:change="$emit('change_model')"/>
-   <button type="button" v-on:click="$emit('change_model')" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
+   <button type="button" v-on:click="$emit('change_model3')" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
 
 </div>
      `
