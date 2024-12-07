@@ -8667,10 +8667,11 @@ public:
     assert(dt->input_acc->type==TINYGLTF_TYPE_SCALAR);
     if (stride==0) { stride=sizeof(float); }
     //assert(stride==0);
-    if (time_index>=0 && time_index<count) {
-      float *arr = (float*) (dt3 + stride*time_index);
+    if (time_index>=0 && time_index-1<count) {
+      float *arr = (float*) (dt3 + stride*(time_index));
       return *arr;
-    } else { return *(float*)(dt3+stride*(count-1)); }
+    } else {
+      return *(float*)(dt3+stride*(count-1)); }
 
     } else return 0.0;
     
@@ -8695,10 +8696,11 @@ public:
     if (stride==0 && dt->input_acc->type==TINYGLTF_TYPE_VEC4) { stride=4*sizeof(float); }
     //assert(stride==0);
     if (time_index+1>=0 && time_index+1<count) {
-      float *arr = (float*) (dt3 + stride*(time_index+1));
-      return *arr;
-    } else { return *(float*)(dt3+stride*(count-1)); }
-    } else return 0.0;
+	float *arr = (float*) (dt3 + stride*(time_index+1));
+	return *arr; /* *arr */
+    } else { /*      std::cout << "Returning end time2: " << *(float*)(dt3+stride*(count-1)) << std::endl;*/
+      return *(float*)(dt3+stride*(count-1)); }
+    } else {      /*std::cout << "Returning end time3: " << 0 << std::endl;*/ return 0.0; }
   }
 
   virtual int Count() const
@@ -9080,6 +9082,7 @@ public:
       firsttime = false; 
       // std::cout << "GLTFSkeletonAnim::Prepare() start" << std::endl;
       if (interface->skins_size()==0) {
+	std::cout << "skins_size==0" << std::endl;
 	int start_node = 0;
 	PrevNodes *prev2 = new PrevNodes;
 	AnimData *dt = new AnimData;
@@ -9094,6 +9097,22 @@ public:
       if (skin_num>=0 && skin_num<sz) {
 	const tinygltf::Skin &skin = interface->get_skin(skin_num); //&load->model.skins[skin_num];
 	int start_node = skin.skeleton;
+	if (start_node==-1) {
+	  std::cout << "skin.skeleton==-1" << std::endl;
+	  int defscene = interface->get_default_scene();
+	  if (defscene==-1) { std::cout << "Default scene ==-1" << std::endl; start_node=0; } else { 
+	    const tinygltf::Scene &scene = interface->get_scene(defscene);
+	    if (scene.nodes.size()>0) {
+	      start_node = scene.nodes[0];
+	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
+	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
+	    }
+	    else {
+	      std::cout << "Default Scene nodes size=0" << std::endl;
+	      start_node=0;
+	    }
+	  }
+	}
 	max_count=0;
 	max_time = 0.0;
 	PrevNodes *prev2 = new PrevNodes;
@@ -9104,7 +9123,7 @@ public:
 	delete dt;
 	delete prev2;
       }
-    }
+      }
     }
 
   }
@@ -9144,6 +9163,22 @@ public:
     if (skin_num>=0 && skin_num<sz2) {
       const tinygltf::Skin &skin = interface->get_skin(skin_num); //&load->model.skins[skin_num];
       int start_node = skin.skeleton;
+	if (start_node==-1) {
+	  std::cout << "skin.skeleton==-1" << std::endl;
+	  int defscene = interface->get_default_scene();
+	  if (defscene==-1) { std::cout << "Default scene ==-1" << std::endl; start_node=0; } else { 
+	    const tinygltf::Scene &scene = interface->get_scene(defscene);
+	    if (scene.nodes.size()>0) {
+	      start_node = scene.nodes[0];
+	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
+	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
+	    }
+	    else {
+	      std::cout << "Default Scene nodes size=0" << std::endl;
+	      start_node=0;
+	    }
+	  }
+	}
       max_count =0;
       max_time = 0.0;
       PrevNodes *prev2 = new PrevNodes;
@@ -9378,13 +9413,13 @@ public:
   }
   Matrix recurse_node(AnimData *dt, PrevNodes &prev2, int node_id, tinygltf::Node * /*node*/, Matrix pos, Matrix pos2, GLTFAnimation * /*anim*/, int time_index, int /*channel*/)
   {
-    //std::cout << "Target node: " << node_id << std::endl;
-    if (node_id<0 || node_id>=interface->nodes_size()) return Matrix::Identity();
+    //std::cout << "Recurse_node: " << node_id << std::endl;
+    if (node_id<0 || node_id>=interface->nodes_size()) { std::cout << "Invalid node_id in recurse_node(" << node_id << "/" << interface->nodes_size() << ")" << std::endl; return Matrix::Identity(); }
    
 
     call_prev_time_index2(prev2,node_id);
     int sz = interface->animations_size(); 
-    if (animation<0||animation>=sz) return Matrix::Identity();
+    if (animation<0||animation>=sz) { std::cout << "Invalid animation id in recurse_node (" << animation << "/" << sz << ")" << std::endl; return Matrix::Identity(); }
 
     //std::cout << "GETNODE:" << node_id << std::endl;
     const tinygltf::Node &node = interface->get_node(node_id); 
@@ -9407,23 +9442,30 @@ public:
 	  //std::cout << "Compare:" << skin->joints[j] << "==" << node_id << std::endl;
 	  if (jj!=-1 && skin->joints[j]==node_id)
 	    {
+	      std::cout << "Duplicate joint"<< node_id << " " << j << " " << jj  << std::endl;
 	      jj=-1;
 	      break;
 	    }
 	  if (skin->joints[j]==node_id) { /*doit=true;*/ jj=j; }
 	  }
       }
+
+      if (jj==-1)
+	{
+	  std::cout << "node " << node_id << "not found in jj calc" << std::endl;
+	}
+      
       //std::cout << "Found jj:" << jj << std::endl;
       //if (jj==-1) {
       //	if (node_id<max_joints) {
       //	  jj=node_id;
       // 	}
       //}
-
-      
+      //max_time = 0.0;
 	for(int i=0;i<s5;i++) {
       const tinygltf::AnimationChannel *chan = &anim3->channels[i];
 
+      
       if (chan->target_node == node_id) {
 	std::string path = chan->target_path;
 	channel = i;
@@ -9446,7 +9488,9 @@ public:
     int type = -1;
     if (channel!=-1)
       {
-      if (anim->end_time()>max_time) { max_time = anim->end_time(); }
+	
+	if (anim->end_time()>max_time) { max_time = anim->end_time(); }
+	//if (max_time<max_time2) max_time = max_time2;
       if (jj!=-1) {
 	start_t[jj] = anim->start_time();
 	end_t[jj] = anim->end_time();
@@ -9550,7 +9594,7 @@ public:
     int s = node_ids.size();
     for(int i=0;i<s;i++)
       {
-	if (node_ids[i]==-1) { node_ids[i]=0; std::cout << "INDEX #" << i << " is not filled in gltf anim" << std::endl; }
+	if (node_ids[i]==-1) { /*node_ids[i]=0;*/ std::cout << "INDEX #" << i << " is not filled in gltf anim" << std::endl; }
       }
   }
 public:
@@ -10423,8 +10467,10 @@ public:
 	GLTFAnimation anim(&dt,interface,animation,i,0,skin_num);
 	anim.Prepare();
 	int val = anim.Count();
+	//count+=val;
 	if (val>count) count=val;
       }
+    std::cout << "num_timeindexes=" << count << std::endl;
     num_timeindexes=count;
   }
 
@@ -11146,7 +11192,7 @@ public:
 	  timedone = true;
 	}
       }
-    if(keypressed && max_end_time>0.01 && time>max_end_time) { key_time = ev.mainloop_api.get_time()/1000.0; time=e.time-key_time; timevec.clear(); }// repeat
+    if(keypressed && max_end_time>0.0001 && time>max_end_time) { key_time = ev.mainloop_api.get_time()/1000.0; time=e.time-key_time; timevec.clear(); }// repeat
     if (!timedone)
       {
 	TimeStore t;
@@ -11209,21 +11255,25 @@ public:
 	    current = -1;
 	    const std::vector<float> *current_start_time=0, *current_end_time=0;
 	    int sz = items.size();
+	    //GLTFJointMatrices *joints2 = (GLTFJointMatrices*)(items[sz-1]);		    //float finish_time = joints2->get_max_time();
+		//std::cout << finish_time << std::endl;
 	    for(int t=0;t<sz;t++)
 	      {
 		GLTFJointMatrices *joints = (GLTFJointMatrices*)(items[t]);
 		const std::vector<float> *start_time = joints->start_time();
 		const std::vector<float> *end_time = joints->end_time();
 
+		int sr = end_time->size();
+		for(int iu=0;iu<sr;iu++) {
+		  float finish_time = end_time->operator[](iu);
+		  if (finish_time>max_end_time) max_end_time = finish_time;
+		}
+		
 		if (current==-1 && t==0) {
 		  current_start_time=start_time;
 		  current_end_time=end_time;
 		}
 
-		
-		float finish_time = joints->get_max_time();
-		//std::cout << finish_time << std::endl;
-		if (finish_time>max_end_time) max_end_time = finish_time;
 		
 		//int u = end_time->size();
 		//if (ii<u && end_time->operator[](ii)>max_end_time) max_end_time=end_time->operator[](ii);
