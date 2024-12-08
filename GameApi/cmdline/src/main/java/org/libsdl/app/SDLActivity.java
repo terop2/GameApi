@@ -256,7 +256,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * It can be overridden by derived classes.
      */
     protected String getMainFunction() {
-        return "main";
+        return "gameapi_main";
     }
 
     /**
@@ -265,16 +265,16 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * The default implementation returns the defaults. It never returns null.
      * An array returned by a new implementation must at least contain "SDL2".
      * Also keep in mind that the order the libraries are loaded may matter.
-     * @return names of shared libraries to be loaded (e.g. "SDL2","freetype","GameApi","gameapi_cmdline" ).
+     * @return names of shared libraries to be loaded (e.g. "SDL2","freetype","GameApi","gameapi_cmdline", "main").
      */
     protected String[] getLibraries() {
         return new String[] {
-            "SDL2","freetype","GameApi","gameapi_cmdline"
+            "SDL2","freetype","GameApi","gameapi_cmdline",
             // "SDL2_image",
             // "SDL2_mixer",
             // "SDL2_net",
             // "SDL2_ttf",
-            
+            "main"
         };
     }
 
@@ -834,7 +834,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     // Handler for the messages
-    Handler commandHandler = new SDLCommandHandler();
+    Handler commandHandler ;
 
     // Send a message from the SDLMain thread
     boolean sendCommand(int command, Object data) {

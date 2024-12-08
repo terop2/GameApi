@@ -242,8 +242,11 @@ void ClearProgress();
 extern pthread_t g_main_thread_id;
 extern Low_SDL_Window *sdl_window;
 
-
+#ifdef ANDROID
+extern "C" int gameapi_main(int argc, char *argv[]) {
+#else
 int main(int argc, char *argv[]) {
+#endif
   g_main_thread_id = pthread_self();
   call_count++;
   //std::cout << "CALL COUNT" << call_count << std::endl;

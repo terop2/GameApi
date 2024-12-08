@@ -8,7 +8,7 @@ ANDROID_HOME = /home/terop/Android/Sdk
 all:
 	@echo "  LD   cmdline/gameapi_cmdline"
 	@cp ../libGameApi.la libGameApi.so
-	@$(CC) test.cpp -o libgameapi_cmdline.so -I.. -L. -lGameApi
+	@$(CC) -L/home/terop/cvs/GameApi/GameApi/androiddeps/SDL/build/build/.libs -fPIC -shared -DANDROID test.cpp -o libgameapi_cmdline.so -I.. -L. -lGameApi -lSDL2 -lSDL2main -lm -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 	@mkdir -p src/main/jniLibs/arm64-v8a
 	@mkdir -p src/main/jniLibs/armeabi-v7a
 	@cp libgameapi_cmdline.so src/main/jniLibs/arm64-v8a/
@@ -16,7 +16,7 @@ all:
 	@cp ../androiddeps/SDL/build/build/.libs/libSDL2-2.0.so src/main/jniLibs/arm64-v8a/libSDL2-2.0.so
 	@cp ../androiddeps/freetype-2.13.3/build/.libs/libfreetype.so src/main/jniLibs/arm64-v8a/libfreetype.so
 	@mkdir -p src/main/java/org/libsdl/app
-	@cat ../androiddeps/SDL/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java |sed s/\"SDL2\",/\"SDL2\",\"freetype\",\"GameApi\",\"gameapi_cmdline\"/ |sed s/\"main\"// |sed s/\"SDL_main\"/\"main\"/ >src/main/java/org/libsdl/app/SDLActivity.java
+	@cat ../androiddeps/SDL/android-project/app/src/main/java/org/libsdl/app/SDLActivity.java |sed s/\"SDL2\",/\"SDL2\",\"freetype\",\"GameApi\",\"gameapi_cmdline\",/ |sed s/\"SDL_main\"/\"gameapi_main\"/ |sed s/\=\ new\ SDLCommandHandler\(\)//g >src/main/java/org/libsdl/app/SDLActivity.java
 	@mkdir -p res/mipmap-hdpi
 	@mkdir -p res/mipmap-mdpi
 	@mkdir -p res/mipmap-xhdpi
@@ -36,8 +36,8 @@ all:
 	@cp ../androiddeps/freetype-2.13.3/build/.libs/libfreetype.so lib/arm64-v8a/
 	@cp libgameapi_cmdline.so lib/arm64-v8a/
 	@cp script.txt assets/
-	@javac -source 8 -target 8 -d classes -bootclasspath $(ANDROID_HOME)/platforms/android-33/android.jar src/main/java/org/libsdl/app/SDLActivity.java src/main/java/org/libsdl/app/SDLSurface.java src/main/java/org/libsdl/app/SDLAudioManager.java src/main/java/org/libsdl/app/SDLControllerManager.java src/main/java/org/libsdl/app/SDL.java src/main/java/org/libsdl/app/HIDDeviceManager.java src/main/java/org/libsdl/app/HIDDevice.java src/main/java/org/libsdl/app/HIDDeviceBLESteamController.java src/main/java/org/libsdl/app/HIDDeviceUSB.java
-	@d8 --lib /home/terop/Android/Sdk/platforms/android-33/android.jar classes/org/libsdl/app/SDLActivity.class --output .
+	@javac -source 8 -target 8 -d classes -bootclasspath $(ANDROID_HOME)/platforms/android-33/android.jar src/main/java/org/libsdl/app/SDLActivity.java src/main/java/org/libsdl/app/SDLSurface.java src/main/java/org/libsdl/app/SDLAudioManager.java src/main/java/org/libsdl/app/SDLControllerManager.java src/main/java/org/libsdl/app/SDL.java src/main/java/org/libsdl/app/HIDDeviceManager.java src/main/java/org/libsdl/app/HIDDevice.java src/main/java/org/libsdl/app/HIDDeviceBLESteamController.java src/main/java/org/libsdl/app/HIDDeviceUSB.java src/org/meshpage/gameapi/R.java src/org/libsdl/app/R.java
+	@d8 --lib /home/terop/Android/Sdk/platforms/android-33/android.jar classes/org/libsdl/app/SDLActivity.class classes/org/libsdl/app/SDLSurface.class classes/org/libsdl/app/SDLAudioManager.class classes/org/libsdl/app/SDLControllerManager.class classes/org/libsdl/app/HIDDevice.class classes/org/libsdl/app/HIDDeviceBLESteamController.class classes/org/libsdl/app/HIDDeviceUSB.class --output .
 	@$(ANDROID_HOME)/build-tools/33.0.0/aapt2 compile --dir res/ -o compiled_resources/
 	@$(ANDROID_HOME)/build-tools/33.0.0/aapt2 link -o unsigned.apk -I $(ANDROID_HOME)/platforms/android-33/android.jar --java src --shared-lib --manifest AndroidManifest.xml -A assets compiled_resources/*.flat
 	@zip -r unsigned.apk lib/arm64-v8a/libm.so
@@ -54,6 +54,7 @@ all:
 	@zip -r unsigned.apk lib/arm64-v8a/libSDL2.so
 	@zip -r unsigned.apk res/values/strings.xml
 	@zip -r unsigned.apk src/org/meshpage/gameapi/R.java
+	@zip -r unsigned.apk src/org/libsdl/app/R.java
 	@zip -r unsigned.apk src/main/java/org/libsdl/app/SDLActivity.java
 	@zip -r unsigned.apk classes.dex
 	@$(ANDROID_HOME)/build-tools/33.0.0/zipalign -v 4 unsigned.apk aligned.apk
