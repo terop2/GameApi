@@ -6729,7 +6729,7 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   bool done = false;
   GameApi::P mesh;
   for(int i=0;i<ss;i++) {
-    if (interface->get_skin(i).skeleton != -1)
+    //if (interface->get_skin(i).skeleton != -1)
       {
 	int mesh_id = node.mesh;
 	mesh.id = -1;
@@ -6852,7 +6852,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
   bool done = false;
   GameApi::ARR mesh;
   for(int i=0;i<ss;i++) {
-    if (interface->get_skin(i).skeleton != -1)
+    //if (interface->get_skin(i).skeleton != -1)
       {
 	int mesh_id = node.mesh;
 	mesh.id = -1;
@@ -6971,7 +6971,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   bool done = false;
   GameApi::ML mesh;
   for(int i=0;i<ss;i++) {
-    if (interface->get_skin(i).skeleton != -1)
+    //if (interface->get_skin(i).skeleton != -1)
       {
 	int mesh_id = node.mesh;
 	mesh.id = -1;
