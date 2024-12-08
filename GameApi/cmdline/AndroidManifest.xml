@@ -34,7 +34,7 @@
                 android:value="gameapi_cmdline" />
 	    <meta-data
                 android:name="SDL_CMDLINE"
-                android:value="--file assets/script.txt --size 800 600" />
+                android:value="--file assets/script.txt --size 720 1600" />
         </activity>
     </application>
 </manifest>

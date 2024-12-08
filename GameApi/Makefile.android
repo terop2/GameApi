@@ -282,7 +282,8 @@ libGameApi.la: $(OFiles) Makefile
 #TAGS: $(CFiles)
 #	etags -o TAGS -l c++ $(CFiles)
 
-CC = $(CROSS_COMPILE)armv7a-linux-androideabi30-clang++
+CC = $(CROSS_COMPILE)aarch64-linux-android30-clang++
+#armv7a-linux-androideabi30-clang++
 #x86_64-linux-android30-clang++
 CCWIN = i586-mingw32msvc-g++
 

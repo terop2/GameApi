@@ -36,6 +36,8 @@ all:
 	@cp ../androiddeps/freetype-2.13.3/build/.libs/libfreetype.so lib/arm64-v8a/
 	@cp libgameapi_cmdline.so lib/arm64-v8a/
 	@cp script.txt assets/
+	@javac -source 8 -target 8 -d classes -bootclasspath $(ANDROID_HOME)/platforms/android-33/android.jar src/main/java/org/libsdl/app/SDLActivity.java src/main/java/org/libsdl/app/SDLSurface.java src/main/java/org/libsdl/app/SDLAudioManager.java src/main/java/org/libsdl/app/SDLControllerManager.java src/main/java/org/libsdl/app/SDL.java src/main/java/org/libsdl/app/HIDDeviceManager.java src/main/java/org/libsdl/app/HIDDevice.java src/main/java/org/libsdl/app/HIDDeviceBLESteamController.java src/main/java/org/libsdl/app/HIDDeviceUSB.java
+	@d8 --lib /home/terop/Android/Sdk/platforms/android-33/android.jar classes/org/libsdl/app/SDLActivity.class --output .
 	@$(ANDROID_HOME)/build-tools/33.0.0/aapt2 compile --dir res/ -o compiled_resources/
 	@$(ANDROID_HOME)/build-tools/33.0.0/aapt2 link -o unsigned.apk -I $(ANDROID_HOME)/platforms/android-33/android.jar --java src --shared-lib --manifest AndroidManifest.xml -A assets compiled_resources/*.flat
 	@zip -r unsigned.apk lib/arm64-v8a/libm.so
@@ -53,6 +55,7 @@ all:
 	@zip -r unsigned.apk res/values/strings.xml
 	@zip -r unsigned.apk src/org/meshpage/gameapi/R.java
 	@zip -r unsigned.apk src/main/java/org/libsdl/app/SDLActivity.java
+	@zip -r unsigned.apk classes.dex
 	@$(ANDROID_HOME)/build-tools/33.0.0/zipalign -v 4 unsigned.apk aligned.apk
 	@$(ANDROID_HOME)/build-tools/33.0.0/apksigner sign --ks debug.keystore aligned.apk
 	@mv aligned.apk gameapi_cmdline.apk
