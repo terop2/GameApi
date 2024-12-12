@@ -7,6 +7,8 @@ sudo docker run \
      --mount source=myvol2,target=/app \
      -v /tmp/.X11-unix:/tmp/.X11-unix \
      -e DISPLAY=$DISPLAY \
+     -e WAYLAND_DISPLAY=$WAYLAND_DISPLAY \
+     -v ${XDG_RUNTIME_DIR}/${WAYLAND_DISPLAY}:/tmp/${WAYLAND_DISPLAY} \
      -e QT_X11_NO_MITSHM=1 \
      builder-test \
      gameapi-builder $1 $2 $3

@@ -1,7 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.10
 # Dependencies for glvnd and X11.
 RUN apt-get update \
   && apt-get install -y -qq --no-install-recommends \
+    libwayland-client0 \
+    libwayland-server0 \
+    libwayland-egl1 \
+    libvulkan1 \
     libglvnd0 \
     libgl1 \
     libglx0 \
