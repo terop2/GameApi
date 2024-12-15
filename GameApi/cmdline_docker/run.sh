@@ -10,7 +10,9 @@ fi
 sudo xhost +local:root
 cp $1 script.txt
 sudo docker build -t builder-cmdline2:latest .
+sudo docker network create gameapi_network
 sudo docker run \
+     --network gameapi_network \
      --rm \
      -it \
      --gpus all \

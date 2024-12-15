@@ -1,6 +1,8 @@
 #!/bin/sh
 sudo xhost +local:root
+sudo docker network create gameapi_network
 sudo docker run \
+     --network gameapi_network
      --rm \
      -it \
      --gpus all \

@@ -13,7 +13,10 @@ RUN apt-get update \
     libglew2.2 \
     curl \
     libc6 \
-    libgcc-s1
+    libgcc-s1 \
+    iputils-ping \
+    dnsutils \
+    ca-certificates
 # Dependencies for glvnd and X11.
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
