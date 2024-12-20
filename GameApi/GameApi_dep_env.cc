@@ -957,14 +957,18 @@ bool g_del_map_deleter_installed=false;
 void delmap_cache_deleter(void *)
 {
   std::cout << "delmap_cache_deleter is freeing memory" << std::endl;
+#if 0
   std::map<std::string,const std::vector<unsigned char, GameApiAllocator<unsigned char>>* >::iterator i = g_del_map.load_url_buffers_async.begin();
   for(;i!=g_del_map.load_url_buffers_async.end();i++)
     {
       std::pair<std::string, const std::vector<unsigned char, GameApiAllocator<unsigned char> >*> p = *i;
 #ifdef EMSCRIPTEN
-  if (g_del_map.fetches.find(p.first)==g_del_map.fetches.end())
+ if (g_del_map.fetches.find(p.first)==g_del_map.fetches.end())
 #endif
+        {
 	delete p.second;
+        (*i).second = 0;
+        }
     }
   g_del_map.load_url_buffers_async.clear();
 
@@ -974,9 +978,11 @@ void delmap_cache_deleter(void *)
     {
       std::pair<std::string, FetchInBlocks*> p = *i2;
       delete p.second;
+      (*i2).second = 0;
     }
   g_del_map.fetches.clear();
 #endif
+#endif // if 0
 }
 
 
