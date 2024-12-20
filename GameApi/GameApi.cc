@@ -31156,8 +31156,8 @@ void run_callback(void *ptr)
   g_new_script = script;
   static int g_id = -1;
   // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
-  std::cout << "Clearing block:" << g_id << std::endl;
-  if (g_id!=-1 && g_id!=-2) clear_block(g_id);
+  //std::cout << "Clearing block:" << g_id << std::endl;
+  //if (g_id!=-1 && g_id!=-2) clear_block(g_id);
   // END OF TODO.
   clear_shader_cache();
   g_id = add_block();

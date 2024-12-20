@@ -36,7 +36,5 @@
                 android:name="SDL_CMDLINE"
                 android:value="--file assets/script.txt --size 720 1600" />
         </activity>
-	<uses-library android:name="org.libsdl.app"
-		      android:required="false" />
     </application>
 </manifest>
