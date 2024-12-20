@@ -920,11 +920,51 @@ EXPORT GameApi::Env::~Env()
 }
 std::string remove_load(std::string s);
 std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url);
+  struct VECENTRY {
+    std::string first;
+    const std::vector<unsigned char, GameApiAllocator<unsigned char> > * second;
+  };
+#ifdef EMSCRIPTEN
+  struct VECENTRY2
+  {
+    std::string first;
+    FetchInBlocks* second;
+  };
+#endif
 
 struct del_map
 {
-  void del_url(std::string url)
+  void del_fetch_url(std::string url)
   {
+    int s = fetches.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY2 e = fetches[i];
+	if (e.first == url) fetches.erase(fetches.begin()+i);
+      }
+  }
+  void del_async_url(std::string url)
+  {
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (e.first == url) load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+      }
+  }
+  void push_fetch_url(std::string url, FetchInBlocks *blk)
+  {
+    VECENTRY2 e;
+    e.first = url;
+    e.second = blk;
+    fetches.push_back(e);
+  }
+  void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)
+  {
+    VECENTRY e;
+    e.first = url;
+    e.second = ptr;
+    load_url_buffers_async.push_back(e);
   }
   ~del_map() {
 
@@ -935,54 +975,110 @@ struct del_map
   }
   void del_vec(const std::vector<unsigned char, GameApiAllocator<unsigned char> >* vec)
   {
-    std::map<std::string,const std::vector<unsigned char, GameApiAllocator<unsigned char> >*>::iterator it=load_url_buffers_async.begin();
+
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (*e.second == *vec) load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+      }
+
+
+    /*
+    std::map<std::string,std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> >> >::iterator it=load_url_buffers_async.begin();
     for(;it!=load_url_buffers_async.end();it++)
       {
-	const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr = (*it).second;
+	const std::vector<unsigned char, GameApiAllocator<unsigned char> > * ptr = (*it).second.get();
 	if (ptr==vec) {
 	  load_url_buffers_async.erase(it);
-	  delete vec;
+	  delete ptr;
 	  return;
 	}
       }
+    */
   }
-  std::map<std::string, const std::vector<unsigned char, GameApiAllocator<unsigned char> >* > load_url_buffers_async;
+  bool fetch_find(std::string url)
+  {
+    int s = fetches.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY2 e = fetches[i];
+	if (e.first == url)
+	  { return true; }
+      }
+    return false;
+  }
+bool async_find(std::string url)
+{
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (e.first == url)
+	  { return true; }
+      }
+    return false;
+}
+
+VECENTRY &async_get(std::string url)
+{
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (e.first == url)
+	  { ret=e; return ret; }
+      }
+std::cout << "You should check if element exists before calling async_get" << std::endl;
+ VECENTRY e2;
+ ret = e2;
+    return ret;  
+}
+  
+  std::vector<VECENTRY> load_url_buffers_async;
+  //std::map<std::string, std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> > > > load_url_buffers_async;
 #ifdef EMSCRIPTEN
-  std::map<std::string, FetchInBlocks*> fetches;
+    std::vector<VECENTRY2> fetches;
+  //std::map<std::string, std::shared_ptr<FetchInBlocks> > fetches;
 #endif
+  VECENTRY ret;
+  VECENTRY ret2;
 };
 del_map g_del_map;
 bool g_del_map_deleter_installed=false;
 
 void delmap_cache_deleter(void *)
 {
-  std::cout << "delmap_cache_deleter is freeing memory" << std::endl;
 #if 0
-  std::map<std::string,const std::vector<unsigned char, GameApiAllocator<unsigned char>>* >::iterator i = g_del_map.load_url_buffers_async.begin();
+  g_del_map.load_url_buffers_async.clear();
+  g_del_map.fetches.clear();
+#endif
+  
+#if 0
+  std::cout << "delmap_cache_deleter is freeing memory" << std::endl;
+  std::vector<VECENTRY>::iterator i = g_del_map.load_url_buffers_async.begin();
   for(;i!=g_del_map.load_url_buffers_async.end();i++)
     {
-      std::pair<std::string, const std::vector<unsigned char, GameApiAllocator<unsigned char> >*> p = *i;
+      std::pair<std::string, std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> > > > p = *i;
 #ifdef EMSCRIPTEN
  if (g_del_map.fetches.find(p.first)==g_del_map.fetches.end())
 #endif
         {
-	delete p.second;
-        (*i).second = 0;
+	  delete p.second.get();
         }
     }
   g_del_map.load_url_buffers_async.clear();
 
 #ifdef EMSCRIPTEN
-  std::map<std::string,FetchInBlocks* >::iterator i2 = g_del_map.fetches.begin();
+  std::map<std::string,std::shared_ptr<FetchInBlocks> >::iterator i2 = g_del_map.fetches.begin();
   for(;i2!=g_del_map.fetches.end();i2++)
     {
-      std::pair<std::string, FetchInBlocks*> p = *i2;
-      delete p.second;
-      (*i2).second = 0;
+      std::pair<std::string, std::shared_ptr<FetchInBlocks> > p = *i2;
+      delete p.second.get();
     }
   g_del_map.fetches.clear();
 #endif
-#endif // if 0
+#endif
 }
 
 
@@ -1027,7 +1123,8 @@ void onerror_async_cb(unsigned int tmp, void *arg, int, const char*str)
   std::cout << url << std::endl;
     std::string url_str(url);
   std::string url_only(striphomepage(url_str));
-  g_del_map.load_url_buffers_async.erase(url_only);
+  g_del_map.del_async_url(url_only);
+  //g_del_map.load_url_buffers_async.erase(url_only);
   //std::cout << "g_del_map remove url: " << url_only << std::endl;
   //load_url_buffers_async[url_only] = (std::vector<unsigned char>*)-1;
     async_pending_count--;
@@ -1052,7 +1149,10 @@ std::string stripprefix(std::string s)
 }
 void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *buffer)
 {
-  char *url = (char*)arg;
+  const char *url = (const char*)arg;
+  //std::cout << "onload_async_cb" << std::endl;
+  //std::cout << url << std::endl;
+  //std::cout << (int)buffer << std::endl;
   //std::cout << "onload_async_cb: " << url << std::endl;
 
   /*
@@ -1091,12 +1191,14 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 	register_cache_deleter(delmap_cache_deleter,0);
       }
 #ifdef EMSCRIPTEN
-    if (g_del_map.fetches.find(url_only)==g_del_map.fetches.end()
-	&& g_del_map.load_url_buffers_async.find(url_only)!=g_del_map.load_url_buffers_async.end()) {
-      delete g_del_map.load_url_buffers_async[url_only];
+    if (!g_del_map.fetch_find(url_only)
+	&& g_del_map.async_find(url_only)) {
+      //delete g_del_map.load_url_buffers_async[url_only].get();
+      g_del_map.del_async_url(url_only);
     }
 #endif
-  g_del_map.load_url_buffers_async[url_only] = buffer;
+    g_del_map.push_async_url(url_only, buffer );
+    // g_del_map.load_url_buffers_async[url_only] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buffer);
   async_pending_count--;
   //std::cout << "ASync pending dec (onload_async_cb) -->" << async_pending_count<< std::endl;
   
@@ -1228,14 +1330,15 @@ void* process(void *ptr)
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
 
 #ifdef EMSCRIPTEN
-    if (g_del_map.fetches.find(url2)==g_del_map.fetches.end()
-	&& g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) {
-      delete g_del_map.load_url_buffers_async[url2];
+  if (!g_del_map.fetch_find(url2)
+      && g_del_map.async_find(url2)) {
+    g_del_map.del_async_url(url2);
+    //   delete g_del_map.load_url_buffers_async[url2].get();
     }
 #endif
 
-  
-  g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);  
+    g_del_map.push_async_url(url2,buf);
+    //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);  
   //pthread_exit(0);
   return 0;
 }
@@ -1568,7 +1671,8 @@ void fetch_success(void *data)
 #ifdef EMSCRIPTEN
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
-  g_del_map.fetches[url_only]=dt->obj;
+  g_del_map.push_fetch_url(url_only,dt->obj);
+  //g_del_map.fetches[url_only]=std::make_shared<FetchInBlocks>(*dt->obj);
 #endif
   // note, the dt->obj is NOT DELETED AT ALL
 }
@@ -1589,7 +1693,8 @@ void fetch_2_success(emscripten_fetch_t *fetch)
 #ifdef EMSCRIPTEN
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
-  g_del_map.fetches[url_only]=dt->obj;
+  g_del_map.push_fetch_url(url_only,dt->obj);
+  //g_del_map.fetches[url_only]=std::make_shared<FetchInBlocks>(*dt->obj);
 #endif
   emscripten_fetch_close(fetch);
 }
@@ -1691,13 +1796,14 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       }
     //std::cout << "g_del_map: " << (int)(g_content[i]) << " " << (int)(g_content_end[i]) << " " << (int)(g_content_end[i]-g_content[i]) << std::endl;
 #ifdef EMSCRIPTEN
-    if (g_del_map.fetches.find(url_only)==g_del_map.fetches.end()
-	&& g_del_map.load_url_buffers_async.find(url_only)!=g_del_map.load_url_buffers_async.end()) {
-      delete g_del_map.load_url_buffers_async[url_only];
+    if (!g_del_map.fetch_find(url_only)
+	&& g_del_map.async_find(url_only)) {
+      g_del_map.del_async_url(url_only);
+      //delete g_del_map.load_url_buffers_async[url_only].get();
     }
 #endif
-
-    g_del_map.load_url_buffers_async[url_only] = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i],g_content_end[i]);
+    g_del_map.push_async_url(url_only,new std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i],g_content_end[i]));
+			     //g_del_map.load_url_buffers_async[url_only] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i],g_content_end[i]));
 	//std::cout << "g_del_map add url: " << url_only << std::endl;
 
 	//async_pending_count--;
@@ -1756,7 +1862,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
-  if (g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) { 
+  if (g_del_map.async_find(url2)) { 
     InstallProgress(sum,url + " (cached)",15*150);
   } else {
   InstallProgress(sum,url,15*150);
@@ -1786,7 +1892,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
   //std::cout << "URL:" << url << std::endl;
     // if we have already loaded the same url, don't load again
-    if (/*load_url_buffers_async[url] ||*/g_del_map.load_url_buffers_async.find(url_only)!=g_del_map.load_url_buffers_async.end()) {
+    if (/*load_url_buffers_async[url] ||*/g_del_map.async_find(url_only)) {
     //std::cout << "URL FROM CACHE" << std::endl;
       ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
       if (cb) {
@@ -1925,11 +2031,12 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 #ifdef EMSCRIPTEN
     if (g_del_map.fetches.find(url2)==g_del_map.fetches.end()
 	&& g_del_map.load_url_buffers_async.find(url2)!=g_del_map.load_url_buffers_async.end()) {
-      delete g_del_map.load_url_buffers_async[url2];
+      delete g_del_map.load_url_buffers_async[url2].get();
     }
 #endif
 
-    g_del_map.load_url_buffers_async[url2] = buf; //new std::vector<unsigned char>(buf);
+    g_del_map.push_async_url(url2,buf);
+    //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
     ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
     if (cb) {
@@ -2023,7 +2130,7 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     */
     // g_del_map.print();
     
-    return new ASyncDataFetcher(g_del_map.load_url_buffers_async[url]);
+    return new ASyncDataFetcher(&*g_del_map.async_get(url).second);
   }
 
 

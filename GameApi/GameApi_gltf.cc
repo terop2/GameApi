@@ -11829,6 +11829,135 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
 
 #include "zip_file.hpp"
 
+class FetchInBlocks;
+  struct VECENTRY {
+    std::string first;
+    const std::vector<unsigned char, GameApiAllocator<unsigned char> > * second;
+  };
+#ifdef EMSCRIPTEN
+  struct VECENTRY2
+  {
+    std::string first;
+    FetchInBlocks* second;
+  };
+#endif
+
+
+struct del_map
+{
+  void del_fetch_url(std::string url)
+  {
+    int s = fetches.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY2 e = fetches[i];
+	if (e.first == url) fetches.erase(fetches.begin()+i);
+      }
+  }
+  void del_async_url(std::string url)
+  {
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (e.first == url) load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+      }
+  }
+  void push_fetch_url(std::string url, FetchInBlocks *blk)
+  {
+    VECENTRY2 e;
+    e.first = url;
+    e.second = blk;
+    fetches.push_back(e);
+  }
+  void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)
+  {
+    VECENTRY e;
+    e.first = url;
+    e.second = ptr;
+    load_url_buffers_async.push_back(e);
+  }
+  ~del_map() {
+
+  }
+  void print()
+  {
+
+  }
+  void del_vec(const std::vector<unsigned char, GameApiAllocator<unsigned char> >* vec)
+  {
+
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (*e.second == *vec) load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+      }
+
+
+    /*
+    std::map<std::string,std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> >> >::iterator it=load_url_buffers_async.begin();
+    for(;it!=load_url_buffers_async.end();it++)
+      {
+	const std::vector<unsigned char, GameApiAllocator<unsigned char> > * ptr = (*it).second.get();
+	if (ptr==vec) {
+	  load_url_buffers_async.erase(it);
+	  delete ptr;
+	  return;
+	}
+      }
+    */
+  }
+  bool fetch_find(std::string url)
+  {
+    int s = fetches.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY2 e = fetches[i];
+	if (e.first == url)
+	  { return true; }
+      }
+    return false;
+  }
+bool async_find(std::string url)
+{
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (e.first == url)
+	  { return true; }
+      }
+    return false;
+}
+
+VECENTRY &async_get(std::string url)
+{
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	if (e.first == url)
+	  { ret=e; return ret; }
+      }
+std::cout << "You should check if element exists before calling async_get" << std::endl;
+ VECENTRY e2;
+ ret = e2;
+    return ret;  
+}
+  
+  std::vector<VECENTRY> load_url_buffers_async;
+  //std::map<std::string, std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> > > > load_url_buffers_async;
+#ifdef EMSCRIPTEN
+    std::vector<VECENTRY2> fetches;
+  //std::map<std::string, std::shared_ptr<FetchInBlocks> > fetches;
+#endif
+  VECENTRY ret;
+  VECENTRY ret2;
+};
+extern del_map g_del_map;
+
+#if 0
 struct del_map
 {
   void del_url(std::string url)
@@ -11857,6 +11986,7 @@ struct del_map
   std::map<std::string, const std::vector<unsigned char>* > load_url_buffers_async;
 };
 extern del_map g_del_map;
+#endif
 
 class GLTF_Model_with_prepare_sketchfab_zip;
 
@@ -12019,7 +12149,7 @@ void *thread_sketchfab_zip(void *data)
 	    size_t sz=0;
 	    void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
 	    if (sz<1) sz=1;
-	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    std::vector<unsigned char,GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char,GameApiAllocator<unsigned char> >((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
 	    delete[] filename;
 #ifdef EMSCRIPTEN
@@ -12028,11 +12158,12 @@ void *thread_sketchfab_zip(void *data)
 #endif
 #endif
 	    // std::cout << url << "::" << data->size() << std::endl;
-	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
-	      delete g_del_map.load_url_buffers_async[url];
+	    if (g_del_map.async_find(url)) {
+	      g_del_map.del_async_url(url);
+	      //delete g_del_map.load_url_buffers_async[url];
 	    }
-	    
-	    g_del_map.load_url_buffers_async[url] = data;
+	    g_del_map.push_async_url(url,data);
+	    //g_del_map.load_url_buffers_async[url] = data;
 	  }
 
 	return 0;
@@ -12119,17 +12250,19 @@ public:
 	    
 	    size_t sz=0;
 	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
-	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    std::vector<unsigned char,GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char,GameApiAllocator<unsigned char> >((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
 	    delete[] filename;
 
 	    // std::cout << url << "::" << data->size() << std::endl;
-	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
-	      delete g_del_map.load_url_buffers_async[url];
+	    if (g_del_map.async_find(url)) {
+	      g_del_map.del_async_url(url);
+	      //delete g_del_map.load_url_buffers_async[url];
 	    }
 	    if (find_indexhtml_string(url,"engine/")==-1) {
 	      //std::cout << "URL:" << url << std::endl;
-	      g_del_map.load_url_buffers_async[url] = data;
+	      //g_del_map.load_url_buffers_async[url] = data;
+	      g_del_map.push_async_url(url,data);
 	      g_content.push_back(&data->operator[](0));
 	      g_content_end.push_back(&(*data->end()));
 	      char *buf = new char[url.size()+1];
@@ -12254,17 +12387,19 @@ public:
 	    
 	    size_t sz=0;
 	    void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
-	    std::vector<unsigned char> *data = new std::vector<unsigned char>((char*)ptr,((char*)ptr)+sz);
+	    std::vector<unsigned char,GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char, GameApiAllocator<unsigned char> >((char*)ptr,((char*)ptr)+sz);
 	    free(ptr);
 	    delete[] filename;
 
 	    // std::cout << url << "::" << data->size() << std::endl;
-	    if (g_del_map.load_url_buffers_async.find(url)!=g_del_map.load_url_buffers_async.end()) {
-	      delete g_del_map.load_url_buffers_async[url];
+	    if (g_del_map.async_find(url)) {
+	      g_del_map.del_async_url(url);
+	      //delete g_del_map.load_url_buffers_async[url];
 	    }
 	    if (find_indexhtml_string(url,"engine/")==-1) {
 	      //std::cout << "URL:" << url << std::endl;
-	      g_del_map.load_url_buffers_async[url] = data;
+	      g_del_map.push_async_url(url,data);
+		//g_del_map.load_url_buffers_async[url] = data;
 	      g_content.push_back(&data->operator[](0));
 	      g_content_end.push_back(&(*data->end()));
 	      char *buf = new char[url.size()+1];

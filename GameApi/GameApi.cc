@@ -33855,6 +33855,7 @@ void M_cb2_4(void *data);
 void M_cb2_5(void *data);
 void M_cb2_6(void *data);
 
+#if 0
 struct del_map
 {
   void del_url(std::string url)
@@ -33875,7 +33876,7 @@ struct del_map
   std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 };
 extern del_map g_del_map;
-
+#endif
 
 class MemMapWindow2 : public MainLoopItem
 {
