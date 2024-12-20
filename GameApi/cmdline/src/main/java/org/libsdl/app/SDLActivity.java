@@ -256,7 +256,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * It can be overridden by derived classes.
      */
     protected String getMainFunction() {
-        return "gameapi_main";
+        return "SDL_main";
     }
 
     /**
@@ -319,6 +319,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+try {
+    Log.d("SDL", "Starting SDLActivity initialization");
+    // your existing initialization code
+    Log.d("SDL", "About to create handler");
+    this.commandHandler = new SDLCommandHandler();
+    Log.d("SDL", "Handler created successfully");
+} catch (Throwable t) {
+    Log.e("SDL", "Failed during initialization", t);
+    throw t;
+}
+//	this.commandHandler = new SDLCommandHandler();
         Log.v(TAG, "Device: " + Build.DEVICE);
         Log.v(TAG, "Model: " + Build.MODEL);
         Log.v(TAG, "onCreate()");
@@ -834,7 +845,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     // Handler for the messages
-    Handler commandHandler ;
+    private Handler commandHandler;
+    
 
     // Send a message from the SDLMain thread
     boolean sendCommand(int command, Object data) {

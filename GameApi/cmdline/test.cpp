@@ -243,7 +243,7 @@ extern pthread_t g_main_thread_id;
 extern Low_SDL_Window *sdl_window;
 
 #ifdef ANDROID
-extern "C" int gameapi_main(int argc, char *argv[]) {
+extern "C" int main(int argc, char *argv[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif

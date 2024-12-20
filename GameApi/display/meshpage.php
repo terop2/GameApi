@@ -1110,7 +1110,7 @@ width="120" height="120" crossorigin/>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
-      (install docker, nvidia-container-runtime)<br>
+      (install docker, nvidia-container-toolkit)<br>
       sudo docker build -t builder-test:latest .<br>
       ./run.sh
 </div>
@@ -1122,6 +1122,49 @@ width="120" height="120" crossorigin/>
 <img loading="lazy" src="data:image/png;base64,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" width="120" height="120" crossorigin/>
 </div>
 </div>
+
+
+<p>
+<div style="padding: 0px;  width: 1324px;">
+<div></div>
+<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<ul>
+<li><b>Application name:</b> <span itemprop="name">GameApi CmdLine</span>
+<li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">GameDisplay tool</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container (ONLY X11, no wayland)</span>
+<li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-cmdline-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
+<div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
+  <ul>
+  <li>Rating: <span itemprop="ratingValue">5.0</span>
+  <li>RatingCount: <span itemprop="ratingCount">1</span>
+  </ul>
+</div>
+<div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+  <ul>
+  <li>Price:<span itemprop="price">0.00</span>EUR
+  <meta itemprop="priceCurrency" content="EUR" />
+  </ul>
+</div>
+</ul>
+</div>
+<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="margin: 30px;">
+      (install docker, nvidia-container-toolkit)<br>
+      sudo docker build -t builder-test:latest .<br>
+      ./run.sh script.txt homepageurl<p>
+      OR ON UBUNTU 24.10:<br>
+      LD_LIBRARY_PATH=. ./gameapi_cmdline --file script.txt --homepage homepageurl<br>
+</div>
+</div>
+
+
+<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="margin: 15px 50px 15px 50px;">
+<img loading="lazy" src="data:image/png;base64,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" width="120" height="120" crossorigin/>
+</div>
+</div>
+
 
 
 </div>
@@ -2181,7 +2224,23 @@ function show_emscripten(str,hide,indicator,is_async)
 
   var Module = { };
 Module.canvas = canv;
-  Module.locateFile = function(path) { return path+"?<?php echo filemtime("engine_highmem.js") ?>"; }
+  Module.locateFile = function(path,prefix) {
+        if (path.endsWith('.js')) {
+            if (!window.wasmJSContent) {
+                // Synchronously fetch the JS content once
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', prefix + path, false);  // false makes it synchronous
+                xhr.send(null);
+                window.wasmJSContent = xhr.responseText;
+            }
+            // Create a Blob URL that can be reused
+            if (!window.wasmJSUrl) {
+                var blob = new Blob([window.wasmJSContent], {type: 'application/javascript'});
+                window.wasmJSUrl = URL.createObjectURL(blob);
+            }
+            return window.wasmJSUrl;
+        }
+return prefix+path+"?<?php echo filemtime("engine_highmem.js") ?>"; }
 Module.arguments = [
 
 <?php
