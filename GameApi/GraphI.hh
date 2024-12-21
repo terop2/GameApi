@@ -2968,6 +2968,31 @@ public:
   virtual Bitmap<Color> *get_xy() const=0;
 };
 
+class FetchInBlocks;
+struct VECENTRY;
+
+class del_map_interface
+{
+public:
+  virtual void async_cache_clear()=0;
+#ifdef EMSCRIPTEN
+  virtual void del_fetch_url(std::string url)=0;
+#endif
+  virtual void del_async_url(std::string url)=0;
+#ifdef EMSCRIPTEN
+  virtual void push_fetch_url(std::string url, FetchInBlocks *blk)=0;
+#endif
+  virtual void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)=0;
+
+  virtual void del_vec(const std::vector<unsigned char, GameApiAllocator<unsigned char> >* vec)=0;
+#ifdef EMSCRIPTEN
+  virtual bool fetch_find(std::string url)=0;
+#endif
+  virtual bool async_find(std::string url)=0;
+  virtual VECENTRY &async_get(std::string url)=0;  
+};
+
+
 
 #endif
 
@@ -3149,4 +3174,6 @@ private:
   T start,end;
   float radius; bool flip;
 };
+
+
 #endif
