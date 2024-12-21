@@ -929,6 +929,7 @@ bool g_del_map_deleter_installed=false;
 
 void delmap_cache_deleter(void *)
 {
+  g_del_map.async_cache_clear();
 #if 0
   g_del_map.load_url_buffers_async.clear();
   g_del_map.fetches.clear();
