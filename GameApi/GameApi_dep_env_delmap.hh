@@ -16,6 +16,17 @@ class FetchInBlocks;
 
 struct del_map
 {
+  void async_cache_clear()
+  {
+    int s = load_url_buffers_async.size();
+    for(int i=0;i<s;i++)
+      {
+	VECENTRY e = load_url_buffers_async[i];
+	delete e.second;
+      }
+    load_url_buffers_async.clear();
+  }
+
 #ifdef EMSCRIPTEN
   void del_fetch_url(std::string url)
   {
@@ -23,7 +34,7 @@ struct del_map
     for(int i=0;i<s;i++)
       {
 	VECENTRY2 e = fetches[i];
-	if (e.first == url) fetches.erase(fetches.begin()+i);
+	if (e.first == url) { delete e.second; fetches.erase(fetches.begin()+i); }
       }
   }
 #endif
@@ -33,7 +44,10 @@ struct del_map
     for(int i=0;i<s;i++)
       {
 	VECENTRY e = load_url_buffers_async[i];
-	if (e.first == url) load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+	if (e.first == url) {
+	  delete e.second;
+	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+	}
       }
   }
 #ifdef EMSCRIPTEN
@@ -66,7 +80,7 @@ struct del_map
     for(int i=0;i<s;i++)
       {
 	VECENTRY e = load_url_buffers_async[i];
-	if (*e.second == *vec) load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+	if (&*e.second == &*vec) { delete e.second; load_url_buffers_async.erase(load_url_buffers_async.begin()+i); }
       }
 
 
@@ -119,6 +133,8 @@ VECENTRY &async_get(std::string url)
       }
 std::cout << "You should check if element exists before calling async_get" << std::endl;
  VECENTRY e2;
+ e2.first = "";
+ e2.second = 0;
  ret = e2;
     return ret;  
 }
