@@ -47,6 +47,10 @@
 #include <emscripten/html5.h>
 #endif
 
+#ifdef BD_CALVIN_COMPUTER
+#include 
+#endif
+
 #if 0
 //#ifdef __APPLE__
 //#include <OpenGL/gl.h>
@@ -535,6 +539,21 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DEPTH_SIZE, 24);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
+#ifdef WAYLAND
+  
+  if (getenv("XDG_SESSION_TYPE") && std::string(getenv("XDG_SESSION_TYPE"))=="wayland")
+    {
+      g_low->sdl->SDL_SetHint("SDL_VIDEODRIVER", "wayland");
+    }
+  
+#endif
+
+#ifdef BD_CALVIN_COMPUTER
+  std::cout << "Choosing BD_CALVIN computer setup" << std::endl;
+  g_low->sdl->SDL_SetHint("SDL_VIDEODRIVER", "wayland");
+  g_low->sdl->SDL_SetHint("SDL_OPENGL_ES_DRIVER", "1");
+#else
+
 #ifndef LINUX
 #ifndef EMSCRIPTEN
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -560,10 +579,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 #endif
 #endif
+#endif
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
-#if !defined(OPENGL_ES) && !defined(EMSCRIPTEN)
+#if !defined(OPENGL_ES) && !defined(EMSCRIPTEN) && !defined(BD_CALVIN_COMPUTER)
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
 

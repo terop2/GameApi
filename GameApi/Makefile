@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Library General Public License
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
+BD_CALVIN = $(shell uname -n)
 
 
 LIBPATH=/usr/lib/x86_64-linux-gnu/
@@ -171,16 +172,26 @@ WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-v
 #-fsanitize=undefined -fsanitize-recover=undefined
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
-CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
-CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
+CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
 #`pkg-config gtkmm-2.4 --cflags`
 
-
+BD_CALVIN_M64=
+ifeq ($(BD_CALVIN),"fedora")
+CCFLAGS += -DBD_CALVIN_COMPUTER
+CC2FLAGS += -DBD_CALVIN_COMPUTER
+endif
+ifneq ($(BD_CALVIN),"fedora")
+CCFLAGS += -m64
+CC2FLAGS += -m64
+BD_CALVIN_M64 += -m64
+endif
 
 default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
 
 
 check_compile:
+	@echo "SETUP: $(BD_CALVIN)"
 ifeq ($(shell echo $(SDL_PKGCONFIG)),)
 	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST   libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
 else
@@ -242,7 +253,7 @@ dirs:
 
 libGameApi.so: $(OFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client
+	@$(CC) -ggdb $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client
 
 .PHONY: dirs
 

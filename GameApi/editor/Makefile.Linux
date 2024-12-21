@@ -1,7 +1,15 @@
 
+BD_CALVIN=`uname -n`
+
+BD_CALVIN_M64 = 
+ifneq ($(BD_CALVIN),"fedora")
+BD_CALVIN_M64 = -m64
+endif
+
 all:
 	@echo "  LD     editor/a.out"
-	@g++ -m64 -DLINUX -fPIC -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client
+	@echo "SETUP: $(BD_CALVIN)"
+	@g++ $(BD_CALVIN_M64) -DLINUX -fPIC -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client
 
 #-L../hssynth2/synthlib -lsynthlib -L../hssynth2/midiplay/midifile -lmidifile -lasound
 #-fsanitize=undefined -fsanitize-recover=undefined  -lasan
