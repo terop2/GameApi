@@ -1,3 +1,4 @@
+
 #include "GameApi.hh"
 #include <sstream>
 #include <fstream>
@@ -265,8 +266,8 @@ int main(int argc, char *argv[]) {
 
   g_everyapi = &ev;
   
-  int w_width = 1280;
-  int w_height = 900;
+  int w_width = 800;
+  int w_height = 600;
   std::string seamless_url="";
   int current_arg = 1; // start after the current filename
   while(cmd_args.size()-current_arg > 0)
@@ -415,7 +416,7 @@ int main(int argc, char *argv[]) {
            g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
 #endif
   OpenglLowApi *ogl = g_low->ogl;
-           ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+  ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
 
   
   if (!find_string(code, "low_framebuffer_run") && !find_string(code, "webgpu_window"))
