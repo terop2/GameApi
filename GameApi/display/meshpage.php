@@ -1091,7 +1091,7 @@ width="120" height="120" crossorigin/>
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
-<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container (ONLY X11, no wayland)</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-container-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
@@ -1131,7 +1131,7 @@ width="120" height="120" crossorigin/>
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi CmdLine</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">GameDisplay tool</span>
-<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container (ONLY X11, no wayland)</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-cmdline-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
 <div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
