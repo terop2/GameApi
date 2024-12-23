@@ -17,13 +17,22 @@ sudo docker run \
      -it \
      --gpus all \
      --mount source=myvol2,target=/app \
-     -v /tmp/.X11-unix:/tmp/.X11-unix \
-     -e DISPLAY=$DISPLAY \
      -e QT_X11_NO_MITSHM=1 \
      -e LIBGL_DEBUG=verbose \
      -e MESA_DEBUG=1 \
      -e QT_X11_NO_MITSHM=1 \
      -e vblank_mode=0 \
+     -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    --device /dev/input \
+    --device /dev/dri \
+    --device /dev/nvidia0 \
+    --device /dev/nvidiactl \
+    --device /dev/nvidia-modeset \
+    --device /dev/nvidia-uvm \
+    --device /dev/nvidia-uvm-tools \
+    --security-opt=no-new-privileges \
+    --group-add video \
      builder-cmdline2 \
      ./gameapi_cmdline --file script.txt --homepage $2
 # possible commandline parameters:

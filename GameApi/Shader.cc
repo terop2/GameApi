@@ -195,6 +195,7 @@ Program::Program()
 }
 Program::~Program()
 {
+#if 1
   std::vector<const Shader*> vec(priv->shaders.begin(), priv->shaders.end());
   for(std::vector<const Shader*>::iterator i = vec.begin();i!=vec.end();i++)
     {
@@ -203,6 +204,7 @@ Program::~Program()
     }
   g_low->ogl->glDeleteProgram(priv->program);
   delete priv;
+#endif
 }
 void Program::push_back(const Shader &shader)
 {
