@@ -1,6 +1,13 @@
 FROM ubuntu:24.10
 RUN apt-get update \
   && apt-get install -y -qq --no-install-recommends \
+    libglu1 \
+    libglfw3 \
+    libxrandr2 \
+    libxinerama1 \
+    libxcursor1 \
+    libxi6 \
+    # end of wayland packages
     libglvnd0 \
     libgl1 \
     libglx0 \
