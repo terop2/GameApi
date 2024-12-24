@@ -21201,7 +21201,7 @@ public:
 		  std::cout << "ERROR:" << makedir << " returned error " << val2 << std::endl; ok=false;
 		}
 	      
-	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 ") + deploy_truncate(http_to_https(ii.url)) + " --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
+	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 \"") + deploy_truncate(http_to_https(ii.url)) + "\" --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
 	      int val = system(curl_string.c_str());
 	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 #endif
