@@ -20529,9 +20529,9 @@ std::string fetch_more_data(std::string url)
   	  std::string curl="..\\curl\\curl.exe";
 	    std::string curl_string;
 	  if (file_exists(curl))
-	    curl_string= "..\\curl\\curl.exe " + http_to_https(url) + "";
+	    curl_string= "..\\curl\\curl.exe \"" + http_to_https(url) + "\"";
 	  else
-	    curl_string=".\\curl\\curl.exe " + http_to_https(url) + "";
+	    curl_string=".\\curl\\curl.exe \"" + http_to_https(url) + "\"";
 	  std::cout << "SCANNING: " << url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"rb");
 	  int c;
@@ -20546,7 +20546,7 @@ std::string fetch_more_data(std::string url)
 	  return str;
 #endif
 #ifdef LINUX
-	  std::string curl_string = "curl --http1.1 " + http_to_https(url) + "";
+	  std::string curl_string = "curl --http1.1 \"" + http_to_https(url) + "\"";
 	  std::cout << "SCANNING: "<< url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"r");
 	  int c;
