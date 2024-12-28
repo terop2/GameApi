@@ -1167,6 +1167,45 @@ width="120" height="120" crossorigin/>
 
 
 
+<p>
+<div style="padding: 0px;  width: 1324px;">
+<div></div>
+<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<ul>
+<li><b>Application name:</b> <span itemprop="name">GameApi CmdLine</span>
+<li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">GameDisplay tool</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Windows</span>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi_cmdline_<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.zip">download zip</a>
+<div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
+  <ul>
+  <li>Rating: <span itemprop="ratingValue">5.0</span>
+  <li>RatingCount: <span itemprop="ratingCount">1</span>
+  </ul>
+</div>
+<div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+  <ul>
+  <li>Price:<span itemprop="price">0.00</span>EUR
+  <meta itemprop="priceCurrency" content="EUR" />
+  </ul>
+</div>
+</ul>
+</div>
+<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="margin: 30px;">
+      gameapi_cmdline.exe script.txt homepageurl<p>
+</div>
+</div>
+
+
+<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="margin: 10px;">
+<img loading="lazy" src="Windows-Symbol.png" width="200" height="120" crossorigin/>
+</div>
+</div>
+
+
+
+
 </div>
 <!--
 <div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; background-color: white;">
