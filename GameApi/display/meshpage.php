@@ -971,7 +971,7 @@ MOST RECENT RELEASE: WIN:
 $version_win = file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT');
 $version_win = substr($version_win, 0, -1);
 echo "v." . $version_win . " ";
-$start_time = filemtime("./GameApi-Builder-v" . $version_win . ".msi");
+$start_time = filemtime("./assets/GameApi-Builder-v" . $version_win . ".msi");
 $end_time = time();
 $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
@@ -1234,7 +1234,6 @@ width="120" height="120" crossorigin/>
 </div>
 -->
 <br><p>
-WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
 
 <div>
 
