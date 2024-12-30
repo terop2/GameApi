@@ -953,6 +953,10 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 </div>
 <div v-if="state.tool_download">
 <p>
+<link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
+<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">
+<img loading="lazy" src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
+
 <p>
 <p>
 <h1>builder tool download</h1>
@@ -1192,7 +1196,7 @@ width="120" height="120" crossorigin/>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
-      gameapi_cmdline.exe script.txt homepageurl<p>
+      gameapi_cmdline.exe --file script.txt --homepage homepageurl<p>
 </div>
 </div>
 
@@ -1229,9 +1233,6 @@ width="120" height="120" crossorigin/>
 </ul>
 </div>
 -->
-<link itemprop="applicationCategory" href="http://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">
-<img loading="lazy" src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 <br><p>
 WHAT THE CONCEPT LOOKS LIKE AFTER IMPLEMENTATION HAS FINISHED:<br>
 
