@@ -1,3 +1,22 @@
-set_paths_git
-make clean
-make
+@echo off
+if "%1"=="" ECHO full_deploy_win32.bat password version [incremental,deploy]
+if "%1"=="" GOTO END
+if "%2"=="" ECHO full_deploy_win32.bat password version [incremental,deploy]
+if "%2"=="" GOTO END
+if "%3"=="deploy" GOTO DEPLOY
+if "%3"=="incremental" GOTO INC
+call set_paths_git
+call make clean
+:INC
+call make
+:DEPLOY
+pushd editor & call make -f Makefile.win32 & popd
+pushd editor/release & call copy_files.bat & popd
+pushd editor/release & call make_msi.bat %1 & popd
+pushd editor/release & call copy Builder.msi GameApi-Builder-v%2.msi & popd
+pushd editor/release & call scp GameApi-Builder-v%2.msi terop@meshpage.org:/home/terop/meshpage.org/assets/ & popd
+pushd cmdline & call make -f Makefile.win32 & popd
+pushd cmdline & call copy gameapi_cmdline.exe zip2/gameapi_cmdline.exe & popd
+pushd cmdline/zip2 & call zip -r gameapi_cmdline.zip *.* & popd
+pushd cmdline/zip2 & call scp gameapi_cmdline.zip terop@meshpage.org:/home/terop/meshpage.org/assets/GameApi_cmdline_%2.zip & popd
+:END
