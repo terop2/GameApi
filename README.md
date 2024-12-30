@@ -63,6 +63,9 @@ Running the software:
 
 How we normally push our code to hosting space:
   # ./full_deploy.sh
+or
+  # full_deploy_win32.bat
+
 ```
 
 ### Important urls:
