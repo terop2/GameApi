@@ -10,8 +10,10 @@ if not "%3"=="full" GOTO END
 call set_paths_git
 call make clean
 :INC
+call set_paths_git
 call make
 :DEPLOY
+call set_paths_git
 @echo on
 pushd editor & call make & popd
 pushd editor\release & call copy_files.bat & popd
