@@ -2158,8 +2158,10 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
     }
     */
     // g_del_map.print();
-    
-    return new ASyncDataFetcher(&*g_del_map.async_get(url).second);
+    if (g_del_map.async_find(url))
+      return new ASyncDataFetcher(&*g_del_map.async_get(url).second);
+    else
+      return 0;
   }
 
 

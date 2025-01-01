@@ -12,6 +12,14 @@
 #ifndef EMSCRIPTEN
 #define VAO 1
 #endif
+
+#ifdef EMSCRIPTEN
+#define KP EMSCRIPTEN_KEEPALIVE
+#else
+#define KP
+#endif
+
+
 void VertexArraySet::check_m_set(int id)
 {
   Polys *p = m_set[id];
@@ -3847,7 +3855,7 @@ void RenderVertexArray2::render(int id, int attr1, int attr2, int attr3, int att
     ogl->glDisableVertexAttribArray(aattr3);
     ogl->glDisableVertexAttribArray(aattr4);
   }
-Counts CalcCounts(FaceCollection *coll, int start, int end);
+KP Counts CalcCounts(FaceCollection *coll, int start, int end);
 Counts CalcOffsets(FaceCollection *coll, int start);
 void ProgressBar(int val, int max);
 std::atomic<bool> g_lock1, g_lock2, g_lock3;
@@ -3880,6 +3888,7 @@ void *thread_func(void *data)
       if (i==s-1) end_range = ti->end_range;
       Counts ct2_counts = CalcCounts(ti->faces, start_range, end_range);
       Counts ct2_offsets = CalcOffsets(ti->faces, start_range);
+      ti->set->set_reserve(0,ct2_counts.tri_count*3,ct2_counts.quad_count*6,ct2_counts.poly_count);
       //ti->va->reserve(0);
       ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
       ti->ct2_counts = ct2_counts;
@@ -3918,7 +3927,9 @@ void *thread_func(void *data)
 }
 #endif
 
-Counts CalcCounts(FaceCollection *coll, int start, int end)
+
+
+KP Counts CalcCounts(FaceCollection *coll, int start, int end)
 {
   Counts c;
   c.tri_count = 0;

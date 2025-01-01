@@ -12669,7 +12669,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned c
 	else if (base_url.size()>0)
 	  url2 = base_url + "/" + url2.substr(1,url2.size()-2);
 	else url2 = url2.substr(1,url2.size()-2);
-	std::cout << "URL:" << url2 << std::endl;
+	//std::cout << "URL:" << url2 << std::endl;
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
 
 	//std::cout << "COMPARE:" << url2.substr(url2.size()-3,3) << std::endl;
@@ -12677,7 +12677,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned c
 	  vec2.push_back(url2);
     }
   }
-  std::cout << "FOUND:" << vec2.size() << std::endl;
+  //std::cout << "FOUND:" << vec2.size() << std::endl;
   return vec2;
 }
 

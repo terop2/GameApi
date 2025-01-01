@@ -133,7 +133,7 @@ all:
 #-s MAXIMUM_MEMORY=4GB -s ALLOW_MEMORY_GROWTH=1  // doesnt work in firefox.
 #-fsanitize=address (causes slowness/fps broken)
 
-PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=80 -s PTHREAD_POOL_DELAY_LOAD=1
+PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=120 -s PTHREAD_POOL_DELAY_LOAD=1
 
 SIZEOPT=-Oz -fno-rtti -fno-exceptions  -s FILESYSTEM=0 -s TOTAL_STACK=1800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all
 

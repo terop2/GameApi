@@ -6110,7 +6110,7 @@ void LoadUrls_async_cbs()
     ASyncCallback *cb = g_async_vec[i];
     std::string url = g_async_vec2[i];
     
-    if (cb && g_del_map.async_get(std::string("load_url.php?url=") + url).second != 0) {
+    if (cb && g_del_map.async_find(std::string("load_url.php?url=") + url) && g_del_map.async_get(std::string("load_url.php?url=") + url).second != 0) {
       //std::cout << "Callback: " << url << std::endl;
       (*cb->fptr)(cb->data);
       g_async_vec[i] =0 ;
