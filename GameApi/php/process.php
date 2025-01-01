@@ -72,7 +72,7 @@ echo "</div>";
 echo "</div>";
 echo "<div class=\"customfont\" style=\"position: static; margin-left: 27px;\">";
 echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>.";
-echo "<br>Known critical bugs in meshpage:<p><ul><li> (meshy rigging doesnt work in meshpage)</ul><br>";
+echo "<br>Known critical bugs in meshpage:<p><ul><li> (meshy rigging doesnt work in meshpage)<li>(I got reports that might work badly on slow network connections/eats 100% cpu time)</ul><br>";
 echo "</div>";
 echo "<div class=\"grid_container\">";
 for($i=0;$i<4;$i++)

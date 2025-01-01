@@ -6,6 +6,7 @@
 
 #include "GameApi_low.hh"
 #include <atomic>
+#include <iostream>
 
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
 extern Matrix g_last_resize;
@@ -6498,10 +6499,13 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       }
     int progress = 0;
     //InstallProgress(1,"send to gpu mem",10);
+    unsigned int time = g_low->sdl->SDL_GetTicks();
+    bool error = false;
     while(1) {
       //std::cout << "wait 3" << std::endl;
 #if 1
       while(g_lock3==true) {
+	if (g_low->sdl->SDL_GetTicks()-time > 10000.0) { std::cout << "create_vertex_array: BATCHING EXITING ON 10s TIMER" << std::endl; error=true; break; }
 #ifdef EMSCRIPTEN
 	///	emscripten_sleep(100);
 #endif
@@ -6516,7 +6520,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       
       // now ti_global is available
       ThreadInfo volatile *ti_global2 = ti_global;
-      if (ti_global2) {
+      if (ti_global2 && !error) {
 	//std::cout << "transfer"<< std::endl;
 
 	//std::cout << "TRANSFER::ctcounts(" << ti_global2->ct2_counts.tri_count << " " << ti_global2->ct2_counts.quad_count << " " << ti_global2->ct2_counts.poly_count << ")" << std::endl;
@@ -6532,11 +6536,12 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //std::cout << "rel 2" << std::endl;
       g_lock2 = false;
       //pthread_mutex_unlock(mutex2); // release other process
-      if (thread_counter==num_threads) break;
+      if (thread_counter==num_threads||error) break;
     }
     
     for(int i=0;i<num_threads;i++)
       {
+	if (error) break;
 	prep.join(vec[i]);
       }
     pthread_mutex_destroy(mutex1);
