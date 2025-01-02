@@ -6818,6 +6818,11 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, float mult_x, float mult_y, Program *prog);
 void RenderSprite(const Sprite &s, int frame, Point2d pos1, Point2d pos2, Point2d pos1_inside, Point2d pos2_inside, float z, ArrayRender &rend, Program *prog);
 
+extern int sprite_screen_width;
+extern int sprite_screen_height;
+extern int sprite_target_width;
+extern int sprite_target_height;
+
 class SpriteMesh : public Mesh
 {
 public:
@@ -6833,6 +6838,10 @@ public:
   {
     int sx = s.XSize(framenum);
     int sy = s.YSize(framenum);
+    sx*=sprite_target_width;
+    sx/=sprite_screen_width;
+    sy*=sprite_target_height;
+    sy/=sprite_screen_height;
     switch(point)
       {
       case 0: return Point(0.0,0.0, 0.0);

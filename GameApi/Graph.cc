@@ -1186,6 +1186,11 @@ void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
   va.copy(0,coll.NumFaces());
 }
 
+int sprite_screen_width=800;
+int sprite_screen_height=600;
+int sprite_target_width=800;
+int sprite_target_height=600;
+
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, Program *prog)
 {
   //std::cout << "SpriteFrame: " << frame << std::endl;
@@ -1193,7 +1198,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   //glPushMatrix();
   Point2d p = s.Pos(frame);
 
-  Matrix m = Matrix::Translate(pos.x+p.x, pos.y+p.y, z);
+  Matrix m = Matrix::Translate((pos.x+p.x)*sprite_target_width/sprite_screen_width, (pos.y+p.y)*sprite_target_height/sprite_screen_height, z);
   //float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
   //		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
   //		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
@@ -1215,7 +1220,7 @@ void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender 
   //glPushMatrix();
   Point2d p = s.Pos(frame);
 
-  Matrix m = Matrix::Translate(pos.x+p.x, pos.y+p.y, z);
+  Matrix m = Matrix::Translate((pos.x+p.x)*sprite_target_width/sprite_screen_width, (pos.y+p.y)*sprite_target_height/sprite_screen_height, z);
   //float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
   //		    m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
   //		    m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],

@@ -1477,13 +1477,21 @@ private:
 
 
 
-
+extern bool is_move_2d;
 
 EXPORT GameApi::MN GameApi::MovementNode::translate(MN next, 
 					     float start_time, float end_time,
 					     float dx, float dy, float dz)
 {
   Movement *nxt = find_move(e, next);
+ if (is_move_2d)
+    {
+      dx*=sprite_target_width;
+      dx/=sprite_screen_width;
+      dy*=sprite_target_height;
+      dy/=sprite_screen_height;
+    }    
+
   return add_move(e, new TranslateMovement(nxt,start_time, end_time,
 					   dx,dy,dz));
 }
@@ -2000,10 +2008,18 @@ private:
   Movement *nxt;
   float d_time;
 };
+
+bool is_move_2d;
+extern int sprite_target_width;
+extern int sprite_screen_width;
+extern int sprite_target_height;
+extern int sprite_screen_height;
+
 class MatrixMovement : public Movement
 {
 public:
-  MatrixMovement(Movement *next, Matrix m) : next(next), m(m) { }
+  MatrixMovement(Movement *next, Matrix m) : next(next), m(m) {
+  }
   virtual void event(MainLoopEvent &e) { next->event(e); }
   virtual void frame(MainLoopEnv &e) { next->frame(e); }
   virtual void draw_frame(DrawLoopEnv &e) { next->draw_frame(e); }
@@ -2017,6 +2033,7 @@ public:
 private:
   Movement *next;
   Matrix m;
+  mutable bool sprite=false;
 };
 class EventActivateMovement : public Movement
 {
@@ -2064,6 +2081,15 @@ EXPORT GameApi::MN GameApi::MovementNode::event_activate(MN next, MN event, floa
 EXPORT GameApi::MN GameApi::MovementNode::trans2(MN next, float dx, float dy, float dz)
 {
   Movement *nxt = find_move(e, next);
+ if (is_move_2d)
+    {
+      dx*=sprite_target_width;
+      dx/=sprite_screen_width;
+      dy*=sprite_target_height;
+      dy/=sprite_screen_height;
+    }    
+
+
   return add_move(e, new MatrixMovement(nxt, Matrix::Translate(dx,dy,dz)));  
 }
 EXPORT GameApi::MN GameApi::MovementNode::matrix(MN next, M m)

@@ -181,14 +181,18 @@ EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
 
 extern int g_event_screen_x;
 extern int g_event_screen_y;
+extern bool is_move_2d;
 class TurnTo2d : public MainLoopItem
 {
 public:
   TurnTo2d(GameApi::EveryApi &ev, MainLoopItem *next, Point2d tl, Point2d br) : ev(ev), next(next), tl(tl), br(br) {
+    is_move_2d = true;
   }
   void handle_event(MainLoopEvent &e)
   {
+    is_move_2d = true;
     next->handle_event(e);
+    //is_move_2d = false;
   }
   void Collect(CollectVisitor &vis) {
     next->Collect(vis);
@@ -198,6 +202,7 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
+    is_move_2d = true;
     OpenglLowApi *ogl = g_low->ogl;
     static int inside_it = false;
     if (inside_it) { 
@@ -252,6 +257,7 @@ public:
     ev.mainloop_api.switch_to_3d(true, sh, screen_x, screen_y);
     ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
     inside_it = false;
+    //is_move_2d = false;
   }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
 
