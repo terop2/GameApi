@@ -1692,7 +1692,7 @@ void MTL_bump_CB(void *data);
 struct ASyncCallback { void (*fptr)(void*); void *data; };
 ASyncCallback *rem_async_cb(std::string url);
 
-extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
+//extern std::map<std::string, std::vector<unsigned char>* > load_url_buffers_async;
 
 std::string MB(long num);
 int CalcUrlIndex(std::string url);

@@ -10470,7 +10470,7 @@ public:
 	//count+=val;
 	if (val>count) count=val;
       }
-    std::cout << "num_timeindexes=" << count << std::endl;
+    //std::cout << "num_timeindexes=" << count << std::endl;
     num_timeindexes=count;
   }
 
@@ -11880,7 +11880,7 @@ public:
 
     g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
     
-    std::cout << "Zip size: " << size << std::endl;
+    //std::cout << "Zip size: " << size << std::endl;
     if (size>250000000) {
       std::cout << "Zip File too large! -> exiting..." << std::endl;
       return;
@@ -12736,7 +12736,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
       filenames_.push_back(filenames[ids[i]]);
     }
 
-  std::cout << "FETCH:" << filenames_.size() << std::endl;
+  //std::cout << "FETCH:" << filenames_.size() << std::endl;
   e.async_load_all_urls(filenames_, gameapi_homepageurl);
 
       int sd = filenames_.size();

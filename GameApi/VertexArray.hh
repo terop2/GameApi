@@ -587,6 +587,15 @@ public:
     pthread_join(ti[id]->thread_id, &res);
     g_copy_total=0;
     g_copy_progress=0;
+    //ti.clear();
+    //sets.clear();
+    //va2.clear();
+    delete ti[id];
+    delete sets[id];
+    delete va2[id];
+    ti[id]=0;
+    sets[id]=0;
+    va2[id]=0;
   }
   void transfer_to_gpu_mem(VertexArraySet *set, RenderVertexArray &r, int rend_id, int buf, int start, int end) {
     RenderVertexArray_bufferids ids;
@@ -615,6 +624,13 @@ public:
   {
     //std::cout << "threaded_prepare dtor" << std::endl;
 
+    int s2 = ti.size();
+    for(int i2=0;i2<s2;i2++)
+      {
+	if (ti[i2])
+	  join(i2);
+      }
+    
     int s = sets.size();
     for(int i=0;i<s;i++)
       {
