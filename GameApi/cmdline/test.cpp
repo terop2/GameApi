@@ -243,6 +243,9 @@ void ClearProgress();
 extern pthread_t g_main_thread_id;
 extern Low_SDL_Window *sdl_window;
 
+extern int sprite_screen_width;
+extern int sprite_screen_height;
+
 #ifdef ANDROID
 extern "C" int main(int argc, char *argv[]) {
 #else
@@ -268,6 +271,8 @@ int main(int argc, char *argv[]) {
   
   int w_width = 800;
   int w_height = 600;
+  sprite_screen_width=1200;
+  sprite_screen_height=900;
   std::string seamless_url="";
   int current_arg = 1; // start after the current filename
   while(cmd_args.size()-current_arg > 0)
