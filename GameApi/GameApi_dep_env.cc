@@ -977,6 +977,7 @@ struct del_map : public del_map_interface
 #endif
   void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)
   {
+    //std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
     VECENTRY e;
     e.first = url;
     e.second = ptr;
@@ -1032,10 +1033,12 @@ struct del_map : public del_map_interface
 #endif
   bool async_find(std::string url)
 {
+  //std::cout << "ASYNC FIND:" << url << std::endl;
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
       {
 	VECENTRY e = load_url_buffers_async[i];
+	//std::cout << "async_find:" << e.first << std::endl;
 	if (e.first == url)
 	  { return true; }
       }

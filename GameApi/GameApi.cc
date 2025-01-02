@@ -20486,7 +20486,7 @@ std::string find_more_data(std::string line)
 	  if (url_postfix!="")
 	    {
 	      res+=remove_postfix(ii.url)+"/./"+url_postfix + "\n";
-	      std::cout << "FOUND: " << remove_postfix(ii.url) << "/" << url_postfix <<std::endl;
+	      //std::cout << "FOUND: " << remove_postfix(ii.url) << "/" << url_postfix <<std::endl;
 	    }
 	}
       }
@@ -20510,13 +20510,13 @@ std::string find_more_data(std::string line)
 	if (url_postfix!="")
 	  {
 	    res+=remove_postfix(ii.url)+"/./"+url_postfix + "\n";
-	    std::cout << "FOUND: " << remove_postfix(ii.url) << "/" << url_postfix <<std::endl;
+	    //std::cout << "FOUND: " << remove_postfix(ii.url) << "/" << url_postfix <<std::endl;
 	  }
       }
       return res;
     } else {
       UrlItem &ii = vec[0];
-      std::cout << "FOUND: " << ii.url << std::endl;
+      //std::cout << "FOUND: " << ii.url << std::endl;
       std::string data = fetch_more_data(ii.url);
       return data;
     }
@@ -31156,7 +31156,7 @@ void run_callback(void *ptr)
   g_new_script = script;
   static int g_id = -1;
   // TODO, FOR SOME REASON; THE DELETION DOESNT WORK.
-  std::cout << "Clearing block:" << g_id << std::endl;
+  //std::cout << "Clearing block:" << g_id << std::endl;
   if (g_id!=-1 && g_id!=-2) clear_block(g_id);
   // END OF TODO.
   clear_shader_cache();

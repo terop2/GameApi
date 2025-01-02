@@ -75,6 +75,8 @@ class Program
 {
 public:
   Program();
+  Program(const Program &)=delete;
+  Program &operator=(const Program &)=delete;
   void push_back(const Shader &shader);
   void detach(const Shader &shader);
   void link();
@@ -1471,6 +1473,8 @@ class ShaderSeq
 {
 public:
   ShaderSeq(ShaderFile &file) : file(file) { }
+  ShaderSeq(const ShaderSeq &) = delete;
+  ShaderSeq & operator=(const ShaderSeq &) = delete;
   ~ShaderSeq() { int s = progs.size();for(int i=0;i<s;i++) delete progs[i]; }
   int GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec=std::vector<std::string>(), std::vector<std::string> f_vec=std::vector<std::string>(), bool trans=true, ShaderModule *mod=0, ShaderCall *vertex_c=0, ShaderCall *fragment_c=0, std::string v_defines="", std::string f_defines="", std::string v_shader="", std::string f_shader="");
   void link(int i);
