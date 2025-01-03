@@ -78,7 +78,7 @@ void *task_queue_consumer(void *data)
 void tasks_init()
 {
   //std::cout << "Tasks init" << std::endl;
-  int s = 1;
+  int s = 8;
   g_tasks.queue_mutex_init();
   g_tasks.push_mutex_init();
   g_tasks.join_mutex_init();
@@ -182,10 +182,10 @@ public:
   virtual void push_to_queue(task_data d)
   {
     //std::cout << "pushing to queue" << d.num << std::endl;
-    //queue_mutex_start();
+    queue_mutex_start();
     queue.push_back(d);
     //push_mutex_release();
-    //queue_mutex_end();
+    queue_mutex_end();
   }
   virtual bool queue_has_data()
   {
@@ -194,7 +194,7 @@ public:
   }
   virtual task_data front()
   {
-    task_data dt = queue.front();
+    task_data dt = *queue.begin();
     return dt;
   }
   virtual void pop_from_queue()
@@ -207,6 +207,7 @@ public:
   }
   virtual void set_task_as_done(task_data dt)
   {
+    queue_tasks_done.push_back(dt);
     int s = tasks_in_execute.size();
     for(int i=0;i<s;i++)
       {
@@ -216,7 +217,6 @@ public:
 	    tasks_in_execute.erase(tasks_in_execute.begin()+i);
 	  }
       }
-    queue_tasks_done.push_back(dt);
   }
   virtual void wait_for_push_or_shutdown()
   {
