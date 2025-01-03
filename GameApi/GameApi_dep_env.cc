@@ -160,7 +160,9 @@ public:
     //std::cout << "pushing to queue" << d.num << std::endl;
     queue_mutex_start();
     queue.push_back(d);
+    pthread_mutex_lock(mutex);
     pthread_cond_signal(cond);
+    pthread_mutex_unlock(mutex);
     queue_mutex_end();
   }
   virtual bool queue_has_data()

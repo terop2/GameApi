@@ -3904,7 +3904,9 @@ void *thread_func(void *data)
       if (i==s-1) thread_counter++;
       //std::cout << "lock 3 release" << std::endl;
       g_lock3 = false;
+      pthread_mutex_lock(ti->gmutex);
       pthread_cond_signal(ti->g_cond);
+      pthread_mutex_unlock(ti->gmutex);
       //pthread_mutex_unlock(ti->mutex3); // unlock mutex3
       //std::cout << "Lock2 wait" << std::endl;
       //std::cout << "wait 2" << std::endl;
