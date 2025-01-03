@@ -10,6 +10,8 @@
 #include "VectorTools.hh"
 #include "Effect.hh"
 #include "GameApi.hh"
+
+#include "Tasks.hh"
 //#include "GameApi_low.hh"
 #ifndef HAS_PTHREAD
 #define HAS_PTHREAD 1
@@ -505,6 +507,7 @@ struct ThreadInfo
 void *thread_func(void *data);
 extern long long g_copy_total;
 extern long long g_copy_progress;
+extern int g_pthread_count;
 
 class ThreadedPrepare
 {
@@ -532,14 +535,16 @@ public:
     info->prep = 0;
     ti.push_back(info);
 
-    pthread_attr_t attr;
+    //pthread_attr_t attr;
 
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 300000);
+    // pthread_attr_init(&attr);
+    //pthread_attr_setstacksize(&attr, 300000);
     //std::cout << "phread_create" << std::endl;
-    pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    g_pthread_count++;
+    //pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
+    tasks_add(3000,&thread_func,(void*)info);
     //std::cout << "pthread_create_return: " << val << std::endl;
-    pthread_attr_destroy(&attr);
+    //pthread_attr_destroy(&attr);
     //std::cout << "returning: " << sets.size()-1 << std::endl;
     return sets.size()-1;
   }
@@ -568,6 +573,9 @@ public:
     info->mutex3 = mutex3;
     ti.push_back(info);
 
+
+    tasks_add(3003,&thread_func,(void*)info);
+#if 0    
     pthread_attr_t attr;
 
     pthread_attr_init(&attr);
@@ -576,15 +584,19 @@ public:
     pthread_create(&info->thread_id, &attr, &thread_func, (void*)info);
     //std::cout << "pthread_create_return: " << val << std::endl;
     pthread_attr_destroy(&attr);
+#endif
     //std::cout << "returning: " << sets.size()-1 << std::endl;
     return sets.size()-1;
   }
 
   void join(int id)
   {
+    tasks_join(3003);
+#if 0
     void *res;
     //std::cout << "phread_join" << id << std::endl;
     pthread_join(ti[id]->thread_id, &res);
+#endif
     g_copy_total=0;
     g_copy_progress=0;
     //ti.clear();
@@ -624,12 +636,12 @@ public:
   {
     //std::cout << "threaded_prepare dtor" << std::endl;
 
-    int s2 = ti.size();
-    for(int i2=0;i2<s2;i2++)
-      {
-	if (ti[i2])
-	  join(i2);
-      }
+    //int s2 = ti.size();
+    //for(int i2=0;i2<s2;i2++)
+    // {
+    //	if (ti[i2])
+    //	  join(i2);
+    //}
     
     int s = sets.size();
     for(int i=0;i<s;i++)

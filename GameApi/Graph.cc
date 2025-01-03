@@ -1016,6 +1016,7 @@ int g_sprite_count2 = 0;
 void *thread_func_sprite(void *data)
 {
   ThreadInfo_sprite *ti = (ThreadInfo_sprite*)data;
+  //std::cout << "SPRITE:" << ti->start_y << " " << ti->end_y << " " << ti->sx << std::endl;
   for(int y=ti->start_y;y<ti->end_y;y++)
     for(int x=0;x<ti->sx;x++)
 	{
@@ -1036,6 +1037,8 @@ void *thread_func_sprite(void *data)
   return 0;
 }
 std::string MB(long i);
+
+extern int g_pthread_count;
 
 class SpriteTexture : public MeshTextures
 {
@@ -1086,12 +1089,16 @@ public:
       info->sx = sx;
       info->num = num;
       vec.push_back(info);
-      pthread_attr_t attr;
-      pthread_attr_init(&attr);
-      pthread_attr_setstacksize(&attr, 300000);
-      pthread_create(&info->thread_id, &attr, &thread_func_sprite, (void*)info);
-      pthread_attr_destroy(&attr);
+      //pthread_attr_t attr;
+      //pthread_attr_init(&attr);
+      //pthread_attr_setstacksize(&attr, 300000);
+      g_pthread_count++;
+      //pthread_create(&info->thread_id, &attr, &thread_func_sprite, (void*)info);
+      //pthread_attr_destroy(&attr);
+      tasks_add(3011,&thread_func_sprite,(void*)info);
     }
+    tasks_join(3011);
+#if 0
     int s = vec.size();
     for(int t=0;t<s;t++) {
       ThreadInfo_sprite *info = vec[t];
@@ -1101,6 +1108,7 @@ public:
       //ProgressBar(434, t*15/s, 15, "bitmap");
       delete info;
     }
+#endif
     //if (progress)
     //  ProgressBar(434, 15, 15, "bitmap");
 

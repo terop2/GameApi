@@ -1,4 +1,5 @@
 #include "GameApi.hh"
+#include "Tasks.hh"
 #include <sstream>
 #include <fstream>
 #ifdef EMSCRIPTEN
@@ -242,6 +243,9 @@ void ClearProgress();
 extern pthread_t g_main_thread_id;
 int main(int argc, char *argv[]) {
   g_main_thread_id = pthread_self();
+  
+  tasks_init();
+  
   call_count++;
   //std::cout << "CALL COUNT" << call_count << std::endl;
   if (call_count>1) return 0;

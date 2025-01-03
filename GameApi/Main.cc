@@ -1056,8 +1056,10 @@ int mainxxx(int argc, char *argv[])
   //MidFileLoader load("357.mid");
   //std::vector<Event> events = load.GetEvents(1);
 
-  pthread_t thread;
-  pthread_create(&thread, 0 ,&audio, 0);
+  //pthread_t thread;
+  g_pthread_count++;
+  //pthread_create(&thread, 0 ,&audio, 0);
+  tasks_add(3012,&audio,(void*)0);
 #endif
   int screenx, screeny;
   screenx = 1024;

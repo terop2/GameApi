@@ -2971,6 +2971,46 @@ public:
 class FetchInBlocks;
 struct VECENTRY;
 
+struct task_data
+{
+  int id;
+  int num;
+  void *(*fptr)(void*);
+  void *data;
+};
+
+class task_interface
+{
+public:
+  virtual void spawn_thread()=0;
+public: // mutex operations needed
+  virtual void join_mutex_init()=0;
+  virtual void join_mutex_lock()=0;
+  virtual void join_mutex_unlock()=0;
+  virtual void queue_mutex_init()=0;
+  virtual void queue_mutex_start()=0;
+  virtual void queue_mutex_end()=0;
+  virtual void push_mutex_init()=0;
+  virtual void push_mutex_initial_acquire()=0;
+  virtual void push_mutex_wait()=0;
+  virtual void push_mutex_release()=0;
+public:
+  virtual task_data create_work(int id,
+				void *(*fptr)(void*),
+				void *data)=0;
+
+  virtual void push_to_queue(task_data d)=0;
+  virtual bool queue_has_data() =0;
+  virtual task_data front()=0;
+  virtual void pop_from_queue() =0;
+  virtual void wait_for_push_or_shutdown() =0;
+  virtual void start_shutdown()=0;
+  virtual bool shutdown_ongoing()=0;
+  virtual void join_id(int id)=0;
+  virtual void set_task_as_done(task_data d)=0;
+  virtual void set_task_as_execute(task_data d)=0;
+};
+
 class del_map_interface
 {
 public:

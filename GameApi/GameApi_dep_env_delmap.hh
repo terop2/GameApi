@@ -16,3 +16,9 @@ class FetchInBlocks;
 #endif
 
 extern del_map_interface &g_del_map;
+
+
+
+struct TASKENTRY
+{
+};

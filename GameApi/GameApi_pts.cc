@@ -540,6 +540,8 @@ struct ThreadInfo_pts
 };
 void *thread_func_pts(void *data);
 
+extern int g_pthread_count;
+
 class ThreadedPrepare_pts
 {
 public:
@@ -559,19 +561,22 @@ public:
     info->pts = pts;
     ti.push_back(info);
 
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 3000000);
-
-    pthread_create(&info->thread_id, &attr, &thread_func_pts, (void*)info);
+    //pthread_attr_t attr;
+    //pthread_attr_init(&attr);
+    //pthread_attr_setstacksize(&attr, 3000000);
     
-    pthread_attr_destroy(&attr);
+    g_pthread_count++;
+    //pthread_create(&info->thread_id, &attr, &thread_func_pts, (void*)info);
+    tasks_add(3010,&thread_func_pts,(void*)info);
+    
+    //pthread_attr_destroy(&attr);
     return sets.size()-1;
   }
   void join(int id)
   {
-    void *res;
-    pthread_join(ti[id]->thread_id, &res);
+    tasks_join(3010);
+    // void *res;
+    //pthread_join(ti[id]->thread_id, &res);
   }
   PointArray3* collect(int num_items)
   {
