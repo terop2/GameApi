@@ -90,13 +90,13 @@ void tasks_init()
 }
 void tasks_add(int id, void *(*fptr)(void*), void *data)
 {
-  std::cout << "Tasks add "<< id << "::" << (long)fptr << " " << (long)data << std::endl;
+  //std::cout << "Tasks add "<< id << "::" << (long)fptr << " " << (long)data << std::endl;
   task_data dt = g_tasks.create_work(id,fptr,data);
   g_tasks.push_to_queue(dt);
 }
 void tasks_join(int id)
 {
-  std::cout << "Tasks join " << id << std::endl;
+  //std::cout << "Tasks join " << id << std::endl;
   g_tasks.join_id(id);
 }
 
@@ -181,7 +181,7 @@ public:
   // this is run in main thread
   virtual void push_to_queue(task_data d)
   {
-    std::cout << "pushing to queue" << d.num << std::endl;
+    //std::cout << "pushing to queue" << d.num << std::endl;
     //queue_mutex_start();
     queue.push_back(d);
     //push_mutex_release();
@@ -237,7 +237,7 @@ public:
   virtual void join_id(int id)
   {
 
-    std::cout << "join waiting " << id << std::endl;
+    //std::cout << "join waiting " << id << std::endl;
     while(1) {
     int count=0;
 
@@ -257,11 +257,29 @@ public:
     if (count==0) break;
     }
 
+    queue_mutex_start();
 
-    queue.clear();
-    tasks_in_execute.clear();
-    queue_tasks_done.clear();
-    std::cout << "join exiting " << id << std::endl;
+    int s3 = queue.size();
+    for(int i=0;i<s3;i++)
+      {
+	if (queue[i].id==id) { queue.erase(queue.begin()+i); i--; s3--; }
+      }
+    int s4 = tasks_in_execute.size();
+    for(int i=0;i<s4;i++)
+      {
+	if (tasks_in_execute[i].id==id) { tasks_in_execute.erase(tasks_in_execute.begin()+i); i--; s4--; }
+      }
+    int s5 = queue_tasks_done.size();
+    for(int i=0;i<s5;i++)
+      {
+	if (queue_tasks_done[i].id==id) { queue_tasks_done.erase(queue_tasks_done.begin()+i); i--; s5--; }
+      }
+    queue_mutex_end();
+    
+    //queue.clear();
+    //tasks_in_execute.clear();
+    //queue_tasks_done.clear();
+    //std::cout << "join exiting " << id << std::endl;
     
   }
 private:
