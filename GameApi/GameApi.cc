@@ -15746,7 +15746,7 @@ public:
     static int old_g_pthread_count = 0;
     if (old_g_pthread_count != g_pthread_count)
       {
-	std::cout << "New Pthread:" << g_pthread_count << std::endl;
+	//std::cout << "New Pthread:" << g_pthread_count << std::endl;
 	old_g_pthread_count = g_pthread_count;
       }
 
