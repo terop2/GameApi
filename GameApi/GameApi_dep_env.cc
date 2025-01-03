@@ -52,11 +52,7 @@ void *task_queue_consumer(void *data)
 	{
 	  //std::cout << "Tasks has data" << task_num << std::endl;
 	  dt = g_tasks.front();
-	}
-      //g_tasks.queue_mutex_end();
-      if (b) {
 	//std::cout << "Tasks running heavy" << task_num2 << " " << dt.id << " " << dt.num << std::endl;
-	//g_tasks.queue_mutex_start();
 	g_tasks.set_task_as_execute(dt);
 	g_tasks.pop_from_queue();
 	g_tasks.queue_mutex_end();
@@ -80,9 +76,6 @@ void tasks_init()
   //std::cout << "Tasks init" << std::endl;
   int s = 8;
   g_tasks.queue_mutex_init();
-  g_tasks.push_mutex_init();
-  g_tasks.join_mutex_init();
-  g_tasks.push_mutex_initial_acquire();
   for(int i=0;i<s;i++)
     {
       g_tasks.spawn_thread();
@@ -150,41 +143,12 @@ public:
   {
     pthread_mutex_unlock(queue_mutex);
   }
-  virtual void join_mutex_init()
-  {
-    join_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-  }
-  virtual void join_mutex_lock()
-  {
-    pthread_mutex_lock(join_mutex);
-  }
-  virtual void join_mutex_unlock()
-  {
-    pthread_mutex_unlock(join_mutex);
-  }
-  virtual void push_mutex_init()
-  {
-    push_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-  }
-  virtual void push_mutex_initial_acquire()
-  {
-    pthread_mutex_lock(push_mutex);
-  }
-  virtual void push_mutex_wait()
-  {
-    pthread_mutex_lock(push_mutex);
-  }
-  virtual void push_mutex_release()
-  {
-    pthread_mutex_unlock(push_mutex);
-  }
   // this is run in main thread
   virtual void push_to_queue(task_data d)
   {
     //std::cout << "pushing to queue" << d.num << std::endl;
     queue_mutex_start();
     queue.push_back(d);
-    //push_mutex_release();
     queue_mutex_end();
   }
   virtual bool queue_has_data()
@@ -220,10 +184,7 @@ public:
   }
   virtual void wait_for_push_or_shutdown()
   {
-    //push_wait_ongoing[task_num] = 1;
     while(queue.size()==0&&!m_shutdown_ongoing);
-    //push_mutex_wait();
-    //push_wait_ongoing[task_num] = 0;
   }
       
   virtual void start_shutdown()
@@ -276,9 +237,6 @@ public:
       }
     queue_mutex_end();
     
-    //queue.clear();
-    //tasks_in_execute.clear();
-    //queue_tasks_done.clear();
     //std::cout << "join exiting " << id << std::endl;
     
   }
@@ -288,8 +246,6 @@ private:
   std::vector<task_data> queue_tasks_done;
   std::vector<pthread_t*> threads;
   pthread_mutex_t *queue_mutex;
-  pthread_mutex_t *push_mutex;
-  pthread_mutex_t *join_mutex;
   std::atomic<bool> m_shutdown_ongoing=false;
   bool in_join=false;
   int in_join_id=-1;
