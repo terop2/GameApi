@@ -6140,6 +6140,16 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   pthread_mutex_destroy(gmutex2);
   pthread_cond_destroy(g_cond);
   pthread_cond_destroy(g_cond2);
+
+  delete mutex1;
+  delete mutex2;
+  delete mutex3;
+    delete gmutex;
+    delete gmutex2;
+    delete g_cond;
+    delete g_cond2;
+
+
   //VertexArraySet *set = new VertexArraySet;
   //RenderVertexArray *arr2 = new RenderVertexArray(*set);
   //arr2->prepare(0);
@@ -6497,10 +6507,11 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-    pthread_mutex_t *gmutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-    pthread_mutex_t *gmutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
-    pthread_cond_t *g_cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
-    pthread_cond_t *g_cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+	pthread_mutex_t *gmutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+	pthread_mutex_t *gmutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+	pthread_cond_t *g_cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+	pthread_cond_t *g_cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+
     thread_counter = 0;
     g_lock1 = false;
     g_lock2 = true;
@@ -6508,7 +6519,8 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     //pthread_mutex_lock(mutex3); // LOCK mutex3
     //pthread_mutex_lock(mutex2);
     for(int i=0;i<num_threads;i++)
-      {  
+      {
+	
 	int start_range = i*delta_s; 
 	int  end_range = (i+1)*delta_s;
 	if (end_range>s) { end_range = s; }
@@ -6557,7 +6569,9 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ti_global = 0;
       //std::cout << "rel 2" << std::endl;
       g_lock2 = false;
+      pthread_mutex_lock(gmutex2);
       pthread_cond_signal(g_cond2);
+      pthread_mutex_unlock(gmutex2);
       //pthread_mutex_unlock(mutex2); // release other process
       if (thread_counter==num_threads||error) break;
     }
@@ -6570,9 +6584,17 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     pthread_mutex_destroy(mutex1);
     pthread_mutex_destroy(mutex2);
     pthread_mutex_destroy(mutex3);
+  pthread_mutex_destroy(gmutex);
+  pthread_mutex_destroy(gmutex2);
+  pthread_cond_destroy(g_cond);
+  pthread_cond_destroy(g_cond2);
     delete mutex1;
     delete mutex2;
     delete mutex3;
+    delete gmutex;
+    delete gmutex2;
+    delete g_cond;
+    delete g_cond2;
     //VertexArraySet *set = new VertexArraySet;
     //RenderVertexArray *arr2 = new RenderVertexArray(*set);
     //arr2->prepare(0);
