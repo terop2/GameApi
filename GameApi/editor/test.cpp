@@ -27,6 +27,9 @@ using namespace GameApi;
 #ifdef WAYLAND
 #include <wayland-client.h>
 #endif
+
+#include "Tasks.hh"
+
 struct ArrayType
 {
   int type; // arraytypesinuse
@@ -3507,7 +3510,10 @@ extern std::string gameapi_temp_dir;
 
 int main(int argc, char *argv[]) {
 	g_main_thread_id = pthread_self();
-  Env *e2 = new Env;
+
+	tasks_init();
+	
+	Env *e2 = new Env;
   Env &e = *e2;
   EveryApi ev(*e2);
   Envi *env = new Envi;

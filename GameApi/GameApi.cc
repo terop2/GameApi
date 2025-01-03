@@ -31,6 +31,8 @@
 #include <emscripten.h>
 #endif
 
+#include "Tasks.hh"
+
 extern int g_logo_status;
 extern std::string g_msg_string;
 extern int g_global_face_count;
@@ -810,10 +812,15 @@ void *Thread_Call(void *data)
 #ifndef ARM
 pthread_t thread;
 #endif
+
+extern int g_pthread_count;
+
 void GameApi::prepare(GameApi::RenderObject &o)
 {
 #ifndef ARM 
-  pthread_create(&thread, NULL, Thread_Call, (void*)&o);
+  g_pthread_count++;
+  //pthread_create(&thread, NULL, Thread_Call, (void*)&o);
+  tasks_add(3001, Thread_Call, (void*)&o);
 #endif
 }
 
@@ -4711,20 +4718,23 @@ public:
 
     infos.push_back(info);
     
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr,3000);
-    pthread_create(&info->thread_id, &attr, &trans_thread_func, (void*)info);
-
-    pthread_attr_destroy(&attr);
+    //pthread_attr_t attr;
+    //pthread_attr_init(&attr);
+    //pthread_attr_setstacksize(&attr,3000);
+    g_pthread_count ++;
+    //pthread_create(&info->thread_id, &attr, &trans_thread_func, (void*)info);
+    tasks_add(3002,&trans_thread_func, (void*)info);
+    
+	      //pthread_attr_destroy(&attr);
     
     return infos.size()-1;
   }
   void join(int i)
   {
-    TransparencyThreadInfo *info = infos[i];
-    void *res;
-    pthread_join(info->thread_id,&res);
+    tasks_join(3002);
+    //TransparencyThreadInfo *info = infos[i];
+    //void *res;
+    //pthread_join(info->thread_id,&res);
   }
 private:
   TransparentSeparateFaceCollection *m_this;
@@ -15733,6 +15743,14 @@ public:
     }
 #endif
 
+    static int old_g_pthread_count = 0;
+    if (old_g_pthread_count != g_pthread_count)
+      {
+	std::cout << "New Pthread:" << g_pthread_count << std::endl;
+	old_g_pthread_count = g_pthread_count;
+      }
+
+    
     
     static int old_count = 0;
     if (async_pending_count!=old_count) {
@@ -27899,15 +27917,17 @@ public:
       //Callback();
       //g_thread_heavy_ptr = this;
 #if 1
-      pthread_attr_t attr;
-    pthread_t thread_id;
+      //  pthread_attr_t attr;
+      //pthread_t thread_id;
     
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 30000);
+    //pthread_attr_init(&attr);
+    //pthread_attr_setstacksize(&attr, 30000);
     //std::cout << "phread_create" << std::endl;
-    pthread_create(&thread_id, &attr, &thread_heavy_main, (void*)this);
+    g_pthread_count++;
+    tasks_add(3004,&thread_heavy_main,(void*)this);
+    //pthread_create(&thread_id, &attr, &thread_heavy_main, (void*)this);
     //std::cout << "pthread_create_return: " << val << std::endl;
-    pthread_attr_destroy(&attr);
+    //pthread_attr_destroy(&attr);
 #endif
     //new std::thread(&thread_heavy_main);
     }

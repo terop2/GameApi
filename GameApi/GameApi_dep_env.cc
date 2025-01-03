@@ -10,6 +10,10 @@
 #include <unistd.h>
 #endif
 
+#include <atomic>
+
+#include "Tasks.hh"
+
 #define idb_disabled 1
 //#define idb_disabled 0
 
@@ -19,6 +23,7 @@ bool g_filter_execute = false;
 
 extern std::string g_window_href;
 extern std::string gameapi_homepageurl;
+extern int g_pthread_count;
 
 int g_async_pending_count_failures=0;
 
@@ -27,6 +32,256 @@ std::string stripprefix(std::string s);
 void InstallProgress(int num, std::string label, int max);
 void ProgressBar(int num, int val, int max, std::string label);
 extern int g_logo_status;
+
+
+extern task_interface &g_tasks;
+
+void *task_queue_consumer(void *data)
+{
+  static int task_num = 0;
+  task_num++;
+  int task_num2 = task_num;
+  while(1)
+    {
+      //std::cout << "Tasks loop" << task_num2 << std::endl;
+      if (g_tasks.shutdown_ongoing()) break;
+      g_tasks.queue_mutex_start();
+      bool b = g_tasks.queue_has_data();
+      task_data dt;
+      if (b)
+	{
+	  //std::cout << "Tasks has data" << task_num << std::endl;
+	  dt = g_tasks.front();
+	}
+      //g_tasks.queue_mutex_end();
+      if (b) {
+	//std::cout << "Tasks running heavy" << task_num2 << " " << dt.id << " " << dt.num << std::endl;
+	//g_tasks.queue_mutex_start();
+	g_tasks.set_task_as_execute(dt);
+	g_tasks.pop_from_queue();
+	g_tasks.queue_mutex_end();
+	dt.fptr(dt.data);
+	//std::cout << "Tasks finished heavy" << task_num2 << " " << dt.id << " " << dt.num<< std::endl;
+	g_tasks.queue_mutex_start();
+	g_tasks.set_task_as_done(dt);
+	g_tasks.queue_mutex_end();
+      } else
+	{
+	g_tasks.queue_mutex_end();
+	  // std::cout << "Tasks waiting" << task_num2 << std::endl;
+	  g_tasks.wait_for_push_or_shutdown();
+	  //std::cout << "Task_wakeup" << task_num2 << std::endl;
+	}
+    }  
+}
+
+void tasks_init()
+{
+  //std::cout << "Tasks init" << std::endl;
+  int s = 1;
+  g_tasks.queue_mutex_init();
+  g_tasks.push_mutex_init();
+  g_tasks.join_mutex_init();
+  g_tasks.push_mutex_initial_acquire();
+  for(int i=0;i<s;i++)
+    {
+      g_tasks.spawn_thread();
+    }
+}
+void tasks_add(int id, void *(*fptr)(void*), void *data)
+{
+  std::cout << "Tasks add "<< id << "::" << (long)fptr << " " << (long)data << std::endl;
+  task_data dt = g_tasks.create_work(id,fptr,data);
+  g_tasks.push_to_queue(dt);
+}
+void tasks_join(int id)
+{
+  std::cout << "Tasks join " << id << std::endl;
+  g_tasks.join_id(id);
+}
+
+class task_implementation : public task_interface
+{
+public:
+  virtual void spawn_thread()
+  {
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 300000);
+    //std::cout << "phread_create" << std::endl;
+    pthread_t *thread_id = new pthread_t;
+    threads.push_back(thread_id);
+    pthread_create(thread_id, &attr, &task_queue_consumer, (void*)0);
+    //std::cout << "pthread_create_return: " << val << std::endl;
+    pthread_attr_destroy(&attr);
+  }
+  ~task_implementation()
+  {
+    start_shutdown();
+    void *res;
+    int s = threads.size();
+    for(int i=0;i<s;i++)
+      pthread_join(*threads[i], &res);
+
+  }
+  virtual task_data create_work(int id,
+				void *(*fptr)(void*),
+				void *data)
+  {
+    static int counter = 0;
+    counter++;
+    task_data dt;
+    dt.id = id;
+    dt.num = counter;
+    dt.fptr = fptr;
+    dt.data = data;
+    return dt;
+  }
+  virtual void queue_mutex_init()
+  {
+    queue_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  }
+  virtual void queue_mutex_start()
+  {
+    pthread_mutex_lock(queue_mutex);
+  }
+  virtual void queue_mutex_end()
+  {
+    pthread_mutex_unlock(queue_mutex);
+  }
+  virtual void join_mutex_init()
+  {
+    join_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  }
+  virtual void join_mutex_lock()
+  {
+    pthread_mutex_lock(join_mutex);
+  }
+  virtual void join_mutex_unlock()
+  {
+    pthread_mutex_unlock(join_mutex);
+  }
+  virtual void push_mutex_init()
+  {
+    push_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  }
+  virtual void push_mutex_initial_acquire()
+  {
+    pthread_mutex_lock(push_mutex);
+  }
+  virtual void push_mutex_wait()
+  {
+    pthread_mutex_lock(push_mutex);
+  }
+  virtual void push_mutex_release()
+  {
+    pthread_mutex_unlock(push_mutex);
+  }
+  // this is run in main thread
+  virtual void push_to_queue(task_data d)
+  {
+    std::cout << "pushing to queue" << d.num << std::endl;
+    //queue_mutex_start();
+    queue.push_back(d);
+    //push_mutex_release();
+    //queue_mutex_end();
+  }
+  virtual bool queue_has_data()
+  {
+    bool b = queue.size()!=0;
+    return b;
+  }
+  virtual task_data front()
+  {
+    task_data dt = queue.front();
+    return dt;
+  }
+  virtual void pop_from_queue()
+  {
+    queue.erase(queue.begin());
+  }
+  virtual void set_task_as_execute(task_data dt)
+  {
+    tasks_in_execute.push_back(dt);
+  }
+  virtual void set_task_as_done(task_data dt)
+  {
+    int s = tasks_in_execute.size();
+    for(int i=0;i<s;i++)
+      {
+	task_data d = tasks_in_execute[i];
+	if (d.num==dt.num)
+	  {
+	    tasks_in_execute.erase(tasks_in_execute.begin()+i);
+	  }
+      }
+    queue_tasks_done.push_back(dt);
+  }
+  virtual void wait_for_push_or_shutdown()
+  {
+    //push_wait_ongoing[task_num] = 1;
+    while(queue.size()==0&&!m_shutdown_ongoing);
+    //push_mutex_wait();
+    //push_wait_ongoing[task_num] = 0;
+  }
+      
+  virtual void start_shutdown()
+  {
+    m_shutdown_ongoing=true;
+  }
+  virtual bool shutdown_ongoing()
+  {
+    return m_shutdown_ongoing;
+  }
+  virtual void join_id(int id)
+  {
+
+    std::cout << "join waiting " << id << std::endl;
+    while(1) {
+    int count=0;
+
+    queue_mutex_start();
+
+    int s = queue.size();
+    for(int i=0;i<s;i++)
+      {
+	if (queue[i].id == id) count++;
+      }
+    int s2=tasks_in_execute.size();
+    for(int i=0;i<s2;i++)
+      {
+	if (tasks_in_execute[i].id==id) count++;
+      }
+    queue_mutex_end();
+    if (count==0) break;
+    }
+
+
+    queue.clear();
+    tasks_in_execute.clear();
+    queue_tasks_done.clear();
+    std::cout << "join exiting " << id << std::endl;
+    
+  }
+private:
+  std::vector<task_data> queue;
+  std::vector<task_data> tasks_in_execute;
+  std::vector<task_data> queue_tasks_done;
+  std::vector<pthread_t*> threads;
+  pthread_mutex_t *queue_mutex;
+  pthread_mutex_t *push_mutex;
+  pthread_mutex_t *join_mutex;
+  std::atomic<bool> m_shutdown_ongoing=false;
+  bool in_join=false;
+  int in_join_id=-1;
+  int m_join_missed=-1;
+  int m_join_missed_count=0;
+  std::atomic<int> m_join_var=0;
+};
+task_implementation g_tasks_implementation;
+task_interface &g_tasks = g_tasks_implementation;
+
 
 
 #ifdef EMSCRIPTEN
@@ -1322,7 +1577,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 void *process2(void *ptr)
 {
   std::string *str = (std::string*)ptr;
-  pthread_detach(pthread_self());
+  //pthread_detach(pthread_self());
   system(str->c_str());
   //pthread_exit(0);
   return 0;
@@ -1331,11 +1586,13 @@ void *process2(void *ptr)
 void pthread_system(std::string str)
 {
   std::string *ss = new std::string(str);
-  pthread_t thread_id;
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setstacksize(&attr, 300000);
-  pthread_create(&thread_id, &attr, &process2, (void*)ss);
+  //pthread_t thread_id;
+  //pthread_attr_t attr;
+  //pthread_attr_init(&attr);
+  //pthread_attr_setstacksize(&attr, 300000);
+  g_pthread_count++;
+  //pthread_create(&thread_id, &attr, &process2, (void*)ss);
+  tasks_add(3006,&process2,(void*)ss);
 }
 
 
@@ -1355,7 +1612,7 @@ void* process(void *ptr)
 {
   ProcessData *dt = (ProcessData*)ptr;
   std::string url = dt->url;
-  pthread_detach(pthread_self());
+  //pthread_detach(pthread_self());
   std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url);
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
@@ -1462,11 +1719,15 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     dt.push_back(processdata);
     processdata->url = url;
     vec.push_back(processdata);
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 300000);
-    int err = pthread_create(&processdata->thread_id, &attr, &process, (void*)processdata);
-    if (err) { std::cout << "pthread_create returned error " << err << std::endl; }
+    //pthread_attr_t attr;
+    //pthread_attr_init(&attr);
+    //pthread_attr_setstacksize(&attr, 300000);
+    g_pthread_count++;
+    //int err = pthread_create(&processdata->thread_id, &attr, &process, (void*)processdata);
+    //if (err) { std::cout << "pthread_create returned error " << err << std::endl; }
+
+    tasks_add(3007,&process,(void*)processdata);
+    
   }
   long long current_size = 0;
   long long last_size = 0;

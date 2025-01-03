@@ -179,12 +179,12 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare_cubemap(EveryApi &ev, BM right
       if (end_y-start_y > 0)
 	ids.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
     }
-  int ss = ids.size();
-  for(int k=0;k<ss;k++)
-    {
-      threads.join(ids[k]);
-      ProgressBar(767, i*4+k, s*4, "cubetexture");
-    }
+  //int ss = ids.size();
+  //for(int k=0;k<ss;k++)
+  //{
+  threads.join(0 /*ids[k]*/);
+  //ProgressBar(767, i*4+k, s*4, "cubetexture");
+      //}
 #endif
 
       
@@ -346,12 +346,12 @@ EXPORT std::vector<BufferRef> GameApi::TextureApi::prepare_many_buf(GameApi::Eve
 	}
       int ss = ids2.size();
       int ii = i;
-      for(int t=0;t<ss;t++)
-	{
-	  threads.join(ids2[t]);
+      //for(int t=0;t<ss;t++)
+      //	{
+      threads.join(0 /*ids2[t]*/);
 	  //ProgressBar(768, ii*4+i,s*4, "texturemany"); 
 	  
-	}
+	  //}
 #endif
       BufferRef ref = buf.Buffer();
       buf.clear_with_leak();
@@ -539,9 +539,9 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 		ids2.push_back(threads.push_thread(&newbuf, start_x, end_x, start_y, end_y));
 	    }
 	  int ss = ids2.size();
-	  for(int t=0;t<ss;t++)
+	  //for(int t=0;t<ss;t++)
 	    {
-	      threads.join(ids2[t]);
+	      threads.join(0 /*ids2[t]*/);
 	      //ProgressBar(768, i*4+t,s*4, "texturemany"); 
 	    }
 #endif
@@ -622,9 +622,9 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
     }
   int ss = ids2.size();
   int ii = i;
-  for(int t=0;t<ss;t++)
+  //for(int t=0;t<ss;t++)
     {
-      threads.join(ids2[t]);
+      threads.join(0 /*ids2[t]*/);
       //ProgressBar(768, ii*4+i,s*4, "texturemany"); 
 
     }
@@ -761,10 +761,10 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 	ids.push_back(threads.push_thread(&buf, start_x, end_x, start_y, end_y));
     }
   int ss = ids.size();
-  for(int i=0;i<ss;i++)
+  //for(int i=0;i<ss;i++)
     {
-      threads.join(ids[i]);
-  ProgressBar(555,i,4,"texture");
+      threads.join(0 /*ids[i]*/);
+      //ProgressBar(555,i,4,"texture");
     }
 #endif
 

@@ -8,10 +8,12 @@ int hhhh_gggg=1;
 #define TINYGLTF_ENABLE_DRACO 1
 #define TINYGLTF_USE_CPP14 1
 #include "tiny_gltf.h"
+#include "Tasks.hh"
 
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
+extern int g_pthread_count;
 
 template<class T>
 void print(std::string label, T *ptr)
@@ -628,13 +630,15 @@ public:
  #ifdef THREADS
  #ifdef EMSCRIPTEN
     // wait for all threads to finish
+    /*
     int ss = current_gltf_threads.size();
     for(int i=0;i<ss;i++)
       {
 	void *res;
 	pthread_join(current_gltf_threads[i]->thread_id,&res);
       }
-    
+    */
+    tasks_join(3008);
     current_gltf_threads.clear();
  #endif
  #endif
@@ -1136,11 +1140,13 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
 
   decoder->load->current_gltf_threads.push_back(info);
   
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setstacksize(&attr,300000);
-  pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
-
+  //pthread_attr_t attr;
+  //pthread_attr_init(&attr);
+  //pthread_attr_setstacksize(&attr,300000);
+  g_pthread_count++;
+  //pthread_create(&info->thread_id, &attr, &thread_func_gltf_bitmap, (void*)info);
+  tasks_add(3008,&thread_func_gltf_bitmap,(void*)info);
+  
 #endif
   
 }
@@ -1149,13 +1155,15 @@ void gltf_join_threads(GLTFImageDecoder *decoder)
 {
 #ifdef THREADS
 #ifdef EMSCRIPTEN
-    int ss = decoder->load->current_gltf_threads.size();
+  //int ss = decoder->load->current_gltf_threads.size();
+    /*
     for(int i=0;i<ss;i++)
       {
 	void *res;
 	pthread_join(decoder->load->current_gltf_threads[i]->thread_id,&res);
       }
-    
+    */
+    tasks_join(3008);
     decoder->load->current_gltf_threads.clear();
 #endif
 #endif
@@ -1442,6 +1450,8 @@ void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
       return;
     }
 #endif
+
+#if 0
   if (t.IsDirectGltfImage())
     { // FAST PATH FOR GLTF IMAGE
       FlipColours *bm1 = (FlipColours*)&t;
@@ -1561,6 +1571,7 @@ void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
 	}
 	return;
 	}
+
 	//std::cout << "GLTFSLOWPATH" << std::endl;
   for(int y=start_y;y<end_y;y++) {
     int dd = y*buf.ydelta;
@@ -1572,6 +1583,7 @@ void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
   }
 	return;
     }
+#endif
   
   //std::cout << "ORDISLOWPATH" << std::endl;
   for(int y=start_y;y<end_y;y++) {
@@ -11910,22 +11922,28 @@ public:
 	info->i = i;
 	info->pZip = &pZip;
 #ifdef THREADS
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setstacksize(&attr,300000);
-	pthread_create(&info->thread_id, &attr, &thread_sketchfab_zip, (void*)info);
+	//pthread_attr_t attr;
+	//pthread_attr_init(&attr);
+	//pthread_attr_setstacksize(&attr,300000);
+	g_pthread_count++;
+	//pthread_create(&info->thread_id, &attr, &thread_sketchfab_zip, (void*)info);
+	tasks_add(3009,&thread_sketchfab_zip,(void*)info);
+	
 	thread_data.push_back(info);
 #else
 	thread_sketchfab_zip((void*)info);
 #endif
       }
 #ifdef THREADS
+    tasks_join(3009);
+    /*
     for(int i2=0;i2<num;i2++)
       {
 	ZipThreadData *info = thread_data[i2];
 	void *res;
 	pthread_join(thread_data[i2]->thread_id, &res);
       }
+    */
 #endif
     mz_zip_reader_end(&pZip);
     if (mainfilename!="")

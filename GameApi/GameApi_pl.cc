@@ -6505,7 +6505,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       //std::cout << "wait 3" << std::endl;
 #if 1
       while(g_lock3==true) {
-	if (g_low->sdl->SDL_GetTicks()-time > 10000.0) { std::cout << "create_vertex_array: BATCHING EXITING ON 10s TIMER" << std::endl; error=true; break; }
+	//if (g_low->sdl->SDL_GetTicks()-time > 10000.0) { std::cout << "create_vertex_array: BATCHING EXITING ON 10s TIMER" << std::endl; error=true; break; }
 #ifdef EMSCRIPTEN
 	///	emscripten_sleep(100);
 #endif
@@ -18907,11 +18907,11 @@ public:
       if (end_y-start_y > 0)
 	ids.push_back(threads.push_thread(&bbm, start_x, end_x, start_y, end_y));
     }
-  int ss = ids.size();
-  for(int i=0;i<ss;i++)
-    {
-      threads.join(ids[i]);
-    }
+  //int ss = ids.size();
+  //for(int i=0;i<ss;i++)
+  //{
+  threads.join(0 /*ids[i]*/);
+      //}
 #endif
 
   //  bbm.Gen();
@@ -18948,11 +18948,11 @@ public:
       if (end_y-start_y > 0)
 	ids.push_back(threads.push_thread(&bbm, start_x, end_x, start_y, end_y));
     }
-  int ss = ids.size();
-  for(int i=0;i<ss;i++)
-    {
-      threads.join(ids[i]);
-    }
+  //int ss = ids.size();
+  //for(int i=0;i<ss;i++)
+  // {
+  threads.join(0 /*ids[i]*/);
+      //  }
 #endif
 
   //  bbm.Gen();

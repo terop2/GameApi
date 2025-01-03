@@ -22,27 +22,27 @@ EXPORT GameApi::FBO GameApi::FrameBufferApi::create_fbo(EveryApi &ev, int sx, in
   OpenglLowApi *ogl = g_low->ogl;
   
   Low_GLuint fbo_name;
-    ev.mainloop_api.check_glerrors("create_fbo_before");
+  //ev.mainloop_api.check_glerrors("create_fbo_before");
   ogl->glGenFramebuffers(1, &fbo_name);
-    ev.mainloop_api.check_glerrors("create_fbo0");
+  //ev.mainloop_api.check_glerrors("create_fbo0");
   ogl->glBindFramebuffer(Low_GL_FRAMEBUFFER, fbo_name);
-    ev.mainloop_api.check_glerrors("create_fbo1");
+  //ev.mainloop_api.check_glerrors("create_fbo1");
 
   Low_GLuint texture;
   ogl->glGenTextures(1, &texture);
-    ev.mainloop_api.check_glerrors("create_fbo2");
+  //ev.mainloop_api.check_glerrors("create_fbo2");
   ogl->glBindTexture(Low_GL_TEXTURE_2D, texture);
-    ev.mainloop_api.check_glerrors("create_fbo3");
+  //ev.mainloop_api.check_glerrors("create_fbo3");
   ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGB, sx,sy, 0, Low_GL_RGB, Low_GL_UNSIGNED_BYTE, 0);
-    ev.mainloop_api.check_glerrors("create_fbo4");
+  //ev.mainloop_api.check_glerrors("create_fbo4");
   ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MIN_FILTER, Low_GL_NEAREST);
-    ev.mainloop_api.check_glerrors("create_fbo5");
+  //ev.mainloop_api.check_glerrors("create_fbo5");
   ogl->glTexParameteri(Low_GL_TEXTURE_2D, Low_GL_TEXTURE_MAG_FILTER, Low_GL_NEAREST);
-    ev.mainloop_api.check_glerrors("create_fbo6");
+  //ev.mainloop_api.check_glerrors("create_fbo6");
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
-    ev.mainloop_api.check_glerrors("create_fbo7");
+  //ev.mainloop_api.check_glerrors("create_fbo7");
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
-    ev.mainloop_api.check_glerrors("create_fbo8");
+  //ev.mainloop_api.check_glerrors("create_fbo8");
 
   //Low_GLuint depth_texture2=0;
   
@@ -240,19 +240,19 @@ public:
     
     // std::cout << sx << " " << sy << std::endl;
     fbo = ev.fbo_api.create_fbo(ev,sx,sy);
-    ev.mainloop_api.check_glerrors("create_fbo");
+    //ev.mainloop_api.check_glerrors("create_fbo");
     ev.fbo_api.config_fbo(fbo);
-    ev.mainloop_api.check_glerrors("config_fbo");
+    //ev.mainloop_api.check_glerrors("config_fbo");
     if (is_depth) {
       id = ev.fbo_api.depth_id(fbo);
-    ev.mainloop_api.check_glerrors("depth_id");
+      //ev.mainloop_api.check_glerrors("depth_id");
     } else {
       id = ev.fbo_api.tex_id(fbo);
-    ev.mainloop_api.check_glerrors("tex_id");
+      //ev.mainloop_api.check_glerrors("tex_id");
     }
     int count = 30000;
     while(count>0&&!ev.fbo_api.fbo_status(fbo)) { count--; }
-    ev.mainloop_api.check_glerrors("fbo_status");
+    //ev.mainloop_api.check_glerrors("fbo_status");
 
     if (count==0) std::cout << "ERROR, framebuffer status incomplete after delay" << std::endl;
     //firsttime = true;

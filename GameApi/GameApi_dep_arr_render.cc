@@ -3,7 +3,10 @@
 
 #include "GameApi_low.hh"
 
+#include "Tasks.hh"
+
 extern bool g_filter_execute;
+int g_pthread_count=0;
 
 int ArrayRender::NumVertices(FaceCollection &coll)
 {
@@ -183,6 +186,7 @@ void *thread_func_bitmap2(void* data)
   return g_thread_func_bitmap(data);
 }
 
+
 int ThreadedUpdateTexture::push_thread(BufferFromBitmap* bm, int start_x, int end_x, int start_y, int end_y)
   {
     //std::cout << "Starting thread" << std::endl;
@@ -195,17 +199,20 @@ int ThreadedUpdateTexture::push_thread(BufferFromBitmap* bm, int start_x, int en
     info->end_y = end_y;
     ti.push_back(info);
     
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 3000000);
-    pthread_create(&info->thread_id, &attr, &thread_func_bitmap2, (void*)info);
-    pthread_attr_destroy(&attr);
+    //pthread_attr_t attr;
+    //pthread_attr_init(&attr);
+    //pthread_attr_setstacksize(&attr, 3000000);
+    g_pthread_count ++;
+    tasks_add(3005,&thread_func_bitmap2,(void*)info);
+    //pthread_create(&info->thread_id, &attr, &thread_func_bitmap2, (void*)info);
+    //pthread_attr_destroy(&attr);
     return buffers.size()-1;
   }
 void ThreadedUpdateTexture::join(int id)
   {
-    void *res;
-    pthread_join(ti[id]->thread_id, &res);
+    tasks_join(3005);
+    //void *res;
+    //pthread_join(ti[id]->thread_id, &res);
   }
 ThreadedUpdateTexture::~ThreadedUpdateTexture() {
     int s = ti.size();
@@ -263,11 +270,11 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
 	ids.push_back(threads.push_thread(&buf2, start_x, end_x, start_y, end_y));
       }
       }
-  int ss = ids.size();
-  for(int i=0;i<ss;i++)
-    {
-      threads.join(ids[i]);
-    }
+  //int ss = ids.size();
+  //for(int i=0;i<ss;i++)
+  //{
+  threads.join(0 /*ids[i]*/);
+      //}
 #endif
 
   //buf2.Gen(); 
