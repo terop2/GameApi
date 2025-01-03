@@ -76,6 +76,7 @@ void tasks_init()
   //std::cout << "Tasks init" << std::endl;
   int s = 8;
   g_tasks.queue_mutex_init();
+  g_tasks.mutex_init();
   for(int i=0;i<s;i++)
     {
       g_tasks.spawn_thread();
@@ -117,6 +118,7 @@ public:
     for(int i=0;i<s;i++)
       pthread_join(*threads[i], &res);
 
+    mutex_destroy();
   }
   virtual task_data create_work(int id,
 				void *(*fptr)(void*),
@@ -143,12 +145,22 @@ public:
   {
     pthread_mutex_unlock(queue_mutex);
   }
+  virtual void mutex_init()
+  {
+    mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+  }
+  virtual void mutex_destroy()
+  {
+    pthread_cond_destroy(cond);
+  }
   // this is run in main thread
   virtual void push_to_queue(task_data d)
   {
     //std::cout << "pushing to queue" << d.num << std::endl;
     queue_mutex_start();
     queue.push_back(d);
+    pthread_cond_signal(cond);
     queue_mutex_end();
   }
   virtual bool queue_has_data()
@@ -184,12 +196,18 @@ public:
   }
   virtual void wait_for_push_or_shutdown()
   {
-    while(queue.size()==0&&!m_shutdown_ongoing);
+    pthread_mutex_lock(mutex);
+    while(queue.size()==0&&!m_shutdown_ongoing)
+      {
+	pthread_cond_wait(cond, mutex);
+      }
+    pthread_mutex_unlock(mutex);
   }
       
   virtual void start_shutdown()
   {
     m_shutdown_ongoing=true;
+    pthread_cond_signal(cond);
   }
   virtual bool shutdown_ongoing()
   {
@@ -246,6 +264,8 @@ private:
   std::vector<task_data> queue_tasks_done;
   std::vector<pthread_t*> threads;
   pthread_mutex_t *queue_mutex;
+  pthread_mutex_t *mutex;
+  pthread_cond_t *cond;
   std::atomic<bool> m_shutdown_ongoing=false;
   bool in_join=false;
   int in_join_id=-1;
