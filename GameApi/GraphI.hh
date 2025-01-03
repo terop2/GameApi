@@ -2987,6 +2987,8 @@ public: // mutex operations needed
   virtual void queue_mutex_init()=0;
   virtual void queue_mutex_start()=0;
   virtual void queue_mutex_end()=0;
+  virtual void mutex_init()=0;
+  virtual void mutex_destroy()=0;
 public:
   virtual task_data create_work(int id,
 				void *(*fptr)(void*),
