@@ -9464,7 +9464,7 @@ public:
 
       if (jj==-1)
 	{
-	  std::cout << "node " << node_id << "not found in jj calc" << std::endl;
+	  //std::cout << "node " << node_id << "not found in jj calc" << std::endl;
 	}
       
       //std::cout << "Found jj:" << jj << std::endl;
