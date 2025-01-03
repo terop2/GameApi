@@ -501,6 +501,10 @@ struct ThreadInfo
   pthread_mutex_t *mutex1;
   pthread_mutex_t *mutex2;
   pthread_mutex_t *mutex3;
+  pthread_mutex_t *gmutex;
+  pthread_mutex_t *gmutex2;
+  pthread_cond_t *g_cond;
+  pthread_cond_t *g_cond2;
   Counts ct2_offsets;
   Counts ct2_counts;
 };
@@ -549,7 +553,7 @@ public:
     return sets.size()-1;
   }
 
-  int push_thread2(int start_range, int end_range, RenderVertexArray *r, pthread_mutex_t *mutex1, pthread_mutex_t *mutex2, pthread_mutex_t *mutex3, std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
+  int push_thread2(int start_range, int end_range, RenderVertexArray *r, pthread_mutex_t *mutex1, pthread_mutex_t *mutex2, pthread_mutex_t *mutex3, pthread_mutex_t *gmutex, pthread_mutex_t *gmutex2, pthread_cond_t *g_cond, pthread_cond_t *g_cond2,std::vector<int> attrib=std::vector<int>(), std::vector<int> attribi=std::vector<int>())
   {
     g_copy_total += end_range-start_range;
     //std::cout << "Thread " << start_range << " " << end_range << std::endl;
@@ -571,6 +575,10 @@ public:
     info->mutex1 = mutex1;
     info->mutex2 = mutex2;
     info->mutex3 = mutex3;
+    info->gmutex = gmutex;
+    info->gmutex2 = gmutex2;
+    info->g_cond = g_cond;
+    info->g_cond2 = g_cond2;
     ti.push_back(info);
 
 

@@ -5982,6 +5982,7 @@ void ProgressBar(int num, int val, int max, std::string label);
 
 #ifdef THREADS
 extern ThreadInfo volatile *ti_global;
+pthread_cond_t *g_cond;
 #endif
 extern volatile int thread_counter;
 
@@ -5991,6 +5992,7 @@ extern std::atomic<bool> g_lock3;
 
 extern long long g_copy_total;
 extern long long g_copy_progress;
+
 
 
 EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P p, bool keep)
@@ -6062,6 +6064,10 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
   pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_mutex_t *gmutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_mutex_t *gmutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  pthread_cond_t *g_cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+  pthread_cond_t *g_cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
   thread_counter = 0;
   g_lock1 = false;
   g_lock3 = true;
@@ -6074,7 +6080,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
       int  end_range = (i+1)*delta_s;
       if (end_range>s) { end_range = s; } 
       if (i==num_threads-1) {end_range = s; }
-      vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
+      vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3,gmutex,gmutex2,g_cond,g_cond2));
     }
   int progress = 0;
   //InstallProgress(999,"gpu mem",15);
@@ -6082,7 +6088,10 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   while(1) {
     //std::cout << "lock3 wait" << std::endl;
 #if 1
+    pthread_mutex_lock(gmutex);
     while(g_lock3==true) {
+      pthread_cond_wait(g_cond,gmutex);
+      
 #ifdef EMSCRIPTEN
       // emscripten_sleep(100);
 #endif
@@ -6096,6 +6105,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
 	 
       
     }
+    pthread_mutex_unlock(gmutex);
 #endif
     //g_lock3.wait(false); // wait is available only in c++20
     g_lock3 = true;
@@ -6114,6 +6124,7 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
     ti_global = 0;
     //std::cout << "lock 2 release" << std::endl;
     g_lock2 = false;
+    pthread_cond_signal(g_cond2);
     //pthread_mutex_unlock(mutex2); // release other process
     if (thread_counter==num_threads) break;
   }
@@ -6125,6 +6136,10 @@ EXPORT void GameApi::PolygonApi::update_vertex_array(GameApi::VA va, GameApi::P 
   pthread_mutex_destroy(mutex1);
   pthread_mutex_destroy(mutex2);
   pthread_mutex_destroy(mutex3);
+  pthread_mutex_destroy(gmutex);
+  pthread_mutex_destroy(gmutex2);
+  pthread_cond_destroy(g_cond);
+  pthread_cond_destroy(g_cond2);
   //VertexArraySet *set = new VertexArraySet;
   //RenderVertexArray *arr2 = new RenderVertexArray(*set);
   //arr2->prepare(0);
@@ -6482,6 +6497,10 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     pthread_mutex_t *mutex1 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
     pthread_mutex_t *mutex3 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    pthread_mutex_t *gmutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    pthread_mutex_t *gmutex2 = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+    pthread_cond_t *g_cond = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
+    pthread_cond_t *g_cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
     thread_counter = 0;
     g_lock1 = false;
     g_lock2 = true;
@@ -6495,7 +6514,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
 	if (end_range>s) { end_range = s; }
 	//std::cout << "THREAD#" << i << "::Range=(" << start_range << ".." << end_range << ")" << std::endl;
 	if (i==num_threads-1) {end_range = s; }
-	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3));
+	vec.push_back(prep.push_thread2(start_range, end_range,arr2, mutex1, mutex2,mutex3,gmutex,gmutex2,g_cond,g_cond2));
       }
     int progress = 0;
     //InstallProgress(1,"send to gpu mem",10);
@@ -6504,12 +6523,15 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
     while(1) {
       //std::cout << "wait 3" << std::endl;
 #if 1
+      pthread_mutex_lock(gmutex);
       while(g_lock3==true) {
+	pthread_cond_wait(g_cond,gmutex);
 	//if (g_low->sdl->SDL_GetTicks()-time > 10000.0) { std::cout << "create_vertex_array: BATCHING EXITING ON 10s TIMER" << std::endl; error=true; break; }
 #ifdef EMSCRIPTEN
 	///	emscripten_sleep(100);
 #endif
       }
+      pthread_mutex_unlock(gmutex);
 #endif
       // g_lock3.wait(); // wait is available in c++20 only
       g_lock3 = true;
@@ -6535,6 +6557,7 @@ EXPORT GameApi::VA GameApi::PolygonApi::create_vertex_array(GameApi::P p, bool k
       ti_global = 0;
       //std::cout << "rel 2" << std::endl;
       g_lock2 = false;
+      pthread_cond_signal(g_cond2);
       //pthread_mutex_unlock(mutex2); // release other process
       if (thread_counter==num_threads||error) break;
     }

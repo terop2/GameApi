@@ -3864,7 +3864,6 @@ std::atomic<bool> g_lock1, g_lock2, g_lock3;
 ThreadInfo volatile *ti_global;
 volatile int thread_counter=0;
 
-
 void *thread_func(void *data)
 {
 #ifndef BATCHING
@@ -3905,11 +3904,17 @@ void *thread_func(void *data)
       if (i==s-1) thread_counter++;
       //std::cout << "lock 3 release" << std::endl;
       g_lock3 = false;
+      pthread_cond_signal(ti->g_cond);
       //pthread_mutex_unlock(ti->mutex3); // unlock mutex3
       //std::cout << "Lock2 wait" << std::endl;
       //std::cout << "wait 2" << std::endl;
       //std::cout << "lock 2 wait" << std::endl;
-      while(g_lock2==true);
+      pthread_mutex_lock(ti->gmutex2);
+      while(g_lock2==true)
+	{
+	  pthread_cond_wait(ti->g_cond2,ti->gmutex2);
+	}
+      pthread_mutex_unlock(ti->gmutex2);
       //g_lock2.wait(false);
       g_lock2 = true;
       //std::cout << "lock 2 wait end" << std::endl;
