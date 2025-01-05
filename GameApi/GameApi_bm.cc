@@ -8782,6 +8782,25 @@ private:
 };
 
 
+GameApi::ML GameApi::BitmapApi::display_bitmaps(GameApi::EveryApi &ev, std::vector<BM> vec, float start_time, float delta_time)
+{
+  int s = vec.size();
+  std::vector<GameApi::ML> vec2;
+  for(int i=0;i<s;i++)
+    {
+      int sx = size_x(vec[i]);
+      int sy = size_y(vec[i]);
+      GameApi::P p = ev.polygon_api.quad_z(-sx/2,sx/2,-sy/2,sy/2,0);
+      GameApi::MT tex = ev.materials_api.texture(ev,vec[i],1.0);
+      GameApi::MT fade = ev.materials_api.fade(ev,tex,start_time+i*3.5*delta_time,start_time+(i*3.5+1)*delta_time,start_time+(i*3.5+3)*delta_time,start_time+(i*3.5+4)*delta_time);
+      GameApi::ML ml = ev.materials_api.bind(p,fade);
+      vec2.push_back(ml);
+    }
+  return ev.mainloop_api.array_ml(ev,vec2);
+}
+
+
+
 #if 0
 
 struct CompressedImage
