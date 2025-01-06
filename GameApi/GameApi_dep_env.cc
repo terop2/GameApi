@@ -252,7 +252,6 @@ public:
   }
   virtual void join_id(int id)
   {
-    in_join=true;
     //std::cout << "join waiting " << id << std::endl;
     pthread_mutex_lock(mutex2);
     while(1) {
@@ -272,7 +271,9 @@ public:
       }
     queue_mutex_end();
     if (count==0) break;
+      in_join=true;
       pthread_cond_wait(cond2,mutex2);
+      in_join=false;
     }
     pthread_mutex_unlock(mutex2);
 
@@ -296,7 +297,6 @@ public:
     queue_mutex_end();
     
     //std::cout << "join exiting " << id << std::endl;
-    in_join=false;
   }
 private:
   std::vector<task_data> queue;
