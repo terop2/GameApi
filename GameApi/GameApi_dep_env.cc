@@ -117,7 +117,11 @@ public:
     int s = threads.size();
     for(int i=0;i<s;i++)
       pthread_join(*threads[i], &res);
-
+    int s = threads.size();
+    for(int i=0;i<s;i++)
+      delete threads[i];
+    
+    
     mutex_destroy();
   }
   virtual task_data create_work(int id,
