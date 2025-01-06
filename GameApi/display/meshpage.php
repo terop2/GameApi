@@ -590,6 +590,7 @@ echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v$version_sou
 echo "<br>Yours,<br><img loading=\"lazy\" src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img loading=\"lazy\" src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
 echo "<br><br>Development history of the project:<br>";
+echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2024.png\" crossorigin></img>";
 echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2023.png\" crossorigin></img>";
 echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2022.png\" crossorigin></img>";
 echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2021.png\" crossorigin></img>";

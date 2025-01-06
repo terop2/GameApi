@@ -863,6 +863,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT ML display_bitmaps(EveryApi &ev, std::vector<BM> vec, float start_time, float delta_time);
   IMPORT BM flip_tile_bitmap(BM bm, int sx, int sy, bool is_x);
   IMPORT ML write_gif_anim2(Array<int,int> *vec, std::string filename, int delay);
   IMPORT ML gif_anim(EveryApi &ev, ML ml3, int key, float time_delta, int num, std::string filename, int delay);
