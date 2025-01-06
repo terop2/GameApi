@@ -88,6 +88,8 @@ or
     
       ```
       #include "GameApi.hh"
+      tasks_init();
+
       std::string code= "SCRIPT FROM CODEGEN HERE";
       Env e2;
       EveryApi ev(e);
