@@ -117,8 +117,8 @@ public:
     int s = threads.size();
     for(int i=0;i<s;i++)
       pthread_join(*threads[i], &res);
-    int s = threads.size();
-    for(int i=0;i<s;i++)
+    int s2 = threads.size();
+    for(int i=0;i<s2;i++)
       delete threads[i];
     
     
@@ -158,10 +158,26 @@ public:
     cond2 = new pthread_cond_t(PTHREAD_COND_INITIALIZER);
 
   }
+  virtual void queue_mutex_destroy()
+  {
+    pthread_mutex_destroy(queue_mutex);
+    delete queue_mutex;
+    queue_mutex = 0;
+  }
   virtual void mutex_destroy()
   {
     pthread_cond_destroy(cond);
     pthread_cond_destroy(cond2);
+    pthread_mutex_destroy(mutex);
+    pthread_mutex_destroy(mutex2);
+    delete mutex;
+    delete mutex2;
+    delete cond;
+    delete cond2;
+    mutex=0;
+    mutex2=0;
+    cond=0;
+    cond2=0;
   }
   // this is run in main thread
   virtual void push_to_queue(task_data d)
