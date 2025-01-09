@@ -39,7 +39,7 @@ fclose($fp);
 <input id="rotate" class="cb" type="checkbox" name="rotate" value="rotate" checked><div class="label">Rotate</div><br>
 <!--input class="cb" type="checkbox" name="pan" value="pan" checked><div class="label">Pan</div><br-->
 <p>
-<input class="submit" type="submit" value="Convert to HTML5">
+<input id="submit" class="submit" type="submit" value="Convert to HTML5">
 <?php echo file_get_contents("./pp2/tmp.count") ?>
 </form>
 
@@ -60,8 +60,23 @@ function trans_change()
 }
 function file_change()
 {
-  //var el3 = document.getElementById("gltffile");
-  //var name = el3.value;
+  var el3 = document.getElementById("gltffile");
+  var name = el3.value;
+  var start = name.substr(0,6);
+  var google = name.substr(0,24);
+  var dropbox = name.substr(0,23);
+  var google2 = name.substr(0,23);
+  var dropbox2 = name.substr(0,22);
+  if (start=="file:/"||google=="https://drive.google.com"||dropbox=="https://www.dropbox.com"||google2=="http://drive.google.com"||dropbox2=="http://www.dropbox.com")
+  {
+	var el4 = document.getElementById("submit");
+	el4.disabled="disabled";
+  } else {
+	var el4 = document.getElementById("submit");
+	el4.disabled="";
+  }
+
+
   //var ext = name.substring(name.length-4);
   //if (ext==".zip") {
   //  var el3 = document.getElementById("sketchfab");
@@ -152,7 +167,8 @@ HINT#2: For advanced users, there's a builder tool available at: <a href="https:
 HINT#3: &lt;iframe scrolling="no" src="index.html" width="830" height="630"/&gt; to embed it to your main article.<br>
 HINT#4: Changing the canvas dimensions is possible if you modify both the embed and index.html<br>
 HINT#5: You can get the source code (needed for LGPL/GPL) from <a href="https://github.com/terop2/GameApi">https://github.com/terop2/GameApi</a>.<br>
-HINT#6: Urls from google drive doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
+HINT#6: Urls from google drive or dropbox doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
+HINT#7: file:// -urls are not working. 
 <style>
 .moveright {
    position: relative;
