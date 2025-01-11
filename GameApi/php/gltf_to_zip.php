@@ -23,7 +23,7 @@ fclose($fp);
 
 <form method="POST" action="/gltf_to_zip_result.php">
 <label class="url" for="gltffile">GLTF2.0 File Url:</label>
-<input class="gltf" type="url" id="gltffile" name="gltffile" value="" onchange="file_change()"><br>
+<input class="gltf" type="url" id="gltffile" name="gltffile" value="" onchange="file_change()"><div id="span" class="red"></div><br>
 
 (you just need .gltf file url, it'll find all dependencies starting from that file)<br>
 (or if you got the content from sketchfab, their gltf zip files are acceptable too)
@@ -71,9 +71,19 @@ function file_change()
   {
 	var el4 = document.getElementById("submit");
 	el4.disabled="disabled";
+
+	var msg = "";
+	if (start=="file:/") msg="file:// urls not acceptable";
+	if (google=="https://drive.google.com"||google2=="http://drive.google.com") msg="google drive not acceptable";
+	if (dropbox=="https://www.dropbox.com"||dropbox2=="http://www.dropbox.com") msg="dropbox not acceptable";
+
+	var el5 = document.getElementById("span");
+	el5.innerHTML = msg;
   } else {
 	var el4 = document.getElementById("submit");
 	el4.disabled="";
+	var el5 = document.getElementById("span");
+	el5.innerHTML = "";
   }
 
 
@@ -170,6 +180,9 @@ HINT#5: You can get the source code (needed for LGPL/GPL) from <a href="https://
 HINT#6: Urls from google drive or dropbox doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
 HINT#7: file:// -urls are not working. 
 <style>
+.red {
+  color: red;
+}
 .moveright {
    position: relative;
    top: -42px;
