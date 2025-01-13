@@ -21,12 +21,22 @@ fclose($fp);
 (gltf file get prepared for hosting/displaying/rendering on the web)
 </div>
 
+
+
 <form method="POST" action="/gltf_to_zip_result.php">
 <label class="url" for="gltffile">GLTF2.0 File Url:</label>
 <input class="gltf" type="url" id="gltffile" name="gltffile" value="" onchange="file_change()"><div id="span" class="red"></div><br>
 
+
+<div class="flex">
+<div>
 (you just need .gltf file url, it'll find all dependencies starting from that file)<br>
 (or if you got the content from sketchfab, their gltf zip files are acceptable too)
+</div><div>
+<img id="trans" width="320px" height="200px" src="https://meshpage.org/ab_black.png"/>
+</div>
+</div>
+
 <br><br>
 
 <input id="transparent" class="cb" type="checkbox" name="transparent" value="trans" onchange="trans_change()"><div class="label">Transparent Canvas</div><br>
@@ -43,7 +53,6 @@ fclose($fp);
 <?php echo file_get_contents("./pp2/tmp.count") ?>
 </form>
 
-<img id="trans" style="position:absolute; top: 200px; left:300px;" width="320px" height="200px" src="https://meshpage.org/ab_black.png"/>
 
 <script>
 function trans_change()
@@ -174,12 +183,18 @@ function shadow_change()
 
 HINT#1: Firsttime users should check the server config from our faq: <a href="https://meshpage.org/meshpage_5">faq</a>.<br>
 HINT#2: For advanced users, there's a builder tool available at: <a href="https://meshpage.org/meshpage_4">builder tool</a>.<br>
-HINT#3: &lt;iframe scrolling="no" src="index.html" width="830" height="630"/&gt; to embed it to your main article.<br>
-HINT#4: Changing the canvas dimensions is possible if you modify both the embed and index.html<br>
+HINT#3: &lt;iframe scrolling="no" src="display.html" width="830" height="630"/&gt; to embed it to your main article.<br>
+HINT#4: Changing the canvas dimensions is possible if you modify both the embed and display.html<br>
 HINT#5: You can get the source code (needed for LGPL/GPL) from <a href="https://github.com/terop2/GameApi">https://github.com/terop2/GameApi</a>.<br>
 HINT#6: Urls from google drive or dropbox doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
-HINT#7: file:// -urls are not working. 
+HINT#7: file:// -urls are not working.<br>
+HINT#8: Correct way to provide url is to place your glb or zip file to hosting space and give url to the file from your hosting space. usually http or https.
 <style>
+.flex {
+  display: flex;
+  flex-direction: column;
+}
+
 .red {
   color: red;
 }
