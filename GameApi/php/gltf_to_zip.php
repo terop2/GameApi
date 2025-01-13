@@ -174,8 +174,8 @@ function shadow_change()
 
 HINT#1: Firsttime users should check the server config from our faq: <a href="https://meshpage.org/meshpage_5">faq</a>.<br>
 HINT#2: For advanced users, there's a builder tool available at: <a href="https://meshpage.org/meshpage_4">builder tool</a>.<br>
-HINT#3: &lt;iframe scrolling="no" src="index.html" width="830" height="630"/&gt; to embed it to your main article.<br>
-HINT#4: Changing the canvas dimensions is possible if you modify both the embed and index.html<br>
+HINT#3: &lt;iframe scrolling="no" src="myzipdirectory/display.html" width="830" height="630"/&gt; to embed it to your main article.<br>
+HINT#4: Changing the canvas dimensions is possible if you modify both the embed and display.html<br>
 HINT#5: You can get the source code (needed for LGPL/GPL) from <a href="https://github.com/terop2/GameApi">https://github.com/terop2/GameApi</a>.<br>
 HINT#6: Urls from google drive or dropbox doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
 HINT#7: file:// -urls are not working. 
