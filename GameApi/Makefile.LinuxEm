@@ -268,16 +268,18 @@ examples: main
 fixmissing: check_emscripten_exists
 
 libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
-	echo "  em++ libGameApi.bc"
-	#@em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
-	touch libGameApi.bc
+	@#echo "  em++ libGameApi.bc"
+	@#@em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@echo "touch libGameApi.bc"
+	@touch libGameApi.bc
 
 #-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
 
 libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
-	echo "  em++ libGameApi_nothreads.bc"
-	#@em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
-	touch libGameApi_nothreads.bc
+	@echo "  em++ libGameApi_nothreads.bc"
+	@#@em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@echo "touch libGameApi_nothreads.bc"
+	@touch libGameApi_nothreads.bc
 
 #-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib 
 
