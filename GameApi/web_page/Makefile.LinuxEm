@@ -168,38 +168,8 @@ PTHREADOPT2 = $(PTHREADOPT)
 # -s TOTAL_STACK=20Mb
 # --closure 1
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
-#grow: ../libGameApi.bc
-#	@echo "LINK web_page/engine.js"
-#	@(cd ..;em++ $(ALLFLAGS)  -s FETCH=1  --use-preload-cache  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -s ALLOW_MEMORY_GROWTH=1 -L. -Lobs -o web_page/engine.js  -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1  -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
-#	@cp engine.wasm engine_lowmem.wasm
-#	@cp engine.data engine_lowmem.data
-#	@cp engine.js engine_lowmem.js
-#	@cp engine.html engine_lowmem.html
-#	@cp engine.html.mem engine_lowmem.html.mem
-#	@echo "strip engine_lowmem.wasm"
-#	@$(STRIP) engine_lowmem.wasm
-#	@echo "brotli engine_lowmem.wasm.br"
-#	@brotli --quality=5 --force engine_lowmem.wasm -o engine_lowmem.wasm.br
-#
-#
-#-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
-#lowmem: ../libGameApi.bc
-#	@echo "LINK web_page/engine.js"
-#	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps   -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
-#	@cp engine.wasm engine_lowmem.wasm
-#	@cp engine.data engine_lowmem.data
-#	@cp engine.js engine_lowmem.js
-#	@cp engine.html engine_lowmem.html
-#	@cp engine.html.mem engine_lowmem.html.mem
-#	@echo "emdwp engine_lowmem.dwp"
-#	@emdwp -e engine_lowmem.wasm -o engine_lowmem.dwp
-#	@echo "strip engine_lowmem.wasm"
-#	@$(STRIP) engine_lowmem.wasm
-#	@echo "brotli engine_lowmem.wasm.br"
-#	@brotli --quality=5 --force engine_lowmem.wasm -o engine_lowmem.wasm.br
 
 both:  both_lowmem both_highmem
-#both_middlemem both_highmem 
 
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  -s TOTAL_MEMORY=1920bM
@@ -210,14 +180,6 @@ both_highmem: test.cpp ../libGameApi_nothreads.bc
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
 
 #   -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb
-#both_middlemem: test.cpp ../libGameApi_nothreads.bc
-#	@echo "LINK web_page/engine_nothreads.js"
-#	@(cd ..;em++ $(ALLFLAGS)  -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
-#	@echo "brotli engine_nothreads.wasm.br"
-#	@brotli --quality=5 --force engine_nothreads.wasm -o engine_nothreads.wasm.br
-
-
-
 #  -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
 both_lowmem: test.cpp ../libGameApi_nothreads.bc
 	@echo "LINK web_page/engine_lowmem_nothreads.js"
@@ -237,26 +199,9 @@ pthreads_both_highmem: test.cpp ../libGameApi.bc
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
 
 #  -Lhssynth2/synthlib/emscripten -lsynthlib -L hssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=950Mb
-#pthreads_both_middlemem: test.cpp ../libGameApi.bc
-#	@echo "LINK web_page/engine.js"
-#	@(cd ..;em++ $(PTHREADOPT2) $(ALLFLAGS)  -s FILESYSTEM=0  --use-preload-cache -s NO_EXIT_RUNTIME=1   --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
-#	@echo "brotli engine.wasm.br"
-#	@brotli --quality=5 --force engine.wasm -o engine.wasm.br
 
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
-#pthreads_both_lowmem: test.cpp ../libGameApi.bc
-#	@echo "LINK web_page/engine_lowmem.js"
-#	@(cd ..;em++ $(PTHREADOPT2) $(ALLFLAGS)  -s FILESYSTEM=0  --use-preload-cache -s NO_EXIT_RUNTIME=1   --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2   -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_lowmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  ) 
-#	@echo "brotli engine_lowmem.wasm.br"
-#	@brotli --quality=5 --force engine_lowmem.wasm -o engine_lowmem.wasm.br
-
-
-
-
-
-#both_nodebug: both_nodebug_highmem both_nodebug_middlemem both_nodebug_lowmem
-
 
 #-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1920Mb
 both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc 
@@ -267,11 +212,6 @@ both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc
 
 
 #-Lhssynth2/synthlib/emscripten -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
-#both_nodebug_middlemem: test.cpp ../libGameApi_nothreads.bc 
-#	@echo "LINK web_page/engine_nothreads.js"
-#	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
-#	@echo "brotli engine_nothreads.wasm.br"
-#	@brotli --quality=5 --force engine_nothreads.wasm -o engine_nothreads.wasm.br
 
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb -s TOTAL_MEMORY=220Mb
@@ -292,22 +232,6 @@ pthreads_both_nodebug_highmem: test.cpp ../libGameApi.bc
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  -s TOTAL_MEMORY=950Mb
-#pthreads_both_nodebug_middlemem: test.cpp  ../libGameApi.bc
-#	@echo "LINK web_page/engine.js"
-#	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps -s FILESYSTEM=0   --use-preload-cache -s NO_EXIT_RUNTIME=1   --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 ) 
-#	@echo "brotli engine.wasm.br"
-#	@brotli --quality=5 --force engine.wasm -o engine.wasm.br
-
-# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
-#pthreads_both_nodebug_lowmem: test.cpp ../libGameApi.bc
-#	@echo "LINK web_page/engine_lowmem.js"
-#	@(cd ..;em++ $(ALLFLAGS)  -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0   --use-preload-cache -s NO_EXIT_RUNTIME=1  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2   -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_lowmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )#
-#	@echo "emdwp engine_lowmem.dwp"
-#	@emdwp -e engine_lowmem.wasm -o engine_lowmem.dwp
-#	@echo "strip engine_lowmem.wasm"
-#	@$(STRIP) engine_lowmem.wasm
-#	@echo "brotli engine_lowmem.wasm.br"
-#	@brotli --quality=5 --force engine_lowmem.wasm -o engine_lowmem.wasm.br
 
 
 #-s NO_DISABLE_EXCEPTION_CATCHING
