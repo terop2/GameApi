@@ -174,17 +174,17 @@ both:  both_lowmem both_highmem
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  -s TOTAL_MEMORY=1920bM
 both_highmem: test.cpp ../libGameApi_nothreads.bc
-	@echo "LINK web_page/engine_nothreads_highmem.js"
+	@echo "  LINK   web_page/engine_nothreads_highmem.js"
 	@(cd ..;em++ $(ALLFLAGS) -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_nothreads_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
-	@echo "brotli engine_nothreads_highmem.wasm.br"
+	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
 
 #   -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb
 #  -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
 both_lowmem: test.cpp ../libGameApi_nothreads.bc
-	@echo "LINK web_page/engine_lowmem_nothreads.js"
+	@echo "  LINK   web_page/engine_lowmem_nothreads.js"
 	@(cd ..;em++ $(ALLFLAGS)   -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine_lowmem_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
-	@echo "brotli engine_lowmem_nothreads.wasm.br"
+	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=5 --force engine_lowmem_nothreads.wasm -o engine_lowmem_nothreads.wasm.br
 
 
@@ -193,9 +193,9 @@ pthreads_both: pthreads_both_highmem
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1750Mb
 pthreads_both_highmem: test.cpp ../libGameApi.bc
-	@echo "LINK web_page/engine_highmem.js"
+	@echo "  LINK   web_page/engine_highmem.js"
 	@(cd ..;em++ $(PTHREADOPT2) $(ALLFLAGS)  -s FILESYSTEM=0   --use-preload-cache  -s NO_EXIT_RUNTIME=1   --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
-	@echo "brotli engine_highmem.wasm.br"
+	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
 
 #  -Lhssynth2/synthlib/emscripten -lsynthlib -L hssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=950Mb
@@ -205,9 +205,9 @@ pthreads_both_highmem: test.cpp ../libGameApi.bc
 
 #-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1920Mb
 both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc 
-	@echo "LINK web_page/engine_nothreads_highmem.js"
+	@echo "  LINK   web_page/engine_nothreads_highmem.js"
 	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2 -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_nothreads_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
-	@echo "brotli engine_nothreads_highmem.wasm.br"
+	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
 
 
@@ -216,9 +216,9 @@ both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb -s TOTAL_MEMORY=220Mb
 both_nodebug_lowmem: test.cpp ../libGameApi_nothreads.bc 
-	@echo "LINK web_page/engine_lowmem_nothreads.js"
+	@echo "  LINK   web_page/engine_lowmem_nothreads.js"
 	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_lowmem_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )   
-	@echo "brotli engine_lowmem_nothreads.wasm.br"
+	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=5 --force engine_lowmem_nothreads.wasm -o engine_lowmem_nothreads.wasm.br
 
 
@@ -226,9 +226,9 @@ pthreads_both_nodebug: pthreads_both_nodebug_highmem pthreads_both_nodebug_middl
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1950Mb
 pthreads_both_nodebug_highmem: test.cpp ../libGameApi.bc
-	@echo "LINK web_page/engine_highmem.js"
+	@echo "  LINK   web_page/engine_highmem.js"
 	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache -s NO_EXIT_RUNTIME=1  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
-	@echo "brotli engine_highmem.wasm.br"
+	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  -s TOTAL_MEMORY=950Mb
