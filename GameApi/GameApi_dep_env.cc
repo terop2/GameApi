@@ -69,6 +69,7 @@ void *task_queue_consumer(void *data)
 	  //std::cout << "Task_wakeup" << task_num2 << std::endl;
 	}
     }  
+  return 0;
 }
 
 void tasks_init()

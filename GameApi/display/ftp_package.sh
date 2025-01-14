@@ -4,20 +4,20 @@ start_it()
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
       SSHSOCKET=~/.ssh/terop@meshpage.org
-      ssh -M -f -N -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org
+      sshpass -p $1 ssh -M -f -N -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org
     fi
 }
 copy_it()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org:/home/terop/meshpage.org/$1 ./build/
+	sshpass -p $1 scp -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org:/home/terop/meshpage.org/$1 ./build/
     else
 	if [ "$MACHINE" == "terop-pc2" ]; then
 	    cp /home/terop/meshpage.org/$1 ./build/
 	    echo "copying $1 to build directory"
 	else
-	    scp https://ssh.meshpage.org/$1 ./build/
+	    sshpass -p $1 scp https://ssh.meshpage.org/$1 ./build/
 	fi
     fi
 }
@@ -40,17 +40,23 @@ finish()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	ssh -S $SSHSOCKET -O exit terop@ssh.meshpage.org
+	sshpass -p $1 ssh -S $SSHSOCKET -O exit terop@ssh.meshpage.org
     fi
 }
 finish2()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr2[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
+	sshpass -p $1 scp ${arr2[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
     fi
 
 }
+
+
+if [[ $1 == "" ]]; then
+    echo "Usage: ./ftp_package.sh password"
+    exit
+fi
 
 rm -rf build
 mkdir build
