@@ -39,7 +39,7 @@ echo "<h1 class=\"customfont fontsize\" align=\"left\" style=\"position: static;
 echo "<h2 class=\"customfont label_a\" align=\"left\" style=\"position: relative; top: -50px; left: 50px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>";
 echo "</div>";
 echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
-echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"350\" height=\"270\" style=\"overflow: visible; border: none;\"></iframe>";
+echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"800\" height=\"600\" style=\"overflow: visible; border: none;\"></iframe>";
 echo "<div class=\"customfont\" style=\"position:absolute; top:-30px; left:310px;\">";
 echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)";
 echo "<pre style=\"font-size: 9px;\">";
@@ -74,6 +74,10 @@ echo "<div class=\"customfont\" style=\"position: static; margin-left: 27px;\">"
 echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>.";
 echo "<br>Known critical bugs in meshpage:<p><ul><li> (meshy rigging doesnt work in meshpage)</ul><br>";
 echo "</div>";
+echo "<p><p><p><p><br><p><p><br>";
+echo "<p><p><p><p><br><p><p><br>";
+echo "<p><p><p><p><br><p><p><br>";
+echo "<p><p><p><p><br><p><p><br>";
 echo "<div class=\"grid_container\">";
 for($i=0;$i<4;$i++)
 {
@@ -154,6 +158,7 @@ echo "   justify-content: right;";
 echo "   text-decoration-line: none;";
 echo "   color: black;";
 echo "   padding: 28px 0px 0px 0px;";
+echo "   z-index: 1;";
 echo "}";
 echo ".grid_item1_a {";
 echo "  display: flex;";
