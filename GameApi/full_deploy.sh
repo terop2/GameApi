@@ -10,13 +10,13 @@ make -f Makefile.LinuxEm clean
 ./emmake.sh
 (cd web_page;./ftp_release.sh)
 (cd display;./ftp_release.sh)
-(cd display;./ftp_package.sh)
+(cd display;./ftp_package.sh $1)
 (cd php;./ftp.sh)
 (cd deploytool;./ftp_release.sh)
 (cd editor;./copy_files_to_deb.sh `cat ../VERSION.TXT`)
 (cd editor;./make_deb.sh `cat ../VERSION.TXT`)
 cp editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb docker/
-sudo dpkg -i editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb
+echo $1 |sudo -S dpkg -i editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb
 #(cd docker;sudo docker build -t builder-test:latest .)
 (cd docker;./build_tar.sh `cat ../VERSION.TXT`)
 (cd cmdline_docker;./copy_files.sh)
