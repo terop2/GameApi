@@ -281,6 +281,7 @@ function viewport_meta( )
 function twitter_meta( $arr, $j )
 {
   global $sitename;
+  global $site;
   $user = $arr["username"];
   $i = $arr["index"];
   $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
@@ -293,6 +294,7 @@ function twitter_meta( $arr, $j )
 }
 function google_meta( $arr, $i )
 {
+  global $site;
   $user = $arr["username"];
   $i = $arr["index"];
   $filename = $site . "/user_data/user_" . $user . "/screenshot" . $i . ".webp";
@@ -300,6 +302,8 @@ function google_meta( $arr, $i )
   echo '<meta property="og:title" content="' . $label . '"/>';
   echo '<meta property="og:description" content="3d animations"/>';
   echo '<meta property="og:image" content="' . $filename . '"/>';
+  echo '<meta property="og:image:width" content="279"/>';
+  echo '<meta property="og:image:height" content="183"/>';
 }
 
 function user_frame( $arr, $i, $noheaders, $seamless, $transparent )
