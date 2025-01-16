@@ -113,6 +113,7 @@ public:
   }
   ~task_implementation()
   {
+#if 0
     start_shutdown();
     void *res;
     int s = threads.size();
@@ -124,6 +125,7 @@ public:
     
     
     mutex_destroy();
+#endif
   }
   virtual task_data create_work(int id,
 				void *(*fptr)(void*),

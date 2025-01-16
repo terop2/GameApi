@@ -33,7 +33,7 @@ $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
 if ($page!="2") {
  echo '<meta name="description" content="meshpage.org makes the web 3d, one site at the time"/>';
- }
+ } else
  ?>
 <meta http-equiv="origin-trial" content="AptK8NwNEYWXkj+auQSC8THBYvgBloOO5LemnbbmXRjmKwP7tV1EmbhaDZ02jO/PGuID0wNcCOXwQtfkuWsnNAgAAABjeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiVW5yZXN0cmljdGVkU2hhcmVkQXJyYXlCdWZmZXIiLCJleHBpcnkiOjE2Mzk1MjYzOTl9"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
@@ -61,6 +61,9 @@ function create_id2( $name, $index )
 }
 
 $id = $_GET["id"];
+
+
+
 $label = create_id2("terop", $id); //$_GET["label"];
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
@@ -370,7 +373,7 @@ function load_anim_pic_reset(num,file_id)
    imgtag.onmousemove = function() { }
 
  if (file_id!=-1) { 
-   imgtag.src="user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
+   imgtag.src="<?php echo $site ?>/user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
    }
 
 }
@@ -430,8 +433,8 @@ $cnt = $cnt + 1;
 $id = create_id( $arr );
 $label = get_label( $arr );
 
-   $filename = "user_data/user_" . $user . "/screenshot" . $ii . ".png";
-   $filename2 = "user_data/user_" . $user . "/screenshot" . $ii . ".webp";
+   $filename = "<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".png";
+   $filename2 = "<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    $ik = $ii;
    if (file_exists($filename2)) $filename = $filename2;
    if (!file_exists($filename)) { $ik=-1; $filename = $assetsite . "/unknown.webp"; }
@@ -451,9 +454,9 @@ $label = get_label( $arr );
    //echo "<layer width=\"200\" height=\"150\">";
    if (file_exists("user_data/user_terop/screenshot" . $ii . ".webp"))
    {
-   echo "<img loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   echo "<img loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"   crossorigin/>";
    } else {
-   echo "<img loading=\"lazy\" src=\"" . $assetsite . "/unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  itemprop=\"thumbnailUrl\" crossorigin/>";
+   echo "<img loading=\"lazy\" src=\"" . $assetsite . "/unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  crossorigin/>";
    }
    //echo "</layer>";
    // src=\"" . $filename . "\"
