@@ -92,7 +92,7 @@ or
 
       std::string code= "SCRIPT FROM CODEGEN HERE";
       Env e2;
-      EveryApi ev(e);
+      EveryApi ev(e2);
       ExecuteEnv e;
       ev.mainloop_api.init_window(w_width,w_height,"GameApi", vr_init);
       ev.mainloop_api.set_screen_size(w_width, w_height);
