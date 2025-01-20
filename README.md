@@ -5,7 +5,16 @@ We proudly present a 3d modelling tool, 3d engine and web site for
 displaying 3d models.
 
 Our best feature is gltf rendering and its eventual deployment in web, but our
-tools are slightly more flexible than just focusing on gltf area.
+tools are slightly more flexible than just focusing on gltf area. The software
+uses 8 cpus in the following locations:
+1) vertex arrays,
+2) textures in sprites,
+3) url loading,
+4) bitmap loading,
+5) zip decoding,
+6) points,
+7) sprites,
+8) gltf bitmaps decoding from png/jpeg files
 
 <img src="https://meshpage.org/assets/builder_mini.png" width="320px" height="300px"/>
 <img src="https://meshpage.org/assets/sanmiguel.png" width="320px" height="300px"/>
