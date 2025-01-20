@@ -1335,9 +1335,29 @@ width="120" height="120" crossorigin/>
    overflow: scroll;
    scrollbar-width: thin;
 }
+@media screen and (max-width: 480px) {
+.scriptdialog {
+   position: fixed;
+   top: 50px;
+   width: 320px;
+   height: 600px;
+   border-style: solid;
+   border: 2px solid;
+   z-index: 300;
+   background-color: white;
+   overflow: scroll;
+   scrollbar-width: thin;
+}
+}
 .scriptclose {
    position: relative;
    left: 750px;
+}
+@media screen and (max-width: 480px) {
+.scriptclose {
+   position: relative;
+  left: 285px;
+}
 }
 .scriptdialog_inner {
    margin: 30px;
