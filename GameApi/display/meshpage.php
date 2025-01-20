@@ -469,18 +469,36 @@ $label = get_label( $arr );
    echo "</div>";
    echo "</div>";
 
-   echo "<div style=\"width: 85%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
+   echo "<div style=\"width: 55%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
    echo "<div class=\"zipbutton\">";
+   echo "<div class=\"ziphoriz\">";
+   echo "<button type=\"button\" onclick=\"show_script($ii)\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\">Script</button>";
    echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
    echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
    echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
    echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
    echo "</form>";
    echo "</div>";
+   echo "</div>";
    echo "<div id=\"zipprogress" . $ii . "\" style=\"display:none\">";
    echo "<progress class=\"zipbutton zipmargin\" id=\"zipprog" . $ii . "\" max=\"11\" value=\"0\">70%</progress>";
    echo "</div>";
    echo "</a>";
+   echo "</div>";
+   echo "</div>";
+   echo "<div id=\"scriptdialog$ii\" style=\"display:none\" class=\"scriptdialog\">";
+   echo "<div id=\"scriptclose$ii\" class=\"scriptclose\">";
+   echo "<button id=\"scriptclosebutton$ii\" onclick=\"hide_script($ii)\">[X]</button>";
+   echo "</div>";
+   echo "<div class=\"scriptdialog_inner\">";
+   $ump = create_id2("terop",$ii);
+   $scriptdata = file_get_contents("https://meshpage.org/mesh_pre.php?id=$ump");
+   $scriptdata = str_replace("<","&lt;",$scriptdata);
+   $scriptdata = str_replace(">","&gt;",$scriptdata);
+   $scriptdata = str_replace("\n","<br>",$scriptdata);
+   echo "<pre style=\"font-size: 70%;\">";
+   echo "$scriptdata";
+   echo "</pre>";
    echo "</div>";
    echo "</div>";
 }
@@ -530,6 +548,14 @@ echo "<div style=\"height:40px\"></div>";
 echo "</div>";
 echo "<script>\n";
    echo "var g_background = 0;\n";
+echo "function show_script(v) {\n";
+echo "   var d = document.getElementById(\"scriptdialog\" + v);";
+echo "   d.style = \"\";\n";
+echo "}";
+echo "function hide_script(v) {\n";
+echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
+echo "   d.style = \"display:none;\"\n";
+echo "}";
 echo "</script>\n";
 
 ?>
@@ -1274,9 +1300,33 @@ width="120" height="120" crossorigin/>
 .butinner:hover {
    background-color: #ccf;
 }
+.ziphoriz {
+  display: inline-flex;
+}
+.scriptdialog {
+   position: fixed;
+   top: 50px;
+   width: 800px;
+   height: 600px;
+   border-style: solid;
+   border: 2px solid;
+   z-index: 300;
+   background-color: white;
+   overflow: scroll;
+   scrollbar-width: thin;
+}
+.scriptclose {
+   position: relative;
+   left: 750px;
+}
+.scriptdialog_inner {
+   margin: 30px;
+}
+br:after { content: "" }
+br { content: "" }
 .zipbutton {
    position: relative;
-   left: 174px;
+   left: 124px;
    top: -24px;
 }
 .zipmargin {
@@ -1717,6 +1767,9 @@ if ($page!="") {
    methods: {
 
        mesh_display(id,label) {
+          if (g_focus2) {
+	     return;
+	  }
        	  if (g_focus) {
        	  var frm = document.getElementById("form" + id.toString());
 	  frm.submit();
