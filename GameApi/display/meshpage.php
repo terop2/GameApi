@@ -399,7 +399,9 @@ if ($startpos!="") {
 }
 $dupcache = array();
 
-echo "<script>var g_focus=false;</script>";
+echo "<script>var g_focus=false; var g_focus2 = false;</script>";
+
+$display_labels = array();
 
 $iii=0;
 $counter=0;
@@ -433,6 +435,8 @@ $cnt = $cnt + 1;
 $id = create_id( $arr );
 $label = get_label( $arr );
 
+$display_labels[$ii] = $label;
+
    $filename = "<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".png";
    $filename2 = "<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    $ik = $ii;
@@ -444,7 +448,7 @@ $label = get_label( $arr );
    $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
    echo "<div class=\"flex-item\" itemscope itemtype=\"http://schema.org/CreativeWork\">";
    echo "<div class=\"highlight\">";
-   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "')\" itemprop=\"url\">";
+   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
    // BACKGROUND CHANGE
@@ -502,6 +506,9 @@ $label = get_label( $arr );
    echo "</div>";
    echo "</div>";
 }
+echo "<script>";
+echo "var display_labels = " . json_encode($display_labels) . ";";
+echo "</script>";
 
    echo "</div>";
 
@@ -550,9 +557,9 @@ echo "<script>\n";
    echo "var g_background = 0;\n";
 echo "function show_script2(ii,dt) {\n";
 echo "   var d = document.getElementById(\"scriptdialog_inner\" + ii);\n";
-echo "   dt.replaceAll(\"<\",\"&lt;\");\n";
-echo "   dt.replaceAll(\">\",\"&gt;\");\n";
-echo "   dt.replaceAll(\"\\n\",\"<br>\");\n";
+echo "   dt = dt.replaceAll(\"<\",\"&lt;\");\n";
+echo "   dt = dt.replaceAll(\">\",\"&gt;\");\n";
+echo "   dt = dt.replaceAll(\"\\n\",\"<br>\");\n";
 echo "   d.innerHTML = dt;\n";
 echo "}\n";
 echo "function show_script(v,ump) {\n";
@@ -575,6 +582,8 @@ echo "</script>\n";
 <div id="main_display"> <!--v-show="state.mesh"-->
 <div class="display" id="display2" style="display:none">
 <div class="ems" id="canvas2" style="width:330px; height:247px"></div>
+</div>
+<div class="display_title_bar" id="display_title_bar">
 </div>
 <div class="display" id="display" > <!-- style="display:none" -->
 
@@ -1368,6 +1377,11 @@ br { content: "" }
 .tab button.active {
   background-color: #ccc;
 }
+.display_title_bar {
+   font-size: 200%;
+   text-align: center;
+   height: 40px;
+}
 .tabcontent {
   padding: 6px 12px;
   border: 1px solid #ccc;
@@ -1777,7 +1791,9 @@ if ($page!="") {
    },
    methods: {
 
-       mesh_display(id,label) {
+       mesh_display(id,label,display_label) {
+       	  var d = document.getElementById("display_title_bar");
+	  d.innerHTML = display_label;
           if (g_focus2) {
 	     return;
 	  }
@@ -1981,6 +1997,10 @@ var m_id = 0;
 
 function choose_display(id,label, vm,is_popstate)
 {
+   var d = document.getElementById("display_title_bar");
+   d.innerHTML = display_labels[id];
+
+
   m_id = id;
   if (!is_popstate) {
   g_last_id = id;
@@ -2438,6 +2458,10 @@ if ($mobile=="yes") {
   elem.style.height = (hd).toString() + "px";
   elem2.style.width = (wd).toString() + "px";
   elem2.style.height = (hd).toString() + "px";
+
+  var title = document.getElementById("display_title_bar");
+  if (!title) return;
+  title.style.width = (wd).toString() + "px";
 
   var iframe = document.getElementById("canvas");
   if (!iframe) return;
