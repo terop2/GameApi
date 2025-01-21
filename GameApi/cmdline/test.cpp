@@ -10,9 +10,48 @@
 
 #ifdef ANDROID
 #include <android_native_app_glue.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
 #include <SDL2/SDL.h>
+#include <jni.h>
 #endif
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init);
+
+#ifdef ANDROID
+GameApi::RUN android_run = { -1 };
+GameApi::BLK android_blk = { -1 };
+
+#endif
+
+void splitter_iter2(void *arg);
+
+#ifdef ANDROID
+extern GameApi::RUN android_run;
+extern GameApi::BLK android_blk;
+extern GameApi::EveryApi *g_everyapi;
+extern "C" void SDL_Android_Init(JNIEnv*env, jclass cls)
+{
+        SDL_Log("ANDROID Init called");
+}
+extern "C"    void SDL_Android_GLES_Init() {
+        SDL_Log("GLES Init called");
+    }
+    
+    // Try these variants too in case SDL version difference
+extern "C"    void Android_GLES_RenderFrame() {
+        SDL_Log("Alternative render frame called");
+    }
+
+ extern "C"   void Android_GLES_Init() {
+        SDL_Log("Alternative GLES init called");
+    }
+
+extern "C" void Android_RenderFrame();
+
+extern "C" void SDL_Android_GLES_RenderFrame() {
+  Android_RenderFrame();
+}
+#endif
 
 
 void onload(unsigned int, void*, const char* var)
@@ -171,6 +210,107 @@ std::string code=
 
 std::string homepageurl = "";
 
+#ifdef ANDROID
+
+
+class SDLStreamBuf : public std::streambuf {
+protected:
+    std::string buffer;
+
+    virtual int_type overflow(int_type c) {
+        if (c != EOF) {
+            if (c == '\n') {
+                SDL_Log("%s", buffer.c_str());
+                buffer.clear();
+            } else {
+                buffer += static_cast<char>(c);
+            }
+        }
+        return c;
+    }
+
+    virtual int sync() {
+        if (!buffer.empty()) {
+            SDL_Log("%s", buffer.c_str());
+            buffer.clear();
+        }
+        return 0;
+    }
+};
+
+
+AAssetManager* getAssetManager();
+
+void copyAssetToInternal(const char* filename) {
+    AAssetManager* assetManager = getAssetManager();
+    if (!assetManager) {
+        SDL_Log("Failed to initialize AssetManager!");
+        return;
+    }
+
+    AAsset* asset = AAssetManager_open(assetManager, filename, AASSET_MODE_BUFFER);
+    if (!asset) {
+        SDL_Log("Failed to open asset: %s", filename);
+        return;
+    }
+
+    const char* internalStoragePath = SDL_AndroidGetInternalStoragePath();
+    std::string outputPath = std::string(internalStoragePath) + "/" + filename;
+
+    FILE* outputFile = fopen(outputPath.c_str(), "wb");
+    if (!outputFile) {
+        SDL_Log("Failed to open output file: %s", outputPath.c_str());
+        AAsset_close(asset);
+        return;
+    }
+
+    const void* buffer = AAsset_getBuffer(asset);
+    size_t size = AAsset_getLength(asset);
+    fwrite(buffer, 1, size, outputFile);
+
+    fclose(outputFile);
+    AAsset_close(asset);
+
+    SDL_Log("Successfully copied %s to internal storage at %s", filename, outputPath.c_str());
+}
+
+AAssetManager* getAssetManager() {
+    JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+    jobject activity = (jobject)SDL_AndroidGetActivity();
+
+    jclass activityClass = env->GetObjectClass(activity);
+    jmethodID getAssetsMethod = env->GetMethodID(activityClass, "getAssets", "()Landroid/content/res/AssetManager;");
+    jobject assetManager = env->CallObjectMethod(activity, getAssetsMethod);
+    jobject glob = env->NewGlobalRef(assetManager);
+    
+    return AAssetManager_fromJava(env, glob);
+}
+
+std::string loadAsset(const char* filename) {
+    AAssetManager* assetManager = getAssetManager();
+    if (!assetManager) {
+        SDL_Log("Failed to obtain AssetManager!");
+        return "";
+    }
+    SDL_Log("Tero: Trying to open:%s", filename);
+    AAsset* asset = AAssetManager_open(assetManager, filename, AASSET_MODE_BUFFER);
+    if (!asset) {
+        SDL_Log("Failed to open asset: %s", filename);
+        return "";
+    }
+
+    size_t assetLength = AAsset_getLength(asset);
+    const void* buffer = AAsset_getBuffer(asset);
+    const char *buf = (const char*)buffer;
+    // Do something with the asset's content
+    SDL_Log("Asset size: %zu bytes", assetLength);
+    return std::string(buf);
+   
+    // Clean up
+    //AAsset_close(asset);
+}
+#endif
+
 std::string strip_spaces(std::string data)
 {
   std::string res;
@@ -289,12 +429,24 @@ int main(int argc, char *argv[]) {
   int argc=3;
   char *argv[] = { "./SDLAPP", "--file", "script.txt" };
 #endif
-  
-  
-  g_main_thread_id = pthread_self();
 
-  tasks_init();
+#ifdef ANDROID
+  static SDLStreamBuf sdlbuf;
+  std::cout.rdbuf(&sdlbuf);
+#endif
   
+#ifdef ANDROID
+  SDL_Log("Tero1");  
+#endif
+  g_main_thread_id = pthread_self();
+#ifdef ANDROID
+  SDL_Log("Tero2");  
+#endif
+    
+  tasks_init();
+#ifdef ANDROID
+  SDL_Log("Tero3");  
+#endif  
   call_count++;
   //std::cout << "CALL COUNT" << call_count << std::endl;
 #ifndef ANDROID
@@ -309,8 +461,14 @@ int main(int argc, char *argv[]) {
       //std::cout << "Arg #" << i << ":" << argv[i] << std::endl;
       cmd_args.push_back(argv[i]);
     }
-  Env e;
-  EveryApi ev(e);
+#ifdef ANDROID
+  SDL_Log("Tero4");  
+#endif
+  Env *e2 = new Env;
+  Env &e = *e2;
+  EveryApi *ev2 = new EveryApi(e);
+  EveryApi &ev = *ev2;
+  //EveryApi ev(e);
 
   g_everyapi = &ev;
   
@@ -320,6 +478,9 @@ int main(int argc, char *argv[]) {
   sprite_screen_height=900;
   std::string seamless_url="";
   int current_arg = 1; // start after the current filename
+#ifdef ANDROID
+  SDL_Log("Tero5");  
+#endif
   while(cmd_args.size()-current_arg > 0)
     {
       if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--transparent") {
@@ -345,16 +506,30 @@ int main(int argc, char *argv[]) {
 	} else
 	if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--file")
 	  {
-	    std::string arg = cmd_args[current_arg+1];
 #ifdef ANDROID
-	    SDL_RWops* file = SDL_RWFromFile(arg.c_str(), "rb");
-	    if (file) {
-	      Sint64 size = SDL_RWsize(file);
-	      std::vector<char> buffer(size);
-	      SDL_RWread(file, buffer.data(), 1, size);
-	      SDL_RWclose(file);
-    
-	      std::string content(buffer.data(), size);
+  SDL_Log("Tero6");  
+#endif
+  std::string arg = cmd_args[current_arg+1];
+#ifdef ANDROID
+	    copyAssetToInternal(arg.c_str());
+#endif
+	    //std::string arg2 = SDL_AndroidGetExternalStoragePath();
+	    //SDL_Log("Tero:%s", arg2.c_str());
+#ifdef ANDROID
+	    SDL_RWops* file = SDL_RWFromFile(arg.c_str(), "r");
+	    if (!file)
+	      {
+		SDL_Log("Tero file==NULL");
+	      }
+	    Sint64 fileSize = SDL_RWsize(file);
+
+	    std::vector<unsigned char> vec(fileSize+1);
+	    SDL_RWread(file, &vec[0],1,fileSize);
+	    vec[fileSize]='\0';
+
+	   
+	    
+	    std::string content = std::string(vec.begin(),vec.end()); //loadAsset(arg.c_str());
 	      // Use content...
 	      
 	      std::stringstream file2(content);
@@ -363,6 +538,7 @@ int main(int argc, char *argv[]) {
 	      std::string start;
 	      int pos =0;
 	      while(std::getline(file2,line)) {
+		SDL_Log("Tero: %s",line.c_str());
 		std::stringstream ss(line);
 		ss >> start;
 		res+=line+"\n";
@@ -372,6 +548,7 @@ int main(int argc, char *argv[]) {
 	      }
 	      if (pos==0) { std::cout << "RUN not found from the script" << std::endl; }
     
+  SDL_Log("Tero7");  
 
 #else
 	    std::ifstream file(arg.c_str());
@@ -387,9 +564,9 @@ int main(int argc, char *argv[]) {
 		pos = res.size();
 	      }
 	    }
- #ifndef ANDROID
+#ifndef ANDROID
 	    if (pos==0) { std::cout << "RUN not found from the script" << std::endl; return 0; }
- #endif
+#endif
 #endif
 
 	    
@@ -403,9 +580,6 @@ int main(int argc, char *argv[]) {
 
 	    current_arg+=2;
 
-#ifdef ANDROID
-	    }
-#endif
 	    
 	  } else
       if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--code")
@@ -476,8 +650,9 @@ int main(int argc, char *argv[]) {
 	  exit(0);
 	}
     }
-
-
+#ifdef ANDROID
+  SDL_Log("Tero7");  
+#endif
   // initialize window
   if (!find_string(code, "low_framebuffer_run") && !find_string(code, "webgpu_window"))
     {
@@ -490,15 +665,24 @@ int main(int argc, char *argv[]) {
       set_status(3,6);
       g_event_screen_x = w_width; // was -1
       g_event_screen_y = w_height;
+#ifdef ANDROID      
+  SDL_Log("Tero8");  
+#endif
     }
   else
     {
       initialize_low(0);
+#ifdef ANDROID      
+  SDL_Log("Tero8_fail");  
+#endif
     }
   ev.mainloop_api.set_screen_size(w_width, w_height);
   ev.mainloop_api.set_homepage_url(homepageurl);
   ev.mainloop_api.set_seamless_url(seamless_url);
-
+#ifdef ANDROID      
+  SDL_Log("Tero9");  
+#endif
+  
 
 #ifndef LINUX
            g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
@@ -530,6 +714,9 @@ int main(int argc, char *argv[]) {
   std::cout << blk.second << std::endl;
     std::cout << "ERROR: internal error" << std::endl;
   }
+#ifdef ANDROID
+  SDL_Log("Tero10 done");  
+#endif
 }
 
 

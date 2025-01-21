@@ -97,6 +97,10 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef ANDROID
+#define OPENGL_ES 1
+#endif
+
 #ifdef LINUX
 // TEST
 #define OPENGL_ES 1

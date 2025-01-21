@@ -574,6 +574,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
 #endif
   
+  
 #ifndef EMSCRIPTEN
 #ifndef LINUX
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
@@ -583,6 +584,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
+#ifndef ANDROID
 #if !defined(OPENGL_ES) && !defined(EMSCRIPTEN) && !defined(BD_CALVIN_COMPUTER)
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -595,6 +597,13 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
 
 #endif
+#else
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
+
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
+#endif
+  
   //g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #ifdef VIRTUAL_REALITY
   if (vr_init||g_vr_enable) {

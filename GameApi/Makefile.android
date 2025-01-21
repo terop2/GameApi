@@ -21,6 +21,8 @@
 
 CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
 
+ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087/
+
 ANDROID_FLAGS=-DANDROID -D_FORTIFY_SOURCE=2 -I/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
 
 LIBPATH=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/
@@ -192,8 +194,8 @@ WARN = -Wno-undefined-bool-conversion -Wno-self-assign-field -Wno-mismatched-tag
 #-I/usr/include/freetype2 -I/usr/include/SDL2
 # -Ichai/ChaiScript-6.1.0/include
 #
-CCFLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./androidobjs/objs  -DLINUX  -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
-CC2FLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./androidobjs/objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
+CCFLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./androidobjs/objs  -DLINUX  -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CC2FLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./androidobjs/objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
 #`pkg-config gtkmm-2.4 --cflags`
 
 

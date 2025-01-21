@@ -33,13 +33,15 @@ cp $NDK/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-andr
 
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk src/com/meshpage/gameapi_cmdline/MainActivity.java)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk classes.dex)
-cp script.txt android_cmdline/
-(cd android_cmdline ; zip -u ../gameapi_cmdline.apk script.txt)
+cp script.txt android_cmdline/assets/
+(cd android_cmdline ; zip -u ../gameapi_cmdline.apk assets/script.txt)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/arm64-v8a/libSDL2.so)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/arm64-v8a/libmain.so)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/arm64-v8a/libGameApi_android.so)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/arm64-v8a/libfreetype.so)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/arm64-v8a/libc++_shared.so)
+(cd android_cmdline ; zip -u ../gameapi_cmdline.apk res/values/strings.xml)
+(cd android_cmdline ; zip -u ../gameapi_cmdline.apk res/mipmap/ic_launcher.png)
 
 $ANDROID_SDK/build-tools/35.0.0/zipalign -f 4 gameapi_cmdline.apk gameapi_cmdline_aligned.apk
 mv gameapi_cmdline_aligned.apk gameapi_cmdline.apk
