@@ -656,6 +656,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   OpenglLowApi *ogl = g_low->ogl;
   ogl->init();
 
+#ifdef ANDROID
+  g_gpu_vendor = std::string("ANDROID");
+#endif
+  
+#ifndef ANDROID
   const unsigned char *ptr = ogl->glGetString(Low_GL_VENDOR);
   if (ptr && strlen((const char*)ptr)>2) {
     g_gpu_vendor = std::string(ptr,ptr+3);
@@ -666,7 +671,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   std::cout << "GPU Vendor: " << ogl->glGetString(Low_GL_VENDOR) << "(" << g_gpu_vendor << ")" << std::endl;
   std::cout << "GPU Renderer:" << ogl->glGetString(Low_GL_RENDERER)<< std::endl;
   std::cout << "GPU Version:" << ogl->glGetString(Low_GL_VERSION) << std::endl;
-  
+#endif  
 
   vblank = true;
 #if 0

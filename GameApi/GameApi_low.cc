@@ -111,10 +111,16 @@
 
 
 #define COLONCOLON ::
-#ifdef ANDROID
-#define COLONCOLON
-#endif
+//#ifdef ANDROID
+//#define COLONCOLON
+//#endif
 
+
+#ifdef ANDROID
+#define WRAP(a) SDL_GL_GetProcAddress(#a)
+#else
+#define WRAP(a) a
+#endif
 
 #undef glBindAttribLocation
 #undef glActiveTexture
@@ -198,6 +204,8 @@
 
 #undef Mix_PlayChannel
 #undef Mix_HaltChannel
+
+
 
 
 std::string to_str(int val)
@@ -492,10 +500,12 @@ public:
   virtual void cleanup() { }
 
   virtual void glDrawBuffers(int n, const unsigned int *bufs) {
+#ifndef ANDROID
 #ifdef GLEW_HACK
 #define glDrawBuffers GLEW_GET_FUN(__glewDrawBuffers)
 #endif
     COLONCOLON glDrawBuffers((GLsizei)n, bufs);
+#endif
   }
 
 
@@ -718,8 +728,10 @@ public:
 
   virtual void glDrawBuffer(int s)
   {
+#ifndef ANDROID
     map_enums(s);
     COLONCOLON glDrawBuffer(s); 
+#endif
   }
   
 
@@ -798,6 +810,7 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
 #endif
 }
   virtual void glVertexAttribDivisor(int a, int b) { 
+#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glVertexAttribDivisor GLEW_GET_FUN(__glewVertexAttribDivisor)
@@ -805,8 +818,10 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     COLONCOLON glVertexAttribDivisor(a,b); 
     check_err("glVertexAttribDivisor");
 #endif
+#endif
   }
   virtual void glGenVertexArrays(int i, unsigned int *arr) { 
+#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glGenVertexArrays GLEW_GET_FUN(__glewGenVertexArrays)
@@ -814,22 +829,27 @@ virtual void glVertexAttribIPointer(int a, int b, int gl_float, int boolean, con
     COLONCOLON glGenVertexArrays(i,arr); 
     check_err("glGenVertexArrays");
 #endif
+#endif
   }
   virtual void glDeleteVertexArrays(int count, unsigned int *vao) { 
+#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDeleteVertexArrays GLEW_GET_FUN(__glewDeleteVertexArrays)
 #endif
  COLONCOLON glDeleteVertexArrays(count,vao);
 #endif
+#endif
   }
   virtual void glBindVertexArray(int vao) { 
+#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glBindVertexArray GLEW_GET_FUN(__glewBindVertexArray)
 #endif
 COLONCOLON glBindVertexArray(vao); 
     check_err("glBindVertexArray");
+#endif
 #endif
   }
   virtual void glEnableVertexAttribArray(int a) { 
@@ -847,6 +867,7 @@ COLONCOLON glDisableVertexAttribArray(a);
     check_err("glDisableVertexAttribArray");
   }
   virtual void glDrawArraysInstanced(int tri, int a, unsigned int b, unsigned int c) { 
+#ifndef ANDROID
 #ifndef USE_GLES2
 #ifdef GLEW_HACK
 #define glDrawArraysInstanced GLEW_GET_FUN(__glewDrawArraysInstanced)
@@ -856,6 +877,7 @@ COLONCOLON glDrawArraysInstanced(tri,a,b,c);
     check_err("glDrawArraysInstanced");
 #else
     glDrawArrays(tri,a,b);
+#endif
 #endif
   }
   virtual void glDrawArrays(int tri, int a, unsigned int b) { 
@@ -875,6 +897,7 @@ COLONCOLON glDrawArraysInstanced(tri,a,b,c);
     check_err("glDrawElements");
   }
   virtual void glDrawElementsInstanced(int tri, int a, int type, void *indices, int size) {
+#ifndef ANDROID
     map_enums(tri);
     map_enums(type);
     unsigned int tri2 = (unsigned int)tri;
@@ -888,6 +911,7 @@ COLONCOLON glDrawArraysInstanced(tri,a,b,c);
 #endif
 #endif
     check_err("glDrawElementsInstanced");
+#endif
   }
   // bitmaps
   virtual void glReadPixels(int x, int y, int w, int h, int rgba, int mode, void *ptr) { 
@@ -1159,6 +1183,7 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
 
   void* glMapBuffer(int a, int b)
   {
+#ifndef ANDROID
 #ifdef GLEW_HACK
 #define glMapBuffer GLEW_GET_FUN(__glewMapBuffer)
 #endif
@@ -1167,14 +1192,18 @@ virtual void glGetUniformfv(int p, int loc, float *arr) {
     map_enums(b);
     std::cout << "glMapBuffer[mapped](" << a << "," << b << ")" << std::endl;
     return COLONCOLON glMapBuffer(a,b);
+#endif
+    return 0;
   }
   void glUnmapBuffer(int a)
   {
+#ifndef ANDROID
 #ifdef GLEW_HACK
 #define glUnmapBuffer GLEW_GET_FUN(__glewUnmapBuffer)
 #endif
     map_enums(a);
     COLONCOLON glUnmapBuffer(a);
+#endif
   }
 
   
@@ -1201,9 +1230,16 @@ void glGetIntegerv(int i, int *ptr) {
 
       }
   void glFinish() { COLONCOLON glFinish(); }
-  const unsigned char *glGetString( int name ) { 
+  const unsigned char *glGetString( int name ) {
+    static char * ptr = "";
     map_enums(name);
-    return COLONCOLON glGetString(name); }
+#ifdef ANDROID
+    return (unsigned char*)ptr; // HORROR
+#else
+    return COLONCOLON WRAP(glGetString)(name);
+#endif
+    
+  }
 
   void glMatrixLoadIdentityEXT(int i) { }
   void glMatrixMode(int i) { }

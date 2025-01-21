@@ -1,5 +1,5 @@
 export ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087/
-export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2
+export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2_2
 export FREETYPE=/home/terop/cvs/GameApi/GameApi/androiddeps/freetype-2.13.3/build/.libs
 export SDLLIBS=/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2_2/lib
 
@@ -24,6 +24,7 @@ $ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-c
     -lGameApi_android \
     -lfreetype \
     -lSDL2 \
+    -lSDL2main \
     -lGLESv1_CM \
     -lGLESv2 \
     -lEGL \
@@ -32,5 +33,8 @@ $ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android21-c
     -lc \
     -pthread \
     -Wl,--allow-shlib-undefined \
+    -fPIC \
+    -shared -Wl,--no-undefined \
+    -static-libstdc++ \
     -o android_aout
 

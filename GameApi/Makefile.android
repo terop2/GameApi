@@ -263,7 +263,7 @@ dirs:
 
 libGameApi_android.so: $(OFiles) Makefile
 	@echo "  LD     libGameApi_android.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android.so  $(LDFLAGS) -lstdc++
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android.so  $(LDFLAGS) -lstdc++ -static-libstdc++
 	#-lwayland-client
 
 .PHONY: dirs

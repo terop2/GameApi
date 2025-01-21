@@ -10,7 +10,9 @@
 
 #ifdef ANDROID
 #include <android_native_app_glue.h>
+#include <SDL2/SDL.h>
 #endif
+Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init);
 
 
 void onload(unsigned int, void*, const char* var)
@@ -253,12 +255,42 @@ extern int sprite_screen_width;
 extern int sprite_screen_height;
 
 #ifdef ANDROID
+
+static void handle_cmd(struct android_app *app, int32_t cmd) {
+  switch(cmd) {
+  case APP_CMD_INIT_WINDOW:
+    InitSDL2(800,600,false,false,false,false);
+    break;
+  case APP_CMD_TERM_WINDOW:
+    break;
+  }
+}
+
 extern "C" void android_main(struct android_app *app) {
-  int argc = 3;
-  const char *argv[] = { "./android", "--file", "script.txt" };
+
+
+  app->onAppCmd = handle_cmd;
+
+#define SDL_MAIN_HANDLED
+
+    // Pass dummy argc and argv to SDL main
+  char* argv[] = {"SDL_App", "--file", "script.txt"};
+    SDL_SetMainReady();
+    SDL_main(3, argv);
+}
+#endif
+  
+#ifdef ANDROID
+int main(int ac, char *ag[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
+#ifdef ANDROID
+  int argc=3;
+  char *argv[] = { "./SDLAPP", "--file", "script.txt" };
+#endif
+  
+  
   g_main_thread_id = pthread_self();
 
   tasks_init();
@@ -314,6 +346,34 @@ int main(int argc, char *argv[]) {
 	if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--file")
 	  {
 	    std::string arg = cmd_args[current_arg+1];
+#ifdef ANDROID
+	    SDL_RWops* file = SDL_RWFromFile(arg.c_str(), "rb");
+	    if (file) {
+	      Sint64 size = SDL_RWsize(file);
+	      std::vector<char> buffer(size);
+	      SDL_RWread(file, buffer.data(), 1, size);
+	      SDL_RWclose(file);
+    
+	      std::string content(buffer.data(), size);
+	      // Use content...
+	      
+	      std::stringstream file2(content);
+	      std::string res;
+	      std::string line;
+	      std::string start;
+	      int pos =0;
+	      while(std::getline(file2,line)) {
+		std::stringstream ss(line);
+		ss >> start;
+		res+=line+"\n";
+		if (start=="RUN" || start=="BLK") {
+		  pos = res.size();
+		}
+	      }
+	      if (pos==0) { std::cout << "RUN not found from the script" << std::endl; }
+    
+
+#else
 	    std::ifstream file(arg.c_str());
 	    std::string res;
 	    std::string line;
@@ -330,6 +390,9 @@ int main(int argc, char *argv[]) {
  #ifndef ANDROID
 	    if (pos==0) { std::cout << "RUN not found from the script" << std::endl; return 0; }
  #endif
+#endif
+
+	    
 	    res=res.substr(0,pos);
 	    code = insert_enter(strip_spaces(decode(res)));
 	  code = replace_str(code, "&lt;", "<");
@@ -339,6 +402,11 @@ int main(int argc, char *argv[]) {
 	  code = replace_str(code, "&amp;", "&");
 
 	    current_arg+=2;
+
+#ifdef ANDROID
+	    }
+#endif
+	    
 	  } else
       if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--code")
 	{
@@ -468,6 +536,3 @@ int main(int argc, char *argv[]) {
 
 #endif
 
-#ifdef ANDROID
- int main() { }
-#endif
