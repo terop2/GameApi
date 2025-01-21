@@ -31,6 +31,14 @@
 #include <emscripten.h>
 #endif
 
+#ifdef ANDROID
+#include <android_native_app_glue.h>
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#include <SDL2/SDL.h>
+#include <jni.h>
+#endif
+
 #include "Tasks.hh"
 
 extern int g_logo_status;
@@ -38,6 +46,9 @@ extern std::string g_msg_string;
 extern int g_global_face_count;
 extern int g_engine_status;
 extern std::string g_gpu_vendor;
+extern Low_SDL_Window *sdl_window;
+extern Low_SDL_GLContext g_context;
+
 
 #ifdef EMSCRIPTEN
 bool is_mobile_1()
@@ -16504,6 +16515,47 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
   }
 #endif
 }
+
+#ifdef ANDROID
+extern GameApi::RUN android_run;
+extern GameApi::BLK android_blk;
+
+#endif
+
+
+#ifdef ANDROID
+extern "C" void Android_RenderFrame() {
+
+  std::cout << "Android_RenderFrame" << std::endl;
+  
+  static bool firsttime = true;
+
+  if (firsttime) {
+    GameApi::EveryApi &ev = *g_everyapi;
+    GameApi::Env &e = ev.get_env();
+    
+    
+    Splitter *spl2 = find_splitter(e, android_run);
+    spl2->e = &e;
+    spl2->ev = &ev;
+    spl2->Init();
+    splitter_current = spl2;
+
+    firsttime = false;
+  }
+  g_low->sdl->SDL_GL_MakeCurrent(sdl_window,g_context);
+
+  OpenglLowApi *ogl = g_low->ogl;
+  ogl->glClearColor(1.0f, 0.0f, 0.0f, 1.0f);  // Try red to make it obvious
+  ogl->glClear(Low_GL_COLOR_BUFFER_BIT);
+        
+  g_low->sdl->SDL_GL_SwapWindow(sdl_window);  // Make sure we're swapping
+	
+  splitter_iter2((void*)splitter_current);
+  
+}
+#endif
+
 
 class KeyFrameMesh : public VertexAnimNode
 {
