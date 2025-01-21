@@ -8,6 +8,11 @@
 #endif
 #include <cmath>
 
+#ifdef ANDROID
+#include <android_native_app_glue.h>
+#endif
+
+
 void onload(unsigned int, void*, const char* var)
 {
   std::cout << "POST RESULT: " << var << std::endl;
@@ -248,7 +253,9 @@ extern int sprite_screen_width;
 extern int sprite_screen_height;
 
 #ifdef ANDROID
-extern "C" int main(int argc, char *argv[]) {
+extern "C" void android_main(struct android_app *app) {
+  int argc = 3;
+  const char *argv[] = { "./android", "--file", "script.txt" };
 #else
 int main(int argc, char *argv[]) {
 #endif
@@ -258,7 +265,9 @@ int main(int argc, char *argv[]) {
   
   call_count++;
   //std::cout << "CALL COUNT" << call_count << std::endl;
+#ifndef ANDROID
   if (call_count>1) return 0;
+#endif
   set_status(1,6);
   //std::cout << "COMMANDLINE ARGS: " << std::endl;
   int s = argc;
@@ -318,7 +327,9 @@ int main(int argc, char *argv[]) {
 		pos = res.size();
 	      }
 	    }
+ #ifndef ANDROID
 	    if (pos==0) { std::cout << "RUN not found from the script" << std::endl; return 0; }
+ #endif
 	    res=res.substr(0,pos);
 	    code = insert_enter(strip_spaces(decode(res)));
 	  code = replace_str(code, "&lt;", "<");
@@ -457,3 +468,6 @@ int main(int argc, char *argv[]) {
 
 #endif
 
+#ifdef ANDROID
+ int main() { }
+#endif
