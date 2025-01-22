@@ -10,7 +10,9 @@
 #include <atomic>
 
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define VAO 1
+#endif
 #endif
 
 #ifdef EMSCRIPTEN
@@ -2619,10 +2621,10 @@ GameApi::PinIn RenderVertexArray::prepare(int id, bool isnull, int tri_count_, i
       counter++;			    
     }
     }
-    }
+    
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 #endif
-
+    }
 
 #ifdef VAO
     ogl->glBindVertexArray(0);

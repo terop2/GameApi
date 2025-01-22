@@ -84,6 +84,10 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef ANDROID
+#define OPENGL_ES 1
+#endif
+
 
 //#define WAYLAND 1
 

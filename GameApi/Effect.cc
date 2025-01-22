@@ -34,7 +34,9 @@
 #include "Graph.hh"
 
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define VAO 1
+#endif
 #endif
 
 #include "GameApi_low.hh"

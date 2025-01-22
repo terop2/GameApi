@@ -55,6 +55,10 @@
 #define OPENGL_ES 1
 #endif
 
+#ifdef ANDROID
+#define OPENGL_ES 1
+#endif
+
 
 #ifdef WINDOWS
 //#define OPENGL_ES 1
