@@ -2679,6 +2679,15 @@ GameApi::ML GameApi::MainLoopApi::glClear(GameApi::EveryApi &ev)
 
 extern bool g_transparent_indication;
 
+GameApi::ML GameApi::MainLoopApi::android_landscape_scale(EveryApi &ev, ML ml)
+{
+  MN I1=ev.move_api.mn_empty();
+  MN I2=ev.move_api.rotatez(I1,1.5708);
+  MN I3=ev.move_api.scale2(I2,0.8,1,1);
+  ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
+ return I4;
+}
+
 GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
 {
   if (g_transparent) {
