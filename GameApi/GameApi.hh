@@ -353,6 +353,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML android_landscape_scale(EveryApi &ev, ML ml);
   ML disable_resize(ML ml);
   ML turn_to_meters_default(EveryApi &ev, ML ml, P p);
   ML turn_to_meters(EveryApi &ev, ML ml, float sx1,float sx2, float sy1,float sy2, float sz1,float sz2);

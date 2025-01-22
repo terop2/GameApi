@@ -16361,8 +16361,10 @@ EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML 
 {
   float screen_x = ev.mainloop_api.get_screen_sx();
   float screen_y = ev.mainloop_api.get_screen_sy();
-
   ml = ev.mainloop_api.display_background(ev,ml);
+#ifdef ANDROID
+  ml = ev.mainloop_api.android_landscape_scale(ev,ml);
+#endif
   if (g_user_id && std::string(g_user_id)==std::string("TeroPulkkinen")) {
     ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
     }
