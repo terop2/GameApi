@@ -76,6 +76,24 @@ or
   # full_deploy_win32.bat
 
 Android cmdline: (but requires sdl2 and freetype compilation)
+  1) SDL2 compilation:
+   export ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087
+   cmake \
+    -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+    -DANDROID_ABI=arm64-v8a \
+    -DANDROID_PLATFORM=31 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DSDL_HIDAPI=ON \
+    -DSDL_JOYSTICK=ON \
+    -DSDL_GAMECONTROLLER=ON \
+    -DSDL_ANDROID=ON \
+    -S ../SDL-release-2.30.11 -B .
+    make
+ 2) freetype compilation:
+  CC=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang++ ../configure --host=aarch64-linux-android --with-brotli=no --with-bzip2=no --with-zlib=no --with-png=no
+ 3) Changing paths for sdl2, ndk, sdk and freetype in Makefile.android, cmdline4/build.sh and cmdline4/build_package.sh
+ 4) Compile package + push it to android device:
   make -f Makefile.android
   (cd cmdline4; ./ammake.sh)
 
