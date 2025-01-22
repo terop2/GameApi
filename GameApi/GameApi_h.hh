@@ -43,11 +43,14 @@
 #endif
 
 //#ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define VAO 1
-//#endif
+#endif
 
 #ifndef RASPI
+#ifndef ANDROID
 #define HAS_INSTANCING 1
+#endif
 #endif
 
 //#ifndef RASPI

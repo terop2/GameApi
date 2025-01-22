@@ -38,9 +38,9 @@ GL_PKGCONFIG = $(GL_PATH)$(GL_NAME)
 endif
 SDL_PATH=$(LIBPATH)
 SDL_NAME=libSDL2-2.0.so
-SDL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2/include
+SDL_CFLAGS= -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include-config-release/SDL2 -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include-config-release -I/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/include/SDL2
 #`pkg-config --cflags sdl2`
-SDL_PKGCONFIG= -L/home/terop/cvs/GameApi/GameApi/androiddeps/SDL2/lib
+SDL_PKGCONFIG= -L/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild/lib
 #`pkg-config --libs sdl2`
 ifndef SDL_PKGCONFIG
 SDL_PKGCONFIG = $(SDL_PATH)$(SDL_NAME)

@@ -21,7 +21,9 @@
 #define BATCHING 1
 
 #ifndef EMSCRIPTEN
+#ifndef ANDROID
 #define VAO 1
+#endif
 #endif
 
 #ifndef RASPI

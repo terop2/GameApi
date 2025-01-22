@@ -399,7 +399,7 @@ extern int sprite_screen_height;
 static void handle_cmd(struct android_app *app, int32_t cmd) {
   switch(cmd) {
   case APP_CMD_INIT_WINDOW:
-    InitSDL2(800,600,false,false,false,false);
+    //InitSDL2(800,600,false,false,false,false);
     break;
   case APP_CMD_TERM_WINDOW:
     break;

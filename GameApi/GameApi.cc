@@ -16009,7 +16009,7 @@ public:
     if (no_draw_count==0) {
       if (debug_enabled) status+="NO_DRAW_COUNT0 ";
       if (!g_transparent) {
-	env->ev->mainloop_api.clear_3d(0xff000000);
+	env->ev->mainloop_api.clear_3d(0xff0000ff);
       } else
 	{
 	env->ev->mainloop_api.clear_3d_transparent();
@@ -16154,7 +16154,7 @@ public:
     
       if (status != old_status)
 	{
-	  //std::cout << status << std::endl;
+	  std::cout << status << std::endl;
 	  old_status = status;
 	}
     }
