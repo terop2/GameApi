@@ -94,7 +94,8 @@ Android cmdline: (but requires sdl2 and freetype compilation)
   CC=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang++ ../configure --host=aarch64-linux-android --with-brotli=no --with-bzip2=no --with-zlib=no --with-png=no
  3) Changing paths for sdl2, ndk, sdk and freetype in Makefile.android, cmdline4/build.sh and cmdline4/build_package.sh
  4) Compile package + push it to android device:
-  make -f Makefile.android
+  make -f Makefile.android clean
+  make -f Makefile.android -j 8
   (cd cmdline4; ./ammake.sh)
 
 
