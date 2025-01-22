@@ -75,6 +75,11 @@ How we normally push our code to hosting space:
 or
   # full_deploy_win32.bat
 
+Android cmdline: (but requires sdl2 and freetype compilation)
+  make -f Makefile.android
+  (cd cmdline4; ./ammake.sh)
+
+
 ```
 
 ### Important urls:
