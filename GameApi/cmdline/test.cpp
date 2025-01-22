@@ -419,7 +419,12 @@ extern "C" void android_main(struct android_app *app) {
     SDL_main(3, argv);
 }
 #endif
-  
+
+#ifdef ANDROID
+void popen_curl_init();
+#endif
+
+
 #ifdef ANDROID
 int main(int ac, char *ag[]) {
 #else
@@ -430,6 +435,11 @@ int main(int argc, char *argv[]) {
   char *argv[] = { "./SDLAPP", "--file", "script.txt" };
 #endif
 
+#ifdef ANDROID
+  popen_curl_init();
+#endif
+
+  
 #ifdef ANDROID
   static SDLStreamBuf sdlbuf;
   std::cout.rdbuf(&sdlbuf);

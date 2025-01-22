@@ -22,6 +22,8 @@
 CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
 
 ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087/
+ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
 
 ANDROID_FLAGS=-DANDROID -D_FORTIFY_SOURCE=2 -I/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
 
@@ -76,7 +78,7 @@ endif
 WARNINGOPTS = -Wno-unused-private-field
 
 
-LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
+LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG) $(ANDROID_CURL_LIB)
 
 CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
@@ -194,8 +196,8 @@ WARN = -Wno-undefined-bool-conversion -Wno-self-assign-field -Wno-mismatched-tag
 #-I/usr/include/freetype2 -I/usr/include/SDL2
 # -Ichai/ChaiScript-6.1.0/include
 #
-CCFLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./androidobjs/objs  -DLINUX  -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
-CC2FLAGS = -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./androidobjs/objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CCFLAGS = $(ANDROID_CURL_INCLUDE) -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./androidobjs/objs  -DLINUX  -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CC2FLAGS = $(ANDROID_CURL_INCLUDE) -DANDROID $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./androidobjs/objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
 #`pkg-config gtkmm-2.4 --cflags`
 
 
@@ -265,7 +267,7 @@ dirs:
 
 libGameApi_android.so: $(OFiles) Makefile
 	@echo "  LD     libGameApi_android.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android.so  $(LDFLAGS) -lstdc++ -static-libstdc++
+	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android.so  $(LDFLAGS) -lstdc++ -static-libstdc++ -lcurl -lssl -lcrypto -lz
 	#-lwayland-client
 
 .PHONY: dirs
