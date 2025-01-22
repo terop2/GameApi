@@ -16027,6 +16027,10 @@ public:
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
 #endif
+
+#ifdef ANDROID
+	if (e.ch==1073742094 && e.type==0x300) { env->exit=true; return 0; }
+#endif
 	
 	if (g_prepare_done)
 	  env->ev->mainloop_api.event_ml(env->mainloop, e);
