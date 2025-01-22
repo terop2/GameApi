@@ -3,6 +3,8 @@ export ANDROID_SDK=/home/terop/Android/Sdk
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 export SDL=/home/terop/cvs/GameApi/GameApi/androiddeps/SDLBuild
 export NDK=/home/terop/Android/Sdk/ndk/28.0.12674087
+export ANDROID_CURL_LIB=/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/lib
+
 # Assuming ANDROID_SDK is set to your SDK path
 AAPT=$ANDROID_SDK/build-tools/35.0.0/aapt
 JAVAC="javac"

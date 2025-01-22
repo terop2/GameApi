@@ -2346,7 +2346,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
       }
 
       return; }
-    //std::cout << "Loading url: " << url <<std::endl;
+    std::cout << "Loading url: " << url <<std::endl;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url);
     //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf->size()==0) {
@@ -2913,6 +2913,11 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, std::string *use
   userp->append((char*)contents,size*nmemb);
   return size*nmemb;
 }
+size_t HeaderCallback(void *contents, size_t size, size_t nmemb, std::string *userp)
+{
+  userp->append((char*)contents,size*nmemb);
+  return size*nmemb;
+}
 
 
 void popen_curl_init() {
@@ -2921,33 +2926,48 @@ void popen_curl_init() {
 
 std::string popen_curl_replacement(std::string url, bool headeronly)
 {
+  std::cout << "popen_curl_replacement 1" << std::endl;
   CURLcode res;
+  std::string headers;
   std::string readBuffer;
   CURL *curl;
   curl = curl_easy_init();
+  std::cout << "popen_curl_replacement 2" << std::endl;
 
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-
+  std::cout << "popen_curl_replacement 3" << std::endl;
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     if (headeronly)
       {
+  std::cout << "popen_curl_replacement 4" << std::endl;
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, HeaderCallback);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headers);
+  std::cout << "popen_curl_replacement 5" << std::endl;
       } else {
-      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-    }
+  std::cout << "popen_curl_replacement 6" << std::endl;
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+  std::cout << "popen_curl_replacement 7" << std::endl;
+      }
+  std::cout << "popen_curl_replacement 8" << std::endl;
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
+  std::cout << "popen_curl_replacement 9" << std::endl;
 
     res = curl_easy_perform(curl);
+  std::cout << "popen_curl_replacement 10" << std::endl;
 
     if (res != CURLE_OK) {
       std::cout << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
     } else {
+  std::cout << "popen_curl_replacement 11" << std::endl;
       curl_easy_cleanup(curl);
+      std::cout << headers << std::endl;
+      if (headeronly) return headers;
       return readBuffer;
     }
     
@@ -2996,6 +3016,7 @@ long long load_size_from_url(std::string url)
     std::string s(vec2.begin(),vec2.end());
 #endif
 #ifdef ANDROID
+    long long num = 1;
     std::string s = popen_curl_replacement(url,true); // headers only
 #endif
     //std::cout << "Headers:" << s << std::endl;
@@ -3012,7 +3033,9 @@ long long load_size_from_url(std::string url)
 	//std::cout << "Got num: " << num << std::endl;
       }
     }
+#ifndef ANDROID
     }
+#endif
     //std::cout << "POPEN1 END" << url << std::endl;
     return num;
 }
@@ -3270,6 +3293,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #ifdef HAS_POPEN
 #ifndef ANDROID
 
+    std::cout << "NOT IN ANDROID" << std::endl;
+    
 #ifdef WINDOWS
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
     std::string cmd2  = "..\\curl\\curl.exe";
@@ -3303,6 +3328,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     pclose(f2);
     std::string s(vec2.begin(),vec2.end());
 #else // ANDROID
+    std::cout << "IS IN ANDROID" << std::endl;
     std::string s = popen_curl_replacement(url,true);
 #endif
     //std::cout << "Headers:" << s << std::endl;
@@ -3416,7 +3442,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #endif
 #else
 
-    // no popen
+#ifdef ANDROID
+    std::string s = popen_curl_replacement(url,false);
+    *buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
+#endif
+
+// no popen
 #endif
 
     //  std::cout << "POPEN3b END " << url << std::endl;
