@@ -96,6 +96,8 @@ Android cmdline: (but requires sdl2 and freetype and libcurl compilation)
     git clone https://github.com/Microsoft/vcpkg.git
     ./vcpkg/bootstrap-vcpkg.sh
     ./vcpkg/vcpkg install curl:arm64-android
+    (then headers are in ./vcpkg/installed/arm64-android/include)
+    (then libs are in ./vcpkg/installed/arm64-android/lib)
  3) Changing paths for sdl2, ndk, sdk and freetype in Makefile.android, cmdline4/build.sh and cmdline4/build_package.sh
  4) Compile package + push it to android device:
   make -f Makefile.android clean
