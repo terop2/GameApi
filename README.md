@@ -48,15 +48,6 @@ You can find the display.html from the generated .zip files.
   - apt-get install zip
   - apt-get install tar
 
-### Android runtime
-
-https://meshpage.org/gameapi_xmas.apk
-
-(Note, apk files are just zip files which have been signed and aligned with ndk's
-tools. The apk has script.txt which can be changed, if you uncompress the zip file,
-and compress again with different script.txt file. But then you need ndk's tools to
-sign and align the zip file or else android don't accept it.)
-(see cmdline4/build_package.sh for details)
 
 ### Compiling
 ```
