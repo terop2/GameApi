@@ -20,6 +20,16 @@ uses 8 cpus in the following locations:
 <img src="https://meshpage.org/assets/sanmiguel.png" width="320px" height="300px"/>
 <img src="https://meshpage.org/assets/suitcase.png" width="320px" height="300px"/>
 
+### Android runtime
+
+  https://meshpage.org/gameapi_xmas.apk
+
+  (given that android security horror prevents changing script.txt file from
+  within the apk file, you'll need someone who has full ndk installed and build
+  of gameapi near. Thus, if you have designed a script with gameapi builder and
+  would want it to work on android, send the codegen script to
+  terop@kotiposti.net as email, and I'll install it to apk file and send
+  you the resulting apk in return mail.)
 
 ### Change your web page
 ```
