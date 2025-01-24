@@ -12685,7 +12685,7 @@ public:
   {
     std::string out;
     if (!next->is_fragment()) {
-      std::cout << "ERROR:" << funcname << " " << next->func_name() << std::endl;
+      //std::cout << "ERROR:" << funcname << " " << next->func_name() << std::endl;
     }
     out+=next->func_call();
     std::stringstream ss;
