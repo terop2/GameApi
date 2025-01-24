@@ -16158,7 +16158,7 @@ public:
     
       if (status != old_status)
 	{
-	  std::cout << status << std::endl;
+	  //std::cout << status << std::endl;
 	  old_status = status;
 	}
     }
@@ -18936,6 +18936,19 @@ public:
     ev.shader_api.unuse(s3);
 
   }
+  GameApi::PT map_point(GameApi::EveryApi &ev, GameApi::PT p)
+  {
+    /*#ifdef ANDROID
+    Matrix m2 = Matrix::ZRotation(1.5708);
+    Matrix m3 = Matrix::Scale(-1.0,-0.5,1);
+    Matrix mm = m3*m2;
+    Matrix mmi = Matrix::Inverse(mm);
+    Point p1 = Point(ev.point_api.pt_x(p),ev.point_api.pt_y(p),ev.point_api.pt_z(p))*mmi;
+    return ev.point_api.point(p1.x,p1.y,p1.z);
+    #else*/
+    return p;
+    /*#endif*/
+  }
   virtual void handle_event(MainLoopEvent &e)
   {
     if (point.id==-1) {
@@ -18949,7 +18962,7 @@ public:
     ee.type = e.type;
     ee.ch = e.ch;
     ee.button = e.button;
-    ee.cursor_pos = point;
+    ee.cursor_pos = map_point(ev,point);
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
   }
@@ -19066,6 +19079,22 @@ public:
     ev.shader_api.unuse(s3);
 
   }
+  GameApi::PT map_point(GameApi::EveryApi &ev,GameApi::PT p)
+  {
+    /*
+#ifdef ANDROID
+    Matrix m2 = Matrix::ZRotation(1.5708);
+    Matrix m3 = Matrix::Scale(-1.0,-0.5,1);
+    Matrix mm = m3*m2;
+    Matrix mmi = Matrix::Inverse(mm);
+    Point p1 = Point(ev.point_api.pt_x(p),ev.point_api.pt_y(p),ev.point_api.pt_z(p))*mmi;
+    return ev.point_api.point(p1.x,p1.y,p1.z);
+    #else*/
+    return p;
+    /*#endif*/
+  }
+
+  
   virtual void handle_event(MainLoopEvent &e)
   {
     if (point.id==-1) {
@@ -19079,7 +19108,7 @@ public:
     ee.type = e.type;
     ee.ch = e.ch;
     ee.button = e.button;
-    ee.cursor_pos = point;
+    ee.cursor_pos = map_point(ev,point);
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
   }
@@ -19123,6 +19152,23 @@ public:
   void HeavyPrepare() { }
 
   void Prepare() { next->Prepare(); next2->Prepare(); }
+  GameApi::PT map_point(GameApi::EveryApi &ev, GameApi::PT p)
+  {
+    /*
+#ifdef ANDROID
+    Matrix m2 = Matrix::ZRotation(1.5708);
+    Matrix m3 = Matrix::Scale(-1.0,-0.5,1);
+    Matrix mm = m3*m2;
+    Matrix mmi = Matrix::Inverse(mm);
+    Point p1 = Point(ev.point_api.pt_x(p),ev.point_api.pt_y(p),ev.point_api.pt_z(p))*mmi;
+    return ev.point_api.point(p1.x,p1.y,p1.z);
+#else
+    */
+    return p;
+    /*#endif*/
+  }
+
+
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
@@ -19219,7 +19265,7 @@ public:
     ee.type = e.type;
     ee.ch = e.ch;
     ee.button = e.button;
-    ee.cursor_pos = point;
+    ee.cursor_pos = map_point(ev,point);
     GameApi::InteractionApi::quake_movement_event(ev,ee,pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     next->handle_event(e);
     next2->handle_event(e);

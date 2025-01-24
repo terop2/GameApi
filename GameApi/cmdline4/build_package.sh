@@ -52,4 +52,3 @@ keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -
 # Sign the APK (you'll need a keystore)
 $ANDROID_SDK/build-tools/35.0.0/apksigner sign --ks debug.keystore gameapi_cmdline.apk
 
-#(cd android_cmdline; jarsigner -keystore ../debug.keystore ../gameapi_cmdline.apk androiddebugkey)
