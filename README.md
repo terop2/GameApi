@@ -86,6 +86,7 @@ or
   # full_deploy_win32.bat
 
 Android cmdline: (but requires sdl2 and freetype and libcurl compilation)
+                 (current status: at least quake_ml[|2|3] are broken.)
   1) SDL2 compilation:
    export ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087
    cmake \
