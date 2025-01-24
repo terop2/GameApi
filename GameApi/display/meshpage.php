@@ -448,6 +448,7 @@ $display_labels[$ii] = $label;
    $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
    echo "<div class=\"flex-item\" itemscope itemtype=\"http://schema.org/CreativeWork\">";
    echo "<div class=\"highlight\">";
+   echo "<div style=\"width: 100%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
    echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
    echo "<div class=\"border\">";
    echo "<div class=\"image\">";
@@ -474,7 +475,6 @@ $display_labels[$ii] = $label;
    echo "</div>";
    $ump = create_id2("terop",$ii);
 
-   echo "<div style=\"width: 55%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$label</div>";
    echo "<div class=\"zipbutton\">";
    echo "<div class=\"ziphoriz\">";
    echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\">Script</button>";
@@ -1367,7 +1367,7 @@ br { content: "" }
 .zipbutton {
    position: relative;
    left: 124px;
-   top: -24px;
+   top: 10px;
 }
 .zipmargin {
    z-index: 100;

@@ -51,6 +51,8 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
   }
 #endif
 
+
+  
   int scr_x_0 = 0.0;
   int scr_x_1 = screen_x/3.0;
   int scr_x_2 = screen_x*2.0/3.0;
@@ -137,10 +139,18 @@ void GameApi::InteractionApi::quake_movement_event(EveryApi &ev, MainLoopApi::Ev
 void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, float &pos_y, float &rot_y, Quake_data &data, float &speed_x, float &speed_y, float speed, float rot_speed)
 {
  float delta = ev.mainloop_api.get_delta_time()*7.0;
+#ifdef ANDROID
+ std::swap(data.backward,data.left);
+ std::swap(data.forward,data.right);
+#endif
   if (data.backward) { pos_y += delta*speed_y; pos_x+=delta*speed_x; }
   if (data.forward) { pos_y -= delta*speed_y; pos_x-=delta*speed_x; }
   if (data.left) { rot_y += delta*rot_speed; }
   if (data.right) { rot_y -= delta*rot_speed; }
+#ifdef ANDROID
+ std::swap(data.backward,data.left);
+ std::swap(data.forward,data.right);
+#endif
 
   if (data.side_left) { pos_y += delta*speed*sin(rot_y); pos_x += delta*speed*cos(rot_y); }
   if (data.side_right) { pos_y += delta*speed*sin(rot_y+3.14159); pos_x += delta*speed*cos(rot_y+3.14159); }
