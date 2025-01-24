@@ -3293,7 +3293,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #ifdef HAS_POPEN
 #ifndef ANDROID
 
-    std::cout << "NOT IN ANDROID" << std::endl;
+    //std::cout << "NOT IN ANDROID" << std::endl;
     
 #ifdef WINDOWS
     std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
