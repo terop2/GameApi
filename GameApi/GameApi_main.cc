@@ -7,6 +7,9 @@
 
 #define NO_MV 1
 
+#define ANDROID_LANDSCAPE 1
+//#define ANDROID_PORTRAIT 1
+
 void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset);
 void play_midi(void *ptr);
 
@@ -2681,11 +2684,22 @@ extern bool g_transparent_indication;
 
 GameApi::ML GameApi::MainLoopApi::android_landscape_scale(EveryApi &ev, ML ml)
 {
+#ifdef ANDROID_LANDSCAPE
   MN I1=ev.move_api.mn_empty();
   MN I2=ev.move_api.rotatez(I1,1.5708);
   MN I3=ev.move_api.scale2(I2,-1.0,-0.5,1);
   ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
  return I4;
+#endif
+#ifdef ANDROID_PORTRAIT
+  MN I1=ev.move_api.mn_empty();
+  MN I2=ev.move_api.rotatez(I1,1.5708);
+  MN I3=ev.move_api.scale2(I2,-1.0,-0.5,1);
+  ML I4=ev.move_api.move_ml_projection(ev,ml,I3,1,10.0);
+ return I4;
+#endif
+
+ return ml;
 }
 
 GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)

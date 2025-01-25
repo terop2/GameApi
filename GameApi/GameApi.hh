@@ -1878,6 +1878,7 @@ public:
   IMPORT M get_matrix(MN n, float time, float delta_time);
   IMPORT ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
   IMPORT ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
+  IMPORT ML move_ml_projection(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
   IMPORT P move_ml_p(EveryApi &ev, P p, MN move, float time);
   IMPORT ML repeat_ml(EveryApi &ev, ML ml, float duration);
   IMPORT ML key_activate_ml(EveryApi &ev, ML ml, MN mn, int key, float duration);
