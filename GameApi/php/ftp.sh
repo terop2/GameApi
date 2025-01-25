@@ -33,7 +33,8 @@ copy_it gltf_to_zip_result.php
 copy_it gltf_to_zip.php 
 copy_it mesh_display.php 
 copy_it mesh_background.php 
-copy_it mesh_addtext.php 
+copy_it mesh_addtext.php
+copy_it mesh_apk.php
 copy_it builder_display.php 
 copy_it mesh_stats.php 
 copy_it mesh_pre.php 

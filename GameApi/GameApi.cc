@@ -2773,6 +2773,120 @@ private:
 };
 
 
+class MoveMLProjection : public MainLoopItem
+{
+public:
+  MoveMLProjection(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int clone_count, float time_delta) : e(e), ev(ev), next(next), mn(mn), clone_count(clone_count), time_delta(time_delta) 
+  {
+    firsttime = true;
+    firsttime2 = false;
+    start_time = 0.0; //ev.mainloop_api.get_time();
+  }
+  void reset_time(float time) {
+    start_time = time*1000.0; //ev.mainloop_api.get_time();
+  }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &env)
+  {
+    next->handle_event(env);
+    Movement *move = find_move(e,mn);
+    move->event(env);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &env)
+  {
+    Movement *move = find_move(e,mn);
+    move->frame(env);
+
+    if (firsttime) {
+      firsttime2 = true;
+      //reset_time(env.time);
+    }
+    if (!firsttime && firsttime2)
+      {
+	reset_time(env.time);
+	firsttime2 = false;
+      }
+    firsttime = false;
+    for(int i=0;i<clone_count;i++)
+      {
+	//GameApi::SH s1;
+	//s1.id = env.sh_texture;
+	//GameApi::SH s11;
+	//s11.id = env.sh_texture_2d;
+	//GameApi::SH s2;
+	//s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    //GameApi::SH s4;
+    //s4.id = next->shader_id();
+		    
+    float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
+    //if (time<last_time) time=last_time;
+    //last_time = time;
+    //std::cout << time << std::endl;
+    GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+    //Matrix mat_i = find_matrix(e, mat);
+    //std::cout << mat_i << std::endl;
+    GameApi::M m2 = add_matrix2(e, env.in_P);
+    //std::cout << env.env << std::endl;
+
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+#ifndef NO_MV
+#ifdef HAS_MATRIX_INVERSE
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+#endif
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_P", mat2);
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_P", mat2);
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_P", mat2);
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_P", mat2);
+    if (s4.id != -1)
+      {
+    ev.shader_api.use(s4);
+    ev.shader_api.set_var(s4, "in_P", mat2);
+      }
+#endif
+
+    //Matrix old_in_MV = env.in_MV;
+    MainLoopEnv ee = env;
+    ee.in_P = find_matrix(e, mat2);
+    
+    //Matrix old_env = env.env;
+    //float old_time = env.time;
+    //ee.env = find_matrix(e,mat2); /* * env.env*/;
+    ee.time = env.time + i*time_delta/10.0;
+    next->execute(ee);
+    ev.shader_api.unuse(s3);
+    //env.env = old_env;
+    //env.time = old_time;
+    //env.in_MV = old_in_MV;
+      }
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  GameApi::MN mn;
+  int clone_count;
+  float time_delta;
+  bool firsttime;
+  bool firsttime2;
+  float last_time=0.0f;
+};
+
+
 class ColorML : public MainLoopItem
 {
 public:
@@ -3489,6 +3603,11 @@ EXPORT GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, 
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move, clone_count, time_delta));
+}
+EXPORT GameApi::ML GameApi::MovementNode::move_ml_projection(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new MoveMLProjection(e,ev,item, move, clone_count, time_delta));
 }
 EXPORT GameApi::P GameApi::MovementNode::move_ml_p(EveryApi &ev, GameApi::P p, GameApi::MN move, float time)
 {
