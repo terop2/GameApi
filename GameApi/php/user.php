@@ -202,6 +202,25 @@ function get_addtext ( $arr )
    } else { $addtext=""; }
    return $addtext;
 }
+
+function get_apk ( $arr )
+{
+  $filename = "./user_data/user_" . $arr["username"] . "/android" . $arr["index"] . ".apk";
+  if (file_exists($filename)) {
+     $data = file_get_contents($filename);
+     $apk = $data;
+   } else { $apk=""; }
+   return $apk;
+}
+
+function get_apk_status ( $arr )
+{
+  $filename = "./user_data/user_" . $arr["username"] . "/android" . sprintf("%d",$arr["index"]) . ".apk";
+  if (file_exists($filename)) {
+     return "1";
+   } else { return "0"; }
+ return "0";
+}
 function get_label( $arr )
 {
   $filename = "./user_data/user_" . $arr["username"] . "/label" . $arr["index"] . ".txt";

@@ -399,11 +399,25 @@ if ($startpos!="") {
 }
 $dupcache = array();
 
-echo "<script>var g_focus=false; var g_focus2 = false; var g_focus3 = false;";
+echo "<script>var g_focus=false; var g_focus2 = false; var g_focus3 = false;\n";
+echo "var g_focus4 = false;\n";
 echo "function show_copy3(ii,dt) {\n";
 echo " var d2 = document.getElementById(\"copybutton\" + ii);\n";
 echo " dt = dt.trim();\n";
 echo "   if (dt==\"\"||dt==\";\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
+echo "}\n";
+echo "function show_apk3(ii,dt) {\n";
+echo " var d2 = document.getElementById(\"apkbutton\" + ii);\n";
+echo " dt = dt.trim();\n";
+//echo " console.log(dt);\n";
+echo "   if (dt==\"0\"||dt==\"\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
+echo "}\n";
+echo "function show_apk(ii,ump) {\n";
+echo " window.location.href=\"/mesh_apk.php?id=\" + ii.toString() + \"&full=true\";";
+echo "}\n";
+echo "function handleSubmit(ii) {\n";
+echo "  e.preventDefault(); \n";
+echo "  console.log(\"handlesubmit(\" + ii.toString + \")\");\n";
 echo "}\n";
 echo "</script>";
 
@@ -498,8 +512,30 @@ echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_fo
    echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
    echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
    echo "</form>";
+
+
+   //echo "<form onsubmit=\"handleSubmit(" . $ii . ");\" id=\"formapk" . $ii . "\" method=\"GET\" action=\"/mesh_apk.php\">";
+   //echo "<input type=\"hidden\" name=\"id\" value=\"" . $ii . "\"/>";
+   //echo "<input type=\"hidden\" name=\"full\" value=\"true\"/>";
+   //echo "<input id=\"apkbutton" . $ii ."\" type=\"submit\" value=\"Apk\" onfocus=\"window.g_focus4=true;\" onblur=\"window.g_focus4=false;\"/>";
+   //echo "</form>";
+
+echo "<button id=\"apkbutton$ii\" type=\"button\" onclick=\"show_apk($ii,'$ump')\" onfocus=\"g_focus4=true;\" onblur=\"g_focus4=false;\">Apk</button>";
+   echo "<script>";
+         $arr = array("username" => "terop", "index" => $_GET["id"]);
+      $res = addtext_date($arr);
+      echo "\nvar dt = \"$res;\";\n";
+echo "   fetch(\"https://meshpage.org/mesh_apk.php?id=$ii&full=false\")\n";
+echo "     .then(x => x.text())\n";
+echo "     .then(y => show_apk3($ii,y));\n";
+echo "</script>";
+
+
    echo "</div>";
    echo "</div>";
+
+
+
    echo "<div id=\"zipprogress" . $ii . "\" style=\"display:none\">";
    echo "<progress class=\"zipbutton zipmargin\" id=\"zipprog" . $ii . "\" max=\"11\" value=\"0\">70%</progress>";
    echo "</div>";
@@ -1449,7 +1485,7 @@ br:after { content: "" }
 br { content: "" }
 .zipbutton {
    position: relative;
-   left: 94px;
+   left: 54px;
    top: 10px;
 }
 .zipmargin {
@@ -1897,6 +1933,9 @@ if ($page!="") {
        mesh_display(id,label,display_label) {
        	  var d = document.getElementById("display_title_bar");
 	  d.innerHTML = display_label;
+	  if (g_focus4) {
+	     return;
+	  }
 	  if (g_focus3) {
 	     return;
 	  }
