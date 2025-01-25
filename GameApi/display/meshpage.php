@@ -403,11 +403,13 @@ echo "<script>var g_focus=false; var g_focus2 = false; var g_focus3 = false;\n";
 echo "var g_focus4 = false;\n";
 echo "function show_copy3(ii,dt) {\n";
 echo " var d2 = document.getElementById(\"copybutton\" + ii);\n";
+echo " if (d2==null) return;\n";
 echo " dt = dt.trim();\n";
 echo "   if (dt==\"\"||dt==\";\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
 echo "}\n";
 echo "function show_apk3(ii,dt) {\n";
 echo " var d2 = document.getElementById(\"apkbutton\" + ii);\n";
+echo " if (d2==null) return;\n";
 echo " dt = dt.trim();\n";
 //echo " console.log(dt);\n";
 echo "   if (dt==\"0\"||dt==\"\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
@@ -419,6 +421,7 @@ echo "function handleSubmit(ii) {\n";
 echo "  e.preventDefault(); \n";
 echo "  console.log(\"handlesubmit(\" + ii.toString + \")\");\n";
 echo "}\n";
+//echo "console.log(apk_status);\n";
 echo "</script>";
 
 $display_labels = array();
@@ -499,12 +502,12 @@ $display_labels[$ii] = $label;
    echo "<div class=\"ziphoriz\">";
    echo "<button id=\"copybutton$ii\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\">&copy;</button>";
    echo "<script>";
-         $arr = array("username" => "terop", "index" => $_GET["id"]);
-      $res = addtext_date($arr);
-      echo "\nvar dt = \"$res;\";\n";
-echo "   fetch(\"https://meshpage.org/mesh_addtext.php?id=$ump&\" + dt )\n";
-echo "     .then(x => x.text())\n";
-echo "     .then(y => show_copy3($ii,y));\n";
+//         $arr = array("username" => "terop", "index" => $_GET["id"]);
+//      $res = addtext_date($arr);
+//      echo "\nvar dt = \"$res;\";\n";
+//echo "   fetch(\"https://meshpage.org/mesh_addtext.php?id=$ump&\" + dt )\n";
+//echo "     .then(x => x.text())\n";
+//echo "     .then(y => show_copy3($ii,y));\n";
 echo "</script>";
 echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\">Script</button>";
    echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
@@ -525,9 +528,11 @@ echo "<button id=\"apkbutton$ii\" type=\"button\" onclick=\"show_apk($ii,'$ump')
          $arr = array("username" => "terop", "index" => $_GET["id"]);
       $res = addtext_date($arr);
       echo "\nvar dt = \"$res;\";\n";
-echo "   fetch(\"https://meshpage.org/mesh_apk.php?id=$ii&full=false\")\n";
-echo "     .then(x => x.text())\n";
-echo "     .then(y => show_apk3($ii,y));\n";
+
+//echo "   fetch(\"https://meshpage.org/mesh_apk.php?id=$ii&full=false\")\n";
+//echo "     .then(x => x.text())\n";
+//echo "     .then(y => show_apk3($ii,y));\n";
+//echo "show_apk3($ii,apk_status[$ii]);\n";
 echo "</script>";
 
 
@@ -562,6 +567,19 @@ echo "</script>";
    echo "</div>";
 }
 echo "<script>";
+echo "function js_parse(arr) {\n";
+echo "  apk_status = JSON.parse(arr);\n";
+echo "  apk_status.keys().forEach((key)=>{show_apk3(key,apk_status[key]);});";
+echo "}\n";
+echo "function js2_parse(arr) {\n";
+echo "  addtext_status = JSON.parse(arr);\n";
+echo "  addtext_status.keys().forEach((key)=>{show_copy3(key,addtext_status[key]);});";
+echo "}\n";
+echo "var apk_status=[];\n";
+echo "fetch(\"https://meshpage.org/mesh_addtext.php?id=0&full=array\")\n";
+echo "     .then(x=>x.text()).then(y=>js2_parse(y));\n";
+echo "fetch(\"https://meshpage.org/mesh_apk.php?id=0&full=array\")\n";
+echo "     .then(x=>x.text()).then(y=>js_parse(y));\n";
 echo "var display_labels = " . json_encode($display_labels) . ";";
 echo "</script>";
 
