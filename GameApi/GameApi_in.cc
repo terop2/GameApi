@@ -2,6 +2,9 @@
 #include "GameApi.hh"
 #include "GameApi_h.hh"
 
+#define ANDROID_LANDSCAPE 1
+//#define ANDROID_PORTRAIT 1
+
 void GameApi::InteractionApi::wasd_movement_event(MainLoopApi::Event &e,
 				   float &pos_x, float &pos_y, Wasd_data &data, float speed_x, float speed_y)
 {
@@ -140,16 +143,20 @@ void GameApi::InteractionApi::quake_movement_frame(EveryApi &ev, float &pos_x, f
 {
  float delta = ev.mainloop_api.get_delta_time()*7.0;
 #ifdef ANDROID
+#ifdef ANDROID_LANDSCAPE
  std::swap(data.backward,data.left);
  std::swap(data.forward,data.right);
+#endif
 #endif
   if (data.backward) { pos_y += delta*speed_y; pos_x+=delta*speed_x; }
   if (data.forward) { pos_y -= delta*speed_y; pos_x-=delta*speed_x; }
   if (data.left) { rot_y += delta*rot_speed; }
   if (data.right) { rot_y -= delta*rot_speed; }
 #ifdef ANDROID
+#ifdef ANDROID_LANDSCAPE
  std::swap(data.backward,data.left);
  std::swap(data.forward,data.right);
+#endif
 #endif
 
   if (data.side_left) { pos_y += delta*speed*sin(rot_y); pos_x += delta*speed*cos(rot_y); }

@@ -399,7 +399,13 @@ if ($startpos!="") {
 }
 $dupcache = array();
 
-echo "<script>var g_focus=false; var g_focus2 = false;</script>";
+echo "<script>var g_focus=false; var g_focus2 = false; var g_focus3 = false;";
+echo "function show_copy3(ii,dt) {\n";
+echo " var d2 = document.getElementById(\"copybutton\" + ii);\n";
+echo " dt = dt.trim();\n";
+echo "   if (dt==\"\"||dt==\";\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
+echo "}\n";
+echo "</script>";
 
 $display_labels = array();
 
@@ -477,7 +483,16 @@ $display_labels[$ii] = $label;
 
    echo "<div class=\"zipbutton\">";
    echo "<div class=\"ziphoriz\">";
-   echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\">Script</button>";
+   echo "<button id=\"copybutton$ii\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\">&copy;</button>";
+   echo "<script>";
+         $arr = array("username" => "terop", "index" => $_GET["id"]);
+      $res = addtext_date($arr);
+      echo "\nvar dt = \"$res;\";\n";
+echo "   fetch(\"https://meshpage.org/mesh_addtext.php?id=$ump&\" + dt )\n";
+echo "     .then(x => x.text())\n";
+echo "     .then(y => show_copy3($ii,y));\n";
+echo "</script>";
+echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\">Script</button>";
    echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
    echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
    echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
@@ -496,12 +511,16 @@ $display_labels[$ii] = $label;
    echo "<button id=\"scriptclosebutton$ii\" onclick=\"hide_script($ii)\">[X]</button>";
    echo "</div>";
    echo "<div  class=\"scriptdialog_inner\">";
-   //$scriptdata = file_get_contents("https://meshpage.org/mesh_pre.php?id=$ump");
-   //$scriptdata = str_replace("<","&lt;",$scriptdata);
-   //$scriptdata = str_replace(">","&gt;",$scriptdata);
-   //$scriptdata = str_replace("\n","<br>",$scriptdata);
    echo "<pre id=\"scriptdialog_inner$ii\" style=\"font-size: 70%;\">";
-   //echo "$scriptdata";
+   echo "</pre>";
+   echo "</div>";
+   echo "</div>";
+   echo "<div id=\"copydialog$ii\" style=\"display:none\" class=\"copydialog\">";
+   echo "<div id=\"copyclose$ii\" class=\"copyclose\">";
+   echo "<button id=\"copyclosebutton$ii\" onclick=\"hide_copy($ii)\">[X]</button>";
+   echo "</div>";
+   echo "<div  class=\"copydialog_inner\">";
+   echo "<pre id=\"copydialog_inner$ii\" style=\"font-size: 70%;\">";
    echo "</pre>";
    echo "</div>";
    echo "</div>";
@@ -572,6 +591,31 @@ echo "     .then(y => show_script2(v,y));\n";
 echo "}";
 echo "function hide_script(v) {\n";
 echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
+echo "   d.style = \"display:none;\"\n";
+echo "}";
+echo "function show_copy2(ii,dt) {\n";
+echo "   var d = document.getElementById(\"copydialog_inner\" + ii);\n";
+echo "   dt = dt.replaceAll(\"<p>\",\"\");\n";
+echo "   dt = dt.replaceAll(\"</p>\",\"\");\n";
+echo "   dt = dt.replaceAll(\"<\",\"&lt;\");\n";
+echo "   dt = dt.replaceAll(\">\",\"&gt;\");\n";
+echo "   dt = dt.replaceAll(\"\\n\",\"<br>\");\n";
+echo "   dt = dt.trim();\n";
+echo "   d.innerHTML = dt;\n";
+echo "}\n";
+echo "function show_copy(v,ump) {\n";
+echo "   var d = document.getElementById(\"copydialog\" + v);\n";
+echo "   d.style = \"\";\n";
+      $arr = array("username" => "terop", "index" => $_GET["id"]);
+      $res = addtext_date($arr);
+      echo "var dt = \"$res;\";";
+echo "   fetch(\"https://meshpage.org/mesh_addtext.php?id=\" + ump + \"&\" + dt )\n";
+echo "     .then(x => x.text())\n";
+echo "     .then(y => show_copy2(v,y));\n";
+
+echo "}";
+echo "function hide_copy(v) {\n";
+echo "   var d = document.getElementById(\"copydialog\" + v);\n";
 echo "   d.style = \"display:none;\"\n";
 echo "}";
 echo "</script>\n";
@@ -1362,11 +1406,50 @@ width="120" height="120" crossorigin/>
 .scriptdialog_inner {
    margin: 30px;
 }
+.copydialog {
+   position: fixed;
+   top: 50px;
+   width: 800px;
+   height: 200px;
+   border-style: solid;
+   border: 2px solid;
+   z-index: 300;
+   background-color: white;
+   overflow: scroll;
+   scrollbar-width: thin;
+}
+@media screen and (max-width: 480px) {
+.copydialog {
+   position: fixed;
+   top: 50px;
+   width: 320px;
+   height: 600px;
+   border-style: solid;
+   border: 2px solid;
+   z-index: 300;
+   background-color: white;
+   overflow: scroll;
+   scrollbar-width: thin;
+}
+}
+.copyclose {
+   position: relative;
+   left: 750px;
+}
+@media screen and (max-width: 480px) {
+.copyclose {
+   position: relative;
+  left: 285px;
+}
+}
+.copydialog_inner {
+   margin: 30px;
+}
 br:after { content: "" }
 br { content: "" }
 .zipbutton {
    position: relative;
-   left: 124px;
+   left: 94px;
    top: 10px;
 }
 .zipmargin {
@@ -1814,6 +1897,9 @@ if ($page!="") {
        mesh_display(id,label,display_label) {
        	  var d = document.getElementById("display_title_bar");
 	  d.innerHTML = display_label;
+	  if (g_focus3) {
+	     return;
+	  }
           if (g_focus2) {
 	     return;
 	  }

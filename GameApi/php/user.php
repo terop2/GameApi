@@ -543,6 +543,7 @@ function page_header_plain( $pos )
 function page_header( $pos )
 {
   global $sitename;
+  global $site;
    echo '<!DOCTYPE html>';
    echo "<html>";
    echo "<head>";
