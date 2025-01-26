@@ -934,6 +934,7 @@ EXPORT float GameApi::MainLoopApi::get_time()
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
+  if (pp->delta_time > 28.0/100.0) return 28.0/100.0;
   return pp->delta_time;
 }
 EXPORT void GameApi::MainLoopApi::reset_time()
