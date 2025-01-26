@@ -1632,6 +1632,7 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   std::string path = getenv("homepath");
   start=drive+path+"\\";
 #endif
+#ifndef ANDROID
 #ifdef LINUX
   const char *dd = getenv("BUILDER_DOCKER_DIR");
   std::string dockerdir = dd?dd:"";
@@ -1644,6 +1645,11 @@ std::vector<GameApi::TXID> GameApi::PolygonApi::mtl_parse(EveryApi &ev, std::vec
   if (val) { std::cout << "system returned: " << val << std::endl; }
   start+="/";
 #endif
+#endif
+#ifdef ANDROID
+  start="/data/local/tmp/";
+#endif
+
   /*
     std::string a_filename = start+a_ss2.str();
     //std::cout << "Saving: " << a_filename << std::endl;
@@ -1799,6 +1805,7 @@ public:
   std::string path = getenv("homepath");
   start=drive+path+"\\";
 #endif
+#ifndef ANDROID
 #ifdef LINUX
   const char *dd = getenv("BUILDER_DOCKER_DIR");
   std::string dockerdir = dd?dd:"";
@@ -1812,7 +1819,11 @@ public:
     std::cout << "system returned: " << val << std::endl;
   start+="/";
 #endif
-   
+#endif
+#ifdef ANDROID
+  start="/data/local/tmp/";
+#endif
+  
   std::string a_filename = start+a_ss2.str();
   //std::cout << "Saving: " << a_filename << std::endl;
   /*
@@ -1840,11 +1851,17 @@ public:
 	del_vec.push_back(dt);
 	dt->t = this;
 	dt->i = b_i;
-	std::string s = mat[b_i].map_Ka;
+	std::string s;
+	  //if (mat[b_i].map_Ka)
+	s = mat[b_i].map_Ka;
 	if (s.size()==0) s=mat[b_i].map_Kd;
 
-	std::string s2 = mat[b_i].map_d;
-	std::string s3 = mat[b_i].map_bump;
+	std::string s2;
+	  //if (mat[b_i].map_d)
+	s2= mat[b_i].map_d;
+	std::string s3;
+	  //if (mat[b_i].map_bump)
+	s3= mat[b_i].map_bump;
 
 	
 	bool skip=false;

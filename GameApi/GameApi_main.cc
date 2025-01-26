@@ -906,11 +906,30 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 //  time = pp->frame_time;
 //}
 
-EXPORT float GameApi::MainLoopApi::get_time()
+float cur_time = 0.0;
+EXPORT void GameApi::MainLoopApi::step()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
-  return pp->frame_time-time;
-  //return g_low->sdl->SDL_GetTicks()-time;
+  float target_time = pp->frame_time-time;
+  //std::cout << cur_time << " " << target_time << std::endl;
+  if (cur_time < target_time)
+    {
+    }
+  if (target_time > cur_time+28.0)
+    {
+      cur_time += 28.0;
+    } else
+    {
+      cur_time = target_time;
+    }
+}
+
+EXPORT float GameApi::MainLoopApi::get_time()
+{
+  //MainLoopPriv *pp = (MainLoopPriv*)priv;
+  //float val = pp->frame_time-time;
+  //return val;
+  return cur_time;
 }
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
@@ -1064,6 +1083,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
   p->current_time = float(time)/100.0;
 
   p->previous_frame_time = time;
+  step();
 #endif
 #if 0
   unsigned long long time = g_low->sdl->SDL_GetPerformanceCounter();
@@ -2687,7 +2707,7 @@ GameApi::ML GameApi::MainLoopApi::android_landscape_scale(EveryApi &ev, ML ml)
 #ifdef ANDROID_LANDSCAPE
   MN I1=ev.move_api.mn_empty();
   MN I2=ev.move_api.rotatez(I1,1.5708);
-  MN I3=ev.move_api.scale2(I2,-1.0,-0.5,1);
+  MN I3=ev.move_api.scale2(I2,-1.0,-0.7,1);
   ML I4=ev.move_api.move_ml(ev,ml,I3,1,10.0);
  return I4;
 #endif

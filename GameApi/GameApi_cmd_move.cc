@@ -100,6 +100,18 @@ std::vector<GameApiItem*> moveapi_functions()
 			 { "", "", "0.0", "30.0", "0.0", "1.0" },
 			 "MN", "move_api", "interpolate"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::android_landscape_rotate,
+			 "android_landscape",
+			 { "next" },
+			 { "MN" },
+			 { "" },
+			 "MN", "move_api", "android_landscape_rotate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::android_landscape_rotate_inv,
+			 "inv_android_landscape",
+			 { "next" },
+			 { "MN" },
+			 { "" },
+			 "MN", "move_api", "android_landscape_rotate_inv"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::local_move,
 			 "local_move",
 			 { "ev", "inner_ml", "center_points" },

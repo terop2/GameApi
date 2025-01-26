@@ -1212,12 +1212,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #endif
 #ifndef EMSCRIPTEN
 #ifndef LINUX
+#ifndef ANDROID
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::webcam_txid_win,
 			 "vr_webcam_win",
 			 { "ev", "sx", "sy", "num" },
 			 { "EveryApi&", "int", "int", "int" },
 			 { "ev", "800", "600", "0" },
 			 "TXID", "texture_api", "webcam_txid_win"));
+#endif
 #endif
 #endif
 #if 0
