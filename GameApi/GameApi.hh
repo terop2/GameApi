@@ -353,6 +353,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  void step();
   ML android_landscape_scale(EveryApi &ev, ML ml);
   ML disable_resize(ML ml);
   ML turn_to_meters_default(EveryApi &ev, ML ml, P p);
@@ -1835,6 +1836,8 @@ class MovementNode
 {
 public:
   MovementNode(Env &e) : e(e) {}
+  IMPORT MN android_landscape_rotate(MN next);
+  IMPORT MN android_landscape_rotate_inv(MN next);
   IMPORT MN mn_mouse_y(FF fetcher, MN move, float start_x, float end_x, float start_y, float end_y, float start_val, float end_val);
   IMPORT MN whack_a_mole_start(EveryApi &ev, MN prev, float &time);
   IMPORT MN whack_a_mole_rotate_around(EveryApi &ev, MN prev, int num, float &time);

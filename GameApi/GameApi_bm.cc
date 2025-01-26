@@ -6672,6 +6672,7 @@ public:
   std::string home  = getenv("TEMP");
   std::string filename_with_path = home + std::string("\\_gameapi_builder\\gif_anim_tmp.gif");
 #endif
+#ifndef ANDROID
 #ifdef LINUX
   const char *dd = getenv("BUILDER_DOCKER_DIR");
   std::string dockerdir = dd?dd:"";
@@ -6684,6 +6685,10 @@ public:
   home+="/";
   if (dockerdir!="") home=dockerdir;
   std::string filename_with_path = home + std::string(".gameapi_builder/gif_anim_tmp.gif");
+#endif
+#endif
+#ifdef ANDROID
+  std::string filename_with_path = "/data/local/tmp/gif_anim_tmp.gif";
 #endif
   
   int index = e.add_to_download_bar(filename);

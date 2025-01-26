@@ -20,6 +20,10 @@
 #include <iomanip>
 #include <atomic>
 
+#define ANDROID_LANDSCAPE 1
+//#define ANDROID_PORTRAIT 1
+
+
 #ifdef LOOKING_GLASS
 #define HP_LOAD_LIBRARY
 #include <holoplay.h>
@@ -1868,6 +1872,27 @@ EXPORT GameApi::MN GameApi::MovementNode::rotate_wave(MN next, float start_time,
 }
 
 
+EXPORT GameApi::MN GameApi::MovementNode::android_landscape_rotate(MN next)
+{
+#ifdef ANDROID_LANDSCAPE
+  MN i1 = rotatez(next,1.5708);
+  MN i2 = scale2(i1,-1.0,-0.7,1);
+  return i2;
+#else
+  return next;
+#endif
+}
+EXPORT GameApi::MN GameApi::MovementNode::android_landscape_rotate_inv(MN next)
+{
+#ifdef ANDROID_LANDSCAPE
+  MN i1 = scale2(next,1.0/-1.0,1.0/-0.7,1);
+  MN i2 = rotatez(i1,-1.5708);
+  return i2;
+#else
+  return next;
+#endif
+}
+
 EXPORT GameApi::MN GameApi::MovementNode::rotate(MN next, float start_time, float end_time, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, float angle)
 {
   Movement *nxt = find_move(e, next);
@@ -2705,6 +2730,8 @@ public:
     //std::cout << env.env << std::endl;
 
     GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+
+
 #ifndef NO_MV
 #ifdef HAS_MATRIX_INVERSE
     GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
@@ -18836,19 +18863,27 @@ public:
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const
   {
-    return pts.pts[val].size();
+    if (val>=0&&val<pts.pts.size())
+      return pts.pts[val].size();
+    return 0;
   }
   virtual Point Pos(int i) const
   {
-    return pts.pts[val][i];
+    if (val>=0&&val<pts.pts.size())
+      return pts.pts[val][i];
+    return Point(0.0,0.0,0.0);
   }
   virtual unsigned int Color(int i) const
   {
-    return pts.color[val][i];
+    if (val>=0&&val<pts.color.size())
+      return pts.color[val][i];
+    return 0xffffffff;
   }
   virtual Vector Normal(int i) const
   {
-    return pts.normal[val][i];
+    if (val>=0&&val<pts.normal.size()&&i>=0&&i<pts.normal[val].size())
+      return pts.normal[val][i];
+    return Vector(1.0,0.0,0.0);
   }
 private:
   VoxelToPTS &pts;
@@ -19008,12 +19043,23 @@ public:
     quake_rot_y = rot_y;
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
+#ifdef ANDROID_LANDSCAPE
+    GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+    GameApi::M land_rot = ev.matrix_api.zrot(1.5708);
+    GameApi::M land_rot_inv = ev.matrix_api.zrot(-1.5708);
+    GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y+400);
+#else
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
     GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y+400);
+#endif
     GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
-    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
-
+#ifdef ANDROID_LANDSCAPE
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(land_rot_inv,ev.matrix_api.mult(trans,rot_y2)),land_rot),trans2),scale));
+#else
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(matrix_api.mult(matrix_api.mult(trans,rot_y2),trans2),scale));
+				      
+#endif					
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
     //GameApi::SH s1;
     //s1.id = e.sh_texture;
@@ -19149,12 +19195,22 @@ public:
     
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
+#ifdef ANDROID_LANDSCAPE
+    GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+    GameApi::M land_rot = ev.matrix_api.zrot(1.5708);
+    GameApi::M land_rot_inv = ev.matrix_api.zrot(-1.5708);
+    GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y+400);
+#else
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
     GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
+#endif
     GameApi::M trans2 = ev.matrix_api.trans(0.0,current_y,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
+#ifdef ANDROID_LANDSCAPE
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(land_rot_inv,ev.matrix_api.mult(trans,rot_y2)),land_rot),trans2),scale));
+#else
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
-
+#endif
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
     //GameApi::SH s1;
     //s1.id = e.sh_texture;
@@ -19297,14 +19353,24 @@ public:
     quake_rot_y = rot_y;
     MainLoopEnv eee = e;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
+#ifdef ANDROID_LANDSCAPE
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+    GameApi::M land_rot = ev.matrix_api.zrot(1.5708);
+    GameApi::M land_rot_inv = ev.matrix_api.zrot(-1.5708);
+#else
+    GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
+#endif
     GameApi::M trans_y2 = ev.matrix_api.trans(p.x,p.y,p.z);
+#ifdef ANDROID_LANDSCAPE
+    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(land_rot_inv,ev.matrix_api.mult(rot_y2,trans_y2)),land_rot));
+#else
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(rot_y2,trans_y2));
+#endif
     GameApi::M trans = ev.matrix_api.trans(pos_x, 0.0, pos_y +400.0);
     GameApi::M trans2 = ev.matrix_api.trans(0.0,0.0,-400.0);
     GameApi::M scale = ev.matrix_api.scale(1.0,1.0,-1.0);
     GameApi::M res2 = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(trans,trans2),scale));
-
+    
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
     //GameApi::SH s1;
     //s1.id = e.sh_texture;

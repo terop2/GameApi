@@ -1,6 +1,5 @@
 
 
-
 #include "GameApi_low.hh"
 
 #ifndef ARM
@@ -1233,12 +1232,12 @@ void glGetIntegerv(int i, int *ptr) {
       }
   void glFinish() { COLONCOLON glFinish(); }
   const unsigned char *glGetString( int name ) {
-    static char * ptr = "";
+    static const char * ptr = "";
     map_enums(name);
-#ifdef ANDROID
-    return (unsigned char*)ptr; // HORROR
-#else
+#ifndef ANDROID
     return COLONCOLON WRAP(glGetString)(name);
+#else
+    return (unsigned char*)ptr; // HORROR
 #endif
     
   }

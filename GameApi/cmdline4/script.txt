@@ -1,13 +1,95 @@
-P I1=ev.polygon_api.cube(-200,200,-200,200,-200,200);
-P I0=ev.polygon_api.recalculate_normals(I1);
-LI I2=ev.lines_api.from_polygon(I0);
-MT I3=ev.materials_api.m_def(ev);
-MT I4=ev.materials_api.phong(ev,I3,0.0,0.0,1,ff008800,ff88ff88,5);
-PT I5=ev.point_api.point(0.0,0.0,0.0);
-MT I6=ev.materials_api.fur(ev,I4,I5,20,1.59,1500,2,4);
-ML I7=ev.polygon_api.line_to_cone2(ev,I2,40,15,I6);
-MN I8=ev.move_api.mn_empty();
-MN I9=ev.move_api.rotate(I8,0,10000,0,0,0,0,1,0,628);
-MN I10=ev.move_api.rotate(I9,0,10000,0,0,0,0,0,1,2000);
-ML I11=ev.move_api.move_ml(ev,I7,I10,1,10.0);
-RUN I12=ev.blocker_api.game_window2(ev,I11,false,false,0.0,100000.0);
+TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/santa_model.glb);
+
+ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
+
+MN I3=ev.move_api.mn_empty();
+MN I68=ev.move_api.android_landscape_rotate(I3);
+
+MN I4=ev.move_api.rotate(I68,0,10,0,0,0,0,1,0,0.7);
+
+MN I5=ev.move_api.rotate(I4,10,30,0,0,0,0,1,0,-1.4);
+
+MN I6=ev.move_api.rotate(I5,30,40,0,0,0,0,1,0,0.7);
+MN I69=ev.move_api.android_landscape_rotate_inv(I6);
+
+MN I7=ev.move_api.time_repeat(I69,0,40);
+
+MN I8=ev.move_api.trans2(I7,0,0,-30);
+
+ML I9=ev.move_api.move_ml(ev,I2,I8,1,10.0);
+
+TF I10=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/christmas_tree.glb);
+
+ML I11=ev.mainloop_api.gltf_mesh_all(ev,I10,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
+
+MN I12=ev.move_api.mn_empty();
+
+MN I13=ev.move_api.trans2(I12,-250,0,0);
+
+ML I14=ev.move_api.move_ml(ev,I11,I13,1,10.0);
+
+MN I15=ev.move_api.trans2(I12,250,0,0);
+
+ML I16=ev.move_api.move_ml(ev,I11,I15,1,10.0);
+
+ML I17=ev.mainloop_api.array_ml(ev,std::vector<ML>{I11,I14,I16});
+
+MN I18=ev.move_api.mn_empty();
+
+MN I19=ev.move_api.trans2(I18,0,0,-350);
+
+ML I20=ev.move_api.move_ml(ev,I17,I19,1,10.0);
+
+ML I21=ev.mainloop_api.or_elem_ml(ev,I9,I20);
+
+TF I22=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/unopenable_gift.glb);
+
+ML I23=ev.mainloop_api.gltf_mesh_all(ev,I22,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
+
+MN I24=ev.move_api.mn_empty();
+
+MN I25=ev.move_api.scale2(I24,0.3,0.3,0.3);
+
+MN I26=ev.move_api.trans2(I25,-250,-120,-150);
+
+ML I27=ev.move_api.move_ml(ev,I23,I26,1,10.0);
+
+MN I28=ev.move_api.trans2(I25,250,-120,-150);
+
+ML I29=ev.move_api.move_ml(ev,I23,I28,1,10.0);
+
+ML I30=ev.mainloop_api.or_elem_ml(ev,I27,I29);
+
+ML I31=ev.mainloop_api.or_elem_ml(ev,I21,I30);
+
+MN I32=ev.move_api.mn_empty();
+
+MN I33=ev.move_api.scale2(I32,2,2,2);
+
+MN I34=ev.move_api.translate(I33,0,100,240,0,0);
+
+MN I35=ev.move_api.translate(I34,100,400,-480,0,0);
+
+MN I36=ev.move_api.translate(I35,400,500,240,0,0);
+
+MN I37=ev.move_api.time_repeat(I36,0,500);
+
+ML I38=ev.move_api.move_ml(ev,I31,I37,1,10.0);
+
+P I39=ev.polygon_api.quad_z(-450,450,0,100,150);
+
+FI I40=ev.font_api.load_font(http://meshpage.org/assets/Chunkfive.otf,20,20);
+
+BM I41=ev.font_api.draw_text_string(I40,Merry_Christmas,5,30);
+
+BM I42=ev.bitmap_api.flip_y(I41);
+
+MT I43=ev.materials_api.texture(ev,I42,1.0);
+
+MT I44=ev.materials_api.fade(ev,I43,0,10,15,25);
+
+ML I45=ev.materials_api.bind(I39,I44);
+
+ML I46=ev.mainloop_api.or_elem_ml(ev,I38,I45);
+
+RUN I47=ev.blocker_api.game_window2(ev,I46,false,false,0.0,100000.0);
