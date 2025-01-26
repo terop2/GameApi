@@ -7,8 +7,10 @@
 
 #define NO_MV 1
 
+#ifdef ANDROID
 #define ANDROID_LANDSCAPE 1
 //#define ANDROID_PORTRAIT 1
+#endif
 
 void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsigned char> &patchset);
 void play_midi(void *ptr);

@@ -2,8 +2,10 @@
 #include "GameApi.hh"
 #include "GameApi_h.hh"
 
+#ifdef ANDROID
 #define ANDROID_LANDSCAPE 1
 //#define ANDROID_PORTRAIT 1
+#endif
 
 void GameApi::InteractionApi::wasd_movement_event(MainLoopApi::Event &e,
 				   float &pos_x, float &pos_y, Wasd_data &data, float speed_x, float speed_y)

@@ -20,8 +20,10 @@
 #include <iomanip>
 #include <atomic>
 
+#ifdef ANDROID
 #define ANDROID_LANDSCAPE 1
 //#define ANDROID_PORTRAIT 1
+#endif
 
 
 #ifdef LOOKING_GLASS
@@ -19057,7 +19059,10 @@ public:
 #ifdef ANDROID_LANDSCAPE
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(land_rot_inv,ev.matrix_api.mult(trans,rot_y2)),land_rot),trans2),scale));
 #else
-    GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(matrix_api.mult(matrix_api.mult(trans,rot_y2),trans2),scale));
+    GameApi::M res = ev.matrix_api.mult(env_m,
+					ev.matrix_api.mult(
+							   ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2)
+							   ,scale));
 				      
 #endif					
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
