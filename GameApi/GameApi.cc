@@ -16157,7 +16157,7 @@ public:
     if (no_draw_count==0) {
       if (debug_enabled) status+="NO_DRAW_COUNT0 ";
       if (!g_transparent) {
-	env->ev->mainloop_api.clear_3d(0xff0000ff);
+	env->ev->mainloop_api.clear_3d(0xff000000);
       } else
 	{
 	env->ev->mainloop_api.clear_3d_transparent();
@@ -16700,7 +16700,7 @@ extern "C" void Android_RenderFrame() {
   g_low->sdl->SDL_GL_MakeCurrent(sdl_window,g_context);
 
   OpenglLowApi *ogl = g_low->ogl;
-  ogl->glClearColor(1.0f, 0.0f, 0.0f, 1.0f);  // Try red to make it obvious
+  ogl->glClearColor(0.0f, 0.0f, 0.0f, 1.0f);  // Try red to make it obvious
   ogl->glClear(Low_GL_COLOR_BUFFER_BIT);
         
   g_low->sdl->SDL_GL_SwapWindow(sdl_window);  // Make sure we're swapping

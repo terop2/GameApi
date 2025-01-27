@@ -996,6 +996,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ML", "{zero,one,src_color,one_minus_src_color,dst_color,one_minus_dst_color,src_alpha,one_minus_src_alpha,dst_alpha,one_minus_dst_alpha,constant_color,one_minus_constant_color,constant_alpha}", "{zero,one,src_color,one_minus_src_color,dst_color,one_minus_dst_color,src_alpha,one_minus_src_alpha,dst_alpha,one_minus_dst_alpha,constant_color,one_minus_constant_color,constant_alpha}" },
 			 { "", "2", "3" },
 			 "ML", "mainloop_api", "blendfunc"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::shader_cache_disable,
+			 "ogl_shcache_disable",
+			 { "ml", "disable" },
+			 { "ML", "bool" },
+			 { "", "true" },
+			 "ML", "mainloop_api", "shader_cache_disable"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::disable_z_buffer,
 			 "ogl_zbuf_disable",
 			 { "ml" },

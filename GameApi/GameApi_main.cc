@@ -39,6 +39,50 @@ EXPORT void GameApi::MainLoopApi::make_current()
  int val = g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
  std::cout << "Makecurrent return:" << val << std::endl;
 }
+
+bool g_shader_cache_disabled = false;
+
+class ShaderCacheDisable : public MainLoopItem
+{
+public:
+  ShaderCacheDisable(MainLoopItem *item, bool disable) : item(item), disable(disable) { }
+
+  virtual void logoexecute() { }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() {
+    bool old = g_shader_cache_disabled;
+    g_shader_cache_disabled = disable;
+    item->Prepare();
+    g_shader_cache_disabled = old;
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    bool old = g_shader_cache_disabled;
+    g_shader_cache_disabled = disable;
+    item->execute(e);
+    g_shader_cache_disabled = old;
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    bool old = g_shader_cache_disabled;
+    g_shader_cache_disabled = disable;
+    item->handle_event(e);
+    g_shader_cache_disabled = old;
+  }
+  virtual std::vector<int> shader_id() { item->shader_id(); }  
+private:
+  MainLoopItem *item;
+  bool disable;
+};
+
+EXPORT GameApi::ML GameApi::MainLoopApi::shader_cache_disable(ML ml, bool disable)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new ShaderCacheDisable(item,disable));
+}
+
 EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 {
   g_low->sdl->SDL_ShowCursor(enabled);

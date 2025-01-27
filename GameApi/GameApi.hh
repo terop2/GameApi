@@ -353,6 +353,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML shader_cache_disable(ML ml, bool disable);
   void step();
   ML android_landscape_scale(EveryApi &ev, ML ml);
   ML disable_resize(ML ml);
