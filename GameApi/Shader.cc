@@ -5972,7 +5972,7 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
     }
   return o;
 }
-
+extern bool g_shader_cache_disable;
 
 int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
@@ -5998,7 +5998,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
   // std::cout << "Checking: " << v_format << " " << f_format << " " << v_vec << " " << f_vec << std::endl;
   
-  if (res) {
+  if (res && !g_shader_cache_disable) {
     //std::cout << "FOUND FROM SHADER CACHE" << std::endl;
     int s1 = res->v_shaders.size();
     for(int i=0;i<s1;i++) p->push_back(*res->v_shaders[i]);
