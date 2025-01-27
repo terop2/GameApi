@@ -71,7 +71,7 @@ public:
     item->handle_event(e);
     g_shader_cache_disable = old;
   }
-  virtual std::vector<int> shader_id() { item->shader_id(); }  
+  virtual std::vector<int> shader_id() { return item->shader_id(); }  
 private:
   MainLoopItem *item;
   bool disable;
