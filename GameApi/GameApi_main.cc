@@ -40,7 +40,7 @@ EXPORT void GameApi::MainLoopApi::make_current()
  std::cout << "Makecurrent return:" << val << std::endl;
 }
 
-bool g_shader_cache_disabled = false;
+bool g_shader_cache_disable = false;
 
 class ShaderCacheDisable : public MainLoopItem
 {
@@ -51,25 +51,25 @@ public:
   virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
   virtual void HeavyPrepare() { }
   virtual void Prepare() {
-    bool old = g_shader_cache_disabled;
-    g_shader_cache_disabled = disable;
+    bool old = g_shader_cache_disable;
+    g_shader_cache_disable = disable;
     item->Prepare();
-    g_shader_cache_disabled = old;
+    g_shader_cache_disable = old;
   }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
-    bool old = g_shader_cache_disabled;
-    g_shader_cache_disabled = disable;
+    bool old = g_shader_cache_disable;
+    g_shader_cache_disable = disable;
     item->execute(e);
-    g_shader_cache_disabled = old;
+    g_shader_cache_disable = old;
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    bool old = g_shader_cache_disabled;
-    g_shader_cache_disabled = disable;
+    bool old = g_shader_cache_disable;
+    g_shader_cache_disable = disable;
     item->handle_event(e);
-    g_shader_cache_disabled = old;
+    g_shader_cache_disable = old;
   }
   virtual std::vector<int> shader_id() { item->shader_id(); }  
 private:
