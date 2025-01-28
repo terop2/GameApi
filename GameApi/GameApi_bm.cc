@@ -8805,12 +8805,13 @@ GameApi::ML GameApi::BitmapApi::display_bitmaps(GameApi::EveryApi &ev, std::vect
 }
 
 
-GameApi::BM GameApi::BitmapApi::debug_number(GameApi::EveryApi &ev, GameApi::BM bm0, int num)
+GameApi::BM GameApi::BitmapApi::debug_number(GameApi::EveryApi &ev, GameApi::BM bm0, int num, bool disable)
 {
-  FI fi = ev.font_api.load_font("https://meshpage.org/assets/Chunkfive.otf",8,8);
+  if (disable==false) {
+  FI fi = ev.font_api.load_font("https://meshpage.org/assets/Chunkfive.otf",48,48);
   std::stringstream ss;
   ss << num;
-  BM bm = ev.font_api.draw_text_string(fi, ss.str(), 3,8);
+  BM bm = ev.font_api.draw_text_string(fi, ss.str(), 3,48);
 
   int size_x = ev.bitmap_api.size_x(bm0);
   int size_y = ev.bitmap_api.size_y(bm0);
@@ -8818,6 +8819,7 @@ GameApi::BM GameApi::BitmapApi::debug_number(GameApi::EveryApi &ev, GameApi::BM 
   int top_x = size_x * 0.1;
   int top_y = size_y * 0.1;
   return ev.bitmap_api.blitbitmap(bm0,bm2,top_x,top_y);
+  } else { return bm0; }
 }
 
 
