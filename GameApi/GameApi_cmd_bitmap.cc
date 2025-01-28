@@ -100,9 +100,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "BM", "polygon_api", "gltf_load_bitmap"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::debug_number,
 			 "bm_debug",
-			 { "ev", "bm0", "num" },
-			 { "EveryApi&", "BM", "int" },
-			 { "ev", "", "1" },
+			 { "ev", "bm0", "num", "disable" },
+			 { "EveryApi&", "BM", "int","bool" },
+			 { "ev", "", "1","false" },
 			 "BM", "bitmap_api", "debug_number"));
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::sprite_atlas_x,
