@@ -1546,7 +1546,7 @@ public:
   void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
   virtual int SizeX() const { return bm.SizeY(); }
-  virtual int SizeY() const { return bm.SizeX(); }
+  virtual int SizeY() const { if (cache_y) return sy; cache_y=true;return sy=bm.SizeX(); }
   virtual Color Map(int x, int y) const
   {
     int yy = x;
@@ -1555,6 +1555,8 @@ public:
   }
 private:
   Bitmap<Color> &bm;
+  mutable int sy;
+  mutable bool cache_y=false;
 };
 
 class FlipBitmap : public Bitmap<Color>
@@ -1568,8 +1570,8 @@ public:
   void HeavyPrepare() { }
   void Prepare() { bm.Prepare(); }
 
-  virtual int SizeX() const { return bm.SizeX(); }
-  virtual int SizeY() const { return bm.SizeY(); }
+  virtual int SizeX() const { if (cache_x) return sx; cache_x=true; return sx=bm.SizeX(); }
+  virtual int SizeY() const { if (cache_y) return sy; cache_y=true; return sy=bm.SizeY(); }
   virtual Color Map(int x, int y) const
   {
     int xx = x;
@@ -1586,6 +1588,8 @@ public:
 private:
   Bitmap<Color> &bm;
   bool flip_x, flip_y;
+  mutable bool cache_x=false, cache_y=false;
+  mutable int sx,sy;
 };
 #if 0
 class DupXBitmap : public Bitmap<Color>

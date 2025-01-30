@@ -2630,7 +2630,8 @@ public:
   {
     Color cc = c.Map(x,y);
     unsigned int val = cc.Pixel();
-
+    if (val==cache_key) return Color(cache_value);
+    
     // This is gameapi format.
     unsigned int val_a = val&0xff000000;
     unsigned int val_r = val&0x00ff0000;
@@ -2648,12 +2649,16 @@ public:
     val_r <<= 0;
     unsigned int v = val_r+val_g+val_b+val_a;
     //std::cout << std::hex << v << std::dec << " " << std::endl;
+    cache_key = val;
+    cache_value = v;
     return Color(v);
   }
   virtual bool IsDirectGltfImage() const { return c.IsDirectGltfImage(); }
 
 public:
   Bitmap<Color> &c;
+  mutable unsigned int cache_key=0;
+  mutable unsigned int cache_value=0;
 };
 
 
