@@ -17470,7 +17470,7 @@ EXPORT GameApi::KF GameApi::VertexAnimApi::repeat_keyframes(KF rep, int count)
 
 
 
-class StringDisplayToBitmap : public Bitmap<int>
+class StringDisplayToBitmap : public Bitmap<Color>
 {
 public:
   StringDisplayToBitmap(StringDisplay &sd, int def) : sd(sd),def(def) {}
@@ -17508,7 +17508,7 @@ public:
     return maxy;
 
   }
-  int Map(int x, int y) const
+  Color Map(int x, int y) const
   {
     int s = sd.Count();
     //int maxy = 0;
@@ -17520,7 +17520,7 @@ public:
 	if (y<yy) continue;
 	if (x>xx+sd.SX(i)) continue;
 	if (y>yy+sd.SY(i)) continue;
-	return sd.Map(i, x-xx, y-yy);
+	return Color(sd.Map(i, x-xx, y-yy));
       }
     return def;
   }
@@ -17532,10 +17532,10 @@ GameApi::BM GameApi::FontApi::string_display_to_bitmap(SD sd, int def)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   StringDisplay *sdd = find_string_display(e, sd);
-  Bitmap<int> *bm1 = new StringDisplayToBitmap(*sdd, def);
-  env->deletes.push_back(std::shared_ptr<void>(bm1)); 
-  Bitmap<Color> *bm2 = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(0,0,0,0), *bm1);
-  return add_color_bitmap(e, bm2);
+  Bitmap<Color> *bm1 = new StringDisplayToBitmap(*sdd, def);
+  //env->deletes.push_back(std::shared_ptr<void>(bm1)); 
+  //Bitmap<Color> *bm2 = new MapBitmapToColor(0,255,Color(255,255,255,255), Color(0,0,0,0), *bm1);
+  return add_color_bitmap(e, bm1);
 }
 
 class ChooseGlyphFromFont : public GlyphInterface
@@ -17555,7 +17555,7 @@ public:
   virtual int SizeX() const { return fi.SizeX(idx); }
   virtual int SizeY() const { return fi.SizeY(idx); }
   virtual int AdvanceX() const { return fi.AdvanceX(idx); }
-  virtual int Map(int x, int y) const
+  virtual unsigned int Map(int x, int y) const
   {
     return fi.Map(idx,x,y);
   }
@@ -17724,7 +17724,7 @@ public:
 #endif
     return tmp;
   }
-  virtual int Map(int c, int x, int y) const
+  virtual unsigned int Map(int c, int x, int y) const
   {
     return vec[c]->Map(x,y);
   }
@@ -29640,10 +29640,10 @@ public:
 	{
 	  ss >> idx >> top >> sx >> sy >> advance_x;
 	  //std::cout << idx;
-	  int *ptr = new int[sx*sy];
+	  unsigned int *ptr = new unsigned int[sx*sy];
 	  for(int y=0;y<sy;y++) {
 	    for(int x=0;x<sx;x++) {
-	    int val = 0;
+	    unsigned int val = 0;
 	    ss >> val;
 	    ptr[x+y*sx] = val;
 	    }
@@ -29689,13 +29689,13 @@ public:
     }
     return 0;
   }
-  virtual int Map(long idx, int x, int y) const
+  virtual unsigned int Map(long idx, int x, int y) const
   {
     int sx = SizeX(idx);
     int sy = SizeY(idx);
     int index = find_index(idx);
     if (index==-1) return 0;
-    int *ptr = m_data[index];
+    unsigned int *ptr = m_data[index];
     if (x>=0&&x<sx)
       if (y>=0&&y<sy)
 	return ptr[x+y*sx];
@@ -29718,7 +29718,7 @@ private:
   std::vector<int> m_top;
   std::vector<int> m_sx;
   std::vector<int> m_sy;
-  std::vector<int*> m_data;
+  std::vector<unsigned int*> m_data;
   std::vector<int> m_advance_x;
   bool firsttime;
 };

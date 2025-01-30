@@ -13,7 +13,7 @@ public:
   virtual int Top(long idx) const;
   virtual int SizeX(long idx) const;
   virtual int SizeY(long idx) const;
-  virtual int Map(long idx, int x, int y) const;
+  virtual unsigned int Map(long idx, int x, int y) const;
   virtual int AdvanceX(long idx) const;
   void gen_glyph_data(long idx);
 private:
