@@ -1,95 +1,177 @@
-TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/santa_model.glb);
+P I1=ev.polygon_api.quad_x(-300,-300,300,-300,300);
 
-ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
+BM I2=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_1.jpg);
 
-MN I3=ev.move_api.mn_empty();
-MN I68=ev.move_api.android_landscape_rotate(I3);
+BM I3=ev.bitmap_api.debug_number(ev,I2,1,true);
 
-MN I4=ev.move_api.rotate(I68,0,10,0,0,0,0,1,0,0.7);
+BM I4=ev.bitmap_api.rot90(I3);
 
-MN I5=ev.move_api.rotate(I4,10,30,0,0,0,0,1,0,-1.4);
+BM I5=ev.bitmap_api.flip_y(I4);
 
-MN I6=ev.move_api.rotate(I5,30,40,0,0,0,0,1,0,0.7);
-MN I69=ev.move_api.android_landscape_rotate_inv(I6);
+BM I6=ev.bitmap_api.flip_x(I5);
 
-MN I7=ev.move_api.time_repeat(I69,0,40);
+MT I7=ev.materials_api.texture(ev,I6,1.0);
 
-MN I8=ev.move_api.trans2(I7,0,0,-30);
+MT I8=ev.materials_api.fade(ev,I7,0,1,30000,31000);
 
-ML I9=ev.move_api.move_ml(ev,I2,I8,1,10.0);
+ML I9=ev.materials_api.bind(I1,I8);
 
-TF I10=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/christmas_tree.glb);
+P I10=ev.polygon_api.quad_y(-300,300,-300,-300,300);
 
-ML I11=ev.mainloop_api.gltf_mesh_all(ev,I10,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
+BM I11=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_2.jpg);
 
-MN I12=ev.move_api.mn_empty();
+BM I12=ev.bitmap_api.debug_number(ev,I11,2,true);
 
-MN I13=ev.move_api.trans2(I12,-250,0,0);
+BM I13=ev.bitmap_api.flip_x(I12);
 
-ML I14=ev.move_api.move_ml(ev,I11,I13,1,10.0);
+MT I14=ev.materials_api.texture(ev,I13,1.0);
 
-MN I15=ev.move_api.trans2(I12,250,0,0);
+MT I15=ev.materials_api.fade(ev,I14,0,1,30000,31000);
 
-ML I16=ev.move_api.move_ml(ev,I11,I15,1,10.0);
+ML I16=ev.materials_api.bind(I10,I15);
 
-ML I17=ev.mainloop_api.array_ml(ev,std::vector<ML>{I11,I14,I16});
+P I17=ev.polygon_api.quad_z(-300,300,-300,300,-300);
 
-MN I18=ev.move_api.mn_empty();
+BM I18=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_3.jpg);
 
-MN I19=ev.move_api.trans2(I18,0,0,-350);
+BM I19=ev.bitmap_api.debug_number(ev,I18,3,true);
 
-ML I20=ev.move_api.move_ml(ev,I17,I19,1,10.0);
+BM I20=ev.bitmap_api.rot90(I19);
 
-ML I21=ev.mainloop_api.or_elem_ml(ev,I9,I20);
+BM I21=ev.bitmap_api.rot90(I20);
 
-TF I22=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/unopenable_gift.glb);
+MT I22=ev.materials_api.texture(ev,I21,1.0);
 
-ML I23=ev.mainloop_api.gltf_mesh_all(ev,I22,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
+MT I23=ev.materials_api.fade(ev,I22,0,1,30000,31000);
 
-MN I24=ev.move_api.mn_empty();
+ML I24=ev.materials_api.bind(I17,I23);
 
-MN I25=ev.move_api.scale2(I24,0.3,0.3,0.3);
+P I25=ev.polygon_api.quad_x(300,-300,300,-300,300);
 
-MN I26=ev.move_api.trans2(I25,-250,-120,-150);
+BM I26=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_4.jpg);
 
-ML I27=ev.move_api.move_ml(ev,I23,I26,1,10.0);
+BM I27=ev.bitmap_api.debug_number(ev,I26,4,true);
 
-MN I28=ev.move_api.trans2(I25,250,-120,-150);
+BM I28=ev.bitmap_api.rot90(I27);
 
-ML I29=ev.move_api.move_ml(ev,I23,I28,1,10.0);
+BM I29=ev.bitmap_api.rot90(I28);
 
-ML I30=ev.mainloop_api.or_elem_ml(ev,I27,I29);
+BM I30=ev.bitmap_api.rot90(I29);
 
-ML I31=ev.mainloop_api.or_elem_ml(ev,I21,I30);
+BM I31=ev.bitmap_api.flip_y(I30);
 
-MN I32=ev.move_api.mn_empty();
+MT I32=ev.materials_api.texture(ev,I31,1.0);
 
-MN I33=ev.move_api.scale2(I32,2,2,2);
+MT I33=ev.materials_api.fade(ev,I32,0,1,30000,31000);
 
-MN I34=ev.move_api.translate(I33,0,100,240,0,0);
+ML I34=ev.materials_api.bind(I25,I33);
 
-MN I35=ev.move_api.translate(I34,100,400,-480,0,0);
+P I35=ev.polygon_api.quad_y(-300,300,300,-300,300);
 
-MN I36=ev.move_api.translate(I35,400,500,240,0,0);
+BM I36=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_5.jpg);
 
-MN I37=ev.move_api.time_repeat(I36,0,500);
+BM I37=ev.bitmap_api.debug_number(ev,I36,5,true);
 
-ML I38=ev.move_api.move_ml(ev,I31,I37,1,10.0);
+MT I38=ev.materials_api.texture(ev,I37,1.0);
 
-P I39=ev.polygon_api.quad_z(-450,450,0,100,150);
+MT I39=ev.materials_api.fade(ev,I38,0,10,30000,31000);
 
-FI I40=ev.font_api.load_font(http://meshpage.org/assets/Chunkfive.otf,20,20);
+ML I40=ev.materials_api.bind(I35,I39);
 
-BM I41=ev.font_api.draw_text_string(I40,Merry_Christmas,5,30);
+P I41=ev.polygon_api.quad_z(-300,300,-300,300,300);
 
-BM I42=ev.bitmap_api.flip_y(I41);
+BM I42=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_6.jpg);
 
-MT I43=ev.materials_api.texture(ev,I42,1.0);
+BM I43=ev.bitmap_api.debug_number(ev,I42,6,true);
 
-MT I44=ev.materials_api.fade(ev,I43,0,10,15,25);
+BM I44=ev.bitmap_api.flip_y(I43);
 
-ML I45=ev.materials_api.bind(I39,I44);
+MT I45=ev.materials_api.texture(ev,I44,1.0);
 
-ML I46=ev.mainloop_api.or_elem_ml(ev,I38,I45);
+MT I46=ev.materials_api.fade(ev,I45,30000,31000,60000,61000);
 
-RUN I47=ev.blocker_api.game_window2(ev,I46,false,false,0.0,100000.0);
+ML I47=ev.materials_api.bind(I41,I46);
+
+ML I48=ev.mainloop_api.array_ml(ev,std::vector<ML>{I9,I16,I24,I34,I40,I47});
+
+MN I49=ev.move_api.mn_empty();
+
+MN I50=ev.move_api.scale2(I49,0.8,0.8,0.8);
+
+MN I51=ev.move_api.rotate(I50,0,100,0,0,0,0,1,0,6.28318);
+
+MN I52=ev.move_api.rotate(I51,100,150,0,0,0,0,1,0,3.14159);
+
+MN I53=ev.move_api.rotate(I52,150,250,0,0,0,1,0,0,6.28318);
+
+MN I54=ev.move_api.rotate(I53,250,300,0,0,0,0,1,0,3.14159);
+
+MN I55=ev.move_api.time_repeat(I54,0,300);
+
+ML I56=ev.move_api.move_ml(ev,I48,I55,1,10.0);
+
+BM I57=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_7.jpg);
+
+BM I58=ev.bitmap_api.debug_number(ev,I57,7,true);
+
+BM I59=ev.bitmap_api.rot90(I58);
+
+BM I60=ev.bitmap_api.flip_x(I59);
+
+MT I61=ev.materials_api.texture(ev,I60,1.0);
+
+MT I62=ev.materials_api.fade(ev,I61,30000,31000,60000,61000);
+
+ML I63=ev.materials_api.bind(I1,I62);
+
+BM I64=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_8.jpg);
+
+BM I65=ev.bitmap_api.debug_number(ev,I64,8,true);
+
+BM I666=ev.bitmap_api.flip_x(I65);
+
+BM I66=ev.bitmap_api.flip_y(I666);
+
+MT I67=ev.materials_api.texture(ev,I66,1.0);
+
+MT I68=ev.materials_api.fade(ev,I67,30000,31000,60000,61000);
+
+ML I69=ev.materials_api.bind(I10,I68);
+
+BM I70=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_9.jpg);
+
+BM I71=ev.bitmap_api.debug_number(ev,I70,9,true);
+
+BM I72=ev.bitmap_api.flip_y(I71);
+
+MT I73=ev.materials_api.texture(ev,I72,1.0);
+
+MT I74=ev.materials_api.fade(ev,I73,30000,31000,60000,61000);
+
+ML I75=ev.materials_api.bind(I17,I74);
+
+BM I76=ev.bitmap_api.loadbitmapfromurl(http://meshpage.org/kalven_10.jpg);
+
+BM I77=ev.bitmap_api.debug_number(ev,I76,4,true);
+
+BM I78=ev.bitmap_api.flip_x(I77);
+
+MT I79=ev.materials_api.texture(ev,I78,1.0);
+
+MT I80=ev.materials_api.fade(ev,I79,300,31000,60000,61000);
+
+ML I81=ev.materials_api.bind(I25,I80);
+
+ML I82=ev.materials_api.bind(I35,I67);
+
+ML I83=ev.materials_api.bind(I41,I73);
+
+ML I84=ev.mainloop_api.array_ml(ev,std::vector<ML>{I63,I69,I75,I81,I82,I83});
+
+ML I85=ev.move_api.move_ml(ev,I84,I55,1,10.0);
+
+ML I86=ev.mainloop_api.or_elem_ml(ev,I56,I85);
+
+ML I87=ev.mainloop_api.shader_cache_disable(I86,true);
+
+RUN I88=ev.blocker_api.game_window2(ev,I87,false,false,0.0,100000.0);

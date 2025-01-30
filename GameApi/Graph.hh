@@ -1235,8 +1235,9 @@ public:
   {
     bm.Collect(vis);
     bm2.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() { 
     bm.Prepare();
     bm2.Prepare();
@@ -1244,20 +1245,7 @@ public:
 
   virtual int SizeX() const { return bm.SizeX(); }
   virtual int SizeY() const { return bm.SizeY(); }
-  virtual Color Map(int xx, int yy) const
-  {
-    Color c1 = bm.Map(xx,yy);
-    Color c2(0,0,0,0);
-    if (xx>=x && xx<x+bm2.SizeX())
-      if (yy>=y && yy<y+bm2.SizeY())
-	{
-	  //std::cout << "Test" << x <<" " << y << ":" << xx << " " << yy << std::endl;
-	c2 = bm2.Map(xx-x, yy-y);
-	}
-    Color res = Color::Interpolate(c1,c2,c2.alpha/255.0);
-    //std::cout << res.r << res.b << res.g << res.alpha << std::endl;
-    return res;
-  } 
+  virtual Color Map(int xx, int yy) const;
 private:
   Bitmap<Color> &bm;
   Bitmap<Color> &bm2;
@@ -1272,8 +1260,9 @@ public:
     bm.Collect(vis);
     bm2.Collect(vis);
     mask.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() { 
     bm.Prepare();
     bm2.Prepare();
@@ -1310,8 +1299,9 @@ public:
     bm.Collect(vis);
     bm2.Collect(vis);
     mask.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
   void Prepare() { 
     bm.Prepare();
     bm2.Prepare();
@@ -1356,8 +1346,9 @@ public:
   SubBitmap(Bitmap<T> &bm, int x, int y, int width, int height) : bm(bm), x(x), y(y), width(width), height(height) { }
   void Collect(CollectVisitor &vis) {
     bm.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
 
   void Prepare() { bm.Prepare(); }
 
@@ -1382,8 +1373,9 @@ public:
   }
   void Collect(CollectVisitor &vis) {
     bm.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
 
   void Prepare() { bm.Prepare(); }
 
@@ -2618,7 +2610,7 @@ private:
 class FlipColours : public Bitmap<Color>
 {
 public:
-  FlipColours(Bitmap<Color> &c) : c(c) { }
+  FlipColours(Bitmap<Color> &c) : c(c), mutex(PTHREAD_MUTEX_INITIALIZER) { }
   void Collect(CollectVisitor &vis) { c.Collect(vis); }
   void HeavyPrepare() { 
   }
@@ -2630,8 +2622,24 @@ public:
   {
     Color cc = c.Map(x,y);
     unsigned int val = cc.Pixel();
-    if (val==cache_key) return Color(cache_value);
-    
+#ifdef THREADS
+  if (firsttime)
+    {
+      pthread_mutex_init(&mutex,NULL);
+      firsttime=false;
+    }
+  
+  pthread_mutex_lock(&mutex);
+#endif
+
+  if (val==cache_key) {
+    unsigned int cc = cache_value;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return Color(cc);
+  }
+
     // This is gameapi format.
     unsigned int val_a = val&0xff000000;
     unsigned int val_r = val&0x00ff0000;
@@ -2651,14 +2659,19 @@ public:
     //std::cout << std::hex << v << std::dec << " " << std::endl;
     cache_key = val;
     cache_value = v;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
     return Color(v);
   }
   virtual bool IsDirectGltfImage() const { return c.IsDirectGltfImage(); }
 
 public:
   Bitmap<Color> &c;
+  mutable bool firsttime=true;
   mutable unsigned int cache_key=0;
   mutable unsigned int cache_value=0;
+  mutable pthread_mutex_t mutex;
 };
 
 
@@ -3395,8 +3408,9 @@ public:
   void Collect(CollectVisitor &vis)
   {
     bitmap.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
 
   void Prepare() { bitmap.Prepare(); }
   float SizeX() const { return xsize; }
@@ -3421,8 +3435,9 @@ public:
   BitmapFromContinuousBitmap(ContinuousBitmap<T> &bitmap, int xsize, int ysize) : bitmap(bitmap), xsize(xsize), ysize(ysize) { }
   void Collect(CollectVisitor &vis) {
     bitmap.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() { Prepare(); }
 
   void Prepare() { bitmap.Prepare(); }
 

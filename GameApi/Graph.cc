@@ -1,3 +1,4 @@
+
 // 
 // Copyright (C) 2009 Tero Pulkkinen
 // Released under LGPL License.
@@ -77,6 +78,37 @@ VoxelEffect::VoxelEffect(Render *r)
   plugins.push_back(new TexturePlugin(buf));
 #endif
 }
+
+Color BlitBitmapClass::Map(int xx, int yy) const
+  {
+    Color c1 = bm.Map(xx,yy);
+    Color c2(0,0,0,0);
+    if (xx>=x && xx<x+bm2.SizeX())
+      if (yy>=y && yy<y+bm2.SizeY())
+	{
+	  //std::cout << "Test" << x <<" " << y << ":" << xx << " " << yy << std::endl;
+	c2 = bm2.Map(xx-x, yy-y);
+	}
+    Color res = Color::Interpolate(c1,c2,c2.alpha/255.0f);
+    //std::cout << c2.r << " " << c2.b << " " << c2.g << " " << c2.alpha << std::endl;
+    /*
+    float val = float(c2.alpha)/255.0f;
+    //std::cout << val << std::endl;
+    Color res;
+    res.r = int(c1.r*(1.0f-val) + c2.r*val);
+    res.g = int(c1.g*(1.0f-val) + c2.g*val);
+    res.b = int(c1.b*(1.0f-val) + c2.b*val);
+    */
+    //std::cout << "C1:"<< c1.r << ":" << c1.g << ":" << c1.b << std::endl;
+    //std::cout << "C2:"<< c2.r << ":" << c2.g << ":" << c2.b << std::endl;
+    //std::cout << "res:"<< res.r << ":" << res.g << ":" << res.b << std::endl;
+    
+    //res.alpha = 255;
+    return res;
+  } 
+
+
+
 void VoxelEffect::Init()
 {
   FrameAnimPlugins::Init();

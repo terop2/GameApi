@@ -6038,7 +6038,8 @@ ASyncData async_data[] = {
   { "matrices_api", "render_ms_files", 3 },
   { "matrices_api", "render_ms_files2", 3 },
   { "voxel_api", "voxel_from_bitmaps", 1 },
-  { "points_api", "load_points", 0 }
+  { "points_api", "load_points", 0 },
+  { "bitmap_api", "debug_number", 4}
 };
 ASyncData *g_async_ptr = &async_data[0];
 int g_async_count = sizeof(async_data)/sizeof(ASyncData);
