@@ -17573,7 +17573,7 @@ GameApi::GI GameApi::FontApi::choose_glyph_from_font(FI font, long idx)
 class StringDisplayFromGlyphs : public StringDisplay
 {
 public:
-  StringDisplayFromGlyphs(std::vector<GlyphInterface*> vec, std::string str, int x_gap, int empty_line_height) : vec(vec), x_gap(x_gap), str(str), empty_line_height(empty_line_height) { }
+  StringDisplayFromGlyphs(std::vector<GlyphInterface*> vec, std::string str, int x_gap, int empty_line_height) : vec(vec), x_gap(x_gap), str(str), empty_line_height(empty_line_height),mutex(PTHREAD_MUTEX_INITIALIZER) { }
   void Collect(CollectVisitor &vis)
   {
     int s = vec.size();
@@ -17593,21 +17593,65 @@ public:
   virtual int Count() const { return vec.size(); }
   virtual int X(int c) const
   {
+#ifdef THREADS
+  if (firsttime)
+    {
+      pthread_mutex_init(&mutex,NULL);
+      firsttime=false;
+    }
+  
+  pthread_mutex_lock(&mutex);
+#endif
+
+  if (c==c1) {
+    int tmp = x1;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
+  }
+    c1=c;
     int s = vec.size();
     int x = 0;
     for(int i=0;i<s;i++)
       {
-	if (i==c) { return x; }
+	if (i==c) {
+	  x1=x;
+#ifdef THREADS
+	  pthread_mutex_unlock(&mutex);
+#endif
+	  return x;
+	}
 	GlyphInterface *gi = vec[i];
 	x+=gi->AdvanceX();
 	x+=x_gap;
 	if (str[i]=='\n') x=0;
       }
+    x1=0;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
     return 0;
   }
   virtual int Y(int c) const
   {
-    //int s = str.size();
+#ifdef THREADS
+  if (firsttime)
+    {
+      pthread_mutex_init(&mutex,NULL);
+      firsttime=false;
+    }
+  
+  pthread_mutex_lock(&mutex);
+#endif
+  if (c==c2) {
+    int tmp = y2;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
+  }
+    int s = str.size();
     int y = 0;
     int prev_pos = 0;
     for(int i=0;i<c;i++)
@@ -17623,15 +17667,62 @@ public:
 	  prev_pos = i;
 	}
       }
-    return y+PositiveDelta()+vec[c]->Top();
+    c2=c;
+    int tmp = y2=y+PositiveDelta()+vec[c]->Top();
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
   }
   virtual int SX(int c) const
   {
-    return vec[c]->SizeX();
+#ifdef THREADS
+  if (firsttime)
+    {
+      pthread_mutex_init(&mutex,NULL);
+      firsttime=false;
+    }
+  
+  pthread_mutex_lock(&mutex);
+#endif
+  if (c==c3) {
+    int tmp = sx3;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
+  }
+    c3=c;
+    int tmp = sx3=vec[c]->SizeX();
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
   }
   virtual int SY(int c) const
   {
-    return vec[c]->SizeY();
+#ifdef THREADS
+  if (firsttime)
+    {
+      pthread_mutex_init(&mutex,NULL);
+      firsttime=false;
+    }
+  
+  pthread_mutex_lock(&mutex);
+#endif
+  if (c==c4) {
+    int tmp = sy4;
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
+  }
+    c4=c;
+    int tmp= sy4=vec[c]->SizeY();
+#ifdef THREADS
+    pthread_mutex_unlock(&mutex);
+#endif
+    return tmp;
   }
   virtual int Map(int c, int x, int y) const
   {
@@ -17653,6 +17744,10 @@ private:
   int x_gap;
   std::string str;
   int empty_line_height;
+  mutable int c1=-1,c2=-1,c3=-1,c4=-1;
+  mutable int x1=0,y2=0,sx3=0,sy4=0;
+  mutable bool firsttime=true;
+  mutable pthread_mutex_t mutex;
 };
 
 GameApi::SD GameApi::FontApi::draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height)

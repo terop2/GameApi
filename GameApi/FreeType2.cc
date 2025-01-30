@@ -9,6 +9,8 @@
 #include FT_OUTLINE_H
 #include "FreeType2.hh"
 
+
+
 struct GlyphData
 {
   int top;
@@ -95,9 +97,19 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 {
   //std::cout << "try gen_glyph_data:" << idx << std::endl;
   //std::string key = glyph_key(ttf_filename,sx,sy);
-#ifndef EMSCRIPTEN
+  //#ifndef EMSCRIPTEN
+  //#ifndef EMSCRIPTEN
+#ifdef THREADS
+  static bool firsttime=true;
+  if (firsttime)
+    {
+      pthread_mutex_init(&mutex,NULL);
+      firsttime=false;
+    }
+  
   pthread_mutex_lock(&mutex);
 #endif
+  //#endif
 
   std::map<long, GlyphData*> *mymap = data2;
   if (!mymap) { mymap = global_glyph_data[key]; }
@@ -108,9 +120,12 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   }
   GlyphData *data = mymap?mymap->operator[](idx):0; //glyph_data[idx];
   if (data) { 
-#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
+    //#endif
     return; }
   //std::cout << "gen_glyph_data:" << idx << std::endl;
 
@@ -138,7 +153,8 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   GameApi::ASyncVec *ptr = e.get_loaded_async_url(ttf_filename);
   if (!ptr) {
     std::cout << "async not ready yet, failing..." << std::endl;
-#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
     return; 
@@ -179,7 +195,8 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     //std::cout << "ptr2: " << std::hex << (int)ptr2 << " size:" << std::dec << size << std::endl;
     //std::cout << ptr2 << std::endl;
     std::cout << "Remember to recompile the code after changing envimpl size" << std::endl;
-#ifndef EMSCRIPTEN
+    //#ifndef EMSCRIPTEN
+#ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
     return; //exit(0);
@@ -206,7 +223,8 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 	data->bitmap_data[ix+iy*data->sx] = (int)data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
       }
 
-#ifndef EMSCRIPTEN
+  //#ifndef EMSCRIPTEN
+#ifdef THREADS
   pthread_mutex_unlock(&mutex);
 #endif
 
