@@ -1311,13 +1311,19 @@ public:
   int image_index;
 };
 
+void bm_cb(void* ptr2);
 
 class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
   LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0;
-
+    async_pending_count++;
     // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
+    env.async_load_callback(url,&bm_cb,this);
+  }
+  void unasync()
+  {
+    async_pending_count--;
   }
   ~LoadBitmapFromUrl()
   {
@@ -1385,6 +1391,12 @@ public:
   bool load_finished = false;  
   int id;
 };
+void bm_cb(void* ptr2)
+{
+  LoadBitmapFromUrl* ptr = (LoadBitmapFromUrl*)ptr2;
+  ptr->unasync();
+}
+
 
 EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 {

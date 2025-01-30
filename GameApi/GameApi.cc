@@ -17479,9 +17479,11 @@ public:
     StringDisplay *ssd = &sd;
     if (ssd)
       sd.Collect(vis);
+    vis.register_obj(this);
   }
   void HeavyPrepare()
   {
+    Prepare();
   }
 
   void Prepare() { StringDisplay *ssd = &sd; if (ssd) sd.Prepare(); }

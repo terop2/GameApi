@@ -418,7 +418,7 @@ Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
     return c2;
   }
   unsigned int Pixel() {
-    return (alpha<<24) + (r << 16) + (g << 8) + b; 
+    return (((unsigned int)alpha)<<24) + (((unsigned int)r) << 16) + (((unsigned int)g) << 8) + (unsigned int)b; 
   }
   friend Color operator*(Color c, float val)
   {
@@ -682,12 +682,12 @@ Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
 
   static Color Interpolate(const Color &aVec, const Color &aVec2, float aVal)
   {
-    if (aVal < 0.0) aVal = 0.0;
-    if (aVal > 1.0) aVal = 1.0;
+    if (aVal < 0.0f) aVal = 0.0f;
+    if (aVal > 1.0f) aVal = 1.0f;
     Color v;
-    v.r = int(float(aVec.r)*(1.0-aVal) + float(aVec2.r)*aVal);
-    v.g = int(float(aVec.g)*(1.0-aVal) + float(aVec2.g)*aVal);
-    v.b = int(float(aVec.b)*(1.0-aVal) + float(aVec2.b)*aVal);
+    v.r = int(float(aVec.r)*(1.0f-aVal) + float(aVec2.r)*aVal);
+    v.g = int(float(aVec.g)*(1.0f-aVal) + float(aVec2.g)*aVal);
+    v.b = int(float(aVec.b)*(1.0f-aVal) + float(aVec2.b)*aVal);
     v.alpha = int(float(aVec.alpha)*(1.0-aVal) + float(aVec2.alpha)*aVal);
     return v;
   }

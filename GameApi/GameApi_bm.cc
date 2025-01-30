@@ -3268,7 +3268,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::alt(std::vector<BM> vec, int index)
 {
   if (vec.size()==0) { return newbitmap(1,1); }
   int s = vec.size();
-  if (index<0||index>=s) return newbitmap(1,1);
+  if (index<0||index>=s) return newbitmap(1,1); 
   return vec[index];
 }
 
@@ -8809,21 +8809,75 @@ GameApi::ML GameApi::BitmapApi::display_bitmaps(GameApi::EveryApi &ev, std::vect
 }
 
 
-GameApi::BM GameApi::BitmapApi::debug_number(GameApi::EveryApi &ev, GameApi::BM bm0, int num, bool disable)
+class DebugNumber : public Bitmap<Color>
 {
+public:
+  DebugNumber(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::BM bm0, int num, bool disable, std::string url) : e(e), ev(ev), bm0(bm0), num(num), disable(disable), url(url) { }
+  void Collect(CollectVisitor &vis)
+  {
+    Bitmap<Color> *bitmap = find_bitmap2(e,bm0);
+    bitmap->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+
+  int SizeX() const {
+    if (m_bm0.id==-1) return 0;
+    Bitmap<Color> *bitmap = find_bitmap2(e,m_bm0);
+    return bitmap->SizeX();
+  }
+  int SizeY() const {
+    if (m_bm0.id==-1) return 0;
+    Bitmap<Color> *bitmap = find_bitmap2(e,m_bm0);
+    return bitmap->SizeY();
+  }
+  Color Map(int x, int y) const
+  {
+    if (m_bm0.id==-1) return Color(0,0,0,0);
+    Bitmap<Color> *bitmap = find_bitmap2(e,m_bm0);
+    return bitmap->Map(x,y);
+  }
+  void Prepare()
+  {
+
   if (disable==false) {
-  FI fi = ev.font_api.load_font("https://meshpage.org/assets/Chunkfive.otf",48,48);
+    GameApi::FI fi = ev.font_api.load_font(url.c_str(),48,48);
   std::stringstream ss;
   ss << num;
-  BM bm = ev.font_api.draw_text_string(fi, ss.str(), 3,48);
+  GameApi::BM bm = ev.font_api.draw_text_string(fi, ss.str(), 3,48);
 
+  
   int size_x = ev.bitmap_api.size_x(bm0);
   int size_y = ev.bitmap_api.size_y(bm0);
-  BM bm2 = ev.bitmap_api.scale_bitmap(ev,bm,size_x*0.8,size_y*0.8);
+  if (size_x<48) size_x=48;
+  if (size_y<48) size_y=48;
+  GameApi::BM bm2 = ev.bitmap_api.scale_bitmap(ev,bm,size_x*0.8,size_y*0.8);
   int top_x = size_x * 0.1;
-  int top_y = size_y * 0.1;
-  return ev.bitmap_api.blitbitmap(bm0,bm2,top_x,top_y);
-  } else { return bm0; }
+  int top_y = size_y * 0.1; 
+  //FB alpha = ev.float_bitmap_api.from_alpha(bm2);
+
+  //int sx = ev.bitmap_api.size_x(bm2);
+  //int sy = ev.bitmap_api.size_y(bm2);
+  //for(int y=0;y<sy;y++)
+  //for(int x=0;x<sx;x++)
+  //  std::cout << std::hex << ev.bitmap_api.colorvalue(bm2,x,y) << ",";
+  m_bm0 = ev.bitmap_api.blitbitmap(bm0,bm2,top_x,top_y);
+  return;
+  } else { m_bm0 = bm0; }
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::BM bm0;
+  int num;
+  bool disable;
+  std::string url;
+  GameApi::BM m_bm0 = { -1 };
+};
+
+GameApi::BM GameApi::BitmapApi::debug_number(GameApi::EveryApi &ev, GameApi::BM bm0, int num, bool disable, std::string url)
+{
+  return add_color_bitmap2(e,new DebugNumber(e,ev,bm0,num,disable,url));
 }
 
 

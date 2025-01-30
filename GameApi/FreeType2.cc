@@ -13,9 +13,9 @@
 
 struct GlyphData
 {
-  int top;
-  int sx,sy;
-  int advance_x;
+  int top=0;
+  int sx=0,sy=0;
+  int advance_x=0;
   unsigned int *bitmap_data=0;
 
   FT_Library *lib=0;
@@ -43,21 +43,29 @@ std::map<std::string,std::map<long,GlyphData*>*> global_glyph_data;
 int FontInterfaceImpl::Top(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->top;
 }
 int FontInterfaceImpl::SizeX(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->sx;
 }
 int FontInterfaceImpl::SizeY(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->sy;
 }
 int FontInterfaceImpl::AdvanceX(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->advance_x;
 }
 unsigned int FontInterfaceImpl::Map(long idx, int x, int y) const
@@ -67,6 +75,8 @@ unsigned int FontInterfaceImpl::Map(long idx, int x, int y) const
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
   int ssx = SizeX(idx);
   if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
   return data2->operator[](idx)->bitmap_data[x+y*ssx];
 }
 
@@ -221,8 +231,11 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
     for(int ix=0;ix<data->sx;ix++)
       {
 	unsigned char alpha = data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
+	//std::cout << (int)alpha << ",";
 	data->bitmap_data[ix+iy*data->sx] = (alpha<<24) | 0xffffff;
+	//std::cout << (int) data->bitmap_data[ix+iy*data->sx] << ",";
       }
+  //std::cout << std::endl;
 
   //#ifndef EMSCRIPTEN
 #ifdef THREADS
