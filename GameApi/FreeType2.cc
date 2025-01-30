@@ -14,7 +14,7 @@ struct GlyphData
   int top;
   int sx,sy;
   int advance_x;
-  int *bitmap_data=0;
+  unsigned int *bitmap_data=0;
 
   FT_Library *lib=0;
   FT_Face face;
@@ -58,7 +58,7 @@ int FontInterfaceImpl::AdvanceX(long idx) const {
   if (!data2) data2=global_glyph_data[key];
   return data2->operator[](idx)->advance_x;
 }
-int FontInterfaceImpl::Map(long idx, int x, int y) const
+unsigned int FontInterfaceImpl::Map(long idx, int x, int y) const
 {
   if (x<0 || x>=SizeX(idx) || y<0 || y>=SizeY(idx))
     return 0;
@@ -199,11 +199,12 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   int ssy = data->sy;
   if (ssx<1) ssx=1;
   if (ssy<1) ssy=1;
-  data->bitmap_data = new int[ssx*ssy];
+  data->bitmap_data = new unsigned int[ssx*ssy];
   for(int iy=0;iy<data->sy;iy++)
     for(int ix=0;ix<data->sx;ix++)
       {
-	data->bitmap_data[ix+iy*data->sx] = (int)data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
+	unsigned char alpha = data->face->glyph->bitmap.buffer[ix+iy*data->face->glyph->bitmap.pitch];
+	data->bitmap_data[ix+iy*data->sx] = (alpha<<24) | 0xffffff;
       }
 
 #ifndef EMSCRIPTEN
