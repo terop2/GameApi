@@ -18,12 +18,39 @@
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+#
+#ARCH = armv7a-eabi
+ARCH = aarch64
+#ARCH = x86
+#ARCH = x86_64
 
 CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
 
 ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087/
+
+ifeq ($(ARCH),x86)
+M64=
+ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x86-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x86-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+endif
+
+ifeq ($(ARCH),x86_64)
+M64=-m64
+ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/x64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+endif
+
+
+ifeq ($(ARCH),aarch64)
+M64=-m64
 ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
 ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm64-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+endif
+ifeq ($(ARCH),armv7a-eabi)
+M64=
+ANDROID_CURL_INCLUDE=-I/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm-android/include -I$(ANDROID_NDK)platforms/android-35/arch-arm/usr/include
+ANDROID_CURL_LIB=-L/home/terop/cvs/GameApi/GameApi/androiddeps/vcpkg/installed/arm-android/lib -L$(ANDROID_NDK)platforms/android-35/arch-arm/usr/lib
+endif
 
 ANDROID_FLAGS=-DANDROID -D_FORTIFY_SOURCE=2 -I/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
 
@@ -179,10 +206,10 @@ CFiles2 =
 Subdirs = 
 #module1
 
-OFiles = $(patsubst %.cc,androidobjs/objs/%.o,$(CFiles) $(CFiles2))
-O2Files = $(patsubst %.cc,androidobjs/objs/%.obj,$(CFiles) $(CFiles2))
-DFiles = $(patsubst %.cc,androidobjs/objs/%.d,$(CFiles) $(CFiles2)) 
-D2Files = $(patsubst %.cc,androidobjs/objs/%.d2,$(CFiles) $(CFiles2)) 
+OFiles = $(patsubst %.cc,androidobjs-$(ARCH)/objs/%.o,$(CFiles) $(CFiles2))
+O2Files = $(patsubst %.cc,androidobjs-$(ARCH)/objs/%.obj,$(CFiles) $(CFiles2))
+DFiles = $(patsubst %.cc,androidobjs-$(ARCH)/objs/%.d,$(CFiles) $(CFiles2)) 
+D2Files = $(patsubst %.cc,androidobjs-$(ARCH)/objs/%.d2,$(CFiles) $(CFiles2)) 
 HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCHFiles = $(patsubst %.cc,objs/%.hh.gch,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
@@ -196,13 +223,13 @@ WARN = -Wno-undefined-bool-conversion -Wno-self-assign-field -Wno-mismatched-tag
 #-I/usr/include/freetype2 -I/usr/include/SDL2
 # -Ichai/ChaiScript-6.1.0/include
 #
-CCFLAGS = $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -fPIC -Wall -I./androidobjs/objs   -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
-CC2FLAGS = $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -m64 -std=c++20 -Wall -I./androidobjs/objs -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CCFLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++17 -fPIC -Wall -I./androidobjs-$(ARCH)/objs   -pthread -Wno-var-tracking-assignments $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
+CC2FLAGS = $(M64) $(ANDROID_CURL_INCLUDE) -DANDROID -DLINUX $(ANDROID_FLAGS) $(WARNINGOPTS) $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++17 -Wall -I./androidobjs-$(ARCH)/objs -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -I$(ANDROID_NDK)/sources/android/native_app_glue 
 #`pkg-config gtkmm-2.4 --cflags`
 
 
 
-default: check_compile dirs libGameApi_android.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
+default: check_compile dirs libGameApi_android-$(ARCH).so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
 
 
 check_compile:
@@ -233,41 +260,56 @@ else
 endif
 
 dirs:
-	@echo "  MKDIR  androidobjs/objs"
-	@mkdir -p androidobjs/objs
-	@echo "  MKDIR  androidobjs/objs/lib"
-	@mkdir -p androidobjs/objs/lib
-	@echo "  MKDIR  androidobjs/objs/draco/attributes"
-	@mkdir -p androidobjs/objs/draco/attributes
-	@echo "  MKDIR  androidobjs/objs/draco/compression"
-	@mkdir -p androidobjs/objs/draco/compression
-	@echo "  MKDIR  androidobjs/objs/draco/compression/attributes"
-	@mkdir -p androidobjs/objs/draco/compression/attributes
-	@echo "  MKDIR  androidobjs/objs/draco/compression/attributes/prediction_schemes"
-	@mkdir -p androidobjs/objs/draco/compression/attributes/prediction_schemes
-	@echo "  MKDIR  androidobjs/objs/draco/compression/bit_coders"
-	@mkdir -p androidobjs/objs/draco/compression/bit_coders
-	@echo "  MKDIR  androidobjs/objs/draco/compression/entropy"
-	@mkdir -p androidobjs/objs/draco/compression/entropy
-	@echo "  MKDIR  androidobjs/objs/draco/compression/mesh"
-	@mkdir -p androidobjs/objs/draco/compression/mesh
-	@echo "  MKDIR  androidobjs/objs/draco/compression/point_cloud"
-	@mkdir -p androidobjs/objs/draco/compression/point_cloud
-	@echo "  MKDIR  androidobjs/objs/draco/compression/point_cloud/algorithms"
-	@mkdir -p androidobjs/objs/draco/compression/point_cloud/algorithms
-	@echo "  MKDIR  androidobjs/objs/draco/core"
-	@mkdir -p androidobjs/objs/draco/core
-	@echo "  MKDIR  androidobjs/objs/draco/mesh"
-	@mkdir -p androidobjs/objs/draco/mesh
-	@echo "  MKDIR  androidobjs/objs/draco/point_cloud"
-	@mkdir -p androidobjs/objs/draco/point_cloud
-	@echo "  MKDIR  androidobjs/objs/draco/metadata"
-	@mkdir -p androidobjs/objs/draco/metadata
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs"
+	@mkdir -p androidobjs-$(ARCH)/objs
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/lib"
+	@mkdir -p androidobjs-$(ARCH)/objs/lib
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/attributes"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/attributes
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/attributes"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/attributes
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/attributes/prediction_schemes"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/attributes/prediction_schemes
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/bit_coders"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/bit_coders
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/entropy"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/entropy
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/mesh"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/mesh
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/point_cloud"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/point_cloud
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/compression/point_cloud/algorithms"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/compression/point_cloud/algorithms
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/core"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/core
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/mesh"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/mesh
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/point_cloud"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/point_cloud
+	@echo "  MKDIR  androidobjs-$(ARCH)/objs/draco/metadata"
+	@mkdir -p androidobjs-$(ARCH)/objs/draco/metadata
 
 
-libGameApi_android.so: $(OFiles) Makefile
-	@echo "  LD     libGameApi_android.so"
-	@$(CC) -ggdb -m64 -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android.so  $(LDFLAGS) -lstdc++ -static-libstdc++ -lcurl -lssl -lcrypto -lz
+ifeq ($(ARCH),x86)
+CC = $(CROSS_COMPILE)i686-linux-android30-clang++
+endif
+ifeq ($(ARCH),x86_64)
+CC = $(CROSS_COMPILE)x86_64-linux-android30-clang++
+endif
+
+ifeq ($(ARCH),aarch64)
+CC = $(CROSS_COMPILE)aarch64-linux-android21-clang++
+endif
+ifeq ($(ARCH),armv7a-eabi)
+CC = $(CROSS_COMPILE)armv7a-linux-androideabi30-clang++
+endif
+
+
+libGameApi_android-$(ARCH).so: $(OFiles) Makefile
+	@echo "  LD     libGameApi_android-$(ARCH).so"
+	@$(CC) $(M64) -ggdb -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi_android-$(ARCH).so  $(LDFLAGS) -lstdc++ -static-libstdc++ -lcurl -lssl -lcrypto -lz
 	#-lwayland-client
 
 .PHONY: dirs
@@ -286,7 +328,6 @@ libGameApi_android.so: $(OFiles) Makefile
 #TAGS: $(CFiles)
 #	etags -o TAGS -l c++ $(CFiles)
 
-CC = $(CROSS_COMPILE)aarch64-linux-android21-clang++
 #armv7a-linux-androideabi30-clang++
 #x86_64-linux-android30-clang++
 CCWIN = i586-mingw32msvc-g++
@@ -306,9 +347,9 @@ cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.la
 editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.la
 	@(cd editor; make -f Makefile.Linux LDFLAGS="$(LDFLAGS)")
 
-$(OFiles): androidobjs/objs/%.o : %.cc
+$(OFiles): androidobjs-$(ARCH)/objs/%.o : %.cc
 	@echo "  CC     $@"
-	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
 
 touch_all:
 	touch GameApi_gui_1.cc
@@ -317,7 +358,7 @@ touch_all:
 
 
 clean:
-	@rm -rf androidobjs/objs/*.o androidobjs/objs/*.obj androidobjs/objs/*.d androidobjs/objs/*.d2 androidobjs/objs/*.gch androidobjs/objs/*.gch2
+	@rm -rf androidobjs-$(ARCH)/objs/*.o androidobjs-$(ARCH)/objs/*.obj androidobjs-$(ARCH)/objs/*.d androidobjs-$(ARCH)/objs/*.d2 androidobjs-$(ARCH)/objs/*.gch androidobjs-$(ARCH)/objs/*.gch2 androidobjs-$(ARCH)/objs/draco
 	@echo Clean.
 
 
