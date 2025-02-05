@@ -28,21 +28,27 @@ echo "<head>";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
 echo "</head>";
 echo "<body>";
+echo "<div class=\"bl_container\">";
+echo "<div class=\"bl_item\">";
 echo "The Page is designed to be used by Web developers.<br>";
 
 //echo "SEO_KEYWORDS: meshpage.org offers unique way to do physically based rendering via runtime processing of 3d assets from normal gltf 2.0 files. The 3d models are created in blender and its gltf exporter and passed to our asset delivery system. This uses khronos group gltf 2.0 standard and can render 3d models from multiple sources, including blender and sketchfab.";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
-
-echo "<div class=\"grid_container\">";
-echo "<div class=\"grid_item1_a width620\">";
+echo "</div>";
+echo "<div class=\"bl_item\">";
 echo "<div>";
 echo "<h1 class=\"customfont fontsize\" align=\"left\" style=\"position: static; left: -150px;\">meshpage.org&reg;</h1>";
 echo "<h2 class=\"customfont label_a\" align=\"left\" style=\"position: relative; top: -50px; left: 50px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>";
 echo "</div>";
-echo "</div><div height=\"270\" class=\"grid_item3_a width620 noscrollbars\">";
+echo "</div>";
+echo "<div class=\"bl_item\">";
+echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>.";
+echo "<br>Known critical bugs in meshpage:<p><ul><li> (meshy rigging doesnt work in meshpage)</ul><br>";
+echo "</div>";
+echo "<div class=\"bl_item\">";
 echo "<iframe scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"800\" height=\"600\" style=\"overflow: visible; border: none;\"></iframe>";
-echo "<div class=\"customfont\" style=\"position:absolute; top:-30px; left:310px;\">";
+echo "</div><div class=\"bl_item\">";
 echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)";
 echo "<pre style=\"font-size: 9px;\">";
 echo "TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/punk/mesh_garden_gnome.glb);\n";
@@ -68,18 +74,8 @@ echo "ML I17=ev.mainloop_api.scene_transparency(I16);\n";
 echo "ML I18=ev.mainloop_api.async_gltf(I17,I1);\n";
 echo "RUN I19=ev.blocker_api.game_window2(ev,I18,false,false,0.0,100000.0);\n";
 echo "</pre>";
-    
 echo "</div>";
 echo "</div>";
-echo "</div>";
-echo "<div class=\"customfont\" style=\"position: static; margin-left: 27px;\">";
-echo "Suitable external tools: <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>.";
-echo "<br>Known critical bugs in meshpage:<p><ul><li> (meshy rigging doesnt work in meshpage)</ul><br>";
-echo "</div>";
-echo "<p><p><p><p><br><p><p><br>";
-echo "<p><p><p><p><br><p><p><br>";
-echo "<p><p><p><p><br><p><p><br>";
-echo "<p><p><p><p><br><p><p><br>";
 echo "<div class=\"grid_container\">";
 for($i=0;$i<4;$i++)
 {
@@ -137,6 +133,14 @@ echo "a.link {";
 echo "   text-decoration: none !important;";
 echo "   -webkit-box-shadow: none !important;";
 echo "   box-shadow: none !important;";
+echo "}";
+echo ".bl_container {";
+echo "  display: flex;";
+echo "  flex: 0 0 auto;";
+echo "  flex-wrap: wrap;";
+echo "}";
+echo ".bl_item {";
+echo "   margin-left: 40px;";
 echo "}";
 echo ".grid_container {";
 echo "   display: grid;";
