@@ -952,18 +952,26 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 //  time = pp->frame_time;
 //}
 
-float cur_time = 0.0;
+float cur_time = 0.0f;
+float prev_frame = 0.0f;
+float avg_advance = 0.0f;
+float avg_count =0.0f;
+float avg_table[200];
+int avg_index=0;
+int avg_count_i=0;
+float last_speedup=0.0f;
+float avg_sum=0.0f;
 EXPORT void GameApi::MainLoopApi::step()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
   float target_time = pp->frame_time-time;
   //std::cout << cur_time << " " << target_time << std::endl;
-  if (cur_time < target_time)
+
+  float cutoff = 31.0;
+  
+  if (target_time > cur_time+(cutoff))
     {
-    }
-  if (target_time > cur_time+28.0)
-    {
-      cur_time += 28.0;
+      cur_time += cutoff;
     } else
     {
       cur_time = target_time;
@@ -980,7 +988,8 @@ EXPORT float GameApi::MainLoopApi::get_time()
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
-  if (pp->delta_time > 28.0/100.0) return 28.0/100.0;
+  float cutoff = 31.0;
+  if (pp->delta_time > (cutoff)/100.0) return (cutoff)/100.0;
   return pp->delta_time;
 }
 EXPORT void GameApi::MainLoopApi::reset_time()
