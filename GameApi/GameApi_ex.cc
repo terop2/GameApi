@@ -6,28 +6,71 @@ class VariableExpr : public ExprNode
 {
 public:
   VariableExpr(std::string name) : name(name) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     int s = env.size();
     for(int i=0;i<s;i++)
       {
-	GameApi::FloatExprEnv &e = env[i];
+	const GameApi::FloatExprEnv &e = env[i];
 	if (e.name == name) { return e.value; }
       }
     std::cout << "Expr float value not found: " << name << std::endl;
     return 0.0f;
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     int s = env.size();
     for(int i=0;i<s;i++)
       {
-	GameApi::IntExprEnv &e = env[i];
+	const GameApi::IntExprEnv &e = env[i];
 	if (e.name == name) { return e.value; }
       }
     std::cout << "Expr int value not found: " << name << std::endl;
     return 0;
-  }  
+  }
+
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::vector<GameApi::BoolExprEnv> env1 = env.bool_env;
+
+    int s = env1.size();
+    for(int i=0;i<s;i++)
+      {
+	const GameApi::BoolExprEnv &e = env1[i];
+	if (e.name == name) { return e.value; }
+      }
+    std::cout << "Expr Bool value not found:" << name << std::endl;
+    return 0;
+  }
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    std::vector<GameApi::ColorExprEnv> env1 = env.color_env;
+
+    int s = env1.size();
+    for(int i=0;i<s;i++)
+      {
+	const GameApi::ColorExprEnv &e = env1[i];
+	if (e.name == name) { return e.value; }
+      }
+    std::cout << "Expr Color value not found:" << name << std::endl;
+    return 0;
+
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::vector<GameApi::PointExprEnv> env1 = env.point_env;
+
+    int s = env1.size();
+    for(int i=0;i<s;i++)
+      {
+	const GameApi::PointExprEnv &e = env1[i];
+	if (e.name == name) { return e.value; }
+      }
+    std::cout << "Expr Point value not found:" << name << std::endl;
+    return Point(0.0,0.0,0.0);;
+  }
+
+  
 private:
   std::string name;
 };
@@ -40,13 +83,29 @@ class PlusExpr : public ExprNode
 {
 public:
   PlusExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     return n1->float_execute(env) + n2->float_execute(env);
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     return n1->int_execute(env) + n2->int_execute(env);
+  }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    Color c1 = n1->color_execute(env);
+    Color c2 = n2->color_execute(env);
+    return Color::Interpolate(c1,c2,0.5f);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
   }
 private:
   ExprNode *n1, *n2;
@@ -63,14 +122,32 @@ class MulExpr : public ExprNode
 {
 public:
   MulExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     return n1->float_execute(env) * n2->float_execute(env);
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     return n1->int_execute(env) * n2->int_execute(env);
   }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    float m = n1->float_execute(env);
+    Color c1 = Color(0.0,0.0,0.0,1.0);
+    Color c2 = n2->color_execute(env);
+    return Color::Interpolate(c1,c2,m);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
+  }
+
 private:
   ExprNode *n1, *n2;
 };
@@ -86,14 +163,33 @@ class MinusExpr : public ExprNode
 {
 public:
   MinusExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     return n1->float_execute(env) - n2->float_execute(env);
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     return n1->int_execute(env) - n2->int_execute(env);
   }
+
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "color_execute failed" << std::endl;
+    return Color(0xffffffff);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
+  }
+
+  
 private:
   ExprNode *n1, *n2;
 };
@@ -109,14 +205,31 @@ class DivExpr : public ExprNode
 {
 public:
   DivExpr(ExprNode *n1, ExprNode *n2) : n1(n1), n2(n2) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     return n1->float_execute(env) / n2->float_execute(env);
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     return n1->int_execute(env) / n2->int_execute(env);
   }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "color_execute failed" << std::endl;
+    return Color(0xffffffff);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
+  }
+
 private:
   ExprNode *n1, *n2;
 };
@@ -131,15 +244,31 @@ class SinExpr : public ExprNode
 {
 public:
   SinExpr(ExprNode *n) : n(n) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     float val = n->float_execute(env);
     return sin(val);
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     std::cout << "ERROR! sin with ints" << std::endl;
     return 0;
+  }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "color_execute failed" << std::endl;
+    return Color(0xffffffff);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
   }
 
 private:
@@ -150,15 +279,31 @@ class CosExpr : public ExprNode
 {
 public:
   CosExpr(ExprNode *n) : n(n) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     float val = n->float_execute(env);
     return cos(val);
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     std::cout << "ERROR! cos with ints" << std::endl;
     return 0;
+  }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "color_execute failed" << std::endl;
+    return Color(0xffffffff);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
   }
 
 private:
@@ -178,13 +323,29 @@ class ConstantExpr : public ExprNode
 {
 public:
   ConstantExpr(int ival, float fval) : ival(ival),fval(fval) { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)
   {
     return fval;
   }
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)
   {
     return ival;
+  }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "bool_execute failed" << std::endl;
+    return false;
+  }
+
+  virtual Color color_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "color_execute failed" << std::endl;
+    return Color(0xffffffff);
+  }
+  virtual Point point_execute(const GameApi::ExprEnv &env)
+  {
+    std::cout << "point_execute failed" << std::endl;
+    return Point(0.0,0.0,0.0);    
   }
 private:
   int ival;
@@ -438,3 +599,4 @@ GameApi::EX GameApi::ExprApi::expr_int(std::string expr, bool &success)
 {
   return expr_parse(*this, expr, success);
 }
+
