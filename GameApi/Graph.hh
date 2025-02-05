@@ -2610,7 +2610,7 @@ private:
 class FlipColours : public Bitmap<Color>
 {
 public:
-  FlipColours(Bitmap<Color> &c) : c(c), mutex(PTHREAD_MUTEX_INITIALIZER) { }
+  FlipColours(Bitmap<Color> &c) : c(c) /*, mutex(PTHREAD_MUTEX_INITIALIZER)*/ { }
   void Collect(CollectVisitor &vis) { c.Collect(vis); }
   void HeavyPrepare() { 
   }
@@ -2622,23 +2622,23 @@ public:
   {
     Color cc = c.Map(x,y);
     unsigned int val = cc.Pixel();
-#ifdef THREADS
-  if (firsttime)
-    {
-      pthread_mutex_init(&mutex,NULL);
-      firsttime=false;
-    }
+    //#ifdef THREADS
+    //if (firsttime)
+    //{
+    //  pthread_mutex_init(&mutex,NULL);
+    //  firsttime=false;
+    // }
   
-  pthread_mutex_lock(&mutex);
-#endif
+    // pthread_mutex_lock(&mutex);
+    //#endif
 
-  if (val==cache_key) {
-    unsigned int cc = cache_value;
-#ifdef THREADS
-    pthread_mutex_unlock(&mutex);
-#endif
-    return Color(cc);
-  }
+    //if (val==cache_key) {
+    //unsigned int cc = cache_value;
+    //#ifdef THREADS
+    // pthread_mutex_unlock(&mutex);
+    //#endif
+    //return Color(cc);
+    //}
 
     // This is gameapi format.
     unsigned int val_a = val&0xff000000;
@@ -2657,21 +2657,21 @@ public:
     val_r <<= 0;
     unsigned int v = val_r+val_g+val_b+val_a;
     //std::cout << std::hex << v << std::dec << " " << std::endl;
-    cache_key = val;
-    cache_value = v;
-#ifdef THREADS
-    pthread_mutex_unlock(&mutex);
-#endif
+    //cache_key = val;
+    //cache_value = v;
+    //#ifdef THREADS
+    //pthread_mutex_unlock(&mutex);
+    //#endif
     return Color(v);
   }
   virtual bool IsDirectGltfImage() const { return c.IsDirectGltfImage(); }
 
 public:
   Bitmap<Color> &c;
-  mutable bool firsttime=true;
-  mutable unsigned int cache_key=0;
-  mutable unsigned int cache_value=0;
-  mutable pthread_mutex_t mutex;
+  //mutable bool firsttime=true;
+  //mutable unsigned int cache_key=0;
+  //mutable unsigned int cache_value=0;
+  //mutable pthread_mutex_t mutex;
 };
 
 

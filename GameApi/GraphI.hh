@@ -80,6 +80,18 @@ namespace GameApi
   struct EveryApi;
   struct FloatExprEnv { std::string name; float value; };
   struct IntExprEnv { std::string name; int value; };
+  struct BoolExprEnv { std::string name; bool value; };
+  struct ColorExprEnv { std::string name; Color value; };
+  struct PointExprEnv { std::string name; Point value; };
+
+  struct ExprEnv
+  {
+    std::vector<FloatExprEnv> float_env;
+    std::vector<IntExprEnv> int_env;
+    std::vector<BoolExprEnv> bool_env;
+    std::vector<ColorExprEnv> color_env;
+    std::vector<PointExprEnv> point_env;
+  };
 
 };
 
@@ -938,8 +950,13 @@ class ExprNode
 {
 public:
   virtual ~ExprNode() { }
-  virtual float float_execute(std::vector<GameApi::FloatExprEnv> &env)=0;
-  virtual int int_execute(std::vector<GameApi::IntExprEnv> &env)=0;
+  virtual float float_execute(const std::vector<GameApi::FloatExprEnv> &env)=0;
+  virtual int int_execute(const std::vector<GameApi::IntExprEnv> &env)=0;
+  virtual float float_execute(const GameApi::ExprEnv &env) { return float_execute(env.float_env); }
+  virtual int int_execute(const GameApi::ExprEnv &env) { return int_execute(env.int_env); }
+  virtual bool bool_execute(const GameApi::ExprEnv &env)=0;
+  virtual Color color_execute(const GameApi::ExprEnv &env)=0;
+  virtual Point point_execute(const GameApi::ExprEnv &env)=0;
 };
 
 class PhysicsNode

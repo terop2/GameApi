@@ -103,7 +103,7 @@ public:
     pthread_attr_t attr;
 
     pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 300000);
+    pthread_attr_setstacksize(&attr, 3000000);
     //std::cout << "phread_create" << std::endl;
     pthread_t *thread_id = new pthread_t;
     threads.push_back(thread_id);

@@ -1024,7 +1024,21 @@ void *thread_func_gltf_bitmap(void *data2)
           "Unknown image format. STB cannot decode image data for image[" +
           std::to_string(image_idx) + "] name = \"" + image->name + "\".\n";
     }
-    std::cout << "ERROR1, size=" << size << std::endl;
+  FILEID id;
+  id.id = bm->decoder_item;
+  delete [] bm->bytes;
+  delete bm->decoder->files2[id];
+  bm->decoder->files2[id]=0;
+
+  image->width = 1;
+  image->height = 1;
+  image->component = req_comp;
+  image->bits = bits;
+  image->pixel_type = pixel_type;
+  image->image.resize(static_cast<uint64_t>(1 * 1 * req_comp) * size_t(bits / 8));
+
+  
+  std::cout << "ERROR1, size=" << size << std::endl;
   async_pending_count--;
     return 0;
   }
@@ -1036,6 +1050,19 @@ void *thread_func_gltf_bitmap(void *data2)
                 "] name = \"" + image->name + "\"\n";
     }
     std::cout << "ERROR2" << std::endl;
+  FILEID id;
+  id.id = bm->decoder_item;
+  delete [] bm->bytes;
+  delete bm->decoder->files2[id];
+  bm->decoder->files2[id]=0;
+  image->width = 1;
+  image->height = 1;
+  image->component = req_comp;
+  image->bits = bits;
+  image->pixel_type = pixel_type;
+  image->image.resize(static_cast<uint64_t>(1 * 1 * req_comp) * size_t(bits / 8));
+
+
   async_pending_count--;
     return 0;
   }
@@ -11905,11 +11932,13 @@ public:
     g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
     
     //std::cout << "Zip size: " << size << std::endl;
+#if 1
     if (size>250000000) {
-      std::cout << "Zip File too large! -> exiting..." << std::endl;
+      std::cout << "Zip File too large! 250Mb is max. -> exiting..." << std::endl;
       return;
 	}
-
+#endif
+    
     //mz_ulong size2 = 0;
     //unsigned char *ptr = new unsigned char[size2];
     //std::cout << "ZIP URL=" << zip_url << std::endl;
