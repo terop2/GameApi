@@ -23327,6 +23327,15 @@ public:
   int Type() const { return header->type; }
   int NumBlocks() const { return valid ? header->numblocks : 0; }
   int BlockType(int block) const { return blocks[block].block_type; }
+  int BlockTypeInv(int id) const
+  {
+    static std::map<int,int> cache_map;
+    if (cache_map.find(id)!=cache_map.end()) return cache_map[id];
+    int s = NumBlocks();
+    for(int i=0;i<s;i++)
+      if (BlockType(i)==id) { cache_map[id]=i; return i; }
+    return -1;
+  }
   int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
   unsigned char *Block(int block) const { return wholefile + blocks[block].block_offset_from_beginning_of_file; }
   unsigned char *BlockWithOffset(int block, int offset2, int size2) const
@@ -23364,6 +23373,15 @@ public:
   int Type() const { return header.type; }
   int NumBlocks() const { return header.numblocks; }
   int BlockType(int block) const { return blocks[block].block_type; }
+  int BlockTypeInv(int id) const
+  {
+    int s = NumBlocks();
+    for(int i=0;i<s;i++)
+      if (BlockType(i)==id) return i;
+    return -1;
+  }
+
+  
   int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
   unsigned char *BlockWithOffset(int block, int offset2, int size2) const
   {
@@ -33670,6 +33688,7 @@ public:
   int Type() const { return 3;}
   int NumBlocks() const { return 1+map->size(); }
   int BlockType(int block) const { return 10; }
+  int BlockTypeInv(int id) const { if (id==10) return 0; else return -1; }
   int BlockSizeInBytes(int block) const {
     if (block==0) {
       int s = map->size();
