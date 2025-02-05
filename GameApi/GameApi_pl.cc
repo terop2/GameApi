@@ -15915,6 +15915,8 @@ public:
   }
   int find_block(int id) const
   {
+    if (id==block_cache_id) return block_cache;
+    
     int s = ds->NumBlocks();
     //std::cout << "FINDBLOCK:" << id << " " << s << std::endl;
     static bool once=false;
@@ -15924,11 +15926,14 @@ public:
     }
     for(int i=0;i<s;i++) {
       //std::cout << "FB:" << i << " " << id << " " << ds->BlockType(i) << std::endl;
-      if (ds->BlockType(i)==id) return i; }
+      if (ds->BlockType(i)==id) { block_cache_id=id; block_cache=i; return i;}
+    }
     static bool once2 = false;
     if (!once2) { std::cout << "DSFaceCollection: couldnt find block " << id << std::endl; once2=true; 
     for(int i=0;i<s;i++) { std::cout << "Block type: " << ds->BlockType(i) << std::endl; }
     }
+    block_cache_id=id;
+    block_cache=-1;
     return -1;
   }
   int vertex_index(int face, int point) const
@@ -15941,6 +15946,8 @@ public:
 private:
   DiskStore *ds;
   bool ready;
+  mutable int block_cache_id=-2;
+  mutable int block_cache=-2;
 };
 
 GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const unsigned char *buf, const unsigned char *end)
