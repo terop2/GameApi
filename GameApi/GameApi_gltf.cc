@@ -574,6 +574,8 @@ public:
 #endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    if (!vec) return;
+    if (!vec->size()) return;
     std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
     g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
@@ -1268,9 +1270,9 @@ public:
   virtual int SizeY() const { if (img) return img->height; return 0; }
   virtual Color Map(int x, int y) const
   {
-    if (!img) return Color(0x0);
-    if (x<0||x>=img->width) return Color(0x0);
-    if (y<0||y>=img->height) return Color(0x0);
+    //if (!img) return Color(0x0);
+    //if (x<0||x>=img->width) return Color(0x0);
+    //if (y<0||y>=img->height) return Color(0x0);
     const unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
@@ -1625,8 +1627,8 @@ void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
 #endif
   
   //std::cout << "ORDISLOWPATH" << std::endl;
-  for(int y=start_y;y<end_y;y++) {
-    int dd = y*buf.ydelta;
+  int dd = start_y*buf.ydelta;
+  for(int y=start_y;y<end_y;y++,dd+=buf.ydelta) {
     for(int x=start_x;x<end_x;x++)
       {
 	unsigned int color = t.Map(x,y).Pixel();
