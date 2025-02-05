@@ -135,9 +135,9 @@ all:
 
 PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=8
 
-SIZEOPT=-Oz -fno-rtti -fno-exceptions  -s FILESYSTEM=0 -s TOTAL_STACK=8800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all
+SIZEOPT=-Oz -fno-rtti -fno-exceptions  -s FILESYSTEM=0 -s TOTAL_STACK=18800kb -s DISABLE_EXCEPTION_CATCHING=1 -gpubnames -sREVERSE_DEPS=all
 
-NOSIZEOPT = -s TOTAL_STACK=8800kb -gpubnames
+NOSIZEOPT = -s TOTAL_STACK=18800kb -gpubnames
 
 #--closure 1
 #--memoryprofiler
