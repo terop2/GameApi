@@ -574,6 +574,8 @@ public:
 #endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    if (!vec) return;
+    if (!vec->size()) return;
     std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
     g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
@@ -1024,7 +1026,21 @@ void *thread_func_gltf_bitmap(void *data2)
           "Unknown image format. STB cannot decode image data for image[" +
           std::to_string(image_idx) + "] name = \"" + image->name + "\".\n";
     }
-    std::cout << "ERROR1, size=" << size << std::endl;
+  FILEID id;
+  id.id = bm->decoder_item;
+  delete [] bm->bytes;
+  delete bm->decoder->files2[id];
+  bm->decoder->files2[id]=0;
+
+  image->width = 1;
+  image->height = 1;
+  image->component = req_comp;
+  image->bits = bits;
+  image->pixel_type = pixel_type;
+  image->image.resize(static_cast<uint64_t>(1 * 1 * req_comp) * size_t(bits / 8));
+
+  
+  std::cout << "ERROR1, size=" << size << std::endl;
   async_pending_count--;
     return 0;
   }
@@ -1036,6 +1052,19 @@ void *thread_func_gltf_bitmap(void *data2)
                 "] name = \"" + image->name + "\"\n";
     }
     std::cout << "ERROR2" << std::endl;
+  FILEID id;
+  id.id = bm->decoder_item;
+  delete [] bm->bytes;
+  delete bm->decoder->files2[id];
+  bm->decoder->files2[id]=0;
+  image->width = 1;
+  image->height = 1;
+  image->component = req_comp;
+  image->bits = bits;
+  image->pixel_type = pixel_type;
+  image->image.resize(static_cast<uint64_t>(1 * 1 * req_comp) * size_t(bits / 8));
+
+
   async_pending_count--;
     return 0;
   }
@@ -1241,9 +1270,9 @@ public:
   virtual int SizeY() const { if (img) return img->height; return 0; }
   virtual Color Map(int x, int y) const
   {
-    if (!img) return Color(0x0);
-    if (x<0||x>=img->width) return Color(0x0);
-    if (y<0||y>=img->height) return Color(0x0);
+    //if (!img) return Color(0x0);
+    //if (x<0||x>=img->width) return Color(0x0);
+    //if (y<0||y>=img->height) return Color(0x0);
     const unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
@@ -1598,8 +1627,8 @@ void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
 #endif
   
   //std::cout << "ORDISLOWPATH" << std::endl;
-  for(int y=start_y;y<end_y;y++) {
-    int dd = y*buf.ydelta;
+  int dd = start_y*buf.ydelta;
+  for(int y=start_y;y<end_y;y++,dd+=buf.ydelta) {
     for(int x=start_x;x<end_x;x++)
       {
 	unsigned int color = t.Map(x,y).Pixel();
@@ -11905,11 +11934,13 @@ public:
     g_zip_file_size = g_zip_file_size > size ? g_zip_file_size : size;
     
     //std::cout << "Zip size: " << size << std::endl;
+#if 1
     if (size>250000000) {
-      std::cout << "Zip File too large! -> exiting..." << std::endl;
+      std::cout << "Zip File too large! 250Mb is max. -> exiting..." << std::endl;
       return;
 	}
-
+#endif
+    
     //mz_ulong size2 = 0;
     //unsigned char *ptr = new unsigned char[size2];
     //std::cout << "ZIP URL=" << zip_url << std::endl;
