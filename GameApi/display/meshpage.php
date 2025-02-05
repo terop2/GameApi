@@ -844,6 +844,14 @@ instead of megabytes of video files
 <li>We don't have sound or music support at all, because it's fundamentally based on recording industry technology, and we're not experts in that area.
 </ul>
 
+<h2>What is the standard rendering pipeline?</h2>
+
+<img src="https://meshpage.org/assets/std_render_pipeline.png" width="600" height="200"/>
+
+<h2>And if you want something to move on screen?</h2>
+
+<img src="https://meshpage.org/assets/std_rendering_with_move.png" width="600" height="200"/>
+
 <h2>Is there a 3d model viewer that uses your engine?</h2>
 
 Yes. It's <a href="<?php echo $site ?>/view.php" target="_blank">here</a>
