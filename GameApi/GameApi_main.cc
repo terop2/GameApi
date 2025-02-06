@@ -952,22 +952,42 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 //  time = pp->frame_time;
 //}
 
-float cur_time = 0.0;
+float cur_time = 0.0f;
+float delta_time = 16.6666;
+float cur_time2 = 0.0f;
+double accumulator = 0.0f;
+double cur_delta = 16.666f;
 EXPORT void GameApi::MainLoopApi::step()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
-  float target_time = pp->frame_time-time;
+  float target_time = pp->frame_time-cur_time2;
   //std::cout << cur_time << " " << target_time << std::endl;
-  if (cur_time < target_time)
+  cur_time2 = pp->frame_time;
+
+
+  accumulator += target_time;
+  
+  float cutoff = 31.0;
+  cur_delta = 0.00001f;
+  float local_acc=0.0f;
+  while(accumulator >= delta_time && local_acc<cutoff)
     {
+      accumulator-=delta_time;
+      cur_time+=delta_time;
+      cur_delta+=delta_time;
+      local_acc+=delta_time;
     }
-  if (target_time > cur_time+28.0)
+  return cur_time;
+
+  /*
+  if (target_time > cur_time+(cutoff))
     {
-      cur_time += 28.0;
+      cur_time += cutoff;
     } else
     {
       cur_time = target_time;
     }
+  */
 }
 
 EXPORT float GameApi::MainLoopApi::get_time()
@@ -979,13 +999,25 @@ EXPORT float GameApi::MainLoopApi::get_time()
 }
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
-  MainLoopPriv *pp = (MainLoopPriv*)priv;
-  if (pp->delta_time > 28.0/100.0) return 28.0/100.0;
-  return pp->delta_time;
+  //MainLoopPriv *pp = (MainLoopPriv*)priv;
+  float cutoff = 31.0;
+  //if (pp->delta_time > (cutoff)/100.0) return (cutoff)/100.0;
+  //return pp->delta_time;
+  if (cur_delta>cutoff) return (cutoff)/100.0;
+  return cur_delta/100.0;
 }
+extern float cur_time;
+extern double accumulator;
+extern double cur_delta;
+
 EXPORT void GameApi::MainLoopApi::reset_time()
 {
   time = g_low->sdl->SDL_GetTicks();
+
+  accumulator=0.0f;
+  cur_time = 0.0;
+  cur_delta= 16.6666;
+  
 }
 EXPORT void GameApi::MainLoopApi::advance_time(float val)
 {
