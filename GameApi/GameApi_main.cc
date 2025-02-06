@@ -953,22 +953,33 @@ EXPORT void GameApi::MainLoopApi::antialias(bool enable)
 //}
 
 float cur_time = 0.0f;
-float prev_frame = 0.0f;
-float avg_advance = 0.0f;
-float avg_count =0.0f;
-float avg_table[200];
-int avg_index=0;
-int avg_count_i=0;
-float last_speedup=0.0f;
-float avg_sum=0.0f;
+float delta_time = 16.6666;
+float cur_time2 = 0.0f;
+double accumulator = 0.0f;
+double cur_delta = 16.666f;
 EXPORT void GameApi::MainLoopApi::step()
 {
   MainLoopPriv *pp = (MainLoopPriv*)priv;
-  float target_time = pp->frame_time-time;
+  float target_time = pp->frame_time-cur_time2;
   //std::cout << cur_time << " " << target_time << std::endl;
+  cur_time2 = pp->frame_time;
 
-  float cutoff = 31.0;
+
+  accumulator += target_time;
   
+  float cutoff = 31.0;
+  cur_delta = 0.00001f;
+  float local_acc=0.0f;
+  while(accumulator >= delta_time && local_acc<cutoff)
+    {
+      accumulator-=delta_time;
+      cur_time+=delta_time;
+      cur_delta+=delta_time;
+      local_acc+=delta_time;
+    }
+  return cur_time;
+
+  /*
   if (target_time > cur_time+(cutoff))
     {
       cur_time += cutoff;
@@ -976,6 +987,7 @@ EXPORT void GameApi::MainLoopApi::step()
     {
       cur_time = target_time;
     }
+  */
 }
 
 EXPORT float GameApi::MainLoopApi::get_time()
@@ -987,14 +999,25 @@ EXPORT float GameApi::MainLoopApi::get_time()
 }
 EXPORT float GameApi::MainLoopApi::get_delta_time()
 {
-  MainLoopPriv *pp = (MainLoopPriv*)priv;
+  //MainLoopPriv *pp = (MainLoopPriv*)priv;
   float cutoff = 31.0;
-  if (pp->delta_time > (cutoff)/100.0) return (cutoff)/100.0;
-  return pp->delta_time;
+  //if (pp->delta_time > (cutoff)/100.0) return (cutoff)/100.0;
+  //return pp->delta_time;
+  if (cur_delta>cutoff) return (cutoff)/100.0;
+  return cur_delta/100.0;
 }
+extern float cur_time;
+extern double accumulator;
+extern double cur_delta;
+
 EXPORT void GameApi::MainLoopApi::reset_time()
 {
   time = g_low->sdl->SDL_GetTicks();
+
+  accumulator=0.0f;
+  cur_time = 0.0;
+  cur_delta= 16.6666;
+  
 }
 EXPORT void GameApi::MainLoopApi::advance_time(float val)
 {
