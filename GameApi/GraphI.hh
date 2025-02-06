@@ -1594,6 +1594,7 @@ public:
   virtual int NumBlocks() const=0;
   // blocktypes: 0=vertex, 1=color, 2=texcoord, 3=normal, 4=bitmap, 5=voxel, 6=vertexheader, 7=vertexpointcounts, 8=vertexindex, 9=texcoord3, 10=memoryblock
   virtual int BlockType(int block) const=0;
+  virtual int BlockTypeInv(int block) const=0;
   virtual int BlockSizeInBytes(int block) const=0;
   virtual unsigned char* Block(int block) const=0;
   virtual unsigned char* BlockWithOffset(int block, int offset, int size) const=0;

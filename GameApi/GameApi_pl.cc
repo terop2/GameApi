@@ -15915,7 +15915,7 @@ public:
   }
   int find_block(int id) const
   {
-    if (id==block_cache_id) return block_cache;
+    //if (id==block_cache_id) return block_cache;
     
     int s = ds->NumBlocks();
     //std::cout << "FINDBLOCK:" << id << " " << s << std::endl;
@@ -15924,16 +15924,22 @@ public:
       once=true;
       // emscripten_run_script("jsStackTrace()");
     }
+    int block =  ds->BlockTypeInv(id);
+    if (block != -1) return block;
+#if 0
+    /*
     for(int i=0;i<s;i++) {
       //std::cout << "FB:" << i << " " << id << " " << ds->BlockType(i) << std::endl;
-      if (ds->BlockType(i)==id) { block_cache_id=id; block_cache=i; return i;}
+      if (ds->BlockType(i)==id) { /*block_cache_id=id; block_cache=i;*/ return i;}
     }
+  */
+#endif
     static bool once2 = false;
     if (!once2) { std::cout << "DSFaceCollection: couldnt find block " << id << std::endl; once2=true; 
     for(int i=0;i<s;i++) { std::cout << "Block type: " << ds->BlockType(i) << std::endl; }
     }
-    block_cache_id=id;
-    block_cache=-1;
+    //block_cache_id=id;
+    //block_cache=-1;
     return -1;
   }
   int vertex_index(int face, int point) const
@@ -15947,7 +15953,7 @@ private:
   DiskStore *ds;
   bool ready;
   mutable int block_cache_id=-2;
-  mutable int block_cache=-2;
+  mutable int block_cache=-2;  
 };
 
 GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const unsigned char *buf, const unsigned char *end)
@@ -16095,6 +16101,22 @@ public:
   }
   int Type() const { return 0; }
   int NumBlocks() const { return 9; }
+  int BlockTypeInv(int id) const
+  {
+    switch(id) {
+    case 6: return 0;
+    case 7: return 1;
+    case 8: return 2;
+    case 0: return 3;
+    case 3: return 4;
+    case 1: return 5;
+    case 2: return 6;
+    case 9: return 7;
+    case 10: return 8;
+    case -1: return -1;
+    }
+    return -1;
+  }
   int BlockType(int block) const {
     switch(block) {
     case 0: return 6; // vertexheader
@@ -16496,6 +16518,8 @@ public:
   }
   void HeavyPrepare()
   {
+    if (firsttime) {
+      firsttime=false;
     if (objs.size()==0) {
       int s = coll->NumObjects();
       for(int i=0;i<s;i++) {
@@ -16511,10 +16535,13 @@ public:
 	}
       }
     }
+    }
   }
   void PrepareDone() { coll->PrepareDone(); }
   virtual void Prepare() {
     coll->Prepare();
+    if (firsttime) {
+      firsttime=false;
     if (objs.size()==0) {
       int s = coll->NumObjects();
       for(int i=0;i<s;i++) {
@@ -16529,6 +16556,7 @@ public:
 	  }
 	}
       }
+    }
     }
   }
   
@@ -16629,6 +16657,7 @@ private:
   int num_slots;
   int current_slot;
   mutable int actual_faces=0;
+  bool firsttime = true;
 };
 
 GameApi::P GameApi::PolygonApi::texture_splitter2(P p, int val, int num_slots, int current_slot)
