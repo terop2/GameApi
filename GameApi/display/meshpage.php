@@ -1274,11 +1274,6 @@ width="120" height="120" crossorigin/>
 </div>
 
 </div>
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
-<div style="width:120px;float: left;">
-<img src="https://meshpage.org/assets/android_logo.png" width="100" height="50"/>
-</div>
-</div>
 
 
 <p>

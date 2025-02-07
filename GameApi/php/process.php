@@ -38,7 +38,7 @@ echo "</div>";
 
 echo "<div style=\"\" class=\"bl_item media\">";
 echo "<div>";
-echo "<h1 class=\"customfont hardshadow fontsize white\" align=\"left\" style=\"position: static; left: -150px;\">meshpage.org&reg;</h1>";
+echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -150px;\">meshpage.org&reg;</h1>";
 echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: -50px; left: 50px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>";
 
 echo "</div>";
@@ -208,8 +208,11 @@ echo "          position: absolute;";
 echo "            padding: 20px;";
 echo "            border-radius: 8px;";
 echo "}";
-echo ".white {";
+echo ".orange {";
 echo "  color: #ff6622;";
+echo "}";
+echo ".white {";
+echo "  color: #ffffff;";
 echo "}";
 echo ".noscrollbars {";
 echo "  overflow-x: visible; overflow-y: visible;";
