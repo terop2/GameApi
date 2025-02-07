@@ -1058,15 +1058,6 @@ The main problem is visible in zoom feature, when mouse wheel is being mapped to
 
 We haven't checked what needs to be done to get trackpads working in windows.
 
-<h2>Why isn't sounds/music working?</h2>
-
-Current status of sound/music routines is that pthreads and sounds are
-not working at the same time.<br>Thus to get sound working, you need
-to disable pthreads, and get slower prepare time in 3d model loading
-phase. This can be done by not enabling crossOriginIsolation,<br> then the
-scripts will automatically fall back to non-threaded version of the
-code.
-
 <h2>What tools you should try immediately?</h2>
 <ul>
 <li>m_snow, m_flat for shading
