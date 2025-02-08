@@ -36,7 +36,7 @@ echo "<div class=\"image-wrapper\">\n";
 echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"https://meshpage.org/sheepgame1.webp\" width=\"100%\"/>\n";
 echo "</div>\n";
 
-echo "<div style=\"\" class=\"media\">\n";
+echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";
 echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
 echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: -50px; left: 50px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>\n";
