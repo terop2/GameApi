@@ -207,6 +207,10 @@ echo "</div>\n";
 
 
 echo "<style>\n";
+echo "html, body {\n";
+echo "    max-width: 100%;\n";
+echo "    overflow-x: hidden;\n";
+echo "}\n";
 echo "::-webkit-scrollbar {\n";
 echo "    width: 0px;\n";
 echo "    height: 0px;\n";
