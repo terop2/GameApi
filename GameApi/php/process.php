@@ -25,7 +25,7 @@ echo "<html lang=\"en\">\n";
 echo "<title>A way to display your 3d models on the web -- jpg of 3d</title>\n";
 echo "<head>\n";
 echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">\n";
-echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=0.7\">\n";
 echo "</head>\n";
 echo "<body>\n";
 
@@ -208,6 +208,10 @@ echo "</div>\n";
 
 
 echo "<style>\n";
+echo "html, body {\n";
+echo "    max-width: 100%;\n";
+echo "    overflow-x: hidden;\n";
+echo "}\n";
 echo "::-webkit-scrollbar {\n";
 echo "    width: 0px;\n";
 echo "    height: 0px;\n";
