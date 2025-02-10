@@ -89,25 +89,26 @@ Android cmdline: (but requires sdl2 and freetype and libcurl compilation)
                  (current status: at least quake_ml[|2|3] are broken.)
   1) SDL2 compilation:
    export ANDROID_NDK=/home/terop/Android/Sdk/ndk/28.0.12674087
-   cmake \
-    -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
-    -DANDROID_ABI=arm64-v8a \
-    -DANDROID_PLATFORM=31 \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON \
-    -DSDL_HIDAPI=ON \
-    -DSDL_JOYSTICK=ON \
-    -DSDL_GAMECONTROLLER=ON \
-    -DSDL_ANDROID=ON \
-    -S ../SDL-release-2.30.11 -B .
+   cd androiddeps/SDLBuild[|2|3|4]
+   ./cmake.cmd
     make
  2) freetype compilation:
-  CC=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang++ ../configure --host=aarch64-linux-android --with-brotli=no --with-bzip2=no --with-zlib=no --with-png=no
+  cd androiddeps/freetype-2.13.3/build
+  emacs android_configure.sh
+  (should compile to all 4 platforms:
+     aarch64-linux-android30-clang++, --host=aarch64-linux-android
+     i686-linux-android30-clang++, --host=i686-linux-android
+     x86_64-linux-android30-clang++, --host=x86_64-linux-android
+     armv7a-linux-androideabi30-clang++, --host=arm-linux-androideabi
+     )
   make
  3) libcurl compilation
     git clone https://github.com/Microsoft/vcpkg.git
     ./vcpkg/bootstrap-vcpkg.sh
     ./vcpkg/vcpkg install curl:arm64-android
+    ./vcpkg/vcpkg install curl:arm-android
+    ./vcpkg/vcpkg install curl:x64-android
+    ./vcpkg/vcpkg install curl:x86-android
     (then headers are in ./vcpkg/installed/arm64-android/include)
     (then libs are in ./vcpkg/installed/arm64-android/lib)
  4) Changing paths for sdl2, ndk, sdk and freetype in Makefile.android, cmdline4/build.sh and cmdline4/build_package.sh
