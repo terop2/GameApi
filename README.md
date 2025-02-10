@@ -113,6 +113,7 @@ Android cmdline: (but requires sdl2 and freetype and libcurl compilation)
     (then libs are in ./vcpkg/installed/arm64-android/lib)
  4) Changing paths for sdl2, ndk, sdk and freetype in Makefile.android, cmdline4/build.sh and cmdline4/build_package.sh
  5) Compile package + push it to android device:
+  emacs Makefile.android // change ARCH 4 times
   make -f Makefile.android clean
   make -f Makefile.android -j 8
   (cd cmdline4; ./ammake.sh)
