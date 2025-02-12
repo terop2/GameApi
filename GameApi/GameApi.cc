@@ -21167,6 +21167,120 @@ void deploy_set_status_file(std::string output_filename, int status)
 }
 
 
+// temporary persistent store stuff
+
+struct LINE
+{
+  std::string return_type;
+  std::string label_id;
+  std::string api_name;
+  std::string func_name;
+  std::vector<std::string> params;
+};
+
+LINE parse_line(std::string line)
+{
+  int s = line.size();
+  int pos1 = -1; // space
+  int pos2 = -1; // =
+  int pos3 = -1; // .
+  int pos4 = -1; // .
+  int pos5 = -1; // (
+  std::vector<int> param_end_pos;
+  int level=0;
+  for(int i=0;i<s;i++)
+    {
+      if (line[i]==' ' && pos1==-1) pos1=i;
+      if (line[i]=='=' && pos2==-1) pos2=i;
+      if (line[i]=='.' && pos3!=-1 && pos4==-1) pos4=i;
+      if (line[i]=='.' && pos3==-1) pos3=i;
+      if (line[i]=='(' && pos5==-1) pos5=i;
+      if ((line[i]==','||line[i]==')')&&level==0) param_end_pos.push_back(i);
+      if (line[i]=='{') level++;
+      if (line[i]=='}') level--;
+    }
+  std::string ret_type = line.substr(0,pos1);
+  std::string label = line.substr(pos1+1,pos2-pos1-1);
+  std::string api = std::string(line.begin()+pos3+1,line.begin()+pos4);
+  std::string func_name = std::string(line.begin()+pos4+1,line.begin()+pos5);
+  int pos = pos5;
+  int s2 = param_end_pos.size();
+  std::vector<std::string> params;
+  for(int i=0;i<s2;i++)
+    {
+      params.push_back(std::string(line.begin()+pos+1,line.begin()+param_end_pos[i]));
+      pos = param_end_pos[i];
+    }
+
+  LINE l;
+  l.return_type = ret_type;
+  l.label_id = label;
+  l.api_name = api;
+  l.func_name = func_name;
+  l.params = params;
+  return l;
+}
+
+struct PersistentFuncSpec
+{
+  std::string api;
+  std::string func;
+  int param_num;
+};
+
+PersistentFuncSpec g_persistent_func[] =
+  {
+    { "bitmap_api", "bm_png_bm", 2 },
+    { "polygon_api", "load_ds_from_temp_p", 2 }
+  };
+int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
+
+std::string get_persistent_id(LINE l)
+{
+  int s = g_persistent_func_size;
+  for(int i=0;i<s;i++)
+    {
+      PersistentFuncSpec spec = g_persistent_func[i];
+      if (spec.api == l.api_name && spec.func == l.func_name)
+	{
+	  return l.params[spec.param_num];
+	}
+    }
+  return "@";
+}
+
+
+std::vector<std::string> get_persistent_ids(std::vector<std::string> lines)
+{
+  std::vector<std::string> results;
+  int s = lines.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string line = lines[i];
+      LINE l = parse_line(line);
+      std::string res = get_persistent_id(l);
+      if (res!="@")
+	{
+	  int ss = res.size();
+	  int pos = -1;
+	  for(int j=0;j<ss;j++)
+	    if (res[j]=='/'||res[j]=='\\') pos=j;
+	  results.push_back(res.substr(pos+1));
+	}
+    }
+  return results;
+}
+std::vector<std::string> get_persistent_ids(std::string code)
+{
+  std::stringstream ss(code);
+  std::string line;
+  std::vector<std::string> lines;
+  while(std::getline(ss,line)) {
+    lines.push_back(line);
+  }
+  return get_persistent_ids(lines);
+}
+
 
 
 bool g_update_download_bar = false;
@@ -21234,6 +21348,18 @@ public:
       
       int val4 = system(str5.c_str());
       if (val4!=0) { std::cout << "ERROR: mkdir returned error: " << val4 <<std::endl; ok=false; }
+
+
+      std::string str6 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\store";
+      if (gameapi_temp_dir!="@")
+	{
+	  str6 = deploy_replace_string(str6,"%TEMP%",gameapi_temp_dir);
+	}
+      int val5 = system(str6.c_str());
+      if (val5!=0) { std::cout << "ERROR: mkdir returned error: " << val5 <<std::endl; ok=false; }
+
+      
+
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
       }
@@ -21247,6 +21373,19 @@ public:
       s = replace_str(s, "<", "&lt;");
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
+
+
+
+      std::string htmlfile = s;
+
+      htmlfile = replace_str(htmlfile, "@", "\n");					      
+      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+      
+      htmlfile+='\n';
+
+
+      std::vector<std::string> persistent = get_persistent_ids(htmlfile);
+      m_persistent = persistent;
 
       
       
@@ -21314,8 +21453,25 @@ public:
 	  curl_string = deploy_replace_string(curl_string,"%TEMP%",gameapi_temp_dir);
 	}
 
-	  int val = system(curl_string.c_str());
-	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
+
+      int s7=ii.url.size();
+      int pos=-1;
+      for(int i=0;i<s7;i++)
+	if (ii.url[i]=='/') pos=i;
+      
+      std::string id = ii.url.substr(pos+1);
+      
+	    int s8=persistent.size();
+	    bool flag=false;
+	    for(int i=0;i<s8;i++)
+	      {
+		if (id==persistent[i]) flag=true;
+	      }
+	    
+	    if (!flag) {
+	      int val = system(curl_string.c_str());
+	      if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
+	    }
 	  }
 	}
 
@@ -21329,6 +21485,11 @@ public:
       while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
       
       htmlfile+='\n';
+
+
+      
+
+      
       std::string lastline = get_last_line(htmlfile,'\n');
       std::string label,id2;
       std::stringstream ss2(lastline);
@@ -21448,6 +21609,17 @@ public:
 	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
 
+
+	int s = m_persistent.size();
+	for(int i=0;i<s;i++)
+	  {
+	    std::string line = std::string("copy %TEMP%\\_gameapi_builder\\store\\") + m_persistent[i] + " %TEMP%\\_gameapi_builder\\deploy\\store\\" + m_persistent[i];
+	    int val = system(line.c_str());
+	    if (val!=0) { std::cout << "ERROR: " << line << " returned ERROR CODE " << val << std::endl; ok=false; }
+	  }
+	
+
+	
       if (gameapi_temp_dir!="@")
 	{
 	  line0 = deploy_replace_string(line0,"%TEMP%",gameapi_temp_dir);
@@ -21562,7 +21734,7 @@ public:
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
       std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string cmd1 = std::string("rm -rf ") + home + std::string("/.gameapi_builder/deploy");
-      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy";
+      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy/store";
       int val1= system(cmd1.c_str());
       int val2=system(cmd2.c_str());
       //int val3=system("mkdir -p ~/.gameapi_builder/deploy/licenses");
@@ -21655,6 +21827,35 @@ public:
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    std::string fn = home + "/.gameapi_builder/deploy/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
+
+	    int s7=fn.size();
+	    int pos = -1;
+	    for(int i=0;i<s7;i++)
+	      {
+		if (fn[i]=='/') pos=i;
+	      }
+	    std::string id = fn.substr(pos+1);
+
+	    std::string htmlfile = s;
+	    
+	    htmlfile = replace_str(htmlfile, "@", "\n");					      
+	    while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+	    
+	    htmlfile+='\n';
+	   
+	    std::vector<std::string> persistent = get_persistent_ids(htmlfile);
+	    m_persistent = persistent;
+
+	    int s8=persistent.size();
+	    bool flag=false;
+	    for(int i=0;i<s8;i++)
+	      {
+		if (id==persistent[i]) flag=true;
+	      }
+	    
+	    if (!flag) {
+	    
+
 	    std::cout << "READING OUTPUT:" << fn << std::endl;
 	    std::ifstream sj(fn.c_str());
 	    std::string line;
@@ -21669,6 +21870,7 @@ public:
 	      }
 										
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
+	    }
 	  }
 	}
 
@@ -21683,6 +21885,12 @@ public:
       while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
       
       htmlfile+='\n';
+
+
+      //std::vector<std::string> persistent = get_persistent_ids(htmlfile);
+      //m_persistent = persistent;
+
+
       std::string lastline = get_last_line(htmlfile,'\n');
       std::string label,id2;
       std::stringstream ss2(lastline);
@@ -21788,6 +21996,17 @@ public:
 	}
       std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
+
+	int s = m_persistent.size();
+	for(int i=0;i<s;i++)
+	  {
+	    std::string line = std::string("cp ") + home + "/.gameapi_builder/store/" + m_persistent[i] + " " + home + "/.gameapi_builder/deploy/store/" + m_persistent[i];
+	    int val = system(line.c_str());
+	    if (val!=0) { std::cout << "ERROR: " << line << " returned ERROR CODE " << val << std::endl; ok=false; }
+	  }
+
+
+      
 	std::string line0 = std::string("cp ") + g0 + " " + home + "/.gameapi_builder/gameapi_0.html";
 	std::string line0a = std::string("cp ") + g0a + " " + home + "/.gameapi_builder/gameapi_0_seamless.html";
 	std::string line1 = std::string("cp ") + g1 + " " + home + "/.gameapi_builder/gameapi_1.html";
@@ -21888,6 +22107,7 @@ private:
   std::string homepage;
   bool ok=true;
   bool use_filename;
+  std::vector<std::string> m_persistent;
 };
 
 void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage)
