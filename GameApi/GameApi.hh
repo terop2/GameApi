@@ -309,7 +309,7 @@ public:
   // persistent store
   IMPORT void store_file(std::string filename, ASyncVec *vec);
   IMPORT bool store_file_exists(std::string filename);
-  IMPORT void load_file(std::string filename, void (*fptr)(void*), void*);
+  IMPORT void load_file(std::string filename, void (*fptr)(void*), void*, bool &success);
   IMPORT ASyncVec *load_file_result(std::string filename);
   IMPORT void load_file_clean(std::string filename);
   
@@ -692,7 +692,7 @@ public:
   std::string ds_to_string(DS ds);
 
   // temp store
-  void load_ds_from_temp(std::string filename, void (*fptr)(void*), void *data);
+  void load_ds_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);
   DS load_ds_from_temp2(std::string filename);
   void load_ds_from_temp3(std::string filename);
   

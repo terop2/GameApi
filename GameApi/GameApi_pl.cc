@@ -15956,6 +15956,12 @@ private:
   mutable int block_cache=-2;  
 };
 
+GameApi::P GameApi::PolygonApi::p_ds2(EveryApi &ev, DS ds)
+{
+  DiskStore *dds = find_disk_store(e, ds);  
+  return add_polygon2(e, new DSFaceCollection(dds),1);
+}
+
 GameApi::P GameApi::PolygonApi::p_ds(EveryApi &ev, const unsigned char *buf, const unsigned char *end)
 {
   DS ds = ev.mainloop_api.load_ds_from_mem(buf,end);
