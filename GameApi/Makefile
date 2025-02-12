@@ -59,7 +59,7 @@ endif
 
 LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
 
-CFiles=	GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
+CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \

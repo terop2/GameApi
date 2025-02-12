@@ -306,8 +306,13 @@ public:
   IMPORT void remove_async(int i);
   IMPORT void async_scheduler();
 
+  // persistent store
+  IMPORT void store_file(std::string filename, ASyncVec *vec);
+  IMPORT bool store_file_exists(std::string filename);
+  IMPORT void load_file(std::string filename, void (*fptr)(void*), void*);
+  IMPORT ASyncVec *load_file_result(std::string filename);
+  IMPORT void load_file_clean(std::string filename);
   
-
   IMPORT ~Env();
   IMPORT static Env *Latest_Env();
 private:
@@ -583,6 +588,7 @@ public:
   IMPORT ML debug_obj(EveryApi &ev);
   IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
   IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects);
+  IMPORT void save_ds_store(std::string filename, DS ds);
   struct Event
   {
     int type=-1;
@@ -684,6 +690,11 @@ public:
   DS load_ds_from_disk_incrementally(std::string filename);
   void save_ds(std::string output_filename, DS ds);
   std::string ds_to_string(DS ds);
+
+  // temp store
+  void load_ds_from_temp(std::string filename, void (*fptr)(void*), void *data);
+  DS load_ds_from_temp2(std::string filename);
+  void load_ds_from_temp3(std::string filename);
   
   INP cursor_keys_normal_move();
   INP cursor_keys_rotate_move(float speed_rot, float pos_forward, float pos_normal, float pos_backward);
@@ -2556,6 +2567,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P p_ds2(EveryApi &ev, DS ds2);
+  P load_ds_from_temp_p(EveryApi &ev, P p, std::string url);
   ML fade_pic(EveryApi &ev, BM bm1, float start_time, float transition_time, float end_time, float end_transition_time,
 	      BM bm2, float start2_time, float transition2_time, float end2_time, float end2_transition_time);
   P no_batch_map(P p);
