@@ -23424,7 +23424,119 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string fi
   return add_disk_store(e,new LoadDSDisk(filename));
 }
 
+void load_png_cb2(void *);
+
+class LoadPNGFromTemp : public Bitmap<Color>
+{
+public:
+  LoadPNGFromTemp(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm, std::string url, std::string homepage) : env(env), ev(ev), bm(bm), url(url), homepage(homepage) {
+    ev.bitmap_api.load_png_from_temp(get_filename(),&load_png_cb2,this,success);
+
+  }
+  ~LoadPNGFromTemp()
+  {
+    ev.bitmap_api.load_png_from_temp3(get_filename());
+  }
+  
+  std::string get_filename() const
+  {
+    int s = url.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (url[i]=='/'||url[i]=='\\') pos=i;
+      }
+    return url.substr(pos+1);
+  }
+
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+
+  void Prepare2()
+  {
+    //std::cout << "Prepare2" << success << std::endl;
+    if (success) {
+      bm2 = ev.bitmap_api.load_png_from_temp2(get_filename());
+      // bm2 = ev.polygon_api.bm_png2(ev,ds2);
+      
+      Bitmap<Color> *bbm = find_bitmap2(env,bm2);
+      bbm->Prepare();
+    }
+  }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+#ifndef ANDROID
+    if (!env.store_file_exists(get_filename()))
+      {
+	Bitmap<Color> *bbm = find_bitmap2(env,bm);
+	bbm->Prepare();
+	
+	int flags = 0;
+	//ds = ev.polygon_api.bm_png_inv(p,flags);
+	ev.mainloop_api.save_png_store(get_filename(),bm);
+	ev.bitmap_api.load_png_from_temp(get_filename(),&load_png_cb2,this,success);
+      }
+#endif
+#endif
+    
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+
+  virtual int SizeX() const
+  {
+    if (bm2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	Bitmap<Color> *bm = find_bitmap2(env,bm2);
+	return bm->SizeX();
+      }
+    return 0;
+  }
+  virtual int SizeY() const
+  {
+    if (bm2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	Bitmap<Color> *bm = find_bitmap2(env,bm2);
+	return bm->SizeY();
+      }
+    return 0;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    if (bm2.id!=-1)
+      {
+	Bitmap<Color> *bm = find_bitmap2(env,bm2);
+	return bm->Map(x,y);
+      }
+    return Color(0xffffffff);
+  }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::BM bm;
+  GameApi::DS ds;
+  GameApi::DS ds2 = { -1 };
+  GameApi::BM bm2 = { -1 };
+  std::string url;
+  std::string homepage;
+  bool success = false;
+};
+
+void load_png_cb2(void *dt)
+{
+  LoadPNGFromTemp *ptr = (LoadPNGFromTemp*)dt;
+  ptr->Prepare2();
+}
+
+
+GameApi::BM GameApi::BitmapApi::bm_png_bm(EveryApi &ev, BM bm, std::string url)
+{
+  return add_color_bitmap(e,new LoadPNGFromTemp(e,ev,bm,url,gameapi_homepageurl));
+}
+
 void load_ds_cb2(void *);
+
 
 class LoadDSFromTemp : public FaceCollection
 {
@@ -23610,6 +23722,26 @@ GameApi::P GameApi::PolygonApi::load_ds_from_temp_p(GameApi::EveryApi &ev, GameA
   return add_polygon2(e, new LoadDSFromTemp(e,ev, p, url, gameapi_homepageurl),1);
 }
 
+
+void GameApi::BitmapApi::load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success)
+{
+  e.load_file(filename,fptr,data,success);
+}
+GameApi::BM GameApi::BitmapApi::load_png_from_temp2(std::string filename)
+{
+  ASyncVec *vec = e.load_file_result(filename);
+  std::vector<unsigned char> buf(vec->begin(),vec->end());
+  bool success=false;
+  BufferRef ref = LoadImageFromString(buf, success);
+  Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  return add_color_bitmap2(e,bm);
+}
+void GameApi::BitmapApi::load_png_from_temp3(std::string filename)
+{
+  e.load_file_clean(filename);
+}
+
+
 void GameApi::MainLoopApi::load_ds_from_temp(std::string filename, void (*fptr)(void*), void*data, bool &success)
 {
   e.load_file(filename,fptr,data,success);
@@ -23785,6 +23917,7 @@ void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
 }
 
 GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
+
 
 void GameApi::MainLoopApi::save_ds_store(std::string output_filename, DS ds)
 {
