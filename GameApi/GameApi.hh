@@ -878,6 +878,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
   // temp store
   BM bm_png_bm(EveryApi &ev, BM bm, std::string url);
   void load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);

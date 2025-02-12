@@ -38,6 +38,13 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			     "BM", "bitmap_api", "bm_png_bm"));
       
 
+      vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::stable_diffusion,
+			     "stable_diffusion",
+			     { "ev", "prompt", "filename" },
+			     { "EveryApi&", "std::string", "std::string" },
+			     { "ev", "garden_gnome", "test.png" },
+			     "BM", "bitmap_api", "stable_diffusion"));
+      
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::script_bitmap,
 			 "bm_expr",

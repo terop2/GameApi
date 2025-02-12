@@ -21231,7 +21231,8 @@ struct PersistentFuncSpec
 PersistentFuncSpec g_persistent_func[] =
   {
     { "bitmap_api", "bm_png_bm", 2 },
-    { "polygon_api", "load_ds_from_temp_p", 2 }
+    { "polygon_api", "load_ds_from_temp_p", 2 },
+    { "bitmap_api", "stable_diffusion", 2 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
@@ -23643,6 +23644,81 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string fi
 { // This doesnt use too much memory.
   return add_disk_store(e,new LoadDSDisk(filename));
 }
+
+
+class StableDiffusion : public Bitmap<Color>
+{
+public:
+  StableDiffusion(GameApi::Env &env,std::string prompt) : env(env), prompt(prompt) {
+
+    url = "https://meshpage.org/mesh_ai_bm.php?prompt=\"";
+    url+=prompt;
+    url+="\"";
+    
+  }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url,gameapi_homepageurl);
+#endif
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+    std::vector<unsigned char> vec2(vec->begin(),vec->end());
+    bool success = false;
+    ref = LoadImageFromString(vec2,success);
+    done = true;
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  
+  virtual int SizeX() const
+  {
+    if (done)
+      {
+	return ref.width;
+      }
+    return 1;
+  }
+  virtual int SizeY() const
+  {
+    if (done)
+      {
+	return ref.height;
+      }
+    return 1;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    if (done)
+      {
+	if (x>=0&&x<ref.width)
+	  if (y>=0&&y<ref.height)
+	    return Color(ref.buffer[x+ref.ydelta*y]);
+      }
+    return Color(0xffffffff);
+  }
+private:
+  GameApi::Env &env;
+  std::string prompt;
+  std::string url;
+  BufferRef ref;
+  bool done = false;
+};
+
+
+GameApi::BM GameApi::BitmapApi::stable_diffusion(EveryApi &ev, std::string prompt, std::string filename)
+{
+  Bitmap<Color> *bm = new StableDiffusion(e, prompt);
+  GameApi::BM bm2 = add_color_bitmap(e,bm);
+  return bm_png_bm(ev, bm2, filename);
+}
+
+
 
 void load_png_cb2(void *);
 
