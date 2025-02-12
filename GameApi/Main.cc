@@ -1616,6 +1616,43 @@ void PreCalcExecute(Render &rend, FrameAnim &f, float duration, int numframes)
     }
 }
 
+
+
+
+GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
+
+void g_png_store_write_func(void *context, void *data, int size)
+{
+  std::string *write_buf = (std::string*)context;
+  *write_buf = std::string((unsigned char*)data,((unsigned char*)data)+size);
+}
+
+Bitmap<Color> *find_bitmap2(GameApi::Env &e, GameApi::BM bm);
+
+
+void GameApi::MainLoopApi::save_png_store(std::string output_filename, BM bm)
+{
+  std::stringstream ss;
+  Bitmap<Color> *bbm = find_bitmap2(e,bm);
+  bbm->Prepare();
+  FlipColours flip(*bbm);
+  BufferFromBitmap bm2(flip);
+  bm2.Gen();
+  BufferRef ref = bm2.Buffer();
+  
+  stbi_write_func *func = &g_png_store_write_func;
+  std::string write_buf;
+  void *context = (void*)&write_buf;
+  void *data = ref.buffer;
+  int stride = ref.ydelta*sizeof(unsigned int); // in bytes
+  stbi_write_png_to_func(func, context, bbm->SizeX(), bbm->SizeY(), 4, data, stride);
+
+  
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(write_buf.begin(),write_buf.end());
+  e.store_file(output_filename,g_convert(&vec));
+}
+
+
 #undef LoadImage
 BufferRef LoadImageFromString(const std::vector<unsigned char> &buffer, bool &success)
 {

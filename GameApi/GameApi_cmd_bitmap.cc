@@ -29,6 +29,15 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BB", "unsigned int" },
 			 { "", "00000000" },
 			 "BM", "bitmap_api", "newbitmap_bb"));
+
+      vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bm_png_bm,
+			     "bm_png_bm",
+			     { "ev", "bm", "url" },
+			     { "EveryApi&","BM","std::string" },
+			     { "ev", "", "https://meshpage.org/temp.png" },
+			     "BM", "bitmap_api", "bm_png_bm"));
+      
+
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::script_bitmap,
 			 "bm_expr",

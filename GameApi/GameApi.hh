@@ -589,6 +589,7 @@ public:
   IMPORT ML restart_screen(EveryApi &ev, ML ml, std::string fontname);
   IMPORT ML save_ds_ml(EveryApi &ev, std::string output_filename, P p, bool disable_normal, bool disable_color, bool disable_texcoord, bool disable_texcoord3, bool disable_objects);
   IMPORT void save_ds_store(std::string filename, DS ds);
+  IMPORT void save_png_store(std::string filename, BM bm);
   struct Event
   {
     int type=-1;
@@ -877,6 +878,12 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  // temp store
+  BM bm_png_bm(EveryApi &ev, BM bm, std::string url);
+  void load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);
+  BM load_png_from_temp2(std::string filename);
+  void load_png_from_temp3(std::string filename);
+
   IMPORT BM debug_number(EveryApi &ev, BM bm0, int num, bool disable, std::string url);
   IMPORT ML display_bitmaps(EveryApi &ev, std::vector<BM> vec, float start_time, float delta_time);
   IMPORT BM flip_tile_bitmap(BM bm, int sx, int sy, bool is_x);
