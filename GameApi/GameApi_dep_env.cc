@@ -2432,6 +2432,11 @@ private:
   mutable unsigned char tmp;
 };
 
+GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec)
+{
+  return new ASyncDataFetcher(vec);
+}
+
 GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
   {
   int u = g_urls.size();

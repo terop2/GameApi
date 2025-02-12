@@ -135,8 +135,11 @@ void g_load_cb(void *data)
 
 GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
 
-void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *data)
+void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *data, bool &success)
 {
+#ifndef EMSCRIPTEN
+  if (!store_file_exists(filename)) { std::cout << "Filename: " << filename << " does not exists!" << std::endl; success=false; return; }
+#endif
   std::string start="";
 #ifdef LINUX
   const char *dd = getenv("BUILDER_DOCKER_DIR");
@@ -161,6 +164,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   ld.filename = filename;
   ld.vec = g_convert(vec);
   g_finished.push_back(ld);
+  success=true;
   fptr(data);
 #endif
 #ifdef WINDOWS
@@ -184,6 +188,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   ld.filename = filename;
   ld.vec = g_convert(vec);
   g_finished.push_back(ld);
+  success=true;
   fptr(data);
 #endif
 #ifdef EMSCRIPTEN
@@ -195,10 +200,12 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   pl->fptr = fptr;
   pl->data = data;
   g_loads.push_back(pl);
+  success=true;
   async_load_callback(store_file_dir,&g_load_cb,(void*)pl);
 #endif
 #ifdef ANDROID
 #endif
+
 }
   
 GameApi::ASyncVec *GameApi::Env::load_file_result(std::string filename)
