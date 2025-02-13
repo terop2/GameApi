@@ -1,0 +1,11 @@
+cmake \
+    -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK/build/cmake/android.toolchain.cmake \
+    -DANDROID_ABI=armeabi-v7a \
+    -DANDROID_PLATFORM=31 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DSDL_HIDAPI=ON \
+    -DSDL_JOYSTICK=ON \
+    -DSDL_GAMECONTROLLER=ON \
+    -DSDL_ANDROID=ON \
+    -S ../SDL-release-2.30.11 -B .

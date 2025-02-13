@@ -2607,6 +2607,49 @@ private:
 };
 
 
+class FlipColoursInv : public Bitmap<Color>
+{
+public:
+  FlipColoursInv(Bitmap<Color> &c) : c(c) { }
+
+  void Collect(CollectVisitor &vis) { c.Collect(vis); }
+  void HeavyPrepare() { 
+  }
+  void Prepare() { c.Prepare(); }
+
+  virtual int SizeX() const { return c.SizeX(); }
+  virtual int SizeY() const { return c.SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    Color cc = c.Map(x,y);
+    unsigned int val = cc.Pixel();
+
+    // This is gameapi format.
+    unsigned int val_a = val&0xff000000;
+    unsigned int val_r = val&0x00ff0000;
+    unsigned int val_g = val&0x0000ff00;
+    unsigned int val_b = val&0x000000ff;
+    val_a >>= 24;
+    val_b >>= 16;
+    val_g >>= 8;
+    val_r >>= 0;
+
+
+    val_a <<= 24;
+    val_r <<= 16;
+    val_g <<= 8;
+    val_b <<= 0;
+
+    // These are opengl RGBA format
+    unsigned int v = val_r+val_g+val_b+val_a;
+    return Color(v);
+  }
+  virtual bool IsDirectGltfImage() const { return c.IsDirectGltfImage(); }
+
+public:
+  Bitmap<Color> &c;
+};
+
 class FlipColours : public Bitmap<Color>
 {
 public:
@@ -3372,6 +3415,8 @@ public:
 
   void Prepare() { c.Prepare(); }
 
+  bool ReadyToPrepare() const { return c.ReadyToPrepare(); }
+  
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   Color Map(int x, int y) const
@@ -3413,6 +3458,9 @@ public:
   void HeavyPrepare() { Prepare(); }
 
   void Prepare() { bitmap.Prepare(); }
+
+  bool ReadyToPrepare() const { return bitmap.ReadyToPrepare(); }
+
   float SizeX() const { return xsize; }
   float SizeY() const { return ysize; }
   T Map(float x, float y) const

@@ -102,6 +102,7 @@ echo "<li>Blender import is known to contain areas that cannot be rendered\n";
 echo "<li>Phong shading is already outdated\n";
 echo "<li>File size limits at 250Mb sketchfab zip file size\n";
 echo "<li>Builder is unusable for newbies\n";
+echo "<li>Android deliverables require installation of ndk and a working build\n";
 echo "</ul>\n";
 echo "</div>\n";
 echo "</div>\n";

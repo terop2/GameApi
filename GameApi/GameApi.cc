@@ -1,6 +1,5 @@
 
 
-
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -21168,6 +21167,121 @@ void deploy_set_status_file(std::string output_filename, int status)
 }
 
 
+// temporary persistent store stuff
+
+struct LINE
+{
+  std::string return_type;
+  std::string label_id;
+  std::string api_name;
+  std::string func_name;
+  std::vector<std::string> params;
+};
+
+LINE parse_line(std::string line)
+{
+  int s = line.size();
+  int pos1 = -1; // space
+  int pos2 = -1; // =
+  int pos3 = -1; // .
+  int pos4 = -1; // .
+  int pos5 = -1; // (
+  std::vector<int> param_end_pos;
+  int level=0;
+  for(int i=0;i<s;i++)
+    {
+      if (line[i]==' ' && pos1==-1) pos1=i;
+      if (line[i]=='=' && pos2==-1) pos2=i;
+      if (line[i]=='.' && pos3!=-1 && pos4==-1) pos4=i;
+      if (line[i]=='.' && pos3==-1) pos3=i;
+      if (line[i]=='(' && pos5==-1) pos5=i;
+      if ((line[i]==','||line[i]==')')&&level==0) param_end_pos.push_back(i);
+      if (line[i]=='{') level++;
+      if (line[i]=='}') level--;
+    }
+  std::string ret_type = line.substr(0,pos1);
+  std::string label = line.substr(pos1+1,pos2-pos1-1);
+  std::string api = std::string(line.begin()+pos3+1,line.begin()+pos4);
+  std::string func_name = std::string(line.begin()+pos4+1,line.begin()+pos5);
+  int pos = pos5;
+  int s2 = param_end_pos.size();
+  std::vector<std::string> params;
+  for(int i=0;i<s2;i++)
+    {
+      params.push_back(std::string(line.begin()+pos+1,line.begin()+param_end_pos[i]));
+      pos = param_end_pos[i];
+    }
+
+  LINE l;
+  l.return_type = ret_type;
+  l.label_id = label;
+  l.api_name = api;
+  l.func_name = func_name;
+  l.params = params;
+  return l;
+}
+
+struct PersistentFuncSpec
+{
+  std::string api;
+  std::string func;
+  int param_num;
+};
+
+PersistentFuncSpec g_persistent_func[] =
+  {
+    { "bitmap_api", "bm_png_bm", 2 },
+    { "polygon_api", "load_ds_from_temp_p", 2 },
+    { "bitmap_api", "stable_diffusion", 2 }
+  };
+int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
+
+std::string get_persistent_id(LINE l)
+{
+  int s = g_persistent_func_size;
+  for(int i=0;i<s;i++)
+    {
+      PersistentFuncSpec spec = g_persistent_func[i];
+      if (spec.api == l.api_name && spec.func == l.func_name)
+	{
+	  return l.params[spec.param_num];
+	}
+    }
+  return "@";
+}
+
+
+std::vector<std::string> get_persistent_ids(std::vector<std::string> lines)
+{
+  std::vector<std::string> results;
+  int s = lines.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string line = lines[i];
+      LINE l = parse_line(line);
+      std::string res = get_persistent_id(l);
+      if (res!="@")
+	{
+	  int ss = res.size();
+	  int pos = -1;
+	  for(int j=0;j<ss;j++)
+	    if (res[j]=='/'||res[j]=='\\') pos=j;
+	  results.push_back(res.substr(pos+1));
+	}
+    }
+  return results;
+}
+std::vector<std::string> get_persistent_ids(std::string code)
+{
+  std::stringstream ss(code);
+  std::string line;
+  std::vector<std::string> lines;
+  while(std::getline(ss,line)) {
+    lines.push_back(line);
+  }
+  return get_persistent_ids(lines);
+}
+
 
 
 bool g_update_download_bar = false;
@@ -21235,6 +21349,18 @@ public:
       
       int val4 = system(str5.c_str());
       if (val4!=0) { std::cout << "ERROR: mkdir returned error: " << val4 <<std::endl; ok=false; }
+
+
+      std::string str6 = "mkdir %TEMP%\\_gameapi_builder\\deploy\\store";
+      if (gameapi_temp_dir!="@")
+	{
+	  str6 = deploy_replace_string(str6,"%TEMP%",gameapi_temp_dir);
+	}
+      int val5 = system(str6.c_str());
+      if (val5!=0) { std::cout << "ERROR: mkdir returned error: " << val5 <<std::endl; ok=false; }
+
+      
+
       env.set_download_progress(env.download_index_mapping(id), 3.0/8.0);
       break;
       }
@@ -21248,6 +21374,19 @@ public:
       s = replace_str(s, "<", "&lt;");
       s = replace_str(s, "\"", "&quot;");
       s = replace_str(s, "\'", "&apos;");
+
+
+
+      std::string htmlfile = s;
+
+      htmlfile = replace_str(htmlfile, "@", "\n");					      
+      while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+      
+      htmlfile+='\n';
+
+
+      std::vector<std::string> persistent = get_persistent_ids(htmlfile);
+      m_persistent = persistent;
 
       
       
@@ -21315,8 +21454,25 @@ public:
 	  curl_string = deploy_replace_string(curl_string,"%TEMP%",gameapi_temp_dir);
 	}
 
-	  int val = system(curl_string.c_str());
-	  if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
+
+      int s7=ii.url.size();
+      int pos=-1;
+      for(int i=0;i<s7;i++)
+	if (ii.url[i]=='/') pos=i;
+      
+      std::string id = ii.url.substr(pos+1);
+      
+	    int s8=persistent.size();
+	    bool flag=false;
+	    for(int i=0;i<s8;i++)
+	      {
+		if (id==persistent[i]) flag=true;
+	      }
+	    
+	    if (!flag) {
+	      int val = system(curl_string.c_str());
+	      if (val!=0) { std::cout << "ERROR: " << curl_string << " RETURNED ERROR " << val << std::endl; ok=false; }
+	    }
 	  }
 	}
 
@@ -21330,6 +21486,11 @@ public:
       while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
       
       htmlfile+='\n';
+
+
+      
+
+      
       std::string lastline = get_last_line(htmlfile,'\n');
       std::string label,id2;
       std::stringstream ss2(lastline);
@@ -21449,6 +21610,17 @@ public:
 	std::string line5 = std::string("copy ") + gk + " %TEMP%\\_gameapi_builder\\get_file_size.php";
 	//std::string line5 = std::string("copy ") + gsed + " %TEMP%\\_gameapi_builder\\sed.exe";
 
+
+	int s = m_persistent.size();
+	for(int i=0;i<s;i++)
+	  {
+	    std::string line = std::string("copy %TEMP%\\_gameapi_builder\\store\\") + m_persistent[i] + " %TEMP%\\_gameapi_builder\\deploy\\store\\" + m_persistent[i];
+	    int val = system(line.c_str());
+	    if (val!=0) { std::cout << "ERROR: " << line << " returned ERROR CODE " << val << std::endl; ok=false; }
+	  }
+	
+
+	
       if (gameapi_temp_dir!="@")
 	{
 	  line0 = deploy_replace_string(line0,"%TEMP%",gameapi_temp_dir);
@@ -21563,7 +21735,7 @@ public:
       std::cout << "Step #2: Creating tmp directories.." << std::endl;
       std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
       std::string cmd1 = std::string("rm -rf ") + home + std::string("/.gameapi_builder/deploy");
-      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy";
+      std::string cmd2 = "mkdir -p " + home + "/.gameapi_builder/deploy/store";
       int val1= system(cmd1.c_str());
       int val2=system(cmd2.c_str());
       //int val3=system("mkdir -p ~/.gameapi_builder/deploy/licenses");
@@ -21656,6 +21828,35 @@ public:
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    std::string fn = home + "/.gameapi_builder/deploy/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
+
+	    int s7=fn.size();
+	    int pos = -1;
+	    for(int i=0;i<s7;i++)
+	      {
+		if (fn[i]=='/') pos=i;
+	      }
+	    std::string id = fn.substr(pos+1);
+
+	    std::string htmlfile = s;
+	    
+	    htmlfile = replace_str(htmlfile, "@", "\n");					      
+	    while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
+	    
+	    htmlfile+='\n';
+	   
+	    std::vector<std::string> persistent = get_persistent_ids(htmlfile);
+	    m_persistent = persistent;
+
+	    int s8=persistent.size();
+	    bool flag=false;
+	    for(int i=0;i<s8;i++)
+	      {
+		if (id==persistent[i]) flag=true;
+	      }
+	    
+	    if (!flag) {
+	    
+
 	    std::cout << "READING OUTPUT:" << fn << std::endl;
 	    std::ifstream sj(fn.c_str());
 	    std::string line;
@@ -21670,6 +21871,7 @@ public:
 	      }
 										
 	    if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
+	    }
 	  }
 	}
 
@@ -21684,6 +21886,12 @@ public:
       while(htmlfile[htmlfile.size()-1]=='\n') htmlfile=htmlfile.substr(0,htmlfile.size()-1);
       
       htmlfile+='\n';
+
+
+      //std::vector<std::string> persistent = get_persistent_ids(htmlfile);
+      //m_persistent = persistent;
+
+
       std::string lastline = get_last_line(htmlfile,'\n');
       std::string label,id2;
       std::stringstream ss2(lastline);
@@ -21789,6 +21997,17 @@ public:
 	}
       std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
+
+	int s = m_persistent.size();
+	for(int i=0;i<s;i++)
+	  {
+	    std::string line = std::string("cp ") + home + "/.gameapi_builder/store/" + m_persistent[i] + " " + home + "/.gameapi_builder/deploy/store/" + m_persistent[i];
+	    int val = system(line.c_str());
+	    if (val!=0) { std::cout << "ERROR: " << line << " returned ERROR CODE " << val << std::endl; ok=false; }
+	  }
+
+
+      
 	std::string line0 = std::string("cp ") + g0 + " " + home + "/.gameapi_builder/gameapi_0.html";
 	std::string line0a = std::string("cp ") + g0a + " " + home + "/.gameapi_builder/gameapi_0_seamless.html";
 	std::string line1 = std::string("cp ") + g1 + " " + home + "/.gameapi_builder/gameapi_1.html";
@@ -21889,6 +22108,7 @@ private:
   std::string homepage;
   bool ok=true;
   bool use_filename;
+  std::vector<std::string> m_persistent;
 };
 
 void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage)
@@ -23425,6 +23645,449 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string fi
   return add_disk_store(e,new LoadDSDisk(filename));
 }
 
+void *stable_diff_execute(void *ptr);
+
+
+
+class StableDiffusion : public Bitmap<Color>
+{
+public:
+  StableDiffusion(GameApi::Env &env,std::string prompt) : env(env), prompt(prompt) {
+
+    url = "https://meshpage.org/mesh_ai_bm.php?prompt=\"";
+    url+=prompt;
+    url+="\"";
+    std::cout << "STABLE DIFF tasks_add" << std::endl;
+    tasks_add(567, &stable_diff_execute, (void*)this);
+    
+  }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void Prepare2()
+  {
+    std::cout << "Stable diffusion PREPARE2" << std::endl;
+#ifndef EMSCRIPTEN
+    env.async_load_url(url,gameapi_homepageurl);
+#endif
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+    std::vector<unsigned char> vec2(vec->begin(),vec->end());
+    bool success = false;
+    ref = LoadImageFromString(vec2,success);
+    std::cout << "STABLE DIFF done=true" << std::endl;
+    done = true;
+  }
+  virtual void HeavyPrepare()
+  {
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual bool ReadyToPrepare() const
+  {
+    return done;
+  }
+  void wait() const
+  {
+    //if (!done) tasks_join(567);
+  }
+  
+  virtual int SizeX() const
+  {
+    wait();
+    if (done)
+      {
+	return ref.width;
+      }
+    return 400;
+  }
+  virtual int SizeY() const
+  {
+    wait();
+    if (done)
+      {
+	return ref.height;
+      }
+    return 400;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    wait();
+    if (done)
+      {
+	if (x>=0&&x<ref.width)
+	  if (y>=0&&y<ref.height)
+	    return Color(ref.buffer[x+ref.ydelta*y]);
+      }
+    return Color(0xffffffff);
+  }
+private:
+  GameApi::Env &env;
+  std::string prompt;
+  std::string url;
+  BufferRef ref;
+  bool done = false;
+};
+void *stable_diff_execute(void *ptr)
+{
+  StableDiffusion *diff = (StableDiffusion*)ptr;
+  diff->Prepare2();
+  return 0;
+}
+
+
+
+GameApi::BM GameApi::BitmapApi::stable_diffusion(EveryApi &ev, std::string prompt, std::string filename)
+{
+  Bitmap<Color> *bm = new StableDiffusion(e, prompt);
+  GameApi::BM bm2 = add_color_bitmap(e,bm);
+  return bm_png_bm(ev, bm2, filename);
+}
+
+
+
+void load_png_cb2(void *);
+
+class LoadPNGFromTemp : public Bitmap<Color>
+{
+public:
+  LoadPNGFromTemp(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::BM bm, std::string url, std::string homepage) : env(env), ev(ev), bm(bm), url(url), homepage(homepage) {
+    ev.bitmap_api.load_png_from_temp(get_filename(),&load_png_cb2,this,success);
+
+  }
+  ~LoadPNGFromTemp()
+  {
+    ev.bitmap_api.load_png_from_temp3(get_filename());
+  }
+  
+  std::string get_filename() const
+  {
+    int s = url.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (url[i]=='/'||url[i]=='\\') pos=i;
+      }
+    return url.substr(pos+1);
+  }
+
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+
+  void Prepare2()
+  {
+    std::cout << "Prepare2" << success << std::endl;
+    if (success) {
+      bm2 = ev.bitmap_api.load_png_from_temp2(get_filename());
+      // bm2 = ev.polygon_api.bm_png2(ev,ds2);
+      
+      Bitmap<Color> *bbm = find_bitmap2(env,bm2);
+      bbm->Prepare();
+      std::cout << "Prepare2 done" << std::endl;
+    }
+  }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+#ifndef ANDROID
+    if (!env.store_file_exists(get_filename()))
+      {
+	Bitmap<Color> *bbm = find_bitmap2(env,bm);
+	bbm->Prepare();
+	
+	int flags = 0;
+	//ds = ev.polygon_api.bm_png_inv(p,flags);
+	ev.mainloop_api.save_png_store(get_filename(),bm);
+	ev.bitmap_api.load_png_from_temp(get_filename(),&load_png_cb2,this,success);
+      }
+#endif
+#endif
+    
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+
+  virtual bool ReadyToPrepare() const {
+    Bitmap<Color> *bbm = find_bitmap2(env,bm);
+    return bbm->ReadyToPrepare();
+  }
+  
+  virtual int SizeX() const
+  {
+    if (bm2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	Bitmap<Color> *bm = find_bitmap2(env,bm2);
+	return bm->SizeX();
+      }
+    return 400;
+  }
+  virtual int SizeY() const
+  {
+    if (bm2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	Bitmap<Color> *bm = find_bitmap2(env,bm2);
+	return bm->SizeY();
+      }
+    return 400;
+  }
+  virtual Color Map(int x, int y) const
+  {
+    if (bm2.id!=-1)
+      {
+	Bitmap<Color> *bm = find_bitmap2(env,bm2);
+	return bm->Map(x,y);
+      }
+    return Color(0xffffffff);
+  }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::BM bm;
+  GameApi::DS ds;
+  GameApi::DS ds2 = { -1 };
+  GameApi::BM bm2 = { -1 };
+  std::string url;
+  std::string homepage;
+  bool success = false;
+};
+
+void load_png_cb2(void *dt)
+{
+  LoadPNGFromTemp *ptr = (LoadPNGFromTemp*)dt;
+  ptr->Prepare2();
+}
+
+
+GameApi::BM GameApi::BitmapApi::bm_png_bm(EveryApi &ev, BM bm, std::string url)
+{
+  return add_color_bitmap(e,new LoadPNGFromTemp(e,ev,bm,url,gameapi_homepageurl));
+}
+
+void load_ds_cb2(void *);
+
+
+class LoadDSFromTemp : public FaceCollection
+{
+public:
+  LoadDSFromTemp(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::P p, std::string url, std::string homepage) : env(env), ev(ev), p(p), url(url), homepage(homepage) {
+
+    ev.mainloop_api.load_ds_from_temp(get_filename(),&load_ds_cb2,this,success);
+
+
+  }
+  virtual std::string name() const { return "LoadDSFromTemp"; }
+  ~LoadDSFromTemp()
+  {
+    ev.mainloop_api.load_ds_from_temp3(get_filename());
+  }
+  std::string get_filename() const
+  {
+    int s = url.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (url[i]=='/'||url[i]=='\\') pos=i;
+      }
+    return url.substr(pos+1);
+  }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+
+  void Prepare2()
+  {
+    std::cout << "Prepare2" << success << std::endl;
+    if (success) {
+      ds2 = ev.mainloop_api.load_ds_from_temp2(get_filename());
+      p2 = ev.polygon_api.p_ds2(ev,ds2);
+      
+      FaceCollection *coll = find_facecoll(env,p2);
+      coll->Prepare();
+    }
+  }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+#ifndef ANDROID
+    if (!env.store_file_exists(get_filename()))
+      {
+	FaceCollection *coll = find_facecoll(env,p);
+	coll->Prepare();
+	
+	int flags = 0;
+	ds = ev.polygon_api.p_ds_inv(p,flags);
+	ev.mainloop_api.save_ds_store(get_filename(),ds);
+	ev.mainloop_api.load_ds_from_temp(get_filename(),&load_ds_cb2,this,success);
+      }
+#endif
+#endif
+    
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+
+  virtual int NumFaces() const
+  {
+    //std::cout << "NumFaces" << std::endl;
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      //std::cout << "NumFaces:" << coll->NumFaces() << std::endl;
+      return coll->NumFaces();
+    }
+    return 0;
+  }
+  virtual int NumPoints(int face) const
+  {
+    //std::cout << "NumPoints" << std::endl;
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->NumPoints(face);
+    }
+
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    // std::cout << "FacePoint"<< face << " " << point << std::endl;
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->FacePoint(face,point);
+    }
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->PointNormal(face,point);
+    }
+    return Vector(0.0,0.0,1.0);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return 0.0f;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->Color(face,point);
+    }
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->TexCoord(face,point);
+    }
+    Point2d p;
+    p.x = 0.0f;
+    p.y = 0.0f;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->TexCoord3(face,point);
+    }
+    return 0.0f;
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->Joints(face,point);
+    }
+    VEC4 res;
+    res.x = 0.0; res.y = 0.0; res.z = 0.0; res.w = 0.0;
+    return res;
+
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->Weights(face,point);
+    }
+    VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  //virtual float LightAmount(int face, int point) const { return 0.5; }
+
+  //virtual bool IsTransparent() const { return false; }
+  
+  virtual int NumObjects() const {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->NumObjects();
+    }
+    //std::cout << "Warning: FaceCollection::NumObjects() called" << std::endl;
+    return 1; }
+  virtual std::pair<int,int> GetObject(int o) const {
+    if (p2.id!=-1) {
+      FaceCollection *coll = find_facecoll(env,p2);
+      return coll->GetObject(o);
+    }
+    return std::make_pair(0,NumFaces());
+  }
+
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::P p;
+  GameApi::DS ds;
+  GameApi::DS ds2 = { -1 };
+  GameApi::P p2 = { -1 };
+  std::string url;
+  std::string homepage;
+  bool success = false;
+};
+void load_ds_cb2(void *dt)
+{
+  LoadDSFromTemp *ptr = (LoadDSFromTemp*)dt;
+  ptr->Prepare2();
+}
+
+GameApi::P GameApi::PolygonApi::load_ds_from_temp_p(GameApi::EveryApi &ev, GameApi::P p, std::string url)
+{
+  return add_polygon2(e, new LoadDSFromTemp(e,ev, p, url, gameapi_homepageurl),1);
+}
+
+
+void GameApi::BitmapApi::load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success)
+{
+  e.load_file(filename,fptr,data,success);
+}
+GameApi::BM GameApi::BitmapApi::load_png_from_temp2(std::string filename)
+{
+  ASyncVec *vec = e.load_file_result(filename);
+  std::vector<unsigned char> buf(vec->begin(),vec->end());
+  bool success=false;
+  BufferRef ref = LoadImageFromString(buf, success);
+  Bitmap<Color> *bm = new BitmapFromBuffer(ref);
+  return add_color_bitmap2(e,bm);
+}
+void GameApi::BitmapApi::load_png_from_temp3(std::string filename)
+{
+  e.load_file_clean(filename);
+}
+
+
+void GameApi::MainLoopApi::load_ds_from_temp(std::string filename, void (*fptr)(void*), void*data, bool &success)
+{
+  e.load_file(filename,fptr,data,success);
+}
+GameApi::DS GameApi::MainLoopApi::load_ds_from_temp2(std::string filename)
+{
+  ASyncVec *vec = e.load_file_result(filename);
+  return add_disk_store(e, new LoadDS(vec->begin(),vec->end()));
+}
+void GameApi::MainLoopApi::load_ds_from_temp3(std::string filename)
+{
+  e.load_file_clean(filename);
+}
+
+
+
 GameApi::DS GameApi::MainLoopApi::load_ds_from_disk(std::string filename)
 { // this uses lots of memory
   std::ifstream t(filename,std::ios::in | std::ios::binary);
@@ -23582,6 +24245,52 @@ void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
   std::cout << "Closing file" << std::endl;
   ff.close();
 }
+
+GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
+
+
+void GameApi::MainLoopApi::save_ds_store(std::string output_filename, DS ds)
+{
+  std::stringstream ff;
+
+  int offset = 0;
+  DiskStore *dds = find_disk_store(e, ds);
+  dds->Prepare();
+  FileHeader h;
+  h.d = 'd';
+  h.s = 's';
+  h.type = dds->Type();
+  h.numblocks = dds->NumBlocks();
+  std::cout << "Writing Header:" << sizeof(FileHeader) << std::endl;
+  ff.write((char*)&h, (int)sizeof(FileHeader));
+  offset += sizeof(FileHeader);
+  int s = h.numblocks;
+  offset += sizeof(FileBlock)*s;
+  for(int i=0;i<s;i++)
+    {
+      FileBlock b;
+      b.block_type = dds->BlockType(i);
+      b.block_size_in_bytes = dds->BlockSizeInBytes(i);
+      b.block_offset_from_beginning_of_file = offset;
+      offset += b.block_size_in_bytes;
+      std::cout << "Writing FileBlock:" << sizeof(FileBlock) << std::endl;
+      ff.write((char*)&b,(int)sizeof(FileBlock));
+    }
+  for(int i=0;i<s;i++)
+    {
+      int s = dds->BlockSizeInBytes(i);
+      unsigned char *ptr = dds->Block(i);
+      std::cout << "Writing Block:" << s << std::endl;
+      ff.write((char*)ptr, s);
+    }
+  std::cout << "Closing file" << std::endl;
+
+  std::cout << "Writing to Temp area: " << output_filename << std::endl;
+  std::string ss = ff.str();
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(ss.begin(),ss.end());
+  e.store_file(output_filename,g_convert(&vec));
+}
+
 
 class RandomIntBitmap : public Bitmap<int>
 {

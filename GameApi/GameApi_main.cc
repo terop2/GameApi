@@ -977,7 +977,7 @@ EXPORT void GameApi::MainLoopApi::step()
       cur_delta+=delta_time;
       local_acc+=delta_time;
     }
-  return cur_time;
+  //return cur_time;
 
   /*
   if (target_time > cur_time+(cutoff))

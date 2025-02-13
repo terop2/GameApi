@@ -284,6 +284,7 @@ public:
   virtual int SizeY() const=0;
   virtual C Map(int x, int y) const=0;
   virtual void Prepare()=0;
+  virtual bool ReadyToPrepare() const { return true; }
   virtual ~Bitmap() { }
 
   virtual bool IsDirectGltfImage() const { return false; }
@@ -386,6 +387,7 @@ public:
   virtual float SizeY() const=0;
   virtual C Map(float x, float y) const=0;
   virtual void Prepare()=0;
+  virtual bool ReadyToPrepare() const { return true; }
   virtual ~ContinuousBitmap() { }
 };
 

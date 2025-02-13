@@ -24,6 +24,7 @@ finish()
 	scp ${arr[@]} terop@meshpage.org:/home/terop/meshpage.org/
     fi
 }
+copy_it mesh_ai_bm.php
 copy_it feat.php
 copy_it ad.php
 copy_it process.php
