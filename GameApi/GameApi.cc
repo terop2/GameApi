@@ -23645,6 +23645,9 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string fi
   return add_disk_store(e,new LoadDSDisk(filename));
 }
 
+void *stable_diff_execute(void *ptr);
+
+
 
 class StableDiffusion : public Bitmap<Color>
 {
@@ -23654,14 +23657,17 @@ public:
     url = "https://meshpage.org/mesh_ai_bm.php?prompt=\"";
     url+=prompt;
     url+="\"";
+    std::cout << "STABLE DIFF tasks_add" << std::endl;
+    tasks_add(567, &stable_diff_execute, (void*)this);
     
   }
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
   }
-  virtual void HeavyPrepare()
+  void Prepare2()
   {
+    std::cout << "Stable diffusion PREPARE2" << std::endl;
 #ifndef EMSCRIPTEN
     env.async_load_url(url,gameapi_homepageurl);
 #endif
@@ -23669,31 +23675,46 @@ public:
     std::vector<unsigned char> vec2(vec->begin(),vec->end());
     bool success = false;
     ref = LoadImageFromString(vec2,success);
+    std::cout << "STABLE DIFF done=true" << std::endl;
     done = true;
+  }
+  virtual void HeavyPrepare()
+  {
   }
   virtual void Prepare()
   {
     HeavyPrepare();
   }
+  virtual bool ReadyToPrepare() const
+  {
+    return done;
+  }
+  void wait() const
+  {
+    //if (!done) tasks_join(567);
+  }
   
   virtual int SizeX() const
   {
+    wait();
     if (done)
       {
 	return ref.width;
       }
-    return 1;
+    return 400;
   }
   virtual int SizeY() const
   {
+    wait();
     if (done)
       {
 	return ref.height;
       }
-    return 1;
+    return 400;
   }
   virtual Color Map(int x, int y) const
   {
+    wait();
     if (done)
       {
 	if (x>=0&&x<ref.width)
@@ -23709,6 +23730,13 @@ private:
   BufferRef ref;
   bool done = false;
 };
+void *stable_diff_execute(void *ptr)
+{
+  StableDiffusion *diff = (StableDiffusion*)ptr;
+  diff->Prepare2();
+  return 0;
+}
+
 
 
 GameApi::BM GameApi::BitmapApi::stable_diffusion(EveryApi &ev, std::string prompt, std::string filename)
@@ -23749,13 +23777,14 @@ public:
 
   void Prepare2()
   {
-    //std::cout << "Prepare2" << success << std::endl;
+    std::cout << "Prepare2" << success << std::endl;
     if (success) {
       bm2 = ev.bitmap_api.load_png_from_temp2(get_filename());
       // bm2 = ev.polygon_api.bm_png2(ev,ds2);
       
       Bitmap<Color> *bbm = find_bitmap2(env,bm2);
       bbm->Prepare();
+      std::cout << "Prepare2 done" << std::endl;
     }
   }
   virtual void HeavyPrepare() {
@@ -23777,6 +23806,11 @@ public:
   }
   virtual void Prepare() { HeavyPrepare(); }
 
+  virtual bool ReadyToPrepare() const {
+    Bitmap<Color> *bbm = find_bitmap2(env,bm);
+    return bbm->ReadyToPrepare();
+  }
+  
   virtual int SizeX() const
   {
     if (bm2.id!=-1)
@@ -23785,7 +23819,7 @@ public:
 	Bitmap<Color> *bm = find_bitmap2(env,bm2);
 	return bm->SizeX();
       }
-    return 0;
+    return 400;
   }
   virtual int SizeY() const
   {
@@ -23795,7 +23829,7 @@ public:
 	Bitmap<Color> *bm = find_bitmap2(env,bm2);
 	return bm->SizeY();
       }
-    return 0;
+    return 400;
   }
   virtual Color Map(int x, int y) const
   {

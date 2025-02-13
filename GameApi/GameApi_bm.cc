@@ -1345,6 +1345,37 @@ EXPORT int GameApi::BitmapApi::intvalue(GameApi::BM orig, int x, int y)
   return 0;
 }
 
+EXPORT bool GameApi::BitmapApi::ready_to_prepare(BM bm)
+{
+  BitmapHandle *handle = find_bitmap(e, bm);
+#ifdef EMSCRIPTEN
+  BitmapColorHandle *handle2 = static_cast<BitmapColorHandle*>(handle);
+  if (handle2)
+    return handle2->bm->ReadyToPrepare();
+  return false;
+#else
+
+  BitmapColorHandle *handle2 = dynamic_cast<BitmapColorHandle*>(handle);
+  BitmapIntHandle *handle3 = dynamic_cast<BitmapIntHandle*>(handle);
+  BitmapArrayHandle *handle4 = dynamic_cast<BitmapArrayHandle*>(handle);
+  BitmapPosHandle *handle5 = dynamic_cast<BitmapPosHandle*>(handle);
+  BitmapTileHandle *handle6 = dynamic_cast<BitmapTileHandle*>(handle);
+  if (handle2)
+    return handle2->bm->ReadyToPrepare();
+  if (handle3)
+    return handle3->bm->ReadyToPrepare();
+  if (handle4)
+    return dynamic_cast<BitmapColorHandle*>(handle4->vec[0])->bm->SizeX();
+  if (handle5)
+    return handle5->bm->ReadyToPrepare();
+  if (handle6)
+    return handle6->bm->ReadyToPrepare();
+  return false;
+#endif
+
+  
+}
+
 EXPORT int GameApi::BitmapApi::size_x(BM bm)
 {
   BitmapHandle *handle = find_bitmap(e, bm);

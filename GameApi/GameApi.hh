@@ -983,6 +983,7 @@ public:
   IMPORT int size_x(BM bm);
   IMPORT int size_y(BM bm);
   IMPORT void prepare(BM bm);
+  IMPORT bool ready_to_prepare(BM bm);
   
   IMPORT BMA empty_array();
   BMA array(BM *array, int size);

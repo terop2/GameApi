@@ -186,6 +186,7 @@ class FaceCollection : public CollectInterface
 public:
   virtual ~FaceCollection() { }
   virtual std::string name() const=0;
+  virtual bool ReadyToPrepare() const { return true; }
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;

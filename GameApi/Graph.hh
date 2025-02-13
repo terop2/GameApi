@@ -3415,6 +3415,8 @@ public:
 
   void Prepare() { c.Prepare(); }
 
+  bool ReadyToPrepare() const { return c.ReadyToPrepare(); }
+  
   int SizeX() const { return sx; }
   int SizeY() const { return sy; }
   Color Map(int x, int y) const
@@ -3456,6 +3458,9 @@ public:
   void HeavyPrepare() { Prepare(); }
 
   void Prepare() { bitmap.Prepare(); }
+
+  bool ReadyToPrepare() const { return bitmap.ReadyToPrepare(); }
+
   float SizeX() const { return xsize; }
   float SizeY() const { return ysize; }
   T Map(float x, float y) const

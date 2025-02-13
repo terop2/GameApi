@@ -1685,26 +1685,43 @@ public:
     update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
-    ev.bitmap_api.prepare(bm);
+    if (ev.bitmap_api.ready_to_prepare(bm)) {
+      ev.bitmap_api.prepare(bm);
+    }
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
+    //std::cout << "Update" << std::endl;
+      //std::cout << "Update Ready to Prepare" << std::endl;
     #if 1
     if (firsttime) {
-      ev.bitmap_api.prepare(bm);
+      if (ev.bitmap_api.ready_to_prepare(bm)) {
+	std::cout << "ACTUAL PREPARE" << std::endl;
+	ev.bitmap_api.prepare(bm);
+      }
     }
     size.dx = ev.bitmap_api.size_x(bm);
     size.dy = ev.bitmap_api.size_y(bm);
     if (firsttime)
       {
+	if (ev.bitmap_api.ready_to_prepare(bm)) {
         bm_va = ev.sprite_api.create_vertex_array(bm);
 	//ev.sprite_api.clear_arrays(bm_va);
 	firsttime = false;
+	}
       }
     #endif
   }
   void render()
   {
+    //std::cout << "Render" << std::endl;
+    if (firsttime && ev.bitmap_api.ready_to_prepare(bm)) {
+      std::cout << "REUPDATE" << std::endl;
+      Point2d p;
+      p.x=0.0f; p.y=0.0f;
+      update(p,-1,-1,0,0);
+    }
+    
     #if 1
     if (is_visible())
       {
@@ -4322,8 +4339,8 @@ EXPORT GameApi::W GameApi::GuiApi::bitmap_dialog(BM bm, W &close_button, FtA atl
 {
     OpenglLowApi *ogl = g_low->ogl;
     ogl->glDisable(Low_GL_DEPTH_TEST);
-
-    ev.bitmap_api.prepare(bm);
+    if (ev.bitmap_api.ready_to_prepare(bm))
+      ev.bitmap_api.prepare(bm);
   float sx = float(ev.bitmap_api.size_x(bm));
   float sy = float(ev.bitmap_api.size_y(bm));
   if (sx>sy) {
