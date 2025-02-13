@@ -40,7 +40,7 @@ EXPORT void GameApi::MainLoopApi::make_current()
  std::cout << "Makecurrent return:" << val << std::endl;
 }
 
-bool g_shader_cache_disable = false;
+extern bool g_shader_cache_disable;
 
 class ShaderCacheDisable : public MainLoopItem
 {
