@@ -1677,6 +1677,8 @@ GameApi::W GameApi::GuiApi::bounding_box(W w)
   return add_widget(e, new BoundingBoxWidget(ww));
 }
 
+extern bool g_inside_icon_display;
+
 class IconGuiWidget : public GuiWidgetForward
 {
 public:
@@ -1686,7 +1688,9 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
     if (ev.bitmap_api.ready_to_prepare(bm)) {
+      g_inside_icon_display=true;
       ev.bitmap_api.prepare(bm);
+      g_inside_icon_display=false;
     }
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
@@ -1697,7 +1701,9 @@ public:
     if (firsttime) {
       if (ev.bitmap_api.ready_to_prepare(bm)) {
 	//std::cout << "ACTUAL PREPARE" << std::endl;
+      g_inside_icon_display=true;
 	ev.bitmap_api.prepare(bm);
+	g_inside_icon_display=false;
       }
     }
     size.dx = ev.bitmap_api.size_x(bm);
@@ -1705,7 +1711,9 @@ public:
     if (firsttime)
       {
 	if (ev.bitmap_api.ready_to_prepare(bm)) {
+      g_inside_icon_display=true;
         bm_va = ev.sprite_api.create_vertex_array(bm);
+	g_inside_icon_display=false;
 	//ev.sprite_api.clear_arrays(bm_va);
 	firsttime = false;
 	}
@@ -1731,7 +1739,10 @@ public:
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "color_mix", 1.0f);
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x+0.5,p.y+0.5,0.0));
+      g_inside_icon_display=true;
 	ev.sprite_api.render_sprite_vertex_array(bm_va);
+      g_inside_icon_display=false;
+	
       }
       }
     #endif
