@@ -21376,7 +21376,7 @@ public:
       s = replace_str(s, "\'", "&apos;");
 
 
-
+      {
       std::string htmlfile = s;
 
       htmlfile = replace_str(htmlfile, "@", "\n");					      
@@ -21387,7 +21387,7 @@ public:
 
       std::vector<std::string> persistent = get_persistent_ids(htmlfile);
       m_persistent = persistent;
-
+      }
       
       
       std::vector<UrlItem> items = find_url_items(s);
@@ -21462,11 +21462,11 @@ public:
       
       std::string id = ii.url.substr(pos+1);
       
-	    int s8=persistent.size();
+	    int s8=m_persistent.size();
 	    bool flag=false;
 	    for(int i=0;i<s8;i++)
 	      {
-		if (id==persistent[i]) flag=true;
+		if (id==m_persistent[i]) flag=true;
 	      }
 	    
 	    if (!flag) {

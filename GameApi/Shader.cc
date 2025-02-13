@@ -5972,7 +5972,7 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
     }
   return o;
 }
-extern bool g_shader_cache_disable;
+bool g_shader_cache_disable=false;
 
 int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
