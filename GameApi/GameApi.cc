@@ -23652,15 +23652,29 @@ void *stable_diff_execute(void *ptr);
 class StableDiffusion : public Bitmap<Color>
 {
 public:
-  StableDiffusion(GameApi::Env &env,std::string prompt) : env(env), prompt(prompt) {
+  StableDiffusion(GameApi::Env &env,std::string prompt, std::string filename) : env(env), prompt(prompt), filename(filename) {
 
     url = "https://meshpage.org/mesh_ai_bm.php?prompt=\"";
     url+=prompt;
     url+="\"";
     std::cout << "STABLE DIFF tasks_add" << std::endl;
-    tasks_add(567, &stable_diff_execute, (void*)this);
-    
+
+    if (!env.store_file_exists(get_filename())) {
+      tasks_add(567, &stable_diff_execute, (void*)this);
+    } else done=true;
   }
+  std::string get_filename() const
+  {
+    int s = filename.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (filename[i]=='/'||filename[i]=='\\') pos=i;
+      }
+    return filename.substr(pos+1);
+  }
+
+  
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -23726,6 +23740,7 @@ public:
 private:
   GameApi::Env &env;
   std::string prompt;
+  std::string filename;
   std::string url;
   BufferRef ref;
   bool done = false;
