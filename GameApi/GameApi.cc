@@ -23654,10 +23654,22 @@ class StableDiffusion : public Bitmap<Color>
 public:
   StableDiffusion(GameApi::Env &env,std::string prompt, std::string filename) : env(env), prompt(prompt), filename(filename) {
 
+#ifdef LINUX
+    FILE *ptr = popen("uname -n","r");
+    char buf[15];
+    fread(buf,9,1,ptr);
+    std::string s(buf,buf+9);
+    if (s=="terop-pc2")
+      {
+	std::cout << "Warning: Stable diffusion doesnt work in terop-pc2, since cuda is busy! (use different computer)" << std::endl;
+      }
+
+#endif
+    
     url = "https://meshpage.org/mesh_ai_bm.php?prompt=\"";
     url+=prompt;
     url+="\"";
-    std::cout << "STABLE DIFF tasks_add" << std::endl;
+    //std::cout << "STABLE DIFF tasks_add" << std::endl;
 
     if (!env.store_file_exists(get_filename())) {
       tasks_add(567, &stable_diff_execute, (void*)this);
@@ -23681,7 +23693,7 @@ public:
   }
   void Prepare2()
   {
-    std::cout << "Stable diffusion PREPARE2" << std::endl;
+    //std::cout << "Stable diffusion PREPARE2" << std::endl;
 #ifndef EMSCRIPTEN
     env.async_load_url(url,gameapi_homepageurl);
 #endif
@@ -23689,7 +23701,7 @@ public:
     std::vector<unsigned char> vec2(vec->begin(),vec->end());
     bool success = false;
     ref = LoadImageFromString(vec2,success);
-    std::cout << "STABLE DIFF done=true" << std::endl;
+    //std::cout << "STABLE DIFF done=true" << std::endl;
     done = true;
   }
   virtual void HeavyPrepare()
@@ -23756,7 +23768,7 @@ void *stable_diff_execute(void *ptr)
 
 GameApi::BM GameApi::BitmapApi::stable_diffusion(EveryApi &ev, std::string prompt, std::string filename)
 {
-  Bitmap<Color> *bm = new StableDiffusion(e, prompt);
+  Bitmap<Color> *bm = new StableDiffusion(e, prompt,filename);
   GameApi::BM bm2 = add_color_bitmap(e,bm);
   return bm_png_bm(ev, bm2, filename);
 }
@@ -23792,14 +23804,14 @@ public:
 
   void Prepare2()
   {
-    std::cout << "Prepare2" << success << std::endl;
+    //std::cout << "Prepare2" << success << std::endl;
     if (success) {
       bm2 = ev.bitmap_api.load_png_from_temp2(get_filename());
       // bm2 = ev.polygon_api.bm_png2(ev,ds2);
       
       Bitmap<Color> *bbm = find_bitmap2(env,bm2);
       bbm->Prepare();
-      std::cout << "Prepare2 done" << std::endl;
+      //std::cout << "Prepare2 done" << std::endl;
     }
   }
   virtual void HeavyPrepare() {
