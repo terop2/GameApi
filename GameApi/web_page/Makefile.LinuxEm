@@ -93,7 +93,7 @@ draco/compression/attributes/attributes_decoder.cc
 
 DEBUGFILES = FreeType.cc FreeType2.cc GameApi_gui.cc GameApi.cc GameApi_bm.cc \
 	GameApi_pl.cc GameApi_trk.cc  GameApi_li.cc GameApi_main.cc \
-	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_webcam.cc Math2.cc 
+	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_webcam.cc Math2.cc GameApi_dep_store.cc 
 
 OLDCFiles=music.c music_html5.c prerequisites.c
 

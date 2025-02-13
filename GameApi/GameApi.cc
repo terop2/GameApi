@@ -23671,10 +23671,13 @@ public:
     url+=prompt;
     url+="\"";
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
-
+#ifdef EMSCRIPTEN
+    done = true;
+#else
     if (!env.store_file_exists(get_filename())) {
       tasks_add(567, &stable_diff_execute, (void*)this);
     } else done=true;
+#endif
   }
   std::string get_filename() const
   {
