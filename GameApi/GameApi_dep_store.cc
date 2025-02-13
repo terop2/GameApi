@@ -179,7 +179,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   
   start+="/";
   std::string store_file_dir = start + filename;
-  std::ifstream ss(store_file_dir.c_str());
+  std::ifstream ss(store_file_dir.c_str(),ios_base::in|ios_base::binary);
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char,GameApiAllocator<unsigned char> >();
   char ch;
   while(ss.get(ch))
