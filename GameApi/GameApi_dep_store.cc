@@ -133,6 +133,8 @@ void g_load_cb(void *data)
   delete pl;
 }
 
+extern std::string gameapi_homepageurl;
+
 GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
 
 void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *data, bool &success)
@@ -202,6 +204,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   g_loads.push_back(pl);
   success=true;
   async_load_callback(store_file_dir,&g_load_cb,(void*)pl);
+  async_load_url(store_file_dir,gameapi_homepageurl);
 #endif
 #ifdef ANDROID
 #endif
