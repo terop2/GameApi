@@ -29,6 +29,22 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BB", "unsigned int" },
 			 { "", "00000000" },
 			 "BM", "bitmap_api", "newbitmap_bb"));
+
+      vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bm_png_bm,
+			     "bm_png_bm",
+			     { "ev", "bm", "url" },
+			     { "EveryApi&","BM","std::string" },
+			     { "ev", "", "https://meshpage.org/temp.png" },
+			     "BM", "bitmap_api", "bm_png_bm"));
+      
+
+      vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::stable_diffusion,
+			     "stable_diffusion",
+			     { "ev", "prompt", "filename" },
+			     { "EveryApi&", "std::string", "std::string" },
+			     { "ev", "garden_gnome", "test.png" },
+			     "BM", "bitmap_api", "stable_diffusion"));
+      
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::script_bitmap,
 			 "bm_expr",

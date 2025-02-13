@@ -2445,7 +2445,7 @@ void terminate_handler()
   //print_counters();
   print_stack_trace();
   std::cout << "Terminate Handler called!" << std::endl;
-  for(;;);
+  //for(;;);
 }
 void clear_counters();
 void print_counters();

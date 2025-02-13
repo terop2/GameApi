@@ -35,6 +35,13 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev" },
 			 "P", "mainloop_api", "edit_3d_p"));
 #endif
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_ds_from_temp_p,
+			 "p_ds_p",
+			 { "ev", "p", "url" },
+			 { "EveryApi&", "P", "std::string" },
+			 { "ev", "", "https://meshpage.org/temp.ds" },
+			 "P", "polygon_api", "load_ds_from_temp_p"));
   
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::load_model,
