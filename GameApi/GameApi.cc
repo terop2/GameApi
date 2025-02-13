@@ -23648,6 +23648,7 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string fi
 void *stable_diff_execute(void *ptr);
 
 
+bool g_inside_icon_display=false;
 
 class StableDiffusion : public Bitmap<Color>
 {
@@ -23717,7 +23718,8 @@ public:
   }
   void wait() const
   {
-    //if (!done) tasks_join(567);
+    if (!g_inside_icon_display)
+    if (!done) tasks_join(567);
   }
   
   virtual int SizeX() const
