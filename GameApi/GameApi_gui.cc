@@ -1696,7 +1696,7 @@ public:
     #if 1
     if (firsttime) {
       if (ev.bitmap_api.ready_to_prepare(bm)) {
-	std::cout << "ACTUAL PREPARE" << std::endl;
+	//std::cout << "ACTUAL PREPARE" << std::endl;
 	ev.bitmap_api.prepare(bm);
       }
     }
