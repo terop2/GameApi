@@ -21334,7 +21334,7 @@ public:
 	int val2=system(str2.c_str());
 	int val3=system(str3.c_str());
 	int val4=system(str4.c_str());
-      if (val2!=0||val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4<< std::endl; ok=false; }
+      if (val3!=0||val4!=0) { std::cout << "ERROR: rmdir or mkdir RETURNED ERROR " << val2 << " " << val3 << " " << val4<< std::endl; ok=false; }
       env.set_download_progress(env.download_index_mapping(id), 2.0/8.0);
       break;
     }
@@ -21614,7 +21614,12 @@ public:
 	int s = m_persistent.size();
 	for(int i=0;i<s;i++)
 	  {
-	    std::string line = std::string("copy %TEMP%\\_gameapi_builder\\store\\") + m_persistent[i] + " %TEMP%\\_gameapi_builder\\deploy\\store\\" + m_persistent[i];
+	    std::string drive = getenv("systemdrive");
+	    std::string path = getenv("homepath");
+	    std::string start=drive+path+"\\_gameapi_builder\\" + "store\\";
+	    
+	    
+	    std::string line = std::string("copy ") + start + m_persistent[i] + " %TEMP%\\_gameapi_builder\\deploy\\store\\" + m_persistent[i];
 	    int val = system(line.c_str());
 	    if (val!=0) { std::cout << "ERROR: " << line << " returned ERROR CODE " << val << std::endl; ok=false; }
 	  }
