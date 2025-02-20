@@ -21233,7 +21233,8 @@ PersistentFuncSpec g_persistent_func[] =
     { "bitmap_api", "bm_png_bm", 2 },
     { "polygon_api", "load_ds_from_temp_p", 2 },
     { "bitmap_api", "stable_diffusion", 2 },
-    { "polygon_api", "meshy", 2 }
+    { "polygon_api", "meshy", 2 },
+    { "polygon_api", "tf_ds_tf", 2 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
@@ -24708,6 +24709,7 @@ void load_glb_cb2(void *dt)
 
 GLTFModelInterface *find_next(GLTFModelInterface *i)
 {
+#ifndef EMSCRIPTEN 
   MeshyRendering *meshy = dynamic_cast<MeshyRendering*>(i);
   std::cout << "FIND NEXT:" << (long)meshy << std::endl;
   if (meshy)
@@ -24719,6 +24721,9 @@ GLTFModelInterface *find_next(GLTFModelInterface *i)
     {
       i = tmp->get_next();
     }
+#else
+  return i;
+#endif
   std::cout << "FIND_NEXT2:" << i->name() << std::endl;
   //std::cout << "FIND NEXT2: " << (long) i << typeid(i).name() << std::endl;
   return i;
