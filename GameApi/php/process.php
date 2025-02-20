@@ -125,6 +125,7 @@ echo "<li>nft and e-commerce support(implementation not started)\n";
 echo "<li>popularity(access to popular sales platforms missing(I'm not going to spam people with useless emails))\n";
 echo "<li>video support(rejected for copyright reasons)\n";
 echo "<li>artificial intelligence(not enough information how to implement/database copyright problems)\n";
+echo "<li>adverticement video displaying gameapi features(planned, but govt rejected the training)\n";
 echo "</ul>\n";
 echo "</div>\n";
 echo "</div>\n";
