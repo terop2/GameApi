@@ -23670,6 +23670,9 @@ public:
     url = "https://meshpage.org/mesh_ai_p.php?prompt=\"";
     url+=prompt;
     url+="\"";
+
+    url2 = "https://meshpage.org/mesh_ai_p2.php";
+
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
 #ifdef EMSCRIPTEN
     done = true;
@@ -23701,7 +23704,13 @@ public:
 #ifndef EMSCRIPTEN
     env.async_load_url(url,gameapi_homepageurl,true);
 #endif
-    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+
+#ifndef EMSCRIPTEN
+    env.async_load_url(url2,gameapi_homepageurl,false);
+#endif
+
+
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url2);
     std::string vec2(vec->begin(),vec->end());
     //std::cout << "STRING:" << vec2.substr(0,50) << std::endl;
     ref = LoadGLBFromString(env,"",url,vec2);
@@ -24025,6 +24034,7 @@ private:
   std::string prompt;
   std::string filename;
   std::string url;
+  std::string url2;
   //BufferRef ref;
   GameApi::TF ref;
   bool done = false;
