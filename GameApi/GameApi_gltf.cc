@@ -1099,8 +1099,8 @@ int register_cache_deleter(void (*fptr)(void*), void*);
 #ifdef EMSCRIPTEN
 void del_instances(void*)
 {
-  int s2 = g_model_del_items.size();
-  for(int ii=0;ii<s2;ii++)
+  int s3 = g_model_del_items.size();
+  for(int ii=0;ii<s3;ii++)
     {
       GLTF_Model_with_prepare* item = g_model_del_items[ii];
       item->load = 0;
@@ -1145,10 +1145,10 @@ void del_instances(void*)
       item->self = 0;
     }
   
-  int s = g_gltf_instances_from_string.size();
-  for(int i=0;i<s;i++)
+  int s4 = g_gltf_instances_from_string.size();
+  for(int i=0;i<s4;i++)
     {
-     KeyStruct &s = g_gltf_instances_from_string[i];
+     KeyStruct_from_string &s = g_gltf_instances_from_string[i];
      //std::cout << "POINTER:" << (int)s.obj << std::endl;
      delete s.obj->decoder;
      s.obj->decoder = 0;

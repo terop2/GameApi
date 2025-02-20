@@ -841,7 +841,13 @@ instead of megabytes of video files
 <li>End product sizes are pretty small, so you can't expect full length movie
     as the output of this process
 <li>Different animation models are very limited -- basically just translate/rotate
-<li>We don't have sound or music support at all, because it's fundamentally based on recording industry technology, and we're not experts in that area.
+</ul>
+
+<h2>What to do if your hosting location has no php?</h2>
+<ul>
+<li>comment out or remove display.html 4 lines at the beginning
+<li>you will lose threads too.
+<li>every .zip file distributed by meshpage.org has one of those display.html files with this issue.
 </ul>
 
 <h2>What is the standard rendering pipeline?</h2>
