@@ -3430,6 +3430,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	ProgressBar(sum,i*15/num,15,url);
       }
       buffer->push_back(c);
+      if (nosize) std::cout << c;
     }
     
 #endif

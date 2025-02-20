@@ -1,5 +1,9 @@
 <?php
-ob_end_clean();
+ini_set('output_buffering','0');
+ob_end_flush();
+ob_implicit_flush(true);
+set_time_limit(0);
+ob_start();
 
 $prompt = $_GET["prompt"];
 
@@ -18,12 +22,14 @@ while($status['running']) {
    $status = proc_get_status($process);
    }
    */
-$file = popen("(cd /home/terop/cvs/meshy/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/meshy/api_request.py \"$prompt\" 2>/dev/null >/dev/null)","r");
+$file = popen("(cd /home/terop/cvs/meshy/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/meshy/api_request.py \"$prompt\" 2>&1)","r");
 while (!feof($file)) {
- $res = fread($file, 80);
+ $res = fgets($file);
  echo "$res";
+ flush();
+ ob_flush();
 }
-fclose($file);
+pclose($file);
 
 
 //$file2 = fopen("/home/terop/meshpage.org/pp2/meshy_log.txt","a");
