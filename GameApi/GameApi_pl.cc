@@ -8,6 +8,12 @@
 #include <atomic>
 #include <iostream>
 
+bool GameApi::PolygonApi::ready_to_prepare(ML p)
+{
+  MainLoopItem *item = find_main_loop(e,p);
+  return item->ReadyToPrepare();
+}
+
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat);
 extern Matrix g_last_resize;
 
@@ -15780,6 +15786,643 @@ struct PP
   int reserved_2=-1;
 };
 
+struct DSGLTFHeader
+{
+  char base_url[255];
+  char url[255];
+  int default_scene;
+  int num_accessors;
+  int num_animations;
+  int num_buffers;
+  int num_bufferviews;
+  int num_materials;
+  int num_meshes;
+  int num_nodes;
+  int num_textures;
+  int num_images;
+  int num_skins;
+  int num_samplers;
+  int num_cameras;
+  int num_scenes;
+  int num_lights;
+};
+
+class DSGLTF : public GLTFModelInterface
+{
+public:
+  DSGLTF(DiskStore *ds) : ds(ds) { ready = false; }
+  virtual std::string name() const { return "DSGLTF"; }
+  void Collect(CollectVisitor &vis)
+  {
+    ds->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { ready=true; }
+  void Prepare() { ds->Prepare(); ready=true; }
+
+  std::string BaseUrl() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return std::string(head->base_url);    
+  }
+  std::string Url() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return std::string(head->url);    
+  }
+  unsigned char *get_header() const
+  {
+    if (!ready) return 0;
+    int num = find_block(0); // header
+    if (num<0) return 0;
+    unsigned char *ptr = ds->Block(num);
+    return ptr;
+  }
+  int find_block(int id) const
+  {
+    //if (id==block_cache_id) return block_cache;
+    
+    int s = ds->NumBlocks();
+    //std::cout << "FINDBLOCK:" << id << " " << s << std::endl;
+    static bool once=false;
+    if (s==0&&!once) { std::cout << "DSFaceCollection failed for NumBlocks==0 which means that file is not valid" << std::endl;
+      once=true;
+      // emscripten_run_script("jsStackTrace()");
+    }
+    int block =  ds->BlockTypeInv(id);
+    if (block != -1) return block;
+    return -1;
+  }
+
+  
+  int get_default_scene() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->default_scene;
+  }
+  //
+  // Sizes
+  // 
+  int accessors_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_accessors;
+
+  }
+  int animations_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_animations;
+  }
+  int buffers_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_buffers;
+  }
+  int bufferviews_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_bufferviews;
+  }
+  int materials_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_materials;
+  }
+  int meshes_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_meshes;
+  }
+  int nodes_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_nodes;
+  }
+  int textures_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_textures;
+  }
+  int images_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_images;
+  }
+  int skins_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_skins;
+  }
+  int samplers_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_samplers;
+  }
+  int cameras_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+     DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_cameras;
+ }
+  int scenes_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_scenes;
+  }
+  int lights_size() const {
+    unsigned char *ptr = get_header();
+    if (!ptr) return 0;
+    DSGLTFHeader *head = (DSGLTFHeader*)ptr;
+    return head->num_lights;
+  }
+
+  unsigned char *get_ptr(int block) const
+  {
+    if (!ready) return 0;
+    int num = find_block(block);
+    if (num<0) return 0;
+    unsigned char *ptr = ds->Block(num);
+    return ptr;
+  }
+
+
+
+  //
+  // Accessors
+  //
+  virtual const tinygltf::Accessor &get_accessor(int i) const {
+    unsigned char *ptr = get_ptr(1);
+    tinygltf::Accessor *array = (tinygltf::Accessor*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Animation &get_animation(int i) const {
+    unsigned char *ptr = get_ptr(2);
+    tinygltf::Animation *array = (tinygltf::Animation*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Buffer &get_buffer(int i) const {
+    unsigned char *ptr = get_ptr(3);
+    tinygltf::Buffer *array = (tinygltf::Buffer*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const {
+    unsigned char *ptr = get_ptr(4);
+    tinygltf::BufferView *array = (tinygltf::BufferView*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Material &get_material(int i) const {
+    unsigned char *ptr = get_ptr(5);
+    tinygltf::Material *array = (tinygltf::Material*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Mesh &get_mesh(int i) const {
+    unsigned char *ptr = get_ptr(6);
+    tinygltf::Mesh *array = (tinygltf::Mesh*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Node &get_node(int i) const {
+    unsigned char *ptr = get_ptr(7);
+    tinygltf::Node *array = (tinygltf::Node*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Texture &get_texture(int i) const {
+    unsigned char *ptr = get_ptr(8);
+    tinygltf::Texture *array = (tinygltf::Texture*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Image &get_image(int i) const {
+    unsigned char *ptr = get_ptr(9);
+    tinygltf::Image *array = (tinygltf::Image*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Skin &get_skin(int i) const {
+    unsigned char *ptr = get_ptr(10);
+    tinygltf::Skin *array = (tinygltf::Skin*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Sampler &get_sampler(int i) const {
+    unsigned char *ptr = get_ptr(11);
+    tinygltf::Sampler *array = (tinygltf::Sampler*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Camera &get_camera(int i) const {
+    unsigned char *ptr = get_ptr(12);
+    tinygltf::Camera *array = (tinygltf::Camera*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Scene &get_scene(int i) const {
+    unsigned char *ptr = get_ptr(13);
+    tinygltf::Scene *array = (tinygltf::Scene*)ptr;
+    return array[i];
+  }
+  virtual const tinygltf::Light &get_light(int i) const {  
+    unsigned char *ptr = get_ptr(14);
+    tinygltf::Light *array = (tinygltf::Light*)ptr;
+    return array[i];
+  }
+
+  //
+  // Second level accessors
+  //
+  int accessor_name_size(int a) const {
+    // 15
+    unsigned char *ptr = get_ptr(15);
+    unsigned int *ptr2 = (unsigned int*)ptr;
+    return ptr2[a];
+  }
+  unsigned char accessor_name_char(int a, int ch) const {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_name_size(i);
+    unsigned char *ptr = get_ptr(16);
+    ptr+=pos;
+    return ptr[ch];
+  }
+  int accessor_extensions_size(int a) const {
+    unsigned char *ptr = get_ptr(17);
+    unsigned int *ptr2 = (unsigned int*)ptr;
+    return ptr2[a];
+  }
+  int accessor_extensions_size2(int a) const {
+    //unsigned char *ptr = get_ptr(18);
+    //unsigned int *ptr2 = (unsigned int*)ptr;
+    //return ptr2[a];
+    return sizeof(tinygltf::Value);
+  }
+  std::string accessor_extensions_key(int a, int ext) const
+  {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_extensions_size(i);
+    unsigned char *ptr = get_ptr(18);
+    ptr+=pos;
+    return std::string(&ptr[ext],&ptr[ext+accessor_name_size(a)]);
+  }
+  tinygltf::Value accessor_extensions_value(int a, int ext) const
+  {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_extensions_size2(i);
+    unsigned char *ptr = get_ptr(19);
+    ptr+=pos;
+    tinygltf::Value val;
+    std::copy(&ptr[ext],&ptr[ext+sizeof(tinygltf::Value)],(unsigned char *)&val);
+    //fill_heap_for_tinygltfValue(val,third_level+0);
+    return val;
+  }
+  int accessor_extras_size(int a) const {
+    unsigned char *ptr = get_ptr(20);
+    unsigned int *ptr2 = (unsigned int*)ptr;
+    return ptr2[a];
+  }
+  unsigned char accessor_extras_char(int a, int ch) const {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_extras_size(i);
+    unsigned char *ptr = get_ptr(16);
+    ptr+=pos;
+    return ptr[ch];
+  }
+  int accessor_extensions2_size(int a) const {
+    unsigned char *ptr = get_ptr(20);
+    unsigned int *ptr2 = (unsigned int*)ptr;
+    return ptr2[a];
+  }
+  unsigned char accessor_externsions2_char(int a, int ch) const {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_extensions2_size(i);
+    unsigned char *ptr = get_ptr(16);
+    ptr+=pos;
+    return ptr[ch];
+  }
+  int accessor_minvalues_size(int a) const {
+    unsigned char *ptr = get_ptr(20);
+    unsigned int *ptr2 = (unsigned int*)ptr;
+    return ptr2[a];
+  }
+  double accessor_minvalues_get(int a, int val) const
+  {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_minvalues_size(i);
+    unsigned char *ptr = get_ptr(16);
+    ptr+=pos;
+    double *ptr2 = (double*)ptr;
+    return ptr2[val];
+  }
+  int accessor_maxvalues_size(int a) const
+  {
+    unsigned char *ptr = get_ptr(20);
+    unsigned int *ptr2 = (unsigned int*)ptr;
+    return ptr2[a];
+  }
+  double accessor_maxvalues_get(int a, int val) const
+  {
+    int s = a;
+    int pos = 0;
+    for(int i=0;i<s;i++)
+      pos+=accessor_maxvalues_size(i);
+    unsigned char *ptr = get_ptr(16);
+    ptr+=pos;
+    double *ptr2 = (double*)ptr;
+    return ptr2[val];
+  }
+  //
+  // Second level animations
+  // 
+  int animation_name_size(int a) const
+  {
+  }
+  unsigned char animation_name_get(int a, int ch) const
+  {
+  }
+  int animation_channel_size(int a) const
+  {
+  }
+  tinygltf::AnimationChannel animation_channel_get(int a, int chan) const
+  {
+  }
+  int animation_sampler_size(int a) const
+  {
+  }
+  tinygltf::AnimationSampler animation_sampler_get(int a, int chan) const
+  {
+  }
+  //
+  // Second level buffer
+  //
+  int buffer_name_size(int b) const
+  {
+  }
+  unsigned char buffer_name_get(int b, int ch) const
+  {
+  }
+  int buffer_data_size(int b) const
+  {
+  }
+  unsigned char buffer_data_get(int b, int ch) const
+  {
+  }
+  int buffer_uri_size(int b) const
+  {
+  }
+  unsigned char buffer_uri_get(int b, int ch) const
+  {
+  }
+  //
+  // BufferViews second level
+  //
+  int bufferviews_name_size(int bv) const
+  {
+  }
+  unsigned char bufferviews_name_get(int bv, int ch) const
+  {
+  }
+  //
+  // Material 2nd level
+  //
+  int material_name_size(int bv) const
+  {
+  }
+  unsigned char material_name_get(int bv, int ch) const
+  {
+  }
+  double material_emissivefactor(int bv, int zero_to_two) const
+  {
+  }
+  int material_alphamode_size(int bv) const
+  {
+  }
+  unsigned char material_alphamode_get(int bv, int ch) const
+  {
+  }
+  tinygltf::PbrMetallicRoughness material_pbr(int bv) const
+  {
+  }
+  tinygltf::NormalTextureInfo material_normaltexture(int bv) const
+  {
+  }
+  tinygltf::OcclusionTextureInfo material_occlusiontexture(int bv) const
+  {
+  }
+  tinygltf::TextureInfo material_textureinfo(int bv) const
+  {
+  }
+  //
+  // Meshes 2nd level
+  //
+  int mesh_name_size(int mesh) const
+  {
+  }
+  unsigned char mesh_name_get(int mesh, int ch) const
+  {
+  }
+  int mesh_primitives_size(int mesh) const
+  {
+  }
+  tinygltf::Primitive mesh_primitives_get(int mesh, int prim) const
+  {
+  }
+  int mesh_weights_size(int mesh) const
+  {
+  }
+  double mesh_weights_get(int mesh, int index) const
+  {
+  }
+  //
+  // Nodes 2nd level
+  //
+  int node_name_size(int n) const
+  {
+  }
+  unsigned char node_name_get(int n, int ch) const
+  {
+  }
+  int node_children_size(int n) const
+  {
+  }
+  int node_children_get(int n, int child) const
+  {
+  }
+  int node_rotation_size(int n) const
+  {
+  }
+  double node_rotation_get(int n, int i) const
+  {
+  }
+  int node_scale_size(int n) const
+  {
+  }
+  double node_scale_get(int n, int i) const
+  {
+  }
+  int node_translation_size(int n) const
+  {
+  }
+  double node_translation_get(int n, int i) const
+  {
+  }
+  int node_matrix_size(int n) const
+  {
+  }
+  double node_matrix_get(int n, int i) const
+  {
+  }
+  //
+  // Textures, 2nd level
+  //
+  int texture_name_size(int t) const
+  {
+  }
+  unsigned char texture_name_get(int i, int ch) const
+  {
+  }
+  //
+  // Images, 2nd level
+  //
+  int image_name_size(int i) const
+  {
+  }
+  unsigned char image_name_get(int i, int ch) const
+  {
+  }
+  int image_image_size(int i) const
+  {
+  }
+  unsigned char image_image_get(int i, int ch) const
+  {
+  }
+  int image_mimeType_size(int i) const
+  {
+  }
+  unsigned char image_mimeType_get(int i, int ch) const
+  {
+  }
+  int image_uri_size(int i) const
+  {
+  }
+  unsigned char image_uri_get(int i, int ch) const
+  {
+  }
+  //
+  // Skins 2nd level
+  //
+  int skin_name_size(int i) const
+  {
+  }
+  unsigned char skin_name_get(int i, int ch) const
+  {
+  }
+  int skin_joints_size(int i) const
+  {
+  }
+  int skin_joints_get(int i, int j) const
+  {
+  }
+  //
+  // Samplers, 2nd level
+  //
+  int sampler_name_size(int s) const
+  {
+  }
+  unsigned char sampler_name_get(int s, int ch) const
+  {
+  }
+  //
+  // Cameras 2nd level
+  //
+  int camera_type_size(int c) const
+  {
+  }
+  unsigned char camera_type_get(int c, int ch) const
+  {
+  }
+  int camera_name_size(int c) const
+  {
+  }
+  unsigned char camera_name_get(int c, int ch) const
+  {
+  }
+  tinygltf::PerspectiveCamera camera_perspective(int c) const
+  {
+  }
+  tinygltf::OrthographicCamera camera_ortho(int c) const
+  {
+  }
+  //
+  // Scenes 2nd level
+  //
+  int scenes_name_size(int s) const
+  {
+  }
+  unsigned char scenes_name_get(int s, int ch) const
+  {
+  }
+  int scenes_nodes_size(int s) const
+  {
+  }
+  int scenes_nodes_get(int s, int node) const
+  {
+  }
+  //
+  // Lights 2nd level
+  //
+  int light_name_size(int l) const
+  {
+  }
+  unsigned char light_name_get(int l, int ch) const
+  {
+  }
+  int light_color_size(int l) const
+  {
+  }
+  double light_color_get(int l, int component) const
+  {
+  }
+  int light_type_size(int l) const
+  {
+  }
+  unsigned char light_type_get(int l, int ch) const
+  {
+  }
+  tinygltf::SpotLight light_spot(int i) const
+  {
+  }
+  //
+  // 3rd level
+  //
+  void fill_heap_for_tinygltfValue(tinygltf::Value &val, int block)
+  {
+  }
+private:
+  DiskStore *ds;
+  bool ready;
+  int third_level=-1; // TODO
+};
+
 class DSFaceCollection : public FaceCollection
 {
 public:
@@ -16200,6 +16843,118 @@ GameApi::DS GameApi::PolygonApi::p_ds_inv(GameApi::P p, int flags)
 {
   FaceCollection *coll = find_facecoll(e, p);
   return add_disk_store(e, new DiskStoreCollection(coll,flags));
+}
+
+class DiskStoreModel : public DiskStore
+{
+public:
+  DiskStoreModel(GLTFModelInterface *tf, int flags=-1) : tf(tf), flags(flags) { if (flags==-1) flags=0; }
+  void Collect(CollectVisitor &vis)
+  {
+    tf->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+  }
+  virtual void Prepare() { }
+  virtual int Type() const { return 4; }
+  virtual int NumBlocks() const { return 15; }
+  virtual int BlockType(int block) const { return 0; }
+  virtual int BlockTypeInv(int block) const { return 0; }
+  virtual int BlockSizeInBytes(int block) const
+  {
+    switch(block) {
+      // header
+    case 0: return sizeof(DSGLTFHeader);
+      // tinygltf data structures
+    case 1: return sizeof(tinygltf::Accessor)*tf->accessors_size();
+    case 2: return sizeof(tinygltf::Animation)*tf->animations_size();
+    case 3: return sizeof(tinygltf::Buffer)*tf->buffers_size();
+    case 4: return sizeof(tinygltf::BufferView)*tf->bufferviews_size();
+    case 5: return sizeof(tinygltf::Material)*tf->materials_size();
+    case 6: return sizeof(tinygltf::Mesh)*tf->meshes_size();
+    case 7: return sizeof(tinygltf::Node)*tf->nodes_size();
+    case 8: return sizeof(tinygltf::Texture)*tf->textures_size();
+    case 9: return sizeof(tinygltf::Image)*tf->images_size();
+    case 10: return sizeof(tinygltf::Skin)*tf->skins_size();
+    case 11: return sizeof(tinygltf::Sampler)*tf->samplers_size();
+    case 12: return sizeof(tinygltf::Camera)*tf->cameras_size();
+    case 13: return sizeof(tinygltf::Scene)*tf->scenes_size();
+    case 14: return sizeof(tinygltf::Light)*tf->lights_size();
+      // tinygltf 2nd level data structures
+    case 15: return sizeof(int)*tf->accessors_size();
+    case 16:
+      {
+	int s = tf->accessors_size();
+	int sum=0;
+	for(int i=0;i<s;i++)
+	  sum+=tf->get_accessor(i).name.size();
+	return sum;
+      }
+    };
+  }
+  void fill_header() const
+  {
+    std::string base_url = tf->BaseUrl();
+    std::copy(base_url.begin(), base_url.end(),header.base_url);
+    std::string url = tf->Url();
+    std::copy(url.begin(),url.end(),header.url);
+    
+    header.num_accessors = tf->accessors_size();
+    header.num_animations = tf->animations_size();
+    header.num_buffers = tf->buffers_size();
+    header.num_bufferviews = tf->bufferviews_size();
+    header.num_materials = tf->materials_size();
+    header.num_meshes = tf->meshes_size();
+    header.num_nodes = tf->nodes_size();
+    header.num_textures = tf->textures_size();
+    header.num_images = tf->images_size();
+    header.num_skins = tf->skins_size();
+    header.num_samplers = tf->samplers_size();
+    header.num_cameras = tf->cameras_size();
+    header.num_scenes = tf->scenes_size();
+    header.num_lights = tf->lights_size();
+  }
+  virtual unsigned char* Block(int block) const
+  {
+    switch(block)
+      {
+      case 0: fill_header(); return (unsigned char*)&header;
+      case 1: return (unsigned char*)&tf->get_accessor(0);
+      case 2: return (unsigned char*)&tf->get_animation(0);
+      case 3: return (unsigned char*)&tf->get_buffer(0);
+      case 4: return (unsigned char*)&tf->get_bufferview(0);
+      case 5: return (unsigned char*)&tf->get_material(0);
+      case 6: return (unsigned char*)&tf->get_mesh(0);
+      case 7: return (unsigned char*)&tf->get_node(0);
+      case 8: return (unsigned char*)&tf->get_texture(0);
+      case 9: return (unsigned char*)&tf->get_image(0);
+      case 10: return (unsigned char*)&tf->get_skin(0);
+      case 11: return (unsigned char*)&tf->get_sampler(0);
+      case 12: return (unsigned char*)&tf->get_camera(0);
+      case 13: return (unsigned char*)&tf->get_scene(0);
+      case 14: return (unsigned char*)&tf->get_light(0);
+	// tinygltf 2nd level data structures
+      };
+  }
+  virtual unsigned char* BlockWithOffset(int block, int offset, int size) const
+  {
+    return Block(block)+offset;
+  }
+private:
+  GLTFModelInterface *tf;
+  int flags;
+  
+  // data
+  mutable DSGLTFHeader header;
+  
+};
+
+GameApi::DS GameApi::PolygonApi::tf_ds_inv(GameApi::TF tf, int flags)
+{
+  GLTFModelInterface *ttf = find_gltf(e, tf);
+  return add_disk_store(e, new DiskStoreModel(ttf,flags));
 }
 
 

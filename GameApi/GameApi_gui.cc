@@ -1079,6 +1079,8 @@ extern bool g_is_quake;
 
 bool g_inside_ml_widget;
 extern bool g_transparent;
+extern bool g_inside_mesh_display;
+
 
 class MLGuiWidget : public GuiWidgetForward
 {
@@ -1156,7 +1158,9 @@ public:
       }
     if (!firsttime)
       {
+	g_inside_mesh_display = true;
 	ev.mainloop_api.event_ml(p, e);
+	g_inside_mesh_display=false;
       }
 
 #ifdef EMSCRIPTEN
@@ -1210,11 +1214,15 @@ public:
     if (firsttime2) {
       // firsttime
       MainLoopItem *item = find_main_loop(env, p);
-      item->Prepare();
-      firsttime2 = false;
+      if (ev.polygon_api.ready_to_prepare(p)) {
+	g_inside_mesh_display=true;
+	item->Prepare();
+	g_inside_mesh_display=false;
+	firsttime2 = false;
+      } 
     }
 
-
+    if (!firsttime2) {
     if (left)
       {
 	rot_y+=1.0*3.14159*2.0/360.0*ev.mainloop_api.get_delta_time()*keypress_rot_speed;
@@ -1272,7 +1280,9 @@ public:
 	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
 
 	}
+	g_inside_mesh_display=true;
 	ev.mainloop_api.execute_ml(ev,p, sh, sh2, sh2, sh_arr,mat, in_T, in_N, sz.dx, sz.dy);
+	g_inside_mesh_display=false;
 	e.type = -1;
 	e.ch = -1;
 	e.button = -1;
@@ -1291,8 +1301,9 @@ public:
 	ogl->glViewport(0,0,screen_x*scale_x, screen_y*scale_y);
 	ev.shader_api.use(old_sh);
       } 
-
+    }
       }
+     
   }
 private:
   GameApi::Env &env;

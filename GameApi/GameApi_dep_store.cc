@@ -28,12 +28,12 @@ bool GameApi::Env::store_file_exists(std::string filename)
 #ifdef WINDOWS
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
-  start=drive+path+"\\" + "store";
+  start=drive+path+"\\_gameapi_builder\\" + "store";
   std::string cmd = "mkdir " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
   
-  start+="/";
+  start+="\\";
   std::string store_file_dir = start + filename;
   return file_exists(store_file_dir);
 #endif
@@ -72,14 +72,14 @@ void GameApi::Env::store_file(std::string filename, ASyncVec *vec)
 #ifdef WINDOWS
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
-  start=drive+path+"\\" + "store";
+  start=drive+path+"\\_gameapi_builder\\" + "store";
   std::string cmd = "mkdir " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
   
-  start+="/";
+  start+="\\";
   std::string store_file_dir = start + filename;
-  std::ofstream ss(store_file_dir.c_str());
+  std::ofstream ss(store_file_dir.c_str(),std::ios_base::out|std::ios_base::binary);
   std::string data(vec->begin(),vec->end());
   ss << data;
   ss.close();
@@ -111,6 +111,7 @@ std::vector<FINISHED_LOADS> g_finished;
 void g_load_cb(void *data)
 {
   PENDING_LOADS *pl = (PENDING_LOADS*)data;
+  std::cout << "Loading finished " << pl->store_filename << std::endl;
   GameApi::ASyncVec *vec = pl->env->get_loaded_async_url(pl->store_filename);
   //std::vector<unsigned char, GameApi::GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char,GameApi::GameApiAllocator<unsigned char> >(vec->begin(),vec->end());
   FINISHED_LOADS ld;
@@ -132,6 +133,8 @@ void g_load_cb(void *data)
   pl->fptr(pl->data);
   delete pl;
 }
+
+extern std::string gameapi_homepageurl;
 
 GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
 
@@ -170,14 +173,14 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
 #ifdef WINDOWS
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
-  start=drive+path+"\\" + "store";
+  start=drive+path+"\\_gameapi_builder\\" + "store";
   std::string cmd = "mkdir " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
   
-  start+="/";
+  start+="\\";
   std::string store_file_dir = start + filename;
-  std::ifstream ss(store_file_dir.c_str());
+  std::ifstream ss(store_file_dir.c_str(),std::ios_base::in|std::ios_base::binary);
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char,GameApiAllocator<unsigned char> >();
   char ch;
   while(ss.get(ch))
@@ -202,6 +205,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   g_loads.push_back(pl);
   success=true;
   async_load_callback(store_file_dir,&g_load_cb,(void*)pl);
+  async_load_url(store_file_dir,gameapi_homepageurl);
 #endif
 #ifdef ANDROID
 #endif

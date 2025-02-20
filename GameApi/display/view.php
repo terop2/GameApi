@@ -2316,19 +2316,82 @@ function decodeBase64(encoded) {
     return decodedString;
 }
 
+function chunkDecode(encodedVal) {
+  // First decode from base64
+  const decoded = atob(encodedVal);
+  
+  // Define chunk size for URL decoding
+  const chunkSize = 80000;
+  const chunks = [];
+  
+  // Split the decoded string into chunks
+  for (let i = 0; i < decoded.length; i += chunkSize) {
+    const chunk = decoded.slice(i, i + chunkSize);
+    // Decode each chunk
+    const decodedChunk = decodeURIComponent(escape(chunk));
+    chunks.push(decodedChunk);
+  }
+  
+  // Join the decoded chunks
+  return chunks.join('');
+}
+/*
+async function array_to_base64(arr) {
+    const res = [];
+    
+    for (const val of arr) {
+        // Convert string to Uint8Array
+        const encoder = new TextEncoder();
+        const uint8Array = encoder.encode(val);
+        
+        // Process in chunks
+        const chunkSize = 80000;
+        const chunks = [];
+        
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+            const chunk = uint8Array.slice(i, Math.min(i + chunkSize, uint8Array.length));
+            const decoder = new TextDecoder();
+            const chunkStr = decoder.decode(chunk);
+            chunks.push(new Blob([encodeURIComponent(chunkStr)]));
+        }
+        
+        // Combine chunks using Blob
+        const fullBlob = new Blob(chunks);
+        const fullEncoded = await fullBlob.text();
+        
+        // Convert to base64
+        const base64 = btoa(unescape(fullEncoded));
+        res.push(base64);
+    }
+    
+    return res;
+}
+*/
 function array_to_base64(arr)
 {
    var res = [];
    for(var i=0;i<arr.length;i++)
    {
      var val = arr[i];
-     var buffer = btoa(unescape(encodeURIComponent(val)));
+     const chunkSize = 80000;
+     const chunks = [];
+     for(let ii=0;ii<val.length;ii+=chunkSize) {
+        const chunk = val.slice(ii,ii+chunkSize);
+	const encodedChunk = encodeURIComponent(chunk);
+	chunks.push(encodedChunk);
+     }
+     let fullEncoded = '';
+     for( const chunk of chunks) {
+        fullEncoded += chunk;
+	}
+     var buffer = btoa(unescape(fullEncoded));
      //var buffer = encodeBase64(val);
      res.push(buffer);
    }
    return res;
 
 }
+
 function base64_to_array(arr)
 {
    var res = [];
