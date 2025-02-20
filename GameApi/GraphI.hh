@@ -827,6 +827,7 @@ public:
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
+  virtual bool ReadyToPrepare() const { return true; }
   virtual void destroy() { }
   virtual void set_vars(std::map<std::string, std::string> vars) { }
   virtual std::map<std::string, std::string> get_vars() const {
@@ -1306,7 +1307,7 @@ public:
 class ASyncLoader
 {
 public:
-  void load_urls(std::string url, std::string homepage);
+  void load_urls(std::string url, std::string homepage, bool nosize);
   void load_all_urls(std::vector<std::string> urls, std::string homepage);
   GameApi::ASyncVec *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);
@@ -1590,7 +1591,7 @@ class DiskStore : public CollectInterface
 {
 public:
   virtual ~DiskStore() { }
-  // types: 0=P, 1=BM, 2=VX, 3=urlmemorymap
+  // types: 0=P, 1=BM, 2=VX, 3=urlmemorymap, 4=tf
   virtual void Prepare()=0;
   virtual int Type() const=0;
   virtual int NumBlocks() const=0;
@@ -2347,7 +2348,10 @@ public:
   virtual void Prepare()=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
-
+  virtual bool ReadyToPrepare() const { return true; }
+  
+  virtual std::string name() const=0;
+  
   virtual std::string BaseUrl() const=0;
   virtual std::string Url() const=0;
 
