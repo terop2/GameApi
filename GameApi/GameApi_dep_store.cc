@@ -111,6 +111,7 @@ std::vector<FINISHED_LOADS> g_finished;
 void g_load_cb(void *data)
 {
   PENDING_LOADS *pl = (PENDING_LOADS*)data;
+  std::cout << "Loading finished " << pl->store_filename << std::endl;
   GameApi::ASyncVec *vec = pl->env->get_loaded_async_url(pl->store_filename);
   //std::vector<unsigned char, GameApi::GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char,GameApi::GameApiAllocator<unsigned char> >(vec->begin(),vec->end());
   FINISHED_LOADS ld;

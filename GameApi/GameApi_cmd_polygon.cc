@@ -144,6 +144,13 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "std::string" },
 			 { "http://meshpage.org/assets/teapot.stl@FinlayMcWalter@https://creativecommons.org/share-your-work/public-domain/cc0/" },
 			 "P", "polygon_api", "stl_load"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::tf_ds_tf,
+			 "tf_ds_tf",
+			 { "ev", "tf", "url" },
+			 { "EveryApi&", "TF", "std::string" },
+			 { "ev", "", "test44.glb" },
+			 "TF", "polygon_api", "tf_df_tf"));
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_loadKK,
 			 "gltf_load",
 			 { "base_url", "url" },
@@ -175,6 +182,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "std::string" },
 			 { "https://meshpage.org/lighthouse.zip@CHL@https://creativecommons.org/licenses/by/4.0/" },
 			 "TF", "mainloop_api", "gltf_load_sketchfab_zip"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::meshy,
+			 "meshy_ai",
+			 { "ev", "prompt", "filename" },
+			 { "EveryApi&", "std::string", "std::string" },
+			 { "ev", "A_Monster_Truck", "monster.glb" },
+			 "TF", "polygon_api", "meshy"));
+  
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::glb_load_sketchfab_zip,
 			 "glb_sketchfab_zip",

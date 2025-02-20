@@ -20573,7 +20573,7 @@ std::vector<P_script2*> del_p_script;
 class HtmlUrl;
 std::vector<HtmlUrl*> del_p2_script;
 
-std::vector<unsigned char> *load_from_url(std::string url);
+std::vector<unsigned char> *load_from_url(std::string url, bool nosize);
 
 class HtmlUrl : public Html
 {
@@ -20623,7 +20623,7 @@ public:
     //std::cout << "GOT SCRIPT FILE:" << code << std::endl;
     if (code.size()<120) {
       //std::cout << "LOADING FROM URL: " << url << std::endl;
-      std::vector<unsigned char> *file = load_from_url(url);
+      std::vector<unsigned char> *file = load_from_url(url,false);
       code=std::string(file->begin(), file->end());
       //std::cout << "GOT:" << code << std::endl;
     }
@@ -21232,7 +21232,8 @@ PersistentFuncSpec g_persistent_func[] =
   {
     { "bitmap_api", "bm_png_bm", 2 },
     { "polygon_api", "load_ds_from_temp_p", 2 },
-    { "bitmap_api", "stable_diffusion", 2 }
+    { "bitmap_api", "stable_diffusion", 2 },
+    { "polygon_api", "meshy", 2 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
@@ -23651,9 +23652,398 @@ GameApi::DS GameApi::MainLoopApi::load_ds_from_disk_incrementally(std::string fi
 }
 
 void *stable_diff_execute(void *ptr);
+void *meshy_execute(void *ptr);
 
 
 bool g_inside_icon_display=false;
+bool g_inside_mesh_display=false;
+
+GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string url, std::string data);
+
+
+
+class MeshyRendering : public GLTFModelInterface
+{
+public:
+  std::string name() const { return "MeshyRendering"; }
+  MeshyRendering(GameApi::Env &env,std::string prompt, std::string filename) : env(env), prompt(prompt), filename(filename) {    
+    url = "https://meshpage.org/mesh_ai_p.php?prompt=\"";
+    url+=prompt;
+    url+="\"";
+    //std::cout << "STABLE DIFF tasks_add" << std::endl;
+#ifdef EMSCRIPTEN
+    done = true;
+#else
+    if (!env.store_file_exists(get_filename())) {
+      tasks_add(568, &meshy_execute, (void*)this);
+    } else done=true;
+#endif
+  }
+  std::string get_filename() const
+  {
+    int s = filename.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (filename[i]=='/'||filename[i]=='\\') pos=i;
+      }
+    return filename.substr(pos+1);
+  }
+
+  
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void Prepare2()
+  {
+    std::cout << "Meshy PREPARE2" << std::endl;
+#ifndef EMSCRIPTEN
+    env.async_load_url(url,gameapi_homepageurl,true);
+#endif
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+    std::string vec2(vec->begin(),vec->end());
+    //std::cout << "STRING:" << vec2.substr(0,50) << std::endl;
+    ref = LoadGLBFromString(env,"",url,vec2);
+    std::cout << "Meshy done=true" << std::endl;
+    done = true;
+  }
+  virtual void HeavyPrepare()
+  {
+    if (ref.id!=-1)
+      {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      i->Prepare();
+      }
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual bool ReadyToPrepare() const
+  {
+    return done;
+  }
+  void wait() const
+  {
+    std::cout << "WAIT" << std::endl;
+    if (!g_inside_mesh_display)
+      if (!done) { std::cout << "JOIN" << std::endl; tasks_join(568); }
+    std::cout << "WAIT ENDED" << std::endl;
+  }
+
+  std::string BaseUrl() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      return i->BaseUrl();
+    }
+    return "";
+  }
+  std::string Url() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      return i->Url();
+    }
+    return "";
+  }
+  
+  virtual int get_default_scene() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      return i->get_default_scene();
+    }
+    return 0;
+  }
+
+  virtual int accessors_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *i = find_gltf(env,ref);
+      return i->accessors_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Accessor &get_accessor(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_accessor(i);
+    }
+    static tinygltf::Accessor a;
+    return a;
+  }
+    
+  virtual int animations_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->animations_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Animation &get_animation(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_animation(i);
+    }
+    static tinygltf::Animation a;
+    return a;
+  }
+
+  virtual int buffers_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->buffers_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Buffer &get_buffer(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_buffer(i);
+    }
+    static tinygltf::Buffer b;
+    return b;
+  }
+    
+
+  virtual int bufferviews_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->bufferviews_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_bufferview(i);
+    }
+    static tinygltf::BufferView b;
+    return b;
+  }
+
+  virtual int materials_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->materials_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Material &get_material(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_material(i);
+    }
+    static tinygltf::Material b;
+    return b;
+  }
+
+  virtual int meshes_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->meshes_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Mesh &get_mesh(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_mesh(i);
+    }
+    static tinygltf::Mesh b;
+    return b;
+  }
+  virtual int nodes_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->nodes_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Node &get_node(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_node(i);
+    }
+    static tinygltf::Node b;
+    return b;
+  }
+  virtual int textures_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->textures_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Texture &get_texture(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_texture(i);
+    }
+    static tinygltf::Texture b;
+    return b;
+  }  
+
+  virtual int images_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->images_size();
+    }
+    return 0;
+
+  }
+  virtual const tinygltf::Image &get_image(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_image(i);
+    }
+    static tinygltf::Image b;
+    return b;
+  }
+
+  virtual int skins_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->skins_size();
+    }
+    return 0;
+
+  }
+  virtual const tinygltf::Skin &get_skin(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_skin(i);
+    }
+    static tinygltf::Skin b;
+    return b;
+  }
+
+  virtual int samplers_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->samplers_size();
+    }
+    return 0;
+  }
+  virtual const tinygltf::Sampler &get_sampler(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_sampler(i);
+    }
+    static tinygltf::Sampler b;
+    return b;
+  }
+  virtual int cameras_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->cameras_size();
+    }
+    return 0;
+
+  }
+  virtual const tinygltf::Camera &get_camera(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_camera(i);
+    }
+    static tinygltf::Camera b;
+    return b;
+  }
+
+  virtual int scenes_size() const {
+
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->scenes_size();
+    }
+    return 0;
+
+  }
+  virtual const tinygltf::Scene &get_scene(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_scene(i);
+    }
+    static tinygltf::Scene b;
+    return b;
+  }
+  virtual int lights_size() const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->lights_size();
+    }
+    return 0;
+
+  }
+  virtual const tinygltf::Light &get_light(int i) const {
+    wait();
+    if (done) {
+      GLTFModelInterface *ii = find_gltf(env,ref);
+      return ii->get_light(i);
+    }
+    static tinygltf::Light b;
+    return b;
+  }
+
+  GLTFModelInterface *get_next() const
+  {
+    wait();
+    GLTFModelInterface *ii = find_gltf(env,ref);
+    return ii;
+  }
+  
+private:
+  GameApi::Env &env;
+  std::string prompt;
+  std::string filename;
+  std::string url;
+  //BufferRef ref;
+  GameApi::TF ref;
+  bool done = false;
+};
+void *meshy_execute(void *ptr)
+{
+  MeshyRendering *diff = (MeshyRendering*)ptr;
+  diff->Prepare2();
+  return 0;
+}
+
+
+GameApi::TF GameApi::PolygonApi::meshy(EveryApi &ev, std::string prompt, std::string filename)
+{
+  GLTFModelInterface *ttf = new MeshyRendering(e, prompt,filename);
+  GameApi::TF tf = add_gltf(e,ttf);
+  return tf_ds_tf(ev, tf, filename);
+}
+
 
 class StableDiffusion : public Bitmap<Color>
 {
@@ -23786,6 +24176,7 @@ GameApi::BM GameApi::BitmapApi::stable_diffusion(EveryApi &ev, std::string promp
 
 
 void load_png_cb2(void *);
+void load_glb_cb2(void *);
 
 class LoadPNGFromTemp : public Bitmap<Color>
 {
@@ -23890,16 +24281,444 @@ private:
   bool success = false;
 };
 
+
+class LoadGLBFromTemp : public GLTFModelInterface
+{
+public:
+  std::string name() const { return "LoadGLBFromTemp"; }
+  LoadGLBFromTemp(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, std::string url, std::string homepage) : env(env), ev(ev), tf(tf), url(url), homepage(homepage) {
+    ev.polygon_api.load_glb_from_temp(get_filename(),&load_glb_cb2,this,success);
+    std::cout << "WARNING: Load time is very slow, wait 5 minutes or something.." << std::endl;
+  }
+  ~LoadGLBFromTemp()
+  {
+    ev.polygon_api.load_glb_from_temp3(get_filename());
+  }
+  
+  std::string get_filename() const
+  {
+    int s = url.size();
+    int pos = -1;
+    for(int i=0;i<s;i++)
+      {
+	if (url[i]=='/'||url[i]=='\\') pos=i;
+      }
+    return url.substr(pos+1);
+  }
+
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+
+  void Prepare2()
+  {
+    std::cout << "Prepare2" << success << std::endl;
+    if (success) {
+      tf2 = ev.polygon_api.load_glb_from_temp2(get_filename());
+      // bm2 = ev.polygon_api.bm_png2(ev,ds2);
+      std::cout << "TF id=" << tf2.id << std::endl;
+      
+      GLTFModelInterface *bbm = find_gltf(env,tf2);
+      bbm->Prepare();
+      //std::cout << "Prepare2 done" << std::endl;
+    }
+  }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+#ifndef ANDROID
+    if (!env.store_file_exists(get_filename()))
+      {
+	std::cout << "Storing " << get_filename() << std::endl;
+	
+	GLTFModelInterface *bbm = find_gltf(env,tf);
+	bbm->Prepare();
+	
+	int flags = 0;
+	//ds = ev.polygon_api.bm_png_inv(p,flags);
+	ev.mainloop_api.save_glb_store(ev,get_filename(),tf);
+	ev.polygon_api.load_glb_from_temp(get_filename(),&load_glb_cb2,this,success);
+      }
+#endif
+#endif
+    
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+
+  virtual bool ReadyToPrepare() const {
+    GLTFModelInterface *bbm = find_gltf(env,tf);
+    return bbm->ReadyToPrepare();
+  }
+
+  std::string BaseUrl() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->BaseUrl();
+      }
+    return "";
+  }
+  std::string Url() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->Url();
+      }
+    return "";
+  }
+  virtual int get_default_scene() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_default_scene();
+      }
+    return 0;
+  }
+
+  virtual int accessors_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->accessors_size();
+      }
+    return 0;
+  }
+  virtual const tinygltf::Accessor &get_accessor(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_accessor(i);
+      }
+    static tinygltf::Accessor a;
+    return a;
+  }
+  
+  virtual int animations_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->animations_size();
+      }
+    return 0;
+
+  }
+  virtual const tinygltf::Animation &get_animation(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_animation(i);
+      }
+    static tinygltf::Animation a;
+    return a;
+    }
+    virtual int buffers_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->buffers_size();
+      }
+    return 0;
+    }
+  virtual const tinygltf::Buffer &get_buffer(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_buffer(i);
+      }
+    static tinygltf::Buffer a;
+    return a;
+  }
+
+  virtual int bufferviews_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->bufferviews_size();
+      }
+    return 0;
+
+  }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_bufferview(i);
+      }
+    static tinygltf::BufferView a;
+    return a;
+  }
+
+  virtual int materials_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->materials_size();
+      }
+    return 0;
+  }
+  virtual const tinygltf::Material &get_material(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_material(i);
+      }
+    static tinygltf::Material a;
+    return a;
+  }
+
+  virtual int meshes_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->meshes_size();
+      }
+    return 0;
+
+  }
+    virtual const tinygltf::Mesh &get_mesh(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_mesh(i);
+      }
+    static tinygltf::Mesh a;
+    return a;
+
+    }
+  virtual int nodes_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->nodes_size();
+      }
+    return 0;
+
+  }
+  virtual const tinygltf::Node &get_node(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_node(i);
+      }
+    static tinygltf::Node a;
+    return a;
+  }
+
+  virtual int textures_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->textures_size();
+      }
+    return 0;
+  }
+  virtual const tinygltf::Texture &get_texture(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_texture(i);
+      }
+    static tinygltf::Texture a;
+    return a;    
+  }
+  virtual int images_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->images_size();
+      }
+    return 0;
+  }
+  virtual const tinygltf::Image &get_image(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_image(i);
+      }
+    static tinygltf::Image a;
+    return a;    
+  }
+  virtual int skins_size() const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->skins_size();
+      }
+    return 0;
+    
+  }
+  virtual const tinygltf::Skin &get_skin(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_skin(i);
+      }
+    static tinygltf::Skin a;
+    return a;    
+  }
+
+  virtual int samplers_size() const {
+  if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->samplers_size();
+      }
+    return 0;
+  
+  }
+  virtual const tinygltf::Sampler &get_sampler(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_sampler(i);
+      }
+    static tinygltf::Sampler a;
+    return a;    
+    
+  }
+
+  virtual int cameras_size() const {
+  if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->cameras_size();
+      }
+    return 0;
+    
+  }
+  virtual const tinygltf::Camera &get_camera(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_camera(i);
+      }
+    static tinygltf::Camera a;
+    return a;    
+    
+  }
+
+  virtual int scenes_size() const {
+  if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->scenes_size();
+      }
+    return 0;
+  }
+  virtual const tinygltf::Scene &get_scene(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_scene(i);
+      }
+    static tinygltf::Scene a;
+    return a;    
+  }
+
+  virtual int lights_size() const {
+  if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->lights_size();
+      }
+    return 0;
+  }
+  virtual const tinygltf::Light &get_light(int i) const {
+    if (tf2.id!=-1)
+      {
+	//std::cout << "BM2ID:"<< bm2.id << std::endl;
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf->get_light(i);
+      }
+    static tinygltf::Light a;
+    return a;    
+  }
+
+  GLTFModelInterface *get_next() const
+  {
+	GLTFModelInterface *tf = find_gltf(env,tf2);
+	return tf;
+  }
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::TF tf;
+  GameApi::DS ds;
+  GameApi::DS ds2 = { -1 };
+  GameApi::TF tf2 = { -1 };
+  std::string url;
+  std::string homepage;
+  bool success = false;
+};
+
+
 void load_png_cb2(void *dt)
 {
   LoadPNGFromTemp *ptr = (LoadPNGFromTemp*)dt;
   ptr->Prepare2();
+}
+void load_glb_cb2(void *dt)
+{
+  LoadGLBFromTemp *ptr = (LoadGLBFromTemp*)dt;
+  ptr->Prepare2();
+}
+
+
+GLTFModelInterface *find_next(GLTFModelInterface *i)
+{
+  MeshyRendering *meshy = dynamic_cast<MeshyRendering*>(i);
+  std::cout << "FIND NEXT:" << (long)meshy << std::endl;
+  if (meshy)
+    {
+      i = meshy->get_next();
+    }
+  LoadGLBFromTemp *tmp = dynamic_cast<LoadGLBFromTemp*>(i);
+  if (tmp)
+    {
+      i = tmp->get_next();
+    }
+  std::cout << "FIND_NEXT2:" << i->name() << std::endl;
+  //std::cout << "FIND NEXT2: " << (long) i << typeid(i).name() << std::endl;
+  return i;
 }
 
 
 GameApi::BM GameApi::BitmapApi::bm_png_bm(EveryApi &ev, BM bm, std::string url)
 {
   return add_color_bitmap(e,new LoadPNGFromTemp(e,ev,bm,url,gameapi_homepageurl));
+}
+
+GameApi::TF GameApi::PolygonApi::tf_ds_tf(EveryApi &ev, TF tf, std::string url)
+{
+  return add_gltf(e, new LoadGLBFromTemp(e,ev,tf,url,gameapi_homepageurl));
 }
 
 void load_ds_cb2(void *);
@@ -24090,6 +24909,30 @@ GameApi::P GameApi::PolygonApi::load_ds_from_temp_p(GameApi::EveryApi &ev, GameA
 }
 
 
+
+
+
+void GameApi::PolygonApi::load_glb_from_temp(std::string filename, void (*fptr)(void *), void *data, bool &success)
+{
+  e.load_file(filename, fptr,data,success);
+}
+GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string url, std::string data);
+
+GameApi::TF GameApi::PolygonApi::load_glb_from_temp2(std::string filename)
+{
+  ASyncVec *vec = e.load_file_result(filename);
+  std::string buf(vec->begin(),vec->end());
+  bool success=false;
+  GameApi::TF tf = LoadGLBFromString(e,"",filename,buf);
+  return tf;
+}
+
+void GameApi::PolygonApi::load_glb_from_temp3(std::string filename)
+{
+  e.load_file_clean(filename);
+}
+
+
 void GameApi::BitmapApi::load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success)
 {
   e.load_file(filename,fptr,data,success);
@@ -24236,9 +25079,11 @@ std::string GameApi::MainLoopApi::ds_to_string(DS ds)
   for(int i=0;i<s;i++)
     {
       int s = dds->BlockSizeInBytes(i);
-      unsigned char *ptr = dds->Block(i);
+      if (s!=0) {
+	unsigned char *ptr = dds->Block(i);
       //std::cout << "Writing Block:" << s << std::endl;
-      ff.write((char*)ptr, s);
+	ff.write((char*)ptr, s);
+      }
     }
   //std::cout << "Closing file" << std::endl;
   //ff.close();

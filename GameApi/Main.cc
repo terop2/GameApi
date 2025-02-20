@@ -161,6 +161,8 @@ extern bool g_vr_enable;
 //#pragma comment (lib, "glew32s.lib") 
 
 BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
+GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
+
 
 extern Low_SDL_Window *sdl_window;
 
