@@ -1176,11 +1176,11 @@ EXPORT void clear_all_caches()
 
 
 
-EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage)
+EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage, bool nosize)
 {
   // std::cout << "async_load_url " << url << std::endl;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  env->async_loader->load_urls(url, homepage);
+  env->async_loader->load_urls(url, homepage, nosize);
 
 }
 EXPORT void GameApi::Env::async_load_all_urls(std::vector<std::string> urls, std::string homepage)
@@ -1213,7 +1213,7 @@ EXPORT GameApi::Env::~Env()
   delete (::EnvImpl*)envimpl;
 }
 std::string remove_load(std::string s);
-std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url);
+std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize);
 
 
 #include "GameApi_dep_env_delmap.hh"
@@ -1576,7 +1576,7 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 
 }
 
-std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url);
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool noside);
 
 struct CallbackDel
 {
@@ -1652,7 +1652,7 @@ void* process(void *ptr)
   ProcessData *dt = (ProcessData*)ptr;
   std::string url = dt->url;
   //pthread_detach(pthread_self());
-  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url);
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,false);
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
@@ -2106,7 +2106,7 @@ void fetch_failed(void *data)
 }
 #endif
 
-void ASyncLoader::load_urls(std::string url, std::string homepage)
+void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
   {
     //std::cout << "load_urls:" << url << std::endl;
     if (url=="") return;
@@ -2347,7 +2347,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage)
 
       return; }
     std::cout << "Loading url: " << url <<std::endl;
-    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url);
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,nosize);
     //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf->size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
@@ -2985,19 +2985,19 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
 
 long long load_size_from_url(std::string url)
 {
-  //std::cout << "POPEN1 " << url << std::endl;
+  std::cout << "POPEN SIZE" << url << std::endl;
   url = upgrade_to_https(url);
   if (url=="") return 1;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
 #ifndef ANDROID
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
+    std::string cmd = "..\\curl\\curl.exe --max-time 300 -N --url " + url;
     std::string cmd2  = "..\\curl\\curl.exe";
     succ = file_exists(cmd2);
     std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
 #else
-    std::string cmd = "curl -s -N --url " + url;
+    std::string cmd = "curl --max-time 300 -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
@@ -3075,13 +3075,13 @@ public:
 #ifdef HAS_POPEN
 
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
+    std::string cmd = "..\\curl\\curl.exe --max-time 300 -N --url " + url;
     std::string cmd2  = "..\\curl\\curl.exe";
     succ = file_exists(cmd2);
     std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
 #else
     //std::cout << "Fetching " << url << std::endl;
-    std::string cmd = "curl -s -N --url " + url;
+    std::string cmd = "curl --max-time 300 -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
@@ -3266,7 +3266,7 @@ struct load_url_deleter
 };
 load_url_deleter load_from_url_del;
 
-std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url)
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
   //std::cout << "POPEN3 " << url << std::endl;
 
@@ -3295,25 +3295,27 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   // global variable that might not be initialized.
   //load_from_url_del.item.push_back(buffer);
     bool succ=false;
+    
 #ifdef HAS_POPEN
 #ifndef ANDROID
 
     //std::cout << "NOT IN ANDROID" << std::endl;
     
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s -N --url " + url;
+    std::string cmd = "..\\curl\\curl.exe --max-time 300 -N --url " + url;
     std::string cmd2  = "..\\curl\\curl.exe";
     succ = file_exists(cmd2);
     std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
 #else
     //       std::cout << "Fetching " << url << std::endl;
 
-    std::string cmd = "curl -s -N --url " + url;
+    std::string cmd = "curl --max-time 300 -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
     int num = 100000;
     if (succ) {
+    if (!nosize) {
 
 #ifdef __APPLE__
     FILE *f2 = popen(cmdsize.c_str(), "r");
@@ -3350,8 +3352,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	//std::cout << "Got num: " << num << std::endl;
       }
     }
+    }
     //std::cout << "Content-Length: " << num << std::endl;
-
+    
 #ifndef ANDROID
 #ifdef __APPLE__
     FILE *f = popen(cmd.c_str(), "r");
@@ -3373,12 +3376,26 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     }
 
 
+    int fd = fileno(f);
+    fd_set fds;
+    struct timeval tv;
+    
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
     long long i = 0;
     if (num>0)
       buffer->reserve(num);
-    while(fread(&c,1,1,f)==1) {
+
+    while(1) {
+      FD_ZERO(&fds);
+      FD_SET(fd,&fds);
+      tv.tv_sec=0;
+      tv.tv_usec=50000;
+
+      if (select(fd+1,&fds,NULL,NULL,&tv) > 0)
+	{
+
+	  if ( fread(&c,1,1,f)==1) {
       //std::cout << c;
       i++;
       g_current_size++;
@@ -3389,7 +3406,15 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
-      buffer->push_back(c); }
+      buffer->push_back(c);
+	  } else
+	    {
+	      break;
+	    }
+	}
+      
+      //usleep(10);
+    }
     pclose(f);
 
     }
@@ -3409,9 +3434,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       {
 #ifndef ANDROID
 #ifdef WINDOWS
-    std::string cmd = ".\\curl\\curl.exe -s -N --url " + url;
+    std::string cmd = ".\\curl\\curl.exe --max-time 300 -N --url " + url;
 #else
-    std::string cmd = "curl -s -N --url " + url;
+    std::string cmd = "curl --max-time 300 -N --url " + url;
 #endif
 #ifdef LINUX
     FILE *f = popen(cmd.c_str(), "r");
@@ -3571,9 +3596,9 @@ void send_post_request(std::string url, std::string headers, std::string data)
 #ifdef WINDOWS
   remove_spaces(data);
   remove_spaces(headers);
-  std::string cmd = "..\\curl\\curl.exe -s -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
+  std::string cmd = "..\\curl\\curl.exe -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
 #else
-  std::string cmd = "curl -s -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
+  std::string cmd = "curl -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
 #endif
   // std::cout << cmd << std::endl;
   

@@ -25,10 +25,13 @@ void print(std::string label, T *ptr)
 }
 
 class GLTF_Model_with_prepare;
+class GLTF_Model_with_prepare_from_string;
 std::vector<GLTF_Model_with_prepare*> g_model_del_items;
+std::vector<GLTF_Model_with_prepare_from_string*> g_model_del_items_from_string;
 std::vector<std::string> g_deleted_urls;
 
 class LoadGltf;
+class LoadGltf_from_string;
 // not working because tinygltf doesn't allow it.
 //#define CONCURRENT_IMAGE_DECODE 1
 
@@ -58,6 +61,7 @@ class GLTFImageDecoder
 {
 public:
   GLTFImageDecoder(std::string url_prefix, LoadGltf *load) : url_prefix(url_prefix),load(load) { }
+  GLTFImageDecoder(std::string url_prefix, LoadGltf_from_string *load) : url_prefix(url_prefix), load2(load) { }
   ~GLTFImageDecoder();
   std::vector<std::string> scan_gltf_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &vec);
   FETCHID fetch_file(GameApi::Env &e, std::string filename);
@@ -78,6 +82,7 @@ public:
 public:
   friend void *thread_func_gltf_bitmap(void *);
   LoadGltf *load;
+  LoadGltf_from_string *load2;
   std::string url_prefix;
   std::map<FETCHID,std::string> filenames;
   std::map<FETCHID,std::vector<unsigned char, GameApiAllocator<unsigned char> > *> files;
@@ -120,6 +125,7 @@ class GLTF_Model : public GLTFModelInterface
 {
 public:
   GLTF_Model(tinygltf::Model *model, std::string base_url, std::string url) : self(model), base_url(base_url), url(url) { }
+  virtual std::string name() const { return "GLTF_Model"; }
   virtual void Prepare() { }
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
@@ -462,6 +468,7 @@ public:
 
 
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr);
+bool LoadImageData_from_string(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr);
 bool WriteImageData(const std::string *basepath, const std::string *filename, tinygltf::Image *image, bool b, void *ptr);
 
 bool FileExists(const std::string &abs_filename, void *ptr);
@@ -497,9 +504,17 @@ struct LoadGltf2_data
   int id;
   FETCHID iid;
 };
+struct LoadGltf2_data_from_string
+{
+  LoadGltf_from_string *obj;
+  int id;
+  FETCHID iid;
+};
 void LoadGltf3_cb(void*);
 void LoadGltf2_cb(void*);
 void LoadGltf_cb(void *);
+void LoadGltf_cb_from_string(void *);
+void LoadGltf2_cb_from_string(void*);
 
 int find_str(std::string val, std::string repl);
 
@@ -762,11 +777,278 @@ void LoadGltf2_cb(void *ptr)
   LoadGltf2_data *dt = (LoadGltf2_data*)ptr;
   dt->obj->PrePrePrepare(dt->id, dt->iid);
 }
+class LoadGltf_from_string : public CollectInterface
+{
+public:
+  LoadGltf_from_string(GameApi::Env &e, std::string data, std::string base_url,std::string url, std::string homepage, bool is_binary) : e(e), data(data), url(url), base_url(base_url), homepage(homepage), is_binary(is_binary) {
+    g_e = &e;
+    decoder = new GLTFImageDecoder(base_url,this);
+    tinygltf::FsCallbacks fs = {
+      &FileExists,
+      &ExpandFilePath,
+      &ReadWholeFile,
+      &WriteWholeFile,
+      (void*)this
+    };
+    tiny.SetFsCallbacks(fs);
+    //#ifdef CONCURRENT_IMAGE_DECODE
+#ifdef THREADS
+    if (url.substr(url.size()-3,3)!="glb")
+      tiny.SetImageLoader(&LoadImageData_from_string, this);
+#endif
+    //#endif
+    //tiny.SetImageWriter(&WriteImageData, this);
+    e.async_load_callback(url, &LoadGltf_cb_from_string, (void*)this);
+  }
+  ~LoadGltf_from_string()
+  {
+    g_deleted_urls.push_back(url);
+    delete decoder;
+    decoder=0;
+    e.async_rem_callback(url);
+    if (prepare_done) {
+      
+    }
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+  void PrePrePrepare(int i, FETCHID id)
+  {
+    if (!decoder) return;
+    if (url.substr(url.size()-3,3)!="glb") {
+    prepreprepare_done = true;
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
+    if (!vec) return;
+    //std::cout << "PrePrePrepare vecsize=" << vec->size() << std::endl;
+    std::string filename = decoder->get_fetch_filename(id);
+    //std::cout << "PrePrePrepare()" << filename << std::endl;
+    FILEID iid = decoder->add_file(vec,filename);
+    //#ifdef THREADS
+    //delete vec;
+    //#endif
+    async_pending_count++;
+    decoder->start_decode_process(id,iid,256,256);
+    }
+  }
+  void PrePrepare() {
+    if (!decoder) return;
+    if (preprepare_done) return;
+    preprepare_done = true;
+    if (url.substr(url.size()-3,3)!="glb") {
+      //std::cout << "PrePrepare()" << url << std::endl;
+      //#ifndef EMSCRIPTEN
+      //e.async_load_url(url, homepage);
+
+      //#endif
+    
+    //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    //if (!vec) return;
+    if (!data.size()) return;
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(data.begin(), data.end());
+
+    g_glb_file_size = g_glb_file_size > data.size() ? g_glb_file_size : data.size();
+
+
+
+    
+    std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
+
+    //int ss = image_filenames.size();
+    //std::cout << "filenames_count:" << ss << std::endl;
+    //for(int i=0;i<ss;i++)
+    //  {
+    //std::cout << "IMAGE:" << image_filenames[i] << std::endl;
+    // }
+    
+    
+    std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
+    int ss = image_ids.size();
+    for(int ii=0;ii<ss;ii++)
+      {
+	LoadGltf2_data_from_string *dt = new LoadGltf2_data_from_string;
+	dt->obj = this;
+	dt->id = ii;
+	dt->iid = image_ids[ii];
+	decoder->set_fetch_callback(e, image_ids[ii], &LoadGltf2_cb_from_string, (void*)dt); 
+      }
+    decoder->fetch_all_files(e,image_ids);
+
+#ifndef EMSCRIPTEN
+    std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
+    int ig = 0;
+    for(;it!=decoder->filenames.end();it++)
+      {
+	std::pair<FETCHID,std::string> p = *it;
+	PrePrePrepare(ig,p.first);
+	ig++;
+      }
+#endif
+    }
+  }
+  void Prepare() {
+    if (prepare_done) return;
+#ifndef EMSCRIPTEN
+    PrePrepare();
+#endif
+    if (!preprepare_done)
+      {
+	PrePrepare();
+      }
+    //std::cout << "LoadGLTF: baseurl=" << base_url << std::endl;
+
+
+ #ifdef THREADS
+ #ifdef EMSCRIPTEN
+    // wait for all threads to finish
+    /*
+    int ss = current_gltf_threads.size();
+    for(int i=0;i<ss;i++)
+      {
+	void *res;
+	pthread_join(current_gltf_threads[i]->thread_id,&res);
+      }
+    */
+    tasks_join(3008);
+    current_gltf_threads.clear();
+ #endif
+ #endif
+
+    if (!prepreprepare_done) {
+    std::map<FETCHID,std::string>::iterator it = decoder->filenames.begin();
+    int ig = 0;
+    for(;it!=decoder->filenames.end();it++)
+      {
+	std::pair<FETCHID,std::string> p = *it;
+	PrePrePrepare(ig,p.first);
+	ig++;
+      }
+    }
+  
+
+    
+    
+    //try {
+      //std::cout << "LoadGLTF: url=" << url << std::endl;
+    //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+    //if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; return; }
+    std::vector<unsigned char> *vec = new std::vector<unsigned char>(data.begin(), data.end());
+    int ssz = vec->end()-vec->begin();
+    if (ssz<1) {
+      std::cout << "LoadGLTF: ssz=" << ssz << std::endl;
+      return;
+    }
+    std::vector<char> vec2(vec->begin(), vec->end());
+    std::string str(vec->begin(),vec->end());
+
+
+    std::cout << "LOADGLTF:" << str.substr(0,50) << std::endl;
+
+    
+    bool is_animated = false;
+    {
+    int val = find_str(str,"\"animations\"");
+    if (val!=-1)
+      {
+	is_animated=true;
+	g_glb_animated=true;
+      }
+    }
+
+
+    //std::cout << str << std::endl;
+    //bool b = false;
+    std::string err;
+    std::string warn;
+    if (!is_binary) {
+      //std::cout << "File size: " << url  << "::" << str.size() << std::endl;
+      int sz = str.size();
+
+      if (g_concurrent_download) {
+#ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space) {
+      sz--;
+    }
+    if (sz<0) sz=0;
+#endif
+      }
+    //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
+    std::cout << "LoadASCII" << std::endl;
+      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
+    } else {
+      int sz = vec->size();
+      //std::cout << "File size: " << url  << "::" << sz << std::endl;
+      if (g_concurrent_download) {
+#ifdef EMSCRIPTEN
+    int s = g_urls.size();
+    bool has_space = true;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Compare:" << g_urls[i] << "==" << url << std::endl;
+      if (std::string(g_urls[i])==url) has_space=false;
+    }
+    if (has_space)
+      {
+      sz--;
+      }
+    if (sz<0) sz=0;
+#endif
+      }
+    char *ptr2 = &vec2.operator[](0);
+    unsigned char *ptr3 = (unsigned char*)ptr2;
+    //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
+    std::cout << "LoadBInary" << std::endl;
+      tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
+    }
+    if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
+    if (!err.empty()) { std::cout << "ERROR: " << err << std::endl; }
+    prepare_done = true;
+    delete vec;
+    //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
+  }
+  void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
+public:
+  GameApi::Env &e;
+  std::string base_url;
+  std::string url;
+  std::string data;
+  std::string homepage;
+  bool is_binary;
+  tinygltf::TinyGLTF tiny;
+  tinygltf::Model model;
+  bool prepare_done = false;
+  GLTFImageDecoder *decoder=0;
+  bool preprepare_done = false;
+  bool prepreprepare_done = false;
+  std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
+};
+
+void LoadGltf_cb_from_string(void *ptr)
+{
+  LoadGltf_from_string *obj = (LoadGltf_from_string*)ptr;
+  obj->PrePrepare();
+}
+void LoadGltf2_cb_from_string(void *ptr)
+{
+  LoadGltf2_data_from_string *dt = (LoadGltf2_data_from_string*)ptr;
+  dt->obj->PrePrePrepare(dt->id, dt->iid);
+}
 
 
 class GLTF_Model_with_prepare : public GLTF_Model
 {
 public:
+  std::string name() const { return "GLTF_Model_with_prepare"; }
   GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
   virtual void Prepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
@@ -778,6 +1060,22 @@ public:
 };
 
 
+class GLTF_Model_with_prepare_from_string : public GLTF_Model
+{
+public:
+  std::string name() const { return "GLTF_Model_with_prepare_from_string"; }
+  GLTF_Model_with_prepare_from_string(LoadGltf_from_string *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
+  virtual void Prepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+  virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
+  virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+public:
+  LoadGltf_from_string *load=0;
+  tinygltf::Model *model=0;
+  bool firsttime;
+};
+
+
+
 struct KeyStruct
 {
   std::string key;
@@ -785,6 +1083,13 @@ struct KeyStruct
 };
 
 std::vector<KeyStruct> g_gltf_instances;
+struct KeyStruct_from_string
+{
+  std::string key;
+  LoadGltf_from_string *obj;
+};
+
+std::vector<KeyStruct_from_string> g_gltf_instances_from_string;
 
 bool instance_deleter_installed=false;
 
@@ -828,6 +1133,44 @@ void del_instances(void*)
     }
   g_gltf_instances.clear();
   //instance_deleter_installed=false;
+
+
+
+  int s2 = g_model_del_items_from_string.size();
+  for(int ii=0;ii<s2;ii++)
+    {
+      GLTF_Model_with_prepare_from_string* item = g_model_del_items_from_string[ii];
+      item->load = 0;
+      item->model = 0;
+      item->self = 0;
+    }
+  
+  int s = g_gltf_instances_from_string.size();
+  for(int i=0;i<s;i++)
+    {
+     KeyStruct &s = g_gltf_instances_from_string[i];
+     //std::cout << "POINTER:" << (int)s.obj << std::endl;
+     delete s.obj->decoder;
+     s.obj->decoder = 0;
+     s.obj->model.accessors.clear();
+     s.obj->model.animations.clear();
+     s.obj->model.buffers.clear();
+     s.obj->model.bufferViews.clear();
+     s.obj->model.materials.clear();
+     s.obj->model.meshes.clear();
+     s.obj->model.nodes.clear();
+     s.obj->model.textures.clear();
+     s.obj->model.images.clear();
+     s.obj->model.skins.clear();
+     s.obj->model.samplers.clear();
+     s.obj->model.cameras.clear();
+     s.obj->model.scenes.clear();
+     s.obj->model.lights.clear();
+     
+    }
+  g_gltf_instances_from_string.clear();
+  //instance_deleter_installed=false;
+
 }
 #endif
 
@@ -855,6 +1198,33 @@ LoadGltf *find_gltf_instance(GameApi::Env &e, std::string base_url, std::string 
   g_gltf_instances.push_back(s2);
   return obj;
 }
+
+
+LoadGltf_from_string *find_gltf_instance_from_string(GameApi::Env &e, std::string data, std::string base_url, std::string url, std::string homepage, bool is_binary)
+{
+#ifdef EMSCRIPTEN
+  if (instance_deleter_installed==false)
+    {
+      register_cache_deleter(&del_instances,(void*)0);
+      instance_deleter_installed=true;
+  }
+#endif
+  
+  std::string key = base_url + ":" + url;
+
+  int s = g_gltf_instances_from_string.size();
+  for(int i=0;i<s;i++) {
+    if (g_gltf_instances_from_string[i].key == key) return g_gltf_instances_from_string[i].obj;
+  }
+  LoadGltf_from_string *obj = new LoadGltf_from_string(e,data,base_url,url,homepage,is_binary);
+  //obj->Prepare();
+  KeyStruct_from_string s2;
+  s2.key = key;
+  s2.obj = obj;
+  g_gltf_instances_from_string.push_back(s2);
+  return obj;
+}
+
 
 
 void call_prepare(void *ptr) {
@@ -1202,6 +1572,39 @@ void gltf_join_threads(GLTFImageDecoder *decoder)
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
 {
   LoadGltf *dt = (LoadGltf*)ptr;
+  std::string url = dt->base_url;
+  if (url.size()!=0&&url.substr(url.size()-1,1)!="/") url.push_back('/');
+  url+=image->uri;
+  //std::cout << "FIND_FILE:" << url << std::endl;
+  FILEID id = dt->decoder->find_file(url);
+  //if (!dt->decoder->is_decoded(id)) {
+    //std::cout << "JOINING BITMAP THREADS!" << std::endl;
+  //  gltf_join_threads(dt->decoder);
+  // }
+  //FILEID id2 = dt->decoder->find_file(url);
+  if (dt->decoder->is_decoded(id)) {
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr2 = dt->decoder->get_decoded_file(id);
+    //std::cout << "OUTPUT0:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
+    image->image = *ptr2;
+    image->width = dt->decoder->decoded_image[id]->width;
+    image->height = dt->decoder->decoded_image[id]->height;
+    image->component = dt->decoder->decoded_image[id]->component;
+    image->pixel_type = dt->decoder->decoded_image[id]->pixel_type;
+    image->bits = dt->decoder->decoded_image[id]->bits;
+    //std::cout << "OUTPUT:" << image->width << "x" << image->height << " " << image->component << " " << image->pixel_type << " " << image->bits << std::endl;
+  } else { std::cout << "FILE WAS NOT DECODED YET:" << dt->decoder->load->current_gltf_threads.size() << "::" << dt->base_url + image->uri << std::endl; }
+  //#ifdef CONCURRENT_IMAGE_DECODE
+  //start_gltf_bitmap_thread(image, req_width, req_height, bytes, size);
+  //return true;
+  //#endif
+  //LoadGltf *data = (LoadGltf*)ptr;
+  //std::cout << "LoadImageData " << req_width << " " << req_height << " " << size << std::endl;
+  //return false;
+  return true;
+}
+bool LoadImageData_from_string(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr)
+{
+  LoadGltf_from_string *dt = (LoadGltf_from_string*)ptr;
   std::string url = dt->base_url;
   if (url.size()!=0&&url.substr(url.size()-1,1)!="/") url.push_back('/');
   url+=image->uri;
@@ -7737,6 +8140,7 @@ public:
     interface->Collect(vis);
     vis.register_obj(this);
   }
+  virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
   virtual void HeavyPrepare() {
     Prepare();
   }
@@ -11672,6 +12076,7 @@ void ASyncGltfCB(void *data)
 class GLTFEmpty : public GLTFModelInterface
 {
 public:
+  std::string name() const { return "GLTFEmpty"; }
   virtual void Prepare() { }
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
@@ -11880,6 +12285,96 @@ GameApi::TF GameApi::MainLoopApi::gltf_loadKK(std::string base_url, std::string 
 }
 
 
+GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string url, std::string data)
+{
+  //std::ofstream ss("foo.err");
+  //ss << data;
+  //ss.close();
+
+
+  std::cout << "BASE URL:" << base_url << std::endl;
+  std::cout << "URL: " << url << std::endl;
+  
+  if (g_deploy_phase) base_url="./";
+  else
+    {
+      int s = url.size();
+      int pos = -1;
+      for(int i=0;i<s;i++)
+	{
+	  if (url[i]=='/') { pos = i; }
+	}
+      if (pos!=-1) {
+	base_url = url.substr(0,pos);
+      }
+    }
+  
+  bool is_binary=true;
+  //if (int(url.size())>3) {
+  //  std::string sub = url.substr(url.size()-3);
+  //  if (sub=="glb") is_binary=true;
+  //}
+  
+  LoadGltf_from_string *load = find_gltf_instance_from_string(e,data,base_url,url,gameapi_homepageurl,is_binary);
+  GLTF_Model_with_prepare_from_string *model = new GLTF_Model_with_prepare_from_string(load, &load->model);
+  g_model_del_items_from_string.push_back(model);
+  GLTFModelInterface *i = (GLTFModelInterface*)model;
+      int c = get_current_block();
+      set_current_block(-1);
+  GameApi::TF tf = add_gltf(e,i);
+  set_current_block(c);
+  return tf;
+}
+
+GameApi::ASyncVec *g_convert(std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec);
+
+GLTFModelInterface *find_next(GLTFModelInterface *i);
+
+
+void GameApi::MainLoopApi::save_glb_store(GameApi::EveryApi &ev, std::string output_filename, TF tf)
+{
+  //GameApi::DS ds = ev.polygon_api.tf_ds_inv(tf,0);
+  //std::string write_buf = ev.mainloop_api.ds_to_string(ds);
+  GLTFModelInterface *interface = find_gltf(e,tf);
+
+  interface = find_next(interface);
+
+  std::cout << "save_glb_store:" << interface->name() << std::endl;
+  
+#ifndef EMSCRIPTEN
+  GLTF_Model_with_prepare *prepare = dynamic_cast<GLTF_Model_with_prepare*>(interface);
+  if (!prepare) {
+    GLTF_Model_with_prepare_from_string *prepare = dynamic_cast<GLTF_Model_with_prepare_from_string*>(interface);
+    if (!prepare) { std::cout << "Using tf_ds_tf twice is not possible at " << prepare->name() << std::endl; }
+    
+    //prepare->Prepare();
+  GLTF_Model *model = (GLTF_Model*)interface;
+  LoadGltf_from_string *load = prepare->load;
+  tinygltf::Model *self = model->self;
+  std::stringstream ss;
+  bool b = load->tiny.WriteGltfSceneToStream(self, ss, true, true);
+  std::string write_buf = ss.str();
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(write_buf.begin(),write_buf.end());
+  e.store_file(output_filename,g_convert(&vec));
+    
+  return;
+
+  }
+#else
+  GLTF_Model_with_prepare *prepare = (GLTF_Model_with_prepare*)interface;
+#endif
+  GLTF_Model *model = (GLTF_Model*)interface;
+  //prepare->Prepare();
+  LoadGltf *load = prepare->load;
+  tinygltf::Model *self = model->self;
+  std::stringstream ss;
+  bool b = load->tiny.WriteGltfSceneToStream(self, ss, true, true);
+  std::string write_buf = ss.str();
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(write_buf.begin(),write_buf.end());
+  e.store_file(output_filename,g_convert(&vec));
+}
+
+
 #include "zip_file.hpp"
 #include "GameApi_dep_env_delmap.hh"
 
@@ -11901,6 +12396,7 @@ void *thread_sketchfab_zip(void *data);
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
 public:
+  std::string name() const { return "GLTF_Model_with_prepare_sketchfab_zip"; }
   GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model) { firsttime=true; }
   void Prepare() {
     if (firsttime) {

@@ -284,7 +284,7 @@ public:
   IMPORT std::vector<int> store_counts();
   IMPORT void free_to_counts(std::vector<int> vec);
   IMPORT void free_temp_memory();
-  IMPORT void async_load_url(std::string url, std::string homepage);
+  IMPORT void async_load_url(std::string url, std::string homepage, bool nosize=false);
   IMPORT void async_load_all_urls(std::vector<std::string> urls, std::string homepage);
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
   IMPORT void async_rem_callback(std::string url);
@@ -358,6 +358,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  void save_glb_store(EveryApi &ev, std::string filename, TF tf);
   ML shader_cache_disable(ML ml, bool disable);
   void step();
   ML android_landscape_scale(EveryApi &ev, ML ml);
@@ -2576,6 +2577,13 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  bool ready_to_prepare(ML p);
+  DS tf_ds_inv(TF tf, int flags);
+  void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
+  TF load_glb_from_temp2(std::string filename);
+  void load_glb_from_temp3(std::string filename);
+  TF tf_ds_tf(EveryApi &ev, TF tf, std::string url);
+  TF meshy(EveryApi &ev, std::string prompt, std::string filename);
   P p_ds2(EveryApi &ev, DS ds2);
   P load_ds_from_temp_p(EveryApi &ev, P p, std::string url);
   ML fade_pic(EveryApi &ev, BM bm1, float start_time, float transition_time, float end_time, float end_transition_time,
