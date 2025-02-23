@@ -1,0 +1,3 @@
+
+all:
+	latex paper.tex

@@ -1,0 +1,36 @@
+
+\documentclass[11pt,twoside,a4paper]{article}
+\begin{document}
+\title{GameApi Builder tool and meshpage.org}
+\author{Tero Pulkkinen}
+\date{23.2.2025}
+\maketitle
+\begin{abstract}
+  GameApi Builder tool and meshpage.org are technologies that allow display of 3d models in multiple platforms, including linux, win32, web, android. The tools are based on small scripting language built with single primitive: function call, and passing parameters to predefined functions. Input of the tools are gltf/glb files, .obj files or .stl files, and output of the tools are script.txt files, html5 .zip files and android apk files. Using these techniques, we build a complete 3d engine subsystem with advanced tech features including opengl instancing, 3d models, voxels, volumes, textures, gltf materials, gltf animations.
+\end{abstract}
+
+\section{history}
+The project started in 2013, when we started using sdl2, libfreetype to build a 3d engine. We first built some simple game called gameapigame, where we develop opengl based sprite technology. Then we started doing 3d model routines, including FaceCollection type as mesh representation. How it differs from normal mesh data structure, is that it only publishes interface of a mesh, it doesn't need to store the mesh data inside the same object, if it can fetch the data from somewhere else. Bitmaps and voxels also have similar kind of interface.
+
+Significant development that took several years was the frame rate improvement actions. Getting frame rates working was done by splitting the operations to Prepare() and execute() operations, where prepare() would be called just once, and contains heavy operations, while execute is per-frame operation executed many times and is light to execute so to get 60Hz frequence for frame updates.
+
+Another significant development was the building of the algorithm library. We now have 600 separate algorithms that can be chosen from the builder tool and the algorithms are working together with the FaceCollection and Bitmap types to implement various algorithms needed for 3d modelling and displaying.
+
+\section{Technical Details}
+template<class C>
+class Bitmap : public CollectInterface
+{
+public:
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual C Map(int x, int y) const=0;
+  virtual void Prepare()=0;
+};
+
+This contains the main part of bitmap type. It publishes size of the bitmap and a mapping function which fetches each pixel from the bitmap. C type can be either unsigned char, Color, int or something else. This is the standard getpixel() style interface for bitmaps.
+
+
+
+
+
+\end{document}
