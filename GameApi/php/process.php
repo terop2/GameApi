@@ -7,7 +7,7 @@ $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
 $alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
 $links = array("view.php", "gltf_to_zip.php", "meshpage_4", "meshpage.php");
 $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with the engine",
-       	       "convert your<br>gltf files to html5<br>for hosting space<br>deployment",
+       	       "convert your<br>gltf files to html5<br>for hosting space<br>",
 	       "if end result needed<br>tweaking, use full<br> customisation",
 	       "and there's plenty<br> of examples to learn<br> the scripting language");
 
@@ -195,7 +195,7 @@ for($i=0;$i<4;$i++)
    echo "<strong>$labels[$i]</strong>\n";
    echo "</div>\n";
    echo "<div class=\"grid_item2 center width150\">\n";
-   echo "<img class=\"imgs2\" src=\"$imgs[$i]\" width=\"150\" height=\"110\" alt=\"$alts[$i]\"\/>\n";
+   echo "<img class=\"imgs2\" src=\"$imgs[$i]\" width=\"150\" height=\"150\" alt=\"$alts[$i]\"\/>\n";
    echo "</div>\n";
 
 if (substr_count($descs[$i],"<br>")>=3) {
