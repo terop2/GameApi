@@ -17,20 +17,46 @@ Significant development that took several years was the frame rate improvement a
 Another significant development was the building of the algorithm library. We now have 600 separate algorithms that can be chosen from the builder tool and the algorithms are working together with the FaceCollection and Bitmap types to implement various algorithms needed for 3d modelling and displaying.
 
 \section{Technical Details}
+
+\begin{verbatim}
 template<class C>
 class Bitmap : public CollectInterface
 {
 public:
+  virtual void Prepare()=0;
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual C Map(int x, int y) const=0;
-  virtual void Prepare()=0;
 };
+\end{verbatim}
 
 This contains the main part of bitmap type. It publishes size of the bitmap and a mapping function which fetches each pixel from the bitmap. C type can be either unsigned char, Color, int or something else. This is the standard getpixel() style interface for bitmaps.
 
+The FaceCollection type is slightly more complicated:
 
+\begin{verbatim}
+class FaceCollection : public CollectInterface
+{
+public:
+  virtual ~FaceCollection() { }
+  virtual void Prepare()=0;
+  virtual int NumFaces() const = 0;
+  virtual int NumPoints(int face) const=0;
+  
+  virtual Point FacePoint(int face, int point) const=0;
+  virtual Vector PointNormal(int face, int point) const=0;
+  virtual float Attrib(int face, int point, int id) const=0;
+  virtual int AttribI(int face, int point, int id) const=0;
+  virtual unsigned int Color(int face, int point) const=0;
+  virtual Point2d TexCoord(int face, int point) const=0;
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+};
+\end{verbatim}
 
-
+this allows triangle meshes, quad meshes, polygon meshes, or any
+combination of them. Before rendering, the code fetches the data from
+the interface and push\_backs it to 3 separate c++ vectors, one for triangles, one for quads and one for polygons. Then 3 draw calls to opengl can render the model, one for GL\_TRIANGLES, one for GL\_QUADS and one for GL\_TRIANGLE\_STRIP.
 
 \end{document}
