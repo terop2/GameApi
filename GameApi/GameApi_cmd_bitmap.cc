@@ -40,7 +40,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
       vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::stable_diffusion,
 			     "stable_diffusion",
-			     { "ev", "prompt", "filename" },
+			     { "ev", "prompt", "cache file" },
 			     { "EveryApi&", "std::string", "std::string" },
 			     { "ev", "garden_gnome", "test.png" },
 			     "BM", "bitmap_api", "stable_diffusion"));
