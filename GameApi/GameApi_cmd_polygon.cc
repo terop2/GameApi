@@ -185,7 +185,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::meshy,
 			 "meshy_ai",
-			 { "ev", "prompt", "filename" },
+			 { "ev", "prompt", "cache file" },
 			 { "EveryApi&", "std::string", "std::string" },
 			 { "ev", "A_Monster_Truck", "monster.glb" },
 			 "TF", "polygon_api", "meshy"));
