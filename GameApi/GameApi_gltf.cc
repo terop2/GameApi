@@ -947,7 +947,7 @@ public:
     std::string str(vec->begin(),vec->end());
 
 
-    std::cout << "LOADGLTF:" << str.substr(0,50) << std::endl;
+    //std::cout << "LOADGLTF:" << str.substr(0,50) << std::endl;
 
     
     bool is_animated = false;
@@ -1007,7 +1007,7 @@ public:
     char *ptr2 = &vec2.operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
     //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
-    std::cout << "LoadBInary" << std::endl;
+    //std::cout << "LoadBInary" << std::endl;
       tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
     }
     if (!warn.empty()) { std::cout << "WARN: " << warn << std::endl; }
@@ -12292,8 +12292,8 @@ GameApi::TF LoadGLBFromString(GameApi::Env &e, std::string base_url, std::string
   //ss.close();
 
 
-  std::cout << "BASE URL:" << base_url << std::endl;
-  std::cout << "URL: " << url << std::endl;
+  //std::cout << "BASE URL:" << base_url << std::endl;
+  //std::cout << "URL: " << url << std::endl;
   
   if (g_deploy_phase) base_url="./";
   else
@@ -12339,7 +12339,7 @@ void GameApi::MainLoopApi::save_glb_store(GameApi::EveryApi &ev, std::string out
 
   interface = find_next(interface);
 
-  std::cout << "save_glb_store:" << interface->name() << std::endl;
+  //std::cout << "save_glb_store:" << interface->name() << std::endl;
   
 #ifndef EMSCRIPTEN
   GLTF_Model_with_prepare *prepare = dynamic_cast<GLTF_Model_with_prepare*>(interface);
@@ -13329,7 +13329,7 @@ FILEID GLTFImageDecoder::find_file(std::string filename)
     }
   FILEID id;
   id.id = -1;
-  std::cout << "ERROR, GLTFImageDecoder::find_file()" << std::endl;
+  //std::cout << "ERROR, GLTFImageDecoder::find_file()" << std::endl;
   return id;
 }
 FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec, std::string filename)
