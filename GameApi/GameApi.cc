@@ -1,4 +1,4 @@
-
+<
 
 #define SDL2_USED  
 #define GAME_API_DEF
@@ -24325,7 +24325,7 @@ public:
 
   void Prepare2()
   {
-    std::cout << "Prepare2" << success << std::endl;
+    //std::cout << "Prepare2" << success << std::endl;
     if (success) {
       tf2 = ev.polygon_api.load_glb_from_temp2(get_filename());
       // bm2 = ev.polygon_api.bm_png2(ev,ds2);
@@ -24771,7 +24771,7 @@ public:
 
   void Prepare2()
   {
-    std::cout << "Prepare2" << success << std::endl;
+    //std::cout << "Prepare2" << success << std::endl;
     if (success) {
       ds2 = ev.mainloop_api.load_ds_from_temp2(get_filename());
       p2 = ev.polygon_api.p_ds2(ev,ds2);
