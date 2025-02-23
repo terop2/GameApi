@@ -1,4 +1,3 @@
-<
 
 #define SDL2_USED  
 #define GAME_API_DEF
