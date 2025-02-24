@@ -1,20 +1,55 @@
-
 \documentclass[11pt,twoside,a4paper]{article}
+\usepackage{listings}
 \begin{document}
 \title{GameApi Builder tool and meshpage.org}
-\author{Tero Pulkkinen}
+\author{Tero Pulkkinen (terop@kotiposti.net)}
 \date{23.2.2025}
 \maketitle
+\newcommand{\code}[1]{\lstinline{#1}}
 \begin{abstract}
   GameApi Builder tool and meshpage.org are technologies that allow display of 3d models in multiple platforms, including linux, win32, web, android. The tools are based on small scripting language built with single primitive: function call, and passing parameters to predefined functions. Input of the tools are gltf/glb files, .obj files or .stl files, and output of the tools are script.txt files, html5 .zip files and android apk files. Using these techniques, we build a complete 3d engine subsystem with advanced tech features including opengl instancing, 3d models, voxels, volumes, textures, gltf materials, gltf animations.
 \end{abstract}
 
 \section{history}
-The project started in 2013, when we started using sdl2, libfreetype to build a 3d engine. We first built some simple game called gameapigame, where we develop opengl based sprite technology. Then we started doing 3d model routines, including FaceCollection type as mesh representation. How it differs from normal mesh data structure, is that it only publishes interface of a mesh, it doesn't need to store the mesh data inside the same object, if it can fetch the data from somewhere else. Bitmaps and voxels also have similar kind of interface.
 
-Significant development that took several years was the frame rate improvement actions. Getting frame rates working was done by splitting the operations to Prepare() and execute() operations, where prepare() would be called just once, and contains heavy operations, while execute is per-frame operation executed many times and is light to execute so to get 60Hz frequence for frame updates.
+The project started in 2013, when we started using sdl2, libfreetype
+to build a 3d engine. We first built some simple game called
+gameapigame, where we develop opengl based sprite technology. Then we
+started doing 3d model routines, including FaceCollection type as mesh
+representation. How it differs from normal mesh data structure, is
+that it only publishes interface of a mesh, it doesn't need to store
+the mesh data inside the same object, if it can fetch the data from
+somewhere else. Bitmaps and voxels also have similar kind of
+interface.
 
-Another significant development was the building of the algorithm library. We now have 600 separate algorithms that can be chosen from the builder tool and the algorithms are working together with the FaceCollection and Bitmap types to implement various algorithms needed for 3d modelling and displaying.
+Significant development that took several years was the frame rate
+improvement actions. Getting frame rates working was done by splitting
+the operations to Prepare() and execute() operations, where prepare()
+would be called just once, and contains heavy operations, while
+execute is per-frame operation executed many times and is light to
+execute so to get 60Hz frequence for frame updates.
+
+Another significant development was the building of the algorithm
+library. We now have 600 separate algorithms that can be chosen from
+the builder tool and the algorithms are working together with the
+FaceCollection and Bitmap types to implement various algorithms needed
+for 3d modelling and displaying.
+
+Significant development effort was done to implement 70 test cases for
+the library, we have games, demos, 3d models, and animations available
+which test all aspects of the library.
+
+Yet another significant development was the creation of GLTF rendering
+using tinygltf library. tinygltf allowed reading the gltf/glb file
+formats, but it didn't have rendering capability builtin, and that
+needed to be done with our engine's primitives.
+
+There is also optimization slot done after gltf development, and some
+half year was spent on optimizing the rendering pipeline after gltf
+was implemented. We maanged to reduce loading time of the engine from
+20-30 seconds to mere 1-2 seconds.
+
+Final development focused on artificial intelligence integration.
 
 \section{Technical Details}
 
@@ -49,14 +84,55 @@ public:
   virtual int AttribI(int face, int point, int id) const=0;
   virtual unsigned int Color(int face, int point) const=0;
   virtual Point2d TexCoord(int face, int point) const=0;
-  virtual float TexCoord3(int face, int point) const { return 0.0; }
-  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
-  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual float TexCoord3(int face, int point) const=0;
+  virtual VEC4 Joints(int face, int point) const=0;
+  virtual VEC4 Weights(int face, int point) const=0;
 };
 \end{verbatim}
 
 this allows triangle meshes, quad meshes, polygon meshes, or any
 combination of them. Before rendering, the code fetches the data from
 the interface and push\_backs it to 3 separate c++ vectors, one for triangles, one for quads and one for polygons. Then 3 draw calls to opengl can render the model, one for GL\_TRIANGLES, one for GL\_QUADS and one for GL\_TRIANGLE\_STRIP.
+
+\section{script files}
+
+script files look like this:
+\begin{verbatim}
+TF I0=ev.mainloop_api.gltf_loadKK(http://meshpage.org/assets/bottledcar/,
+                        http://meshpage.org/assets/bottledcar/scene.gltf);
+P I333=ev.mainloop_api.gltf_mesh_all_p(ev,I0);
+BM I1=ev.bitmap_api.newbitmap(100,100,ff888888);
+BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
+ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+MN I997=ev.move_api.mn_empty();
+MN I998=ev.move_api.scale2(I997,1.5,1.5,1.5);
+ML I999=ev.move_api.move_ml(ev,I3,I998,1,10);
+ML I4=ev.sprite_api.turn_to_2d(ev,I999,0.0,0.0,800.0,600.0);
+ML I5=ev.mainloop_api.gltf_mesh_all(ev,I0,1.0,0,1,1,1,0.0,ff888888);
+ML I7=ev.mainloop_api.async_gltf(I5,I0);
+ML I400=ev.mainloop_api.mouse_roll_zoom2(ev,I7);
+ML I6=ev.mainloop_api.turn_to_meters_default(ev,I400,I333);
+ML I8=ev.mainloop_api.touch_rotate(ev,I6,true,true,0.01,0.01);
+MN I9=ev.move_api.mn_empty();
+MN I10=ev.move_api.scale2(I9,1,1,1);
+ML I11=ev.move_api.move_ml(ev,I8,I10,1,10.0);
+ML I12=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,I11});
+ML I13=ev.mainloop_api.perspective(ev,I12,80.0,10.1,60000.0);
+RUN I14=ev.blocker_api.game_window2(ev,I13,false,false,0.0,100000.0);
+\end{verbatim}
+
+It's like c++ code, but it's actually a script that is parsed during execution.
+BM type in the script maps directly to \code{Bitmap<Color>*}
+pointer to polymorphic interface mentioned earlier.
+
+the BM type is actually defined in c++ as:
+\begin{verbatim}
+struct BM { int id; };
+\end{verbatim}
+where id points to an index in certain std::vector stored in EnvImpl.
+
+\section{EnvImpl}
+
+
 
 \end{document}
