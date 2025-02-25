@@ -6,6 +6,8 @@
 bool file_exists(std::string filename);
 
 
+std::string g_store_directory;
+
 bool GameApi::Env::store_file_exists(std::string filename)
 {
   std::string start="";
@@ -17,6 +19,7 @@ bool GameApi::Env::store_file_exists(std::string filename)
   home+="/";
   if (dockerdir!="") home=dockerdir;
   start = home + ".gameapi_builder" + "/store";
+  if (g_store_directory!="") start=g_store_directory;
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -29,6 +32,7 @@ bool GameApi::Env::store_file_exists(std::string filename)
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
   start=drive+path+"\\_gameapi_builder\\" + "store";
+  if (g_store_directory!="") start=g_store_directory;
   std::string cmd = "mkdir " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -58,6 +62,7 @@ void GameApi::Env::store_file(std::string filename, ASyncVec *vec)
   home+="/";
   if (dockerdir!="") home=dockerdir;
   start = home + ".gameapi_builder" + "/store";
+  if (g_store_directory!="") start=g_store_directory;
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -73,6 +78,7 @@ void GameApi::Env::store_file(std::string filename, ASyncVec *vec)
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
   start=drive+path+"\\_gameapi_builder\\" + "store";
+  if (g_store_directory!="") start=g_store_directory;
   std::string cmd = "mkdir " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -151,6 +157,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   home+="/";
   if (dockerdir!="") home=dockerdir;
   start = home + ".gameapi_builder" + "/store";
+  if (g_store_directory!="") start=g_store_directory;
   std::string cmd = "mkdir -p " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
@@ -174,6 +181,7 @@ void GameApi::Env::load_file(std::string filename, void (*fptr)(void*), void *da
   std::string drive = getenv("systemdrive");
   std::string path = getenv("homepath");
   start=drive+path+"\\_gameapi_builder\\" + "store";
+  if (g_store_directory!="") start=g_store_directory;
   std::string cmd = "mkdir " + start;
   int val = system(cmd.c_str());
   if (val) { std::cout << "system returned: " << val << std::endl; }
