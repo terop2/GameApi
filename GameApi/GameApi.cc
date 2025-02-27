@@ -24709,7 +24709,7 @@ void load_glb_cb2(void *dt)
 GLTFModelInterface *find_next(GLTFModelInterface *i)
 {
   MeshyRendering *meshy = dynamic_cast<MeshyRendering*>(i);
-  std::cout << "FIND NEXT:" << (long)meshy << std::endl;
+  //std::cout << "FIND NEXT:" << (long)meshy << std::endl;
   if (meshy)
     {
       i = meshy->get_next();
@@ -24719,7 +24719,7 @@ GLTFModelInterface *find_next(GLTFModelInterface *i)
     {
       i = tmp->get_next();
     }
-  std::cout << "FIND_NEXT2:" << i->name() << std::endl;
+  //std::cout << "FIND_NEXT2:" << i->name() << std::endl;
   //std::cout << "FIND NEXT2: " << (long) i << typeid(i).name() << std::endl;
   return i;
 }
