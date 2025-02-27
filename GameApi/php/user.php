@@ -713,6 +713,9 @@ echo "</div>";
   echo "<div style=\"width:120px;float: left;\">";
   echo "<img src=\"https://meshpage.org/assets/stability.jpeg\" width=\"100\" height=\"50\"/>";
 echo "</div>";
+  echo "<div style=\"width:120px;float: left;\">";
+  echo "<img src=\"https://meshpage.org/assets/meshy_logo.jpeg\" width=\"100\" height=\"50\"/>";
+echo "</div>";
 
   echo "</div>";
   echo "<p><br>";
