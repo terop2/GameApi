@@ -1,5 +1,4 @@
 
-
 #define SDL2_USED  
 #define GAME_API_DEF
 #define _SCL_SECURE_NO_WARNINGS
@@ -21233,7 +21232,8 @@ PersistentFuncSpec g_persistent_func[] =
     { "bitmap_api", "bm_png_bm", 2 },
     { "polygon_api", "load_ds_from_temp_p", 2 },
     { "bitmap_api", "stable_diffusion", 2 },
-    { "polygon_api", "meshy", 2 }
+    { "polygon_api", "meshy", 2 },
+    { "polygon_api", "tf_ds_tf", 2 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
@@ -23704,7 +23704,7 @@ public:
   }
   void Prepare2()
   {
-    std::cout << "Meshy PREPARE2" << std::endl;
+    //std::cout << "Meshy PREPARE2" << std::endl;
 #ifndef EMSCRIPTEN
     env.async_load_url(url,gameapi_homepageurl,true);
 #endif
@@ -23718,7 +23718,7 @@ public:
     std::string vec2(vec->begin(),vec->end());
     //std::cout << "STRING:" << vec2.substr(0,50) << std::endl;
     ref = LoadGLBFromString(env,"",url,vec2);
-    std::cout << "Meshy done=true" << std::endl;
+    //std::cout << "Meshy done=true" << std::endl;
     done = true;
   }
   virtual void HeavyPrepare()
@@ -23739,10 +23739,10 @@ public:
   }
   void wait() const
   {
-    std::cout << "WAIT" << std::endl;
+    //std::cout << "WAIT" << std::endl;
     if (!g_inside_mesh_display)
-      if (!done) { std::cout << "JOIN" << std::endl; tasks_join(568); }
-    std::cout << "WAIT ENDED" << std::endl;
+      if (!done) { /*std::cout << "JOIN" << std::endl;*/ tasks_join(568); }
+    //std::cout << "WAIT ENDED" << std::endl;
   }
 
   std::string BaseUrl() const {
@@ -24302,7 +24302,10 @@ public:
   std::string name() const { return "LoadGLBFromTemp"; }
   LoadGLBFromTemp(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, std::string url, std::string homepage) : env(env), ev(ev), tf(tf), url(url), homepage(homepage) {
     ev.polygon_api.load_glb_from_temp(get_filename(),&load_glb_cb2,this,success);
-    std::cout << "WARNING: Load time is very slow, wait 5 minutes or something.." << std::endl;
+
+    if (!env.store_file_exists(get_filename())) {
+      std::cout << "WARNING: Load time is very slow, wait 5 minutes or something.." << std::endl;
+    }
   }
   ~LoadGLBFromTemp()
   {
@@ -24324,11 +24327,11 @@ public:
 
   void Prepare2()
   {
-    std::cout << "Prepare2" << success << std::endl;
+    //std::cout << "Prepare2" << success << std::endl;
     if (success) {
       tf2 = ev.polygon_api.load_glb_from_temp2(get_filename());
       // bm2 = ev.polygon_api.bm_png2(ev,ds2);
-      std::cout << "TF id=" << tf2.id << std::endl;
+      //std::cout << "TF id=" << tf2.id << std::endl;
       
       GLTFModelInterface *bbm = find_gltf(env,tf2);
       bbm->Prepare();
@@ -24340,7 +24343,7 @@ public:
 #ifndef ANDROID
     if (!env.store_file_exists(get_filename()))
       {
-	std::cout << "Storing " << get_filename() << std::endl;
+	//std::cout << "Storing " << get_filename() << std::endl;
 	
 	GLTFModelInterface *bbm = find_gltf(env,tf);
 	bbm->Prepare();
@@ -24708,6 +24711,7 @@ void load_glb_cb2(void *dt)
 
 GLTFModelInterface *find_next(GLTFModelInterface *i)
 {
+#ifndef EMSCRIPTEN 
   MeshyRendering *meshy = dynamic_cast<MeshyRendering*>(i);
   //std::cout << "FIND NEXT:" << (long)meshy << std::endl;
   if (meshy)
@@ -24719,6 +24723,9 @@ GLTFModelInterface *find_next(GLTFModelInterface *i)
     {
       i = tmp->get_next();
     }
+#else
+  return i;
+#endif
   //std::cout << "FIND_NEXT2:" << i->name() << std::endl;
   //std::cout << "FIND NEXT2: " << (long) i << typeid(i).name() << std::endl;
   return i;
@@ -24766,7 +24773,7 @@ public:
 
   void Prepare2()
   {
-    std::cout << "Prepare2" << success << std::endl;
+    //std::cout << "Prepare2" << success << std::endl;
     if (success) {
       ds2 = ev.mainloop_api.load_ds_from_temp2(get_filename());
       p2 = ev.polygon_api.p_ds2(ev,ds2);

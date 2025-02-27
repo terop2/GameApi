@@ -1,0 +1,230 @@
+\documentclass[11pt,twoside,a4paper]{article}
+\usepackage{listings}
+\begin{document}
+\title{GameApi Builder tool and meshpage.org}
+\author{Tero Pulkkinen (terop@kotiposti.net)}
+\date{23.2.2025}
+\maketitle
+\newcommand{\code}[1]{\lstinline{#1}}
+\begin{abstract}
+  GameApi Builder tool and meshpage.org are technologies that allow display of 3d models in multiple platforms, including linux, win32, web, android. The tools are based on small scripting language built with single primitive: function call, and passing parameters to predefined functions. Input of the tools are gltf/glb files, .obj files or .stl files, and output of the tools are script.txt files, html5 .zip files and android apk files. Using these techniques, we build a complete 3d engine subsystem with advanced tech features including opengl instancing, 3d models, voxels, volumes, textures, gltf materials, gltf animations.
+\end{abstract}
+
+\section{history}
+
+The project started in 2013, when we started using sdl2, libfreetype
+to build a 3d engine. We first built some simple game called
+gameapigame, where we develop opengl based sprite technology. Then we
+started doing 3d model routines, including FaceCollection type as mesh
+representation. How it differs from normal mesh data structure, is
+that it only publishes interface of a mesh, it doesn't need to store
+the mesh data inside the same object, if it can fetch the data from
+somewhere else. Bitmaps and voxels also have similar kind of
+interface.
+
+Significant development that took several years was the frame rate
+improvement actions. Getting frame rates working was done by splitting
+the operations to Prepare() and execute() operations, where prepare()
+would be called just once, and contains heavy operations, while
+execute is per-frame operation executed many times and is light to
+execute so to get 60Hz frequence for frame updates.
+
+Another significant development was the building of the algorithm
+library. We now have 600 separate algorithms that can be chosen from
+the builder tool and the algorithms are working together with the
+FaceCollection and Bitmap types to implement various algorithms needed
+for 3d modelling and displaying.
+
+Significant development effort was done to implement 70 test cases for
+the library, we have games, demos, 3d models, and animations available
+which test all aspects of the library.
+
+Yet another significant development was the creation of GLTF rendering
+using tinygltf library. tinygltf allowed reading the gltf/glb file
+formats, but it didn't have rendering capability builtin, and that
+needed to be done with our engine's primitives.
+
+There is also optimization slot done after gltf development, and some
+half year was spent on optimizing the rendering pipeline after gltf
+was implemented. We maanged to reduce loading time of the engine from
+20-30 seconds to mere 1-2 seconds.
+
+Final development focused on artificial intelligence integration.
+
+\section{Technical Details}
+
+\begin{verbatim}
+template<class C>
+class Bitmap : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual C Map(int x, int y) const=0;
+};
+\end{verbatim}
+
+This contains the main part of bitmap type. It publishes size of the bitmap and a mapping function which fetches each pixel from the bitmap. C type can be either unsigned char, Color, int or something else. This is the standard getpixel() style interface for bitmaps.
+
+The FaceCollection type is slightly more complicated:
+
+\begin{verbatim}
+class FaceCollection : public CollectInterface
+{
+public:
+  virtual ~FaceCollection() { }
+  virtual void Prepare()=0;
+  virtual int NumFaces() const = 0;
+  virtual int NumPoints(int face) const=0;
+  
+  virtual Point FacePoint(int face, int point) const=0;
+  virtual Vector PointNormal(int face, int point) const=0;
+  virtual float Attrib(int face, int point, int id) const=0;
+  virtual int AttribI(int face, int point, int id) const=0;
+  virtual unsigned int Color(int face, int point) const=0;
+  virtual Point2d TexCoord(int face, int point) const=0;
+  virtual float TexCoord3(int face, int point) const=0;
+  virtual VEC4 Joints(int face, int point) const=0;
+  virtual VEC4 Weights(int face, int point) const=0;
+};
+\end{verbatim}
+
+this allows triangle meshes, quad meshes, polygon meshes, or any
+combination of them. Before rendering, the code fetches the data from
+the interface and push\_backs it to 3 separate c++ vectors, one for triangles, one for quads and one for polygons. Then 3 draw calls to opengl can render the model, one for GL\_TRIANGLES, one for GL\_QUADS and one for GL\_TRIANGLE\_STRIP.
+
+\section{script files}
+
+script files look like this:
+\begin{verbatim}
+TF I0=ev.mainloop_api.gltf_loadKK(http://meshpage.org/assets/bottledcar/,
+                        http://meshpage.org/assets/bottledcar/scene.gltf);
+P I333=ev.mainloop_api.gltf_mesh_all_p(ev,I0);
+BM I1=ev.bitmap_api.newbitmap(100,100,ff888888);
+BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
+ML I3=ev.sprite_api.vertex_array_render(ev,I2);
+MN I997=ev.move_api.mn_empty();
+MN I998=ev.move_api.scale2(I997,1.5,1.5,1.5);
+ML I999=ev.move_api.move_ml(ev,I3,I998,1,10);
+ML I4=ev.sprite_api.turn_to_2d(ev,I999,0.0,0.0,800.0,600.0);
+ML I5=ev.mainloop_api.gltf_mesh_all(ev,I0,1.0,0,1,1,1,0.0,ff888888);
+ML I7=ev.mainloop_api.async_gltf(I5,I0);
+ML I400=ev.mainloop_api.mouse_roll_zoom2(ev,I7);
+ML I6=ev.mainloop_api.turn_to_meters_default(ev,I400,I333);
+ML I8=ev.mainloop_api.touch_rotate(ev,I6,true,true,0.01,0.01);
+MN I9=ev.move_api.mn_empty();
+MN I10=ev.move_api.scale2(I9,1,1,1);
+ML I11=ev.move_api.move_ml(ev,I8,I10,1,10.0);
+ML I12=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,I11});
+ML I13=ev.mainloop_api.perspective(ev,I12,80.0,10.1,60000.0);
+RUN I14=ev.blocker_api.game_window2(ev,I13,false,false,0.0,100000.0);
+\end{verbatim}
+
+It's like c++ code, but it's actually a script that is parsed during execution.
+BM type in the script maps directly to \code{Bitmap<Color>*}
+pointer to polymorphic interface mentioned earlier.
+
+the BM type is actually defined in c++ as:
+\begin{verbatim}
+struct BM { int id; };
+\end{verbatim}
+where id points to an index in certain std::vector stored in EnvImpl.
+
+\section{EnvImpl}
+
+\section{List of functions supported}
+\begin{itemize}
+  \item BitmapApi
+\begin{enumerate}
+\item new ()->BM
+\item new\_bm BM->BM
+\item new\_fb FB->BM
+\item new\_bb BB->BM
+\item bm\_png\_bm BM->BM
+\item stable\_diffusion ()->BM
+\item bm\_expr ()->BM
+\item load ()->BM
+\item save\_png BM->ML
+\item save\_png\_arr ([BM])->ML
+\item save\_raw BM->ML 
+\item save\_gif\_anim ([BM])->ML
+\item bm\_url ()->BM
+\item bm\_fetch ()->TXID
+\item bm\_fetch2 ()->TXID
+\item bm\_gltf TF->BM
+\item bm\_debug BM->BM
+\item bm\_atlas\_x BM->[BM]
+\item bm\_atlas\_y BM->[BM]
+\item bm\_atlas\_xy BM->[BM]
+\item bm\_cubemap BM->(BM,BM,BM,BM,BM,BM)
+\item bm\_invcubemap (BM,BM,BM;BM,BM,BM)->BM
+\item edge\_fix BM->BM
+\item border BM->BM 
+\item add\_shape\_border BM->BM
+\item bm\_choose\_color BM->BB
+\item sub BM->BM
+\item alt ([BM])->BM
+\item compose\_x (BM,BM)->BM
+\item compose\_y (BM,BM)->BM
+\item blit (BM,BM)->BM
+\item blitFB (BM,BM,FB)->BM
+\item blitBB (BM,BM,BB)->BM
+\item bm\_scale BM->BM
+\item bm\_scale2 BM->BM
+\item bm\_fullscreen BM->BM
+\item interpolate (BM,BM)->BM
+\item bm\_color BM->BM
+\item bm\_plus (BM,BM)->BM
+\item bm\_medianfilter BM->BM
+\item repeat BM->BM
+\item flip\_x BM->BM
+\item flip\_y BM->BM
+\item rot90 BM->BM
+\item indicator ()->BM
+\item fractal\_mountain ()->FB
+\item lightmap (P,P)->BM
+\item noise\_vec ()->BM
+\item gradient (PT,PT)->BM
+\item circ\_gradient ()->BM
+\item chessboard ()->BM
+\item mandelbrot ()->BM
+\item blur BM->BM
+\item floodfill FB->FB
+\item floodfill\_color BM->BM
+\item floodfill\_color\_inv BM->BM
+\item gray\_to\_black BM->BM
+\item baked\_shadow (P,P,BM)->BM
+\item bm\_bumpmap FB->BM
+\item bm\_memoize BM->BM
+\item bm\_world\_from\_bitmap ([BM])->BM
+\item bm\_persistent\_cache BM->BM
+\item cbm\_empty ()->CBM
+\item cbm\_from\_bitmap BM->CBM
+\item cbm\_to\_bitmap CBM->BM
+\item cbm\_bicubic ()->CBM
+\item cbm\_sample CBM->BM
+\item cbm\_rotate CBM->CBM
+\item s\_spherical FB->S
+\item s\_bitmap (S,BM)->S
+\item s\_sample S->P
+\item cfb\_c ()->CFB
+\item cfb\_x ()->CFB
+\item cfb\_y ()->CFB
+\item cfb\_add ([CFB])->CFB
+\item cfb\_mul ([CFB])->CFB
+\item cfb\_sqrt CFB->CFB
+\item cfb\_sin CFB->CFB
+\item cfb\_cos CFB->CFB
+\item cfb\_tan CFB->CFB
+\item cfb\_sample CFB->FB
+\item cfb\_equalizer (CFB,CFB)->CBB
+\item cbb\_sample CBB->BB
+\end{enumerate}
+
+\item BoolBitmapApi
+\item FloatBitmapApi
+  
+\end{itemize}
+
+\end{document}

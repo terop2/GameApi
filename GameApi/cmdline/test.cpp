@@ -424,6 +424,8 @@ extern "C" void android_main(struct android_app *app) {
 void popen_curl_init();
 #endif
 
+extern std::string g_store_directory;
+
 
 #ifdef ANDROID
 int main(int ac, char *ag[]) {
@@ -502,6 +504,10 @@ int main(int argc, char *argv[]) {
 	  seamless_url = cmd_args[current_arg+1];
 	  current_arg+=2;
 	} else
+	if (check_count(cmd_args, current_arg,2) && cmd_args[current_arg]=="--store")
+	  {
+	    g_store_directory = cmd_args[current_arg+1];
+	  }
       if (check_count(cmd_args, current_arg, 3) && cmd_args[current_arg]=="--size")
 	{
 	  std::string width = cmd_args[current_arg+1];
@@ -657,6 +663,7 @@ int main(int argc, char *argv[]) {
 	  std::cout << "   --size 100 200" << std::endl;
 	  std::cout << "   --code data" << std::endl;
 	  std::cout << "   --generate-logo" << std::endl;
+	  std::cout << "   --store dir (for AI features)" << std::endl;
 	  exit(0);
 	}
     }

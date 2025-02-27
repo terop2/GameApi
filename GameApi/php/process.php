@@ -7,7 +7,7 @@ $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
 $alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
 $links = array("view.php", "gltf_to_zip.php", "meshpage_4", "meshpage.php");
 $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with the engine",
-       	       "convert your<br>gltf files to html5<br>for hosting space<br>deployment",
+       	       "convert your<br>gltf files to html5<br>for hosting space<br>",
 	       "if end result needed<br>tweaking, use full<br> customisation",
 	       "and there's plenty<br> of examples to learn<br> the scripting language");
 
@@ -62,6 +62,7 @@ echo "<div class=\"bl_item customfont content\">\n";
 echo "<h2>USE CASES SUPPORTED:</h2>\n";
 echo "<ul>\n";
 echo "<li>Display 3d models in linux,win32,web,android\n";
+echo "<li>Artificial intelligence support for stable diffusion and meshy\n";
 echo "<li>GLTF imports from blender,sketchfab,meshy\n";
 echo "<li>Exports to script.txt,html5 zip files,android apk files\n";
 echo "<li>Running the script.txt via builder, web deploy, cmdline tool in ubuntu/win32, or in wine\n";
@@ -130,7 +131,6 @@ echo "<li>robot spare parts display(waiting for hw availability)\n";
 echo "<li>nft and e-commerce support(implementation not started)\n";
 echo "<li>popularity(access to popular sales platforms missing(I'm not going to spam people with useless emails))\n";
 echo "<li>video support(rejected for copyright reasons)\n";
-echo "<li>artificial intelligence(not enough information how to implement/database copyright problems)\n";
 echo "<li>adverticement video displaying gameapi features(planned, but govt rejected the training)\n";
 echo "</ul>\n";
 echo "</div>\n";
@@ -195,7 +195,7 @@ for($i=0;$i<4;$i++)
    echo "<strong>$labels[$i]</strong>\n";
    echo "</div>\n";
    echo "<div class=\"grid_item2 center width150\">\n";
-   echo "<img class=\"imgs2\" src=\"$imgs[$i]\" width=\"150\" height=\"110\" alt=\"$alts[$i]\"\/>\n";
+   echo "<img class=\"imgs2\" src=\"$imgs[$i]\" width=\"150\" height=\"150\" alt=\"$alts[$i]\"\/>\n";
    echo "</div>\n";
 
 if (substr_count($descs[$i],"<br>")>=3) {
