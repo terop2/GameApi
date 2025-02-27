@@ -1735,7 +1735,7 @@ public:
   {
     //std::cout << "Render" << std::endl;
     if (firsttime && ev.bitmap_api.ready_to_prepare(bm)) {
-      std::cout << "REUPDATE" << std::endl;
+      //std::cout << "REUPDATE" << std::endl;
       Point2d p;
       p.x=0.0f; p.y=0.0f;
       update(p,-1,-1,0,0);
