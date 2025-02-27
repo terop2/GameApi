@@ -133,6 +133,98 @@ where id points to an index in certain std::vector stored in EnvImpl.
 
 \section{EnvImpl}
 
+\section{List of functions supported}
+\begin{itemize}
+  \item BitmapApi
+\begin{enumerate}
+\item new ()->BM
+\item new\_bm BM->BM
+\item new\_fb FB->BM
+\item new\_bb BB->BM
+\item bm\_png\_bm BM->BM
+\item stable\_diffusion ()->BM
+\item bm\_expr ()->BM
+\item load ()->BM
+\item save\_png BM->ML
+\item save\_png\_arr ([BM])->ML
+\item save\_raw BM->ML 
+\item save\_gif\_anim ([BM])->ML
+\item bm\_url ()->BM
+\item bm\_fetch ()->TXID
+\item bm\_fetch2 ()->TXID
+\item bm\_gltf TF->BM
+\item bm\_debug BM->BM
+\item bm\_atlas\_x BM->[BM]
+\item bm\_atlas\_y BM->[BM]
+\item bm\_atlas\_xy BM->[BM]
+\item bm\_cubemap BM->(BM,BM,BM,BM,BM,BM)
+\item bm\_invcubemap (BM,BM,BM;BM,BM,BM)->BM
+\item edge\_fix BM->BM
+\item border BM->BM 
+\item add\_shape\_border BM->BM
+\item bm\_choose\_color BM->BB
+\item sub BM->BM
+\item alt ([BM])->BM
+\item compose\_x (BM,BM)->BM
+\item compose\_y (BM,BM)->BM
+\item blit (BM,BM)->BM
+\item blitFB (BM,BM,FB)->BM
+\item blitBB (BM,BM,BB)->BM
+\item bm\_scale BM->BM
+\item bm\_scale2 BM->BM
+\item bm\_fullscreen BM->BM
+\item interpolate (BM,BM)->BM
+\item bm\_color BM->BM
+\item bm\_plus (BM,BM)->BM
+\item bm\_medianfilter BM->BM
+\item repeat BM->BM
+\item flip\_x BM->BM
+\item flip\_y BM->BM
+\item rot90 BM->BM
+\item indicator ()->BM
+\item fractal\_mountain ()->FB
+\item lightmap (P,P)->BM
+\item noise\_vec ()->BM
+\item gradient (PT,PT)->BM
+\item circ\_gradient ()->BM
+\item chessboard ()->BM
+\item mandelbrot ()->BM
+\item blur BM->BM
+\item floodfill FB->FB
+\item floodfill\_color BM->BM
+\item floodfill\_color\_inv BM->BM
+\item gray\_to\_black BM->BM
+\item baked\_shadow (P,P,BM)->BM
+\item bm\_bumpmap FB->BM
+\item bm\_memoize BM->BM
+\item bm\_world\_from\_bitmap ([BM])->BM
+\item bm\_persistent\_cache BM->BM
+\item cbm\_empty ()->CBM
+\item cbm\_from\_bitmap BM->CBM
+\item cbm\_to\_bitmap CBM->BM
+\item cbm\_bicubic ()->CBM
+\item cbm\_sample CBM->BM
+\item cbm\_rotate CBM->CBM
+\item s\_spherical FB->S
+\item s\_bitmap (S,BM)->S
+\item s\_sample S->P
+\item cfb\_c ()->CFB
+\item cfb\_x ()->CFB
+\item cfb\_y ()->CFB
+\item cfb\_add ([CFB])->CFB
+\item cfb\_mul ([CFB])->CFB
+\item cfb\_sqrt CFB->CFB
+\item cfb\_sin CFB->CFB
+\item cfb\_cos CFB->CFB
+\item cfb\_tan CFB->CFB
+\item cfb\_sample CFB->FB
+\item cfb\_equalizer (CFB,CFB)->CBB
+\item cbb\_sample CBB->BB
+\end{enumerate}
 
+\item BoolBitmapApi
+\item FloatBitmapApi
+  
+\end{itemize}
 
 \end{document}
