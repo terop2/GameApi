@@ -21233,7 +21233,7 @@ PersistentFuncSpec g_persistent_func[] =
     { "polygon_api", "load_ds_from_temp_p", 2 },
     { "bitmap_api", "stable_diffusion", 2 },
     { "polygon_api", "meshy", 2 },
-    { "polygon_api", "tf_ds_tf", 2 }
+    { "polygon_api", "tf_glb_tf", 2 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
@@ -24055,7 +24055,7 @@ GameApi::TF GameApi::PolygonApi::meshy(EveryApi &ev, std::string prompt, std::st
 {
   GLTFModelInterface *ttf = new MeshyRendering(e, prompt,filename);
   GameApi::TF tf = add_gltf(e,ttf);
-  return tf_ds_tf(ev, tf, filename);
+  return tf_glb_tf(ev, tf, filename);
 }
 
 
@@ -24737,7 +24737,7 @@ GameApi::BM GameApi::BitmapApi::bm_png_bm(EveryApi &ev, BM bm, std::string url)
   return add_color_bitmap(e,new LoadPNGFromTemp(e,ev,bm,url,gameapi_homepageurl));
 }
 
-GameApi::TF GameApi::PolygonApi::tf_ds_tf(EveryApi &ev, TF tf, std::string url)
+GameApi::TF GameApi::PolygonApi::tf_glb_tf(EveryApi &ev, TF tf, std::string url)
 {
   return add_gltf(e, new LoadGLBFromTemp(e,ev,tf,url,gameapi_homepageurl));
 }
