@@ -2931,45 +2931,45 @@ void popen_curl_init() {
 
 std::string popen_curl_replacement(std::string url, bool headeronly)
 {
-  std::cout << "popen_curl_replacement 1" << std::endl;
+  //std::cout << "popen_curl_replacement 1" << std::endl;
   CURLcode res;
   std::string headers;
   std::string readBuffer;
   CURL *curl;
   curl = curl_easy_init();
-  std::cout << "popen_curl_replacement 2" << std::endl;
+  //std::cout << "popen_curl_replacement 2" << std::endl;
 
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-  std::cout << "popen_curl_replacement 3" << std::endl;
+    //std::cout << "popen_curl_replacement 3" << std::endl;
   curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
   curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
     if (headeronly)
       {
-  std::cout << "popen_curl_replacement 4" << std::endl;
+	//std::cout << "popen_curl_replacement 4" << std::endl;
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, 0L);
         curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
         curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, HeaderCallback);
         curl_easy_setopt(curl, CURLOPT_HEADERDATA, &headers);
-  std::cout << "popen_curl_replacement 5" << std::endl;
+	//std::cout << "popen_curl_replacement 5" << std::endl;
       } else {
-  std::cout << "popen_curl_replacement 6" << std::endl;
+      //std::cout << "popen_curl_replacement 6" << std::endl;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
-  std::cout << "popen_curl_replacement 7" << std::endl;
+	//std::cout << "popen_curl_replacement 7" << std::endl;
       }
-  std::cout << "popen_curl_replacement 8" << std::endl;
+    //std::cout << "popen_curl_replacement 8" << std::endl;
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
-  std::cout << "popen_curl_replacement 9" << std::endl;
+    //std::cout << "popen_curl_replacement 9" << std::endl;
 
     res = curl_easy_perform(curl);
-  std::cout << "popen_curl_replacement 10" << std::endl;
+    //std::cout << "popen_curl_replacement 10" << std::endl;
 
     if (res != CURLE_OK) {
       std::cout << "curl_easy_perform() failed: " << curl_easy_strerror(res) << std::endl;
     } else {
-  std::cout << "popen_curl_replacement 11" << std::endl;
+      //std::cout << "popen_curl_replacement 11" << std::endl;
       curl_easy_cleanup(curl);
       std::cout << headers << std::endl;
       if (headeronly) return headers;
@@ -2985,7 +2985,7 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
 
 long long load_size_from_url(std::string url)
 {
-  std::cout << "POPEN SIZE" << url << std::endl;
+  //std::cout << "POPEN SIZE" << url << std::endl;
   url = upgrade_to_https(url);
   if (url=="") return 1;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;

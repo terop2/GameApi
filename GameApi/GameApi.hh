@@ -2582,7 +2582,7 @@ public:
   void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
   TF load_glb_from_temp2(std::string filename);
   void load_glb_from_temp3(std::string filename);
-  TF tf_ds_tf(EveryApi &ev, TF tf, std::string url);
+  TF tf_glb_tf(EveryApi &ev, TF tf, std::string url);
   TF meshy(EveryApi &ev, std::string prompt, std::string filename);
   P p_ds2(EveryApi &ev, DS ds2);
   P load_ds_from_temp_p(EveryApi &ev, P p, std::string url);
