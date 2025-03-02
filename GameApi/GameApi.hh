@@ -879,6 +879,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  TXID video_source(std::string filename, int sx, int sy);
   BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
   // temp store
   BM bm_png_bm(EveryApi &ev, BM bm, std::string url);

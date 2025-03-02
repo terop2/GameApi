@@ -8463,6 +8463,7 @@ private:
 };
 #endif  
 
+
 class TextureShaderML : public MainLoopItem
 {
 public:
@@ -26344,3 +26345,145 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
 }
 
 
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+
+void *writer(void*);
+
+class VideoSource : public TextureID, public CollectInterface
+{
+public:
+  VideoSource(GameApi::Env &e, std::string filename, int sx, int sy) : e(e), sx(sx),sy(sy), filename(filename) {
+    ref=BufferRef::NewBuffer(sx,sy);    
+  }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    tasks_add(111,&writer,(void*)this);
+    tasks_join(111);
+    OpenglLowApi *ogl = g_low->ogl;
+    ogl->glGenTextures(1,&tex);
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void handle_event(MainLoopEvent &e) { }
+  void Prepare2()
+  {
+#ifndef EMSCRIPTEN
+    e.async_load_url(filename, gameapi_homepageurl);
+#endif
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(filename);
+    std::string home = getenv("HOME");
+    std::ofstream ss((home + "/.gameapi_builder/video.mp4")
+		     .c_str(),std::ios_base::out|std::ios_base::binary);
+    std::string ss2(ptr->begin(),ptr->end());
+    ss << ss2;
+    ss.close();
+
+    
+    cap = cv::VideoCapture(home + "/.gameapi_builder/video.mp4");
+  }
+  
+  virtual void render(MainLoopEnv &e)
+  {
+    OpenglLowApi *ogl = g_low->ogl;
+    cv::Mat frame;
+    if (cap.grab())
+      {
+	cap.retrieve(frame);
+      }
+    else
+      {
+   std::string home = getenv("HOME");
+ 	cap = cv::VideoCapture(home+"/.gameapi_builder/video.mp4");
+	
+	cap.grab();
+	cap.retrieve(frame);
+      }
+
+    int channels = frame.channels();
+    int nRows = frame.rows;
+    int nCols = frame.cols;
+
+    if (nRows==0) return;
+    if (nCols==0) return;
+    
+    //std::cout << "Channels: " << channels << std::endl;
+    
+    
+    //if (frame.isContinuous())
+    // {
+    //	nCols *= nRows;
+    //	nRows = 1;
+    //}
+
+    //std::cout << "sx=" << sx << " sy=" << sy << std::endl;
+    //std::cout << "r=" << nRows << " c=" << nCols << std::endl;
+    
+    int delta_y = sy-nRows;
+    int delta_x = sx-nCols;
+
+    if (delta_y<0) delta_y=0;
+    if (delta_x<0) delta_x=0;
+    
+    delta_x/=2;
+    delta_y/=2;
+
+    //std::cout << "delta_x=" << delta_x << " delta_y=" << delta_y<< std::endl;
+
+    std::memset(ref.buffer, 0, sx*sy*sizeof(unsigned int));
+
+    
+    unsigned char *ptr = frame.data;
+    for(int j=0;j<std::min(sy,nRows);j++) {
+      unsigned char *rowP = frame.ptr<unsigned char>(j);
+      for(int i=0;i<std::min(sx,nCols);i++)
+	{
+	  ref.buffer[delta_x+i+(j+delta_y)*ref.ydelta]=Color(rowP[i*channels+0],rowP[i*channels+1],rowP[i*channels+2],255).Pixel();
+	}
+    }
+#ifndef EMSCRIPTEN
+  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+  ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+    ogl->glBindTexture(Low_GL_TEXTURE_2D, tex);
+    //std::cout << frame.cols << "x" << frame.rows << std::endl;
+    ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, ref.width, ref.height, 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, ref.buffer);
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_NEAREST);      
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_NEAREST);
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
+    ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
+
+    ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
+  }
+  virtual int texture() const
+      {
+	OpenglLowApi *ogl = g_low->ogl;
+#ifndef EMSCRIPTEN
+  ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
+#endif
+  ogl->glActiveTexture(Low_GL_TEXTURE0+0);
+	ogl->glBindTexture(Low_GL_TEXTURE_2D,tex);
+	return tex;
+      }
+  virtual bool is_fbo() const { return false; }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+private:
+  GameApi::Env &e;
+  int sx,sy;
+  std::string filename;
+  cv::VideoCapture cap;
+  unsigned int tex;
+  BufferRef ref;
+};
+void *writer(void* ptr)
+{
+  VideoSource *src = (VideoSource*)ptr;
+  src->Prepare2();
+}
+
+
+GameApi::TXID GameApi::BitmapApi::video_source(std::string filename, int sx, int sy)
+{
+  return add_txid(e,new VideoSource(e,filename,sx,sy));
+}

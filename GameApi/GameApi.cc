@@ -13237,6 +13237,7 @@ GameApi::US GameApi::UberShaderApi::v_texture_arr(US us)
   */
 }
 
+
 GameApi::US GameApi::UberShaderApi::v_colour(US us)
 {
   ShaderCall *next = find_uber(e, us);
@@ -13665,6 +13666,7 @@ GameApi::US GameApi::UberShaderApi::f_texture_arr(US us)
   return add_uber(e, new F_ShaderCallFunction("texture_arr", next,"EX_TEXCOORD TEXTURE_ARRAY COLOR_MIX"));
   */
 }
+
 
 GameApi::US GameApi::UberShaderApi::f_colour(US us)
 {

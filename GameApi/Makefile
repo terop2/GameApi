@@ -56,8 +56,15 @@ FREETYPE_PKGCONFIG=`pkg-config --libs freetype2`
 ifndef FREETYPE_PKGCONFIG
 FREETYPE_PKGCONFIG = $(FREETYPE_PATH)$(FREETYPE_NAME)
 endif
+OPENCV_PATH=$(LIBPATH)
+OPENCV_NAME=libopencv.so
+OPENCV_CFLAGS=`pkg-config --cflags opencv4`
+OPENCV_PKGCONFIG=`pkg-config --libs opencv4`
+ifndef OPENCV_PKGCONFIG
+OPENCV_PKGCONFIG = $(OPENCV_PATH)$(OPENCV_NAME)
+endif
 
-LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG)
+LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG) $(OPENCV_PKGCONFIG)
 
 CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
@@ -172,7 +179,7 @@ WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-v
 #-fsanitize=undefined -fsanitize-recover=undefined
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
-CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
+CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib 
 CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib
 #`pkg-config gtkmm-2.4 --cflags`
 
@@ -217,6 +224,12 @@ ifeq ($(shell echo $(FREETYPE_PKGCONFIG)),)
 else
 	@echo "  PKGCNF libfreetype=OK"
 endif
+ifeq ($(shell echo $(OPENCV_PKGCONFIG)),)
+	@test -f $(OPENCV_PATH)$(OPENCV_NAME) && echo "  TEST   libopencv=OK" || (echo "  TEST libopencv=FAIL\n NOTE: recommended command: make -j 8 OPENCV_PATH=$(FREETYPE_PATH) OPENCV_NAME=$(FREETYPE_NAME)" ; exit 1)
+else
+	@echo "  PKGCNF libopencv=OK"
+endif
+
 
 dirs:
 	@echo "  MKDIR  objs"
