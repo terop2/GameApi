@@ -1,9 +1,9 @@
 Package: gameapi-builder
-Version: 1.0-25
+Version: 1.0-28
 Section: base
 Priority: optional
 Architecture: amd64
-Depends: libsdl2-2.0-0 (>= 2.0.8), libfreetype6 (>= 2.8.1), libsdl2-mixer-2.0-0 (>= 2.0.2), libglew2.2 (>= 2.2.0), curl (>= 7.65.3), libstdc++6 (>=3.4.29), libc6 (>=2.34.0), libgcc-s1, unzip, zip, tar
+Depends: libsdl2-2.0-0 (>= 2.0.8), libfreetype6 (>= 2.8.1), libsdl2-mixer-2.0-0 (>= 2.0.2), libglew2.2 (>= 2.2.0), curl (>= 7.65.3), libstdc++6 (>=3.4.29), libc6 (>=2.34.0), libgcc-s1, unzip, zip, tar, libopencv-dev
 Maintainer: Tero Pulkkinen <terop@kotiposti.net>
 Description: GameApi Builder v25
  GameApi Builder is 3d modelling software
