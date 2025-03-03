@@ -99,12 +99,15 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "BM", "bitmap_api", "loadbitmapfromurl"));
 #endif
+
+#ifdef LINUX
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::video_source,
 			 "video_source",
 			 { "filename","sx","sy" },
 			 { "std::string","int","int" },
 			 { "https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4", "1600","2500" },
 			 "TXID", "bitmap_api", "video_source"));
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap,
 			 "bm_fetch",
 			 { "ev", "url", "reload_frame", "texture_unit" },

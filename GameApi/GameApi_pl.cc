@@ -8,6 +8,11 @@
 #include <atomic>
 #include <iostream>
 
+#ifdef LINUX
+#define USE_VIDEO
+#endif
+
+
 bool GameApi::PolygonApi::ready_to_prepare(ML p)
 {
   MainLoopItem *item = find_main_loop(e,p);
@@ -26344,9 +26349,11 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
   return I8;
 }
 
+#ifdef USE_VIDEO
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
 
 void *writer(void*);
 
@@ -26355,6 +26362,8 @@ class VideoSource : public TextureID, public CollectInterface
 public:
   VideoSource(GameApi::Env &e, std::string filename, int sx, int sy) : e(e), sx(sx),sy(sy), filename(filename) {
     ref=BufferRef::NewBuffer(sx,sy);    
+
+    std::cout << "WARNING: Video support doesn't work in emscripten" << std::endl;
   }
   virtual void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
@@ -26487,3 +26496,4 @@ GameApi::TXID GameApi::BitmapApi::video_source(std::string filename, int sx, int
 {
   return add_txid(e,new VideoSource(e,filename,sx,sy));
 }
+#endif

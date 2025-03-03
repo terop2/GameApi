@@ -23,8 +23,11 @@
 
 EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
 
-allopts = -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -Oz -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0 -fno-rtti -emit-llvm -Wno-unused-command-line-argument
-# -Oz -gsplit-dwarf -gpubnames
+opencvopts = -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/build_wasm -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/core/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/calíb3d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/calib3d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/features2d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/flann/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/dnn/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/imgproc/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/objdetect/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/photo/include  -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/video/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/highgui/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/videoio/include -s SHARED_MEMORY=1
+
+
+allopts = -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -Oz -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument
+# -Oz -gsplit-dwarf -gpubnames -fno-rtti
 
 yes_pthread_opts = -s USE_PTHREADS=1 -pthread
 no_pthread_opts = -DNO_THREADS
@@ -188,10 +191,10 @@ EMINC3 = $(EMSCRIPTEN_PATH)upstream/emscripten/cache/sysroot/include/freetype2
 SDL_MIXER_MINI1 = sdl_mixer_mini/src
 SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
-#-fno-exceptions
-CFLAGS = $(allopts) -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
-CCFLAGS = $(allopts) -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
-CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1 -fno-exceptions -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+#-fno-exceptions -fno-exceptions -fno-exceptions -fno-exceptions
+CFLAGS = $(allopts) -s DISABLE_EXCEPTION_CATCHING=1  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+CCFLAGS = $(allopts) -I. -s DISABLE_EXCEPTION_CATCHING=1   -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
+CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
