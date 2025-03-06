@@ -33,11 +33,11 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-//echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"https://meshpage.org/sheepgame1.webp\" width=\"100%\"/>\n";
-echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
-echo "  <source src=\"https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
-echo "  Your browser does not support video tag.";
-echo "</video>\n";
+echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"https://meshpage.org/sheepgame1.webp\" width=\"100%\"/>\n";
+//echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
+//echo "  <source src=\"https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
+//echo "  Your browser does not support video tag.";
+//echo "</video>\n";
 
 echo "</div>\n";
 
