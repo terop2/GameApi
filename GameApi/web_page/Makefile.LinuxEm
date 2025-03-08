@@ -135,18 +135,32 @@ all:
 
 PTHREADOPT = -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=8
 
-SIZEOPT=-Oz  -s FILESYSTEM=0 -s TOTAL_STACK=18800kb -s DISABLE_EXCEPTION_CATCHING=1  -sREVERSE_DEPS=all
+SIZEOPT=-Oz   -s TOTAL_STACK=18800kb -s DISABLE_EXCEPTION_CATCHING=1  -sREVERSE_DEPS=all
 
-# -fno-rtti -fno-exceptions -gpubnames
+# -fno-rtti -fno-exceptions -gpubnames -s FILESYSTEM=0
 
-NOSIZEOPT = -s TOTAL_STACK=18800kb -gpubnames
+NOSIZEOPT = -s TOTAL_STACK=18800kb
 
+#-gpubnames
 #--closure 1
 #--memoryprofiler
 # 
-REQUIREDOPT = -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=50Mb -Wno-unused-command-line-argument -emit-llvm -fno-rtti  -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['miniTempWebGLIntBuffers', 'removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1 -s USE_SDL_MIXER=2 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE='stackTrace'  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -flto -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 
+REQUIREDOPT = -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH=1 -s TOTAL_MEMORY=50Mb -Wno-unused-command-line-argument -emit-llvm -fno-rtti  -s WASM=1 -s "EXPORTED_RUNTIME_METHODS=['miniTempWebGLIntBuffers', 'removeRunDependency','UTF8ToString','allocate', 'ALLOC_NORMAL', 'ALLOC_STACK', 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', '_set_toggle_button',  'cwrap', 'ccall', 'FT_Get_Char_Index', 'FT_Load_Gryph', 'FT_New_Memory_Face', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch','emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_main', '_set_float', '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script']" -s ALLOW_BLOCKING_ON_MAIN_THREAD=1 -s USE_SDL_MIXER=2 -s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE='stackTrace'  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=1 -s WASM_OBJECT_FILES=1 -flto -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 
 
-OPENCVOPT = -L./emscriptendeps/build_wasm/lib ./emscriptendeps/build_wasm/lib/libopencv_core.a ./emscriptendeps/build_wasm/lib/libopencv_video.a ./emscriptendeps/build_wasm/lib/libopencv_calib3d.a ./emscriptendeps/build_wasm/lib/libopencv_dnn.a ./emscriptendeps/build_wasm/lib/libopencv_features2d.a ./emscriptendeps/build_wasm/lib/libopencv_flann.a ./emscriptendeps/build_wasm/lib/libopencv_imgproc.a ./emscriptendeps/build_wasm/lib/libopencv_objdetect.a ./emscriptendeps/build_wasm/lib/libopencv_photo.a -s SHARED_MEMORY=1
+OPENCVOPT = -L./emscriptendeps/build_wasm3/lib \
+	  ./emscriptendeps/build_wasm3/lib/libopencv_core.a \
+	  ./emscriptendeps/build_wasm3/lib/libopencv_video.a \
+	  ./emscriptendeps/build_wasm3/lib/libopencv_videoio.a \
+	  ./emscriptendeps/build_wasm3/lib/libopencv_imgproc.a \
+	  ./emscriptendeps/build_wasm3/lib/libopencv_imgcodecs.a \
+	  -s SHARED_MEMORY=1 -s FETCH_SUPPORT_INDEXEDDB=0
+
+	  #./emscriptendeps/build_wasm3/lib/libopencv_calib3d.a 
+	  #./emscriptendeps/build_wasm3/lib/libopencv_dnn.a
+	  #./emscriptendeps/build_wasm3/lib/libopencv_features2d.a
+	  #./emscriptendeps/build_wasm3/lib/libopencv_flann.a
+	  #./emscriptendeps/build_wasm3/lib/libopencv_objdetect.a
+	  #./emscriptendeps/build_wasm3/lib/libopencv_photo.a
 
 
 STRIP = echo emstrip --no-strip-all --remove-section=name
@@ -154,7 +168,7 @@ STRIP = echo emstrip --no-strip-all --remove-section=name
 #
 #-g   (doesnt work with closure compiler)
 
-ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
+ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT) $(OPENCVOPT)
 PTHREADOPT2 = $(PTHREADOPT)
 
 
@@ -176,19 +190,19 @@ PTHREADOPT2 = $(PTHREADOPT)
 
 both:  both_lowmem both_highmem
 
-
+# -s FILESYSTEM=0
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  -s TOTAL_MEMORY=1920bM
 both_highmem: test.cpp ../libGameApi_nothreads.bc
 	@echo "  LINK   web_page/engine_nothreads_highmem.js"
-	@(cd ..;em++ $(ALLFLAGS) -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_nothreads_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
+	@(cd ..;em++ $(ALLFLAGS)   --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_nothreads_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
 
 #   -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb
-#  -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
+#  -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0
 both_lowmem: test.cpp ../libGameApi_nothreads.bc
 	@echo "  LINK   web_page/engine_lowmem_nothreads.js"
-	@(cd ..;em++ $(ALLFLAGS)   -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine_lowmem_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
+	@(cd ..;em++ $(ALLFLAGS)     --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine_lowmem_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=5 --force engine_lowmem_nothreads.wasm -o engine_lowmem_nothreads.wasm.br
 
@@ -196,10 +210,10 @@ both_lowmem: test.cpp ../libGameApi_nothreads.bc
 pthreads_both: pthreads_both_highmem
 #pthreads_both_middlemem pthreads_both_lowmem
 
-# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1750Mb
+# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1750Mb -s FILESYSTEM=0
 pthreads_both_highmem: test.cpp ../libGameApi.bc
 	@echo "  LINK   web_page/engine_highmem.js"
-	@(cd ..;em++ $(PTHREADOPT2) $(ALLFLAGS)  -s FILESYSTEM=0   --use-preload-cache  -s NO_EXIT_RUNTIME=1   --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
+	@(cd ..;em++ $(PTHREADOPT2) $(ALLFLAGS)     --use-preload-cache  -s NO_EXIT_RUNTIME=1   --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1 -L. -Lobs -I. -o web_page/engine_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
 	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
 
@@ -208,10 +222,10 @@ pthreads_both_highmem: test.cpp ../libGameApi.bc
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=220Mb
 
-#-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1920Mb
+#-Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1920Mb -s FILESYSTEM=0
 both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc 
 	@echo "  LINK   web_page/engine_nothreads_highmem.js"
-	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2 -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_nothreads_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
+	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps    --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2 -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_nothreads_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )
 	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
 
@@ -219,20 +233,20 @@ both_nodebug_highmem: test.cpp ../libGameApi_nothreads.bc
 #-Lhssynth2/synthlib/emscripten -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
 
 
-# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb -s TOTAL_MEMORY=220Mb
+# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb -s TOTAL_MEMORY=220Mb -s FILESYSTEM=0
 both_nodebug_lowmem: test.cpp ../libGameApi_nothreads.bc 
 	@echo "  LINK   web_page/engine_lowmem_nothreads.js"
-	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_lowmem_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )   
+	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps    --use-preload-cache --bind -std=c++11 web_page/test.cpp $(OFiles_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) $(O2Files_nothreads) -s USE_SDL=2  -s USE_FREETYPE=1   -L. -Lobs -I. -o web_page/engine_lowmem_nothreads.js -s ERROR_ON_UNDEFINED_SYMBOLS=0   -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0  )   
 	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=5 --force engine_lowmem_nothreads.wasm -o engine_lowmem_nothreads.wasm.br
 
 
 pthreads_both_nodebug: pthreads_both_nodebug_highmem pthreads_both_nodebug_middlemem pthreads_both_nodebug_lowmem
 
-# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1950Mb
+# -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=1950Mb -s FILESYSTEM=0 
 pthreads_both_nodebug_highmem: test.cpp ../libGameApi.bc
 	@echo "  LINK   web_page/engine_highmem.js"
-	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps  -s FILESYSTEM=0  --use-preload-cache -s NO_EXIT_RUNTIME=1  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
+	@(cd ..;em++ $(ALLFLAGS) -fno-exceptions -fimplicit-modules -fimplicit-module-maps   --use-preload-cache -s NO_EXIT_RUNTIME=1  --bind -std=c++11 web_page/test.cpp $(OFiles) $(DOFiles) $(OOFiles) $(O2Files) -s USE_SDL=2  -s USE_FREETYPE=1  -L. -Lobs -I. -o web_page/engine_highmem.js -s ERROR_ON_UNDEFINED_SYMBOLS=0  -s ENVIRONMENT=web,worker -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=1 -s FETCH=1  -s MIN_WEBGL_VERSION=2 -s MAX_WEBGL_VERSION=2 -s GL_SUPPORT_AUTOMATIC_ENABLE_EXTENSIONS=0 )
 	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
 
