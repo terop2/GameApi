@@ -1,5 +1,5 @@
 Package: gameapi-builder
-Version: 1.0-28
+Version: 1.0-25
 Section: base
 Priority: optional
 Architecture: amd64

@@ -2294,7 +2294,7 @@ var g_ready_bit=0; // THIS WILL BE CHANGED BY C++ SIDE
 var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
-  	       Module['onRuntimeInitialized'] = function() { return function() { } };
+  	       //Module['onRuntimeInitialized'] = function() { return function() { } };
                if (g_check_em_timeout != null)
   	          clearTimeout(g_check_em_timeout);
 	       g_check_em_timeout = null;
@@ -2335,7 +2335,7 @@ function check_emscripten_running(indicator)
          //console.log(Module);
      	 //Module.ready().then(_ => check_em(indicator));
 	 //Module['calledRun'] = check_em(indicator);
-	 Module['onRuntimeInitialized'] = check_em(indicator);
+	 //Module['onRuntimeInitialized'] = check_em(indicator);
 	 g_check_em_timeout = setTimeout(function() {
 	                    //console.log("waiting for emscripten startup..");
 	 		    if (g_ready_bit==1) {
