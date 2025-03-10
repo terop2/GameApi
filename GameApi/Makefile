@@ -56,13 +56,13 @@ FREETYPE_PKGCONFIG=`pkg-config --libs freetype2`
 ifndef FREETYPE_PKGCONFIG
 FREETYPE_PKGCONFIG = $(FREETYPE_PATH)$(FREETYPE_NAME)
 endif
-OPENCV_PATH=$(LIBPATH)
-OPENCV_NAME=libopencv.so
-OPENCV_CFLAGS=`pkg-config --cflags opencv4`
-OPENCV_PKGCONFIG=`pkg-config --libs opencv4`
-ifndef OPENCV_PKGCONFIG
-OPENCV_PKGCONFIG = $(OPENCV_PATH)$(OPENCV_NAME)
-endif
+#OPENCV_PATH=$(LIBPATH)
+#OPENCV_NAME=libopencv.so
+#OPENCV_CFLAGS=`pkg-config --cflags opencv4`
+#OPENCV_PKGCONFIG=`pkg-config --libs opencv4`
+#ifndef OPENCV_PKGCONFIG
+#OPENCV_PKGCONFIG = $(OPENCV_PATH)$(OPENCV_NAME)
+#endif
 
 LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG) $(OPENCV_PKGCONFIG)
 
@@ -224,11 +224,11 @@ ifeq ($(shell echo $(FREETYPE_PKGCONFIG)),)
 else
 	@echo "  PKGCNF libfreetype=OK"
 endif
-ifeq ($(shell echo $(OPENCV_PKGCONFIG)),)
-	@test -f $(OPENCV_PATH)$(OPENCV_NAME) && echo "  TEST   libopencv=OK" || (echo "  TEST libopencv=FAIL\n NOTE: recommended command: make -j 8 OPENCV_PATH=$(FREETYPE_PATH) OPENCV_NAME=$(FREETYPE_NAME)" ; exit 1)
-else
-	@echo "  PKGCNF libopencv=OK"
-endif
+#ifeq ($(shell echo $(OPENCV_PKGCONFIG)),)
+#	@test -f $(OPENCV_PATH)$(OPENCV_NAME) && echo "  TEST   libopencv=OK" || (echo "  TEST libopencv=FAIL\n NOTE: recommended command: make -j 8 OPENCV_PATH=$(FREETYPE_PATH) OPENCV_NAME=$(FREETYPE_NAME)" ; exit 1)
+#else
+#	@echo "  PKGCNF libopencv=OK"
+#endif
 
 
 dirs:
