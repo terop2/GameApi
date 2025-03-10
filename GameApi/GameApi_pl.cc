@@ -8,14 +8,14 @@
 #include <atomic>
 #include <iostream>
 
-#ifdef LINUX
-#define USE_VIDEO 1
-#endif
+//#ifdef LINUX
+//#define USE_VIDEO 1
+//#endif
 
 // NOT WORKING
-#ifdef EMSCRIPTEN
-#define USE_VIDEO 1
-#endif
+//#ifdef EMSCRIPTEN
+//#define USE_VIDEO 1
+//#endif
 
 bool GameApi::PolygonApi::ready_to_prepare(ML p)
 {
