@@ -131,7 +131,7 @@ echo "<li>nanite(implementation not started)\n";
 echo "<li>robot spare parts display(waiting for hw availability)\n";
 echo "<li>nft and e-commerce support(implementation not started)\n";
 echo "<li>popularity(access to popular sales platforms missing(I'm not going to spam people with useless emails))\n";
-echo "<li>video support(rejected for copyright reasons)\n";
+echo "<li>video support(emscripten video in opencv not working)\n";
 echo "<li>adverticement video displaying gameapi features(planned, but govt rejected the training)\n";
 echo "</ul>\n";
 echo "</div>\n";
