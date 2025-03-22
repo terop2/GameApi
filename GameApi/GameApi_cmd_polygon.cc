@@ -146,7 +146,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "P", "polygon_api", "stl_load"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::tf_glb_tf,
 			 "tf_glb_tf",
-			 { "ev", "tf", "url" },
+			 { "ev", "tf", "cache_file" },
 			 { "EveryApi&", "TF", "std::string" },
 			 { "ev", "", "test44.glb" },
 			 "TF", "polygon_api", "tf_glb_tf"));

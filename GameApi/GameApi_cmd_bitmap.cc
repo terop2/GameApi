@@ -35,9 +35,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
       vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bm_png_bm,
 			     "bm_png_bm",
-			     { "ev", "bm", "url" },
+			     { "ev", "bm", "cache file" },
 			     { "EveryApi&","BM","std::string" },
-			     { "ev", "", "https://meshpage.org/temp.png" },
+			     { "ev", "", "temp.png" },
 			     "BM", "bitmap_api", "bm_png_bm"));
       
 
@@ -101,14 +101,12 @@ std::vector<GameApiItem*> bitmapapi_functions()
 #endif
 
   //#ifdef LINUX
-#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::video_source,
 			 "video_source",
 			 { "filename","sx","sy" },
 			 { "std::string","int","int" },
 			 { "https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4", "1600","2500" },
 			 "TXID", "bitmap_api", "video_source"));
-#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::dyn_fetch_bitmap,
 			 "bm_fetch",
 			 { "ev", "url", "reload_frame", "texture_unit" },
