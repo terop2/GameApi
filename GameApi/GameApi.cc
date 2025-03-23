@@ -23679,6 +23679,15 @@ public:
 
     url2 = "https://meshpage.org/mesh_ai_p2.php";
 
+
+    
+#ifdef EMSCRIPTEN
+    done = true;
+#else
+    if (!env.store_file_exists(get_filename())) {
+      tasks_add(568, &meshy_execute, (void*)this);
+    } else done=true;
+#endif
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
   }
   std::string get_filename() const
@@ -23701,6 +23710,12 @@ public:
   {
     //std::cout << "Meshy PREPARE2" << std::endl;
 
+#ifndef EMSCRIPTEN
+    env.async_load_url(url,gameapi_homepageurl,true);
+#endif
+#ifndef EMSCRIPTEN
+    env.async_load_url(url2,gameapi_homepageurl,false);
+#endif
 
     GameApi::ASyncVec *vec = env.get_loaded_async_url(url2);
     std::string vec2(vec->begin(),vec->end());
@@ -23712,21 +23727,8 @@ public:
   virtual void HeavyPrepare()
   {
 
-#ifndef EMSCRIPTEN
-    env.async_load_url(url,gameapi_homepageurl,true);
-#endif
 
-#ifndef EMSCRIPTEN
-    env.async_load_url(url2,gameapi_homepageurl,false);
-#endif
 
-#ifdef EMSCRIPTEN
-    done = true;
-#else
-    if (!env.store_file_exists(get_filename())) {
-      tasks_add(568, &meshy_execute, (void*)this);
-    } else done=true;
-#endif
 
     if (ref.id!=-1)
       {
@@ -24085,6 +24087,16 @@ public:
     url+=prompt;
     url+="\"";
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
+
+
+    
+#ifdef EMSCRIPTEN
+    done = true;
+#else
+    if (!env.store_file_exists(get_filename())) {
+      tasks_add(567, &stable_diff_execute, (void*)this);
+    } else done=true;
+#endif
   }
   std::string get_filename() const
   {
@@ -24104,6 +24116,9 @@ public:
   }
   void Prepare2()
   {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url,gameapi_homepageurl);
+#endif
     //std::cout << "Stable diffusion PREPARE2" << std::endl;
     GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
     std::vector<unsigned char> vec2(vec->begin(),vec->end());
@@ -24114,17 +24129,7 @@ public:
   }
   virtual void HeavyPrepare()
   {
-#ifndef EMSCRIPTEN
-    env.async_load_url(url,gameapi_homepageurl);
-#endif
 
-#ifdef EMSCRIPTEN
-    done = true;
-#else
-    if (!env.store_file_exists(get_filename())) {
-      tasks_add(567, &stable_diff_execute, (void*)this);
-    } else done=true;
-#endif
 
   }
   virtual void Prepare()

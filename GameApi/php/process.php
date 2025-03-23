@@ -48,7 +48,18 @@ echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"p
 
 echo "</div>\n";
 echo "</div>\n";
+
 echo "<div class=\"bl_container\">\n";
+
+echo "<div class=\"bl_row\">\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item customfont content\">\n";
+echo "<h2><span class=\"large\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10</span> years of work,<br><span class=\"large\">&nbsp;&nbsp;&nbsp;260</span> kloc of source code,<br> <span class=\"large\">&nbsp;&nbsp;600</span> builder tool nodes,<br><span class=\"large\">2900</span> version control commits,<br>   <span class=\"large\">3700</span> page views,<br><span class=\"large\">&nbsp;&nbsp;600</span> downloads,<br> <span class=\"large\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2</span> paying customers</h2>\n";
+echo "</div>\n";
+echo "</div>\n";
+echo "</div>\n";
+
+
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
@@ -295,6 +306,9 @@ echo "a.link {\n";
 echo "   text-decoration: none !important;\n";
 echo "   -webkit-box-shadow: none !important;\n";
 echo "   box-shadow: none !important;\n";
+echo "}\n";
+echo ".large {\n";
+echo "   font-size: 150%;\n";
 echo "}\n";
 echo ".bl_container {\n";
 echo "  display: flex;\n";
