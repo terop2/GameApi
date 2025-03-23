@@ -181,6 +181,28 @@ struct FaceBufferRef
   VEC4 *weights;
 };
 
+class MutableFaceCollection : public CollectInterface
+{
+public:
+  virtual std::string name() const=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+
+  virtual int NumVertices() const=0;
+  virtual void Faces(std::vector<Point> &vec)=0;
+  virtual void Normal(std::vector<Vector> &vec)=0;
+  virtual void Color(std::vector<unsigned int> &vec)=0;
+  virtual void Tex(std::vector<Point2d> &vec)=0;
+  virtual void Tex3(std::vector<float> &vec)=0;
+  virtual void Joints(std::vector<VEC4> &vec)=0;
+  virtual void Weights(std::vector<VEC4> &vec)=0;
+
+  virtual int NumFaces() const=0;
+  virtual void Indices(std::vector<int> &vec)=0; // size is numfaces*3
+};
+
+
 class FaceCollection : public CollectInterface
 {
 public:

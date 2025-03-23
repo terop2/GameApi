@@ -1458,6 +1458,7 @@ class SDLApi : public SDLLowApi
   }
   //virtual void SDL_GL_SwapBuffers() { ::SDL_GL_SwapBuffers(); }
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window) { ::SDL_GL_SwapWindow((SDL_Window*)(window->ptr)); }
+  virtual void SDL_PumpEvents() { ::SDL_PumpEvents(); }
   virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title) { ::SDL_SetWindowTitle((SDL_Window*)(window->ptr), title); }
   virtual unsigned int SDL_GetMouseState(int *x, int *y) { return ::SDL_GetMouseState(x,y); }
   virtual unsigned int SDL_GetModState() { return (unsigned int)::SDL_GetModState(); }
