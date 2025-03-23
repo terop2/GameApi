@@ -3266,6 +3266,14 @@ struct load_url_deleter
 };
 load_url_deleter load_from_url_del;
 
+
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
   //std::cout << "POPEN3 " << url << std::endl;
@@ -3379,6 +3387,11 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     int fd = fileno(f);
     fd_set fds;
     struct timeval tv;
+
+#ifdef LINUX
+    int flags = fcntl(fd, F_GETFL, 0);
+    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+#endif
     
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
@@ -3386,6 +3399,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     if (num>0)
       buffer->reserve(num);
 #ifdef LINUX
+
     while(1) {
       FD_ZERO(&fds);
       FD_SET(fd,&fds);
@@ -3394,12 +3408,13 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 
       if (select(fd+1,&fds,NULL,NULL,&tv) > 0)
 	{
-      g_low->sdl->SDL_PumpEvents();
+	  /*
+	  g_low->sdl->SDL_PumpEvents();
       Low_SDL_Event event;
       while (g_low->sdl->SDL_PollEvent(&event)) {
       }
       g_low->sdl->SDL_GL_SwapWindow(sdl_window);
-
+	  */
 	  if ( fread(&c,1,1,f)==1) {
       //std::cout << c;
       i++;
