@@ -674,6 +674,7 @@ public:
   virtual void SDL_GetWindowSize(Low_SDL_Window *window, int *w, int *h)=0;
   //virtual void SDL_GL_SwapBuffers()=0;
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;
+  virtual void SDL_PumpEvents()=0;
   virtual void SDL_UpdateWindowSurface(Low_SDL_Window *window)=0;
   virtual void SDL_DestroyWindow(Low_SDL_Window *window)=0;
   virtual void SDL_SetWindowTitle(Low_SDL_Window *window, const char *title)=0;

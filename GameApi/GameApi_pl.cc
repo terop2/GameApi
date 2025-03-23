@@ -26522,9 +26522,171 @@ void *writer(void* ptr)
   src->Prepare2();
 }
 
+bool file_exists(std::string s);
+
+bool exists(const cv::String &path)
+{
+  std::string s = path;
+  return file_exists(s);
+}
+
+
 
 GameApi::TXID GameApi::BitmapApi::video_source(std::string filename, int sx, int sy)
 {
   return add_txid(e,new VideoSource(e,filename,sx,sy));
 }
 #endif
+
+class MutableFaceCollImpl : public MutableFaceCollection
+{
+public:
+  MutableFaceCollImpl(FaceCollection &coll) : coll(coll) { }
+
+  virtual std::string name() const { return "mutablefacecollimpl"; }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+
+  
+  virtual int NumVertices() const { return coll.NumFaces()*3; }
+  virtual void Faces(std::vector<Point> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.FacePoint(i/3,i%3);
+  }
+  virtual void Normal(std::vector<Vector> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.PointNormal(i/3,i%3);
+  }
+  virtual void Color(std::vector<unsigned int> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.Color(i/3,i%3);
+  }
+  virtual void Tex(std::vector<Point2d> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.TexCoord(i/3,i%3);
+  }
+  virtual void Tex3(std::vector<float> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.TexCoord3(i/3,i%3);
+  }
+  virtual void Joints(std::vector<VEC4> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.Joints(i/3,i%3);
+  }
+  virtual void Weights(std::vector<VEC4> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      vec[i] = coll.Weights(i/3,i%3);
+  }
+
+
+  virtual int NumFaces() const { return coll.NumFaces()*3; }
+  virtual void Indices(std::vector<int> &vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	vec[i] = i;
+      }
+  }
+private:
+  FaceCollection &coll;
+};
+
+class MutableImpl : public FaceCollection
+{
+public:
+  MutableImpl(MutableFaceCollection &mut) : mut(mut) { }
+
+  virtual std::string name() const { return "mutableimpl"; }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    
+    int vert = mut.NumVertices();
+    int numfaces = mut.NumFaces();
+    
+    faces.resize(vert);
+    normals.resize(vert);
+    colors.resize(vert);
+    textures.resize(vert);
+    tex3.resize(vert);
+    joints.resize(vert);
+    weights.resize(vert);
+    indices.resize(numfaces*3);
+    
+    mut.Faces(faces);
+    mut.Normal(normals);
+    mut.Color(colors);
+    mut.Tex(textures);
+    mut.Tex3(tex3);
+    mut.Joints(joints);
+    mut.Weights(weights);
+    mut.Indices(indices);
+    
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+
+  virtual Point FacePoint(int face, int point) const
+  {
+    return faces[indices[face*3+point]];
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    return normals[indices[face*3+point]];
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return colors[indices[face*3+point]];
+
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    return textures[indices[face*3+point]];
+  }
+  virtual float TexCoord3(int face, int point) const {
+
+    return tex3[indices[face*3+point]];
+
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    return joints[indices[face*3+point]];
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    return weights[indices[face*3+point]];
+  }
+private:
+  MutableFaceCollection &mut;
+  std::vector<Point> faces;
+  std::vector<Vector> normals;
+  std::vector<unsigned int> colors;
+  std::vector<Point2d> textures;
+  std::vector<float> tex3;
+  std::vector<VEC4> joints;
+  std::vector<VEC4> weights;
+
+  std::vector<int> indices;
+};

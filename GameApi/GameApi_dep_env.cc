@@ -103,7 +103,7 @@ public:
     pthread_attr_t attr;
 
     pthread_attr_init(&attr);
-    pthread_attr_setstacksize(&attr, 3000000);
+    pthread_attr_setstacksize(&attr, 4096000);
     //std::cout << "phread_create" << std::endl;
     pthread_t *thread_id = new pthread_t;
     threads.push_back(thread_id);
@@ -3394,6 +3394,11 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 
       if (select(fd+1,&fds,NULL,NULL,&tv) > 0)
 	{
+      g_low->sdl->SDL_PumpEvents();
+      Low_SDL_Event event;
+      while (g_low->sdl->SDL_PollEvent(&event)) {
+      }
+      g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 
 	  if ( fread(&c,1,1,f)==1) {
       //std::cout << c;

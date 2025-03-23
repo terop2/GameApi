@@ -3745,6 +3745,87 @@ unsigned long g_glb_file_size=0;
 unsigned long g_zip_file_size=0;
 bool g_glb_animated=false;
 
+/*
+class GLTFFaceCollectionMutable : public MutableFaceCollection
+{
+public:
+  GLTFFaceCollectionMutable(tinygltf::Accessor *array, tinygltf::Primitive *prim) : array(array), prim(prim) { }
+  virtual std::string name() const { return "GLTFFaceCollectionMutable"; }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() {
+    position_index = prim->attributes["POSITION"];
+    normal_index = prim->attributes["NORMAL"];
+    texcoord_index = prim->attributes["TEXCOORD_0"];
+    color_index = prim->attributes["COLOR_0"];
+    joints_index = prim->attributes["JOINTS_0"];
+    weights_index = prim->attributes["WEIGHTS_0"];
+
+    position_bv = array[position_index]->bufferView;
+    normal_bv = array[normal_index]->bufferView;
+    texcoord_bv = array[texcoord_index]->bufferView;
+    color_bv = array[color_index]->bufferView;
+    joints_bv = array[joints_index]->bufferView;
+    weights_bv = array[weights_index]->bufferView;
+  }
+  virtual void Prepare() { }
+
+  virtual int NumVertices() const
+  {
+    return array[position_index].count;
+  }
+  virtual void Faces(std::vector<Point> &vec)
+  {
+    int s1 = vec.size();
+    int s2 = NumVertices();
+    int s = std::min(s1,s2);
+    tinygltf::Accessor &a = array[position_index];
+    tinygltf::BufferView &bv = bv_array[position_bv];
+    int buffer = bv.buffer;
+    tinygltf::Buffer &b = b_array[buffer];
+    unsigned char *ptr = b.data;
+    ptr+=bv.byteOffset;
+    size_t stride = bv.byteStride;
+    ptr+=a.byteOffset;
+    int componentType = a.componentType;
+    assert(componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    if (stride==0) stride=sizeof(float);
+    int ss = 0;
+    for(int i=0;i<s;i++)
+      {
+	float *ptr2 = (float*)ptr;
+	vec[i] = Point(ptr2[0],ptr2[1],ptr2[2]);
+	ptr+=stride;
+      }
+  }
+  virtual void Normal(std::vector<Vector> &vec)=0;
+  virtual void Color(std::vector<unsigned int> &vec)=0;
+  virtual void Tex(std::vector<Point2d> &vec)=0;
+  virtual void Tex3(std::vector<float> &vec)=0;
+  virtual void Joints(std::vector<VEC4> &vec)=0;
+  virtual void Weights(std::vector<VEC4> &vec)=0;
+
+  virtual int NumFaces() const=0;
+  virtual void Indices(std::vector<int> &vec)=0; // size is numfaces*3
+private:
+  tinygltf::BufferView *bf_array;
+  tinygltf::Accessor *array;
+  tinygltf::Primitive *prim;
+  int position_index;
+  int normal_index;
+  int texcoord_index;
+  int color_index;
+  int joints_index;
+  int weights_index;
+
+  int position_bv;
+  int normal_bv;
+  int texcoord_bv;
+  int color_bv;
+  int joints_bv;
+  int weights_bv;
+
+};
+*/
 
 class GLTFFaceCollection : public FaceCollection
 {
@@ -12433,7 +12514,7 @@ public:
 #if 1
     if (size>250000000) {
       std::cout << "Zip File too large! 250Mb is max. -> exiting..." << std::endl;
-      return;
+      //return;
 	}
 #endif
     
