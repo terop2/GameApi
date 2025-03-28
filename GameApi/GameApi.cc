@@ -23568,7 +23568,7 @@ public:
       if (BlockType(i)==id) { cache_map[id]=i; return i; }
     return -1;
   }
-  int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
+  size_t BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
   unsigned char *Block(int block) const { return wholefile + blocks[block].block_offset_from_beginning_of_file; }
   unsigned char *BlockWithOffset(int block, int offset2, int size2) const
   {
@@ -23614,15 +23614,15 @@ public:
   }
 
   
-  int BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
+  size_t BlockSizeInBytes(int block) const { return blocks[block].block_size_in_bytes; }
   unsigned char *BlockWithOffset(int block, int offset2, int size2) const
   {
     if (block==blocknum && offset2==offset && size2 == sz) return buf;
     delete [] buf;
-    int size = BlockSizeInBytes(block);
-    buf = new unsigned char[std::min(size-offset2,size2)];
+    size_t size = BlockSizeInBytes(block);
+    buf = new unsigned char[std::min(size_t(size-offset2),size_t(size2))];
     t.seekg(blocks[block].block_offset_from_beginning_of_file+offset2,std::ios::beg);
-    t.read((char*)buf,std::min(size-offset2,size2));
+    t.read((char*)buf,std::min(size_t(size-offset2),size_t(size2)));
     blocknum = block;
     offset = offset;
     sz = size2;
@@ -23632,7 +23632,7 @@ public:
   {
     if (block==blocknum && offset==-1 && sz==-1) return buf;
     delete [] buf;
-    int size = BlockSizeInBytes(block);
+    size_t size = BlockSizeInBytes(block);
     buf = new unsigned char[size];
     t.seekg(blocks[block].block_offset_from_beginning_of_file,std::ios::beg);
     t.read((char*)buf,size);
@@ -25111,7 +25111,7 @@ std::string GameApi::MainLoopApi::ds_to_string(DS ds)
     }
   for(int i=0;i<s;i++)
     {
-      int s = dds->BlockSizeInBytes(i);
+      size_t s = dds->BlockSizeInBytes(i);
       if (s!=0) {
 	unsigned char *ptr = dds->Block(i);
       //std::cout << "Writing Block:" << s << std::endl;
@@ -25152,7 +25152,7 @@ void GameApi::MainLoopApi::save_ds(std::string output_filename, DS ds)
     }
   for(int i=0;i<s;i++)
     {
-      int s = dds->BlockSizeInBytes(i);
+      size_t s = dds->BlockSizeInBytes(i);
       unsigned char *ptr = dds->Block(i);
       std::cout << "Writing Block:" << s << std::endl;
       ff.write((char*)ptr, s);
@@ -25193,7 +25193,7 @@ void GameApi::MainLoopApi::save_ds_store(std::string output_filename, DS ds)
     }
   for(int i=0;i<s;i++)
     {
-      int s = dds->BlockSizeInBytes(i);
+      size_t s = dds->BlockSizeInBytes(i);
       unsigned char *ptr = dds->Block(i);
       std::cout << "Writing Block:" << s << std::endl;
       ff.write((char*)ptr, s);
@@ -35208,7 +35208,7 @@ public:
     for(int i=0;i<s;i++) {
       std::string url2 = get_url(i);
       if (url2 == url) {
-	int sz = store->BlockSizeInBytes(i+1);
+	size_t sz = store->BlockSizeInBytes(i+1);
 	unsigned char *blk = store->Block(i+1);
 	// TODO, better way to store this memory(?)
 	std::vector<unsigned char> *vec = new std::vector<unsigned char>(blk,blk+sz);
@@ -35313,7 +35313,7 @@ public:
   int NumBlocks() const { return 1+map->size(); }
   int BlockType(int block) const { return 10; }
   int BlockTypeInv(int id) const { if (id==10) return 0; else return -1; }
-  int BlockSizeInBytes(int block) const {
+  size_t BlockSizeInBytes(int block) const {
     if (block==0) {
       int s = map->size();
       int count = 0;

@@ -126,6 +126,8 @@ GameApiModule load_gameapi(std::string filename)
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      i4= i;
 	      i++;
+	      //std::cout << name_value << std::endl;
+	      //std::cout << i1 << " " << i2 << " " << i3 << " " << i4 << std::endl;
 	      p.param_name = name_value.substr(0, std::max(i1,0));
 	      p.value = unhexify(name_value.substr(i1+1, i2-i1-1));
 	      std::string is_array_str = name_value.substr(i2+1, i3-i2-1);
