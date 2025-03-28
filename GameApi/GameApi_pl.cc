@@ -16790,7 +16790,7 @@ public:
     };
     return -1;
   }
-  int BlockSizeInBytes(int block) const
+  size_t BlockSizeInBytes(int block) const
   {
     switch(block) {
     case 0: return sizeof(header);
@@ -16872,7 +16872,7 @@ public:
   virtual int NumBlocks() const { return 15; }
   virtual int BlockType(int block) const { return 0; }
   virtual int BlockTypeInv(int block) const { return 0; }
-  virtual int BlockSizeInBytes(int block) const
+  virtual size_t BlockSizeInBytes(int block) const
   {
     switch(block) {
       // header

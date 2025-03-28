@@ -35,7 +35,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
       vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bm_png_bm,
 			     "bm_png_bm",
-			     { "ev", "bm", "cache file" },
+			     { "ev", "bm", "cache_file" },
 			     { "EveryApi&","BM","std::string" },
 			     { "ev", "", "temp.png" },
 			     "BM", "bitmap_api", "bm_png_bm"));
@@ -43,7 +43,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
       vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::stable_diffusion,
 			     "stable_diffusion",
-			     { "ev", "prompt", "cache file" },
+			     { "ev", "prompt", "cache_file" },
 			     { "EveryApi&", "std::string", "std::string" },
 			     { "ev", "garden_gnome", "test.png" },
 			     "BM", "bitmap_api", "stable_diffusion"));
