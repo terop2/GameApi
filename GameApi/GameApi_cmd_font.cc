@@ -299,6 +299,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "IF", "float", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0" },
 			 "FF", "font_api", "choose_float_fetcher"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::span_key_fetcher,
+			 "ff_span",
+			 { "start_x", "end_x", "speed_x", "key_down", "key_up" },
+			 { "float", "float", "float", "int", "int" },
+			 { "0.0", "100.0", "5.0", "97", "100" },
+			 "FF", "font_api", "span_key_fetcher"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_fetcher2,
 			 "ff_time",
 			 { "ev" },

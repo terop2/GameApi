@@ -3317,7 +3317,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #else
     //       std::cout << "Fetching " << url << std::endl;
 
-    std::string cmd = "curl -s --max-time 300 -N --url " + url;
+    std::string cmd = "curl --no-buffer -s --max-time 300 -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
@@ -3385,12 +3385,24 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 
 
     int fd = fileno(f);
+    if (fd==-1)
+      {
+	std::cout << "fileno failed" << std::endl;
+      }
+    
+    
     fd_set fds;
     struct timeval tv;
 
 #ifdef LINUX
     int flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    if (flags==-1) {
+	std::cout << "FCNTL F_GETFL failed" << std::endl;
+    }
+    if (fcntl(fd, F_SETFL, flags | O_NONBLOCK)==-1)
+      {
+	std::cout << "FCNTL F_SETFL failed" << std::endl;
+      }
 #endif
     
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
@@ -3404,10 +3416,11 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       FD_ZERO(&fds);
       FD_SET(fd,&fds);
       tv.tv_sec=0;
-      tv.tv_usec=50000;
-
-      if (select(fd+1,&fds,NULL,NULL,&tv) > 0)
+      tv.tv_usec=0;
+      //if (nosize) { std::cout << "while" << std::endl; }
+      if (select(fd+1,&fds,NULL,NULL,&tv) > 0 && FD_ISSET(fd,&fds))
 	{
+	  //if (nosize) { std::cout << "select" << std::endl; }
 	  /*
 	  g_low->sdl->SDL_PumpEvents();
       Low_SDL_Event event;
@@ -3415,7 +3428,19 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       }
       g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 	  */
-	  if ( fread(&c,1,1,f)==1) {
+      int bytes_read = read(fd,&c,1);
+      if (bytes_read<0) {
+	    if (errno==EAGAIN || errno==EWOULDBLOCK) { continue; }
+	    else {
+	      std::cout << "READ ERROR" << std::endl;
+	    }
+      } else
+      if (bytes_read==0)
+	{
+	  break;
+	}
+      else {
+	//	    if (nosize) { std::cout << "fread" << std::endl; }
       //std::cout << c;
       i++;
       g_current_size++;
@@ -3428,14 +3453,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       }
       buffer->push_back(c);
       if (nosize) std::cout << c;
-	  } else
-	    {
-	      break;
-	    }
-	}
-      
+      }
+      usleep(1000);
       //usleep(10);
+	}
     }
+    
     pclose(f);
 #endif
 #ifdef WINDOWS
@@ -3456,7 +3479,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #endif
 
     
-    }
+   }
 #else // ANDROID
     std::string s = popen_curl_replacement(url,false);
     buffer = std::vector<unsigned char,GameApiAllocator<unsigned char> >(s.begin(),s.end());
