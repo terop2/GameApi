@@ -44,6 +44,16 @@ using tinygltf library. tinygltf allowed reading the gltf/glb file
 formats, but it didn't have rendering capability builtin, and that
 needed to be done with our engine's primitives.
 
+GameApi also have advanced deployment alternatives. Emscripten based
+web implementation provides html5 zip file generation where generated
+zips can be uncompressed to hosting space to display the designed
+scenes in web browser. Also linux and windows users, there's separate
+gameapi runtime which allows running generated script.txt files as
+standalone linux and windows executable applications. Android platform
+has build scripts available, but their usage requires installation of
+android ndk and availability of the source code: android usage is
+significantly more difficult than linux/windows or even web platforms.
+
 There is also optimization slot done after gltf development, and some
 half year was spent on optimizing the rendering pipeline after gltf
 was implemented. We maanged to reduce loading time of the engine from
