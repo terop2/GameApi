@@ -760,6 +760,54 @@ private:
   int count;
   float x_mult, y_mult, z_mult;
 };
+
+class SpanKeyFetcher : public Fetcher<float>
+{
+public:
+  SpanKeyFetcher(float start_x, float end_x, float speed_x, int key_down, int key_up) : start_x(start_x), end_x(end_x), speed_x(speed_x), key_down(key_down), key_up(key_up)
+  {
+    pos_x = start_x+(end_x-start_x)/2;
+    down=false;
+    up=false;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
+  virtual void event(MainLoopEvent &e)
+  {
+    //std::cout << e.type << " " << e.ch << std::endl;
+    if (e.type==0x300 && e.ch == key_down) down=true;
+    if (e.type==0x300 && e.ch == key_up) up=true;
+    if (e.type==0x301 && e.ch == key_down) down=false;
+    if (e.type==0x301 && e.ch == key_up) up=false;
+    //std::cout << "up:" << up << " down:" << down << std::endl;
+  }
+  virtual void frame(MainLoopEnv &e) {
+    //std::cout << "up2:" << up << " down2:" << down << std::endl;
+    if (down) pos_x-=speed_x;
+    if (up) pos_x+=speed_x;
+    //std::cout << "pos_x1:" << pos_x << std::endl;
+    if (pos_x>end_x) pos_x=end_x;
+    if (pos_x<start_x) pos_x=start_x;
+    //std::cout << "pos_x2:" << pos_x << std::endl;
+  }
+  virtual void set(float t) { pos_x=t; }
+  virtual float get() const
+  {
+    return pos_x;
+  }
+private:
+  float start_x, end_x, speed_x;
+  int key_down, key_up;
+  float pos_x;
+  bool up,down;
+};
+
+GameApi::FF GameApi::FontApi::span_key_fetcher(float start_x, float end_x, float speed_x, int key_down, int key_up)
+{
+  return add_float_fetcher(e,new SpanKeyFetcher(start_x, end_x, speed_x, key_down, key_up));
+}
+
 class ToggleButtonIntFetcher : public Fetcher<int>
 {
 public:
