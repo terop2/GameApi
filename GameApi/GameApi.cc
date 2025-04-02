@@ -24124,7 +24124,7 @@ public:
     env.async_load_url(url2,gameapi_homepageurl,false);
 #endif
     //std::cout << "Stable diffusion PREPARE2" << std::endl;
-    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url2);
     std::vector<unsigned char> vec2(vec->begin(),vec->end());
     bool success = false;
     ref = LoadImageFromString(vec2,success);
