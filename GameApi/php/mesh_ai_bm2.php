@@ -2,7 +2,5 @@
 
 header("Content-Type: image/jpg");
 
-$file = fopen("/home/terop/cvs/fastflux/test.jpg","rb");
-while (!feof($file)) {
-    echo fread($file, 4096);
-}
+$file = file_get_contents("/home/terop/cvs/fastflux/test.jpg");
+echo "$file";

@@ -23,7 +23,7 @@ putenv('PATH=/usr/local/cuda/bin:/home/terop/cvs/fastflux/bin:/home/terop/cvs/fa
 putenv('LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/terop/cvs/fastflux/lib:/home/terop/cvs/fastflux/pkgs/cudatoolkit-11.8.0-h4ba93d1_13/lib:' . getenv('LD_LIBRARY_PATH'));
 
 $res = "";
-$file = popen("(cd /home/terop/cvs/fastflux/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/fastflux/terop.py $prompt 2>&1)", "rb");
+$file = popen("(cd /home/terop/cvs/fastflux/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/fastflux/terop.py $prompt 2>&1)", "r");
 stream_set_blocking($file,0);
 while (!feof($file)) {
   $res = fgets($file);
