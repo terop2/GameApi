@@ -1,4 +1,21 @@
 <?php
+ini_set('zlib.output_compression', 'Off');
+ini_set('output_buffering', 'Off');
+set_time_limit(0);
+ob_implicit_flush(true);
+header('Content-Type: text/event-stream');
+// Disable caching to ensure real-time updates
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+header('Accept-Encoding:');
+header('X-Accel-Buffering: no');
+
+function sendChunk($data) {
+    echo $data;
+    flush();
+}
+
 
 $prompt = $_GET["prompt"];
 
@@ -7,20 +24,9 @@ putenv('LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/terop/cvs/fastflux/lib:/home
 
 $res = "";
 $file = popen("(cd /home/terop/cvs/fastflux/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/fastflux/terop.py $prompt 2>&1)", "rb");
+stream_set_blocking($file,0);
 while (!feof($file)) {
-  $res .= fread($file, 4096);
+  $res = fgets($file);
+  sendChunk("$res");
 }
 $status = pclose($file);
-
-if ($status=="120")
-{
-echo "EXIT STATUS: " . $status;
-echo $res;
-} else {
-header("Content-Type: image/jpg");
-
-$file = fopen("/home/terop/cvs/fastflux/test.jpg","rb");
-while (!feof($file)) {
-    echo fread($file, 4096);
-}
-}
