@@ -3274,6 +3274,8 @@ load_url_deleter load_from_url_del;
 #include <fcntl.h>
 
 
+
+
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
   //std::cout << "POPEN3 " << url << std::endl;
@@ -3389,10 +3391,10 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     struct timeval tv;
 
 #ifdef LINUX
-    int flags = fcntl(fd, F_GETFL, 0);
-    fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+    //int flags = fcntl(fd, F_GETFL, 0);
+    //fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 #endif
-    
+   
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
     unsigned char c;
     long long i = 0;
@@ -3405,7 +3407,6 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       FD_SET(fd,&fds);
       tv.tv_sec=0;
       tv.tv_usec=50000;
-
       if (select(fd+1,&fds,NULL,NULL,&tv) > 0)
 	{
 	  /*
@@ -3427,7 +3428,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	ProgressBar(sum,i*15/num,15,url);
       }
       buffer->push_back(c);
-      if (nosize) std::cout << c;
+      if (nosize) std::cout << c << std::flush;
 	  } else
 	    {
 	      break;
