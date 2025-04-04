@@ -3414,21 +3414,28 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       buffer->reserve(num);
 #ifdef LINUX
 
+    int cnt=0;
     while(1) {
       FD_ZERO(&fds);
       FD_SET(fd,&fds);
       tv.tv_sec=0;
-      tv.tv_usec=50000;
+      tv.tv_usec=5000;
+
+	cnt++;
+      if (cnt>5000) {
+	cnt=0;
+	  g_low->sdl->SDL_PumpEvents();
+	  Low_SDL_Event event;
+	  while (g_low->sdl->SDL_PollEvent(&event)) {
+	  }
+	  g_low->sdl->SDL_GL_SwapWindow(sdl_window);
+      }
+      //if (nosize) { std::cout << "while" << std::endl; }
       if (select(fd+1,&fds,NULL,NULL,&tv) > 0 && FD_ISSET(fd,&fds))
 	{
 	  //if (nosize) { std::cout << "select" << std::endl; }
-	  /*
-	  g_low->sdl->SDL_PumpEvents();
-      Low_SDL_Event event;
-      while (g_low->sdl->SDL_PollEvent(&event)) {
-      }
-      g_low->sdl->SDL_GL_SwapWindow(sdl_window);
-	  */
+	  
+	  
       int bytes_read = read(fd,&c,1);
       if (bytes_read<0) {
 	    if (errno==EAGAIN || errno==EWOULDBLOCK) { continue; }
