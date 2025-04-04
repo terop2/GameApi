@@ -27,6 +27,7 @@ finish()
 copy_it mesh_ai_p.php
 copy_it mesh_ai_p2.php
 copy_it mesh_ai_bm.php
+copy_it mesh_ai_bm2.php
 copy_it feat.php
 copy_it ad.php
 copy_it process.php

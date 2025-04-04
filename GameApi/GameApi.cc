@@ -70,6 +70,7 @@ extern int g_time_id;
 
 bool is_mobile(GameApi::EveryApi &ev)
 {
+  if (g_gpu_vendor=="Mesa") return false;
   if (g_gpu_vendor=="Mozi") return false;
   return is_mobile_1() || ev.mainloop_api.get_screen_width() < 800 ||(g_gpu_vendor != "NVID" && g_gpu_vendor != "AMD" && g_gpu_vendor != "WebK");
 }
@@ -24088,7 +24089,7 @@ public:
     url+="\"";
     //std::cout << "STABLE DIFF tasks_add" << std::endl;
 
-
+    url2 = "https://meshpage.org/mesh_ai_bm2.php";
     
 #ifdef EMSCRIPTEN
     done = true;
@@ -24117,10 +24118,13 @@ public:
   void Prepare2()
   {
 #ifndef EMSCRIPTEN
-    env.async_load_url(url,gameapi_homepageurl);
+    env.async_load_url(url,gameapi_homepageurl,true);
+#endif
+#ifndef EMSCRIPTEN
+    env.async_load_url(url2,gameapi_homepageurl,false);
 #endif
     //std::cout << "Stable diffusion PREPARE2" << std::endl;
-    GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+    GameApi::ASyncVec *vec = env.get_loaded_async_url(url2);
     std::vector<unsigned char> vec2(vec->begin(),vec->end());
     bool success = false;
     ref = LoadImageFromString(vec2,success);
@@ -24180,6 +24184,7 @@ private:
   std::string prompt;
   std::string filename;
   std::string url;
+  std::string url2;
   BufferRef ref;
   bool done = false;
 };
