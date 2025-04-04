@@ -1,49 +1,35 @@
 <?php
-ini_set('output_buffering','0');
-ob_end_flush();
-ob_implicit_flush(true);
+ini_set('zlib.output_compression', 'Off');
+ini_set('output_buffering', 'Off');
 set_time_limit(0);
-ob_start();
+ob_end_clean();
+ob_implicit_flush(true);
+
+// Inform the browser we're using chunked encoding
+// Make sure content type is set
+header('Content-Type: text/event-stream');
+// Disable caching to ensure real-time updates
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
+header('Accept-Encoding:');
+header('X-Accel-Buffering: no');
+
+function sendChunk($data) {
+    echo $data;
+    flush();
+}
 
 $prompt = $_GET["prompt"];
 
 //echo "$prompt";
-$descriptorspec = array(
-   0 => array("pipe", "r"),
-   1 => array("pipe", "w"),
-   2 => array("pipe", "w")
-);
-/*
-$process = proc_open("(cd /home/terop/cvs/meshy/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/meshy/api_request.py \"$prompt\" 2>/dev/null >/dev/null)", $descriptorspec, $pipes, null, null, array('bypass_shell' => true));
-stream_set_blocking($pipes[1], 0);
-$status = proc_get_status($process);
-while($status['running']) {
-   usleep(100000);
-   $status = proc_get_status($process);
-   }
-   */
-$file = popen("(cd /home/terop/cvs/meshy/;/home/terop/cvs/fastflux/bin/python3 /home/terop/cvs/meshy/api_request.py \"$prompt\" 2>&1)","r");
+
+$file = popen("(cd /home/terop/cvs/meshy/;/home/terop/cvs/meshy/api_request2.sh '$prompt' 2>&1)","r");
+stream_set_blocking($file,0);
 while (!feof($file)) {
  $res = fgets($file);
- echo "$res";
- flush();
- ob_flush();
+ sendChunk("$res");
 }
 pclose($file);
 
 
-//$file2 = fopen("/home/terop/meshpage.org/pp2/meshy_log.txt","a");
-//while (!feof($file)) {
-// $res = fread($file, 10);
-// fwrite($file2,$res);
-//}
-//$status = pclose($file);
-//fclose($file2);
-
-//proc_close($process);
-
-//$file3 = fopen("/home/terop/cvs/meshy/refined_model.glb","rb");
-//while (!feof($file3)) {
-//    echo fread($file3, 4096);
-//    }
-//fclose($file3);
