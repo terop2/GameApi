@@ -1142,6 +1142,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
 
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
+  g_low->ogl->glFinish();
 #ifdef SDL2_USED
   g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 #else
