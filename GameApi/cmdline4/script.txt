@@ -1,97 +1,32 @@
-TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/santa_model.glb);
-
-ML I2=ev.mainloop_api.gltf_mesh_all(ev,I1,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
-
-MN I3=ev.move_api.mn_empty();
-
-MN I68=ev.move_api.android_landscape_rotate(I3);
-
-MN I4=ev.move_api.rotate(I68,0,10,0,0,0,0,1,0,0.7);
-
-MN I5=ev.move_api.rotate(I4,10,30,0,0,0,0,1,0,-1.4);
-
-MN I6=ev.move_api.rotate(I5,30,40,0,0,0,0,1,0,0.7);
-
-MN I69=ev.move_api.android_landscape_rotate_inv(I6);
-
-MN I7=ev.move_api.time_repeat(I69,0,40);
-
-MN I8=ev.move_api.trans2(I7,0,0,-30);
-
-ML I9=ev.move_api.move_ml(ev,I2,I8,1,10.0);
-
-TF I10=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/christmas_tree.glb);
-
-ML I11=ev.mainloop_api.gltf_mesh_all(ev,I10,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
-
-MN I12=ev.move_api.mn_empty();
-
-MN I13=ev.move_api.trans2(I12,-250,0,0);
-
-ML I14=ev.move_api.move_ml(ev,I11,I13,1,10.0);
-
-MN I15=ev.move_api.trans2(I12,250,0,0);
-
-ML I16=ev.move_api.move_ml(ev,I11,I15,1,10.0);
-
-ML I17=ev.mainloop_api.array_ml(ev,std::vector<ML>{I11,I14,I16});
-
-MN I18=ev.move_api.mn_empty();
-
-MN I19=ev.move_api.trans2(I18,0,0,-350);
-
-ML I20=ev.move_api.move_ml(ev,I17,I19,1,10.0);
-
-ML I21=ev.mainloop_api.or_elem_ml(ev,I9,I20);
-
-TF I22=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/unopenable_gift.glb);
-
-ML I23=ev.mainloop_api.gltf_mesh_all(ev,I22,1.0,0,400.0,-400.0,300.0,0.0,ff000000);
-
-MN I24=ev.move_api.mn_empty();
-
-MN I25=ev.move_api.scale2(I24,0.3,0.3,0.3);
-
-MN I26=ev.move_api.trans2(I25,-250,-120,-150);
-
-ML I27=ev.move_api.move_ml(ev,I23,I26,1,10.0);
-
-MN I28=ev.move_api.trans2(I25,250,-120,-150);
-
-ML I29=ev.move_api.move_ml(ev,I23,I28,1,10.0);
-
-ML I30=ev.mainloop_api.or_elem_ml(ev,I27,I29);
-
-ML I31=ev.mainloop_api.or_elem_ml(ev,I21,I30);
-
-MN I32=ev.move_api.mn_empty();
-
-MN I33=ev.move_api.scale2(I32,2,2,2);
-
-MN I34=ev.move_api.translate(I33,0,100,240,0,0);
-
-MN I35=ev.move_api.translate(I34,100,400,-480,0,0);
-
-MN I36=ev.move_api.translate(I35,400,500,240,0,0);
-
-MN I37=ev.move_api.time_repeat(I36,0,500);
-
-ML I38=ev.move_api.move_ml(ev,I31,I37,1,10.0);
-
-P I39=ev.polygon_api.quad_z(-450,450,0,100,150);
-
-FI I40=ev.font_api.load_font(http://meshpage.org/assets/Chunkfive.otf,20,20);
-
-BM I41=ev.font_api.draw_text_string(I40,Merry_Christmas,5,30);
-
-BM I42=ev.bitmap_api.flip_y(I41);
-
-MT I43=ev.materials_api.texture(ev,I42,1.0);
-
-MT I44=ev.materials_api.fade(ev,I43,0,10,15,25);
-
-ML I45=ev.materials_api.bind(I39,I44);
-
-ML I46=ev.mainloop_api.or_elem_ml(ev,I38,I45);
-
-RUN I47=ev.blocker_api.game_window2(ev,I46,false,false,0.0,100000.0);
+TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/beast.glb);
+ML I2=ev.mainloop_api.gltf_mesh_all_anim(ev,I1,1,0,cv,400,-400,300,0,ff000000);
+IF I3=ev.font_api.keypress_int_fetcher(119,1,0);
+ML I4=ev.mainloop_api.if_keys(I2,I3,vc);
+MN I5=ev.move_api.mn_empty();
+MN I6=ev.move_api.trans2(I5,0,0,100);
+MN I7=ev.move_api.rotatey(I6,3.14159);
+ML I8=ev.move_api.move_ml(ev,I4,I7,1,10.0);
+TF I9=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/plant1.glb);
+P I10=ev.mainloop_api.gltf_mesh_all_p(ev,I9);
+P I11=ev.polygon_api.quad_y(-2000,2000,0,-2000,2000);
+PTS I12=ev.points_api.random_mesh_quad_instancing(ev,I11,300);
+MT I13=ev.materials_api.gltf_material(ev,I9,0,1.0,400.0,-400.0,300.0);
+MT I14=ev.materials_api.phong(ev,I13,400.0,-400.0,300.0,ffff8800,ffffffff,30.0);
+ML I15=ev.materials_api.bind_inst(I10,I12,I14);
+TF I16=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/stone_cannon.glb);
+P I17=ev.mainloop_api.gltf_mesh_all_p(ev,I16);
+P I18=ev.polygon_api.quad_y(-2000,2000,-30,-2000,2000);
+PTS I19=ev.points_api.random_mesh_quad_instancing(ev,I18,30);
+MT I20=ev.materials_api.gltf_material(ev,I16,0,1.0,400.0,-400.0,300.0);
+ML I21=ev.materials_api.bind_inst(I17,I19,I20);
+ML I22=ev.mainloop_api.or_elem_ml(ev,I15,I21);
+ML I23=ev.move_api.quake_ml3(ev,I8,I22,5,0.05,0,0,0);
+ML I24=ev.move_api.key_printer_ml(I23);
+P I25=ev.polygon_api.quad_z(-1200,1200,-1200,1200,-240);
+BM I26=ev.bitmap_api.stable_diffusion(ev,ground_color_texture_under_water,ground.png);
+BM I27=ev.bitmap_api.flip_y(I26);
+MT I28=ev.materials_api.texture(ev,I27,1.0);
+ML I29=ev.materials_api.bind(I25,I28);
+ML I30=ev.mainloop_api.or_elem_ml(ev,I24,I29);
+ML I31=ev.mainloop_api.perspective(ev,I30,80,10.1,60000);
+RUN I32=ev.blocker_api.game_window2(ev,I31,false,false,0.0,100000.0);

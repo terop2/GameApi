@@ -73,6 +73,7 @@ for i in "${!array1[@]}"; do
     (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/$AARCH_DIR/libGameApi_android-$ARCH.so)
     (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/$AARCH_DIR/libfreetype.so)
     (cd android_cmdline ; zip -u ../gameapi_cmdline.apk lib/$AARCH_DIR/libc++_shared.so)
+    (cd android_cmdline ; zip -u ../gameapi_cmdline.apk store/ground.png)
 done
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk res/values/strings.xml)
 (cd android_cmdline ; zip -u ../gameapi_cmdline.apk res/mipmap/ic_launcher.png)

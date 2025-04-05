@@ -3064,7 +3064,8 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
 
 
 #else
-BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
+#if 0
+ BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
  FI I19 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 80,80);
  BM I20 = ev.font_api.draw_text_string(I19, "GameApi", 5, 30);
 
@@ -3080,6 +3081,8 @@ BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
  //P I26=ev.polygon_api.rotatex(I25,3.14159);
 P I27=ev.polygon_api.scale(I25,2,-2,2);
 P I28=ev.polygon_api.translate(I27,-400,200,0);
+#endif
+ P I28=ev.polygon_api.p_empty();
 VA I29=ev.polygon_api.create_vertex_array(I28,true);
 ML I30=ev.polygon_api.render_vertex_array_ml(ev,I29);
 MN I31=ev.move_api.mn_empty();

@@ -216,6 +216,12 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "[ML]", "IF" },
 			 { "", "" },
 			 "ML", "font_api", "ml_chooser"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::if_keys,
+			 "if_keys",
+			 { "ml", "fetcher", "keys" },
+			 { "ML", "IF", "std::string" },
+			 { "", "", "cv" },
+			 "ML", "mainloop_api", "if_keys"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::anim_ML,
 			 "ml_anim",
 			 { "ev", "url", "p1", "p2", "p3", "p4", "p5", "dyn" },
