@@ -761,6 +761,54 @@ private:
   float x_mult, y_mult, z_mult;
 };
 
+class SendKey : public MainLoopItem
+{
+public:
+  SendKey(MainLoopItem *item, Fetcher<int> *fetcher, std::string keys) : item(item), fetcher(fetcher), keys(keys) {}
+  virtual void Collect(CollectVisitor &vis) {
+    item->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    fetcher->frame(e);
+    int val = fetcher->get();
+    static int old =-1;
+    
+    if (old!=val && val>=0 && val<keys.size())
+      {
+	old=val;
+	MainLoopEvent keyevent;
+	keyevent.type = 0x300;
+	keyevent.ch = keys[val];
+	keyevent.button=-1;
+	keyevent.cursor_pos=Point(0.0,0.0,0.0);
+	item->handle_event(keyevent);
+      }
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    fetcher->event(e);
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+  
+private:
+  MainLoopItem *item;
+  Fetcher<int> *fetcher;
+  std::string keys;
+};
+
+GameApi::ML GameApi::MainLoopApi::if_keys(ML ml, IF fetcher, std::string keys)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  Fetcher<int> *fetcher2 = find_int_fetcher(e,fetcher);
+  return add_main_loop(e, new SendKey(item,fetcher2,keys));
+}
+
 class SpanKeyFetcher : public Fetcher<float>
 {
 public:

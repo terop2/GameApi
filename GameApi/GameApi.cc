@@ -19490,8 +19490,9 @@ public:
 	sh.id = vec[i];
 	//Matrix m = find_matrix(env,rot_y2);
 	ev.shader_api.use(sh);
-	ev.shader_api.set_var(sh, "in_View", rot_y2);
-	ev.shader_api.set_var(sh, "in_View2", rot_y2);
+	// these cause phong direction to go wrong.
+	//ev.shader_api.set_var(sh, "in_View", rot_y2);
+	//ev.shader_api.set_var(sh, "in_View2", rot_y2);
 	g_view_rot = rot_y2;
       }
 
