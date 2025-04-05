@@ -11801,11 +11801,14 @@ public:
 		const std::vector<float> *start_time = joints->start_time();
 		const std::vector<float> *end_time = joints->end_time();
 
-		int sr = end_time->size();
-		for(int iu=0;iu<sr;iu++) {
-		  float finish_time = end_time->operator[](iu);
-		  if (finish_time>max_end_time) max_end_time = finish_time;
-		}
+		if (t==sz-1 && ii==0)
+		  {
+		    int sr = end_time->size();
+		    for(int iu=0;iu<sr;iu++) {
+		      float finish_time = end_time->operator[](iu);
+		      if (finish_time>max_end_time) max_end_time = finish_time;
+		    }
+		  }
 		
 		if (current==-1 && t==0) {
 		  current_start_time=start_time;
@@ -11829,6 +11832,9 @@ public:
 	    if (current==-1) {
 	      static std::vector<float> *start_time2 = 0;
 	      static std::vector<float> *end_time2 = 0;
+	      static bool done_2 = false;
+	      if (!done_2) {
+		done_2 = true;
 	      delete start_time2;
 	      delete end_time2;
 	      start_time2 = new std::vector<float>;
@@ -11839,7 +11845,7 @@ public:
 	      int s2 = current_end_time->size();
 	      for(int i=0;i<s2;i++)
 		end_time2->push_back(current_end_time->operator[](i)+max_end_time);
-	      
+	      }
 	      current_start_time = start_time2;
 	      current_end_time = end_time2;
 	      current=0;
