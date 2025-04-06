@@ -1,2 +1,13 @@
     </pre>
     <pre id="gameapi_modificationdate" style="display:none">
+    <?php
+       $files = array("display.html","engine/engine_highmem.wasm",
+       "engine/engine_highmem.js",
+       "engine/gameapi.js");
+       $max_dt = -2147483648;
+       foreach($files as $file) {
+       $dt = filemtime($file);
+       if ($dt!=false && $dt>$max_dt) $max_dt=$dt;
+       }
+       echo $max_dt;
+       ?>
