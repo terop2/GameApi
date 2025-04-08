@@ -471,7 +471,7 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p)
     }
   // todo, update vertex array?
 }
-void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
+void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool draw)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
@@ -501,9 +501,8 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p)
       array[i*3+2] = p.z;
       color[i] = swap_color(c);
     }
-
-  
-  update(pta,slow);
+  if (draw)
+    update(pta,slow);
 }
 void GameApi::PointsApi::update(GameApi::PTA pta, bool slow)
 {

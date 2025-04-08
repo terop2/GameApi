@@ -1242,6 +1242,7 @@ struct del_map : public del_map_interface
 	  {
 	    delete e.second;
 	    fetches.erase(fetches.begin()+i);
+	    i--;
 	    break;
 	  }
       }
@@ -1256,6 +1257,7 @@ struct del_map : public del_map_interface
 	if (e.first == url) {
 	  delete e.second;
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+	  i--;
 	  break;
 	}
       }
@@ -1294,6 +1296,7 @@ struct del_map : public del_map_interface
 	if (&*e.second == &*vec) {
 	  delete e.second;
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+	  i--;
 	  break;
 	}
       }

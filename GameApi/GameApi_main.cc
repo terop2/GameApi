@@ -1356,6 +1356,10 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
   Event e2;
   int last = g_low->sdl->SDL_PollEvent(&event);
   e2.last = last!=0;
+  if (event.type==Low_SDL_KEYDOWN || event.type==Low_SDL_KEYUP)
+    e2.repeat = event.key.repeat;
+  else
+    e2.repeat = 0;
   //float t = get_time();
   //g_event_time = t;
   //MainLoopPriv *p = (MainLoopPriv*)priv;

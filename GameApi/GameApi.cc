@@ -9233,6 +9233,11 @@ public:
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const{
     //std::cout << "display:mat2_inst" << std::endl;
+
+    PointsApiPoints *points = find_pointsapi_points(e,pts);
+    MainLoopEnv ee;
+    points->Update(ee);
+    
     GameApi::ML ml3;
     ml3.id = next->mat_inst(p.id,pts.id);
     //GameApi::ML ml32 = ev.mainloop_api.depthfunc(ml3, 0);
@@ -10044,6 +10049,8 @@ public:
   BindInst(GameApi::Env &env, Material *mat, GameApi::P p, GameApi::PTS pts) : env(env), mat(mat),p(p),pts(pts) { ml.id = -1; firsttime = true; }
   void find_ml() {
     if (ml.id==-1) {
+      //PointsApiPoints *pt = find_pointsapi_points(env,pts);
+      //size = pt->NumPoints();
       ml.id = mat->mat_inst(p.id,pts.id);
     }
   }
@@ -10080,6 +10087,14 @@ public:
       firsttime = false;
     }
     find_ml();
+
+    //PointsApiPoints *pt = find_pointsapi_points(env,pts);
+    //if (size!=pt->NumPoints())
+    // {
+    // size = pt->NumPoints();
+    // ml.id = mat->mat_inst(p.id,pts.id);
+    //  }
+    
     MainLoopItem *item = find_main_loop(env,ml);
     item->execute(e);
   }
@@ -10104,6 +10119,7 @@ private:
   GameApi::ML ml;
   bool firsttime;
   bool disabled=false;
+  int size=0;
 };
 
 class BindInstFade : public MainLoopItem
@@ -10283,7 +10299,7 @@ public:
       }
     if (changed)
       {
-	ev.points_api.update_from_data(pta, pts);
+	ev.points_api.update_from_data(pta, pts,false);
       }
 
     if (firsttime) {
@@ -10687,7 +10703,7 @@ public:
       }
     if (changed)
       {
-	ev.points_api.update_from_data(pta, pts);
+	ev.points_api.update_from_data(pta, pts,false);
       }
 
     if (firsttime) {
@@ -10801,7 +10817,7 @@ public:
       if (va.id!=-1) {
 	ev.polygon_api.prepare_vertex_array_instanced(ev.shader_api, va, pta, sh); 
 	firsttime = false;
-      }
+       }
     }
 
     ev.shader_api.set_var(sh, "in_POS", e.in_POS);
@@ -15627,8 +15643,15 @@ void blocker_iter(void *arg)
 
     // handle esc event
     GameApi::MainLoopApi::Event e;
+    int counter=0;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
+	counter++;
+	bool ignore = false;
+       
+	if (e.repeat!=0) ignore=true;
+	
+	if (!ignore && (counter<5 || (e.type==0x300||e.type==0x301))) {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { /*std::cout << "ESC pressed!" << std::endl;*/ env->exit = true; }
@@ -15638,7 +15661,8 @@ void blocker_iter(void *arg)
 				   env->data, env->speed_x, env->speed_y,
 				   1.0, 1.0*3.14159*2.0/360.0);
 	env->ev->mainloop_api.event_ml(env->mainloop, e);
-
+	}
+	
       }
     GameApi::InteractionApi::quake_movement_frame(*env->ev, env->pos_x, env->pos_y, env->rot_y,
 				   env->data, env->speed_x, env->speed_y,
@@ -16169,9 +16193,14 @@ public:
     // handle esc event
     if (debug_enabled) status+="EVENT ";
     GameApi::MainLoopApi::Event e;
+    int counter=0;
     while((e = env->ev->mainloop_api.get_event()).last==true)
       {
-
+	counter++;
+	bool ignore = false;
+       
+	if (e.repeat!=0) ignore=true;
+	if (!ignore && (counter<5|| (e.type==0x300||e.type==0x301))) {
 	//std::cout << e.ch << " " << e.type << std::endl;
 #ifndef EMSCRIPTEN
 	if (e.ch==27 && e.type==0x300) { /*std::cout << "Esc pressed2!" << std::endl;*/ env->exit = true; return 0; }
@@ -16183,7 +16212,7 @@ public:
 	
 	if (g_prepare_done)
 	  env->ev->mainloop_api.event_ml(env->mainloop, e);
-	
+	}
       }
     
     GameApi::M mat = env->ev->matrix_api.identity();

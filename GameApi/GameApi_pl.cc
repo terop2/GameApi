@@ -21991,6 +21991,88 @@ GameApi::ARR GameApi::PolygonApi::block_render2(GameApi::EveryApi &ev, std::vect
 
 }
 
+
+extern float quake_pos_x, quake_pos_y;
+extern float quake_rot_y;
+
+class BlockPTS : public PointsApiPoints
+{
+public:
+  BlockPTS(PointsApiPoints *points, float d, int max_points) : points(points),d(d), max_points(max_points) { }
+
+  void Collect(CollectVisitor &vis)
+  {
+    points->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  
+  virtual void Prepare() { points->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b = points->Update(e);
+    //pos2=pos;
+    pos.clear();
+    int s = points->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	if (enabled(i))
+	  {
+	    pos.push_back(i);
+	  }
+      }
+    /*
+    int s2 = std::min(pos2.size(),pos.size());
+    bool changed = false;
+    for(int i=0;i<s2;i++)
+      {
+	if (pos[i]!=pos2[i])
+	  {
+	    changed=true;
+	  }
+      }
+    */
+    //std::cout << "Update:" << prev << " " << pos.size() << std::endl;
+    //if (prev==pos.size()&&!changed) return false;
+    prev=pos.size();
+    return true; }
+  virtual int NumPoints() const { return max_points; }
+  virtual Point Pos(int i) const { if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0); return points->Pos(pos[i]); }
+  virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
+  virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
+
+  bool enabled(int i) const
+  {
+    Point p = points->Pos(i);
+    float cursor_pos_x = quake_pos_x;
+    float cursor_pos_y = -quake_pos_y;
+
+    float delta_x = p.x+cursor_pos_x;
+    float delta_y = p.z-cursor_pos_y;
+    float dist = delta_x*delta_x + delta_y*delta_y;
+    //std::cout << "A:" << p.x << " " << p.z << std::endl;
+    //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
+    if (dist<d*d)
+      {
+	return true;
+      }
+    return false;
+  }
+private:
+  PointsApiPoints *points;
+  float d;
+  float sign;
+  std::vector<int> pos;
+  std::vector<int> pos2;
+  int prev=0;
+  int max_points;
+};
+GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_points)
+{
+  PointsApiPoints *points = find_pointsapi_points(e,pts);
+  return add_points_api_points(e,new BlockPTS(points,d,max_points));
+}
+
+
 extern float quake_pos_x;
 extern float quake_pos_y;
 class BlockDraw : public MainLoopItem

@@ -3169,7 +3169,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
   // INSTANCED DRAWING
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
-  if (g_inst_map[positions]==false) {
+  //if (g_inst_map[positions]==false) {
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
     if (normals) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
@@ -3179,7 +3179,8 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
     }
-  }
+    //}
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
     
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   if (s.ref.indices_char)
@@ -3299,7 +3300,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
   // INSTANCED DRAWING
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
-  if (g_inst_map[positions]==false) {
+  //if (g_inst_map[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
   if (normals) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
@@ -3309,7 +3310,8 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
   }
-  }
+  //}
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   ogl->glVertexAttribDivisor(5, 1);
   ogl->glEnableVertexAttribArray(5);
@@ -3385,7 +3387,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
   // INSTANCED DRAWING
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
-  if (g_inst_map[positions]==false) {
+  //if (g_inst_map[positions]==false) {
   ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(Point) * size, positions);
   if (normals) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
@@ -3395,7 +3397,8 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
     ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
   }
-  }
+  //}
+  ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
   ogl->glVertexAttribPointer(5, 3, Low_GL_FLOAT, Low_GL_FALSE, 0, 0);
   ogl->glVertexAttribDivisor(5, 1);
   ogl->glEnableVertexAttribArray(5);
