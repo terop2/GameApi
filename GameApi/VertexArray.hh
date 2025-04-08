@@ -409,6 +409,7 @@ public:
   std::vector<unsigned int> attribi_buffer3;
   unsigned int indices_buffer;
   bool nodelete;
+  bool bufferdata_done=false;
 };
 
 class RenderVertexArray2
