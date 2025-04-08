@@ -37178,3 +37178,42 @@ GameApi::ML GameApi::MainLoopApi::android_resize(GameApi::EveryApi &ev, ML ml, f
       return ml;
     }
 }
+
+
+class CursorKeysToWasd : public MainLoopItem
+{
+public:
+  CursorKeysToWasd(MainLoopItem *item) : item(item) {}
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    MainLoopEvent ee = e;
+    if (e.type==0x300||e.type==0x301) {
+      if (e.ch==26||e.ch==82||e.ch==1073741906) ee.ch='w';
+      if (e.ch==22||e.ch==81||e.ch==1073741905) ee.ch='s';
+      if (e.ch==4||e.ch==80||e.ch==1073741904) ee.ch='a';
+      if (e.ch==7||e.ch==79||e.ch==1073741903) ee.ch='d';
+      if (e.ch==29) ee.ch='z';
+      if (e.ch==27) ee.ch='x';
+    }
+    item->handle_event(ee);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+
+private:
+  MainLoopItem *item;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::cursorkeys_to_wasd(GameApi::ML ml)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new CursorKeysToWasd(item));
+}

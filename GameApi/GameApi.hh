@@ -358,6 +358,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML cursorkeys_to_wasd(ML ml);
   ML if_keys(ML ml, IF fetcher, std::string keys);
   void save_glb_store(EveryApi &ev, std::string filename, TF tf);
   ML shader_cache_disable(ML ml, bool disable);

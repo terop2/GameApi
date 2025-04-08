@@ -686,6 +686,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "0", "", "" },
 			 "ML", "move_api", "color_ml"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::cursorkeys_to_wasd,
+			 "keys_to_wasd",
+			 { "ml" },
+			 { "ML" },
+			 { "" },
+			 "ML", "mainloop_api", "cursorkeys_to_wasd"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::all_cursor_keys,
 			 "wasd_ml",
 			 { "ev", "ml", "speed", "duration" },
