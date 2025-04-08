@@ -1,15 +1,10 @@
 <?php
-ini_set('zlib.output_compression', 'Off');
 ini_set('output_buffering', 'Off');
-set_time_limit(0);
-ob_implicit_flush(true);
-header('Content-Type: text/event-stream');
-// Disable caching to ensure real-time updates
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
-header('Accept-Encoding:');
-header('X-Accel-Buffering: no');
+use function OutputControl\ob_start;
+use function OutputControl\ob_end_flush;
+use function OutputControl\ob_get_clean;
+
+@ob_end_clean();
 
 function sendChunk($data) {
     echo $data;

@@ -3322,7 +3322,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #else
     //       std::cout << "Fetching " << url << std::endl;
 
-    std::string cmd = "curl --no-buffer -s --max-time 300 -N --url " + url;
+    std::string cmd = "stdbuf -oL curl --fail --silent --show-error --http2 -H \"X-Requested-With: XMLHttpRequest\" -H \"Accept: text/event-stream\" -N --url " + url;
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
@@ -3400,7 +3400,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     struct timeval tv;
 
 #ifdef LINUX
-	  int flags = fcntl(fd, F_GETFL, 0);
+    /*
+    int flags = fcntl(fd, F_GETFL, 0);
     if (flags==-1) {
 	std::cout << "FCNTL F_GETFL failed" << std::endl;
     }
@@ -3408,6 +3409,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       {
 	std::cout << "FCNTL F_SETFL failed" << std::endl;
       }
+    */
 #endif
    
     //std::cout<< "FILE: " << std::hex<<(long)f <<std::endl; 
@@ -3434,12 +3436,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	  g_low->sdl->SDL_GL_SwapWindow(sdl_window);
       }
       //if (nosize) { std::cout << "while" << std::endl; }
-      if (select(fd+1,&fds,NULL,NULL,&tv) > 0 && FD_ISSET(fd,&fds))
+      //if (select(fd+1,&fds,NULL,NULL,&tv) > 0 && FD_ISSET(fd,&fds))
 	{
 	  //if (nosize) { std::cout << "select" << std::endl; }
 	  
-	  
-      int bytes_read = read(fd,&c,1);
+	  char buf[1024];
+	  int bytes_read = read(fd,buf,sizeof(buf));
       if (bytes_read<0) {
 	    if (errno==EAGAIN || errno==EWOULDBLOCK) { continue; }
 	    else {
@@ -3462,13 +3464,21 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
-      buffer->push_back(c);
-      if (nosize) std::cout << c << std::flush;
+      for(int i=0;i<bytes_read;i++)
+	buffer->push_back(buf[i]);
+      if (nosize) {
+	for(int i=0;i<bytes_read;i++)
+	  std::cout << buf[i];
+	std::cout << std::flush;
       }
+      }
+
+	}
+      /*
 	} else
 	    {
 	      break;
-	    }
+	      }*/
     }
     
     pclose(f);
