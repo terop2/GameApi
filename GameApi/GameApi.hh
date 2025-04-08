@@ -630,6 +630,7 @@ public:
     
     bool last=false;
     std::string drag_drop_filename="";
+    int repeat = 0;
   };
   struct DoubleTapState { DoubleTapState() : start_frame(0), in_between(false) { } int start_frame; bool in_between; };
   IMPORT bool ch_doubletap_detect(Event &e, int exprire_timer_count, int ch, DoubleTapState &state);
@@ -3627,6 +3628,7 @@ class PointsApi
 {
 public:
   PointsApi(Env &e) : e(e) { }
+  IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
   IMPORT PTS load_points(std::string url);
   IMPORT PTS pts_alt(std::vector<PTS> vec, int index);
   IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);
@@ -3693,7 +3695,7 @@ public:
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
-  void update_from_data(PTA array, PTS p);
+  void update_from_data(PTA array, PTS p, bool draw=true);
   void update_from_data(MSA array, MS p);
   void update(PTA array, bool slow=false);
   IMPORT void render(PTA array);

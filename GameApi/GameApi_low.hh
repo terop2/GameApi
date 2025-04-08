@@ -560,6 +560,7 @@ struct Low_SDL_Event_KeySym
 struct Low_SDL_Event_Key
 {
   Low_SDL_Event_KeySym keysym;
+  int repeat=0;
 };
 struct Low_SDL_MouseWheelEvent
 {

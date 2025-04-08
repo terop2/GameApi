@@ -1356,7 +1356,7 @@ class SDLApi : public SDLLowApi
 	event->type = e.type;
    if (e.type==SDL_KEYDOWN||e.type==SDL_KEYUP) {
       event->key.keysym.sym = e.key.keysym.sym;
-      if (e.key.repeat!=0) { return val; }
+      if (e.key.repeat!=0) { event->key.repeat=e.key.repeat; return val; }
     }
     if (e.type==SDL_MOUSEWHEEL) {
       event->wheel.y = e.wheel.y;
