@@ -2765,15 +2765,28 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
   ogl->glBindVertexArray(vao[0]);
 #endif
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
-
+  if (bufferdata_done) {
+    ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(Point)*size, positions);
+  }
+  else
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
   if (normals) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+    if (bufferdata_done)
+      {
+	ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, sizeof(Vector)*size, normals);
+      }
+    else
     ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
   }
   if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+    if (bufferdata_done)
+      {
+	ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int)*size, colors);
+      }
+    else
     ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
   }
   
@@ -2782,14 +2795,29 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
 #endif
 
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
+  if (bufferdata_done)
+    {
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(Point)*size,positions);
+    }
+  else
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
   if (normals) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+  if (bufferdata_done)
+    {
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(Vector)*size,normals);
+    }
+  else
     ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
   }
   if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+  if (bufferdata_done)
+    {
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(unsigned int)*size,colors);
+    }
+  else
     ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
   }
 
@@ -2803,14 +2831,29 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
 #endif
 
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
+  if (bufferdata_done)
+    {
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(Point)*size,positions);
+    }
+  else
   ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Point) * size, positions, Low_GL_DYNAMIC_DRAW);
 
   if (normals) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, normals_buffer );
+  if (bufferdata_done)
+    {
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(Vector)*size,normals);
+    }
+  else
     ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(Vector) * size, normals, Low_GL_DYNAMIC_DRAW);
   }
   if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
+  if (bufferdata_done)
+    {
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,sizeof(unsigned int)*size,colors);
+    }
+  else
     ogl->glBufferData( Low_GL_ARRAY_BUFFER, sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
   }
 
@@ -2820,6 +2863,8 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
   ogl->glBindVertexArray(0);
 #endif
 
+  bufferdata_done = true;
+  
   return GameApi::PinIn();
 }
 std::map<Point*,bool> g_inst_map;
