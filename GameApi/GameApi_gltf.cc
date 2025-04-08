@@ -1749,13 +1749,20 @@ class LoadBitmapFromUrl : public Bitmap<Color>
 {
 public:
   LoadBitmapFromUrl(GameApi::Env &env, std::string url, std::string homepage) : env(env), url(url),homepage(homepage) { cbm = 0;
+#ifdef EMSCRIPTEN
     async_pending_count++;
+    async=true;
+#endif
     // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
     env.async_load_callback(url,&bm_cb,this);
   }
   void unasync()
   {
-    async_pending_count--;
+#ifdef EMSCRIPTEN
+    if (async)
+      async_pending_count--;
+    async=false;
+#endif
   }
   ~LoadBitmapFromUrl()
   {
@@ -1780,6 +1787,8 @@ public:
   void Prepare()
   {
     if (!cbm) {
+      unasync();
+
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
@@ -1822,6 +1831,7 @@ public:
   Bitmap<Color> *cbm=0;
   bool load_finished = false;  
   int id;
+  bool async=false;
 };
 void bm_cb(void* ptr2)
 {
