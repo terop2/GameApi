@@ -845,9 +845,9 @@ instead of megabytes of video files
 
 <h2>What to do if your hosting location has no php?</h2>
 <ul>
-<li>comment out or remove display.html 4 lines at the beginning
+<li>comment out or remove display.php 4 lines at the beginning
 <li>you will lose threads too.
-<li>every .zip file distributed by meshpage.org has one of those display.html files with this issue.
+<li>every .zip file distributed by meshpage.org has one of those display.php files with this issue.
 </ul>
 
 <h2>What is the standard rendering pipeline?</h2>
@@ -885,9 +885,9 @@ Useful other sites with gltf viewing capability in web:
 
 Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php">Here</a>.
 
-<h2>Now, if I got display.html, how do I embed it to my article</h2>
+<h2>Now, if I got display.php, how do I embed it to my article</h2>
 
-&lt;iframe scrolling="no" src="display.html" width="830" height="630"&gt;
+&lt;iframe scrolling="no" src="display.php" width="830" height="630"&gt;
 
 <h2>I want smooth transition from jpg/png/webp to the 3d engine</h2>
 
