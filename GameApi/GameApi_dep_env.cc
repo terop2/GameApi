@@ -3322,7 +3322,15 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #else
     //       std::cout << "Fetching " << url << std::endl;
 
-    std::string cmd = "stdbuf -oL curl --fail --silent --show-error --http2 -H \"X-Requested-With: XMLHttpRequest\" -H \"Accept: text/event-stream\" -N --url " + url;
+    std::string cmd;
+    if (nosize)
+      {
+	cmd = "stdbuf -oL curl --fail --silent --show-error --http2 -H \"X-Requested-With: XMLHttpRequest\" -H \"Accept: text/event-stream\" -N --url " + url;
+      }
+    else
+      {
+	cmd = "curl -N -s --max-time 300 --url " + url;
+      }
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
@@ -3436,12 +3444,22 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	  g_low->sdl->SDL_GL_SwapWindow(sdl_window);
       }
       //if (nosize) { std::cout << "while" << std::endl; }
-      //if (select(fd+1,&fds,NULL,NULL,&tv) > 0 && FD_ISSET(fd,&fds))
+      bool go=true;
+      /*
+      if (!nosize) {
+	if (select(fd+1,&fds,NULL,NULL,&tv) > 0 && FD_ISSET(fd,&fds))
+	  {
+	    go=true;
+	  }
+      } else { go=true; }
+      */
+
+      if (go)
 	{
 	  //if (nosize) { std::cout << "select" << std::endl; }
 	  
 	  char buf[1024];
-	  int bytes_read = read(fd,buf,sizeof(buf));
+	  int bytes_read = read(fd,buf,1);
       if (bytes_read<0) {
 	    if (errno==EAGAIN || errno==EWOULDBLOCK) { continue; }
 	    else {
@@ -3455,8 +3473,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       else {
 	//	    if (nosize) { std::cout << "fread" << std::endl; }
       //std::cout << c;
-      i++;
-      g_current_size++;
+      i+=bytes_read;
+      g_current_size+=bytes_read;
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
@@ -3464,13 +3482,13 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	sum = sum % 1000;
 	ProgressBar(sum,i*15/num,15,url);
       }
-      for(int i=0;i<bytes_read;i++)
-	buffer->push_back(buf[i]);
+      for(int ii=0;ii<bytes_read;ii++)
+	buffer->push_back(buf[ii]);
       if (nosize) {
-	for(int i=0;i<bytes_read;i++)
-	  std::cout << buf[i];
+	for(int ii=0;ii<bytes_read;ii++)
+	  std::cout << buf[ii];
 	std::cout << std::flush;
-      }
+	}
       }
 
 	}
