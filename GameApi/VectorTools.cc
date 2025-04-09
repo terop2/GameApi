@@ -221,6 +221,32 @@ Matrix operator+(const Matrix &m1, const Matrix &m2)
 Matrix operator*(const Matrix &m1, const Matrix &m2)
 {
   Matrix r;
+  for(int i=0;i<16;i++)
+    r.matrix[i]=0;
+
+  for(int i=0;i<4;i++)
+    {
+      float a_0 = m1.matrix[i];
+      float a_1 = m1.matrix[i+4];
+      float a_2 = m1.matrix[i+8];
+      float a_3 = m1.matrix[i+12];
+
+      for(int j=0;j<4;j++)
+	{
+	  int jj=j*4;
+	  float b_0 = m2.matrix[jj];
+	  float b_1 = m2.matrix[1+jj];
+	  float b_2 = m2.matrix[2+jj];
+	  float b_3 = m2.matrix[3+jj];
+	  r.matrix[i+j*4] = a_0*b_0 + a_1*b_1 + a_2*b_2 + a_3*b_3;
+	}
+      
+    }
+  return r;
+
+  
+#if 0
+  Matrix r;
   //if (m1.is_identity && m2.is_identity)
   //  {
   //    r = Matrix::Identity();
@@ -235,6 +261,7 @@ Matrix operator*(const Matrix &m1, const Matrix &m2)
 	r.matrix[i] += m1.matrix[x+z*4]*m2.matrix[z+yy];
     }
   return r;
+#endif
 }
 
 bool Matrix::has_nan(const Matrix &m)
