@@ -6915,17 +6915,21 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
 
 struct TransformObject
 {
-  TransformObject() : scale_x(1.0), scale_y(1.0), scale_z(1.0),
-		      rot_x(0.0), rot_y(0.0), rot_z(0.0), rot_w(0.0),
-		      trans_x(0.0), trans_y(0.0), trans_z(0.0), m(Matrix::Identity()) { }
-  TransformObject(const TransformObject&o) : scale_x(o.scale_x), scale_y(o.scale_y), scale_z(o.scale_z),
-				       rot_x(o.rot_x), rot_y(o.rot_y), rot_z(o.rot_z), rot_w(o.rot_w),
-				       trans_x(o.trans_x), trans_y(o.trans_y), trans_z(o.trans_z),
-				       m(o.m) { }
+  TransformObject() : scale_x(1.0), scale_y(1.0), scale_z(1.0),scale(false),
+		      rot_x(0.0), rot_y(0.0), rot_z(0.0), rot_w(0.0),rot(false),
+    trans_x(0.0), trans_y(0.0), trans_z(0.0), trans(false), m(Matrix::Identity()), m_enabled(false) { }
+  TransformObject(const TransformObject&o) : scale_x(o.scale_x), scale_y(o.scale_y), scale_z(o.scale_z), scale(o.scale),
+					     rot_x(o.rot_x), rot_y(o.rot_y), rot_z(o.rot_z), rot_w(o.rot_w), rot(o.rot),
+					     trans_x(o.trans_x), trans_y(o.trans_y), trans_z(o.trans_z), trans(o.trans),
+					     m(o.m),m_enabled(o.m_enabled) { }
   double scale_x, scale_y, scale_z;
+  bool scale;
   double rot_x, rot_y, rot_z, rot_w;
+  bool rot;
   double trans_x, trans_y, trans_z;
+  bool trans;
   Matrix m;
+  bool m_enabled;
 };
 void print_transform(TransformObject o)
 {
@@ -6941,14 +6945,18 @@ TransformObject gltf_node_default()
   o.scale_x = 1.0;
   o.scale_y = 1.0;
   o.scale_z = 1.0;
+  o.scale=false;
   o.rot_x = 0.0;
   o.rot_y = 0.0;
   o.rot_z = 0.0;
   o.rot_w = 1.0;
+  o.rot=false;
   o.trans_x = 0.0;
   o.trans_y = 0.0;
   o.trans_z = 0.0;
+  o.trans=false;
   o.m = Matrix::Identity();
+  o.m_enabled=false;
   return o;
 }
 
@@ -7057,9 +7065,11 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   res.trans_x = val*o2.trans_x + (1.0-val)*o.trans_x;
   res.trans_y = val*o2.trans_y + (1.0-val)*o.trans_y;
   res.trans_z = val*o2.trans_z + (1.0-val)*o.trans_z;
+  res.trans=true;
   res.scale_x = val*o2.scale_x + (1.0-val)*o.scale_x;
   res.scale_y = val*o2.scale_y + (1.0-val)*o.scale_y;
   res.scale_z = val*o2.scale_z + (1.0-val)*o.scale_z;
+  res.scale=true;
 
 
   //std::cout << "SCALE2:" << res.scale_x << " " << res.scale_y << " " << res.scale_z << std::endl;
@@ -7088,8 +7098,11 @@ TransformObject slerp_transform(TransformObject o, TransformObject o2, float val
   res.rot_y = res2[1];
   res.rot_z = res2[2];
   res.rot_w = res2[3];
+  res.rot=true;
+
   
   for(int i=0;i<16;i++) res.m.matrix[i] = val*o2.m.matrix[i] + (1.0-val)*o.m.matrix[i];
+  res.m_enabled=true;
   
   // FIXME (TO BE REMOVED)
   /*
@@ -7119,7 +7132,7 @@ TransformObject gltf_node_transform_obj(const tinygltf::Node *node)
     o.scale_y = s_y;
     o.scale_z = s_z;
     //std::cout << "SCALE3:" << s_x << " " << s_y << " " << s_z << std::endl;
-
+    o.scale=true;
   }
   if (int(node->rotation.size())==4) {
     double r_x = node->rotation[0];
@@ -7130,6 +7143,7 @@ TransformObject gltf_node_transform_obj(const tinygltf::Node *node)
     o.rot_y = r_y;
     o.rot_z = r_z;
     o.rot_w = r_w;
+    o.rot=true;
   }
 
   if (int(node->translation.size())==3) {
@@ -7139,6 +7153,7 @@ TransformObject gltf_node_transform_obj(const tinygltf::Node *node)
     o.trans_x = m_x;
     o.trans_y = m_y;
     o.trans_z = m_z;
+    o.trans=true;
   }
   if (int(node->matrix.size())==16) {
     const double *arr = &node->matrix[0];
@@ -7146,20 +7161,26 @@ TransformObject gltf_node_transform_obj(const tinygltf::Node *node)
       for(int i=0;i<4;i++)
       for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
       o.m = m;
+      o.m_enabled=true;
   }
   return o;
 }
 
-std::pair<Matrix,Matrix> gltf_node_transform_obj_apply(GameApi::Env &e, GameApi::EveryApi &ev, Matrix root, const TransformObject &o2)
+
+
+Matrix gltf_node_transform_obj_apply2(GameApi::Env &e, GameApi::EveryApi &ev, const Matrix &root, const TransformObject &o2)
 {
   //std::cout << "obj_apply:" << std::endl;
   //print_transform(o);
   TransformObject o = o2;
   //GameApi::MN mv = ev.move_api.mn_empty();
-  Matrix mv = Matrix::Identity();
+  Matrix mv; // = Matrix::Identity();
 
 
   //std::cout << "quar:" << o.rot_x << " " << o.rot_y << " " << o.rot_z << " " << o.rot_w << std::endl;
+
+  Matrix m;
+  if (o.rot) {
   
   float d = sqrt(o.rot_x*o.rot_x+o.rot_y*o.rot_y+o.rot_z*o.rot_z +o.rot_w*o.rot_w);
   o.rot_x/=d;
@@ -7168,19 +7189,80 @@ std::pair<Matrix,Matrix> gltf_node_transform_obj_apply(GameApi::Env &e, GameApi:
   o.rot_w/=d;
   
   Quarternion q = { float(o.rot_x), float(o.rot_y), float(o.rot_z), float(o.rot_w) };
-  Matrix m = Quarternion::QuarToMatrix(q);
+  m = Quarternion::QuarToMatrix(q);
+  }
+
   //std::cout << "objapply: " << m << std::endl;
   // Matrix mi = Matrix::Inverse(m);
   // Scale
 
   // gltf spec says the order must be scale, rotate, translate
-  mv = mv * Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
+  if (o.scale)
+    mv = Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
+  else
+    mv=Matrix::Identity();
   //std::cout << "Scale4: " << o.scale_x << " " << o.scale_y << " " << o.scale_z << std::endl;
-  if (!Matrix::has_nan(m))
+  //if (!Matrix::has_nan(m))
+  if (o.rot)
     mv = mv * m;
   //else std::cout << m << " (m) skipped in obj_apply" << std::endl;
-  mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
-  if (!Matrix::has_nan(o.m))
+  if (o.trans)
+    mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
+  //if (!Matrix::has_nan(o.m))
+  if (o.m_enabled)
+    mv = mv * o.m;
+  //else std::cout << m << " (o.m) skipped in obj_apply" << std::endl;
+  //mv = mv*root; // * root;
+
+
+  //std::cout << mv << std::endl;
+  
+  return mv*root;
+}
+
+
+std::pair<Matrix,Matrix> gltf_node_transform_obj_apply(GameApi::Env &e, GameApi::EveryApi &ev, const Matrix &root, const TransformObject &o2)
+{
+  //std::cout << "obj_apply:" << std::endl;
+  //print_transform(o);
+  TransformObject o = o2;
+  //GameApi::MN mv = ev.move_api.mn_empty();
+  Matrix mv; // = Matrix::Identity();
+
+
+  //std::cout << "quar:" << o.rot_x << " " << o.rot_y << " " << o.rot_z << " " << o.rot_w << std::endl;
+
+  Matrix m;
+  if (o.rot)
+    {
+  float d = sqrt(o.rot_x*o.rot_x+o.rot_y*o.rot_y+o.rot_z*o.rot_z +o.rot_w*o.rot_w);
+  o.rot_x/=d;
+  o.rot_y/=d;
+  o.rot_z/=d;
+  o.rot_w/=d;
+  
+  Quarternion q = { float(o.rot_x), float(o.rot_y), float(o.rot_z), float(o.rot_w) };
+  m = Quarternion::QuarToMatrix(q);
+
+    }
+  //std::cout << "objapply: " << m << std::endl;
+  // Matrix mi = Matrix::Inverse(m);
+  // Scale
+
+  // gltf spec says the order must be scale, rotate, translate
+  if (o.scale)
+    mv = Matrix::Scale(o.scale_x, o.scale_y, o.scale_z);
+  else
+    mv=Matrix::Identity();
+  //std::cout << "Scale4: " << o.scale_x << " " << o.scale_y << " " << o.scale_z << std::endl;
+  //if (!Matrix::has_nan(m))
+  if (o.rot)
+    mv = mv * m;
+  //else std::cout << m << " (m) skipped in obj_apply" << std::endl;
+  if (o.trans)
+    mv = mv * Matrix::Translate(o.trans_x, o.trans_y, o.trans_z);
+  //if (!Matrix::has_nan(o.m))
+  if (o.m_enabled)
     mv = mv * o.m;
   //else std::cout << m << " (o.m) skipped in obj_apply" << std::endl;
   //mv = mv*root; // * root;
@@ -9811,10 +9893,11 @@ public:
 	start_obj.trans_x =a[0];
 	start_obj.trans_y =a[1];
 	start_obj.trans_z =a[2];
+	start_obj.trans=true;
 	end_obj.trans_x =a2[0];
 	end_obj.trans_y =a2[1];
 	end_obj.trans_z =a2[2];
-	
+	end_obj.trans=true;
       }
 
       if (type==1 && a2 && path=="rotation") { // rotation
@@ -9822,11 +9905,12 @@ public:
 	start_obj.rot_y=a[1];
 	start_obj.rot_z=a[2];
 	start_obj.rot_w=a[3];
+	start_obj.rot=true;
 	end_obj.rot_x=a2[0];
 	end_obj.rot_y=a2[1];
 	end_obj.rot_z=a2[2];
 	end_obj.rot_w=a2[3];
-	
+	end_obj.rot=true;
 	
 
       }
@@ -9835,9 +9919,11 @@ public:
 	start_obj.scale_x=a[0];
 	start_obj.scale_y=a[1];
 	start_obj.scale_z=a[2];
+	start_obj.scale=true;
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
+	end_obj.scale=true;
 	//std::cout << "Scale11a:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
 	//std::cout << "Scale11b:" << a2[0] << " " << a2[1] << " " << a2[2] << std::endl;
 
@@ -9889,10 +9975,11 @@ public:
 	start_obj.trans_x =a[0];
 	start_obj.trans_y =a[1];
 	start_obj.trans_z =a[2];
+	start_obj.trans=true;
 	end_obj.trans_x =a2[0];
 	end_obj.trans_y =a2[1];
 	end_obj.trans_z =a2[2];
-	
+	end_obj.trans=true;
       }
 
       if (type==1 && a2 && path=="rotation") { // rotation
@@ -9900,11 +9987,12 @@ public:
 	start_obj.rot_y=a[1];
 	start_obj.rot_z=a[2];
 	start_obj.rot_w=a[3];
+	start_obj.rot=true;
 	end_obj.rot_x=a2[0];
 	end_obj.rot_y=a2[1];
 	end_obj.rot_z=a2[2];
 	end_obj.rot_w=a2[3];
-	
+	end_obj.rot=true;
 	
 
       }
@@ -9913,9 +10001,11 @@ public:
 	start_obj.scale_x=a[0];
 	start_obj.scale_y=a[1];
 	start_obj.scale_z=a[2];
+	start_obj.scale=true;
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
+	end_obj.scale=true;
 	//std::cout << "Scale12a:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
 	//std::cout << "Scale12b:" << a2[0] << " " << a2[1] << " " << a2[2] << std::endl;
       }
@@ -10058,9 +10148,11 @@ public:
 	start_obj.trans_x =a[0];
 	start_obj.trans_y =a[1];
 	start_obj.trans_z =a[2];
+	start_obj.trans=true;
 	end_obj.trans_x =a2[0];
 	end_obj.trans_y =a2[1];
 	end_obj.trans_z =a2[2];
+	end_obj.trans=true;
 	//std::cout << "tr[" << a[0] << "," << a[1] << "," << a[2] << "->" << a2[0] << "," << a2[1] << "," << a2[2] << "]";
       }
 
@@ -10069,10 +10161,12 @@ public:
 	start_obj.rot_y=a[1];
 	start_obj.rot_z=a[2];
 	start_obj.rot_w=a[3];
+	start_obj.rot=true;
 	end_obj.rot_x=a2[0];
 	end_obj.rot_y=a2[1];
 	end_obj.rot_z=a2[2];
 	end_obj.rot_w=a2[3];
+	end_obj.rot=true;
 	
 	//std::cout << "rot[" << a[0] << "," << a[1] << "," << a[2] << "," << a[3] << "->" << a2[0] << "," << a2[1] << "," << a2[2]<<"," << a2[3] << "]";
 	
@@ -10083,9 +10177,11 @@ public:
 	start_obj.scale_x=a[0];
 	start_obj.scale_y=a[1];
 	start_obj.scale_z=a[2];
+	start_obj.scale=true;
 	end_obj.scale_x=a2[0];
 	end_obj.scale_y=a2[1];
 	end_obj.scale_z=a2[2];
+	end_obj.scale=true;
 	//std::cout << "Scale13a:" << a[0] << " " << a[1] << " " << a[2] << std::endl;
 	//std::cout << "Scale13b:" << a2[0] << " " << a2[1] << " " << a2[2] << std::endl;
 	//std::cout << "sc[" << a[0] << "," << a[1] << "," << a[2] << "->" << a2[0] << "," << a2[1] << "," << a2[2] << "]";
@@ -11728,6 +11824,8 @@ public:
   struct TimeStore { int id; float time; };
   void execute(MainLoopEnv &e) {
     current_time = e.time;
+
+    
     float time = e.time-key_time;
     static std::vector<TimeStore> timevec;
     int s = timevec.size();
@@ -11741,6 +11839,17 @@ public:
 	}
       }
     if(keypressed && max_end_time>0.0001 && time>max_end_time) { key_time = ev.mainloop_api.get_time()/1000.0; time=e.time-key_time; timevec.clear(); }// repeat
+    if (keypressed)
+      {
+	GLTFJointMatrices *joints_0 = (GLTFJointMatrices*)ml_orig;
+	int s = joints_0->root()->size();
+	if (!curr_done) {
+	  current_vec.resize(s);
+	}
+
+	for(int i=0;i<s;i++)
+	  current_vec[i] = -1;
+      }
     if (!timedone)
       {
 	TimeStore t;
@@ -11792,12 +11901,19 @@ public:
 	std::vector<Matrix> *bind = joints_0->bind();	
 
 	ev.shader_api.use(sh);
-	std::vector<GameApi::M> vec;
+	//std::vector<GameApi::M> vec;
 	std::vector<GameApi::M> vec_bindm;
 	std::vector<GameApi::M> vec_resize;
 	std::vector<GameApi::M> vec_resizei;
 	int sz = 1;
 	int iisz = r_0->size();
+	if (!curr_done) {
+	  vec.resize(iisz);
+	  start_vec.resize(iisz);
+	  end_vec.resize(iisz);
+	  current_vec.resize(iisz);
+	  curr_done=true;
+	}
 	for(int ii=0;ii<iisz;ii++)
 	  {
 	    current = -1;
@@ -11833,12 +11949,61 @@ public:
 		if (ii<ssz)
 		  if (time>=start_time->operator[](ii) && time<end_time->operator[](ii))
 		    {
-		      current=t;
+		      current=t; 
 		      current_start_time = start_time;
 		      current_end_time = end_time;
 		      break;
 		    }
 	      }
+	    /*
+	    if (current != -1 && current==current_vec[ii]) {
+	    MainLoopItem *next = items[current];
+	    GLTFJointMatrices *joints = (GLTFJointMatrices*)next;
+	    std::vector<TransformObject> *start = joints->start();
+	    std::vector<TransformObject> *end = joints->end();
+	    std::vector<Matrix> *r = joints->root();
+	    std::vector<Matrix> *r_2 = joints->root2();
+
+	    float time01 = (time-current_start_time->operator[](ii))/(current_end_time->operator[](ii)-current_start_time->operator[](ii));
+
+	    if (std::isinf(time01)) time01 = 0.0;
+	    if (time01<0.0) time01=0.0;
+	    if (time01>1.0) time01=1.0;
+
+	    TransformObject start_obj;
+	    if (ii<sz)
+	      start_obj= start->operator[](ii);
+	    else start_obj = gltf_node_default();
+	    TransformObject end_obj;
+	    if (ii<sz)
+	      end_obj = end->operator[](ii);
+	    else end_obj = gltf_node_default();
+
+	    Matrix rr;
+	    if (ii<sz)
+	      rr = r->operator[](ii);
+	    else rr=Matrix::Identity();
+
+	    Matrix rr2;
+	    if (ii<sz)
+	      rr2 = r_2->operator[](ii);
+	    else rr2=Matrix::Identity();
+
+	    
+	    
+	    TransformObject obj = slerp_transform(start_obj,end_obj,time01);
+
+	    Matrix mr;
+	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
+
+
+	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj).second;
+	    Matrix m = mv; // TODO, THIS SHOULD BE MULTIPLIED BY BINDM
+
+		vec[ii] = add_matrix2(env, start_vec[ii]*m*end_vec[ii]);
+	    
+	      continue;
+	      }*/
 	    if (current==-1) {
 	      static std::vector<float> *start_time2 = 0;
 	      static std::vector<float> *end_time2 = 0;
@@ -11860,6 +12025,7 @@ public:
 	      current_end_time = end_time2;
 	      current=0;
 	    }
+	    current_vec[ii]=current;
 
 	    
 	    MainLoopItem *next = items[current];
@@ -11891,12 +12057,12 @@ public:
 	    if (ii<sz)
 	      end_obj = end->operator[](ii);
 	    else end_obj = gltf_node_default();
-	    
+	    /*
 	    Matrix rr0;
 	    if (ii<sz)
 	      rr0 = r_0->operator[](ii);
 	    else rr0=Matrix::Identity();
-
+	    */
 
 	    Matrix rr;
 	    if (ii<sz)
@@ -11908,25 +12074,28 @@ public:
 	      rr2 = r_2->operator[](ii);
 	    else rr2=Matrix::Identity();
 
-	    
+	    /*
 	    Matrix jb;
 	    if (ii<sz)
 	      jb = j_bind->operator[](ii);
 	    else jb=Matrix::Identity();
-	    
+	    */
+
+	    /*
 	    TransformObject m0t;
 	    if (ii<sz)
 	      m0t = start_0->operator[](ii);
 	    else m0t = gltf_node_default();
-
+	    */
+	    /*
 	    Matrix rr_interpolate = rr;
 	    rr_interpolate*=(1.0-time01);
 	    Matrix rr_interpolate2=rr2;
 	    rr_interpolate2*=time01;
 	    Matrix rr_int = rr_interpolate + rr_interpolate2;
-
-	    Matrix m0 = gltf_node_transform_obj_apply(env,ev,rr0,m0t).second;	    
-	    Matrix m0i = Matrix::Inverse(m0);
+	    */
+	    //Matrix m0 = gltf_node_transform_obj_apply2(env,ev,rr0,m0t); //.second;	    
+	    //Matrix m0i = Matrix::Inverse(m0);
 
 	    Matrix bindm;
 	    if (ii<sz)
@@ -11940,22 +12109,24 @@ public:
 	    for(int j=0;j<16;j++) mr.matrix[j]=(time01)*rr2.matrix[j] + (1.0-time01)*rr.matrix[j];
 
 
-	    Matrix mv = gltf_node_transform_obj_apply(env,ev,mr,obj).second;
+	    Matrix mv = gltf_node_transform_obj_apply2(env,ev,mr,obj); //.second;
 	    Matrix m = mv; // TODO, THIS SHOULD BE MULTIPLIED BY BINDM
 	    
 	    Matrix ri = resizei; //Matrix::Inverse(resize);
-
+	    /*
 	    if (Matrix::has_nan(ri)) { ri=Matrix::Identity();  }
 	    if (Matrix::has_nan(m0i)) { m0i=Matrix::Identity(); }
 	    if (Matrix::has_nan(m0)) { m0=Matrix::Identity(); }
 	    if (Matrix::has_nan(bindm)) { bindm=Matrix::Identity(); }
 	    if (Matrix::has_nan(m)) {  m=Matrix::Identity();  }
 	    if (Matrix::has_nan(resize)) { resize=Matrix::Identity(); }
-	    
+	    */
 	    if (mode==0)
 	      {// m0i*m0
-		vec.push_back(add_matrix2(env, ri*m0i*m0*bindm*m*resize));
-	      //vec_bindm.push_back(add_matrix2(env, bindm));
+		vec[ii] = add_matrix2(env, ri* /*m0i*m0*/ bindm*m*resize);
+		//start_vec[ii] = ri*m0i*m0*bindm;
+		//end_vec[ii] = resize;
+		//vec_bindm.push_back(add_matrix2(env, bindm));
 	      //vec_resize.push_back(add_matrix2(env,resize));
 	      //vec_resizei.push_back(add_matrix2(env,resizei));
 	      }
@@ -12042,6 +12213,12 @@ private:
   float max_end_time=0.0;
   int mode;
   int id;
+  std::vector<GameApi::M> vec;
+  std::vector<Matrix> start_vec;
+  std::vector<Matrix> end_vec;
+  std::vector<int> current_vec;
+  bool curr_done=false;
+  float last_time=0.0f;
 };
 int GltfAnimShaderML::count=2;
 int GltfAnimShaderML::curr=0;

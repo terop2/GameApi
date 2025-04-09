@@ -21995,6 +21995,33 @@ GameApi::ARR GameApi::PolygonApi::block_render2(GameApi::EveryApi &ev, std::vect
 extern float quake_pos_x, quake_pos_y;
 extern float quake_rot_y;
 
+PointsApiPoints *g_pts;
+
+float g_pos1;
+float g_pos2;
+
+bool ComparePTSObj2(int a, int b)
+{
+  float val1,val2;
+  int num = g_pts->NumPoints();
+  if (a==num-2) val1=g_pos1; 
+  else if (a==num-1) val1 = g_pos2;
+  else val1=g_pts->Pos(a).x;
+
+  if (b==num-2) val2=g_pos1;
+  if (b==num-1) val2=g_pos2;
+  else val2=g_pts->Pos(b).x;
+  
+  return val1<val2;
+}
+bool ComparePTSObj(int a, int b)
+{
+  float val1,val2;
+  val1=g_pts->Pos(a).x;
+  val2=g_pts->Pos(b).x;
+  return val1<val2;
+}
+
 class BlockPTS : public PointsApiPoints
 {
 public:
@@ -22003,21 +22030,112 @@ public:
   void Collect(CollectVisitor &vis)
   {
     points->Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+    int s = points->NumPoints();
+    allpoints.clear();
+    for(int i=0;i<s;i++)
+      {
+	allpoints.push_back(i);
+      }
+    g_pts = points;
+    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj);
+  }
   
-  virtual void Prepare() { points->Prepare(); }
+  virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) {
     bool b = points->Update(e);
     //pos2=pos;
     pos.clear();
     int s = points->NumPoints();
-    for(int i=0;i<s;i++)
+    if (s<1) return true;
+    if (allpoints.size()<1) return true;
+    float start_x = -quake_pos_x-d;
+    float end_x = -quake_pos_x+d;
+    //allpoints.push_back(allpoints.size());
+    //allpoints.push_back(allpoints.size());
+
+    g_pos1 = start_x;
+    g_pos2 = end_x;
+    g_pts = points;
+
+    //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
+
+    int result=-1;
+    {
+    int left = 0;
+    int right = allpoints.size()-1;
+
+    
+    while(left <= right)
       {
-	if (enabled(i))
+	int mid = (left+right)/2;
+	if (points->Pos(allpoints[mid]).x < start_x && points->Pos(allpoints[mid+1]).x > start_x) { result=mid; break; }
+
+	if (points->Pos(allpoints[mid]).x < start_x)
 	  {
-	    pos.push_back(i);
+	    left = mid + 1;
+	  }
+	else
+	  {
+	    right = mid - 1;
+	  }
+      }
+    if (result==-1) result=(left+right)/2;
+    }
+    int start = result;
+
+    result = -1;
+    {
+    int left = 0;
+    int right = allpoints.size()-1;
+
+    while(left <= right)
+      {
+        int mid = (left+right)/2;
+	if (points->Pos(allpoints[mid]).x < end_x && points->Pos(allpoints[mid+1]).x > end_x) { result=mid; break; }
+
+	if (points->Pos(allpoints[mid]).x < end_x)
+	  {
+	    left = mid + 1;
+	  }
+	else
+	  {
+	    right = mid - 1;
+	  }
+      }
+    if (result==-1) result=(left+right)/2;
+    }
+    int end = result;
+    
+    
+    //int start = ii-allpoints.begin();
+    //int end = ii2-allpoints.begin();
+
+    //std::cout << start << " " << end << std::endl;
+    //std::cout << "POINT1:" << points->Pos(allpoints[start]).x << " POINT2:" << points->Pos(allpoints[end]).x << std::endl;
+
+    
+    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
+    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
+    
+
+
+    /*
+    int s2 = allpoints.size();
+    for(int i=0;i<s2;i++)
+      {
+	std::cout << "Point#" << i << "=" << allpoints[i] << "::" << points->Pos(allpoints[i]) << std::endl;
+      }
+    */
+    
+    for(int i=start;i<end;i++)
+      {
+	if (enabled(allpoints[i]))
+	  {
+	    pos.push_back(allpoints[i]);
 	  }
       }
     /*
@@ -22061,8 +22179,8 @@ private:
   PointsApiPoints *points;
   float d;
   float sign;
+  std::vector<int> allpoints;
   std::vector<int> pos;
-  std::vector<int> pos2;
   int prev=0;
   int max_points;
 };
