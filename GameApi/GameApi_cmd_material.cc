@@ -345,9 +345,9 @@
 			 "MT", "materials_api", "gltf_material"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_mt_arr,
 			 "m_gltf_arr",
-			 { "ev", "tf", "mix", "light_dir_x", "light_dir_y", "light_dir_z" },
-			 { "EveryApi&", "TF", "float", "float", "float", "float" },
-			 { "ev", "", "1.0", "400.0", "-400.0", "300.0" },
+			 { "ev", "tf", "mix", "light_dir_x", "light_dir_y", "light_dir_z", "is_transparent" },
+			 { "EveryApi&", "TF", "float", "float", "float", "float", "bool" },
+			 { "ev", "", "1.0", "400.0", "-400.0", "300.0","true" },
 			 "[MT]", "materials_api", "gltf_mesh_all_mt_arr"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_material_env,
 			 "m_gltf_env",

@@ -1243,24 +1243,35 @@ struct del_map : public del_map_interface
 	    delete e.second;
 	    fetches.erase(fetches.begin()+i);
 	    i--;
-	    break;
+	    //break;
 	  }
       }
   }
 #endif
   void del_async_url(std::string url)
   {
+    std::cout << "del_async_url: 1"<< std::endl;
     int s = load_url_buffers_async.size();
+    std::cout << "del_async_url: 2"<< std::endl;
     for(int i=0;i<s;i++)
       {
+    std::cout << "del_async_url: 3"<< std::endl;
 	VECENTRY e = load_url_buffers_async[i];
+    std::cout << "del_async_url: 4"<< std::endl;
 	if (e.first == url) {
+    std::cout << "del_async_url: 5"<< std::endl;
 	  delete e.second;
+    std::cout << "del_async_url: 6"<< std::endl;
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
+    std::cout << "del_async_url: 7"<< std::endl;
 	  i--;
+    std::cout << "del_async_url: 8"<< std::endl;
 	  break;
+    std::cout << "del_async_url: 9"<< std::endl;
 	}
+    std::cout << "del_async_url: 10"<< std::endl;
       }
+    std::cout << "del_async_url: 11"<< std::endl;
   }
 #ifdef EMSCRIPTEN
   void push_fetch_url(std::string url, FetchInBlocks *blk)

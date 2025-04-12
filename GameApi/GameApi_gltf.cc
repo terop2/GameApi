@@ -10,6 +10,8 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 #include "Tasks.hh"
 
+#define NO_MV 1
+
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
@@ -5365,7 +5367,8 @@ public:
     else
       ogl->glDisable(Low_GL_BLEND);
     next->execute(e);
-    ogl->glEnable(Low_GL_BLEND);
+    if (!b)
+      ogl->glEnable(Low_GL_BLEND);
     
   }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
@@ -7320,16 +7323,16 @@ GameApi::MN gltf_node_transform(GameApi::Env &e, GameApi::EveryApi &ev, tinygltf
 }
 
 GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
-GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix) , float mix, Vector light_dir);
+GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent) , float mix, Vector light_dir, bool transparent);
 
 GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys);
 
-GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), float mix, Vector light_dir);
+GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent), float mix, Vector light_dir, bool transparent);
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color);
 
-GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color);
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent);
 GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys, int mode,int inst);
 
 
@@ -7461,7 +7464,7 @@ GameApi::P gltf_node2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
 }
 
 
-GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), bool translate, float mix, Vector light_dir)
+GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent), bool translate, float mix, Vector light_dir, bool transparent)
 {
   //if (!load2) load2 = load;
   int s2 = interface->nodes_size(); //load->model.nodes.size();
@@ -7486,7 +7489,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton_p_arr(e,ev,interface, mesh_id, i,keys,fptr_skeleton, mix, light_dir);
+	  mesh = gltf_mesh2_with_skeleton_p_arr(e,ev,interface, mesh_id, i,keys,fptr_skeleton, mix, light_dir,transparent);
 	  done = true;
 	}
 	if (done)
@@ -7498,7 +7501,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
     int mesh_id = node.mesh;
     mesh.id = -1;
     if (mesh_id!=-1) {
-      mesh = gltf_mesh2_p_arr( e, ev, interface, mesh_id, 0, keys,fptr_mesh,mix, light_dir);
+      mesh = gltf_mesh2_p_arr( e, ev, interface, mesh_id, 0, keys,fptr_mesh,mix, light_dir,transparent);
     }
   }
   // todo cameras
@@ -7516,7 +7519,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
   for(int i=0;i<s;i++) {
     int child_id = node.children[i];
     if (child_id!=-1) {
-      GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, child_id,keys,fptr_skeleton,fptr_mesh,translate,mix,light_dir);
+      GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, child_id,keys,fptr_skeleton,fptr_mesh,translate,mix,light_dir,transparent);
       ArrayType *t = find_array(e,ml);
       int s3 = t->vec.size();
       for(int j=0;j<s3;j++) {
@@ -7582,7 +7585,7 @@ GameApi::ARR gltf_node2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 
 
 
-GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, float mix, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color)
+GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  int node_id, std::string keys, float mix, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
 {
   //if (!load2) load2 = load;
   int s2 = interface->nodes_size(); //load->model.nodes.size();
@@ -7605,7 +7608,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 	int mesh_id = node.mesh;
 	mesh.id = -1;
 	if (mesh_id != -1) {
-	  mesh = gltf_mesh2_with_skeleton(e,ev,interface, mesh_id, i,keys,mix,mode, light_dir, animation, border_width, border_color);
+	  mesh = gltf_mesh2_with_skeleton(e,ev,interface, mesh_id, i,keys,mix,mode, light_dir, animation, border_width, border_color,transparent);
 	  done = true;
 	}
 	if (done)
@@ -7637,7 +7640,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     int child_id = node.children[i];
     if (child_id!=-1) {
       //std::cout << "{";
-      GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys,mix,o2.second,mode, light_dir, animation, border_width, border_color );
+      GameApi::ML ml = gltf_node2( e, ev, interface, child_id,keys,mix,o2.second,mode, light_dir, animation, border_width, border_color,transparent );
       vec.push_back(ml);
       //std::cout << "}";
     }
@@ -7734,7 +7737,7 @@ GameApi::P gltf_scene2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInter
 }
 
 
-GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys,int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), bool translate, float mix,Vector light_dir )
+GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys,int (*fptr_skeleton)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent),int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent), bool translate, float mix,Vector light_dir, bool transparent )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -7750,7 +7753,7 @@ GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
   int s = scene.nodes.size();
   std::vector<int> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, scene.nodes[i], keys, fptr_skeleton, fptr_mesh,translate, mix, light_dir);
+    GameApi::ARR ml = gltf_node2_p_arr( e, ev, interface, scene.nodes[i], keys, fptr_skeleton, fptr_mesh,translate, mix, light_dir,transparent);
     ArrayType *array = find_array(e,ml);
     int s2 = array->vec.size();
     for(int j=0;j<s2;j++)
@@ -7766,7 +7769,7 @@ GameApi::ARR gltf_scene2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
 }
 
 
-GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color )
+GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -7779,7 +7782,7 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,Matrix::Identity(),mode,light_dir,animation, border_width, border_color );
+    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,Matrix::Identity(),mode,light_dir,animation, border_width, border_color,transparent );
     vec.push_back(ml);
   }
   return ev.mainloop_api.array_ml(ev, vec);
@@ -7804,7 +7807,7 @@ GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, G
   }
 }
 
-int arr_fetch_load(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix)
+int arr_fetch_load(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent)
 {
   GameApi::P p = gltf_load2(e,ev, interface, mesh_id, i);
   return p.id;
@@ -7812,7 +7815,7 @@ int arr_fetch_load(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *i
 
 Vector g_light_dir = Vector(0.0,0.0,-400.0);
 
-int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix)
+int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent)
 {
     const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
   int mat = m.primitives[i].material;
@@ -7821,12 +7824,16 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       GLTF_Material *mat3 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat3->texture(0); // basecolor
       bool is_transparent = mat3->IsTransparent();
+      GameApi::MT mat_res;
       GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2, is_transparent);
-      return mat2.id; // TEST REMOVED TRANSPARENCY
-  return mat4.id;
+
+      if (transparent) mat_res=mat4; else mat_res=mat2;
+      
+      //return mat2.id; // TEST REMOVED TRANSPARENCY
+  return mat_res.id;
 }
 
-GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), float mix, Vector light_dir)
+GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, int (*fptr)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent), float mix, Vector light_dir, bool transparent)
 {
   g_light_dir = light_dir;
   //g_last_resize=Matrix::Identity();
@@ -7836,7 +7843,7 @@ GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi 
     std::vector<int> mls;
     for(int i=0;i<s;i++) {
       //GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
-      int id = fptr(e,ev,interface,mesh_id,i,mix);
+      int id = fptr(e,ev,interface,mesh_id,i,mix,transparent);
       mls.push_back(id);
     }
     ArrayType *t = new ArrayType;
@@ -7867,7 +7874,7 @@ int get_cache_id(GLTFModelInterface *interface)
 
 
 
-GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color)
+GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
 {
   int cache_id = get_cache_id(interface);
   //std::cout << "MESH2: " << mesh_id << std::endl;
@@ -7901,11 +7908,14 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       GLTF_Material *mat33 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat33->texture(0); // basecolor
       bool is_transparent = mat33->IsTransparent();
+      GameApi::MT mat_res;
       GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
-
+      if (transparent) {
+	mat_res = mat4;
+      } else { mat_res=mat2_anim; }
 
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
-      GameApi::ML ml = ev.materials_api.bind(p,mat4);
+      GameApi::ML ml = ev.materials_api.bind(p,mat_res);
 
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
       GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
@@ -7939,7 +7949,7 @@ GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
 
 }
 
-GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix), float mix, Vector light_dir )
+GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys,int (*fptr_mesh)(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,int mesh_id, int i, float mix, bool transparent), float mix, Vector light_dir, bool transparent )
 {
   g_light_dir = light_dir;
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
@@ -7948,7 +7958,7 @@ GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
     std::vector<int> mls;
     for(int i=0;i<s;i++) {
       //GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
-      int id = fptr_mesh(e,ev,interface,mesh_id,i, mix);
+      int id = fptr_mesh(e,ev,interface,mesh_id,i, mix,transparent);
       mls.push_back(id);
     }
     ArrayType *t = new ArrayType;
@@ -8125,8 +8135,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh( GameApi::EveryApi &ev, TF model0, i
 class GltfNode : public MainLoopItem
 {
 public:
-  GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int node_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color)
-    :env(env), ev(ev), interface(interface),node_id(node_id),keys(keys),mix(mix), mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color) { res.id=-1; }
+  GltfNode(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int node_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
+    :env(env), ev(ev), interface(interface),node_id(node_id),keys(keys),mix(mix), mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color),transparent(transparent) { res.id=-1; }
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -8146,7 +8156,7 @@ public:
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   interface->Prepare();
   GameApi::P mesh = gltf_node2_p(env,ev,interface,node_id,keys); //env,ev, interface, 0,0);
-  GameApi::ML ml = gltf_node2(env,ev,interface,node_id,keys,mix,Matrix::Identity(), mode, light_dir, animation,border_width, border_color);
+  GameApi::ML ml = gltf_node2(env,ev,interface,node_id,keys,mix,Matrix::Identity(), mode, light_dir, animation,border_width, border_color,transparent);
   res = scale_to_gltf_size(env,ev,mesh,ml);
 
     
@@ -8192,21 +8202,22 @@ private:
   int animation;
   float border_width;
   unsigned int border_color;
+  bool transparent;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, TF model0, int node_id, std::string keys, float mix,int mode, float light_x, float light_y, float light_z, int animation, float border_width, unsigned int border_color )
+GameApi::ML GameApi::MainLoopApi::gltf_node( GameApi::EveryApi &ev, TF model0, int node_id, std::string keys, float mix,int mode, float light_x, float light_y, float light_z, int animation, float border_width, unsigned int border_color, bool transparent )
 {
 
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e,new GltfNode(e,ev,interface,node_id,keys,mix,mode,Vector(light_x,light_y,light_z),animation,border_width,border_color));
+  return add_main_loop(e,new GltfNode(e,ev,interface,node_id,keys,mix,mode,Vector(light_x,light_y,light_z),animation,border_width,border_color,transparent));
 }
 
 
 class GltfScene : public MainLoopItem
 {
 public:
-  GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, int mode,Vector light_dir, int animation, float border_width, unsigned int border_color)
-    :env(env), ev(ev), interface(interface),scene_id(scene_id),keys(keys),mix(mix),mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color) { res.id=-1;}
+  GltfScene(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys, float mix, int mode,Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
+    :env(env), ev(ev), interface(interface),scene_id(scene_id),keys(keys),mix(mix),mode(mode),light_dir(light_dir),animation(animation),border_width(border_width), border_color(border_color),transparent(transparent) { res.id=-1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -8226,7 +8237,7 @@ public:
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   interface->Prepare();
   GameApi::P mesh = gltf_scene2_p(env,ev,interface,scene_id,keys); //env,ev, interface, 0,0);
-  GameApi::ML ml = gltf_scene2(env,ev,interface,scene_id,keys,mix,mode,light_dir,animation, border_width, border_color);
+  GameApi::ML ml = gltf_scene2(env,ev,interface,scene_id,keys,mix,mode,light_dir,animation, border_width, border_color,transparent);
   res= scale_to_gltf_size(env,ev,mesh,ml);    
   MainLoopItem *item = find_main_loop(env,res);
   item->Prepare();
@@ -8269,12 +8280,13 @@ private:
   int animation;
   float border_width;
   unsigned int border_color;
+  bool transparent;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, TF model0, int scene_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color )
+GameApi::ML GameApi::MainLoopApi::gltf_scene( GameApi::EveryApi &ev, TF model0, int scene_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfScene(e,ev,interface,scene_id,keys,mix,mode,Vector(light_dir_x, light_dir_y, light_dir_z),animation,border_width,border_color));
+  return add_main_loop(e, new GltfScene(e,ev,interface,scene_id,keys,mix,mode,Vector(light_dir_x, light_dir_y, light_dir_z),animation,border_width,border_color,transparent));
   //return ml;
 }
 
@@ -8305,8 +8317,8 @@ GameApi::ML gltf_mesh_all2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFMode
 class GltfMeshAll : public MainLoopItem
 {
 public:
-  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color)
-    :env(env), ev(ev), interface(interface),mix(mix),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color) { res.id = -1;}
+  GltfMeshAll(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, float mix, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent)
+    :env(env), ev(ev), interface(interface),mix(mix),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
@@ -8330,7 +8342,7 @@ public:
     int scene_id = interface->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
 
-    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,mode,light_dir,0,border_width,border_color ); // 0 = take numtimeindexes from first animation
+    GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,mode,light_dir,0,border_width,border_color,transparent ); // 0 = take numtimeindexes from first animation
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
     if (res.id!=-1) {
@@ -8376,6 +8388,7 @@ private:
   Vector light_dir;
   float border_width;
   unsigned int border_color;
+  bool transparent;
 };
 
 class GltfMeshAllP : public FaceCollection
@@ -8575,7 +8588,7 @@ GameApi::P GameApi::MainLoopApi::gltf_mesh_all_p( GameApi::EveryApi &ev, TF mode
 class GltfMeshAllPArr : public FaceCollection
 {
 public:
-  GltfMeshAllPArr(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i, Vector light_dir) : env(env), ev(ev), interface(interface),i(i),light_dir(light_dir) { res.id=-1;}
+  GltfMeshAllPArr(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i, Vector light_dir, bool transparent) : env(env), ev(ev), interface(interface),i(i),light_dir(light_dir),transparent(transparent) { res.id=-1;}
   virtual std::string name() const { return "GltfMeshAllPArr"; }
 
   virtual void Collect(CollectVisitor &vis) {
@@ -8597,7 +8610,7 @@ public:
 	set_current_block(-2);
 
 	int scene_id = interface->get_default_scene();
-	GameApi::ARR p = gltf_scene2_p_arr( env, ev, interface,scene_id,"", &arr_fetch_load, &arr_fetch_load,true, 1.0, light_dir);
+	GameApi::ARR p = gltf_scene2_p_arr( env, ev, interface,scene_id,"", &arr_fetch_load, &arr_fetch_load,true, 1.0, light_dir,transparent);
 	ArrayType *t = find_array(env,p);
 	std::vector<GameApi::P> vv;
 	int ss2 = t->vec.size();
@@ -8784,11 +8797,12 @@ private:
   static std::map<GLTFModelInterface*,GameApi::P> g_cache2;
   bool firsttime=true;
   Vector light_dir;
+  bool transparent;
 };
 std::map<GLTFModelInterface*,GameApi::ARR> GltfMeshAllPArr::g_cache;
 std::map<GLTFModelInterface*,GameApi::P> GltfMeshAllPArr::g_cache2;
 
-GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_p_arr( GameApi::EveryApi &ev, TF model0, float light_dir_x, float light_dir_y, float light_dir_z)
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_p_arr( GameApi::EveryApi &ev, TF model0, float light_dir_x, float light_dir_y, float light_dir_z, bool transparent)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   int s = 100;
@@ -8796,7 +8810,7 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_p_arr( GameApi::EveryApi &ev, T
   t->type=0;
   for(int i=0;i<s;i++)
     {
-      t->vec.push_back(add_polygon2(e,new GltfMeshAllPArr(e,ev,interface,i,Vector(light_dir_x,light_dir_y,light_dir_z)),1).id);
+      t->vec.push_back(add_polygon2(e,new GltfMeshAllPArr(e,ev,interface,i,Vector(light_dir_x,light_dir_y,light_dir_z),transparent),1).id);
     }
   return add_array(e,t);
 }
@@ -8804,7 +8818,7 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_p_arr( GameApi::EveryApi &ev, T
 class GltfMeshAllMatArr : public MaterialForward
 {
 public:
-  GltfMeshAllMatArr(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i, float mix, Vector light_dir) : e(e), ev(ev), interface(interface), i(i),mix(mix),light_dir(light_dir) { m_mat=0; firsttime=true; }
+  GltfMeshAllMatArr(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int i, float mix, Vector light_dir, bool transparent) : e(e), ev(ev), interface(interface), i(i),mix(mix),light_dir(light_dir),transparent(transparent) { m_mat=0; firsttime=true; }
   void create_mat() const
   {
     if (firsttime) {
@@ -8813,7 +8827,7 @@ public:
 	set_current_block(-2);
       interface->Prepare();
       int scene_id = interface->get_default_scene();
-      GameApi::ARR arr = gltf_scene2_p_arr(e,ev,interface,scene_id,"",&arr_fetch_material,&arr_fetch_material,false, mix,light_dir);
+      GameApi::ARR arr = gltf_scene2_p_arr(e,ev,interface,scene_id,"",&arr_fetch_material,&arr_fetch_material,false, mix,light_dir,transparent);
       g_cache[interface]=arr;
       set_current_block(c);
     }
@@ -8884,10 +8898,11 @@ private:
   float mix;
   mutable bool firsttime;
   Vector light_dir;
+  bool transparent;
 };
 std::map<GLTFModelInterface*,GameApi::ARR> GltfMeshAllMatArr::g_cache;
 
-GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_mt_arr( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z )
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_mt_arr( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, bool transparent )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   int s = 200;
@@ -8895,7 +8910,7 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_mt_arr( GameApi::EveryApi &ev, 
   t->type=0;
   for(int i=0;i<s;i++)
     {
-      t->vec.push_back(add_material(e,new GltfMeshAllMatArr(e,ev,interface,i,mix,Vector(light_dir_x,light_dir_y,light_dir_z))).id);
+      t->vec.push_back(add_material(e,new GltfMeshAllMatArr(e,ev,interface,i,mix,Vector(light_dir_x,light_dir_y,light_dir_z),transparent)).id);
     }
   return add_array(e,t);
 }
@@ -8919,15 +8934,15 @@ GameApi::ML GameApi::MainLoopApi::ml_empty()
 }
 
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model0, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model0, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color));
+  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
 }
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color));
+  return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color,transparent));
 }
 
 class GltfMeshAllEnv : public MainLoopItem
@@ -10297,7 +10312,7 @@ GLTFJointMatrices *find_joint_matrices(GameApi::Env &e, GameApi::ML ml)
   return item2;
 }
 
-GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, int mode, Vector light_dir, float border_width, unsigned int border_color )
+GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, int mode, Vector light_dir, float border_width, unsigned int border_color, bool transparent )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
   if (!(scene_id>=0 && scene_id<s2))
@@ -10310,7 +10325,7 @@ GameApi::ML gltf_scene3( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   int s = scene.nodes.size();
   std::vector<GameApi::ML> vec;
   for(int i=0;i<s;i++) {
-    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,Matrix::Identity(),mode,light_dir, animation, border_width, border_color );
+    GameApi::ML ml = gltf_node2( e, ev, interface, scene.nodes[i], keys,mix,Matrix::Identity(),mode,light_dir, animation, border_width, border_color,transparent );
     //GameApi::ML ml = gltf_anim3(e,ev,load,animation, scene->nodes[i]);
     vec.push_back(ml);
   }
@@ -10425,7 +10440,7 @@ GameApi::P GameApi::MainLoopApi::gltf_scene_p( GameApi::EveryApi &ev, TF model0,
 class GltfSceneAnim : public MainLoopItem
 {
 public:
-  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, int mode, Vector light_dir, float border_width, unsigned int border_color) : env(env), ev(ev), interface(interface), scene_id(scene_id), animation(animation), keys(keys),mix(mix),mode(mode),light_dir(light_dir),border_width(border_width), border_color(border_color) { res.id = -1; }
+  GltfSceneAnim(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, int animation, std::string keys, float mix, int mode, Vector light_dir, float border_width, unsigned int border_color,bool transparent) : env(env), ev(ev), interface(interface), scene_id(scene_id), animation(animation), keys(keys),mix(mix),mode(mode),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent) { res.id = -1; }
 
   virtual void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
@@ -10444,7 +10459,7 @@ public:
   //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   interface->Prepare();
   GameApi::P mesh = gltf_scene2_p(env,ev, interface, scene_id,"");
-  GameApi::ML ml = gltf_scene3(env,ev,interface,scene_id,animation,keys,mix,mode,light_dir, border_width, border_color);
+  GameApi::ML ml = gltf_scene3(env,ev,interface,scene_id,animation,keys,mix,mode,light_dir, border_width, border_color,transparent);
   res= scale_to_gltf_size(env,ev,mesh,ml);
   MainLoopItem *item = find_main_loop(env,res);
   item->Prepare();
@@ -10487,12 +10502,13 @@ private:
   Vector light_dir;
   float border_width;
   unsigned int border_color;
+  bool transparent;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color )
+GameApi::ML GameApi::MainLoopApi::gltf_scene_anim( GameApi::EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color,bool transparent )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfSceneAnim(e,ev,interface,scene_id,animation,keys,mix,mode,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color));
+  return add_main_loop(e, new GltfSceneAnim(e,ev,interface,scene_id,animation,keys,mix,mode,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
 
 }
 
@@ -11822,11 +11838,269 @@ public:
     items[0]->logoexecute();
   }
   struct TimeStore { int id; float time; };
+
+  void timestep()
+  {
+  }
+
+
+  
+
+void execute(MainLoopEnv &e) {
+  const int update_freq=3;
+  framenum++;
+  if (framenum>update_freq-1) framenum=0;
+
+  
+  
+  
+
+  current_time = e.time;
+    float time = current_time - key_time;
+
+    static std::vector<TimeStore> timevec;
+    bool timedone = false;
+
+    // Check for stored time
+    for (TimeStore &tv : timevec) {
+        if (tv.id == id + 300 * g_time_id) {
+            time = tv.time;
+            timedone = true;
+            break;
+        }
+    }
+
+    if (keypressed && max_end_time > 0.0001f && time > max_end_time) {
+        key_time = ev.mainloop_api.get_time() / 1000.0f;
+        time = e.time - key_time;
+        timevec.clear(); // repeat
+    }
+
+    if (keypressed && !curr_done) {
+        GLTFJointMatrices *joints_0 = static_cast<GLTFJointMatrices *>(ml_orig);
+        current_vec.assign(joints_0->root()->size(), -1);
+    }
+
+    if (!timedone) {
+        timevec.push_back({id + 300 * g_time_id, time});
+    }
+
+    MainLoopEnv ee = e;
+
+    // First-time shader setup
+    if (firsttime) {
+        auto &vertex = ee.us_vertex_shader;
+        if (vertex == -1) {
+            vertex = ev.uber_api.v_empty().id;
+        }
+        vertex = ev.uber_api.v_gltf_anim({vertex}).id;
+
+        auto &fragment = ee.us_fragment_shader;
+        if (fragment == -1) {
+            fragment = ev.uber_api.f_empty(false).id;
+        }
+        fragment = ev.uber_api.f_gltf_anim({fragment}).id;
+    }
+
+    // Shader and joint matrix logic
+    auto sh_ids = ml_orig->shader_id();
+    GLTFJointMatrices *joints_0 = static_cast<GLTFJointMatrices *>(ml_orig);
+    auto *start_0 = joints_0->start();
+    auto *r_0 = joints_0->root();
+    auto *bind = joints_0->bind();
+
+    /*
+    int start_joint = vec.size()*framenum/update_freq;
+    int end_joint = vec.size()*(framenum+1)/update_freq-1;
+    if (framenum==update_freq-1) end_joint=std::min(int(vec.size()-1),200);
+    if (end_joint>=std::min(int(vec.size()),200)) end_joint=std::min(int(vec.size()-1),200);
+
+    if (start_joint>=std::min(int(vec.size()),200)) start_joint=std::min(int(vec.size()-1),200);
+    
+    if (frame_firsttime) { start_joint=0; end_joint=std::min(int(vec.size()-1),200); frame_firsttime=false; }
+
+    if (end_joint<0) end_joint=0;
+    if (start_joint<0) start_joint=0;
+    */
+    int start_joint = 0;
+    int end_joint = std::min(int(vec.size()),200);
+    
+    if (!curr_done) {
+        size_t jointCount = r_0->size();
+        vec.resize(jointCount);
+        start_vec.resize(jointCount);
+        end_vec.resize(jointCount);
+        current_vec.resize(jointCount);
+	current_item_vec.resize(jointCount);
+        current_item_vec.assign(jointCount, 0);
+        curr_done = true;
+    }
+
+
+        std::vector<GameApi::M> jointMatrices(vec.size());
+
+            const std::vector<float> *current_start_time = nullptr;
+            const std::vector<float> *current_end_time = nullptr;
+
+	    size_t t = items.size()-1;
+	    GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[t]);
+	    auto *start_time = joints->start_time();
+	    auto *end_time = joints->end_time();
+	    
+	    if (t == items.size() - 1) {
+	      for (float finish_time : *end_time) {
+		if (finish_time > max_end_time) max_end_time = finish_time;
+	      }
+	    }
+
+		
+	    if (current == -1) {
+	      GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[0]);
+	      auto *start_time = joints->start_time();
+	      auto *end_time = joints->end_time();
+	      current_start_time = start_time;
+	      current_end_time = end_time;
+	    }
+
+	
+	    // [0..vec.size()]
+        for (size_t ii = start_joint; ii <= end_joint; ++ii) {
+            current = -1;
+
+            for (size_t t = current_item_vec[ii]; t < items.size(); ++t) {
+                GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[t]);
+                auto *start_time = joints->start_time();
+                auto *end_time = joints->end_time();
+
+                if (ii < start_time->size() && ii < end_time->size()) {
+                    if (time >= (*start_time)[ii] && time < (*end_time)[ii]) {
+                        current = t;
+                        current_start_time = start_time;
+                        current_end_time = end_time;
+			current_item_vec[ii]=t;
+                        break;
+                    }
+                }
+            }
+
+	    // first fallback, check from start time forward
+	    if (current==-1)
+	      {
+		//frame_firsttime=true;
+		for (size_t t = 0; t < items.size(); ++t) {
+		  GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[t]);
+		  auto *start_time = joints->start_time();
+		  auto *end_time = joints->end_time();
+		  
+		  if (ii < start_time->size() && ii < end_time->size()) {
+                    if (time >= (*start_time)[ii] && time < (*end_time)[ii]) {
+                        current = t;
+                        current_start_time = start_time;
+                        current_end_time = end_time;
+			current_item_vec[ii]=t;
+                        break;
+                    }
+		  }
+		}
+		
+	      }
+	    
+            // fallback animation loop
+            if (current == -1) {
+                static std::vector<float> start_time2, end_time2;
+                static bool done_2 = false;
+
+                if (!done_2) {
+                    done_2 = true;
+                    start_time2.clear();
+                    end_time2.clear();
+                    for (float t : *current_start_time) start_time2.push_back(t + max_end_time);
+                    for (float t : *current_end_time) end_time2.push_back(t + max_end_time);
+                }
+
+                current_start_time = &start_time2;
+                current_end_time = &end_time2;
+                current = 0;
+		current_item_vec[ii]=0;
+            }
+
+	    
+            //current_vec[ii] = current;
+
+            GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[current]);
+            auto *start = joints->start();
+            auto *end = joints->end();
+            auto *r = joints->root();
+            auto *r2 = joints->root2();
+            auto *j_bind = joints->bind();
+
+            size_t sz = std::min({start_0->size(), start->size(), end->size()});
+
+            float t0 = (*current_start_time)[ii];
+            float t1 = (*current_end_time)[ii];
+            float time01 = (time - t0) / (t1 - t0);
+            time01 = std::clamp(time01, 0.0f, 1.0f);
+
+            TransformObject start_obj = (ii < sz) ? (*start)[ii] : gltf_node_default();
+            TransformObject end_obj = (ii < sz) ? (*end)[ii] : gltf_node_default();
+            Matrix rr = (ii < sz) ? (*r)[ii] : Matrix::Identity();
+            Matrix rr2 = (ii < sz) ? (*r2)[ii] : Matrix::Identity();
+            Matrix bindm = (ii < bind->size()) ? (*bind)[ii] : Matrix::Identity();
+
+            TransformObject obj = slerp_transform(start_obj, end_obj, time01);
+
+            Matrix mr;
+            for (int j = 0; j < 16; ++j) {
+                mr.matrix[j] = time01 * rr2.matrix[j] + (1.0f - time01) * rr.matrix[j];
+            }
+
+            Matrix mv = gltf_node_transform_obj_apply2(env, ev, mr, obj);
+	    
+	    jointMatrices[ii] = add_matrix2(env, resizei * bindm * mv * resize);
+        }
+
+        if (jointMatrices.size() > 200) {
+            static bool warned = false;
+            if (!warned) {
+                std::cerr << "Warning: jointMatrix count exceeds shader limit (200)." << std::endl;
+                warned = true;
+            }
+        }
+
+    for (int sh_id : sh_ids) {
+        if (sh_id == -1) continue;
+
+        sh.id = sh_id;
+        ev.shader_api.use(sh);
+
+        ev.shader_api.set_var(sh, "jointMatrix", jointMatrices,start_joint,end_joint);
+			      //std::min(int(jointMatrices.size()), int(200)));
+
+#ifndef NO_MV
+        ev.shader_api.set_var(sh, "in_MV", add_matrix2(env, e.in_MV));
+        ev.shader_api.set_var(sh, "in_T", add_matrix2(env, e.in_T));
+        ev.shader_api.set_var(sh, "in_N", add_matrix2(env, e.in_N));
+        ev.shader_api.set_var(sh, "in_P", add_matrix2(env, e.in_P));
+        ev.shader_api.set_var(sh, "time", e.time);
+        ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+    }
+
+    ml_orig->execute(ee);
+
+    if (firsttime) firsttime = false;
+
+    ev.shader_api.unuse(sh);
+}
+  
+
+#if 0
+  
   void execute(MainLoopEnv &e) {
     current_time = e.time;
 
     
-    float time = e.time-key_time;
+    float time = current_time-key_time;
     static std::vector<TimeStore> timevec;
     int s = timevec.size();
     bool timedone = false;
@@ -12194,6 +12468,8 @@ public:
     
   }
   
+#endif
+  
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
@@ -12217,8 +12493,11 @@ private:
   std::vector<Matrix> start_vec;
   std::vector<Matrix> end_vec;
   std::vector<int> current_vec;
+  std::vector<size_t> current_item_vec;
   bool curr_done=false;
   float last_time=0.0f;
+  int framenum=0;
+  bool frame_firsttime=true;
 };
 int GltfAnimShaderML::count=2;
 int GltfAnimShaderML::curr=0;
