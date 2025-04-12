@@ -8642,7 +8642,9 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
+    int oldvert = ee.us_vertex_shader;
+    int oldfrag = ee.us_fragment_shader;
     if (sh.id==-1) {
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
@@ -8739,6 +8741,8 @@ public:
 
     next->execute(ee);
     ev.shader_api.unuse(sh);
+    ee.us_vertex_shader = oldvert;
+    ee.us_fragment_shader = oldfrag;
   }
   std::vector<int> shader_id() { return next->shader_id(); }
 
@@ -10886,7 +10890,9 @@ public:
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e)
   {
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
+    int old_vert = ee.us_vertex_shader;
+    int old_frag = ee.us_fragment_shader;
      if (firsttime)
       {
 #if 1
@@ -10963,6 +10969,8 @@ public:
 	if (firsttime) 	firsttime = false;
 
     next->execute(ee);
+    ee.us_vertex_shader = old_vert;
+    ee.us_fragment_shader = old_frag;
     ev.shader_api.unuse(sh);
   }
 private:
