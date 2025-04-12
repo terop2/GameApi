@@ -2085,7 +2085,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   MainLoopItem *item = find_main_loop(e, ml);
   if (!item) { std::cout << "execute_ml rejected item=NULL with ml.id=" << ml.id << std::endl; /*check_main_loop_array(e);*/ return; }
   if (color.id<0||texture_2d.id<0||texture.id<0) { std::cout << "execute_ml shaders rejected" << std::endl; return; }
-  MainLoopEnv ek;
+  static MainLoopEnv ek;
   ek.sh_color = color.id;
   ek.sh_texture_2d = texture_2d.id;
   ek.sh_texture = texture.id;
@@ -2115,9 +2115,10 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
       sh.id = vec[i];
       if (sh.id>=0) {
 	GameApi::M mat = ev.matrix_api.identity();
-	ev.shader_api.use(sh);
-	ev.shader_api.set_var(sh, "in_View", mat);
-	ev.shader_api.set_var(sh, "in_View2", mat);
+	// TODO, IS THIS NEEDED?
+	//ev.shader_api.use(sh);
+	//ev.shader_api.set_var(sh, "in_View", mat);
+	//ev.shader_api.set_var(sh, "in_View2", mat);
 	g_view_rot=mat;
       } else
 	{

@@ -11885,8 +11885,11 @@ void execute(MainLoopEnv &e) {
         timevec.push_back({id + 300 * g_time_id, time});
     }
 
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
 
+    int old_vert = ee.us_vertex_shader;
+    int old_frag = ee.us_fragment_shader;
+    
     // First-time shader setup
     if (firsttime) {
         auto &vertex = ee.us_vertex_shader;
@@ -12087,6 +12090,8 @@ void execute(MainLoopEnv &e) {
     }
 
     ml_orig->execute(ee);
+    ee.us_vertex_shader = old_vert;
+    ee.us_fragment_shader = old_frag;
 
     if (firsttime) firsttime = false;
 
@@ -12137,7 +12142,8 @@ void execute(MainLoopEnv &e) {
     MainLoopEnv ee = e;
     if (firsttime)
       {
-
+	
+	
 #if 1
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;

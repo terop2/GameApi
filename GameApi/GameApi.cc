@@ -2769,7 +2769,9 @@ public:
 #endif
 
     //Matrix old_in_MV = env.in_MV;
-    MainLoopEnv ee = env;
+    //MainLoopEnv ee = env;
+    Matrix old = env.in_MV;
+    MainLoopEnv &ee = env;
     ee.in_MV = find_matrix(e, mat2);
 
     if (g_moved_positions.size()<1000) {
@@ -2779,10 +2781,15 @@ public:
     
     //Matrix old_env = env.env;
     //float old_time = env.time;
+    Matrix oldenv = ee.env;
     ee.env = find_matrix(e,mat2); /* * env.env*/;
+    float oldtime = ee.time;
     ee.time = env.time + i*time_delta/10.0;
     next->execute(ee);
     ev.shader_api.unuse(s3);
+    ee.in_MV = old;
+    ee.env = oldenv;
+    ee.time = oldtime;
     //env.env = old_env;
     //env.time = old_time;
     //env.in_MV = old_in_MV;
@@ -15924,7 +15931,7 @@ public:
     
 #ifdef EMSCRIPTEN
     if (need_change2) {
-      emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
       need_change=true;
       need_change2=false;
     }
@@ -16164,7 +16171,7 @@ public:
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
       //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 32);
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+      emscripten_set_main_loop_timing(EM_TIMING_RAF, 0);
     }
  #endif
     
@@ -16501,7 +16508,7 @@ public:
     }
 #else
     if (!g_new_blocker_block)
-      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,30); // 0,1
+      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,60); // 0,1
     else
       g_pending_blocker_env = env;
 #endif
@@ -16669,7 +16676,7 @@ void splitter_iter2(void *arg)
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
-	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,30); // 0,1
+	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,60); // 0,1
       }
 #else
       splitter_current = next;
@@ -16694,7 +16701,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
   vr_run2(spl2);
 #else
   if (spl2->NoMainLoop()) { } else {
-    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,30); // 0.1
+    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,60); // 0.1
   }
 #endif
 #else
@@ -19487,7 +19494,9 @@ public:
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
-    MainLoopEnv eee = e;
+    MainLoopEnv &eee = e;
+    Matrix old_mv = eee.in_MV;
+    Matrix old_env = eee.env;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
 #ifdef ANDROID_LANDSCAPE
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
@@ -19549,6 +19558,8 @@ public:
     eee.env = find_matrix(env, res);
 
     next->execute(eee);
+    eee.in_MV = old_mv;
+    eee.env = old_env;
     ev.shader_api.unuse(s3);
 
 #ifndef NO_MV
@@ -35065,7 +35076,8 @@ public:
     ogl->glEnable(Low_GL_CULL_FACE);
     item->execute(e);
     ogl->glDisable(Low_GL_CULL_FACE);
-    ogl->glCullFace(Low_GL_BACK);
+    if ((is_gltf && !b) || (!is_gltf && b))
+      ogl->glCullFace(Low_GL_BACK);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -37198,7 +37210,8 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    MainLoopEvent ee = e;
+    MainLoopEvent &ee = e;
+    int old_ch = ee.ch;
     if (e.type==0x300||e.type==0x301) {
       if (e.ch==26||e.ch==82||e.ch==1073741906) ee.ch='w';
       if (e.ch==22||e.ch==81||e.ch==1073741905) ee.ch='s';
@@ -37208,6 +37221,7 @@ public:
       if (e.ch==27) ee.ch='x';
     }
     item->handle_event(ee);
+    ee.ch = old_ch;
   }
   virtual std::vector<int> shader_id() { return item->shader_id(); }
 
