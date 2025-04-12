@@ -1142,7 +1142,7 @@ EXPORT void GameApi::MainLoopApi::swapbuffers()
 
   //MainLoopPriv *p = (MainLoopPriv*)priv;
   //glLoadIdentity();
-  g_low->ogl->glFinish();
+  //  g_low->ogl->glFinish();
 #ifdef SDL2_USED
   g_low->sdl->SDL_GL_SwapWindow(sdl_window);
 #else
@@ -2510,10 +2510,13 @@ public:
   }
   std::vector<int> shader_id() { 
     int s = vec.size();
-    std::vector<int> res;
+    static std::vector<int> res;
+    res.clear();
     for(int i=0;i<s;i++)
       {
-	std::vector<int> v = vec[i]->shader_id();
+	static std::vector<int> v;
+	v.clear();
+	v = vec[i]->shader_id();
 	int ss = v.size();
 	for(int j=0;j<ss;j++)
 	  {
@@ -2522,6 +2525,9 @@ public:
 	  }
 	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
       }
+    //std::sort(res.begin(),res.end());
+    //auto last = std::unique(res.begin(),res.end());
+    //res.erase(last,res.end());
     return res; 
   }
 private:

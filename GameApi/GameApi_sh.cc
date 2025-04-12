@@ -405,24 +405,84 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   prog->set_var(name, v);
   return PinIn();
 }
+
+
+
+std::map<std::string,std::vector<float> *> cache_matrix;
+
+EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char *name, const std::vector<M> &m, int start, int end)
+{
+  if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
+
+
+  //std::cout << name << " " << start << " " << end << std::endl;
+  
+  std::string name2 = name;
+  name2+=char(shader.id);
+  name2+=char(start);
+  name2+=char(end);
+  
+  std::vector<float> *v = new std::vector<float>;
+  int s = std::min(m.size(),size_t(end-start));
+  std::vector<float> *v2 = cache_matrix[name2];
+  int pos =0;
+  bool same = true;
+  for(int i=std::max(0,start);i<std::min(start+s,end);i++)
+    {
+      Matrix mm = find_matrix(e,m[i]);
+      Matrix mm2 = Matrix::Transpose(mm);
+      //std::cout << mm << std::endl;
+      for(int ii=0;ii<16;ii++) {
+	v->push_back(mm2.matrix[ii]);
+	if (v2) {
+	  if (fabs(mm2.matrix[ii]-v2->operator[](pos))>0.0000001) same=false;
+	} else same=false;
+	pos++;
+       }
+    }
+  ShaderPriv2 *p = (ShaderPriv2*)priv;
+  ShaderSeq *seq = p->seq;
+  Program *prog = seq->prog(p->ids[shader.id]);
+  if (!same)
+    prog->set_var_matrix2(name, *v,start);
+  delete cache_matrix[name2];
+  cache_matrix[name2]=v;
+  return PinIn();
+
+}
+
 EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num)
 {
   if (shader.id<0) { std::cout << "set_var shader.id=" << shader.id << " " << name << " rejected" << std::endl; return PinIn(); }
 
-  std::vector<float> v;
+  std::string name2 = name;
+  name2+=char(shader.id);
+  
+  std::vector<float> *v = new std::vector<float>;
   int s = std::min(m.size(),size_t(num));
+  std::vector<float> *v2 = cache_matrix[name2];
+  int pos =0;
+  bool same = true;
   for(int i=0;i<s;i++)
     {
       Matrix mm = find_matrix(e,m[i]);
       Matrix mm2 = Matrix::Transpose(mm);
       //std::cout << mm << std::endl;
-      for(int ii=0;ii<16;ii++)
-	v.push_back(mm2.matrix[ii]);
+      for(int ii=0;ii<16;ii++) {
+	v->push_back(mm2.matrix[ii]);
+	if (v2) {
+	  if (fabs(mm2.matrix[ii]-v2->operator[](pos))>0.0000001f) same=false;
+	} else same=false;
+	pos++;
+       }
     }
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  prog->set_var_matrix(name, v);
+  if (!same)
+    prog->set_var_matrix(name, *v);
+  delete cache_matrix[name2];
+  cache_matrix[name2]=v;
   return PinIn();
 }
 

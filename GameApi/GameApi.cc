@@ -2708,6 +2708,7 @@ public:
       }
     firsttime = false;
     for(int i=0;i<clone_count;i++)
+      //int i=0;
       {
 	//GameApi::SH s1;
 	//s1.id = env.sh_texture;
@@ -9222,6 +9223,8 @@ public:
     //GameApi::P p4 = ev.polygon_api.no_batch_map(p3);
     GameApi::PTS pts = ev.points_api.single_pts();
     GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
+    //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
 
     
     //ml.id = next->mat(p2.id);
@@ -9533,7 +9536,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
   MT I5=shadow_mt; //ev.materials_api.colour_material(ev,0.5);
   ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,dark_color,light_color,scale,size,false,shadow2_mt);
-  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000);
+  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
 }
@@ -16160,7 +16163,8 @@ public:
  #ifdef EMSCRIPTEN
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
-        emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 32);
+      emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
     }
  #endif
     
@@ -16497,7 +16501,7 @@ public:
     }
 #else
     if (!g_new_blocker_block)
-      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1);
+      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,30); // 0,1
     else
       g_pending_blocker_env = env;
 #endif
@@ -16665,7 +16669,7 @@ void splitter_iter2(void *arg)
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
-	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1);
+	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,30); // 0,1
       }
 #else
       splitter_current = next;
@@ -16690,7 +16694,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
   vr_run2(spl2);
 #else
   if (spl2->NoMainLoop()) { } else {
-    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1);
+    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,30); // 0.1
   }
 #endif
 #else

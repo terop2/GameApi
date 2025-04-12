@@ -399,8 +399,8 @@ public:
   ML load_midi(EveryApi &ev, ML next, std::string url, std::string url_patchset);
   ML ml_empty();
   P gltf_mesh_all_p(GameApi::EveryApi&ev, TF model0);
-  ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0,float light_dir_x, float light_dir_y, float light_dir_z);
-  ARR gltf_mesh_all_mt_arr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z);
+  ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0,float light_dir_x, float light_dir_y, float light_dir_z, bool transparent);
+  ARR gltf_mesh_all_mt_arr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, bool transparent);
   MT mainloop_material(EveryApi &ev, ML ml);
   TF glb_load_sketchfab_zip(std::string url_to_zip);
   TF gltf_load_sketchfab_zip(std::string url_to_zip);
@@ -508,14 +508,14 @@ public:
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
   IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color );
-  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color );
-  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color );
-  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color );
-  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation , float border_width, unsigned int border_color );
+  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
+  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
+  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent );
+  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation , float border_width, unsigned int border_color, bool transparent );
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
   IMPORT ML gltf_anim2( EveryApi &ev, TF model0, int animation, int channel);
   IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -4088,6 +4088,7 @@ public:
   IMPORT PinIn set_var(GameApi::SH shader, const char *name, float x, float y, float z, float k);
   IMPORT PinIn set_var(GameApi::SH shader, const char * name, int val);
   IMPORT PinIn set_var(GameApi::SH shader, const char * name, M matrix);
+  IMPORT PinIn set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int start, int end);
   IMPORT PinIn set_var(GameApi::SH shader, const char * name, const std::vector<M> &m, int num);
   IMPORT PinIn set_var(GameApi::SH shader, const char * name, const std::vector<PT> &v);
   IMPORT PinOut<M> get_matrix_var(GameApi::SH shader, std::string name);

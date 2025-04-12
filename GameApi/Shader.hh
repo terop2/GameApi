@@ -101,6 +101,7 @@ public: // uniform variable
   void set_var(const char *name, float *array, int count);
   void set_var(const char *name, int *array, int count);
   void set_var(const char *name, int val);
+  void set_var_matrix2(const char *name, const std::vector<float> &v, int start);
   void set_var_matrix(const char *name, const std::vector<float> &v);
   void set_var(const char *name, const std::vector<Point> &v);
   Matrix get_matrix_var(const std::string &name);
@@ -109,9 +110,13 @@ public: // uniform variable
   Attrib find_attr(const std::string &attr_name, int id);
   Attrib find_attr_int(const std::string &attr_name, int id);
   void attr_loc(std::string s, int index);
+  uint64_t unique_id(const char *name);
 public:
   ProgramPriv *priv;
-  std::map<std::string, int> locs;
+  std::map<uint64_t, int> locs;
+  std::map<Low_GLint, Matrix> cache;
+std::map<Low_GLint,float> g_setvar_cache;
+  std::map<Low_GLint,int> g_intvar_cache;
 };
 
 class TestVertexShader : public ShaderSpec
