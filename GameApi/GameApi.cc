@@ -9,6 +9,7 @@
 #endif
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 
 #include "GameApi_h.hh"
@@ -15566,13 +15567,15 @@ extern bool g_execute_callback;
 extern void (*g_mainloop_callback)(void *ptr);
 extern void *g_mainloop_ptr;
 
-void splitter_iter2(void *arg);
+//void splitter_iter2(void *arg);
+int splitter_iter2(double time, void *userdata);
 
 
 void clear_texture_confirms();
 
 extern bool g_stop_music;
-void blocker_iter(void *arg)
+//void blocker_iter(void *arg)
+int blocker_iter(double time, void *arg)
 {
   {
     Envi_2 *env = (Envi_2*)arg;
@@ -15597,14 +15600,17 @@ void blocker_iter(void *arg)
       {
 	g_execute_callback = false;
 	g_mainloop_callback(g_mainloop_ptr);       
-	return;
+#ifdef EMSCRIPTEN
+	emscripten_request_animation_frame_loop(blocker_iter,arg);
+#endif
+	return 0;
       }
 
   Envi_2 *env = (Envi_2*)arg;
   if (g_new_blocker_env) { env = g_new_blocker_env; }
   if (g_new_splitter) {
-    splitter_iter2(0);
-    return;
+    splitter_iter2(0.0,0);
+    return 0;
   }
   
   //std::cout << "async: " << async_pending_count << std::endl;
@@ -15620,7 +15626,10 @@ void blocker_iter(void *arg)
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
-      return;
+#ifdef EMSCRIPTEN
+  emscripten_request_animation_frame_loop(blocker_iter,arg);
+#endif
+  return 0;
     }
   async_is_done = true;
 
@@ -15712,6 +15721,10 @@ void blocker_iter(void *arg)
     env->ev->mainloop_api.swapbuffers();
     g_time_id++;
     g_engine_status = 1;
+#ifdef EMSCRIPTEN
+    emscripten_request_animation_frame_loop(blocker_iter,arg);
+#endif
+    return 0;
     //    ogl->glGetError();
 }
 extern int async_pending_count;
@@ -16496,12 +16509,13 @@ public:
 
 #ifndef EMSCRIPTEN
     while(!env->exit) {
-      blocker_iter(env);
+      blocker_iter(0.0,env);
       //ev.mainloop_api.delay(10);
     }
 #else
     if (!g_new_blocker_block)
-      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,30); // 0,1
+      emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
+      //emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,30); // 0,1
     else
       g_pending_blocker_env = env;
 #endif
@@ -16640,7 +16654,8 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
 
 
 Splitter *splitter_current = 0;
-void splitter_iter2(void *arg)
+//void splitter_iter2(void *arg)
+int splitter_iter2(double time, void *arg)
 {
   //if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
   Splitter *blk2 = 0;
@@ -16651,10 +16666,13 @@ void splitter_iter2(void *arg)
 
   if (g_new_splitter) blk2 = g_new_splitter;
   if (g_new_blocker_env) {
-    blocker_iter((void*)g_new_blocker_env);
-    return;
+    blocker_iter(0.0,(void*)g_new_blocker_env);
+#ifdef EMSCRIPTEN
+    emscripten_request_animation_frame_loop(splitter_iter2,arg);
+#endif
+    return 0;
   }
-  if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return; }  
+  if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return 0; }  
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
     {
@@ -16669,12 +16687,17 @@ void splitter_iter2(void *arg)
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
-	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,30); // 0,1
+	//emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,30); // 0,
+	emscripten_request_animation_frame_loop(splitter_iter2, (void*)next);
       }
 #else
       splitter_current = next;
 #endif
     }
+#ifdef EMSCRIPTEN
+  emscripten_request_animation_frame_loop(splitter_iter2,arg);
+#endif
+  return 0;
 }
 
 #ifdef VIRTUAL_REALITY
@@ -16699,7 +16722,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 #endif
 #else
   while(splitter_current) {
-    splitter_iter2((void*)splitter_current);
+    splitter_iter2(0.0,(void*)splitter_current);
   }
 #endif
 }
