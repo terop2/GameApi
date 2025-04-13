@@ -2085,7 +2085,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
   MainLoopItem *item = find_main_loop(e, ml);
   if (!item) { std::cout << "execute_ml rejected item=NULL with ml.id=" << ml.id << std::endl; /*check_main_loop_array(e);*/ return; }
   if (color.id<0||texture_2d.id<0||texture.id<0) { std::cout << "execute_ml shaders rejected" << std::endl; return; }
-  static MainLoopEnv ek;
+  MainLoopEnv ek;
   ek.sh_color = color.id;
   ek.sh_texture_2d = texture_2d.id;
   ek.sh_texture = texture.id;
