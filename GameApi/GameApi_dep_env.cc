@@ -1236,7 +1236,7 @@ struct del_map : public del_map_interface
   {
     int s = fetches.size();
     for(int i=0;i<s;i++)
-      {
+      { 
 	VECENTRY2 e = fetches[i];
 	if (e.first == url)
 	  {
@@ -1287,7 +1287,7 @@ struct del_map : public del_map_interface
     //std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
     VECENTRY e;
     e.first = url;
-    e.second = ptr;
+    e.second = const_cast<std::vector<unsigned char,GameApiAllocator<unsigned char> > *>(ptr);
     load_url_buffers_async.push_back(e);
   }
   ~del_map() {

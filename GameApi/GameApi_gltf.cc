@@ -10,7 +10,7 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 #include "Tasks.hh"
 
-#define NO_MV 1
+//#define NO_MV 1
 
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
@@ -11957,13 +11957,6 @@ void execute(MainLoopEnv &e) {
 	    }
 
 		
-	    if (current == -1) {
-	      GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[0]);
-	      auto *start_time = joints->start_time();
-	      auto *end_time = joints->end_time();
-	      current_start_time = start_time;
-	      current_end_time = end_time;
-	    }
 
 	
 	    // [0..vec.size()]
@@ -12007,10 +12000,23 @@ void execute(MainLoopEnv &e) {
 		}
 		
 	      }
+	    if (items.size()<1) return;
+	    if (current == -1) {
+	      GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[0]);
+	      auto *start_time = joints->start_time();
+	      auto *end_time = joints->end_time();
+	      current_start_time = start_time;
+	      current_end_time = end_time;
+	      current=0;
+	    }
+
 	    
             // fallback animation loop
+	    /*
             if (current == -1) {
-                static std::vector<float> start_time2, end_time2;
+	      current=0;
+	      /*
+	      static std::vector<float> start_time2, end_time2;
                 static bool done_2 = false;
 
                 if (!done_2) {
@@ -12019,14 +12025,14 @@ void execute(MainLoopEnv &e) {
                     end_time2.clear();
                     for (float t : *current_start_time) start_time2.push_back(t + max_end_time);
                     for (float t : *current_end_time) end_time2.push_back(t + max_end_time);
-                }
+		    }
 
-                current_start_time = &start_time2;
-                current_end_time = &end_time2;
-                current = 0;
-		current_item_vec[ii]=0;
-            }
-
+		
+		  current_start_time = &start_time2;
+		  current_end_time = &end_time2;
+		  current = 0;
+		  current_item_vec[ii]=0;*/
+            //}
 	    
             //current_vec[ii] = current;
 

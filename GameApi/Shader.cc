@@ -336,7 +336,8 @@ void Program::use()
 }
 void Program::unuse()
 {
-  g_low->ogl->glUseProgram(0);
+  if (current_program != 0)
+    g_low->ogl->glUseProgram(0);
   current_program = 0;
 }
 
