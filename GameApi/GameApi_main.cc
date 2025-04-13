@@ -2115,9 +2115,10 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
       sh.id = vec[i];
       if (sh.id>=0) {
 	GameApi::M mat = ev.matrix_api.identity();
-	ev.shader_api.use(sh);
-	ev.shader_api.set_var(sh, "in_View", mat);
-	ev.shader_api.set_var(sh, "in_View2", mat);
+	// TODO, IS THIS NEEDED?
+	//ev.shader_api.use(sh);
+	//ev.shader_api.set_var(sh, "in_View", mat);
+	//ev.shader_api.set_var(sh, "in_View2", mat);
 	g_view_rot=mat;
       } else
 	{

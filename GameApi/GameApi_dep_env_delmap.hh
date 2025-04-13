@@ -5,7 +5,7 @@ class FetchInBlocks;
 
   struct VECENTRY {
     std::string first;
-    const std::vector<unsigned char, GameApiAllocator<unsigned char> > * second;
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > * second;
 
     VECENTRY() : first(""), second(0) { }
     VECENTRY(const VECENTRY &a)

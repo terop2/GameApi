@@ -36,7 +36,7 @@ void print(std::string label, T *ptr)
 }
 
 
-#define NO_MV 1
+//#define NO_MV 1
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
@@ -8642,7 +8642,9 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &e)
   {
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
+    int oldvert = ee.us_vertex_shader;
+    int oldfrag = ee.us_fragment_shader;
     if (sh.id==-1) {
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;
@@ -8739,6 +8741,8 @@ public:
 
     next->execute(ee);
     ev.shader_api.unuse(sh);
+    ee.us_vertex_shader = oldvert;
+    ee.us_fragment_shader = oldfrag;
   }
   std::vector<int> shader_id() { return next->shader_id(); }
 
@@ -10886,7 +10890,9 @@ public:
   void logoexecute() { next->logoexecute(); }
   void execute(MainLoopEnv &e)
   {
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
+    int old_vert = ee.us_vertex_shader;
+    int old_frag = ee.us_fragment_shader;
      if (firsttime)
       {
 #if 1
@@ -10963,6 +10969,8 @@ public:
 	if (firsttime) 	firsttime = false;
 
     next->execute(ee);
+    ee.us_vertex_shader = old_vert;
+    ee.us_fragment_shader = old_frag;
     ev.shader_api.unuse(sh);
   }
 private:
@@ -24438,22 +24446,16 @@ public:
   virtual void Prepare() { next->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
+    Matrix old_inP = ee.in_P;
     Matrix m = Matrix::Perspective(mult, (double)800/(double)600, front_plane, end_plane); 
     ee.in_P = m;
 
+    Matrix gp = g_in_P;
     g_in_P = m;
     g_in_P_used = true;
+
     
-    std::vector<int> v=next->shader_id();
-    int s = v.size();
-    for(int i=0;i<s;i++)
-      {
-	GameApi::SH s1;
-	s1.id = v[i];
-	ev.shader_api.use(s1);
-	ev.shader_api.set_var(s1,"in_P", add_matrix2(ev.get_env(),m));
-      }
     GameApi::SH s1;
     s1.id = e.sh_texture;
     GameApi::SH s11;
@@ -24469,9 +24471,22 @@ public:
     ev.shader_api.use(s2);
     ev.shader_api.set_var(s2, "in_P", add_matrix2(ev.get_env(),m));
     ev.shader_api.use(s3);
-    ev.shader_api.set_var(s3, "in_P", add_matrix2(ev.get_env(),m));
-    
+    ev.shader_api.set_var(s3, "in_P", add_matrix2(ev.get_env(),m)); 
+    std::vector<int> v=next->shader_id();
+    int s = v.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH s1;
+	s1.id = v[i];
+	ev.shader_api.use(s1);
+	ev.shader_api.set_var(s1,"in_P", add_matrix2(ev.get_env(),m));
+      }
+   
     next->execute(ee);
+    ee.in_P = old_inP;
+    
+    g_in_P_used = false;
+    g_in_P = gp;
   }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
