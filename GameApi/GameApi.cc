@@ -88,7 +88,7 @@ extern Envi_2 *g_new_blocker_env;
 extern char *g_user_id;
 extern bool g_filter_execute;
 
-#define NO_MV 1
+//#define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 void clear_all_caches();
 int register_cache_deleter(void (*fptr)(void*),void*data);
@@ -2332,10 +2332,10 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
-    //GameApi::SH s1;
-    //s1.id = env.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = env.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
     
@@ -2452,10 +2452,10 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
-    //GameApi::SH s1;
-    //s1.id = env.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = env.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
 
@@ -2563,10 +2563,10 @@ public:
   void Prepare() { next->Prepare(); }
   void execute(MainLoopEnv &env)
   {
-    //GameApi::SH s1;
-    //s1.id = env.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = env.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
 
@@ -2711,16 +2711,16 @@ public:
     for(int i=0;i<clone_count;i++)
       //int i=0;
       {
-	//GameApi::SH s1;
-	//s1.id = env.sh_texture;
-	//GameApi::SH s11;
-	//s11.id = env.sh_texture_2d;
-	//GameApi::SH s2;
-	//s2.id = env.sh_array_texture;
+	GameApi::SH s1;
+	s1.id = env.sh_texture;
+	GameApi::SH s11;
+	s11.id = env.sh_texture_2d;
+	GameApi::SH s2;
+	s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
-    //GameApi::SH s4;
-    //s4.id = next->shader_id();
+    GameApi::SH s4;
+    s4.id = next->shader_id().size()!=0?next->shader_id()[0]:-1;
 		    
     float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
     //if (time<last_time) time=last_time;
@@ -2770,7 +2770,9 @@ public:
 #endif
 
     //Matrix old_in_MV = env.in_MV;
-    MainLoopEnv ee = env;
+    //MainLoopEnv ee = env;
+    Matrix old = env.in_MV;
+    MainLoopEnv &ee = env;
     ee.in_MV = find_matrix(e, mat2);
 
     if (g_moved_positions.size()<1000) {
@@ -2780,10 +2782,15 @@ public:
     
     //Matrix old_env = env.env;
     //float old_time = env.time;
+    Matrix oldenv = ee.env;
     ee.env = find_matrix(e,mat2); /* * env.env*/;
+    float oldtime = ee.time;
     ee.time = env.time + i*time_delta/10.0;
     next->execute(ee);
     ev.shader_api.unuse(s3);
+    ee.in_MV = old;
+    ee.env = oldenv;
+    ee.time = oldtime;
     //env.env = old_env;
     //env.time = old_time;
     //env.in_MV = old_in_MV;
@@ -2847,16 +2854,16 @@ public:
     firsttime = false;
     for(int i=0;i<clone_count;i++)
       {
-	//GameApi::SH s1;
-	//s1.id = env.sh_texture;
-	//GameApi::SH s11;
-	//s11.id = env.sh_texture_2d;
-	//GameApi::SH s2;
-	//s2.id = env.sh_array_texture;
+	GameApi::SH s1;
+	s1.id = env.sh_texture;
+	GameApi::SH s11;
+	s11.id = env.sh_texture_2d;
+	GameApi::SH s2;
+	s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
-    //GameApi::SH s4;
-    //s4.id = next->shader_id();
+    GameApi::SH s4;
+    s4.id = next->shader_id().size()!=0?next->shader_id()[0]:-1;
 		    
     float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
     //if (time<last_time) time=last_time;
@@ -3039,10 +3046,10 @@ public:
     move->frame(env);
 
 
-    //GameApi::SH s1;
-    //s1.id = env.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = env.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
     GameApi::M mat,m2,mat2;
@@ -3343,10 +3350,10 @@ public:
     move->frame(env);
 
 
-    //GameApi::SH s1;
-    //s1.id = env.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = env.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
     GameApi::SH s3;
     s3.id = env.sh_color;
     GameApi::M mat,m2,mat2;
@@ -3852,10 +3859,10 @@ public:
   void execute_one(MainLoopEnv &env, Matrix m, int level)
   {
 	  GameApi::M m2 = add_matrix2(e, m);
-	  //GameApi::SH s1;
-	  //s1.id = env.sh_texture;
-	  //GameApi::SH s2;
-	  //s2.id = env.sh_array_texture;
+	  GameApi::SH s1;
+	  s1.id = env.sh_texture;
+	  GameApi::SH s2;
+	  s2.id = env.sh_array_texture;
 	  GameApi::SH s3;
 	  s3.id = env.sh_color;
 	  //GameApi::M mat = ev.move_api.get_matrix(mn, time);
@@ -9223,7 +9230,10 @@ public:
     GameApi::P p3 = ev.polygon_api.color(p2,color);
     //GameApi::P p4 = ev.polygon_api.no_batch_map(p3);
     GameApi::PTS pts = ev.points_api.single_pts();
-    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
+    GameApi::MT mat = ev.materials_api.colour_material(ev,1.0);
+    // There's something wrong with render_instanced_ml in_MV or in_P
+    //GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
+    GameApi::ML ml = ev.materials_api.bind_inst(p3,pts,mat);
     //GameApi::VA va = ev.polygon_api.create_vertex_array(p3,false);
     //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
 
@@ -15567,15 +15577,15 @@ extern bool g_execute_callback;
 extern void (*g_mainloop_callback)(void *ptr);
 extern void *g_mainloop_ptr;
 
-//void splitter_iter2(void *arg);
-int splitter_iter2(double time, void *userdata);
+void splitter_iter2(void *arg);
+//bool splitter_iter2(double time, void *userdata);
 
 
 void clear_texture_confirms();
 
 extern bool g_stop_music;
-//void blocker_iter(void *arg)
-int blocker_iter(double time, void *arg)
+void blocker_iter(void *arg)
+//bool blocker_iter(double time, void *arg)
 {
   {
     Envi_2 *env = (Envi_2*)arg;
@@ -15600,17 +15610,17 @@ int blocker_iter(double time, void *arg)
       {
 	g_execute_callback = false;
 	g_mainloop_callback(g_mainloop_ptr);       
-#ifdef EMSCRIPTEN
-	emscripten_request_animation_frame_loop(blocker_iter,arg);
-#endif
-	return 0;
+	//#ifdef EMSCRIPTEN
+	//emscripten_request_animation_frame_loop(blocker_iter,arg);
+	//#endif
+	return;
       }
 
   Envi_2 *env = (Envi_2*)arg;
   if (g_new_blocker_env) { env = g_new_blocker_env; }
   if (g_new_splitter) {
-    splitter_iter2(0.0,0);
-    return 0;
+    splitter_iter2(0);
+    return;
   }
   
   //std::cout << "async: " << async_pending_count << std::endl;
@@ -15626,10 +15636,10 @@ int blocker_iter(double time, void *arg)
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
       }
-#ifdef EMSCRIPTEN
-  emscripten_request_animation_frame_loop(blocker_iter,arg);
-#endif
-  return 0;
+      //#ifdef EMSCRIPTEN
+      //emscripten_request_animation_frame_loop(blocker_iter,arg);
+      //#endif
+  return;
     }
   async_is_done = true;
 
@@ -15721,10 +15731,10 @@ int blocker_iter(double time, void *arg)
     env->ev->mainloop_api.swapbuffers();
     g_time_id++;
     g_engine_status = 1;
-#ifdef EMSCRIPTEN
-    emscripten_request_animation_frame_loop(blocker_iter,arg);
-#endif
-    return 0;
+    //#ifdef EMSCRIPTEN
+    //emscripten_request_animation_frame_loop(blocker_iter,arg);
+    //#endif
+    return;
     //    ogl->glGetError();
 }
 extern int async_pending_count;
@@ -15937,7 +15947,7 @@ public:
     
 #ifdef EMSCRIPTEN
     if (need_change2) {
-      emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
       need_change=true;
       need_change2=false;
     }
@@ -16177,7 +16187,7 @@ public:
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
       //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 32);
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+      emscripten_set_main_loop_timing(EM_TIMING_RAF, 0);
     }
  #endif
     
@@ -16509,13 +16519,13 @@ public:
 
 #ifndef EMSCRIPTEN
     while(!env->exit) {
-      blocker_iter(0.0,env);
+      blocker_iter(env);
       //ev.mainloop_api.delay(10);
     }
 #else
     if (!g_new_blocker_block)
-      emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
-      //emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,30); // 0,1
+            emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,60); // 0,1
+    //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
     else
       g_pending_blocker_env = env;
 #endif
@@ -16654,8 +16664,8 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
 
 
 Splitter *splitter_current = 0;
-//void splitter_iter2(void *arg)
-int splitter_iter2(double time, void *arg)
+void splitter_iter2(void *arg)
+//bool splitter_iter2(double time, void *arg)
 {
   //if (!arg) { std::cout << "FAIL: Splitter_iter2 NULL" << std::endl; return; }
   Splitter *blk2 = 0;
@@ -16666,13 +16676,13 @@ int splitter_iter2(double time, void *arg)
 
   if (g_new_splitter) blk2 = g_new_splitter;
   if (g_new_blocker_env) {
-    blocker_iter(0.0,(void*)g_new_blocker_env);
-#ifdef EMSCRIPTEN
-    emscripten_request_animation_frame_loop(splitter_iter2,arg);
-#endif
-    return 0;
+    blocker_iter((void*)g_new_blocker_env);
+    //#ifdef EMSCRIPTEN
+    //emscripten_request_animation_frame_loop(splitter_iter2,arg);
+    //#endif
+    return;
   }
-  if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return 0; }  
+  if (!blk2) { std::cout << "FAIL: no blk2" << std::endl; return; }  
   int blocker_exit_code = blk2->Iter();
   if (blocker_exit_code!=-1) 
     {
@@ -16687,17 +16697,17 @@ int splitter_iter2(double time, void *arg)
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
-	//emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,30); // 0,
-	emscripten_request_animation_frame_loop(splitter_iter2, (void*)next);
+	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,60); // 0,1
+	//emscripten_request_animation_frame_loop(splitter_iter2, (void*)next);
       }
 #else
       splitter_current = next;
 #endif
     }
-#ifdef EMSCRIPTEN
-  emscripten_request_animation_frame_loop(splitter_iter2,arg);
-#endif
-  return 0;
+  //#ifdef EMSCRIPTEN
+  //emscripten_request_animation_frame_loop(splitter_iter2,arg);
+  //#endif
+  return;
 }
 
 #ifdef VIRTUAL_REALITY
@@ -16717,12 +16727,13 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
   vr_run2(spl2);
 #else
   if (spl2->NoMainLoop()) { } else {
-    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,30); // 0.1
+    //emscripten_request_animation_frame_loop(splitter_iter2,(void*)spl2);
+    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,60); // 0.1
   }
 #endif
 #else
   while(splitter_current) {
-    splitter_iter2(0.0,(void*)splitter_current);
+    splitter_iter2((void*)splitter_current);
   }
 #endif
 }
@@ -19220,10 +19231,10 @@ public:
 				      
 #endif					
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
-    //GameApi::SH s1;
-    //s1.id = e.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = e.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
     GameApi::SH s3;
     s3.id = e.sh_color;
 
@@ -19371,10 +19382,10 @@ public:
     GameApi::M res = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(ev.matrix_api.mult(trans,rot_y2),trans2),scale));
 #endif
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
-    //GameApi::SH s1;
-    //s1.id = e.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = e.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
     GameApi::SH s3;
     s3.id = e.sh_color;
 
@@ -19510,7 +19521,9 @@ public:
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
     quake_rot_y = rot_y;
-    MainLoopEnv eee = e;
+    MainLoopEnv &eee = e;
+    Matrix old_mv = eee.in_MV;
+    Matrix old_env = eee.env;
     GameApi::M env_m = add_matrix2(env, e.in_MV);
 #ifdef ANDROID_LANDSCAPE
     GameApi::M rot_y2 = ev.matrix_api.yrot(rot_y);
@@ -19531,10 +19544,10 @@ public:
     GameApi::M res2 = ev.matrix_api.mult(env_m, ev.matrix_api.mult(ev.matrix_api.mult(trans,trans2),scale));
     
     //GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(res));
-    //GameApi::SH s1;
-    //s1.id = e.sh_texture;
-    //GameApi::SH s2;
-    //s2.id = e.sh_array_texture;
+    GameApi::SH s1;
+    s1.id = e.sh_texture;
+    GameApi::SH s2;
+    s2.id = e.sh_array_texture;
     GameApi::SH s3;
     s3.id = e.sh_color;
 
@@ -19572,6 +19585,8 @@ public:
     eee.env = find_matrix(env, res);
 
     next->execute(eee);
+    eee.in_MV = old_mv;
+    eee.env = old_env;
     ev.shader_api.unuse(s3);
 
 #ifndef NO_MV
@@ -19593,6 +19608,10 @@ public:
     eee.env = find_matrix(env, res2);
 
     next2->execute(eee);
+
+    eee.in_MV = old_mv;
+    eee.env = old_env;
+    
     ev.shader_api.unuse(s3);
 
 
@@ -19677,19 +19696,19 @@ public:
       {
 	Point p = o->Pos(i);
 	GameApi::M m = ev.matrix_api.trans(p.x,p.y,p.z);
-	//GameApi::M m2 = add_matrix2(env, e.in_MV);
+	GameApi::M m2 = add_matrix2(env, e.in_MV);
 	MainLoopEnv ee = e;
 
-	//GameApi::SH s1;
-	//s1.id = e.sh_texture;
-	//GameApi::SH s11;
-	//s11.id = e.sh_texture_2d;
-	//GameApi::SH s2;
-	//s2.id = e.sh_array_texture;
+	GameApi::SH s1;
+	s1.id = e.sh_texture;
+	GameApi::SH s11;
+	s11.id = e.sh_texture_2d;
+	GameApi::SH s2;
+	s2.id = e.sh_array_texture;
 	GameApi::SH s3;
 	s3.id = e.sh_color;
 	
-	//GameApi::M mat2 = ev.matrix_api.mult(m,m2);
+	GameApi::M mat2 = ev.matrix_api.mult(m,m2);
 	//GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
 #ifndef NO_MV
 	ev.shader_api.use(s1);
@@ -19753,19 +19772,19 @@ public:
       {
 	Matrix p = o->Index(i);
 	GameApi::M m = add_matrix2(env, p); //ev.matrix_api.trans(p.x,p.y,p.z);
-	//GameApi::M m2 = add_matrix2(env, e.in_MV);
+	GameApi::M m2 = add_matrix2(env, e.in_MV);
 	MainLoopEnv ee = e;
 
-	//GameApi::SH s1;
-	//s1.id = e.sh_texture;
-	//GameApi::SH s11;
-	//s11.id = e.sh_texture_2d;
-	//GameApi::SH s2;
-	//s2.id = e.sh_array_texture;
+	GameApi::SH s1;
+	s1.id = e.sh_texture;
+	GameApi::SH s11;
+	s11.id = e.sh_texture_2d;
+	GameApi::SH s2;
+	s2.id = e.sh_array_texture;
 	GameApi::SH s3;
 	s3.id = e.sh_color;
 	
-	//GameApi::M mat2 = ev.matrix_api.mult(m,m2);
+	GameApi::M mat2 = ev.matrix_api.mult(m,m2);
 	//GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
 #ifndef NO_MV
 	ev.shader_api.use(s1);
@@ -35088,7 +35107,8 @@ public:
     ogl->glEnable(Low_GL_CULL_FACE);
     item->execute(e);
     ogl->glDisable(Low_GL_CULL_FACE);
-    ogl->glCullFace(Low_GL_BACK);
+    if ((is_gltf && !b) || (!is_gltf && b))
+      ogl->glCullFace(Low_GL_BACK);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
@@ -37221,7 +37241,8 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    MainLoopEvent ee = e;
+    MainLoopEvent &ee = e;
+    int old_ch = ee.ch;
     if (e.type==0x300||e.type==0x301) {
       if (e.ch==26||e.ch==82||e.ch==1073741906) ee.ch='w';
       if (e.ch==22||e.ch==81||e.ch==1073741905) ee.ch='s';
@@ -37231,6 +37252,7 @@ public:
       if (e.ch==27) ee.ch='x';
     }
     item->handle_event(ee);
+    ee.ch = old_ch;
   }
   virtual std::vector<int> shader_id() { return item->shader_id(); }
 

@@ -325,13 +325,20 @@ void Program::print_log()
     sh->print_log();
   }
 }
+Program *current_program=0;
 void Program::use()
 {
-  g_low->ogl->glUseProgram(priv->program);
+  if (this!=current_program)
+    {
+      g_low->ogl->glUseProgram(priv->program);
+      current_program=this;
+    }
 }
 void Program::unuse()
 {
-  g_low->ogl->glUseProgram(0);
+  if (current_program != 0)
+    g_low->ogl->glUseProgram(0);
+  current_program = 0;
 }
 
 

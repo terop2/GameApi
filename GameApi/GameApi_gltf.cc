@@ -10,7 +10,7 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 #include "Tasks.hh"
 
-#define NO_MV 1
+//#define NO_MV 1
 
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
@@ -11885,8 +11885,11 @@ void execute(MainLoopEnv &e) {
         timevec.push_back({id + 300 * g_time_id, time});
     }
 
-    MainLoopEnv ee = e;
+    MainLoopEnv &ee = e;
 
+    int old_vert = ee.us_vertex_shader;
+    int old_frag = ee.us_fragment_shader;
+    
     // First-time shader setup
     if (firsttime) {
         auto &vertex = ee.us_vertex_shader;
@@ -11954,13 +11957,6 @@ void execute(MainLoopEnv &e) {
 	    }
 
 		
-	    if (current == -1) {
-	      GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[0]);
-	      auto *start_time = joints->start_time();
-	      auto *end_time = joints->end_time();
-	      current_start_time = start_time;
-	      current_end_time = end_time;
-	    }
 
 	
 	    // [0..vec.size()]
@@ -12004,10 +12000,23 @@ void execute(MainLoopEnv &e) {
 		}
 		
 	      }
+	    if (items.size()<1) return;
+	    if (current == -1) {
+	      GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[0]);
+	      auto *start_time = joints->start_time();
+	      auto *end_time = joints->end_time();
+	      current_start_time = start_time;
+	      current_end_time = end_time;
+	      current=0;
+	    }
+
 	    
             // fallback animation loop
+	    /*
             if (current == -1) {
-                static std::vector<float> start_time2, end_time2;
+	      current=0;
+	      /*
+	      static std::vector<float> start_time2, end_time2;
                 static bool done_2 = false;
 
                 if (!done_2) {
@@ -12016,14 +12025,14 @@ void execute(MainLoopEnv &e) {
                     end_time2.clear();
                     for (float t : *current_start_time) start_time2.push_back(t + max_end_time);
                     for (float t : *current_end_time) end_time2.push_back(t + max_end_time);
-                }
+		    }
 
-                current_start_time = &start_time2;
-                current_end_time = &end_time2;
-                current = 0;
-		current_item_vec[ii]=0;
-            }
-
+		
+		  current_start_time = &start_time2;
+		  current_end_time = &end_time2;
+		  current = 0;
+		  current_item_vec[ii]=0;*/
+            //}
 	    
             //current_vec[ii] = current;
 
@@ -12087,6 +12096,8 @@ void execute(MainLoopEnv &e) {
     }
 
     ml_orig->execute(ee);
+    ee.us_vertex_shader = old_vert;
+    ee.us_fragment_shader = old_frag;
 
     if (firsttime) firsttime = false;
 
@@ -12137,7 +12148,8 @@ void execute(MainLoopEnv &e) {
     MainLoopEnv ee = e;
     if (firsttime)
       {
-
+	
+	
 #if 1
     GameApi::US vertex;
     vertex.id = ee.us_vertex_shader;

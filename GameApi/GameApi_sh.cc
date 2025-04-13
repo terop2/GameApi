@@ -435,7 +435,10 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
       for(int ii=0;ii<16;ii++) {
 	v->push_back(mm2.matrix[ii]);
 	if (v2) {
+	  //std::cout << mm2.matrix[ii] << " == " << v2->operator[](pos);
+	  
 	  if (fabs(mm2.matrix[ii]-v2->operator[](pos))>0.0000001) same=false;
+	  //std::cout << "SAME:" << same << std::endl;
 	} else same=false;
 	pos++;
        }
@@ -443,7 +446,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  if (!same)
+  //if (!same)
     prog->set_var_matrix2(name, *v,start);
   delete cache_matrix[name2];
   cache_matrix[name2]=v;
@@ -471,7 +474,9 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
       for(int ii=0;ii<16;ii++) {
 	v->push_back(mm2.matrix[ii]);
 	if (v2) {
+	  //std::cout << mm2.matrix[ii] << " == " << v2->operator[](pos);
 	  if (fabs(mm2.matrix[ii]-v2->operator[](pos))>0.0000001f) same=false;
+	  //std::cout << "SAME:" << same << std::endl;
 	} else same=false;
 	pos++;
        }
@@ -479,7 +484,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  if (!same)
+  //if (!same)
     prog->set_var_matrix(name, *v);
   delete cache_matrix[name2];
   cache_matrix[name2]=v;
