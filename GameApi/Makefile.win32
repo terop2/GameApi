@@ -21,21 +21,25 @@
 
 CFiles_dep= VectorTools.cc Buffer.cc  GameApi_low.cc GameApi_low_stub.cc GameApi_dep_add_find.cc GameApi_dep_env.cc Shader.cc VertexArray.cc  GameApi_dep_arr_render.cc GameApi_dep_store.cc
 
-CFiles=	GameApi2.cc GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc Effect.cc \
+CFiles_bm = Tree.cc  IntersectObject.cc 
+CFiles_pl =   Plane.cc    Game.cc
+CFiles_ml = Editor.cc   ShaderExpr.cc Font.cc FontEditor.cc
+CFiles_mt = GameApiTest2.cc  Serialize.cc KeyFrameEditor.cc Parser.cc
+CFiles=	GameApi2.cc GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc Effect.cc GameApi_bm.cc GameApi_cmd_bitmap.cc GameApi_cmd_bbitmap.cc \
 	Intersect.cc Bitmap.cc Effect2.cc  VolumeObjects.cc \
-	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
-	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
-	Editor.cc Web.cc Functions.cc ShaderExpr.cc Font.cc FontEditor.cc \
-	GameApi.cc GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
-        GameApiTest2.cc State.cc Serialize.cc KeyFrameEditor.cc Parser.cc \
+	 Graph.cc State.cc Web.cc Triangle.cc \
+	 Event.cc  ObjectCreator.cc Coordinates.cc \
+	 Functions.cc Widgets.cc Category.cc \
+	 GameApiTest.cc Games.cc HierarchyObject.cc Physics.cc \
+         \
 	FreeType.cc FreeType2.cc StateChange.cc DistanceObject.cc GameRunner.cc \
-	GameApi_an.cc GameApi_bm.cc GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
+	GameApi_an.cc  GameApi_co.cc GameApi_dr.cc GameApi_ev.cc \
 	GameApi_ex.cc GameApi_fbo.cc GameApi_f.cc GameApi_fn.cc \
 	GameApi_fnt.cc GameApi_gr.cc \
-	GameApi_gui.cc \
-	GameApi_lay.cc \
-	GameApi_li.cc GameApi_main.cc GameApi_mx.cc GameApi_pc.cc \
-	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_gui.cc GameApi_pl.cc GameApi_cmd_polygon2.cc GameApi_cmd_polygon.cc \
+	GameApi_lay.cc  GameApi_main.cc GameApi_cmd_mainloop.cc \
+	GameApi_li.cc  GameApi_mx.cc GameApi_pc.cc \
+	GameApi_phy.cc GameApi_pla.cc  GameApi_pt.cc \
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
@@ -43,17 +47,17 @@ CFiles=	GameApi2.cc GameApi_webcam.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc 
         GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
 	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc GameApi_vr.cc \
  	GameApi_qt.cc GameApi_low_egl.cc escapi.cc \
-	GameApi_cmd_move.cc \
-	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
-	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
+	GameApi_cmd_move.cc GameApi.cc GameApi_cmd_material.cc \
+	       GameApi_cmd_pdfield.cc \
+	        GameApi_cmd_point.cc \
 	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
-	GameApi_cmd_cvolume.cc       GameApi_cmd_polygon2.cc \
-	GameApi_cmd_fbitmap.cc       GameApi_cmd_polygon.cc \
+	GameApi_cmd_cvolume.cc        \
+	GameApi_cmd_fbitmap.cc        \
 	GameApi_cmd_font.cc          GameApi_cmd_framebuffer.cc \
 	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
 	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
-	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
-	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc \
+	      GameApi_cmd_volume.cc \
+	      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc \
 	GameApi_cmd.cc cpushader.cc \
 draco/attributes/attribute_octahedron_transform.cc    draco/attributes/geometry_attribute.cc \
 draco/attributes/attribute_quantization_transform.cc  draco/attributes/point_attribute.cc \
@@ -123,6 +127,10 @@ Subdirs =
 #module1
 
 OFiles = $(patsubst %.cc,objs/%.o,$(CFiles) $(CFiles2))
+OFiles_bm = $(patsubst %.cc,objs/%.o,$(CFiles_bm))
+OFiles_pl = $(patsubst %.cc,objs/%.o,$(CFiles_pl))
+OFiles_ml = $(patsubst %.cc,objs/%.o,$(CFiles_ml))
+OFiles_mt = $(patsubst %.cc,objs/%.o,$(CFiles_mt))
 O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
 OFiles_dep = $(patsubst %.cc,objs/%.o,$(CFiles_dep))
 O2Files_dep = $(patsubst %.cc,objs/%.obj,$(CFiles_dep))
@@ -169,7 +177,7 @@ CC2FLAGS = -I. -m64 -O0 -DWINDOWS -g -std=c++17 -fPIC -Wall -I./objs -I$(INC1WIN
 #`pkg-config gtkmm-2.4 --cflags`
 
 
-default: glew.o libGameApi.dll libGameDep.dll
+default: glew.o libGameApi_bm.dll libGameApi_pl.dll libGameApi_ml.dll libGameApi_mt.dll libGameDep.dll libGameApi.dll  
 
 touch_all: GameApi_gui.cc
 	touch GameApi_gui.cc
@@ -245,22 +253,33 @@ main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameAp
 	@echo mingw main.exe
 	@$(CCWIN) -m64 -g $(O2Files_examples) -o main.exe -L. -lGameApi -lopengl32 -lm -lstdc++ 
 
-libGameApi_dep.so: $(O2Files_dep) Makefile
-	@echo g++ libGameApi_dep.so
-	@g++ -shared -g $(OFiles_dep) -std=c++17 -o libGameApi_dep.so -lSDL2 -lGL -lSDL2_image -lGLEW -lstdc++
 
-libGameApi.so: $(OFiles) Makefile libGameApi_dep.so
-	@echo g++ libGameApi.so
-	@g++ -shared -g $(OFiles) -std=c++17 -o libGameApi.so -lSDL2 -lGL -lSDL2_image -lGLEW -lfreetype-6 -lstdc++ 
 #`pkg-config gtkmm-2.4 --libs` 
 
 libGameDep.dll: $(O2Files_dep) Makefile.win32 glew.o
 	@echo mingw libGameDep.dll
 	@g++ -m64 -Wa,-mbig-obj -std=c++17 -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) -DGLEW_STATIC glew.o -o libGameDep.dll -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api -pthread
 
-libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameDep.dll
+libGameApi.dll: $(O2Files) Makefile.win32 glew.o libGameApi_bm.dll libGameApi_pl.dll libGameApi_ml.dll libGameApi_mt.dll
 	@echo mingw libGameApi.dll
-	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -lpthreadgc2 -Lopenvr -lopenvr_api -pthread
+	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files) -DGLEW_STATIC -o libGameApi.dll -lGameDep -lGameApi_bm -lGameApi_pl -lGameApi_ml -lGameApi_mt holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api 
+
+libGameApi_bm.dll: $(OFiles_bm) Makefile.win32 libGameDep.dll
+	@echo mingw libGameApi_bm.dll
+	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(OFiles_bm) -DGLEW_STATIC -o libGameApi_bm.dll -lGameDep holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api
+
+libGameApi_pl.dll: $(OFiles_pl) Makefile.win32
+	@echo mingw libGameApi_pl.dll
+	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(OFiles_pl) -DGLEW_STATIC -o libGameApi_pl.dll holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api
+
+libGameApi_ml.dll: $(OFiles_ml) Makefile.win32
+	@echo mingw libGameApi_ml.dll
+	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(OFiles_ml) -DGLEW_STATIC -o libGameApi_ml.dll holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api
+
+libGameApi_mt.dll: $(OFiles_mt) Makefile.win32
+	@echo mingw libGameApi_mt.dll
+	@g++ -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(OFiles_mt) -DGLEW_STATIC -o libGameApi_mt.dll holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api
+
 
 #-L./hssynth2/synthlib -lsynthlib -L./hssynth2/midiplay/midifile -lmidifile
 #-lchaiscript_stdlib-6.1.0
@@ -302,6 +321,24 @@ $(D3Files): objs/%.d3: %.cc
 $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
 	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
+
+$(OFiles_bm): objs/%.o : %.cc
+	@echo g++ $< -o $@
+	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+
+$(OFiles_ml): objs/%.o : %.cc
+	@echo g++ $< -o $@
+	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+
+$(OFiles_pl): objs/%.o : %.cc
+	@echo g++ $< -o $@
+	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+
+$(OFiles_mt): objs/%.o : %.cc
+	@echo g++ $< -o $@
+	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+
+
 
 $(O2Files): objs/%.obj : %.cc
 	@echo mingw $<
