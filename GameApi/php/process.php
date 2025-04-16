@@ -140,6 +140,7 @@ echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
 echo "<br><h2>FEATURES STILL IN THE FUTURE:</h2>\n";
 echo "<ul>\n";
+echo "<li>mesh decimate(recommend use blender batch mode via python scipts)\n";
 echo "<li>raspi support(memory problems)\n";
 echo "<li>vulkan or webgpu support(not implemented)\n";
 echo "<li>virtual reality(was implemented, doesnt work)\n";
