@@ -7,6 +7,7 @@
 #include "GameApi_low.hh"
 #include <atomic>
 #include <iostream>
+#include <queue>
 
 //#ifdef LINUX
 //#define USE_VIDEO 1
@@ -36,7 +37,7 @@ void print(std::string label, T *ptr)
 }
 
 
-//#define NO_MV 1
+#define NO_MV 1
 
 void InstallProgress(int num, std::string label, int max=15);
 void ProgressBar(int num, int val, int max, std::string label);
@@ -22197,6 +22198,175 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
   PointsApiPoints *points = find_pointsapi_points(e,pts);
   return add_points_api_points(e,new BlockPTS(points,d,max_points));
 }
+class BlockPTS2 : public PointsApiPoints
+{
+public:
+  BlockPTS2(PointsApiPoints *points, float start_d, float end_d, int max_points) : points(points),start_d(start_d),end_d(end_d), max_points(max_points) { }
+
+  void Collect(CollectVisitor &vis)
+  {
+    points->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    int s = points->NumPoints();
+    allpoints.clear();
+    for(int i=0;i<s;i++)
+      {
+	allpoints.push_back(i);
+      }
+    g_pts = points;
+    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj);
+  }
+  
+  virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b = points->Update(e);
+    //pos2=pos;
+    pos.clear();
+    int s = points->NumPoints();
+    if (s<1) return true;
+    if (allpoints.size()<1) return true;
+    float start_x = -quake_pos_x-end_d;
+    float end_x = -quake_pos_x+end_d;
+    //allpoints.push_back(allpoints.size());
+    //allpoints.push_back(allpoints.size());
+
+    g_pos1 = start_x;
+    g_pos2 = end_x;
+    g_pts = points;
+
+    //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
+
+    int result=-1;
+    {
+    int left = 0;
+    int right = allpoints.size()-1;
+
+    
+    while(left <= right)
+      {
+	int mid = (left+right)/2;
+	if (points->Pos(allpoints[mid]).x < start_x && points->Pos(allpoints[mid+1]).x > start_x) { result=mid; break; }
+
+	if (points->Pos(allpoints[mid]).x < start_x)
+	  {
+	    left = mid + 1;
+	  }
+	else
+	  {
+	    right = mid - 1;
+	  }
+      }
+    if (result==-1) result=(left+right)/2;
+    }
+    int start = result;
+
+    result = -1;
+    {
+    int left = 0;
+    int right = allpoints.size()-1;
+
+    while(left <= right)
+      {
+        int mid = (left+right)/2;
+	if (points->Pos(allpoints[mid]).x < end_x && points->Pos(allpoints[mid+1]).x > end_x) { result=mid; break; }
+
+	if (points->Pos(allpoints[mid]).x < end_x)
+	  {
+	    left = mid + 1;
+	  }
+	else
+	  {
+	    right = mid - 1;
+	  }
+      }
+    if (result==-1) result=(left+right)/2;
+    }
+    int end = result;
+    
+    
+    //int start = ii-allpoints.begin();
+    //int end = ii2-allpoints.begin();
+
+    //std::cout << start << " " << end << std::endl;
+    //std::cout << "POINT1:" << points->Pos(allpoints[start]).x << " POINT2:" << points->Pos(allpoints[end]).x << std::endl;
+
+    
+    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
+    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
+    
+
+
+    /*
+    int s2 = allpoints.size();
+    for(int i=0;i<s2;i++)
+      {
+	std::cout << "Point#" << i << "=" << allpoints[i] << "::" << points->Pos(allpoints[i]) << std::endl;
+      }
+    */
+    
+    for(int i=start;i<end;i++)
+      {
+	if (enabled(allpoints[i]))
+	  {
+	    pos.push_back(allpoints[i]);
+	  }
+      }
+    /*
+    int s2 = std::min(pos2.size(),pos.size());
+    bool changed = false;
+    for(int i=0;i<s2;i++)
+      {
+	if (pos[i]!=pos2[i])
+	  {
+	    changed=true;
+	  }
+      }
+    */
+    //std::cout << "Update:" << prev << " " << pos.size() << std::endl;
+    //if (prev==pos.size()&&!changed) return false;
+    prev=pos.size();
+    return true; }
+  virtual int NumPoints() const { return max_points; }
+  virtual Point Pos(int i) const { if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0); return points->Pos(pos[i]); }
+  virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
+  virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
+
+  bool enabled(int i) const
+  {
+    Point p = points->Pos(i);
+    float cursor_pos_x = quake_pos_x;
+    float cursor_pos_y = -quake_pos_y;
+
+    float delta_x = p.x+cursor_pos_x;
+    float delta_y = p.z-cursor_pos_y;
+    float dist = delta_x*delta_x + delta_y*delta_y;
+    //std::cout << "A:" << p.x << " " << p.z << std::endl;
+    //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
+    if (dist<end_d*end_d && dist>start_d*start_d)
+      {
+	return true;
+      }
+    return false;
+  }
+private:
+  PointsApiPoints *points;
+  float start_d,end_d;
+  float sign;
+  std::vector<int> allpoints;
+  std::vector<int> pos;
+  int prev=0;
+  int max_points;
+};
+
+
+GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_d, float end_d, int max_points)
+{
+  PointsApiPoints *points = find_pointsapi_points(e,pts);
+  return add_points_api_points(e,new BlockPTS2(points,start_d,end_d,max_points));
+}
 
 
 extern float quake_pos_x;
@@ -26905,3 +27075,610 @@ private:
 
   std::vector<int> indices;
 };
+
+namespace Decimate
+{
+
+struct Vec3 {
+    float x, y, z;
+
+    float distance(const Vec3& other) const {
+        return std::sqrt((x - other.x)*(x - other.x)
+                       + (y - other.y)*(y - other.y)
+                       + (z - other.z)*(z - other.z));
+    }
+
+    Vec3 operator+(const Vec3& o) const { return {x + o.x, y + o.y, z + o.z}; }
+    Vec3 operator/(float d) const { return {x / d, y / d, z / d}; }
+};
+
+struct Triangle {
+    int v0, v1, v2;
+};
+
+struct Edge {
+    int v1, v2;
+
+    bool operator<(const Edge& other) const {
+        return std::tie(v1, v2) < std::tie(other.v1, other.v2);
+    }
+};
+
+struct Mesh {
+    std::vector<Vec3> vertices;
+    std::vector<Triangle> triangles;
+};
+
+std::set<Edge> collectEdges(const std::vector<Triangle>& tris) {
+    std::set<Edge> edges;
+    for (auto& t : tris) {
+        int v[3] = {t.v0, t.v1, t.v2};
+        for (int i = 0; i < 3; ++i) {
+            int a = std::min(v[i], v[(i+1)%3]);
+            int b = std::max(v[i], v[(i+1)%3]);
+            edges.insert({a, b});
+        }
+    }
+    return edges;
+}
+
+void collapseEdge(Mesh& mesh, int v1, int v2) {
+    // Collapse v2 into v1
+    Vec3 newPos = (mesh.vertices[v1] + mesh.vertices[v2]) / 2.0f;
+    mesh.vertices[v1] = newPos;
+
+    for (auto& tri : mesh.triangles) {
+        if (tri.v0 == v2) tri.v0 = v1;
+        if (tri.v1 == v2) tri.v1 = v1;
+        if (tri.v2 == v2) tri.v2 = v1;
+    }
+
+    // Remove degenerate triangles
+    std::vector<Triangle> cleaned;
+    for (auto& tri : mesh.triangles) {
+        if (tri.v0 != tri.v1 && tri.v1 != tri.v2 && tri.v2 != tri.v0)
+            cleaned.push_back(tri);
+    }
+    mesh.triangles = cleaned;
+}
+
+void decimate(Mesh& mesh, float target_ratio) {
+    int target_faces = static_cast<int>(mesh.triangles.size() * target_ratio);
+
+    while (mesh.triangles.size() > target_faces) {
+        auto edges = collectEdges(mesh.triangles);
+        float min_cost = std::numeric_limits<float>::max();
+        Edge best_edge;
+
+        for (auto& e : edges) {
+            float cost = mesh.vertices[e.v1].distance(mesh.vertices[e.v2]);
+            if (cost < min_cost) {
+                min_cost = cost;
+                best_edge = e;
+            }
+        }
+
+        collapseEdge(mesh, best_edge.v1, best_edge.v2);
+    }
+}
+
+}
+
+Decimate::Mesh decimate_mesh_from_facecollection(FaceCollection *coll)
+{
+  Decimate::Mesh res;
+  coll->Prepare();
+  int s = coll->NumFaces();
+  int vertex = 0;
+  for(int i=0;i<s;i++)
+    {
+      Point p0 = coll->FacePoint(i,0);
+      Point p1 = coll->FacePoint(i,1);
+      Point p2 = coll->FacePoint(i,2);
+      Decimate::Vec3 v0 = { p0.x,p0.y,p0.z };
+      Decimate::Vec3 v1 = { p1.x,p1.y,p1.z };
+      Decimate::Vec3 v2 = { p2.x,p2.y,p2.z };
+      res.vertices.push_back(v0);
+      res.vertices.push_back(v1);
+      res.vertices.push_back(v2);
+      Decimate::Triangle t;
+      t.v0 = vertex;
+      t.v1 = vertex+1;
+      t.v2 = vertex+2;
+      res.triangles.push_back(t);
+      vertex+=3;
+    }
+  return res;
+}
+
+
+class DecimateFaceCollection : public FaceCollection
+{
+public:
+  DecimateFaceCollection(FaceCollection *orig, Decimate::Mesh &mesh) : mesh(mesh) { }
+
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+  std::string name() const { return "DecimateFaceCollection"; }
+  void Prepare() { }
+  
+  virtual int NumFaces() const { return mesh.triangles.size(); }
+  virtual int NumPoints(int face) const { return 3; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    Decimate::Vec3 pp = mesh.vertices[p];
+    return Point(pp.x,pp.y,pp.z);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->PointNormal(face2,point2);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->Color(face2,point2);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->TexCoord(face2,point2);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->TexCoord3(face2,point2);
+
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->Joints(face2,point2);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    Decimate::Triangle t = mesh.triangles[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v0; break;
+      case 1: p=t.v1; break;
+      case 2: p=t.v2; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->Weights(face2,point2);
+  }
+private:
+  FaceCollection *orig;
+  Decimate::Mesh &mesh;
+};
+
+GameApi::P GameApi::PolygonApi::decimate(GameApi::P p, float val)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  Decimate::Mesh m = decimate_mesh_from_facecollection(coll);
+  Decimate::decimate(m, val);
+  return add_polygon2(e,new DecimateFaceCollection(coll,m),1);
+}
+
+
+/*
+int main() {
+  Decimate::Mesh mesh;
+
+    // Load or create your mesh here (example: a simple quad split into 2 triangles)
+    mesh.vertices = {
+        {0, 0, 0}, {1, 0, 0},
+        {1, 1, 0}, {0, 1, 0}
+    };
+    mesh.triangles = {
+        {0, 1, 2}, {0, 2, 3}
+    };
+
+    decimate(mesh, 0.5f); // reduce to 50% triangle count
+
+    std::cout << "Reduced to " << mesh.triangles.size() << " triangles.\n";
+}
+*/
+
+
+namespace Decimate2 {
+
+struct Vec3 {
+    double x, y, z;
+    Vec3 operator+(const Vec3& o) const { return {x + o.x, y + o.y, z + o.z}; }
+    Vec3 operator-(const Vec3& o) const { return {x - o.x, y - o.y, z - o.z}; }
+    Vec3 operator*(double s) const { return {x * s, y * s, z * s}; }
+    Vec3 operator/(double s) const { return {x / s, y / s, z / s}; }
+    double dot(const Vec3& o) const { return x*o.x + y*o.y + z*o.z; }
+};
+
+Vec3 cross(const Vec3& a, const Vec3& b) {
+    return {
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    };
+}
+
+struct SymmetricMatrix {
+    double m[10];
+    SymmetricMatrix(double c = 0) { for (int i = 0; i < 10; ++i) m[i] = c; }
+    SymmetricMatrix(double a, double b, double c, double d) {
+        m[0]=a*a; m[1]=a*b; m[2]=a*c; m[3]=a*d;
+        m[4]=b*b; m[5]=b*c; m[6]=b*d;
+        m[7]=c*c; m[8]=c*d;
+        m[9]=d*d;
+    }
+    double operator[](int i) const { return m[i]; }
+    SymmetricMatrix operator+(const SymmetricMatrix& n) const {
+        SymmetricMatrix r;
+        for (int i = 0; i < 10; ++i) r.m[i] = m[i] + n.m[i];
+        return r;
+    }
+    double vertexError(double x, double y, double z) const {
+        return m[0]*x*x + 2*m[1]*x*y + 2*m[2]*x*z + 2*m[3]*x +
+               m[4]*y*y + 2*m[5]*y*z + 2*m[6]*y +
+               m[7]*z*z + 2*m[8]*z + m[9];
+    }
+};
+
+struct Vertex {
+    Vec3 p;
+    SymmetricMatrix q;
+    bool deleted = false;
+};
+
+struct Triangle {
+    int v[3];
+    bool deleted = false;
+};
+
+struct Edge {
+    int v1, v2;
+    double cost;
+    Vec3 pos;
+    bool operator>(const Edge& e) const { return cost > e.cost; }
+};
+struct Mesh
+{
+  std::vector<Vertex> vertices;
+  std::vector<Triangle> faces;
+};
+
+  
+bool readOBJ(const std::string& filename, std::vector<Vertex>& verts, std::vector<Triangle>& tris) {
+    std::ifstream in(filename);
+    if (!in) return false;
+
+    std::string line;
+    while (std::getline(in, line)) {
+        std::stringstream ss(line);
+        std::string tag;
+        ss >> tag;
+
+        if (tag == "v") {
+            Vec3 v;
+            ss >> v.x >> v.y >> v.z;
+            verts.push_back({v});
+        } else if (tag == "f") {
+            Triangle t;
+            std::string f;
+            for (int i = 0; i < 3; ++i) {
+                ss >> f;
+                t.v[i] = std::stoi(f) - 1;
+            }
+            tris.push_back(t);
+        }
+    }
+    return true;
+}
+
+void writeOBJ(const std::string& filename, const std::vector<Vertex>& verts, const std::vector<Triangle>& tris) {
+    std::ofstream out(filename);
+    std::vector<int> remap(verts.size(), -1);
+    int count = 1;
+
+    for (size_t i = 0; i < verts.size(); ++i) {
+        if (!verts[i].deleted) {
+            out << "v " << verts[i].p.x << " " << verts[i].p.y << " " << verts[i].p.z << "\n";
+            remap[i] = count++;
+        }
+    }
+
+    for (const auto& t : tris) {
+        if (!t.deleted)
+            out << "f " << remap[t.v[0]] << " " << remap[t.v[1]] << " " << remap[t.v[2]] << "\n";
+    }
+}
+
+SymmetricMatrix planeQuadric(const Vec3& v0, const Vec3& v1, const Vec3& v2) {
+    Vec3 n = cross(v1 - v0, v2 - v0);
+    double len = std::sqrt(n.dot(n));
+    if (len == 0) return SymmetricMatrix();
+    n = n / len;
+    double d = -n.dot(v0);
+    return SymmetricMatrix(n.x, n.y, n.z, d);
+}
+
+void computeVertexQuadrics(std::vector<Vertex>& verts, const std::vector<Triangle>& tris) {
+    for (const auto& t : tris) {
+        SymmetricMatrix q = planeQuadric(verts[t.v[0]].p, verts[t.v[1]].p, verts[t.v[2]].p);
+        for (int i = 0; i < 3; ++i)
+            verts[t.v[i]].q = verts[t.v[i]].q + q;
+    }
+}
+
+Vec3 midpoint(const Vec3& a, const Vec3& b) {
+    return (a + b) / 2.0;
+}
+
+double computeEdgeCost(const Vertex& v1, const Vertex& v2, Vec3& opt) {
+    SymmetricMatrix q = v1.q + v2.q;
+    opt = midpoint(v1.p, v2.p);
+    return q.vertexError(opt.x, opt.y, opt.z);
+}
+
+void decimate(std::vector<Vertex>& verts, std::vector<Triangle>& tris, float targetRatio) {
+    computeVertexQuadrics(verts, tris);
+
+    auto edgeSet = std::set<std::pair<int, int>>();
+    for (const auto& t : tris) {
+        for (int i = 0; i < 3; ++i) {
+            int a = std::min(t.v[i], t.v[(i+1)%3]);
+            int b = std::max(t.v[i], t.v[(i+1)%3]);
+            edgeSet.insert({a, b});
+        }
+    }
+
+    std::priority_queue<Edge, std::vector<Edge>, std::greater<>> queue;
+    for (auto [a, b] : edgeSet) {
+        Vec3 pos;
+        double cost = computeEdgeCost(verts[a], verts[b], pos);
+        queue.push({a, b, cost, pos});
+    }
+
+    int target = tris.size() * targetRatio;
+
+    while (tris.size() > target && !queue.empty()) {
+        Edge e = queue.top(); queue.pop();
+        if (verts[e.v1].deleted || verts[e.v2].deleted) continue;
+
+        verts[e.v1].p = e.pos;
+        verts[e.v1].q = verts[e.v1].q + verts[e.v2].q;
+        verts[e.v2].deleted = true;
+
+        for (auto& t : tris) {
+            if (t.deleted) continue;
+            for (int i = 0; i < 3; ++i)
+                if (t.v[i] == e.v2) t.v[i] = e.v1;
+
+            if (t.v[0] == t.v[1] || t.v[1] == t.v[2] || t.v[2] == t.v[0])
+                t.deleted = true;
+        }
+    }
+}
+
+}
+
+Decimate2::Mesh decimate_mesh_from_facecollection2(FaceCollection *coll)
+{
+  Decimate2::Mesh res;
+  coll->Prepare();
+  int s = coll->NumFaces();
+  int vertex = 0;
+  for(int i=0;i<s;i++)
+    {
+      Point p0 = coll->FacePoint(i,0);
+      Point p1 = coll->FacePoint(i,1);
+      Point p2 = coll->FacePoint(i,2);
+      Decimate2::Vec3 v0 = { p0.x,p0.y,p0.z };
+      Decimate2::Vec3 v1 = { p1.x,p1.y,p1.z };
+      Decimate2::Vec3 v2 = { p2.x,p2.y,p2.z };
+      Decimate2::Vertex vv0 = { v0 };
+      Decimate2::Vertex vv1 = { v1 };
+      Decimate2::Vertex vv2 = { v2 };
+      res.vertices.push_back(vv0);
+      res.vertices.push_back(vv1);
+      res.vertices.push_back(vv2);
+      Decimate2::Triangle t;
+      t.v[0] = vertex;
+      t.v[1] = vertex+1;
+      t.v[2] = vertex+2;
+      res.faces.push_back(t);
+      vertex+=3;
+    }
+  return res;
+}
+
+class DecimateFaceCollection2 : public FaceCollection
+{
+public:
+  DecimateFaceCollection2(FaceCollection *orig, Decimate2::Mesh &mesh) : mesh(mesh) { }
+
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+  std::string name() const { return "DecimateFaceCollection2"; }
+  void Prepare() { }
+  
+  virtual int NumFaces() const { return mesh.faces.size(); }
+  virtual int NumPoints(int face) const { return 3; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    Decimate2::Vertex pp = mesh.vertices[p];
+    return Point(pp.p.x,pp.p.y,pp.p.z);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->PointNormal(face2,point2);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->Color(face2,point2);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->TexCoord(face2,point2);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->TexCoord3(face2,point2);
+
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->Joints(face2,point2);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    Decimate2::Triangle t = mesh.faces[face];
+    int p;
+    switch(point)
+      {
+      case 0: p=t.v[0]; break;
+      case 1: p=t.v[1]; break;
+      case 2: p=t.v[2]; break;
+      default: p=0; break;
+      };
+    int face2 = p/3;
+    int point2 = p%3;
+    return orig->Weights(face2,point2);
+  }
+private:
+  FaceCollection *orig;
+  Decimate2::Mesh &mesh;
+};
+GameApi::P GameApi::PolygonApi::decimate2(GameApi::P p, float val)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  Decimate2::Mesh m = decimate_mesh_from_facecollection2(coll);
+  Decimate2::decimate(m.vertices,m.faces, val);
+  return add_polygon2(e,new DecimateFaceCollection2(coll,m),1);
+}

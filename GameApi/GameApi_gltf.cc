@@ -10,7 +10,8 @@ int hhhh_gggg=1;
 #include "tiny_gltf.h"
 #include "Tasks.hh"
 
-//#define NO_MV 1
+// TODO, CAUSES PROBLEMS
+#define NO_MV 1
 
 extern unsigned long g_glb_file_size;
 extern unsigned long g_zip_file_size;
@@ -11912,7 +11913,7 @@ void execute(MainLoopEnv &e) {
     auto *r_0 = joints_0->root();
     auto *bind = joints_0->bind();
 
-    /*
+    
     int start_joint = vec.size()*framenum/update_freq;
     int end_joint = vec.size()*(framenum+1)/update_freq-1;
     if (framenum==update_freq-1) end_joint=std::min(int(vec.size()-1),200);
@@ -11924,9 +11925,11 @@ void execute(MainLoopEnv &e) {
 
     if (end_joint<0) end_joint=0;
     if (start_joint<0) start_joint=0;
-    */
-    int start_joint = 0;
-    int end_joint = std::min(int(vec.size()),200);
+    
+    //int start_joint = 0;
+    //int end_joint = std::min(int(vec.size()-1),200);
+
+    if (end_joint<0) end_joint=0;
     
     if (!curr_done) {
         size_t jointCount = r_0->size();

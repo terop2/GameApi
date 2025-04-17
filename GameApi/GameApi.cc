@@ -88,7 +88,7 @@ extern Envi_2 *g_new_blocker_env;
 extern char *g_user_id;
 extern bool g_filter_execute;
 
-//#define NO_MV 1
+#define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 void clear_all_caches();
 int register_cache_deleter(void (*fptr)(void*),void*data);
@@ -9266,7 +9266,12 @@ public:
     //ml.id = next->mat_inst(p2.id, pts.id);
     ///std::cout << "toon color: " << std::hex << color << std::endl;
     GameApi::P p3 = ev.polygon_api.color(p2,color);
-    GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
+    GameApi::MT mat = ev.materials_api.colour_material(ev,1.0);
+    // There's something wrong with render_instanced_ml in_MV or in_P
+    //GameApi::ML ml = ev.materials_api.render_instanced_ml(ev,p3,pts);
+    GameApi::ML ml = ev.materials_api.bind_inst(p3,pts,mat);
+
+    //GameApi::ML ml = ev.materials_api.render_instanced_ml(ev, p3, pts);
 
 
 
@@ -15947,7 +15952,8 @@ public:
     
 #ifdef EMSCRIPTEN
     if (need_change2) {
-      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+      emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+      //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       need_change=true;
       need_change2=false;
     }
@@ -16186,8 +16192,8 @@ public:
  #ifdef EMSCRIPTEN
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
-      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 32);
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 0);
+       emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+      //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
     }
  #endif
     
@@ -16524,7 +16530,7 @@ public:
     }
 #else
     if (!g_new_blocker_block)
-            emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,60); // 0,1
+            emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1); // 0,1
     //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
     else
       g_pending_blocker_env = env;
@@ -16697,7 +16703,7 @@ void splitter_iter2(void *arg)
 #ifdef EMSCRIPTEN
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
-	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,60); // 0,1
+	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1); // 0,1
 	//emscripten_request_animation_frame_loop(splitter_iter2, (void*)next);
       }
 #else
@@ -16728,7 +16734,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 #else
   if (spl2->NoMainLoop()) { } else {
     //emscripten_request_animation_frame_loop(splitter_iter2,(void*)spl2);
-    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,60); // 0.1
+    emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1); // 0.1
   }
 #endif
 #else

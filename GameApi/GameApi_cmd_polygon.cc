@@ -144,6 +144,18 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "std::string" },
 			 { "http://meshpage.org/assets/teapot.stl@FinlayMcWalter@https://creativecommons.org/share-your-work/public-domain/cc0/" },
 			 "P", "polygon_api", "stl_load"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::decimate,
+			 "decimate",
+			 { "p", "val" },
+			 { "P", "float" },
+			 { "", "0.5" },
+			 "P", "polygon_api", "decimate"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::decimate2,
+			 "decimate2",
+			 { "p", "val" },
+			 { "P", "float" },
+			 { "", "0.5" },
+			 "P", "polygon_api", "decimate2"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::tf_glb_tf,
 			 "tf_glb_tf",
 			 { "ev", "tf", "cache_file" },

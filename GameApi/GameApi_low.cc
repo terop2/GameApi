@@ -1467,6 +1467,10 @@ class SDLApi : public SDLLowApi
     SDL_GLContext ctx = (SDL_GLContext)context;
     return ::SDL_GL_MakeCurrent((SDL_Window*)(window->ptr), ctx);
   }
+  virtual void SDL_GL_SetSwapInterval(int val)
+  {
+    ::SDL_GL_SetSwapInterval(val);
+  }
   virtual Low_SDL_Joystick* SDL_JoystickOpen(int i) { 
     Low_SDL_Joystick *data = new Low_SDL_Joystick;
     data->data = ::SDL_JoystickOpen(i); 

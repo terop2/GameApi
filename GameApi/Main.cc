@@ -689,6 +689,10 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #endif  
 
   vblank = true;
+#ifdef EMSCRIPTEN
+  g_low->sdl->SDL_GL_SetSwapInterval(0);
+#endif
+
 #if 0
   if (vblank)
     {
