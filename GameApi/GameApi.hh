@@ -2582,6 +2582,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  P decimate(P p, float val);
+  P decimate2(P p, float val);
   bool ready_to_prepare(ML p);
   DS tf_ds_inv(TF tf, int flags);
   void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
@@ -3630,6 +3632,7 @@ class PointsApi
 public:
   PointsApi(Env &e) : e(e) { }
   IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
+  IMPORT PTS block_pts_lod(PTS pts, float start_d, float end_d, int max_points_visible);
   IMPORT PTS load_points(std::string url);
   IMPORT PTS pts_alt(std::vector<PTS> vec, int index);
   IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);

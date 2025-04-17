@@ -672,6 +672,7 @@ public:
   virtual Low_SDL_GLContext SDL_GL_CreateContext(Low_SDL_Window *window)=0;
   virtual void SDL_SetWindowFullscreen(Low_SDL_Window *window, int val)=0;
   virtual int SDL_GL_MakeCurrent(Low_SDL_Window *window, Low_SDL_GLContext context)=0;
+  virtual void SDL_GL_SetSwapInterval(int val)=0;
   virtual void SDL_GetWindowSize(Low_SDL_Window *window, int *w, int *h)=0;
   //virtual void SDL_GL_SwapBuffers()=0;
   virtual void SDL_GL_SwapWindow(Low_SDL_Window *window)=0;

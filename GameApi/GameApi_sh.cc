@@ -427,7 +427,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   std::vector<float> *v2 = cache_matrix[name2];
   int pos =0;
   bool same = true;
-  for(int i=std::max(0,start);i<std::min(start+s,end);i++)
+  for(int i=std::max(0,start);i<=std::min(start+s,end);i++)
     {
       Matrix mm = find_matrix(e,m[i]);
       Matrix mm2 = Matrix::Transpose(mm);

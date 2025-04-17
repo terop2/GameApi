@@ -714,8 +714,8 @@ struct MainLoopEnv
   std::string v_shader_functions;
   std::string f_shader_functions;
 
-  std::vector<std::string> v_shader_funcnames;
-  std::vector<std::string> f_shader_funcnames;
+  //std::vector<std::string> v_shader_funcnames;
+  //std::vector<std::string> f_shader_funcnames;
  
  
   // from event api

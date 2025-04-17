@@ -2464,10 +2464,14 @@ public:
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Collect(vis);    
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+  }
   void Prepare() {
     int s = vec.size();
     for(int i=0;i<s;i++) vec[i]->Prepare();
+
+      
+    
   }
   void logoexecute() {
     int s = vec.size();
@@ -2535,6 +2539,7 @@ private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
   std::vector<MainLoopItem*> vec;
+
 };
 
 class FrameBufferArrayMainLoop : public FrameBufferLoop
