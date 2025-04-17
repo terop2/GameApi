@@ -408,14 +408,15 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "BM", "float" },
 			 { "", "0.7" },
 			 "BM", "bitmap_api", "gray_to_black"));
-  
+#ifndef WINDOWS
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::calculate_baked_light,
 			 "baked_shadow",
 			 { "texture_p", "scene_p", "texture", "count", "light_pos_x", "light_pos_y", "light_pos_z", "shadow_darkness", "softness" },
 			 { "P", "P", "BM", "int", "float", "float", "float", "float", "float" },
 			 { "", "", "", "10000", "-300.0", "300.0", "-300.0", "0.2", "50.0" },
 			 "BM", "bitmap_api", "calculate_baked_light"));
-
+#endif
+  
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::bump_map,
 			 "bm_bumpmap",
 			 { "fb", "h" },
@@ -501,6 +502,9 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "" },
 			 "CBM", "bitmap_api", "scale_bitmap2"));
 #endif
+
+
+#ifndef WINDOWS
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::bicubic,
 			 "cbm_bicubic",
 			 { "f_0", "f_1", "df_0", "df_1", "ff_0", "ff_1", "dff_0", "dff_1" },
@@ -521,6 +525,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "", "0.5", "0.5", "0.0" },
 			 "CBM", "cont_bitmap_api", "rotate"));
 
+#endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::s_spherical,
 			 "s_spherical",
 			 { "c_x", "c_y", "c_z", "fb", "start_radius", "end_radius", "start_values", "end_values" },
