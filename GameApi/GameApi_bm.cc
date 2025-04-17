@@ -3194,6 +3194,8 @@ private:
   BiCubicInterpolate *inter;
 };
 #endif
+
+#ifndef WINDOWS
 GameApi::CBM GameApi::ContinuousBitmapApi::bicubic(float f_0, float f_1, float df_0, float df_1,
 						   float ff_0, float ff_1, float dff_0, float dff_1)
 {
@@ -3201,6 +3203,7 @@ GameApi::CBM GameApi::ContinuousBitmapApi::bicubic(float f_0, float f_1, float d
   return add_continuous_bitmap(e, new BiCubicInterpolateBitmap(f_0,f_1,df_0,df_1, ff_0, ff_1, dff_0, dff_1));
 #endif
 }
+#endif
 #if 0
 class FunctionContinuousBitmap : public ContinuousBitmap<Color>
 {
@@ -3242,12 +3245,15 @@ EXPORT GameApi::BM GameApi::ContinuousBitmapApi::sample(CBM c_bitmap, int sx, in
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
   return add_color_bitmap(e, new SampleBitmap(*cbm, sx, sy));
 }
+
+#ifndef WINDOWS
 EXPORT GameApi::CBM GameApi::ContinuousBitmapApi::rotate(CBM c_bitmap, float center_x, float center_y, float angle)
 {
   ContinuousBitmap<Color> *cbm = find_continuous_bitmap(e, c_bitmap);
   return add_continuous_bitmap(e, new RotateContinuousBitmap<Color>(cbm, center_x, center_y, angle));
   
 }
+#endif
 
 EXPORT GameApi::BM GameApi::ContinuousBitmapApi::to_bitmap(CBM bm, int sx, int sy)
 {
@@ -5240,6 +5246,8 @@ GameApi::BM GameApi::BitmapApi::median_filter(BM bm, int sx, int sy)
   return add_color_bitmap(e, new MedianFilter(*b2, sx,sy));
 }
 
+#ifndef WINDOWS
+
 class CalcLight : public Bitmap<Color>
 {
 public:
@@ -5446,6 +5454,8 @@ GameApi::BM GameApi::BitmapApi::calculate_baked_light(P p, P p2, BM texture, int
   BM bm = add_bitmap(e, handle2);
   return bm;
 }
+
+#endif
 
 class ScaleToSize : public Bitmap<Color>
 {
