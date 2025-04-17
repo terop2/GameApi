@@ -22201,7 +22201,7 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
 class BlockPTS2 : public PointsApiPoints
 {
 public:
-  BlockPTS2(PointsApiPoints *points, float start_d, float end_d, int max_points) : points(points),start_d(start_d),end_d(end_d), max_points(max_points) { }
+  BlockPTS2(PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, int max_points) : points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) { }
 
   void Collect(CollectVisitor &vis)
   {
@@ -22228,8 +22228,8 @@ public:
     int s = points->NumPoints();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_x = -quake_pos_x-end_d;
-    float end_x = -quake_pos_x+end_d;
+    float start_x = -quake_pos_x+start_x2;
+    float end_x = -quake_pos_x+end_x2;
     //allpoints.push_back(allpoints.size());
     //allpoints.push_back(allpoints.size());
 
@@ -22342,10 +22342,10 @@ public:
 
     float delta_x = p.x+cursor_pos_x;
     float delta_y = p.z-cursor_pos_y;
-    float dist = delta_x*delta_x + delta_y*delta_y;
+    //float dist = delta_x*delta_x + delta_y*delta_y;
     //std::cout << "A:" << p.x << " " << p.z << std::endl;
     //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
-    if (dist<end_d*end_d && dist>start_d*start_d)
+    if (delta_x<end_x2 && delta_x>start_x2 && delta_y<end_y2 && delta_y>start_y2)
       {
 	return true;
       }
@@ -22353,7 +22353,8 @@ public:
   }
 private:
   PointsApiPoints *points;
-  float start_d,end_d;
+  float start_x2,end_x2;
+  float start_y2,end_y2;
   float sign;
   std::vector<int> allpoints;
   std::vector<int> pos;
@@ -22362,10 +22363,10 @@ private:
 };
 
 
-GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_d, float end_d, int max_points)
+GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
-  return add_points_api_points(e,new BlockPTS2(points,start_d,end_d,max_points));
+  return add_points_api_points(e,new BlockPTS2(points,start_x,end_x,start_y,end_y,max_points));
 }
 
 
