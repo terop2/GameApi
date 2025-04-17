@@ -647,9 +647,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "PTS", "points_api", "block_pts"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::block_pts_lod,
 			 "b_pts_lod",
-			 { "pts", "start_d", "end_d", "max_points_visible" },
-			 { "PTS", "float", "float","int" },
-			 { "", "100.0", "300.0","35" },
+			 { "pts", "start_x", "end_x", "start_z", "end_z", "max_points_visible" },
+			 { "PTS", "float", "float", "float", "float","int" },
+			 { "", "-1000.0", "1000.0", "100.0", "300.0","35" },
 			 "PTS", "points_api", "block_pts_lod"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::block_draw,
 			 "b_draw",
