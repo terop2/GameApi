@@ -72,4 +72,6 @@ ML I32=ev.mainloop_api.load_song(ev,I30,https://meshpage.org/liplatus4.ogg);
 
 ML I33=ev.mainloop_api.cursorkeys_to_wasd(I32);
 
-RUN I34=ev.blocker_api.game_window2(ev,I33,false,false,0.0,100000.0);
+ML I333=ev.mainloop_api.android_resize(ev,I33,1.0);
+
+RUN I34=ev.blocker_api.game_window2(ev,I333,false,false,0.0,100000.0);
