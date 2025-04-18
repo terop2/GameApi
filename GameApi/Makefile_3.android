@@ -19,9 +19,9 @@
 #
 
 #
-ARCH = armv7a-eabi
+#ARCH = armv7a-eabi
 #ARCH = aarch64
-#ARCH = x86
+ARCH = x86
 #ARCH = x86_64
 
 CROSS_COMPILE=/home/terop/Android/Sdk/ndk-bundle/toolchains/llvm/prebuilt/linux-x86_64/bin/
