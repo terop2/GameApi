@@ -2520,7 +2520,7 @@ public:
     for(int i=0;i<s;i++)
       {
 	static std::vector<int> v;
-	v.clear();
+	//v.clear();
 	v = vec[i]->shader_id();
 	int ss = v.size();
 	for(int j=0;j<ss;j++)
@@ -2530,9 +2530,9 @@ public:
 	  }
 	//if (vec[i]->shader_id()!=-1) return vec[i]->shader_id();
       }
-    //std::sort(res.begin(),res.end());
-    //auto last = std::unique(res.begin(),res.end());
-    //res.erase(last,res.end());
+    std::sort(res.begin(),res.end());
+    auto last = std::unique(res.begin(),res.end());
+    res.erase(last,res.end());
     return res; 
   }
 private:
