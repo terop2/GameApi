@@ -577,17 +577,43 @@ Matrix Program::get_matrix_var(const std::string &name)
   return m;
   
 }
+
+std::string NumToString(int val)
+{
+  std::string res;
+  static std::string digits = "0123456789";
+  std::string ch2;
+  ch2 += '0';
+  if (val==0) { res+='0'; return res; }
+  while(val!=0) {
+    int ch = val % 10;
+    ch2[0]=digits[ch];
+    res.insert(0,ch2);
+    val/=10;
+  }
+  return res;
+}
+
+
 void Program::set_var_matrix2(const char *name, const std::vector<float> &v, int start)
 {
-  static std::stringstream ss;
-  ss.str("");
-  ss.clear();
-  ss << name << "[" << start << "]";
+  //static std::stringstream ss;
+  //ss.str("");
+  //ss.clear();
+  //ss << name << "[" << start << "]";
 
+  static std::string s;
+  s=name;
+  s+='[';
+  s+=NumToString(start);
+  s+=']';
+
+  //std::cout << s << std::endl;
+  
   Low_GLint loc;
-  uint64_t id = unique_id(ss.str().c_str());
+  uint64_t id = unique_id(s.c_str());
   if (locs.find(id)==locs.end()) {
-    loc = g_low->ogl->glGetUniformLocation(priv->program, ss.str().c_str());
+    loc = g_low->ogl->glGetUniformLocation(priv->program, s.c_str());
     locs[id]=loc;
   }
   else
