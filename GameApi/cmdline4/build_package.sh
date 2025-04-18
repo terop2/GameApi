@@ -1,3 +1,9 @@
+#!/bin/bash
+if [[ $1 == "" ]]; then
+    echo "Usage: ./build_package.sh password"
+    exit
+fi
+
 
 export ARCH=armv7a-eabi
 #export ARCH=aarch64
@@ -81,7 +87,7 @@ done
 $ANDROID_SDK/build-tools/35.0.0/zipalign -f 4 gameapi_cmdline.apk gameapi_cmdline_aligned.apk
 mv gameapi_cmdline_aligned.apk gameapi_cmdline.apk
 
-keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass gtk260774 -keypass gtk260774
+keytool -genkey -v -keystore debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass gtk260774 -keypass $1
 # Sign the APK (you'll need a keystore)
-$ANDROID_SDK/build-tools/35.0.0/apksigner sign --ks-pass pass:gtk260774 --key-pass pass:gtk260774 --ks debug.keystore gameapi_cmdline.apk 
+$ANDROID_SDK/build-tools/35.0.0/apksigner sign --ks-pass pass:gtk260774 --key-pass pass:$1 --ks debug.keystore gameapi_cmdline.apk 
 
