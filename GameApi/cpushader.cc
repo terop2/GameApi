@@ -1,8 +1,8 @@
 
 #include "GameApi_h.hh"
 
-extern std::string gameapi_homepageurl;
-std::string replace_str(std::string val, std::string repl, std::string subst);
+IMPORT extern std::string gameapi_homepageurl;
+IMPORT std::string replace_str(std::string val, std::string repl, std::string subst);
 
 
 

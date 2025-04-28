@@ -102,7 +102,7 @@ public:
 
 
 extern std::vector<const char *> g_urls;
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 //bool feature_enable[255];
 
@@ -12530,7 +12530,7 @@ EXPORT GameApi::ML GameApi::PolygonApi::gltf_anim_shader(GameApi::EveryApi &ev, 
 
 void ASyncGltfCB(void *data);
 
-extern std::vector<std::string> g_registered_urls;
+IMPORT extern std::vector<std::string> g_registered_urls;
 
 class ASyncGltf : public MainLoopItem
 {
@@ -12812,7 +12812,7 @@ GameApi::ML GameApi::MainLoopApi::save_gltf(TF tf, std::string filename)
 }
 
 
-extern bool g_deploy_phase;
+IMPORT extern bool g_deploy_phase;
 
 GameApi::TF GameApi::MainLoopApi::gltf_loadKK2(std::string url)
 {
@@ -13485,7 +13485,7 @@ private:
 
 std::string fetch_more_data(std::string url);
 
-std::string get_zip_license_file(std::string zipfilename)
+IMPORT std::string get_zip_license_file(std::string zipfilename)
 {
   std::string zip = fetch_more_data(zipfilename);
   std::vector<unsigned char> vec2(zip.begin(),zip.end());

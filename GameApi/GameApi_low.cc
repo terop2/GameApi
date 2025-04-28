@@ -1606,10 +1606,10 @@ public:
 };
 #endif // ndef ARM
 
-LowApi *g_low;
+IMPORT LowApi *g_low;
 
 void initialize_stub(int flags); 
-void initialize_low(int flags)
+IMPORT void initialize_low(int flags)
 {
   //#ifndef ARM
   LowApi *low = new LowApi;

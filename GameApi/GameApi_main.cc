@@ -32,7 +32,7 @@ EXPORT GameApi::MainLoopApi::~MainLoopApi()
 {
   delete (MainLoopPriv*)priv;
 }
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 extern Low_SDL_GLContext g_context;
 EXPORT void GameApi::MainLoopApi::make_current()
 {
@@ -89,9 +89,9 @@ EXPORT void GameApi::MainLoopApi::cursor_visible(bool enabled)
 }
 extern Low_SDL_Window *sdl_window;
 
-int g_has_wayland = false;
-extern int g_display_width;
-extern int g_display_height;
+IMPORT int g_has_wayland = false;
+IMPORT extern int g_display_width;
+IMPORT extern int g_display_height;
 
 EXPORT void GameApi::MainLoopApi::init_window(int screen_width, int screen_height, std::string window_title, bool vr_init)
 {
@@ -1258,8 +1258,8 @@ EXPORT bool GameApi::MainLoopApi::ch_doubletap_detect(Event &e, int expire_timer
     }
   return doubletap;
 }
-int g_event_screen_x = -1;
-int g_event_screen_y = -1;
+IMPORT int g_event_screen_x = -1;
+IMPORT int g_event_screen_y = -1;
 extern int g_resize_event_sx;
 extern int g_resize_event_sy;
 
@@ -2064,8 +2064,8 @@ GameApi::ML GameApi::MainLoopApi::seq_ml_score(ML ml1, ML ml2, int score)
   MainLoopItem *main2 = find_main_loop(e,ml2);
   return add_main_loop(e, new SeqMLScore(main1,main2, score));
 }
-extern int g_event_screen_x;
-extern int g_event_screen_y;
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
 
 GameApi::M g_view_rot;
 void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH array_texture, M in_MV, M in_T, M in_N, int screen_size_x, int screen_size_y)
@@ -2765,8 +2765,8 @@ void GameApi::MainLoopApi::display_seamless(EveryApi &ev)
  frame_count = 0;
 
 }
-bool g_transparent = false;
-extern bool g_transparent;
+IMPORT bool g_transparent = false;
+IMPORT extern bool g_transparent;
 int g_background_mode = 0;
 unsigned int g_background_center[] = { 0xff000000, 0xff888888, 0xffffffff, 0xff000088,
 				       0xffff0000, 0xff00ff00, 0xffffff00,
@@ -3194,7 +3194,7 @@ GameApi::M GameApi::MainLoopApi::in_MV(EveryApi &ev, bool is_3d)
       return ev.matrix_api.identity();      
     }
 }
-std::string gameapi_homepageurl;
+IMPORT std::string gameapi_homepageurl;
 std::string GameApi::MainLoopApi::get_homepage_url()
 {
   return gameapi_homepageurl;

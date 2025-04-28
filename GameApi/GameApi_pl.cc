@@ -39,8 +39,8 @@ void print(std::string label, T *ptr)
 
 #define NO_MV 1
 
-void InstallProgress(int num, std::string label, int max=15);
-void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
 void SetupProgress(int num, int count);
 
 int my_getline(LoadStream *stream, int index, std::string &line);
@@ -1631,7 +1631,7 @@ struct CBData {
 
 
 extern int async_pending_count;
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 std::string convert_slashes(std::string s);
 
@@ -2576,7 +2576,7 @@ private:
 
 
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 EXPORT GameApi::P GameApi::PolygonApi::p_url(EveryApi &ev, std::string url, int count)
 {
   int c = get_current_block();
@@ -26908,7 +26908,7 @@ void *writer(void* ptr)
   src->Prepare2();
 }
 
-bool file_exists(std::string s);
+IMPORT bool file_exists(std::string s);
 
 bool exists(const cv::String &path)
 {

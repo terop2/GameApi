@@ -3,8 +3,8 @@
 #include <memory>
 
 
-void InstallProgress(int num, std::string label, int max);
-void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
 void stackTrace();
 
 
@@ -75,7 +75,7 @@ struct Rest {
 };
 Rest g_rest;
 int g_current_block=-1;
-int add_block()
+IMPORT int add_block()
 {
   g_blocks.g_blocks.push_back(new Block);
   return g_blocks.g_blocks.size()-1;
@@ -84,7 +84,7 @@ void recreate_block(int id)
 {
   g_blocks.g_blocks[id]=new Block;
 }
-void set_current_block(int id)
+IMPORT void set_current_block(int id)
 {
   g_current_block = id;
 }
@@ -112,7 +112,7 @@ int get_current_block()
 {
   return g_current_block;
 }
-void clear_block(int id)
+IMPORT void clear_block(int id)
 {
   delete g_blocks.g_blocks[id];
   g_blocks.g_blocks[id]=0;
@@ -1593,7 +1593,7 @@ DynMainLoop *find_dyn(GameApi::Env &e, GameApi::D d)
   return env->dyn[d.id];
 }
 
-Html *find_html(GameApi::Env &e, GameApi::HML u)
+IMPORT Html *find_html(GameApi::Env &e, GameApi::HML u)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->html[u.id];
@@ -1791,7 +1791,7 @@ Fetcher<std::string> *find_string_fetcher(GameApi::Env &e, GameApi::SF s)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->string_fetchers[s.id];
 }
-ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr)
+IMPORT ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->arrays2[arr.id];

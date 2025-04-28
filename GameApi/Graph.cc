@@ -1028,8 +1028,8 @@ bool GridEffect2::Frame(float time)
   return false;
 }
  
-void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
 
 struct ThreadInfo_sprite
 {
@@ -1226,10 +1226,10 @@ void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas)
   va.copy(0,coll.NumFaces());
 }
 
-int sprite_screen_width=800;
-int sprite_screen_height=600;
-int sprite_target_width=800;
-int sprite_target_height=600;
+IMPORT int sprite_screen_width=800;
+IMPORT int sprite_screen_height=600;
+IMPORT int sprite_target_width=800;
+IMPORT int sprite_target_height=600;
 
 void RenderSprite(const Sprite &s, int frame, Point2d pos, float z, ArrayRender &rend, Program *prog)
 {
