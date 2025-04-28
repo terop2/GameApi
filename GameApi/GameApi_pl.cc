@@ -22030,6 +22030,13 @@ bool ComparePTSObj(int a, int b)
   val2=g_pts->Pos(b).x;
   return val1<val2;
 }
+bool ComparePTSObj_y(int a, int b)
+{
+  float val1,val2;
+  val1=g_pts->Pos(a).z;
+  val2=g_pts->Pos(b).z;
+  return val1<val2;
+}
 
 class BlockPTS : public PointsApiPoints
 {
@@ -22201,7 +22208,12 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
 class BlockPTS2 : public PointsApiPoints
 {
 public:
-  BlockPTS2(PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, int max_points) : points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) { }
+  BlockPTS2(PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, int max_points) : points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
+
+    if (start_x2>end_x2) std::swap(start_x2,end_x2);
+    if (start_y2>end_y2) std::swap(start_y2,end_y2);
+
+  }
 
   void Collect(CollectVisitor &vis)
   {
@@ -22216,7 +22228,7 @@ public:
 	allpoints.push_back(i);
       }
     g_pts = points;
-    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj);
+    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y);
   }
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
@@ -22228,13 +22240,13 @@ public:
     int s = points->NumPoints();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_x = -quake_pos_x+start_x2;
-    float end_x = -quake_pos_x+end_x2;
+    float start_y = -quake_pos_y+start_y2;
+    float end_y = -quake_pos_y+end_y2;
     //allpoints.push_back(allpoints.size());
     //allpoints.push_back(allpoints.size());
 
-    g_pos1 = start_x;
-    g_pos2 = end_x;
+    g_pos1 = start_y;
+    g_pos2 = end_y;
     g_pts = points;
 
     //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
@@ -22248,9 +22260,9 @@ public:
     while(left <= right)
       {
 	int mid = (left+right)/2;
-	if (points->Pos(allpoints[mid]).x < start_x && points->Pos(allpoints[mid+1]).x > start_x) { result=mid; break; }
+	if (points->Pos(allpoints[mid]).z < start_y && points->Pos(allpoints[mid+1]).z > start_y) { result=mid; break; }
 
-	if (points->Pos(allpoints[mid]).x < start_x)
+	if (points->Pos(allpoints[mid]).z < start_y)
 	  {
 	    left = mid + 1;
 	  }
@@ -22262,7 +22274,10 @@ public:
     if (result==-1) result=(left+right)/2;
     }
     int start = result;
+    if (start<0) start=0;
+    if (start>allpoints.size()-1) start=allpoints.size()-1;
 
+    
     result = -1;
     {
     int left = 0;
@@ -22271,9 +22286,9 @@ public:
     while(left <= right)
       {
         int mid = (left+right)/2;
-	if (points->Pos(allpoints[mid]).x < end_x && points->Pos(allpoints[mid+1]).x > end_x) { result=mid; break; }
+	if (points->Pos(allpoints[mid]).z < end_y && points->Pos(allpoints[mid+1]).z > end_y) { result=mid; break; }
 
-	if (points->Pos(allpoints[mid]).x < end_x)
+	if (points->Pos(allpoints[mid]).z < end_y)
 	  {
 	    left = mid + 1;
 	  }
@@ -22285,6 +22300,8 @@ public:
     if (result==-1) result=(left+right)/2;
     }
     int end = result;
+    if (end<0) end=0;
+    if (end>allpoints.size()-1) end=allpoints.size()-1;
     
     
     //int start = ii-allpoints.begin();
