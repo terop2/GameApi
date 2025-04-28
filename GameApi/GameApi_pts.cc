@@ -44,7 +44,7 @@ private:
 };
 #endif
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 class LoadPoints : public PointsApiPoints
 {
@@ -2921,7 +2921,7 @@ private:
   PlyLoader load;
 };
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 GameApi::PTS GameApi::PointsApi::ply_pts(std::string url)
 {

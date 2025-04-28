@@ -21,6 +21,7 @@ pushd editor\release & call make_msi.bat %1 & popd
 pushd editor\release & call copy Builder.msi GameApi-Builder-v%2.msi & popd
 pushd editor\release & call scp GameApi-Builder-v%2.msi terop@meshpage.org:/home/terop/meshpage.org/assets/ & popd
 pushd cmdline & call make -f Makefile.win32 & popd
+pushd cmdline & "C:\Program files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /debug /f ..\..\keys\cert2.pfx /p "%1" gameapi_cmdline.exe & popd
 pushd cmdline & call copy gameapi_cmdline.exe zip2\gameapi_cmdline.exe & popd
 pushd cmdline & call copy ..\libGameApi.dll zip2\libGameApi.dll & popd
 pushd cmdline & call copy ..\libGameApi_bm.dll zip2\libGameApi_bm.dll & popd

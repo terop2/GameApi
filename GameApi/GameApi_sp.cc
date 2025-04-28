@@ -179,8 +179,8 @@ EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
   priv = (void*) new SpritePriv;
 }
 
-extern int g_event_screen_x;
-extern int g_event_screen_y;
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
 extern bool is_move_2d;
 class TurnTo2d : public MainLoopItem
 {
@@ -513,8 +513,8 @@ EXPORT void GameApi::SpriteApi::spritepos(BM bm, float x, float y)
   i->y = y;
 }
 
-void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
 
 
 class RenderVertexArray4 : public MainLoopItem

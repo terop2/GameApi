@@ -164,7 +164,7 @@ BufferRef CopyFromSDLSurface(Low_SDL_Surface *surf);
 GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
 
 
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 
 
 
@@ -467,8 +467,8 @@ Low_SDL_GLContext g_context;
 
 extern std::string g_gpu_vendor;
 
-int g_display_width = 1200;
-int g_display_height = 1024;
+IMPORT int g_display_width = 1200;
+IMPORT int g_display_height = 1024;
 
 
 void initialize_low(int flags);

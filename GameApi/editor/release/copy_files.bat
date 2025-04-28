@@ -20,15 +20,6 @@ copy ..\..\display\get_file_size.php editor\get_file_size.php
 copy ..\arrow.ppm editor\arrow.ppm
 copy ..\..\libgameapi.dll .
 strip libgameapi.dll
-copy ..\..\libgameapi_bm.dll
-strip libgameapi_bm.dll
-copy ..\..\libgameapi_ml.dll
-strip libgameapi_ml.dll
-copy ..\..\libgameapi_mt.dll
-strip libgameapi_mt.dll
-copy ..\..\libgameapi_pl.dll
-strip libgameapi_pl.dll
-copy ..\..\libgamedep.dll .
-strip libgamedep.dll
+copy ..\..\libgameapi.a .
 copy ..\a.exe editor\edit.exe
 strip editor\edit.exe

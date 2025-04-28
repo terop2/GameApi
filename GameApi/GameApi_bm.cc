@@ -704,10 +704,10 @@ void stackTrace()
     });
 #endif
 }
-void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 //void del_bitmap_cache(void* ptr);
 //int register_cache_deleter(void (*fptr)(void*), void*data);
@@ -1823,7 +1823,7 @@ private:
   int ssx,ssy;
 };
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 EXPORT GameApi::BM GameApi::BitmapApi::world_from_bitmap3(EveryApi &ev, std::vector<BM> v, std::string url, std::string chars, int dx, int dy)
 {
@@ -4362,7 +4362,7 @@ private:
   std::string chars;
 };
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 GameApi::IBM GameApi::BitmapApi::intbitmap_loader(std::string url)
 {

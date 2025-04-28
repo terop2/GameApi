@@ -11,10 +11,10 @@
 #include <emscripten.h>
 #endif
 
-extern bool g_transparent;
+IMPORT extern bool g_transparent;
 
-extern int g_event_screen_x;
-extern int g_event_screen_y;
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
 
 #if defined(ARM) || defined(RASPI) 
 #ifdef FIRST_PART
@@ -1078,7 +1078,7 @@ private:
 extern bool g_is_quake;
 
 bool g_inside_ml_widget;
-extern bool g_transparent;
+IMPORT extern bool g_transparent;
 extern bool g_inside_mesh_display;
 
 
@@ -2866,10 +2866,10 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   return array_2;
 }
 
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 
-int g_window_pos_x = 0;
-int g_window_pos_y = 0;
+IMPORT int g_window_pos_x = 0;
+IMPORT int g_window_pos_y = 0;
 
 class WindowMoveWidget : public GuiWidgetForward
 {
@@ -3354,7 +3354,7 @@ BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
 extern GameApi::GuiApi *g_everyapi_gui;
 
 
-void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v, int val, int max)
+IMPORT void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v, int val, int max)
 {
   g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v,val,max);
 }
@@ -3649,7 +3649,7 @@ std::vector<std::string> parse_enum_type(std::string type)
 }
 
 std::map<int, int> enum_map;
-bool file_exists(std::string filename);
+IMPORT bool file_exists(std::string filename);
 
 EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type)
 {
@@ -3683,9 +3683,9 @@ EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, in
   return arr2;
 }
 static bool enum_clicked=false;
-GameApi::W enum_popup = { 0 };
-GameApi::W enum_click;
-bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2)
+IMPORT GameApi::W enum_popup = { 0 };
+IMPORT GameApi::W enum_click;
+IMPORT bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2)
 {
   //std::cout << "enum: " << button << " " << type2 << std::endl;
   if (enum_clicked==true){
@@ -3719,13 +3719,13 @@ bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W cli
     }
   return false;
 }
-void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui)
+IMPORT void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui)
 {
   if (enum_clicked && enum_popup.id!=0) {
     gui.render(enum_popup);
   }
 }
-void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button)
+IMPORT void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button)
 {
   int s = vec.size();
   for(int i=0;i<s;i++) {
@@ -3744,7 +3744,7 @@ void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec,
   }
 }
 extern std::map<int,int> int_editor_map;
-void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
+IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
 {
   GuiWidget *w = find_widget(e,enum_click);
   std::string val = w->get_id();
@@ -5185,8 +5185,8 @@ private:
   unsigned int true_color, false_color;
   float time;
 };
-extern int g_event_screen_y;
-extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
+IMPORT extern int g_event_screen_x;
 class ScrollAreaWidget : public GuiWidgetForward
 {
 public:
@@ -6081,15 +6081,15 @@ ASyncData async_data[] = {
   { "bitmap_api", "debug_number", 4},
   { "bitmap_api", "video_source", 0}
 };
-ASyncData *g_async_ptr = &async_data[0];
-int g_async_count = sizeof(async_data)/sizeof(ASyncData);
+IMPORT ASyncData *g_async_ptr = &async_data[0];
+IMPORT int g_async_count = sizeof(async_data)/sizeof(ASyncData);
 ASyncData async_data2[] = { 
   { "polygon_api", "p_mtl", 1 },
   { "polygon_api", "p_mtl2", 1 },
   { "polygon_api", "p_url", 1 }
 };
-ASyncData *g_async_ptr2 = &async_data2[0];
-int g_async_count2 = sizeof(async_data2)/sizeof(ASyncData);
+IMPORT ASyncData *g_async_ptr2 = &async_data2[0];
+IMPORT int g_async_count2 = sizeof(async_data2)/sizeof(ASyncData);
 
 
 
@@ -6170,7 +6170,7 @@ bool is_in_vec(std::string url)
   for(int i=0;i<s;i++) { if (g_extra_async_urls[i]==url) return true; }
   return false;
 }
-std::vector<std::string> g_registered_urls;
+IMPORT std::vector<std::string> g_registered_urls;
 bool is_in_registered(std::string url)
 {
   int s = g_registered_urls.size();
@@ -6225,7 +6225,7 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	}
     }
 }			 
-void InstallProgress(int num, std::string label, int max=15);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
 
 void LoadUrls(const CodeGenLine &line, std::string homepage)
 {
@@ -6630,7 +6630,7 @@ std::string ToString(int num)
   return ss.str();
 }
 extern int g_async_load_count;
-std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
+IMPORT std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, GameApi::ExecuteEnv &e)
 {
   g_async_load_count = 0;
   int error_line_num = 0;

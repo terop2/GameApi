@@ -1,4 +1,4 @@
 
 all:
 	@echo "  LD   cmdline/gameapi_cmdline"
-	@g++ test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi -lGameApi_bm -lGameApi_mt -lGameApi_pl -lGameApi_ml -lGameDep
+	@g++ test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi

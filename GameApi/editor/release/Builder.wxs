@@ -69,17 +69,6 @@
 </File>
 <File Id='gameapiDLL' Name='libgameapi.dll' DiskId='1' Source='libgameapi.dll' KeyPath='no'>
 </File>
-<File Id='gameapibmDLL' Name='libgameapi_bm.dll' DiskId='1' Source='libgameapi_bm.dll' KeyPath='no'>
-</File>
-<File Id='gameapimlDLL' Name='libgameapi_ml.dll' DiskId='1' Source='libgameapi_ml.dll' KeyPath='no'>
-</File>
-<File Id='gameapimtDLL' Name='libgameapi_mt.dll' DiskId='1' Source='libgameapi_mt.dll' KeyPath='no'>
-</File>
-<File Id='gameapiplDLL' Name='libgameapi_pl.dll' DiskId='1' Source='libgameapi_pl.dll' KeyPath='no'>
-</File>
-
-<File Id='gamedepDLL' Name='libgamedep.dll' DiskId='1' Source='libgamedep.dll' KeyPath='no'>
-</File>
 <File Id='gccDLL' Name='libgcc_s_dw2-1.dll' DiskId='1' Source='libgcc_s_dw2-1.dll' KeyPath='no'>
 </File>
 <File Id='gcc2DLL' Name='libgcc_s_seh-1.dll' DiskId='1' Source='libgcc_s_seh-1.dll' KeyPath='no'>
