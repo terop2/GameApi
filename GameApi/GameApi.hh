@@ -264,7 +264,15 @@ struct ExecuteEnv
 #define EXPORT
 #else
 
+#ifdef GAMEAPI_EXPORTS
+#define IMPORT __attribute__((visibility("default")))
+#else
+#define IMPORT
+#endif
+#define EXPORT
+
   
+  /*   
 #ifndef __clang__
 #define IMPORT 
 #define EXPORT
@@ -277,6 +285,7 @@ struct ExecuteEnv
 #define EXPORT
 #endif
 #endif
+  */
 #endif
 
   IMPORT std::pair<int,std::string> execute_codegen(Env &e2, EveryApi &ev, std::string text, ExecuteEnv &e);

@@ -14,7 +14,14 @@
 #define EXPORT
 #else
 
-  
+#ifdef GAMEAPI_EXPORTS
+#define IMPORT __attribute__((visibility("default")))
+#else
+#define IMPORT
+#endif
+#define EXPORT
+
+/*  
 #ifndef __clang__
 #define IMPORT 
 #define EXPORT
@@ -27,6 +34,7 @@
 #define EXPORT
 #endif
 #endif
+*/
 #endif
 
 

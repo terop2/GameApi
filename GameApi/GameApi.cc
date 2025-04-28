@@ -22230,7 +22230,7 @@ private:
   std::vector<std::string> m_persistent;
 };
 
-void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage)
+IMPORT void start_async_deploy(GameApi::Env &e, std::string script, std::string output_filename, std::string homepage)
 {
   e.start_async(new SaveDeployAsync(e,script,output_filename,homepage,true));
 }
