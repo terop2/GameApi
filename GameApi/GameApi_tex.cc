@@ -93,8 +93,8 @@ EXPORT GameApi::Q GameApi::TextureApi::get_tex_coord(TX tx, int id)
   return get_tex_coord_1(tx,id);
 }
 
-void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
 
 GameApi::Q GameApi::TextureApi::get_tex_coord_1(TX tx, int id)
 {

@@ -8,8 +8,8 @@
 #include "GameApi_low.hh"
 
 
-bool g_vr_enable = false; 
-int g_vr_device_id = 0;
+IMPORT bool g_vr_enable = false; 
+IMPORT int g_vr_device_id = 0;
 
 class ZeroIntFetcher : public Fetcher<int>
 {

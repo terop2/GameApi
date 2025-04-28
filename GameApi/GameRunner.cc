@@ -25,7 +25,7 @@
 #endif
 #include "GameApi_low.hh"
 
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 
 void GameRunner::run()
 {

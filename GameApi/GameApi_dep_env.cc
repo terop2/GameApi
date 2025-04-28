@@ -21,16 +21,16 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 
 
-extern std::string g_window_href;
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string g_window_href;
+IMPORT extern std::string gameapi_homepageurl;
 extern int g_pthread_count;
 
 int g_async_pending_count_failures=0;
 
-std::string striphomepage(std::string url);
-std::string stripprefix(std::string s);
-void InstallProgress(int num, std::string label, int max);
-void ProgressBar(int num, int val, int max, std::string label);
+IMPORT std::string striphomepage(std::string url);
+IMPORT std::string stripprefix(std::string s);
+IMPORT void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
 extern int g_logo_status;
 
 
@@ -72,7 +72,7 @@ void *task_queue_consumer(void *data)
   return 0;
 }
 
-void tasks_init()
+IMPORT void tasks_init()
 {
   //std::cout << "Tasks init" << std::endl;
   int s = 8;
@@ -83,13 +83,13 @@ void tasks_init()
       g_tasks.spawn_thread();
     }
 }
-void tasks_add(int id, void *(*fptr)(void*), void *data)
+IMPORT void tasks_add(int id, void *(*fptr)(void*), void *data)
 {
   //std::cout << "Tasks add "<< id << "::" << (long)fptr << " " << (long)data << std::endl;
   task_data dt = g_tasks.create_work(id,fptr,data);
   g_tasks.push_to_queue(dt);
 }
-void tasks_join(int id)
+IMPORT void tasks_join(int id)
 {
   //std::cout << "Tasks join " << id << std::endl;
   g_tasks.join_id(id);
@@ -1157,7 +1157,7 @@ EXPORT void unregister_cache_deleter(int id)
       }
     }
 }
-EXPORT void clear_all_caches()
+IMPORT void clear_all_caches()
 {
   int s=g_cache_deleter.size();
   for(int i=0;i<s;i++)
@@ -1636,7 +1636,7 @@ void *process2(void *ptr)
   return 0;
 }
 
-void pthread_system(std::string str)
+IMPORT void pthread_system(std::string str)
 {
   std::string *ss = new std::string(str);
   //pthread_t thread_id;
@@ -2495,8 +2495,8 @@ struct ProgressI {
 void SetTicks(int num, int ticks);
 
 
-std::string g_original_title;
-Low_SDL_Window *sdl_window;
+IMPORT std::string g_original_title;
+IMPORT Low_SDL_Window *sdl_window;
 int g_last_tick=0;
 bool g_has_title=false;
 std::vector<ProgressI > progress_max;
@@ -2506,8 +2506,8 @@ std::vector<std::string> progress_label;
 std::vector<int> g_setup;
 std::vector<int> g_setup_count;
 
-void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
-void InstallProgress(int num, std::string label, int max=15)
+IMPORT void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
+IMPORT void InstallProgress(int num, std::string label, int max=15)
 {
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
@@ -2558,7 +2558,7 @@ float progress_val_mult[] = { 0.1, 0.3, 0.5, 0.8, 1.0 };
 int g_val2;
 int g_max2;
 
-long long FindProgressVal()
+IMPORT long long FindProgressVal()
 {
 
 #if 0
@@ -2691,7 +2691,7 @@ long long FindProgressMax()
   return sum;
 
 }
-void FinishProgress()
+IMPORT void FinishProgress()
 {
   if (g_has_title) {
 	//int tick = g_low->sdl->SDL_GetTicks();
@@ -2706,16 +2706,16 @@ void FinishProgress()
     //}
   }
 }
-std::vector<std::string> g_prog_labels;
-GameApi::W g_progress_dialog;
-GameApi::EveryApi *g_everyapi2=0;
-GameApi::GuiApi *g_everyapi_gui=0;
-GameApi::FtA g_atlas;
-GameApi::BM g_atlas_bm;
-bool g_progress_callback_set=false;
-void (*g_progress_callback)();
+IMPORT std::vector<std::string> g_prog_labels;
+IMPORT GameApi::W g_progress_dialog;
+IMPORT GameApi::EveryApi *g_everyapi2=0;
+IMPORT GameApi::GuiApi *g_everyapi_gui=0;
+IMPORT GameApi::FtA g_atlas;
+IMPORT GameApi::BM g_atlas_bm;
+IMPORT bool g_progress_callback_set=false;
+IMPORT void (*g_progress_callback)();
 
-void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max);
+IMPORT void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max);
 
 
 
@@ -2727,7 +2727,7 @@ void SetupProgress(int num, int count)
 }
 
 
-pthread_t g_main_thread_id;
+IMPORT pthread_t g_main_thread_id;
 bool g_progress_bar_show_logo=false;
 void (*g_progress_bar_logo_cb)(void*);
 void *g_progress_bar_logo_cb_data=0;
@@ -2910,7 +2910,7 @@ std::string remove_load(std::string s)
   return s;
 }
 
-bool file_exists(std::string filename)
+IMPORT bool file_exists(std::string filename)
 {
   std::ifstream f(filename.c_str());
   return f.good();
@@ -3703,7 +3703,7 @@ void remove_spaces(std::string &s)
     }
 }
 
-void send_post_request(std::string url, std::string headers, std::string data)
+IMPORT void send_post_request(std::string url, std::string headers, std::string data)
 {
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
@@ -3854,7 +3854,7 @@ std::vector<int> index_map;
 std::vector<Low_SDL_GLContext> context_map;
 std::vector<bool> valid_context;
 
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 //extern Low_SDL_GLContext g_context;
 void *async_process(void *ptr)
 {

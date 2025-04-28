@@ -373,26 +373,26 @@ void set_status(int val, int val_max) {
   //#endif
 }
 
-void initialize_low(int flags);
-std::string replace_str(std::string s, std::string repl, std::string subst);
+IMPORT void initialize_low(int flags);
+IMPORT std::string replace_str(std::string s, std::string repl, std::string subst);
 
 int call_count=0;
 
-extern bool g_transparent;
-extern int g_event_screen_x;
-extern int g_event_screen_y;
-extern std::string g_platform;
+IMPORT extern bool g_transparent;
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
+IMPORT extern std::string g_platform;
 
-extern bool g_deploy_phase;
-extern std::string g_window_href;
-extern GameApi::EveryApi *g_everyapi;
-void ClearProgress();
+IMPORT extern bool g_deploy_phase;
+IMPORT extern std::string g_window_href;
+IMPORT extern GameApi::EveryApi *g_everyapi;
+IMPORT void ClearProgress();
 #if 1
-extern pthread_t g_main_thread_id;
-extern Low_SDL_Window *sdl_window;
+IMPORT extern pthread_t g_main_thread_id;
+IMPORT extern Low_SDL_Window *sdl_window;
 
-extern int sprite_screen_width;
-extern int sprite_screen_height;
+IMPORT extern int sprite_screen_width;
+IMPORT extern int sprite_screen_height;
 
 #ifdef ANDROID
 
@@ -424,7 +424,7 @@ extern "C" void android_main(struct android_app *app) {
 void popen_curl_init();
 #endif
 
-extern std::string g_store_directory;
+IMPORT extern std::string g_store_directory;
 
 
 #ifdef ANDROID

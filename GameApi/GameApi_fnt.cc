@@ -2198,7 +2198,7 @@ private:
   float start_y, end_y;
 };
 
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 extern int g_resize_event_sx;
 extern int g_resize_event_sy;
 

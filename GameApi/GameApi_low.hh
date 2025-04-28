@@ -4,6 +4,33 @@
 #ifndef GAMEAPI_LOW_H
 #define GAMEAPI_LOW_H
 
+
+#ifdef WINDOWS
+#ifdef GAMEAPI_EXPORTS
+#define IMPORT __declspec(dllexport)
+#else
+#define IMPORT __declspec(dllimport)
+#endif
+#define EXPORT
+#else
+
+  
+#ifndef __clang__
+#define IMPORT 
+#define EXPORT
+#else
+#ifdef GAMEAPI_COMPILATION
+#define IMPORT __declspec(dllexport)
+#define EXPORT __declspec(dllexport)
+#else
+#define IMPORT
+#define EXPORT
+#endif
+#endif
+#endif
+
+
+
 typedef unsigned int Low_GLuint;
 typedef void Low_GLvoid;
 typedef unsigned int Low_GLenum;
@@ -756,7 +783,7 @@ struct LowApi
   EmscriptenVRLowApi *ems_vr;
 };
 
-extern LowApi *g_low;
+IMPORT extern LowApi *g_low;
 
 enum { EStandard, EWeb };
 void initialize_low(int flags);
