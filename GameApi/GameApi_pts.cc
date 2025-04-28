@@ -1327,8 +1327,17 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     return false; }
   virtual int NumPoints() const { if (points) return points->size(); else { const_cast<MeshQuad*>(this)->Prepare(); return points->size(); } }
-  virtual Point Pos(int i) const { if (points) return (*points)[i]; else { const_cast<MeshQuad*>(this)->Prepare(); return (*points)[i]; } }
-  virtual unsigned int Color(int i) const { if (color2) return (*color2)[i]; else { const_cast<MeshQuad*>(this)->Prepare(); return (*color2)[i];}  }
+  virtual Point Pos(int i) const {
+    if (points && !(i>=0&&i<points->size())) return Point(0.0,0.0,0.0);
+    if (points) return (*points)[i]; else { const_cast<MeshQuad*>(this)->Prepare();
+    if (points && !(i>=0&&i<points->size())) return Point(0.0,0.0,0.0);
+
+      return (*points)[i]; } }
+  virtual unsigned int Color(int i) const {
+    if (color2 && !(i>=0&&i<color2->size())) return 0xffffffff;
+    if (color2) return (*color2)[i]; else { const_cast<MeshQuad*>(this)->Prepare();
+      if (color2 && !(i>=0&&i<color2->size())) return 0xffffffff;
+      return (*color2)[i];}  }
 
   void Collect(CollectVisitor &vis) { coll->Collect(vis); vis.register_obj(this); }
   void HeavyPrepare() {

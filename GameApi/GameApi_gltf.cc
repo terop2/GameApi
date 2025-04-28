@@ -11848,6 +11848,17 @@ public:
   
 
 void execute(MainLoopEnv &e) {
+
+  /* (causes flickering of the player)
+  if (fabs(e.time-last_time)>0.000001)
+    {
+      last_time=e.time;
+    } else
+    {
+      return;
+    }
+  */
+
   const int update_freq=3;
   framenum++;
   if (framenum>update_freq-1) framenum=0;
@@ -12513,6 +12524,7 @@ private:
   float last_time=0.0f;
   int framenum=0;
   bool frame_firsttime=true;
+
 };
 int GltfAnimShaderML::count=2;
 int GltfAnimShaderML::curr=0;

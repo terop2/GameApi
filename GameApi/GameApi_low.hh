@@ -151,6 +151,7 @@ enum
     Low_GL_UNSIGNED_SHORT,
     Low_GL_BYTE,
     Low_GL_DOUBLE,
+    Low_GL_NEAREST_MIPMAP_LINEAR, // glTexParameteri 3th param
     //
     //  OLD STUFF
     // 

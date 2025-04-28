@@ -367,6 +367,7 @@ void map_enums(int &i)
   case    Low_GL_TEXTURE_CUBE_MAP: i=GL_TEXTURE_CUBE_MAP; break;
   case    Low_GL_LINEAR: i=GL_LINEAR; break;
   case    Low_GL_LINEAR_MIPMAP_LINEAR: i=GL_LINEAR_MIPMAP_LINEAR; break;
+  case    Low_GL_NEAREST_MIPMAP_LINEAR: i=GL_NEAREST_MIPMAP_LINEAR; break;
   case    Low_GL_TEXTURE_MIN_FILTER: i=GL_TEXTURE_MIN_FILTER; break;
   case    Low_GL_TEXTURE_MAG_FILTER: i=GL_TEXTURE_MAG_FILTER; break;
   case    Low_GL_TEXTURE_WRAP_S: i=GL_TEXTURE_WRAP_S; break;
