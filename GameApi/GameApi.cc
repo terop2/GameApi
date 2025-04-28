@@ -51,7 +51,7 @@ extern std::string g_msg_string;
 extern int g_global_face_count;
 extern int g_engine_status;
 extern std::string g_gpu_vendor;
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 extern Low_SDL_GLContext g_context;
 
 
@@ -76,9 +76,9 @@ bool is_mobile(GameApi::EveryApi &ev)
   return is_mobile_1() || ev.mainloop_api.get_screen_width() < 800 ||(g_gpu_vendor != "NVID" && g_gpu_vendor != "AMD" && g_gpu_vendor != "WebK");
 }
 
-bool g_deploy_phase = false;
+IMPORT bool g_deploy_phase = false;
 
-std::string gameapi_temp_dir = "@";
+IMPORT std::string gameapi_temp_dir = "@";
 
 class Envi_2;
 
@@ -90,7 +90,7 @@ extern bool g_filter_execute;
 
 #define NO_MV 1
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
-void clear_all_caches();
+IMPORT void clear_all_caches();
 int register_cache_deleter(void (*fptr)(void*),void*data);
 
 class ScreenSpaceMaterialForward : public ScreenSpaceMaterial
@@ -250,13 +250,13 @@ EXPORT GameApi::MT GameApi::MaterialsApi::mt_empty(EveryApi &ev)
 #define THIRD_PART 1
 #endif
 
-void InstallProgress(int num,std::string label, int max=15);
-void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num,std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
 std::string funccall_to_string(ShaderModule *mod);
 std::string color_funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
 std::string color_funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string val);
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 extern int async_pending_count;
 extern bool async_is_done;
 extern float debug_pos_x, debug_pos_y, debug_pos_z;
@@ -2055,10 +2055,10 @@ private:
 };
 
 bool is_move_2d;
-extern int sprite_target_width;
-extern int sprite_screen_width;
-extern int sprite_target_height;
-extern int sprite_screen_height;
+IMPORT extern int sprite_target_width;
+IMPORT extern int sprite_screen_width;
+IMPORT extern int sprite_target_height;
+IMPORT extern int sprite_screen_height;
 
 class MatrixMovement : public Movement
 {
@@ -5591,10 +5591,10 @@ GameApi::ML GameApi::MainLoopApi::transparent(ML ml)
 }
 
 
-std::vector<void (*)(void*)> g_transparent_callback_objs;
-std::vector<void*> g_transparent_callback_params;
-std::vector<int> g_transparent_callback_ids;
-std::vector<float> g_transparent_pos;
+IMPORT std::vector<void (*)(void*)> g_transparent_callback_objs;
+IMPORT std::vector<void*> g_transparent_callback_params;
+IMPORT std::vector<int> g_transparent_callback_ids;
+IMPORT std::vector<float> g_transparent_pos;
 void trans_callback(void *obj);
 
 class TransparentCombine : public MainLoopItem
@@ -15599,7 +15599,7 @@ struct PrepareCB
   void *ptr;
 };
 std::vector<PrepareCB> g_prepare_callbacks;
-void FinishProgress();
+IMPORT void FinishProgress();
 
 extern std::string gameapi_seamless_url;
 extern bool g_execute_callback;
@@ -15790,8 +15790,8 @@ pthread_t g_thread_id;
 
 int g_logo_shown = 0;
 
-extern int g_event_screen_x;
-extern int g_event_screen_y;
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
 
 extern void (*g_prepare_heavy_callback)(GameApi::Env &e, GameApi::H h);
 extern GameApi::Env *g_prepare_heavy_env;
@@ -16465,8 +16465,8 @@ void progress_logo_cb(void *data)
 extern int score;
 extern int hidden_score;
 
-extern int g_event_screen_x;
-extern int g_event_screen_y;
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
 
 extern bool g_execute_callback;
 extern void (*g_mainloop_callback)(void *ptr);
@@ -16743,7 +16743,7 @@ void splitter_iter2(void *arg)
 #ifdef VIRTUAL_REALITY
 void vr_run2(Splitter *spl2);
 #endif
-extern GameApi::EveryApi *g_everyapi;
+IMPORT extern GameApi::EveryApi *g_everyapi;
 EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
 {
   g_everyapi = &ev;
@@ -19093,7 +19093,7 @@ PointsApiPoints *VoxelToPTS::get(int val)
   return new VPTS(*this, val,vx);
 }
 
-std::vector<GameApi::PTS> GameApi::arr_to_pts_arr(GameApi::EveryApi &ev, GameApi::ARR a)
+IMPORT std::vector<GameApi::PTS> GameApi::arr_to_pts_arr(GameApi::EveryApi &ev, GameApi::ARR a)
 {
   std::vector<GameApi::PTS> vec;
   ArrayType *t = find_array(ev.get_env(), a);
@@ -20644,14 +20644,14 @@ GameApi::ML GameApi::MainLoopApi::fps_display(EveryApi &ev, ML ml, std::string f
   return I54;
 }
 
-int find_str(std::string val, std::string repl)
+IMPORT int find_str(std::string val, std::string repl)
 {
   std::size_t pos = val.find(repl);
   if (pos==std::string::npos) return -1;
   return pos;
 }
 
-std::string replace_str(std::string val, std::string repl, std::string subst)
+IMPORT std::string replace_str(std::string val, std::string repl, std::string subst)
 {
   std::string s = "";
   int p = 0;
@@ -20815,8 +20815,8 @@ GameApi::ML GameApi::MainLoopApi::save_script(HML h, std::string filename)
   return add_main_loop(e, new SaveScript(e,h2,filename));
 }
 
-bool file_exists(std::string file);
-std::string get_last_line(std::string s, char ch)
+IMPORT bool file_exists(std::string file);
+IMPORT std::string get_last_line(std::string s, char ch)
 {
   int ss = s.size();
   int pos = 0;
@@ -20873,9 +20873,9 @@ std::string find_more_data(std::string line);
 std::string fetch_more_data(std::string url);
 std::string http_to_https(std::string url);
 std::vector<UrlItem> find_url_items(std::string s);
-std::string get_zip_license_file(std::string zipfilename); // impl in gltf
+IMPORT std::string get_zip_license_file(std::string zipfilename); // impl in gltf
 
-std::string remove_prefix(std::string url);
+IMPORT std::string remove_prefix(std::string url);
 
 void find_url_items3(std::vector<UrlItem> &result)
 {
@@ -29032,7 +29032,7 @@ GameApi::BM GameApi::MainLoopApi::framebuffer_bitmap(FBU buf)
   return add_color_bitmap(e, new FrameBufferBitmap(fbuf));
 }
 
-bool g_progress_halt = false;
+IMPORT bool g_progress_halt = false;
 class LowFrameBuffer : public FrameBuffer
 {
 public:
@@ -31490,7 +31490,7 @@ extern Low_SDL_Window *sdl_display2_window;
 extern Low_SDL_Surface *sdl_display2_framebuffer;
 extern Low_SDL_GLContext context_display2;
 extern Low_SDL_GLContext g_context;
-extern Low_SDL_Window *sdl_window;
+IMPORT extern Low_SDL_Window *sdl_window;
 
 class MainLoopSplitter_win32_and_emscripten_display2 : public Splitter
 {
@@ -32954,7 +32954,7 @@ struct CodeGenValues
 
 
 CodeGenValues g_codegen_values;
-void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level)
+IMPORT void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level)
 {
   g_codegen_values.mod2 = mod2;
   g_codegen_values.id = id;
@@ -32964,7 +32964,7 @@ void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int leve
   //std::cout << "set_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
 
 }
-void clear_codegen();
+IMPORT void clear_codegen();
 std::string do_codegen(GameApi::EveryApi &ev)
 {
   //std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
@@ -33045,13 +33045,13 @@ std::string g_emscripten_frame_2(std::string code, std::string homepage) {
 }
 */
 
-std::string find_html2(GameApi::HML ml, GameApi::Env &env)
+IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env)
 {
   Html *hml = find_html(env,ml);
   hml->Prepare();
   return hml->script_file();
 }
-std::string find_homepage2(GameApi::HML ml, GameApi::Env &env)
+IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env)
 {
   Html *hml = find_html(env,ml);
   hml->Prepare();
@@ -34495,7 +34495,7 @@ GameApi::ML GameApi::MainLoopApi::create_objs(EveryApi &ev, int area_id)
   //return create_all_objects(e,ev,area_id);
 }
 
-std::string g_platform;
+IMPORT std::string g_platform;
 
 bool is_platform_linux()
 {
@@ -35765,7 +35765,7 @@ private:
 
 
 
-void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls)
+IMPORT void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls)
 {
   UrlMemoryMap *map = new GraphUrlMemoryMap(e,ev,script,urls);
   UrlMemoryMap *map2 = new OptimizeObjFilesFromUrlMemoryMap(ev,map);
@@ -36299,7 +36299,7 @@ std::string get_path(std::string str)
   return str;
 }
 
-std::string replace_string(std::string str, char ch, char ch2)
+IMPORT std::string replace_string(std::string str, char ch, char ch2)
 {
   int s = str.size();
   for(int i=0;i<s;i++) if (str[i]==ch) str[i]=ch2;
@@ -36307,7 +36307,7 @@ std::string replace_string(std::string str, char ch, char ch2)
 }
 
 std::string str_tolower(std::string s);
-std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url)
+IMPORT std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url)
 {
   std::vector<std::string> res;
   if (url.size()>4 && url[url.size()-3] == 'm' && url[url.size()-2] == 't' && url[url.size()-1]=='l') {
@@ -37296,3 +37296,61 @@ GameApi::ML GameApi::MainLoopApi::cursorkeys_to_wasd(GameApi::ML ml)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new CursorKeysToWasd(item));
 }
+
+GameApi::BlockerApi::BlockerApi(Env &e) : e(e) { }
+GameApi::MixedApi::MixedApi(Env &e) : e(e) { }
+template<class T>
+GameApi::ArrayApi<T>::ArrayApi(Env &e) : e(e) { }
+GameApi::CurveApi::CurveApi(Env &e) : e(e) { }
+GameApi::MatrixCurveApi::MatrixCurveApi(Env &e) : e(e) { }
+GameApi::CurvesApi::CurvesApi(Env &e) : e(e) { }
+GameApi::ImplicitApi::ImplicitApi(Env &e) : e(e) { }
+GameApi::ShaderModuleApi::ShaderModuleApi(Env &e) : e(e) { }
+GameApi::PickingApi::PickingApi(Env &e) : e(e) { }
+GameApi::TreeApi::TreeApi(Env &e) : e(e) { }
+GameApi::MaterialsApi::MaterialsApi(Env &e) : e(e) { }
+GameApi::InputApi::InputApi(Env &e) : e(e) { }
+GameApi::PhysicsApi::PhysicsApi(Env &e) : e(e) { }
+GameApi::CollisionPlane::CollisionPlane(Env &e) : e(e) { }
+GameApi::Skeletal::Skeletal(Env &e) : e(e) { }
+GameApi::VertexAnimApi::VertexAnimApi(Env &e) : e(e) { }
+GameApi::EventNode::EventNode(Env &e) : e(e) { }
+GameApi::MovementNode::MovementNode(Env &e) : e(e) {}
+GameApi::ExprApi::ExprApi(Env &e) : e(e) {}
+GameApi::WModApi::WModApi(Env &e) : e(e) { }
+GameApi::FloatVolumeApi::FloatVolumeApi(Env &e) : e(e) { }
+GameApi::ColorVolumeApi::ColorVolumeApi(Env &e) : e(e) { }
+GameApi::VectorVolumeApi::VectorVolumeApi(Env &e) : e(e) { }
+GameApi::DistanceFloatVolumeApi::DistanceFloatVolumeApi(Env &e) : e(e) { }
+GameApi::SeparateApi::SeparateApi(Env &e) :e(e) { }
+GameApi::TriStripApi::TriStripApi(Env &e) : e(e) { }
+GameApi::CutterApi::CutterApi(Env &e) : e(e) { }
+GameApi::BooleanOps::BooleanOps(Env &e) : e(e) { }
+GameApi::PolygonDistanceField::PolygonDistanceField(Env &e) : e(e) { }
+GameApi::PolygonArrayApi::PolygonArrayApi(Env &e) : e(e) { }
+GameApi::WaveformApi::WaveformApi(Env &e) : e(e) { }
+GameApi::SampleCollectionApi::SampleCollectionApi(Env &e) : e(e) { }
+GameApi::TrackerApi::TrackerApi(Env &e) : e(e) { }
+GameApi::NewPlaneApi::NewPlaneApi(Env &e) : e(e) { }
+GameApi::VectorBitmapApi::VectorBitmapApi(Env &e) : e(e) { }
+GameApi::PointCollectionApi::PointCollectionApi(Env &e) : e(e) { }
+GameApi::MatricesApi::MatricesApi(Env &e) :e(e) { }
+GameApi::PointsApi::PointsApi(Env &e) : e(e) { }
+GameApi::LinesApi::LinesApi(Env &e) : e(e) { }
+GameApi::SpaceVectorApi::SpaceVectorApi(Env &e) : e(e) { }
+GameApi::ObjectMoveApi::ObjectMoveApi(Env &e) : e(e) { }
+GameApi::UberShaderApi::UberShaderApi(Env &e) : e(e) {}
+GameApi::LowFrameBufferApi::LowFrameBufferApi(Env &e) : e(e) { }
+GameApi::FrameBufferApi::FrameBufferApi(Env &e) : e(e) { }
+GameApi::LayoutApi::LayoutApi(Env &e) : e(e) { }
+GameApi::DrawApi::DrawApi(Env &e) : e(e) { }
+GameApi::EveryApi::EveryApi(Env &e)
+	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
+	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e), low_frame_api(e),
+
+	    env(e)
+  { }
+GameApi::Env &GameApi::EveryApi::get_env() { return env; }
+
+//GameApi::SurfaceApi::~SurfaceApi() {}
+GameApi::EveryApi::~EveryApi() { }

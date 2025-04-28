@@ -489,7 +489,7 @@ private:
   GameApi::ASyncVec *vec;
 };
 
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 
 GameApi::ML GameApi::TrackerApi::play_wave_via_keypress(EveryApi &ev, ML ml, std::string url, int key)
 {

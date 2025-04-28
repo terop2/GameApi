@@ -40,10 +40,10 @@
 #endif
 
 #include "GameApi_low.hh"
+#include "GameApi.hh"
 
-
-void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max=15);
 
 
 std::ostream &operator<<(std::ostream &o, const ObjectData &od)

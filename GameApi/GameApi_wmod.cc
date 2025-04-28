@@ -565,8 +565,8 @@ EXPORT std::vector<std::string> GameApi::WModApi::types_from_function(GameApi::E
   return types2;
 }
 
-void InstallProgress(int num, std::string label, int max);
-void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
 
 EXPORT void GameApi::WModApi::insert_links(EveryApi &ev, GuiApi &gui, WM mod2, int id, std::vector<W> &links, W canvas, const std::vector<W> &connect_targets, SH sh2, SH sh)
 {
@@ -811,7 +811,7 @@ struct codegen_item
 };
 std::vector<codegen_item> codegen_cache;
 
-void clear_codegen()
+IMPORT void clear_codegen()
 {
   codegen_cache = std::vector<codegen_item>();
 }
@@ -1155,8 +1155,8 @@ std::vector<std::string> combine_vec(std::vector<std::string> v1, std::vector<st
 }
 
 
-std::vector<std::vector<std::string> > g_collect_authors;
-std::vector<std::vector<std::string> > g_collect_licenses;
+IMPORT std::vector<std::vector<std::string> > g_collect_authors;
+IMPORT std::vector<std::vector<std::string> > g_collect_licenses;
 
 EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, ASyncData *arr, int arr_size, int j)
 {
@@ -1757,8 +1757,8 @@ EXPORT void GameApi::WModApi::insert_inserted_to_canvas(GuiApi &gui, W canvas, W
   
 }
 
-void ProgressBar(int num, int val, int max, std::string label);
-void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max);
 
 std::string json_string(std::string data)
 {

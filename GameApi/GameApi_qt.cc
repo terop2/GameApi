@@ -378,7 +378,7 @@ public:
 private:
   QMLData *mod;
 };
-extern std::string gameapi_homepageurl;
+IMPORT extern std::string gameapi_homepageurl;
 GameApi::FML GameApi::LowFrameBufferApi::qml_print(std::string url)
 {
   QMLModule *mod = new QMLModule(e,url,gameapi_homepageurl);

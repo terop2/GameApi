@@ -32,6 +32,7 @@
 #include "GraphI.hh"
 
 #include "GameApi_low.hh"
+#include "GameApi.hh"
 
 // this flag needs to be changes also from
 // 1) GameApi_h.hh
@@ -93,8 +94,8 @@
 std::string funccall_to_string(ShaderModule *mod);
 std::string funccall_to_string_with_replace(ShaderModule *mod, std::string name, std::string value);
 
-void InstallProgress(int num, std::string label, int max);
-void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void InstallProgress(int num, std::string label, int max);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
 
 
 struct ShaderPriv

@@ -6,7 +6,7 @@
 bool file_exists(std::string filename);
 
 
-std::string g_store_directory;
+IMPORT std::string g_store_directory;
 
 bool GameApi::Env::store_file_exists(std::string filename)
 {

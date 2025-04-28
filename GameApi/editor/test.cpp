@@ -40,7 +40,7 @@ void render_cb(Envi *env);
 void refresh();
 void ClearProgress();
 
-std::string remove_prefix(std::string url);
+IMPORT std::string remove_prefix(std::string url);
 
 int find_str(std::string s, std::string el);
 
@@ -57,7 +57,7 @@ extern std::vector<float> g_transparent_pos;
 extern std::vector<std::vector<std::string> > g_collect_authors;
 extern std::vector<std::vector<std::string> > g_collect_licenses;
 
-std::string get_zip_license_file(std::string s);
+IMPORT std::string get_zip_license_file(std::string s);
 
 std::vector<std::string> g_license_filenames;
 std::vector<std::string> g_license_urls;
@@ -68,23 +68,23 @@ float event_lock_time=0.0;
 extern GameApi::W enum_popup;
 extern GameApi::W enum_click;
 extern bool g_update_download_bar;
-bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2);
-void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui);
-void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button);
-void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value);
-ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
+IMPORT bool enum_editor_callback(GameApi::Env &env,GameApi::GuiApi &gui, GameApi::W click_widget, std::string type, int mouse_x, int mouse_y, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap, std::vector<GameApi::W> &areas, int button, int type2);
+IMPORT void enum_editor_draw(GameApi::EveryApi &ev, GameApi::GuiApi &gui);
+IMPORT void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::W> vec, int button);
+IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value);
+IMPORT ArrayType *find_array(GameApi::Env &e, GameApi::ARR arr);
 
-std::string replace_string(std::string str, char ch, char ch2);
-void send_post_request(std::string url, std::string headers, std::string data);
-std::string replace_str(std::string ste, std::string repl, std::string subst);
+IMPORT std::string replace_string(std::string str, char ch, char ch2);
+IMPORT void send_post_request(std::string url, std::string headers, std::string data);
+IMPORT std::string replace_str(std::string ste, std::string repl, std::string subst);
 
-void clear_all_caches();
+IMPORT void clear_all_caches();
 
 extern std::vector<std::string> g_registered_urls;
 extern int g_event_screen_x;
 extern int g_event_screen_y;
-extern int g_display_width;
-extern int g_display_height;
+IMPORT extern int g_display_width;
+IMPORT extern int g_display_height;
 extern int g_window_pos_x;
 extern int g_window_pos_y;
 extern std::string gameapi_homepageurl;
@@ -96,7 +96,7 @@ extern GameApi::FtA g_atlas;
 extern GameApi::BM g_atlas_bm;
 extern GameApi::W g_progress_dialog;
 extern GameApi::GuiApi *g_everyapi_gui;
-extern pthread_t g_main_thread_id;
+IMPORT extern pthread_t g_main_thread_id;
 
 
 struct wl_display;
@@ -116,16 +116,16 @@ void mem_summary()
   //std::cout << "Max mem usage: " << max_mem_usage/1024000 << "Mb" << std::endl;
 }
 
-void clear_codegen();
-void InstallProgress(int num, std::string label, int max=15);
-void ProgressBar(int num, int val, int max, std::string label);
-void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
-void pthread_system(std::string str);
+IMPORT void clear_codegen();
+IMPORT void InstallProgress(int num, std::string label, int max=15);
+IMPORT void ProgressBar(int num, int val, int max, std::string label);
+IMPORT void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, int level);
+IMPORT void pthread_system(std::string str);
 IMPORT std::string find_html2(GameApi::HML ml, GameApi::Env &env);
 IMPORT std::string find_homepage2(GameApi::HML ml, GameApi::Env &env);
-std::vector<unsigned char> load_from_url(std::string url);
+IMPORT std::vector<unsigned char> load_from_url(std::string url);
 
-std::string get_last_line(std::string file, char ch);
+IMPORT std::string get_last_line(std::string file, char ch);
 
 std::string hexify2(std::string s)
 {
@@ -303,7 +303,7 @@ std::vector<DllData> load_dlls(std::string filename)
 }
 
 
-std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url);
+IMPORT std::vector<std::string> find_additional_urls(GameApi::Env &e, GameApi::EveryApi &ev, std::string url);
 
 
 
@@ -639,14 +639,14 @@ extern ASyncData *g_async_ptr2;
 extern int g_async_count2;
 
 
-void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls);
+IMPORT void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls);
 PT old_cursor_pos;
 
 
 
 void FinishProgress();
 Envi *g_env;
-extern bool g_progress_halt;
+IMPORT extern bool g_progress_halt;
 class IterTab;
 extern IterTab *g_start2;
 
@@ -2438,7 +2438,7 @@ void print_stack_trace()
 #endif
 }
 
-extern std::string g_original_title;
+IMPORT extern std::string g_original_title;
 
 void terminate_handler()
 {
@@ -2447,16 +2447,16 @@ void terminate_handler()
   std::cout << "Terminate Handler called!" << std::endl;
   //for(;;);
 }
-void clear_counters();
-void print_counters();
-bool file_exists(std::string s);
+IMPORT void clear_counters();
+IMPORT void print_counters();
+IMPORT bool file_exists(std::string s);
 
-extern bool g_vr_enable;
-extern int g_vr_device_id;
+IMPORT extern bool g_vr_enable;
+IMPORT extern int g_vr_device_id;
 //extern pthread_t g_main_thread;
 
-extern bool g_progress_callback_set;
-extern void (*g_progress_callback)();
+IMPORT extern bool g_progress_callback_set;
+IMPORT extern void (*g_progress_callback)();
 
 void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>, int val, int max);
 extern void (*update_progress_dialog_cb)(GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max);
@@ -3506,7 +3506,7 @@ void refresh()
   }
 }
 
-extern std::string gameapi_temp_dir;
+IMPORT extern std::string gameapi_temp_dir;
 
 int main(int argc, char *argv[]) {
 	g_main_thread_id = pthread_self();

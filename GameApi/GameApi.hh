@@ -255,8 +255,16 @@ struct ExecuteEnv
   class Env;
   struct EveryApi;
 
-  std::pair<int,std::string> execute_codegen(Env &e2, EveryApi &ev, std::string text, ExecuteEnv &e);
+#ifdef WINDOWS
+#ifdef GAMEAPI_EXPORTS
+#define IMPORT __declspec(dllexport)
+#else
+#define IMPORT __declspec(dllimport)
+#endif
+#define EXPORT
+#else
 
+  
 #ifndef __clang__
 #define IMPORT 
 #define EXPORT
@@ -269,7 +277,11 @@ struct ExecuteEnv
 #define EXPORT
 #endif
 #endif
+#endif
 
+  IMPORT std::pair<int,std::string> execute_codegen(Env &e2, EveryApi &ev, std::string text, ExecuteEnv &e);
+
+  
   int register_cache_deleter(void (*fptr)(void*), void *data);
   void unregister_cache_deleter(int id);
 
@@ -336,7 +348,7 @@ private:
 class BlockerApi
 {
 public:
-  BlockerApi(Env &e) : e(e) { }
+  IMPORT BlockerApi(Env &e);
   IMPORT BLK game_window(EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration);
   IMPORT BLK game_seq(EveryApi &ev, std::vector<BLK> vec);
   IMPORT void run(BLK blk);
@@ -358,110 +370,110 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  ML cursorkeys_to_wasd(ML ml);
-  ML if_keys(ML ml, IF fetcher, std::string keys);
-  void save_glb_store(EveryApi &ev, std::string filename, TF tf);
-  ML shader_cache_disable(ML ml, bool disable);
-  void step();
-  ML android_landscape_scale(EveryApi &ev, ML ml);
-  ML disable_resize(ML ml);
-  ML turn_to_meters_default(EveryApi &ev, ML ml, P p);
-  ML turn_to_meters(EveryApi &ev, ML ml, float sx1,float sx2, float sy1,float sy2, float sz1,float sz2);
-  void check_glerrors(std::string context);
-  HML load_zip2(EveryApi &ev, std::string zip_url);
-  HML load_zip_assets2(std::string zip_url);
-  ML load_zip(EveryApi &ev, std::string zip_url);
-  ML load_zip_assets(std::string zip_url);
-  ML disable_matrices(EveryApi &ev, ML ml, int size);
-  ML hires_ml(EveryApi &ev, ML I3, int size, int numsamples, float blur_radius);
-  ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
-  ML android_resize(EveryApi &ev, ML ml, float mult);
-  ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
-  ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
-  ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
-  ML gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix);
-  ML gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix);
-  ML gltf_node2(EveryApi &ev, TF tf, int node_id, float mix);
-  ML gltf_scene2(EveryApi &ev, TF tf, int scene_id, float mix);
-  ML concurrent_download(ML ml);
-  ML fullscreen_button(EveryApi &ev);
-  TT timing_start();
-  TT timing(float duration, TT link, ML show);
-  TT timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir);
-  ML timing_exit(TT link);
-  ML scene_transparency(ML scene);
-  ML game(EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3,std::string url4, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM jump_bm, FI font, BM status_bm, BM splash, std::vector<BM> item_types, std::vector<BM> enemy_types, BM weapon_bm, std::vector<BM> enemy_child_death,BM aku_death);
-  W pts_world(PTS p, int type);
-  CX cache_one(P p, MT mt);
-  CX array_cache(std::vector<CX> vec);
-  CX subworld(CX c, W w, int start_block, int end_block);
-  W array_world(std::vector<W> vec);
-  ML load_midi(EveryApi &ev, ML next, std::string url, std::string url_patchset);
-  ML ml_empty();
-  P gltf_mesh_all_p(GameApi::EveryApi&ev, TF model0);
-  ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0,float light_dir_x, float light_dir_y, float light_dir_z, bool transparent);
-  ARR gltf_mesh_all_mt_arr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, bool transparent);
-  MT mainloop_material(EveryApi &ev, ML ml);
-  TF glb_load_sketchfab_zip(std::string url_to_zip);
-  TF gltf_load_sketchfab_zip(std::string url_to_zip);
-  ML vr_scale(ML ml, float);
-  ML disable_polygons(ML ml);
-  ML print_deps(ML ml, int num);
-  ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);
-  ARR load_shader2(std::string vertex_url, std::string fragment_url);
-  SHC load_shader(std::string shader_url);
-  SHI generic_anim_shader2(EveryApi &ev, SHP params, std::string funcname, SHC code, std::vector<SHI> children);
-  void make_current();
-  SHP constant_shp_f(SHP next, int num, float value);
-  SHP constant_shp_i(SHP next, int num, int value);
-  SHP constant_shp_u(SHP next, int num, unsigned int value);
-  SHP constant_shp_p3d(SHP next, int num, PT value);
-  SHP constant_shp_uvw(SHP next, int num, PT value);
-  SHP timed_shp_f(float start_time, float end_time, SHP next, int num, float start_value, float end_value);
-  SHP timed_shp_i(float start_time, float end_time, SHP next, int num, int start_value, int end_value);
-  SHP timed_shp_u(float start_time, float end_time, SHP next, int num, unsigned int start_value, unsigned int end_value);
-  SHP timed_shp_p3d(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);
-  SHP timed_shp_uvw(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);  
-  ML save_deploy(HML h, std::string filename);
-  ML save_script(HML h, std::string filename);
-  HML html_url(std::string url);
-  SHI empty_shaderI();
-  SHI phong_vertex(SHI next);
-  SHI phong_fragment(SHI next, unsigned int ambient, unsigned int highlight, float pow);
-  ML phong_shader3(EveryApi &ev, ML ml, unsigned int ambient, unsigned int highlight, float pow);
-  SHP empty_shp();
-  ML generic_shader_fragment_only(EveryApi &ev, ML ml, SHI fragment, std::vector<TXID> vec);
-  ML generic_shader(EveryApi &ev, ML ml, SHI vertex, SHI fragment, std::vector<TXID> vec);
-  SHI generic_anim_shader(SHP,std::string, std::string, std::vector<SHI> children);
-  ML save_gltf(TF tf, std::string filename);
-  TF gltf_loadKK(std::string base_url, std::string url);
-  TF gltf_loadKK2(std::string url);
-  ML send_key_at_time(ML ml, float time, int key);
-  void start_editor_state();
-  void end_editor_state();
-  ML right_mouse_pan(EveryApi &ev, ML next);
-  ML mouse_roll_zoom(EveryApi &ev, ML next);
-  ML mouse_roll_zoom2(EveryApi &ev, ML nect);
-  ML perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane);
-  ML anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn);
-  ML glClear(EveryApi &ev);
-  GS game_state();
-  ML gs_mouse_pos(GS gs, ML ml, int x, int y);
-  ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
-  ML gs_delta(GS gs, ML ml, int p, int n, float delta);
-  ML gs_time(GS gs, ML ml, int t);
-  ML gltf_mesh_all_env(EveryApi &ev, TF model0, BM diffuse, BM specular, BM bfrd, float mix);
-  ML transparent(ML ml);
-  ML async_gltf(ML ml, TF tf);
-  ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
-  ML edit_3d(EveryApi &ev, P p, float radius);
-  P edit_3d_p(EveryApi &ev);
+  IMPORT ML cursorkeys_to_wasd(ML ml);
+  IMPORT ML if_keys(ML ml, IF fetcher, std::string keys);
+  IMPORT void save_glb_store(EveryApi &ev, std::string filename, TF tf);
+  IMPORT ML shader_cache_disable(ML ml, bool disable);
+  IMPORT void step();
+  IMPORT ML android_landscape_scale(EveryApi &ev, ML ml);
+  IMPORT ML disable_resize(ML ml);
+  IMPORT ML turn_to_meters_default(EveryApi &ev, ML ml, P p);
+  IMPORT ML turn_to_meters(EveryApi &ev, ML ml, float sx1,float sx2, float sy1,float sy2, float sz1,float sz2);
+  IMPORT void check_glerrors(std::string context);
+  IMPORT HML load_zip2(EveryApi &ev, std::string zip_url);
+  IMPORT HML load_zip_assets2(std::string zip_url);
+  IMPORT ML load_zip(EveryApi &ev, std::string zip_url);
+  IMPORT ML load_zip_assets(std::string zip_url);
+  IMPORT ML disable_matrices(EveryApi &ev, ML ml, int size);
+  IMPORT ML hires_ml(EveryApi &ev, ML I3, int size, int numsamples, float blur_radius);
+  IMPORT ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
+  IMPORT ML android_resize(EveryApi &ev, ML ml, float mult);
+  IMPORT ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
+  IMPORT ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
+  IMPORT ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
+  IMPORT ML gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix);
+  IMPORT ML gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix);
+  IMPORT ML gltf_node2(EveryApi &ev, TF tf, int node_id, float mix);
+  IMPORT ML gltf_scene2(EveryApi &ev, TF tf, int scene_id, float mix);
+  IMPORT ML concurrent_download(ML ml);
+  IMPORT ML fullscreen_button(EveryApi &ev);
+  IMPORT TT timing_start();
+  IMPORT TT timing(float duration, TT link, ML show);
+  IMPORT TT timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir);
+  IMPORT ML timing_exit(TT link);
+  IMPORT ML scene_transparency(ML scene);
+  IMPORT ML game(EveryApi &ev, int tile_sx, int tile_sy, std::string url, std::string url2, std::string url3,std::string url4, std::string tiles_string, std::string tiles_string2, int start_pos_x, int start_pos_y, int player_start_tile, int player_end_tile, BM tile_bm, BM player_bm, BM ruohikko_bm, BM corn_bm, BM vesisade_bm, BM jump_bm, FI font, BM status_bm, BM splash, std::vector<BM> item_types, std::vector<BM> enemy_types, BM weapon_bm, std::vector<BM> enemy_child_death,BM aku_death);
+  IMPORT W pts_world(PTS p, int type);
+  IMPORT CX cache_one(P p, MT mt);
+  IMPORT CX array_cache(std::vector<CX> vec);
+  IMPORT CX subworld(CX c, W w, int start_block, int end_block);
+  IMPORT W array_world(std::vector<W> vec);
+  IMPORT ML load_midi(EveryApi &ev, ML next, std::string url, std::string url_patchset);
+  IMPORT ML ml_empty();
+  IMPORT P gltf_mesh_all_p(GameApi::EveryApi&ev, TF model0);
+  IMPORT ARR gltf_mesh_all_p_arr(GameApi::EveryApi &ev, TF model0,float light_dir_x, float light_dir_y, float light_dir_z, bool transparent);
+  IMPORT ARR gltf_mesh_all_mt_arr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, bool transparent);
+  IMPORT MT mainloop_material(EveryApi &ev, ML ml);
+  IMPORT TF glb_load_sketchfab_zip(std::string url_to_zip);
+  IMPORT TF gltf_load_sketchfab_zip(std::string url_to_zip);
+  IMPORT ML vr_scale(ML ml, float);
+  IMPORT ML disable_polygons(ML ml);
+  IMPORT ML print_deps(ML ml, int num);
+  IMPORT ML screenspace_rendering(EveryApi &ev, ML scene, SMT screenspace_material);
+  IMPORT ARR load_shader2(std::string vertex_url, std::string fragment_url);
+  IMPORT SHC load_shader(std::string shader_url);
+  IMPORT SHI generic_anim_shader2(EveryApi &ev, SHP params, std::string funcname, SHC code, std::vector<SHI> children);
+  IMPORT void make_current();
+  IMPORT SHP constant_shp_f(SHP next, int num, float value);
+  IMPORT SHP constant_shp_i(SHP next, int num, int value);
+  IMPORT SHP constant_shp_u(SHP next, int num, unsigned int value);
+  IMPORT SHP constant_shp_p3d(SHP next, int num, PT value);
+  IMPORT SHP constant_shp_uvw(SHP next, int num, PT value);
+  IMPORT SHP timed_shp_f(float start_time, float end_time, SHP next, int num, float start_value, float end_value);
+  IMPORT SHP timed_shp_i(float start_time, float end_time, SHP next, int num, int start_value, int end_value);
+  IMPORT SHP timed_shp_u(float start_time, float end_time, SHP next, int num, unsigned int start_value, unsigned int end_value);
+  IMPORT SHP timed_shp_p3d(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);
+  IMPORT SHP timed_shp_uvw(float start_time, float end_time, SHP next, int num, PT start_value, PT end_value);  
+  IMPORT ML save_deploy(HML h, std::string filename);
+  IMPORT ML save_script(HML h, std::string filename);
+  IMPORT HML html_url(std::string url);
+  IMPORT SHI empty_shaderI();
+  IMPORT SHI phong_vertex(SHI next);
+  IMPORT SHI phong_fragment(SHI next, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML phong_shader3(EveryApi &ev, ML ml, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT SHP empty_shp();
+  IMPORT ML generic_shader_fragment_only(EveryApi &ev, ML ml, SHI fragment, std::vector<TXID> vec);
+  IMPORT ML generic_shader(EveryApi &ev, ML ml, SHI vertex, SHI fragment, std::vector<TXID> vec);
+  IMPORT SHI generic_anim_shader(SHP,std::string, std::string, std::vector<SHI> children);
+  IMPORT ML save_gltf(TF tf, std::string filename);
+  IMPORT TF gltf_loadKK(std::string base_url, std::string url);
+  IMPORT TF gltf_loadKK2(std::string url);
+  IMPORT ML send_key_at_time(ML ml, float time, int key);
+  IMPORT void start_editor_state();
+  IMPORT void end_editor_state();
+  IMPORT ML right_mouse_pan(EveryApi &ev, ML next);
+  IMPORT ML mouse_roll_zoom(EveryApi &ev, ML next);
+  IMPORT ML mouse_roll_zoom2(EveryApi &ev, ML nect);
+  IMPORT ML perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane);
+  IMPORT ML anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn);
+  IMPORT ML glClear(EveryApi &ev);
+  IMPORT GS game_state();
+  IMPORT ML gs_mouse_pos(GS gs, ML ml, int x, int y);
+  IMPORT ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
+  IMPORT ML gs_delta(GS gs, ML ml, int p, int n, float delta);
+  IMPORT ML gs_time(GS gs, ML ml, int t);
+  IMPORT ML gltf_mesh_all_env(EveryApi &ev, TF model0, BM diffuse, BM specular, BM bfrd, float mix);
+  IMPORT ML transparent(ML ml);
+  IMPORT ML async_gltf(ML ml, TF tf);
+  IMPORT ML tunnel_tree(EveryApi &ev, std::vector<P> faces, std::vector<MN> moves, std::string url, MT mat2);
+  IMPORT ML edit_3d(EveryApi &ev, P p, float radius);
+  IMPORT P edit_3d_p(EveryApi &ev);
   //ML gltf_joint_matrices(EveryApi &ev, LoadGltf *load, int skin_num, int animation, int time_index, ML next);
-  ML choose_ml_from_status(ML connect, ML download, ML prepare);
-  ML key_ml(std::vector<ML> vec, std::string keys);
-  ML async_url(std::string url, ML ml);
-  ARR gltf_anim_skeleton(EveryApi &ev, TF model0, int skin_num, int animation, int channelk, int num_keyframes);
-  P gltf_scene_p(GameApi::EveryApi &ev, TF model0, int scene_id);
+  IMPORT ML choose_ml_from_status(ML connect, ML download, ML prepare);
+  IMPORT ML key_ml(std::vector<ML> vec, std::string keys);
+  IMPORT ML async_url(std::string url, ML ml);
+  IMPORT ARR gltf_anim_skeleton(EveryApi &ev, TF model0, int skin_num, int animation, int channelk, int num_keyframes);
+  IMPORT P gltf_scene_p(GameApi::EveryApi &ev, TF model0, int scene_id);
   IMPORT ML memmap_window2(EveryApi &ev, std::string url);
   IMPORT ML memmap_window3(EveryApi &ev, std::string url_1, std::string url_2, std::string url_3, std::string url_4, std::string url_5, std::string url_6);
   IMPORT ML ml_load_um(EveryApi &ev, std::string url);
@@ -636,10 +648,10 @@ public:
   struct DoubleTapState { DoubleTapState() : start_frame(0), in_between(false) { } int start_frame; bool in_between; };
   IMPORT bool ch_doubletap_detect(Event &e, int exprire_timer_count, int ch, DoubleTapState &state);
   IMPORT Event get_event();
-  void waittof();
-  SP screenspace();
-  void execute_ml(EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
-  void event_ml(ML ml, const Event &e);
+  IMPORT void waittof();
+  IMPORT SP screenspace();
+  IMPORT void execute_ml(EveryApi &ev, ML ml, SH color, SH texture, SH texture_2d, SH arr_texture, M in_MV, M in_T, M in_N, int screen_width, int screen_height);
+  IMPORT void event_ml(ML ml, const Event &e);
   IMPORT ML array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
   IMPORT ML slow_start_array_ml(GameApi::EveryApi &ev, std::vector<ML> vec, int max_ticks);
   IMPORT ML filter_execute_array_ml(GameApi::EveryApi &ev, std::vector<ML> vec);
@@ -647,72 +659,72 @@ public:
   IMPORT FML array_fml(std::vector<FML> vec);
   //IMPORT ML timing_ml(std::vector<ML> vec, float duration);
   IMPORT ML dyn_points(EveryApi &ev, ML ml, MN move, int pointnum, float pos_x, float pos_y, float pos_z);
-  ML seq_ml(std::vector<ML> vec, float time);
-  ML seq_ml_score(ML ml1, ML ml2, int score);
-  ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
-  ML collision_seq_ml(ML curr, ML end, std::string obj1, std::string obj2, float show_duration);
-  ML collision_gen_key(ML curr, std::string obj1, std::string obj2, int key, float duration);
-  ML collision_detection(EveryApi &ev,float player_size,float enemy_size, ML normal_game_screen, ML gameover_screen);
+  IMPORT ML seq_ml(std::vector<ML> vec, float time);
+  IMPORT ML seq_ml_score(ML ml1, ML ml2, int score);
+  IMPORT ML timed_tmp_seq_ml(ML curr, ML end, float start_time, float end_time, float show_duration, int key);
+  IMPORT ML collision_seq_ml(ML curr, ML end, std::string obj1, std::string obj2, float show_duration);
+  IMPORT ML collision_gen_key(ML curr, std::string obj1, std::string obj2, int key, float duration);
+  IMPORT ML collision_detection(EveryApi &ev,float player_size,float enemy_size, ML normal_game_screen, ML gameover_screen);
 
-  M in_MV(EveryApi &ev, bool is_3d);
-  M in_T(EveryApi &ev, bool is_3d);
-  M in_N(EveryApi &ev, bool is_3d);
-  M in_P(EveryApi &ev, bool is_3d);
-  std::string get_homepage_url();
-  void set_homepage_url(std::string url);
-  void set_seamless_url(std::string url);
+  IMPORT M in_MV(EveryApi &ev, bool is_3d);
+  IMPORT M in_T(EveryApi &ev, bool is_3d);
+  IMPORT M in_N(EveryApi &ev, bool is_3d);
+  IMPORT M in_P(EveryApi &ev, bool is_3d);
+  IMPORT std::string get_homepage_url();
+  IMPORT void set_homepage_url(std::string url);
+  IMPORT void set_seamless_url(std::string url);
 
-  ML load_song(EveryApi& ev, ML next, std::string url);
-  ML skybox(EveryApi &ev, BM land, BM sky); // 100x100 bm's required
-  ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
-  ML keyboard_toggle(ML m1, ML m2, int key);
-  ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
-  P p_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ARR load_P_script_array(EveryApi &ev, HML hml /*std::string url*/, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ML load_ML_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  MN load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-    MN load_MN_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  MT load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  MT load_MT_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ML load_song(EveryApi& ev, ML next, std::string url);
+  IMPORT ML skybox(EveryApi &ev, BM land, BM sky); // 100x100 bm's required
+  IMPORT ML scale_2d_screen(EveryApi &ev, ML orig, float sx, float sy);
+  IMPORT ML keyboard_toggle(ML m1, ML m2, int key);
+  IMPORT ML touch_rotate(EveryApi &ev, ML ml, bool leftright, bool topdown, float x_speed, float y_speed);
+  IMPORT P p_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT P load_P_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ARR load_P_script_array(EveryApi &ev, HML hml /*std::string url*/, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ML load_ML_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT MN load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+    IMPORT MN load_MN_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT MT load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT MT load_MT_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
 
-  ARR load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ARR load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ARR load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
-  ML prepare_pts(ML ml, PTS pts);
-  ML depthfunc(ML ml, int val); 
-  ML depthmask(ML ml, bool b);
-  ML blendfunc(ML ml, int val, int val2);
-  ML cullface(ML ml, bool b, bool is_gltf);
-  ML record_keypresses(ML ml, std::string output_filename);
-  ML playback_keypresses(ML ml, std::string input_url);
-  ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
+  IMPORT ARR load_ML_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT BM load_BM_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ARR load_BM_script_array(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ARR load_BM_script_array_comb(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ML prepare_pts(ML ml, PTS pts);
+  IMPORT ML depthfunc(ML ml, int val); 
+  IMPORT ML depthmask(ML ml, bool b);
+  IMPORT ML blendfunc(ML ml, int val, int val2);
+  IMPORT ML cullface(ML ml, bool b, bool is_gltf);
+  IMPORT ML record_keypresses(ML ml, std::string output_filename);
+  IMPORT ML playback_keypresses(ML ml, std::string input_url);
+  IMPORT ML setup_hmd_projection(EveryApi &ev, ML ml, bool eye, bool is_standard, float n, float f, bool translate);
   
-  DS load_ds_from_mem(const unsigned char *buf, const unsigned char *end);
-  DS load_ds_from_disk(std::string filename);
-  DS load_ds_from_disk_incrementally(std::string filename);
-  void save_ds(std::string output_filename, DS ds);
-  std::string ds_to_string(DS ds);
+  IMPORT DS load_ds_from_mem(const unsigned char *buf, const unsigned char *end);
+  IMPORT DS load_ds_from_disk(std::string filename);
+  IMPORT DS load_ds_from_disk_incrementally(std::string filename);
+  IMPORT void save_ds(std::string output_filename, DS ds);
+  IMPORT std::string ds_to_string(DS ds);
 
   // temp store
-  void load_ds_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);
-  DS load_ds_from_temp2(std::string filename);
-  void load_ds_from_temp3(std::string filename);
+  IMPORT void load_ds_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);
+  IMPORT DS load_ds_from_temp2(std::string filename);
+  IMPORT void load_ds_from_temp3(std::string filename);
   
-  INP cursor_keys_normal_move();
-  INP cursor_keys_rotate_move(float speed_rot, float pos_forward, float pos_normal, float pos_backward);
-  INP move_sequence(float start_time, float time_per_char, std::string str);
-  INP move_speed(INP orig, float speed);
-  INP gravity(INP im, IBM bitmap, float start_x, float end_x, float start_y, float end_y, float speed);
-  INP move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity);
-  ML move_in(EveryApi &ev, ML ml, INP in);
-  ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
-  ML score_adder2(EveryApi &ev, ML ml, O o,PTS points, MN transform, int enter_score, int leave_score, int dyn_point, float timeout, IF fetcher);
-  ML score_hidder(EveryApi &ev, ML ml, O o, int max_count);
-  IF state_int_fetcher(std::string url, std::string states);
-  MN state_speed_movement(MN mn, std::string url, std::string states, std::string x_speeds, std::string y_speeds, std::string z_speeds);
+  IMPORT INP cursor_keys_normal_move();
+  IMPORT INP cursor_keys_rotate_move(float speed_rot, float pos_forward, float pos_normal, float pos_backward);
+  IMPORT INP move_sequence(float start_time, float time_per_char, std::string str);
+  IMPORT INP move_speed(INP orig, float speed);
+  IMPORT INP gravity(INP im, IBM bitmap, float start_x, float end_x, float start_y, float end_y, float speed);
+  IMPORT INP move_collision(IBM scene, float start_x, float end_x, float start_y, float end_y, float s_x, float m_x, float e_x, float s_y, float m_y, float e_y, float speed_up, float speed_down, float speed_left, float speed_right, float speed_gravity);
+  IMPORT ML move_in(EveryApi &ev, ML ml, INP in);
+  IMPORT ML score_adder(EveryApi &ev, ML ml, O o, MN transform, int enter_score, int leave_score, int dyn_point, float timeout);
+  IMPORT ML score_adder2(EveryApi &ev, ML ml, O o,PTS points, MN transform, int enter_score, int leave_score, int dyn_point, float timeout, IF fetcher);
+  IMPORT ML score_hidder(EveryApi &ev, ML ml, O o, int max_count);
+  IMPORT IF state_int_fetcher(std::string url, std::string states);
+  IMPORT MN state_speed_movement(MN mn, std::string url, std::string states, std::string x_speeds, std::string y_speeds, std::string z_speeds);
 private:
   MainLoopApi(const MainLoopApi&);
   void operator=(const MainLoopApi&);
@@ -726,26 +738,26 @@ private:
 class MixedApi
 {
 public:
-  MixedApi(Env &e) : e(e) { }
+  IMPORT MixedApi(Env &e);
   // constructing
-  MX mx_float(float val);
-  MX mx_int(int val);
-  MX mx_bool(bool val);
-  MX mx_point(float x, float y, float z);
-  MX mx_vector(float dx, float dy, float dz);
-  MX mx_color(int r, int g, int b, int a);
-  MX mx_pair(std::string name, MX val);
-  MX mx_string(std::string value);
-  MX mx_array(std::vector<MX> vec);
+  IMPORT MX mx_float(float val);
+  IMPORT MX mx_int(int val);
+  IMPORT MX mx_bool(bool val);
+  IMPORT MX mx_point(float x, float y, float z);
+  IMPORT MX mx_vector(float dx, float dy, float dz);
+  IMPORT MX mx_color(int r, int g, int b, int a);
+  IMPORT MX mx_pair(std::string name, MX val);
+  IMPORT MX mx_string(std::string value);
+  IMPORT MX mx_array(std::vector<MX> vec);
 
   // accessing
-  int mx_size(MX arr);
-  MX mx_index(MX arr, int idx);
-  MX mx_find(MX arr, std::string name);
-  float mx_to_float(MX val, float def=0.0);
-  int mx_to_int(MX val, int def=-1);
-  std::vector<std::string> mx_names(MX val);
-  std::vector<MX> mx_values(MX val);
+  IMPORT int mx_size(MX arr);
+  IMPORT MX mx_index(MX arr, int idx);
+  IMPORT MX mx_find(MX arr, std::string name);
+  IMPORT float mx_to_float(MX val, float def=0.0);
+  IMPORT int mx_to_int(MX val, int def=-1);
+  IMPORT std::vector<std::string> mx_names(MX val);
+  IMPORT std::vector<MX> mx_values(MX val);
 private:
   Env &e;
 };
@@ -774,7 +786,7 @@ public:
 	IMPORT void rendersprite2(BM bm, SH sh, PT pos);
 	IMPORT void rendersprite3(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
 	void rendersprite3_1(BM bm, int bm_choose, SH sh, float x, float y, float mult_x, float mult_y);
-	void rendersprite4(BM bm, int bm_choose, SH sh, PT pos);
+	IMPORT void rendersprite4(BM bm, int bm_choose, SH sh, PT pos);
 	IMPORT void rendersprite5(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, float x, float y);
 	IMPORT void rendersprite6(BM bm, int bm_choose, SH sh, SP move_space, SP sprite_space, PT pos);
   //IMPORT void rendersprite(BM bm, SH sh, float x, float y, float x1, float y1, float inside_x, float inside_y, float inside_x1, float inside_y1);
@@ -882,13 +894,13 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
-  TXID video_source(std::string filename, int sx, int sy);
-  BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
+  IMPORT TXID video_source(std::string filename, int sx, int sy);
+  IMPORT BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
   // temp store
-  BM bm_png_bm(EveryApi &ev, BM bm, std::string url);
-  void load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);
-  BM load_png_from_temp2(std::string filename);
-  void load_png_from_temp3(std::string filename);
+  IMPORT BM bm_png_bm(EveryApi &ev, BM bm, std::string url);
+  IMPORT void load_png_from_temp(std::string filename, void (*fptr)(void*), void *data, bool &success);
+  IMPORT BM load_png_from_temp2(std::string filename);
+  IMPORT void load_png_from_temp3(std::string filename);
 
   IMPORT BM debug_number(EveryApi &ev, BM bm0, int num, bool disable, std::string url);
   IMPORT ML display_bitmaps(EveryApi &ev, std::vector<BM> vec, float start_time, float delta_time);
@@ -935,7 +947,7 @@ public:
   IMPORT BM compose_y(BM bm1, BM bm2);
   IMPORT BM border(BM, int left ,int right ,int top ,int bottom);
   IMPORT BM add_shape_border(EveryApi &ev, BM bm, float dist_field_size, float start_range, float end_range, int r, int g, int b, int a, int border_size);
-	BM subbitmap(BM orig, int x, int y, int width, int height);
+	IMPORT BM subbitmap(BM orig, int x, int y, int width, int height);
 	IMPORT BM subbitmapimage(BM orig, int r_start_range, int r_end_range, int g_start_range, int g_end_range, int b_start_range, int b_end_range, unsigned int empty_color);
   IMPORT BM plus_bitmap(BM bm, BM bm2);
   IMPORT BM noise_vectors(int sx, int sy);
@@ -991,7 +1003,7 @@ public:
   IMPORT bool ready_to_prepare(BM bm);
   
   IMPORT BMA empty_array();
-  BMA array(BM *array, int size);
+  IMPORT BMA array(BM *array, int size);
   IMPORT BM array_elem(BMA array, int i);
   IMPORT BM Indicator(int sx, int sy, int g_ind);
   IMPORT BM avg(BM bm1, BM bm2);
@@ -1018,9 +1030,9 @@ public:
   IMPORT std::vector<TXID> dyn_fetch_mtl(EveryApi &ev, std::string mtl_url, ML ml2);
   IMPORT ML txidarray_from_heavy(EveryApi &ev, H heavy, std::vector<TXID> *vec, ML ml, int start_range, int end_range, int heavycount);
 
-  IBM create_ibm(std::vector<BB> vec);
-  BB choose_bool(IBM bm, int val);
-  ARR choose_ints(IBM bm, int count);
+  IMPORT IBM create_ibm(std::vector<BB> vec);
+  IMPORT BB choose_bool(IBM bm, int val);
+  IMPORT ARR choose_ints(IBM bm, int count);
 private:
   BitmapApi(const BitmapApi&);
   void operator=(const BitmapApi&);
@@ -1033,11 +1045,11 @@ private:
 class FloatApi
 {
 public:
-  FloatApi(Env &e);
-  F value(float v);
-  F ref(float *v);
-  F array_index(float *array, int pos);
-  float get_value(F f);
+  IMPORT FloatApi(Env &e);
+  IMPORT F value(float v);
+  IMPORT F ref(float *v);
+  IMPORT F array_index(float *array, int pos);
+  IMPORT float get_value(F f);
 private:
   Env &e;
 };
@@ -1048,7 +1060,7 @@ template<class T>
 class ArrayApi
 { // handle arrays
 public:
-  ArrayApi(Env &e) : e(e) { }
+  IMPORT ArrayApi(Env &e);
   A<T> array(std::vector<T> vec);
 private:
   Env &e;
@@ -1059,7 +1071,7 @@ private:
 class FloatArrayApi
 {
 public:
-  FloatArrayApi(Env &e);
+  IMPORT FloatArrayApi(Env &e);
   FA array(float *array, int size);
   FA f_array(F *array, int size);
   FA duparray(float value, int size);
@@ -1236,7 +1248,7 @@ private:
 class CurveApi
 {
 public:
-  CurveApi(Env &e) : e(e) { }
+  IMPORT CurveApi(Env &e);
   IMPORT C line(PT p1, PT p2);
   IMPORT C circle_xy(PT center, float r);
   IMPORT C circle_xz(PT center, float r);
@@ -1276,7 +1288,7 @@ private:
 class MatrixCurveApi
 {
 public:
-  MatrixCurveApi(Env &e) : e(e) { }
+  IMPORT MatrixCurveApi(Env &e);
   IMPORT MC from_curve(C curve);
   IMPORT MC circle_xy(float radius);
   IMPORT MC circle_xz(float radius);
@@ -1290,7 +1302,7 @@ private:
 class CurvesApi
 {
 public:
-  CurvesApi(Env &e) : e(e) { }
+  IMPORT CurvesApi(Env &e);
   CC start(PTS points);
   CC comb(CC prev, PTS points);
   PTS extract(CC curves, int block, float val);
@@ -1341,7 +1353,7 @@ private:
 class SpaceApi
 {
 public:
-  SpaceApi(Env &e);
+  IMPORT SpaceApi(Env &e);
   ~SpaceApi();
   SP rotatespace(SP s, float angle);
   SP rotatespace(SP s, PT center, float angle);
@@ -1370,7 +1382,7 @@ private:
 class DupApi
 {
 public:
-  DupApi(Env &e);
+  IMPORT DupApi(Env &e);
   ~DupApi();
   BM dup_bm(BM b);
   SP dup_sp(SP s);
@@ -1385,7 +1397,7 @@ public:
 class TextApi
 {
 public:
-	IMPORT TextApi(BitmapApi &bm, SpriteApi &sp) : bm(bm), sp(sp), priv(0) { }
+	TextApi(BitmapApi &bm, SpriteApi &sp) : bm(bm), sp(sp), priv(0) { }
 	IMPORT ~TextApi();
 	IMPORT void load_font(std::string filename, int sx, int sy, int x, int y, char start_char, char end_char);
 	IMPORT void draw_text(std::string text, int x, int y, SH sh);
@@ -1404,7 +1416,7 @@ private:
 class ImplicitApi
 {
 public:
-  ImplicitApi(Env &e) : e(e) { }
+  IMPORT ImplicitApi(Env &e);
   IMPORT IM im_sphere(float r);
   IMPORT IM blob(float c, float c_x, float c_y, float cc_x, float cc_y);
   IMPORT IM im_translate(IM obj, float dx, float dy, float dz);
@@ -1424,7 +1436,8 @@ private:
 #ifdef F_VOLUME_API
 class VolumeApi
 {
-public:	IMPORT VolumeApi(Env &e);
+public:
+  IMPORT VolumeApi(Env &e);
 	IMPORT ~VolumeApi();
   IMPORT BB volumeprojection(O o, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int numsamples);
   IMPORT O boolfunction(std::function<bool(float x, float y, float z)> f);
@@ -1492,7 +1505,7 @@ private:
 class ShaderModuleApi
 {
 public:
-  IMPORT ShaderModuleApi(Env &e) : e(e) { }
+  IMPORT ShaderModuleApi(Env &e);
   IMPORT SFO empty();
   IMPORT SFO function(std::function<std::string (std::string id)> function, std::string function_name, std::vector<std::string> param_names = std::vector<std::string>(), std::vector<std::string> arg_values = std::vector<std::string>());
   IMPORT SFO color_function(SFO orig, std::function<std::string (std::string)> function, std::string function_name);
@@ -1559,10 +1572,10 @@ public:
     bool left=false;
     bool right=false;
   };
-  static void wasd_movement_event(MainLoopApi::Event &e,
+  IMPORT static void wasd_movement_event(MainLoopApi::Event &e,
 			    float &pos_x, float &pos_y, Wasd_data &data,
 			    float speed_x, float speed_y);
-  static void wasd_movement_frame(MainLoopApi::Event &e,
+  IMPORT static void wasd_movement_frame(MainLoopApi::Event &e,
 			    float &pos_x, float &pos_y, Wasd_data &data,
 			    float speed_x, float speed_y);
   struct Quake_data {
@@ -1576,11 +1589,11 @@ public:
     float old_pos_y=0.0;
     bool mv_mode= false;
   };
-  static void quake_movement_event(GameApi::EveryApi &ev, MainLoopApi::Event &e,
+  IMPORT static void quake_movement_event(GameApi::EveryApi &ev, MainLoopApi::Event &e,
 			     float &pos_x, float &pos_y, float &rot_y,
 			     Quake_data &data,
 			     float &speed_x, float &speed_y, float speed, float rot_speed);
-  static void quake_movement_frame(GameApi::EveryApi &ev, 
+  IMPORT static void quake_movement_frame(GameApi::EveryApi &ev, 
 			     float &pos_x, float &pos_y, float &rot_y,
 			     Quake_data &data,
 			     float &speed_x, float &speed_y, float speed, float rot_speed);
@@ -1591,7 +1604,7 @@ public:
 class PickingApi
 {
 public:
-  PickingApi(Env &e) : e(e) { }
+  IMPORT PickingApi(Env &e);
   BB pick_area(EveryApi &ev, float mouse_x, float mouse_y, float radius, int scr_size_x, int scr_size_y);
   O pick_volume(M in_P, BB pick);
   bool picked( O o, float x, float y, float z);
@@ -1604,12 +1617,12 @@ private:
 class TreeApi
 {
 public:
-  TreeApi(Env &e) : e(e) { }
-  TL level(std::vector<MN> vec);
-  T tree(std::vector<TL> vec);
-  ML tree_ml(EveryApi &ev, T tree, std::vector<ML> vec);
-  P tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time, float percentage);
-  MS tree_ms(EveryApi &ev, T tree, float time);
+  IMPORT TreeApi(Env &e);
+  IMPORT TL level(std::vector<MN> vec);
+  IMPORT T tree(std::vector<TL> vec);
+  IMPORT ML tree_ml(EveryApi &ev, T tree, std::vector<ML> vec);
+  IMPORT P tree_p(EveryApi &ev, T tree, std::vector<P> vec, float time, float percentage);
+  IMPORT MS tree_ms(EveryApi &ev, T tree, float time);
 private:
   Env &e;
 };
@@ -1619,7 +1632,7 @@ private:
 class MaterialsApi
 {
 public:
-  MaterialsApi(Env &e) : e(e) { }
+  IMPORT MaterialsApi(Env &e);
   IMPORT MT hires(EveryApi &ev, MT mat, int size, int numsampled, float blur_radius);
   IMPORT MT mt_empty(EveryApi &ev);
   IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
@@ -1733,7 +1746,7 @@ private:
 class InputApi
 {
 public:
-  InputApi(Env &e) : e(e) { }
+  IMPORT InputApi(Env &e);
   
 private:
   Env &e;
@@ -1744,29 +1757,29 @@ private:
 class PhysicsApi
 {
 public:
-  PhysicsApi(Env &e) : e(e) { }
+  IMPORT PhysicsApi(Env &e);
   struct PHI { PH phy; int id; };
-  PH phy_empty();
-  PHI anchor_point(PH phy, PT pos);
+  IMPORT PH phy_empty();
+  IMPORT PHI anchor_point(PH phy, PT pos);
   PH anchor_point2(PH phy, PT pos) { PHI pp = anchor_point(phy,pos); return pp.phy; }
-  PH ext_force(PH phy, int point, V dir);
-  PH ext_force_all(PH phy, V dir);
-  PH anchor_link(PH phy, int p1, int p2, float dist);
-  PH force_obj(PH phy, O obj,
+  IMPORT PH ext_force(PH phy, int point, V dir);
+  IMPORT PH ext_force_all(PH phy, V dir);
+  IMPORT PH anchor_link(PH phy, int p1, int p2, float dist);
+  IMPORT PH force_obj(PH phy, O obj,
 	       V dir);
-  PH phy_from_p(P p);
+  IMPORT PH phy_from_p(P p);
   // PH gameover_obj(PH phy, O obj, int point)
   // PH keypress_force(PH phy, int point, V dir, int key);
   //PH array(PH *arr, int size);
 
-  int num_anchors(PH phy);
-  int num_forces(PH phy, int anchor);
-  int num_links(PH phy);
-  int num_force_volumes(PH phy);
+  IMPORT int num_anchors(PH phy);
+  IMPORT int num_forces(PH phy, int anchor);
+  IMPORT int num_links(PH phy);
+  IMPORT int num_force_volumes(PH phy);
 
-  PTS init_points(PH pos);
-  void step_points(PH phy, PTA prev_frame, float timestep);
-  PTS physics_action(EveryApi &ev, PH phy);
+  IMPORT PTS init_points(PH pos);
+  IMPORT void step_points(PH phy, PTA prev_frame, float timestep);
+  IMPORT PTS physics_action(EveryApi &ev, PH phy);
 private:
   Env &e;
 };
@@ -1776,12 +1789,12 @@ private:
 class CollisionPlane
 {
 public:
-  CollisionPlane(Env &e) : e(e) { }
-  CP circle(int id, float radius);
-  CP rectangle(int id, float x, float y, float sx, float sy);
-  CP or_elem(int id, std::vector<CP> vec);
-  void set_pos(CP plane, int id, float x, float y);
-  bool check_collision(CP plane, float x, float y);
+  IMPORT CollisionPlane(Env &e);
+  IMPORT CP circle(int id, float radius);
+  IMPORT CP rectangle(int id, float x, float y, float sx, float sy);
+  IMPORT CP or_elem(int id, std::vector<CP> vec);
+  IMPORT void set_pos(CP plane, int id, float x, float y);
+  IMPORT bool check_collision(CP plane, float x, float y);
 private:
   Env &e;
 };
@@ -1791,7 +1804,7 @@ private:
 class Skeletal
 {
 public:
-  Skeletal(Env &e) : e(e) { }
+  IMPORT Skeletal(Env &e);
   SA root(PT absolute_pos);
   SA node(SA parent, MN matrix, PT point_offset);
   ML skeletal_bind(EveryApi &ev, std::vector<P> vec, std::vector<PT> vec2, std::vector<SA> sa_vec);
@@ -1804,7 +1817,7 @@ private:
 class VertexAnimApi
 {
 public:
-  VertexAnimApi(Env &e) : e(e) { }
+  IMPORT VertexAnimApi(Env &e);
   IMPORT KF keyframe_mesh(P part);
   IMPORT KF keyframe_lines(LI part);
   IMPORT KF keyframe_bind(EveryApi &ev, KF keyframe, PTT pointtransform, float delta_time);
@@ -1836,7 +1849,7 @@ private:
 class EventNode
 {
 public:
-  EventNode(Env &e) : e(e) { }
+  IMPORT EventNode(Env &e);
   EV empty_event();
   EV key_event(EV next, int key_id, int key_type);
   EV timer_event(EV next, float time);
@@ -1863,7 +1876,7 @@ private:
 class MovementNode
 {
 public:
-  MovementNode(Env &e) : e(e) {}
+  IMPORT MovementNode(Env &e);
   IMPORT MN android_landscape_rotate(MN next);
   IMPORT MN android_landscape_rotate_inv(MN next);
   IMPORT MN mn_mouse_y(FF fetcher, MN move, float start_x, float end_x, float start_y, float end_y, float start_val, float end_val);
@@ -1961,24 +1974,24 @@ private:
 class ExprApi
 {
 public:
-  ExprApi(Env &e) : e(e) {}
-  EX variable(std::string name);
-  EX plus(EX e1, EX e2);
-  EX mul(EX e1, EX e2);
-  EX minus(EX e1, EX e2);
-  EX div(EX e1, EX e2);
-  EX sin(EX e1);
-  EX cos(EX e1);
-  EX float_constant(float val);
-  EX int_constant(int val);
+  IMPORT ExprApi(Env &e);
+  IMPORT EX variable(std::string name);
+  IMPORT EX plus(EX e1, EX e2);
+  IMPORT EX mul(EX e1, EX e2);
+  IMPORT EX minus(EX e1, EX e2);
+  IMPORT EX div(EX e1, EX e2);
+  IMPORT EX sin(EX e1);
+  IMPORT EX cos(EX e1);
+  IMPORT EX float_constant(float val);
+  IMPORT EX int_constant(int val);
 
-  EX expr_float(std::string expr, bool &success);
-  EX expr_int(std::string expr, bool &success);
+  IMPORT EX expr_float(std::string expr, bool &success);
+  IMPORT EX expr_int(std::string expr, bool &success);
 
   struct FloatExprEnv { std::string name; float value; };
   struct IntExprEnv { std::string name; int value; };
-  float expr_eval_float(EX expr, std::vector<FloatExprEnv> env);
-  int expr_eval_int(EX expr, std::vector<IntExprEnv> env);
+  IMPORT float expr_eval_float(EX expr, std::vector<FloatExprEnv> env);
+  IMPORT int expr_eval_int(EX expr, std::vector<IntExprEnv> env);
 private:
   Env &e;
 };
@@ -2199,7 +2212,7 @@ private:
 class WModApi
 {
 public:
-  WModApi(Env &e) : e(e) { }
+  IMPORT WModApi(Env &e);
   IMPORT void dump_functions_for_docs(GameApi::EveryApi &ev, int i);
   IMPORT int dump_functions_count();
   IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
@@ -2252,7 +2265,7 @@ private:
 class FloatVolumeApi
 {
 public:
-	IMPORT FloatVolumeApi(Env &e) : e(e) { }
+  IMPORT FloatVolumeApi(Env &e);
   IMPORT FO light(float dist);
   IMPORT FO julia(float c_x, float c_y, float limit);
   IMPORT FO mandelbrot(float x_x, float x_y, float limit);
@@ -2293,7 +2306,7 @@ private:
 class ColorVolumeApi
 {
 public:
-  IMPORT ColorVolumeApi(Env &e) : e(e) { }
+  IMPORT ColorVolumeApi(Env &e);
   IMPORT COV function(std::function<unsigned int(float x, float y, float z)> f);
   IMPORT COV from_float_volume(FO obj, unsigned int col0, unsigned int col1);
   IMPORT COV from_volume(O obj, unsigned int col_true, unsigned int col_false);
@@ -2318,7 +2331,7 @@ private:
 class VectorVolumeApi
 {
 public:
-	IMPORT VectorVolumeApi(Env &e) : e(e) { }
+  IMPORT VectorVolumeApi(Env &e);
 	IMPORT VO function(std::function<V(float x, float y, float z)> f);
 	IMPORT VO normal(FD fd);
   IMPORT VO normal2(FO fo, float stepsize);
@@ -2335,7 +2348,7 @@ private:
 class DistanceFloatVolumeApi
 {
 public:
-	IMPORT DistanceFloatVolumeApi(Env &e) : e(e) { }
+  IMPORT DistanceFloatVolumeApi(Env &e);
 	IMPORT FD function(std::function<float(float x, float y, float z)> f);
 	IMPORT FD fd_sphere(PT center, float radius);
 	IMPORT FD fd_cube(float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
@@ -2395,7 +2408,7 @@ private:
 class SeparateApi
 {
 public:
-  SeparateApi(Env &e) :e(e) { }
+  IMPORT SeparateApi(Env &e);
   SA empty();
   SA u_sep(SA orig, float (*sep_u)(float x, float y, float z, void *data), void *data);
   SA v_sep(SA orig, float (*sep_v)(float x, float y, float z, void *data), void *data);
@@ -2416,8 +2429,8 @@ private:
 class SurfaceApi
 {
 public:
-  SurfaceApi(Env &e);
-  ~SurfaceApi();
+  IMPORT SurfaceApi(Env &e);
+  IMPORT ~SurfaceApi();
   S plane(PT pos, V u_x, V u_y);
   S sphere(PT center, float radius);
   S torus(PT center, float dist1, float dist2, PT pos, PT u_x, PT u_y);
@@ -2442,8 +2455,8 @@ private:
 class TriStripApi
 {
 public:
-  IMPORT TriStripApi(Env &e) : e(e) { }
-  IMPORT ~TriStripApi() { }
+  IMPORT TriStripApi(Env &e);
+  ~TriStripApi() { }
   IMPORT TS from_array(PT *arr, int size);
   IMPORT TS function(std::function<PT (int i)> f, int count);
   IMPORT TS color_function(TS ts, std::function<unsigned int (int i)> f);
@@ -2473,7 +2486,7 @@ private:
 class CutterApi
 {
 public:
-  IMPORT CutterApi(Env &e) : e(e) { }
+  IMPORT CutterApi(Env &e);
   IMPORT CT function(std::function<PT (PT,PT)> f);
   IMPORT CT plane_cut(PT pos, V u_x, V u_y);
   //IMPORT CT sphere_cut(PT center, float radius);
@@ -2490,7 +2503,7 @@ private:
 class BooleanOps
 {
 public:
-  BooleanOps(Env &e) : e(e) { }
+  IMPORT BooleanOps(Env &e);
   IMPORT BO create_bo(P mesh, O bools, FD fd);
   IMPORT BO cube_bo(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z,int split_x, int split_y);
   IMPORT BO sphere_bo(EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2);
@@ -2512,7 +2525,7 @@ struct PD { int id; };
 class PolygonDistanceField
 {
 public:
-  PolygonDistanceField(Env &e) : e(e) { }
+  IMPORT PolygonDistanceField(Env &e);
   IMPORT PD empty(EveryApi &ev);
   IMPORT PD create_pd(P mesh, SFO distance_field);
   IMPORT PD cube_pd(EveryApi &ev, float start_x, float end_x,float start_y, float end_y,float start_z, float end_z);
@@ -2543,7 +2556,7 @@ private:
 class PolygonArrayApi
 {
 public:
-  PolygonArrayApi(Env &e) : e(e) { }
+  IMPORT PolygonArrayApi(Env &e);
   Pa split_p(EveryApi &ev, P p, int max_chunk);
   Va create_vertex_array(EveryApi &ev, Pa p, bool keep=false);
   void delete_vertex_array(EveryApi &ev, Va va);
@@ -2582,155 +2595,155 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
-  P decimate(P p, float val);
-  P decimate2(P p, float val);
-  bool ready_to_prepare(ML p);
-  DS tf_ds_inv(TF tf, int flags);
-  void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
-  TF load_glb_from_temp2(std::string filename);
-  void load_glb_from_temp3(std::string filename);
-  TF tf_glb_tf(EveryApi &ev, TF tf, std::string url);
-  TF meshy(EveryApi &ev, std::string prompt, std::string filename);
-  P p_ds2(EveryApi &ev, DS ds2);
-  P load_ds_from_temp_p(EveryApi &ev, P p, std::string url);
-  ML fade_pic(EveryApi &ev, BM bm1, float start_time, float transition_time, float end_time, float end_transition_time,
+  IMPORT P decimate(P p, float val);
+  IMPORT P decimate2(P p, float val);
+  IMPORT bool ready_to_prepare(ML p);
+  IMPORT DS tf_ds_inv(TF tf, int flags);
+  IMPORT void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
+  IMPORT TF load_glb_from_temp2(std::string filename);
+  IMPORT void load_glb_from_temp3(std::string filename);
+  IMPORT TF tf_glb_tf(EveryApi &ev, TF tf, std::string url);
+  IMPORT TF meshy(EveryApi &ev, std::string prompt, std::string filename);
+  IMPORT P p_ds2(EveryApi &ev, DS ds2);
+  IMPORT P load_ds_from_temp_p(EveryApi &ev, P p, std::string url);
+  IMPORT ML fade_pic(EveryApi &ev, BM bm1, float start_time, float transition_time, float end_time, float end_transition_time,
 	      BM bm2, float start2_time, float transition2_time, float end2_time, float end2_transition_time);
-  P no_batch_map(P p);
-  CS colourspace_sphere2();
-  CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);
-  CS colourspace_func(std::function<unsigned int (float,float,float,float)> f, float sx, float ex, float sy, float ey, float sz, float ez, float st, float et);
-  CSI colourspace_sample(CS i, int sx, int sy, int sz);
-  P colourspace_facecoll(CSI i, float t);
-  P polygon_fetch(P p);
-  PL rect_pl(float start_x, float end_x,
+  IMPORT P no_batch_map(P p);
+  IMPORT CS colourspace_sphere2();
+  IMPORT CS colourspace_or_elem(CS cs, float delta_t, CS cs2, float delta_t2);
+  IMPORT CS colourspace_func(std::function<unsigned int (float,float,float,float)> f, float sx, float ex, float sy, float ey, float sz, float ez, float st, float et);
+  IMPORT CSI colourspace_sample(CS i, int sx, int sy, int sz);
+  IMPORT P colourspace_facecoll(CSI i, float t);
+  IMPORT P polygon_fetch(P p);
+  IMPORT PL rect_pl(float start_x, float end_x,
 	     float start_y, float end_y,
 	     float start_z, float end_z,
 	     bool x_or_z,
 	     bool start_or_end_higher);
-  PL or_elem_pl(PL pl1, PL pl2);
-  PL array_pl(std::vector<PL> vec);
+  IMPORT PL or_elem_pl(PL pl1, PL pl2);
+  IMPORT PL array_pl(std::vector<PL> vec);
 	     
-  P render_pl(PL pl);
-  P material_face_collection(P base, P material);
-  ML mixshader_shader(EveryApi &ev, ML ml, float mix=0.5);
-  P extract_large_polygons(P p, float minimum_size, bool reverse);
-  P x_split(P p, float x, float x_0, float x_1);
-  P y_split(P p, float y, float y_0, float y_1);
-  P z_split(P p, float z, float z_0, float z_1);
-  P optimize_mesh(P p);
-  P ambient_occulsion_color(P p);
-  P face_cutter(P p, float start, float end);
-  P heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
-  FB fractal_mountain(int level, int sx, int sy);
-  P combine_anim(P p1, P p2, float start_time, float end_time);
-  P sphere_anim(float c_x, float c_y, float c_z,
+  IMPORT P render_pl(PL pl);
+  IMPORT P material_face_collection(P base, P material);
+  IMPORT ML mixshader_shader(EveryApi &ev, ML ml, float mix=0.5);
+  IMPORT P extract_large_polygons(P p, float minimum_size, bool reverse);
+  IMPORT P x_split(P p, float x, float x_0, float x_1);
+  IMPORT P y_split(P p, float y, float y_0, float y_1);
+  IMPORT P z_split(P p, float z, float z_0, float z_1);
+  IMPORT P optimize_mesh(P p);
+  IMPORT P ambient_occulsion_color(P p);
+  IMPORT P face_cutter(P p, float start, float end);
+  IMPORT P heightmap2(FB bm, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT FB fractal_mountain(int level, int sx, int sy);
+  IMPORT P combine_anim(P p1, P p2, float start_time, float end_time);
+  IMPORT P sphere_anim(float c_x, float c_y, float c_z,
 		float c2_x, float c2_y, float c2_z,
 		float r, float r2, float start_time, float end_time, int numfaces1, int numfaces2);
-  P cone_anim(float c_x, float c_y, float c_z,
+  IMPORT P cone_anim(float c_x, float c_y, float c_z,
 	      float d_x, float d_y, float d_z,
 	      float c2_x, float c2_y, float c2_z,
 	      float d2_x, float d2_y, float d2_z,
 	      float r1, float r2,
 	      float r1_2, float r2_2, int numfaces, float start_time, float end_time);
-  P cube_anim(float start_x, float end_x,
+  IMPORT P cube_anim(float start_x, float end_x,
 	      float start_y, float end_y,
 	      float start_z, float end_z,
 	      float start_x2, float end_x2,
 	      float start_y2, float end_y2,
 	      float start_z2, float end_z2,
 	      float start_time, float end_time);
-  ARR or_elem_anim(P p1, P p2, float time);
-  ML anim_render(AA, float delta);
-  ML p_mtl2_prepare(P p);
-  ARR material_choose(std::vector<MT> mat, std::vector<P> p);
-  ARR comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2);
-  ARR p_mtl_materials(EveryApi &ev, P P);
-  ARR p_mtl2_materials(EveryApi &ev, P p);
-  P get_face_count(P p);
-  P transparent_separate2(P p, std::vector<BM> vec, bool opaque);
-  P transparent_separate(P p, BM bm, bool opaque, bool force_transparent);
-  void sort_vertices(VA va, M m);
-  P remove_faces(P p);
-  P combine_textures(P p1, P p2); 
-  P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);
-  MS identity_pose(int li_size);
-  ARR gltf_split_faces2(EveryApi &ev, TF model0, int mesh_index, int prim_index, int max_attach);
+  IMPORT ARR or_elem_anim(P p1, P p2, float time);
+  IMPORT ML anim_render(AA, float delta);
+  IMPORT ML p_mtl2_prepare(P p);
+  IMPORT ARR material_choose(std::vector<MT> mat, std::vector<P> p);
+  IMPORT ARR comb_mat(GameApi::EveryApi &ev, std::vector<MT> vec1, std::vector<MT> vec2);
+  IMPORT ARR p_mtl_materials(EveryApi &ev, P P);
+  IMPORT ARR p_mtl2_materials(EveryApi &ev, P p);
+  IMPORT P get_face_count(P p);
+  IMPORT P transparent_separate2(P p, std::vector<BM> vec, bool opaque);
+  IMPORT P transparent_separate(P p, BM bm, bool opaque, bool force_transparent);
+  IMPORT void sort_vertices(VA va, M m);
+  IMPORT P remove_faces(P p);
+  IMPORT P combine_textures(P p1, P p2); 
+  IMPORT P slow_calc_lights(P p, float light_dir_x, float light_dir_y, float light_dir_z);
+  IMPORT MS identity_pose(int li_size);
+  IMPORT ARR gltf_split_faces2(EveryApi &ev, TF model0, int mesh_index, int prim_index, int max_attach);
   
-  ARR split_faces(P p, ATT att, int max_attach);
-  std::vector<P> orig_pose(EveryApi &ev, P p, LI li, int li_size);
-  std::vector<P> orig_pose2(EveryApi &ev, std::vector<P> vec, LI li, int li_size);
-  MS new_pose(EveryApi &ev, LI li_orig, LI li);
-  ML ske_anim(EveryApi &ev, P mesh, LI orig_pose, int li_size, std::string url, std::vector<LI> new_poses, MT mat);
-  ML ske_anim2(EveryApi &ev, std::vector<P> mesh, LI orig_pose, int li_size, std::string url, std::vector<LI> new_poses, MT mat);
-  ATT find_attach2(P p, LI li);
-  ATT attach_cache(ATT a, P p);
+  IMPORT ARR split_faces(P p, ATT att, int max_attach);
+  IMPORT std::vector<P> orig_pose(EveryApi &ev, P p, LI li, int li_size);
+  IMPORT std::vector<P> orig_pose2(EveryApi &ev, std::vector<P> vec, LI li, int li_size);
+  IMPORT MS new_pose(EveryApi &ev, LI li_orig, LI li);
+  IMPORT ML ske_anim(EveryApi &ev, P mesh, LI orig_pose, int li_size, std::string url, std::vector<LI> new_poses, MT mat);
+  IMPORT ML ske_anim2(EveryApi &ev, std::vector<P> mesh, LI orig_pose, int li_size, std::string url, std::vector<LI> new_poses, MT mat);
+  IMPORT ATT find_attach2(P p, LI li);
+  IMPORT ATT attach_cache(ATT a, P p);
   
-  P convex_hull(PTS pts);
-  P optimize_mesh(P p, float max);
-  P toon_outline(P p, float border_width);
-  ML cullface(ML ml, bool b, bool is_gltf);
-  P substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal);
-  ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
-  ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);
-  ARR block_render2(GameApi::EveryApi &ev, std::vector<P> vec, std::vector<MT> mat);
-  ML block_draw(std::vector<ML> vec, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z, int view);
-  P bitmapsized_quad(BM bm);
+  IMPORT P convex_hull(PTS pts);
+  IMPORT P optimize_mesh(P p, float max);
+  IMPORT P toon_outline(P p, float border_width);
+  IMPORT ML cullface(ML ml, bool b, bool is_gltf);
+  IMPORT P substitute(P p1, P p2, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float normal);
+  IMPORT ARR block_divide(P p, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z);
+  IMPORT ARR block_render(GameApi::EveryApi &ev, std::vector<P> vec, MT mat);
+  IMPORT ARR block_render2(GameApi::EveryApi &ev, std::vector<P> vec, std::vector<MT> mat);
+  IMPORT ML block_draw(std::vector<ML> vec, float pos_x, float pos_z, int sx, int sz, float delta_x, float delta_z, int view);
+  IMPORT P bitmapsized_quad(BM bm);
   // Array functions
-  PTS voxelarray_to_pts(AV arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
-  AV pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz);
-  AV av_unique(AV arr);
-  ML quad_tree(P p);
-  P mix_mesh(P p, PTS points, float val);
-  ARR poly_array(std::vector<P> vec);
-  P poly_index(ARR arr, int idx);
-  int poly_size(ARR arr);
-  ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
-  P normal_darkness(P p, float dark);
-  P gltf_load( EveryApi &ev, TF model, int mesh_index, int prim_index );
-  P gltf_load_nr( EveryApi &ev, TF model, int mesh_index, int prim_index );
-  BM gltf_load_bitmap( GameApi::EveryApi &ev, TF model, int image_index );
-  ARR material_extractor_p(P p, int start_index, int end_index, int num_slots, int current_slot);
-  ARR material_extractor_bm(P p, int start_index, int end_index);
-  ARR material_extractor_mt(EveryApi &ev, P p, float mix, int start_index, int end_index);
-  MT material_index(EveryApi &ev, std::vector<MT> vec, int index);
-  ARR material_arr(std::vector<MT> vec, int start_range, int end_range);
-  ML mesh_anim_display_inst(EveryApi &ev, P p, FF val, MN move, MT mat, MS inst);
-  ML mesh_anim_display_inst2(EveryApi &ev, P p, FF val, MN mn, MT mat, PTS inst);
-  ML mesh_anim(EveryApi &ev, std::vector<P> vec, std::vector<MN> move, std::vector<MT> mat, std::vector<MS> inst, std::vector<IF> states, std::string url);
-  P mesh_elem(P start, P end);
-  P bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per );
-  P bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 );
-  LI li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps);
-  P p_piechart(EveryApi &ev, float c_x, float c_y, float start_angle, float end_angle, float radius, int numsteps, float start_z, float end_z);
-  ML piechart_full(EveryApi &ev, float c_x, float c_y, std::string url, float radius, int numsteps, float start_z, float end_z);
-  P li_polygon(LI li, float width);
-  P gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color);
-  P texture_add(P p, BM bm);
-  P stl_load(std::string url);
-  P fix_vertex_order(P p);
-  P filter_invisible(P p, float size);
-  std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix, int delta=0);
+  IMPORT PTS voxelarray_to_pts(AV arr, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT AV pts_to_voxel(PTS pts, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, int sx, int sy, int sz);
+  IMPORT AV av_unique(AV arr);
+  IMPORT ML quad_tree(P p);
+  IMPORT P mix_mesh(P p, PTS points, float val);
+  IMPORT ARR poly_array(std::vector<P> vec);
+  IMPORT P poly_index(ARR arr, int idx);
+  IMPORT int poly_size(ARR arr);
+  IMPORT ARR poly_execute(EveryApi &ev, ARR arr, std::string gameapi_script);
+  IMPORT P normal_darkness(P p, float dark);
+  IMPORT P gltf_load( EveryApi &ev, TF model, int mesh_index, int prim_index );
+  IMPORT P gltf_load_nr( EveryApi &ev, TF model, int mesh_index, int prim_index );
+  IMPORT BM gltf_load_bitmap( GameApi::EveryApi &ev, TF model, int image_index );
+  IMPORT ARR material_extractor_p(P p, int start_index, int end_index, int num_slots, int current_slot);
+  IMPORT ARR material_extractor_bm(P p, int start_index, int end_index);
+  IMPORT ARR material_extractor_mt(EveryApi &ev, P p, float mix, int start_index, int end_index);
+  IMPORT MT material_index(EveryApi &ev, std::vector<MT> vec, int index);
+  IMPORT ARR material_arr(std::vector<MT> vec, int start_range, int end_range);
+  IMPORT ML mesh_anim_display_inst(EveryApi &ev, P p, FF val, MN move, MT mat, MS inst);
+  IMPORT ML mesh_anim_display_inst2(EveryApi &ev, P p, FF val, MN mn, MT mat, PTS inst);
+  IMPORT ML mesh_anim(EveryApi &ev, std::vector<P> vec, std::vector<MN> move, std::vector<MT> mat, std::vector<MS> inst, std::vector<IF> states, std::string url);
+  IMPORT P mesh_elem(P start, P end);
+  IMPORT P bar_chart( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per );
+  IMPORT P bar_chart2( GameApi::EveryApi &ev, std::string url, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z, float per, float per2 );
+  IMPORT LI li_piechart(float c_x, float c_y, float c_z, float start_angle, float end_angle, float radius, int numsteps);
+  IMPORT P p_piechart(EveryApi &ev, float c_x, float c_y, float start_angle, float end_angle, float radius, int numsteps, float start_z, float end_z);
+  IMPORT ML piechart_full(EveryApi &ev, float c_x, float c_y, std::string url, float radius, int numsteps, float start_z, float end_z);
+  IMPORT P li_polygon(LI li, float width);
+  IMPORT P gradient_color(P p, float p_x, float p_y, float p_z, float v_x, float v_y, float v_z, unsigned int start_color, unsigned int end_color);
+  IMPORT P texture_add(P p, BM bm);
+  IMPORT P stl_load(std::string url);
+  IMPORT P fix_vertex_order(P p);
+  IMPORT P filter_invisible(P p, float size);
+  IMPORT std::vector<TXID> mtl_parse(EveryApi&ev, std::vector<unsigned char> mtlfilecontents, std::string url_prefix, int delta=0);
   
-  ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts, int ticks);
-  ML m_bind_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, int ticks);
-  ML load_scene(EveryApi &ev, std::string url, int sx, int sy);
+  IMPORT ML m_bind_inst_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, PTS pts, int ticks);
+  IMPORT ML m_bind_many(EveryApi &ev, std::vector<P> vec, std::vector<MT> materials, int ticks);
+  IMPORT ML load_scene(EveryApi &ev, std::string url, int sx, int sy);
 
-  CG curve_group_from_anim(MA ma, float start_time, float end_time);
-  MA meshanim(std::vector<P> vec, float start_time, float end_time);
-  P meshanim_mesh(MA ma, float time);
-  P meshanim_mesh2(MA ma, float time1, float time2);
-  ARR meshanim_anim_meshes(MA ma, float start_time, float delta_time, int count);
+  IMPORT CG curve_group_from_anim(MA ma, float start_time, float end_time);
+  IMPORT MA meshanim(std::vector<P> vec, float start_time, float end_time);
+  IMPORT P meshanim_mesh(MA ma, float time);
+  IMPORT P meshanim_mesh2(MA ma, float time1, float time2);
+  IMPORT ARR meshanim_anim_meshes(MA ma, float start_time, float delta_time, int count);
 
-  P lod_choose(std::vector<P> vec, std::string name);
-  P lod_set(P p, std::string name, int value);
-  IF lod_select(float start_dist, float dist_step, int max_value);
+  IMPORT P lod_choose(std::vector<P> vec, std::string name);
+  IMPORT P lod_set(P p, std::string name, int value);
+  IMPORT IF lod_select(float start_dist, float dist_step, int max_value);
 
-  BM shadow_map(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy);
-  BB shadow_map2(P p, float p_x, float p_y, float p_z, int sx, int sy, P quad);
-  BM shadow_map3(EveryApi &ev, P objs, float p_x, float p_Y, float p_z, int sx, int sy, P quad);
-  ML choose_time(ML next, std::vector<ML> vec, float delta_time);
-  ML anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count);
-  ML anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float delta_time, int count);
+  IMPORT BM shadow_map(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy);
+  IMPORT BB shadow_map2(P p, float p_x, float p_y, float p_z, int sx, int sy, P quad);
+  IMPORT BM shadow_map3(EveryApi &ev, P objs, float p_x, float p_Y, float p_z, int sx, int sy, P quad);
+  IMPORT ML choose_time(ML next, std::vector<ML> vec, float delta_time);
+  IMPORT ML anim(EveryApi &ev, ML next, MA anim, float start_time, float delta_time, int count);
+  IMPORT ML anim_bind(EveryApi &ev, ML next, MA anim, MT material, float start_time, float delta_time, int count);
   
   // normal functions
   IMPORT void print_stat(P p);
@@ -2975,9 +2988,9 @@ public:
   IMPORT ID find_texcoord_id(P p, int facenum, int pointnum);
   IMPORT ID id_array(ID *array, int size);
   IMPORT void preparepoly(P p, int bbm_choose = -1);
-  void renderpoly(P p, float x, float y, float z);
-  void renderpoly(P p, PT pos);
-  void renderpoly(P p, int choose, float x, float y, float z);
+  IMPORT void renderpoly(P p, float x, float y, float z);
+  IMPORT void renderpoly(P p, PT pos);
+  IMPORT void renderpoly(P p, int choose, float x, float y, float z);
   IMPORT void prepare(P p, int bbm_choose = -1);
   IMPORT void render(P p, int choose, float x, float y, float z);
   IMPORT void update(VA va);
@@ -3141,7 +3154,7 @@ private:
 class WaveformApi
 { // [0..length] -> [-1..1]
 public: 
-	IMPORT WaveformApi(Env &e) : e(e) { }
+	IMPORT WaveformApi(Env &e);
 	IMPORT WV wv_empty(float length);
 	IMPORT WV function(std::function<float(float)> f, float length, float min_value, float max_value);
 	IMPORT WV sinwave(float length, float freq);
@@ -3177,7 +3190,7 @@ private:
 class SampleCollectionApi
 {
 public:
-  IMPORT SampleCollectionApi(Env &e) : e(e) { }
+  IMPORT SampleCollectionApi(Env &e);
   IMPORT SM empty();
   IMPORT SM add(SM orig, WV wave, int sample_rate, int id);
   //WV find_wave(SM orig, int id);
@@ -3194,7 +3207,7 @@ private:
 class TrackerApi
 {
 public:
-  IMPORT TrackerApi(Env &e) : e(e) { }
+  IMPORT TrackerApi(Env &e);
   IMPORT TRK empty(int numchannels, int numslots);
   IMPORT TRK audio_slot(TRK orig, int channel, int slot, int duration, int sample);
   IMPORT TRK array(TRK *array, int size);
@@ -3241,7 +3254,7 @@ private:
 class NewPlaneApi
 {
 public:
-  IMPORT NewPlaneApi(Env &e) : e(e) { }
+  IMPORT NewPlaneApi(Env &e);
   IMPORT PP function(std::function<PT (int idx)> f, int num_points, float px, float py, float sx, float sy);
   IMPORT PP color_function(PP pl, std::function<unsigned int (int idx)> f);
   IMPORT PP polygon(std::vector<PT> vec);
@@ -3462,7 +3475,7 @@ private:
 class VectorBitmapApi
 {
 public: 
-  VectorBitmapApi(Env &e) : e(e) { }
+  IMPORT VectorBitmapApi(Env &e);
   VBM spheredelta(float radius1, float radius2, float x, float y, float z,
 		  float sx, float sy);
   VBM plane(PT pos, V u_x, V u_y, V u_z);
@@ -3581,7 +3594,7 @@ private:
 class PointCollectionApi
   { // int -> PT
 public:
-	IMPORT PointCollectionApi(Env &e) : e(e) { }
+	IMPORT PointCollectionApi(Env &e);
     IMPORT PC function(std::function<PT (int)> f, int count);
 	IMPORT PC empty();
 	IMPORT PC single(PT point);
@@ -3600,7 +3613,7 @@ private:
 class MatricesApi
 {
 public:
-  MatricesApi(Env &e) :e(e) { }
+  IMPORT MatricesApi(Env &e);
   ML render_ms_files2_si(EveryApi &ev, std::vector<P> p, std::vector<MT> mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   ML render_ms_files_si(EveryApi &ev, std::vector<P> p, MT mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
 
@@ -3630,7 +3643,7 @@ private:
 class PointsApi
 {
 public:
-  PointsApi(Env &e) : e(e) { }
+  IMPORT PointsApi(Env &e);
   IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
   IMPORT PTS block_pts_lod(PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);
   IMPORT PTS load_points(std::string url);
@@ -3732,7 +3745,7 @@ private:
 class LinesApi
 {
 public:
-	IMPORT LinesApi(Env &e) : e(e) { }
+	IMPORT LinesApi(Env &e);
   IMPORT LI alt(std::vector<LI> v, int index);
   IMPORT LI li_empty();
   IMPORT LI li_url(std::string url);
@@ -3835,7 +3848,7 @@ private:
 class SpaceVectorApi
 { // f : PT->V
 public:
-  SpaceVectorApi(Env &e) : e(e) { }
+  IMPORT SpaceVectorApi(Env &e);
   SV function(std::function<V (float x, float y, float z)> f); // TODO
   SV from_points(PC coll); // choose poly(nearest points), linear interpoate, ensure no failures
   PT flow_next_point(SV v, PT p, float mult);
@@ -3879,7 +3892,7 @@ private:
 class ObjectMoveApi
 {
 public:
-  ObjectMoveApi(Env &e) : e(e) { }
+  IMPORT ObjectMoveApi(Env &e);
   OM empty(int numobjects);
   OM add_object(OM orig, int index, P obj);
   OM clear_object(OM orig, int index);
@@ -3898,7 +3911,7 @@ private:
 class VBOApi
 {
 public:
-  VBOApi(Env &e);
+  IMPORT VBOApi(Env &e);
   ~VBOApi();
   // preparing
   Vb alloc(int obj_count);
@@ -3924,7 +3937,7 @@ private:
 class PathApi
 {
 public:
-  PathApi(Env &e);
+  IMPORT PathApi(Env &e);
   ~PathApi();
   PA point(PT p);
   PA next_point(PA pa, PT p);
@@ -3945,101 +3958,101 @@ private:
 class UberShaderApi
 {
 public:
-  UberShaderApi(Env &e) : e(e) {}
-  US v_empty();
-  US v_water(US us);
-  US v_edge(US us);
-  US v_gltf_anim(US us);
-  US v_globe(US us);
-  US v_color_from_normals(US us);
-  US v_recalc_normal(US us);
-  US v_diffuse(US us);
-  US v_ambient(US us);
-  US v_specular(US us);
-  US v_inst(US us);
-  US v_inst_matrix(US us);
-  US v_passall(US us);
-  US v_pass_position(US us);
-  US v_point_light(US us);
-  US v_coloured_lights(US us);
-  US v_snoise(US us);
-  US v_light(US us);
-  US v_ref(US us);
-  US v_wave(US us);
-  US v_toon(US us);
-  US v_texture(US us);
-  US v_manytexture(US us);
-  US v_cubemaptexture(US us);
-  US v_texture_arr(US us);
-  US v_colour(US us);
-  US v_blur(US us); // dangerous operation
-  US v_dist_field_mesh(US us, SFO sfo);
-  US v_skeletal(US us);
-  US v_custom(US us, std::string v_funcname);
-  US v_newshadow_1(US us);
-  US v_newshadow_2(US us);
-  US v_phong(US us);
-  US v_blurred_render(US us);
-  US v_adjust(US us);
-  US v_generic(US us, std::string name, std::string flags);
-  US v_vertexphong(US us);
-  US v_glowedge(US us);
-  US v_bump_phong(US us);
-  US v_fog(US us);
-  US v_shadow(US us);
-  US v_mix(US us);
-  US v_dyn_lights(US us);
-  US v_gi(US us);
-  US v_gltf(US us);
-  US v_colour_with_mix(US us);
-  US v_fade(US us);
-  US f_water(US us);
-  US f_edge(US us);
-  US f_gltf_anim(US us);
-  US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
-  US f_sandbox(US us, SFO sfo); // this requires texture coordinates
-  US f_empty(bool transparent);
-  US f_diffuse(US us);
-  US f_ambient(US us);
-  US f_specular(US us);
-  US f_newshadow_1(US us);
-  US f_newshadow_2(US us, bool is_phong);
-  US f_adjust(US us);
-  US f_phong(US us);
-  US f_blurred_render(US us);
-  US f_phong2(US us);
-  US f_generic(US us, std::string name, std::string flags);
-  US f_generic_flip(US us, std::string name, std::string flags);
-  US f_vertexphong(US us);
-  US f_glowedge(US us);
-  US f_bump_phong(US us);
-  US f_fog(US us);
-  US f_shadow(US us);
-  US f_mix(US us);
-  US f_dyn_lights(US us);
-  US f_color_from_normals(US us);
-  US f_color_from_id(US us, int id); // id = [0..9]
-  US f_point_light(US us);
-  US f_coloured_lights(US us);
-  US f_bands(US us);
-  US f_snoise(US us);
-  US f_blur(US us); // dangerous operation
-  US f_ref(US us);
-  US f_light(US us);
-  US f_toon(US us);
-  US f_texture(US us);
-  US f_manytexture(US us);
-  US f_cubemaptexture(US us);
-  US f_texture_arr(US us);
-  US f_colour(US us);
-  US f_mix_color(US us, US us2, float val); // TODO
-  US f_choose_color(US us);
-  US f_custom(US us, std::string f_funcname);
-  US f_gi(US us);
-  US f_colour_with_mix(US us);
-  US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec, bool unlit);
-  US f_fade(US us);
-  US f_flip(US us, US us2);
+  IMPORT UberShaderApi(Env &e);
+  IMPORT US v_empty();
+  IMPORT US v_water(US us);
+  IMPORT US v_edge(US us);
+  IMPORT US v_gltf_anim(US us);
+  IMPORT US v_globe(US us);
+  IMPORT US v_color_from_normals(US us);
+  IMPORT US v_recalc_normal(US us);
+  IMPORT US v_diffuse(US us);
+  IMPORT US v_ambient(US us);
+  IMPORT US v_specular(US us);
+  IMPORT US v_inst(US us);
+  IMPORT US v_inst_matrix(US us);
+  IMPORT US v_passall(US us);
+  IMPORT US v_pass_position(US us);
+  IMPORT US v_point_light(US us);
+  IMPORT US v_coloured_lights(US us);
+  IMPORT US v_snoise(US us);
+  IMPORT US v_light(US us);
+  IMPORT US v_ref(US us);
+  IMPORT US v_wave(US us);
+  IMPORT US v_toon(US us);
+  IMPORT US v_texture(US us);
+  IMPORT US v_manytexture(US us);
+  IMPORT US v_cubemaptexture(US us);
+  IMPORT US v_texture_arr(US us);
+  IMPORT US v_colour(US us);
+  IMPORT US v_blur(US us); // dangerous operation
+  IMPORT US v_dist_field_mesh(US us, SFO sfo);
+  IMPORT US v_skeletal(US us);
+  IMPORT US v_custom(US us, std::string v_funcname);
+  IMPORT US v_newshadow_1(US us);
+  IMPORT US v_newshadow_2(US us);
+  IMPORT US v_phong(US us);
+  IMPORT US v_blurred_render(US us);
+  IMPORT US v_adjust(US us);
+  IMPORT US v_generic(US us, std::string name, std::string flags);
+  IMPORT US v_vertexphong(US us);
+  IMPORT US v_glowedge(US us);
+  IMPORT US v_bump_phong(US us);
+  IMPORT US v_fog(US us);
+  IMPORT US v_shadow(US us);
+  IMPORT US v_mix(US us);
+  IMPORT US v_dyn_lights(US us);
+  IMPORT US v_gi(US us);
+  IMPORT US v_gltf(US us);
+  IMPORT US v_colour_with_mix(US us);
+  IMPORT US v_fade(US us);
+  IMPORT US f_water(US us);
+  IMPORT US f_edge(US us);
+  IMPORT US f_gltf_anim(US us);
+  IMPORT US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
+  IMPORT US f_sandbox(US us, SFO sfo); // this requires texture coordinates
+  IMPORT US f_empty(bool transparent);
+  IMPORT US f_diffuse(US us);
+  IMPORT US f_ambient(US us);
+  IMPORT US f_specular(US us);
+  IMPORT US f_newshadow_1(US us);
+  IMPORT US f_newshadow_2(US us, bool is_phong);
+  IMPORT US f_adjust(US us);
+  IMPORT US f_phong(US us);
+  IMPORT US f_blurred_render(US us);
+  IMPORT US f_phong2(US us);
+  IMPORT US f_generic(US us, std::string name, std::string flags);
+  IMPORT US f_generic_flip(US us, std::string name, std::string flags);
+  IMPORT US f_vertexphong(US us);
+  IMPORT US f_glowedge(US us);
+  IMPORT US f_bump_phong(US us);
+  IMPORT US f_fog(US us);
+  IMPORT US f_shadow(US us);
+  IMPORT US f_mix(US us);
+  IMPORT US f_dyn_lights(US us);
+  IMPORT US f_color_from_normals(US us);
+  IMPORT US f_color_from_id(US us, int id); // id = [0..9]
+  IMPORT US f_point_light(US us);
+  IMPORT US f_coloured_lights(US us);
+  IMPORT US f_bands(US us);
+  IMPORT US f_snoise(US us);
+  IMPORT US f_blur(US us); // dangerous operation
+  IMPORT US f_ref(US us);
+  IMPORT US f_light(US us);
+  IMPORT US f_toon(US us);
+  IMPORT US f_texture(US us);
+  IMPORT US f_manytexture(US us);
+  IMPORT US f_cubemaptexture(US us);
+  IMPORT US f_texture_arr(US us);
+  IMPORT US f_colour(US us);
+  IMPORT US f_mix_color(US us, US us2, float val); // TODO
+  IMPORT US f_choose_color(US us);
+  IMPORT US f_custom(US us, std::string f_funcname);
+  IMPORT US f_gi(US us);
+  IMPORT US f_colour_with_mix(US us);
+  IMPORT US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec, bool unlit);
+  IMPORT US f_fade(US us);
+  IMPORT US f_flip(US us, US us2);
 private:
   Env &e;
 };
@@ -4108,28 +4121,28 @@ private:
 class LowFrameBufferApi
 {
 public:
-  LowFrameBufferApi(Env &e) : e(e) { }
-  RUN low_framebuffer_run(EveryApi &ev, FBU buffer, int mode, int scr_x, int scr_y);
-  FBU low_framebuffer(FML mainloop, int format, int width, int height, int depth);
-  FML low_sprite_draw(std::string name, BM bm, MN mn, int x, int y, int fmt, float start_time);
-  FML low_poly_draw(std::string name, P p,MN mn);
-  FML low_sprite_array(std::string name, std::string url, std::vector<BM> bms, MN mn, int x, int y, int fmt, float start_time);
-  FML low_render_world(std::vector<BM> blocks, int screen_width, int screen_height, int fmt);
-  FML low_scroll_world(FML ml, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames);
-  FML low_build_world(FML ml, std::string url, std::string chars,int x, int y);
-  FML low_enemy_draw(BM bm, std::string url, int fmt, float speed);
-  FML low_enemy_draw2(std::vector<BM> bm, std::string url, int fmt, float speed, int time_delta, int time_duration);
-  FML low_collision(FML ml, float start_x, float end_x, float start_y, float end_y, int key);
-  BM low_frame_bitmap(FML ml, int sx, int sy);
-  FML low_key_bm_prepare(FML ml, BM bm, int key,FML normal, float duration, FML next);
-  FML low_activate_snapshot(EveryApi &ev, FML ml, int key, MN move, float duration, FML next);
-  FML qml_print(std::string url);
-  FML qml_create_node(std::string url);
-  FML w_root(GameApi::EveryApi &ev, GameApi::W wd);
-  W w_layout(std::vector<W> vec, std::string url);
-  W w_rect(unsigned int color);
-  W w_bitmap(BM bm);
-  W w_text(EveryApi &ev, Ft font, std::string str, int x_gap, float baseline);
+  IMPORT LowFrameBufferApi(Env &e);
+  IMPORT RUN low_framebuffer_run(EveryApi &ev, FBU buffer, int mode, int scr_x, int scr_y);
+  IMPORT FBU low_framebuffer(FML mainloop, int format, int width, int height, int depth);
+  IMPORT FML low_sprite_draw(std::string name, BM bm, MN mn, int x, int y, int fmt, float start_time);
+  IMPORT FML low_poly_draw(std::string name, P p,MN mn);
+  IMPORT FML low_sprite_array(std::string name, std::string url, std::vector<BM> bms, MN mn, int x, int y, int fmt, float start_time);
+  IMPORT FML low_render_world(std::vector<BM> blocks, int screen_width, int screen_height, int fmt);
+  IMPORT FML low_scroll_world(FML ml, float speed_x, float speed_y, float p_x, float p_y, float left_offset, float right_offset, float height, float height2, int mode, int jump_frames);
+  IMPORT FML low_build_world(FML ml, std::string url, std::string chars,int x, int y);
+  IMPORT FML low_enemy_draw(BM bm, std::string url, int fmt, float speed);
+  IMPORT FML low_enemy_draw2(std::vector<BM> bm, std::string url, int fmt, float speed, int time_delta, int time_duration);
+  IMPORT FML low_collision(FML ml, float start_x, float end_x, float start_y, float end_y, int key);
+  IMPORT BM low_frame_bitmap(FML ml, int sx, int sy);
+  IMPORT FML low_key_bm_prepare(FML ml, BM bm, int key,FML normal, float duration, FML next);
+  IMPORT FML low_activate_snapshot(EveryApi &ev, FML ml, int key, MN move, float duration, FML next);
+  IMPORT FML qml_print(std::string url);
+  IMPORT FML qml_create_node(std::string url);
+  IMPORT FML w_root(GameApi::EveryApi &ev, GameApi::W wd);
+  IMPORT W w_layout(std::vector<W> vec, std::string url);
+  IMPORT W w_rect(unsigned int color);
+  IMPORT W w_bitmap(BM bm);
+  IMPORT W w_text(EveryApi &ev, Ft font, std::string str, int x_gap, float baseline);
 private:
   LowFrameBufferApi(const LowFrameBufferApi &);
   void operator=(const LowFrameBufferApi&);
@@ -4141,7 +4154,7 @@ class FrameBufferApi
 {
 public:
   struct vp { int viewport[4]; };
-  IMPORT FrameBufferApi(Env &e) : e(e) { }
+  IMPORT FrameBufferApi(Env &e);
   IMPORT FBO create_fbo(EveryApi &ev, int sx, int sy);
   IMPORT void config_fbo(FBO buffer);
   IMPORT void unconfig_fbo(FBO buffer);
@@ -4165,7 +4178,7 @@ private:
 class LayoutApi
 {
 public:
-  LayoutApi(Env &e) : e(e) { }
+  IMPORT LayoutApi(Env &e);
   LAY root(int sx, int sy); // id = {0}
   LAY split_y(LAY l, int id, int num); // id = {0..num-1}
   LAY split_x(LAY l, int id, int num); // id = {0..num-1}
@@ -4193,7 +4206,7 @@ private:
 class DrawApi
 {
 public:
-  DrawApi(Env &e) : e(e) { }
+  IMPORT DrawApi(Env &e);
   DR label(LAY l, int id, std::string str, Ft font);
   DR icon(LAY l, int id, BM bm);
   DR rect(LAY l, int id, unsigned int color);
@@ -4226,14 +4239,9 @@ private:
   
 struct EveryApi
 {
-	EveryApi(Env &e)
-	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e), low_frame_api(e),
-
-	    env(e)
-  { }
-  Env &get_env() { return env; }
-  
+  IMPORT EveryApi(Env &e);
+  IMPORT Env &get_env();
+  IMPORT ~EveryApi();
   MainLoopApi mainloop_api;
   PointApi point_api;
   VectorApi vector_api;
