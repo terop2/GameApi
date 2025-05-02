@@ -89,7 +89,7 @@ echo "<li>Running the script.txt via builder, web deploy, cmdline tool in ubuntu
 echo "<li>Html5 export has video canvas or embedding, full screen mode\n";
 echo "<li>File format support like .obj,.stl,.glb,.gltf\n";
 echo "<li>GLTF Materials, skeletons/rigging, animations\n";
-echo "<li>Nanite/lod implementation available\n";
+echo "<li>lod implementation available\n";
 echo "<li>OpenGL instancing, static instancing\n";
 echo "<li>Load time and frame rate performance optimizations\n";
 echo "<li>Concurrent network stack,zip decode,image decode,vertex arrays,textures using 8 cpus after web deploy\n";
@@ -154,6 +154,7 @@ echo "<li>nft and e-commerce support(implementation not started)\n";
 echo "<li>popularity(access to popular sales platforms missing(I'm not going to spam people with useless emails))\n";
 echo "<li>video support(emscripten video in opencv not working)\n";
 echo "<li>adverticement video displaying gameapi features(planned, but govt rejected the training)\n";
+echo "<li>nanite patches for lod\n";
 echo "</ul>\n";
 echo "</div>\n";
 echo "</div>\n";
