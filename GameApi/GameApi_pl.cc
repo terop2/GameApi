@@ -27700,3 +27700,89 @@ GameApi::P GameApi::PolygonApi::decimate2(GameApi::P p, float val)
   Decimate2::decimate(m.vertices,m.faces, val);
   return add_polygon2(e,new DecimateFaceCollection2(coll,m),1);
 }
+
+struct PointPair2
+{
+  int face1;
+  int point1;
+  int face2;
+  int point2;
+};
+
+std::vector<PointPair2> get_pairs(FaceCollection &coll)
+{
+  std::vector<PointPair2> vec;
+  int s = coll.NumFaces();
+  for(int i=0;i<s;i++)
+    {
+      int p = coll.NumPoints(i);
+      for(int j=0;j<s;j++)
+	{
+	  Point point1 = coll.FacePoint(i,j);
+	  for(int i2=i+1;i2<s;i2++)
+	    {
+	      //if (i2==i) continue;
+	      int p2=coll.NumPoints(i2);
+	      for(int j2=0;j2<p2;j2++)
+		{
+		  Point point2 = coll.FacePoint(i2,j2);
+		  if (fabs(point2.x-point1.x)<0.000001 &&
+		      fabs(point2.y-point1.y)<0.000001 &&
+		      fabs(point2.z-point1.z)<0.000001)
+		    {
+		      PointPair2 px;
+		      px.face1 = i;
+		      px.point1 = j;
+		      px.face2 = i2;
+		      px.point2 = j2;
+		      vec.push_back(px);
+		    }
+		}
+	    }
+
+	  
+	}
+    }
+  return vec;
+}
+
+
+struct PointIndex
+{
+  int face;
+  int point;
+};
+bool operator<(const PointIndex &p1, const PointIndex &p2)
+{
+  if (p1.face==p2.face)
+    {
+      return p1.point<p2.point;
+    }
+  return p1.face<p2.face;
+}
+
+
+class PointMap2
+{
+public:
+  virtual PointIndex Map(const PointIndex &p) const=0;
+};
+
+class PointMapImpl : public PointMap2
+{
+public:
+  PointMapImpl(std::vector<PointPair2> vec)
+  {
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	PointIndex i1 = { vec[i].face1, vec[i].point1 };
+	PointIndex i2 = { vec[i].face2, vec[i].point2 };
+	mymap[i1]=i2;
+	mymap[i2]=i1;
+      }
+  }
+  PointIndex Map(const PointIndex &p) const { return mymap[p]; }
+private:
+  mutable std::map<PointIndex,PointIndex> mymap;
+};
