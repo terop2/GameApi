@@ -458,6 +458,7 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, e.in_P);
 	//GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
 	//m = ev.matrix_api.mult(m3,m);
 
@@ -466,6 +467,7 @@ public:
 
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
 	ev.shader_api.set_var(sh, "time", e.time);
     ev.shader_api.set_var(sh, "in_POS", e.in_POS);
   OpenglLowApi *ogl = g_low->ogl;
@@ -513,6 +515,7 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, e.in_P);
 	//GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
 	//m = ev.matrix_api.mult(m3,m);
 	ev.shader_api.set_var(sh, "in_MV", m);
@@ -520,6 +523,7 @@ public:
 
 	ev.shader_api.set_var(sh, "in_T", m1);
 	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
 	ev.shader_api.set_var(sh, "time", e.time);
 	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
 
@@ -605,12 +609,14 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	//GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
 	//m = ev.matrix_api.mult(m3,m);
 	ev.shader_api.set_var(shader, "in_MV", m);
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "in_P", m3);
 	sh = shader;
       }
 
@@ -696,6 +702,7 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	//GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
 	//m = ev.matrix_api.mult(m3,m);
@@ -703,6 +710,7 @@ public:
 	ev.shader_api.set_var(shader, "in_MV", m);
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "in_P", m3);
 	sh = shader;
       }
 
@@ -792,6 +800,7 @@ public:
 	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
 	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
 	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	GameApi::M m3 = add_matrix2(env, e.in_P);
 	ev.shader_api.use(shader);
 	//GameApi::M m3 = ev.matrix_api.trans(0.0,0.0,-1.1);
 	//m = ev.matrix_api.mult(m3,m);
@@ -799,6 +808,7 @@ public:
 	ev.shader_api.set_var(shader, "in_MV", m);
 	ev.shader_api.set_var(shader, "in_T", m1);
 	ev.shader_api.set_var(shader, "in_N", m2);
+	ev.shader_api.set_var(shader, "in_P", m3);
 	sh = shader;
       }
 
@@ -1499,6 +1509,9 @@ EXPORT GameApi::ML GameApi::LinesApi::ml_li_render(EveryApi &ev, LI l, float lin
   return add_main_loop(e, new LinesRender(e,ev,l,linewidth));
 }
 
+IMPORT extern GameApi::EveryApi *g_everyapi;
+
+
 EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 {
   OpenglLowApi *ogl = g_low->ogl;
@@ -1519,6 +1532,26 @@ EXPORT GameApi::LLA GameApi::LinesApi::prepare(LI l)
 	Point p2 = coll->LinePoint(i,1);
 	Point k = coll->EndLinePoint(i,0);
 	Point k2 = coll->EndLinePoint(i,1);
+
+	/*
+	if (is_mobile(*g_everyapi))
+	  {
+	    float mul = 0.90;
+	    p.x*=mul;
+	    p.y*=mul;
+	    p.z*=mul;
+	    p2.x*=mul;
+	    p2.y*=mul;
+	    p2.z*=mul;
+	    k.x*=mul;
+	    k.y*=mul;
+	    k.z*=mul;
+	    k2.x*=mul;
+	    k2.y*=mul;
+	    k2.z*=mul;
+	  }
+	*/
+	
 	//if (p.x==p2.x && p.y==p2.y && p.z==p2.z)
 	//  p2.x+=1.0;
 	unsigned int color1 = coll->LineColor(i,0);
