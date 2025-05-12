@@ -2365,9 +2365,27 @@ private:
 
 W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert);
 
+#ifdef LINUX
+#include <execinfo.h>
+#endif
 
 void print_stack_trace()
 {
+#ifdef LINUX
+    const int maxFrames = 64;
+    void* frames[maxFrames];
+    int frameCount = backtrace(frames, maxFrames);
+    char** symbols = backtrace_symbols(frames, frameCount);
+    
+    std::cerr << "Stack trace:\n";
+    for (int i = 0; i < frameCount; ++i)
+    {
+        std::cerr << symbols[i] << std::endl;
+    }
+
+    free(symbols);
+#endif
+
 #ifdef WINDOWS
   HANDLE process = GetCurrentProcess();
   HANDLE thread = GetCurrentThread();
