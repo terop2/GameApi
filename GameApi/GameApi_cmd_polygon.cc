@@ -195,12 +195,19 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "https://meshpage.org/lighthouse.zip@CHL@https://creativecommons.org/licenses/by/4.0/" },
 			 "TF", "mainloop_api", "gltf_load_sketchfab_zip"));
 
+#if 0
+  // removed for copyright reasons, see copyright office paperwork on AI:
+  // https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-3-Generative-AI-Training-Report-Pre-Publication-Version.pdf
+  // The parts that require removal are:
+  // 1) ai training violates reproduction right
+  // 2) fair use does not apply if ai output substitutes the original
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::meshy,
 			 "meshy_ai",
 			 { "ev", "prompt", "cache_file" },
 			 { "EveryApi&", "std::string", "std::string" },
 			 { "ev", "A_Monster_Truck", "monster.glb" },
 			 "TF", "polygon_api", "meshy"));
+#endif
   
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::glb_load_sketchfab_zip,
