@@ -40,13 +40,19 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			     { "ev", "", "temp.png" },
 			     "BM", "bitmap_api", "bm_png_bm"));
       
-
+#if 0
+  // removed for copyright reasons, see copyright office paperwork on AI:
+  // https://www.copyright.gov/ai/Copyright-and-Artificial-Intelligence-Part-3-Generative-AI-Training-Report-Pre-Publication-Version.pdf
+  // The parts that require removal are:
+  // 1) ai training violates reproduction right
+  // 2) fair use does not apply if ai output substitutes the original
       vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::stable_diffusion,
 			     "stable_diffusion",
 			     { "ev", "prompt", "cache_file" },
 			     { "EveryApi&", "std::string", "std::string" },
 			     { "ev", "garden_gnome", "test.png" },
 			     "BM", "bitmap_api", "stable_diffusion"));
+#endif
       
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::script_bitmap,
