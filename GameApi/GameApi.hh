@@ -3653,6 +3653,7 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  IMPORT PTS pts_lines(std::string url, float start_pos, float dist, float speed);
   IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
   IMPORT PTS block_pts_lod(PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);
   IMPORT PTS load_points(std::string url);
