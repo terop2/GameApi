@@ -3196,3 +3196,118 @@ GameApi::PTS GameApi::PointsApi::pts_alt(std::vector<PTS> vec, int index)
   if (index>=0 && index<vec.size()) return vec[index];
   return add_points_api_points(e,new EmptyPTS);
 }
+
+class LinesPts : public PointsApiPoints
+{
+public:
+  LinesPts(GameApi::Env &e, std::string url, std::string homepage, float start_pos, float dist, float speed) : e(e), url(url), homepage(homepage), start_pos(start_pos), dist(dist), speed(speed) { current_pos = start_pos; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() { Prepare(); }
+  
+  virtual void Prepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "LinesPts async not ready yet, failing..." << std::endl;
+      return;
+    }
+    std::string data(ptr->begin(),ptr->end());
+    std::stringstream ss(data);
+    std::string line;
+    vec.clear();
+    while(std::getline(ss,line))
+      {
+	std::stringstream ss2(line);
+	float x,y,z;
+	ss2 >> x >> y >> z;
+	vec.push_back(Point(x,y,z));
+	//std::cout << "INPUT:" << x << "," << y << "," << z << std::endl;
+      }
+
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    float time = e.time;
+    //std::cout << "TIME:" << time << std::endl;
+
+    float pos = start_pos + time*speed;
+    current_pos = pos;
+    current_pos = fmod(current_pos,dist);
+    return true;
+  }
+  virtual int NumPoints() const
+  {
+    return dist_all()/dist;
+  }
+  virtual Point Pos(int ii) const
+  {
+    int s = vec.size();
+    s--;
+    float pos = current_pos;
+    float sum = 0.0;
+    int span = 0;
+    int i =0 ;
+    //std::cout << "CURRENT_POS:" << current_pos << std::endl;
+    for(;i<s;i++)
+      {
+	if (span>=ii) break;
+	float d = dist_one(i);
+	float sum2 = sum;
+	for(;pos<sum+d;pos+=dist,sum2+=dist) { span++; if (span>ii) break; }
+	if (span>=ii) break;
+	sum=sum2-d;
+	pos-=d;
+      }
+    //std::cout << "i=" << i << std::endl;
+    Point p0 = vec[i];
+    Point p1 = vec[i+1];
+    Vector v = p1-p0;
+    float dd = v.Dist();
+    float pos2 = pos/dd;
+    Point res = Point(Vector(p0)*(1.0-pos2)+Vector(p1)*(pos2));
+    //std::cout << "RESULT;" << ii << "::" << res.x << " " << res.y << " " << res.z << std::endl;
+    return res;
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+
+  float dist_one(int i) const
+  {
+    if (i>=vec.size()-1) return 0.0;
+    Point p0 = vec[i];
+    Point p1 = vec[i+1];
+    Vector v = p1-p0;
+    return v.Dist();
+  }
+  float dist_all() const {
+    int s = vec.size();
+    s--;
+    float sum=0.0;
+    for(int i=0;i<s;i++)
+      {
+	sum+=dist_one(i);
+      }
+    return sum;
+  }
+private:
+  GameApi::Env &e;
+  std::string url;
+  std::string homepage;
+  std::vector<Point> vec;
+  float start_pos;
+  float dist;
+  float speed;
+
+  float current_pos;
+};
+
+
+GameApi::PTS GameApi::PointsApi::pts_lines(std::string url, float start_pos, float dist, float speed)
+{
+  return add_points_api_points(e, new LinesPts(e,url,gameapi_homepageurl, start_pos,dist,speed));
+}

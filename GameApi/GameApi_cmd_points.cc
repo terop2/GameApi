@@ -53,6 +53,12 @@
 			 { "" },
 			 "P", "polygon_api", "convex_hull"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::pts_lines,
+			 "pts_lines",
+			 { "url", "start_pos", "dist", "speed" },
+			 { "std::string", "float", "float", "float" },
+			 { "https://meshpage.org/lines.txt", "0.0", "100.0", "3.0" },
+			 "PTS", "points_api", "pts_lines"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::move,
 			 "move_pts",
 			 { "obj", "dx", "dy", "dz" },
