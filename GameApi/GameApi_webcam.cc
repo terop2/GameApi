@@ -552,6 +552,11 @@ inline uint8_t clamp(int value) const {
 	{
 	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
 	}
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx/2;x++)
+	{
+	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
+	}
   }
   
   
@@ -584,6 +589,121 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 
 #endif
 
+#ifdef EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#include <stdio.h>
+
+EM_JS(void, init_webcam, (), {
+  const video = document.createElement('video');
+  video.setAttribute('id', 'webcam');
+  video.setAttribute('autoplay', '');
+  video.setAttribute('playsinline', '');
+  video.style.display = 'none';
+  video.width = 640;
+  video.height = 480;
+  video.onloadedmetadata = () => {
+    video.play();
+  };
+  document.body.appendChild(video);
+
+  const canvas = document.createElement('canvas');
+  canvas.setAttribute('id', 'webcamCanvas');
+  canvas.setAttribute('willReadFrequently', 'true');
+  canvas.width = 640;
+  canvas.height = 480;
+  canvas.style.display = 'none';
+  document.body.appendChild(canvas);
+
+  
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+      video.srcObject = stream;
+    })
+    .catch((err) => {
+      console.error('Webcam error:', err);
+    });
+});
+
+EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
+  const video = document.getElementById('webcam');
+  if (video.readyState < 2) {
+    // Not enough data yet
+    return;
+  }
+  const canvas = document.getElementById('webcamCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, width, height);
+
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+
+  const heap = Module.HEAPU8;
+  for (let i = 0; i < Math.min(data.length,width*height*4); ++i) {
+    heap[dstPtr + i] = data[i];
+  }
+});
+
+class EmscriptenCapture : public BufferRefReq
+{
+public:
+  EmscriptenCapture(int, int, int num) : num(num) {
+    sx=640; sy=480;
+    init_done = false;
+    ref=BufferRef::NewBuffer(sx,sy);
+  }
+  void initCapture(int num) const
+  {
+    init_webcam();
+    framebuffer = (uint8_t*)malloc(sx*sy*4);
+  }
+  void doCapture(int num) const
+  {
+    grab_frame_to_memory((int)ref.buffer,sx,sy);
+    //std::copy(framebuffer,framebuffer+sx*sy*4,ref.buffer);
+    int sx = ref.width;
+    int sy = ref.height;
+    for(int y=0;y<sy/2;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
+	}
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx/2;x++)
+	{
+	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
+	}
+
+  }
+  void Gen() const { }
+  BufferRef Buffer() const {
+    if (!init_done) {
+      initCapture(num);
+      init_done = true;
+    }
+    doCapture(num);
+    return ref;
+  }
+
+private:
+  mutable uint8_t *framebuffer = nullptr;
+  int sx,sy;
+  mutable BufferRef ref;
+  mutable int num;
+  mutable bool init_done;
+};
+
+
+GameApi::TXID GameApi::TextureApi::webcam_txid_emscripten(EveryApi &ev, int sx, int sy, int num)
+{
+  EmscriptenCapture *buf = new EmscriptenCapture(sx,sy,num);
+  WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
+  return add_txid(e,id);
+}
+
+#endif
+
+
 GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int sy, int num)
 {
 #ifdef LINUX
@@ -591,5 +711,8 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int
 #endif
 #ifdef WINDOWS
   return webcam_txid_win(ev,sx,sy,num);
+#endif
+#ifdef EMSCRIPTEN
+  return webcam_txid_emscripten(ev,sx,sy,num);
 #endif
 }
