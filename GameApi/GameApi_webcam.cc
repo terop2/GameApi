@@ -4,21 +4,6 @@
 #include "Buffer.hh"
 
 
-#ifndef EMSCRIPTEN
-#ifdef WINDOWS
-#include "openvr/openvr_mingw.h"
-#else
-#ifdef LINUX
-#include "openvr/openvr_mingw.h"
-#else
-#include "openvr/openvr.h"
-#endif
-#endif
-
-#else // emscripten
-
-#endif
-
 
 class WebCamBufferRefTexID : public TextureID
 {
@@ -39,6 +24,26 @@ private:
   BufferRefReq &seq;
   mutable GameApi::TXID id;
 };
+
+
+#ifndef LINUX
+
+#ifndef EMSCRIPTEN
+#ifdef WINDOWS
+#include "openvr/openvr_mingw.h"
+#else
+#ifdef LINUX
+#include "openvr/openvr_mingw.h"
+#else
+#include "openvr/openvr.h"
+#endif
+#endif
+
+#else // emscripten
+
+#endif
+
+
 
 
 #ifndef VIRTUAL_REALITY_OVERLAY
@@ -292,10 +297,13 @@ GameApi::ML GameApi::TextureApi::vr_overlay(GameApi::TXID id, std::string key, s
 // TODO: ML->RUN that uses openvr's PollEvent().
 
 
+#endif // !LINUX
+
 
 #endif
 
 #ifndef EMSCRIPTEN
+#ifndef LINUX
 
 #include "escapi/escapi.h"
 
@@ -376,3 +384,212 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_win(EveryApi &ev, int sx, int sy,
   return add_txid(e,id);
 }
 #endif
+#endif
+
+#ifdef LINUX
+
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/videodev2.h>
+#include <sys/mman.h>
+
+class LinuxCapture : public BufferRefReq
+{
+public:
+  LinuxCapture(int sx, int sy, int num) : num(num) {
+    sx=640; sy=480;
+    ref = BufferRef::NewBuffer(sx,sy);
+    init_done = false;
+
+   
+  }
+  ~LinuxCapture()
+  {
+    if (init_done) {
+      munmap(buffer,buf.length);
+      close(fd);
+    }
+  }
+  void initCapture(int num) const
+  {
+    const char* dev_name = "/dev/video0";
+    fd = open(dev_name, O_RDWR);
+    if (fd == -1) {
+        perror("Opening video device");
+        return;
+    }
+
+    v4l2_capability cap;
+    if (ioctl(fd, VIDIOC_QUERYCAP, &cap) == -1) {
+        perror("Querying Capabilities");
+        return;
+    }
+
+    std::cout << "Driver Caps:\n"
+              << "  Driver: " << cap.driver << "\n"
+              << "  Card: " << cap.card << "\n"
+              << "  Bus: " << cap.bus_info << "\n"
+              << "  Version: " << ((cap.version >> 16) & 0xFF) << "."
+              << ((cap.version >> 8) & 0xFF) << "."
+              << (cap.version & 0xFF) << "\n";
+
+    // Set Image Format
+    v4l2_format fmt{};
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    fmt.fmt.pix.width = 640;
+    fmt.fmt.pix.height = 480;
+    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
+    fmt.fmt.pix.field = V4L2_FIELD_NONE;
+
+    if (ioctl(fd, VIDIOC_S_FMT, &fmt) == -1) {
+        perror("Setting Pixel Format");
+        return;
+    }
+
+    // Request Buffer
+    v4l2_requestbuffers req{};
+    req.count = 1;
+    req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    req.memory = V4L2_MEMORY_MMAP;
+
+    if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+        perror("Requesting Buffer");
+        return;
+    }
+
+    // Query Buffer
+    buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buf.memory = V4L2_MEMORY_MMAP;
+    buf.index = 0;
+
+    if (ioctl(fd, VIDIOC_QUERYBUF, &buf) == -1) {
+        perror("Querying Buffer");
+        return;
+    }
+
+    buffer = mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, fd, buf.m.offset);
+    if (buffer == MAP_FAILED) {
+        perror("mmap");
+        return;
+    }
+
+
+  }
+
+inline uint8_t clamp(int value) const {
+    return std::max(0, std::min(255, value));
+}
+
+// Converts a YUYV buffer (width * height * 2 bytes) to ARGB (width * height * 4 bytes)
+  void convertYUYVtoARGB(uint8_t* yuyv, uint8_t* argb, int width, int height) const {
+    int numPixels = width * height;
+
+    for (int i = 0, j = 0; i < numPixels * 2; i += 4, j += 8) {
+        // Extract YUYV for 2 pixels
+        uint8_t y0 = yuyv[i + 0];
+        uint8_t u  = yuyv[i + 1];
+        uint8_t y1 = yuyv[i + 2];
+        uint8_t v  = yuyv[i + 3];
+
+        int c0 = y0 - 16;
+        int c1 = y1 - 16;
+        int d = u - 128;
+        int e = v - 128;
+
+        // First pixel
+        int r = clamp((298 * c0 + 409 * e + 128) >> 8);
+        int g = clamp((298 * c0 - 100 * d - 208 * e + 128) >> 8);
+        int b = clamp((298 * c0 + 516 * d + 128) >> 8);
+
+        argb[j + 0] = r;  // A
+        argb[j + 1] = g;
+        argb[j + 2] = b;
+        argb[j + 3] = 255;
+
+        // Second pixel
+        r = clamp((298 * c1 + 409 * e + 128) >> 8);
+        g = clamp((298 * c1 - 100 * d - 208 * e + 128) >> 8);
+        b = clamp((298 * c1 + 516 * d + 128) >> 8);
+
+        argb[j + 4] = r;  // A
+        argb[j + 5] = g;
+        argb[j + 6] = b;
+        argb[j + 7] = 255;
+    }
+}
+  
+  void doCapture(int num) const
+  {
+
+    // Queue the Buffer
+    if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+        perror("Queue Buffer");
+        return;
+    }
+
+    // Start Streaming
+    v4l2_buf_type type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    if (ioctl(fd, VIDIOC_STREAMON, &type) == -1) {
+        perror("Start Capture");
+        return;
+    }
+    if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
+        perror("Retrieving Frame");
+        return;
+    }
+    //BufferRef::FreeBuffer(ref);
+    unsigned char *buffer2 = (unsigned char *)buffer;
+    std::vector<unsigned char> s = std::vector<unsigned char>(buffer2,buffer2+buf.bytesused);
+    //std::cout << "BYTES USED:" << buf.bytesused << std::endl;
+    //std::cout << std::string(s.begin(),s.begin()+30) << std::endl;
+    //bool success=false;
+    //ref = LoadImageFromString(s,success);    
+    int sx = ref.width;
+    int sy = ref.height;
+    convertYUYVtoARGB(&s[0],(uint8_t*)ref.buffer,sx,sy);
+    for(int y=0;y<sy/2;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
+	}
+  }
+  
+  
+  void Gen() const { }
+  BufferRef Buffer() const {
+    if (!init_done) {
+      initCapture(num);
+      init_done = true;
+    }
+    doCapture(num);
+    return ref;
+  }
+private:
+  mutable BufferRef ref;
+  mutable int num;
+  mutable bool init_done;
+  mutable int fd;
+  mutable v4l2_buffer buf;
+  mutable void *buffer=0;
+  
+};
+
+
+GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int sy, int num)
+{
+  LinuxCapture *buf = new LinuxCapture(sx,sy,num);
+  WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
+  return add_txid(e,id);
+}
+
+#endif
+
+GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int sy, int num)
+{
+#ifdef LINUX
+  return webcam_txid_linux(ev,sx,sy,num);
+#endif
+#ifdef WINDOWS
+  return webcam_txid_win(ev,sx,sy,num);
+#endif
+}

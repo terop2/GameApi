@@ -1246,6 +1246,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #endif
 #endif
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::webcam_txid_generic,
+			 "webcam_generic",
+			 { "ev", "sx", "sy", "num" },
+			 { "EveryApi&", "int", "int", "int" },
+			 { "ev", "800", "600", "0" },
+			 "TXID", "texture_api", "webcam_txid_generic"));
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::run_seq,
 			 "run_seq",
