@@ -7304,6 +7304,50 @@ private:
   GameApi::SH shader;
 };
 
+std::string get_shader_path(GameApi::Env &e, GameApi::US us)
+{
+  std::string s;
+  ShaderCall *call = find_uber(e,us);
+  s+=call->func_name();
+  while(call->get_next())
+    {
+      call = call->get_next();
+      s+=":";
+      s+=call->func_name();
+    }
+  return s;
+}
+
+struct PTexCacheItem
+{
+  GameApi::Env *e;
+  GameApi::US vertex;
+  GameApi::US fragment;
+  std::string v_shader_functions;
+  std::string f_shader_functions;
+  GameApi::SH shader;
+  friend bool operator==(const PTexCacheItem &i1, const PTexCacheItem &i2)
+  {
+    return get_shader_path(*i1.e,i1.vertex)==get_shader_path(*i2.e,i2.vertex) && get_shader_path(*i1.e,i1.fragment)==get_shader_path(*i2.e,i2.fragment) &&
+      i1.v_shader_functions==i2.v_shader_functions &&
+      i1.f_shader_functions==i2.f_shader_functions;
+  }
+};
+
+std::vector<PTexCacheItem> ptex_cache;
+
+GameApi::SH find_ptex_shader(const PTexCacheItem &ii)
+{
+  int s = ptex_cache.size();
+  for(int i=0;i<s;i++)
+    {
+      if (ii==ptex_cache[i]) return ptex_cache[i].shader;
+    }
+  GameApi::SH sh;
+  sh.id = -1;
+  return sh;
+}
+
 
 class RenderPTex : public MainLoopItem
 {
@@ -7327,26 +7371,40 @@ public:
   void HeavyPrepare() {
     if (va.id==0) {
       va = ev.polygon_api.create_vertex_array(p,false); // should be true
+      FaceCollection *coll = find_facecoll(env,p);
+      if (coll->NumFaces()==0) disabled=true;
+      else disabled=false;
+      //std::cout << "NumFaces0:" << coll->NumFaces() << std::endl;
     }
   }
 
   void Prepare() {
     if (va.id==0) {
       va = ev.polygon_api.create_vertex_array(p, false); // should be true
+      FaceCollection *coll = find_facecoll(env,p);
+      if (coll->NumFaces()==0) disabled=true;
+      else disabled=false;
+      //std::cout << "NumFaces1:" << coll->NumFaces() << std::endl;
     }
   }
   void execute(MainLoopEnv &e)
-  { 
+  {
     if (firsttime)
       {
 	if (va.id==0) {
+
 	  va = ev.polygon_api.create_vertex_array(p, false); // should be true
+	  FaceCollection *coll = find_facecoll(env,p);
+	  if (coll->NumFaces()==0) disabled=true;
+	  else disabled=false;
+      //std::cout << "NumFaces2:" << coll->NumFaces() << std::endl;
 	  std::cout << "Warning: RenderPTex Prepare() not called!" << std::endl;
 	}
 	ev.polygon_api.create_vertex_array_hw(va);
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types,false,id_labels);
 	va = ev.texture_api.bind_many(va, id, types);
       }
+    if (disabled) return;
 
     GameApi::SH sh;
     GameApi::US u_v;
@@ -7430,15 +7488,34 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
+	    /*
+	    PTexCacheItem item;
+	    item.e = &env;
+	    item.vertex = vertex;
+	    item.fragment = fragment;
+	    item.v_shader_functions = e.v_shader_functions;
+	    item.f_shader_functions = e.f_shader_functions;
+	    std::cout << get_shader_path(env,item.vertex) << " " << get_shader_path(env,item.fragment) << " " << item.v_shader_functions << " " << item.f_shader_functions << std::endl;
+	    GameApi::SH sh2 = find_ptex_shader(item);
+	    if (sh2.id==-1)
+	      {
+	    */
+	    //std::cout << "hep" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
+	    /*
+	    item.shader = shader;
+	    ptex_cache.push_back(item);
+	    */
+	ev.mainloop_api.init_3d(shader);
+	/*   } else shader=sh2;*/
 	  }
 	else
 	  {
 	    GameApi::SFO sfo;
 	    sfo.id = e.sfo_id;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
-	  }
 	ev.mainloop_api.init_3d(shader);
+	  }
 	ev.mainloop_api.alpha(true); 
 
       }
@@ -7482,6 +7559,7 @@ private:
   std::vector<GameApi::BM> bm;
   std::vector<int> types;
   std::vector<std::string> id_labels;
+  bool disabled=false;
 };
 
 class RenderPTex_id : public MainLoopItem

@@ -327,20 +327,32 @@ void Program::print_log()
   }
 }
 Program *current_program=0;
+extern std::map<Program*,Program*> program_map;
 void Program::use()
 {
-  if (this!=current_program)
+  /*
+  if (program_map[this]!=0 && program_map[this]!=current_program && this!=current_program)
     {
-      g_low->ogl->glUseProgram(priv->program);
-      current_program=this;
+	g_low->ogl->glUseProgram(program_map[this]->priv->program);
+	current_program=program_map[this];
     }
+  else
+  */
+  if (this==current_program) return;
+  //if (program_map[this]!=0 && program_map[this]==current_program) return;
+
+  g_low->ogl->glUseProgram(priv->program);
+  current_program=this;
+  //if (program_map[this]!=0) current_program=program_map[this];
 }
 void Program::unuse()
 {
+ 
   if (current_program != 0)
     g_low->ogl->glUseProgram(0);
   current_program = 0;
-}
+ 
+  }
 
 
 void Program::set_var(const char *name, float val)
@@ -6030,6 +6042,10 @@ struct ShaderCacheItem
   std::vector<Shader*> v_shaders;
   std::vector<Shader*> f_shaders;
   std::vector<Shader*> g_shaders;
+
+
+  Program *prog;
+  int prog_id;
   
   friend bool operator==(const ShaderCacheItem &i1,const ShaderCacheItem &i2);
 };
@@ -6130,6 +6146,10 @@ std::ostream &operator<<(std::ostream &o, const std::vector<T> &v)
 }
 bool g_shader_cache_disable=false;
 
+bool g_shader_from_cache = false;
+
+std::map<Program*,Program*> program_map;
+
 int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string g_format, std::vector<std::string> v_vec, std::vector<std::string> f_vec, bool is_trans, ShaderModule *mod, ShaderCall *vertex_c, ShaderCall *fragment_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   ShaderCacheItem ci;
@@ -6148,14 +6168,18 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
   ci.f_shader = f_shader;
   const ShaderCacheItem *res = find_from_shader_cache(ci); 
 
+
+ 
   int id = progs.size();
   Program *p = new Program;
   progs.push_back(p);
+  ci.prog = p;
+  ci.prog_id = id;
 
-  // std::cout << "Checking: " << v_format << " " << f_format << " " << v_vec << " " << f_vec << std::endl;
   
+  // std::cout << "Checking: " << v_format << " " << f_format << " " << v_vec << " " << f_vec << std::endl;
   if (res && !g_shader_cache_disable) {
-    //std::cout << "FOUND FROM SHADER CACHE" << std::endl;
+    program_map[p]=res->prog;
     int s1 = res->v_shaders.size();
     for(int i=0;i<s1;i++) p->push_back(*res->v_shaders[i]);
 
@@ -6168,6 +6192,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
     return id;
   }
   // std::cout << "NOT FOUND" << v_vec << " " << f_vec << std::endl;
+
 
   
   std::string::iterator i = v_format.begin();
@@ -6256,6 +6281,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
   //p->link();
   //p->GeomTypes(5,2); 
   //p->GeomOutputVertices(100000);
+  //std::cout << "Return normal: " << id << std::endl;
   return id;
 }
 void ShaderSeq::print_log(int i)

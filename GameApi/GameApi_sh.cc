@@ -154,10 +154,12 @@ EXPORT GameApi::SH GameApi::ShaderApi::get_normal_shader(std::string v_format, s
 }
 
 
+extern bool g_shader_from_cache;
 GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::string f_format, std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines, v_shader, f_shader);
   //const int vertex_id = 7;
+  if (!g_shader_from_cache) {
   bind_attrib_1(sh, 0, "in_Position");
   bind_attrib_1(sh, 1, "in_Normal");
   bind_attrib_1(sh, 2, "in_Color");
@@ -175,14 +177,18 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
   //bind_attrib_1(sh, 14, "INDICES");
   //bind_attrib_1(sh, 6, "in_LightAmount");
   link_1(sh);
+  }
   use_1(sh);
-  set_default_projection_1(sh, "in_P");
+  if (!g_shader_from_cache) {
+    set_default_projection_1(sh, "in_P");
+  }
   return sh;
 }
 GameApi::SH GameApi::ShaderApi::get_normal_shader_1_new(std::string v_format, std::string f_format, std::string g_format,std::string v_comb, std::string f_comb, bool trans, SFO mod, US v_c, US f_c, std::string v_defines, std::string f_defines, std::string v_shader, std::string f_shader)
 {
   SH sh = get_shader_1(v_format, f_format, g_format, v_comb, f_comb,trans,mod,v_c, f_c, v_defines, f_defines, v_shader, f_shader);
   //const int vertex_id = 7;
+  if (!g_shader_from_cache) {
   bind_attrib_1(sh, 0, "in_Position");
   bind_attrib_1(sh, 1, "in_Normal");
   bind_attrib_1(sh, 2, "in_Color");
@@ -200,8 +206,11 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1_new(std::string v_format, st
   bind_attrib_1(sh, 14, "INDICES");
   bind_attrib_1(sh, 6, "in_LightAmount");
   link_1(sh);
+  }
   use_1(sh);
-  set_default_projection_1(sh, "in_P");
+  if (!g_shader_from_cache) {
+    set_default_projection_1(sh, "in_P");
+  }
   return sh;
 }
 
