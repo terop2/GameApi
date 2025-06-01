@@ -1147,6 +1147,8 @@ public:
   virtual std::string define_strings() const=0;
   virtual std::string func_name() const=0;
   virtual bool is_fragment() const { return false; }
+  virtual ShaderCall *get_next() const=0;
+
 };
 
 class MatrixArray : public CollectInterface

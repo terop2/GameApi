@@ -12870,6 +12870,7 @@ public:
     std::string m = (s1=="" ||s2=="") ? "" : " ";
     return s1 + m + s2; 
   }
+  ShaderCall *get_next() const { return next; }
 private:
   std::string funcname;
   ShaderCall *next;
@@ -12917,6 +12918,7 @@ public:
     std::string m = (s1=="" ||s2=="") ? "" : " ";
     return s1 + m + s2; 
   }
+  ShaderCall *get_next() const { return next; }
 private:
   std::string funcname;
   ShaderCall *next;
@@ -12964,6 +12966,7 @@ public:
     std::string m = (s1=="" ||s2=="") ? "" : " ";
     return s1 + m + s2; 
   }
+  ShaderCall *get_next() const { return next; }
 private:
   std::string funcname;
   ShaderCall *next;
@@ -13012,6 +13015,7 @@ public:
     std::string m = (s1=="" ||s2=="") ? "" : " ";
     return s1 + m + s2; 
   }
+  ShaderCall *get_next() const { return next; }
 private:
   std::string funcname;
   ShaderCall *next;
@@ -13025,6 +13029,8 @@ public:
   int index(int base) const { id = base; return base; }
   virtual std::string func_name() const { return "EmptyV"; }
 
+  ShaderCall *get_next() const { return 0; }
+  
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
   {
@@ -13047,6 +13053,7 @@ public:
   int index(int base) const { id = base; return base; }
   virtual std::string func_name() const { return "emptyF"; }
   virtual bool is_fragment() const { return true; }
+  ShaderCall *get_next() const { return 0; }
 
   std::string func_call2(int &index) const { return ""; }
   std::string func_call() const
@@ -13341,6 +13348,7 @@ public:
     return out;
   }
   std::string define_strings() const { return next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+  ShaderCall *get_next() const { return next; }
 private:
   ShaderCall *next;
   ShaderModule *mod;
@@ -13386,6 +13394,7 @@ public:
     return out;
   }
   std::string define_strings() const { return "EX_POSITION " + next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+  ShaderCall *get_next() const { return next; }
 private:
   ShaderCall *next;
   ShaderModule *mod;
@@ -13431,6 +13440,7 @@ public:
     return out;
   }
   std::string define_strings() const { return "EX_TEXCOORD " + next->define_strings(); } // TODO, MAYBE ASK DEFINE STRINGS FROM SFO
+  ShaderCall *get_next() const { return next; }
 private:
   ShaderCall *next;
   ShaderModule *mod;
