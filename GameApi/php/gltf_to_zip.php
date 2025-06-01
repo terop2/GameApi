@@ -189,6 +189,7 @@ HINT#5: You can get the source code (needed for LGPL/GPL) from <a href="https://
 HINT#6: Urls from google drive or dropbox doesn't seem to be working, its missing .zip or .glb or .gltf extension in the url and is usually password protected.<br>
 HINT#7: file:// -urls are not working.<br>
 HINT#8: Correct way to provide url is to place your glb or zip file to hosting space and give url to the file from your hosting space. usually http or https.
+HINT#9: Warning: if you use the web site with some files owned by someone else, you need to obtain permission to create derived works (and possible reproduction rights, if you publish the end result in a web page), as the web page combines our 3d engine with the file you provided and that combination can be considered derived work.
 <style>
 .flex {
   display: flex;
