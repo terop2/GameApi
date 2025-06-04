@@ -5,6 +5,24 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
 
   std::vector<GameApiItem*> vec;
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::string_bytestore,
+			 "bs_string",
+			 { "s" },
+			 { "std::string" },
+			 { "abc" },
+			 "BS", "mainloop_api", "string_bytestore"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::bytestore_timing,
+			 "bs_timing",
+			 { "store", "ch", "s", "time_delta" },
+			 { "BS", "int", "std::string", "float" },
+			 { "", "0", "abc", "3.0" },
+			 "ML", "mainloop_api", "bytestore_timing"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::bytestore_array,
+			 "bs_array",
+			 { "ev", "store", "url", "time_delta" },
+			 { "EveryApi&", "BS", "std::string", "float" },
+			 { "ev", "", "https://meshpage.org/bs.txt", "3.0" },
+			 "ML", "mainloop_api", "bytestore_array"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::ml_empty,
 			 "ml_empty",
 			 { },

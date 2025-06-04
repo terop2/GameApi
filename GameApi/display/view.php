@@ -184,6 +184,7 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 <div style="height:10px"></div>
 </appdragdroparea>
 </div> <!-- vue ends here -->
+Warning: If you submit content to using the submit button and the content is owned by someone else, you need to obtain reproduction rights and give meshpage.org permission to publish the content in meshpage.org. While the content is available only to people who gets access to resulting urls, the reproduction rights are still required.
 </body>
 </html>
 

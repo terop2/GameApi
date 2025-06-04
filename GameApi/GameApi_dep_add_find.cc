@@ -129,6 +129,17 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+GameApi::BS add_bytestore(GameApi::Env &e, ByteStore *bs)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->bytestores.push_back(bs);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(bs));
+  GameApi::BS im;
+  im.id = env->bytestores.size()-1;
+  return im;
+}
+
 GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace *cs)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1466,6 +1477,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 #endif
+}
+
+ByteStore *find_bytestore(GameApi::Env &e, GameApi::BS bs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->bytestores[bs.id];  
 }
 
 ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs)
