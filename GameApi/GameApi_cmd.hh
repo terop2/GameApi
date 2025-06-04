@@ -320,6 +320,7 @@ MACRO(GameApi::SHI)
 MACRO(GameApi::SHC)
 MACRO(GameApi::SMT)
 MACRO(GameApi::TT)
+MACRO(GameApi::BS)
 #undef MACRO
 
 

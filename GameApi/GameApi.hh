@@ -60,6 +60,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(BS)
   MAC(US)
   MAC(CS)
   MAC(CSI)
@@ -379,6 +380,9 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT BS string_bytestore(std::string s);
+  IMPORT ML bytestore_timing(BS store, int ch, std::string s, float time_delta);
+  IMPORT ML bytestore_array(EveryApi &ev, BS store, std::string url, float delta_time);
   IMPORT ML cursorkeys_to_wasd(ML ml);
   IMPORT ML if_keys(ML ml, IF fetcher, std::string keys);
   IMPORT void save_glb_store(EveryApi &ev, std::string filename, TF tf);
@@ -3083,7 +3087,7 @@ public:
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
-  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false, float emis2_r=0.0, float emis2_g=0.0, float emis2_b=0.0, float light_dir_x=0.0, float light_dir_y=0.0, float light_dir_z=-400.0);
+  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false, float emis2_r=0.0, float emis2_g=0.0, float emis2_b=0.0, float light_dir_x=0.0, float light_dir_y=0.0, float light_dir_z=-400.0, std::string cache_id="gltf");
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int accexss_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);
@@ -4016,7 +4020,7 @@ public:
   IMPORT US v_mix(US us);
   IMPORT US v_dyn_lights(US us);
   IMPORT US v_gi(US us);
-  IMPORT US v_gltf(US us);
+  IMPORT US v_gltf(US us, std::string cache_id);
   IMPORT US v_colour_with_mix(US us);
   IMPORT US v_fade(US us);
   IMPORT US f_water(US us);
@@ -4063,7 +4067,7 @@ public:
   IMPORT US f_custom(US us, std::string f_funcname);
   IMPORT US f_gi(US us);
   IMPORT US f_colour_with_mix(US us);
-  IMPORT US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec, bool unlit);
+  IMPORT US f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec, bool unlit, std::string cache_id);
   IMPORT US f_fade(US us);
   IMPORT US f_flip(US us, US us2);
 private:
