@@ -380,6 +380,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT PTS bytestore_pts(BS bs, PTS pts, char disable_char, char enable_char, bool default_is_enable);
+  IMPORT ML bytestore_render(EveryApi &ev, BS bs, std::vector<ML> mls, std::string url, float delta_x, float delta_y);
   IMPORT BS string_bytestore(std::string s);
   IMPORT ML bytestore_timing(BS store, int ch, std::string s, float time_delta);
   IMPORT ML bytestore_array(EveryApi &ev, BS store, std::string url, float delta_time);
