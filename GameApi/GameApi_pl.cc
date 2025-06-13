@@ -27977,3 +27977,168 @@ GameApi::ML GameApi::MainLoopApi::bytestore_array(GameApi::EveryApi &ev, GameApi
 {
   return add_main_loop(e,new TimingByteStoreArray(e,ev,bs,url,gameapi_homepageurl,delta_time));
 }
+
+class Bytestore_render : public MainLoopItem
+{
+public:
+  Bytestore_render(GameApi::Env &e, GameApi::EveryApi &ev, ByteStore &store, std::vector<MainLoopItem*> mls, std::string url, std::string homepage, float delta_x, float delta_y) : env(e), ev(ev), store(store), mls(mls), url(url), homepage(homepage), delta_x(delta_x), delta_y(delta_y) { }
+  virtual void Collect(CollectVisitor &vis) {
+    int s = mls.size();
+    for(int i=0;i<s;i++)
+      mls[i]->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+
+    std::string s = std::string(ptr->begin(),ptr->end());
+    std::stringstream ss(s);
+    std::string line;
+    char ch;
+    int index;
+    
+    while(std::getline(ss,line)) {
+      std::stringstream ss2(line);
+      ss2 >> ch >> index;
+      MapItem ii;
+      ii.ch = ch;
+      ii.index = index;
+      maps.push_back(ii);
+    }
+
+    
+  }
+  virtual void Prepare() {
+    int s = mls.size();
+    for(int i=0;i<s;i++)
+      mls[i]->Prepare();
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    int s2 = store.Size();
+    int xx = 0;
+    int yy = 0;
+    for(int x=0;x<s2;x++)
+      {
+	unsigned char &ch = store.Get(x);
+	if (ch=='\n')
+	  {
+	    xx=0;
+	    yy++;
+	    continue;
+	  }
+	else
+	  {
+	    int s3 = maps.size();
+	    for(int i=0;i<s3;i++)
+	      {
+		MapItem &ch2 = maps[i];
+		if (ch2.ch==ch)
+		  {
+		    MainLoopEnv ee = e;
+		    ee.in_MV = e.in_MV * Matrix::Translate(xx*delta_x, 0.0, yy*delta_y);
+		    mls[i]->execute(ee);
+		    
+		    
+		  }
+	      }
+	  }
+	xx++;
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = mls.size();
+    for(int i=0;i<s;i++)
+      mls[i]->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    int s = mls.size();
+    std::vector<int> res;
+    for(int i=0;i<s;i++) {
+      std::vector<int> v=mls[i]->shader_id();
+      int s2 = v.size();
+      for(int j=0;j<s2;j++)
+	res.push_back(v[j]);
+    }
+    return res;
+  }
+
+  struct MapItem {
+    char ch;
+    int index;
+  };
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  ByteStore &store;
+  std::vector<MainLoopItem*> mls;
+  std::vector<MapItem> maps;
+  std::string url;
+  std::string homepage;
+  float delta_x,delta_y;
+};
+
+GameApi::ML GameApi::MainLoopApi::bytestore_render(GameApi::EveryApi &ev, GameApi::BS bs, std::vector<GameApi::ML> ml, std::string url, float delta_x, float delta_y)
+{
+  ByteStore *bs2 = find_bytestore(e,bs);
+
+  int s = ml.size();
+  std::vector<MainLoopItem*> vec;
+  for(int i=0;i<s;i++)
+    vec.push_back(find_main_loop(e,ml[i]));
+  
+  return add_main_loop(e,new Bytestore_render(e,ev,*bs2,vec,url,gameapi_homepageurl,delta_x,delta_y));
+}
+
+class Bytestore_pts : public PointsApiPoints
+{
+public:
+  Bytestore_pts(ByteStore &store, PointsApiPoints &pts, char disable_char, char enable_char, bool default_is_enable) : store(store), pts(pts), ch1(disable_char), ch2(enable_char),default_is_enable(default_is_enable) { }
+  virtual void Collect(CollectVisitor &vis) { pts.Collect(vis); }
+  virtual void HeavyPrepare()
+  {
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    return pts.NumPoints();
+  }
+  virtual Point Pos(int i) const {
+    if (i>=0 && i<store.Size()) {
+      unsigned char ch = store.Get(i);
+      if (ch==ch1) return Point(-6667,-6667,-6667);
+      if (ch==ch2) return pts.Pos(i);
+    }
+    if (default_is_enable) return pts.Pos(i);
+    return Point(-6667,-6667,-6667);
+  }
+  virtual unsigned int Color(int i) const { return pts.Color(i); }
+  virtual Vector Normal(int i) const { return pts.Normal(i); }
+private:
+  ByteStore &store;
+  PointsApiPoints &pts;
+  char ch1;
+  char ch2;
+  bool default_is_enable;
+};
+
+GameApi::PTS GameApi::MainLoopApi::bytestore_pts(GameApi::BS bs, GameApi::PTS pts, char disable_char, char enable_char, bool default_is_enable)
+{
+  ByteStore *bs2 = find_bytestore(e,bs);
+  PointsApiPoints *pts2 = find_pointsapi_points(e,pts);
+  return add_points_api_points(e, new Bytestore_pts(*bs2,*pts2,disable_char,enable_char,default_is_enable));
+}
