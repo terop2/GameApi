@@ -12876,6 +12876,18 @@ private:
   ShaderCall *next;
   mutable int id;
   std::string defines;
+  std::string cache_id;
+};
+
+class V_ShaderCallFunctionWithCacheId : public V_ShaderCallFunction
+{
+public:
+  V_ShaderCallFunctionWithCacheId(std::string funcname, ShaderCall *next, std::string defines, std::string cache_id3) : V_ShaderCallFunction(funcname,next,defines), cache_id2(cache_id3) { }
+
+  virtual std::string cache_id() const { return cache_id2; }
+
+private:
+  std::string cache_id2;
 };
 
 class F_ShaderCallFunction : public ShaderCall
@@ -12925,6 +12937,18 @@ private:
   mutable int id;
   std::string defines;
 };
+
+class F_ShaderCallFunctionWithCacheId : public F_ShaderCallFunction
+{
+public:
+  F_ShaderCallFunctionWithCacheId(std::string funcname, ShaderCall *next, std::string defines, std::string cache_id3) : F_ShaderCallFunction(funcname,next,defines), cache_id2(cache_id3) { }
+
+  virtual std::string cache_id() const { return cache_id2; }
+
+private:
+  std::string cache_id2;
+};
+
 
 class V_ShaderCallFunctionFlip : public ShaderCall
 {
@@ -13173,10 +13197,10 @@ GameApi::US GameApi::UberShaderApi::v_gi(US us)
   ShaderCall *next = find_uber(e, us);
   return add_uber(e, new V_ShaderCallFunction("gi", next,"IN_POSITION EX_POSITION"));
 }
-GameApi::US GameApi::UberShaderApi::v_gltf(US us)
+GameApi::US GameApi::UberShaderApi::v_gltf(US us, std::string cache_id)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("gltf", next,"GLTF IN_COLOR EX_COLOR IN_TEXCOORD EX_TEXCOORD IN_NORMAL EX_NORMAL IN_POSITION EX_POSITION"));
+  return add_uber(e, new V_ShaderCallFunctionWithCacheId("gltf", next,"GLTF IN_COLOR EX_COLOR IN_TEXCOORD EX_TEXCOORD IN_NORMAL EX_NORMAL IN_POSITION EX_POSITION",cache_id));
 }
 GameApi::US GameApi::UberShaderApi::v_fade(US us)
 {
@@ -13570,7 +13594,7 @@ GameApi::US GameApi::UberShaderApi::f_fade(US us)
 //{
   
 //}
-GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec,bool unlit)
+GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, bool spec,bool unlit, std::string cache_id)
 {
   ShaderCall *next = find_uber(e, us);
   std::string s;
@@ -13588,7 +13612,7 @@ GameApi::US GameApi::UberShaderApi::f_gltf(US us, bool tex0, bool tex1, bool tex
   if (unlit) s+=" UNLIT";
   
   //std::cout << "f_gltf:" << s << std::endl;
-  return add_uber(e, new F_ShaderCallFunction("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD COLOR_MIX GLTF" + s));
+  return add_uber(e, new F_ShaderCallFunctionWithCacheId("gltf", next,"EX_POSITION EX_NORMAL EX_COLOR EX_TEXCOORD COLOR_MIX GLTF" + s,cache_id));
 }
 GameApi::US GameApi::UberShaderApi::f_colour_with_mix(US us)
 {
@@ -15980,13 +16004,13 @@ public:
   }
   virtual int Iter()
   {
-
+    
     static std::string status = "";
     static std::string old_status = "";
     
 #ifdef EMSCRIPTEN
     if (need_change2) {
-      emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
+      emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       need_change=true;
       need_change2=false;
@@ -16226,8 +16250,9 @@ public:
  #ifdef EMSCRIPTEN
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
-       emscripten_set_main_loop_timing(EM_TIMING_RAF, 1);
+      emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
+      //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
     }
  #endif
     

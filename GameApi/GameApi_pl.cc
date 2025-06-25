@@ -7308,12 +7308,12 @@ std::string get_shader_path(GameApi::Env &e, GameApi::US us)
 {
   std::string s;
   ShaderCall *call = find_uber(e,us);
-  s+=call->func_name();
+  s+=call->cache_id();
   while(call->get_next())
     {
       call = call->get_next();
       s+=":";
-      s+=call->func_name();
+      s+=call->cache_id();
     }
   return s;
 }
@@ -7488,26 +7488,26 @@ public:
 	fragment.id = u_f.id; //e.us_fragment_shader;
 	if (e.sfo_id==-1)
 	  {
-	    /*
+	    
 	    PTexCacheItem item;
 	    item.e = &env;
 	    item.vertex = vertex;
 	    item.fragment = fragment;
 	    item.v_shader_functions = e.v_shader_functions;
 	    item.f_shader_functions = e.f_shader_functions;
-	    std::cout << get_shader_path(env,item.vertex) << " " << get_shader_path(env,item.fragment) << " " << item.v_shader_functions << " " << item.f_shader_functions << std::endl;
+	    //std::cout << get_shader_path(env,item.vertex) << " " << get_shader_path(env,item.fragment) << " " << item.v_shader_functions << " " << item.f_shader_functions << std::endl;
 	    GameApi::SH sh2 = find_ptex_shader(item);
 	    if (sh2.id==-1)
 	      {
-	    */
+	    
 	    //std::cout << "hep" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
-	    /*
+	    
 	    item.shader = shader;
 	    ptex_cache.push_back(item);
-	    */
+	    
 	ev.mainloop_api.init_3d(shader);
-	/*   } else shader=sh2;*/
+	   } else shader=sh2;
 	  }
 	else
 	  {
@@ -8704,7 +8704,7 @@ private:
 class GLTFShaderML : public MainLoopItem
 {
 public:
-  GLTFShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7,float roughnessfactor, float metallicfactor, float basecolorfactor0, float basecolorfactor1, float basecolorfactor2, float basecolorfactor3, float occul_strength, float emiss_factor, bool spec, Vector diff_factor, Vector spec_factor, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, Vector light_dir2) : ev(ev), next(next),mix(mix), tex0(tex0), tex1(tex1), tex2(tex2), tex3(tex3), tex4(tex4), tex5(tex5), tex6(tex6), tex7(tex7), roughnessfactor(roughnessfactor), metallicfactor(metallicfactor), basecolorfactor0(basecolorfactor0), basecolorfactor1(basecolorfactor1), basecolorfactor2(basecolorfactor2), basecolorfactor3(basecolorfactor3), occul_strength(occul_strength), emiss_factor(emiss_factor),spec(spec),diff_factor(diff_factor), spec_factor(spec_factor), glossi_factor(glossi_factor), unlit(unlit),emis2(Point(emis2_r,emis2_g,emis2_b)),light_dir2(light_dir2) 
+  GLTFShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7,float roughnessfactor, float metallicfactor, float basecolorfactor0, float basecolorfactor1, float basecolorfactor2, float basecolorfactor3, float occul_strength, float emiss_factor, bool spec, Vector diff_factor, Vector spec_factor, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, Vector light_dir2, std::string cache_id) : ev(ev), next(next),mix(mix), tex0(tex0), tex1(tex1), tex2(tex2), tex3(tex3), tex4(tex4), tex5(tex5), tex6(tex6), tex7(tex7), roughnessfactor(roughnessfactor), metallicfactor(metallicfactor), basecolorfactor0(basecolorfactor0), basecolorfactor1(basecolorfactor1), basecolorfactor2(basecolorfactor2), basecolorfactor3(basecolorfactor3), occul_strength(occul_strength), emiss_factor(emiss_factor),spec(spec),diff_factor(diff_factor), spec_factor(spec_factor), glossi_factor(glossi_factor), unlit(unlit),emis2(Point(emis2_r,emis2_g,emis2_b)),light_dir2(light_dir2), cache_id(cache_id) 
   {
     firsttime = true;
     sh.id=-1;
@@ -8735,7 +8735,7 @@ public:
     }
     vertex.id = ee.us_vertex_shader;
     //std::cout << "ManyTexture::V_ManyTexture" << std::endl;
-    GameApi::US a2 = ev.uber_api.v_gltf(vertex);
+    GameApi::US a2 = ev.uber_api.v_gltf(vertex,cache_id);
     ee.us_vertex_shader = a2.id;
 
     GameApi::US fragment;
@@ -8748,7 +8748,7 @@ public:
     }
     fragment.id = ee.us_fragment_shader;
     //std::cout << "ManyTexture::F_ManyTexture" << std::endl;
-    GameApi::US a2f = ev.uber_api.f_gltf(fragment, tex0, tex1, tex2, tex3, tex4,tex5,tex6,tex7,spec,unlit);
+    GameApi::US a2f = ev.uber_api.f_gltf(fragment, tex0, tex1, tex2, tex3, tex4,tex5,tex6,tex7,spec,unlit,cache_id);
     ee.us_fragment_shader = a2f.id;
     }
 
@@ -8841,6 +8841,7 @@ private:
   bool unlit;
   Point emis2;
   Vector light_dir2;
+  std::string cache_id;
 };
 
 
@@ -12043,10 +12044,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::mixshader_shader(EveryApi &ev, ML mainlo
    MainLoopItem *item = find_main_loop(e, mainloop);
    return add_main_loop(e, new TextureManyShaderML(ev, item, mix));
  }
-EXPORT GameApi::ML GameApi::PolygonApi::gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r, float diff_factor_g, float diff_factor_b, float spec_factor_r, float spec_factor_g, float spec_factor_b, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, float light_dir_x, float light_dir_y, float light_dir_z)
+EXPORT GameApi::ML GameApi::PolygonApi::gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r, float diff_factor_g, float diff_factor_b, float spec_factor_r, float spec_factor_g, float spec_factor_b, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, float light_dir_x, float light_dir_y, float light_dir_z, std::string cache_id)
  {
    MainLoopItem *item = find_main_loop(e, mainloop);
-   return add_main_loop(e, new GLTFShaderML(ev, item, mix,tex0,tex1,tex2,tex3,tex4, tex5, tex6,tex7,roughness, metallic, basecolor0,basecolor1,basecolor2, basecolor3, occul, emiss,spec, Vector(diff_factor_r,diff_factor_g, diff_factor_b), Vector(spec_factor_r,spec_factor_g,spec_factor_b), glossi_factor, unlit,emis2_r,emis2_g,emis2_b,Vector(light_dir_x, light_dir_y, light_dir_z)));
+   return add_main_loop(e, new GLTFShaderML(ev, item, mix,tex0,tex1,tex2,tex3,tex4, tex5, tex6,tex7,roughness, metallic, basecolor0,basecolor1,basecolor2, basecolor3, occul, emiss,spec, Vector(diff_factor_r,diff_factor_g, diff_factor_b), Vector(spec_factor_r,spec_factor_g,spec_factor_b), glossi_factor, unlit,emis2_r,emis2_g,emis2_b,Vector(light_dir_x, light_dir_y, light_dir_z),cache_id));
  }
  EXPORT GameApi::ML GameApi::PolygonApi::texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix=0.5, float mix2=0.5)
  {
@@ -27864,3 +27865,280 @@ public:
 private:
   mutable std::map<PointIndex,PointIndex> mymap;
 };
+
+class StringByteStore : public ByteStore
+{
+public:
+  StringByteStore(std::string s2) : s(s2.begin(),s2.end()) {}
+  int Size() const { return s.size(); }
+  unsigned char &Get(int i) const { return s[i]; }
+private:
+  mutable std::vector<unsigned char> s;
+};
+
+GameApi::BS GameApi::MainLoopApi::string_bytestore(std::string s)
+{
+  return add_bytestore(e,new StringByteStore(s));
+}
+
+class TimingByteStoreUser : public MainLoopItem
+{
+public:
+  TimingByteStoreUser(ByteStore &store, int ch, std::string s, float time_delta) : store(store), ch(ch), s(s), time_delta(time_delta) { current_pos =0;}
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    static float prev_time = 0.0;
+    float time = e.time;
+    float delta = time - prev_time;
+    int jump = int(delta/time_delta);
+    current_pos+=jump;
+    store.Get(ch) = s[current_pos%s.size()];
+    prev_time+=jump*time_delta;
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+  }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
+private:
+  ByteStore &store;
+  int ch;
+  std::string s;
+  float time_delta;
+  int current_pos;
+};
+GameApi::ML GameApi::MainLoopApi::bytestore_timing(BS store, int ch, std::string s, float time_delta)
+{
+  ByteStore *bs = find_bytestore(e,store);
+  return add_main_loop(e, new TimingByteStoreUser(*bs,ch,s,time_delta));
+}
+
+class TimingByteStoreArray : public MainLoopItem
+{
+public:
+  TimingByteStoreArray(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::BS store, std::string url, std::string homepage, float delta_time) : e(e), ev(ev), store(store), url(url),homepage(homepage),delta_time(delta_time) { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void HeavyPrepare() {
+#ifndef EMSCRIPTEN
+    e.async_load_url(url, homepage);
+#endif
+
+    GameApi::ASyncVec *ptr = e.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+
+    std::string s = std::string(ptr->begin(),ptr->end());
+    std::stringstream ss(s);
+    std::string line;
+    int ch;
+    std::string s2;
+    while(std::getline(ss,line)) {
+      std::stringstream ss2(line);
+      ss2 >> ch >> s2;
+      chs.push_back(ch);
+      strings.push_back(s2);
+    }
+    int s3 = chs.size();
+    for(int i=0;i<s3;i++)
+      {
+	mls.push_back(ev.mainloop_api.bytestore_timing(store,chs[i],strings[i],delta_time));
+      }
+  }
+  virtual void Prepare() { }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &ee)
+  {
+    int s = mls.size();
+    for(int i=0;i<s;i++) {
+      GameApi::ML ml = mls[i];
+      MainLoopItem *item = find_main_loop(e,ml);
+      item->execute(ee);
+    }
+  }
+  void handle_event(MainLoopEvent &) { }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::BS store;
+  std::string url, homepage;
+  std::vector<int> chs;
+  std::vector<std::string> strings;
+  std::vector<GameApi::ML> mls;
+  float delta_time;
+};
+
+GameApi::ML GameApi::MainLoopApi::bytestore_array(GameApi::EveryApi &ev, GameApi::BS bs, std::string url, float delta_time)
+{
+  return add_main_loop(e,new TimingByteStoreArray(e,ev,bs,url,gameapi_homepageurl,delta_time));
+}
+
+class Bytestore_render : public MainLoopItem
+{
+public:
+  Bytestore_render(GameApi::Env &e, GameApi::EveryApi &ev, ByteStore &store, std::vector<MainLoopItem*> mls, std::string url, std::string homepage, float delta_x, float delta_y) : env(e), ev(ev), store(store), mls(mls), url(url), homepage(homepage), delta_x(delta_x), delta_y(delta_y) { }
+  virtual void Collect(CollectVisitor &vis) {
+    int s = mls.size();
+    for(int i=0;i<s;i++)
+      mls[i]->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+#ifndef EMSCRIPTEN
+    env.async_load_url(url, homepage);
+#endif
+
+    GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
+    if (!ptr) {
+      std::cout << "p_url async not ready yet, failing..." << std::endl;
+      return;
+    }
+
+    std::string s = std::string(ptr->begin(),ptr->end());
+    std::stringstream ss(s);
+    std::string line;
+    char ch;
+    int index;
+    
+    while(std::getline(ss,line)) {
+      std::stringstream ss2(line);
+      ss2 >> ch >> index;
+      MapItem ii;
+      ii.ch = ch;
+      ii.index = index;
+      maps.push_back(ii);
+    }
+
+    
+  }
+  virtual void Prepare() {
+    int s = mls.size();
+    for(int i=0;i<s;i++)
+      mls[i]->Prepare();
+    HeavyPrepare();
+  }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    int s2 = store.Size();
+    int xx = 0;
+    int yy = 0;
+    for(int x=0;x<s2;x++)
+      {
+	unsigned char &ch = store.Get(x);
+	if (ch=='\n')
+	  {
+	    xx=0;
+	    yy++;
+	    continue;
+	  }
+	else
+	  {
+	    int s3 = maps.size();
+	    for(int i=0;i<s3;i++)
+	      {
+		MapItem &ch2 = maps[i];
+		if (ch2.ch==ch)
+		  {
+		    MainLoopEnv ee = e;
+		    ee.in_MV = e.in_MV * Matrix::Translate(xx*delta_x, 0.0, yy*delta_y);
+		    mls[i]->execute(ee);
+		    
+		    
+		  }
+	      }
+	  }
+	xx++;
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    int s = mls.size();
+    for(int i=0;i<s;i++)
+      mls[i]->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    int s = mls.size();
+    std::vector<int> res;
+    for(int i=0;i<s;i++) {
+      std::vector<int> v=mls[i]->shader_id();
+      int s2 = v.size();
+      for(int j=0;j<s2;j++)
+	res.push_back(v[j]);
+    }
+    return res;
+  }
+
+  struct MapItem {
+    char ch;
+    int index;
+  };
+  
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  ByteStore &store;
+  std::vector<MainLoopItem*> mls;
+  std::vector<MapItem> maps;
+  std::string url;
+  std::string homepage;
+  float delta_x,delta_y;
+};
+
+GameApi::ML GameApi::MainLoopApi::bytestore_render(GameApi::EveryApi &ev, GameApi::BS bs, std::vector<GameApi::ML> ml, std::string url, float delta_x, float delta_y)
+{
+  ByteStore *bs2 = find_bytestore(e,bs);
+
+  int s = ml.size();
+  std::vector<MainLoopItem*> vec;
+  for(int i=0;i<s;i++)
+    vec.push_back(find_main_loop(e,ml[i]));
+  
+  return add_main_loop(e,new Bytestore_render(e,ev,*bs2,vec,url,gameapi_homepageurl,delta_x,delta_y));
+}
+
+class Bytestore_pts : public PointsApiPoints
+{
+public:
+  Bytestore_pts(ByteStore &store, PointsApiPoints &pts, char disable_char, char enable_char, bool default_is_enable) : store(store), pts(pts), ch1(disable_char), ch2(enable_char),default_is_enable(default_is_enable) { }
+  virtual void Collect(CollectVisitor &vis) { pts.Collect(vis); }
+  virtual void HeavyPrepare()
+  {
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const
+  {
+    return pts.NumPoints();
+  }
+  virtual Point Pos(int i) const {
+    if (i>=0 && i<store.Size()) {
+      unsigned char ch = store.Get(i);
+      if (ch==ch1) return Point(-6667,-6667,-6667);
+      if (ch==ch2) return pts.Pos(i);
+    }
+    if (default_is_enable) return pts.Pos(i);
+    return Point(-6667,-6667,-6667);
+  }
+  virtual unsigned int Color(int i) const { return pts.Color(i); }
+  virtual Vector Normal(int i) const { return pts.Normal(i); }
+private:
+  ByteStore &store;
+  PointsApiPoints &pts;
+  char ch1;
+  char ch2;
+  bool default_is_enable;
+};
+
+GameApi::PTS GameApi::MainLoopApi::bytestore_pts(GameApi::BS bs, GameApi::PTS pts, char disable_char, char enable_char, bool default_is_enable)
+{
+  ByteStore *bs2 = find_bytestore(e,bs);
+  PointsApiPoints *pts2 = find_pointsapi_points(e,pts);
+  return add_points_api_points(e, new Bytestore_pts(*bs2,*pts2,disable_char,enable_char,default_is_enable));
+}

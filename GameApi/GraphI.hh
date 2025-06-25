@@ -9,6 +9,14 @@
 #include "VectorTools.hh"
 #include "Buffer.hh"
 
+class ByteStore
+{
+public:
+  virtual int Size() const=0;
+  virtual unsigned char &Get(int i) const=0;
+};
+
+
 template<class T>
 class GameApiAllocator
 {
@@ -1148,7 +1156,7 @@ public:
   virtual std::string func_name() const=0;
   virtual bool is_fragment() const { return false; }
   virtual ShaderCall *get_next() const=0;
-
+  virtual std::string cache_id() const { return func_name(); }
 };
 
 class MatrixArray : public CollectInterface
@@ -3235,6 +3243,7 @@ private:
   T start,end;
   float radius; bool flip;
 };
+
 
 
 #endif

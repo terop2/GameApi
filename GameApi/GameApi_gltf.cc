@@ -18,6 +18,9 @@ extern unsigned long g_zip_file_size;
 extern bool g_glb_animated;
 extern int g_pthread_count;
 
+GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
+
+
 template<class T>
 void print(std::string label, T *ptr)
 {
@@ -2922,6 +2925,8 @@ GameApi::ML GameApi::MainLoopApi::gltf_material_mesh(EveryApi &ev, TF tf, int me
   std::vector<GameApi::ML> mls;
   for(int i=0;i<s;i++)
     {
+      //GameApi::P p = gltf_load2(e,ev,interface,mesh_index,i);
+      //GameApi::ML ml=ev.polygon_api.render_vertex_array_ml2(ev,p);
       GameApi::ML ml = gltf_material_nop(ev,tf,mesh_index,i,mix);
       mls.push_back(ml);
     }
@@ -2938,7 +2943,7 @@ GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int
 class GLTF_Node_impl : public MainLoopItem
 {
 public:
-  GLTF_Node_impl(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int node_index, float mix) : env(env), ev(ev), tf(tf), node_index(node_index)
+  GLTF_Node_impl(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF tf, int node_index, float mix) : env(env), ev(ev), tf(tf), node_index(node_index),mix(mix)
   {
   }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
@@ -3466,6 +3471,7 @@ GLTF_SKIN *gltf_skin(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::TF tf, int
     } else
       {
 	// default to mesh 0
+	std::cout << "defaulting to mesh 0" << std::endl;
 	mesh = ev.mainloop_api.gltf_material_mesh(ev,tf,0,mix);
 	mls.push_back(mesh);
       }
@@ -5442,6 +5448,7 @@ public:
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       if (r.baseColorFactor[3]<0.9)
 	{
+	  //std::cout << "Returning transparent: " << r.baseColorFactor[3] << std::endl;
 	  return true;
 	}
     }
@@ -5675,6 +5682,11 @@ public:
 
 
 
+    std::stringstream ss2;
+    ss2 << "gltf" << interface->Url() << material_id;
+    std::string cache_id = ss2.str();
+
+    
     //GameApi::ML I13;
     //I13.id = next->mat(p.id);
     //GameApi::P I10=p; 
@@ -5705,7 +5717,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx, light_dir.dy, light_dir.dz); // todo base color
+      I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx, light_dir.dy, light_dir.dz,cache_id); // todo base color
 
       //} else {
       //	I18 = specglossyshader(ev,I17);
@@ -5743,6 +5755,9 @@ public:
       bm.push_back(texture(j));
     }
 
+    std::stringstream ss2;
+    ss2 << "gltf" << interface->Url() << material_id;
+    std::string cache_id = ss2.str();
 
 
     //GameApi::ML I13;
@@ -5774,7 +5789,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz,cache_id);
     //} else {
     //	I18 = specglossyshader(ev,I17);
     // }
@@ -5829,6 +5844,9 @@ public:
 	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
 	id_labels.push_back(ss.str());
       }
+    std::stringstream ss2;
+    ss2 << "gltf" << interface->Url() << material_id;
+    std::string cache_id = ss2.str();
     
     GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm,std::vector<int>(),id_labels);
     GameApi::ML I18;
@@ -5841,7 +5859,7 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz);
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz,cache_id);
     //} else {
     //	I18 = specglossyshader(ev,I17);
     // }
@@ -7592,6 +7610,7 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   int s2 = interface->nodes_size(); //load->model.nodes.size();
   if (!(node_id>=0 && node_id<s2))
     {
+      std::cout << "empty node" << node_id<< std::endl;
     GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
@@ -7877,6 +7896,7 @@ int get_cache_id(GLTFModelInterface *interface)
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
 {
+  //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
   //std::cout << "MESH2: " << mesh_id << std::endl;
   //g_last_resize=Matrix::Identity();
@@ -7888,8 +7908,16 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       //std::cout << "skeleton:" << mesh_id << " " << i << std::endl;
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
-      GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, 1.0,light_dir);
-      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,true):mat2;
+      bool colour=false;
+      GameApi::MT mat2;
+      if (mat==-1) { colour=true;
+	mat2=ev.materials_api.m_def(ev);
+	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xffff8888,0xffffffff,10.0);
+      } else {
+        mat2 = gltf_material2(e, ev, interface, mat, 1.0,light_dir);
+      }
+      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
       GameApi::MT mat2_anim;
       if (interface->animations_size()!=0 && keys.size()>0) {
@@ -7905,12 +7933,18 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 	{
 	  mat2_anim = mat3;
 	}
+      GameApi::MT mat4;
+      if (colour)
+	{
+	  mat4 = mat2_anim;
+	} else {
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat33 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat33->texture(0); // basecolor
       bool is_transparent = mat33->IsTransparent();
+      mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      }
       GameApi::MT mat_res;
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
       if (transparent) {
 	mat_res = mat4;
       } else { mat_res=mat2_anim; }
@@ -7925,6 +7959,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
     GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
     return ml;
   } else {
+    std::cout << "EMPTY" << std::endl;
     GameApi::P empty = ev.polygon_api.p_empty();
     GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
     return ml;
@@ -7981,6 +8016,7 @@ GameApi::ARR gltf_mesh2_p_arr( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color)
 {
+  //std::cout << mesh_id << " :: " << skin_id << std::endl;
   int cache_id = get_cache_id(interface);
   
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
@@ -7988,11 +8024,20 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     int s = m.primitives.size();
     std::vector<GameApi::ML> mls;
     for(int i=0;i<s;i++) {
-      // std::cout << "mesh2:" << mesh_id << " " << i << std::endl;
+      //std::cout << "mesh2:" << mesh_id << " " << i << std::endl;
       GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
       int mat = m.primitives[i].material;
-      GameApi::MT mat2 = gltf_material2(e, ev, interface, mat, mix,light_dir);
-      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,true):mat2;
+      GameApi::MT mat2;
+      bool colour = false;
+      if (mat==-1) { colour=true;
+	mat2=ev.materials_api.m_def(ev);
+	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xffff8888,0xffffffff,10.0);
+      } else
+	{
+	  mat2 = gltf_material2(e, ev, interface, mat, mix,light_dir);
+	}
+      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
       GameApi::MT mat2_anim;
       if (interface->animations_size()!=0 && keys.size()>0) {
@@ -8005,13 +8050,19 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
 	  //}
 	mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+cache_id*100);
       } else { mat2_anim=mat3; }
-
+      GameApi::MT mat4;
+      if (colour)
+	{
+	  mat4 = mat2_anim;
+	}
+      else {
       Material *mat0 = find_material(e,mat2);
       GLTF_Material *mat33 = (GLTF_Material*)mat0;
       GameApi::BM bm = mat33->texture(0); // basecolor
       bool is_transparent = mat33->IsTransparent();
-      GameApi::MT mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
+      }
 
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
