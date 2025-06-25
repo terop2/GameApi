@@ -818,6 +818,7 @@ struct EnvImpl
   std::vector<MainLoopItemWGPU*> wgpu_main_loop;
   std::vector<ColourSpace*> colourspaces;
   std::vector<ColourSpaceI*> colourspacesI;
+  std::vector<ByteStore*> bytestores;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1147,6 +1148,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::BS add_bytestore(GameApi::Env &e, ByteStore *bs);
 GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace * cs);
 GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI * csi);
 GameApi::GI add_gi(GameApi::Env &e, GameApi::GlobalIlluminationData *dt);
@@ -1310,6 +1312,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+ByteStore *find_bytestore(GameApi::Env &e, GameApi::BS bs);
 ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs);
 ColourSpaceI *find_colourspaceI(GameApi::Env &e, GameApi::CSI csi);
 GameApi::GlobalIlluminationData *find_gi(GameApi::Env &e, GameApi::GI gi);
