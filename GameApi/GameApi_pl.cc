@@ -9,9 +9,9 @@
 #include <iostream>
 #include <queue>
 
-//#ifdef LINUX
-//#define USE_VIDEO 1
-//#endif
+#ifdef LINUX
+#define USE_VIDEO 1
+#endif
 
 // NOT WORKING
 //#ifdef EMSCRIPTEN
@@ -26866,14 +26866,11 @@ public:
   {
     if (firsttime) {
       firsttime=false;
-    std::cout << "1" << std::endl;
 #ifndef EMSCRIPTEN
     e.async_load_url(filename, gameapi_homepageurl);
 #endif
-    std::cout << "2" << std::endl;
     GameApi::ASyncVec *ptr = e.get_loaded_async_url(filename);
     if (!ptr) { std::cout << "ASYNC NOT READY in VIDEO" << std::endl; return; }
-    std::cout << "3" << std::endl;
 
     std::string home = getenv("HOME")?getenv("HOME"):".";
     std::string path = "/.gameapi_builder/";
@@ -26881,20 +26878,14 @@ public:
     home = ".";
     path = "/";
 #endif
-    std::cout << "4" << std::endl;
     std::ofstream ss((home + path + "video.mp4")
 		     .c_str(),std::ios_base::out|std::ios_base::binary);
-    std::cout << "5" << std::endl;
     std::string ss2(ptr->begin(),ptr->end());
-    std::cout << "6" << std::endl;
     ss << ss2;
-    std::cout << "7" << std::endl;
     ss.close();
 
-    std::cout << "8" << home + path + "video.mp4" << std::endl;
     
     cap = cv::VideoCapture(home + path + "video.mp4");
-    std::cout << "9" << std::endl;
     }
   }
   
@@ -26902,24 +26893,17 @@ public:
   {
     OpenglLowApi *ogl = g_low->ogl;
     cv::Mat frame;
-    std::cout << "11" << std::endl;
     if (cap.grab())
       {
-    std::cout << "12" << std::endl;
 	cap.retrieve(frame);
-    std::cout << "13" << std::endl;
       }
     else
       {
    std::string home = getenv("HOME");
-    std::cout << "14" << std::endl;
  	cap = cv::VideoCapture(home+"/.gameapi_builder/video.mp4");
 	
-    std::cout << "15" << std::endl;
 	cap.grab();
-    std::cout << "16" << std::endl;
 	cap.retrieve(frame);
-    std::cout << "17" << std::endl;
       }
 
     int channels = frame.channels();
@@ -27002,6 +26986,7 @@ void *writer(void* ptr)
 {
   VideoSource *src = (VideoSource*)ptr;
   src->Prepare2();
+  return 0;
 }
 
 IMPORT bool file_exists(std::string s);

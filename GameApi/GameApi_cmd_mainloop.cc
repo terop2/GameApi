@@ -1276,6 +1276,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 #endif
 #endif
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::videofile_txid_generic,
+			 "videofile_generic",
+			 { "ev", "sx", "sy", "url" },
+			 { "EveryApi&", "int", "int", "std::string" },
+			 { "ev","800", "600", "https://meshpage.org/assets/frog.mp4" },
+			 "TXID", "texture_api", "videofile_txid_generic"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::webcam_txid_generic,
 			 "webcam_generic",
 			 { "ev", "sx", "sy", "num" },
