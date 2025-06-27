@@ -1,4 +1,4 @@
-<?php
+s<?php
 header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
 //header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -730,6 +730,7 @@ echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a
 
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
+echo "Y-tunnus: 3544765-4 (Tero Pulkkinen)<br>";
 echo "Ko-fi address: <a href=\"https://ko-fi.com/terop57376\">terop57376</a><br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a><br>";
