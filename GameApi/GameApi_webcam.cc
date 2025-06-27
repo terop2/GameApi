@@ -594,28 +594,33 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 #include <emscripten/html5.h>
 #include <stdio.h>
 
-EM_JS(void, init_webcam, (), {
+EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   const video = document.createElement('video');
   video.setAttribute('id', 'webcam');
-  video.setAttribute('autoplay', '');
-  video.setAttribute('playsinline', '');
+  video.autoplay = true;
+  video.playsInline = true;
+  if (is_videofile)
+    video.crossOrigin = 'anonymous';
+  if (is_videofile)
+    video.src=UTF8ToString(url);
   video.style.display = 'none';
-  video.width = 640;
-  video.height = 480;
+  video.width = sx;
+  video.height = sy;
+    video.muted = true;
   video.onloadedmetadata = () => {
-    video.play();
+    video.play().catch(err => console.error("Autoplay failed:", err));
   };
   document.body.appendChild(video);
 
   const canvas = document.createElement('canvas');
   canvas.setAttribute('id', 'webcamCanvas');
   canvas.setAttribute('willReadFrequently', 'true');
-  canvas.width = 640;
-  canvas.height = 480;
+  canvas.width = sx;
+  canvas.height = sy;
   canvas.style.display = 'none';
   document.body.appendChild(canvas);
 
-  
+  if (!is_videofile)  
   navigator.mediaDevices.getUserMedia({ video: true })
     .then((stream) => {
       video.srcObject = stream;
@@ -627,8 +632,13 @@ EM_JS(void, init_webcam, (), {
 
 EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
   const video = document.getElementById('webcam');
+  const heap = Module.HEAPU8;
   if (video.readyState < 2) {
     // Not enough data yet
+    for (let i = 0; i < width*height*4; ++i) {
+      heap[dstPtr + i] = 0;
+    }
+
     return;
   }
   const canvas = document.getElementById('webcamCanvas');
@@ -638,7 +648,6 @@ EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
 
-  const heap = Module.HEAPU8;
   for (let i = 0; i < Math.min(data.length,width*height*4); ++i) {
     heap[dstPtr + i] = data[i];
   }
@@ -647,22 +656,22 @@ EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
 class EmscriptenCapture : public BufferRefReq
 {
 public:
-  EmscriptenCapture(int, int, int num) : num(num) {
-    sx=640; sy=480;
+  EmscriptenCapture(int sx, int sy, int num) : num(num),is_video_file(false),sx(sx),sy(sy) {
+    //sx=640; sy=480;
     init_done = false;
     ref=BufferRef::NewBuffer(sx,sy);
   }
+  EmscriptenCapture(int sx, int sy, std::string url) : url(url), num(0), is_video_file(true),sx(sx),sy(sy) { init_done = false; ref=BufferRef::NewBuffer(sx,sy); }
   void initCapture(int num) const
   {
-    init_webcam();
-    framebuffer = (uint8_t*)malloc(sx*sy*4);
+    init_webcam(is_video_file?url.c_str():"",is_video_file,sx,sy);
   }
   void doCapture(int num) const
   {
-    grab_frame_to_memory((int)ref.buffer,sx,sy);
-    //std::copy(framebuffer,framebuffer+sx*sy*4,ref.buffer);
     int sx = ref.width;
     int sy = ref.height;
+    grab_frame_to_memory((int)ref.buffer,sx,sy);
+    //std::copy(framebuffer,framebuffer+sx*sy*4,ref.buffer);
     for(int y=0;y<sy/2;y++)
       for(int x=0;x<sx;x++)
 	{
@@ -686,17 +695,25 @@ public:
   }
 
 private:
+  mutable std::string url;
   mutable uint8_t *framebuffer = nullptr;
   int sx,sy;
   mutable BufferRef ref;
   mutable int num;
   mutable bool init_done;
+  mutable bool is_video_file;
 };
 
 
 GameApi::TXID GameApi::TextureApi::webcam_txid_emscripten(EveryApi &ev, int sx, int sy, int num)
 {
   EmscriptenCapture *buf = new EmscriptenCapture(sx,sy,num);
+  WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
+  return add_txid(e,id);
+}
+GameApi::TXID GameApi::TextureApi::videofile_txid_emscripten(EveryApi &ev, int sx, int sy, std::string url)
+{
+  EmscriptenCapture *buf = new EmscriptenCapture(sx,sy,url);
   WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
   return add_txid(e,id);
 }
@@ -715,4 +732,16 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int
 #ifdef EMSCRIPTEN
   return webcam_txid_emscripten(ev,sx,sy,num);
 #endif
+}
+GameApi::TXID GameApi::TextureApi::videofile_txid_generic(EveryApi &ev, int sx, int sy, std::string url)
+{
+#ifdef LINUX
+  return ev.bitmap_api.video_source(url,sx,sy);
+#endif
+#ifdef EMSCRIPTEN
+  return videofile_txid_emscripten(ev,sx,sy,url);
+#endif
+  GameApi::TXID id;
+  id.id = 0;
+  return id;
 }

@@ -3525,9 +3525,20 @@ void refresh()
 }
 
 IMPORT extern std::string gameapi_temp_dir;
+#ifdef LINUX
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/core/ocl.hpp>
+#endif
+
 
 int main(int argc, char *argv[]) {
-	g_main_thread_id = pthread_self();
+#ifdef LINUX
+  cv::setNumThreads(10);
+  cv::ocl::setUseOpenCL(false);
+#endif
+ g_main_thread_id = pthread_self();
 
 	tasks_init();
 	

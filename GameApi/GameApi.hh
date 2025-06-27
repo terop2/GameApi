@@ -862,6 +862,8 @@ public:
   IMPORT TXID webcam_txid_linux(EveryApi &ev, int sx, int sy, int num);
   IMPORT TXID webcam_txid_emscripten(EveryApi &ev, int sx, int sy, int num);
   IMPORT TXID webcam_txid_generic(EveryApi &ev, int sx, int sy, int num);
+  IMPORT TXID videofile_txid_generic(EveryApi &ev, int sx, int sy, std::string url);
+  IMPORT TXID videofile_txid_emscripten(EveryApi &ev, int sx, int sy, std::string url);
   IMPORT ML vr_overlay(TXID id, std::string key, std::string name, int sx, int sy);
   IMPORT std::vector<TXID> prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types=std::vector<int>(),bool mipmaps=true, std::vector<std::string> id_labels=std::vector<std::string>());
   IMPORT TXID prepare_cubemap(EveryApi &ev, BM right, BM left, BM top, BM bottom, BM back, BM front);
