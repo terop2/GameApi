@@ -594,6 +594,15 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 #include <emscripten/html5.h>
 #include <stdio.h>
 
+EM_JS(void, webcam_cleanup, (void), {
+    var video = document.getElementById('webcam');
+    video.id = 'oldwebcam';
+    video.remove();
+    var video2 = document.getElementById('webcamCanvas');
+    video2.id = 'oldwebcamCanvas';
+    video2.remove();
+  });
+
 EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   const video = document.createElement('video');
   video.setAttribute('id', 'webcam');
@@ -603,6 +612,8 @@ EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
     video.crossOrigin = 'anonymous';
   if (is_videofile)
     video.src=UTF8ToString(url);
+  else
+    video.src='';
   video.style.display = 'none';
   video.width = sx;
   video.height = sy;
@@ -620,7 +631,7 @@ EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   canvas.style.display = 'none';
   document.body.appendChild(canvas);
 
-  if (!is_videofile)  
+  if (!is_videofile) {
   navigator.mediaDevices.getUserMedia({ video: true })
     .then((stream) => {
       video.srcObject = stream;
@@ -628,12 +639,13 @@ EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
     .catch((err) => {
       console.error('Webcam error:', err);
     });
+  }
 });
 
 EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
   const video = document.getElementById('webcam');
   const heap = Module.HEAPU8;
-  if (video.readyState < 2) {
+  if ([undefined,null].includes(video) || video.readyState < 2) {
     // Not enough data yet
     for (let i = 0; i < width*height*4; ++i) {
       heap[dstPtr + i] = 0;
@@ -653,6 +665,13 @@ EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
   }
 });
 
+void emscripten_capture_cb(void*);
+
+extern void (*g_stop_cb)(void*);
+extern void *g_stop_cb_param;
+extern bool g_stop_cb_enabled;
+
+
 class EmscriptenCapture : public BufferRefReq
 {
 public:
@@ -660,8 +679,20 @@ public:
     //sx=640; sy=480;
     init_done = false;
     ref=BufferRef::NewBuffer(sx,sy);
+    g_stop_cb = &emscripten_capture_cb;
+    g_stop_cb_param = (void*)this;
+    g_stop_cb_enabled = true;
   }
-  EmscriptenCapture(int sx, int sy, std::string url) : url(url), num(0), is_video_file(true),sx(sx),sy(sy) { init_done = false; ref=BufferRef::NewBuffer(sx,sy); }
+  EmscriptenCapture(int sx, int sy, std::string url) : url(url), num(0), is_video_file(true),sx(sx),sy(sy) { init_done = false; ref=BufferRef::NewBuffer(sx,sy);
+
+    g_stop_cb = &emscripten_capture_cb;
+    g_stop_cb_param = (void*)this;
+    g_stop_cb_enabled = true;
+
+    
+  }
+  ~EmscriptenCapture() { g_stop_cb_enabled = false; if (init_done) webcam_cleanup(); }
+  void cleanup() { g_stop_cb_enabled = false; if (init_done) webcam_cleanup(); }
   void initCapture(int num) const
   {
     init_webcam(is_video_file?url.c_str():"",is_video_file,sx,sy);
@@ -703,6 +734,11 @@ private:
   mutable bool init_done;
   mutable bool is_video_file;
 };
+void emscripten_capture_cb(void* p)
+{
+  EmscriptenCapture *cb2 = (EmscriptenCapture*)p;
+  cb2->cleanup();
+}
 
 
 GameApi::TXID GameApi::TextureApi::webcam_txid_emscripten(EveryApi &ev, int sx, int sy, int num)
