@@ -33451,9 +33451,13 @@ KP extern "C" void set_background_mode(int i)
 }
 
 bool g_stop_music = false;
+void (*g_stop_cb)(void*);
+void *g_stop_cb_param;
+bool g_stop_cb_enabled = false;
 KP extern "C" void stop_music_playing()
 {
   g_stop_music = true;
+  if (g_stop_cb_enabled) g_stop_cb(g_stop_cb_param);
 }
 
 extern Matrix g_last_resize;
