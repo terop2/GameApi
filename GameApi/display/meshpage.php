@@ -500,7 +500,7 @@ $display_labels[$ii] = $label;
 
    echo "<div class=\"zipbutton\">";
    echo "<div class=\"ziphoriz\">";
-   echo "<button id=\"copybutton$ii\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\">&copy;</button>";
+   echo "<button id=\"copybutton$ii\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\" style=\"height:21px\">&copy;</button>";
    echo "<script>";
 //         $arr = array("username" => "terop", "index" => $_GET["id"]);
 //      $res = addtext_date($arr);
@@ -509,11 +509,11 @@ $display_labels[$ii] = $label;
 //echo "     .then(x => x.text())\n";
 //echo "     .then(y => show_copy3($ii,y));\n";
 echo "</script>";
-echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\">Script</button>";
+echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\" style=\"height:21px\">Script</button>";
    echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
    echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
    echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
-   echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
+   echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" style=\"height:21px\" onblur=\"g_focus=false;\">";
    echo "</form>";
 
 
@@ -523,7 +523,7 @@ echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_fo
    //echo "<input id=\"apkbutton" . $ii ."\" type=\"submit\" value=\"Apk\" onfocus=\"window.g_focus4=true;\" onblur=\"window.g_focus4=false;\"/>";
    //echo "</form>";
 
-echo "<button id=\"apkbutton$ii\" type=\"button\" onclick=\"show_apk($ii,'$ump')\" onfocus=\"g_focus4=true;\" onblur=\"g_focus4=false;\">Apk</button>";
+echo "<button id=\"apkbutton$ii\" type=\"button\" style=\"height:21px\" onclick=\"show_apk($ii,'$ump')\" onfocus=\"g_focus4=true;\" onblur=\"g_focus4=false;\">Apk</button>";
    echo "<script>";
          $arr = array("username" => "terop", "index" => $_GET["id"]);
       $res = addtext_date($arr);
