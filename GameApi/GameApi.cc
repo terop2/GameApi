@@ -21387,7 +21387,7 @@ std::string get_persistent_id(LINE l)
   for(int i=0;i<s;i++)
     {
       PersistentFuncSpec spec = g_persistent_func[i];
-      std::cout << spec.api << "==" << l.api_name << " && " << spec.func << "==" << l.func_name << std::endl;
+      //std::cout << spec.api << "==" << l.api_name << " && " << spec.func << "==" << l.func_name << std::endl;
       if (spec.api == l.api_name && spec.func == l.func_name)
 	{
 	  return l.params[spec.param_num];
@@ -33818,14 +33818,14 @@ void set_area_type_obj(int id, std::string obj_type_name, std::string obj_pos_na
   int i;
   for(i=0;i<s;i++) {
     V_Object_Type_Array *arr = g_object_types[i];
-    std::cout << "Compare:" << arr->type_name << "==" << obj_type_name << std::endl;
+    //std::cout << "Compare:" << arr->type_name << "==" << obj_type_name << std::endl;
     if (arr->type_name == obj_type_name) { break; }
   }
   int s2 = g_object_pos.size();
   int j;
   for(j=0;j<s2;j++) {
     V_Object_Pos *pos = &g_object_pos[j];
-    std::cout << "Compare:" << pos->pos_name << "==" << obj_pos_name << std::endl;
+    //std::cout << "Compare:" << pos->pos_name << "==" << obj_pos_name << std::endl;
     if (pos->pos_name == obj_pos_name) { break; }
    
   }
