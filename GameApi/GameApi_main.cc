@@ -1350,6 +1350,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
     }
 
 #endif
+
   
   OpenglLowApi *ogl = g_low->ogl;
   Low_SDL_Event event;

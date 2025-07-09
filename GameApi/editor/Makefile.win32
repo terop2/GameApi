@@ -1,5 +1,4 @@
 
 all:
-	g++ -DWINDOWS -ggdb -std=c++17 test.cpp -L. -L.. -I.. -lgmon -lGameApi -lDbgHelp -pthread
-	
+	g++ -DWINDOWS -ggdb -std=c++17 test.cpp -L. -L.. -I.. -lgmon -lGameApi -pthread -lDbgHelp -lole32 -levr -lpropsys -lmfplat -lmfreadwrite -lmf -lmfuuid -lshlwapi -luuid -lopengl32 
 

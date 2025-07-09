@@ -262,7 +262,7 @@ main.exe: $(GCHFiles_examples) $(O2Files_examples) Makefile GameApi.hh libGameAp
 
 libGameApi.dll: $(O2Files_dep) $(O2Files) Makefile.win32 glew.o libGameDep.dll
 	@echo mingw libGameApi.dll
-	@g++ -DGAMEAPI_EXPORTS -flto -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) $(O2Files) glew.o -DGLEW_STATIC -o libGameApi.dll holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api -lpthreadgc2 -Wl,--reduce-memory-overheads -Wl,--out-implib,libGameApi.a -lmfplat -lmfreadwrite -lmf -lshlwapi -lole32 -luuid
+	@g++ -DGAMEAPI_EXPORTS -flto -m64 -Wa,-mbig-obj -L. -L$(LIBWIN) -L$(LIB2WIN) -L$(LIB3WIN) -L$(LIB4WIN) -L$(LIB5WIN) -L$(LIB6WIN) -L$(LIB7WIN) -L$(LIB8WIN) -L$(LIB9WIN) -shared -g $(O2Files_dep) $(O2Files) glew.o -DGLEW_STATIC -o libGameApi.dll holoplay/HoloPlayAPI.lib -lSDL2 -lSDL2_image -lSDL2_mixer -lfreetype-6 -lstdc++ -lgcc -lwsock32 -lopengl32 -Lopenvr -lopenvr_api -lpthreadgc2 -Wl,--reduce-memory-overheads -Wl,--out-implib,libGameApi.a -lole32 -levr -lpropsys -lmfplat -lmfreadwrite -lmf -lshlwapi -luuid
 
 
 #-L./hssynth2/synthlib -lsynthlib -L./hssynth2/midiplay/midifile -lmidifile
