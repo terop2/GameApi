@@ -599,7 +599,6 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 #include <iostream>
 #include <string>
 #include <vector>
-#include <thread>
 #include <windows.h>
 
 #pragma comment(lib, "mfplat.lib")
@@ -624,7 +623,7 @@ public:
       BufferRef::FreeBuffer(ref);
     }
   }
-  void init() {
+  void init() const {
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
     MFStartup(MF_VERSION);
 
@@ -632,7 +631,8 @@ public:
     MFCreateAttributes(&attr, 1);
     attr->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
 
-    MFCreateSourceReaderFromURL(url.c_str(), attr.Get(), &reader);
+    std::wstring ws(url.begin(),url.end());
+    MFCreateSourceReaderFromURL(ws.c_str(), attr.Get(), &reader);
 
     ComPtr<IMFMediaType> type;
     MFCreateMediaType(&type);
@@ -642,7 +642,7 @@ public:
 
     init_done = true;
   }
-  bool update_frame() {
+  bool update_frame() const {
     if (!init_done) return false;
 
     IMFSample *sample = nullptr;
@@ -661,7 +661,7 @@ public:
     mediaBuffer->Lock(&data, &maxLength, &currentLength);
 
     int stride = sx*4;
-    if (int y=0;y<sy; y++)
+    for (int y=0;y<sy; y++)
       {
 	memcpy(&ref.buffer[(sy-1-y)*stride], &data[y*stride],stride);
       }
@@ -685,9 +685,9 @@ public:
 private:
   std::string url;
   int sx, sy;
-  IMFSourceReader* reader = nullptr;
-  GLuint tex;
-  bool init_done;
+  mutable IMFSourceReader* reader = nullptr;
+  unsigned int tex;
+  mutable bool init_done;
   BufferRef ref;
 };
 
@@ -858,14 +858,18 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_emscripten(EveryApi &ev, int s
   return add_txid(e,id);
 }
 
+
+
+
+#endif
+
+#ifdef WINDOWS
 GameApi::TXID GameApi::TextureApi::videofile_txid_win32(EveryApi &ev, int sx, int sy, std::string url)
 {
   VideoPlayer_win32 *buf = new VideoPlayer_win32(sx,sy,url);
   WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
   return add_txid(e,id);
 }
-
-
 #endif
 
 
