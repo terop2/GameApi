@@ -590,22 +590,32 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 #endif
 
 #ifdef WINDOWS
-#include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
-#include <mfobjects.h>
 #include <shlwapi.h>
 #include <wrl/client.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <windows.h>
+#define INITGUID
+#include <initguid.h>
+#include <mfapi.h>
+#include <mfobjects.h>
+#include <mfidl.h>
+#include <objbase.h>
 
 #pragma comment(lib, "mfplat.lib")
 #pragma comment(lib, "mfreadwrite.lib")
 #pragma comment(lib, "mf.lib")
 #pragma comment(lib, "shlwapi.lib")
 
+#if 0
+DEFINE_GUID(MF_MT_MAJOR_TYPE,       0x48eba18e,0xf8c9,0x4687,0xbf,0x11,0x0a,0x74,0xc9,0xf9,0x6a,0x8f);
+DEFINE_GUID(MF_MT_SUBTYPE,          0xf7e34c9a,0x42e8,0x4714,0xb7,0xc6,0x5a,0x1c,0x64,0x66,0x21,0x8f);
+DEFINE_GUID(MFMediaType_Video,      0x73646976,0x0000,0x0010,0x80,0x00,0x00,0xaa,0x00,0x38,0x9b,0x71);
+DEFINE_GUID(MFVideoFormat_RGB32,    0x00000016,0x0000,0x0010,0x80,0x00,0x00,0xaa,0x00,0x38,0x9b,0x71);
+#endif
 
 using namespace Microsoft::WRL;
 
@@ -619,26 +629,105 @@ public:
   ~VideoPlayer_win32() {
     if (init_done) {
       MFShutdown();
-      CoUninitialize();
+      //CoUninitialize();
       BufferRef::FreeBuffer(ref);
     }
   }
+  void print_guid(const GUID& guid) const {
+    wchar_t guidString[39] = {0}; // 38 chars + null
+    if (StringFromGUID2(guid, guidString, 39)) {
+        std::wcout << L"GUID: " << guidString << std::endl;
+    } else {
+        std::wcout << L"GUID: <conversion failed>" << std::endl;
+    }
+}
+  void check(HRESULT hr, std::string pos) const
+  {
+    if (FAILED(hr)) std::cout << "Failed: " << pos << std::endl;
+  }
   void init() const {
-    CoInitializeEx(NULL, COINIT_MULTITHREADED);
-    MFStartup(MF_VERSION);
+    HRESULT hr;
+    //hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    //check(hr,"CoInitialize");
+   hr=MFStartup(MF_VERSION);
+   check(hr,"MFStartup");
 
     ComPtr<IMFAttributes> attr;
-    MFCreateAttributes(&attr, 1);
+    hr=MFCreateAttributes(&attr, 1);
+   check(hr,"MFCreateAttributes");
     attr->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
-
     std::wstring ws(url.begin(),url.end());
-    MFCreateSourceReaderFromURL(ws.c_str(), attr.Get(), &reader);
+    hr=MFCreateSourceReaderFromURL(ws.c_str(), attr.Get(), &reader);
+   check(hr,"MFCreateSourceReaderFromURL");
 
     ComPtr<IMFMediaType> type;
-    MFCreateMediaType(&type);
-    type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
-    type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
-    reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, type.Get());
+    hr=MFCreateMediaType(&type);
+   check(hr,"CreateMediaType");
+    hr=type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+   check(hr,"SetGUID Video");
+
+    hr=type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+   check(hr,"SetGUID RGB32");
+
+   //hr=MFSetAttributeSize(type.Get(),MF_MT_FRAME_SIZE,sx,sy);
+   //check(hr,"framesize");
+   //hr=MFSetAttributeRatio(type.Get(),MF_MT_FRAME_RATE,30,1);
+   //check(hr,"framerate");
+   
+    hr=reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, type.Get());
+    check(hr,"SetCurrentMediaType");
+
+
+    
+    ComPtr<IMFMediaType> actualType;
+    reader->GetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, &actualType);
+
+    GUID subtype = {};
+    actualType->GetGUID(MF_MT_SUBTYPE, &subtype);
+    std::wcout << L"Actual subtype: ";
+    print_guid(subtype);
+    std::wcout << std::endl;
+    
+    UINT32 targetWidth = 640;
+    UINT32 targetHeight = 480;
+    UINT64 size=0;
+    hr=MFGetAttributeSize(actualType.Get(), MF_MT_FRAME_SIZE, &targetWidth, &targetHeight);
+    check(hr,"GetFrameSize");
+    
+    sx=targetWidth;
+    sy=targetHeight;
+    BufferRef::FreeBuffer(ref);
+    ref=BufferRef::NewBuffer(sx,sy);
+
+
+    UINT32 rotation = 0;
+    if (SUCCEEDED(actualType->GetUINT32(MF_MT_VIDEO_ROTATION, &rotation))) {
+      //std::cout << "Video rotation: " << rotation << " degrees" << std::endl;
+      rot = rotation; 
+    } else {
+      //std::cout << "No rotation metadata found (default 0°)" << std::endl;
+    }
+
+
+    if(rot==270)
+      {
+	rotref1=BufferRef::NewBuffer(sy,sx);
+      }
+    if(rot==180)
+      {
+	rotref1=BufferRef::NewBuffer(sy,sx);
+	rotref2=BufferRef::NewBuffer(sx,sy);
+      }
+    if(rot==90)
+      {
+	rotref1=BufferRef::NewBuffer(sy,sx);
+	rotref2=BufferRef::NewBuffer(sx,sy);
+	rotref3=BufferRef::NewBuffer(sy,sx);
+      }
+    
+    
+    std::cout << "Media size: " << sx << " " << sy << std::endl;
+    
 
     init_done = true;
   }
@@ -649,23 +738,109 @@ public:
     DWORD streamIndex, flags;
     LONGLONG timestamp;
 
-    reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &streamIndex, &flags, &timestamp, &sample);
+    HRESULT hr = reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &streamIndex, &flags, &timestamp, &sample);
+    check(hr,"ReadSample");
 
     if (!sample) return false;
 
     IMFMediaBuffer* mediaBuffer = nullptr;
-    sample->ConvertToContiguousBuffer(&mediaBuffer);
+    hr=sample->ConvertToContiguousBuffer(&mediaBuffer);
+   check(hr,"ConvertToContiguousBuffer");
 
     BYTE *data = nullptr;
     DWORD maxLength = 0, currentLength = 0;
-    mediaBuffer->Lock(&data, &maxLength, &currentLength);
-
-    int stride = sx*4;
+    hr=mediaBuffer->Lock(&data, &maxLength, &currentLength);
+   check(hr,"Lock");
+   //std::cout << "Frame size: " << currentLength << std::endl;
+   int stride = sx*4;
     for (int y=0;y<sy; y++)
       {
-	memcpy(&ref.buffer[(sy-1-y)*stride], &data[y*stride],stride);
+	  memcpy(&ref.buffer[y*ref.ydelta], &data[y*stride],stride);
       }
+   
+    if(rot==270)
+      {
+	for (int y = 0; y < sy; y++) {
+	  for (int x = 0; x < sx; x++) {
+	    int src_index = y * sx + x;
+	    int dst_index = x * sy + (sy - 1 - y); // rotate 90° clockwise
+	    
+	    ((uint32_t*)rotref1.buffer)[dst_index] = ((uint32_t*)ref.buffer)[src_index];
+	  }
+	}
+      }
+    if(rot==180)
+      {
+	for (int y = 0; y < sy; y++) {
+	  for (int x = 0; x < sx; x++) {
+	    int src_index = y * sx + x;
+	    int dst_index = x * sy + (sy - 1 - y); // rotate 90° clockwise
+	    
+	    ((uint32_t*)rotref1.buffer)[dst_index] = ((uint32_t*)ref.buffer)[src_index];
+	  }
+	}
 
+
+	for (int y = 0; y < sx; y++) {
+	  for (int x = 0; x < sy; x++) {
+	    int src_index = y * sy + x;
+	    int dst_index = x * sx + (sx - 1 - y); // rotate 90° clockwise
+	    
+	    ((uint32_t*)rotref2.buffer)[dst_index] = ((uint32_t*)rotref1.buffer)[src_index];
+	  }
+	}
+
+      }
+    if(rot==90)
+
+      {
+	for (int y = 0; y < sy; y++) {
+	  for (int x = 0; x < sx; x++) {
+	    int src_index = y * sx + x;
+	    int dst_index = x * sy + (sy - 1 - y); // rotate 90° clockwise
+	    
+	    ((uint32_t*)rotref1.buffer)[dst_index] = ((uint32_t*)ref.buffer)[src_index];
+	  }
+	}
+
+
+	for (int y = 0; y < sx; y++) {
+	  for (int x = 0; x < sy; x++) {
+	    int src_index = y * sy + x;
+	    int dst_index = x * sx + (sx - 1 - y); // rotate 90° clockwise
+	    
+	    ((uint32_t*)rotref2.buffer)[dst_index] = ((uint32_t*)rotref1.buffer)[src_index];
+	  }
+	}
+
+	for (int y = 0; y < sy; y++) {
+	  for (int x = 0; x < sx; x++) {
+	    int src_index = y * sx + x;
+	    int dst_index = x * sy + (sy - 1 - y); // rotate 90° clockwise
+	    
+	    ((uint32_t*)rotref3.buffer)[dst_index] = ((uint32_t*)rotref2.buffer)[src_index];
+	  }
+	}
+
+
+      }
+    int width=sx;
+    int height=sy;
+    if (rot==90||rot==270) std::swap(width,height);
+    int ydelta = ref.ydelta;
+    unsigned int *buf = ref.buffer;
+    if(rot==270) { buf=rotref1.buffer; ydelta=rotref1.ydelta; }
+    if(rot==180) { buf=rotref2.buffer; ydelta=rotref2.ydelta; }
+    if(rot==90) { buf=rotref3.buffer; ydelta=rotref3.ydelta; }
+    for(int y=0;y<height;y++)
+      for(int x=0;x<width;x++)
+	{
+	  buf[x+y*ydelta]|=0xff000000; // alpha channel included
+	}
+
+    
+    
+    
     mediaBuffer->Unlock();
     mediaBuffer->Release();
     sample->Release();
@@ -680,15 +855,23 @@ public:
       init_done = true;
     }
     update_frame();
-    return ref;
+    BufferRef *buf = &ref;
+    if(rot==270) buf=&rotref1;
+    if(rot==180) buf=&rotref2;
+    if(rot==90) buf=&rotref3;
+    return *buf;
   }  
 private:
   std::string url;
-  int sx, sy;
+  mutable int sx, sy;
   mutable IMFSourceReader* reader = nullptr;
   unsigned int tex;
   mutable bool init_done;
-  BufferRef ref;
+  mutable BufferRef ref;
+  mutable BufferRef rotref1;
+  mutable BufferRef rotref2;
+  mutable BufferRef rotref3;
+  mutable int rot=0;
 };
 
 #endif
@@ -872,7 +1055,6 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_win32(EveryApi &ev, int sx, in
 }
 #endif
 
-
 GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int sy, int num)
 {
 #ifdef LINUX
@@ -896,7 +1078,7 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_generic(EveryApi &ev, int sx, 
 #ifdef WINDOWS
   return videofile_txid_win32(ev,sx,sy,url);
 #endif
-
+  
   GameApi::TXID id;
   id.id = 0;
   return id;

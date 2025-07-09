@@ -3531,15 +3531,36 @@ IMPORT extern std::string gameapi_temp_dir;
 #include <opencv2/videoio.hpp>
 #include <opencv2/core/ocl.hpp>
 #endif
+#ifdef WINDOWS
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <shlwapi.h>
+#include <wrl/client.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <windows.h>
+#define INITGUID
+#include <initguid.h>
+#include <mfapi.h>
+#include <mfobjects.h>
+#include <mfidl.h>
+
+
+#endif
 
 
 int main(int argc, char *argv[]) {
+#ifdef WINDOWS
+    HRESULT hr;
+    hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    if (FAILED(hr)) {std::cout << "Warning: CoInitializeEx failed! => videofile fails..." << std::endl; }
+#endif
 #ifdef LINUX
   cv::setNumThreads(10);
   cv::ocl::setUseOpenCL(false);
 #endif
  g_main_thread_id = pthread_self();
-
 	tasks_init();
 	
 	Env *e2 = new Env;

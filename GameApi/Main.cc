@@ -491,6 +491,7 @@ extern void *(*g_thread_func_bitmap)(void *data);
 
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init)
 {
+  
 #ifdef THREADS
   g_thread_func_bitmap=&thread_func_bitmap;
 #endif
