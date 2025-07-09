@@ -589,6 +589,110 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 
 #endif
 
+#ifdef WINDOWS
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <mfobjects.h>
+#include <shlwapi.h>
+#include <wrl/client.h>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <thread>
+#include <windows.h>
+
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "mfreadwrite.lib")
+#pragma comment(lib, "mf.lib")
+#pragma comment(lib, "shlwapi.lib")
+
+
+using namespace Microsoft::WRL;
+
+class VideoPlayer_win32 : public BufferRefReq
+{
+public:
+  VideoPlayer_win32(int sx, int sy, std::string url) : url(url), sx(sx), sy(sy) {
+    ref=BufferRef::NewBuffer(sx,sy);
+
+  }
+  ~VideoPlayer_win32() {
+    if (init_done) {
+      MFShutdown();
+      CoUninitialize();
+      BufferRef::FreeBuffer(ref);
+    }
+  }
+  void init() {
+    CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    MFStartup(MF_VERSION);
+
+    ComPtr<IMFAttributes> attr;
+    MFCreateAttributes(&attr, 1);
+    attr->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
+
+    MFCreateSourceReaderFromURL(url.c_str(), attr.Get(), &reader);
+
+    ComPtr<IMFMediaType> type;
+    MFCreateMediaType(&type);
+    type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+    type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32);
+    reader->SetCurrentMediaType(MF_SOURCE_READER_FIRST_VIDEO_STREAM, nullptr, type.Get());
+
+    init_done = true;
+  }
+  bool update_frame() {
+    if (!init_done) return false;
+
+    IMFSample *sample = nullptr;
+    DWORD streamIndex, flags;
+    LONGLONG timestamp;
+
+    reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &streamIndex, &flags, &timestamp, &sample);
+
+    if (!sample) return false;
+
+    IMFMediaBuffer* mediaBuffer = nullptr;
+    sample->ConvertToContiguousBuffer(&mediaBuffer);
+
+    BYTE *data = nullptr;
+    DWORD maxLength = 0, currentLength = 0;
+    mediaBuffer->Lock(&data, &maxLength, &currentLength);
+
+    int stride = sx*4;
+    if (int y=0;y<sy; y++)
+      {
+	memcpy(&ref.buffer[(sy-1-y)*stride], &data[y*stride],stride);
+      }
+
+    mediaBuffer->Unlock();
+    mediaBuffer->Release();
+    sample->Release();
+    return true;
+  }
+
+
+  void Gen() const { }
+  BufferRef Buffer() const {
+    if (!init_done) {
+      init();
+      init_done = true;
+    }
+    update_frame();
+    return ref;
+  }  
+private:
+  std::string url;
+  int sx, sy;
+  IMFSourceReader* reader = nullptr;
+  GLuint tex;
+  bool init_done;
+  BufferRef ref;
+};
+
+#endif
+
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
 #include <emscripten/html5.h>
@@ -754,6 +858,14 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_emscripten(EveryApi &ev, int s
   return add_txid(e,id);
 }
 
+GameApi::TXID GameApi::TextureApi::videofile_txid_win32(EveryApi &ev, int sx, int sy, std::string url)
+{
+  VideoPlayer_win32 *buf = new VideoPlayer_win32(sx,sy,url);
+  WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
+  return add_txid(e,id);
+}
+
+
 #endif
 
 
@@ -777,6 +889,10 @@ GameApi::TXID GameApi::TextureApi::videofile_txid_generic(EveryApi &ev, int sx, 
 #ifdef EMSCRIPTEN
   return videofile_txid_emscripten(ev,sx,sy,url);
 #endif
+#ifdef WINDOWS
+  return videofile_txid_win32(ev,sx,sy,url);
+#endif
+
   GameApi::TXID id;
   id.id = 0;
   return id;
