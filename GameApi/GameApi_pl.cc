@@ -26849,7 +26849,7 @@ public:
   VideoSource(GameApi::Env &e, std::string filename, int sx, int sy) : e(e), sx(sx),sy(sy), filename(filename) {
     ref=BufferRef::NewBuffer(sx,sy);    
 
-    std::cout << "WARNING: Video support doesn't work in emscripten" << std::endl;
+    //std::cout << "WARNING: Video support doesn't work in emscripten" << std::endl;
   }
   virtual void Collect(CollectVisitor &vis) {
     vis.register_obj(this);
