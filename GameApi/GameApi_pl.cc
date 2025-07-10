@@ -26912,6 +26912,15 @@ public:
 
     if (nRows==0) return;
     if (nCols==0) return;
+
+
+    if (nRows!=sy||nCols!=sx)
+      {
+	BufferRef::FreeBuffer(ref);
+	ref=BufferRef::NewBuffer(nCols,nRows);
+	sx=nCols;
+	sy=nRows;
+      }
     
     //std::cout << "Channels: " << channels << std::endl;
     
