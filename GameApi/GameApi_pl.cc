@@ -26956,6 +26956,13 @@ public:
 	  ref.buffer[delta_x+i+(j+delta_y)*ref.ydelta]=Color(rowP[i*channels+0],rowP[i*channels+1],rowP[i*channels+2],255).Pixel();
 	}
     }
+    for(int y=0;y<sy/2;y++)
+      for(int x=0;x<sx;x++)
+	{
+	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
+	}
+
+    
 #ifndef EMSCRIPTEN
   ogl->glClientActiveTexture(Low_GL_TEXTURE0+0);
 #endif
