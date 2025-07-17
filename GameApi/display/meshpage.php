@@ -727,6 +727,7 @@ echo "Resume cookie dialog: <a href=\"JavaScript:void(0);\" onClick=\"resume_coo
 echo "<script>function resume_cookies() { var c = document.getElementById(\"callout\"); c.style.display=\"block\"; }</script>"; 
 
 echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a><br><p>";
+echo "Video tutorial: <a href=\"https://meshpage.org/assets/builder_greeen_example.mp4\">tutorial</a><br><p>";
 
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
