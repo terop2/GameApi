@@ -87,7 +87,7 @@ echo "<li><b>Exports</b> to script.txt,html5 zip files,android apk files\n";
 echo "<li><b>Running the script.txt</b> via builder, web deploy, cmdline tool in ubuntu/win32, or in wine\n";
 echo "<li><b>Html5 export</b> has video canvas or embedding, full screen mode\n";
 echo "<li><b>File format support</b> like .obj,.stl,.glb,.gltf\n";
-echo "<li><b>video support</b>(mp4 videofile and webcam support in linux/win32/web working)\n";
+echo "<li><b>Video support</b>(mp4 videofile and webcam support in linux/win32/web working)\n";
 echo "<li><b>Vulkan</b> support in linux via mesa/zink opengl driver\n";
 echo "<li><b>GLTF Materials</b>, skeletons/rigging, animations\n";
 echo "<li><b>LOD</b> implementation available\n";
