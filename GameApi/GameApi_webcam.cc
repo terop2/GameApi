@@ -740,6 +740,15 @@ public:
 
     HRESULT hr = reader->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &streamIndex, &flags, &timestamp, &sample);
     check(hr,"ReadSample");
+    if (hr==MF_E_END_OF_STREAM) {
+      HRESULT hr = S_OK;
+      PROPVARIANT var = {};
+      PropVariantInit(&var);
+      var.vt = VT_I8;
+      var.hVal.QuadPart = 0;
+      hr = pSourceReader->SetCurrentPosition(GUID_NULL, var);
+      check(hr,"setcurrentposition");
+    }
 
     if (!sample) return false;
 
@@ -893,6 +902,8 @@ EM_JS(void, webcam_cleanup, (void), {
 EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   const video = document.createElement('video');
   video.setAttribute('id', 'webcam');
+  if (is_videofile)
+    video.loop = true;
   video.autoplay = true;
   video.playsInline = true;
   if (is_videofile)
