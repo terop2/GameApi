@@ -121,7 +121,6 @@ $countname = "./pp2/tmp.count";
 $num = file_get_contents($countname);
 $num2 = intval($num) + 1;
 $str = sprintf('%05d',$num2);
-echo "$str";
 file_put_contents($countname,$str);
 
 
