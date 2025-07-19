@@ -21591,9 +21591,9 @@ public:
 	  std::string curl="..\\curl\\curl.exe";
 	    std::string curl_string;
 	  if (file_exists(curl))
-	    curl_string= "..\\curl\\curl.exe \"" + deploy_truncate(http_to_https(ii.url)) + "\" --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "";
+	    curl_string= "..\\curl\\curl.exe \"" + deploy_truncate(http_to_https(ii.url)) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
 	  else
-	    curl_string=".\\curl\\curl.exe \"" + deploy_truncate(http_to_https(ii.url)) + "\" --output " + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "";
+	    curl_string=".\\curl\\curl.exe \"" + deploy_truncate(http_to_https(ii.url)) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
 	  std::cout << curl_string << std::endl;
       if (gameapi_temp_dir!="@")
 	{
@@ -21971,7 +21971,7 @@ public:
 		  std::cout << "ERROR:" << makedir << " returned error " << val2 << std::endl; ok=false;
 		}
 	      
-	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 \"") + deploy_truncate(http_to_https(ii.url)) + "\" --output ./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
+	      std::string curl_string= std::string("(cd ~/.gameapi_builder/deploy/") + std::string(";curl --http1.1 \"") + deploy_truncate(http_to_https(ii.url)) + "\" --output \"./licenses/" + ii.licensed_filename + "/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\")";
 	      int val = system(curl_string.c_str());
 	      if (val!=0) { std::cout << "ERROR:" << curl_string << " returned error " << val << std::endl; ok=false;}
 #endif
@@ -21987,7 +21987,7 @@ public:
 	    s = deploy_replace_string(s,ii.url,remove_prefix(ii.url));
 	    std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
-	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 \"") + deploy_truncate(http_to_https(ii.url)) + "\" --output " + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + ")";
+	    std::string curl_string = std::string("(cd " + home + "/.gameapi_builder/deploy/") + dir + (dir!=""?"/":"") + std::string(";curl --http1.1 \"") + deploy_truncate(http_to_https(ii.url)) + "\" --output \"" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\")";
 	    //std::cout << curl_string << std::endl;
 	    int val = system(curl_string.c_str());
 	    std::string fn = home + "/.gameapi_builder/deploy/" + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?')));
