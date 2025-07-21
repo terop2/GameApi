@@ -552,6 +552,8 @@ Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
   }
   static unsigned int CubicInterpolate(unsigned int pixel1, unsigned int pixel2, float val)
   {
+    return Interpolate(pixel1,pixel2,val);
+#if 0
     unsigned int b = pixel1 & 0xff;
     unsigned int g = pixel1 & 0xff00;
     unsigned int r = pixel1 & 0xff0000;
@@ -616,6 +618,7 @@ Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
     r4 <<= 16;
     a4 <<= 24;
     return r4+g4+b4+a4;
+#endif
   }
   static unsigned int max_color(unsigned int pixel1, unsigned int pixel2)
   {

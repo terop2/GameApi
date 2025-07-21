@@ -50,6 +50,8 @@ const unsigned int c_dialog_button_2 = c_dark;
 #endif
 
 
+bool WidgetCompare(GuiWidget *w1, GuiWidget *w2);
+
 
 class GuiWidgetForward : public GuiWidget
 {
@@ -66,6 +68,7 @@ public:
     isVisible = true;
     //old_mouse.x = 0.0;
     //old_mouse.y = 0.0;
+    sort_widgets();
   }
   void hide() { 
     isVisible=false; 
@@ -108,6 +111,7 @@ public:
 	pos = new_pos;
 	prev_pos = new_pos;
       }
+    sort_widgets();
   }
   virtual void set_size(Vector2d size_p)
   {
@@ -116,23 +120,33 @@ public:
   }
   virtual void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-
+    if (vec.size()!=sorted.size()) sort_widgets();
+    
     
     int s = vec.size();
     int selected_item = -1;
+    int i2 = 0;
     for(int i=0;i<s;i++)
       {
-	GuiWidget *w = vec[i];
+	GuiWidget *w = sorted[i];
+	if (mouse_pos.y <= w->get_pos().y + w->get_size().dy + 80) { i2=i; break; }
+      }
+
+    
+    for(int i=i2;i<s;i++)
+      {
+	GuiWidget *w = sorted[i];
 	if (firsttime>0) 
 	  w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	
 	Point2d p = w->get_pos();
 	Vector2d s = w->get_size();
-	//if ((mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
-	//     mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
-	//   ||
-	//    (old_mouse.x >= p.x-80 && old_mouse.x < p.x+s.dx+80 &&
-	//     old_mouse.y >= p.y-80 && old_mouse.y < p.y+s.dy+80))
+	/*
+	if ((mouse_pos.x >= p.x-80 && mouse_pos.x < p.x+s.dx+80 &&
+	     mouse_pos.y >= p.y-80 && mouse_pos.y < p.y+s.dy+80)
+	   ||
+	    (old_mouse.x >= p.x-80 && old_mouse.x < p.x+s.dx+80 &&
+	    old_mouse.y >= p.y-80 && old_mouse.y < p.y+s.dy+80))*/
 	  {
 	    w->update(mouse_pos, button,ch, type, mouse_wheel_y);
 	  }
@@ -141,6 +155,7 @@ public:
 	  {
 	    selected_item = i;
 	  }
+	if (mouse_pos.y<p.y-80) break;
       }
     if (firsttime>0)
       firsttime--;
@@ -150,7 +165,7 @@ public:
     if (button==-1) {
       current_selected_item = -1;
     }
-    //old_mouse = mouse_pos;
+    old_mouse = mouse_pos;
   }
   virtual void render()
   {
@@ -234,6 +249,11 @@ public:
       }
     return v;
   }
+  void sort_widgets()
+  {
+    sorted=std::vector<GuiWidget*>(vec.begin(),vec.end());
+    std::sort(sorted.begin(),sorted.end(),&WidgetCompare);
+  }
 protected:
   GameApi::EveryApi &ev;
   Point2d pos;
@@ -241,17 +261,35 @@ protected:
   int current_selected_item;
   int firsttime;
   Point2d prev_pos;
-  //Point2d old_mouse;
+  Point2d old_mouse;
 public:
   std::vector<GuiWidget *> vec;
+  std::vector<GuiWidget *> sorted;
   bool isVisible;
 };
 
 
-class CanvasWidget : public GuiWidgetForward
+class GuiWidgetRestrict : public GuiWidgetForward
 {
 public:
-  CanvasWidget(GameApi::EveryApi &ev, int sx, int sy) : GuiWidgetForward(ev, std::vector<GuiWidget*>())
+  GuiWidgetRestrict(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : GuiWidgetForward(ev,vec) { }
+  void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
+  {
+	Point2d p = get_pos();
+	Vector2d s = get_size();
+	if (mouse_pos.x>=p.x && mouse_pos.x<p.x+s.dx)
+	  if (mouse_pos.y>=p.y && mouse_pos.y<p.y+s.dy)
+	    {
+	      GuiWidgetForward::update(mouse_pos,button,ch,type,mouse_wheel_y);
+	    }
+  }
+};
+
+
+class CanvasWidget : public GuiWidgetRestrict
+{
+public:
+  CanvasWidget(GameApi::EveryApi &ev, int sx, int sy) : GuiWidgetRestrict(ev, std::vector<GuiWidget*>())
   {
     size.dx = sx;
     size.dy = sy;

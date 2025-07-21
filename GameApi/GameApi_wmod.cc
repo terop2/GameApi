@@ -1980,9 +1980,13 @@ EXPORT std::string GameApi::WModApi::dump_functions(GameApi::EveryApi &ev, int i
   return json_object(vec2);
 }
 
+
 int ret_type_count(std::string);
 
-EXPORT void GameApi::WModApi::insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open)
+void set_mouse_move_cb(GuiWidget *w, void (*fptr)(void*), void*data);
+
+
+EXPORT void GameApi::WModApi::insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod2, int id, FtA atlas, BM atlas_bm, std::vector<W> &connect_clicks_p, std::vector<W> &params, std::vector<W> &display_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open, void (*fptr)(void*), void *data)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   GameApiModule *mod = env->gameapi_modules[mod2.id];
@@ -2113,6 +2117,10 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gu
       gui.set_size2(node5, line->sz);
       popup_open.push_back(node5);
       W node3 = gui.mouse_move(node5, 0, 0, gui.size_x(node5), 20);
+      GuiWidget *w = find_widget(e,node3);
+      set_mouse_move_cb(w,fptr,data);
+      //MouseMoveWidget *w2 = (MouseMoveWidget*)w;
+      //w2->set_cb(fptr,data);
       gui.set_id(node3, line->uid);
       gui.set_index(node3, line->j);
       gui.set_size2(node3, line->sz);

@@ -2655,8 +2655,8 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&normals_buffer_matrix);
   ogl->glDeleteBuffers(1,&color_buffer);
   ogl->glDeleteBuffers(1,&color_buffer_matrix);
-  if (s.ref.numfaces!=0)
-    ogl->glDeleteBuffers(1,&indices_buffer);
+  //if (s.ref.numfaces!=0)
+  //  ogl->glDeleteBuffers(1,&indices_buffer);
   
   ogl->glDeleteBuffers(1,&buffers2[0]);
   ogl->glDeleteBuffers(1,&buffers2[1]);

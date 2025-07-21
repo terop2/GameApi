@@ -1086,6 +1086,9 @@ public:
     currentnum = -1; 
   }
   ~SpriteTexture() {
+    //int s = allocs.size();
+    //for(int i=0;i<s;i++)
+    //delete allocs[i];
     for(int i=0;i<NumTextures();i++)
       {
 	delete [] ref[i].buffer;
@@ -1111,6 +1114,7 @@ public:
     int dsy = sy/numthreads + 1;
     for(int t=0;t<numthreads;t++) {
       ThreadInfo_sprite *info = new ThreadInfo_sprite;
+      //allocs.push_back(info);
       info->s = &s;
       info->ref = ref;
       info->start_y = t*dsy;
@@ -1130,6 +1134,17 @@ public:
       tasks_add(3011,&thread_func_sprite,(void*)info);
     }
     tasks_join(3011);
+
+
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	delete vec[i];
+      }
+    
+
+    
+
 #if 0
     int s = vec.size();
     for(int t=0;t<s;t++) {
@@ -1161,6 +1176,7 @@ private:
   mutable BufferRef *ref;
   mutable int currentnum;
   bool progress;
+  //std::vector<ThreadInfo_sprite*> allocs;
 };
 
 void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress)
