@@ -997,6 +997,7 @@ public:
   IMPORT BM rot90(BM orig);
         IMPORT BM alpha_color(BM orig, unsigned int color_key);
   IMPORT BM gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy);
+  IMPORT BM gradient_y(unsigned int color_1, unsigned int color_2, int sx, int sy);
   IMPORT BM radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2);
   IMPORT BM conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
