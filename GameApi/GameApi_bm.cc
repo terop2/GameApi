@@ -249,7 +249,15 @@ public:
     // now [0.0 .. 1.0]
     if (val<0.0) return 0;
     if (val>1.0) return 0;
-    return Color(Color::CubicInterpolate(color_1, color_2, val));
+
+    //if (cache[color_1].find(int(val*100.0))!=cache[color_1].end())
+    //  {
+    //	return cache[color_1][int(val*100.0)];
+    // }
+    
+    Color c = Color(Color::CubicInterpolate(color_1, color_2, val));
+    //cache[color_1][int(val*100.0)]=c;
+    return c;
   }
 
 private:
@@ -260,7 +268,11 @@ private:
   int sx,sy;
   Vector u_x;
   float v;
+  //static std::map<unsigned int,std::map<int,Color> > cache;
 };
+//std::map<unsigned int,std::map<int,Color> > GradientBitmap2::cache;
+
+
 EXPORT GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy)
 {
   Point *pos_1a = find_point(e, pos_1);

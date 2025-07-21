@@ -378,11 +378,11 @@ struct Envi {
   BM atlas_bm;
   BM atlas_bm2;
   BM atlas_bm3;
-  bool insert_ongoing;
-  bool insert_ongoing2;
+  bool insert_ongoing=false;
+  bool insert_ongoing2=false;
 
-  bool connect_ongoing;
-  bool connect_ongoing2;
+  bool connect_ongoing=false;
+  bool connect_ongoing2=false;
   bool flip_ongoing;
   bool key_state;
   std::map<int, bool> flip_status;
@@ -2107,7 +2107,7 @@ public:
   
     
     if (update)
-      env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
+       env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
     
     //int area_y = env->gui->size_y(env->array);
     //std::cout << area_y << std::endl;
@@ -2486,6 +2486,13 @@ public:
   virtual void DoTask(int i)=0;
 };
 
+void MoveCB(void* data)
+{
+  Envi *env = (Envi*)data;
+  //env->ev->mod_api.update_lines_from_canvas(env->canvas, env->mod, 0);
+  //std::cout << "update" << std::endl;
+}
+
 class StartMainTask : public ASyncTask
 {
 public:
@@ -2803,7 +2810,7 @@ public:
       }
     case 3:
       {
-	ev.mod_api.insert_to_canvas(ev,gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open);
+	ev.mod_api.insert_to_canvas(ev,gui, canvas, mod, 0, atlas, atlas_bm, env.connect_clicks, env.connect_targets, env.display_clicks, env.edit_clicks, env.delete_key, env.codegen_button_vec, env.popup_open, &MoveCB,(void*)&env);
 
   break;
       }

@@ -2239,7 +2239,7 @@ public:
   IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
   IMPORT WM load(std::string filename);
   IMPORT void save(WM mod, std::string ilename);
-  IMPORT void insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open);
+  IMPORT void insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open, void (*fptr)(void*), void *data);
   IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);
   IMPORT void insert_inserted_to_canvas(GuiApi &gui, W canvas, W item, std::string uid, W &display_clicks, W &edit_clicks, W &delete_key, W &codegen_button, W &popup_open);
   IMPORT W inserted_widget(GameApi::EveryApi &ev, GuiApi &gui, WM mod2, int id, FtA atlas, BM atlas_bm, std::string func_name, std::vector<W *> connect_click, std::string uid, std::vector<W> &params);

@@ -863,6 +863,8 @@ private:
 };
 
 
+
+
 class PolyGuiWidget : public GuiWidgetForward
 {
 public:
@@ -2304,6 +2306,15 @@ private:
 };
 
 
+bool WidgetCompare(GuiWidget *w1, GuiWidget *w2)
+{
+  float p1 = w1->get_pos().y;
+  float p2 = w2->get_pos().y;
+  return p1<p2;
+  
+}
+
+
 class Highlight2GuiWidget : public GuiWidgetForward
 {
 public:
@@ -2941,9 +2952,11 @@ public:
     if (move_ongoing && button==-1)
       {
 	move_ongoing = false;
+	if (fptr_enabled) fptr(data);
       }
     size = vec[0]->get_size();
   }
+  void set_cb(void (*p_fptr)(void*),void* p_data) { fptr_enabled=true; fptr=p_fptr; data=p_data; }
   int chosen_item() const { return vec[0]->chosen_item(); }
 private:
   int area_x, area_y;
@@ -2951,7 +2964,16 @@ private:
   bool move_ongoing;
   Point2d old_pos;
   Point2d old_mouse;
+  bool fptr_enabled;
+  void (*fptr)(void*);
+  void *data;
 };
+void set_mouse_move_cb(GuiWidget *w, void (*fptr)(void*), void*data)
+{
+  MouseMoveWidget *w2 = (MouseMoveWidget*)w;
+  w2->set_cb(fptr,data);
+}
+
 
 class RectangleWidget : public GuiWidgetForward
 {
@@ -3363,7 +3385,7 @@ void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM
 {
   if (progress_lock) return;
   static int g_id = -1;
-  if (g_id!=-1) clear_block(g_id);
+  //if (g_id!=-1) clear_block(g_id);
   g_id = add_block();
   int old = get_current_block();
   set_current_block(g_id);
@@ -5210,6 +5232,7 @@ public:
   void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
     Point2d mouse = mouse_pos;
+    static bool is_inside=false;
     if (mouse.x>=pos.x-80 && mouse.x<pos.x+size.dx+80 &&
 	mouse.y>=pos.y-80 && mouse.y<pos.y+size.dy+80)
       {
@@ -5217,11 +5240,16 @@ public:
 	//mouse.x -= left*(sz.dx-size.dx);
 	//mouse.y -= top*(sz.dy-size.dy);
 	orig->update(mouse, button,ch, type, mouse_wheel_y);
+	is_inside=true;
       }
     else
       {
-	Point2d mouse = {-666.0, -666.0 };
-	orig->update(mouse, button,ch, type, mouse_wheel_y);
+	if (is_inside) {
+	
+	  Point2d mouse = {-666.0, -666.0 };
+	  orig->update(mouse, button,ch, type, mouse_wheel_y);
+	}
+	is_inside=false;
       }
     if (!disable_wheel && type==1027 && mouse.x>pos.x && mouse.x<pos.x+size.dx &&
 	mouse.y>pos.y && mouse.y<pos.y+size.dy)
