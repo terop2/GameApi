@@ -275,13 +275,13 @@ public:
   GuiWidgetRestrict(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : GuiWidgetForward(ev,vec) { }
   void update(Point2d mouse_pos, int button, int ch, int type, int mouse_wheel_y)
   {
-	Point2d p = get_pos();
+	      GuiWidgetForward::update(mouse_pos,button,ch,type,mouse_wheel_y);
+	      /*	Point2d p = get_pos();
 	Vector2d s = get_size();
 	if (mouse_pos.x>=p.x && mouse_pos.x<p.x+s.dx)
 	  if (mouse_pos.y>=p.y && mouse_pos.y<p.y+s.dy)
 	    {
-	      GuiWidgetForward::update(mouse_pos,button,ch,type,mouse_wheel_y);
-	    }
+	    }*/
   }
 };
 
