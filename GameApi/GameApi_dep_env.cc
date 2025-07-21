@@ -1185,7 +1185,9 @@ EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage, 
 }
 EXPORT void GameApi::Env::async_load_all_urls(std::vector<std::string> urls, std::string homepage)
 {
+  if (!envimpl) return;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
+  if (!env) return;
   env->async_loader->load_all_urls(urls, homepage);
 
 }
