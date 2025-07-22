@@ -304,33 +304,33 @@ $(D3Files): objs/%.d3: %.cc
 
 $(OFiles): objs/%.o : %.cc
 	@echo g++ $< -o $@
-	@$(CC) -std=c++17 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) -DDEFINE_ALL -std=c++17 -g -c $(CCFLAGS) $< -o $@
 
 $(OFiles_bm): objs/%.o : %.cc
 	@echo g++ $< -o $@
-	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+	@$(CC) -DDEFINE_ALL -std=c++17 -g -c $(CC2FLAGS) $< -o $@
 
 $(OFiles_ml): objs/%.o : %.cc
 	@echo g++ $< -o $@
-	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+	@$(CC) -DDEFINE_ALL -std=c++17 -g -c $(CC2FLAGS) $< -o $@
 
 $(OFiles_pl): objs/%.o : %.cc
 	@echo g++ $< -o $@
-	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+	@$(CC) -DDEFINE_ALL -std=c++17 -g -c $(CC2FLAGS) $< -o $@
 
 $(OFiles_mt): objs/%.o : %.cc
 	@echo g++ $< -o $@
-	@$(CC) -std=c++17 -g -c $(CC2FLAGS) $< -o $@
+	@$(CC) -DDEFINE_ALL -std=c++17 -g -c $(CC2FLAGS) $< -o $@
 
 
 
 $(O2Files): objs/%.obj : %.cc
 	@echo mingw $<
-	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -g -c $(CC2FLAGS) $< -o $@
 
 $(O2Files_dep): objs/%.obj : %.cc
 	@echo mingw $<
-	@$(CCWIN) -g -c $(CC2FLAGS) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -g -c $(CC2FLAGS) $< -o $@
 
 glew.o:
 	$(CCWIN) -g -c $(CC2FLAGS) c:\users\terop\cvs\glew\glew-2.1.0\glew-2.1.0\src\glew.c -o glew.o
