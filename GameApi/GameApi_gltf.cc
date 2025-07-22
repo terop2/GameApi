@@ -12652,7 +12652,7 @@ public:
 	else url2 = url2.substr(1,url2.size()-2);
 	//std::cout << "URL:" << url2 << std::endl;
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
-
+	//std::cout << "g_registered_urls:" << url2 << std::endl;
 	g_registered_urls.push_back(url2);
 #ifdef EMSCRIPTEN
 	env.async_load_url(url2,homepage);

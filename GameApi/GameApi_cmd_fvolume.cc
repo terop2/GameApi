@@ -225,116 +225,151 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 			 { "", "", "", "" },
 			 "FD", "dist_api", "quad"));
 #endif
+
+#if (ALL==1)||(FD_LINE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_line,
 			 "fd_line",
 			 { "start", "end", "dist" },
 			 { "PT", "PT", "float" },
 			 { "", "", "10.0" },
 			 "FD", "dist_api", "fd_line"));
+#endif
+#if (ALL==1)||(FD_MIN==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_min,
 			 "fd_min",
 			 { "a1", "a2" },
 			 { "FD", "FD" },
 			 { "", "" },
 			 "FD", "dist_api", "fd_min"));
+#endif
+#if (ALL==1)||(FD_MAX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_max,
 			 "fd_max",
 			 { "a1", "a2" },
 			 { "FD", "FD" },
 			 { "", "" },
 			 "FD", "dist_api", "fd_max"));
+#endif
+#if (ALL==1)||(FD_AND_NOT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_and_not,
 			 "fd_and_not",
 			 { "a1", "a2" },
 			 { "FD", "FD" },
 			 { "", "" },
 			 "FD", "dist_api", "fd_and_not"));
+#endif
+#if (ALL==1)||(FD_BLEND==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_blend,
 			 "fd_blend",
 			 { "a1", "a2", "k" },
 			 { "FD", "FD", "float" },
 			 { "", "", "15.0" },
 			 "FD", "dist_api", "fd_blend"));
+#endif
+#if (ALL==1)||(FD_COLOR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_color,
 			 "fd_color",
 			 { "fd", "r", "g", "b", "a" },
 			 { "FD", "float", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0", "1.0" },
 			 "FD", "dist_api", "fd_color"));
+#endif
+#if (ALL==1)||(FD_TRANS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_trans,
 			 "fd_trans",
 			 { "fd", "dx", "dy", "dz" },
 			 { "FD", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
 			 "FD", "dist_api", "fd_trans"));
+#endif
+#if (ALL==1)||(FD_ROT_X==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_rot_x,
 			 "fd_rot_x",
 			 { "fd", "angle" },
 			 { "FD", "float" },
 			 { "", "0.0" },
 			 "FD", "dist_api", "fd_rot_x"));
+#endif
+#if (ALL==1)||(FD_ROT_Y==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_rot_y,
 			 "fd_rot_y",
 			 { "fd", "angle" },
 			 { "FD", "float" },
 			 { "", "0.0" },
 			 "FD", "dist_api", "fd_rot_y"));
+#endif
+#if (ALL==1)||(FD_ROT_Z==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::fd_rot_z,
 			 "fd_rot_z",
 			 { "fd", "angle" },
 			 { "FD", "float" },
 			 { "", "0.0" },
 			 "FD", "dist_api", "fd_rot_z"));
+#endif
+#if (ALL==1)||(NORMAL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::vector_volume_api, &GameApi::VectorVolumeApi::normal,
 			 "fd_normal",
 			 { "fd" },
 			 { "FD" },
 			 { "" },
 			 "VO", "vector_volume_api", "normal"));
+#endif
+#if (ALL==1)||(RECALCULATE_NORMALS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::recalculate_normals,
 			 "fd_recalc_normals",
 			 { "fd" },
 			 { "FD" },
 			 { "" },
 			 "FD", "dist_api", "recalculate_normals"));
+#endif
+#if (ALL==1)||(AMBIENT_OCCULSION==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::ambient_occulsion,
 			 "fd_amb_occul",
 			 { "fd", "d", "i" },
 			 { "FD", "float", "float" },
 			 { "", "10.2", "30.0" },
 			 "FD", "dist_api", "ambient_occulsion","[B]", "Broken"));
-			 
+#endif
+#if (ALL==1)||(RENDER2==1) 
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render2,
 			 "fd_render2",
 			 { "ev", "obj", "sx", "sy" },
 			 { "EveryApi&", "FD", "int", "int" },
 			 { "ev", "", "300", "300" },
 			 "BM", "dist_api", "render2"));
+#endif
+#if (ALL==1)||(RENDER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::render,
 			 "fd_render_bm",
 			 { "obj", "pos", "u_x", "u_y", "u_z", "sx", "sy" },
 			 { "FD", "PT", "V", "V", "V", "int", "int" },
 			 { "", "", "", "", "", "100", "100" },
 			 "BM", "dist_api", "render"));
-
+#endif
+#if (ALL==1)||(DISTANCE_POLY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly,
 			 "fd_render_p",
 			 { "ev", "fd", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
 			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "400.0", "400.0", "50", "50", "100.0", "100.0" },
 			 "P", "dist_api", "distance_poly","[B]","Sometimes gives bad results"));
+#endif
+#if (ALL==1)||(DISTANCE_POLY_CYL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly_cyl,
 			 "fd_render_cyl_p",
 			 { "ev", "fd", "pos_x", "pos_y", "pos_z", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
 			 { "EveryApi&", "FD", "float", "float", "float", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "0.0", "-600.0", "0.0", "300.0", "1200.0", "300.0", "50", "50", "40.0", "40.0", "50", "50", "50.0", "50.0" },
 			 "P", "dist_api", "distance_poly_cyl","[B]", "Sometimes gives bad result"));
+#endif
+#if (ALL==1)||(DISTANCE_POLY_SPH==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::dist_api, &GameApi::DistanceFloatVolumeApi::distance_poly_sph,
 			 "fd_render_sph_p",
 			 { "ev", "fd", "dx", "dy", "dz", "sx", "sy", "ssx", "ssy", "ssxi", "ssyi", "ssx2", "ssy2" },
 			 { "EveryApi&", "FD", "float", "float", "float", "int", "int", "float", "float", "int", "int", "float", "float" },
 			 { "ev", "", "400.0", "400.0", "400.0", "256", "256", "40.0", "40.0", "50", "50", "50.0", "50.0" },
 			 "P", "dist_api", "distance_poly_sph", "[B]", "Sometimes gives bad result"));
+#endif
 #endif
 #endif  
   return vec;
