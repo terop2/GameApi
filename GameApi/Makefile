@@ -66,7 +66,7 @@ endif
 
 LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG) $(OPENCV_PKGCONFIG)
 
-CMDFiles = 	GameApi_cmd_move.cc \
+CMDFiles = GameApi_pl.cc	GameApi_cmd_move.cc \
 	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
 	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
 	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
@@ -91,7 +91,7 @@ CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_
 	GameApi_fnt.cc GameApi_gr.cc  \
         GameApi_lay.cc \
 	GameApi_li.cc GameApi_mx.cc GameApi_pc.cc \
-	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pt.cc \
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \

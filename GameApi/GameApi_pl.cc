@@ -5,6 +5,7 @@
 #endif
 
 #include "GameApi_low.hh"
+#include "GameApi_cmd.hh"
 #include <atomic>
 #include <iostream>
 #include <queue>
@@ -26836,6 +26837,7 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
 }
 
 #ifdef USE_VIDEO
+#if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
@@ -27004,20 +27006,26 @@ void *writer(void* ptr)
   src->Prepare2();
   return 0;
 }
+#endif
 
 IMPORT bool file_exists(std::string s);
+
+
+#if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
 
 bool exists(const cv::String &path)
 {
   std::string s = path;
   return file_exists(s);
 }
-
+#endif
 
 
 GameApi::TXID GameApi::BitmapApi::video_source(std::string filename, int sx, int sy)
 {
+#if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
   return add_txid(e,new VideoSource(e,filename,sx,sy));
+#endif
 }
 #endif
 
