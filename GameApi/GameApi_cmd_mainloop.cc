@@ -250,12 +250,14 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "0", "cvbnmfghjklertyuiop","0" },
 			 "ML", "mainloop_api", "gltf_node"));
 #endif
+#if (ALL==1)||(GLTF_SCENE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
 			 { "ev", "tf", "scene_id", "keys","mix","mode","light_dir_x", "light_dir_y", "light_dir_z", "animation","border_width", "border_color","is_transparent" },
 			 { "EveryApi&", "TF", "int", "std::string","float","int", "float", "float", "float", "int", "float", "unsigned int","bool" },
 			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_scene"));
+#endif
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
@@ -297,34 +299,41 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "ML", "mainloop_api", "gltf_anim4"));
 #endif
 #ifndef STABLE
+#if (ALL==1)||(GLTF_SCENE_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
 			 { "ev", "tf", "scene_id", "animation", "keys","mix","mode", "light_dir_x", "light_dir_y", "light_dir_z","border_width", "border_color" , "transparent"},
 			 { "EveryApi&", "TF", "int", "int", "std::string","float","int", "float", "float", "float", "float", "unsigned int","bool" },
 			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
-
+#endif
 
 #ifdef NO_PREPARE_RENDER
+#if (ALL==1)||(GLTF_MATERIAL_NOP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_nop_resize,
 			 "tf_nop",
 			 { "ev", "tf", "mesh_index", "prim_index", "mix" },
 			 { "EveryApi&", "TF", "int", "int", "float" },
 			 { "ev", "", "0","0", "0.5" },
 			 "ML","mainloop_api", "gltf_material_nop"));
+#endif
+#if (ALL==1)||(GLTF_MATERIAL_MESH==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_mesh,
 			 "tf_material",
 			 { "ev", "tf", "mesh_index", "mix" },
 			 { "EveryApi&", "TF", "int", "float" },
 			 { "ev", "", "0", "0.5" },
 			 "ML", "mainloop_api", "gltf_material_mesh"));
+#endif
+#if (ALL==1)||(GLTF_NODE2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node2,
 			 "tf_node",
 			 { "ev", "tf","node_id", "mix" },
 			 { "EveryApi&", "TF", "int", "float" },
 			 { "ev", "", "0", "0.5" },
 			 "ML", "mainloop_api", "gltf_node2"));
-		       
+#endif		       
+#if (ALL==1)||(GLTF_SCENE2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene2,
 			 "tf_scene2",
 			 { "ev", "tf", "scene_id", "mix" },
@@ -332,6 +341,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "0", "0.5" },
 			 "ML", "mainloop_api", "gltf_scene2"));
 
+#endif
 #endif
 #if (ALL==1)||(ASYNC_GLTF==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::async_gltf,
@@ -368,18 +378,22 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
   
 #ifndef STABLE
+#if (ALL==1)||(PIECHART_FULL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::piechart_full,
 			 "piechart_ml",
 			 { "ev", "c_x", "c_y", "url", "radius", "numsteps", "start_z", "end_z" },
 			 { "EveryApi&", "float", "float", "std::string", "float", "int", "float", "float" },
 			 { "ev", "0.0", "0.0", "http://meshpage.org/assets/piechart_full.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "350.0", "30", "0.0", "40.0" },
 			 "ML", "polygon_api", "piechart_full"));
+#endif
+#if (ALL==1)||(SKYBOX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::skybox,
 			 "skybox_ml",
 			 { "ev", "land", "sky" },
 			 { "EveryApi&", "BM", "BM" },
 			 { "ev", "", "" },
 			 "ML", "mainloop_api", "skybox"));
+#endif
 #endif
 #if (ALL==1)||(ALT_ML_ARRAY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::sprite_api, &GameApi::SpriteApi::alt_ml_array,
@@ -407,24 +421,30 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "ML", "mainloop_api", "array_ml"));
 #endif
 #ifndef STABLE
+#if (ALL==1)||(RANDOM_INSTANTIATE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::random_instantiate,
 			 "rand_inst",
 			 { "ev", "ml", "vec", "start_time", "time_step", "random_chance" },
 			 { "EveryApi&", "ML", "[MN]", "float", "float", "float" },
 			 { "ev", "", "", "0.0", "2.0", "0.5" },
 			 "ML", "mainloop_api", "random_instantiate"));
+#endif
+#if (ALL==1)||(ACTIVATE_ARRAY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::activate_array,
 			 "activate_array_ml",
 			 { "arr" },
 			 { "[ML]" },
 			 { "" },
 			 "ML", "mainloop_api", "activate_array"));
+#endif
+#if (ALL==1)||(ACTIVATE_ARR_ARR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::activate_arr_arr,
 			 "ac_arr_ml",
 			 { "arr" },
 			 { "[ML]" },
 			 { "" },
 			 "[ML]", "mainloop_api", "activate_arr_arr"));
+#endif
   /*
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_ml,
 			 "timing_ml",
@@ -432,24 +452,30 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "[ML]", "float" },
 			 { "", "10.0" },
 			 "ML", "mainloop_api", "timing_ml"));*/
+#if (ALL==1)||(SEQ_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::seq_ml,
 			 "seq_ml",
 			 { "vec", "time" },
 			 { "[ML]", "float" },
 			 { "", "30.0" },
 			 "ML", "mainloop_api", "seq_ml"));
+#endif
+#if (ALL==1)||(SEQ_ML_SCORE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::seq_ml_score,
 			 "seq_ml_score",
 			 { "ml1", "ml2", "target_score" },
 			 { "ML", "ML", "int" },
 			 { "", "", "100" },
 			 "ML", "mainloop_api", "seq_ml_score"));
+#endif
+#if (ALL==1)||(TIMED_TMP_SEQ_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timed_tmp_seq_ml,
 			 "timed_tmp_seq_ml",
 			 { "curr", "end", "start_time", "end_time", "show_duration", "key" },
 			 { "ML", "ML", "float", "float", "float", "int" },
 			 { "", "", "0.0", "100.0", "30.0", "32" },
 			 "ML", "mainloop_api", "timed_tmp_seq_ml"));
+#endif
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::collision_detection,
 			 "collision_ml",
@@ -476,19 +502,22 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mov
 			 "P", "move_api", "move_ml_p"));
 #endif
 #ifndef STABLE
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::move_in,
+#if (ALL==1)||(MOVE_IN==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::move_in,
 			 "move_in",
 			 { "ev", "ml", "in" },
 			 { "EveryApi&", "ML", "INP" },
 			 { "ev", "", "" },
 			 "ML", "mainloop_api", "move_in"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::dyn_points,
+#endif
+#if (ALL==1)||(DYN_POINTS==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::dyn_points,
 			 "dyn_points_ml",
 			 { "ev", "ml", "move", "pointnum", "pos_x", "pos_y", "pos_z" },
 			 { "EveryApi&", "ML", "MN", "int", "float", "float", "float" },
 			 { "ev", "", "", "0", "0.0", "0.0", "0.0" },
 			 "ML", "mainloop_api", "dyn_points"));
-		     
+#endif		     
 #endif
 #if 0
   // This doesnt work since it eats too much memory.
@@ -541,31 +570,38 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "ML", "mainloop_api", "turn_to_meters"));
 #endif
 #ifndef STABLE
-  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::scale_2d_screen,
+#if (ALL==1)||(SCALE_2D_SCREEN==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::scale_2d_screen,
 			 "bm_2d_screen_scale",
 			 { "ev", "orig", "sx", "sy" },
 			 { "EveryApi&", "ML", "float", "float" },
 			 { "ev", "", "1024", "768" },
 			 "ML", "mainloop_api", "scale_2d_screen"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render,
+#endif
+#if (ALL==1)||(SPRITE_RENDER==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render,
 			 "sp_render",
 			 { "ev", "bm", "start_x", "end_x", "start_y", "end_y", "z" },
 			 { "EveryApi&", "BM", "float", "float", "float", "float", "float" },
 			 { "ev", "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
 			 "ML", "polygon_api", "sprite_render"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render_inst,
+#endif
+#if (ALL==1)||(SPRITE_RENDER_INST==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render_inst,
 			 "sp_render_inst",
 			 { "ev", "bm", "pts", "start_x", "end_x", "start_y", "end_y", "z" },
 			 { "EveryApi&", "BM", "PTS", "float", "float", "float", "float", "float" },
 			 { "ev", "", "", "-200.0", "200.0", "-200.0", "200.0", "0.0" },
 			 "ML", "polygon_api", "sprite_render_inst"));
-  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render_fade,
+#endif
+#if (ALL==1)||(SPRITE_RENDER_FADE==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sprite_render_fade,
 			 "sp_render_fade",
 			 { "ev", "bm", "pts", "start_x", "end_x", "start_y", "end_y", "z", "flip", "start_time", "end_time" },
 			 { "EveryApi&", "BM", "PTS", "float", "float", "float", "float", "float", "bool", "float", "float" },
 			 { "ev", "", "", "-200.0", "200.0", "-200.0", "200.0", "0.0", "false", "10.0", "40.0" },
 			 "ML", "polygon_api", "sprite_render_fade"));
-			 
+#endif			 
 #endif
   
 #if 0
@@ -593,24 +629,30 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi
 			 "ML", "materials_api", "render_instanced_ml"));
 #endif
 #ifndef STABLE
+#if (ALL==1)||(RENDER_DYNAMIC_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::render_dynamic_ml,
 			 "p_render_dyn",
 			 { "ev", "p", "dyn" },
 			 { "EveryApi&", "P", "DC" },
 			 { "ev", "", "" },
 			 "ML", "polygon_api", "render_dynamic_ml"));
+#endif
+#if (ALL==1)||(RENDER_INSTANCED_ML_FADE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced_ml_fade,
 			 "p_render_inst_fade",
 			 { "ev", "p", "pts", "flip", "start_time", "end_time" },
 			 { "EveryApi&", "P", "PTS", "bool", "float", "float" },
 			 { "ev", "", "", "false", "10.0", "40.0" },
 			 "ML", "materials_api", "render_instanced_ml_fade"));
+#endif
+#if (ALL==1)||(RENDER_INSTANCED2_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::render_instanced2_ml,
 			 "p_render_inst2",
 			 { "ev", "va", "pta" },
 			 { "EveryApi&", "VA", "PTA" },
 			 { "ev", "", "" },
 			 "ML", "materials_api", "render_instanced2_ml","","Can be used for dynamic changes for pta"));
+#endif
 #endif
 #if (ALL==1)||(RENDER_TXID==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::render_txid,
@@ -668,12 +710,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::ml_li_
 			 "ML", "lines_api", "ml_li_render"));
 #endif
 #ifndef STABLE
-  vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::sfo_to_ml,
+#if (ALL==1)||(SFO_TO_ML==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::sh_api, &GameApi::ShaderModuleApi::sfo_to_ml,
 			 "sfo_render",
 			 { "ev", "sfo", "sx", "sy" },
 			 { "EveryApi&", "SFO", "float", "float" },
 			 { "ev", "", "-1.0", "-1.0" },
 			 "ML", "sh_api", "sfo_to_ml"));
+#endif
 #endif
 #if (ALL==1)||(INSTANCED_POSITIONS==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, (GameApi::PTS (GameApi::VolumeApi::*)(GameApi::O,int,int,int, float,float, float,float, float,float))&GameApi::VolumeApi::instanced_positions,

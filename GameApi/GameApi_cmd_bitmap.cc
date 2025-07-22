@@ -601,24 +601,30 @@ std::vector<GameApiItem*> bitmapapi_functions()
 #endif  
 
 #ifndef STABLE
+#if (ALL==1)||(CBM_EMPTY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::cbm_empty,
 			 "cbm_empty",
 			 { "sx", "sy" },
 			 { "float", "float" },
 			 { "1.0", "1.0" },
 			 "CBM", "cont_bitmap_api", "cbm_empty"));
+#endif
+#if (ALL==1)||(FROM_BITMAP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::from_bitmap,
 			 "cbm_from_bitmap",
 			 { "bm", "xsize", "ysize" },
 			 { "BM", "float", "float" },
 			 { "", "1.0", "1.0" },
 			 "CBM", "cont_bitmap_api", "from_bitmap"));
+#endif
+#if (ALL==1)||(TO_BITMAP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::to_bitmap,
 			 "cbm_to_bitmap",
 			 { "cbm", "sx", "sy" },
 			 { "CBM", "int", "int" },
 			 { "", "200", "200" },
 			 "BM", "cont_bitmap_api", "to_bitmap"));
+#endif
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::scale_bitmap2,
 			 "cbm_scale_bitmap",

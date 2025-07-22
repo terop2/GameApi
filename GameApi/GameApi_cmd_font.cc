@@ -251,18 +251,22 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "ML", "mainloop_api", "anim_ML"));
 #endif
 #ifndef STABLE
+#if (ALL==1)||(KEY_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::key_ml,
 			 "key_ml",
 			 { "vec", "keys" },
 			 { "[ML]", "std::string" },
 			 { "", "zxcvbnmfghjklertyuiop" },
 			 "ML", "mainloop_api", "key_ml"));
+#endif
+#if (ALL==1)||(QUAKE_AREA_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::quake_area_fetcher,
 			 "if_qarea",
 			 { "start_x", "end_x", "start_z", "end_z" },
 			 { "float", "float", "float", "float" },
 			 { "0.0", "100.0", "0.0", "100.0" },
 			 "IF", "font_api", "quake_area_fetcher"));
+#endif
 #endif
 #if (ALL==1)||(TOGGLE_BUTTON_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::toggle_button_fetcher,
@@ -281,18 +285,22 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "IF", "font_api", "timed_int_fetcher"));
 #endif
 #ifndef STABLE
+#if (ALL==1)||(MOVEMENT_INT_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::movement_int_fetcher,
 			 "if_move",
 			 { "count", "x_mult", "y_mult", "z_mult" },
 			 { "int", "float", "float", "float" },
 			 { "10", "0.1", "0.1", "0.1" },
 			 "IF", "font_api", "movement_int_fetcher"));
+#endif
+#if (ALL==1)||(REPEAT_INT_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::repeat_int_fetcher,
 			 "if_repeat",
 			 { "fetcher", "duration" },
 			 { "IF", "float" },
 			 { "", "30.0" },
 			 "IF", "font_api", "repeat_int_fetcher"));
+#endif
 #endif
 #if (ALL==1)||(KEYPRESS_INT_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::keypress_int_fetcher,
@@ -327,97 +335,126 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "IF,MN", "font_api", "choose_screen"));
 #endif
 #ifndef STABLE
+#if (ALL==1)||(FACE_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::face_fetcher,
 			 "uv_face",
 			 { "p", "facenum" },
 			 { "P", "int" },
 			 { "", "0" },
 			 "UV", "mainloop_api", "face_fetcher"));
+#endif
+#if (ALL==1)||(CHOOSE_FLOAT_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::choose_float_fetcher,
 			 "ff_choose",
 			 { "int_fetcher", "a_0", "a_1", "a_2", "a_3", "a_4", "a_5", "a_6" },
 			 { "IF", "float", "float", "float", "float", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "0.0" },
 			 "FF", "font_api", "choose_float_fetcher"));
+#endif
+#if (ALL==1)||(SPAN_KEY_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::span_key_fetcher,
 			 "ff_span",
 			 { "start_x", "end_x", "speed_x", "key_down", "key_up" },
 			 { "float", "float", "float", "int", "int" },
 			 { "0.0", "100.0", "5.0", "97", "100" },
 			 "FF", "font_api", "span_key_fetcher"));
+#endif
+#if (ALL==1)||(TIME_FETCHER2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_fetcher2,
 			 "ff_time",
 			 { "ev" },
 			 { "EveryApi&" },
 			 { "ev" },
 			 "FF", "font_api", "time_fetcher2"));
+#endif
+#if (ALL==1)||(TIME_RANGE_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_range_fetcher,
 			 "ff_range",
 			 { "start_time", "end_time", "before_start", "start_value", "end_value", "after_end", "repeat" },
 			 { "float", "float", "float" ,"float", "float", "float","float" },
 			 { "0.0", "30.0", "-1000.0", "0.0", "1.0", "-1000.0", "10000.0" },
 			 "FF", "font_api", "time_range_fetcher"));
+#endif
+#if (ALL==1)||(TIME_RANGE_FETCHER_KEY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::time_range_fetcher_key,
 			 "ff_key_range",
 			 { "key", "start_time", "end_time", "before_start", "start_value", "end_value", "after_end", "repeat" },
 			 { "int", "float", "float", "float" ,"float", "float", "float", "float" },
 			 { "32", "0.0", "30.0", "-1000.0", "0.0", "1.0", "-1000.0", "10000.0" },
 			 "FF", "font_api", "time_range_fetcher_key"));
+#endif
+#if (ALL==1)||(POINT_FETCHER_CONSTANT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::point_fetcher_constant,
 			 "pf_constant",
 			 { "x", "y", "z" },
 			 { "float", "float", "float" },
 			 { "0.0", "0.0", "0.0" },
 			 "PF", "font_api", "point_fetcher_constant"));
+#endif
+#if (ALL==1)||(MOUSE_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::mouse_fetcher,
 			 "pf_mouse",
 			 { },
 			 { },
 			 { },
 			 "PF", "font_api", "mouse_fetcher"));
+#endif
+#if (ALL==1)||(POINT_FETCHER_PART==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::point_fetcher_part,
 			 "pf_component",
 			 { "point_fetcher", "component", "float_fetcher" },
 			 { "PF", "int", "FF" },
 			 { "", "0", "" },
 			 "PF", "font_api", "point_fetcher_part"));
+#endif
+#if (ALL==1)||(FPS_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::fps_fetcher,
 			 "fnt_fps",
 			 { "ev" },
 			 { "EveryApi&" },
 			 { "ev" },
 			 "FF", "font_api", "fps_fetcher"));
+#endif
+#if (ALL==1)||(FLOAT_TO_STRING_FETCHER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::float_to_string_fetcher,
 			 "fnt_float_to_string",
 			 { "fetcher" },
 			 { "FF" },
 			 { "" },
 			 "SF", "font_api", "float_to_string_fetcher"));
+#endif
+#if (ALL==1)||(CHAR_FETCHER_FROM_STRING==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::char_fetcher_from_string,
 			 "fnt_char_idx",
 			 { "string_fetcher", "alternatives", "idx" },
 			 { "SF", "std::string", "int" },
 			 { "", "0123456789", "0" },
 			 "IF", "font_api", "char_fetcher_from_string"));
-
+#endif
+#if (ALL==1)||(X_COMP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::x_comp,
 			 "pf_x",
 			 { "point_fetcher", "start_x", "end_x", "numsteps" },
 			 { "PF", "float", "float", "int" },
 			 { "", "0.0", "300.0", "8" },
 			 "IF", "font_api", "x_comp"));
+#endif
+#if (ALL==1)||(Y_COMP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::y_comp,
 			 "pf_y",
 			 { "point_fetcher", "start_y", "end_y", "numsteps" },
 			 { "PF", "float", "float", "int" },
 			 { "", "0.0", "300.0", "8" },
 			 "IF", "font_api", "y_comp"));
+#endif
+#if (ALL==1)||(Z_COMP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::z_comp,
 			 "pf_z",
 			 { "point_fetcher", "start_z", "end_z", "numsteps" },
 			 { "PF", "float", "float", "int" },
 			 { "", "0.0", "300.0", "8" },
 			 "IF", "font_api", "z_comp"));
+#endif
 #endif
 #if (ALL==1)||(LEVEL==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::tree_api, &GameApi::TreeApi::level,
