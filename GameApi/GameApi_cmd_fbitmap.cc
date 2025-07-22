@@ -5,13 +5,14 @@
  std::vector<GameApiItem*> floatbitmapapi_functions()
 {
   std::vector<GameApiItem*> vec;
+#if (ALL==1)||(FB_EMPTY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::fb_empty,
 			 "emptyfloat",
 			 { "sx", "sy" },
 			 { "int", "int" },
 			 { "100", "100" },
 			 "FB", "float_bitmap_api", "fb_empty"));
-
+#endif
 
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::grayscale,
@@ -21,30 +22,38 @@
 			 { "" },
 			 "FB", "float_bitmap_api", "grayscale"));
 #endif
+#if (ALL==1)||(FROM_RED==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_red,
 			 "from_red",
 			 { "color_bm" },
 			 { "BM" },
 			 { "" },
 			 "FB", "float_bitmap_api", "from_red"));
+#endif
+#if (ALL==1)||(FROM_GREEN==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_green,
 			 "from_green",
 			 { "color_bm" },
 			 { "BM" },
 			 { "" },
 			 "FB", "float_bitmap_api", "from_green"));
+#endif
+#if (ALL==1)||(FROM_BLUE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_blue,
 			 "from_blue",
 			 { "color_bm" },
 			 { "BM" },
 			 { "" },
 			 "FB", "float_bitmap_api", "from_blue"));
+#endif
+#if (ALL==1)||(FROM_ALPHA==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_alpha,
 			 "from_alpha",
 			 { "color_bm" },
 			 { "BM" },
 			 { "" },
 			 "FB", "float_bitmap_api", "from_alpha"));
+#endif
 #if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::min_fb,
 			 "min_fb",
@@ -134,12 +143,14 @@
 			 { "", "", "" },
 			 "BM", "float_bitmap_api", "choose_bitmap"));
 #endif
+#if (ALL==1)||(FROM_BOOL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::from_bool,
 			 "from_bool",
 			 { "b", "val_true", "val_false" },
 			 { "BB", "float", "float" },
 			 { "", "1.0", "0.0" },
 			 "FB", "float_bitmap_api", "from_bool"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::distance_field,
 			 "distance_field",

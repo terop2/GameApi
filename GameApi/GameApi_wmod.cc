@@ -326,6 +326,9 @@ EXPORT void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id
     }
 }
 
+
+
+
 EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(GameApi::EveryApi &ev, std::string func_name)
 {
   static std::vector<GameApiItem*> functions = all_functions(ev);
@@ -459,6 +462,39 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
     }
   return res;  
 }
+
+std::string to_upper(std::string s)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    s[i]=std::toupper(s[i]);
+  return s;
+}
+
+EXPORT std::string GameApi::WModApi::dep_from_function(EveryApi &ev, WM mod2, int id)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  std::string name = func->function_name;
+  return to_upper(name);
+}
+
+EXPORT std::string GameApi::WModApi::deps_from_mod(EveryApi &ev, WM mod2)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  int s = mod->funcs.size();
+  std::string res;
+  for(int i=0;i<s;i++)
+    {
+      res+=dep_from_function(ev,mod2,i) + "\n";
+      std::cout << dep_from_function(ev,mod2,i) << std::endl;
+    }
+  return res;
+}
+
+
 EXPORT std::vector<std::string*> GameApi::WModApi::refs_from_function(GameApi::EveryApi &ev, WM mod2, int id, std::string funcname)
 {
   //std::cout << "refs_from_function: " << funcname << std::endl;
@@ -837,6 +873,40 @@ std::string find_codegen(int id, std::string line_uid, bool &success)
   return "";
 }
     
+EXPORT std::string GameApi::WModApi::extract_funcname(std::string line)
+{
+  int s = line.size();
+  int count=0;
+  int start=-1,end=-1;
+  for(int i=0;i<s;i++)
+    {
+      if (line[i]=='.') {
+	count++;
+	if (count==2) start=i+1;
+      }
+      if (line[i]=='(') { end=i; break; }
+    }
+  if (start==-1||end==-1) return "";
+  return line.substr(start,end-start);
+}
+
+EXPORT std::string GameApi::WModApi::extract_deps(std::string filename)
+{
+  std::ifstream ss(filename.c_str());
+  std::string line;
+  std::string res;
+  while(std::getline(ss,line))
+    {
+      std::string funcname = extract_funcname(line);
+      if (funcname!="")
+	{
+	  res+=std::string("#define ")+to_upper(funcname)+" 1\n";
+	}
+    }
+  return res;
+}
+
+
 
 EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j)
 {

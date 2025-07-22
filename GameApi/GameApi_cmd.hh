@@ -581,6 +581,11 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
   return item;
 }
 
+#ifdef DEFINE_ALL
+#define ALL 1
+#else
+#include "GameApi_short_defines.hh"
+#endif
 
 
 

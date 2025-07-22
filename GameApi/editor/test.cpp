@@ -3672,6 +3672,16 @@ int main(int argc, char *argv[]) {
 		filenames.push_back(filename);
 		i++;
 	      }
+	    if (std::string(argv[i])=="--dep")
+	      {
+		std::string filename = std::string(argv[i+1]);
+		i++;
+		std::string res = ev.mod_api.extract_deps(filename);
+		std::ofstream ss("../GameApi_short_defines.hh");
+		ss << res << std::endl;
+		ss.close();
+		exit(0);
+	      }
 	    if (std::string(argv[i])=="--tempdir")
 	      {
 		gameapi_temp_dir=std::string(argv[i+1]);

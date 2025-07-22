@@ -4,66 +4,86 @@
 std::vector<GameApiItem*> linesapi_functions()
 {
   std::vector<GameApiItem*> vec;
+#if (ALL==1)||(LI_URL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_url,
 			 "li_url",
 			 { "url" },
 			 { "std::string" },
 			 { "https://meshpage.org/assets/li_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "LI", "lines_api", "li_url"));
+#endif
+#if (ALL==1)||(POINT_ARRAY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::point_array,
 			 "li_points",
 			 { "arr" },
 			 { "[PT]" },
 			 { "" },
 			 "LI", "lines_api", "point_array"));
+#endif
+#if (ALL==1)||(ALT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::alt,
 			 "li_alt",
 			 { "arr", "index" },
 			 { "[LI]", "int" },
 			 { "", "0" },
 			 "LI", "lines_api", "alt"));
+#endif
+#if (ALL==1)||(LI_FROM_PTS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_from_pts,
 			 "li_from_pts",
 			 { "pts1", "dx", "dy", "dz" },
 			 { "PTS", "float", "float", "float" },
 			 { "", "0.0","0.01","0.0" },
 			 "LI", "points_api", "li_from_pts"));
+#endif
+#if (ALL==1)||(LI_PTS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_pts,
 			 "li_to_pts",
 			 { "li", "pos" },
 			 { "LI", "float" },
 			 { "", "0.0" },
 			 "PTS", "points_api", "li_pts"));
+#endif
+#if (ALL==1)||(LI_PTS2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::li_pts2,
 			 "li_to_pts2",
 			 { "li" },
 			 { "LI" },
 			 { "" },
 			 "PTS", "points_api", "li_pts2"));
+#endif
+#if (ALL==1)||(CHANGE_COLOR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int))&GameApi::LinesApi::change_color,
 			 "change_color",
 			 { "li", "color" },
 			 { "LI", "unsigned int" },
 			 { "", "ffffffff" },
 			 "LI", "lines_api", "change_color"));
+#endif
+#if (ALL==1)||(CHANGE_COLOR2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, (GameApi::LI (GameApi::LinesApi::*)(GameApi::LI, unsigned int, unsigned int))&GameApi::LinesApi::change_color2,
 			 "change_color2",
 			 { "li", "color_1", "color_2" },
 			 { "LI", "unsigned int", "unsigned int" },
 			 { "", "ffffffff", "ff888888" },
 			 "LI", "lines_api", "change_color2"));
+#endif
+#if (ALL==1)||(FROM_POLYGON==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::from_polygon,
 			 "li_from_polygon",
 			 { "poly" },
 			 { "P" },
 			 { "" },
 			 "LI", "lines_api", "from_polygon"));
+#endif
+#if (ALL==1)||(LI_POLYGON==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::li_polygon,
 			 "li_polygon",
 			 { "li", "width" },
 			 { "LI", "float" },
 			 { "", "2.0" },
 			 "P", "polygon_api", "li_polygon"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_bevel,
 			 "li_bevel",
@@ -86,12 +106,14 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "", "0.3" },
 			 "LI", "lines_api", "random_angle"));
 #endif
+#if (ALL==1)||(RANDOM_MESH_QUAD_LINES==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::random_mesh_quad_lines,
 			 "li_from_quads",
 			 { "ev", "p", "count" },
 			 { "EveryApi&", "P", "int" },
 			 { "ev", "", "1000" },
 			 "LI", "lines_api", "random_mesh_quad_lines"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::lines_from_quads,
 			 "li_grid_from_quads",
@@ -106,24 +128,30 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "",   "-300.0", "300.0", "-300.0", "300.0", "0.0" },
 			 "LI", "lines_api", "border_from_bool_bitmap"));
 #endif
+#if (ALL==1)||(TRANSLATE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::translate,
 			 "li_translate",
 			 { "lines", "dx", "dy", "dz" },
 			 { "LI", "float", "float", "float" },
 			 { "", "0.0", "0.0", "0.0" },
 			 "LI", "lines_api", "translate"));
+#endif
+#if (ALL==1)||(SCALE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::scale,
 			 "li_scale",
 			 { "lines", "m_x", "m_y", "m_z" },
 			 { "LI", "float", "float", "float" },
 			 { "", "1.0", "1.0", "1.0" },
 			 "LI", "lines_api", "scale"));
+#endif
+#if (ALL==1)||(LI_OR_ELEM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::li_or_elem,
 			 "li_or_elem",
 			 { "li1", "li2" },
 			 { "LI", "LI" },
 			 { "", "" },
 			 "LI", "lines_api", "li_or_elem"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::lines_api, &GameApi::LinesApi::line_product,
 			 "li_product",
@@ -161,12 +189,14 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "ev", "http://meshpage.org/assets/" },
 			 "LI", "lines_api", "import_ifc"));
 #endif
+#if (ALL==1)||(LINE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::line,
 			 "c_line",
 			 { "p1", "p2" },
 			 { "PT", "PT" },
 			 { "", "" },
 			 "C", "curve_api", "line"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::circle_xy,
 			 "c_circle_xy",
@@ -229,18 +259,22 @@ std::vector<GameApiItem*> linesapi_functions()
 			 { "", "0.0", "1.0" },
 			 "C", "curve_api", "split"));
 #endif
+#if (ALL==1)||(SAMPLE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::sample,
 			 "c_sample",
 			 { "curve", "num_samples" },
 			 { "C", "int" },
 			 { "", "10" },
 			 "PTS", "curve_api", "sample"));
+#endif
+#if (ALL==1)||(TO_LINES==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::to_lines,
 			 "c_render",
 			 { "curve", "num_lines" },
 			 { "C", "int" },
 			 { "", "40" },
 			 "LI", "curve_api", "to_lines"));
+#endif
 #ifndef STABLE
   vec.push_back(ApiItemF(&GameApi::EveryApi::curve_api, &GameApi::CurveApi::curve_product,
 			 "c_product",
