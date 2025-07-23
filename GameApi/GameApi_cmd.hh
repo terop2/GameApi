@@ -1,5 +1,41 @@
 
 
+#ifdef DEFINE_ALL
+#define FEATURE_GLTF 1
+#define FEATURE_VOXEL 1
+#define FEATURE_VOLUME 1
+#else
+#define FEATURE_GLTF 1
+#define FEATURE_VOXEL 1
+#define FEATURE_VOLUME 1
+#endif
+#define FEATURE_FONT 1
+#define FEATURE_MATERIAL 1
+#define FEATURE_FRAMEBUFFER 1
+#define FEATURE_PTS 1
+#define FEATURE_WAVEFORM 1
+#define FEATURE_GUI 1
+#define FEATURE_BOOLEANOPS 1
+#define FEATURE_OGL_SETUP 1
+
+#ifdef DEFINE_ALL
+#define ALL 1
+#else
+#include "GameApi_short_defines.hh"
+#endif
+
+
+
+
+#if (NEWSHADOW2_GLTF==1)||(GLTF_NEWSHADOW2==1)
+#define FEATURE_GLTF 1
+#endif
+#if (SPHERE_BO==1)||(OR_ELEM_BO==1)||(INTERSECT_BO==1)||(CUBE_BO==1)||(FD_MIN==1)
+#define FEATURE_VOLUME 1
+#endif
+
+
+
 int ret_type_count(std::string s);
 struct DelApiItemF
 {
@@ -18,7 +54,9 @@ void set_empty(GameApi::EveryApi &ev, T &t) { t.id=0; }
   void set_empty(GameApi::EveryApi&ev,lab &l);
 
 MACRO2(GameApi::BM,ev.bitmap_api.newbitmap(10,10,0x00000000))
+#if (FEATURE_VOLUME==1)
 MACRO2(GameApi::FD,ev.dist_api.fd_cube(0.0,0.0,0.0,0.0,0.0,0.0))
+#endif
 MACRO2(GameApi::BO,ev.bool_api.cube_bo(ev,0.0,0.0,0.0,0.0,0.0,0.0,1,1))
 MACRO2(GameApi::BB,ev.bool_bitmap_api.bb_empty(10,10))
 MACRO2(GameApi::FB,ev.float_bitmap_api.fb_empty(10,10))
@@ -580,12 +618,4 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
   g_api_item_deleter.items.push_back(item);
   return item;
 }
-
-#ifdef DEFINE_ALL
-#define ALL 1
-#else
-#include "GameApi_short_defines.hh"
-#endif
-
-
 

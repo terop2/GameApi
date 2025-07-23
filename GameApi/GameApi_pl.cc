@@ -2323,9 +2323,9 @@ GameApi::ARR GameApi::PolygonApi::comb_mat(GameApi::EveryApi &ev, std::vector<MT
   return add_array(e,array);
 
 }
-
 GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
 {
+#if (FEATURE_GLTF==1)
   FaceCollection *coll = find_facecoll(e,p);
   coll->Prepare();
 #ifndef EMSCRIPTEN
@@ -2361,9 +2361,9 @@ GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
     array->vec.push_back(m.id);
   }
   return add_array(e,array);
+#endif
   
 }
-
 
 GameApi::ARR GameApi::PolygonApi::p_mtl2_materials(GameApi::EveryApi &ev, P p)
 {

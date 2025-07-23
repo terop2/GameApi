@@ -4,6 +4,7 @@ int hhhh_gggg=1;
 #include "GameApi_h.hh"
 #include "GraphI.hh"
 #include "VectorTools.hh"
+#include "GameApi_cmd.hh"
 #define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_ENABLE_DRACO 1
 #define TINYGLTF_USE_CPP14 1
@@ -40,6 +41,8 @@ class LoadGltf;
 class LoadGltf_from_string;
 // not working because tinygltf doesn't allow it.
 //#define CONCURRENT_IMAGE_DECODE 1
+IMPORT extern std::string gameapi_homepageurl;
+
 
 extern int async_pending_count;
 class ThreadInfo_gltf_bitmap;
@@ -105,7 +108,6 @@ public:
 
 
 extern std::vector<const char *> g_urls;
-IMPORT extern std::string gameapi_homepageurl;
 
 //bool feature_enable[255];
 
@@ -415,8 +417,9 @@ public:
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
 };
 
-extern std::vector<std::pair<std::string,int> > bitmap_prepare_cache_data;
+
 int bitmap_find_data(std::string data);
+extern std::vector<std::pair<std::string,int> > bitmap_prepare_cache_data;
 
 class BitmapPrepareCache : public Bitmap<Color>
 {
@@ -471,6 +474,7 @@ public:
   Bitmap<Color> *bm;
   mutable Bitmap<Color> *bm_cache=0;
 };
+
 
 
 bool LoadImageData(tinygltf::Image *image, const int image_idx, std::string *err, std::string *warn, int req_width, int req_height, const unsigned char *bytes, int size, void *ptr);
@@ -1748,7 +1752,6 @@ public:
   const tinygltf::Image *img;
   int image_index;
 };
-
 void bm_cb(void* ptr2);
 
 class LoadBitmapFromUrl : public Bitmap<Color>
@@ -8986,6 +8989,7 @@ GameApi::ML GameApi::MainLoopApi::ml_empty()
 }
 
 
+
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model0, float mix, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
@@ -14029,4 +14033,4 @@ IMAGEID GLTFImageDecoder::convert_to_image(std::vector<unsigned char> &vec)
 Bitmap<Color> *GLTFImageDecoder::get_converted_image(IMAGEID id)
 {
 }
-					  
+

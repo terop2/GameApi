@@ -1,6 +1,9 @@
  
 #include "GameApi_h.hh"
 #include "GameApi_vo.hh"
+#include "GameApi_cmd.hh"
+
+#if (FEATURE_VOLUME==1)
 
 EXPORT GameApi::O GameApi::VolumeApi::from_bool_bitmap(BB b, float dist)
 {
@@ -93,11 +96,16 @@ EXPORT GameApi::O GameApi::VolumeApi::colour(GameApi::O o1, unsigned int col)
   VolumeObject *oo1 = find_volume(e,o1);
   return add_volume(e, new ColorSpecVolume(*oo1, Color(col)));
 }
+#endif
 EXPORT GameApi::O GameApi::VolumeApi::not_op(GameApi::O o1)
 {
+#if (FEATURE_VOLUME==1)
   VolumeObject *oo1 = find_volume(e,o1);
   return add_volume(e, new NotVolume(*oo1));
+#endif
 }
+
+#if (FEATURE_VOLUME==1)
 
 EXPORT GameApi::O GameApi::VolumeApi::min_op(GameApi::O o1, GameApi::O o2)
 {
@@ -140,13 +148,16 @@ EXPORT GameApi::BB GameApi::VolumeApi::plane(GameApi::O o, int sx, int sy,
   env->deletes.push_back(std::shared_ptr<void>(plane));
   return add_bool_bitmap(e, bm);
 }
+#endif
 EXPORT GameApi::O GameApi::VolumeApi::andnot_op(GameApi::O o1, GameApi::O o2)
 {
+#if (FEATURE_VOLUME==1)
   VolumeObject *oo1 = find_volume(e, o1);
   VolumeObject *oo2 = find_volume(e, o2);
   return add_volume(e, new AndNotVolume(*oo1,*oo2));
-
+#endif
 }
+#if (FEATURE_VOLUME==1)
 EXPORT GameApi::O GameApi::VolumeApi::scale(GameApi::O obj, float x, float y, float z)
 {
   VolumeObject *o1 = find_volume(e, obj);
@@ -1405,11 +1416,16 @@ private:
   float dist;
 };
 
+#endif 
+
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_sphere(PT center, float radius)
 {
+#if (FEATURE_VOLUME==1)
   Point *cent = find_point(e, center);
   return add_distance(e, new SphereDistanceRenderable(*cent, radius));
+#endif
 }
+#if (FEATURE_VOLUME==1)
 class CubeDistanceRenderable : public DistanceRenderable
 {
 public:
@@ -1732,12 +1748,18 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_round_cube(float start_x,
   return add_distance(e, new RoundCubeDistance(start, end, r));
 }
 
+#endif
+
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_min(FD fd1, FD fd2)
 {
+#if (FEATURE_VOLUME==1)
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
   return add_distance(e, new MinDistance2(*ff1, *ff2));
+#endif
 }
+
+#if (FEATURE_VOLUME==1)
 
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_max(FD fd1, FD fd2)
 {
@@ -1746,13 +1768,17 @@ EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_max(FD fd1, FD fd2)
   return add_distance(e, new MaxDistance2(*ff1, *ff2));
 }
 
-
+#endif
 EXPORT GameApi::FD GameApi::DistanceFloatVolumeApi::fd_and_not(FD fd1, FD fd2)
 {
+#if (FEATURE_VOLUME==1)
   DistanceRenderable *ff1 = find_distance(e, fd1);
   DistanceRenderable *ff2 = find_distance(e, fd2);
   return add_distance(e, new AndNotDistance(*ff1, *ff2));
+#endif
 }
+
+#if (FEATURE_VOLUME==1)
 
 class RenderDistance : public Bitmap<Color>
 {
@@ -2076,4 +2102,4 @@ GameApi::PTS GameApi::VolumeApi::random_vol_object(O o, float start_x, float end
   return add_points_api_points(e, new RandomVolObject(obj,start_x,end_x, start_y, end_y, start_z, end_z, numpoints));
 }
 
-
+#endif
