@@ -1352,7 +1352,7 @@ public:
 		}
 		    
 		static int g_id = -1;
-		std::cout << "ClearBlock" << std::endl;
+		//std::cout << "ClearBlock" << std::endl;
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
