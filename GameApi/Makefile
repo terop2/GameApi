@@ -184,8 +184,8 @@ WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-v
 #-fsanitize=undefined -fsanitize-recover=undefined
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
-CCFLAGS =  -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -O2 -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
-CC2FLAGS =  -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -O2 -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CCFLAGS =  -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CC2FLAGS =  -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
 #`pkg-config gtkmm-2.4 --cflags`
 
 BD_CALVIN_M64=
@@ -199,7 +199,7 @@ CC2FLAGS += -m64
 BD_CALVIN_M64 += -m64
 endif
 
-default: check_compile dirs libGameApi.so libGameApi_small.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
+default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
 
 
 check_compile:
@@ -271,11 +271,11 @@ dirs:
 
 libGameApi.so: $(OFiles) $(CMDOFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@$(CC) -DDEFINE_ALL -Wl,-strip-all -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client 
+	@$(CC) -DDEFINE_ALL -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client 
 
-libGameApi_small.so: $(OFiles) $(CMDOFiles2a) Makefile
-	@echo "  LD     libGameApi_small.so"
-	@$(CC) -Wl,-strip-all -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles2a) -std=c++20 -o libGameApi_small.so  $(LDFLAGS) -lstdc++ -lwayland-client 
+#libGameApi_small.so: $(OFiles) $(CMDOFiles2a) Makefile
+#	@echo "  LD     libGameApi_small.so"
+#	@$(CC) -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles2a) -std=c++20 -o libGameApi_small.so  $(LDFLAGS) -lstdc++ -lwayland-client 
 
 
 .PHONY: dirs

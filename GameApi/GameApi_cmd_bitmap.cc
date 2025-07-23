@@ -637,12 +637,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 
 #ifndef WINDOWS
 #if (ALL==1)||(BICUBIC==1)
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::cont_bitmap_api, &GameApi::ContinuousBitmapApi::bicubic,
 			 "cbm_bicubic",
 			 { "f_0", "f_1", "df_0", "df_1", "ff_0", "ff_1", "dff_0", "dff_1" },
 			 { "float", "float", "float", "float", "float", "float", "float", "float" },
 			 { "0.0", "0.0", "0.5", "-0.5", "1.0", "1.0", "0.5", "-0.5" },
 			 "CBM", "cont_bitmap_api", "bicubic"));
+#endif
 #endif
 
 #if (ALL==1)||(SAMPLE==1)
