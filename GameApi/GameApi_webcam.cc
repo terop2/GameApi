@@ -7,8 +7,9 @@
 
 class WebCamBufferRefTexID : public TextureID
 {
-public:
+public: // THIS IS STRANGE CLASS AS IT DELETES ITS seq PARAMETER.
   WebCamBufferRefTexID(GameApi::EveryApi &ev, BufferRefReq &seq) : ev(ev), seq(seq) { id.id=0; }
+  ~WebCamBufferRefTexID() { delete &seq; } 
   void handle_event(MainLoopEvent &e) {
   }
   void render(MainLoopEnv &e) {
@@ -405,13 +406,26 @@ public:
   }
   ~LinuxCapture()
   {
+      std::cout << "Stopping webcam...(try)" << std::endl;
     if (init_done) {
+      std::cout << "Stopping webcam..." << std::endl;
+      int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      ioctl(fd, VIDIOC_STREAMOFF, &type);
+
+
+    struct v4l2_requestbuffers req = {0};
+    req.count = 0;
+    req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    req.memory = V4L2_MEMORY_MMAP;
+    ioctl(fd, VIDIOC_REQBUFS, &req);
+      
       munmap(buffer,buf.length);
       close(fd);
     }
   }
   void initCapture(int num) const
   {
+    std::cout << "Starting webcam.." << std::endl;
     const char* dev_name = "/dev/video0";
     fd = open(dev_name, O_RDWR);
     if (fd == -1) {

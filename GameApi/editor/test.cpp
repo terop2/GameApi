@@ -1352,6 +1352,7 @@ public:
 		}
 		    
 		static int g_id = -1;
+		std::cout << "ClearBlock" << std::endl;
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
@@ -1468,7 +1469,19 @@ public:
 			  //env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  
-			} else
+			} else if (type=="TXID")
+			  {
+			    TXID id2;
+			    id2.id = id;
+			    P I1=env->ev->polygon_api.fullscreen_quad(*env->ev);
+			    MT I2=env->ev->materials_api.textureid(*env->ev,id2,1.0);
+			    ML ml=env->ev->materials_api.bind(I1,I2);
+
+			      env->env->free_temp_memory();
+			      env->gui->delete_widget(env->mem);
+			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			  }
+			else
 			  if (type=="ML")
 			    {
 			      ML ml;
