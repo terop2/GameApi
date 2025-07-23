@@ -45,6 +45,7 @@
 #endif
 
 #include "Tasks.hh"
+#include "GameApi_cmd.hh"
 
 extern int g_logo_status;
 extern std::string g_msg_string;
@@ -948,6 +949,7 @@ EXPORT GameApi::BO GameApi::BooleanOps::cube_bo(GameApi::EveryApi &ev,
 				      float start_z, float end_z,
 				      int split_x, int split_y)
 {
+#if (FEATURE_VOLUME==1)
   P mesh = ev.polygon_api.cube(start_x, end_x, start_y, end_y, start_z, end_z);
   P mesh2 = ev.polygon_api.splitquads(mesh, split_x, split_y);
 
@@ -955,16 +957,20 @@ EXPORT GameApi::BO GameApi::BooleanOps::cube_bo(GameApi::EveryApi &ev,
   FD fd = ev.dist_api.fd_cube(start_x, end_x, start_y, end_y, start_z, end_z);
   //CT cutter = ev.cutter_api.distance_cut(fd);
   return create_bo(mesh2, bools, fd);
+#endif
 }
 EXPORT GameApi::BO GameApi::BooleanOps::sphere_bo(GameApi::EveryApi &ev, PT center, float radius, int numfaces1, int numfaces2)
 {
+#if (FEATURE_VOLUME==1)
   P mesh = ev.polygon_api.sphere(center, radius, numfaces1, numfaces2);
   O bools = ev.volume_api.o_sphere(center, radius);
   FD fd = ev.dist_api.fd_sphere(center, radius);
   return create_bo(mesh, bools, fd);
+#endif
 }
 EXPORT GameApi::BO GameApi::BooleanOps::or_elem_bo(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
 {
+#if (FEATURE_VOLUME==1)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   BO_Impl obj_i = env->boolean_ops[obj.id];
   BO_Impl obj2_i = env->boolean_ops[obj2.id];
@@ -972,6 +978,7 @@ EXPORT GameApi::BO GameApi::BooleanOps::or_elem_bo(GameApi::EveryApi &ev, GameAp
   O bools = ev.volume_api.max_op(obj_i.bools, obj2_i.bools);
   FD fd = ev.dist_api.fd_min(obj_i.fd, obj2_i.fd);
   return create_bo(mesh, bools, fd);
+#endif
 }
 EXPORT GameApi::BO GameApi::BooleanOps::and_not_bo(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
 {
@@ -992,6 +999,7 @@ EXPORT GameApi::BO GameApi::BooleanOps::and_not_bo(GameApi::EveryApi &ev, GameAp
 
 EXPORT GameApi::BO GameApi::BooleanOps::intersect_bo(GameApi::EveryApi &ev, GameApi::BO obj, GameApi::BO obj2)
 {
+#if (FEATURE_VOLUME==1)
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   BO_Impl obj_i = env->boolean_ops[obj.id];
   BO_Impl obj2_i = env->boolean_ops[obj2.id];
@@ -1004,6 +1012,7 @@ EXPORT GameApi::BO GameApi::BooleanOps::intersect_bo(GameApi::EveryApi &ev, Game
   O bools = ev.volume_api.min_op(obj_i.bools, obj2_i.bools);
   FD fd = ev.dist_api.fd_max(obj_i.fd, obj2_i.fd);
   return create_bo(mesh, bools, fd);
+#endif
 }
 
 EXPORT GameApi::P GameApi::BooleanOps::to_polygon(BO obj)
@@ -9556,6 +9565,7 @@ GameApi::MT get_texture_count(GameApi::Env &e, GLTF_Material *mat1, NewShadowMat
 
 EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt)
 {
+#if (FEATURE_GLTF==1)
   P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);
   MT I3=ev.materials_api.gltf_material(ev,I1,0,1,light_dir_x,light_dir_y,light_dir_z);
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
@@ -9564,10 +9574,12 @@ EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P
   ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
+#endif
 }
 
 EXPORT GameApi::ML GameApi::MaterialsApi::gltf_newshadow2(EveryApi &ev, P models, MT model_mt,  P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, TF tf)
 {
+#if (FEATURE_GLTF==1)
   //  PT I1=ev.point_api.point(100,0,0);
   //P I2=ev.polygon_api.sphere(I1,180,30,30);
   P I2=models;
@@ -9593,6 +9605,7 @@ ML I5=ev.materials_api.bind(I2,I4);
 ML I11=ev.materials_api.bind(I6,I9);
 ML I12=ev.mainloop_api.or_elem_ml(ev,I5,I11);
  return I12;
+#endif
 }
 
 
@@ -20948,6 +20961,7 @@ void find_url_items3(std::vector<UrlItem> &result)
   for(int i=0;i<s;i++)
     {
       std::string name = remove_prefix(result[i].url);
+#if (FEATURE_GLTF==1)
       if (name.size()>4 && name.substr(name.size()-4,4)==".zip")
 	{
 	  std::string contents = get_zip_license_file(result[i].url);
@@ -20973,6 +20987,7 @@ void find_url_items3(std::vector<UrlItem> &result)
 	  result2.push_back(ii);
 	  continue;
 	}
+#endif
       int ss = filenames.size();
       for(int j=0;j<ss;j++)
 	{

@@ -66,7 +66,7 @@ endif
 
 LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG) $(OPENCV_PKGCONFIG)
 
-CMDFiles = GameApi_pl.cc	GameApi_cmd_move.cc \
+CMDFiles = GameApi.cc GameApi_gltf.cc GameApi_vo.cc GameApi_vx.cc GameApi_pl.cc	GameApi_cmd_move.cc \
 	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
 	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
 	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
@@ -78,7 +78,7 @@ CMDFiles = GameApi_pl.cc	GameApi_cmd_move.cc \
 	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
 	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc
 
-CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
+CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
@@ -95,8 +95,8 @@ CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
-        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
-        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_wmod.cc \
+        GameApi_wv.cc GameApi_cut.cc GameApi_in.cc \
 	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc \
 	GameApi_cmd.cc cpushader.cc \
 draco/attributes/attribute_octahedron_transform.cc    draco/attributes/geometry_attribute.cc \
