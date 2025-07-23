@@ -2952,11 +2952,11 @@ public:
     if (move_ongoing && button==-1)
       {
 	move_ongoing = false;
-	if (fptr_enabled) fptr(data);
+	//if (fptr_enabled) fptr(data);
       }
     size = vec[0]->get_size();
   }
-  void set_cb(void (*p_fptr)(void*),void* p_data) { fptr_enabled=true; fptr=p_fptr; data=p_data; }
+  void set_cb(void (*p_fptr)(void*),void* p_data) { /*fptr_enabled=true; fptr=p_fptr; data=p_data;*/ }
   int chosen_item() const { return vec[0]->chosen_item(); }
 private:
   int area_x, area_y;
@@ -2965,8 +2965,8 @@ private:
   Point2d old_pos;
   Point2d old_mouse;
   bool fptr_enabled;
-  void (*fptr)(void*);
-  void *data;
+  //void (*fptr)(void*);
+  //void *data;
 };
 void set_mouse_move_cb(GuiWidget *w, void (*fptr)(void*), void*data)
 {
