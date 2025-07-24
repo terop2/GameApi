@@ -3707,6 +3707,7 @@ void remove_spaces(std::string &s)
 
 IMPORT void send_post_request(std::string url, std::string headers, std::string data)
 {
+  std::cout << "POST REQUEST: " << url << " with headers " << headers << " with data: " << data << std::endl;
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
   remove_spaces(data);
