@@ -26963,6 +26963,11 @@ public:
 	{
 	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
 	}
+    for(int y=0;y<sy;y++)
+      for(int x=0;x<sx/2;x++)
+	{
+	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
+	}
 
     
 #ifndef EMSCRIPTEN
