@@ -906,12 +906,16 @@ private:
 
 EM_JS(void, webcam_cleanup, (void), {
     var video = document.getElementById('webcam');
+    if (video !== null) {
     video.setAttribute('id','oldwebcam');
 		      
     video.remove();
+    }
     var video2 = document.getElementById('webcamCanvas');
+    if (video2 !== null) {
     video2.setAttribute('id','oldwebcamCanvas');
     video2.remove();
+    }
   });
 
 EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
