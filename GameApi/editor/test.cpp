@@ -1469,7 +1469,20 @@ public:
 			  //env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  
-			} else if (type=="TXID")
+			} else if (type=="TX") {
+			  TX id1;
+			  id1.id = id;
+			  TXID id2=env->ev->texture_api.prepare(id1);			    
+			    P I1=env->ev->polygon_api.fullscreen_quad(*env->ev);
+			    MT I2=env->ev->materials_api.textureid(*env->ev,id2,1.0);
+			    ML ml=env->ev->materials_api.bind(I1,I2);
+
+			      env->env->free_temp_memory();
+			      env->gui->delete_widget(env->mem);
+			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+
+			}
+			else if (type=="TXID")
 			  {
 			    TXID id2;
 			    id2.id = id;
