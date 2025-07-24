@@ -2209,7 +2209,7 @@ fetch(myBRequest).then((r) => {
    if (t=="") t="0";
    //console.log("BACKGROUND:" + t);
    g_background = parseInt(t,10);
-});   
+
 
 const myHeaders2 = new Headers();
 const myARequest = new Request(url2, {
@@ -2223,7 +2223,6 @@ const myARequest = new Request(url2, {
 	}).then((t) => {
   	   var pos = document.getElementById("addtext");
 	   pos.innerHTML = t;
-	   });
 
 const myHeaders = new Headers();
 const myFRequest = new Request(url, {
@@ -2244,6 +2243,14 @@ const myFRequest = new Request(url, {
     g_txt[id] = t;
     //
   });
+
+
+});
+
+
+});   
+
+
   } else {
     g_txt_id = id;
     if (g_txt_cb) window.clearTimeout(g_txt_cb);
@@ -2522,6 +2529,25 @@ function show_emscripten(str,hide,indicator,is_async)
 
   var Module = { };
 Module.canvas = canv;
+
+Module.locateFile = function(path, prefix) {
+    if (path.endsWith('.js')) {
+        if (!window.wasmJSContentPromise) {
+            window.wasmJSContentPromise = fetch(prefix + path)
+                .then(response => response.text())
+                .then(text => {
+                    const blob = new Blob([text], {type: 'application/javascript'});
+                    window.wasmJSUrl = URL.createObjectURL(blob);
+                    return window.wasmJSUrl;
+                });
+        }
+        // Return a Promise from locateFile is not supported,
+        // so instead preload wasmJSUrl before Module is created.
+        throw new Error("wasmJSUrl not yet loaded. Preload required.");
+    }
+    return prefix + path + "?<?php echo filemtime("engine_highmem.js") ?>";
+};
+/*
   Module.locateFile = function(path,prefix) {
         if (path.endsWith('.js')) {
             if (!window.wasmJSContent) {
@@ -2538,7 +2564,7 @@ Module.canvas = canv;
             }
             return window.wasmJSUrl;
         }
-return prefix+path+"?<?php echo filemtime("engine_highmem.js") ?>"; }
+return prefix+path+"?<?php echo filemtime("engine_highmem.js") ?>"; }*/
 Module.arguments = [
 
 <?php
