@@ -26,10 +26,25 @@ echo "<title>A way to display your 3d models on the web -- jpg of 3d</title>\n";
 echo "<head>\n";
 echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">\n";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=0.7\">\n";
-echo "<meta name=\"keywords\" content=\"GameAPI engine, GameAPI builder, Meshpage GameAPI, Meshpage game engine, C++ game engine for beginners, WebGL game engine, SDL OpenGL game engine,lightweight game engine, beginner game development, game engine for students, high school game programming, learn game dev with C++, easy game engine for teens, intro to game development, GLTF game engine, emscripten game engine, build games with C++ and WebGL, cross-platform game engine, open source C++ game engine, mesh-based game development, alternative to Unity for students, C++ to WebGL game dev workflow, how to start making games in high school, low-level 3D engine with scripting,retro-style engine for modern platforms\">\";
+echo "<meta name=\"keywords\" content=\"GameAPI engine, GameAPI builder, Meshpage GameAPI, Meshpage game engine, C++ game engine for beginners, WebGL game engine, SDL OpenGL game engine,lightweight game engine, beginner game development, game engine for students, high school game programming, learn game dev with C++, easy game engine for teens, intro to game development, GLTF game engine, emscripten game engine, build games with C++ and WebGL, cross-platform game engine, open source C++ game engine, mesh-based game development, alternative to Unity for students, C++ to WebGL game dev workflow, how to start making games in high school, low-level 3D engine with scripting,retro-style engine for modern platforms\">\n";
 
 
 echo "</head>\n";
+
+echo "<script type=\"application/ld+json\">\n";
+echo "{\n";
+echo "  \"@context\": \"https://schema.org\",\n";
+echo "  \"@type\": \"SoftwareApplication\",\n";
+echo "  \"name\": \"GameAPI\",\n";
+echo "  \"operatingSystem\": \"Linux, Windows, Web\",\n";
+echo "  \"applicationCategory\": \"GameDevelopmentApplication\",\n";
+echo "  \"description\": \"A lightweight 3D game engine for students and hobbyists.\",\n";
+echo "  \"url\": \"https://meshpage.org\",\n";
+echo "  \"softwareVersion\": \"v28\",\n";
+echo "  \"programmingLanguage\": \"C++, WebGL\"\n";
+echo "}\n";
+echo "</script>\n";
+
 echo "<body>\n";
 
 //echo "SEO_KEYWORDS: meshpage.org offers unique way to do physically based rendering via runtime processing of 3d assets from normal gltf 2.0 files. The 3d models are created in blender and its gltf exporter and passed to our asset delivery system. This uses khronos group gltf 2.0 standard and can render 3d models from multiple sources, including blender and sketchfab.";
