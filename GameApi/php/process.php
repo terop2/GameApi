@@ -26,6 +26,9 @@ echo "<title>A way to display your 3d models on the web -- jpg of 3d</title>\n";
 echo "<head>\n";
 echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">\n";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=0.7\">\n";
+echo "<meta name=\"keywords\" content=\"GameAPI engine, GameAPI builder, Meshpage GameAPI, Meshpage game engine, C++ game engine for beginners, WebGL game engine, SDL OpenGL game engine,lightweight game engine, beginner game development, game engine for students, high school game programming, learn game dev with C++, easy game engine for teens, intro to game development, GLTF game engine, emscripten game engine, build games with C++ and WebGL, cross-platform game engine, open source C++ game engine, mesh-based game development, alternative to Unity for students, C++ to WebGL game dev workflow, how to start making games in high school, low-level 3D engine with scripting,retro-style engine for modern platforms\">\";
+
+
 echo "</head>\n";
 echo "<body>\n";
 
