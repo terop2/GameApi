@@ -2,9 +2,22 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 
+bool is_hexify(std::string s)
+{
+  int ss = s.size();
+  if (ss>0&&s[0]=='*') return false;
+  if (ss%1==0) {
+  for(int i=0;i<ss;i++)
+    {
+      if (!((s[i]>='0' && s[i]<='9')||(s[i]>='A'&&s[i]<='F'))) return false; 
+    }
+  return true;
+  } else return false;
+}
 
 std::string hexify(std::string s)
 {
+#if 0
   std::string res;
   int ss = s.size();
   for(int i=0;i<ss;i++)
@@ -17,11 +30,24 @@ std::string hexify(std::string s)
       res+=chrs[c3];
       res+=chrs[c2];
     }
-  return res;
+#endif
+  std::string res;
+  res+="*";
+  int ss = s.size();
+    for(int i=0;i<ss;i++) {
+      if (s[i]==' ') s[i]='#';
+      if (s[i]==':') s[i]='?';
+      res+=s[i];
+    }
+   
+    return res;
+
+    //return res;
 }
 std::string unhexify(std::string s)
 {
   std::string res;
+  if (is_hexify(s)) {  
   int ss = s.size();
   for(int i=0;i<ss;i+=2)
     {
@@ -37,6 +63,16 @@ std::string unhexify(std::string s)
 	}
       res+=char((val<<4) + val2);
     }
+  } else {
+    std::string res;
+    int ss = s.size();
+    for(int i=1;i<ss;i++) {
+      if (s[i]=='#') s[i]=' ';
+      if (s[i]=='?') s[i]=':';
+      res+=s[i];
+    }
+    return res;
+  }
   return res;
 }
 
