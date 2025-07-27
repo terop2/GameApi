@@ -34,6 +34,7 @@ MACRO2(GameApi::FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.o
 MACRO2(GameApi::HML,ev.mainloop_api.html_url("https://meshpage.org/assets/empty_hml.mp"))
 MACRO2(GameApi::PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
 MACRO2(GameApi::IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3));
+MACRO2(GameApi::TF,ev.mainloop_api.gltf_loadKK2("https://meshpage.org/assets/test.glb"))
 #undef MACRO2
 
 
@@ -132,6 +133,7 @@ MACRO3(FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20
 MACRO3(GameApi::HML,ev.mainloop_api.html_url("https://meshpage.org/assets/empty_hml.mp"))
 MACRO3(PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
 MACRO3(IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3));
+MACRO3(TF,ev.mainloop_api.gltf_loadKK2("https://meshpage.org/assets/test.glb"))
  return "@";
 }
 
