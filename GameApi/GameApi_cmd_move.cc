@@ -545,12 +545,14 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "KF", "vertex_anim_api", "repeat_keyframes"));
 #endif
 #if (ALL==1)||(CURVE_TRANS==1)
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::curve_trans,
 			 "kf_curve",
 			 { "ev", "keyframe", "curve", "pos", "numsamples", "duration" },
 			 { "EveryApi&", "KF", "C", "CPP", "int", "float" },
 			 { "ev", "", "", "", "10", "30.0" },
 			 "KF", "vertex_anim_api", "curve_trans"));
+#endif
 #endif
 #if (ALL==1)||(SAMPLE_ROT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::vertex_anim_api, &GameApi::VertexAnimApi::sample_rot,

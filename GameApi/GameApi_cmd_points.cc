@@ -199,6 +199,7 @@
 			 "PTS", "points_api", "hemisphere_points"));
 #endif
 #if (ALL==1)||(WAVE_POINTS==1)
+#if 0
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::wave_points,
 			 "wave_pts",
 			 { "wave", "num_samples", "pos_x", "pos_y", "pos_z",
@@ -209,6 +210,7 @@
 			     "float", "float", "float" },
 			 { "", "50", "-300.0", "-300.0", "0.0", "600.0", "0.0", "0.0", "0.0", "600.0", "0.0" },
 			 "PTS", "points_api", "wave_points"));
+#endif
 #endif
 #if (ALL==1)||(FILTER_COMPONENT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::filter_component,
