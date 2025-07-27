@@ -2562,7 +2562,7 @@ public:
 	  }
 	
 
-	mod = ev.mod_api.load(filename);
+	mod = ev.mod_api.load(ev,filename);
 	
 		break;
 	 }

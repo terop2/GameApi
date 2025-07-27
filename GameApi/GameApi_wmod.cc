@@ -44,7 +44,61 @@ std::string unhexify(std::string s)
 std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 
 
-GameApiModule load_gameapi(std::string filename)
+void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
+{
+    static std::vector<GameApiItem*> functions = all_functions(ev);
+    
+
+    int s = functions.size();
+    int res = -1;
+    GameApiItem *resitem = 0;
+    for(int i=0;i<s;i++)
+      {
+	GameApiItem *item = functions[i];
+	if (item->Name(0)==line.module_name)
+	  {
+	    res=i; resitem = item; break;
+	  }
+      }
+    if (!resitem) { std::cout << "Warning: module " << line.module_name << " not found" << std::endl; return; }
+    if (res==-1) { std::cout << "Warning: module " << line.module_name << " not found" << std::endl; return; }
+    
+    int pcount = resitem->ParamCount(0);
+    std::vector<GameApiParam> res_params;
+    for(int i=0;i<pcount;i++)
+      {
+	GameApiParam p_res;
+	std::string paramname = resitem->ParamName(0,i);
+	std::string def = resitem->ParamDefault(0,i);
+	int ppcount = line.params.size();
+	int jj = -1;
+	for(int j=0;j<ppcount;j++)
+	  {
+	    if (paramname==line.params[j].param_name)
+	      {
+		def = line.params[j].value;
+		jj=j;
+	      }
+	  }
+	if (jj==-1) { std::cout << "Warning: parameter " << paramname << " not found in " << line.module_name << std::endl; }
+	p_res.param_name = paramname;
+	p_res.value = def;
+	std::string ret = resitem->ReturnType(0);
+	p_res.is_array = ret.size()>0&&ret[0]=='['&&ret[ret.size()-1]==']'?true:false;
+	if (jj!=-1)
+	  p_res.array_return_target = line.params[jj].array_return_target;
+	else
+	  p_res.array_return_target=NULL;
+	if (jj!=-1)
+	  p_res.j = line.params[jj].j;
+	else
+	  p_res.j = 0;
+	res_params.push_back(p_res);
+      }
+    line.params=res_params;
+}
+
+GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 {
   GameApiModule mod;
   std::ifstream ss(filename.c_str());
@@ -149,6 +203,7 @@ GameApiModule load_gameapi(std::string filename)
 	      //std::cout << "PARAMS: " << j << std::endl;
 	      g_line.params.push_back(p);
 	    }
+	  fill_gline(ev,g_line);
 	  f.lines.push_back(g_line);
 	} 
       mod.funcs.push_back(f);
@@ -217,9 +272,9 @@ EXPORT void GameApi::WModApi::save(GameApi::WM wm, std::string filename)
   save_gameapi(*mod, filename);
 }
 
-EXPORT GameApi::WM GameApi::WModApi::load(std::string filename)
+EXPORT GameApi::WM GameApi::WModApi::load(GameApi::EveryApi &ev, std::string filename)
 {
-  GameApiModule mod = load_gameapi(filename);
+  GameApiModule mod = load_gameapi(ev, filename);
   GameApiModule *mod2 = new GameApiModule(mod);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 

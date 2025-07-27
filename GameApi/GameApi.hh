@@ -2242,7 +2242,7 @@ public:
   IMPORT void dump_functions_for_docs(GameApi::EveryApi &ev, int i);
   IMPORT int dump_functions_count();
   IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
-  IMPORT WM load(std::string filename);
+  IMPORT WM load(EveryApi &ev, std::string filename);
   IMPORT void save(WM mod, std::string ilename);
   IMPORT void insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open, void (*fptr)(void*), void *data);
   IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);
