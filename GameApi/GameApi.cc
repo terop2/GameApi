@@ -28089,11 +28089,12 @@ public:
 
   }
 
-  virtual int num_flags() const { return states[current_state].flags.size(); }
+  virtual int num_flags() const { if (current_state>=states.size()) return 0; return states[current_state].flags.size(); }
   //virtual int num_pos() const=0;
   //virtual int num_floats() const=0;
   virtual std::string flag(int val) const
   {
+    if (current_state>=states.size()) return "";
     int s = states[current_state].flags.size();
     if (val>=0 && val<s)
       return states[current_state].flags[val];
