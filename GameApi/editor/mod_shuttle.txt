@@ -53,7 +53,7 @@ test
 (1384,1756)translate uid13565 0 0 1 orig:*uid13563:false:-1:0 dx:*0:false:-1:0 dy:*230:false:-1:0 dz:*0:false:-1:0
 (1531,1753)p_or_elem uid13566 0 0 1 p1:*uid13563:false:-1:0 p2:*uid13565:false:-1:0
 (1243,1863)m_snow uid13568 0 0 1 ev:*ev:false:-1:0 nxt:*uid30868:false:-1:0 color1:*ffaaaaaa:false:-1:0 color2:*ffeeeeee:false:-1:0 color3:*ffffffff:false:-1:0 mix_val:*0.95:false:-1:0
-(591,1842)bm_url uid13570 0 0 1 url:*https://meshpage.org/assets/tiiliseina.jpg:false:-1:0
+(591,1842)bm_url uid13570 0 0 1 url:*https?//meshpage.org/assets/tiiliseina.jpg:false:-1:0
 (1212,2072)quad_y uid13572 0 0 1 x1:*400:false:-1:0 x2:*1400:false:-1:0 y:*-110:false:-1:0 z1:*-500:false:-1:0 z2:*500:false:-1:0
 (1354,2110)m_bind uid13573 0 0 1 p:*uid30866:false:-1:0 mat:*uid13574:false:-1:0
 (1219,2189)m_fur uid13574 0 0 1 ev:*ev:false:-1:0 nxt:*uid13576:false:-1:0 center:*uid13577:false:-1:0 dist:*60:false:-1:0 max_angle:*1:false:-1:0 count:*15000:false:-1:0 size:*2:false:-1:0 cone_numfaces:*4:false:-1:0
@@ -90,12 +90,12 @@ test
 (1131,3050)c_circle_xz uid28232 0 0 1 center:*uid28233:false:-1:0 r:*1800:false:-1:0
 (985,3045)point uid28233 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (1269,3056)c_sample uid28234 0 0 1 curve:*uid28232:false:-1:0 num_samples:*20:false:-1:0
-(744,2981)bm_url uid28236 0 0 1 url:*http://meshpage.org/assets/betoniseina.jpg:false:-1:0
+(744,2981)bm_url uid28236 0 0 1 url:*http?//meshpage.org/assets/betoniseina.jpg:false:-1:0
 (1215,2710)texcoord uid28237 0 0 1 orig:*uid28230:false:-1:0 p1_x:*0.0:false:-1:0 p1_y:*0.0:false:-1:0 p2_x:*1.0:false:-1:0 p2_y:*0.0:false:-1:0 p3_x:*1.0:false:-1:0 p3_y:*1.0:false:-1:0 p4_x:*0.0:false:-1:0 p4_y:*1.0:false:-1:0
 (864,3273)quad_y uid29515 0 0 1 x1:*-2000:false:-1:0 x2:*2000:false:-1:0 y:*-120:false:-1:0 z1:*-2000:false:-1:0 z2:*2000:false:-1:0
 (980,3295)m_bind uid29516 0 0 1 p:*uid30857:false:-1:0 mat:*uid30861:false:-1:0
 (962,3165)texcoord uid30857 0 0 1 orig:*uid29515:false:-1:0 p1_x:*0:false:-1:0 p1_y:*0:false:-1:0 p2_x:*15:false:-1:0 p2_y:*0:false:-1:0 p3_x:*15:false:-1:0 p3_y:*15:false:-1:0 p4_x:*0:false:-1:0 p4_y:*15:false:-1:0
-(389,3428)bm_url uid30858 0 0 1 url:*https://meshpage.org/assets/matto.jpg:false:-1:0
+(389,3428)bm_url uid30858 0 0 1 url:*https?//meshpage.org/assets/matto.jpg:false:-1:0
 (533,3507)edge_fix uid30860 0 0 1 bm:*uid30871:false:-1:0
 (694,3443)m_texture_many uid30861 0 0 1 ev:*ev:false:-1:0 vec:*[uid30860]:false:-1:0 mix:*1.0:false:-1:0
 (1216,1957)triangle uid30862 0 0 1 p1:*uid30863:false:-1:0 p2:*uid30865:false:-1:0 p3:*uid30864:false:-1:0
@@ -125,7 +125,7 @@ test
 (494,3940)c_circle_xz uid15168 0 0 1 center:*uid15169:false:-1:0 r:*1000:false:-1:0
 (358,3932)point uid15169 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (625,3983)c_sample uid15170 0 0 1 curve:*uid15168:false:-1:0 num_samples:*4:false:-1:0
-(224,4146)bm_url uid15173 0 0 1 url:*https://meshpage.org/assets/matto.jpg:false:-1:0
+(224,4146)bm_url uid15173 0 0 1 url:*https?//meshpage.org/assets/matto.jpg:false:-1:0
 (802,3886)move_ml uid15174 0 0 1 ev:*ev:false:-1:0 ml:*uid15167:false:-1:0 mn:*uid15182:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (960,4177)anim_translate uid15175 0 0 1 next:*uid15176:false:-1:0 start_time:*15:false:-1:0 end_time:*30:false:-1:0 dx:*0:false:-1:0 dy:*-400:false:-1:0 dz:*0:false:-1:0
 (794,4184)anim_translate uid15176 0 0 1 next:*uid15179:false:-1:0 start_time:*0:false:-1:0 end_time:*15:false:-1:0 dx:*0:false:-1:0 dy:*400:false:-1:0 dz:*0:false:-1:0
@@ -153,7 +153,7 @@ test
 (446,5028)rotatey uid23567 0 0 1 orig:*uid23553:false:-1:0 angle:*1.57:false:-1:0
 (449,5130)rotatey uid23568 0 0 1 orig:*uid23553:false:-1:0 angle:*3.14:false:-1:0
 (452,5240)rotatey uid23569 0 0 1 orig:*uid23553:false:-1:0 angle:*4.67:false:-1:0
-(2200,1633)score_display uid22498 0 0 1 ev:*ev:false:-1:0 ml:*uid20435:false:-1:0 font:*http://meshpage.org/assets/Chunkfive.otf:false:-1:0
+(2200,1633)score_display uid22498 0 0 1 ev:*ev:false:-1:0 ml:*uid20435:false:-1:0 font:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0
 (1903,1663)o_inst uid24517 0 0 1 volume:*uid24518:false:-1:0 pts:*uid28234:false:-1:0
 (1753,1694)o_cube uid24518 0 0 1 start_x:*-100:false:-1:0 end_x:*100:false:-1:0 start_y:*-300:false:-1:0 end_y:*300:false:-1:0 start_z:*-100:false:-1:0 end_z:*100:false:-1:0
 (2135,1726)score_adder uid8896 0 0 1 ev:*ev:false:-1:0 ml:*uid23628:false:-1:0 o:*uid24517:false:-1:0 mn:*uid8897:false:-1:0 enter_score:*1:false:-1:0 leave_score:*0:false:-1:0 dyn_point:*-1:false:-1:0 timeout:*0.1:false:-1:0
@@ -194,7 +194,7 @@ test
 (1625,695)m_bind uid15038 0 0 1 p:*uid23625:false:-1:0 mat:*uid23627:false:-1:0
 (1946,1435)array_ml uid15039 0 0 1 ev:*ev:false:-1:0 arr:*[uid15017,uid15038,uid15043]:false:-1:0
 (2098,1341)seq_ml uid15040 0 0 1 vec:*[uid22498,uid15039]:false:-1:0 time:*1500:false:-1:0
-(1664,5020)FI_load uid15041 0 0 1 url:*http://meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*200:false:-1:0 sy:*200:false:-1:0
+(1664,5020)FI_load uid15041 0 0 1 url:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*200:false:-1:0 sy:*200:false:-1:0
 (1799,5024)FI_drawtext uid15042 0 0 1 font:*uid15041:false:-1:0 str:*Success:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
 (2152,5103)bm_2d uid15043 0 0 1 ev:*ev:false:-1:0 ml:*uid15045:false:-1:0 tl_x:*0.0:false:-1:0 tl_y:*0.0:false:-1:0 br_x:*800.0:false:-1:0 br_y:*600.0:false:-1:0
 (1874,5145)bm_render uid15044 0 0 1 ev:*ev:false:-1:0 bm:*uid15042:false:-1:0
@@ -211,18 +211,18 @@ test
 (1624,5480)array_ml uid2017 0 0 1 ev:*ev:false:-1:0 arr:*[uid2014,uid15174,uid29516,uid28231,uid13578,uid13579,uid13580,uid13558,uid13564]:false:-1:0
 (1760,5524)move_ml uid2018 0 0 1 ev:*ev:false:-1:0 ml:*uid2017:false:-1:0 mn:*uid15016:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (1912,5616)array_ml uid2019 0 0 1 ev:*ev:false:-1:0 arr:*[uid15038,uid2018]:false:-1:0
-(1751,5797)FI_load uid2020 0 0 1 url:*http://meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*200:false:-1:0 sy:*200:false:-1:0
+(1751,5797)FI_load uid2020 0 0 1 url:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*200:false:-1:0 sy:*200:false:-1:0
 (1884,5796)FI_drawtext uid2021 0 0 1 font:*uid2020:false:-1:0 str:*Failed:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
 (2026,5812)bm_render uid2022 0 0 1 ev:*ev:false:-1:0 bm:*uid2021:false:-1:0
 (2174,5859)move_ml uid2023 0 0 1 ev:*ev:false:-1:0 ml:*uid2022:false:-1:0 mn:*uid24023:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (2300,5861)bm_2d uid2024 0 0 1 ev:*ev:false:-1:0 ml:*uid2023:false:-1:0 tl_x:*0.0:false:-1:0 tl_y:*0.0:false:-1:0 br_x:*800.0:false:-1:0 br_y:*600.0:false:-1:0
 (2425,1354)array_ml uid2025 0 0 1 ev:*ev:false:-1:0 arr:*[uid2019,uid2024]:false:-1:0
 (2353,1492)seq_ml uid2026 0 0 1 vec:*[uid22498,uid2025]:false:-1:0 time:*1500:false:-1:0
-(2671,1552)song_ml uid15530 0 0 1 ev:*ev:false:-1:0 next:*uid678:false:-1:0 url:*http://tpgames.org/XMASSONG.OGG:false:-1:0
+(2671,1552)song_ml uid15530 0 0 1 ev:*ev:false:-1:0 next:*uid678:false:-1:0 url:*http?//meshpage.org/assets/XMASSONG.OGG:false:-1:0
 (2474,1827)score_hidder uid20435 0 0 1 ev:*ev:false:-1:0 ml:*uid13811:false:-1:0 o:*uid20436:false:-1:0 max_count:*100:false:-1:0
 (2323,1886)o_sphere uid20436 0 0 1 center:*uid20437:false:-1:0 radius:*300:false:-1:0
 (2178,1889)point uid20437 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
-(166,5909)FI_load uid4549 0 0 1 url:*http://meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*30:false:-1:0 sy:*30:false:-1:0
+(166,5909)FI_load uid4549 0 0 1 url:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*30:false:-1:0 sy:*30:false:-1:0
 (289,5904)FI_drawtext uid4550 0 0 1 font:*uid4549:false:-1:0 str:*Press:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
 (288,6018)FI_drawtext uid4551 0 0 1 font:*uid4549:false:-1:0 str:*R:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
 (293,6132)FI_drawtext uid4552 0 0 1 font:*uid4549:false:-1:0 str:*to:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
@@ -256,12 +256,12 @@ test
 (31,7748)point uid15099 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (24,7857)point uid15100 0 0 1 x:*0:false:-1:0 y:*80:false:-1:0 z:*0:false:-1:0
 (415,7695)bm_plus uid15101 0 0 1 bm1:*uid15097:false:-1:0 bm2:*uid15098:false:-1:0
-(240,-927)p_mtl uid6874 0 0 1 ev:*ev:false:-1:0 obj_url:*http://tpgames.org/house/hOUSE.obj:false:-1:0 mtl_url:*http://tpgames.org/house/hOUSE.mtl:false:-1:0 url_prefix:*http://tpgames.org/house:false:-1:0 count:*1:false:-1:0
+(240,-927)p_mtl uid6874 0 0 1 ev:*ev:false:-1:0 obj_url:*http?//meshpage.org/assets/house/hOUSE.obj:false:-1:0 mtl_url:*http?//meshpage.org/assets/house/hOUSE.mtl:false:-1:0 url_prefix:*http?//meshpage.org/assets/house:false:-1:0 count:*1:false:-1:0
 (176,-799)m_texture_many_p uid6876 0 0 1 ev:*ev:false:-1:0 mix:*0.5:false:-1:0
 (406,-856)m_bind uid6877 0 0 1 p:*uid6874:false:-1:0 mat:*uid6876:false:-1:0
 (631,-686)run_window uid7403 0 0 1 ev:*ev:false:-1:0 ml:*uid7941:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
 (453,-718)quake_ml uid7941 0 0 1 ev:*ev:false:-1:0 ml:*uid6877:false:-1:0 speed:*20.0:false:-1:0 rot_speed:*0.03:false:-1:0
-(206,8304)p_mtl uid13978 0 0 1 ev:*ev:false:-1:0 obj_url:*http://tpgames.org/car/car.obj:false:-1:0 mtl_url:*http://tpgames.org/car/car.mtl:false:-1:0 url_prefix:*http://tpgames.org/car:false:-1:0 count:*1:false:-1:0
+(206,8304)p_mtl uid13978 0 0 1 ev:*ev:false:-1:0 obj_url:*http?//meshpage.org/assets/car/car.obj:false:-1:0 mtl_url:*http?//meshpage.org/assets/car/car.mtl:false:-1:0 url_prefix:*http?//meshpage.org/assets/car:false:-1:0 count:*1:false:-1:0
 (173,8437)m_texture_many_p uid13979 0 0 1 ev:*ev:false:-1:0 mix:*0.5:false:-1:0
 (373,8388)m_bind uid13980 0 0 1 p:*uid13978:false:-1:0 mat:*uid13979:false:-1:0
 (329,8697)sphere uid20114 0 0 1 center:*uid20118:false:-1:0 radius:*30:false:-1:0 numfaces1:*30:false:-1:0 numfaces2:*30:false:-1:0
@@ -329,13 +329,13 @@ test
 (262,-1969)point uid28552 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (539,-1969)texcoord_from_normal uid996 0 0 1 p:*uid28551:false:-1:0
 (201,-1692)bm_cubemap uid11335 0 0 1 bm:*uid12684:false:-1:0
-(45,-1701)bm_url uid12684 0 0 1 url:*http://tpgames.org/jungle.png:false:-1:0
+(45,-1701)bm_url uid12684 0 0 1 url:*http?//meshpage.org/assets/jungle.png:false:-1:0
 (759,-1551)quake_ml uid18588 0 0 1 ev:*ev:false:-1:0 ml:*uid24385:false:-1:0 speed:*20.0:false:-1:0 rot_speed:*0.03:false:-1:0
 (553,-1560)m_phong uid26566 0 0 1 ev:*ev:false:-1:0 nxt:*uid31484:false:-1:0 light_dir_x:*-0.3:false:-1:0 light_dir_y:*0.3:false:-1:0 light_dir_z:*-1:false:-1:0 ambient:*ffff8800:false:-1:0 highlight:*ff666666:false:-1:0 pow:*15:false:-1:0
 (365,-1680)m_texture_cubemap uid31484 0 0 1 ev:*ev:false:-1:0 vec:*uid11335:false:-1:0 mix:*1:false:-1:0 mix2:*1:false:-1:0
 (413,-1556)m_snow uid31485 0 0 1 ev:*ev:false:-1:0 nxt:*uid31484:false:-1:0 color1:*ff000000:false:-1:0 color2:*ff111111:false:-1:0 color3:*ff222222:false:-1:0 mix_val:*1:false:-1:0
 (310,-1538)m_flat uid31486 0 0 1 ev:*ev:false:-1:0 nxt:*uid31484:false:-1:0 color1:*ff8888ff:false:-1:0 color2:*ffff4422:false:-1:0 color3:*ffffffff:false:-1:0
-(382,10922)time_display uid2531 0 0 1 ev:*ev:false:-1:0 ml:*uid2532:false:-1:0 font:*http://tpgames.org/Chunkfive.otf:false:-1:0 time:*1000.0:false:-1:0
+(382,10922)time_display uid2531 0 0 1 ev:*ev:false:-1:0 ml:*uid2532:false:-1:0 font:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0 time:*1000.0:false:-1:0
 (230,10911)p_render uid2532 0 0 1 ev:*ev:false:-1:0 p:*uid2533:false:-1:0
 (91,10901)empty uid2533 0 0 1
 (400,11276)sphere uid7189 0 0 1 center:*uid7190:false:-1:0 radius:*350:false:-1:0 numfaces1:*30:false:-1:0 numfaces2:*30:false:-1:0
@@ -343,7 +343,7 @@ test
 (497,11503)m_phong uid7191 0 0 1 ev:*ev:false:-1:0 nxt:*uid29397:false:-1:0 light_dir_x:*-0.3:false:-1:0 light_dir_y:*0.3:false:-1:0 light_dir_z:*-1.0:false:-1:0 ambient:*ffff8800:false:-1:0 highlight:*ff666666:false:-1:0 pow:*15.0:false:-1:0
 (141,11393)m_def uid7192 0 0 1 ev:*ev:false:-1:0
 (549,11359)m_bind uid7193 0 0 1 p:*uid7189:false:-1:0 mat:*uid29399:false:-1:0
-(464,11627)sound_ml uid24660 0 0 1 ev:*ev:false:-1:0 ml:*uid24663:false:-1:0 url:*http://tpgames.org/tool.wav:false:-1:0 key:*32:false:-1:0
+(464,11627)sound_ml uid24660 0 0 1 ev:*ev:false:-1:0 ml:*uid24663:false:-1:0 url:*http?//meshpage.org/assets/tool.wav:false:-1:0 key:*32:false:-1:0
 (320,11625)ml_script uid24663 0 0 1 ev:*ev:false:-1:0 hml:*:false:-1:0 %1:*a:false:-1:0 %2:*b:false:-1:0 %3:*c:false:-1:0 %4:*d:false:-1:0 %5:*e:false:-1:0
 (238,-2713)cube uid4213 0 0 1 start_x:*-200:false:-1:0 end_x:*200:false:-1:0 start_y:*-200:false:-1:0 end_y:*200:false:-1:0 start_z:*-200:false:-1:0 end_z:*200:false:-1:0
 (369,-2699)to_triangles uid4214 0 0 1 p:*uid4213:false:-1:0
@@ -385,7 +385,7 @@ test
 (188,1638)mn_empty uid26643 0 0 1
 (316,1645)anim_rotate uid26644 0 0 1 next:*uid26643:false:-1:0 start_time:*0:false:-1:0 end_time:*10000:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*628:false:-1:0
 (547,1515)run_window uid26645 0 0 1 ev:*ev:false:-1:0 ml:*uid26642:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
-(42,-4214)bm_url uid18815 0 0 1 url:*http://tpgames.org/qtamo_moonlight.png:false:-1:0
+(42,-4214)bm_url uid18815 0 0 1 url:*http?//meshpage.org/assets/qtamo_moonlight.png:false:-1:0
 (835,-4156)run_window uid19298 0 0 1 ev:*ev:false:-1:0 ml:*uid1490:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
 (703,-4237)move_ml uid19299 0 0 1 ev:*ev:false:-1:0 ml:*uid19303:false:-1:0 mn:*uid19306:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (331,-4008)mn_empty uid19300 0 0 1
@@ -405,12 +405,12 @@ test
 (338,-1301)p_render uid2855 0 0 1 ev:*ev:false:-1:0 p:*uid2854:false:-1:0
 (475,-1299)run_window uid2856 0 0 1 ev:*ev:false:-1:0 ml:*uid2855:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
 (482,-1184)vr_window uid2857 0 0 1 ev:*ev:false:-1:0 ml:*uid2855:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0 invert:*true:false:-1:0 translate:*true:false:-1:0
-(2658,1408)fps_display uid639233296 0 0 1 ev:*ev:false:-1:-1948749152 ml:*uid678:false:-1:0 font:*http://tpgames.org/Chunkfive.otf:false:-1:-1948749152
-(2992,1381)html_window uid1358972107 0 0 1 ev:*ev:false:-1:-1736589344 r:*uid13561:false:-1:0 homepage:*https://tpgames.org/:false:-1:-1736589344
-(2986,1380)html_run uid1069116362 0 0 1 ev:*ev:false:-1:976138096 r:*uid13561:false:-1:0 homepage:*https://tpgames.org/:false:-1:976138096
+(2658,1408)fps_display uid639233296 0 0 1 ev:*ev:false:-1:-1948749152 ml:*uid678:false:-1:0 font:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:-1948749152
+(2992,1381)html_window uid1358972107 0 0 1 ev:*ev:false:-1:-1736589344 r:*uid13561:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:-1736589344
+(2986,1380)html_run uid1069116362 0 0 1 ev:*ev:false:-1:976138096 r:*uid13561:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:976138096
 (3140,1386)save_deploy uid1069116363 0 0 1 h:*uid1069116362:false:-1:0 filename:*gameapi_deploy.zip:false:-1:976138096
 (651,13234)p_render uid746678191 0 0 1 ev:*ev:false:-1:-1578803632 p:*uid746678193:false:-1:0
 (780,13239)print_deps uid746678192 0 0 1 ml:*uid746678191:false:-1:0 num:*10:false:-1:-1578803632
 (517,13227)cube uid746678193 0 0 1 start_x:*-100.0:false:-1:-1578803632 end_x:*100.0:false:-1:-1578803632 start_y:*-100.0:false:-1:-1578803632 end_y:*100.0:false:-1:-1578803632 start_z:*-100.0:false:-1:-1578803632 end_z:*100.0:false:-1:-1578803632
 (2789,1667)ogl_perspective uid761379141 0 0 1 ev:*ev:false:-1:-653570528 ml:*uid678:false:-1:0 mult:*80:false:-1:-653570528 front_plane:*10.1:false:-1:-653570528 end_plane:*60000:false:-1:-653570528
-(128,1465)html_url uid1007937289 0 0 1 url:*http://meshpage.org/assets/blob_p.mp:false:-1:-1639347440
+(128,1465)html_url uid1007937289 0 0 1 url:*http?//meshpage.org/assets/blob_p.mp:false:-1:-1639347440
