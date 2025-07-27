@@ -1367,6 +1367,8 @@ public:
 		
 		if (id==-1) {
 		  std::cout << "Execute failed!" << std::endl;
+		  //display = false;
+		  env->progress_visible=false;
 		  return;
 		}
 		env->codegen_uid = uid;

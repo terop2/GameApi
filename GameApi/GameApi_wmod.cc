@@ -1203,7 +1203,9 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
 		  int val = execute(ev, mod2, id, p, exeenv, level-1,jj);
-		  if (val==-1) return -1;
+		  if (val==-1) {
+		    return -1;
+		  }
 		  std::stringstream sw;
 		  sw << val;
 		  p = sw.str();
@@ -1264,8 +1266,16 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		  return val;
 		}
 	    }
-  std::cout << "EXECUTE FAILED! "<< line->module_name << std::endl;
-
+  std::cout << "EXECUTE FAILED! "<< line->module_name << "(";
+  int s = line->params.size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << line->params[i].param_name << "=" << line->params[i].value;
+      if (i!=s-1) std::cout << ",";
+    }
+  std::cout << ")->??" << std::endl;
+  
+  
 	}
     }
   return -1;

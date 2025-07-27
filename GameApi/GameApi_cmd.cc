@@ -32,6 +32,7 @@ MACRO2(GameApi::ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_em
 MACRO2(GameApi::CFB,ev.float_bitmap_api.X_bitmap(300.0,300.0))
 MACRO2(GameApi::FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20))
 MACRO2(GameApi::PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
+MACRO2(GameApi::IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3));
 #undef MACRO2
 
 
@@ -94,6 +95,7 @@ void funccall_1(std::vector<std::string> &s, GameApi::ExecuteEnv &e, std::vector
 #define MACRO3(lab, funccall) \
   if (s==#lab) { return #funccall; }
 
+
 std::string empty_param(std::string s)
 {
   if (s.size()>1 && s[0]=='[')
@@ -124,6 +126,10 @@ MACRO3(C,ev.curve_api.linear(std::vector<GameApi::PT>()))
 MACRO3(PD,ev.polygon_dist_api.empty(ev))
 MACRO3(WV,ev.waveform_api.wv_empty(1.0))
 MACRO3(ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()));
+MACRO3(CFB,ev.float_bitmap_api.X_bitmap(300.0,300.0))
+MACRO3(FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20))
+MACRO3(PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
+MACRO3(IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3));
  return "@";
 }
 
