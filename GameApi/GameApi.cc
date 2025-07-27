@@ -22331,7 +22331,8 @@ public:
     for(int i=0;i<s;i++) {
       if (del_p_script[i]==this) del_p_script[i]=0;
     }
-    hml->SetCB(&P2_CB,this);
+    if (hml)
+      hml->SetCB(&P2_CB,this);
     coll=0;
   }
     virtual std::string name() const { return "P_script2"; }
@@ -22346,6 +22347,7 @@ public:
     //#endif
     //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    if (hml) {
     hml->Prepare();
     std::string code(hml->script_file());
     code = replace_str(code, "%1", p1);
@@ -22375,6 +22377,7 @@ public:
       //async_taken=false;
 
       return;
+    }
     }
     //#ifdef EMSCRIPTEN
     //if (async_taken)
@@ -22681,7 +22684,8 @@ class ML_script2 : public MainLoopItem
 public:
   ML_script2(GameApi::Env &e, GameApi::EveryApi &ev, Html *hml, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), hml(hml),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
     //e.async_load_callback(url, &ML_cb, this); 
-       hml->SetCB(&ML2_cb,this);
+    if (hml)
+    hml->SetCB(&ML2_cb,this);
 #ifdef EMSCRIPTEN
        //async_pending_count++; async_taken=true;
        //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
@@ -22695,6 +22699,7 @@ public:
     //#endif
     //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     //if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    if (hml) {
     hml->Prepare();
     std::string code(hml->script_file());
     //std::cout << "PREPARE2: " << code << std::endl;
@@ -22736,7 +22741,7 @@ public:
       //#endif
       //async_taken = false;
       //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
-
+    }
   }
   void Collect(CollectVisitor &vis)
   {
