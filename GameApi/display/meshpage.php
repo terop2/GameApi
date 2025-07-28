@@ -1245,6 +1245,52 @@ width="120" height="120" crossorigin/>
 
 </div>
 
+
+<p>
+<div style="padding: 0px;  width: 1324px;">
+<div></div>
+<div itemscope itemtype="http://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<ul>
+<li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
+<li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="http://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
+<li><b>Operating system:</b> <span itemprop="operatingSystem">Linux with wine</span>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
+<div itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating" >
+  <ul>
+  <li>Rating: <span itemprop="ratingValue">5.0</span>
+  <li>RatingCount: <span itemprop="ratingCount">1</span>
+  </ul>
+</div>
+<div itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+  <ul>
+  <li>Price:<span itemprop="price">0.00</span>EUR
+  <meta itemprop="priceCurrency" content="EUR" />
+  </ul>
+</div>
+</ul>
+</div>
+<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="margin: 30px;">
+     (install wine)<br>
+     wine msiexec /i GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi<br>
+     cd ~/.wine/drive_c/Program\ Files\ (x86)/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.0<br>
+     wine gameapi_builder.exe
+</div>
+</div>
+
+
+<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="margin: 15px 50px 15px 50px;">
+<img loading="lazy" src="https://meshpage.org/assets/wine_logo.jpeg"
+width="120" height="120" crossorigin/>
+</div>
+</div>
+
+</div>
+
+
+
+
 <p>
 <div style="padding: 0px;  width: 1324px;">
 <div></div>
