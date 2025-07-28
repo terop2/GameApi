@@ -320,39 +320,39 @@ $(D2Files): objs/%.d2: %.cc
 
 $(OFiles): objs/%.bc : %.cc
 	@echo "  em++  $@"
-	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
 $(DOFiles): objs/%.bc : %.cc
 	@echo "  em++  $@"
-	@$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -c $(CCFLAGS) $(pthread_opts) $< -o $@
 	    
 
 $(OOFiles): objs/%.bc : %.c
 	@echo "  emcc  $@"
-	@$(CCC) -c $(CFLAGS) $(pthread_opts) $< -o $@
+	@$(CCC) -DDEFINE_ALL -c $(CFLAGS) $(pthread_opts) $< -o $@
 
 
 $(O2Files): objs/%.bc : %.cc
 	@echo "  mingw $<"
-	$(CCWIN) -c $(CCFLAGS) $(pthread_opts) $< -o $@
+	$(CCWIN) -DDEFINE_ALL -c $(CCFLAGS) $(pthread_opts) $< -o $@
 
 
 $(OFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  em++  $@"
-	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 $(DOFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  em++  $@"
-	@$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
 $(OOFiles_nothreads): objs/nothreads/%.bc : %.c
 	@echo "  emcc  $@"
-	@$(CCC) -DNO_THREADS -c $(CFLAGS) $< -o $@
+	@$(CCC) -DDEFINE_ALL -DNO_THREADS -c $(CFLAGS) $< -o $@
 
 $(O2Files_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  mingw $<"
-	$(CCWIN) -DNO_THREADS -c $(CCFLAGS) $< -o $@
+	$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $< -o $@
 
 
 glew.o:

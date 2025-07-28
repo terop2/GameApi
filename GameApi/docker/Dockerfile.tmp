@@ -1,4 +1,4 @@
-FROM ubuntu:24.10
+FROM ubuntu:25.04
 # Dependencies for glvnd and X11.
 RUN apt-get update \
   && apt-get install -y -qq --no-install-recommends \
@@ -31,6 +31,7 @@ RUN apt-get update \
     libxdamage1 \
     xdg-utils \
     libu2f-udev \
+    libopencv-dev \
   && rm -rf /var/lib/apt/lists/*
 #RUN apt-get install -y wget
 RUN wget --no-check-certificate https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb

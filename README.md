@@ -178,6 +178,23 @@ Android cmdline: (but requires sdl2 and freetype and libcurl compilation)
   cd cmdline
   LD_LIBRARY_PATH=.. ./gameapi_cmdline --file input_script.txt
   ```
+### ADVANCED -- configuring what parts of the library are included
+
+1) collect all the scripts you want to run with gameapi to script.txt
+   (normal linux cat command can create larger script from smaller pieces)
+
+  ```
+   cat script1.txt script2.txt script3.txt >script.txt
+  ```
+
+2) use builder tool to generate a header file:
+  ```
+  cd editor
+  ./a.out --deps script.txt
+  ```
+This --deps option creates ../GameApi_short_defines.hh file.
+
+Then the library needs full recompilation, and you get libGameApi_small.so file, which contains only the parts needed for running the scripts in (1).
 
 ### License:
 

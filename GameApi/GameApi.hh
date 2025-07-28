@@ -997,6 +997,7 @@ public:
   IMPORT BM rot90(BM orig);
         IMPORT BM alpha_color(BM orig, unsigned int color_key);
   IMPORT BM gradient(PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2, int sx, int sy);
+  IMPORT BM gradient_y(unsigned int color_1, unsigned int color_2, int sx, int sy);
   IMPORT BM radial_gradient(int sx, int sy, PT pos, float r1, float r2, unsigned int color_1, unsigned int color_2);
   IMPORT BM conical_gradient(int sx, int sy, float x, float y, float angle1, float angle2, unsigned int color_1, unsigned int color_2);
   //BM bitmapandtypes(BM bm, BM (*fptr)(int)); // bm has ints in it
@@ -2234,10 +2235,14 @@ class WModApi
 {
 public:
   IMPORT WModApi(Env &e);
+  IMPORT std::string dep_from_function(EveryApi &ev, WM mod2, int id);
+  IMPORT std::string deps_from_mod(EveryApi &ev, WM mod2);
+  IMPORT std::string extract_deps(std::string filename);
+  IMPORT std::string extract_funcname(std::string line);
   IMPORT void dump_functions_for_docs(GameApi::EveryApi &ev, int i);
   IMPORT int dump_functions_count();
   IMPORT std::string dump_functions(GameApi::EveryApi &ev, int i);
-  IMPORT WM load(std::string filename);
+  IMPORT WM load(EveryApi &ev, std::string filename);
   IMPORT void save(WM mod, std::string ilename);
   IMPORT void insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gui, W canvas, WM mod, int id, FtA font, BM font_bm, std::vector<W> &connect_clicks, std::vector<W> &params, std::vector<W> &diaplay_clicks, std::vector<W> &edit_clicks, std::vector<W> &delete_key, std::vector<W> &codegen_button, std::vector<W> &popup_open, void (*fptr)(void*), void *data);
   IMPORT void update_lines_from_canvas(W canvas, WM mod, int id);

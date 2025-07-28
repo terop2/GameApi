@@ -5,6 +5,7 @@
 #endif
 
 #include "GameApi_low.hh"
+#include "GameApi_cmd.hh"
 #include <atomic>
 #include <iostream>
 #include <queue>
@@ -2322,9 +2323,9 @@ GameApi::ARR GameApi::PolygonApi::comb_mat(GameApi::EveryApi &ev, std::vector<MT
   return add_array(e,array);
 
 }
-
 GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
 {
+#if (FEATURE_GLTF==1)
   FaceCollection *coll = find_facecoll(e,p);
   coll->Prepare();
 #ifndef EMSCRIPTEN
@@ -2360,9 +2361,9 @@ GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
     array->vec.push_back(m.id);
   }
   return add_array(e,array);
+#endif
   
 }
-
 
 GameApi::ARR GameApi::PolygonApi::p_mtl2_materials(GameApi::EveryApi &ev, P p)
 {
@@ -26836,6 +26837,7 @@ GameApi::ML GameApi::PolygonApi::fade_pic(GameApi::EveryApi &ev, BM bm1, float s
 }
 
 #ifdef USE_VIDEO
+#if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
@@ -26848,7 +26850,15 @@ class VideoSource : public TextureID, public CollectInterface
 public:
   VideoSource(GameApi::Env &e, std::string filename, int sx, int sy) : e(e), sx(sx),sy(sy), filename(filename) {
     ref=BufferRef::NewBuffer(sx,sy);    
+    Random r;
+    float val = double(r.next())/r.maximum();
+    float val2 = val*10000.0;
+    int val3 = (int)val2;
 
+    std::stringstream ss;
+    ss << val3;
+    id = ss.str();
+    
     //std::cout << "WARNING: Video support doesn't work in emscripten" << std::endl;
   }
   virtual void Collect(CollectVisitor &vis) {
@@ -26878,14 +26888,14 @@ public:
     home = ".";
     path = "/";
 #endif
-    std::ofstream ss((home + path + "video.mp4")
+    std::ofstream ss((home + path + "video"+id+".mp4")
 		     .c_str(),std::ios_base::out|std::ios_base::binary);
     std::string ss2(ptr->begin(),ptr->end());
     ss << ss2;
     ss.close();
 
     
-    cap = cv::VideoCapture(home + path + "video.mp4");
+    cap = cv::VideoCapture(home + path + "video"+id+".mp4");
     }
   }
   
@@ -26900,7 +26910,7 @@ public:
     else
       {
    std::string home = getenv("HOME");
- 	cap = cv::VideoCapture(home+"/.gameapi_builder/video.mp4");
+ 	cap = cv::VideoCapture(home+"/.gameapi_builder/video"+id+".mp4");
 	
 	cap.grab();
 	cap.retrieve(frame);
@@ -26961,6 +26971,11 @@ public:
 	{
 	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
 	}
+    //for(int y=0;y<sy;y++)
+    //  for(int x=0;x<sx/2;x++)
+    //	{
+    //	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
+    //	}
 
     
 #ifndef EMSCRIPTEN
@@ -26997,6 +27012,7 @@ private:
   unsigned int tex;
   BufferRef ref;
   bool firsttime = true;
+  std::string id;
 };
 void *writer(void* ptr)
 {
@@ -27004,20 +27020,26 @@ void *writer(void* ptr)
   src->Prepare2();
   return 0;
 }
+#endif
 
 IMPORT bool file_exists(std::string s);
+
+
+#if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
 
 bool exists(const cv::String &path)
 {
   std::string s = path;
   return file_exists(s);
 }
-
+#endif
 
 
 GameApi::TXID GameApi::BitmapApi::video_source(std::string filename, int sx, int sy)
 {
+#if (ALL==1)||(VIDEOFILE_TXID_GENERIC==1)
   return add_txid(e,new VideoSource(e,filename,sx,sy));
+#endif
 }
 #endif
 

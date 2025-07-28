@@ -66,7 +66,19 @@ endif
 
 LDFLAGS= $(SDL_MIXER_PKGCONFIG) $(GLEW_PKGCONFIG) $(FREETYPE_PKGCONFIG) $(OPENCV_PKGCONFIG)
 
-CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc GameApi_gltf.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc GameApi.cc \
+CMDFiles = GameApi.cc GameApi_gltf.cc GameApi_vo.cc GameApi_vx.cc GameApi_pl.cc	GameApi_cmd_move.cc \
+	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
+	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
+	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
+	GameApi_cmd_cvolume.cc       GameApi_cmd_polygon2.cc \
+	GameApi_cmd_fbitmap.cc       GameApi_cmd_polygon.cc \
+	GameApi_cmd_font.cc          GameApi_cmd_framebuffer.cc \
+	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
+	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
+	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
+	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc
+
+CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_dep_arr_render.cc GameApi_gui.cc  GameApi2.cc GameApi_diag.cc Pieces.cc Map.cc VectorTools.cc Effect.cc Buffer.cc GameApi_main.cc \
 	Intersect.cc Bitmap.cc Effect2.cc Shader.cc VolumeObjects.cc \
 	Tree.cc Event.cc ObjectCreator.cc IntersectObject.cc Graph.cc \
 	Widgets.cc Category.cc Plane.cc Coordinates.cc Triangle.cc Game.cc \
@@ -79,24 +91,13 @@ CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_
 	GameApi_fnt.cc GameApi_gr.cc  \
         GameApi_lay.cc \
 	GameApi_li.cc GameApi_mx.cc GameApi_pc.cc \
-	GameApi_phy.cc GameApi_pla.cc GameApi_pl.cc GameApi_pt.cc \
+	GameApi_phy.cc GameApi_pla.cc GameApi_pt.cc \
 	GameApi_pts.cc GameApi_sh.cc GameApi_shm.cc GameApi_sm.cc \
         GameApi_spa.cc GameApi_sp.cc GameApi_st.cc GameApi_su.cc \
         GameApi_tex.cc GameApi_tr.cc GameApi_trk.cc GameApi_tx.cc \
-        GameApi_vbo.cc GameApi_ve.cc GameApi_vo.cc GameApi_wmod.cc \
-        GameApi_wv.cc GameApi_vx.cc GameApi_cut.cc GameApi_in.cc \
+        GameApi_vbo.cc GameApi_ve.cc GameApi_wmod.cc \
+        GameApi_wv.cc GameApi_cut.cc GameApi_in.cc \
 	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc \
-	GameApi_cmd_move.cc \
-	GameApi_cmd_bbitmap.cc       GameApi_cmd_pdfield.cc \
-	GameApi_cmd_bitmap.cc        GameApi_cmd_point.cc \
-	GameApi_cmd_booleanops.cc    GameApi_cmd_points.cc \
-	GameApi_cmd_cvolume.cc       GameApi_cmd_polygon2.cc \
-	GameApi_cmd_fbitmap.cc       GameApi_cmd_polygon.cc \
-	GameApi_cmd_font.cc          GameApi_cmd_framebuffer.cc \
-	GameApi_cmd_texture.cc GameApi_cmd_fvolume.cc \
-	GameApi_cmd_lines.cc         GameApi_cmd_vector.cc \
-	GameApi_cmd_mainloop.cc      GameApi_cmd_volume.cc \
-	GameApi_cmd_material.cc      GameApi_cmd_waveform.cc GameApi_cmd_shader.cc \
 	GameApi_cmd.cc cpushader.cc \
 draco/attributes/attribute_octahedron_transform.cc    draco/attributes/geometry_attribute.cc \
 draco/attributes/attribute_quantization_transform.cc  draco/attributes/point_attribute.cc \
@@ -167,6 +168,9 @@ Subdirs =
 #module1
 
 OFiles = $(patsubst %.cc,objs/%.o,$(CFiles) $(CFiles2))
+CMDOFiles = $(patsubst %.cc,objs/%.o,$(CMDFiles))
+CMDOFiles2 = $(patsubst %.cc,objs/%.o,$(CMDFiles))
+CMDOFiles2a = $(patsubst %.cc,objs/%_2.o,$(CMDFiles))
 O2Files = $(patsubst %.cc,objs/%.obj,$(CFiles) $(CFiles2))
 DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2)) 
 D2Files = $(patsubst %.cc,objs/%.d2,$(CFiles) $(CFiles2)) 
@@ -175,13 +179,13 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
-WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct
+WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct -Wno-deprecated-enum-enum-conversion
 
 #-fsanitize=undefined -fsanitize-recover=undefined
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
-CCFLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -O2 -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -DGAMEAPI_EXPORTS
-CC2FLAGS = $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -O2 -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -DGAMEAPI_EXPORTS
+CCFLAGS =  -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CC2FLAGS =  -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
 #`pkg-config gtkmm-2.4 --cflags`
 
 BD_CALVIN_M64=
@@ -265,9 +269,14 @@ dirs:
 	@mkdir -p objs/draco/metadata
 
 
-libGameApi.so: $(OFiles) Makefile
+libGameApi.so: $(OFiles) $(CMDOFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@$(CC) -ggdb $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client 
+	@$(CC) -DDEFINE_ALL -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client 
+
+#libGameApi_small.so: $(OFiles) $(CMDOFiles2a) Makefile
+#	@echo "  LD     libGameApi_small.so"
+#	@$(CC) -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles2a) -std=c++20 -o libGameApi_small.so  $(LDFLAGS) -lstdc++ -lwayland-client 
+
 
 .PHONY: dirs
 
@@ -306,6 +315,15 @@ editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
 	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
+
+$(CMDOFiles): objs/%.o : %.cc
+	@echo "  CC     $@"
+	@$(CC) -DDEFINE_ALL -std=c++20 -g -c $(CCFLAGS) $< -o $@
+
+$(CMDOFiles2a): objs/%_2.o : %.cc
+	@echo "  CC     $@"
+	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
+
 
 touch_all:
 	touch GameApi_gui_1.cc

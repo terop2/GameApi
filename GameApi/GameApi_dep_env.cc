@@ -1185,7 +1185,9 @@ EXPORT void GameApi::Env::async_load_url(std::string url, std::string homepage, 
 }
 EXPORT void GameApi::Env::async_load_all_urls(std::vector<std::string> urls, std::string homepage)
 {
+  if (!envimpl) return;
   ::EnvImpl *env = (::EnvImpl*)envimpl;
+  if (!env) return;
   env->async_loader->load_all_urls(urls, homepage);
 
 }
@@ -3705,6 +3707,7 @@ void remove_spaces(std::string &s)
 
 IMPORT void send_post_request(std::string url, std::string headers, std::string data)
 {
+  std::cout << "POST REQUEST: " << url << " with headers " << headers << " with data: " << data << std::endl;
 #ifndef EMSCRIPTEN
 #ifdef WINDOWS
   remove_spaces(data);

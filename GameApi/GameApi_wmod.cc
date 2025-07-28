@@ -2,9 +2,24 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 
+std::string deploy_replace_string(std::string res, std::string subst, std::string repl);
+
+bool is_hexify(std::string s)
+{
+  int ss = s.size();
+  if (ss>0&&s[0]=='*') return false;
+  if (ss%1==0) {
+  for(int i=0;i<ss;i++)
+    {
+      if (!((s[i]>='0' && s[i]<='9')||(s[i]>='A'&&s[i]<='F'))) return false; 
+    }
+  return true;
+  } else return false;
+}
 
 std::string hexify(std::string s)
 {
+#if 0
   std::string res;
   int ss = s.size();
   for(int i=0;i<ss;i++)
@@ -17,11 +32,24 @@ std::string hexify(std::string s)
       res+=chrs[c3];
       res+=chrs[c2];
     }
-  return res;
+#endif
+  std::string res;
+  res+="*";
+  int ss = s.size();
+    for(int i=0;i<ss;i++) {
+      if (s[i]==' ') s[i]='#';
+      if (s[i]==':') s[i]='?';
+      res+=s[i];
+    }
+   
+    return res;
+
+    //return res;
 }
 std::string unhexify(std::string s)
 {
   std::string res;
+  if (is_hexify(s)) {  
   int ss = s.size();
   for(int i=0;i<ss;i+=2)
     {
@@ -37,6 +65,18 @@ std::string unhexify(std::string s)
 	}
       res+=char((val<<4) + val2);
     }
+  } else {
+    std::string res;
+    int ss = s.size();
+    for(int i=1;i<ss;i++) {
+      if (s[i]=='#') s[i]=' ';
+      if (s[i]=='?') s[i]=':';
+      res+=s[i];
+    }
+    res = deploy_replace_string(res,"tpgames.org","meshpage.org/assets");
+    return res;
+  }
+  res = deploy_replace_string(res,"tpgames.org","meshpage.org/assets");
   return res;
 }
 
@@ -44,7 +84,61 @@ std::string unhexify(std::string s)
 std::vector<GameApiItem*> all_functions(GameApi::EveryApi &ev);
 
 
-GameApiModule load_gameapi(std::string filename)
+void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
+{
+    static std::vector<GameApiItem*> functions = all_functions(ev);
+    
+
+    int s = functions.size();
+    int res = -1;
+    GameApiItem *resitem = 0;
+    for(int i=0;i<s;i++)
+      {
+	GameApiItem *item = functions[i];
+	if (item->Name(0)==line.module_name)
+	  {
+	    res=i; resitem = item; break;
+	  }
+      }
+    if (!resitem) { std::cout << "Warning: module " << line.module_name << " not found" << std::endl; return; }
+    if (res==-1) { std::cout << "Warning: module " << line.module_name << " not found" << std::endl; return; }
+    
+    int pcount = resitem->ParamCount(0);
+    std::vector<GameApiParam> res_params;
+    for(int i=0;i<pcount;i++)
+      {
+	GameApiParam p_res;
+	std::string paramname = resitem->ParamName(0,i);
+	std::string def = resitem->ParamDefault(0,i);
+	int ppcount = line.params.size();
+	int jj = -1;
+	for(int j=0;j<ppcount;j++)
+	  {
+	    if (paramname==line.params[j].param_name)
+	      {
+		def = line.params[j].value;
+		jj=j;
+	      }
+	  }
+	if (jj==-1) { std::cout << "Warning: parameter " << paramname << " not found in " << line.module_name << std::endl; }
+	p_res.param_name = paramname;
+	p_res.value = def;
+	std::string ret = resitem->ReturnType(0);
+	p_res.is_array = ret.size()>0&&ret[0]=='['&&ret[ret.size()-1]==']'?true:false;
+	if (jj!=-1)
+	  p_res.array_return_target = line.params[jj].array_return_target;
+	else
+	  p_res.array_return_target=NULL;
+	if (jj!=-1)
+	  p_res.j = line.params[jj].j;
+	else
+	  p_res.j = 0;
+	res_params.push_back(p_res);
+      }
+    line.params=res_params;
+}
+
+GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 {
   GameApiModule mod;
   std::ifstream ss(filename.c_str());
@@ -149,6 +243,7 @@ GameApiModule load_gameapi(std::string filename)
 	      //std::cout << "PARAMS: " << j << std::endl;
 	      g_line.params.push_back(p);
 	    }
+	  fill_gline(ev,g_line);
 	  f.lines.push_back(g_line);
 	} 
       mod.funcs.push_back(f);
@@ -217,9 +312,9 @@ EXPORT void GameApi::WModApi::save(GameApi::WM wm, std::string filename)
   save_gameapi(*mod, filename);
 }
 
-EXPORT GameApi::WM GameApi::WModApi::load(std::string filename)
+EXPORT GameApi::WM GameApi::WModApi::load(GameApi::EveryApi &ev, std::string filename)
 {
-  GameApiModule mod = load_gameapi(filename);
+  GameApiModule mod = load_gameapi(ev, filename);
   GameApiModule *mod2 = new GameApiModule(mod);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
 
@@ -325,6 +420,9 @@ EXPORT void GameApi::WModApi::update_lines_from_canvas(W canvas, WM mod2, int id
       line->y = int(pos.y-canvas_pos.y);
     }
 }
+
+
+
 
 EXPORT std::vector<int> GameApi::WModApi::indexes_from_funcname(GameApi::EveryApi &ev, std::string func_name)
 {
@@ -459,6 +557,39 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
     }
   return res;  
 }
+
+std::string to_upper(std::string s)
+{
+  int ss = s.size();
+  for(int i=0;i<ss;i++)
+    s[i]=std::toupper(s[i]);
+  return s;
+}
+
+EXPORT std::string GameApi::WModApi::dep_from_function(EveryApi &ev, WM mod2, int id)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+  std::string name = func->function_name;
+  return to_upper(name);
+}
+
+EXPORT std::string GameApi::WModApi::deps_from_mod(EveryApi &ev, WM mod2)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  int s = mod->funcs.size();
+  std::string res;
+  for(int i=0;i<s;i++)
+    {
+      res+=dep_from_function(ev,mod2,i) + "\n";
+      std::cout << dep_from_function(ev,mod2,i) << std::endl;
+    }
+  return res;
+}
+
+
 EXPORT std::vector<std::string*> GameApi::WModApi::refs_from_function(GameApi::EveryApi &ev, WM mod2, int id, std::string funcname)
 {
   //std::cout << "refs_from_function: " << funcname << std::endl;
@@ -837,6 +968,40 @@ std::string find_codegen(int id, std::string line_uid, bool &success)
   return "";
 }
     
+EXPORT std::string GameApi::WModApi::extract_funcname(std::string line)
+{
+  int s = line.size();
+  int count=0;
+  int start=-1,end=-1;
+  for(int i=0;i<s;i++)
+    {
+      if (line[i]=='.') {
+	count++;
+	if (count==2) start=i+1;
+      }
+      if (line[i]=='(') { end=i; break; }
+    }
+  if (start==-1||end==-1) return "";
+  return line.substr(start,end-start);
+}
+
+EXPORT std::string GameApi::WModApi::extract_deps(std::string filename)
+{
+  std::ifstream ss(filename.c_str());
+  std::string line;
+  std::string res;
+  while(std::getline(ss,line))
+    {
+      std::string funcname = extract_funcname(line);
+      if (funcname!="")
+	{
+	  res+=std::string("#define ")+to_upper(funcname)+" 1\n";
+	}
+    }
+  return res;
+}
+
+
 
 EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j)
 {
@@ -1078,7 +1243,9 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      if (p.size()>3 && p[0]=='u' && p[1] == 'i' && p[2] =='d')
 		{
 		  int val = execute(ev, mod2, id, p, exeenv, level-1,jj);
-		  if (val==-1) return -1;
+		  if (val==-1) {
+		    return -1;
+		  }
 		  std::stringstream sw;
 		  sw << val;
 		  p = sw.str();
@@ -1139,8 +1306,16 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		  return val;
 		}
 	    }
-  std::cout << "EXECUTE FAILED! "<< line->module_name << std::endl;
-
+  std::cout << "EXECUTE FAILED! "<< line->module_name << "(";
+  int s = line->params.size();
+  for(int i=0;i<s;i++)
+    {
+      std::cout << line->params[i].param_name << "=" << line->params[i].value;
+      if (i!=s-1) std::cout << ",";
+    }
+  std::cout << ")->??" << std::endl;
+  
+  
 	}
     }
   return -1;
