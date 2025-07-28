@@ -1,6 +1,9 @@
 
 #include "GameApi_h.hh"
 #include "GameApi_vo.hh"
+#include "GameApi_cmd.hh"
+
+#if (FEATURE_VOXEL==1)
 
 class VoxelFunction : public Voxel<unsigned int>
 {
@@ -314,3 +317,6 @@ EXPORT GameApi::BM GameApi::VoxelApi::sw_rays(O volume, VX colours, int sx, int 
   return add_color_bitmap(e, bm);
 }
 #endif
+
+
+#endif // FEATURE_VOXEL==1

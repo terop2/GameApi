@@ -7,8 +7,9 @@
 
 class WebCamBufferRefTexID : public TextureID
 {
-public:
+public: // THIS IS STRANGE CLASS AS IT DELETES ITS seq PARAMETER.
   WebCamBufferRefTexID(GameApi::EveryApi &ev, BufferRefReq &seq) : ev(ev), seq(seq) { id.id=0; }
+  ~WebCamBufferRefTexID() { delete &seq; } 
   void handle_event(MainLoopEvent &e) {
   }
   void render(MainLoopEnv &e) {
@@ -405,13 +406,26 @@ public:
   }
   ~LinuxCapture()
   {
+      std::cout << "Stopping webcam...(try)" << std::endl;
     if (init_done) {
+      std::cout << "Stopping webcam..." << std::endl;
+      int type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+      ioctl(fd, VIDIOC_STREAMOFF, &type);
+
+
+    struct v4l2_requestbuffers req = {0};
+    req.count = 0;
+    req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    req.memory = V4L2_MEMORY_MMAP;
+    ioctl(fd, VIDIOC_REQBUFS, &req);
+      
       munmap(buffer,buf.length);
       close(fd);
     }
   }
   void initCapture(int num) const
   {
+    std::cout << "Starting webcam.." << std::endl;
     const char* dev_name = "/dev/video0";
     fd = open(dev_name, O_RDWR);
     if (fd == -1) {
@@ -893,11 +907,16 @@ private:
 
 EM_JS(void, webcam_cleanup, (void), {
     var video = document.getElementById('webcam');
-    video.id = 'oldwebcam';
+    if (video !== null) {
+    video.setAttribute('id','oldwebcam');
+		      
     video.remove();
+    }
     var video2 = document.getElementById('webcamCanvas');
-    video2.id = 'oldwebcamCanvas';
+    if (video2 !== null) {
+    video2.setAttribute('id','oldwebcamCanvas');
     video2.remove();
+    }
   });
 
 EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
@@ -1007,11 +1026,11 @@ public:
 	{
 	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+x+(ref.height-y-1)*ref.ydelta));
 	}
-    for(int y=0;y<sy;y++)
-      for(int x=0;x<sx/2;x++)
-	{
-	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
-	}
+    //for(int y=0;y<sy;y++)
+    //  for(int x=0;x<sx/2;x++)
+    //	{
+    //	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
+    //	}
 
   }
   void Gen() const { }

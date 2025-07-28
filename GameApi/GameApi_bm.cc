@@ -224,6 +224,31 @@ EXPORT GameApi::BM GameApi::BitmapApi::color_range(BM orig, unsigned int source_
   return bm;
 
 }
+
+class GradientBitmap3 : public Bitmap<Color>
+{
+public:
+  GradientBitmap3(unsigned int y_0_color, unsigned int y_end_color, int sx, int sy) : y_0_color(y_0_color), y_end_color(y_end_color), sx(sx), sy(sy) {
+    delta_y = 1.0/float(sy);
+  }
+
+  void Collect(CollectVisitor &vis)
+  {
+  }
+  void HeavyPrepare() { }
+  void Prepare() { }
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual Color Map(int x, int y) const
+  {
+    return Color::Interpolate(y_0_color, y_end_color, delta_y*float(y));
+  }
+private:
+  float delta_y =0.0;
+  unsigned int y_0_color, y_end_color;
+  int sx, sy;
+};
+
 class GradientBitmap2 : public Bitmap<Color>
 {
 public:
@@ -281,6 +306,12 @@ EXPORT GameApi::BM GameApi::BitmapApi::gradient(PT pos_1, PT pos_2, unsigned int
   Point2d pos_2b = { pos_2a->x, pos_2a->y };
   return add_color_bitmap2(e, new GradientBitmap2(pos_1b, pos_2b, color_1, color_2, sx,sy));
 }
+
+EXPORT GameApi::BM GameApi::BitmapApi::gradient_y(unsigned int color_1, unsigned int color_2, int sx, int sy)
+{
+  return add_color_bitmap(e, new GradientBitmap3(color_1, color_2, sx, sy));
+}
+
 
 #if 0
 class RadialGradient : public Bitmap<Color>

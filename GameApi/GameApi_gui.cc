@@ -2952,11 +2952,11 @@ public:
     if (move_ongoing && button==-1)
       {
 	move_ongoing = false;
-	if (fptr_enabled) fptr(data);
+	//if (fptr_enabled) fptr(data);
       }
     size = vec[0]->get_size();
   }
-  void set_cb(void (*p_fptr)(void*),void* p_data) { fptr_enabled=true; fptr=p_fptr; data=p_data; }
+  void set_cb(void (*p_fptr)(void*),void* p_data) { /*fptr_enabled=true; fptr=p_fptr; data=p_data;*/ }
   int chosen_item() const { return vec[0]->chosen_item(); }
 private:
   int area_x, area_y;
@@ -2965,8 +2965,8 @@ private:
   Point2d old_pos;
   Point2d old_mouse;
   bool fptr_enabled;
-  void (*fptr)(void*);
-  void *data;
+  //void (*fptr)(void*);
+  //void *data;
 };
 void set_mouse_move_cb(GuiWidget *w, void (*fptr)(void*), void*data)
 {
@@ -5364,7 +5364,7 @@ private:
 EXPORT GameApi::W GameApi::GuiApi::gradient(int sx, int sy, PT pos_1, PT pos_2, unsigned int color_1, unsigned int color_2)
 {
   //color_2 = color_1;
-  BM bm = ev.bitmap_api.gradient(pos_1, pos_2, color_1, color_2, sx, sy);
+  BM bm = ev.bitmap_api.gradient_y(/*pos_1, pos_2,*/ color_1, color_2, sx, sy);
   int key = color_1+color_2;
   return icon_shared(bm,key);
 }
@@ -5403,7 +5403,7 @@ EXPORT GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, 
 
       PT pt1 = ev.point_api.point(0.0, 0.0, 0.0);
   PT pt2 = ev.point_api.point(0.0, sy, 0.0);
-  BM w = ev.bitmap_api.gradient(pt1, pt2, color_1, color_2, sx,sy);
+  BM w = ev.bitmap_api.gradient_y(/*pt1, pt2,*/ color_1, color_2, sx,sy);
   unsigned int color_1L = color_1;
   unsigned int color_2L = color_2;
 #if 1
@@ -5418,7 +5418,7 @@ EXPORT GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, 
   ptr2[2] = (unsigned char) (float(ptr2[2])*0.8);
   ptr2[3] = (unsigned char) (float(ptr2[3])*0.8);
 #endif
-  BM w2 = ev.bitmap_api.gradient(pt1, pt2, color_1L, color_2L,sx,sy);
+  BM w2 = ev.bitmap_api.gradient_y(/*pt1, pt2,*/ color_1L, color_2L,sx,sy);
 
   unsigned int color_1D = color_1;
   unsigned int color_2D = color_2;
@@ -5434,7 +5434,7 @@ EXPORT GameApi::W GameApi::GuiApi::button(int sx, int sy, unsigned int color_1, 
   ptr2D[2] = (unsigned char) (float(ptr2D[2])*0.6);
   ptr2D[3] = (unsigned char) (float(ptr2D[3])*0.6);
 #endif
-  BM w3 = ev.bitmap_api.gradient(pt1, pt2, color_1D, color_2D,sx,sy);
+  BM w3 = ev.bitmap_api.gradient_y(/*pt1, pt2,*/ color_1D, color_2D,sx,sy);
 
   BB mask_0 = ev.bool_bitmap_api.bb_empty(sx,sy);
   BB mask_0a = ev.bool_bitmap_api.rectangle(mask_0, 0.0, 0.0, float(sx), 2.0);

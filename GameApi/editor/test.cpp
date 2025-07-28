@@ -1352,6 +1352,7 @@ public:
 		}
 		    
 		static int g_id = -1;
+		//std::cout << "ClearBlock" << std::endl;
 		if (g_id!=-1) clear_block(g_id);
 		g_id = add_block();
 		set_current_block(g_id);
@@ -1366,6 +1367,8 @@ public:
 		
 		if (id==-1) {
 		  std::cout << "Execute failed!" << std::endl;
+		  //display = false;
+		  env->progress_visible=false;
 		  return;
 		}
 		env->codegen_uid = uid;
@@ -1468,7 +1471,32 @@ public:
 			  //env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  
-			} else
+			} else if (type=="TX") {
+			  TX id1;
+			  id1.id = id;
+			  TXID id2=env->ev->texture_api.prepare(id1);			    
+			    P I1=env->ev->polygon_api.fullscreen_quad(*env->ev);
+			    MT I2=env->ev->materials_api.textureid(*env->ev,id2,1.0);
+			    ML ml=env->ev->materials_api.bind(I1,I2);
+
+			      env->env->free_temp_memory();
+			      env->gui->delete_widget(env->mem);
+			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+
+			}
+			else if (type=="TXID")
+			  {
+			    TXID id2;
+			    id2.id = id;
+			    P I1=env->ev->polygon_api.fullscreen_quad(*env->ev);
+			    MT I2=env->ev->materials_api.textureid(*env->ev,id2,1.0);
+			    ML ml=env->ev->materials_api.bind(I1,I2);
+
+			      env->env->free_temp_memory();
+			      env->gui->delete_widget(env->mem);
+			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
+			  }
+			else
 			  if (type=="ML")
 			    {
 			      ML ml;
@@ -1553,6 +1581,7 @@ public:
 					env->ev->shader_api.use(env->sh);
 					env->ev->tracker_api.stop_music_playing();
 					//}
+		     
 				      display = false;
 				    }
 				  else
@@ -2536,7 +2565,7 @@ public:
 	  }
 	
 
-	mod = ev.mod_api.load(filename);
+	mod = ev.mod_api.load(ev,filename);
 	
 		break;
 	 }
@@ -3671,6 +3700,16 @@ int main(int argc, char *argv[]) {
 		filename = std::string(argv[i+1]);
 		filenames.push_back(filename);
 		i++;
+	      }
+	    if (std::string(argv[i])=="--dep")
+	      {
+		std::string filename = std::string(argv[i+1]);
+		i++;
+		std::string res = ev.mod_api.extract_deps(filename);
+		std::ofstream ss("../GameApi_short_defines.hh");
+		ss << res << std::endl;
+		ss.close();
+		exit(0);
 	      }
 	    if (std::string(argv[i])=="--tempdir")
 	      {

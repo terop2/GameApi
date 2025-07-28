@@ -1,5 +1,41 @@
 
 
+#ifdef DEFINE_ALL
+#define FEATURE_GLTF 1
+#define FEATURE_VOXEL 1
+#define FEATURE_VOLUME 1
+#else
+#define FEATURE_GLTF 1
+#define FEATURE_VOXEL 1
+#define FEATURE_VOLUME 1
+#endif
+#define FEATURE_FONT 1
+#define FEATURE_MATERIAL 1
+#define FEATURE_FRAMEBUFFER 1
+#define FEATURE_PTS 1
+#define FEATURE_WAVEFORM 1
+#define FEATURE_GUI 1
+#define FEATURE_BOOLEANOPS 1
+#define FEATURE_OGL_SETUP 1
+
+#ifdef DEFINE_ALL
+#define ALL 1
+#else
+#include "GameApi_short_defines.hh"
+#endif
+
+
+
+
+#if (NEWSHADOW2_GLTF==1)||(GLTF_NEWSHADOW2==1)
+#define FEATURE_GLTF 1
+#endif
+#if (SPHERE_BO==1)||(OR_ELEM_BO==1)||(INTERSECT_BO==1)||(CUBE_BO==1)||(FD_MIN==1)
+#define FEATURE_VOLUME 1
+#endif
+
+
+
 int ret_type_count(std::string s);
 struct DelApiItemF
 {
@@ -18,7 +54,9 @@ void set_empty(GameApi::EveryApi &ev, T &t) { t.id=0; }
   void set_empty(GameApi::EveryApi&ev,lab &l);
 
 MACRO2(GameApi::BM,ev.bitmap_api.newbitmap(10,10,0x00000000))
+#if (FEATURE_VOLUME==1)
 MACRO2(GameApi::FD,ev.dist_api.fd_cube(0.0,0.0,0.0,0.0,0.0,0.0))
+#endif
 MACRO2(GameApi::BO,ev.bool_api.cube_bo(ev,0.0,0.0,0.0,0.0,0.0,0.0,1,1))
 MACRO2(GameApi::BB,ev.bool_bitmap_api.bb_empty(10,10))
 MACRO2(GameApi::FB,ev.float_bitmap_api.fb_empty(10,10))
@@ -40,6 +78,10 @@ MACRO2(GameApi::WV,ev.waveform_api.wv_empty(1.0))
 MACRO2(GameApi::ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()))
 MACRO2(GameApi::CFB,ev.float_bitmap_api.X_bitmap(300.0,300.0))
 MACRO2(GameApi::FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20))
+MACRO2(GameApi::HML,ev.mainloop_api.html_url("https://meshpage.org/assets/empty_hml.mp"))
+MACRO2(GameApi::PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
+MACRO2(GameApi::IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3))
+MACRO2(GameApi::TF,ev.mainloop_api.gltf_loadKK2("https://meshpage.org/assets/test.glb"))
 #undef MACRO2
 
 std::string empty_param(std::string s);  
@@ -580,7 +622,4 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
   g_api_item_deleter.items.push_back(item);
   return item;
 }
-
-
-
 
