@@ -19,6 +19,9 @@ RUN apt-get update \
     zip \
     wget \
     ca-certificates \
+    ffmpeg \
+    libsm6 \
+    libxrender-dev \
     fonts-liberation \
     libatk1.0-0 \
     libcairo2 \

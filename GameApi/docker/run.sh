@@ -19,6 +19,7 @@ sudo docker run \
     --device /dev/nvidia-modeset \
     --device /dev/nvidia-uvm \
     --device /dev/nvidia-uvm-tools \
+    --device /dev/video0 \
     --security-opt=no-new-privileges \
     --group-add video \
      builder-test \
