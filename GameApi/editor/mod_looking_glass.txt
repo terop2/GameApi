@@ -14,7 +14,7 @@ test
 (731,552)mn_translate uid14953 0 0 1 next:*uid14954:false:-1:0 dx:*0:false:-1:0 dy:*420:false:-1:0 dz:*0:false:-1:0
 (582,591)mn_scale uid14954 0 0 1 next:*uid14952:false:-1:0 sx:*10:false:-1:0 sy:*10:false:-1:0 sz:*10:false:-1:0
 (300,1948)sphere uid18529 0 0 1 center:*uid18530:false:-1:0 radius:*100.0:false:-1:0 numfaces1:*30:false:-1:0 numfaces2:*30:false:-1:0
-(158,1950)point uid18530 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
+(157,1950)point uid18530 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (455,1994)m_bind uid18531 0 0 1 p:*uid18529:false:-1:0 mat:*uid18532:false:-1:0
 (324,2072)m_phong uid18532 0 0 1 ev:*ev:false:-1:0 nxt:*uid18533:false:-1:0 light_dir_x:*-0.3:false:-1:0 light_dir_y:*0.3:false:-1:0 light_dir_z:*-1.0:false:-1:0 ambient:*ffff8800:false:-1:0 highlight:*ff666666:false:-1:0 pow:*15.0:false:-1:0
 (173,2083)m_def uid18533 0 0 1 ev:*ev:false:-1:0

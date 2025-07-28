@@ -617,6 +617,7 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_linux(EveryApi &ev, int sx, int s
 #include <mfapi.h>
 #include <mfobjects.h>
 #include <mfidl.h>
+#include <mferror.h>
 #include <objbase.h>
 
 #pragma comment(lib, "mfplat.lib")
@@ -760,7 +761,7 @@ public:
       PropVariantInit(&var);
       var.vt = VT_I8;
       var.hVal.QuadPart = 0;
-      hr = pSourceReader->SetCurrentPosition(GUID_NULL, var);
+      hr = reader->SetCurrentPosition(GUID_NULL, var);
       check(hr,"setcurrentposition");
     }
 
