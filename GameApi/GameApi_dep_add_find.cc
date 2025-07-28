@@ -1613,7 +1613,10 @@ DynMainLoop *find_dyn(GameApi::Env &e, GameApi::D d)
 IMPORT Html *find_html(GameApi::Env &e, GameApi::HML u)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
-  return env->html[u.id];
+  if (u.id>=0&&u.id<env->html.size())
+    return env->html[u.id];
+  else
+    return 0;
 }
 
 Fetcher<FaceID> *find_uv(GameApi::Env &e, GameApi::UV u)

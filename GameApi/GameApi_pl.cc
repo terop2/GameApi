@@ -26850,7 +26850,15 @@ class VideoSource : public TextureID, public CollectInterface
 public:
   VideoSource(GameApi::Env &e, std::string filename, int sx, int sy) : e(e), sx(sx),sy(sy), filename(filename) {
     ref=BufferRef::NewBuffer(sx,sy);    
+    Random r;
+    float val = double(r.next())/r.maximum();
+    float val2 = val*10000.0;
+    int val3 = (int)val2;
 
+    std::stringstream ss;
+    ss << val3;
+    id = ss.str();
+    
     //std::cout << "WARNING: Video support doesn't work in emscripten" << std::endl;
   }
   virtual void Collect(CollectVisitor &vis) {
@@ -26880,14 +26888,14 @@ public:
     home = ".";
     path = "/";
 #endif
-    std::ofstream ss((home + path + "video.mp4")
+    std::ofstream ss((home + path + "video"+id+".mp4")
 		     .c_str(),std::ios_base::out|std::ios_base::binary);
     std::string ss2(ptr->begin(),ptr->end());
     ss << ss2;
     ss.close();
 
     
-    cap = cv::VideoCapture(home + path + "video.mp4");
+    cap = cv::VideoCapture(home + path + "video"+id+".mp4");
     }
   }
   
@@ -26902,7 +26910,7 @@ public:
     else
       {
    std::string home = getenv("HOME");
- 	cap = cv::VideoCapture(home+"/.gameapi_builder/video.mp4");
+ 	cap = cv::VideoCapture(home+"/.gameapi_builder/video"+id+".mp4");
 	
 	cap.grab();
 	cap.retrieve(frame);
@@ -27004,6 +27012,7 @@ private:
   unsigned int tex;
   BufferRef ref;
   bool firsttime = true;
+  std::string id;
 };
 void *writer(void* ptr)
 {

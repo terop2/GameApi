@@ -2,6 +2,8 @@
 #include "GameApi_h.hh"
 #include "GameApi_gui.hh"
 
+std::string deploy_replace_string(std::string res, std::string subst, std::string repl);
+
 bool is_hexify(std::string s)
 {
   int ss = s.size();
@@ -71,8 +73,10 @@ std::string unhexify(std::string s)
       if (s[i]=='?') s[i]=':';
       res+=s[i];
     }
+    res = deploy_replace_string(res,"tpgames.org","meshpage.org/assets");
     return res;
   }
+  res = deploy_replace_string(res,"tpgames.org","meshpage.org/assets");
   return res;
 }
 

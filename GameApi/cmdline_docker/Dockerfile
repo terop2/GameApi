@@ -1,4 +1,4 @@
-FROM ubuntu:24.10
+FROM ubuntu:25.04
 RUN apt-get update \
   && apt-get install -y -qq --no-install-recommends \
     libglu1 \
@@ -23,7 +23,8 @@ RUN apt-get update \
     libgcc-s1 \
     iputils-ping \
     dnsutils \
-    ca-certificates
+    ca-certificates \
+    libopencv-dev
 # Dependencies for glvnd and X11.
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
