@@ -26883,19 +26883,23 @@ public:
     if (!ptr) { std::cout << "ASYNC NOT READY in VIDEO" << std::endl; return; }
 
     std::string home = getenv("HOME")?getenv("HOME"):".";
-    std::string path = "/.gameapi_builder/";
+
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?"/root":home;
+
+  std::string path = dd?dockerdir+"/.gameapi_builder/":home+"/.gameapi_builder/";
 #ifdef EMSCRIPTEN
     home = ".";
     path = "/";
 #endif
-    std::ofstream ss((home + path + "video"+id+".mp4")
+    std::ofstream ss((path + "video"+id+".mp4")
 		     .c_str(),std::ios_base::out|std::ios_base::binary);
     std::string ss2(ptr->begin(),ptr->end());
     ss << ss2;
     ss.close();
 
     
-    cap = cv::VideoCapture(home + path + "video"+id+".mp4");
+    cap = cv::VideoCapture(path + "video"+id+".mp4");
     }
   }
   
@@ -26910,7 +26914,12 @@ public:
     else
       {
    std::string home = getenv("HOME");
- 	cap = cv::VideoCapture(home+"/.gameapi_builder/video"+id+".mp4");
+
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:home;
+
+   
+ 	cap = cv::VideoCapture(dockerdir+"/.gameapi_builder/video"+id+".mp4");
 	
 	cap.grab();
 	cap.retrieve(frame);
