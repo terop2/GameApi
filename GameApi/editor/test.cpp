@@ -1581,6 +1581,7 @@ public:
 					env->ev->shader_api.use(env->sh);
 					env->ev->tracker_api.stop_music_playing();
 					//}
+		     
 				      display = false;
 				    }
 				  else
