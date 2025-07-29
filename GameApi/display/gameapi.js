@@ -33,6 +33,7 @@ var canv = document.getElementById("canvas");
 var hom = document.getElementById("homepage");
 var hom2 = hom.innerHTML;
 var Module = {
+    onStartup : function() { check_em()(); },
     canvas : canv,
     arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
     print : (function() { return function(text) { console.log(text); } })(),

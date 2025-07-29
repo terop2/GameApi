@@ -2361,13 +2361,14 @@ var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
   	       //Module['onRuntimeInitialized'] = function() { return function() { } };
+	       console.log("CHECKEM");
                if (g_check_em_timeout != null)
   	          clearTimeout(g_check_em_timeout);
 	       g_check_em_timeout = null;
   	       //console.log("CHECK_EM");
 	       //console.log(Module);
 	       g_emscripten_alive=true;
-
+	       g_ready_bit=0; // this disables the timer.
 //indicator[0]=false; 
 	       var old = indicator[1];
 	       var old2 = indicator[2];
@@ -2405,7 +2406,7 @@ function check_emscripten_running(indicator)
 	 g_check_em_timeout = setTimeout(function() {
 	                    //console.log("waiting for emscripten startup..");
 	 		    if (g_ready_bit==1) {
-	 		       /* console.log("onRuntimeInitialized didn't trigger in time");*/  check_em(indicator)(); } },1000);
+	 		       console.log("onRuntimeInitialized didn't trigger in time");  check_em(indicator)(); } },1000);
 	 //check_em(indicator);
    	 //console.log("RUNNING");
 	 } else {
@@ -2582,7 +2583,12 @@ function show_emscripten(str,hide,indicator,is_async)
 <script type="text/javascript">
   var canv = document.getElementById("canvas");
 
-  var Module = { };
+  var Module = {
+      onStartup: function() {
+        console.log("onRuntimeInitialized done");
+      	check_em(app.indicator)();
+      }
+  };
 Module.canvas = canv;
 
 Module.locateFile = function(path, prefix) {

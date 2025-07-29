@@ -390,7 +390,9 @@ int main(int argc, char *argv[]) {
   std::pair<int,std::string> blk = mainloop(e, ev);
   set_status(5,6);
 #ifdef EMSCRIPTEN
-  emscripten_run_script("g_ready_bit=1");
+  std::cout << "ASYNC_EMSCRIPTEN_RUN_SCRIPT" << std::endl;
+  emscripten_async_run_script("g_ready_bit=1; Module.onStartup();",10);
+  std::cout << "ASYNC_EMSCRIPTEN_RUN_SCRIPT2" << std::endl;
 #endif
   if (blk.second == "RUN") {
     RUN r;
