@@ -1,4 +1,4 @@
-s<?php
+<?php
 header("Cross-Origin-Opener-Policy: same-origin");
 header("Access-Control-Allow-Headers: Range");
 //header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -2102,12 +2102,13 @@ return function() {
 
 function start_timer(id, label, vm)
 {
+	console.log("start_timer");
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 	  store.choose("mesh");
 
 //console.log("START TIMER");
     if (g_tm_cb) window.clearTimeout(g_tm_cb);
-      g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 10);
+      g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 1);
 }
 
 function choose_bread(txt,breadcrumb)
@@ -2169,6 +2170,7 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 }
 function choose_breadlist(id,breadcrumb,first,second)
 {
+  //console.log("choose_breadlist");
   while(breadcrumb.length) breadcrumb.pop();
   var target;
   if (id==0) { target = first; }
@@ -2181,9 +2183,10 @@ function choose_breadlist(id,breadcrumb,first,second)
 }
 function delayed_choose_display(vm, id, label)
 {
+  //console.log("delayed_choose_display");
   return function() {
    if (!g_emscripten_alive) {
-      setTimeout(delayed_choose_display(vm,id,label), 100);
+      setTimeout(delayed_choose_display(vm,id,label), 1);
       return;
   }
   //console.log(id);
@@ -2223,6 +2226,8 @@ var m_id = 0;
 
 function choose_display(id,label, vm,is_popstate)
 {
+   //console.log("choose_display");
+   //console.log(id);
    var d = document.getElementById("display_title_bar");
    d.innerHTML = display_labels[id];
 
@@ -2296,6 +2301,8 @@ const myFRequest = new Request(url, {
     //console.log(vm.indicator);
     g_txt_id = id;
     g_txt[id] = t;
+    show_emscripten(t,true,vm.indicator,true);
+
     //
   });
 
@@ -2340,6 +2347,9 @@ function set_keyboard_focus_to_iframe()
 }
 function start_emscripten_really(vm)
 {
+    var x = "<?php echo $id ?>";
+    if (x=="" || x==" ") {
+
 //	 console.log(ASM_CONSTS);
      var str = "";
      str+="P I1=ev.polygon_api.p_empty();\n";
@@ -2349,6 +2359,7 @@ function start_emscripten_really(vm)
     //console.log("INDICATOR2:");
     //console.log(vm.indicator);
      show_emscripten(str,true,vm.indicator,true);
+     }
 }
 function start_emscripten(vm)
 {
@@ -2361,7 +2372,7 @@ var g_emscripten_alive = false;
 function check_em(indicator) {
   return function() {
   	       //Module['onRuntimeInitialized'] = function() { return function() { } };
-	       console.log("CHECKEM");
+	       //console.log("CHECKEM");
                if (g_check_em_timeout != null)
   	          clearTimeout(g_check_em_timeout);
 	       g_check_em_timeout = null;
@@ -2406,7 +2417,7 @@ function check_emscripten_running(indicator)
 	 g_check_em_timeout = setTimeout(function() {
 	                    //console.log("waiting for emscripten startup..");
 	 		    if (g_ready_bit==1) {
-	 		       console.log("onRuntimeInitialized didn't trigger in time");  check_em(indicator)(); } },1000);
+	 		       console.log("onRuntimeInitialized didn't trigger in time");  check_em(indicator)(); } },30000);
 	 //check_em(indicator);
    	 //console.log("RUNNING");
 	 } else {
@@ -2585,8 +2596,8 @@ function show_emscripten(str,hide,indicator,is_async)
 
   var Module = {
       onStartup: function() {
-        console.log("onRuntimeInitialized done");
-      	check_em(app.indicator)();
+        //console.log("onRuntimeInitialized done");
+      	window.setTimeout(function() { check_em(app.indicator)(); },1);
       }
   };
 Module.canvas = canv;
