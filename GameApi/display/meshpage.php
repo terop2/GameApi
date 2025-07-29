@@ -1956,7 +1956,7 @@ if ($page!="") {
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==2) {
-      echo "setTimeout(delayed_choose_display(vm,g_last_id,g_last_label),1);";
+      echo "setTimeout(delayed_choose_display(vm,g_last_id,g_last_label),30);";
       echo "store.choose(\"mesh\");";
 
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(false);";
@@ -2026,7 +2026,7 @@ if ($page!="") {
        	  if (g_focus) {
        	  var frm = document.getElementById("form" + id.toString());
 	  frm.submit();
-	  window.setTimeout(zip_progress(id),10);
+	  window.setTimeout(zip_progress(id),30);
           return;
           }
           if (cookie_status==0) return;
@@ -2089,7 +2089,7 @@ return function() {
        if (!g_emscripten_alive) {
     //console.log("NOT ALIVE");
        if (g_tm_cb) window.clearTimeout(g_tm_cb);
-       g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 10);
+       g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 30);
        return;
        } else {
     //console.log("ALIVE");
@@ -2108,7 +2108,7 @@ function start_timer(id, label, vm)
 
 //console.log("START TIMER");
     if (g_tm_cb) window.clearTimeout(g_tm_cb);
-      g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 1);
+      g_tm_cb = window.setTimeout(timer_timeout(id,label,vm), 30);
 }
 
 function choose_bread(txt,breadcrumb)
@@ -2186,7 +2186,7 @@ function delayed_choose_display(vm, id, label)
   //console.log("delayed_choose_display");
   return function() {
    if (!g_emscripten_alive) {
-      setTimeout(delayed_choose_display(vm,id,label), 1);
+      setTimeout(delayed_choose_display(vm,id,label), 30);
       return;
   }
   //console.log(id);
@@ -2317,7 +2317,7 @@ const myFRequest = new Request(url, {
   } else {
     g_txt_id = id;
     if (g_txt_cb) window.clearTimeout(g_txt_cb);
-    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 1);
+    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 30);
   }
 
 }
@@ -2604,7 +2604,7 @@ function show_emscripten(str,hide,indicator,is_async)
   var Module = {
       onStartup: function() {
         //console.log("onRuntimeInitialized done");
-      	window.setTimeout(function() { check_em(app.indicator)(); },1);
+      	window.setTimeout(function() { check_em(app.indicator)(); },30);
       }
   };
 Module.canvas = canv;
@@ -2699,7 +2699,7 @@ if ($nothreads == "yes") {
 <script>
 
 window.onresize = resize_event;
-window.setTimeout(function() { resize_event(null); },10);
+window.setTimeout(function() { resize_event(null); },30);
 
 
 function resize_event(event) {
