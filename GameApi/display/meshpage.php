@@ -2301,6 +2301,7 @@ const myFRequest = new Request(url, {
     //console.log(vm.indicator);
     g_txt_id = id;
     g_txt[id] = t;
+    g_str=t;
     show_emscripten(t,true,vm.indicator,true);
 
     //
@@ -2345,6 +2346,8 @@ function set_keyboard_focus_to_iframe()
      window.clearTimeout(g_keyboard_focus_timeout);
   g_keyboard_focus_timeout = window.setTimeout(set_keyboard_focus,100);
 }
+
+var g_str = "";
 function start_emscripten_really(vm)
 {
     var x = "<?php echo $id ?>";
@@ -2352,9 +2355,13 @@ function start_emscripten_really(vm)
 
 //	 console.log(ASM_CONSTS);
      var str = "";
-     str+="P I1=ev.polygon_api.p_empty();\n";
-     str+="ML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\n";
-     str+="RUN I3=ev.blocker_api.game_window2(ev,I2,false,false,0.0,100000.0);\n";
+     if (g_str!="") {
+       str+=g_str;
+     } else {
+       str+="P I1=ev.polygon_api.p_empty();\n";
+       str+="ML I2=ev.polygon_api.render_vertex_array_ml2(ev,I1);\n";
+       str+="RUN I3=ev.blocker_api.game_window2(ev,I2,false,false,0.0,100000.0);\n";
+     }
 
     //console.log("INDICATOR2:");
     //console.log(vm.indicator);
