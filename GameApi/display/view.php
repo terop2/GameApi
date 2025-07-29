@@ -1850,7 +1850,8 @@ function drop(ev)
 
 var canv = document.getElementById("canvas");
 var Module = {
-   canvas : canv,
+    onStartup : function() { check_em2()(); },
+canvas : canv,
    locateFile : (function(path) { return path+"?<?php echo filemtime("engine_highmem.js") ?>"; }),
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
