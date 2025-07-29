@@ -33,7 +33,7 @@ std::string hexify(std::string s)
       res+=chrs[c2];
     }
 #endif
-  std::cout << "CONVERT:" << s << " to ";
+  //std::cout << "CONVERT:" << s << " to ";
   std::string res;
   res+="*";
   int ss = s.size();
@@ -42,7 +42,7 @@ std::string hexify(std::string s)
       if (s[i]==':') s[i]='?';
       res+=s[i];
     }
-    std::cout << res << std::endl;
+    //std::cout << res << std::endl;
     return res;
 
     //return res;
