@@ -1566,7 +1566,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::vi
 			 "videofile_generic",
 			 { "ev", "sx", "sy", "url" },
 			 { "EveryApi&", "int", "int", "std::string" },
-			 { "ev","800", "600", "https://meshpage.org/assets/frog.mp4" },
+			 { "ev","800", "600", "https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4" },
 			 "TXID", "texture_api", "videofile_txid_generic"));
 #endif
 #if (ALL==1)||(WEBCAM_TXID_GENERIC==1)
