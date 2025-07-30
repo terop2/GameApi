@@ -595,7 +595,7 @@ echo "<script>(function () {var sc=document.createElement('script');sc.async=tru
 echo "</script>";
 echo "<!-- End SF Tag -->";
 echo "<footer style=\"position: static; margin-left: 27px;\" class=\"customfont\" id=\"gnomeauthor\">";
-echo "*) \"Mesh Garden Gnome\" (<a href=\"https://skfb.ly/D9Fq\">https://skfb.ly/D9Fq</a>) by Seth Berrier is licensed under Creative Commons Attribution (<a href=\"http://creativecommons.org/licenses/by/4.0/\">http://creativecommons.org/licenses/by/4.0/</a>).";
+echo "*) \"Mesh Garden Gnome\" (<a href=\"https://skfb.ly/D9Fq\">https://skfb.ly/D9Fq</a>) by Seth Berrier is licensed under Creative Commons Attribution (<a href=\"https://creativecommons.org/licenses/by/4.0/\">https://creativecommons.org/licenses/by/4.0/</a>).";
 echo "</footer>";
 
   // COPYRIGHT NOTICE
