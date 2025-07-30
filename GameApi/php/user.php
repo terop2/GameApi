@@ -499,7 +499,7 @@ function small_page_header_head( $arr2 )
 }
 function highlight_start($pos, $pos2, $level)
 {
-  echo "<div itemprop=\"itemListElement\" itemscope itemtype=\"http://schema.org/ListItem\" class=\"link level" . $level . "\">";
+  echo "<div itemprop=\"itemListElement\" itemscope itemtype=\"https://schema.org/ListItem\" class=\"link level" . $level . "\">";
   echo "<meta itemprop=\"position\" content=\"" . $pos2 . "\"/>";
   if ($pos==$pos2) {
    echo "<b>";
@@ -523,7 +523,7 @@ function small_page_header_body( $arr2, $num )
   global $sitename;
   analytics();
   $id = create_id( $arr2 );
-  echo "<div itemscope itemtype=\"http://schema.org/BreadcrumbList\" id=\"navbar\" class=\"navi\">";
+  echo "<div itemscope itemtype=\"https://schema.org/BreadcrumbList\" id=\"navbar\" class=\"navi\">";
   echo "<div class=\"ncenter\">";
   highlight_start($num, 0,1);
   echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_all\"><span itemprop=\"name\">" . $sitename . "</span></a>";
@@ -574,7 +574,7 @@ function page_header( $pos )
    echo "</head>";
    echo "<body>";
    analytics();
-   echo "<div itemscope itemtype=\"http://schema.org/BreadcrumbList\" id=\"navbar\" class=\"navi\">";   
+   echo "<div itemscope itemtype=\"https://schema.org/BreadcrumbList\" id=\"navbar\" class=\"navi\">";   
    echo "<div class=\"ncenter\">";
    highlight_start($pos, 0,1);
    echo "<a itemprop=\"item\" class=\"navi\" href=\"mesh_all\"><span itemprop=\"name\">" . $sitename . "</span></a>";
@@ -626,7 +626,7 @@ function page_header( $pos )
    //echo " | ";
    highlight_start($pos, 7,1);
    if ($_SERVER["HTTP_HOST"]=="localhost") {
-   echo "<a itemprop=\"item\" class=\"navi right\" href=\"http://localhost/mesh-page/mesh_login_page\"><span itemprop=\"name\">login</span></a>";
+   echo "<a itemprop=\"item\" class=\"navi right\" href=\"https://localhost/mesh-page/mesh_login_page\"><span itemprop=\"name\">login</span></a>";
    } else {
    echo "<a itemprop=\"item\" class=\"navi right\" href=\"" . $site . "/mesh_login_page\"><span itemprop=\"name\">login</span></a>";
    }
