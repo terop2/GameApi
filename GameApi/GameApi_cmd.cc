@@ -4,6 +4,8 @@
 #include "GameApi_cmd.hh"
 
 
+
+
 #define MACRO2(lab, funccall) \
   void set_empty(GameApi::EveryApi&ev,lab &l) {	\
     l = funccall;\

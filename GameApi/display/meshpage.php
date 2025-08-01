@@ -1174,20 +1174,9 @@ DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 11 64-bit</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
 <?php
 visit_counter_inc( "tool" );
 ?>
-  </ul>
 </div>
 </ul>
 </div>
@@ -1214,18 +1203,6 @@ visit_counter_inc( "tool" );
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 64-bit amd64</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.deb">download deb</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating" >
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
-  </ul>
-</div>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1255,18 +1232,6 @@ width="120" height="120" crossorigin/>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux with wine</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating" >
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
-  </ul>
-</div>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1301,18 +1266,6 @@ width="120" height="120" crossorigin/>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-container-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating" >
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
-  </ul>
-</div>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1351,18 +1304,6 @@ width="120" height="120" crossorigin/>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-cmdline-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating" >
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
-  </ul>
-</div>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1393,18 +1334,6 @@ width="120" height="120" crossorigin/>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">GameDisplay tool</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows</span>
 <li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi_cmdline_<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.zip">download zip</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating" >
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
-  </ul>
-</div>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1431,18 +1360,6 @@ width="120" height="120" crossorigin/>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Web</span>
 <li><b>Tool url:</b> <a href="<?php echo $site ?>/gameapi_builder.php">execute tool in web browser</a>
-<div itemprop="aggregateRating" itemscope itemtype="https://schema.org/AggregateRating">
-  <ul>
-  <li>Rating: <span itemprop="ratingValue">5.0</span>
-  <li>RatingCount: <span itemprop="ratingCount">1</span>
-  </ul>
-</div>
-<div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-  <ul>
-  <li>Price:<span itemprop="price">0.00</span>EUR
-  <meta itemprop="priceCurrency" content="EUR" />
-  </ul>
-</div>
 </ul>
 </div>
 -->
