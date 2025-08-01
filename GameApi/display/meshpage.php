@@ -1177,7 +1177,6 @@ DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <?php
 visit_counter_inc( "tool" );
 ?>
-</div>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
