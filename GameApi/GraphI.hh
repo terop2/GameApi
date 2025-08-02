@@ -3245,5 +3245,47 @@ private:
 };
 
 
+class Landscape : public CollectInterface
+{
+public:
+  virtual int SizeX() const=0;
+  virtual int SizeY() const=0;
+  virtual float start_x() const=0;
+  virtual float end_x() const=0;
+  virtual float start_z() const=0;
+  virtual float end_z() const=0;
+
+  virtual float Height_tl(int x, int y) const=0;
+  virtual float Height_tr(int x, int y) const=0;
+  virtual float Height_br(int x, int y) const=0;
+  virtual float Height_bl(int x, int y) const=0;
+
+  virtual int NumTextures() const=0;
+  virtual Bitmap<Color> *Texture(int texnum) const=0;
+  virtual int TextureNum(int x, int y) const=0;
+  
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  virtual void render(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+};
+
+class SceneItems : public CollectInterface
+{
+public:
+  virtual int NumItems() const=0;
+  virtual Point Loc(int i) const=0;
+  virtual int Select(int i) const=0;
+  virtual float YRot(int i) const=0;
+  virtual float Height(int i) const=0;
+  
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  virtual void render(MainLoopEnv &e)=0;
+  virtual void handle_event(MainLoopEvent &e)=0;
+};
+
 
 #endif
