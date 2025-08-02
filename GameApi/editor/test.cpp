@@ -3587,6 +3587,9 @@ IMPORT extern std::string gameapi_temp_dir;
 
 
 int main(int argc, char *argv[]) {
+#ifdef LINUX
+  try {
+#endif
 #ifdef WINDOWS
     HRESULT hr;
     hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -3841,6 +3844,9 @@ int main(int argc, char *argv[]) {
     IterAlgo(e,nodes,args,&ev);
   }
   return 0;
-}
+#ifdef LINUX
+  } catch(...) { std::cout << "EXCEPTION" << std::endl; }
+#endif
+  }
 
 

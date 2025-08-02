@@ -26898,7 +26898,6 @@ public:
     ss << ss2;
     ss.close();
 
-    
     cap = cv::VideoCapture(path + "video"+id+".mp4");
     }
   }
