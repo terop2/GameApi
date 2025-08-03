@@ -2601,6 +2601,11 @@ public:
       const char *driver = g_low->sdl->SDL_GetCurrentVideoDriver();
       if (driver)
 	std::cout << "VIDEODRIVER:" << driver << std::endl;
+
+      if (driver && std::string(driver)=="wayland")
+	{
+	  std::cout << "WARNING: you should use 'export SDL_VIDEODRIVER=x11' with gameapi-builder." << std::endl;
+	}
       
       const char *ee2 = getenv("SDL_VIDEODRIVER");
       bool has_wayland1 = false;
