@@ -688,6 +688,7 @@ public:
   virtual void cleanup()=0;
   virtual void SDL_Init(int flags)=0;
   virtual void SDL_GetCurrentDisplayMode(int index, Low_SDL_DisplayMode *mode)=0;
+  virtual const char *SDL_GetCurrentVideoDriver()=0;
   virtual bool SDL_GetWindowWMInfo(Low_SDL_Window *window, Low_SDL_SysWMinfo *info)=0;
   virtual void SDL_GL_SetAttribute(int flag, int val)=0;
   virtual void SDL_SetHint(const char *flag, const char *str)=0;

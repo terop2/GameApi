@@ -19,6 +19,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctime>
+#include "GameApi_low.hh"
+#ifdef LINUX
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 using namespace GameApi;
 #ifndef WINDOWS
 #define WAYLAND 1
@@ -41,6 +46,7 @@ void refresh();
 void ClearProgress();
 
 IMPORT std::string remove_prefix(std::string url);
+IMPORT extern Low_SDL_Window *sdl_window;
 
 int find_str(std::string s, std::string el);
 
@@ -659,6 +665,7 @@ public:
   virtual void update(void *arg, MainLoopApi::Event &e)=0;
 };
 
+
 class MainIter : public BuilderIter
 {
 public:
@@ -691,21 +698,32 @@ public:
       env->gui->set_pos(env->scroll_area, x+env->extra_left, y+env->extra_top);
 
       
-#ifdef WAYLAND
-      //wl_surface_damage_buffer(g_wl_surface, 0,0,g_display_width, g_display_height);
-      //wl_shell_surface_set_transient(g_wl_shell_surface, g_wl_surface, x,y, 0);
-      //wl_surface_commit(g_wl_surface);
-#endif
     }
-    
+#ifdef WAYLAND
+    t0=get_time_us();
+#endif    
   }
+#ifdef WAYLAND
+  uint64_t get_time_us() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+  }
+  const uint32_t target_frametime_us = 10000;
+#endif
   void render(void *arg)
   {
     Envi *env = (Envi*)arg;
     //std::cout << "MainIter::render start" << std::endl;
     if (!env->envi_ready) return;
+    //std::cout << "Render attempt!" << std::endl;
     //std::cout << "MainIter::render cont" << std::endl;
-    
+#ifdef WAYLAND
+    uint64_t t1 = get_time_us();
+    if (t1-t0 < target_frametime_us)
+      usleep(target_frametime_us - (t1-t0));
+    t0=get_time_us();
+#endif    
     
     render_cb(env);
 
@@ -2343,8 +2361,11 @@ private:
   bool pkggen_button = false;
   bool display_button = false;
   std::string popup_uid;
+  bool ready_to_render=true;
+  uint64_t t0;
 };
-  
+
+
 float f(float w)
 {
   return cos(w);
@@ -2576,6 +2597,11 @@ public:
       const char *ee = getenv("XDG_SESSION_TYPE");
       if (ee)
 	std::cout << "SESSION TYPE:" << ee << std::endl;
+
+      const char *driver = g_low->sdl->SDL_GetCurrentVideoDriver();
+      if (driver)
+	std::cout << "VIDEODRIVER:" << driver << std::endl;
+      
       const char *ee2 = getenv("SDL_VIDEODRIVER");
       bool has_wayland1 = false;
       bool has_wayland2 = false;
@@ -3138,6 +3164,19 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 	vec[i]->render(args[i]);
     }
   ev->mainloop_api.swapbuffers();
+
+#ifdef WAYLAND
+    if (!g_wl_display) {
+    Low_SDL_SysWMinfo info;
+  if (g_low->sdl->SDL_GetWindowWMInfo(sdl_window, &info))
+    {
+      g_wl_display = info.display;
+      g_wl_surface = info.surface;
+      g_wl_shell_surface = info.shell_surface;
+    }
+    }
+#endif
+
   }
     MainLoopApi::Event e;
     e.ch = 0;
@@ -3556,6 +3595,17 @@ void refresh()
   g_env->ev->mainloop_api.end_editor_state();
   g_env->ev->mainloop_api.swapbuffers();
 
+#ifdef WAYLAND
+    if (!g_wl_display) {
+    Low_SDL_SysWMinfo info;
+  if (g_low->sdl->SDL_GetWindowWMInfo(sdl_window, &info))
+    {
+      g_wl_display = info.display;
+      g_wl_surface = info.surface;
+      g_wl_shell_surface = info.shell_surface;
+    }
+    }
+#endif
 
   }
 }

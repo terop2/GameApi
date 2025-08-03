@@ -153,9 +153,9 @@ struct wl_display;
 struct wl_surface;
 struct wl_shell_surface;
 
-wl_display *g_wl_display = 0; 
-wl_surface *g_wl_surface = 0;
-wl_shell_surface *g_wl_shell_surface = 0;
+IMPORT wl_display *g_wl_display = 0; 
+IMPORT wl_surface *g_wl_surface = 0;
+IMPORT wl_shell_surface *g_wl_shell_surface = 0;
 
 extern bool g_vr_enable;
 //#pragma comment (lib, "glew32s.lib") 
@@ -653,6 +653,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   
 #ifdef WAYLAND
   Low_SDL_SysWMinfo info;
+  SDL_VERSION(&info.version);
   if (g_low->sdl->SDL_GetWindowWMInfo(sdl_window, &info))
     {
       g_wl_display = info.display;

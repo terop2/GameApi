@@ -1270,6 +1270,12 @@ class SDLApi : public SDLLowApi
     mode->w = m.w;
     mode->h = m.h;
   }
+
+  virtual const char *SDL_GetCurrentVideoDriver()
+  {
+    return ::SDL_GetCurrentVideoDriver();
+  }
+  
   virtual void SDL_PauseAudio(int pause_on) {
     ::SDL_PauseAudio(pause_on);
   }
