@@ -202,4 +202,4 @@ LGPL/GPL
 
 Yours,
 
-<img src="https://meshpage.org/assets/avatar.png" width="80px" height="80px"/>
+<img src="https://meshpage.org/dingbat.png" width="150px" height="150px"/>
