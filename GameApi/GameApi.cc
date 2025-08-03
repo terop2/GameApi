@@ -16446,6 +16446,23 @@ public:
 	}
     }
     env->ev->mainloop_api.swapbuffers();
+
+    
+#ifdef WAYLAND
+    if (!g_wl_display) {
+    Low_SDL_SysWMinfo info;
+  SDL_VERSION(&info.version);
+  if (g_low->sdl->SDL_GetWindowWMInfo(sdl_window, &info))
+    {
+      g_wl_display = info.display;
+      g_wl_surface = info.surface;
+      g_wl_shell_surface = info.shell_surface;
+    }
+    }
+#endif
+
+
+    
     g_time_id ++;
     }
     g_engine_status = 1;
