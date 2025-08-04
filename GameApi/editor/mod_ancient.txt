@@ -32,7 +32,7 @@ test
 (958,1554)anim_scale uid14961 0 0 1 next:*uid14959:false:-1:0 start_time:*0:false:-1:0 end_time:*100:false:-1:0 sx:*10:false:-1:0 sy:*10:false:-1:0 sz:*10:false:-1:0
 (1106,1554)mn_translate uid14962 0 0 1 next:*uid14961:false:-1:0 dx:*0:false:-1:0 dy:*420:false:-1:0 dz:*0:false:-1:0
 (1179,1346)quake_ml uid14963 0 0 1 ev:*ev:false:-1:0 ml:*uid14958:false:-1:0 speed:*5:false:-1:0 rot_speed:*0.02:false:-1:0
-(1298,1350)vr_window uid14964 0 0 1 ev:*ev:false:-1:0 ml:*uid14963:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0 invert:*true:false:-1:0 translate:*true:false:-1:0
+(1443,1352)vr_window uid14964 0 0 1 ev:*ev:false:-1:0 ml:*uid1920985694:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0 invert:*true:false:-1:0 translate:*true:false:-1:0
 (917,230)run_window uid1419 0 0 1 ev:*ev:false:-1:0 ml:*uid1420:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0:false:-1:0 duration:*100000:false:-1:0
 (779,237)fps_display uid1420 0 0 1 ev:*ev:false:-1:0 ml:*uid11881:false:-1:0 font:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0
 (476,-31)sphere uid1421 0 0 1 center:*uid1422:false:-1:0 radius:*350:false:-1:0 numfaces1:*30:false:-1:0 numfaces2:*30:false:-1:0
@@ -406,3 +406,4 @@ test
 (215,-5041)m_phong3 uid132504679 0 0 1 ev:*ev:false:-1:1819378416 nxt:*uid1069710110:false:-1:0 ambient:*ff004400:false:-1:1819378416 highlight:*ff88ff88:false:-1:1819378416 pow:*15:false:-1:1819378416
 (985,-5101)html_run uid1927183051 0 0 1 ev:*ev:false:-1:1842813808 r:*uid3209:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:1842813808
 (1142,-5092)save_deploy uid1927183052 0 0 1 h:*uid1927183051:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1842813808
+(1298,1479)ogl_perspective uid1920985694 0 0 1 ev:*ev:false:-1:19 ml:*uid14963:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19

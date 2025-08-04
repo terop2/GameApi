@@ -709,7 +709,7 @@ public:
     gettimeofday(&tv, nullptr);
     return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
   }
-  const uint32_t target_frametime_us = 10000;
+  const uint64_t target_frametime_us = 10000;
 #endif
   void render(void *arg)
   {
