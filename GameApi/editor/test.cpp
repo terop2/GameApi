@@ -731,6 +731,11 @@ public:
   }
  
   virtual void update(void *arg, MainLoopApi::Event &e) { 
+    //std::cout << "update:" << std::hex << e.type << std::dec << " " << e.ch << " " << e.button << std::endl;
+
+    
+
+    
     Envi *env = (Envi*)arg;
     //std::cout << "MainIter::update start" << std::endl;
     //std::cout << "1" << std::endl;
@@ -762,12 +767,14 @@ public:
       {
 	env->key_state = true;
       }
+#ifdef EMSCRIPTEN
     if (e.type==1024 && e.button==0 && env->key_state==true)
       {
 	// FIX EMSCRIPTEN EENTS NOT GIVING KEYDOWN EVENTS.
 	e.type=1025;
 	env->key_state = false;
       }
+#endif
 	
     
     
@@ -792,6 +799,11 @@ public:
       {
 	e.ch=-1;
       }
+
+    //std::cout << "update2:" << std::dec << e.type << std::dec << " " << e.ch << " " << e.button << std::endl;
+
+
+    
     if (env->display_visible)
       {
 	int chosen = env->gui->chosen_item(env->display_close);

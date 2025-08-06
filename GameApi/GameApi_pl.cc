@@ -2815,13 +2815,66 @@ public:
   virtual std::string name() const { return "TexCoordSpherical"; }
   
   virtual Point2d TexCoord(int face, int point) const { 
-      Point p = ForwardFaceCollection::FacePoint(face,point);
-      p-=Vector(center);
-      float r = sqrt(p.x*p.x+p.y*p.y+p.z*p.z);
-      float alfa = acos(p.z/r);
-      float beta = atan2(p.y,p.x);
-      alfa/=2.0*3.14159;
-      beta/=2.0*3.14159;
+    if (point<0||point>=ForwardFaceCollection::NumPoints(face)) { Point2d p; p.x=0.0; p.y=0.0; std::cout << "stub" << std::endl; return p; }
+    Point p0 = ForwardFaceCollection::FacePoint(face,0);
+      Point p1 = ForwardFaceCollection::FacePoint(face,1);
+      Point p2 = ForwardFaceCollection::FacePoint(face,2);
+      Point p3 = ForwardFaceCollection::FacePoint(face,3%ForwardFaceCollection::NumPoints(face));
+      p0-=Vector(center);
+      p1-=Vector(center);
+      p2-=Vector(center);
+      p3-=Vector(center);
+      float r0 = sqrt(p0.x*p0.x+p0.y*p0.y+p0.z*p0.z);
+      float r1 = sqrt(p1.x*p1.x+p1.y*p1.y+p1.z*p1.z);
+      float r2 = sqrt(p2.x*p2.x+p2.y*p2.y+p2.z*p2.z);
+      float r3 = sqrt(p3.x*p3.x+p3.y*p3.y+p3.z*p3.z);
+      float alfa0 = acos(p0.z/r0);
+      float beta0 = atan2(p0.y,p0.x);
+      float alfa1 = acos(p1.z/r1);
+      float beta1 = atan2(p1.y,p1.x);
+      float alfa2 = acos(p2.z/r2);
+      float beta2 = atan2(p2.y,p2.x);
+      float alfa3 = acos(p3.z/r3);
+      float beta3 = atan2(p3.y,p3.x);
+      alfa0/=2.0*3.14159;
+      beta0/=2.0*3.14159;
+      alfa1/=2.0*3.14159;
+      beta1/=2.0*3.14159;
+      alfa2/=2.0*3.14159;
+      beta2/=2.0*3.14159;
+      alfa3/=2.0*3.14159;
+      beta3/=2.0*3.14159;
+
+      bool alfa0b = alfa0<0.7;
+      bool beta0b = beta0<0.7;
+      bool alfa1b = alfa0<0.7;
+      bool beta1b = beta0<0.7;
+      bool alfa2b = alfa0<0.7;
+      bool beta2b = beta0<0.7;
+      bool alfa3b = alfa0<0.7;
+      bool beta3b = beta0<0.7;
+
+      float alfa_arr[] = { alfa0, alfa1, alfa2, alfa3 };
+      float beta_arr[] = { beta0, beta1, beta2, beta3 };
+      bool alfa_b_arr[] = { alfa0b, alfa1b,alfa2b,alfa3b };
+      bool beta_b_arr[] = { beta0b, beta1b,beta2b,beta3b };
+      
+      float alfa = alfa_arr[point];
+      float beta = beta_arr[point];
+
+      float alfa_b = alfa_arr[point] <0.3;
+      float beta_b = beta_arr[point] <0.3;
+      
+      if (alfa_b != alfa0b) alfa+=1.0;
+      else if (alfa_b != alfa1b) alfa+=1.0;
+      else if (alfa_b != alfa2b) alfa+=1.0;
+      else if (alfa_b != alfa3b) alfa+=1.0;
+
+      if (beta_b != beta0b) beta+=1.0;
+      else if (beta_b != beta1b) beta+=1.0;
+      else if (beta_b != beta2b) beta+=1.0;
+      else if (beta_b != beta3b) beta+=1.0;
+      
       Point2d pp;
       pp.x = alfa;
       pp.y = beta;
@@ -13936,18 +13989,86 @@ public:
   bool has_texcoord() const { return true; }
   Point2d TexCoord(int face, int point) const
   {
-    Point p = coll->FacePoint(face, point);
+    Point p0 = coll->FacePoint(face, 0);
+    Point p1 = coll->FacePoint(face, 1);
+    Point p2 = coll->FacePoint(face, 2);
+    Point p3 = coll->FacePoint(face, 3);
     Vector n = coll->PointNormal(face,point);
-    GameApi::PT p2 = ev.point_api.point(p.x, p.y, p.z);
+    GameApi::PT pp0 = ev.point_api.point(p0.x, p0.y, p0.z);
+    GameApi::PT pp1 = ev.point_api.point(p1.x, p1.y, p1.z);
+    GameApi::PT pp2 = ev.point_api.point(p2.x, p2.y, p2.z);
+    GameApi::PT pp3 = ev.point_api.point(p3.x, p3.y, p3.z);
     GameApi::V v2 = ev.vector_api.vector(n.dx, n.dy, n.dz);
-    GameApi::PT ip = ev.dist_api.ray_shape_intersect(fd, p2, v2);
-    GameApi::PT sph = ev.point_api.spherical_coords(ip);
-    float alfa = ev.point_api.pt_x(sph);
-    float beta = ev.point_api.pt_y(sph);
-    Point2d pp;
+    GameApi::PT ip0 = ev.dist_api.ray_shape_intersect(fd, pp0, v2);
+    GameApi::PT ip1 = ev.dist_api.ray_shape_intersect(fd, pp1, v2);
+    GameApi::PT ip2 = ev.dist_api.ray_shape_intersect(fd, pp2, v2);
+    GameApi::PT ip3 = ev.dist_api.ray_shape_intersect(fd, pp3, v2);
+    GameApi::PT sph0 = ev.point_api.spherical_coords(ip0);
+    GameApi::PT sph1 = ev.point_api.spherical_coords(ip1);
+    GameApi::PT sph2 = ev.point_api.spherical_coords(ip2);
+    GameApi::PT sph3 = ev.point_api.spherical_coords(ip3);
+    float alfa0 = ev.point_api.pt_x(sph0);
+    float beta0 = ev.point_api.pt_y(sph0);
+    float alfa1 = ev.point_api.pt_x(sph1);
+    float beta1 = ev.point_api.pt_y(sph1);
+    float alfa2 = ev.point_api.pt_x(sph2);
+    float beta2 = ev.point_api.pt_y(sph2);
+    float alfa3 = ev.point_api.pt_x(sph3);
+    float beta3 = ev.point_api.pt_y(sph3);
+
+
+      bool alfa0b = alfa0<0.5;
+      bool beta0b = beta0<0.5;
+      bool alfa1b = alfa0<0.5;
+      bool beta1b = beta0<0.5;
+      bool alfa2b = alfa0<0.5;
+      bool beta2b = beta0<0.5;
+      bool alfa3b = alfa0<0.5;
+      bool beta3b = beta0<0.5;
+
+      float alfa_arr[] = { alfa0, alfa1, alfa2, alfa3 };
+      float beta_arr[] = { beta0, beta1, beta2, beta3 };
+      bool alfa_b_arr[] = { alfa0b, alfa1b,alfa2b,alfa3b };
+      bool beta_b_arr[] = { beta0b, beta1b,beta2b,beta3b };
+      
+      float alfa = alfa_arr[point];
+      float beta = beta_arr[point];
+
+      float alfa_b = alfa_arr[point] <0.5;
+      float beta_b = beta_arr[point] <0.5;
+
+
+      int alfa_0_count=0;
+      int alfa_1_count=0;
+      int beta_0_count=0;
+      int beta_1_count=0;
+      
+      if (alfa0b==false) alfa_0_count++; else alfa_1_count++;
+      if (alfa1b==false) alfa_0_count++; else alfa_1_count++;
+      if (alfa2b==false) alfa_0_count++; else alfa_1_count++;
+      if (alfa3b==false) alfa_0_count++; else alfa_1_count++;
+
+      if (beta0b==false) beta_0_count++; else beta_1_count++;
+      if (beta1b==false) beta_0_count++; else beta_1_count++;
+      if (beta2b==false) beta_0_count++; else beta_1_count++;
+      if (beta3b==false) beta_0_count++; else beta_1_count++;
+
+
+      bool choose_alfa = alfa_0_count>alfa_1_count ? 0 : 1;
+      bool choose_beta = beta_0_count>beta_1_count ? 0 : 1;
+      
+      if (choose_alfa && alfa_b != true) { alfa+=3.14159; }
+      if (!choose_alfa && alfa_b != false) { alfa-=3.14159; }
+      if (choose_beta && beta_b != true) { beta+=3.14159*2.0; }
+      if (!choose_beta && beta_b != false) { beta-=3.14159*2.0; }
+      
+      
+      
+
+    Point2d pp; 
     pp.x = alfa/3.14159265;
-    pp.y = 0.5+beta/3.14159265/2.0;
-    // std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
+    pp.y = beta/3.14159265/2.0;
+    std::cout << "texcoord: " << pp.x << " " << pp.y << std::endl;
     return pp;
   }
 private:

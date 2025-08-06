@@ -4960,9 +4960,10 @@ public:
     float v_l = x-h/2<0?values.Map(0,y):values.Map(x-h/2.0,y);
     float v_t = y-h/2<0?values.Map(x,0):values.Map(x,y-h/2.0);
     float v_b = y+h/2>=SizeY()?values.Map(x,SizeY()-1):values.Map(x,y+h/2.0);
-    float angle_x = atan((v_r-v_l)/h);
-    float angle_y = atan((v_b-v_t)/h);
+    float angle_x = atan2((v_r-v_l),h);
+    float angle_y = atan2((v_b-v_t),h);
     Point p(0.0,1.0,0.0);
+    //std::cout << angle_x << " " << angle_y << std::endl;
     Matrix m_x = Matrix::ZRotation(angle_x);
     Matrix m_z = Matrix::XRotation(angle_y);
     Point res = p*m_x*m_z;
