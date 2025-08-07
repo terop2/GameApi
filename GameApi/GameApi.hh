@@ -380,11 +380,11 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT ML gltf_mesh_all_inst( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z );
-  IMPORT ARR gltf_mesh_all_parr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z );
-  IMPORT ARR gltf_mesh_all_msarr( EveryApi &ev, TF model0 );
-  IMPORT ARR gltf_mesh_all_parr_msarr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z  );
-  IMPORT std::vector<GameApi::MT> gltf_mesh_all_parr_mat( EveryApi &ev, TF model0, float mix, float light_x, float light_y, float light_z);
+  IMPORT ML gltf_mesh_all_inst( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id );
+  IMPORT ARR gltf_mesh_all_parr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_num );
+  IMPORT ARR gltf_mesh_all_msarr( EveryApi &ev, TF model0, int skin_num );
+  IMPORT ARR gltf_mesh_all_parr_msarr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z,int skin_num  );
+  IMPORT std::vector<GameApi::MT> gltf_mesh_all_parr_mat( EveryApi &ev, TF model0, float mix, float light_x, float light_y, float light_z, int skin_num);
   IMPORT ML bindinst_parr_msarr( EveryApi &ev, std::vector<P> parr, std::vector<MS> msarr, std::vector<MT> mat );
   IMPORT PTS bytestore_pts(BS bs, PTS pts, char disable_char, char enable_char, bool default_is_enable);
   IMPORT ML bytestore_render(EveryApi &ev, BS bs, std::vector<ML> mls, std::string url, float delta_x, float delta_y);

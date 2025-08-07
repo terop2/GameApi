@@ -8634,8 +8634,19 @@ private:
   
   };
 
-std::vector<int> get_tinygltf_nodes( GameApi::EveryApi &ev, GLTFModelInterface *interface)
+std::vector<int> get_tinygltf_nodes( GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num)
 {
+  if (skin_num>=0 && skin_num<interface->skins_size())
+    {
+      const tinygltf::Skin &skin = interface->get_skin(skin_num);
+      int start_node = skin.skeleton;
+      if (start_node!=-1)
+	{
+	  std::vector<int> vec;
+	  vec.push_back(start_node);
+	  return vec;
+	}
+    }
    int scene_id = interface->get_default_scene();
    if (scene_id>=0 && scene_id<interface->scenes_size())
      {
@@ -8655,7 +8666,6 @@ GameApi::P GameApi::MainLoopApi::gltf_mesh_all_p( GameApi::EveryApi &ev, TF mode
   return add_polygon2(e, new GltfMeshAllP(e,ev,interface),1);
 }
 
-
 #ifdef TRY_INST_RENDER
 
 GameApi::MS ms_array( GameApi::Env &e, std::vector<Matrix> vec);
@@ -8665,6 +8675,8 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
   std::cout << "handle p node:" << nodes[i] << std::endl;
       if (nodes[i]>=0 && nodes[i]<interface->nodes_size()) {
 	const tinygltf::Node &node = interface->get_node(nodes[i]);
+
+	
 	int mesh = node.mesh;
 	std::cout << "render mesh " << mesh << std::endl;
 	if (mesh!=-1)
@@ -8682,10 +8694,18 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
 	      {
 		const tinygltf::Primitive &prim = mesh_data.primitives[p];
 		int material = prim.material;
+		GameApi::MT mat2;
+		if (material==-1)
+		  {
+		    mat2=ev.materials_api.m_def(ev);
+		    mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xffff8888,0xffffffff,10.0);
+		  } else {
 		GameApi::MT mat = ev.materials_api.gltf_material(ev, model0, material, mix, light_dir_x, light_dir_y, light_dir_z);
+		  mat2 = mat;
+		}
 		std::cout << "append primitive " << p << std::endl;
 		GameApi::P p2 = gltf_load2(e,ev,interface,mesh,p);
-		materials.push_back(mat);
+		materials.push_back(mat2);
 		mesh_ids.push_back(mesh);
 		prim_ids.push_back(p);
 		meshes.push_back(p2.id);
@@ -8708,12 +8728,12 @@ void handle_p_node_children(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<
   }
 }
 
-GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_parr( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z)
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_parr( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_num)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   ArrayType *array = new ArrayType;
   array->type=0;
-  std::vector<int> nodes = get_tinygltf_nodes( ev, interface );
+  std::vector<int> nodes = get_tinygltf_nodes( ev, interface, skin_num );
   int s = nodes.size();
   std::vector<int> mesh_ids;
   std::vector<int> prim_ids;
@@ -8721,6 +8741,8 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_parr( GameApi::EveryApi &ev, TF
   std::vector<GameApi::MT> materials;
   for(int i=0;i<s;i++)
     {
+
+
       handle_p_node(e,ev,mesh_ids, prim_ids, meshes, materials,interface, nodes, i,model0,mix,light_dir_x,light_dir_y, light_dir_z);
       if (nodes[i]>=0 && nodes[i]<interface->nodes_size()) {
 	const tinygltf::Node &node = interface->get_node(nodes[i]);
@@ -8735,12 +8757,12 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_parr( GameApi::EveryApi &ev, TF
   return add_array(e,array);
 }
 
-std::vector<GameApi::MT> GameApi::MainLoopApi::gltf_mesh_all_parr_mat( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z)
+std::vector<GameApi::MT> GameApi::MainLoopApi::gltf_mesh_all_parr_mat( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_num)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   //ArrayType *array = new ArrayType;
   //array->type=0;
-  std::vector<int> nodes = get_tinygltf_nodes( ev, interface );
+  std::vector<int> nodes = get_tinygltf_nodes( ev, interface, skin_num );
   int s = nodes.size();
   std::vector<int> mesh_ids;
   std::vector<int> prim_ids;
@@ -8764,20 +8786,20 @@ std::vector<GameApi::MT> GameApi::MainLoopApi::gltf_mesh_all_parr_mat( GameApi::
 }
 
 
-void handle_node(std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i);
+void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i, GameApi::TF model0);
 
-void handle_node_children(std::vector<int> &mesh_ids, const std::vector<int> &children, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface)
+void handle_node_children(GameApi::Env &env, GameApi::EveryApi &ev,std::vector<int> &mesh_ids, const std::vector<int> &children, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, GameApi::TF model0)
 {
   int s9 = children.size();
   for(int ii=0;ii<s9;ii++) {
-    handle_node(mesh_ids, children, transform, interface,ii);
+    handle_node(env,ev,mesh_ids, children, transform, interface,ii,model0);
     int node_id = children[ii];
     const tinygltf::Node &node = interface->get_node(node_id);
     std::vector<int> children2 = node.children;
-    handle_node_children(mesh_ids,children2,transform,interface);
+    handle_node_children(env,ev,mesh_ids,children2,transform,interface,model0);
   }
 }
-void handle_node(std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i)
+void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i, GameApi::TF model0)
 {
   std::cout << "handle node:" << nodes[i] << std::endl;
       if (nodes[i]>=0 && nodes[i]<interface->nodes_size()) {
@@ -8816,6 +8838,22 @@ void handle_node(std::vector<int> &mesh_ids, const std::vector<int> &nodes, std:
 	      res = Matrix::Scale(s_x,s_y,s_z);
 	      //std::cout << "Scale14:" << s_x << " " << s_y << " " << s_z << std::endl;
 	    }
+
+	    int skin = node.skin;
+	    if (skin!=-1)
+	      {
+		GLTF_SKIN *sk = gltf_skin(env,ev,model0,skin,1.0);
+		//tinygltf::Skin &sk = interface->get_skin(skin);
+		//std::vector<int> joints = sk.joints;
+		//int skin_root_id = sk->root_node();
+		if (sk && sk->is_joint(nodes[i])) {
+		  int joint = sk->joint_num(nodes[i]);
+		  Matrix invBind = sk->inverse_bind(joint);
+		  res = res * invBind;
+		}
+	      }
+
+	    
 	    if (found) {
 	      int s7 = pos3.size();
 	      for(int k=0;k<s7;k++) {
@@ -8844,12 +8882,12 @@ void handle_node(std::vector<int> &mesh_ids, const std::vector<int> &nodes, std:
 
 
 
-GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, TF model0)
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, TF model0, int skin_num)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   ArrayType *array = new ArrayType;
   array->type=0;
-  std::vector<int> nodes = get_tinygltf_nodes( ev, interface );
+  std::vector<int> nodes = get_tinygltf_nodes( ev, interface, skin_num );
 
   int s = nodes.size();
   std::vector<int> mesh_ids;
@@ -8858,12 +8896,12 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, T
   std::vector<std::vector<Matrix> > transform;
   for(int i=0;i<s;i++)
     {
-      handle_node(mesh_ids, nodes, transform, interface, i);
+      handle_node(e,ev,mesh_ids, nodes, transform, interface, i, model0);
 
       if (nodes[i]>=0 && nodes[i]<interface->nodes_size()) {
 	const tinygltf::Node &node = interface->get_node(nodes[i]);
 	std::vector<int> children = node.children;
-	handle_node_children(mesh_ids,children,transform,interface);
+	handle_node_children(e,ev,mesh_ids,children,transform,interface,model0);
 	//int s9 = children.size();
 	//for(int ii=0;ii<s9;ii++) {
 	//  handle_node(mesh_ids, children, transform, interface,ii);
@@ -8902,13 +8940,13 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, T
 
 
 
-GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_parr_msarr( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z  )
+GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_parr_msarr( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_num  )
 {
 
     ArrayType *array = new ArrayType;
     array->type=0;
-    array->vec.push_back(gltf_mesh_all_parr(ev,model0,mix,light_dir_x, light_dir_y, light_dir_z).id); // [P]
-    array->vec.push_back(gltf_mesh_all_msarr(ev,model0).id); // [MS]
+    array->vec.push_back(gltf_mesh_all_parr(ev,model0,mix,light_dir_x, light_dir_y, light_dir_z,skin_num).id); // [P]
+    array->vec.push_back(gltf_mesh_all_msarr(ev,model0, skin_num).id); // [MS]
     return add_array(ev.get_env(),array);
 
 }
@@ -8958,18 +8996,18 @@ GameApi::ML GameApi::MainLoopApi::bindinst_parr_msarr( GameApi::EveryApi &ev,
 class MeshAllPARRMSArrPrepare : public MainLoopItem
 {
 public:
-  MeshAllPARRMSArrPrepare(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z) : env(env),ev(ev), interface(interface), model0(model0), mix(mix), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z) { }
+  MeshAllPARRMSArrPrepare(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id) : env(env),ev(ev), interface(interface), model0(model0), mix(mix), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), skin_id(skin_id) { }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
     ArrayType *array = new ArrayType;
     array->type=0;
-    parr=ev.mainloop_api.gltf_mesh_all_parr(ev,model0,mix,light_dir_x, light_dir_y, light_dir_z);
+    parr=ev.mainloop_api.gltf_mesh_all_parr(ev,model0,mix,light_dir_x, light_dir_y, light_dir_z,skin_id);
     array->vec.push_back(parr.id); // [P]
-    msarr=ev.mainloop_api.gltf_mesh_all_msarr(ev,model0);
+    msarr=ev.mainloop_api.gltf_mesh_all_msarr(ev,model0,skin_id);
     array->vec.push_back(msarr.id); // [MS]
     ret = add_array(env,array);
-    mtarr = ev.mainloop_api.gltf_mesh_all_parr_mat(ev,model0,mix,light_dir_x, light_dir_y, light_dir_z);
+    mtarr = ev.mainloop_api.gltf_mesh_all_parr_mat(ev,model0,mix,light_dir_x, light_dir_y, light_dir_z,skin_id);
     ArrayType *parr2 = find_array(env,parr);
     std::vector<GameApi::P> pvec;
     int s = parr2->vec.size();
@@ -9018,12 +9056,13 @@ private:
   GameApi::TF model0;
   float mix;
   float light_dir_x, light_dir_y, light_dir_z;
+  int skin_id;
 };
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z )
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst( GameApi::EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id )
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new MeshAllPARRMSArrPrepare(e,ev,interface,model0,mix,light_dir_x, light_dir_y, light_dir_z));
+  return add_main_loop(e, new MeshAllPARRMSArrPrepare(e,ev,interface,model0,mix,light_dir_x, light_dir_y, light_dir_z, skin_id));
 }
 #endif // INST RENDER
 

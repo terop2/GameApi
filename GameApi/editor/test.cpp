@@ -776,7 +776,6 @@ public:
 	env->key_state = false;
       }
 #endif
-	
     
     
     if (e.ch==1073742048 && e.type == 0x300)
