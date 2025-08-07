@@ -34,7 +34,7 @@ public:
   typedef int64_t difference_type;
   void print() const
   {
-#if 1
+#if 0
     if (*changed_mem >100000)
       {
 	if (*used_mem>1024000000) {
@@ -53,13 +53,36 @@ public:
       }
 #endif
   }
-  T* allocate(uint64_t sz) { *free_mem-=sz*sizeof(T); *changed_mem+=sz*sizeof(T); *used_mem+=sz*sizeof(T); print(); return (T*)malloc(sz*sizeof(T)); }
-  void deallocate(T *ptr, uint64_t sz) { *free_mem+=sz*sizeof(T); *changed_mem+=sz*sizeof(T); print(); *used_mem-=sz*sizeof(T); return free((void*)ptr); }
+  T* allocate(uint64_t sz) {
+#if 0
+    *free_mem-=sz*sizeof(T);
+    *changed_mem+=sz*sizeof(T);
+    *used_mem+=sz*sizeof(T);
+    print();
+#endif
+    return (T*)malloc(sz*sizeof(T));
+  }
+  void deallocate(T *ptr, uint64_t sz) {
+#if 0
+    *free_mem+=sz*sizeof(T);
+    *changed_mem+=sz*sizeof(T);
+    print();
+    *used_mem-=sz*sizeof(T);
+#endif
+    return free((void*)ptr);
+  }
   uint64_t max_size() const { return *free_mem; }
   friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
   friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
   GameApiAllocator() : free_mem(&m_free_mem), changed_mem(&m_changed_mem),used_mem(&m_used_mem) { }
   GameApiAllocator(const GameApiAllocator &a) : free_mem(a.free_mem), changed_mem(&m_changed_mem), used_mem(&m_used_mem) { }
+  GameApiAllocator &operator=(const GameApiAllocator &a)
+  {
+    free_mem = a.free_mem;
+    changed_mem = a.changed_mem;
+    used_mem = a.used_mem;
+    return *this;
+  }
 private:
   uint64_t *free_mem;
   uint64_t *changed_mem;

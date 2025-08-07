@@ -1222,8 +1222,11 @@ std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::
 
 struct del_map : public del_map_interface
 {
+  del_map() { pthread_mutex_init(&lock, NULL); }
+  ~del_map() { pthread_mutex_destroy(&lock); }
   void async_cache_clear()
   {
+    pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
       {
@@ -1231,11 +1234,14 @@ struct del_map : public del_map_interface
 	delete e.second;
       }
     load_url_buffers_async.clear();
+    //std::cout << "Map Clear! -> 0" << std::endl;
+    pthread_mutex_unlock(&lock);
   }
 
 #ifdef EMSCRIPTEN
   void del_fetch_url(std::string url)
   {
+    pthread_mutex_lock(&lock);
     int s = fetches.size();
     for(int i=0;i<s;i++)
       { 
@@ -1248,72 +1254,86 @@ struct del_map : public del_map_interface
 	    //break;
 	  }
       }
+    pthread_mutex_unlock(&lock);
   }
 #endif
   void del_async_url(std::string url)
   {
     //std::cout << "del_async_url: 1"<< std::endl;
+    pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     //std::cout << "del_async_url: 2"<< std::endl;
     for(int i=0;i<s;i++)
       {
 	//std::cout << "del_async_url: 3"<< std::endl;
-	VECENTRY e = load_url_buffers_async[i];
+	VECENTRY &e = load_url_buffers_async[i];
 	//std::cout << "del_async_url: 4"<< std::endl;
 	if (e.first == url) {
+	  delete e.second; e.second=0;
 	  //std::cout << "del_async_url: 5"<< std::endl;
-	  delete e.second;
 	  //std::cout << "del_async_url: 6"<< std::endl;
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
 	  //std::cout << "del_async_url: 7"<< std::endl;
 	  i--;
 	  //std::cout << "del_async_url: 8"<< std::endl;
+	  //std::cout << "Map Pop() -> " << load_url_buffers_async.size() << std::endl;
+
 	  break;
 	  //std::cout << "del_async_url: 9"<< std::endl;
 	}
 	//std::cout << "del_async_url: 10"<< std::endl;
       }
     //std::cout << "del_async_url: 11"<< std::endl;
+    pthread_mutex_unlock(&lock);
   }
 #ifdef EMSCRIPTEN
   void push_fetch_url(std::string url, FetchInBlocks *blk)
   {
+    pthread_mutex_lock(&lock);
     VECENTRY2 e;
     e.first = url;
     e.second = blk;
     fetches.push_back(e);
+    pthread_mutex_lock(&unlock);
   }
 #endif
   void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)
   {
     //std::cout << "Push async url: " << url << " " << std::hex << (long)ptr << std::dec << std::endl;
+    pthread_mutex_lock(&lock);
     VECENTRY e;
     e.first = url;
     e.second = const_cast<std::vector<unsigned char,GameApiAllocator<unsigned char> > *>(ptr);
     load_url_buffers_async.push_back(e);
+    //std::cout << "Map Push() -> " << load_url_buffers_async.size() << " " << std::hex << (long)ptr << std::dec << std::endl;
+    pthread_mutex_unlock(&lock);
   }
-  ~del_map() {
+  //~del_map() {
 
-  }
+  //}
   void print()
   {
 
   }
   void del_vec(const std::vector<unsigned char, GameApiAllocator<unsigned char> >* vec)
   {
+    pthread_mutex_lock(&lock);
 
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
       {
-	VECENTRY e = load_url_buffers_async[i];
+	VECENTRY &e = load_url_buffers_async[i];
 	if (&*e.second == &*vec) {
-	  delete e.second;
+	  delete e.second; e.second=0;
 	  load_url_buffers_async.erase(load_url_buffers_async.begin()+i);
 	  i--;
+	  //std::cout << "Map Pop2() -> " << load_url_buffers_async.size() << " " << std::endl;
+	  
 	  break;
 	}
       }
 
+    pthread_mutex_unlock(&lock);
 
     /*
     std::map<std::string,std::shared_ptr<const std::vector<unsigned char, GameApiAllocator<unsigned char> >> >::iterator it=load_url_buffers_async.begin();
@@ -1331,44 +1351,58 @@ struct del_map : public del_map_interface
 #ifdef EMSCRIPTEN
   bool fetch_find(std::string url)
   {
+    pthread_mutex_lock(&lock);
     int s = fetches.size();
     for(int i=0;i<s;i++)
       {
 	VECENTRY2 e = fetches[i];
 	if (e.first == url)
-	  { return true; }
+	  {
+	    pthread_mutex_unlock(&lock);
+	    return true;
+	  }
       }
+    pthread_mutex_unlock(&lock);
     return false;
   }
 #endif
   bool async_find(std::string url)
 {
   //std::cout << "ASYNC FIND:" << url << std::endl;
+    pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
       {
 	VECENTRY e = load_url_buffers_async[i];
 	//std::cout << "async_find:" << e.first << std::endl;
 	if (e.first == url)
-	  { return true; }
+	  {
+	    pthread_mutex_unlock(&lock);
+	    return true; }
       }
+    pthread_mutex_unlock(&lock);
     return false;
 }
 
 VECENTRY &async_get(std::string url)
 {
+    pthread_mutex_lock(&lock);
     int s = load_url_buffers_async.size();
     for(int i=0;i<s;i++)
       {
 	VECENTRY e = load_url_buffers_async[i];
 	if (e.first == url)
-	  { ret=e; return ret; }
+	  { ret=e;
+	    pthread_mutex_unlock(&lock);
+
+	    return ret; }
       }
 std::cout << "You should check if element exists before calling async_get" << std::endl;
  VECENTRY e2;
  e2.first = "";
  e2.second = 0;
  ret = e2;
+    pthread_mutex_unlock(&lock);
     return ret;  
 }
   
@@ -1380,6 +1414,7 @@ std::cout << "You should check if element exists before calling async_get" << st
 #endif
   VECENTRY ret;
   VECENTRY ret2;
+  pthread_mutex_t lock;
 };
 
 
