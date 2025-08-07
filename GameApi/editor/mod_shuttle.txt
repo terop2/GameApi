@@ -27,7 +27,7 @@ test
 (78,792)point uid13538 0 0 1 x:*0:false:-1:0 y:*-110:false:-1:0 z:*0:false:-1:0
 (94,1130)point uid13539 0 0 1 x:*0:false:-1:0 y:*110:false:-1:0 z:*0:false:-1:0
 (394,906)o_maxop uid13540 0 0 1 object1:*uid13537:false:-1:0 object2:*uid13533:false:-1:0
-(2401,960)o_maxop uid13541 0 0 1 object1:*uid13540:false:-1:0 object2:*uid13536:false:-1:0
+(504,1019)o_maxop uid13541 0 0 1 object1:*uid13540:false:-1:0 object2:*uid13536:false:-1:0
 (654,1084)o_move uid13543 0 0 1 obj:*uid13541:false:-1:0 dx:*300:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
 (654,1197)o_move uid13544 0 0 1 obj:*uid13541:false:-1:0 dx:*-300:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
 (785,1028)o_maxop uid13545 0 0 1 object1:*uid13541:false:-1:0 object2:*uid13543:false:-1:0
@@ -35,7 +35,7 @@ test
 (1018,1123)vx_blit uid13547 0 0 1 object:*uid13546:false:-1:0 sx:*300:false:-1:0 sy:*50:false:-1:0 sz:*30:false:-1:0 start_x:*-400:false:-1:0 end_x:*400:false:-1:0 start_y:*-200:false:-1:0 end_y:*200:false:-1:0 start_z:*-100:false:-1:0 end_z:*100:false:-1:0 false_value:*-1:false:-1:0 true_value:*0:false:-1:0
 (1150,1127)vx_inst uid13548 0 0 1 voxel:*uid13547:true:-1:0 count:*1:true:-1:0 start_x:*-400:true:-1:0 end_x:*400:true:-1:0 start_y:*-200:true:-1:0 end_y:*200:true:-1:0 start_z:*-100:true:-1:0 end_z:*100:true:-1:0
 (1298,1136)vx_render uid13549 0 0 1 ev:*ev:false:-1:0 objs:*[uid13550]:false:-1:0 ptss:*uid13548:false:-1:0
-(1142,994)cube uid13550 0 0 1 start_x:*-2:false:-1:0 end_x:*2:false:-1:0 start_y:*-20:false:-1:0 end_y:*20:false:-1:0 start_z:*-3:false:-1:0 end_z:*3:false:-1:0
+(952,1077)cube uid13550 0 0 1 start_x:*-2:false:-1:0 end_x:*2:false:-1:0 start_y:*-20:false:-1:0 end_y:*20:false:-1:0 start_z:*-3:false:-1:0 end_z:*3:false:-1:0
 (1316,1252)vx_bind uid13551 0 0 1 ev:*ev:false:-1:0 objs:*[uid13550]:false:-1:0 ptss:*uid13548:false:-1:0 mt:*uid13562:false:-1:0
 (1114,1319)m_phong uid13552 0 0 1 ev:*ev:false:-1:0 nxt:*uid13553:false:-1:0 light_dir_x:*-0.3:false:-1:0 light_dir_y:*0.3:false:-1:0 light_dir_z:*-1:false:-1:0 ambient:*ffff8800:false:-1:0 highlight:*ffffffff:false:-1:0 pow:*15:false:-1:0
 (993,1324)m_def uid13553 0 0 1 ev:*ev:false:-1:0
