@@ -13670,6 +13670,7 @@ void *thread_sketchfab_zip(void *data)
 	    mz_uint err = mz_zip_reader_get_filename(pZip, i, filename, 256);
 	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; return 0; }
 	    std::string url = "load_url.php?url=" + obj->zip_url + "/" + std::string(filename);
+	    //std::cout << "Reading: " << url << std::endl;
 	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
 	    if (url.substr(url.size()-5)==".gltf" ||url.substr(url.size()-4)==".glb") obj->mainfilename = obj->zip_url + "/" + std::string(filename);
 	    //std::cout << "Decompressing zip: " << filename << std::endl;
