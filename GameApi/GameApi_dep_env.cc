@@ -1294,7 +1294,7 @@ struct del_map : public del_map_interface
     e.first = url;
     e.second = blk;
     fetches.push_back(e);
-    pthread_mutex_lock(&unlock);
+    pthread_mutex_unlock(&lock);
   }
 #endif
   void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)
