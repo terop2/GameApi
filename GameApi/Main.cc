@@ -550,10 +550,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_DOUBLEBUFFER, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_STENCIL_SIZE, 1);
 #ifdef WAYLAND
-  
+    
   if (getenv("XDG_SESSION_TYPE") && std::string(getenv("XDG_SESSION_TYPE"))=="wayland")
     {
       g_low->sdl->SDL_SetHint("SDL_VIDEODRIVER", "wayland");
+      g_low->sdl->SDL_SetHint("SDL_OPENGL_ES_DRIVER", "1");
     }
   
 #endif
