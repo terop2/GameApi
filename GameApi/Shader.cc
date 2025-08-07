@@ -205,7 +205,7 @@ Program::~Program()
   for(std::vector<const Shader*>::iterator i = vec.begin();i!=vec.end();i++)
     {
       detach(*(*i));
-      delete (*i);
+      //delete (*i); // push_back takes const ref, not an ownership passing
     }
   g_low->ogl->glDeleteProgram(priv->program);
   delete priv;
