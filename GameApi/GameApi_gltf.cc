@@ -8642,6 +8642,7 @@ std::vector<int> get_tinygltf_nodes( GameApi::EveryApi &ev, GLTFModelInterface *
       int start_node = skin.skeleton;
       if (start_node!=-1)
 	{
+	  std::cout << "Choose skeleton!" << std::endl;
 	  std::vector<int> vec;
 	  vec.push_back(start_node);
 	  return vec;
@@ -8650,10 +8651,12 @@ std::vector<int> get_tinygltf_nodes( GameApi::EveryApi &ev, GLTFModelInterface *
    int scene_id = interface->get_default_scene();
    if (scene_id>=0 && scene_id<interface->scenes_size())
      {
+	  std::cout << "Choose scene!" << std::endl;
        const tinygltf::Scene &scene = interface->get_scene(scene_id);
        return scene.nodes;
      } else
      {
+	  std::cout << "Choose empty!" << std::endl;
        return std::vector<int>();
      }
 }
@@ -8666,6 +8669,7 @@ GameApi::P GameApi::MainLoopApi::gltf_mesh_all_p( GameApi::EveryApi &ev, TF mode
   return add_polygon2(e, new GltfMeshAllP(e,ev,interface),1);
 }
 
+//#define TRY_INST_RENDER 1
 #ifdef TRY_INST_RENDER
 
 GameApi::MS ms_array( GameApi::Env &e, std::vector<Matrix> vec);
@@ -8694,6 +8698,7 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
 	      {
 		const tinygltf::Primitive &prim = mesh_data.primitives[p];
 		int material = prim.material;
+		std::cout << "Primitive material:" << material << std::endl;
 		GameApi::MT mat2;
 		if (material==-1)
 		  {
@@ -8786,41 +8791,44 @@ std::vector<GameApi::MT> GameApi::MainLoopApi::gltf_mesh_all_parr_mat( GameApi::
 }
 
 
-void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i, GameApi::TF model0);
+void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i, GameApi::TF model0, Matrix &res);
 
-void handle_node_children(GameApi::Env &env, GameApi::EveryApi &ev,std::vector<int> &mesh_ids, const std::vector<int> &children, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, GameApi::TF model0)
+void handle_node_children(GameApi::Env &env, GameApi::EveryApi &ev,std::vector<int> &mesh_ids, const std::vector<int> &children, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, GameApi::TF model0, Matrix res)
 {
   int s9 = children.size();
   for(int ii=0;ii<s9;ii++) {
-    handle_node(env,ev,mesh_ids, children, transform, interface,ii,model0);
+    Matrix res2 = res;
+    handle_node(env,ev,mesh_ids, children, transform, interface,ii,model0,res2);
     int node_id = children[ii];
     const tinygltf::Node &node = interface->get_node(node_id);
     std::vector<int> children2 = node.children;
-    handle_node_children(env,ev,mesh_ids,children2,transform,interface,model0);
+    handle_node_children(env,ev,mesh_ids,children2,transform,interface,model0,res2);
   }
 }
-void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i, GameApi::TF model0)
+void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mesh_ids, const std::vector<int> &nodes, std::vector<std::vector<Matrix> > &transform, GLTFModelInterface *interface, int i, GameApi::TF model0, Matrix &res)
 {
   std::cout << "handle node:" << nodes[i] << std::endl;
       if (nodes[i]>=0 && nodes[i]<interface->nodes_size()) {
 	const tinygltf::Node &node = interface->get_node(nodes[i]);
 	int mesh = node.mesh;
 	std::cout << "render mesh " << mesh << std::endl;
+	bool found=false;
+	std::vector<int> pos3;
 	if (mesh!=-1)
 	  {
 	    int s3=mesh_ids.size();
-	    bool found=false;
 	    int pos2 = -1;
-	    std::vector<int> pos3;
 	    for(int m=0;m<s3;m++) {
 	      if (mesh_ids[m]==mesh) { pos3.push_back(m); found=true; }
 	    }
-	    Matrix res = Matrix::Identity();
+	  }
+	    //res = Matrix::Identity();
 	    if (int(node.translation.size())==3) {
 	      double m_x = node.translation[0];
 	      double m_y = node.translation[1];
 	      double m_z = node.translation[2];
-	      res = Matrix::Translate(m_x,m_y,m_z);
+	      std::cout << "Translate:" << m_x << " " << m_y << " " << m_z << std::endl;
+	      res = res * Matrix::Translate(m_x,m_y,m_z);
 	    }
 	    if (int(node.rotation.size())==4) {
 	      double r_x = node.rotation[0];
@@ -8829,16 +8837,44 @@ void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mes
 	      double r_w = node.rotation[3];
 	      Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
 	      Matrix m = Quarternion::QuarToMatrix(q);
-	      res = m;
+	      std::cout << "Rotate:" << r_x << " " << r_y << " " << r_z << " " << r_w << std::endl;
+	      res = res * m;
 	    }
 	    if (int(node.scale.size())==3) {
 	      double s_x = node.scale[0];
 	      double s_y = node.scale[1];
 	      double s_z = node.scale[2];
-	      res = Matrix::Scale(s_x,s_y,s_z);
+	      std::cout << "Scale:" << s_x << " " << s_y << " " << s_z << std::endl;
+	      res = res * Matrix::Scale(s_x,s_y,s_z);
 	      //std::cout << "Scale14:" << s_x << " " << s_y << " " << s_z << std::endl;
 	    }
-
+	    if (int(node.matrix.size())==16)
+	      {
+		std::cout << "Matrix:" << std::endl;
+		Matrix m;
+		m.matrix[0]=node.matrix[0];
+		m.matrix[1]=node.matrix[4];
+		m.matrix[2]=node.matrix[8];
+		m.matrix[3]=node.matrix[12];
+		m.matrix[4]=node.matrix[1];
+		m.matrix[5]=node.matrix[5];
+		m.matrix[6]=node.matrix[9];
+		m.matrix[7]=node.matrix[13];
+		m.matrix[8]=node.matrix[2];
+		m.matrix[9]=node.matrix[6];
+		m.matrix[10]=node.matrix[10];
+		m.matrix[11]=node.matrix[14];
+		m.matrix[12]=node.matrix[3];
+		m.matrix[13]=node.matrix[7];
+		m.matrix[14]=node.matrix[11];
+		m.matrix[15]=node.matrix[15];
+		int s = 16;
+		for(int i=0;i<s;i++) std::cout << m.matrix[i] << ",";
+		std::cout << std::endl;
+		res = res*m;
+	      }
+	    
+	    
 	    int skin = node.skin;
 	    if (skin!=-1)
 	      {
@@ -8849,20 +8885,32 @@ void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mes
 		if (sk && sk->is_joint(nodes[i])) {
 		  int joint = sk->joint_num(nodes[i]);
 		  Matrix invBind = sk->inverse_bind(joint);
+		  std::cout << "InvBind" << std::endl;
 		  res = res * invBind;
 		}
 	      }
 
+	    if (mesh!=-1) {
 	    
 	    if (found) {
 	      int s7 = pos3.size();
 	      for(int k=0;k<s7;k++) {
-		transform[k].push_back(res); // TODO, RESIZING NEEDS TO BE DONE HERE?
+		transform[pos3[k]].push_back(res); // TODO, RESIZING NEEDS TO BE DONE HERE?
+		std::cout << "Pushed matrix to pos:"<< pos3[k] << " ";
+	      int s=16;
+	      for(int i=0;i<s;i++) std::cout << res.matrix[i] << ",";
+	      std::cout << std::endl;
+
+		
 	      }
 	    }
 	    if (!found) {
 	      transform.push_back(std::vector<Matrix>());
 	      transform[transform.size()-1].push_back(res);
+	      std::cout << "Pushed matrix:";
+	      int s=16;
+	      for(int i=0;i<s;i++) std::cout << res.matrix[i] << ",";
+	      std::cout << std::endl;
 	    }
 	    if (!found) { // skip mesh if already rendered.
 	      const tinygltf::Mesh &mesh_data = interface->get_mesh(mesh);
@@ -8876,7 +8924,7 @@ void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mes
 		//meshes.push_back(p2.id);
 		}
 	    }
-	  }
+	    }
       }
 }
 
@@ -8884,6 +8932,7 @@ void handle_node(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<int> &mes
 
 GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, TF model0, int skin_num)
 {
+  std::cout << "START MSARRAY" << std::endl;
   GLTFModelInterface *interface = find_gltf(e,model0);
   ArrayType *array = new ArrayType;
   array->type=0;
@@ -8896,12 +8945,15 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, T
   std::vector<std::vector<Matrix> > transform;
   for(int i=0;i<s;i++)
     {
-      handle_node(e,ev,mesh_ids, nodes, transform, interface, i, model0);
+      Matrix res = Matrix::Identity();
+      handle_node(e,ev,mesh_ids, nodes, transform, interface, i, model0, res);
 
       if (nodes[i]>=0 && nodes[i]<interface->nodes_size()) {
 	const tinygltf::Node &node = interface->get_node(nodes[i]);
 	std::vector<int> children = node.children;
-	handle_node_children(e,ev,mesh_ids,children,transform,interface,model0);
+	std::cout << "start children" << std::endl;
+	handle_node_children(e,ev,mesh_ids,children,transform,interface,model0,res);
+	std::cout << "end children" << std::endl;
 	//int s9 = children.size();
 	//for(int ii=0;ii<s9;ii++) {
 	//  handle_node(mesh_ids, children, transform, interface,ii);
@@ -8916,9 +8968,9 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, T
       //ArrayType *array2 = new ArrayType;
       //array2->type=0;
       std::vector<Matrix> inner = transform[i];
-      std::cout << ((EnvImpl*)e.envimpl)->matrix_arrays.size() << std::endl;
+      //std::cout << ((EnvImpl*)e.envimpl)->matrix_arrays.size() << std::endl;
       array2 = ms_array(e, inner);
-      std::cout << ((EnvImpl*)e.envimpl)->matrix_arrays.size() << std::endl;
+      //std::cout << ((EnvImpl*)e.envimpl)->matrix_arrays.size() << std::endl;
       //std::vector<int> inner2;
       //int s6 = inner.size();
       //for(int j=0;j<s6;j++)
@@ -8934,6 +8986,7 @@ GameApi::ARR GameApi::MainLoopApi::gltf_mesh_all_msarr( GameApi::EveryApi &ev, T
       msarr.push_back(arrindex);
     }
   array->vec = msarr;
+  std::cout << "END MSARRAY" << std::endl;
   return add_array(e,array);
 }
 
@@ -8973,7 +9026,7 @@ GameApi::ML GameApi::MainLoopApi::bindinst_parr_msarr( GameApi::EveryApi &ev,
       GameApi::P p = parr[i];
       GameApi::MS arr = msarr[i];
       GameApi::MT mat = matarr[i];
-      std::cout << "arr" << arr.id << std::endl;
+      //std::cout << "arr" << arr.id << std::endl;
       //ArrayType *t = find_array(e,msarrid);
       //int s2 = t->vec.size();
       //std::vector<Matrix> mat2;
@@ -8997,7 +9050,7 @@ class MeshAllPARRMSArrPrepare : public MainLoopItem
 {
 public:
   MeshAllPARRMSArrPrepare(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id) : env(env),ev(ev), interface(interface), model0(model0), mix(mix), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), skin_id(skin_id) { }
-  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void Collect(CollectVisitor &vis) { interface->Collect(vis); vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
     ArrayType *array = new ArrayType;
@@ -9017,6 +9070,17 @@ public:
     int s2 = msarr2->vec.size();
     for(int i=0;i<s2;i++) { GameApi::MS p = { msarr2->vec[i] }; msvec.push_back(p); }
     ml = ev.mainloop_api.bindinst_parr_msarr( ev, pvec, msvec, mtarr);
+    int scene_id = interface->get_default_scene();
+    GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+    res = scale_to_gltf_size(env,ev,mesh,ml);
+
+    if (res.id!=-1)
+      {
+	MainLoopItem *item = find_main_loop(env,res);
+	if (item)
+	  item->Prepare();
+      }
+    
   }
   virtual void Prepare() {
     interface->Prepare();
@@ -9025,21 +9089,26 @@ public:
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
-    if (ml.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,ml);
+    if (res.id!=-1) {
+      // TODO THIS WILL EAT MEMORY
+      GameApi::MN empty = ev.move_api.mn_empty();
+      GameApi::MN mv = ev.move_api.matrix(empty, add_matrix2(env,e.in_MV));
+      res2 = ev.move_api.move_ml(ev,res,mv,1,10.0);
+      
+      MainLoopItem *item = find_main_loop(env,res2);
       item->execute(e);
     }
   }
   virtual void handle_event(MainLoopEvent &e)
   {
-    if (ml.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,ml);
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
       item->handle_event(e);
     }
   }
   virtual std::vector<int> shader_id() {
-    if (ml.id!=-1) {
-      MainLoopItem *item = find_main_loop(env,ml);
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
       return item->shader_id();
     }
     return std::vector<int>();
@@ -9050,6 +9119,8 @@ private:
   GameApi::EveryApi &ev;
   GameApi::ARR ret = { -1 };
   GameApi::ML ml = { -1 };
+  GameApi::ML res= { -1 };
+  GameApi::ML res2 = { -1 };
   GameApi::ARR parr = { -1 };
   GameApi::ARR msarr = { -1 };
   std::vector<GameApi::MT> mtarr;

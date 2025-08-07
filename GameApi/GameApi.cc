@@ -10043,12 +10043,21 @@ public:
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
     item->Collect(vis);
+    vis.register_obj(this);
     firsttime = false;
   }
   void HeavyPrepare() {
+    Prepare();
   }
   virtual void Prepare()
   {
+    if (firsttime) {
+    find_ml();
+    MainLoopItem *item = find_main_loop(env,ml);
+    item->Prepare();
+    //HeavyPrepare();
+    firsttime = false;
+    }
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -10106,6 +10115,7 @@ public:
   void HeavyPrepare() {
     FaceCollection *coll = find_facecoll(env,p);
     if (coll->NumFaces()==0) disabled=true;
+    Prepare();
   }
   virtual void Prepare()
   {
@@ -10114,7 +10124,7 @@ public:
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
       item->Prepare();
-      HeavyPrepare();
+      //HeavyPrepare();
       firsttime = false;
     }
   }
@@ -10940,7 +10950,11 @@ public:
   void Prepare() {
     if (initialized) { std::cout << "Prepare in RenderInstanced called twice" << std::endl; return; }
     //PointsApiPoints *obj2 = find_pointsapi_points(env, pts);
-    va = ev.polygon_api.create_vertex_array(p,true);
+    if (va.id==-1)
+      va = ev.polygon_api.create_vertex_array(p,true);
+
+    MatrixArray *obj2 = find_matrix_array(env, pts);
+    obj2->Prepare();
     initialized=true;
   }
   void execute(MainLoopEnv &e)
