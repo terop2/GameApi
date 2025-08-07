@@ -3129,11 +3129,14 @@ EXPORT GameApi::W GameApi::GuiApi::window_move(W widget, int area_x, int area_y,
 
 int ret_type_count(std::string return_type)
 {
-  if (return_type.size()>1&&return_type[0]=='[') return 1; // filter out array rturns
+  //if (return_type.size()>1&&return_type[0]=='[') return 1; // filter out array rturns
   int s = return_type.size();
   int count = 1;
+  int level = 0;
   for(int i=0;i<s;i++) {
-    if (return_type[i]==',') count++;
+    if (return_type[i]=='[') level++;
+    if (return_type[i]==']') level--;
+    if (return_type[i]==',' && level==0) count++;
   }
   return count;
 }
@@ -3144,8 +3147,11 @@ std::string ret_type_index(std::string return_type, int index)
   int beg = 0;
   std::string label;
   int i=0;
+  int level = 0;
   for(;i<s;i++) {
-    if (return_type[i]==',') {
+    if (return_type[i]=='[') level++;
+    if (return_type[i]==']') level--;
+    if (return_type[i]==',' && level==0) {
       label = return_type.substr(beg,i-beg);
       if (count==index) return label;
       count++;
@@ -5209,6 +5215,8 @@ private:
 };
 IMPORT extern int g_event_screen_y;
 IMPORT extern int g_event_screen_x;
+
+extern const char *g_videodriver;
 class ScrollAreaWidget : public GuiWidgetForward
 {
 public:
@@ -5272,11 +5280,19 @@ public:
     if (g_event_screen_y!=-1) {
       float scale_x = float(g_event_screen_x)/float(ev.mainloop_api.get_screen_width());
       float scale_y = float(g_event_screen_y)/float(ev.mainloop_api.get_screen_height());
+  if (g_videodriver && std::string(g_videodriver)=="wayland") {
+    scale_x*=1.6;
+  }
+
+      
       //std::cout << "SCISSOR SIZE: " << size.dx << " " << size.dy << " " << scale_x << " " << scale_y << std::endl;
       ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, (size.dx)*scale_x, size.dy*scale_y);
     } else {
       ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
     }
+    //std::cout << "g_resize_event;:" << g_resize_event_sx << " " << g_resize_event_sy << std::endl;
+    //std::cout << "g_event_screen:" << g_event_screen_x << " " << g_event_screen_y << std::endl;
+    //std::cout<< "scrollarea:" << pos.x << " " << size.dx << std::endl;
     vec[0]->render();
     ogl->glDisable(Low_GL_SCISSOR_TEST);
       }

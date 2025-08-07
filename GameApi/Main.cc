@@ -1990,3 +1990,4 @@ Low_SDL_Surface *init_2nd_display(int scr_x, int scr_y)
 
   return 0;
 }
+IMPORT const char *g_videodriver=0;

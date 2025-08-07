@@ -59,6 +59,7 @@ extern std::vector<void (*)(void*)> g_transparent_callback_objs;
 extern std::vector<void*> g_transparent_callback_params;
 extern std::vector<int> g_transparent_callback_ids;
 extern std::vector<float> g_transparent_pos;
+extern const char *g_videodriver;
 
 extern std::vector<std::vector<std::string> > g_collect_authors;
 extern std::vector<std::vector<std::string> > g_collect_licenses;
@@ -2614,6 +2615,8 @@ public:
       if (driver)
 	std::cout << "VIDEODRIVER:" << driver << std::endl;
 
+      g_videodriver = driver;
+      
       if (driver && std::string(driver)=="wayland")
 	{
 	  std::cout << "WARNING: you should use 'export SDL_VIDEODRIVER=x11' with gameapi-builder." << std::endl;

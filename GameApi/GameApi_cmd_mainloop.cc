@@ -283,6 +283,16 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "", "", "","1.0" },
 			 "ML", "mainloop_api", "gltf_mesh_all_env"));
 #endif
+#if 0
+#if (ALL==1)||(GLTF_MESH_ALL_INST==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_inst,
+			 "ml_gltf_all_inst",
+			 { "ev", "tf", "mix", "light_x", "light_y", "light_z" },
+			 { "EveryApi&", "TF", "float", "float", "float", "float" },
+			 { "ev", "", "1.0", "0.0", "0.0", "-1.0" },
+			 "ML", "mainloop_api", "gltf_mesh_all_inst"));
+#endif
+#endif
   
   /*  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_anim,
 			 "ml_gltf_anim",
@@ -766,6 +776,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi
 			 { "P", "MS", "MT" },
 			 { "", "", "" },
 			 "ML", "materials_api", "bind_inst_matrix"));
+#endif
+#if 0
+#if (ALL==1)||(BINDINST_PARR_MSARR==1)
+vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::bindinst_parr_msarr,
+			 "m_bindinst_parr",
+		       { "ev", "parr", "msarr", "mat" },
+		       {"EveryApi&", "[P]", "[MS]", "MT" },
+		       { "ev", "", "", "" },
+		       "ML", "mainloop_api", "bindinst_parr_msarr"));
+#endif
 #endif
 #if (ALL==1)||(M_BIND_INST_MANY==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::m_bind_inst_many,
