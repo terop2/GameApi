@@ -287,9 +287,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_MESH_ALL_INST==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_inst,
 			 "ml_gltf_all_inst",
-			 { "ev", "tf", "mix", "light_x", "light_y", "light_z" },
-			 { "EveryApi&", "TF", "float", "float", "float", "float" },
-			 { "ev", "", "1.0", "0.0", "0.0", "-1.0" },
+			 { "ev", "tf", "mix", "light_x", "light_y", "light_z", "skin_id" },
+			 { "EveryApi&", "TF", "float", "float", "float", "float","int" },
+			 { "ev", "", "1.0", "0.0", "0.0", "-1.0","0" },
 			 "ML", "mainloop_api", "gltf_mesh_all_inst"));
 #endif
 #endif
