@@ -1324,6 +1324,8 @@ bool g_disable_storing=false;
 
 #endif
 
+extern const char *g_videodriver;
+
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
 #if 0
@@ -1414,8 +1416,15 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
            g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
 #endif
            ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+
+  if (g_videodriver && std::string(g_videodriver)=="wayland") {
+    //g_event_screen_x = -1;
+    //g_event_screen_y = -1;
+  }
+	   
     }
   }
+  //}
 #endif
 
   // This will be activated from gameapi.cc

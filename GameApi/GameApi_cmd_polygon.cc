@@ -222,6 +222,16 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "", "1.0", "1.0", "1.0","true" },
 			 "[P]", "mainloop_api", "gltf_mesh_all_p_arr"));
 #endif
+#if 0
+#if (ALL==1)||(GLTF_MESH_ALL_PARR_MSARR==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_parr_msarr,
+			 "gltf_mesh_all_parr_msarr",
+			 { "ev", "model0" },
+			 { "EveryApi&", "TF" },
+			 { "ev", "" },
+			 "[P],[MS]", "mainloop_api", "gltf_mesh_all_parr_msarr"));
+#endif
+#endif  
 #if (ALL==1)||(GLTF_LOAD_SKETCHFAB_ZIP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_load_sketchfab_zip,
 			 "gltf_sketchfab_zip",
