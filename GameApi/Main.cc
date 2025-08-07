@@ -536,7 +536,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   if (screenx ==-1) { scr_x = g_display_width; screenx = g_display_width; }
   if (screeny ==-1) { scr_y = g_display_height; screeny = g_display_height; }
   
-    std::cout << g_low->sdl->SDL_GetError() << std::endl;
+  //std::cout << g_low->sdl->SDL_GetError() << std::endl;
     //std::cout << "NumJoysticks:"  << g_low->sdl->SDL_NumJoysticks() << std::endl;
 
     //   std::cout << "TEST:" << std::endl;
@@ -635,7 +635,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     sdl_window = g_low->sdl->SDL_CreateWindow("Program", Low_SDL_WINDOWPOS_CENTERED, Low_SDL_WINDOWPOS_CENTERED, scr_x, scr_y, Low_SDL_WINDOW_OPENGL_SHOWN);
 
   //std::cout << "window created!" << std::endl;
-  std::cout << g_low->sdl->SDL_GetError() << std::endl;
+  //std::cout << g_low->sdl->SDL_GetError() << std::endl;
 
   //std::cout << sdl_window << " " << sdl_window->ptr << std::endl;
 
