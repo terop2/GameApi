@@ -51,8 +51,8 @@ test
 (782,1853)p_alt uid11700 0 0 1 vec:*uid11699:false:-1:0 index:*4:false:-1:0
 (430,2354)p_mtl uid11701 0 0 1 ev:*ev:false:-1:0 obj_url:*http?//meshpage.org/assets/sponza/sponza.obj:false:-1:0 mtl_url:*http?//meshpage.org/assets/sponza/sponza.mtl:false:-1:0 url_prefix:*http?//meshpage.org/assets/sponza:false:-1:0 count:*1:false:-1:0
 (583,1522)m_def uid14770 0 0 1 ev:*ev:false:-1:0
-(382,2595)ml_gltf_all uid9029 0 0 1 ev:*ev:false:-1:0 tf:*:false:-1:0 mix:*1.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*true:false:-1:0
-(529,2778)move_ml uid9030 0 0 1 ev:*ev:false:-1:0 ml:*uid25603:false:-1:0 mn:*uid9032:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(382,2595)ml_gltf_all uid9029 0 0 1 ev:*ev:false:-1:0 tf:*uid483845087:false:-1:0 mix:*1.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*true:false:-1:0
+(529,2778)move_ml uid9030 0 0 1 ev:*ev:false:-1:0 ml:*uid9029:false:-1:0 mn:*uid9032:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (245,2900)mn_empty uid9031 0 0 1
 (404,2902)mn_scale uid9032 0 0 1 next:*uid9031:false:-1:0 sx:*3:false:-1:0 sy:*3:false:-1:0 sz:*3:false:-1:0
 (667,2778)quake_ml2 uid19577 0 0 1 ev:*ev:false:-1:0 ml:*uid9030:false:-1:0 speed:*20.0:false:-1:0 rot_speed:*0.03:false:-1:0
@@ -60,8 +60,8 @@ test
 (338,3218)m_material uid23052 0 0 1 ev:*ev:false:-1:0 roughness:*0.5:false:-1:0 metallic:*0.8:false:-1:0 base_r:*1:false:-1:0 base_g:*1:false:-1:0 base_b:*1:false:-1:0 base_a:*1:false:-1:0 mix:*1:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0
 (484,3159)m_bind uid23053 0 0 1 p:*uid23054:false:-1:0 mat:*uid23052:false:-1:0
 (361,3057)flip_normals uid23054 0 0 1 orig:*uid23051:false:-1:0
-(183,2775)m_gltf_env uid25598 0 0 1 ev:*ev:false:-1:0 tf:*:false:-1:0 material_id:*0:false:-1:0 mix:*1:false:-1:0 diffuse:*uid25604:false:-1:0 specular:*uid25604:false:-1:0 bfrd:*uid25604:false:-1:0
-(203,2665)p_gltf uid25599 0 0 1 ev:*ev:false:-1:0 tf:*:false:-1:0 mesh_index:*0:false:-1:0 prim_index:*0:false:-1:0
+(183,2775)m_gltf_env uid25598 0 0 1 ev:*ev:false:-1:0 tf:*uid483845087:false:-1:0 material_id:*0:false:-1:0 mix:*1:false:-1:0 diffuse:*uid25604:false:-1:0 specular:*uid25604:false:-1:0 bfrd:*uid25604:false:-1:0
+(203,2665)p_gltf uid25599 0 0 1 ev:*ev:false:-1:0 tf:*uid483845087:false:-1:0 mesh_index:*0:false:-1:0 prim_index:*0:false:-1:0
 (21,2763)bm_url uid25600 0 0 1 url:*http?//meshpage.org/assets/gameapi_logo.png:false:-1:0
 (33,2875)bm_url uid25601 0 0 1 url:*http?//meshpage.org/assets/gameapi_logo.png:false:-1:0
 (40,2994)bm_url uid25602 0 0 1 url:*http?//meshpage.org/assets/gameapi_logo.png:false:-1:0
@@ -407,3 +407,4 @@ test
 (985,-5101)html_run uid1927183051 0 0 1 ev:*ev:false:-1:1842813808 r:*uid3209:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:1842813808
 (1142,-5092)save_deploy uid1927183052 0 0 1 h:*uid1927183051:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1842813808
 (1298,1479)ogl_perspective uid1920985694 0 0 1 ev:*ev:false:-1:19 ml:*uid14963:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19
+(36,2538)gltf_sketchfab_zip uid483845087 0 0 1 url_to_zip:*https?//meshpage.org/assets/wooden_sofa.zip:false:-1:-1940884016

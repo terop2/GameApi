@@ -47,6 +47,8 @@
 #include "Tasks.hh"
 #include "GameApi_cmd.hh"
 
+//#define USE_GL_ERROR 1
+extern int g_disable_draws;
 extern int g_logo_status;
 extern std::string g_msg_string;
 extern int g_global_face_count;
@@ -15718,10 +15720,11 @@ void blocker_iter(void *arg)
   if (env->logo_shown)
     {
       bool b=false;
-      if (gameapi_seamless_url=="")
-	b = env->ev->mainloop_api.logo_iter();
+      if (gameapi_seamless_url=="") {
+	if (!g_disable_draws) b = env->ev->mainloop_api.logo_iter();
+      }
       else
-	b = env->ev->mainloop_api.seamless_iter();
+	if (!g_disable_draws) b = env->ev->mainloop_api.seamless_iter();
       if (b && async_pending_count==0) { env->logo_shown = false;
 	env->ev->mainloop_api.reset_time();
 	env->ev->mainloop_api.advance_time(env->start_time/10.0*1000.0);
@@ -15751,7 +15754,7 @@ void blocker_iter(void *arg)
 
 
     FinishProgress();
-    env->ev->mainloop_api.clear_3d(0xff000000);
+    if (!g_disable_draws) env->ev->mainloop_api.clear_3d(0xff000000);
 
     // handle esc event
     GameApi::MainLoopApi::Event e;
@@ -15803,7 +15806,7 @@ void blocker_iter(void *arg)
 	GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
 	GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
-	env->ev->mainloop_api.execute_ml(*env->ev,env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev,env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
 	if (env->fpscounter)
 	  env->ev->mainloop_api.fpscounter();
@@ -15818,7 +15821,7 @@ void blocker_iter(void *arg)
     Envi_2 *env = (Envi_2*)arg;
   env->ev->mainloop_api.fpscounter_frameready();
 	}
-    env->ev->mainloop_api.swapbuffers();
+    if (!g_disable_draws) env->ev->mainloop_api.swapbuffers();
     g_time_id++;
     g_engine_status = 1;
     //#ifdef EMSCRIPTEN
@@ -16236,11 +16239,11 @@ public:
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
-	  env->ev->mainloop_api.logo_iter();
+	if (!g_disable_draws) env->ev->mainloop_api.logo_iter();
 	  g_engine_status = 2;
 	  //std::cout << "End of Logo iter" << std::endl;
 	} else {
-	  env->ev->mainloop_api.seamless_iter();
+	  if (!g_disable_draws) env->ev->mainloop_api.seamless_iter();
 	  g_engine_status = 2;
 	}
       if (vis_counter>=vis->vec.size()) {
@@ -16263,11 +16266,11 @@ public:
       //bool b = false;
       if (gameapi_seamless_url=="") {
 	  //std::cout << "Logo iter" << std::endl;
-	  env->ev->mainloop_api.logo_iter();
+	  if (!g_disable_draws) env->ev->mainloop_api.logo_iter();
 	  g_engine_status = 2;
 	  //std::cout << "End of Logo iter" << std::endl;
 	} else {
-	  env->ev->mainloop_api.seamless_iter();
+	  if (!g_disable_draws) env->ev->mainloop_api.seamless_iter();
 	  g_engine_status = 2;
 	}
     }
@@ -16304,10 +16307,10 @@ public:
     if (no_draw_count==0) {
       if (debug_enabled) status+="NO_DRAW_COUNT0 ";
       if (!g_transparent) {
-	env->ev->mainloop_api.clear_3d(0xff000000);
+	if (!g_disable_draws) env->ev->mainloop_api.clear_3d(0xff000000);
       } else
 	{
-	env->ev->mainloop_api.clear_3d_transparent();
+	if (!g_disable_draws) env->ev->mainloop_api.clear_3d_transparent();
 	}
     }
 
@@ -16404,7 +16407,7 @@ public:
       if (debug_enabled) status+="PREPARE_DONE ";
       if (cb_counter==1||cb_counter>2) {
 	//	env->ev->shader_api.use(env->color_sh);
-	env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
       }
       if (g_transparent_callback_objs.size()) {
 	int s = g_transparent_callback_objs.size();
@@ -16462,7 +16465,13 @@ public:
 	  old_status = status;
 	}
     }
-    env->ev->mainloop_api.swapbuffers();
+#ifdef USE_GL_ERROR
+    int err = g_low->ogl->glGetError();
+    if (err != Low_GL_NO_ERROR) { printf("GL error: %x\n", err); }
+#endif
+
+    
+   if (!g_disable_draws)  env->ev->mainloop_api.swapbuffers();
 
     
 #ifdef WAYLAND
