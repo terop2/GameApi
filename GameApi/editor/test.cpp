@@ -2618,11 +2618,13 @@ public:
 
       g_videodriver = driver;
 
+#if 0
       if (g_gpu_vendor == std::string("NVID") && (getenv("__GL_SYNC_TO_VBLANK")==0 ||std::string(getenv("__GL_SYNC_TO_VBLANK"))=="1"))
 	{
 	  std::cout << "Warning: You should do: export __GL_SYNC_TO_VBLACK=0 to run gameapi-builder in nvidia gpu cards" << std::endl;
 	}
-
+#endif
+      
       
       if (driver && std::string(driver)=="wayland")
 	{
