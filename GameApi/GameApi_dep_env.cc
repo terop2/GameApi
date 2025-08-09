@@ -792,7 +792,7 @@ bool is_urls_from_same_server(std::string url, std::string url2)
 inline int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
 #endif
 
-std::string g_gpu_vendor;
+IMPORT std::string g_gpu_vendor;
 extern int async_pending_count;
 EnvImpl::EnvImpl() : event_infos(new EmptySequencer2), mutex(PTHREAD_MUTEX_INITIALIZER)
 {

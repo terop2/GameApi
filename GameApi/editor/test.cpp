@@ -35,6 +35,8 @@ using namespace GameApi;
 
 #include "Tasks.hh"
 
+extern std::string g_gpu_vendor;
+
 struct ArrayType
 {
   int type; // arraytypesinuse
@@ -2615,10 +2617,16 @@ public:
 	std::cout << "VIDEODRIVER:" << driver << std::endl;
 
       g_videodriver = driver;
+
+      if (g_gpu_vendor == std::string("NVID") && (getenv("__GL_SYNC_TO_VBLANK")==0 ||std::string(getenv("__GL_SYNC_TO_VBLANK"))=="1"))
+	{
+	  std::cout << "Warning: You should do: export __GL_SYNC_TO_VBLACK=0 to run gameapi-builder in nvidia gpu cards" << std::endl;
+	}
+
       
       if (driver && std::string(driver)=="wayland")
 	{
-	  std::cout << "WARNING: you should use 'export SDL_VIDEODRIVER=x11' with gameapi-builder." << std::endl;
+	  std::cout << "WARNING: you should use 'export SDL_VIDEODRIVER=x11' with gameapi-builder in wayland." << std::endl;
 	}
       
       const char *ee2 = getenv("SDL_VIDEODRIVER");

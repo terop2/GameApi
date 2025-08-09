@@ -555,6 +555,8 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     {
       g_low->sdl->SDL_SetHint("SDL_VIDEODRIVER", "wayland");
       g_low->sdl->SDL_SetHint("SDL_OPENGL_ES_DRIVER", "1");
+      g_low->sdl->SDL_SetHint("SDL_RENDER_DRIVER", "opengles2");
+      g_low->sdl->SDL_SetHitn("SDL_RENDER_VSYNC", "0");
     }
   
 #endif

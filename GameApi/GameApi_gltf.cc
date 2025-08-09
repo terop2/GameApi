@@ -10626,7 +10626,7 @@ public:
 
     call_prev_time_index2(prev2,node_id);
     int sz = interface->animations_size(); 
-    if (animation<0||animation>=sz) { std::cout << "Invalid animation id in recurse_node (" << animation << "/" << sz << ")" << std::endl; return Matrix::Identity(); }
+    if (animation<0||animation>=sz) { /*std::cout << "Invalid animation id in recurse_node (" << animation << "/" << sz << ")" << std::endl;*/ return Matrix::Identity(); }
 
     //std::cout << "GETNODE:" << node_id << std::endl;
     const tinygltf::Node &node = interface->get_node(node_id); 
@@ -10807,7 +10807,7 @@ public:
     int s = node_ids.size();
     for(int i=0;i<s;i++)
       {
-	if (node_ids[i]==-1) { /*node_ids[i]=0;*/ std::cout << "INDEX #" << i << " is not filled in gltf anim" << std::endl; }
+	if (node_ids[i]==-1) { /*node_ids[i]=0;*/ /*std::cout << "INDEX #" << i << " is not filled in gltf anim" << std::endl;*/ }
       }
   }
 public:

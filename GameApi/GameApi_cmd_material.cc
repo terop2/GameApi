@@ -594,6 +594,7 @@
 			 { "ev", "1024", "1024", "255", "255", "255", "255", "0", "0", "0", "255", "0.5" },
 			 "MT", "materials_api", "noise"));
 #endif
+#if 0
 #ifndef STABLE
 #if (ALL==1)||(BLOOM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bloom,
@@ -602,6 +603,7 @@
 			 { "EveryApi&", "MT", "BM", "float", "float", "float", "float", "float" },
 			 { "ev", "", "", "0.7", "0.7", "0.7", "0.01", "0.01" },
 			 "MT", "materials_api", "bloom"));
+#endif
 #endif
 #if (ALL==1)||(CHOOSE_COLOR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
@@ -644,6 +646,7 @@
 			 { "ev", "", "-1.5", "2.0" },
 			 "MT", "materials_api", "bevel"));
 #endif
+#if 0
 #ifndef STABLE
 #if (ALL==1)||(DIST_FIELD_MESH==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::dist_field_mesh,
@@ -662,7 +665,7 @@
 			 "MT", "materials_api", "mesh_color_from_sfo"));
 #endif
 #endif
-
+#endif
 #ifndef STABLE
 #if (ALL==1)||(MATERIAL_EXTRACTOR_P==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::material_extractor_p,

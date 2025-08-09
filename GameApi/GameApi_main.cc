@@ -1324,6 +1324,8 @@ bool g_disable_storing=false;
 
 #endif
 
+int g_disable_draws = 0;
+
 extern const char *g_videodriver;
 
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
@@ -1403,7 +1405,14 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 #endif
 #endif
 
+#ifndef EMSCRIPTEN
+  if (event.type==Low_SDL_WINDOWEVENT) {
+    if (event.window.event == 7) { g_disable_draws = 1; }
+    if (event.window.event == 8) { g_disable_draws = 0; }
+  }
+#endif
 
+  
 #ifndef EMSCRIPTEN
   if (event.type==Low_SDL_WINDOWEVENT) {
     if (event.window.event == 5) {
