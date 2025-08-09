@@ -95,6 +95,53 @@ IMPORT void tasks_join(int id)
   g_tasks.join_id(id);
 }
 
+extern GameApi::EveryApi *g_everyapi;
+
+void timeout_getevent()
+{
+  GameApi::EveryApi *ev = g_everyapi; 
+  if (!ev) return;
+  GameApi::MainLoopApi::Event e;
+     while((e = ev->mainloop_api.get_event()).last==true)
+       {
+	 /* this eats all events from queue */
+       }
+
+}
+
+int wait_with_timeout(pthread_cond_t *cond, pthread_mutex_t *mutex, int timeout_ms)
+{
+  struct timespec ts;
+  int ret;
+  
+  // Get current time
+  clock_gettime(CLOCK_REALTIME, &ts);
+  
+  // Add timeout_ms milliseconds to current time for absolute timeout
+  ts.tv_sec += timeout_ms / 1000;
+  ts.tv_nsec += (timeout_ms % 1000) * 1000000;
+  
+  // Normalize nanoseconds if > 1 second
+  if (ts.tv_nsec >= 1000000000) {
+    ts.tv_sec += 1;
+    ts.tv_nsec -= 1000000000;
+  }
+  
+  // Wait on the condition variable with timeout
+  ret = pthread_cond_timedwait(cond, mutex, &ts);
+  
+  if (ret == 0) {
+    // Condition was signaled before timeout
+    return 0;
+  } else if (ret == ETIMEDOUT) {
+    // Timeout expired
+    return 1;
+  } else {
+    // Some other error occurred
+    return -1;
+  }
+}
+
 class task_implementation : public task_interface
 {
 public:
@@ -237,7 +284,13 @@ public:
     pthread_mutex_lock(mutex);
     while(queue.size()==0&&!m_shutdown_ongoing)
       {
-	pthread_cond_wait(cond, mutex);
+	//pthread_cond_wait(cond, mutex);
+	int val = wait_with_timeout(cond,mutex,1000);
+	if (val==1) // timeout
+	  {
+	    //std::cout << "Warning: wait timeout!" << std::endl;
+	    timeout_getevent();
+	  }
       }
     pthread_mutex_unlock(mutex);
   }
@@ -275,7 +328,16 @@ public:
       }
     queue_mutex_end();
     if (count==0) break;
-      pthread_cond_wait(cond2,mutex2);
+    repeat:
+    {
+	int val = wait_with_timeout(cond2,mutex2,1000);
+	if (val==1) // timeout
+	  {
+	    timeout_getevent();
+	    //std::cout << "Warning: wait timeout!" << std::endl;
+	    goto repeat;
+	  }
+    }
     }
     pthread_mutex_unlock(mutex2);
 
