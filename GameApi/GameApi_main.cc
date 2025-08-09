@@ -1407,8 +1407,8 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 
 #ifndef EMSCRIPTEN
   if (event.type==Low_SDL_WINDOWEVENT) {
-    if (event.window.event == 7) { g_disable_draws = 1; }
-    if (event.window.event == 8) { g_disable_draws = 0; }
+    if (event.window.event == 7||event.window.event==11||event.window.event==13) { g_disable_draws = 1; /*std::cout << "Draws disabled!" << std::endl;*/ }
+    if (event.window.event == 8||event.window.event==10) { g_disable_draws = 0; /*std::cout << "Draws enabled!" << std::endl;*/ }
   }
 #endif
 
