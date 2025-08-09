@@ -96,6 +96,7 @@ IMPORT void tasks_join(int id)
 }
 
 extern GameApi::EveryApi *g_everyapi;
+extern int g_disable_draws;
 
 void timeout_getevent()
 {
@@ -3547,11 +3548,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	cnt++;
       if (cnt>5000) {
 	cnt=0;
-	  g_low->sdl->SDL_PumpEvents();
-	  Low_SDL_Event event;
-	  while (g_low->sdl->SDL_PollEvent(&event)) {
-	  }
-	  g_low->sdl->SDL_GL_SwapWindow(sdl_window);
+	//g_low->sdl->SDL_PumpEvents();
+	  //Low_SDL_Event event;
+	  //while (g_low->sdl->SDL_PollEvent(&event)) {
+	  //}
+	timeout_getevent();
+	if (!g_disable_draws) g_low->sdl->SDL_GL_SwapWindow(sdl_window);
       }
       //if (nosize) { std::cout << "while" << std::endl; }
       bool go=true;

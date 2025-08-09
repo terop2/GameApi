@@ -1359,6 +1359,8 @@ class SDLApi : public SDLLowApi
 
     if (!val) { return 0; }
 
+    //std::cout << e.type << " " << (int)e.window.event << std::endl;
+    
 	if (event) {
 	event->type = e.type;
    if (e.type==SDL_KEYDOWN||e.type==SDL_KEYUP) {
