@@ -16302,7 +16302,10 @@ public:
       }
     }
 
-    g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context);
+    if (g_low->sdl->SDL_GL_MakeCurrent(sdl_window, g_context)!=0)
+      {
+	std::cout << "Failed to make context current:" << g_low->sdl->SDL_GetError() << std::endl;
+      }
 
     if (no_draw_count==0) {
       if (debug_enabled) status+="NO_DRAW_COUNT0 ";
