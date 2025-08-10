@@ -1418,12 +1418,12 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 #endif
 #endif
 
-#ifndef EMSCRIPTEN
-  if (event.type==Low_SDL_WINDOWEVENT) {
-    if (event.window.event == 7||event.window.event==11||event.window.event==13) { g_disable_draws = 1; /*std::cout << "Draws disabled!" << std::endl;*/ }
-    if (event.window.event == 8||event.window.event==10||event.window.event==12||event.window.event==15||event.window.event==18) { g_disable_draws = 0; /*std::cout << "Draws enabled!" << std::endl;*/ }
-  }
-#endif
+  //#ifndef EMSCRIPTEN
+  //if (event.type==Low_SDL_WINDOWEVENT) {
+  //  if (event.window.event == 7||event.window.event==11||event.window.event==13) { g_disable_draws = 1; /*std::cout << "Draws disabled!" << std::endl;*/ }
+  // if (event.window.event == 8||event.window.event==10||event.window.event==12||event.window.event==15||event.window.event==18) { g_disable_draws = 0; /*std::cout << "Draws enabled!" << std::endl;*/ }
+  //}
+  //#endif
 
   
 #ifndef EMSCRIPTEN
