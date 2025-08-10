@@ -73,7 +73,7 @@ std::vector<std::string> g_license_urls;
 std::vector<std::string> g_license_authors;
 
 bool event_lock=true;
-float event_lock_time=0.0;
+uint64_t event_lock_time=0;
 extern GameApi::W enum_popup;
 extern GameApi::W enum_click;
 extern bool g_update_download_bar;
@@ -668,6 +668,11 @@ public:
   virtual void update(void *arg, MainLoopApi::Event &e)=0;
 };
 
+  uint64_t get_time_us() {
+    struct timeval tv;
+    gettimeofday(&tv, nullptr);
+    return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+  }
 
 class MainIter : public BuilderIter
 {
@@ -708,11 +713,6 @@ public:
 #endif    
   }
 #ifdef WAYLAND
-  uint64_t get_time_us() {
-    struct timeval tv;
-    gettimeofday(&tv, nullptr);
-    return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
-  }
   const uint64_t target_frametime_us = 10000;
 #endif
   void render(void *arg)
@@ -3187,7 +3187,7 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
       if (vec[i])
 	vec[i]->start(args[i]);
     }
-  //if (!event_lock) {
+  if (!event_lock) {
   int s2 = vec.size();
   for(int i=0;i<s2;i++)
     {
@@ -3208,18 +3208,18 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
     }
 #endif
 
-    //}
+    }
     MainLoopApi::Event e;
     e.ch = 0;
     e.last = true;
-    //event_lock=true;
+    event_lock=true;
 
-    //float t = ev->mainloop_api.get_time();
-    //if (t>event_lock_time+0.3) event_lock=false;
+    uint64_t t = get_time_us();
+    if (t>event_lock_time+3000) event_lock=false;
     
     while((e=ev->mainloop_api.get_event()).last)
       {
-	//event_lock=false;
+	event_lock=false;
 	int s3 = vec.size();
 	for(int i=0;i<s3;i++)
 	  {
@@ -3228,7 +3228,7 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 	  }
 	
       }
-    //if (!event_lock) event_lock_time=ev->mainloop_api.get_time();
+    if (!event_lock) event_lock_time=get_time_us();
     
     ee.async_scheduler();    
 }
