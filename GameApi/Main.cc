@@ -489,6 +489,62 @@ void *thread_func_bitmap(void *data)
 
 extern void *(*g_thread_func_bitmap)(void *data);
 
+
+void glDebugOutput(unsigned int source,
+                            unsigned int type,
+                            unsigned int id,
+                            unsigned int severity,
+                            int length,
+                            const char *message,
+                            const void *userParam)
+{
+    // Ignore some non-significant notification messages
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+        return;
+
+    const char *srcStr =
+        (source == GL_DEBUG_SOURCE_API)             ? "API" :
+        (source == GL_DEBUG_SOURCE_WINDOW_SYSTEM)   ? "WindowSys" :
+        (source == GL_DEBUG_SOURCE_SHADER_COMPILER) ? "ShaderCompiler" :
+        (source == GL_DEBUG_SOURCE_THIRD_PARTY)     ? "3rdParty" :
+        (source == GL_DEBUG_SOURCE_APPLICATION)     ? "App" :
+        (source == GL_DEBUG_SOURCE_OTHER)           ? "Other" : "Unknown";
+
+    const char *typeStr =
+        (type == GL_DEBUG_TYPE_ERROR)               ? "Error" :
+        (type == GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR) ? "Deprecated" :
+        (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR)  ? "Undefined" :
+        (type == GL_DEBUG_TYPE_PORTABILITY)         ? "Portability" :
+        (type == GL_DEBUG_TYPE_PERFORMANCE)         ? "Performance" :
+        (type == GL_DEBUG_TYPE_MARKER)              ? "Marker" :
+        (type == GL_DEBUG_TYPE_PUSH_GROUP)          ? "PushGrp" :
+        (type == GL_DEBUG_TYPE_POP_GROUP)           ? "PopGrp" : "Other";
+
+    const char *sevStr =
+        (severity == GL_DEBUG_SEVERITY_HIGH)         ? "HIGH" :
+        (severity == GL_DEBUG_SEVERITY_MEDIUM)       ? "MEDIUM" :
+        (severity == GL_DEBUG_SEVERITY_LOW)          ? "LOW" :
+        (severity == GL_DEBUG_SEVERITY_NOTIFICATION) ? "NOTIFY" : "Unknown";
+
+    printf("GL Debug: Source=%s Type=%s Sev=%s ID=%u\n  %s\n",
+           srcStr, typeStr, sevStr, id, message);
+}
+
+void initDebugCallback()
+{
+     GLint flags;
+    g_low->ogl->glGetIntegerv(Low_GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        g_low->ogl->glEnable(Low_GL_DEBUG_OUTPUT);
+        g_low->ogl->glEnable(Low_GL_DEBUG_OUTPUT_SYNCHRONOUS); // Synchronous for easier debugging
+        g_low->ogl->glDebugMessageCallback(glDebugOutput, 0);
+        g_low->ogl->glDebugMessageControl(Low_GL_DONT_CARE, Low_GL_DONT_CARE,
+                              Low_GL_DONT_CARE, 0, NULL, Low_GL_TRUE);
+    }
+}
+
+
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init)
 {
   
@@ -649,6 +705,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
 
+
   
   //std::cout << "context created" << std::endl;
 
@@ -679,6 +736,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   OpenglLowApi *ogl = g_low->ogl;
   ogl->init();
 
+  //initDebugCallback();
+
+  
 #ifdef ANDROID
   g_gpu_vendor = std::string("ANDROID");
 #endif

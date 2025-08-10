@@ -204,7 +204,11 @@ enum
     Low_GL_CW,
     Low_GL_CCW,
     Low_GL_LINK_STATUS,
-    Low_GL_READ_BUFFER
+    Low_GL_READ_BUFFER,
+    Low_GL_CONTEXT_FLAGS,
+    Low_GL_DEBUG_OUTPUT,
+    Low_GL_DEBUG_OUTPUT_SYNCHRONOUS,
+    Low_GL_DONT_CARE
   };
 enum {
     Low_GL_COLOR_BUFFER_BIT=1, // glClear
@@ -286,6 +290,8 @@ enum {
 #undef emscripten_set_click_callback
 #undef glGenerateMipmap
 #undef glFrontFace
+#undef glDebugMessageCallback
+#undef glDebugMessageControl
 
 class OpenglLowApi
 {
@@ -456,6 +462,21 @@ public:
   virtual void glNewList(int i, int k) { }
   virtual int glGenLists(int) { return 0; }
   virtual void glDeleteLists(int,int) {}
+  
+  virtual void glDebugMessageCallback(void (*)(unsigned int source,
+							    unsigned int type,
+							    unsigned int id,
+							    unsigned int severity,
+							    int length,
+							    const char *message,
+							    const void *userParam),
+				      const void *userParam)=0;
+  virtual void glDebugMessageControl(unsigned int source,
+				     unsigned int type,
+				     unsigned int severity,
+				     int count,
+				     const unsigned int *ids,
+				     int enabled)=0;
 };
 
 class FontLowApi

@@ -682,13 +682,11 @@ public:
     //std::cout << "MainIter cont" << std::endl;
     
     env->ev->shader_api.use(env->sh);
-    
     if (env->has_wayland) {
       env->ev->mainloop_api.clear(0x00000000);
     } else {
       env->ev->mainloop_api.clear(0xff000000);
     }
-    
     if (env->old_window_pos_x != g_window_pos_x || env->old_window_pos_y != g_window_pos_y) {
       int x = g_window_pos_x;
       int y = g_window_pos_y;
@@ -703,7 +701,10 @@ public:
       
     }
 #ifdef WAYLAND
-    t0=get_time_us();
+    static bool firsttime = true;
+    if (firsttime)
+      t0=get_time_us();
+    firsttime = false;
 #endif    
   }
 #ifdef WAYLAND
@@ -3180,12 +3181,13 @@ private:
 void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,EveryApi *ev)
 {
   int s = vec.size();
+  //std::cout << "IterAlgo " << s << std::endl;
   for(int i=0;i<s;i++)
     {
       if (vec[i])
 	vec[i]->start(args[i]);
     }
-  if (!event_lock) {
+  //if (!event_lock) {
   int s2 = vec.size();
   for(int i=0;i<s2;i++)
     {
@@ -3206,18 +3208,18 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
     }
 #endif
 
-  }
+    //}
     MainLoopApi::Event e;
     e.ch = 0;
     e.last = true;
-    event_lock=true;
+    //event_lock=true;
 
-    float t = ev->mainloop_api.get_time();
-    if (t>event_lock_time+0.3) event_lock=false;
+    //float t = ev->mainloop_api.get_time();
+    //if (t>event_lock_time+0.3) event_lock=false;
     
     while((e=ev->mainloop_api.get_event()).last)
       {
-	event_lock=false;
+	//event_lock=false;
 	int s3 = vec.size();
 	for(int i=0;i<s3;i++)
 	  {
@@ -3226,7 +3228,7 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
 	  }
 	
       }
-    if (!event_lock) event_lock_time=ev->mainloop_api.get_time();
+    //if (!event_lock) event_lock_time=ev->mainloop_api.get_time();
     
     ee.async_scheduler();    
 }
@@ -3299,11 +3301,14 @@ public:
     //std::cout << "IterTab::start cont" << std::endl;
     
     env->ev->shader_api.use(env->sh);
-    
+    static bool firsttime = true;
+    if (firsttime) {
     if (env->has_wayland) {
       env->ev->mainloop_api.clear(0x00000000);
     } else {
       env->ev->mainloop_api.clear(0xff000000);
+    }
+    firsttime = false;
     }
   }
   void render(void *arg) {
@@ -3600,6 +3605,7 @@ void refresh()
   if (g_progress_halt) return;
   if (g_env && g_env->progress_visible) {
   g_env->ev->shader_api.use(g_env->sh);
+
   if (g_env->has_wayland) {
     g_env->ev->mainloop_api.clear(0x00000000);
   } else {
