@@ -687,10 +687,12 @@ public:
     //std::cout << "MainIter cont" << std::endl;
     
     env->ev->shader_api.use(env->sh);
+    if (!event_lock) {
     if (env->has_wayland) {
       env->ev->mainloop_api.clear(0x00000000);
     } else {
       env->ev->mainloop_api.clear(0xff000000);
+    }
     }
     if (env->old_window_pos_x != g_window_pos_x || env->old_window_pos_y != g_window_pos_y) {
       int x = g_window_pos_x;
@@ -3303,11 +3305,13 @@ public:
     env->ev->shader_api.use(env->sh);
     static bool firsttime = true;
     if (firsttime) {
+      if (!event_lock) {
     if (env->has_wayland) {
       env->ev->mainloop_api.clear(0x00000000);
     } else {
       env->ev->mainloop_api.clear(0xff000000);
     }
+      }
     firsttime = false;
     }
   }
@@ -3606,10 +3610,12 @@ void refresh()
   if (g_env && g_env->progress_visible) {
   g_env->ev->shader_api.use(g_env->sh);
 
+  if (!event_lock) {
   if (g_env->has_wayland) {
     g_env->ev->mainloop_api.clear(0x00000000);
   } else {
     g_env->ev->mainloop_api.clear(0xff000000);
+  }
   }
   g_env->ev->mainloop_api.start_editor_state();
   PT cursor_pos = old_cursor_pos;
