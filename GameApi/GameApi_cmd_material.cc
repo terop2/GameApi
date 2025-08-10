@@ -605,6 +605,7 @@
 			 "MT", "materials_api", "bloom"));
 #endif
 #endif
+#endif
 #if (ALL==1)||(CHOOSE_COLOR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::choose_color,
 			 "m_choose_color",
@@ -628,7 +629,6 @@
 			 { "EveryApi&", "MT", "int", "float" },
 			 { "ev", "", "300", "10" },
 			 "MT", "materials_api", "marble"));
-#endif
 #endif
 #if (ALL==1)||(WEB==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::web,
