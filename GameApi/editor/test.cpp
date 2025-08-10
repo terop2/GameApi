@@ -669,9 +669,25 @@ public:
 };
 
   uint64_t get_time_us() {
+#ifdef LINUX
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     return (uint64_t)tv.tv_sec * 1000000 + tv.tv_usec;
+#endif
+#ifdef WINDOWS
+    static LARGE_INTEGER frequency;
+    static BOOL frequencyInitialized = FALSE;
+    if (!frequencyInitialized) {
+        QueryPerformanceFrequency(&frequency);
+        frequencyInitialized = TRUE;
+    }
+
+    LARGE_INTEGER counter;
+    QueryPerformanceCounter(&counter);
+
+    // Convert counts to microseconds
+    return (uint64_t)((counter.QuadPart * 1000000) / frequency.QuadPart);
+#endif
   }
 
 class MainIter : public BuilderIter
