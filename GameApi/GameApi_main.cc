@@ -825,15 +825,24 @@ EXPORT void GameApi::MainLoopApi::switch_to_3d(bool b, SH sh, int screenx, int s
     }
 }
 extern std::string gameapi_seamless_url;
+extern int g_disable_draws;
+int callcount=0;
 EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 {
   OpenglLowApi *ogl = g_low->ogl;
   //glClearColor(255,255,255,255);
+  callcount++;
+  if (callcount > 1000) {
+    std::cout << "clear called too often" << std::endl;
+    callcount = 0;
+  }
+  if (!g_disable_draws) {
   ogl->glClearStencil(0);
   Color c(col);
   ogl->glClearColor(c.rf(),c.gf(),c.bf(),c.af());
   ogl->glStencilMask(~0);
   ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  }
   //glLoadIdentity();
   //glTranslatef(0.375, 0.375, 0.0);
   //glTranslatef(0.0, 0.0, -260.0);
@@ -845,14 +854,17 @@ EXPORT void GameApi::MainLoopApi::clear(unsigned int col)
 EXPORT void GameApi::MainLoopApi::clear_3d_transparent()
 {
   OpenglLowApi *ogl = g_low->ogl;
+  if (!g_disable_draws) {
   ogl->glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
   ogl->glClear( Low_GL_COLOR_BUFFER_BIT | Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
+  }
 }
 bool g_no_clear = false;
 EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
 {
   //glClearColor(255,255,255,255);
   OpenglLowApi *ogl = g_low->ogl;
+  if (!g_disable_draws) {
   
   ogl->glClearStencil(0);
 
@@ -878,7 +890,7 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   //float speed = 1.0;
   //glRotatef(speed*time, 0.0,1.0,0.0);
   //glTranslatef(0.0, -100.0, 0.0);
-
+  }
 }
 
 EXPORT void GameApi::MainLoopApi::transparency(bool enabled)
@@ -1099,6 +1111,7 @@ EXPORT void GameApi::MainLoopApi::check_glerrors(std::string context)
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
+  callcount=0;
 #if 0
   OpenglLowApi *ogl = g_low->ogl;
   int e = -1;

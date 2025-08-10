@@ -15821,7 +15821,15 @@ void blocker_iter(void *arg)
     Envi_2 *env = (Envi_2*)arg;
   env->ev->mainloop_api.fpscounter_frameready();
 	}
-    if (!g_disable_draws) env->ev->mainloop_api.swapbuffers();
+    env->ev->mainloop_api.swapbuffers();
+#ifdef WAYLAND
+    static uint64_t t0 = get_time_us();
+    uint64_t t1 = get_time_us();
+    if (t1-t0 < target_frametime_us)
+      usleep(target_frametime_us - (t1-t0));
+    t0=get_time_us();
+#endif
+
     g_time_id++;
     g_engine_status = 1;
     //#ifdef EMSCRIPTEN
@@ -16474,8 +16482,17 @@ public:
 #endif
 
     
-   if (!g_disable_draws)  env->ev->mainloop_api.swapbuffers();
+   env->ev->mainloop_api.swapbuffers();
 
+#ifdef WAYLAND
+    static uint64_t t0 = get_time_us();
+    uint64_t t1 = get_time_us();
+    if (t1-t0 < target_frametime_us)
+      usleep(target_frametime_us - (t1-t0));
+    t0=get_time_us();
+#endif
+
+   
     
 #ifdef WAYLAND
     if (!g_wl_display) {

@@ -206,6 +206,8 @@
 #undef Mix_PlayChannel
 #undef Mix_HaltChannel
 
+#undef glDebugMessageControl
+#undef glDebugMessageCallback
 
 
 
@@ -291,6 +293,15 @@ void map_enums_sdl(int &i) {
   case Low_SDL_GL_MULTISAMPLESAMPLES: i = SDL_GL_MULTISAMPLESAMPLES; break;
   case Low_SDL_ENABLE: i=SDL_ENABLE; break;
     //  case Low_SDL_DROPFILE: i=SDL_DROPFILE; break;
+  };
+}
+void map_enums2(unsigned int &i)
+{
+  switch(i) {
+  case   Low_GL_CONTEXT_FLAGS: i=GL_CONTEXT_FLAGS; break;
+  case   Low_GL_DEBUG_OUTPUT: i=GL_DEBUG_OUTPUT; break;
+  case  Low_GL_DEBUG_OUTPUT_SYNCHRONOUS: i=GL_DEBUG_OUTPUT_SYNCHRONOUS; break;
+  case Low_GL_DONT_CARE: i=GL_DONT_CARE; break;
   };
 }
 
@@ -471,6 +482,7 @@ void map_enums(int &i)
   case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
 #endif
 #endif
+    
 
   default: break;
   };
@@ -1248,6 +1260,39 @@ void glGetIntegerv(int i, int *ptr) {
   void glLoadIdentity() {  }
   void glTranslatef(float,float,float) { }
 
+  virtual void glDebugMessageCallback(void (*f)(unsigned int source,
+							    unsigned int type,
+							    unsigned int id,
+							    unsigned int severity,
+							    int length,
+							    const char *message,
+							    const void *userParam),
+				      const void *userParam)
+  {
+#ifdef GLEW_HACK
+#define glDebugMessageCallback GLEW_GET_FUN(__glewDebugMessageCallback)
+#endif
+    
+    ::glDebugMessageCallback(f,userParam);
+  }
+  virtual void glDebugMessageControl(unsigned int source,
+				     unsigned int type,
+				     unsigned int severity,
+				     int count,
+				     const unsigned int *ids,
+				     int enabled)
+  {
+    map_enums2(source);
+    map_enums2(type);
+    map_enums2(severity);
+    map_enums(enabled);
+#ifdef GLEW_HACK
+#define glDebugMessageControl GLEW_GET_FUN(__glewDebugMessageControl)
+#endif
+    ::glDebugMessageControl(source,type,severity,count,ids,enabled);
+  }
+
+  
 };
 
 SDLLowApi::~SDLLowApi() { }
