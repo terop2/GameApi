@@ -330,6 +330,38 @@ touch_all:
 	touch GameApi_gui_2.cc
 	touch GameApi_gui_3.cc
 
+DESTDIR ?= 
+
+install:
+	@echo "Installling to '$(DESTDIR)'"
+	mkdir -p $(DESTDIR)
+	mkdir -p $(DESTDIR)/usr
+	mkdir -p $(DESTDIR)/usr/bin
+	mkdir -p $(DESTDIR)/usr/lib
+	mkdir -p $(DESTDIR)/usr/share
+	cp editor/gameapi-builder $(DESTDIR)/usr/bin/gameapi-builder
+	cp cmdline/gameapi_cmdline $(DESTDIR)/usr/bin/gameapi_cmdline
+	cp deploytool/deploytool $(DESTDIR)/usr/bin/gameapi_deploytool
+	cp libGameApi.so $(DESTDIR)/usr/lib/x86_64-linux-gnu/libGameApi.so
+	strip $(DESTDIR)/usr/bin/gameapi-builder
+	strip $(DESTDIR)/usr/lib/x86_64-linux-gnu/libGameApi.so
+	cp editor/atlas0.txt $(DESTDIR)/usr/share/atlas0.txt
+	cp editor/atlas1.txt $(DESTDIR)/usr/share/atlas1.txt
+	cp editor/atlas2.txt $(DESTDIR)/usr/share/atlas2.txt
+	cp editor/atlas_bm0.ppm $(DESTDIR)/usr/share/atlas_bm0.ppm
+	cp editor/atlas_bm1.ppm $(DESTDIR)/usr/share/atlas_bm1.ppm
+	cp editor/atlas_bm2.ppm $(DESTDIR)/usr/share/atlas_bm2.ppm
+	cp display/gameapi_0.html $(DESTDIR)/usr/share/gameapi_0.html
+	cp display/gameapi_0_seamless.html $(DESTDIR)/usr/share/gameapi_0_seamless.html
+	cp display/gameapi_1.html $(DESTDIR)/usr/share/gameapi_1.html
+	cp display/gameapi_2.html $(DESTDIR)/usr/share/gameapi_2.html
+	cp display/gameapi_3.html $(DESTDIR)/usr/share/gameapi_3.html
+	cp display/gameapi_3_seamless.html $(DESTDIR)/usr/share/gameapi_3_seamless.html
+	cp display/gameapi_display.zip $(DESTDIR)/usr/share/gameapi_display.zip
+	cp display/get_file_size.php $(DESTDIR)/usr/share/get_file_size.php
+	cp editor/deploy.sh $(DESTDIR)/usr/share/deploy.sh
+	cp editor/arrow.ppm $(DESTDIR)/usr/share/arrow.ppm
+	@echo "Install Done."
 
 clean:
 	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
