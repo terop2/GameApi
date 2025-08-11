@@ -6,7 +6,7 @@ mkdir -p gameapi-builder_1.0-$1/usr/bin
 mkdir -p gameapi-builder_1.0-$1/usr/lib
 mkdir -p gameapi-builder_1.0-$1/usr/share
 mkdir -p gameapi-builder_1.0-$1/DEBIAN
-cp a.out gameapi-builder_1.0-$1/usr/bin/gameapi-builder
+cp gameapi-builder gameapi-builder_1.0-$1/usr/bin/gameapi-builder
 cp ../cmdline/gameapi_cmdline gameapi-builder_1.0-$1/usr/bin/gameapi_cmdline
 cp ../deploytool/deploytool gameapi-builder_1.0-$1/usr/bin/gameapi_deploytool
 cp ../libGameApi.so gameapi-builder_1.0-$1/usr/lib/libGameApi.so
