@@ -13249,7 +13249,7 @@ GameApi::US GameApi::UberShaderApi::v_bump_phong(US us)
 GameApi::US GameApi::UberShaderApi::v_fog(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("fog", next,"EX_POSITION IN_POSITION"));
+  return add_uber(e, new V_ShaderCallFunction("fog", next,"EX_POSITION IN_POSITION FOG"));
 }
 GameApi::US GameApi::UberShaderApi::v_mix(US us)
 {
