@@ -1,0 +1,55 @@
+name: gameapi-builder
+base: core22
+version: '1.0'
+summary: GameApi Builder
+description: |
+  GameApi Builder is a C++/SDL/OpenGL/WebGL/Emscripten/GLTF/GLB engine
+  for building games and interactive 3D content.
+grade: stable
+confinement: strict
+
+apps:
+  gameapi-builder:
+    command: editor/gameapi-builder
+    plugs:
+      - opengl
+      - home
+      - network
+      - x11
+      - wayland
+
+parts:
+  gameapi-builder:
+    plugin: make
+    source: .
+    build-packages:
+      - g++
+      - make
+      - libsdl2-dev
+      - libgl1-mesa-dev
+      - libglew-dev
+      - libfreetype6-dev
+      - libsdl2-mixer-dev
+      - curl
+      - libstdc++6
+      - libc6
+      - libgcc-s1
+      - unzip
+      - zip
+      - tar
+      - libopencv-dev
+    stage-packages:
+      - libsdl2-2.0-0
+      - libfreetype6
+      - libsdl2-mixer-2.0-0
+      - libgl1
+      - libglew2.2
+      - curl
+      - libstdc++6
+      - libc6
+      - libgcc-s1
+      - unzip
+      - zip
+      - tar
+      - libopencv-dev
+      
