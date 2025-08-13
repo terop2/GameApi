@@ -4365,6 +4365,45 @@ GameApi::MS GameApi::MatricesApi::ms_interface(VX vox, int type, float start_x, 
   return add_matrix_array(e, new MS_interface(voxel,type,start_x,end_x,start_y,end_y, start_z,end_z));
 }
 
+class MS_steady : public MatrixArray
+{
+public:
+  MS_steady(MatrixArray *next) : next(next) { }
+  virtual void Collect(CollectVisitor &vis) {
+    next->Collect(vis);
+    vis.register_obj(this);
+  }
+  void Prepare() { next->Prepare(); HeavyPrepare(); }
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+    mat.clear();
+    int s = next->Size();
+    for(int i=0;i<s;i++)
+      {
+	Matrix m = next->Index(i);
+	mat.push_back(m);
+      }
+    }
+    firsttime = false;
+  }
+  int Size() const { return mat.size(); }
+  Matrix Index(int i) const
+  {
+    if (i>=0&&i<mat.size())
+      return mat[i];
+    return Matrix::Identity();
+  }
+private:
+  MatrixArray *next;
+  std::vector<Matrix> mat;
+  bool firsttime=true;
+};
+GameApi::MS GameApi::MatricesApi::ms_steady(MS ms)
+{
+  MatrixArray *next = find_matrix_array(e,ms);
+  return add_matrix_array(e,new MS_steady(next));
+}
 
 class RenderMSFilesI : public MainLoopItem
 {
@@ -8066,7 +8105,7 @@ private:
 class PhongMaterial : public MaterialForward
 {
 public:
-  PhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, bool background_included) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), highlight(highlight), pow(pow),background_included(background_included) { }
+  PhongMaterial(GameApi::Env &env, GameApi::EveryApi &ev, Material *next, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow, bool background_included) : env(env), ev(ev), next(next), light_dir_x(light_dir_x), light_dir_y(light_dir_y), light_dir_z(light_dir_z), ambient(ambient), specular(specular), highlight(highlight), pow(pow),background_included(background_included) { }
   void logoexecute() { next->logoexecute(); }
   virtual GameApi::ML mat2(GameApi::P p) const
   {
@@ -8084,9 +8123,9 @@ public:
     ml.id = next->mat(p0.id);
     GameApi::ML sh;
     if (background_included) {
-      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
-      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     }
     return sh;
   }
@@ -8108,9 +8147,9 @@ public:
     ml.id = next->mat_inst(p0.id, pts.id);
     GameApi::ML sh;
     if (background_included) {
-      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
-      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     }
     return sh;
 
@@ -8134,9 +8173,9 @@ public:
     ml.id = next->mat_inst_matrix(p0.id, ms.id);
     GameApi::ML sh;
     if (background_included) {
-    sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
-    sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     }
     return sh;
 
@@ -8159,9 +8198,9 @@ public:
     ml.id = next->mat_inst2(p0.id, pta.id);
     GameApi::ML sh;
     if (background_included) {
-    sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
-      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     }
     return sh;
 
@@ -8183,9 +8222,9 @@ public:
     ml.id = next->mat_inst_fade(p0.id, pts.id, flip, start_time, end_time);
     GameApi::ML sh;
     if (background_included) {
-      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader2(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     } else {
-      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+      sh = ev.polygon_api.phong_shader(ev, ml, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     }
     return sh;
 
@@ -8196,7 +8235,7 @@ private:
   GameApi::EveryApi &ev;
   Material *next;
   float light_dir_x, light_dir_y, light_dir_z;
-  unsigned int ambient, highlight;
+  unsigned int ambient, specular, highlight;
   float pow;
   bool background_included;
 };
@@ -9096,7 +9135,7 @@ EXPORT GameApi::MT GameApi::MaterialsApi::m_def(EveryApi &ev)
 {
   return add_material(e, new DefaultMaterial(ev));
 }
-EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow)
 {
   int s = vec.size();
   ArrayType *array = new ArrayType;
@@ -9104,7 +9143,7 @@ EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vect
 
   for(int i=0;i<s;i++) {
     GameApi::MT mat = ev.polygon_api.material_index(ev,vec,i);
-    GameApi::MT mat2 = ev.materials_api.phong(ev,mat,light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow);
+    GameApi::MT mat2 = ev.materials_api.phong(ev,mat,light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow);
     array->vec.push_back(mat2.id);
   }
   return add_array(e,array);
@@ -9470,7 +9509,7 @@ EXPORT GameApi::MT GameApi::MaterialsApi::newshadow(EveryApi &ev, MT nxt, P mode
   return add_material(e, new NewShadowMaterial(e,ev,mat,models,light_dir_x, light_dir_y, light_dir_z, dark_level, light_level,scale,size,is_phong,texindex,shadow_mat));
 }
 
-EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_phong(EveryApi &ev, P models, MT model_mt,  P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, bool draw_model, MT shadow2_mt)
+EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_phong(EveryApi &ev, P models, MT model_mt,  P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int ambient_color, unsigned int dark_color, unsigned int light_color, float scale, int size, bool draw_model, MT shadow2_mt)
 {
   //  PT I1=ev.point_api.point(100,0,0);
   //P I2=ev.polygon_api.sphere(I1,180,30,30);
@@ -9486,7 +9525,7 @@ ML I5=ev.materials_api.bind(I2,I4);
  MT I8=shadow_mt;
  MT I9=ev.materials_api.newshadow(ev,I8,I2,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,scale,size,true,0,shadow2_mt);
  MT I10;
- I10=ev.materials_api.phong(ev,I9,light_dir_x,light_dir_y,light_dir_z,dark_color,light_color,30);
+ I10=ev.materials_api.phong(ev,I9,light_dir_x,light_dir_y,light_dir_z,ambient_color, dark_color,light_color,30);
 // MT I10=model_mt;
 ML I11=ev.materials_api.bind(I6,I10);
  ML I12;
@@ -9565,14 +9604,14 @@ GameApi::MT get_texture_count(GameApi::Env &e, GLTF_Material *mat1, NewShadowMat
   return add_material(e, new GetTextureCountForNewShadow(mat1,mat2,next));
 }
 
-EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt)
+EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int ambient_color, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt)
 {
 #if (FEATURE_GLTF==1)
   P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);
   MT I3=ev.materials_api.gltf_material(ev,I1,0,1,light_dir_x,light_dir_y,light_dir_z);
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
   MT I5=shadow_mt; //ev.materials_api.colour_material(ev,0.5);
-  ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,dark_color,light_color,scale,size,false,shadow2_mt);
+  ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,ambient_color, dark_color,light_color,scale,size,false,shadow2_mt);
   ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
@@ -9616,15 +9655,15 @@ EXPORT GameApi::MT GameApi::MaterialsApi::adjust(EveryApi &ev, MT nxt, unsigned 
   Material *mat = find_material(e, nxt);
   return add_material(e, new AdjustMaterial(e, ev, mat, ad_color, ad_dark, ad_light));
 }
-EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+EXPORT GameApi::MT GameApi::MaterialsApi::phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow, false));
+  return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow, false));
 }
-EXPORT GameApi::MT GameApi::MaterialsApi::phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+EXPORT GameApi::MT GameApi::MaterialsApi::phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow)
 {
   Material *mat = find_material(e, nxt);
-  return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, highlight, pow, true));
+  return add_material(e, new PhongMaterial(e, ev, mat, light_dir_x, light_dir_y, light_dir_z, ambient, specular, highlight, pow, true));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix)
 {
@@ -14409,7 +14448,7 @@ EXPORT GameApi::MS GameApi::MatricesApi::from_lines_3d(LI li)
   return add_matrix_array(e, new From3dLinesMatrices(lines));
 }
 
-#if 0
+#if 1
 class MultArray1 : public MatrixArray
 {
 public:
@@ -14452,7 +14491,7 @@ private:
 
 EXPORT GameApi::MS GameApi::MatricesApi::mult(MS m, M mat)
 {
-#if 0
+#if 1
   MatrixArray *arr = find_matrix_array(e, m);
   Matrix mm = find_matrix(e, mat);
   return add_matrix_array(e, new MultArray1(arr,mm));
@@ -34108,9 +34147,9 @@ GameApi::ML create_landscape2(GameApi::Env &e, GameApi::EveryApi &ev, const V_Ar
   GameApi::MT top_tx = ev.materials_api.texture(ev, top_bm, 0.3);
   GameApi::MT left_tx = ev.materials_api.texture(ev, left_bm, 0.3);
   GameApi::MT front_tx = ev.materials_api.texture(ev, front_bm, 0.3);
-  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,0.0,0.0,-1.0, 0xff884422, 0xffffffff, 150.0);
-  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,0.0,0.0,-1.0, 0xff884422, 0xffffffff, 150.0);
-  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,0.0,0.0,-1.0, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT top_ph = ev.materials_api.phong(ev,top_tx,0.0,0.0,-1.0, 0xff221100, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT left_ph = ev.materials_api.phong(ev,left_tx,0.0,0.0,-1.0, 0xff221100, 0xff884422, 0xffffffff, 150.0);
+  GameApi::MT front_ph = ev.materials_api.phong(ev,front_tx,0.0,0.0,-1.0, 0xff221100, 0xff884422, 0xffffffff, 150.0);
   GameApi::ML top_ml = ev.materials_api.bind(top_elem, top_ph);
   GameApi::ML left_ml = ev.materials_api.bind(left_elem, left_ph);
   GameApi::ML front_ml = ev.materials_api.bind(front_elem, front_ph);
@@ -34667,12 +34706,12 @@ GameApi::ARR GameApi::MaterialsApi::material_pack_1(GameApi::EveryApi &ev)
   array->type = 44;
   { // default material
   MT I1=ev.materials_api.m_def(ev);
-  MT I2=ev.materials_api.phong(ev,I1,-0.3,0.3,-1.0,0xffff8800,0xff666666,5.0);
+  MT I2=ev.materials_api.phong(ev,I1,-0.3,0.3,-1.0,0xff221100, 0xffff8800,0xff666666,5.0);
   array->vec.push_back(I2.id);
   }
   { // gold
     MT I3=ev.materials_api.m_def(ev);
-    MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1,0xff996515,0xffffff00,15);
+    MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1,0xff221100, 0xff996515,0xffffff00,15);
     array->vec.push_back(I4.id);
 
   }

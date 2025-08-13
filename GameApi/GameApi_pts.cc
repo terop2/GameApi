@@ -1658,7 +1658,7 @@ public:
   }
   void HeavyPrepare() { }
 
-  void Prepare() { next->Prepare(); }
+  void Prepare() { if (firsttime) next->Prepare(); firsttime=false; }
   void HandleEvent(MainLoopEvent &event) { }
   bool Update(MainLoopEnv &e) { return false; }
   int NumPoints() const { return next->NumPoints(); }
@@ -1689,6 +1689,7 @@ private:
   PointsApiPoints *next;
   mutable std::map<int, Point> mymap;
   mutable std::map<int, unsigned int> mymap_color;
+  bool firsttime = true;
 };
 
 GameApi::PTS GameApi::PointsApi::memoize_pts(PTS pts)

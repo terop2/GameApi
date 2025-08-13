@@ -408,6 +408,15 @@
 			 { "0.0", "1.0", "0.0", "30" },
 			 "MS", "matrices_api", "ms_random_rot"));
 #endif
+#if (ALL==1)||(MS_STEADY==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::ms_steady,
+			 "ms_steady",
+			 { "ms" },
+			 { "MS" },
+			 { "" },
+			 "MS", "matrices_api", "ms_steady"));
+#endif
+
 #if (ALL==1)||(SUBARRAY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::matrices_api, &GameApi::MatricesApi::subarray,
 			 "ms_subarray",

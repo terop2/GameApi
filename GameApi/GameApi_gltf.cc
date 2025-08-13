@@ -5616,7 +5616,7 @@ public:
     //std::cout << "GLOSSY:" << get_diffuse_factor() << " " << get_glossiness_factor() << " " << get_specular_factor() << std::endl;
     GameApi::ML tex1 = ev.polygon_api.texture_many_shader(ev, ml, 0.5*get_glossiness_factor()+0.5*(1.0-get_diffuse_factor()));
 
-    GameApi::ML tex2 = ev.polygon_api.phong_shader(ev,tex1, 0.0,0.0,-1.0,0xff000000,0xffffffff, (get_specular_factor())*30.0);
+    GameApi::ML tex2 = ev.polygon_api.phong_shader(ev,tex1, 0.0,0.0,-1.0,0xff221100, 0xff888888,0xffffffff, (get_specular_factor())*30.0);
     return tex2;
   }
 #endif  
@@ -7916,7 +7916,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       if (mat==-1) { colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
-	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xffff8888,0xffffffff,10.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
       } else {
         mat2 = gltf_material2(e, ev, interface, mat, 1.0,light_dir);
       }
@@ -8035,7 +8035,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       if (mat==-1) { colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
-	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xffff8888,0xffffffff,10.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
       } else
 	{
 	  mat2 = gltf_material2(e, ev, interface, mat, mix,light_dir);
@@ -8703,7 +8703,7 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
 		if (material==-1)
 		  {
 		    mat2=ev.materials_api.m_def(ev);
-		    mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xffff8888,0xffffffff,10.0);
+		    mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
 		  } else {
 		GameApi::MT mat = ev.materials_api.gltf_material(ev, model0, material, mix, light_dir_x, light_dir_y, light_dir_z);
 		  mat2 = mat;

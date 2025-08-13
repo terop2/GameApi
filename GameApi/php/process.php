@@ -47,6 +47,8 @@ echo "</script>\n";
 
 echo "<body>\n";
 
+
+
 //echo "SEO_KEYWORDS: meshpage.org offers unique way to do physically based rendering via runtime processing of 3d assets from normal gltf 2.0 files. The 3d models are created in blender and its gltf exporter and passed to our asset delivery system. This uses khronos group gltf 2.0 standard and can render 3d models from multiple sources, including blender and sketchfab.";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
@@ -616,5 +618,7 @@ echo "(function() {\n";
 echo "  if (!crossOriginIsolated) console.log(\"MAIN WINDOW not crossorigin isolated\"); else console.log(\"MAIN WINDOW OK\");\n";
 echo "})();\n";
 echo "</script>\n";
+
+
 echo "</body>\n";
 echo "</html>\n";

@@ -2399,9 +2399,10 @@ GameApi::ARR GameApi::PolygonApi::p_mtl2_materials(GameApi::EveryApi &ev, P p)
     GameApi::MaterialDef mat = vec[i];
     //GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Kd_x,mat.Kd_y,mat.Kd_z,1.0, mat.d);
     GameApi::MT m0 = ev.materials_api.m_def(ev);
-    unsigned int ambient = 0xff000000 + (int(mat.Kd_x*255.0)<<16) + (int(mat.Kd_y*255.0)<<8) + int(mat.Kd_z*255.0);
+    unsigned int ambient = 0xff000000 + (int(mat.Ka_x*255.0)<<16) + (int(mat.Ka_y*255.0)<<8) + int(mat.Ka_z*255.0);
+    unsigned int diffuse = 0xff000000 + (int(mat.Kd_x*255.0)<<16) + (int(mat.Kd_y*255.0)<<8) + int(mat.Kd_z*255.0);
     unsigned int specular = 0xff000000 + (int(mat.Ks_x*255.0)<<16) + (int(mat.Ks_y*255.0)<<8) + int(mat.Ks_z*255.0);
-    GameApi::MT m = ev.materials_api.phong2(ev, m0, 1.0,1.0,1.0,ambient, specular, mat.Ns);
+    GameApi::MT m = ev.materials_api.phong2(ev, m0, 1.0,1.0,1.0,ambient, diffuse, specular, mat.Ns);
     array->vec.push_back(m.id);
   }
   return add_array(e,array);
@@ -11004,7 +11005,7 @@ private:
 class PhongShaderML : public MainLoopItem
 {
 public:
-  PhongShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, unsigned int ambient, unsigned int highlight, float pow, bool background_included) : env(env), ev(ev), next(next), light_dir(light_dir), ambient(ambient), highlight(highlight), pow(pow), background_included(background_included) 
+  PhongShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, Vector light_dir, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow, bool background_included) : env(env), ev(ev), next(next), light_dir(light_dir), ambient(ambient), specular(specular), highlight(highlight), pow(pow), background_included(background_included) 
   { 
     firsttime = true;
     sh.id = -1;
@@ -11080,6 +11081,11 @@ public:
 			      ((ambient&0xff))/255.0,
 			      ((ambient&0xff000000)>>24)/255.0);
 	ev.shader_api.set_var(sh, "level2_color",
+			      ((specular&0xff0000)>>16)/255.0,
+			      ((specular&0xff00)>>8)/255.0,
+			      ((specular&0xff))/255.0,
+			      ((specular&0xff000000)>>24)/255.0);
+	ev.shader_api.set_var(sh, "level3_color",
 			      ((highlight&0xff0000)>>16)/255.0,
 			  ((highlight&0xff00)>>8)/255.0,
 			      ((highlight&0xff))/255.0,
@@ -11115,6 +11121,7 @@ private:
   GameApi::SH sh;
   bool firsttime;
   unsigned int ambient;
+  unsigned int specular;
   unsigned int highlight;
   float pow;
   bool background_included;
@@ -12194,10 +12201,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::blurred_render_shader(EveryApi &ev, ML m
   
 }
 
-EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+EXPORT GameApi::ML GameApi::PolygonApi::phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow,false));
+  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, specular, highlight,pow,false));
 }
 
 EXPORT GameApi::ML GameApi::PolygonApi::adjust_shader(EveryApi &ev, ML mainloop, unsigned int ad_color, float ad_dark, float ad_light)
@@ -12206,10 +12213,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::adjust_shader(EveryApi &ev, ML mainloop,
   return add_main_loop(e, new AdjustShaderML(e, ev, item, ad_color,ad_dark,ad_light));
 }
 
-EXPORT GameApi::ML GameApi::PolygonApi::phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
+EXPORT GameApi::ML GameApi::PolygonApi::phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular,  unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
-  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, highlight,pow,true));
+  return add_main_loop(e, new PhongShaderML(e, ev, item, Vector(light_dir_x, light_dir_y, -light_dir_z),ambient, specular, highlight,pow,true));
 }
 EXPORT GameApi::ML GameApi::PolygonApi::vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix)
 {
