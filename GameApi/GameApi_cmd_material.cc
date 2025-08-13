@@ -312,17 +312,17 @@
 #if (ALL==1)||(PHONG==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong,
 			 "m_phong",
-			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
-			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "400.0", "-400.0", "300.0", "ffff8800", "ffffffff", "30.0" },
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "specular", "highlight", "pow" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "400.0", "-400.0", "300.0", "ff221100", "ffff8800", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong"));
 #endif
 #if (ALL==1)||(PHONG2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::phong2,
 			 "m_phong2",
-			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
-			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "400.0", "-400.0", "300.0", "ffff8800", "ffffffff", "30.0" },
+			 { "ev", "nxt", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "specular", "highlight", "pow" },
+			 { "EveryApi&", "MT", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "400.0", "-400.0", "300.0", "ff221100", "ffff8800", "ffffffff", "30.0" },
 			 "MT", "materials_api", "phong2"));
 #endif
 #if (ALL==1)||(PHONG3_MATERIAL==1)
@@ -363,9 +363,9 @@
 #if (ALL==1)||(M_APPLY_PHONG==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api,&GameApi::MaterialsApi::m_apply_phong,
 			 "m_apply_phong",
-			 { "ev", "vec", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "highlight", "pow" },
-			 { "EveryApi&", "[MT]", "float", "float", "float", "unsigned int", "unsigned int", "float" },
-			 { "ev", "", "-0.3", "0.3", "-1.0", "ffff8800", "ff666666", "5.9" },
+			 { "ev", "vec", "light_dir_x", "light_dir_y", "light_dir_z", "ambient", "specular", "highlight", "pow" },
+			 { "EveryApi&", "[MT]", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float" },
+			 { "ev", "", "-0.3", "0.3", "-1.0", "ff221100", "ffff8800", "ffffffff", "5.9" },
 			 "[MT]", "materials_api", "m_apply_phong"));
 #endif
 #if (ALL==1)||(TOON_BORDER==1)
@@ -477,17 +477,17 @@
 #if (ALL==1)||(NEWSHADOW2_PHONG==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::newshadow2_phong,
 			 "m_dir_shadow",
-			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size", "drawmodel", "shadow2_mt" },
-			 { "EveryApi&", "P", "MT", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "float", "int", "bool", "MT" },
-			 { "ev", "", "", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "ff884422", "ffffffff", "0.8", "1024", "true", "" },
+			 { "ev", "models", "model_mt", "shadow_mesh", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "ambient_color", "dark_color", "light_color", "scale", "size", "drawmodel", "shadow2_mt" },
+			 { "EveryApi&", "P", "MT", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float", "int", "bool", "MT" },
+			 { "ev", "", "", "", "", "-0.3", "-1.0", "-0.3", "0.7", "1.0", "ff221100", "ff884422", "ffffffff", "0.8", "1024", "true", "" },
 			 "ML", "materials_api", "newshadow2_phong"));
 #endif
 #if (ALL==1)||(NEWSHADOW2_GLTF==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::newshadow2_gltf,
 			 "m_gltf_shadow",
-			 { "ev", "model", "shadow_p", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "dark_color", "light_color", "scale", "size", "shadow2_mt" },
-			 { "EveryApi&", "TF", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "float", "int", "MT" },
-			 { "ev", "", "", "", "-0.3", "-1.0", "-0.3", "0", "1", "ffff8800", "ffffffff", "0.8", "1024", "" },
+			 { "ev", "model", "shadow_p", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "ambient_color", "dark_color", "light_color", "scale", "size", "shadow2_mt" },
+			 { "EveryApi&", "TF", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float", "int", "MT" },
+			 { "ev", "", "", "", "-0.3", "-1.0", "-0.3", "0", "1", "ff221100", "ffff8800", "ffffffff", "0.8", "1024", "" },
 			 "ML", "materials_api", "newshadow2_gltf"));
 #endif
   /*

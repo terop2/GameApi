@@ -1699,10 +1699,10 @@ public:
 
   IMPORT MT adjust(EveryApi &ev, MT nxt, unsigned int ad_color, float ad_dark, float ad_light);
   
-  IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
-  IMPORT MT phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT MT phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
+  IMPORT MT phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
   IMPORT MT vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
-  IMPORT ARR m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ARR m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
   IMPORT MT edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
   IMPORT MT bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width);
@@ -1710,8 +1710,8 @@ public:
   IMPORT MT shadow(EveryApi &ev, P p, std::vector<BM> vec, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2);
   IMPORT MT shadow2(EveryApi &ev, P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures);
   IMPORT MT newshadow(EveryApi &ev, MT nxt, P models, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, bool is_phong, int texindex, MT shadow_mt);
-  IMPORT ML newshadow2_phong(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, bool draw_model, MT shadow2_mt);
-  IMPORT ML newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt);
+  IMPORT ML newshadow2_phong(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int ambient_color, unsigned int dark_color, unsigned int light_color, float scale, int size, bool draw_model, MT shadow2_mt);
+  IMPORT ML newshadow2_gltf(EveryApi &ev, TF I1, P shadow_p, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, unsigned int ambient_color, unsigned int dark_color, unsigned int light_color, float scale, int size, MT shadow2_mt);
   IMPORT ML gltf_newshadow2(EveryApi &ev, P models, MT model_mt, P shadow_mesh, MT shadow_mt, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int size, TF tf); 
   IMPORT MT dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point);
   IMPORT MT coloured_lights(EveryApi &ev, MT nxt, float scale,
@@ -3067,8 +3067,8 @@ public:
   IMPORT ML newshadow_shader_2_gltf(EveryApi &ev, ML ml, float light_dir_x, float light_dir_y, float light_dir_z, float dark_level, float light_level, float scale, int texindex);
   IMPORT ML adjust_shader(EveryApi &ev, ML mainloop, unsigned int ad_color, float ad_dark, float ad_light);
   IMPORT ML blurred_render_shader(EveryApi &ev, ML mainloop, int numsamples, float blur_radius);
-  IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
-  IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow);
+  IMPORT ML phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
+  IMPORT ML phong_shader2(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
   IMPORT ML vertex_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
   IMPORT ML edge_shader(EveryApi &ev, ML mainloop, float edge_width, unsigned int edge_color);
   IMPORT ML gltf_anim_shader(GameApi::EveryApi &ev, ML ml_orig, std::vector<GameApi::ML> mls, int key, int mode, int timeid);
@@ -3646,6 +3646,7 @@ class MatricesApi
 {
 public:
   IMPORT MatricesApi(Env &e);
+  MS ms_steady(MS ms);
   ML render_ms_files2_si(EveryApi &ev, std::vector<P> p, std::vector<MT> mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   ML render_ms_files_si(EveryApi &ev, std::vector<P> p, MT mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
 
