@@ -3466,6 +3466,7 @@ public: // values are [0.0..1.0]
   IMPORT BM to_color(FB r, FB g, FB b, FB a);
   IMPORT BM choose_bitmap(FB fb, BM bm1, BM bm2);
   IMPORT FB perlin_noise(FB grad_1, FB grad_2);
+  IMPORT FB perlin_noise2(int sx, int sy, float key);
   IMPORT BM subfloatbitmap(EveryApi &ev, FB fb, float range_start, float range_end, unsigned int true_color, unsigned int false_color);
   
   IMPORT FB from_bool(BB b, float val_true, float val_false);
@@ -3677,6 +3678,11 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  IMPORT PTS random_points_in_plane(EveryApi &ev, float key,
+				    float start_x, float end_x,
+				    float start_z, float end_z,
+				    float y,
+				    int num);
   IMPORT PTS pts_lines(std::string url, float start_pos, float dist, float speed);
   IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
   IMPORT PTS block_pts_lod(PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);

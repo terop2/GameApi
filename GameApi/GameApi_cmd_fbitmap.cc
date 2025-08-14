@@ -140,13 +140,13 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitm
 			 { "0.0", "100.0", "0.0", "100.0", "0.0", "1.0", "100", "100" },
 			 "FB", "float_bitmap_api", "gaussian"));
 #endif
-#if (ALL==1)||(PERLIN_NOISE==1)
-vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::perlin_noise,
+#if (ALL==1)||(PERLIN_NOISE2==1)
+vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::perlin_noise2,
 			 "bm_perlin",
-			 { "grad_1", "grad_2" },
-			 { "FB", "FB" },
-			 { "", "" },
-			 "FB", "float_bitmap_api", "perlin_noise"));
+		       { "sx", "sy", "key" },
+		       { "int", "int", "float" },
+		       { "256", "256", "0.5" },
+			 "FB", "float_bitmap_api", "perlin_noise2"));
 #endif
 #if (ALL==1)||(TO_GRAYSCALE_COLOR==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::to_grayscale_color,
