@@ -3312,3 +3312,29 @@ GameApi::PTS GameApi::PointsApi::pts_lines(std::string url, float start_pos, flo
 {
   return add_points_api_points(e, new LinesPts(e,url,gameapi_homepageurl, start_pos,dist,speed));
 }
+
+GameApi::PTS GameApi::PointsApi::random_points_in_plane(EveryApi &ev, float key,
+							float start_x, float end_x,
+							float start_z, float end_z,
+							float y, int num)
+{
+  GameApi::FB noise = ev.float_bitmap_api.perlin_noise2(256,256,key);
+  Bitmap<float> *fbm = find_float_bitmap(e,noise)->bitmap;
+  std::vector<GameApi::PT> vec;
+  for(int i=0;i<num;i++)
+    {
+      float val_x, val_y,val_z,curval;
+      do {
+	Random r;
+	val_x = float(r.next())/float(r.maximum());
+	val_y = float(r.next())/float(r.maximum());
+	val_z = float(r.next())/float(r.maximum());
+	
+	curval = fbm->Map(val_x*fbm->SizeX(), val_y*fbm->SizeY());
+      } while(curval<val_z);
+      vec.push_back(ev.point_api.point(start_x + (end_x-start_x)*val_x,
+				       y,
+				       start_z + (end_z-start_z)*val_y));
+    }
+  return pt_array(ev,vec);
+}

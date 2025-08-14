@@ -261,6 +261,15 @@
 			 { "ev", "", "300" },
 			 "PTS", "points_api", "random_mesh_quad_instancing"));
 #endif
+#if (ALL==1)||(RANDOM_POINTS_IN_PLANE==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_points_in_plane,
+			 "perlin_plane",
+			 { "ev", "key", "start_x", "end_x", "start_z", "end_z", "y", "num" },
+			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "int" },
+			 { "ev", "0.5", "-300.0", "300.0", "-300.0", "300.0", "0.0", "100" },
+			 "PTS", "points_api", "random_points_in_plane"));
+#endif
+
 #ifndef STABLE
 #if (ALL==1)||(RANDOM_VOL_OBJECT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::volume_api, &GameApi::VolumeApi::random_vol_object,
