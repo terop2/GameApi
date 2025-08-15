@@ -1341,6 +1341,8 @@ int g_disable_draws = 0;
 
 extern const char *g_videodriver;
 
+extern bool disable_opengl_from_get_event;
+
 EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
 {
 #if 0
@@ -1434,11 +1436,13 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       g_event_screen_y = event.window.data2;
       if (g_event_screen_x<320) g_event_screen_x = 320;
       if (g_event_screen_y<200) g_event_screen_y = 200;
+	   if (!disable_opengl_from_get_event) {	   
 #ifndef LINUX
            g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
 #endif
-           ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
-
+	     ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+	   }
+	   
   if (g_videodriver && std::string(g_videodriver)=="wayland") {
     //g_event_screen_x = -1;
     //g_event_screen_y = -1;
@@ -1456,10 +1460,12 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       g_event_screen_y = g_resize_event_sy;
       if (g_event_screen_x<320) g_event_screen_x = 320;
       if (g_event_screen_y<200) g_event_screen_y = 200;
+	   if (!disable_opengl_from_get_event) {	   
 #ifndef LINUX
            g_low->sdl->SDL_SetWindowSize(sdl_window,g_event_screen_x, g_event_screen_y);
 #endif
            ogl->glViewport(0,0,g_event_screen_x, g_event_screen_y);
+	   }
 	   g_resize_event_sx = -1;
 	   g_resize_event_sy = -1;
   }

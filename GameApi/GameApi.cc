@@ -16081,7 +16081,7 @@ public:
   }
   virtual int Iter()
   {
-    
+    try {
     static std::string status = "";
     static std::string old_status = "";
     
@@ -16551,6 +16551,20 @@ public:
     g_time_id ++;
     }
     g_engine_status = 1;
+
+    } catch(const std::exception &e) {
+      std::cout << "Frame exception: " << e.what() << "!" << std::endl;
+#ifdef EMSCRIPTEN
+emscripten_log(EM_LOG_ERROR | EM_LOG_C_STACK, "Stack trace:");
+#endif
+    } catch(...) {
+      std::cout << "Unknown exception!" << std::endl;
+#ifdef EMSCRIPTEN
+emscripten_log(EM_LOG_ERROR | EM_LOG_C_STACK, "Stack trace:");
+#endif
+    }
+
+    
     //xsogl->glGetError();
     return -1;
   }
@@ -33425,6 +33439,24 @@ std::vector<std::string> g_strings(25);
 #define KP
 #endif
 
+
+#ifdef EMSCRIPTEN
+
+#if 0
+#include <emscripten/bind.h>
+
+using MyString = std::string;
+extern bool set_string_firsttime;
+
+EMSCRIPTEN_BINDINGS(my_module) {
+  emscripten::value_array<MyString>("MyString");
+    // This ensures embind knows std::string
+  set_string_firsttime = false;
+}
+#endif
+
+#endif
+
 //#define KP_DEBUG 1
 
 bool g_execute_callback = false;
@@ -33697,17 +33729,28 @@ void g_content_deleter(void *)
 std::vector<unsigned char *> g_buffers;
 std::vector<int> g_buffer_sizes;
 
+bool set_string_firsttime = true;
+
 KP extern "C" void set_string(int num, const char *value_)
 {
 
 #ifdef EMSCRIPTEN
+#if 0
+  if (set_string_firsttime)
+    {
+      emscripten::value_array<MyString>("MyString");
+      set_string_firsttime = false;
+    }
+#endif
+
+  
   size_t ptr_size=0;
   char *ptr=0;
   if (num!=3) {
 emscripten::val v = emscripten::val::u8string(value_);
-  std::string script2_a;  
+ std::string script2_a;  
   //std::vector<unsigned char> script2_b;
-      script2_a = v.as<std::string>();
+ script2_a = v.as<std::string>();
       ptr = new char[script2_a.size()+1];
       std::copy(script2_a.begin(),script2_a.end(),ptr);
       ptr[script2_a.size()]=0;

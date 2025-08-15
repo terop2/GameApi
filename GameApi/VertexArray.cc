@@ -37,6 +37,7 @@ void VertexArraySet::print_stat(int id)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];  
     }
   //std::cout << "tri_polys: " << p->tri_polys.size() << std::endl;
@@ -49,6 +50,7 @@ void VertexArraySet::explode(int id, Point pt, float dist)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];  
     }
   std::vector<std::vector<Point>* > vec;
@@ -86,6 +88,7 @@ void VertexArraySet::clear_poly_and_poly2(int id)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];  
     }
   p->tri_polys.clear();
@@ -101,6 +104,7 @@ void VertexArraySet::free_reserve(int id)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];  
     }
   p->tri_polys.resize(0);
@@ -143,6 +147,7 @@ void VertexArraySet::set_reserve(int id, int tri_count, int quad_count, int poly
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];  
     }
   //std::cout << "Reserve: " << tri_count << " " << quad_count << std::endl;
@@ -206,6 +211,7 @@ bool range_check(int i, int points_num)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num < 3) return;
@@ -260,6 +266,7 @@ void VertexArraySet::push_poly(int id, int num, Point *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num < 3) return;
@@ -305,6 +312,7 @@ void VertexArraySet::push_poly2_with_indices(int id, int num, Point *points, uns
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num < 3) return;
@@ -360,6 +368,7 @@ void VertexArraySet::push_poly2(int id, int num, Point *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -406,6 +415,7 @@ void VertexArraySet::push_normal_with_indices(int id, int num, Vector *points, u
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3)
@@ -462,6 +472,7 @@ void VertexArraySet::push_normal(int id, int num, Vector *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3)
@@ -508,6 +519,7 @@ void VertexArraySet::push_attrib(int id, int attrib_id, int num, float *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -552,6 +564,7 @@ void VertexArraySet::push_attribi(int id, int attrib_id, int num, int *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -638,6 +651,7 @@ void VertexArraySet::push_color_with_indices(int id, int num, unsigned int *poin
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -691,6 +705,7 @@ void VertexArraySet::push_color(int id, int num, unsigned int *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -736,6 +751,7 @@ void VertexArraySet::push_joint_with_indices(int id, int num, VEC4 *points, unsi
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -793,6 +809,7 @@ void VertexArraySet::push_joint(int id, int num, VEC4 *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -840,6 +857,7 @@ void VertexArraySet::push_weight_with_indices(int id, int num, VEC4 *points, uns
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -896,6 +914,7 @@ void VertexArraySet::push_weight(int id, int num, VEC4 *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -942,6 +961,7 @@ void VertexArraySet::push_texcoord_with_indices(int id, int num, Point *points, 
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -998,6 +1018,7 @@ void VertexArraySet::push_texcoord(int id, int num, Point *points)
   if (!p)
     {
       m_set[id] = new Polys;
+      ref_count = 1;
       p = m_set[id];
     }
   if (num<3) return;
@@ -1108,11 +1129,17 @@ void VertexArraySet::apply_change(DynamicChange *change, int id_source, int id_t
 VertexArraySet::~VertexArraySet()
 {
     std::mymap<int,Polys*>::iterator it = m_set.begin();
-    for(;it!=m_set.end();it++)
-      {
-	Polys *ptr = (*it).second;
-	delete ptr;
-      }
+    const VertexArraySet *curr = this;
+    bool still_alive = false;
+    while(curr->m_ref) curr=curr->m_ref;
+    curr->ref_count--;
+    if (curr->ref_count==0) {
+      for(;it!=m_set.end();it++)
+	{
+	  Polys *ptr = (*it).second;
+	  delete ptr;
+	}
+    }
 }
 void VertexArraySet::free_memory()
 {

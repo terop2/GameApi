@@ -14,7 +14,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the GNU Library General Public License
+# You should have received a copy ofg the GNU Library General Public License
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 
@@ -26,7 +26,7 @@ EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
 opencvopts = -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/build_wasm3 -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/core/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/calíb3d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/calib3d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/features2d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/flann/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/dnn/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/imgproc/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/objdetect/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/photo/include  -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/video/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/highgui/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/videoio/include -s SHARED_MEMORY=1 -s NO_DISABLE_EXCEPTION_CATCHING -sASSERTIONS=0 -sSAFE_HEAP=0
 
 # -Oz
-allopts = -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -O2 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -flto -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
+allopts = -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -O2 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -flto -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
 
 #-gpubnames
 # -Oz -gsplit-dwarf  -fno-rtti
@@ -193,9 +193,9 @@ SDL_MIXER_MINI1 = sdl_mixer_mini/src
 SDL_MIXER_MINI2 = sdl_mixer_mini/include
 
 #-fno-exceptions -fno-exceptions -fno-exceptions -fno-exceptions
-CFLAGS = $(allopts) -s DISABLE_EXCEPTION_CATCHING=1  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
-CCFLAGS = $(allopts) -I. -s DISABLE_EXCEPTION_CATCHING=1   -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
-CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
+CFLAGS = $(allopts) -fexceptions -s DISABLE_EXCEPTION_CATCHING=0  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
+CCFLAGS = $(allopts) -I. -fexceptions -s DISABLE_EXCEPTION_CATCHING=0   -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
+CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=0  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
@@ -271,9 +271,11 @@ examples: main
 
 fixmissing: check_emscripten_exists
 
+# -fno-rtti -fno-exceptions  -fno-exceptions
+
 libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 	@#echo "  em++ libGameApi.bc"
-	@#@em++ $(allopts)  -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@#@em++ $(allopts)   -s DISABLE_EXCEPTION_CATCHING=0 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
 	@echo "touch libGameApi.bc"
 	@touch libGameApi.bc
 
@@ -281,7 +283,7 @@ libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 
 libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	@echo "  em++ libGameApi_nothreads.bc"
-	@#@em++ $(allopts) -fno-rtti -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@#@em++ $(allopts)  -s DISABLE_EXCEPTION_CATCHING=0 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
 	@echo "touch libGameApi_nothreads.bc"
 	@touch libGameApi_nothreads.bc
 

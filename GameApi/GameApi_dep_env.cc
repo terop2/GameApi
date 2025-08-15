@@ -98,15 +98,20 @@ IMPORT void tasks_join(int id)
 extern GameApi::EveryApi *g_everyapi;
 extern int g_disable_draws;
 
+bool disable_opengl_from_get_event=false;
+
+
 void timeout_getevent()
 {
   GameApi::EveryApi *ev = g_everyapi; 
   if (!ev) return;
   GameApi::MainLoopApi::Event e;
+  disable_opengl_from_get_event=true;
      while((e = ev->mainloop_api.get_event()).last==true)
        {
 	 /* this eats all events from queue */
        }
+  disable_opengl_from_get_event=false;
 
 }
 
