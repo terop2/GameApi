@@ -1,2 +1,2 @@
 #!/bin/bash
-cp *.cpp *.hh ~/meshpage.org/assets/gameapi_source_for_debug/
+cp *.cc *.hh ~/meshpage.org/assets/gameapi_source_for_debug/

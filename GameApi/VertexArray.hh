@@ -75,8 +75,13 @@ public:
     std::mymap<int, Polys*>::iterator it = s.m_set.begin();
     for(;it!=s.m_set.end();it++)
       {
-	m_set[(*it).first] = new Polys(*(*it).second);
+	m_set[(*it).first] = (*it).second; //new Polys(*(*it).second);
       }
+    const VertexArraySet *curr = &s;
+    while (curr->m_ref) { curr=curr->m_ref; }
+    curr->ref_count++;
+    ref_count=0;
+    m_ref = &s;
     bm_id = 0;
     texture_id = s.texture_id;
     texture_many_ids = s.texture_many_ids;
@@ -301,6 +306,8 @@ public:
   static void append_to_polys(VertexArraySet::Polys &target, const VertexArraySet::Polys &source);
 
   mutable std::mymap<int, Polys*> m_set;
+  mutable int ref_count=0;
+  mutable const VertexArraySet *m_ref=0;
   bool has_normal=true;
   bool has_attrib=false;
   bool has_color=true;

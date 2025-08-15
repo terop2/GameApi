@@ -7459,7 +7459,10 @@ public:
 	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types,false,id_labels);
 	va = ev.texture_api.bind_many(va, id, types);
       }
-    if (disabled) return;
+    if (disabled) {
+      if (firsttime) { firsttime = false; }
+      return;
+    }
 
     GameApi::SH sh;
     GameApi::US u_v;

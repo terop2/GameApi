@@ -241,10 +241,26 @@ extern GameApi::EveryApi *g_everyapi;
 void ClearProgress();
 #if 1
 extern pthread_t g_main_thread_id;
+
+void print_stacktrace() {
+EM_ASM({
+    console.log("JS stack trace:", new Error().stack);
+});
+}
+
+void out_of_memory()
+{
+  std::cout << "Allocation failed!" << std::endl;
+  print_stacktrace();
+  abort();
+}
+
 int main(int argc, char *argv[]) {
   g_main_thread_id = pthread_self();
   
   tasks_init();
+
+  std::set_new_handler(&out_of_memory);
   
   call_count++;
   //std::cout << "CALL COUNT" << call_count << std::endl;
