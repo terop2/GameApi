@@ -9971,7 +9971,8 @@ public:
     // TODO, IS THIS CORRECT IMPLEMENTATION
     find_ml();
      MainLoopItem *item = find_main_loop(env,ml);
-     item->Collect(vis);
+     if (item)
+       item->Collect(vis);
       firsttime = false;
       // TODO, IS THIS CORRECT IMPLEMENTATION
   }
@@ -9990,25 +9991,30 @@ public:
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Prepare();
+      if (item)
+	item->Prepare();
       firsttime = false;
     }
     
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->execute(e);
+    if (item)
+      item->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->handle_event(e);
+    if (item)
+      item->handle_event(e);
   }
     
   virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    return item->shader_id();
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
   }
 private:
   GameApi::Env &env;
@@ -10030,7 +10036,8 @@ public:
   void Collect(CollectVisitor &vis) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Collect(vis);
+      if (item)
+	item->Collect(vis);
       firsttime=false;
   }
   void HeavyPrepare() { }
@@ -10042,24 +10049,29 @@ public:
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Prepare();
+      if (item)
+	item->Prepare();
       firsttime = false;
     }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->execute(e);
+    if (item)
+      item->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->handle_event(e);
+    if (item)
+      item->handle_event(e);
   }
     
   virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    return item->shader_id();
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
   }
 private:
   GameApi::Env &env;
@@ -10083,7 +10095,8 @@ public:
   {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->Collect(vis);
+    if (item)
+      item->Collect(vis);
     vis.register_obj(this);
     firsttime = false;
   }
@@ -10095,7 +10108,8 @@ public:
     if (firsttime) {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
+    if (item)
+      item->Prepare();
     //HeavyPrepare();
     firsttime = false;
     }
@@ -10105,24 +10119,29 @@ public:
     if (firsttime) {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
+    if (item)
+      item->Prepare();
     firsttime = false;
     }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->execute(e);
+    if (item)
+      item->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->handle_event(e);
+    if (item)
+      item->handle_event(e);
   }
     
   virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    return item->shader_id();
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
   }
 private:
   GameApi::Env &env;
@@ -10149,7 +10168,8 @@ public:
   {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Collect(vis);
+      if (item)
+	item->Collect(vis);
       vis.register_obj(this);
       firsttime = false;
   }
@@ -10164,7 +10184,8 @@ public:
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Prepare();
+      if (item)
+	item->Prepare();
       //HeavyPrepare();
       firsttime = false;
     }
@@ -10175,7 +10196,8 @@ public:
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Prepare();
+      if (item)
+	item->Prepare();
       firsttime = false;
     }
     find_ml();
@@ -10188,20 +10210,24 @@ public:
     //  }
     
     MainLoopItem *item = find_main_loop(env,ml);
-    item->execute(e);
+    if (item)
+      item->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     if (disabled) return;
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->handle_event(e);
+    if (item)
+      item->handle_event(e);
   }
     
   virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    return item->shader_id();
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
   }
 private:
   GameApi::Env &env;
@@ -10227,7 +10253,8 @@ public:
   {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->Collect(vis);
+    if (item)
+      item->Collect(vis);
     firsttime = false;
   }
   void HeavyPrepare() { }
@@ -10239,24 +10266,29 @@ public:
     if (firsttime) {
       find_ml();
       MainLoopItem *item = find_main_loop(env,ml);
-      item->Prepare();
+      if (item)
+	item->Prepare();
       firsttime = false;
     }
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->execute(e);
+    if (item)
+      item->execute(e);
   }
   virtual void handle_event(MainLoopEvent &e)
   {
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    item->handle_event(e);
+    if (item)
+      item->handle_event(e);
   }
     
   virtual std::vector<int> shader_id() { 
     find_ml();
     MainLoopItem *item = find_main_loop(env,ml);
-    return item->shader_id();
+    if (item)
+      return item->shader_id();
+    return std::vector<int>();
   }
 private:
   GameApi::Env &env;

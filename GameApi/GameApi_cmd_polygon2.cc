@@ -535,6 +535,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "ev", "", "0.5", "0.5", "0.5" },
 			 "ML", "polygon_api", "bloom1_shader"));
 #endif
+#if 0
 #if (ALL==1)||(WAVE_SHADER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::wave_shader,
 			 "p_wave",
@@ -542,6 +543,7 @@ std::vector<GameApiItem*> polygonapi_functions2()
 			 { "EveryApi&", "ML", "float", "float", "float", "float" },
 			 { "ev", "", "0.02", "1.5", "17", "9" },
 			 "ML", "polygon_api", "wave_shader"));
+#endif
 #endif
 #if (ALL==1)||(FOG_SHADER==1)  
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::fog_shader,
