@@ -189,11 +189,11 @@ CC2FLAGS =   -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL
 #`pkg-config gtkmm-2.4 --cflags`
 
 BD_CALVIN_M64=
-ifeq ($(BD_CALVIN),"fedora")
+ifeq ($(BD_CALVIN),fedora)
 CCFLAGS += -DBD_CALVIN_COMPUTER
 CC2FLAGS += -DBD_CALVIN_COMPUTER
 endif
-ifneq ($(BD_CALVIN),"fedora")
+ifneq ($(BD_CALVIN),fedora)
 CCFLAGS += -m64
 CC2FLAGS += -m64
 BD_CALVIN_M64 += -m64
