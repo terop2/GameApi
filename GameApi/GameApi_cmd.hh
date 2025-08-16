@@ -751,6 +751,9 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
 #ifdef RASPI
 #define ORDER 1
 #endif
+#ifdef ARM
+#define ORDER 1
+#endif
   
   //std::stringstream ss;
   int s2 = s.size();

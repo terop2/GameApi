@@ -198,10 +198,13 @@ ifeq ($(BD_CALVIN),fedora)
 CCFLAGS += -DBD_CALVIN_COMPUTER
 CC2FLAGS += -DBD_CALVIN_COMPUTER
 endif
+
+PLATFORM_FLAGS=
 ifneq ($(BD_CALVIN),fedora)
 CCFLAGS += -m64
 CC2FLAGS += -m64
 BD_CALVIN_M64 += -m64
+PLATFORM_FLAGS += -DARM
 endif
 
 default: check_compile dirs libGameApi.so deploytool/deploytool editor/gameapi-builder cmdline/gameapi_cmdline
@@ -319,7 +322,7 @@ editor/gameapi-builder: editor/Makefile.Linux editor/test.cpp libGameApi.so
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
-	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) $(PLATFORM_FLAGS) -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 $(CMDOFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
