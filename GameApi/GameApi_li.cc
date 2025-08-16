@@ -1964,7 +1964,9 @@ GameApi::LI GameApi::LinesApi::fur(PTS points, PT center, float dist)
 {
   PointsApiPoints *pts = find_pointsapi_points(e, points);
   Point *pt = find_point(e, center);
-  return add_line_array(e, new Fur2(pts, *pt, dist));
+  if (pts && pt)
+    return add_line_array(e, new Fur2(pts, *pt, dist));
+  return li_empty();
 }
 
 GameApi::LI GameApi::LinesApi::random_mesh_quad_lines(EveryApi &ev, P p, int count)
