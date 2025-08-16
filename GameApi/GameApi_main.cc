@@ -2500,7 +2500,7 @@ public:
   void Collect(CollectVisitor &vis)
   {
     int s = vec.size();
-    for(int i=0;i<s;i++) vec[i]->Collect(vis);    
+    for(int i=0;i<s;i++) if (vec[i]) vec[i]->Collect(vis);    
   }
   void HeavyPrepare() {
   }
