@@ -2,7 +2,7 @@
 BD_CALVIN=`uname -n`
 
 BD_CALVIN_M64 = 
-ifneq ($(BD_CALVIN),"fedora")
+ifneq ($(BD_CALVIN),fedora)
 BD_CALVIN_M64 = -m64
 endif
 
