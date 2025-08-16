@@ -762,11 +762,13 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
     {
       ss << s[i] << " ";
     }
+  std::cout << "NO ORDER!" << std::endl;
 #else
   for(int i=0;i<s2;i++)
     {
       ss << s[i] << " ";
     }
+  std::cout << "YES ORDER!" << std::endl;
 #endif
   // std::cout << "FuncCall: " << ss.str() << std::endl;
 
