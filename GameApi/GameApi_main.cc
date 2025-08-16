@@ -2506,7 +2506,7 @@ public:
   }
   void Prepare() {
     int s = vec.size();
-    for(int i=0;i<s;i++) vec[i]->Prepare();
+    for(int i=0;i<s;i++) if (vec[i]) vec[i]->Prepare();
 
       
     
@@ -2515,7 +2515,7 @@ public:
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
-	vec[i]->logoexecute();
+	if (vec[i]) vec[i]->logoexecute();
       }
   }
   void execute(MainLoopEnv &e)
@@ -2527,7 +2527,7 @@ public:
 
 #ifndef NO_MV
 	// here's a block needed to distribute in_MV to different cases.
-	std::vector<int> ids = vec[i]->shader_id();
+	std::vector<int> ids = vec[i]?vec[i]->shader_id():std::vector<int>();
 	int s = ids.size();
 	for(int j=0;j<s;j++) {
 	  int id = ids[j];
@@ -2540,7 +2540,7 @@ public:
 	  }
 	}
 #endif
-	vec[i]->execute(ee);
+	if (vec[i]) vec[i]->execute(ee);
       }
   }
   void handle_event(MainLoopEvent &e)
@@ -2548,7 +2548,7 @@ public:
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
-	vec[i]->handle_event(e);
+	if (vec[i]) vec[i]->handle_event(e);
       }
   }
   std::vector<int> shader_id() { 
