@@ -18,7 +18,7 @@
 # along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
 #
 BD_CALVIN = $(shell uname -n)
-
+ARCH = $(shell uname -m)
 
 LIBPATH=/usr/lib/x86_64-linux-gnu/
 GL_PATH=$(LIBPATH)
@@ -195,10 +195,23 @@ CC2FLAGS = $(ADDRESS) -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLA
 
 BD_CALVIN_M64=
 PLATFORM_FLAGS=
+ifeq ($(ARCH),armv7l)
+PLATFORM_FLAGS += -DARM2
+endif
+ifeq ($(ARCH),aarch64)
+PLATFORM_FLAGS += -DARM2
+endif
+ifeq ($(ARCH),armv6l)
+PLATFORM_FLAGS += -DARM2
+endif
+ifeq ($(ARCH),armv8l)
+PLATFORM_FLAGS += -DARM2
+endif
+
+
 ifeq ($(BD_CALVIN),fedora)
 CCFLAGS += -DBD_CALVIN_COMPUTER
 CC2FLAGS += -DBD_CALVIN_COMPUTER
-PLATFORM_FLAGS += -DARM2
 endif
 
 ifneq ($(BD_CALVIN),fedora)
