@@ -12043,6 +12043,8 @@ EXPORT GameApi::ML GameApi::PolygonApi::noise_shader(EveryApi &ev, ML mainloop)
 }
 EXPORT GameApi::ML GameApi::PolygonApi::custom_shader(EveryApi &ev, ML mainloop, std::string v_shaderstring, std::string f_shaderstring, std::string v_funcname, std::string f_funcname)
 {
+  std::cout << "ERROR: custom_shader() is missing!" << std::endl;
+  GameApi::ML ml; ml.id=-1; return ml;
 #if 0
   MainLoopItem *item = find_main_loop(e, mainloop);
   return add_main_loop(e, new CustomShaderML(ev, item,v_shaderstring,f_shaderstring,v_funcname,f_funcname));
