@@ -31,12 +31,12 @@ test
 (748,1099)anim_translate uid21318 0 0 1 next:*uid21316:false:-1:0 start_time:*0:false:-1:0 end_time:*500:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*-600:false:-1:0
 (787,691)move_ml uid21319 0 0 1 ev:*ev:false:-1:0 ml:*uid21306:false:-1:0 mn:*uid21318:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (153,1107)mn_scale uid21320 0 0 1 next:*uid21314:false:-1:0 sx:*1:false:-1:0 sy:*1:false:-1:0 sz:*-1:false:-1:0
-(905,750)array_ml uid21321 0 0 1 ev:*ev:false:-1:0 arr:*[uid21319,uid21312]:false:-1:0
+(904,750)array_ml uid21321 0 0 1 ev:*ev:false:-1:0 arr:*[uid21319,uid21312]:false:-1:0
 (1062,801)local_move uid21323 0 0 1 ev:*ev:false:-1:0 inner_ml:*uid21321:false:-1:0 center_points:*uid21325:false:-1:0
 (1110,1010)c_line uid21324 0 0 1 p1:*uid21326:false:-1:0 p2:*uid21327:false:-1:0
 (1234,1009)c_sample uid21325 0 0 1 curve:*uid21324:false:-1:0 num_samples:*250:false:-1:0
-(970,964)point uid21326 0 0 1 x:*0:false:-1:0 y:*0:false:-1:0 z:*0:false:-1:0
-(973,1075)point uid21327 0 0 1 x:*0:false:-1:0 y:*0:false:-1:0 z:*-200000:false:-1:0
+(969,964)point uid21326 0 0 1 x:*0:false:-1:0 y:*0:false:-1:0 z:*0:false:-1:0
+(972,1075)point uid21327 0 0 1 x:*0:false:-1:0 y:*0:false:-1:0 z:*-200000:false:-1:0
 (1049,624)mn_empty uid21328 0 0 1
 (1179,637)anim_translate uid21329 0 0 1 next:*uid21328:false:-1:0 start_time:*0:false:-1:0 end_time:*1000:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*200000:false:-1:0
 (1223,821)move_ml uid21330 0 0 1 ev:*ev:false:-1:0 ml:*uid21323:false:-1:0 mn:*uid21329:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
@@ -61,7 +61,7 @@ test
 (144,1354)point uid19696 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (149,1459)point uid19697 0 0 1 x:*0:false:-1:0 y:*50:false:-1:0 z:*0:false:-1:0
 (93,1570)point uid19698 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
-(46,1694)point uid19699 0 0 1 x:*0:false:-1:0 y:*50:false:-1:0 z:*0:false:-1:0
+(46,1618)point uid19699 0 0 1 x:*0:false:-1:0 y:*50:false:-1:0 z:*0:false:-1:0
 (463,1445)blit uid19700 0 0 1 bg:*uid19694:false:-1:0 orig:*uid19695:false:-1:0 x:*0:false:-1:0 y:*50:false:-1:0
 (597,1452)bm_fullscreen uid19701 0 0 1 ev:*ev:false:-1:0 orig:*uid19700:false:-1:0
 (752,1455)bm_render uid19702 0 0 1 ev:*ev:false:-1:0 bm:*uid19701:false:-1:0
@@ -79,11 +79,11 @@ test
 (564,2751)mn_scale uid25853 0 0 1 next:*uid25852:false:-1:0 sx:*0.5:false:-1:0 sy:*0.5:false:-1:0 sz:*0.5:false:-1:0
 (543,2630)move_ml uid25854 0 0 1 ev:*ev:false:-1:0 ml:*uid32529:false:-1:0 mn:*uid25853:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (823,1727)fps_display uid25855 0 0 1 ev:*ev:false:-1:0 ml:*uid23555:false:-1:0 font:*http?//meshpage.org/assets/Chunkfive.otf:false:-1:0
-(170,1732)p_script uid32524 0 0 1 ev:*ev:false:-1:0 hml:*:false:-1:0 %1:*a:false:-1:0 %2:*b:false:-1:0 %3:*c:false:-1:0 %4:*d:false:-1:0 %5:*e:false:-1:0
+(170,1732)p_script uid32524 0 0 1 ev:*ev:false:-1:0 hml:*uid454941648:false:-1:0 %1:*a:false:-1:0 %2:*b:false:-1:0 %3:*c:false:-1:0 %4:*d:false:-1:0 %5:*e:false:-1:0
 (432,1721)m_bind_inst uid32525 0 0 1 p:*uid16564:false:-1:0 pts:*uid19689:false:-1:0 mat:*uid32527:false:-1:0
 (346,1607)m_def uid32526 0 0 1 ev:*ev:false:-1:0
 (464,1612)m_phong uid32527 0 0 1 ev:*ev:false:-1:0 nxt:*uid27618:false:-1:0 light_dir_x:*-0.3:false:-1:0 light_dir_y:*0.3:false:-1:0 light_dir_z:*-1.0:false:-1:0 ambient:*ffff8800:false:-1:0 specular:*ffff8800:false:-1:0 highlight:*ff666666:false:-1:0 pow:*15.0:false:-1:0
-(73,2562)p_script uid32528 0 0 1 ev:*ev:false:-1:0 hml:*:false:-1:0 %1:*a:false:-1:0 %2:*b:false:-1:0 %3:*c:false:-1:0 %4:*d:false:-1:0 %5:*e:false:-1:0
+(99,2543)p_script uid32528 0 0 1 ev:*ev:false:-1:0 hml:*uid454941649:false:-1:0 %1:*a:false:-1:0 %2:*b:false:-1:0 %3:*c:false:-1:0 %4:*d:false:-1:0 %5:*e:false:-1:0
 (213,2544)m_bind_inst uid32529 0 0 1 p:*uid32528:false:-1:0 pts:*uid25446:false:-1:0 mat:*uid32531:false:-1:0
 (3,2696)m_def uid32530 0 0 1 ev:*ev:false:-1:0
 (132,2805)m_fur uid32531 0 0 1 ev:*ev:false:-1:0 nxt:*uid32537:false:-1:0 center:*uid32532:false:-1:0 dist:*20:false:-1:0 max_angle:*3.14159:false:-1:0 count:*5000:false:-1:0 size:*2:false:-1:0 cone_numfaces:*4:false:-1:0
@@ -91,7 +91,7 @@ test
 (669,2433)move_ml uid32533 0 0 1 ev:*ev:false:-1:0 ml:*uid25854:false:-1:0 mn:*uid32536:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (661,2947)mn_empty uid32534 0 0 1
 (788,2963)mn_translate uid32535 0 0 1 next:*uid32534:false:-1:0 dx:*30:false:-1:0 dy:*70:false:-1:0 dz:*15:false:-1:0
-(934,2952)mn_scale uid32536 0 0 1 next:*uid32535:false:-1:0 sx:*3:false:-1:0 sy:*3:false:-1:0 sz:*3:false:-1:0
+(933,2952)mn_scale uid32536 0 0 1 next:*uid32535:false:-1:0 sx:*3:false:-1:0 sy:*3:false:-1:0 sz:*3:false:-1:0
 (14,2795)m_snow uid32537 0 0 1 ev:*ev:false:-1:0 nxt:*uid27620:false:-1:0 color1:*ffffffff:false:-1:0 color2:*ffffffff:false:-1:0 color3:*ffffffff:false:-1:0 mix_val:*1:false:-1:0
 (273,3380)o_cone uid32540 0 0 1 p1:*uid32546:false:-1:0 p2:*uid32547:false:-1:0 rad1:*300:false:-1:0 rad2:*300:false:-1:0
 (270,3501)o_cone uid32541 0 0 1 p1:*uid32548:false:-1:0 p2:*uid32549:false:-1:0 rad1:*300:false:-1:0 rad2:*400:false:-1:0
@@ -111,7 +111,7 @@ test
 (852,3583)vx_bind uid32556 0 0 1 ev:*ev:false:-1:0 objs:*[uid32555]:false:-1:0 ptss:*uid32553:false:-1:0 mt:*uid32557:false:-1:0
 (684,3662)m_flat uid32557 0 0 1 ev:*ev:false:-1:0 nxt:*uid6777:false:-1:0 color1:*ff8888ff:false:-1:0 color2:*ffff4422:false:-1:0 color3:*ffffffff:false:-1:0
 (426,3676)m_def uid32558 0 0 1 ev:*ev:false:-1:0
-(1022,3656)local_move uid32559 0 0 1 ev:*ev:false:-1:0 inner_ml:*uid32556:false:-1:0 center_points:*uid32560:false:-1:0
+(1020,3656)local_move uid32559 0 0 1 ev:*ev:false:-1:0 inner_ml:*uid32556:false:-1:0 center_points:*uid32560:false:-1:0
 (892,3773)pt_array uid32560 0 0 1 ev:*ev:false:-1:0 vec:*[uid32561,uid32562,uid32563,uid32564]:false:-1:0
 (677,3795)point uid32561 0 0 1 x:*-500:false:-1:0 y:*0:false:-1:0 z:*-500:false:-1:0
 (676,3914)point uid32562 0 0 1 x:*500:false:-1:0 y:*0:false:-1:0 z:*-500:false:-1:0
@@ -120,7 +120,7 @@ test
 (897,3933)cube uid32565 0 0 1 start_x:*-500:false:-1:0 end_x:*500:false:-1:0 start_y:*-100:false:-1:0 end_y:*100:false:-1:0 start_z:*-500:false:-1:0 end_z:*500:false:-1:0
 (1043,3940)m_bind uid32568 0 0 1 p:*uid32565:false:-1:0 mat:*uid6775:false:-1:0
 (896,4086)bm_url uid32570 0 0 1 url:*http?//meshpage.org/assets/tiiliseina.jpg:false:-1:0
-(903,4207)repeat uid6774 0 0 1 orig1:*uid32570:false:-1:0 x_count:*5:false:-1:0 y_xount:*5:false:-1:0
+(902,4207)repeat uid6774 0 0 1 orig1:*uid32570:false:-1:0 x_count:*5:false:-1:0 y_xount:*5:false:-1:0
 (1036,4156)m_texture_many uid6775 0 0 1 ev:*ev:false:-1:0 vec:*[uid6774]:false:-1:0 mix:*1.0:false:-1:0
 (490,3551)o_maxop uid6776 0 0 1 object1:*uid32550:false:-1:0 object2:*uid32542:false:-1:0
 (548,3682)m_web uid6777 0 0 1 ev:*ev:false:-1:0 nxt:*uid27621:false:-1:0 mult:*1.03:false:-1:0 linewidth:*2.0:false:-1:0 linecolor:*ff000000:false:-1:0
@@ -129,10 +129,10 @@ test
 (1164,3808)mn_translate uid6780 0 0 1 next:*uid6779:false:-1:0 dx:*-3000:false:-1:0 dy:*-150:false:-1:0 dz:*1500:false:-1:0
 (832,2232)dc_sphwave uid16563 0 0 1 r1:*30.0:false:-1:0 fr_1:*3.0:false:-1:0 t_1:*1.0:false:-1:0 r2:*30.0:false:-1:0 fr_2:*5.0:false:-1:0 t_2:*2.0:false:-1:0
 (286,1735)sph_wave uid16564 0 0 1 p:*uid32524:false:-1:0 r1:*30:false:-1:0 freq_1:*13:false:-1:0 r2:*30:false:-1:0 freq_2:*16:false:-1:0
-(797,1999)dyn_points_ml uid24615 0 0 1 ev:*ev:false:-1:0 ml:*uid23554:false:-1:0 move:*uid24620:false:-1:0 pointnum:*0:false:-1:0 pos_x:*1000:false:-1:0 pos_y:*0:false:-1:0 pos_z:*0:false:-1:0
+(777,2008)dyn_points_ml uid24615 0 0 1 ev:*ev:false:-1:0 ml:*uid23554:false:-1:0 move:*uid24620:false:-1:0 pointnum:*0:false:-1:0 pos_x:*1000:false:-1:0 pos_y:*0:false:-1:0 pos_z:*0:false:-1:0
 (413,2159)mn_empty uid24616 0 0 1
 (809,2124)anim_rotate uid24619 0 0 1 next:*uid24616:false:-1:0 start_time:*0:false:-1:0 end_time:*30:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*6.28318:false:-1:0
-(939,2128)anim_repeat uid24620 0 0 1 next:*uid24619:false:-1:0 start_time:*0:false:-1:0 repeat_duration:*30:false:-1:0
+(938,2128)anim_repeat uid24620 0 0 1 next:*uid24619:false:-1:0 start_time:*0:false:-1:0 repeat_duration:*30:false:-1:0
 (217,4689)cube_bo uid24622 0 0 1 ev:*ev:false:-1:0 start_x:*-300:false:-1:0 end_x:*300:false:-1:0 start_y:*-300:false:-1:0 end_y:*300:false:-1:0 start_z:*-300:false:-1:0 end_z:*300:false:-1:0 split_x:*10:false:-1:0 split_y:*10:false:-1:0
 (209,4797)sphere_bo uid24623 0 0 1 ev:*ev:false:-1:0 center:*uid24624:false:-1:0 radius:*350:false:-1:0 numfaces1:*20:false:-1:0 numfaces2:*20:false:-1:0
 (87,4798)point uid24624 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
@@ -159,16 +159,16 @@ test
 (588,5863)vx_landscape_bm uid24645 0 0 1 bitmap:*uid24646:false:-1:0 height:*30:false:-1:0 false_val:*-1:false:-1:0 true_val:*0:false:-1:0
 (463,5859)from_bool uid24646 0 0 1 b:*uid24652:false:-1:0 val_true:*1:false:-1:0 val_false:*0:false:-1:0
 (786,5868)vx_inst uid24647 0 0 1 voxel:*uid24645:true:-1:0 count:*1:true:-1:0 start_x:*-200:true:-1:0 end_x:*200:true:-1:0 start_y:*-20:true:-1:0 end_y:*20:true:-1:0 start_z:*-200:true:-1:0 end_z:*200:true:-1:0
-(922,5842)vx_render uid24648 0 0 1 ev:*ev:false:-1:0 objs:*[uid24649]:false:-1:0 ptss:*uid24647:false:-1:0
+(921,5842)vx_render uid24648 0 0 1 ev:*ev:false:-1:0 objs:*[uid24649]:false:-1:0 ptss:*uid24647:false:-1:0
 (786,5727)sphere uid24649 0 0 1 center:*uid24650:false:-1:0 radius:*100:false:-1:0 numfaces1:*2:false:-1:0 numfaces2:*2:false:-1:0
 (669,5721)point uid24650 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (367,5676)emptybool uid24651 0 0 1 sx:*100:false:-1:0 sy:*100:false:-1:0
 (499,5679)circle uid24652 0 0 1 bg:*uid24651:false:-1:0 center_x:*50.0:false:-1:0 center_y:*50.0:false:-1:0 radius:*50.0:false:-1:0
-(944,5710)vx_bind uid24653 0 0 1 ev:*ev:false:-1:0 objs:*[uid24649]:false:-1:0 ptss:*uid24647:false:-1:0 mt:*uid24655:false:-1:0
+(943,5710)vx_bind uid24653 0 0 1 ev:*ev:false:-1:0 objs:*[uid24649]:false:-1:0 ptss:*uid24647:false:-1:0 mt:*uid24655:false:-1:0
 (568,6004)m_noise uid24654 0 0 1 ev:*ev:false:-1:0 sx:*1024:false:-1:0 sy:*1024:false:-1:0 r:*255:false:-1:0 g:*255:false:-1:0 b:*255:false:-1:0 a:*255:false:-1:0 r2:*0:false:-1:0 g2:*0:false:-1:0 b2:*0:false:-1:0 a2:*255:false:-1:0 mix:*0.5:false:-1:0
 (883,6002)m_snow uid24655 0 0 1 ev:*ev:false:-1:0 nxt:*uid27623:false:-1:0 color1:*ffaaaaaa:false:-1:0 color2:*ffeeeeee:false:-1:0 color3:*ffffffff:false:-1:0 mix_val:*0.95:false:-1:0
 (837,5596)mn_empty uid24657 0 0 1
-(968,5596)mn_translate uid24658 0 0 1 next:*uid24657:false:-1:0 dx:*0:false:-1:0 dy:*-150:false:-1:0 dz:*-3700:false:-1:0
+(967,5596)mn_translate uid24658 0 0 1 next:*uid24657:false:-1:0 dx:*0:false:-1:0 dy:*-150:false:-1:0 dz:*-3700:false:-1:0
 (287,6303)sphere uid24659 0 0 1 center:*uid24660:false:-1:0 radius:*300:false:-1:0 numfaces1:*10:false:-1:0 numfaces2:*10:false:-1:0
 (171,6303)point uid24660 0 0 1 x:*0:false:-1:0 y:*80:false:-1:0 z:*0:false:-1:0
 (564,6317)li_from_polygon uid24661 0 0 1 poly:*uid24662:false:-1:0
@@ -179,16 +179,16 @@ test
 (302,6458)m_def uid24666 0 0 1 ev:*ev:false:-1:0
 (601,6466)m_phong uid24667 0 0 1 ev:*ev:false:-1:0 nxt:*uid27624:false:-1:0 light_dir_x:*-0.3:false:-1:0 light_dir_y:*0.3:false:-1:0 light_dir_z:*-1:false:-1:0 ambient:*ff00ff88:false:-1:0 specular:*ffff8800:false:-1:0 highlight:*ff006611:false:-1:0 pow:*15:false:-1:0
 (601,6579)point uid24668 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
-(984,6423)move_ml uid24669 0 0 1 ev:*ev:false:-1:0 ml:*uid24664:false:-1:0 mn:*uid24671:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(983,6423)move_ml uid24669 0 0 1 ev:*ev:false:-1:0 ml:*uid24664:false:-1:0 mn:*uid24671:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (801,6597)mn_empty uid24670 0 0 1
-(924,6599)mn_translate uid24671 0 0 1 next:*uid24670:false:-1:0 dx:*-3600:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
+(923,6599)mn_translate uid24671 0 0 1 next:*uid24670:false:-1:0 dx:*-3600:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
 (1137,1593)run_window uid8957 0 0 1 ev:*ev:false:-1:0 ml:*uid1800664666:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
-(1003,1760)sound_ml uid20643 0 0 1 ev:*ev:false:-1:0 ml:*uid25855:false:-1:0 url:*http?//meshpage.org/assets/plate.wav:false:-1:0 key:*100:false:-1:0
+(1002,1760)sound_ml uid20643 0 0 1 ev:*ev:false:-1:0 ml:*uid25855:false:-1:0 url:*http?//meshpage.org/assets/plate.wav:false:-1:0 key:*100:false:-1:0
 (1276,1859)key_printer_ml uid20644 0 0 1 ml:*uid20648:false:-1:0
-(1006,1878)sound_ml uid20645 0 0 1 ev:*ev:false:-1:0 ml:*uid20643:false:-1:0 url:*http?//meshpage.org/assets/plate.wav:false:-1:0 key:*97:false:-1:0
+(1005,1878)sound_ml uid20645 0 0 1 ev:*ev:false:-1:0 ml:*uid20643:false:-1:0 url:*http?//meshpage.org/assets/plate.wav:false:-1:0 key:*97:false:-1:0
 (1137,1880)sound_ml uid20647 0 0 1 ev:*ev:false:-1:0 ml:*uid20645:false:-1:0 url:*http?//meshpage.org/assets/plate.wav:false:-1:0 key:*119:false:-1:0
 (1148,1999)sound_ml uid20648 0 0 1 ev:*ev:false:-1:0 ml:*uid20647:false:-1:0 url:*http?//meshpage.org/assets/plate.wav:false:-1:0 key:*115:false:-1:0
-(988,1547)vr_window uid14388 0 0 1 ev:*ev:false:-1:0 ml:*uid23555:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0 invert:*true:false:-1:0 translate:*true:false:-1:0
+(987,1547)vr_window uid14388 0 0 1 ev:*ev:false:-1:0 ml:*uid23555:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0 invert:*true:false:-1:0 translate:*true:false:-1:0
 (150,6987)emptybool uid7298 0 0 1 sx:*200:false:-1:0 sy:*200:false:-1:0
 (286,6992)circle uid7299 0 0 1 bg:*uid7298:false:-1:0 center_x:*100:false:-1:0 center_y:*100:false:-1:0 radius:*100:false:-1:0
 (419,7000)to_bitmap uid7300 0 0 1 bools:*uid7299:false:-1:0 true_r:*255:false:-1:0 true_g:*255:false:-1:0 true_b:*255:false:-1:0 true_a:*255:false:-1:0 false_r:*0:false:-1:0 false_g:*0:false:-1:0 false_b:*0:false:-1:0 false_a:*0:false:-1:0
@@ -220,7 +220,7 @@ test
 (865,7900)move_ml uid14128 0 0 1 ev:*ev:false:-1:0 ml:*uid10254:false:-1:0 mn:*uid14130:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
 (651,7961)mn_empty uid14129 0 0 1
 (786,8011)anim_rotate uid14130 0 0 1 next:*uid14129:false:-1:0 start_time:*0:false:-1:0 end_time:*10000:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*628:false:-1:0
-(976,7920)run_window uid14131 0 0 1 ev:*ev:false:-1:0 ml:*uid14128:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
+(975,7920)run_window uid14131 0 0 1 ev:*ev:false:-1:0 ml:*uid14128:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
 (335,-626)cube uid930 0 0 1 start_x:*-5:false:-1:0 end_x:*5:false:-1:0 start_y:*-5:false:-1:0 end_y:*5:false:-1:0 start_z:*-5:false:-1:0 end_z:*5:false:-1:0
 (200,-450)o_sphere uid931 0 0 1 center:*uid933:false:-1:0 radius:*300:false:-1:0
 (209,-339)o_sphere uid932 0 0 1 center:*uid934:false:-1:0 radius:*290:false:-1:0
@@ -259,4 +259,6 @@ test
 (436,6475)m_fog uid27624 0 0 1 ev:*ev:false:-1:0 nxt:*uid24666:false:-1:0 dist:*300.0:false:-1:0 dark_color:*ff000000:false:-1:0 light_color:*ffffffff:false:-1:0
 (533,-48)m_fog uid10863 0 0 1 ev:*ev:false:-1:0 nxt:*uid944:false:-1:0 dist:*300.0:false:-1:0 dark_color:*ff000000:false:-1:0 light_color:*ffffffff:false:-1:0
 (66,713)m_fog uid11033 0 0 1 ev:*ev:false:-1:0 nxt:*uid21302:false:-1:0 dist:*300.0:false:-1:0 dark_color:*ff000000:false:-1:0 light_color:*ffffffff:false:-1:0
-(929,1658)ogl_perspective uid1800664666 0 0 1 ev:*ev:false:-1:19 ml:*uid23555:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19
+(928,1658)ogl_perspective uid1800664666 0 0 1 ev:*ev:false:-1:19 ml:*uid23555:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19
+(51,1725)html_url uid454941648 0 0 1 url:*http?//meshpage.org/assets/coin_p.mp:false:-1:-2014590912
+(-14,2543)html_url uid454941649 0 0 1 url:*http?//meshpage.org/assets/tree_p.mp:false:-1:-2014590912
