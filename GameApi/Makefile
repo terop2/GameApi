@@ -185,7 +185,7 @@ WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-v
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC
 
 ADDRESS=
-ifeq(DEBUG,address)
+ifeq (DEBUG,address)
 ADDRESS=-fsanitize=address
 endif
 
@@ -204,7 +204,7 @@ CC2FLAGS += -m64
 BD_CALVIN_M64 += -m64
 endif
 
-default: check_compile dirs libGameApi.so deploytool/deploytool editor/a.out cmdline/gameapi_cmdline
+default: check_compile dirs libGameApi.so deploytool/deploytool editor/gameapi-builder cmdline/gameapi_cmdline
 
 
 check_compile:
@@ -309,13 +309,13 @@ CCWIN = i586-mingw32msvc-g++
 
 
 deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
-	@(cd deploytool; make -f Makefile)
+	@(cd deploytool; make -f Makefile DEBUG="$(DEBUG)")
 
 cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.so
-	@(cd cmdline; make -f Makefile)
+	@(cd cmdline; make -f Makefile DEBUG="$(DEBUG)")
 
-editor/a.out: editor/Makefile.Linux editor/test.cpp libGameApi.so
-	@(cd editor; make -f Makefile.Linux LDFLAGS="$(LDFLAGS)")
+editor/gameapi-builder: editor/Makefile.Linux editor/test.cpp libGameApi.so
+	@(cd editor; make -f Makefile.Linux DEBUG="$(DEBUG)" LDFLAGS="$(LDFLAGS)")
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC     $@"

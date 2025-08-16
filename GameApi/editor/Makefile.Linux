@@ -6,12 +6,18 @@ ifneq ($(BD_CALVIN),fedora)
 BD_CALVIN_M64+=-m64
 endif
 
+ADDRESS=
+ifeq ($(DEBUG),address)
+ADDRESS=-fsanitize=address
+endif
+
+
 WARN = -Wno-deprecated-enum-enum-conversion
 
 all:
 	@echo "  LD     editor/gameapi-builder"
 	@echo "SETUP: $(BD_CALVIN)"
-	@g++ -Wl,--gc-sections $(WARN) $(BD_CALVIN_M64) -O2 -DLINUX -fPIC -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client `pkg-config --cflags opencv4` `pkg-config --libs opencv4` -o gameapi-builder
+	@g++ $(ADDRESS) -Wl,--gc-sections $(WARN) $(BD_CALVIN_M64) -O2 -DLINUX -fPIC -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client `pkg-config --cflags opencv4` `pkg-config --libs opencv4` -o gameapi-builder
 
 
 #@echo "  LD     editor/gameapi-builder.small"
