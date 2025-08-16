@@ -207,7 +207,9 @@ endif
 ifeq ($(ARCH),armv8l)
 PLATFORM_FLAGS += -DARM2
 endif
-
+ifeq ($(ARCH),arm64)  # macOS
+PLATFORM_FLAGS += -DARM2
+endif
 
 ifeq ($(BD_CALVIN),fedora)
 CCFLAGS += -DBD_CALVIN_COMPUTER
