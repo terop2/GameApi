@@ -326,11 +326,11 @@ $(OFiles): objs/%.o : %.cc
 
 $(CMDOFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
-	@$(CC) -DDEFINE_ALL -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) $(PLATFORM_FLAGS) -DDEFINE_ALL -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 $(CMDOFiles2a): objs/%_2.o : %.cc
 	@echo "  CC     $@"
-	@$(CC) -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) $(PLATFORM_FLAGS) -std=c++20 -g -c $(CCFLAGS) $< -o $@
 
 
 touch_all:
