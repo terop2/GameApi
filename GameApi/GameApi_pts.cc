@@ -1165,7 +1165,7 @@ GameApi::PTS GameApi::PointsApi::random_bitmap_instancing(EveryApi &ev, BB bm, i
    return add_points_api_points(e, new SurfacePoints(points, color2));  
  
 }
-#if 0
+#if 1
 class StandardBox : public PointsApiPoints
 {
 public:
@@ -1207,7 +1207,7 @@ GameApi::PTS GameApi::PointsApi::standard_box(int sx, int sy, int sz,
 					      float start_z, float end_z
 					      )
 {
-#if 0
+#if 1
   return add_points_api_points(e, new StandardBox(sx,sy,sz,
 						  start_x, end_x,
 						  start_y, end_y,
