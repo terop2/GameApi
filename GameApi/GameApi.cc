@@ -12993,7 +12993,7 @@ private:
 class F_ShaderCallFunction : public ShaderCall
 {
 public:
-  F_ShaderCallFunction(std::string funcname, ShaderCall *next, std::string defines) : funcname(funcname), next(next),defines(defines) { }
+  F_ShaderCallFunction(std::string funcname, ShaderCall *next, std::string defines) : funcname(funcname), next(next),defines(defines),id(0) { }
   int index(int base) const {
     id = next->index(base)+1;
     return id;
