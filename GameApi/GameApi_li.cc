@@ -1966,6 +1966,7 @@ GameApi::LI GameApi::LinesApi::fur(PTS points, PT center, float dist)
   Point *pt = find_point(e, center);
   if (pts && pt)
     return add_line_array(e, new Fur2(pts, *pt, dist));
+  std::cout << "Warning: fur got null pointer either: " << (long)pts << " or " << (long)pt << std::endl;
   return li_empty();
 }
 
