@@ -751,7 +751,7 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
 #ifdef RASPI
 #define ORDER 1
 #endif
-#ifdef ARM
+#ifdef ARM2
 #define ORDER 1
 #endif
   
