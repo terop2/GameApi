@@ -295,7 +295,7 @@ public:
 	if (val==1) // timeout
 	  {
 	    //std::cout << "Warning: wait timeout!" << std::endl;
-	    timeout_getevent();
+	    //timeout_getevent();
 	  }
       }
     pthread_mutex_unlock(mutex);
