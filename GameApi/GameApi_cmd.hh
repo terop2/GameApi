@@ -735,6 +735,24 @@ template<typename T> T from_stream2(std::stringstream &is, GameApi::EveryApi &ev
   return cls.from_stream(is,ev);
 }
 
+#if 0
+
+template<class...T,std::size_t... Is>
+void read_tuple(std::istream &is, std::tuple<T...>&t, std::index_sequence<Is...>)
+{
+  ( (is >> std::get<Is>(t)), ... );
+}
+
+template<class RT,class...P>
+RT call_working(std::istream &params, std::function<RT(P...)> fptr ) {
+  std::tuple<P...> args;
+  read_tuple(params, args, std::make_index_sequence<sizeof...(P)>{});
+  RT t = std::apply(fptr,args);
+  return t;
+}
+
+#endif
+
 
 template<class T, class RT, class... P>
 int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (GameApi::EveryApi::*api),
@@ -754,6 +772,8 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
 #ifdef ARM2
 #define ORDER 1
 #endif
+
+#if 0
   
   //std::stringstream ss;
   int s2 = s.size();
@@ -776,6 +796,24 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
   T *ptr = &(ev.*api);
   RT val = (ptr->*fptr)(from_stream2<P>(ss,ev)...);
 
+#endif
+
+  int s2 = s.size();
+  for(int i=0;i<s2;i++)
+    {
+      ss << s[i] << " ";
+    }
+
+  std::tuple<P...> args = {from_stream2<P>(ss,ev)...};
+  
+  T *ptr = &(ev.*api);
+
+  RT val = std::apply([&](auto&&... unpacked) {
+    return (ptr->*fptr)(unpacked...);
+  }, args);
+  
+  //RT val = call_working<RT,P...>(ss,std::function<RT(P...)>([ptr,fptr](P... p) -> RT { return (ptr->*fptr)(p...);}));
+  
   //std::cout << "RETURN:" << val.id << std::endl;
   //std::cout << "RETURN TYPE:" << return_type << std::endl;
    
