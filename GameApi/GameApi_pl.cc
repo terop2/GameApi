@@ -7444,7 +7444,7 @@ public:
   }
   void execute(MainLoopEnv &e)
   {
-    if (firsttime)
+    if (firsttime||(disabled&&find_facecoll(env,p)->NumFaces()>0))
       {
 	if (va.id==0) {
 
