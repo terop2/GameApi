@@ -2136,7 +2136,7 @@ function serialize_state()
 	 plastic : elem3 && elem3.value,
 	 textured : elem4 && elem4.value
    };
-   console.log(prettyStringifyObject(ser));
+   //console.log(prettyStringifyObject(ser));
    return json_stringify(ser);
 }
 
@@ -2154,7 +2154,7 @@ function deserialize_state(txt)
   var textured = ser.textured;
   //var mat = ser.material;
 
-  console.log(ser + " " + model + " " + normals + " " + border + " " + bg + " " + cat + " " + metal + " " + plastic + " " + textured);
+  //console.log(ser + " " + model + " " + normals + " " + border + " " + bg + " " + cat + " " + metal + " " + plastic + " " + textured);
 
   var elem5 = document.getElementById("category-select");
   if (elem5) elem5.value = cat;
