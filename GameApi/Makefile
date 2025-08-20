@@ -189,8 +189,8 @@ ifeq (DEBUG,address)
 ADDRESS=-fsanitize=address
 endif
 
-CCFLAGS = $(ADDRESS) -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
-CC2FLAGS = $(ADDRESS) -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CCFLAGS = $(ADDRESS) -O2 -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CC2FLAGS = $(ADDRESS) -O2 -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
 #`pkg-config gtkmm-2.4 --cflags`
 
 BD_CALVIN_M64=
