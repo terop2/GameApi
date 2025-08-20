@@ -966,12 +966,13 @@ EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
   if ([undefined,null].includes(video) || video.readyState < 2) {
     // Not enough data yet
     for (let i = 0; i < width*height*4; ++i) {
-      heap[dstPtr + i] = 0;
+      heap[(dstPtr + i)] = 0;
     }
 
     return;
   }
   const canvas = document.getElementById('webcamCanvas');
+  if (!([undefined,null].includes(canvas))) { 
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, width, height);
 
@@ -979,7 +980,8 @@ EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
   const data = imageData.data;
 
   for (let i = 0; i < Math.min(data.length,width*height*4); ++i) {
-    heap[dstPtr + i] = data[i];
+    heap[(dstPtr + i)] = data[i];
+  }
   }
 });
 
