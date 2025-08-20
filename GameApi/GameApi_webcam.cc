@@ -960,9 +960,10 @@ EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   }
 });
 
-EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
+EM_JS(void, grab_frame_to_memory, (long dstPtr, int width, int height), {
   const video = document.getElementById('webcam');
-  const heap = Module.HEAPU8;
+  const heap = HEAPU8;
+  if (!([undefined,null].includes(heap))) {
   if ([undefined,null].includes(video) || video.readyState < 2) {
     // Not enough data yet
     for (let i = 0; i < width*height*4; ++i) {
@@ -981,6 +982,7 @@ EM_JS(void, grab_frame_to_memory, (int dstPtr, int width, int height), {
 
   for (let i = 0; i < Math.min(data.length,width*height*4); ++i) {
     heap[(dstPtr + i)] = data[i];
+  }
   }
   }
 });
@@ -1021,7 +1023,7 @@ public:
   {
     int sx = ref.width;
     int sy = ref.height;
-    grab_frame_to_memory((int)ref.buffer,sx,sy);
+    grab_frame_to_memory((long)ref.buffer,sx,sy);
     //std::copy(framebuffer,framebuffer+sx*sy*4,ref.buffer);
     for(int y=0;y<sy/2;y++)
       for(int x=0;x<sx;x++)
