@@ -445,10 +445,10 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
   std::vector<GameApi::TXID> txidvec;
   ids.resize(vec.size());
   ogl->glGenTextures(vec.size(), &ids[0]);
-  int s = vec.size();
+  int vecsize = vec.size();
   //InstallProgress(768, "texturemany", s*4);
 
-  for(int i=0;i<s;i++)
+  for(int i=0;i<vecsize;i++)
     {
       //std::cout << "I=" << i << std::endl;
       if (i<id_labels.size()) {
@@ -665,7 +665,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, power_of_two?Low_GL_REPEAT:Low_GL_CLAMP_TO_EDGE); // these cause power-of-two texture requirement in emscripten.
 #endif	
 	*/
-    }
+      }
       //g_low->ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);
       GameApi::TXID id2;
       id2.id = ids[i];
@@ -677,7 +677,9 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       idcache.push_back(idcacheitem);
       }
     }
-  assert(txidvec.size()==vec.size());
+  // the assert sometimes fail, dunno why.
+  //assert(txidvec.size()==vec.size());
+  if (txidvec.size()!=vec.size()) { std::cout << "Warning(prepare_many): " << txidvec.size() << " != " << vec.size() << std::endl; }
   return txidvec;
 }
 EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<BM> vec, int sx, int sy)

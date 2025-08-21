@@ -9608,11 +9608,11 @@ EXPORT GameApi::ML GameApi::MaterialsApi::newshadow2_gltf(EveryApi &ev, TF I1, P
 {
 #if (FEATURE_GLTF==1)
   P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);
-  MT I3=ev.materials_api.gltf_material(ev,I1,0,1,light_dir_x,light_dir_y,light_dir_z);
+  MT I3=ev.materials_api.gltf_material(ev,I1,0,1,1.0,1.0,light_dir_x,light_dir_y,light_dir_z);
   P I4=shadow_p; //ev.polygon_api.cube(-300,300,-220,-200,-300,300);
   MT I5=shadow_mt; //ev.materials_api.colour_material(ev,0.5);
   ML I6=ev.materials_api.newshadow2_phong(ev,I2,I3,I4,I5,light_dir_x,light_dir_y,light_dir_z,dark_level,light_level,ambient_color, dark_color,light_color,scale,size,false,shadow2_mt);
-  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true);
+  ML I7=ev.mainloop_api.gltf_mesh_all(ev,I1,1,1.0,1.0,0,light_dir_x, light_dir_y, light_dir_z,0.0,0xff000000,true);
   ML I8=ev.mainloop_api.or_elem_ml(ev,I6,I7);
   return I8;
 #endif
@@ -13275,7 +13275,7 @@ GameApi::US GameApi::UberShaderApi::v_blurred_render(US us)
 GameApi::US GameApi::UberShaderApi::v_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new V_ShaderCallFunction("phong", next,"IN_POSITION EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL"));
+  return add_uber(e, new V_ShaderCallFunction("phong", next,"IN_POSITION EX_NORMAL2 EX_LIGHTPOS2 LIGHTDIR IN_NORMAL EX_POSITION"));
 }
 GameApi::US GameApi::UberShaderApi::v_generic(US us, std::string name, std::string flags)
 {
@@ -13644,7 +13644,7 @@ GameApi::US GameApi::UberShaderApi::f_newshadow_2(US us, bool is_phong)
 GameApi::US GameApi::UberShaderApi::f_phong(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("phong", next,"PHONG_TEXTURE EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+  return add_uber(e, new F_ShaderCallFunction("phong", next,"PHONG_TEXTURE EX_NORMAL2 EX_LIGHTPOS2 LEVELS EX_POSITION"));
 }
 
 GameApi::US GameApi::UberShaderApi::f_blurred_render(US us)
@@ -13671,7 +13671,7 @@ GameApi::US GameApi::UberShaderApi::f_generic_flip(US us, std::string name, std:
 GameApi::US GameApi::UberShaderApi::f_phong2(US us)
 {
   ShaderCall *next = find_uber(e, us);
-  return add_uber(e, new F_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS"));
+  return add_uber(e, new F_ShaderCallFunction("phong", next,"EX_NORMAL2 EX_LIGHTPOS2 LEVELS EX_POSITION"));
 }
 GameApi::US GameApi::UberShaderApi::f_vertexphong(US us)
 {
