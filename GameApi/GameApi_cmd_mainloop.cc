@@ -253,26 +253,26 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_SCENE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene,
 			 "ml_gltf_scene",
-			 { "ev", "tf", "scene_id", "keys","mix","mode","light_dir_x", "light_dir_y", "light_dir_z", "animation","border_width", "border_color","is_transparent" },
-			 { "EveryApi&", "TF", "int", "std::string","float","int", "float", "float", "float", "int", "float", "unsigned int","bool" },
-			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0", "0.0", "ff000000","true" },
+			 { "ev", "tf", "scene_id", "keys","mix","self_mult", "rest_mult","mode","light_dir_x", "light_dir_y", "light_dir_z", "animation","border_width", "border_color","is_transparent" },
+			 { "EveryApi&", "TF", "int", "std::string","float","float", "float","int", "float", "float", "float", "int", "float", "unsigned int","bool" },
+			 { "ev", "", "0", "cvbnmfghjklertyuiop","1.0","1.0", "1.0","0", "400.0", "-400.0", "300.0", "0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_scene"));
 #endif
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all,
 			 "ml_gltf_all",
-			 { "ev", "tf", "mix", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent" },
-			 { "EveryApi&", "TF", "float", "int", "float", "float", "float", "float", "unsigned int", "bool" },
-			 { "ev", "", "1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 { "ev", "tf", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent" },
+			 { "EveryApi&", "TF", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool" },
+			 { "ev", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
 			 "ml_gltf_all_anim",
-			 { "ev", "tf","mix","mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent" },
-			 { "EveryApi&", "TF","float","int","std::string", "float", "float", "float", "float", "unsigned int","bool" },
-			 { "ev", "", "1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent" },
+			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool" },
+			 { "ev", "", "1.0","1.0","1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_ENV==1)
@@ -312,9 +312,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_SCENE_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene_anim,
 			 "ml_gltf_sc_anim",
-			 { "ev", "tf", "scene_id", "animation", "keys","mix","mode", "light_dir_x", "light_dir_y", "light_dir_z","border_width", "border_color" , "transparent"},
-			 { "EveryApi&", "TF", "int", "int", "std::string","float","int", "float", "float", "float", "float", "unsigned int","bool" },
-			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 { "ev", "tf", "scene_id", "animation", "keys","mix","self_mult", "rest_mult","mode", "light_dir_x", "light_dir_y", "light_dir_z","border_width", "border_color" , "transparent"},
+			 { "EveryApi&", "TF", "int", "int", "std::string","float","float", "float", "int", "float", "float", "float", "float", "unsigned int","bool" },
+			 { "ev", "", "0", "0", "cvbnmfghjklertyuiop","1.0","1.0", "1.0","0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_scene_anim"));
 #endif
 
