@@ -2659,11 +2659,21 @@ if ($mobile=="yes") {
   if (!iframe) return;
   iframe.style.width = (wd).toString() + "px";
   iframe.style.height = (hd).toString() + "px";
+  const dpr = window.devicePixelRatio || 2;
+  iframe.width = (wd)*dpr;
+  iframe.height = (hd)*dpr;
+
 
   var iframe2 = document.getElementById("canvas2");
   if (!iframe2) return;
   iframe2.style.width = (wd).toString() + "px";
   iframe2.style.height = (hd).toString() + "px";
+
+  const dpr2 = window.devicePixelRatio || 2;
+  iframe2.width = (wd)*dpr2;
+  iframe2.height = (hd)*dpr2;
+
+
 
   var iframe3 = document.getElementById("gpucanvas");
   if (!iframe3) return;
