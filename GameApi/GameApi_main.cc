@@ -2941,16 +2941,19 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
   int x = 0;
   int y = 0;
-  int width = 500/g_dpr;
-  int height = 300/g_dpr;
-  float div_x = 1;
-  float div_y = 1;
+  int width = 500; //*get_screen_width()/800;
+  int height = 300; //*get_screen_height()/600;
+  float scale_x = 1.0;
+  float scale_y = 1.0;
+  //scale_x = float(get_screen_width())/float(800.0);
+  //scale_y = float(get_screen_height())/float(600.0);
+  /*
   if (is_mobile(ev)) {
-    width=200/g_dpr;
-    height=100/g_dpr;
+    width=200;
+    height=100;
     div_x=2.5;
     div_y=2.2;
-  }
+    }*/
 
   std::string s = std::string(logo_connecting_raw,logo_connecting_raw+logo_connecting_raw_len);
   BM I7A = load_raw_bitmap2(e, s /*"web_page/logo-connecting.raw"*/);
@@ -2961,11 +2964,11 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 BM I2=ev.bitmap_api.scale_bitmap(ev,I7aA,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
- MN I5=ev.move_api.scale2(I4,1.5/g_dpr,1.5/g_dpr,1);
- MN I6=ev.move_api.trans2(I5,(220-40-15+30)/div_x/g_dpr,(250-20+100)/div_y/g_dpr,0);
+ MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30)*scale_x,(250-20+100)*scale_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
- ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
 
     
 //    ML I19=ev.sprite_api.vertex_array_render(ev,I18);
@@ -2995,11 +2998,11 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 BM I2=ev.bitmap_api.scale_bitmap(ev,I7aB,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
- MN I5=ev.move_api.scale2(I4,1.5/g_dpr,1.5/g_dpr,1);
- MN I6=ev.move_api.trans2(I5,(220-40-15+30)/div_x/g_dpr,(250-20+100)/div_y/g_dpr,0);
+ MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30)*scale_x,(250-20+100)*scale_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
- ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
 
     
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
@@ -3027,12 +3030,12 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 BM I2=ev.bitmap_api.scale_bitmap(ev,I7aC,width,height);
 ML I3=ev.sprite_api.vertex_array_render(ev,I2);
 MN I4=ev.move_api.mn_empty();
- MN I5=ev.move_api.scale2(I4,1.5/g_dpr,1.5/g_dpr,1);
- MN I6=ev.move_api.trans2(I5,(220-40-15+30)/div_x/g_dpr,(250-20+100)/div_y/g_dpr,0);
+ MN I5=ev.move_api.scale2(I4,1.5,1.5,1);
+ MN I6=ev.move_api.trans2(I5,(220-40-15+30)*scale_x,(250-20+100)*scale_y,0);
 ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
 
  
-ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
+ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
 
     //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
 //    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
@@ -3050,7 +3053,7 @@ ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0,600.0);
   }
   ML I17 = ev.mainloop_api.choose_ml_from_status(I17A,I17B,I17C);
   //ML I18 = ev.mainloop_api.
-  ML I18=ev.sprite_api.turn_to_2d(ev,I17,0,0,800,600);
+  ML I18=ev.sprite_api.turn_to_2d(ev,I17,0,0,800*scale_x,600*scale_y);
     /*
   MN I14=ev.move_api.empty();
   MN I14a=ev.move_api.scale2(I14, 4,4,4);
