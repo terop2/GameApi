@@ -232,7 +232,14 @@ public:
 	  scale_x = float(g_event_screen_x)/float(screen_x);
 	  scale_y = float(g_event_screen_y)/float(screen_y);
 	}
+	bool mobile = false;
+	if (screen_x/g_dpr < 340.0 &&
+	    screen_y/g_dpr < 250.0)
+	  { // mobile
+	    mobile=true;
+	  }
 
+	
 
     GameApi::SH sh = { e.sh_texture_2d };
     ev.shader_api.use(sh);
@@ -244,8 +251,13 @@ public:
     MainLoopEnv ee = e;
     ee.sh_texture = e.sh_texture_2d;
 #ifdef EMSCRIPTEN
-    ee.in_MV = Matrix::Scale(800.0*g_dpr/1200.0,600.0*g_dpr/900.0,1.0);
-    ee.env = Matrix::Scale(800.0*g_dpr/1200.0,600.0*g_dpr/900.0,1.0);
+    if (!mobile) {
+      ee.in_MV = Matrix::Scale(800.0*g_dpr/1200.0,600.0*g_dpr/900.0,1.0);
+      ee.env = Matrix::Scale(800.0*g_dpr/1200.0,600.0*g_dpr/900.0,1.0);
+    } else {
+      ee.in_MV = Matrix::Scale(330.0*g_dpr/1200.0,247.0*g_dpr/900.0,1.0);
+      ee.env = Matrix::Scale(330.0*g_dpr/1200.0,247.0*g_dpr/900.0,1.0);
+    }
 #else
     ee.in_MV = Matrix::Identity();
 #endif
