@@ -182,6 +182,7 @@ EXPORT GameApi::SpriteApi::SpriteApi(GameApi::Env &e) : e(e)
 IMPORT extern int g_event_screen_x;
 IMPORT extern int g_event_screen_y;
 extern bool is_move_2d;
+extern double g_dpr;
 class TurnTo2d : public MainLoopItem
 {
 public:
@@ -243,8 +244,8 @@ public:
     MainLoopEnv ee = e;
     ee.sh_texture = e.sh_texture_2d;
 #ifdef EMSCRIPTEN
-    ee.in_MV = Matrix::Scale(800.0/1200.0,600.0/900.0,1.0);
-    ee.env = Matrix::Scale(800.0/1200.0,600.0/900.0,1.0);
+    ee.in_MV = Matrix::Scale(800.0*g_dpr/1200.0,600.0*g_dpr/900.0,1.0);
+    ee.env = Matrix::Scale(800.0*g_dpr/1200.0,600.0*g_dpr/900.0,1.0);
 #else
     ee.in_MV = Matrix::Identity();
 #endif

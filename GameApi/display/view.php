@@ -1880,10 +1880,12 @@ function load_emscripten(state,filename, contents, filenames)
     if (!crossOriginIsolated && !mobile) src="engine_nothreads_highmem.js?" + data2;
     if (!g_emscripten_running) {
       enable_spinner(true);
+      const dpr = window.devicePixelRatio || 2;
+
       if (filename=="") {
-      Module.arguments = [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
+      Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       } else {
-      Module.arguments = [ "--size", "800", "600", "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
+      Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       }
 
       var script = document.createElement("script");

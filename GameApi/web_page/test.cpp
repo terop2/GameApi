@@ -255,6 +255,13 @@ void out_of_memory()
   abort();
 }
 
+EM_JS(double, getDevicePixelRatio, (), {
+    return (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 2.0;
+});
+
+extern double g_dpr;
+
+
 int main(int argc, char *argv[]) {
   g_main_thread_id = pthread_self();
   
@@ -278,9 +285,13 @@ int main(int argc, char *argv[]) {
   EveryApi ev(e);
 
   g_everyapi = &ev;
+
+
+  double dpr = getDevicePixelRatio();
+  g_dpr = dpr;
   
-  int w_width = 800;
-  int w_height = 600;
+  int w_width = 800*dpr;
+  int w_height = 600*dpr;
   std::string seamless_url="";
   int current_arg = 1; // start after the current filename
   while(cmd_args.size()-current_arg > 0)

@@ -20,6 +20,8 @@
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
 
+IMPORT double g_dpr=1.0;
+
 
 IMPORT extern std::string g_window_href;
 IMPORT extern std::string gameapi_homepageurl;
