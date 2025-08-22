@@ -160,12 +160,13 @@ EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap(EveryApi &ev, BM orig, int s
   BM ret = ev.cont_bitmap_api.to_bitmap(cbm, sx,sy);
   return ret;
 }
+extern double g_dpr;
 EXPORT GameApi::BM GameApi::BitmapApi::scale_bitmap_fullscreen(EveryApi &ev, BM orig)
 {
   int sx = ev.mainloop_api.get_screen_sx();
   int sy = ev.mainloop_api.get_screen_sy();
   CBM cbm = ev.cont_bitmap_api.from_bitmap(orig, 1.0, 1.0);
-  BM ret = ev.cont_bitmap_api.to_bitmap(cbm, sx,sy);
+  BM ret = ev.cont_bitmap_api.to_bitmap(cbm, sx/g_dpr,sy/g_dpr);
   return ret;
 }
 
