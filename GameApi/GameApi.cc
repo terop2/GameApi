@@ -16009,6 +16009,8 @@ bool CompareTrans(int a, int b) {
 extern bool g_transparent;
 extern int g_async_pending_count_failures;
 
+extern double g_dpr;
+
 class MainLoopSplitter_win32_and_emscripten : public Splitter
 {
 public:
@@ -16610,7 +16612,7 @@ emscripten_log(EM_LOG_ERROR | EM_LOG_C_STACK, "Stack trace:");
 	  scale_x = float(g_event_screen_x)/float(screen_width);
 	  scale_y = float(g_event_screen_y)/float(screen_height);
 	}
-	ogl->glViewport(0,0,screen_width*scale_x, screen_height*scale_y);
+	ogl->glViewport(0,0,screen_width*scale_x*g_dpr, screen_height*scale_y*g_dpr);
     // this is needed for win32 build in editor
       ogl->glDisable(Low_GL_DEPTH_TEST);
   }

@@ -2560,16 +2560,17 @@ Module.locateFile = function(path, prefix) {
             return window.wasmJSUrl;
         }
 return prefix+path+"?<?php echo filemtime("engine_highmem.js") ?>"; }*/
+  const dpr = window.devicePixelRatio || 2;
 Module.arguments = [
 
 <?php
 require_once("user.php");
 $mobile = js_mobile();
 if ($mobile=="yes") {
-  echo "\"--size\", \"330\", \"247\",";
+  echo "\"--size\", (330*dpr).toString(), (247*dpr).toString(),";
 }
 else {
-echo "\"--size\", \"800\", \"600\",";
+echo "\"--size\", (800*dpr).toString(), (600*dpr).toString(),";
 }
 $ua = $_SERVER["HTTP_USER_AGENT"];
 ?>
@@ -2659,11 +2660,21 @@ if ($mobile=="yes") {
   if (!iframe) return;
   iframe.style.width = (wd).toString() + "px";
   iframe.style.height = (hd).toString() + "px";
+  const dpr = window.devicePixelRatio || 2;
+  iframe.width = (wd)*dpr;
+  iframe.height = (hd)*dpr;
+
 
   var iframe2 = document.getElementById("canvas2");
   if (!iframe2) return;
   iframe2.style.width = (wd).toString() + "px";
   iframe2.style.height = (hd).toString() + "px";
+
+  const dpr2 = window.devicePixelRatio || 2;
+  iframe2.width = (wd)*dpr2;
+  iframe2.height = (hd)*dpr2;
+
+
 
   var iframe3 = document.getElementById("gpucanvas");
   if (!iframe3) return;
