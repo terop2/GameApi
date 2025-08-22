@@ -2560,16 +2560,17 @@ Module.locateFile = function(path, prefix) {
             return window.wasmJSUrl;
         }
 return prefix+path+"?<?php echo filemtime("engine_highmem.js") ?>"; }*/
+  const dpr = window.devicePixelRatio || 2;
 Module.arguments = [
 
 <?php
 require_once("user.php");
 $mobile = js_mobile();
 if ($mobile=="yes") {
-  echo "\"--size\", \"330\", \"247\",";
+  echo "\"--size\", (330*dpr).toString(), (247*dpr).toString(),";
 }
 else {
-echo "\"--size\", \"800\", \"600\",";
+echo "\"--size\", (800*dpr).toString(), (600*dpr).toString(),";
 }
 $ua = $_SERVER["HTTP_USER_AGENT"];
 ?>
