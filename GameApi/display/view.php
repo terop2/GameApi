@@ -2107,6 +2107,9 @@ function resize_event(event)
   var elem = document.getElementById("canvas");
   elem.style.width = scale_x.toString() + "px";
   elem.style.height = scale_y.toString() + "px";
+  const dpr = window.devicePixelRatio || 2;
+  elem.width = (scale_x)*dpr;
+  elem.height = (scale_y)*dpr;
 
 }
 

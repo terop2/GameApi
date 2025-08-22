@@ -7925,7 +7925,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
 	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
       } else {
-        mat2 = gltf_material2(e, ev, interface, mat, 1.0,1.0,1.0,light_dir);
+        mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
       }
       GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
