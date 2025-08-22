@@ -2933,7 +2933,7 @@ GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data);
 #include "editor/logo-downloading.inc"
 
 extern bool g_has_fullscreen_button;
-
+extern double g_dpr;
 
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
@@ -2941,13 +2941,13 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   //BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
   int x = 0;
   int y = 0;
-  int width = 500;
-  int height = 300;
+  int width = 500/g_dpr;
+  int height = 300/g_dpr;
   float div_x = 1;
   float div_y = 1;
   if (is_mobile(ev)) {
-    width=200;
-    height=100;
+    width=200/g_dpr;
+    height=100/g_dpr;
     div_x=2.5;
     div_y=2.2;
   }
