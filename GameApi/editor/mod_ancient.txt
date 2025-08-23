@@ -398,7 +398,7 @@ test
 (1,-5308)gltf_load uid1069710107 0 0 1 base_url:*https?//meshpage.org/assets/antique_telephone/:false:-1:1974107840 url:*https?//meshpage.org/assets/antique_telephone/scene.gltf:false:-1:1974107840
 (133,-5394)p_gltf uid1069710108 0 0 1 ev:*ev:false:-1:1974107840 tf:*uid1069710107:false:-1:0 mesh_index:*0:false:-1:1974107840 prim_index:*0:false:-1:1974107840
 (126,-5278)p_gltf_nr uid1069710109 0 0 1 ev:*ev:false:-1:1974107840 tf:*uid1069710107:false:-1:0 mesh_index:*1:false:-1:1974107840 prim_index:*0:false:-1:1974107840
-(101,-5175)m_gltf uid1069710110 0 0 1 ev:*ev:false:-1:1974107840 tf:*uid1069710107:false:-1:0 material_id:*0:false:-1:1974107840 mix:*1:false:-1:1974107840 self_mult:*32:false:-1:0 rest_mult:*1:false:-1:0 light_x:*400:false:-1:0 light_y:*-400:false:-1:0 light_z:*300:false:-1:0
+(101,-5175)m_gltf uid1069710110 0 0 1 ev:*ev:false:-1:1974107840 tf:*uid1069710107:false:-1:0 material_id:*0:false:-1:1974107840 mix:*1:false:-1:1974107840 self_mult:*5:false:-1:0 rest_mult:*1:false:-1:0 light_x:*40:false:-1:0 light_y:*-40:false:-1:0 light_z:*300:false:-1:0
 (538,-5229)async_gltf uid480532597 0 0 1 ml:*uid13862:false:-1:0 tf:*uid1069710107:false:-1:0
 (104,-5059)m_def uid132504676 0 0 1 ev:*ev:false:-1:1819378416
 (268,-5061)m_or_elem uid132504677 0 0 1 ev:*ev:false:-1:1819378416 mat1:*uid132504679:false:-1:0 mat2:*uid1069710110:false:-1:0
