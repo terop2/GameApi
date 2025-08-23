@@ -37594,7 +37594,7 @@ GameApi::Env &GameApi::EveryApi::get_env() { return env; }
 //GameApi::SurfaceApi::~SurfaceApi() {}
 GameApi::EveryApi::~EveryApi() { }
 
-GameApi::ML GameApi::MainLoopApi::nanite(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
+GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
 {
   P p1 = ev.polygon_api.decimate3(p,level1);
   P p2 = ev.polygon_api.decimate3(p,level2);
@@ -37608,6 +37608,24 @@ GameApi::ML GameApi::MainLoopApi::nanite(GameApi::EveryApi &ev, GameApi::P p, Ga
   ML I151=ev.materials_api.bind_inst(p3,I613,mat);
   ML I152=ev.materials_api.bind_inst(p2,I614,mat);
   ML I153=ev.materials_api.bind_inst(p1,I615,mat);
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+}
+
+GameApi::ML GameApi::MainLoopApi::lod_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
+{
+    P p1 = ev.polygon_api.decimate3(p,level1);
+  P p2 = ev.polygon_api.decimate3(p,level2);
+  P p3 = ev.polygon_api.decimate3(p,level3);
+  P p4 = ev.polygon_api.decimate3(p,level4);
+  MS I612=ev.points_api.block_ms_lod(ms,-4200.0,4200.0,-3800,-860,l4 /*120*/);
+  MS I613=ev.points_api.block_ms_lod(ms,-3000.0,3000.0,-940,-560,l3 /*95*/);
+  MS I614=ev.points_api.block_ms_lod(ms,-2400.0,2400.0,-640,-160,l2 /*45*/);
+  MS I615=ev.points_api.block_ms_lod(ms,-1600.0,1600.0,-240,800,l1 /*45*/);
+  ML I15=ev.materials_api.bind_inst_matrix(p4,I612,mat);
+  ML I151=ev.materials_api.bind_inst_matrix(p3,I613,mat);
+  ML I152=ev.materials_api.bind_inst_matrix(p2,I614,mat);
+  ML I153=ev.materials_api.bind_inst_matrix(p1,I615,mat);
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
 }

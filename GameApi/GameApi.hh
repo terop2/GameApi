@@ -380,7 +380,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
-  IMPORT ML nanite(EveryApi &ev, P p, MT mat, PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
+  IMPORT ML lod_matrix(EveryApi &ev, P p, MT mat, MS ms,float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
+  IMPORT ML lod(EveryApi &ev, P p, MT mat, PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
   IMPORT ML gltf_mesh_all_inst( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id );
   IMPORT ARR gltf_mesh_all_parr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_num );
   IMPORT ARR gltf_mesh_all_msarr( EveryApi &ev, TF model0, int skin_num );
@@ -3688,6 +3689,7 @@ public:
   IMPORT PTS pts_lines(std::string url, float start_pos, float dist, float speed);
   IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
   IMPORT PTS block_pts_lod(PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);
+  IMPORT MS block_ms_lod(MS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);
   IMPORT PTS load_points(std::string url);
   IMPORT PTS pts_alt(std::vector<PTS> vec, int index);
   IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);

@@ -22221,7 +22221,7 @@ extern float quake_pos_x, quake_pos_y;
 extern float quake_rot_y;
 
 PointsApiPoints *g_pts;
-
+MatrixArray *g_pts_matrix;
 float g_pos1;
 float g_pos2;
 
@@ -22236,6 +22236,7 @@ bool ComparePTSObj2(int a, int b)
   if (b==num-2) val2=g_pos1;
   if (b==num-1) val2=g_pos2;
   else val2=g_pts->Pos(b).x;
+  if (std::fabs(val1-val2) < 1e-6f) return a<b;
   
   return val1<val2;
 }
@@ -22244,6 +22245,7 @@ bool ComparePTSObj(int a, int b)
   float val1,val2;
   val1=g_pts->Pos(a).x;
   val2=g_pts->Pos(b).x;
+  if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 bool ComparePTSObj_y(int a, int b)
@@ -22251,6 +22253,15 @@ bool ComparePTSObj_y(int a, int b)
   float val1,val2;
   val1=g_pts->Pos(a).z;
   val2=g_pts->Pos(b).z;
+  if (std::fabs(val1-val2) < 1e-6f) return a<b;
+  return val1<val2;
+}
+bool ComparePTSObj_y_matrix(int a, int b)
+{
+  float val1,val2;
+  val1=g_pts_matrix->Index(a).matrix[4*2+3];
+  val2=g_pts_matrix->Index(b).matrix[4*2+3];
+  if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 
@@ -22595,11 +22606,193 @@ private:
   int max_points;
 };
 
+class BlockPTS2_matrix : public MatrixArray
+{
+public:
+  BlockPTS2_matrix(MatrixArray *points, float start_x, float end_x, float start_y, float end_y, int max_points) : points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
+
+    if (start_x2>end_x2) std::swap(start_x2,end_x2);
+    if (start_y2>end_y2) std::swap(start_y2,end_y2);
+
+  }
+
+  void Collect(CollectVisitor &vis)
+  {
+    points->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    int s = points->Size();
+    allpoints.clear();
+    for(int i=0;i<s;i++)
+      {
+	allpoints.push_back(i);
+      }
+    g_pts_matrix = points;
+    std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y_matrix);
+  }
+  
+  virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b = points->Update(e);
+    //pos2=pos;
+    pos.clear();
+    int s = points->Size();
+    if (s<1) return true;
+    if (allpoints.size()<1) return true;
+    float start_y = -quake_pos_y+start_y2;
+    float end_y = -quake_pos_y+end_y2;
+    //allpoints.push_back(allpoints.size());
+    //allpoints.push_back(allpoints.size());
+
+    //g_pos1 = start_y;
+    //g_pos2 = end_y;
+    g_pts_matrix = points;
+
+    //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
+
+    int result=-1;
+    {
+    int left = 0;
+    int right = allpoints.size()-1;
+
+    
+    while(left <= right)
+      {
+	int mid = (left+right)/2;
+	if (points->Index(allpoints[mid]).get_translate().dz < start_y && points->Index(allpoints[mid+1]).get_translate().dz > start_y) { result=mid; break; }
+
+	if (points->Index(allpoints[mid]).get_translate().dz < start_y)
+	  {
+	    left = mid + 1;
+	  }
+	else
+	  {
+	    right = mid - 1;
+	  }
+      }
+    if (result==-1) result=(left+right)/2;
+    }
+    int start = result;
+    if (start<0) start=0;
+    if (start>allpoints.size()-1) start=allpoints.size()-1;
+
+    
+    result = -1;
+    {
+    int left = 0;
+    int right = allpoints.size()-1;
+
+    while(left <= right)
+      {
+        int mid = (left+right)/2;
+	if (points->Index(allpoints[mid]).get_translate().dz < end_y && points->Index(allpoints[mid+1]).get_translate().dz > end_y) { result=mid; break; }
+
+	if (points->Index(allpoints[mid]).get_translate().dz < end_y)
+	  {
+	    left = mid + 1;
+	  }
+	else
+	  {
+	    right = mid - 1;
+	  }
+      }
+    if (result==-1) result=(left+right)/2;
+    }
+    int end = result;
+    if (end<0) end=0;
+    if (end>allpoints.size()-1) end=allpoints.size()-1;
+    
+    
+    //int start = ii-allpoints.begin();
+    //int end = ii2-allpoints.begin();
+
+    //std::cout << start << " " << end << std::endl;
+    //std::cout << "POINT1:" << points->Pos(allpoints[start]).x << " POINT2:" << points->Pos(allpoints[end]).x << std::endl;
+
+    
+    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
+    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
+    
+
+
+    /*
+    int s2 = allpoints.size();
+    for(int i=0;i<s2;i++)
+      {
+	std::cout << "Point#" << i << "=" << allpoints[i] << "::" << points->Pos(allpoints[i]) << std::endl;
+      }
+    */
+    
+    for(int i=start;i<end;i++)
+      {
+	if (enabled(allpoints[i]))
+	  {
+	    pos.push_back(allpoints[i]);
+	  }
+      }
+    /*
+    int s2 = std::min(pos2.size(),pos.size());
+    bool changed = false;
+    for(int i=0;i<s2;i++)
+      {
+	if (pos[i]!=pos2[i])
+	  {
+	    changed=true;
+	  }
+      }
+    */
+    //std::cout << "Update:" << prev << " " << pos.size() << std::endl;
+    //if (prev==pos.size()&&!changed) return false;
+    prev=pos.size();
+    return true; }
+  virtual int Size() const { return max_points; }
+  virtual Matrix Index(int i) const { if (i>=pos.size()) { Matrix m=Matrix::Identity(); return m; } return points->Index(pos[i]); }
+  virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
+  virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
+
+  bool enabled(int i) const
+  {
+    Matrix p0 = points->Index(i);
+    Point p = Point(p0.get_translate());
+    float cursor_pos_x = quake_pos_x;
+    float cursor_pos_y = -quake_pos_y;
+
+    float delta_x = p.x+cursor_pos_x;
+    float delta_y = p.z-cursor_pos_y;
+    //float dist = delta_x*delta_x + delta_y*delta_y;
+    //std::cout << "A:" << p.x << " " << p.z << std::endl;
+    //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
+    if (delta_x<end_x2 && delta_x>start_x2 && delta_y<end_y2 && delta_y>start_y2)
+      {
+	return true;
+      }
+    return false;
+  }
+private:
+  MatrixArray *points;
+  float start_x2,end_x2;
+  float start_y2,end_y2;
+  float sign;
+  std::vector<int> allpoints;
+  std::vector<int> pos;
+  int prev=0;
+  int max_points;
+};
+
+
 
 GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
   return add_points_api_points(e,new BlockPTS2(points,start_x,end_x,start_y,end_y,max_points));
+}
+
+GameApi::MS GameApi::PointsApi::block_ms_lod(GameApi::MS ms, float start_x, float end_x, float start_y, float end_y, int max_points)
+{
+  MatrixArray *mat = find_matrix_array(e,ms);
+  return add_matrix_array(e, new BlockPTS2_matrix(mat,start_x,end_x,start_y,end_y, max_points));
 }
 
 
