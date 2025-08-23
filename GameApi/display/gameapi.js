@@ -32,10 +32,11 @@ var data4 = lines2.replace(/\t/g,"");
 var canv = document.getElementById("canvas");
 var hom = document.getElementById("homepage");
 var hom2 = hom.innerHTML;
+const dpr = window.devicePixelRatio || 2;
 var Module = {
     onStartup : function() { check_em()(); },
     canvas : canv,
-    arguments : [ "--size", "800", "600", "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
+    arguments : [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
     print : (function() { return function(text) { console.log(text); } })(),
 };
   Module.locateFile = function(path) { return "engine/" + path+"?"+data2; }
