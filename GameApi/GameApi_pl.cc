@@ -28309,3 +28309,173 @@ GameApi::PTS GameApi::MainLoopApi::bytestore_pts(GameApi::BS bs, GameApi::PTS pt
   PointsApiPoints *pts2 = find_pointsapi_points(e,pts);
   return add_points_api_points(e, new Bytestore_pts(*bs2,*pts2,disable_char,enable_char,default_is_enable));
 }
+
+std::vector<int> *g_idx_vec;
+FaceCollection *g_idx_faces;
+
+float triArea(Point a, Point b, Point c)
+{
+  Vector ab = b-a;
+  Vector ac = c-a;
+  return 0.5f * Vector::CrossProduct(ab,ac).Dist();
+}
+
+float quadArea(Point p1, Point p2, Point p3, Point p4)
+{
+  float area1 = triArea(p1,p2,p3);
+  float area2 = triArea(p1,p3,p4);
+  return area1+area2;
+}
+#if 0
+bool CompareFaces(int i1, int i2)
+{
+  int idx1 = g_idx_vec[i1];
+  int idx2 = g_idx_vec[i2];
+  Point p1 = g_idx_faces->FacePoint(idx1,0);
+  Point p2 = g_idx_faces->FacePoint(idx1,1);
+  Point p3 = g_idx_faces->FacePoint(idx1,2);
+  Point p4 = g_idx_faces->FacePoint(idx1,3%g_idx_faces->NumPoints(idx1));
+
+  float area1 = quadArea(p1,p2,p3,p4);
+  
+  Point pp1 = g_idx_faces->FacePoint(idx2,0);
+  Point pp2 = g_idx_faces->FacePoint(idx2,1);
+  Point pp3 = g_idx_faces->FacePoint(idx2,2);
+  Point pp4 = g_idx_faces->FacePoint(idx2,3%g_idx_faces->NumPoints(idx2));
+
+  float area2 = quadArea(pp1,pp2,pp3,pp4);
+  return area1<area2;
+}
+#endif
+
+class DecimatePolygon : public FaceCollection
+{
+public:
+  DecimatePolygon(FaceCollection *coll, float val) : coll(coll),val(val) { firsttime = true; }
+  std::string name() const { return "DecimatePolygon"; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    if (firsttime) {
+      int s = coll->NumFaces();
+      indices.clear();
+      for(int i=0;i<s;i++)
+	{
+	  indices.push_back(i);
+	}
+      g_idx_vec = &indices;
+      g_idx_faces = coll;
+
+
+    auto compareFaces = [this](int i1, int i2) {
+            auto faceArea = [this](int idx) {
+                int n = coll->NumPoints(idx);
+                if (n < 3) return 0.0f; // degenerate
+
+                // handle triangles directly
+                if (n == 3) {
+                    Point a = coll->FacePoint(idx,0);
+                    Point b = coll->FacePoint(idx,1);
+                    Point c = coll->FacePoint(idx,2);
+                    return triArea(a,b,c);
+                }
+
+                // handle quads (or n-gons, just take first 4 verts)
+                Point p1 = coll->FacePoint(idx,0);
+                Point p2 = coll->FacePoint(idx,1);
+                Point p3 = coll->FacePoint(idx,2);
+                Point p4 = coll->FacePoint(idx,3 % n);
+                return quadArea(p1,p2,p3,p4);
+            };
+
+            float area1 = faceArea(i1);
+            float area2 = faceArea(i2);
+
+            if (std::fabs(area1 - area2) < 1e-6f) {
+                // tie-breaker by index to ensure strict weak ordering
+                return i1 < i2;
+            }
+            return area1 > area2;
+        };
+     int keep = std::max(1,(int)std::round(s*val));
+    if (keep<s) {
+      std::nth_element(indices.begin(),indices.begin()+keep,indices.end(),compareFaces);
+      indices.resize(keep);
+    }
+    //   std::sort(indices.begin(),indices.end(),compareFaces);
+      firsttime = false;
+    }
+  }
+  virtual void Prepare() { coll->Prepare(); HeavyPrepare(); }
+  virtual int NumFaces() const { if (!firsttime) return indices.size(); return 0; }
+  virtual int NumPoints(int face) const { if (!firsttime) return coll->NumPoints(indices[face]); return 0; }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (!firsttime)
+      return coll->FacePoint(indices[face],point);
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (!firsttime)
+      return coll->PointNormal(indices[face],point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    if (!firsttime)
+      return coll->Attrib(indices[face],point,id);
+    return 0.0;
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    if (!firsttime)
+      return coll->AttribI(indices[face],point,id);
+    return 0;
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (!firsttime)
+      return coll->Color(indices[face],point);
+    return 0x00000000;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (!firsttime)
+    return coll->TexCoord(indices[face],point);
+    Point2d p;
+    p.x=0.0f;
+    p.y=0.0f;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const {
+    if (!firsttime)
+      return coll->TexCoord3(indices[face],point);
+    return 0.0f;
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    if (!firsttime)
+      return coll->Joints(indices[face],point);
+    VEC4 v;
+    return v;
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    if (!firsttime)
+      return coll->Weights(indices[face],point);
+    VEC4 v;
+    return v;
+  }
+private:
+  FaceCollection *coll;
+  std::vector<int> indices;
+  bool firsttime;
+  float val;
+};
+GameApi::P GameApi::PolygonApi::decimate3(GameApi::P faces, float val)
+{
+  FaceCollection *coll = find_facecoll(e,faces);
+  return add_polygon2(e, new DecimatePolygon(coll,val),1);
+}

@@ -2629,6 +2629,7 @@ public:
 	IMPORT ~PolygonApi();
   IMPORT P decimate(P p, float val);
   IMPORT P decimate2(P p, float val);
+  IMPORT P decimate3(P p, float val);
   IMPORT bool ready_to_prepare(ML p);
   IMPORT DS tf_ds_inv(TF tf, int flags);
   IMPORT void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
