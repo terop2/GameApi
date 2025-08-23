@@ -28397,7 +28397,7 @@ public:
 
             if (std::fabs(area1 - area2) < 1e-6f) {
                 // tie-breaker by index to ensure strict weak ordering
-                return i1 > i2;
+                return i1 < i2;
             }
             return area1 > area2;
         };
