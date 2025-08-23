@@ -803,6 +803,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 			 { "ev", "", "", "", "", "" },
 			 "ML", "polygon_api", "mesh_anim_display_inst"));
 #endif
+#if (ALL==1)||(NANITE==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::nanite,
+			"m_nanite",
+			{ "ev", "mesh", "mat", "pts", "decimate_level1", "decimate_level2", "decimate_level3", "decimate_level4", "max_obj_count1", "max_obj_count2", "max_obj_count3", "max_obj_count4" },
+			{ "EveryApi&", "P", "MT", "PTS", "float", "float","float", "float", "int", "int", "int", "int" },
+			{ "ev", "", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120" },
+			"ML", "mainloop_api", "nanite"));
+#endif
 #ifndef STABLE
 #if (ALL==1)||(BIND_INST_FADE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,

@@ -380,6 +380,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML nanite(EveryApi &ev, P p, MT mat, PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
   IMPORT ML gltf_mesh_all_inst( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id );
   IMPORT ARR gltf_mesh_all_parr( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_num );
   IMPORT ARR gltf_mesh_all_msarr( EveryApi &ev, TF model0, int skin_num );

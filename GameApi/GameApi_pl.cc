@@ -28479,3 +28479,4 @@ GameApi::P GameApi::PolygonApi::decimate3(GameApi::P faces, float val)
   FaceCollection *coll = find_facecoll(e,faces);
   return add_polygon2(e, new DecimatePolygon(coll,val),1);
 }
+
