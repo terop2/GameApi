@@ -111,6 +111,7 @@ echo "<li><b>Video support</b>(mp4 videofile and webcam support in linux/win32/w
 echo "<li><b>Vulkan</b> support in linux via mesa/zink opengl driver\n";
 echo "<li><b>GLTF Materials</b>, skeletons/rigging, animations\n";
 echo "<li><b>LOD</b> implementation available\n";
+echo "<li><b>Mesh decimate</b> for optimizing performance\n";
 echo "<li><b>OpenGL instancing</b>, static instancing\n";
 echo "<li>Load time and frame rate <b>performance optimizations</b>\n";
 echo "<li><b>Concurrent network stack</b>,zip decode,image decode,vertex arrays,textures using 8 cpus after web deploy\n";
@@ -163,7 +164,6 @@ echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
 echo "<br><h2>FEATURES STILL IN THE FUTURE:</h2>\n";
 echo "<ul>\n";
-echo "<li>mesh decimate(recommend use blender batch mode via python scipts)\n";
 echo "<li>raspi support(memory problems)\n";
 echo "<li>webgpu support(not implemented)\n";
 echo "<li>virtual reality(was implemented, doesnt work)\n";
