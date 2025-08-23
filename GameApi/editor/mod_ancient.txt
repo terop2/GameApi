@@ -364,13 +364,13 @@ test
 (517,-5105)touch_rotate uid3213 0 0 0 ev:*ev:false:-1:7914272 ml:*uid3210:false:-1:0 leftright:*true:false:-1:7914272 topdown:*true:false:-1:7914272 x_speed:*0.01:false:-1:7914272 y_speed:*0.01:false:-1:7914272
 (370,-4998)mn_rotatex uid3214 0 0 0 next:*uid3212:false:-1:0 angle:*-1.59:false:-1:7914272
 (534,-4980)mn_translate uid3215 0 0 0 next:*uid3214:false:-1:0 dx:*100:false:-1:7914272 dy:*-200:false:-1:7914272 dz:*200:false:-1:7914272
-(315,-5554)bm_fullscreen uid3216 0 0 0 ev:*ev:false:-1:7914272 orig:*uid3217:false:-1:0
-(125,-5561)new uid3217 0 0 0 sx:*100:false:-1:7914272 sy:*100:false:-1:7914272 color:*ff888888:false:-1:7914272
-(499,-5522)bm_render uid3218 0 0 0 ev:*ev:false:-1:7914272 bm:*uid3216:false:-1:0
-(670,-5504)bm_2d uid3219 0 0 0 ev:*ev:false:-1:7914272 ml:*uid3218:false:-1:0 tl_x:*0.0:false:-1:7914272 tl_y:*0.0:false:-1:7914272 br_x:*800.0:false:-1:7914272 br_y:*600.0:false:-1:7914272
+(248,-5661)bm_fullscreen uid3216 0 0 0 ev:*ev:false:-1:7914272 orig:*uid3217:false:-1:0
+(60,-5677)new uid3217 0 0 0 sx:*100:false:-1:7914272 sy:*100:false:-1:7914272 color:*ff888888:false:-1:7914272
+(441,-5638)bm_render uid3218 0 0 0 ev:*ev:false:-1:7914272 bm:*uid3216:false:-1:0
+(670,-5504)bm_2d uid3219 0 0 0 ev:*ev:false:-1:7914272 ml:*uid1167375147:false:-1:0 tl_x:*0.0:false:-1:7914272 tl_y:*0.0:false:-1:7914272 br_x:*800.0:false:-1:7914272 br_y:*600.0:false:-1:7914272
 (792,-5245)array_ml uid3220 0 0 0 ev:*ev:false:-1:7914272 arr:*[uid3219,uid3213]:false:-1:0
 (237,-5181)m_phong uid13861 0 0 0 ev:*ev:false:-1:7914272 nxt:*uid1069710110:false:-1:0 light_pos_x:*30:false:-1:0 light_pos_y:*-400:false:-1:0 light_pos_z:*30:false:-1:0 ambient:*ff008800:false:-1:7914272 specular:*ffff8800:false:-1:0 highlight:*ff88ff88:false:-1:7914272 pow:*5:false:-1:7914272
-(393,-5273)m_bind uid13862 0 0 0 p:*uid14379:false:-1:0 mat:*uid1069710110:false:-1:0
+(393,-5273)m_bind uid13862 0 0 0 p:*uid2095509016:false:-1:0 mat:*uid1069710110:false:-1:0
 (276,-5375)p_or_elem uid14379 0 0 0 p1:*uid1069710108:false:-1:0 p2:*uid1069710109:false:-1:0
 (424,-4802)m_gltf_man uid1681031190 0 0 16809983 ev:*ev:false:-1:15 mix:*0.95:false:-1:15 self_mult:*1:false:-1:0 rest_mult:*1:false:-1:0 baseColor:*uid1743615524:false:-1:0 metalrough:*uid1743615523:false:-1:0 normal:*uid1743615525:false:-1:0 occlusion:*uid1743615526:false:-1:0 emissive:*uid1743615524:false:-1:0 baseColor_b:*true:false:-1:15 metalrough_b:*true:false:-1:15 normal_b:*true:false:-1:15 occlusion_b:*true:false:-1:15 emissive_b:*true:false:-1:15 roughnessfactor:*0.5:false:-1:0 metallicfactor:*0.5:false:-1:0 base_r:*0.5:false:-1:0 base_g:*0.5:false:-1:0 base_b:*0.5:false:-1:0 base_a:*1:false:-1:0 occulsionstrength:*1:false:-1:0 light_dir_x:*400:false:-1:0 light_dir_y:*-400:false:-1:0 light_dir_z:*300:false:-1:0
 (71,-4918)bm_url uid1681031191 0 0 16809983 url:*https?//meshpage.org/assets/antique_telephone/textures/TX_telephone_BaseColor.jpeg:false:-1:1
@@ -408,3 +408,7 @@ test
 (1142,-5092)save_deploy uid1927183052 0 0 1 h:*uid1927183051:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1842813808
 (1298,1479)ogl_perspective uid1920985694 0 0 1 ev:*ev:false:-1:19 ml:*uid14963:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19
 (36,2538)gltf_sketchfab_zip uid483845087 0 0 1 url_to_zip:*https?//meshpage.org/assets/wooden_sofa.zip:false:-1:-1940884016
+(502,-5504)move_ml uid1167375147 0 0 1 ev:*ev:false:-1:-600108512 ml:*uid3218:false:-1:0 mn:*uid1167375148:false:-1:0 clone_count:*1:false:-1:-600108512 time_delta:*10.0:false:-1:-600108512
+(359,-5495)mn_scale uid1167375148 0 0 1 next:*uid1167375149:false:-1:0 sx:*1.5:false:-1:-600108512 sy:*1.5:false:-1:-600108512 sz:*1:false:-1:-600108512
+(222,-5501)mn_empty uid1167375149 0 0 1
+(408,-5387)decimate uid2095509016 0 0 1 p:*uid14379:false:-1:0 val:*0.1:false:-1:1076019360
