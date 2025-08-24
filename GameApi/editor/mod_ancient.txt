@@ -412,3 +412,4 @@ test
 (359,-5495)mn_scale uid1167375148 0 0 1 next:*uid1167375149:false:-1:0 sx:*1.5:false:-1:-600108512 sy:*1.5:false:-1:-600108512 sz:*1:false:-1:-600108512
 (222,-5501)mn_empty uid1167375149 0 0 1
 (408,-5387)decimate uid2095509016 0 0 1 p:*uid14379:false:-1:0 val:*0.7:false:-1:1076019360
+(66,-5503)decimate_tf uid2135681881 0 0 1 mesh:*uid1069710107:false:-1:0 val:*0.5:false:-1:1962358752

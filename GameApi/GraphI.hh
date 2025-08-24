@@ -2433,6 +2433,104 @@ public:
   virtual const tinygltf::Light &get_light(int i) const=0;
 };
 
+class ForwardGLTF : public GLTFModelInterface
+{
+public:
+  ForwardGLTF(GLTFModelInterface *next) : next(next) { }
+  virtual std::string name() const=0;
+  
+  virtual std::string BaseUrl() const { return next->BaseUrl(); }
+  virtual std::string Url() const { return next->Url(); }
+
+  virtual int get_default_scene() const { return next->get_default_scene(); }
+  
+  virtual int accessors_size() const { return next->accessors_size(); }
+  virtual const tinygltf::Accessor &get_accessor(int i) const
+  {
+    return next->get_accessor(i);
+  }
+
+  virtual int animations_size() const { return next->animations_size(); }
+  virtual const tinygltf::Animation &get_animation(int i) const
+  {
+    return next->get_animation(i);
+  }
+
+  virtual int buffers_size() const { return next->buffers_size(); }
+  virtual const tinygltf::Buffer &get_buffer(int i) const
+  {
+    return next->get_buffer(i);
+  }
+
+  virtual int bufferviews_size() const { return next->bufferviews_size(); }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const
+  {
+    return next->get_bufferview(i);
+  }
+
+  virtual int materials_size() const { return next->materials_size(); }
+  virtual const tinygltf::Material &get_material(int i) const
+  {
+    return next->get_material(i);
+  }
+
+  virtual int meshes_size() const { return next->meshes_size(); }
+  virtual const tinygltf::Mesh &get_mesh(int i) const
+  {
+    return next->get_mesh(i);
+  }
+
+  virtual int nodes_size() const { return next->nodes_size(); }
+  virtual const tinygltf::Node &get_node(int i) const
+  {
+    return next->get_node(i);
+  }
+
+  virtual int textures_size() const { return next->textures_size(); }
+  virtual const tinygltf::Texture &get_texture(int i) const
+  {
+    return next->get_texture(i);
+  }
+
+  virtual int images_size() const { return next->images_size(); }
+  virtual const tinygltf::Image &get_image(int i) const
+  {
+    return next->get_image(i);
+  }
+
+  virtual int skins_size() const { return next->skins_size(); }
+  virtual const tinygltf::Skin &get_skin(int i) const
+  {
+    return next->get_skin(i);
+  }
+
+  virtual int samplers_size() const { return next->samplers_size(); }
+  virtual const tinygltf::Sampler &get_sampler(int i) const
+  {
+    return next->get_sampler(i);
+  }
+
+  virtual int cameras_size() const { return next->cameras_size(); }
+  virtual const tinygltf::Camera &get_camera(int i) const
+  {
+    return next->get_camera(i);
+  }
+
+  virtual int scenes_size() const { return next->scenes_size(); }
+  virtual const tinygltf::Scene &get_scene(int i) const
+  {
+    return next->get_scene(i);
+  }
+
+  virtual int lights_size() const { return next->lights_size(); }
+  virtual const tinygltf::Light &get_light(int i) const
+  {
+    return next->get_light(i);
+  }
+private:
+  GLTFModelInterface *next;
+};
+
 
 struct BBox
 {
