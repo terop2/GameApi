@@ -6553,12 +6553,13 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_from_file( GameApi::EveryApi &e
 GameApi::MT GameApi::MaterialsApi::gltf_material( EveryApi &ev, TF model0, int material_id, float mix, float self_mult, float rest_mult, float light_dir_x, float light_dir_y, float light_dir_z )
   {
     GLTFModelInterface *model = find_gltf(e,model0);
+    /*
     std::string url = model->Url();
   bool is_binary=false;
   if (int(url.size())>3) {
     std::string sub = url.substr(url.size()-3);
     if (sub=="glb") is_binary=true;
-  }
+    }*/
   //LoadGltf *load = find_gltf_instance(e,base_url,url,gameapi_homepageurl,is_binary);
   // new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
   Material *mat = new GLTF_Material(e,ev, model, material_id,mix,self_mult,rest_mult, Vector(light_dir_x, light_dir_y, light_dir_z));
@@ -12606,7 +12607,7 @@ void execute(MainLoopEnv &e) {
 	    /*
             if (current == -1) {
 	      current=0;
-	      /*
+	      
 	      static std::vector<float> start_time2, end_time2;
                 static bool done_2 = false;
 
