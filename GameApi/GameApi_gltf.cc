@@ -6956,6 +6956,17 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
   GameApi::ML ml3 = add_main_loop(e, new ScaleToGltf(e,ev,p,ml));
   return ml3;
 }
+GameApi::MS scale_to_gltf_size_inv(GameApi::EveryApi &ev, GameApi::P p, GameApi::MS ms)
+{
+  FaceCollection *coll = find_facecoll(ev.get_env(),p);
+  coll->Prepare();
+  std::pair<float,Point> dim = find_mesh_scale(coll);
+  GameApi::MS ms2 = ev.matrices_api.scale2(ms,1.0/dim.first,1.0/dim.first,1.0/dim.first);
+  GameApi::MS ms3 = ev.matrices_api.trans2(ms,-dim.second.x,-dim.second.y,-dim.second.z);
+  return ms3;
+}
+
+
 
 struct TransformObject
 {
@@ -7372,8 +7383,10 @@ GameApi::ARR gltf_mesh2_with_skeleton_p_arr( GameApi::Env &e, GameApi::EveryApi 
 
 
 GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color);
+GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color);
 
 GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent);
+GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent);
 GameApi::MT gltf_anim_material3(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int num_timeindexes, GameApi::MT next, std::string keys, int mode,int inst);
 
 
@@ -7760,6 +7773,192 @@ GameApi::ML gltf_node2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
   return ret;
 }
 
+GameApi::ML gltf_node2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface,  GameApi::MS ms, int node_id, std::string keys, float mix, float self_mult, float rest_mult, Matrix root, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
+{
+  //if (!load2) load2 = load;
+  int s2 = interface->nodes_size(); //load->model.nodes.size();
+  if (!(node_id>=0 && node_id<s2))
+    {
+      std::cout << "empty node" << node_id<< std::endl;
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+    }
+  // HERE WE HAVE NOT CALLED PREPARE?
+  const tinygltf::Node &node = interface->get_node(node_id); //&load->model.nodes[node_id];
+
+#if 0
+  if (int(node.scale.size())==3) {
+    double s_x = node.scale[0];
+    double s_y = node.scale[1];
+    double s_z = node.scale[2];
+    ms = ev.matrices_api.scale2(ms, 1.0/s_x, 1.0/s_y, 1.0/s_z);
+    //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+    //std::cout << "Scale8:" << s_x << " " << s_y << " " << s_z << std::endl;
+  }
+  if (int(node.rotation.size())==4) {
+    double r_x = node.rotation[0];
+    double r_y = node.rotation[1];
+    double r_z = node.rotation[2];
+    double r_w = node.rotation[3];
+    //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
+    Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
+    Matrix m = Quarternion::QuarToMatrix(q);
+    //Movement *orig = find_move(e, mv);
+    //Movement *mv2 = new MatrixMovement(orig, m);
+    //mv = add_move(e, mv2);
+    Matrix invm = Matrix::Inverse(m);
+    ms = ev.matrices_api.apply_matrix(ms,add_matrix2(e,invm));
+    }
+  if (int(node.translation.size())==3) {
+    double m_x = node.translation[0];
+    double m_y = node.translation[1];
+    double m_z = node.translation[2];
+    //mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+    ms = ev.matrices_api.trans2(ms,-m_x,-m_y,-m_z);
+    //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
+  }
+  //std::cout << node->matrix.size();
+  if (int(node.matrix.size())==16) {
+    const double *arr = &node.matrix[0];
+    Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+      //std::cout << "mat[]";
+
+      Matrix invm = Matrix::Inverse(m);
+      ms = ev.matrices_api.apply_matrix(ms,add_matrix2(e,invm));
+      
+      // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+      //Movement *orig = find_move(e, mv);
+      //Movement *mv2 = new MatrixMovement(orig, m);
+      //mv = add_move(e, mv2);    
+  }
+#endif
+
+
+  
+  // Load mesh
+  int ss = interface->skins_size(); //load->model.skins.size();
+  bool done = false;
+  GameApi::ML mesh;
+  for(int i=0;i<ss;i++) {
+    //if (interface->get_skin(i).skeleton != -1)
+      {
+	int mesh_id = node.mesh;
+	mesh.id = -1;
+	if (mesh_id != -1) {
+	  mesh = gltf_mesh2_with_skeleton_inst_matrix(e,ev,interface, ms, mesh_id, i,keys,mix,self_mult, rest_mult, mode, light_dir, animation, border_width, border_color,transparent);
+	  done = true;
+	}
+	if (done)
+	  break;
+      }
+    
+  }
+  if (!done) {
+    int mesh_id = node.mesh;
+    mesh.id = -1;
+    if (mesh_id!=-1) {
+      mesh = gltf_mesh2_inst_matrix( e, ev, interface, ms, mesh_id, 0, keys,mix,self_mult,rest_mult,mode, light_dir ,animation, border_width, border_color);
+    }
+  }
+  // todo cameras
+
+  TransformObject o = gltf_node_transform_obj(&node);
+  std::pair<Matrix,Matrix> o2 = gltf_node_transform_obj_apply(e,ev, root,o);
+  // recurse children
+  int s = node.children.size();
+  std::vector<GameApi::ML> vec;
+  //std::cout << "CHILDREN:";
+  //for(int i=0;i<s;i++) {
+  //  int child_id = node.children[i];
+  //  std::cout << child_id << ",";
+  // }
+  //std::cout << std::endl;
+  for(int i=0;i<s;i++) {
+    int child_id = node.children[i];
+    if (child_id!=-1) {
+      //std::cout << "{";
+      GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, ms, child_id,keys,mix,self_mult,rest_mult,o2.second,mode, light_dir, animation, border_width, border_color,transparent );
+      vec.push_back(ml);
+      //std::cout << "}";
+    }
+  }
+  if (mesh.id != -1) {
+    vec.push_back( mesh );
+    //std::cout << "MESH";
+  }
+
+  /*
+ GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
+ GameApi::MN mv = ev.move_api.mn_empty();
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, o2.first);
+    mv = add_move(e, mv2);    
+
+ GameApi::MN mv3 = ev.move_api.mn_empty();
+    Movement *orig2 = find_move(e, mv3);
+    Movement *mv22 = new MatrixMovement(orig2, o2.second);
+    mv3 = add_move(e, mv22);
+  */
+    
+  
+  
+  
+ GameApi::ML array = ev.mainloop_api.array_ml(ev, vec);
+ GameApi::MN mv = ev.move_api.mn_empty();
+ 
+  if (int(node.scale.size())==3) {
+    double s_x = node.scale[0];
+    double s_y = node.scale[1];
+    double s_z = node.scale[2];
+    mv = ev.move_api.scale2(mv, s_x, s_y, s_z);
+    //std::cout << "sc[" << s_x << "," << s_y << "," << s_z << "]";
+    //std::cout << "Scale8:" << s_x << " " << s_y << " " << s_z << std::endl;
+  }
+  if (int(node.rotation.size())==4) {
+    double r_x = node.rotation[0];
+    double r_y = node.rotation[1];
+    double r_z = node.rotation[2];
+    double r_w = node.rotation[3];
+    //std::cout << "rot[" << r_x << "," << r_y << "," << r_z << "," << r_w << "]";
+    Quarternion q = { float(r_x), float(r_y), float(r_z), float(r_w) };
+    Matrix m = Quarternion::QuarToMatrix(q);
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(e, mv2);
+    }
+  if (int(node.translation.size())==3) {
+    double m_x = node.translation[0];
+    double m_y = node.translation[1];
+    double m_z = node.translation[2];
+    mv = ev.move_api.trans2(mv, m_x, m_y, m_z);
+    //std::cout << "tr[" << m_x << "," << m_y << "," << m_z << "]";
+  }
+  //std::cout << node->matrix.size();
+  if (int(node.matrix.size())==16) {
+    const double *arr = &node.matrix[0];
+    Matrix m;
+      for(int i=0;i<4;i++)
+      for(int j=0;j<4;j++) m.matrix[i*4+j] = (float)arr[j*4+i];
+      //std::cout << "mat[]";
+
+      // for(int i=0;i<16;i++) m.matrix[i] = (float)arr[i];
+    Movement *orig = find_move(e, mv);
+    Movement *mv2 = new MatrixMovement(orig, m);
+    mv = add_move(e, mv2);    
+  }
+  
+  GameApi::ML ret = ev.move_api.move_ml(ev, array, mv, 1, 10.0 );
+  /*
+  GameApi::ML ret2 = ev.move_api.move_ml(ev, mesh, mv3, 1, 10.0 );
+  GameApi::ML ret_arr = ev.mainloop_api.array_ml(ev,std::vector<GameApi::ML>{ret,ret2});
+  */
+  return ret;
+}
+
+
 GameApi::P gltf_scene2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int scene_id, std::string keys )
 {
   int s2 = interface->scenes_size(); //load->model.scenes.size();
@@ -7829,6 +8028,27 @@ GameApi::ML gltf_scene2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterf
   }
   return ev.mainloop_api.array_ml(ev, vec);
 }
+
+
+GameApi::ML gltf_scene2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, int scene_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent )
+{
+  int s2 = interface->scenes_size(); //load->model.scenes.size();
+  if (!(scene_id>=0 && scene_id<s2))
+    {
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+    }
+  const tinygltf::Scene &scene = interface->get_scene(scene_id); //&load->model.scenes[scene_id];
+  int s = scene.nodes.size();
+  std::vector<GameApi::ML> vec;
+  for(int i=0;i<s;i++) {
+    GameApi::ML ml = gltf_node2_inst_matrix( e, ev, interface, ms, scene.nodes[i], keys,mix,self_mult,rest_mult,Matrix::Identity(),mode,light_dir,animation, border_width, border_color,transparent );
+    vec.push_back(ml);
+  }
+  return ev.mainloop_api.array_ml(ev, vec);
+}
+
 
 GameApi::P gltf_mesh2_with_skeleton_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys)
 {
@@ -7988,6 +8208,82 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
   }
 }
 
+
+GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, Vector light_dir, int animation, float border_width, unsigned int border_color, bool transparent)
+{
+  //std::cout << mesh_id << " :: " << skin_id << std::endl;
+  int cache_id = get_cache_id(interface);
+  //std::cout << "MESH2: " << mesh_id << std::endl;
+  //g_last_resize=Matrix::Identity();
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<s;i++) {
+      //std::cout << "skeleton:" << mesh_id << " " << i << std::endl;
+      GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int mat = m.primitives[i].material;
+      bool colour=false;
+      GameApi::MT mat2;
+      if (mat==-1) { colour=true;
+	mat2=ev.materials_api.m_def(ev);
+	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+      } else {
+        mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
+      }
+      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
+
+      GameApi::MT mat2_anim;
+      if (interface->animations_size()!=0 && keys.size()>0) {
+	//int ssz = interface->animations_size();
+	int maxtimeindexes=0;
+	//for(int iu=0;iu<ssz;iu++) {
+	int iu = animation;
+	  int mm = gltf_mesh2_calc_max_timeindexes(interface,iu,skin_id);
+	  if (mm>maxtimeindexes) maxtimeindexes=mm;
+	  //}
+	mat2_anim= gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+100*cache_id);
+      } else
+	{
+	  mat2_anim = mat3;
+	}
+      GameApi::MT mat4;
+      if (colour)
+	{
+	  mat4 = mat2_anim;
+	} else {
+      Material *mat0 = find_material(e,mat2);
+      GLTF_Material *mat33 = (GLTF_Material*)mat0;
+      GameApi::BM bm = mat33->texture(0); // basecolor
+      bool is_transparent = mat33->IsTransparent();
+      mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      }
+      GameApi::MT mat_res;
+      if (transparent) {
+	mat_res = mat4;
+      } else { mat_res=mat2_anim; }
+
+      //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
+      GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat_res);
+
+      GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
+      GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
+      mls.push_back(ml);
+    }
+    GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
+    return ml;
+  } else {
+    std::cout << "EMPTY" << std::endl;
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+  }
+}
+
+
+
+
 GameApi::P gltf_mesh2_p( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, int skin_id, std::string keys )
 {
   if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
@@ -8099,6 +8395,71 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
     return ml;
   }
 }
+
+GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult,int mode, Vector light_dir, int animation, float border_width, unsigned int border_color)
+{
+  //std::cout << mesh_id << " :: " << skin_id << std::endl;
+  int cache_id = get_cache_id(interface);
+  
+  if (mesh_id>=0 && mesh_id<int(interface->meshes_size())) {
+    const tinygltf::Mesh &m = interface->get_mesh(mesh_id);
+    int s = m.primitives.size();
+    std::vector<GameApi::ML> mls;
+    for(int i=0;i<s;i++) {
+      //std::cout << "mesh2:" << mesh_id << " " << i << std::endl;
+      GameApi::P p = gltf_load2(e, ev, interface, mesh_id, i);
+      int mat = m.primitives[i].material;
+      GameApi::MT mat2;
+      bool colour = false;
+      if (mat==-1) { colour=true;
+	mat2=ev.materials_api.m_def(ev);
+	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+      } else
+	{
+	  mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
+	}
+      GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
+
+      GameApi::MT mat2_anim;
+      if (interface->animations_size()!=0 && keys.size()>0) {
+	int ssz = interface->animations_size();
+	int maxtimeindexes = 0;
+	//for(int iu=0;iu<ssz;iu++) {
+	int iu = animation;
+	  int mm = gltf_mesh2_calc_max_timeindexes(interface,iu,skin_id);
+	  if (mm>maxtimeindexes) maxtimeindexes=mm;
+	  //}
+	mat2_anim = gltf_anim_material3(e,ev, interface, skin_id, maxtimeindexes, mat3, keys,mode,mesh_id+10*i+cache_id*100);
+      } else { mat2_anim=mat3; }
+      GameApi::MT mat4;
+      if (colour)
+	{
+	  mat4 = mat2_anim;
+	}
+      else {
+      Material *mat0 = find_material(e,mat2);
+      GLTF_Material *mat33 = (GLTF_Material*)mat0;
+      GameApi::BM bm = mat33->texture(0); // basecolor
+      bool is_transparent = mat33->IsTransparent();
+      mat4 = ev.materials_api.transparent_material(ev,bm, mat2_anim,is_transparent);
+      //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
+      }
+
+      GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat4);
+      GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
+      GameApi::ML ml3=ev.mainloop_api.depthfunc(ml2,3);
+      mls.push_back(ml);
+    }
+    GameApi::ML ml = ev.mainloop_api.array_ml(ev, mls);
+    return ml;
+  } else {
+    GameApi::P empty = ev.polygon_api.p_empty();
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,empty);
+    return ml;
+  }
+}
+
 
 GameApi::ML gltf_mesh2_env( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_id, GameApi::BM diffuse, GameApi::BM specular, GameApi::BM brfd, float mix)
 {
@@ -8468,6 +8829,89 @@ private:
   unsigned int border_color;
   bool transparent;
 };
+
+
+class GltfMeshAllInstMatrix : public MainLoopItem
+{
+public:
+  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent)
+    :env(env), ev(ev), interface(interface),ms(ms),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent) { res.id = -1;}
+
+
+  virtual void Collect(CollectVisitor &vis) {
+    interface->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
+  virtual void HeavyPrepare() {
+    Prepare();
+  }
+  virtual void Prepare() {
+    std::string url = interface->Url();
+    bool is_binary=false;
+    if (int(url.size())>3) {
+      std::string sub = url.substr(url.size()-3);
+      if (sub=="glb") is_binary=true;
+    }
+    // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
+    //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
+    interface->Prepare();
+    int scene_id = interface->get_default_scene();
+    GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+
+    //GameApi::MS ms2 = scale_to_gltf_size_inv(ev,mesh,ms);
+    
+    GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent ); // 0 = take numtimeindexes from first animation
+    res = scale_to_gltf_size(env,ev,mesh,ml);
+
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      if (item)
+	item->Prepare();
+    }
+    
+  }
+  virtual void execute(MainLoopEnv &e) {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e) {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      if (item)
+	item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+    MainLoopItem *item = find_main_loop(env,res);
+    if (item)
+      return item->shader_id();
+    else return std::vector<int>();
+    } else return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  //std::string base_url;
+  //std::string url;
+  GLTFModelInterface *interface;
+  GameApi::MS ms;
+  GameApi::ML res;
+  float mix;
+  float self_mult, rest_mult;
+  int mode;
+  std::string keys;
+  Vector light_dir;
+  float border_width;
+  unsigned int border_color;
+  bool transparent;
+};
+
 
 class GltfMeshAllP : public FaceCollection
 {
@@ -9517,6 +9961,21 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model
   GLTFModelInterface *interface = find_gltf(e,model0);
   return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
 }
+
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst2( GameApi::EveryApi &ev, TF model0, PTS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
+{
+  GameApi::MS I1=ev.matrices_api.from_points(ms);
+  return gltf_mesh_all_inst_matrix(ev,model0,I1,mix,self_mult,rest_mult,mode,light_dir_x,light_dir_y,light_dir_z,border_width,border_color,transparent);
+}
+
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &ev, TF model0, MS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
+{
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,ms,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
+}
+
+
+
 GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult,int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);

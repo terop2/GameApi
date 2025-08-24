@@ -380,6 +380,10 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  GameApi::ML lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent);
+
+  GameApi::ML lod_matrix_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent);
+
   IMPORT ML lod_matrix(EveryApi &ev, P p, MT mat, MS ms,float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
   IMPORT ML lod(EveryApi &ev, P p, MT mat, PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
   IMPORT ML gltf_mesh_all_inst( EveryApi &ev, TF model0, float mix, float light_dir_x, float light_dir_y, float light_dir_z, int skin_id );
@@ -544,6 +548,9 @@ public:
   IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
   IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color );
   IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
+  IMPORT ML gltf_mesh_all_inst2( EveryApi &ev, TF model0, PTS pts, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
+
+  IMPORT ML gltf_mesh_all_inst_matrix( EveryApi &ev, TF model0, MS ms, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
   IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
   IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent );
   IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,float self_mult,float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation , float border_width, unsigned int border_color, bool transparent );
@@ -3664,6 +3671,9 @@ public:
   IMPORT MS from_points(PTS pts);
   IMPORT MS mult(MS m, M mat);
   IMPORT MS mult(M mat, MS m);
+  IMPORT MS apply_matrix(MS m, M mat);
+  IMPORT MS trans2(MS m, float tx,float ty, float tz);
+  IMPORT MS scale2(MS m, float sx,float sy, float sz);
   IMPORT MS repeat_ms(EveryApi &ev, MN mn, int val);
   IMPORT MS subarray(MS m, int start, int count);
   IMPORT MS ms_random_rot(float px, float py, float pz, int count);

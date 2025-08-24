@@ -4875,7 +4875,49 @@ GameApi::MS GameApi::MatricesApi::inverse_ms(MS ms)
   MatrixArray *ms1 = find_matrix_array(e,ms);
   return add_matrix_array(e, new InvMS(ms1));
 }
+GameApi::MS GameApi::MatricesApi::scale2(MS ms, float sx, float sy, float sz)
+{
+  return apply_matrix(ms,add_matrix2(e,Matrix::Scale(sx,sy,sz)));
+}
+GameApi::MS GameApi::MatricesApi::trans2(MS ms, float tx, float ty, float tz)
+{
+  return apply_matrix(ms,add_matrix2(e,Matrix::Translate(tx,ty,tz)));
+}
+class ApplyMatrixMS : public MatrixArray
+{
+public:
+  ApplyMatrixMS(MatrixArray *next, Matrix m) : next(next),m(m) { }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { return next->Update(e); }
+  virtual int Size() const { return next->Size(); }
+  virtual Matrix Index(int i) const {
+    //std::cout << "INVERSE START" << std::endl;
+    std::cout << "ApplyMatrix m=" << m << std::endl;
+    Matrix m2 = next->Index(i)*m;
+    //std::cout << "INVERSE END" << std::endl;
+    std::cout << "ApplyMatrix " << i << "::" << m2 << std::endl;
+    return m2;
+  }
+  virtual unsigned int Color(int i) const {
+    return next->Color(i);
+  }
+private:
+  MatrixArray *next;
+  Matrix m;
+};
 
+GameApi::MS GameApi::MatricesApi::apply_matrix(MS ms, M m)
+{
+  MatrixArray *ms1 = find_matrix_array(e,ms);
+  Matrix m2 = find_matrix(e,m);
+  return add_matrix_array(e, new ApplyMatrixMS(ms1,m2));
+}
 class InterpolateMS : public MatrixArray
 {
 public:
@@ -37614,7 +37656,7 @@ GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameA
 
 GameApi::ML GameApi::MainLoopApi::lod_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
 {
-    P p1 = ev.polygon_api.decimate3(p,level1);
+  P p1 = ev.polygon_api.decimate3(p,level1);
   P p2 = ev.polygon_api.decimate3(p,level2);
   P p3 = ev.polygon_api.decimate3(p,level3);
   P p4 = ev.polygon_api.decimate3(p,level4);
@@ -37630,3 +37672,46 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix(GameApi::EveryApi &ev, GameApi::P p
   return I154;
 }
 
+
+GameApi::ML GameApi::MainLoopApi::lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent)
+{
+  TF p1 = ev.polygon_api.decimate_tf(p,level1);
+  TF p2 = ev.polygon_api.decimate_tf(p,level2);
+  TF p3 = ev.polygon_api.decimate_tf(p,level3);
+  TF p4 = ev.polygon_api.decimate_tf(p,level4);
+  PTS I612=ev.points_api.block_pts_lod(pts,-4200.0,4200.0,-3800,-860,l4 /*120*/);
+  PTS I613=ev.points_api.block_pts_lod(pts,-3000.0,3000.0,-940,-560,l3 /*95*/);
+  PTS I614=ev.points_api.block_pts_lod(pts,-2400.0,2400.0,-640,-160,l2 /*45*/);
+  PTS I615=ev.points_api.block_pts_lod(pts,-1600.0,1600.0,-240,800,l1 /*45*/);
+
+  ML I15=ev.mainloop_api.gltf_mesh_all_inst2(ev,p4,I612,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+  ML I151=ev.mainloop_api.gltf_mesh_all_inst2(ev,p3,I613,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+  ML I152=ev.mainloop_api.gltf_mesh_all_inst2(ev,p2,I614,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+  ML I153=ev.mainloop_api.gltf_mesh_all_inst2(ev,p1,I615,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+
+}
+
+
+GameApi::ML GameApi::MainLoopApi::lod_matrix_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent)
+{
+  TF p1 = ev.polygon_api.decimate_tf(p,level1);
+  TF p2 = ev.polygon_api.decimate_tf(p,level2);
+  TF p3 = ev.polygon_api.decimate_tf(p,level3);
+  TF p4 = ev.polygon_api.decimate_tf(p,level4);
+  MS I612=ev.points_api.block_ms_lod(ms,-4200.0,4200.0,-3800,-860,l4 /*120*/);
+  MS I613=ev.points_api.block_ms_lod(ms,-3000.0,3000.0,-940,-560,l3 /*95*/);
+  MS I614=ev.points_api.block_ms_lod(ms,-2400.0,2400.0,-640,-160,l2 /*45*/);
+  MS I615=ev.points_api.block_ms_lod(ms,-1600.0,1600.0,-240,800,l1 /*45*/);
+
+  ML I15=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p4,I612,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+  ML I151=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p3,I613,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+  ML I152=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p2,I614,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+  ML I153=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p1,I615,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
+
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+
+}

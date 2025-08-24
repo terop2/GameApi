@@ -267,6 +267,23 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
 #endif
+#if (ALL==1)||(GLTF_MESH_ALL_INST==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_inst2,
+			 "ml_gltf_all_inst",
+			 { "ev", "tf", "pts", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent" },
+			 { "EveryApi&", "TF", "PTS", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool" },
+			 { "ev", "", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 "ML", "mainloop_api", "gltf_mesh_all_inst2"));
+#endif
+
+#if (ALL==1)||(GLTF_MESH_ALL_INST_MATRIX==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_inst_matrix,
+			 "ml_gltf_all_inst_m",
+			 { "ev", "tf", "ms", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent" },
+			 { "EveryApi&", "TF", "MS", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool" },
+			 { "ev", "", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 "ML", "mainloop_api", "gltf_mesh_all_inst_matrix"));
+#endif
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
 			 "ml_gltf_all_anim",
@@ -819,6 +836,24 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 			{ "ev", "", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120" },
 			"ML", "mainloop_api", "lod_matrix"));
 #endif
+#if (ALL==1)||(LOD_PTS_TF==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_matrix_tf,
+			"m_lod_pts_tf",
+			{ "ev", "tf", "pts", "decimate_level1", "decimate_level2", "decimate_level3", "decimate_level4", "max_obj_count1", "max_obj_count2", "max_obj_count3", "max_obj_count4", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent" },
+			{ "EveryApi&", "TF", "PTS", "float", "float","float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool" },
+			{ "ev", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120", "1.0", "1.0", "1.0", "0", "0.1", "0.1", "-400.0", "0", "ff000000", "false" },
+			"ML", "mainloop_api", "lod_pts_tf"));
+#endif
+
+#if (ALL==1)||(LOD_MATRIX_TF==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_matrix_tf,
+			"m_lod_matrix_tf",
+			{ "ev", "tf", "ms", "decimate_level1", "decimate_level2", "decimate_level3", "decimate_level4", "max_obj_count1", "max_obj_count2", "max_obj_count3", "max_obj_count4", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent" },
+			{ "EveryApi&", "TF", "MS", "float", "float","float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool" },
+			{ "ev", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120", "1.0", "1.0", "1.0", "0", "0.1", "0.1", "-400.0", "0", "ff000000", "false" },
+			"ML", "mainloop_api", "lod_matrix_tf"));
+#endif
+
 #ifndef STABLE
 #if (ALL==1)||(BIND_INST_FADE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,
