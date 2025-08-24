@@ -4275,7 +4275,9 @@ public:
       if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
-
+	
+	if (index<0 ||index>=position_acc->count) return Point(0.0,0.0,0.0);
+	
 	const unsigned char *pos_ptr = &position_buf->data[0];
 	int stride2 = position_bv->byteStride;
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
@@ -4370,6 +4372,9 @@ public:
       
 	int index = get_index(face,point);
 
+	if (index<0 ||index>=normal_acc->count) return Vector(0.0,0.0,0.0);
+
+	
 	const unsigned char *pos_ptr = &normal_buf->data[0];
 	int stride2 = normal_bv->byteStride;
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
@@ -4428,6 +4433,9 @@ public:
       
 	int index = get_index(face,point);
 
+	if (index<0 ||index>=color_acc->count) return 0xff000000;
+
+	
 	const unsigned char *pos_ptr = &color_buf->data[0];
 	int stride2 = color_bv->byteStride;
 	if (stride2==0) stride2 = 4*sizeof(unsigned char); // 3 = num of components in (x,y,z)
@@ -4466,6 +4474,7 @@ public:
       if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
+	if (index<0 ||index>=joints_acc->count) { VEC4 v; return v; }
 
 	const unsigned char *pos_ptr = &joints_buf->data[0];
 	int stride2 = joints_bv->byteStride;
@@ -4634,6 +4643,7 @@ public:
       if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
+	if (index<0 ||index>=weights_acc->count) { VEC4 v; return v; }
 
 	const unsigned char *pos_ptr = &weights_buf->data[0];
 	int stride2 = weights_bv->byteStride;
@@ -4728,6 +4738,7 @@ public:
       if (indices_buf_done && indices_bv_done && indices_done) {
       
 	int index = get_index(face,point);
+	if (index<0 ||index>=texcoord_acc->count) { return Point(0.0,0.0,0.0); }
 
 	const unsigned char *pos_ptr = &texcoord_buf->data[0];
 	int stride2 = texcoord_bv->byteStride;
