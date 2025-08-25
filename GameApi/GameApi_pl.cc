@@ -22587,8 +22587,9 @@ public:
   {
     Point2d pos_y = calc_pos2(i);
     
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
-	pos_y.x>=start_x2 && pos_y.x<=end_x2)
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2
+	&&
+	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
     return false;
   }
@@ -22753,8 +22754,9 @@ public:
   {
     Point2d pos_y = calc_pos2(i);
     
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
-	pos_y.x>=start_x2 && pos_y.x<=end_x2)
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2
+	&&
+	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
     return false;
   }
