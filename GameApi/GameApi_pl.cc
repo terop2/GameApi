@@ -22450,7 +22450,7 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
 class BlockPTS2 : public PointsApiPoints
 {
 public:
-  BlockPTS2(PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, int max_points) : points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
+  BlockPTS2(GameApi::Env &env, PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, int max_points) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
     
     if (start_x2>end_x2) std::swap(start_x2,end_x2);
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
@@ -22482,7 +22482,7 @@ public:
     Point pt = points->Pos(pos);
     pt.x-=quake_pos_x;
     pt.z-=quake_pos_y;
-    Point p2 = pt*in_MV;
+    Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
     return p2.z;
   }
   Point2d calc_pos2(int pos) const
@@ -22490,7 +22490,7 @@ public:
     Point p = points->Pos(pos);
     p.x-=quake_pos_x;
     p.z-=quake_pos_y;
-    Point p2 = p*in_MV;
+    Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
     Point2d res;
     res.x = p2.x;
     res.y = p2.z;
@@ -22593,6 +22593,7 @@ public:
     return false;
   }
 private:
+  GameApi::Env &env;
   PointsApiPoints *points;
   float start_x2,end_x2;
   float start_y2,end_y2;
@@ -22608,7 +22609,7 @@ private:
 class BlockPTS2_matrix : public MatrixArray
 {
 public:
-  BlockPTS2_matrix(MatrixArray *points, float start_x, float end_x, float start_y, float end_y, int max_points) : points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
+  BlockPTS2_matrix(GameApi::Env &env, MatrixArray *points, float start_x, float end_x, float start_y, float end_y, int max_points) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
 
     if (start_x2>end_x2) std::swap(start_x2,end_x2);
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
@@ -22731,7 +22732,7 @@ public:
     Point pt = Point(p0.get_translate());
     pt.x-=quake_pos_x;
     pt.z-=quake_pos_y;
-    Point p2 = pt*in_MV;
+    Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
     return p2.z;
   }
   Point2d calc_pos2(int pos) const
@@ -22740,7 +22741,7 @@ public:
     Point p = Point(p0.get_translate());
     p.x-=quake_pos_x;
     p.z-=quake_pos_y;
-    Point p2 = p*in_MV;
+    Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
     Point2d res;
     res.x = p2.x;
     res.y = p2.z;
@@ -22758,6 +22759,7 @@ public:
     return false;
   }
 private:
+  GameApi::Env &env;
   MatrixArray *points;
   float start_x2,end_x2;
   float start_y2,end_y2;
@@ -22775,13 +22777,13 @@ private:
 GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
-  return add_points_api_points(e,new BlockPTS2(points,start_x,end_x,start_y,end_y,max_points));
+  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,max_points));
 }
 
 GameApi::MS GameApi::PointsApi::block_ms_lod(GameApi::MS ms, float start_x, float end_x, float start_y, float end_y, int max_points)
 {
   MatrixArray *mat = find_matrix_array(e,ms);
-  return add_matrix_array(e, new BlockPTS2_matrix(mat,start_x,end_x,start_y,end_y, max_points));
+  return add_matrix_array(e, new BlockPTS2_matrix(e,mat,start_x,end_x,start_y,end_y, max_points));
 }
 
 
