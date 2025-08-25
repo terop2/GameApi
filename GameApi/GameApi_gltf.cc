@@ -8834,12 +8834,14 @@ private:
 class GltfMeshAllInstMatrix : public MainLoopItem
 {
 public:
-  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GameApi::MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent)
-    :env(env), ev(ev), interface(interface),ms(ms),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent) { res.id = -1;}
+  GltfMeshAllInstMatrix(GameApi::Env &env, GameApi::EveryApi &ev, GLTFModelInterface *interface, GLTFModelInterface *resize_obj, GameApi::MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, Vector light_dir, float border_width, unsigned int border_color, bool transparent)
+    :env(env), ev(ev), interface(interface),resize_obj(resize_obj), ms(ms),mix(mix),self_mult(self_mult), rest_mult(rest_mult),mode(mode),keys(keys),light_dir(light_dir),border_width(border_width), border_color(border_color),transparent(transparent) { res.id = -1;}
 
 
   virtual void Collect(CollectVisitor &vis) {
     interface->Collect(vis);
+    MatrixArray *ms0 = find_matrix_array(env,ms);
+    ms0->Collect(vis);
     vis.register_obj(this);
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
@@ -8856,8 +8858,11 @@ public:
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
     interface->Prepare();
+    resize_obj->Prepare();
+    MatrixArray *ms0 = find_matrix_array(env,ms);
+    ms0->Prepare();
     int scene_id = interface->get_default_scene();
-    GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
+    GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id,"");
 
     //GameApi::MS ms2 = scale_to_gltf_size_inv(ev,mesh,ms);
     
@@ -8900,6 +8905,7 @@ private:
   //std::string base_url;
   //std::string url;
   GLTFModelInterface *interface;
+  GLTFModelInterface *resize_obj;
   GameApi::MS ms;
   GameApi::ML res;
   float mix;
@@ -9962,16 +9968,17 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model
   return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst2( GameApi::EveryApi &ev, TF model0, PTS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst2( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
 {
   GameApi::MS I1=ev.matrices_api.from_points(ms);
-  return gltf_mesh_all_inst_matrix(ev,model0,I1,mix,self_mult,rest_mult,mode,light_dir_x,light_dir_y,light_dir_z,border_width,border_color,transparent);
+  return gltf_mesh_all_inst_matrix(ev,model0,resize_obj,I1,mix,self_mult,rest_mult,mode,light_dir_x,light_dir_y,light_dir_z,border_width,border_color,transparent);
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &ev, TF model0, MS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,ms,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
+  GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
 }
 
 

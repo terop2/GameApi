@@ -22224,6 +22224,8 @@ PointsApiPoints *g_pts;
 MatrixArray *g_pts_matrix;
 float g_pos1;
 float g_pos2;
+Matrix g_compare_in_MV;
+
 
 bool ComparePTSObj2(int a, int b)
 {
@@ -22251,7 +22253,20 @@ bool ComparePTSObj(int a, int b)
 bool ComparePTSObj_y(int a, int b)
 {
   float val1,val2;
+  /*
+  Point pt = g_pts->Pos(a);
+  pt.x-=quake_pos_x;
+  pt.z-=quake_pos_y;
+  Point ptb = pt*g_compare_in_MV;
+
+  Point pt2 = g_pts->Pos(b);
+  pt2.x-=quake_pos_x;
+  pt2.z-=quake_pos_y;
+  Point pt2b = pt2*g_compare_in_MV;
+  */
+  
   val1=g_pts->Pos(a).z;
+
   val2=g_pts->Pos(b).z;
   if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
@@ -22303,7 +22318,7 @@ public:
     g_pos1 = start_x;
     g_pos2 = end_x;
     g_pts = points;
-
+    
     //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
 
     int result=-1;
@@ -22457,39 +22472,56 @@ public:
     g_pts = points;
     std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y);
   }
+
+  float calc_pos(int p) const
+  {
+    int pos = allpoints[p];
+    Point pt = points->Pos(pos);
+    pt.x-=quake_pos_x;
+    pt.z-=quake_pos_y;
+    Point p2 = pt*in_MV;
+    return p2.z;
+  }
+  Point2d calc_pos2(int pos) const
+  {
+    Point p = points->Pos(pos);
+    p.x-=quake_pos_x;
+    p.z-=quake_pos_y;
+    Point p2 = p*in_MV;
+    Point2d res;
+    res.x = p2.x;
+    res.y = p2.z;
+    return res;
+  }
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) {
+    in_MV = e.in_MV;
+    g_compare_in_MV = in_MV;
+
     bool b = points->Update(e);
-    //pos2=pos;
     pos.clear();
     int s = points->NumPoints();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_y = -quake_pos_y+start_y2;
-    float end_y = -quake_pos_y+end_y2;
-    //allpoints.push_back(allpoints.size());
-    //allpoints.push_back(allpoints.size());
+    float start_y = start_y2;
+    float end_y = end_y2;
 
-    g_pos1 = start_y;
-    g_pos2 = end_y;
-    g_pts = points;
-
-    //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
+    if (start_y>end_y) std::swap(start_y,end_y);
+    int sy=allpoints.size();
 
     int result=-1;
     {
     int left = 0;
     int right = allpoints.size()-1;
 
-    
     while(left <= right)
       {
 	int mid = (left+right)/2;
-	if (points->Pos(allpoints[mid]).z < start_y && points->Pos(allpoints[mid+1]).z > start_y) { result=mid; break; }
+	if (calc_pos(mid) < start_y &&  calc_pos(mid+1) > start_y) { result=mid; break; }
 
-	if (points->Pos(allpoints[mid]).z < start_y)
+    if (calc_pos(mid) < start_y)
 	  {
 	    left = mid + 1;
 	  }
@@ -22503,7 +22535,6 @@ public:
     int start = result;
     if (start<0) start=0;
     if (start>allpoints.size()-1) start=allpoints.size()-1;
-
     
     result = -1;
     {
@@ -22513,9 +22544,9 @@ public:
     while(left <= right)
       {
         int mid = (left+right)/2;
-	if (points->Pos(allpoints[mid]).z < end_y && points->Pos(allpoints[mid+1]).z > end_y) { result=mid; break; }
+	if (calc_pos(mid) < end_y && calc_pos(mid+1) > end_y) { result=mid; break; }
 
-	if (points->Pos(allpoints[mid]).z < end_y)
+	if (calc_pos(mid) < end_y)
 	  {
 	    left = mid + 1;
 	  }
@@ -22529,70 +22560,33 @@ public:
     int end = result;
     if (end<0) end=0;
     if (end>allpoints.size()-1) end=allpoints.size()-1;
-    
-    
-    //int start = ii-allpoints.begin();
-    //int end = ii2-allpoints.begin();
-
-    //std::cout << start << " " << end << std::endl;
-    //std::cout << "POINT1:" << points->Pos(allpoints[start]).x << " POINT2:" << points->Pos(allpoints[end]).x << std::endl;
 
     
-    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
-    //allpoints.erase(allpoints.begin()+allpoints.size()-1);
-    
+  if (start>end) std::swap(start,end);
 
-
-    /*
-    int s2 = allpoints.size();
-    for(int i=0;i<s2;i++)
-      {
-	std::cout << "Point#" << i << "=" << allpoints[i] << "::" << points->Pos(allpoints[i]) << std::endl;
-      }
-    */
-    
-    for(int i=start;i<end;i++)
+  for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
 	  {
 	    pos.push_back(allpoints[i]);
 	  }
       }
-    /*
-    int s2 = std::min(pos2.size(),pos.size());
-    bool changed = false;
-    for(int i=0;i<s2;i++)
-      {
-	if (pos[i]!=pos2[i])
-	  {
-	    changed=true;
-	  }
-      }
-    */
-    //std::cout << "Update:" << prev << " " << pos.size() << std::endl;
-    //if (prev==pos.size()&&!changed) return false;
     prev=pos.size();
     return true; }
   virtual int NumPoints() const { return max_points; }
-  virtual Point Pos(int i) const { if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0); return points->Pos(pos[i]); }
+  virtual Point Pos(int i) const { if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0);
+    Point p = points->Pos(pos[i]);
+    return Point(p.x,p.y,-p.z); }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
   virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
 
   bool enabled(int i) const
   {
-    Point p = points->Pos(i);
-    float cursor_pos_x = quake_pos_x;
-    float cursor_pos_y = -quake_pos_y;
-
-    float delta_x = p.x+cursor_pos_x;
-    float delta_y = p.z-cursor_pos_y;
-    //float dist = delta_x*delta_x + delta_y*delta_y;
-    //std::cout << "A:" << p.x << " " << p.z << std::endl;
-    //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
-    if (delta_x<end_x2 && delta_x>start_x2 && delta_y<end_y2 && delta_y>start_y2)
-      {
-	return true;
-      }
+    Point2d pos_y = calc_pos2(i);
+    
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
+	pos_y.x>=start_x2 && pos_y.x<=end_x2)
+      return true;
     return false;
   }
 private:
@@ -22604,6 +22598,7 @@ private:
   std::vector<int> pos;
   int prev=0;
   int max_points;
+  Matrix in_MV;
 };
 
 class BlockPTS2_matrix : public MatrixArray
@@ -22635,20 +22630,21 @@ public:
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) {
+    in_MV = e.in_MV;
     bool b = points->Update(e);
     //pos2=pos;
     pos.clear();
     int s = points->Size();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_y = -quake_pos_y+start_y2;
-    float end_y = -quake_pos_y+end_y2;
+    float start_y = start_y2; //-quake_pos_y+start_y2;
+    float end_y = end_y2; //-quake_pos_y+end_y2;
     //allpoints.push_back(allpoints.size());
     //allpoints.push_back(allpoints.size());
 
     //g_pos1 = start_y;
     //g_pos2 = end_y;
-    g_pts_matrix = points;
+    //g_pts_matrix = points;
 
     //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
 
@@ -22661,9 +22657,9 @@ public:
     while(left <= right)
       {
 	int mid = (left+right)/2;
-	if (points->Index(allpoints[mid]).get_translate().dz < start_y && points->Index(allpoints[mid+1]).get_translate().dz > start_y) { result=mid; break; }
+	if (calc_pos(mid) < start_y && calc_pos(mid+1) > start_y) { result=mid; break; }
 
-	if (points->Index(allpoints[mid]).get_translate().dz < start_y)
+	if (calc_pos(mid) < start_y)
 	  {
 	    left = mid + 1;
 	  }
@@ -22687,9 +22683,9 @@ public:
     while(left <= right)
       {
         int mid = (left+right)/2;
-	if (points->Index(allpoints[mid]).get_translate().dz < end_y && points->Index(allpoints[mid+1]).get_translate().dz > end_y) { result=mid; break; }
+	if (calc_pos(mid) < end_y && calc_pos(mid+1) > end_y) { result=mid; break; }
 
-	if (points->Index(allpoints[mid]).get_translate().dz < end_y)
+	if (calc_pos(mid) < end_y)
 	  {
 	    left = mid + 1;
 	  }
@@ -22748,26 +22744,48 @@ public:
     prev=pos.size();
     return true; }
   virtual int Size() const { return max_points; }
-  virtual Matrix Index(int i) const { if (i>=pos.size()) { Matrix m=Matrix::Identity(); return m; } return points->Index(pos[i]); }
+  virtual Matrix Index(int i) const {
+    if (i>=pos.size()) { Matrix m=Matrix::Identity(); return m; }
+
+    Matrix m = points->Index(pos[i]);
+    m.matrix[4*3+3]=-m.matrix[4*3+3];
+    return m;
+  }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
   virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
 
+
+  float calc_pos(int p) const
+  {
+    int pos = allpoints[p];
+    Matrix p0 = points->Index(pos);
+    Point pt = Point(p0.get_translate());
+    pt.x-=quake_pos_x;
+    pt.z-=quake_pos_y;
+    Point p2 = pt*in_MV;
+    return p2.z;
+  }
+  Point2d calc_pos2(int pos) const
+  {
+    Matrix p0 = points->Index(pos);
+    Point p = Point(p0.get_translate());
+    p.x-=quake_pos_x;
+    p.z-=quake_pos_y;
+    Point p2 = p*in_MV;
+    Point2d res;
+    res.x = p2.x;
+    res.y = p2.z;
+    return res;
+  }
+
+  
   bool enabled(int i) const
   {
-    Matrix p0 = points->Index(i);
-    Point p = Point(p0.get_translate());
-    float cursor_pos_x = quake_pos_x;
-    float cursor_pos_y = -quake_pos_y;
-
-    float delta_x = p.x+cursor_pos_x;
-    float delta_y = p.z-cursor_pos_y;
-    //float dist = delta_x*delta_x + delta_y*delta_y;
-    //std::cout << "A:" << p.x << " " << p.z << std::endl;
-    //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
-    if (delta_x<end_x2 && delta_x>start_x2 && delta_y<end_y2 && delta_y>start_y2)
-      {
-	return true;
-      }
+    Point2d pos_y = calc_pos2(i);
+    
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
+	pos_y.x>=start_x2 && pos_y.x<=end_x2)
+      return true;
     return false;
   }
 private:
@@ -22779,6 +22797,7 @@ private:
   std::vector<int> pos;
   int prev=0;
   int max_points;
+  Matrix in_MV;
 };
 
 
