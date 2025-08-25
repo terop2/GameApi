@@ -22596,8 +22596,9 @@ public:
     if (pos_y.x<minimum) minimum=pos_y.x;
     if (pos_y.x>maximum) maximum=pos_y.x;
     
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
-	pos_y.x>=start_x2 && pos_y.x<=end_x2)
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2
+	&&
+	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
     return false;
   }
@@ -22773,8 +22774,9 @@ public:
     if (pos_y.x>maximum) maximum=pos_y.x;
 
     
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
-	pos_y.x>=start_x2 && pos_y.x<=end_x2)
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2
+	&&
+	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
     return false;
   }
