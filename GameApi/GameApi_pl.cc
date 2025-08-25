@@ -22279,6 +22279,14 @@ bool ComparePTSObj_y_matrix(int a, int b)
   if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
+class BlockPTS2;
+class BlockPTS2_matrix;
+BlockPTS2 *g_blockpts2;
+BlockPTS2_matrix *g_blockpts2_matrix;
+
+bool CompareWithCalc(int a, int b);
+bool CompareWithCalc_matrix(int a, int b);
+
 
 class BlockPTS : public PointsApiPoints
 {
@@ -22442,11 +22450,16 @@ private:
   int prev=0;
   int max_points;
 };
+
+
 GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_points)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
   return add_points_api_points(e,new BlockPTS(points,d,max_points));
 }
+extern Matrix g_quakeml2_matrix;
+extern bool g_is_quakeml2;
+
 class BlockPTS2 : public PointsApiPoints
 {
 public:
@@ -22483,8 +22496,16 @@ public:
     pt.x-=quake_pos_x;
     pt.y=-60.0;
     pt.z-=quake_pos_y;
-    Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
+    Point p2 = pt*in_MV;
     return p2.z;
+    /*
+    if (g_is_quakeml2)
+      {
+	//std::cout << "pos:():" << p2 << std::endl;
+	p2.z-=400.0;
+	p2 = p2*Matrix::Inverse(g_quakeml2_matrix);
+	}*/
+    //return p2.z;
   }
   Point2d calc_pos2(int pos) const
   {
@@ -22493,6 +22514,14 @@ public:
     p.y=-60.0;
     p.z-=quake_pos_y;
     Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
+    /*
+    if (g_is_quakeml2)
+      {
+	//std::cout << "pos2:():" << p2 << std::endl;
+	p2.z -= 400.0;
+	p2 = p2*Matrix::Inverse(g_quakeml2_matrix);
+      }
+    */
     Point2d res;
     res.x = p2.x;
     res.y = p2.z;
@@ -22500,7 +22529,16 @@ public:
   }
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
-  virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
+  virtual void HandleEvent(MainLoopEvent &event) {
+    points->HandleEvent(event);
+    /*
+    if (event.ch!=-1)
+      {
+	g_blockpts2 = this;
+	std::sort(allpoints.begin(),allpoints.end(),CompareWithCalc);
+      }
+    */
+  }
   virtual bool Update(MainLoopEnv &e) {
     in_MV = e.in_MV;
     g_compare_in_MV = in_MV;
@@ -22571,6 +22609,8 @@ public:
 
   minimum=4000000.0;
   maximum=-4000000.0;
+
+  //std::cout << "startend:" << start << " " << end << " " << calc_pos(start) << " " << calc_pos(end) << std::endl;
   
   for(int i=start;i<=end;i++)
       {
@@ -22592,7 +22632,7 @@ public:
   bool enabled(int i) const
   {
     Point2d pos_y = calc_pos2(i);
-
+    
     if (pos_y.x<minimum) minimum=pos_y.x;
     if (pos_y.x>maximum) maximum=pos_y.x;
     
@@ -22617,6 +22657,15 @@ private:
   mutable float minimum=4000000.0;
   mutable float maximum=-4000000.0;
 };
+
+bool CompareWithCalc(int a, int b)
+{
+  Point2d val1= g_blockpts2->calc_pos2(a);
+  Point2d val2= g_blockpts2->calc_pos2(b);
+  if (std::fabs(val1.y-val2.y) < 1e-6f) return a<b;
+  return val1.y<val2.y;  
+}
+
 
 class BlockPTS2_matrix : public MatrixArray
 {
@@ -22648,7 +22697,15 @@ public:
   }
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
-  virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
+  virtual void HandleEvent(MainLoopEvent &event) {
+    points->HandleEvent(event);
+    /*    if (event.ch!=-1)
+      {
+	g_blockpts2_matrix = this;
+	std::sort(allpoints.begin(),allpoints.end(),CompareWithCalc_matrix);
+      }
+    */
+  }
   virtual bool Update(MainLoopEnv &e) {
     in_MV = e.in_MV;
     bool b = points->Update(e);
@@ -22659,7 +22716,8 @@ public:
     if (allpoints.size()<1) return true;
     float start_y = start_y2;
     float end_y = end_y2; 
-
+    int start,end;
+    
     if (start_y>end_y) std::swap(start_y,end_y);
 
     int result=-1;
@@ -22684,7 +22742,7 @@ public:
       }
     if (result==-1) result=(left+right)/2;
     }
-    int start = result;
+    start = result;
     if (start<0) start=0;
     if (start>allpoints.size()-1) start=allpoints.size()-1;
 
@@ -22710,7 +22768,7 @@ public:
       }
     if (result==-1) result=(left+right)/2;
     }
-    int end = result;
+    end = result;
     if (end<0) end=0;
     if (end>allpoints.size()-1) end=allpoints.size()-1;
     
@@ -22720,6 +22778,7 @@ public:
     minimum=4000000.0;
     maximum=-4000000.0;
 
+    
     for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
@@ -22750,6 +22809,11 @@ public:
     pt.y=-60.0;
     pt.z-=quake_pos_y;
     Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
+    if (g_is_quakeml2)
+      {
+	p2.z-=400.0;
+	p2 = p2*Matrix::Inverse(g_quakeml2_matrix);
+      }
     return p2.z;
   }
   Point2d calc_pos2(int pos) const
@@ -22760,6 +22824,11 @@ public:
     p.y=-60.0;
     p.z-=quake_pos_y;
     Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
+    if (g_is_quakeml2)
+      {
+	p2.z-=400.0;
+	p2 = p2*Matrix::Inverse(g_quakeml2_matrix);
+      }
     Point2d res;
     res.x = p2.x;
     res.y = p2.z;
@@ -22796,6 +22865,13 @@ private:
   mutable float maximum=-4000000.0;
 };
 
+bool CompareWithCalc_matrix(int a, int b)
+{
+  Point2d val1= g_blockpts2_matrix->calc_pos2(a);
+  Point2d val2= g_blockpts2_matrix->calc_pos2(b);
+  if (std::fabs(val1.y-val2.y) < 1e-6f) return a<b;
+  return val1.y<val2.y;  
+}
 
 
 GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points)
@@ -29118,4 +29194,33 @@ GameApi::TF GameApi::PolygonApi::decimate_tf(GameApi::TF mesh, float val)
 {
   GLTFModelInterface *i = find_gltf(e,mesh);
   return add_gltf(e, new DecimateTF(i,val));
+}
+
+class MoveFromMV : public MainLoopItem
+{
+public:
+  MoveFromMV(MainLoopItem *next) : next(next) { }
+  virtual void Collect(CollectVisitor &vis) { next->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { next->Prepare(); HeavyPrepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    Matrix m = e.in_MV;
+    Vector v = m.get_translate();
+    quake_pos_x = v.dx;
+    quake_pos_y = v.dz;
+    quake_rot_y = 0.0;
+    next->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+private:
+  MainLoopItem *next;
+};
+
+GameApi::ML GameApi::MainLoopApi::get_movement_from_MV(GameApi::ML ml)
+{
+  MainLoopItem *mainloop = find_main_loop(e,ml);
+  return add_main_loop(e, new MoveFromMV(mainloop));
 }

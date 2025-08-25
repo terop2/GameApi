@@ -19464,6 +19464,8 @@ float quake_rot_y;
 bool g_is_quake = false;
 extern GameApi::M g_view_rot;
 
+bool g_is_quakeml=false;
+
 class QuakeML : public MainLoopItem
 {
 public:
@@ -19480,6 +19482,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
+    g_is_quakeml=true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
     quake_pos_y = pos_y;
@@ -19545,6 +19548,7 @@ public:
 
     next->execute(eee);
     ev.shader_api.unuse(s3);
+    g_is_quakeml=false;
 
   }
   GameApi::PT map_point(GameApi::EveryApi &ev, GameApi::PT p)
@@ -19608,6 +19612,9 @@ GameApi::ML GameApi::MovementNode::quake_ml(EveryApi &ev, ML ml,float speed, flo
 
 float find_area_y(GameApi::Env &e, float pos_x, float pos_z);
 
+Matrix g_quakeml2_matrix = Matrix::Identity();
+bool g_is_quakeml2 = false;
+
 class QuakeML2 : public MainLoopItem
 {
 public:
@@ -19624,6 +19631,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
+    g_is_quakeml2 = true;
     //if (ev.mainloop_api.get_screen_width()<700) {
     //GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, -rot_speed);
     //} else {
@@ -19675,6 +19683,7 @@ public:
 	ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "in_View", rot_y2);
 	ev.shader_api.set_var(sh, "in_View2", rot_y2);
+	g_quakeml2_matrix = find_matrix(env,rot_y2);
       }
 
     
@@ -19698,6 +19707,7 @@ public:
 
     next->execute(eee);
     ev.shader_api.unuse(s3);
+    g_is_quakeml2 = false;
 
   }
   GameApi::PT map_point(GameApi::EveryApi &ev,GameApi::PT p)
@@ -19759,6 +19769,8 @@ GameApi::ML GameApi::MovementNode::quake_ml2(EveryApi &ev, ML ml,float speed, fl
 
 extern GameApi::M g_view_rot;
 
+bool g_is_quakeml3 = false;
+
 class QuakeML3 : public MainLoopItem
 {
 public:
@@ -19793,6 +19805,7 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
+    g_is_quakeml3 = true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
@@ -19891,6 +19904,7 @@ public:
     ev.shader_api.unuse(s3);
 
 
+    g_is_quakeml3 = false;
   }
   virtual void handle_event(MainLoopEvent &e)
   {
