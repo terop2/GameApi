@@ -22481,6 +22481,7 @@ public:
     int pos = allpoints[p];
     Point pt = points->Pos(pos);
     pt.x-=quake_pos_x;
+    pt.y=-60.0;
     pt.z-=quake_pos_y;
     Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
     return p2.z;
@@ -22489,6 +22490,7 @@ public:
   {
     Point p = points->Pos(pos);
     p.x-=quake_pos_x;
+    p.y=-60.0;
     p.z-=quake_pos_y;
     Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
     Point2d res;
@@ -22567,6 +22569,9 @@ public:
     
   if (start>end) std::swap(start,end);
 
+  minimum=4000000.0;
+  maximum=-4000000.0;
+  
   for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
@@ -22574,6 +22579,7 @@ public:
 	    pos.push_back(allpoints[i]);
 	  }
       }
+  //std::cout << "Range:" << minimum << " " << maximum << std::endl;
     prev=pos.size();
     return true; }
   virtual int NumPoints() const { return max_points; }
@@ -22586,6 +22592,9 @@ public:
   bool enabled(int i) const
   {
     Point2d pos_y = calc_pos2(i);
+
+    if (pos_y.x<minimum) minimum=pos_y.x;
+    if (pos_y.x>maximum) maximum=pos_y.x;
     
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
 	pos_y.x>=start_x2 && pos_y.x<=end_x2)
@@ -22604,6 +22613,8 @@ private:
   int max_points;
   Matrix in_MV;
   bool firsttime;
+  mutable float minimum=4000000.0;
+  mutable float maximum=-4000000.0;
 };
 
 class BlockPTS2_matrix : public MatrixArray
@@ -22704,7 +22715,10 @@ public:
     
 
     if (start>end) std::swap(start,end);
-    
+
+    minimum=4000000.0;
+    maximum=-4000000.0;
+
     for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
@@ -22712,6 +22726,7 @@ public:
 	    pos.push_back(allpoints[i]);
 	  }
       }
+    //std::cout << "Range:" << minimum << " " << maximum << std::endl;
     prev=pos.size();
     return true; }
   virtual int Size() const { return max_points; }
@@ -22731,6 +22746,7 @@ public:
     Matrix p0 = points->Index(pos);
     Point pt = Point(p0.get_translate());
     pt.x-=quake_pos_x;
+    pt.y=-60.0;
     pt.z-=quake_pos_y;
     Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
     return p2.z;
@@ -22740,6 +22756,7 @@ public:
     Matrix p0 = points->Index(pos);
     Point p = Point(p0.get_translate());
     p.x-=quake_pos_x;
+    p.y=-60.0;
     p.z-=quake_pos_y;
     Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
     Point2d res;
@@ -22752,6 +22769,9 @@ public:
   bool enabled(int i) const
   {
     Point2d pos_y = calc_pos2(i);
+    if (pos_y.x<minimum) minimum=pos_y.x;
+    if (pos_y.x>maximum) maximum=pos_y.x;
+
     
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
 	pos_y.x>=start_x2 && pos_y.x<=end_x2)
@@ -22770,6 +22790,8 @@ private:
   int max_points;
   Matrix in_MV;
   bool firsttime;
+  mutable float minimum=4000000.0;
+  mutable float maximum=-4000000.0;
 };
 
 
@@ -28881,7 +28903,7 @@ public:
 		unsigned char *udata = &buf2a.data[0];
 		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
 		DecimateIndex_int *udata2 = (DecimateIndex_int*)udata1;
-		std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_int) << std::endl;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_int) << std::endl;
 		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_int);
 		auto begin = StridedIterator<DecimateIndex_int>((uint8_t*)udata2,stride);
 		auto end = begin + keep/3;
@@ -28919,7 +28941,7 @@ public:
 		unsigned char *udata = &buf2a.data[0];
 		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
 		DecimateIndex_short *udata2 = (DecimateIndex_short*)udata1;
-		std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_short) << std::endl;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_short) << std::endl;
 		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_short);
 		auto begin = StridedIterator<DecimateIndex_short>((uint8_t*)udata2,stride);
 		auto end = begin + keep/3;
@@ -28957,7 +28979,7 @@ public:
 		unsigned char *udata = &buf2a.data[0];
 		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
 		DecimateIndex_byte *udata2 = (DecimateIndex_byte*)udata1;
-		std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_byte) << std::endl;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_byte) << std::endl;
 		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_byte);
 		auto begin = StridedIterator<DecimateIndex_byte>((uint8_t*)udata2,stride);
 		auto end = begin + keep/3;
@@ -28981,7 +29003,7 @@ public:
       start_bufview = next->bufferviews_size();
       start_buffer = next->buffers_size();
       int s = next->meshes_size();
-      std::cout << "Meshes: " << s << std::endl;
+      //std::cout << "Meshes: " << s << std::endl;
       for(int i=0;i<s;i++)
 	{
 
