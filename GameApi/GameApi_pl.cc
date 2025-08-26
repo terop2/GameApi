@@ -22481,12 +22481,10 @@ public:
 
   float calc_pos(int p) const
   {
-#if 0
     int idx = allpoints[p];
     Point pp = calc_pos3(idx);
     return pp.z;
-#endif
-#if 1
+#if 0
     int idx = allpoints[p];
     Matrix p0 = Matrix::Identity(); 
     Point pt = points->Pos(idx); 
@@ -22509,7 +22507,13 @@ public:
   }
   Point2d calc_pos2(int pos) const
   {
-#if 1
+    Point pp = calc_pos3(pos);
+    Point2d res;
+    res.x = pp.x;
+    res.y = pp.z;
+    return res;
+    
+#if 0
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
     Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
@@ -22524,7 +22528,6 @@ public:
     
   }
 
-#if 0
   Point calc_pos3(int pos) const
   {
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
@@ -22538,31 +22541,33 @@ public:
     ncd.z-=1.0;
     return ncd;
   }
-#endif
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
     points->HandleEvent(event);
   }
   virtual bool Update(MainLoopEnv &e) {
-    in_MV = e.in_MV;
     in_Proj = e.in_P;
     g_compare_in_MV = in_MV;
-    std::sort(allpoints.begin(), allpoints.end(),
-	      [&](int a, int b){
-		Point2d aa = calc_pos2(a);
-		Point2d bb = calc_pos2(b);
-		if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
-		return aa.y < bb.y;
-	      });
+    if (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)) {
+      in_MV = e.in_MV;
+      std::sort(allpoints.begin(), allpoints.end(),
+		[&](int a, int b){
+		  Point2d aa = calc_pos2(a);
+		  Point2d bb = calc_pos2(b);
+		  if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
+		  return aa.y < bb.y;
+		});
+    }
+    in_MV = e.in_MV;
     
     bool b = points->Update(e);
     pos.clear();
     int s = points->NumPoints();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_y = start_y2;
-    float end_y = end_y2;
+    float start_y = ncd_z_start2; //start_y2;
+    float end_y = ncd_z_end2; //end_y2;
 
     
 
@@ -22589,7 +22594,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) { std::cout << "search fail!" << std::endl; result=(left+right)/2; }
+    if (result==-1) { std::cout << "search fail!" << std::endl; result=0; /*(left+right)/2;*/ }
     }
     int start = result;
     if (start<0) start=0;
@@ -22614,7 +22619,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) { std::cout << "search fail2!" << left << ">" << right << std::endl; result=(left+right)/2; }
+    if (result==-1) { std::cout << "search fail2!" << left << ">" << right << std::endl; result=allpoints.size()-1; /*(left+right)/2;*/ }
     }
     int end = result;
     if (end<0) end=0;
@@ -22649,13 +22654,22 @@ public:
 
   bool enabled(int i) const
   {
-    Point2d pos_y = calc_pos2(i);
-
-    
+    Point pp = calc_pos3(i);
+    if (pp.x >= -1.0f && pp.x <= 1.0f) {
+      if (pp.y >= -1.0f && pp.y <= 1.0f) {
+	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
+	  return true;
+	}
+      }
+    }
+    return false;
+#if 0
+    Point2d pos_y = calc_pos2(i);    
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
     return false;
+#endif
   }
 private:
   GameApi::Env &env;
@@ -22673,13 +22687,6 @@ private:
   bool firsttime;
 };
 
-bool CompareWithCalc(int a, int b)
-{
-  Point2d val1= g_blockpts2->calc_pos2(a);
-  Point2d val2= g_blockpts2->calc_pos2(b);
-  //if (std::fabs(val1.y-val2.y) < 1e-6f) return a<b;
-  return val1.y<val2.y;  
-}
 
 
 class BlockPTS2_matrix : public MatrixArray
@@ -22715,19 +22722,12 @@ public:
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
     points->HandleEvent(event);
-    /*    if (event.ch!=-1)
-      {
-	g_blockpts2_matrix = this;
-	std::sort(allpoints.begin(),allpoints.end(),CompareWithCalc_matrix);
-      }
-    */
   }
   virtual bool Update(MainLoopEnv &e) {
-
-    
-    in_MV = e.in_MV;
     in_Proj = e.in_P;
     bool b = points->Update(e);
+    if (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)) {
+      in_MV = e.in_MV;
     std::sort(allpoints.begin(), allpoints.end(),
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
@@ -22735,18 +22735,16 @@ public:
 		if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
 		return aa.y < bb.y;
 	      });
-
-
-    //pos2=pos;
+    }
+    in_MV = e.in_MV;
     pos.clear();
     int s = points->Size();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_y = start_y2;
-    float end_y = end_y2; 
+    float start_y = ncd_z_start2; //start_y2;
+    float end_y = ncd_z_end2; //end_y2; 
     int start,end;
 
-#if 0
     
     if (start_y>end_y) std::swap(start_y,end_y);
 
@@ -22759,7 +22757,7 @@ public:
     while(left <= right)
       {
 	int mid = (left+right)/2;
-	if (calc_pos(mid) < start_y && calc_pos(mid+1) > start_y) { result=mid; break; }
+	if ((calc_pos(mid) < start_y && mid+1 <= allpoints.size()-1 && calc_pos(mid+1) > start_y) || left==right) { result=mid; break; }
 
 	if (calc_pos(mid) < start_y)
 	  {
@@ -22770,7 +22768,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) { std::cout << "search fail!" << std::endl; result=(left+right)/2; }
+    if (result==-1) { std::cout << "search fail!" << std::endl; result=0; /*(left+right)/2;*/ }
     }
     start = result;
     if (start<0) start=0;
@@ -22785,7 +22783,7 @@ public:
     while(left <= right)
       {
         int mid = (left+right)/2;
-	if (calc_pos(mid) < end_y && calc_pos(mid+1) > end_y) { result=mid; break; }
+	if ((calc_pos(mid) < end_y && mid+1<=allpoints.size()-1 && calc_pos(mid+1) > end_y)||left==right) { result=mid; break; }
 
 	if (calc_pos(mid) < end_y)
 	  {
@@ -22796,7 +22794,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) result=(left+right)/2;
+    if (result==-1) { std::cout << "search fail!" << std::endl; result=allpoints.size()-1; /*(left+right)/2;*/ }
     }
     end = result;
     if (end<0) end=0;
@@ -22804,9 +22802,8 @@ public:
     
 
     if (start>end) std::swap(start,end);
-#endif
-    start = 0;
-    end=allpoints.size()-1;
+    //start = 0;
+    //end=allpoints.size()-1;
 
     
     for(int i=start;i<=end;i++)
@@ -22820,10 +22817,9 @@ public:
     return true; }
   virtual int Size() const { return max_points; }
   virtual Matrix Index(int i) const {
-    std::cout << "INDEX:" << i << " " << pos.size() << std::endl;
     if (i>=pos.size()) { Matrix m=Matrix::Translate(-666666.0,-666666.0,-666666.0); return m; }
     Matrix m = points->Index(pos[i]);
-    //m.matrix[4*2+3]=-m.matrix[4*2+3];
+    m.matrix[4*2+3]=-m.matrix[4*2+3];
     return m;
   }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
@@ -22833,17 +22829,26 @@ public:
   float calc_pos(int p) const
   {
     int idx = allpoints[p];
+    Point pp = calc_pos3(idx);
+    return pp.z;
+#if 0    
     Matrix p0 = points->Index(idx);
     Point pt = Point(0.0f,0.0f,0.0f);
     Point world = pt * p0;
     world.x -=quake_pos_x;
     world.z -=quake_pos_y;
     Point view = world * in_MV;
-    std::cout <<"calc_pos:"<< view << std::endl;
     return view.z;
+#endif
   }
   Point2d calc_pos2(int pos) const
   {
+    Point pp = calc_pos3(pos);
+    Point2d res;
+    res.x = pp.x;
+    res.y = pp.z;
+    return res;
+#if 0
     Matrix p0 = points->Index(pos);
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
@@ -22854,8 +22859,8 @@ public:
     res.x = view.x;
     res.y = view.z;
     return res;
+#endif
   }
-#if 0
   Point calc_pos3(int pos) const
   {
     Matrix p0 = points->Index(pos);
@@ -22869,16 +22874,25 @@ public:
     ncd.z-=1.0;
     return ncd;
   }
-#endif
   
   bool enabled(int i) const
   {
+    Point pp = calc_pos3(i);
+
+    if (pp.x >= -1.0f && pp.x <= 1.0f)
+      if (pp.y >= -1.0f && pp.y <= 1.0f)
+	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
+	  return true;
+    return false;
+    
+    /*
     Point2d pos_y = calc_pos2(i);
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2
 	&&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
     return false;
+    */
   }
 private:
   GameApi::Env &env;
@@ -29234,7 +29248,9 @@ public:
     quake_pos_x = v.dx;
     quake_pos_y = v.dz;
     quake_rot_y = 0.0;
+    g_is_quakeml2=true;
     next->execute(e);
+    g_is_quakeml2=false;
   }
   virtual void handle_event(MainLoopEvent &e) { next->handle_event(e); }
   virtual std::vector<int> shader_id() { return next->shader_id(); }
