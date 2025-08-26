@@ -37656,16 +37656,23 @@ GameApi::Env &GameApi::EveryApi::get_env() { return env; }
 //GameApi::SurfaceApi::~SurfaceApi() {}
 GameApi::EveryApi::~EveryApi() { }
 
+float lod_l0 = 1.0f;
+float lod_l1 = 1.0174f;
+float lod_l2 = 1.03076f;
+float lod_l3 = 1.05387f;
+float lod_l4 = 5.0f;
+
+
 GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
 {
   P p1 = ev.polygon_api.decimate3(p,level1);
   P p2 = ev.polygon_api.decimate3(p,level2);
   P p3 = ev.polygon_api.decimate3(p,level3);
   P p4 = ev.polygon_api.decimate3(p,level4);
-  PTS I612=ev.points_api.block_pts_lod(pts,-24200.0,24200.0,8000,2000,l4 /*120*/,0.5,1.0);
-  PTS I613=ev.points_api.block_pts_lod(pts,-15000.0,15000.0,2000,1000,l3 /*95*/,0.0,0.5);
-  PTS I614=ev.points_api.block_pts_lod(pts,-10400.0,10400.0,1000,0,l2 /*45*/,-0.5,0.0);
-  PTS I615=ev.points_api.block_pts_lod(pts,-5600.0,5600.0,0,-500,l1 /*45*/,-1.0,-0.5);
+  PTS I612=ev.points_api.block_pts_lod(pts,-24200.0,24200.0,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-15000.0,15000.0,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-10400.0,10400.0,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-5600.0,5600.0,0,-500,l1 /*45*/,lod_l3,lod_l4);
   ML I15=ev.materials_api.bind_inst(p4,I612,mat);
   ML I151=ev.materials_api.bind_inst(p3,I613,mat);
   ML I152=ev.materials_api.bind_inst(p2,I614,mat);
@@ -37680,10 +37687,10 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix(GameApi::EveryApi &ev, GameApi::P p
   P p2 = ev.polygon_api.decimate3(p,level2);
   P p3 = ev.polygon_api.decimate3(p,level3);
   P p4 = ev.polygon_api.decimate3(p,level4);
-  MS I612=ev.points_api.block_ms_lod(ms,-24200.0,24200.0,2000,8000,l4 /*120*/,0.5,1.0);
-  MS I613=ev.points_api.block_ms_lod(ms,-15000.0,15000.0,1000,2000,l3 /*95*/,0.0,0.5);
-  MS I614=ev.points_api.block_ms_lod(ms,-10400.0,10400.0,0,1000,l2 /*45*/,-0.5,0.0);
-  MS I615=ev.points_api.block_ms_lod(ms,-5600.0,5600.0,-500,0,l1 /*45*/,-1.0,-0.5);
+  MS I612=ev.points_api.block_ms_lod(ms,-24200.0,24200.0,2000,8000,l4 /*120*/,lod_l0,lod_l1);
+  MS I613=ev.points_api.block_ms_lod(ms,-15000.0,15000.0,1000,2000,l3 /*95*/,lod_l1,lod_l2);
+  MS I614=ev.points_api.block_ms_lod(ms,-10400.0,10400.0,0,1000,l2 /*45*/,lod_l2,lod_l3);
+  MS I615=ev.points_api.block_ms_lod(ms,-5600.0,5600.0,-500,0,l1 /*45*/,lod_l3,lod_l4);
   ML I15=ev.materials_api.bind_inst_matrix(p4,I612,mat);
   ML I151=ev.materials_api.bind_inst_matrix(p3,I613,mat);
   ML I152=ev.materials_api.bind_inst_matrix(p2,I614,mat);
@@ -37699,10 +37706,10 @@ GameApi::ML GameApi::MainLoopApi::lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF 
   TF p2 = ev.polygon_api.decimate_tf(p,level2);
   TF p3 = ev.polygon_api.decimate_tf(p,level3);
   TF p4 = ev.polygon_api.decimate_tf(p,level4);
-  PTS I612=ev.points_api.block_pts_lod(pts,-24200.0,24200.0,2000,8000,l4 /*120*/,0.5,1.0);
-  PTS I613=ev.points_api.block_pts_lod(pts,-15000.0,15000.0,1000,2000,l3 /*95*/,0.0,0.5);
-  PTS I614=ev.points_api.block_pts_lod(pts,-10400.0,10400.0,0,1000,l2 /*45*/,-0.5,0.0);
-  PTS I615=ev.points_api.block_pts_lod(pts,-5600.0,5600.0,-500,0,l1 /*45*/,-1.0,-0.5);
+  PTS I612=ev.points_api.block_pts_lod(pts,-24200.0,24200.0,2000,8000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-15000.0,15000.0,1000,2000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-10400.0,10400.0,0,1000,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-5600.0,5600.0,-500,0,l1 /*45*/,lod_l3,lod_l4);
 
 
   
@@ -37723,10 +37730,10 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix_tf(GameApi::EveryApi &ev, GameApi::
   TF p2 = ev.polygon_api.decimate_tf(p,level2);
   TF p3 = ev.polygon_api.decimate_tf(p,level3);
   TF p4 = ev.polygon_api.decimate_tf(p,level4);
-  MS I612=ev.points_api.block_ms_lod(ms,-24200.0,24200.0,8000,2000,l4 /*120*/,0.5,1.0);
-  MS I613=ev.points_api.block_ms_lod(ms,-15000.0,15000.0,2000,1000,l3 /*95*/,0.0,0.5);
-  MS I614=ev.points_api.block_ms_lod(ms,-10400.0,10400.0,1000,0,l2 /*45*/,-0.5,0.0);
-  MS I615=ev.points_api.block_ms_lod(ms,-5600.0,5600.0,0,-500,l1 /*45*/,-1.0,-0.5);
+  MS I612=ev.points_api.block_ms_lod(ms,-24200.0,24200.0,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  MS I613=ev.points_api.block_ms_lod(ms,-15000.0,15000.0,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  MS I614=ev.points_api.block_ms_lod(ms,-10400.0,10400.0,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  MS I615=ev.points_api.block_ms_lod(ms,-5600.0,5600.0,0,-500,l1 /*45*/,lod_l3,lod_l4);
 
   ML I15=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p4,p,I612,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
   ML I151=ev.mainloop_api.gltf_mesh_all_inst_matrix(ev,p3,p,I613,mix,self_mult, rest_mult, mode,light_dir_x, light_dir_y, light_dir_z, border_width, border_color,transparent);
