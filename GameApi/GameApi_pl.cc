@@ -22494,7 +22494,6 @@ public:
     world.x -=quake_pos_x;
     world.z -=quake_pos_y;
     Point view = world * in_MV;
-    std::cout << "calc_pos:" << p << "::"<< view.z << std::endl;
     return view.z;
 #endif
     
@@ -22522,28 +22521,10 @@ public:
     res.y = view.z;
     return res;
 #endif
-#if 0
-    Point p = calc_pos3(pos);
-    Point2d res;
-    res.x = p.x;
-    res.y = p.z;
-    return res;
-#endif
     
-#if 0
-    Point p = points->Pos(pos);
-    p.x-=quake_pos_x;
-    p.y=-60.0;
-    p.z-=quake_pos_y;
-    Point p2 = p*in_MV;
-    
-    Point2d res;
-    res.x = p2.x;
-    res.y = p2.z;
-    return res;
-#endif
   }
 
+#if 0
   Point calc_pos3(int pos) const
   {
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
@@ -22557,24 +22538,16 @@ public:
     ncd.z-=1.0;
     return ncd;
   }
-
+#endif
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
     points->HandleEvent(event);
-    /*
-    if (event.ch!=-1)
-      {
-	g_blockpts2 = this;
-	std::sort(allpoints.begin(),allpoints.end(),CompareWithCalc);
-      }
-    */
   }
   virtual bool Update(MainLoopEnv &e) {
     in_MV = e.in_MV;
     in_Proj = e.in_P;
     g_compare_in_MV = in_MV;
-
     std::sort(allpoints.begin(), allpoints.end(),
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
@@ -22582,7 +22555,6 @@ public:
 		if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
 		return aa.y < bb.y;
 	      });
-
     
     bool b = points->Update(e);
     pos.clear();
@@ -22592,9 +22564,7 @@ public:
     float start_y = start_y2;
     float end_y = end_y2;
 
-#if 0
     
-    std::cout << "start_y:" << start_y << std::endl;
 
     
     if (start_y>end_y) std::swap(start_y,end_y);
@@ -22653,15 +22623,11 @@ public:
     
   if (start>end) std::swap(start,end);
 
-  minimum=4000000.0;
-  maximum=-4000000.0;
 
-  //std::cout << "startend:" << start << " " << end << " " << calc_pos(start) << " " << calc_pos(end) << std::endl;
 
-#endif
   
-  int start = 0;
-  int end = allpoints.size();
+  //int start = 0;
+  //int end = allpoints.size()-1;
 
   
   for(int i=start;i<=end;i++)
@@ -22671,11 +22637,11 @@ public:
 	    pos.push_back(allpoints[i]);
 	  }
       }
-  //std::cout << "Range:" << minimum << " " << maximum << std::endl;
     prev=pos.size();
     return true; }
   virtual int NumPoints() const { return max_points; }
-  virtual Point Pos(int i) const { if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0);
+  virtual Point Pos(int i) const {
+    if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0);
     Point p = points->Pos(pos[i]);
     return Point(p.x,p.y,-p.z); }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
@@ -22683,22 +22649,12 @@ public:
 
   bool enabled(int i) const
   {
-#if 0
-    Point pos = calc_pos3(i);
-    if (/*pos.x>=-1.0 && pos.x<=1.0 &&*/
-	/*pos.y>=-3.0 && pos.y<=3.0 &&*/
-	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2) {
-      return true;
-    }
-#endif
-#if 1
     Point2d pos_y = calc_pos2(i);
+
     
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2
-	&&
+    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
-#endif
     return false;
   }
 private:
@@ -22715,8 +22671,6 @@ private:
   Matrix in_MV;
   Matrix in_Proj;
   bool firsttime;
-  mutable float minimum=4000000.0;
-  mutable float maximum=-4000000.0;
 };
 
 bool CompareWithCalc(int a, int b)
@@ -22863,13 +22817,13 @@ public:
 	  }
       }
     //std::cout << "Range:" << minimum << " " << maximum << std::endl;
-    prev=pos.size();
     return true; }
   virtual int Size() const { return max_points; }
   virtual Matrix Index(int i) const {
+    std::cout << "INDEX:" << i << " " << pos.size() << std::endl;
     if (i>=pos.size()) { Matrix m=Matrix::Translate(-666666.0,-666666.0,-666666.0); return m; }
     Matrix m = points->Index(pos[i]);
-    m.matrix[4*2+3]=-m.matrix[4*2+3];
+    //m.matrix[4*2+3]=-m.matrix[4*2+3];
     return m;
   }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
@@ -22878,17 +22832,6 @@ public:
 
   float calc_pos(int p) const
   {
-#if 0
-    int pos = allpoints[p];
-    Matrix p0 = points->Index(pos);
-    Point pt = Point(p0.get_translate());
-    pt.x-=quake_pos_x;
-    pt.y=-60.0;
-    pt.z-=quake_pos_y;
-    Point p2 = pt*in_MV; 
-    return p2.z;
-#endif
-#if 1
     int idx = allpoints[p];
     Matrix p0 = points->Index(idx);
     Point pt = Point(0.0f,0.0f,0.0f);
@@ -22898,27 +22841,9 @@ public:
     Point view = world * in_MV;
     std::cout <<"calc_pos:"<< view << std::endl;
     return view.z;
-#endif
-    /*    
-    int idx = allpoints[p];
-    Point pp = calc_pos3(idx);
-    return pp.z;
-    */
   }
   Point2d calc_pos2(int pos) const
   {
-#if 0
-    Matrix p0 = points->Index(pos);
-    Point p = Point(p0.get_translate());
-    p.x-=quake_pos_x;
-    p.y=-60.0;
-    p.z-=quake_pos_y;
-    Point p2 = p*in_MV; 
-    Point2d res;
-    res.x = p2.x;
-    res.y = p2.z;
-    return res;
-#endif
     Matrix p0 = points->Index(pos);
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
@@ -22930,6 +22855,7 @@ public:
     res.y = view.z;
     return res;
   }
+#if 0
   Point calc_pos3(int pos) const
   {
     Matrix p0 = points->Index(pos);
@@ -22943,24 +22869,15 @@ public:
     ncd.z-=1.0;
     return ncd;
   }
-  
+#endif
   
   bool enabled(int i) const
   {
-#if 0
-    Point pos = calc_pos3(i);
-    if (pos.x>=-1.0 && pos.x<=1.0 &&
-	/*pos.y>=-1.0 && pos.y<=1.0 &&*/
-	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2)
-      return true;
-#endif
-#if 1
     Point2d pos_y = calc_pos2(i);
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2
 	&&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
-#endif
     return false;
   }
 private:
@@ -22971,29 +22888,19 @@ private:
   float sign;
   std::vector<int> allpoints;
   std::vector<int> pos;
-  int prev=0;
   int max_points;
   float ncd_z_start2,ncd_z_end2;
   Matrix in_MV;
   Matrix in_Proj;
   bool firsttime;
-  mutable float minimum=4000000.0;
-  mutable float maximum=-4000000.0;
 };
 
-bool CompareWithCalc_matrix(int a, int b)
-{
-  Point2d val1= g_blockpts2_matrix->calc_pos2(a);
-  Point2d val2= g_blockpts2_matrix->calc_pos2(b);
-  if (std::fabs(val1.y-val2.y) < 1e-6f) return a<b;
-  return val1.y<val2.y;  
-}
 
 
 GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_s, float ncd_z_e)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
-  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,max_points,ncd_z_s,ncd_z_e));
+  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,ncd_z_s,ncd_z_e,max_points));
 }
 
 GameApi::MS GameApi::PointsApi::block_ms_lod(GameApi::MS ms, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_s, float ncd_z_e)
