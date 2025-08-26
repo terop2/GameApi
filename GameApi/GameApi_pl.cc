@@ -22570,7 +22570,7 @@ public:
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
 		Point2d bb = calc_pos2(b);
-		if (std::fabs(aa-bb) < 1e-6f) return a<b;
+		if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
 		return aa.y < bb.y;
 	      });
 
@@ -22757,7 +22757,7 @@ public:
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
 		Point2d bb = calc_pos2(b);
-		if (std::fabs(aa-bb) < 1e-6f) return a<b;
+		if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
 		return aa.y < bb.y;
 	      });
 
