@@ -22478,15 +22478,38 @@ public:
 
   float calc_pos(int p) const
   {
+    int idx = allpoints[p];
+    Matrix p0 = Matrix::Identity(); //points->Index(idx);
+    Point pt = points->Pos(idx); //Point(0.0f,0.0f,0.0f);
+    Point world = pt * p0;
+    world.x -=quake_pos_x;
+    world.z -=quake_pos_y;
+    Point view = world * in_MV;
+    return view.z;
+
+#if 0
     int pos = allpoints[p];
     Point pt = points->Pos(pos);
     pt.x-=quake_pos_x;
     pt.z-=quake_pos_y;
     Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
     return p2.z;
+#endif
   }
   Point2d calc_pos2(int pos) const
   {
+    Matrix p0 = Matrix::Identity(); //points->Index(pos);
+    Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
+    Point world = local * p0;
+    world.x -= quake_pos_x;
+    world.z -= quake_pos_y;
+    Point view = world * in_MV;
+    Point2d res;
+    res.x = view.x;
+    res.y = view.z;
+    return res;
+
+#if 0
     Point p = points->Pos(pos);
     p.x-=quake_pos_x;
     p.z-=quake_pos_y;
@@ -22495,6 +22518,7 @@ public:
     res.x = p2.x;
     res.y = p2.z;
     return res;
+#endif
   }
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
@@ -22728,24 +22752,46 @@ public:
 
   float calc_pos(int p) const
   {
+#if 0
     int pos = allpoints[p];
     Matrix p0 = points->Index(pos);
     Point pt = Point(p0.get_translate());
     pt.x-=quake_pos_x;
     pt.z-=quake_pos_y;
-    Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
+    Point p2 = pt*in_MV; 
     return p2.z;
+#endif
+    int idx = allpoints[p];
+    Matrix p0 = points->Index(idx);
+    Point pt = Point(0.0f,0.0f,0.0f);
+    Point world = pt * p0;
+    world.x -=quake_pos_x;
+    world.z -=quake_pos_y;
+    Point view = world * in_MV;
+    return view.z;
   }
   Point2d calc_pos2(int pos) const
   {
+#if 0
     Matrix p0 = points->Index(pos);
     Point p = Point(p0.get_translate());
     p.x-=quake_pos_x;
     p.z-=quake_pos_y;
-    Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
+    Point p2 = p*in_MV; 
     Point2d res;
     res.x = p2.x;
     res.y = p2.z;
+    return res;
+#endif
+    Matrix p0 = points->Index(pos);
+    Point local(0.0f,0.0f,0.0f);
+    Point world = local * p0;
+    world.x -= quake_pos_x;
+    world.z -= quake_pos_y;
+    Point view = world * in_MV;
+    Point2d res;
+    res.x = view.x;
+    res.y = view.z;
     return res;
   }
 
