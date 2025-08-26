@@ -22253,17 +22253,6 @@ bool ComparePTSObj(int a, int b)
 bool ComparePTSObj_y(int a, int b)
 {
   float val1,val2;
-  /*
-  Point pt = g_pts->Pos(a);
-  pt.x-=quake_pos_x;
-  pt.z-=quake_pos_y;
-  Point ptb = pt*g_compare_in_MV;
-
-  Point pt2 = g_pts->Pos(b);
-  pt2.x-=quake_pos_x;
-  pt2.z-=quake_pos_y;
-  Point pt2b = pt2*g_compare_in_MV;
-  */
   
   val1=g_pts->Pos(a).z;
 
@@ -22492,15 +22481,23 @@ public:
 
   float calc_pos(int p) const
   {
+#if 0
     int idx = allpoints[p];
-    Matrix p0 = Matrix::Identity(); //points->Index(idx);
-    Point pt = points->Pos(idx); //Point(0.0f,0.0f,0.0f);
+    Point pp = calc_pos3(idx);
+    return pp.z;
+#endif
+#if 1
+    int idx = allpoints[p];
+    Matrix p0 = Matrix::Identity(); 
+    Point pt = points->Pos(idx); 
     Point world = pt * p0;
     world.x -=quake_pos_x;
     world.z -=quake_pos_y;
     Point view = world * in_MV;
+    std::cout << "calc_pos:" << p << "::"<< view.z << std::endl;
     return view.z;
-
+#endif
+    
 #if 0
     int pos = allpoints[p];
     Point pt = points->Pos(pos);
@@ -22513,6 +22510,7 @@ public:
   }
   Point2d calc_pos2(int pos) const
   {
+#if 1
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
     Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
@@ -22523,7 +22521,15 @@ public:
     res.x = view.x;
     res.y = view.z;
     return res;
-
+#endif
+#if 0
+    Point p = calc_pos3(pos);
+    Point2d res;
+    res.x = p.x;
+    res.y = p.z;
+    return res;
+#endif
+    
 #if 0
     Point p = points->Pos(pos);
     p.x-=quake_pos_x;
@@ -22546,6 +22552,9 @@ public:
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
     Point ncd = world * in_MV * in_Proj;
+    ncd.z-=1.0;
+    ncd.z*=2.0;
+    ncd.z-=1.0;
     return ncd;
   }
 
@@ -22583,6 +22592,11 @@ public:
     float start_y = start_y2;
     float end_y = end_y2;
 
+#if 0
+    
+    std::cout << "start_y:" << start_y << std::endl;
+
+    
     if (start_y>end_y) std::swap(start_y,end_y);
     int sy=allpoints.size();
 
@@ -22605,7 +22619,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) result=(left+right)/2;
+    if (result==-1) { std::cout << "search fail!" << std::endl; result=0; }
     }
     int start = result;
     if (start<0) start=0;
@@ -22630,7 +22644,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) result=(left+right)/2;
+    if (result==-1) result=allpoints.size()-1; //(left+right)/2;
     }
     int end = result;
     if (end<0) end=0;
@@ -22643,6 +22657,12 @@ public:
   maximum=-4000000.0;
 
   //std::cout << "startend:" << start << " " << end << " " << calc_pos(start) << " " << calc_pos(end) << std::endl;
+
+#endif
+  
+  int start = 0;
+  int end = allpoints.size();
+
   
   for(int i=start;i<=end;i++)
       {
@@ -22663,16 +22683,16 @@ public:
 
   bool enabled(int i) const
   {
-    Point pos = calc_pos3(i);
-    if (pos.x>=-1.0 && pos.x<=1.0 &&
-	pos.y>=-1.0 && pos.y<=1.0 &&
-	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2)
-      return true;
 #if 0
+    Point pos = calc_pos3(i);
+    if (/*pos.x>=-1.0 && pos.x<=1.0 &&*/
+	/*pos.y>=-3.0 && pos.y<=3.0 &&*/
+	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2) {
+      return true;
+    }
+#endif
+#if 1
     Point2d pos_y = calc_pos2(i);
-    
-    if (pos_y.x<minimum) minimum=pos_y.x;
-    if (pos_y.x>maximum) maximum=pos_y.x;
     
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2
 	&&
@@ -22703,7 +22723,7 @@ bool CompareWithCalc(int a, int b)
 {
   Point2d val1= g_blockpts2->calc_pos2(a);
   Point2d val2= g_blockpts2->calc_pos2(b);
-  if (std::fabs(val1.y-val2.y) < 1e-6f) return a<b;
+  //if (std::fabs(val1.y-val2.y) < 1e-6f) return a<b;
   return val1.y<val2.y;  
 }
 
@@ -22715,7 +22735,7 @@ public:
 
     if (start_x2>end_x2) std::swap(start_x2,end_x2);
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
-    if (ncd_z_start>ncd_z_end) std::swap(ncd_z_start,ncd_z_end);
+    if (ncd_z_start2>ncd_z_end2) std::swap(ncd_z_start2,ncd_z_end2);
     firsttime = true;
   }
 
@@ -22753,6 +22773,7 @@ public:
     
     in_MV = e.in_MV;
     in_Proj = e.in_P;
+    bool b = points->Update(e);
     std::sort(allpoints.begin(), allpoints.end(),
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
@@ -22762,7 +22783,6 @@ public:
 	      });
 
 
-    bool b = points->Update(e);
     //pos2=pos;
     pos.clear();
     int s = points->Size();
@@ -22794,7 +22814,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) result=(left+right)/2;
+    if (result==-1) { std::cout << "search fail!" << std::endl; result=(left+right)/2; }
     }
     start = result;
     if (start<0) start=0;
@@ -22829,8 +22849,6 @@ public:
 
     if (start>end) std::swap(start,end);
 
-    minimum=4000000.0;
-    maximum=-4000000.0;
 
     
     for(int i=start;i<=end;i++)
@@ -22866,6 +22884,7 @@ public:
     Point p2 = pt*in_MV; 
     return p2.z;
 #endif
+#if 1
     int idx = allpoints[p];
     Matrix p0 = points->Index(idx);
     Point pt = Point(0.0f,0.0f,0.0f);
@@ -22873,7 +22892,14 @@ public:
     world.x -=quake_pos_x;
     world.z -=quake_pos_y;
     Point view = world * in_MV;
+    std::cout <<"calc_pos:"<< view << std::endl;
     return view.z;
+#endif
+    /*    
+    int idx = allpoints[p];
+    Point pp = calc_pos3(idx);
+    return pp.z;
+    */
   }
   Point2d calc_pos2(int pos) const
   {
@@ -22908,18 +22934,24 @@ public:
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
     Point ncd = world * in_MV * in_Proj;
+    ncd.z-=1.0;
+    ncd.z*=2.0;
+    ncd.z-=1.0;
     return ncd;
   }
   
   
   bool enabled(int i) const
   {
+#if 0
     Point pos = calc_pos3(i);
     if (pos.x>=-1.0 && pos.x<=1.0 &&
-	pos.y>=-1.0 && pos.y<=1.0 &&
+	/*pos.y>=-1.0 && pos.y<=1.0 &&*/
 	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2)
       return true;
- #if 0   
+#endif
+#if 1
+    Point2d pos_y = calc_pos2(i);
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2
 	&&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
