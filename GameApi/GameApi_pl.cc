@@ -22548,11 +22548,9 @@ public:
     Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
     Point world_rot_inv = world;
-    if (g_is_quakeml2) {
       world.z -= 400.0;
       world_rot_inv = world * Matrix::YRotation(quake_rot_y*2.0);
       world_rot_inv.z += 400.0;
-    }
     
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
@@ -22681,7 +22679,6 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    std::cout << pp.z << std::endl;
     /*if (pp.x >= -2.4f && pp.x <= 2.4f)*/ {
       /*  if (pp.y >= -2.0f && pp.y <= 2.0f)*/ {
 	  if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
@@ -22915,11 +22912,9 @@ public:
     //std::cout << "Q:wd:" << world << std::endl;
 
     Point world_rot_inv = world;
-    if (g_is_quakeml2) {
       world.z -= 400.0;
       world_rot_inv = world * Matrix::YRotation(quake_rot_y*2.0);
       world_rot_inv.z += 400.0;
-    }
     
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
