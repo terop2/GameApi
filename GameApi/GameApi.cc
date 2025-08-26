@@ -19621,17 +19621,20 @@ public:
   QuakeML2(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, float speed, float rot_speed) : env(env), ev(ev), next(next), speed(speed), rot_speed(rot_speed) { 
     point.id=-1;
   }
+  ~QuakeML2() {     g_is_quakeml2 = false; }
+
     void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {     g_is_quakeml2 = true;
+}
 
-  void Prepare() { next->Prepare(); }
+  void Prepare() { next->Prepare();     g_is_quakeml2 = true;
+}
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
-    g_is_quakeml2 = true;
     //if (ev.mainloop_api.get_screen_width()<700) {
     //GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, -rot_speed);
     //} else {
@@ -19707,7 +19710,6 @@ public:
 
     next->execute(eee);
     ev.shader_api.unuse(s3);
-    g_is_quakeml2 = false;
 
   }
   GameApi::PT map_point(GameApi::EveryApi &ev,GameApi::PT p)
@@ -19777,14 +19779,20 @@ public:
   QuakeML3(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next, MainLoopItem *next2, float speed, float rot_speed, Point p) : env(env), ev(ev), next(next), next2(next2), speed(speed), rot_speed(rot_speed),p(p) { 
     point.id=-1;
   }
+  ~QuakeML3()
+  {
+      g_is_quakeml3 = false;
+  }
     void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
     next2->Collect(vis);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {     g_is_quakeml3 = true;
+  }
 
-  void Prepare() { next->Prepare(); next2->Prepare(); }
+  void Prepare() { next->Prepare(); next2->Prepare();     g_is_quakeml3 = true;
+ }
   GameApi::PT map_point(GameApi::EveryApi &ev, GameApi::PT p)
   {
     /*
@@ -19805,7 +19813,6 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
-    g_is_quakeml3 = true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
@@ -19904,8 +19911,7 @@ public:
     ev.shader_api.unuse(s3);
 
 
-    g_is_quakeml3 = false;
-  }
+   }
   virtual void handle_event(MainLoopEvent &e)
   {
     if (point.id==-1) {
