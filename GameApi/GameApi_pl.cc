@@ -22485,26 +22485,6 @@ public:
     int idx = allpoints[p];
     Point pp = calc_pos3(idx);
     return pp.z;
-#if 0
-    int idx = allpoints[p];
-    Matrix p0 = Matrix::Identity(); 
-    Point pt = points->Pos(idx); 
-    Point world = pt * p0;
-    world.x -=quake_pos_x;
-    world.z -=quake_pos_y;
-    Point view = world * in_MV;
-    return view.z;
-#endif
-    
-#if 0
-    int pos = allpoints[p];
-    Point pt = points->Pos(pos);
-    pt.x-=quake_pos_x;
-    pt.y=-60.0;
-    pt.z-=quake_pos_y;
-    Point p2 = pt*in_MV;
-    return p2.z;
-#endif
   }
   Point2d calc_pos2(int pos) const
   {
@@ -22513,21 +22493,7 @@ public:
     res.x = pp.x;
     res.y = pp.z;
     return res;
-    
-#if 0
-    Matrix p0 = Matrix::Identity(); //points->Index(pos);
-    Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
-    Point world = local * p0;
-    world.x -= quake_pos_x;
-    world.z -= quake_pos_y;
-    Point view = world * in_MV;
-    Point2d res;
-    res.x = view.x;
-    res.y = view.z;
-    return res;
-#endif
-    
-  }
+   }
 
   Point calc_pos3(int pos) const
   {
@@ -22568,92 +22534,16 @@ public:
   }
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
+    if (firsttime2) { firsttime2=false; std::cout << in_Proj << std::endl; }
     g_compare_in_MV = in_MV;
+    bool b = points->Update(e);
 
-#if 0
-    if (firsttime2 || (!g_is_quakeml3 && (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)))) {
-      firsttime2=false;
-      in_MV = e.in_MV;
-      std::sort(allpoints.begin(), allpoints.end(),
-		[&](int a, int b){
-		  Point2d aa = calc_pos2(a);
-		  Point2d bb = calc_pos2(b);
-		  //if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
-		  return aa.y < bb.y;
-		});
-    }
-#endif
     in_MV = e.in_MV;
     
-    bool b = points->Update(e);
     pos.clear();
     int s = points->NumPoints();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-    float start_y = ncd_z_start2; //start_y2;
-    float end_y = ncd_z_end2; //end_y2;
-
-#if 0    
-
-    
-    if (start_y>end_y) std::swap(start_y,end_y);
-    int sy=allpoints.size();
-
-    int result=-1;
-    {
-    int left = 0;
-    int right = allpoints.size()-1;
-
-    while(left <= right)
-      {
-	int mid = (left+right)/2;
-	if ((calc_pos(mid) < start_y && mid+1<=allpoints.size()-1 &&  calc_pos(mid+1) > start_y) || left==right) { result=mid; break; }
-
-    if (calc_pos(mid) < start_y)
-	  {
-	    left = mid + 1;
-	  }
-	else
-	  {
-	    right = mid - 1;
-	  }
-      }
-    if (result==-1) { std::cout << "search fail!" << std::endl; result=0; /*(left+right)/2;*/ }
-    }
-    int start = result;
-    if (start<0) start=0;
-    if (start>allpoints.size()-1) start=allpoints.size()-1;
-    
-    result = -1;
-    {
-    int left = 0;
-    int right = allpoints.size()-1;
-
-    while(left <= right)
-      {
-        int mid = (left+right)/2;
-	if ((calc_pos(mid) < end_y && mid+1<=allpoints.size()-1 && calc_pos(mid+1) > end_y) || left==right) { result=mid; break; }
-
-	if (calc_pos(mid) < end_y)
-	  {
-	    left = mid + 1;
-	  }
-	else
-	  {
-	    right = mid - 1;
-	  }
-      }
-    if (result==-1) { std::cout << "search fail2!" << left << ">" << right << std::endl; result=allpoints.size()-1; /*(left+right)/2;*/ }
-    }
-    int end = result;
-    if (end<0) end=0;
-    if (end>allpoints.size()-1) end=allpoints.size()-1;
-
-    
-  if (start>end) std::swap(start,end);
-
-
-#endif
   
   int start = 0;
   int end = allpoints.size()-1;
@@ -22679,21 +22569,10 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    /*if (pp.x >= -2.4f && pp.x <= 2.4f)*/ {
-      /*  if (pp.y >= -2.0f && pp.y <= 2.0f)*/ {
-	  if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
-	  return true;
-	}
-      }
+    if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
+      return true;
     }
     return false;
-#if 0
-    Point2d pos_y = calc_pos2(i);    
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2 &&
-	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
-      return true;
-    return false;
-#endif
   }
 private:
   GameApi::Env &env;
@@ -22750,19 +22629,9 @@ public:
   }
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
-    bool b = points->Update(e);
-    if (firsttime2 || (!g_is_quakeml3 && (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)))) {
-      firsttime2 = false;
-      in_MV = e.in_MV;
-    std::sort(allpoints.begin(), allpoints.end(),
-	      [&](int a, int b){
-		Point2d aa = calc_pos2(a);
-		Point2d bb = calc_pos2(b);
-		//if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
-		return aa.y < bb.y;
-	      });
-    }
     in_MV = e.in_MV;
+
+    bool b = points->Update(e);
     pos.clear();
     int s = points->Size();
     if (s<1) return true;
@@ -22771,67 +22640,9 @@ public:
     float end_y = ncd_z_end2; //end_y2; 
     int start,end;
 
-    
-    if (start_y>end_y) std::swap(start_y,end_y);
+    start = 0;
+    end=allpoints.size()-1;
 
-    int result=-1;
-    {
-    int left = 0;
-    int right = allpoints.size()-1;
-
-    
-    while(left <= right)
-      {
-	int mid = (left+right)/2;
-	if ((calc_pos(mid) < start_y && mid+1 <= allpoints.size()-1 && calc_pos(mid+1) > start_y) || left==right) { result=mid; break; }
-
-	if (calc_pos(mid) < start_y)
-	  {
-	    left = mid + 1;
-	  }
-	else
-	  {
-	    right = mid - 1;
-	  }
-      }
-    if (result==-1) { std::cout << "search fail!" << std::endl; result=0; /*(left+right)/2;*/ }
-    }
-    start = result;
-    if (start<0) start=0;
-    if (start>allpoints.size()-1) start=allpoints.size()-1;
-
-    
-    result = -1;
-    {
-    int left = 0;
-    int right = allpoints.size()-1;
-
-    while(left <= right)
-      {
-        int mid = (left+right)/2;
-	if ((calc_pos(mid) < end_y && mid+1<=allpoints.size()-1 && calc_pos(mid+1) > end_y)||left==right) { result=mid; break; }
-
-	if (calc_pos(mid) < end_y)
-	  {
-	    left = mid + 1;
-	  }
-	else
-	  {
-	    right = mid - 1;
-	  }
-      }
-    if (result==-1) { std::cout << "search fail!" << std::endl; result=allpoints.size()-1; /*(left+right)/2;*/ }
-    }
-    end = result;
-    if (end<0) end=0;
-    if (end>allpoints.size()-1) end=allpoints.size()-1;
-    
-
-    if (start>end) std::swap(start,end);
-    //start = 0;
-    //end=allpoints.size()-1;
-
-    
     for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
@@ -22857,15 +22668,6 @@ public:
     int idx = allpoints[p];
     Point pp = calc_pos3(idx);
     return pp.z;
-#if 0    
-    Matrix p0 = points->Index(idx);
-    Point pt = Point(0.0f,0.0f,0.0f);
-    Point world = pt * p0;
-    world.x -=quake_pos_x;
-    world.z -=quake_pos_y;
-    Point view = world * in_MV;
-    return view.z;
-#endif
   }
   Point2d calc_pos2(int pos) const
   {
@@ -22874,42 +22676,23 @@ public:
     res.x = pp.x;
     res.y = pp.z;
     return res;
-#if 0
-    Matrix p0 = points->Index(pos);
-    Point local(0.0f,0.0f,0.0f);
-    Point world = local * p0;
-    world.x -= quake_pos_x;
-    world.z -= quake_pos_y;
-    Point view = world * in_MV;
-    Point2d res;
-    res.x = view.x;
-    res.y = view.z;
-    return res;
-#endif
   }
   Point calc_pos3(int pos) const
   {
     if (g_is_quakeml3) {
-    Matrix p0 = points->Index(pos);
-    //std::cout << "Q3:P0:" << p0 << std::endl;
-    Point local(0.0f,0.0f,0.0f);
-    Point world = local * p0;
-    //std::cout << "Q3:wd:" << world << std::endl;
-    world.x -= quake_pos_x;
-    world.z -= quake_pos_y;
-    Point view = world * in_MV;
-    //std::cout << "Q3:view:" << view << std::endl;
-    //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
-    Point ncd = view * in_Proj;
-    //std::cout << "Q3:ncd:" << ncd << std::endl;
-    return ncd;
+      Matrix p0 = points->Index(pos);
+      Point local(0.0f,0.0f,0.0f);
+      Point world = local * p0;
+      world.x -= quake_pos_x;
+      world.z -= quake_pos_y;
+      Point view = world * in_MV;
+      Point ncd = view * in_Proj;
+      return ncd;
     }
     
     Matrix p0 = points->Index(pos);
-    //std::cout << "Q:P0:" << p0 << std::endl;
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
-    //std::cout << "Q:wd:" << world << std::endl;
 
     Point world_rot_inv = world;
       world.z -= 400.0;
@@ -22918,16 +22701,10 @@ public:
     
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
-    //std::cout << "Q:wd2:" << world_rot_inv << std::endl;
     Point view = world_rot_inv * in_MV;
-    //std::cout << "Q:view:" << view << std::endl;
     Point ncd = view * in_Proj;
-    //std::cout << "Q:ncd:" << ncd << " " << in_Proj << std::endl;
 
     
-    //ncd.z-=1.0;
-    //ncd.z*=2.0;
-    //ncd.z-=1.0;
     return ncd;
   }
   
@@ -22935,7 +22712,7 @@ public:
   {
     Point pp = calc_pos3(i);
     //if (i % 1000==0)
-      std::cout << pp.z << std::endl;
+    // std::cout << pp.z << std::endl;
     //if (pp.x >= -2.4f && pp.x <= 2.4f)
       /*if (pp.y >= -2.0f && pp.y <= 2.0f)*/
 	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
@@ -29320,4 +29097,188 @@ GameApi::ML GameApi::MainLoopApi::get_movement_from_MV(GameApi::ML ml)
 {
   MainLoopItem *mainloop = find_main_loop(e,ml);
   return add_main_loop(e, new MoveFromMV(mainloop));
+}
+
+inline int hash3D(int x, int y, int z, int gridRes) {
+  return x+y*gridRes + z*gridRes*gridRes;
+}
+
+struct GridCell
+{
+  std::vector<int> faceIndices;
+};
+
+class SpatialDecimate : public FaceCollection
+{
+public:
+  SpatialDecimate(FaceCollection *coll, float percentage) : coll(coll), percentage(percentage) { firsttime = true; }
+  std::string name() const { return "SpatialDecimate"; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void Prepare()
+  {
+    coll->Prepare();
+    HeavyPrepare();
+  }
+
+  void HeavyPrepare()
+  {
+    
+    
+    
+    if (firsttime) {
+      int s = coll->NumFaces();
+      float gridResolution = std::cbrt(s)/2.0;
+      cellSize = 300.0 / gridResolution;
+      float cellCount = 300.0/cellSize;
+      float C = cellCount*cellCount*cellCount;
+      maxPerCell = std::ceil(percentage*100.0*float(s)/C);
+			     
+
+      
+      firsttime = false;
+    result.clear();
+    int gridRes = int(1.0f/cellSize) + 1;
+    std::unordered_map<int,GridCell> grid;
+
+    for(int i=0;i<s;i++)
+      {
+	int numpoints = coll->NumPoints(i);
+	if (numpoints == 3)
+	  {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point centroid = {
+	      (p1.x+p2.x+p3.x)/3.0f,
+	      (p1.y+p2.y+p3.y)/3.0f,
+	      (p1.z+p2.z+p3.z)/3.0f,
+	    };
+	    int gx = int(centroid.x / cellSize);
+	    int gy = int(centroid.y / cellSize);
+	    int gz = int(centroid.z / cellSize);
+	    int h = hash3D(gx,gy,gz,gridRes);
+	    grid[h].faceIndices.push_back(i);
+	  }
+	else if (numpoints<3)
+	  {
+	    continue;
+	  } else
+	  {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point p4 = coll->FacePoint(i,3);
+	    Point centroid = {
+	      (p1.x+p2.x+p3.x+p4.x)/4.0f,
+	      (p1.y+p2.y+p3.y+p4.y)/4.0f,
+	      (p1.z+p2.z+p3.z+p4.z)/4.0f,
+	    };
+	    int gx = int(centroid.x / cellSize);
+	    int gy = int(centroid.y / cellSize);
+	    int gz = int(centroid.z / cellSize);
+	    int h = hash3D(gx,gy,gz,gridRes);
+	    grid[h].faceIndices.push_back(i);
+	  }
+      }
+
+    for(auto &pair : grid) {
+      auto &facesInCell = pair.second.faceIndices;
+
+      std::sort(facesInCell.begin(), facesInCell.end(), [&](int a, int b) {
+	auto faceArea = [&](int i) {
+	  int num = coll->NumPoints(i);
+	  if (num==3) {
+	    Point p0 = coll->FacePoint(i,0);
+	    Point p1 = coll->FacePoint(i,1);
+	    Point p2 = coll->FacePoint(i,2);
+	    return triArea(p0,p1,p2);
+	  } else if (num>=4)
+	    {
+	    Point p0 = coll->FacePoint(i,0);
+	    Point p1 = coll->FacePoint(i,1);
+	    Point p2 = coll->FacePoint(i,2);
+	    Point p3 = coll->FacePoint(i,3);
+	    return quadArea(p0,p1,p2,p3);
+	    }
+	};
+	return faceArea(a) > faceArea(b);
+      });
+      int keep = std::min(maxPerCell,(int)facesInCell.size());
+      for(int i=0;i<keep;i++)
+	{
+	  result.push_back(facesInCell[i]);
+	}
+    
+    }
+    }
+  }
+  virtual int NumFaces() const { return result.size(); }
+  virtual int NumPoints(int face) const
+  {
+    if (face>=0 && face<result.size()) {
+      int face2 = result[face];
+      return coll->NumPoints(face2);
+    }
+    return 0;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int face2 = result[face];
+    return coll->FacePoint(face2,point);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    int face2 = result[face];
+    return coll->PointNormal(face2,point);
+  }
+  virtual float Attrib(int face, int point, int id) const
+  {
+    int face2 = result[face];
+    return coll->Attrib(face2,point,id);
+  }
+  virtual int AttribI(int face, int point, int id) const
+  {
+    int face2 = result[face];
+    return coll->AttribI(face2,point,id);
+  }
+  virtual unsigned int Color(int face, int point) const
+  {
+    int face2 = result[face];
+    return coll->Color(face2,point);
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int face2 = result[face];
+    return coll->TexCoord(face2,point);
+  }
+  virtual float TexCoord3(int face, int point) const {
+    int face2 = result[face];
+    return coll->TexCoord3(face2,point);
+  }
+  virtual VEC4 Joints(int face, int point) const {
+    int face2 = result[face];
+    return coll->Joints(face2,point);
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    int face2 = result[face];
+    return coll->Weights(face2,point);
+  }
+
+private:
+  FaceCollection *coll;
+  float percentage;
+  float cellSize;
+  int maxPerCell;
+  std::vector<int> result;
+  bool firsttime;
+};
+
+GameApi::P GameApi::PolygonApi::spatial_decimate(GameApi::P p, float percentage)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new SpatialDecimate(coll,percentage),1);
 }
