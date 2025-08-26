@@ -22914,12 +22914,15 @@ public:
   
   bool enabled(int i) const
   {
+#if 0
     Point pos = calc_pos3(i);
     if (pos.x>=-1.0 && pos.x<=1.0 &&
 	pos.y>=-1.0 && pos.y<=1.0 &&
 	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2)
       return true;
- #if 0   
+#endif
+#if 1
+    Point2d pos_y = calc_pos2(i);
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2
 	&&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
