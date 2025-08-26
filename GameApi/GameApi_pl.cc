@@ -22608,7 +22608,7 @@ public:
     while(left <= right)
       {
 	int mid = (left+right)/2;
-	if (calc_pos(mid) < start_y &&  calc_pos(mid+1) > start_y) { result=mid; break; }
+	if ((calc_pos(mid) < start_y && mid+1<=allpoints.size()-1 &&  calc_pos(mid+1) > start_y) || left==right) { result=mid; break; }
 
     if (calc_pos(mid) < start_y)
 	  {
@@ -22619,7 +22619,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) { std::cout << "search fail!" << std::endl; result=0; }
+    if (result==-1) { std::cout << "search fail!" << std::endl; result=(left+right)/2; }
     }
     int start = result;
     if (start<0) start=0;
@@ -22633,7 +22633,7 @@ public:
     while(left <= right)
       {
         int mid = (left+right)/2;
-	if (calc_pos(mid) < end_y && calc_pos(mid+1) > end_y) { result=mid; break; }
+	if ((calc_pos(mid) < end_y && mid+1<=allpoints.size()-1 && calc_pos(mid+1) > end_y) || left==right) { result=mid; break; }
 
 	if (calc_pos(mid) < end_y)
 	  {
@@ -22644,7 +22644,7 @@ public:
 	    right = mid - 1;
 	  }
       }
-    if (result==-1) result=allpoints.size()-1; //(left+right)/2;
+    if (result==-1) { std::cout << "search fail2!" << left << ">" << right << std::endl; result=(left+right)/2; }
     }
     int end = result;
     if (end<0) end=0;
@@ -22791,6 +22791,8 @@ public:
     float start_y = start_y2;
     float end_y = end_y2; 
     int start,end;
+
+#if 0
     
     if (start_y>end_y) std::swap(start_y,end_y);
 
@@ -22848,7 +22850,9 @@ public:
     
 
     if (start>end) std::swap(start,end);
-
+#endif
+    start = 0;
+    end=allpoints.size()-1;
 
     
     for(int i=start;i<=end;i++)
