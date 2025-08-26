@@ -22238,7 +22238,7 @@ bool ComparePTSObj2(int a, int b)
   if (b==num-2) val2=g_pos1;
   if (b==num-1) val2=g_pos2;
   else val2=g_pts->Pos(b).x;
-  if (std::fabs(val1-val2) < 1e-6f) return a<b;
+  //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   
   return val1<val2;
 }
@@ -22247,7 +22247,7 @@ bool ComparePTSObj(int a, int b)
   float val1,val2;
   val1=g_pts->Pos(a).x;
   val2=g_pts->Pos(b).x;
-  if (std::fabs(val1-val2) < 1e-6f) return a<b;
+  //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 bool ComparePTSObj_y(int a, int b)
@@ -22257,7 +22257,7 @@ bool ComparePTSObj_y(int a, int b)
   val1=g_pts->Pos(a).z;
 
   val2=g_pts->Pos(b).z;
-  if (std::fabs(val1-val2) < 1e-6f) return a<b;
+  //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 bool ComparePTSObj_y_matrix(int a, int b)
@@ -22265,7 +22265,7 @@ bool ComparePTSObj_y_matrix(int a, int b)
   float val1,val2;
   val1=g_pts_matrix->Index(a).matrix[4*2+3];
   val2=g_pts_matrix->Index(b).matrix[4*2+3];
-  if (std::fabs(val1-val2) < 1e-6f) return a<b;
+  //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 class BlockPTS2;
@@ -22571,6 +22571,8 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
     g_compare_in_MV = in_MV;
+
+#if 0
     if (firsttime2 || (!g_is_quakeml3 && (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)))) {
       firsttime2=false;
       in_MV = e.in_MV;
@@ -22578,10 +22580,11 @@ public:
 		[&](int a, int b){
 		  Point2d aa = calc_pos2(a);
 		  Point2d bb = calc_pos2(b);
-		  if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
+		  //if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
 		  return aa.y < bb.y;
 		});
     }
+#endif
     in_MV = e.in_MV;
     
     bool b = points->Update(e);
@@ -22592,7 +22595,7 @@ public:
     float start_y = ncd_z_start2; //start_y2;
     float end_y = ncd_z_end2; //end_y2;
 
-    
+#if 0    
 
     
     if (start_y>end_y) std::swap(start_y,end_y);
@@ -22652,10 +22655,10 @@ public:
   if (start>end) std::swap(start,end);
 
 
-
+#endif
   
-  //int start = 0;
-  //int end = allpoints.size()-1;
+  int start = 0;
+  int end = allpoints.size()-1;
 
   
   for(int i=start;i<=end;i++)
@@ -22678,7 +22681,7 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    //std::cout << pp.x << std::endl;
+    std::cout << pp.z << std::endl;
     /*if (pp.x >= -2.4f && pp.x <= 2.4f)*/ {
       /*  if (pp.y >= -2.0f && pp.y <= 2.0f)*/ {
 	  if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
@@ -22758,7 +22761,7 @@ public:
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
 		Point2d bb = calc_pos2(b);
-		if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
+		//if (std::fabs(aa.y-bb.y) < 1e-6f) return a<b;
 		return aa.y < bb.y;
 	      });
     }
@@ -22891,19 +22894,25 @@ public:
   {
     if (g_is_quakeml3) {
     Matrix p0 = points->Index(pos);
+    //std::cout << "Q3:P0:" << p0 << std::endl;
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
+    //std::cout << "Q3:wd:" << world << std::endl;
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
     Point view = world * in_MV;
+    //std::cout << "Q3:view:" << view << std::endl;
     //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
     Point ncd = view * in_Proj;
+    //std::cout << "Q3:ncd:" << ncd << std::endl;
     return ncd;
     }
     
     Matrix p0 = points->Index(pos);
+    //std::cout << "Q:P0:" << p0 << std::endl;
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
+    //std::cout << "Q:wd:" << world << std::endl;
 
     Point world_rot_inv = world;
     if (g_is_quakeml2) {
@@ -22914,8 +22923,11 @@ public:
     
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
+    //std::cout << "Q:wd2:" << world_rot_inv << std::endl;
     Point view = world_rot_inv * in_MV;
+    //std::cout << "Q:view:" << view << std::endl;
     Point ncd = view * in_Proj;
+    //std::cout << "Q:ncd:" << ncd << " " << in_Proj << std::endl;
 
     
     //ncd.z-=1.0;
@@ -22927,7 +22939,8 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-
+    //if (i % 1000==0)
+      std::cout << pp.z << std::endl;
     //if (pp.x >= -2.4f && pp.x <= 2.4f)
       /*if (pp.y >= -2.0f && pp.y <= 2.0f)*/
 	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)

@@ -19788,7 +19788,8 @@ public:
     next->Collect(vis);
     next2->Collect(vis);
   }
-  void HeavyPrepare() {     g_is_quakeml3 = true;
+  void HeavyPrepare() {
+    g_is_quakeml3 = true;
   }
 
   void Prepare() { next->Prepare(); next2->Prepare();     g_is_quakeml3 = true;

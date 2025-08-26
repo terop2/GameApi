@@ -203,9 +203,11 @@ Vector operator*(const Vector &v, const Matrix &m)
   r.dz = v.dx*m.matrix[8] + v.dy*m.matrix[9] + v.dz*m.matrix[10] + m.matrix[11];
   
   float val = v.dx*m.matrix[12] + v.dy*m.matrix[13] + v.dz*m.matrix[14] + m.matrix[15];
-  r.dx /= val;
-  r.dy /= val;
-  r.dz /= val;
+  if (val!=0.0f) {
+    r.dx /= val;
+    r.dy /= val;
+    r.dz /= val;
+  }
   //r.ds = 
   return r;
 }
@@ -389,7 +391,7 @@ Matrix Matrix::PerspectiveProjection(float dist)
   Matrix r = { {1.0, 0.0, 0.0, 0.0,
 	       0.0, 1.0, 0.0, 0.0,
 	       0.0, 0.0, 0.0/*(B+F)/(B-F)*/, 0.0/*-2.0*B*F/(B-F)*/,
-	       0.0, 0.0, float(1.0/dist), 1.0} };
+	       0.0, 0.0, float(1.0/dist), 0.0} };
   return r;
 }
 
