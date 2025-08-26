@@ -293,6 +293,12 @@ public:
   {
     *this = *this * m;
   }
+  static bool Equal(Matrix m1, Matrix m2)
+  {
+    for(int i=0;i<16;i++)
+      if (std::fabs(m1.matrix[i]-m2.matrix[i])>0.000001) return false;
+    return true;
+  }
   static Matrix Zero();
   static Matrix KeepRotation(const Matrix &m);
   static Matrix Transpose(const Matrix &m);
