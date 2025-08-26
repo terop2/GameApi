@@ -174,6 +174,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "", "0.5" },
 			 "P", "polygon_api", "decimate3"));
 #endif
+#if (ALL==1)||(SPATIAL_DECIMATE==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spatial_decimate,
+			 "sp_decimate",
+			 { "p", "val" },
+			 { "P", "float" },
+			 { "", "0.5" },
+			 "P", "polygon_api", "spatial_decimate"));
+#endif
 #if (ALL==1)||(DECIMATE_TF==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::decimate_tf,
 			 "decimate_tf",

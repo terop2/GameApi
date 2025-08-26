@@ -19626,6 +19626,7 @@ public:
     void Collect(CollectVisitor &vis)
   {
     next->Collect(vis);
+    vis.register_obj(this);
   }
   void HeavyPrepare() {     g_is_quakeml2 = true;
 }
@@ -19787,6 +19788,7 @@ public:
   {
     next->Collect(vis);
     next2->Collect(vis);
+    vis.register_obj(this);
   }
   void HeavyPrepare() {
     g_is_quakeml3 = true;
