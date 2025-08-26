@@ -853,7 +853,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 			{ "ev", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120", "1.0", "1.0", "1.0", "0", "0.1", "0.1", "-400.0", "0", "ff000000", "false" },
 			"ML", "mainloop_api", "lod_matrix_tf"));
 #endif
+#if (ALL==1)||(GET_MOVEMENT_FROM_MV==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::get_movement_from_MV,
+			"quake_in_MV",
+			{ "ml" },
+			{ "ML" },
+			{ "" },
+			"ML", "mainloop_api", "get_movement_from_MV"));
+#endif
 
+ 
 #ifndef STABLE
 #if (ALL==1)||(BIND_INST_FADE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::bind_inst_fade,
