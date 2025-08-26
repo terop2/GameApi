@@ -22552,6 +22552,12 @@ public:
     in_MV = e.in_MV;
     g_compare_in_MV = in_MV;
 
+    std::sort(allpoints.begin(), allpoints.end(),
+	      [&](int a, int b){
+		return calc_pos(a) < calc_pos(b);
+	      });
+
+    
     bool b = points->Update(e);
     pos.clear();
     int s = points->NumPoints();
@@ -22716,7 +22722,16 @@ public:
     */
   }
   virtual bool Update(MainLoopEnv &e) {
+
+    
     in_MV = e.in_MV;
+
+    std::sort(allpoints.begin(), allpoints.end(),
+	      [&](int a, int b){
+		return calc_pos(a) < calc_pos(b);
+	      });
+
+
     bool b = points->Update(e);
     //pos2=pos;
     pos.clear();
@@ -22818,16 +22833,7 @@ public:
     pt.x-=quake_pos_x;
     pt.y=-60.0;
     pt.z-=quake_pos_y;
-<<<<<<< HEAD
     Point p2 = pt*in_MV; 
-=======
-    Point p2 = pt*in_MV; /*find_matrix(env,g_view_rot);*/
-    if (g_is_quakeml2)
-      {
-	p2.z-=400.0;
-	p2 = p2*Matrix::Inverse(g_quakeml2_matrix);
-      }
->>>>>>> f6d417cd94b587c7456d6aa7ea538f80e20656a7
     return p2.z;
 #endif
     int idx = allpoints[p];
@@ -22847,16 +22853,7 @@ public:
     p.x-=quake_pos_x;
     p.y=-60.0;
     p.z-=quake_pos_y;
-<<<<<<< HEAD
     Point p2 = p*in_MV; 
-=======
-    Point p2 = p*in_MV; /*find_matrix(env,g_view_rot);*/
-    if (g_is_quakeml2)
-      {
-	p2.z-=400.0;
-	p2 = p2*Matrix::Inverse(g_quakeml2_matrix);
-      }
->>>>>>> f6d417cd94b587c7456d6aa7ea538f80e20656a7
     Point2d res;
     res.x = p2.x;
     res.y = p2.z;
