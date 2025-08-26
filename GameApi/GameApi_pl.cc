@@ -22448,6 +22448,7 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
 }
 extern Matrix g_quakeml2_matrix;
 extern bool g_is_quakeml2;
+extern bool g_is_quakeml3;
 
 class BlockPTS2 : public PointsApiPoints
 {
@@ -22530,15 +22531,36 @@ public:
 
   Point calc_pos3(int pos) const
   {
+    if (g_is_quakeml3) {
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
     Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
-    Point ncd = world * in_MV * in_Proj;
-    ncd.z-=1.0;
-    ncd.z*=2.0;
-    ncd.z-=1.0;
+    Point view = world * in_MV;
+    //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
+    Point ncd = view * in_Proj;
+    return ncd;
+    }
+
+    
+    Matrix p0 = Matrix::Identity(); //points->Index(pos);
+    Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
+    Point world = local * p0;
+    Point world_rot_inv = world;
+    if (g_is_quakeml2) {
+      world.z -= 400.0;
+      world_rot_inv = world * Matrix::YRotation(quake_rot_y*2.0);
+      world_rot_inv.z += 400.0;
+    }
+    
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+    Point view = world_rot_inv * in_MV;
+    Point ncd = view * in_Proj;
+    //ncd.z-=1.0;
+    //ncd.z*=2.0;
+    //ncd.z-=1.0;
     return ncd;
   }
   
@@ -22549,7 +22571,8 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
     g_compare_in_MV = in_MV;
-    if (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)) {
+    if (firsttime2 || (!g_is_quakeml3 && (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)))) {
+      firsttime2=false;
       in_MV = e.in_MV;
       std::sort(allpoints.begin(), allpoints.end(),
 		[&](int a, int b){
@@ -22655,9 +22678,10 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    if (pp.x >= -1.0f && pp.x <= 1.0f) {
-      if (pp.y >= -1.0f && pp.y <= 1.0f) {
-	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
+    //std::cout << pp.x << std::endl;
+    /*if (pp.x >= -2.4f && pp.x <= 2.4f)*/ {
+      /*  if (pp.y >= -2.0f && pp.y <= 2.0f)*/ {
+	  if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
 	  return true;
 	}
       }
@@ -22685,6 +22709,7 @@ private:
   Matrix in_MV;
   Matrix in_Proj;
   bool firsttime;
+  bool firsttime2=true;
 };
 
 
@@ -22726,7 +22751,8 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
     bool b = points->Update(e);
-    if (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)) {
+    if (firsttime2 || (!g_is_quakeml3 && (g_is_quakeml2||!Matrix::Equal(in_MV,e.in_MV)))) {
+      firsttime2 = false;
       in_MV = e.in_MV;
     std::sort(allpoints.begin(), allpoints.end(),
 	      [&](int a, int b){
@@ -22863,15 +22889,38 @@ public:
   }
   Point calc_pos3(int pos) const
   {
+    if (g_is_quakeml3) {
     Matrix p0 = points->Index(pos);
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
-    Point ncd = world * in_MV * in_Proj;
-    ncd.z-=1.0;
-    ncd.z*=2.0;
-    ncd.z-=1.0;
+    Point view = world * in_MV;
+    //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
+    Point ncd = view * in_Proj;
+    return ncd;
+    }
+    
+    Matrix p0 = points->Index(pos);
+    Point local(0.0f,0.0f,0.0f);
+    Point world = local * p0;
+
+    Point world_rot_inv = world;
+    if (g_is_quakeml2) {
+      world.z -= 400.0;
+      world_rot_inv = world * Matrix::YRotation(quake_rot_y*2.0);
+      world_rot_inv.z += 400.0;
+    }
+    
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+    Point view = world_rot_inv * in_MV;
+    Point ncd = view * in_Proj;
+
+    
+    //ncd.z-=1.0;
+    //ncd.z*=2.0;
+    //ncd.z-=1.0;
     return ncd;
   }
   
@@ -22879,8 +22928,8 @@ public:
   {
     Point pp = calc_pos3(i);
 
-    if (pp.x >= -1.0f && pp.x <= 1.0f)
-      if (pp.y >= -1.0f && pp.y <= 1.0f)
+    //if (pp.x >= -2.4f && pp.x <= 2.4f)
+      /*if (pp.y >= -2.0f && pp.y <= 2.0f)*/
 	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
 	  return true;
     return false;
@@ -22907,6 +22956,7 @@ private:
   Matrix in_MV;
   Matrix in_Proj;
   bool firsttime;
+  bool firsttime2=true;
 };
 
 
