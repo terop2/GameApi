@@ -19782,7 +19782,9 @@ public:
     next->Collect(vis);
     next2->Collect(vis);
   }
-  void HeavyPrepare() { }
+  void HeavyPrepare() {
+    g_is_quakeml3 = true;
+  }
 
   void Prepare() { next->Prepare(); next2->Prepare(); }
   GameApi::PT map_point(GameApi::EveryApi &ev, GameApi::PT p)
@@ -19805,7 +19807,6 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     g_is_quake=true;
-    g_is_quakeml3 = true;
     GameApi::InteractionApi::quake_movement_frame(ev, pos_x, pos_y, rot_y, dt, speed_x, speed_y, speed, rot_speed);
     quake_pos_x = pos_x;
     quake_pos_y = -pos_y;
@@ -19904,7 +19905,7 @@ public:
     ev.shader_api.unuse(s3);
 
 
-    g_is_quakeml3 = false;
+    //g_is_quakeml3 = false;
   }
   virtual void handle_event(MainLoopEvent &e)
   {
