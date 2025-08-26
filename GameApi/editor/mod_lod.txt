@@ -1,0 +1,43 @@
+test
+
+
+(224,295)meshy_ai uid41967876 0 0 1 ev:*ev:false:-1:242424728 prompt:*A_Monster_Truck:false:-1:242424728 cache_file:*monster_fd6rrr.glb:false:-1:242424728
+(217,443)stable_diffusion uid198174801 0 0 1 ev:*ev:false:-1:-1566391056 prompt:*garden_gnome:false:-1:-1566391056 cache_file:*testeee.png:false:-1:-1566391056
+(298,185)videofile_generic uid590532431 0 0 1 ev:*ev:false:-1:-1853981776 sx:*640:false:-1:-1853981776 sy:*480:false:-1:-1853981776 url:*https?//meshpage.org/assets/frog.mp4:false:-1:-1853981776
+(78,466)m_texture_many uid590532432 0 0 1 ev:*ev:false:-1:-1853981776 vec:*:false:-1:-1853981776 mix:*1.0:false:-1:-1853981776
+(507,188)m_texture_id uid590532433 0 0 1 ev:*ev:false:-1:-1853981776 txid:*uid590532431:false:-1:0 mix:*1.0:false:-1:-1853981776
+(572,321)quad_z uid590532434 0 0 1 x1:*-400:false:-1:-1853981776 x2:*400:false:-1:-1853981776 y1:*-400:false:-1:-1853981776 y2:*400:false:-1:-1853981776 z:*0:false:-1:-1853981776
+(708,251)m_bind uid590532435 0 0 1 p:*uid590532434:false:-1:0 mat:*uid590532433:false:-1:0
+(638,641)m_phong uid2063128962 0 0 1 ev:*ev:false:-1:66 nxt:*uid1895700827:false:-1:0 light_pos_x:*30.0:false:-1:0 light_pos_y:*-400.0:false:-1:0 light_pos_z:*30.0:false:-1:0 ambient:*ff221100:false:-1:66 specular:*ffff8800:false:-1:66 highlight:*ffffffff:false:-1:66 pow:*30:false:-1:66
+(344,530)m_def uid2063128963 0 0 1 ev:*ev:false:-1:1205385728
+(609,490)sphere uid2063128964 0 0 1 center:*(0.0,0.0,0.0):false:-1:19 radius:*350:false:-1:19 numfaces1:*30:false:-1:19 numfaces2:*30:false:-1:19
+(771,596)m_bind uid2063128965 0 0 1 p:*uid2063128964:false:-1:0 mat:*uid2063128962:false:-1:0
+(342,657)bm_url uid1895700826 0 0 1 url:*http?//meshpage.org/assets/gameapi_logo.png:false:-1:1341536448
+(484,671)m_texture uid1895700827 0 0 1 ev:*ev:false:-1:19 bm:*uid1895700826:false:-1:0 mix:*0.7:false:-1:19
+(193,804)gltf_load2 uid1682655714 0 0 1 url:*https?//meshpage.org/dingel.glb:false:-1:1482292672
+(459,831)ml_gltf_all_inst uid366862086 0 0 1 ev:*ev:false:-1:66 tf:*uid1682655714:false:-1:0 resize_obj:*:false:-1:0 pts:*uid512153509:false:-1:0 mix:*1.0:false:-1:66 self_mult:*1.0:false:-1:66 rest_mult:*1.0:false:-1:66 mode:*0:false:-1:66 light_dir_x:*400.0:false:-1:66 light_dir_y:*-400.0:false:-1:66 light_dir_z:*300.0:false:-1:66 border_width:*0.0:false:-1:66 border_color:*ff000000:false:-1:66 transparent:*true:false:-1:66
+(248,1041)random_quad uid366862087 0 0 1 ev:*ev:false:-1:19 p:*uid366862089:false:-1:0 count:*320:false:-1:19
+(103,1045)quad_y uid366862089 0 0 1 x1:*-3000:false:-1:10 x2:*3000:false:-1:10 y:*-80:false:-1:10 z1:*-3000:false:-1:10 z2:*3000:false:-1:10
+(474,1092)m_lod_pts_tf uid366862090 0 0 1 ev:*ev:false:-1:71 tf:*uid1682655714:false:-1:0 pts:*uid366862087:false:-1:0 decimate_level1:*1:false:-1:71 decimate_level2:*0.8:false:-1:71 decimate_level3:*0.6:false:-1:71 decimate_level4:*0.4:false:-1:71 max_obj_count1:*300:false:-1:71 max_obj_count2:*300:false:-1:71 max_obj_count3:*300:false:-1:71 max_obj_count4:*300:false:-1:71 mix:*1:false:-1:71 self_mult:*2:false:-1:71 rest_mult:*1:false:-1:71 mode:*0:false:-1:71 light_dir_x:*0.1:false:-1:71 light_dir_y:*400:false:-1:71 light_dir_z:*-400:false:-1:71 border_width:*0:false:-1:71 border_color:*ff000000:false:-1:71 transparent:*false:false:-1:71
+(907,820)run_window uid512153505 0 0 1 ev:*ev:false:-1:19 ml:*uid512153506:false:-1:0 logo:*false:false:-1:19 fpscounter:*false:false:-1:19 start_time:*0.0:false:-1:19 duration:*100000.0:false:-1:19
+(834,954)ogl_perspective uid512153506 0 0 1 ev:*ev:false:-1:37 ml:*uid1873847482:false:-1:0 mult:*80.0:false:-1:37 front_plane:*10.1:false:-1:37 end_plane:*60000.0:false:-1:37
+(651,834)ogl_perspective uid512153507 0 0 1 ev:*ev:false:-1:19 ml:*uid366862086:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19
+(190,1223)point uid512153508 0 0 1 x:*0:false:-1:10 y:*-120:false:-1:10 z:*0:false:-1:10
+(319,1218)pt_array uid512153509 0 0 1 ev:*ev:false:-1:10 vec:*[uid512153508]:false:-1:0
+(655,940)fly_ml uid512153510 0 0 1 ev:*ev:false:-1:37 ship:*uid512153512:false:-1:0 world:*uid366862090:false:-1:0 speed:*20.0:false:-1:37 rot_speed:*0.03:false:-1:37 p_x:*0.0:false:-1:37 p_y:*0.0:false:-1:37 p_z:*0.0:false:-1:37
+(120,934)cube uid512153511 0 0 1 start_x:*-10:false:-1:19 end_x:*10:false:-1:19 start_y:*-10:false:-1:19 end_y:*10:false:-1:19 start_z:*-10:false:-1:19 end_z:*10:false:-1:19
+(259,927)p_render uid512153512 0 0 1 ev:*ev:false:-1:10 p:*uid512153511:false:-1:0
+(514,1263)decimate_tf uid1525535555 0 0 1 mesh:*uid1682655714:false:-1:0 val:*0.5:false:-1:10
+(517,1376)b_pts_lod uid1525535556 0 0 1 pts:*uid366862087:false:-1:0 start_x:*-1000:false:-1:37 end_x:*1000:false:-1:37 start_z:*-3000:false:-1:37 end_z:*3000:false:-1:37 max_points_visible:*350:false:-1:37 ncd_start:*-1.0:false:-1:0 ncd_end:*1.0:false:-1:0
+(704,1302)ml_gltf_all_inst uid1525535557 0 0 1 ev:*ev:false:-1:66 tf:*uid1525535555:false:-1:0 resize_obj:*:false:-1:0 pts:*uid1525535556:false:-1:0 mix:*1.0:false:-1:66 self_mult:*1.0:false:-1:66 rest_mult:*1.0:false:-1:66 mode:*0:false:-1:66 light_dir_x:*400.0:false:-1:66 light_dir_y:*-400.0:false:-1:66 light_dir_z:*300.0:false:-1:66 border_width:*0.0:false:-1:66 border_color:*ff000000:false:-1:66 transparent:*true:false:-1:66
+(182,1594)quad_y uid1776558625 0 0 1 x1:*-2300:false:-1:19 x2:*2300:false:-1:19 y:*-120:false:-1:19 z1:*-38000:false:-1:19 z2:*-900:false:-1:19
+(189,1701)quad_y uid1776558626 0 0 1 x1:*-2200:false:-1:10 x2:*2200:false:-1:10 y:*-120:false:-1:10 z1:*-900:false:-1:10 z2:*0:false:-1:10
+(190,1818)quad_y uid1776558627 0 0 1 x1:*-800:false:-1:10 x2:*800:false:-1:10 y:*-120:false:-1:10 z1:*0:false:-1:10 z2:*300:false:-1:10
+(180,1928)quad_y uid1776558628 0 0 1 x1:*-300:false:-1:10 x2:*300:false:-1:10 y:*-120:false:-1:10 z1:*300:false:-1:10 z2:*500:false:-1:10
+(463,1860)p_or_array uid1776558629 0 0 1 vec:*[uid1776558625,uid1776558626,uid1776558627,uid1776558628]:false:-1:0
+(832,1143)move_ml uid1133706902 0 0 1 ev:*ev:false:-1:19 ml:*uid616735964:false:-1:0 mn:*uid1133706904:false:-1:0 clone_count:*1:false:-1:19 time_delta:*10.0:false:-1:19
+(88,1463)mn_empty uid1133706903 0 0 1
+(235,1453)anim_translate uid1133706904 0 0 1 next:*uid1395720866:false:-1:0 start_time:*0:false:-1:1523486128 end_time:*30:false:-1:1523486128 dx:*4400:false:-1:1523486128 dy:*0:false:-1:1523486128 dz:*4400:false:-1:1523486128
+(648,1124)quake_in_MV uid616735964 0 0 1 ml:*uid366862090:false:-1:0
+(430,1503)mn_rotatey uid1395720866 0 0 1 next:*uid1133706903:false:-1:0 angle:*1:false:-1:10
+(893,1249)quake_ml2 uid1873847482 0 0 1 ev:*ev:false:-1:19 ml:*uid366862090:false:-1:0 speed:*20.0:false:-1:19 rot_speed:*0.03:false:-1:19
