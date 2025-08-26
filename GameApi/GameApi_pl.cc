@@ -22463,10 +22463,11 @@ extern bool g_is_quakeml2;
 class BlockPTS2 : public PointsApiPoints
 {
 public:
-  BlockPTS2(GameApi::Env &env, PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, int max_points) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
+  BlockPTS2(GameApi::Env &env, PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, float ncd_z_start, float ncd_z_end,int max_points) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points), ncd_z_start2(ncd_z_start), ncd_z_end2(ncd_z_end) {
     
     if (start_x2>end_x2) std::swap(start_x2,end_x2);
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
+    if (ncd_z_start2>ncd_z_end2) std::swap(ncd_z_start2,ncd_z_end2);
     firsttime = true;
   }
 
@@ -22536,6 +22537,18 @@ public:
     return res;
 #endif
   }
+
+  Point calc_pos3(int pos) const
+  {
+    Matrix p0 = Matrix::Identity(); //points->Index(pos);
+    Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
+    Point world = local * p0;
+    world.x -= quake_pos_x;
+    world.z -= quake_pos_y;
+    Point ncd = world * in_MV * in_Proj;
+    return ncd;
+  }
+
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
@@ -22550,6 +22563,7 @@ public:
   }
   virtual bool Update(MainLoopEnv &e) {
     in_MV = e.in_MV;
+    in_Proj = e.in_P;
     g_compare_in_MV = in_MV;
 
     std::sort(allpoints.begin(), allpoints.end(),
@@ -22649,6 +22663,12 @@ public:
 
   bool enabled(int i) const
   {
+    Point pos = calc_pos3(i);
+    if (pos.x>=-1.0 && pos.x<=1.0 &&
+	pos.y>=-1.0 && pos.y<=1.0 &&
+	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2)
+      return true;
+#if 0
     Point2d pos_y = calc_pos2(i);
     
     if (pos_y.x<minimum) minimum=pos_y.x;
@@ -22658,6 +22678,7 @@ public:
 	&&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
+#endif
     return false;
   }
 private:
@@ -22670,7 +22691,9 @@ private:
   std::vector<int> pos;
   int prev=0;
   int max_points;
+  float ncd_z_start2,ncd_z_end2;
   Matrix in_MV;
+  Matrix in_Proj;
   bool firsttime;
   mutable float minimum=4000000.0;
   mutable float maximum=-4000000.0;
@@ -22688,10 +22711,11 @@ bool CompareWithCalc(int a, int b)
 class BlockPTS2_matrix : public MatrixArray
 {
 public:
-  BlockPTS2_matrix(GameApi::Env &env, MatrixArray *points, float start_x, float end_x, float start_y, float end_y, int max_points) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points) {
+  BlockPTS2_matrix(GameApi::Env &env, MatrixArray *points, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_start, float ncd_z_end) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points),ncd_z_start2(ncd_z_start), ncd_z_end2(ncd_z_end) {
 
     if (start_x2>end_x2) std::swap(start_x2,end_x2);
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
+    if (ncd_z_start>ncd_z_end) std::swap(ncd_z_start,ncd_z_end);
     firsttime = true;
   }
 
@@ -22728,7 +22752,7 @@ public:
 
     
     in_MV = e.in_MV;
-
+    in_Proj = e.in_P;
     std::sort(allpoints.begin(), allpoints.end(),
 	      [&](int a, int b){
 		Point2d aa = calc_pos2(a);
@@ -22876,19 +22900,31 @@ public:
     res.y = view.z;
     return res;
   }
-
+  Point calc_pos3(int pos) const
+  {
+    Matrix p0 = points->Index(pos);
+    Point local(0.0f,0.0f,0.0f);
+    Point world = local * p0;
+    world.x -= quake_pos_x;
+    world.z -= quake_pos_y;
+    Point ncd = world * in_MV * in_Proj;
+    return ncd;
+  }
+  
   
   bool enabled(int i) const
   {
-    Point2d pos_y = calc_pos2(i);
-    if (pos_y.x<minimum) minimum=pos_y.x;
-    if (pos_y.x>maximum) maximum=pos_y.x;
-
-    
+    Point pos = calc_pos3(i);
+    if (pos.x>=-1.0 && pos.x<=1.0 &&
+	pos.y>=-1.0 && pos.y<=1.0 &&
+	pos.z>=ncd_z_start2 && pos.z<=ncd_z_end2)
+      return true;
+ #if 0   
     if (pos_y.y>=start_y2 && pos_y.y<=end_y2
 	&&
 	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
       return true;
+#endif
     return false;
   }
 private:
@@ -22901,7 +22937,9 @@ private:
   std::vector<int> pos;
   int prev=0;
   int max_points;
+  float ncd_z_start2,ncd_z_end2;
   Matrix in_MV;
+  Matrix in_Proj;
   bool firsttime;
   mutable float minimum=4000000.0;
   mutable float maximum=-4000000.0;
@@ -22916,16 +22954,16 @@ bool CompareWithCalc_matrix(int a, int b)
 }
 
 
-GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points)
+GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_s, float ncd_z_e)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
-  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,max_points));
+  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,max_points,ncd_z_s,ncd_z_e));
 }
 
-GameApi::MS GameApi::PointsApi::block_ms_lod(GameApi::MS ms, float start_x, float end_x, float start_y, float end_y, int max_points)
+GameApi::MS GameApi::PointsApi::block_ms_lod(GameApi::MS ms, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_s, float ncd_z_e)
 {
   MatrixArray *mat = find_matrix_array(e,ms);
-  return add_matrix_array(e, new BlockPTS2_matrix(e,mat,start_x,end_x,start_y,end_y, max_points));
+  return add_matrix_array(e, new BlockPTS2_matrix(e,mat,start_x,end_x,start_y,end_y, max_points,ncd_z_s,ncd_z_e));
 }
 
 
