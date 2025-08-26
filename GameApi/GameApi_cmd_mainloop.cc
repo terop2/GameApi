@@ -907,9 +907,9 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::bloc
 #if (ALL==1)||(BLOCK_PTS_LOD==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::block_pts_lod,
 			 "b_pts_lod",
-			 { "pts", "start_x", "end_x", "start_z", "end_z", "max_points_visible" },
-			 { "PTS", "float", "float", "float", "float","int" },
-			 { "", "-1000.0", "1000.0", "100.0", "300.0","35" },
+		       { "pts", "start_x", "end_x", "start_z", "end_z", "max_points_visible", "ncd_start", "ncd_end" },
+		       { "PTS", "float", "float", "float", "float","int","float", "float" },
+	      { "", "-1000.0", "1000.0", "100.0", "300.0","35", "-1.0", "1.0" },
 			 "PTS", "points_api", "block_pts_lod"));
 #endif
 #if (ALL==1)||(BLOCK_DRAW==1)

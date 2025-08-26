@@ -3700,8 +3700,8 @@ public:
 				    int num);
   IMPORT PTS pts_lines(std::string url, float start_pos, float dist, float speed);
   IMPORT PTS block_pts(PTS pts, float d, int max_points_visible);
-  IMPORT PTS block_pts_lod(PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);
-  IMPORT MS block_ms_lod(MS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible);
+  IMPORT PTS block_pts_lod(PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible, float ncd_z_s, float ncd_z_e);
+  IMPORT MS block_ms_lod(MS pts, float start_x, float end_x, float start_y, float end_y, int max_points_visible, float ncd_z_s, float ncd_z_e);
   IMPORT PTS load_points(std::string url);
   IMPORT PTS pts_alt(std::vector<PTS> vec, int index);
   IMPORT PTS points_field(float start_speed_y, float end_speed_y, int numpoints, float start_x, float end_x, float start_y, float end_y);
