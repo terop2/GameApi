@@ -22495,11 +22495,11 @@ public:
     return res;
    }
 
-  Point calc_pos3(int pos) const
-  {
+  Point calc_pos3(int pos3) const
+  {    
     if (g_is_quakeml3) {
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
-    Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
+    Point local = points->Pos(pos3); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
@@ -22511,7 +22511,7 @@ public:
 
     
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
-    Point local = points->Pos(pos); //(0.0f,0.0f,0.0f);
+    Point local = points->Pos(pos3); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
     Point world_rot_inv = world;
       world.z -= 400.0;
@@ -22569,8 +22569,10 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
-      return true;
+    if (pp.x >= -40.0f && pp.x <= 40.0f) {
+      if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
+	return true;
+        }
     }
     return false;
   }
@@ -22711,22 +22713,11 @@ public:
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    //if (i % 1000==0)
-    // std::cout << pp.z << std::endl;
-    //if (pp.x >= -2.4f && pp.x <= 2.4f)
-      /*if (pp.y >= -2.0f && pp.y <= 2.0f)*/
+    if (pp.x >= -40.0f && pp.x <= 40.0f)
 	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
 	  return true;
     return false;
     
-    /*
-    Point2d pos_y = calc_pos2(i);
-    if (pos_y.y>=start_y2 && pos_y.y<=end_y2
-	&&
-	  pos_y.x>=start_x2 && pos_y.x<=end_x2)
-      return true;
-    return false;
-    */
   }
 private:
   GameApi::Env &env;
