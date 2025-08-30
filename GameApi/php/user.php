@@ -719,6 +719,8 @@ echo "</div>";
 
   echo "</div>";
   echo "<p><br>";
+  echo "<div style=\"height:70px\"></div>";
+
   // COPYRIGHT NOTICE
    echo "<div style=\"height:20px;\"></div>";
    echo "<p>";
