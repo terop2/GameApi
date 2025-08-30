@@ -20,7 +20,7 @@ test
 (103,1045)quad_y uid366862089 0 0 1 x1:*-3000:false:-1:10 x2:*3000:false:-1:10 y:*-80:false:-1:10 z1:*-3000:false:-1:10 z2:*3000:false:-1:10
 (474,1092)m_lod_pts_tf uid366862090 0 0 1 ev:*ev:false:-1:71 tf:*uid1682655714:false:-1:0 pts:*uid366862087:false:-1:0 decimate_level1:*1:false:-1:71 decimate_level2:*0.8:false:-1:71 decimate_level3:*0.6:false:-1:71 decimate_level4:*0.4:false:-1:71 max_obj_count1:*3000:false:-1:71 max_obj_count2:*3000:false:-1:71 max_obj_count3:*3000:false:-1:71 max_obj_count4:*3000:false:-1:71 mix:*1:false:-1:71 self_mult:*2:false:-1:71 rest_mult:*1:false:-1:71 mode:*0:false:-1:71 light_dir_x:*0.1:false:-1:71 light_dir_y:*400:false:-1:71 light_dir_z:*-400:false:-1:71 border_width:*0:false:-1:71 border_color:*ff000000:false:-1:71 transparent:*false:false:-1:71
 (907,820)run_window uid512153505 0 0 1 ev:*ev:false:-1:19 ml:*uid512153506:false:-1:0 logo:*false:false:-1:19 fpscounter:*false:false:-1:19 start_time:*0.0:false:-1:19 duration:*100000.0:false:-1:19
-(834,954)ogl_perspective uid512153506 0 0 1 ev:*ev:false:-1:37 ml:*uid1873847482:false:-1:0 mult:*80.0:false:-1:37 front_plane:*10.1:false:-1:37 end_plane:*60000.0:false:-1:37
+(834,954)ogl_perspective uid512153506 0 0 1 ev:*ev:false:-1:37 ml:*uid471275032:false:-1:0 mult:*80.0:false:-1:37 front_plane:*10.1:false:-1:37 end_plane:*60000.0:false:-1:37
 (651,834)ogl_perspective uid512153507 0 0 1 ev:*ev:false:-1:19 ml:*uid366862086:false:-1:0 mult:*80.0:false:-1:19 front_plane:*10.1:false:-1:19 end_plane:*60000.0:false:-1:19
 (190,1223)point uid512153508 0 0 1 x:*0:false:-1:10 y:*-120:false:-1:10 z:*0:false:-1:10
 (319,1218)pt_array uid512153509 0 0 1 ev:*ev:false:-1:10 vec:*[uid512153508]:false:-1:0
@@ -41,3 +41,8 @@ test
 (648,1124)quake_in_MV uid616735964 0 0 1 ml:*uid366862090:false:-1:0
 (430,1503)mn_rotatey uid1395720866 0 0 1 next:*uid1133706903:false:-1:0 angle:*1:false:-1:10
 (893,1249)quake_ml2 uid1873847482 0 0 1 ev:*ev:false:-1:19 ml:*uid366862090:false:-1:0 speed:*20.0:false:-1:19 rot_speed:*0.03:false:-1:19
+(61,677)b_pts_debug uid471275028 0 0 1
+(55,563)cube uid471275029 0 0 1 start_x:*-10:false:-1:-509256640 end_x:*10:false:-1:-509256640 start_y:*-10:false:-1:-509256640 end_y:*10:false:-1:-509256640 start_z:*-10:false:-1:-509256640 end_z:*10:false:-1:-509256640
+(213,618)m_bind_inst uid471275030 0 0 1 p:*uid471275029:false:-1:0 pts:*uid471275028:false:-1:0 mat:*uid471275031:false:-1:0
+(59,788)m_def uid471275031 0 0 1 ev:*ev:false:-1:-509256640
+(776,721)or_elem_ml uid471275032 0 0 1 ev:*ev:false:-1:-509256640 m1:*uid1873847482:false:-1:0 m2:*uid471275030:false:-1:0

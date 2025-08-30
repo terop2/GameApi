@@ -390,6 +390,8 @@ echo "<div class=\"buttons\">";
 echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/view.php'\">3d model viewer</button>";
 echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
 echo "</div>";
+echo "<div style=\"height:50px\"></div>";
+
 echo "<div class=\"flex-container\">";
 $cnt = 0;
 $start = $num;
@@ -623,6 +625,7 @@ echo "</script>";
    else echo "500";
    echo "</div>";
 echo "<br>";
+echo "<div style=\"height:70px\"></div>";
 page_footer();
 echo "<div style=\"height:40px\"></div>";
 echo "</div>";
@@ -1121,7 +1124,7 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 require_once("user.php");
 ?>
 
-PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a> (LGPL/GPL)
+PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referrer-when-downgrade">HERE</a>(130&#8364;) (LGPL/GPL)
 <p><br>
 MOST RECENT RELEASE: WIN: 
 <?php
@@ -1381,7 +1384,7 @@ width="120" height="120" crossorigin/>
 <style>
 .buttons {
    position: absolute;
-   right: 10px;
+   right: 25px;
    top: 50px;
    display: flex;
    width: 300px;

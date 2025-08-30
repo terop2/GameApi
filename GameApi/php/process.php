@@ -2,13 +2,13 @@
 
 header("Cross-Origin-Opener-Policy: same-origin");
 
-$labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "FULL CUSTOMISATION", "EXAMPLES");
+$labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "DOWNLOAD TOOL<h1 style=\"font-size:24px\">(price: 130&#8364;)</h1>", "EXAMPLES");
 $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
 $alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
 $links = array("view.php", "gltf_to_zip.php", "meshpage_4", "meshpage.php");
 $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with the engine",
        	       "convert your<br>gltf files to html5<br>for hosting space<br>",
-	       "if end result needed<br>tweaking, use full<br> customisation",
+	       "if end result needed<br>tweaking, download<br> tool",
 	       "and there's plenty<br> of examples to learn<br> the scripting language");
 
 
@@ -147,7 +147,6 @@ echo "<li>Artificial intelligence support copyright problems\n";
 echo "<li>Meshy rigging doesnt work in meshpage\n";
 echo "<li>GLTF animations have problems in some models\n";
 echo "<li>GLTF cameras not implemented\n";
-echo "<li>GLTF material light direction not implemented\n";
 echo "<li>Water shader is based on hacks instead of navier-stokes\n";
 echo "<li>Blender import is known to contain areas that cannot be rendered\n";
 echo "<li>Phong shading is already outdated\n";

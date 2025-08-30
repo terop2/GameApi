@@ -22450,6 +22450,31 @@ extern Matrix g_quakeml2_matrix;
 extern bool g_is_quakeml2;
 extern bool g_is_quakeml3;
 
+std::vector<Point> g_lod_debug_vec;
+
+class DisplayLodDebug : public PointsApiPoints
+{
+public:
+  void Collect(CollectVisitor &vis)
+  { }
+  void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return true; }
+  virtual int NumPoints() const
+  {
+    return g_lod_debug_vec.size();
+  }
+  virtual Point Pos(int i) const
+  {
+    return g_lod_debug_vec[i];
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+
+};
+
+
 class BlockPTS2 : public PointsApiPoints
 {
 public:
@@ -22505,6 +22530,14 @@ public:
     world.z -= quake_pos_y;
     Point view = world * in_MV;
     //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
+
+    if (pos3>=g_lod_debug_vec.size())
+      {
+	g_lod_debug_vec.resize(pos3+1);
+      }
+    g_lod_debug_vec[pos3]=world;
+
+    
     Point ncd = view * in_Proj;
     return ncd;
     }
@@ -22521,6 +22554,13 @@ public:
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
     Point view = world_rot_inv * in_MV;
+
+    if (pos3>=g_lod_debug_vec.size())
+      {
+	g_lod_debug_vec.resize(pos3+1);
+      }
+    g_lod_debug_vec[pos3]=world;
+
     Point ncd = view * in_Proj;
     //ncd.z-=1.0;
     //ncd.z*=2.0;
@@ -22688,6 +22728,14 @@ public:
       world.x -= quake_pos_x;
       world.z -= quake_pos_y;
       Point view = world * in_MV;
+
+    if (pos>=g_lod_debug_vec.size())
+      {
+	g_lod_debug_vec.resize(pos+1);
+      }
+    g_lod_debug_vec[pos]=world;
+
+
       Point ncd = view * in_Proj;
       return ncd;
     }
@@ -22704,6 +22752,14 @@ public:
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
     Point view = world_rot_inv * in_MV;
+
+    if (pos>=g_lod_debug_vec.size())
+      {
+	g_lod_debug_vec.resize(pos+1);
+      }
+    g_lod_debug_vec[pos]=world;
+
+    
     Point ncd = view * in_Proj;
 
     
@@ -22741,6 +22797,11 @@ GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, 
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
   return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,ncd_z_s,ncd_z_e,max_points));
+}
+
+GameApi::PTS GameApi::PointsApi::block_pts_debug()
+{
+  return add_points_api_points(e,new DisplayLodDebug);
 }
 
 GameApi::MS GameApi::PointsApi::block_ms_lod(GameApi::MS ms, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_s, float ncd_z_e)
