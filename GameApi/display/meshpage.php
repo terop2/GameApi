@@ -1,6 +1,6 @@
 <?php
-header("Cross-Origin-Opener-Policy: same-origin");
-header("Access-Control-Allow-Headers: Range");
+#header("Cross-Origin-Opener-Policy: same-origin");
+#header("Access-Control-Allow-Headers: Range");
 //header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 //header("Cache-Control: post-check=0, pre-check=0", false);
 //header("Pragma: no-cache");
@@ -855,6 +855,10 @@ instead of megabytes of video files
 <li>you will lose threads too.
 <li>every .zip file distributed by meshpage.org has one of those display.php files with this issue.
 </ul>
+
+<h2>What should I do to serve the files via http/3?</h2>
+
+Chrome: chrome://flags -> experimental quic protocol -> enabled
 
 <h2>What is the standard rendering pipeline?</h2>
 
