@@ -1,6 +1,6 @@
 <?php
 
-header("Cross-Origin-Opener-Policy: same-origin");
+//header("Cross-Origin-Opener-Policy: same-origin");
 
 $labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "DOWNLOAD TOOL<h1 style=\"font-size:24px\">(price: 130&#8364;)</h1>", "EXAMPLES");
 $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
@@ -12,7 +12,7 @@ $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with
 	       "and there's plenty<br> of examples to learn<br> the scripting language");
 
 
-  $logstr = $_SERVER["HTTP_REFERER"];
+  $logstr = $_SERVER["HTTP_REFERER"]??'';
 if ($logstr != "https://meshpage.org/assets/homepage/homepage.php" && $logstr != "")
 {
 $fp = fopen("./pp2/referer.log","a+");
@@ -88,11 +88,20 @@ echo "</div>\n";
 echo "</div>\n";
 
 
+echo "<div class=\"bl_row\">\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item customfont content\">\n";
+echo "<h1>What our tech is doing: <span style=\"font-size: 12px\">(deploy pipeline)</span></h1><h1 style=\"font-size: 30px\">GLB files <a style=\"text-decoration: none;\" href=\"https://meshpage.org/meshpage_5#deploy\"><span style=\"font-size: 50px;\">&rarr;</span></a> HTML5 zip <a href=\"https://meshpage.org/meshpage_5#to_web_server\" style=\"text-decoration: none;\"><span style=\"font-size: 50px\">&rarr;</span></a> (web server)</h1>\n";
+echo "</div>\n";
+echo "</div>\n";
+echo "</div>\n";
+
+
 
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
-echo "<h2>SUITABLE EXTERNAL TOOLS:</h2> <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>.\n";
+echo "<h2>SUITABLE EXTERNAL TOOLS:</h2> <a href=\"https://www.blender.org/download/\">blender</a>, <a href=\"https://sketchfab.com/feed\">sketchfab</a>, <a href=\"https://meshy.ai\">meshy</a>, <a href=\"https://hyper3d.ai/\">rodin</a>.\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -191,7 +200,8 @@ echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 
 echo "<div class=\"bl_item img\">\n";
-echo "<iframe class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" allow=\"cross-origin-isolated\" src=\"https://meshpage.org/punk/index.html\" width=\"800\" height=\"440\" style=\"overflow: visible; border: none;\"></iframe>\n";
+// allow=\"cross-origin-isolated\" 
+echo "<iframe class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"https://meshpage.org/punk/index.html\" width=\"800\" height=\"600\" style=\"overflow: visible; border: none;\"></iframe>\n";
 echo "</div></div>\n";
 echo "<div class=\"bl_column\"><div class=\"bl_item customfont content\">\n";
 echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)\n";

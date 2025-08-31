@@ -907,6 +907,7 @@ There's now a callback for that purpose
    { var d = document.getElementById("img"); d.style="display:none"; }
 </pre>
 
+<div id="deploy">
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
 <img loading="lazy" src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>
@@ -934,8 +935,27 @@ Additionally, you should have in the page where iframe or embed is in, the follo
   ?&gt;
 </pre>
 Apparently this needs to be in the page itself and not in the .htaccess to get SharedArrayBuffer and pthreads working.
+</div>
 
+<h2>Where do I get html5 zip file?</h2>
+There's few options:
+<ul>
+<li>gltf_to_zip webpage
+<li>zip-button in the main web page
+<li>right-clicking and choosing display in builder tool save_deploy node that is connected to html_run and further to run_window
+</ul>
 
+<div id="to_web_server">
+<h2>What to do with the html5 zip file?</h2>
+<ul>
+<li>upload to your web server 
+<li>create a directory        
+<li>unzip the html5 zip file to the directory 
+<li>figure out what url points to display.php file 
+<li>open display.php in your web browser to display it 
+<li>use &lt;iframe scrolling="no" src="url/myzipdirectory/display.php" width="830" height="630"&gt; in your web page of your choice.
+</ul>
+</div>
 <h2>How to setup http cache with the engine?</h2>
 
 We recommend in .htaccess:
