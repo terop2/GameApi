@@ -3,9 +3,9 @@
 ini_set("post_max_size", "120M");
 ini_set("upload_max_filesize", "100M");
 ini_set("memory_limit", "1024M");
-header("Access-Control-Allow-Headers: Range");
+//header("Access-Control-Allow-Headers: Range");
 include("backend.php");
-header("Cross-Origin-Opener-Policy: same-origin");
+//header("Cross-Origin-Opener-Policy: same-origin");
 $date = filemtime("engine_highmem.js");
 
 $machine=php_uname("n");

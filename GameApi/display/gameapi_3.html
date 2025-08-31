@@ -29,6 +29,15 @@
       let container_width=800;
       let container_height=600;
       let enable_debug_border=false;
+      if (window.self !== window.top)
+      { // we're inside iframe, use iframe dimensions
+	  wd = window.innerWidth;
+	  hd = window.innerHeight;
+	  container_width = window.innerWidth;
+	  container_height= window.innerHeight;
+      }
+
+      
     </script>
     <script src="engine/gameapi.js?1"></script>
     <script>
