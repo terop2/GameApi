@@ -942,7 +942,7 @@ function get_border(i,m,filename,border_avoid)
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   var five = "";
   if (/*anim_value &&*/ filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
-  res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,0.0,0.0,1.0,ffffccaa,fffff8ee,30.0);\n";
+  res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
   //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,3.5,1.0,-400.0,400.0,400.0);\n";
   var gltf = ",false";
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf=",true"; }
@@ -1288,6 +1288,7 @@ function create_script(filename, contents, filenames)
 
 
   var border = get_border(border_value,material_value,filename,border_avoid);
+var out = "I4";
 
   if (brd>=0 && brd<store.state.border_db.length) {
      var name2 = store.state.border_db[brd];
@@ -1321,7 +1322,6 @@ res+="LI I116=ev.lines_api.from_polygon(I124);\n";
 
 var color = "000000";
 var bg = get_background_value();
-var out = "I4";
 if (bg>=0&&bg<store.state.background_db.length) {
   var name2 = store.state.background_db[bg];
   var name = parse_bg_colour(name2);
@@ -1445,7 +1445,8 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,3);\n";
   
  // 
 //res+="ML I11=ev.mainloop_api.hires_ml(ev," + variable + ", 4096);\n";
-  res+="RUN I12=ev.blocker_api.game_window2(ev," + variable + ",false,false,0.0,1000000.0);\n";
+  res+="ML I11=ev.mainloop_api.perspective(ev," + variable + ",80.0,10.1,60000.0);\n";
+  res+="RUN I12=ev.blocker_api.game_window2(ev,I11,false,false,0.0,1000000.0);\n";
 
 
 return res;  

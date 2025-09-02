@@ -4380,7 +4380,7 @@ public:
 	if (stride2==0) stride2 = 3*sizeof(float); // 3 = num of components in (x,y,z)
 	float *pos_ptr2 = (float*)(pos_ptr + normal_bv->byteOffset + index*stride2 + normal_acc->byteOffset); 
 	//std::cout << face << " " << point << "::" << index << "::" << pos_ptr2[0] << "," << pos_ptr2[1] << "," << pos_ptr2[2] << std::endl;
-	return Vector(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
+	return -Vector(pos_ptr2[0], pos_ptr2[1], pos_ptr2[2]);
       } else {
 	// TODO, check that this branch works
 	const unsigned char *pos_ptr = &normal_buf->data[0];
@@ -4390,7 +4390,7 @@ public:
 	int comp = face*3+point;
 	const unsigned char *pos_ptr3 = pos_ptr2 + normal_acc->byteOffset + comp*stride;
 	const float *pos_ptr4 = (const float*)pos_ptr3; // 3 = num of components in (x,y,z)
-	return Vector(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
+	return -Vector(pos_ptr4[0], pos_ptr4[1], pos_ptr4[2]);
       }
     }
     } else {
@@ -4399,7 +4399,7 @@ public:
       Point p1 = FacePoint(face, 0);
       Point p2 = FacePoint(face, 1);
       Point p3 = FacePoint(face, 2);
-      Vector v = Vector::CrossProduct(p2-p1,p3-p1);
+      Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
       Vector res = v / v.Dist();
       store_face = face;
       store_res = res;
@@ -4415,7 +4415,7 @@ public:
       Point p1 = FacePoint(face, 0);
       Point p2 = FacePoint(face, 1);
       Point p3 = FacePoint(face, 2);
-      Vector v = Vector::CrossProduct(p2-p1,p3-p1);
+      Vector v = -Vector::CrossProduct(p2-p1,p3-p1);
       Vector res = v / v.Dist();
       store_face = face;
       store_res = res;

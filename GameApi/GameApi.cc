@@ -10023,6 +10023,10 @@ public:
 
   virtual void Prepare()
   {
+    find_ml();
+     MainLoopItem *item = find_main_loop(env,ml);
+     if (item)
+       item->Prepare();
   }
   void logoexecute() {
     // TODO, can we do this here?
