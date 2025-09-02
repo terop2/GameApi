@@ -1995,7 +1995,7 @@ s+=""
   " vec3 V = normalize(ex_Position-vec3(0.0,0.0,-400.0));\n"
   " vec3 H2 = normalize(L+V);\n"
   " vec3 N2 = normalize(N);\n"
-  " float val = dot(-N2,H2);\n"
+  " float val = dot(N2,H2);\n"
   " if (val<0.0) {\n" 
   "  val*=0.20;\n" 
   "  val+=0.20;\n" 
@@ -4809,7 +4809,7 @@ s+=""
   " vec3 V = normalize(ex_Position-vec3(0.0,0.0,-400.0));\n"
   " vec3 H2 = normalize(L+V);\n"
   " vec3 N2 = normalize(N);\n"
-  " float val = dot(-N2,H2);\n"
+  " float val = dot(N2,H2);\n"
   " if (val<0.0) {\n" // [-1..0]
   "  val*=0.20;\n" // [-0.20..0]
   "  val+=0.20;\n" // [0..0.20]
