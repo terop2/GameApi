@@ -7,7 +7,7 @@ make clean
 make -j 8
 (cd editor;make -f Makefile.Linux)
 make -f Makefile.LinuxEm clean
-./emmake.sh
+./emmake.sh RELEASE=true
 (cd web_page;./ftp_release.sh)
 (cd display;./ftp_release.sh)
 (cd display;./ftp_package.sh $1)

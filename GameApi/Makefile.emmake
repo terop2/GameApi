@@ -1,6 +1,7 @@
 
 
-	
+
+
 
 minimal: pthreads_both_nodebug both
 
@@ -11,23 +12,23 @@ nodebug: pthreads_both_nodebug both_nodebug
 debug: pthreads_both both
 
 libGameApi.bc:
-	$(MAKE) -j 8 -f Makefile.LinuxEm
+	$(MAKE) -j 8 -f Makefile.LinuxEm RELEASE=$(RELEASE) EMSCRIPTEN_PATH=$(EMSCRIPTEN_PATH)
 	touch libGameApi.bc
 
 libGameApi_nothreads.bc:
-	$(MAKE) -j 8 -f Makefile.LinuxEm nothreads
+	$(MAKE) -j 8 -f Makefile.LinuxEm nothreads RELEASE=$(RELEASE) EMSCRIPTEN_PATH=$(EMSCRIPTEN_PATH)
 	touch libGameApi_nothreads.bc
 
 pthreads_both : libGameApi.bc
-	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm pthreads_both)
+	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm pthreads_both RELEASE=$(RELEASE) EMSCRIPTEN_PATH=$(EMSCRIPTEN_PATH)) 
 
 both: libGameApi_nothreads.bc
-	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm both)
+	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm both RELEASE=$(RELEASE) EMSCRIPTEN_PATH=$(EMSCRIPTEN_PATH))
 
 pthreads_both_nodebug : libGameApi.bc
-	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm pthreads_both)
+	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm pthreads_both RELEASE=$(RELEASE) EMSCRIPTEN_PATH=$(EMSCRIPTEN_PATH))
 
 both_nodebug : libGameApi_nothreads.bc
-	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm both)
+	(cd web_page; $(MAKE) -j 8 -f Makefile.LinuxEm both RELEASE=$(RELEASE) EMSCRIPTEN_PATH=$(EMSCRIPTEN_PATH))
 
 .PHONY: all nodebug debug pthreads_both both pthreads_both_nodebug both_nodebug minimal libGameApi.bc libGameApi_nothreads.bc
