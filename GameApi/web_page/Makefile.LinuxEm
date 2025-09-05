@@ -152,7 +152,7 @@ WASM_OPT = $(EMSCRIPTEN_PATH)/upstream/bin/wasm-opt
 # 'ALLOC_DYNAMIC', 'ALLOC_NONE', '_activate_trigger', 'set_toggle_button', 'FT_GET_Char_Index', 'FT_Load_Glyph', 'FT_New_Memory_Faces', 'FT_Render_Glyph', 'FT_Set_Char_Size', 'emscripten_fetch', 'emscripten_fetch_attr_init', 'emscripten_fetch_close', '_set_float',  '_get_integer', '_set_integer', '_set_float', '_set_string', '_set_resize_event', '_stop_music_playing', '_set_background_mode', '_set_new_script'
 
 ifeq ($(RELEASE),true)
-  releaseopts = -Oz -flto --closure 1 -gline-tables-only
+  releaseopts = -Oz -flto -gline-tables-only
 else
   releaseopts = -O0 -gline-tables-only --profiling-funcs --no-entry -s ERROR_ON_UNDEFINED_SYMBOLS=0 -s SAFE_HEAP=0
 endif
