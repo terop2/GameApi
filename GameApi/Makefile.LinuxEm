@@ -29,7 +29,7 @@ opencvopts = -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/include -I/
 sizeopts = -s MINIMAL_RUNTIME=1 -s DYNAMIC_EXECUTION=0 -gline-tables-only
 
 ifeq ($(RELEASE),true)
-  releaseopts = -Oz -flto --closure 1 
+  releaseopts = -Oz
 else
   releaseopts = -O0 --profiling-funcs
 endif

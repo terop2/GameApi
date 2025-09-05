@@ -1930,8 +1930,7 @@ function load_files(data_array2, filename_array)
     const uint8 = sli; 
 
     let pointer = Module._malloc( uint8.length );
-    HEAP8.set( uint8, pointer );
-    
+    HEAP8.set( uint8, pointer );      
     Module.ccall('set_string', null, ['number', 'number'], [3,pointer], {async:false} );
     Module._free( pointer );
     }
