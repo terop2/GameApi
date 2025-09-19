@@ -217,9 +217,11 @@ CC2FLAGS += -DBD_CALVIN_COMPUTER
 endif
 
 ifneq ($(BD_CALVIN),fedora)
+ifneq ($(BD_CALVIN),raspberrypi)
 CCFLAGS += -m64
 CC2FLAGS += -m64
 BD_CALVIN_M64 += -m64
+endif
 endif
 
 default: check_compile dirs libGameApi.so deploytool/deploytool editor/gameapi-builder cmdline/gameapi_cmdline
