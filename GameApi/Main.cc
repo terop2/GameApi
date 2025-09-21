@@ -65,7 +65,7 @@
 // 3) Shader.cc
 //#define OPENGL_ES 1
 #ifdef RASPI
-#define OPENGL_ES 1
+//#define OPENGL_ES 1
 #endif
 
 #ifdef LINUX
@@ -609,6 +609,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
     
   if (getenv("XDG_SESSION_TYPE") && std::string(getenv("XDG_SESSION_TYPE"))=="wayland")
     {
+      std::cout << "wayland setup" << std::endl;
       g_low->sdl->SDL_SetHint("SDL_VIDEODRIVER", "wayland");
       g_low->sdl->SDL_SetHint("SDL_OPENGL_ES_DRIVER", "1");
       g_low->sdl->SDL_SetHint("SDL_RENDER_DRIVER", "opengles2");
@@ -632,9 +633,11 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #endif
 #ifndef EMSCRIPTEN
 #ifdef LINUX
+#ifndef RASPI
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLEBUFFERS, 1);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_MULTISAMPLESAMPLES, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_FLAGS, Low_SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
 #endif
 #endif
 #ifdef EMSCRIPTEN
@@ -653,24 +656,46 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
+  std::cout << "Context Requesting version:";
+  
 #ifndef ANDROID
 #if !defined(OPENGL_ES) && !defined(EMSCRIPTEN) && !defined(BD_CALVIN_COMPUTER)
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  std::cout << "3,";
+#ifdef RASPI
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 1);
+  std::cout << "1";
+#else
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
-
+  std::cout << "3";
+#endif
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_CORE);
-#else 
+  std::cout << " core" << std::endl;
+#else
+#ifdef RASPI
+  std::cout << "2,";
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
-
+  std::cout << "0";
+#else
+  std::cout << "2,";
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
+  g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
+  std::cout << "0";
+#endif
+  
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
+  std::cout << " es" << std::endl;
 
 #endif
 #else
+  std::cout << "2,";
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
+  std::cout << "0";
 
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
+  std::cout << " es" << std::endl;
 #endif
   
   //g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
