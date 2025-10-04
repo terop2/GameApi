@@ -3,7 +3,9 @@ BD_CALVIN=$(shell uname -n)
 
 BD_CALVIN_M64= 
 ifneq ($(BD_CALVIN),fedora)
+ifneq ($(BD_CALVIN),raspberrypi)
 BD_CALVIN_M64+=-m64
+endif
 endif
 
 ADDRESS=
