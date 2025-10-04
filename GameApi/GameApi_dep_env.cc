@@ -858,9 +858,9 @@ bool is_urls_from_same_server(std::string url, std::string url2)
 }
 
 
-#ifdef RASPI
-inline int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
-#endif
+//#ifdef RASPI
+//inline int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
+//#endif
 
 IMPORT std::string g_gpu_vendor;
 extern int async_pending_count;

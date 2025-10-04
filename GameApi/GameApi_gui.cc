@@ -18,9 +18,10 @@ IMPORT extern int g_event_screen_y;
 
 #if defined(ARM) || defined(RASPI) 
 #ifdef FIRST_PART
-int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
+//int strlen(const char *ptr) { const char *p = ptr; while(*p) { p++;  } return p-ptr;}
+size_t strlen(const char *);
 #else
-int strlen(const char *);
+size_t strlen(const char *);
 #endif
 #endif
 int ret_type_count(std::string return_type);
