@@ -4276,6 +4276,10 @@ public:
   virtual void execute(MainLoopEnv &e)
   {
     if (valid) {
+    Timing *t = find_timing(env,link);
+    start_time2 = t->end_time(); //+timing->delta_time();
+    end_time2 = start_time2+duration; //+timing->delta_time();
+
     if (e.time>=start_time2 && e.time<=end_time2) {
       in_timerange=true;
       MainLoopItem *item = find_main_loop(env,show);
@@ -4335,12 +4339,84 @@ GameApi::TT GameApi::MainLoopApi::timing_start()
   return add_timing(e, new Timing2(e));
 }
 
+
+class TimingEvent : public Timing
+{
+public:
+  TimingEvent(GameApi::Env &env, Fetcher<int> *fetch, Timing *timing, MainLoopItem *item) : env(env), fetch(fetch), timing(timing), item(item) { }
+  virtual float end_time() const {
+    start_time = timing->end_time();
+    if (fetch->get() == 1)
+      {
+	return current_time+delta_time();
+      }
+    return start_time+20000.0;
+  }
+  virtual float delta_time() const { return timing->delta_time(); }
+  virtual Timing *clone() const
+  {
+    return new TimingEvent(env,fetch,timing,item);
+  }
+  virtual void Collect(CollectVisitor &vis) {
+    item->Collect(vis);
+    timing->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void FirstFrame() { }
+  virtual void execute(MainLoopEnv &e)
+  {
+    current_time = e.time;
+    fetch->frame(e);
+    item->execute(e);
+    start_time = timing->end_time();
+    in_timerange=false;
+    if (e.time >= start_time && e.time<= end_time()) {
+      in_timerange=true;
+      item->execute(e);
+    } else {
+      MainLoopEnv ee = e;
+      ee.time = e.time+delta_time();
+      timing->execute(ee);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (in_timerange)
+      {
+	fetch->event(e);
+	item->handle_event(e);
+      }
+    else
+      {
+	timing->handle_event(e);
+      }
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }
+private:
+  GameApi::Env &env;
+  Fetcher<int> *fetch;
+  Timing *timing;
+  MainLoopItem *item;
+  mutable float start_time;
+  mutable bool in_timerange;
+  mutable float current_time;
+};
+
+GameApi::TT GameApi::MainLoopApi::timing_event(IF trigger, TT link, ML show)
+{
+  Fetcher<int> *fetch = find_int_fetcher(e,trigger);
+  Timing *timing = find_timing(e,link);
+  MainLoopItem *item = find_main_loop(e,show);
+  return add_timing(e, new TimingEvent(e,fetch,timing,item));
+}
+
 GameApi::TT GameApi::MainLoopApi::timing(float duration, TT link, ML show)
 {
   return add_timing(e, new Timing2(e,duration,show,link));
 }
 GameApi::TT GameApi::MainLoopApi::timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir)
-{
+{ // TODO, DOESNT WORK WITH TIMING_EVENT.
   Timing *t = find_timing(e,link);
   float start_time = t->end_time();
 

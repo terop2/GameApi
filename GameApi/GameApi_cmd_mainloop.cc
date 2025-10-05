@@ -102,6 +102,14 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "5.0", "", "" },
 			 "TT", "mainloop_api", "timing"));
 #endif
+#if (ALL==1)||(TIMING_EVENT==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_event,
+			 "t_event",
+			 { "trigger", "link", "show" },
+			 { "IF", "TT", "ML" },
+			 { "", "", "" },
+			 "TT", "mainloop_api", "timing_event"));
+#endif
 #if (ALL==1)||(TIMING_SWITCH==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_switch,
 			 "t_time_switch",
@@ -520,6 +528,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::mov
 			 { "ev", "", "", "1", "10.0" },
 			 "ML", "move_api", "move_ml"));
 #endif
+#if (ALL==1)||(KEYPRESS_MOVE_ML==1)
+vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::keypress_move_ml,
+			 "key_move_ml",
+		       { "ev", "ml", "mn", "clone_count", "time_delta", "key", "flipenabled" },
+		       { "EveryApi&", "ML", "MN", "int", "float", "int", "bool" },
+		       { "ev", "", "", "1", "10.0", "32", "false" },
+			 "ML", "move_api", "keypress_move_ml"));
+#endif
 #if (ALL==1)||(MOVE_ML_P==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::move_ml_p,
 			 "move_ml_p",
@@ -936,6 +952,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot
 			 { "EveryApi&", "ML", "int", "int", "float","float", "float" },
 			 { "ev", "", "100", "97", "0.01","-100000.0", "100000.0" },
 			 "ML", "move_api", "rot_x_ml"));
+#endif
+#if (ALL==1)||(KEY_MOVE_ML==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::key_move_ml,
+			"move_char_ml",
+			{ "ev", "ml", "key_forward", "key_backward", "key_rot_minus", "key_rot_plus", "speed", "rot_speed", "start_angle", "start_x", "end_x", "start_z", "end_z" },
+			{ "EveryApi&", "ML", "int", "int", "int", "int", "float", "float", "float", "float", "float", "float", "float" },
+	       { "ev", "", "119", "115", "97", "100", "10.0", "0.01", "0.0", "-1000.0", "1000.0", "-1000.0", "1000.0" },
+			"ML", "move_api", "key_move_ml"));
 #endif
 #if (ALL==1)||(ROT_Y_ML==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::move_api, &GameApi::MovementNode::rot_y_ml,
