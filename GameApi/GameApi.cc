@@ -2539,6 +2539,137 @@ private:
   float jump_position;
 };
 
+Point g_key_move_2_pos;
+
+class KeyMoveML2 : public MainLoopItem
+{
+public:
+  KeyMoveML2(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, int key_forward, int key_backward, int key_rotate_minus, int key_rotate_plus, float speed, float rot_speed, float start_angle, float start_x, float end_x, float start_z, float end_z) : e(e), ev(ev), next(next), key_forward(key_forward), key_backward(key_backward), key_rotate_minus(key_rotate_minus), key_rotate_plus(key_rotate_plus), speed(speed), rot_speed(rot_speed), start_angle(start_angle), angle(start_angle), start_x(start_x), end_x(end_x), start_z(start_z), end_z(end_z) {
+    move_forward=false;
+    move_backward=false;
+    rot_forward=false;
+    rot_backward=false;
+  }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+
+  void handle_event(MainLoopEvent &eve)
+  {
+    int ch = eve.ch;
+#ifdef EMSCRIPTEN
+    if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
+    if (ch==39) ch='0';
+    if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
+#endif
+
+
+    if (eve.type==0x300 && ch==key_forward) { move_forward=true; }
+    if (eve.type==0x301 && ch==key_forward) { move_forward=false; }
+    if (eve.type==0x300 && ch==key_backward) { move_backward=true; }
+    if (eve.type==0x301 && ch==key_backward) { move_backward=false; }
+    if (eve.type==0x300 && ch==key_rotate_plus) { rot_forward=true; }
+    if (eve.type==0x301 && ch==key_rotate_plus) { rot_forward=false; }
+    if (eve.type==0x300 && ch==key_rotate_minus) { rot_backward=true; }
+    if (eve.type==0x301 && ch==key_rotate_minus) { rot_backward=false; }
+    next->handle_event(eve);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &env)
+  {
+    GameApi::SH s1;
+    s1.id = env.sh_texture;
+    GameApi::SH s2;
+    s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+
+    if (move_forward &&
+	pos.x+speed*sin(angle) < end_x &&
+	pos.z+speed*cos(angle) < end_z &&
+	pos.x+speed*sin(angle) > start_x &&
+	pos.z+speed*cos(angle) > start_z) {
+      pos.x += speed*sin(angle);
+      pos.z += speed*cos(angle);
+    }
+    if (move_backward &&
+	pos.x-speed*sin(angle) > start_x &&
+	pos.z-speed*cos(angle) > start_z &&
+	pos.x-speed*sin(angle) < end_x &&
+	pos.z-speed*cos(angle) < end_z)
+      {
+      pos.x -= speed*sin(angle);
+      pos.z -= speed*cos(angle);
+      }
+    g_key_move_2_pos = pos;
+    if (rot_forward)
+      {
+	angle-= rot_speed;
+      }
+    if (rot_backward)
+      {
+	angle+= rot_speed;
+      }
+    Matrix rot_matrix = Matrix::YRotation(angle-start_angle);
+    Matrix move_matrix = Matrix::Translate(pos.x,pos.y,pos.z);
+    Matrix res = rot_matrix * move_matrix;
+    GameApi::M mat = add_matrix2(e, res);
+    GameApi::M m2 = add_matrix2(e, env.env);
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+
+#ifndef NO_MV
+#ifdef HAS_MATRIX_INVERSE
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+#endif
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+#endif
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+#endif
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+#endif
+#endif
+    Matrix old_in_MV = env.in_MV;
+    env.in_MV = find_matrix(e, mat2);
+    Matrix old_env = env.env;
+    env.env = find_matrix(e,mat2);/* * env.env*/;
+    next->execute(env);
+    ev.shader_api.unuse(s3);
+    env.env = old_env;
+    env.in_MV = old_in_MV;
+
+    
+  }  
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  int key_forward;
+  int key_backward;
+  int key_rotate_minus;
+  int key_rotate_plus;
+  float speed;
+  float rot_speed;
+  bool move_forward, move_backward;
+  bool rot_forward, rot_backward;
+  Point pos = { 0.0,0.0,0.0 };
+  float start_angle;
+  float angle;
+  float start_x, end_x;
+  float start_z, end_z;
+};
+
 class KeyMoveML : public MainLoopItem
 {
 public:
@@ -2828,6 +2959,175 @@ private:
   bool firsttime2;
   float last_time=0.0f;
 };
+
+class KeyPressMoveML : public MainLoopItem
+{
+public:
+  KeyPressMoveML(GameApi::Env &e, GameApi::EveryApi &ev, MainLoopItem *next, GameApi::MN mn, int clone_count, float time_delta, int key, bool flipenabled) : e(e), ev(ev), next(next), mn(mn), clone_count(clone_count), time_delta(time_delta), key(key), flipenabled(flipenabled) 
+  {
+    firsttime = true;
+    firsttime2 = false;
+    start_time = 0.0; //ev.mainloop_api.get_time();
+    enabled=flipenabled?true:false;
+  }
+  void reset_time(float time) {
+    start_time = time*1000.0; //ev.mainloop_api.get_time();
+  }
+  //int shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  void handle_event(MainLoopEvent &env)
+  {
+    if (env.type==0x300 && env.ch == int(key))
+      {
+	enabled=flipenabled?false:true;
+      }
+    if (env.type==0x301 && env.ch == int(key))
+      {
+	enabled=flipenabled?true:false;
+      }
+
+    
+    next->handle_event(env);
+    Movement *move = find_move(e,mn);
+    move->event(env);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { }
+  void Prepare() { next->Prepare(); }
+  void logoexecute() { next->logoexecute(); }
+  void execute(MainLoopEnv &env)
+  {
+    Movement *move = find_move(e,mn);
+    move->frame(env);
+
+    if (firsttime) {
+      firsttime2 = true;
+      //reset_time(env.time);
+    }
+    if (!firsttime && firsttime2)
+      {
+	reset_time(env.time);
+	firsttime2 = false;
+      }
+    firsttime = false;
+    for(int i=0;i<clone_count;i++)
+      //int i=0;
+      {
+	GameApi::SH s1;
+	s1.id = env.sh_texture;
+	GameApi::SH s11;
+	s11.id = env.sh_texture_2d;
+	GameApi::SH s2;
+	s2.id = env.sh_array_texture;
+    GameApi::SH s3;
+    s3.id = env.sh_color;
+    /*
+    */		    
+    float time = (env.time*1000.0-start_time)/100.0+i*time_delta;
+    //if (time<last_time) time=last_time;
+    //last_time = time;
+    //std::cout << time << std::endl;
+    GameApi::M mat = ev.move_api.get_matrix(mn, time, ev.mainloop_api.get_delta_time());
+    //Matrix mat_i = find_matrix(e, mat);
+    //std::cout << mat_i << std::endl;
+    GameApi::M m2 = add_matrix2(e, env.env);
+    //std::cout << env.env << std::endl;
+
+    GameApi::M mat2 = ev.matrix_api.mult(mat,m2);
+
+    /*
+#ifndef NO_MV
+#ifdef HAS_MATRIX_INVERSE
+    GameApi::M mat2i = ev.matrix_api.transpose(ev.matrix_api.inverse(mat2));
+#endif
+    ev.shader_api.use(s1);
+    ev.shader_api.set_var(s1, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s1, "in_iMV", mat2i);
+#endif
+    ev.shader_api.use(s11);
+    ev.shader_api.set_var(s11, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s11, "in_iMV", mat2i);
+#endif
+    ev.shader_api.use(s2);
+    ev.shader_api.set_var(s2, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s2, "in_iMV", mat2i);
+#endif
+    ev.shader_api.use(s3);
+    ev.shader_api.set_var(s3, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+    ev.shader_api.set_var(s3, "in_iMV", mat2i);
+#endif
+
+    std::vector<int> vec = next->shader_id();
+    int s = vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::SH s4;
+	s4.id = vec[i];
+
+	if (s4.id != -1)
+	  {
+	    ev.shader_api.use(s4);
+	    ev.shader_api.set_var(s4, "in_MV", mat2);
+#ifdef HAS_MATRIX_INVERSE
+	    ev.shader_api.set_var(s4, "in_iMV", mat2i);
+#endif
+	  }
+      }
+#endif
+    */
+    
+    //Matrix old_in_MV = env.in_MV;
+    //MainLoopEnv ee = env;
+    Matrix old = env.in_MV;
+    MainLoopEnv &ee = env;
+    if (enabled)
+      ee.in_MV = find_matrix(e, mat2);
+
+    if (g_moved_positions.size()<1000) {
+      if (g_collide_flag)
+	g_moved_positions.push_back(ee.in_MV);
+    }
+    
+    //Matrix old_env = env.env;
+    //float old_time = env.time;
+    Matrix oldenv = ee.env;
+    if (enabled)
+      ee.env = find_matrix(e,mat2); /* * env.env*/;
+    float oldtime = ee.time;
+    ee.time = env.time + i*time_delta/10.0;
+    next->execute(ee);
+    ev.shader_api.unuse(s3);
+    ee.in_MV = old;
+    ee.env = oldenv;
+    ee.time = oldtime;
+    //env.env = old_env;
+    //env.time = old_time;
+    //env.in_MV = old_in_MV;
+      }
+  }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  float start_time;
+  MainLoopItem *next;
+  GameApi::MN mn;
+  int clone_count;
+  float time_delta;
+  bool firsttime;
+  bool firsttime2;
+  float last_time=0.0f;
+  bool enabled;
+  bool flipenabled;
+  int key;
+};
+
 
 
 class MoveMLProjection : public MainLoopItem
@@ -3661,6 +3961,11 @@ EXPORT GameApi::ML GameApi::MovementNode::move_ml(EveryApi &ev, GameApi::ML ml, 
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new MoveML(e,ev,item, move, clone_count, time_delta));
 }
+EXPORT GameApi::ML GameApi::MovementNode::keypress_move_ml(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta, int key, bool flipenabled)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyPressMoveML(e,ev,item, move, clone_count, time_delta, key, flipenabled));
+}
 EXPORT GameApi::ML GameApi::MovementNode::move_ml_projection(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int clone_count, float time_delta)
 {
   MainLoopItem *item = find_main_loop(e, ml);
@@ -3727,6 +4032,12 @@ EXPORT GameApi::ML GameApi::MovementNode::rot_z_ml(EveryApi &ev, GameApi::ML ml,
 {
   MainLoopItem *item = find_main_loop(e, ml);
   return add_main_loop(e, new KeyMoveML(e,ev,item,key_forward, key_backward,0.0,speed,false,false,false,false,false,true,start_z,end_z));
+}
+
+EXPORT GameApi::ML GameApi::MovementNode::key_move_ml(EveryApi &ev, GameApi::ML ml, int key_forward, int key_backward, int key_rotate_minus, int key_rotate_plus, float speed, float rot_speed, float start_angle, float start_x, float end_x, float start_z, float end_z)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new KeyMoveML2(e,ev,item,key_forward, key_backward,key_rotate_minus, key_rotate_plus, speed, rot_speed, start_angle, start_x, end_x, start_z, end_z));
 }
 
 EXPORT GameApi::ML GameApi::MovementNode::enable_ml(EveryApi &ev, GameApi::ML ml, float start_time, float end_time)
@@ -36696,6 +37007,7 @@ public:
       }
       firsttime = false;
     } else {
+      //std::cout << "KeyML:" << current_item << "<" << items.size() << " at " << e.time << std::endl;
       if (current_item>=0 && current_item<items.size())
 	items[current_item]->execute(e);
     }

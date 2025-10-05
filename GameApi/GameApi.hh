@@ -426,6 +426,7 @@ public:
   IMPORT ML concurrent_download(ML ml);
   IMPORT ML fullscreen_button(EveryApi &ev);
   IMPORT TT timing_start();
+  IMPORT TT timing_event(IF fetch, TT timing, ML show);
   IMPORT TT timing(float duration, TT link, ML show);
   IMPORT TT timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir);
   IMPORT ML timing_exit(TT link);
@@ -1151,6 +1152,7 @@ public:
   IMPORT SF time_string_fetcher(EveryApi &ev);
   IMPORT SF score_string_fetcher(std::string id, std::string label, int numdigits); // use score_display instead.
   IMPORT IF char_fetcher_from_string(SF string_fetcher, std::string alternatives, int idx);
+  IMPORT IF key_move_2_area_fetcher(float start_x, float end_x, float start_z, float end_z);
   IMPORT ML dynamic_character(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y);
   IMPORT FML dynamic_character_frame(EveryApi &ev, std::vector<BM> vec, IF fetcher, int x, int y, int fmt, MN mn);
   IMPORT ML dynamic_polygon(EveryApi &ev, std::vector<P> vec, MT material, IF fetcher);
@@ -1915,6 +1917,7 @@ class MovementNode
 {
 public:
   IMPORT MovementNode(Env &e);
+  IMPORT ML key_move_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, int key_rotate_minus, int key_rotate_plus, float speed, float rot_speed, float start_angle, float start_x, float end_x, float start_z, float end_z);
   IMPORT MN android_landscape_rotate(MN next);
   IMPORT MN android_landscape_rotate_inv(MN next);
   IMPORT MN mn_mouse_y(FF fetcher, MN move, float start_x, float end_x, float start_y, float end_y, float start_val, float end_val);
@@ -1960,6 +1963,7 @@ public:
   IMPORT M get_matrix(MN n, float time, float delta_time);
   IMPORT ML color_ml(EveryApi &ev, int color_num, ML ml, CC cc);
   IMPORT ML move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
+  IMPORT ML keypress_move_ml(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0, int key=32, bool flipenabled=false);
   IMPORT ML move_ml_projection(EveryApi &ev, ML ml, MN mn, int clone_count=1, float time_delta=10.0);
   IMPORT P move_ml_p(EveryApi &ev, P p, MN move, float time);
   IMPORT ML repeat_ml(EveryApi &ev, ML ml, float duration);

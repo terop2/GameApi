@@ -10,6 +10,7 @@ int hhhh_gggg=1;
 #define TINYGLTF_USE_CPP14 1
 #include "tiny_gltf.h"
 #include "Tasks.hh"
+#include <unordered_set>
 
 // TODO, CAUSES PROBLEMS
 #define NO_MV 1
@@ -1683,9 +1684,9 @@ public:
   virtual int SizeY() const { if (img) return img->height; return 0; }
   virtual Color Map(int x, int y) const
   {
-    //if (!img) return Color(0x0);
-    //if (x<0||x>=img->width) return Color(0x0);
-    //if (y<0||y>=img->height) return Color(0x0);
+    if (!img) return Color(0x0);
+    if (x<0||x>=img->width) return Color(0x0);
+    if (y<0||y>=img->height) return Color(0x0);
     const unsigned char *ptr = &img->image[0];
     int offset = (x*img->component + y*img->width*img->component)*(img->bits/8);
     //if (img->component<0) { offset=(x+y*img->width)*(img->bits/8); img->component=4; }
@@ -10795,6 +10796,7 @@ public:
 	      start_node = scene.nodes[0];
 	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
 	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
+	      std::cout << "scene_node=" << start_node << std::endl;
 	    }
 	    else {
 	      std::cout << "Default Scene nodes size=0" << std::endl;
@@ -10802,6 +10804,7 @@ public:
 	    }
 	  }
 	}
+	std::cout << "Start node chosen:" << start_node << std::endl;
 	max_count=0;
 	max_time = 0.0;
 	PrevNodes *prev2 = new PrevNodes;
@@ -10853,6 +10856,8 @@ public:
       const tinygltf::Skin &skin = interface->get_skin(skin_num); //&load->model.skins[skin_num];
       int start_node = skin.skeleton;
 	if (start_node==-1) {
+
+
 	  std::cout << "skin.skeleton==-1" << std::endl;
 	  int defscene = interface->get_default_scene();
 	  if (defscene==-1) { std::cout << "Default scene ==-1" << std::endl; start_node=0; } else { 
@@ -10861,6 +10866,7 @@ public:
 	      start_node = scene.nodes[0];
 	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
 	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
+	      std::cout << "scene_node=" << start_node << std::endl;
 	    }
 	    else {
 	      std::cout << "Default Scene nodes size=0" << std::endl;
@@ -12892,7 +12898,7 @@ public:
   
 
 void execute(MainLoopEnv &e) {
-
+  //std::cout << "gltf::time=" << e.time << std::endl;
   /* (causes flickering of the player)
   if (fabs(e.time-last_time)>0.000001)
     {

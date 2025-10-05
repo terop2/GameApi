@@ -730,6 +730,35 @@ EXPORT GameApi::ML GameApi::FontApi::dynamic_string(GameApi::EveryApi &ev, GameA
   return ev.mainloop_api.array_ml(ev,ml);
 }
 
+extern Point g_key_move_2_pos;
+
+class KeyMoveAreaFetcher : public Fetcher<int>
+{
+public:
+  KeyMoveAreaFetcher(float start_x, float end_x, float start_z, float end_z) : start_x(start_x), end_x(end_x), start_z(start_z), end_z(end_z) { }
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) { }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+  virtual void set(int t) { }
+  virtual int get() const
+  {
+    Point pos = g_key_move_2_pos;
+    if (pos.x>=start_x && pos.x<=end_x &&
+	pos.z>=start_z && pos.z<=end_z)
+      return 1;
+    return 0;
+  }
+private:
+  float start_x, end_x;
+  float start_z, end_z;
+};
+
+GameApi::IF GameApi::FontApi::key_move_2_area_fetcher(float start_x, float end_x, float start_z, float end_z)
+{
+  return add_int_fetcher(e, new KeyMoveAreaFetcher(start_x,end_x,start_z,end_z));
+}
+
 class MovementIntFetcher : public Fetcher<int>
 {
 public:
