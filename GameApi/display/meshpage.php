@@ -385,7 +385,7 @@ $num = read_num( $user );
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "<div style=\"display:none\">LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span></div><br>";
 echo "<div style=\"display:none\">PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span></div>";
-page_title($sitename, "groundbreaking way to bring the next level technologies to the web: 3d.");
+page_title($sitename, "groundbreaking way to bring 3d to the web.");
 echo "<div class=\"buttons\">";
 echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/view.php'\">3d model viewer</button>";
 echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";

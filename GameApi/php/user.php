@@ -642,7 +642,7 @@ function page_header( $pos )
 }
 function page_title( $str, $desc )
 {
-echo '<div style="font-family: \'calibri\', sans-serif" class="page_title">';
+echo '<div style="position: relative; left: -10px; font-family: \'calibri\', sans-serif" class="page_title">';
 echo '<div rel="title" class="title"><h1>' . $str;
 if ($_SERVER["HTTP_HOST"]=="localhost") {
   echo "(localhost)";
