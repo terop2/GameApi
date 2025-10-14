@@ -333,7 +333,7 @@ echo "            padding: 20px;\n";
 echo "            border-radius: 8px;\n";
 echo "}\n";
 echo ".orange {\n";
-echo "  color: #ff6622;\n";
+echo "  color: #ffff66;\n";
 echo "}\n";
 echo ".white {\n";
 echo "  color: #ffffff;\n";

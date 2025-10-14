@@ -22856,6 +22856,44 @@ GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
   return add_main_loop(e, new SaveDeploy(e,h2,filename));
 }
 
+std::string fix_script(std::string code, std::string rettype)
+{
+  {
+  std::stringstream ss(code);
+  std::string line;
+  int line_no = 0;
+  int res_line = 0;
+  while(std::getline(ss,line))
+    {
+      std::stringstream ss2(line);
+      std::string ret_type;
+      ss2 >> ret_type;
+      if (ret_type==rettype)
+	{
+	  res_line = line_no;
+	}
+      line_no++;
+    }
+  }
+
+
+  {
+  std::stringstream ss(code);
+  std::string line;
+  int line_no = 0;
+  std::string res;
+  while(std::getline(ss,line))
+    {
+      if (line_no > res_line) return res;
+      res+=line+"\n";
+      line_no++;
+    }
+  }
+  return code;
+  
+}
+
+
 
 class P_script2 : public FaceCollection
 {
@@ -22884,6 +22922,7 @@ public:
     if (hml) {
     hml->Prepare();
     std::string code(hml->script_file());
+    code = fix_script(code, "P");
     code = replace_str(code, "%1", p1);
     code = replace_str(code, "%2", p2);
     code = replace_str(code, "%3", p3);
@@ -23236,7 +23275,8 @@ public:
     if (hml) {
     hml->Prepare();
     std::string code(hml->script_file());
-    //std::cout << "PREPARE2: " << code << std::endl;
+    code = fix_script(code, "ML");
+    std::cout << "PREPARE2: " << code << std::endl;
     code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
@@ -23342,6 +23382,7 @@ public:
       GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
+    code = fix_script(code, "ML");
       code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
@@ -23450,6 +23491,7 @@ public:
     //  std::string code(vec->begin(), vec->end());
     hml->Prepare();
     std::string code(hml->script_file());
+    code = fix_script(code, "MN");
     code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
@@ -23552,6 +23594,7 @@ public:
       GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
+    code = fix_script(code, "MN");
       code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
@@ -23656,6 +23699,7 @@ public:
     // std::string code(vec->begin(), vec->end());
         hml->Prepare();
     std::string code(hml->script_file());
+    code = fix_script(code, "MT");
 
       code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
@@ -23761,6 +23805,8 @@ public:
       GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "async not ready!" << std::endl; return; }
       std::string code(vec->begin(), vec->end());
+    code = fix_script(code, "MT");
+
       code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
