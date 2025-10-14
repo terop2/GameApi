@@ -23236,7 +23236,7 @@ public:
     if (hml) {
     hml->Prepare();
     std::string code(hml->script_file());
-    //std::cout << "PREPARE2: " << code << std::endl;
+    std::cout << "PREPARE2: " << code << std::endl;
     code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
