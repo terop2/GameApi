@@ -22858,11 +22858,11 @@ GameApi::ML GameApi::MainLoopApi::save_deploy(HML h, std::string filename)
 
 std::string fix_script(std::string code, std::string rettype)
 {
+  int res_line = 0;
   {
   std::stringstream ss(code);
   std::string line;
   int line_no = 0;
-  int res_line = 0;
   while(std::getline(ss,line))
     {
       std::stringstream ss2(line);
@@ -23276,7 +23276,7 @@ public:
     hml->Prepare();
     std::string code(hml->script_file());
     code = fix_script(code, "ML");
-    std::cout << "PREPARE2: " << code << std::endl;
+    //std::cout << "PREPARE2: " << code << std::endl;
     code = replace_str(code, "%1", p1);
       code = replace_str(code, "%2", p2);
       code = replace_str(code, "%3", p3);
