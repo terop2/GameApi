@@ -694,7 +694,7 @@ public:
 #endif
   }
 
-std::string create_tmp_filename()
+std::string create_tmp_filename(std::string prefix, std::string suffix)
 {
   std::string start="";
 #ifdef LINUX
@@ -720,7 +720,7 @@ std::string create_tmp_filename()
   ss2.flush();
   ss2.close();
   std::stringstream ss3;
-  ss3 << "tmp_" << val << ".txt";
+  ss3 << prefix << val << suffix;
   return ss3.str();
 }
 
@@ -916,7 +916,7 @@ public:
 	    s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
 
-	    std::string filename = create_tmp_filename();
+	    std::string filename = create_tmp_filename("script_", ".txt");
 	    
 	    int id = env->env->add_to_download_bar(filename);
 	    int ii = env->env->download_index_mapping(id);
@@ -1155,7 +1155,7 @@ public:
 	    s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
 
-	    std::string filename = create_tmp_filename();
+	    std::string filename = create_tmp_filename("script_",".txt");
 	    
 	    int id = env->env->add_to_download_bar(filename);
 	    int ii = env->env->download_index_mapping(id);
