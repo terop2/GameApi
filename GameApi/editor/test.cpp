@@ -798,14 +798,18 @@ public:
 	int s = filename.size();
 	for(int i=0;i<s;i++)
 	  {
-	    if (filename[i]=='/') pos=i+1;
+	    if (filename[i]=='/'||filename[i]=='\\') pos=i+1;
 	  }
 	shortfile = filename.substr(pos);
 	int id = env->env->add_to_download_bar(shortfile);
 	int ii = env->env->download_index_mapping(id);
 
-	
+#ifdef LINUX
 	std::ifstream ss(filename.c_str());
+#endif
+#ifdef WINDOWS
+	std::ifstream ss(filename.c_str(),std::ios::in | std::ios::binary);
+#endif
 	std::vector<unsigned char> file;
 	char ch;
 	while(ss.get(ch)) {
@@ -3436,6 +3440,16 @@ public:
 	    g_dragdrop_filename = std::string("file://") + s + "/.gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);
 #endif
 #ifdef WINDOWS
+	      std::string home = getenv("TEMP");
+
+
+	      int s = home.size();
+	      for(int i=0;i<s;i++)
+		if (home[i]=='\\') home[i]='/';
+	      
+	    //std::string drive = getenv("systemdrive");
+	    //std::string path = getenv("homepath");
+	    g_dragdrop_filename = std::string("file://") + home + "/_gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);
 #endif
 	  }
 	if (state==2 && chosen==0)
