@@ -672,6 +672,8 @@ struct Low_SDL_Event
   Low_SDL_MouseButtonEvent button;
 };
 
+struct Low_SDL_Cursor { void *ptr; };
+
 struct Low_SDL_Surface { void *ptr; int w; int h; void* pixels; int pitch; };
 struct Low_SDL_Window { void *ptr; };
 typedef void* Low_SDL_GLContext;
@@ -720,6 +722,12 @@ public:
   virtual void SDL_LockSurface(Low_SDL_Surface *surf)=0;
   virtual void SDL_UnlockSurface(Low_SDL_Surface *surf)=0;
   virtual void SDL_ShowCursor(bool b)=0;
+  virtual Low_SDL_Cursor* SDL_CreateCursor(const unsigned char *data,
+				const unsigned char *mask,
+				int w, int h,
+				int hot_x, int hot_y)=0;
+  virtual void SDL_SetCursor(Low_SDL_Cursor *cursor)=0;
+  virtual void SDL_FreeCursor(Low_SDL_Cursor *cursor)=0;
   virtual int SDL_PollEvent(Low_SDL_Event *event)=0;
   virtual unsigned int SDL_GetTicks()=0;
   virtual unsigned long long SDL_GetPerformanceCounter()=0;
