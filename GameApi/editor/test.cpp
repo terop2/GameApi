@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <filesystem>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -693,6 +694,36 @@ public:
 #endif
   }
 
+std::string create_tmp_filename()
+{
+  std::string start="";
+#ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
+  std::string home = getenv("HOME");
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder/tmp.counter";
+#endif
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  start=drive+path+"\\_gameapi_builder\\tmp.counter";
+#endif
+  std::ifstream ss(start.c_str());
+  int val=0;
+  ss >> val;
+  ss.close();
+  val++;
+  std::ofstream ss2(start.c_str());
+  ss2 << val;
+  ss2.flush();
+  ss2.close();
+  std::stringstream ss3;
+  ss3 << "tmp_" << val << ".txt";
+  return ss3.str();
+}
+
 class MainIter : public BuilderIter
 {
 public:
@@ -884,6 +915,15 @@ public:
 	    s = replace_str(s, "<", "&lt;");
 	    s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
+
+	    std::string filename = create_tmp_filename();
+	    
+	    int id = env->env->add_to_download_bar(filename);
+	    int ii = env->env->download_index_mapping(id);
+	    std::vector<unsigned char> vec(s.begin(),s.end());
+	    env->env->set_download_data(ii,vec);
+	    env->env->set_download_progress(ii,100.0);
+	    env->env->set_download_ready(ii);
 	    std::cout << s << std::endl;
 	  }
 	int chosen3 = env->gui->chosen_item(env->collect_button);
@@ -1114,6 +1154,17 @@ public:
 	    s = replace_str(s, "<", "&lt;");
 	    s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
+
+	    std::string filename = create_tmp_filename();
+	    
+	    int id = env->env->add_to_download_bar(filename);
+	    int ii = env->env->download_index_mapping(id);
+	    std::vector<unsigned char> vec(s.begin(),s.end());
+	    env->env->set_download_data(ii,vec);
+	    env->env->set_download_progress(ii,100.0);
+	    env->env->set_download_ready(ii);
+
+
 	    std::cout << s << std::endl;
 	    
 	  }
