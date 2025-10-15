@@ -659,6 +659,9 @@ IMPORT extern bool g_progress_halt;
 class IterTab;
 extern IterTab *g_start2;
 
+extern bool g_dragdrop_enabled;
+extern std::string g_dragdrop_filename;
+
 
 class BuilderIter
 {
@@ -784,6 +787,36 @@ public:
     }
 
     enum_editor_handle_event(*env->gui, env->enum_click_targets, e.button);
+
+    //std::cout << "EVENT: " << e.type << std::endl;
+
+    if (e.type==4096)
+      { // dropfile
+	std::string filename = e.drag_drop_filename;
+	std::string shortfile;
+	int pos=0;
+	int s = filename.size();
+	for(int i=0;i<s;i++)
+	  {
+	    if (filename[i]=='/') pos=i+1;
+	  }
+	shortfile = filename.substr(pos);
+	int id = env->env->add_to_download_bar(shortfile);
+	int ii = env->env->download_index_mapping(id);
+
+	
+	std::ifstream ss(filename.c_str());
+	std::vector<unsigned char> file;
+	char ch;
+	while(ss.get(ch)) {
+	  unsigned char ch2 = ch;
+	  file.push_back(ch2);
+	}
+	env->env->set_download_data(ii, file);
+	env->env->set_download_progress(ii,100.0);
+	env->env->set_download_ready(ii);
+      }
+    
     
     if (e.type==1024 && e.button==-1)
       {
@@ -3387,16 +3420,29 @@ public:
       {
 	env->env->start_async(new DownloadUpdateTask(g_start)); 
      }
+
+    if (e.button != 0) g_dragdrop_enabled=false;
+    
     int s5 = env->db_buttons.size();
     for(int i=0;i<s5;i++)
       {
 	W w = env->db_buttons[i];
 	int chosen = env->gui->chosen_item(w);
+	if (state==0 && chosen==0 && e.button==0)
+	  {
+	    g_dragdrop_enabled=true;
+#ifdef LINUX
+	    std::string s = getenv("HOME");
+	    g_dragdrop_filename = std::string("file://") + s + "/.gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);
+#endif
+#ifdef WINDOWS
+#endif
+	  }
 	if (state==2 && chosen==0)
 	  {
 	    if (counter<200)
 	      { // double-click on the download bar
- #ifdef LINUX
+#ifdef LINUX
 		std::string s = getenv("HOME");
 		pthread_system((std::string("xdg-open ")+s+"/.gameapi_builder/Downloads/").c_str());
 #endif
