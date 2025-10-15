@@ -3113,13 +3113,13 @@ long long load_size_from_url(std::string url)
     bool succ=false;
 #ifndef ANDROID
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url " + url;
+    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url \"" + url + "\"";
     std::string cmd2  = "..\\curl\\curl.exe";
     succ = file_exists(cmd2);
-    std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
+    std::string cmdsize = "..\\curl\\curl.exe -sI --url \"" + url + "\"";
 #else
-    std::string cmd = "curl -s --max-time 300 -N --url " + url;
-    std::string cmdsize = "curl -sI --url " + url;
+    std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
+    std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
 #endif
     long long num = 1;
@@ -3196,14 +3196,14 @@ public:
 #ifdef HAS_POPEN
 
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url " + url;
+    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url \"" + url + "\"";
     std::string cmd2  = "..\\curl\\curl.exe";
     succ = file_exists(cmd2);
-    std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
+    std::string cmdsize = "..\\curl\\curl.exe -sI --url \"" + url + "\"";
 #else
     //std::cout << "Fetching " << url << std::endl;
-    std::string cmd = "curl -s --max-time 300 -N --url " + url;
-    std::string cmdsize = "curl -sI --url " + url;
+    std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
+    std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
 #endif
 
@@ -3854,7 +3854,7 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
   system("mkdir %TEMP%\\_gameapi_builder\\Downloads");
   std::string home = getenv("TEMP");
   std::string filename_with_path = home + std::string("\\_gameapi_builder\\Downloads\\") + filename;
-  std::ofstream ss(filename_with_path.c_str());
+  std::ofstream ss(filename_with_path.c_str(),std::ios::binary);
   std::string val(vec->begin(),vec->end());
   ss << val;
   ss << std::flush;
