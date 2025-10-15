@@ -671,6 +671,10 @@ private:
 };
 
 
+IMPORT bool g_dragdrop_enabled;
+IMPORT std::string g_dragdrop_filename;
+
+
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -689,6 +693,10 @@ public:
     bool changed = false;
     Point2d pos = get_pos();
     Vector2d sz = get_size();
+
+    //std::cout << "ATTEMPT DRAGDROP: " << g_dragdrop_enabled << " " << button << " " << type << std::endl;
+    
+
     if (button == 0 && type==1025 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
 	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
       {
@@ -698,6 +706,23 @@ public:
       {
 	active = false;
       }
+
+
+    static int state=0;
+    if (button==0 && type==1024) state=1;
+    if (button!=0 && type==1024) state=0;
+    if (g_dragdrop_enabled && state==1 && button==-1 && type==1026 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
+	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
+      {
+	g_dragdrop_enabled=false;
+	std::string filename = g_dragdrop_filename;
+	label=filename;
+	changed=true;
+	active=true;
+	//std::cout << "DRAGDROP" << std::endl;
+      }
+
+    
     //std::cout << type << " " << ch << std::endl;
     if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; }
     if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; }
@@ -3885,6 +3910,8 @@ EXPORT GameApi::W GameApi::GuiApi::directory_view(std::vector<std::string> dir_i
 EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 {
 }
+
+
 
 EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab, std::vector<float> progress)
 {
