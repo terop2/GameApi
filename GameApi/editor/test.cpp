@@ -3425,7 +3425,11 @@ public:
 	env->env->start_async(new DownloadUpdateTask(g_start)); 
      }
 
-    if (e.button != 0) g_dragdrop_enabled=false;
+    static bool flag=false;
+    if (e.button != 0 && flag==true)
+      g_dragdrop_enabled=false;
+    if (e.button != 0) flag=true;
+    else flag=false;
     
     int s5 = env->db_buttons.size();
     for(int i=0;i<s5;i++)
