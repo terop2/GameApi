@@ -536,6 +536,7 @@ class Conv {
 public:
   static void set(T &target, std::string s) { std::stringstream ss(s); ss >> target; }
   static void get(const T &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+  static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type!"; }
 };
 template<>
 class Conv<std::string>
@@ -543,6 +544,11 @@ class Conv<std::string>
 public:
   static void set(std::string &target, std::string s) { target = s; }
   static void get(const std::string &target, std::string &s) { s=target; }
+  static std::string error(const std::string &target, const std::string &dd_ext) {
+    std::string filename = target;
+    std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
+
+    return std::string("Drag & Drop not allowed for the extension .") + ext + ", since required: ." + dd_ext + "!"; }
 };
 template<>
 class Conv<float>
@@ -550,6 +556,7 @@ class Conv<float>
 public:
   static void set(float &target, std::string s) { s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
   static void get(const float &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+  static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type float!"; }
 };
 template<class T>
 class MultilineEditor : public GuiWidgetForward
@@ -723,7 +730,8 @@ public:
 	  changed=true;
 	  active=true;
 	} else {
-	  std::cout << "ERROR: drag drop extension ." << drag_drop_ext << " does not match ." << ext << "!" << std::endl;
+	  std::string err = Conv<T>::error(ext,drag_drop_ext);
+	  std::cout << err << std::endl;
 	}
 	//std::cout << "DRAGDROP" << std::endl;
       }
