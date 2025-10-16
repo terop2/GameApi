@@ -1,5 +1,3 @@
-
-
 #ifndef GAMEAPI_HH
 #define GAMEAPI_HH
 
@@ -60,6 +58,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   name(int i) : id(i) { }\
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
+  MAC(ZIP)
   MAC(BS)
   MAC(US)
   MAC(CS)
