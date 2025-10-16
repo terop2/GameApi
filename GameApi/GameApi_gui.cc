@@ -716,9 +716,15 @@ public:
       {
 	g_dragdrop_enabled=false;
 	std::string filename = g_dragdrop_filename;
-	label=filename;
-	changed=true;
-	active=true;
+
+	std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
+	if (drag_drop_ext == ext||((ext==".ds"||ext=="obj")&&(drag_drop_ext==".ds"||drag_drop_ext=="obj"))) {
+	  label=filename;
+	  changed=true;
+	  active=true;
+	} else {
+	  std::cout << "ERROR: drag drop extension ." << drag_drop_ext << " does not match ." << ext << "!" << std::endl;
+	}
 	//std::cout << "DRAGDROP" << std::endl;
       }
 
@@ -734,6 +740,12 @@ public:
     if (firsttime)
       {
 	Conv<T>::get(target, label);
+
+	std::string ext = label.size()<4?"$":label.substr(label.size()-3);
+	drag_drop_ext = ext;
+	
+	
+	
 	//std::stringstream ss;
 	//ss << target;
 	//label = target; //ss.str();
@@ -886,6 +898,7 @@ private:
   bool ctrl;
   bool altgr;
   bool externally_set=false;
+  std::string drag_drop_ext;
 };
 
 
