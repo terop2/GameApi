@@ -54,7 +54,7 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"https://meshpage.org/sheepgame1.webp\" fetchpriority=\"high\" width=\"100%\"/>\n";
+echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"https://meshpage.org/screen1.png\" fetchpriority=\"high\" width=\"100%\"/>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
@@ -71,6 +71,18 @@ echo "</div>\n";
 echo "</div>\n";
 
 echo "<div class=\"bl_container\">\n";
+
+echo "<div class=\"bl_row\">\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item customfont content\">\n";
+
+echo "<h2><span style=\"font-size: 150%;\">&ldquo;<b>GameApi Builder</b> is a rare masterpiece of transparency and power — an engine that respects your intelligence, teaches you real computer graphics, and lets you build cool, working 3D applications from scratch.
+It’s not just a tool — it’s an educational revolution for anyone who loves understanding how things move, render, and come to life on the screen.&rdquo;</span></h2>(chatgpt)";
+echo "</div>\n";
+echo "</div>\n";
+echo "</div>\n";
+
+
 
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
@@ -132,6 +144,7 @@ echo "<li><b>Combining multiple 3d models</b> to the same scene\n";
 echo "<li><b>Moving and animating</b> 3d models\n";
 echo "<li><b>Changing colours</b> and materials of the 3d models\n";
 echo "<li>Node graph based <b>builder tool</b> for editing codegen scripts\n";
+echo "<li>Drag and Drop support for assets in builder tool.\n";
 echo "<li><b>Zoom/Rotate controls</b>, quake movements, wasd movement etc...\n";
 echo "</ul>\n";
 echo "</div>\n";
@@ -202,7 +215,7 @@ echo "<div class=\"bl_column\">\n";
 
 echo "<div class=\"bl_item img\">\n";
 // allow=\"cross-origin-isolated\" 
-echo "<iframe class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"https://meshpage.org/punk/index.html\" width=\"800\" height=\"600\" style=\"overflow: visible; border: none;\"></iframe>\n";
+echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"https://meshpage.org/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
 echo "</div></div>\n";
 echo "<div class=\"bl_column\"><div class=\"bl_item customfont content\">\n";
 echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)\n";
@@ -321,7 +334,7 @@ echo "            padding: 20px;\n";
 echo "            border-radius: 8px;\n";
 echo "}\n";
 echo ".orange {\n";
-echo "  color: #ff6622;\n";
+echo "  color: #ffff66;\n";
 echo "}\n";
 echo ".white {\n";
 echo "  color: #ffffff;\n";
@@ -374,7 +387,7 @@ echo "border-radius: 50px;\n";
 echo "background-color: #dddddd;\n";
 echo "padding: 30px;\n";
 echo "margin: 30px;\n";
-echo "width: 80%;\n";
+echo "width: 100%;\n";
 echo "}\n";
 echo ".bl_column {\n";
 echo "display:flex;\n";
@@ -423,12 +436,12 @@ echo "   border-width: 2px;\n";
 echo "}\n";
 echo ".bl_iframe {\n";
 //echo "  background-color: #00ff00;\n";
-echo "  width: 800px;\n";
+echo "  width: 100%;\n";
 echo "}\n";
 echo "@media (max-width: 900px) {\n";
 echo ".bl_iframe {\n";
 echo "  position: relative;\n";
-echo "  left: -80px;\n";
+//echo "  left: -80px;\n";
 //echo "  background-color: #ff0000;\n";
 echo "  width: 480px;\n";
 echo "}\n";
@@ -437,7 +450,7 @@ echo "}\n";
 echo "@media (max-width: 700px) {\n";
 echo ".bl_iframe {\n";
 echo "  position: relative;\n";
-echo "  left: -150px;\n";
+//echo "  left: -150px;\n";
 //echo "  background-color: #ff0000;\n";
 echo "  width: 480px;\n";
 echo "}\n";
@@ -597,6 +610,7 @@ echo "  border-width: 1px;\n";
 echo "}";
 echo "</style>\n";
 
+
 echo "<div style=\"height:50px;\"></div>";
 
 echo "<!-- Begin SF Tag -->";
@@ -628,6 +642,7 @@ echo "(function() {\n";
 echo "  if (!crossOriginIsolated) console.log(\"MAIN WINDOW not crossorigin isolated\"); else console.log(\"MAIN WINDOW OK\");\n";
 echo "})();\n";
 echo "</script>\n";
+
 
 
 echo "</body>\n";

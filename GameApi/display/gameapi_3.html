@@ -42,7 +42,15 @@
     <script src="engine/gameapi.js?1"></script>
     <script>
 function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border) {
-      return function (event) {
+    return function (event) {
+      if (window.self !== window.top)
+      { // we're inside iframe, use iframe dimensions
+	  wd = window.innerWidth;
+	  hd = window.innerHeight;
+	  container_width = window.innerWidth;
+	  container_height= window.innerHeight;
+      }
+	
           if (Module && g_emscripten_running) {
       var cc = document.getElementById("container");
       var c = document.getElementById("canvas");

@@ -15,6 +15,7 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <filesystem>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -659,6 +660,9 @@ IMPORT extern bool g_progress_halt;
 class IterTab;
 extern IterTab *g_start2;
 
+extern bool g_dragdrop_enabled;
+extern std::string g_dragdrop_filename;
+
 
 class BuilderIter
 {
@@ -689,6 +693,36 @@ public:
     return (uint64_t)((counter.QuadPart * 1000000) / frequency.QuadPart);
 #endif
   }
+
+std::string create_tmp_filename(std::string prefix, std::string suffix)
+{
+  std::string start="";
+#ifdef LINUX
+  const char *dd = getenv("BUILDER_DOCKER_DIR");
+  std::string dockerdir = dd?dd:"";
+  std::string home = getenv("HOME");
+  home+="/";
+  if (dockerdir!="") home=dockerdir;
+  start = home + ".gameapi_builder/tmp.counter";
+#endif
+#ifdef WINDOWS
+  std::string drive = getenv("systemdrive");
+  std::string path = getenv("homepath");
+  start=drive+path+"\\_gameapi_builder\\tmp.counter";
+#endif
+  std::ifstream ss(start.c_str());
+  int val=0;
+  ss >> val;
+  ss.close();
+  val++;
+  std::ofstream ss2(start.c_str());
+  ss2 << val;
+  ss2.flush();
+  ss2.close();
+  std::stringstream ss3;
+  ss3 << prefix << val << suffix;
+  return ss3.str();
+}
 
 class MainIter : public BuilderIter
 {
@@ -784,6 +818,47 @@ public:
     }
 
     enum_editor_handle_event(*env->gui, env->enum_click_targets, e.button);
+
+    //std::cout << "EVENT: " << e.type << std::endl;
+
+    if (e.type==4096)
+      { // dropfile
+	std::string filename = e.drag_drop_filename;
+	std::string shortfile;
+	int pos=0;
+	int s = filename.size();
+	for(int i=0;i<s;i++)
+	  {
+	    if (filename[i]=='/'||filename[i]=='\\') pos=i+1;
+	  }
+	shortfile = filename.substr(pos);
+	int s2 = shortfile.size();
+	for(int i=0;i<s2;i++)
+	  {
+	    if (shortfile[i]==' ') shortfile[i]='_';
+	    if (shortfile[i]=='(') shortfile[i]='_';
+	    if (shortfile[i]==')') shortfile[i]='_';
+	  }
+	int id = env->env->add_to_download_bar(shortfile);
+	int ii = env->env->download_index_mapping(id);
+
+#ifdef LINUX
+	std::ifstream ss(filename.c_str());
+#endif
+#ifdef WINDOWS
+	std::ifstream ss(filename.c_str(),std::ios::in | std::ios::binary);
+#endif
+	std::vector<unsigned char> file;
+	char ch;
+	while(ss.get(ch)) {
+	  unsigned char ch2 = ch;
+	  file.push_back(ch2);
+	}
+	env->env->set_download_data(ii, file);
+	env->env->set_download_progress(ii,100.0);
+	env->env->set_download_ready(ii);
+      }
+    
     
     if (e.type==1024 && e.button==-1)
       {
@@ -847,6 +922,15 @@ public:
 	    s = replace_str(s, "<", "&lt;");
 	    s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
+
+	    std::string filename = create_tmp_filename("script_", ".txt");
+	    
+	    int id = env->env->add_to_download_bar(filename);
+	    int ii = env->env->download_index_mapping(id);
+	    std::vector<unsigned char> vec(s.begin(),s.end());
+	    env->env->set_download_data(ii,vec);
+	    env->env->set_download_progress(ii,100.0);
+	    env->env->set_download_ready(ii);
 	    std::cout << s << std::endl;
 	  }
 	int chosen3 = env->gui->chosen_item(env->collect_button);
@@ -1077,6 +1161,17 @@ public:
 	    s = replace_str(s, "<", "&lt;");
 	    s = replace_str(s, "\"", "&quot;");
 	    s = replace_str(s, "\'", "&apos;");
+
+	    std::string filename = create_tmp_filename("script_",".txt");
+	    
+	    int id = env->env->add_to_download_bar(filename);
+	    int ii = env->env->download_index_mapping(id);
+	    std::vector<unsigned char> vec(s.begin(),s.end());
+	    env->env->set_download_data(ii,vec);
+	    env->env->set_download_progress(ii,100.0);
+	    env->env->set_download_ready(ii);
+
+
 	    std::cout << s << std::endl;
 	    
 	  }
@@ -1557,6 +1652,14 @@ public:
 			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 
 			    } else
+			    if (type=="ZIP")
+			      {
+			      ML ml;
+			      ml.id = id;
+			      env->env->free_temp_memory();
+			      env->gui->delete_widget(env->mem);
+			      env->display = env->gui->ml_dialog(ml, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);				
+			      } else
 			    if (type=="MT")
 			      {
 				MT mat;
@@ -2576,6 +2679,8 @@ void MoveCB(void* data)
   //std::cout << "update" << std::endl;
 }
 
+Low_SDL_Cursor *cursor0, *cursor1;
+
 class StartMainTask : public ASyncTask
 {
 public:
@@ -2689,6 +2794,111 @@ public:
       display_width = g_display_width;
       display_height = g_display_height;
     }
+
+  
+
+
+static unsigned char cursor_0_data[16] = {
+ 0b01000000,
+  0b01000000,
+  0b01100000,
+  0b01110000,
+  0b01111000,
+  0b01111100,
+  0b01111110,
+  0b01111110,
+  0b01111110,
+  0b01111100,
+  0b01101000,
+  0b01001000,
+  0b00001100,
+  0b00000100,
+  0b00000100,
+  0b00000000
+};
+
+static unsigned char cursor_0_mask[16] = { 
+  0b11000000,
+  0b11100000,
+  0b11110000,
+  0b11111000,
+  0b11111100,
+  0b11111110,
+  0b11111111,
+  0b11111111,
+  0b11111111,
+  0b11111110,
+  0b11111100,
+  0b11111100,
+  0b00111110,
+  0b00011110,
+  0b00011110,
+  0b00000000
+};
+ static unsigned char cursor_1_data[(16+8)*4] = {
+  0b01000000, 0b00000000, 0b00000000, 0b00000000,
+  0b01000000, 0b00000000, 0b00000000, 0b00000000,
+  0b01100000, 0b00000000, 0b00000000, 0b00000000, 
+  0b01110000, 0b00000000, 0b00000000, 0b00000000,
+  0b01111000, 0b00000000, 0b00000000, 0b00000000,
+  0b01111100, 0b00000000, 0b00000000, 0b00000000,
+  0b01111110, 0b00000000, 0b00000000, 0b00000000, 
+  0b01111110, 0b00000000, 0b00000000, 0b00000000,
+  0b01111110, 0b00000000, 0b00000000, 0b00000000,
+  0b01111100, 0b00000000, 0b00000000, 0b00000000,
+  0b01101000, 0b00000000, 0b00111111, 0b11111110,
+  0b01001000, 0b00000000, 0b00100000, 0b00000010,
+  0b00001100, 0b00000000, 0b00100000, 0b00000010,
+  0b00000100, 0b00000000, 0b00100000, 0b00000010,
+  0b00000100, 0b00000000, 0b00100000, 0b00000010,
+  0b00000000, 0b00000000, 0b00100000, 0b00000010, 
+
+  0b00000000, 0b00000000, 0b00100000, 0b00000010,
+  0b00000000, 0b00000000, 0b00100000, 0b00000010,
+  0b00000000, 0b00000000, 0b00100000, 0b00000010,
+  0b00000000, 0b00000000, 0b00100000, 0b00000010,
+  0b00000000, 0b00000000, 0b00100000, 0b00000010,
+  0b00000000, 0b00000000, 0b00111111, 0b11111110,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000
+
+  
+};
+
+ static unsigned char cursor_1_mask[(16+8)*4] = {
+  0b11000000, 0b00000000, 0b00000000, 0b00000000,
+  0b11100000, 0b00000000, 0b00000000, 0b00000000,
+  0b11110000, 0b00000000, 0b00000000, 0b00000000,
+  0b11111000, 0b00000000, 0b00000000, 0b00000000,
+  0b11111100, 0b00000000, 0b00000000, 0b00000000,
+  0b11111110, 0b00000000, 0b00000000, 0b00000000,
+  0b11111111, 0b00000000, 0b00000000, 0b00000000,
+  0b11111111, 0b00000000, 0b00000000, 0b00000000,
+  0b11111111, 0b00000000, 0b00000000, 0b00000000,
+  0b11111110, 0b00000000, 0b01111111, 0b11111111,
+  0b11111100, 0b00000000, 0b01111111, 0b11111111,
+  0b11111100, 0b00000000, 0b01100000, 0b00000011,
+  0b00111110, 0b00000000, 0b01100000, 0b00000011,
+  0b00011110, 0b00000000, 0b01100000, 0b00000011,
+  0b00011110, 0b00000000, 0b01100000, 0b00000011,
+  0b00000000, 0b00000000, 0b01100000, 0b00000011,
+
+  0b00000000, 0b00000000, 0b01100000, 0b00000011,
+  0b00000000, 0b00000000, 0b01100000, 0b00000011,
+  0b00000000, 0b00000000, 0b01100000, 0b00000011,
+  0b00000000, 0b00000000, 0b01100000, 0b00000011,
+  0b00000000, 0b00000000, 0b01100000, 0b00000011,
+  0b00000000, 0b00000000, 0b01111111, 0b11111111,
+  0b00000000, 0b00000000, 0b01111111, 0b11111111,
+  0b00000000, 0b00000000, 0b00000000, 0b00000000
+  
+};
+
+ 
+ cursor0 = g_low->sdl->SDL_CreateCursor(cursor_0_data,cursor_0_mask,8,16,0,0);
+  cursor1 = g_low->sdl->SDL_CreateCursor(cursor_1_data,cursor_1_mask,32,16+8,0,0);
+
+  g_low->sdl->SDL_SetCursor(cursor0);
   
   float font_scale = 1.5;
 
@@ -3387,16 +3597,46 @@ public:
       {
 	env->env->start_async(new DownloadUpdateTask(g_start)); 
      }
+
+    static bool flag=false;
+    if (e.button != 0 && flag==true) {
+      g_low->sdl->SDL_SetCursor(cursor0);
+      g_dragdrop_enabled=false;
+    }
+    if (e.button != 0) flag=true;
+    else flag=false;
+    
     int s5 = env->db_buttons.size();
     for(int i=0;i<s5;i++)
       {
 	W w = env->db_buttons[i];
 	int chosen = env->gui->chosen_item(w);
+	if (/*state==0 &&*/ chosen==0 && e.button==0)
+	  {
+	    g_dragdrop_enabled=true;
+	    g_low->sdl->SDL_SetCursor(cursor1);
+#ifdef LINUX
+	    std::string s = getenv("HOME");
+	    g_dragdrop_filename = std::string("file://") + s + "/.gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);
+#endif
+#ifdef WINDOWS
+	      std::string home = getenv("TEMP");
+
+
+	      int s = home.size();
+	      for(int i=0;i<s;i++)
+		if (home[i]=='\\') home[i]='/';
+	      
+	    //std::string drive = getenv("systemdrive");
+	    //std::string path = getenv("homepath");
+	    g_dragdrop_filename = std::string("file://") + home + "/_gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);
+#endif
+	  }
 	if (state==2 && chosen==0)
 	  {
 	    if (counter<200)
 	      { // double-click on the download bar
- #ifdef LINUX
+#ifdef LINUX
 		std::string s = getenv("HOME");
 		pthread_system((std::string("xdg-open ")+s+"/.gameapi_builder/Downloads/").c_str());
 #endif

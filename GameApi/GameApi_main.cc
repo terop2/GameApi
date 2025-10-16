@@ -1402,6 +1402,7 @@ EXPORT GameApi::MainLoopApi::Event GameApi::MainLoopApi::get_event()
       Low_SDL_DropEvent *ptr = &event.drop;
       if (ptr && ptr->file)
 	filename = ptr->file;
+      std::cout << "DRAGDROP: " << filename << std::endl;
     }
   e2.drag_drop_filename = filename;
 

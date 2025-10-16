@@ -536,6 +536,7 @@ class Conv {
 public:
   static void set(T &target, std::string s) { std::stringstream ss(s); ss >> target; }
   static void get(const T &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+  static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type!"; }
 };
 template<>
 class Conv<std::string>
@@ -543,6 +544,11 @@ class Conv<std::string>
 public:
   static void set(std::string &target, std::string s) { target = s; }
   static void get(const std::string &target, std::string &s) { s=target; }
+  static std::string error(const std::string &target, const std::string &dd_ext) {
+    std::string filename = target;
+    std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
+
+    return std::string("Drag & Drop not allowed for the extension .") + ext + ", since required: ." + dd_ext + "!"; }
 };
 template<>
 class Conv<float>
@@ -550,6 +556,7 @@ class Conv<float>
 public:
   static void set(float &target, std::string s) { s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
   static void get(const float &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+  static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type float!"; }
 };
 template<class T>
 class MultilineEditor : public GuiWidgetForward
@@ -671,6 +678,10 @@ private:
 };
 
 
+IMPORT bool g_dragdrop_enabled;
+IMPORT std::string g_dragdrop_filename;
+
+
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -689,6 +700,10 @@ public:
     bool changed = false;
     Point2d pos = get_pos();
     Vector2d sz = get_size();
+
+    //std::cout << "ATTEMPT DRAGDROP: " << g_dragdrop_enabled << " " << button << " " << type << std::endl;
+    
+
     if (button == 0 && type==1025 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
 	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
       {
@@ -698,6 +713,30 @@ public:
       {
 	active = false;
       }
+
+
+    static int state=0;
+    if (button==0 && type==1024) state=1;
+    if (button!=0 && type==1024) state=0;
+    if (g_dragdrop_enabled && state==1 && button==-1 && type==1026 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
+	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
+      {
+	g_dragdrop_enabled=false;
+	std::string filename = g_dragdrop_filename;
+
+	std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
+	if (drag_drop_ext == ext||((ext==".ds"||ext=="obj")&&(drag_drop_ext==".ds"||drag_drop_ext=="obj"))) {
+	  label=filename;
+	  changed=true;
+	  active=true;
+	} else {
+	  std::string err = Conv<T>::error(ext,drag_drop_ext);
+	  std::cout << err << std::endl;
+	}
+	//std::cout << "DRAGDROP" << std::endl;
+      }
+
+    
     //std::cout << type << " " << ch << std::endl;
     if (type==768 && (ch==1073742049||ch==1073742053)) { shift=true; }
     if (type==769 && (ch==1073742049||ch==1073742053)) { shift=false; }
@@ -709,6 +748,12 @@ public:
     if (firsttime)
       {
 	Conv<T>::get(target, label);
+
+	std::string ext = label.size()<4?"$":label.substr(label.size()-3);
+	drag_drop_ext = ext;
+	
+	
+	
 	//std::stringstream ss;
 	//ss << target;
 	//label = target; //ss.str();
@@ -861,6 +906,7 @@ private:
   bool ctrl;
   bool altgr;
   bool externally_set=false;
+  std::string drag_drop_ext;
 };
 
 
@@ -3885,6 +3931,8 @@ EXPORT GameApi::W GameApi::GuiApi::directory_view(std::vector<std::string> dir_i
 EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 {
 }
+
+
 
 EXPORT GameApi::W GameApi::GuiApi::download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab, std::vector<float> progress)
 {
