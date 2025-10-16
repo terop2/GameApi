@@ -832,6 +832,13 @@ public:
 	    if (filename[i]=='/'||filename[i]=='\\') pos=i+1;
 	  }
 	shortfile = filename.substr(pos);
+	int s2 = shortfile.size();
+	for(int i=0;i<s2;i++)
+	  {
+	    if (shortfile[i]==' ') shortfile[i]='_';
+	    if (shortfile[i]=='(') shortfile[i]='_';
+	    if (shortfile[i]==')') shortfile[i]='_';
+	  }
 	int id = env->env->add_to_download_bar(shortfile);
 	int ii = env->env->download_index_mapping(id);
 
