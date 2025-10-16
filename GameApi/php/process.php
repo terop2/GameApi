@@ -144,6 +144,7 @@ echo "<li><b>Combining multiple 3d models</b> to the same scene\n";
 echo "<li><b>Moving and animating</b> 3d models\n";
 echo "<li><b>Changing colours</b> and materials of the 3d models\n";
 echo "<li>Node graph based <b>builder tool</b> for editing codegen scripts\n";
+echo "<li>Drag and Drop support for assets in builder tool.\n";
 echo "<li><b>Zoom/Rotate controls</b>, quake movements, wasd movement etc...\n";
 echo "</ul>\n";
 echo "</div>\n";
