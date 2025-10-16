@@ -1754,7 +1754,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			   { "h", "filename" },
 			   { "HML", "std::string" },
 			   { "", "gameapi_deploy.zip" },
-			   "ML", "mainloop_api", "save_deploy"));
+			   "ZIP", "mainloop_api", "save_deploy"));
 #endif    
   return vec;
 }

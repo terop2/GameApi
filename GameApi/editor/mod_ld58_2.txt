@@ -1,0 +1,78 @@
+test
+
+
+(135,73)gltf_load2 uid458194132 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/office_desk_-_18mb.glb:false:-1:-237105072
+(138,186)gltf_load2 uid458194133 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/chair.glb:false:-1:-237105072
+(145,302)gltf_load2 uid458194134 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/door.glb:false:-1:-237105072
+(151,429)gltf_load2 uid458194135 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/retro_computer.glb:false:-1:-237105072
+(287,75)ml_gltf_all uid177025078 0 0 1 ev:*ev:false:-1:-134202688 tf:*uid458194132:false:-1:0 mix:*1.0:false:-1:-134202688 self_mult:*1.0:false:-1:-134202688 rest_mult:*1.0:false:-1:-134202688 mode:*0:false:-1:-134202688 light_dir_x:*400.0:false:-1:-134202688 light_dir_y:*-400.0:false:-1:-134202688 light_dir_z:*300.0:false:-1:-134202688 border_width:*0.0:false:-1:-134202688 border_color:*ff000000:false:-1:-134202688 transparent:*true:false:-1:-134202688
+(287,192)ml_gltf_all uid177025079 0 0 1 ev:*ev:false:-1:-134202688 tf:*uid458194133:false:-1:0 mix:*1.0:false:-1:-134202688 self_mult:*1.0:false:-1:-134202688 rest_mult:*1.0:false:-1:-134202688 mode:*0:false:-1:-134202688 light_dir_x:*400.0:false:-1:-134202688 light_dir_y:*-400.0:false:-1:-134202688 light_dir_z:*300.0:false:-1:-134202688 border_width:*0.0:false:-1:-134202688 border_color:*ff000000:false:-1:-134202688 transparent:*true:false:-1:-134202688
+(289,303)ml_gltf_all uid177025080 0 0 1 ev:*ev:false:-1:-134202688 tf:*uid458194134:false:-1:0 mix:*1.0:false:-1:-134202688 self_mult:*1.0:false:-1:-134202688 rest_mult:*1.0:false:-1:-134202688 mode:*0:false:-1:-134202688 light_dir_x:*400.0:false:-1:-134202688 light_dir_y:*-400.0:false:-1:-134202688 light_dir_z:*300.0:false:-1:-134202688 border_width:*0.0:false:-1:-134202688 border_color:*ff000000:false:-1:-134202688 transparent:*true:false:-1:-134202688
+(305,414)ml_gltf_all uid177025081 0 0 1 ev:*ev:false:-1:-134202688 tf:*uid458194135:false:-1:0 mix:*1.0:false:-1:-134202688 self_mult:*1.0:false:-1:-134202688 rest_mult:*1.0:false:-1:-134202688 mode:*0:false:-1:-134202688 light_dir_x:*400.0:false:-1:-134202688 light_dir_y:*-400.0:false:-1:-134202688 light_dir_z:*300.0:false:-1:-134202688 border_width:*0.0:false:-1:-134202688 border_color:*ff000000:false:-1:-134202688 transparent:*true:false:-1:-134202688
+(463,77)move_ml uid177025082 0 0 1 ev:*ev:false:-1:-134202688 ml:*uid177025078:false:-1:0 mn:*uid177025087:false:-1:0 clone_count:*1:false:-1:-134202688 time_delta:*10.0:false:-1:-134202688
+(470,195)move_ml uid177025083 0 0 1 ev:*ev:false:-1:-134202688 ml:*uid177025079:false:-1:0 mn:*uid177025089:false:-1:0 clone_count:*1:false:-1:-134202688 time_delta:*10.0:false:-1:-134202688
+(477,312)move_ml uid177025084 0 0 1 ev:*ev:false:-1:-134202688 ml:*uid177025080:false:-1:0 mn:*uid177025093:false:-1:0 clone_count:*1:false:-1:-134202688 time_delta:*10.0:false:-1:-134202688
+(471,424)move_ml uid177025085 0 0 1 ev:*ev:false:-1:-134202688 ml:*uid177025081:false:-1:0 mn:*uid177025094:false:-1:0 clone_count:*1:false:-1:-134202688 time_delta:*10.0:false:-1:-134202688
+(42,596)mn_empty uid177025086 0 0 1
+(347,610)mn_translate uid177025087 0 0 1 next:*uid177025088:false:-1:0 dx:*-300:false:-1:-134202688 dy:*-50:false:-1:-134202688 dz:*0:false:-1:-134202688
+(192,600)mn_scale uid177025088 0 0 1 next:*uid177025086:false:-1:0 sx:*1:false:-1:-134202688 sy:*1.5:false:-1:-134202688 sz:*1:false:-1:-134202688
+(349,722)mn_translate uid177025089 0 0 1 next:*uid177025090:false:-1:0 dx:*-270:false:-1:-134202688 dy:*0:false:-1:-134202688 dz:*300:false:-1:-134202688
+(189,713)mn_scale uid177025090 0 0 1 next:*uid177025086:false:-1:0 sx:*0.5:false:-1:-134202688 sy:*0.5:false:-1:-134202688 sz:*0.5:false:-1:-134202688
+(185,834)mn_scale uid177025091 0 0 1 next:*uid177025086:false:-1:0 sx:*1.0:false:-1:-134202688 sy:*1.0:false:-1:-134202688 sz:*1.0:false:-1:-134202688
+(185,947)mn_scale uid177025092 0 0 1 next:*uid177025086:false:-1:0 sx:*0.3:false:-1:-134202688 sy:*0.3:false:-1:-134202688 sz:*0.3:false:-1:-134202688
+(350,845)mn_translate uid177025093 0 0 1 next:*uid177025091:false:-1:0 dx:*380:false:-1:-134202688 dy:*0:false:-1:-134202688 dz:*100:false:-1:-134202688
+(542,969)mn_translate uid177025094 0 0 1 next:*uid177025096:false:-1:0 dx:*-300:false:-1:-134202688 dy:*105:false:-1:-134202688 dz:*0:false:-1:-134202688
+(696,238)array_ml uid177025095 0 0 1 ev:*ev:false:-1:-134202688 arr:*[uid177025082,uid177025083,uid177025084,uid177025085]:false:-1:0
+(352,967)mn_rotatey uid177025096 0 0 1 next:*uid177025092:false:-1:0 angle:*-1.57:false:-1:-134202688
+(157,1161)quad_y uid177025097 0 0 1 x1:*-700:false:-1:-134202688 x2:*400:false:-1:-134202688 y:*-150:false:-1:-134202688 z1:*-120:false:-1:-134202688 z2:*400:false:-1:-134202688
+(155,1379)quad_z uid177025098 0 0 1 x1:*-700:false:-1:-134202688 x2:*400:false:-1:-134202688 y1:*-150:false:-1:-134202688 y2:*300:false:-1:-134202688 z:*-120:false:-1:-134202688
+(155,1268)quad_y uid177025099 0 0 1 x1:*-700:false:-1:-134202688 x2:*400:false:-1:-134202688 y:*300:false:-1:-134202688 z1:*-120:false:-1:-134202688 z2:*400:false:-1:-134202688
+(156,1489)quad_x uid177025100 0 0 1 x:*-700:false:-1:-134202688 y1:*-150:false:-1:-134202688 y2:*300:false:-1:-134202688 z1:*-120:false:-1:-134202688 z2:*400:false:-1:-134202688
+(154,1592)quad_x uid177025101 0 0 1 x:*400:false:-1:-134202688 y1:*-150:false:-1:-134202688 y2:*300:false:-1:-134202688 z1:*-120:false:-1:-134202688 z2:*400:false:-1:-134202688
+(301,1163)m_bind uid177025102 0 0 1 p:*uid177025097:false:-1:0 mat:*uid177025121:false:-1:0
+(305,1276)m_bind uid177025103 0 0 1 p:*uid177025099:false:-1:0 mat:*uid177025120:false:-1:0
+(308,1387)m_bind uid177025104 0 0 1 p:*uid177025098:false:-1:0 mat:*uid177025119:false:-1:0
+(309,1497)m_bind uid177025105 0 0 1 p:*uid177025100:false:-1:0 mat:*uid177025118:false:-1:0
+(305,1604)m_bind uid177025106 0 0 1 p:*uid177025101:false:-1:0 mat:*uid177025117:false:-1:0
+(234,1745)m_texture uid177025107 0 0 1 ev:*ev:false:-1:-134202688 bm:*uid177025114:false:-1:0 mix:*1.0:false:-1:-134202688
+(231,1852)m_texture uid177025108 0 0 1 ev:*ev:false:-1:-134202688 bm:*uid177025116:false:-1:0 mix:*1.0:false:-1:-134202688
+(243,1960)m_texture uid177025109 0 0 1 ev:*ev:false:-1:-134202688 bm:*uid177025116:false:-1:0 mix:*1.0:false:-1:-134202688
+(241,2074)m_texture uid177025110 0 0 1 ev:*ev:false:-1:-134202688 bm:*uid177025116:false:-1:0 mix:*1.0:false:-1:-134202688
+(246,2188)m_texture uid177025111 0 0 1 ev:*ev:false:-1:-134202688 bm:*uid177025116:false:-1:0 mix:*1.0:false:-1:-134202688
+(503,1334)array_ml uid177025112 0 0 1 ev:*ev:false:-1:-134202688 arr:*[uid177025102,uid177025103,uid177025104,uid177025105,uid177025106]:false:-1:0
+(5,1750)bm_url uid177025113 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/ChatGPT_Image_16._lokak._2025_klo_21.32.47.png:false:-1:1656503600
+(117,1735)repeat uid177025114 0 0 1 orig1:*uid177025113:false:-1:0 x_count:*3:false:-1:-134202688 y_xount:*1:false:-1:-134202688
+(866,323)or_elem_ml uid177025115 0 0 1 ev:*ev:false:-1:-134202688 m1:*uid177025095:false:-1:0 m2:*uid177025112:false:-1:0
+(17,1886)bm_url uid177025116 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/ChatGPT_Image_16._lokak._2025_klo_21.31.59.png:false:-1:1656503600
+(392,2187)m_web uid177025117 0 0 1 ev:*ev:false:-1:-134202688 nxt:*uid177025111:false:-1:0 mult:*1:false:-1:-134202688 linewidth:*8:false:-1:-134202688 linecolor:*ff000000:false:-1:-134202688
+(390,2071)m_web uid177025118 0 0 1 ev:*ev:false:-1:-134202688 nxt:*uid177025110:false:-1:0 mult:*1:false:-1:-134202688 linewidth:*8:false:-1:-134202688 linecolor:*ff000000:false:-1:-134202688
+(387,1955)m_web uid177025119 0 0 1 ev:*ev:false:-1:-134202688 nxt:*uid177025109:false:-1:0 mult:*1:false:-1:-134202688 linewidth:*8:false:-1:-134202688 linecolor:*ff000000:false:-1:-134202688
+(383,1851)m_web uid177025120 0 0 1 ev:*ev:false:-1:-134202688 nxt:*uid177025108:false:-1:0 mult:*1:false:-1:-134202688 linewidth:*8:false:-1:-134202688 linecolor:*ff000000:false:-1:-134202688
+(381,1743)m_web uid177025121 0 0 1 ev:*ev:false:-1:-134202688 nxt:*uid177025107:false:-1:0 mult:*1:false:-1:-134202688 linewidth:*8:false:-1:-134202688 linecolor:*ff000000:false:-1:-134202688
+(57,2501)gltf_load2 uid1327750830 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/old_man_walk_cycle__1_.glb:false:-1:1232552144
+(206,2494)ml_gltf_all_anim uid1901677302 0 0 1 ev:*ev:false:-1:-310363456 tf:*uid1327750830:false:-1:0 mix:*1:false:-1:-310363456 self_mult:*1:false:-1:-310363456 rest_mult:*1:false:-1:-310363456 mode:*0:false:-1:-310363456 keys:*op:false:-1:-310363456 light_dir_x:*400:false:-1:-310363456 light_dir_y:*-400:false:-1:-310363456 light_dir_z:*300:false:-1:-310363456 border_width:*0:false:-1:-310363456 border_color:*ff000000:false:-1:-310363456 transparent:*true:false:-1:-310363456
+(1658,331)run_window uid1007788202 0 0 1 ev:*ev:false:-1:-1134544192 ml:*uid127267838:false:-1:0 logo:*false:false:-1:-1134544192 fpscounter:*false:false:-1:-1134544192 start_time:*0.0:false:-1:-1134544192 duration:*100000.0:false:-1:-1134544192
+(705,2568)move_ml uid1311314396 0 0 1 ev:*ev:false:-1:880818880 ml:*uid232185164:false:-1:0 mn:*uid1311314399:false:-1:0 clone_count:*1:false:-1:880818880 time_delta:*10.0:false:-1:880818880
+(332,2682)mn_empty uid1311314397 0 0 1
+(464,2681)mn_scale uid1311314398 0 0 1 next:*uid1311314397:false:-1:0 sx:*0.4:false:-1:880818880 sy:*0.4:false:-1:880818880 sz:*0.4:false:-1:880818880
+(582,2686)mn_translate uid1311314399 0 0 1 next:*uid1311314398:false:-1:0 dx:*-150:false:-1:880818880 dy:*50:false:-1:880818880 dz:*150:false:-1:880818880
+(1034,366)or_elem_ml uid1311314400 0 0 1 ev:*ev:false:-1:880818880 m1:*uid177025115:false:-1:0 m2:*uid1311314401:false:-1:0
+(855,2588)if_keys uid1311314401 0 0 1 ml:*uid1311314396:false:-1:0 fetcher:*uid1311314403:false:-1:0 keys:*po:false:-1:880818880
+(817,2749)if_keypress uid1311314403 0 0 1 key:*119:false:-1:880818880 key_down_value:*1:false:-1:880818880 key_up_value:*0:false:-1:880818880
+(714,2327)key_move_ml uid1723923027 0 0 1 ev:*ev:false:-1:2074098368 ml:*uid1901677302:false:-1:0 mn:*uid1723923029:false:-1:0 clone_count:*1:false:-1:2074098368 time_delta:*10:false:-1:2074098368 key:*119:false:-1:2074098368 flipenabled:*true:false:-1:0
+(33,2323)mn_empty uid1723923028 0 0 1
+(310,2315)mn_translate uid1723923029 0 0 1 next:*uid1723923030:false:-1:0 dx:*60:false:-1:2074098368 dy:*-140:false:-1:2074098368 dz:*0:false:-1:2074098368
+(180,2327)mn_scale uid1723923030 0 0 1 next:*uid1723923028:false:-1:0 sx:*1.3:false:-1:2074098368 sy:*1.3:false:-1:2074098368 sz:*1.3:false:-1:2074098368
+(1167,474)key_at_time uid2047151563 0 0 1 ml:*uid1311314400:false:-1:0 time:*0.1:false:-1:1560296128 key:*119:false:-1:1560296128
+(571,2465)move_char_ml uid232185164 0 0 1 ev:*ev:false:-1:-1447019840 ml:*uid1723923027:false:-1:0 key_forward:*119:false:-1:-1447019840 key_backward:*115:false:-1:-1447019840 key_rot_minus:*97:false:-1:-1447019840 key_rot_plus:*100:false:-1:-1447019840 speed:*10:false:-1:-1447019840 rot_speed:*0.06:false:-1:-1447019840 start_angle:*1.57:false:-1:-1447019840 start_x:*-600:false:-1:0 end_x:*1100:false:-1:0 start_z:*-220:false:-1:0 end_z:*400:false:-1:0
+(1161,212)t_start uid127267835 0 0 1
+(1330,165)t_event uid127267836 0 0 1 trigger:*uid127267837:false:-1:0 link:*uid127267835:false:-1:0 show:*uid1311314400:false:-1:0
+(1097,96)if_char_move_area uid127267837 0 0 1 start_x:*1000:false:-1:-60802368 end_x:*1100:false:-1:-60802368 start_z:*-100:false:-1:-60802368 end_z:*100:false:-1:-60802368
+(1495,468)t_exit uid127267838 0 0 1 link:*uid127267839:false:-1:0
+(1475,247)t_time uid127267839 0 0 1 duration:*5:false:-1:-60802368 link:*uid127267836:false:-1:0 show:*uid127267841:false:-1:0
+(1299,728)cube uid127267840 0 0 1 start_x:*-100.0:false:-1:-60802368 end_x:*100.0:false:-1:-60802368 start_y:*-100.0:false:-1:-60802368 end_y:*100.0:false:-1:-60802368 start_z:*-100.0:false:-1:-60802368 end_z:*100.0:false:-1:-60802368
+(1426,733)p_render uid127267841 0 0 1 ev:*ev:false:-1:-60802368 p:*uid127267840:false:-1:0
+(1895,576)ml_script uid221479564 0 0 1 ev:*ev:false:-1:1209823776 hml:*uid221479565:false:-1:0 %1:*a:false:-1:1209823776 %2:*b:false:-1:1209823776 %3:*c:false:-1:1209823776 %4:*d:false:-1:1209823776 %5:*e:false:-1:1209823776
+(1737,577)html_url uid221479565 0 0 1 url:*http?//meshpage.org/assets/blob_p.mp:false:-1:1209823776
+(2065,334)save_deploy uid221479566 0 0 1 h:*uid221479567:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1209823776
+(1900,334)html_run uid221479567 0 0 1 ev:*ev:false:-1:1209823776 r:*uid1007788202:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:1209823776

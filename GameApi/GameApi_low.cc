@@ -1393,6 +1393,24 @@ class SDLApi : public SDLLowApi
   virtual void SDL_LockSurface(Low_SDL_Surface *surf) { ::SDL_LockSurface((SDL_Surface*)surf->ptr); }
   virtual void SDL_UnlockSurface(Low_SDL_Surface *surf) { ::SDL_UnlockSurface((SDL_Surface*)surf->ptr); }
   virtual void SDL_ShowCursor(bool b) { ::SDL_ShowCursor(b); }
+  virtual Low_SDL_Cursor* SDL_CreateCursor(const unsigned char *data,
+				const unsigned char *mask,
+				int w, int h,
+				int hot_x, int hot_y)
+  {
+    Low_SDL_Cursor *c = new Low_SDL_Cursor;
+    c->ptr = (void*)::SDL_CreateCursor(data,mask,w,h,hot_x,hot_y);
+    return c;
+  }
+  virtual void SDL_SetCursor(Low_SDL_Cursor *cursor)
+  {
+    ::SDL_SetCursor((SDL_Cursor*)cursor->ptr);
+  }
+  virtual void SDL_FreeCursor(Low_SDL_Cursor *cursor)
+  {
+    ::SDL_FreeCursor((SDL_Cursor*)cursor->ptr);
+    delete cursor;
+  }
   virtual int SDL_PollEvent(Low_SDL_Event *event) {
     if (!event) { std::cout << "LOW::SDL_PollEvent called with null pointer" << std::endl; return 0; }
     //SDL_Event e;
