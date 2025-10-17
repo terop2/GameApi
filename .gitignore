@@ -31,7 +31,6 @@ GameApi/CMakeCache.txt
 GameApi/**/gmon.out
 GameApi/**/*.html.mem
 GameApi/**/foo.err
-GameApi/**/*.js
 GameApi/cmake_install.cmake
 GameApi/objs/**
 GameApi/glew.o*
