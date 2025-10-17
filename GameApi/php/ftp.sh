@@ -28,6 +28,7 @@ finish()
 	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 }
+copy_it screen1.webp
 copy_it img_1.webp
 copy_it img_2.webp
 copy_it img_3.webp
