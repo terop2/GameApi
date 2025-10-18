@@ -131,7 +131,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "html_url",
 			 { "url" },
 			 { "std::string" },
-			 { "http://meshpage.org/assets/blob_p.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "http://meshpage.org/test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "HML", "mainloop_api", "html_url"));
 #endif
 #if (ALL==1)||(SAVE_SCRIPT==1)
@@ -147,7 +147,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "bm_script",
 			 { "ev", "url", "%1", "%2", "%3", "%4", "%5" },
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "ev", "http://meshpage.org/assets/tiiliseina_bm.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
+			 { "ev", "http://meshpage.org/test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a", "b", "c", "d", "e" },
 			 "BM", "mainloop_api", "load_BM_script"));
 #endif
   /*

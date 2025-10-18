@@ -557,7 +557,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 #ifdef EMSCRIPTEN
   EmscriptenWebGLContextAttributes attr;
   emscripten_webgl_init_context_attributes(&attr);
-  attr.majorVersion = 3; attr.minorVersion = 0;
+  attr.majorVersion = 2; attr.minorVersion = 0;
   //attr.antialias=false;
   
   

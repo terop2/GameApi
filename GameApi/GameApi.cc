@@ -1627,7 +1627,7 @@ public:
     long long v1 = FindProgressVal();
     long long v2 = FindProgressMax();
     v1*=(long long)256;
-    float val3 = float(v1/v2);
+    float val3 = v2<1?0.0:float(v1/v2);
     val3/=256.0;
     float val2 = val3; //float(FindProgressVal())/float(FindProgressMax() +0.1);
 
