@@ -181,7 +181,8 @@ STRIP = echo emstrip --no-strip-all --remove-section=name
 #
 #-g   (doesnt work with closure compiler)
 
-ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT) $(OPENCVOPT)
+ALLFLAGS = $(SIZEOPT) $(REQUIREDOPT)
+# $(OPENCVOPT)
 PTHREADOPT2 = $(PTHREADOPT)
 
 

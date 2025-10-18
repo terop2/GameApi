@@ -76,6 +76,7 @@ void *task_queue_consumer(void *data)
 
 IMPORT void tasks_init()
 {
+#ifdef THREADS
   //std::cout << "Tasks init" << std::endl;
   int s = 8;
   g_tasks.queue_mutex_init();
@@ -84,17 +85,24 @@ IMPORT void tasks_init()
     {
       g_tasks.spawn_thread();
     }
+#endif
 }
 IMPORT void tasks_add(int id, void *(*fptr)(void*), void *data)
 {
+#ifdef THREADS
   //std::cout << "Tasks add "<< id << "::" << (long)fptr << " " << (long)data << std::endl;
   task_data dt = g_tasks.create_work(id,fptr,data);
   g_tasks.push_to_queue(dt);
+#else
+  fptr(data);
+#endif
 }
 IMPORT void tasks_join(int id)
 {
+#ifdef THREADS
   //std::cout << "Tasks join " << id << std::endl;
   g_tasks.join_id(id);
+#endif
 }
 
 extern GameApi::EveryApi *g_everyapi;
