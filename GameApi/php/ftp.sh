@@ -1,4 +1,8 @@
 #!/bin/bash
+
+#SITE=meshpage.org
+SITE=192.168.1.104
+
 INDEX=0
 copy_it()
 {
@@ -10,20 +14,29 @@ copy_it()
 	INDEX=${INDEX}+1
 	arr[${INDEX}]=$1
     else
-       scp $1 terop@meshpage.org:/home/terop/meshpage.org/
-       echo "copying $1 to meshpage.org"
+       scp $1 terop@$SITE:/home/terop/meshpage.org/
+       echo "copying $1 to $SITE"
     fi
 }
 finish()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr[@]} terop@meshpage.org:/home/terop/meshpage.org/
+	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
     if [ "$MACHINE" == "terop-pc2" ]; then
-	scp ${arr[@]} terop@meshpage.org:/home/terop/meshpage.org/
+	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 }
+copy_it screen1.webp
+copy_it img_1.webp
+copy_it img_2.webp
+copy_it img_3.webp
+copy_it img_4.webp
+copy_it row1.webp
+copy_it row2.webp
+copy_it row3.webp
+copy_it vue.js
 copy_it mesh_apk_gen_page.php
 copy_it mesh_apk_gen_result.php
 copy_it mesh_ai_p.php

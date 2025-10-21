@@ -725,7 +725,11 @@ public:
 	std::string filename = g_dragdrop_filename;
 
 	std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
-	if (drag_drop_ext == ext||((ext==".ds"||ext=="obj")&&(drag_drop_ext==".ds"||drag_drop_ext=="obj"))) {
+	if (drag_drop_ext == ext
+	    ||((ext==".ds"||ext=="obj")&&(drag_drop_ext==".ds"||drag_drop_ext=="obj"))
+	    ||((ext=="jpg"||ext=="png"||ext=="peg")&&(drag_drop_ext=="jpg"||drag_drop_ext=="png"||drag_drop_ext=="peg"))
+	    
+	    ) {
 	  label=filename;
 	  changed=true;
 	  active=true;
