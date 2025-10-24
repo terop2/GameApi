@@ -1328,7 +1328,7 @@ public:
 	//e.inMV = find_matrix(env, mat);
 	if (!g_transparent) {
 	  g_low->ogl->glEnable(Low_GL_SCISSOR_TEST);
-	  g_low->ogl->glScissor(pos.x, screen_y-pos.y-sz.dy, sz.dx,sz.dy);
+	  g_low->ogl->glScissor(pos.x*scale_x, (screen_y-pos.y-sz.dy)*scale_y, sz.dx*scale_x,sz.dy*scale_y);
 	  ev.mainloop_api.clear_3d(0xff000000);
 	  g_low->ogl->glDisable(Low_GL_SCISSOR_TEST);
 
