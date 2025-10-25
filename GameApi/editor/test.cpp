@@ -693,6 +693,9 @@ public:
     return (uint64_t)((counter.QuadPart * 1000000) / frequency.QuadPart);
 #endif
   }
+#ifdef LINUX
+#include <filesystem>
+#endif
 
 std::string create_tmp_filename(std::string prefix, std::string suffix)
 {
@@ -704,11 +707,14 @@ std::string create_tmp_filename(std::string prefix, std::string suffix)
   home+="/";
   if (dockerdir!="") home=dockerdir;
   start = home + ".gameapi_builder/tmp.counter";
+
+  std::filesystem::create_directories(std::filesystem::path(start).parent_path());
 #endif
-#ifdef WINDOWS
-  std::string drive = getenv("systemdrive");
-  std::string path = getenv("homepath");
-  start=drive+path+"\\_gameapi_builder\\tmp.counter";
+#ifdef WINDOWS  
+  const char* tmp = getenv("TEMP");
+  if (!tmp) tmp = getenv("TMP");
+  std::string base = tmp ? tmp : "C:\\Windows\\Temp";
+  std::string start = base + "\\gameapi_builder_tmp.counter";
 #endif
   std::ifstream ss(start.c_str());
   int val=0;
