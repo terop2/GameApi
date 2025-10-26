@@ -694,6 +694,8 @@ public:
 #endif
   }
 
+#include <filesystem>
+
 std::string create_tmp_filename(std::string prefix, std::string suffix)
 {
   std::string start="";
@@ -704,11 +706,14 @@ std::string create_tmp_filename(std::string prefix, std::string suffix)
   home+="/";
   if (dockerdir!="") home=dockerdir;
   start = home + ".gameapi_builder/tmp.counter";
+
+  std::filesystem::create_directories(std::filesystem::path(start).parent_path());
 #endif
-#ifdef WINDOWS
-  std::string drive = getenv("systemdrive");
-  std::string path = getenv("homepath");
-  start=drive+path+"\\_gameapi_builder\\tmp.counter";
+#ifdef WINDOWS  
+  const char* appdata = getenv("LOCALAPPDATA");
+  std::string base = appdata ? appdata : "C:\\Users\\Public\\AppData";
+  start = base + "\\GameApi_Builder\\tmp.counter";
+  std::filesystem::create_directories(std::filesystem::path(start).parent_path());
 #endif
   std::ifstream ss(start.c_str());
   int val=0;
