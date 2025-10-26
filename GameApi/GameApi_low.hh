@@ -208,7 +208,8 @@ enum
     Low_GL_CONTEXT_FLAGS,
     Low_GL_DEBUG_OUTPUT,
     Low_GL_DEBUG_OUTPUT_SYNCHRONOUS,
-    Low_GL_DONT_CARE
+    Low_GL_DONT_CARE,
+    Low_GL_FRAMEBUFFER_SRGB
   };
 enum {
     Low_GL_COLOR_BUFFER_BIT=1, // glClear

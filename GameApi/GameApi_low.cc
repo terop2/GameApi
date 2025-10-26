@@ -482,7 +482,7 @@ void map_enums(int &i)
   case   Low_GL_GEOMETRY_OUTPUT_TYPE_EXT: i=GL_GEOMETRY_OUTPUT_TYPE_EXT; break;
 #endif
 #endif
-    
+  case Low_GL_FRAMEBUFFER_SRGB: i=GL_FRAMEBUFFER_SRGB; break;
 
   default: break;
   };
