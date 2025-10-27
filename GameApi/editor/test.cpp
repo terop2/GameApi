@@ -712,7 +712,7 @@ std::string create_tmp_filename(std::string prefix, std::string suffix)
 #ifdef WINDOWS  
   const char* appdata = getenv("LOCALAPPDATA");
   std::string base = appdata ? appdata : "C:\\Users\\Public\\AppData";
-  std::string start = base + "\\GameApi_Builder\\tmp.counter";
+  start = base + "\\GameApi_Builder\\tmp.counter";
   std::filesystem::create_directories(std::filesystem::path(start).parent_path());
 #endif
   std::ifstream ss(start.c_str());
