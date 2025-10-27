@@ -844,6 +844,9 @@ public:
 	    if (shortfile[i]=='(') shortfile[i]='_';
 	    if (shortfile[i]==')') shortfile[i]='_';
 	    if (shortfile[i]==',') shortfile[i]='_';
+	    if (shortfile[i]==':') shortfile[i]='_';
+	    if (shortfile[i]=='<') shortfile[i]='_';
+	    if (shortfile[i]=='>') shortfile[i]='_';
 	  }
 	int id = env->env->add_to_download_bar(shortfile);
 	int ii = env->env->download_index_mapping(id);
