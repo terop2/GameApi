@@ -1567,7 +1567,7 @@ public:
     long long max = FindProgressMax();
     //std::cout << "PROGRESSBAR:" << val << "/" << max << std::endl;
     val*=(long long)256;
-    float val2 = float(val/max);
+    float val2 = max!=0?float(val/max):0.0;
     val2/=256.0;
     
     //int val3 = 15*val2;
