@@ -433,7 +433,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many_txid(EveryAp
 }
 
 
-EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels)
+EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels, std::vector<bool> is_srgb)
 {
   //std::cout << "prepare many: " << vec.size() << " " << types.size() << " " << mipmaps << " " << id_labels.size() << std::endl;
   mipmaps = false;
@@ -643,7 +643,17 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
       if (!power_of_two) { /*std::cout << "Warning: texture not in power_of_two, mipmapping is disabled" << std::endl;*/ }
       
 	ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
-	ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,Low_GL_RGBA,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+
+	int rgb = Low_GL_RGBA;
+	if (is_srgb.size()>i)
+	  {
+	    if (is_srgb[i]==true)
+	      {
+		rgb = Low_GL_SRGB8_ALPHA8;
+	      }
+	  }
+	
+	ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,rgb /*Low_GL_RGBA*/,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
 	//#ifdef EMSCRIPTEN
 	//	if (mipmaps&&power_of_two)
 	//#endif
@@ -729,7 +739,7 @@ EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<B
   i.id=id; 
   return i;
 }
-EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
+EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx, bool is_srgb)
 {
   OpenglLowApi *ogl = g_low->ogl;
   TextureI *tex = find_texture(e, tx);
@@ -778,7 +788,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx)
 #endif
   ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
-  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, is_srgb?Low_GL_SRGB8_ALPHA8:Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
 
   int ssx = bm.SizeX();
   int ssy = bm.SizeY();

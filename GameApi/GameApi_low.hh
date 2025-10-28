@@ -187,6 +187,7 @@ enum
     Low_GL_BYTE,
     Low_GL_DOUBLE,
     Low_GL_NEAREST_MIPMAP_LINEAR, // glTexParameteri 3th param
+    Low_GL_SRGB8_ALPHA8,
     //
     //  OLD STUFF
     // 

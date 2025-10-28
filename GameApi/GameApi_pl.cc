@@ -7407,7 +7407,7 @@ GameApi::SH find_ptex_shader(const PTexCacheItem &ii)
 class RenderPTex : public MainLoopItem
 {
 public:
-  RenderPTex(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::P p, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels) : env(env), ev(ev), api(api), p(p), bm(bm), types(types),id_labels(id_labels)
+  RenderPTex(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PolygonApi &api, GameApi::P p, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels, std::vector<bool> is_srgb) : env(env), ev(ev), api(api), p(p), bm(bm), types(types),id_labels(id_labels), is_srgb(is_srgb)
   {
     shader.id = -1;
     firsttime = true;
@@ -7456,7 +7456,7 @@ public:
 	  std::cout << "Warning: RenderPTex Prepare() not called!" << std::endl;
 	}
 	ev.polygon_api.create_vertex_array_hw(va);
-	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types,false,id_labels);
+	std::vector<GameApi::TXID> id = ev.texture_api.prepare_many(ev, bm, types,false,id_labels,is_srgb);
 	va = ev.texture_api.bind_many(va, id, types);
       }
     if (disabled) {
@@ -7618,6 +7618,7 @@ private:
   std::vector<int> types;
   std::vector<std::string> id_labels;
   bool disabled=false;
+  std::vector<bool> is_srgb;
 };
 
 class RenderPTex_id : public MainLoopItem
@@ -12309,10 +12310,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2(EveryApi &ev, P 
 void confirm_texture_usage(GameApi::Env &e, GameApi::P p);
 
 
-EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels)
+EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture(EveryApi &ev, P p, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels, std::vector<bool> is_srgb)
  {
    confirm_texture_usage(e,p);
-   return add_main_loop(e, new RenderPTex(e, ev, *this, p, bm,types,id_labels));
+   return add_main_loop(e, new RenderPTex(e, ev, *this, p, bm,types,id_labels,is_srgb));
  }
 EXPORT GameApi::ML GameApi::PolygonApi::render_vertex_array_ml2_texture_id(EveryApi &ev, P p, std::vector<TXID> *bm)
  {

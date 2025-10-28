@@ -392,6 +392,7 @@ void map_enums(int &i)
   case    Low_GL_TRUE: i=GL_TRUE; break;
   case    Low_GL_TEXTURE_BINDING_2D:  i=GL_TEXTURE_BINDING_2D; break;
   case    Low_GL_RGBA: i=GL_RGBA; break;
+  case    Low_GL_SRGB8_ALPHA8: i=GL_SRGB8_ALPHA8; break;
   case Low_GL_RGB: i=GL_RGB; break;
   case    Low_GL_SCISSOR_TEST:  i=GL_SCISSOR_TEST; break;
   case    Low_GL_FRAMEBUFFER_COMPLETE: i=GL_FRAMEBUFFER_COMPLETE; break;
