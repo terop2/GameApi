@@ -23252,6 +23252,8 @@ void MT_cb(void* data);
 void MT2_cb(void* data);
 
 
+extern bool g_progress_lock_assets;
+
 class ML_script2 : public MainLoopItem
 {
 public:
@@ -23266,6 +23268,7 @@ public:
   }
   ~ML_script2() { /*e.async_rem_callback(url);*/ }
   void Prepare2() {
+    g_progress_lock_assets=true;
     //std::string homepage = gameapi_homepageurl;
     //#ifndef EMSCRIPTEN
     //   e.async_load_url(url, homepage);
@@ -23303,6 +23306,7 @@ public:
 	//async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
+    g_progress_lock_assets=false;
 	return;
       }
       //GameApi::P pp;
@@ -23316,6 +23320,7 @@ public:
       //async_taken = false;
       //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
     }
+    g_progress_lock_assets=false;
   }
   void Collect(CollectVisitor &vis)
   {
@@ -23325,6 +23330,8 @@ public:
   void Prepare() {}
   virtual void execute(MainLoopEnv &e3)
   {
+        g_progress_lock_assets=true;
+
     if (firsttime) {
       if (!main2) {
 #ifdef EMSCRIPTEN
@@ -23336,13 +23343,16 @@ public:
     }
     if (main2)
       main2->execute(e3);
+    g_progress_lock_assets=false;
   }
 
   virtual void handle_event(MainLoopEvent &e)
   {
+    g_progress_lock_assets=true;
     if (main2) {
       main2->handle_event(e);
     }
+    g_progress_lock_assets=false;
   }
   virtual std::vector<int> shader_id() { 
     if (main2) {
@@ -23375,6 +23385,8 @@ public:
   }
   ~ML_script() { e.async_rem_callback(url); }
   void Prepare2() {
+        g_progress_lock_assets=true;
+
     std::string homepage = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
       e.async_load_url(url, homepage);
@@ -23410,6 +23422,7 @@ public:
 	async_taken = false;
 	//main2->execute(e3);
 	//firsttime = false;
+    g_progress_lock_assets=false;
 	return;
       }
       //GameApi::P pp;
@@ -23422,6 +23435,7 @@ public:
 #endif
       async_taken = false;
       //std::cout << "async_pending_count dec (ML_sctipr2) " << async_pending_count << std::endl;
+    g_progress_lock_assets=false;
 
   }
   void Collect(CollectVisitor &vis)
@@ -23432,6 +23446,7 @@ public:
   void Prepare() {}
   virtual void execute(MainLoopEnv &e3)
   {
+    g_progress_lock_assets=true;
     if (firsttime) {
       if (!main2) {
 #ifdef EMSCRIPTEN
@@ -23443,13 +23458,16 @@ public:
     }
     if (main2)
       main2->execute(e3);
+    g_progress_lock_assets=false;
   }
 
   virtual void handle_event(MainLoopEvent &e)
   {
+    g_progress_lock_assets=true;
     if (main2) {
       main2->handle_event(e);
     }
+    g_progress_lock_assets=false;
   }
   virtual std::vector<int> shader_id() { 
     if (main2) {

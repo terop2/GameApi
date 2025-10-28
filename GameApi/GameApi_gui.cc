@@ -3385,6 +3385,26 @@ EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM
 {
   std::string prog = vec[vec.size()-1].substr(0,18);
   std::string rest = vec[vec.size()-1].substr(18);
+
+  //std::cout  << "Progress:" << prog << " " << rest << std::endl;
+
+  int pos = -1;
+  int s = rest.size();
+  for(int i=0;i<s;i++)
+    {
+      if (rest[i]=='.') pos=i;
+    }
+
+  
+  int restsize = rest.size()-pos;
+  if (pos!=-1 && pos >25-restsize)
+    {
+      std::string start = rest.substr(0,25-restsize);
+      std::string rest2 = rest.substr(pos);
+      rest = start+rest2;
+    }
+  
+  
   /*
   BB I3=ev.bool_bitmap_api.bb_empty(300,30);
   BB I4=ev.bool_bitmap_api.rectangle(I3,0,0,300*val/max,30);
@@ -3397,7 +3417,8 @@ BB I4=ev.bool_bitmap_api.rectangle(I3,0,38,310,2);
 BB I5=ev.bool_bitmap_api.rectangle(I4,308,0,2,40);
 BM I6=ev.bool_bitmap_api.to_bitmap(I5,255,255,255,255,0,0,0,0);
 BB I7=ev.bool_bitmap_api.bb_empty(300,30);
-BB I8=ev.bool_bitmap_api.rectangle(I7,0,0,300*val/max,30);
+//std::cout << "Progress: " << rest << " :: " << val << " " << max << std::endl;
+ BB I8=ev.bool_bitmap_api.rectangle(I7,0,0,300*val/max,30);
 BM I9=ev.bool_bitmap_api.to_bitmap(I8,255,255,255,255,0,0,0,0);
 BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
 
@@ -3440,12 +3461,14 @@ IMPORT void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::
 
 void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max)
 {
+  //std::cout << "PROGRESS:" << val << " " << max << std::endl;
   if (progress_lock) return;
   static int g_id = -1;
   //if (g_id!=-1) clear_block(g_id);
   g_id = add_block();
   int old = get_current_block();
   set_current_block(g_id);
+
   
   w = progress_dialog(sx,sy,atlas,atlas_bm, vec, val, max);
   
