@@ -1705,6 +1705,8 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 
 }
 
+IMPORT bool g_progress_lock_assets=false;
+
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool noside);
 
 struct CallbackDel
@@ -1913,7 +1915,8 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	    //for(int i=0;i<s;i++) sum+=int(url[u+i]);
 	    //sum = sum % 1000;
 	    //std::cout << g_current_size << "*15/" << total_size << std::endl; 
-	    ProgressBar(444,g_current_size*15/total_size,15,"loading assets");
+	    if (!g_progress_lock_assets) // script_ml works odd.
+	      ProgressBar(444,g_current_size*15/total_size,15,"loading assets");
 	  last_size=g_current_size;
 	  }
 #ifdef LINUX
@@ -2621,9 +2624,14 @@ std::vector<std::string> progress_label;
 std::vector<int> g_setup;
 std::vector<int> g_setup_count;
 
+
+int find_str(std::string s, std::string s2);
+
+
 IMPORT void ClearProgress() { progress_max.clear(); progress_val.clear(); progress_label.clear(); g_setup.clear(); g_setup_count.clear(); }
 IMPORT void InstallProgress(int num, std::string label, int max=15)
 {
+  if (find_str(label,"script")!=-1) return;
   //std::cout << "InstallProgress: " << num << " " << label << " " << max << std::endl;
   //std::cout << "InstallProgress: '" << label << "'" << std::endl;
   //std::cout << "IB: " << num << std::endl;
@@ -2850,6 +2858,7 @@ void *g_progress_bar_logo_cb_data=0;
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
+  if (find_str(label,"script")!=-1) return;
 #ifndef EMSCRIPTEN
   //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
   pthread_t curr = pthread_self();
