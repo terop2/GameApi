@@ -5638,6 +5638,11 @@ public:
   int num_textures() const {
     return 5; // (1=base color, 2=metallicroughness), 3=normal, 4=occulsion, 5=emissive
   }
+  bool is_srgb(int i) const
+  {
+    if (i==0) return true;
+    return false;
+  }
   GameApi::BM texture(int i) const {
     print_extension_map();
     if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
@@ -5721,8 +5726,12 @@ public:
 	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
 	id_labels.push_back(ss.str());
       }
+    std::vector<bool> rgb;
+    for(int i=0;i<s;i++)
+      rgb.push_back(is_srgb(i));
+
     
-    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm,std::vector<int>(),id_labels);
+    GameApi::ML I17=ev.polygon_api.render_vertex_array_ml2_texture(ev,I10,bm,std::vector<int>(),id_labels,rgb);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
@@ -5793,8 +5802,11 @@ public:
 	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
 	id_labels.push_back(ss.str());
       }
+    std::vector<bool> rgb;
+    for(int i=0;i<s;i++)
+      rgb.push_back(is_srgb(i));
     
-    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm, std::vector<int>(),id_labels);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture(ev,I10,pts,bm, std::vector<int>(),id_labels,rgb);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
@@ -5860,11 +5872,19 @@ public:
 	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
 	id_labels.push_back(ss.str());
       }
+
+    std::vector<bool> rgb;
+    for(int i=0;i<s;i++)
+      rgb.push_back(is_srgb(i));
+
+    
     std::stringstream ss2;
     ss2 << "gltf" << interface->Url() << material_id;
     std::string cache_id = ss2.str();
+
+
     
-    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm,std::vector<int>(),id_labels);
+    GameApi::ML I17=ev.materials_api.render_instanced_ml_texture_matrix(ev,I10,ms,bm,std::vector<int>(),id_labels,rgb);
     GameApi::ML I18;
     if (material_id<0 || material_id>=int(interface->materials_size())) {
       I18 = I17;
