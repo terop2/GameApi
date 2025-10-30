@@ -142,7 +142,7 @@ public:
   virtual std::string BaseUrl() const { return base_url; }
   virtual std::string Url() const { return url; }
 
-
+  virtual void execute() { }
   virtual int get_default_scene() const { return self->defaultScene; }
   
   virtual int accessors_size() const { return self->accessors.size(); }
@@ -550,6 +550,10 @@ public:
 #endif
     //#endif
     //tiny.SetImageWriter(&WriteImageData, this);
+#ifdef EMSCRIPTEN
+    async_pending_count++;
+    async=true;
+#endif
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
   }
   ~LoadGltf()
@@ -561,6 +565,14 @@ public:
     if (prepare_done) {
       
     }
+  }
+  void unasync()
+  {
+#ifdef EMSCRIPTEN
+    if (async)
+      async_pending_count--;
+    async=false;
+#endif
   }
   void Collect(CollectVisitor &vis)
   {
@@ -589,6 +601,7 @@ public:
     }
   }
   void PrePrepare() {
+    unasync();
     if (!decoder) return;
     if (preprepare_done) return;
     preprepare_done = true;
@@ -600,8 +613,8 @@ public:
 #endif
     
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    if (!vec) return;
-    if (!vec->size()) return;
+    if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << std::endl; stackTrace();  return; }
+    if (!vec->size()) { std::cout << "PrePrepare FILE SIZE=0!" << std::endl; stackTrace();  return; }
     std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
     g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
@@ -621,13 +634,19 @@ public:
     
     std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
     int ss = image_ids.size();
+
+#ifdef EMSCRIPTEN
+	async_pending_count+=ss;
+#endif
+
     for(int ii=0;ii<ss;ii++)
       {
 	LoadGltf2_data *dt = new LoadGltf2_data;
 	dt->obj = this;
 	dt->id = ii;
 	dt->iid = image_ids[ii];
-	decoder->set_fetch_callback(e, image_ids[ii], &LoadGltf2_cb, (void*)dt); 
+	decoder->set_fetch_callback(e, image_ids[ii], &LoadGltf2_cb, (void*)dt);
+
       }
     decoder->fetch_all_files(e,image_ids);
 
@@ -644,6 +663,7 @@ public:
     }
   }
   void Prepare() {
+    unasync();
     if (prepare_done) return;
 #ifndef EMSCRIPTEN
     PrePrepare();
@@ -688,7 +708,7 @@ public:
     //try {
       //std::cout << "LoadGLTF: url=" << url << std::endl;
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; return; }
+    if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; stackTrace(); return; }
     int ssz = vec->end()-vec->begin();
     if (ssz<1) {
       std::cout << "LoadGLTF: ssz=" << ssz << std::endl;
@@ -763,6 +783,10 @@ public:
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
   }
   void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
+  void execute()
+  {
+    if (!prepare_done) Prepare();
+  }
 public:
   GameApi::Env &e;
   std::string base_url;
@@ -776,6 +800,7 @@ public:
   bool preprepare_done = false;
   bool prepreprepare_done = false;
   std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
+  bool async=false;
 };
 
 void LoadGltf_cb(void *ptr)
@@ -787,6 +812,7 @@ void LoadGltf2_cb(void *ptr)
 {
   LoadGltf2_data *dt = (LoadGltf2_data*)ptr;
   dt->obj->PrePrePrepare(dt->id, dt->iid);
+  async_pending_count--;
 }
 class LoadGltf_from_string : public CollectInterface
 {
@@ -809,6 +835,11 @@ public:
 #endif
     //#endif
     //tiny.SetImageWriter(&WriteImageData, this);
+#ifdef EMSCRIPTEN
+    async_pending_count++;
+    async=true;
+#endif
+
     e.async_load_callback(url, &LoadGltf_cb_from_string, (void*)this);
   }
   ~LoadGltf_from_string()
@@ -819,6 +850,15 @@ public:
     e.async_rem_callback(url);
     if (prepare_done) {
       
+    }
+  }
+  void unasync()
+  {
+    if (async) {
+#ifdef EMSCRIPTEN
+    async_pending_count--;
+    async=false;
+#endif
     }
   }
   void Collect(CollectVisitor &vis)
@@ -848,6 +888,7 @@ public:
     }
   }
   void PrePrepare() {
+    unasync();
     if (!decoder) return;
     if (preprepare_done) return;
     preprepare_done = true;
@@ -876,10 +917,16 @@ public:
     //  {
     //std::cout << "IMAGE:" << image_filenames[i] << std::endl;
     // }
+
+
     
     
     std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
     int ss = image_ids.size();
+
+#ifdef EMSCRIPTEN
+    async_pending_count+=ss;
+#endif
     for(int ii=0;ii<ss;ii++)
       {
 	LoadGltf2_data_from_string *dt = new LoadGltf2_data_from_string;
@@ -1028,6 +1075,7 @@ public:
     //} catch(int a) { std::cout << "GltfLoad::Prepare() exception:" << url << std::endl; }
   }
   void set_urls(std::string burl, std::string url2) { base_url=burl; url=url2; }
+  void execute() { if (!prepare_done) Prepare(); }
 public:
   GameApi::Env &e;
   std::string base_url;
@@ -1042,6 +1090,7 @@ public:
   bool preprepare_done = false;
   bool prepreprepare_done = false;
   std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
+  bool async=false;
 };
 
 void LoadGltf_cb_from_string(void *ptr)
@@ -1053,6 +1102,7 @@ void LoadGltf2_cb_from_string(void *ptr)
 {
   LoadGltf2_data_from_string *dt = (LoadGltf2_data_from_string*)ptr;
   dt->obj->PrePrePrepare(dt->id, dt->iid);
+  async_pending_count--;
 }
 
 
@@ -1064,6 +1114,7 @@ public:
   virtual void Prepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+  virtual void execute() { load->execute(); }
 public:
   LoadGltf *load=0;
   tinygltf::Model *model=0;
@@ -1079,6 +1130,7 @@ public:
   virtual void Prepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
   virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
   virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+  virtual void execute() { load->execute(); }
 public:
   LoadGltf_from_string *load=0;
   tinygltf::Model *model=0;
@@ -1684,6 +1736,7 @@ public:
   virtual int SizeY() const { if (img) return img->height; return 0; }
   virtual Color Map(int x, int y) const
   {
+    interface->execute();
     if (!img) return Color(0x0);
     if (x<0||x>=img->width) return Color(0x0);
     if (y<0||y>=img->height) return Color(0x0);
@@ -1776,6 +1829,7 @@ public:
   }
   ~LoadBitmapFromUrl()
   {
+    unasync();
     //unregister_cache_deleter(id);
   }
   virtual int SizeX() const {
@@ -4131,6 +4185,7 @@ public:
   }
   virtual int NumFaces() const 
   {
+    interface->execute();
     int res=0;
     if (mode==TINYGLTF_MODE_TRIANGLES && indices_done) {
       //std::cout << "NumFaces(0):" << indices_acc->count/3 << std::endl;
@@ -4270,6 +4325,7 @@ public:
   }
   virtual Point FacePoint(int face, int point) const
   {
+    interface->execute();
 
     if (position_bv_done && position_done && position_buf_done) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
@@ -4428,6 +4484,7 @@ public:
   virtual int AttribI(int face, int point, int id) const { return 0; }
   bool has_color() const { return true; /*color_bv && color_acc && color_buf*/; }
   virtual unsigned int Color(int face, int point) const {
+    interface->execute();
     if (color_bv_done && color_done && color_buf_done) {
     if (mode==TINYGLTF_MODE_TRIANGLES) {
       if (indices_buf_done && indices_bv_done && indices_done) {
@@ -4469,6 +4526,7 @@ public:
   }
   virtual VEC4 Joints(int face, int point) const
   {
+    interface->execute();
 
     if (joints_bv_done && joints_done && joints_buf_done) {
       if (mode==TINYGLTF_MODE_TRIANGLES) {
@@ -4638,6 +4696,7 @@ public:
   }
   virtual VEC4 Weights(int face, int point) const
   {
+    interface->execute();
 
     if (weights_bv_done && weights_done && weights_buf_done) {
       if (mode==TINYGLTF_MODE_TRIANGLES) {
@@ -4723,11 +4782,13 @@ public:
   
   bool has_texcoord() const { return texcoord_bv_done&&texcoord_done&&texcoord_buf_done; }
   virtual Point2d TexCoord(int face, int point) const { 
+    interface->execute();
     Point p = tex(face,point);
     //std::cout << "TexCoord: " << p.x << " " << p.y << std::endl;
     Point2d pp; pp.x=p.x; pp.y=p.y; return pp; 
   }
   virtual float TexCoord3(int face, int point) const { 
+    interface->execute();
     Point p = tex(face,point);
     return p.z;
   }
@@ -8898,6 +8959,7 @@ public:
     
   }
   virtual void execute(MainLoopEnv &e) {
+    interface->execute();
     if (res.id!=-1) {
     MainLoopItem *item = find_main_loop(env,res);
     if (item)
@@ -14837,6 +14899,7 @@ GLTFImageDecoder::~GLTFImageDecoder()
 {
 #ifndef WIN32
 #ifndef LINUX
+#if 0
   std::map<FILEID,std::vector<unsigned char,GameApiAllocator<unsigned char> > *>::iterator i = files2.begin();
     for(;i!=files2.end();i++)
       {
@@ -14852,6 +14915,7 @@ GLTFImageDecoder::~GLTFImageDecoder()
       {
 	delete (*i3).second;
       }
+#endif
 #endif
 #endif
 }
@@ -14966,6 +15030,7 @@ std::vector<unsigned char,GameApiAllocator<unsigned char> > *GLTFImageDecoder::g
   std::string url = filenames[id];
   //std::cout << "get_file:" << url << std::endl;
   GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+  if (!vec) { std::cout << "GLTFImageDecoder async not ready!" << std::endl; return 0; }
   //std::cout << "FILE SIZE:" << vec->size() << std::endl;
   return new std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(),vec->end());
 }

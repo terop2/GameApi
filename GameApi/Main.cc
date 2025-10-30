@@ -835,9 +835,9 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   ogl->glViewport(0,0,screenx, screeny);
   ogl->glDisable(Low_GL_CULL_FACE);
 #endif
-#ifdef WINDOWS
+  //#ifdef WINDOWS
   ogl->glDisable(Low_GL_FRAMEBUFFER_SRGB);
-#endif
+  //#endif
   
   return 0;
 }
