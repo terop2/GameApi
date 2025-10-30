@@ -573,6 +573,16 @@ public:
       async_pending_count--;
     async=false;
 #endif
+#ifdef EMSCRIPTEN
+    int s = async_vec.size();
+    for(int i=0;i<s;i++) {
+      if (async_vec.size()>i && async_vec[i]==true) {
+	async_pending_count--;
+	async_vec[i]=false;
+      }
+    }
+#endif
+
   }
   void Collect(CollectVisitor &vis)
   {
@@ -855,6 +865,7 @@ public:
   }
   ~LoadGltf_from_string()
   {
+    unasync();
     g_deleted_urls.push_back(url);
     delete decoder;
     decoder=0;
@@ -871,6 +882,20 @@ public:
     async=false;
 #endif
     }
+
+#ifdef EMSCRIPTEN
+    int s = async_vec.size();
+    for(int i=0;i<s;i++)
+      {
+	if (async_vec.size()>i && async_vec[i]==true)
+	  {
+	    async_pending_count--;
+	    async_vec[i]=false;
+	  }
+      }
+#endif
+    
+    
   }
   void Collect(CollectVisitor &vis)
   {
@@ -937,6 +962,8 @@ public:
 
 #ifdef EMSCRIPTEN
     async_pending_count+=ss;
+    async_vec.resize(ss);
+    for(int kk=0;kk<ss;kk++) async_vec[kk]=true;
 #endif
     for(int ii=0;ii<ss;ii++)
       {
@@ -1102,6 +1129,7 @@ public:
   bool prepreprepare_done = false;
   std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
   bool async=false;
+  std::vector<bool> async_vec;
 };
 
 void LoadGltf_cb_from_string(void *ptr)
@@ -1113,7 +1141,6 @@ void LoadGltf2_cb_from_string(void *ptr)
 {
   LoadGltf2_data_from_string *dt = (LoadGltf2_data_from_string*)ptr;
   dt->obj->PrePrePrepare(dt->id, dt->iid);
-  async_pending_count--;
 }
 
 
