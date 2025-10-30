@@ -21811,6 +21811,8 @@ int convert_find_ch(std::string s, int pos, char ch)
   return -1;
 }
 
+void replace_script(std::string filename);
+
 std::string convert_script(std::string script)
 {
   std::stringstream ss(script);
@@ -21887,6 +21889,21 @@ struct LINE
   std::vector<std::string> params;
 };
 
+std::string output_line(LINE l)
+{
+  std::string s = l.return_type + " " + l.label_id + "=ev." + l.api_name + "." + l.func_name + "(";
+  int ss = l.params.size();
+  
+  for(int i=0;i<ss;i++)
+    {
+      s+=l.params[i];
+      if (i!=ss-1) s+=",";
+    }
+  s+=");";
+  return s;
+}
+			
+
 LINE parse_line(std::string line)
 {
   int s = line.size();
@@ -21929,6 +21946,76 @@ LINE parse_line(std::string line)
   l.params = params;
   return l;
 }
+
+extern ASyncData *g_async_ptr;
+extern int g_async_count;
+
+std::string replace_url(std::string url)
+{
+  int s=url.size();
+  int pos = -1;
+  for(int i=0;i<s;i++)
+    {
+      if (url[i]=='/') pos=i;
+    }
+  if (pos!=-1)
+    {
+      return url.substr(pos+1);
+    }
+  return url;
+}
+
+void replace_script(std::string filename)
+{
+  std::cout << "replace script:" << filename << std::endl;
+  std::ifstream ss(filename.c_str());
+  std::string line;
+  std::stringstream out;
+  while(std::getline(ss,line))
+    {
+      LINE l = parse_line(line);
+      int s = g_async_count;
+      for(int i=0;i<s;i++)
+	{
+	  ASyncData *ptr = g_async_ptr + i;
+	  ASyncData dt = *ptr;
+	  if (l.api_name == dt.api_name && l.func_name == dt.func_name)
+	    {
+	      int pos = dt.param_num;
+	      if (pos!=-1) {
+		l.params[pos] = replace_url(l.params[pos]);
+	      }
+	    }
+	}
+      out << output_line(l) << std::endl;
+    }
+  ss.close();
+  std::ofstream ss2(filename.c_str());
+  ss2 << out.str();
+  ss2.close();
+}
+
+std::vector<std::string> find_script_filenames(std::string path, std::string script)
+{
+  std::vector<std::string> res;
+  std::stringstream ss(script);
+  std::string line;
+  while(std::getline(ss,line))
+    {
+      int pos = find_str(line,"html_url(");
+      if (pos!=-1)
+	{
+	  int pos2 = find_str(line,")");
+	  std::string param = line.substr(pos+9,pos2-pos-9);
+	  std::string param2 = replace_url(param);
+	  std::cout << "FOUND script: " << param << std::endl;
+	  res.push_back(path+"/"+param2);
+	}
+    }
+  return res;
+}
+
+
 
 struct PersistentFuncSpec
 {
@@ -22242,6 +22329,21 @@ public:
 	  home=gameapi_temp_dir;
 	}
 
+      std::vector<std::string> scripts = find_script_filenames(home+"\\_gameapi_builder\\deploy\\",htmlfile);
+      int su=scripts.size();
+      for(int iu=0;iu<su;iu++)
+	{
+	  replace_script(scripts[iu]);
+	  std::ifstream ss(scripts[iu].c_str());
+	  std::stringstream ss2;
+	  ss2 << ss.rdbuf();
+	  std::vector<string> scripts2 = find_script_filenames(home+"\\_gameapi_builder\\deploy\\",ss2.str());
+	  su+=scripts2.size();
+	  int suu = scripts2.size();
+	  for(int j=0;j<suu;j++) scripts.push_back(scripts2[j]);
+	}
+
+      
       //std::cout << "______SCRIPT HERE_______________" << std::endl;
       //std::cout << htmlfile << std::endl;
       //std::cout << "______SCRIPT ENDS_______________" << std::endl;
@@ -22650,8 +22752,24 @@ public:
       //std::cout << htmlfile << std::endl;
       //std::cout << "______SCRIPT ENDS_______________" << std::endl;
 
-      
       std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
+
+      std::vector<std::string> scripts = find_script_filenames(home+"/.gameapi_builder/deploy/",htmlfile);
+      int su=scripts.size();
+      for(int iu=0;iu<su;iu++)
+	{
+	  replace_script(scripts[iu]);
+	  std::ifstream ss(scripts[iu].c_str());
+	  std::stringstream ss2;
+	  ss2 << ss.rdbuf();
+	  std::vector<std::string> scripts2 = find_script_filenames(home+"/.gameapi_builder/deploy/",ss2.str());
+	  su+=scripts2.size();
+	  int suu = scripts2.size();
+	  for(int j=0;j<suu;j++) scripts.push_back(scripts2[j]);
+	}
+
+      
+      
       std::fstream ss((home + "/.gameapi_builder/gameapi_script.html").c_str(), std::ofstream::out);
       ss << convert_script(htmlfile);
       ss << std::flush;
