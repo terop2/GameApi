@@ -6332,11 +6332,11 @@ void LoadUrls_async(GameApi::Env &e, const CodeGenLine &line, std::string homepa
 	  std::string url = line.params[param_num];
 
 	  if (!is_async_loaded_urls_in_vec(url)) {
-	    std::cout << "LoadUrls_async Loading " << url << std::endl;
+	    //std::cout << "LoadUrls_async Loading " << url << std::endl;
 	    e.async_load_url(url,homepage);
 	    g_async_loaded_urls.push_back(url);
 	  } else {
-	    std::cout << "LoadUrls_async Pushing " << url << std::endl;
+	    //std::cout << "LoadUrls_async Pushing " << url << std::endl;
 
 	    ASyncCallback *cb = rem_async_cb(std::string("load_url.php?url=")+url);
 	    g_async_vec.push_back(cb);
