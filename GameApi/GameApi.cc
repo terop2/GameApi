@@ -16503,7 +16503,7 @@ public:
     static int old_count = 0;
     if (async_pending_count!=old_count) {
       old_count = async_pending_count;
-      std::cout << "async_pending_count=" << old_count << std::endl;
+      //std::cout << "async_pending_count=" << old_count << std::endl;
       static int yyyy=0;
       if (old_count>100)yyyy=1;
       if (yyyy==1&&old_count<0+g_async_pending_count_failures) { async_pending_count=0;
