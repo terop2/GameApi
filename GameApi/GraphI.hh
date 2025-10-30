@@ -9,6 +9,10 @@
 #include "VectorTools.hh"
 #include "Buffer.hh"
 
+#ifdef EMSCRIPTEN
+#include <emscripten/heap.h>
+#endif
+
 class ByteStore
 {
 public:
@@ -21,17 +25,17 @@ template<class T>
 class GameApiAllocator
 {
 public:
-  static uint64_t m_free_mem;
-  static uint64_t m_changed_mem;
-  static uint64_t m_used_mem;
+  static uint32_t m_free_mem;
+  static uint32_t m_changed_mem;
+  static uint32_t m_used_mem;
   
   typedef T* pointer;
   typedef const T* const_pointer;
   typedef void* void_pointer;
   typedef const void* const_void_pointer;
   typedef T value_type;
-  typedef uint64_t size_type;
-  typedef int64_t difference_type;
+  typedef uint32_t size_type;
+  typedef int32_t difference_type;
   void print() const
   {
 #if 0
@@ -53,25 +57,39 @@ public:
       }
 #endif
   }
-  T* allocate(uint64_t sz) {
+  T* allocate(uint32_t sz) {
+    if (sz==0) return nullptr;
+
 #if 0
     *free_mem-=sz*sizeof(T);
     *changed_mem+=sz*sizeof(T);
     *used_mem+=sz*sizeof(T);
     print();
 #endif
-    return (T*)malloc(sz*sizeof(T));
+#ifdef EMSCRIPTEN
+    void *p = emscripten_builtin_malloc(sz*sizeof(T));
+    if (!p) return nullptr;
+    return static_cast<T*>(p);
+#else
+    void *p = malloc(sz*sizeof(T));
+    if (!p) return nullptr;
+    return (T*)p;
+#endif
   }
-  void deallocate(T *ptr, uint64_t sz) {
+  void deallocate(T *ptr, uint32_t sz) {
 #if 0
     *free_mem+=sz*sizeof(T);
     *changed_mem+=sz*sizeof(T);
     print();
     *used_mem-=sz*sizeof(T);
 #endif
-    return free((void*)ptr);
+#ifdef EMSCRIPTEN
+    if (ptr) emscripten_builtin_free(ptr);
+#else
+      free((void*)ptr);
+#endif
   }
-  uint64_t max_size() const { return *free_mem; }
+  uint32_t max_size() const { return *free_mem; }
   friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
   friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
   GameApiAllocator() : free_mem(&m_free_mem), changed_mem(&m_changed_mem),used_mem(&m_used_mem) { }
@@ -84,17 +102,17 @@ public:
     return *this;
   }
 private:
-  uint64_t *free_mem;
-  uint64_t *changed_mem;
-  uint64_t *used_mem;
+  uint32_t *free_mem;
+  uint32_t *changed_mem;
+  uint32_t *used_mem;
 };
 
 template<class T>
-uint64_t GameApiAllocator<T>::m_free_mem = std::numeric_limits<uint64_t>::max();
+uint32_t GameApiAllocator<T>::m_free_mem = std::numeric_limits<uint32_t>::max();
 template<class T>
-uint64_t GameApiAllocator<T>::m_changed_mem = 0;
+uint32_t GameApiAllocator<T>::m_changed_mem = 0;
 template<class T>
-uint64_t GameApiAllocator<T>::m_used_mem = 0;
+uint32_t GameApiAllocator<T>::m_used_mem = 0;
 
 
 #ifndef TINYGLTF_IMPLEMENTATION
@@ -428,6 +446,7 @@ template<class Z, class C>
 class ContinuousBitmap2
 {
 public:
+  virtual ~ContinuousBitmap2() { }
   virtual Z SizeX() const=0;
   virtual Z SizeY() const=0;
   virtual C Map(Z x,Z y) const=0;
@@ -449,11 +468,13 @@ template<class T>
 class HandleValue
 {
 public:
+  virtual ~HandleValue() { }
   virtual void Handle(T t)=0;
 };
 class Graph
 {
 public:
+  virtual ~Graph() { }
   virtual int NumVertexes() const=0;
   virtual int NumEdges() const=0;
   virtual std::pair<int, int> EdgeVertex(int edge) const=0;
@@ -462,6 +483,7 @@ template<class V, class E>
 class GraphData
 {
 public:
+  virtual ~GraphData() { }
   virtual V Vertex(int v) const =0;
   virtual E Edge(int e, int v1, int v2) const=0;
 };
@@ -543,6 +565,7 @@ class GuiWidget
 {
 public:
   GuiWidget() : index(0), size2(1) { }
+
   void set_id(std::string id_m) { id = id_m; }
   std::string get_id() const { return id; }
   void set_index(int j) { index = j; }
@@ -627,7 +650,7 @@ public:
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
-  virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }
+  //virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }
 };
 
 struct GameApiLine
@@ -1053,6 +1076,7 @@ protected:
 class Cutter
 {
 public:
+  virtual ~Cutter() { }
   virtual std::vector<Point> cut(Point p1, Point p2) const=0;
 };
 
@@ -1119,6 +1143,7 @@ public:
 class ImplicitFunction4d
 {
 public:
+  virtual ~ImplicitFunction4d() { }
   virtual float f(float x, float y, float z, float t) const=0;
   virtual float f_u(float x, float y, float t) const=0;
   virtual float f_l(float x, float y, float t) const=0;
@@ -1221,6 +1246,7 @@ public:
 namespace GameApi {
 class EditNode {
 public:
+  virtual ~EditNode() { }
   // 0=no source, 1=mouse_x, 2=mouse_y
   virtual void SetSource(int i)=0;
   // 0=no edit, 1=edit_x, 2=edit_y, 3=edit_z
@@ -1248,6 +1274,7 @@ public:
 class Event3
 {
 public:
+  virtual ~Event3() { }
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual bool event_triggered() const=0;
@@ -1256,6 +1283,7 @@ public:
 class Action
 {
 public:
+  virtual ~Action() { }
   virtual MainLoopItem *get_main_loop(MainLoopItem *next)=0;
   virtual void trigger()=0;
 };
@@ -1351,6 +1379,7 @@ template<class T>
 class BuilderValue
 {
 public:
+  virtual ~BuilderValue() { }
   virtual T get() const=0;
 };
 
@@ -1367,6 +1396,7 @@ template<class T>
 class BuilderArray
 {
 public:
+  virtual ~BuilderArray() { }
   virtual int Size() const=0;
   virtual BuilderValue<T> *Index(int i) const=0;
 };
@@ -1450,6 +1480,7 @@ public:
 
 class CmdExecute {
 public:
+  virtual ~CmdExecute() { }
   virtual void Execute(char c)=0;
   virtual Point pos() const=0;
   virtual int obj_type() const=0;
@@ -1487,6 +1518,7 @@ public:
 class Space3d
 {
 public:
+  virtual ~Space3d() { }
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
   virtual float SizeZ() const=0;
@@ -1496,6 +1528,7 @@ public:
 class PropertyArray
 {
 public:
+  virtual ~PropertyArray() { }
   virtual int NumProp() const=0;
   virtual unsigned int Color(int i) const=0;
 };
@@ -1503,6 +1536,7 @@ public:
 class EnableArray
 {
 public:
+  virtual ~EnableArray() { }
   virtual int NumEnables() const=0;
   virtual void Enable(int i)=0;
   virtual void Disable(int i)=0;
@@ -1511,6 +1545,7 @@ public:
 class PointsInPlane
 {
 public:
+  virtual ~PointsInPlane() { }
   virtual int Size() const=0;
   virtual Point2d Map(int i) const=0;
   virtual unsigned int Color(int i) const=0;
@@ -1519,6 +1554,7 @@ public:
 class LinesInPlane
 {
 public:
+  virtual ~LinesInPlane() { }
   virtual int Size() const=0;
   virtual Point2d Map(int i, bool second) const=0;
   virtual unsigned int Color(int i, bool second) const=0;
@@ -1527,6 +1563,7 @@ public:
 class FacesInPlane
 {
 public:
+  virtual ~FacesInPlane() { }
   virtual int Size() const=0;
   virtual int NumPoints(int face) const=0;
   virtual Point2d Map(int face, int point) const=0;
@@ -1540,6 +1577,7 @@ template<class T>
 class PathValues
 {
 public:
+  virtual ~PathValues() { }
   virtual float Size() const=0;
   virtual T get(float x) const=0;
 };
@@ -1548,6 +1586,7 @@ template<class T>
 class AreaValues
 {
 public:
+  virtual ~AreaValues() { }
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
   virtual T get(float x, float y) const=0;
@@ -1580,6 +1619,7 @@ public:
 class WorldSpec
 {
 public:
+  virtual ~WorldSpec() { }
   virtual int NumItems() const=0;
   virtual int PosX(int i) const=0;
   virtual int PosY(int i) const=0;
@@ -1598,6 +1638,7 @@ public:
 class ShaderI
 {
 public:
+  virtual ~ShaderI() { }
   virtual std::string funcname() const=0;
   virtual std::string shader() const=0;
 };
@@ -1605,12 +1646,14 @@ public:
 class DynamicChange
 {
 public:
+  virtual ~DynamicChange() { }
   virtual void applychange(float *source, float *target, int size_in_floats, MainLoopEnv &e)=0;
 };
 
 class ShaderBitmap
 {
 public:
+  virtual ~ShaderBitmap() { }
   virtual std::string bitmapname() const=0;
   virtual std::string bitmapbody() const=0;
   virtual std::string bitmapbody_v_init() const=0;
@@ -1639,6 +1682,7 @@ public:
 class InputForMoving
 {
 public:
+  virtual ~InputForMoving() { }
   virtual void execute(MainLoopEnv &e)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual float XPos() const=0;
@@ -1649,6 +1693,7 @@ public:
 class Glyph
 {
 public:
+  virtual ~Glyph() { }
   virtual float Top() const=0;
   virtual float SizeX() const=0;
   virtual float SizeY() const=0;
@@ -1924,6 +1969,7 @@ private:
 class ColorBool
 {
 public:
+  virtual ~ColorBool() { }
   virtual bool is_included(unsigned int color) const=0;
 };
 
@@ -1972,6 +2018,7 @@ public:
 class QuadTree
 {
 public:
+  virtual ~QuadTree() { }
   virtual int RootType() const=0;
   virtual Extends RootExtends() const=0;
   virtual QuadNode *Root() const=0;
@@ -2039,6 +2086,7 @@ struct Prop3d
 class Object3d : public CollectInterface
 {
 public:
+  virtual ~Object3d() { }
   virtual int current_state() const=0;
   virtual Prop3d &prop(int state)=0;
     
@@ -2200,6 +2248,7 @@ struct Rect5
 class RectangleArray : public CollectInterface
 {
 public:
+  virtual ~RectangleArray() { }
   virtual void Prepare() =0;
   virtual int NumRects() const=0;
   virtual Rect5 GetRect(int i) const=0;
@@ -2220,6 +2269,7 @@ public:
 class PlayerStrings
 {
 public:
+  virtual ~PlayerStrings() { }
   virtual int NumPlayers() const=0;
   virtual std::string Player_ID(int i) const=0;
   virtual std::string Player_Prop(int i) const=0;
@@ -2228,6 +2278,7 @@ public:
 class DynMainLoop
 {
 public:
+  virtual ~DynMainLoop() { }
   virtual int num() const=0;
   virtual MainLoopItem *get_mainloop(int i) const=0;
 };
@@ -2262,18 +2313,21 @@ public:
 class FloatArray2
 {
 public:
+  virtual ~FloatArray2() { }
   virtual int Num() const=0;
   virtual float Map(int i) const=0;
 };
 class FloatField
 {
 public:
+  virtual ~FloatField() { }
   virtual float Map(Point p) const=0;
 };
 
 class VelocityField
 {
 public:
+  virtual ~VelocityField() { }
   virtual Vector Map(Point p) const=0;
 };
 
@@ -2319,6 +2373,7 @@ public:
 class BitmapRange
 {
 public:
+  virtual ~BitmapRange() { }
   virtual int NumSpans() const=0;
   virtual int NumRanges(int span) const=0;
   virtual int StartRange(int span, int range) const=0;
@@ -2328,6 +2383,7 @@ public:
 class GameState
 {
 public:
+  virtual ~GameState() { }
   virtual float *index_float(int i) const=0;
   virtual int *index_int(int i) const=0;
   virtual std::string *index_string(int i) const=0;
@@ -2337,6 +2393,7 @@ public:
 class GCBitmap : public CollectInterface
 {
 public:
+  virtual ~GCBitmap() { }
   virtual void Prepare()=0;
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
@@ -2346,6 +2403,7 @@ public:
 class GraphicsContext
 {
 public:
+  virtual ~GraphicsContext() { }
   virtual int size_x() const=0;
   virtual int size_y() const=0;
 
@@ -2366,6 +2424,7 @@ GCBitmap *to_gcbitmap(Bitmap<Color> *bm);
 class TimeAnim : public CollectInterface
 {
 public:
+  virtual ~TimeAnim() { }
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual void Prepare()=0;
@@ -2378,10 +2437,13 @@ public:
 class GLTFModelInterface : public CollectInterface
 {
 public:
+  virtual ~GLTFModelInterface() { }
   virtual void Prepare()=0;
   virtual void Collect(CollectVisitor &vis)=0;
   virtual void HeavyPrepare()=0;
   virtual bool ReadyToPrepare() const { return true; }
+
+  virtual void execute() { }
   
   virtual std::string name() const=0;
   
@@ -2442,6 +2504,8 @@ public:
   virtual std::string BaseUrl() const { return next->BaseUrl(); }
   virtual std::string Url() const { return next->Url(); }
 
+  virtual void execute() { next->execute(); }
+  
   virtual int get_default_scene() const { return next->get_default_scene(); }
   
   virtual int accessors_size() const { return next->accessors_size(); }
@@ -2546,6 +2610,7 @@ class Program;
 class ShaderBlock
 {
 public:
+  virtual ~ShaderBlock() { }
   virtual int NumChildren() const=0;
   virtual const ShaderBlock *Children(int i) const=0;
 
@@ -2570,12 +2635,15 @@ public:
 class Scalar
 {
 public:
+  virtual ~Scalar() { }
+
   virtual float get() const=0;
 };
 
 class Vec2
 {
 public:
+  virtual ~Vec2() { }
   virtual float get_x() const=0;
   virtual float get_y() const=0;
 };
@@ -2583,6 +2651,7 @@ public:
 class Vec3
 {
 public:
+  virtual ~Vec3() { }
   virtual float get_x() const=0;
   virtual float get_y() const=0;
   virtual float get_z() const=0;
@@ -2591,6 +2660,7 @@ public:
 class Vec4
 {
 public:
+  virtual ~Vec4() { }
   virtual float get_x() const=0;
   virtual float get_y() const=0;
   virtual float get_z() const=0;
@@ -2604,16 +2674,19 @@ public:
 class Mat2_a
 {
 public:
+  virtual ~Mat2_a() { }
   virtual float get_mat(int x, int y) const=0;
 };
 class Mat3_a
 {
 public:
+  virtual ~Mat3_a() { }
   virtual float get_mat(int x, int y) const=0;
 };
 class Mat4_a
 {
 public:
+  virtual ~Mat4_a() { }
   virtual float get_mat(int x, int y) const=0;
 };
 
@@ -2661,6 +2734,7 @@ struct PointBinding
 class BindingsI
 {
 public:
+  virtual ~BindingsI() { }
   virtual int F_Size() const=0;
   virtual const FloatBinding &F_get(int i) const=0;
   virtual int I_Size() const=0;
@@ -2731,6 +2805,7 @@ public:
 class ShaderI2 : public CollectInterface2
 {
 public:
+  virtual ~ShaderI2() { }
   virtual void set_inner(int num, std::string value)=0; 
   virtual std::string get_webgl_header() const=0;
   virtual std::string get_win32_header() const=0;
@@ -2747,6 +2822,7 @@ public:
 class ShaderParameterI
 {
 public:
+  virtual ~ShaderParameterI() { }
   virtual void set_time(float time)=0;
   //virtual bool enabled() const=0;
   virtual float param_value_f(int i) const=0;
@@ -2762,11 +2838,13 @@ class ASyncTask
 public:
   virtual int NumTasks() const=0;
   virtual void DoTask(int i)=0;
+  virtual ~ASyncTask() { }
 };
 
 class PixelBufferObject : public CollectInterface
 {
 public:
+  virtual ~PixelBufferObject() { }
   virtual unsigned int Id() const=0;
   virtual void Prepare()=0;
   virtual int SizeX() const=0;
@@ -2776,6 +2854,7 @@ public:
 class TexturedAlternatives
 {
 public:
+  virtual ~TexturedAlternatives() { }
   virtual int NumArray() const=0; // a
   virtual int NumAlts() const=0; // i
   virtual int Alt(int a, int i) const=0;
@@ -2785,6 +2864,7 @@ class TexturedVoxelArea;
 class TexturedAreaArray
 {
 public:
+  virtual ~TexturedAreaArray() { }
   virtual int Size() const=0;
   virtual TexturedVoxelArea *Index(int i) const=0;
   virtual int Left(int i) const=0;
@@ -2802,6 +2882,7 @@ class TexturedVoxelArea
 {
 public:
   TexturedVoxelArea() { }
+  virtual ~TexturedVoxelArea() { }
   virtual int Parent() const=0;
   virtual Bitmap<Color>* texture() const=0;
   virtual FaceCollection* faces() const=0;
@@ -2834,6 +2915,7 @@ private:
 class TexturedQuads
 {
 public:
+  virtual ~TexturedQuads() { }
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual Color Map(int x, int y) const=0;
@@ -2853,6 +2935,7 @@ public:
 class MarchingCubesInputData
 {
 public:
+  virtual ~MarchingCubesInputData() { }
   virtual int start_x() const=0;
   virtual int end_x() const=0;
   virtual int start_y() const=0;
@@ -2871,6 +2954,7 @@ public:
 class MarchingCubesCellInputData
 {
 public:
+  virtual ~MarchingCubesCellInputData() { }
   virtual bool Map(bool x, bool y, bool z) const=0;
   virtual Vector gradient(bool x, bool y, bool z) const=0;
 };
@@ -2878,6 +2962,7 @@ public:
 class MarchingCubesCellEdge
 {
 public:
+  virtual ~MarchingCubesCellEdge() { }
   virtual bool start(unsigned char c1, unsigned char c2)=0;
   virtual bool end(unsigned char c1, unsigned char c2)=0;
   virtual Point pos(unsigned char c1, unsigned char c2)=0;
@@ -2887,6 +2972,7 @@ public:
 class MarchingCubesCellPolygon
 {
 public:
+  virtual ~MarchingCubesCellPolygon() { }
   virtual int NumPoints() const=0;
   virtual Point FacePoint(int point) const=0;
   virtual Vector PointNormal(int point) const=0;
@@ -2895,6 +2981,7 @@ public:
 class MarchingCubesMesh
 {
 public:
+  virtual ~MarchingCubesMesh() { }
   virtual int NumPolygons(int x, int y, int z) const=0; // returns 0..4
   virtual MarchingCubesCellPolygon *Polygon(int x, int y, int z, int poly_num) const=0;
 };
@@ -2903,6 +2990,7 @@ public:
 class IWorld
 {
 public:
+  virtual ~IWorld() { }
   virtual int NumBlocks() const=0;
   virtual int BlockType(int i) const=0;
   virtual Point BlockPos(int i) const=0;
@@ -2912,6 +3000,7 @@ public:
 class ICache
 {
 public:
+  virtual ~ICache() { }
   virtual int Num() const=0;
   virtual FaceCollection *GetFaces(int i) const=0;
   virtual Material *GetMaterial(int i) const=0; 
@@ -2921,6 +3010,7 @@ public:
 class Platform
 {
 public:
+  virtual ~Platform() { }
   virtual bool Allow(float x, float z) const=0;
   virtual float Height(float x, float z) const=0;
   virtual FaceCollection *Render() const=0;
@@ -2931,6 +3021,7 @@ public:
 class Tiles2d
 {
 public:
+  virtual ~Tiles2d() { }
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual int Tile(int x, int y) const=0;
@@ -2948,6 +3039,7 @@ public:
 };
 class Tiles3d
 {
+  virtual ~Tiles3d() { }
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
   virtual int SizeZ() const=0;
@@ -2957,6 +3049,7 @@ class Tiles3d
 class TileScroller
 {
 public:
+  virtual ~TileScroller() { }
   virtual Point get_pos() const=0;
   virtual void handle_event(MainLoopEvent &e)=0;
   virtual void execute(MainLoopEnv &e)=0;
@@ -2966,6 +3059,7 @@ public:
 class TileRenderer2d
 {
 public:
+  virtual ~TileRenderer2d() { }
   virtual MainLoopItem *get_renderer(TileScroller *scr) const=0;
   virtual void set_tiles_2d(Tiles2d *t, std::vector<Bitmap<Color>*> bm, std::vector<int> vec)=0;
 };
@@ -2973,6 +3067,7 @@ public:
 class TileRenderer3d
 {
 public:
+  virtual ~TileRenderer3d() { }
   virtual MainLoopItem *get_renderer() const=0;
   virtual void set_tiles_3d(Tiles3d *t) const=0;
 };
@@ -2980,6 +3075,7 @@ public:
 class TileHudInterface
 {
 public:
+  virtual ~TileHudInterface() { }
   virtual int get_score() const=0;
   virtual void set_score(int score)=0;
   virtual int get_health() const=0;
@@ -2992,24 +3088,28 @@ public:
 class TileSplashScreenInterface
 {
 public:
+  virtual ~TileSplashScreenInterface() { }
   virtual bool enabled() const=0;
   virtual void reset()=0;
 };
 class TileSplashScreenCallback
 {
 public:
+  virtual ~TileSplashScreenCallback() { }
   virtual void reset()=0;
 };
 
 class TileEnemyCallback
 {
 public:
+  virtual ~TileEnemyCallback() { }
   virtual void add_random_item(int x, int y, float delta_x)=0;
 };
 
 class TileActivation
 {
 public:
+  virtual ~TileActivation() { }
   virtual void ActivateTile(int x, int y, int z)=0;
   virtual void DeactivateTile(int x, int y, int z)=0;
 };
@@ -3018,6 +3118,7 @@ public:
 class TileBehaviorMap
 {
 public: 
+  virtual ~TileBehaviorMap() { }
   virtual void SetTiles2d(Tiles2d *t)=0;
   virtual void SetTiles3d(Tiles3d *t)=0;
   virtual int NumBehaviours() const=0;
@@ -3030,6 +3131,7 @@ public:
 class TilePlayer
 {
 public:
+  virtual ~TilePlayer() { }
   virtual void SetTiles2d(Tiles2d *t)=0;
   virtual void SetTiles3d(Tiles3d *t)=0;
   virtual void handle_event(MainLoopEvent &e)=0;
@@ -3050,6 +3152,7 @@ public:
 class TileEnemies
 {
 public:
+  virtual ~TileEnemies() { }
   virtual void SetTiles2d(Tiles2d *t)=0;
   virtual void SetTiles3d(Tiles3d *t)=0;
   virtual int NumEnemies() const=0;
@@ -3116,6 +3219,7 @@ struct Pixel2
 class PixelAllocator
 {
 public:
+  virtual ~PixelAllocator() { }
   virtual Pixel2 Alloc()=0;
   virtual int SizeX() const=0;
   virtual int SizeY() const=0;
@@ -3137,6 +3241,7 @@ struct task_data
 class task_interface
 {
 public:
+  virtual ~task_interface() { }
   virtual void spawn_thread()=0;
 public: // mutex operations needed
   virtual void queue_mutex_init()=0;
@@ -3164,6 +3269,7 @@ public:
 class del_map_interface
 {
 public:
+  virtual ~del_map_interface() { }
   virtual void async_cache_clear()=0;
 #ifdef EMSCRIPTEN
   virtual void del_fetch_url(std::string url)=0;

@@ -420,6 +420,25 @@ struct FetchInBlocksUserData
 
 extern bool g_concurrent_download;
 
+#ifdef EMSCRIPTEN
+std::string get_html_directory() {
+    const char* dir = (const char*)EM_ASM_PTR({
+        var href = window.location.href;
+        var dir = href.substring(0, href.lastIndexOf('/') + 1);
+        var lengthBytes = lengthBytesUTF8(dir) + 1;
+        var stringOnWasmHeap = _malloc(lengthBytes);
+        stringToUTF8(dir, stringOnWasmHeap, lengthBytes);
+        return stringOnWasmHeap;
+    });
+    std::string result(dir);
+    free((void*)dir);
+    return result;
+}
+#else
+std::string get_html_directory() { return ""; }
+#endif
+
+
 class FetchInBlocks
 {
 public:
@@ -447,15 +466,19 @@ private:
     std::stringstream ss;
     ss << r;
 
+#if 0
     std::string url0 = gameapi_homepageurl;
     int res=0;
     int ss2 = url0.size();
     for(int i=0;i<ss2;i++) if (url0[i]=='/') res=i;
-    std::string url1 = url0.substr(0,res);
+    std::string url1 = url0.substr(0,res+1);
+#endif
+    std::string url1 = get_html_directory() + "/";
 
-    if (url1=="") url1="https://meshpage.org"; // this doesnt really work, since it gives CORS problem
     
-    std::string url2 = url1+"/get_file_size.php?" + ss.str() + "&url=" +url; 
+    //if (url1=="") url1="https://meshpage.org/"; // this doesnt really work, since it gives CORS problem
+    
+    std::string url2 = url1+"get_file_size.php?" + ss.str() + "&url=" +url; 
     emscripten_fetch(&attr, url2.c_str());
 
     int val = 0;
@@ -1185,12 +1208,14 @@ EXPORT void GameApi::Env::remove_download_bar_item(int i)
 EXPORT int GameApi::Env::start_async(ASyncTask *task)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  return env->start_async(task);
+  int i = env->start_async(task);
+  return i;
 }
 IMPORT int GameApi::Env::async_mapping(int index)
 {
   ::EnvImpl *env = (::EnvImpl*)envimpl;
-  return env->async_mapping(index);
+  int i = env->async_mapping(index);
+  return i;
 }
 IMPORT void GameApi::Env::remove_async(int i)
 {
@@ -4054,11 +4079,16 @@ void EnvImpl::remove_async(int i)
 }
 void EnvImpl::async_scheduler()
 {
-  int s = task_location.size();
+
+  
+  int s = std::min(tasks.size(),task_location.size());
   for(int i=0;i<s;i++)
     {
       if (!task_finished(i,task_location[i])) continue; // still running
-      if (tasks[i]->NumTasks()>task_location[i])
+      ASyncTask *t = tasks[i];
+      int s1 = t->NumTasks();
+      int s2 = task_location[i];
+      if (s1>s2)
 	{
 	  task_location[i]++;
 	  start_task(i,task_location[i]);
