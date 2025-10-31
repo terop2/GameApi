@@ -16478,6 +16478,12 @@ public:
   }
   virtual int Iter()
   {
+    if (async_pending_count < 0) {
+      async_pending_count = 0;
+      std::cout << "Warning: async_pending_count went negative, fixing.." << std::endl;
+    }
+
+    
     try {
     static std::string status = "";
     static std::string old_status = "";
