@@ -85,7 +85,7 @@ function check_emscripten_running()
     //console.log("HEP");
     var canv = document.getElementById("canvas");
     if (Module) {
-        Module['onRuntimeInitialized'] = check_em();
+        Module['onStartup'] = check_em();
     g_check_em_timeout = setTimeout(function() {
             console.log("waiting for emscripten startup..");
             if (g_ready_bit==1) {
