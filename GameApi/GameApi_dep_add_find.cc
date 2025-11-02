@@ -127,11 +127,11 @@ IMPORT void clear_block(int id)
 }
 void add_b(std::shared_ptr<void> ptr)
 {
-  if (g_current_block!=-1 && !g_blocks.g_blocks[g_current_block])
+  if ((g_current_block>=0 && g_current_block<g_blocks.g_blocks.size()) && !g_blocks.g_blocks[g_current_block])
     {
       recreate_block(g_current_block);
     }
-  if (g_current_block!=-1)
+  if (g_current_block>=0 && g_current_block<g_blocks.g_blocks.size() && g_blocks.g_blocks[g_current_block])
     g_blocks.g_blocks[g_current_block]->vec.push_back(ptr);
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
