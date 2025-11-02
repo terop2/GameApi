@@ -11,7 +11,7 @@ void stackTrace();
 struct Block
 {
   std::vector<std::shared_ptr<void> > vec;
-#if 1
+#if 0
   ~Block()
   {
     int s = vec.size();
@@ -34,11 +34,11 @@ struct G_BLOCK
 std::vector<Block*> g_blocks;
   ~G_BLOCK() {
     int s = g_blocks.size();
-    std::cout << "G_BLOCKS dtor: s=" << s<< std::endl;
+    //std::cout << "G_BLOCKS dtor: s=" << s<< std::endl;
     for(int i=0;i<s;i++) {
-      std::cout << "Deleting " << i << std::endl;
+      //std::cout << "Deleting " << i << std::endl;
       delete g_blocks[i];
-      std::cout << "del ok" << std::endl;
+      //std::cout << "del ok" << std::endl;
     }
   }
 } g_blocks;
@@ -84,16 +84,14 @@ IMPORT int add_block()
 void recreate_block(int id)
 {
   if (id>=0 && id<g_blocks.g_blocks.size()) {
-    if (g_blocks.g_blocks[id])
-      delete g_blocks.g_blocks[id];
+    //if (g_blocks.g_blocks[id])
+    //  delete g_blocks.g_blocks[id];
     g_blocks.g_blocks[id]=new Block;
   }
 }
 IMPORT void set_current_block(int id)
 {
-  if (id>=0 && id<g_blocks.g_blocks.size()) {
-    g_current_block = id;
-  } 
+  g_current_block = id;
 }
 void delete_item_from_block(void *ptr, Block *blk)
 {
@@ -122,7 +120,7 @@ int get_current_block()
 IMPORT void clear_block(int id)
 {
   if (id>=0 && id<g_blocks.g_blocks.size()) {
-    std::cout << "Deleting pointer " << (long)g_blocks.g_blocks[id] << std::endl;
+    //std::cout << "Deleting pointer " << (long)g_blocks.g_blocks[id] << std::endl;
     delete g_blocks.g_blocks[id];
     g_blocks.g_blocks[id]=0;
   }

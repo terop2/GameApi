@@ -34237,14 +34237,14 @@ void run_callback(void *ptr)
   // END OF TODO.
   clear_shader_cache();
   g_id = add_block();
-  //std::cout << "New block id:" << g_id << std::endl;
   set_current_block(g_id);
   GameApi::ExecuteEnv e;
 #ifdef KP_DEBUG
   std::cout << "FINAL CODE:" << script << std::endl;
 #endif
   std::pair<int,std::string> blk = GameApi::execute_codegen(g_everyapi->get_env(), *g_everyapi, script, e);
-  set_current_block(-2);
+  set_current_block(add_block());
+  //set_current_block(-2);
 #ifdef KP_DEBUG
   std::cout << "blk.second==" << blk.second << std::endl;
 #endif
