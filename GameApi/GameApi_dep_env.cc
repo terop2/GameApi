@@ -21,6 +21,7 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 
 IMPORT double g_dpr=1.0;
+extern std::vector<const char*> g_urls;
 
 
 IMPORT extern std::string g_window_href;
@@ -1745,6 +1746,9 @@ void ASyncLoader::rem_callback(std::string url)
 {
   rem_async_cb(url);
 }
+
+extern std::string gameapi_homepageurl;
+
 void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 {
   // progress bar
@@ -1765,6 +1769,45 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
   add_async_cb(url,cb);
 
 
+
+  int u = g_urls.size();
+  for(int i=0;i<u;i++)
+    {
+        if (remove_load(url)==g_urls[i]) {
+	  
+	std::string url_only = "load_url.php?url=" + url;
+	std::string oldurl = url;
+	url = "load_url.php?url=" + url + "&homepage=" + gameapi_homepageurl;
+	
+	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+	if (cb) {
+	  //std::cout << "Load cb!" << url << std::endl;
+	(*cb->fptr)(cb->data);
+	}
+      ASyncCallback *cb2 = rem_async_cb(url); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!2" << url << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!3" << url << std::endl;
+	(*cb3->fptr)(cb3->data);
+      }
+
+      { // progressbar
+	std::string url_plain = stripprefix(url);
+	int s = url_plain.size();
+	int sum=0;
+	for(int i=0;i<s;i++) sum+=int(url_plain[i]);
+	sum = sum % 1000;
+	ProgressBar(sum,15,15,url_plain);
+      }
+
+
+	}
+    }
+	
 
   //std::cout << "async set callback" << url << std::endl;
 }
@@ -1856,14 +1899,14 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       if (g_del_map.async_find(url2))
 	{
 	  
-	  //ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
-	  //if (cb) {
+	  ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
+	  if (cb) {
 	//std::cout << "Load cb!" << url2 << std::endl;
 	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
-	//(*cb->fptr)(cb->data);
+	(*cb->fptr)(cb->data);
 	  //} else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
-	  //}
+	  }
 	  
 	}
       else
@@ -2138,7 +2181,6 @@ std::string remove_load(std::string s);
 
 extern std::vector<const unsigned char*> g_content;
 extern std::vector<const unsigned char*> g_content_end;
-extern std::vector<const char*> g_urls;
 
 
 int CalcUrlIndex(std::string url)
@@ -2263,6 +2305,9 @@ void fetch_failed(void *data)
 }
 #endif
 
+int find_str(std::string s, std::string f);
+
+
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
   {
     //std::cout << "load_urls:" << url << std::endl;
@@ -2303,6 +2348,8 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 	std::string oldurl = url;
 	url = "load_url.php?url=" + url + "&homepage=" + homepage;
 
+
+	
 	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
 	if (cb) {
 	  //std::cout << "Load cb!" << url << std::endl;
@@ -2439,9 +2486,11 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
     
     //emscripten_idb_async_exists("gameapi", oldurl.c_str(), (void*)ld, &idb_exists, &idb_error);
     if (extract_server(oldurl)=="" || is_same_server || is_same_server2) {
+      if (find_str(oldurl,".zip/")==-1) { // ignore zip file contents.
       FetchInBlocks *b = new FetchInBlocks(oldurl,fetch_success,fetch_failed,(void*)ld);
       ld->obj = b;
       b->fetch();
+      }
       /*
     emscripten_fetch_attr_t attr;
     emscripten_fetch_attr_init(&attr);
@@ -2527,15 +2576,32 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
     g_del_map.push_async_url(url2,buf);
     //g_del_map.load_url_buffers_async[url2] = std::make_shared<const std::vector<unsigned char, GameApiAllocator<unsigned char> >>(*buf); //new std::vector<unsigned char>(buf);
     //std::cout << "Async cb!" << url2 << std::endl;
-    ASyncCallback *cb = rem_async_cb(url2); //load_url_callbacks[url2];
-    if (cb) {
+  std::string url_only = "load_url.php?url=" + oldurl;
+
+      ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+      if (cb) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb->fptr)(cb->data);
+      }
+      ASyncCallback *cb2 = rem_async_cb(url); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb3->fptr)(cb3->data);
+      }
+
+    ASyncCallback *cb4 = rem_async_cb(url2); //load_url_callbacks[url2];
+    if (cb4) {
       //std::cout << "Load cb!" << url2 << std::endl;
       //std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
-      (*cb->fptr)(cb->data);
+      (*cb4->fptr)(cb4->data);
     } else {
       //std::cout << "ASyncLoadUrl::CB failed" << std::endl;
     }
-
       {
 
     // REASON, ProgressBar cannot be called from other threads.
