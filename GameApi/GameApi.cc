@@ -16610,7 +16610,7 @@ public:
 	  static int count=600;
 	  if (async_pending_count!=async_old) {
 	    async_old=async_pending_count;
-	    count=600;
+	    count=100;
 	  } else {
 	    //std::cout << "TICK " << count << std::endl;
 	    count--; if (count<0) { 
@@ -38137,14 +38137,17 @@ void async_pending_plus(std::string label, std::string info)
 void async_pending_minus(std::string label, std::string info)
 {
   int s = async_labels.size();
+  bool done=false;
   for(int i=0;i<s;i++)
     {
       if (label==async_labels[i] && info==async_infos[i]) {
 	async_labels.erase(async_labels.begin()+i);
 	async_infos.erase(async_infos.begin()+i);
+	done = true;
 	break;
       }
     }
+  if (!done) { std::cout << "async_pending_minus not found [" << label << "::" << info << "]" << std::endl; }
 }
 
 GameApi::ML GameApi::MainLoopApi::android_resize(GameApi::EveryApi &ev, ML ml, float mult)
