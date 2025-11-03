@@ -2552,7 +2552,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
       }
 
       return; }
-    std::cout << "Loading url: " << url <<std::endl;
+    //std::cout << "Loading url: " << url <<std::endl;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,nosize);
     //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf->size()==0) {
