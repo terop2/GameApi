@@ -3383,27 +3383,52 @@ int progress_lock=0;
 
 EXPORT GameApi::W GameApi::GuiApi::progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max)
 {
-  std::string prog = vec[vec.size()-1].substr(0,18);
-  std::string rest = vec[vec.size()-1].substr(18);
+  std::vector<std::string> prog;
+  std::vector<std::string> rest;
+
+  int s2 = vec.size();
+  for(int i=0;i<s2;i++)
+    {
+      if (vec[i].size()>19) {
+	std::string r = vec[i].substr(18);
+	//std::cout << "'" << r << "'" << std::endl;
+	if (r!="  loading assets" && r!="  collect") {
+	  prog.push_back(vec[i].substr(0,18));
+	  rest.push_back(vec[i].substr(18));
+	}
+      }
+    }
+
+  int restcount = 0;
+  while(rest.size()<3) { restcount++; rest.push_back("Caaaaaaaaaaaaaaaaaaaa"); }
+
+  
 
   //std::cout  << "Progress:" << prog << " " << rest << std::endl;
 
+  int s3 = std::max(0,int(rest.size()));
+  int start = std::max(s3-3,0);
+
+  
+  for(int ii=start;ii<s3;ii++)
+    {
+      // std::cout << ii << "::" << rest[ii] << std::endl;
   int pos = -1;
-  int s = rest.size();
+  int s = rest[ii].size();
   for(int i=0;i<s;i++)
     {
-      if (rest[i]=='.') pos=i;
+      if (rest[ii][i]=='.') pos=i;
     }
 
   
-  int restsize = rest.size()-pos;
+  int restsize = rest[ii].size()-pos;
   if (pos!=-1 && pos >25-restsize)
     {
-      std::string start = rest.substr(0,25-restsize);
-      std::string rest2 = rest.substr(pos);
-      rest = start+rest2;
+      std::string start = rest[ii].substr(0,25-restsize);
+      std::string rest2 = rest[ii].substr(pos);
+      rest[ii] = start+rest2;
     }
-  
+    }
   
   /*
   BB I3=ev.bool_bitmap_api.bb_empty(300,30);
@@ -3427,10 +3452,18 @@ BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
   BM bm = I10; 
   //W txt_0 = text(prog, atlas, atlas_bm);
   W txt_0 = icon(bm);
-  W txt_1 = text(rest, atlas, atlas_bm);
-  W arr[2] = { txt_0, txt_1 };
-  W array_0 = array_y(&arr[0], 2, 5);
-
+  std::vector<W> arr;
+  arr.push_back(txt_0);
+  //int ssy = 20;
+  //for(int ii=start;ii<s3;ii++) {
+  //  GameApi::W w = text(rest[ii], atlas, atlas_bm);
+  //  w = margin(w,0,(ssy-size_y(w))/2,0,(ssy-size_y(w))/2);
+  //  arr.push_back(w);
+  //}
+  //W arr[2] = { txt_0, txt_1 };
+  W array_0 = array_y(&arr[0], arr.size(), 5);
+  //W array_0b = array_y(&arr[0], arr.size()-restcount, 5);
+  
   W array_1 = margin(array_0, (sx-size_x(array_0))/2, (sy-size_y(array_0))/2, (sx-size_x(array_0))/2, (sy-size_y(array_0))/2);
   
   //W rect = highlight(400,200);
@@ -3454,24 +3487,24 @@ BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
 extern GameApi::GuiApi *g_everyapi_gui;
 
 
-IMPORT void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v, int val, int max)
+IMPORT void update_progress_dialog_cb_impl(volatile GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string> v, int val, int max, int process)
 {
-  g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v,val,max);
+  g_everyapi_gui->update_progress_dialog(w,x,y,f,b,v,val,max,process);
 }
 
-void GameApi::GuiApi::update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max)
+void GameApi::GuiApi::update_progress_dialog(volatile W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max,int process)
 {
   //std::cout << "PROGRESS:" << val << " " << max << std::endl;
-  if (progress_lock) return;
+  //if (progress_lock) return;
   static int g_id = -1;
-  //if (g_id!=-1) clear_block(g_id);
+  if (g_id!=-1) clear_block(g_id);
   g_id = add_block();
   int old = get_current_block();
   set_current_block(g_id);
 
-  
-  w = progress_dialog(sx,sy,atlas,atlas_bm, vec, val, max);
-  
+
+    GameApi::W ww = progress_dialog(sx,sy,atlas,atlas_bm, vec, val, max);
+    w = ww;
   set_current_block(old);
 }
 

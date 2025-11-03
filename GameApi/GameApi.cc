@@ -56,7 +56,7 @@ extern int g_engine_status;
 extern std::string g_gpu_vendor;
 IMPORT extern Low_SDL_Window *sdl_window;
 extern Low_SDL_GLContext g_context;
-
+extern int g_progress_script_num;
 
 #ifdef EMSCRIPTEN
 bool is_mobile_1()
@@ -21271,7 +21271,7 @@ std::vector<P_script2*> del_p_script;
 class HtmlUrl;
 std::vector<HtmlUrl*> del_p2_script;
 
-std::vector<unsigned char> *load_from_url(std::string url, bool nosize);
+std::vector<unsigned char> *load_from_url(std::string url, bool nosize, int progres_num);
 
 class HtmlUrl : public Html
 {
@@ -21303,7 +21303,7 @@ public:
   }
   ~HtmlUrl() {
     unasync();
-    del_p2_script.push_back(this); /*e.async_rem_callback(url);*/ }
+    /*del_p2_script.push_back(this);*/ /*e.async_rem_callback(url);*/ }
   void Prepare2()
   {
     for(int i=0;i<del_p2_script.size();i++)
@@ -21335,7 +21335,7 @@ public:
     //std::cout << "GOT SCRIPT FILE:" << code << std::endl;
     if (code.size()<120) {
       //std::cout << "LOADING FROM URL: " << url << std::endl;
-      std::vector<unsigned char> *file = load_from_url(url,false);
+      std::vector<unsigned char> *file = load_from_url(url,false,g_progress_script_num);
       code=std::string(file->begin(), file->end());
       //std::cout << "GOT:" << code << std::endl;
     }
@@ -23394,6 +23394,23 @@ void MT2_cb(void* data);
 
 
 extern bool g_progress_lock_assets;
+extern int g_progress_script_num;
+
+int process_script=-1;
+int process_script_max=0;
+int get_process_script_num()
+{
+  process_script++;
+  if (process_script_max<process_script) process_script_max=process_script;
+  return process_script;
+}
+IMPORT void reset_process_script_num()
+{
+  process_script=-1;
+  process_script_max=0;
+}
+IMPORT int get_process_script_max() { return process_script_max; }
+
 
 class ML_script2 : public MainLoopItem
 {
@@ -23406,17 +23423,21 @@ public:
        async_pending_count++; async_taken=true;
        //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
 #endif
+       process_script_num=get_process_script_num();
   }
   void unasync()
   {
+#ifdef EMSCRIPTEN
     if (async_taken) {
       async_pending_count--;
       async_taken=false;
     }
+#endif
   }
   ~ML_script2() { unasync(); /*e.async_rem_callback(url);*/ }
   void Prepare2() {
     g_progress_lock_assets=true;
+    g_progress_script_num = process_script_num;
     //std::string homepage = gameapi_homepageurl;
     //#ifndef EMSCRIPTEN
     //   e.async_load_url(url, homepage);
@@ -23459,6 +23480,7 @@ public:
 	//firsttime = false;
     g_progress_lock_assets=false;
     unasync();
+    g_progress_script_num = -1;
 	return;
       }
       //GameApi::P pp;
@@ -23474,26 +23496,32 @@ public:
     }
     unasync();
     g_progress_lock_assets=false;
+    g_progress_script_num = -1;
   }
   void Collect(CollectVisitor &vis)
   {
+    g_progress_script_num = process_script_num;
 #ifdef EMSCRIPTEN
     if (main2)
       main2->Collect(vis);    
 #endif
+    g_progress_script_num=-1;
   }
   void HeavyPrepare() {
   }
 	      
   void Prepare() {
+    g_progress_script_num = process_script_num;
 #ifdef EMSCRIPTEN
     if (main2)
 	main2->Prepare();
 #endif
+    g_progress_script_num = -1;
   }
   virtual void execute(MainLoopEnv &e3)
   {
         g_progress_lock_assets=true;
+    g_progress_script_num = process_script_num;
 
     if (firsttime) {
       if (!main2) {
@@ -23507,15 +23535,18 @@ public:
     if (main2)
       main2->execute(e3);
     g_progress_lock_assets=false;
+    g_progress_script_num = -1;
   }
 
   virtual void handle_event(MainLoopEvent &e)
   {
+    g_progress_script_num = process_script_num;
     g_progress_lock_assets=true;
     if (main2) {
       main2->handle_event(e);
     }
     g_progress_lock_assets=false;
+    g_progress_script_num = -1;
   }
   virtual std::vector<int> shader_id() { 
     if (main2) {
@@ -23533,6 +23564,7 @@ private:
   bool firsttime;
   MainLoopItem *main2;
   bool async_taken=false;
+  int process_script_num=0;
 };
 
 

@@ -54,8 +54,11 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
 #define MAC(name) \
   struct name { int id;\
   name(const name &i) : id(i.id) { } \
-  name() : id(-1) { } \
+  name(const volatile name &i) : id(i.id) { } \
+  name() : id(-1) { }				\
   name(int i) : id(i) { }\
+  name &operator=(const name &i) { id=i.id; return *this; } \
+  volatile name &operator=(volatile name &i) volatile { id=i.id; return *this; } \
   name* clone() const { if (id!=-1) { return new name(id); } return 0; } \
   };
   MAC(ZIP)
@@ -2053,7 +2056,7 @@ public:
   IMPORT W asset_dialog(EveryApi &ev, std::vector<std::string> jpg_urls, std::vector<std::string> jpg_display_names,W &select_button, W &cancel_button, FtA atlas, BM atlas_bm);
   IMPORT W dynamic_text(std::string need_letters, std::string *dyn_text, void (*fptr)(void *, float mouse_x, float mouse_y, int button, int ch, int type, int mouse_wheel_y), void *user_ptr, GameApi::FtA atlas, GameApi::BM atlas_bm, int x_gap);
   IMPORT W progress_dialog(int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max);
-  IMPORT void update_progress_dialog(W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max);
+  IMPORT void update_progress_dialog(volatile W &w, int sx, int sy, FtA atlas, BM atlas_bm, std::vector<std::string> vec, int val, int max, int process);
   IMPORT void delete_widget(W w);
   IMPORT W window_decoration(int sx, int sy, std::string label, FtA atlas, BM atlas_bm);
   IMPORT W window_decoration2(int sx, int sy, std::string label, FtA atlas, BM atlas_bm, bool move);
