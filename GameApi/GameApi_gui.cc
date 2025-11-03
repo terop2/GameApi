@@ -3454,11 +3454,11 @@ BM I10=ev.bitmap_api.blitbitmap(I6,I9,5,5);
   W txt_0 = icon(bm);
   std::vector<W> arr;
   arr.push_back(txt_0);
-  //int ssy = 20;
+  int ssy = 20;
   //for(int ii=start;ii<s3;ii++) {
-  //  GameApi::W w = text(rest[ii], atlas, atlas_bm);
-  //  w = margin(w,0,(ssy-size_y(w))/2,0,(ssy-size_y(w))/2);
-  //  arr.push_back(w);
+  GameApi::W w = text("Loading assets.." /*rest[ii]*/, atlas, atlas_bm);
+    w = margin(w,0,(ssy-size_y(w))/2,0,(ssy-size_y(w))/2);
+    arr.push_back(w);
   //}
   //W arr[2] = { txt_0, txt_1 };
   W array_0 = array_y(&arr[0], arr.size(), 5);
