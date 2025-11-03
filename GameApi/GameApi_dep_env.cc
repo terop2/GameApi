@@ -19,6 +19,9 @@
 
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
+int g_progress_script_num=-1;
+
+extern int g_last_loaded_script;
 
 IMPORT double g_dpr=1.0;
 extern std::vector<const char*> g_urls;
@@ -35,7 +38,7 @@ IMPORT std::string stripprefix(std::string s);
 IMPORT void InstallProgress(int num, std::string label, int max);
 IMPORT void ProgressBar(int num, int val, int max, std::string label);
 extern int g_logo_status;
-
+int get_process_script_max();
 
 extern task_interface &g_tasks;
 
@@ -1319,7 +1322,7 @@ EXPORT GameApi::Env::~Env()
   delete (::EnvImpl*)envimpl;
 }
 std::string remove_load(std::string s);
-std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize);
+std::vector<unsigned char,GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize,int progress_num);
 
 
 #include "GameApi_dep_env_delmap.hh"
@@ -1733,7 +1736,7 @@ void onload_async_cb(unsigned int tmp, void *arg, const std::vector<unsigned cha
 
 IMPORT bool g_progress_lock_assets=false;
 
-std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool noside);
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool noside,int progress_num);
 
 struct CallbackDel
 {
@@ -1752,13 +1755,14 @@ extern std::string gameapi_homepageurl;
 void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 {
   // progress bar
-  
+
+#if 1
   int s = url.size();
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
   InstallProgress(sum,url,15*150);
-  
+#endif
 
   url = "load_url.php?url=" + url;
   ASyncCallback* cb = new ASyncCallback;
@@ -1794,7 +1798,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 	//std::cout << "Load cb!3" << url << std::endl;
 	(*cb3->fptr)(cb3->data);
       }
-
+#if 0
       { // progressbar
 	std::string url_plain = stripprefix(url);
 	int s = url_plain.size();
@@ -1803,7 +1807,7 @@ void ASyncLoader::set_callback(std::string url, void (*fptr)(void*), void *data)
 	sum = sum % 1000;
 	ProgressBar(sum,15,15,url_plain);
       }
-
+#endif
 
 	}
     }
@@ -1844,6 +1848,7 @@ struct ProcessData
 {
   pthread_t thread_id;
   std::string url;
+  int progress_script_num;
 };
 
 void* process(void *ptr)
@@ -1851,7 +1856,7 @@ void* process(void *ptr)
   ProcessData *dt = (ProcessData*)ptr;
   std::string url = dt->url;
   //pthread_detach(pthread_self());
-  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,false);
+  std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,false,dt->progress_script_num);
   std::string url2 = "load_url.php?url=" + url ;
   //std::cout << "g_del_map " << url2 << " = " << (int)buf << std::endl;
   //std::cout << "g_del_map add url(process): " << url2 << std::endl;
@@ -1871,7 +1876,45 @@ void* process(void *ptr)
 }
 
 bool g_progress_already_done = false;
-long long g_current_size=0;
+std::map<int,long long> g_current_size;
+std::map<int,long long> g_total_size;
+long long get_current_size()
+{
+  long long res=0;
+  std::map<int,long long>::iterator i = g_current_size.begin();
+  int ii=0;
+  while(i!=g_current_size.end())
+    {
+      //std::cout << "Current_size:" << (*i).first << " :: " << ii << "::" << (*i).second << std::endl;
+      res+=(*i).second;
+      i++; ii++;
+    }
+  while(ii<get_process_script_max())
+    {
+      res+=0;
+      ii++;
+    }
+  return res;
+}
+long long get_total_size()
+{
+  long long res=0;
+  std::map<int,long long>::iterator i = g_total_size.begin();
+  int ii=0;
+  while(i!=g_total_size.end())
+    {
+      //std::cout << "Total_size:" << (*i).first << " :: " << ii << "::" << (*i).second << std::endl;
+      res+=(*i).second;
+      i++; ii++;
+    }
+  while(ii<get_process_script_max())
+    {
+      res+=3000000L;
+      ii++;
+    }
+  return res;
+}
+
 void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homepage)
 {
   //std::cout<< "URLS_SIZE:" << urls.size() << std::endl;
@@ -1943,7 +1986,8 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       sizes.push_back(sz);
       total_size+=sz;
     }
-  g_current_size = 0;
+  g_total_size[g_progress_script_num] = total_size;
+  g_current_size[g_progress_script_num]=0;
   
   std::vector<ProcessData*> vec;
 
@@ -1956,6 +2000,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
     ProcessData *processdata = new ProcessData;
     dt.push_back(processdata);
     processdata->url = url;
+    processdata->progress_script_num = g_progress_script_num;
     vec.push_back(processdata);
     //pthread_attr_t attr;
     //pthread_attr_init(&attr);
@@ -1976,16 +2021,16 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       std::string url2 = "load_url.php?url=" + url ;
       while (!(g_del_map.async_find(url2)))
 	{
-	  if (g_current_size > last_size+(total_size/15))
+	  if (get_current_size() > last_size+(get_total_size()/15))
 	  {
 	    //int s = url.size();
 	    //int sum=0;
 	    //for(int i=0;i<s;i++) sum+=int(url[u+i]);
 	    //sum = sum % 1000;
 	    //std::cout << g_current_size << "*15/" << total_size << std::endl; 
-	    if (!g_progress_lock_assets) // script_ml works odd.
-	      ProgressBar(444,g_current_size*15/total_size,15,"loading assets");
-	  last_size=g_current_size;
+	    //if (!g_progress_lock_assets) // script_ml works odd.
+	      ProgressBar(444,get_current_size()*15/get_total_size(),15,"loading assets");
+	    last_size=get_current_size();
 	  }
 #ifdef LINUX
 	  //usleep(100000);
@@ -2038,8 +2083,10 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       }
 
     }
+#if 0
 	ProgressBar(444,15,15,"loading assets");
-  
+#endif
+	
 #endif
   g_progress_already_done = false;
 
@@ -2366,6 +2413,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 	(*cb3->fptr)(cb3->data);
       }
 
+#if 0
       { // progressbar
 	std::string url_plain = stripprefix(url);
 	int s = url_plain.size();
@@ -2374,7 +2422,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 	sum = sum % 1000;
 	ProgressBar(sum,15,15,url_plain);
       }
-	
+#endif	
 	return;
       }
     }
@@ -2398,11 +2446,14 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
   //std::cout << "InstallProgress:" << sum << " " << url << std::endl;
-  if (g_del_map.async_find(url2)) { 
+  if (g_del_map.async_find(url2)) {
+#if 1
     InstallProgress(sum,url + " (cached)",15*150);
+#endif
   } else {
+#if 1
   InstallProgress(sum,url,15*150);
-
+#endif
   }
     }
     
@@ -2445,7 +2496,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 	//std::cout << "Load cb!" << url << std::endl;
 	(*cb3->fptr)(cb3->data);
       }
-
+#if 0
       { // progressbar
 	std::string url_plain = stripprefix(url);
 	int s = url_plain.size();
@@ -2454,7 +2505,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 	sum = sum % 1000;
 	ProgressBar(sum,15,15,url_plain);
       }
-
+#endif
       return; 
     }
   //std::cout << "URL LOADED REALLY..." << std::endl;
@@ -2534,10 +2585,14 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
   int sum=0;
   for(int i=0;i<s;i++) sum+=int(url[i]);
   sum = sum % 1000;
-  if (g_del_map.async_find(url2)) { 
+  if (g_del_map.async_find(url2)) {
+#if 0
     ProgressBar(sum,0,15,url+" (cached)");
+#endif
   } else {
+#if 0
     ProgressBar(sum,0,15,url);
+#endif
   }
   }
 
@@ -2548,12 +2603,14 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 	int sum=0;
 	for(int i=0;i<s;i++) sum+=int(url[i]);
 	sum = sum % 1000;
+#if 0
 	ProgressBar(sum,15,15,url + " (cached)");
+#endif
       }
 
       return; }
     //std::cout << "Loading url: " << url <<std::endl;
-    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,nosize);
+    std::vector<unsigned char, GameApiAllocator<unsigned char> > *buf = load_from_url(url,nosize,g_progress_script_num);
     //std::cout << "Loading url finished: " << url <<std::endl;
     if (buf->size()==0) {
       std::cout << "Empty URL file. Either url is broken or homepage is wrong." << std::endl;
@@ -2605,7 +2662,7 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
       {
 
     // REASON, ProgressBar cannot be called from other threads.
-#if 1
+#if 0
   { // progressbar
   int s = url.size();
   int sum=0;
@@ -2921,7 +2978,7 @@ IMPORT void FinishProgress()
   }
 }
 IMPORT std::vector<std::string> g_prog_labels;
-IMPORT GameApi::W g_progress_dialog;
+IMPORT volatile GameApi::W g_progress_dialog;
 IMPORT GameApi::EveryApi *g_everyapi2=0;
 IMPORT GameApi::GuiApi *g_everyapi_gui=0;
 IMPORT GameApi::FtA g_atlas;
@@ -2929,7 +2986,7 @@ IMPORT GameApi::BM g_atlas_bm;
 IMPORT bool g_progress_callback_set=false;
 IMPORT void (*g_progress_callback)();
 
-IMPORT void (*update_progress_dialog_cb)(GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max);
+IMPORT void (*update_progress_dialog_cb)(volatile GameApi::W &w, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
 
 
 
@@ -2949,6 +3006,7 @@ void *g_progress_bar_logo_cb_data=0;
 
 void ProgressBar(int num, int val, int max, std::string label)
 {
+  //std::cout << "Progressbar: " << num << " " << val << " " << max << " " << label << std::endl;
   if (find_str(label,"script")!=-1) return;
 #ifndef EMSCRIPTEN
   //  if (getpid()!=gettid()) return; // DO NOT EXECUTE IN PTHREADS
@@ -3086,7 +3144,7 @@ void ProgressBar(int num, int val, int max, std::string label)
 	if (g_everyapi2)
 	  {
 	    
-	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,val1,max1);
+	    update_progress_dialog_cb(g_progress_dialog, 400,200, g_atlas, g_atlas_bm, g_prog_labels,val1,max1,g_last_loaded_script);
 	    if (g_progress_callback_set) {
 	      g_progress_callback();
 	    }
@@ -3503,12 +3561,13 @@ load_url_deleter load_from_url_del;
 #include <fcntl.h>
 
 
+int g_last_loaded_script=-1;
 
-
-std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize)
+std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize, int progress_script_num)
 { // works only in windows currently. Dunno about linux, and definitely doesnt wok in emscripten
   //std::cout << "POPEN3 " << url << std::endl;
 
+  
   url = upgrade_to_https(url);
 
     if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
@@ -3523,7 +3582,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(g_content[i], g_content_end[i]);
 	//load_from_url_del.item.push_back(vec);
 	//std::cout << "load_from_url using memory: " << url << " " << vec.size() << std::endl;
-	g_current_size+=vec->size();
+	g_current_size[progress_script_num]+=vec->size();
 
 	return vec;
       }
@@ -3601,6 +3660,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     }
     }
     //std::cout << "Content-Length: " << num << std::endl;
+    g_total_size[progress_script_num] = num;
+
     
 #ifndef ANDROID
 #ifdef __APPLE__
@@ -3701,13 +3762,17 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 	//	    if (nosize) { std::cout << "fread" << std::endl; }
       //std::cout << c;
       i+=bytes_read;
-      g_current_size+=bytes_read;
+      g_current_size[progress_script_num]+=bytes_read;
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
 	for(int j=0;j<s;j++) sum+=int(url[j]);
 	sum = sum % 1000;
-	ProgressBar(sum,i*15/num,15,url);
+#if 1
+	//if (progress_script_num==-1)
+  g_last_loaded_script=progress_script_num;
+	ProgressBar(445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+#endif
       }
       for(int ii=0;ii<bytes_read;ii++)
 	buffer->push_back(buf[ii]);
@@ -3731,13 +3796,17 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #ifdef WINDOWS
     while ( fread(&c,1,1,f)==1) {
       i++;
-      g_current_size++;
+      g_current_size[progress_script_num]++;
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
 	for(int j=0;j<s;j++) sum+=int(url[j]);
 	sum = sum % 1000;
-	ProgressBar(sum,i*15/num,15,url);
+#if 1
+	//if (progress_script_num==-1)
+  g_last_loaded_script=progress_script_num;
+	ProgressBar(445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+#endif
       }
       buffer->push_back(c);
       if (nosize) std::cout << c;
@@ -3780,13 +3849,17 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     long long i = 0;
     while(fread(&c,1,1,f)==1) {
       i++;
-      g_current_size++;
+      g_current_size[progress_script_num]++;
       if (!g_progress_already_done && num/15>0 && i%(num/15)==0) {
 	int s = url.size();
 	int sum=0;
 	for(int j=0;j<s;j++) sum+=int(url[j]);
 	sum = sum % 1000;
-	ProgressBar(sum,i*15/num,15,url);
+#if 1
+	//if (progress_script_num==-1)
+  g_last_loaded_script=progress_script_num;
+	  ProgressBar( 445 /*sum*/,get_current_size()*15/get_total_size(),15,url);
+#endif
       }
       buffer->push_back(c); }
     pclose(f);
