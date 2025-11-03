@@ -556,7 +556,7 @@ public:
     async_pending_plus("LoadGltf", "LoadGltf_cb");
 #endif
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
-    std::cout << "Callback started for " << url << std::endl;
+    //std::cout << "Callback started for " << url << std::endl;
   }
   ~LoadGltf()
   {
@@ -609,6 +609,7 @@ public:
     std::string filename = decoder->get_fetch_filename(id);
     //std::cout << "PrePrePrepare()" << filename << std::endl;
     FILEID iid = decoder->add_file(vec,filename);
+#ifdef EMSCRIPTEN
     if (async_vec.size()>i && async_vec[i]==true) {
       async_pending_count--;
       async_vec[i]=false;
@@ -616,9 +617,10 @@ public:
       async_pending_minus("LoadGltf", "async_vec " + ss.str());
     } else
       {
+	std::cout << "i=" << i << " < " << async_vec.size() << std::endl;
 	std::cout << "PrePrePrepare() fail, propably callbacks called wrong!" << std::endl;
       }
-
+#endif
 
     //#ifdef THREADS
     //delete vec;
@@ -629,13 +631,13 @@ public:
     }
   }
   void PrePrepare() {
-
+#ifdef EMSCRIPTEN
     if (async) {
       async_pending_count--;
       async_pending_minus("LoadGltf", "LoadGltf_cb");
       async=false;
   }
-
+#endif
     //unasync();
     if (!decoder) return;
     if (preprepare_done) return;
@@ -669,10 +671,10 @@ public:
     
     std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
     int ss = image_ids.size();
+    async_vec.resize(ss);
 
 #ifdef EMSCRIPTEN
 	async_pending_count+=ss;
-	async_vec.resize(ss);
 	for(int kk=0;kk<ss;kk++) {
 	  async_vec[kk]=true;
 	  std::stringstream ss; ss << kk;
@@ -1532,7 +1534,9 @@ void *thread_func_gltf_bitmap(void *data2)
 
   
   std::cout << "ERROR1, size=" << size << std::endl;
+#ifdef EMSCRIPTEN
   async_pending_count--;
+#endif
     return 0;
   }
 
@@ -1555,8 +1559,9 @@ void *thread_func_gltf_bitmap(void *data2)
   image->pixel_type = pixel_type;
   image->image.resize(static_cast<uint64_t>(1 * 1 * req_comp) * size_t(bits / 8));
 
-
+#ifdef EMSCRIPTEN
   async_pending_count--;
+#endif
     return 0;
   }
   /*
@@ -1623,8 +1628,10 @@ void *thread_func_gltf_bitmap(void *data2)
   bm->decoder->files2[id]=0;
 #endif
 #endif
-  
+
+#ifdef EMSCRIPTEN
   async_pending_count--;
+#endif
   
   return 0;
 
@@ -14179,6 +14186,17 @@ public:
     async_pending_plus("sketchfab_zip", "zip_done");
 #endif
     e.async_load_callback(zip_url, &Zip_callback,(void*)this);
+
+  }
+  ~GLTF_Model_with_prepare_sketchfab_zip()
+  {
+    if (async) {
+#ifdef EMSCRIPTEN
+    async_pending_count--;
+    async=false;
+    async_pending_minus("sketchfab_zip", "zip_done");
+#endif
+    }
 
   }
   void Zip_cb()
