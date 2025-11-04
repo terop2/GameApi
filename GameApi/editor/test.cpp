@@ -2671,8 +2671,8 @@ IMPORT extern int g_vr_device_id;
 IMPORT extern bool g_progress_callback_set;
 IMPORT extern void (*g_progress_callback)();
 
-void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>, int val, int max);
-extern void (*update_progress_dialog_cb)(GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max);
+void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>, int val, int max, int process);
+extern void (*update_progress_dialog_cb)(GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
 
 class ASyncTask
 {
