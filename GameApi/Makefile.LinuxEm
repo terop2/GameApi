@@ -26,6 +26,10 @@ EMSCRIPTEN_PATH=/home/terop/cvs/emscripten/emsdk/
 opencvopts = -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/build_wasm3 -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/core/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/calíb3d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/calib3d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/features2d/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/flann/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/dnn/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/imgproc/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/objdetect/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/photo/include  -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/video/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/highgui/include -I/home/terop/cvs/GameApi/GameApi/emscriptendeps/opencv/modules/videoio/include -s SHARED_MEMORY=1 -s NO_DISABLE_EXCEPTION_CATCHING -sASSERTIONS=0 -sSAFE_HEAP=0
 
 
+memsanitizer = -s SAFE_HEAP=1 -s MALLOC=emmalloc
+memsanitizer2 =
+#$(memsanitizer)
+
 sizeopts = -s MINIMAL_RUNTIME=1 -s DYNAMIC_EXECUTION=0 -gline-tables-only
 
 ifeq ($(RELEASE),true)
@@ -36,13 +40,13 @@ endif
 
 
 # -Oz
-allopts = $(sizeopts) $(releaseopts) -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
+allopts = $(memsanitizer2) $(sizeopts) $(releaseopts) -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
 
 #-gpubnames
 # -Oz -gsplit-dwarf  -fno-rtti
 
 yes_pthread_opts = -s USE_PTHREADS=1 -pthread
-no_pthread_opts = -DNO_THREADS
+no_pthread_opts = -DNO_THREADS -s USE_PTHREADS=0
 pthread_opts = $(yes_pthread_opts)
 
 nowarns=-Wno-unused-but-set-variable -Wno-invalid-source-encoding -Wno-reorder-ctor -Wno-deprecated-volatile -Wno-implicit-const-int-float-conversion -Wno-overloaded-virtual -Wno-uninitialized -Wno-self-assign-field -Wno-writable-strings -Wno-delete-abstract-non-virtual-dtor -Wno-unused-result -Wno-unused-command-line-argument
@@ -293,7 +297,7 @@ libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 
 libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	@echo "  em++ libGameApi_nothreads.bc"
-	@#@em++ $(allopts)  -s DISABLE_EXCEPTION_CATCHING=0 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@#@em++ $(allopts) $(no_pthread_opts) -s DISABLE_EXCEPTION_CATCHING=0 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
 	@echo "touch libGameApi_nothreads.bc"
 	@touch libGameApi_nothreads.bc
 
@@ -351,20 +355,20 @@ $(O2Files): objs/%.bc : %.cc
 
 $(OFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  em++  $@"
-	@$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $(no_pthread_opts) $< -o $@
 
 $(DOFiles_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  em++  $@"
-	@$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $< -o $@
+	@$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $(no_pthread_opts) $< -o $@
 
 
 $(OOFiles_nothreads): objs/nothreads/%.bc : %.c
 	@echo "  emcc  $@"
-	@$(CCC) -DDEFINE_ALL -DNO_THREADS -c $(CFLAGS) $< -o $@
+	@$(CCC) -DDEFINE_ALL -DNO_THREADS -c $(CFLAGS) $(no_pthread_opts) $< -o $@
 
 $(O2Files_nothreads): objs/nothreads/%.bc : %.cc
 	@echo "  mingw $<"
-	$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $< -o $@
+	$(CCWIN) -DDEFINE_ALL -DNO_THREADS -c $(CCFLAGS) $(no_pthread_opts) $< -o $@
 
 
 glew.o:

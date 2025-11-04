@@ -51,9 +51,10 @@ if ($id>0)
 */
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
+<!--link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous"-->
 </head>
 <body>
 <script>
@@ -114,7 +115,7 @@ req.send();
 
 ?>
 
-<script src="vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@1.0.28/dist/vue.js"></script>
 <script>
 if (!crossOriginIsolated) {
     console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
@@ -159,12 +160,13 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 	  v-on:change_model="change_model()"
 	  v-on:change_choose="change_model()"
 	  v-on:change_choose_url="change_model_url()"
-	  v-on:root_handle_drop="change_model3($event)"
+	  v-on:root_handle_drop="change_model3"
 	  v-bind:filename="state.filename"
 	  v-bind:filename1="state.filename1"
 	  v-bind:filename2="state.filename2"
 ></appmodel>
-<appbackground v-on:change_model="change_model()"></appbackground>
+<appbackground v-on:change_model="change_model()"
+	       v-bind:state="state"></appbackground>
 <appmaterial v-on:change_model="change_model()"
 	     v-on:change_category="change_category()"
 	     v-bind:is_metal="state.is_metal"
@@ -174,7 +176,8 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 	     v-bind:filter_material_plastic="filter_material_plastic()"
 	     v-bind:filter_material_textured="filter_material_textured()"
 ></appmaterial>
-<appborder v-on:change_model="change_model()"></appborder>
+<appborder v-on:change_model="change_model()"
+	   v-bind:state="state"></appborder>
 <appnormals v-on:change_model="change_model()"></appnormals>
 <appsubmitbutton></appsubmitbutton>
 <br>
@@ -216,6 +219,7 @@ var store = {
       file_ap: function(type,filename) { }, // should return promise
       }
       };
+
 
 Vue.component('apptitle', {
    data: function() {
@@ -272,6 +276,16 @@ Vue.component('appnormals', {
        
 Vue.component('appmaterial', {
    props: ['is_metal', 'is_plastic', 'is_textured', 'filter_material_metal', 'filter_material_plastic', 'filter_material_textured'],
+   methods: {
+   parse_material_count: function(mat,type)
+   {  
+   var arr = mat.split(" ");
+   return arr[0];
+   },
+   parse_material_name: function(mat, type) {
+      return mat.replace(type + ' ', '');
+   }
+   },
    data: function() {
       return {
       }
@@ -297,6 +311,7 @@ Vue.component('appmaterial', {
 		 <option value="0">Metal</option>
 		 <option value="1">Plastic</option>
 		 <option value="2">Textured</option>
+		 </select>
 		 </div>
 		 <div v-show="is_metal=='true'">
 		 Type<br>
@@ -347,13 +362,27 @@ Vue.component('appbackground', {
     return {
     }
     },
+    props: ['state'],
+    methods: {
+      parse_bg_count: function(bg,type)
+      {
+       var arr = bg.split(" ");
+       return arr[0];
+      },
+     parse_bg_name: function(bg,type)
+     {
+      var arr = bg.split(" ");
+      return arr[1];
+     }
+
+    },
     template: `
     <div class="block blockitem height8 border customfont">
     Background<br>
     <div class="horizspace customfont">
     <select name="background" id="background-select" v-on:change="$emit('change_model')">
       <!--option value="-1">Black</option-->
-    <template v-for="bg in store.state.background_db">
+    <template v-for="bg in state.background_db">
     <option v-bind:value="parse_bg_count(bg)">{{ parse_bg_name(bg) }}</option>
     </template>
     </select></div></div>
@@ -365,10 +394,24 @@ Vue.component('appborder', {
      return {
      }
      },
+     methods: {
+     	  parse_border_count: function(brd,type)
+	  		      {
+			         var arr = brd.split(" ");  
+				    return arr[0];
+				    },
+	  parse_border_name: function(brd,type)
+  	  		     {
+			        var arr = brd.split(" ");
+				   return arr[1] + " " + arr[2];
+				   }
+
+		},
+     props: ['state'],
      template: `<div class="block blockitem height8 border customfont">
      Border<br><div class="horizspace customfont"><select name="border" id="border-select" v-on:change="$emit('change_model')">
   <!--option value="-1">None</option -->
-  <template v-for="brd in store.state.border_db">
+  <template v-for="brd in state.border_db">
   <option v-bind:value="parse_border_count(brd)">{{ parse_border_name(brd) }}</option>
   </template>
   </select></div></div>
@@ -383,7 +426,7 @@ Vue.component('appmodel_choose', {
      template: `<div class="border block blockitem height12 customfont">
      Model<br><select name="model" id="model-select" v-on:change="$emit('change_model')">
  <option value="-1">(use drag&drop area)</option>
- <template v-for="model in store.state.model_db">
+ <template v-for="model in state.model_db">
  <option v-bind:value="parse_model_count(model)">{{ parse_model_name(model) }}</option>
  </template>
 </select></div>
@@ -420,16 +463,22 @@ Vue.component('appmodel_model_loading', {
 Vue.component('appmodel_notselected', {
    data: function() {
      return { } },
+   methods: {
+      onFileChange: function(event) { this.$emit('handle_drop', event); }
+   },
    template: `<div class="border block blockitem height12 customfont">
    <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a><!--or <a href="javascript:;" v-on:click="$emit('link_click')">link</a-->.</small>
    <br><br><small>.STL, .OBJ, .GLB, .ZIP file types supported. See help for materials.</small>
    <button type="button" onclick="clickselectfile()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
-   <input id="selectfile" type="file" multiple v-on:change="$emit('handle_drop','selectfile')" style="display:none"/>
+   <input id="selectfile" type="file" multiple v-on:change="onFileChange" style="display:none"/>
    </div>`
    });
 
 Vue.component('appmodel_selected', {
   props: ['filename', 'filename1', 'filename2', 'model_info', 'progress_1', 'progress_2', 'progress_3', 'is_twoline'],
+  methods: {
+     onFileChange: function(event) { this.$emit('handle_drop', event); }
+  },
   data: function() {
     return { } },
     template: `<div class="border block blockitem height12 customfont">
@@ -437,13 +486,16 @@ Vue.component('appmodel_selected', {
       <appfilenameinfo v-bind:is_twoline="is_twoline" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2"></appfilenameinfo>
       <appmodelinfo v-bind:progress_1="progress_1" v-bind:progress_2="progress_2" v-bind:progress_3="progress_3" v-bind:model_info="model_info"></appmodelinfo>
       <button type="button" onclick="clickselectfile2()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
-   <input id="selectfile2" type="file" multiple v-on:change="$emit('handle_drop','selectfile2')" style="display: none;"/>
+   <input id="selectfile2" type="file" multiple v-on:change="onFileChange" style="display: none;"/>
       </div>`
       });
 
 Vue.component('appmodel', {
   props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'is_model_loading', 'filename', 'filename1', 'filename2', 'model_info', 'progress_1', 'progress_2', 'progress_3', 'is_twoline'],
-  data: function() {
+   methods: {
+      onHandleDrop: function(event) { this.$emit('root_handle_drop',event); }
+   },
+data: function() {
     return { } },
     template: `<div class="block blockitem">
        <div v-if="is_loading=='true'">
@@ -459,12 +511,12 @@ Vue.component('appmodel', {
        <appmodel_link v-on:change_model="$emit('change_choose_url')"></appmodel_link>
        </div>
        <div v-if="is_selected=='true'">
-       <appmodel_selected v-bind:progress_1="progress_1" v-bind:progress_2="progress_2" b-bind:progress_3="progress_3" v-bind:model_info="model_info" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2" v-bind:is_twoline="is_twoline" v-on:handle_drop="$emit('root_handle_drop',$event)"></appmodel_selected>
+       <appmodel_selected v-bind:progress_1="progress_1" v-bind:progress_2="progress_2" b-bind:progress_3="progress_3" v-bind:model_info="model_info" v-bind:filename="filename" v-bind:filename1="filename1" v-bind:filename2="filename2" v-bind:is_twoline="is_twoline" v-on:handle_drop="onHandleDrop"></appmodel_selected>
        </div>
        <div v-if="is_notselected=='true'">
        <appmodel_notselected v-on:examples_click="$emit('examples_click')"
        			     v-on:link_click="$emit('link_click')"
-			     v-on:handle_drop="$emit('root_handle_drop',$event)"
+			     v-on:handle_drop="onHandleDrop"
        ></appmodel_notselected>
        </div>
        </div>`
@@ -555,6 +607,7 @@ var app = new Vue({
 
    },
    methods: {
+
    handle_changes : function()
    {
     this.$emit('change_model');
@@ -648,7 +701,9 @@ filter_material : function(arr,key)
 	 this.change_model();
       },
       change_model3: function(selectfile) {
-        if (repeat_prev==0) {
+      	console.log("CHANGE_MODEL3");
+	console.log(selectfile);
+      if (repeat_prev==0) {
         repeat_prev=1;
         //console.log("CHANGE_MODEL3");
 	//console.log(selectfile);
@@ -712,6 +767,38 @@ function strfy(arr)
    return str;
 }
 
+function parse_material_count(mat,type)
+{
+   var arr = mat.split(" ");
+   return arr[0];
+}
+
+
+function parse_material_name(mat)
+{
+   var arr = mat.split(" ");
+   return arr[2];
+}
+function parse_material_type(mat)
+{
+   var arr = mat.split(" ");
+   return arr[1];
+}
+function parse_material_url(mat)
+{ // this only works with textured
+   var arr = mat.split(" ");
+   return arr[3];
+}
+function parse_material_color(mat)
+{
+   var arr = mat.split(" ");
+   return arr[3];
+}
+function parse_material_roughness(mat)
+{
+   var arr = mat.split(" ");
+   return arr[4];
+}
 
 </script>
 <style>
@@ -1003,36 +1090,6 @@ function get_background(i)
 
 
 
-function parse_material_count(mat)
-{
-   var arr = mat.split(" ");
-   return arr[0];
-}
-function parse_material_name(mat)
-{
-   var arr = mat.split(" ");
-   return arr[2];
-}
-function parse_material_type(mat)
-{
-   var arr = mat.split(" ");
-   return arr[1];
-}
-function parse_material_url(mat)
-{ // this only works with textured
-   var arr = mat.split(" ");
-   return arr[3];
-}
-function parse_material_color(mat)
-{
-   var arr = mat.split(" ");
-   return arr[3];
-}
-function parse_material_roughness(mat)
-{
-   var arr = mat.split(" ");
-   return arr[4];
-}
 function find_line_from_material_db(index)
 {
   var s = store.state.material_db.length;
@@ -1714,8 +1771,11 @@ function drop3(state,selectfileelem)
 
 
 set_filename_info(state,"");
-   var elem2 = document.getElementById(selectfileelem);
-   var files2 = elem2.files;
+   console.log(selectfileelem);
+   //var elem2 = document.getElementById(selectfileelem);
+   //console.log(elem2);
+   var files2 = selectfileelem.target.files;
+   console.log(files2);
 
    //console.log(files2);
    set_model_info(state,"(loading..)");
@@ -1993,7 +2053,7 @@ var g_timer=null;
 
 function check_em2() {
    if (g_timer!=null) clearTimeout(g_timer);
-   Module['onRuntimeInitialized'] = function() { return function() { } };
+   Module['onStartup'] = function() { return function() { } };
   // console.log("DOWNLOAD WAITING..");
    return function() {
       setTimeout(function() { check_em2_func(); },100);
@@ -2005,7 +2065,7 @@ function check_emscripten_running()
 {
     var canv = document.getElementById("canvas");
     if (Module) {
-	Module['onRuntimeInitialized'] = check_em2();
+	Module['onStartup'] = check_em2();
 	g_timer = setTimeout(function() { if (g_ready_bit==1) check_em2()(); },1000);
     } else {
 	setTimeout(function() { check_emscripten_running() }, 100);
@@ -2552,3 +2612,6 @@ function formsubmit()
 //});
 
 </script>
+<!--script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script-->
