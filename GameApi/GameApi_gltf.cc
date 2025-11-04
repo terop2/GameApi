@@ -1677,6 +1677,24 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   
 #endif
 #ifndef THREADS
+  image->width = req_width;
+  image->height = req_height;
+  image->component = 3;
+  image->bits = 8;
+  image->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+
+  ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
+  info->url = url;
+  info->image = image;
+  info->req_width = req_width;
+  info->req_height = req_height;
+  info->decoder = decoder;
+  info->decoder_item = decoder_item;
+  unsigned char *bytes2 = new unsigned char[size];
+  std::copy(bytes, bytes+size,bytes2);
+  info->bytes = bytes2;
+  info->size = size;
+
   thread_func_gltf_bitmap((void*)info);
 #endif
 }
