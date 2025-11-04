@@ -1373,6 +1373,8 @@ public:
   GameApi::ASyncVec *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);
   void rem_callback(std::string url);
+  int count_callbacks();
+  void print_callbacks();
 };
 
 template<class T>

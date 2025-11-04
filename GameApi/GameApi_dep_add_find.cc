@@ -15,20 +15,16 @@ struct Block
   ~Block()
   {
     int s = vec.size();
-    //if (s)
-    //  InstallProgress(667, "Cleanup", 15);
+    std::cout << "Block dtor s=" << s << std::endl;
     for(int i=0;i<s;i++)
       {
-	//if (i%10==0) {
-	//  ProgressBar(667,i*15/s,15,"Cleanup");
-	//}
-	//std::cout << typeid(decltype(*(vec[i]))).name() << std::endl;
+	std::cout << "Reset " << i << std::endl;
       vec[i].reset();
+      std::cout << "Reset ok" << std::endl;
       }
-  //if (s)
-  //    ProgressBar(667,15,15,"Cleanup");
-    //std::cout << std::endl;
+    std::cout << "Clearing vec" << std::endl;
     vec.clear();
+    std::cout << "Clear ok" << std::endl;
   }
 #endif
 };
@@ -38,7 +34,12 @@ struct G_BLOCK
 std::vector<Block*> g_blocks;
   ~G_BLOCK() {
     int s = g_blocks.size();
-    for(int i=0;i<s;i++) delete g_blocks[i];
+    //std::cout << "G_BLOCKS dtor: s=" << s<< std::endl;
+    for(int i=0;i<s;i++) {
+      //std::cout << "Deleting " << i << std::endl;
+      delete g_blocks[i];
+      //std::cout << "del ok" << std::endl;
+    }
   }
 } g_blocks;
 
@@ -82,7 +83,11 @@ IMPORT int add_block()
 }
 void recreate_block(int id)
 {
-  g_blocks.g_blocks[id]=new Block;
+  if (id>=0 && id<g_blocks.g_blocks.size()) {
+    //if (g_blocks.g_blocks[id])
+    //  delete g_blocks.g_blocks[id];
+    g_blocks.g_blocks[id]=new Block;
+  }
 }
 IMPORT void set_current_block(int id)
 {
@@ -114,16 +119,19 @@ int get_current_block()
 }
 IMPORT void clear_block(int id)
 {
-  delete g_blocks.g_blocks[id];
-  g_blocks.g_blocks[id]=0;
+  if (id>=0 && id<g_blocks.g_blocks.size()) {
+    //std::cout << "Deleting pointer " << (long)g_blocks.g_blocks[id] << std::endl;
+    delete g_blocks.g_blocks[id];
+    g_blocks.g_blocks[id]=0;
+  }
 }
 void add_b(std::shared_ptr<void> ptr)
 {
-  if (g_current_block!=-1 && !g_blocks.g_blocks[g_current_block])
+  if ((g_current_block>=0 && g_current_block<g_blocks.g_blocks.size()) && !g_blocks.g_blocks[g_current_block])
     {
       recreate_block(g_current_block);
     }
-  if (g_current_block!=-1)
+  if (g_current_block>=0 && g_current_block<g_blocks.g_blocks.size() && g_blocks.g_blocks[g_current_block])
     g_blocks.g_blocks[g_current_block]->vec.push_back(ptr);
   else
     g_rest.g_rest.push_back(ptr); // these will never be released
