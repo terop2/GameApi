@@ -905,7 +905,7 @@ public:
 #endif
     }
 
-#ifdef EMSCRIPTEN
+    //#ifdef EMSCRIPTEN
     int s = async_vec.size();
     for(int i=0;i<s;i++)
       {
@@ -915,7 +915,7 @@ public:
 	    async_vec[i]=false;
 	  }
       }
-#endif
+    //#endif
     
     
   }
