@@ -1111,6 +1111,9 @@ EXPORT void GameApi::MainLoopApi::check_glerrors(std::string context)
 }
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
+  //std::cout << "swapbuffers" << std::endl;
+  //stackTrace();
+  
   callcount=0;
 #if 0
   OpenglLowApi *ogl = g_low->ogl;

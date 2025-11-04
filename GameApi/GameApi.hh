@@ -311,6 +311,8 @@ public:
   IMPORT void async_load_url(std::string url, std::string homepage, bool nosize=false);
   IMPORT void async_load_all_urls(std::vector<std::string> urls, std::string homepage);
   IMPORT void async_load_callback(std::string url, void (*fptr)(void*), void *data);
+  IMPORT int count_async_callbacks_still_pending();
+  IMPORT void print_callbacks_pending();
   IMPORT void async_rem_callback(std::string url);
   IMPORT ASyncVec *get_loaded_async_url(std::string url);
   IMPORT int add_to_download_bar(std::string filename);
@@ -718,6 +720,7 @@ public:
   IMPORT ARR load_P_script_array(EveryApi &ev, HML hml /*std::string url*/, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   IMPORT ML load_ML_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   IMPORT ML load_ML_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
+  IMPORT ML load_ML_script3(EveryApi &ev, std::string url);
   IMPORT MN load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
     IMPORT MN load_MN_script2(EveryApi &ev, HML h, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);
   IMPORT MT load_MT_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5);

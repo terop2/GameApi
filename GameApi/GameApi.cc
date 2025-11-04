@@ -16607,7 +16607,7 @@ public:
 	else {
 	  bool pass_through=false;
 	  static int async_old = -1;
-	  static int count=600;
+	  static int count=100;
 	  if (async_pending_count!=async_old) {
 	    async_old=async_pending_count;
 	    count=100;
@@ -21277,6 +21277,7 @@ class HtmlUrl : public Html
 {
 public:
   HtmlUrl(GameApi::Env &e, std::string url) : e(e), url(url) {
+    firsttime = true;
     has_cb=false;
 #ifdef EMSCRIPTEN
     async_pending_count++;
@@ -21288,11 +21289,10 @@ public:
       if (del_p2_script[i]==this) del_p2_script[i]=0;
     }
 
-    //#ifdef EMSCRIPTEN
+#ifdef EMSCRIPTEN
     //async_pending_count++; async_taken = true;
     //std::cout << "async_pending_count inc (P_sctipr) " << async_pending_count << std::endl;
-    //#endif
-    firsttime = true;
+#endif
   }
   void unasync()
   {
@@ -21306,6 +21306,10 @@ public:
     /*del_p2_script.push_back(this);*/ /*e.async_rem_callback(url);*/ }
   void Prepare2()
   {
+    if (cb_called) return;
+    cb_called=true;
+    //std::cout << "HtmlUrl Prepare2 callback:" << url << std::endl;
+    //stackTrace();
     for(int i=0;i<del_p2_script.size();i++)
       if (del_p2_script[i]==this) { std::cout << "del_p_script error!" << std::endl; return; }
     
@@ -21318,23 +21322,27 @@ public:
   }
   virtual void Prepare()
   {
-    if (firsttime) {
+    if (!cb_called) { Prepare2(); return; }
+    //std::cout << "HtmlUrl Prepare" << std::endl;
+    //if (firsttime) {
+    //std::cout << "HtmlUrl Prepare firsttime=true" << std::endl;
       firsttime = false; 
     homepage2 = gameapi_homepageurl;
 #ifndef EMSCRIPTEN
     e.async_load_url(url, homepage2);
 #endif
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
-    if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+    if (!vec||vec->size()<10) { std::cout << "HtmlUrl::async not ready!" << std::endl; firsttime = true; return; }
+    //std::cout << "HtmlUrl vecsize=" << vec->size() << std::endl;
     code = std::string(vec->begin(), vec->end());
     //std::cout << "HTMLURL:" << code << std::endl;
-    if (code=="") firsttime=true;
-    }
+    if (code.size()<10) firsttime=true;
+    //}
   }
   virtual std::string script_file() const {
-    //std::cout << "GOT SCRIPT FILE:" << code << std::endl;
-    if (code.size()<120) {
-      //std::cout << "LOADING FROM URL: " << url << std::endl;
+    //std::cout << "GOT SCRIPT FILE:'" << code << "' for url: '" << url << "'"<< std::endl;
+    if (code.size()<10) {
+      std::cout << "FAIL in HtmlUrl::LOADING FROM URL: " << url << std::endl;
       std::vector<unsigned char> *file = load_from_url(url,false,g_progress_script_num);
       code=std::string(file->begin(), file->end());
       //std::cout << "GOT:" << code << std::endl;
@@ -21364,8 +21372,9 @@ private:
   bool has_cb;
   void (*m_fptr)(void*);
   void *m_data;
-  bool firsttime;
+  bool firsttime=true;
   bool async=false;
+  bool cb_called=false;
 };
 void HTML_cb(void *ptr)
 {
@@ -24037,7 +24046,7 @@ public:
   MT_script(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5) : e(e), ev(ev), url(url),p1(p1), p2(p2), p3(p3), p4(p4), p5(p5) , main2(0) { firsttime = true; 
        e.async_load_callback(url, &MN_cb, this); 
 #ifdef EMSCRIPTEN
-       async_pending_count++; async_taken=true;
+      async_pending_count++; async_taken=true;
 #endif
        //std::cout << "async_pending_count inc (ML_sctipr) " << async_pending_count << std::endl;
   }
@@ -24232,6 +24241,12 @@ GameApi::ML GameApi::MainLoopApi::load_ML_script2(EveryApi &ev, HML h, std::stri
 {
   Html *hml = find_html(e,h);
   return add_main_loop(e, new ML_script2(e,ev,hml,p1,p2,p3,p4,p5));
+}
+GameApi::ML GameApi::MainLoopApi::load_ML_script3(EveryApi &ev, std::string url)
+{
+  GameApi::HML hml = html_url(url);
+  GameApi::ML ml = load_ML_script2(ev,hml,"","","","","");
+  return ml;
 }
 GameApi::MN GameApi::MainLoopApi::load_MN_script(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5)
 {
@@ -38158,8 +38173,8 @@ GameApi::MT GameApi::MainLoopApi::mainloop_material(EveryApi &ev, ML ml)
   return add_material(e,new MLMaterial(ev, ml));
 }
 
-std::vector<std::string> async_labels;
-std::vector<std::string> async_infos;
+IMPORT std::vector<std::string> async_labels;
+IMPORT std::vector<std::string> async_infos;
 
 void async_pending_plus(std::string label, std::string info)
 {
