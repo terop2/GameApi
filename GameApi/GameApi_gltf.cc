@@ -1534,6 +1534,7 @@ void *thread_func_gltf_bitmap(void *data2)
 
   
   std::cout << "ERROR1, size=" << size << std::endl;
+  stackTrace();
 #ifdef EMSCRIPTEN
   async_pending_count--;
 #endif
@@ -1675,7 +1676,9 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   tasks_add(3008,&thread_func_gltf_bitmap,(void*)info);
   
 #endif
-  
+#ifndef THREADS
+  thread_func_gltf_bitmap((void*)info);
+#endif
 }
 
 void gltf_join_threads(GLTFImageDecoder *decoder)
@@ -1690,6 +1693,10 @@ void gltf_join_threads(GLTFImageDecoder *decoder)
 	pthread_join(decoder->load->current_gltf_threads[i]->thread_id,&res);
       }
     */
+    tasks_join(3008);
+    decoder->load->current_gltf_threads.clear();
+#endif
+#ifdef LINUX
     tasks_join(3008);
     decoder->load->current_gltf_threads.clear();
 #endif
