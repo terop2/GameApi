@@ -34252,13 +34252,13 @@ std::string qq_insert_enter(std::string s)
   return s;
 }
 
-extern bool g_execute_block;
+//extern bool g_execute_block;
 
 void run_callback(void *ptr)
 {
   //std::cout << "RUN CALLBACK: g_execute_block=" << g_execute_block << std::endl;
-  if (g_execute_block) return;
-  g_execute_block=true;
+  //if (g_execute_block) return;
+  //g_execute_block=true;
 
   //std::cout << "1" << std::endl;
   
@@ -34365,7 +34365,7 @@ extern Matrix g_last_resize;
 #ifdef EMSCRIPTEN
 #include <emscripten/val.h>
 
-bool g_execute_block = true;
+//bool g_execute_block = true;
 
 void ClearProgress();
 KP extern "C" void set_new_script(const char *script2_)
@@ -34389,7 +34389,7 @@ KP extern "C" void set_new_script(const char *script2_)
     g_mainloop_callback = &run_callback;
     g_execute_callback = true;
 
-    g_execute_block = false;
+    //g_execute_block = false;
 
     
     mtl_urls.clear();
