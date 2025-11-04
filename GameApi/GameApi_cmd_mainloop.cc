@@ -174,6 +174,14 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "a", "b", "c", "d", "e" },
 			 "ML", "mainloop_api", "load_ML_script2"));
 #endif
+#if (ALL==1)||(LOAD_ML_SCRIPT3==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_ML_script3,
+			 "ml_script2",
+			 { "ev", "url" },
+			 { "EveryApi&", "std::string" },
+			 { "ev", "test.txt" },
+			 "ML", "mainloop_api", "load_ML_script3"));
+#endif
 #if (ALL==1)||(LOAD_MN_SCRIPT2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::load_MN_script2,
 			 "mn_script",

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GameAPI Builder — script_ml Reference</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; line-height:1.5; margin:24px; color:#111; }
+    h1 { font-size:1.8rem; margin-top:0; }
+    h2 { font-size:1.25rem; margin-bottom:6px; color:#222; }
+    p { margin:8px 0; }
+    table { border-collapse:collapse; width:100%; margin:10px 0 18px 0; }
+    th, td { border:1px solid #ddd; padding:8px; text-align:left; vertical-align:top; }
+    th { background:#f7f7f7; font-weight:600; }
+    code { background:#f3f4f6; padding:2px 6px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace; }
+    pre { background:#0b1220; color:#e6eef8; padding:12px; border-radius:6px; overflow:auto; }
+    .small { font-size:0.9rem; color:#555; }
+    .badge { display:inline-block; padding:2px 8px; background:#eef6ff; border-radius:999px; color:#0366d6; font-weight:600; font-size:0.85rem; }
+    .cols { display:grid; grid-template-columns:1fr; gap:12px; }
+    @media(min-width:900px){ .cols { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+
+  <h1>GameAPI Builder — <span class="badge">script_ml</span> Reference</h1>
+  <p class="small">Canonical summary of the scripting handle model and core functions used by GameAPI Builder's <code>script_ml</code> system.</p>
+
+  <h2 id="key-principles">Key Principles</h2>
+  <ul>
+    <li><strong>Handles only as return values:</strong> Every line in <code>script_ml</code> returns a handle (not primitives). Primitives (<code>int</code>, <code>float</code>, <code>string</code>) are allowed only as function parameters.</li>
+    <li><strong>One-line = one node:</strong> Each script line is a single method call of the form <code>&lt;HANDLE&gt; &lt;var&gt; = ev.api.func(params);</code>. This maps 1:1 to a visual node in the editor.</li>
+    <li><strong>Deterministic, linear execution:</strong> Lines execute top-to-bottom. The text is a canonical serialization of the node graph (no hidden reordering).</li>
+    <li><strong>Graph connectivity via handles:</strong> Return handles (variables) form the edges. Passing a handle as a parameter connects nodes in the graph.</li>
+    <li><strong>Typed handles reflect engine semantics:</strong> Different handle names (e.g., <code>P</code>, <code>MT</code>, <code>MN</code>, <code>TF</code>, <code>ML</code>, <code>VX</code>, <code>O</code>, <code>PTS</code>, <code>MS</code>) represent distinct runtime interfaces/resources — check compatibility when wiring nodes.</li>
+    <li><strong>Precalc vs runtime:</strong> Geometry ops (combine, decimate) are precalc/asset operations returning new <code>P</code> or <code>TF</code> handles. Rendering/binding returns <code>ML</code> nodes that participate in the main loop.</li>
+    <li><strong>Single object context:</strong> All API calls use the implicit <code>ev</code> object, e.g. <code>ev.asset.load_gltf(...)</code>.</li>
+    <li><strong>Instancing vs single-object transforms:</strong> Use <code>PTS</code>/<code>MS</code> for instancing; use <code>MN</code> + <code>move_ml</code> for single-object transforms.</li>
+  </ul>
+
+  <h2 id="handle-reference">script_ml — Handle &amp; Function Reference</h2>
+
+  <div class="cols">
+    <div>
+      <h3>Handle Types</h3>
+      <table>
+        <thead><tr><th>Handle</th><th>Represents / Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>ML</code></td><td>MainLoopItem object — scene node or renderable instance. Returned by creation/binding functions.</td></tr>
+          <tr><td><code>MN</code></td><td>Move Node — live scene transform used for single-object placement (attach via <code>move_ml</code>).</td></tr>
+          <tr><td><code>TF</code></td><td>TinyGLTF resource — raw GLTF data (nodes, meshes, animations). Not a main-loop item.</td></tr>
+          <tr><td><code>P</code></td><td>Polygon mesh — raw geometry, combinable and decimatable. Input to render binding.</td></tr>
+          <tr><td><code>MT</code></td><td>Material / render interface — encapsulates shader/material and exposes render functions that return <code>ML</code>.</td></tr>
+          <tr><td><code>PTS</code></td><td>Points array — list of positions used for instanced rendering.</td></tr>
+          <tr><td><code>MS</code></td><td>Matrices array — transform matrices used for instanced rendering.</td></tr>
+          <tr><td><code>O</code></td><td>Volume object — volumetric data (e.g., density or SDF). Not directly renderable.</td></tr>
+          <tr><td><code>VX</code></td><td>Voxel object — renderable voxel/voxel-mesh derived from <code>O</code> via conversion.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3>Core Functions (Signatures)</h3>
+      <table>
+        <thead><tr><th>Function</th><th>Signature</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>move_ml</code></td><td><code>(ML, MN) -> ML</code></td><td>Attach a main-loop node to a transform. Returns updated ML.</td></tr>
+          <tr><td><code>m_bind</code></td><td><code>(P | VX, MT) -> ML</code></td><td>Bind a mesh or voxel object to a material producing a renderable ML node.</td></tr>
+          <tr><td><code>m_bind_inst</code></td><td><code>(P | VX, PTS | MS, MT) -> ML</code></td><td>Bind for instanced rendering using positions or matrices; returns ML for the instance batch.</td></tr>
+          <tr><td><code>p_or_elem</code></td><td><code>(P, P) -> P</code></td><td>Combine two polygon meshes into one (precalc stage).</td></tr>
+          <tr><td><code>p_or_array</code></td><td><code>([P]) -> P</code></td><td>Combine multiple polygon meshes into a single mesh.</td></tr>
+          <tr><td><code>volume_to_voxels</code></td><td><code>(O) -> VX</code></td><td>Convert volumetric object to renderable voxels.</td></tr>
+          <tr><td><code>ml_gltf_all</code></td><td><code>(TF) -> ML</code></td><td>Import full GLTF scene as ML nodes (single call).</td></tr>
+          <tr><td><code>ml_gltf_all_inst</code></td><td><code>(TF, PTS | MS) -> ML</code></td><td>Instanced variant of <code>ml_gltf_all</code>.</td></tr>
+          <tr><td><code>ml_gltf_all_lod</code></td><td><code>(TF, float[] distances) -> ML</code></td><td>LOD variant for GLTF scenes (switch levels by distance).</td></tr>
+          <tr><td><code>decimate (TF)</code></td><td><code>(TF, float ratio) -> TF</code></td><td>Reduce GLTF scene detail by <code>ratio</code> ∈ [0..1].</td></tr>
+          <tr><td><code>decimate (P)</code></td><td><code>(P, float ratio) -> P</code></td><td>Simplify polygon mesh by <code>ratio</code> ∈ [0..1].</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+
+
+  <h2 id="notes">Additional Notes & Best Practices (summary)</h2>
+  <ul>
+    <li><strong>Prefer decimation + instancing</strong> over complex LOD switching for predictable visuals and fewer disappearing/popping artifacts.</li>
+    <li><strong>Pre-calc mesh combines</strong> with <code>p_or_array</code> to reduce draw calls and simplify scene graphs.</li>
+    <li><strong>Validate handle types</strong> at editor export time — ensure a <code>P</code> isn't passed where an <code>MN</code> is required, etc.</li>
+    <li><strong>Use <code>ml_gltf_all</code></strong> when you want a quick import of an entire GLTF scene; use extract-and-bind for fine-grained control.</li>
+  </ul>
+
+  <p class="small">If you want this exported as a standalone HTML file or converted into Markdown / PDF, tell me which format and I’ll produce it.</p>
+
+</body>
+</html>

@@ -553,8 +553,10 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count++;
     async=true;
+    async_pending_plus("LoadGltf", "LoadGltf_cb");
 #endif
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
+    //std::cout << "Callback started for " << url << std::endl;
   }
   ~LoadGltf()
   {
@@ -569,9 +571,11 @@ public:
   void unasync()
   {
 #ifdef EMSCRIPTEN
-    if (async)
+    if (async) {
       async_pending_count--;
-    async=false;
+      async_pending_minus("LoadGltf", "LoadGltf_cb");
+      async=false;
+  }
 #endif
 #ifdef EMSCRIPTEN
     int s = async_vec.size();
@@ -579,6 +583,8 @@ public:
       if (async_vec.size()>i && async_vec[i]==true) {
 	async_pending_count--;
 	async_vec[i]=false;
+	std::stringstream ss; ss << i;
+	async_pending_minus("LoadGltf", "async_vec " + ss.str());
       }
     }
 #endif
@@ -603,24 +609,36 @@ public:
     std::string filename = decoder->get_fetch_filename(id);
     //std::cout << "PrePrePrepare()" << filename << std::endl;
     FILEID iid = decoder->add_file(vec,filename);
+#ifdef EMSCRIPTEN
     if (async_vec.size()>i && async_vec[i]==true) {
       async_pending_count--;
       async_vec[i]=false;
+      std::stringstream ss; ss << i;
+      async_pending_minus("LoadGltf", "async_vec " + ss.str());
     } else
       {
+	std::cout << "i=" << i << " < " << async_vec.size() << std::endl;
 	std::cout << "PrePrePrepare() fail, propably callbacks called wrong!" << std::endl;
       }
-
+#endif
 
     //#ifdef THREADS
     //delete vec;
     //#endif
-    async_pending_count++;
+    // async_pending_count++;
+    //  async_pending_plus("LoadGltf", "decode_process");
     decoder->start_decode_process(id,iid,256,256);
     }
   }
   void PrePrepare() {
-    unasync();
+#ifdef EMSCRIPTEN
+    if (async) {
+      async_pending_count--;
+      async_pending_minus("LoadGltf", "LoadGltf_cb");
+      async=false;
+  }
+#endif
+    //unasync();
     if (!decoder) return;
     if (preprepare_done) return;
     preprepare_done = true;
@@ -653,11 +671,15 @@ public:
     
     std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
     int ss = image_ids.size();
+    async_vec.resize(ss);
 
 #ifdef EMSCRIPTEN
 	async_pending_count+=ss;
-	async_vec.resize(ss);
-	for(int kk=0;kk<ss;kk++) async_vec[kk]=true;
+	for(int kk=0;kk<ss;kk++) {
+	  async_vec[kk]=true;
+	  std::stringstream ss; ss << kk;
+	  async_pending_plus("LoadGltf", "async_vec " + ss.str());
+	}
 #endif
 
     for(int ii=0;ii<ss;ii++)
@@ -883,7 +905,7 @@ public:
 #endif
     }
 
-#ifdef EMSCRIPTEN
+    //#ifdef EMSCRIPTEN
     int s = async_vec.size();
     for(int i=0;i<s;i++)
       {
@@ -893,7 +915,7 @@ public:
 	    async_vec[i]=false;
 	  }
       }
-#endif
+    //#endif
     
     
   }
@@ -919,8 +941,8 @@ public:
     //#ifdef THREADS
     //delete vec;
     //#endif
-    async_pending_count++;
-    decoder->start_decode_process(id,iid,256,256);
+    //async_pending_count++;
+    //decoder->start_decode_process(id,iid,256,256);
     }
   }
   void PrePrepare() {
@@ -1512,7 +1534,10 @@ void *thread_func_gltf_bitmap(void *data2)
 
   
   std::cout << "ERROR1, size=" << size << std::endl;
+  stackTrace();
+#ifdef EMSCRIPTEN
   async_pending_count--;
+#endif
     return 0;
   }
 
@@ -1535,8 +1560,9 @@ void *thread_func_gltf_bitmap(void *data2)
   image->pixel_type = pixel_type;
   image->image.resize(static_cast<uint64_t>(1 * 1 * req_comp) * size_t(bits / 8));
 
-
+#ifdef EMSCRIPTEN
   async_pending_count--;
+#endif
     return 0;
   }
   /*
@@ -1603,8 +1629,10 @@ void *thread_func_gltf_bitmap(void *data2)
   bm->decoder->files2[id]=0;
 #endif
 #endif
-  
+
+#ifdef EMSCRIPTEN
   async_pending_count--;
+#endif
   
   return 0;
 
@@ -1648,7 +1676,27 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   tasks_add(3008,&thread_func_gltf_bitmap,(void*)info);
   
 #endif
-  
+#ifndef THREADS
+  image->width = req_width;
+  image->height = req_height;
+  image->component = 3;
+  image->bits = 8;
+  image->pixel_type = TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE;
+
+  ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
+  info->url = url;
+  info->image = image;
+  info->req_width = req_width;
+  info->req_height = req_height;
+  info->decoder = decoder;
+  info->decoder_item = decoder_item;
+  unsigned char *bytes2 = new unsigned char[size];
+  std::copy(bytes, bytes+size,bytes2);
+  info->bytes = bytes2;
+  info->size = size;
+
+  thread_func_gltf_bitmap((void*)info);
+#endif
 }
 
 void gltf_join_threads(GLTFImageDecoder *decoder)
@@ -1663,6 +1711,10 @@ void gltf_join_threads(GLTFImageDecoder *decoder)
 	pthread_join(decoder->load->current_gltf_threads[i]->thread_id,&res);
       }
     */
+    tasks_join(3008);
+    decoder->load->current_gltf_threads.clear();
+#endif
+#ifdef LINUX
     tasks_join(3008);
     decoder->load->current_gltf_threads.clear();
 #endif
@@ -13741,6 +13793,7 @@ public:
     // this algo not needed in glb files since they have no urls to outside.
     if (url.substr(url.size()-4,4)==".glb") return;
 
+    std::vector<std::string> found_urls;
     
     //std::cout << "AsyncGltf::PREPARE2" << std::endl;
     if (!done) {
@@ -13773,6 +13826,7 @@ public:
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
 	//std::cout << "g_registered_urls:" << url2 << std::endl;
 	g_registered_urls.push_back(url2);
+	found_urls.push_back(url2);
 #ifdef EMSCRIPTEN
 	env.async_load_url(url2,homepage);
 #endif
@@ -13780,7 +13834,7 @@ public:
     }
     }
 #ifndef EMSCRIPTEN
-    env.async_load_all_urls(g_registered_urls, gameapi_homepageurl);
+    env.async_load_all_urls(found_urls, gameapi_homepageurl);
 #endif
     
   }
@@ -14143,11 +14197,44 @@ struct ZipThreadData
 
 void *thread_sketchfab_zip(void *data);
 
+void Zip_callback(void* ptr);
+
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
 public:
   std::string name() const { return "GLTF_Model_with_prepare_sketchfab_zip"; }
-  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model) { firsttime=true; }
+  GLTF_Model_with_prepare_sketchfab_zip(GameApi::Env &e, std::string zip_url, std::string homepage, LoadGltf *load, tinygltf::Model *model) : e(e), GLTF_Model(model, zip_url + "/", zip_url + "/scene.gltf"), zip_url(zip_url), homepage(homepage), load(load), model(model) { firsttime=true;
+
+#ifdef EMSCRIPTEN
+    async_pending_count++;
+    async=true;
+    async_pending_plus("sketchfab_zip", "zip_done");
+#endif
+    e.async_load_callback(zip_url, &Zip_callback,(void*)this);
+
+  }
+  ~GLTF_Model_with_prepare_sketchfab_zip()
+  {
+    if (async) {
+#ifdef EMSCRIPTEN
+    async_pending_count--;
+    async=false;
+    async_pending_minus("sketchfab_zip", "zip_done");
+#endif
+    }
+
+  }
+  void Zip_cb()
+  {
+    if (async) {
+#ifdef EMSCRIPTEN
+    async_pending_count--;
+    async=false;
+    async_pending_minus("sketchfab_zip", "zip_done");
+#endif
+    }
+    UncompressZip();
+  }
   void Prepare() {
     if (firsttime) {
     UncompressZip();
@@ -14169,6 +14256,7 @@ public:
   }
   void UncompressZip()
   {
+    if (uncompress_done) return;
 #ifndef EMSCRIPTEN
     e.async_load_url(zip_url, homepage);
 #endif
@@ -14251,7 +14339,7 @@ public:
 	url = mainfilename;
 	load->set_urls(base_url,url);
       }
-    
+    uncompress_done = true;
   }
 public:
   GameApi::Env &e;
@@ -14261,7 +14349,19 @@ public:
   tinygltf::Model *model;	       
   bool firsttime;
   std::string mainfilename;
+  bool uncompress_done=false;
+  bool async = false;
 };
+void Zip_callback(void* ptr)
+  {
+    GLTF_Model_with_prepare_sketchfab_zip *p = (GLTF_Model_with_prepare_sketchfab_zip*)ptr;
+    p->Zip_cb();
+  }
+
+  
+extern std::string gameapi_homepageurl;
+struct ASyncCallback { void (*fptr)(void*); void *data; };
+ASyncCallback *rem_async_cb(std::string url);
 
 void *thread_sketchfab_zip(void *data)
 {
@@ -14286,6 +14386,7 @@ void *thread_sketchfab_zip(void *data)
 	      filename[j]=0;
 	    mz_uint err = mz_zip_reader_get_filename(pZip, i, filename, 256);
 	    if (strlen(filename)==0) { std::cout << "Skipping empty filename from .zip" << std::endl; delete [] filename; return 0; }
+	    std::string url_plain = obj->zip_url + "/" + std::string(filename);
 	    std::string url = "load_url.php?url=" + obj->zip_url + "/" + std::string(filename);
 	    //std::cout << "Reading: " << url << std::endl;
 	    //std::cout << url.substr(url.size()-5) << "::" << url.substr(url.size()-4) << std::endl;
@@ -14315,6 +14416,31 @@ void *thread_sketchfab_zip(void *data)
 	    }
 	    g_del_map.push_async_url(url,data);
 	    //g_del_map.load_url_buffers_async[url] = data;
+
+
+	std::string url_only = "load_url.php?url=" + url_plain;
+	std::string oldurl = url_plain;
+	url_plain = "load_url.php?url=" + url_plain + "&homepage=" + gameapi_homepageurl;
+
+	//std::cout << "callback check: " << oldurl << std::endl;
+	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+	if (cb) {
+	  //std::cout << "Load cb!" << url << std::endl;
+	(*cb->fptr)(cb->data);
+	}
+	//std::cout << "callback check: " << url_plain << std::endl;
+      ASyncCallback *cb2 = rem_async_cb(url_plain); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!2" << url << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      //std::cout << "callback check: " << url_only << std::endl;
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!3" << url << std::endl;
+	(*cb3->fptr)(cb3->data);
+      }
+
 	  }
 
 	return 0;
