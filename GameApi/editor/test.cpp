@@ -25,6 +25,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #endif
+#include <atomic>
 using namespace GameApi;
 #ifndef WINDOWS
 #define WAYLAND 1
@@ -37,7 +38,8 @@ using namespace GameApi;
 #include "Tasks.hh"
 
 extern std::string g_gpu_vendor;
-
+extern bool g_progress_lock_assets;
+void reset_process_script_num();
 struct ArrayType
 {
   int type; // arraytypesinuse
@@ -47,9 +49,13 @@ class Envi;
 void render_cb(Envi *env);
 void refresh();
 void ClearProgress();
+extern bool refresh_done;
 
 IMPORT std::string remove_prefix(std::string url);
 IMPORT extern Low_SDL_Window *sdl_window;
+
+extern std::vector<std::string> async_labels;
+extern std::vector<std::string> async_infos;
 
 int find_str(std::string s, std::string el);
 
@@ -99,12 +105,11 @@ extern int g_window_pos_x;
 extern int g_window_pos_y;
 extern std::string gameapi_homepageurl;
 extern int g_has_wayland;
-extern GameApi::W g_progress_dialog;
+extern volatile GameApi::W g_progress_dialog;
 extern std::vector<std::string> g_prog_labels;
 extern GameApi::EveryApi *g_everyapi2;
 extern GameApi::FtA g_atlas;
 extern GameApi::BM g_atlas_bm;
-extern GameApi::W g_progress_dialog;
 extern GameApi::GuiApi *g_everyapi_gui;
 IMPORT extern pthread_t g_main_thread_id;
 
@@ -208,12 +213,15 @@ struct GameApiParam
 class GameApiItem
 {
 public:
+  virtual ~GameApiItem() { }
   virtual int Count() const=0;
   virtual std::string Name(int i) const=0;
   virtual int ParamCount(int i) const=0;
   virtual std::string ParamName(int i, int p) const=0;
   virtual std::string ParamType(int i, int p) const=0;
   virtual std::string ParamDefault(int i, int p) const=0;
+  virtual std::string DefaultAuthor(int i, int p) const=0;
+  virtual std::string DefaultLicense(int i, int p) const=0;
   virtual std::string ReturnType(int i) const=0;
   virtual std::string ApiName(int i) const=0;
   virtual std::string FuncName(int i) const=0;
@@ -223,6 +231,7 @@ public:
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
+  //virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }
 };
 
 extern std::vector<GameApiItem*> global_functions;
@@ -333,6 +342,8 @@ struct Envi {
   std::vector<std::string> enum_types;
   bool editor_visible;
   W display;
+  bool going_to_have_display=false;
+  bool going_to_remove_progress=false;
   W license_dialog;
   W license_dialog_next;
   W license_dialog_cancel;
@@ -648,6 +659,7 @@ extern int g_async_count;
 extern ASyncData *g_async_ptr2;
 extern int g_async_count2;
 
+extern int async_pending_count;
 
 IMPORT void save_dd(GameApi::Env &e, GameApi::EveryApi &ev, std::string filename, std::string script, std::vector<std::string> urls);
 PT old_cursor_pos;
@@ -667,6 +679,7 @@ extern std::string g_dragdrop_filename;
 class BuilderIter
 {
 public:
+  virtual ~BuilderIter() { }
   virtual void start(void *arg)=0;
   virtual void render(void *arg)=0;
   virtual void update(void *arg, MainLoopApi::Event &e)=0;
@@ -1513,6 +1526,7 @@ public:
 		set_current_block(g_id);
 		set_codegen_values(env->mod,0,uid,1000);
 		ClearProgress();
+		reset_process_script_num();
 		int id = env->ev->mod_api.execute(*env->ev, env->mod, 0, uid, exeenv,1000,0); // TODO last 0=wrong
 		set_current_block(-2);
 
@@ -1896,6 +1910,7 @@ public:
 					      htmlfile = replace_string(htmlfile,'\n','@');
 					      homepage = replace_string(homepage,'\n','@');
 					      std::string cmd = std::string("explorer \"https://meshpage.org/gameapi_example.php?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
+		std::cout << "PTHREAD_SYSTEM explorer" << std::endl;
 
 					      pthread_system(cmd.c_str());
 			
@@ -1922,6 +1937,7 @@ public:
 					      } else {
 					      cmd = std::string("chromium \"https://meshpage.org/" + name + "?homepage=") + homepage + std::string("&id=") + ss2.str() + std::string("&date=") + dt2 + std::string("\"");
 					      }
+		std::cout << "PTHREAD_SYSTEM chromium" << std::endl;
 					      pthread_system(cmd.c_str());
 			
 #endif
@@ -2054,16 +2070,60 @@ public:
 		if (display)
 		  {
 		    env->gui->set_pos(env->display, 200.0, 100.0);
-		    env->display_visible = true;
 		    g_env->ev->mainloop_api.end_editor_state();
-		    
+		    env->going_to_have_display = true;
+		    env->display_visible = true;
 		  }
-		env->progress_visible = false;
-		
+		//if (async_pending_count==0)
+		//  env->progress_visible = false;
+		env->going_to_remove_progress=true;
+	env->progress_visible = false;
 	      }
 	  }
       }
-  
+
+#if 0
+    
+    if (async_pending_count<0)
+      {
+	async_pending_count=0;
+	std::cout << "Async pending negative in builder!" << std::endl;
+      }
+    
+    static int old_async=0;
+    static int count = 600;
+    if (old_async != async_pending_count) {
+      std::cout << "async pending: " << async_pending_count << std::endl;
+      old_async=async_pending_count;
+	    count=600;
+    } else if (async_pending_count>0) {
+      count--; std::cout << "." << std::flush; if (count<0) { 
+	      std::cout << "Builder::ASyncPendingCountDrift:" << async_pending_count << std::endl;
+	      int s = async_labels.size();
+	      for(int i=0;i<s;i++)
+		{
+		  std::cout << async_labels[i] << "::" << async_infos[i] << " ";
+		}
+	      std::cout << std::endl;
+	      std::cout << "Builder::Special async pending count logo exit" << std::endl;
+	      async_pending_count=0;
+	    }
+    }
+
+    
+    
+    if (env->going_to_have_display && async_pending_count==0)
+      {
+	env->going_to_have_display=false;
+	env->display_visible = true;
+      }
+
+    if (env->going_to_remove_progress && async_pending_count==0)
+      {
+	env->going_to_remove_progress=false;
+	env->progress_visible = false;
+      }
+#endif
     
     if (!env->editor_visible && !env->license_dialog_visible)
       {
@@ -2671,14 +2731,15 @@ IMPORT extern int g_vr_device_id;
 IMPORT extern bool g_progress_callback_set;
 IMPORT extern void (*g_progress_callback)();
 
-void update_progress_dialog_cb_impl(GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>, int val, int max, int process);
-extern void (*update_progress_dialog_cb)(GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
+void update_progress_dialog_cb_impl(volatile GameApi::W &w, int x,int y, GameApi::FtA f, GameApi::BM b, std::vector<std::string>, int val, int max, int process);
+extern void (*update_progress_dialog_cb)(volatile GameApi::W &, int,int, GameApi::FtA, GameApi::BM, std::vector<std::string>, int val, int max, int process);
 
 class ASyncTask
 {
 public:
   virtual int NumTasks() const=0;
   virtual void DoTask(int i)=0;
+  virtual ~ASyncTask() { }
 };
 
 void MoveCB(void* data)
@@ -3431,8 +3492,17 @@ void IterAlgo(Env &ee, std::vector<BuilderIter*> vec, std::vector<void*> args,Ev
       if (vec[i])
 	vec[i]->render(args[i]);
     }
-  ev->mainloop_api.swapbuffers();
-
+  int val = ee.count_async_callbacks_still_pending();
+  //std::cout << "async count:" << val << std::endl;
+  //if (val==0)
+    ev->mainloop_api.swapbuffers();
+    //else {
+    //g_env->env->print_callbacks_pending();
+    //g_env->ev->mainloop_api.delay(12.0);
+    //}
+    
+  refresh_done = false;
+  
 #ifdef WAYLAND
     if (!g_wl_display) {
     Low_SDL_SysWMinfo info;
@@ -3647,6 +3717,7 @@ public:
 	      { // double-click on the download bar
 #ifdef LINUX
 		std::string s = getenv("HOME");
+		std::cout << "PTHREAD_SYSTEM xdg" << std::endl;
 		pthread_system((std::string("xdg-open ")+s+"/.gameapi_builder/Downloads/").c_str());
 #endif
 #ifdef WINDOWS
@@ -3852,8 +3923,7 @@ void render_cb(Envi *env)
    }
 
   enum_editor_draw(*env->ev, *env->gui);
-
-    if (env->progress_visible)
+  if (env->progress_visible)
       {
 	env->gui->set_pos(g_progress_dialog, 400,300);
   PT cursor_pos = old_cursor_pos;
@@ -3863,10 +3933,15 @@ void render_cb(Envi *env)
 	int mouse_wheel_y = 0;
 	env->gui->update(g_progress_dialog, cursor_pos, button, ch, type, mouse_wheel_y);
 
+	
+	//std::cout << "progress:" << g_progress_dialog.id << std::endl;
 	env->gui->render(g_progress_dialog);
+	refresh_done = true;
       }
-
 }
+
+
+bool refresh_done = false;
 
 void refresh()
 {
@@ -3896,11 +3971,21 @@ void refresh()
     }
 	}
 
-  render_cb(g_env);
+  
+	render_cb(g_env); 
   g_start2->render(g_start_tab);
   g_env->ev->mainloop_api.end_editor_state();
-  g_env->ev->mainloop_api.swapbuffers();
 
+  int val = g_env->env->count_async_callbacks_still_pending();
+  //std::cout << "async count2:" << val << std::endl;
+  //if (val==0)
+    g_env->ev->mainloop_api.swapbuffers();
+    //else {
+    // g_env->env->print_callbacks_pending();
+    //g_env->ev->mainloop_api.delay(12.0);
+    //}
+  refresh_done = false;
+  
 #ifdef WAYLAND
     if (!g_wl_display) {
     Low_SDL_SysWMinfo info;
