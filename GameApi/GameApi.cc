@@ -22337,7 +22337,7 @@ public:
 	  std::ifstream ss(scripts[iu].c_str());
 	  std::stringstream ss2;
 	  ss2 << ss.rdbuf();
-	  std::vector<string> scripts2 = find_script_filenames(home+"\\_gameapi_builder\\deploy\\",ss2.str());
+	  std::vector<std::string> scripts2 = find_script_filenames(home+"\\_gameapi_builder\\deploy\\",ss2.str());
 	  su+=scripts2.size();
 	  int suu = scripts2.size();
 	  for(int j=0;j<suu;j++) scripts.push_back(scripts2[j]);
