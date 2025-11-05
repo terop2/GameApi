@@ -58,6 +58,9 @@ IMPORT extern Low_SDL_Window *sdl_window;
 extern Low_SDL_GLContext g_context;
 extern int g_progress_script_num;
 
+IMPORT extern GameApi::EveryApi *g_everyapi;
+
+
 #ifdef EMSCRIPTEN
 bool is_mobile_1()
 {
@@ -16607,10 +16610,10 @@ public:
 	else {
 	  bool pass_through=false;
 	  static int async_old = -1;
-	  static int count=100;
+	  static int count=600;
 	  if (async_pending_count!=async_old) {
 	    async_old=async_pending_count;
-	    count=100;
+	    count=600;
 	  } else {
 	    //std::cout << "TICK " << count << std::endl;
 	    count--; if (count<0) { 
@@ -16620,10 +16623,13 @@ public:
 		{
 		  std::cout << async_labels[i] << "::" << async_infos[i] << " ";
 		}
+	      g_everyapi->get_env().print_callbacks_pending();
 	      std::cout << std::endl;
 	      std::cout << "Special async pending count logo exit" << std::endl;
 	      if (debug_enabled) status += "LOGO_EXIT2 ";
-	      async_pending_count=0; no_draw_count=0; pass_through=true; env->logo_shown=false;	    }
+	      async_pending_count=0; no_draw_count=0; pass_through=true; env->logo_shown=false;
+	      count=600;
+	    }
 	  }
 	  if (!pass_through)
 	    return -1;
@@ -38175,6 +38181,8 @@ GameApi::MT GameApi::MainLoopApi::mainloop_material(EveryApi &ev, ML ml)
 
 IMPORT std::vector<std::string> async_labels;
 IMPORT std::vector<std::string> async_infos;
+
+
 
 void async_pending_plus(std::string label, std::string info)
 {

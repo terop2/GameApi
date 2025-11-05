@@ -1605,6 +1605,9 @@ ASyncCallback *rem_async_cb(std::string url)
   if (i==s) { /*std::cout << "rem_async_cb failure!" << std::endl;*/ return 0; }
   ASyncCallback *cb = load_url_callbacks[i].cb;
   load_url_callbacks.erase(load_url_callbacks.begin()+i);
+  //std::cout << "Callback removed:" << url << std::endl;
+  //stackTrace();
+  //rem_async_cb(url); // remove all with the same url
   return cb;
 }
 
@@ -2352,6 +2355,28 @@ void fetch_failed(void *data)
 int find_str(std::string s, std::string f);
 
 
+std::string remove_dirs(std::string url)
+{
+#if 0
+  int s = url.size();
+  int start=-1;
+  int end=-1;
+  for(int i=0;i<s;i++)
+    {
+      if (start==-1&&url[i]=='.'&&url[i+1]=='z'&&url[i+2]=='i'&&url[i+3]=='p'&&url[i+4]=='/') start=i+4;
+      if (url[i]=='/') end=i;
+    }
+  if (start!=-1 && end!=-1)
+    {
+      std::string res = url.substr(0,start) + "/" + url.substr(end+1);
+      std::cout << "Removedirs returning: " << res << std::endl;
+      return res;
+    }
+#endif
+  return url;
+}
+
+
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
   {
     //std::cout << "load_urls:" << url << std::endl;
@@ -2461,34 +2486,42 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 
 
     const char * headers[] = { /*"Content-type", "application/json; charset=UTF-8",*/ 0};
-    
-    //std::cout << "url loading started! " << url << std::endl;
+    //std::cout << "url_only=" << url_only << std::endl;
+    //stackTrace();
+    //std::string url_only_without_dirs = remove_dirs(url_only);
 
-  //std::cout << "URL:" << url << std::endl;
-    // if we have already loaded the same url, don't load again
-    if (/*load_url_buffers_async[url] ||*/g_del_map.async_find(url_only)) {
-    //std::cout << "URL FROM CACHE" << std::endl;
+    if (g_del_map.async_find(url_only)) {
+      //std::cout << "(cached)" << std::endl;
+      
 
+      //ASyncCallback *cb5 = rem_async_cb(url_only_without_dirs); //load_url_callbacks[url];
+      //if (cb5) {
+      //  std::cout << "Load cb5!" << oldurl << std::endl;
+      //(*cb5->fptr)(cb5->data);
+      //}
+
+
+      
 	ASyncCallback *cb4 = rem_async_cb("load_url.php?url="+oldurl); //load_url_callbacks[url];
 	if (cb4) {
-	  //std::cout << "Load cb!" << url << std::endl;
+	  //std::cout << "Load cb4!" << oldurl << std::endl;
 	(*cb4->fptr)(cb4->data);
 	}
 
 
       ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
       if (cb) {
-	//std::cout << "Load cb!" << url << std::endl;
+	//std::cout << "Load cb!" << oldurl << std::endl;
 	(*cb->fptr)(cb->data);
       }
       ASyncCallback *cb2 = rem_async_cb(url); //load_url_callbacks[url];
       if (cb2) {
-	//std::cout << "Load cb!" << url << std::endl;
+	//std::cout << "Load cb2!" << oldurl << std::endl;
 	(*cb2->fptr)(cb2->data);
       }
       ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
       if (cb3) {
-	//std::cout << "Load cb!" << url << std::endl;
+	//std::cout << "Load cb3!" << oldurl << std::endl;
 	(*cb3->fptr)(cb3->data);
       }
 #if 0
@@ -2529,6 +2562,40 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
       FetchInBlocks *b = new FetchInBlocks(oldurl,fetch_success,fetch_failed,(void*)ld);
       ld->obj = b;
       b->fetch();
+      } else {
+	async_pending_count--;
+
+
+
+	ASyncCallback *cb4 = rem_async_cb("load_url.php?url="+oldurl); //load_url_callbacks[url];
+	if (cb4) {
+	  //std::cout << "Load cb!" << url << std::endl;
+	(*cb4->fptr)(cb4->data);
+	}
+
+	// std::string url_only_without_dirs = remove_dirs(url_only);
+
+	//ASyncCallback *cb5 = rem_async_cb(url_only_without_dirs); //load_url_callbacks[url];
+	//if (cb5) {
+	//std::cout << "Load cb!" << url << std::endl;
+	//(*cb5->fptr)(cb5->data);
+	//}
+	
+      ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+      if (cb) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb->fptr)(cb->data);
+      }
+      ASyncCallback *cb2 = rem_async_cb(url); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb3->fptr)(cb3->data);
+      }
       }
 
     } else { std::cout << "WARNING: Security violation, trying to access urls that are outside allowed ownership area:" << oldurl << " isn't in domains '" << extract_server(g_window_href) << "' or '" << extract_server(homepage) << "'" << std::endl; }
@@ -2563,6 +2630,24 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
       }
       //std::cout << "URL cached:" << url << std::endl;
 
+
+      //std::string url_only_without_dirs = remove_dirs("load_url.php?url="+oldurl);
+    
+      //ASyncCallback *cb6 = rem_async_cb(url_only_without_dirs); //load_url_callbacks[url];
+      //if (cb6) {
+	//std::cout << "Load cb!" << url << std::endl;
+      //	(*cb6->fptr)(cb6->data);
+      //}
+
+
+    
+      ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+      if (cb) {
+	//std::cout << "Load cb!" << url << std::endl;
+	(*cb->fptr)(cb->data);
+      }
+
+      
 	ASyncCallback *cb5 = rem_async_cb("load_url.php?url="+oldurl); //load_url_callbacks[url];
 	if (cb5) {
 	  //std::cout << "Load cb!" << url << std::endl;
@@ -2603,6 +2688,17 @@ void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
     //std::cout << "Async cb!" << url2 << std::endl;
   std::string url_only = "load_url.php?url=" + oldurl;
 
+
+  //std::string url_only_without_dirs = remove_dirs("load_url.php?url="+oldurl);
+    
+  //  ASyncCallback *cb6 = rem_async_cb(url_only_without_dirs); //load_url_callbacks[url];
+  //  if (cb6) {
+	//std::cout << "Load cb!" << url << std::endl;
+  //	(*cb6->fptr)(cb6->data);
+  //  }
+
+
+  
 	ASyncCallback *cb5 = rem_async_cb("load_url.php?url="+oldurl); //load_url_callbacks[url];
 	if (cb5) {
 	  //std::cout << "Load cb!" << url << std::endl;
