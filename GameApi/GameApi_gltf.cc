@@ -555,11 +555,13 @@ public:
     async=true;
     async_pending_plus("LoadGltf", "LoadGltf_cb");
 #endif
+    //std::cout << "LoadGltf_cb using url: " << url << std::endl;
     e.async_load_callback(url, &LoadGltf_cb, (void*)this);
     //std::cout << "Callback started for " << url << std::endl;
   }
   ~LoadGltf()
   {
+    unasync();
     g_deleted_urls.push_back(url);
     delete decoder;
     decoder=0;
@@ -631,6 +633,7 @@ public:
     }
   }
   void PrePrepare() {
+    //std::cout << "PREPREPARE CALLED WITH async=" << async << std::endl;
 #ifdef EMSCRIPTEN
     if (async) {
       async_pending_count--;
@@ -849,6 +852,7 @@ public:
 
 void LoadGltf_cb(void *ptr)
 {
+  //std::cout << "LOADGLTF_CB CALLED!" << std::endl;
   LoadGltf *obj = (LoadGltf*)ptr;
   obj->PrePrepare();
 }
@@ -14199,6 +14203,16 @@ void *thread_sketchfab_zip(void *data);
 
 void Zip_callback(void* ptr);
 
+
+void zip_mutex_create();
+void zip_mutex_destroy();
+extern std::vector<std::string> zip_result_urls;
+extern std::string gameapi_homepageurl;
+struct ASyncCallback { void (*fptr)(void*); void *data; };
+ASyncCallback *rem_async_cb(std::string url);
+std::string remove_dirs(std::string url);
+
+
 class GLTF_Model_with_prepare_sketchfab_zip : public GLTF_Model
 {
 public:
@@ -14290,6 +14304,9 @@ public:
     
     mz_uint num = mz_zip_reader_get_num_files(&pZip);
     //std::cout << "ZIp num=" << num << std::endl;
+
+    zip_mutex_create();
+
     std::vector<ZipThreadData*> thread_data;
     for(int i=0;i<num;i++)
       {
@@ -14323,6 +14340,7 @@ public:
     */
 #endif
     mz_zip_reader_end(&pZip);
+
     if (mainfilename!="")
       {
 	std::string mainfile1 = "";
@@ -14339,6 +14357,47 @@ public:
 	url = mainfilename;
 	load->set_urls(base_url,url);
       }
+
+    zip_mutex_destroy();
+    int s = zip_result_urls.size();
+    for(int i=0;i<s;i++)
+      {
+	std::string url_plain = remove_dirs(zip_result_urls[i]);
+
+	//std::cout << "URL for cb: " << url_plain << std::endl;
+
+	
+	std::string url_only = "load_url.php?url=" + url_plain;
+	std::string oldurl = url_plain;
+	url_plain = "load_url.php?url=" + url_plain + "&homepage=" + gameapi_homepageurl;
+
+	//std::cout << "callback check: " << oldurl << std::endl;
+	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
+	if (cb) {
+	  //std::cout << "Load cb!" << oldurl << std::endl;
+	(*cb->fptr)(cb->data);
+	}
+	//std::cout << "callback check: " << url_plain << std::endl;
+      ASyncCallback *cb2 = rem_async_cb(url_plain); //load_url_callbacks[url];
+      if (cb2) {
+	//std::cout << "Load cb!2" << url_plain << std::endl;
+	(*cb2->fptr)(cb2->data);
+      }
+      //std::cout << "callback check: " << url_only << std::endl;
+      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb3) {
+	//std::cout << "Load cb!3" << url_only << std::endl;
+	(*cb3->fptr)(cb3->data);
+      }
+      ASyncCallback *cb4 = rem_async_cb(url_only); //load_url_callbacks[url];
+      if (cb4) {
+	//std::cout << "Load cb!4" << url_only << std::endl;
+	(*cb4->fptr)(cb4->data);
+      }
+	
+      }
+    zip_result_urls.clear();
+    
     uncompress_done = true;
   }
 public:
@@ -14359,9 +14418,34 @@ void Zip_callback(void* ptr)
   }
 
   
-extern std::string gameapi_homepageurl;
-struct ASyncCallback { void (*fptr)(void*); void *data; };
-ASyncCallback *rem_async_cb(std::string url);
+
+std::vector<std::string> zip_result_urls;
+#ifdef THREADS
+pthread_mutex_t *zip_mutex;
+#endif
+void zip_mutex_create()
+{
+#ifdef THREADS
+  zip_mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+#endif
+}
+void zip_push(std::string url)
+{
+#ifdef THREADS
+  pthread_mutex_lock(zip_mutex);
+#endif
+  zip_result_urls.push_back(url);
+#ifdef THREADS
+  pthread_mutex_unlock(zip_mutex);
+#endif
+}
+void zip_mutex_destroy()
+{
+#ifdef THREADS
+  pthread_mutex_destroy(zip_mutex);
+  delete zip_mutex;
+#endif
+}
 
 void *thread_sketchfab_zip(void *data)
 {
@@ -14414,32 +14498,16 @@ void *thread_sketchfab_zip(void *data)
 	      g_del_map.del_async_url(url);
 	      //delete g_del_map.load_url_buffers_async[url];
 	    }
+	    //std::cout << "Pushing zip file: " << url << std::endl;
 	    g_del_map.push_async_url(url,data);
+
+	    zip_push(url_plain);
+	    
 	    //g_del_map.load_url_buffers_async[url] = data;
 
+	    
 
-	std::string url_only = "load_url.php?url=" + url_plain;
-	std::string oldurl = url_plain;
-	url_plain = "load_url.php?url=" + url_plain + "&homepage=" + gameapi_homepageurl;
-
-	//std::cout << "callback check: " << oldurl << std::endl;
-	ASyncCallback *cb = rem_async_cb(oldurl); //load_url_callbacks[url];
-	if (cb) {
-	  //std::cout << "Load cb!" << url << std::endl;
-	(*cb->fptr)(cb->data);
-	}
-	//std::cout << "callback check: " << url_plain << std::endl;
-      ASyncCallback *cb2 = rem_async_cb(url_plain); //load_url_callbacks[url];
-      if (cb2) {
-	//std::cout << "Load cb!2" << url << std::endl;
-	(*cb2->fptr)(cb2->data);
-      }
-      //std::cout << "callback check: " << url_only << std::endl;
-      ASyncCallback *cb3 = rem_async_cb(url_only); //load_url_callbacks[url];
-      if (cb3) {
-	//std::cout << "Load cb!3" << url << std::endl;
-	(*cb3->fptr)(cb3->data);
-      }
+	    
 
 	  }
 
@@ -15057,6 +15125,7 @@ int gltf_mesh2_calc_max_timeindexes(GLTFModelInterface *interface, int animation
 //
 // 2nd attempt at image decoding with multiple threads.
 //
+std::string remove_dirs(std::string url);
 
 
 GLTFImageDecoder::~GLTFImageDecoder()
@@ -15169,7 +15238,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
   int s = ids.size();
   for(int i=0;i<s;i++)
     {
-      filenames_.push_back(filenames[ids[i]]);
+      filenames_.push_back(remove_dirs(filenames[ids[i]]));
     }
 
   //std::cout << "FETCH:" << filenames_.size() << std::endl;
@@ -15186,14 +15255,16 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
 void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data)
 {
   std::string url = filenames[id];
-  e.async_load_callback(url, fptr, user_data);
+  e.async_load_callback(remove_dirs(url), fptr, user_data);
 }
+
 
 std::vector<unsigned char,GameApiAllocator<unsigned char> > *GLTFImageDecoder::get_file(GameApi::Env &e, FETCHID id)
 {
   std::string url = filenames[id];
   //std::cout << "get_file:" << url << std::endl;
   GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
+  if (!vec) vec=e.get_loaded_async_url(remove_dirs(url));
   if (!vec) { std::cout << "GLTFImageDecoder async not ready!" << std::endl; return 0; }
   //std::cout << "FILE SIZE:" << vec->size() << std::endl;
   return new std::vector<unsigned char,GameApiAllocator<unsigned char> >(vec->begin(),vec->end());
