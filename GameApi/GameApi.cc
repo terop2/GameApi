@@ -38191,6 +38191,13 @@ void async_pending_plus(std::string label, std::string info)
 }
 void async_pending_minus(std::string label, std::string info)
 {
+  if (async_pending_count<0)
+    {
+      std::cout << "async_pending_minus detected negative async_pending_count" << std::endl;
+      std::cout << "last one: " << label << " " << info << std::endl;
+    }
+
+  
   int s = async_labels.size();
   bool done=false;
   for(int i=0;i<s;i++)
