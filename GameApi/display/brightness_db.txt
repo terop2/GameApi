@@ -1,0 +1,7 @@
+0 normal 1.0
+1 very_dark 0.5 
+2 dark 0.7
+3 light 2.0
+4 very_light 3.0
+5 white 5.0
+6 very_white 8.0
