@@ -1,4 +1,4 @@
-<?php
+b<?php
 
 ini_set("post_max_size", "120M");
 ini_set("upload_max_filesize", "100M");
@@ -167,6 +167,8 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 ></appmodel>
 <appbackground v-on:change_model="change_model()"
 	       v-bind:state="state"></appbackground>
+<objbrightness v-on:change_model="change_model()"
+	       v-bind:state="state"></objbrightness>
 <appmaterial v-on:change_model="change_model()"
 	     v-on:change_category="change_category()"
 	     v-bind:is_metal="state.is_metal"
@@ -214,6 +216,7 @@ var store = {
       is_textured: "false",
       model_db: [],
       background_db: [],
+      brightness_db: [],
       material_db: [],
       border_db: [],
       file_ap: function(type,filename) { }, // should return promise
@@ -388,6 +391,40 @@ Vue.component('appbackground', {
     </select></div></div>
     `
 });
+
+
+Vue.component('objbrightness', {
+  data: function() {
+    return {
+    }
+    },
+    props: ['state'],
+    methods: {
+      parse_bright_count: function(bg,type)
+      {
+       var arr = bg.split(" ");
+       return arr[0];
+      },
+     parse_bright_name: function(bg,type)
+     {
+      var arr = bg.split(" ");
+      return arr[1];
+     }
+
+    },
+    template: `
+    <div class="block blockitem height8 border customfont">
+    Brightness<br>
+    <div class="horizspace customfont">
+    <select name="brightness" id="brightness-select" v-on:change="$emit('change_model')">
+      <!--option value="-1">Black</option-->
+    <template v-for="bg in state.brightness_db">
+    <option v-bind:value="parse_bright_count(bg)">{{ parse_bright_name(bg) }}</option>
+    </template>
+    </select></div></div>
+    `
+});
+
 
 Vue.component('appborder', {
   data: function() {
@@ -720,7 +757,9 @@ filter_material : function(arr,key)
 var mat_db = "material_db.txt";
 var bor_db = "border_db.txt";
 var bck_db = "background_db.txt";
+var brg_db = "brightness_db.txt";
 var mdl_db = "model_db.txt";
+
 
 fetch(mat_db).then(response => {
 response.body.getReader().read().then(value=>{
@@ -743,6 +782,15 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.background_db = str.split("\n");
    store.state.background_db.pop();
+  
+   //console.log(store.state.background_db);
+   });
+});
+fetch(brg_db).then(response => {
+response.body.getReader().read().then(value=>{
+   var str = strfy(value.value);
+   store.state.brightness_db = str.split("\n");
+   store.state.brightness_db.pop();
   
    //console.log(store.state.background_db);
    });
@@ -1065,10 +1113,30 @@ function parse_bg_colour(bg)
   var arr = bg.split(" ");
   return arr[2];
 }
+function parse_brg_value(brg)
+{
+  var arr = brg.split(" ");
+  return arr[2];
+}
 function get_background_value()
 {
   var elem = document.getElementById("background-select");
   return parseInt(elem.value);
+}
+function get_brightness_value()
+{
+  var elem = document.getElementById("brightness-select");
+  return parseFloat(elem.value);
+}
+function get_brightness(i)
+{
+   var val = 1.0;
+   if (i>=0 && i<store.state.brightness_db.length) {
+      var name2 = store.state.brightness_db[i];
+      var name = parse_brg_value(name2);
+      val = name;
+   }
+   return val;
 }
 function get_background(i)
 {
@@ -1258,6 +1326,9 @@ function create_script(filename, contents, filenames)
   var background_value = get_background_value();
   var background = get_background(background_value);
 
+  var brightness_value = get_brightness_value();
+  var brightness = get_brightness(brightness_value);
+
   var border_value = get_border_value();
 
   var anim_value = true;
@@ -1297,10 +1368,10 @@ function create_script(filename, contents, filenames)
      if (normals_val!=3 && normals_val!=4)
      	{
 	if (anim_value==true) {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186,0.90,3.5,0.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,0.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n"; // 0.75
 	border_avoid = true;
 	} else {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186,0.90,3.5,0.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,0.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n"; // 0.75
 	border_avoid=true;
 	}
 	}
@@ -1315,10 +1386,10 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186,0.9,3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
      border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186,0.9,3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
      border_avoid=true;
      }
      }
@@ -1331,10 +1402,10 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
      if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186,0.9,3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
      border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186,0.9,3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
      border_avoid=true;
      }
      }
@@ -2200,6 +2271,7 @@ function serialize_state()
           normals : get_normals_value(),
           border  : get_border_value(),
         background: get_background_value(),
+	brightness : get_brightness_value(),
          material : get_material_value(),
 	 category : elem && elem.value,
 	 metal : elem2 && elem2.value,
@@ -2218,6 +2290,7 @@ function deserialize_state(txt)
   var normals = ser.normals;
   var border = ser.border;
   var bg = ser.background;
+  var brg = ser.brightness;
   var cat = ser.category;
   var metal = ser.metal;
   var plastic = ser.plastic;
@@ -2238,6 +2311,8 @@ function deserialize_state(txt)
   if (elem3) elem3.value = border;
   var elem4 = document.getElementById("background-select");
   if (elem4) elem4.value = bg;
+  var elem4 = document.getElementById("brightness-select");
+  if (elem4) elem4.value = brg;
   var elem6 = document.getElementById("metal-type-select");
   if (elem6) elem6.value = metal;
   var elem7 = document.getElementById("plastic-type-select");
