@@ -82,7 +82,7 @@ public:
   std::vector<unsigned char,GameApiAllocator<unsigned char> > *get_file(GameApi::Env &e, FETCHID id);
   FILEID add_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec, std::string filename);
   FILEID find_file(std::string filename);
-  void start_decode_process(FETCHID fetch_id, FILEID id, int req_width, int req_height);
+  void start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height);
   //void decode_file(FILEID id);
   bool is_decoded(FILEID id);
   void set_decode_callback(FILEID id, void (*fptr)(void*), void *user_data);
@@ -502,6 +502,7 @@ struct ThreadInfo_gltf_bitmap
   GLTFImageDecoder *decoder;
   int decoder_item;
   std::string url;
+  int i;
 };
 
 GameApi::Env *g_e = 0;
@@ -627,9 +628,13 @@ public:
     //#ifdef THREADS
     //delete vec;
     //#endif
-    // async_pending_count++;
-    //  async_pending_plus("LoadGltf", "decode_process");
-    decoder->start_decode_process(id,iid,256,256);
+#ifdef EMSCRIPTEN
+     async_pending_count++;
+     std::stringstream ss; ss<<i;
+     async_pending_plus("LoadGltf", "decode_process " + ss.str());
+#endif
+     
+     decoder->start_decode_process(i,id,iid,256,256);
     }
   }
   void PrePrepare() {
@@ -1541,6 +1546,9 @@ void *thread_func_gltf_bitmap(void *data2)
   stackTrace();
 #ifdef EMSCRIPTEN
   async_pending_count--;
+  std::stringstream ss; ss<<bm->i;
+  async_pending_minus("LoadGltf", "decode_process " + ss.str());
+
 #endif
     return 0;
   }
@@ -1566,6 +1574,8 @@ void *thread_func_gltf_bitmap(void *data2)
 
 #ifdef EMSCRIPTEN
   async_pending_count--;
+  std::stringstream ss; ss<<bm->i;
+  async_pending_minus("LoadGltf", "decode_process " + ss.str());
 #endif
     return 0;
   }
@@ -1636,6 +1646,8 @@ void *thread_func_gltf_bitmap(void *data2)
 
 #ifdef EMSCRIPTEN
   async_pending_count--;
+  std::stringstream ss; ss<<bm->i;
+  async_pending_minus("LoadGltf", "decode_process " + ss.str());
 #endif
   
   return 0;
@@ -1648,7 +1660,7 @@ class GLTFImageDecoder;
 //std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
 
 
-void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url)
+void start_gltf_bitmap_thread(int i, tinygltf::Image *image, int req_width, int req_height, const unsigned char *bytes, int size, GLTFImageDecoder *decoder, int decoder_item, std::string url)
 {
 #ifdef THREADS
   
@@ -1665,6 +1677,7 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   info->req_height = req_height;
   info->decoder = decoder;
   info->decoder_item = decoder_item;
+  info->i = i;
   unsigned char *bytes2 = new unsigned char[size];
   std::copy(bytes, bytes+size,bytes2);
   info->bytes = bytes2;
@@ -1694,6 +1707,7 @@ void start_gltf_bitmap_thread(tinygltf::Image *image, int req_width, int req_hei
   info->req_height = req_height;
   info->decoder = decoder;
   info->decoder_item = decoder_item;
+  info->i = i;
   unsigned char *bytes2 = new unsigned char[size];
   std::copy(bytes, bytes+size,bytes2);
   info->bytes = bytes2;
@@ -15293,14 +15307,14 @@ FILEID GLTFImageDecoder::add_file(std::vector<unsigned char,GameApiAllocator<uns
   filenames2[id] = filename;
   return id;
 }
-void GLTFImageDecoder::start_decode_process(FETCHID fetch_id, FILEID id, int req_width, int req_height)
+void GLTFImageDecoder::start_decode_process(int i, FETCHID fetch_id, FILEID id, int req_width, int req_height)
 {
   //std::cout << "start_process:" << id.id << std::endl;
   tinygltf::Image *img = new tinygltf::Image;
 #ifdef THREADS
 #ifdef EMSCRIPTEN
   std::string filename = get_fetch_filename(fetch_id);
-  start_gltf_bitmap_thread(img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename);
+  start_gltf_bitmap_thread(i,img, req_width, req_height, &(files2[id]->operator[](0)), files2[id]->size(), this, id.id,filename);
 #else
   // not-emscripten -> do syncronous version
   ThreadInfo_gltf_bitmap *info = new ThreadInfo_gltf_bitmap;
@@ -15311,6 +15325,7 @@ void GLTFImageDecoder::start_decode_process(FETCHID fetch_id, FILEID id, int req
   info->decoder_item = id.id;
   info->bytes = &(files2[id]->operator[](0));
   info->size = files2[id]->size();
+  info->i = i;
   thread_func_gltf_bitmap((void*)info);
 #endif
 #else
@@ -15322,6 +15337,7 @@ void GLTFImageDecoder::start_decode_process(FETCHID fetch_id, FILEID id, int req
   info->decoder_item = id.id;
   info->bytes = &(files2[id]->operator[](0));
   info->size = files2[id]->size();
+  info->i = i;
   thread_func_gltf_bitmap((void*)info);
 #endif
   
