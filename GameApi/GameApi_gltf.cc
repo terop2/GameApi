@@ -762,7 +762,7 @@ public:
     if (!vec) { std::cout << "LoadGLTF ASync not ready!" << std::endl; stackTrace(); return; }
     int ssz = vec->end()-vec->begin();
     if (ssz<1) {
-      std::cout << "LoadGLTF: ssz=" << ssz << std::endl;
+      std::cout << "LoadGLTF: ssz=" << ssz << " at " << url << std::endl;
       return;
     }
     std::vector<char> vec2(vec->begin(), vec->end());
