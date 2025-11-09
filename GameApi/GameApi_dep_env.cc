@@ -41,7 +41,9 @@ FILE * my_popen(const char *cmd, const char *c)
 #ifdef LINUX
   FILE *f = popen(cmd,c);
 #endif
+#ifndef EMSCRIPTEN
   return f;
+#endif
 }
 
 
