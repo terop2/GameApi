@@ -594,7 +594,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 #if (ALL==1)||(DISPLAY_BITMAPS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::display_bitmaps,
 			 "bm_display",
-			 { "ev", "vec", "start_time,", "delta_time" },
+			 { "ev", "vec", "start_time", "delta_time" },
 			 { "EveryApi&", "[BM]", "float", "float" },
 			 { "ev", "", "0.0", "3.0" },
 			 "ML", "bitmap_api", "display_bitmaps"));
