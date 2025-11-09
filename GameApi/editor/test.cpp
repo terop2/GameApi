@@ -1474,7 +1474,6 @@ public:
 	    std::string uid = popup_uid;
 	    if (1)
 	      {
-		//std::cout << "Execute for uid: " << uid << std::endl;
 		clear_all_caches();
 		env->env->free_temp_memory();
 
@@ -1636,8 +1635,6 @@ public:
 			  TF tf;
 			  tf.id = id;
 			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,1.0,1.0,0,400.0,-400.0,300.0,0,0xff00000,true);
-			  //env->env->free_temp_memory();
-			  //env->gui->delete_widget(env->mem);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  
 			} else if (type=="TX") {
@@ -3078,7 +3075,7 @@ static unsigned char cursor_0_mask[16] = {
     a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
     a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
-#else
+#endif
 #ifdef WINDOWS
   std::string a_atlas0;
   std::string a_atlas1;
@@ -3086,7 +3083,7 @@ static unsigned char cursor_0_mask[16] = {
   std::string a_atlas_bm0;
   std::string a_atlas_bm1;
   std::string a_atlas_bm2;
-
+  {
   std::string dir = GetInstallDir();
   if (file_exists(dir+"\\atlas0.txt")) {
   a_atlas0 = dir+"\\atlas0.txt";
@@ -3103,16 +3100,10 @@ static unsigned char cursor_0_mask[16] = {
     a_atlas_bm1 = "atlas_bm1.ppm";
     a_atlas_bm2 = "atlas_bm2.ppm";
   }
+
+  }
+#endif
   
-#else
-  std::string a_atlas0 = "atlas0.txt";
-  std::string a_atlas1 = "atlas1.txt";
-  std::string a_atlas2 = "atlas2.txt";
-  std::string a_atlas_bm0 = "atlas_bm0.ppm";
-  std::string a_atlas_bm1 = "atlas_bm1.ppm";
-  std::string a_atlas_bm2 = "atlas_bm2.ppm";
-#endif
-#endif
   
   atlas = ev.font_api.load_atlas(a_atlas0);
   atlas2 = ev.font_api.load_atlas(a_atlas1);
@@ -3449,13 +3440,32 @@ public:
     a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
     a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
-#else
-  std::string a_atlas0 = "atlas0.txt";
-  std::string a_atlas1 = "atlas1.txt";
-  std::string a_atlas2 = "atlas2.txt";
-  std::string a_atlas_bm0 = "atlas_bm0.ppm";
-  std::string a_atlas_bm1 = "atlas_bm1.ppm";
-  std::string a_atlas_bm2 = "atlas_bm2.ppm";
+#endif
+#ifdef WINDOWS
+  std::string a_atlas0;
+  std::string a_atlas1;
+  std::string a_atlas2;
+  std::string a_atlas_bm0;
+  std::string a_atlas_bm1;
+  std::string a_atlas_bm2;
+  {
+  std::string dir = GetInstallDir();
+  if (file_exists(dir+"\\atlas0.txt")) {
+  a_atlas0 = dir+"\\atlas0.txt";
+  a_atlas1 = dir+"\\atlas1.txt";
+  a_atlas2 = dir+"\\atlas2.txt";
+  a_atlas_bm0 = dir+"\\atlas_bm0.ppm";
+  a_atlas_bm1 = dir+"\\atlas_bm1.ppm";
+  a_atlas_bm2 = dir+"\\atlas_bm2.ppm";
+  } else {
+    a_atlas0 = "atlas0.txt";
+    a_atlas1 = "atlas1.txt";
+    a_atlas2 = "atlas2.txt";
+    a_atlas_bm0 = "atlas_bm0.ppm";
+    a_atlas_bm1 = "atlas_bm1.ppm";
+    a_atlas_bm2 = "atlas_bm2.ppm";
+  }
+  }
 #endif
  
   env->atlas = ev.font_api.load_atlas(a_atlas0);

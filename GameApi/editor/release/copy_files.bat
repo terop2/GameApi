@@ -1,4 +1,4 @@
-//scp terop@ssh.meshpage.org:/home/terop/cvs/GameApi/GameApi/display/gameapi_display.zip ..\..\display\gameapi_display.zip
+scp terop@192.168.1.104:/home/terop/meshpage.org/gameapi_display.zip ..\..\display\gameapi_display.zip
 copy ..\..\display\gameapi_display.zip editor\gameapi_display.zip
 copy ..\..\display\gameapi_0.html editor\gameapi_0.html
 copy ..\..\display\gameapi_0_seamless.html editor\gameapi_0_seamless.html
