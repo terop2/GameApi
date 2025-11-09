@@ -3000,7 +3000,15 @@ static unsigned char cursor_0_mask[16] = {
   if (file_exists("/usr/share/atlas0.txt")) {
     fname = "/usr/share/atlas0.txt";
   }
-  
+#ifdef WINDOWS
+  {
+  std::string dir = GetInstallDir();
+  if (file_exists(dir+"\\atlas0.txt"))
+    {
+      fname=dir+"\\atlas0.txt";
+    }
+  }
+#endif
 
   
   std::ifstream ss(fname.c_str());
