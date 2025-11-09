@@ -2749,6 +2749,22 @@ void MoveCB(void* data)
   //std::cout << "update" << std::endl;
 }
 
+#ifdef WINDOWS
+std::string GetInstallDir()
+{
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+
+    // Remove the executable filename
+    char* lastSlash = strrchr(path, '\\');
+    if (lastSlash)
+        *lastSlash = '\0';
+
+    return std::string(path);
+}
+#endif
+
+
 Low_SDL_Cursor *cursor0, *cursor1;
 
 class StartMainTask : public ASyncTask
@@ -2979,11 +2995,14 @@ static unsigned char cursor_0_mask[16] = {
   font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
   font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
 
+
   std::string fname = "atlas0.txt";
   if (file_exists("/usr/share/atlas0.txt")) {
     fname = "/usr/share/atlas0.txt";
   }
-    
+  
+
+  
   std::ifstream ss(fname.c_str());
   char c;
   bool flag = false;
@@ -3052,12 +3071,39 @@ static unsigned char cursor_0_mask[16] = {
     a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
 #else
+#ifdef WINDOWS
+  std::string a_atlas0;
+  std::string a_atlas1;
+  std::string a_atlas2;
+  std::string a_atlas_bm0;
+  std::string a_atlas_bm1;
+  std::string a_atlas_bm2;
+
+  std::string dir = GetInstallDir();
+  if (file_exists(dir+"\\atlas0.txt")) {
+  a_atlas0 = dir+"\\atlas0.txt";
+  a_atlas1 = dir+"\\atlas1.txt";
+  a_atlas2 = dir+"\\atlas2.txt";
+  a_atlas_bm0 = dir+"\\atlas_bm0.ppm";
+  a_atlas_bm1 = dir+"\\atlas_bm1.ppm";
+  a_atlas_bm2 = dir+"\\atlas_bm2.ppm";
+  } else {
+    a_atlas0 = "atlas0.txt";
+    a_atlas1 = "atlas1.txt";
+    a_atlas2 = "atlas2.txt";
+    a_atlas_bm0 = "atlas_bm0.ppm";
+    a_atlas_bm1 = "atlas_bm1.ppm";
+    a_atlas_bm2 = "atlas_bm2.ppm";
+  }
+  
+#else
   std::string a_atlas0 = "atlas0.txt";
   std::string a_atlas1 = "atlas1.txt";
   std::string a_atlas2 = "atlas2.txt";
   std::string a_atlas_bm0 = "atlas_bm0.ppm";
   std::string a_atlas_bm1 = "atlas_bm1.ppm";
   std::string a_atlas_bm2 = "atlas_bm2.ppm";
+#endif
 #endif
   
   atlas = ev.font_api.load_atlas(a_atlas0);
