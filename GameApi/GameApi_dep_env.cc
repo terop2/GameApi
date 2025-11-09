@@ -21,6 +21,32 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 int g_progress_script_num=-1;
 
+
+FILE * my_popen(const char *cmd, const char *c)
+{
+  //std::cout << "MY_POPEN:" << cmd << std::endl;
+
+#ifdef WINDOWS
+  std::string cmd2 = cmd;
+  std::string cmd3;
+  int s = cmd2.size();
+  for(int i=0;i<s;i++)
+    {
+      //if (cmd2[i]=='\\') cmd3+='/'; else
+      cmd3+=cmd2[i];
+    }  
+  //std::cout << "MY_POPEN:" << cmd3 << std::endl;
+  FILE *f = popen(("call " + cmd3).c_str(),c);
+#endif
+#ifdef LINUX
+  FILE *f = popen(cmd.c_str(),c);
+#endif
+  return f;
+}
+
+
+std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
+
 extern int g_last_loaded_script;
 
 IMPORT double g_dpr=1.0;
@@ -93,6 +119,7 @@ IMPORT void tasks_init()
 }
 IMPORT void tasks_add(int id, void *(*fptr)(void*), void *data)
 {
+  //std::cout << "Tasks add" << id << std::endl;
 #ifdef THREADS
   //std::cout << "Tasks add "<< id << "::" << (long)fptr << " " << (long)data << std::endl;
   task_data dt = g_tasks.create_work(id,fptr,data);
@@ -1930,6 +1957,8 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 
   g_progress_already_done = true;
 #ifndef EMSCRIPTEN
+
+  
   int s = urls.size();
   std::vector<std::string> urls1 = urls;
 
@@ -1949,6 +1978,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
 	(*cb->fptr)(cb->data);
 	  //} else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
+
 	  }
 	  
 	}
@@ -1980,7 +2010,7 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
   //s=std::min(10,s-u);
   for(int d=0;d<s;d++)
     {
-      std::string url = urls[u+d];
+  std::string url = urls[d];
       long long sz = load_size_from_url(url);
       //std::cout << "SZ:" << url << "=" << sz << std::endl;
       sizes.push_back(sz);
@@ -2077,7 +2107,9 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       if (cb) {
 	//std::cout << "Load cb!" << url2 << std::endl;
 	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
+  std::cout << "un" << std::endl;
 	(*cb->fptr)(cb->data);
+  std::cout << "um" << std::endl;
       } else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
       }
@@ -3351,19 +3383,75 @@ std::string popen_curl_replacement(std::string url, bool headeronly)
 
 #endif
 
+
+#ifdef WINDOWS
+std::string GetInstallDir2(bool pathfix)
+{
+    char path[MAX_PATH];
+    GetModuleFileNameA(NULL, path, MAX_PATH);
+
+    // Remove the executable filename
+    char* lastSlash = strrchr(path, '\\');
+    if (lastSlash)
+        *lastSlash = '\0';
+
+
+    if (pathfix) {
+    std::string path0 =std::string(path);
+    int s = path0.size();
+    std::string path2;
+    for(int i=0;i<s;i++)
+      {
+	//if (path0[i]==' ') { path2+='\\'; path2+=path[i]; }
+	//else
+	  path2+=path0[i];
+      }
+    return path2;
+    } else { return std::string(path); }
+}
+#endif
+
+
+#ifdef WINDOWS
+#include <direct.h>
+#endif
+
 long long load_size_from_url(std::string url)
 {
   //std::cout << "POPEN SIZE" << url << std::endl;
   url = upgrade_to_https(url);
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+  std::string cd = buffer3;
+  url = deploy_replace_string(url,"%CD%",cd);
+  url = deploy_replace_string(url,"%cd%",cd);
+  }
+#endif
+
+  
   if (url=="") return 1;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
     bool succ=false;
 #ifndef ANDROID
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url \"" + url + "\"";
-    std::string cmd2  = "..\\curl\\curl.exe";
+    std::string dir = GetInstallDir2(true);
+    std::string dir2 = GetInstallDir2(false);
+    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url \"" + url + "\"";
+    std::string cmd2  = dir2 + "\\curl\\curl.exe";
     succ = file_exists(cmd2);
-    std::string cmdsize = "..\\curl\\curl.exe -sI --url \"" + url + "\"";
+    std::string cmdsize = "\"" + dir + "\\curl\\curl.exe\" -sI --url \"" + url + "\"";
+
+    if (!succ) {
+      cmd2 = dir2 + "\\..\\curl\\curl.exe";
+      cmd = "\"" +  dir + "\\..\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
+      cmdsize = "\"" + dir + "\\..\\curl\\curl.exe\" -sI --url " + url;
+      succ = file_exists(cmd2);
+      if (!succ) std::cout << dir2+"\\curl\\curl.exe" << " or " << cmd2 << " not found." << std::endl;
+
+    }
+
+
 #else
     std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
     std::string cmdsize = "curl -sI --url \"" + url + "\"";
@@ -3372,12 +3460,12 @@ long long load_size_from_url(std::string url)
     long long num = 1;
     if (succ) {
 #ifdef __APPLE__
-    FILE *f2 = popen(cmdsize.c_str(), "r");
+    FILE *f2 = my_popen(cmdsize.c_str(), "r");
 #else
 #ifdef LINUX
-    FILE *f2 = popen(cmdsize.c_str(), "r");
+    FILE *f2 = my_popen(cmdsize.c_str(), "r");
 #else    
-    FILE *f2 = popen(cmdsize.c_str(), "rb");
+    FILE *f2 = my_popen(cmdsize.c_str(), "rb");
 #endif
 #endif
     std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
@@ -3435,6 +3523,17 @@ public:
     //std::cout << "POPEN2 " << url << std::endl;
     
     url = upgrade_to_https(url);
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+    std::string cd = buffer3;
+    url = deploy_replace_string(url,"%CD%",cd);
+    url = deploy_replace_string(url,"%cd%",cd);
+  }
+#endif
+  std::cout << "stream prepare: " << url << std::endl;
+
+    
     size = load_size_from_url(url);
 
     InstallProgress(333, "stream load..", 15);
@@ -3443,10 +3542,21 @@ public:
 #ifdef HAS_POPEN
 
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url \"" + url + "\"";
-    std::string cmd2  = "..\\curl\\curl.exe";
+    std::string dir = GetInstallDir2(true);
+    std::string dir2 = GetInstallDir2(false);
+    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url \"" + url + "\"";
+    std::string cmd2  = dir2+"\\curl\\curl.exe";
+    std::string cmdsize = "\"" + dir + "\\curl\\curl.exe\" -sI --url \"" + url + "\"";
     succ = file_exists(cmd2);
-    std::string cmdsize = "..\\curl\\curl.exe -sI --url \"" + url + "\"";
+
+    if (!succ) {
+      cmd2 = dir2 + "\\..\\curl\\curl.exe";
+      cmd = "\"" + dir + "\\..\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
+      cmdsize = "\"" + dir + "\\..\\curl\\curl.exe\" -sI --url " + url;
+      succ = file_exists(cmd2);
+      if (!succ) std::cout << dir2+"\\curl\\curl.exe" << " or " << cmd2 << " not found." << std::endl;
+    }
+
 #else
     //std::cout << "Fetching " << url << std::endl;
     std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
@@ -3455,12 +3565,12 @@ public:
 #endif
 
 #ifdef __APPLE__
-    f = popen(cmd.c_str(), "r");
+    f = my_popen(cmd.c_str(), "r");
 #else
 #ifdef LINUX
-    f = popen(cmd.c_str(), "r");
+    f = my_popen(cmd.c_str(), "r");
 #else    
-    f = popen(cmd.c_str(), "rb");
+    f = my_popen(cmd.c_str(), "rb");
 #endif
 #endif
 
@@ -3648,9 +3758,20 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 {
   
   url = upgrade_to_https(url);
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+    std::string cd = buffer3;
+    url = deploy_replace_string(url,"%CD%",cd);
+    url = deploy_replace_string(url,"%cd%",cd);
+  }
+#endif
 
+  
     if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
 
+
+    
   int u = g_urls.size();
   for(int i=0;i<u;i++)
     {
@@ -3669,10 +3790,21 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 
     
 #ifdef WINDOWS
-    std::string cmd = "..\\curl\\curl.exe -s --max-time 300 -N --url " + url;
-    std::string cmd2  = "..\\curl\\curl.exe";
+    std::string dir = GetInstallDir2(true);
+    std::string dir2 = GetInstallDir2(false);
+    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
+    std::string cmd2  = dir2 + "\\curl\\curl.exe";
+    std::string cmdsize = "\"" + dir + "\\curl\\curl.exe\" -sI --url " + url;
     succ = file_exists(cmd2);
-    std::string cmdsize = "..\\curl\\curl.exe -sI --url " + url;
+    if (!succ) {
+      cmd2 = dir + "\\..\\curl\\curl.exe";
+      cmd = "\"" + dir + "\\..\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
+      cmdsize = "\"" + dir + "\\..\\curl\\curl.exe\" -sI --url " + url;
+      succ = file_exists(cmd2);
+      if (!succ) std::cout << dir2+"\\curl\\curl.exe" << " or " << cmd2 << " not found." << std::endl;
+
+    }
+
 #else
 
     std::string cmd;
@@ -3687,17 +3819,18 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     std::string cmdsize = "curl -sI --url " + url;
     succ = true;
 #endif
+
     int num = 100000;
     if (succ) {
     if (!nosize) {
       //std::cout << "POPEN " << cmdsize << std::endl;
 #ifdef __APPLE__
-    FILE *f2 = popen(cmdsize.c_str(), "r");
+    FILE *f2 = my_popen(cmdsize.c_str(), "r");
 #else
 #ifdef LINUX
-    FILE *f2 = popen(cmdsize.c_str(), "r");
+    FILE *f2 = my_popen(cmdsize.c_str(), "r");
 #else    
-    FILE *f2 = popen(cmdsize.c_str(), "rb");
+    FILE *f2 = my_popen(cmdsize.c_str(), "rb");
 #endif
 #endif
     std::vector<unsigned char, GameApiAllocator<unsigned char> > vec2;
@@ -3740,12 +3873,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     
 #ifndef ANDROID
 #ifdef __APPLE__
-    FILE *f = popen(cmd.c_str(), "r");
+    FILE *f = my_popen(cmd.c_str(), "r");
 #else
 #ifdef LINUX
-    FILE *f = popen(cmd.c_str(), "r");
+    FILE *f = my_popen(cmd.c_str(), "r");
 #else    
-    FILE *f = popen(cmd.c_str(), "rb");
+    FILE *f = my_popen(cmd.c_str(), "rb");
 #endif
 #endif
     if (!f) {
@@ -3893,14 +4026,15 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       {
 #ifndef ANDROID
 #ifdef WINDOWS
-    std::string cmd = ".\\curl\\curl.exe -s --max-time 300 -N --url " + url;
+	std::string dir = GetInstallDir2(true);
+    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
 #else
     std::string cmd = "curl -s --max-time 300 -N --url " + url;
 #endif
 #ifdef LINUX
-    FILE *f = popen(cmd.c_str(), "r");
+    FILE *f = my_popen(cmd.c_str(), "r");
 #else
-    FILE *f = popen(cmd.c_str(), "rb");
+    FILE *f = my_popen(cmd.c_str(), "rb");
 #endif
 
     if (!f) { g_msg_string = "popen failed!"; std::cout << "popen failed!" << std::endl; }
@@ -4060,7 +4194,8 @@ IMPORT void send_post_request(std::string url, std::string headers, std::string 
 #ifdef WINDOWS
   remove_spaces(data);
   remove_spaces(headers);
-  std::string cmd = "..\\curl\\curl.exe -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
+  std::string dir = GetInstallDir2(true);
+  std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
 #else
   std::string cmd = "curl -N -X POST --url " + url + " -d \"" + data + "\" -H \"" + headers + "\"";
 #endif
@@ -4068,12 +4203,12 @@ IMPORT void send_post_request(std::string url, std::string headers, std::string 
   
 
 #ifdef __APPLE__
-    FILE *f2 = popen(cmd.c_str(), "r");
+    FILE *f2 = my_popen(cmd.c_str(), "r");
 #else
 #ifdef LINUX
-    FILE *f2 = popen(cmd.c_str(), "r");
+    FILE *f2 = my_popen(cmd.c_str(), "r");
 #else    
-    FILE *f2 = popen(cmd.c_str(), "rb");
+    FILE *f2 = my_popen(cmd.c_str(), "rb");
 #endif
 #endif
 

@@ -21789,6 +21789,7 @@ std::string deploy_replace_string(std::string val, std::string repl, std::string
   for(int i=0;i<s;i++)
     {
       int ss = repl.size();
+      //if (ss+i>=val.size()) { res+=val[i]; continue; }
       bool not_found=false;
       for(int j=0;j<ss;j++)
 	{
