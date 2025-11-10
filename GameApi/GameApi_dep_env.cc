@@ -39,9 +39,11 @@ FILE * my_popen(const char *cmd, const char *c)
   FILE *f = popen(("call " + cmd3).c_str(),c);
 #endif
 #ifdef LINUX
-  FILE *f = popen(cmd.c_str(),c);
+  FILE *f = popen(cmd,c);
 #endif
+#ifndef EMSCRIPTEN
   return f;
+#endif
 }
 
 
