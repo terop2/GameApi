@@ -192,7 +192,8 @@ public:
 	  */
 	  // check if widget is inside its parent (DOESNT WORK)
 	  //if (p.x+s.dx<p0.x || p.x>p0.x+s0.dx || p.y+s.dy<p0.y || p.y>p0.y+s0.dy) continue;
-	  if (p.x + s.dx>=0.0 && p.y+s.dy>=0.0 && p.x<1200.0 && p.y<1000.0)
+	  
+	  if (p.x + s.dx>=0.0 && p.y+s.dy>=0.0 && p.x<float(ev.mainloop_api.get_screen_width()) && p.y<float(ev.mainloop_api.get_screen_height()))
 	    { // inside screen.
 	      w->render();
 	    }
