@@ -16112,6 +16112,10 @@ void splitter_iter2(void *arg);
 
 void clear_texture_confirms();
 
+IMPORT extern int g_event_screen_x;
+IMPORT extern int g_event_screen_y;
+
+
 extern bool g_stop_music;
 void blocker_iter(void *arg)
 //bool blocker_iter(double time, void *arg)
@@ -16243,6 +16247,9 @@ void blocker_iter(void *arg)
 	GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
 	GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
+
+
+	
 	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev,env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
 
 	if (env->fpscounter)
@@ -16799,9 +16806,10 @@ public:
 	}
       }
     
-    GameApi::M mat = env->ev->matrix_api.identity();
-    if (screen_width<600) {
-      //mat = env->ev->matrix_api.scale(-1.0,-1.0,1.0);
+    GameApi::M mat = env->ev->mainloop_api.in_MV(*env->ev, true);
+    //GameApi::M mat = env->ev->matrix_api.identity();
+    if (screen_width>1920) { // somehow the --mg option in builder needs this
+      mat = env->ev->matrix_api.mult(mat,env->ev->matrix_api.scale(1.0/6.0,1.0/6.0,1.0/6.0));
     }
 #ifndef NO_MV
     env->ev->shader_api.use(env->color_sh);
@@ -16817,7 +16825,12 @@ public:
     //env->ev->shader_api.set_var(env->arr_texture_sh, "in_iMV", env->ev->matrix_api.transpose(env->ev->matrix_api.inverse(mat)));
     env->ev->shader_api.use(env->color_sh);
     
-    GameApi::M in_MV = mat; //env->ev->mainloop_api.in_MV(*env->ev, true);
+    GameApi::M in_MV = env->ev->mainloop_api.in_MV(*env->ev, true);
+    if (screen_width>1920) { // somehow the --mg option in builder needs this
+      in_MV = env->ev->matrix_api.mult(in_MV,env->ev->matrix_api.scale(1.0/6.0,1.0/6.0,1.0/6.0));
+    }
+
+
     GameApi::M in_T = env->ev->mainloop_api.in_T(*env->ev, true);
     GameApi::M in_N = env->ev->mainloop_api.in_N(*env->ev, true);
 
@@ -16866,7 +16879,16 @@ public:
       if (debug_enabled) status+="PREPARE_DONE ";
       if (cb_counter==1||cb_counter>2) {
 	//	env->ev->shader_api.use(env->color_sh);
+
+
+
+	
+	
 	if (!g_disable_draws) env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
+
+	
+
+	
       }
       if (g_transparent_callback_objs.size()) {
 	int s = g_transparent_callback_objs.size();
@@ -17163,6 +17185,7 @@ private:
 
 EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+  std::cout << "Warning: BLK type is deprecated, use RUN instead." << std::endl;
   ml = ev.mainloop_api.display_background(ev,ml);
   if (g_user_id && std::string(g_user_id)==std::string("TeroPulkkinen")) {
     ml = ev.texture_api.send_screenshots_via_key_to_server(ev,ml,'g',30.0, 15);
@@ -17172,8 +17195,12 @@ EXPORT GameApi::BLK GameApi::BlockerApi::game_window(GameApi::EveryApi &ev, ML m
 }
 EXPORT GameApi::RUN GameApi::BlockerApi::game_window2(GameApi::EveryApi &ev, ML ml, bool logo, bool fpscounter, float start_time, float duration)
 {
+  // these are magic numbers because they change the projection matrix.
+  // and that should be constant recardless of screen resolution, since
+  // we've already handled this with viewport.
   float screen_x = ev.mainloop_api.get_screen_sx();
   float screen_y = ev.mainloop_api.get_screen_sy();
+  //std::cout << "Use screen:" << screen_x << " " << screen_y << std::endl;
   ml = ev.mainloop_api.display_background(ev,ml);
 #ifdef ANDROID
   ml = ev.mainloop_api.android_landscape_scale(ev,ml);
@@ -32579,6 +32606,9 @@ public:
     
     firsttime2 = false;
     } else {
+      float scale_x=3.0;
+      float scale_y=3.0;
+      
       env->ev->mainloop_api.execute_ml(*env->ev, env->mainloop, env->color_sh, env->texture_sh, env->texture_sh, env->arr_texture_sh, in_MV, in_T, in_N, env->screen_width, env->screen_height);
     }
     if (env->fpscounter)
