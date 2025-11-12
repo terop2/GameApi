@@ -1,4 +1,4 @@
-FROM ubuntu:25.04
+FROM ubuntu:25.10
 # Dependencies for glvnd and X11.
 RUN apt-get update \
   && apt-get install -y -qq --no-install-recommends \
