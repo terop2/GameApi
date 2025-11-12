@@ -599,6 +599,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 { "ev", "", "0.0", "3.0" },
 			 "ML", "bitmap_api", "display_bitmaps"));
 #endif  
+#if (ALL==1)||(VERTICAL_BITMAP_DISPLAY==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::vertical_bitmap_display,
+			 "bm_vert_display",
+			 { "ev", "vec", "y_delta" },
+			 { "EveryApi&", "[BM]", "float" },
+			 { "ev", "", "0.0" },
+			 "ML", "bitmap_api", "vertical_bitmap_display"));
+#endif  
 
 #ifndef STABLE
 #if (ALL==1)||(CBM_EMPTY==1)
