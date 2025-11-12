@@ -2167,7 +2167,7 @@ void GameApi::MainLoopApi::execute_ml(GameApi::EveryApi &ev, ML ml, SH color, SH
 	  std::cout << "execute_ml rejected SH " << sh.id << "coming from shader_id()" << std::endl; 
 	}
     }
-  
+
   item->execute(ek);
   }
 }

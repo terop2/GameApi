@@ -40,11 +40,16 @@ EXPORT void GameApi::ShaderApi::set_default_projection(SH shader, std::string na
   if (shader.id<0) return;
   set_default_projection_1(shader, name);
 }
+IMPORT extern GameApi::EveryApi *g_everyapi;
+
 void GameApi::ShaderApi::set_default_projection_1(SH shader, std::string name)
 {
   if (shader.id<0) return;
   //std::cout << "SetDefaultProjection:" << std::endl;
-  Matrix m = Matrix::Perspective(80.0, (double)800/600, 10.1, 1600.0);
+  
+  int screen_sx = g_everyapi?g_everyapi->mainloop_api.get_screen_sx():800;
+  int screen_sy = g_everyapi?g_everyapi->mainloop_api.get_screen_sy():600;
+  Matrix m = Matrix::Perspective(80.0, (double)screen_sx/screen_sy, 10.1, 1600.0);
   if (shader.id==-1) return;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;

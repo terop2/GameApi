@@ -5388,15 +5388,16 @@ public:
     if (g_event_screen_y!=-1) {
       float scale_x = float(g_event_screen_x)/float(ev.mainloop_api.get_screen_width());
       float scale_y = float(g_event_screen_y)/float(ev.mainloop_api.get_screen_height());
-  if (g_videodriver && std::string(g_videodriver)=="wayland") {
-    scale_x*=1.6;
-  }
+      //if (g_videodriver && std::string(g_videodriver)=="wayland") {
+      // scale_x*=1.6;
+      // }
 
-      
+      //std::cout << g_event_screen_x << " / " << ev.mainloop_api.get_screen_width() << std::endl;
+      //std::cout << g_event_screen_y << " / " << ev.mainloop_api.get_screen_height() << std::endl;
       //std::cout << "SCISSOR SIZE: " << size.dx << " " << size.dy << " " << scale_x << " " << scale_y << std::endl;
       ogl->glScissor(pos.x*scale_x, g_event_screen_y-pos.y*scale_y-size.dy*scale_y, (size.dx)*scale_x, size.dy*scale_y);
     } else {
-      ogl->glScissor(pos.x, screen_y-pos.y-size.dy, size.dx, size.dy);
+      ogl->glScissor(pos.x, (screen_y-pos.y-size.dy), size.dx, size.dy);
     }
     //std::cout << "g_resize_event;:" << g_resize_event_sx << " " << g_resize_event_sy << std::endl;
     //std::cout << "g_event_screen:" << g_event_screen_x << " " << g_event_screen_y << std::endl;
