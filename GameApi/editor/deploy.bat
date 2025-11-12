@@ -11,5 +11,5 @@ if "%2"=="seamless" type %TEMP%\_gameapi_builder\gameapi_0_seamless.html %TEMP%\
 if NOT "%2"=="seamless" type %TEMP%\_gameapi_builder\gameapi_0.html %TEMP%\_gameapi_builder\gameapi_homepage.html %TEMP%\_gameapi_builder\gameapi_1.html %TEMP%\_gameapi_builder\gameapi_script.html %TEMP%\_gameapi_builder\gameapi_2.html %TEMP%\_gameapi_builder\gameapi_date.html %TEMP%\_gameapi_builder\gameapi_3.html >%TEMP%\_gameapi_builder\deploy\display.php
 copy %TEMP%\_gameapi_builder\get_file_size.php %TEMP%\_gameapi_builder\deploy\get_file_size.php
 cd ..
-tar -c -f gameapi_deploy.zip *
+powershell Compress-Archive * gameapi_deploy.zip
 :END
