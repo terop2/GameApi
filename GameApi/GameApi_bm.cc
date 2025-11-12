@@ -8998,22 +8998,176 @@ private:
   int current_x;
 };
 
-
-GameApi::ML GameApi::BitmapApi::display_bitmaps(GameApi::EveryApi &ev, std::vector<BM> vec, float start_time, float delta_time)
+class VerticalBitmapDisplay : public MainLoopItem
 {
+public:
+  VerticalBitmapDisplay(GameApi::Env &env, GameApi::EveryApi &ev,
+			std::vector<GameApi::BM> vec,
+			float y_delta)
+    : env(env), ev(ev), vec(vec), y_delta(y_delta) { }
+  virtual void Collect(CollectVisitor &vis) {
+    int s=vec.size();
+    for(int i=0;i<s;i++)
+      {
+      BitmapHandle *handle = find_bitmap(env, vec[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      b2->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+
+  virtual void HeavyPrepare()
+  {
+
+    int s2=vec.size();
+    for(int i=0;i<s2;i++)
+      {
+      BitmapHandle *handle = find_bitmap(env, vec[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      b2->Prepare();
+      }
+
+    
   int s = vec.size();
   std::vector<GameApi::ML> vec2;
   for(int i=0;i<s;i++)
     {
-      int sx = size_x(vec[i]);
-      int sy = size_y(vec[i]);
+      int sx = ev.bitmap_api.size_x(vec[i]);
+      int sy = ev.bitmap_api.size_y(vec[i]);
+      GameApi::P p = ev.polygon_api.quad_z(-sx/2,sx/2,-sy/2,sy/2,0);
+      GameApi::MT tex = ev.materials_api.texture(ev,vec[i],1.0);
+      GameApi::ML ml = ev.materials_api.bind(p,tex);
+      GameApi::MN empty = ev.move_api.mn_empty();
+      GameApi::MN trans = ev.move_api.trans2(empty,0.0,i*y_delta,0.0);
+      GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,trans,1,10.0);
+      vec2.push_back(ml2);
+    }
+  res=ev.mainloop_api.array_ml(ev,vec2);
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      return item->shader_id();
+    }
+    return std::vector<int>();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::ML res = { -1 };
+  std::vector<GameApi::BM> vec;
+  float y_delta;
+};
+
+GameApi::ML GameApi::BitmapApi::vertical_bitmap_display(EveryApi &ev,
+							std::vector<BM> vec,
+							float y_delta)
+{
+  return add_main_loop(e,new VerticalBitmapDisplay(e,ev,vec,y_delta));
+}
+
+class DisplayBitmaps : public MainLoopItem
+{
+public:
+  DisplayBitmaps(GameApi::Env &env, GameApi::EveryApi &ev, std::vector<GameApi::BM> vec, float start_time, float delta_time) : env(env), ev(ev), vec(vec), start_time(start_time), delta_time(delta_time) { }
+  virtual void Collect(CollectVisitor &vis) {
+    int s=vec.size();
+    for(int i=0;i<s;i++)
+      {
+      BitmapHandle *handle = find_bitmap(env, vec[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      b2->Collect(vis);
+      }
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+
+    int s2=vec.size();
+    for(int i=0;i<s2;i++)
+      {
+      BitmapHandle *handle = find_bitmap(env, vec[i]);
+      ::Bitmap<Color> *b2 = find_color_bitmap(handle);
+      b2->Prepare();
+      }
+
+    
+  int s = vec.size();
+  std::vector<GameApi::ML> vec2;
+  for(int i=0;i<s;i++)
+    {
+      int sx = ev.bitmap_api.size_x(vec[i]);
+      int sy = ev.bitmap_api.size_y(vec[i]);
       GameApi::P p = ev.polygon_api.quad_z(-sx/2,sx/2,-sy/2,sy/2,0);
       GameApi::MT tex = ev.materials_api.texture(ev,vec[i],1.0);
       GameApi::MT fade = ev.materials_api.fade(ev,tex,start_time+i*3.5*delta_time,start_time+(i*3.5+1)*delta_time,start_time+(i*3.5+3)*delta_time,start_time+(i*3.5+4)*delta_time);
       GameApi::ML ml = ev.materials_api.bind(p,fade);
       vec2.push_back(ml);
     }
-  return ev.mainloop_api.array_ml(ev,vec2);
+  res=ev.mainloop_api.array_ml(ev,vec2);
+  MainLoopItem *item = find_main_loop(env,res);
+  item->Prepare();
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->execute(e);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      item->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (res.id!=-1) {
+      MainLoopItem *item = find_main_loop(env,res);
+      return item->shader_id();
+    }
+    return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::vector<GameApi::BM> vec;
+  float start_time;
+  float delta_time;
+  GameApi::ML res = { -1 };
+};
+
+
+GameApi::ML GameApi::BitmapApi::display_bitmaps(GameApi::EveryApi &ev, std::vector<BM> vec, float start_time, float delta_time)
+{
+
+  return add_main_loop(e, new DisplayBitmaps(e,ev,vec,start_time,delta_time));  
 }
 
 
