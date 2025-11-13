@@ -20,7 +20,29 @@
 BD_CALVIN = $(shell uname -n)
 ARCH = $(shell uname -m)
 
+STEAM_SDK_PATH = /home/terop/cvs/steam/sdk
+
 LIBPATH=/usr/lib/x86_64-linux-gnu/
+
+STEAM_ENABLE ?= no
+STEAM_DEPLOY_ENABLE ?= no
+ifeq ($(STEAM_ENABLE),yes)
+STEAM_PATH=$(STEAM_SDK_PATH)
+STEAM_NAME=$(STEAM_PATH)/redistributable_bin/linux64/libsteam_api.so
+STEAM_H_TEST=$(STEAM_PATH)/public/steam/steam_api.h
+ifeq ($(STEAM_DEPLOY_ENABLE),yes)
+STEAM_CFLAGS=-DSTEAM -DSTEAM_DEPLOY -I$(STEAM_PATH)/public
+else
+STEAM_CFLAGS=-DSTEAM -I$(STEAM_PATH)/public
+endif
+STEAM_LIBS=-L$(STEAM_PATH)/redistributable_bin/linux64 -lsteam_api
+else
+STEAM_PATH=
+STEAM_NAME=
+STEAM_H_TEST=
+STEAM_CFLAGS=
+STEAM_LIBS=
+endif
 GL_PATH=$(LIBPATH)
 GL_NAME=libGL.so
 GL_CFLAGS=`pkg-config --cflags gl`
@@ -194,8 +216,8 @@ RASPI=-DRASPI
 endif
 
 
-CCFLAGS = $(RASPI) $(ADDRESS) -O2 -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
-CC2FLAGS = $(RASPI) $(ADDRESS) -O2 -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CCFLAGS = $(STEAM_CFLAGS) $(RASPI) $(ADDRESS) -O2 -ffunction-sections -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) $(OPENCV_CFLAGS) -I. -ggdb -std=c++20 -fPIC -Wall -I./objs -I/usr/include/freetype2 -I/usr/include/SDL2 -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
+CC2FLAGS = $(STEAM_CFLAGS) $(RASPI) $(ADDRESS) -O2 -ffunction-section -fdata-sections $(GL_CFLAGS) $(SDL_CFLAGS) $(SDL_MIXER_CFLAGS) $(GLEW_CFLAGS) $(FREETYPE_CFLAGS) -I. -ggdb -std=c++20 -Wall -I./objs -DLINUX  -lpthread -pthread -Ichai/ChaiScript-6.1.0/include -fno-var-tracking-assignments -rdynamic $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -fvisibility=hidden -fvisibility-inlines-hidden -DGAMEAPI_EXPORTS
 #`pkg-config gtkmm-2.4 --cflags`
 
 BD_CALVIN_M64=
@@ -234,6 +256,10 @@ default: check_compile dirs libGameApi.so deploytool/deploytool editor/gameapi-b
 
 check_compile:
 	@echo "SETUP: $(BD_CALVIN)"
+ifeq ($(STEAM_ENABLE),yes)
+	@test -f $(STEAM_H_TEST) && echo "  TEST   steam_api.h=OK" || (echo "  TEST steam_api.h=FAIL"; echo "PROBLEM: STEAM_SDK_PATH=$(STEAM_SDK_PATH) in Makefile not correct!"; exit 1)
+	@test -f $(STEAM_NAME) && echo "  TEST   libsteam_api.so=OK" || (echo "  TEST  libsteam_api.so=FAIL"; echo "PROBLEM: STEAM_SDK_PATH=$(STEAM_SDK_PATH) in Makefile not correct!"; exit 1)
+endif
 ifeq ($(shell echo $(SDL_PKGCONFIG)),)
 	@test -f $(SDL_PATH)$(SDL_NAME) && echo "  TEST   libsdl2=OK" || (echo "  TEST libsdl2=FAIL\n NOTE: recommended command: make -j 8 SDL_PATH=$(SDL_PATH) SDL_NAME=$(SDL_NAME)"; exit 1)
 else
@@ -301,7 +327,7 @@ dirs:
 
 libGameApi.so: $(OFiles) $(CMDOFiles) Makefile
 	@echo "  LD     libGameApi.so"
-	@$(CC) $(ADDRESS) -DDEFINE_ALL -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client 
+	@$(CC) $(ADDRESS) -DDEFINE_ALL -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles) -std=c++20 -o libGameApi.so  $(LDFLAGS) -lstdc++ -lwayland-client $(STEAM_LIBS)
 
 #libGameApi_small.so: $(OFiles) $(CMDOFiles2a) Makefile
 #	@echo "  LD     libGameApi_small.so"
@@ -337,10 +363,10 @@ deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
 	@(cd deploytool; make -f Makefile DEBUG="$(DEBUG)")
 
 cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.so
-	@(cd cmdline; make -f Makefile DEBUG="$(DEBUG)")
+	@(cd cmdline; make -f Makefile DEBUG="$(DEBUG)" STEAM_DEPLOY_ENABLE="$(STEAM_DEPLOY_ENABLE)" STEAM_PATH="$(STEAM_PATH)") 
 
 editor/gameapi-builder: editor/Makefile.Linux editor/test.cpp libGameApi.so
-	@(cd editor; make -f Makefile.Linux DEBUG="$(DEBUG)" LDFLAGS="$(LDFLAGS)")
+	@(cd editor; make -f Makefile.Linux DEBUG="$(DEBUG)" LDFLAGS="$(LDFLAGS)" STEAM_ENABLE="$(STEAM_ENABLE)" STEAM_PATH="$(STEAM_PATH)")
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
