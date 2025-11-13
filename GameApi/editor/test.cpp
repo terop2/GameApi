@@ -37,6 +37,10 @@ using namespace GameApi;
 
 #include "Tasks.hh"
 
+#ifdef STEAM
+#include <steam/steam_api.h>
+#endif
+
 extern std::string g_gpu_vendor;
 extern bool g_progress_lock_assets;
 void reset_process_script_num();
@@ -807,7 +811,9 @@ public:
   virtual void update(void *arg, MainLoopApi::Event &e) { 
     //std::cout << "update:" << std::hex << e.type << std::dec << " " << e.ch << " " << e.button << std::endl;
 
-    
+#ifdef STEAM
+    SteamAPI_RunCallbacks();
+#endif
 
     
     Envi *env = (Envi*)arg;
@@ -4067,10 +4073,18 @@ void refresh()
 
 IMPORT extern std::string gameapi_temp_dir;
 #ifdef LINUX
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/videoio.hpp>
-#include <opencv2/core/ocl.hpp>
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/highgui.hpp>
+//#include <opencv2/videoio.hpp>
+//#include <opencv2/core/ocl.hpp>
+namespace cv {
+  void setNumThreads(int);
+  namespace ocl {
+    void setUseOpenCL(bool);
+  }
+};
+
+
 #endif
 #ifdef WINDOWS
 #include <mfidl.h>
@@ -4091,6 +4105,8 @@ IMPORT extern std::string gameapi_temp_dir;
 #endif
 
 
+
+
 int main(int argc, char *argv[]) {
 #ifdef LINUX
   try {
@@ -4104,6 +4120,26 @@ int main(int argc, char *argv[]) {
   cv::setNumThreads(10);
   cv::ocl::setUseOpenCL(false);
 #endif
+
+#ifdef STEAM
+  if (SteamAPI_RestartAppIfNecessary(4181720))
+    return 0;
+#endif
+  
+#ifdef STEAM
+  if (!SteamAPI_Init()) {
+    std::cout << "Steam not initialized." << std::endl;
+    return 1;
+  }
+#endif
+
+#ifdef STEAM
+  if (SteamApps()->BIsSubscribedApp(4181720)) {
+    std::cout << "User does not own this app." << std::endl;
+    return 1;
+  }
+#endif
+  
  g_main_thread_id = pthread_self();
 	tasks_init();
 	
@@ -4348,10 +4384,21 @@ int main(int argc, char *argv[]) {
   while(1) {
     IterAlgo(e,nodes,args,&ev);
   }
+
+#ifdef STEAM
+  SteamAPI_Shutdown();
+#endif  
+  
   return 0;
 #ifdef LINUX
   } catch(...) { std::cout << "EXCEPTION" << std::endl; }
 #endif
-  }
+
+#ifdef STEAM
+  SteamAPI_Shutdown();
+#endif
+
+
+}
 
 

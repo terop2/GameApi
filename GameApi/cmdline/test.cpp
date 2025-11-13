@@ -15,6 +15,13 @@
 #include <SDL2/SDL.h>
 #include <jni.h>
 #endif
+
+#ifdef STEAM
+#include <steam/steam_api.h>
+#endif
+
+
+
 Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, bool resize, bool vr_init);
 
 #ifdef ANDROID
@@ -436,7 +443,27 @@ int main(int argc, char *argv[]) {
   int argc=3;
   char *argv[] = { "./SDLAPP", "--file", "script.txt" };
 #endif
+#ifdef STEAM
+  if (SteamAPI_RestartAppIfNecessary(STEAM_APP_ID))
+    return 0;
+#endif
 
+#ifdef STEAM
+  if (!SteamAPI_Init()) {
+    std::cout << "Steam not initialized." << std::endl;
+    return 1;
+  }
+#endif
+
+#ifdef STEAM
+  if (SteamApps()->BIsSubscribedApp(STEAM_APP_ID)) {
+    std::cout << "User does not own this app." << std::endl;
+    return 1;
+  }
+#endif
+
+
+  
 #ifdef ANDROID
   popen_curl_init();
 #endif
@@ -734,6 +761,11 @@ int main(int argc, char *argv[]) {
 #ifdef ANDROID
   SDL_Log("Tero10 done");  
 #endif
+
+#ifdef STEAM
+  SteamAPI_Shutdown();
+#endif
+
 }
 
 

@@ -13,13 +13,25 @@ ifeq ($(DEBUG),address)
 ADDRESS=-fsanitize=address
 endif
 
+STEAM_DEPLOY_ENABLE ?= no
+STEAM_PATH ?= /home/terop/cvs/steam/sdk
+
+ifeq ($(STEAM_DEPLOY_ENABLE),yes)
+STEAM_CFLAGS=-DSTEAM -DSTEAM_DEPLOY -I$(STEAM_PATH)/public
+STEAM_LIBS=-L$(STEAM_PATH)/redistributable_bin/linux64 -lsteam_api
+else
+STEAM_CFLAGS=
+STEAM_LIBS=
+endif
+
+
 
 WARN = -Wno-deprecated-enum-enum-conversion
 
 all:
 	@echo "  LD     editor/gameapi-builder"
 	@echo "SETUP: $(BD_CALVIN)"
-	@g++ $(ADDRESS) -Wl,--gc-sections $(WARN) $(BD_CALVIN_M64) -O2 -DLINUX -fPIC -g -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client `pkg-config --cflags opencv4` `pkg-config --libs opencv4` -o gameapi-builder
+	@g++ $(ADDRESS) -Wl,--gc-sections $(WARN) $(BD_CALVIN_M64) -O2 -DLINUX -fPIC -g -ggdb -std=c++20 -Wl,-rpath,.. test.cpp -L.. -I.. -lGameApi -ldl -lwayland-client `pkg-config --cflags opencv4` `pkg-config --libs opencv4` $(STEAM_CFLAGS) $(STEAM_LIBS) -o gameapi-builder
 
 
 #@echo "  LD     editor/gameapi-builder.small"
