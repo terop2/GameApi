@@ -18,6 +18,9 @@
 
 #ifdef STEAM
 #include <steam/steam_api.h>
+#include <cstdlib>     
+#include <unistd.h>   
+#include <fcntl.h>    
 #endif
 
 
@@ -444,6 +447,17 @@ int main(int argc, char *argv[]) {
   char *argv[] = { "./SDLAPP", "--file", "script.txt" };
 #endif
 #ifdef STEAM
+  std::stringstream ss0;
+  ss0 << "SteamAppId=" << STEAM_APP_ID;
+  std::stringstream ss0_2;
+  ss0_2 << "SteamGameId=" << STEAM_APP_ID;
+  putenv(const_cast<char*>(ss0.str().c_str()));      // fake that Steam launched us
+  putenv(const_cast<char*>(ss0_2.str().c_str()));     // same
+
+  if (getenv("SteamAppId") || getenv("SteamGameId")) {
+  } else
+    if (getenv("SteamAppId")==nullptr && access("steam_appid.txt",F_OK)==0) {
+    } else  
   if (SteamAPI_RestartAppIfNecessary(STEAM_APP_ID))
     return 0;
 #endif
@@ -456,10 +470,14 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef STEAM
+printf("Main app subscribed: %s\n", SteamApps()->BIsSubscribed() ? "YES" : "NO");
+printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? "YES" : "NO");
+#if 0
   if (SteamApps()->BIsSubscribedApp(STEAM_APP_ID)) {
     std::cout << "User does not own this app." << std::endl;
     return 1;
   }
+#endif
 #endif
 
 
