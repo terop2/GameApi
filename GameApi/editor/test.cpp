@@ -39,6 +39,9 @@ using namespace GameApi;
 
 #ifdef STEAM
 #include <steam/steam_api.h>
+#include <cstdlib>
+#include <unistd.h>
+#include <fcntl.h> 
 #endif
 
 extern std::string g_gpu_vendor;
@@ -67,6 +70,7 @@ int find_str(std::string s, std::string el);
 extern "C" void _udev_device_get_action() { }
 #endif
 
+extern std::string g_mod_path;
 
 extern std::vector<void (*)(void*)> g_transparent_callback_objs;
 extern std::vector<void*> g_transparent_callback_params;
@@ -3713,6 +3717,7 @@ public:
 	new_envi->ev = env->ev;
 	//std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
 	(*perm_tasks)[i]=new StartMainTask(*dt->env,*dt->ev,*new_envi,dt->sh,dt->sh_2d,dt->sh_arr,dt->sh2,dt->sh3,dt->screen_x,dt->screen_y,(*dt->filenames)[i],dt->argc,dt->argv);
+	g_mod_path=(*dt->filenames)[i];
 	(*perm_nodes)[i]=new MainIter;
 	(*perm_args)[i]=new_envi;
 	env->env->start_async((*perm_tasks)[i]);
@@ -3861,6 +3866,7 @@ public:
 	//std::cout << "CHOOSE: " << (*dt->filenames)[i] << std::endl;
 	(*dt->filenames).push_back(s);
 	(*perm_tasks).push_back(new StartMainTask(*dt->env,*dt->ev,*new_envi,dt->sh,dt->sh_2d,dt->sh_arr,dt->sh2,dt->sh3,dt->screen_x,dt->screen_y,s /*(*dt->filenames)[i]*/,dt->argc,dt->argv));
+	g_mod_path=s;
 	(*perm_nodes).push_back(new MainIter);
 	(*perm_args).push_back(new_envi);
 	int pos = (*perm_tasks).size()-1;
@@ -4122,6 +4128,14 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef STEAM
+
+putenv((char*)"SteamAppId=4181720");      // fake that Steam launched us
+putenv((char*)"SteamGameId=4181720");     // same
+
+  if (getenv("SteamAppId") || getenv("SteamGameId")) {
+  } else
+    if (getenv("SteamAppId")==nullptr && access("steam_appid.txt",F_OK)==0) {
+    } else
   if (SteamAPI_RestartAppIfNecessary(4181720))
     return 0;
 #endif
@@ -4130,14 +4144,21 @@ int main(int argc, char *argv[]) {
   if (!SteamAPI_Init()) {
     std::cout << "Steam not initialized." << std::endl;
     return 1;
+  } else {
+    std::cout << "Steam initialized correctly." << std::endl;
   }
 #endif
 
 #ifdef STEAM
+printf("Main app subscribed: %s\n", SteamApps()->BIsSubscribed() ? "YES" : "NO");
+printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? "YES" : "NO");
+
+#if 0
   if (SteamApps()->BIsSubscribedApp(4181720)) {
     std::cout << "User does not own this app." << std::endl;
     return 1;
   }
+#endif
 #endif
   
  g_main_thread_id = pthread_self();
@@ -4162,10 +4183,12 @@ int main(int argc, char *argv[]) {
 	std::string drive = getenv("systemdrive");
 	std::string path = getenv("homepath");
 	std::string filename = drive+path+"\\mod.txt";
+	g_mod_path = filename;
 #else
 	const char *dd = getenv("BUILDER_DOCKER_DIR");
 	std::string dockerdir = dd?dd:"";
 	std::string filename = dockerdir + "mod.txt";
+	g_mod_path = filename;
 #endif
 	std::vector<std::string> filenames;
 	
@@ -4242,6 +4265,7 @@ int main(int argc, char *argv[]) {
 	    if (std::string(argv[i])=="--file")
 	      {
 		filename = std::string(argv[i+1]);
+		if (filenames.size()==0) g_mod_path=filename;
 		filenames.push_back(filename);
 		i++;
 	      }
@@ -4373,7 +4397,9 @@ int main(int argc, char *argv[]) {
   
   e.start_async(g_start=new Tabs_Gui(e,ev,*env_tab,sh,sh_2d,sh_arr,sh2,sh3,screen_x, screen_y, &filenames,active_tab));
   e.start_async(perm_tasks[0]=new StartMainTask(e,ev,*env,sh,sh_2d,sh_arr,sh2,sh3,screen_x,screen_y,filenames[0],argc,argv));
+  g_mod_path = filenames[0];
 
+  
   std::vector<void*> args;
   args.push_back(perm_args[0]=env);
   args.push_back(env_tab);

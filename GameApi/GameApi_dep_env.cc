@@ -21,6 +21,7 @@ bool g_disable_polygons=false;
 bool g_filter_execute = false;
 int g_progress_script_num=-1;
 
+IMPORT std::string g_mod_path;
 
 FILE * my_popen(const char *cmd, const char *c)
 {
@@ -3418,6 +3419,25 @@ std::string GetInstallDir2(bool pathfix)
 #include <direct.h>
 #endif
 
+std::string take_prefix(std::string cd, std::string path)
+{
+  int s = path.size();
+  int pos=-1;
+  for(int i=0;i<s;i++)
+    {
+      if (path[i]=='/'||path[i]=='\\') pos=i;
+    }
+  if (pos!=-1)
+    {
+      int p = find_str(path,":");
+      if (path.size()>0 && path[0]!='/'&&p==-1) return cd+"/"+path.substr(0,pos);
+      return path.substr(0,pos);
+    }
+  int p = find_str(path,":");
+  if (path.size()>0 && path[0]!='/'&&p==-1) return cd+"/"+path;
+  return path;
+}
+
 long long load_size_from_url(std::string url)
 {
   //std::cout << "POPEN SIZE" << url << std::endl;
@@ -3426,11 +3446,18 @@ long long load_size_from_url(std::string url)
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
+  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   }
 #endif
-
+#ifdef LINUX
+  std::string cd="$(pwd)";
+  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
+#endif
+  //std::cout << "size url: " << url << std::endl;
   
   if (url=="") return 1;
     std::vector<unsigned char, GameApiAllocator<unsigned char> > buffer;
@@ -3529,10 +3556,19 @@ public:
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
     std::string cd = buffer3;
+    if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
   }
 #endif
+#ifdef LINUX
+  std::string cd="$(pwd)";
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
+#endif
+  
+  
   std::cout << "stream prepare: " << url << std::endl;
 
     
@@ -3764,10 +3800,18 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
     std::string cd = buffer3;
+    if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
   }
 #endif
+#ifdef LINUX
+  std::string cd="$(pwd)";
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
+#endif
+  //std::cout << "load url=" << url << std::endl;
 
   
     if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
