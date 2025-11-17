@@ -67,7 +67,7 @@ std::string convert_spaces_to_url_encoding(std::string url)
   int s =url.size();
   for(int i=0;i<s;i++)
     {
-      if (url[i]==' ') res+="%28"; else
+      if (url[i]==' ') res+="%20"; else
       if (url[i]=='\'') res+="%27"; else
 	res+=url[i];
     }
