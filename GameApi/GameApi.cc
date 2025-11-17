@@ -21732,7 +21732,7 @@ std::string fetch_more_data(std::string url)
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
@@ -21743,7 +21743,7 @@ std::string fetch_more_data(std::string url)
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
@@ -21793,7 +21793,7 @@ std::vector<UrlItem> find_url_items(std::string s)
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   s = deploy_replace_string(s,"%CD%",cd);
   s = deploy_replace_string(s,"%cd%",cd);
   s = deploy_replace_string(s,"$(pwd)",cd);
@@ -21804,7 +21804,7 @@ std::vector<UrlItem> find_url_items(std::string s)
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   s = deploy_replace_string(s,"%CD%",cd);
   s = deploy_replace_string(s,"%cd%",cd);
   s = deploy_replace_string(s,"$(pwd)",cd);
@@ -22340,7 +22340,7 @@ public:
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
@@ -22351,7 +22351,7 @@ public:
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
@@ -22770,7 +22770,7 @@ public:
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
@@ -22781,7 +22781,7 @@ public:
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
