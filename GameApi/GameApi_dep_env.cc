@@ -3472,7 +3472,7 @@ long long load_size_from_url(std::string url)
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
@@ -3483,7 +3483,7 @@ long long load_size_from_url(std::string url)
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
