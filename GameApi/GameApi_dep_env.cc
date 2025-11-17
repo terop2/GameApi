@@ -34,8 +34,7 @@ FILE * my_popen(const char *cmd, const char *c)
   for(int i=0;i<s;i++)
     {
       //if (cmd2[i]=='\\') cmd3+='/'; else
-      if (cmd2[i]=='\'') cmd3+="\\\'"; else
-      cmd3+=cmd2[i];
+	  cmd3+=cmd2[i];
     }  
   //std::cout << "MY_POPEN:" << cmd3 << std::endl;
   std::cout << "POPEN CMD:" << cmd3 << std::endl;
@@ -43,24 +42,37 @@ FILE * my_popen(const char *cmd, const char *c)
 #endif
 #ifdef LINUX
 
-auto escape_shell = [](std::string s) {
-    size_t pos = 0;
-    while ((pos = s.find("'", pos)) != std::string::npos) {
-        s.replace(pos, 1, "'\\''");  // POSIX-safe single quote escape
-        pos += 4;
-    }
-    return s;
-};
- std::string s = cmd;
- std::string s2 = escape_shell(s);
- std::cout << "POPEN CMD:" << s2.c_str() << std::endl;
- FILE *f = popen(s2.c_str(),c);
+ std::string cmd2 = cmd;
+
+ std::string cmd3;
+  int s = cmd2.size();
+  for(int i=0;i<s;i++)
+    {
+      //if (cmd2[i]=='\\') cmd3+='/'; else
+      //if (cmd2[i]=='\'') cmd3+="\\\'"; else
+      cmd3+=cmd2[i];
+    }  
+
+ std::cout << "POPEN CMD:" << cmd3.c_str() << std::endl;
+ FILE *f = popen(cmd3.c_str(),c);
 #endif
 #ifndef EMSCRIPTEN
   return f;
 #endif
 }
 
+std::string convert_spaces_to_url_encoding(std::string url)
+{
+  std::string res;
+  int s =url.size();
+  for(int i=0;i<s;i++)
+    {
+      if (url[i]==' ') res+="%28"; else
+      if (url[i]=='\'') res+="%27"; else
+	res+=url[i];
+    }
+  return res;
+}
 
 std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
 
@@ -3477,6 +3489,7 @@ long long load_size_from_url(std::string url)
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
 #endif
+  url=convert_spaces_to_url_encoding(url);
   //std::cout << "size url: " << url << std::endl;
   
   if (url=="") return 1;
@@ -3593,6 +3606,7 @@ public:
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
 #endif
+  url=convert_spaces_to_url_encoding(url);
   
   
   std::cout << "stream prepare: " << url << std::endl;
@@ -3844,6 +3858,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
 #endif
+  url=convert_spaces_to_url_encoding(url);
   std::cout << "load url=" << url << std::endl;
 
   
