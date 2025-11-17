@@ -4195,6 +4195,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	//std::cout << "Loading:" << filename << std::endl;
 	for(int i=1;i<argc;i++)
 	  {
+	    std::cout << argv[i] << std::endl;
 	    if (std::string(argv[i])=="--help"||std::string(argv[i])=="-h"||std::string(argv[i])=="-?"||std::string(argv[i])=="/?")
 	      {
 		std::cout << "Usage: gameapi-builder <options>" << std::endl;
