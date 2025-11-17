@@ -59,6 +59,7 @@ extern Low_SDL_GLContext g_context;
 extern int g_progress_script_num;
 
 IMPORT extern GameApi::EveryApi *g_everyapi;
+std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
 
 
 #ifdef EMSCRIPTEN
@@ -21717,12 +21718,36 @@ std::string find_more_data(std::string line)
 std::string fetch_more_data(std::string url)
 {
 #ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+  std::string cd = buffer3;
+  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  url = deploy_replace_string(url,"%CD%",cd);
+  url = deploy_replace_string(url,"%cd%",cd);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
+  }
+#endif
+#ifdef LINUX
+  char buffer3[PATH_MAX];
+  getcwd(buffer3, PATH_MAX);
+  std::string cd = buffer3;
+  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  url = deploy_replace_string(url,"%CD%",cd);
+  url = deploy_replace_string(url,"%cd%",cd);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
+#endif
+
+
+  
+#ifdef WINDOWS
   	  std::string curl="..\\curl\\curl.exe";
 	    std::string curl_string;
 	  if (file_exists(curl))
-	    curl_string= "..\\curl\\curl.exe \"" + http_to_https(url) + "\"";
+	    curl_string= "..\\curl\\curl.exe \"" + convert_spaces_to_url_encoding(http_to_https(url)) + "\"";
 	  else
-	    curl_string=".\\curl\\curl.exe \"" + http_to_https(url) + "\"";
+	    curl_string=".\\curl\\curl.exe \"" + convert_spaces_to_url_encoding(http_to_https(url)) + "\"";
 	  std::cout << "SCANNING: " << url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"rb");
 	  int c;
@@ -21737,7 +21762,7 @@ std::string fetch_more_data(std::string url)
 	  return str;
 #endif
 #ifdef LINUX
-	  std::string curl_string = "curl --http1.1 \"" + http_to_https(url) + "\"";
+	  std::string curl_string = "curl --http1.1 \"" + convert_spaces_to_url_encoding(http_to_https(url)) + "\"";
 	  std::cout << "SCANNING: "<< url << std::endl;
 	  FILE *file = popen(curl_string.c_str(),"r");
 	  int c;
@@ -21753,6 +21778,30 @@ std::string fetch_more_data(std::string url)
 }
 std::vector<UrlItem> find_url_items(std::string s)
 {
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+  std::string cd = buffer3;
+  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  s = deploy_replace_string(s,"%CD%",cd);
+  s = deploy_replace_string(s,"%cd%",cd);
+  s = deploy_replace_string(s,"$(pwd)",cd);
+  s = deploy_replace_string(s,"$(PWD)",cd);
+  }
+#endif
+#ifdef LINUX
+  char buffer3[PATH_MAX];
+  getcwd(buffer3, PATH_MAX);
+  std::string cd = buffer3;
+  if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  s = deploy_replace_string(s,"%CD%",cd);
+  s = deploy_replace_string(s,"%cd%",cd);
+  s = deploy_replace_string(s,"$(pwd)",cd);
+  s = deploy_replace_string(s,"$(PWD)",cd);
+#endif
+
+
+  
   std::vector<UrlItem> vec;
   int ss = s.size();
   for(int i=0;i<ss;i++)
