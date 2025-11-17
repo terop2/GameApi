@@ -63,6 +63,12 @@ IMPORT extern Low_SDL_Window *sdl_window;
 extern Low_SDL_GLContext g_context;
 extern int g_progress_script_num;
 
+extern std::string g_mod_path;
+std::string convert_spaces_to_url_encoding(std::string url);
+std::string take_prefix(std::string cd, std::string path);
+
+
+
 IMPORT extern GameApi::EveryApi *g_everyapi;
 std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
 
