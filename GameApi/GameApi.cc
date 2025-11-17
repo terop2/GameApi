@@ -36,6 +36,11 @@
 #include <emscripten.h>
 #endif
 
+#ifdef WINDOWS
+#include <direct.h>
+#endif
+
+
 #ifdef ANDROID
 #include <android_native_app_glue.h>
 #include <android/asset_manager.h>
@@ -22375,7 +22380,7 @@ public:
 	  if (file_exists(curl))
 	    curl_string= "..\\curl\\curl.exe \"" + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
 	  else
-	    curl_string=".\\curl\\curl.exe \"" + convert_spaces_to_url_enicodng(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
+	    curl_string=".\\curl\\curl.exe \"" + convert_spaces_to_url_encoding(deploy_truncate(http_to_https(ii.url))) + "\" --output \"" + "%TEMP%\\_gameapi_builder\\deploy\\" + dir + (dir!=""?"/":"") + deploy_truncate(remove_prefix(remove_str_after_char(ii.url,'?'))) + "\"";
 	  std::cout << curl_string << std::endl;
       if (gameapi_temp_dir!="@")
 	{
