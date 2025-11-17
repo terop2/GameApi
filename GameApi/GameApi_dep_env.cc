@@ -3449,11 +3449,15 @@ long long load_size_from_url(std::string url)
   if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
   }
 #endif
 #ifdef LINUX
   std::string cd="$(pwd)";
   if (g_mod_path!="") cd=cd + "/" + take_prefix(cd,g_mod_path);
+  url = deploy_replace_string(url,"%CD%",cd);
+  url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
 #endif
@@ -3559,11 +3563,15 @@ public:
     if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
+    url = deploy_replace_string(url,"$(pwd)",cd);
+    url = deploy_replace_string(url,"$(PWD)",cd);
   }
 #endif
 #ifdef LINUX
   std::string cd="$(pwd)";
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+    url = deploy_replace_string(url,"%CD%",cd);
+    url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
 #endif
@@ -3803,15 +3811,19 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
+  url = deploy_replace_string(url,"$(pwd)",cd);
+  url = deploy_replace_string(url,"$(PWD)",cd);
   }
 #endif
 #ifdef LINUX
   std::string cd="$(pwd)";
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+    url = deploy_replace_string(url,"%CD%",cd);
+    url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
 #endif
-  //std::cout << "load url=" << url << std::endl;
+  std::cout << "load url=" << url << std::endl;
 
   
     if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
@@ -3847,6 +3859,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
       cmd = "\"" + dir + "\\..\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
       cmdsize = "\"" + dir + "\\..\\curl\\curl.exe\" -sI --url " + url;
       succ = file_exists(cmd2);
+      std::cout << "CURL success=" << succ << std::endl;
       if (!succ) std::cout << dir2+"\\curl\\curl.exe" << " or " << cmd2 << " not found." << std::endl;
 
     }
