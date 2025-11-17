@@ -34,13 +34,26 @@ FILE * my_popen(const char *cmd, const char *c)
   for(int i=0;i<s;i++)
     {
       //if (cmd2[i]=='\\') cmd3+='/'; else
+      if (cmd2[i]=='\'') cmd3+="\\\'"; else
       cmd3+=cmd2[i];
     }  
   //std::cout << "MY_POPEN:" << cmd3 << std::endl;
   FILE *f = popen(("call " + cmd3).c_str(),c);
 #endif
 #ifdef LINUX
-  FILE *f = popen(cmd,c);
+
+auto escape_shell = [](std::string s) {
+    size_t pos = 0;
+    while ((pos = s.find("'", pos)) != std::string::npos) {
+        s.replace(pos, 1, "'\\''");  // POSIX-safe single quote escape
+        pos += 4;
+    }
+    return s;
+};
+ std::string s = cmd;
+ std::string s2 = escape_shell(s);
+
+ FILE *f = popen(s2.c_str(),c);
 #endif
 #ifndef EMSCRIPTEN
   return f;
@@ -3857,14 +3870,14 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #ifdef WINDOWS
     std::string dir = GetInstallDir2(true);
     std::string dir2 = GetInstallDir2(false);
-    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
+    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url \"" + url + "\"";
     std::string cmd2  = dir2 + "\\curl\\curl.exe";
-    std::string cmdsize = "\"" + dir + "\\curl\\curl.exe\" -sI --url " + url;
+    std::string cmdsize = "\"" + dir + "\\curl\\curl.exe\" -sI --url \"" + url + "\"";
     succ = file_exists(cmd2);
     if (!succ) {
       cmd2 = dir + "\\..\\curl\\curl.exe";
-      cmd = "\"" + dir + "\\..\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
-      cmdsize = "\"" + dir + "\\..\\curl\\curl.exe\" -sI --url " + url;
+      cmd = "\"" + dir + "\\..\\curl\\curl.exe\" -s --max-time 300 -N --url \"" + url+ "\"";
+      cmdsize = "\"" + dir + "\\..\\curl\\curl.exe\" -sI --url \"" + url + "\"";
       succ = file_exists(cmd2);
       std::cout << "CURL success=" << succ << std::endl;
       if (!succ) std::cout << dir2+"\\curl\\curl.exe" << " or " << cmd2 << " not found." << std::endl;
@@ -3876,13 +3889,13 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
     std::string cmd;
     if (nosize)
       {
-	cmd = "stdbuf -oL curl --fail --silent --show-error --http2 -H \"X-Requested-With: XMLHttpRequest\" -H \"Accept: text/event-stream\" -N --url " + url;
+	cmd = "stdbuf -oL curl --fail --silent --show-error --http2 -H \"X-Requested-With: XMLHttpRequest\" -H \"Accept: text/event-stream\" -N --url \"" + url+ "\"";
       }
     else
       {
-	cmd = "curl -N -s --max-time 300 --url " + url;
+	cmd = "curl -N -s --max-time 300 --url \"" + url + "\"";
       }
-    std::string cmdsize = "curl -sI --url " + url;
+    std::string cmdsize = "curl -sI --url \"" + url + "\"";
     succ = true;
 #endif
 
@@ -4093,9 +4106,9 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
 #ifndef ANDROID
 #ifdef WINDOWS
 	std::string dir = GetInstallDir2(true);
-    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url " + url;
+    std::string cmd = "\"" + dir + "\\curl\\curl.exe\" -s --max-time 300 -N --url \"" + url + "\"";
 #else
-    std::string cmd = "curl -s --max-time 300 -N --url " + url;
+    std::string cmd = "curl -s --max-time 300 -N --url \"" + url + "\"";
 #endif
 #ifdef LINUX
     FILE *f = my_popen(cmd.c_str(), "r");
