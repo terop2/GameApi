@@ -23001,6 +23001,18 @@ public:
 	  g3a = "/usr/share/gameapi_3_seamless.html";
 	  gn = "/usr/share/gameapi_display.zip";
 	  gk = "/usr/share/get_file_size.php";
+	  if (!file_exists(g1)) {
+	  g0 = "./gameapi_0.html";
+	  g0a = "./gameapi_0_seamless.html";
+	  g1 = "./gameapi_1.html";
+	  g2 = "./gameapi_2.html";
+	  g3 = "./gameapi_3.html";
+	  g3a = "./gameapi_3_seamless.html";
+	  gn = "./gameapi_display.zip";
+	  gk = "./get_file_size.php";
+	  }
+
+	  
 	}
       std::string home = getenv("HOME")?getenv("HOME"):"/home/www-data";
 
