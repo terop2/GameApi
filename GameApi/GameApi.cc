@@ -21794,6 +21794,7 @@ std::vector<UrlItem> find_url_items(std::string s)
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   s = deploy_replace_string(s,"%CD%",cd);
   s = deploy_replace_string(s,"%cd%",cd);
   s = deploy_replace_string(s,"$(pwd)",cd);
@@ -21805,6 +21806,7 @@ std::vector<UrlItem> find_url_items(std::string s)
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   s = deploy_replace_string(s,"%CD%",cd);
   s = deploy_replace_string(s,"%cd%",cd);
   s = deploy_replace_string(s,"$(pwd)",cd);
@@ -22341,6 +22343,7 @@ public:
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
@@ -22352,6 +22355,7 @@ public:
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
@@ -22771,6 +22775,7 @@ public:
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
@@ -22782,6 +22787,7 @@ public:
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
