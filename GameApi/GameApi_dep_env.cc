@@ -38,6 +38,7 @@ FILE * my_popen(const char *cmd, const char *c)
       cmd3+=cmd2[i];
     }  
   //std::cout << "MY_POPEN:" << cmd3 << std::endl;
+  std::cout << "POPEN CMD:" << cmd3 << std::endl;
   FILE *f = popen(("call " + cmd3).c_str(),c);
 #endif
 #ifdef LINUX
@@ -52,7 +53,7 @@ auto escape_shell = [](std::string s) {
 };
  std::string s = cmd;
  std::string s2 = escape_shell(s);
-
+ std::cout << "POPEN CMD:" << s2.c_str() << std::endl;
  FILE *f = popen(s2.c_str(),c);
 #endif
 #ifndef EMSCRIPTEN
