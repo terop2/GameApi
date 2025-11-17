@@ -3473,6 +3473,7 @@ long long load_size_from_url(std::string url)
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
@@ -3484,6 +3485,7 @@ long long load_size_from_url(std::string url)
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
@@ -3590,6 +3592,7 @@ public:
   if (_getcwd(buffer3,sizeof(buffer3))) {
     std::string cd = buffer3;
     if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
     url = deploy_replace_string(url,"$(pwd)",cd);
@@ -3601,7 +3604,8 @@ public:
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
-    url = deploy_replace_string(url,"%CD%",cd);
+  cd = convert_spaces_to_url_encoding(cd);
+  url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
@@ -3841,6 +3845,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   if (_getcwd(buffer3,sizeof(buffer3))) {
     std::string cd = buffer3;
     if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+  cd = convert_spaces_to_url_encoding(cd);
     url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
@@ -3853,7 +3858,8 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   std::string cd = buffer3;
 
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
-    url = deploy_replace_string(url,"%CD%",cd);
+  cd = convert_spaces_to_url_encoding(cd);
+  url = deploy_replace_string(url,"%CD%",cd);
     url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
