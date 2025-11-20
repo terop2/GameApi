@@ -14,6 +14,7 @@ Dependent packages (ubuntu):
   apt-get install unzip
   apt-get install zip
   apt-get install tar
+  apt-get install libopencv-dev
 
 Choose correct directory:
    cd GameApi
