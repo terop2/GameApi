@@ -111,6 +111,8 @@
 </File>
 <File Id='zlibDLL' Name='zlib1.dll' DiskId='1' Source='zlib1.dll' KeyPath='no'>
 </File>
+<File Id='README.TXT' Name="gameapi_content\README.TXT" DiskId='1' Source='gameapi_content\README.TXT' KeyPath='no'>
+</File>
 </Component>
 <Directory Id='curldir' Name='curl'>
 <Component Id='CurlExecutable' Guid='79581D3E-A778-4897-B679-093F7FDB9CB6'>
