@@ -125,7 +125,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_url",
 			 { "url" },
 			 { "std::string" },
-			 { "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "file://$(instdir)/steam_fix1.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "BM", "bitmap_api", "loadbitmapfromurl"));
 #endif
 #endif
@@ -144,7 +144,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_fetch",
 			 { "ev", "url", "reload_frame", "texture_unit" },
 			 { "EveryApi&", "std::string", "int", "int" },
-			 { "ev", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "300000", "0" },
+			 { "ev", "file://$(instdir)/steam_fix1.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "300000", "0" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap"));
 #endif
 #if (ALL==1)||(DYN_FETCH_BITMAP2==1)
@@ -152,7 +152,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_fetch2",
 			 { "ev", "url", "url2", "time", "texture_unit", "sx", "sy", "sx2", "sy2" },
 			 { "EveryApi&", "std::string", "std::string", "float", "int", "int", "int", "int", "int" },
-			 { "ev", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "http://meshpage.org/assets/gameapi_logo.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "0.0", "0", "256", "256", "1024", "1024" },
+			 { "ev", "file://$(instdir)/steam_fix1.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "file://$(instdir)/steam_fix1.png@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "0.0", "0", "256", "256", "1024", "1024" },
 			 "TXID", "bitmap_api", "dyn_fetch_bitmap2"));
 #endif
 #if (ALL==1)||(GLTF_LOAD_BITMAP==1)
@@ -168,7 +168,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_debug",
 			 { "ev", "bm0", "num", "disable", "url" },
 			 { "EveryApi&", "BM", "int","bool", "std::string" },
-			 { "ev", "", "1","false", "https://meshpage.org/assets/Chunkfive.otf" },
+			 { "ev", "", "1","false", "file://$(instdir)/Chunkfive.otf" },
 			 "BM", "bitmap_api", "debug_number"));
 #endif
 #ifndef STABLE

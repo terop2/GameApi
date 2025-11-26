@@ -130,7 +130,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_load",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "20", "20" },
+			 { "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "20", "20" },
 			 "FI", "font_api", "load_font"));
 #endif
 #if (ALL==1)||(DRAW_TEXT_STRING==1)
@@ -172,7 +172,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "newfont",
 			 { "file", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "http://meshpage.org/assets/Chunkfive.otf", "20", "20" },
+			 { "file://$(instdir)/Chunkfive.otf", "20", "20" },
 			 "Ft", "font_api", "newfont"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_atlas_info,
