@@ -1,6 +1,7 @@
-.......
-.#####.
-.#...#.
-.#...#.
-.#####.
-.......
+7 6
+aaaaaaa
+abbbbba
+abaaaba
+abaaaba
+abbbbba
+aaaaaaa
