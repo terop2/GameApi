@@ -75,9 +75,17 @@ std::string unhexify(std::string s)
       res+=s[i];
     }
     res = deploy_replace_string(res,"tpgames.org","meshpage.org/assets");
+    //res = deploy_replace_string(res,"https://meshpage.org/assets","file://$(instdir)");
+    //res = deploy_replace_string(res,"http://meshpage.org/assets","file://$(instdir)");
+    //res = deploy_replace_string(res,"https://meshpage.org","file://$(instdir)");
+    //res = deploy_replace_string(res,"http://meshpage.org","file://$(instdir)");
     return res;
   }
   res = deploy_replace_string(res,"tpgames.org","meshpage.org/assets");
+  //res = deploy_replace_string(res,"https://meshpage.org/assets","file://$(instdir)");
+  //res = deploy_replace_string(res,"http://meshpage.org/assets","file://$(instdir)");
+  //res = deploy_replace_string(res,"https://meshpage.org","file://$(instdir)");
+  //res = deploy_replace_string(res,"http://meshpage.org","file://$(instdir)");
   return res;
 }
 

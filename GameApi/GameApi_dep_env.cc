@@ -37,7 +37,7 @@ FILE * my_popen(const char *cmd, const char *c)
 	  cmd3+=cmd2[i];
     }  
   //std::cout << "MY_POPEN:" << cmd3 << std::endl;
-  std::cout << "POPEN CMD:" << cmd3 << std::endl;
+  //std::cout << "POPEN CMD:" << cmd3 << std::endl;
   FILE *f = popen(("call " + cmd3).c_str(),c);
 #endif
 #ifdef LINUX
@@ -53,7 +53,7 @@ FILE * my_popen(const char *cmd, const char *c)
       cmd3+=cmd2[i];
     }  
 
- std::cout << "POPEN CMD:" << cmd3.c_str() << std::endl;
+  //std::cout << "POPEN CMD:" << cmd3.c_str() << std::endl;
  FILE *f = popen(cmd3.c_str(),c);
 #endif
 #ifndef EMSCRIPTEN
@@ -3420,11 +3420,20 @@ std::string GetInstallDir2(bool pathfix);
 #ifdef LINUX
 std::string GetContentInstallDir(bool pathfix)
 {
-  if (file_exists("/usr/share/gameapi_content/README.TXT"))
+  char path[PATH_MAX];
+  ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+  if (count != -1) {
+    path[count] = '\0';
+  }
+  std::string path2 = path;
+  if (path2 != "/home/terop/cvs/GameApi/GameApi/editor/gameapi-builder")
     {
-      return "/usr/share/gameapi_content";
+      if (file_exists("/usr/share/gameapi_content/README.TXT"))
+	{
+	  return "/usr/share/gameapi_content";
+	}
     }
-  return "./gameapi_content/";
+  return "/home/terop/cvs/GameApi/GameApi/gameapi_content";
 }
 #endif
 #ifdef WINDOWS
@@ -3519,7 +3528,7 @@ long long load_size_from_url(std::string url)
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
   url = deploy_replace_string(url,"$(instdir)",cd2);
-  url = deploy_replace_string(url."$(INSTDIR)",cd2);
+  url = deploy_replace_string(url,"$(INSTDIR)",cd2);
 #endif
   url=convert_spaces_to_url_encoding(url);
   //std::cout << "size url: " << url << std::endl;
