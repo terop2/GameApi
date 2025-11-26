@@ -70,7 +70,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_expr",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "https://meshpage.org/assets/example_expr_e.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
+			 { "file://$(instdir)/example_expr_e.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "100", "100" },
 			 "BM", "bitmap_api", "script_bitmap"));
 #endif
 #if (ALL==1)||(LOADBITMAP==1)
@@ -559,7 +559,7 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "bm_world_from_bitmap",
 			 { "ev", "v", "url", "chars", "dx", "dy" },
 			 { "EveryApi&", "[BM]", "std::string", "std::string", "int", "int" },
-			 { "ev", "", "http://meshpage.org/assets/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", ".#", "100", "100" },
+			 { "ev", "", "file://$(instdir)/map.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "ab", "100", "100" },
 			 "BM", "bitmap_api", "world_from_bitmap3"));
 #endif
 #if (ALL==1)||(PERSISTENT_CACHE==1)  
