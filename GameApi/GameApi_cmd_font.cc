@@ -146,9 +146,10 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_largetext",
 			 { "ev", "font", "texturl", "x_gap", "line_height", "baseline_separation" },
 			 { "EveryApi&", "FI", "std::string", "int", "int", "int" },
-			 { "ev", "", "http://meshpage.org/assets/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
+			 { "ev", "", "file://$(instdir)/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
 			 "BM", "font_api", "draw_text_large"));
 #endif
+#if 0
 #if (ALL==1)||(SAVE_FONT_DUMP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_font_dump,
 			 "FI_save_dump",
@@ -157,6 +158,8 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "", "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#€%&/()=?+\\*^.,-<>|§œ;:[]_ ", "font.txt" },
 			 "ML", "font_api", "save_font_dump"));
 #endif
+#endif
+#if 0
 #if (ALL==1)||(LOAD_FONT_DUMP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::load_font_dump,
 			 "FI_load_dump",
@@ -165,7 +168,8 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "http://meshpage.org/assets/font.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "FI", "font_api", "load_font_dump"));
 #endif
-
+#endif
+  
 #if 0
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::newfont,
@@ -242,6 +246,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "", "", "cv" },
 			 "ML", "mainloop_api", "if_keys"));
 #endif
+#if 0
 #if (ALL==1)||(ANIM_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::anim_ML,
 			 "ml_anim",
@@ -249,6 +254,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "EveryApi&", "std::string", "std::string", "std::string", "std::string", "std::string", "std::string", "IF" },
 			 { "ev", "http://meshpage.org/assets/marble_cube_ml.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "a/a", "b/b", "c/c", "d/d", "e/e", "" },
 			 "ML", "mainloop_api", "anim_ML"));
+#endif
 #endif
 #ifndef STABLE
 #if (ALL==1)||(KEY_ML==1)
@@ -323,7 +329,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "if_statemachine",
 			 { "url", "states" },
 			 { "std::string", "std::string" },
-			 { "http://meshpage.org/assets/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4" },
+			 { "file://$(instdir)/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4" },
 			 "IF", "mainloop_api", "state_int_fetcher"));
 #endif
 #if (ALL==1)||(HMD_STATE_FETCHER==1)
