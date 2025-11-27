@@ -21816,6 +21816,7 @@ std::vector<UrlItem> find_url_items(std::string s)
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
+  std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   cd = convert_spaces_to_url_encoding(cd);
   cd2 = convert_spaces_to_url_encoding(cd2);
