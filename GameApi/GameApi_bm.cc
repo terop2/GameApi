@@ -1839,6 +1839,8 @@ public:
     std::stringstream ss(data);
     ss >> ssx >> ssy;
 
+    if (!ssx||!ssy) return;
+    
     int *array = new int[ssx*ssy];
     for(int i=0;i<ssx*ssy;i++)
       {
@@ -1846,14 +1848,22 @@ public:
 	ss >> c;
 	int s = chars.size();
 	int val = 0;
-	for(int i=0;i<s;i++)
+	for(int j=0;j<s;j++)
 	  {
-	    if (c==(unsigned char)chars[i]) val=i;
+	    //std::cout << "chars: " << c << chars[j] << std::endl;
+	    if (c==(unsigned char)chars[j]) val=j;
 	  }
 	array[i] = val;
       }
     mymap = array;
     }
+
+    int s = v.size();
+    for(int i=0;i<s;i++)
+      {
+	ev.bitmap_api.prepare(v[i]);
+      }
+    
   }
 private:
   GameApi::Env &e;
