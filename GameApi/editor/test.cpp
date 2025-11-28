@@ -4128,6 +4128,11 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef STEAM
+  gameapi_temp_dir="./";
+#endif
+
+  
+#ifdef STEAM
 
 putenv((char*)"SteamAppId=4181720");      // fake that Steam launched us
 putenv((char*)"SteamGameId=4181720");     // same
