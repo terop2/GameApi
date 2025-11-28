@@ -4128,7 +4128,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef STEAM
-  gameapi_temp_dir="./";
+  gameapi_temp_dir=".";
 #endif
 
   
