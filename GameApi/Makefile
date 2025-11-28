@@ -243,11 +243,17 @@ CCFLAGS += -DBD_CALVIN_COMPUTER
 CC2FLAGS += -DBD_CALVIN_COMPUTER
 endif
 
-ifneq ($(BD_CALVIN),fedora)
-ifneq ($(BD_CALVIN),raspberrypi)
+ifneq ($(ARCH),aarch64)
+ifneq ($(ARCH),arm64)
+ifneq ($(ARCH),armv7l)
+ifneq ($(ARCH),armv6l)
+ifneq ($(ARCH),armv8l)
 CCFLAGS += -m64
 CC2FLAGS += -m64
 BD_CALVIN_M64 += -m64
+endif
+endif
+endif
 endif
 endif
 

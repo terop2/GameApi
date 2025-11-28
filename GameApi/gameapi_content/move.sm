@@ -1,0 +1,8 @@
+a,b,c :: flags
+k_1 :: A->B
+k_2 :: B->C
+k_1 = keyup 32
+k_2 = timer 10
+A := a,b,c
+B := a,c
+C := a,b

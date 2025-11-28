@@ -32,7 +32,7 @@ MACRO2(GameApi::PD,ev.polygon_dist_api.empty(ev))
 MACRO2(GameApi::WV,ev.waveform_api.wv_empty(1.0))
 MACRO2(GameApi::ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()))
 MACRO2(GameApi::CFB,ev.float_bitmap_api.X_bitmap(300.0,300.0))
-MACRO2(GameApi::FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20))
+MACRO2(GameApi::FI,ev.font_api.load_font("http://$(instdir)/Chunkfive.otf",20,20))
 MACRO2(GameApi::HML,ev.mainloop_api.html_url("https://meshpage.org/assets/empty_hml.mp"))
 MACRO2(GameApi::PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
 MACRO2(GameApi::IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3));
@@ -131,7 +131,7 @@ MACRO3(PD,ev.polygon_dist_api.empty(ev))
 MACRO3(WV,ev.waveform_api.wv_empty(1.0))
 MACRO3(ML,ev.polygon_api.render_vertex_array_ml2(ev,ev.polygon_api.p_empty()));
 MACRO3(CFB,ev.float_bitmap_api.X_bitmap(300.0,300.0))
-MACRO3(FI,ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20,20))
+MACRO3(FI,ev.font_api.load_font("file://$(instdir)/Chunkfive.otf",20,20))
 MACRO3(GameApi::HML,ev.mainloop_api.html_url("https://meshpage.org/assets/empty_hml.mp"))
 MACRO3(PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_api.point(0.0,0.0,0.0)}))
 MACRO3(IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3));

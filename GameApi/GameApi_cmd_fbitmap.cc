@@ -195,7 +195,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::intb
 			 "load_map",
 			 { "url" },
 			 { "std::string" },
-			 { "http://meshpage.org/assets/examplemap.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "file://$(instdir)/examplemap.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "IBM", "bitmap_api", "intbitmap_loader"));
 #endif
 #if (ALL==1)||(INTBITMAP_BM==1)

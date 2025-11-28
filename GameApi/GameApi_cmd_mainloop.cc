@@ -1230,7 +1230,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "fps_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
+			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "fps_display"));
 #endif
 
@@ -1287,7 +1287,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "score_display",
 			 { "ev", "ml", "font" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
+			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "score_display"));
 #endif
 #ifndef STABLE
@@ -1296,7 +1296,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "time_display",
 			 { "ev", "ml", "font", "time" },
 			 { "EveryApi&", "ML", "std::string", "float" },
-			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "1000.0" },
+			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "1000.0" },
 			 "ML", "mainloop_api", "time_display"));
 #endif
 #if (ALL==1)||(MATRIX_RANGE_CHECK==1)
@@ -1321,7 +1321,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 "restart_screen",
 			 { "ev", "ml", "fontname" },
 			 { "EveryApi&", "ML", "std::string" },
-			 { "ev", "", "https://meshpage.org/assets/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
+			 { "ev", "", "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive" },
 			 "ML", "mainloop_api", "restart_screen"));
 #endif
 #if (ALL==1)||(FULLSCREEN_BUTTON==1)

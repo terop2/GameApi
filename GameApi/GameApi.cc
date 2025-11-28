@@ -66,6 +66,7 @@ extern int g_progress_script_num;
 extern std::string g_mod_path;
 std::string convert_spaces_to_url_encoding(std::string url);
 std::string take_prefix(std::string cd, std::string path);
+std::string GetContentInstallDir(bool b);
 
 
 
@@ -21732,22 +21733,28 @@ std::string fetch_more_data(std::string url)
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
+  std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
+  url = deploy_replace_string(url,"$(instdir)",cd2);
+  url = deploy_replace_string(url,"$(INSTDIR)",cd2);
   }
 #endif
 #ifdef LINUX
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
+  std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   url = deploy_replace_string(url,"%CD%",cd);
   url = deploy_replace_string(url,"%cd%",cd);
   url = deploy_replace_string(url,"$(pwd)",cd);
   url = deploy_replace_string(url,"$(PWD)",cd);
+  url = deploy_replace_string(url,"$(instdir)",cd2);
+  url = deploy_replace_string(url,"$(INSTDIR)",cd2);
 #endif
 
 
@@ -21793,24 +21800,32 @@ std::vector<UrlItem> find_url_items(std::string s)
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
+  std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   cd = convert_spaces_to_url_encoding(cd);
+  cd2 = convert_spaces_to_url_encoding(cd2);
   s = deploy_replace_string(s,"%CD%",cd);
   s = deploy_replace_string(s,"%cd%",cd);
   s = deploy_replace_string(s,"$(pwd)",cd);
   s = deploy_replace_string(s,"$(PWD)",cd);
+  s = deploy_replace_string(s,"$(instdir)",cd2);
+  s = deploy_replace_string(s,"$(INSTDIR)",cd2);
   }
 #endif
 #ifdef LINUX
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
+  std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   cd = convert_spaces_to_url_encoding(cd);
+  cd2 = convert_spaces_to_url_encoding(cd2);
   s = deploy_replace_string(s,"%CD%",cd);
   s = deploy_replace_string(s,"%cd%",cd);
   s = deploy_replace_string(s,"$(pwd)",cd);
   s = deploy_replace_string(s,"$(PWD)",cd);
+  s = deploy_replace_string(s,"$(instdir)",cd2);
+  s = deploy_replace_string(s,"$(INSTDIR)",cd2);
 #endif
 
 
@@ -22342,24 +22357,32 @@ public:
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
-  if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
+   std::string cd2 = GetContentInstallDir(false);
+ if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   cd = convert_spaces_to_url_encoding(cd);
+  cd2 = convert_spaces_to_url_encoding(cd2);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
+  ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
+  ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
   }
 #endif
 #ifdef LINUX
   char buffer3[PATH_MAX];
   getcwd(buffer3, PATH_MAX);
   std::string cd = buffer3;
+   std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   cd = convert_spaces_to_url_encoding(cd);
+  cd2 = convert_spaces_to_url_encoding(cd2);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
+  ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
+  ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
 #endif
 
 	  
@@ -22774,12 +22797,16 @@ public:
   char buffer3[MAX_PATH];
   if (_getcwd(buffer3,sizeof(buffer3))) {
   std::string cd = buffer3;
+   std::string cd2 = GetContentInstallDir(false);
   if (g_mod_path!="") cd=take_prefix(cd,g_mod_path);
   cd = convert_spaces_to_url_encoding(cd);
+  cd2 = convert_spaces_to_url_encoding(cd2);
   ii.url = deploy_replace_string(ii.url,"%CD%",cd);
   ii.url = deploy_replace_string(ii.url,"%cd%",cd);
   ii.url = deploy_replace_string(ii.url,"$(pwd)",cd);
   ii.url = deploy_replace_string(ii.url,"$(PWD)",cd);
+  ii.url = deploy_replace_string(ii.url,"$(instdir)",cd2);
+  ii.url = deploy_replace_string(ii.url,"$(INSTDIR)",cd2);
   }
 #endif
 #ifdef LINUX
