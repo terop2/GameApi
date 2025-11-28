@@ -12,6 +12,7 @@ cp ../deploytool/deploytool gameapi-builder_1.0-$1/usr/bin/gameapi_deploytool
 cp ../libGameApi.so gameapi-builder_1.0-$1/usr/lib/libGameApi.so
 strip gameapi-builder_1.0-$1/usr/bin/gameapi-builder
 strip gameapi-builder_1.0-$1/usr/lib/libGameApi.so
+cp -r ../gameapi_content gameapi-builder_1.0-$1/usr/share/
 cp atlas0.txt gameapi-builder_1.0-$1/usr/share/atlas0.txt
 cp atlas1.txt gameapi-builder_1.0-$1/usr/share/atlas1.txt
 cp atlas2.txt gameapi-builder_1.0-$1/usr/share/atlas2.txt
