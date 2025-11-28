@@ -1,4 +1,17 @@
 
+
+STEAM_ENABLE ?= no
+STEAM_PATH ?= c:\users\terop\cvs\steam\sdk
+
+ifeq ($(STEAM_ENABLE),yes)
+STEAM_CFLAGS=-DSTEAM -DSTEAM_DEPLOY -I$(STEAM_PATH)/public
+STEAM_LIBS=-L$(STEAM_PATH)/redistributable_bin/win64 -lsteam_api64
+else
+STEAM_CFLAGS=
+STEAM_LIBS=
+endif
+
+
 all:
-	g++ -DWINDOWS -g -ggdb -std=c++17 test.cpp -L. -L.. -I.. -lgmon -lGameApi -pthread -lDbgHelp -lole32 -levr -lpropsys -lmfplat -lmfreadwrite -lmf -lmfuuid -lshlwapi -luuid -lopengl32 
+	g++ $(STEAM_CFLAGS) -DWINDOWS -g -ggdb -std=c++17 test.cpp -L. -L.. -I.. -lgmon -lGameApi -pthread -lDbgHelp -lole32 -levr -lpropsys -lmfplat -lmfreadwrite -lmf -lmfuuid -lshlwapi -luuid -lopengl32 $(STEAM_LIBS) 
 
