@@ -58,7 +58,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "load_gameapi_zip2",
 			 { "ev", "zip_url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "https://meshpage.org/assets/" },
+			 { "ev", "https://meshpage.org/assets/test.zip" },
 			 "HML", "mainloop_api", "load_zip2"));
 #endif
 #if (ALL==1)||(LOAD_ZIP==1)
@@ -66,7 +66,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 "load_gameapi_zip",
 			 { "ev", "zip_url" },
 			 { "EveryApi&", "std::string" },
-			 { "ev", "https://meshpage.org/assets/" },
+			 { "ev", "https://meshpage.org/assets/test.zip" },
 			 "ML", "mainloop_api", "load_zip"));
 #endif
   /*
