@@ -4128,7 +4128,14 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef STEAM
-  gameapi_temp_dir=".";
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+    std::string cd = std::string("\"") + std::string(buffer3) + std::string("\"");
+    // cd = std::string("\"") + "c:\\users\\terop\\terop's GameApi Builder" + std::string("\"");
+  gameapi_temp_dir=cd;
+  }
+#endif
 #endif
 
   

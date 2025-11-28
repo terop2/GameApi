@@ -8,6 +8,7 @@ copy ..\..\display\gameapi_2.html editor\gameapi_2.html
 copy ..\..\display\gameapi_3.html editor\gameapi_3.html
 copy ..\..\display\gameapi_3_seamless.html editor\gameapi_3_seamless.html
 copy ..\..\zip\sed.exe editor\sed.exe
+copy c:\windows\system32\tar.exe editor/tar.exe
 copy ..\deploy.bat editor\deploy.bat
 copy ..\freetype.dll editor\freetype.dll
 copy ..\pthreadGC2.dll editor\pthreadGC2.dll

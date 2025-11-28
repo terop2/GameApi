@@ -1,4 +1,17 @@
 
+STEAM_DEPLOY_ENABLE ?= no
+STEAM_PATH ?= c:\users\terop\cvs\steam\sdk
+
+ifeq ($(STEAM_DEPLOY_ENABLE),yes)
+STEAM_APPID ?= 4181720
+STEAM_CFLAGS=-DSTEAM -DSTEAM_DEPLOY -I$(STEAM_PATH)/public -DSTEAM_APP_ID=$(STEAM_APPID)
+STEAM_LIBS=-L$(STEAM_PATH)/redistributable_bin/win64 -lsteam_api64
+else
+STEAM_CFLAGS=
+STEAM_LIBS=
+endif
+
+
 all:
 	@echo "  LD   cmdline/gameapi_cmdline"
-	@g++ test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi
+	@g++ $(STEAM_CFLAGS) test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi $(STEAM_LIBS)

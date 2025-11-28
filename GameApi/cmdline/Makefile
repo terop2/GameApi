@@ -13,7 +13,7 @@ ifeq ($(DEBUG),address)
 ADDRESS=-fsanitize=address
 endif
 
-STEAM_DEPLOY_ENABLE ?= yes
+STEAM_DEPLOY_ENABLE ?= no
 STEAM_PATH ?= /home/terop/cvs/steam/sdk
 
 ifeq ($(STEAM_DEPLOY_ENABLE),yes)

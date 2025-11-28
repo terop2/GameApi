@@ -167,6 +167,7 @@
 <Feature Id='Complete' Level='1'>
     <ComponentRef Id='MainExecutable' />
     <ComponentRef Id='CurlExecutable' />
+    <ComponentRef Id='gameapi_content' />
     <ComponentRef Id='ProgramMenuDir' />
     <ComponentRef Id='CreateTestFolder' />
 </Feature>

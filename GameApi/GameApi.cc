@@ -22215,6 +22215,16 @@ std::vector<std::string> get_persistent_ids(std::string code)
 }
 
 
+std::string remove_quotes(std::string s)
+{
+  if (s.size()<3) return s;
+  if (s[0]=='\"' && s[s.size()-1]=='\"')
+    {
+      return s.substr(1,s.size()-2);
+    }
+  return s;
+}
+
 
 bool g_update_download_bar = false;
 class SaveDeployAsync : public ASyncTask
@@ -22417,7 +22427,7 @@ public:
 	  std::cout << curl_string << std::endl;
       if (gameapi_temp_dir!="@")
 	{
-	  curl_string = deploy_replace_string(curl_string,"%TEMP%",gameapi_temp_dir);
+	  curl_string = deploy_replace_string(curl_string,"%TEMP%",remove_quotes(gameapi_temp_dir));
 	}
 
 
@@ -22493,7 +22503,7 @@ public:
       std::string home = getenv("TEMP");
       if (gameapi_temp_dir!="@")
 	{
-	  home=gameapi_temp_dir;
+	  home=remove_quotes(gameapi_temp_dir);
 	}
 
       std::vector<std::string> scripts = find_script_filenames(home+"\\_gameapi_builder\\deploy\\",htmlfile);
@@ -22547,7 +22557,7 @@ public:
       std::string home = getenv("TEMP");
        if (gameapi_temp_dir!="@")
 	{
-	  home = gameapi_temp_dir;
+	  home = remove_quotes(gameapi_temp_dir);
 	}
 
       std::fstream ss2((home + "/_gameapi_builder/gameapi_date.html").c_str(), std::ofstream::out);
@@ -22645,10 +22655,10 @@ public:
     case 6:
       {
       	std::cout << "Step #8: Deploying.." << std::endl;
-      std::string dep = "deploy.bat";
-      std::string line5 = dep + " %TEMP%\\_gameapi_builder\\gameapi_display.zip";
+      std::string dep = "call deploy.bat";
+      std::string line5 = dep + " \"%TEMP%\\_gameapi_builder\\gameapi_display.zip\"";
       if (gameapi_temp_dir!="@") {
-	  line5 = deploy_replace_string(line5,"%TEMP%",gameapi_temp_dir);
+	line5 = deploy_replace_string(line5,"%TEMP%",remove_quotes(gameapi_temp_dir));
       }
       
       bool is_seamless = deploy_find(h2_script, "ev.mainloop_api.scene_transparency");
@@ -22657,8 +22667,9 @@ public:
       } else { line5+=" noseamless"; }
       if (gameapi_temp_dir!="@")
 	{
-	  line5 += std::string(" ") + gameapi_temp_dir; 
+	  line5 += std::string(" \"") + remove_quotes(gameapi_temp_dir) + std::string("\""); 
 	}
+      std::cout << "Executing cmd: " << line5 << std::endl;
       int val = system(line5.c_str());
       // ... TODO, HOW TO CREATE TAR.GZ AND ZIP FILES WITH CORRECT CONTENT.
 
