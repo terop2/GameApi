@@ -40,6 +40,8 @@
 </File>
 <File Id='zip.exe' Name='zip.exe' DiskId='1' Source='editor/zip.exe' KeyPath='no'>
 </File>
+<File Id='unzip.exe' Name='unzip.exe' DiskId='1' Source='editor/unzip.exe' KeyPath='no'>
+</File>
 <File Id='bzip2.dll' Name='bzip2.dll' DiskId='1' Source='editor/bzip2.dll' KeyPath='no'>
 </File>
 <File Id='deploy' Name='deploy.bat' DiskId='1' Source='editor/deploy.bat' KeyPath='no'>
