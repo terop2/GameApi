@@ -44,5 +44,5 @@ if NOT "%P2%"=="seamless" (
 )
 copy "%TEMP%\_gameapi_builder\get_file_size.php" "%TEMP%\_gameapi_builder\deploy\get_file_size.php"
 cd ..
-powershell Compress-Archive * gameapi_deploy.zip
+"%OLDDIR%\zip.exe" -r gameapi_deploy.zip *
 :END
