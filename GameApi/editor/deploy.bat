@@ -1,15 +1,48 @@
 @echo off
-if NOT "%3"=="" set "TEMP=%3"
-if "%1"=="" ECHO deploy path_to_zip_file
-if "%1"=="" GOTO END
+set "P3=%3"
+set "P2=%2"
+set "P1=%1"
+set "P1=%P1:"=%"
+set "P2=%P2:"=%"
+set "P3=%P3:"=%"
+if NOT "%P3%"=="" set "TEMP=%P3%"
+if "%P1%"=="" ECHO deploy path_to_zip_file
+if "%P1%"=="" GOTO END
 set "OLDDIR=%CD%"
-cd %TEMP%\_gameapi_builder/deploy/engine
-tar -xf %1
+IF EXIST "%OLDDIR%\sed.exe" (
+   echo "Sed found."
+) else (
+   set "OLDDIR=."
+)
+cd "%TEMP%\_gameapi_builder/deploy/engine"
+set "ZIPFILE=%P1%"
+"%OLDDIR%\tar.exe" -xf "%ZIPFILE%"
 type gameapi.js |"%OLDDIR%\sed.exe" s@web_page@engine/web_page@ >gameapi2.js
 move gameapi2.js gameapi.js
-if "%2"=="seamless" type %TEMP%\_gameapi_builder\gameapi_0_seamless.html %TEMP%\_gameapi_builder\gameapi_homepage.html %TEMP%\_gameapi_builder\gameapi_1.html %TEMP%\_gameapi_builder\gameapi_script.html %TEMP%\_gameapi_builder\gameapi_2.html %TEMP%\_gameapi_builder\gameapi_date.html %TEMP%\_gameapi_builder\gameapi_3_seamless.html >%TEMP%\_gameapi_builder\deploy\display.php
-if NOT "%2"=="seamless" type %TEMP%\_gameapi_builder\gameapi_0.html %TEMP%\_gameapi_builder\gameapi_homepage.html %TEMP%\_gameapi_builder\gameapi_1.html %TEMP%\_gameapi_builder\gameapi_script.html %TEMP%\_gameapi_builder\gameapi_2.html %TEMP%\_gameapi_builder\gameapi_date.html %TEMP%\_gameapi_builder\gameapi_3.html >%TEMP%\_gameapi_builder\deploy\display.php
-copy %TEMP%\_gameapi_builder\get_file_size.php %TEMP%\_gameapi_builder\deploy\get_file_size.php
+set "OUTPUT=%TEMP%\_gameapi_builder\deploy\display.php"
+if "%P2%"=="seamless" (
+> "%OUTPUT%" (
+   type "%TEMP%\_gameapi_builder\gameapi_0_seamless.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_homepage.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_1.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_script.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_2.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_date.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_3_seamless.html" 
+   )
+)
+if NOT "%P2%"=="seamless" (
+> "%OUTPUT%" (
+   type "%TEMP%\_gameapi_builder\gameapi_0.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_homepage.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_1.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_script.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_2.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_date.html" 
+   type "%TEMP%\_gameapi_builder\gameapi_3.html" 
+   )
+)
+copy "%TEMP%\_gameapi_builder\get_file_size.php" "%TEMP%\_gameapi_builder\deploy\get_file_size.php"
 cd ..
-powershell Compress-Archive * gameapi_deploy.zip
+"%OLDDIR%\zip.exe" -r gameapi_deploy.zip *
 :END

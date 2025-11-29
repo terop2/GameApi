@@ -4128,6 +4128,18 @@ int main(int argc, char *argv[]) {
 #endif
 
 #ifdef STEAM
+#ifdef WINDOWS
+  char buffer3[MAX_PATH];
+  if (_getcwd(buffer3,sizeof(buffer3))) {
+    std::string cd = std::string("\"") + std::string(buffer3) + std::string("\"");
+    // cd = std::string("\"") + "c:\\users\\terop\\terop's GameApi Builder" + std::string("\"");
+  gameapi_temp_dir=cd;
+  }
+#endif
+#endif
+
+  
+#ifdef STEAM
 
 putenv((char*)"SteamAppId=4181720");      // fake that Steam launched us
 putenv((char*)"SteamGameId=4181720");     // same

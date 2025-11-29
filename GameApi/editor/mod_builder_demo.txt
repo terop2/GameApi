@@ -67,15 +67,15 @@ test
 (779,2141)bm_url uid52502442 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/bld26.png:false:-1:1262665664
 (885,1812)bm_url uid52502443 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/bld22.png:false:-1:1262665664
 (881,1926)bm_url uid52502444 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/bld24.png:false:-1:1262665664
-(178,-591)new uid52502445 0 0 1 sx:*700:false:-1:-289391936 sy:*200:false:-1:-289391936 color:*00000000:false:-1:-289391936
+(178,-591)new uid52502445 0 0 1 sx:*700:false:-1:-289391936 sy:*400:false:-1:-289391936 color:*00000000:false:-1:-289391936
 (184,-457)FI_load uid52502446 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/ChunkFive-Regular.otf:false:-1:-289391936 sx:*50:false:-1:-289391936 sy:*50:false:-1:-289391936
 (306,-459)FI_drawtext uid52502447 0 0 1 font:*uid52502446:false:-1:0 str:*Meshpage.org:false:-1:-289391936 x_gap:*5:false:-1:-289391936 line_height:*30:false:-1:-289391936
 (319,-341)FI_drawtext uid52502448 0 0 1 font:*uid52502449:false:-1:0 str:*(terop.itch.io/gameapi-builder):false:-1:-289391936 x_gap:*5:false:-1:-289391936 line_height:*30:false:-1:-289391936
 (185,-329)FI_load uid52502449 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/ChunkFive-Regular.otf:false:-1:-289391936 sx:*20:false:-1:-289391936 sy:*20:false:-1:-289391936
 (458,-549)blit uid52502450 0 0 1 bg:*uid52502445:false:-1:0 orig:*uid52502447:false:-1:0 x:*0:false:-1:-289391936 y:*0:false:-1:-289391936
 (598,-419)blit uid52502451 0 0 1 bg:*uid52502450:false:-1:0 orig:*uid52502448:false:-1:0 x:*0:false:-1:-289391936 y:*100:false:-1:-289391936
-(717,-416)bm_render uid52502452 0 0 1 ev:*ev:false:-1:-289391936 bm:*uid52502451:false:-1:0
-(935,-421)bm_2d uid52502453 0 0 1 ev:*ev:false:-1:-289391936 ml:*uid52502454:false:-1:0 tl_x:*0.0:false:-1:-289391936 tl_y:*0.0:false:-1:-289391936 br_x:*800.0:false:-1:-289391936 br_y:*600.0:false:-1:-289391936
+(862,-557)bm_render uid52502452 0 0 1 ev:*ev:false:-1:-289391936 bm:*uid1888491110:false:-1:0
+(935,-421)bm_2d uid52502453 0 0 1 ev:*ev:false:-1:-289391936 ml:*uid52502454:false:-1:0 tl_x:*0:false:-1:-289391936 tl_y:*0:false:-1:-289391936 br_x:*800:false:-1:-289391936 br_y:*600:false:-1:-289391936
 (834,-327)move_ml uid52502454 0 0 1 ev:*ev:false:-1:-289391936 ml:*uid52502452:false:-1:0 mn:*uid52502456:false:-1:0 clone_count:*1:false:-1:-289391936 time_delta:*10.0:false:-1:-289391936
 (554,-210)mn_empty uid52502455 0 0 1
 (686,-209)mn_translate uid52502456 0 0 1 next:*uid52502455:false:-1:0 dx:*300:false:-1:-289391936 dy:*300:false:-1:-289391936 dz:*0:false:-1:-289391936
@@ -90,3 +90,4 @@ test
 (1495,488)run_window uid1823808571 0 0 1 ev:*ev:false:-1:-635422016 ml:*uid959068008:false:-1:0 logo:*false:false:-1:-635422016 fpscounter:*false:false:-1:-635422016 start_time:*0.0:false:-1:-635422016 duration:*100000.0:false:-1:-635422016
 (1297,378)t_time uid1823808572 0 0 1 duration:*2200:false:-1:-635422016 link:*uid959068016:false:-1:0 show:*uid1823808565:false:-1:0
 (1632,2103)run_window uid1942743188 0 0 1 ev:*ev:false:-1:-1509934400 ml:*uid1823808565:false:-1:0 logo:*false:false:-1:-1509934400 fpscounter:*false:false:-1:-1509934400 start_time:*0.0:false:-1:-1509934400 duration:*100000.0:false:-1:-1509934400
+(686,-553)bm_fullscreen uid1888491110 0 0 1 ev:*ev:false:-1:267142864 orig:*uid52502451:false:-1:0

@@ -38,6 +38,10 @@
 </File>
 <File Id='sed' Name='sed.exe' DiskId='1' Source='editor/sed.exe' KeyPath='no'>
 </File>
+<File Id='zip.exe' Name='zip.exe' DiskId='1' Source='editor/zip.exe' KeyPath='no'>
+</File>
+<File Id='bzip2.dll' Name='bzip2.dll' DiskId='1' Source='editor/bzip2.dll' KeyPath='no'>
+</File>
 <File Id='deploy' Name='deploy.bat' DiskId='1' Source='editor/deploy.bat' KeyPath='no'>
 </File>
 <File Id='mod' Name='mod.txt' DiskId='1' Source='mod.txt' KeyPath='no'>
@@ -111,9 +115,25 @@
 </File>
 <File Id='zlibDLL' Name='zlib1.dll' DiskId='1' Source='zlib1.dll' KeyPath='no'>
 </File>
-<File Id='README.TXT' Name="gameapi_content\README.TXT" DiskId='1' Source='gameapi_content\README.TXT' KeyPath='no'>
+</Component>
+<Directory Id='gameapicontentdir' Name='gameapi_content'>
+<Component Id='gameapi_content' Guid='5b32d0c0-83d8-40ef-a5fc-89494e739dc0'>
+<File Id='README.TXT' Name="README.TXT" DiskId='1' Source='editor\gameapi_content\README.TXT' KeyPath='no'>
+</File>
+<File Id='Chunkfive.otf' Name="Chunkfive.otf" DiskId='1' Source='editor\gameapi_content\Chunkfive.otf' KeyPath='no'>
+</File>
+<File Id='examplemap.txt' Name="examplemap.txt" DiskId='1' Source='editor\gameapi_content\examplemap.txt' KeyPath='no'>
+</File>
+<File Id='example_expr_e.mp' Name="example_expr_e.mp" DiskId='1' Source='editor\gameapi_content\example_expr_e.mp' KeyPath='no'>
+</File>
+<File Id='map.txt' Name="map.txt" DiskId='1' Source='editor\gameapi_content\map.txt' KeyPath='no'>
+</File>
+<File Id='move.sm' Name="move.sm" DiskId='1' Source='editor\gameapi_content\move.sm' KeyPath='no'>
+</File>
+<File Id='steam_fix1.png' Name="steam_fix1.png" DiskId='1' Source='editor\gameapi_content\steam_fix1.png' KeyPath='no'>
 </File>
 </Component>
+</Directory>
 <Directory Id='curldir' Name='curl'>
 <Component Id='CurlExecutable' Guid='79581D3E-A778-4897-B679-093F7FDB9CB6'>
 <File Id='curl' Name='curl.exe' DiskId='1' Source='curl/curl.exe' KeyPath='no'>
@@ -151,6 +171,7 @@
 <Feature Id='Complete' Level='1'>
     <ComponentRef Id='MainExecutable' />
     <ComponentRef Id='CurlExecutable' />
+    <ComponentRef Id='gameapi_content' />
     <ComponentRef Id='ProgramMenuDir' />
     <ComponentRef Id='CreateTestFolder' />
 </Feature>
