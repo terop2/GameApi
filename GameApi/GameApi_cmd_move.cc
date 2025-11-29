@@ -93,7 +93,7 @@ std::vector<GameApiItem*> moveapi_functions()
 			 "mn_statemachine",
 			 { "mn", "url", "states", "x_speeds", "y_speeds", "z_speeds" },
 			 { "MN", "std::string", "std::string", "std::string", "std::string", "std::string" },
-			 { "", "http://meshpage.org/assets/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4", "0.0&-1.0&0.0&0.0&1.0", "0.0&0.0&-1.0&1.0&0.0", "0.0&0.0&0.0&0.0&0.0" },
+			 { "", "file://$(instdir)/move.sm@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "s0&s1&s2&s3&s4", "0.0&-1.0&0.0&0.0&1.0", "0.0&0.0&-1.0&1.0&0.0", "0.0&0.0&0.0&0.0&0.0" },
 			 "MN", "mainloop_api", "state_speed_movement"));
 #endif
 #if (ALL==1)||(SCALE_PROGRESS==1)

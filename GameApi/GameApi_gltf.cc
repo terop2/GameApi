@@ -14929,7 +14929,7 @@ std::string get_zip_indexhtml_file(std::string zipfilename)
     if (strlen(filename)==0) continue;
     std::string filename2(filename);
 
-    if (filename2=="index.html") {
+    if (filename2=="index.html"||filename2=="display.php") {
       size_t sz=0;
       void *ptr = mz_zip_reader_extract_to_heap(&pZip, i, &sz, 0);
       std::string res = std::string((char*)ptr,((char*)ptr)+sz);

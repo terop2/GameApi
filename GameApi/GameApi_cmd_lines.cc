@@ -9,7 +9,7 @@ std::vector<GameApiItem*> linesapi_functions()
 			 "li_url",
 			 { "url" },
 			 { "std::string" },
-			 { "https://meshpage.org/assets/li_example.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
+			 { "file://$(instdir)/li_example.mp@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0" },
 			 "LI", "lines_api", "li_url"));
 #endif
 #if (ALL==1)||(POINT_ARRAY==1)
