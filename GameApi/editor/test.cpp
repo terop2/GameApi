@@ -4111,7 +4111,7 @@ namespace cv {
 #endif
 
 
-
+void save_mod_txt_from_script_file2(GameApi::EveryApi &ev, std::string input_script_filename, std::string output_mod_txt_filename);
 
 int main(int argc, char *argv[]) {
 #ifdef LINUX
@@ -4203,6 +4203,11 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	g_mod_path = filename;
 #endif
 	std::vector<std::string> filenames;
+
+	bool script = false;
+	std::string script_filename="";
+	bool o_opt = false;
+	std::string o_filename="";
 	
 	//std::cout << "Loading:" << filename << std::endl;
 	for(int i=1;i<argc;i++)
@@ -4218,6 +4223,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		std::cout << "  --vr vive    (choose vive for vr)" << std::endl;
 		std::cout << "  --dump (list all functions)" << std::endl;
 		std::cout << "  --tempdir <dir> (choose temporary dir)" << std::endl;
+		std::cout << "  --script script.txt -o mod.txt  (convert from script to mod.txt)" << std::endl;
 		exit(0);
 	      }
 	    if (std::string(argv[i])=="--dump_count")
@@ -4262,6 +4268,18 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		screen_x = 800;
 		screen_y = 600;
 	      }
+	    if (std::string(argv[i])=="--script")
+	      {
+		script_filename=std::string(argv[i+1]);
+		script = true;
+		i++;
+	      }
+	    if (std::string(argv[i])=="-o")
+	      {
+		o_filename=std::string(argv[i+1]);
+		o_opt=true;
+		i++;
+	      }
 	    if (std::string(argv[i])=="--vr")
 	      {
 		g_vr_enable = true;
@@ -4298,6 +4316,24 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 		i++;
 	      }
 	  }
+	if (script && o_opt)
+	  {
+	    save_mod_txt_from_script_file2(ev,script_filename,o_filename);
+	    std::cout << "Done!" << std::endl;
+	    exit(0);
+	  }
+	if (script && !o_opt)
+	  {
+	    std::cout << "--script used without -o option! exiting..." << std::endl;
+	    exit(1);
+	  }
+	if (o_opt && !script)
+	  {
+	    std::cout << "-o used without --script option! exiting..." << std::endl;
+	    exit(1);
+	  }
+	
+	
 	if (filenames.size()==0) filenames.push_back(filename);
       bool has_wayland = false;
       

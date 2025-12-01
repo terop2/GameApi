@@ -6084,6 +6084,256 @@ CodeGenLine parse_codegen_line(std::string line)
   return line2;
 }
 
+GameApiParam convert_param(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &lines, const std::vector<GameApiLine> &lines2, std::string api_name, std::string func_name, int i, std::string param, int j)
+{
+  static std::vector<GameApiItem*> funcs = all_functions(ev);
+
+  int s = funcs.size();
+  std::string param_name;
+  for(int ii=0;ii<s;ii++)
+    {
+      GameApiItem *item = funcs[ii];
+      if (item->ApiName(0)==api_name && item->FuncName(0)==func_name)
+	{
+	  param_name=item->ParamName(0,i);
+	  break;
+	}
+    }
+  if (param_name=="") std::cout << "Warning: " << api_name << "::" << func_name << " param " << i << " name not found." << std::endl;
+
+  int s2 = lines.size();
+  const CodeGenLine *res_line=0;
+  const GameApiLine *res_line2=0;
+  for(int i2=0;i2<s2;i2++)
+    {
+      const CodeGenLine &line = lines[i2];
+      if (param==line.label_num)
+	{
+	  res_line = &lines[i2];
+	  res_line2 = &lines2[i2];
+	}
+    }
+  
+  
+  GameApiParam res;
+  res.param_name = param_name;
+  res.value = res_line?res_line2->uid:param;
+  res.is_array = res_line && res_line->return_type.size()>0 && res_line->return_type[0]=='[' && res_line->return_type[res_line->return_type.size()-1]==']' ? true : false;
+  res.array_return_target = res.is_array ? const_cast<GameApiLine*>(res_line2) : 0; // GameApiLine
+  res.j = j;
+  return res;
+}
+
+struct CodeGenVectors {
+  std::vector<std::string> params;
+  std::vector<int> j;
+};
+
+
+GameApiLine convert_line(GameApi::EveryApi &ev, std::vector<CodeGenLine> &lines, std::vector<GameApiLine> &lines2, const std::vector<CodeGenVectors> &vecs, CodeGenLine l, int i)
+{
+  static int uid = 3333;
+  uid++;
+
+  std::stringstream ss; ss << "uid" << uid;
+
+  int pos = lines2.size();
+  int pos_x = pos % 6;
+  int pos_y = pos / 6;
+  std::cout << "POS:" << pos << " " << pos_x << " " << pos_y << std::endl;
+
+
+  
+  float start_x = 200.0;
+  float start_y = 200.0;
+  
+  float delta_x = 200.0;
+  float delta_y = 200.0;
+
+  static std::vector<GameApiItem*> funcs = all_functions(ev);
+  int s2 = funcs.size();
+  std::string module_name = "";
+  for(int k=0;k<s2;k++)
+    {
+      GameApiItem *item = funcs[k];
+      if (item->ApiName(0)==l.api_name && item->FuncName(0)==l.func_name)
+	{
+	  module_name = item->Name(0);
+	  break;
+	}
+    }
+
+  
+  GameApiLine res;
+  res.x = start_x + pos_x*delta_x;
+  res.y = start_y + pos_y*delta_y;
+  res.module_name = module_name;
+  res.uid = ss.str();
+  res.j = i<vecs.size()&&vecs[i].j.size()>0?vecs[i].j[0]:0;
+  res.sz = i<vecs.size()?vecs[i].j.size():1;
+  res.array_return = l.return_type.size()>0 && l.return_type[0]=='[' && l.return_type[l.return_type.size()-1]==']';
+
+  int s = l.params.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string param = l.params[i];
+      //std::string link = l.params_linkage[i];
+      int j = l.j[i];
+
+      res.params.push_back(convert_param(ev,lines,lines2,l.api_name,l.func_name,i,param,j));
+      
+    }
+  return res;
+}
+
+std::vector<GameApiLine> convert_script(GameApi::EveryApi &ev, std::string script);
+
+GameApiFunction convert_lines_to_functions(std::vector<GameApiLine> lines)
+{
+  GameApiFunction res;
+  res.function_name = "test";
+  res.param_names = std::vector<std::string>();
+  res.param_types = std::vector<std::string>();
+  res.lines = lines;
+  return res;
+}
+GameApiModule convert_function_to_module(GameApiFunction f)
+{
+  GameApiModule m;
+  m.funcs.push_back(f);
+  return m;
+}
+
+void save_gameapi(const GameApiModule &mod, std::string filename);
+
+void save_mod_txt_from_script_file(GameApi::EveryApi &ev, std::string input_script_filename, std::string output_mod_txt_filename)
+{
+  std::ifstream input(input_script_filename);
+  std::stringstream buffer;
+  buffer << input.rdbuf();
+  std::string script = buffer.str();
+  std::vector<GameApiLine> lines = convert_script(ev,script);
+  GameApiFunction f = convert_lines_to_functions(lines);
+  GameApiModule m = convert_function_to_module(f);
+  save_gameapi(m,output_mod_txt_filename);
+}
+
+GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename);
+
+bool line_match(const GameApiLine &l1, const GameApiLine &l2)
+{
+  if (l1.module_name==l2.module_name)
+    {
+      int s1 = l1.params.size();
+      int s2 = l2.params.size();
+      if (s1==s2)
+	{
+	  bool match=true;
+	  for(int k=0;k<s1;k++)
+	    {
+	      if (l1.params[k].value.size()>3 && l1.params[k].value[0]=='u' && l1.params[k].value[1]=='i' && l1.params[k].value[2]=='d')
+		{
+		  if (l1.params[k].value != l2.params[k].value) match=false;
+		}
+	      if (l2.params[k].value.size()>3 && l2.params[k].value[0]=='u' && l2.params[k].value[1]=='i' && l2.params[k].value[2]=='d')
+		{
+		  if (l1.params[k].value != l2.params[k].value) match=false;
+		}
+	    }
+	  return match;
+	}
+    }
+  return false;
+}
+
+
+void transfer_x_y_from_old_mod_txt_to_new_one(GameApi::EveryApi &ev,
+					      std::string old_mod_filename,
+					      GameApiModule &mod)
+{
+  GameApiModule mod0 = load_gameapi(ev,old_mod_filename);
+  GameApiFunction &f0 = mod0.funcs[0];
+  GameApiFunction &f1 = mod.funcs[0];
+  int s = f1.lines.size();
+  int cursor = 0;
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine &l1 = f1.lines[i];
+      GameApiLine &l2 = f0.lines[cursor];
+      bool match = line_match(l1,l2);
+      if (match) {
+	l1.x = l2.x;
+	l1.y = l2.y;
+	cursor++;
+	continue;
+      }
+      int diff = 1;
+    repeat:
+      {
+	bool done = false;
+      if (cursor+diff<f0.lines.size()) {
+	GameApiLine &l2d = f0.lines[cursor+diff];
+	bool match1 = line_match(l1,l2d);
+	if (match1)
+	  {
+	    l1.x = l2d.x;
+	    l1.y = l2d.y;
+	    cursor+=diff;
+	    continue;
+	  }
+	done = true;
+      }
+      if (i+diff<f1.lines.size()) {
+	GameApiLine &l1d = f1.lines[i+diff];
+	bool match2 = line_match(l1d,l2);
+	if (match2)
+	  {
+	    l1d.x = l2.x;
+	    l1d.y = l2.y;
+	    i+=diff-1;
+	    continue;
+	  }
+	done = true;
+      }
+      if (!done) continue;
+      }
+      // no match found...
+      diff++;
+      goto repeat;
+     
+    }
+}
+
+IMPORT void save_mod_txt_from_script_file2(GameApi::EveryApi &ev, std::string input_script_filename, std::string output_mod_txt_filename)
+{
+  if (!file_exists(output_mod_txt_filename)) {
+    std::ifstream input(input_script_filename);
+    std::stringstream buffer;
+    buffer << input.rdbuf();
+    std::string script = buffer.str();
+    std::vector<GameApiLine> lines = convert_script(ev,script);
+    GameApiFunction f = convert_lines_to_functions(lines);
+    GameApiModule m = convert_function_to_module(f);
+    save_gameapi(m,output_mod_txt_filename);
+  } else {
+    std::ifstream input(input_script_filename);
+    std::stringstream buffer;
+    buffer << input.rdbuf();
+    std::string script = buffer.str();
+    std::vector<GameApiLine> lines = convert_script(ev,script);
+    GameApiFunction f = convert_lines_to_functions(lines);
+    GameApiModule m = convert_function_to_module(f);
+
+    transfer_x_y_from_old_mod_txt_to_new_one(ev,
+					      output_mod_txt_filename,
+					     m);
+    save_gameapi(m,output_mod_txt_filename);
+  }
+}
+
+
+
+
 std::string striphomepage(std::string url);
 
 std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
@@ -6485,10 +6735,6 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
     return vec;
 }
 
-struct CodeGenVectors {
-  std::vector<std::string> params;
-  std::vector<int> j;
-};
 
 std::pair<std::string, int> parse_multiple_return(std::string param)
 {
@@ -6617,6 +6863,32 @@ void add_params_linkage(std::vector<CodeGenLine> &lines, std::vector<CodeGenVect
 	  
     }
 }
+
+std::vector<GameApiLine> convert_script(GameApi::EveryApi &ev, std::string script)
+{
+  std::stringstream ss(script);
+  std::string line;
+  std::vector<CodeGenLine> lines;
+  std::vector<GameApiLine> lines2;
+  while(std::getline(ss,line))
+    {
+      CodeGenLine l = parse_codegen_line(line);
+      lines.push_back(l);
+    }
+  std::vector<CodeGenVectors> vecs;
+  bool error=false;
+  std::map<std::string,int> env_map;
+  add_params_linkage(lines,vecs,error,env_map);
+  if (error) { return std::vector<GameApiLine>(); }
+  int s = lines.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApiLine l2 = convert_line(ev,lines,lines2,vecs,lines[i], i);
+      lines2.push_back(l2);
+    }
+  return lines2;
+}
+
 
 void link_api_items(std::vector<CodeGenLine> &vec, std::vector<GameApiItem*> functions)
 {
