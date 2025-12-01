@@ -2312,3 +2312,4 @@ EXPORT void GameApi::WModApi::insert_to_canvas(GameApi::EveryApi &ev, GuiApi &gu
     }
   connect_clicks_p = connect_clicks;
 }
+
