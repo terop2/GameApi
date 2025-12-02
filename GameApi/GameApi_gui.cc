@@ -6120,6 +6120,37 @@ GameApiParam convert_param(GameApi::EveryApi &ev, const std::vector<CodeGenLine>
   res.param_name = param_name;
   res.value = res_line?res_line2->uid:param;
 
+  int p0 = find_str(param,"[");
+  int p1 = find_str(param,"]");
+  if (p0!=-1 && p1!=-1)
+    { // multiple returns
+      std::string label = param.substr(0,p0);
+      std::string index = param.substr(p0+1,p1-p0-1);
+      int index2 =0;
+      
+      std::stringstream ss(index);
+      ss >> index2;
+      std::string res_param="";
+
+      int s2 = lines.size();
+      const CodeGenLine *res_line=0;
+      const GameApiLine *res_line2=0;
+      for(int i2=0;i2<s2;i2++)
+	{
+	  const CodeGenLine &line = lines[i2];
+	  if (label==line.label_num)
+	    {
+	      res_line = &lines[i2];
+	      res_line2 = &lines2[i2];
+	      res_param = res_line2->uid;
+	    }
+	}
+
+      res.value = res_param;
+      j=index2;
+    }
+
+  
   int pos = find_str(param,"std::vector<");
   int posA = find_str(param,"std::vector&lt;");
   if (pos!=-1 || posA!=-1)
