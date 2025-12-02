@@ -6083,6 +6083,7 @@ CodeGenLine parse_codegen_line(std::string line)
   //std::cout << "CodeGenLine: " << line2.api_name << " " << line2.func_name << " " << line2.params << std::endl;
   return line2;
 }
+int find_str(std::string val, std::string repl);
 
 GameApiParam convert_param(GameApi::EveryApi &ev, const std::vector<CodeGenLine> &lines, const std::vector<GameApiLine> &lines2, std::string api_name, std::string func_name, int i, std::string param, int j)
 {
@@ -6118,6 +6119,70 @@ GameApiParam convert_param(GameApi::EveryApi &ev, const std::vector<CodeGenLine>
   GameApiParam res;
   res.param_name = param_name;
   res.value = res_line?res_line2->uid:param;
+
+  int pos = find_str(param,"std::vector<");
+  int posA = find_str(param,"std::vector&lt;");
+  if (pos!=-1 || posA!=-1)
+    {
+      int delta = 13;
+      if (posA!=-1) delta=16; 
+      int pos0 = find_str(param,">");
+      int pos0b = find_str(param,"&gt;");
+      if (pos0==-1) pos0=pos0b;
+      std::string type = param.substr(pos+delta,pos0-pos-delta);
+
+
+      std::string res_param = "[";
+      // if (delta==15) res_param="std::vector&lt;" + type + "&gt;{";
+      int pos1 = find_str(param,"{");
+      int pos2 = find_str(param,"}");
+      std::string arr_params = param.substr(pos1+1,(pos2-1)-pos1);
+      int pp = 0;
+      std::string rest = arr_params;
+      //std::cout << "ARR PARAMS:" << arr_params << std::endl;
+
+      while((pp=find_str(rest,","))!=-1)
+	{
+	  std::string param = rest.substr(0,pp);
+	  //std::cout << "PARAM:" << param << std::endl;
+
+	  int s2 = lines.size();
+	  const CodeGenLine *res_line=0;
+	  const GameApiLine *res_line2=0;
+	  for(int i2=0;i2<s2;i2++)
+	    {
+	      const CodeGenLine &line = lines[i2];
+	      if (param==line.label_num)
+		{
+		  res_line = &lines[i2];
+		  res_line2 = &lines2[i2];
+		  res_param += res_line2->uid + ",";
+		}
+	    }
+	  rest = rest.substr(pp+1);
+	}
+      std::string param = rest;
+      //std::cout << "PARAM:" << param << std::endl;
+      int s2 = lines.size();
+      const CodeGenLine *res_line=0;
+      const GameApiLine *res_line2=0;
+      for(int i2=0;i2<s2;i2++)
+	{
+	  const CodeGenLine &line = lines[i2];
+	  if (param==line.label_num)
+	    {
+	      res_line = &lines[i2];
+	      res_line2 = &lines2[i2];
+	      res_param += res_line2->uid;
+	    }
+	}
+      res_param+="]";
+      //std::cout << "RESVALUE:" << res_param << std::endl;
+      res.value = res_param;
+    }
+
+  
+
   res.is_array = res_line && res_line->return_type.size()>0 && res_line->return_type[0]=='[' && res_line->return_type[res_line->return_type.size()-1]==']' ? true : false;
   res.array_return_target = res.is_array ? const_cast<GameApiLine*>(res_line2) : 0; // GameApiLine
   res.j = j;
@@ -6140,7 +6205,7 @@ GameApiLine convert_line(GameApi::EveryApi &ev, std::vector<CodeGenLine> &lines,
   int pos = lines2.size();
   int pos_x = pos % 6;
   int pos_y = pos / 6;
-  std::cout << "POS:" << pos << " " << pos_x << " " << pos_y << std::endl;
+  //std::cout << "POS:" << pos << " " << pos_x << " " << pos_y << std::endl;
 
 
   
