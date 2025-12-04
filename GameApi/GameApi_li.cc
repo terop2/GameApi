@@ -61,6 +61,8 @@ EXPORT GameApi::LI GameApi::LinesApi::color_function(LI lines, std::function<uns
   LineCollection *lines2 = find_line_array(e, lines);
   return add_line_array(e, new ColorFunctionLines(lines2, f));
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 class LineCollectionFunction : public LineCollection
 {
@@ -166,6 +168,8 @@ EXPORT GameApi::LI GameApi::LinesApi::from_plane(GameApi::PL plane)
   PlanePoints2d *plane2 = find_plane(e,plane);
   return add_line_array(e, new LinesFromPlane(plane2));
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 EXPORT GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops)
 {
@@ -173,6 +177,8 @@ EXPORT GameApi::LI GameApi::LinesApi::from_points(GameApi::PC points, bool loops
   PointCollection *point_coll = find_pointcoll_array(e,points);
   return add_line_array(e, new ContinuousLines(point_coll, loops));
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 EXPORT GameApi::LI GameApi::LinesApi::from_polygon2(GameApi::P poly1, GameApi::P poly2)
 {
@@ -181,6 +187,8 @@ EXPORT GameApi::LI GameApi::LinesApi::from_polygon2(GameApi::P poly1, GameApi::P
   FaceCollection *p2 = find_facecoll(e, poly2);
   return add_line_array(e, new AnimLines(p1, p2));
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 #if 0
 class SliceLineCollection : public LineCollection
@@ -264,6 +272,8 @@ EXPORT GameApi::LI GameApi::LinesApi::normals_from_polygon(GameApi::P p, float l
   FaceCollection *coll = find_facecoll(e, p);
   return add_line_array(e, new NormalsLineCollection(coll, length));
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 class MatrixLineCollection : public LineCollection
 {
@@ -324,6 +334,8 @@ EXPORT GameApi::LI GameApi::LinesApi::render_slice_2d(GameApi::P p, GameApi::PT 
   Vector *v2 = find_vector(e, u_y);
   return add_line_array(e, new SliceLineCollection(coll,*pp1, *v1, *v2));
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 
 #if 0
@@ -359,6 +371,8 @@ EXPORT GameApi::P GameApi::LinesApi::line_anim(GameApi::P poly, GameApi::LI line
   LineCollection *c = find_line_array(e, lines);
   return add_polygon(e, new LineAnim(*p, *c, val),1);
 #endif
+  GameApi::P p = { -1 };
+  return p;
 }
 EXPORT GameApi::LI GameApi::LinesApi::from_polygon(GameApi::P poly)
 {
@@ -1367,6 +1381,8 @@ EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim(LI lines, float val)
   LineCollection *coll = find_line_array(e, lines);
   return add_points_api_points(e, new LineAnim2(coll, val));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 
 EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim2(LI lines, std::function<float (int)> f)
@@ -1375,6 +1391,8 @@ EXPORT GameApi::PTS GameApi::LinesApi::pts_line_anim2(LI lines, std::function<fl
   LineCollection *coll = find_line_array(e, lines);
   return add_points_api_points(e, new LineAnim3(coll, f));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 
 EXPORT void GameApi::LinesApi::update(LLA la, LI l)
@@ -2319,6 +2337,8 @@ GameApi::LI GameApi::LinesApi::line_pos_mult(float val, LI li)
   LineCollection *lines = find_line_array(e, li);
   return add_line_array(e, new LinePosMult(val, lines));
 #endif
+  GameApi::LI li2 = { -1 };
+  return li2;
 }
 
 class LIOrElem : public LineCollection

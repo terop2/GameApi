@@ -32,6 +32,8 @@ EXPORT GameApi::TRK GameApi::TrackerApi::empty(int numchannels, int numslots)
 #if 0
   return add_tracker(e, new EmptyTracker(numchannels, numslots));
 #endif
+  GameApi::TRK trk = { -1 };
+  return trk;
 }
 
 #if 0
@@ -78,6 +80,8 @@ EXPORT GameApi::TRK GameApi::TrackerApi::audio_slot(TRK orig, int channel, int s
   Tracker *next = find_tracker(e, orig);
   return add_tracker(e, new AudioTracker(next, channel, slot, duration, sample));
 #endif
+  GameApi::TRK trk = { -1 };
+  return trk;
 }
 
 #if 0
@@ -160,6 +164,8 @@ EXPORT GameApi::TRK GameApi::TrackerApi::array(TRK *array, int size)
   env->deletes.push_back(std::shared_ptr<void>(vec));
   return add_tracker(e, new ArrayTracker(&(*vec)[0], size));
 #endif
+  GameApi::TRK trk = { -1 };
+  return trk;
 }
 EXPORT GameApi::TBUF GameApi::TrackerApi::prepare(TRK trk)
 {
@@ -541,6 +547,7 @@ void *setup_midi(const std::vector<unsigned char> &data, const std::vector<unsig
   return (void*)pass;
 #endif
 #endif
+  return 0;
 }
 
 void play_midi(void *ptr)

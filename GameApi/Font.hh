@@ -290,6 +290,7 @@ public:
     //delete ptr;
     //ptr = new ScaleFontCharacter(*cha, scalex, scaley);
     //return ptr;
+    return 0;
   }
 
   virtual int Character(int ch) const { return f.Character(ch); }

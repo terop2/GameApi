@@ -3989,6 +3989,7 @@ EXPORT GameApi::W GameApi::GuiApi::directory_view(std::vector<std::string> dir_i
 
 EXPORT GameApi::W GameApi::GuiApi::asset_view(std::string url_or_filename)
 {
+  GameApi::W w; return w;
 }
 
 

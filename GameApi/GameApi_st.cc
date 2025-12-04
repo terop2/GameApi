@@ -50,6 +50,8 @@ GameApi::TR GameApi::StateChangeApi::linear_1(TR tr, int path_num, std::function
 		 new PFloatRenderer(f,e));
   return add_timerange(e, arr2);
 #endif
+  GameApi::TR tr2 = { -1 };
+  return tr2;
 }
 
 EXPORT GameApi::VV GameApi::StateChangeApi::prepare(TR sc)

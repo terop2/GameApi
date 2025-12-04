@@ -1487,6 +1487,7 @@ public:
     if (i==0) return "pos 0.0 0.0 0.0";
     if (i==1) return "pos 100.0 0.0 100.0";
     if (i==2) return "pos -100.0 0.0 -100.0";
+    return "";
   }
 };
 
@@ -19395,6 +19396,7 @@ public:
 	}
       }
     }
+    return -1;
   }
 private:
   GameApi::Env &e;
@@ -26048,7 +26050,7 @@ public:
       FaceCollection *coll = find_facecoll(env,p2);
       return coll->NumPoints(face);
     }
-
+    return 3;
   }
   virtual Point FacePoint(int face, int point) const
   {

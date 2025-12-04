@@ -89,6 +89,9 @@ EXPORT GameApi::IM GameApi::ImplicitApi::blob(float c,
 #if 0
   return add_implicit(e, new BlobImplicitFunction(c,Point(c_x,c_y,0.0), Point(cc_x, cc_y, 0.0)));
 #endif
+  GameApi::IM im = { -1 };
+  return im;
+  
 }
 
 class TranslateImplicitFunction3d : public ImplicitFunction3d

@@ -472,6 +472,7 @@ public:
     PointCollection *coll = arr.Index(i);
     //c = new SplineCurve(*coll, arr2);
     //return c;
+    return 0;
   }
 
 private:
@@ -616,6 +617,7 @@ private:
       //mv.points = new SelectPoints(mv.arr, i);
       //mv.interpol = new LinearInterpolation(*mv.points, mv.dist);
       //return mv.interpol;
+      return 0;
     }
     LinearMovement &mv;
   };

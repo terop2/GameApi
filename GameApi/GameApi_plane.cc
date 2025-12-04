@@ -70,6 +70,7 @@ bool is_point_inside_polygon(FacesInPlane *coll, int face, Point2d p, bool *enab
   //std::cout << "PolygonFill: " << b << std::endl;
   return b;
 #endif
+  return false;
 }
 
 bool is_line_segment_inside_polygon(FacesInPlane *coll, int face, Point2d line_1, Point2d line_2, bool *enable_array)

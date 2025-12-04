@@ -585,4 +585,5 @@ QMLLoop *create_qml_element(QMLData *dt)
   }
   return new UnknownWithChildren(context,type2,p_vec,vec);
 #endif
+  return 0;
 }
