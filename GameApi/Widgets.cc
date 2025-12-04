@@ -126,4 +126,5 @@ bool TextureWidget::Frame(float time)
     
     return false;
 #endif
+    return false;
   }
