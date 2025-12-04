@@ -10180,6 +10180,23 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF 
   return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color,transparent));
 }
 
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent)
+{
+  GameApi::MS I1=ev.matrices_api.from_points(ms);
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,I1,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
+
+}
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent)
+{
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent));
+
+}
+							  
+
 class GltfMeshAllEnv : public MainLoopItem
 {
 public:
