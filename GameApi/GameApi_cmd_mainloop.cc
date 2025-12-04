@@ -308,6 +308,24 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "1.0","1.0","1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
 			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
 #endif
+#if 0
+#if (ALL==1)||(GLTF_MESH_ALL_ANIM_INST==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim_inst,
+			 "ml_gltf_all_anim_inst",
+			 { "ev", "tf","resize_obj", "pts", "mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent" },
+			 { "EveryApi&", "TF","TF","PTS","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool" },
+			 { "ev", "", "","","1.0","1.0","1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 "ML", "mainloop_api", "gltf_mesh_all_anim_inst"));
+#endif
+#if (ALL==1)||(GLTF_MESH_ALL_ANIM_INST_MATRIX==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim_inst_matrix,
+			 "ml_gltf_all_anim_inst_matrix",
+			 { "ev", "tf","resize_obj", "ms","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent" },
+			 { "EveryApi&", "TF","TF","MS","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool" },
+			 { "ev", "", "","","1.0","1.0","1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true" },
+			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
+#endif
+#endif
 #if (ALL==1)||(GLTF_MESH_ALL_ENV==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_env,
 			 "ml_gltf_all_env",
