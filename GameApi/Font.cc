@@ -79,4 +79,6 @@ BufferRef RenderFont(Font *font, Array<int, int> &text, int zoomlevel)
   // return bitmap
   return ref;
 #endif
+  BufferRef r;
+  return r;
 }

@@ -2484,6 +2484,7 @@ public:
     //delete convert;
     //convert = new PointCollectionConvert(*arr.Index(i));
     //return convert;
+    return 0;
   }
   ~PointCollectionConvertArray() { /*delete convert;*/ }
 private:
@@ -5212,6 +5213,7 @@ public:
     part = new ConstantWaveformPart(samplelength*i, samplelength*(i+1), array[i]);
     return part;
 #endif
+    return 0;
   }
   
 private:
@@ -5596,6 +5598,7 @@ public:
     p->set_points(center, center2,rr);
     return p;
 #endif
+    return 0;
   }
 private:
   PointCollection &center_points;

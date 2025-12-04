@@ -1007,6 +1007,8 @@ EXPORT GameApi::RUN GameApi::TextureApi::combine_screens(RUN r1, RUN r2)
   Splitter *s2 = find_splitter(e,r2);
   return add_splitter(e, new CombineScreens(s1,s2));
 #endif
+  GameApi::RUN run = { -1 };
+  return run;
 }
 
 EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
@@ -1028,6 +1030,8 @@ EXPORT GameApi::ARR GameApi::TextureApi::grab_screen(EveryApi &ev, RUN r)
   arr->vec.push_back(bm.id);
   return add_array(e, arr);
 #endif
+  GameApi::ARR arr = { -1 };
+  return arr;
 }
 
 
@@ -1293,6 +1297,8 @@ GameApi::ML GameApi::TextureApi::prepare_key_anim(ML next, std::vector<ML> keyed
   }
   return add_main_loop(e, new KeyPrepareAnim(key, next_, vec,time_delta,s, filenames));
 #endif
+  GameApi::ML ml={-1};
+  return ml;
 }
 
 #if 0
@@ -1367,6 +1373,8 @@ GameApi::BM GameApi::TextureApi::grab_screen_bitmap(EveryApi &ev)
   BM bm = add_bitmap(e, handle3);
   return bm;
 #endif
+  GameApi::BM bm = { -1 };
+  return bm;
 }
 
 GameApi::ML GameApi::TextureApi::save_screenshot_via_key(EveryApi &ev, GameApi::ML ml3, int key, std::string filename)
@@ -1444,6 +1452,8 @@ GameApi::ARR GameApi::TextureApi::grab_to_bm_array(BM bm)
   t->vec.push_back(t22.id);
   return add_array(e,t);
 #endif
+  GameApi::ARR arr = { -1 };
+  return arr;
 }
 
 
@@ -1619,6 +1629,8 @@ GameApi::ML GameApi::TextureApi::upload_bm_to_pbo(BM bm, PBO p)
 
 GameApi::ML GameApi::TextureApi::upload_txid_to_pbo(TXID tx, PBO p)
 {
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 
 class PboBitmap : public Bitmap<Color>

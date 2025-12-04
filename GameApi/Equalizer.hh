@@ -1586,9 +1586,9 @@ public:
 
   void Prepare() { /*sample.Prepare();*/ }
 
-  int SizeX() const { /*return sample.SizeX();*/ }
-  int SizeY() const { /*return sample.SizeY();*/ }
-  Color Map(int x, int y) const { /*return sample.Map(x,y);*/ }
+  int SizeX() const { return 0; /*return sample.SizeX();*/ }
+  int SizeY() const { return 0; /*return sample.SizeY();*/ }
+  Color Map(int x, int y) const { Color c; return c; /*return sample.Map(x,y);*/ }
 
 private:
   //ContinuousBitmapFromBitmap<Color> cont;

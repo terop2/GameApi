@@ -57,6 +57,8 @@ EXPORT GameApi::SM GameApi::SampleCollectionApi::add(SM orig, WV wave, int sampl
   Waveform *wv = find_waveform(e, wave);
   return add_sample(e, new AddSamples(sample, wv, sample_rate, id));
 #endif
+  GameApi::SM sm = { -1 };
+  return sm;
 }
 EXPORT void GameApi::SampleCollectionApi::init_audio()
 {

@@ -50,4 +50,6 @@ EXPORT GameApi::PC GameApi::PointCollectionApi::function(std::function<GameApi::
 #if 0
   return add_pointcoll_array(e, new PointCollectionFunction(e, f, count));
 #endif
+  GameApi::PC pc = { -1 };
+  return pc;
 }
