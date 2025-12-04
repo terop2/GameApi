@@ -251,6 +251,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::heightmap(BM colour, FB height, PT pos, 
   Vector *uu_z = find_vector(e, u_z);
   return add_points_api_points(e, new HeightMapPoints(*colour_bm, *height_bm, *pt, *uu_x, *uu_y, *uu_z, sx, sy));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 EXPORT GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT pos,
 					     GameApi::V u_x, GameApi::V u_y, GameApi::V u_z, int sx, int sy, int sz)
@@ -263,6 +265,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::from_volume(GameApi::O o, GameApi::PT po
   Vector *uu_z = find_vector(e, u_z);
   return add_points_api_points(e, new SpacePoints(*obj, *pt, *uu_x, *uu_y, *uu_z, sx, sy, sz));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 EXPORT GameApi::PTS GameApi::PointsApi::move(GameApi::PTS obj, float dx, float dy, float dz)
 {
@@ -404,6 +408,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::shadow_points(GameApi::PTS obj,
   Vector *light = find_vector(e, light_vec);
   return add_points_api_points(e, new ShadowPoints(pts, *pt, *uu_x, *uu_y, *light));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 int GameApi::PointsApi::num_points(PTA pta)
 {
@@ -802,6 +808,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::from_float_volume(GameApi::FO object,
   FloatVolumeObject *fo = find_float_volume(e, object);
   return add_points_api_points(e, new PTSFromFloatVolume(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z));
 #endif
+  GameApi::PTS pts = { -1 } ;
+  return pts;
 }
 
 
@@ -921,6 +929,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::function(std::function<GameApi::PT(int p
 #if 0
   return add_points_api_points(e, new PointApiPointFunction(e, f, numpoints));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 EXPORT GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<unsigned int(int pointnum, PT pos)> f)
 {
@@ -928,6 +938,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::color_function(PTS orig, std::function<u
   PointsApiPoints *pts = find_pointsapi_points(e, orig);
   return add_points_api_points(e, new PointsApiColorFunction(e, pts, f));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 
 #if 0
@@ -970,6 +982,8 @@ EXPORT GameApi::PTS GameApi::PointsApi::surface(S surf, int sx, int sy)
   SurfaceImpl *s = find_surface(e, surf);
   return add_points_api_points(e, new SurfacePoints3(s->surf, sx,sy));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 
 EXPORT int GameApi::PointsApi::NumPoints(PTS p)
@@ -1137,6 +1151,9 @@ GameApi::ML GameApi::PointsApi::render_ml(EveryApi &ev, PTA array)
   PointArray3 *arr = find_point_array3(e, array);
   return add_main_loop(e, new PointsApiRender(e, ev,arr));
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
+ 
 }
 
 
@@ -1294,6 +1311,8 @@ GameApi::ML GameApi::PointsApi::movement_display(EveryApi &ev, ML ml, MN mn, int
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new MovementDisplay(e,ev, item, mn,count, sx,sy,sz,start_x,end_x,start_y,end_y,start_z,end_z));
 #endif
+  GameApi::ML ml2 = { -1 };
+  return ml2;
 }
 struct Cont {
   int count;

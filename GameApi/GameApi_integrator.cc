@@ -281,6 +281,8 @@ GameApi::FB GameApi::FloatVolumeApi::integrate_render(FO obj, int sx, int sy, in
   FloatVolumeObject *ff = find_float_volume(e, obj);
   return add_float_bitmap(e, new RenderVolume(*ff, sx,sy,numsamples));
 #endif
+  GameApi::FB fb = { -1 };
+  return fb;
 }
 
 #if 0

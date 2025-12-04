@@ -48,6 +48,8 @@ GameApi::PhysicsApi::PHI GameApi::PhysicsApi::anchor_point(PH phy, PT pos)
   i.id = n->NumAnchors()-1;
   return i;
 #endif
+  GameApi::PhysicsApi::PHI phi = { -1 };
+  return phi;
 }
 
 class ForcePhysics : public ForwardPhysics

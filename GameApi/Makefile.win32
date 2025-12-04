@@ -141,7 +141,7 @@ draco/metadata/metadata.cc     \
 draco/metadata/metadata_decoder.cc          draco/metadata/structural_metadata.cc \
 
 
-WARN = -Wno-unused-function -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-cpp -Wno-return-type -Wno-unused-but-set-variable -Wno-misleading-indentation -Wno-bool-compare
+WARN = -Wno-return-type -Wno-unused-function -Wno-sign-compare -Wno-reorder -Wno-unused-variable -Wno-cpp  -Wno-unused-but-set-variable -Wno-misleading-indentation -Wno-bool-compare
 
 CFiles2 = Main.cc
 

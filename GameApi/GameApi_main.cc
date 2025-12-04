@@ -3505,6 +3505,8 @@ GameApi::ML GameApi::MainLoopApi::prepare_pts(ML ml, PTS pts)
   PointsApiPoints *points = find_pointsapi_points(e, pts);
   return add_main_loop(e, new PreparePTS(item, points));
 #endif
+  GameApi::ML ml2 = { -1 };
+  return ml2;
 }
 
 class DepthFunc : public MainLoopItem

@@ -6,6 +6,8 @@ GameApi::LAY GameApi::LayoutApi::root(int sx, int sy)
 #if 0
   return add_layout(e, new RootLayout(sx,sy));
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 GameApi::LAY GameApi::LayoutApi::split_y(LAY l, int id, int num)
 {
@@ -13,6 +15,8 @@ GameApi::LAY GameApi::LayoutApi::split_y(LAY l, int id, int num)
   Layout *ll = find_layout(e, l);
   return add_layout(e, new SplitLayoutY(*ll, id, num));
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 GameApi::LAY GameApi::LayoutApi::split_x(LAY l, int id, int num)
 {
@@ -20,6 +24,8 @@ GameApi::LAY GameApi::LayoutApi::split_x(LAY l, int id, int num)
   Layout *ll = find_layout(e, l);
   return add_layout(e, new SplitLayoutX(*ll, id, num));
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 GameApi::LAY GameApi::LayoutApi::split_xy(LAY l, int id, int num_x, int num_y)
 {
@@ -27,6 +33,8 @@ GameApi::LAY GameApi::LayoutApi::split_xy(LAY l, int id, int num_x, int num_y)
   Layout *ll = find_layout(e, l);
   return add_layout(e, new SplitXYLayout(*ll, id, num_x, num_y));
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 GameApi::LAY GameApi::LayoutApi::margin(LAY l, int id, int lx, int rx, int ty, int by)
 {
@@ -34,6 +42,8 @@ GameApi::LAY GameApi::LayoutApi::margin(LAY l, int id, int lx, int rx, int ty, i
   Layout *ll = find_layout(e, l);
   return add_layout(e, new MarginLayout(*ll, id, lx,rx,ty,by));  
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 GameApi::LAY GameApi::LayoutApi::center(LAY l, int id, int cx, int cy)
 {
@@ -41,6 +51,8 @@ GameApi::LAY GameApi::LayoutApi::center(LAY l, int id, int cx, int cy)
   Layout *ll = find_layout(e, l);
   return add_layout(e, new CenterLayout(*ll, id, cx, cy));
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 GameApi::LAY GameApi::LayoutApi::array(LAY *array, int *id, int size)
 {
@@ -52,6 +64,8 @@ GameApi::LAY GameApi::LayoutApi::array(LAY *array, int *id, int size)
     }
   return add_layout(e, new ArrayLayout(&(*vec)[0], id, size));
 #endif
+  GameApi::LAY lay = { -1 };
+  return lay;
 }
 
 int GameApi::LayoutApi::count(LAY l)

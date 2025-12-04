@@ -4512,6 +4512,7 @@ void *async_process(void *ptr)
   
   dt->finished = true;
   */
+  return 0;
 }
 
 void start_task(int task, int pos)

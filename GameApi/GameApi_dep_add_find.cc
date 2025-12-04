@@ -1326,6 +1326,8 @@ GameApi::VV add_timerange_vertexarray(GameApi::Env &e, GameApi::TR tr)
   vv.id = env->timerange_vertexarrays.size()-1;
   return vv;
 #endif
+  GameApi::VV vv = { -1 };
+  return vv;
 }
 
 GameApi::O add_volume(GameApi::Env &e, VolumeObject *o)
@@ -1420,6 +1422,8 @@ GameApi::E add_event(GameApi::Env &e, const EventInfo &info)
   ee.id = event->CurrentEventNum();
   return ee;
 #endif
+  GameApi::E e2 = { -1 };
+  return e2;
 }
 GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info)
 {
@@ -1436,6 +1440,8 @@ GameApi::L add_link(GameApi::Env &e, GameApi::E e1, GameApi::E e2, LinkInfo info
   ee.id = link->CurrentLinkNum();
   return ee;  
 #endif
+  GameApi::L l = { -1 };
+  return l;
 }
 #if 0
 GameApi::MV add_mv_point(GameApi::Env &e, float x, float y, float z)
@@ -1485,6 +1491,8 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
   ee.id = spos->CurrentPosNum();
   return ee;
 #endif
+  GameApi::LL ll = { -1 };
+  return ll;
 }
 
 ByteStore *find_bytestore(GameApi::Env &e, GameApi::BS bs)
