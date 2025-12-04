@@ -51,6 +51,8 @@ EXPORT GameApi::LI GameApi::FontApi::glyph_outline(GameApi::Ft font, long idx, f
   LineCollection *coll2 = new ForwardLineCollection(coll);
   return add_line_array(e, coll2);
 #endif
+  GameApi::LI li = { -1 };
+  return li;
 }
 EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, float sx, float sy, float dx, float dy)
 {
@@ -64,6 +66,8 @@ EXPORT GameApi::PL GameApi::FontApi::glyph_plane(GameApi::Ft font, long idx, flo
   PlanePoints2d *plane = new FontLineCollectionWrapper(coll, bm->Types(), sx, sy, dx,dy);
   return add_plane(e, plane);
 #endif
+  GameApi::PL pl = { -1 };
+  return pl; 
 }
 
 class GlyphChooser : public Bitmap<int>
@@ -1458,6 +1462,8 @@ GameApi::IF GameApi::FontApi::time_fetcher(EveryApi &ev, float start_time)
 #if 0
   return add_int_fetcher(e, new TimeFetcher(ev,start_time));
 #endif
+  GameApi::IF i = { -1 };
+  return i;
 }
 
 class ChooseScreen : public Fetcher<int>

@@ -233,6 +233,7 @@ bool VoxelEffect::Frame(float time)
 
   return false;
 #endif
+  return false;
 }
 
 
@@ -368,6 +369,7 @@ bool MapEffect::Frame(float time)
   ogl->glPopMatrix();
   return false;
 #endif
+  return false;
 }
 
 SuperParameters odd_1 = { 1.00, 1.00, 7.00, 0.20, 1.70, 1.70 };
@@ -516,6 +518,7 @@ bool InterpolateMovementEffect::Frame(float time)
   //DrawVBO(trans, time, vbostate, UpdateAll);
   return false;
 #endif
+  return false;
 }
 
 void GraphEffect::Init()

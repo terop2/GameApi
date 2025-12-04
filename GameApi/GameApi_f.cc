@@ -36,18 +36,24 @@ GameApi::F GameApi::FloatApi::value(float v)
 #if 0
   return add_float(e, new LazySingle(v));
 #endif
+  GameApi::F f = { -1 };
+  return f;
 }
 GameApi::F GameApi::FloatApi::ref(float *v)
 {
 #if 0
   return add_float(e, new LazyRef(v));
 #endif
+  GameApi::F f = { -1 };
+  return f;
 }
 GameApi::F GameApi::FloatApi::array_index(float *array, int pos)
 {
 #if 0
   return add_float(e, new LazyIndex(array, pos));
 #endif
+  GameApi::F f = { -1 };
+  return f;
 }
 float GameApi::FloatApi::get_value(F f)
 {
@@ -55,6 +61,7 @@ float GameApi::FloatApi::get_value(F f)
   LazyValue<float> *value = find_float(e, f);
   return value->get();
 #endif
+  return 0.0;
 }
 GameApi::FloatArrayApi::FloatArrayApi(Env &e) : e(e) { }
 GameApi::FA GameApi::FloatArrayApi::array(float *array, int size)
@@ -123,12 +130,16 @@ GameApi::BM GameApi::FloatArrayApi::span_arrays(FA fa1, FA fa2, CBM f)
   ContinuousBitmap<Color> *bm = find_continuous_bitmap(e, f);
   return add_color_bitmap2(e, new SpanArrays(*arr1, *arr2, bm));
 #endif
+  GameApi::BM bm = { -1 };
+  return bm;
 }
 GameApi::FA GameApi::FloatArrayApi::ramp(float start_value, float end_value, int steps)
 {
 #if 0
   return add_float_array(e, new RampArray(start_value, end_value, steps));
 #endif
+  GameApi::FA fa = { -1 };
+  return fa;
 }
 GameApi::FA GameApi::FloatArrayApi::f_array(F *array, int size)
 {

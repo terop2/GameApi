@@ -201,7 +201,7 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
-WARN = -Werror=return-type -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result -Wno-return-type -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct -Wno-deprecated-enum-enum-conversion
+WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result  -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized -Wno-return-type -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct -Wno-deprecated-enum-enum-conversion
 
 #-fsanitize=undefined -fsanitize-recover=undefined
 #  -I/usr/include/freetype2 -I$(INCWIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -DGLEW_STATIC

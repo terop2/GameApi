@@ -3133,7 +3133,7 @@ public:
   virtual std::vector<int> shader_id() {
     if (res.id!=-1) {
       MainLoopItem *item = find_main_loop(env,res);
-      item->shader_id();
+      return item->shader_id();
     } else return std::vector<int>();
   }
 

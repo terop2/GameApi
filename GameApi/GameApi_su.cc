@@ -25,6 +25,8 @@ GameApi::S GameApi::SurfaceApi::bitmapsphere(PT center, float radius0, float rad
   i.surf = sphere;
   return add_surface(e, i);
 #endif
+  GameApi::S s = { -1 };
+  return s;
 }
 
 GameApi::PT GameApi::SpaceApi::plus(PT p1, PT p2)
@@ -58,6 +60,8 @@ GameApi::BM GameApi::SurfaceApi::render(S surf, int sx, int sy,
   handle->bm = bm2;
   return add_bitmap(e, handle);
 #endif
+  GameApi::BM bm = { -1 };
+  return bm;
 }
 GameApi::S GameApi::SurfaceApi::plane(PT pos, V u_x, V u_y)
 {
@@ -70,6 +74,8 @@ GameApi::S GameApi::SurfaceApi::plane(PT pos, V u_x, V u_y)
   i.surf = new PlaneSurfaceIn3d(pl);
   return add_surface(e,i);
 #endif
+  GameApi::S s = { -1 };
+  return s;
 }
 
 GameApi::S GameApi::SurfaceApi::sphere(PT center, float radius)
@@ -81,6 +87,8 @@ GameApi::S GameApi::SurfaceApi::sphere(PT center, float radius)
   i.surf = surf;
   return add_surface(e,i);
 #endif
+  GameApi::S s = { -1 };
+  return s;
 }
 GameApi::S GameApi::SurfaceApi::texture(S orig, BM texture)
 {

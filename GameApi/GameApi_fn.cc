@@ -27,6 +27,8 @@ GameApi::F GameApi::FunctionApi::constant(float y)
 #if 0
   return add_function(e, new ConstantFloatFunction(y));
 #endif
+  GameApi::F f = { -1 };
+  return f;
 }
 GameApi::F GameApi::FunctionApi::sin()
 {
