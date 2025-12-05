@@ -517,6 +517,8 @@ GameApi::ST GameApi::EventApi::enable_obj(ST states, int state, LL link)
   info.enable_obj_array = new EnableLinkArray(enable, pos_id);
   return states;
 #endif
+  GameApi::ST s = { -1 };
+  return s;
 }
 
 
@@ -641,6 +643,8 @@ GameApi::SA GameApi::SeparateApi::u_sep(SA orig, float (*sep_x)(float x, float y
   Separate *sep = find_separate(e, orig);
   return add_separate(e, new SeparateX(sep, sep_x, data));
 #endif
+  GameApi::SA a = { -1 };
+  return a;
 }
 GameApi::SA GameApi::SeparateApi::v_sep(SA orig, float (*sep_y)(float x, float y, float z, void *data), void *data)
 {
@@ -648,6 +652,8 @@ GameApi::SA GameApi::SeparateApi::v_sep(SA orig, float (*sep_y)(float x, float y
   Separate *sep = find_separate(e, orig);
   return add_separate(e, new SeparateY(sep, sep_y, data));
 #endif
+  GameApi::SA s = { -1 };
+  return s;
 }
 GameApi::SA GameApi::SeparateApi::surf_sep(SA orig, float (*sep_dist)(float x, float y, float z, void *data), void *data)
 {
@@ -655,6 +661,8 @@ GameApi::SA GameApi::SeparateApi::surf_sep(SA orig, float (*sep_dist)(float x, f
   Separate *sep = find_separate(e, orig);
   return add_separate(e, new SeparateDist(sep, sep_dist, data));
 #endif
+  GameApi::SA a = { -1 };
+  return a;
 }
 
 GameApi::P GameApi::SeparateApi::create_quads(GameApi::SA object, float dist, float dist_accuracy,
@@ -674,6 +682,8 @@ GameApi::P GameApi::SeparateApi::create_quads(GameApi::SA object, float dist, fl
 					   u_range_start, u_range_end, u_step,
 					   v_range_start, v_range_end, v_step), 1);
 #endif
+  GameApi::P p = { -1 };
+  return p;
 }
 
 
@@ -765,6 +775,8 @@ GameApi::OM GameApi::ObjectMoveApi::empty(int numobjects)
 #if 0
   return add_move(e, new EmptyMove(numobjects));
 #endif
+  GameApi::OM m = { -1 };
+  return m;
 }
 GameApi::OM GameApi::ObjectMoveApi::add_object(OM orig, int index, P obj)
 {
@@ -772,6 +784,8 @@ GameApi::OM GameApi::ObjectMoveApi::add_object(OM orig, int index, P obj)
   Array<int, ObjectWithPos> *arr = find_move(e, orig);
   return add_move(e, new AddObjectMove(*arr, index, obj));
 #endif
+  GameApi::OM m = { -1 };
+  return m;
 }
 GameApi::OM GameApi::ObjectMoveApi::clear_object(OM orig, int index)
 {
@@ -781,6 +795,8 @@ GameApi::OM GameApi::ObjectMoveApi::clear_object(OM orig, int index)
   Array<int, ObjectWithPos> *arr = find_move(e, orig);
   return add_move(e, new AddObjectMove(*arr, index, p));
 #endif
+  GameApi::OM n = { -1 };
+  return n;
 }
 GameApi::OM GameApi::ObjectMoveApi::change_pos(OM orig, int index, M mat)
 {
@@ -788,6 +804,8 @@ GameApi::OM GameApi::ObjectMoveApi::change_pos(OM orig, int index, M mat)
   Array<int, ObjectWithPos> *arr = find_move(e, orig);
   return add_move(e, new PosMove(*arr, index, mat));
 #endif
+  GameApi::OM m = { -1 };
+  return m;
 }
 GameApi::VAA GameApi::ObjectMoveApi::prepare_all(OM orig)
 {
@@ -1130,12 +1148,16 @@ GameApi::CP GameApi::CollisionPlane::rectangle(int id, float x, float y, float s
 #if 0
   return add_collision(e, new RectangleCollision(id, x,y,sx,sy));
 #endif
+  GameApi::CP cp = { -1 };
+  return cp;
 }
 GameApi::CP GameApi::CollisionPlane::circle(int id, float radius)
 {
 #if 0
   return add_collision(e, new CircleCollision(id, radius));
 #endif
+  GameApi::CP cp = { -1 };
+  return cp;
 }
 GameApi::CP GameApi::CollisionPlane::or_elem(int id, std::vector<CP> vec)
 {
@@ -1148,6 +1170,8 @@ GameApi::CP GameApi::CollisionPlane::or_elem(int id, std::vector<CP> vec)
     }
   return add_collision(e, new OrElemCollision(id, vec2));
 #endif
+  GameApi::CP cp = { -1 };
+  return cp;
 }
 void GameApi::CollisionPlane::set_pos(CP plane, int id, float x, float y)
 {
@@ -1284,6 +1308,8 @@ EXPORT GameApi::MN GameApi::MovementNode::mn_interpolate2(MN mn1, MN mn2, float 
   Movement *m2 = find_move(e, mn2);
   return add_move(e, new InterpolateMovement2(m1,m2, start_time, end_time));
 #endif
+  GameApi::MN mn = { -1 };
+  return mn;
 }
 
 class ColorStart : public ColorChange
@@ -1458,6 +1484,8 @@ EXPORT GameApi::MN GameApi::MovementNode::debug_translate(MN next)
   Movement *nxt = find_move(e, next);
   return add_move(e, new DebugTranslateMovement(nxt));
 #endif
+  GameApi::MN mn = { -1 };
+  return mn;
 }
 
 EXPORT GameApi::MN GameApi::MovementNode::translate_wave(MN next,
@@ -1799,6 +1827,8 @@ EXPORT GameApi::MN GameApi::MovementNode::scale_wave(MN next,
   return add_move(e, new ScaleWaveMovement(nxt, start_time, end_time, m_wave,
 				       sx,sy,sz));
 #endif
+  GameApi::MN mn = { -1 };
+  return mn;
 }
 
 
@@ -4074,6 +4104,8 @@ EXPORT GameApi::ML GameApi::MovementNode::move_ml_array(EveryApi &ev, std::vecto
     }
   return add_main_loop(e, new MoveMLArray(e,ev, vec2, move));
 #endif
+  GameApi::ML ml2={-1};
+  return ml2;
 }
 EXPORT GameApi::ML GameApi::MovementNode::key_event(EveryApi &ev, GameApi::ML ml, GameApi::MN move, int type, int ch, int button, float duration)
 {
@@ -4136,6 +4168,8 @@ GameApi::O GameApi::PickingApi::pick_volume(M in_P, BB pick)
   std::cout << std::endl;
   return add_volume(e, new MatrixVolume(*bm, m));
 #endif
+  GameApi::O o={-1};
+  return o;
 }
 bool GameApi::PickingApi::picked(O o, float x, float y, float z)
 {
@@ -10046,6 +10080,8 @@ EXPORT GameApi::MT GameApi::MaterialsApi::edge(EveryApi &ev, MT nxt, float edge_
   Material *mat = find_material(e, nxt);
   return add_material(e, new EdgeMaterial(e,ev,mat, edge_width, edge_color));
 #endif
+  GameApi::MT m = { -1 };
+  return m;
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::gi(EveryApi &ev, MT nxt, PTS points, float obj_size)
 {
@@ -10066,12 +10102,16 @@ EXPORT GameApi::MT GameApi::MaterialsApi::shadow(EveryApi &ev, GameApi::P p, std
 #if 0
   return add_material(e, new ShadowMaterial(ev, p, vec, Point(p_x,p_y,p_z),sx,sy , dark_color,mix,mix2));
 #endif
+  GameApi::MT m = { -1 };
+  return m;
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::shadow2(EveryApi &ev, GameApi::P p, float p_x, float p_y, float p_z, int sx, int sy, unsigned int dark_color, float mix, float mix2, int numtextures)
 {
 #if 0
   return add_material(e, new ShadowMaterial2(e,ev, p, Point(p_x,p_y,p_z),sx,sy , dark_color,mix,mix2,numtextures));
 #endif
+  GameApi::MT m = { -1 };
+  return m;
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::dyn_lights(EveryApi &ev, MT nxt, float light_pos_x, float light_pos_y, float light_pos_z, float dist, int dyn_point)
 {
@@ -10087,6 +10127,8 @@ EXPORT GameApi::MT GameApi::MaterialsApi::coloured_lights(EveryApi &ev, MT nxt, 
   Material *mat = find_material(e, nxt);
   return add_material(e, new ColouredLightsMaterial(ev, mat, scale, color_1, color_2, color_3, color_4, color_5, color_6, color_7, color_8, pos_1, pos_2,pos_3,pos_4,pos_5,pos_6,pos_7,pos_8, dist_1, dist_2, dist_3, dist_4, dist_5, dist_6, dist_7, dist_8));
 #endif
+  GameApi::MT m = { -1 };
+  return m;
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::shading1(EveryApi &ev, MT nxt, float mix_val, float mix_val2)
 {
@@ -14988,6 +15030,8 @@ EXPORT GameApi::MC GameApi::MatrixCurveApi::from_curve(C curve)
   Curve<Point> *c = find_curve(e,curve);
   return add_matrix_curve(e, new FromCurveMatrices(c));
 #endif
+  GameApi::MC m = { -1 };
+  return m;
 }
 #if 0
 class CircleXYMatrix : public Curve<Matrix>
@@ -15022,10 +15066,14 @@ private:
 EXPORT GameApi::MC GameApi::MatrixCurveApi::circle_xy(float radius)
 {
   // return add_matrix_curve(e, new CircleXYMatrix(radius));
+  GameApi::MC m={-1};
+  return m;
 }
 EXPORT GameApi::MC GameApi::MatrixCurveApi::circle_xz(float radius)
 {
   //return add_matrix_curve(e, new CircleXZMatrix(radius));
+  GameApi::MC m={-1};
+  return m;
 }
 
 #if 0
@@ -15064,6 +15112,8 @@ EXPORT GameApi::MS GameApi::MatrixCurveApi::sample(MC m_curve, int num)
   Curve<Matrix> *c = find_matrix_curve(e, m_curve);
   return add_matrix_array(e, new SampleMatrixCurve2(c,num));
 #endif
+  GameApi::MS ms = { -1 };
+  return ms;
 }
 
 class DistanceFieldMesh : public MaterialForward
@@ -15243,6 +15293,8 @@ GameApi::MT GameApi::MaterialsApi::sfo_sandbox(EveryApi &ev, SFO sfo, MT next)
   Material *nxt = find_material(e, next);
   return add_material(e, new SFO_Sandbox(ev, sfo, nxt));
 #endif
+  GameApi::MT m = { -1 };
+  return m;
 }
 GameApi::MT GameApi::MaterialsApi::mesh_color_from_sfo(EveryApi &ev, SFO sfo, MT next)
 {
@@ -15787,6 +15839,8 @@ GameApi::MX GameApi::MixedApi::mx_pair(std::string name, MX val)
   MixedI *val2 = find_mixed(e, val);
   return add_mixed(e, new PairMixed(name,*val2));
 #endif
+  GameApi::MX m = { -1 };
+  return m;
 }
 GameApi::MX GameApi::MixedApi::mx_string(std::string value)
 {
@@ -15803,6 +15857,8 @@ GameApi::MX GameApi::MixedApi::mx_array(std::vector<MX> vec)
     }
   return add_mixed(e, new ArrayMixed(vec2));
 #endif
+  GameApi::MX m = { -1 };
+  return m;
 }
 
 int GameApi::MixedApi::mx_size(MX arr)
@@ -17264,6 +17320,8 @@ EXPORT GameApi::RUN GameApi::BlockerApi::run_seq(GameApi::EveryApi &ev, std::vec
     }
   return add_splitter(e, new SplitterSeq(vec2));
 #endif
+  GameApi::RUN r = { -1 };
+  return r;
 }
 #if 0
 class BlockerSeq : public Blocker
@@ -17298,6 +17356,8 @@ EXPORT GameApi::BLK GameApi::BlockerApi::game_seq(GameApi::EveryApi &ev,std::vec
     }
   return add_blocker(e, new BlockerSeq(ev,blks));
 #endif
+  GameApi::BLK b = { -1 };
+  return b;
 }
 EXPORT void GameApi::BlockerApi::run(BLK blk)
 {
@@ -17623,6 +17683,9 @@ EXPORT GameApi::PTT GameApi::VertexAnimApi::curve_accessor(C curve, CPP pos, flo
   CurvePos *cur_pos = find_curve_pos(e, pos);
   return add_point_transform(e, new CurveAccessor(start_time, *cur, *cur_pos, time_mult));
 #endif
+  GameApi::PTT p = { -1 };
+  return p;
+
 }
 
 
@@ -17631,6 +17694,8 @@ EXPORT GameApi::PTT GameApi::VertexAnimApi::rot_accessor(float start_time, float
 #if 0
   return add_point_transform(e, new RotAccessor(start_time, time_mult, nx, ny,nz, dist_angle));
 #endif
+  GameApi::PTT p = { -1 };
+  return p;
 }
 EXPORT GameApi::KF GameApi::VertexAnimApi::curve_trans(EveryApi &ev, KF kf, C curve, CPP pos, int numsamples, float duration)
 {
@@ -17843,6 +17908,8 @@ EXPORT GameApi::PTT GameApi::VertexAnimApi::rotate_trans(PTT prev, float nx, flo
   PointTransform *prev2 = find_point_transform(e, prev);
   return add_point_transform(e, new RotateSpeed(prev2, nx, ny, nz, speed_angle));
 #endif
+  GameApi::PTT p = { -1 };
+  return p;
 }
 EXPORT GameApi::PTT GameApi::VertexAnimApi::rotate_trans2(PTT prev, float duration, float nx, float ny, float nz, float dist_angle)
 {
@@ -17850,6 +17917,8 @@ EXPORT GameApi::PTT GameApi::VertexAnimApi::rotate_trans2(PTT prev, float durati
   PointTransform *prev2 = find_point_transform(e, prev);
   return add_point_transform(e, new RotateDist(prev2, duration, nx, ny, nz, dist_angle));
 #endif
+  GameApi::PTT p = { -1 };
+  return p;
 }
 EXPORT GameApi::PTT GameApi::VertexAnimApi::scale_trans(PTT prev, float scale_speed_x, float scale_speed_y, float scale_speed_z)
 {
@@ -19510,6 +19579,8 @@ GameApi::VX GameApi::VoxelApi::subvoxel(VX voxel, int start_x, int end_x,
   Voxel<int> *vx = find_int_voxel(e, voxel);
   return add_int_voxel(e, new SubVoxel(vx, start_x, end_x, start_y, end_y, start_z, end_z));
 #endif
+  GameApi::VX vx = { -1 };
+  return vx;
 }
 GameApi::VX GameApi::VoxelApi::voxel_landscape_from_fbm(FB bitmap, int height, int false_value, int true_value)
 {
@@ -20730,6 +20801,8 @@ GameApi::PTS GameApi::PointsApi::wave_points(WV wave, int num_samples,
   Waveform *wv = find_waveform(e, wave);
   return add_points_api_points(e, new WavePoints(*wv, num_samples, Point(pos_x, pos_y, pos_z), Vector(u_x_x, u_x_y, u_x_z), Vector(u_y_x, u_y_y, u_y_z)));
 #endif
+  GameApi::PTS pts = { -1 };
+  return pts;
 }
 
 class FilterComponent : public PointsApiPoints
@@ -32907,6 +32980,8 @@ EXPORT GameApi::ML GameApi::MainLoopApi::drag_drop_area(EveryApi &ev, ML mainloo
   MainLoopItem *ml = find_main_loop(e, mainloop);
   return add_main_loop(e, new DragDropArea(e,ev,ml,fptr));
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 
 
@@ -33599,6 +33674,8 @@ GameApi::ML GameApi::PolygonApi::quad_tree(P p)
   FaceCollection *coll = find_facecoll(e,p);
   return add_main_loop(e, new QuadTreeEntry(g_tree, coll));
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 
 #if 0
@@ -33728,6 +33805,8 @@ GameApi::ML GameApi::MainLoopApi::activate_item(ML ml, ML def2)
   MainLoopItem *def = find_main_loop(e, def2);
   return add_main_loop(e, new ActivateMainLoopItem(item,60,def));
 #endif
+  GameApi::ML ml2 = { -1 };
+  return ml2;
 }
 GameApi::ML GameApi::MainLoopApi::activate_array(std::vector<ML> vec)
 {
@@ -33742,6 +33821,8 @@ GameApi::ML GameApi::MainLoopApi::activate_array(std::vector<ML> vec)
     }
   return add_main_loop(e, new SlowActivateArray(vec2));
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 
 #if 0
@@ -33794,6 +33875,8 @@ GameApi::ML GameApi::MainLoopApi::slow_activate_item(ML ml, int i)
   MainLoopItem *item = find_main_loop(e,ml);
   return add_main_loop(e, new SlowActivateItem(item,i));
 #endif
+  GameApi::ML ml2= {-1};
+  return ml2;
 }
 
 GameApi::ARR GameApi::MainLoopApi::activate_arr_arr(std::vector<ML> arr)
@@ -38023,6 +38106,8 @@ GameApi::ML GameApi::MainLoopApi::edit_3d(GameApi::EveryApi &ev, P p, float radi
   g_edit_faces = model;
   return add_main_loop(e, model);
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 GameApi::P GameApi::MainLoopApi::edit_3d_p(EveryApi &ev)
 {
@@ -38034,6 +38119,8 @@ GameApi::P GameApi::MainLoopApi::edit_3d_p(EveryApi &ev)
       return ev.polygon_api.p_empty();
     }
 #endif
+  GameApi::P p = { -1 };
+  return p;
 }
 
 

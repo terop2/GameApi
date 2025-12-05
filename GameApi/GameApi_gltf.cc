@@ -2486,6 +2486,7 @@ public:
 	std::cout << "TINYGLTF_TYPE_ error" << std::endl;
       }
     }
+    return 0;
   }
   virtual VA_ComponentType ComponentType(VertexArrayEnum i) const
   {
@@ -10144,7 +10145,7 @@ public:
     ml.id = m_mat->mat_inst2(p.id,pta.id);
     return ml;
   }
-  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const { }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const { GameApi::ML ml = { -1 }; return ml; }
 
   
 private:
@@ -13835,7 +13836,7 @@ void GameApi::MainLoopApi::save_glb_store(GameApi::EveryApi &ev, std::string out
   GLTF_Model_with_prepare *prepare = dynamic_cast<GLTF_Model_with_prepare*>(interface);
   if (!prepare) {
     GLTF_Model_with_prepare_from_string *prepare = dynamic_cast<GLTF_Model_with_prepare_from_string*>(interface);
-    if (!prepare) { std::cout << "Using tf_ds_tf twice is not possible at " << prepare->name() << std::endl; }
+    if (!prepare) { std::cout << "Using tf_ds_tf twice is not possible!" << std::endl; }
     
     //prepare->Prepare();
   GLTF_Model *model = (GLTF_Model*)interface;
@@ -15029,9 +15030,12 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *GLTFImageDecoder::
 }
 IMAGEID GLTFImageDecoder::convert_to_image(std::vector<unsigned char> &vec)
 {
+  IMAGEID i;
+  return i;
 }
 Bitmap<Color> *GLTFImageDecoder::get_converted_image(IMAGEID id)
 {
+  return 0;
 }
 
 

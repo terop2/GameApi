@@ -289,6 +289,8 @@ EXPORT GameApi::O GameApi::VolumeApi::from_polygon(GameApi::P p, float x, float 
   Point px(x,y,z);
   return add_volume(e, new FaceCollectionVolume(coll,px));
 #endif
+  GameApi::O o = { -1 };
+  return o;
 }
 
 EXPORT void GameApi::VolumeApi::find_surface(O object, PT p1, PT p2, PT *res1, PT *res2, int level)
@@ -827,6 +829,8 @@ EXPORT GameApi::COV GameApi::ColorVolumeApi::function(std::function<unsigned int
   //env->deletes.push_back(std::shared_ptr<void>(ev));
   return add_color_volume(e, ff);
 #endif
+  GameApi::COV cov = { -1 };
+  return cov;
 }
 
 class ColorVolumeFromFloatVolume : public ColorVolumeObject
@@ -969,6 +973,8 @@ EXPORT GameApi::BM GameApi::ColorVolumeApi::array_bm(COV colours, int sx, int sy
   Bitmap<Color> *bm = new ArrayBM(col, sx,sy,ssx,ssy,z);
   return add_color_bitmap2(e,bm);
 #endif
+  GameApi::BM bm = { -1 };
+  return bm;
 }
 
 EXPORT GameApi::COV GameApi::ColorVolumeApi::from_volume(O obj, unsigned int col_true, unsigned int col_false)
