@@ -16391,261 +16391,347 @@ public:
   // 
   int animation_name_size(int a) const
   {
+    return 0;
   }
   unsigned char animation_name_get(int a, int ch) const
   {
+    return 'a';
   }
   int animation_channel_size(int a) const
   {
+    return 0;
   }
   tinygltf::AnimationChannel animation_channel_get(int a, int chan) const
   {
+    tinygltf::AnimationChannel c;
+    return c;
   }
   int animation_sampler_size(int a) const
   {
+    return 0;
   }
   tinygltf::AnimationSampler animation_sampler_get(int a, int chan) const
   {
+    tinygltf::AnimationSampler a2;
+    return a2;
   }
   //
   // Second level buffer
   //
   int buffer_name_size(int b) const
   {
+    return 0;
   }
   unsigned char buffer_name_get(int b, int ch) const
   {
+    return 'a';
   }
   int buffer_data_size(int b) const
   {
+    return 0;
   }
   unsigned char buffer_data_get(int b, int ch) const
   {
+    return 'a';
   }
   int buffer_uri_size(int b) const
   {
+    return 0;
   }
   unsigned char buffer_uri_get(int b, int ch) const
   {
+    return 'a';
   }
   //
   // BufferViews second level
   //
   int bufferviews_name_size(int bv) const
   {
+    return 0;
   }
   unsigned char bufferviews_name_get(int bv, int ch) const
   {
+    return 'a';
   }
   //
   // Material 2nd level
   //
   int material_name_size(int bv) const
   {
+    return 0;
   }
   unsigned char material_name_get(int bv, int ch) const
   {
+    return 'a';
   }
   double material_emissivefactor(int bv, int zero_to_two) const
   {
+    return 0.0;
   }
   int material_alphamode_size(int bv) const
   {
+    return 0;
   }
   unsigned char material_alphamode_get(int bv, int ch) const
   {
+    return 'a';
   }
   tinygltf::PbrMetallicRoughness material_pbr(int bv) const
   {
+    tinygltf::PbrMetallicRoughness i;
+    return i;
+
   }
   tinygltf::NormalTextureInfo material_normaltexture(int bv) const
   {
+    tinygltf::NormalTextureInfo i;
+    return i;
   }
   tinygltf::OcclusionTextureInfo material_occlusiontexture(int bv) const
   {
+    tinygltf::OcclusionTextureInfo i;
+    return i;
   }
   tinygltf::TextureInfo material_textureinfo(int bv) const
   {
+    tinygltf::TextureInfo i;
+    return i;
   }
+  
   //
   // Meshes 2nd level
   //
   int mesh_name_size(int mesh) const
   {
+    return 0;
   }
   unsigned char mesh_name_get(int mesh, int ch) const
   {
+    return 'a';
   }
   int mesh_primitives_size(int mesh) const
   {
+    return 0;
   }
   tinygltf::Primitive mesh_primitives_get(int mesh, int prim) const
   {
+    tinygltf::Primitive p;
+    return p;
   }
   int mesh_weights_size(int mesh) const
   {
+    return 0;
   }
   double mesh_weights_get(int mesh, int index) const
   {
+    return 0.0;
   }
   //
   // Nodes 2nd level
   //
   int node_name_size(int n) const
   {
+    return 0;
   }
   unsigned char node_name_get(int n, int ch) const
   {
+    return 'a';
   }
   int node_children_size(int n) const
   {
+    return 0;
   }
   int node_children_get(int n, int child) const
   {
+    return 0;
   }
   int node_rotation_size(int n) const
   {
+    return 0;
   }
   double node_rotation_get(int n, int i) const
   {
+    return 0.0;
   }
   int node_scale_size(int n) const
   {
+    return 0;
   }
   double node_scale_get(int n, int i) const
   {
+    return 0.0;
   }
   int node_translation_size(int n) const
   {
+    return 0;
   }
   double node_translation_get(int n, int i) const
   {
+    return 0.0;
   }
   int node_matrix_size(int n) const
   {
+    return 0;
   }
   double node_matrix_get(int n, int i) const
   {
+    return 0.0;
   }
   //
   // Textures, 2nd level
   //
   int texture_name_size(int t) const
   {
+    return 0;
   }
   unsigned char texture_name_get(int i, int ch) const
   {
+    return 'a';
   }
   //
   // Images, 2nd level
   //
   int image_name_size(int i) const
   {
+    return 0;
   }
   unsigned char image_name_get(int i, int ch) const
   {
+    return 'a';
   }
   int image_image_size(int i) const
   {
+    return 0;
   }
   unsigned char image_image_get(int i, int ch) const
   {
+    return 'a';
   }
   int image_mimeType_size(int i) const
   {
+    return 0;
   }
   unsigned char image_mimeType_get(int i, int ch) const
   {
+    return 'a';
   }
   int image_uri_size(int i) const
   {
+    return 0;
   }
   unsigned char image_uri_get(int i, int ch) const
   {
+    return 'a';
   }
   //
   // Skins 2nd level
   //
   int skin_name_size(int i) const
   {
+    return 0;
   }
   unsigned char skin_name_get(int i, int ch) const
   {
+    return 'a';
   }
   int skin_joints_size(int i) const
   {
+    return 0;
   }
   int skin_joints_get(int i, int j) const
   {
+    return 0;
   }
   //
   // Samplers, 2nd level
   //
   int sampler_name_size(int s) const
   {
+    return 0;
   }
   unsigned char sampler_name_get(int s, int ch) const
   {
+    return 'a';
   }
   //
   // Cameras 2nd level
   //
   int camera_type_size(int c) const
   {
+    return 0;
   }
   unsigned char camera_type_get(int c, int ch) const
   {
+    return 'a';
   }
   int camera_name_size(int c) const
   {
+    return 0;
   }
   unsigned char camera_name_get(int c, int ch) const
   {
+    return 'a';
   }
   tinygltf::PerspectiveCamera camera_perspective(int c) const
   {
+    tinygltf::PerspectiveCamera c2;
+    return c2;
   }
   tinygltf::OrthographicCamera camera_ortho(int c) const
   {
+    tinygltf::OrthographicCamera c2;
+    return c2;
   }
   //
   // Scenes 2nd level
   //
   int scenes_name_size(int s) const
   {
+    return 0;
   }
   unsigned char scenes_name_get(int s, int ch) const
   {
+    return 'a';
   }
   int scenes_nodes_size(int s) const
   {
+    return 0;
   }
   int scenes_nodes_get(int s, int node) const
   {
+    return 0;
   }
   //
   // Lights 2nd level
   //
   int light_name_size(int l) const
   {
+    return 0;
   }
   unsigned char light_name_get(int l, int ch) const
   {
+    return 'a';
   }
   int light_color_size(int l) const
   {
+    return 0;
   }
   double light_color_get(int l, int component) const
   {
+    return 0.0;
   }
   int light_type_size(int l) const
   {
+    return 0;
   }
   unsigned char light_type_get(int l, int ch) const
   {
+    return 'a';
   }
   tinygltf::SpotLight light_spot(int i) const
   {
+    tinygltf::SpotLight l;
+    return l;
   }
   //
   // 3rd level
@@ -17129,6 +17215,7 @@ public:
 	return sum;
       }
     };
+    return 0;
   }
   void fill_header() const
   {
@@ -17173,6 +17260,7 @@ public:
       case 14: return (unsigned char*)&tf->get_light(0);
 	// tinygltf 2nd level data structures
       };
+    return 0;
   }
   virtual unsigned char* BlockWithOffset(int block, int offset, int size) const
   {
@@ -17704,6 +17792,8 @@ GameApi::ML GameApi::PolygonApi::p_mtl2_prepare(P p)
 #if 0
   return add_main_loop(e, new P_MTL2_ML(e,p));
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 
 GameApi::ARR GameApi::PolygonApi::p_mtl2(EveryApi &ev, std::string obj_url, std::string mtl_url, std::string prefix, int count, int start_index, int end_index, float mix)
@@ -19221,6 +19311,8 @@ GameApi::P GameApi::PolygonApi::light_transport(P p, int num, float light_dir_x,
   Vector light_dir(light_dir_x, light_dir_y, light_dir_z);
   return add_polygon2(e, new ShadowColor(coll, num, light_dir),1);
 #endif
+  GameApi::P p2 = { -1 };
+  return p2;
 }
 
 class TextureFromP : public Bitmap<Color>
@@ -19628,6 +19720,8 @@ GameApi::ML GameApi::PolygonApi::choose_time(ML next, std::vector<ML> vec, float
     }
   return add_main_loop(e, new ChooseTime(nxt, v, delta_time));
 #endif
+  GameApi::ML ml = { -1 };
+  return ml;
 }
 
 
@@ -20081,6 +20175,8 @@ GameApi::P GameApi::PolygonApi::texture_add(P p, BM bm)
   ::Bitmap<Color> *b2 = find_color_bitmap(handle);
   return add_polygon2(e, new AddMeshTexture(coll, b2),1);
 #endif
+  GameApi::P p2 = { -1 };
+  return p2;
 }
 
 
@@ -23644,6 +23740,8 @@ GameApi::ATT GameApi::PolygonApi::find_attach2(P p, LI li)
 
   return add_attach(e, new Att(coll,lines));
 #endif
+  GameApi::ATT p2 = { -1 };
+  return p2;
 }
 // NOTE, find_attach and attach_cache need to have the same P instance.
 GameApi::ATT GameApi::PolygonApi::attach_cache(ATT a, P p)
@@ -23653,6 +23751,8 @@ GameApi::ATT GameApi::PolygonApi::attach_cache(ATT a, P p)
   FaceCollection *coll = find_facecoll(e,p);
   return add_attach(e, new AttCache(att, coll));
 #endif
+  GameApi::ATT a2 = { -1 };
+  return a2;
 }
 
 
@@ -23775,6 +23875,8 @@ GameApi::P split_attach_faces(GameApi::Env &e, GameApi::P p, GameApi::ATT att, i
   Attach *att2 = find_attach(e, att);
   return add_polygon2(e, new SplitAttachFaces(coll, att2, max_attach, num, prepared),1);
 #endif
+  GameApi::P p2 = { -1 };
+  return p2;
 }
 
 GameApi::ARR GameApi::PolygonApi::split_faces(P p, ATT att, int max_attach) // max_attach is number of lines in LI
@@ -23936,6 +24038,7 @@ std::vector<GameApi::P> GameApi::PolygonApi::orig_pose2(EveryApi &ev, std::vecto
     }
   return res;
 #endif
+  return std::vector<GameApi::P>();
 }
 
 std::vector<GameApi::P> GameApi::PolygonApi::orig_pose(EveryApi &ev, P p, LI li, int li_size)
@@ -24049,6 +24152,8 @@ GameApi::MS GameApi::PolygonApi::new_pose(EveryApi &ev, LI li_orig, LI li)
   //GameApi::MS ms_inv = ev.matrices_api.inverse_ms(ms_0);
   return add_matrix_array(e, new NewPose(e,ev,li_orig,li));
 #endif
+  GameApi::MS ms = { -1 };
+  return ms;
 }
 
 
@@ -24717,6 +24822,8 @@ GameApi::BM GameApi::BitmapApi::lightmap_bitmap(int sx, int sy, P faces, P faces
   BM bm = add_bitmap(e, handle2);
   return bm;
 #endif
+  GameApi::BM m = { -1 };
+  return m;
 }
 
 class CollectBitmap : public CollectInterface
@@ -24904,6 +25011,8 @@ GameApi::P GameApi::PolygonApi::slow_calc_lights(GameApi::P p, float light_dir_x
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new SponzaFaceCollection(coll, light_dir_x, light_dir_y, light_dir_z),1);
 #endif
+  GameApi::P p2 = { -1 };
+  return p2;
 }
 
 class CombineTextures : public ForwardFaceCollection
@@ -25577,6 +25686,8 @@ GameApi::P GameApi::PolygonApi::combine_anim(P p1, P p2, float start_time, float
   FaceCollection *pp2 = find_facecoll(e,p2);
   return add_polygon2(e, new CombineAnim2(pp1,pp2,start_time,end_time),1);
 #endif
+  GameApi::P p = { -1 };
+  return p;
 }
 
 GameApi::P GameApi::PolygonApi::sphere_anim(float c_x, float c_y, float c_z,
@@ -26196,6 +26307,8 @@ GameApi::P GameApi::PolygonApi::material_face_collection(P base, P material)
   FaceCollection *coll2 = find_facecoll(e,material);
   return add_polygon2(e, new MaterialFaceCollection(coll,coll2),1);
 #endif
+  GameApi::P p = { -1 };
+  return p;
 }
 
 
@@ -26316,6 +26429,8 @@ GameApi::W GameApi::MainLoopApi::pts_world(PTS p, int type)
   PointsApiPoints *points = find_pointsapi_points(e,p);
   return add_world(e, new PTSWorld(points,type));
 #endif
+  GameApi::W w = { -1 };
+  return w;
 }
 
 #if 0
@@ -26339,6 +26454,8 @@ GameApi::CX GameApi::MainLoopApi::cache_one(P p, MT mat2)
   Material *mat = find_material(e,mat2);
   return add_cache(e, new SingleCache(coll,mat));
 #endif
+  GameApi::CX c = { -1 };
+  return c;
 }
 
 
@@ -26394,6 +26511,8 @@ GameApi::CX GameApi::MainLoopApi::array_cache(std::vector<CX> vec)
     }
   return add_cache(e, new ArrayCache(vec2));
 #endif
+  GameApi::CX x = { -1 };
+  return x;
 }
 
 #if 0
@@ -26416,6 +26535,7 @@ public:
   {
     int type = world->BlockType(start_block+i);
     Material *mat = cache->GetMaterial(type);
+    return mat;
   }
 private:
   ICache *cache;
@@ -26431,6 +26551,8 @@ GameApi::CX GameApi::MainLoopApi::subworld(CX c, W w, int start_block, int end_b
   IWorld *ww = find_world(e,w);
   return add_cache(e, new SubWorldCache(cc,ww,start_block,end_block));
 #endif
+  GameApi::CX c2 = { -1 };
+  return c2;
 }
 
 #if 0
@@ -26497,6 +26619,8 @@ GameApi::W GameApi::MainLoopApi::array_world(std::vector<W> vec)
     vec2.push_back(find_world(e,vec[i]));
   return add_world(e, new ArrayWorld(vec2));
 #endif
+  GameApi::W w = { -1 };
+  return w;
 }
 
 class ArrayPlatform : public Platform
@@ -26827,6 +26951,7 @@ public:
 	plot-=u_y;
 	if (point==3) return plot;
       }
+    return Point(0.0,0.0,0.0);
   }
   virtual Vector PointNormal(int face, int point) const
   {
@@ -28632,6 +28757,7 @@ public:
   {
     if (!firsttime)
       return coll->PointNormal(indices[face],point);
+    return Vector(1.0,1.0,1.0);
   }
   virtual float Attrib(int face, int point, int id) const
   {
@@ -29257,6 +29383,7 @@ public:
 	    Point p3 = coll->FacePoint(i,3);
 	    return quadArea(p0,p1,p2,p3);
 	    }
+	  return 0.0f;
 	};
 	return faceArea(a) > faceArea(b);
       });
