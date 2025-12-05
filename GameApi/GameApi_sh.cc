@@ -441,7 +441,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   std::vector<float> *v2 = cache_matrix[name2];
   int pos =0;
   bool same = true;
-  for(int i=std::max(0,start);i<=std::min(start+s,end);i++)
+  for(int i=std::max(0,start);i<=std::min(start+s,end-1);i++)
     {
       Matrix mm = find_matrix(e,m[i]);
       Matrix mm2 = Matrix::Transpose(mm);
@@ -460,7 +460,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  //if (!same)
+  if (!same)
     prog->set_var_matrix2(name, *v,start);
   delete cache_matrix[name2];
   cache_matrix[name2]=v;
