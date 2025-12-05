@@ -3920,7 +3920,7 @@ std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std:
   url = deploy_replace_string(url,"$(INSTDIR)",cd2);
 #endif
   url=convert_spaces_to_url_encoding(url);
-  std::cout << "load url=" << url << std::endl;
+  // std::cout << "load url=" << url << std::endl;
 
   
     if (url.size()==0) { std::vector<unsigned char, GameApiAllocator<unsigned char> > *b = new std::vector<unsigned char, GameApiAllocator<unsigned char> >(); /*load_from_url_del.item.push_back(b);*/ return b; }
