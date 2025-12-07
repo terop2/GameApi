@@ -1,23 +1,27 @@
 #!/bin/bash
+
+#SITE=ssh.meshpage.org
+SITE=192.168.1.104
+
 start_it()
 {
     MACHINE=`uname -n`
-    if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-      SSHSOCKET=~/.ssh/terop@meshpage.org
-      sshpass -p $1 ssh -f -N -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org
-    fi
+    #if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
+    #  SSHSOCKET=~/.ssh/terop@meshpage.org
+    #  ssh -f -N -o ControlPath=$SSHSOCKET terop@$SITE
+    #fi
 }
 copy_it()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	sshpass -p $2 scp -o ControlPath=$SSHSOCKET terop@ssh.meshpage.org:/home/terop/meshpage.org/$1 ./build/
+	scp terop@$SITE:/home/terop/meshpage.org/$1 ./build/
     else
 	if [ "$MACHINE" == "terop-pc2" ]; then
 	    cp /home/terop/meshpage.org/$1 ./build/
 	    echo "copying $1 to build directory"
 	else
-	    sshpass -p $1 scp https://ssh.meshpage.org/$1 ./build/
+	    scp https://$SITE/$1 ./build/
 	fi
     fi
 }
@@ -39,15 +43,15 @@ copy_it2()
 finish()
 {
     MACHINE=`uname -n`
-    if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	sshpass -p $1 ssh -S $SSHSOCKET -O exit terop@ssh.meshpage.org
-    fi
+    #if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
+    #ssh -S $SSHSOCKET -O exit terop@$SITE
+    #fi
 }
 finish2()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	sshpass -p $1 scp ${arr2[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
+	scp ${arr2[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 
 }
