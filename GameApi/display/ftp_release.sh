@@ -1,4 +1,7 @@
 #!/bin/bash
+#SITE=meshpage.org
+SITE=192.168.1.104
+
 INDEX=0
 copy_it()
 {
@@ -15,7 +18,7 @@ finish()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr[@]} terop@meshpage.org:/home/terop/meshpage.org/
+	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 }
 #copy_it pessimist.php
@@ -43,7 +46,8 @@ copy_it oauth2.php
 copy_it oauth2_callback.php 
 copy_it material_db.txt 
 copy_it border_db.txt 
-copy_it background_db.txt 
+copy_it background_db.txt
+copy_it brightness_db.txt
 copy_it model_db.txt 
 copy_it gameapi_example.php
 copy_it gameapi_example_transparent.php

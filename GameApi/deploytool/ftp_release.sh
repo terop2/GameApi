@@ -1,4 +1,8 @@
 #!/bin/bash
+
+#SITE=ssh.meshpage.org
+SITE=192.168.1.104
+
 INDEX=0
 copy_it()
 {
@@ -15,7 +19,7 @@ finish()
 {
     MACHINE=`uname -n`
     if [ "$MACHINE" == "terop-HP-255-G8-Notebook-PC" ]; then
-	scp ${arr[@]} terop@ssh.meshpage.org:/home/terop/meshpage.org/
+	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 }
 copy_it deploytool

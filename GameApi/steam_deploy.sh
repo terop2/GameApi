@@ -5,6 +5,7 @@ if [[ $1 == "" ]]; then
 fi
 
 ./full_deploy.sh $1 incremental steam noweb
+cp /home/terop/cvs/GameApi/GameApi/display/gameapi_display.zip /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
 cp /home/terop/cvs/GameApi/GameApi/editor/gameapi-builder /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
 cp /home/terop/cvs/GameApi/GameApi/cmdline/gameapi_cmdline /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
 cp /home/terop/cvs/GameApi/GameApi/libGameApi.so /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/libs/

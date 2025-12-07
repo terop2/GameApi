@@ -28,6 +28,13 @@ finish()
 	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 }
+copy_it mesh_css.css
+copy_it .htaccess
+copy_it _bootswatch.scss
+copy_it _variables.scss
+copy_it bootstrap.css
+copy_it unknown.webp
+copy_it cookies.php
 copy_it screen1.webp
 copy_it img_1.webp
 copy_it img_2.webp
