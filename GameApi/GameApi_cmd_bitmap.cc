@@ -698,6 +698,14 @@ std::vector<GameApiItem*> bitmapapi_functions()
 			 "P", "polygon_api", "s_sample"));
 #endif
 #if (ALL==1)||(C_BITMAP==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::cbm_to_cfb,
+			 "cbm_to_cfb",
+			 { "bm", "red_mult", "red_add", "green_mult", "green_add", "blue_mult", "blue_add", "alpha_mult", "alpha_add"},
+			 { "CBM", "float","float", "float","float", "float", "float","float","float" },
+			 { "", "0.333", "0.0", "0.333", "0.0", "0.333", "0.0", "0.0", "0.0" },
+			 "CFB", "points_api", "cbm_to_cfb"));
+#endif
+#if (ALL==1)||(C_BITMAP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::float_bitmap_api, &GameApi::FloatBitmapApi::C_bitmap,
 			 "cfb_c",
 			 { "sx", "sy", "C" },

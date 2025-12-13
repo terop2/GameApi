@@ -3357,3 +3357,136 @@ GameApi::PTS GameApi::PointsApi::random_points_in_plane(EveryApi &ev, float key,
     }
   return pt_array(ev,vec);
 }
+
+class HeightField : public PointsApiPoints
+{
+public:
+  HeightField(PointsApiPoints *points, ContinuousBitmap<float> *landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+    : points(points), landscape(landscape), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z)
+  {
+  }
+  void Collect(CollectVisitor &vis) { points->Collect(vis); vis.register_obj(this); }
+  void HeavyPrepare() { landscape->Prepare(); }
+  virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const { return points->NumPoints(); }
+  virtual Point Pos(int i) const
+  {
+    Point p = points->Pos(i);
+    float px = (p.x-start_x)/(end_x-start_x);
+    float pz = (p.z-start_z)/(end_z-start_z);
+    if (px>=0.0f && px<=1.0f) {
+      if (pz>=0.0f && pz<=1.0f) {
+	px*=landscape->SizeX();
+	pz*=landscape->SizeY();
+	p.y = landscape->Map(px,pz);
+	p.y = start_y + p.y*(end_y-start_y);
+      }
+    }
+    return p;
+  }
+  virtual unsigned int Color(int i) const { return points->Color(i); }
+  virtual Vector Normal(int i) const { return points->Normal(i); }
+private:
+  PointsApiPoints *points;
+  ContinuousBitmap<float> *landscape;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+
+class HeightField_p : public ForwardFaceCollection
+{
+public:
+  HeightField_p(FaceCollection *points, ContinuousBitmap<float> *landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+    : ForwardFaceCollection(*points), points(points), landscape(landscape), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z)
+  {
+  }
+  virtual std::string name() const { return "HeightField_p"; } 
+  virtual Point FacePoint(int face, int point) const
+  {
+    Point p = points->FacePoint(face,point);
+    float px = (p.x-start_x)/(end_x-start_x);
+    float pz = (p.z-start_z)/(end_z-start_z);
+    if (px>=0.0f && px<=1.0f) {
+      if (pz>=0.0f && pz<=1.0f) {
+	px*=landscape->SizeX();
+	pz*=landscape->SizeY();
+	p.y = landscape->Map(px,pz);
+	p.y = start_y + p.y*(end_y-start_y);
+      }
+    }
+    return p;
+  }  
+private:
+  FaceCollection *points;
+  ContinuousBitmap<float> *landscape;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+
+GameApi::PTS GameApi::PointsApi::height_field_pts(PTS points, CFB landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  PointsApiPoints *p = find_pointsapi_points(e,points);
+  ContinuousBitmap<float> *cb = find_cont_float(e,landscape);
+  return add_points_api_points(e,new HeightField(p,cb,start_x,end_x,start_y,end_y,start_z,end_z));
+}
+
+GameApi::P GameApi::PointsApi::height_field_p(P faces, CFB landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  FaceCollection *p = find_facecoll(e,faces);
+  ContinuousBitmap<float> *cb = find_cont_float(e,landscape);
+  return add_polygon2(e,new HeightField_p(p,cb,start_x,end_x,start_y,end_y,start_z,end_z),1);
+}
+
+class CBM_TO_CFB : public ContinuousBitmap<float>
+{
+public:
+  CBM_TO_CFB( ContinuousBitmap<Color> *bitmap, float red_mult, float red_add,
+	      float green_mult, float green_add,
+	      float blue_mult, float blue_add,
+	      float alpha_mult, float alpha_add) : bitmap(bitmap),
+						   red_mult(red_mult), red_add(red_add),
+						   green_mult(green_mult), green_add(green_add),
+						   blue_mult(blue_mult), blue_add(blue_add),
+						   alpha_mult(alpha_mult), alpha_add(alpha_add)
+  {
+  }
+  void Collect(CollectVisitor &vis) { bitmap->Collect(vis); }
+  void HeavyPrepare() { }
+  virtual float SizeX() const { return bitmap->SizeX(); }
+  virtual float SizeY() const { return bitmap->SizeY(); }
+  virtual float Map(float x, float y) const
+  {
+    Color c = bitmap->Map(x,y);
+    return red_add + c.rf()*red_mult +
+      blue_add + c.bf()*blue_mult +
+      green_add + c.gf()*green_mult +
+      alpha_add + c.af()*alpha_mult;
+  }
+  virtual void Prepare() { bitmap->Prepare(); }
+  virtual bool ReadyToPrepare() const { return bitmap->ReadyToPrepare(); }
+private:
+  ContinuousBitmap<Color> *bitmap;
+  float red_mult, red_add;
+  float green_mult, green_add;
+  float blue_mult, blue_add;
+  float alpha_mult, alpha_add;
+};
+
+GameApi::CFB GameApi::PointsApi::cbm_to_cfb( CBM bm,
+					     float red_mult, float red_add,
+					     float green_mult, float green_add,
+					     float blue_mult, float blue_add,
+					     float alpha_mult, float alpha_add)
+{
+  ContinuousBitmap<Color> *bbm = find_continuous_bitmap(e,bm);
+  return add_cont_float(e,new CBM_TO_CFB(bbm,red_mult, red_add,
+					 green_mult,green_add,
+					 blue_mult,blue_add,
+					 alpha_mult,alpha_add));
+}
