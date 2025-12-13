@@ -387,6 +387,15 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev" },
 			 "P", "polygon_api", "fullscreen_quad"));
 #endif
+#if (ALL==1)||(HEIGHT_FIELD_P==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::height_field_p,
+			 "heightfield_p",
+			 { "faces", "landscape", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			 { "P", "CFB", "float", "float", "float", "float", "float", "float" },
+			 { "", "", "-1000.0", "1000.0", "-300.0", "300.0", "-3000.0", "1000.0" },
+			 "P", "points_api", "height_field_p"));
+#endif
+
 #if (ALL==1)||(BG_IMAGE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::bg_image,
 			 "bg_image",

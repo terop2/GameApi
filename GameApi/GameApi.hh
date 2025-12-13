@@ -3706,6 +3706,13 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  IMPORT CFB cbm_to_cfb( CBM bm, float red_mult, float red_add,
+			 float green_mult, float green_add,
+			 float blue_mult, float blue_add,
+			 float alpha_mult, float alpha_add);
+  IMPORT PTS height_field_pts(PTS points, CFB landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  IMPORT P height_field_p(P faces, CFB landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
+  
   IMPORT PTS block_pts_debug();
   IMPORT PTS random_points_in_plane(EveryApi &ev, float key,
 				    float start_x, float end_x,
