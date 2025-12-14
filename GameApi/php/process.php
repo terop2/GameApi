@@ -111,7 +111,7 @@ echo "<meta name=\"description\" content=\"Getting the best rendering result fro
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=0.7\">\n";
 echo "<meta name=\"keywords\" content=\"GameAPI engine, GameAPI builder, Meshpage GameAPI, Meshpage game engine, C++ game engine for beginners, WebGL game engine, SDL OpenGL game engine,lightweight game engine, beginner game development, game engine for students, high school game programming, learn game dev with C++, easy game engine for teens, intro to game development, GLTF game engine, emscripten game engine, build games with C++ and WebGL, cross-platform game engine, open source C++ game engine, mesh-based game development, alternative to Unity for students, C++ to WebGL game dev workflow, how to start making games in high school, low-level 3D engine with scripting,retro-style engine for modern platforms\">\n";
 
-echo "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css\" integrity=\"sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh\" crossorigin=\"anonymous\">";
+//echo "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css\" integrity=\"sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh\" crossorigin=\"anonymous\">";
 
 
 echo "</head>\n";
