@@ -1,5 +1,5 @@
 <?php
-header("Cross-Origin-Opener-Policy: same-origin");
+//header("Cross-Origin-Opener-Policy: same-origin");
 //header("Cross-Origin-Embedder-Policy: require-corp");
 //header("Cross-Origin-Resource-Policy: same-site");
 //header("Access-Control-Allow-Headers: Range");
@@ -51,7 +51,7 @@ $hostname=gethostbyaddr($priv_ip);
 if (empty($hostname)) { $hostname=$priv_ip; }
 
 
-$https = "http";
+$https = "https";
 $site = $priv_ip2; //$hostname; //"[2001:14ba:9c31:e100::198]"; //192.168.1.104";
 $assetsite = $priv_ip2 . "/assets"; //"[2001:14ba:9c31:e100::198]/assets"; // "192.168.1.104/assets";
 $sitename = $hostname; //"[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
@@ -109,8 +109,8 @@ if ($page!="2") {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
 <meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
 <meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
-<!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script-->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
 
 <?php
@@ -159,7 +159,7 @@ if ($page=="2") {
    google_meta( $arr2, $arr2["index"]);
 }
 
-echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" />";
+//echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"mesh_css.css?" . filemtime("mesh_css.css") . "\" />";
 
 ?>
 
@@ -981,11 +981,11 @@ Chrome: chrome://flags -> experimental quic protocol -> enabled
 
 <h2>What is the standard rendering pipeline?</h2>
 
-<img src="$https://$site/assets/std_render_pipeline.png" width="600" height="200"/>
+<img src="<?php echo "$https://$site/assets/std_render_pipeline.png" ?>" width="600" height="200"/>
 
 <h2>And if you want something to move on screen?</h2>
 
-<img src="$https://$site/assets/std_rendering_with_move.png" width="600" height="200"/>
+<img src="<?php echo "$https://$site/assets/std_rendering_with_move.png" ?>" width="600" height="200"/>
 
 <h2>Is there a 3d model viewer that uses your engine?</h2>
 
