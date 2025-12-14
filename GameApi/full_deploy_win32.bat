@@ -29,7 +29,7 @@ pushd editor & call make & popd
 pushd editor\release & call copy_files.bat & popd
 pushd editor\release & call make_msi.bat %1 & popd
 pushd editor\release & call copy Builder.msi GameApi-Builder-v%2.msi & popd
-pushd editor\release & call scp GameApi-Builder-v%2.msi terop@192.168.1.104:/home/terop/meshpage.org/ & popd
+pushd editor\release & call scp GameApi-Builder-v%2.msi terop@meshpage.org:/home/terop/meshpage.org/ & popd
 if "%4"=="steam" GOTO STEAM2
 pushd cmdline & call make -f Makefile.win32 & popd
 GOTO STEAM2_DONE
@@ -45,5 +45,5 @@ pushd cmdline & call copy ..\libGameApi_mt.dll zip2\libGameApi_mt.dll & popd
 pushd cmdline & call copy ..\libGameApi_pl.dll zip2\libGameApi_pl.dll & popd
 pushd cmdline & call copy ..\libGameDep.dll zip2\libGameDep.dll & popd
 pushd cmdline\zip2 & call "c:\program files (x86)\gnuwin32\bin\zip" -r gameapi_cmdline.zip *.* & popd
-pushd cmdline\zip2 & call scp gameapi_cmdline.zip terop@192.168.1.104:/home/terop/meshpage.org/GameApi_cmdline_%2.zip & popd
+pushd cmdline\zip2 & call scp gameapi_cmdline.zip terop@meshpage.org:/home/terop/meshpage.org/GameApi_cmdline_%2.zip & popd
 :END
