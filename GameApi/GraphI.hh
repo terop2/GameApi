@@ -2436,6 +2436,7 @@ public:
 };
 
 
+#if 0
 class GLTFEditInterface : public CollectInterface
 {
 public:
@@ -2461,6 +2462,7 @@ public:
   virtual int images_size() const=0;
   virtual GameApi::BM get_image(int i) const=0;  
 };
+#endif
 
 class GLTFModelInterface : public CollectInterface
 {

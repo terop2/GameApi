@@ -437,17 +437,19 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   name2+=char(end);
   
   std::vector<float> *v = new std::vector<float>;
-  int s = std::min(m.size(),size_t(end-start));
+  int s = std::min(m.size()-std::max(0,start),size_t(end-std::max(0,start)));
   std::vector<float> *v2 = cache_matrix[name2];
   int pos =0;
   bool same = true;
-  for(int i=std::max(0,start);i<=std::min(start+s,end-1);i++)
+  // std::cout << start << " " << end << " ";
+  for(int i=std::max(0,start);i<=std::min(std::max(0,start)+s,end);i++)
     {
       Matrix mm = find_matrix(e,m[i]);
       Matrix mm2 = Matrix::Transpose(mm);
-      //std::cout << mm << std::endl;
+      //std::cout << i << "::" << mm2 << std::endl;
       for(int ii=0;ii<16;ii++) {
 	v->push_back(mm2.matrix[ii]);
+	//std::cout << mm2.matrix[ii] << ",";
 	if (v2) {
 	  //std::cout << mm2.matrix[ii] << " == " << v2->operator[](pos);
 	  
@@ -457,10 +459,11 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
 	pos++;
        }
     }
+  //std::cout << std::endl;
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  if (!same)
+  if (!same && v)
     prog->set_var_matrix2(name, *v,start);
   delete cache_matrix[name2];
   cache_matrix[name2]=v;
@@ -498,7 +501,7 @@ EXPORT GameApi::PinIn GameApi::ShaderApi::set_var(GameApi::SH shader, const char
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;
   Program *prog = seq->prog(p->ids[shader.id]);
-  //if (!same)
+  if (!same)
     prog->set_var_matrix(name, *v);
   delete cache_matrix[name2];
   cache_matrix[name2]=v;

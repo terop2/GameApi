@@ -20465,7 +20465,7 @@ public:
 #endif	
 	
 	ee.in_MV = find_matrix(env, m) * e.in_MV;
-	ee.env = find_matrix(env, m) * e.in_MV;
+	ee.env = find_matrix(env, m) * e.env;
 	inner->execute(ee);
 	ev.shader_api.unuse(s3);
       }	  

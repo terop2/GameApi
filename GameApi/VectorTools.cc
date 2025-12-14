@@ -284,6 +284,22 @@ bool Matrix::has_nan(const Matrix &m)
   if (std::isnan(m.matrix[13])) return true;
   if (std::isnan(m.matrix[14])) return true;
   if (std::isnan(m.matrix[15])) return true;
+  if (std::isnan(-m.matrix[0])) return true;
+  if (std::isnan(-m.matrix[1])) return true;
+  if (std::isnan(-m.matrix[2])) return true;
+  if (std::isnan(-m.matrix[3])) return true;
+  if (std::isnan(-m.matrix[4])) return true;
+  if (std::isnan(-m.matrix[5])) return true;
+  if (std::isnan(-m.matrix[6])) return true;
+  if (std::isnan(-m.matrix[7])) return true;
+  if (std::isnan(-m.matrix[8])) return true;
+  if (std::isnan(-m.matrix[9])) return true;
+  if (std::isnan(-m.matrix[10])) return true;
+  if (std::isnan(-m.matrix[11])) return true;
+  if (std::isnan(-m.matrix[12])) return true;
+  if (std::isnan(-m.matrix[13])) return true;
+  if (std::isnan(-m.matrix[14])) return true;
+  if (std::isnan(-m.matrix[15])) return true;
   return false;
 }
 
