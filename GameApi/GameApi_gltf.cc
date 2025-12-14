@@ -13135,7 +13135,7 @@ public:
  
   void execute(MainLoopEnv &e) {
 
-    const int update_freq=2;
+    const int update_freq=1;
     framenum++;
     if (framenum>update_freq-1) framenum=0;
    
