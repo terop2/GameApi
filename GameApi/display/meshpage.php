@@ -169,8 +169,8 @@ $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
 ?>
-<link rel="preload" href="https://cdn.jsdelivr.net/npm/vue@1.0.28/dist/vue.js" as="script"/>
 </head>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -219,7 +219,7 @@ $highmem = js_highmem();
 }
 </script>
 <body id="body" style="overflow:hidden">
-<script src="https://cdn.jsdelivr.net/npm/vue@1.0.28/dist/vue.js"></script>
+
 <script>
 if (!crossOriginIsolated) {
     console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
@@ -240,147 +240,25 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 <div id="app" class="container-lg">
 
 <!-- new navbar -->
-
-
-<div id="navbar" class="navi navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-  <div class="ncenter noselect container-fluid p-0">
-
-    <!-- Left section -->
-    <ul class="navbar-nav flex-row">
-      <li class="nav-item mx-3">
-        <a class="nav-link" href="javascript:void(0);" @click="resume_cookies">
-          <svg width="10" height="10" v-if="indicator[0]">
-            <rect width="10" height="10" style="fill:#ff0000;stroke-width:0;stroke:rgb(0,0,0);" />
-          </svg>
-          <svg width="10" height="10" v-else>
-            <rect width="10" height="10" style="fill:#00ff00;stroke-width:0;stroke:rgb(0,0,0);" />
-          </svg>
-        </a>
-      </li>
-
-    <!-- Breadcrumb / dynamic links -->
-      <li class="nav-item mx-3" v-for="bread in main_breadcrumb">
-        <a
-          class="nav-link"
-          :class="bread.link ? 'navi highlightedtab link active' : 'navi link'"
-          @click="bread_click($event)"
-        >
-          <b>{{ bread.title }}</b>
-        </a>
-      </li>
-
-    <!-- Right side -->
-    </ul>
-
-  </div>
-</div>
-
-
-<div id="debug">
-  {{ main_breadcrumb }}
-</div>
-
-
-<!-- old navbar -->
-
-<!--div id="navbar" class="navi navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-<div class="ncenter noselect container-fluid navbar-nav ms-auto p-0">
-<a class="navbar-brand" href="#">meshpage.org</a>
-<div class="collapse navbar-collapse" id="navbarNav">
-<ul class="navbar-nav flex-row">
-<li class="nav-item">
-<a class="nav-link" href="JavaScript:void(0);" onClick="resume_cookies()">
-<template v-if="indicator[0]">
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-<template v-else>
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-</a>
-</li>
-<li class="nav-item">
-</li>
-</ul>
-<ul class="navbar-nav flex-row">
-<li class="nav-item">
-<a class="nav-link" href="#">A</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">B</a>
-</li>
-</ul>
-<ul class="navbar-nav flex-row">
-<li class="nav-item">
-<a class="nav-link" href="#">testi</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">testi</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">testi</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">testi</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">testi</a>
-</li>
-<template v-for="bread in main_breadcrumb">
-<template v-if="bread.link"-->
-<!--meta itemprop="position" v-bind:content="bread.num"/-->
-<!--li class="nav-item">
-<a class="navi highlightedtab link nav-link active" v-on:click="bread_click($event)"><b>xxx<span class="nav-item" v-html="bread.title"></span>yyy</b></a>
-</li>
-</template>
-<template v-if="!bread.link"-->
-<!--div style="font-family: 'calibri', sans-serif" class="link level1 container-fluid"-->
-<!--meta itemprop="position" v-bind:content="bread.num"/-->
-<!--li class="nav-item">
-<a class="navi link nav-link" v-on:click="bread_click($event)"><span class="nav-item"><b>xxx {{ bread.title }} yyy</b></span></a>
-</li-->
-<!--/li-->
-<!--/template>
-</template>
-
-</ul>
-<ul class="navbar-nav flex-row">
-<li class="nav-item">
-<button class="navbar-toggler" type="button">
-<span class="navbar-toggler-icon"></span>
-</button>
-</li>
-</ul>
+<div id="navbar1" style="display:none">
+<div class="topnav">
+  <a class="active" href="#" id="menu_main"><?php echo "$sitename"; ?></a>
+  <a href="#" id="menu_tool">tool download</a>
+  <a href="#" id="menu_faq">faq</a>
+  <a href="#" id="menu_tutorial">docs</a>
+  <a href="#" id="menu_about">about</a>
 </div>
 </div>
-</div-->
+<div id="navbar2" style="display:none">
+<div class="topnav">
+  <a class="active" href="#" id="menu_main2"><?php echo "$sitename"; ?></a>
+  <a href="#" id="menu_display">mesh display</a>
+</div>
+</div>
 
-<!--div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; display:none;" class="link level1 container-fluid" id="login_label">
-<a class="navi link nav-link" v-on:click="login_click($event)"  id="login_button"><span><div id="login_info nav-item">Anonymous</div></span></a>
-</div>
-</div>
-</div>
-<div class="dropdown-window navbar-toggler" id="dropdown" style="display:none">
-<div id="navbarNav" class="dropdown-content collapse navbar-collapse">
-<ul class="navbar-nav">
-<li class="nav-item">
-<a class="nav-link" v-on:click="login_menu_click($event, 'profile')">Profile</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" v-on:click="login_menu_click($event, 'create_new')">Create new anim</a>
-</li>
-<li class="nav-item">
-<a class="nav-link" v-on:click="login_menu_click($event, 'my_animations')">My Animations</a><hr>
-</li>
-<li class="nav-item">
-<a class="nav-link" href="#">Logout</a>
-</li>
-</div>
-</div-->
-<div class="main">
+<!-- new navbar ends -->
+
+<div class="main" id="main" style="display:none;">
 <div v-if="state.empty">
 </div>
 <?php
@@ -440,76 +318,11 @@ if ($sitename=="dinoengine.com") {
   <input type="submit">
   </form>
 </div>
-<script>
-function open_tab(event, label) {
-  var tabcontent = document.getElementsByClassName("tabcontent");
-  var i;
-  for(i=0;i<tabcontent.length; i++) {
-     tabcontent[i].style.display="none";
-  }
-  var tablinks = document.getElementsByClassName("tablinks");
-  for(i=0;i<tablinks.length;i++) {
-     tablinks[i].className = tablinks[i].className.replace(" active", "");
-  }
-  document.getElementById(label).style.display = "block";
-  event.currentTarget.className += " active";
-}
-</script>
 </div>
 <div v-show="state.my_animations" style="display:none">
 </div>
 <div id="main_div">
 
-
-<script>
-/*
-function populate_imgs()
-{
-   var s = imgarr.length;
-   var i = 0;
-   for(i=0;i<s;i++)
-   {
-      var node = imgarr[i];
-      var tag = node.tag;
-      var filename = node.filename;
-      //console.log(tag);
-      //console.log(filename);
-      var tag2 = document.getElementById(tag);
-      tag2.src = filename;
-   }
-}
-*/
-/*
-function preload_anim(num, file_id)
-{
-  for(var i=0;i<15;i++)
-  {
-   var filename = "<?php echo $https ?>://<?php echo $site ?>/user_data/user_terop/grab";
-   var num2 = file_id.toString();
-   var str = i.toFixed().toString();
-   while (str.length<3) str="0".concat(str);
-   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
-   var url = filename2;
-
-   //const preloadImage = new Image();
-   //preloadImage.src=url;
-   var tag = document.getElementById("preload".concat(i.toString()));
-   tag.src = url;
-  }
-}
-*/
-function load_anim_pic_reset(num,file_id)
-{
-   var name = "displayimage".concat(num.toString());
-   var imgtag = document.getElementById(name);
-   imgtag.onmousemove = function() { }
-
- if (file_id!=-1) { 
-   imgtag.src="<?php echo $https ?>://<?php echo $site ?>/user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
-   }
-
-}
-</script>
 <?php
 require_once("user.php");
 $user="terop";
@@ -538,30 +351,6 @@ if ($startpos!="") {
 }
 $dupcache = array();
 
-echo "<script>var g_focus=false; var g_focus2 = false; var g_focus3 = false;\n";
-echo "var g_focus4 = false;\n";
-echo "function show_copy3(ii,dt) {\n";
-echo " var d2 = document.getElementById(\"copybutton\" + ii);\n";
-echo " if (d2==null) return;\n";
-echo " dt = dt.trim();\n";
-echo "   if (dt==\"\"||dt==\";\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
-echo "}\n";
-echo "function show_apk3(ii,dt) {\n";
-echo " var d2 = document.getElementById(\"apkbutton\" + ii);\n";
-echo " if (d2==null) return;\n";
-echo " dt = dt.trim();\n";
-//echo " console.log(dt);\n";
-echo "   if (dt==\"0\"||dt==\"\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
-echo "}\n";
-echo "function show_apk(ii,ump) {\n";
-echo " window.location.href=\"/mesh_apk.php?id=\" + ii.toString() + \"&full=true\";";
-echo "}\n";
-echo "function handleSubmit(ii) {\n";
-echo "  e.preventDefault(); \n";
-echo "  console.log(\"handlesubmit(\" + ii.toString + \")\");\n";
-echo "}\n";
-//echo "console.log(apk_status);\n";
-echo "</script>";
 
 $display_labels = array();
 
@@ -640,8 +429,8 @@ $display_labels[$ii] = $label;
    echo "<div class=\"zipbutton d-flex align-items-right hover-red justify-content-end\">";
    echo "<div class=\"ziphoriz justify-content-end d-flex align-items-right gap-2 hover-red\">";
    echo "<button id=\"copybutton$ii\" class=\"btn btn-secondary btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\">&copy;</button>";
-   echo "<script>";
-echo "</script>";
+ //  echo "<script>";
+//echo "</script>";
 echo "<button class=\"btn btn-info btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\" >Script</button>";
    echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
    echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
@@ -649,13 +438,7 @@ echo "<button class=\"btn btn-info btn-sm btn-light py-1 px-1 hover-red rounded-
    echo "<input class=\"btn btn-success btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
    echo "</form>";
 echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounded-0\" id=\"apkbutton$ii\" type=\"button\" onclick=\"show_apk($ii,'$ump')\" onfocus=\"g_focus4=true;\" onblur=\"g_focus4=false;\">Apk</button>";
-   echo "<script>";
-         $arr = array("username" => "terop", "index" => $_GET["id"]);
-      $res = addtext_date($arr);
-      echo "\nvar dt = \"$res;\";\n";
-
-echo "</script>";
-
+ 
 
    echo "</div>";
    echo "</div>";
@@ -687,22 +470,6 @@ echo "</script>";
    echo "</div>";
    echo "</div>";
 }
-echo "<script>";
-echo "function js_parse(arr) {\n";
-echo "  apk_status = JSON.parse(arr);\n";
-echo "  apk_status.keys().forEach((key)=>{show_apk3(key,apk_status[key]);});";
-echo "}\n";
-echo "function js2_parse(arr) {\n";
-echo "  addtext_status = JSON.parse(arr);\n";
-echo "  addtext_status.keys().forEach((key)=>{show_copy3(key,addtext_status[key]);});";
-echo "}\n";
-echo "var apk_status=[];\n";
-echo "fetch(\"$https://$site/mesh_addtext.php?id=0&full=array\")\n";
-echo "     .then(x=>x.text()).then(y=>js2_parse(y));\n";
-echo "fetch(\"$https://$site/mesh_apk.php?id=0&full=array\")\n";
-echo "     .then(x=>x.text()).then(y=>js_parse(y));\n";
-echo "var display_labels = " . json_encode($display_labels) . ";";
-echo "</script>";
 
    echo "</div>";
 
@@ -834,7 +601,7 @@ echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" wi
 </div>
 
 
-<div v-show="state.about" style="display:none">
+<div id="about" style="display:none;">
 <p>
 <p>
 <p>
@@ -910,7 +677,7 @@ function login() {
 </script>
 
 </div>
-<div v-show="state.docs" style="display:none">
+<div id="docs" style="display:none;">
 <p>
 <p>
 <p>
@@ -930,7 +697,7 @@ list_end();
 ?>
 
 </div>
-<div v-show="state.faq" style="display:none">
+<div id="faq" style="display:none;">
 <p>
 <p>
 <p>
@@ -1254,11 +1021,12 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <li>mediaisnothingtomebutistilllikeit <a href="https://mediaisnothingtomebutistilllikeit.wordpress.com/2017/12/06/meshpage-org/">blog</a>
 </ul>
 </div>
-<div v-show="state.tool_download" style="display:none">
+<div id="tool" style="display:none;">
+
 <p>
 <link itemprop="applicationCategory" href="https://schema.org/ModellingTool">
 <a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('$https://<?php echo $site ?>/assets/VERSION_WIN.TXT'); ?>.msi">
-<img loading="lazy" src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
+<img loading="lazy" src="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <p>
 <p>
@@ -1521,9 +1289,162 @@ width="120" height="120" crossorigin/>
 
 </div>
 </div>
-
 </div> <!-- app.. vue ends here -->
+
+
+<?php
+
+echo "<script>";
+echo "function js_parse(arr) {\n";
+echo "  apk_status = JSON.parse(arr);\n";
+echo "  apk_status.keys().forEach((key)=>{show_apk3(key,apk_status[key]);});";
+echo "}\n";
+echo "function js2_parse(arr) {\n";
+echo "  addtext_status = JSON.parse(arr);\n";
+echo "  addtext_status.keys().forEach((key)=>{show_copy3(key,addtext_status[key]);});";
+echo "}\n";
+echo "var apk_status=[];\n";
+echo "fetch(\"$https://$site/mesh_addtext.php?id=0&full=array\")\n";
+echo "     .then(x=>x.text()).then(y=>js2_parse(y));\n";
+echo "fetch(\"$https://$site/mesh_apk.php?id=0&full=array\")\n";
+echo "     .then(x=>x.text()).then(y=>js_parse(y));\n";
+echo "var display_labels = " . json_encode($display_labels) . ";";
+echo "</script>";
+
+
+  echo "<script>";
+         $arr = array("username" => "terop", "index" => $_GET["id"]);
+      $res = addtext_date($arr);
+      echo "\nvar dt = \"$res;\";\n";
+
+echo "</script>";
+
+
+echo "<script>var g_focus=false; var g_focus2 = false; var g_focus3 = false;\n";
+echo "var g_focus4 = false;\n";
+echo "function show_copy3(ii,dt) {\n";
+echo " var d2 = document.getElementById(\"copybutton\" + ii);\n";
+echo " if (d2==null) return;\n";
+echo " dt = dt.trim();\n";
+echo "   if (dt==\"\"||dt==\";\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
+echo "}\n";
+echo "function show_apk3(ii,dt) {\n";
+echo " var d2 = document.getElementById(\"apkbutton\" + ii);\n";
+echo " if (d2==null) return;\n";
+echo " dt = dt.trim();\n";
+//echo " console.log(dt);\n";
+echo "   if (dt==\"0\"||dt==\"\") {  d2.disabled=\"true\"; } else { d2.disabled=\"\"; }\n";
+echo "}\n";
+echo "function show_apk(ii,ump) {\n";
+echo " window.location.href=\"/mesh_apk.php?id=\" + ii.toString() + \"&full=true\";";
+echo "}\n";
+echo "function handleSubmit(ii) {\n";
+echo "  e.preventDefault(); \n";
+echo "  console.log(\"handlesubmit(\" + ii.toString + \")\");\n";
+echo "}\n";
+//echo "console.log(apk_status);\n";
+echo "</script>";
+?>
+
+<script>
+function open_tab(event, label) {
+  var tabcontent = document.getElementsByClassName("tabcontent");
+  var i;
+  for(i=0;i<tabcontent.length; i++) {
+     tabcontent[i].style.display="none";
+  }
+  var tablinks = document.getElementsByClassName("tablinks");
+  for(i=0;i<tablinks.length;i++) {
+     tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(label).style.display = "block";
+  event.currentTarget.className += " active";
+}
+</script>
+
+<script>
+/*
+function populate_imgs()
+{
+   var s = imgarr.length;
+   var i = 0;
+   for(i=0;i<s;i++)
+   {
+      var node = imgarr[i];
+      var tag = node.tag;
+      var filename = node.filename;
+      //console.log(tag);
+      //console.log(filename);
+      var tag2 = document.getElementById(tag);
+      tag2.src = filename;
+   }
+}
+*/
+/*
+function preload_anim(num, file_id)
+{
+  for(var i=0;i<15;i++)
+  {
+   var filename = "<?php echo $https ?>://<?php echo $site ?>/user_data/user_terop/grab";
+   var num2 = file_id.toString();
+   var str = i.toFixed().toString();
+   while (str.length<3) str="0".concat(str);
+   var filename2 = filename.concat(num2).concat("_").concat(str).concat(".png").concat("?").concat(<?php echo '"' . filemtime("user_data/touch.txt") . '"'?>);
+   var url = filename2;
+
+   //const preloadImage = new Image();
+   //preloadImage.src=url;
+   var tag = document.getElementById("preload".concat(i.toString()));
+   tag.src = url;
+  }
+}
+*/
+function load_anim_pic_reset(num,file_id)
+{
+   var name = "displayimage".concat(num.toString());
+   var imgtag = document.getElementById(name);
+   imgtag.onmousemove = function() { }
+
+ if (file_id!=-1) { 
+   imgtag.src="<?php echo $https ?>://<?php echo $site ?>/user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
+   }
+
+}
+</script>
+
+
 </body>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topnav {
+  overflow: hidden;
+  background-color: #333;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+</style>
+
 <style>
 .buttons {
    position: absolute;
@@ -1837,27 +1758,29 @@ var store = {
     choose(a) {
       this.clear_state();
       if (a=='main') this.state.main = true;
-      if (a=='create_mesh') this.state.create_mesh = true;
-      if (a=='tool_download') this.state.tool_download = true;
-      if (a=='faq') this.state.faq = true;
-      if (a=='docs') this.state.docs = true;
-      if (a=='about') this.state.about = true;
-      if (a=='login') this.state.login = true;
-      if (a=='vault') this.state.vault = true;
-      if (a=='block') this.state.block = true;
-      if (a=='stats') this.state.stats = true;
-      if (a=='logout') this.state.logout = true;
-      if (a=='mesh') this.state.mesh = true;
-      if (a=='functions') this.state.functions = true;
-      if (a=='source_code') this.state.source_code = true;
-      if (a=='html_embed') this.state.html_embed = true;
-      if (a=='profile') this.state.profile = true;
-      if (a=='create_new') this.state.create_new = true;
-      if (a=='my_animations') this.state.my_animations = true;
+      else if (a=='create_mesh') this.state.create_mesh = true;
+      else if (a=='tool_download') this.state.tool_download = true;
+      else if (a=='faq') this.state.faq = true;
+      else if (a=='docs') this.state.docs = true;
+      else if (a=='about') this.state.about = true;
+      else if (a=='login') this.state.login = true;
+      else if (a=='vault') this.state.vault = true;
+      else if (a=='block') this.state.block = true;
+      else if (a=='stats') this.state.stats = true;
+      else if (a=='logout') this.state.logout = true;
+      else if (a=='mesh') this.state.mesh = true;
+      else if (a=='functions') this.state.functions = true;
+      else if (a=='source_code') this.state.source_code = true;
+      else if (a=='html_embed') this.state.html_embed = true;
+      else if (a=='profile') this.state.profile = true;
+      else if (a=='create_new') this.state.create_new = true;
+      else if (a=='my_animations') this.state.my_animations = true;
+      else console.log("bad choose call");
       hide_display(this.state.mesh);
       hide_main(this.state.main);
       },
 };
+
 
 function create_id2( name, index )
 {
@@ -2075,7 +1998,13 @@ if ($page!="") {
        resume_cookies: function() { resume_cookies(); },
        
        mesh_display(id,label,display_label) {
-       	  var d = document.getElementById("display_title_bar");
+        var vm = this;
+  	  
+	  choose_display(id,label,vm,false);
+	  choose_nav(1);
+	  clearActive2();
+	  menu2(1);
+var d = document.getElementById("display_title_bar");
 	  d.innerHTML = display_label;
 	  if (g_focus4) {
 	     return;
@@ -2141,7 +2070,19 @@ if ($page!="") {
    }
    });
 
+store.state = Vue.observable(store.state);
 
+window.store2 = {
+   choose: function(a) {
+      store.choose(a);
+      },
+   toggle_dropdown : function() {
+      store.toggle_dropdown();
+      },
+   clear_state : function() {
+     store.clear_state();
+     }
+};
 
 var g_tm_cb;
 
@@ -2165,7 +2106,7 @@ return function() {
 
 function start_timer(id, label, vm)
 {
-	console.log("start_timer");
+	//console.log("start_timer");
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 	  store.choose("mesh");
 
@@ -2203,6 +2144,7 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 	 //console.log(choose);
 	 store.choose(choose);
 	 if (breadcrumb.length == first.length) {
+	     //console.log("replacestate");
 	     window.history.replaceState({page: 2},"title 2", "/meshpage_" + (i+3).toString());
 	     } else {
 	     if (i==0) {
@@ -2233,7 +2175,7 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 }
 function choose_breadlist(id,breadcrumb,first,second)
 {
-  console.log("choose_breadlist");
+  //console.log("choose_breadlist");
   while(breadcrumb.length) breadcrumb.pop();
   var target;
   if (id==0) { target = first; }
@@ -3168,6 +3110,104 @@ function accept_necessary_cookies(save)
 }
 get_cookie_status();
 </script>
+
+<script>
+
+let elementNames = [ "menu_main", "menu_tool", "menu_faq", "menu_tutorial", "menu_about" ];
+let pageNames = [ "main", "tool", "faq", "docs", "about" ];
+let elementNames2 = [ "menu_main2", "menu_display" ];
+let pageNames2 = [ "main", "main_display" ];
+for (let i=0;i<elementNames.length;i++)
+{
+document.getElementById(elementNames[i]).addEventListener("click", function(e) {
+	e.preventDefault();
+	clearActive();
+	var el = document.getElementById(elementNames[i]);
+	el.className = "active";
+	menu(i);
+	});
+}
+
+for (let i=0;i<elementNames2.length;i++)
+{
+document.getElementById(elementNames2[i]).addEventListener("click", function(e) {
+	e.preventDefault();
+	clearActive2();
+	var el = document.getElementById(elementNames2[i]);
+	el.className = "active";
+	menu2(i);
+	});
+}
+
+
+function clearActive()
+{
+    for (let i=0;i<elementNames.length;i++)
+    {
+	var e = document.getElementById(elementNames[i]);
+        e.className="";
+    }    
+    for (let i=0;i<pageNames.length;i++)
+    {
+	var e = document.getElementById(pageNames[i]);
+	e.style.display="none";
+    }
+}
+function clearActive2()
+{
+    for (let i=0;i<elementNames2.length;i++)
+    {
+	var e = document.getElementById(elementNames2[i]);
+        e.className="";
+    }    
+    for (let i=0;i<pageNames2.length;i++)
+    {
+	var e = document.getElementById(pageNames2[i]);
+	e.style.display="none";
+    }
+}
+
+function menu(val)
+{
+    var e = document.getElementById(elementNames[val]);
+    e.className="active";
+    var e2 = document.getElementById(pageNames[val]);
+    e2.style.display="block";
+}
+function menu2(val)
+{
+    var e = document.getElementById(elementNames2[val]);
+    e.className="active";
+    var e2 = document.getElementById(pageNames2[val]);
+    e2.style.display="block";
+    
+    if (val==0)
+    {
+	hide_display(false);
+	hide_main(true);
+	clearActive();
+	choose_nav(0);
+	menu(0);
+    }
+
+}
+function choose_nav(val)
+{
+   var e0 = document.getElementById("navbar1");
+   var e1 = document.getElementById("navbar2");
+   if (val==0) {
+     e0.style.display="block";
+     e1.style.display="none";
+   }
+   if (val==1) {
+     e0.style.display="none";
+     e1.style.display="block";
+   }
+}
+menu(0);
+choose_nav(0);
+</script>
+
 
 <div id="callout" class="callout" style="display:none">
   <div class="callout-header">EU Cookie Popup</div>
