@@ -1,7 +1,88 @@
-#Header set Access-Control-Allow-Origin http://localhost
+#post_max_size = 120M
+#upload_max_filesize = 100M
+#require valid-user
+DirectoryIndex index.html
+FileETag MTime Size
+#php_value post_max_size 20M
+#php_value memory_limit 1024M
+AddOutputFilterByType BROTLI_COMPRESS text/xml
+AddOutputFilterByType BROTLI_COMPRESS text/css
+AddOutputFilterByType BROTLI_COMPRESS application/xml
+AddOutputFilterByType BROTLI_COMPRESS application/xhtml+xml
+AddOutputFilterByType BROTLI_COMPRESS application/rss+xml
+AddOutputFilterByType BROTLI_COMPRESS application/javascript
+AddOutputFilterByType BROTLI_COMPRESS application/x-javascript
+AddOutputFilterByType BROTLI_COMPRESS application/wasm
+AddOutputFilterByType BROTLI_COMPRESS application/x-font-opentype
+AddOutputFilterByType BROTLI_COMPRESS text/plain
+<files *.wasm>
+SetOutputFilter BROTLI_COMPRESS
+</files>
+<files *.ds.*>
+SetOutputFilter BROTLI_COMPRESS
+</files>
+<files *.ds>
+SetOutputFilter BROTLI_COMPRESS
+</files>
+<files *.data>
+SetOutputFilter BROTLI_COMPRESS
+</files>
+AddType application/wasm wasm
+AddType application/x-gameapi-binary ds
+AddType text/plain mtl
+AddType application/x-font-opentype otf
+AddType application/x-httpd-php php
+RewriteEngine On
+#RewriteCond %{HTTP:X-Forwarded-Proto} !https
+#RewriteCond %{HTTPS} off
+#RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteRule ^meshpage_([0-9])$ meshpage\.php?page=$1 [L]
+RewriteRule ^([0-9]+)$ meshpage\.php?p=2&id=$1 [L]
+RewriteRule ^([0-9]+)_([0-9]+)$ meshpage\.php?p=$1&id=$2 [L]
+RewriteRule mesh_all mesh_all\.php [L]
+RewriteRule mesh_code mesh_code\.php [L]
+RewriteRule mesh_api mesh_api\.php [L]
+RewriteRule mesh_html mesh_html\.php [L]
+RewriteRule create_mesh create_mesh\.php [L]
+RewriteRule mesh_tool mesh_tool\.php [L]
+RewriteRule mesh_faq mesh_faq\.php [L]
+RewriteRule mesh_tutorial mesh_tutorial\.php [L]
+RewriteRule mesh_about mesh_about\.php [L]
+RewriteRule mesh_block mesh_block\.php [L]
+RewriteRule mesh_logout mesh_logout\.php [L]
+RewriteRule mesh_login_result mesh_login_result\.php [L]
+RewriteRule mesh_login_page mesh_login\.php [L]
+RewriteRule mesh_stats mesh_stats\.php [L]
+ExpiresActive On
+ExpiresDefault A0
+ExpiresByType image/gif A2592000
+ExpiresByType image/png A2592000
+ExpiresByType image/jpg A2592000
+ExpiresByType image/jpeg A2592000
+ExpiresByType image/ico A2592000
+ExpiresByType text/css A2592000
+ExpiresByType text/javascript A2592000
+#ExpiresByType application/wasm A2592000
+ExpiresByType application/x-gameapi-binary A2592000
+ExpiresByType application/x-font-opentype A2592000 
+#Header always set Content-Security-Policy "upgrade-insecure-requests;"
+Header always set object-src "none;"
+Header always set script-src "none;"
+#SetEnvIf Origin "^http(s)?://(.+\.)?meshpage\.org$" AccessControlAllowOrigin=$0
+#SetEnvIf Origin "^http(s)?://(.+\.)?tpgames\.org$" AccessControlAllowOrigin=$0
+#SetEnvIf Origin ".*\.itch\.io$" ITCH_ORIGIN=$0
+#SetEnvIf Origin ".*\.itch\.zone$" ITCH_ORIGIN=$0
+#Header set Access-Control-Allow-Origin "%{ITCH_ORIGIN}e" env=ITCH_ORIGIN
+#Header set Access-Control-Allow-Origin %{AccessControlAllowOrigin}e env=AccessControlAllowOrigin
+#Header set Access-Control-Allow-Origin "https://meshpage.org"
+#Header set Vary "Origin"
 #Header set Cross-Origin-Embedder-Policy "require-corp"
 #Header set Cross-Origin-Resource-Policy "same-site"
 #Header set Cross-Origin-Opener-Policy "same-origin"
 #Header set Access-Control-Allow-Headers "Range"
-RewriteEngine On
-RewriteRule ^([0-9]+)$ /meshpage.php?p=2&id=$1 [L,QSA]
+#Header edit Upgrade (.*)h2,h2c(.*) "$1$2"
+#Header set Cache-Control "max-age=0, immutable"
+SetEnv no-gzip 1
+Header unset ETag
+FileETag None
+#php_value output_buffering 0
