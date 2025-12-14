@@ -1,5 +1,7 @@
-Header set Access-Control-Allow-Origin https://192.168.1.104
+Header set Access-Control-Allow-Origin http://localhost
 Header set Cross-Origin-Embedder-Policy "require-corp"
 Header set Cross-Origin-Resource-Policy "same-site"
 Header set Cross-Origin-Opener-Policy "same-origin"
 Header set Access-Control-Allow-Headers "Range"
+RewriteEngine On
+RewriteRule ^([0-9]+)$ /meshpage.php?p=2&id=$1 [L,QSA]

@@ -1,11 +1,93 @@
 <?php
 
+$machine=php_uname("n");
+$siteprefix = "";
+
+$ip = trim(@file_get_contents("https://api.ipify.org"));
+function get_private_ip2() {
+    $s = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+    socket_connect($s, "8.8.8.8", 53);
+    socket_getsockname($s, $addr, $port);
+    socket_close($s);
+    return $addr;
+}
+function get_client_ip2() {
+     $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? $_SERVER['SERVER_ADDR'] ?? 'UNKNOWN';
+    return $host;
+
+/*        return $_SERVER['REMOTE_ADDR'];*/
+/*
+if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        // IP from shared internet (e.g., proxy)
+        return $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // IP passed from proxy or load balancer
+        // May contain multiple addresses, use the first one
+        $ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ipList[0]);
+    } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+        // Direct connection
+        return $_SERVER['REMOTE_ADDR'];
+    }
+    return 'UNKNOWN';
+    */
+}
+$priv_ip = get_client_ip2();
+$priv_ip2 = $priv_ip;
+if (filter_var($priv_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+  $priv_ip2 = "[" . $priv_ip2 . "]";
+}
+
+
+$hostname=gethostbyaddr($priv_ip);
+if (empty($hostname)) { $hostname=$priv_ip; }
+
+
+$https = "http";
+$site = $priv_ip2; //$hostname; //"[2001:14ba:9c31:e100::198]"; //192.168.1.104";
+$assetsite = $priv_ip2 . "/assets"; //"[2001:14ba:9c31:e100::198]/assets"; // "192.168.1.104/assets";
+$sitename = $hostname; //"[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
+$siteprefix=$_SERVER['HTTP_HOST'];
+$siteprefix=substr($siteprefix,0,4);
+   //echo "SITEPREFIX: $siteprefix";
+if ("$siteprefix"!="ssh.") $siteprefix="";
+
+/*
+
+if ("$machine"=="raspberrypi") {
+   $https = "http";
+   $site = "[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
+   $assetsite = "[2001:14ba:9c31:e100::198]/assets"; //"192.168.1.104/assets";
+   $sitename = "[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   //echo "SITEPREFIX: $siteprefix";
+   if ("$siteprefix"!="ssh.") $siteprefix="";
+} else {
+if ("$machine"=="terop-pc2") {
+   $https = "https";
+   $site = "meshpage.org";
+   $assetsite = "meshpage.org/assets";
+   $sitename = "meshpage.org";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   //echo "SITEPREFIX: $siteprefix";
+   if ("$siteprefix"!="ssh.") $siteprefix="";
+} else {
+   $https = "https";
+   $site = "dinoengine.com";
+   $assetsite = "dinoengine.com/assetsite";
+   $sitename = "dinoengine.com";
+}
+}
+*/
+
 //header("Cross-Origin-Opener-Policy: same-origin");
 
 $labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "DOWNLOAD TOOL<h1 style=\"font-size:24px\">(price: 130&#8364;)</h1>", "EXAMPLES");
 $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
 $alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
-$links = array("view.php", "gltf_to_zip.php", "meshpage_4", "meshpage.php");
+$links = array("view.php", "gltf_to_zip.php", "meshpage.php?ps=4", "meshpage.php");
 $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with the engine",
        	       "convert your<br>gltf files to html5<br>for hosting space<br>",
 	       "if end result needed<br>tweaking, download<br> tool",
@@ -13,7 +95,7 @@ $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with
 
 
   $logstr = $_SERVER["HTTP_REFERER"]??'';
-if ($logstr != "https://meshpage.org/assets/homepage/homepage.php" && $logstr != "")
+if ($logstr != "https://$site/assets/homepage/homepage.php" && $logstr != "")
 {
 $fp = fopen("./pp2/referer.log","a+");
 fwrite($fp, "MAINPAGE " . $logstr);
@@ -29,6 +111,8 @@ echo "<meta name=\"description\" content=\"Getting the best rendering result fro
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=0.7\">\n";
 echo "<meta name=\"keywords\" content=\"GameAPI engine, GameAPI builder, Meshpage GameAPI, Meshpage game engine, C++ game engine for beginners, WebGL game engine, SDL OpenGL game engine,lightweight game engine, beginner game development, game engine for students, high school game programming, learn game dev with C++, easy game engine for teens, intro to game development, GLTF game engine, emscripten game engine, build games with C++ and WebGL, cross-platform game engine, open source C++ game engine, mesh-based game development, alternative to Unity for students, C++ to WebGL game dev workflow, how to start making games in high school, low-level 3D engine with scripting,retro-style engine for modern platforms\">\n";
 
+echo "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css\" integrity=\"sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh\" crossorigin=\"anonymous\">";
+
 
 echo "</head>\n";
 
@@ -40,7 +124,7 @@ echo "  \"name\": \"GameAPI\",\n";
 echo "  \"operatingSystem\": \"Linux, Windows, Web\",\n";
 echo "  \"applicationCategory\": \"GameDevelopmentApplication\",\n";
 echo "  \"description\": \"A lightweight 3D game engine for students and hobbyists.\",\n";
-echo "  \"url\": \"https://meshpage.org\",\n";
+echo "  \"url\": \"https://$site\",\n";
 echo "  \"softwareVersion\": \"v28\",\n";
 echo "  \"programmingLanguage\": \"C++, WebGL\"\n";
 echo "}\n";
@@ -54,9 +138,9 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"https://meshpage.org/screen1.png\" fetchpriority=\"high\" width=\"100%\"/>\n";
+echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/screen1.webp\" fetchpriority=\"high\" width=\"100%\"/>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
-//echo "  <source src=\"https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
+//echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
 //echo "</video>\n";
 
@@ -65,7 +149,7 @@ echo "</div>\n";
 echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";
 echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
-echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: -50px; left: 50px; font-size: 14px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>\n";
+echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>\n";
 
 echo "</div>\n";
 echo "</div>\n";
@@ -104,7 +188,7 @@ echo "</div>\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
-echo "<h1>What our tech is doing: <span style=\"font-size: 12px\">(deploy pipeline)</span></h1><h1 style=\"font-size: 30px\">GLB files <a style=\"text-decoration: none;\" href=\"https://meshpage.org/meshpage_5#deploy\"><span style=\"font-size: 50px;\">&rarr;</span></a> HTML5 zip <a href=\"https://meshpage.org/meshpage_5#to_web_server\" style=\"text-decoration: none;\"><span style=\"font-size: 50px\">&rarr;</span></a> (web server)</h1>\n";
+echo "<h1>What our tech is doing: <span style=\"font-size: 12px\">(deploy pipeline)</span></h1><h1 style=\"font-size: 30px\">GLB files <a style=\"text-decoration: none;\" href=\"$https://$site/meshpage_5#deploy\"><span style=\"font-size: 50px;\">&rarr;</span></a> HTML5 zip <a href=\"$https://$site/meshpage_5#to_web_server\" style=\"text-decoration: none;\"><span style=\"font-size: 50px\">&rarr;</span></a> (web server)</h1>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -151,15 +235,15 @@ echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img class=\"bl_img\" src=\"https://meshpage.org/row1.webp\"/>\n";
-//echo "<img class=\"bl_img\" src=\"https://meshpage.org/assets/gameapi_bdcalvin_intro.mp4\"/>\n";
+echo "<img class=\"bl_img\" src=\"$https://$site/row1.webp\"/>\n";
+//echo "<img class=\"bl_img\" src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img clasS=\"bl_img\" src=\"https://meshpage.org/row2.webp\"/>\n";
+echo "<img clasS=\"bl_img\" src=\"$https://$site/row2.webp\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
@@ -203,7 +287,7 @@ echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img class=\"bl_img\" src=\"https://meshpage.org/row3.webp\"/>\n";
+echo "<img class=\"bl_img\" src=\"$https://$site/row3.webp\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 
@@ -215,12 +299,12 @@ echo "<div class=\"bl_column\">\n";
 
 echo "<div class=\"bl_item img\">\n";
 // allow=\"cross-origin-isolated\" 
-echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"https://meshpage.org/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
+echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"$https://$site/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
 echo "</div></div>\n";
 echo "<div class=\"bl_column\"><div class=\"bl_item customfont content\">\n";
-echo "<a href=\"https://meshpage.org/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"https://meshpage.org/assets/gnome2.webp\">gnome2</a>)\n";
+echo "<a href=\"$https://$site/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"$https://$site/assets/gnome2.webp\">gnome2</a>)\n";
 echo "<pre class=\"customfont\" style=\"font-size: 14px;\">\n";
-echo "TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/punk/mesh_garden_gnome.glb);\n";
+echo "TF I1=ev.mainloop_api.gltf_loadKK2($https://$site/punk/mesh_garden_gnome.glb);\n";
 echo "P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
 echo "P I3=ev.polygon_api.color_alpha(I2,ff);\n";
 echo "MT I4=ev.materials_api.colour_material(ev,0);\n";
@@ -266,9 +350,9 @@ for($i=0;$i<4;$i++)
    echo "</div>\n";
 
 if (substr_count($descs[$i],"<br>")>=3) {
-   echo "<div class=\"grid_item3 width200 customfont\" style=\"font-size: 20px; margin: 15px 5px 5px 0px\">\n";
+   echo "<div class=\"grid_item3 width200 customfont\" style=\"font-size: 20px; margin: 0px 5px -5px 0px\">\n";
    } else {
-   echo "<div class=\"grid_item3 width200 customfont\" style=\"font-size: 20px; margin: 25px 5px 5px 0px\">\n";
+   echo "<div class=\"grid_item3 width200 customfont\" style=\"font-size: 20px; margin: 5px 5px 5px 0px\">\n";
    }
    echo "$descs[$i]\n";
    echo "</div>\n"; // grid item3
@@ -643,6 +727,9 @@ echo "  if (!crossOriginIsolated) console.log(\"MAIN WINDOW not crossorigin isol
 echo "})();\n";
 echo "</script>\n";
 
+echo "<script src=\"https://code.jquery.com/jquery-3.4.1.slim.min.js\" integrity=\"sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n\" crossorigin=\"anonymous\"></script>";
+echo "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>";
+echo "<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js\" integrity=\"sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6\" crossorigin=\"anonymous\"></script>";
 
 
 echo "</body>\n";

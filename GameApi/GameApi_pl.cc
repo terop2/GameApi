@@ -633,6 +633,7 @@ void GameApi::PolygonApi::print_data(P p)
   if (p.id == -1) { std::cout << "INVALID P OBJECT at print_data" << std::endl; return; }
   FaceCollection *coll = find_facecoll(e, p);
   if (!coll) { std::cout << "INVALID FACECOLLECTION at print_data" << std::endl;  return; }
+  coll->Prepare();
   int s = coll->NumFaces();
   for(int i=0;i<s;i++)
     {
