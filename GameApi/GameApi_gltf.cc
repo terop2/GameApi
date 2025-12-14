@@ -13216,6 +13216,7 @@ public:
     
     if (!curr_done) {
       int jointCount = int(r_0->size());
+      //std::cout << "JointCount=" << jointCount << std::endl;
       vec.resize(jointCount);
       start_vec.resize(jointCount);
       end_vec.resize(jointCount);
@@ -13334,6 +13335,7 @@ public:
       float t1 = ii<sz && ii<int(current_end_time->size())?(*current_end_time)[ii]:1.0;
       float time01 = (time - t0) / (t1 - t0);
       time01 = std::clamp(time01, 0.0f, 1.0f);
+      if (std::isnan(time01)) time01 = 0.0f;
       
       TransformObject start_obj = (ii < sz && ii<int(start->size())) ? (*start)[ii] : gltf_node_default();
       TransformObject end_obj = (ii < sz && ii<int(end->size())) ? (*end)[ii] : gltf_node_default();
@@ -13342,21 +13344,33 @@ public:
       Matrix bindm = (ii < sz && ii<int(bind->size())) ? (*bind)[ii] : Matrix::Identity(); 
       
       TransformObject obj = slerp_transform(start_obj, end_obj, time01);
-      
+      /*
+      if (ii==0) {
+      std::cout << "ii=" << ii << std::endl;
+      std::cout << time01 << std::endl;
+      std::cout << "rr2:" << rr2 << std::endl;
+      std::cout << "rr:" << rr << std::endl;
+      //std::cout << "obj:" << obj << std::endl;
+      print_transform(obj);
+      }*/
       Matrix mr;
       for (int j = 0; j < 16; ++j) {
 	mr.matrix[j] = time01 * rr2.matrix[j] + (1.0f - time01) * rr.matrix[j];
       }
-      
+      /*
+      if (ii==0)
+      std::cout << "mr:" << mr << std::endl;
+      */
       Matrix mv = gltf_node_transform_obj_apply2(env, ev, mr, obj);
       
-#if 0
-      if (Matrix::has_nan(resizei)) { resizei=Matrix::Identity();  }
+#if 1
+      // if these are not here. nvidia fails for -nan in 0 matrix on bird model
+      if (Matrix::has_nan(resizei)) { std::cout << "RESIZEI MATRIX " << ii << " has nans " << resizei << std::endl; resizei=Matrix::Zero();  }
       //if (Matrix::has_nan(m0i)) { m0i=Matrix::Identity(); }
       //if (Matrix::has_nan(m0)) { m0=Matrix::Identity(); }
-      if (Matrix::has_nan(bindm)) { bindm=Matrix::Identity(); }
-      if (Matrix::has_nan(mv)) {  mv=Matrix::Identity();  }
-      if (Matrix::has_nan(resize)) { resize=Matrix::Identity(); }
+      if (Matrix::has_nan(bindm)) { std::cout << "BIND MATRIX " << ii << " has nans " << bindm << std::endl; bindm=Matrix::Zero(); }
+      if (Matrix::has_nan(mv)) { std::cout << "MV MATRIX " << ii << " has nans " << mv << std::endl; mv=Matrix::Zero();  }
+      if (Matrix::has_nan(resize)) { std::cout << "RESIZE MATRIX " << ii << " has nans " << resize << std::endl; resize=Matrix::Zero(); }
 #endif
       
       if (ii<jointMatrices.size()) 
@@ -13379,7 +13393,7 @@ public:
 
       if (start_joint>=jointMatrices.size()) start_joint=jointMatrices.size();
       if (end_joint>=jointMatrices.size()) end_joint=jointMatrices.size();
-      
+      //std::cout << "JOINTCOUNTS:" << start_joint << " " << end_joint << std::endl;
       ev.shader_api.set_var(sh, "jointMatrix", jointMatrices,
 			    start_joint,end_joint);
 			      //0,std::min(int(jointMatrices.size()), int(200)));
