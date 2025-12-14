@@ -1,12 +1,81 @@
 <?php
-#header("Cross-Origin-Opener-Policy: same-origin");
-#header("Access-Control-Allow-Headers: Range");
+header("Cross-Origin-Opener-Policy: same-origin");
+//header("Cross-Origin-Embedder-Policy: require-corp");
+//header("Cross-Origin-Resource-Policy: same-site");
+//header("Access-Control-Allow-Headers: Range");
+
+//header("Access-Control-Allow-Headers: Range");
 //header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 //header("Cache-Control: post-check=0, pre-check=0", false);
 //header("Pragma: no-cache");
 $machine=php_uname("n");
 $siteprefix = "";
-if ($machine=="terop-pc2") {
+$ip = trim(@file_get_contents("https://api.ipify.org"));
+
+function get_private_ip() {
+    $s = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+    socket_connect($s, "8.8.8.8", 53);
+    socket_getsockname($s, $addr, $port);
+    socket_close($s);
+    return $addr;
+}
+function get_client_ip3() {
+     $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? $_SERVER['SERVER_ADDR'] ?? 'UNKNOWN';
+    return $host;
+/*    return $_SERVER['REMOTE_ADDR'];*/
+/*
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        // IP from shared internet (e.g., proxy)
+        return $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        // IP passed from proxy or load balancer
+        // May contain multiple addresses, use the first one
+        $ipList = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ipList[0]);
+    } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+        // Direct connection
+        return $_SERVER['REMOTE_ADDR'];
+    }
+    return 'UNKNOWN';
+    */
+}
+
+$priv_ip=get_client_ip3();
+$priv_ip2 = $priv_ip;
+if (filter_var($priv_ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+  $priv_ip2 = "[" . $priv_ip2 . "]";
+}
+
+$hostname=gethostbyaddr($priv_ip);
+
+if (empty($hostname)) { $hostname=$priv_ip; }
+
+
+$https = "http";
+$site = $priv_ip2; //$hostname; //"[2001:14ba:9c31:e100::198]"; //192.168.1.104";
+$assetsite = $priv_ip2 . "/assets"; //"[2001:14ba:9c31:e100::198]/assets"; // "192.168.1.104/assets";
+$sitename = $hostname; //"[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
+$siteprefix=$_SERVER['HTTP_HOST'];
+$siteprefix=substr($siteprefix,0,4);
+   //echo "SITEPREFIX: $siteprefix";
+if ("$siteprefix"!="ssh.") $siteprefix="";
+
+header("Access-Control-Allow-Origin: $https://$site");
+
+/*
+
+if ("$machine"=="raspberrypi"||"$machine"=="meshpage.ddns.net") {
+   $https = "http";
+   $site = $hostname; //"[2001:14ba:9c31:e100::198]"; //192.168.1.104";
+   $assetsite = $hostname . "/assets"; //"[2001:14ba:9c31:e100::198]/assets"; // "192.168.1.104/assets";
+   $sitename = $hostname; //"[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
+   $siteprefix=$_SERVER['HTTP_HOST'];
+   $siteprefix=substr($siteprefix,0,4);
+   //echo "SITEPREFIX: $siteprefix";
+   if ("$siteprefix"!="ssh.") $siteprefix="";
+} else {
+if ("$machine"=="terop-pc2") {
+   $https = "https";
    $site = "meshpage.org";
    $assetsite = "meshpage.org/assets";
    $sitename = "meshpage.org";
@@ -15,14 +84,15 @@ if ($machine=="terop-pc2") {
    //echo "SITEPREFIX: $siteprefix";
    if ("$siteprefix"!="ssh.") $siteprefix="";
 } else {
+   $https = "https";
    $site = "dinoengine.com";
    $assetsite = "dinoengine.com/assetsite";
    $sitename = "dinoengine.com";
 }
-   $site = "https://" . $siteprefix . $site;
-   $assetsite = "https://" . $siteprefix . $assetsite;
-//echo "SITE:" . $site;
-//echo "ASSETSITE:" . $assetsite
+}
+*/
+   //$site = $https . "://" . $siteprefix . $site;
+   //$assetsite = $https . "://" . $siteprefix . $assetsite;
 ?>
 <!DOCTYPE html>
 <html id="html"  style="background-color: #eee; overflow: auto;">
@@ -39,6 +109,10 @@ if ($page!="2") {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
 <meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
 <meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
+<!--link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script-->
+
+
 <?php
 require_once("user.php");
 function create_id2( $name, $index )
@@ -95,7 +169,7 @@ $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
 ?>
-<link rel="preload" href="vue.js" as="script"/>
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/vue@1.0.28/dist/vue.js" as="script"/>
 </head>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -105,7 +179,7 @@ $highmem = js_highmem();
      "@type": "ListItem",
      "position": 1,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage_3",
+        "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_3",
 	"name": "meshpage.org"
 	}
   },
@@ -113,7 +187,7 @@ $highmem = js_highmem();
      "@type": "ListItem",
      "position": 2,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage_4",
+        "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_4",
 	"name": "tool download"
      }
   },
@@ -121,15 +195,15 @@ $highmem = js_highmem();
      "@type": "ListItem",
      "position": 3,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage_5",
-	"name": "faq"
+        "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_5",
+	"name": "faq" 
      }
   },
   {
      "@type": "ListItem",
      "position": 4,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage_6",
+        "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_6",
 	"name": "documents"
      }
   },
@@ -137,7 +211,7 @@ $highmem = js_highmem();
      "@type": "ListItem",
      "position": 5,
      "item": {
-        "@id": "<?php echo $site ?>/meshpage_7",
+        "@id": "<?php echo $https ?>://<?php echo $site ?>/meshpage_7",
 	"name": "about"
      }
   }
@@ -145,7 +219,7 @@ $highmem = js_highmem();
 }
 </script>
 <body id="body" style="overflow:hidden">
-<script src="vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@1.0.28/dist/vue.js"></script>
 <script>
 if (!crossOriginIsolated) {
     console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
@@ -163,10 +237,59 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
-<div id="app">
-<div id="navbar" class="navi">
-<div class="ncenter noselect">
-<a href="JavaScript:void(0);" onClick="resume_cookies()">
+<div id="app" class="container-lg">
+
+<!-- new navbar -->
+
+
+<div id="navbar" class="navi navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="ncenter noselect container-fluid p-0">
+
+    <!-- Left section -->
+    <ul class="navbar-nav flex-row">
+      <li class="nav-item mx-3">
+        <a class="nav-link" href="javascript:void(0);" @click="resume_cookies">
+          <svg width="10" height="10" v-if="indicator[0]">
+            <rect width="10" height="10" style="fill:#ff0000;stroke-width:0;stroke:rgb(0,0,0);" />
+          </svg>
+          <svg width="10" height="10" v-else>
+            <rect width="10" height="10" style="fill:#00ff00;stroke-width:0;stroke:rgb(0,0,0);" />
+          </svg>
+        </a>
+      </li>
+
+    <!-- Breadcrumb / dynamic links -->
+      <li class="nav-item mx-3" v-for="bread in main_breadcrumb">
+        <a
+          class="nav-link"
+          :class="bread.link ? 'navi highlightedtab link active' : 'navi link'"
+          @click="bread_click($event)"
+        >
+          <b>{{ bread.title }}</b>
+        </a>
+      </li>
+
+    <!-- Right side -->
+    </ul>
+
+  </div>
+</div>
+
+
+<div id="debug">
+  {{ main_breadcrumb }}
+</div>
+
+
+<!-- old navbar -->
+
+<!--div id="navbar" class="navi navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+<div class="ncenter noselect container-fluid navbar-nav ms-auto p-0">
+<a class="navbar-brand" href="#">meshpage.org</a>
+<div class="collapse navbar-collapse" id="navbarNav">
+<ul class="navbar-nav flex-row">
+<li class="nav-item">
+<a class="nav-link" href="JavaScript:void(0);" onClick="resume_cookies()">
 <template v-if="indicator[0]">
 <svg width="10" height="10">
 <rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
@@ -177,79 +300,88 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 <rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
 </svg>
 </template>
-<!--template v-if="isIndicator3_2">
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-<template v-if="isIndicator3">
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #ff8800; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-<template v-if="isIndicatorNone">
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-<template v-if="isIndicator2">
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #ff0000; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template>
-<template v-else>
-<svg width="10" height="10">
-<rect width="10" height="10" style="fill: #00ff00; stroke-width:0; stroke: rgb(0,0,0);">
-</svg>
-</template-->
-</a>	
+</a>
+</li>
+<li class="nav-item">
+</li>
+</ul>
+<ul class="navbar-nav flex-row">
+<li class="nav-item">
+<a class="nav-link" href="#">A</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">B</a>
+</li>
+</ul>
+<ul class="navbar-nav flex-row">
+<li class="nav-item">
+<a class="nav-link" href="#">testi</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">testi</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">testi</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">testi</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">testi</a>
+</li>
 <template v-for="bread in main_breadcrumb">
-<template v-if="bread.link">
-<div style="font-family: 'calibri', sans-serif" class="link level1 highlightedtab">
-<meta itemprop="position" v-bind:content="bread.num"/>
-<a class="navi highlightedtab link" v-on:click="bread_click($event)"><b><span v-html="bread.title"></span></b></a>
+<template v-if="bread.link"-->
+<!--meta itemprop="position" v-bind:content="bread.num"/-->
+<!--li class="nav-item">
+<a class="navi highlightedtab link nav-link active" v-on:click="bread_click($event)"><b>xxx<span class="nav-item" v-html="bread.title"></span>yyy</b></a>
+</li>
 </template>
-<template v-if="!bread.link">
-<div style="font-family: 'calibri', sans-serif" class="link level1">
-<meta itemprop="position" v-bind:content="bread.num"/>
-<a class="navi link" v-on:click="bread_click($event)"><span><b>{{ bread.title }}</b></span></a>
+<template v-if="!bread.link"-->
+<!--div style="font-family: 'calibri', sans-serif" class="link level1 container-fluid"-->
+<!--meta itemprop="position" v-bind:content="bread.num"/-->
+<!--li class="nav-item">
+<a class="navi link nav-link" v-on:click="bread_click($event)"><span class="nav-item"><b>xxx {{ bread.title }} yyy</b></span></a>
+</li-->
+<!--/li-->
+<!--/template>
 </template>
-</div>
-</template>
-<div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; display:none;" class="link level1" id="login_label">
-<a class="navi link" v-on:click="login_click($event)"  id="login_button"><span><div id="login_info">Anonymous</div></span></a>
-</div>
-</div>
-</div>
-<div class="dropdown-window" id="dropdown" style="display:none">
-<div class="dropdown-content">
-<b>
-<a v-on:click="login_menu_click($event, 'profile')">Profile</a>
-<a v-on:click="login_menu_click($event, 'create_new')">Create new anim</a>
-<a v-on:click="login_menu_click($event, 'my_animations')">My Animations</a><hr>
-<a href="#">Logout</a>
-</b>
+
+</ul>
+<ul class="navbar-nav flex-row">
+<li class="nav-item">
+<button class="navbar-toggler" type="button">
+<span class="navbar-toggler-icon"></span>
+</button>
+</li>
+</ul>
 </div>
 </div>
+</div-->
+
+<!--div style="font-family: 'calibri', sans-serif; width: 120px; text-align: right; float: right; margin: 0 10 0 0; display:none;" class="link level1 container-fluid" id="login_label">
+<a class="navi link nav-link" v-on:click="login_click($event)"  id="login_button"><span><div id="login_info nav-item">Anonymous</div></span></a>
+</div>
+</div>
+</div>
+<div class="dropdown-window navbar-toggler" id="dropdown" style="display:none">
+<div id="navbarNav" class="dropdown-content collapse navbar-collapse">
+<ul class="navbar-nav">
+<li class="nav-item">
+<a class="nav-link" v-on:click="login_menu_click($event, 'profile')">Profile</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" v-on:click="login_menu_click($event, 'create_new')">Create new anim</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" v-on:click="login_menu_click($event, 'my_animations')">My Animations</a><hr>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="#">Logout</a>
+</li>
+</div>
+</div-->
 <div class="main">
 <div v-if="state.empty">
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
-<br><br><br><br><br><br>
 </div>
 <?php
 if ($sitename=="dinoengine.com") {
@@ -268,7 +400,7 @@ if ($sitename=="dinoengine.com") {
 <input type="submit"><br><br>
 </form>
 </div>
-<div v-if="state.create_new">
+<div v-show="state.create_new" style="display:none">
 <div class="tab">
   <button class="tablinks active" onclick="open_tab(event,'pkg')">Package files</button>
   <button class="tablinks" onclick="open_tab(event,'script')">Script files</button>
@@ -324,7 +456,7 @@ function open_tab(event, label) {
 }
 </script>
 </div>
-<div v-if="state.my_animations">
+<div v-show="state.my_animations" style="display:none">
 </div>
 <div id="main_div">
 
@@ -352,7 +484,7 @@ function preload_anim(num, file_id)
 {
   for(var i=0;i<15;i++)
   {
-   var filename = "<?php echo $site ?>/user_data/user_terop/grab";
+   var filename = "<?php echo $https ?>://<?php echo $site ?>/user_data/user_terop/grab";
    var num2 = file_id.toString();
    var str = i.toFixed().toString();
    while (str.length<3) str="0".concat(str);
@@ -373,7 +505,7 @@ function load_anim_pic_reset(num,file_id)
    imgtag.onmousemove = function() { }
 
  if (file_id!=-1) { 
-   imgtag.src="<?php echo $site ?>/user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
+   imgtag.src="<?php echo $https ?>://<?php echo $site ?>/user_data/user_terop/screenshot".concat(file_id.toString()).concat(".webp");
    }
 
 }
@@ -382,17 +514,22 @@ function load_anim_pic_reset(num,file_id)
 require_once("user.php");
 $user="terop";
 $num = read_num( $user );
+echo "<br><br><br>";
+echo "<div class=\"flex-container d-flex flex-wrap align-items-center\">";
+   echo "<div class=\"flex-item border p-3 m-0 w-18 h-18 text-left\" style=\"width: 60%;\">";
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "<div style=\"display:none\">LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span></div><br>";
 echo "<div style=\"display:none\">PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span></div>";
 page_title($sitename, "groundbreaking way to bring 3d to the web.");
-echo "<div class=\"buttons\">";
-echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/view.php'\">3d model viewer</button>";
-echo "<button type=\"button\" class=\"butinner\" onclick=\"window.location='https://meshpage.org/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "</div>";
+echo "<div class=\"flex-item border p-3 m-0 w-10 h-10 text-left\">";
+echo "<button type=\"button\" class=\"btn btn-primary m-4 w-4 h-10\" onclick=\"window.location='$https://$site/view.php'\">3d model viewer</button>";
+echo "<button type=\"button\" class=\"btn btn-primary m-4 w-4 h-10\" onclick=\"window.location='$https://$site/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "</div>";
 echo "</div>";
 echo "<div style=\"height:50px\"></div>";
 
-echo "<div class=\"flex-container\">";
+echo "<div class=\"flex-container d-flex flex-wrap align-items-stretch\">";
 $cnt = 0;
 $start = $num;
 $startpos = $_GET["ps"];
@@ -462,21 +599,21 @@ $label = get_label( $arr );
 
 $display_labels[$ii] = $label;
 
-   $filename = "<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".png";
-   $filename2 = "<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".webp";
+   $filename = "<?php echo $https ?>://<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".png";
+   $filename2 = "<?php echo $https ?>://<?php echo $site ?>/user_data/user_" . $user . "/screenshot" . $ii . ".webp";
    $ik = $ii;
    if (file_exists($filename2)) $filename = $filename2;
-   if (!file_exists($filename)) { $ik=-1; $filename = $assetsite . "/unknown.webp"; }
+   if (!file_exists($filename)) { $ik=-1; $filename = "/unknown.webp"; }
 
 
 
    $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
-   echo "<div class=\"flex-item\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
-   echo "<div class=\"highlight\">";
+   echo "<div class=\"flex-item hover-red border p-3 m-0 w-18 h-18 text-center\" style=\"width: 25%;\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
+   echo "<div class=\"highlight hover-red child-div top-0 m-0 start-0 w-100 h-100\">";
    echo "<div style=\"width: 100%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$ii : $label</div>";
-   echo "<a class=\"label\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
-   echo "<div class=\"border\">";
-   echo "<div class=\"image\">";
+   echo "<a class=\"label hover-red\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
+   echo "<div class=\"border hover-red\">";
+   echo "<div class=\"image hover-red\">";
    // BACKGROUND CHANGE
    //echo "<layer width=\"200\" height=\"150\">";
    //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
@@ -484,9 +621,9 @@ $display_labels[$ii] = $label;
    //echo "<layer width=\"200\" height=\"150\">";
    if (file_exists("user_data/user_terop/screenshot" . $ii . ".webp"))
    {
-   echo "<img loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"   crossorigin/>";
+   echo "<img class=\"hover-red object-fit-cover\" loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" style=\"width: 100%; aspect-ratio: 4 / 3;\" width=\"200\" height=\"150\" draggable=\"false\"   crossorigin/>";
    } else {
-   echo "<img loading=\"lazy\" src=\"" . $assetsite . "/unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" width=\"200\" height=\"150\" draggable=\"false\"  crossorigin/>";
+   echo "<img class=\"hover-red object-fit-cover\" loading=\"lazy\" src=\"unknown.webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" style=\"width: 100%; aspect-ratio: 4 / 3;\" width=\"200\" height=\"150\" draggable=\"false\"  crossorigin/>";
    }
    //echo "</layer>";
    // src=\"" . $filename . "\"
@@ -500,41 +637,23 @@ $display_labels[$ii] = $label;
    echo "</div>";
    $ump = create_id2("terop",$ii);
 
-   echo "<div class=\"zipbutton\">";
-   echo "<div class=\"ziphoriz\">";
-   echo "<button id=\"copybutton$ii\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\" style=\"height:21px\">&copy;</button>";
+   echo "<div class=\"zipbutton d-flex align-items-right hover-red justify-content-end\">";
+   echo "<div class=\"ziphoriz justify-content-end d-flex align-items-right gap-2 hover-red\">";
+   echo "<button id=\"copybutton$ii\" class=\"btn btn-secondary btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\">&copy;</button>";
    echo "<script>";
-//         $arr = array("username" => "terop", "index" => $_GET["id"]);
-//      $res = addtext_date($arr);
-//      echo "\nvar dt = \"$res;\";\n";
-//echo "   fetch(\"https://meshpage.org/mesh_addtext.php?id=$ump&\" + dt )\n";
-//echo "     .then(x => x.text())\n";
-//echo "     .then(y => show_copy3($ii,y));\n";
 echo "</script>";
-echo "<button type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\" style=\"height:21px\">Script</button>";
+echo "<button class=\"btn btn-info btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"button\" onclick=\"show_script($ii,'$ump')\" onfocus=\"g_focus2=true;\" onblur=\"g_focus2=false;\" >Script</button>";
    echo "<form id=\"form" . $ii . "\" method=\"GET\" action=\"/item_to_zip_result.php\">";
    echo "<input type=\"hidden\" name=\"itemnum\" value=\"" . $ii . "\">";
    echo "<input type=\"hidden\" name=\"itemid\" value=\"" . $id . "\">";
-   echo "<input type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" style=\"height:21px\" onblur=\"g_focus=false;\">";
+   echo "<input class=\"btn btn-success btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"submit\" value=\"Zip\" onfocus=\"g_focus=true;\" onblur=\"g_focus=false;\">";
    echo "</form>";
-
-
-   //echo "<form onsubmit=\"handleSubmit(" . $ii . ");\" id=\"formapk" . $ii . "\" method=\"GET\" action=\"/mesh_apk.php\">";
-   //echo "<input type=\"hidden\" name=\"id\" value=\"" . $ii . "\"/>";
-   //echo "<input type=\"hidden\" name=\"full\" value=\"true\"/>";
-   //echo "<input id=\"apkbutton" . $ii ."\" type=\"submit\" value=\"Apk\" onfocus=\"window.g_focus4=true;\" onblur=\"window.g_focus4=false;\"/>";
-   //echo "</form>";
-
-echo "<button id=\"apkbutton$ii\" type=\"button\" style=\"height:21px\" onclick=\"show_apk($ii,'$ump')\" onfocus=\"g_focus4=true;\" onblur=\"g_focus4=false;\">Apk</button>";
+echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounded-0\" id=\"apkbutton$ii\" type=\"button\" onclick=\"show_apk($ii,'$ump')\" onfocus=\"g_focus4=true;\" onblur=\"g_focus4=false;\">Apk</button>";
    echo "<script>";
          $arr = array("username" => "terop", "index" => $_GET["id"]);
       $res = addtext_date($arr);
       echo "\nvar dt = \"$res;\";\n";
 
-//echo "   fetch(\"https://meshpage.org/mesh_apk.php?id=$ii&full=false\")\n";
-//echo "     .then(x => x.text())\n";
-//echo "     .then(y => show_apk3($ii,y));\n";
-//echo "show_apk3($ii,apk_status[$ii]);\n";
 echo "</script>";
 
 
@@ -578,9 +697,9 @@ echo "  addtext_status = JSON.parse(arr);\n";
 echo "  addtext_status.keys().forEach((key)=>{show_copy3(key,addtext_status[key]);});";
 echo "}\n";
 echo "var apk_status=[];\n";
-echo "fetch(\"https://meshpage.org/mesh_addtext.php?id=0&full=array\")\n";
+echo "fetch(\"$https://$site/mesh_addtext.php?id=0&full=array\")\n";
 echo "     .then(x=>x.text()).then(y=>js2_parse(y));\n";
-echo "fetch(\"https://meshpage.org/mesh_apk.php?id=0&full=array\")\n";
+echo "fetch(\"$https://$site/mesh_apk.php?id=0&full=array\")\n";
 echo "     .then(x=>x.text()).then(y=>js_parse(y));\n";
 echo "var display_labels = " . json_encode($display_labels) . ";";
 echo "</script>";
@@ -591,37 +710,37 @@ echo "</script>";
    echo "<p>";
    echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
    if ($startpos!="")
-      echo "<a href=\"" . $site . "/meshpage.php\">000</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php\">000</a> | ";
    else echo "000 | ";
    if ($startpos!="1")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=1\">050</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=1\">050</a> | ";
    else echo "050 | ";
    if ($startpos!="2")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=2\">100</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=2\">100</a> | ";
    else echo "100 | ";
    if ($startpos!="3")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=3\">150</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=3\">150</a> | ";
    else echo "150 | ";
    if ($startpos!="4")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=4\">200</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=4\">200</a> | ";
    else echo "200 | ";
    if ($startpos!="5")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=5\">250</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=5\">250</a> | ";
    else echo "250 | ";
    if ($startpos!="6")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=6\">300</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=6\">300</a> | ";
    else echo "300 | ";
    if ($startpos!="7")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=7\">350</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=7\">350</a> | ";
    else echo "350 | ";
    if ($startpos!="8")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=8\">400</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=8\">400</a> | ";
    else echo "400 | ";
    if ($startpos!="9")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=9\">450</a> | ";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=9\">450</a> | ";
    else echo "450 | ";
    if ($startpos!="10")
-      echo "<a href=\"" . $site . "/meshpage.php?ps=10\">500</a>";
+      echo "<a href=\"" . $https . "://" . $site . "/meshpage.php?ps=10\">500</a>";
    else echo "500";
    echo "</div>";
 echo "<br>";
@@ -641,7 +760,7 @@ echo "}\n";
 echo "function show_script(v,ump) {\n";
 echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
 echo "   d.style = \"\";\n";
-echo "   fetch(\"https://meshpage.org/mesh_pre.php?id=\" + ump)\n";
+echo "   fetch(\"$https://$site/mesh_pre.php?id=\" + ump)\n";
 echo "     .then(x => x.text())\n";
 echo "     .then(y => show_script2(v,y));\n";
 
@@ -666,7 +785,7 @@ echo "   d.style = \"\";\n";
       $arr = array("username" => "terop", "index" => $_GET["id"]);
       $res = addtext_date($arr);
       echo "var dt = \"$res;\";";
-echo "   fetch(\"https://meshpage.org/mesh_addtext.php?id=\" + ump + \"&\" + dt )\n";
+echo "   fetch(\"$https://$site/mesh_addtext.php?id=\" + ump + \"&\" + dt )\n";
 echo "     .then(x => x.text())\n";
 echo "     .then(y => show_copy2(v,y));\n";
 
@@ -680,7 +799,7 @@ echo "</script>\n";
 ?>
 
 
-<div id="main_display"> <!--v-show="state.mesh"-->
+<div id="main_display" style="display:none"> <!--v-show="state.mesh"-->
 <div class="display" id="display2" style="display:none">
 <div class="ems" id="canvas2" style="width:330px; height:247px"></div>
 </div>
@@ -715,7 +834,7 @@ echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" wi
 </div>
 
 
-<div v-if="state.about">
+<div v-show="state.about" style="display:none">
 <p>
 <p>
 <p>
@@ -730,7 +849,7 @@ echo "Resume cookie dialog: <a href=\"JavaScript:void(0);\" onClick=\"resume_coo
 echo "<script>function resume_cookies() { var c = document.getElementById(\"callout\"); c.style.display=\"block\"; }</script>"; 
 
 echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a><br><p>";
-echo "Video tutorial: <a href=\"https://meshpage.org/assets/builder_greeen_example.mp4\">tutorial</a><br><p>";
+echo "Video tutorial: <a href=\"$https://$site/assets/builder_greeen_example.mp4\">tutorial</a><br><p>";
 
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
@@ -738,7 +857,7 @@ echo "Y-tunnus: 3544765-4 (Tero Pulkkinen)<br>";
 echo "Ko-fi address: <a href=\"https://ko-fi.com/terop57376\">terop57376</a><br>";
 echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a><br>";
-$version_source = file_get_contents('https://meshpage.org/assets/VERSION_SOURCE.TXT');
+$version_source = file_get_contents('$https://$site/assets/VERSION_SOURCE.TXT');
 echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v$version_source.tar.gz\">GameApi-sourcecode-v$version_source.tar.gz</a>.";
 echo "<br>Yours,<br><img loading=\"lazy\" src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img loading=\"lazy\" src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
@@ -791,7 +910,7 @@ function login() {
 </script>
 
 </div>
-<div v-if="state.docs">
+<div v-show="state.docs" style="display:none">
 <p>
 <p>
 <p>
@@ -800,18 +919,18 @@ function login() {
 require_once("user.php");
 list_start("Available documents:");
 list_item($assetsite . "/Linux_compile.txt", "Linux compilation");
-list_item($site . "/feat.php", "Builder Feature list");
+list_item($https . "://" . $site . "/feat.php", "Builder Feature list");
 list_item($assetsite . "/Opengl_chain.txt", "Mesh structure");
 list_item($assetsite . "/Math_concepts.txt", "Math concepts");
 list_item($assetsite . "/Printer.txt", "3d printer instructions");
 list_item($assetsite . "/Skills_to_learn.txt", "Skills to learn");
 list_item($assetsite . "/Releasing_animations.txt", "Releasing animations to your web page");
-list_item("https://meshpage.org/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
+list_item("$https://$site/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
 list_end();
 ?>
 
 </div>
-<div v-if="state.faq">
+<div v-show="state.faq" style="display:none">
 <p>
 <p>
 <p>
@@ -862,11 +981,11 @@ Chrome: chrome://flags -> experimental quic protocol -> enabled
 
 <h2>What is the standard rendering pipeline?</h2>
 
-<img src="https://meshpage.org/assets/std_render_pipeline.png" width="600" height="200"/>
+<img src="$https://$site/assets/std_render_pipeline.png" width="600" height="200"/>
 
 <h2>And if you want something to move on screen?</h2>
 
-<img src="https://meshpage.org/assets/std_rendering_with_move.png" width="600" height="200"/>
+<img src="$https://$site/assets/std_rendering_with_move.png" width="600" height="200"/>
 
 <h2>Is there a 3d model viewer that uses your engine?</h2>
 
@@ -893,7 +1012,7 @@ Useful other sites with gltf viewing capability in web:
 
 <h2>If I just want to deploy simple gltf file?</h2>
 
-Check our gltf-to-zip converter at <a href="https://meshpage.org/gltf_to_zip.php">Here</a>.
+Check our gltf-to-zip converter at <a href="<?php echo $https ?>://<?php echo $site ?>/gltf_to_zip.php">Here</a>.
 
 <h2>Now, if I got display.php, how do I embed it to my article</h2>
 
@@ -921,7 +1040,7 @@ allowed for copyright reasons.
 Web server config(.htaccess) should be something like the following: (you should change the url)
 <br>
 <pre>
-Header set Access-Control-Allow-Origin "<?php echo $site ?>" 
+Header set Access-Control-Allow-Origin "<?php echo $https ?>://<?php echo $site ?>" 
 Header set Cross-Origin-Embedder-Policy "require-corp" 
 Header set Cross-Origin-Resource-Policy "same-site" 
 Header set Cross-Origin-Opener-Policy "same-origin" 
@@ -1123,7 +1242,7 @@ its possible to fix the problem by using the opengl backend.
 <li>Firefox users: about:config shuold have shared.memory=true
 </ul>
 <h2>What browser should I use?</h2>
-On my laptop I get the following benchmarks(this test: <a href="<?php echo $site ?>/mesh_display?id=GVILK@032">here</a>(
+On my laptop I get the following benchmarks(this test: <a href="<?php echo $https ?>://<?php echo $site ?>/mesh_display?id=GVILK@032">here</a>(
 <ul>
 <li>some users have reported 700fps, but with high-end video card
 <li>Brave browser gives about 147fps
@@ -1135,10 +1254,10 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $site
 <li>mediaisnothingtomebutistilllikeit <a href="https://mediaisnothingtomebutistilllikeit.wordpress.com/2017/12/06/meshpage-org/">blog</a>
 </ul>
 </div>
-<div v-if="state.tool_download">
+<div v-show="state.tool_download" style="display:none">
 <p>
 <link itemprop="applicationCategory" href="https://schema.org/ModellingTool">
-<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">
+<a itemprop="downloadUrl" href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('$https://<?php echo $site ?>/assets/VERSION_WIN.TXT'); ?>.msi">
 <img loading="lazy" src="<?php echo $assetsite ?>/gameapi-builder-screenshot2.png" width="901" height="199" crossorigin></a>
 
 <p>
@@ -1152,7 +1271,7 @@ PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referr
 <p><br>
 MOST RECENT RELEASE: WIN: 
 <?php
-$version_win = file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT');
+$version_win = file_get_contents('$https://$site/assets/VERSION_WIN.TXT');
 $version_win = substr($version_win, 0, -1);
 echo "v." . $version_win . " ";
 $start_time = filemtime("./assets/GameApi-Builder-v" . $version_win . ".msi");
@@ -1164,7 +1283,7 @@ echo "(" . $delta . " days ago)";
 MOST RECENT RELEASE: LINUX: 
 
 <?php
-$version = file_get_contents('https://meshpage.org/assets/VERSION.TXT');
+$version = file_get_contents('$https://$site/assets/VERSION.TXT');
 $version = substr($version, 0, -1);
 echo "v." . $version  . " ";
 $start_time = filemtime("./gameapi-builder_1.0-" . $version . ".deb");
@@ -1177,7 +1296,7 @@ echo "(" . $delta . " days ago)";
 MOST RECENT RELEASE: SOURCECODE: 
 
 <?php
-$version_source = file_get_contents('https://meshpage.org/assets/VERSION_SOURCE.TXT');
+$version_source = file_get_contents('$https://$site/assets/VERSION_SOURCE.TXT');
 $version_source = substr($version_source, 0, -1);
 echo "v." . $version_source . " ";
 $start_time = filemtime("./GameApi-sourcecode-v" . $version_source . ".tar.gz");
@@ -1187,11 +1306,11 @@ echo "(" . $delta . " days ago)";
 ?>
 <br><br>
 CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
-<a href="<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
-<a href="<?php echo $site ?>/world_transform.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/world_transform.webp" width="200" height="200" crossorigin></img></a>
-<a href="<?php echo $site ?>/subtle_calmness.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/subtle_calmness.webp" width="200" height="200" crossorigin></img></a>
-<a href="<?php echo $site ?>/city_building.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/city_building.webp" width="200" height="200" crossorigin></img></a>
-<a href="<?php echo $site ?>/investor.webp" target=_blank><img loading="lazy" src="<?php echo $site ?>/investor.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $site ?>/world_transform.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/world_transform.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $site ?>/subtle_calmness.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/subtle_calmness.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $site ?>/city_building.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/city_building.webp" width="200" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $site ?>/investor.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/investor.webp" width="200" height="200" crossorigin></img></a>
 <br><br>
 DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <div style="padding: 0px; width: 1324px;">
@@ -1200,7 +1319,7 @@ DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows 11 64-bit</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('$https://$site/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
 <?php
 visit_counter_inc( "tool" );
 ?>
@@ -1209,7 +1328,7 @@ visit_counter_inc( "tool" );
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
       (doubleclick msi file to install it)<br>
-       start menu -> GameApi-Builder v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.0 -> GameApi_Builder v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.0
+       start menu -> GameApi-Builder v<?php echo file_get_contents('$https://<?php echo $site ?>/assets/VERSION_WIN.TXT'); ?>.0 -> GameApi_Builder v<?php echo file_get_contents('$https://$site/assets/VERSION_WIN.TXT'); ?>.0
 </div>
 </div>
 
@@ -1228,12 +1347,12 @@ visit_counter_inc( "tool" );
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Ubuntu 64-bit amd64</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.deb">download deb</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents('$https://$site/assets/VERSION.TXT'); ?>.deb">download deb</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
-      sudo dpkg -i gameapi-builder_1.0-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.deb<br>
+      sudo dpkg -i gameapi-builder_1.0-<?php echo file_get_contents('$https://$site/assets/VERSION.TXT'); ?>.deb<br>
       gameapi-builder
 </div>
 </div>
@@ -1257,14 +1376,14 @@ width="120" height="120" crossorigin/>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux with wine</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents('$https://$site/assets/VERSION_WIN.TXT'); ?>.msi">download msi</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
 <div style="margin: 30px;">
      (install wine)<br>
-     wine msiexec /i GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.msi<br>
-     cd ~/.wine/drive_c/Program\ Files\ (x86)/GameApi-Builder-v<?php echo file_get_contents('https://meshpage.org/assets/VERSION_WIN.TXT'); ?>.0<br>
+     wine msiexec /i GameApi-Builder-v<?php echo file_get_contents('$https://$site/assets/VERSION_WIN.TXT'); ?>.msi<br>
+     cd ~/.wine/drive_c/Program\ Files\ (x86)/GameApi-Builder-v<?php echo file_get_contents('$https://$site/assets/VERSION_WIN.TXT'); ?>.0<br>
      wine gameapi_builder.exe
 </div>
 </div>
@@ -1272,7 +1391,7 @@ width="120" height="120" crossorigin/>
 
 <div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
-<img loading="lazy" src="https://meshpage.org/assets/wine_logo.jpeg"
+<img loading="lazy" src="$https://$site/assets/wine_logo.jpeg"
 width="120" height="120" crossorigin/>
 </div>
 </div>
@@ -1291,7 +1410,7 @@ width="120" height="120" crossorigin/>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-container-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-container-<?php echo file_get_contents('$https://$site/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1329,7 +1448,7 @@ width="120" height="120" crossorigin/>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">GameDisplay tool</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Linux/Docker container</span>
 <li><b>Graphics Card:</b> <span itemprop="graphicsCard">NVidia</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-cmdline-<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/gameapi-builder-docker-cmdline-<?php echo file_get_contents('$https://$site/assets/VERSION.TXT'); ?>.tar.gz">download tar.gz</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1359,7 +1478,7 @@ width="120" height="120" crossorigin/>
 <li><b>Application name:</b> <span itemprop="name">GameApi CmdLine</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">GameDisplay tool</span>
 <li><b>Operating system:</b> <span itemprop="operatingSystem">Windows</span>
-<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi_cmdline_<?php echo file_get_contents('https://meshpage.org/assets/VERSION.TXT'); ?>.zip">download zip</a>
+<li><b>Download url:</b> <a href="<?php echo $assetsite ?>/GameApi_cmdline_<?php echo file_get_contents('$https://$site/assets/VERSION.TXT'); ?>.zip">download zip</a>
 </ul>
 </div>
 <div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
@@ -1509,8 +1628,8 @@ width="120" height="120" crossorigin/>
 }
 .zipbutton {
    position: relative;
-   left: 54px;
-   top: 10px;
+   //left: 54px;
+   //top: 10px;
 }
 .zipmargin {
    z-index: 100;
@@ -1807,7 +1926,7 @@ function zip_progress(id)
 
 var app = new Vue({
    el: '#app',
-   mounted: function() {
+   ready: function() {
           var vm = this;
      choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
      //start_emscripten(vm);
@@ -1953,7 +2072,8 @@ if ($page!="") {
       isIndicatorNone() { return this.indicator[2]==0; }
    },
    methods: {
-
+       resume_cookies: function() { resume_cookies(); },
+       
        mesh_display(id,label,display_label) {
        	  var d = document.getElementById("display_title_bar");
 	  d.innerHTML = display_label;
@@ -2113,7 +2233,7 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 }
 function choose_breadlist(id,breadcrumb,first,second)
 {
-  //console.log("choose_breadlist");
+  console.log("choose_breadlist");
   while(breadcrumb.length) breadcrumb.pop();
   var target;
   if (id==0) { target = first; }
@@ -2185,14 +2305,14 @@ function choose_display(id,label, vm,is_popstate)
   store.choose("mesh");
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
-  var url = "<?php echo $site ?>/mesh_pre.php?id=" + label;
+  var url = "<?php echo $https ?>://<?php echo $site ?>/mesh_pre.php?id=" + label;
 <?php
       $arr = array("username" => "terop", "index" => $_GET["id"]);
       $res = addtext_date($arr);
       echo "var dt = \"$res;\";";
 ?>
-  var url2 = "<?php echo $site ?>/mesh_addtext.php?id=" + label + "&" + dt;
-  var url3 = "<?php echo $site ?>/mesh_background.php?id=" + label;
+  var url2 = "<?php echo $https ?>://<?php echo $site ?>/mesh_addtext.php?id=" + label + "&" + dt;
+  var url3 = "<?php echo $https ?>://<?php echo $site ?>/mesh_background.php?id=" + label;
   //console.log(g_txt[id]);
   //console.log(url3);
   if (g_txt[id]===undefined) {
@@ -2403,7 +2523,7 @@ function resize_size() {
   return [830,630];
 }
 
-var gameapi_homepageurl = "<?php echo $assetsite ?>";
+var gameapi_homepageurl = "<?php echo $https ?>://<?php echo $assetsite ?>";
 
 var g_display_timeout = null;
 function display_cb()
@@ -2609,36 +2729,6 @@ Module.print = (function() {
 		    } })();
 </script>
 <?php
-/*
-require_once("user.php");
-$nothreads = js_no_threads();
-$mobile = js_mobile();
-$highmem = js_highmem();
-if ($mobile == "yes") {
-   echo "<script>import Module from './engine_lowmem_nothreads.js';</script>";
-  //echo "<script src='engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "'></script>";
-} else
-if ($nothreads == "yes") {
-   if ($highmem == "yes") {
-  //echo "<script src='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "'></script>";
-   echo "<script async>import Module from './engine_nothreads_highmem.js';</script>";
-
-   } else {
- // echo "<script src='engine_nothreads.js?" . filemtime("engine_nothreads.js") . "'></script>";
-   echo "<script async>import Module from './engine_nothreads.js';</script>";
-
-}
-} else {
-   if ($highmem == "yes") {
- // echo "<script src='engine_highmem.js?" . filemtime("engine_highmem.js") . "' crossorigin='anonymous'></script>";
-   echo "<script async>import Module from './engine_highmem.js';</script>";
-
-   } else {
-  //echo "<script src='engine.js?" . filemtime("engine.js") . "' crossorigin='anonymous'></script>";
-   echo "<script async>import Module from './engine.js';</script>";
-  }
-}
-*/
 ?>
 <script>
 
@@ -2807,8 +2897,10 @@ require_once("user.php");
 $nothreads = js_no_threads();
 $mobile = js_mobile();
 $highmem = js_highmem();
+//echo "MOBILE: $mobile\nNOTHREADS: $nothreads\nHIGHMEM: $highmem\n";
 if ($mobile == "yes") {
   echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
+
 } else
 if ($nothreads == "yes") {
    if ($highmem == "yes") {
@@ -2819,7 +2911,9 @@ if ($nothreads == "yes") {
    }
 } else {
    if ($highmem == "yes") {
+   //echo "if (!crossOriginIsolated) { import('./engine_nothreads_highmem.js'); } else { import('./engine_highmem.js'); }";
   echo "var filename = 'engine_highmem.js?" . filemtime("engine_highmem.js") . "';";
+  echo "if (!crossOriginIsolated) filename='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
    } else {
   echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
@@ -3157,4 +3251,46 @@ get_cookie_status();
 .closebtn:hover {
   color: lightgrey;
 }
+.hover-border:hover {
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary-bg-subtle);
+  transition: 0.2s;
+}
+.btn {
+  text-decoration: none !important;
+}
+.btn:hover {
+  text-decoration: none !important;
+}
+.btn, 
+.btn:link, 
+.btn:visited, 
+.btn:hover, 
+.btn:focus, 
+.btn:active {
+  text-decoration: none !important;
+}
+.hover-red:hover {
+  background-color: red !important;
+  color: white !important; /* optional: makes text visible on red */
+}
+.scaled-img {
+  max-width: 100%;    /* responsive width */
+  max-height: 100%;   /* responsive height */
+  height: auto;       /* preserve aspect ratio */
+  width: auto;        /* preserve aspect ratio */
+  display: block;
+}
+.img-stretch-then-scale {
+  width: 800px;          /* initial forced size */
+  height: 600px;
+  object-fit: fill;
+  max-width: 100%;        /* scale down to fit container */
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+}
+
 </style>
+

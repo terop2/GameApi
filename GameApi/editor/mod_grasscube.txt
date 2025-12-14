@@ -5,7 +5,7 @@ test
 (260,228)li_from_polygon uid2029395466 0 0 1 poly:*uid2029395465:false:-1:0
 (478,276)li_to_cone2 uid2029395468 0 0 1 ev:*ev:false:-1:-1060074160 li:*uid2029395466:false:-1:0 size:*10.0:false:-1:-1060074160 numfaces:*15:false:-1:-1060074160 mt:*uid2029395471:false:-1:0
 (102,406)m_def uid2029395469 0 0 1 ev:*ev:false:-1:-1060074160
-(229,402)m_phong uid2029395470 0 0 1 ev:*ev:false:-1:-1060074160 nxt:*uid2029395469:false:-1:0 light_dir_x:*-0.3:false:-1:-1060074160 light_dir_y:*0.3:false:-1:-1060074160 light_dir_z:*-1:false:-1:-1060074160 ambient:*ff002200:false:-1:-1060074160 specular:*ff004400:false:-1:0 highlight:*ff006600:false:-1:-1060074160 pow:*5:false:-1:-1060074160
+(229,402)m_phong uid2029395470 0 0 1 ev:*ev:false:-1:-1060074160 nxt:*uid2029395469:false:-1:0 light_pos_x:*30.0:false:-1:0 light_pos_y:*-400.0:false:-1:0 light_pos_z:*30.0:false:-1:0 ambient:*ff002200:false:-1:-1060074160 specular:*ff004400:false:-1:0 highlight:*ff006600:false:-1:-1060074160 pow:*5:false:-1:-1060074160
 (355,444)m_fur uid2029395471 0 0 1 ev:*ev:false:-1:-1060074160 nxt:*uid2029395470:false:-1:0 center:*uid2029395472:false:-1:0 dist:*60:false:-1:-1060074160 max_angle:*1.59:false:-1:-1060074160 count:*1500:false:-1:-1060074160 size:*2:false:-1:-1060074160 cone_numfaces:*4:false:-1:-1060074160
 (232,514)point uid2029395472 0 0 1 x:*0.0:false:-1:-1060074160 y:*0.0:false:-1:-1060074160 z:*0.0:false:-1:-1060074160
 (167,687)mn_empty uid2029395473 0 0 1
@@ -14,3 +14,5 @@ test
 (667,603)run_window uid2029395476 0 0 1 ev:*ev:false:-1:-1060074160 ml:*uid2029395475:false:-1:0 logo:*false:false:-1:-1060074160 fpscounter:*false:false:-1:-1060074160 start_time:*0.0:false:-1:-1060074160 duration:*100000.0:false:-1:-1060074160
 (836,605)html_run uid2029395477 0 0 1 ev:*ev:false:-1:-1060074160 r:*uid2029395476:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:-1060074160
 (995,595)save_deploy uid2029395478 0 0 1 h:*uid2029395477:false:-1:0 filename:*gameapi_deploy.zip:false:-1:-1060074160
+(1053,885)ml_script uid1117168870 0 0 1 ev:*ev:false:-1:1304910560 hml:*uid1117168871:false:-1:0 %1:*a:false:-1:1304910560 %2:*b:false:-1:1304910560 %3:*c:false:-1:1304910560 %4:*d:false:-1:1304910560 %5:*e:false:-1:1304910560
+(923,882)html_url uid1117168871 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_5.txt:false:-1:1304910560
