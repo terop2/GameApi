@@ -2436,6 +2436,32 @@ public:
 };
 
 
+class GLTFEditInterface : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual bool ReadyToPrepare() const { return true; }
+  virtual void execute() { }
+
+  virtual std::string name() const=0;
+  
+  virtual std::string BaseUrl() const=0;
+  virtual std::string Url() const=0;
+
+  virtual int get_default_scene() const=0;
+
+  virtual int meshes_size() const=0;
+  virtual GameApi::P get_mesh(int i) const=0;
+
+  virtual int materials_size() const=0;
+  virtual GameApi::MT get_material(int i) const=0;
+
+  virtual int images_size() const=0;
+  virtual GameApi::BM get_image(int i) const=0;  
+};
+
 class GLTFModelInterface : public CollectInterface
 {
 public:

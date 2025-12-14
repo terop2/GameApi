@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SITE=meshpage.org
-SITE=192.168.1.104
+SITE=meshpage.org
+#SITE=192.168.1.104
 
 INDEX=0
 copy_it()

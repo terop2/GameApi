@@ -13350,13 +13350,14 @@ public:
       
       Matrix mv = gltf_node_transform_obj_apply2(env, ev, mr, obj);
       
-      
+#if 0
       if (Matrix::has_nan(resizei)) { resizei=Matrix::Identity();  }
       //if (Matrix::has_nan(m0i)) { m0i=Matrix::Identity(); }
       //if (Matrix::has_nan(m0)) { m0=Matrix::Identity(); }
       if (Matrix::has_nan(bindm)) { bindm=Matrix::Identity(); }
       if (Matrix::has_nan(mv)) {  mv=Matrix::Identity();  }
       if (Matrix::has_nan(resize)) { resize=Matrix::Identity(); }
+#endif
       
       if (ii<jointMatrices.size()) 
 	jointMatrices[ii] = add_matrix2(env, resizei * bindm * mv * resize);
