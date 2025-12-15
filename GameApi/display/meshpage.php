@@ -259,8 +259,6 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 <!-- new navbar ends -->
 
 <div class="main" id="main" style="display:none;">
-<div v-if="state.empty">
-</div>
 <?php
 if ($sitename=="dinoengine.com") {
   echo "<div class=\"logo\">";
@@ -278,7 +276,7 @@ if ($sitename=="dinoengine.com") {
 <input type="submit"><br><br>
 </form>
 </div>
-<div v-show="state.create_new" style="display:none">
+<!--div v-show="state.create_new" style="display:none">
 <div class="tab">
   <button class="tablinks active" onclick="open_tab(event,'pkg')">Package files</button>
   <button class="tablinks" onclick="open_tab(event,'script')">Script files</button>
@@ -318,7 +316,7 @@ if ($sitename=="dinoengine.com") {
   <input type="submit">
   </form>
 </div>
-</div>
+</div-->
 <div v-show="state.my_animations" style="display:none">
 </div>
 <div id="main_div">
@@ -329,15 +327,17 @@ $user="terop";
 $num = read_num( $user );
 echo "<br><br><br>";
 echo "<div class=\"flex-container d-flex flex-wrap align-items-center\">";
-   echo "<div class=\"flex-item border p-3 m-0 w-18 h-18 text-left\" style=\"width: 60%;\">";
+   echo "<div class=\"flex-item p-3 m-0 w-3 h-18 text-left\" style=\"width: 60%;\">";
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
 echo "<div style=\"display:none\">LOGIN STATUS: <span id=\"loginstatus\">WAITING FOR COOKIES..</span></div><br>";
 echo "<div style=\"display:none\">PURCHASE STATUS: <span id=\"status\">WAITING FOR COOKIES..</span></div>";
 page_title($sitename, "groundbreaking way to bring 3d to the web.");
 echo "</div>";
-echo "<div class=\"flex-item border p-3 m-0 w-10 h-10 text-left\">";
-echo "<button type=\"button\" class=\"btn btn-primary m-4 w-4 h-10\" onclick=\"window.location='$https://$site/view.php'\">3d model viewer</button>";
-echo "<button type=\"button\" class=\"btn btn-primary m-4 w-4 h-10\" onclick=\"window.location='$https://$site/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "<div class=\"flex-item p-3 m-0 w-8 h-10 text-left\">";
+echo "<div class=\"flex-container d-flex flex-column align-items-center\">";
+echo "<button type=\"button\" style=\"width: 320px;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/view.php'\">3d model viewer</button>";
+echo "<button type=\"button\" style=\"width: 320px;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "</div>";
 echo "</div>";
 echo "</div>";
 echo "<div style=\"height:50px\"></div>";
@@ -601,7 +601,7 @@ echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" wi
 </div>
 
 
-<div id="about" style="display:none;">
+<div id="about" class="container-lg" style="display:none;">
 <p>
 <p>
 <p>
@@ -677,7 +677,7 @@ function login() {
 </script>
 
 </div>
-<div id="docs" style="display:none;">
+<div id="docs" class="container-lg" style="display:none;">
 <p>
 <p>
 <p>
@@ -697,7 +697,7 @@ list_end();
 ?>
 
 </div>
-<div id="faq" style="display:none;">
+<div id="faq" class="container-lg" style="display:none;">
 <p>
 <p>
 <p>
@@ -1021,7 +1021,7 @@ On my laptop I get the following benchmarks(this test: <a href="<?php echo $http
 <li>mediaisnothingtomebutistilllikeit <a href="https://mediaisnothingtomebutistilllikeit.wordpress.com/2017/12/06/meshpage-org/">blog</a>
 </ul>
 </div>
-<div id="tool" style="display:none;">
+<div id="tool" class="container-lg" style="display:none;">
 
 <p>
 <link itemprop="applicationCategory" href="https://schema.org/ModellingTool">
@@ -1847,9 +1847,125 @@ function zip_progress(id)
 }
 
 
+
+let elementNames = [ "menu_main", "menu_tool", "menu_faq", "menu_tutorial", "menu_about" ];
+let pageNames = [ "main", "tool", "faq", "docs", "about" ];
+let elementNames2 = [ "menu_main2", "menu_display" ];
+let pageNames2 = [ "main", "main_display" ];
+
+
+window.clearActive = function()
+{
+    //console.log("clearActive");
+    for (let i=0;i<elementNames.length;i++)
+    {
+	var e = document.getElementById(elementNames[i]);
+        e.className="";
+    }    
+    for (let i=0;i<pageNames.length;i++)
+    {
+	var e = document.getElementById(pageNames[i]);
+	e.style.display="none";
+    }
+}
+window.clearActive2 = function()
+{
+    //console.log("clearActive2");
+    for (let i=0;i<elementNames2.length;i++)
+    {
+	var e = document.getElementById(elementNames2[i]);
+        e.className="";
+    }    
+    for (let i=0;i<pageNames2.length;i++)
+    {
+	var e = document.getElementById(pageNames2[i]);
+	e.style.display="none";
+    }
+}
+
+window.menu = function(val)
+{
+    //console.log("MENU");
+    //console.log(val);
+    if (val!=0) {
+       window.history.replaceState({page: 2},"title 2", "/meshpage_" + (val+3).toString());
+       //window.location.href="/meshpage_" + (val+3).toString();
+       }
+    else {
+	window.history.replaceState({page:1},"title 2", "/meshpage.php");
+        //window.location.href="/meshpage.php";
+   }
+
+    var e = document.getElementById(elementNames[val]);
+    e.className="active";
+    var e2 = document.getElementById(pageNames[val]);
+    e2.style.display="block";
+
+    if (val==0)
+    {
+	hide_main(true);
+	hide_display(false);
+    } else {
+	hide_main(false);
+	hide_display(false);
+    }
+
+
+}
+window.menu2 = function(val,id,pushstate)
+{
+    //console.log("MENU2");
+    //console.log(val);
+    var e = document.getElementById(elementNames2[val]);
+    e.className="active";
+    var e2 = document.getElementById(pageNames2[val]);
+    e2.style.display="block";
+    
+    if (val==0)
+    {
+	window.history.replaceState({page: 1},"title 1", "/meshpage.php" );
+	//window.location.href = "/meshpage.php";
+	hide_display(false);
+	hide_main(true);
+	clearActive();
+	choose_nav(0);
+	menu(0);
+    }
+    if (val==1)
+    {
+	if (pushstate==true) {
+	   window.history.pushState({page: 2},"title 2", "/" + id.toString() );
+	   } else {
+	   window.history.replaceState({page: 2},"title 2", "/" + id.toString() );
+	   }
+	//window.location.href = "/" + id.toString();
+	hide_display(true);
+	hide_main(false);
+    }
+
+}
+window.choose_nav = function(val)
+{
+    //console.log("choose_nav");
+    //console.log(val);
+   var e0 = document.getElementById("navbar1");
+   var e1 = document.getElementById("navbar2");
+   if (val==0) {
+     e0.style.display="block";
+     e1.style.display="none";
+   }
+   if (val==1) {
+     e0.style.display="none";
+     e1.style.display="block";
+   }
+}
+//menu(0);
+//choose_nav(0);
+
+
 var app = new Vue({
    el: '#app',
-   ready: function() {
+   mounted: function() {
           var vm = this;
      choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
      //start_emscripten(vm);
@@ -1862,12 +1978,18 @@ var app = new Vue({
        	  choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
        	  store.choose('main');
-	  if (typeof fix_keyboard === "function") fix_keyboard(true);
+      window.choose_nav(0);
+      window.clearActive();
+      window.menu(0);
+
+      if (typeof fix_keyboard === "function") fix_keyboard(true);
 	  return;
 	  }
        var pgnum = e.state.page;
 
        var url = window.location.href;
+       window.location.reload();
+
        var n = url.search("_");
        var n2 = url.search("page=");
        var cut = 1;
@@ -1900,6 +2022,10 @@ var app = new Vue({
 	  choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
 	  store.choose('main');
+      	  window.choose_nav(0);
+      	  window.clearActive();
+      	  window.menu(0);	
+  
 	  //start_emscripten(vm);
 	  //if (pgnum==1)
 	  //   window.history.go(-2);
@@ -1909,7 +2035,11 @@ var app = new Vue({
 	  }
        if (pgnum==2) {
           //console.log("MESH");
-       	  window.mesh_display(vm,id,label); 
+       	  window.mesh_display(vm,id,label);
+	  window.choose_nav(1);
+      	  window.clearActive2();
+      	  window.menu2(1,id,false);
+	  
 	  if (typeof fix_keyboard === "function") fix_keyboard(false);
 	  }
        }
@@ -1919,6 +2049,10 @@ var app = new Vue({
           var vm = vue;
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 	  choose_display(id,label,vm,true);
+      window.choose_nav(1);
+      window.clearActive2();
+      window.menu2(1,id,false);
+	  
        }
 
 <?php
@@ -1938,12 +2072,17 @@ if ($page!="") {
    if ($page==1) {
       echo "store.choose(\"main\");";
       echo "choose_bread(\"main\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(0);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==2) {
       echo "setTimeout(delayed_choose_display(vm,g_last_id,g_last_label),30);";
       echo "store.choose(\"mesh\");";
-
+      echo "window.choose_nav(1);";
+      echo "window.clearActive2();";
+      echo "window.menu2(1,g_last_id,false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(false);";
       } else
       {
@@ -1952,33 +2091,52 @@ if ($page!="") {
    if ($page==3) {
       echo "store.choose(\"main\");";
       echo "choose_bread(\"main\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(0);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==4) {
       echo "store.choose(\"tool_download\");";
       echo "choose_bread(\"tool_download\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(1);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==5) {
       echo "store.choose(\"faq\");";
       echo "choose_bread(\"faq\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(2);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==6) {
       echo "store.choose(\"docs\");";
       echo "choose_bread(\"docs\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(3);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==7) {
       echo "store.choose(\"about\");";
       echo "choose_bread(\"about\",vm.main_breadcrumb);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(4);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
 
 } else {
   echo "store.choose(\"main\");";
   echo "choose_bread(\"main\",vm.main_breadcrumb);";
-      echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
+      echo "window.choose_nav(0);";
+      echo "window.clearActive();";
+      echo "window.menu(0);";
+
+echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
 }
 
 ?>
@@ -2001,9 +2159,9 @@ if ($page!="") {
         var vm = this;
   	  
 	  choose_display(id,label,vm,false);
-	  choose_nav(1);
-	  clearActive2();
-	  menu2(1);
+	  window.choose_nav(1);
+	  window.clearActive2();
+	  window.menu2(1,id,true);
 var d = document.getElementById("display_title_bar");
 	  d.innerHTML = display_label;
 	  if (g_focus4) {
@@ -2109,6 +2267,9 @@ function start_timer(id, label, vm)
 	//console.log("start_timer");
 	  choose_breadlist(1,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 	  store.choose("mesh");
+	  //window.choose_nav(1);
+      	  //window.clearActive2();
+      	  //window.menu2(1,id,true);
 
 //console.log("START TIMER");
     if (g_tm_cb) window.clearTimeout(g_tm_cb);
@@ -2145,10 +2306,10 @@ function choose_breadcrumb(txt,breadcrumb,store,first,second)
 	 store.choose(choose);
 	 if (breadcrumb.length == first.length) {
 	     //console.log("replacestate");
-	     window.history.replaceState({page: 2},"title 2", "/meshpage_" + (i+3).toString());
+	     //window.history.replaceState({page: 2},"title 2", "/meshpage_" + (i+3).toString());
 	     } else {
 	     if (i==0) {
-	     window.history.back();
+	     //window.history.back();
 //window.history.replaceState({page: 2},"title 2", "meshpage_" + (i+1).toString());
 	     }
 	     }
@@ -2242,9 +2403,14 @@ function choose_display(id,label, vm,is_popstate)
   g_last_id = id;
   g_last_label = label;
   	       // ?p=2&id="
-  window.history.pushState({page: 2},"title 2", "/" + id.toString() ); // + "&label=" + label.toString()
+	      //console.log("PUSHSTATE");
+	      //console.log(id);
+//window.history.pushState({page: 2},"title 2", "/" + id.toString() ); // + "&label=" + label.toString()
   }
   store.choose("mesh");
+	  //window.choose_nav(1);
+      	  //window.clearActive2();
+      	  //window.menu2(1,id,true);
   choose_breadcrumb("mesh display",vm.main_breadcrumb,store,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
 
   var url = "<?php echo $https ?>://<?php echo $site ?>/mesh_pre.php?id=" + label;
@@ -2672,6 +2838,31 @@ Module.print = (function() {
 </script>
 <?php
 ?>
+<script>
+for (let i=0;i<elementNames.length;i++)
+{
+document.getElementById(elementNames[i]).addEventListener("click", function(e) {
+	e.preventDefault();
+	clearActive();
+	var el = document.getElementById(elementNames[i]);
+	el.className = "active";
+	menu(i);
+	});
+}
+
+for (let i=0;i<elementNames2.length;i++)
+{
+document.getElementById(elementNames2[i]).addEventListener("click", function(e) {
+	e.preventDefault();
+	clearActive2();
+	var el = document.getElementById(elementNames2[i]);
+	el.className = "active";
+	menu2(i,0,true);
+	});
+}
+
+</script>
+
 <script>
 
 window.onresize = resize_event;
@@ -3111,102 +3302,6 @@ function accept_necessary_cookies(save)
 get_cookie_status();
 </script>
 
-<script>
-
-let elementNames = [ "menu_main", "menu_tool", "menu_faq", "menu_tutorial", "menu_about" ];
-let pageNames = [ "main", "tool", "faq", "docs", "about" ];
-let elementNames2 = [ "menu_main2", "menu_display" ];
-let pageNames2 = [ "main", "main_display" ];
-for (let i=0;i<elementNames.length;i++)
-{
-document.getElementById(elementNames[i]).addEventListener("click", function(e) {
-	e.preventDefault();
-	clearActive();
-	var el = document.getElementById(elementNames[i]);
-	el.className = "active";
-	menu(i);
-	});
-}
-
-for (let i=0;i<elementNames2.length;i++)
-{
-document.getElementById(elementNames2[i]).addEventListener("click", function(e) {
-	e.preventDefault();
-	clearActive2();
-	var el = document.getElementById(elementNames2[i]);
-	el.className = "active";
-	menu2(i);
-	});
-}
-
-
-function clearActive()
-{
-    for (let i=0;i<elementNames.length;i++)
-    {
-	var e = document.getElementById(elementNames[i]);
-        e.className="";
-    }    
-    for (let i=0;i<pageNames.length;i++)
-    {
-	var e = document.getElementById(pageNames[i]);
-	e.style.display="none";
-    }
-}
-function clearActive2()
-{
-    for (let i=0;i<elementNames2.length;i++)
-    {
-	var e = document.getElementById(elementNames2[i]);
-        e.className="";
-    }    
-    for (let i=0;i<pageNames2.length;i++)
-    {
-	var e = document.getElementById(pageNames2[i]);
-	e.style.display="none";
-    }
-}
-
-function menu(val)
-{
-    var e = document.getElementById(elementNames[val]);
-    e.className="active";
-    var e2 = document.getElementById(pageNames[val]);
-    e2.style.display="block";
-}
-function menu2(val)
-{
-    var e = document.getElementById(elementNames2[val]);
-    e.className="active";
-    var e2 = document.getElementById(pageNames2[val]);
-    e2.style.display="block";
-    
-    if (val==0)
-    {
-	hide_display(false);
-	hide_main(true);
-	clearActive();
-	choose_nav(0);
-	menu(0);
-    }
-
-}
-function choose_nav(val)
-{
-   var e0 = document.getElementById("navbar1");
-   var e1 = document.getElementById("navbar2");
-   if (val==0) {
-     e0.style.display="block";
-     e1.style.display="none";
-   }
-   if (val==1) {
-     e0.style.display="none";
-     e1.style.display="block";
-   }
-}
-menu(0);
-choose_nav(0);
-</script>
 
 
 <div id="callout" class="callout" style="display:none">
