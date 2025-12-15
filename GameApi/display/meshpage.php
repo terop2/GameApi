@@ -335,8 +335,8 @@ page_title($sitename, "groundbreaking way to bring 3d to the web.");
 echo "</div>";
 echo "<div class=\"flex-item p-3 m-0 w-8 h-10 text-left\">";
 echo "<div class=\"flex-container d-flex flex-column align-items-center\">";
-echo "<button type=\"button\" style=\"width: 320px;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/view.php'\">3d model viewer</button>";
-echo "<button type=\"button\" style=\"width: 320px;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "<button type=\"button\" style=\"width: 380px; font-size: 150%;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/view.php'\">3d model viewer</button>";
+echo "<button type=\"button\" style=\"width: 380px; font-size: 150%;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
 echo "</div>";
 echo "</div>";
 echo "</div>";
@@ -397,11 +397,11 @@ $display_labels[$ii] = $label;
 
 
    $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
-   echo "<div class=\"flex-item hover-red border p-3 m-0 w-18 h-18 text-center\" style=\"width: 25%;\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
-   echo "<div class=\"highlight hover-red child-div top-0 m-0 start-0 w-100 h-100\">";
-   echo "<div style=\"width: 100%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\">$ii : $label</div>";
+   echo "<div class=\"flex-item p-3 m-0 w-18 h-18 text-center\" style=\"width: 25%;\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
+   echo "<div class=\"highlight hover-red child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\">";
+   echo "<div style=\"width: 100%; font-size: 150%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\"><b>$ii : $label</b></div>";
    echo "<a class=\"label hover-red\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
-   echo "<div class=\"border hover-red\">";
+   echo "<div class=\"hover-red\">";
    echo "<div class=\"image hover-red\">";
    // BACKGROUND CHANGE
    //echo "<layer width=\"200\" height=\"150\">";
@@ -473,7 +473,7 @@ echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounde
 
    echo "</div>";
 
-   echo "<div style=\"font-family: 'calibri', sans-serif\" align=\"left\">";
+   echo "<div style=\"font-family: 'calibri', sans-serif; font-size: 150%;\" align=\"left\">";
    echo "<p>";
    echo "<div style=\"float:left; overflow: hidden; height: 1px; width:15px\"></div>";
    if ($startpos!="")
@@ -566,12 +566,12 @@ echo "</script>\n";
 ?>
 
 
-<div id="main_display" style="display:none"> <!--v-show="state.mesh"-->
-<div class="display" id="display2" style="display:none">
-<div class="ems" id="canvas2" style="width:330px; height:247px"></div>
-</div>
+<div id="main_display" class="container-lg" style="display:none"> <!--v-show="state.mesh"-->
 <div class="display_title_bar" id="display_title_bar">
 </div>
+<div class="display" id="display2" style="display:none">
+</div>
+<div class="ems" id="canvas2" style="width:330px; height:247px; display:none;"></div>
 <div class="display" id="display" > <!-- style="display:none" -->
 
 <?php
@@ -626,22 +626,22 @@ echo "<p>";
 echo "Github: <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a><br>";
 $version_source = file_get_contents('$https://$site/assets/VERSION_SOURCE.TXT');
 echo "Source Code: <a href=\"" . $assetsite . "/GameApi-sourcecode-v$version_source.tar.gz\">GameApi-sourcecode-v$version_source.tar.gz</a>.";
-echo "<br>Yours,<br><img loading=\"lazy\" src=\"" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
+echo "<br>Yours,<br><img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/avatar.png\" width=\"50\" height=\"50\" crossorigin></img>";
 //echo "<a href=\"https://stackexchange.com/users/429879\"><img loading=\"lazy\" src=\"https://stackexchange.com/users/flair/429879.png\" width=\"208\" height=\"58\" alt=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" title=\"profile for tp1 on Stack Exchange, a network of free, community-driven Q&amp;A sites\" crossorigin></a>";
 echo "<br><br>Development history of the project:<br>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2024.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2023.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2022.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2021.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2020.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2019.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2018.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2017.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2016.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2015.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2014.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2013.png\" crossorigin></img>";
-echo "<img loading=\"lazy\" src=\"" . $assetsite . "/github_2012.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2024.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2023.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2022.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2021.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2020.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2019.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2018.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2017.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2016.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2015.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2014.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2013.png\" crossorigin></img>";
+echo "<img loading=\"lazy\" src=\"" . $https . "://" . $assetsite . "/github_2012.png\" crossorigin></img>";
 
 echo "<br><br><br><hr><br><br><br>";
 
@@ -1073,13 +1073,15 @@ $delta = floor(($end_time - $start_time)/60/60/24);
 echo "(" . $delta . " days ago)";
 ?>
 <br><br>
+<!--
 CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
 <a href="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/god_playing_with_builder.webp" width="200" height="200" crossorigin></img></a>
 <a href="<?php echo $https ?>://<?php echo $site ?>/world_transform.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/world_transform.webp" width="200" height="200" crossorigin></img></a>
 <a href="<?php echo $https ?>://<?php echo $site ?>/subtle_calmness.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/subtle_calmness.webp" width="200" height="200" crossorigin></img></a>
 <a href="<?php echo $https ?>://<?php echo $site ?>/city_building.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/city_building.webp" width="200" height="200" crossorigin></img></a>
 <a href="<?php echo $https ?>://<?php echo $site ?>/investor.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/investor.webp" width="200" height="200" crossorigin></img></a>
-<br><br>
+<br><br-->
+
 DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <div style="padding: 0px; width: 1324px;">
 <div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
@@ -1159,7 +1161,7 @@ width="120" height="120" crossorigin/>
 
 <div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
-<img loading="lazy" src="$https://$site/assets/wine_logo.jpeg"
+<img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/assets/wine_logo.jpeg"
 width="120" height="120" crossorigin/>
 </div>
 </div>
@@ -1280,9 +1282,9 @@ width="120" height="120" crossorigin/>
 
 <div>
 
-<a href="<?php echo $assetsite ?>/builder_screenshot.webp" target=_blank><img loading="lazy" src="<?php echo $assetsite ?>/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
-<a href="<?php echo $assetsite ?>/builder_screenshot2.webp" target=_blank><img loading="lazy" src="<?php echo $assetsite ?>/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
-<a href="<?php echo $assetsite ?>/builder_screenshot3.webp" target=_blank><img loading="lazy" src="<?php echo $assetsite ?>/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $assetsite ?>/builder_screenshot.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $assetsite ?>/builder_screenshot.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $assetsite ?>/builder_screenshot2.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $assetsite ?>/builder_screenshot2.webp" width="300" height="200" crossorigin></img></a>
+<a href="<?php echo $https ?>://<?php echo $assetsite ?>/builder_screenshot3.webp" target=_blank><img loading="lazy" src="<?php echo $https ?>://<?php echo $assetsite ?>/builder_screenshot3.webp" width="300" height="200" crossorigin></img></a>
 </div>
 </div>
 
@@ -1581,9 +1583,9 @@ body {
   background-color: #ccc;
 }
 .display_title_bar {
-   font-size: 200%;
+   font-size: 300%;
    text-align: center;
-   height: 40px;
+   height: 60px;
 }
 .tabcontent {
   padding: 6px 12px;
