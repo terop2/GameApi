@@ -43,7 +43,7 @@ $hostname=gethostbyaddr($priv_ip);
 if (empty($hostname)) { $hostname=$priv_ip; }
 
 
-$https = "http";
+$https = "https";
 $site = $priv_ip2; //$hostname; //"[2001:14ba:9c31:e100::198]"; //192.168.1.104";
 $assetsite = $priv_ip2 . "/assets"; //"[2001:14ba:9c31:e100::198]/assets"; // "192.168.1.104/assets";
 $sitename = $hostname; //"[2001:14ba:9c31:e100::198]"; //"192.168.1.104";
