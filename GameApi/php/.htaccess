@@ -86,3 +86,8 @@ SetEnv no-gzip 1
 Header unset ETag
 FileETag None
 #php_value output_buffering 0
+ErrorDocument 404 /error.php
+ErrorDocument 403 /error.php
+ErrorDocument 500 /error.php
+ErrorDocument 502 /error.php
+ErrorDocument 503 /error.php
