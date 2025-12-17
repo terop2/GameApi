@@ -1039,7 +1039,7 @@ PURCHASE LICENCES: <a href="pp/paypal.php" crossorigin referrerpolicy="no-referr
 <p><br>
 MOST RECENT RELEASE: WIN: 
 <?php
-$version_win = file_get_contents('$https://$site/assets/VERSION_WIN.TXT');
+$version_win = file_get_contents("$https://$site/assets/VERSION_WIN.TXT");
 $version_win = substr($version_win, 0, -1);
 echo "v." . $version_win . " ";
 $start_time = filemtime("./assets/GameApi-Builder-v" . $version_win . ".msi");
@@ -1051,7 +1051,7 @@ echo "(" . $delta . " days ago)";
 MOST RECENT RELEASE: LINUX: 
 
 <?php
-$version = file_get_contents('$https://$site/assets/VERSION.TXT');
+$version = file_get_contents("$https://$site/assets/VERSION.TXT");
 $version = substr($version, 0, -1);
 echo "v." . $version  . " ";
 $start_time = filemtime("./gameapi-builder_1.0-" . $version . ".deb");
@@ -1064,7 +1064,7 @@ echo "(" . $delta . " days ago)";
 MOST RECENT RELEASE: SOURCECODE: 
 
 <?php
-$version_source = file_get_contents('$https://$site/assets/VERSION_SOURCE.TXT');
+$version_source = file_get_contents("$https://$site/assets/VERSION_SOURCE.TXT");
 $version_source = substr($version_source, 0, -1);
 echo "v." . $version_source . " ";
 $start_time = filemtime("./GameApi-sourcecode-v" . $version_source . ".tar.gz");
