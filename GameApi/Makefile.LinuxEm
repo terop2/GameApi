@@ -40,7 +40,7 @@ endif
 
 
 # -Oz
-allopts = $(memsanitizer2) $(sizeopts) $(releaseopts) -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
+allopts = -msimd128 $(memsanitizer2) $(sizeopts) $(releaseopts) -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH=1 -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
 
 #-gpubnames
 # -Oz -gsplit-dwarf  -fno-rtti
