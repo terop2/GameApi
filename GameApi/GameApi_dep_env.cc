@@ -2319,11 +2319,22 @@ void fetch_success(void *data)
 #endif
   // note, the dt->obj is NOT DELETED AT ALL
 }
+
+std::vector<std::string> g_pending_fetch;
+std::vector<FetchInBlocks*> g_pending_fetch_obj;
+std::vector<std::string> g_pending_finish;
+std::vector<FetchInBlocks*> g_pending_finish_obj;
+
+
 void fetch_2_success(emscripten_fetch_t *fetch)
 {
   //std::cout << "2nd attempt successful" << std::endl;
   LoadData *dt = (LoadData*)(fetch->userData);
   const char *url = dt->buf3;
+
+
+  
+  //std::cout << "fetch2: " << url << std::endl;
   dt->obj->result = std::vector<unsigned char,GameApiAllocator<unsigned char> >(&fetch->data[0],&fetch->data[fetch->numBytes]);
   // hack to fix the download amounts.
   //std::cout << "FETCH2SUCCESS:" << dt->final_file_size << "==" << fetch->numBytes << std::endl;
@@ -2332,12 +2343,43 @@ void fetch_2_success(emscripten_fetch_t *fetch)
      dt->obj->result.push_back(' ');
   }
   const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = dt->obj->get();  
+
+  int s = g_pending_finish.size();
+  for(int i=0;i<s;i++)
+    {
+      //std::cout << "Finish:" << g_pending_finish[i] << " == " << url << std::endl;
+      if (g_pending_finish[i]==stripprefix(striphomepage(url))) {
+	//std::cout << "FOUND!" << std::endl;
+	onload_async_cb(333,(void*)url,vec);
+#ifdef EMSCRIPTEN
+  std::string url_str(url);
+  std::string url_only(striphomepage(url_str));
+  g_del_map.push_fetch_url(url_only,g_pending_finish_obj[i]);
+#endif	
+	g_pending_finish.erase(g_pending_finish.begin()+i);
+	g_pending_finish_obj.erase(g_pending_finish_obj.begin()+i);
+	i--;
+	s--;
+      }
+    }
   onload_async_cb(333,(void*)url,vec);
+  int s2 = g_pending_fetch.size();
+  for(int i=0;i<s;i++)
+    {
+      //std::cout << "Finish:" << g_pending_fetch[i] << " == " << url << std::endl;
+      if (stripprefix(striphomepage(g_pending_fetch[i]))==stripprefix(striphomepage(url))) {
+	//std::cout << "FOUND2!" << std::endl;
+	g_pending_fetch.erase(g_pending_fetch.begin()+i);
+	g_pending_fetch_obj.erase(g_pending_fetch_obj.begin()+i);
+	i--;
+	s--;
+      }
+    }
+  
 #ifdef EMSCRIPTEN
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
   g_del_map.push_fetch_url(url_only,dt->obj);
-  //g_del_map.fetches[url_only]=std::make_shared<FetchInBlocks>(*dt->obj);
 #endif
   emscripten_fetch_close(fetch);
 }
@@ -2380,6 +2422,8 @@ void fetch_2_progress(emscripten_fetch_t *fetch)
 
   
 }
+
+
 void fetch_failed(void *data)
 {
   LoadData *dt = (LoadData*)data;
@@ -2402,6 +2446,17 @@ void fetch_failed(void *data)
   ProgressBar(sum,0,15*150,"fetch: "+url_only2);
   }
 
+  int s = g_pending_fetch.size();
+  for(int i=0;i<s;i++)
+    {
+      if (stripprefix(striphomepage(g_pending_fetch[i]))==stripprefix(striphomepage(dt->url)))
+	{
+	  g_pending_finish.push_back(stripprefix(striphomepage(dt->url)));
+	  g_pending_finish_obj.push_back(g_pending_fetch_obj[i]);
+	  return; // don't do fetch at all, since same url is already being loaded.
+	}
+    }
+  
   
   // TRY AGAIN... (possibly get_size.php missing)
   emscripten_fetch_attr_t attr;
@@ -2412,6 +2467,10 @@ void fetch_failed(void *data)
   attr.onerror=fetch_2_error;
   attr.onprogress=fetch_2_progress;
   attr.userData=(void*)dt;
+
+  //std::cout << "Start fetch:" << dt->url << std::endl;
+  g_pending_fetch.push_back(stripprefix(striphomepage(dt->url)));
+  g_pending_fetch_obj.push_back(dt->obj);
   emscripten_fetch(&attr,dt->url.c_str());
 
 }
