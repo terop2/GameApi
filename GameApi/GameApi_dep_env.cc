@@ -2326,6 +2326,7 @@ std::vector<std::string> g_pending_finish;
 std::vector<FetchInBlocks*> g_pending_finish_obj;
 
 
+
 void fetch_2_success(emscripten_fetch_t *fetch)
 {
   //std::cout << "2nd attempt successful" << std::endl;
@@ -2344,6 +2345,8 @@ void fetch_2_success(emscripten_fetch_t *fetch)
   }
   const std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec = dt->obj->get();  
 
+
+  
   int s = g_pending_finish.size();
   for(int i=0;i<s;i++)
     {
@@ -2375,7 +2378,6 @@ void fetch_2_success(emscripten_fetch_t *fetch)
 	s--;
       }
     }
-  
 #ifdef EMSCRIPTEN
   std::string url_str(url);
   std::string url_only(striphomepage(url_str));
@@ -2446,6 +2448,7 @@ void fetch_failed(void *data)
   ProgressBar(sum,0,15*150,"fetch: "+url_only2);
   }
 
+  
   int s = g_pending_fetch.size();
   for(int i=0;i<s;i++)
     {
@@ -2456,7 +2459,6 @@ void fetch_failed(void *data)
 	  return; // don't do fetch at all, since same url is already being loaded.
 	}
     }
-  
   
   // TRY AGAIN... (possibly get_size.php missing)
   emscripten_fetch_attr_t attr;
