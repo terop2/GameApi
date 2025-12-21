@@ -18267,7 +18267,60 @@ public:
     Prepare();
   }
 
-  void Prepare() { StringDisplay *ssd = &sd; if (ssd) sd.Prepare(); }
+  void Prepare() {
+    StringDisplay *ssd = &sd;
+    if (ssd) sd.Prepare();
+
+    x_array = new std::vector<int>[SizeX()>0?SizeX():1];
+    y_array_start = new int[SizeY()>0?SizeY():1];
+    y_array_end = new int[SizeY()>0?SizeY():1];
+
+
+    int ss = SizeX();
+    size_x=ss;
+    
+    int s = sd.Count();
+    for(int i=0;i<s;i++)
+      {
+	int x_start = sd.X(i);
+	int x_end = sd.X(i) + sd.SX(i);
+	for(int j=x_start;j<x_end;j++)
+	  {
+	    x_array[j].push_back(i);
+	  }
+      }
+
+
+    int ss2 = SizeY();
+    for(int i=0;i<ss2;i++)
+      {
+	y_array_start[i] = ss+1;
+      }
+    int s2 = sd.Count();
+    for(int i=0;i<s2;i++)
+      {
+	int y_start = sd.Y(i);
+	int y_end = sd.Y(i) + sd.SY(i);
+	for(int j=y_start;j<y_end;j++)
+	  y_array_start[j] = std::min(i,y_array_start[j]);
+      }
+
+
+    int ss3 = SizeY();
+    for(int i=0;i<ss3;i++)
+      {
+	y_array_end[i] = -1;
+      }
+
+    int s3 = sd.Count();
+    for(int i=0;i<s3;i++)
+      {
+	int y_start = sd.Y(i);
+	int y_end = sd.Y(i) + sd.SY(i);
+	for(int j=y_start;j<y_end;j++)
+	  y_array_end[j] = std::max(i,y_array_end[j]);
+      }
+  }
   int SizeX() const
   {
     int s = sd.Count();
@@ -18293,6 +18346,27 @@ public:
   }
   Color Map(int x, int y) const
   {
+    std::vector<int> &pos = x_array[x];
+    int y_0 = y_array_start[y];
+    int y_1 = y_array_end[y];
+
+    if (pos.size()==0 ||y_0>=size_x||y_1==-1)
+      return def;
+
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+      {
+	int val = pos.operator[](i);
+	if (val>=y_0 && val<=y_1) {
+	  int xx = sd.X(val);
+	  int yy = sd.Y(val);
+	  return Color(sd.Map(val, x-xx, y-yy));
+	}
+      }
+    return def;
+    
+    
+#if 0
     int s = sd.Count();
     //int maxy = 0;
     for(int i=0;i<s;i++)
@@ -18306,10 +18380,15 @@ public:
 	return Color(sd.Map(i, x-xx, y-yy));
       }
     return def;
+#endif
   }
 private:
   StringDisplay &sd;
   int def;
+  std::vector<int> *x_array;
+  int *y_array_start;
+  int *y_array_end;
+  int size_x;
 };
 GameApi::BM GameApi::FontApi::string_display_to_bitmap(SD sd, int def)
 {
