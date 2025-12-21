@@ -1369,6 +1369,7 @@ class ASyncLoader
 {
 public:
   void load_urls(std::string url, std::string homepage, bool nosize);
+  void load_urls2(std::string url, std::string homepage, bool nosize);
   void load_all_urls(std::vector<std::string> urls, std::string homepage);
   GameApi::ASyncVec *get_loaded_data(std::string url) const;
   void set_callback(std::string url, void (*fptr)(void*), void *data);

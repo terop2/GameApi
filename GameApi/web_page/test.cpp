@@ -262,10 +262,16 @@ EM_JS(double, getDevicePixelRatio, (), {
 extern double g_dpr;
 
 
+IMPORT extern const char * g_html_dir;
+IMPORT const char * get_html_directory2();
+
+
 int main(int argc, char *argv[]) {
 #ifdef THREADS
   g_main_thread_id = pthread_self();
 #endif
+
+  g_html_dir = get_html_directory2();
   
   tasks_init();
 
