@@ -342,7 +342,7 @@ echo "</div>";
 echo "</div>";
 echo "<div style=\"height:50px\"></div>";
 
-echo "<div class=\"flex-container d-flex flex-wrap align-items-stretch\">";
+echo "<div class=\"flex-container d-flex flex-row flex-wrap align-items-stretch\">";
 $cnt = 0;
 $start = $num;
 $startpos = $_GET["ps"];
@@ -397,7 +397,7 @@ $display_labels[$ii] = $label;
 
 
    $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
-   echo "<div class=\"flex-item p-3 m-0 w-18 h-18 text-center\" style=\"width: 25%;\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
+   echo "<div class=\"flex-item col-12 col-sm-6 col-md-4 col-lg-3 p-3 m-0 w-18 h-18 text-center\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
    echo "<div class=\"highlight hover-red child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\">";
    echo "<div style=\"width: 100%; font-size: 150%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\"><b>$ii : $label</b></div>";
    echo "<a class=\"label hover-red\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
