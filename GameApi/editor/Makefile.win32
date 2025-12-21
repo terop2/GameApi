@@ -13,5 +13,5 @@ endif
 
 
 all:
-	g++ $(STEAM_CFLAGS) -DWINDOWS -g -ggdb -std=c++17 test.cpp -L. -L.. -I.. -lgmon -lGameApi -pthread -lDbgHelp -lole32 -levr -lpropsys -lmfplat -lmfreadwrite -lmf -lmfuuid -lshlwapi -luuid -lopengl32 $(STEAM_LIBS) 
+	g++ -fno-exceptions $(STEAM_CFLAGS) -DWINDOWS -g -ggdb -std=c++17 test.cpp -L. -L.. -I.. -lgmon -lGameApi -pthread -lDbgHelp -lole32 -levr -lpropsys -lmfplat -lmfreadwrite -lmf -lmfuuid -lshlwapi -luuid -lopengl32 $(STEAM_LIBS) 
 
