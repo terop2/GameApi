@@ -93,6 +93,7 @@ public:
   }
   void SetRef(FaceBufferRef r) { ref = r; }
   void clear_poly_and_poly2(int id);
+  void clear_vectors(int id);
   void clear_arrays()
   {
     std::mymap<int, Polys*>::iterator it = m_set.begin();

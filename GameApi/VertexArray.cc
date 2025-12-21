@@ -82,6 +82,42 @@ void VertexArraySet::explode(int id, Point pt, float dist)
 	}
     }
 }
+void VertexArraySet::clear_vectors(int id)
+{
+  Polys *p = m_set[id];
+  if (!p)
+    {
+      m_set[id] = new Polys;
+      ref_count = 1;
+      p = m_set[id];  
+    }
+  p->tri_polys.clear();
+  p->quad_polys.clear();
+  p->poly_polys.clear();
+  p->tri_polys2.clear();
+  p->quad_polys2.clear();
+  p->poly_polys2.clear();
+
+  p->tri_normals.clear();
+  p->quad_normals.clear();
+  p->poly_normals.clear();
+
+  p->tri_color.clear();
+  p->quad_color.clear();
+  p->poly_color.clear();
+
+  p->tri_texcoord.clear();
+  p->quad_texcoord.clear();
+  p->poly_texcoord.clear();
+
+  p->tri_joint.clear();
+  p->quad_joint.clear();
+  p->poly_joint.clear();
+
+  p->tri_weight.clear();
+  p->quad_weight.clear();
+  p->poly_weight.clear();
+}
 void VertexArraySet::clear_poly_and_poly2(int id)
 {
   Polys *p = m_set[id];
@@ -3946,8 +3982,14 @@ void *thread_func(void *data)
 #ifndef BATCHING
   ThreadInfo *ti = (ThreadInfo*)data;
   //ti->va->reserve(0);
+  Counts ct2_counts = CalcCounts(ti->faces, ti->start_range, ti->end_range);
+  //Counts ct2_offsets = CalcOffsets(ti->faces, ti->start_range);
+  ti->set->clear_vectors(0);
+  ti->set->set_reserve(0,ct2_counts.tri_count*3,ct2_counts.quad_count*6,ct2_counts.poly_count);
+
   ti->va->copy(ti->start_range, ti->end_range,ti->attrib, ti->attribi);
   //pthread_exit(NULL);
+  ti->set->free_reserve(0);
   return 0;
 #else
   ThreadInfo *ti = (ThreadInfo*)data;
@@ -3964,6 +4006,7 @@ void *thread_func(void *data)
       if (i==s-1) end_range = ti->end_range;
       Counts ct2_counts = CalcCounts(ti->faces, start_range, end_range);
       Counts ct2_offsets = CalcOffsets(ti->faces, start_range);
+      ti->set->clear_vectors(0);
       ti->set->set_reserve(0,ct2_counts.tri_count*3,ct2_counts.quad_count*6,ct2_counts.poly_count);
       //ti->va->reserve(0);
       ti->va->copy(start_range, end_range,ti->attrib, ti->attribi);
@@ -4085,6 +4128,9 @@ void FaceCollectionVertexArray2::copy(int start_range, int end_range, std::vecto
     s.has_texcoord = has_texcoord2;
     s.has_skeleton = has_skeleton2;
 
+
+
+    
     
     for(int i=start_range;i<end_range;i++)
       {

@@ -87,7 +87,7 @@ if ("$machine"=="terop-pc2") {
 $labels = array("3D MODEL VIEWER", "GLTF to HTML5 ZIP", "DOWNLOAD TOOL<h1 style=\"font-size:24px\">(price: 130&#8364;)</h1>", "EXAMPLES");
 $imgs = array("img_1.webp", "img_2.webp", "img_3.webp", "img_4.webp");
 $alts = array("3d model viewer", "gltf to html5 zip converter", "builder tool download", "3d design examples");
-$links = array("view.php", "gltf_to_zip.php", "meshpage.php?ps=4", "meshpage.php");
+$links = array("view.php", "gltf_to_zip.php", "builder-tool-download.php", "meshpage.php");
 $descs = array("quickly test that your <br>gltf files are<br>compatible<br> with the engine",
        	       "convert your<br>gltf files to html5<br>for hosting space<br>",
 	       "if end result needed<br>tweaking, download<br> tool",

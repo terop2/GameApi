@@ -16564,7 +16564,7 @@ public:
     }
 
     
-    try {
+    //try {
     static std::string status = "";
     static std::string old_status = "";
     
@@ -17052,7 +17052,7 @@ public:
     g_time_id ++;
     }
     g_engine_status = 1;
-
+    /*
     } catch(const std::exception &e) {
       std::cout << "Frame exception: " << e.what() << "!" << std::endl;
 #ifdef EMSCRIPTEN
@@ -17064,7 +17064,7 @@ emscripten_log(EM_LOG_ERROR | EM_LOG_C_STACK, "Stack trace:");
 emscripten_log(EM_LOG_ERROR | EM_LOG_C_STACK, "Stack trace:");
 #endif
     }
-
+    */
     
     //xsogl->glGetError();
     return -1;
