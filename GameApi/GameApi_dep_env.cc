@@ -2151,9 +2151,9 @@ void ASyncLoader::load_all_urls(std::vector<std::string> urls, std::string homep
       if (cb) {
 	//std::cout << "Load cb!" << url2 << std::endl;
 	//std::cout << "ASyncLoader::cb:" << url2 << std::endl; 
-  std::cout << "un" << std::endl;
+	//std::cout << "un" << std::endl;
 	(*cb->fptr)(cb->data);
-  std::cout << "um" << std::endl;
+	// std::cout << "um" << std::endl;
       } else {
 	//std::cout << "ASyncLoadUrl::CB failed" << std::endl;
       }
