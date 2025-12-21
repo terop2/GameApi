@@ -77,7 +77,7 @@
 
 
 
-#define HAS_GL_GETERROR 1
+//#define HAS_GL_GETERROR 1
 
 #if 0
 //#ifdef WEBGL2
