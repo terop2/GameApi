@@ -198,8 +198,8 @@ INC8WIN = $(CVSPATH)\sdl2_mixer\SDL2_mixer-2.0.4\x86_64-w64-mingw32/include/sdl2
 
 #  -fPIC -ftrack-macro-expansion=0 -fno-var-tracking-assignments
 
-CCFLAGS = $(STEAM_CFLAGS) -fext-numeric-literals -fno-var-tracking-assignments -ftrack-macro-expansion=0 -fPIC -DGAMEAPI_EXPORTS -fvisibility=hidden -I. -m64 -O2 -DWINDOWS -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -DHAVE_STRUCT_TIMESPEC  -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -pthread
-CC2FLAGS = $(STEAM_CFLAGS) -fext-numeric-literals -fPIC -ftrack-macro-expansion=0 -fno-var-tracking-assignments -DGAMEAPI_EXPORTS -fvisibility=hidden -I. -m64 -O2 -DWINDOWS -std=c++20 -Wall -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -Iholoplay -Lholoplay  -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -pthread
+CCFLAGS = -fno-exceptions $(STEAM_CFLAGS) -fext-numeric-literals -fno-var-tracking-assignments -ftrack-macro-expansion=0 -fPIC -DGAMEAPI_EXPORTS -fvisibility=hidden -I. -m64 -O2 -DWINDOWS -std=c++20 -Wall -I./objs -I/usr/include/freetype2 -DHAVE_STRUCT_TIMESPEC  -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -pthread
+CC2FLAGS = -fno-exceptions $(STEAM_CFLAGS) -fext-numeric-literals -fPIC -ftrack-macro-expansion=0 -fno-var-tracking-assignments -DGAMEAPI_EXPORTS -fvisibility=hidden -I. -m64 -O2 -DWINDOWS -std=c++20 -Wall -I./objs -I$(INC1WIN) -I$(INC2WIN) -I$(INC3WIN) -I$(INC4WIN) -I$(INC5WIN) -I$(INC6WIN) -I$(INC7WIN) -I$(INC8WIN) -DGLEW_STATIC -DHAVE_STRUCT_TIMESPEC -U__STRICT_ANSI__ -Iholoplay -Lholoplay  -Iescapi -Ichai/ChaiScript-6.1.0/include -Wa,-mbig-obj -Ichai/ChaiScript-6.1.0/include $(WARN) -I./hssynth2/midiplay/midifile/include -I./hssynth2/synthlib -pthread
 #`pkg-config gtkmm-2.4 --cflags`
 
 
