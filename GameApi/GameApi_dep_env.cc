@@ -465,6 +465,34 @@ task_interface &g_tasks = g_tasks_implementation;
 
 
 
+IMPORT const char *g_html_dir;
+
+std::string get_html_directory()
+{
+  return std::string(g_html_dir);
+}
+
+
+#ifdef EMSCRIPTEN
+IMPORT const char * get_html_directory2() {
+    const char* dir = (const char*)EM_ASM_PTR({
+        var href = window.location.href;
+        var dir = href.substring(0, href.lastIndexOf('/') + 1);
+        var lengthBytes = lengthBytesUTF8(dir) + 1;
+        var stringOnWasmHeap = _malloc(lengthBytes);
+        stringToUTF8(dir, stringOnWasmHeap, lengthBytes);
+        return stringOnWasmHeap;
+    });
+    const char *result(strdup(dir));
+    free((void*)dir);
+    return result;
+}
+#else
+IMPORT const char * get_html_directory2() { return ""; }
+#endif
+
+
+
 #ifdef EMSCRIPTEN
 void blocks_success(emscripten_fetch_t *fetch);
 void blocks_failed(emscripten_fetch_t *fetch);
@@ -484,23 +512,6 @@ struct FetchInBlocksUserData
 
 extern bool g_concurrent_download;
 
-#ifdef EMSCRIPTEN
-std::string get_html_directory() {
-    const char* dir = (const char*)EM_ASM_PTR({
-        var href = window.location.href;
-        var dir = href.substring(0, href.lastIndexOf('/') + 1);
-        var lengthBytes = lengthBytesUTF8(dir) + 1;
-        var stringOnWasmHeap = _malloc(lengthBytes);
-        stringToUTF8(dir, stringOnWasmHeap, lengthBytes);
-        return stringOnWasmHeap;
-    });
-    std::string result(dir);
-    free((void*)dir);
-    return result;
-}
-#else
-std::string get_html_directory() { return ""; }
-#endif
 
 
 class FetchInBlocks
@@ -2502,8 +2513,48 @@ std::string remove_dirs(std::string url)
   return url;
 }
 
+#ifdef THREADS
+#ifndef EMSCRIPTEN
+struct LoadUrlsData
+{
+  ASyncLoader *loader;
+  std::string url;
+  std::string homepage;
+  bool nosize;
+};
+void *load_urls_task(void *d)
+{
+  LoadUrlsData *dt = (LoadUrlsData*)d;
+  dt->loader->load_urls2(dt->url,dt->homepage,dt->nosize);
+  return 0;
+}
 
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
+{
+  static int count = 0;
+  count++;
+  LoadUrlsData *dt = new LoadUrlsData;
+  dt->loader = this;
+  dt->url = url;
+  dt->homepage = homepage;
+  dt->nosize = nosize;
+  tasks_add(9999+count,&load_urls_task,(void*)dt);
+}
+#else
+void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
+{
+  load_urls2(url,homepage,nosize);
+}
+#endif
+#else
+void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
+{
+  load_urls2(url,homepage,nosize);
+}
+#endif
+
+
+void ASyncLoader::load_urls2(std::string url, std::string homepage, bool nosize)
   {
     //std::cout << "load_urls:" << url << std::endl;
     if (url=="") return;

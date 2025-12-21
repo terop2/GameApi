@@ -39,9 +39,11 @@ else
   releaseopts = -O0 --profiling-funcs
 endif
 
+glue_opts = -O3 -DNDEBUG -s ASSERTIONS=0 -s SAFE_HEAP=0 -s STACK_OVERFLOW_CHECK=0
+
 
 # -Oz
-allopts = $(memsanitizer2) $(sizeopts) $(releaseopts) -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1024Mb -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
+allopts = $(glue_opts) $(memsanitizer2) $(sizeopts) $(releaseopts) -fno-rtti -gpubnames --profiling-funcs $(opencvopts) -s MAXIMUM_MEMORY=4gb -s ALLOW_MEMORY_GROWTH=1 -s INITIAL_MEMORY=1024Mb -DEMSCRIPTEN_HAS_UNBOUND_TYPE_NAMES=0  -emit-llvm -Wno-unused-command-line-argument  -s WASM=1 -s STACK_OVERFLOW_CHECK=0 -s ASSERTIONS=0 -s WASM_OBJECT_FILES=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s ELIMINATE_DUPLICATE_FUNCTIONS=1 -s SHARED_MEMORY=1
 
 #-gpubnames
 # -Oz -gsplit-dwarf  -fno-rtti
