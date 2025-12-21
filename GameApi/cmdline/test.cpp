@@ -437,11 +437,16 @@ void popen_curl_init();
 IMPORT extern std::string g_store_directory;
 
 
+IMPORT extern const char * g_html_dir;
+IMPORT const char * get_html_directory2();
+
+
 #ifdef ANDROID
 int main(int ac, char *ag[]) {
 #else
 int main(int argc, char *argv[]) {
 #endif
+  g_html_dir=get_html_directory2();
 #ifdef ANDROID
   int argc=3;
   char *argv[] = { "./SDLAPP", "--file", "script.txt" };

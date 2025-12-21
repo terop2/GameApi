@@ -26,6 +26,7 @@
 #include <unistd.h>
 #endif
 #include <atomic>
+#include <string>
 using namespace GameApi;
 #ifndef WINDOWS
 #define WAYLAND 1
@@ -4113,7 +4114,13 @@ namespace cv {
 
 void save_mod_txt_from_script_file2(GameApi::EveryApi &ev, std::string input_script_filename, std::string output_mod_txt_filename);
 
+IMPORT extern const char * g_html_dir;
+IMPORT const char * get_html_directory2();
+
+
 int main(int argc, char *argv[]) {
+
+  g_html_dir=get_html_directory2();
 #ifdef LINUX
   try {
 #endif
