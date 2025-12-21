@@ -2521,6 +2521,7 @@ struct LoadUrlsData
   std::string url;
   std::string homepage;
   bool nosize;
+  int num;
 };
 void *load_urls_task(void *d)
 {
@@ -2530,16 +2531,36 @@ void *load_urls_task(void *d)
 }
 
 int g_pending_loads=0;
+std::vector<LoadUrlsData*> g_pending_loads_vec;
+
+pthread_mutex_t *get_load_mutex()
+{
+  static pthread_mutex_t *mutex = 0;
+  if (!mutex) {
+    mutex = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  }
+  return mutex;
+}
+
 
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 {
+  static int count = 0;
+  count++;
+
+  pthread_mutex_t *m = get_load_mutex();
+  
   LoadUrlsData *dt = new LoadUrlsData;
   dt->loader = this;
   dt->url = url;
   dt->homepage = homepage;
   dt->nosize = nosize;
+  dt->num = 9999+count;
   g_pending_loads++;
-  tasks_add(9999,&load_urls_task,(void*)dt);
+  pthread_mutex_lock(m);
+  g_pending_loads_vec.push_back(dt);
+  pthread_mutex_unlock(m);
+  tasks_add(9999+count,&load_urls_task,(void*)dt);
 }
 #else
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
@@ -2981,9 +3002,24 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
 
 #ifdef THREADS
 #ifndef EMSCRIPTEN
-    if (g_pending_loads > 0) {
-      tasks_join(9999);
-      g_pending_loads = 0;
+
+    pthread_mutex_t *m = get_load_mutex();
+
+    pthread_mutex_lock(m);
+    int s = g_pending_loads_vec.size();
+    int id = -1;
+    for(int i=0;i<s;i++)
+      {
+	LoadUrlsData *dt = g_pending_loads_vec[i];
+	if (dt->url == url)
+	  {
+	    id = dt->num;
+	    g_pending_loads_vec.erase(g_pending_loads_vec.begin()+i);
+	  }
+      }
+    pthread_mutex_unlock(m);
+    if (id != -1) {
+      tasks_join(id);
     }
 #endif
 #endif
