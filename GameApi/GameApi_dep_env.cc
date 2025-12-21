@@ -2531,14 +2531,12 @@ void *load_urls_task(void *d)
 
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
 {
-  static int count = 0;
-  count++;
   LoadUrlsData *dt = new LoadUrlsData;
   dt->loader = this;
   dt->url = url;
   dt->homepage = homepage;
   dt->nosize = nosize;
-  tasks_add(9999+count,&load_urls_task,(void*)dt);
+  tasks_add(9999,&load_urls_task,(void*)dt);
 }
 #else
 void ASyncLoader::load_urls(std::string url, std::string homepage, bool nosize)
@@ -2978,6 +2976,12 @@ GameApi::ASyncVec *ASyncLoader::get_loaded_data(std::string url) const
   {
     //std::cout << "GET LOADED_DATA:" << url << std::endl;
 
+#ifdef THREADS
+#ifndef EMSCRIPTEN
+    tasks_join(9999);
+#endif
+#endif
+    
     
   int u = g_urls.size();
   for(int i=0;i<u;i++)
