@@ -1856,6 +1856,16 @@ let elementNames2 = [ "menu_main2", "menu_display" ];
 let pageNames2 = [ "main", "main_display" ];
 
 
+window.set_url = function(id,repl)
+{
+   if (id==3) { window.history.replaceState({page:2}, "title 2", "/meshpage.php"); }
+   if (id==4) { window.history.replaceState({page:2}, "title 2", "/builder-tool-download.php"); }
+   if (id==5) { window.history.replaceState({page:2}, "title 2", "/faq.php"); }
+   if (id==6) { window.history.replaceState({page:2}, "title 2", "/docs.php"); }
+   if (id==7) { window.history.replaceState({page:2}, "title 2", "/about.php"); }
+}
+
+
 window.clearActive = function()
 {
     //console.log("clearActive");
@@ -1890,7 +1900,8 @@ window.menu = function(val)
     //console.log("MENU");
     //console.log(val);
     if (val!=0) {
-       window.history.replaceState({page: 2},"title 2", "/meshpage_" + (val+3).toString());
+       window.set_url(val+3);
+       //window.history.replaceState({page: 2},"title 2", "/meshpage_" + (val+3).toString());
        //window.location.href="/meshpage_" + (val+3).toString();
        }
     else {
@@ -3302,6 +3313,9 @@ function accept_necessary_cookies(save)
    });
 }
 get_cookie_status();
+</script>
+
+<script>
 </script>
 
 
