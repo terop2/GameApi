@@ -1,0 +1,52 @@
+test
+
+
+(200,200)gltf_load2 uid3334 0 0 3 url:*https?//meshpage.org/santa_model.glb:false:-1:0
+(400,200)ml_gltf_all uid3335 0 0 1 ev:*ev:false:-1:0 tf:*uid3334:false:-1:0 mix:*1.0:false:-1:0 self_mult:*3.5:false:-1:0 rest_mult:*0.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(600,200)mn_empty uid3336 0 0 1
+(800,200)android_landscape uid3337 0 0 1 next:*uid3336:false:-1:0
+(1000,200)anim_rotate uid3338 0 0 1 next:*uid3337:false:-1:0 start_time:*0:false:-1:0 end_time:*10:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*0.7:false:-1:0
+(1200,200)anim_rotate uid3339 0 0 1 next:*uid3338:false:-1:0 start_time:*10:false:-1:0 end_time:*30:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*-1.4:false:-1:0
+(200,400)anim_rotate uid3340 0 0 1 next:*uid3339:false:-1:0 start_time:*30:false:-1:0 end_time:*40:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0 v_x:*0:false:-1:0 v_y:*1:false:-1:0 v_z:*0:false:-1:0 angle:*0.7:false:-1:0
+(400,400)inv_android_landscape uid3341 0 0 1 next:*uid3340:false:-1:0
+(600,400)anim_repeat uid3342 0 0 1 next:*uid3341:false:-1:0 start_time:*0:false:-1:0 repeat_duration:*40:false:-1:0
+(800,400)mn_translate uid3343 0 0 1 next:*uid3342:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*-30:false:-1:0
+(1000,400)move_ml uid3344 0 0 1 ev:*ev:false:-1:0 ml:*uid3335:false:-1:0 mn:*uid3343:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(1200,400)gltf_load2 uid3345 0 0 1 url:*https?//meshpage.org/christmas_tree.glb:false:-1:0
+(200,600)ml_gltf_all uid3346 0 0 1 ev:*ev:false:-1:0 tf:*uid3345:false:-1:0 mix:*1.0:false:-1:0 self_mult:*3.5:false:-1:0 rest_mult:*0.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(400,600)mn_empty uid3347 0 0 1
+(600,600)mn_translate uid3348 0 0 1 next:*uid3347:false:-1:0 dx:*-250:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
+(800,600)move_ml uid3349 0 0 1 ev:*ev:false:-1:0 ml:*uid3346:false:-1:0 mn:*uid3348:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(1000,600)mn_translate uid3350 0 0 1 next:*uid3347:false:-1:0 dx:*250:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
+(1200,600)move_ml uid3351 0 0 1 ev:*ev:false:-1:0 ml:*uid3346:false:-1:0 mn:*uid3350:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(200,800)array_ml uid3352 0 0 1 ev:*ev:false:-1:0 arr:*[uid3346,uid3349,uid3351]:false:-1:-1
+(400,800)mn_empty uid3353 0 0 1
+(600,800)mn_translate uid3354 0 0 1 next:*uid3353:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*-350:false:-1:0
+(800,800)move_ml uid3355 0 0 1 ev:*ev:false:-1:0 ml:*uid3352:false:-1:0 mn:*uid3354:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(1000,800)or_elem_ml uid3356 0 0 1 ev:*ev:false:-1:0 m1:*uid3344:false:-1:0 m2:*uid3355:false:-1:0
+(1200,800)gltf_load2 uid3357 0 0 1 url:*https?//meshpage.org/unopenable_gift.glb:false:-1:0
+(200,1000)ml_gltf_all uid3358 0 0 1 ev:*ev:false:-1:0 tf:*uid3357:false:-1:0 mix:*1.0:false:-1:0 self_mult:*3.5:false:-1:0 rest_mult:*0.0:false:-1:0 mode:*0:false:-1:0 light_dir_x:*400.0:false:-1:0 light_dir_y:*-400.0:false:-1:0 light_dir_z:*300.0:false:-1:0 border_width:*0.0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(400,1000)mn_empty uid3359 0 0 1
+(600,1000)mn_scale uid3360 0 0 1 next:*uid3359:false:-1:0 sx:*0.3:false:-1:0 sy:*0.3:false:-1:0 sz:*0.3:false:-1:0
+(800,1000)mn_translate uid3361 0 0 1 next:*uid3360:false:-1:0 dx:*-250:false:-1:0 dy:*-120:false:-1:0 dz:*-150:false:-1:0
+(1000,1000)move_ml uid3362 0 0 1 ev:*ev:false:-1:0 ml:*uid3358:false:-1:0 mn:*uid3361:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(1200,1000)mn_translate uid3363 0 0 1 next:*uid3360:false:-1:0 dx:*250:false:-1:0 dy:*-120:false:-1:0 dz:*-150:false:-1:0
+(200,1200)move_ml uid3364 0 0 1 ev:*ev:false:-1:0 ml:*uid3358:false:-1:0 mn:*uid3363:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(400,1200)or_elem_ml uid3365 0 0 1 ev:*ev:false:-1:0 m1:*uid3362:false:-1:0 m2:*uid3364:false:-1:0
+(600,1200)or_elem_ml uid3366 0 0 1 ev:*ev:false:-1:0 m1:*uid3356:false:-1:0 m2:*uid3365:false:-1:0
+(800,1200)mn_empty uid3367 0 0 1
+(1000,1200)mn_scale uid3368 0 0 1 next:*uid3367:false:-1:0 sx:*2:false:-1:0 sy:*2:false:-1:0 sz:*2:false:-1:0
+(1200,1200)anim_translate uid3369 0 0 1 next:*uid3368:false:-1:0 start_time:*0:false:-1:0 end_time:*100:false:-1:0 dx:*240:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
+(200,1400)anim_translate uid3370 0 0 1 next:*uid3369:false:-1:0 start_time:*100:false:-1:0 end_time:*400:false:-1:0 dx:*-480:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
+(400,1400)anim_translate uid3371 0 0 1 next:*uid3370:false:-1:0 start_time:*400:false:-1:0 end_time:*500:false:-1:0 dx:*240:false:-1:0 dy:*0:false:-1:0 dz:*0:false:-1:0
+(600,1400)anim_repeat uid3372 0 0 1 next:*uid3371:false:-1:0 start_time:*0:false:-1:0 repeat_duration:*500:false:-1:0
+(800,1400)move_ml uid3373 0 0 1 ev:*ev:false:-1:0 ml:*uid3366:false:-1:0 mn:*uid3372:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
+(1000,1400)quad_z uid3374 0 0 1 x1:*-450:false:-1:0 x2:*450:false:-1:0 y1:*0:false:-1:0 y2:*100:false:-1:0 z:*150:false:-1:0
+(1200,1400)FI_load uid3375 0 0 1 url:*https?//meshpage.org/assets/Chunkfive.otf:false:-1:0 sx:*20:false:-1:0 sy:*20:false:-1:0
+(200,1600)FI_drawtext uid3376 0 0 1 font:*uid3375:false:-1:0 str:*Merry_Christmas:false:-1:0 x_gap:*5:false:-1:0 line_height:*30:false:-1:0
+(400,1600)flip_y uid3377 0 0 1 orig:*uid3376:false:-1:0
+(600,1600)m_texture uid3378 0 0 1 ev:*ev:false:-1:0 bm:*uid3377:false:-1:0 mix:*1.0:false:-1:0
+(800,1600)m_fade uid3379 0 0 1 ev:*ev:false:-1:0 next:*uid3378:false:-1:0 start_time:*0:false:-1:0 end_time:*10:false:-1:0 start_time2:*15:false:-1:0 end_time2:*25:false:-1:0
+(1000,1600)m_bind uid3380 0 0 1 p:*uid3374:false:-1:0 mat:*uid3379:false:-1:0
+(1200,1600)or_elem_ml uid3381 0 0 1 ev:*ev:false:-1:0 m1:*uid3373:false:-1:0 m2:*uid3380:false:-1:0
+(200,1800)run_window uid3382 0 0 1 ev:*ev:false:-1:0 ml:*uid3381:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
