@@ -3358,6 +3358,63 @@ GameApi::PTS GameApi::PointsApi::random_points_in_plane(EveryApi &ev, float key,
   return pt_array(ev,vec);
 }
 
+
+
+extern float quake_pos_x;
+extern float quake_pos_y;
+extern float quake_rot_y;
+
+class PublishHeightField : public MainLoopItem
+{
+public:
+  PublishHeightField(GameApi::Env &env, MainLoopItem *item, ContinuousBitmap<float> *landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+    : env(env), item(item), landscape(landscape),
+      start_x(start_x), end_x(end_x),
+      start_y(start_y), end_y(end_y),
+      start_z(start_z), end_z(end_z)
+  {
+  }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    float x = quake_pos_x + 100.0*cos(-quake_rot_y);
+    float z = -quake_pos_y + 100.0*sin(-quake_rot_y);
+
+    x-=start_x;
+    x/=end_x-start_x;
+    z-=start_z;
+    z/=end_z-start_z;
+    float val = landscape->Map(x,z);
+    val = start_y + val*(end_y-start_y);
+
+    Matrix old = e.in_MV;
+    MainLoopEnv &ee = e;
+    ee.in_MV = Matrix::Translate(0.0,val,0.0);
+    Matrix oldenv = ee.env;
+    ee.env = ee.in_MV;
+    item->execute(ee);
+    ee.in_MV = old;
+    ee.env = oldenv;
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    return item->shader_id();
+  }
+private:
+  GameApi::Env &env;
+  MainLoopItem *item;
+  ContinuousBitmap<float> *landscape;
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+};
+
+
 class HeightField : public PointsApiPoints
 {
 public:
@@ -3428,7 +3485,12 @@ private:
   float start_z, end_z;
 };
 
-
+GameApi::ML GameApi::PointsApi::publish_heightfield(ML ml, CFB landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  ContinuousBitmap<float> *cb = find_cont_float(e,landscape);
+  return add_main_loop(e, new PublishHeightField(e,item, cb, start_x, end_x, start_y, end_y, start_z, end_z));
+}
 GameApi::PTS GameApi::PointsApi::height_field_pts(PTS points, CFB landscape, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z)
 {
   PointsApiPoints *p = find_pointsapi_points(e,points);

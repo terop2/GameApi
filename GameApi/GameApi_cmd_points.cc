@@ -88,7 +88,7 @@
 			 "heightfield_pts",
 			 { "points", "landscape", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
 			 { "PTS", "CFB", "float", "float", "float", "float", "float", "float" },
-			 { "", "", "-1000.0", "1000.0", "-300.0", "300.0", "-3000.0", "1000.0" },
+			 { "", "", "-1000.0", "1000.0", "-300.0", "300.0", "-1000.0", "1000.0" },
 			 "PTS", "points_api", "height_field_pts"));
 #endif
 #if (ALL==1)||(BULLET==1)

@@ -3706,6 +3706,8 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  IMPORT ML publish_heightfield(ML ml, CFB landscape, float start_x, float end_x,
+				float start_y, float end_y, float start_z, float end_z);
   IMPORT CFB cbm_to_cfb( CBM bm, float red_mult, float red_add,
 			 float green_mult, float green_add,
 			 float blue_mult, float blue_add,
