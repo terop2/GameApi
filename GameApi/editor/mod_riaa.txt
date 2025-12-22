@@ -63,3 +63,4 @@ test
 (91,-1463)point uid11219 0 0 1 x:*0.0:false:-1:0 y:*0.0:false:-1:0 z:*0.0:false:-1:0
 (964,-1289)blk_window uid15650 0 0 1 ev:*ev:false:-1:0 ml:*uid3405:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
 (828,-1290)p_wave uid3405 0 0 1 ev:*ev:false:-1:0 mainloop:*uid32262:false:-1:0 radius:*0.02:false:-1:0 t_mult:*5:false:-1:0 x_mult:*30:false:-1:0 y_mult:*17:false:-1:0
+(1663,545)run_window uid770182820 0 0 1 ev:*ev:false:-1:402632640 ml:*uid11796:false:-1:0 logo:*false:false:-1:402632640 fpscounter:*false:false:-1:402632640 start_time:*0.0:false:-1:402632640 duration:*100000.0:false:-1:402632640

@@ -1077,6 +1077,15 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "", "0.5236", "0.5236", "-1400.0" },
 			 "ML", "mainloop_api", "isometric"));
 #endif
+#if (ALL==1)||(PUBLISH_HEIGHTFIELD==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::publish_heightfield,
+			"heightfield_ml",
+			{ "ml", "landscape", "start_x", "end_x", "start_y", "end_y", "start_z", "end_z" },
+			{ "ML", "CFB", "float", "float", "float", "float", "float", "float" },
+			{ "", "", "-1000.0", "1000.0", "-300.0", "300.0", "-1000.0", "1000.0" },
+			"ML", "points_api", "publish_heightfield"));
+#endif
+
 #ifndef STABLE
 #if (ALL==1)||(DEBUG_OBJ==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::debug_obj, 
