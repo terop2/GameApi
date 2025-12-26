@@ -2,6 +2,7 @@
 #include "GameApi_h.hh"
 #ifdef EMSCRIPTEN
 #include <emscripten.h>
+#include <emscripten/emscripten.h>
 #endif
 
 #include "GameApi_low.hh"
@@ -736,6 +737,8 @@ extern std::map<std::string, std::vector<unsigned char>*> load_url_buffers;
 #endif
 #endif
 
+int find_str(std::string val, std::string repl);
+
 void stackTrace()
 {
 #ifdef LINUX
@@ -755,9 +758,42 @@ void stackTrace()
 #endif
 
 #ifdef EMSCRIPTEN
+  char stack[40960];
+  emscripten_get_callstack(
+			   EM_LOG_C_STACK | EM_LOG_JS_STACK,
+			   stack,
+			   sizeof(stack)
+			   );
+  std::string s(stack);
+  std::stringstream ss(s);
+  std::string line;
+  while(std::getline(ss,line)) {
+    //std::cout << "LINE:" << line << std::endl;
+    int pos0 = find_str(line,"(");
+  if (pos0!=-1) {
+    std::string s2 = line;
+    int posc=0;
+    int res_pos = -1;
+    while(1) {
+      int pos1 = find_str(s2,"::");
+      if (pos1==-1) break;
+      posc+=pos1+2;
+      if (posc<pos0) res_pos=posc-2;
+      s2=s2.substr(pos1+2);
+    }
+    if (res_pos != -1)
+      {
+	std::string res = line.substr(res_pos,pos0-res_pos);
+	std::cout << res << std::endl;
+      }
+  }
+  }
+  //puts(stack);
+#if 0
   EM_ASM({
       console.log(new Error().stack);
     });
+#endif
 #endif
 }
 IMPORT void ProgressBar(int num, int val, int max, std::string label);

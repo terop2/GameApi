@@ -58,6 +58,12 @@ if ($id>0)
 </head>
 <body>
 <script>
+setInterval(() => {
+  console.log(
+    wasmMemory.buffer.byteLength / 1024 / 1024,
+    "MB"
+  );
+}, 1000);
 
 function json_stringify(val)
 {
