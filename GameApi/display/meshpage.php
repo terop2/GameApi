@@ -221,6 +221,8 @@ $highmem = js_highmem();
 <body id="body" style="overflow:hidden">
 
 <script>
+
+
 if (!crossOriginIsolated) {
     console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
     console.log("Your web server needs the following configuration to get gameapi builder animations working:");

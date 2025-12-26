@@ -435,6 +435,19 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many_txid(EveryAp
 
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels, std::vector<bool> is_srgb)
 {
+#if 0
+  std::cout << "Prepare Many:" << std::endl;
+  int st = vec.size();
+  for(int i=0;i<st;i++)
+    {
+      BitmapHandle *handle = find_bitmap(e, vec[i]);
+      Bitmap<Color> *bbm = find_color_bitmap(handle);
+      //std::cout << id_labels[i] << "::" << bbm->SizeX() << "x" << bbm->SizeY() << std::endl;
+    }
+  std::cout << "End." << std::endl;
+#endif
+  
+  
   //std::cout << "prepare many: " << vec.size() << " " << types.size() << " " << mipmaps << " " << id_labels.size() << std::endl;
   mipmaps = false;
   
@@ -455,6 +468,7 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	TXID id = find_txid(id_labels[i]);
 	if (id.id!=-1) {
 	  txidvec.push_back(id);
+	  //std::cout << i << "Cached." << std::endl;
 	  continue;
 	}
       }

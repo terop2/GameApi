@@ -5855,6 +5855,25 @@ public:
     if (i==0) return true;
     return false;
   }
+  GameApi::BM reduce_size(GameApi::BM bm) const
+  {
+    return bm;
+#if 0
+    BitmapHandle *handle = find_bitmap(e, bm);
+    Bitmap<Color> *bbm = find_color_bitmap(handle);
+    int sx = bbm->SizeX();
+    int sy = bbm->SizeY();
+    int sx2 = sx;
+    int sy2 = sy;
+    if (sx>256) sx2=256;
+    if (sy>256) sy2=256;
+    if (sx!=sx2 || sy!=sy2)
+      {
+	return ev.bitmap_api.scale_bitmap(ev,bm,sx2,sy2);
+      }
+    return bm;
+#endif
+  }
   GameApi::BM texture(int i) const {
     print_extension_map();
     if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
@@ -5868,17 +5887,17 @@ public:
       if (get_spec()) index=get_specglossi_index();
       if (get_sheen()) index=get_sheen_index();
       //std::cout << "IMG0=" << index << "(" << get_spec() << "," << get_sheen() << ")" << std::endl;
-      return gltf_load_bitmap2(e,ev, interface, index);
+      return reduce_size(gltf_load_bitmap2(e,ev, interface, index));
     }
     case 1: {
       int index = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
       if (get_spec()) index=get_diffuse_index();
       //std::cout << "IMG1=" << index << "(" << get_spec() << ")" << std::endl;
-      return gltf_load_bitmap2(e,ev, interface, index);
+      return reduce_size(gltf_load_bitmap2(e,ev, interface, index));
     }
-    case 2: return gltf_load_bitmap2(e,ev, interface, m.normalTexture.index);
-    case 3: return gltf_load_bitmap2(e,ev, interface, m.occlusionTexture.index);
-    case 4: return gltf_load_bitmap2(e,ev, interface, m.emissiveTexture.index);
+    case 2: return reduce_size(gltf_load_bitmap2(e,ev, interface, m.normalTexture.index));
+    case 3: return reduce_size(gltf_load_bitmap2(e,ev, interface, m.occlusionTexture.index));
+    case 4: return reduce_size(gltf_load_bitmap2(e,ev, interface, m.emissiveTexture.index));
     default:
       std::cout << "ERROR: gltf_meterial::texture" << std::endl;
       GameApi::BM bm; bm.id=-1; return bm;
@@ -14145,6 +14164,17 @@ void zip_mutex_destroy()
 #endif
 }
 
+size_t writer_cb(void *pOpaque, mz_uint64 offset, const void *pBuf, size_t n)
+{
+  //std::cout << "CB:" << offset << " " << n << std::endl;
+  std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = (std::vector<unsigned char,GameApiAllocator<unsigned char> > *)pOpaque;
+  std::copy((const unsigned char*)pBuf,((const unsigned char*)pBuf)+n,vec->begin()+offset);
+  return n;
+}
+
+GameApi::ASyncVec *get_fetcher(const std::vector<unsigned char, GameApiAllocator<unsigned char> > *buffer);
+
+
 void *thread_sketchfab_zip(void *data)
 {
   //std::cout << "Thread sketchfab zip" << std::endl;
@@ -14180,11 +14210,27 @@ void *thread_sketchfab_zip(void *data)
 	    //  continue;
 	    //}
 	    
-	    size_t sz=0;
-	    void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
-	    if (sz<1) sz=1;
-	    std::vector<unsigned char,GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char,GameApiAllocator<unsigned char> >((char*)ptr,((char*)ptr)+sz);
-	    free(ptr);
+	    //size_t sz=0;
+	    //void *ptr = mz_zip_reader_extract_to_heap(pZip, i, &sz, 0);
+	    mz_zip_archive_file_stat file_stat;
+	    std::vector<unsigned char, GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char, GameApiAllocator<unsigned char> >;
+	    if (mz_zip_reader_file_stat(pZip, i, &file_stat))
+	      {
+		size_t uncompressed_size = (size_t)file_stat.m_uncomp_size;
+		data->resize(uncompressed_size);
+	      }
+	    else
+	      {
+		std::cout << "Zip decode cannot find file size" << std::endl;
+	      }
+	    mz_bool b = mz_zip_reader_extract_to_callback(pZip, i, &writer_cb, (void*)data, 0);
+	    if (!b)
+	      {
+		std::cout << "Zip decompress failed!" << std::endl;
+	      }
+	    //if (sz<1) sz=1;
+	    //std::vector<unsigned char,GameApiAllocator<unsigned char> > *data = new std::vector<unsigned char,GameApiAllocator<unsigned char> >((char*)ptr,((char*)ptr)+sz);
+	    //free(ptr);
 	    delete[] filename;
 #ifdef EMSCRIPTEN
 #if 0
@@ -14197,7 +14243,7 @@ void *thread_sketchfab_zip(void *data)
 	      //delete g_del_map.load_url_buffers_async[url];
 	    }
 	    //std::cout << "Pushing zip file: " << url << std::endl;
-	    g_del_map.push_async_url(url,data);
+	    g_del_map.push_async_url(url,get_fetcher(data) );
 
 	    zip_push(url_plain);
 	    
@@ -14305,7 +14351,7 @@ public:
 	    if (find_indexhtml_string(url,"engine/")==-1) {
 	      //std::cout << "URL:" << url << std::endl;
 	      //g_del_map.load_url_buffers_async[url] = data;
-	      g_del_map.push_async_url(url,data);
+	      g_del_map.push_async_url(url,get_fetcher(data) );
 	      g_content.push_back(&data->operator[](0));
 	      g_content_end.push_back(&(*data->end()));
 	      char *buf = new char[url.size()+1];
@@ -14441,7 +14487,7 @@ public:
 	    }
 	    if (find_indexhtml_string(url,"engine/")==-1) {
 	      //std::cout << "URL:" << url << std::endl;
-	      g_del_map.push_async_url(url,data);
+	      g_del_map.push_async_url(url,get_fetcher(data) );
 		//g_del_map.load_url_buffers_async[url] = data;
 	      g_content.push_back(&data->operator[](0));
 	      g_content_end.push_back(&(*data->end()));

@@ -173,7 +173,7 @@ OPENCVOPT = -L./emscriptendeps/build_wasm3/lib \
 	  ./emscriptendeps/build_wasm3/lib/libopencv_videoio.a \
 	  ./emscriptendeps/build_wasm3/lib/libopencv_imgproc.a \
 	  ./emscriptendeps/build_wasm3/lib/libopencv_imgcodecs.a \
-	  -s SHARED_MEMORY=1 -s FETCH_SUPPORT_INDEXEDDB=0 -s NO_DISABLE_EXCEPTION_CATCHING -sASSERTIONS=0 -sSAFE_HEAP=0
+	  -s SHARED_MEMORY=1 -s FETCH_SUPPORT_INDEXEDDB=0 -s DISABLE_EXCEPTION_CATCHING=1 -sASSERTIONS=0 -sSAFE_HEAP=0
 
 	  #./emscriptendeps/build_wasm3/lib/libopencv_calib3d.a 
 	  #./emscriptendeps/build_wasm3/lib/libopencv_dnn.a

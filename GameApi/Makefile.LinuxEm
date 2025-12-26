@@ -212,7 +212,7 @@ SDL_MIXER_MINI2 = sdl_mixer_mini/include
 #-fno-exceptions -fno-exceptions -fno-exceptions -fno-exceptions
 CFLAGS = $(allopts) -Werror=exceptions -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s LLD_REPORT_UNDEFINED=1 -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion  -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
 CCFLAGS = $(allopts) -I. -fno-exceptions -s DISABLE_EXCEPTION_CATCHING=1 -s ERROR_ON_UNDEFINED_SYMBOLS=1 -s LLD_REPORT_UNDEFINED=1  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -Wno-unused-variable -Wno-unused-private-field -Wno-mismatched-tags -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ichai/ChaiScript-6.1.0/include -Wno-emcc  -Wno-return-type -Wno-undefined-bool-conversion -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
-CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=0  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
+CC2FLAGS = $(allopts)  -I. -s DISABLE_EXCEPTION_CATCHING=1  -fomit-frame-pointer -s USE_FREETYPE=1 -DEMSCRIPTEN -std=c++20 -Wall $(nowarns) -DGLEW_STATIC -I$(EMINC1) -I$(EMINC2) -I$(EMINC3) -Ichai/ChaiScript-6.1.0/include -Wno-emcc -Wno-return-type -Wno-undefined-bool-conversion -I$(SDL_MIXER_MINI1) -I$(SDL_MIXER_MINI2) -Ihssynth2/synthlib -Ihssynth2/midiplay/midifile/include -s USE_SDL=2 -s USE_SDL_MIXER=2 -fvisibility=hidden -DGAMEAPI_EXPORTS
 # -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 -s WASM_MEM_MAX=1500Mb
 #`pkg-config gtkmm-2.4 --cflags`
 # -fno-exceptions
@@ -292,7 +292,7 @@ fixmissing: check_emscripten_exists
 
 libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 	@#echo "  em++ libGameApi.bc"
-	@#@em++ $(allopts)   -s DISABLE_EXCEPTION_CATCHING=0 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@#@em++ $(allopts)   -s DISABLE_EXCEPTION_CATCHING=1 -shared $(DOFiles) $(OFiles) $(O2Files) $(OOFiles) -o libGameApi.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
 	@echo "touch libGameApi.bc"
 	@touch libGameApi.bc
 
@@ -300,7 +300,7 @@ libGameApi.bc: fixmissing $(DOFiles) $(O2Files) $(OFiles) $(OOFiles) Makefile
 
 libGameApi_nothreads.bc: fixmissing $(DOFiles_nothreads) $(O2Files_nothreads)  $(OFiles_nothreads) $(OOFiles_nothreads) Makefile
 	@echo "  em++ libGameApi_nothreads.bc"
-	@#@em++ $(allopts) $(no_pthread_opts) -s DISABLE_EXCEPTION_CATCHING=0 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
+	@#@em++ $(allopts) $(no_pthread_opts) -s DISABLE_EXCEPTION_CATCHING=1 -shared $(OFiles_nothreads) $(O2Files_nothreads) $(DOFiles_nothreads) $(OOFiles_nothreads) -o libGameApi_nothreads.bc -s ERROR_ON_UNDEFINED_SYMBOLS=0
 	@echo "touch libGameApi_nothreads.bc"
 	@touch libGameApi_nothreads.bc
 

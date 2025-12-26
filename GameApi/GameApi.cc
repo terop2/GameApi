@@ -298,20 +298,13 @@ size_t max_mem_usage=0;
 #if 0
 void *operator new( std::size_t count)
 {
-  current_mem_usage+=count;
-  max_mem_usage+=count;
+  //current_mem_usage+=count;
+  //max_mem_usage+=count;
 
-  if (abs(long(printed_mem_usage-current_mem_usage))>1000000)
+  if (count > 1024000)
     {
-      if (current_mem_usage>1024000000)
-	printf("MEM:%lf Gb MAX:%lf Gb\n",double(current_mem_usage)/1024000000.0,double(max_mem_usage)/1024000000.0);
-      else
-      if (current_mem_usage>1024000)
-	printf("MEM:%lf Mb MAX:%lf Mb\n",double(current_mem_usage)/1024000.0,double(max_mem_usage)/1024000.0);
-      else
-	printf("MEM:%lf kb MAX:%lf kb\n",double(current_mem_usage)/1024.0,double(max_mem_usage)/1024.0);
-	
-      printed_mem_usage=current_mem_usage;
+      printf("Large Alloc: %ld.\n", (long)count);
+      stackTrace();
     }
   
   void *ptr = malloc(count);
@@ -319,7 +312,7 @@ void *operator new( std::size_t count)
 }
 void operator delete(void* ptr, size_t sz) noexcept
 {
-  current_mem_usage-=sz;
+  //current_mem_usage-=sz;
   free(ptr);
 
   /*

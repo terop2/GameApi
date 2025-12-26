@@ -21,6 +21,8 @@ public:
 };
 
 
+void stackTrace();
+
 template<class T>
 class GameApiAllocator
 {
@@ -38,34 +40,14 @@ public:
   typedef int32_t difference_type;
   void print() const
   {
-#if 0
-    if (*changed_mem >100000)
-      {
-	if (*used_mem>1024000000) {
-	  //printf("MEM:%lf Gb MAX:%lf Gb\n",double(*used_mem)/1024000000.0,double(*free_mem)/1024000000.0);
-	}
-	else {
-	  if (*used_mem>1024000) {
-	    //printf("MEM:%lf Mb MAX:%lf Mb\n",double(*used_mem)/1024000.0,double(*free_mem)/1024000.0);
-	  }
-	  else {
-	    //printf("MEM:%lf kb MAX:%lf kb\n",double(*used_mem)/1024.0,double(*free_mem)/1024.0);
-	  }
-	}
-
-	*changed_mem = 0;
-      }
-#endif
   }
   T* allocate(uint32_t sz) {
     if (sz==0) return nullptr;
-
-#if 0
-    *free_mem-=sz*sizeof(T);
-    *changed_mem+=sz*sizeof(T);
-    *used_mem+=sz*sizeof(T);
-    print();
-#endif
+    //if (sz*sizeof(T)>=1024000) {
+    //  printf("Allocator large alloc: %ld\n",(long)sz*sizeof(T));
+    //  stackTrace();
+    //}
+    
 #ifdef EMSCRIPTEN
     void *p = emscripten_builtin_malloc(sz*sizeof(T));
     if (!p) return nullptr;
@@ -3309,14 +3291,14 @@ public:
 #ifdef EMSCRIPTEN
   virtual void push_fetch_url(std::string url, FetchInBlocks *blk)=0;
 #endif
-  virtual void push_async_url(std::string url, const std::vector<unsigned char, GameApiAllocator<unsigned char> > *ptr)=0;
+  virtual void push_async_url(std::string url, const GameApi::ASyncVec *ptr)=0;
 
-  virtual void del_vec(const std::vector<unsigned char, GameApiAllocator<unsigned char> >* vec)=0;
+  virtual void del_vec(GameApi::ASyncVec* vec)=0;
 #ifdef EMSCRIPTEN
   virtual bool fetch_find(std::string url)=0;
 #endif
   virtual bool async_find(std::string url)=0;
-  virtual VECENTRY &async_get(std::string url)=0;  
+  virtual GameApi::ASyncVec *async_get2(std::string url)=0;  
 };
 
 
