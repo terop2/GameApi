@@ -20381,14 +20381,14 @@ public:
     for(int x=0;x<sx;x++) {
       vox[x].resize(sy);
       for(int y=0;y<sy;y++)
-	vox[x][y].resize(sz);
+	vox[x][y].resize(sz,-1);
     }
 
     //std::cout << "NumVoxels: " << s << std::endl;
     for(int i=0;i<s;i++)
       {
 	XYZI p = ml.get_voxel(error, model,i);
-	vox[p.x][p.y][p.z] = p.colorIndex;
+	vox[int(p.x)+1][int(p.y)+1][int(p.z)+1] = int(p.colorIndex);
       }
     
   }
@@ -20401,21 +20401,21 @@ public:
     bool error = false;
     VoxSize s = ml.get_size(error,model);
     //std::cout << "SizeX:"<< s.sx << std::endl;
-    return s.sx;
+    return int(s.sx)+2;
   }
   virtual int SizeY() const
   {
     bool error = false;
     VoxSize s = ml.get_size(error,model);
     //std::cout << "SizeY:" << s.sy << std::endl;
-    return s.sy;
+    return int(s.sy)+2;
   }
   virtual int SizeZ() const
   {
     bool error = false;
     VoxSize s = ml.get_size(error,model);
     //std::cout << "SizeZ:" << s.sz << std::endl;
-    return s.sz;
+    return int(s.sz)+2;
   }
   virtual int Map(int x, int y, int z) const
   {
@@ -20424,7 +20424,7 @@ public:
 	if (z>=0 && z<vox[x][y].size()) {
 	  //std::cout << x << " " << y << " " << z << " " << vox[x][y][z] << std::endl;
 	  int res = vox[x][y][z];
-	  if (res==0) res=-1;
+	  //if (res==0) res=-1;
 	  return res;
 	}
     //std::cout << "zero " << x << " " << y << " " << z << std::endl;
@@ -20684,7 +20684,7 @@ GameApi::ARR GameApi::VoxelApi::vox_cubes(GameApi::EveryApi &ev, std::string url
 class VoxML : public MainLoopItem
 {
 public:
-  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz) { }
+  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz),mt(mt) { }
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -20713,8 +20713,8 @@ public:
     float p_x = -u_x/2.0;
     float p_y = -u_y/2.0;
     float p_z = -u_z/2.0;
-    GameApi::ARR I3=ev.voxel_api.voxel_instancing(I2,255,p_x,p_x+u_x,p_y,p_y+u_y,p_z,p_z+u_z);
-    GameApi::MT I4=ev.materials_api.m_def(ev);
+    GameApi::ARR I3=ev.voxel_api.voxel_instancing(I2,256,p_x,p_x+u_x,p_y,p_y+u_y,p_z,p_z+u_z);
+    GameApi::MT I4=mt; //ev.materials_api.colour_material(ev,1.0); //ev.materials_api.m_def(ev);
     ArrayType *arr = find_array(env,I3);
     std::vector<GameApi::PTS> vec;
     int s = arr->vec.size();
@@ -20746,11 +20746,25 @@ private:
   int model;
   float sx, sy, sz;
   MainLoopItem *item=0;
+  GameApi::MT mt;
 };
 
 GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
 {
-  return add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz));
+  GameApi::MT mt = ev.materials_api.colour_material(ev,1.0);
+  GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt));
+  GameApi::MN mn0 = ev.move_api.mn_empty();
+  GameApi::MN mn1 = ev.move_api.rotatex(mn0,-3.14159/2.0);
+  GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
+  return ml1;
+}
+GameApi::ML GameApi::VoxelApi::vox_bind_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt)
+{
+  GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt));
+  GameApi::MN mn0 = ev.move_api.mn_empty();
+  GameApi::MN mn1 = ev.move_api.rotatex(mn0,-3.14159/2.0);
+  GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
+  return ml1;
 }
 
 
