@@ -19681,7 +19681,7 @@ GameApi::VX GameApi::VoxelApi::blit_voxel(O object,
 }
 
 
-class VoxelToPTS 
+class VoxelToPTS : public CollectInterface
 {
 public:
   VoxelToPTS(Voxel<int> *vx, int count, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z) : vx(vx),count(count), start_x(start_x), end_x(end_x), start_y(start_y), end_y(end_y), start_z(start_z), end_z(end_z)
@@ -19691,6 +19691,7 @@ public:
   void Collect(CollectVisitor &vis)
   {
     vx->Collect(vis);
+    vis.register_obj(this);
   }
   void HeavyPrepare()
   {
@@ -19699,6 +19700,7 @@ public:
     int sx = vx->SizeX();
     int sy = vx->SizeY();
     int sz = vx->SizeZ();
+    //std::cout << "SIZES:" << sx << " " << sy << " " << sz << std::endl;
     if (sx && sy && sz)  prepared=true;
     Point p;
     float dx = end_x-start_x;
@@ -19748,6 +19750,7 @@ public:
     int sx = vx->SizeX();
     int sy = vx->SizeY();
     int sz = vx->SizeZ();
+    //std::cout << "SIZES:" << sx << " " << sy << " " << sz << std::endl;
     if (sx && sy && sz)  prepared=true;
     Point p;
     float dx = end_x-start_x;
@@ -19795,7 +19798,7 @@ public:
   std::vector<std::vector<Vector> > normal;
   std::vector<std::vector<unsigned int> > color;
   Voxel<int> *vx;
-  bool prepared;
+  bool prepared=false;
   int count;
   float start_x, end_x;
   float start_y, end_y;
@@ -19808,18 +19811,28 @@ public:
   VPTS(VoxelToPTS &pts, int val, Voxel<int> *vx) : pts(pts), val(val),vx(vx) { }
   void Collect(CollectVisitor &vis)
   {
+    //std::cout << "VPTS::COllect" << std::endl;
     pts.Collect(vis);
+    vis.register_obj(this);
   }
-  void HeavyPrepare() { }
-  void Prepare() {
+  void HeavyPrepare() {
+    //std::cout << "VPTS::HeavyPrepare" << std::endl;
     pts.Prepare();
-    /*vx->Prepare();*/ }
+    vx->Prepare();    
+  }
+  void Prepare() {
+    //std::cout << "VPTS::Prepare" << std::endl;
+    HeavyPrepare();
+  }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const
   {
-    if (val>=0&&val<pts.pts.size())
+    //std::cout << "NumPoints3:" << val << " " << pts.pts.size() << std::endl;
+    if (val>=0&&val<pts.pts.size()) {
+      //std::cout << " " << pts.pts[val].size() << std::endl;
       return pts.pts[val].size();
+    }
     return 0;
   }
   virtual Point Pos(int i) const
@@ -19866,6 +19879,64 @@ IMPORT std::vector<GameApi::PTS> GameApi::arr_to_pts_arr(GameApi::EveryApi &ev, 
   return vec;
 }
 
+class VoxelInstancing : public PointsApiPoints
+{
+public:
+  VoxelInstancing(GameApi::Env &e, GameApi::VX voxel,
+		  int count,
+		  float start_x, float end_x,
+		  float start_y, float end_y,
+		  float start_z, float end_z, int i) : e(e),voxel(voxel),
+						count(count),
+						start_x(start_x),
+						end_x(end_x),
+						start_y(start_y),
+						end_y(end_y),
+						start_z(start_z),
+						       end_z(end_z), i(i) { }
+
+
+  virtual void Collect(CollectVisitor &vis) {
+    Voxel<int> *vx = find_int_voxel(e,voxel);
+    vx->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare() {
+    //std::cout << "HeavyPrepare()" << std::endl;
+    if (!pts) {
+      //std::cout << "HeavyPrepare(2)" << std::endl;
+      Voxel<int> *vx = find_int_voxel(e, voxel);
+      VoxelToPTS *pts2 = new VoxelToPTS(vx, count, start_x, end_x, start_y, end_y, start_z, end_z);
+      //EnvImpl *env = ::EnvImpl::Environment(&e);
+      //env->deletes.push_back(std::shared_ptr<void>(pts2));
+      
+      pts = pts2->get(i);
+      pts->Prepare();
+      //std::cout << "HeavyPrepare(3)" << (long)pts << std::endl;
+    }
+  }  
+  virtual void Prepare() {
+    Voxel<int> *vx = find_int_voxel(e,voxel);
+    vx->Prepare();
+    HeavyPrepare();
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { if(pts) pts->HandleEvent(event); }
+  virtual bool Update(MainLoopEnv &e) { if (pts) return pts->Update(e); return false; }
+  virtual int NumPoints() const {  if (pts) return pts->NumPoints(); return 0;  }
+  virtual Point Pos(int i) const {  if (pts) return pts->Pos(i); return Point(0.0,0.0,0.0); }
+  virtual unsigned int Color(int i) const { if (pts) return pts->Color(i); return 0xffffff; }
+  virtual Vector Normal(int i) const { if (pts) return pts->Normal(i); return Vector(1.0,0.0,0.0); }
+private:
+  GameApi::Env &e;
+  GameApi::VX voxel;
+  int count;
+  float start_x; float end_x;
+  float start_y; float end_y;
+  float start_z; float end_z;
+  PointsApiPoints *pts = 0;
+  int i;
+};
+
 // ARR = array of PTS
 GameApi::ARR GameApi::VoxelApi::voxel_instancing(VX voxel,
 						 int count,
@@ -19873,18 +19944,18 @@ GameApi::ARR GameApi::VoxelApi::voxel_instancing(VX voxel,
 						 float start_y, float end_y,
 						 float start_z, float end_z)
 {
-  Voxel<int> *vx = find_int_voxel(e, voxel);
-  VoxelToPTS *pts = new VoxelToPTS(vx, count, start_x, end_x, start_y, end_y, start_z, end_z);
-  EnvImpl *env = ::EnvImpl::Environment(&e);
-  env->deletes.push_back(std::shared_ptr<void>(pts));
+  //Voxel<int> *vx = find_int_voxel(e, voxel);
+  //VoxelToPTS *pts = new VoxelToPTS(vx, count, start_x, end_x, start_y, end_y, start_z, end_z);
+  //EnvImpl *env = ::EnvImpl::Environment(&e);
+  //env->deletes.push_back(std::shared_ptr<void>(pts));
   
   int s = count;
-  std::vector<int> vec;
+  //std::vector<int> vec;
   ArrayType *array = new ArrayType;
   array->type = 2;
   for(int i=0;i<s;i++)
     {
-      PointsApiPoints *p = pts->get(i);
+      PointsApiPoints *p = new VoxelInstancing(e,voxel,count,start_x,end_x,start_y,end_y,start_z,end_z,i);
       PTS pts = add_points_api_points(e, p);
       array->vec.push_back(pts.id);
     }
@@ -19894,8 +19965,10 @@ GameApi::ML GameApi::VoxelApi::voxel_render(EveryApi &ev, std::vector<P> objs, s
 {
   int s = std::min(objs.size(), vec.size());
   std::vector<ML> mls;
+  //std::cout << "Voxel render:" << s << std::endl;
   for(int i=0;i<s;i++)
     {
+      //std::cout << "Voxel:" << objs[i].id << " " << vec[i].id << std::endl;
       ML o = ev.materials_api.render_instanced_ml(ev, objs[i], vec[i]);
       mls.push_back(o);
     }
@@ -20109,7 +20182,7 @@ class VoxMainLoopItem : public MainLoopItem
 {
 public:
   VoxMainLoopItem(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float sx, float sy, float sz) : env(env), ev(ev), url(url), homepage(homepage), sx(sx), sy(sy), sz(sz) { }
-  virtual void Collect(CollectVisitor &vis) { }
+  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
     if (!data) {
@@ -20172,7 +20245,7 @@ public:
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 
-  VoxSize get_size(bool &res_error, int model)
+  VoxSize get_size(bool &res_error, int model) const
   {
     res_error = error;
     if (!error && (model>=0 && model<sizes.size()) ) {
@@ -20188,7 +20261,7 @@ public:
 
   }
   
-  VoxPalette get_palette(bool &res_error)
+  VoxPalette get_palette(bool &res_error) const
   {
     res_error = error;
     if (!error) {
@@ -20198,7 +20271,7 @@ public:
     VoxPalette pp;
     return pp;
   }
-  int get_num_vox(bool &res_error, int model)
+  int get_num_vox(bool &res_error, int model) const
   {
     res_error = error;
     if (!error && (model>=0 && model<xyzis.size()) ) {
@@ -20207,7 +20280,7 @@ public:
     }
     return 0;
   }
-  XYZI get_voxel(bool &res_error, int model, int vox)
+  XYZI get_voxel(bool &res_error, int model, int vox) const
   {
     res_error = error;
     if (!error && (model>=0 && model<xyzis.size())) {
@@ -20224,7 +20297,19 @@ public:
     return err;
   }
 
-  GameApi::P get_voxel_model(int model)
+  GameApi::P get_cube(int model, int palette_index) const
+  {
+    if (palette_index == 0) return ev.polygon_api.p_empty();
+    bool error = false;
+    VoxPalette *pal = new VoxPalette(get_palette(error));
+    if (error) return ev.polygon_api.p_empty();
+    if (pal->palette[palette_index] == 0x0) return ev.polygon_api.p_empty();
+    GameApi::P cube = ev.polygon_api.cube(0.0,sx,0.0,sy,0.0,sz);
+    GameApi::P c_cube = ev.polygon_api.color(cube, pal->palette[palette_index]);
+    delete pal;
+    return c_cube;
+  }
+  GameApi::P get_voxel_model(int model) const
   {
     bool error = false;
     VoxPalette *pal = new VoxPalette(get_palette(error));
@@ -20258,6 +20343,7 @@ public:
 	}
       }
     }
+    delete pal;
     return ev.polygon_api.p_empty();
   }
 private:
@@ -20275,6 +20361,194 @@ private:
 };
 
 
+class VoxVoxel : public Voxel<int>
+{
+public:
+  VoxVoxel(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz) : ml(e,ev,url,gameapi_homepageurl,sx,sy,sz), model(model) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    ml.Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    bool error = false;
+    int s = ml.get_num_vox(error,model);
+    int sx = SizeX();
+    int sy = SizeY();
+    int sz = SizeZ();
+    vox.resize(sx);
+    for(int x=0;x<sx;x++) {
+      vox[x].resize(sy);
+      for(int y=0;y<sy;y++)
+	vox[x][y].resize(sz);
+    }
+
+    //std::cout << "NumVoxels: " << s << std::endl;
+    for(int i=0;i<s;i++)
+      {
+	XYZI p = ml.get_voxel(error, model,i);
+	vox[p.x][p.y][p.z] = p.colorIndex;
+      }
+    
+  }
+  virtual void Prepare() {
+    ml.Prepare();
+    HeavyPrepare();
+  }
+  virtual int SizeX() const
+  {
+    bool error = false;
+    VoxSize s = ml.get_size(error,model);
+    //std::cout << "SizeX:"<< s.sx << std::endl;
+    return s.sx;
+  }
+  virtual int SizeY() const
+  {
+    bool error = false;
+    VoxSize s = ml.get_size(error,model);
+    //std::cout << "SizeY:" << s.sy << std::endl;
+    return s.sy;
+  }
+  virtual int SizeZ() const
+  {
+    bool error = false;
+    VoxSize s = ml.get_size(error,model);
+    //std::cout << "SizeZ:" << s.sz << std::endl;
+    return s.sz;
+  }
+  virtual int Map(int x, int y, int z) const
+  {
+    if (x>=0 && x<vox.size())
+      if (y>=0 && y<vox[x].size())
+	if (z>=0 && z<vox[x][y].size()) {
+	  //std::cout << x << " " << y << " " << z << " " << vox[x][y][z] << std::endl;
+	  int res = vox[x][y][z];
+	  if (res==0) res=-1;
+	  return res;
+	}
+    //std::cout << "zero " << x << " " << y << " " << z << std::endl;
+    return 0;
+  }
+  virtual unsigned int Color(int x, int y, int z) const { return 0xffffffff; }
+  virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; return v; }
+private:
+  VoxMainLoopItem ml;
+  int model;
+  std::vector<std::vector<std::vector<int>>> vox;
+};
+
+
+class VoxCubeFaceCollection : public FaceCollection
+{
+public:
+  VoxCubeFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, int palette_index, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz),model(model),palette_index(palette_index) { }
+  virtual std::string name() const { return "VoxFaceCollection"; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    ml.Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    faces = ml.get_cube(model,palette_index);
+  }
+  virtual void Prepare() { ml.Prepare(); HeavyPrepare();  }
+
+  virtual int NumFaces() const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->NumFaces();
+      }
+    return 0;
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->NumPoints(face);
+      }
+    return 0;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->FacePoint(face,point);
+      }
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->PointNormal(face,point);
+      }
+    return Vector(0.0,0.0,0.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->Color(face,point);
+      }
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->TexCoord(face,point);
+      }
+    Point2d p;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->TexCoord3(face,point);
+      }
+    return 0.0f;
+  }
+
+  virtual VEC4 Joints(int face, int point) const {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->Joints(face,point);
+      }
+    VEC4 v;
+    return v;
+
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->Weights(face,point);
+      }
+    VEC4 v;
+    return v;
+  }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  VoxMainLoopItem ml;
+  GameApi::P faces = { -1 };
+  int model;
+  int palette_index;
+};
 
 
 class VoxFaceCollection : public FaceCollection
@@ -20390,6 +20664,93 @@ private:
 GameApi::P GameApi::VoxelApi::vox_voxel(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
 {
   return add_polygon2(e, new VoxFaceCollection(e,ev, url,gameapi_homepageurl,model,sx,sy,sz),1);
+}
+GameApi::VX GameApi::VoxelApi::vox_voxel2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+{
+  return add_int_voxel(e,new VoxVoxel(e,ev,url, model,sx,sy,sz));
+}
+GameApi::ARR GameApi::VoxelApi::vox_cubes(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+{
+  ArrayType *array = new ArrayType;
+  array->type = 44;
+  int s = 256;
+  for(int i=0;i<s;i++)
+    {
+      array->vec.push_back(add_polygon2(e,new VoxCubeFaceCollection(e,ev,url,gameapi_homepageurl, model, i, sx,sy,sz),1).id);
+    }
+  return add_array(e,array);
+}
+
+class VoxML : public MainLoopItem
+{
+public:
+  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    GameApi::ARR I1=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
+    ArrayType *arr2 = find_array(env,I1);
+    std::vector<GameApi::P> vec2;
+    int s2 = arr2->vec.size();
+    for(int i=0;i<s2;i++)
+      {
+	GameApi::P p;
+	p.id = arr2->vec[i];
+	vec2.push_back(p);
+      }
+    GameApi::VX I2=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
+    Voxel<int> *vvx = find_int_voxel(env,I2);
+    vvx->Prepare();
+    int ssx = vvx->SizeX();
+    int ssy = vvx->SizeY();
+    int ssz = vvx->SizeZ();
+    float u_x = ssx*sx;
+    float u_y = ssy*sy;
+    float u_z = ssz*sz;
+    float p_x = -u_x/2.0;
+    float p_y = -u_y/2.0;
+    float p_z = -u_z/2.0;
+    GameApi::ARR I3=ev.voxel_api.voxel_instancing(I2,255,p_x,p_x+u_x,p_y,p_y+u_y,p_z,p_z+u_z);
+    GameApi::MT I4=ev.materials_api.m_def(ev);
+    ArrayType *arr = find_array(env,I3);
+    std::vector<GameApi::PTS> vec;
+    int s = arr->vec.size();
+    for(int i=0;i<s;i++)
+      {
+	GameApi::PTS p;
+	p.id = arr->vec[i];
+	vec.push_back(p);
+      }
+    GameApi::ML I5=ev.voxel_api.voxel_bind(ev,vec2,vec,I4);
+    item = find_main_loop(env,I5);
+    item->Prepare();
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void execute(MainLoopEnv &e) {
+    if (item)
+      item->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (item)
+      item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { if (item) return item->shader_id(); return std::vector<int>(); }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  int model;
+  float sx, sy, sz;
+  MainLoopItem *item=0;
+};
+
+GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+{
+  return add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz));
 }
 
 

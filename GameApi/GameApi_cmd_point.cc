@@ -95,6 +95,30 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "30", "30", "30" },
 			 "VX", "voxel_api", "empty_voxel"));
 #endif
+#if (ALL==1)||(VOX_VOXEL2==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_voxel2,
+			 "vx_vox",
+			 { "ev", "url", "model", "sx", "sy", "sz" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
+			 "VX", "voxel_api", "vox_voxel2"));
+#endif  
+#if (ALL==1)||(VOX_CUBES==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_cubes,
+			 "vx_cubes",
+			 { "ev", "url", "model", "sx", "sy", "sz" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
+			 "[P]", "voxel_api", "vox_cubes"));
+#endif
+#if (ALL==1)||(VOX_ML==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_ml,
+			 "vx_ml",
+			 { "ev", "url", "model", "sx", "sy", "sz" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
+			 "ML", "mainloop_api", "vox_ml"));
+#endif
 #if (ALL==1)||(SUBVOXEL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::subvoxel,
 			 "vx_sub",

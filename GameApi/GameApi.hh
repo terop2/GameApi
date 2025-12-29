@@ -3579,6 +3579,9 @@ class VoxelApi
   // NxNxN->RGB
 public:
   IMPORT VoxelApi(Env &e);
+  IMPORT ML vox_ml(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
+  IMPORT VX vox_voxel2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
+  IMPORT ARR vox_cubes(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT P vox_voxel(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT VX voxel_from_bitmaps(std::vector<BM> vec, std::string url);
   IMPORT VX function(unsigned int (*fptr)(EveryApi &ev, int x, int y, int z, void *data), int sx, int sy, int sz, void *data);
