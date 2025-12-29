@@ -397,6 +397,7 @@ public:
   virtual C Map(int x, int y, int z) const=0;
   virtual unsigned int Color(int x, int y, int z) const { return 0xffffffff; }
   virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; return v; }
+  virtual void CleanPrepare()=0;
   virtual ~Voxel() { }
 };
 

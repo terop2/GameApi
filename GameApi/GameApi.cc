@@ -16802,8 +16802,7 @@ public:
     }
 			
     if (!g_prepare_done) return -1;
-
- #ifdef EMSCRIPTEN
+#ifdef EMSCRIPTEN
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
       emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
@@ -19383,6 +19382,7 @@ public:
     if (val==-1) return bg->Map(x,y,z);
     return val;
   }
+  void CleanPrepare() { }
 private:
   Voxel<int> *bg;
   Voxel<int> *obj;
@@ -19444,6 +19444,7 @@ public:
     Point p(xx,yy,zz);
     return obj->Normal(p);
   }
+  void CleanPrepare() { }
 private:
   Voxel<int> *next;
   VolumeObject *obj;
@@ -19472,6 +19473,7 @@ public:
   {
     return -1;
   }
+  virtual void CleanPrepare() { }
 private:
   int sx,sy,sz;
 };
@@ -19539,6 +19541,7 @@ public:
     }
     return -1;
   }
+  void CleanPrepare() { }
 private:
   GameApi::Env &e;
   std::string url, homepage;
@@ -19587,6 +19590,7 @@ public:
     if (val00 > float(y)) { return false_value; }
     return true_value;
   }
+  void CleanPrepare() { }
 private:
   Bitmap<float> &bm;
   int height;
@@ -20381,14 +20385,14 @@ public:
     for(int x=0;x<sx;x++) {
       vox[x].resize(sy);
       for(int y=0;y<sy;y++)
-	vox[x][y].resize(sz,-1);
+	vox[x][y].resize(sz,0);
     }
 
     //std::cout << "NumVoxels: " << s << std::endl;
     for(int i=0;i<s;i++)
       {
 	XYZI p = ml.get_voxel(error, model,i);
-	vox[int(p.x)+1][int(p.y)+1][int(p.z)+1] = int(p.colorIndex);
+	vox[int(p.x)+1][int(p.y)+1][int(p.z)+1] = (unsigned char)(p.colorIndex);
       }
     
   }
@@ -20424,7 +20428,7 @@ public:
 	if (z>=0 && z<vox[x][y].size()) {
 	  //std::cout << x << " " << y << " " << z << " " << vox[x][y][z] << std::endl;
 	  int res = vox[x][y][z];
-	  //if (res==0) res=-1;
+	  if (res==0) res=-1;
 	  return res;
 	}
     //std::cout << "zero " << x << " " << y << " " << z << std::endl;
@@ -20432,10 +20436,13 @@ public:
   }
   virtual unsigned int Color(int x, int y, int z) const { return 0xffffffff; }
   virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; return v; }
+  virtual void CleanPrepare() {
+    vox.clear();
+  }
 private:
   VoxMainLoopItem ml;
   int model;
-  std::vector<std::vector<std::vector<int>>> vox;
+  std::vector<std::vector<std::vector<unsigned char>>> vox;
 };
 
 
@@ -20727,6 +20734,7 @@ public:
     GameApi::ML I5=ev.voxel_api.voxel_bind(ev,vec2,vec,I4);
     item = find_main_loop(env,I5);
     item->Prepare();
+    vvx->CleanPrepare();
   }
   virtual void Prepare() { HeavyPrepare(); }
   virtual void execute(MainLoopEnv &e) {
@@ -28501,6 +28509,7 @@ start_y(start_y), end_y(end_y),
     if (zz > low_val && zz < high_val) return value;
     return -1;
   }
+  void CleanPrepare() { }
 private:
   ImplicitFunction3d *im;
   int sx,sy,sz;
