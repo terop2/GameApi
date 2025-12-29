@@ -6580,7 +6580,11 @@ ASyncData async_data[] = {
   { "points_api", "load_points", 0 },
   { "bitmap_api", "debug_number", 4},
   { "bitmap_api", "video_source", 0},
-  { "mainloop_api", "load_ML_script3",1}
+  { "mainloop_api", "load_ML_script3",1},
+  { "voxel_api", "vox_voxel", 1},
+  { "voxel_api", "vox_voxel2", 1},
+  { "voxel_api", "vox_cubes", 1},
+  { "voxel_api", "vox_ml", 1}
 };
 IMPORT ASyncData *g_async_ptr = &async_data[0];
 IMPORT int g_async_count = sizeof(async_data)/sizeof(ASyncData);
