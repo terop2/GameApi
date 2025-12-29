@@ -4511,6 +4511,7 @@ public:
   {
     return bi->Map(x,y);
   }
+  void CleanPrepare() {}
 private:
   Bitmap<int> *bi;
 };

@@ -19,7 +19,7 @@ public:
   {
     return fptr(ev, x,y,z,data);
   }
-
+  void CleanPrepare() { }
 private:
   GameApi::EveryApi &ev;
   unsigned int (*fptr)(GameApi::EveryApi &ev,int x, int y, int z, void *data);
@@ -289,6 +289,12 @@ public:
 #endif
     BOX b = { xx,xxx,yy,yyy,zz,zzz };
     return b;
+  }
+  void CleanPrepare() {
+    p1.clear();
+    p2.clear();
+    p3.clear();
+    p4.clear();
   }
 private:
   FaceCollection *coll;

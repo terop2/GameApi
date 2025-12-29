@@ -4037,6 +4037,7 @@ public:
   {
     return xx*sizex/xsize;
   }
+  void CleanPrepare() { }
 private:
   ContinuousVoxel<T> &v;
   int x,y,z;
