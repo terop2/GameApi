@@ -19924,6 +19924,475 @@ GameApi::P GameApi::VoxelApi::voxel_static(EveryApi &ev, std::vector<P> objs, st
   return ev.polygon_api.or_array2(mls);
 }
 
+// VOX file loader
+struct VoxAcc {
+  unsigned char *ptr;
+  size_t numBytes;
+};
+
+struct VoxChunk {
+  char chunk_id[4];
+  int content_size_bytes;
+  int children_bytes;
+  VoxAcc chunk_content;
+  VoxAcc children_chunks;
+};
+bool test_chunk(const VoxAcc &acc, const char *chunk_id)
+{
+  unsigned char *ptr = acc.ptr;
+  if (ptr[0]==chunk_id[0] &&
+      ptr[1]==chunk_id[1] &&
+      ptr[2]==chunk_id[2] &&
+      ptr[3]==chunk_id[3])
+    {
+      return true;
+    }
+  return false;
+}
+VoxChunk read_chunk(VoxAcc &acc)
+{
+  unsigned char *ptr = acc.ptr;
+  VoxChunk res;
+  std::copy(ptr,ptr+4,res.chunk_id);
+  std::copy(ptr+4,ptr+8,&res.content_size_bytes);
+  std::copy(ptr+8,ptr+12,&res.children_bytes);
+  res.chunk_content.ptr = ptr+12;
+  res.chunk_content.numBytes = res.content_size_bytes;
+  res.children_chunks.ptr = ptr+12+res.content_size_bytes;
+  res.children_chunks.numBytes = res.children_bytes;
+
+  acc.ptr += 12 + res.content_size_bytes + res.children_bytes;
+  return res;
+}
+
+
+struct VoxMainPair
+{
+  VoxChunk size;
+  VoxChunk xyzi;
+};
+
+struct VoxMain {
+  VoxChunk pack; // optional
+  std::vector<VoxMainPair> models;
+  VoxChunk rgba; // optional
+};
+int pack_to_numModels(const VoxChunk &pack)
+{
+  assert(pack.chunk_id[0]=='P');
+  assert(pack.chunk_id[1]=='A');
+  assert(pack.chunk_id[2]=='C');
+  assert(pack.chunk_id[3]=='K');
+  unsigned char *ptr = pack.chunk_content.ptr;
+  int *ptr2 = (int*)ptr;
+  return *ptr2;
+}
+struct VoxSize {
+  int sx, sy, sz;
+};
+
+VoxSize size_to_size(const VoxChunk &size)
+{
+  assert(size.chunk_id[0]=='S');
+  assert(size.chunk_id[1]=='I');
+  assert(size.chunk_id[2]=='Z');
+  assert(size.chunk_id[3]=='E');
+  unsigned char *ptr = size.chunk_content.ptr;  
+  int *ptr2 = (int*)ptr;
+  VoxSize res;
+  res.sx = ptr2[0];
+  res.sy = ptr2[1];
+  res.sz = ptr2[2];
+  return res;
+}
+struct VoxXYZI
+{
+  int numVoxels;
+  int *ptr; // [int(x,y,z,colorIndex)]
+};
+struct XYZI
+{
+  unsigned char x;
+  unsigned char y;
+  unsigned char z;
+  unsigned char colorIndex;
+};
+XYZI ptr_to_xyzi(int *ptr)
+{
+  unsigned char *ptr2 = (unsigned char*)ptr;
+  XYZI res;
+  res.x = ptr2[0];
+  res.y = ptr2[1];
+  res.z = ptr2[2];
+  res.colorIndex = ptr2[3];
+  return res;
+}
+XYZI Vox_to_xyzi(const VoxXYZI &vox, int i)
+{
+  if (i<0 || i>=vox.numVoxels) { std::cout << "ERROR at index / Vox_to_xyzi: i=" << i << std::endl; i=0; }
+  return ptr_to_xyzi(vox.ptr + i);
+}
+VoxXYZI xyzi_to_xyzi(const VoxChunk &xyzi)
+{
+  assert(xyzi.chunk_id[0]=='X');
+  assert(xyzi.chunk_id[1]=='Y');
+  assert(xyzi.chunk_id[2]=='Z');
+  assert(xyzi.chunk_id[3]=='I');  
+  unsigned char *ptr = xyzi.chunk_content.ptr;  
+  int *ptr2 = (int*)ptr;
+  VoxXYZI res;
+  res.numVoxels = ptr2[0];
+  res.ptr = ptr2 + 1;
+  return res;
+}
+struct VoxPalette {
+  unsigned int palette[256];
+};
+unsigned int default_palette[256] = {
+   0x00000000, 0xffffffff, 0xffccffff, 0xff99ffff, 0xff66ffff, 0xff33ffff, 0xff00ffff, 0xffffccff, 
+   0xffccccff, 0xff99ccff, 0xff66ccff, 0xff33ccff, 0xff00ccff, 0xffff99ff, 0xffcc99ff, 0xff9999ff,
+   0xff6699ff, 0xff3399ff, 0xff0099ff, 0xffff66ff, 0xffcc66ff, 0xff9966ff, 0xff6666ff, 0xff3366ff, 
+   0xff0066ff, 0xffff33ff, 0xffcc33ff, 0xff9933ff, 0xff6633ff, 0xff3333ff, 0xff0033ff, 0xffff00ff,
+   0xffcc00ff, 0xff9900ff, 0xff6600ff, 0xff3300ff, 0xff0000ff, 0xffffffcc, 0xffccffcc, 0xff99ffcc, 
+   0xff66ffcc, 0xff33ffcc, 0xff00ffcc, 0xffffcccc, 0xffcccccc, 0xff99cccc, 0xff66cccc, 0xff33cccc,
+   0xff00cccc, 0xffff99cc, 0xffcc99cc, 0xff9999cc, 0xff6699cc, 0xff3399cc, 0xff0099cc, 0xffff66cc, 
+   0xffcc66cc, 0xff9966cc, 0xff6666cc, 0xff3366cc, 0xff0066cc, 0xffff33cc, 0xffcc33cc, 0xff9933cc,
+   0xff6633cc, 0xff3333cc, 0xff0033cc, 0xffff00cc, 0xffcc00cc, 0xff9900cc, 0xff6600cc, 0xff3300cc,
+   0xff0000cc, 0xffffff99, 0xffccff99, 0xff99ff99, 0xff66ff99, 0xff33ff99, 0xff00ff99, 0xffffcc99,
+   0xffcccc99, 0xff99cc99, 0xff66cc99, 0xff33cc99, 0xff00cc99, 0xffff9999, 0xffcc9999, 0xff999999, 
+   0xff669999, 0xff339999, 0xff009999, 0xffff6699, 0xffcc6699, 0xff996699, 0xff666699, 0xff336699,
+   0xff006699, 0xffff3399, 0xffcc3399, 0xff993399, 0xff663399, 0xff333399, 0xff003399, 0xffff0099, 
+   0xffcc0099, 0xff990099, 0xff660099, 0xff330099, 0xff000099, 0xffffff66, 0xffccff66, 0xff99ff66,
+   0xff66ff66, 0xff33ff66, 0xff00ff66, 0xffffcc66, 0xffcccc66, 0xff99cc66, 0xff66cc66, 0xff33cc66, 
+   0xff00cc66, 0xffff9966, 0xffcc9966, 0xff999966, 0xff669966, 0xff339966, 0xff009966, 0xffff6666,
+   0xffcc6666, 0xff996666, 0xff666666, 0xff336666, 0xff006666, 0xffff3366, 0xffcc3366, 0xff993366, 
+   0xff663366, 0xff333366, 0xff003366, 0xffff0066, 0xffcc0066, 0xff990066, 0xff660066, 0xff330066,
+   0xff000066, 0xffffff33, 0xffccff33, 0xff99ff33, 0xff66ff33, 0xff33ff33, 0xff00ff33, 0xffffcc33, 
+   0xffcccc33, 0xff99cc33, 0xff66cc33, 0xff33cc33, 0xff00cc33, 0xffff9933, 0xffcc9933, 0xff999933,
+   0xff669933, 0xff339933, 0xff009933, 0xffff6633, 0xffcc6633, 0xff996633, 0xff666633, 0xff336633, 
+   0xff006633, 0xffff3333, 0xffcc3333, 0xff993333, 0xff663333, 0xff333333, 0xff003333, 0xffff0033,
+   0xffcc0033, 0xff990033, 0xff660033, 0xff330033, 0xff000033, 0xffffff00, 0xffccff00, 0xff99ff00, 
+   0xff66ff00, 0xff33ff00, 0xff00ff00, 0xffffcc00, 0xffcccc00, 0xff99cc00, 0xff66cc00, 0xff33cc00,
+   0xff00cc00, 0xffff9900, 0xffcc9900, 0xff999900, 0xff669900, 0xff339900, 0xff009900, 0xffff6600, 
+   0xffcc6600, 0xff996600, 0xff666600, 0xff336600, 0xff006600, 0xffff3300, 0xffcc3300, 0xff993300,
+   0xff663300, 0xff333300, 0xff003300, 0xffff0000, 0xffcc0000, 0xff990000, 0xff660000, 0xff330000, 
+   0xff0000ee, 0xff0000dd, 0xff0000bb, 0xff0000aa, 0xff000088, 0xff000077, 0xff000055, 0xff000044,
+   0xff000022, 0xff000011, 0xff00ee00, 0xff00dd00, 0xff00bb00, 0xff00aa00, 0xff008800, 0xff007700, 
+   0xff005500, 0xff004400, 0xff002200, 0xff001100, 0xffee0000, 0xffdd0000, 0xffbb0000, 0xffaa0000,
+   0xff880000, 0xff770000, 0xff550000, 0xff440000, 0xff220000, 0xff110000, 0xffeeeeee, 0xffdddddd, 
+   0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
+};
+
+VoxPalette default_vox_palette()
+{
+  VoxPalette res;
+  std::copy(default_palette,default_palette+256,res.palette);
+  return res;
+}
+VoxPalette palette_from_chunk(const VoxChunk &palette)
+{
+  VoxPalette res;
+  unsigned char *ptr = palette.chunk_content.ptr;
+  int *ptr2 = (int*)ptr;
+  res.palette[0]=0x00000000;
+  for(int i=0;i<=254;i++)
+    {
+      res.palette[i+1] = ptr2[i];
+    }
+  return res;
+}
+
+
+
+
+class VoxMainLoopItem : public MainLoopItem
+{
+public:
+  VoxMainLoopItem(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float sx, float sy, float sz) : env(env), ev(ev), url(url), homepage(homepage), sx(sx), sy(sy), sz(sz) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare()
+  {
+    if (!data) {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
+      if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
+      data = new std::vector<unsigned char>(ptr->begin(),ptr->end());
+
+      error = false;
+      int offset = 8;
+      VoxAcc main_chunk;
+      main_chunk.ptr = &data->operator[](0) + offset;
+      main_chunk.numBytes = data->size()-offset;
+      
+      VoxChunk main_ch = read_chunk(main_chunk);
+      VoxAcc &main_children = main_ch.children_chunks;
+      bool has_pack = test_chunk(main_children, "PACK");
+      VoxChunk pack;
+      if (has_pack)
+	{
+	  pack = read_chunk(main_children);
+	  numModels = pack_to_numModels(pack);
+	} else
+	{
+	  numModels = 1;
+	}
+      for(int i=0;i<numModels;i++)
+	{
+	  VoxChunk size,xyzi;
+	  bool has_size = test_chunk(main_children,"SIZE");
+	  if (!has_size) { error=true; break; }
+	  size = read_chunk(main_children);
+	  bool has_xyzi = test_chunk(main_children,"XYZI");
+	  if (!has_xyzi) { error=true; break; }
+	  xyzi = read_chunk(main_children);
+	  sizes.push_back(size);
+	  xyzis.push_back(xyzi);
+	}
+      if (!error)
+	{
+	  bool has_rgba = test_chunk(main_children,"RGBA");
+	  if (has_rgba)
+	    {
+	      VoxChunk rgba0 = read_chunk(main_children);
+	      rgba = palette_from_chunk(rgba0);
+	    } else
+	    {
+	      rgba = default_vox_palette();
+	    }
+	}      
+    }
+  }
+  virtual void Prepare()
+  {
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
+  VoxSize get_size(bool &res_error, int model)
+  {
+    res_error = error;
+    if (!error && (model>=0 && model<sizes.size()) ) {
+      VoxSize sz = size_to_size(sizes[model]);
+      return sz;
+    }
+    res_error = true;
+    VoxSize sz;
+    sz.sx = 1;
+    sz.sy = 1;
+    sz.sz = 1;
+    return sz;
+
+  }
+  
+  VoxPalette get_palette(bool &res_error)
+  {
+    res_error = error;
+    if (!error) {
+      VoxPalette p = rgba;
+      return p;
+    }
+    VoxPalette pp;
+    return pp;
+  }
+  int get_num_vox(bool &res_error, int model)
+  {
+    res_error = error;
+    if (!error && (model>=0 && model<xyzis.size()) ) {
+      VoxXYZI sz = xyzi_to_xyzi(xyzis[model]);
+      return sz.numVoxels;
+    }
+    return 0;
+  }
+  XYZI get_voxel(bool &res_error, int model, int vox)
+  {
+    res_error = error;
+    if (!error && (model>=0 && model<xyzis.size())) {
+      VoxXYZI sz = xyzi_to_xyzi(xyzis[model]);
+      XYZI xyzi = Vox_to_xyzi(sz, vox);
+      return xyzi;
+    } 
+    XYZI err;
+    err.x = 0;
+    err.y = 0;
+    err.z = 0;
+    err.colorIndex = 0;
+    res_error = true;
+    return err;
+  }
+
+  GameApi::P get_voxel_model(int model)
+  {
+    bool error = false;
+    VoxPalette *pal = new VoxPalette(get_palette(error));
+    int num = get_num_vox(error, model);
+    if (!error) {
+      std::vector<GameApi::P> vec;
+      
+      VoxSize siz = get_size(error, model);
+      if (!error) {
+	float start_x = siz.sx*sx/2.0;
+	float start_y = siz.sy*sy/2.0;
+	float start_z = siz.sz*sz/2.0;
+	
+	for(int i=0;i<num;i++)
+	  {
+	    XYZI p = get_voxel(error, model,i);
+	    if (error) { break; }
+	    float p_x = float(p.x)*sx - start_x;
+	    float p_y = float(p.y)*sy - start_y;
+	    float p_z = float(p.z)*sz - start_z;
+	  
+	    GameApi::P cube = ev.polygon_api.cube(p_x,p_x+sx,p_y,p_y+sy,p_z,p_z+sz);
+	    GameApi::P c_cube = ev.polygon_api.color(cube, pal->palette[p.colorIndex]);
+	    vec.push_back(c_cube);
+	  }
+	if (!error) {
+	  delete pal;
+	  GameApi::P p = ev.polygon_api.or_array3(vec);
+	  GameApi::P p2 = ev.polygon_api.rotatex(p,-3.14159/2.0);
+	  return p2;
+	}
+      }
+    }
+    return ev.polygon_api.p_empty();
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  std::string url;
+  std::string homepage;
+  std::vector<unsigned char> *data = 0;
+  int numModels=0;
+  std::vector<VoxChunk> sizes;
+  std::vector<VoxChunk> xyzis;
+  bool error = false;
+  VoxPalette rgba;
+  float sx,sy,sz;
+};
+
+
+
+
+class VoxFaceCollection : public FaceCollection
+{
+public:
+  VoxFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz),model(model) { }
+  virtual std::string name() const { return "VoxFaceCollection"; }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    ml.Collect(vis);
+  }
+  virtual void HeavyPrepare()
+  {
+    faces = ml.get_voxel_model(model);
+  }
+  virtual void Prepare() { ml.Prepare(); HeavyPrepare();  }
+
+  virtual int NumFaces() const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->NumFaces();
+      }
+    return 0;
+  }
+  virtual int NumPoints(int face) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->NumPoints(face);
+      }
+    return 0;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->FacePoint(face,point);
+      }
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->PointNormal(face,point);
+      }
+    return Vector(0.0,0.0,0.0);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->Color(face,point);
+      }
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->TexCoord(face,point);
+      }
+    Point2d p;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->TexCoord3(face,point);
+      }
+    return 0.0f;
+  }
+
+  virtual VEC4 Joints(int face, int point) const {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->Joints(face,point);
+      }
+    VEC4 v;
+    return v;
+
+  }
+  virtual VEC4 Weights(int face, int point) const {
+    if (faces.id != -1)
+      {
+	FaceCollection *coll = find_facecoll(env,faces);
+	return coll->Weights(face,point);
+      }
+    VEC4 v;
+    return v;
+  }
+private:
+  GameApi::Env &env;
+  std::string url;
+  std::string homepage;
+  VoxMainLoopItem ml;
+  GameApi::P faces = { -1 };
+  int model;
+};
+
+
+GameApi::P GameApi::VoxelApi::vox_voxel(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+{
+  return add_polygon2(e, new VoxFaceCollection(e,ev, url,gameapi_homepageurl,model,sx,sy,sz),1);
+}
+
+
 GameApi::ML GameApi::MovementNode::all_cursor_keys(EveryApi &ev, ML ml, float speed, float duration)
 {
   ML ml1 = cursor_keys(ev,ml,119,97,115,100, speed, duration);
