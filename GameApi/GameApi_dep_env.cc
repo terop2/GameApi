@@ -633,7 +633,6 @@ public:
   virtual void set_task_as_done(task_data dt)
   {
     queue_mutex_start();
-    queue_tasks_done.push_back(dt);
     int s = tasks_in_execute.size();
     for(int i=0;i<s;i++)
       {
@@ -641,15 +640,18 @@ public:
 	if (d.num==dt.num)
 	  {
 	    tasks_in_execute.erase(tasks_in_execute.begin()+i);
+	    i--;
+	    s--;
 	  }
       }
+    queue_tasks_done.push_back(dt);
     queue_mutex_end();
-    if (in_join)
-      {
+    //if (in_join)
+    //  {
 	pthread_mutex_lock(mutex2);
-	pthread_cond_signal(cond2);
+	pthread_cond_broadcast(cond2);
 	pthread_mutex_unlock(mutex2);
-      }
+	// }
   }
   virtual void wait_for_push_or_shutdown()
   {

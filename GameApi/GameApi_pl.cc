@@ -27336,12 +27336,18 @@ public:
     vis.register_obj(this);
   }
   virtual void HeavyPrepare() {
-    tasks_add(111,&writer,(void*)this);
-    tasks_join(111);
-    OpenglLowApi *ogl = g_low->ogl;
-    ogl->glGenTextures(1,&tex);
+    preparing_async = true;
+      tasks_add(111,&writer,(void*)this);
+      tasks_join(111);
+      preparing_async = false;
+      OpenglLowApi *ogl = g_low->ogl;
+      ogl->glGenTextures(1,&tex);
   }
-  virtual void Prepare() { HeavyPrepare(); }
+  virtual void Prepare() {
+    if (!preparing_async) {
+      HeavyPrepare();
+    }
+  }
   virtual void handle_event(MainLoopEvent &e) { }
   void Prepare2()
   {
@@ -27492,6 +27498,7 @@ private:
   BufferRef ref;
   bool firsttime = true;
   std::string id;
+  bool preparing_async = false;
 };
 void *writer(void* ptr)
 {
