@@ -692,9 +692,9 @@ public:
     int count=0;
     int s = queue.size();
     for(int i=0;i<s;i++)
-      {
-	if (queue[i].id == id) count++;
-      }
+    {
+    if (queue[i].id == id) count++;
+    }
     int s2=tasks_in_execute.size();
     for(int i=0;i<s2;i++)
       {
