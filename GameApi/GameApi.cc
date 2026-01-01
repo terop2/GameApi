@@ -20423,16 +20423,18 @@ public:
   }
   virtual int Map(int x, int y, int z) const
   {
+	  int res = vox[x][y][z];
+	  if (res==0) res=-1;
+	  return res;
+#if 0
     if (x>=0 && x<vox.size())
       if (y>=0 && y<vox[x].size())
 	if (z>=0 && z<vox[x][y].size()) {
 	  //std::cout << x << " " << y << " " << z << " " << vox[x][y][z] << std::endl;
-	  int res = vox[x][y][z];
-	  if (res==0) res=-1;
-	  return res;
 	}
+#ndif
     //std::cout << "zero " << x << " " << y << " " << z << std::endl;
-    return 0;
+    //return 0;
   }
   virtual unsigned int Color(int x, int y, int z) const { return 0xffffffff; }
   virtual Vector Normal(int x, int y, int z) const { Vector v{0.0,0.0,-400.0}; return v; }
