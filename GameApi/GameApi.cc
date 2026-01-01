@@ -7092,6 +7092,7 @@ public:
   {
     id->render(e);
     int ss = s->texture_id;
+    std::cout << "execute texture_id=" << id->texture() << std::endl;
     s->texture_id = SPECIAL_TEX_ID+ id->texture();
     next->execute(e);
     OpenglLowApi *ogl = g_low->ogl;
@@ -20160,21 +20161,34 @@ unsigned int default_palette[256] = {
    0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
 };
 
+unsigned int convert_palette(unsigned int c)
+{
+  unsigned int a = c & 0xff000000;
+  unsigned int b = c & 0x00ff0000;
+  unsigned int g = c & 0x0000ff00;
+  unsigned int r = c & 0x000000ff;
+  b >>= 16;
+  g >>= 8;
+
+  r <<= 16;
+  g <<= 8;
+  return a+r+g+b;
+}
 VoxPalette default_vox_palette()
 {
   VoxPalette res;
-  std::copy(default_palette,default_palette+256,res.palette);
+  std::transform(default_palette,default_palette+256,res.palette, [](auto x) { return convert_palette(x); });
   return res;
 }
 VoxPalette palette_from_chunk(const VoxChunk &palette)
 {
   VoxPalette res;
   unsigned char *ptr = palette.chunk_content.ptr;
-  int *ptr2 = (int*)ptr;
+  unsigned int *ptr2 = (unsigned int*)ptr;
   res.palette[0]=0x00000000;
   for(int i=0;i<=254;i++)
     {
-      res.palette[i+1] = ptr2[i];
+      res.palette[i+1] = convert_palette(ptr2[i]);
     }
   return res;
 }
@@ -35699,7 +35713,7 @@ bool set_string_firsttime = true;
 
 KP extern "C" void set_string(int num, const char *value_)
 {
-
+  std::cout << "SETSTRING:" << num << std::endl;
 #ifdef EMSCRIPTEN
 #if 0
   if (set_string_firsttime)
@@ -35793,6 +35807,7 @@ emscripten::val v = emscripten::val::u8string(value_);
     std::copy(value,value+g_set_string_int,data);
     data[g_set_string_int]=0;
     //std::cout << "Appending:" << g_set_string_url << "::" << g_set_string_int << std::endl;
+    std::cout << "APPENDING:" << g_set_string_url << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+g_set_string_int+1);
@@ -35837,7 +35852,7 @@ emscripten::val v = emscripten::val::u8string(value_);
       std::copy(g_buffers[i],g_buffers[i]+g_buffer_sizes[i],data+offset);
       offset+=g_buffer_sizes[i];
     }
-    //std::cout << "Appending:" << g_set_string_url << "::" << size << std::endl;
+    std::cout << "Appending:" << g_set_string_url << "::" << size << std::endl;
     g_urls.push_back(strdup(g_set_string_url.c_str()));
     g_content.push_back(data);
     g_content_end.push_back(data+size);

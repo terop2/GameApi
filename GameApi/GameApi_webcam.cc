@@ -17,8 +17,8 @@ public: // THIS IS STRANGE CLASS AS IT DELETES ITS seq PARAMETER.
   bool is_fbo() const { return false; }
   int texture() const
   {
-    id = ev.texture_api.bufferref_to_txid(id, seq.Buffer());
-    return id.id;
+      id = ev.texture_api.bufferref_to_txid(id, seq.Buffer());
+      return id.id;
   }
 private:
   GameApi::EveryApi &ev;
@@ -905,23 +905,23 @@ private:
 #include <emscripten/html5.h>
 #include <stdio.h>
 
-EM_JS(void, webcam_cleanup, (void), {
-    var video = document.getElementById('webcam');
+EM_JS(void, webcam_cleanup, (int num), {
+    var video = document.getElementById('webcam' + num.toString());
     if (video !== null) {
-    video.setAttribute('id','oldwebcam');
+      video.setAttribute('id','oldwebcam'+num.toString());
 		      
     video.remove();
     }
-    var video2 = document.getElementById('webcamCanvas');
+    var video2 = document.getElementById('webcamCanvas'+num.toString());
     if (video2 !== null) {
-    video2.setAttribute('id','oldwebcamCanvas');
+      video2.setAttribute('id','oldwebcamCanvas'+num.toString());
     video2.remove();
     }
   });
 
-EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
-  const video = document.createElement('video');
-  video.setAttribute('id', 'webcam');
+EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy, int num), {
+    const video = document.createElement('video');
+    video.setAttribute('id', 'webcam'+num.toString());
   if (is_videofile)
     video.loop = true;
   video.autoplay = true;
@@ -942,7 +942,7 @@ EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   document.body.appendChild(video);
 
   const canvas = document.createElement('canvas');
-  canvas.setAttribute('id', 'webcamCanvas');
+  canvas.setAttribute('id', 'webcamCanvas'+num.toString());
   canvas.setAttribute('willReadFrequently', 'true');
   canvas.width = sx;
   canvas.height = sy;
@@ -960,8 +960,74 @@ EM_JS(void, init_webcam, (const char *url, bool is_videofile, int sx, int sy), {
   }
 });
 
-EM_JS(void, grab_frame_to_memory, (long dstPtr, int width, int height), {
-  const video = document.getElementById('webcam');
+
+EM_JS(void, init_webcam_from_content, (const unsigned char *content, int size, bool is_videofile, int sx, int sy, int num), {
+    const bytes = new Uint8Array(Module.HEAPU8.buffer,content,size);
+    console.log(
+  String.fromCharCode(...bytes.slice(0, 16))
+);
+    
+    const copy = new Uint8Array(size);
+    copy.set(bytes);
+    //const blob = new Blob([copy], { type: "video/mp4" });
+    //const url = URL.createObjectURL(blob);
+    const video = document.createElement('video');
+    video.setAttribute('id', 'webcam'+num.toString());
+  if (is_videofile)
+    video.loop = true;
+  video.autoplay = true;
+  video.playsInline = true;
+  if (is_videofile)
+    video.crossOrigin = 'anonymous';
+
+  const mediaSource = new MediaSource();
+  
+  if (is_videofile)
+    video.src=URL.createObjectURL(mediaSource);
+  else
+    video.src='';
+  mediaSource.addEventListener("sourceopen", () => {
+      const sb = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+      sb.addEventListener("updateend", () => {
+	  if (!sb.updating) {
+	  mediaSource.endOfStream();
+	  video.play();
+	  }
+	});
+      sb.appendBuffer(copy);
+    });
+					      
+  video.style.display = 'none';
+  video.width = sx;
+  video.height = sy;
+    video.muted = true;
+  video.onloadedmetadata = () => {
+    video.play().catch(err => console.error("Autoplay failed:", err));
+  };
+  document.body.appendChild(video);
+
+  const canvas = document.createElement('canvas');
+  canvas.setAttribute('id', 'webcamCanvas'+num.toString());
+  canvas.setAttribute('willReadFrequently', 'true');
+  canvas.width = sx;
+  canvas.height = sy;
+  canvas.style.display = 'none';
+  document.body.appendChild(canvas);
+
+  if (!is_videofile) {
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then((stream) => {
+      video.srcObject = stream;
+    })
+    .catch((err) => {
+      console.error('Webcam error:', err);
+    });
+  }
+});
+
+
+EM_JS(void, grab_frame_to_memory, (long dstPtr, int width, int height, int num), {
+    const video = document.getElementById('webcam'+num.toString());
   const heap = HEAPU8;
   if (!([undefined,null].includes(heap))) {
   if ([undefined,null].includes(video) || video.readyState < 2) {
@@ -972,7 +1038,7 @@ EM_JS(void, grab_frame_to_memory, (long dstPtr, int width, int height), {
 
     return;
   }
-  const canvas = document.getElementById('webcamCanvas');
+  const canvas = document.getElementById('webcamCanvas'+num.toString());
   if (!([undefined,null].includes(canvas))) { 
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, width, height);
@@ -993,6 +1059,10 @@ extern void (*g_stop_cb)(void*);
 extern void *g_stop_cb_param;
 extern bool g_stop_cb_enabled;
 
+extern std::vector<const char*> g_urls;
+extern std::vector<const unsigned char*> g_content;
+extern std::vector<const unsigned char*> g_content_end;
+std::string remove_load(std::string s);
 
 class EmscriptenCapture : public BufferRefReq
 {
@@ -1005,7 +1075,7 @@ public:
     g_stop_cb_param = (void*)this;
     g_stop_cb_enabled = true;
   }
-  EmscriptenCapture(int sx, int sy, std::string url) : url(url), num(0), is_video_file(true),sx(sx),sy(sy) { init_done = false; ref=BufferRef::NewBuffer(sx,sy);
+  EmscriptenCapture(int sx, int sy, std::string url, int num) : url(url), num(num), is_video_file(true),sx(sx),sy(sy) { init_done = false; ref=BufferRef::NewBuffer(sx,sy);
 
     g_stop_cb = &emscripten_capture_cb;
     g_stop_cb_param = (void*)this;
@@ -1013,17 +1083,36 @@ public:
 
     
   }
-  ~EmscriptenCapture() { g_stop_cb_enabled = false; if (init_done) webcam_cleanup(); }
-  void cleanup() { g_stop_cb_enabled = false; if (init_done) webcam_cleanup(); }
+  ~EmscriptenCapture() { g_stop_cb_enabled = false; if (init_done) webcam_cleanup(lastnum); }
+  void cleanup() { g_stop_cb_enabled = false; if (init_done) webcam_cleanup(lastnum); }
   void initCapture(int num) const
   {
-    init_webcam(is_video_file?url.c_str():"",is_video_file,sx,sy);
+    bool done = false;
+    int u = g_urls.size();
+    const unsigned char *content = 0;
+    const unsigned char *content_end = 0;
+    for(int i=0;i<u;i++)
+      {
+	if (remove_load(url)==g_urls[i])
+	  {
+	    content = g_content[i];
+	    content_end = g_content_end[i];
+
+	    done = true;
+	  }
+      }
+    if (done)
+      init_webcam_from_content(content,content_end-content,is_video_file,sx,sy,num);
+    
+    if (!done)
+      init_webcam(is_video_file?url.c_str():"",is_video_file,sx,sy,num);
+    lastnum = num;
   }
   void doCapture(int num) const
   {
     int sx = ref.width;
     int sy = ref.height;
-    grab_frame_to_memory((long)ref.buffer,sx,sy);
+    grab_frame_to_memory((long)ref.buffer,sx,sy,num);
     //std::copy(framebuffer,framebuffer+sx*sy*4,ref.buffer);
     for(int y=0;y<sy/2;y++)
       for(int x=0;x<sx;x++)
@@ -1036,6 +1125,7 @@ public:
     //	  std::swap(*(ref.buffer+x+y*ref.ydelta),*(ref.buffer+(ref.width-x-1)+y*ref.ydelta));
     //	}
 
+    lastnum = num;
   }
   void Gen() const { }
   BufferRef Buffer() const {
@@ -1055,6 +1145,7 @@ private:
   mutable int num;
   mutable bool init_done;
   mutable bool is_video_file;
+  mutable int lastnum;
 };
 void emscripten_capture_cb(void* p)
 {
@@ -1069,9 +1160,9 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_emscripten(EveryApi &ev, int sx, 
   WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
   return add_txid(e,id);
 }
-GameApi::TXID GameApi::TextureApi::videofile_txid_emscripten(EveryApi &ev, int sx, int sy, std::string url)
+GameApi::TXID GameApi::TextureApi::videofile_txid_emscripten(EveryApi &ev, int sx, int sy, std::string url, int num)
 {
-  EmscriptenCapture *buf = new EmscriptenCapture(sx,sy,url);
+  EmscriptenCapture *buf = new EmscriptenCapture(sx,sy,url,num);
   WebCamBufferRefTexID *id = new WebCamBufferRefTexID(ev, *buf);
   return add_txid(e,id);
 }
@@ -1104,11 +1195,13 @@ GameApi::TXID GameApi::TextureApi::webcam_txid_generic(EveryApi &ev, int sx, int
 }
 GameApi::TXID GameApi::TextureApi::videofile_txid_generic(EveryApi &ev, int sx, int sy, std::string url)
 {
+  static int num = 0;
+  num++;
 #ifdef LINUX
   return ev.bitmap_api.video_source(url,sx,sy);
 #endif
 #ifdef EMSCRIPTEN
-  return videofile_txid_emscripten(ev,sx,sy,url);
+  return videofile_txid_emscripten(ev,sx,sy,url,num);
 #endif
 #ifdef WINDOWS
   return videofile_txid_win32(ev,sx,sy,url);

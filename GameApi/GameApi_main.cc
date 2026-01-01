@@ -4264,10 +4264,13 @@ public:
     Timing *t = find_timing(env,link);
     t->Collect(vis);
     }
+    vis.register_obj(this);
   }
-  virtual void HeavyPrepare() {}
+  virtual void HeavyPrepare() {
+  }
   virtual void Prepare()
   {
+    HeavyPrepare();
     if (valid) {
     MainLoopItem *item = find_main_loop(env,show);
     item->Prepare();
@@ -4277,7 +4280,7 @@ public:
     }
     Timing *t = find_timing(env,link);
     t->Prepare();
-    }
+    }    
   }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
@@ -4287,6 +4290,7 @@ public:
     start_time2 = t->end_time(); //+timing->delta_time();
     end_time2 = start_time2+duration; //+timing->delta_time();
 
+    //std::cout << "TIME:" << e.time << " " << start_time2 << " " << end_time2 << std::endl;
     if (e.time>=start_time2 && e.time<=end_time2) {
       in_timerange=true;
       MainLoopItem *item = find_main_loop(env,show);
@@ -4301,7 +4305,7 @@ public:
       in_timerange=false;
       Timing *item = find_timing(env,link);
       MainLoopEnv ee = e;
-      ee.time = e.time+delta_time();
+      //ee.time = e.time+delta_time();
       item->execute(ee);
     }
     }
