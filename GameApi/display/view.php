@@ -511,7 +511,7 @@ Vue.component('appmodel_notselected', {
    },
    template: `<div class="border block blockitem height12 customfont">
    <small>Please Drag & Drop any 3D model to this page. You can also try our <a href="javascript:;" v-on:click="$emit('examples_click')">examples</a><!--or <a href="javascript:;" v-on:click="$emit('link_click')">link</a-->.</small>
-   <br><br><small>.STL, .OBJ, .GLB, .ZIP file types supported. See help for materials.</small>
+   <br><br><small>.STL, .OBJ, .GLB, .ZIP, .VOX file types supported. See help for materials.</small>
    <button type="button" onclick="clickselectfile()" style="margin-right:0; margin-left: auto; display: block; width: 80px; height: 30px">Open</button>
    <input id="selectfile" type="file" multiple v-on:change="onFileChange" style="display:none"/>
    </div>`
@@ -584,7 +584,7 @@ Vue.component('appinfo', {
      },
      template: `<div class="block blockitem customfont">
 <h3>Supported file formats</h3>
-.gltf, .glb, .stl, .obj, .mtl, .ds, dirs, .zip
+.gltf, .glb, .stl, .obj, .mtl, .ds, dirs, .zip, .vox
 <h3>Supported texture formats</h3>
 .jpg, .png</div>
      `});
@@ -729,7 +729,6 @@ filter_material : function(arr,key)
       change_model: function() {
         if (repeat_prev==0) {
         repeat_prev=1;
-        //console.log("CHANGE_MODEL");
 	  if (typeof drop2 == 'function')
             drop2(this.state);
 	    }
@@ -740,16 +739,11 @@ filter_material : function(arr,key)
          var inputtag = document.getElementById("model_url");
 	 var url = inputtag.value;
 	 this.state.url = url;
-	 //console.log(url);
 	 this.change_model();
       },
       change_model3: function(selectfile) {
-      	console.log("CHANGE_MODEL3");
-	console.log(selectfile);
       if (repeat_prev==0) {
         repeat_prev=1;
-        //console.log("CHANGE_MODEL3");
-	//console.log(selectfile);
 	if (typeof drop3 =='function')
            drop3(this.state, selectfile);
 	}
@@ -772,7 +766,6 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.material_db = str.split("\n");
    store.state.material_db.pop();
-//console.log(store.state.material_db);
    });
 });
 fetch(bor_db).then(response => {
@@ -780,7 +773,6 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.border_db = str.split("\n");
    store.state.border_db.pop();
-   //console.log(store.state.border_db);
    });
 });
 fetch(bck_db).then(response => {
@@ -789,7 +781,6 @@ response.body.getReader().read().then(value=>{
    store.state.background_db = str.split("\n");
    store.state.background_db.pop();
   
-   //console.log(store.state.background_db);
    });
 });
 fetch(brg_db).then(response => {
@@ -798,7 +789,6 @@ response.body.getReader().read().then(value=>{
    store.state.brightness_db = str.split("\n");
    store.state.brightness_db.pop();
   
-   //console.log(store.state.background_db);
    });
 });
 fetch(mdl_db).then(response => {
@@ -806,7 +796,6 @@ response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.model_db = str.split("\n");
    store.state.model_db.pop();
-   //console.log(store.state.model_db);
    });
 });
 
@@ -883,16 +872,9 @@ function enable_spinner(a)
   //var el = document.getElementById("canvas2");
   var el2 = document.getElementById("canvas");
   if (a) {
-    //console.log("SPINNER ENABLED");
     el2.style.backgroundImage = "url('load_spinner2.gif')";
     el2.style.backgroundSize = "100% 100%";
 } else {
-    //console.log("SPINNER DISABLED");
-    //el.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
-   // el.style.backgroundImage = "none";
-   // el.style.backgroundColor = "#000000";
-   // el.style.backgroundSize = "auto auto";
-    //el2.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
     el2.style.backgroundImage = "none";
     el2.style.backgroundColor = "#000000";
     el2.style.backgroundSize = "auto auto";
@@ -904,9 +886,9 @@ function find_main_item(arr)
 {
    var s = arr.length;
    for(var i=0;i<s;i++) {
-      //console.log(arr[i]);
       if (arr[i].substr(-4)==".zip") return i;
       if (arr[i].substr(-4)==".glb") return i;
+      if (arr[i].substr(-4)==".vox") return i;
       if (arr[i].substr(-4)==".stl") return i;
       if (arr[i].substr(-5)==".gltf") return i;
       if (arr[i].substr(-3)==".ds") return i;
@@ -915,7 +897,6 @@ function find_main_item(arr)
    }
    console.log("ERROR: main item not found");
    set_label("ERROR: main item not found");
-   //console.log("ERROR: main item not found");
    return -1;
 }
 function default_script()
@@ -953,7 +934,6 @@ function find_mtl_name(filenames)
    var s = filenames.length;
    for(var i=0;i<s;i++) {
       var filename = filenames[i];
-      //console.log(filename);
       if (filename.substr(-4)==".mtl") return filenames[i];
    }
    return "";
@@ -1082,8 +1062,12 @@ function get_border(i,m,filename,border_avoid)
 
   res+= "P I205=ev.polygon_api.recalculate_normals(" + variable + ");\nP I206=ev.polygon_api.smooth_normals2(I205);\n"
   var five = "";
-  if (/*anim_value &&*/ filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
-  res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
+  if (/*anim_value &&*/ filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
+  if (filename.substr(-4)!=".vox") {
+    res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
+    } else {
+    res+="MT I504=ev.materials_api.mt_alt(ev,std::vector&lt;MT&gt;{I" + five + "4},0);\n";
+    }
   //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,3.5,1.0,-400.0,400.0,400.0);\n";
   var gltf = ",false";
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf=",true"; }
@@ -1171,8 +1155,6 @@ function find_line_from_material_db(index)
      var elem2 = store.state.material_db[i];
      var cnt = parse_material_count(elem2);
      if (cnt==index) {
-        //console.log(cnt);
-	//console.log(index);
      	return store.state.material_db[i];
 	}
   }
@@ -1229,14 +1211,10 @@ function hex_color_to_number(text)
 	    if (digit2=='d'||digit2=='D') digit=13;
 	    if (digit2=='e'||digit2=='E') digit=14;
 	    if (digit2=='f'||digit2=='F') digit=15;
-	    //console.log(digit);
             hash = digit + (hash << 4);
         }
 
         var c = (hash & 0x00FFFFFF);
-        //c = c - 16777216;
-        //console.log(text);
-	//console.log(c.toString(16));
         return c;
 	} return 0;
 
@@ -1271,7 +1249,7 @@ var normals_select = normals;
 var texcoord_normals_select = texcoord_normals;
 var normals_val = get_normals_value();
 if (normals_val==-1) {
-if (filename.substr(-4)==".glb"||filename.substr(-4)==".obj"||filename.substr(-4)==".zip") { normals_val=2; } else { normals_val=0; }
+if (filename.substr(-4)==".glb"||filename.substr(-4)==".obj"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox") { normals_val=2; } else { normals_val=0; }
 }
 if (normals_val==0||normals_val==5) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
 if (normals_val==1||normals_val==6) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
@@ -1352,7 +1330,10 @@ function create_script(filename, contents, filenames)
   }
 
 
-
+  if (filename.substr(-4)==".vox") {
+     res+="P I155=ev.voxel_api.vox_voxel(ev," + filename + ",0,20,20,20);\n";
+     res+="ML I62=ev.voxel_api.vox_ml(ev," + filename + ",0,20,20,20);\n";
+  } else
   if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
   if (filename.substr(-4)==".obj") {
@@ -1365,10 +1346,8 @@ function create_script(filename, contents, filenames)
        }
      } else
   if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
-  //if (filename.substr(-4)==".ply") { res+="P I155=ev.points_api.ply_faces(" + filename + ");\n"; } else
   if (filename.substr(-4)==".zip") {
      res+="TF I186=ev.mainloop_api.gltf_load_sketchfab_zip("+filename+");\n"
-     //res+="TF I186=ev.polygon_api.decimate_tf(I154,0.3);\n"
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I186);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
@@ -1384,11 +1363,7 @@ function create_script(filename, contents, filenames)
   } else
   if (filename.substr(-4)==".glb") {
      res+="TF I186=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     //res+="TF I186=ev.polygon_api.decimate_tf(I154,0.3);\n"
-
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I186);\n";
-     //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
-     //res+="P I173=ev.polygon_api.decimate(I172,0.3);\n"
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
@@ -1402,8 +1377,6 @@ function create_script(filename, contents, filenames)
   } else
   if (filename.substr(-5)==".gltf") {
     res+="TF I186=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
-     //res+="TF I186=ev.polygon_api.decimate_tf(I154,0.3);\n"
-     //res+="P I1550=ev.polygon_api.gltf_load(ev,I154,0,0);\n";
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I186);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
@@ -1476,7 +1449,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   if (material[1]!="") {
      res+=material[1];
   } else
-  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
+  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox")) {
       res+="P I2=ev.polygon_api.recalculate_normals(I1);\n";
       }
   res+="MT I3=ev.materials_api.m_def(ev);\n";
@@ -1499,11 +1472,15 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
     if (anim_value==true) { 
       res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I186,0,30,I54,cvbnmdfghjklertyuiop,0);\n";
       }
+  } else if (filename.substr(-4)==".vox")
+  {
+  res+="MT I54=ev.materials_api.colour_material(ev,0.5);\n";
+  res+="MT I4=ev.materials_api.phong(ev,I1,30.0,-400.0,30.0,ff221100,ffff8800,ffffffff,30.0);\n";
   } else {
      res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,1.0,ff888888,ffffffff,5.0,0.5);\n";
   }
 
- if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"))||material_value!=-1) { 
+ if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox"))||material_value!=-1) { 
     res+="ML I62=ev.materials_api.bind(I2," + out + ");\n";
     }
 
@@ -1511,16 +1488,10 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
     res+="MT I772=ev.mainloop_api.mainloop_material(ev,I62);\n";
     res+="ML I63=ev.materials_api.bind(I771,I772);\n";
 
-
-  res+="ML I64=ev.mainloop_api.depthmask(I63,true);\n";
-res+="ML I6=ev.mainloop_api.depthfunc(I64,3);\n";
- 
-  //console.log(material_value);
-  //console.log(border_value);
-  //console.log(filename.substr(-4));
-  //console.log(filename.substr(-5));
+    res+="ML I64=ev.mainloop_api.depthmask(I63,true);\n";
+    res+="ML I6=ev.mainloop_api.depthfunc(I64,3);\n";
   if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
-  //   res+="ML I6=ev.mainloop_api.gltf_mesh_all(ev,I154,0.5,3.5,1.0,0,-400.0,400.0,400.0,true);\n";
+
 
   }
 
@@ -1680,12 +1651,9 @@ function extract_contents(state,file_array,filenames, filename, path)
      fileReader.onload = () => {
         let fileContents = fileReader.result;
 	var binary = '';
-	//console.log(fileContents);
 	var bytes = new Uint8Array( fileContents );
-	//console.log(bytes.length);
 
         binary = enc.decode(bytes);
-	//console.log(binary);
 	contents_array.push(binary);
 	contents_array2.push(bytes);
 	filename_array.push(fix_filename(filenames[i]));
@@ -1720,8 +1688,6 @@ function extract_contents(state,file_array,filenames, filename, path)
 	var binary = '';
 	var bytes = new Uint8Array( fileContents );
 		binary = enc.decode(bytes);
-	//console.log(bytes);
-	//console.log(binary);
 
 	contents_array.push(binary);
 	contents_array2.push(bytes);
@@ -1740,20 +1706,9 @@ var loading_data = 0;
 
 function load_finished(value)
 {
-   //console.log("LOAD FINISHED");
-
-   // clear caches
-
-
    load_files(contents_array2,filename_array);
    load_emscripten(store.state,g_filename, contents_array, filename_array);
    set_label("Load finished..");
-   //setTimeout(function() {
-   //	if (Module) {
-	//   var value = Module.ccall('get_integer', 'number', ['number'],[2]);
-	//   store.state.progress_1=(value/100).toString();
-	//}
-   //	}, 1000);
 }
 function fix_filename(filename)
 {
@@ -1770,7 +1725,6 @@ function traverseFileTree(item, path) {
    path = path || "";
    if (item.isFile) {
       item.file(function(file) {
-         //console.log("File:", path + file.name);
 	 resolve({file: file,path: path+file.name});
 	 });
     } else if (item.isDirectory) {
@@ -1809,13 +1763,8 @@ var old_main_item_dir = "";
 var old_main_item_name = "";
 var old_files = "";
 var old_filenames = "";
-	   //console.log("Aold_files=");
-	   //console.log(old_files);
-	   //console.log("Aold_filenames=");
-	   //console.log(old_filenames);
 function load_finished2(succ)
 {
-   //console.log(succ);
    load_finished(1);
 }
 function drop2(state)
@@ -1843,24 +1792,14 @@ function drop2(state)
 
 function drop3(state,selectfileelem)
 {
-   //console.log("drop3:CLEARING CACHES");
    Module.ccall('set_string', null, ['number', 'string'],[6,""]);
 
 
-set_filename_info(state,"");
-   console.log(selectfileelem);
-   //var elem2 = document.getElementById(selectfileelem);
-   //console.log(elem2);
+   set_filename_info(state,"");
    var files2 = selectfileelem.target.files;
-   console.log(files2);
 
-   //console.log(files2);
    set_model_info(state,"(loading..)");
-  set_label("Loading model..");
-
-  //var mod = document.getElementById("model-select");
-  //mod.value="-1";
-
+   set_label("Loading model..");
 
   var files = [];
   var filenames = [];
@@ -1868,16 +1807,11 @@ set_filename_info(state,"");
      const promise2 = new Promise( resolve => {
 
      	   var s = files2.length;
-	   //console.log(s);
      	   for(var i=0;i<s;i++) {
-	   	   //console.log(files2[i].name);
 	   	   filenames.push(files2[i].name);
 		   files.push(files2[i]);
 	   }
 
-           //const [files,filenames] = flatten_arrays(data);
-	   //console.log(files);
-	   //console.log(filenames);
            var main_item_num = find_main_item(filenames);
 	   var main_item = files[main_item_num];
            var main_item_name = filenames[main_item_num];
@@ -1885,32 +1819,9 @@ set_filename_info(state,"");
 	   main_item_name=do_base64(main_item_name);
 	   filenames[main_item_num]=do_base64(filenames[main_item_num]);
 
-/*
-	   var snd_item_num = -1;
-	   var snd_item_name = "";
-	   //console.log(main_item_name);
-	   if (main_item_name.substr(-4)==".zip") {
-	      console.log("ZIP UNCOMPRESS");
-	      var zipentries=get_zip_filenames(main_item);
-	      snd_item_num = find_main_item(zipentries);
-	      snd_item_name = zipentries[snd_item_num];
-	      console.log(snd_item_num);
-	      console.log(snd_item_name);
-	   }
-	   */
-
-
 	   old_files = files;
 	   old_filenames = filenames;
-	   //console.log("Bold_files=");
-	   //console.log(old_files);
-	   //console.log("Bold_filenames=");
-	   //console.log(old_filenames);
 	   old_main_item_name = main_item_name;
-	   /*
-	   old_snd_item_num = snd_item_num;
-	   old_snd_item_name = snd_item_name;
-*/
 
            const promise = extract_contents(state,files,filenames,fix_filename(main_item_name),"");
            promise.then(load_finished);
@@ -2052,6 +1963,7 @@ function load_files(data_array2, filename_array)
 
 
     var filename = filename_array[i];
+    //console.log(filename);
     var sz = data3.length;
 
     Module.ccall('set_string', null, ['number', 'string'], [1,filename], {async:false} );
