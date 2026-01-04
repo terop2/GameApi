@@ -71,7 +71,7 @@ public:
       free((void*)ptr);
 #endif
   }
-  uint32_t max_size() const { return *free_mem; }
+  uint32_t max_size() const { if (free_mem) return *free_mem; return 0x00ff0000; }
   friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
   friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
   GameApiAllocator() : free_mem(&m_free_mem), changed_mem(&m_changed_mem),used_mem(&m_used_mem) { }
@@ -385,6 +385,127 @@ public:
 typedef Bitmap<Color> ColorBitmap;
 typedef Bitmap<Point> PointBitmap;
 typedef Bitmap<Quad> QuadBitmap;
+
+  struct PosSpec
+  {
+    int x,y,z;
+  };
+  struct SizeSpec
+  {
+    int sx,sy,sz;
+    friend bool operator==(const SizeSpec &s1, const SizeSpec &s2)
+    {
+      return s1.sx==s2.sx &&
+	s1.sy==s2.sy &&
+	s1.sz==s2.sz;
+    }
+  };
+  struct ShapeSpec
+  {
+    unsigned int color;
+    float border_width;
+    unsigned int border_color;
+    friend bool operator==(const ShapeSpec &c1, const ShapeSpec &c2)
+    {
+      return
+	c1.color == c2.color &&
+	fabs(c1.border_width - c2.border_width) <0.0001 &&
+	c1.border_color == c2.border_color;
+    }
+  };
+  struct ShapeSizeSpec
+  {
+    SizeSpec size;
+    ShapeSpec shape;
+    friend bool operator==(const ShapeSizeSpec &c1, const ShapeSizeSpec &c2)
+    {
+      return c1.size.sx == c2.size.sx &&
+	c1.size.sy == c2.size.sy &&
+	c1.size.sz == c2.size.sz &&
+	c1.shape.color == c2.shape.color &&
+	fabs(c1.shape.border_width - c2.shape.border_width) <0.0001 &&
+	c1.shape.border_color == c2.shape.border_color;
+    }
+  };
+  struct OptCacheId 
+  {
+    int id;
+  };
+
+  struct ElemSpec
+  {
+    PosSpec pos;
+    //SizeSpec size;
+    //ShapeSpec shape;
+    OptCacheId id;
+    bool enabled;
+  };
+  struct CubeSpec
+  {
+    ShapeSizeSpec shapesize;
+
+    friend bool operator==(const CubeSpec &c1, const CubeSpec &c2)
+    {
+      return c1.shapesize.size.sx == c2.shapesize.size.sx &&
+	c1.shapesize.size.sy == c2.shapesize.size.sy &&
+	c1.shapesize.size.sz == c2.shapesize.size.sz &&
+	c1.shapesize.shape.color == c2.shapesize.shape.color &&
+	fabs(c1.shapesize.shape.border_width - c2.shapesize.shape.border_width) <0.0001 &&
+	c1.shapesize.shape.border_color == c2.shapesize.shape.border_color;
+    }
+  };
+
+PosSpec opt_get_pos(int x, int y, int z);
+SizeSpec opt_get_size(int sx, int sy, int sz);
+ShapeSpec opt_get_shape(unsigned int color, float border_width, unsigned int border_color);
+CubeSpec opt_get_cube(const ShapeSizeSpec &s);
+OptCacheId opt_get_id(int id);
+
+class OptVoxel : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  
+  // the grid
+  virtual SizeSpec Size() const=0;
+  
+  // the world
+  virtual int ShapeSizeSize() const=0;
+  virtual int WorldSize(int sss) const=0;
+  virtual ShapeSizeSpec WorldShapeIndex(int sss) const=0;
+  virtual ElemSpec WorldIndex(int sss, int w) const=0;
+};
+
+class OptCubes : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  // the cubes
+  virtual CubeSpec get_cube(unsigned int color,
+			    float border_width,
+			    unsigned int border_color,
+			    int sx, int sy, int sz) const=0;
+
+  virtual FaceCollection *create_cube(const CubeSpec &spec) const=0;
+};
+
+class OptCubeCache : public CollectInterface
+{
+public:
+  // cube cache
+  virtual void add_to_cache(const CubeSpec &spec, FaceCollection *coll)=0;
+
+  bool is_in_cache(const CubeSpec &spec) const { return find_from_cache(spec)!=0; }
+  virtual OptCacheId find_id_from_cache(const CubeSpec &spec) const =0;
+  virtual CubeSpec *find_spec_from_cache_id(OptCacheId id) const=0;
+  virtual FaceCollection* find_from_cache_id(OptCacheId id) const=0;
+  virtual OptCacheId resize_cache_id(const OptCacheId &o, const SizeSpec &sz)=0; // non-const
+  FaceCollection* find_from_cache(const CubeSpec &spec) const { return find_from_cache_id(find_id_from_cache(spec)); }
+};
 
 template<class C>
 class Voxel : public CollectInterface

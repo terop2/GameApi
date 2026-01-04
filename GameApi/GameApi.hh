@@ -2649,6 +2649,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P multiply_facecoll(P p, int sx, int sy, int sz);
   IMPORT P spatial_decimate(P p, float val);
   IMPORT TF decimate_tf(TF mesh, float val);
   IMPORT P decimate(P p, float val);
