@@ -28690,10 +28690,51 @@ bool CompareFaces(int i1, int i2)
 }
 #endif
 
+float count_percentage(FaceCollection *coll)
+{
+  int s = coll->NumFaces();
+  int s2 = 100;
+  Random r;
+
+  auto faceArea = [coll](int idx) {
+    int n = coll->NumPoints(idx);
+    if (n < 3) return 0.0f; // degenerate
+    
+    // handle triangles directly
+    if (n == 3) {
+      Point a = coll->FacePoint(idx,0);
+      Point b = coll->FacePoint(idx,1);
+      Point c = coll->FacePoint(idx,2);
+      return triArea(a,b,c);
+    }
+    
+    // handle quads (or n-gons, just take first 4 verts)
+    Point p1 = coll->FacePoint(idx,0);
+    Point p2 = coll->FacePoint(idx,1);
+    Point p3 = coll->FacePoint(idx,2);
+    Point p4 = coll->FacePoint(idx,3 % n);
+    return quadArea(p1,p2,p3,p4);
+  };
+  
+  int count = 0;
+  for(int i=0;i<s2;i++)
+    {
+      float val = double(r.next())/r.maximum();
+      val*=s;
+      int val2 = (int)val;
+      float areaf = faceArea(val2);
+      bool b = areaf < 0.000001f;
+      if (b) count++;
+    }
+  return 1.0f-float(count)/float(s2);
+}
+
+
 class DecimatePolygon : public FaceCollection
 {
 public:
-  DecimatePolygon(FaceCollection *coll, float val) : coll(coll),val(val) { firsttime = true; }
+  DecimatePolygon(FaceCollection *coll, float val) : coll(coll),val(val),b(false) { firsttime = true; }
+  DecimatePolygon(FaceCollection *coll) : coll(coll), b(true) { }
   std::string name() const { return "DecimatePolygon"; }
   virtual void Collect(CollectVisitor &vis)
   {
@@ -28743,6 +28784,9 @@ public:
             }
             return area1 > area2;
         };
+
+    if (b) val=count_percentage(coll);
+    
      int keep = std::max(1,(int)std::round(s*val));
     if (keep<s) {
       std::nth_element(indices.begin(),indices.begin()+keep,indices.end(),compareFaces);
@@ -28816,11 +28860,17 @@ private:
   std::vector<int> indices;
   bool firsttime;
   float val;
+  bool b;
 };
 GameApi::P GameApi::PolygonApi::decimate3(GameApi::P faces, float val)
 {
   FaceCollection *coll = find_facecoll(e,faces);
   return add_polygon2(e, new DecimatePolygon(coll,val),1);
+}
+GameApi::P GameApi::PolygonApi::decimate_zeros(GameApi::P faces)
+{
+  FaceCollection *coll = find_facecoll(e,faces);
+  return add_polygon2(e, new DecimatePolygon(coll),1);
 }
 
 struct DecimateVertex_float
@@ -28910,10 +28960,209 @@ struct StridedIterator {
 };
 
 
+float count_percentage_tf(GLTFModelInterface *next, int m, int j)
+{
+
+	  const tinygltf::Mesh &mesh = next->get_mesh(m);
+	const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	      int indices_index = vec[j].indices;
+	      //std::cout << "INDICES_INDEX:" << indices_index << std::endl;
+	      //if (indices_index<=0 || indices_index>=next->accessors_size())
+	      //	continue;
+	      const tinygltf::Accessor &acc = next->get_accessor(indices_index);
+	      const tinygltf::BufferView &bv = next->get_bufferview(acc.bufferView);
+	      const tinygltf::Buffer &buf = next->get_buffer(bv.buffer);
+	      const unsigned char *data = &buf.data[0];
+	      const unsigned char *data1 = data + bv.byteOffset + acc.byteOffset;
+	      const unsigned int *data2 = (unsigned int*)data1;
+	      int s3 = std::min(acc.count,bv.byteStride!=0?bv.byteLength/bv.byteStride:66666666); //buf.data.size()/sz;
+	      //std::cout << "s3=" << s3 << std::endl;
+	      const std::map<std::string,int> &attrs = next->get_mesh(m).primitives[j].attributes;
+	      if (attrs.find("POSITION")==attrs.end()) return 1.0f;
+	      
+	      const tinygltf::Accessor &acc2 = next->get_accessor(attrs.find("POSITION")->second);
+	      if (acc2.bufferView==-1) return 1.0f;
+	      const tinygltf::BufferView &bv2 = next->get_bufferview(acc2.bufferView);
+
+	      int s4 = std::min(acc2.count,bv2.byteStride!=0?bv2.byteLength/bv2.byteStride:66666666); //buf.data.size()/sz;
+	      if (bv2.buffer==-1) return 1.0f;
+
+	      const tinygltf::Buffer &buf2 = next->get_buffer(bv2.buffer);
+	      const unsigned char *kdata = &buf2.data[0];
+	      const unsigned char *kdata1 = kdata + bv2.byteOffset + acc2.byteOffset;
+
+	      const DecimateVertex_float *kdata2 = (const DecimateVertex_float*)kdata1;
+
+
+
+  
+  int s = s3;
+  int s2 = s3/10;
+  Random r;
+
+  auto faceArea = [kdata1,kdata2,acc2,bv2](DecimateIndex_int idx) {
+    //std::cout << "found:" << idx << std::endl;
+    
+    if (idx.i1>=acc2.count) { std::cout << "i1=" << idx.i1 << " .. fail.." << std::hex << idx.i1 << std::dec << std::endl; return 0.0f; }
+    if (idx.i2>=acc2.count) { std::cout << "i2=" << idx.i2 << " .. fail.." << std::hex << idx.i2 << std::dec << std::endl; return 0.0f; }
+    if (idx.i3>=acc2.count) { std::cout << "i3=" << idx.i3 << " .. fail.." << std::hex << idx.i3 << std::dec << std::endl; return 0.0f; }
+    
+    //std::cout << "Indices: " << idx.i1 << " " << idx.i2 << " " << idx.i3 << std::endl;
+    size_t stride = bv2.byteStride?bv2.byteStride:sizeof(DecimateVertex_float);
+    assert(acc2.componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+    assert(acc2.type==TINYGLTF_TYPE_VEC3);
+    const unsigned char *kdata00 = kdata1 + idx.i1*stride;
+    const unsigned char *kdata01 = kdata1 + idx.i2*stride;
+    const unsigned char *kdata02 = kdata1 + idx.i3*stride;
+    
+    const DecimateVertex_float *pdata0 = (const DecimateVertex_float*)kdata00;
+    const DecimateVertex_float *pdata1 = (const DecimateVertex_float*)kdata01;
+    const DecimateVertex_float *pdata2 = (const DecimateVertex_float*)kdata02;
+    Point p1 = pdata0->p1;
+    Point p2 = pdata1->p1;
+    Point p3 = pdata2->p1;
+    //std::cout << p1 << " " << p2 << " " << p3 << std::endl;
+    return triArea(p1,p2,p3);
+  };
+  
+  int count = 0;
+  for(int i=0;i<s2;i++)
+    {
+      float val = double(r.next())/r.maximum();
+      val*=s;
+      int val2 = (int)val;
+      //std::cout << "val2=" << val2 << " " << s3 << std::endl;
+      float areaf=0.0f;
+      
+      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_INT||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)) {
+	if (val2<s3) {
+	  /*
+	  int bufidx = new_buffer.size();
+	  int bufvidx = new_bufviews.size();
+	  int accidx = new_accessors.size();
+	  
+	  new_buffer.push_back(tinygltf::Buffer());
+	  new_bufviews.push_back(tinygltf::BufferView());
+	  new_accessors.push_back(tinygltf::Accessor());
+	  
+	  tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+	  tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+	  tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	  
+	  buf2a = buf;
+	  bv2a = bv;
+	  acc2a =acc;
+	  
+	  acc2a.bufferView = start_bufview + bufvidx;
+	  bv2a.buffer = start_buffer + bufidx;
+	  //vec2[j].indices = start_accessors + accidx;
+	  indices_to_index[indices_index] = new_accessors.size()-1;
+	  */
+	  const unsigned char *udata = &buf.data[0];
+	  const unsigned char *udata1 = udata + bv.byteOffset + acc.byteOffset;
+	  DecimateIndex_int *udata2 = (DecimateIndex_int*)udata1;
+	  //std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_int) << std::endl;
+	  size_t stride = bv.byteStride?bv.byteStride*3:sizeof(DecimateIndex_int);
+	  auto begin = StridedIterator<DecimateIndex_int>((uint8_t*)udata2,stride);
+	  auto end = begin + val2/3;
+		areaf = faceArea(*end);
+		
+		
+	}
+      } else
+	if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_SHORT||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)) {
+	  if (val2<s3) {
+	    /*
+	    int bufidx = new_buffer.size();
+	    int bufvidx = new_bufviews.size();
+	    int accidx = new_accessors.size();
+	    
+	    new_buffer.push_back(tinygltf::Buffer());
+	    new_bufviews.push_back(tinygltf::BufferView());
+	    new_accessors.push_back(tinygltf::Accessor());
+		
+	    tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+	    tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+	    tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	    
+	    buf2a = buf;
+	    bv2a = bv;
+	    acc2a =acc;
+	    
+	    acc2a.bufferView = start_bufview + bufvidx;
+	    bv2a.buffer = start_buffer + bufidx;
+	    //vec2[j].indices = start_accessors + accidx;
+	    indices_to_index[indices_index] = new_accessors.size()-1;
+	    */
+	    const unsigned char *udata = &buf.data[0];
+	    const unsigned char *udata1 = udata + bv.byteOffset + acc.byteOffset;
+	    DecimateIndex_short *udata2 = (DecimateIndex_short*)udata1;
+	    //std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_short) << std::endl;
+	    size_t stride = bv.byteStride?bv.byteStride*3:sizeof(DecimateIndex_short);
+	    auto begin = StridedIterator<DecimateIndex_short>((uint8_t*)udata2,stride);
+	    auto end = begin + val2/3;
+	    DecimateIndex_short i1 = *end;
+	    DecimateIndex_int i2;
+	    i2.i1 = i1.i1;
+	    i2.i2 = i1.i2;
+	    i2.i3 = i1.i3;
+	    areaf = faceArea(i2);
+	    
+	  }
+	} else
+	  if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_BYTE||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE)) {
+	    if (val2<s3) {
+	      /*
+	      int bufidx = new_buffer.size();
+	      int bufvidx = new_bufviews.size();
+	      int accidx = new_accessors.size();
+	      
+	      new_buffer.push_back(tinygltf::Buffer());
+	      new_bufviews.push_back(tinygltf::BufferView());
+	      new_accessors.push_back(tinygltf::Accessor());
+	      
+	      tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+	      tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+	      tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+	      buf2a = buf;
+	      bv2a = bv;
+	      acc2a =acc;
+		
+	      acc2a.bufferView = start_bufview + bufvidx;
+	      bv2a.buffer = start_buffer + bufidx;
+	      //indices_to_index[indices_index] = new_accessors.size()-1;
+	      */
+	      const unsigned char *udata = &buf.data[0];
+	      const unsigned char *udata1 = udata + bv.byteOffset + acc.byteOffset;
+	      DecimateIndex_byte *udata2 = (DecimateIndex_byte*)udata1;
+	      //std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_byte) << std::endl;
+	      size_t stride = bv.byteStride?bv.byteStride*3:sizeof(DecimateIndex_byte);
+	      auto begin = StridedIterator<DecimateIndex_byte>((uint8_t*)udata2,stride);
+	      auto end = begin + val2/3;
+	    DecimateIndex_byte i1 = *end;
+	    DecimateIndex_int i2;
+	    i2.i1 = i1.i1;
+	    i2.i2 = i1.i2;
+	    i2.i3 = i1.i3;
+	      areaf = faceArea(i2);
+	    }
+	  }
+      //float areaf = faceArea(val2);
+      //std::cout << "areaf=" << areaf << std::endl;
+      bool b = areaf < 0.000001f;
+      if (b) count++;
+    }
+  //std::cout << "Percentage:" << 1.0f-float(count)/float(s2);
+  return 1.0f-float(count)/float(s2);
+}
+
+
 class DecimateTF : public ForwardGLTF
 {
 public:
-  DecimateTF(GLTFModelInterface *next, float val) : ForwardGLTF(next), next(next), val(val) { firsttime = true; }
+  DecimateTF(GLTFModelInterface *next, float val) : ForwardGLTF(next), next(next), val(val),b(false) { firsttime = true; }
+  DecimateTF(GLTFModelInterface *next) : ForwardGLTF(next), next(next), b(true) { firsttime=true; }
   std::string name() const { return "DecimateTF"; }
   
   void Collect(CollectVisitor &vis)
@@ -28927,9 +29176,6 @@ public:
 	  const tinygltf::Mesh &mesh = next->get_mesh(i);
 	const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
 	      int indices_index = vec[j].indices;
-	      //std::cout << "INDICES_INDEX:" << indices_index << std::endl;
-	      //if (indices_index<=0 || indices_index>=next->accessors_size())
-	      //	continue;
 	      const tinygltf::Accessor &acc = next->get_accessor(indices_index);
 	      const tinygltf::BufferView &bv = next->get_bufferview(acc.bufferView);
 	      const tinygltf::Buffer &buf = next->get_buffer(bv.buffer);
@@ -29010,6 +29256,7 @@ public:
 		return compareFaces_int(ii1,ii2);
 		};
 
+		if (b) val = count_percentage_tf(next,i,j);
 	      
 	      int keep = std::max(1,(int)std::round(s3*val));
 	      //std::cout << "KEEP:" << keep << " s=" << s3 << std::endl;
@@ -29231,7 +29478,7 @@ public:
   }
 private:
   GLTFModelInterface *next;
-  float val;
+  mutable float val;
   bool firsttime = true;
 
   int start_meshes = -1;
@@ -29247,12 +29494,18 @@ private:
   mutable std::map<int,int> indices_to_index;
   mutable std::vector<tinygltf::Mesh> m_meshes;
   mutable std::vector<bool> m_enabled;
-  };
+  bool b;
+};
 
 GameApi::TF GameApi::PolygonApi::decimate_tf(GameApi::TF mesh, float val)
 {
   GLTFModelInterface *i = find_gltf(e,mesh);
   return add_gltf(e, new DecimateTF(i,val));
+}
+GameApi::TF GameApi::PolygonApi::decimate_tf_zero(GameApi::TF mesh)
+{
+  GLTFModelInterface *i = find_gltf(e,mesh);
+  return add_gltf(e, new DecimateTF(i));
 }
 
 class MoveFromMV : public MainLoopItem
