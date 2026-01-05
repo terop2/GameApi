@@ -1,4 +1,4 @@
-b<?php
+<?php
 
 ini_set("post_max_size", "120M");
 ini_set("upload_max_filesize", "100M");
