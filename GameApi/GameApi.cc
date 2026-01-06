@@ -20028,7 +20028,7 @@ struct VoxChunk {
   VoxAcc chunk_content;
   VoxAcc children_chunks;
 };
-bool test_chunk(const VoxAcc &acc, const char *chunk_id)
+bool test_chunk(const VoxAcc &acc, const char *chunk_id, unsigned char **found)
 {
   unsigned char *ptr = acc.ptr;
   if (ptr[0]==chunk_id[0] &&
@@ -20036,8 +20036,23 @@ bool test_chunk(const VoxAcc &acc, const char *chunk_id)
       ptr[2]==chunk_id[2] &&
       ptr[3]==chunk_id[3])
     {
+      *found=0;
       return true;
     }
+  int s = acc.numBytes;
+  for(int i=0;i<s;i++)
+    {
+      if (ptr[i]==chunk_id[0] &&
+	  ptr[i+1]==chunk_id[1] &&
+	  ptr[i+2]==chunk_id[2] &&
+	  ptr[i+3]==chunk_id[3])
+	{
+	  *found = ptr +i;
+	  //std::cout << "FOUND chunk " << ptr[i] << ptr[i+1] << ptr[i+2] << ptr[i+3] << " at " << i << std::endl;
+	  return true;
+	}      
+    }
+  
   //std::cout << "Chunk " << chunk_id << " not found. There was: " << ptr[0] << ptr[1] << ptr[2] << ptr[3] << std::endl;
   return false;
 }
@@ -20045,15 +20060,20 @@ VoxChunk read_chunk(VoxAcc &acc)
 {
   unsigned char *ptr = acc.ptr;
   VoxChunk res;
-  std::copy(ptr,ptr+4,res.chunk_id);
-  std::copy(ptr+4,ptr+8,&res.content_size_bytes);
-  std::copy(ptr+8,ptr+12,&res.children_bytes);
+  std::copy(ptr,ptr+4,(unsigned char*)res.chunk_id);
+  std::copy(ptr+4,ptr+8,(unsigned char*)&res.content_size_bytes);
+  std::copy(ptr+8,ptr+12,(unsigned char*)&res.children_bytes);
   res.chunk_content.ptr = ptr+12;
   res.chunk_content.numBytes = res.content_size_bytes;
   res.children_chunks.ptr = ptr+12+res.content_size_bytes;
   res.children_chunks.numBytes = res.children_bytes;
 
+  
   acc.ptr += 12 + res.content_size_bytes + res.children_bytes;
+  //acc.numBytes -= 12 + res.content_size_bytes + res.children_bytes;
+  //std::cout << "radd_chunk:" << res.chunk_id[0] << res.chunk_id[1] << res.chunk_id[2] << res.chunk_id[3] << " " << acc.numBytes << std::endl;
+  //std::cout << "numbers:" << res.content_size_bytes << " " << res.children_bytes << std::endl;
+
   return res;
 }
 
@@ -20175,6 +20195,64 @@ unsigned int default_palette[256] = {
    0xffbbbbbb, 0xffaaaaaa, 0xff888888, 0xff777777, 0xff555555, 0xff444444, 0xff222222, 0xff111111
 };
 
+
+unsigned int palette098[256] = {
+0x00000000,0xffffffff,0xff7f7f7f,0xffbfbfbf,0xff000000,0xff3f3f3f,0xff7f7f3f,0xff7fbf7f,
+0xff3f7fbf,0xff7f3fbf,0xffbf3fbf,0xffbf7f7f,0xffbf3f3f,0xffbf7f3f,0xffbfbf3f,0xff7fbf3f,
+0xff3fbf3f,0xff3fbf7f,0xff3fbfbf,0xff3f7f7f,0xff3f7f3f,0xff7f7f00,0xffbfbf00,0xff7fbf00,
+0xff3fbf00,0xff00bf00,0xff00bf3f,0xff00bfbf,0xff007f7f,0xff007f3f,0xff007f00,0xff00007f,
+
+0xff3f007f,0xff7f007f,0xffbf007f,0xffbf3f7f,0xff7f3f7f,0xff3f3f7f,0xff3f007f,0xff0000bf,
+0xff3f00bf,0xff7f00bf,0xffbf00bf,0xffbf3fbf,0xff7f3fbf,0xff3f3fbf,0xff3f00bf,0xff0000ff,
+0xff3f00ff,0xff7f00ff,0xffbf00ff,0xffbf3fff,0xff7f3fff,0xff3f3fff,0xff3f00ff,0xff00bfff,
+0xff3fbfff,0xff7fbfff,0xffbfbfff,0xffbf7fff,0xff7f7fff,0xff3f7fff,0xff3f3fff,0xff007fff,
+
+0xff3f7fff,0xff7f7fff,0xffbf7fff,0xffbf7fbf,0xff7f7fbf,0xff3f7fbf,0xff3f3fbf,0xff00bfbf,
+0xff3fbfbf,0xff7fbfbf,0xffbfbfbf,0xffbf7fbf,0xff7f7fbf,0xff3f7fbf,0xff3f3fbf,0xff00ffbf,
+0xff3fffbf,0xff7fffbf,0xffbfffbf,0xffbfff7f,0xff7fff7f,0xff3fff7f,0xff3f7f7f,0xff00ff7f,
+0xff3fff7f,0xff7fff7f,0xffbfff7f,0xffbfbf3f,0xff7fbf3f,0xff3fbf3f,0xff3f7f3f,0xff00bf3f,
+
+0xff3fbf3f,0xff7fbf3f,0xffbfbf3f,0xffbf7f3f,0xff7f7f3f,0xff3f7f3f,0xff3f3f3f,0xffbf3f00,
+0xff7f3f00,0xff3f3f00,0xff3f3f00,0xff7f3f00,0xffbf3f00,0xffbf7f00,0xff7f7f00,0xff3f7f00,
+0xff3f3f00,0xff7f0000,0xffbf0000,0xffbf3f00,0xff7f3f00,0xff3f3f00,0xff3f3f00,0xff7f3f00,
+0xffbf3f00,0xffbf7f00,0xff7f7f00,0xff3f7f00,0xff3f3f00,0xffbf0000,0xffff0000,0xffbf3f00,
+
+0xff7f3f00,0xff3f3f00,0xff3f3f00,0xff7f3f00,0xffbf3f00,0xffbf7f00,0xff7f7f00,0xff3f7f00,
+0xff3f3f00,0xffbf7f00,0xffff7f00,0xffbf7f3f,0xff7f7f3f,0xff3f7f3f,0xff3f3f3f,0xffbf7f00,
+0xffffbf00,0xffbfbf3f,0xff7fbf3f,0xff3fbf3f,0xff3f7f3f,0xffbf7f00,0xffffbf00,0xffbfbf3f,
+0xff7fbf3f,0xff3fbf3f,0xff3f7f3f,0xffbf7f00,0xffffbf00,0xffbfbf3f,0xff7fbf3f,0xff3fbf3f,
+
+0xff3f7f3f,0xff7f7f00,0xffbfbf00,0xff7fbf00,0xff3fbf00,0xff007f00,0xff007f3f,0xff007f7f,
+0xff003f3f,0xff003f00,0xff3f3f00,0xff7f7f00,0xffbfbf00,0xff7fbf00,0xff3fbf00,0xff007f00,
+0xff007f3f,0xff007f7f,0xff003f3f,0xff003f00,0xff3f3f00,0xff3f3f00,0xff7f7f00,0xffbfbf00,
+0xff7fbf00,0xff3fbf00,0xff007f00,0xff007f3f,0xff007f7f,0xff003f3f,0xff003f00,0xff3f3f00,
+
+0xff7f3f00,0xffbf3f00,0xffff7f00,0xffbf7f3f,0xff7f7f3f,0xff3f7f3f,0xff3f3f3f,0xffbf7f00,
+0xffffbf00,0xffbfbf3f,0xff7fbf3f,0xff3fbf3f,0xff3f7f3f,0xffbf7f00,0xffffbf00,0xffbfbf3f,
+0xff7fbf3f,0xff3fbf3f,0xff3f7f3f,0xffbf7f00,0xffffbf00,0xffbfbf3f,0xff7fbf3f,0xff3fbf3f,
+0xff3f7f3f,0xff7f7f00,0xffbfbf00,0xff7fbf00,0xff3fbf00,0xff007f00,0xff007f3f,0xff007f7f,
+0xff003f3f,0xff003f00,0xff3f3f00,0xff000000,0xff00003f,0xff00007f,0xff003fbf,0xff007fff,
+0xff3fbfff,0xff7fbfff,0xffbfbfff,0xffffffff
+};
+
+unsigned int convert_palette_chunk(unsigned int c)
+{
+  //std::cout << std::hex << c << std::endl;;
+  
+  unsigned int a = c & 0xff000000;
+  unsigned int b = c & 0x00ff0000;
+  unsigned int g = c & 0x0000ff00;
+  unsigned int r = c & 0x000000ff;
+  
+  b>>=16;
+  g>>=8;
+
+  r<<=16;
+  g<<=8;
+
+  return r+g+b+a;
+}
+
 unsigned int convert_palette(unsigned int c)
 {
   unsigned int a = c & 0xff000000;
@@ -20190,9 +20268,15 @@ unsigned int convert_palette(unsigned int c)
 }
 VoxPalette default_vox_palette()
 {
-  VoxPalette res;
-  std::transform(default_palette,default_palette+256,res.palette, [](auto x) { return convert_palette(x); });
-  return res;
+  if (1) {
+    VoxPalette res;
+    std::transform(default_palette,default_palette+256,res.palette, [](auto x) { return convert_palette(x); });
+    return res;
+  } else {
+    VoxPalette res;
+    std::transform(&palette098[0],&palette098[256],&res.palette[0], [](unsigned int x) { return convert_palette(x); });
+    return res;
+  }
 }
 VoxPalette palette_from_chunk(const VoxChunk &palette)
 {
@@ -20202,7 +20286,7 @@ VoxPalette palette_from_chunk(const VoxChunk &palette)
   res.palette[0]=0x00000000;
   for(int i=0;i<=254;i++)
     {
-      res.palette[i+1] = convert_palette(ptr2[i]);
+      res.palette[i+1] = convert_palette_chunk(ptr2[i]);
     }
   return res;
 }
@@ -20235,7 +20319,8 @@ public:
       
       VoxChunk main_ch = read_chunk(main_chunk);
       VoxAcc &main_children = main_ch.children_chunks;
-      bool has_pack = test_chunk(main_children, "PACK");
+      unsigned char *found=0;
+      bool has_pack = test_chunk(main_children, "PACK",&found);
       VoxChunk pack;
       if (has_pack)
 	{
@@ -20245,13 +20330,14 @@ public:
 	{
 	  numModels = 1;
 	}
-      for(int i=0;i<std::min(numModels,model0+1);i++)
+      for(int i=0;i<numModels;i++)
 	{
+	  unsigned char *found=0;
 	  VoxChunk size,xyzi;
-	  bool has_size = test_chunk(main_children,"SIZE");
+	  bool has_size = test_chunk(main_children,"SIZE",&found);
 	  if (!has_size) { error=true; break; }
 	  size = read_chunk(main_children);
-	  bool has_xyzi = test_chunk(main_children,"XYZI");
+	  bool has_xyzi = test_chunk(main_children,"XYZI",&found);
 	  if (!has_xyzi) { error=true; break; }
 	  xyzi = read_chunk(main_children);
 	  if (i==model0) {
@@ -20261,9 +20347,13 @@ public:
 	}
       if (!error)
 	{
-	  bool has_rgba = test_chunk(main_children,"RGBA");
+	  unsigned char *found=0;
+	  bool has_rgba = test_chunk(main_children,"RGBA",&found);
 	  if (has_rgba)
 	    {
+	      if (found) {
+		main_children.ptr = found;
+	      }
 	      VoxChunk rgba0 = read_chunk(main_children);
 	      rgba = palette_from_chunk(rgba0);
 	    } else
