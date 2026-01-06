@@ -10907,6 +10907,18 @@ public:
 	GameApi::US vertex2 = ev.uber_api.v_inst(vertex);
 	//GameApi::US fragment2 = ev.uber_api.f_inst(fragment);
 	//std::cout << "SHADER FUNCTIONS: " << e.v_shader_functions << "--" << e.f_shader_functions << std::endl;
+
+	ShaderCall *v_call = find_uber(env,vertex2);
+	ShaderCall *f_call = find_uber(env,fragment);
+	
+	static std::map<std::string,GameApi::SH> mymap;
+	
+	std::string key = v_call->get_key() + f_call->get_key();
+	if (mymap.find(key)!=mymap.end())
+	  {
+	    shader = mymap[key];
+	  }
+	else
 	if (e.sfo_id==-1)
 	  shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions);
 	else
@@ -10915,6 +10927,7 @@ public:
 	    sfo.id = e.sfo_id;
 	    shader=ev.shader_api.get_normal_shader("comb", "comb", "", vertex2, fragment,e.v_shader_functions, e.f_shader_functions, false, sfo);
 	  }
+	mymap[key]=shader;
 	ev.mainloop_api.init_3d(shader);
 	ev.mainloop_api.alpha(true); 
 
@@ -20577,15 +20590,15 @@ public:
 
 	int sx = 2;
 	while(check(spec.pos.x,spec.pos.y,spec.pos.z,
-		    sx,1,1)==true) sx++;
+		    sx,1,1,sx-1,1,1)==true) sx++;
 	sx--;
 	int sy = 2;
 	while(check(spec.pos.x,spec.pos.y,spec.pos.z,
-		    sx,sy,1)==true) sy++;
+		    sx,sy,1,sx,sy-1,1)==true) sy++;
 	sy--;
 	int sz = 2;
 	while(check(spec.pos.x,spec.pos.y,spec.pos.z,
-		    sx,sy,sz)==true) sz++;
+		    sx,sy,sz,sx,sy,sz-1)==true) sz++;
 	sz--;
 
 	spec.sizeindex = sz0 + find_size(sx,sy,sz);
@@ -20643,7 +20656,7 @@ public:
     return specs.size()-1;
   }
   
-  bool check(int x, int y, int z, int sx, int sy, int sz) const
+  bool check(int x, int y, int z, int sx, int sy, int sz, int old_sx, int old_sy, int old_sz) const
   {
     int ix = x;
     int iy = y;
@@ -20652,6 +20665,52 @@ public:
     int val0 = vx2.Map(ix,iy,iz);
     //std::cout << "val0=" << val0 << "(" << sx << " " << sy << " " << sz << ")" << std::endl;
     if (val0==-1||val0==0) return false; 
+
+    if (sx!=old_sx)
+      {
+	ix = x+sx-1;
+	for(iy=y;iy<y+sy;iy++)
+	  {
+	    for(iz=z;iz<z+sz;iz++)
+	      {
+		int val = vx2.Map(ix,iy,iz);
+		if (val!=val0) return false;
+	      }
+	  }
+      }
+
+    if (sy!=old_sy)
+      {
+	iy = y+sy-1;
+	for(ix=x;ix<x+sx;ix++)
+	  {
+	    for(iz=z;iz<z+sz;iz++)
+	      {
+		int val = vx2.Map(ix,iy,iz);
+		if (val!=val0) return false;
+	      }
+	  }
+      }
+
+    if (sz!=old_sz)
+      {
+	iz = z+sz-1;
+	for(iy=y;iy<y+sy;iy++)
+	  {
+	    for(ix=x;ix<x+sx;ix++)
+	      {
+		int val = vx2.Map(ix,iy,iz);
+		if (val!=val0) return false;
+	      }
+	  }
+      }
+    
+    
+#if 0
+    ix = x+old_sx;
+    iy = y+old_sy;
+    iz = z+old_sz;
+    
     for(;ix<x+sx;ix++)
       {
 	iy = y;
@@ -20666,6 +20725,7 @@ public:
 	      }
 	  }
       }
+#endif
     //std::cout << "returning true" << ix << " " << iy << " " << iz << " " << sx << " " << sy << " " << sz << std::endl;
     return true;
   }
