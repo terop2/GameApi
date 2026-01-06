@@ -1307,6 +1307,16 @@ public:
   virtual bool is_fragment() const { return false; }
   virtual ShaderCall *get_next() const=0;
   virtual std::string cache_id() const { return func_name(); }
+
+  std::string get_key() const {
+    std::string key = "";
+    const ShaderCall *call = this;
+    while(call) {
+      key+=func_name();
+      call = call->get_next();
+    }
+    return key;
+  }
 };
 
 class MatrixArray : public CollectInterface
