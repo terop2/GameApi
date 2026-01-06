@@ -20522,7 +20522,7 @@ public:
     GameApi::P cube = ev.polygon_api.cube(0.0,sx,0.0,sy,0.0,sz);
     GameApi::P c_cube = ev.polygon_api.color(cube, spec.shapesize.shape.color);
     GameApi::P m_cube = ev.polygon_api.multiply_facecoll(c_cube,spec.shapesize.size.sx,spec.shapesize.size.sy,spec.shapesize.size.sz);
-    FaceCollection *coll = find_facecoll(env,m_cube);
+    FaceCollection *coll = find_facecoll(env,c_cube);
     return coll;
   }
 private:
@@ -20531,6 +20531,7 @@ private:
   float sx,sy,sz;
 };
 
+#if 0
 class OptVoxelResizeVoxels : public OptVoxel
 {
 public:
@@ -20585,11 +20586,12 @@ private:
   std::vector<ShapeSizeSpec> specs;
   std::vector<std::vector<ElemSpec>> e_specs;
 };
+#endif
 
 class OptVoxelRemoveNotEnabled : public OptVoxel
 {
 public:
-  OptVoxelRemoveNotEnabled(OptVoxel &vx) : vx(vx) {}
+  OptVoxelRemoveNotEnabled(OptVoxel &vx) : vx(vx) { firsttime = true;}
   virtual void Collect(CollectVisitor &vis)
   {
     vx.Collect(vis);
@@ -20597,46 +20599,61 @@ public:
   }
   virtual void HeavyPrepare()
   {
-    int sk = vx.ShapeSizeSize();
-    vec.resize(sk);
-    for(int j=0;j<sk;j++) {
-    int s = vx.WorldSize(j);
+    if (firsttime) {
+      firsttime = false;
+      int s = vx.WorldSize();
       for(int i=0;i<s;i++)
 	{
-	  ElemSpec e = vx.WorldIndex(j,i);
-	  if (e.enabled == true)
+	  ElemSpec e = vx.WorldIndex(i);
+	  if (e.enabled)
 	    {
-	      vec[j].push_back(e);
+	      vec.push_back(e);
 	    }
 	}
-      }
+    }
   }
   virtual void Prepare() { vx.Prepare(); HeavyPrepare(); }
   virtual SizeSpec Size() const
   {
     return vx.Size();
   }
-  virtual int ShapeSizeSize() const
+  virtual int ShapeSize() const
   {
-    return vx.ShapeSizeSize();
+    return vx.ShapeSize();
   }
-  virtual int WorldSize(int sss) const
+  virtual int SizeSize() const
   {
-    return vec[sss].size();
+    return vx.SizeSize();
   }
-  virtual ShapeSizeSpec WorldShapeIndex(int sss) const
+  virtual int WorldSize() const
+  {
+    return vec.size();
+  }
+  virtual ShapeSpec WorldShapeIndex(int sss) const
   {
     return vx.WorldShapeIndex(sss);
   }
-  virtual ElemSpec WorldIndex(int sss, int w) const
+  virtual SizeSpec WorldSizeIndex(int sss) const
   {
-    return vec[sss][w];
+    return vx.WorldSizeIndex(sss);
+  }
+  virtual ElemSpec WorldIndex(int w) const
+  {
+    return vec[w];
   }
 private:
   OptVoxel &vx;
-  std::vector<std::vector<ElemSpec> > vec;
+  std::vector<ElemSpec> vec;
+  bool firsttime;
 };
 
+GameApi::OVX GameApi::VoxelApi::remove_not_enabled(OVX vx)
+{
+  OptVoxel *vvx = find_opt_voxel(e,vx);
+  return add_opt_voxel(e,new OptVoxelRemoveNotEnabled(*vvx));
+}
+
+#if 0
 class DisableOverlappingCubes : public OptVoxel
 {
 public:
@@ -20700,20 +20717,247 @@ private:
   OptCubeCache &cache;
 };
 
+#endif
+
+class VectorPTS : public PointsApiPoints
+{
+public:
+  VectorPTS(const std::vector<Point> &p) : pp(p) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+  }
+  virtual void HeavyPrepare() { }
+  virtual int NumPoints() const { return pp.size(); }
+  virtual Point Pos(int i) const { return pp[i]; }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+private:
+  std::vector<Point> pp;
+};
+
+GameApi::PTS convert_to_pts(GameApi::Env &e, const std::vector<Point> &p)
+{
+  return add_points_api_points(e,new VectorPTS(p));
+}
+
+
+class OptVoxelRender
+{
+public:
+  OptVoxelRender(OptVoxel &vx, OptCubes &cubes) : vx(vx), cubes(cubes) { }
+
+  GameApi::ML convert_to_ML(GameApi::Env &e, GameApi::EveryApi &ev, float sx, float sy, float sz, GameApi::MT mat)
+  {
+    std::vector<CubeSpec> *specs = new std::vector<CubeSpec>;
+    int s1 = vx.ShapeSize();
+    int s2 = vx.SizeSize();
+    specs->reserve(s1*s2);
+    CubeSpec spec;
+    for(int i=0;i<s1;i++)
+      {
+	spec.shapesize.shape = vx.WorldShapeIndex(i);
+	for(int j=0;j<s2;j++)
+	  {
+	    spec.shapesize.size = vx.WorldSizeIndex(j);
+	    specs->push_back(spec);
+	  }
+      }
+
+    std::vector<FaceCollection*> faces;
+    int s = specs->size();
+    for(int i=0;i<s;i++)
+      {
+	faces.push_back(cubes.create_cube(specs->operator[](i)));
+      }
+    delete specs;
+
+    std::vector<std::vector<Point> > ptss;   // ptss[facesnum][pointnum]
+    ptss.resize(faces.size());
+
+    int s3 = vx.WorldSize();
+    for(int i=0;i<s3;i++)
+      {
+	ElemSpec e = vx.WorldIndex(i);
+	int index = e.sizeindex + s2*e.shapeindex;
+	Point p = { e.pos.x*sx, e.pos.y*sy, e.pos.z*sz };
+	//std::cout << "index=" << index << std::endl;
+	ptss[index].push_back(p);
+      }
+
+    std::vector<GameApi::PTS> ptss2;
+    int s4 = ptss.size();
+    for(int i=0;i<s4;i++)
+      {
+	ptss2.push_back(convert_to_pts(e,ptss[i]));
+      }
+
+    std::vector<GameApi::P> ps;
+    int s5 = faces.size();
+    for(int i=0;i<s5;i++)
+      {
+	ps.push_back(add_polygon2(e,faces[i],1));
+      }
+
+
+    std::vector<GameApi::ML> mls;
+    int s6 = std::min(ptss.size(),faces.size()); // min probably doesnt do anything since sizes are the same.
+    for(int i=0;i<s6;i++)
+      {
+	mls.push_back(ev.materials_api.bind_inst(ps[i],ptss2[i],mat));
+      }
+    
+    GameApi::ML ml = ev.mainloop_api.array_ml(ev,mls);
+    GameApi::MN I1=ev.move_api.mn_empty();
+
+    SizeSpec ssx = vx.Size();
+    
+    GameApi::MN mn=ev.move_api.trans2(I1,-ssx.sx*sx/2.0,
+				      -ssx.sy*sy/2.0,
+				      -ssx.sz*sz/2.0);
+
+    GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn,1,10.0);
+    return ml2;
+  }
+private:
+  OptVoxel &vx;
+  OptCubes &cubes;
+};
+
+class RenderOVX : public MainLoopItem
+{
+public:
+  RenderOVX(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::OVX vx, GameApi::MT mat, float sx, float sy, float sz) : e(e), ev(ev), vx(vx), mat(mat), sx(sx),sy(sy), sz(sz) { }
+  ~RenderOVX()
+  {
+    delete cubesimpl;
+    delete render;
+  }
+  virtual void Collect(CollectVisitor &vis) {
+    OptVoxel *vvx = find_opt_voxel(e,vx);
+    vvx->Collect(vis);
+    vis.register_obj(this);
+  }
+  virtual void HeavyPrepare()
+  {
+    if (ml.id == -1) {
+      cubesimpl = new OptCubesImpl(e,ev,sx,sy,sz);
+      OptVoxel *vvx = find_opt_voxel(e,vx);
+      render = new OptVoxelRender(*vvx,*cubesimpl);
+      ml = render->convert_to_ML(e,ev,sx,sy,sz,mat);
+      MainLoopItem *item = find_main_loop(e,ml);
+      item->Prepare();
+    }
+  }
+  virtual void Prepare() {
+    OptVoxel *vvx = find_opt_voxel(e,vx);
+    vvx->Prepare();
+    HeavyPrepare();
+  }
+  virtual void execute(MainLoopEnv &e2)
+  {
+    if (ml.id != -1)
+      {
+	MainLoopItem *item = find_main_loop(e,ml);
+	item->execute(e2);
+      }
+  }
+  virtual void handle_event(MainLoopEvent &e2)
+  {
+    if (ml.id != -1)
+      {
+	MainLoopItem *item = find_main_loop(e,ml);
+	item->handle_event(e2);
+      }
+
+  }
+  virtual std::vector<int> shader_id() {
+    if (ml.id != -1)
+      {
+	MainLoopItem *item = find_main_loop(e,ml);
+	return item->shader_id();
+      }
+    return std::vector<int>();
+  }
+
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  GameApi::OVX vx;
+  GameApi::MT mat;
+  float sx,sy,sz;
+  GameApi::ML ml = { -1 };
+
+  mutable OptCubesImpl *cubesimpl;
+  mutable OptVoxelRender *render;
+};
+
+GameApi::ML GameApi::VoxelApi::render_ovx(GameApi::EveryApi &ev, OVX vx, MT mat, float sx, float sy, float sz)
+{
+  GameApi::ML ml = add_main_loop(e, new RenderOVX(e,ev,vx,mat,sx,sy,sz));
+  GameApi::MN I1=ev.move_api.mn_empty();
+  GameApi::MN mn=ev.move_api.rotatex(I1,-3.14159/2.0);
+
+  GameApi::ML ml2 = ev.move_api.move_ml(ev,ml,mn,1,10.0);
+  return ml2;
+}
+
+
+class EmptyOptVoxel : public OptVoxel
+{
+public:
+  EmptyOptVoxel() { }
+  virtual void Prepare() { } 
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  
+  // the grid
+  virtual SizeSpec Size() const { SizeSpec sz; sz.sx = 1; sz.sy=1;sz.sz=1; return sz; }
+  
+  // the world
+  virtual int ShapeSize() const { return 0; }
+  virtual ShapeSpec WorldShapeIndex(int shapesize) const { ShapeSpec s; return s; }
+
+  virtual int SizeSize() const { return 0; }
+  virtual SizeSpec WorldSizeIndex(int sizesize) const { SizeSpec s; return s; }
+
+  virtual int WorldSize() const { return 0; }
+  virtual ElemSpec WorldIndex(int w) const { ElemSpec e; return e; }
+
+};
+
+GameApi::OVX GameApi::VoxelApi::empty_ovx()
+{
+  return add_opt_voxel(e,new EmptyOptVoxel);
+}
+
 class VoxelToOptVoxel : public OptVoxel
 {
 public:
   // uses just the colour from the FaceCollections => compatible with voxvoxels.
-  VoxelToOptVoxel(Voxel<int> &vx, std::vector<FaceCollection*> cubes, OptCubeCache &cache, const OptCubes &cubes2) : vx(vx), cubes(cubes), cache(cache), cubes2(cubes2) { }
+  VoxelToOptVoxel(Voxel<int> &vx, std::vector<FaceCollection*> cubes) : vx(vx), cubes(cubes) { }
   virtual void Collect(CollectVisitor &vis)
   {
     vx.Collect(vis);
+    int s = cubes.size();
+    for(int i=0;i<s;i++)
+      {
+	cubes[i]->Collect(vis);
+      }
     vis.register_obj(this);
   }
   virtual void HeavyPrepare()
   {
   }
-  virtual void Prepare() { vx.Prepare(); HeavyPrepare(); }
+  virtual void Prepare() {
+    vx.Prepare();
+    int s = cubes.size();
+    for(int i=0;i<s;i++)
+      {
+	cubes[i]->Prepare();
+      }
+    
+    HeavyPrepare();
+  }
 
   // the grid
   virtual SizeSpec Size() const
@@ -20726,32 +20970,32 @@ public:
   }
 
   // the world
-  virtual int ShapeSizeSize() const
+  virtual int ShapeSize() const
   {
     return 256;
   }
-  virtual int WorldSize(int sss) const
+  virtual int SizeSize() const
+  {
+    return 1;
+  }
+  virtual int WorldSize() const
   {
     return vx.SizeX()*vx.SizeY()*vx.SizeZ();
   }
-  virtual ShapeSizeSpec WorldShapeIndex(int sss) const
+  virtual ShapeSpec WorldShapeIndex(int shape) const
   {
-    ShapeSizeSpec spec;
-    spec.size.sx = 1;
-    spec.size.sy = 1;
-    spec.size.sz = 1;
-    spec.shape.color = cubes[sss]->Color(0,0); // fetch cube color.
-    spec.shape.border_width = 0.0f;
-    spec.shape.border_color = 0xff000000;
-
-    CubeSpec c_spec;
-    c_spec.shapesize = spec;
-
-    OptCacheId id = cache.find_id_from_cache(c_spec);
-    if (id.id==-1)
-      {
-	cache.add_to_cache(c_spec,cubes2.create_cube(c_spec));
-      }
+    ShapeSpec spec;
+    spec.color = cubes[shape]->Color(0,0); // fetch cube color.
+    spec.border_width = 0.0f;
+    spec.border_color = 0xff000000;
+    return spec;
+  }
+  virtual SizeSpec WorldSizeIndex(int size) const
+  {
+    SizeSpec spec;
+    spec.sx = 1;
+    spec.sy = 1;
+    spec.sz = 1;
     return spec;
   }
   bool check(int x, int y, int z, int sx, int sy, int sz) const
@@ -20775,7 +21019,7 @@ public:
   }
 
   
-  virtual ElemSpec WorldIndex(int sss, int w) const
+  virtual ElemSpec WorldIndex(int w) const
   {
     int sx = vx.SizeX();
     int sy = vx.SizeY();
@@ -20788,15 +21032,30 @@ public:
     int sss_yr = sss_xr - (sss_y*sz);
 
     int sss_z = sss_yr;
+
+    //std::cout << "Sizes:" << sx << " " << sy << " " << sz << std::endl;
+    //std::cout << "Index:" << sss_x << " " << sss_y << " " << sss_z << std::endl;
     
     ElemSpec e_spec;
     e_spec.pos.x = sss_x;
     e_spec.pos.y = sss_y;
     e_spec.pos.z = sss_z;
 
+    if (sss_x<1 || sss_y<1 ||sss_z<1||
+	sss_x>=sx-1 || sss_y>=sy-1 || sss_z >=sz-1)
+      {
+	
+	e_spec.enabled = false;
+	
+	e_spec.shapeindex = 0;
+	e_spec.sizeindex = 0;
+	return e_spec;
+      }
+
+    
     int val = vx.Map(sss_x,sss_y,sss_z);
     bool b = false;
-    if (val!=-1 && val==sss) {
+    if (val!=-1) {
       int val_x = vx.Map(sss_x+1,sss_y,sss_z);
       if (val!=val_x) { b=true; } else {
 	int val_y = vx.Map(sss_x,sss_y+1,sss_z);
@@ -20815,52 +21074,33 @@ public:
 	}
       }
     }
-
-
-
     
-    e_spec.enabled = val!=-1 && val==sss && b;
-
-
+    e_spec.enabled = val!=-1 && b;
     
-    // guaranteed to success since we called WorldShapeIndex.
-    CubeSpec c_spec;
-    c_spec.shapesize = WorldShapeIndex(sss);
-    OptCacheId id = cache.find_id_from_cache(c_spec);
-    e_spec.id = id;
-
-
-    // logic to grow cube sizes... start
-    int wsx=2;
-    while(check(sss_x,sss_y,sss_z,wsx,1,1)) wsx++;
-    wsx--;
-    
-    int wsy=2;
-    while(check(sss_x,sss_y,sss_z,wsx,wsy,1)) wsy++;
-    wsy--;
-
-    int wsz=2;
-    while(check(sss_x,sss_y,sss_z,wsx,wsy,wsz)) wsz++;
-    wsz--;
-
-    if (wsx!=1 || wsy!=1 || wsz!=1)
-      {    
-	SizeSpec wss;
-	wss.sx = wsx;
-	wss.sy = wsy;
-	wss.sz = wsz;
-	e_spec.id = cache.resize_cache_id( e_spec.id, wss );
-      }
-    // logic to grow cube sizes... end
+    e_spec.shapeindex = val;
+    e_spec.sizeindex = 0;
     
     return e_spec;
   }
 private:
   Voxel<int> &vx;
   std::vector<FaceCollection*> cubes;
-  OptCubeCache &cache;
-  const OptCubes &cubes2;
+  //OptCubeCache &cache;
+  //const OptCubes &cubes2;
 };
+
+GameApi::OVX GameApi::VoxelApi::vx_to_ovx(VX vx, std::vector<P> vec)
+{
+  Voxel<int> *vvx = find_int_voxel(e,vx);
+  std::vector<FaceCollection*> facecoll;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      facecoll.push_back(find_facecoll(e,vec[i]));
+    }
+  
+  return add_opt_voxel(e, new VoxelToOptVoxel(*vvx, facecoll));
+}
 
 
 class VoxVoxel : public Voxel<int>
@@ -21302,6 +21542,26 @@ GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, in
   GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
   return ml1;
 }
+GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+{
+  GameApi::VX I1=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
+  GameApi::ARR I2=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
+  ArrayType *t = find_array(e,I2);
+  std::vector<GameApi::P> vec;
+  int s = t->vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p;
+      p.id = t->vec[i];
+      vec.push_back(p);
+    }
+  GameApi::OVX I3=ev.voxel_api.vx_to_ovx(I1,vec);
+  GameApi::OVX I4=ev.voxel_api.remove_not_enabled(I3);
+  // TODO ADD MORE OPTIMIZATIONS TO THIS
+  GameApi::MT I5=ev.materials_api.colour_material(ev,1);
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I4,I5,20,20,20);
+  return I6;
+}
 GameApi::ML GameApi::VoxelApi::vox_bind_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt)
 {
   GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt));
@@ -21309,6 +21569,25 @@ GameApi::ML GameApi::VoxelApi::vox_bind_ml(GameApi::EveryApi &ev, std::string ur
   GameApi::MN mn1 = ev.move_api.rotatex(mn0,-3.14159/2.0);
   GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
   return ml1;
+}
+GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt)
+{
+  GameApi::VX I1=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
+  GameApi::ARR I2=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
+  ArrayType *t = find_array(e,I2);
+  std::vector<GameApi::P> vec;
+  int s = t->vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p;
+      p.id = t->vec[i];
+      vec.push_back(p);
+    }
+  GameApi::OVX I3=ev.voxel_api.vx_to_ovx(I1,vec);
+  GameApi::OVX I4=ev.voxel_api.remove_not_enabled(I3);
+  // TODO ADD MORE OPTIMIZATIONS TO THIS
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I4,mt,20,20,20);
+  return I6;
 }
 
 

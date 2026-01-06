@@ -819,6 +819,7 @@ struct EnvImpl
   std::vector<ColourSpace*> colourspaces;
   std::vector<ColourSpaceI*> colourspacesI;
   std::vector<ByteStore*> bytestores;
+  std::vector<OptVoxel*> opt_voxels;
   //std::vector<EventInfo> event_infos;
   Sequencer2 *event_infos; // owned, one level only.
   pthread_mutex_t mutex;
@@ -1148,6 +1149,7 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+GameApi::OVX add_opt_voxel(GameApi::Env &e, OptVoxel *vx);
 GameApi::BS add_bytestore(GameApi::Env &e, ByteStore *bs);
 GameApi::CS add_colourspace(GameApi::Env &e, ColourSpace * cs);
 GameApi::CSI add_colourspaceI(GameApi::Env &e, ColourSpaceI * csi);
@@ -1312,6 +1314,7 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+OptVoxel *find_opt_voxel(GameApi::Env &e, GameApi::OVX vx);
 ByteStore *find_bytestore(GameApi::Env &e, GameApi::BS bs);
 ColourSpace *find_colourspace(GameApi::Env &e, GameApi::CS cs);
 ColourSpaceI *find_colourspaceI(GameApi::Env &e, GameApi::CSI csi);

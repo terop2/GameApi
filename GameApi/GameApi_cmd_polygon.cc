@@ -182,6 +182,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "", "0.5" },
 			 "P", "polygon_api", "decimate3"));
 #endif
+#if 0
 #if (ALL==1)||(DECIMATE_ZEROS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::decimate_zeros,
 			 "decimate_zero",
@@ -189,6 +190,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "P" },
 			 { "" },
 			 "P", "polygon_api", "decimate_zeros"));
+#endif
 #endif
 #if (ALL==1)||(SPATIAL_DECIMATE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::spatial_decimate,
@@ -206,6 +208,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "", "0.5" },
 			 "TF", "polygon_api", "decimate_tf"));
 #endif
+#if 0
 #if (ALL==1)||(DECIMATE_TF_ZERO==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::decimate_tf_zero,
 			 "decimate_tf_zero",
@@ -213,6 +216,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "TF" },
 			 { "" },
 			 "TF", "polygon_api", "decimate_tf_zero"));
+#endif
 #endif
 #if 0
 #if (ALL==1)||(DECIMATE2==1)
