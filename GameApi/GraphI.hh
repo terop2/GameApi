@@ -462,10 +462,10 @@ public:
   
   // the world
   virtual int ShapeSize() const=0;
-  virtual ShapeSpec WorldShapeIndex(int shapesize) const=0;
+  virtual ShapeSpec WorldShapeIndex(int shi) const=0;
 
   virtual int SizeSize() const=0;
-  virtual SizeSpec WorldSizeIndex(int sizesize) const=0;
+  virtual SizeSpec WorldSizeIndex(int szi) const=0;
 
   virtual int WorldSize() const=0;
   virtual ElemSpec WorldIndex(int w) const=0;

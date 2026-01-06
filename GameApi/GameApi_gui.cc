@@ -6583,6 +6583,7 @@ ASyncData async_data[] = {
   { "mainloop_api", "load_ML_script3",1},
   { "voxel_api", "vox_voxel", 1},
   { "voxel_api", "vox_voxel2", 1},
+  { "voxel_api", "vox_voxel3", 1},
   { "voxel_api", "vox_cubes", 1},
   { "voxel_api", "vox_ml", 1},
   { "voxel_api", "vox_bind_ml",1},

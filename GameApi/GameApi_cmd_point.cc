@@ -159,7 +159,16 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "" },
 			 "OVX", "voxel_api", "remove_not_enabled"));
 #endif
+#if (ALL==1)||(RENDER_OVX_P==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::render_ovx_p,
+			 "render_ovx_p",
+			 { "ev", "voxel", "sx", "sy", "sz" },
+			 { "EveryApi&", "OVX", "float", "float", "float" },
+			 { "ev", "", "20.0", "20.0", "20.0" },
+			 "P", "voxel_api", "render_ovx_p"));
+#endif
 
+  
 #if (ALL==1)||(RENDER_OVX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::render_ovx,
 			 "render_ovx",
