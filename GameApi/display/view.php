@@ -1331,8 +1331,8 @@ function create_script(filename, contents, filenames)
 
 
   if (filename.substr(-4)==".vox") {
-     res+="P I155=ev.voxel_api.vox_voxel(ev," + filename + ",0,20,20,20);\n";
-     res+="ML I62=ev.voxel_api.vox_ml(ev," + filename + ",0,20,20,20);\n";
+     res+="P I155=ev.voxel_api.vox_voxel3(ev," + filename + ",0,20,20,20);\n";
+     res+="ML I62=ev.voxel_api.vox_ml2(ev," + filename + ",0,20,20,20);\n";
   } else
   if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else

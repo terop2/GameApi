@@ -83,6 +83,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
 			 "P", "voxel_api", "vox_voxel"));
 #endif
+#if (ALL==1)||(VOX_VOXEL3==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_voxel3,
+			 "p_vox2",
+			 { "ev", "url" , "model", "sx", "sy", "sz" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
+			 "P", "voxel_api", "vox_voxel3"));
+#endif
 #if (ALL==1)||(P_URL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_url,
 			 "p_url",
