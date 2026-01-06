@@ -20025,6 +20025,7 @@ bool test_chunk(const VoxAcc &acc, const char *chunk_id)
     {
       return true;
     }
+  //std::cout << "Chunk " << chunk_id << " not found. There was: " << ptr[0] << ptr[1] << ptr[2] << ptr[3] << std::endl;
   return false;
 }
 VoxChunk read_chunk(VoxAcc &acc)
@@ -20321,6 +20322,17 @@ public:
 
   GameApi::P get_cube(int model, int palette_index) const
   {
+    if (model != lastmodel)
+      {
+	cubecache.clear();
+	lastmodel = model;
+      }
+    if (cubecache.size()<=palette_index) {
+      GameApi::P p;
+      p.id = -1;
+      cubecache.resize(palette_index+1,p);
+    }
+    if (cubecache[palette_index].id!=-1) return cubecache[palette_index];
     if (palette_index == 0) return ev.polygon_api.p_empty();
     bool error = false;
     VoxPalette *pal = new VoxPalette(get_palette(error));
@@ -20329,6 +20341,7 @@ public:
     GameApi::P cube = ev.polygon_api.cube(0.0,sx,0.0,sy,0.0,sz);
     GameApi::P c_cube = ev.polygon_api.color(cube, pal->palette[palette_index]);
     delete pal;
+    cubecache[palette_index] = c_cube;
     return c_cube;
   }
   GameApi::P get_voxel_model(int model) const
@@ -20382,6 +20395,8 @@ private:
   VoxPalette rgba;
   float sx,sy,sz;
   int model0;
+  mutable std::vector<GameApi::P> cubecache;
+  mutable int lastmodel=-1;
 };
 
 class MultiplyFaceCollection : public ForwardFaceCollection
@@ -21348,7 +21363,7 @@ public:
   // the world
   virtual int ShapeSize() const
   {
-    return 256;
+    return cubes.size();
   }
   virtual int SizeSize() const
   {
@@ -21548,7 +21563,7 @@ private:
 class VoxCubeFaceCollection : public FaceCollection
 {
 public:
-  VoxCubeFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, int palette_index, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz,model),model(model),palette_index(palette_index) { }
+  VoxCubeFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, int palette_index, float sx, float sy, float sz, VoxMainLoopItem &ml) : env(e), url(url),homepage(homepage), ml(ml),model(model),palette_index(palette_index) { }
   virtual std::string name() const { return "VoxFaceCollection"; }
   virtual void Collect(CollectVisitor &vis)
   {
@@ -21650,7 +21665,7 @@ private:
   GameApi::Env &env;
   std::string url;
   std::string homepage;
-  VoxMainLoopItem ml;
+  VoxMainLoopItem &ml;
   GameApi::P faces = { -1 };
   int model;
   int palette_index;
@@ -21838,9 +21853,10 @@ GameApi::ARR GameApi::VoxelApi::vox_cubes(GameApi::EveryApi &ev, std::string url
   ArrayType *array = new ArrayType;
   array->type = 44;
   int s = 256;
+  VoxMainLoopItem *ml = new VoxMainLoopItem(e,ev,url,gameapi_homepageurl,sx,sy,sz,model);
   for(int i=0;i<s;i++)
     {
-      array->vec.push_back(add_polygon2(e,new VoxCubeFaceCollection(e,ev,url,gameapi_homepageurl, model, i, sx,sy,sz),1).id);
+      array->vec.push_back(add_polygon2(e,new VoxCubeFaceCollection(e,ev,url,gameapi_homepageurl, model, i, sx,sy,sz,*ml),1).id);
     }
   return add_array(e,array);
 }
