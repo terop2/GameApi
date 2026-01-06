@@ -20199,23 +20199,25 @@ VoxPalette palette_from_chunk(const VoxChunk &palette)
 class VoxMainLoopItem : public MainLoopItem
 {
 public:
-  VoxMainLoopItem(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float sx, float sy, float sz) : env(env), ev(ev), url(url), homepage(homepage), sx(sx), sy(sy), sz(sz) { }
+  VoxMainLoopItem(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, std::string homepage, float sx, float sy, float sz, int model0) : env(env), ev(ev), url(url), homepage(homepage), sx(sx), sy(sy), sz(sz), model0(model0) { }
+  ~VoxMainLoopItem() { delete m_ptr; }
   virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
   virtual void HeavyPrepare()
   {
-    if (!data) {
+    if (!sizes.size()) {
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
       GameApi::ASyncVec *ptr = env.get_loaded_async_url(url);
       if (!ptr) { std::cout << "async not ready!" << std::endl; return; }
-      data = new std::vector<unsigned char>(ptr->begin(),ptr->end());
-
+      //data = new std::vector<unsigned char>(ptr->begin(),ptr->end());
+      m_ptr=ptr;
+      
       error = false;
       int offset = 8;
       VoxAcc main_chunk;
-      main_chunk.ptr = &data->operator[](0) + offset;
-      main_chunk.numBytes = data->size()-offset;
+      main_chunk.ptr = const_cast<unsigned char*>(ptr->begin()) /*&data->operator[](0)*/ + offset;
+      main_chunk.numBytes = ptr->size() /*data->size()*/ -offset;
       
       VoxChunk main_ch = read_chunk(main_chunk);
       VoxAcc &main_children = main_ch.children_chunks;
@@ -20229,7 +20231,7 @@ public:
 	{
 	  numModels = 1;
 	}
-      for(int i=0;i<numModels;i++)
+      for(int i=0;i<std::min(numModels,model0+1);i++)
 	{
 	  VoxChunk size,xyzi;
 	  bool has_size = test_chunk(main_children,"SIZE");
@@ -20238,8 +20240,10 @@ public:
 	  bool has_xyzi = test_chunk(main_children,"XYZI");
 	  if (!has_xyzi) { error=true; break; }
 	  xyzi = read_chunk(main_children);
-	  sizes.push_back(size);
-	  xyzis.push_back(xyzi);
+	  if (i==model0) {
+	    sizes.push_back(size);
+	    xyzis.push_back(xyzi);
+	  }
 	}
       if (!error)
 	{
@@ -20266,8 +20270,8 @@ public:
   VoxSize get_size(bool &res_error, int model) const
   {
     res_error = error;
-    if (!error && (model>=0 && model<sizes.size()) ) {
-      VoxSize sz = size_to_size(sizes[model]);
+    if (!error && (model-model0>=0 && model-model0<sizes.size()) ) {
+      VoxSize sz = size_to_size(sizes[model-model0]);
       return sz;
     }
     res_error = true;
@@ -20292,8 +20296,8 @@ public:
   int get_num_vox(bool &res_error, int model) const
   {
     res_error = error;
-    if (!error && (model>=0 && model<xyzis.size()) ) {
-      VoxXYZI sz = xyzi_to_xyzi(xyzis[model]);
+    if (!error && (model-model0>=0 && model-model0<xyzis.size()) ) {
+      VoxXYZI sz = xyzi_to_xyzi(xyzis[model-model0]);
       return sz.numVoxels;
     }
     return 0;
@@ -20301,8 +20305,8 @@ public:
   XYZI get_voxel(bool &res_error, int model, int vox) const
   {
     res_error = error;
-    if (!error && (model>=0 && model<xyzis.size())) {
-      VoxXYZI sz = xyzi_to_xyzi(xyzis[model]);
+    if (!error && (model-model0>=0 && model-model0<xyzis.size())) {
+      VoxXYZI sz = xyzi_to_xyzi(xyzis[model-model0]);
       XYZI xyzi = Vox_to_xyzi(sz, vox);
       return xyzi;
     } 
@@ -20331,11 +20335,11 @@ public:
   {
     bool error = false;
     VoxPalette *pal = new VoxPalette(get_palette(error));
-    int num = get_num_vox(error, model);
+    int num = get_num_vox(error, model-model0);
     if (!error) {
       std::vector<GameApi::P> vec;
       
-      VoxSize siz = get_size(error, model);
+      VoxSize siz = get_size(error, model-model0);
       if (!error) {
 	float start_x = siz.sx*sx/2.0;
 	float start_y = siz.sy*sy/2.0;
@@ -20343,7 +20347,7 @@ public:
 	
 	for(int i=0;i<num;i++)
 	  {
-	    XYZI p = get_voxel(error, model,i);
+	    XYZI p = get_voxel(error, model-model0,i);
 	    if (error) { break; }
 	    float p_x = float(p.x)*sx - start_x;
 	    float p_y = float(p.y)*sy - start_y;
@@ -20367,15 +20371,17 @@ public:
 private:
   GameApi::Env &env;
   GameApi::EveryApi &ev;
+  GameApi::ASyncVec *m_ptr=0;
   std::string url;
   std::string homepage;
-  std::vector<unsigned char> *data = 0;
+  //std::vector<unsigned char> *data = 0;
   int numModels=0;
   std::vector<VoxChunk> sizes;
   std::vector<VoxChunk> xyzis;
   bool error = false;
   VoxPalette rgba;
   float sx,sy,sz;
+  int model0;
 };
 
 class MultiplyFaceCollection : public ForwardFaceCollection
@@ -20951,6 +20957,20 @@ public:
 	}
       }
 
+    // filter out empty ptss
+    int sg = ptss.size();
+    for(int i=0;i<sg;i++)
+      {
+	if (ptss[i].size()==0)
+	  {
+	    ptss.erase(ptss.begin() + i);
+	    faces.erase(faces.begin() + i);
+	    i--;
+	    sg--;
+	  }
+      }
+
+    
     std::vector<GameApi::PTS> ptss2;
     int s4 = ptss.size();
     for(int i=0;i<s4;i++)
@@ -20967,7 +20987,7 @@ public:
 
 
     std::vector<GameApi::P> mls;
-    int s6 = std::min(ptss.size(),faces.size()); // min probably doesnt do anything since sizes are the same.
+    int s6 = std::min(ptss2.size(),ps.size()); // min probably doesnt do anything since sizes are the same.
     for(int i=0;i<s6;i++)
       {
 	mls.push_back(ev.polygon_api.static_instancing(ev,ps[i],ptss2[i]));
@@ -21024,6 +21044,21 @@ public:
 	}
       }
 
+    // filter out empty ptss
+    int sg = ptss.size();
+    for(int i=0;i<sg;i++)
+      {
+	if (ptss[i].size()==0)
+	  {
+	    ptss.erase(ptss.begin() + i);
+	    faces.erase(faces.begin()+i);
+	    i--;
+	    sg--;
+	  }
+      }
+
+
+    
     std::vector<GameApi::PTS> ptss2;
     int s4 = ptss.size();
     for(int i=0;i<s4;i++)
@@ -21040,7 +21075,7 @@ public:
 
 
     std::vector<GameApi::ML> mls;
-    int s6 = std::min(ptss.size(),faces.size()); // min probably doesnt do anything since sizes are the same.
+    int s6 = std::min(ps.size(),ptss2.size()); // min probably doesnt do anything since sizes are the same.
     for(int i=0;i<s6;i++)
       {
 	mls.push_back(ev.materials_api.bind_inst(ps[i],ptss2[i],mat));
@@ -21428,7 +21463,7 @@ GameApi::OVX GameApi::VoxelApi::vx_to_ovx(VX vx, std::vector<P> vec)
 class VoxVoxel : public Voxel<int>
 {
 public:
-  VoxVoxel(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz) : ml(e,ev,url,gameapi_homepageurl,sx,sy,sz), model(model) { }
+  VoxVoxel(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz) : ml(e,ev,url,gameapi_homepageurl,sx,sy,sz,model), model(model) { }
   virtual void Collect(CollectVisitor &vis)
   {
     ml.Collect(vis);
@@ -21513,7 +21548,7 @@ private:
 class VoxCubeFaceCollection : public FaceCollection
 {
 public:
-  VoxCubeFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, int palette_index, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz),model(model),palette_index(palette_index) { }
+  VoxCubeFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, int palette_index, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz,model),model(model),palette_index(palette_index) { }
   virtual std::string name() const { return "VoxFaceCollection"; }
   virtual void Collect(CollectVisitor &vis)
   {
@@ -21625,7 +21660,7 @@ private:
 class VoxFaceCollection : public FaceCollection
 {
 public:
-  VoxFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz),model(model) { }
+  VoxFaceCollection(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, std::string homepage, int model, float sx, float sy, float sz) : env(e), url(url),homepage(homepage), ml(e,ev,url,homepage,sx,sy,sz,model),model(model) { }
   virtual std::string name() const { return "VoxFaceCollection"; }
   virtual void Collect(CollectVisitor &vis)
   {
