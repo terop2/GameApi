@@ -419,12 +419,7 @@ typedef Bitmap<Quad> QuadBitmap;
     ShapeSpec shape;
     friend bool operator==(const ShapeSizeSpec &c1, const ShapeSizeSpec &c2)
     {
-      return c1.size.sx == c2.size.sx &&
-	c1.size.sy == c2.size.sy &&
-	c1.size.sz == c2.size.sz &&
-	c1.shape.color == c2.shape.color &&
-	fabs(c1.shape.border_width - c2.shape.border_width) <0.0001 &&
-	c1.shape.border_color == c2.shape.border_color;
+      return c1.size == c2.size && c1.shape==c2.shape;
     }
   };
   struct OptCacheId 
@@ -434,11 +429,10 @@ typedef Bitmap<Quad> QuadBitmap;
 
   struct ElemSpec
   {
-    PosSpec pos;
-    //SizeSpec size;
-    //ShapeSpec shape;
-    OptCacheId id;
     bool enabled;
+    PosSpec pos;
+    int shapeindex;
+    int sizeindex;
   };
   struct CubeSpec
   {
@@ -446,12 +440,7 @@ typedef Bitmap<Quad> QuadBitmap;
 
     friend bool operator==(const CubeSpec &c1, const CubeSpec &c2)
     {
-      return c1.shapesize.size.sx == c2.shapesize.size.sx &&
-	c1.shapesize.size.sy == c2.shapesize.size.sy &&
-	c1.shapesize.size.sz == c2.shapesize.size.sz &&
-	c1.shapesize.shape.color == c2.shapesize.shape.color &&
-	fabs(c1.shapesize.shape.border_width - c2.shapesize.shape.border_width) <0.0001 &&
-	c1.shapesize.shape.border_color == c2.shapesize.shape.border_color;
+      return c1.shapesize == c2.shapesize;
     }
   };
 
@@ -472,11 +461,17 @@ public:
   virtual SizeSpec Size() const=0;
   
   // the world
-  virtual int ShapeSizeSize() const=0;
-  virtual int WorldSize(int sss) const=0;
-  virtual ShapeSizeSpec WorldShapeIndex(int sss) const=0;
-  virtual ElemSpec WorldIndex(int sss, int w) const=0;
+  virtual int ShapeSize() const=0;
+  virtual ShapeSpec WorldShapeIndex(int shapesize) const=0;
+
+  virtual int SizeSize() const=0;
+  virtual SizeSpec WorldSizeIndex(int sizesize) const=0;
+
+  virtual int WorldSize() const=0;
+  virtual ElemSpec WorldIndex(int w) const=0;
 };
+
+class FaceCollection;
 
 class OptCubes : public CollectInterface
 {
@@ -492,6 +487,9 @@ public:
 
   virtual FaceCollection *create_cube(const CubeSpec &spec) const=0;
 };
+
+
+
 
 class OptCubeCache : public CollectInterface
 {

@@ -137,6 +137,19 @@ void add_b(std::shared_ptr<void> ptr)
     g_rest.g_rest.push_back(ptr); // these will never be released
 }
 
+
+GameApi::OVX add_opt_voxel(GameApi::Env &e, OptVoxel *vx)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->opt_voxels.push_back(vx);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(vx));
+  GameApi::OVX im;
+  im.id = env->opt_voxels.size()-1;
+  return im;
+
+}
+
 GameApi::BS add_bytestore(GameApi::Env &e, ByteStore *bs)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1493,6 +1506,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
   GameApi::LL ll = { -1 };
   return ll;
+}
+
+OptVoxel *find_opt_voxel(GameApi::Env &e, GameApi::OVX vx)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->opt_voxels[vx.id];  
 }
 
 ByteStore *find_bytestore(GameApi::Env &e, GameApi::BS bs)
