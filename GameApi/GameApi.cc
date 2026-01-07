@@ -22140,7 +22140,7 @@ GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string u
     GameApi::OVX I40=ev.voxel_api.remove_colours(I4);
   GameApi::OVX I41=ev.voxel_api.resize_voxels(I40,I1);
   // TODO ADD MORE OPTIMIZATIONS TO THIS
-  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I41,mt,20,20,20);
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I41,mt,sx,sy,sz);
   return I6;
 }
 
