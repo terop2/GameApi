@@ -269,6 +269,15 @@
 			 { "ev", "", "300" },
 			 "PTS", "points_api", "random_mesh_quad_instancing"));
 #endif
+#if (ALL==1)||(RANDOM_LATTICE==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_lattice,
+			 "random_lattice",
+			 { "ev", "sx", "sy", "sz", "s_x", "s_y", "s_z", "px", "py", "pz", "count" },
+			 { "EveryApi&", "int","int","int", "float", "float", "float", "float", "float", "float", "int" },
+			 { "ev", "100", "1", "100", "3.0", "3.0", "3.0", "0.5", "0.5", "0.5", "300" },
+			 "PTS", "points_api", "random_lattice"));
+#endif
+
 #if (ALL==1)||(RANDOM_POINTS_IN_PLANE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::random_points_in_plane,
 			 "perlin_plane",

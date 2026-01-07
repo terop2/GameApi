@@ -1504,6 +1504,74 @@ private:
   std::vector<unsigned int> *color2;
   bool firsttime;
 };
+
+class RandomLattice : public PointsApiPoints
+{
+public:
+  RandomLattice(GameApi::EveryApi &ev,
+		int sx, int sy, int sz,
+		float s_x, float s_y, float s_z,
+		float px,float py, float pz, int count)
+    : ev(ev), sx(sx), sy(sy), sz(sz),
+      s_x(s_x),s_y(s_y),s_z(s_z),
+      px(px), py(py), pz(pz), count(count) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() { Prepare(); }
+  virtual void Prepare() {
+    if (firsttime)
+      {
+	firsttime = false;
+	int s = count;
+	Random r;
+	for(int i=0;i<s;i++)
+	  {
+	    float val_x = double(r.next())/double(r.maximum());
+	    float val_y = double(r.next())/double(r.maximum());
+	    float val_z = double(r.next())/double(r.maximum());
+	    val_x *= sx;
+	    val_y *= sy;
+	    val_z *= sz;
+	    int ix = int(val_x);
+	    int iy = int(val_y);
+	    int iz = int(val_z);
+	    float p_x = float(ix)*s_x;
+	    float p_y = float(iy)*s_y;
+	    float p_z = float(iz)*s_z;
+	    p_x -= px * (sx*s_x);
+	    p_y -= py * (sy*s_y);
+	    p_z -= pz * (sz*s_z);
+	    points.push_back(Point(p_x,p_y,p_z));
+	  }
+      }
+  }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int NumPoints() const { return count; }
+  virtual Point Pos(int i) const { return points[i]; }
+  virtual unsigned int Color(int i) const
+  {
+    return 0xffffffff;
+  }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+private:
+  GameApi::EveryApi &ev;
+  int sx,sy,sz;
+  float s_x,s_y,s_z;
+  float px,py,pz;
+  int count;
+  std::vector<Point> points;
+  bool firsttime = true;
+};
+
+GameApi::PTS GameApi::PointsApi::random_lattice(EveryApi &ev, int sx, int sy, int sz,
+						float s_x, float s_y, float s_z,
+						float px, float py, float pz, int count)
+{
+  return add_points_api_points(e, new RandomLattice(ev,sx,sy,sz,s_x,s_y,s_z,px,py,pz,count));
+}
 GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing(EveryApi &ev, P p, int count)
 {
   FaceCollection *coll = find_facecoll(e, p);

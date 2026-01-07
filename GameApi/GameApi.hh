@@ -3725,6 +3725,7 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  
   IMPORT ML publish_heightfield(ML ml, CFB landscape, float start_x, float end_x,
 				float start_y, float end_y, float start_z, float end_z);
   IMPORT CFB cbm_to_cfb( CBM bm, float red_mult, float red_add,
@@ -3777,6 +3778,10 @@ public:
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
   IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT PTS random_mesh_quad_instancing(EveryApi &ev, P p, int count);
+  IMPORT PTS random_lattice(EveryApi &ev, int sx, int sy, int sz,
+			    float s_x, float s_y, float s_z,
+			    float px, float py, float pz,
+			    int count);
   IMPORT PTS surface(S surf, int sx, int sy);
   IMPORT PTS surface(std::function<PT (float,float)> surf,
 		     std::function<unsigned int (PT,float,float)> color,
