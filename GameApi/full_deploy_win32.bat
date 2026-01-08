@@ -30,6 +30,7 @@ pushd editor\release & call copy_files.bat & popd
 pushd editor\release & call make_msi.bat %1 & popd
 pushd editor\release & call copy Builder.msi GameApi-Builder-v%2.msi & popd
 pushd editor\release & call scp GameApi-Builder-v%2.msi terop@meshpage.org:/home/terop/meshpage.org/ & popd
+pushd editor\release & call scp GameApi-Builder-v%2.msi terop@meshpage.org:/home/terop/meshpage.org/assets/ & popd
 if "%4"=="steam" GOTO STEAM2
 pushd cmdline & call make -f Makefile.win32 & popd
 GOTO STEAM2_DONE
