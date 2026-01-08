@@ -20669,6 +20669,7 @@ public:
   }
   virtual void HeavyPrepare()
   {
+    SizeSpec ps = vx.Size();
     int sz0 = vx.SizeSize();
     int ws = vx.WorldSize();
     for(int w=0;w<ws;w++)
@@ -20697,15 +20698,28 @@ public:
 	
 	if (sx!=1||sy!=1||sz!=1) {
 	  PosSpec p0;
+	  SizeSpec s0;
 	  p0.x = spec.pos.x;
 	  p0.y = spec.pos.y;
 	  p0.z = spec.pos.z;
-	  disable_list.push_back(p0);
-	  SizeSpec s0;
 	  s0.sx = sx;
 	  s0.sy = sy;
 	  s0.sz = sz;
-	  disable_list_size.push_back(s0);
+
+	  int di = p0.x*20/ps.sx; // divide to 20 boxes
+	  int di2 = (p0.x+s0.sx)*20/ps.sx;
+
+	  if (di==di2) {
+	    disable_list[di].push_back(p0);
+	    disable_list_size[di].push_back(s0);
+	  } else {
+	    for(int i=di;i<=di2;i++) {
+	    disable_list[i].push_back(p0);
+	    //disable_list[di2].push_back(p0);
+	    disable_list_size[i].push_back(s0);
+	    //disable_list_size[di2].push_back(s0);
+	    }
+	  }
 	}
 	
 	e_specs.push_back(spec);
@@ -20714,15 +20728,25 @@ public:
 
   bool is_in_disable_list(PosSpec p)
   {
-    int s = std::min(disable_list.size(),disable_list_size.size());
+    SizeSpec ps = vx.Size();
+    int di = p.x*20/ps.sx; // divide to 10 boxes
+
+    int s = std::min(disable_list[di].size(),disable_list_size[di].size());
     for(int i=0;i<s;i++)
       {
-	PosSpec p0 = disable_list[i];
-	SizeSpec s0 = disable_list_size[i];
+	PosSpec p0 = disable_list[di][i];
+	if (p.x<p0.x) continue;
+	if (p.y<p0.y) continue;
+	if (p.z<p0.z) continue;
+	SizeSpec s0 = disable_list_size[di][i];
+	if (p.x>=p0.x+s0.sx) continue;
+	if (p.y>=p0.y+s0.sy) continue;
+	if (p.z>=p0.z+s0.sz) continue;
+	/*
 	if ((!(p.x>=p0.x && p.x<p0.x+s0.sx)) ||
 	    (!(p.y>=p0.y && p.y<p0.y+s0.sy)) ||
 	    (!(p.z>=p0.z && p.z<p0.z+s0.sz)))
-	  continue;
+	    continue;*/
 	return true;
       }
     return false;
@@ -20841,8 +20865,8 @@ private:
   OptVoxel &vx;
   Voxel<int> &vx2;
 
-  std::vector<PosSpec> disable_list;
-  std::vector<SizeSpec> disable_list_size;
+  std::vector<PosSpec> disable_list[20];
+  std::vector<SizeSpec> disable_list_size[20];
   
   std::vector<SizeSpec> specs;
   std::vector<ElemSpec> e_specs;
@@ -21123,6 +21147,20 @@ public:
       }
 
     // filter out empty ptss
+    std::vector<std::vector<Point>*> ptss3;
+    std::vector<FaceCollection*> faces3;
+    int sg = ptss.size();
+    ptss3.reserve(sg);
+    for(int i=0;i<sg;i++)
+      {
+	if (ptss[i].size()!=0)
+	  {
+	    ptss3.push_back(&ptss[i]);
+	    faces3.push_back(faces[i]);
+	  }
+      }
+
+#if 0
     int sg = ptss.size();
     for(int i=0;i<sg;i++)
       {
@@ -21134,25 +21172,28 @@ public:
 	    sg--;
 	  }
       }
-
+#endif
     
     std::vector<GameApi::PTS> ptss2;
-    int s4 = ptss.size();
+    int s4 = ptss3.size();
+    ptss2.reserve(s4);
     for(int i=0;i<s4;i++)
       {
-	ptss2.push_back(convert_to_pts(e,ptss[i]));
+	ptss2.push_back(convert_to_pts(e,*(ptss3[i])));
       }
 
     std::vector<GameApi::P> ps;
-    int s5 = faces.size();
+    int s5 = faces3.size();
+    ps.reserve(s5);
     for(int i=0;i<s5;i++)
       {
-	ps.push_back(add_polygon2(e,faces[i],1));
+	ps.push_back(add_polygon2(e,faces3[i],1));
       }
 
 
     std::vector<GameApi::P> mls;
     int s6 = std::min(ptss2.size(),ps.size()); // min probably doesnt do anything since sizes are the same.
+    mls.reserve(s6);
     for(int i=0;i<s6;i++)
       {
 	mls.push_back(ev.polygon_api.static_instancing(ev,ps[i],ptss2[i]));
@@ -21210,6 +21251,20 @@ public:
       }
 
     // filter out empty ptss
+    std::vector<std::vector<Point>*> ptss3;
+    std::vector<FaceCollection*> faces3;
+    int sg = ptss.size();
+    ptss3.reserve(sg);
+    faces3.reserve(sg);
+    for(int i=0;i<sg;i++)
+      {
+	if (ptss[i].size()!=0)
+	  {
+	    ptss3.push_back(&ptss[i]);
+	    faces3.push_back(faces[i]);
+	  }
+      }
+#if 0
     int sg = ptss.size();
     for(int i=0;i<sg;i++)
       {
@@ -21221,26 +21276,29 @@ public:
 	    sg--;
 	  }
       }
-
+#endif
 
     
     std::vector<GameApi::PTS> ptss2;
-    int s4 = ptss.size();
+    int s4 = ptss3.size();
+    ptss2.reserve(s4);
     for(int i=0;i<s4;i++)
       {
-	ptss2.push_back(convert_to_pts(e,ptss[i]));
+	ptss2.push_back(convert_to_pts(e,*(ptss3[i])));
       }
 
     std::vector<GameApi::P> ps;
-    int s5 = faces.size();
+    int s5 = faces3.size();
+    ps.reserve(s5);
     for(int i=0;i<s5;i++)
       {
-	ps.push_back(add_polygon2(e,faces[i],1));
+	ps.push_back(add_polygon2(e,faces3[i],1));
       }
 
 
     std::vector<GameApi::ML> mls;
     int s6 = std::min(ps.size(),ptss2.size()); // min probably doesnt do anything since sizes are the same.
+    mls.reserve(s6);
     for(int i=0;i<s6;i++)
       {
 	mls.push_back(ev.materials_api.bind_inst(ps[i],ptss2[i],mat));
@@ -21488,6 +21546,10 @@ public:
   }
   virtual void HeavyPrepare()
   {
+    c_sx = vx.SizeX();
+    c_sy = vx.SizeY();
+    c_sz = vx.SizeZ();
+
   }
   virtual void Prepare() {
     vx.Prepare();
@@ -21504,9 +21566,9 @@ public:
   virtual SizeSpec Size() const
   {
     SizeSpec sz;
-    sz.sx = vx.SizeX();
-    sz.sy = vx.SizeY();
-    sz.sz = vx.SizeZ();
+    sz.sx = c_sx; //vx.SizeX();
+    sz.sy = c_sy; //vx.SizeY();
+    sz.sz = c_sz; //vx.SizeZ();
     return sz;
   }
 
@@ -21543,10 +21605,9 @@ public:
   
   virtual ElemSpec WorldIndex(int w) const
   {
-    int sx = vx.SizeX();
-    int sy = vx.SizeY();
-    int sz = vx.SizeZ();
-
+    int sx = c_sx;
+    int sy = c_sy;
+    int sz = c_sz;
     int sss_x = w / (sy*sz);
     int sss_xr = w - (sss_x*sy*sz);
 
@@ -21574,29 +21635,27 @@ public:
 	return e_spec;
       }
 
-    
     int val = vx.Map(sss_x,sss_y,sss_z);
     bool b = false;
     if (val!=-1) {
       int val_x = vx.Map(sss_x+1,sss_y,sss_z);
-      if (val!=val_x) { b=true; } else {
+      if (val_x==-1) { b=true; } else {
 	int val_y = vx.Map(sss_x,sss_y+1,sss_z);
-	if (val!=val_y) { b=true; } else {
+	if (val_y==-1) { b=true; } else {
 	  int val_z = vx.Map(sss_x,sss_y,sss_z+1);
-	  if (val!=val_z) { b=true; } else {
+	  if (val_z==-1) { b=true; } else {
 	    int val_mx = vx.Map(sss_x-1,sss_y,sss_z);
-	    if (val!=val_mx) { b=true; } else {
+	    if (val_mx==-1) { b=true; } else {
 	      int val_my = vx.Map(sss_x,sss_y-1,sss_z);
-	      if (val!=val_my) { b=true; } else {
+	      if (val_my==-1) { b=true; } else {
 		int val_mz = vx.Map(sss_x,sss_y,sss_z-1);
-		if (val!=val_mz) { b=true; }
+		if (val_mz==-1) { b=true; }
 	      }
 	    }
 	  }
 	}
       }
     }
-    
     e_spec.enabled = val!=-1 && b;
     
     e_spec.shapeindex = val;
@@ -21609,6 +21668,7 @@ private:
   std::vector<FaceCollection*> cubes;
   //OptCubeCache &cache;
   //const OptCubes &cubes2;
+  int c_sx, c_sy, c_sz;
 };
 
 GameApi::OVX GameApi::VoxelApi::vx_to_ovx(VX vx, std::vector<P> vec)
