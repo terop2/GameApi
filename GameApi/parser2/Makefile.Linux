@@ -1,6 +1,6 @@
 
 all:
-	g++ -std=c++11 dump_docs.cc -o dump_docs
-	g++ -std=c++11 dump_functions.cc `pkg-config --cflags freetype2` `pkg-config --libs freetype2` -L.. -lGameApi -o dump_functions
-	g++ -std=c++11 parser.cc -o parser
-	g++ -std=c++11 file_gen.cc -o file_gen
+	g++ -std=c++23 dump_docs.cc -o dump_docs
+	g++ -std=c++23 dump_functions.cc `pkg-config --cflags freetype2` `pkg-config --libs freetype2` -L.. -lGameApi -o dump_functions
+	g++ -std=c++23 parser.cc -o parser
+	g++ -std=c++23 file_gen.cc -o file_gen
