@@ -455,12 +455,16 @@ echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounde
    echo "</div>";
    echo "</div>";
    echo "<div id=\"scriptdialog$ii\" style=\"display:none\" class=\"scriptdialog\">";
+   echo "<div id=\"scripttitle$ii\" class=\"scripttitle\">";
    echo "<div id=\"scriptclose$ii\" class=\"scriptclose\">";
    echo "<button id=\"scriptclosebutton$ii\" onclick=\"hide_script($ii)\">[X]</button>";
    echo "</div>";
-   echo "<div  class=\"scriptdialog_inner\">";
+   echo "</div>";
+   echo "<div class=\"scriptdialogbody\">";
+   echo "<div class=\"scriptdialog_inner\">";
    echo "<pre id=\"scriptdialog_inner$ii\" style=\"font-size: 70%; line-height: 70%;\">";
    echo "</pre>";
+   echo "</div>";
    echo "</div>";
    echo "</div>";
    echo "<div id=\"copydialog$ii\" style=\"display:none\" class=\"copydialog\">";
@@ -525,7 +529,7 @@ echo "   var d = document.getElementById(\"scriptdialog_inner\" + ii);\n";
 echo "   dt = dt.replaceAll(\"<\",\"&lt;\");\n";
 echo "   dt = dt.replaceAll(\">\",\"&gt;\");\n";
 echo "   dt = dt.replaceAll(\"\\n\",\"<br>\");\n";
-echo "   d.innerHTML = dt;\n";
+echo "   d.innerHTML = \"\\n\\n\\n\"+dt;\n";
 echo "}\n";
 echo "function show_script(v,ump) {\n";
 echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
@@ -1483,8 +1487,10 @@ body {
    border: 2px solid;
    z-index: 300;
    background-color: white;
-   overflow: scroll;
-   scrollbar-width: thin;
+   //overflow: scroll;
+   //scrollbar-width: thin;
+   display: flex;
+   flex-direction: column;
 }
 @media screen and (max-width: 480px) {
 .scriptdialog {
@@ -1496,22 +1502,37 @@ body {
    border: 2px solid;
    z-index: 300;
    background-color: white;
-   overflow: scroll;
-   scrollbar-width: thin;
+   //overflow: scroll;
+   //scrollbar-width: thin;
+   display: flex;
+   flex-direction: column;
 }
+}
+.scripttitle {
+   background: #ddd;
+   padding: 8px 12px;
+   font-weight: bold;
+   flex-shrink: 0;
+}
+.scriptdialogbody {
+   overflow-y: auto;
+   padding: 10px;
+   flex: 1;
+   max-height: 600px;
+   overscroll-behavior: contain;
 }
 .scriptclose {
    position: relative;
-   left: 750px;
+   left: 720px;
 }
 @media screen and (max-width: 480px) {
 .scriptclose {
    position: relative;
-  left: 285px;
+  left: 245px;
 }
 }
 .scriptdialog_inner {
-   margin: 30px;
+   top: 300px;
 }
 .copydialog {
    position: fixed;
