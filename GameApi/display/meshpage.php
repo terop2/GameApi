@@ -574,8 +574,8 @@ echo "</script>\n";
 
 
 <div id="main_display" class="container-lg" style="display:none"> <!--v-show="state.mesh"-->
-<div class="display_title_bar" id="display_title_bar">
-</div>
+<h1 class="display_title_bar" id="display_title_bar">
+</h1>
 <div class="display" id="display2" style="display:none">
 </div>
 <div class="ems" id="canvas2" style="width:330px; height:247px; display:none;"></div>
