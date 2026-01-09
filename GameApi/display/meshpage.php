@@ -402,7 +402,6 @@ $display_labels[$ii] = $label;
    echo "<div class=\"flex-item col-12 col-sm-6 col-md-4 col-lg-3 p-3 m-0 w-18 h-18 text-center\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
    echo "<div class=\"highlight hover-red child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\">";
    echo "<div style=\"width: 100%; font-size: 150%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\"><b>$ii : $label</b></div>";
-   echo "<a class=\"label hover-red\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
    echo "<div class=\"hover-red\">";
    echo "<div class=\"image hover-red\">";
    // BACKGROUND CHANGE
@@ -410,6 +409,8 @@ $display_labels[$ii] = $label;
    //echo "<div style=\"width: 200; height:150; background: rgba(0,0,0,1);\"></div>";
    //echo "</layer>";
    //echo "<layer width=\"200\" height=\"150\">";
+   echo "<a class=\"label hover-red\" href=\"$url\" v-on:click.prevent=\"mesh_display(" . $ii . ",'" . $id . "','" . $label ."')\" itemprop=\"url\">";
+
    if (file_exists("user_data/user_terop/screenshot" . $ii . ".webp"))
    {
    echo "<img class=\"hover-red object-fit-cover\" loading=\"lazy\" src=\"user_data/user_terop/screenshot" . $ii . ".webp\" id=\"displayimage" . $iii . "\" class=\"displayimage\" style=\"width: 100%; aspect-ratio: 4 / 3;\" width=\"200\" height=\"150\" draggable=\"false\"   crossorigin/>";
@@ -420,6 +421,7 @@ $display_labels[$ii] = $label;
    // src=\"" . $filename . "\"
    //echo "<script>imgarr.push({ tag:\"displayimage" . $iii . "\", filename : \"" . $filename . "\"});</script>";
 
+   echo "</a>";
 
 
 
@@ -450,16 +452,19 @@ echo "<button class=\"btn btn-danger btn-sm btn-light py-1 px-1 hover-red rounde
    echo "<div id=\"zipprogress" . $ii . "\" style=\"display:none\">";
    echo "<progress class=\"zipbutton zipmargin\" id=\"zipprog" . $ii . "\" max=\"11\" value=\"0\">70%</progress>";
    echo "</div>";
-   echo "</a>";
    echo "</div>";
    echo "</div>";
    echo "<div id=\"scriptdialog$ii\" style=\"display:none\" class=\"scriptdialog\">";
+   echo "<div id=\"scripttitle$ii\" class=\"scripttitle\">";
    echo "<div id=\"scriptclose$ii\" class=\"scriptclose\">";
    echo "<button id=\"scriptclosebutton$ii\" onclick=\"hide_script($ii)\">[X]</button>";
    echo "</div>";
-   echo "<div  class=\"scriptdialog_inner\">";
+   echo "</div>";
+   echo "<div class=\"scriptdialogbody\">";
+   echo "<div class=\"scriptdialog_inner\">";
    echo "<pre id=\"scriptdialog_inner$ii\" style=\"font-size: 70%; line-height: 70%;\">";
    echo "</pre>";
+   echo "</div>";
    echo "</div>";
    echo "</div>";
    echo "<div id=\"copydialog$ii\" style=\"display:none\" class=\"copydialog\">";
@@ -524,7 +529,7 @@ echo "   var d = document.getElementById(\"scriptdialog_inner\" + ii);\n";
 echo "   dt = dt.replaceAll(\"<\",\"&lt;\");\n";
 echo "   dt = dt.replaceAll(\">\",\"&gt;\");\n";
 echo "   dt = dt.replaceAll(\"\\n\",\"<br>\");\n";
-echo "   d.innerHTML = dt;\n";
+echo "   d.innerHTML = \"\\n\\n\\n\"+dt;\n";
 echo "}\n";
 echo "function show_script(v,ump) {\n";
 echo "   var d = document.getElementById(\"scriptdialog\" + v);\n";
@@ -1482,8 +1487,10 @@ body {
    border: 2px solid;
    z-index: 300;
    background-color: white;
-   overflow: scroll;
-   scrollbar-width: thin;
+   //overflow: scroll;
+   //scrollbar-width: thin;
+   display: flex;
+   flex-direction: column;
 }
 @media screen and (max-width: 480px) {
 .scriptdialog {
@@ -1495,22 +1502,37 @@ body {
    border: 2px solid;
    z-index: 300;
    background-color: white;
-   overflow: scroll;
-   scrollbar-width: thin;
+   //overflow: scroll;
+   //scrollbar-width: thin;
+   display: flex;
+   flex-direction: column;
 }
+}
+.scripttitle {
+   background: #ddd;
+   padding: 8px 12px;
+   font-weight: bold;
+   flex-shrink: 0;
+}
+.scriptdialogbody {
+   overflow-y: auto;
+   padding: 10px;
+   flex: 1;
+   max-height: 600px;
+   overscroll-behavior: contain;
 }
 .scriptclose {
    position: relative;
-   left: 750px;
+   left: 720px;
 }
 @media screen and (max-width: 480px) {
 .scriptclose {
    position: relative;
-  left: 285px;
+  left: 245px;
 }
 }
 .scriptdialog_inner {
-   margin: 30px;
+   top: 300px;
 }
 .copydialog {
    position: fixed;
