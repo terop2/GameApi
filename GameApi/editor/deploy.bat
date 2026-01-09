@@ -1,4 +1,4 @@
-@echo off
+@echo on
 set "P3=%3"
 set "P2=%2"
 set "P1=%1"
@@ -16,7 +16,7 @@ IF EXIST "%OLDDIR%\sed.exe" (
 )
 cd "%TEMP%\_gameapi_builder/deploy/engine"
 set "ZIPFILE=%P1%"
-"%OLDDIR%\tar.exe" -xf "%ZIPFILE%"
+"%OLDDIR%\unzip.exe" "%ZIPFILE%"
 type gameapi.js |"%OLDDIR%\sed.exe" s@web_page@engine/web_page@ >gameapi2.js
 move gameapi2.js gameapi.js
 set "OUTPUT=%TEMP%\_gameapi_builder\deploy\display.php"
