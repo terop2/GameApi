@@ -29153,7 +29153,7 @@ float count_percentage_tf(GLTFModelInterface *next, int m, int j)
       bool b = areaf < 0.000001f;
       if (b) count++;
     }
-  //std::cout << "Percentage:" << 1.0f-float(count)/float(s2);
+  std::cout << "Percentage:" << 1.0f-float(count)/float(s2) << std::endl;
   return 1.0f-float(count)/float(s2);
 }
 
