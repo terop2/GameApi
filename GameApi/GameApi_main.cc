@@ -1109,8 +1109,10 @@ EXPORT void GameApi::MainLoopApi::check_glerrors(std::string context)
   }
   
 }
+extern int g_current_shader_id;
 EXPORT void GameApi::MainLoopApi::swapbuffers()
 {
+  g_current_shader_id = -1;
   //std::cout << "swapbuffers" << std::endl;
   //stackTrace();
   

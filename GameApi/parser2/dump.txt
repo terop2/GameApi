@@ -3,6 +3,7 @@ new bitmap_api newbitmap
 new_bm bitmap_api newbitmap_bm
 new_fb bitmap_api newbitmap_fb
 new_bb bitmap_api newbitmap_bb
+bm_png_bm bitmap_api bm_png_bm
 bm_expr bitmap_api script_bitmap
 load bitmap_api loadbitmap
 save_png bitmap_api save_png_ml
@@ -13,6 +14,7 @@ bm_url bitmap_api loadbitmapfromurl
 bm_fetch bitmap_api dyn_fetch_bitmap
 bm_fetch2 bitmap_api dyn_fetch_bitmap2
 bm_gltf polygon_api gltf_load_bitmap
+bm_debug bitmap_api debug_number
 bm_atlas_x sprite_api sprite_atlas_x
 bm_atlas_y sprite_api sprite_atlas_y
 bm_atlas_xy sprite_api sprite_atlas_xy
@@ -58,15 +60,17 @@ bm_bumpmap bitmap_api bump_map
 bm_memoize bitmap_api memoize
 bm_world_from_bitmap bitmap_api world_from_bitmap3
 bm_persistent_cache bitmap_api persistent_cache
+bm_display bitmap_api display_bitmaps
+bm_vert_display bitmap_api vertical_bitmap_display
 cbm_empty cont_bitmap_api cbm_empty
 cbm_from_bitmap cont_bitmap_api from_bitmap
 cbm_to_bitmap cont_bitmap_api to_bitmap
-cbm_bicubic cont_bitmap_api bicubic
 cbm_sample cont_bitmap_api sample
 cbm_rotate cont_bitmap_api rotate
 s_spherical polygon_api s_spherical
 s_bitmap surface_api texture
 s_sample polygon_api s_sample
+cbm_to_cfb points_api cbm_to_cfb
 cfb_c float_bitmap_api C_bitmap
 cfb_x float_bitmap_api X_bitmap
 cfb_y float_bitmap_api Y_bitmap
@@ -114,7 +118,7 @@ mul_fb bitmap_api mul_fb
 bm_dist float_bitmap_api dist
 bm_blur float_bitmap_api blur_bitmap
 bm_gaussian float_bitmap_api gaussian
-bm_perlin float_bitmap_api perlin_noise
+bm_perlin float_bitmap_api perlin_noise2
 to_grayscale_color float_bitmap_api to_grayscale_color
 fb_choose_bitmap float_bitmap_api choose_bitmap
 from_bool float_bitmap_api from_bool
@@ -126,8 +130,11 @@ fb_to_ibm bitmap_api convert_fb_to_ibm_bitmap
 ibm_to_vx bitmap_api convert_ibm_to_vx
 // PolygonApi
 empty polygon_api p_empty
+p_ds_p polygon_api load_ds_from_temp_p
 save_model polygon_api save_model_ml
 save_ds mainloop_api save_ds_ml
+p_vox voxel_api vox_voxel
+p_vox2 voxel_api vox_voxel3
 p_url polygon_api p_url
 p_url_nr polygon_api p_url_nr
 p_mtl polygon_api p_mtl
@@ -139,6 +146,10 @@ p_ply points_api ply_faces
 p_url_mtl polygon_api p_url_mtl
 p_ds_url polygon_api p_ds_url
 p_stl polygon_api stl_load
+decimate polygon_api decimate3
+sp_decimate polygon_api spatial_decimate
+decimate_tf polygon_api decimate_tf
+tf_glb_tf polygon_api tf_glb_tf
 gltf_load mainloop_api gltf_loadKK
 gltf_load2 mainloop_api gltf_loadKK2
 gltf_mesh_all_p mainloop_api gltf_mesh_all_p
@@ -156,6 +167,7 @@ quad_x polygon_api quad_x
 quad_y polygon_api quad_y
 quad_z polygon_api quad_z
 quad_fullscreen polygon_api fullscreen_quad
+heightfield_p points_api height_field_p
 bg_image polygon_api bg_image
 quad_bmsize polygon_api bitmapsized_quad
 vr_fullscreen_quad polygon_api vr_fullscreen_quad
@@ -260,7 +272,6 @@ persistent_cache polygon_api persistent_cache
 world_from_bitmap polygon_api world_from_bitmap
 p_world_from_bitmap bitmap_api p_world_from_bitmap
 p_to_bitmap polygon_api renderpolytobitmap
-p_wave polygon_api wave_shader
 p_fog polygon_api fog_shader
 shader shader_api shader_choice
 // MaterialsApi
@@ -309,14 +320,11 @@ m_snow materials_api snow
 m_flat materials_api flat
 m_fur materials_api fur
 m_noise materials_api noise
-m_bloom materials_api bloom
 m_choose_color materials_api choose_color
 m_brashmetal materials_api brashmetal
 m_marble materials_api marble
 m_web materials_api web
 m_bevel materials_api bevel
-m_dist_field materials_api dist_field_mesh
-m_dist_field_color materials_api mesh_color_from_sfo
 ext_p polygon_api material_extractor_p
 ext_bm polygon_api material_extractor_bm
 ext_mt polygon_api material_extractor_mt
@@ -404,13 +412,16 @@ pa_y curve_api y_curve
 cpp_sum curve_api xy_sum
 cpp_sum2 curve_api xy_sum2
 // PointsApi
+pts_load points_api load_points
 pts_alt points_api pts_alt
 pts_ply points_api ply_pts
 pt_array points_api pt_array
 from_float_volume points_api from_float_volume
 or_points points_api or_points
 pts_convexhull polygon_api convex_hull
+pts_lines points_api pts_lines
 move_pts points_api move
+heightfield_pts points_api height_field_pts
 bullet_pts points_api bullet
 anim_mix_pts points_api anim_mix
 score_hide_pts mainloop_api score_hide_pts
@@ -425,13 +436,14 @@ color_pts points_api color_points
 face_center points_api polygon_face_center_points
 points_field points_api points_field
 hemisphere_pts points_api hemisphere_points
-wave_pts points_api wave_points
 filter_pts points_api filter_component
 from_volume points_api from_volume
 shadow_points points_api shadow_points
 random_plane points_api random_plane
 random_bitmap points_api random_bitmap_instancing
 random_quad points_api random_mesh_quad_instancing
+random_lattice points_api random_lattice
+perlin_plane points_api random_points_in_plane
 random_volume volume_api random_vol_object
 pts_grid points_api pts_grid
 pts_grid_bb points_api pts_grid_bb
@@ -450,6 +462,7 @@ ms_from_points matrices_api from_points
 ms_mult matrices_api mult_array
 ms_repeat matrices_api repeat_ms
 ms_random_rot matrices_api ms_random_rot
+ms_steady matrices_api ms_steady
 ms_subarray matrices_api subarray
 ms_from_lines_2d matrices_api from_lines_2d
 ms_from_lines_3d matrices_api from_lines_3d
@@ -477,6 +490,8 @@ mn_scale_progress move_api scale_progress
 mn_pos_fetcher move_api mn_fetcher
 mn_slope move_api mn_interpolate
 mn_interpolate move_api interpolate
+android_landscape move_api android_landscape_rotate
+inv_android_landscape move_api android_landscape_rotate_inv
 local_move move_api local_move
 local_move_mat move_api local_move_matrix
 mesh_anim polygon_api mesh_anim
@@ -519,7 +534,6 @@ kf_mesh vertex_anim_api keyframe_mesh
 kf_lines vertex_anim_api keyframe_lines
 kf_bind vertex_anim_api keyframe_bind
 kf_repeat vertex_anim_api repeat_keyframes
-kf_curve vertex_anim_api curve_trans
 kf_rot vertex_anim_api sample_rot
 ptt_empty vertex_anim_api empty_trans
 ptt_trans_s vertex_anim_api translate_trans
@@ -536,7 +550,18 @@ cmd_rotate move_api cmd_rotate
 cmd_to_pts move_api cmd_to_pts
 cmd_to_li move_api cmd_to_li
 cmd_to_plf move_api cmd_to_plf
+vx_from_bm voxel_api voxel_from_bitmaps
 vx_empty voxel_api empty_voxel
+vox_vox voxel_api vox_voxel2
+vox_cubes voxel_api vox_cubes
+vox_ml voxel_api vox_ml
+vox_ml2 voxel_api vox_ml2
+vox_bind_ml voxel_api vox_bind_ml
+vox_bind_ml2 voxel_api vox_bind_ml2
+vx_to_ovx voxel_api vx_to_ovx
+remove_empty_ovx voxel_api remove_not_enabled
+render_ovx_p voxel_api render_ovx_p
+render_ovx voxel_api render_ovx
 vx_sub voxel_api subvoxel
 vx_landscape_bm voxel_api voxel_landscape_from_fbm
 vx_or_elem voxel_api blit_voxel2
@@ -551,6 +576,7 @@ av_from_pts polygon_api pts_to_voxel
 av_to_pts polygon_api voxelarray_to_pts
 av_unique polygon_api av_unique
 // VectorApi
+vector vector_api vector
 // VolumeApi
 o_vrender volume_api volumeprojection
 o_from_bool_bitmap volume_api from_bool_bitmap
@@ -581,15 +607,14 @@ score_hidder mainloop_api score_hidder
 FI_load font_api load_font
 FI_drawtext font_api draw_text_string
 FI_largetext font_api draw_text_large
-FI_save_dump font_api save_font_dump
-FI_load_dump font_api load_font_dump
 bm_array_id font_api bm_array_id
 bm_chooser font_api dynamic_character
 p_chooser font_api dynamic_polygon
 ml_chooser font_api ml_chooser
-ml_anim mainloop_api anim_ML
+if_keys mainloop_api if_keys
 key_ml mainloop_api key_ml
 if_qarea font_api quake_area_fetcher
+if_char_move_area font_api key_move_2_area_fetcher
 if_toggle font_api toggle_button_fetcher
 if_timed font_api timed_int_fetcher
 if_move font_api movement_int_fetcher
@@ -600,6 +625,7 @@ if_hmd font_api hmd_state_fetcher
 choose_screen font_api choose_screen
 uv_face mainloop_api face_fetcher
 ff_choose font_api choose_float_fetcher
+ff_span font_api span_key_fetcher
 ff_time font_api time_fetcher2
 ff_range font_api time_range_fetcher
 ff_key_range font_api time_range_fetcher_key
@@ -668,9 +694,18 @@ pn_std waveform_api std_polynomial
 pn_df_dx waveform_api df_dx
 wv_polynomial waveform_api polynomial_wave
 // MainLoopApi
+bs_string mainloop_api string_bytestore
+bs_timing mainloop_api bytestore_timing
+bs_array mainloop_api bytestore_array
+bs_render mainloop_api bytestore_render
+bs_pts mainloop_api bytestore_pts
+ml_empty mainloop_api ml_empty
+load_gameapi_zip2 mainloop_api load_zip2
+load_gameapi_zip mainloop_api load_zip
 hires_ml mainloop_api hires_ml
 t_start mainloop_api timing_start
 t_time mainloop_api timing
+t_event mainloop_api timing_event
 t_time_switch mainloop_api timing_switch
 t_exit mainloop_api timing_exit
 html_url mainloop_api html_url
@@ -678,6 +713,7 @@ save_html mainloop_api save_script
 bm_script mainloop_api load_BM_script
 p_script mainloop_api p_script2
 ml_script mainloop_api load_ML_script2
+ml_script2 mainloop_api load_ML_script3
 mn_script mainloop_api load_MN_script2
 mt_script mainloop_api load_MT_script2
 bm_script_arr mainloop_api load_BM_script_array
@@ -686,6 +722,8 @@ p_script_arr mainloop_api load_P_script_array
 ml_script_arr mainloop_api load_ML_script_array
 ml_gltf_scene mainloop_api gltf_scene
 ml_gltf_all mainloop_api gltf_mesh_all
+ml_gltf_all_inst mainloop_api gltf_mesh_all_inst2
+ml_gltf_all_inst_m mainloop_api gltf_mesh_all_inst_matrix
 ml_gltf_all_anim mainloop_api gltf_mesh_all_anim
 ml_gltf_all_env mainloop_api gltf_mesh_all_env
 ml_gltf_sc_anim mainloop_api gltf_scene_anim
@@ -694,6 +732,7 @@ tf_material mainloop_api gltf_material_mesh
 tf_node mainloop_api gltf_node2
 tf_scene2 mainloop_api gltf_scene2
 async_gltf mainloop_api async_gltf
+fade_pic polygon_api fade_pic
 scene_ml polygon_api load_scene
 async_url mainloop_api async_url
 piechart_ml polygon_api piechart_full
@@ -708,12 +747,15 @@ seq_ml mainloop_api seq_ml
 seq_ml_score mainloop_api seq_ml_score
 timed_tmp_seq_ml mainloop_api timed_tmp_seq_ml
 move_ml move_api move_ml
+key_move_ml move_api keypress_move_ml
 move_ml_p move_api move_ml_p
 move_in mainloop_api move_in
 dyn_points_ml mainloop_api dyn_points
 repeat_ml move_api repeat_ml
 bm_render sprite_api vertex_array_render
 bm_2d sprite_api turn_to_2d
+meters_default mainloop_api turn_to_meters_default
+meters_scale mainloop_api turn_to_meters
 bm_2d_screen_scale mainloop_api scale_2d_screen
 sp_render polygon_api sprite_render
 sp_render_inst polygon_api sprite_render_inst
@@ -735,22 +777,33 @@ m_bind_inst materials_api bind_inst
 m_bind_inst_mat materials_api bind_inst_matrix
 m_bind_inst_many polygon_api m_bind_inst_many
 m_bind_anim polygon_api mesh_anim_display_inst
+m_lod mainloop_api lod
+m_lod_matrix mainloop_api lod_matrix
+m_lod_pts_tf mainloop_api lod_pts_tf
+m_lod_matrix_tf mainloop_api lod_matrix_tf
+quake_in_MV mainloop_api get_movement_from_MV
 m_fade_inst materials_api bind_inst_fade
 b_divide polygon_api block_divide
 b_bind polygon_api block_render
 b_bind2 polygon_api block_render2
+b_pts points_api block_pts
+b_pts_lod points_api block_pts_lod
+b_pts_debug points_api block_pts_debug
 b_draw polygon_api block_draw
 rot_x_ml move_api rot_x_ml
+move_char_ml move_api key_move_ml
 rot_y_ml move_api rot_y_ml
 rot_z_ml move_api rot_z_ml
 enable_ml move_api enable_ml
 color_ml move_api color_ml
+keys_to_wasd mainloop_api cursorkeys_to_wasd
 wasd_ml move_api all_cursor_keys
 grid_ml bitmap_api grid_ml
 quake_ml move_api quake_ml
 quake_ml2 move_api quake_ml2
 fly_ml move_api quake_ml3
 isometric_ml mainloop_api isometric
+heightfield_ml points_api publish_heightfield
 debug_obj mainloop_api debug_obj
 prepare_key_ml texture_api prepare_key
 screenshot_key_ml texture_api save_screenshot_via_key
@@ -791,6 +844,7 @@ ogl_disable_polys mainloop_api disable_polygons
 ogl_depthfunc mainloop_api depthfunc
 ogl_depthmask mainloop_api depthmask
 ogl_blendfunc mainloop_api blendfunc
+ogl_shcache_disable mainloop_api shader_cache_disable
 ogl_zbuf_disable mainloop_api disable_z_buffer
 ogl_transparent mainloop_api transparent
 ogl_canvas_transparent mainloop_api scene_transparency
@@ -803,7 +857,6 @@ midi_ml mainloop_api load_midi
 android_resize mainloop_api android_resize
 blk_window blocker_api game_window
 run_window blocker_api game_window2
-webgpu_window blocker_api webgpu_window
 html_run mainloop_api emscripten_frame2
 html_ml mainloop_api emscripten_frame2_ML
 html_p mainloop_api emscripten_frame2_P
@@ -812,6 +865,8 @@ sml_window mainloop_api small_window
 looking_glass_window blocker_api game_window_2nd_display
 looking_glass_full mainloop_api looking_glass_full
 vr_window blocker_api vr_window
+videofile_generic texture_api videofile_txid_generic
+webcam_generic texture_api webcam_txid_generic
 pkg_window mainloop_api memmap_window2
 pkg_window2 mainloop_api memmap_window3
 save_deploy mainloop_api save_deploy

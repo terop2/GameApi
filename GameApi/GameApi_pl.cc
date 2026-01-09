@@ -28867,12 +28867,13 @@ GameApi::P GameApi::PolygonApi::decimate3(GameApi::P faces, float val)
   FaceCollection *coll = find_facecoll(e,faces);
   return add_polygon2(e, new DecimatePolygon(coll,val),1);
 }
+/*
 GameApi::P GameApi::PolygonApi::decimate_zeros(GameApi::P faces)
 {
   FaceCollection *coll = find_facecoll(e,faces);
   return add_polygon2(e, new DecimatePolygon(coll),1);
 }
-
+*/
 struct DecimateVertex_float
 {
   Point p1;

@@ -292,13 +292,17 @@ GameApi::SH GameApi::ShaderApi::get_shader_1(std::string v_format, std::string f
   
   return sh;
 }
+int g_current_shader_id = -1;
 EXPORT GameApi::PinIn GameApi::ShaderApi::use(GameApi::SH shader)
 {
   use_1(shader);
   return PinIn();
 }
 void GameApi::ShaderApi::use_1(GameApi::SH shader)
-{
+{ 
+  if (shader.id==g_current_shader_id) return;
+  g_current_shader_id = shader.id;
+  
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   if (shader.id<0||p->ids.find(shader.id)==p->ids.end())  { if (shader.id>=0) std::cout << "use_1::Shader id=" << shader.id << "rejected" << std::endl; return; }
   ShaderSeq *seq = p->seq;
@@ -307,6 +311,7 @@ void GameApi::ShaderApi::use_1(GameApi::SH shader)
 
 EXPORT GameApi::PinIn GameApi::ShaderApi::unuse(GameApi::SH shader)
 {
+  g_current_shader_id = -1;
   if (shader.id<0) { /*std::cout << "unuse shader.id=" << shader.id << " rejected" << std::endl;*/ return PinIn(); }
   ShaderPriv2 *p = (ShaderPriv2*)priv;
   ShaderSeq *seq = p->seq;

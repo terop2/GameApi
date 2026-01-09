@@ -1,4 +1,6 @@
 
+#include <limits>
+#include <optional>
 #include "../GameApi_h.hh"
 
 int main(int argc, char **argv)

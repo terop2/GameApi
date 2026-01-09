@@ -227,6 +227,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(PKG)
   MAC(ATT)
   MAC(CX)
+  MAC(OVX)
 #undef MAC
   
   //template<class T>
@@ -3582,9 +3583,19 @@ class VoxelApi
   // NxNxN->RGB
 public:
   IMPORT VoxelApi(Env &e);
+  IMPORT OVX empty_ovx();
+  IMPORT OVX remove_not_enabled(OVX vx);
+  IMPORT OVX remove_colours(OVX vx);
+  IMPORT OVX resize_voxels(OVX vx, VX vx2);
+  IMPORT OVX vx_to_ovx(VX vx, std::vector<P> vec);
+  IMPORT ML render_ovx(EveryApi &ev, OVX vx, MT mat, float sx, float sy, float sz);
+  IMPORT P render_ovx_p(EveryApi &ev, OVX vx, float sx, float sy, float sz);
   IMPORT ML vox_bind_ml(EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt);
   IMPORT ML vox_ml(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
+  IMPORT ML vox_bind_ml2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt);
+  IMPORT ML vox_ml2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT VX vox_voxel2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
+  IMPORT P vox_voxel3(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT ARR vox_cubes(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT P vox_voxel(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT VX voxel_from_bitmaps(std::vector<BM> vec, std::string url);
@@ -3714,6 +3725,7 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  
   IMPORT ML publish_heightfield(ML ml, CFB landscape, float start_x, float end_x,
 				float start_y, float end_y, float start_z, float end_z);
   IMPORT CFB cbm_to_cfb( CBM bm, float red_mult, float red_add,
@@ -3766,6 +3778,10 @@ public:
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
   IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT PTS random_mesh_quad_instancing(EveryApi &ev, P p, int count);
+  IMPORT PTS random_lattice(EveryApi &ev, int sx, int sy, int sz,
+			    float s_x, float s_y, float s_z,
+			    float px, float py, float pz,
+			    int count);
   IMPORT PTS surface(S surf, int sx, int sy);
   IMPORT PTS surface(std::function<PT (float,float)> surf,
 		     std::function<unsigned int (PT,float,float)> color,
