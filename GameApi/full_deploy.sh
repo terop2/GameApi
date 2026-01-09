@@ -32,6 +32,9 @@ echo $1 |sudo -S dpkg -i editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb
 (cd docker;./build_tar.sh `cat ../VERSION.TXT`)
 (cd cmdline_docker;./copy_files.sh)
 (cd cmdline_docker;./build_tar.sh)
+if [[ $2 == "steam" || $3 == "steam" ]]; then
+    echo "SKIP"
+else
 echo "STEP#1/8 web_page" 
 scp web_page/engine* terop@ssh.meshpage.org:/home/terop/meshpage.org/
 echo "STEP#2/8 cmdline_docker"
@@ -48,4 +51,5 @@ echo "STEP#7/8 editor2"
 scp editor/gameapi-builder_1.0-`cat ./VERSION.TXT`.deb terop@ssh.meshpage.org:/home/terop/meshpage.org/assets/
 echo "STEP#8/8 version.txt"
 scp ./VERSION.TXT terop@ssh.meshpage.org:/home/terop/meshpage.org/assets/
+fi
 echo "SUCCESS"
