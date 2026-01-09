@@ -3,6 +3,7 @@ if "%1"=="" echo copy_to_steam_win.bat password
 if "%1"=="" goto END
 git pull
 call full_deploy_win32 %1 28 incremental steam
+copy c:\users\terop\cvs\GameApi\GameApi\display\gameapi_display.zip c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\gameapi_display.zip
 copy c:\users\terop\cvs\GameApi\GameApi\editor\a.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\gameapi_builder.exe
 copy c:\users\terop\cvs\GameApi\GameApi\libGameApi.dll c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\libGameApi.dll
 c:\windows\system32\xcopy.exe c:\users\terop\cvs\GameApi\GameApi\gameapi_content c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\gameapi_content /E /I /Y
@@ -11,5 +12,5 @@ copy c:\users\terop\cvs\GameApi\GameApi\editor\deploy.bat c:\users\terop\cvs\ste
 copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\tar.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\tar.exe
 copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\zip.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\zip.exe
 copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\bzip2.dll c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\bzip2.dll
-
+copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\unzip.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\unzip.exe
 :END
