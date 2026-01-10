@@ -12,5 +12,5 @@ copy c:\users\terop\cvs\GameApi\GameApi\editor\deploy.bat c:\users\terop\cvs\ste
 copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\tar.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\tar.exe
 copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\zip.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\zip.exe
 copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\bzip2.dll c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\bzip2.dll
-
+copy c:\users\terop\cvs\GameApi\GameApi\editor\release\editor\unzip.exe c:\users\terop\cvs\steam\sdk\tools\ContentBuilder\content\GameApiBuilder\depot_win\unzip.exe
 :END
