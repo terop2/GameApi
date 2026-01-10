@@ -20030,6 +20030,7 @@ struct VoxChunk {
 };
 bool test_chunk(const VoxAcc &acc, const char *chunk_id, unsigned char **found)
 {
+  //std::cout << "Chunk: " << chunk_id[0] << chunk_id[1] << chunk_id[2] << chunk_id[3];
   unsigned char *ptr = acc.ptr;
   if (ptr[0]==chunk_id[0] &&
       ptr[1]==chunk_id[1] &&
@@ -20037,8 +20038,10 @@ bool test_chunk(const VoxAcc &acc, const char *chunk_id, unsigned char **found)
       ptr[3]==chunk_id[3])
     {
       *found=0;
+      //std::cout << " Found!" << std::endl;
       return true;
     }
+#if 0
   int s = acc.numBytes;
   for(int i=0;i<s;i++)
     {
@@ -20048,10 +20051,13 @@ bool test_chunk(const VoxAcc &acc, const char *chunk_id, unsigned char **found)
 	  ptr[i+3]==chunk_id[3])
 	{
 	  *found = ptr +i;
+      std::cout << " Found (but wrong location)!" << std::endl;
 	  //std::cout << "FOUND chunk " << ptr[i] << ptr[i+1] << ptr[i+2] << ptr[i+3] << " at " << i << std::endl;
 	  return true;
 	}      
     }
+#endif
+  //std::cout << " NOT Found! (" << ptr[0] << ptr[1] << ptr[2] << ptr[3] << ")" << std::endl;
   
   //std::cout << "Chunk " << chunk_id << " not found. There was: " << ptr[0] << ptr[1] << ptr[2] << ptr[3] << std::endl;
   return false;
@@ -20073,7 +20079,8 @@ VoxChunk read_chunk(VoxAcc &acc)
   //acc.numBytes -= 12 + res.content_size_bytes + res.children_bytes;
   //std::cout << "radd_chunk:" << res.chunk_id[0] << res.chunk_id[1] << res.chunk_id[2] << res.chunk_id[3] << " " << acc.numBytes << std::endl;
   //std::cout << "numbers:" << res.content_size_bytes << " " << res.children_bytes << std::endl;
-
+  //std::cout << "ReadChunk: " << res.chunk_id[0] << res.chunk_id[1] << res.chunk_id[2] << res.chunk_id[3];
+  //std::cout << "!" << std::endl;
   return res;
 }
 
@@ -20160,6 +20167,86 @@ VoxXYZI xyzi_to_xyzi(const VoxChunk &xyzi)
 struct VoxPalette {
   unsigned int palette[256];
 };
+struct VoxFrame
+{
+  float translate_x, translate_y, translate_z;
+  int rotation; // 0..23
+  float scale_x, scale_y, scale_z;
+  int frame_index;
+};
+struct VoxTranslate {
+  std::map<std::string,std::string> node_attributes;
+  int child_node_id;
+  int reserved_id;
+  int layer_id;
+  int num_frames;
+  std::vector<VoxFrame> frames;
+};
+struct VoxGroup {
+  std::map<std::string,std::string> node_attributes;
+  int num_children;
+  std::vector<int> child_node_ids;
+};
+struct VoxModel {
+  int model_id;
+  std::map<std::string,std::string> dict;
+};
+struct VoxShape {
+  std::map<std::string,std::string> node_attributes;
+  int num_models;
+  std::vector<VoxModel> vec;
+};
+void print_dict(std::map<std::string,std::string> dict)
+{
+  std::map<std::string,std::string>::iterator i=dict.begin();
+  std::cout << "{";
+  for(;i!=dict.end();i++)
+    {
+      std::pair<std::string,std::string> p = *i;
+      std::cout << p.first << "->" << p.second << ",";
+    }
+  std::cout << "}";
+}
+void print(const VoxFrame &f)
+{
+  std::cout << "trans:" << f.translate_x << " " << f.translate_y << " " << f.translate_z << std::endl;
+  std::cout << "rotate:" << f.rotation << std::endl;
+  std::cout << "scale:" << f.scale_x << " " << f.scale_y << " " << f.scale_z << std::endl;
+  std::cout << "frame_index:" << f.frame_index << std::endl;
+}
+void print(const VoxTranslate &t)
+{
+  print_dict(t.node_attributes);
+  std::cout << "child_node_id=" << t.child_node_id << std::endl;
+  std::cout << "reserved_id=" << t.reserved_id << std::endl;
+  std::cout << "layer_id=" << t.layer_id << std::endl;
+  std::cout << "num_frames=" << t.num_frames << std::endl;
+  int s = t.frames.size();
+  for(int i=0;i<s;i++) print(t.frames[i]);
+}
+
+void print(const VoxModel &mod)
+{
+  std::cout << "model_id=" << mod.model_id << std::endl;
+  print_dict(mod.dict);
+}
+void print(const VoxShape &sha)
+{
+  print_dict(sha.node_attributes);
+  std::cout << "num_models=" << sha.num_models << std::endl;
+  int s = sha.vec.size();
+  for(int i=0;i<s;i++)
+    print(sha.vec[i]);
+}
+void print(const VoxGroup &grp)
+{
+  print_dict(grp.node_attributes);
+  std::cout << "num_children=" << grp.num_children;
+  int s = grp.child_node_ids.size();
+  std::cout << "ids: [ "; 
+  for(int i=0;i<s;i++) std::cout << grp.child_node_ids[i] << " ";
+  std::cout << "]" << std::endl;
+}
 unsigned int default_palette[256] = {
    0x00000000, 0xffffffff, 0xffccffff, 0xff99ffff, 0xff66ffff, 0xff33ffff, 0xff00ffff, 0xffffccff, 
    0xffccccff, 0xff99ccff, 0xff66ccff, 0xff33ccff, 0xff00ccff, 0xffff99ff, 0xffcc99ff, 0xff9999ff,
@@ -20278,6 +20365,119 @@ VoxPalette default_vox_palette()
     return res;
   }
 }
+void parse_xyz(std::string val, float &x, float &y, float &z)
+{
+  std::stringstream ss(val);
+  ss>>x >> y >> z;
+}
+void parse_int(std::string val, int &res)
+{
+  std::stringstream ss(val);
+  ss>>res;
+}
+VoxFrame parse_frame(std::map<std::string,std::string> s)
+{
+  VoxFrame res;
+  std::string trans = s["_t"];
+  std::string rot = s["_r"];
+  std::string scale = s["_s"];
+  std::string frame = s["_f"];
+  parse_xyz(trans,res.translate_x,res.translate_y,res.translate_z);
+  parse_int(rot,res.rotation);
+  parse_xyz(scale,res.scale_x,res.scale_y,res.scale_z);
+  parse_int(frame,res.frame_index);
+  return res;
+}
+std::string parse_string(unsigned char *ptr, unsigned char **res_next)
+{
+  int *ptr2 = (int*)ptr;
+  int byte_length = *ptr2;
+  std::string res(ptr+sizeof(int),ptr+sizeof(int)+byte_length);
+  *res_next = ptr + sizeof(int)+byte_length;
+  return res;
+}
+std::map<std::string,std::string> parse_dict(unsigned char *ptr, unsigned char **res_next)
+{
+  std::map<std::string,std::string> res;
+  int *ptr2 = (int *)ptr;
+  int num_entries = *ptr2;
+  //std::cout << "dict numentries=" << num_entries << std::endl;
+  unsigned char *next = ptr+sizeof(int);
+  for(int i=0;i<num_entries;i++)
+    {
+      std::string key = parse_string(next, &next);
+      std::string value = parse_string(next, &next);
+      //std::cout << "key=" << key << " value=" << value << std::endl;
+      res[key]=value;
+    }
+  *res_next = next;
+  return res;
+}
+VoxTranslate translate_from_chunk(const VoxChunk &nTRN)
+{
+  VoxTranslate res;
+  unsigned char *ptr = nTRN.chunk_content.ptr;
+  unsigned char *next;
+  std::map<std::string,std::string> attrs = parse_dict(ptr,&next);
+  unsigned int *next_i = (unsigned int *)next;
+  int child = next_i[0];
+  int reserved = next_i[1];
+  int layer = next_i[2];
+  int num_frames = next_i[3];
+  unsigned char *next2 = next + 4*sizeof(int);
+  std::vector<VoxFrame> frames;
+  for(int i=0;i<num_frames;i++)
+    {
+      std::map<std::string,std::string> dict = parse_dict(next2,&next2);
+      res.frames.push_back(parse_frame(dict));
+    }
+  res.node_attributes = attrs;
+  res.child_node_id = child;
+  res.reserved_id = reserved;
+  res.layer_id = layer;
+  res.num_frames = num_frames;
+  return res;
+}
+VoxGroup parse_group(const VoxChunk &grp)
+{
+  VoxGroup res;
+  unsigned char *ptr = grp.chunk_content.ptr;
+  unsigned char *next;
+  res.node_attributes = parse_dict(ptr,&next);
+  unsigned int *next2 = (unsigned int *)next;
+  int num_children = next2[0];
+  res.num_children = num_children;
+  for(int i=0;i<num_children;i++)
+    res.child_node_ids.push_back(next2[1+i]);
+  return res;
+}
+VoxModel parse_model(unsigned char *ptr, unsigned char **res_next)
+{
+  int *ptr3 = (int*)ptr;
+  int model_id = *ptr3;
+  unsigned char *next;
+  std::map<std::string,std::string> dict = parse_dict(ptr+sizeof(int),&next);
+  VoxModel res;
+  res.model_id = model_id;
+  res.dict = dict;
+  return res;
+}
+VoxShape parse_shape(const VoxChunk &shape)
+{
+  unsigned char *ptr = shape.chunk_content.ptr;
+  VoxShape res;
+  unsigned char *next;
+  res.node_attributes = parse_dict(ptr,&next);
+  unsigned int *next2 = (unsigned int*)next;
+  res.num_models = *next2;
+  unsigned char *ptr2 = next + sizeof(int);
+  for(int i=0;i<res.num_models;i++)
+    {
+      res.vec.push_back(parse_model(ptr2,&ptr2));
+    }
+  return res;
+}
+
 VoxPalette palette_from_chunk(const VoxChunk &palette)
 {
   VoxPalette res;
@@ -20328,14 +20528,14 @@ public:
 	  numModels = pack_to_numModels(pack);
 	} else
 	{
-	  numModels = 1;
+	  numModels = 1000;
 	}
       for(int i=0;i<numModels;i++)
 	{
 	  unsigned char *found=0;
 	  VoxChunk size,xyzi;
 	  bool has_size = test_chunk(main_children,"SIZE",&found);
-	  if (!has_size) { error=true; break; }
+	  if (!has_size) { break; } // no error coming from this.
 	  size = read_chunk(main_children);
 	  bool has_xyzi = test_chunk(main_children,"XYZI",&found);
 	  if (!has_xyzi) { error=true; break; }
@@ -20360,7 +20560,43 @@ public:
 	    {
 	      rgba = default_vox_palette();
 	    }
-	}      
+	}
+#if 0
+      unsigned char *found2 = 0;
+      bool has_nTRN = false;
+      bool has_nGRP = false;
+      bool has_nSHP = false;
+      int count = 0;
+      VoxTranslate root;
+      std::vector<VoxTranslate> translates;
+      do {
+	has_nTRN = test_chunk(main_children,"nTRN",&found2);
+	has_nGRP = test_chunk(main_children,"nGRP",&found2);
+	has_nSHP = test_chunk(main_children,"nSHP",&found2);
+	if (has_nTRN)
+	  {
+	    VoxChunk trn = read_chunk(main_children);
+	    VoxTranslate trans = translate_from_chunk(trn);
+	    if (count==0) root=trans;
+	    else translates.push_back(trans);
+	    print(trans);
+	  }
+	if (has_nGRP)
+	  {
+	  VoxChunk grp = read_chunk(main_children);
+	  VoxGroup grp2 = parse_group(grp);
+	  print(grp2);
+	  }
+	if (has_nSHP)
+	  {
+	    VoxChunk shp = read_chunk(main_children);
+	    VoxShape shp2 = parse_shape(shp);
+	    print(shp2);
+	    //std::cout << "SHP" << std::endl;
+	  }
+      }
+      while(has_nTRN||has_nGRP||has_nSHP);
+#endif
     }
   }
   virtual void Prepare()
