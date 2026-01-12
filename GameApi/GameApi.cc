@@ -41308,43 +41308,74 @@ OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palett
       leaf->is_leaf = true;
       return leaf;
     }
-  int mid_x = (start_x+end_x)/2;
-  int mid_y = (start_y+end_y)/2;
-  int mid_z = (start_z+end_z)/2;
-  OctTreeBase *I0 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, start_y,mid_y, start_z,mid_z);
-  OctTreeBase *I1 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,start_y,mid_y,start_z,mid_z);
-  OctTreeBase *I2 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, mid_y, end_y, start_z,mid_z);
-  OctTreeBase *I3 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,mid_y,end_y, start_z,mid_z);
+  int mid1_x = (start_x+end_x)/3;
+  int mid1_y = (start_y+end_y)/3;
+  int mid1_z = (start_z+end_z)/3;
+  int mid2_x = (start_x+end_x)*2/3;
+  int mid2_y = (start_y+end_y)*2/3;
+  int mid2_z = (start_z+end_z)*2/3;
+  OctTreeBase *center = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, mid1_y,mid2_y, mid1_z,mid2_z);
+  OctTreeBase *px = create_oct_tree_from_ranges(palette,vx,mid2_x,end_x, mid1_y,mid2_y, mid1_z,mid2_z);
+  OctTreeBase *py = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, mid2_y,end_y, mid1_z,mid2_z);
+  OctTreeBase *pz = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, mid1_y,mid2_y, mid2_z,end_z);
 
-  OctTreeBase *I4 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, start_y,mid_y, mid_z,end_z);
-  OctTreeBase *I5 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,start_y,mid_y,mid_z,end_z);
-  OctTreeBase *I6 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, mid_y, end_y, mid_z,end_z);
-  OctTreeBase *I7 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,mid_y,end_y, mid_z,end_z);
+  OctTreeBase *mx = create_oct_tree_from_ranges(palette,vx,start_x,mid1_x, mid1_y,mid2_y, mid1_z,mid2_z);
+  OctTreeBase *my = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, start_y,mid1_y, mid1_z,mid2_z);
+  OctTreeBase *mz = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, mid1_y,mid2_y, start_z,mid1_z);
 
+  OctTreeBase *pxpz = create_oct_tree_from_ranges(palette,vx,mid2_x,end_x, mid1_y,mid2_y, mid2_z,end_z);
+  OctTreeBase *pypz = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, mid2_y,end_y, mid2_z,end_z);
+
+  OctTreeBase *pxmz = create_oct_tree_from_ranges(palette,vx,mid2_x,end_x, mid1_y,mid2_y, start_z,mid1_z);
+  OctTreeBase *pymz = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, mid2_y,end_y, start_z,mid1_z);
+
+  OctTreeBase *mxpz = create_oct_tree_from_ranges(palette,vx,start_x,mid1_x, mid1_y,mid2_y, mid2_z,end_z);
+  OctTreeBase *mypz = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, start_y,mid1_y, mid2_z,end_z);
+
+  OctTreeBase *mxmz = create_oct_tree_from_ranges(palette,vx,start_x,mid1_x, mid1_y,mid2_y, start_z,mid1_z);
+  OctTreeBase *mymz = create_oct_tree_from_ranges(palette,vx,mid1_x,mid2_x, start_y,mid1_y, start_z,mid1_z);
+
+  
+  
   // empty nodes
-  if (!I0 && !I1 && !I2 && !I3 && !I4 && !I5 && !I6 && !I7)
+  if (!center && !px && !py && !pz && !mx && !my && !mz && !pxpz && !pypz && !pxmz && !pymz && !mxpz && !mypz && !mxmz && !mymz)
     return 0;
 
   // nodes with constant colour
-  if (I0 && I1 && I2 && I3 && I4 && I5 && I6 && I7)
-    if (I0->is_leaf && I1->is_leaf && I2->is_leaf && I3->is_leaf && I4->is_leaf && I5->is_leaf && I6->is_leaf && I7->is_leaf)
+#if 0
+  if (center && px && py && pz && mx && my && mz && pxpz && pypz && pxmz && pymz && mxpz && mypz && mxmz && mymz)
+    if (center->is_leaf && px->is_leaf && py->is_leaf && pz->is_leaf && mx->is_leaf && my->is_leaf && mz->is_leaf &&
+	pxpz->is_leaf && pypz->is_leaf && pxmz->is_leaf && pymz->is_leaf && mxpz->is_leaf && mypz->is_leaf && mxmz->is_leaf && mymz->is_leaf)
       {
-	OctTreeLeaf *K0 = (OctTreeLeaf*)I0;
-	OctTreeLeaf *K1 = (OctTreeLeaf*)I1;
-	OctTreeLeaf *K2 = (OctTreeLeaf*)I2;
-	OctTreeLeaf *K3 = (OctTreeLeaf*)I3;
-	OctTreeLeaf *K4 = (OctTreeLeaf*)I4;
-	OctTreeLeaf *K5 = (OctTreeLeaf*)I5;
-	OctTreeLeaf *K6 = (OctTreeLeaf*)I6;
-	OctTreeLeaf *K7 = (OctTreeLeaf*)I7;
-	OctTreeColor c = K0->color;
-	if (c==K1->color &&
-	    c==K2->color &&
-	    c==K3->color &&
-	    c==K4->color &&
-	    c==K5->color &&
-	    c==K6->color &&
-	    c==K7->color)
+	OctTreeLeaf *K_center = (OctTreeLeaf*)center;
+	OctTreeLeaf *K_px = (OctTreeLeaf*)px;
+	OctTreeLeaf *K_py = (OctTreeLeaf*)py;
+	OctTreeLeaf *K_pz = (OctTreeLeaf*)pz;
+	OctTreeLeaf *K_mx = (OctTreeLeaf*)mx;
+	OctTreeLeaf *K_my = (OctTreeLeaf*)my;
+	OctTreeLeaf *K_mz = (OctTreeLeaf*)mz;
+
+	OctTreeLeaf *K_pxpz = (OctTreeLeaf*)pxpz;
+	OctTreeLeaf *K_pypz = (OctTreeLeaf*)pypz;
+
+	OctTreeLeaf *K_pxmz = (OctTreeLeaf*)pxmz;
+	OctTreeLeaf *K_pymz = (OctTreeLeaf*)pymz;
+
+	OctTreeLeaf *K_mxpz = (OctTreeLeaf*)mxpz;
+	OctTreeLeaf *K_mypz = (OctTreeLeaf*)mypz;
+
+	OctTreeLeaf *K_mxmz = (OctTreeLeaf*)mxmz;
+	OctTreeLeaf *K_mymz = (OctTreeLeaf*)mymz;
+	
+
+	OctTreeColor c = center->color;
+	if (c==K_center->color &&
+	    c==K_px->color &&
+	    c==K_py->color &&
+	    c==K_pz->color &&
+	    c==K_mx->color &&
+	    c==K_my->color &&
+	    c==K_mz->color)
 	  { // reduce this to one block with color c.
 	    OctTreeLeaf *leaf = new OctTreeLeaf;
 	    leaf->start_x = start_x;
@@ -41358,7 +41389,7 @@ OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palett
 	    return leaf;
 	  }
       }
-
+#endif
   
   OctTreeSplit *split = new OctTreeSplit;
   split->start_x = start_x;
@@ -41367,14 +41398,25 @@ OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palett
   split->end_y = end_y;
   split->start_z = start_z;
   split->end_z = end_z;
-  split->child[0] = I0;
-  split->child[1] = I1;
-  split->child[2] = I2;
-  split->child[3] = I3;
-  split->child[4] = I4;
-  split->child[5] = I5;
-  split->child[6] = I6;
-  split->child[7] = I7;
+  split->child[0] = center;
+  split->child[1] = px;
+  split->child[2] = py;
+  split->child[3] = pz;
+  split->child[4] = mx;
+  split->child[5] = my;
+  split->child[6] = mz;
+
+  split->child[7] = pxpz;
+  split->child[8] = pypz;
+
+  split->child[9] = pxmz;
+  split->child[10] = pymz;
+
+  split->child[11] = mxpz;
+  split->child[12] = mypz;
+
+  split->child[13] = mxmz;
+  split->child[14] = mymz;
   return split;
 }
 
@@ -41392,9 +41434,8 @@ OctTreeBase *create_oct_tree_from_voxel(const std::vector<OctTreeColor> &palette
   while(s>m)
     {
       p++;
-      m*=2;
+      m*=3;
     }
-  int s2 = pow(2,p);
-  
+  int s2 = pow(3,p);
   return create_oct_tree_from_ranges(palette,vx,0,s2,0,s2,0,s2);
 }
