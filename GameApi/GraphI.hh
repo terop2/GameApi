@@ -450,6 +450,43 @@ ShapeSpec opt_get_shape(unsigned int color, float border_width, unsigned int bor
 CubeSpec opt_get_cube(const ShapeSizeSpec &s);
 OptCacheId opt_get_id(int id);
 
+
+class OctTreePath
+{
+public:
+  std::string path;
+};
+
+struct OctTreeColor
+{
+  unsigned int argb;
+  bool operator==(const OctTreeColor &c1, const OctTreeColor &c2) { return c1.argb==c2.argb; }
+};
+
+class OctTreeBase
+{
+public:
+  int start_x, end_x;
+  int start_y, end_y;
+  int start_z, end_z;
+  bool is_leaf = false;
+};
+
+class OctTreeLeaf : public OctTreeBase
+{
+public:
+  OctTreeLeaf() { is_leaf=true; }
+  OctTreeColor color;
+};
+
+class OctTreeSplit : public OctTreeBase
+{
+public:
+  OctTreeBase *child[8];
+};
+
+
+
 class OptVoxel : public CollectInterface
 {
 public:
