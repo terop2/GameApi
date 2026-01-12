@@ -3126,11 +3126,19 @@ EXPORT GameApi::P GameApi::PolygonApi::quad_y(float x1, float x2,
   FaceCollection *coll = new QuadElem(pp1,pp2,pp3,pp4);
   return add_polygon(e,coll,1);
 }
+extern bool g_turn_to_2d_enabled;
 EXPORT GameApi::P GameApi::PolygonApi::fullscreen_quad(EveryApi &ev)
 {
-  int sx = 800-40; //ev.mainloop_api.get_screen_sx();
-  int sy = 600-40; //ev.mainloop_api.get_screen_sy();
-  return quad_z(-sx,sx, -sy, sy, 0.0);
+  //int sx = 800-40; //ev.mainloop_api.get_screen_sx();
+  //int sy = 600-40; //ev.mainloop_api.get_screen_sy();
+  int sx = ev.mainloop_api.get_screen_sx();
+  int sy = ev.mainloop_api.get_screen_sy();
+  if (g_turn_to_2d_enabled)
+    {
+      return quad_z(0,sx,0,sy,0.0);
+    }
+  else 
+    return quad_z(-sx,sx, -sy, sy, 0.0);
 }
 EXPORT GameApi::ML GameApi::PolygonApi::bg_image(EveryApi &ev, BM bm)
 {
