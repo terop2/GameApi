@@ -122,9 +122,9 @@ std::vector<GameApiItem*> pointapi_functions()
 #if (ALL==1)||(VOX_ML2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_ml2,
 			 "vox_ml2",
-			 { "ev", "url", "model", "sx", "sy", "sz" },
-			 { "EveryApi&", "std::string", "int", "float", "float", "float" },
-			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
+			 { "ev", "url", "model", "sx", "sy", "sz", "border_width", "border_color" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float", "float", "unsigned int" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "0.0", "ff000000" },
 			 "ML", "voxel_api", "vox_ml2"));
 #endif
 #if (ALL==1)||(VOX_BIND_ML==1)
@@ -138,9 +138,9 @@ std::vector<GameApiItem*> pointapi_functions()
 #if (ALL==1)||(VOX_BIND_ML2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_bind_ml2,
 			 "vox_bind_ml2",
-			 { "ev", "url", "model", "sx", "sy", "sz", "material" },
-			 { "EveryApi&", "std::string", "int", "float", "float", "float", "MT" },
-			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "" },
+			 { "ev", "url", "model", "sx", "sy", "sz", "material", "border_width", "border_color" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float", "MT", "float", "unsigned int" },
+		{ "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "", "0.0", "ff000000" },
 			 "ML", "voxel_api", "vox_bind_ml2"));
 #endif
 #if (ALL==1)||(VX_TO_OVX==1)
@@ -172,9 +172,9 @@ std::vector<GameApiItem*> pointapi_functions()
 #if (ALL==1)||(RENDER_OVX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::render_ovx,
 			 "render_ovx",
-			 { "ev", "voxel", "material", "sx", "sy", "sz" },
-			 { "EveryApi&", "OVX", "MT", "float", "float", "float" },
-			 { "ev", "","", "20.0", "20.0", "20.0" },
+			 { "ev", "voxel", "material", "sx", "sy", "sz", "border_width", "border_color" },
+			 { "EveryApi&", "OVX", "MT", "float", "float", "float", "float", "unsigned int" },
+		{ "ev", "","", "20.0", "20.0", "20.0", "0.0", "ff000000" },
 			 "ML", "voxel_api", "render_ovx"));
 #endif
 
