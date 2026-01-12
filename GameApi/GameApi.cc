@@ -41304,7 +41304,7 @@ OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palett
       leaf->end_y = end_y;
       leaf->start_z = start_z;
       leaf->end_z = end_z;
-      leaf->color.argb = palette[c];
+      leaf->color.argb = palette[c].argb;
       leaf->is_leaf = true;
       return leaf;
     }
@@ -41353,7 +41353,7 @@ OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palett
 	    leaf->end_y = end_y;
 	    leaf->start_z = start_z;
 	    leaf->end_z = end_z;
-	    leaf->color.argb = palette[c];
+	    leaf->color.argb = c.argb;
 	    leaf->is_leaf = true;
 	    return leaf;
 	  }

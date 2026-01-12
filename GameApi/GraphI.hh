@@ -460,7 +460,7 @@ public:
 struct OctTreeColor
 {
   unsigned int argb;
-  bool operator==(const OctTreeColor &c1, const OctTreeColor &c2) { return c1.argb==c2.argb; }
+  friend bool operator==(const OctTreeColor &c1, const OctTreeColor &c2) { return c1.argb==c2.argb; }
 };
 
 class OctTreeBase
