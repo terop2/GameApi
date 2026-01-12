@@ -3588,12 +3588,12 @@ public:
   IMPORT OVX remove_colours(OVX vx);
   IMPORT OVX resize_voxels(OVX vx, VX vx2);
   IMPORT OVX vx_to_ovx(VX vx, std::vector<P> vec);
-  IMPORT ML render_ovx(EveryApi &ev, OVX vx, MT mat, float sx, float sy, float sz);
+  IMPORT ML render_ovx(EveryApi &ev, OVX vx, MT mat, float sx, float sy, float sz, float border_width, unsigned int border_color);
   IMPORT P render_ovx_p(EveryApi &ev, OVX vx, float sx, float sy, float sz);
   IMPORT ML vox_bind_ml(EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt);
   IMPORT ML vox_ml(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
-  IMPORT ML vox_bind_ml2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt);
-  IMPORT ML vox_ml2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
+  IMPORT ML vox_bind_ml2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, float border_width, unsigned int border_color);
+  IMPORT ML vox_ml2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz, float border_width, unsigned int border_color);
   IMPORT VX vox_voxel2(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT P vox_voxel3(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);
   IMPORT ARR vox_cubes(EveryApi &ev, std::string url, int model, float sx, float sy, float sz);

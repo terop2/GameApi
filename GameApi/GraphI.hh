@@ -486,6 +486,48 @@ public:
 };
 
 
+#if 0
+class LoadImpl
+{
+public:
+  virtual std::string file_extension() const=0;
+  virtual bool use_this_impl(std::string url) const=0;
+  virtual MainLoopItem *load(std::string url, std::vector<std::shared_ptr<void> > &del_vec)=0;
+};
+
+struct LoadInfoSpec
+{
+  int type;
+  int x,y,z;
+  std::string vox_url;
+  int model;
+  Material *material;
+  MainLoopItem *loaded_info;
+  std::vector<std::shared_ptr<void> > deleter;
+}
+
+struct WorldBlockSpec
+{
+  int start_x, end_x;
+  int start_y, end_y;
+  int start_z, end_z;
+  std::vector<LoadInfoSpec> vec;
+};
+
+class OptVoxelWorld : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+
+  virtual int NumBlocks() const=0;
+  virtual WorldBlockSpec Block(int b) const=0;
+
+  virtual void load_block(int b)=0;
+  virtual void unload_block(int b)=0;
+};
+#endif
 
 class OptVoxel : public CollectInterface
 {
