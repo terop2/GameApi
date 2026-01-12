@@ -183,6 +183,7 @@ IMPORT extern int g_event_screen_x;
 IMPORT extern int g_event_screen_y;
 extern bool is_move_2d;
 extern double g_dpr;
+bool g_turn_to_2d_enabled = false;
 class TurnTo2d : public MainLoopItem
 {
 public:
@@ -191,18 +192,27 @@ public:
   }
   void handle_event(MainLoopEvent &e)
   {
+    g_turn_to_2d_enabled = true;
     is_move_2d = true;
     next->handle_event(e);
     //is_move_2d = false;
+    g_turn_to_2d_enabled = false;
   }
   void Collect(CollectVisitor &vis) {
+    g_turn_to_2d_enabled = true;
     next->Collect(vis);
+    g_turn_to_2d_enabled = false;
   }
   void HeavyPrepare() { }
 
-  void Prepare() { next->Prepare(); }
+  void Prepare() {
+    g_turn_to_2d_enabled = true;    
+    next->Prepare();
+    g_turn_to_2d_enabled = false;
+  }
   void execute(MainLoopEnv &e)
   {
+    g_turn_to_2d_enabled = true;
     is_move_2d = true;
     OpenglLowApi *ogl = g_low->ogl;
     static int inside_it = false;
@@ -210,6 +220,7 @@ public:
     ogl->glDisable(Low_GL_DEPTH_TEST);
       next->execute(e); 
     ogl->glEnable(Low_GL_DEPTH_TEST);
+    g_turn_to_2d_enabled = false;
       return; 
     }
 
@@ -271,8 +282,14 @@ public:
     ogl->glViewport(corner_x*scale_x,(screen_y-corner_y-rect_sy)*scale_y,rect_sx*scale_x, rect_sy*scale_y);
     inside_it = false;
     //is_move_2d = false;
+    g_turn_to_2d_enabled = false;
   }
-  virtual std::vector<int> shader_id() { return next->shader_id(); }
+  virtual std::vector<int> shader_id() {
+    g_turn_to_2d_enabled = true;
+    std::vector<int> v = next->shader_id();
+    g_turn_to_2d_enabled = false;
+    return v;
+  }
 
 private:
   GameApi::EveryApi &ev;

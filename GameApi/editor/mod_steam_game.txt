@@ -11,7 +11,7 @@ test
 (462,270)anim_repeat uid9449 0 0 1 next:*uid9448:false:-1:0 start_time:*0:false:-1:1063298024 repeat_duration:*1:false:-1:1063298024
 (758,24)run_window uid9450 0 0 1 ev:*ev:false:-1:1071472656 ml:*uid1551:false:-1:0 logo:*false:false:-1:1071472656 fpscounter:*false:false:-1:1071472656 start_time:*0.0:false:-1:1071472656 duration:*100000.0:false:-1:1071472656
 (764,167)html_run uid9451 0 0 1 ev:*ev:false:-1:1074234056 r:*uid9450:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:1074234056
-(903,165)save_deploy uid9452 0 0 1 h:*uid9451:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1202995088
+(902,165)save_deploy uid9452 0 0 1 h:*uid9451:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1202995088
 (690,442)ml_script uid9453 0 0 1 ev:*ev:false:-1:1071473912 hml:*uid9454:false:-1:0 %1:*a:false:-1:1071473912 %2:*b:false:-1:1071473912 %3:*c:false:-1:1071473912 %4:*d:false:-1:1071473912 %5:*e:false:-1:1071473912
 (557,429)html_url uid9454 0 0 1 url:*file?//C?/Users/ADMINI~1/AppData/Local/Temp/_gameapi_builder/Downloads/script_1.txt:false:-1:1202069032
 (701,550)p_script uid9455 0 0 1 ev:*ev:false:-1:1071472136 hml:*uid9454:false:-1:0 %1:*a:false:-1:1071472136 %2:*b:false:-1:1071472136 %3:*c:false:-1:1071472136 %4:*d:false:-1:1071472136 %5:*e:false:-1:1071472136
@@ -31,7 +31,7 @@ test
 (69,546)m_def uid9469 0 0 1 ev:*ev:false:-1:1501445208
 (469,957)m_or_elem uid9470 0 0 1 ev:*ev:false:-1:1503455912 mat1:*uid9456:false:-1:0 mat2:*uid9468:false:-1:0
 (336,922)m_or_elem uid9471 0 0 1 ev:*ev:false:-1:1503224872 mat1:*uid9461:false:-1:0 mat2:*uid9467:false:-1:0
-(180,1039)m_apply_phong uid9472 0 0 1 ev:*ev:true:-1:1061416520 vec:*uid9473:true:1922242302:0 light_dir_x:*-0.3:true:-1:1061416520 light_dir_y:*0.3:true:-1:1061416520 light_dir_z:*-1:true:-1:1061416520 ambient:*ff221100:true:-1:1061416520 specular:*ffff8800:true:-1:1061416520 highlight:*ffffffff:true:-1:1061416520 pow:*5.9:true:-1:1061416520
+(180,1039)m_apply_phong uid9472 0 0 1 ev:*ev:true:-1:1061416520 vec:*uid9473:true:-692611879:0 light_dir_x:*-0.3:true:-1:1061416520 light_dir_y:*0.3:true:-1:1061416520 light_dir_z:*-1:true:-1:1061416520 ambient:*ff221100:true:-1:1061416520 specular:*ffff8800:true:-1:1061416520 highlight:*ffffffff:true:-1:1061416520 pow:*5.9:true:-1:1061416520
 (47,933)m_gltf_arr uid9473 0 0 1 ev:*ev:true:-1:1061414184 tf:*uid9442:true:-1:0 mix:*0.95:true:-1:1061414184 self_mult:*1:true:-1:1061414184 rest_mult:*1:true:-1:1061414184 light_dir_x:*400:true:-1:1061414184 light_dir_y:*-400:true:-1:1061414184 light_dir_z:*300:true:-1:1061414184 is_transparent:*true:true:-1:1061414184
 (646,981)m_bind_many uid9474 0 0 1 ev:*ev:false:-1:1503798944 vec:*uid9460:false:-1:0 mats:*uid9472:false:-1:0 ticks:*16:false:-1:1503798944
 (396,-92)ml_gltf_all uid1550 0 0 1 ev:*ev:false:-1:-109097584 tf:*uid9442:false:-1:0 mix:*1:false:-1:-109097584 self_mult:*3:false:-1:-109097584 rest_mult:*0:false:-1:-109097584 mode:*0:false:-1:-109097584 light_dir_x:*400:false:-1:-109097584 light_dir_y:*-400:false:-1:-109097584 light_dir_z:*300:false:-1:-109097584 border_width:*0:false:-1:-109097584 border_color:*ff000000:false:-1:-109097584 transparent:*true:false:-1:-109097584
@@ -57,7 +57,7 @@ test
 (151,2293)new uid14674 0 0 1 sx:*100:false:-1:-1226412808 sy:*50:false:-1:-1226412808 color:*ff0088ff:false:-1:-1226412808
 (153,2409)new uid14675 0 0 1 sx:*100:false:-1:-1226378760 sy:*50:false:-1:-1226378760 color:*ff448800:false:-1:-1226378760
 (314,2331)compose_y uid14676 0 0 1 bm1:*uid14674:false:-1:0 bm2:*uid14675:false:-1:0
-(845,2331)bm_2d uid14677 0 0 1 ev:*ev:false:-1:-1235375680 ml:*uid14678:false:-1:0 tl_x:*0.0:false:-1:-1235375680 tl_y:*0.0:false:-1:-1235375680 br_x:*800.0:false:-1:-1235375680 br_y:*600.0:false:-1:-1235375680
+(845,2331)bm_2d uid14677 0 0 1 ev:*ev:false:-1:-1235375680 ml:*uid1864033763:false:-1:0 tl_x:*0.0:false:-1:-1235375680 tl_y:*0.0:false:-1:-1235375680 br_x:*800.0:false:-1:-1235375680 br_y:*600.0:false:-1:-1235375680
 (698,2328)bm_render uid14678 0 0 1 ev:*ev:false:-1:-1227426784 bm:*uid14679:false:-1:0
 (449,2380)bm_fullscreen uid14679 0 0 1 ev:*ev:false:-1:-1227422144 orig:*uid14676:false:-1:0
 (632,2471)bm_scale2 uid14680 0 0 1 bm:*uid14679:false:-1:0 sz:*1200:false:-1:-1227410304
@@ -92,7 +92,7 @@ test
 (521,3724)anim_rotate uid14718 0 0 1 next:*uid14717:false:-1:0 start_time:*0:false:-1:-1063914768 end_time:*300:false:-1:-1063914768 p_x:*0:false:-1:-1063914768 p_y:*0:false:-1:-1063914768 p_z:*0:false:-1:-1063914768 v_x:*0:false:-1:-1063914768 v_y:*1:false:-1:-1063914768 v_z:*0:false:-1:-1063914768 angle:*-6.28:false:-1:-1063914768
 (686,3736)anim_repeat uid14719 0 0 1 next:*uid14718:false:-1:0 start_time:*0:false:-1:-1859210968 repeat_duration:*300:false:-1:-1859210968
 (856,1617)key_at_time uid14720 0 0 1 ml:*uid14666:false:-1:0 time:*0:false:-1:-1859126152 key:*99:false:-1:-1859126152
-(980,1432)key_printer_ml uid14721 0 0 1 ml:*uid14720:false:-1:0
+(978,1432)key_printer_ml uid14721 0 0 1 ml:*uid14720:false:-1:0
 (472,3909)local_move_mat uid14722 0 0 1 ev:*ev:false:-1:-1556658008 inner_ml:*uid14710:false:-1:0 matrices:*uid14726:false:-1:0
 (31,4001)ms_random_rot uid14723 0 0 1 px:*0:false:-1:-1556629360 py:*1:false:-1:-1556629360 pz:*0:false:-1:-1556629360 count:*30:false:-1:-1556629360
 (261,3898)ms_mult uid14724 0 0 1 m1:*uid14723:false:-1:0 m2:*uid14725:false:-1:0
@@ -108,13 +108,13 @@ test
 (790,4342)m_bind_inst_mat uid14734 0 0 1 p:*uid14735:false:-1:0 ms:*uid14733:false:-1:0 mat:*uid14736:false:-1:0
 (290,4289)gltf_mesh_all_p uid14735 0 0 1 ev:*ev:false:-1:1817856880 model:*uid14727:false:-1:0
 (345,4384)m_gltf uid14736 0 0 1 ev:*ev:false:-1:1033186664 tf:*uid14727:false:-1:0 material_id:*0:false:-1:1033186664 mix:*1.0:false:-1:1033186664 self_mult:*1.0:false:-1:1033186664 rest_mult:*1.0:false:-1:1033186664 light_x:*400.0:false:-1:1033186664 light_y:*-400.0:false:-1:1033186664 light_z:*300.0:false:-1:1033186664
-(995,3089)or_elem_ml uid14737 0 0 1 ev:*ev:false:-1:1820108696 m1:*uid14715:false:-1:0 m2:*uid14745:false:-1:0
+(993,3089)or_elem_ml uid14737 0 0 1 ev:*ev:false:-1:1820108696 m1:*uid14715:false:-1:0 m2:*uid14745:false:-1:0
 (104,4889)bm_url uid14738 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/ChatGPT_Image_Oct_25,_2025,_05_48_52_PM.png:false:-1:1896305864
 (384,4896)m_texture uid14739 0 0 1 ev:*ev:false:-1:1821014056 bm:*uid14744:false:-1:0 mix:*1.0:false:-1:1821014056
 (389,5025)quad_z uid14742 0 0 1 x1:*-8000:false:-1:-904927880 x2:*8000:false:-1:-904927880 y1:*-1500:false:-1:-904927880 y2:*16000:false:-1:-904927880 z:*16000:false:-1:-904927880
 (543,4965)m_bind uid14743 0 0 1 p:*uid14742:false:-1:0 mat:*uid14739:false:-1:0
 (249,4908)flip_y uid14744 0 0 1 orig:*uid14738:false:-1:0
-(973,4391)or_elem_ml uid14745 0 0 1 ev:*ev:false:-1:1972192216 m1:*uid14734:false:-1:0 m2:*uid14766:false:-1:0
+(972,4391)or_elem_ml uid14745 0 0 1 ev:*ev:false:-1:1972192216 m1:*uid14734:false:-1:0 m2:*uid14766:false:-1:0
 (163,5290)bm_url uid14747 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/ChatGPT_Image_Oct_25,_2025,_06_15_45_PM.png:false:-1:-1980088360
 (287,5283)flip_y uid14748 0 0 1 orig:*uid14747:false:-1:0
 (410,5284)m_texture uid14749 0 0 1 ev:*ev:false:-1:-2063280296 bm:*uid14748:false:-1:0 mix:*1.0:false:-1:-2063280296
@@ -146,18 +146,18 @@ test
 (132,3277)decimate_tf uid536820262 0 0 1 mesh:*uid14709:false:-1:0 val:*0.5:false:-1:1720845328
 (407,1591)m_lod_pts_tf uid488107131 0 0 1 ev:*ev:false:-1:1458026784 tf:*uid1557774085:false:-1:0 pts:*uid14652:false:-1:0 decimate_level1:*1:false:-1:1458026784 decimate_level2:*0.9:false:-1:1458026784 decimate_level3:*0.7:false:-1:1458026784 decimate_level4:*0.5:false:-1:1458026784 max_obj_count1:*150:false:-1:1458026784 max_obj_count2:*150:false:-1:1458026784 max_obj_count3:*150:false:-1:1458026784 max_obj_count4:*150:false:-1:1458026784 mix:*1:false:-1:1458026784 self_mult:*1:false:-1:1458026784 rest_mult:*1:false:-1:1458026784 mode:*0:false:-1:1458026784 light_dir_x:*0.1:false:-1:1458026784 light_dir_y:*0.1:false:-1:1458026784 light_dir_z:*-400:false:-1:1458026784 border_width:*2:false:-1:1458026784 border_color:*ff000000:false:-1:1458026784 transparent:*false:false:-1:1458026784 start_brighness:*1:false:-1:1458026784 end_brightness:*1:false:-1:1458026784
 (436,6626)ml_script uid1999036729 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036730:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
-(290,6618)html_url uid1999036730 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_29.txt:false:-1:1932903568
-(298,6730)html_url uid1999036731 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_30.txt:false:-1:1932903568
-(301,6853)html_url uid1999036732 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_31.txt:false:-1:1932903568
-(298,6976)html_url uid1999036733 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_32.txt:false:-1:1932903568
-(304,7099)html_url uid1999036734 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_33.txt:false:-1:1932903568
+(290,6618)html_url uid1999036730 0 0 1 url:*https?//meshpage.org/script_29.txt:false:-1:1932903568
+(298,6730)html_url uid1999036731 0 0 1 url:*https?//meshpage.org/script_30.txt:false:-1:1932903568
+(301,6853)html_url uid1999036732 0 0 1 url:*https?//meshpage.org/script_31.txt:false:-1:1932903568
+(298,6976)html_url uid1999036733 0 0 1 url:*https?//meshpage.org/script_32.txt:false:-1:1932903568
+(304,7099)html_url uid1999036734 0 0 1 url:*https?//meshpage.org/script_33.txt:false:-1:1932903568
 (442,6742)ml_script uid1999036735 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036731:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
 (450,6863)ml_script uid1999036736 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036732:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
 (456,6987)ml_script uid1999036737 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036733:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
 (461,7115)ml_script uid1999036738 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036734:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
-(323,7233)html_url uid1999036739 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_34.txt:false:-1:1932903568
-(325,7355)html_url uid1999036740 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_35.txt:false:-1:1932903568
-(330,7478)html_url uid1999036741 0 0 1 url:*file?///home/terop/.gameapi_builder/Downloads/script_36.txt:false:-1:1932903568
+(323,7233)html_url uid1999036739 0 0 1 url:*https?//meshpage.org/script_34.txt:false:-1:1932903568
+(325,7355)html_url uid1999036740 0 0 1 url:*https?//meshpage.org/script_35.txt:false:-1:1932903568
+(330,7478)html_url uid1999036741 0 0 1 url:*https?//meshpage.org/script_36.txt:false:-1:1932903568
 (461,7238)ml_script uid1999036742 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036739:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
 (462,7357)ml_script uid1999036743 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036740:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
 (473,7477)ml_script uid1999036744 0 0 1 ev:*ev:false:-1:1932903568 hml:*uid1999036741:false:-1:0 %1:*a:false:-1:1932903568 %2:*b:false:-1:1932903568 %3:*c:false:-1:1932903568 %4:*d:false:-1:1932903568 %5:*e:false:-1:1932903568
@@ -169,3 +169,4 @@ test
 (160,1452)decimate_tf_zero uid1557774085 0 0 1 mesh:*uid14649:false:-1:0
 (74,2003)decimate_tf_zero uid1557774086 0 0 1 mesh:*uid14667:false:-1:0
 (316,3248)decimate_tf_zero uid1557774087 0 0 1 mesh:*uid14709:false:-1:0
+(397,2492)bg_image uid1864033763 0 0 1 ev:*ev:false:-1:202406784 bm:*uid14676:false:-1:0
