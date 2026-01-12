@@ -20030,7 +20030,6 @@ struct VoxChunk {
 };
 bool test_chunk(const VoxAcc &acc, const char *chunk_id, unsigned char **found)
 {
-  //std::cout << "Chunk: " << chunk_id[0] << chunk_id[1] << chunk_id[2] << chunk_id[3];
   unsigned char *ptr = acc.ptr;
   if (ptr[0]==chunk_id[0] &&
       ptr[1]==chunk_id[1] &&
@@ -20038,28 +20037,8 @@ bool test_chunk(const VoxAcc &acc, const char *chunk_id, unsigned char **found)
       ptr[3]==chunk_id[3])
     {
       *found=0;
-      //std::cout << " Found!" << std::endl;
       return true;
     }
-#if 0
-  int s = acc.numBytes;
-  for(int i=0;i<s;i++)
-    {
-      if (ptr[i]==chunk_id[0] &&
-	  ptr[i+1]==chunk_id[1] &&
-	  ptr[i+2]==chunk_id[2] &&
-	  ptr[i+3]==chunk_id[3])
-	{
-	  *found = ptr +i;
-      std::cout << " Found (but wrong location)!" << std::endl;
-	  //std::cout << "FOUND chunk " << ptr[i] << ptr[i+1] << ptr[i+2] << ptr[i+3] << " at " << i << std::endl;
-	  return true;
-	}      
-    }
-#endif
-  //std::cout << " NOT Found! (" << ptr[0] << ptr[1] << ptr[2] << ptr[3] << ")" << std::endl;
-  
-  //std::cout << "Chunk " << chunk_id << " not found. There was: " << ptr[0] << ptr[1] << ptr[2] << ptr[3] << std::endl;
   return false;
 }
 VoxChunk read_chunk(VoxAcc &acc)
@@ -20072,15 +20051,8 @@ VoxChunk read_chunk(VoxAcc &acc)
   res.chunk_content.ptr = ptr+12;
   res.chunk_content.numBytes = res.content_size_bytes;
   res.children_chunks.ptr = ptr+12+res.content_size_bytes;
-  res.children_chunks.numBytes = res.children_bytes;
-
-  
+  res.children_chunks.numBytes = res.children_bytes;  
   acc.ptr += 12 + res.content_size_bytes + res.children_bytes;
-  //acc.numBytes -= 12 + res.content_size_bytes + res.children_bytes;
-  //std::cout << "radd_chunk:" << res.chunk_id[0] << res.chunk_id[1] << res.chunk_id[2] << res.chunk_id[3] << " " << acc.numBytes << std::endl;
-  //std::cout << "numbers:" << res.content_size_bytes << " " << res.children_bytes << std::endl;
-  //std::cout << "ReadChunk: " << res.chunk_id[0] << res.chunk_id[1] << res.chunk_id[2] << res.chunk_id[3];
-  //std::cout << "!" << std::endl;
   return res;
 }
 
@@ -20878,8 +20850,6 @@ public:
 
   virtual FaceCollection *create_cube(const CubeSpec &spec) const
   {
-    //std::cout << "create_cube:" << std::hex << spec.shapesize.shape.color << std::dec << " " << spec.shapesize.size.sx << " " << spec.shapesize.size.sy << " " << spec.shapesize.size.sz << std::endl;
-    // TODO, border_width/border_color not used.
     GameApi::P cube = ev.polygon_api.cube(0.0,sx,0.0,sy,0.0,sz);
     GameApi::P c_cube = ev.polygon_api.color(cube, spec.shapesize.shape.color);
     GameApi::P m_cube = ev.polygon_api.multiply_facecoll(c_cube,spec.shapesize.size.sx,spec.shapesize.size.sy,spec.shapesize.size.sz);
@@ -21909,8 +21879,6 @@ public:
 private:
   Voxel<int> &vx;
   std::vector<FaceCollection*> cubes;
-  //OptCubeCache &cache;
-  //const OptCubes &cubes2;
   int c_sx, c_sy, c_sz;
 };
 
@@ -41314,4 +41282,119 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix_tf(GameApi::EveryApi &ev, GameApi::
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
 
+}
+
+OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palette, Voxel<int> *vx,
+					 int start_x, int end_x,
+					 int start_y, int end_y,
+					 int start_z, int end_z)
+{
+  int dist_x = end_x-start_x;
+  int dist_y = end_y-start_y;
+  int dist_z = end_z-start_z;
+  if (dist_x == 1 || dist_y == 1 || dist_z==1)
+    {
+      int c = vx->Map(start_x,start_y,start_z);
+      if (c==-1) return 0;
+      
+      OctTreeLeaf *leaf = new OctTreeLeaf;
+      leaf->start_x = start_x;
+      leaf->end_x = end_x;
+      leaf->start_y = start_y;
+      leaf->end_y = end_y;
+      leaf->start_z = start_z;
+      leaf->end_z = end_z;
+      leaf->color.argb = palette[c].argb;
+      leaf->is_leaf = true;
+      return leaf;
+    }
+  int mid_x = (start_x+end_x)/2;
+  int mid_y = (start_y+end_y)/2;
+  int mid_z = (start_z+end_z)/2;
+  OctTreeBase *I0 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, start_y,mid_y, start_z,mid_z);
+  OctTreeBase *I1 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,start_y,mid_y,start_z,mid_z);
+  OctTreeBase *I2 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, mid_y, end_y, start_z,mid_z);
+  OctTreeBase *I3 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,mid_y,end_y, start_z,mid_z);
+
+  OctTreeBase *I4 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, start_y,mid_y, mid_z,end_z);
+  OctTreeBase *I5 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,start_y,mid_y,mid_z,end_z);
+  OctTreeBase *I6 = create_oct_tree_from_ranges(palette,vx,start_x,mid_x, mid_y, end_y, mid_z,end_z);
+  OctTreeBase *I7 = create_oct_tree_from_ranges(palette,vx,mid_x,end_x,mid_y,end_y, mid_z,end_z);
+
+  // empty nodes
+  if (!I0 && !I1 && !I2 && !I3 && !I4 && !I5 && !I6 && !I7)
+    return 0;
+
+  // nodes with constant colour
+  if (I0 && I1 && I2 && I3 && I4 && I5 && I6 && I7)
+    if (I0->is_leaf && I1->is_leaf && I2->is_leaf && I3->is_leaf && I4->is_leaf && I5->is_leaf && I6->is_leaf && I7->is_leaf)
+      {
+	OctTreeLeaf *K0 = (OctTreeLeaf*)I0;
+	OctTreeLeaf *K1 = (OctTreeLeaf*)I1;
+	OctTreeLeaf *K2 = (OctTreeLeaf*)I2;
+	OctTreeLeaf *K3 = (OctTreeLeaf*)I3;
+	OctTreeLeaf *K4 = (OctTreeLeaf*)I4;
+	OctTreeLeaf *K5 = (OctTreeLeaf*)I5;
+	OctTreeLeaf *K6 = (OctTreeLeaf*)I6;
+	OctTreeLeaf *K7 = (OctTreeLeaf*)I7;
+	OctTreeColor c = K0->color;
+	if (c==K1->color &&
+	    c==K2->color &&
+	    c==K3->color &&
+	    c==K4->color &&
+	    c==K5->color &&
+	    c==K6->color &&
+	    c==K7->color)
+	  { // reduce this to one block with color c.
+	    OctTreeLeaf *leaf = new OctTreeLeaf;
+	    leaf->start_x = start_x;
+	    leaf->end_x = end_x;
+	    leaf->start_y = start_y;
+	    leaf->end_y = end_y;
+	    leaf->start_z = start_z;
+	    leaf->end_z = end_z;
+	    leaf->color.argb = c.argb;
+	    leaf->is_leaf = true;
+	    return leaf;
+	  }
+      }
+
+  
+  OctTreeSplit *split = new OctTreeSplit;
+  split->start_x = start_x;
+  split->end_x = end_x;
+  split->start_y = start_y;
+  split->end_y = end_y;
+  split->start_z = start_z;
+  split->end_z = end_z;
+  split->child[0] = I0;
+  split->child[1] = I1;
+  split->child[2] = I2;
+  split->child[3] = I3;
+  split->child[4] = I4;
+  split->child[5] = I5;
+  split->child[6] = I6;
+  split->child[7] = I7;
+  return split;
+}
+
+OctTreeBase *create_oct_tree_from_voxel(const std::vector<OctTreeColor> &palette, Voxel<int> *vx)
+{
+  int sx = vx->SizeX();
+  int sy = vx->SizeY();
+  int sz = vx->SizeZ();
+  int s = 0;
+  if (sx>sy) s=sx; else s=sy;
+  if (sz>s) s=sz;
+
+  int p = 1;
+  int m = 1;
+  while(s>m)
+    {
+      p++;
+      m*=2;
+    }
+  int s2 = pow(2,p);
+  
+  return create_oct_tree_from_ranges(palette,vx,0,s2,0,s2,0,s2);
 }
