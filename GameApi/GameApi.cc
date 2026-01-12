@@ -21656,7 +21656,7 @@ private:
 class RenderOVX : public MainLoopItem
 {
 public:
-  RenderOVX(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::OVX vx, GameApi::MT mat, float sx, float sy, float sz) : e(e), ev(ev), vx(vx), mat(mat), sx(sx),sy(sy), sz(sz) { }
+  RenderOVX(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::OVX vx, GameApi::MT mat, float sx, float sy, float sz, float border_width, unsigned int border_color) : e(e), ev(ev), vx(vx), mat(mat), sx(sx),sy(sy), sz(sz), border_width(border_width), border_color(border_color) { }
   ~RenderOVX()
   {
     delete cubesimpl;
@@ -21673,7 +21673,11 @@ public:
       cubesimpl = new OptCubesImpl(e,ev,sx,sy,sz);
       OptVoxel *vvx = find_opt_voxel(e,vx);
       render = new OptVoxelRender(*vvx,*cubesimpl);
-      ml = render->convert_to_ML(e,ev,sx,sy,sz,mat);
+      GameApi::MT mat2;
+      if (border_width>0) {
+	mat2 = ev.materials_api.toon_border(ev,mat,border_width,border_color,false);
+      } else { mat2 = mat; }
+      ml = render->convert_to_ML(e,ev,sx,sy,sz,mat2);
       MainLoopItem *item = find_main_loop(e,ml);
       item->Prepare();
     }
@@ -21719,11 +21723,14 @@ private:
 
   mutable OptCubesImpl *cubesimpl;
   mutable OptVoxelRender *render;
+
+  float border_width;
+  unsigned int border_color;
 };
 
-GameApi::ML GameApi::VoxelApi::render_ovx(GameApi::EveryApi &ev, OVX vx, MT mat, float sx, float sy, float sz)
+GameApi::ML GameApi::VoxelApi::render_ovx(GameApi::EveryApi &ev, OVX vx, MT mat, float sx, float sy, float sz, float border_width, unsigned int border_color)
 {
-  GameApi::ML ml = add_main_loop(e, new RenderOVX(e,ev,vx,mat,sx,sy,sz));
+  GameApi::ML ml = add_main_loop(e, new RenderOVX(e,ev,vx,mat,sx,sy,sz,border_width,border_color));
   GameApi::MN I1=ev.move_api.mn_empty();
   GameApi::MN mn=ev.move_api.rotatex(I1,-3.14159/2.0);
 
@@ -22385,7 +22392,7 @@ GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, in
   GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
   return ml1;
 }
-GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, float border_width, unsigned int border_color)
 {
   GameApi::VX I1=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
   GameApi::ARR I2=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
@@ -22404,7 +22411,7 @@ GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, i
   GameApi::OVX I41=ev.voxel_api.resize_voxels(I40,I1);
   // TODO ADD MORE OPTIMIZATIONS TO THIS
   GameApi::MT I5=ev.materials_api.colour_material(ev,1);
-  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I41,I5,20,20,20);
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I41,I5,20,20,20,border_width,border_color);
   return I6;
 }
 
@@ -22418,7 +22425,7 @@ GameApi::ML GameApi::VoxelApi::vox_bind_ml(GameApi::EveryApi &ev, std::string ur
   GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
   return ml1;
 }
-GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt)
+GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, float border_width, unsigned int border_color)
 {
   GameApi::VX I1=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
   GameApi::ARR I2=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
@@ -22436,7 +22443,7 @@ GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string u
     GameApi::OVX I40=ev.voxel_api.remove_colours(I4);
   GameApi::OVX I41=ev.voxel_api.resize_voxels(I40,I1);
   // TODO ADD MORE OPTIMIZATIONS TO THIS
-  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I41,mt,sx,sy,sz);
+  GameApi::ML I6=ev.voxel_api.render_ovx(ev,I41,mt,sx,sy,sz,border_width, border_color);
   return I6;
 }
 
