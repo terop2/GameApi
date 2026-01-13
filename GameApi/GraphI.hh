@@ -485,8 +485,28 @@ public:
   OctTreeBase *child[8];
 };
 
+struct DynamicCursor
+{
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+
+  bool has_changed;
+};
 
 #if 0
+
+
+struct LoadInfoSpec
+{
+  std::string url; // encode model num into ?m=1
+  float x,y,z; // instantiated location in the world
+  float sx,sy,sz; // bounds in the world
+  float ex,ey,ez; // bounds in the world
+};
+
+
+
 class LoadImpl
 {
 public:
@@ -1706,6 +1726,10 @@ public:
   virtual Point Pos(int i) const=0;
   virtual unsigned int Color(int i) const=0;
   virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+  virtual bool has_changed() const { return false; }
+  // axis-aligned bounding box.
+  virtual Point Start(int i) const { return Pos(i); }
+  virtual Point End(int i) const { return Pos(i); }
   virtual ~PointsApiPoints() {}
 };
 

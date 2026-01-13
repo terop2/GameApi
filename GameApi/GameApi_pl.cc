@@ -3133,12 +3133,7 @@ EXPORT GameApi::P GameApi::PolygonApi::fullscreen_quad(EveryApi &ev)
   //int sy = 600-40; //ev.mainloop_api.get_screen_sy();
   int sx = ev.mainloop_api.get_screen_sx();
   int sy = ev.mainloop_api.get_screen_sy();
-  if (g_turn_to_2d_enabled)
-    {
-      return quad_z(0,sx,0,sy,0.0);
-    }
-  else 
-    return quad_z(-sx,sx, -sy, sy, 0.0);
+  return quad_z(-sx,sx, -sy, sy, 0.0);
 }
 EXPORT GameApi::ML GameApi::PolygonApi::bg_image(EveryApi &ev, BM bm)
 {
@@ -29511,6 +29506,389 @@ GameApi::TF GameApi::PolygonApi::decimate_tf(GameApi::TF mesh, float val)
   GLTFModelInterface *i = find_gltf(e,mesh);
   return add_gltf(e, new DecimateTF(i,val));
 }
+
+#if 0
+class TFChangeP : public ForwardGLTF
+{
+public:
+  TFChangeP(GLTFModelInterface *next, int iii0, int iii1, FaceCollection *coll)
+    : ForwardGLTF(next), next(next), iii0(iii0), iii1(iii1) ,coll(coll) { firsttime = true; }
+  std::string name() const { return "TFChangeP"; }
+  
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    vis.register_obj(this);
+  }
+
+  void do_one(int i, int j) const
+  {
+	  const tinygltf::Mesh &mesh = next->get_mesh(i);
+	const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	      int indices_index = vec[j].indices;
+	      const tinygltf::Accessor &acc = next->get_accessor(indices_index);
+	      const tinygltf::BufferView &bv = next->get_bufferview(acc.bufferView);
+	      const tinygltf::Buffer &buf = next->get_buffer(bv.buffer);
+	      const unsigned char *data = &buf.data[0];
+	      const unsigned char *data1 = data + bv.byteOffset + acc.byteOffset;
+	      const unsigned int *data2 = (unsigned int*)data1;
+	      int s3 = std::min(acc.count,bv.byteStride!=0?bv.byteLength/bv.byteStride:66666666); //buf.data.size()/sz;
+	      //std::cout << "s3=" << s3 << std::endl;
+	      const std::map<std::string,int> &attrs = next->get_mesh(i).primitives[j].attributes;
+	      if (attrs.find("POSITION")==attrs.end()) return;
+	      
+	      const tinygltf::Accessor &acc2 = next->get_accessor(attrs.find("POSITION")->second);
+	      if (acc2.bufferView==-1) return;
+	      const tinygltf::BufferView &bv2 = next->get_bufferview(acc2.bufferView);
+
+	      int s4 = std::min(acc2.count,bv2.byteStride!=0?bv2.byteLength/bv2.byteStride:66666666); //buf.data.size()/sz;
+	      if (bv2.buffer==-1) return;
+
+	      const tinygltf::Buffer &buf2 = next->get_buffer(bv2.buffer);
+	      const unsigned char *kdata = &buf2.data[0];
+	      const unsigned char *kdata1 = kdata + bv2.byteOffset + acc2.byteOffset;
+
+	      const DecimateVertex_float *kdata2 = (const DecimateVertex_float*)kdata1;
+
+#if 0	      
+	      auto compareFaces_int = [kdata1,kdata2,acc2,bv2](DecimateIndex_int i1, DecimateIndex_int i2) {
+		//std::cout << "compareFaces:" << i1 << " and " << i2 << std::endl;
+		auto faceArea = [kdata1,kdata2,acc2,bv2](DecimateIndex_int idx) {
+		  //std::cout << "found:" << idx << std::endl;
+
+		  if (idx.i1>=acc2.count) { std::cout << "i1=" << idx.i1 << " .. fail.." << std::hex << idx.i1 << std::dec << std::endl; return 0.0f; }
+		  if (idx.i2>=acc2.count) { std::cout << "i2=" << idx.i2 << " .. fail.." << std::hex << idx.i2 << std::dec << std::endl; return 0.0f; }
+		  if (idx.i3>=acc2.count) { std::cout << "i3=" << idx.i3 << " .. fail.." << std::hex << idx.i3 << std::dec << std::endl; return 0.0f; }
+
+		  //std::cout << "Indices: " << idx.i1 << " " << idx.i2 << " " << idx.i3 << std::endl;
+		  size_t stride = bv2.byteStride?bv2.byteStride:sizeof(DecimateVertex_float);
+		  assert(acc2.componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+		  assert(acc2.type==TINYGLTF_TYPE_VEC3);
+		  const unsigned char *kdata00 = kdata1 + idx.i1*stride;
+		  const unsigned char *kdata01 = kdata1 + idx.i2*stride;
+		  const unsigned char *kdata02 = kdata1 + idx.i3*stride;
+		  
+		  const DecimateVertex_float *pdata0 = (const DecimateVertex_float*)kdata00;
+		  const DecimateVertex_float *pdata1 = (const DecimateVertex_float*)kdata01;
+		  const DecimateVertex_float *pdata2 = (const DecimateVertex_float*)kdata02;
+		  Point p1 = pdata0->p1;
+		  Point p2 = pdata1->p1;
+		  Point p3 = pdata2->p1;
+		  //std::cout << p1 << " " << p2 << " " << p3 << std::endl;
+		  return triArea(p1,p2,p3);
+		};
+		float area1 = faceArea(i1);
+		float area2 = faceArea(i2);
+		if (std::fabs(area1-area2) < 1e-6f) {
+		  return i1.i1<i2.i1;
+		}
+		return area1 > area2;
+	      };
+
+	      auto compareFaces_short = [compareFaces_int,kdata1,kdata2,acc2,bv2](DecimateIndex_short i1, DecimateIndex_short i2) {
+		DecimateIndex_int ii1,ii2;
+		ii1.i1 = i1.i1;
+		ii1.i2 = i1.i2;
+		ii1.i3 = i1.i3;
+		ii2.i1 = i2.i1;
+		ii2.i2 = i2.i2;
+		ii2.i3 = i2.i3;
+		return compareFaces_int(ii1,ii2);
+	      };
+		auto compareFaces_byte = [compareFaces_int,kdata1,kdata2,acc2,bv2](DecimateIndex_byte i1, DecimateIndex_byte i2) {
+		DecimateIndex_int ii1,ii2;
+		ii1.i1 = i1.i1;
+		ii1.i2 = i1.i2;
+		ii1.i3 = i1.i3;
+		ii2.i1 = i2.i1;
+		ii2.i2 = i2.i2;
+		ii2.i3 = i2.i3;
+		return compareFaces_int(ii1,ii2);
+		};
+
+		if (b) val = count_percentage_tf(next,i,j);
+	      
+	      int keep = std::max(1,(int)std::round(s3*val));
+#endif
+
+
+
+	      //std::cout << "KEEP:" << keep << " s=" << s3 << std::endl;
+	      //std::cout << acc.type << " " << acc.componentType << std::endl;
+	      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_INT||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)) {
+		int bufidx = new_buffer.size();
+		int bufvidx = new_bufviews.size();
+		int accidx = new_accessors.size();
+	      
+		new_buffer.push_back(tinygltf::Buffer());
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		
+		tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+		buf2a = buf;
+		bv2a = bv;
+		acc2a =acc;
+		
+		acc2a.bufferView = start_bufview + bufvidx;
+		bv2a.buffer = start_buffer + bufidx;
+		//vec2[j].indices = start_accessors + accidx;
+#if 0
+		indices_to_index[indices_index] = new_accessors.size()-1;
+#endif
+
+		unsigned char *udata = &buf2a.data[0];
+		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
+		DecimateIndex_int *udata2 = (DecimateIndex_int*)udata1;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_int) << std::endl;
+		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_int);
+		auto begin = StridedIterator<DecimateIndex_int>((uint8_t*)udata2,stride);
+
+		int nf = coll->NumFaces();
+		assert(coll->NumPoints(0)==3);
+		for(int i=0;i<nf;i++)
+		  {
+		    
+		  }
+
+
+#if 0
+		auto end = begin + keep/3;
+		auto end2 = begin + s3/3;
+		std::nth_element(begin,end,end2,compareFaces_int);
+		bv2a.byteLength = std::min(bv2a.byteLength,keep*stride/3);
+		
+		acc2a.count = std::min(acc2a.count,size_t(keep));
+#endif
+	      } else
+	      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_SHORT||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)) {
+		int bufidx = new_buffer.size();
+		int bufvidx = new_bufviews.size();
+		int accidx = new_accessors.size();
+	      
+		new_buffer.push_back(tinygltf::Buffer());
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		
+		tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+		buf2a = buf;
+		bv2a = bv;
+		acc2a =acc;
+		
+		acc2a.bufferView = start_bufview + bufvidx;
+		bv2a.buffer = start_buffer + bufidx;
+		//vec2[j].indices = start_accessors + accidx;
+#if 0
+		indices_to_index[indices_index] = new_accessors.size()-1;
+#endif
+
+		unsigned char *udata = &buf2a.data[0];
+		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
+		DecimateIndex_short *udata2 = (DecimateIndex_short*)udata1;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_short) << std::endl;
+		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_short);
+		auto begin = StridedIterator<DecimateIndex_short>((uint8_t*)udata2,stride);
+#if 0
+		auto end = begin + keep/3;
+		auto end2 = begin + s3/3;
+		std::nth_element(begin,end,end2,compareFaces_short);
+		bv2a.byteLength = std::min(bv2a.byteLength,keep*stride/3);
+		
+		acc2a.count = std::min(acc2a.count,size_t(keep*3));
+#endif
+	      } else
+			      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_BYTE||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE)) {
+		int bufidx = new_buffer.size();
+		int bufvidx = new_bufviews.size();
+		int accidx = new_accessors.size();
+	      
+		new_buffer.push_back(tinygltf::Buffer());
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		
+		tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+		buf2a = buf;
+		bv2a = bv;
+		acc2a =acc;
+		
+		acc2a.bufferView = start_bufview + bufvidx;
+		bv2a.buffer = start_buffer + bufidx;
+		//vec2[j].indices = start_accessors + accidx;
+#if 0
+		indices_to_index[indices_index] = new_accessors.size()-1;
+#endif
+
+		unsigned char *udata = &buf2a.data[0];
+		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
+		DecimateIndex_byte *udata2 = (DecimateIndex_byte*)udata1;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_byte) << std::endl;
+		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_byte);
+		auto begin = StridedIterator<DecimateIndex_byte>((uint8_t*)udata2,stride);
+#if 0
+		auto end = begin + keep/3;
+		auto end2 = begin + s3/3;
+		std::nth_element(begin,end,end2,compareFaces_byte);
+		bv2a.byteLength = std::min(bv2a.byteLength,keep/3*stride);
+		
+		acc2a.count = std::min(acc2a.count,size_t(keep*3));
+#endif
+	      }
+	      else { std::cout << "Wrong type or componentType:" << acc.type << " " << acc.componentType << std::endl; }
+	      
+															 
+  }
+  
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+      start_meshes = next->meshes_size();
+      start_accessors = next->accessors_size();
+      start_bufview = next->bufferviews_size();
+      start_buffer = next->buffers_size();
+      int s = next->meshes_size();
+      //std::cout << "Meshes: " << s << std::endl;
+      for(int i=0;i<s;i++)
+	{
+
+	  if (m_enabled.size()<=i)
+	    {
+	      m_enabled.resize(i+1);
+	    }
+	  if (!m_enabled[i])
+	    {
+	      const tinygltf::Mesh &mesh = next->get_mesh(i);
+	      const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	      int s2 = vec.size();
+	      //std::cout << "Primitives2: " << s2 << std::endl;
+	      for(int j=0;j<s2;j++)
+		do_one(i,j);
+	      m_enabled[i]=true;
+	    }
+	}
+    }
+
+    firsttime = false;
+  }
+  void Prepare()
+  {
+    next->Prepare();
+    HeavyPrepare();
+  }
+
+  virtual int accessors_size() const { if (firsttime) return 0; return next->accessors_size()+new_accessors.size(); }
+  virtual const tinygltf::Accessor &get_accessor(int i) const
+  {
+    if (i>=0 && i<next->accessors_size())
+      return next->get_accessor(i);
+    //std::cout << "get new acc:" << i << " " << start_accessors << " " << new_accessors.size() << std::endl;
+    return new_accessors[i-start_accessors];
+  }
+  virtual int bufferviews_size() const { if (firsttime) return 0; return next->bufferviews_size() + new_bufviews.size(); }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const
+  {
+    if (i>=0 && i<next->bufferviews_size())
+      return next->get_bufferview(i);
+    return new_bufviews[i-start_bufview];
+  }
+
+
+  virtual int buffers_size() const { if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
+  virtual const tinygltf::Buffer &get_buffer(int i) const
+  {
+    if (i>=0 && i<next->buffers_size())
+      return next->get_buffer(i);
+    return new_buffer[i-start_buffer];
+  }
+
+  virtual int meshes_size() const { if (firsttime) return 0; return next->meshes_size(); }
+  virtual const tinygltf::Mesh &get_mesh(int i) const
+  {
+    if (m_enabled.size()<=i)
+      {
+	m_enabled.resize(i+1);
+      }
+    if (!m_enabled[i])
+      {
+	const tinygltf::Mesh &mesh = next->get_mesh(i);
+	const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	int s2 = vec.size();
+	//std::cout << "Primitives2: " << s2 << std::endl;
+	for(int j=0;j<s2;j++)
+	  do_one(i,j);
+	m_enabled[i]=true;
+      }
+    
+    
+    if (m_meshes.size()<=i)
+      {
+	m_meshes.resize(i+1);
+      }
+    
+    m_meshes[i] = next->get_mesh(i);
+    int s = m_meshes[i].primitives.size();
+    for(int ii=0;ii<s;ii++)
+      {
+	//std::cout << "map " << m_mesh.primitives[i].indices << " to " << start_accessors + indices_to_index[m_mesh.primitives[i].indices] << std::endl;
+	if (indices_to_index.find(m_meshes[i].primitives[ii].indices)!=indices_to_index.end())
+	  m_meshes[i].primitives[ii].indices = start_accessors + indices_to_index[m_meshes[i].primitives[ii].indices];
+      }
+
+    return m_meshes[i];
+  }
+private:
+  GLTFModelInterface *next;
+  //mutable float val;
+  int iii0; // which model to change
+  int iii1; // which primitive to change
+  FaceCollection *coll; // new data
+  bool firsttime = true;
+
+  int start_meshes = -1;
+  int start_accessors = -1;
+  int start_bufview = -1;
+  int start_buffer = -1;
+  //std::vector<tinygltf::Mesh> new_mesh;
+  //mutable tinygltf::Mesh m_mesh;
+  mutable std::vector<tinygltf::Accessor> new_accessors;
+  mutable std::vector<tinygltf::BufferView> new_bufviews;
+  mutable std::vector<tinygltf::Buffer> new_buffer;
+
+  mutable std::map<int,int> indices_to_index;
+  mutable std::vector<tinygltf::Mesh> m_meshes;
+  mutable std::vector<bool> m_enabled;
+  bool b;
+};
+
+GameApi::TF GameApi::PolygonApi::tf_change_p(GameApi::TF mesh, int i, int prim, GameApi::P p)
+{
+  GLTFModelInterface *ii = find_gltf(e,mesh);
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_gltf(e, new TFChangeP(ii,i,prim,coll));
+}
+GameApi::TF GameApi::PolygonApi::tf_change_p_arr(GameApi::TF mesh, int i, std::vector<GameApi::P> vec)
+{
+  GameApi::TF val = mesh;
+  int s = vec.size();
+  for(int p=0;p<s;p++)
+    {
+      val = tf_change_p(val, i,p,vec[p]);
+    }
+  return val;
+}
+
+#endif
+
+
+
+
 GameApi::TF GameApi::PolygonApi::decimate_tf_zero(GameApi::TF mesh)
 {
   GLTFModelInterface *i = find_gltf(e,mesh);
