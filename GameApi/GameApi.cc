@@ -41398,3 +41398,290 @@ OctTreeBase *create_oct_tree_from_voxel(const std::vector<OctTreeColor> &palette
   
   return create_oct_tree_from_ranges(palette,vx,0,s2,0,s2,0,s2);
 }
+
+bool Compare_x(Point p1, Point p2)
+{
+  return p1.x < p2.x;
+}
+bool Compare_y(Point p1, Point p2)
+{
+  return p1.y < p2.y;
+}
+bool Compare_z(Point p1, Point p2)
+{
+  return p1.z < p2.z;
+}
+
+float Extract_x(Point p1)
+{
+  return p1.x;
+}
+float Extract_y(Point p1)
+{
+  return p1.y;
+}
+float Extract_z(Point p1)
+{
+  return p1.z;
+}
+
+
+
+
+class SortPointsApiPoints : public PointsApiPoints
+{
+public:
+  SortPointsApiPoints(PointsApiPoints *pts, bool (*Compare)(Point i1, Point i2)) : pts(pts), Compare(Compare) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    pts->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+      int s = pts->NumPoints();
+      for(int i=0;i<s;i++)
+	{
+	  vec.push_back(i);
+	}
+      PointsApiPoints *pts2 = pts;
+      std::sort(vec.begin(),vec.end(),
+		[this,pts2](int p1,int p2) {
+		  return Compare(pts2->Pos(p1),pts2->Pos(p2));
+		});
+  }
+  virtual void Prepare()
+  {
+    if (firsttime) {
+      firsttime = false;
+      pts->Prepare();
+      HeavyPrepare();
+    }
+  }
+  virtual int NumPoints() const { return vec.size(); }
+  virtual Point Pos(int i) const
+  {
+    return pts->Pos(vec[i]);
+  }
+  virtual unsigned int Color(int i) const { return pts->Color(vec[i]); }
+  virtual Vector Normal(int i) const { return pts->Normal(vec[i]); }
+private:
+  PointsApiPoints *pts;
+  std::vector<int> vec;
+  //std::vector<Point> vec;
+  bool (*Compare)(Point, Point);
+  bool firsttime= true;
+};
+
+class PreFilterPTS_dynamic_cursor : public PointsApiPoints
+{
+public:
+  PreFilterPTS_dynamic_cursor(PointsApiPoints *pts, DynamicCursor &cursor, bool (*Compare)(Point i1, Point i2), float (*Extract)(Point p)) : pts(pts), cursor(cursor), Compare(Compare), Extract(Extract) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    pts->Collect(vis);
+  }
+  void HeavyPrepare()
+  {
+    int s = pts->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	Vector delta1 = pts->Pos(i)-pts->Start(i);
+	Vector delta2 = pts->End(i)-pts->Pos(i);
+	if (delta1.dx > max_delta_left.dx) max_delta_left.dx = delta1.dx;
+	if (delta1.dy > max_delta_left.dy) max_delta_left.dy = delta1.dy;
+	if (delta1.dz > max_delta_left.dz) max_delta_left.dz = delta1.dz;
+
+	if (delta2.dx > max_delta_right.dx) max_delta_right.dx = delta2.dx;
+	if (delta2.dy > max_delta_right.dy) max_delta_right.dy = delta2.dy;
+	if (delta2.dz > max_delta_right.dz) max_delta_right.dz = delta2.dz;
+      }
+  }
+  void Prepare()
+  {
+    pts->Prepare();
+  }
+
+  std::pair<int,int> find_cursor() const
+  {
+    Point start_p = { cursor.start_x - max_delta_left.dx, cursor.start_y - max_delta_left.dy, cursor.start_z - max_delta_left.dz };
+    std::pair<int,int> loc1 = find_loc(Extract(start_p),0,pts->NumPoints());
+    Point end_p = { cursor.end_x + max_delta_right.dx, cursor.end_y + max_delta_right.dy, cursor.end_z + max_delta_right.dz };
+    std::pair<int,int> loc2 = find_loc(Extract(end_p),0,pts->NumPoints());
+
+    return std::pair<int,int>(loc1.second,loc2.first+1); // +1=c++ convention
+  }
+  
+  std::pair<int,int> find_loc(float val, int start, int end) const
+  {
+    int mid = (start+end)/2;
+    if (mid-start<1) return std::pair<int,int>(mid,mid+1);
+
+    Point p = pts->Pos(mid);
+    float val0 = Extract(p);
+
+    if (val0 < val) {
+      return find_loc(val,start,mid);
+    } else {
+      return find_loc(val,mid,end);
+    }
+  }  
+
+  virtual int NumPoints() const {
+    std::pair<int,int> c = find_cursor();
+    return c.second-c.first;
+  }
+  virtual Point Pos(int i) const {
+    std::pair<int,int> c = find_cursor();
+    return pts->Pos(i-c.first);
+  }
+  virtual unsigned int Color(int i) const {
+    std::pair<int,int> c = find_cursor();
+    return pts->Color(i-c.first);
+  }
+  virtual Vector Normal(int i) const {
+    std::pair<int,int> c = find_cursor();
+    return pts->Normal(i-c.first);
+  }
+
+  virtual Point Start(int i) const
+  {
+    std::pair<int,int> c = find_cursor();
+    return pts->Start(i-c.first);
+  }
+  virtual Point End(int i) const
+  {
+    std::pair<int,int> c = find_cursor();
+    return pts->End(i-c.first);
+  }
+
+  bool has_changed() const
+  {
+    std::pair<int,int> p = find_cursor();
+    if (cursor_cache != p)
+      {
+	cursor_cache = p;
+	return true;
+      }
+    return false;
+  }
+private:
+  PointsApiPoints *pts;
+  DynamicCursor &cursor;
+  bool (*Compare)(Point i1, Point i2);
+  float (*Extract)(Point p);
+
+  Vector max_delta_left;
+  Vector max_delta_right;
+  
+  
+  mutable std::pair<int,int> cursor_cache;
+};
+
+class FilterPTS_dynamic_cursor : public PointsApiPoints
+{
+public:
+  FilterPTS_dynamic_cursor(PointsApiPoints *pts, DynamicCursor &cursor) : pts(pts), cursor(cursor)
+  {
+  }
+
+  virtual void Collect(CollectVisitor &vis)
+  {
+    pts->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    vec.resize(pts->NumPoints(),false);
+    choose();
+    accum();
+  }
+  void Prepare()
+  {
+    pts->Prepare();
+    HeavyPrepare();
+  }
+
+  
+
+
+
+  void accum() const
+  {
+    int s = vec.size();
+    int pos = 0;
+    vec2.clear();
+    vec2.reserve(s);
+    vec2.push_back(0);
+    for(int i=0;i<s-1;i++)
+      {
+	if (vec[i]) pos++;
+	vec2.push_back(pos);
+      }
+  }
+
+  
+  void choose() const
+  {
+    int s = pts->NumPoints();
+    for(int i=0;i<s;i++)
+      {
+	vec[i] = filter(i);
+      }
+  }
+  
+
+  bool filter(int i) const
+  {
+    //Point p = pts->Pos(i);
+    Point p0 = pts->Start(i);
+    Point p1 = pts->End(i);
+    if (p0.x >= cursor.start_x && p1.x < cursor.end_x)
+      if (p0.y >= cursor.start_y && p1.y < cursor.end_y)
+	if (p0.z >= cursor.start_z && p1.z < cursor.end_z)
+	  {
+	    return true;
+	  }
+    return false;
+  }
+
+  virtual int NumPoints() const { return vec2.size(); }
+  virtual Point Pos(int i) const
+  {
+    if (cursor.has_changed || pts->has_changed()) { choose(); accum(); cursor.has_changed=false; }
+    return pts->Pos(vec2[i]);
+  }
+  virtual unsigned int Color(int i) const
+  {
+    return pts->Color(vec2[i]);
+  }
+  virtual Vector Normal(int i) const
+  {
+    return pts->Normal(vec2[i]);
+  }
+
+  virtual Point Start(int i) const
+  {
+    return pts->Start(vec2[i]);
+  }
+  virtual Point End(int i) const
+  {
+    return pts->End(vec2[i]);
+  }
+private:
+  PointsApiPoints *pts;
+  DynamicCursor &cursor;
+private:  
+  mutable std::vector<bool> vec;
+  mutable std::vector<int> vec2;
+};
+
+DynamicCursor g_dyn_cursor;
+  
+GameApi::PTS GameApi::PointsApi::world_filter(PTS points)
+{
+  PointsApiPoints *pts = find_pointsapi_points(e,points);
+  SortPointsApiPoints *pts2 = new SortPointsApiPoints(pts,&Compare_x);
+  PreFilterPTS_dynamic_cursor *pts3 = new PreFilterPTS_dynamic_cursor(pts2,g_dyn_cursor, &Compare_x, &Extract_x);
+  FilterPTS_dynamic_cursor *pts4 = new FilterPTS_dynamic_cursor(pts3,g_dyn_cursor);
+  return add_points_api_points(e,pts4);
+}

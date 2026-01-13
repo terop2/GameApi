@@ -586,12 +586,12 @@ require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
 
-echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\" tabindex=-1></canvas>";
+echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
 
 if ($mobile=="yes") {
-echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
+echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
 } else {
-echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
+echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
 }
 
 
@@ -2429,7 +2429,7 @@ var m_id = 0;
 
 function choose_display(id,label, vm,is_popstate)
 {
-   //console.log("choose_display");
+//console.log("choose_display");
    //console.log(id);
    var d = document.getElementById("display_title_bar");
    d.innerHTML = display_labels[id];
@@ -2535,10 +2535,13 @@ var g_emscripten_start_count = 0;
 
 var g_keyboard_focus_timeout = null;
 
+var g_count = 0;
+
 function set_keyboard_focus()
 {
-  //var iframe = document.getElementById('canvas');
-  //iframe.contentWindow.focus();
+  var iframe = document.getElementById('canvas');
+  if (iframe.contentWindow) iframe.contentWindow.focus();
+  else { g_count++; if (g_count<3) set_keyboard_focus_to_iframe(); else g_count=0; }
   g_keyboard_focus_timeout = null;
 }
 
@@ -2550,6 +2553,7 @@ function remove_keyboard_focus_from_iframe()
 
 function set_keyboard_focus_to_iframe()
 {
+  console.log("set_keyboard_focus_to_iframe()");
   if (g_keyboard_focus_timeout)
      window.clearTimeout(g_keyboard_focus_timeout);
   g_keyboard_focus_timeout = window.setTimeout(set_keyboard_focus,100);
@@ -2813,6 +2817,8 @@ function show_emscripten(str,hide,indicator,is_async)
       onStartup: function() {
         //console.log("onRuntimeInitialized done");
       	window.setTimeout(function() { check_em(app.indicator)(); },30);
+	const canvas = Module.canvas;
+	canvas.tabIndex = 0;
       }
   };
 Module.canvas = canv;
@@ -3026,11 +3032,11 @@ function e1(event)
 function fix_keyboard(hide)
 {
   if (hide) {
-  //console.log("FIX KEYBOARD TRUE");
+  console.log("FIX KEYBOARD TRUE");
   window.addEventListener('keydown', e1, true);
   window.addEventListener('keyup', e1, true);
   } else {
-  //console.log("FIX KEYBOARD FALSE");
+  console.log("FIX KEYBOARD FALSE");
   window.removeEventListener('keydown', e1, true);
   window.removeEventListener('keyup', e1, true);
   }
