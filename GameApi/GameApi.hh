@@ -3730,7 +3730,10 @@ public:
   IMPORT PointsApi(Env &e);
   // should use cubes at left,top,right edge to cut out rendering.
   IMPORT PTS world_filter(PTS points); // uses DynamicCursor g_dyn_cursor
-  
+  IMPORT ML world_filter_cursor(ML ml,
+				float start_delta_x, float end_delta_x,
+				float start_delta_y, float end_delta_y,
+				float start_delta_z, float end_delta_z);
   
   IMPORT ML publish_heightfield(ML ml, CFB landscape, float start_x, float end_x,
 				float start_y, float end_y, float start_z, float end_z);

@@ -181,6 +181,22 @@
 			 { "", "ffffffff" },
 			 "PTS", "points_api", "color_points"));
 #endif
+#if (ALL==1)||(WORLD_FILTER==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::world_filter,
+			 "world_filter",
+			 { "pts" },
+			 { "PTS" },
+			 { "" },
+			 "PTS", "points_api", "world_filter"));
+#endif
+#if (ALL==1)||(WORLD_FILTER_CURSOR==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::world_filter_cursor,
+			 "world_filter_cursor",
+			 { "ml", "start_delta_x", "end_delta_x", "start_delta_y", "end_delta_y", "start_delta_z", "end_delta_z" },
+			 { "ML", "float", "float", "float", "float", "float" ,"float" },
+			 { "", "300.0", "300.0", "300.0", "300.0", "300.0", "300.0" },
+			 "ML", "points_api", "world_filter_cursor"));
+#endif
 #if (ALL==1)||(POLYGON_FACE_CENTER_POINTS==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::points_api, &GameApi::PointsApi::polygon_face_center_points,
 			 "face_center",

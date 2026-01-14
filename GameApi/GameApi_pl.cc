@@ -22465,6 +22465,8 @@ public:
     if (result==-1) result=(left+right)/2;
     }
     int end = result;
+
+    if (start>end) std::swap(start,end);
     
     
     //int start = ii-allpoints.begin();
