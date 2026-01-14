@@ -482,7 +482,7 @@ public:
 class OctTreeSplit : public OctTreeBase
 {
 public:
-  OctTreeBase *child[8];
+  OctTreeBase *child[15];
 };
 
 struct DynamicCursor

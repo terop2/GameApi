@@ -111,6 +111,7 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
 			 "[P]", "voxel_api", "vox_cubes"));
 #endif
+#if 0
 #if (ALL==1)||(VOX_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_ml,
 			 "vox_ml",
@@ -118,6 +119,7 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "EveryApi&", "std::string", "int", "float", "float", "float" },
 			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0" },
 			 "ML", "voxel_api", "vox_ml"));
+#endif
 #endif
 #if (ALL==1)||(VOX_ML2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_ml2,
@@ -127,6 +129,7 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "0.0", "ff000000" },
 			 "ML", "voxel_api", "vox_ml2"));
 #endif
+#if 0
 #if (ALL==1)||(VOX_BIND_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_bind_ml,
 			 "vox_bind_ml",
@@ -134,6 +137,7 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "EveryApi&", "std::string", "int", "float", "float", "float", "MT" },
 			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "" },
 			 "ML", "voxel_api", "vox_bind_ml"));
+#endif
 #endif
 #if (ALL==1)||(VOX_BIND_ML2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_bind_ml2,
@@ -143,6 +147,7 @@ std::vector<GameApiItem*> pointapi_functions()
 		{ "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "", "0.0", "ff000000" },
 			 "ML", "voxel_api", "vox_bind_ml2"));
 #endif
+#if 0
 #if (ALL==1)||(VX_TO_OVX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vx_to_ovx,
 			 "vx_to_ovx",
@@ -151,6 +156,8 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "", "" },
 			 "OVX", "voxel_api", "vx_to_ovx"));
 #endif
+#endif
+#if 0
 #if (ALL==1)||(REMOVE_NOT_ENABLED==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::remove_not_enabled,
 			 "remove_empty_ovx",
@@ -159,6 +166,8 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "" },
 			 "OVX", "voxel_api", "remove_not_enabled"));
 #endif
+#endif
+#if 0
 #if (ALL==1)||(RENDER_OVX_P==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::render_ovx_p,
 			 "render_ovx_p",
@@ -167,8 +176,8 @@ std::vector<GameApiItem*> pointapi_functions()
 			 { "ev", "", "20.0", "20.0", "20.0" },
 			 "P", "voxel_api", "render_ovx_p"));
 #endif
-
-  
+#endif
+#if 0  
 #if (ALL==1)||(RENDER_OVX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::render_ovx,
 			 "render_ovx",
@@ -177,7 +186,7 @@ std::vector<GameApiItem*> pointapi_functions()
 		{ "ev", "","", "20.0", "20.0", "20.0", "0.0", "ff000000" },
 			 "ML", "voxel_api", "render_ovx"));
 #endif
-
+#endif
 #if (ALL==1)||(SUBVOXEL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::subvoxel,
 			 "vx_sub",

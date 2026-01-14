@@ -586,7 +586,7 @@ require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
 
-echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
+echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\"></canvas>";
 
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
@@ -2540,8 +2540,9 @@ var g_count = 0;
 function set_keyboard_focus()
 {
   var iframe = document.getElementById('canvas');
-  if (iframe.contentWindow) iframe.contentWindow.focus();
-  else { g_count++; if (g_count<3) set_keyboard_focus_to_iframe(); else g_count=0; }
+  iframe.tabIndex = "0";
+
+  iframe.focus();
   g_keyboard_focus_timeout = null;
 }
 
@@ -3031,6 +3032,9 @@ function e1(event)
 
 function fix_keyboard(hide)
 {
+  hide=false;
+  const canvas = document.getElementById("canvas");
+  canvas.tabIndex = "0";
   if (hide) {
   console.log("FIX KEYBOARD TRUE");
   window.addEventListener('keydown', e1, true);
