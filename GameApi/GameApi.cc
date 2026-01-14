@@ -9566,7 +9566,7 @@ EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong_color(EveryApi &ev, std
     Color c_high(color);
     c_high *= highlight_mult;
     GameApi::MT mat = ev.polygon_api.material_index(ev,vec,i);
-    std::cout << std::hex << c_amb.Pixel() << " " << c_spec.Pixel() << " " << c_high.Pixel() << std::endl;
+    //std::cout << std::hex << c_amb.Pixel() << " " << c_spec.Pixel() << " " << c_high.Pixel() << std::endl;
     GameApi::MT mat2 = ev.materials_api.phong(ev,mat,light_dir_x, light_dir_y, light_dir_z, c_amb.Pixel(), c_spec.Pixel(), c_high.Pixel(), pow);
     array->vec.push_back(mat2.id);
   }
