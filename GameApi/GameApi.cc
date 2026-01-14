@@ -9533,6 +9533,45 @@ EXPORT GameApi::MT GameApi::MaterialsApi::m_def(EveryApi &ev)
 {
   return add_material(e, new DefaultMaterial(ev));
 }
+EXPORT GameApi::ARR GameApi::MaterialsApi::p_dup(EveryApi &ev, P obj, int count)
+{
+  int p_id = obj.id;
+  ArrayType *array = new ArrayType;
+  array->type = 2;
+  array->vec.resize(count,p_id);
+  return add_array(e,array);
+}
+EXPORT GameApi::ARR GameApi::MaterialsApi::m_dup(EveryApi &ev, MT mat, int count)
+{
+  int mat_id = mat.id;
+  ArrayType *array = new ArrayType;
+  array->type = 2;
+  array->vec.resize(count,mat_id);
+  return add_array(e,array);
+}
+EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong_color(EveryApi &ev, std::vector<MT> vec, std::vector<P> vec2, float light_dir_x, float light_dir_y, float light_dir_z, float ambient_mult, float spec_mult, float highlight_mult, float pow)
+{
+  int s = vec.size();
+  ArrayType *array = new ArrayType;
+  array->type = 2;
+
+  for(int i=0;i<s;i++) {
+    FaceCollection *coll = find_facecoll(e,vec2[i]);
+    coll->Prepare();
+    unsigned int color = coll->Color(0,0);
+    Color c_amb(color);
+    c_amb *= ambient_mult;
+    Color c_spec(color);
+    c_spec *= spec_mult;
+    Color c_high(color);
+    c_high *= highlight_mult;
+    GameApi::MT mat = ev.polygon_api.material_index(ev,vec,i);
+    std::cout << std::hex << c_amb.Pixel() << " " << c_spec.Pixel() << " " << c_high.Pixel() << std::endl;
+    GameApi::MT mat2 = ev.materials_api.phong(ev,mat,light_dir_x, light_dir_y, light_dir_z, c_amb.Pixel(), c_spec.Pixel(), c_high.Pixel(), pow);
+    array->vec.push_back(mat2.id);
+  }
+  return add_array(e,array);
+}
 EXPORT GameApi::ARR GameApi::MaterialsApi::m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow)
 {
   int s = vec.size();
@@ -41366,7 +41405,7 @@ OctTreeBase *create_oct_tree_from_ranges(const std::vector<OctTreeColor> &palett
 
 	OctTreeLeaf *K_mxmz = (OctTreeLeaf*)mxmz;
 	OctTreeLeaf *K_mymz = (OctTreeLeaf*)mymz;
-	
+	 
 
 	OctTreeColor c = center->color;
 	if (c==K_center->color &&

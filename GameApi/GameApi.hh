@@ -1724,6 +1724,9 @@ public:
   IMPORT MT phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
   IMPORT MT vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
   IMPORT ARR m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
+  IMPORT ARR p_dup(EveryApi &ev, P obj, int count);
+  IMPORT ARR m_dup(EveryApi &ev, MT mat, int count);
+  IMPORT ARR m_apply_phong_color(EveryApi &ev, std::vector<MT> vec, std::vector<P> vec2, float light_dir_x, float light_dir_y, float light_dir_z, float ambient_mult, float specular_mult, float highlight_mult, float pow);
   IMPORT MT edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
   IMPORT MT bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width);
