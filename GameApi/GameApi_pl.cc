@@ -22929,11 +22929,13 @@ public:
 
     if (start>end) std::swap(start,end);
 
+ #if 0
     min_ppx = 6666666.0;
     min_ppz = 6666666.0;
     max_ppx = -6666666.0;
     max_ppz = -6666666.0;
-
+#endif
+    
     
     for(int i=start;i<=end;i++)
       {
@@ -22942,9 +22944,11 @@ public:
 	    pos.push_back(allpoints[i]);
 	  }
       }
+
+ #if 0
     std::cout << "X:" << min_ppx << " " << max_ppx << std::endl;
     std::cout << "Z:" << min_ppz << " " << max_ppz << std::endl;
-
+#endif
     
     //std::cout << "Range:" << minimum << " " << maximum << std::endl;
     return true; }
@@ -23037,16 +23041,18 @@ public:
   {
     Point pp = calc_pos3(i);
 
+#if 0
     if (pp.x<min_ppx) min_ppx=pp.x;
     if (pp.z<min_ppz) min_ppz=pp.z;
     
     if (pp.x>max_ppx) max_ppx=pp.x;
     if (pp.z>max_ppz) max_ppz=pp.z;
-
+#endif
+    
     
     if (pp.x >= -40.0f && pp.x <= 40.0f)
       //if (pp.y >= -400.0f && pp.y <= 400.0f)
-      if (pp.z >= ncd_z_start2*2.0f && pp.z <= ncd_z_end2*2.0f)
+      if (pp.z >= ncd_z_start2*0.5f && pp.z <= ncd_z_end2*2.0f)
 	  return true;
     return false;
     
