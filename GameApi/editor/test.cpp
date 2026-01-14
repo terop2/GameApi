@@ -4473,7 +4473,9 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   
   return 0;
 #ifdef LINUX
-  } catch(...) { std::cout << "EXCEPTION" << std::endl; }
+  } catch(...) {
+    std::cout << "EXCEPTION" << std::endl;
+  }
 #endif
 
 #ifdef STEAM

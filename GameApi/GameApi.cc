@@ -41481,16 +41481,39 @@ OctTreeBase *create_oct_tree_from_voxel(const std::vector<OctTreeColor> &palette
 
 bool Compare_x(Point p1, Point p2)
 {
-  return p1.x < p2.x;
+  return std::isless(p1.x,p2.x);
 }
 bool Compare_y(Point p1, Point p2)
 {
-  return p1.y < p2.y;
+  return std::isless(p1.y,p2.y);
 }
 bool Compare_z(Point p1, Point p2)
 {
-  return p1.z < p2.z;
+  return std::isless(p1.z,p2.z);
 }
+
+extern Matrix gg_in_T;
+extern Matrix gg_in_MV;
+
+bool Compare_x_rot(Point p1, Point p2)
+{
+    p1 = p1 * gg_in_MV * gg_in_T;
+    p2 = p2 * gg_in_MV * gg_in_T;
+  return std::isless(p1.x,p2.x);
+}
+bool Compare_y_rot(Point p1, Point p2)
+{
+  p1 = p1 * gg_in_MV * gg_in_T;
+    p2 = p2 * gg_in_MV * gg_in_T;
+  return std::isless(p1.y,p2.y);
+}
+bool Compare_z_rot(Point p1, Point p2)
+{
+    p1 = p1 * gg_in_MV * gg_in_T;
+    p2 = p2 * gg_in_MV * gg_in_T;
+  return std::isless(p1.z,p2.z);
+}
+
 
 float Extract_x(Point p1)
 {
@@ -41504,6 +41527,26 @@ float Extract_z(Point p1)
 {
   return p1.z;
 }
+
+float Extract_x_rot(Point p1)
+{
+    p1 = p1 * gg_in_MV * gg_in_T;
+  //Point pp2 = p2*m;
+  return p1.x;
+}
+float Extract_y_rot(Point p1)
+{
+  p1 = p1 * gg_in_MV * gg_in_T;
+  //Point pp2 = p2*m;
+  return p1.y;
+}
+float Extract_z_rot(Point p1)
+{
+    p1 = p1 * gg_in_MV * gg_in_T;
+  //Point pp2 = p2*m;
+  return p1.z;
+}
+
 
 
 
@@ -41519,6 +41562,7 @@ public:
   }
   void HeavyPrepare()
   {
+    vec.clear();
       int s = pts->NumPoints();
       for(int i=0;i<s;i++)
 	{
@@ -41527,7 +41571,11 @@ public:
       PointsApiPoints *pts2 = pts;
       std::sort(vec.begin(),vec.end(),
 		[this,pts2](int p1,int p2) {
-		  return Compare(pts2->Pos(p1),pts2->Pos(p2));
+		  //float qr = -quake_rot_y;
+		  //Matrix r = Matrix::YRotation(qr);
+
+		  
+		  return this->Compare(pts2->Pos(p1),pts2->Pos(p2));
 		});
   }
   virtual void Prepare()
@@ -41538,13 +41586,35 @@ public:
       HeavyPrepare();
     }
   }
-  virtual int NumPoints() const { return vec.size(); }
+  virtual int NumPoints() const {
+    return vec.size();
+  }
   virtual Point Pos(int i) const
   {
-    return pts->Pos(vec[i]);
+    if (i>=0 && i<int(vec.size()))
+      return pts->Pos(vec[i]);
+    std::cout << "i=" << i << std::endl;
+    return Point(-9999999.0,-9999999.0,-99999999.0);
   }
-  virtual unsigned int Color(int i) const { return pts->Color(vec[i]); }
-  virtual Vector Normal(int i) const { return pts->Normal(vec[i]); }
+  virtual unsigned int Color(int i) const {
+    if (i>=0 && i<int(vec.size()))
+      return pts->Color(vec[i]);
+    std::cout << "ci=" << i << std::endl;
+    return 0xffffffff;
+  }
+  virtual Vector Normal(int i) const {
+    if (i>=0 && i<int(vec.size()))
+      return pts->Normal(vec[i]);
+    std::cout << "ni=" << i << std::endl;
+    return Vector(0.0,0.0,-400.0);
+  }
+  bool has_changed() const { return pts->has_changed(); }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b2 = pts->Update(e);
+    //bool b = pts->has_changed();
+    if (1) { HeavyPrepare(); }
+    return b2;
+  }
 private:
   PointsApiPoints *pts;
   std::vector<int> vec;
@@ -41560,10 +41630,20 @@ public:
   virtual void Collect(CollectVisitor &vis)
   {
     pts->Collect(vis);
+    vis.register_obj(this);
   }
   void HeavyPrepare()
   {
     int s = pts->NumPoints();
+    
+    max_delta_left.dx = -9999999.0;
+    max_delta_left.dy = -9999999.0;
+    max_delta_left.dz = -9999999.0;
+
+    max_delta_right.dx = -9999999.0;
+    max_delta_right.dy = -9999999.0;
+    max_delta_right.dz = -9999999.0;
+
     for(int i=0;i<s;i++)
       {
 	Vector delta1 = pts->Pos(i)-pts->Start(i);
@@ -41576,75 +41656,115 @@ public:
 	if (delta2.dy > max_delta_right.dy) max_delta_right.dy = delta2.dy;
 	if (delta2.dz > max_delta_right.dz) max_delta_right.dz = delta2.dz;
       }
+    std::pair<int,int> p = find_cursor();
+    if (p.first>p.second)
+      {
+	std::swap(p.first,p.second);
+      }
+    cursor_cache = p;
+
   }
   void Prepare()
   {
     pts->Prepare();
+    HeavyPrepare();
   }
 
   std::pair<int,int> find_cursor() const
   {
+    int n = pts->NumPoints();
+    if (n<1) return std::pair<int,int>(0,0);
     Point start_p = { cursor.start_x - max_delta_left.dx, cursor.start_y - max_delta_left.dy, cursor.start_z - max_delta_left.dz };
-    std::pair<int,int> loc1 = find_loc(Extract(start_p),0,pts->NumPoints());
+    std::pair<int,int> loc1 = find_loc(Extract(start_p),0,n-1);
+    if (loc1.first>=n-1) loc1.first=n-1;
+    //std::cout << "LOC1:" << loc1.first << " " << loc1.second << std::endl;
     Point end_p = { cursor.end_x + max_delta_right.dx, cursor.end_y + max_delta_right.dy, cursor.end_z + max_delta_right.dz };
-    std::pair<int,int> loc2 = find_loc(Extract(end_p),0,pts->NumPoints());
+    std::pair<int,int> loc2 = find_loc(Extract(end_p),0,n-1);
+    if (loc2.first>=n-1) loc2.first=n-1;
+    //std::cout << "LOC2:" << loc2.first << " " << loc2.second << std::endl;
 
-    return std::pair<int,int>(loc1.second,loc2.first+1); // +1=c++ convention
+
+    //std::cout << start_p << " " << end_p << std::endl;
+    return std::pair<int,int>(loc1.first,loc2.first+1); 
   }
   
   std::pair<int,int> find_loc(float val, int start, int end) const
   {
+    if (start < 0) start = 0;
+    int n = pts->NumPoints();
+    if (end > n) end = n;
+    
+    while(end - start > 1) {
     int mid = (start+end)/2;
-    if (mid-start<1) return std::pair<int,int>(mid,mid+1);
-
     Point p = pts->Pos(mid);
+    //float qr = -quake_rot_y;
+    //Matrix r = Matrix::YRotation(qr);
+    //p=p*r;
     float val0 = Extract(p);
 
-    if (val0 < val) {
-      return find_loc(val,start,mid);
+    //if (mid-start<1 || end-mid<1) return std::pair<int,int>(mid,mid+1);
+
+    if (std::isless(val,val0)) {
+      end = mid;
     } else {
-      return find_loc(val,mid,end);
+      start=mid;
     }
-  }  
+    }
+    return std::pair<int,int>(start,end);
+  }
 
   virtual int NumPoints() const {
-    std::pair<int,int> c = find_cursor();
-    return c.second-c.first;
+    int num = cursor_cache.second-cursor_cache.first;
+    //std::cout << "NumPoints:" << num << std::endl;
+    return num;
   }
   virtual Point Pos(int i) const {
-    std::pair<int,int> c = find_cursor();
-    return pts->Pos(i-c.first);
+    Point p = pts->Pos(cursor_cache.first + i); 
+    //std::cout << "Pos:" << i << "::" << p << std::endl;
+    return p;
   }
   virtual unsigned int Color(int i) const {
-    std::pair<int,int> c = find_cursor();
-    return pts->Color(i-c.first);
+    return pts->Color(cursor_cache.first + i);
   }
   virtual Vector Normal(int i) const {
-    std::pair<int,int> c = find_cursor();
-    return pts->Normal(i-c.first);
+    return pts->Normal(cursor_cache.first + i);
   }
 
   virtual Point Start(int i) const
   {
-    std::pair<int,int> c = find_cursor();
-    return pts->Start(i-c.first);
+    return pts->Start(cursor_cache.first + i);
   }
   virtual Point End(int i) const
   {
-    std::pair<int,int> c = find_cursor();
-    return pts->End(i-c.first);
+    return pts->End(cursor_cache.first + i);
   }
-
+  virtual bool Update(MainLoopEnv &e) {
+    bool b2 = pts->Update(e);
+    std::pair<int,int> p = find_cursor();
+    if (p.first>p.second)
+      {
+	std::swap(p.first,p.second);
+      }
+    //std::cout << "cursor:" << p1 << " " << p2 << std::endl;
+    if (cursor_cache != p)
+      {
+	b2 = true;
+      }
+    //bool b = has_changed();
+    cursor_cache = p;
+    return true;
+  }
+  /*
   bool has_changed() const
   {
+    if (pts->has_changed()) return true;
     std::pair<int,int> p = find_cursor();
     if (cursor_cache != p)
       {
-	cursor_cache = p;
 	return true;
       }
     return false;
-  }
+    }*/
 private:
   PointsApiPoints *pts;
   DynamicCursor &cursor;
@@ -41657,6 +41777,7 @@ private:
   
   mutable std::pair<int,int> cursor_cache;
 };
+
 
 class FilterPTS_dynamic_cursor : public PointsApiPoints
 {
@@ -41671,7 +41792,11 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
-    vec.resize(pts->NumPoints(),false);
+    int num = pts->NumPoints();
+    if (num>0)
+      vec.resize(num,0);
+    else
+      vec.resize(255,0);
     choose();
     accum();
   }
@@ -41688,14 +41813,14 @@ public:
   void accum() const
   {
     int s = vec.size();
-    int pos = 0;
     vec2.clear();
-    vec2.reserve(s);
+    if (s>0)
+      vec2.reserve(s);
     vec2.push_back(0);
     for(int i=0;i<s-1;i++)
       {
-	if (vec[i]) pos++;
-	vec2.push_back(pos);
+	if (vec[i]) 
+	  vec2.push_back(i);
       }
   }
 
@@ -41705,7 +41830,7 @@ public:
     int s = pts->NumPoints();
     for(int i=0;i<s;i++)
       {
-	vec[i] = filter(i);
+	vec[i] = filter(i) ? 1 : 0;
       }
   }
   
@@ -41727,7 +41852,6 @@ public:
   virtual int NumPoints() const { return vec2.size(); }
   virtual Point Pos(int i) const
   {
-    if (cursor.has_changed || pts->has_changed()) { choose(); accum(); cursor.has_changed=false; }
     return pts->Pos(vec2[i]);
   }
   virtual unsigned int Color(int i) const
@@ -41747,21 +41871,151 @@ public:
   {
     return pts->End(vec2[i]);
   }
+  virtual bool Update(MainLoopEnv &e) {
+    bool b = pts->Update(e);
+    if (cursor.has_changed || b) { choose(); accum(); b=true; cursor.has_changed=false; }
+    if (b||fabs(cursor.start_x -cursorcache.start_x) >0.00001 ||
+	fabs(cursor.start_y -cursorcache.start_y) >0.00001 ||
+	fabs(cursor.start_z-cursorcache.start_z) >0.00001 ||
+	fabs(cursor.end_x - cursorcache.end_x) >0.00001 ||
+	fabs(cursor.end_y - cursorcache.end_y) >0.00001 ||
+	fabs(cursor.end_z - cursorcache.end_z) >0.00001)
+      {
+	cursorcache = cursor;
+	return true;
+      }
+    return true;
+  }  
 private:
   PointsApiPoints *pts;
   DynamicCursor &cursor;
+  mutable DynamicCursor cursorcache;
 private:  
-  mutable std::vector<bool> vec;
+  mutable std::vector<int> vec;
   mutable std::vector<int> vec2;
 };
 
 DynamicCursor g_dyn_cursor;
-  
+
+DynamicCursor g_cut_view = { -30000.0,30000.0, -30000.0, 30000.0, 0.0, 30000.0, false };
+
 GameApi::PTS GameApi::PointsApi::world_filter(PTS points)
 {
   PointsApiPoints *pts = find_pointsapi_points(e,points);
-  SortPointsApiPoints *pts2 = new SortPointsApiPoints(pts,&Compare_x);
-  PreFilterPTS_dynamic_cursor *pts3 = new PreFilterPTS_dynamic_cursor(pts2,g_dyn_cursor, &Compare_x, &Extract_x);
-  FilterPTS_dynamic_cursor *pts4 = new FilterPTS_dynamic_cursor(pts3,g_dyn_cursor);
-  return add_points_api_points(e,pts4);
+  SortPointsApiPoints *pts1 = new SortPointsApiPoints(pts,&Compare_z);
+  PreFilterPTS_dynamic_cursor *pts2 = new PreFilterPTS_dynamic_cursor(pts1,g_dyn_cursor, &Compare_z, &Extract_z);
+  SortPointsApiPoints *pts3 = new SortPointsApiPoints(pts2,&Compare_x);
+  PreFilterPTS_dynamic_cursor *pts4 = new PreFilterPTS_dynamic_cursor(pts3,g_dyn_cursor, &Compare_x, &Extract_x);
+  //SortPointsApiPoints *pts4 = new SortPointsApiPoints(pts3,&Compare_y);
+  //PreFilterPTS_dynamic_cursor *pts5 = new PreFilterPTS_dynamic_cursor(pts4,g_dyn_cursor, &Compare_y, &Extract_y);
+
+  SortPointsApiPoints *pts5 = new SortPointsApiPoints(pts4,&Compare_z_rot);
+  PreFilterPTS_dynamic_cursor *pts6 = new PreFilterPTS_dynamic_cursor(pts5,g_cut_view, &Compare_z_rot, &Extract_z_rot)
+    ;
+  //FilterPTS_dynamic_cursor *pts8 = new FilterPTS_dynamic_cursor(pts6,g_dyn_cursor);
+  return add_points_api_points(e,pts6);
+}
+
+Matrix gg_in_MV= Matrix::Identity();
+Matrix gg_in_P= Matrix::Identity();
+Matrix gg_in_T= Matrix::Identity();
+
+class WorldFilterCursor : public MainLoopItem
+{
+public:
+  WorldFilterCursor(MainLoopItem *item,
+		    float start_delta_x, float end_delta_x,
+		    float start_delta_y, float end_delta_y,
+		    float start_delta_z, float end_delta_z) : item(item),
+							      start_delta_x(start_delta_x), end_delta_x(end_delta_x),
+							      start_delta_y(start_delta_y), end_delta_y(end_delta_y),
+							      start_delta_z(start_delta_z), end_delta_z(end_delta_z) { }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); HeavyPrepare(); }
+  virtual void FirstFrame() { }
+
+  void setup_filter(bool enable)
+  {
+    static Point old_p;
+    
+    Point p;
+    if (g_is_quakeml3) {
+      p = { -quake_pos_x,0.0, -float(quake_pos_y) };
+    } else {
+      p = { -quake_pos_x,0.0, 400.0f-float(quake_pos_y) };
+    }
+    p = Point(0.0,0.0,0.0) * Matrix::Inverse(in_T) * Matrix::Inverse(in_MV);
+    if (p!=old_p)
+      {
+	g_dyn_cursor.has_changed = true;
+	old_p = p;
+      }
+    if (enable)
+      {
+	g_dyn_cursor.start_x = p.x + start_delta_x;
+	g_dyn_cursor.start_y = p.y + start_delta_y;
+	g_dyn_cursor.start_z = p.z + start_delta_z;
+        g_dyn_cursor.end_x = p.x - end_delta_x;
+	g_dyn_cursor.end_y = p.y - end_delta_y;
+	g_dyn_cursor.end_z = p.z - end_delta_z;
+
+	if (g_dyn_cursor.start_x > g_dyn_cursor.end_x)
+	  std::swap(g_dyn_cursor.start_x,g_dyn_cursor.end_x);
+	if (g_dyn_cursor.start_y > g_dyn_cursor.end_y)
+	  std::swap(g_dyn_cursor.start_y,g_dyn_cursor.end_y);
+	if (g_dyn_cursor.start_z > g_dyn_cursor.end_z)
+	  std::swap(g_dyn_cursor.start_z,g_dyn_cursor.end_z);
+
+	
+      }
+    else
+      {
+	//g_dyn_cursor.start_x = p.x;
+	//g_dyn_cursor.start_y = p.y;
+	//g_dyn_cursor.start_z = p.z;
+        //g_dyn_cursor.end_x = p.x;
+	//g_dyn_cursor.end_y = p.y;
+	//g_dyn_cursor.end_z = p.z;
+      }
+  }
+
+  virtual void execute(MainLoopEnv &e)
+  {
+    in_MV = e.in_MV;
+    in_P = e.in_P;
+    in_T = e.in_T;
+    gg_in_MV = e.in_MV;
+    gg_in_T = e.in_T;
+    setup_filter(true);
+    item->execute(e);
+    setup_filter(false);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    setup_filter(true);
+    item->handle_event(e);
+    setup_filter(false);
+  }
+  virtual std::vector<int> shader_id() {
+    return item->shader_id();
+  }
+private:
+  MainLoopItem *item;
+  Matrix in_MV = Matrix::Identity();
+  Matrix in_T = Matrix::Identity();
+  Matrix in_P = Matrix::Identity();
+  float start_delta_x, end_delta_x;
+  float start_delta_y, end_delta_y;
+  float start_delta_z, end_delta_z;
+};
+
+GameApi::ML GameApi::PointsApi::world_filter_cursor(ML ml, float start_delta_x, float end_delta_x,
+						    float start_delta_y, float end_delta_y,
+						    float start_delta_z, float end_delta_z)
+{
+  MainLoopItem *item = find_main_loop(e, ml);
+  return add_main_loop(e, new WorldFilterCursor(item,start_delta_x, end_delta_x,
+						start_delta_y, end_delta_y,
+						start_delta_z, end_delta_z));
 }

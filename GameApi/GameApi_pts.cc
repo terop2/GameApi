@@ -458,6 +458,7 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p)
 {
   MatrixArray *pts = find_matrix_array(e, p);
   int numpoints = pts->Size();
+  if (numpoints<0) numpoints=0;
   
   MatrixArray3 *arr = find_matrix_array3(e, pta);
   float *array = arr->array;
@@ -481,7 +482,7 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool
 {
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
-
+  if (numpoints<0) { std::cout << "PTS numpoints=" << numpoints << std::endl; numpoints=0; }
 
   PointArray3 *arr = find_point_array3(e, pta);
   bool slow = false;
@@ -490,8 +491,8 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool
     unsigned int *color = arr->color;
     delete [] array;
     delete [] color;
-    arr->array = new float[numpoints*3];
-    arr->color = new unsigned int[numpoints];
+    arr->array = new float[(numpoints+1)*3];
+    arr->color = new unsigned int[numpoints+1];
     slow=true;
   }
   arr->numpoints = numpoints;
@@ -664,13 +665,14 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   pts->Prepare();
   int numpoints = pts->NumPoints();
+  if (numpoints<0) { std::cout << "PTS numpoints=" << numpoints << std::endl;  numpoints=0; }
 #if 1
   //ndef THREADS
   //ndef THREADS
   //ifndef THREADS0
-  float *array = new float[numpoints*3];
-  unsigned int *color = new unsigned int[numpoints];
-  Vector *normal = new Vector[numpoints];
+  float *array = new float[(numpoints+1)*3];
+  unsigned int *color = new unsigned int[(numpoints+1)];
+  Vector *normal = new Vector[(numpoints+1)];
   
   for(int i=0;i<numpoints;i++)
     {
@@ -1550,7 +1552,7 @@ public:
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const { return count; }
-  virtual Point Pos(int i) const { return points[i]; }
+  virtual Point Pos(int i) const { if (i>=0&&i<points.size()) return points[i];  return Point(-999999.0,-999999.0,-999999.0); }
   virtual unsigned int Color(int i) const
   {
     return 0xffffffff;
