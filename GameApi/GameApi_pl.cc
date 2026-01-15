@@ -15050,6 +15050,22 @@ EXPORT GameApi::LI GameApi::PolygonApi::li_static_instancing_matrix(EveryApi &ev
   return ev.lines_api.li_or_array(vec);
 }
 
+GameApi::P GameApi::PolygonApi::static_instancing_array(EveryApi &ev, std::vector<P> vec, PTS pos)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, pos);
+  obj2->Prepare();
+  int s = std::min(obj2->NumPoints(),int(vec.size()));
+  std::vector<P> vec2;
+  for(int i=0;i<s;i++)
+    {
+      Point pp = obj2->Pos(i);
+      P trans = translate(vec[i], pp.x,pp.y,pp.z);
+      vec2.push_back(trans);
+    }
+  return or_array2(vec2);
+
+}
+
 GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
 {
   PointsApiPoints *obj2 = find_pointsapi_points(e, pos);
@@ -22321,6 +22337,11 @@ GameApi::ARR GameApi::PolygonApi::block_render2(GameApi::EveryApi &ev, std::vect
 extern float quake_pos_x, quake_pos_y;
 extern float quake_rot_y;
 
+extern Matrix g_quakeml2_matrix;
+extern bool g_is_quakeml2;
+extern bool g_is_quakeml3;
+
+
 PointsApiPoints *g_pts;
 MatrixArray *g_pts_matrix;
 float g_pos1;
@@ -22374,6 +22395,8 @@ bool ComparePTSObj_y(int a, int b)
     world_rot_inv2.x -= quake_pos_x;
     world_rot_inv2.z -= quake_pos_y;
 
+    if (!g_is_quakeml3) {
+
     world_rot_inv1.z -= 400.0;
     world_rot_inv1.x += quake_pos_x;
     world_rot_inv1.z += quake_pos_y;
@@ -22389,7 +22412,9 @@ bool ComparePTSObj_y(int a, int b)
     world_rot_inv2.x -= quake_pos_x;
     world_rot_inv2.z -= quake_pos_y;
     world_rot_inv2.z += 400.0;
-
+    }
+    
+    
     p1=world_rot_inv1;
     p2=world_rot_inv2;
   
@@ -22423,6 +22448,7 @@ bool ComparePTSObj_y_matrix(int a, int b)
     world_rot_inv2.x -= quake_pos_x;
     world_rot_inv2.z -= quake_pos_y;
 
+    if (g_is_quakeml3) {
     world_rot_inv1.z -= 400.0;
     world_rot_inv1.x += quake_pos_x;
     world_rot_inv1.z += quake_pos_y;
@@ -22438,6 +22464,8 @@ bool ComparePTSObj_y_matrix(int a, int b)
     world_rot_inv2.x -= quake_pos_x;
     world_rot_inv2.z -= quake_pos_y;
     world_rot_inv2.z += 400.0;
+
+    }
     
     Point view1 = world_rot_inv1 * ggg_in_MV * ggg_in_T;
     Point view2 = world_rot_inv2 * ggg_in_MV * ggg_in_T;
@@ -22665,9 +22693,6 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
   PointsApiPoints *points = find_pointsapi_points(e,pts);
   return add_points_api_points(e,new BlockPTS(points,d,max_points));
 }
-extern Matrix g_quakeml2_matrix;
-extern bool g_is_quakeml2;
-extern bool g_is_quakeml3;
 
 std::vector<Point> g_lod_debug_vec;
 
@@ -22744,7 +22769,24 @@ public:
     Point world = local * p0;
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
-    Point view = world * in_MV * in_T;
+
+
+    Point world_rot_inv = world;
+
+    //world_rot_inv.x -= quake_pos_x;
+    //world_rot_inv.z -= quake_pos_y;
+
+    /*
+    world_rot_inv.z -= 400.0;
+    world_rot_inv.x += quake_pos_x;
+    world_rot_inv.z += quake_pos_y;
+    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+    world_rot_inv.z += 400.0;
+    */
+    
+    Point view = world_rot_inv * in_MV * in_T;
     //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
 
     if (pos3>=g_lod_debug_vec.size())
@@ -22817,7 +22859,12 @@ public:
     in_T = e.in_T;
     ggg_in_MV = e.in_MV;
     ggg_in_T = e.in_T;
-    HeavyPrepare();
+    if (!g_is_quakeml3) {
+      if (y_rot_cache != quake_rot_y) {
+	HeavyPrepare();
+      }
+      y_rot_cache = quake_rot_y;
+    }
     pos.clear();
     int s = points->NumPoints();
     if (s<1) return true;
@@ -22870,6 +22917,7 @@ private:
   Matrix in_Proj;
   bool firsttime;
   bool firsttime2=true;
+  float y_rot_cache=0.0;
 };
 
 
@@ -22915,7 +22963,12 @@ public:
     ggg_in_P = e.in_P;
     
     bool b = points->Update(e);
-    HeavyPrepare();
+    if (!g_is_quakeml3) {
+      if (y_rot_cache != quake_rot_y) {
+	HeavyPrepare();
+      }
+      y_rot_cache = quake_rot_y;
+    }
     pos.clear();
     int s = points->Size();
     if (s<1) return true;
@@ -23074,6 +23127,7 @@ private:
   bool firsttime2=true;
   mutable float min_ppx,min_ppz;
   mutable float max_ppx,max_ppz;
+  mutable float y_rot_cache=0.0;
 };
 
 
@@ -28920,8 +28974,8 @@ float count_percentage(FaceCollection *coll)
 class DecimatePolygon : public FaceCollection
 {
 public:
-  DecimatePolygon(FaceCollection *coll, float val) : coll(coll),val(val),b(false) { firsttime = true; }
-  DecimatePolygon(FaceCollection *coll) : coll(coll), b(true) { }
+  DecimatePolygon(FaceCollection *coll, float val, bool flip) : coll(coll),val(val),b(false),flip(flip) { firsttime = true; }
+  DecimatePolygon(FaceCollection *coll) : coll(coll), b(true), flip(false) { }
   std::string name() const { return "DecimatePolygon"; }
   virtual void Collect(CollectVisitor &vis)
   {
@@ -28969,6 +29023,7 @@ public:
                 // tie-breaker by index to ensure strict weak ordering
                 return i1 < i2;
             }
+	    if (flip) { return area1 < area2; }
             return area1 > area2;
         };
 
@@ -29048,12 +29103,40 @@ private:
   bool firsttime;
   float val;
   bool b;
+  bool flip;
 };
 GameApi::P GameApi::PolygonApi::decimate3(GameApi::P faces, float val)
 {
   FaceCollection *coll = find_facecoll(e,faces);
-  return add_polygon2(e, new DecimatePolygon(coll,val),1);
+  return add_polygon2(e, new DecimatePolygon(coll,val,false),1);
 }
+GameApi::P GameApi::PolygonApi::decimate3_inv(GameApi::P faces, float val)
+{
+  FaceCollection *coll = find_facecoll(e,faces);
+  return add_polygon2(e, new DecimatePolygon(coll,1.0-val,true),1);
+}
+
+GameApi::P GameApi::PolygonApi::decimate_without_holes(GameApi::EveryApi &ev, GameApi::P faces, float val, int count, float cubesize, std::vector<GameApi::BM> textures)
+{
+  if (count>255) count=255;
+  
+  GameApi::P large = decimate3(faces,val);
+  GameApi::P small = decimate3_inv(faces,val);
+  GameApi::PTS points = ev.points_api.random_mesh_quad_instancing_color(ev,small,count,textures);
+  PointsApiPoints *pt = find_pointsapi_points(e,points);
+  pt->Prepare();
+  int num = pt->NumPoints();
+  std::vector<GameApi::P> vec;
+  GameApi::P cube = ev.polygon_api.cube(-cubesize,cubesize,-cubesize,cubesize,-cubesize,cubesize);
+  for(int i=0;i<num;i++)
+    {
+      GameApi::P c_cube = ev.polygon_api.color(cube,pt->Color(i));
+      vec.push_back(c_cube);
+    }
+  GameApi::P cubes = ev.polygon_api.static_instancing_array(ev,vec,points);
+  return cubes;
+}
+
 /*
 GameApi::P GameApi::PolygonApi::decimate_zeros(GameApi::P faces)
 {
