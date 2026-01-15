@@ -2661,6 +2661,8 @@ public:
   IMPORT P decimate2(P p, float val);
   IMPORT P decimate3(P p, float val);
   IMPORT P decimate_zeros(P p);
+  IMPORT P decimate3_inv(P p, float val);
+  IMPORT P decimate_without_holes(EveryApi &ev, P p, float, int, float, std::vector<BM>);
   IMPORT bool ready_to_prepare(ML p);
   IMPORT DS tf_ds_inv(TF tf, int flags);
   IMPORT void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
@@ -2924,6 +2926,7 @@ public:
   IMPORT ML line_to_cone2(EveryApi &ev, LI li, float size, int numfaces, MT mt);
   IMPORT ML line_to_cone3(EveryApi &ev, LI li, float size, int numfaces, MT mt, unsigned int color);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
+  IMPORT P static_instancing_array(EveryApi &ev, std::vector<P> vec, PTS pos);
   IMPORT P static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
   IMPORT LI li_static_instancing_matrix(EveryApi &ev, LI obj, MS matrix_array);
@@ -3787,6 +3790,7 @@ public:
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
   IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT PTS random_mesh_quad_instancing(EveryApi &ev, P p, int count);
+  IMPORT PTS random_mesh_quad_instancing_color(EveryApi &ev, P p, int count, std::vector<BM> textures);
   IMPORT PTS random_lattice(EveryApi &ev, int sx, int sy, int sz,
 			    float s_x, float s_y, float s_z,
 			    float px, float py, float pz,

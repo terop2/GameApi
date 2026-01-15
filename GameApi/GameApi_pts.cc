@@ -1320,6 +1320,9 @@ struct Cont {
   int count;
   std::vector<Point> *points;
   std::vector<unsigned int> *colours;
+  std::vector<int> *facenum;
+  std::vector<float> *xp_vec;
+  std::vector<float> *yp_vec;
 };
 std::vector<Cont> g_meshquad_data;
 Cont *find_meshquad(int count)
@@ -1367,6 +1370,9 @@ public:
     if (c) {
       points = c->points;
       color2 = c->colours;
+      facenum = c->facenum;
+      xp_vec = c->xp_vec;
+      yp_vec = c->yp_vec;
       return;
     }
     if (firsttime) 
@@ -1376,28 +1382,43 @@ public:
       points = new std::vector<Point>;
     if (!color2)
       color2 = new std::vector<unsigned int>;
+    if (!facenum)
+      facenum = new std::vector<int>;
+    if (!xp_vec)
+      xp_vec=new std::vector<float>;
+    if (!yp_vec)
+      yp_vec=new std::vector<float>;
+
+
     points->clear();
     color2->clear();
 
+    facenum->clear();
+    xp_vec->clear();
+    yp_vec->clear();
+    
     int numfaces = coll->NumFaces();
+    Random r;
     
     for(int i=0;i<count;i++)
       {
-	Random r;
-	float xp = double(r.next())/r.maximum();
-	float yp = double(r.next())/r.maximum();
 	float zp = double(r.next())/r.maximum();
-	xp*=2.0;
-	yp*=2.0;
-	xp-=1.0;
-	yp-=1.0;
 	zp*=float(numfaces);
 	int zpi = int(zp);
 	if (zpi<0) zpi = 0;
 	if (zpi>=numfaces) zpi = numfaces-1;
+	facenum->push_back(zpi);
 	int num = coll->NumPoints(zpi);
 	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
 	if (num==4) {
+	  float xp = double(r.next())/r.maximum();
+	  float yp = double(r.next())/r.maximum();
+	  xp*=2.0;
+	  yp*=2.0;
+	  xp-=1.0;
+	  yp-=1.0;
+	  xp_vec->push_back(xp);
+	  yp_vec->push_back(yp);
 	  Point p1 = coll->FacePoint(zpi, 0);
 	  Point p2 = coll->FacePoint(zpi, 1);
 	  Point p3 = coll->FacePoint(zpi, 2);
@@ -1413,6 +1434,8 @@ public:
 	    Point p3 = coll->FacePoint(zpi, 2);
 	    float r1 = double(r.next())/r.maximum();
 	    float r2 = double(r.next())/r.maximum();
+	    xp_vec->push_back(r1);
+	    yp_vec->push_back(r2);
 	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
 	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
 	    points->push_back(p);
@@ -1438,6 +1461,9 @@ public:
     if (c) {
       points = c->points;
       color2 = c->colours;
+      facenum = c->facenum;
+      xp_vec = c->xp_vec;
+      yp_vec = c->yp_vec;
       return;
     }
     if (firsttime) 
@@ -1447,28 +1473,42 @@ public:
       points = new std::vector<Point>;
     if (!color2)
       color2 = new std::vector<unsigned int>;
+    if (!facenum)
+      facenum = new std::vector<int>;
+    if (!xp_vec)
+      xp_vec=new std::vector<float>;
+    if (!yp_vec)
+      yp_vec=new std::vector<float>;
+
     points->clear();
     color2->clear();
 
+    facenum->clear();
+    xp_vec->clear();
+    yp_vec->clear();
+    
     int numfaces = coll->NumFaces();
     
+    Random r;
     for(int i=0;i<count;i++)
       {
-	Random r;
-	float xp = double(r.next())/r.maximum();
-	float yp = double(r.next())/r.maximum();
 	float zp = double(r.next())/r.maximum();
-	xp*=2.0;
-	yp*=2.0;
-	xp-=1.0;
-	yp-=1.0;
 	zp*=float(numfaces);
 	int zpi = int(zp);
 	if (zpi<0) zpi = 0;
 	if (zpi>=numfaces) zpi = numfaces-1;
+	facenum->push_back(zpi);
 	int num = coll->NumPoints(zpi);
 	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
 	if (num==4) {
+	  float xp = double(r.next())/r.maximum();
+	  float yp = double(r.next())/r.maximum();
+	  xp*=2.0;
+	  yp*=2.0;
+	  xp-=1.0;
+	  yp-=1.0;
+	  xp_vec->push_back(xp);
+	  yp_vec->push_back(yp);
 	  Point p1 = coll->FacePoint(zpi, 0);
 	  Point p2 = coll->FacePoint(zpi, 1);
 	  Point p3 = coll->FacePoint(zpi, 2);
@@ -1484,6 +1524,8 @@ public:
 	    Point p3 = coll->FacePoint(zpi, 2);
 	    float r1 = double(r.next())/r.maximum();
 	    float r2 = double(r.next())/r.maximum();
+	    xp_vec->push_back(r1);
+	    yp_vec->push_back(r2);
 	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
 	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
 	    points->push_back(p);
@@ -1496,6 +1538,9 @@ public:
     c.count = id;
     c.points = points;
     c.colours = color2;
+    c.facenum = facenum;
+    c.xp_vec = xp_vec;
+    c.yp_vec = yp_vec;
     g_meshquad_data.push_back(c);
       }
   }
@@ -1505,7 +1550,67 @@ private:
   std::vector<Point> *points;
   std::vector<unsigned int> *color2;
   bool firsttime;
+protected:
+  std::vector<int> *facenum;
+  std::vector<float> *xp_vec;
+  std::vector<float> *yp_vec;
 };
+
+class MeshQuadColor : public MeshQuad
+{
+public:
+  MeshQuadColor(FaceCollection *coll, int count, std::vector<Bitmap<::Color>*> textures) : MeshQuad(coll,count), coll(coll), textures(textures) {
+  }
+  unsigned int Color(int i) const {
+    int fn = facenum->operator[](i);
+    float xp = xp_vec->operator[](i);
+    float yp = yp_vec->operator[](i);
+    int num = coll->NumPoints(fn);
+    if (num==3) {
+      Point2d tex0 = coll->TexCoord(fn,0);
+      Point2d tex1 = coll->TexCoord(fn,1);
+      Point2d tex2 = coll->TexCoord(fn,2);
+      Point2d tx = Point2d((1.0-sqrt(xp))*tex0 + (sqrt(xp)*(1.0-yp))*tex1 + (yp*sqrt(xp))*tex2);
+      float texid = coll->TexCoord3(fn,0);
+      int texid2 = (int)texid;
+      int sx = textures[texid2]->SizeX();
+      int sy = textures[texid2]->SizeY();
+      unsigned int col = textures[texid2]->Map(fmod(tx.x*sx,sx),fmod(tx.y*sy,sy)).Pixel();
+      return col;
+    } else if (num==4) {
+      Point2d tex0 = coll->TexCoord(fn,0);
+      Point2d tex1 = coll->TexCoord(fn,1);
+      Point2d tex2 = coll->TexCoord(fn,2);
+      Point2d tex3 = coll->TexCoord(fn,3);
+      Point2d tx = 1.0/4.0*((1.0f-xp)*(1.0-yp)*tex0 + (1.0f+xp)*(1.0f-yp)*tex1 + (1.0f+xp)*(1.0f+yp)*tex2 + (1.0f-xp)*(1.0f+yp)*tex3);
+      float texid = coll->TexCoord3(fn,0);
+      int texid2 = (int)texid;
+      int sx = textures[texid2]->SizeX();
+      int sy = textures[texid2]->SizeY();
+      unsigned int col = textures[texid2]->Map(fmod(tx.x*sx,sx),fmod(tx.y*sy,sy)).Pixel();
+      return col;      
+    }
+  }
+private:
+  FaceCollection *coll;
+  int count;
+  std::vector<Bitmap<::Color>*> textures;
+};
+GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing_color(EveryApi &ev, P p, int count, std::vector<GameApi::BM> textures)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  std::vector<Bitmap<Color>*> tex;
+  int s = textures.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::BM bm = textures[i];
+      BitmapHandle *handle = find_bitmap(e,bm);
+      tex.push_back(find_color_bitmap(handle));
+    }
+  return add_points_api_points(e,new MeshQuadColor(coll,count,tex));
+}
+
+
 
 class RandomLattice : public PointsApiPoints
 {
