@@ -1765,7 +1765,7 @@ s+="#ifdef SPECULAR_SIZE\n"
 "#ifdef DISCARD\n"
 "vec4 discard_node(vec4 rgb)\n"
 "{\n"
-"   if (rgb.a<0.3) discard; else return rgb;\n"
+"   if (rgb.a<0.1) discard; else return rgb;\n"
 "}\n"
 "#endif\n"
   
@@ -4826,7 +4826,7 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
 "#ifdef DISCARD\n"
 "vec4 discard_node(vec4 rgb)\n"
 "{\n"
-"   if (rgb.a<0.3) discard; else return rgb;\n"
+"   if (rgb.a<0.1) discard; else return rgb;\n"
 "}\n"
 "#endif\n"
 
