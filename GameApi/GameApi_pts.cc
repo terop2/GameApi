@@ -1345,7 +1345,7 @@ int meshquad_calculate_id(FaceCollection *coll, int count)
 class MeshQuad : public PointsApiPoints
 {
 public:
-  MeshQuad(FaceCollection *coll, int count) : coll(coll), count(count) { firsttime = true; points=0; color2=0;  }
+  MeshQuad(FaceCollection *coll, int count) : coll(coll), count(count) { firsttime = true; points=0; color2=0; facenum=0; xp_vec=0; yp_vec=0; }
   ~MeshQuad() { /*delete points; delete color2; g_meshquad_data.clear();*/ }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) {

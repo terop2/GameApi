@@ -2419,7 +2419,7 @@ function choose_display_timeout(vm)
 	}
    else
       {
-      g_txt_cb = window.setTimeout(choose_display_timeout(vm2), 100);
+      g_txt_cb = window.setTimeout(choose_display_timeout(vm2), 5);
       }
       }
 }
@@ -2479,6 +2479,10 @@ fetch(myBRequest).then((r) => {
    g_background = parseInt(t,10);
 
 
+
+
+});   
+
 const myHeaders2 = new Headers();
 const myARequest = new Request(url2, {
       method: 'GET',
@@ -2492,6 +2496,12 @@ const myARequest = new Request(url2, {
   	   var pos = document.getElementById("addtext");
 	   pos.innerHTML = t;
 
+
+
+});
+
+
+
 const myHeaders = new Headers();
 const myFRequest = new Request(url, {
   method: 'GET',
@@ -2500,7 +2510,7 @@ const myFRequest = new Request(url, {
   cache: 'default'
   });
   if (g_txt_cb) window.clearTimeout(g_txt_cb);
-  g_txt_cb = window.setTimeout(choose_display_timeout(vm), 30);
+  g_txt_cb = window.setTimeout(choose_display_timeout(vm), 5);
 
   fetch(myFRequest).then((r) => {
     return r.text();
@@ -2516,16 +2526,10 @@ const myFRequest = new Request(url, {
   });
 
 
-});
-
-
-});   
-
-
   } else {
     g_txt_id = id;
     if (g_txt_cb) window.clearTimeout(g_txt_cb);
-    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 30);
+    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 5);
   }
 
 }
