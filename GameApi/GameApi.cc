@@ -6692,6 +6692,59 @@ private:
   float mix;
 };
 
+class DiscardMaterial : public MaterialForward
+{
+public:
+  DiscardMaterial(GameApi::EveryApi &ev, Material *next) : ev(ev), next(next) { }
+  virtual GameApi::ML mat2(GameApi::P p) const
+  {
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.polygon_api.render_vertex_array_ml(ev, va);
+    GameApi::ML ml;
+    ml.id = next->mat(p.id);
+    GameApi::ML mla=ev.polygon_api.discard_shader(ev, ml);
+    return mla;
+  }
+  virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    //GameApi::VA va = ev.polygon_api.create_vertex_array(p,false);
+    //GameApi::ML ml = ev.materials_api.render_instanced2_ml(ev, va, pta);
+    GameApi::ML ml;
+    ml.id = next->mat_inst(p.id, pts.id);
+    GameApi::ML mla=ev.polygon_api.discard_shader(ev, ml);
+    return mla;
+  }
+  virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_matrix(p.id, ms.id);
+    GameApi::ML mla=ev.polygon_api.discard_shader(ev, ml);
+    return mla;
+  }
+  virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const
+  {
+    //std::cout << "mat2_inst" << std::endl;
+    //GameApi::PTA pta = ev.points_api.prepare(pts);
+    GameApi::ML ml;
+    ml.id = next->mat_inst2(p.id, pta.id);
+    GameApi::ML mla=ev.polygon_api.discard_shader(ev, ml);
+    return mla;
+  }
+  virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_fade(p.id, pts.id, flip, start_time, end_time);
+    GameApi::ML mla=ev.polygon_api.discard_shader(ev, ml);
+    return mla;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  Material *next;
+};
+
 class AcesFilmMaterial : public MaterialForward
 {
 public:
@@ -9979,6 +10032,11 @@ EXPORT GameApi::MT GameApi::MaterialsApi::acesfilm_material(EveryApi &ev, MT nex
 {
   Material *mat = find_material(e,next);
   return add_material(e, new AcesFilmMaterial(ev,mat));
+}
+EXPORT GameApi::MT GameApi::MaterialsApi::discard_material(EveryApi &ev, MT next)
+{
+  Material *mat = find_material(e,next);
+  return add_material(e, new DiscardMaterial(ev,mat));
 }
 EXPORT GameApi::MT GameApi::MaterialsApi::texture_cubemap(EveryApi &ev, std::vector<BM> vec, float mix, float mix2)
 {
@@ -14113,6 +14171,11 @@ GameApi::US GameApi::UberShaderApi::f_acesfilm(US us)
 {
   ShaderCall *next = find_uber(e,us);
   return add_uber(e, new F_ShaderCallFunctionFlip("acesfilm_node", next, "ACESFILM"));
+}
+GameApi::US GameApi::UberShaderApi::f_discard(US us)
+{
+  ShaderCall *next = find_uber(e,us);
+  return add_uber(e, new F_ShaderCallFunctionFlip("discard_node", next, "DISCARD"));
 }
 GameApi::US GameApi::UberShaderApi::f_edge(US us)
 {

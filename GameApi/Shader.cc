@@ -1761,6 +1761,14 @@ s+="#ifdef SPECULAR_SIZE\n"
 "  return vec4(pow(ACESFilm(pow(rgb.rgb,vec3(2.2))),vec3(1.0/2.2)),rgb.a);\n"
 "}\n"
 "#endif\n"
+
+"#ifdef DISCARD\n"
+"vec4 discard_node(vec4 rgb)\n"
+"{\n"
+"   if (rgb.a<0.3) discard; else return rgb;\n"
+"}\n"
+"#endif\n"
+  
   
   "#ifdef CHOOSE_COLOR\n"
 "uniform vec4 color_choice;\n"
@@ -4814,6 +4822,15 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
 "}\n"
 "#endif\n"
 
+
+"#ifdef DISCARD\n"
+"vec4 discard_node(vec4 rgb)\n"
+"{\n"
+"   if (rgb.a<0.3) discard; else return rgb;\n"
+"}\n"
+"#endif\n"
+
+   
 "uniform vec4 ad_color;\n"
 "uniform float ad_light;\n"
 "uniform float ad_dark;\n"

@@ -227,6 +227,14 @@
 			 { "ev", "" },
 			 "MT", "materials_api", "acesfilm_material"));
 #endif
+#if (ALL==1)||(DISCARD_MATERIAL==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::discard_material,
+			 "m_discard",
+			 { "ev", "material" },
+			 { "EveryApi&", "MT" },
+			 { "ev", "" },
+			 "MT", "materials_api", "discard_material"));
+#endif
 #if (ALL==1)||(TEXTURE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
 			 "m_texture",
