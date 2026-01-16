@@ -195,6 +195,7 @@ Point operator*(const Point &p, const Matrix &m)
   return pp;
 }
 
+
 Vector operator*(const Vector &v, const Matrix &m)
 {
   Vector r;
@@ -220,8 +221,164 @@ Matrix operator+(const Matrix &m1, const Matrix &m2)
   return res;
 }
 
+inline void mul2(const float A[4], const float B[4], float C[4]) {
+    C[0] = A[0]*B[0] + A[1]*B[2];
+    C[1] = A[0]*B[1] + A[1]*B[3];
+    C[2] = A[2]*B[0] + A[3]*B[2];
+    C[3] = A[2]*B[1] + A[3]*B[3];
+}
+
+inline void add2(const float A[4], const float B[4], float C[4]) {
+    C[0]=A[0]+B[0]; C[1]=A[1]+B[1];
+    C[2]=A[2]+B[2]; C[3]=A[3]+B[3];
+}
+
+inline void sub2(const float A[4], const float B[4], float C[4]) {
+    C[0]=A[0]-B[0]; C[1]=A[1]-B[1];
+    C[2]=A[2]-B[2]; C[3]=A[3]-B[3];
+}
+
+inline void getBlock2(const float M[16], int r, int c, float B[4]) {
+    // r,c are block coords (0 or 1)
+    int i = (r*2)*4 + (c*2);
+    B[0] = M[i+0];
+    B[1] = M[i+1];
+    B[2] = M[i+4];
+    B[3] = M[i+5];
+}
+
+inline void setBlock2(float M[16], int r, int c, const float B[4]) {
+    int i = (r*2)*4 + (c*2);
+    M[i+0] = B[0];
+    M[i+1] = B[1];
+    M[i+4] = B[2];
+    M[i+5] = B[3];
+}
+void mat4_strassen(const float A[16], const float B[16], float C[16]) {
+    float A11[4],A12[4],A21[4],A22[4];
+    float B11[4],B12[4],B21[4],B22[4];
+
+    getBlock2(A,0,0,A11); getBlock2(A,0,1,A12);
+    getBlock2(A,1,0,A21); getBlock2(A,1,1,A22);
+
+    getBlock2(B,0,0,B11); getBlock2(B,0,1,B12);
+    getBlock2(B,1,0,B21); getBlock2(B,1,1,B22);
+
+    float T1[4],T2[4];
+    float M1[4],M2[4],M3[4],M4[4],M5[4],M6[4],M7[4];
+
+    // M1 = (A11 + A22)*(B11 + B22)
+    add2(A11,A22,T1);
+    add2(B11,B22,T2);
+    mul2(T1,T2,M1);
+
+    // M2 = (A21 + A22)*B11
+    add2(A21,A22,T1);
+    mul2(T1,B11,M2);
+
+    // M3 = A11*(B12 - B22)
+    sub2(B12,B22,T2);
+    mul2(A11,T2,M3);
+
+    // M4 = A22*(B21 - B11)
+    sub2(B21,B11,T2);
+    mul2(A22,T2,M4);
+
+    // M5 = (A11 + A12)*B22
+    add2(A11,A12,T1);
+    mul2(T1,B22,M5);
+
+    // M6 = (A21 - A11)*(B11 + B12)
+    sub2(A21,A11,T1);
+    add2(B11,B12,T2);
+    mul2(T1,T2,M6);
+
+    // M7 = (A12 - A22)*(B21 + B22)
+    sub2(A12,A22,T1);
+    add2(B21,B22,T2);
+    mul2(T1,T2,M7);
+
+    float C11[4],C12[4],C21[4],C22[4];
+
+    // C11 = M1 + M4 - M5 + M7
+    add2(M1,M4,T1);
+    sub2(T1,M5,T2);
+    add2(T2,M7,C11);
+
+    // C12 = M3 + M5
+    add2(M3,M5,C12);
+
+    // C21 = M2 + M4
+    add2(M2,M4,C21);
+
+    // C22 = M1 - M2 + M3 + M6
+    sub2(M1,M2,T1);
+    add2(T1,M3,T2);
+    add2(T2,M6,C22);
+
+    // Store back
+    setBlock2(C,0,0,C11);
+    setBlock2(C,0,1,C12);
+    setBlock2(C,1,0,C21);
+    setBlock2(C,1,1,C22);
+}
+
+
+inline void mat4_mul(const float A[16], const float B[16], float C[16]) {
+    // Cache B columns in local temps for better locality
+    const float b0 = B[0],  b1 = B[1],  b2 = B[2],  b3 = B[3];
+    const float b4 = B[4],  b5 = B[5],  b6 = B[6],  b7 = B[7];
+    const float b8 = B[8],  b9 = B[9],  b10= B[10], b11= B[11];
+    const float b12= B[12], b13= B[13], b14= B[14], b15= B[15];
+
+    // Row 0
+    {
+        const float a0=A[0], a1=A[1], a2=A[2], a3=A[3];
+        C[0] = a0*b0 + a1*b4 + a2*b8  + a3*b12;
+        C[1] = a0*b1 + a1*b5 + a2*b9  + a3*b13;
+        C[2] = a0*b2 + a1*b6 + a2*b10 + a3*b14;
+        C[3] = a0*b3 + a1*b7 + a2*b11 + a3*b15;
+    }
+
+    // Row 1
+    {
+        const float a0=A[4], a1=A[5], a2=A[6], a3=A[7];
+        C[4] = a0*b0 + a1*b4 + a2*b8  + a3*b12;
+        C[5] = a0*b1 + a1*b5 + a2*b9  + a3*b13;
+        C[6] = a0*b2 + a1*b6 + a2*b10 + a3*b14;
+        C[7] = a0*b3 + a1*b7 + a2*b11 + a3*b15;
+    }
+
+    // Row 2
+    {
+        const float a0=A[8], a1=A[9], a2=A[10], a3=A[11];
+        C[8]  = a0*b0 + a1*b4 + a2*b8  + a3*b12;
+        C[9]  = a0*b1 + a1*b5 + a2*b9  + a3*b13;
+        C[10] = a0*b2 + a1*b6 + a2*b10 + a3*b14;
+        C[11] = a0*b3 + a1*b7 + a2*b11 + a3*b15;
+    }
+
+    // Row 3
+    {
+        const float a0=A[12], a1=A[13], a2=A[14], a3=A[15];
+        C[12] = a0*b0 + a1*b4 + a2*b8  + a3*b12;
+        C[13] = a0*b1 + a1*b5 + a2*b9  + a3*b13;
+        C[14] = a0*b2 + a1*b6 + a2*b10 + a3*b14;
+        C[15] = a0*b3 + a1*b7 + a2*b11 + a3*b15;
+    }
+}
+
 Matrix operator*(const Matrix &m1, const Matrix &m2)
 {
+  Matrix m;
+  //for(int i=0;i<16;i++)
+  //  m.matrix[i]=0;
+  //mat4_strassen(m2.matrix,m1.matrix,m.matrix);
+  mat4_mul(m2.matrix,m1.matrix,m.matrix);
+  return m;
+
+  
+#if 0
   Matrix r;
   for(int i=0;i<16;i++)
     r.matrix[i]=0;
@@ -246,6 +403,8 @@ Matrix operator*(const Matrix &m1, const Matrix &m2)
     }
   return r;
 
+#endif
+  
   
 #if 0
   Matrix r;
