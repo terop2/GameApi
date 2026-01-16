@@ -1064,9 +1064,11 @@ function get_border(i,m,filename,border_avoid)
   var five = "";
   if (/*anim_value &&*/ filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
   if (filename.substr(-4)!=".vox") {
-    res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
+    res+= "MT I505=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
+    res+= "MT I504=ev.materials_api.acesfilm_material(ev,I505);\n";
     } else {
-    res+="MT I504=ev.materials_api.mt_alt(ev,std::vector&lt;MT&gt;{I" + five + "4},0);\n";
+    res+="MT I505=ev.materials_api.mt_alt(ev,std::vector&lt;MT&gt;{I" + five + "4},0);\n";
+    res+= "MT I504=ev.materials_api.acesfilm_material(ev,I505);\n"
     }
   //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,3.5,1.0,-400.0,400.0,400.0);\n";
   var gltf = ",false";
@@ -1331,10 +1333,11 @@ function create_script(filename, contents, filenames)
 
 
   if (filename.substr(-4)==".vox") {
-     res+="P I155=ev.voxel_api.vox_voxel3(ev," + filename + ",0,20,20,20);\n";
+     res+="P I155=ev.voxel_api.vox_voxel3(ev," + filename + ",0,5,5,5);\n";
      res+="MT I627=ev.materials_api.colour_material(ev,0.5);\n"
      res+="MT I628=ev.materials_api.phong(ev,I627,30,-400,30,ff222222,ff888888,ffffffff,30);\n"
-     res+="ML I62=ev.voxel_api.vox_bind_ml2(ev," + filename + ",0,20,20,20,I628);\n";
+     res+="MT I629=ev.materials_api.acesfilm_material(ev,I628);\n"
+     res+="ML I62=ev.voxel_api.vox_bind_ml2(ev," + filename + ",0,5,5,5,I629,0.0,ff000000);\n";
   } else
   if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
@@ -1441,7 +1444,9 @@ if (bg>=0&&bg<store.state.background_db.length) {
   }
 
 res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
-res+="MT I199=ev.materials_api.colour_material(ev,1.0);\n"
+res+="MT I198=ev.materials_api.colour_material(ev,1.0);\n"
+res+= "MT I199=ev.materials_api.acesfilm_material(ev,I198);\n"
+
 res+="ML I156=ev.materials_api.bind(I145,I199);\n"
 
 res+="ML I665=ev.mainloop_api.array_ml(ev,std::vector<ML>{I136,I135,I156});\n";
@@ -1468,21 +1473,25 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   } else
   if (filename.substr(-4)==".obj"&&mtl_name!="") {
      res+="MT I54=ev.materials_api.m_def(ev);\n";
-     res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
+     res+="MT I53=ev.materials_api.texture_many2(ev,0.5);\n"
+    res+= "MT I4=ev.materials_api.acesfilm_material(ev,I53);\n"
   } else
   if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
      var five="";
      if (anim_value==true) { five="5"; }
      res+="MT I" + five + "4=ev.materials_api.gltf_material(ev,I186,0,1,3.5,1.0,-400.0,400.0,400.0);\n";
     if (anim_value==true) { 
-      res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I186,0,30,I54,cvbnmdfghjklertyuiop,0);\n";
+      res+="MT I55=ev.materials_api.gltf_anim_material2(ev,I186,0,30,I54,cvbnmdfghjklertyuiop,0);\n";
+    res+= "MT I4=ev.materials_api.acesfilm_material(ev,I55);\n"
       }
   } else if (filename.substr(-4)==".vox")
   {
   res+="MT I54=ev.materials_api.colour_material(ev,0.5);\n";
-  res+="MT I4=ev.materials_api.phong(ev,I1,30.0,-400.0,30.0,ff221100,ffff8800,ffffffff,30.0);\n";
+  res+="MT I55=ev.materials_api.phong(ev,I1,30.0,-400.0,30.0,ff221100,ffff8800,ffffffff,30.0);\n";
+    res+= "MT I4=ev.materials_api.acesfilm_material(ev,I55);\n"
   } else {
-     res+="MT I4=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,1.0,ff888888,ffffffff,5.0,0.5);\n";
+     res+="MT I54=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,1.0,ff888888,ffffffff,5.0,0.5);\n";
+    res+= "MT I4=ev.materials_api.acesfilm_material(ev,I54);\n"
   }
 
  if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox"))||material_value!=-1) { 

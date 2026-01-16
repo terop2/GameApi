@@ -4620,11 +4620,12 @@ void OutlineFaces::Prepare()
     //  count += c.NumPoints(i);
     //  if (count >= line) break;
     //  }
+    int ss = c.NumPoints(i);
     i = counts[line];
-    count = counts2[line] + c.NumPoints(i);
+    count = counts2[line] + ss;
     int p = count - line + point;
-    int pp = p % c.NumPoints(i);
-    return Point(1.00*Vector(c.FacePoint(i, pp)));
+    int pp = p % ss;
+    return c.FacePoint(i, pp);
     
   }
 unsigned int OutlineFaces::LineColor(int line, int point) const

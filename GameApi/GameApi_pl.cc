@@ -7392,7 +7392,10 @@ struct PTexCacheItem
       i1.f_shader_functions==i2.f_shader_functions;
   }
 };
-
+void print(const PTexCacheItem &i)
+{
+  std::cout << "CacheItem:" << get_shader_path(*i.e,i.vertex) << " " << get_shader_path(*i.e,i.fragment) << " " << i.v_shader_functions << " " << i.f_shader_functions << std::endl;
+}
 std::vector<PTexCacheItem> ptex_cache;
 
 GameApi::SH find_ptex_shader(const PTexCacheItem &ii)
@@ -7561,7 +7564,10 @@ public:
 	    GameApi::SH sh2 = find_ptex_shader(item);
 	    if (sh2.id==-1)
 	      {
-	    
+		/*
+		std::cout << "no cache!" << std::endl;
+		print(item);
+		*/
 	    //std::cout << "hep" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	    
@@ -7569,7 +7575,7 @@ public:
 	    ptex_cache.push_back(item);
 	    
 	ev.mainloop_api.init_3d(shader);
-	   } else shader=sh2;
+	      } else { /*std::cout << "yes cache!" << std::endl;*/ shader=sh2; }
 	  }
 	else
 	  {
@@ -10176,6 +10182,94 @@ private:
   GameApi::SH sh;
 };
 
+class AcesFilmShaderML : public MainLoopItem
+{
+public:
+  AcesFilmShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next) : env(env), ev(ev), next(next) { firsttime = true; sh.id=-1; }
+  std::vector<int> shader_id() {
+    std::vector<int> vec = next->shader_id();
+    return vec; 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    //vertex = ev.uber_api.v_colour_with_mix(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_acesfilm(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  bool firsttime;
+  GameApi::SH sh;
+};
+
 class ColourShaderML : public MainLoopItem
 {
 public:
@@ -12266,6 +12360,11 @@ EXPORT GameApi::ML GameApi::PolygonApi::colour_shader(EveryApi &ev, ML mainloop,
    MainLoopItem *item = find_main_loop(e, mainloop);
    return add_main_loop(e, new ColourShaderML(e,ev,item,mix));
  }
+EXPORT GameApi::ML GameApi::PolygonApi::acesfilm_shader(EveryApi &ev, ML mainloop)
+{
+   MainLoopItem *item = find_main_loop(e, mainloop);
+   return add_main_loop(e, new AcesFilmShaderML(e,ev,item));
+}
 EXPORT GameApi::ML GameApi::PolygonApi::bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
