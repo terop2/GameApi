@@ -1683,6 +1683,7 @@ class MaterialsApi
 public:
   IMPORT MaterialsApi(Env &e);
   IMPORT MT acesfilm_material(EveryApi &ev, MT next);
+  IMPORT MT discard_material(EveryApi &ev, MT next);
   IMPORT MT hires(EveryApi &ev, MT mat, int size, int numsampled, float blur_radius);
   IMPORT MT mt_empty(EveryApi &ev);
   IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
@@ -2654,6 +2655,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT ML discard_shader(EveryApi &ev, ML mainloop);
   IMPORT ML acesfilm_shader(EveryApi &ev, ML mainloop);
   IMPORT P multiply_facecoll(P p, int sx, int sy, int sz);
   IMPORT P spatial_decimate(P p, float val);
@@ -4126,6 +4128,7 @@ public:
   IMPORT US v_fade(US us);
   IMPORT US f_water(US us);
   IMPORT US f_acesfilm(US us);
+  IMPORT US f_discard(US us);
   IMPORT US f_edge(US us);
   IMPORT US f_gltf_anim(US us);
   IMPORT US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader

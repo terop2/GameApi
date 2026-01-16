@@ -8344,7 +8344,7 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
       if (transparent) mat_res=mat4; else mat_res=mat2;
       if (acesfilm)
 	mat4 = ev.materials_api.acesfilm_material(ev,mat4);
-      
+      mat4 = ev.materials_api.discard_material(ev,mat4);
       //return mat2.id; // TEST REMOVED TRANSPARENCY
   return mat_res.id;
 }
@@ -8446,6 +8446,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       } else { mat_res=mat2_anim; }
       if (acesfilm)
 	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
+      mat_res = ev.materials_api.discard_material(ev,mat_res);
       
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat_res);
@@ -8521,6 +8522,7 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       } else { mat_res=mat2_anim; }
       if (acesfilm)
 	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
+      mat_res = ev.materials_api.discard_material(ev,mat_res);
 
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat_res);
@@ -8641,6 +8643,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       }
       if (acesfilm)
 	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
+      mat4 = ev.materials_api.discard_material(ev,mat4);
 
       GameApi::ML ml = ev.materials_api.bind(p,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
@@ -8707,6 +8710,7 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       }
       if (acesfilm)
 	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
+      mat4 = ev.materials_api.discard_material(ev,mat4);
 
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat4);
       GameApi::ML ml2=ev.mainloop_api.depthmask(ml,true);
