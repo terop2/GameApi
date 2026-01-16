@@ -427,7 +427,7 @@ Vue.component('objbrightness', {
     <template v-for="bg in state.brightness_db">
     <option v-bind:value="parse_bright_count(bg)">{{ parse_bright_name(bg) }}</option>
     </template>
-    </select></div></div>
+    </select><br><input v-on:change="$emit('change_model')" true-value="true" false-value="false" type="checkbox" name="acesfilm" id="acesfilm"/>acesfilm</div></div>
     `
 });
 
@@ -988,6 +988,12 @@ function get_border_value()
   var elem = document.getElementById("border-select");
   return parseInt(elem.value);
 }
+function get_acesfilm_value()
+{
+  var elem = document.getElementById("acesfilm");
+  console.log(elem.checked);
+return elem.checked; // returns true or false
+}
 function parse_border_count(brd)
 {
    var arr = brd.split(" ");
@@ -1317,6 +1323,9 @@ function create_script(filename, contents, filenames)
 
   var border_value = get_border_value();
 
+  var aces_value = get_acesfilm_value();
+  
+
   var anim_value = true;
 
   var normals_val = get_normals_value();
@@ -1359,10 +1368,10 @@ function create_script(filename, contents, filenames)
      if (normals_val!=3 && normals_val!=4)
      	{
 	if (anim_value==true) {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,0.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,0.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n"; // 0.75
 	border_avoid = true;
 	} else {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,0.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,0.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n"; // 0.75
 	border_avoid=true;
 	}
 	}
@@ -1374,10 +1383,10 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
      border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
      border_avoid=true;
      }
      }
@@ -1389,10 +1398,10 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
      if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",3.5,1.0,0,cvbnmdfghjklertyuiop,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
      border_avoid=true;
      } else {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true);\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",3.5,1.0,0,-400.0,400.0,400.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
      border_avoid=true;
      }
      }
