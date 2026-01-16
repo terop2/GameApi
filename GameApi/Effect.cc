@@ -4612,16 +4612,9 @@ void OutlineFaces::Prepare()
     int sz2 = counts2.size();
     if (line<0 ||line>=sz) return Point(0.0,0.0,0.0);
     if (line<0 ||line>=sz2) return Point(0.0,0.0,0.0);
-    //int num = c.NumFaces();
     int count = 0;
-    int i=0;
-    //for(;i<num;i++)
-    //  {
-    //  count += c.NumPoints(i);
-    //  if (count >= line) break;
-    //  }
+    int i = counts[line];
     int ss = c.NumPoints(i);
-    i = counts[line];
     count = counts2[line] + ss;
     int p = count - line + point;
     int pp = p % ss;
