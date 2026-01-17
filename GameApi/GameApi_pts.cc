@@ -489,9 +489,9 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, bool 
 	}
 #else
       Color cc(c);
-      color[colorindex]=cc.bf();
+      color[colorindex]=cc.rf();
       color[colorindex+1]=cc.gf();
-      color[colorindex+2]=cc.rf();
+      color[colorindex+2]=cc.bf();
       color[colorindex+3]=cc.af();
       colorindex+=4;
 #endif
@@ -566,9 +566,9 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool
 	}
 #else
       Color cc(c);
-      color[colorindex] = cc.bf();
+      color[colorindex] = cc.rf();
       color[colorindex+1] = cc.gf();
-      color[colorindex+2] = cc.rf();
+      color[colorindex+2] = cc.bf();
       color[colorindex+3] = cc.af();
       colorindex+=4;
 
@@ -689,9 +689,9 @@ public:
 	      }
 #else
 	    Color cc(c);
-	    color[colorindex] = cc.bf();
+	    color[colorindex] = cc.rf();
 	    color[colorindex+1] = cc.gf();
-	    color[colorindex+2] = cc.rf();
+	    color[colorindex+2] = cc.bf();
 	    color[colorindex+3] = cc.af();
 	    colorindex+=4;
 	//*color++ = src->color[j];
@@ -755,9 +755,9 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from
       }
 #else
     Color cc(c);
-    color[colorindex] = cc.bf();
+    color[colorindex] = cc.rf();
     color[colorindex+1] = cc.gf();
-    color[colorindex+2] = cc.rf();
+    color[colorindex+2] = cc.bf();
     color[colorindex+3] = cc.af();
     colorindex+=4;
     //color[i] = swap_color(c);
@@ -820,9 +820,9 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, bool color_from_
 	}
 #else
       Color cc(c);
-      color[colorindex] = cc.bf();
+      color[colorindex] = cc.rf();
       color[colorindex+1] = cc.gf();
-      color[colorindex+2] = cc.rf();
+      color[colorindex+2] = cc.bf();
       color[colorindex+3] = cc.af();
       colorindex+=4;
       /// color[i] = swap_color(c);
