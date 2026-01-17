@@ -636,7 +636,7 @@ public:
   }
   PointArray3* collect(int num_items)
   {
-    int div2 = colour_divisor_calc2(coll);
+    int div2 = -1; //colour_divisor_calc2(coll);
     PointArray3 *arr = new PointArray3;
     arr->array = new float[(num_items)*3];
     arr->color = new unsigned int[num_items*div2];
@@ -656,6 +656,7 @@ public:
 	    *array++ = src->array[j*3+1];
 	    *array++ = src->array[j*3+2];
 	    unsigned int c = src->color[j];
+#if 0
 	    int s = coll->NumFaces();
 	    for(int f=0;f<s;f++)
 	      {
@@ -666,7 +667,9 @@ public:
 		    *color++ = Color::Interpolate(c,cc,mix);
 		  }
 	      }
-	    //*color++ = src->color[j];
+#else
+	*color++ = src->color[j];
+#endif
 	  }
       }
     return arr;
