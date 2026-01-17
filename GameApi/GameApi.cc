@@ -21470,6 +21470,26 @@ private:
 
 #endif
 
+class MatrixPTS : public MatrixArray
+{
+public:
+  MatrixPTS(const std::vector<Matrix> &vec, const std::vector<unsigned int> &pc) : vec(vec), pc(pc) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int Size() const { return vec.size(); }
+  virtual Matrix Index(int i) const { return vec[i]; }
+  virtual unsigned int Color(int i) const { if (i<pc.size()) return pc[i]; return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+private:
+  std::vector<Matrix> vec;
+  std::vector<unsigned int> pc;
+};
+
 class VectorPTS : public PointsApiPoints
 {
 public:
@@ -21497,6 +21517,11 @@ GameApi::PTS convert_to_pts(GameApi::Env &e, const std::vector<Point> &p)
   return add_points_api_points(e,new VectorPTS(p,vec));
 }
 
+GameApi::MS convert_to_ms(GameApi::Env &e, const std::vector<Matrix> &m, const std::vector<unsigned int> &pc)
+{
+  return add_matrix_array(e, new MatrixPTS(m,pc));
+}
+
 #if 1
 class OptVoxelRender
 {
@@ -21504,7 +21529,6 @@ public:
   OptVoxelRender(OptVoxel &vx, OptCubes &cubes) : vx(vx), cubes(cubes) {}
   GameApi::P convert_to_P(GameApi::Env &e, GameApi::EveryApi &ev, float sx, float sy, float sz)
   {
-    std::cout << "convert_to_P" << std::endl;
     std::vector<CubeSpec> *specs = new std::vector<CubeSpec>;
     int s1 = vx.ShapeSize();
     int s2 = vx.SizeSize();
@@ -21521,6 +21545,7 @@ public:
 	  }
       }
 
+    
     std::vector<FaceCollection*> faces;
     int s = specs->size();
     for(int i=0;i<s;i++)
@@ -21528,7 +21553,7 @@ public:
 	faces.push_back(cubes.create_cube(specs->operator[](i)));
       }
     delete specs;
-
+    
     std::vector<std::vector<Point> > ptss;   // ptss[facesnum][pointnum]
     ptss.resize(faces.size());
 
@@ -21538,10 +21563,8 @@ public:
 	ElemSpec e = vx.WorldIndex(i);
 	int index = e.sizeindex + s2*e.shapeindex;
 	Point p = { e.pos.x*sx, e.pos.y*sy, e.pos.z*sz };
-	//std::cout << "index=" << index << std::endl;
 	if (index>=0 && index<faces.size()) {
 	  ptss[index].push_back(p);
-	  //std::cout << "Render:" << p.x << " " << p.y << " " << p.z << " " << e.sizeindex << " " << e.shapeindex << "->" << index << "/" << faces.size() << std::endl;
 	}
       }
 
@@ -21559,19 +21582,6 @@ public:
 	  }
       }
 
-#if 0
-    int sg = ptss.size();
-    for(int i=0;i<sg;i++)
-      {
-	if (ptss[i].size()==0)
-	  {
-	    ptss.erase(ptss.begin() + i);
-	    faces.erase(faces.begin() + i);
-	    i--;
-	    sg--;
-	  }
-      }
-#endif
     
     std::vector<GameApi::PTS> ptss2;
     int s4 = ptss3.size();
@@ -21609,28 +21619,11 @@ public:
   }
   GameApi::ML convert_to_ML(GameApi::Env &e, GameApi::EveryApi &ev, float sx, float sy, float sz, GameApi::MT mat)
   {
-    //std::cout << "convert_to_ML" << std::endl;
-    std::vector<CubeSpec> *specs = new std::vector<CubeSpec>;
-    int s2 = vx.SizeSize();
-    //std::cout << "s2=" << s2 << std::endl;
-    specs->reserve(s2);
     CubeSpec spec;
     spec.shapesize.shape = vx.WorldShapeIndex(0);
-    for(int i=0;i<s2;i++)
-      {
-	spec.shapesize.size = vx.WorldSizeIndex(i);
-	specs->push_back(spec);
-      }
-
-    std::vector<FaceCollection*> faces;
-    int s = specs->size();
-    //std::cout << "s=" << s << std::endl;
-    for(int i=0;i<s;i++)
-      {
-	faces.push_back(cubes.create_cube(specs->operator[](i)));
-      }
-    delete specs;
-
+    spec.shapesize.size = vx.WorldSizeIndex(0);
+    FaceCollection *face = cubes.create_cube(spec);
+    
 
     int s1=vx.ShapeSize();
     std::vector<ShapeSpec> shapes;
@@ -21639,77 +21632,52 @@ public:
 	ShapeSpec s = vx.WorldShapeIndex(i);
 	shapes.push_back(s);
       }
-    
 
-    
-    std::vector<std::vector<Point> > ptss;
-    std::vector<std::vector<unsigned int> > ptss_color;
-    ptss.resize(faces.size());
-    ptss_color.resize(faces.size());
+    int s2=vx.SizeSize();
+    std::vector<SizeSpec> sizes;
+    for(int i=0;i<s2;i++)
+      {
+	SizeSpec s = vx.WorldSizeIndex(i);
+	sizes.push_back(s);
+      }
+        
+    std::vector<Matrix> ptss;
+    std::vector<unsigned int> ptss_color;
     
     int s3 = vx.WorldSize();
-    //std::cout << "s3=" << s3 << std::endl;
+
+    ptss.resize(s3);
+    ptss_color.resize(s3);
+
     for(int i=0;i<s3;i++)
       {
 	ElemSpec e = vx.WorldIndex(i);
 	int index = e.sizeindex;
-
-	if (index >= 0 && index < faces.size())
+	if (index >= 0 && index < sizes.size())
 	  {
 	    int color = e.shapeindex;
-	    const ShapeSpec &color_spec = shapes[color]; //vx.WorldShapeIndex(color);
-	    Point p = { e.pos.x*sx, e.pos.y*sy, e.pos.z*sz };
-	    ptss[index].push_back(p);
-	    ptss_color[index].push_back(color_spec.color);
+	    if (color>=0 && color < shapes.size()) {
+	      const ShapeSpec &color_spec = shapes[color]; 
+
+	      const SizeSpec &size_spec = sizes[index];
+	      Point p = { e.pos.x*sx, e.pos.y*sy, e.pos.z*sz };
+	      Matrix m = Matrix::Translate(p.x,p.y,p.z);
+	      Matrix m2 = Matrix::Scale(float(size_spec.sx),float(size_spec.sy),float(size_spec.sz));
+	      
+	      ptss.push_back(m2*m);
+	      ptss_color.push_back(color_spec.color);
+	    }
 	  }
-      }
+      }    
+    GameApi::MS ms = convert_to_ms(e,ptss,ptss_color);
+
+    
+    GameApi::P ps = add_polygon2(e,face,1);
 
 
-    std::vector<std::vector<Point>*> ptss3;
-    std::vector<std::vector<unsigned int>*> ptss3_color;
-    std::vector<FaceCollection*> faces3;
-    int sg = ptss.size();
-    //std::cout << "sg=" << sg << std::endl;
-    ptss3.reserve(sg);
-    faces3.reserve(sg);
-    for(int i=0;i<sg;i++)
-      {
-	if (ptss[i].size()!=0)
-	  {
-	    ptss3.push_back(&ptss[i]);
-	    ptss3_color.push_back(&ptss_color[i]);
-	    faces3.push_back(faces[i]);
-	  }
-      }
+    GameApi::ML ml;
+    ml = ev.materials_api.bind_inst_matrix(ps,ms,mat);    
 
-    std::vector<GameApi::PTS> ptss2;
-    int s4 = ptss3.size();
-    //std::cout << "s4=" << s4 << std::endl;
-    ptss2.reserve(s4);
-    for(int i=0;i<s4;i++)
-      {
-	ptss2.push_back(convert_to_pts(e,*(ptss3[i]),*(ptss3_color[i])));
-      }
-
-    std::vector<GameApi::P> ps;
-    int s5 = faces3.size();
-    //std::cout << "s5=" << s5 << std::endl;
-    ps.reserve(s5);
-    for(int i=0;i<s5;i++)
-      {
-	ps.push_back(add_polygon2(e,faces3[i],1));
-      }
-
-    std::vector<GameApi::ML> mls;
-    int s6 = std::min(ps.size(),ptss2.size()); // min probably doesnt do anything since sizes are the same.
-    //std::cout << "s6=" << s6 << std::endl;
-    mls.reserve(s6);
-    for(int i=0;i<s6;i++)
-      {
-	mls.push_back(ev.materials_api.bind_inst(ps[i],ptss2[i],mat));
-      }
-
-    GameApi::ML ml = ev.mainloop_api.array_ml(ev,mls);
     GameApi::MN I1=ev.move_api.mn_empty();
 
     SizeSpec ssx = vx.Size();
@@ -21728,10 +21696,10 @@ private:
 #endif
 
 #if 0
-class OptVoxelRender
+class OptVoxelRenderOLD
 {
 public:
-  OptVoxelRender(OptVoxel &vx, OptCubes &cubes) : vx(vx), cubes(cubes) { }
+  OptVoxelRenderOLD(OptVoxel &vx, OptCubes &cubes) : vx(vx), cubes(cubes) { }
 
   GameApi::P convert_to_P(GameApi::Env &e, GameApi::EveryApi &ev, float sx, float sy, float sz)
   {
