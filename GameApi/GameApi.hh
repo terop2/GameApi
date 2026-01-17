@@ -3723,7 +3723,7 @@ public:
   IMPORT MS mult_array(MS m1, MS m2);
   IMPORT MS from_lines_2d(LI li);
   IMPORT MS from_lines_3d(LI li);
-  IMPORT MSA prepare(MS p);
+  IMPORT MSA prepare(MS p, P pp, float mix);
 
 private:
   Env &e;
@@ -3736,6 +3736,7 @@ class PointsApi
 public:
   IMPORT PointsApi(Env &e);
   // should use cubes at left,top,right edge to cut out rendering.
+  IMPORT int colour_divisor_calc(P p);
   IMPORT PTS world_filter(PTS points); // uses DynamicCursor g_dyn_cursor
   IMPORT ML world_filter_cursor(ML ml,
 				float start_delta_x, float end_delta_x,
@@ -3826,15 +3827,15 @@ public:
   IMPORT PTS filter_component(PTS pts, int comp, float val);
   IMPORT PTS anim_rot_pts(PTS pts, float start_time, float end_time, float v_x, float v_y, float v_z, float rotate_amount);
 
-  IMPORT PTA prepare(PTS p);
+  IMPORT PTA prepare(PTS p, P pp, float mix);
   IMPORT int num_points(PTA pta);
   IMPORT int num_points(MSA pta);
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
-  void update_from_data(PTA array, PTS p, bool draw=true);
-  void update_from_data(MSA array, MS p);
-  void update(PTA array, bool slow=false);
+  void update_from_data(PTA array, PTS p, GameApi::P pp, bool draw=true, float mix=0.5);
+  void update_from_data(MSA array, MS p, GameApi::P pp, bool draw=true, float mix=0.5);
+  void update(PTA array, GameApi::P pp, bool slow=false);
   IMPORT void render(PTA array);
   IMPORT ML render_ml(EveryApi &ev, PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
@@ -5332,7 +5333,7 @@ private:
   class PointsObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    PointsObj(EveryApi &ev, PTS fo, SH sh) : points_api(ev.points_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh) 
+    PointsObj(EveryApi &ev, PTS fo, SH sh, P pp, float mix) : points_api(ev.points_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh),pp(pp),mix(mix) 
     {
       numpoints = 5000;
       start_x = -1.0;
@@ -5358,7 +5359,7 @@ private:
       end_z = e_z;
     }
     void prepare(bool keep=false) {
-      array = points_api.prepare(fo);
+      array = points_api.prepare(fo,pp,mix);
       //array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
     }
     void render() {
@@ -5407,6 +5408,8 @@ private:
     int numpoints;
     float start_x, start_y, start_z;
     float end_x, end_y, end_z;
+    P pp;
+    float mix;
   };
   class LinesObj : public RenderObject, public MoveScaleObject3d
   {

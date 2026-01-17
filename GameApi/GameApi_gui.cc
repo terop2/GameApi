@@ -1504,11 +1504,33 @@ private:
   float left,right;
 };
 
+class OneItemFaceCollection : public FaceCollection
+{
+public:
+  virtual std::string name() const { return "OneItemFaceCollection"; }
+  virtual void Prepare() { }
+  virtual void HeavyPrepare() { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual int NumFaces() const { return 1; }
+  virtual int NumPoints(int face) const { return 1; }
+  virtual Point FacePoint(int face, int point) const { return Point(0.0,0.0,0.0); }
+  virtual Vector PointNormal(int face, int point) const { return Vector(0.0,0.0,0.0); }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const { return 0xffffffff; }
+  virtual Point2d TexCoord(int face, int point) const { Point2d p; p.x = 0.0; p.y = 0.0; return p; }
+
+};
+GameApi::P one(GameApi::Env &e)
+{
+  return add_polygon2(e,new OneItemFaceCollection,1);
+}
+
 
 class PTSGuiWidget : public GuiWidgetForward
 {
 public:
-  PTSGuiWidget(GameApi::EveryApi &ev, GameApi::PTS p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
+  PTSGuiWidget(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::PTS p, GameApi::SH sh, GameApi::SH old_sh, int sx, int sy, int screen_x, int screen_y) : GuiWidgetForward(ev, { }), sh(sh), old_sh(old_sh), p(p), obj(ev, p, sh,one(e),1.0f),sx(sx),sy(sy), screen_x(screen_x), screen_y(screen_y) { firsttime = true; 
     Point2d p3 = {-666.0, -666.0 };
     update(p3, -1,-1,-1,0);
     Point2d p2 = { 0.0,0.0 };
@@ -3734,7 +3756,7 @@ EXPORT GameApi::W GameApi::GuiApi::lines(LI p, SH sh2, int sx, int sy, int scree
 }
 EXPORT GameApi::W GameApi::GuiApi::pts(PTS p, SH sh2, int sx, int sy, int screen_size_x, int screen_size_y)
 {
-  return add_widget(e, new PTSGuiWidget(ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
+  return add_widget(e, new PTSGuiWidget(e,ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
 
 EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap)
