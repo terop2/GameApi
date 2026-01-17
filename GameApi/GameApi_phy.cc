@@ -1,5 +1,6 @@
 
 #include "GameApi_h.hh"
+GameApi::P one(GameApi::Env &e);
 
 class EmptyPhysics : public PhysicsNode
 {
@@ -286,7 +287,7 @@ GameApi::PTS GameApi::PhysicsApi::init_points(PH phy)
 class PhysicsAction : public PointsApiPoints
 {
 public:
-  PhysicsAction(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::PH phy) : e(e), ev(ev), phy(phy) { firsttime = true; points2.id=-1; }
+  PhysicsAction(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::PH phy) : env(env), ev(ev), phy(phy) { firsttime = true; points2.id=-1; }
   // TODO, keyboard handling needed in physics area too
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
@@ -294,7 +295,7 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     if (firsttime) {
       points = ev.physics_api.init_points(phy);
-      points2 = ev.points_api.prepare(points);
+      points2 = ev.points_api.prepare(points,one(env),1.0);
       firsttime = false;
     } else
       ev.physics_api.step_points(phy, points2, e.delta_time);
@@ -303,23 +304,23 @@ public:
   virtual int NumPoints() const
   {
     if (points2.id==-1) return 0;
-    PointArray3 *pa = find_point_array3(e, points2);
+    PointArray3 *pa = find_point_array3(env, points2);
     return pa->numpoints;
   }
   virtual Point Pos(int i) const
   {
     if (points2.id==-1) return Point(0.0,0.0,0.0);
-    PointArray3 *pa = find_point_array3(e, points2);
+    PointArray3 *pa = find_point_array3(env, points2);
     return Point(pa->array[i*3+0], pa->array[i*3+1], pa->array[i*3+2]);
   }
   virtual unsigned int Color(int i) const
   {
     if (points2.id==-1) return 0xffffffff;
-    PointArray3 *pa = find_point_array3(e, points2);
+    PointArray3 *pa = find_point_array3(env, points2);
     return pa->color[i];
   }
 private:
-  GameApi::Env &e;
+  GameApi::Env &env;
   GameApi::EveryApi &ev;
   GameApi::PH phy;
   bool firsttime;

@@ -763,6 +763,7 @@ private:
   float linewidth;
 };
 
+GameApi::P one(GameApi::Env &e);
 
 
 class LI_Render_Inst3 : public MainLoopItem
@@ -829,7 +830,7 @@ public:
     ev.shader_api.use(sh);
     if (firsttime)
       {
-	pta = ev.points_api.prepare(pts);
+	pta = ev.points_api.prepare(pts,one(env),1.0);
 	
 	l=api.prepare(l0);
 	api.prepare_inst(l,pta);
@@ -945,7 +946,7 @@ public:
     ev.shader_api.use(sh);
     if (firsttime)
       {
-	pta = ev.matrices_api.prepare(pts);
+	pta = ev.matrices_api.prepare(pts,one(env),1.0);
 	
 	l=api.prepare(l0);
 	api.prepare_inst_matrix(l,pta);

@@ -572,6 +572,7 @@ struct PointArray3
   int numpoints;
   Low_GLuint buffer[2];
   Low_GLuint vao[1];
+  int color_divisor=-1;
 };
 
 struct MatrixArray3
@@ -582,6 +583,7 @@ struct MatrixArray3
   int numpoints;
   Low_GLuint buffer[2];
   Low_GLuint vao[1];
+  int color_divisor=-1;
 };
 
 

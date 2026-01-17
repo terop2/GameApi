@@ -178,6 +178,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1(std::string v_format, std::s
   bind_attrib_1(sh, 13, "in_TexCoord2");
   bind_attrib_1(sh, 14, "in_Color2");
   bind_attrib_1(sh, 15, "JOINTS_1");
+  //bind_attrib_1(sh, 16, "in_InstColor");
   //bind_attrib_1(sh, 6, "WEIGHTS_1");
   //bind_attrib_1(sh, 14, "INDICES");
   //bind_attrib_1(sh, 6, "in_LightAmount");
@@ -210,6 +211,7 @@ GameApi::SH GameApi::ShaderApi::get_normal_shader_1_new(std::string v_format, st
   bind_attrib_1(sh, 13, "WEIGHTS_1");
   bind_attrib_1(sh, 14, "INDICES");
   bind_attrib_1(sh, 6, "in_LightAmount");
+  //bind_attrib_1(sh, 15, "in_InstColor");
   link_1(sh);
   }
   use_1(sh);
