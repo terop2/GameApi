@@ -1351,7 +1351,7 @@ function create_script(filename, contents, filenames)
 
   if (filename.substr(-4)==".vox") {
      res+="P I155=ev.voxel_api.vox_voxel3(ev," + filename + ",0,5,5,5);\n";
-     res+="MT I627=ev.materials_api.colour_material(ev,0.5);\n"
+     res+="MT I627=ev.materials_api.colour_material(ev,0.5,true);\n"
      if (aces_value==true) {
           res+="MT I628=ev.materials_api.phong(ev,I627,30,-400,30,ff222222,ff888888,ffffffff,30);\n"
     	   res+="MT I629=ev.materials_api.acesfilm_material(ev,I628);\n"
@@ -1519,7 +1519,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
       }
   } else if (filename.substr(-4)==".vox")
   {
-  res+="MT I54=ev.materials_api.colour_material(ev,0.5);\n";
+  res+="MT I54=ev.materials_api.colour_material(ev,0.5,true);\n";
   if (aces_value==true) {
      res+="MT I55=ev.materials_api.phong(ev,I1,30.0,-400.0,30.0,ff221100,ffff8800,ffffffff,30.0);\n";
      res+= "MT I4=ev.materials_api.acesfilm_material(ev,I55);\n"
