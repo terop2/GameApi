@@ -12774,7 +12774,7 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced(ShaderApi &shapi
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   PointArray3 *arr = find_point_array3(e, pta);
   //std::cout << "COLOR_DIVISOR:" << arr->color_divisor << std::endl;
-  rend->prepare_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int *)arr->color, arr->numpoints, arr->color_divisor);
+  rend->prepare_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float *)arr->color, arr->numpoints, arr->color_divisor);
 }
 
 EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced_matrix(ShaderApi &shapi, VA va, MSA pta, SH sh)
@@ -12782,7 +12782,7 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced_matrix(ShaderApi
   //VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   MatrixArray3 *arr = find_matrix_array3(e, pta);
-  rend->prepare_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, arr->numpoints, arr->color_divisor);
+  rend->prepare_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, arr->numpoints, arr->color_divisor);
 }
 
 EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh, int hide_n)
@@ -12914,7 +12914,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num,arr->color_divisor);
+      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num,arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
 
@@ -12931,7 +12931,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
@@ -12951,7 +12951,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       //rend->render(0);
 
@@ -12972,7 +12972,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
       ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY,0);
     }
@@ -12986,7 +12986,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color,show_num, arr->color_divisor);
+      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color,show_num, arr->color_divisor);
       //rend->render(0);
     }
 #endif
@@ -13122,7 +13122,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
 
@@ -13139,7 +13139,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
@@ -13159,7 +13159,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //rend->render(0);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
 
@@ -13180,7 +13180,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
       ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY,0);
     }
@@ -13194,7 +13194,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num, arr->color_divisor);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //rend->render(0);
     }
 #endif

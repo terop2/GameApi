@@ -454,16 +454,16 @@ unsigned int swap_color(unsigned int c)
   return ca+cr+cg+cb;
 }
 
-void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, GameApi::P pp, bool draw, float mix)
+void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, bool draw)
 {
-  FaceCollection *coll = find_facecoll(e,pp);
+  //FaceCollection *coll = find_facecoll(e,pp);
   MatrixArray *pts = find_matrix_array(e, p);
   int numpoints = pts->Size();
   if (numpoints<0) numpoints=0;
   
   MatrixArray3 *arr = find_matrix_array3(e, pta);
   float *array = arr->array;
-  unsigned int *color = arr->color;
+  float *color = arr->color;
   int colorindex=0;
   for(int i=0;i<numpoints;i++) 
     {
@@ -476,6 +476,7 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, GameA
       unsigned int c = pts->Color(i);
       for(int j=0;j<16;j++)
 	array[i*16+j] = m.matrix[j];
+#if 0
       int s = coll->NumFaces();
       for(int f=0;f<s;f++)
 	{
@@ -486,7 +487,14 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, GameA
 	      color[colorindex] = swap_color(Color::Interpolate(c,cc,mix));
 	    }
 	}
-      //color[i]=swap_color(c);
+#else
+      Color cc(c);
+      color[colorindex]=cc.bf();
+      color[colorindex+1]=cc.gf();
+      color[colorindex+2]=cc.rf();
+      color[colorindex+3]=cc.af();
+      colorindex+=4;
+#endif
     }
   // todo, update vertex array?
 }
@@ -513,9 +521,9 @@ int colour_divisor_calc2(FaceCollection *coll)
 	}
       return colordiv;
 }
-void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, GameApi::P pp, bool draw, float mix)
+void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool draw)
 {
-  FaceCollection *coll = find_facecoll(e,pp);
+  //FaceCollection *coll = find_facecoll(e,pp);
 
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
@@ -525,17 +533,17 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, Game
   bool slow = false;
   if (numpoints>arr->numpoints) {
     float *array = arr->array;
-    unsigned int *color = arr->color;
+    float *color = arr->color;
     delete [] array;
     delete [] color;
     arr->array = new float[(numpoints+1)*3];
-    arr->color = new unsigned int[(numpoints+1)*colour_divisor_calc(pp)];
+    arr->color = new float[4*(numpoints+1)];
     slow=true;
   }
   arr->numpoints = numpoints;
 
   float *array = arr->array;
-  unsigned int *color = arr->color;
+  float *color = arr->color;
   int colorindex = 0;
   for(int i=0;i<numpoints;i++)
     {
@@ -544,6 +552,7 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, Game
       array[i*3+0] = p.x;
       array[i*3+1] = p.y;
       array[i*3+2] = p.z;
+#if 0
       int num = coll->NumFaces();
       for(int f=0;f<num;f++)
 	{
@@ -555,6 +564,17 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, Game
 	      colorindex++;
 	    }
 	}
+#else
+      Color cc(c);
+      color[colorindex] = cc.bf();
+      color[colorindex+1] = cc.gf();
+      color[colorindex+2] = cc.rf();
+      color[colorindex+3] = cc.af();
+      colorindex+=4;
+
+      // color[i] = swap_color(c);
+#endif
+
     }
   if (draw)
     update(pta,slow);
@@ -606,7 +626,7 @@ public:
   {
     PointArray3 *arr = new PointArray3;
     arr->array = new float[(end_range-start_range)*3];
-    arr->color = new unsigned int[end_range-start_range];
+    arr->color = new float[4*(end_range-start_range)];
     arr->numpoints = end_range-start_range;
     sets.push_back(arr);
 
@@ -639,12 +659,12 @@ public:
     int div2 = -1; //colour_divisor_calc2(coll);
     PointArray3 *arr = new PointArray3;
     arr->array = new float[(num_items)*3];
-    arr->color = new unsigned int[num_items*div2];
+    arr->color = new float[num_items*4];
     arr->numpoints = num_items;
     arr->color_divisor = div2;
     int s = sets.size();
     float *array = arr->array;
-    unsigned int *color = arr->color;
+    float *color = arr->color;
     int colorindex = 0;
     for(int i=0;i<s;i++)
       {
@@ -668,7 +688,13 @@ public:
 		  }
 	      }
 #else
-	*color++ = src->color[j];
+	    Color cc(c);
+	    color[colorindex] = cc.bf();
+	    color[colorindex+1] = cc.gf();
+	    color[colorindex+2] = cc.rf();
+	    color[colorindex+3] = cc.af();
+	    colorindex+=4;
+	//*color++ = src->color[j];
 #endif
 	  }
       }
@@ -694,15 +720,15 @@ private:
 };
 #endif
 
-EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, GameApi::P pp, float mix)
+EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from_instance)
 {
-  FaceCollection *coll = find_facecoll(e,pp);
-  int div = -1; //colour_divisor_calc2(coll);
+  //FaceCollection *coll = find_facecoll(e,pp);
+  int div = color_from_instance?1:-1; //colour_divisor_calc2(coll);
   MatrixArray *arr2 = find_matrix_array(e, p);
   arr2->Prepare();
   int num = arr2->Size();
   float *array = new float[num*16];
-  unsigned int *color = new unsigned int[num]; // *div
+  float *color = new float[num*4]; // *div
   Vector *normal = new Vector[num];
   int colorindex = 0;
   for(int i=0;i<num;i++) {
@@ -728,7 +754,13 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, GameApi::P pp, 
 	  }
       }
 #else
-    color[i] = swap_color(c);
+    Color cc(c);
+    color[colorindex] = cc.bf();
+    color[colorindex+1] = cc.gf();
+    color[colorindex+2] = cc.rf();
+    color[colorindex+3] = cc.af();
+    colorindex+=4;
+    //color[i] = swap_color(c);
 #endif
     normal[i] = arr2->Normal(i);
   }
@@ -742,12 +774,13 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, GameApi::P pp, 
   return add_matrix_array3(e,arr);
 }
 
-EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, GameApi::P pp, float mix)
+EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, bool color_from_instance)
 {
 
   //std::cout << "MIX:" << mix << std::endl;
   
-  FaceCollection *coll = find_facecoll(e,pp);
+  //FaceCollection *coll = find_facecoll(e,pp);
+  int div = color_from_instance?1:-1;
   OpenglLowApi *ogl = g_low->ogl;
 
   PointsApiPoints *pts = find_pointsapi_points(e, p);
@@ -759,8 +792,8 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, GameApi::P pp, f
   //ndef THREADS
   //ifndef THREADS0
   float *array = new float[(numpoints+1)*3];
-  int div = -1; //colour_divisor_calc(pp);
-  unsigned int *color = new unsigned int[(numpoints+1)]; // *div
+  //int div = -1; //colour_divisor_calc(pp);
+  float *color = new float[4*(numpoints+1)]; // *div
   Vector *normal = new Vector[(numpoints+1)];
 
   int colorindex = 0;
@@ -786,7 +819,13 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, GameApi::P pp, f
 	    }
 	}
 #else
-      color[i] = swap_color(c);
+      Color cc(c);
+      color[colorindex] = cc.bf();
+      color[colorindex+1] = cc.gf();
+      color[colorindex+2] = cc.rf();
+      color[colorindex+3] = cc.af();
+      colorindex+=4;
+      /// color[i] = swap_color(c);
 #endif
       normal[i] = pts->Normal(i);
     }
