@@ -830,7 +830,7 @@ public:
     ev.shader_api.use(sh);
     if (firsttime)
       {
-	pta = ev.points_api.prepare(pts,one(env),1.0);
+	pta = ev.points_api.prepare(pts,false);
 	
 	l=api.prepare(l0);
 	api.prepare_inst(l,pta);
@@ -946,7 +946,7 @@ public:
     ev.shader_api.use(sh);
     if (firsttime)
       {
-	pta = ev.matrices_api.prepare(pts,one(env),1.0);
+	pta = ev.matrices_api.prepare(pts,false);
 	
 	l=api.prepare(l0);
 	api.prepare_inst_matrix(l,pta);

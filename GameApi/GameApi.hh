@@ -1708,7 +1708,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
-  IMPORT MT colour_material(EveryApi &ev, float mix);
+  IMPORT MT colour_material(EveryApi &ev, float mix, bool color_from_pts=false);
   IMPORT MT many_texture_id_material(EveryApi &ev, std::string mtl_url, std::string url_prefix, float mix, int start_range, int end_range);
   IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
@@ -1771,9 +1771,9 @@ public:
   IMPORT ML bind_inst_matrix(P p, MS ms, MT mat);
   IMPORT ML bind_inst2(P p, PTA pta, MT mat);
   IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
-  IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
-  IMPORT ML render_instanced_ml_matrix(EveryApi &ev, P p, MS pts);
-  IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
+  IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts, bool color_from_pts=false);
+  IMPORT ML render_instanced_ml_matrix(EveryApi &ev, P p, MS pts, bool color_from_matrix=false);
+  IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, bool color_from_pts=false);
   IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>(), std::vector<std::string> id_labels=std::vector<std::string>(), std::vector<bool> is_srgb=std::vector<bool>());
   IMPORT ML render_instanced_ml_texture_id(EveryApi &ev, P p, PTS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
@@ -1786,7 +1786,7 @@ public:
   //--
 
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
-  IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
+  IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta, bool color_from_pts=false);
   IMPORT ML render_instanced2_ml_matrix(EveryApi &ev, VA va, MSA pta);
   IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
   //ML snow(EveryApi &ev, P p);
@@ -3723,7 +3723,7 @@ public:
   IMPORT MS mult_array(MS m1, MS m2);
   IMPORT MS from_lines_2d(LI li);
   IMPORT MS from_lines_3d(LI li);
-  IMPORT MSA prepare(MS p, P pp, float mix);
+  IMPORT MSA prepare(MS p, bool color_from_instance);
 
 private:
   Env &e;
@@ -3827,14 +3827,14 @@ public:
   IMPORT PTS filter_component(PTS pts, int comp, float val);
   IMPORT PTS anim_rot_pts(PTS pts, float start_time, float end_time, float v_x, float v_y, float v_z, float rotate_amount);
 
-  IMPORT PTA prepare(PTS p, P pp, float mix);
+  IMPORT PTA prepare(PTS p, bool color_from_instance);
   IMPORT int num_points(PTA pta);
   IMPORT int num_points(MSA pta);
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
-  void update_from_data(PTA array, PTS p, GameApi::P pp, bool draw=true, float mix=0.5);
-  void update_from_data(MSA array, MS p, GameApi::P pp, bool draw=true, float mix=0.5);
+  void update_from_data(PTA array, PTS p, bool draw=true);
+  void update_from_data(MSA array, MS p, bool draw=true);
   void update(PTA array, GameApi::P pp, bool slow=false);
   IMPORT void render(PTA array);
   IMPORT ML render_ml(EveryApi &ev, PTA array);
@@ -5359,7 +5359,7 @@ private:
       end_z = e_z;
     }
     void prepare(bool keep=false) {
-      array = points_api.prepare(fo,pp,mix);
+      array = points_api.prepare(fo,false);
       //array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
     }
     void render() {

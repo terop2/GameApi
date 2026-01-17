@@ -2737,7 +2737,7 @@ void RenderVertexArray::del()
   ogl->glDeleteBuffers(1,&buffers3[5]);
   ogl->glDeleteBuffers(1,&buffers3[6]);
 }
-GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size, int colour_divisor)
+GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, float *colors, int size, int colour_divisor)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -2753,7 +2753,7 @@ GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *posit
   }
   if (colors) {
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
-  ogl->glBufferData( Low_GL_ARRAY_BUFFER, colour_divisor!=-1?sizeof(unsigned int) * size*colour_divisor:sizeof(unsigned int)*size, colors, Low_GL_DYNAMIC_DRAW);
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, 4*sizeof(float)*size, colors, Low_GL_DYNAMIC_DRAW);
   }
 
 #ifdef VAO
@@ -2768,7 +2768,7 @@ GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *posit
   }
   if (colors) {
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
-  ogl->glBufferData( Low_GL_ARRAY_BUFFER, colour_divisor!=-1?sizeof(unsigned int) * size*colour_divisor:sizeof(unsigned int)*size, colors, Low_GL_DYNAMIC_DRAW);
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, 4*sizeof(float)*size, colors, Low_GL_DYNAMIC_DRAW);
   }
 #ifdef VAO
   ogl->glBindVertexArray(vao[2]);
@@ -2782,7 +2782,7 @@ GameApi::PinIn RenderVertexArray::prepare_instanced_matrix(int id, Matrix *posit
   }
   if (colors) {
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
-  ogl->glBufferData( Low_GL_ARRAY_BUFFER, colour_divisor!=-1?sizeof(unsigned int) * size*colour_divisor:sizeof(unsigned int)*size, colors, Low_GL_DYNAMIC_DRAW);
+  ogl->glBufferData( Low_GL_ARRAY_BUFFER, 4*sizeof(float)*size, colors, Low_GL_DYNAMIC_DRAW);
   }
 #ifdef VAO
   ogl->glBindVertexArray(0);
@@ -2820,18 +2820,18 @@ GameApi::PinIn RenderVertexArray::prepare_indices(int id, const unsigned char *i
   return GameApi::PinIn();
   
 }
-GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size, int colour_divisor)
+GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Vector *normals, float *colors, int size, int colour_divisor)
 {
-  /*
-  std::cout << "DIVS:" << size << " " << colour_divisor << std::endl;
-  int s2 = colour_divisor;
-  int s = size;
-  for(int j=0;j<s2;j++) {
-    for(int i=0;i<s;i++)
-      std::cout << std::hex << colors[j*size+i] << " ";
-    std::cout << std::endl;
-    }*/
 
+#if 0
+  std::cout << "DIVS:" << size << " " << colour_divisor << std::endl;
+  int s = size;
+    for(int i=0;i<s;i++)
+      std::cout << std::hex << colors[i] << " ";
+    std::cout << std::endl;
+
+#endif
+    
   OpenglLowApi *ogl = g_low->ogl;
 
 #ifdef VAO
@@ -2857,10 +2857,10 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
     if (bufferdata_done)
       {
-	ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, colour_divisor!=-1?sizeof(unsigned int)*size*colour_divisor:sizeof(unsigned int)*size, colors);
+	ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, 4*sizeof(float)*size, colors);
       }
     else
-      ogl->glBufferData( Low_GL_ARRAY_BUFFER, colour_divisor!=-1?sizeof(unsigned int) * size*colour_divisor:sizeof(unsigned int) * size, colors, Low_GL_DYNAMIC_DRAW);
+      ogl->glBufferData( Low_GL_ARRAY_BUFFER, 4*sizeof(float) * size, colors, Low_GL_DYNAMIC_DRAW);
   }
   
 #ifdef VAO
@@ -2888,10 +2888,10 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
   if (bufferdata_done)
     {
-      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,colour_divisor!=-1?sizeof(unsigned int)*size*colour_divisor:sizeof(unsigned int)*size,colors);
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,4*sizeof(float)*size,colors);
     }
   else
-    ogl->glBufferData( Low_GL_ARRAY_BUFFER, colour_divisor!=-1?sizeof(unsigned int) * size*colour_divisor:sizeof(unsigned int)*size, colors, Low_GL_DYNAMIC_DRAW);
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, 4*sizeof(float)*size, colors, Low_GL_DYNAMIC_DRAW);
   }
 
   
@@ -2924,10 +2924,10 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
   if (bufferdata_done)
     {
-      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,colour_divisor!=-1?sizeof(unsigned int)*size*colour_divisor:sizeof(unsigned int)*size,colors);
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER,0,4*sizeof(float)*size,colors);
     }
   else
-    ogl->glBufferData( Low_GL_ARRAY_BUFFER, colour_divisor!=-1?sizeof(unsigned int)*size*colour_divisor:sizeof(unsigned int)*size, colors, Low_GL_DYNAMIC_DRAW);
+    ogl->glBufferData( Low_GL_ARRAY_BUFFER, 4*sizeof(float)*size, colors, Low_GL_DYNAMIC_DRAW);
   }
 
 
@@ -2942,7 +2942,7 @@ GameApi::PinIn RenderVertexArray::prepare_instanced(int id, Point *positions, Ve
 }
 std::map<Point*,bool> g_inst_map;
 std::map<Matrix*,bool> g_inst_map_matrix;
-GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size, int colours_divisor)
+GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positions, Vector *normals, float *colors, int size, int colours_divisor)
 {
   OpenglLowApi *ogl = g_low->ogl;
   //std::cout << "render_instanced_matrix: " << size << std::endl;
@@ -2963,9 +2963,11 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     }
     if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer_matrix );
-    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, 4*sizeof(float) * size, colors);
     }
   }
+  if (colors||normals)
+    ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer_matrix );
   //#ifndef VAO    
   ogl->glVertexAttribPointer(7, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, 0);
   ogl->glVertexAttribPointer(8, 4, Low_GL_FLOAT, Low_GL_FALSE, sizeof(float)*4*4, (void*)(sizeof(float)*4));
@@ -3024,9 +3026,13 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     }
     
 #endif
-    if (colours_divisor!=-1)
+    if (colours_divisor!=-1) {
+      //std::cout << "COLOUR_DIVISOR:" << colours_divisor << std::endl;
+      ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,color_buffer_matrix);
+      ogl->glVertexAttribPointer(2,4,Low_GL_FLOAT, Low_GL_FALSE, 4*sizeof(float), (void*)0);
       ogl->glVertexAttribDivisor(2, colours_divisor);
-  
+    ogl->glEnableVertexAttribArray(2);
+    }
     
 #if 1
     ogl->glEnableVertexAttribArray(0);
@@ -3058,8 +3064,8 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     else
       ogl->glDrawArraysInstanced(Low_GL_TRIANGLES, 0, tri_count, size);
       //std::cout << "InstancingTRI: " << tri_count << " " << size << std::endl;
-      if (colours_divisor!=-1)
-	ogl->glVertexAttribDivisor(2, 0);
+    if (colours_divisor!=-1)
+      ogl->glVertexAttribDivisor(2, 0);
 
 #if 1
     ogl->glDisableVertexAttribArray(0);
@@ -3145,8 +3151,15 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
     ogl->glBindBuffer(Low_GL_ARRAY_BUFFER, 0);
 #endif
 
-    if (colours_divisor!=-1)
+
+    if (colours_divisor!=-1) {
+      //std::cout << "COLOUR_DIVISOR2:" << colours_divisor << std::endl;
+      ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,color_buffer_matrix);
+      ogl->glVertexAttribPointer(2,4,Low_GL_FLOAT, Low_GL_FALSE, 4*sizeof(float), (void*)0);
       ogl->glVertexAttribDivisor(2, colours_divisor);
+    ogl->glEnableVertexAttribArray(2);
+    }
+
 
     
 #if 1
@@ -3248,8 +3261,13 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
 
 #endif
 
-      if (colours_divisor!=-1)
-	ogl->glVertexAttribDivisor(2, colours_divisor);
+    if (colours_divisor!=-1) {
+      //std::cout << "COLOUR_DIVISOR3:" << colours_divisor << std::endl;
+      ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,color_buffer_matrix);
+      ogl->glVertexAttribPointer(2,4,Low_GL_FLOAT, Low_GL_FALSE, 4*sizeof(float), (void*)0);
+      ogl->glVertexAttribDivisor(2, colours_divisor);
+    ogl->glEnableVertexAttribArray(2);
+    }
 
     
 #if 1
@@ -3295,7 +3313,7 @@ GameApi::PinIn RenderVertexArray::render_instanced_matrix(int id, Matrix *positi
 
     return GameApi::PinIn();
 }
-GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size, int colours_divisor)
+GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vector *normals, float *colors, int size, int colours_divisor)
 {
   OpenglLowApi *ogl = g_low->ogl;
 #ifdef VAO
@@ -3313,7 +3331,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
     }
     if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
-    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, 4*sizeof(float) * size, colors);
     }
     //}
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
@@ -3377,8 +3395,13 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 	}
 
 #endif
-    if (colours_divisor!=-1)
+    if (colours_divisor!=-1) {
+      // std::cout << "COLOUR_DIVISOR1a:" << colours_divisor << std::endl;
+      ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,color_buffer);
+      ogl->glVertexAttribPointer(2,4,Low_GL_FLOAT, Low_GL_FALSE, 4*sizeof(float), (void*)0);
       ogl->glVertexAttribDivisor(2, colours_divisor);
+    ogl->glEnableVertexAttribArray(2);
+    }
 
     
 #if 1
@@ -3451,7 +3474,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
   }
   if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
-    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, 4*sizeof(float) * size, colors);
   }
   //}
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
@@ -3490,8 +3513,13 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
 #endif
 
-      if (colours_divisor!=-1)
-	ogl->glVertexAttribDivisor(2, colours_divisor);
+    if (colours_divisor!=-1) {
+      // std::cout << "COLOUR_DIVISOR2a:" << colours_divisor << std::endl;
+      ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,color_buffer);
+      ogl->glVertexAttribPointer(2,4,Low_GL_FLOAT, Low_GL_FALSE, 4*sizeof(float), (void*)0);
+      ogl->glVertexAttribDivisor(2, colours_divisor);
+    ogl->glEnableVertexAttribArray(2);
+    }
 
     
 #if 1
@@ -3542,7 +3570,7 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
   }
   if (colors) {
     ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, color_buffer );
-    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, sizeof(unsigned int) * size, colors);
+    ogl->glBufferSubData( Low_GL_ARRAY_BUFFER, 0, 4*sizeof(float) * size, colors);
   }
   //}
   ogl->glBindBuffer( Low_GL_ARRAY_BUFFER, pos_buffer );
@@ -3582,8 +3610,13 @@ GameApi::PinIn RenderVertexArray::render_instanced(int id, Point *positions, Vec
 
 #endif
 
-      if (colours_divisor!=-1)
-	ogl->glVertexAttribDivisor(2, colours_divisor);
+    if (colours_divisor!=-1) {
+      // std::cout << "COLOUR_DIVISOR3a:" << colours_divisor << std::endl;
+      ogl->glBindBuffer(Low_GL_ARRAY_BUFFER,color_buffer);
+      ogl->glVertexAttribPointer(2,4,Low_GL_FLOAT, Low_GL_FALSE, 4*sizeof(float), (void*)0);
+      ogl->glVertexAttribDivisor(2, colours_divisor);
+    ogl->glEnableVertexAttribArray(2);
+    }
 
     
 #if 1

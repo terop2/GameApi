@@ -295,7 +295,7 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     if (firsttime) {
       points = ev.physics_api.init_points(phy);
-      points2 = ev.points_api.prepare(points,one(env),1.0);
+      points2 = ev.points_api.prepare(points,false);
       firsttime = false;
     } else
       ev.physics_api.step_points(phy, points2, e.delta_time);

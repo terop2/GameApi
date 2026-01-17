@@ -214,9 +214,9 @@
 #if (ALL==1)||(COLOUR_MATERIAL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::colour_material,
 			 "m_colour",
-			 { "ev", "mix" },
-			 { "EveryApi&", "float" },
-			 { "ev", "0.5" },
+			 { "ev", "mix", "color_from_instance" },
+			 { "EveryApi&", "float", "bool" },
+			 { "ev", "0.5", "false" },
 			 "MT", "materials_api", "colour_material"));
 #endif
 #if (ALL==1)||(ACESFILM_MATERIAL==1)
