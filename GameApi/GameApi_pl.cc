@@ -3133,12 +3133,7 @@ EXPORT GameApi::P GameApi::PolygonApi::fullscreen_quad(EveryApi &ev)
   //int sy = 600-40; //ev.mainloop_api.get_screen_sy();
   int sx = ev.mainloop_api.get_screen_sx();
   int sy = ev.mainloop_api.get_screen_sy();
-  if (g_turn_to_2d_enabled)
-    {
-      return quad_z(0,sx,0,sy,0.0);
-    }
-  else 
-    return quad_z(-sx,sx, -sy, sy, 0.0);
+  return quad_z(-sx,sx, -sy, sy, 0.0);
 }
 EXPORT GameApi::ML GameApi::PolygonApi::bg_image(EveryApi &ev, BM bm)
 {
@@ -7397,7 +7392,10 @@ struct PTexCacheItem
       i1.f_shader_functions==i2.f_shader_functions;
   }
 };
-
+void print(const PTexCacheItem &i)
+{
+  std::cout << "CacheItem:" << get_shader_path(*i.e,i.vertex) << " " << get_shader_path(*i.e,i.fragment) << " " << i.v_shader_functions << " " << i.f_shader_functions << std::endl;
+}
 std::vector<PTexCacheItem> ptex_cache;
 
 GameApi::SH find_ptex_shader(const PTexCacheItem &ii)
@@ -7566,7 +7564,10 @@ public:
 	    GameApi::SH sh2 = find_ptex_shader(item);
 	    if (sh2.id==-1)
 	      {
-	    
+		/*
+		std::cout << "no cache!" << std::endl;
+		print(item);
+		*/
 	    //std::cout << "hep" << std::endl;
 	    shader = ev.shader_api.get_normal_shader("comb", "comb", "", vertex, fragment,e.v_shader_functions, e.f_shader_functions);
 	    
@@ -7574,7 +7575,7 @@ public:
 	    ptex_cache.push_back(item);
 	    
 	ev.mainloop_api.init_3d(shader);
-	   } else shader=sh2;
+	      } else { /*std::cout << "yes cache!" << std::endl;*/ shader=sh2; }
 	  }
 	else
 	  {
@@ -10181,6 +10182,183 @@ private:
   GameApi::SH sh;
 };
 
+class AcesFilmShaderML : public MainLoopItem
+{
+public:
+  AcesFilmShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next) : env(env), ev(ev), next(next) { firsttime = true; sh.id=-1; }
+  std::vector<int> shader_id() {
+    std::vector<int> vec = next->shader_id();
+    return vec; 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    //vertex = ev.uber_api.v_colour_with_mix(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_acesfilm(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  bool firsttime;
+  GameApi::SH sh;
+};
+
+class DiscardShaderML : public MainLoopItem
+{
+public:
+  DiscardShaderML(GameApi::Env &env, GameApi::EveryApi &ev, MainLoopItem *next) : env(env), ev(ev), next(next) { firsttime = true; sh.id=-1; }
+  std::vector<int> shader_id() {
+    std::vector<int> vec = next->shader_id();
+    return vec; 
+  }
+  void handle_event(MainLoopEvent &e)
+  {
+    next->handle_event(e);
+  }
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+  }
+  void HeavyPrepare() { } // not called
+  void Prepare() { next->Prepare(); }
+  void execute(MainLoopEnv &e)
+  {
+    MainLoopEnv ee = e;
+     if (firsttime)
+      {
+	firsttime = false;
+#if 1
+    GameApi::US vertex;
+    vertex.id = ee.us_vertex_shader;
+    if (vertex.id==-1) { 
+      GameApi::US a0 = ev.uber_api.v_empty();
+      //GameApi::US a1 = ev.uber_api.v_colour(a0);
+      ee.us_vertex_shader = a0.id;
+    }
+    vertex.id = ee.us_vertex_shader;
+    //vertex = ev.uber_api.v_colour_with_mix(vertex);
+    //GameApi::US a2 = ev.uber_api.v_passall(a4v);
+    ee.us_vertex_shader = vertex.id;
+
+    GameApi::US fragment;
+    fragment.id = ee.us_fragment_shader;
+    if (fragment.id==-1) { 
+      GameApi::US a0 = ev.uber_api.f_empty(false);
+      //GameApi::US a1 = ev.uber_api.f_colour(a0);
+      ee.us_fragment_shader = a0.id;
+    }
+    fragment.id = ee.us_fragment_shader;
+    fragment = ev.uber_api.f_discard(fragment);
+    ee.us_fragment_shader = fragment.id;
+#endif
+      }
+
+     std::vector<int> sh_ids = next->shader_id();
+     int s = sh_ids.size();
+     for(int i=0;i<s;i++) {
+       int sh_id = sh_ids[i];
+     sh.id = sh_id;
+    //std::cout << "sh_id" << sh_id << std::endl;
+    if (sh_id!=-1)
+      {
+	//GameApi::SH sh;
+	ev.shader_api.use(sh);
+
+
+      }
+
+#ifndef NO_MV
+	GameApi::M m = add_matrix2( env, e.in_MV); //ev.shader_api.get_matrix_var(sh, "in_MV");
+	GameApi::M m1 = add_matrix2(env, e.in_T); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m3 = add_matrix2(env, e.in_P); //ev.shader_api.get_matrix_var(sh, "in_T");
+	GameApi::M m2 = add_matrix2(env, e.in_N); //ev.shader_api.get_matrix_var(sh, "in_N");
+	ev.shader_api.set_var(sh, "in_MV", m);
+	ev.shader_api.set_var(sh, "in_T", m1);
+	ev.shader_api.set_var(sh, "in_N", m2);
+	ev.shader_api.set_var(sh, "in_P", m3);
+	ev.shader_api.set_var(sh, "time", e.time);
+	ev.shader_api.set_var(sh, "in_POS", e.in_POS);
+#endif
+     }
+	next->execute(ee);
+    ev.shader_api.unuse(sh);
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  MainLoopItem *next;
+  bool firsttime;
+  GameApi::SH sh;
+};
+
+
 class ColourShaderML : public MainLoopItem
 {
 public:
@@ -12271,6 +12449,16 @@ EXPORT GameApi::ML GameApi::PolygonApi::colour_shader(EveryApi &ev, ML mainloop,
    MainLoopItem *item = find_main_loop(e, mainloop);
    return add_main_loop(e, new ColourShaderML(e,ev,item,mix));
  }
+EXPORT GameApi::ML GameApi::PolygonApi::acesfilm_shader(EveryApi &ev, ML mainloop)
+{
+   MainLoopItem *item = find_main_loop(e, mainloop);
+   return add_main_loop(e, new AcesFilmShaderML(e,ev,item));
+}
+EXPORT GameApi::ML GameApi::PolygonApi::discard_shader(EveryApi &ev, ML mainloop)
+{
+   MainLoopItem *item = find_main_loop(e, mainloop);
+   return add_main_loop(e, new DiscardShaderML(e,ev,item));
+}
 EXPORT GameApi::ML GameApi::PolygonApi::bump_phong_shader(EveryApi &ev, ML mainloop, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow)
 {
   MainLoopItem *item = find_main_loop(e, mainloop);
@@ -12585,7 +12773,8 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced(ShaderApi &shapi
   //VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   PointArray3 *arr = find_point_array3(e, pta);
-  rend->prepare_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int *)arr->color, arr->numpoints);
+  //std::cout << "COLOR_DIVISOR:" << arr->color_divisor << std::endl;
+  rend->prepare_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float *)arr->color, arr->numpoints, arr->color_divisor);
 }
 
 EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced_matrix(ShaderApi &shapi, VA va, MSA pta, SH sh)
@@ -12593,7 +12782,7 @@ EXPORT void GameApi::PolygonApi::prepare_vertex_array_instanced_matrix(ShaderApi
   //VertexArraySet *s = find_vertex_array(e, va);
   RenderVertexArray *rend = find_vertex_array_render(e, va);
   MatrixArray3 *arr = find_matrix_array3(e, pta);
-  rend->prepare_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, arr->numpoints);
+  rend->prepare_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, arr->numpoints, arr->color_divisor);
 }
 
 EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi, VA va, PTA pta, SH sh, int hide_n)
@@ -12725,7 +12914,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num,arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
 
@@ -12742,7 +12931,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
@@ -12762,7 +12951,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       //rend->render(0);
 
@@ -12783,7 +12972,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
       ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY,0);
     }
@@ -12797,7 +12986,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color,show_num);
+      rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color,show_num, arr->color_divisor);
       //rend->render(0);
     }
 #endif
@@ -12933,7 +13122,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
 
@@ -12950,7 +13139,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
   else if (s->texture_id!=-1 && s->texture_id>=SPECIAL_TEX_ID && s->texture_id<SPECIAL_TEX_IDA)
@@ -12970,7 +13159,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //rend->render(0);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
 
@@ -12991,7 +13180,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
       ogl->glBindTexture(Low_GL_TEXTURE_2D_ARRAY,0);
     }
@@ -13005,7 +13194,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
 
-      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (unsigned int*)arr->color, show_num);
+      rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //rend->render(0);
     }
 #endif
@@ -15053,6 +15242,22 @@ EXPORT GameApi::LI GameApi::PolygonApi::li_static_instancing_matrix(EveryApi &ev
       vec.push_back(trans);
     }
   return ev.lines_api.li_or_array(vec);
+}
+
+GameApi::P GameApi::PolygonApi::static_instancing_array(EveryApi &ev, std::vector<P> vec, PTS pos)
+{
+  PointsApiPoints *obj2 = find_pointsapi_points(e, pos);
+  obj2->Prepare();
+  int s = std::min(obj2->NumPoints(),int(vec.size()));
+  std::vector<P> vec2;
+  for(int i=0;i<s;i++)
+    {
+      Point pp = obj2->Pos(i);
+      P trans = translate(vec[i], pp.x,pp.y,pp.z);
+      vec2.push_back(trans);
+    }
+  return or_array2(vec2);
+
 }
 
 GameApi::P GameApi::PolygonApi::static_instancing(EveryApi &ev, P obj, PTS pos)
@@ -22326,6 +22531,11 @@ GameApi::ARR GameApi::PolygonApi::block_render2(GameApi::EveryApi &ev, std::vect
 extern float quake_pos_x, quake_pos_y;
 extern float quake_rot_y;
 
+extern Matrix g_quakeml2_matrix;
+extern bool g_is_quakeml2;
+extern bool g_is_quakeml3;
+
+
 PointsApiPoints *g_pts;
 MatrixArray *g_pts_matrix;
 float g_pos1;
@@ -22348,31 +22558,144 @@ bool ComparePTSObj2(int a, int b)
   
   return val1<val2;
 }
+
+Matrix ggg_in_MV=Matrix::Identity();
+Matrix ggg_in_T = Matrix::Identity();
+Matrix ggg_in_P = Matrix::Identity();
+
 bool ComparePTSObj(int a, int b)
 {
   float val1,val2;
-  val1=g_pts->Pos(a).x;
-  val2=g_pts->Pos(b).x;
+  Point p1 = g_pts->Pos(a);
+  Point p2 = g_pts->Pos(b);
+  p1 = p1*ggg_in_MV*ggg_in_T;
+  p2 = p2*ggg_in_MV*ggg_in_T;
+  val1=p1.x;
+  val2=p2.x;
   //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 bool ComparePTSObj_y(int a, int b)
 {
   float val1,val2;
-  
-  val1=g_pts->Pos(a).z;
+  Point p1 = g_pts->Pos(a);
+  Point p2 = g_pts->Pos(b);
 
-  val2=g_pts->Pos(b).z;
+    Point world_rot_inv1 = p1;
+    Point world_rot_inv2 = p2;
+
+    world_rot_inv1.x -= quake_pos_x;
+    world_rot_inv1.z -= quake_pos_y;
+    world_rot_inv2.x -= quake_pos_x;
+    world_rot_inv2.z -= quake_pos_y;
+
+    if (!g_is_quakeml3) {
+
+    world_rot_inv1.z -= 400.0;
+    world_rot_inv1.x += quake_pos_x;
+    world_rot_inv1.z += quake_pos_y;
+    world_rot_inv1 = world_rot_inv1 * Matrix::YRotation(quake_rot_y);
+    world_rot_inv1.x -= quake_pos_x;
+    world_rot_inv1.z -= quake_pos_y;
+    world_rot_inv1.z += 400.0;
+
+    world_rot_inv2.z -= 400.0;
+    world_rot_inv2.x += quake_pos_x;
+    world_rot_inv2.z += quake_pos_y;
+    world_rot_inv2 = world_rot_inv2 * Matrix::YRotation(quake_rot_y);
+    world_rot_inv2.x -= quake_pos_x;
+    world_rot_inv2.z -= quake_pos_y;
+    world_rot_inv2.z += 400.0;
+    }
+    
+    
+    p1=world_rot_inv1;
+    p2=world_rot_inv2;
+  
+  p1 = p1*ggg_in_MV*ggg_in_T;
+  p2 = p2*ggg_in_MV*ggg_in_T;
+  val1=p1.z;
+  val2=p2.z;
+  
+  //val1=g_pts->Pos(a).z;
+
+  //val2=g_pts->Pos(b).z;
   //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
 bool ComparePTSObj_y_matrix(int a, int b)
 {
   float val1,val2;
-  val1=g_pts_matrix->Index(a).matrix[4*2+3];
-  val2=g_pts_matrix->Index(b).matrix[4*2+3];
+
+  Matrix m1 = g_pts_matrix->Index(a); //*ggg_in_MV*ggg_in_T;
+  Matrix m2 = g_pts_matrix->Index(b); //*ggg_in_MV*ggg_in_T;
+
+  Point local(0.0f,0.0f,0.0f);
+  Point world1 = local * m1;
+  Point world2 = local * m2;
+  
+    Point world_rot_inv1 = world1;
+    Point world_rot_inv2 = world2;
+
+    world_rot_inv1.x -= quake_pos_x;
+    world_rot_inv1.z -= quake_pos_y;
+    world_rot_inv2.x -= quake_pos_x;
+    world_rot_inv2.z -= quake_pos_y;
+
+    if (g_is_quakeml3) {
+    world_rot_inv1.z -= 400.0;
+    world_rot_inv1.x += quake_pos_x;
+    world_rot_inv1.z += quake_pos_y;
+    world_rot_inv1 = world_rot_inv1 * Matrix::YRotation(quake_rot_y);
+    world_rot_inv1.x -= quake_pos_x;
+    world_rot_inv1.z -= quake_pos_y;
+    world_rot_inv1.z += 400.0;
+
+    world_rot_inv2.z -= 400.0;
+    world_rot_inv2.x += quake_pos_x;
+    world_rot_inv2.z += quake_pos_y;
+    world_rot_inv2 = world_rot_inv2 * Matrix::YRotation(quake_rot_y);
+    world_rot_inv2.x -= quake_pos_x;
+    world_rot_inv2.z -= quake_pos_y;
+    world_rot_inv2.z += 400.0;
+
+    }
+    
+    Point view1 = world_rot_inv1 * ggg_in_MV * ggg_in_T;
+    Point view2 = world_rot_inv2 * ggg_in_MV * ggg_in_T;
+
+    //view1.z += quake_pos_y;
+    //view2.z += quake_pos_y;
+    
+    Point ncd1 = view1 * ggg_in_P;
+    Point ncd2 = view2 * ggg_in_P;
+
+    
+    return ncd1.z < ncd2.z;
+    /*    
+  m1=m1*Matrix::Translate(-quake_pos_x,0.0,-quake_pos_y);
+  m2=m2*Matrix::Translate(-quake_pos_x,0.0,-quake_pos_y);
+  
+  m1=m1*Matrix::Translate(0.0,0.0,-400.0);
+  m2=m2*Matrix::Translate(0.0,0.0,-400.0);
+
+  m1=m1*Matrix::YRotation(quake_rot_y);
+  m2=m2*Matrix::YRotation(quake_rot_y);
+  
+  m1=m1*Matrix::Translate(0.0,0.0,400.0);
+  m2=m2*Matrix::Translate(0.0,0.0,400.0);
+
+  m1=m1*ggg_in_MV;
+  m2=m2*ggg_in_MV;
+
+  m1=m1*ggg_in_P;
+  m2=m2*ggg_in_P;
+  
+  val1=m1.matrix[4*2+3];
+  val2=m2.matrix[4*2+3];
   //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
+    */
 }
 class BlockPTS2;
 class BlockPTS2_matrix;
@@ -22407,6 +22730,8 @@ public:
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { points->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) {
+    ggg_in_MV = e.in_MV;
+    ggg_in_T = e.in_T;
     bool b = points->Update(e);
     //pos2=pos;
     pos.clear();
@@ -22421,6 +22746,8 @@ public:
     g_pos1 = start_x;
     g_pos2 = end_x;
     g_pts = points;
+
+    HeavyPrepare(); // TODO, THIS IS NEEDED BECAUSE WE NEED TO ROTATE THE POINTS
     
     //std::cout << "START_X:" << start_x << " END_X:" << end_x << std::endl;
 
@@ -22470,6 +22797,8 @@ public:
     if (result==-1) result=(left+right)/2;
     }
     int end = result;
+
+    if (start>end) std::swap(start,end);
     
     
     //int start = ii-allpoints.begin();
@@ -22527,6 +22856,12 @@ public:
 
     float delta_x = p.x+cursor_pos_x;
     float delta_y = p.z-cursor_pos_y;
+
+    Point p2(delta_x,0.0,delta_y);
+    Point p3=p2*ggg_in_MV*ggg_in_T;
+    delta_x = p3.x;
+    delta_y = p3.z;
+    
     float dist = delta_x*delta_x + delta_y*delta_y;
     //std::cout << "A:" << p.x << " " << p.z << std::endl;
     //std::cout << "B:" << cursor_pos_x << " " << cursor_pos_y << std::endl;
@@ -22552,9 +22887,6 @@ GameApi::PTS GameApi::PointsApi::block_pts(GameApi::PTS pts, float d, int max_po
   PointsApiPoints *points = find_pointsapi_points(e,pts);
   return add_points_api_points(e,new BlockPTS(points,d,max_points));
 }
-extern Matrix g_quakeml2_matrix;
-extern bool g_is_quakeml2;
-extern bool g_is_quakeml3;
 
 std::vector<Point> g_lod_debug_vec;
 
@@ -22598,7 +22930,6 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
-    if (firsttime) {
     int s = points->NumPoints();
     allpoints.clear();
     for(int i=0;i<s;i++)
@@ -22607,8 +22938,6 @@ public:
       }
     g_pts = points;
     std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y);
-    firsttime = false;
-    }
   }
 
   float calc_pos(int p) const
@@ -22634,7 +22963,24 @@ public:
     Point world = local * p0;
     world.x -= quake_pos_x;
     world.z -= quake_pos_y;
-    Point view = world * in_MV;
+
+
+    Point world_rot_inv = world;
+
+    //world_rot_inv.x -= quake_pos_x;
+    //world_rot_inv.z -= quake_pos_y;
+
+    /*
+    world_rot_inv.z -= 400.0;
+    world_rot_inv.x += quake_pos_x;
+    world_rot_inv.z += quake_pos_y;
+    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+    world_rot_inv.z += 400.0;
+    */
+    
+    Point view = world_rot_inv * in_MV * in_T;
     //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
 
     if (pos3>=g_lod_debug_vec.size())
@@ -22645,6 +22991,7 @@ public:
 
     
     Point ncd = view * in_Proj;
+    //return view; // TODO
     return ncd;
     }
 
@@ -22653,13 +23000,30 @@ public:
     Point local = points->Pos(pos3); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
     Point world_rot_inv = world;
-      world.z -= 400.0;
-      world_rot_inv = world * Matrix::YRotation(quake_rot_y*2.0);
-      world_rot_inv.z += 400.0;
+
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+
+    world_rot_inv.z -= 400.0;
+    world_rot_inv.x += quake_pos_x;
+    world_rot_inv.z += quake_pos_y;
+    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+    world_rot_inv.z += 400.0;
+
+
+#if 0
+    world.z -= 400.0;
+     world_rot_inv = world * Matrix::YRotation(-quake_rot_y);
+     world_rot_inv.z += 400.0;
     
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
-    Point view = world_rot_inv * in_MV;
+
+
+#endif
+    Point view = world_rot_inv * in_MV *in_T;
 
     if (pos3>=g_lod_debug_vec.size())
       {
@@ -22671,6 +23035,7 @@ public:
     //ncd.z-=1.0;
     //ncd.z*=2.0;
     //ncd.z-=1.0;
+    //return view;
     return ncd;
   }
   
@@ -22685,7 +23050,15 @@ public:
     bool b = points->Update(e);
 
     in_MV = e.in_MV;
-    
+    in_T = e.in_T;
+    ggg_in_MV = e.in_MV;
+    ggg_in_T = e.in_T;
+    if (!g_is_quakeml3) {
+      if (y_rot_cache != quake_rot_y) {
+	HeavyPrepare();
+      }
+      y_rot_cache = quake_rot_y;
+    }
     pos.clear();
     int s = points->NumPoints();
     if (s<1) return true;
@@ -22716,9 +23089,9 @@ public:
   {
     Point pp = calc_pos3(i);
     if (pp.x >= -40.0f && pp.x <= 40.0f) {
-      if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
+      if (pp.z >= ncd_z_start2*0.5f && pp.z <= ncd_z_end2*2.0f) {
 	return true;
-        }
+	 }
     }
     return false;
   }
@@ -22734,9 +23107,11 @@ private:
   int max_points;
   float ncd_z_start2,ncd_z_end2;
   Matrix in_MV;
+  Matrix in_T;
   Matrix in_Proj;
   bool firsttime;
   bool firsttime2=true;
+  float y_rot_cache=0.0;
 };
 
 
@@ -22758,7 +23133,6 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
-    if (firsttime) {
     int s = points->Size();
     allpoints.clear();
     for(int i=0;i<s;i++)
@@ -22767,8 +23141,6 @@ public:
       }
     g_pts_matrix = points;
     std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y_matrix);
-    firsttime = false;
-    }
   }
   
   virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
@@ -22778,8 +23150,19 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
     in_MV = e.in_MV;
+    in_T = e.in_T;
 
+    ggg_in_MV = e.in_MV;
+    ggg_in_T = e.in_T;
+    ggg_in_P = e.in_P;
+    
     bool b = points->Update(e);
+    if (!g_is_quakeml3) {
+      if (y_rot_cache != quake_rot_y) {
+	HeavyPrepare();
+      }
+      y_rot_cache = quake_rot_y;
+    }
     pos.clear();
     int s = points->Size();
     if (s<1) return true;
@@ -22791,6 +23174,16 @@ public:
     start = 0;
     end=allpoints.size()-1;
 
+    if (start>end) std::swap(start,end);
+
+ #if 0
+    min_ppx = 6666666.0;
+    min_ppz = 6666666.0;
+    max_ppx = -6666666.0;
+    max_ppz = -6666666.0;
+#endif
+    
+    
     for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
@@ -22798,13 +23191,20 @@ public:
 	    pos.push_back(allpoints[i]);
 	  }
       }
+
+ #if 0
+    std::cout << "X:" << min_ppx << " " << max_ppx << std::endl;
+    std::cout << "Z:" << min_ppz << " " << max_ppz << std::endl;
+#endif
+    
     //std::cout << "Range:" << minimum << " " << maximum << std::endl;
     return true; }
   virtual int Size() const { return max_points; }
   virtual Matrix Index(int i) const {
     if (i>=pos.size()) { Matrix m=Matrix::Translate(-666666.0,-666666.0,-666666.0); return m; }
     Matrix m = points->Index(pos[i]);
-    m.matrix[4*2+3]=-m.matrix[4*2+3];
+    m*=Matrix::Scale(1.0f,1.0f,-1.0f);
+    //m.matrix[4*2+3]=-m.matrix[4*2+3];
     return m;
   }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
@@ -22833,7 +23233,7 @@ public:
       Point world = local * p0;
       world.x -= quake_pos_x;
       world.z -= quake_pos_y;
-      Point view = world * in_MV;
+      Point view = world * in_MV * in_T;
 
     if (pos>=g_lod_debug_vec.size())
       {
@@ -22843,6 +23243,7 @@ public:
 
 
       Point ncd = view * in_Proj;
+      //return view;
       return ncd;
     }
     
@@ -22851,14 +23252,25 @@ public:
     Point world = local * p0;
 
     Point world_rot_inv = world;
-      world.z -= 400.0;
-      world_rot_inv = world * Matrix::YRotation(quake_rot_y*2.0);
-      world_rot_inv.z += 400.0;
-    
+
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
-    Point view = world_rot_inv * in_MV;
 
+    world_rot_inv.z -= 400.0;
+    world_rot_inv.x += quake_pos_x;
+    world_rot_inv.z += quake_pos_y;
+    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
+    world_rot_inv.x -= quake_pos_x;
+    world_rot_inv.z -= quake_pos_y;
+    world_rot_inv.z += 400.0;
+    
+    //world_rot_inv = world_rot_inv * Matrix::YRotation(-quake_rot_y);
+    
+    Point view = world_rot_inv * in_MV * in_T;
+
+    //view.z += quake_pos_y;
+
+    
     if (pos>=g_lod_debug_vec.size())
       {
 	g_lod_debug_vec.resize(pos+1);
@@ -22868,15 +23280,26 @@ public:
     
     Point ncd = view * in_Proj;
 
-    
+    //return view;
     return ncd;
   }
   
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
+
+#if 0
+    if (pp.x<min_ppx) min_ppx=pp.x;
+    if (pp.z<min_ppz) min_ppz=pp.z;
+    
+    if (pp.x>max_ppx) max_ppx=pp.x;
+    if (pp.z>max_ppz) max_ppz=pp.z;
+#endif
+    
+    
     if (pp.x >= -40.0f && pp.x <= 40.0f)
-	if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
+      //if (pp.y >= -400.0f && pp.y <= 400.0f)
+      if (pp.z >= ncd_z_start2*0.5f && pp.z <= ncd_z_end2*2.0f)
 	  return true;
     return false;
     
@@ -22892,9 +23315,13 @@ private:
   int max_points;
   float ncd_z_start2,ncd_z_end2;
   Matrix in_MV;
+  Matrix in_T;
   Matrix in_Proj;
   bool firsttime;
   bool firsttime2=true;
+  mutable float min_ppx,min_ppz;
+  mutable float max_ppx,max_ppz;
+  mutable float y_rot_cache=0.0;
 };
 
 
@@ -28741,8 +29168,8 @@ float count_percentage(FaceCollection *coll)
 class DecimatePolygon : public FaceCollection
 {
 public:
-  DecimatePolygon(FaceCollection *coll, float val) : coll(coll),val(val),b(false) { firsttime = true; }
-  DecimatePolygon(FaceCollection *coll) : coll(coll), b(true) { }
+  DecimatePolygon(FaceCollection *coll, float val, bool flip) : coll(coll),val(val),b(false),flip(flip) { firsttime = true; }
+  DecimatePolygon(FaceCollection *coll) : coll(coll), b(true), flip(false) { }
   std::string name() const { return "DecimatePolygon"; }
   virtual void Collect(CollectVisitor &vis)
   {
@@ -28790,6 +29217,7 @@ public:
                 // tie-breaker by index to ensure strict weak ordering
                 return i1 < i2;
             }
+	    if (flip) { return area1 < area2; }
             return area1 > area2;
         };
 
@@ -28869,12 +29297,40 @@ private:
   bool firsttime;
   float val;
   bool b;
+  bool flip;
 };
 GameApi::P GameApi::PolygonApi::decimate3(GameApi::P faces, float val)
 {
   FaceCollection *coll = find_facecoll(e,faces);
-  return add_polygon2(e, new DecimatePolygon(coll,val),1);
+  return add_polygon2(e, new DecimatePolygon(coll,val,false),1);
 }
+GameApi::P GameApi::PolygonApi::decimate3_inv(GameApi::P faces, float val)
+{
+  FaceCollection *coll = find_facecoll(e,faces);
+  return add_polygon2(e, new DecimatePolygon(coll,1.0-val,true),1);
+}
+
+GameApi::P GameApi::PolygonApi::decimate_without_holes(GameApi::EveryApi &ev, GameApi::P faces, float val, int count, float cubesize, std::vector<GameApi::BM> textures)
+{
+  if (count>255) count=255;
+  
+  GameApi::P large = decimate3(faces,val);
+  GameApi::P small = decimate3_inv(faces,val);
+  GameApi::PTS points = ev.points_api.random_mesh_quad_instancing_color(ev,small,count,textures);
+  PointsApiPoints *pt = find_pointsapi_points(e,points);
+  pt->Prepare();
+  int num = pt->NumPoints();
+  std::vector<GameApi::P> vec;
+  GameApi::P cube = ev.polygon_api.cube(-cubesize,cubesize,-cubesize,cubesize,-cubesize,cubesize);
+  for(int i=0;i<num;i++)
+    {
+      GameApi::P c_cube = ev.polygon_api.color(cube,pt->Color(i));
+      vec.push_back(c_cube);
+    }
+  GameApi::P cubes = ev.polygon_api.static_instancing_array(ev,vec,points);
+  return cubes;
+}
+
 /*
 GameApi::P GameApi::PolygonApi::decimate_zeros(GameApi::P faces)
 {
@@ -29511,6 +29967,389 @@ GameApi::TF GameApi::PolygonApi::decimate_tf(GameApi::TF mesh, float val)
   GLTFModelInterface *i = find_gltf(e,mesh);
   return add_gltf(e, new DecimateTF(i,val));
 }
+
+#if 0
+class TFChangeP : public ForwardGLTF
+{
+public:
+  TFChangeP(GLTFModelInterface *next, int iii0, int iii1, FaceCollection *coll)
+    : ForwardGLTF(next), next(next), iii0(iii0), iii1(iii1) ,coll(coll) { firsttime = true; }
+  std::string name() const { return "TFChangeP"; }
+  
+  void Collect(CollectVisitor &vis)
+  {
+    next->Collect(vis);
+    vis.register_obj(this);
+  }
+
+  void do_one(int i, int j) const
+  {
+	  const tinygltf::Mesh &mesh = next->get_mesh(i);
+	const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	      int indices_index = vec[j].indices;
+	      const tinygltf::Accessor &acc = next->get_accessor(indices_index);
+	      const tinygltf::BufferView &bv = next->get_bufferview(acc.bufferView);
+	      const tinygltf::Buffer &buf = next->get_buffer(bv.buffer);
+	      const unsigned char *data = &buf.data[0];
+	      const unsigned char *data1 = data + bv.byteOffset + acc.byteOffset;
+	      const unsigned int *data2 = (unsigned int*)data1;
+	      int s3 = std::min(acc.count,bv.byteStride!=0?bv.byteLength/bv.byteStride:66666666); //buf.data.size()/sz;
+	      //std::cout << "s3=" << s3 << std::endl;
+	      const std::map<std::string,int> &attrs = next->get_mesh(i).primitives[j].attributes;
+	      if (attrs.find("POSITION")==attrs.end()) return;
+	      
+	      const tinygltf::Accessor &acc2 = next->get_accessor(attrs.find("POSITION")->second);
+	      if (acc2.bufferView==-1) return;
+	      const tinygltf::BufferView &bv2 = next->get_bufferview(acc2.bufferView);
+
+	      int s4 = std::min(acc2.count,bv2.byteStride!=0?bv2.byteLength/bv2.byteStride:66666666); //buf.data.size()/sz;
+	      if (bv2.buffer==-1) return;
+
+	      const tinygltf::Buffer &buf2 = next->get_buffer(bv2.buffer);
+	      const unsigned char *kdata = &buf2.data[0];
+	      const unsigned char *kdata1 = kdata + bv2.byteOffset + acc2.byteOffset;
+
+	      const DecimateVertex_float *kdata2 = (const DecimateVertex_float*)kdata1;
+
+#if 0	      
+	      auto compareFaces_int = [kdata1,kdata2,acc2,bv2](DecimateIndex_int i1, DecimateIndex_int i2) {
+		//std::cout << "compareFaces:" << i1 << " and " << i2 << std::endl;
+		auto faceArea = [kdata1,kdata2,acc2,bv2](DecimateIndex_int idx) {
+		  //std::cout << "found:" << idx << std::endl;
+
+		  if (idx.i1>=acc2.count) { std::cout << "i1=" << idx.i1 << " .. fail.." << std::hex << idx.i1 << std::dec << std::endl; return 0.0f; }
+		  if (idx.i2>=acc2.count) { std::cout << "i2=" << idx.i2 << " .. fail.." << std::hex << idx.i2 << std::dec << std::endl; return 0.0f; }
+		  if (idx.i3>=acc2.count) { std::cout << "i3=" << idx.i3 << " .. fail.." << std::hex << idx.i3 << std::dec << std::endl; return 0.0f; }
+
+		  //std::cout << "Indices: " << idx.i1 << " " << idx.i2 << " " << idx.i3 << std::endl;
+		  size_t stride = bv2.byteStride?bv2.byteStride:sizeof(DecimateVertex_float);
+		  assert(acc2.componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
+		  assert(acc2.type==TINYGLTF_TYPE_VEC3);
+		  const unsigned char *kdata00 = kdata1 + idx.i1*stride;
+		  const unsigned char *kdata01 = kdata1 + idx.i2*stride;
+		  const unsigned char *kdata02 = kdata1 + idx.i3*stride;
+		  
+		  const DecimateVertex_float *pdata0 = (const DecimateVertex_float*)kdata00;
+		  const DecimateVertex_float *pdata1 = (const DecimateVertex_float*)kdata01;
+		  const DecimateVertex_float *pdata2 = (const DecimateVertex_float*)kdata02;
+		  Point p1 = pdata0->p1;
+		  Point p2 = pdata1->p1;
+		  Point p3 = pdata2->p1;
+		  //std::cout << p1 << " " << p2 << " " << p3 << std::endl;
+		  return triArea(p1,p2,p3);
+		};
+		float area1 = faceArea(i1);
+		float area2 = faceArea(i2);
+		if (std::fabs(area1-area2) < 1e-6f) {
+		  return i1.i1<i2.i1;
+		}
+		return area1 > area2;
+	      };
+
+	      auto compareFaces_short = [compareFaces_int,kdata1,kdata2,acc2,bv2](DecimateIndex_short i1, DecimateIndex_short i2) {
+		DecimateIndex_int ii1,ii2;
+		ii1.i1 = i1.i1;
+		ii1.i2 = i1.i2;
+		ii1.i3 = i1.i3;
+		ii2.i1 = i2.i1;
+		ii2.i2 = i2.i2;
+		ii2.i3 = i2.i3;
+		return compareFaces_int(ii1,ii2);
+	      };
+		auto compareFaces_byte = [compareFaces_int,kdata1,kdata2,acc2,bv2](DecimateIndex_byte i1, DecimateIndex_byte i2) {
+		DecimateIndex_int ii1,ii2;
+		ii1.i1 = i1.i1;
+		ii1.i2 = i1.i2;
+		ii1.i3 = i1.i3;
+		ii2.i1 = i2.i1;
+		ii2.i2 = i2.i2;
+		ii2.i3 = i2.i3;
+		return compareFaces_int(ii1,ii2);
+		};
+
+		if (b) val = count_percentage_tf(next,i,j);
+	      
+	      int keep = std::max(1,(int)std::round(s3*val));
+#endif
+
+
+
+	      //std::cout << "KEEP:" << keep << " s=" << s3 << std::endl;
+	      //std::cout << acc.type << " " << acc.componentType << std::endl;
+	      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_INT||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)) {
+		int bufidx = new_buffer.size();
+		int bufvidx = new_bufviews.size();
+		int accidx = new_accessors.size();
+	      
+		new_buffer.push_back(tinygltf::Buffer());
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		
+		tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+		buf2a = buf;
+		bv2a = bv;
+		acc2a =acc;
+		
+		acc2a.bufferView = start_bufview + bufvidx;
+		bv2a.buffer = start_buffer + bufidx;
+		//vec2[j].indices = start_accessors + accidx;
+#if 0
+		indices_to_index[indices_index] = new_accessors.size()-1;
+#endif
+
+		unsigned char *udata = &buf2a.data[0];
+		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
+		DecimateIndex_int *udata2 = (DecimateIndex_int*)udata1;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_int) << std::endl;
+		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_int);
+		auto begin = StridedIterator<DecimateIndex_int>((uint8_t*)udata2,stride);
+
+		int nf = coll->NumFaces();
+		assert(coll->NumPoints(0)==3);
+		for(int i=0;i<nf;i++)
+		  {
+		    
+		  }
+
+
+#if 0
+		auto end = begin + keep/3;
+		auto end2 = begin + s3/3;
+		std::nth_element(begin,end,end2,compareFaces_int);
+		bv2a.byteLength = std::min(bv2a.byteLength,keep*stride/3);
+		
+		acc2a.count = std::min(acc2a.count,size_t(keep));
+#endif
+	      } else
+	      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_SHORT||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)) {
+		int bufidx = new_buffer.size();
+		int bufvidx = new_bufviews.size();
+		int accidx = new_accessors.size();
+	      
+		new_buffer.push_back(tinygltf::Buffer());
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		
+		tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+		buf2a = buf;
+		bv2a = bv;
+		acc2a =acc;
+		
+		acc2a.bufferView = start_bufview + bufvidx;
+		bv2a.buffer = start_buffer + bufidx;
+		//vec2[j].indices = start_accessors + accidx;
+#if 0
+		indices_to_index[indices_index] = new_accessors.size()-1;
+#endif
+
+		unsigned char *udata = &buf2a.data[0];
+		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
+		DecimateIndex_short *udata2 = (DecimateIndex_short*)udata1;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_short) << std::endl;
+		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_short);
+		auto begin = StridedIterator<DecimateIndex_short>((uint8_t*)udata2,stride);
+#if 0
+		auto end = begin + keep/3;
+		auto end2 = begin + s3/3;
+		std::nth_element(begin,end,end2,compareFaces_short);
+		bv2a.byteLength = std::min(bv2a.byteLength,keep*stride/3);
+		
+		acc2a.count = std::min(acc2a.count,size_t(keep*3));
+#endif
+	      } else
+			      if (acc.type==TINYGLTF_TYPE_SCALAR && (acc.componentType==TINYGLTF_COMPONENT_TYPE_BYTE||acc.componentType==TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE)) {
+		int bufidx = new_buffer.size();
+		int bufvidx = new_bufviews.size();
+		int accidx = new_accessors.size();
+	      
+		new_buffer.push_back(tinygltf::Buffer());
+		new_bufviews.push_back(tinygltf::BufferView());
+		new_accessors.push_back(tinygltf::Accessor());
+		
+		tinygltf::Buffer &buf2a = new_buffer[new_buffer.size()-1];
+		tinygltf::BufferView &bv2a = new_bufviews[new_bufviews.size()-1];
+		tinygltf::Accessor &acc2a = new_accessors[new_accessors.size()-1];
+	      
+		buf2a = buf;
+		bv2a = bv;
+		acc2a =acc;
+		
+		acc2a.bufferView = start_bufview + bufvidx;
+		bv2a.buffer = start_buffer + bufidx;
+		//vec2[j].indices = start_accessors + accidx;
+#if 0
+		indices_to_index[indices_index] = new_accessors.size()-1;
+#endif
+
+		unsigned char *udata = &buf2a.data[0];
+		unsigned char *udata1 = udata + bv2a.byteOffset + acc2a.byteOffset;
+		DecimateIndex_byte *udata2 = (DecimateIndex_byte*)udata1;
+		//std::cout << "STRIDE: " << bv2a.byteStride << " " << sizeof(DecimateIndex_byte) << std::endl;
+		size_t stride = bv2a.byteStride?bv2a.byteStride*3:sizeof(DecimateIndex_byte);
+		auto begin = StridedIterator<DecimateIndex_byte>((uint8_t*)udata2,stride);
+#if 0
+		auto end = begin + keep/3;
+		auto end2 = begin + s3/3;
+		std::nth_element(begin,end,end2,compareFaces_byte);
+		bv2a.byteLength = std::min(bv2a.byteLength,keep/3*stride);
+		
+		acc2a.count = std::min(acc2a.count,size_t(keep*3));
+#endif
+	      }
+	      else { std::cout << "Wrong type or componentType:" << acc.type << " " << acc.componentType << std::endl; }
+	      
+															 
+  }
+  
+  void HeavyPrepare()
+  {
+    if (firsttime) {
+      start_meshes = next->meshes_size();
+      start_accessors = next->accessors_size();
+      start_bufview = next->bufferviews_size();
+      start_buffer = next->buffers_size();
+      int s = next->meshes_size();
+      //std::cout << "Meshes: " << s << std::endl;
+      for(int i=0;i<s;i++)
+	{
+
+	  if (m_enabled.size()<=i)
+	    {
+	      m_enabled.resize(i+1);
+	    }
+	  if (!m_enabled[i])
+	    {
+	      const tinygltf::Mesh &mesh = next->get_mesh(i);
+	      const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	      int s2 = vec.size();
+	      //std::cout << "Primitives2: " << s2 << std::endl;
+	      for(int j=0;j<s2;j++)
+		do_one(i,j);
+	      m_enabled[i]=true;
+	    }
+	}
+    }
+
+    firsttime = false;
+  }
+  void Prepare()
+  {
+    next->Prepare();
+    HeavyPrepare();
+  }
+
+  virtual int accessors_size() const { if (firsttime) return 0; return next->accessors_size()+new_accessors.size(); }
+  virtual const tinygltf::Accessor &get_accessor(int i) const
+  {
+    if (i>=0 && i<next->accessors_size())
+      return next->get_accessor(i);
+    //std::cout << "get new acc:" << i << " " << start_accessors << " " << new_accessors.size() << std::endl;
+    return new_accessors[i-start_accessors];
+  }
+  virtual int bufferviews_size() const { if (firsttime) return 0; return next->bufferviews_size() + new_bufviews.size(); }
+  virtual const tinygltf::BufferView &get_bufferview(int i) const
+  {
+    if (i>=0 && i<next->bufferviews_size())
+      return next->get_bufferview(i);
+    return new_bufviews[i-start_bufview];
+  }
+
+
+  virtual int buffers_size() const { if (firsttime) return 0; return next->buffers_size() + new_buffer.size(); }
+  virtual const tinygltf::Buffer &get_buffer(int i) const
+  {
+    if (i>=0 && i<next->buffers_size())
+      return next->get_buffer(i);
+    return new_buffer[i-start_buffer];
+  }
+
+  virtual int meshes_size() const { if (firsttime) return 0; return next->meshes_size(); }
+  virtual const tinygltf::Mesh &get_mesh(int i) const
+  {
+    if (m_enabled.size()<=i)
+      {
+	m_enabled.resize(i+1);
+      }
+    if (!m_enabled[i])
+      {
+	const tinygltf::Mesh &mesh = next->get_mesh(i);
+	const std::vector<tinygltf::Primitive> &vec = mesh.primitives;
+	int s2 = vec.size();
+	//std::cout << "Primitives2: " << s2 << std::endl;
+	for(int j=0;j<s2;j++)
+	  do_one(i,j);
+	m_enabled[i]=true;
+      }
+    
+    
+    if (m_meshes.size()<=i)
+      {
+	m_meshes.resize(i+1);
+      }
+    
+    m_meshes[i] = next->get_mesh(i);
+    int s = m_meshes[i].primitives.size();
+    for(int ii=0;ii<s;ii++)
+      {
+	//std::cout << "map " << m_mesh.primitives[i].indices << " to " << start_accessors + indices_to_index[m_mesh.primitives[i].indices] << std::endl;
+	if (indices_to_index.find(m_meshes[i].primitives[ii].indices)!=indices_to_index.end())
+	  m_meshes[i].primitives[ii].indices = start_accessors + indices_to_index[m_meshes[i].primitives[ii].indices];
+      }
+
+    return m_meshes[i];
+  }
+private:
+  GLTFModelInterface *next;
+  //mutable float val;
+  int iii0; // which model to change
+  int iii1; // which primitive to change
+  FaceCollection *coll; // new data
+  bool firsttime = true;
+
+  int start_meshes = -1;
+  int start_accessors = -1;
+  int start_bufview = -1;
+  int start_buffer = -1;
+  //std::vector<tinygltf::Mesh> new_mesh;
+  //mutable tinygltf::Mesh m_mesh;
+  mutable std::vector<tinygltf::Accessor> new_accessors;
+  mutable std::vector<tinygltf::BufferView> new_bufviews;
+  mutable std::vector<tinygltf::Buffer> new_buffer;
+
+  mutable std::map<int,int> indices_to_index;
+  mutable std::vector<tinygltf::Mesh> m_meshes;
+  mutable std::vector<bool> m_enabled;
+  bool b;
+};
+
+GameApi::TF GameApi::PolygonApi::tf_change_p(GameApi::TF mesh, int i, int prim, GameApi::P p)
+{
+  GLTFModelInterface *ii = find_gltf(e,mesh);
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_gltf(e, new TFChangeP(ii,i,prim,coll));
+}
+GameApi::TF GameApi::PolygonApi::tf_change_p_arr(GameApi::TF mesh, int i, std::vector<GameApi::P> vec)
+{
+  GameApi::TF val = mesh;
+  int s = vec.size();
+  for(int p=0;p<s;p++)
+    {
+      val = tf_change_p(val, i,p,vec[p]);
+    }
+  return val;
+}
+
+#endif
+
+
+
+
 GameApi::TF GameApi::PolygonApi::decimate_tf_zero(GameApi::TF mesh)
 {
   GLTFModelInterface *i = find_gltf(e,mesh);

@@ -383,11 +383,11 @@ public:
   GameApi::PinIn update_tri(int id, int buffer_id, int start, int end);
   GameApi::PinIn render(int id);
   void sort_blit(int id, Matrix in_MV);
-  GameApi::PinIn prepare_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
-  GameApi::PinIn prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn prepare_instanced(int id, Point *positions, Vector *normals, float *colors, int size, int colour_divisor);
+  GameApi::PinIn prepare_instanced_matrix(int id, Matrix *positions, Vector *normals, float *colors, int size, int colour_divisor);
   GameApi::PinIn prepare_indices(int id, const unsigned char *ind1, const unsigned short *ind2, const unsigned int *ind3, int facecount);
-  GameApi::PinIn render_instanced(int id, Point *positions, Vector *normals, unsigned int *colors, int size);
-  GameApi::PinIn render_instanced_matrix(int id, Matrix *positions, Vector *normals, unsigned int *colors, int size);
+  GameApi::PinIn render_instanced(int id, Point *positions, Vector *normals, float *colors, int size, int colours_divisor);
+  GameApi::PinIn render_instanced_matrix(int id, Matrix *positions, Vector *normals, float *colors, int size, int colours_divisor);
   void update_buffers(RenderVertexArray_bufferids ids);
   void fetch_buffers(RenderVertexArray_bufferids &ids);
   void set_no_delete(bool b) { nodelete=b; }

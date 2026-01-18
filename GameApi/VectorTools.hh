@@ -399,7 +399,7 @@ Color(const Color &x) : r(x.r), g(x.g), b(x.b), alpha(x.alpha) { }
     return o;
   }
 
-  void operator*=(float k) { r *= k; g *=k; b *=k; alpha*=k; check(); }
+  void operator*=(float k) { r *= k; g *=k; b *=k; /*alpha*=k;*/ check(); }
   friend Color operator+(const Color &c1, const Color &c2)
   {
     Color res;

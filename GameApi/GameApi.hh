@@ -386,9 +386,9 @@ public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
   GameApi::ML get_movement_from_MV(GameApi::ML ml);
-  GameApi::ML lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, float start_brightness, float end_brightness);
+  GameApi::ML lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, float start_brightness, float end_brightness);
 
-  GameApi::ML lod_matrix_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, float start_brightness, float end_brightness);
+  GameApi::ML lod_matrix_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, float start_brightness, float end_brightness);
 
   IMPORT ML lod_matrix(EveryApi &ev, P p, MT mat, MS ms,float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
   IMPORT ML lod(EveryApi &ev, P p, MT mat, PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4);
@@ -553,20 +553,20 @@ public:
   IMPORT ML restart_game(EveryApi &ev, ML ml, int key);
   IMPORT ML matrix_range_check(EveryApi &ev, ML ml, ML ml2, std::string url); // this uses restart_game.
   IMPORT LI gltf_skeleton(EveryApi &ev, TF model0, int start_node);
-  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color );
-  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
-  IMPORT ML gltf_mesh_all_inst2( EveryApi &ev, TF model0, TF resize_obj, PTS pts, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
+  IMPORT ML gltf_mesh( EveryApi &ev, TF model0, int mesh_id, int skin_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool acesfilm );
+  IMPORT ML gltf_mesh_all( EveryApi &ev, TF model0, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_mesh_all_inst2( EveryApi &ev, TF model0, TF resize_obj, PTS pts, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
 
-  IMPORT ML gltf_mesh_all_inst_matrix( EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
-  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
-  IMPORT ML gltf_mesh_all_anim_inst( EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
-  IMPORT ML gltf_mesh_all_anim_inst_matrix( EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent );
-  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent );
-  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,float self_mult,float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation , float border_width, unsigned int border_color, bool transparent );
+  IMPORT ML gltf_mesh_all_inst_matrix( EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_mesh_all_anim_inst( EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_mesh_all_anim_inst_matrix( EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_scene( EveryApi &ev, TF model0, int scene_id, std::string keys , float mix,float self_mult,float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation , float border_width, unsigned int border_color, bool transparent, bool acesfilm );
   //IMPORT ML gltf_anim( EveryApi &ev, std::string base_url, std::string url, int animation, int channel, int mesh_index, int prim_index, MT mat );
   IMPORT ML gltf_anim2( EveryApi &ev, TF model0, int animation, int channel);
-  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color);
-  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix, float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent);
+  IMPORT ML gltf_anim4( EveryApi &ev, TF model0, int animation, int channel, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool acesfilm);
+  IMPORT ML gltf_scene_anim(EveryApi &ev, TF model0, int scene_id, int animation, std::string keys, float mix, float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm);
   IMPORT ML flip_scene_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML flip_scene_x_if_mobile(EveryApi &ev, ML ml);
   IMPORT ML activate_item(ML ml, ML def);
@@ -1682,6 +1682,8 @@ class MaterialsApi
 {
 public:
   IMPORT MaterialsApi(Env &e);
+  IMPORT MT acesfilm_material(EveryApi &ev, MT next);
+  IMPORT MT discard_material(EveryApi &ev, MT next);
   IMPORT MT hires(EveryApi &ev, MT mat, int size, int numsampled, float blur_radius);
   IMPORT MT mt_empty(EveryApi &ev);
   IMPORT MT mt_alt(EveryApi &ev, std::vector<MT> v, int index);
@@ -1706,7 +1708,7 @@ public:
   IMPORT MT texture(EveryApi &ev, BM bm, float mix);
   IMPORT MT textureid(EveryApi &ev, TXID txid, float mix);
   IMPORT MT texture_many(EveryApi&ev, std::vector<BM> vec, float mix);
-  IMPORT MT colour_material(EveryApi &ev, float mix);
+  IMPORT MT colour_material(EveryApi &ev, float mix, bool color_from_pts=false);
   IMPORT MT many_texture_id_material(EveryApi &ev, std::string mtl_url, std::string url_prefix, float mix, int start_range, int end_range);
   IMPORT MT texture_cubemap(EveryApi&ev, std::vector<BM> vec, float mix, float mix2);
   IMPORT MT texture_many2(EveryApi &ev, float mix);
@@ -1724,6 +1726,9 @@ public:
   IMPORT MT phong2(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
   IMPORT MT vertex_phong(EveryApi &ev, MT nxt, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, float mix);
   IMPORT ARR m_apply_phong(EveryApi &ev, std::vector<MT> vec, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int specular, unsigned int highlight, float pow);
+  IMPORT ARR p_dup(EveryApi &ev, P obj, int count);
+  IMPORT ARR m_dup(EveryApi &ev, MT mat, int count);
+  IMPORT ARR m_apply_phong_color(EveryApi &ev, std::vector<MT> vec, std::vector<P> vec2, float light_dir_x, float light_dir_y, float light_dir_z, float ambient_mult, float specular_mult, float highlight_mult, float pow);
   IMPORT MT edge(EveryApi &ev, MT nxt, float edge_width, unsigned int edge_color);
   IMPORT MT gi(EveryApi &ev, MT nxt, PTS points, float obj_size);
   IMPORT MT bump_phong(EveryApi &ev, float light_dir_x, float light_dir_y, float light_dir_z, unsigned int ambient, unsigned int highlight, float pow, FB bm, float bump_width);
@@ -1766,9 +1771,9 @@ public:
   IMPORT ML bind_inst_matrix(P p, MS ms, MT mat);
   IMPORT ML bind_inst2(P p, PTA pta, MT mat);
   IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
-  IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts);
-  IMPORT ML render_instanced_ml_matrix(EveryApi &ev, P p, MS pts);
-  IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time);
+  IMPORT ML render_instanced_ml(EveryApi &ev, P p, PTS pts, bool color_from_pts=false);
+  IMPORT ML render_instanced_ml_matrix(EveryApi &ev, P p, MS pts, bool color_from_matrix=false);
+  IMPORT ML render_instanced_ml_fade(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, bool color_from_pts=false);
   IMPORT ML render_instanced_ml_texture(EveryApi &ev, P p, PTS pts, std::vector<BM> vec, std::vector<int> types=std::vector<int>(), std::vector<std::string> id_labels=std::vector<std::string>(), std::vector<bool> is_srgb=std::vector<bool>());
   IMPORT ML render_instanced_ml_texture_id(EveryApi &ev, P p, PTS pts, std::vector<TXID> *vec);
   IMPORT ML render_instanced_ml_cubemap(EveryApi &ev, P p, PTS pts, std::vector<BM> vec);
@@ -1781,7 +1786,7 @@ public:
   //--
 
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
-  IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta);
+  IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta, bool color_from_pts=false);
   IMPORT ML render_instanced2_ml_matrix(EveryApi &ev, VA va, MSA pta);
   IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
   //ML snow(EveryApi &ev, P p);
@@ -2650,6 +2655,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT ML discard_shader(EveryApi &ev, ML mainloop);
+  IMPORT ML acesfilm_shader(EveryApi &ev, ML mainloop);
   IMPORT P multiply_facecoll(P p, int sx, int sy, int sz);
   IMPORT P spatial_decimate(P p, float val);
   IMPORT TF decimate_tf(TF mesh, float val);
@@ -2658,6 +2665,8 @@ public:
   IMPORT P decimate2(P p, float val);
   IMPORT P decimate3(P p, float val);
   IMPORT P decimate_zeros(P p);
+  IMPORT P decimate3_inv(P p, float val);
+  IMPORT P decimate_without_holes(EveryApi &ev, P p, float, int, float, std::vector<BM>);
   IMPORT bool ready_to_prepare(ML p);
   IMPORT DS tf_ds_inv(TF tf, int flags);
   IMPORT void load_glb_from_temp(std::string filename, void (*fptr)(void*), void*, bool &success);
@@ -2921,6 +2930,7 @@ public:
   IMPORT ML line_to_cone2(EveryApi &ev, LI li, float size, int numfaces, MT mt);
   IMPORT ML line_to_cone3(EveryApi &ev, LI li, float size, int numfaces, MT mt, unsigned int color);
   IMPORT P static_instancing(EveryApi &ev, P obj, PTS pos);
+  IMPORT P static_instancing_array(EveryApi &ev, std::vector<P> vec, PTS pos);
   IMPORT P static_instancing_vertex_color(EveryApi &ev, P obj, PTS pos);
   IMPORT P static_instancing_matrix(EveryApi &ev, P obj, MS matrix_array);
   IMPORT LI li_static_instancing_matrix(EveryApi &ev, LI obj, MS matrix_array);
@@ -3713,7 +3723,7 @@ public:
   IMPORT MS mult_array(MS m1, MS m2);
   IMPORT MS from_lines_2d(LI li);
   IMPORT MS from_lines_3d(LI li);
-  IMPORT MSA prepare(MS p);
+  IMPORT MSA prepare(MS p, bool color_from_instance);
 
 private:
   Env &e;
@@ -3725,6 +3735,13 @@ class PointsApi
 {
 public:
   IMPORT PointsApi(Env &e);
+  // should use cubes at left,top,right edge to cut out rendering.
+  IMPORT int colour_divisor_calc(P p);
+  IMPORT PTS world_filter(PTS points); // uses DynamicCursor g_dyn_cursor
+  IMPORT ML world_filter_cursor(ML ml,
+				float start_delta_x, float end_delta_x,
+				float start_delta_y, float end_delta_y,
+				float start_delta_z, float end_delta_z);
   
   IMPORT ML publish_heightfield(ML ml, CFB landscape, float start_x, float end_x,
 				float start_y, float end_y, float start_z, float end_z);
@@ -3778,6 +3795,7 @@ public:
   IMPORT PTS random_plane(PT pos, V u_x, V u_y, int numpoints);
   IMPORT PTS random_bitmap_instancing(EveryApi &ev, BB bm, int count, float start_x, float end_x, float start_y, float end_y, float z);
   IMPORT PTS random_mesh_quad_instancing(EveryApi &ev, P p, int count);
+  IMPORT PTS random_mesh_quad_instancing_color(EveryApi &ev, P p, int count, std::vector<BM> textures);
   IMPORT PTS random_lattice(EveryApi &ev, int sx, int sy, int sz,
 			    float s_x, float s_y, float s_z,
 			    float px, float py, float pz,
@@ -3809,15 +3827,15 @@ public:
   IMPORT PTS filter_component(PTS pts, int comp, float val);
   IMPORT PTS anim_rot_pts(PTS pts, float start_time, float end_time, float v_x, float v_y, float v_z, float rotate_amount);
 
-  IMPORT PTA prepare(PTS p);
+  IMPORT PTA prepare(PTS p, bool color_from_instance);
   IMPORT int num_points(PTA pta);
   IMPORT int num_points(MSA pta);
   float *point_access(PTA pta, int pointnum); // use ptr[0], ptr[1] and ptr[2] to access the x,y,z coordinate
   IMPORT void set_point(PTA pta, int pointnum, float x, float y, float z);
   //unsigned int *color_access(PTA pta, int pointnum);
   void update_from_data(PTA array, PTS p, bool draw=true);
-  void update_from_data(MSA array, MS p);
-  void update(PTA array, bool slow=false);
+  void update_from_data(MSA array, MS p, bool draw=true);
+  void update(PTA array, GameApi::P pp, bool slow=false);
   IMPORT void render(PTA array);
   IMPORT ML render_ml(EveryApi &ev, PTA array);
   IMPORT void explode(PTA array, float x, float y, float z, float dist);
@@ -4110,6 +4128,8 @@ public:
   IMPORT US v_colour_with_mix(US us);
   IMPORT US v_fade(US us);
   IMPORT US f_water(US us);
+  IMPORT US f_acesfilm(US us);
+  IMPORT US f_discard(US us);
   IMPORT US f_edge(US us);
   IMPORT US f_gltf_anim(US us);
   IMPORT US f_mesh_color(US us, SFO sfo); // this requires v_pass_position() in vertex shader
@@ -5313,7 +5333,7 @@ private:
   class PointsObj : public RenderObject, public MoveScaleObject3d
   {
   public:
-    PointsObj(EveryApi &ev, PTS fo, SH sh) : points_api(ev.points_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh) 
+    PointsObj(EveryApi &ev, PTS fo, SH sh, P pp, float mix) : points_api(ev.points_api), mat(ev.matrix_api), shapi(ev.shader_api), fo(fo), sh(sh),pp(pp),mix(mix) 
     {
       numpoints = 5000;
       start_x = -1.0;
@@ -5339,7 +5359,7 @@ private:
       end_z = e_z;
     }
     void prepare(bool keep=false) {
-      array = points_api.prepare(fo);
+      array = points_api.prepare(fo,false);
       //array = floatvolume.prepare(fo, numpoints, start_x, start_y, start_z, end_x, end_y, end_z); 
     }
     void render() {
@@ -5388,6 +5408,8 @@ private:
     int numpoints;
     float start_x, start_y, start_z;
     float end_x, end_y, end_z;
+    P pp;
+    float mix;
   };
   class LinesObj : public RenderObject, public MoveScaleObject3d
   {

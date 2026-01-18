@@ -195,6 +195,14 @@
 			 { "ev", "", "0" },
 			 "MT", "materials_api", "mt_alt"));
 #endif
+#if (ALL==1)||(M_DUP==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::m_dup,
+			 "m_dup",
+			 { "ev", "mt", "count" },
+			 { "EveryApi&", "MT", "int" },
+			 { "ev", "", "256" },
+			 "[MT]", "materials_api", "m_dup"));
+#endif
 #if (ALL==1)||(MAINLOOP_MATERIAL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::mainloop_material,
 			 "m_ml",
@@ -206,10 +214,26 @@
 #if (ALL==1)||(COLOUR_MATERIAL==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::colour_material,
 			 "m_colour",
-			 { "ev", "mix" },
-			 { "EveryApi&", "float" },
-			 { "ev", "0.5" },
+			 { "ev", "mix", "color_from_instance" },
+			 { "EveryApi&", "float", "bool" },
+			 { "ev", "0.5", "false" },
 			 "MT", "materials_api", "colour_material"));
+#endif
+#if (ALL==1)||(ACESFILM_MATERIAL==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::acesfilm_material,
+			 "m_acesfilm",
+			 { "ev", "material" },
+			 { "EveryApi&", "MT" },
+			 { "ev", "" },
+			 "MT", "materials_api", "acesfilm_material"));
+#endif
+#if (ALL==1)||(DISCARD_MATERIAL==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::discard_material,
+			 "m_discard",
+			 { "ev", "material" },
+			 { "EveryApi&", "MT" },
+			 { "ev", "" },
+			 "MT", "materials_api", "discard_material"));
 #endif
 #if (ALL==1)||(TEXTURE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::texture,
@@ -367,6 +391,14 @@
 			 { "EveryApi&", "[MT]", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float" },
 			 { "ev", "", "-0.3", "0.3", "-1.0", "ff221100", "ffff8800", "ffffffff", "5.9" },
 			 "[MT]", "materials_api", "m_apply_phong"));
+#endif
+#if (ALL==1)||(M_APPLY_PHONG_COLOR==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api,&GameApi::MaterialsApi::m_apply_phong_color,
+			 "m_apply_phong_color",
+			 { "ev", "vec", "vec2", "light_dir_x", "light_dir_y", "light_dir_z", "ambient_mult", "specular_mult", "highlight_mult", "pow" },
+			 { "EveryApi&", "[MT]", "[P]", "float", "float", "float", "float", "float", "float", "float" },
+			 { "ev", "", "", "-0.3", "0.3", "-1.0", "0.22", "0.5", "1.0", "5.9" },
+			 "[MT]", "materials_api", "m_apply_phong_color"));
 #endif
 #if (ALL==1)||(TOON_BORDER==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::toon_border,
