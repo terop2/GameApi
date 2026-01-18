@@ -584,6 +584,7 @@ public:
   FaceCollection* find_from_cache(const CubeSpec &spec) const { return find_from_cache_id(find_id_from_cache(spec)); }
 };
 
+
 template<class C>
 class Voxel : public CollectInterface
 {
@@ -598,6 +599,14 @@ public:
   virtual void CleanPrepare()=0;
   virtual ~Voxel() { }
 };
+
+struct VoxelPos
+{
+  int x,y,z;
+  int sx,sy,sz;
+};
+typedef Voxel<int> * (*VoxelFunc)(void *);
+
 
 template<class I, class B>
 class NDim
