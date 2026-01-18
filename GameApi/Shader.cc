@@ -77,7 +77,7 @@
 
 
 
-//#define HAS_GL_GETERROR 1
+#define HAS_GL_GETERROR 1
 
 #if 0
 //#ifdef WEBGL2
@@ -300,7 +300,7 @@ void Program::link()
   std::cout << "LINK ERROR: " << val << std::endl;
   */
 
-  #ifdef HAS_GL_GETERROR
+#ifdef HAS_GL_GETERROR
   int val = g_low->ogl->glGetError();
 #else
   int val = Low_GL_NO_ERROR;
@@ -874,7 +874,7 @@ ATTRIBUTE + " vec3 in_InstPos;\n"
 "#endif\n"
 "#ifdef INSTMAT\n" +
 ATTRIBUTE +" mat4 in_InstMat;\n"
-"#endif\n" +
+"#endif\n" + 
 ATTRIBUTE + " vec3 in_Position;\n" +
 ATTRIBUTE + " vec3 in_Position2;\n"
 "#ifdef IN_NORMAL\n" +
@@ -1725,7 +1725,51 @@ s+="#ifdef SPECULAR_SIZE\n"
 "#endif\n"
 "#endif\n"
 
+"#ifdef ACESFILM\n"
+"vec3 RRTAndODTFit(vec3 v)\n"
+"{\n"
+  //"   return v; \n"
+  "    vec3 a = v * (v + 0.0245786) - 0.000090537;\n"
+  "    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;\n"
+  "    return a / b;\n"
+"}\n"
 
+  "    const mat3 ACESInputMat = mat3(\n"
+  "        0.59719, 0.35458, 0.04823,\n"
+  "        0.07600, 0.90834, 0.01566,\n"
+  "        0.02840, 0.13383, 0.83777\n"
+  "    );\n"
+
+  "    const mat3 ACESOutputMat = mat3(\n"
+  "        1.60475, -0.53108, -0.07367,\n"
+"        -0.10208,  1.10813, -0.00605,\n"
+"        -0.00327, -0.07276,  1.07602\n"
+"    );\n"
+
+  
+"vec3 ACESFilm(vec3 color)\n"
+"{\n"
+  //"  return color;\n"
+
+"    color = ACESInputMat * color;\n"
+"    color = RRTAndODTFit(color);\n"
+"    color = ACESOutputMat * color;\n"
+"    return clamp(color, 0.0, 1.0);\n"
+"}\n"
+  "vec4 acesfilm_node(vec4 rgb)\n"
+"{\n"
+"  return vec4(pow(ACESFilm(pow(rgb.rgb,vec3(2.2))),vec3(1.0/2.2)),rgb.a);\n"
+"}\n"
+"#endif\n"
+
+"#ifdef DISCARD\n"
+"vec4 discard_node(vec4 rgb)\n"
+"{\n"
+"   if (rgb.a<0.1) discard; else return rgb;\n"
+"}\n"
+"#endif\n"
+  
+  
   "#ifdef CHOOSE_COLOR\n"
 "uniform vec4 color_choice;\n"
 "uniform float mix_val;\n"
@@ -4740,7 +4784,53 @@ s+=    "   return vec4(mix(vec3(0.0,0.0,0.0),rgb.rgb,color_mix)+mix(vec3(0.0,0.0
 "#endif\n"
 "#endif\n"
 
+"#ifdef ACESFILM\n"
+"vec3 RRTAndODTFit(vec3 v)\n"
+"{\n"
+   //" return v;\n"
+   "    vec3 a = v * (v + 0.0245786) - 0.000090537;\n"
+   "    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;\n"
+   "    return a / b;\n"
+"}\n"
 
+   "    const mat3 ACESInputMat = mat3(\n"
+   "        0.59719, 0.35458, 0.04823,\n"
+   "        0.07600, 0.90834, 0.01566,\n"
+   "        0.02840, 0.13383, 0.83777\n"
+   "    );\n"
+
+   "    const mat3 ACESOutputMat = mat3(\n"
+   "        1.60475, -0.53108, -0.07367,\n"
+   "        -0.10208,  1.10813, -0.00605,\n"
+   "        -0.00327, -0.07276,  1.07602\n"
+   "    );\n"
+
+   
+"vec3 ACESFilm(vec3 color)\n"
+"{\n"
+   //"  return color;\n"
+
+   "    color = ACESInputMat * color;\n"
+   "    color = RRTAndODTFit(color);\n"
+   "    color = ACESOutputMat * color;\n"
+   "    return clamp(color, 0.0, 1.0);\n"
+"}\n"
+  "vec4 acesfilm_node(vec4 rgb)\n"
+"{\n"
+
+"  return vec4(pow(ACESFilm(pow(rgb.rgb,vec3(2.2))),vec3(1.0/2.2)),rgb.a);\n"
+"}\n"
+"#endif\n"
+
+
+"#ifdef DISCARD\n"
+"vec4 discard_node(vec4 rgb)\n"
+"{\n"
+"   if (rgb.a<0.1) discard; else return rgb;\n"
+"}\n"
+"#endif\n"
+
+   
 "uniform vec4 ad_color;\n"
 "uniform float ad_light;\n"
 "uniform float ad_dark;\n"
@@ -6326,7 +6416,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //                                std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                                  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -6358,7 +6448,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //                                           std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                                                std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

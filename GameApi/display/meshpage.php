@@ -586,12 +586,12 @@ require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
 
-echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\" tabindex=-1></canvas>";
+echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\"></canvas>";
 
 if ($mobile=="yes") {
-echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
+echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
 } else {
-echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=-1></canvas>";
+echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" width=\"800\" height=\"600\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
 }
 
 
@@ -2419,7 +2419,7 @@ function choose_display_timeout(vm)
 	}
    else
       {
-      g_txt_cb = window.setTimeout(choose_display_timeout(vm2), 100);
+      g_txt_cb = window.setTimeout(choose_display_timeout(vm2), 5);
       }
       }
 }
@@ -2429,7 +2429,7 @@ var m_id = 0;
 
 function choose_display(id,label, vm,is_popstate)
 {
-   //console.log("choose_display");
+//console.log("choose_display");
    //console.log(id);
    var d = document.getElementById("display_title_bar");
    d.innerHTML = display_labels[id];
@@ -2479,6 +2479,10 @@ fetch(myBRequest).then((r) => {
    g_background = parseInt(t,10);
 
 
+
+
+});   
+
 const myHeaders2 = new Headers();
 const myARequest = new Request(url2, {
       method: 'GET',
@@ -2492,6 +2496,12 @@ const myARequest = new Request(url2, {
   	   var pos = document.getElementById("addtext");
 	   pos.innerHTML = t;
 
+
+
+});
+
+
+
 const myHeaders = new Headers();
 const myFRequest = new Request(url, {
   method: 'GET',
@@ -2500,7 +2510,7 @@ const myFRequest = new Request(url, {
   cache: 'default'
   });
   if (g_txt_cb) window.clearTimeout(g_txt_cb);
-  g_txt_cb = window.setTimeout(choose_display_timeout(vm), 30);
+  g_txt_cb = window.setTimeout(choose_display_timeout(vm), 5);
 
   fetch(myFRequest).then((r) => {
     return r.text();
@@ -2516,16 +2526,10 @@ const myFRequest = new Request(url, {
   });
 
 
-});
-
-
-});   
-
-
   } else {
     g_txt_id = id;
     if (g_txt_cb) window.clearTimeout(g_txt_cb);
-    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 30);
+    g_txt_cb = window.setTimeout(choose_display_timeout(vm), 5);
   }
 
 }
@@ -2535,10 +2539,14 @@ var g_emscripten_start_count = 0;
 
 var g_keyboard_focus_timeout = null;
 
+var g_count = 0;
+
 function set_keyboard_focus()
 {
-  //var iframe = document.getElementById('canvas');
-  //iframe.contentWindow.focus();
+  var iframe = document.getElementById('canvas');
+  iframe.tabIndex = "0";
+
+  iframe.focus();
   g_keyboard_focus_timeout = null;
 }
 
@@ -2550,6 +2558,7 @@ function remove_keyboard_focus_from_iframe()
 
 function set_keyboard_focus_to_iframe()
 {
+  console.log("set_keyboard_focus_to_iframe()");
   if (g_keyboard_focus_timeout)
      window.clearTimeout(g_keyboard_focus_timeout);
   g_keyboard_focus_timeout = window.setTimeout(set_keyboard_focus,100);
@@ -2813,6 +2822,8 @@ function show_emscripten(str,hide,indicator,is_async)
       onStartup: function() {
         //console.log("onRuntimeInitialized done");
       	window.setTimeout(function() { check_em(app.indicator)(); },30);
+	const canvas = Module.canvas;
+	canvas.tabIndex = 0;
       }
   };
 Module.canvas = canv;
@@ -3025,12 +3036,15 @@ function e1(event)
 
 function fix_keyboard(hide)
 {
+  hide=false;
+  const canvas = document.getElementById("canvas");
+  canvas.tabIndex = "0";
   if (hide) {
-  //console.log("FIX KEYBOARD TRUE");
+  console.log("FIX KEYBOARD TRUE");
   window.addEventListener('keydown', e1, true);
   window.addEventListener('keyup', e1, true);
   } else {
-  //console.log("FIX KEYBOARD FALSE");
+  console.log("FIX KEYBOARD FALSE");
   window.removeEventListener('keydown', e1, true);
   window.removeEventListener('keyup', e1, true);
   }

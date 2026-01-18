@@ -1645,7 +1645,7 @@ public:
 			if (type=="TF") {
 			  TF tf;
 			  tf.id = id;
-			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,1.0,1.0,0,400.0,-400.0,300.0,0,0xff00000,true);
+			  ML ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,1.0,1.0,0,400.0,-400.0,300.0,0,0xff00000,true,true);
 			  env->display = env->gui->ml_dialog(ml2, env->sh2, env->sh, env->sh_2d, env->sh_arr, env->screen_size_x, env->screen_size_y, env->display_close, env->atlas3, env->atlas_bm3, env->codegen_button, env->collect_button);
 			  
 			} else if (type=="TX") {
@@ -4473,7 +4473,9 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   
   return 0;
 #ifdef LINUX
-  } catch(...) { std::cout << "EXCEPTION" << std::endl; }
+  } catch(...) {
+    std::cout << "EXCEPTION" << std::endl;
+  }
 #endif
 
 #ifdef STEAM

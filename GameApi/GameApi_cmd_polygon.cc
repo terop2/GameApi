@@ -349,6 +349,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "", "0" },
 			 "P", "polygon_api", "alt"));
 #endif
+#if (ALL==1)||(P_DUP==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::p_dup,
+			 "p_dup",
+			 { "ev", "obj", "count" },
+			 { "EveryApi&", "P", "int" },
+			 { "ev", "", "256" },
+			 "[P]", "materials_api", "p_dup"));
+#endif
 #ifndef STABLE
 #if (ALL==1)||(POLY_ARRAY==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::poly_array,
@@ -885,6 +893,14 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "EveryApi&", "P", "PTS" },
 			 { "ev", "", "" },
 			 "P", "polygon_api", "static_instancing"));
+#endif
+#if (ALL==1)||(STATIC_INSTANCING_ARRAY==1)
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::static_instancing_array,
+			 "static_instancing_arr",
+			 { "ev", "obj", "pos" },
+			 { "EveryApi&", "P", "PTS" },
+			 { "ev", "", "" },
+			 "P", "polygon_api", "static_instancing_array"));
 #endif
 #ifndef STABLE
 #if (ALL==1)||(STATIC_INSTANCING_VERTEX_COLOR==1)

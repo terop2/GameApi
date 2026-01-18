@@ -454,14 +454,17 @@ unsigned int swap_color(unsigned int c)
   return ca+cr+cg+cb;
 }
 
-void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p)
+void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, bool draw)
 {
+  //FaceCollection *coll = find_facecoll(e,pp);
   MatrixArray *pts = find_matrix_array(e, p);
   int numpoints = pts->Size();
+  if (numpoints<0) numpoints=0;
   
   MatrixArray3 *arr = find_matrix_array3(e, pta);
   float *array = arr->array;
-  unsigned int *color = arr->color;
+  float *color = arr->color;
+  int colorindex=0;
   for(int i=0;i<numpoints;i++) 
     {
       Matrix m = pts->Index(i);
@@ -473,31 +476,75 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p)
       unsigned int c = pts->Color(i);
       for(int j=0;j<16;j++)
 	array[i*16+j] = m.matrix[j];
-      color[i]=swap_color(c);
+#if 0
+      int s = coll->NumFaces();
+      for(int f=0;f<s;f++)
+	{
+	  int ps = coll->NumPoints(f);
+	  for(int p=0;p<ps;p++)
+	    {
+	      unsigned int cc = coll->Color(f,p);
+	      color[colorindex] = swap_color(Color::Interpolate(c,cc,mix));
+	    }
+	}
+#else
+      Color cc(c);
+      color[colorindex]=cc.rf();
+      color[colorindex+1]=cc.gf();
+      color[colorindex+2]=cc.bf();
+      color[colorindex+3]=cc.af();
+      colorindex+=4;
+#endif
     }
   // todo, update vertex array?
 }
+int GameApi::PointsApi::colour_divisor_calc(GameApi::P pp)
+{
+  FaceCollection *coll = find_facecoll(e,pp);
+      int num = coll->NumFaces();
+      int colordiv = 0;
+      for(int f=0;f<num;f++)
+	{
+	  int nump = coll->NumPoints(f);
+	  colordiv+=nump;
+	}
+      return colordiv;
+}
+int colour_divisor_calc2(FaceCollection *coll)
+{
+      int num = coll->NumFaces();
+      int colordiv = 0;
+      for(int f=0;f<num;f++)
+	{
+	  int nump = coll->NumPoints(f);
+	  colordiv+=nump;
+	}
+      return colordiv;
+}
 void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool draw)
 {
+  //FaceCollection *coll = find_facecoll(e,pp);
+
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   int numpoints = pts->NumPoints();
-
+  if (numpoints<0) { std::cout << "PTS numpoints=" << numpoints << std::endl; numpoints=0; }
 
   PointArray3 *arr = find_point_array3(e, pta);
   bool slow = false;
   if (numpoints>arr->numpoints) {
     float *array = arr->array;
-    unsigned int *color = arr->color;
+    float *color = arr->color;
     delete [] array;
     delete [] color;
-    arr->array = new float[numpoints*3];
-    arr->color = new unsigned int[numpoints];
+    arr->array = new float[(numpoints+1)*3];
+    arr->color = new float[4*(numpoints+1)];
     slow=true;
   }
   arr->numpoints = numpoints;
 
   float *array = arr->array;
-  unsigned int *color = arr->color;
+  float *color = arr->color;
+  int colorindex = 0;
   for(int i=0;i<numpoints;i++)
     {
       Point p = pts->Pos(i);
@@ -505,12 +552,34 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool
       array[i*3+0] = p.x;
       array[i*3+1] = p.y;
       array[i*3+2] = p.z;
-      color[i] = swap_color(c);
+#if 0
+      int num = coll->NumFaces();
+      for(int f=0;f<num;f++)
+	{
+	  int nump = coll->NumPoints(f);
+	  for(int p=0;p<nump;p++)
+	    {
+	      unsigned int cc = coll->Color(f,p);
+	      color[colorindex] = swap_color(Color::Interpolate(c,cc,mix));
+	      colorindex++;
+	    }
+	}
+#else
+      Color cc(c);
+      color[colorindex] = cc.rf();
+      color[colorindex+1] = cc.gf();
+      color[colorindex+2] = cc.bf();
+      color[colorindex+3] = cc.af();
+      colorindex+=4;
+
+      // color[i] = swap_color(c);
+#endif
+
     }
   if (draw)
     update(pta,slow);
 }
-void GameApi::PointsApi::update(GameApi::PTA pta, bool slow)
+void GameApi::PointsApi::update(GameApi::PTA pta, GameApi::P pp, bool slow)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -529,7 +598,7 @@ void GameApi::PointsApi::update(GameApi::PTA pta, bool slow)
     if (slow) {
       ogl->glBufferData(Low_GL_ARRAY_BUFFER, arr->numpoints*sizeof(unsigned int), arr->color, Low_GL_STATIC_DRAW);
     } else {
-    ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*sizeof(unsigned int), arr->color);
+      ogl->glBufferSubData(Low_GL_ARRAY_BUFFER, 0, arr->numpoints*colour_divisor_calc(pp)*sizeof(unsigned int), arr->color);
     }
   }
 }
@@ -552,12 +621,12 @@ extern int g_pthread_count;
 class ThreadedPrepare_pts
 {
 public:
-  ThreadedPrepare_pts(PointsApiPoints *pts) : pts(pts) { }
+  ThreadedPrepare_pts(PointsApiPoints *pts, FaceCollection *coll, float mix) : pts(pts),coll(coll),mix(mix) { }
   int push_thread(int start_range, int end_range)
   {
     PointArray3 *arr = new PointArray3;
     arr->array = new float[(end_range-start_range)*3];
-    arr->color = new unsigned int[end_range-start_range];
+    arr->color = new float[4*(end_range-start_range)];
     arr->numpoints = end_range-start_range;
     sets.push_back(arr);
 
@@ -587,13 +656,16 @@ public:
   }
   PointArray3* collect(int num_items)
   {
+    int div2 = -1; //colour_divisor_calc2(coll);
     PointArray3 *arr = new PointArray3;
     arr->array = new float[(num_items)*3];
-    arr->color = new unsigned int[num_items];
+    arr->color = new float[num_items*4];
     arr->numpoints = num_items;
+    arr->color_divisor = div2;
     int s = sets.size();
     float *array = arr->array;
-    unsigned int *color = arr->color;
+    float *color = arr->color;
+    int colorindex = 0;
     for(int i=0;i<s;i++)
       {
 	PointArray3 *src = sets[i];
@@ -603,7 +675,27 @@ public:
 	    *array++ = src->array[j*3+0];
 	    *array++ = src->array[j*3+1];
 	    *array++ = src->array[j*3+2];
-	    *color++ = src->color[j];
+	    unsigned int c = src->color[j];
+#if 0
+	    int s = coll->NumFaces();
+	    for(int f=0;f<s;f++)
+	      {
+		int ps = coll->NumPoints(f);
+		for(int p=0;p<s;p++)
+		  {
+		    unsigned int cc = coll->Color(f,p);
+		    *color++ = Color::Interpolate(c,cc,mix);
+		  }
+	      }
+#else
+	    Color cc(c);
+	    color[colorindex] = cc.rf();
+	    color[colorindex+1] = cc.gf();
+	    color[colorindex+2] = cc.bf();
+	    color[colorindex+3] = cc.af();
+	    colorindex+=4;
+	//*color++ = src->color[j];
+#endif
 	  }
       }
     return arr;
@@ -623,17 +715,22 @@ private:
   PointsApiPoints *pts;
   std::vector<PointArray3*> sets;
   std::vector<ThreadInfo_pts*> ti;
+  FaceCollection *coll;
+  float mix;
 };
 #endif
 
-EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p)
+EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from_instance)
 {
+  //FaceCollection *coll = find_facecoll(e,pp);
+  int div = color_from_instance?1:-1; //colour_divisor_calc2(coll);
   MatrixArray *arr2 = find_matrix_array(e, p);
   arr2->Prepare();
   int num = arr2->Size();
   float *array = new float[num*16];
-  unsigned int *color = new unsigned int[num];
+  float *color = new float[num*4]; // *div
   Vector *normal = new Vector[num];
+  int colorindex = 0;
   for(int i=0;i<num;i++) {
     Matrix m = arr2->Index(i);
     float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
@@ -645,7 +742,26 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p)
     for(int j=0;j<16;j++) {
       array[i*16+j] = m.matrix[j];
     }
-    color[i] = swap_color(c);
+#if 0
+    int s = coll->NumFaces();
+    for(int f=0;f<s;f++)
+      {
+	int ps = coll->NumPoints(f);
+	for(int p=0;p<s;p++)
+	  {
+	    unsigned int cc = coll->Color(f,p);
+	    color[colorindex]=swap_color(Color::Interpolate(c,cc,mix));
+	  }
+      }
+#else
+    Color cc(c);
+    color[colorindex] = cc.rf();
+    color[colorindex+1] = cc.gf();
+    color[colorindex+2] = cc.bf();
+    color[colorindex+3] = cc.af();
+    colorindex+=4;
+    //color[i] = swap_color(c);
+#endif
     normal[i] = arr2->Normal(i);
   }
   // note, this isnt done like pts, i.e. its not sent to gpu buffers.
@@ -654,23 +770,33 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p)
   arr->color = color;
   arr->normal = normal;
   arr->numpoints = num;
+  arr->color_divisor = div;
   return add_matrix_array3(e,arr);
 }
 
-EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
+EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, bool color_from_instance)
 {
+
+  //std::cout << "MIX:" << mix << std::endl;
+  
+  //FaceCollection *coll = find_facecoll(e,pp);
+  int div = color_from_instance?1:-1;
   OpenglLowApi *ogl = g_low->ogl;
 
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   pts->Prepare();
   int numpoints = pts->NumPoints();
+  if (numpoints<0) { std::cout << "PTS numpoints=" << numpoints << std::endl;  numpoints=0; }
 #if 1
   //ndef THREADS
   //ndef THREADS
   //ifndef THREADS0
-  float *array = new float[numpoints*3];
-  unsigned int *color = new unsigned int[numpoints];
-  Vector *normal = new Vector[numpoints];
+  float *array = new float[(numpoints+1)*3];
+  //int div = -1; //colour_divisor_calc(pp);
+  float *color = new float[4*(numpoints+1)]; // *div
+  Vector *normal = new Vector[(numpoints+1)];
+
+  int colorindex = 0;
   
   for(int i=0;i<numpoints;i++)
     {
@@ -679,7 +805,28 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
       array[i*3+0] = p.x;
       array[i*3+1] = p.y;
       array[i*3+2] = p.z;
-      color[i] = swap_color(c);
+#if 0
+      int s = coll->NumFaces();
+      for(int f=0;f<s;f++)
+	{
+	  int ps = coll->NumPoints(f);
+	  for(int p=0;p<ps;p++)
+	    {
+	      unsigned int cc = coll->Color(f,p);
+	      //std::cout << "MIX:" << std::hex << " " << c << " ++ " << cc << std::endl;
+	      color[colorindex]=swap_color(Color::Interpolate(c,cc,mix));
+	      colorindex++;
+	    }
+	}
+#else
+      Color cc(c);
+      color[colorindex] = cc.rf();
+      color[colorindex+1] = cc.gf();
+      color[colorindex+2] = cc.bf();
+      color[colorindex+3] = cc.af();
+      colorindex+=4;
+      /// color[i] = swap_color(c);
+#endif
       normal[i] = pts->Normal(i);
     }
   PointArray3 *arr = new PointArray3;
@@ -687,6 +834,7 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p)
   arr->color = color;
   arr->normal = normal;
   arr->numpoints = numpoints;
+  arr->color_divisor = div;
 #else
   int num_threads = 4;
   ThreadedPrepare_pts prep(pts);
@@ -1318,6 +1466,9 @@ struct Cont {
   int count;
   std::vector<Point> *points;
   std::vector<unsigned int> *colours;
+  std::vector<int> *facenum;
+  std::vector<float> *xp_vec;
+  std::vector<float> *yp_vec;
 };
 std::vector<Cont> g_meshquad_data;
 Cont *find_meshquad(int count)
@@ -1340,7 +1491,7 @@ int meshquad_calculate_id(FaceCollection *coll, int count)
 class MeshQuad : public PointsApiPoints
 {
 public:
-  MeshQuad(FaceCollection *coll, int count) : coll(coll), count(count) { firsttime = true; points=0; color2=0;  }
+  MeshQuad(FaceCollection *coll, int count) : coll(coll), count(count) { firsttime = true; points=0; color2=0; facenum=0; xp_vec=0; yp_vec=0; }
   ~MeshQuad() { /*delete points; delete color2; g_meshquad_data.clear();*/ }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) {
@@ -1365,6 +1516,9 @@ public:
     if (c) {
       points = c->points;
       color2 = c->colours;
+      facenum = c->facenum;
+      xp_vec = c->xp_vec;
+      yp_vec = c->yp_vec;
       return;
     }
     if (firsttime) 
@@ -1374,28 +1528,43 @@ public:
       points = new std::vector<Point>;
     if (!color2)
       color2 = new std::vector<unsigned int>;
+    if (!facenum)
+      facenum = new std::vector<int>;
+    if (!xp_vec)
+      xp_vec=new std::vector<float>;
+    if (!yp_vec)
+      yp_vec=new std::vector<float>;
+
+
     points->clear();
     color2->clear();
 
+    facenum->clear();
+    xp_vec->clear();
+    yp_vec->clear();
+    
     int numfaces = coll->NumFaces();
+    Random r;
     
     for(int i=0;i<count;i++)
       {
-	Random r;
-	float xp = double(r.next())/r.maximum();
-	float yp = double(r.next())/r.maximum();
 	float zp = double(r.next())/r.maximum();
-	xp*=2.0;
-	yp*=2.0;
-	xp-=1.0;
-	yp-=1.0;
 	zp*=float(numfaces);
 	int zpi = int(zp);
 	if (zpi<0) zpi = 0;
 	if (zpi>=numfaces) zpi = numfaces-1;
+	facenum->push_back(zpi);
 	int num = coll->NumPoints(zpi);
 	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
 	if (num==4) {
+	  float xp = double(r.next())/r.maximum();
+	  float yp = double(r.next())/r.maximum();
+	  xp*=2.0;
+	  yp*=2.0;
+	  xp-=1.0;
+	  yp-=1.0;
+	  xp_vec->push_back(xp);
+	  yp_vec->push_back(yp);
 	  Point p1 = coll->FacePoint(zpi, 0);
 	  Point p2 = coll->FacePoint(zpi, 1);
 	  Point p3 = coll->FacePoint(zpi, 2);
@@ -1411,6 +1580,8 @@ public:
 	    Point p3 = coll->FacePoint(zpi, 2);
 	    float r1 = double(r.next())/r.maximum();
 	    float r2 = double(r.next())/r.maximum();
+	    xp_vec->push_back(r1);
+	    yp_vec->push_back(r2);
 	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
 	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
 	    points->push_back(p);
@@ -1436,6 +1607,9 @@ public:
     if (c) {
       points = c->points;
       color2 = c->colours;
+      facenum = c->facenum;
+      xp_vec = c->xp_vec;
+      yp_vec = c->yp_vec;
       return;
     }
     if (firsttime) 
@@ -1445,28 +1619,42 @@ public:
       points = new std::vector<Point>;
     if (!color2)
       color2 = new std::vector<unsigned int>;
+    if (!facenum)
+      facenum = new std::vector<int>;
+    if (!xp_vec)
+      xp_vec=new std::vector<float>;
+    if (!yp_vec)
+      yp_vec=new std::vector<float>;
+
     points->clear();
     color2->clear();
 
+    facenum->clear();
+    xp_vec->clear();
+    yp_vec->clear();
+    
     int numfaces = coll->NumFaces();
     
+    Random r;
     for(int i=0;i<count;i++)
       {
-	Random r;
-	float xp = double(r.next())/r.maximum();
-	float yp = double(r.next())/r.maximum();
 	float zp = double(r.next())/r.maximum();
-	xp*=2.0;
-	yp*=2.0;
-	xp-=1.0;
-	yp-=1.0;
 	zp*=float(numfaces);
 	int zpi = int(zp);
 	if (zpi<0) zpi = 0;
 	if (zpi>=numfaces) zpi = numfaces-1;
+	facenum->push_back(zpi);
 	int num = coll->NumPoints(zpi);
 	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
 	if (num==4) {
+	  float xp = double(r.next())/r.maximum();
+	  float yp = double(r.next())/r.maximum();
+	  xp*=2.0;
+	  yp*=2.0;
+	  xp-=1.0;
+	  yp-=1.0;
+	  xp_vec->push_back(xp);
+	  yp_vec->push_back(yp);
 	  Point p1 = coll->FacePoint(zpi, 0);
 	  Point p2 = coll->FacePoint(zpi, 1);
 	  Point p3 = coll->FacePoint(zpi, 2);
@@ -1482,6 +1670,8 @@ public:
 	    Point p3 = coll->FacePoint(zpi, 2);
 	    float r1 = double(r.next())/r.maximum();
 	    float r2 = double(r.next())/r.maximum();
+	    xp_vec->push_back(r1);
+	    yp_vec->push_back(r2);
 	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
 	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
 	    points->push_back(p);
@@ -1494,6 +1684,9 @@ public:
     c.count = id;
     c.points = points;
     c.colours = color2;
+    c.facenum = facenum;
+    c.xp_vec = xp_vec;
+    c.yp_vec = yp_vec;
     g_meshquad_data.push_back(c);
       }
   }
@@ -1503,7 +1696,67 @@ private:
   std::vector<Point> *points;
   std::vector<unsigned int> *color2;
   bool firsttime;
+protected:
+  std::vector<int> *facenum;
+  std::vector<float> *xp_vec;
+  std::vector<float> *yp_vec;
 };
+
+class MeshQuadColor : public MeshQuad
+{
+public:
+  MeshQuadColor(FaceCollection *coll, int count, std::vector<Bitmap<::Color>*> textures) : MeshQuad(coll,count), coll(coll), textures(textures) {
+  }
+  unsigned int Color(int i) const {
+    int fn = facenum->operator[](i);
+    float xp = xp_vec->operator[](i);
+    float yp = yp_vec->operator[](i);
+    int num = coll->NumPoints(fn);
+    if (num==3) {
+      Point2d tex0 = coll->TexCoord(fn,0);
+      Point2d tex1 = coll->TexCoord(fn,1);
+      Point2d tex2 = coll->TexCoord(fn,2);
+      Point2d tx = Point2d((1.0-sqrt(xp))*tex0 + (sqrt(xp)*(1.0-yp))*tex1 + (yp*sqrt(xp))*tex2);
+      float texid = coll->TexCoord3(fn,0);
+      int texid2 = (int)texid;
+      int sx = textures[texid2]->SizeX();
+      int sy = textures[texid2]->SizeY();
+      unsigned int col = textures[texid2]->Map(fmod(tx.x*sx,sx),fmod(tx.y*sy,sy)).Pixel();
+      return col;
+    } else if (num==4) {
+      Point2d tex0 = coll->TexCoord(fn,0);
+      Point2d tex1 = coll->TexCoord(fn,1);
+      Point2d tex2 = coll->TexCoord(fn,2);
+      Point2d tex3 = coll->TexCoord(fn,3);
+      Point2d tx = 1.0/4.0*((1.0f-xp)*(1.0-yp)*tex0 + (1.0f+xp)*(1.0f-yp)*tex1 + (1.0f+xp)*(1.0f+yp)*tex2 + (1.0f-xp)*(1.0f+yp)*tex3);
+      float texid = coll->TexCoord3(fn,0);
+      int texid2 = (int)texid;
+      int sx = textures[texid2]->SizeX();
+      int sy = textures[texid2]->SizeY();
+      unsigned int col = textures[texid2]->Map(fmod(tx.x*sx,sx),fmod(tx.y*sy,sy)).Pixel();
+      return col;      
+    }
+  }
+private:
+  FaceCollection *coll;
+  int count;
+  std::vector<Bitmap<::Color>*> textures;
+};
+GameApi::PTS GameApi::PointsApi::random_mesh_quad_instancing_color(EveryApi &ev, P p, int count, std::vector<GameApi::BM> textures)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  std::vector<Bitmap<Color>*> tex;
+  int s = textures.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::BM bm = textures[i];
+      BitmapHandle *handle = find_bitmap(e,bm);
+      tex.push_back(find_color_bitmap(handle));
+    }
+  return add_points_api_points(e,new MeshQuadColor(coll,count,tex));
+}
+
+
 
 class RandomLattice : public PointsApiPoints
 {
@@ -1550,7 +1803,7 @@ public:
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const { return count; }
-  virtual Point Pos(int i) const { return points[i]; }
+  virtual Point Pos(int i) const { if (i>=0&&i<points.size()) return points[i];  return Point(-999999.0,-999999.0,-999999.0); }
   virtual unsigned int Color(int i) const
   {
     return 0xffffffff;
