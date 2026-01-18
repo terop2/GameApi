@@ -41439,3 +41439,106 @@ OctTreeBase *create_oct_tree_from_voxel(const std::vector<OctTreeColor> &palette
   int s2 = pow(3,p);
   return create_oct_tree_from_ranges(palette,vx,0,s2,0,s2,0,s2);
 }
+
+
+class CachedVoxel : public Voxel<int>
+{
+public:
+  CachedVoxel(int sx, int sy, int sz,
+	      std::vector<VoxelPos> pos,
+	      std::vector<VoxelFunc> vec, void *ptr) : sx(sx),sy(sy),sz(sz), pos(pos), vec(vec),ptr(ptr) {
+    cached.resize(vec.size());
+  }
+  void unload(int i) const
+  {
+    if (cached[i])
+      {
+	delete cached[i];
+	cached[i] = 0;
+      }
+  }
+  void load(int i) const
+  {
+    if (!cached[i])
+      {
+	cached[i] = vec[i](ptr);
+	cached[i]->Prepare();
+      }
+  }
+  void reload(int i) const { unload(i); load(i); }
+
+  void activate(int x, int y, int z) const
+  {
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+      {
+	if (x>=pos[i].x && x<pos[i].x + pos[i].sx)
+	  if (y>=pos[i].y && y<pos[i].y + pos[i].sy)
+	    if (z>=pos[i].z && z<pos[i].z + pos[i].sz)
+	      {
+		load(i);
+	      }
+      }
+  }
+  void deactivate(int x, int y, int z) const
+  {
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+      {
+	if (x>=pos[i].x && x<pos[i].x + pos[i].sx)
+	  if (y>=pos[i].y && y<pos[i].y + pos[i].sy)
+	    if (z>=pos[i].z && z<pos[i].z + pos[i].sz)
+	      {
+		unload(i);
+	      }
+      }
+  }
+  
+  virtual int SizeX() const { return sx; }
+  virtual int SizeY() const { return sy; }
+  virtual int SizeZ() const { return sz; }
+  virtual int Map(int x, int y, int z) const
+  {
+    activate(x,y,z);
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+	if (x>=pos[i].x && x<pos[i].x + pos[i].sx)
+	  if (y>=pos[i].y && y<pos[i].y + pos[i].sy)
+	    if (z>=pos[i].z && z<pos[i].z + pos[i].sz)
+	      {
+		return cached[i]->Map(x-pos[i].x, y-pos[i].y, z-pos[i].z);
+	      }
+    return -1;
+  }
+  virtual unsigned int Color(int x, int y, int z) const {
+    activate(x,y,z);
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+	if (x>=pos[i].x && x<pos[i].x + pos[i].sx)
+	  if (y>=pos[i].y && y<pos[i].y + pos[i].sy)
+	    if (z>=pos[i].z && z<pos[i].z + pos[i].sz)
+	      {
+		return cached[i]->Color(x-pos[i].x, y-pos[i].y, z-pos[i].z);
+	      }
+    return 0xffffffff;
+  }
+  virtual Vector Normal(int x, int y, int z) const {
+    activate(x,y,z);
+    int s = pos.size();
+    for(int i=0;i<s;i++)
+	if (x>=pos[i].x && x<pos[i].x + pos[i].sx)
+	  if (y>=pos[i].y && y<pos[i].y + pos[i].sy)
+	    if (z>=pos[i].z && z<pos[i].z + pos[i].sz)
+	      {
+		return cached[i]->Normal(x-pos[i].x, y-pos[i].y, z-pos[i].z);
+	      }
+    Vector v{0.0,0.0,-400.0};
+    return v;
+  }
+private:
+  int sx,sy,sz;
+  std::vector<VoxelPos> pos;
+  std::vector<VoxelFunc> vec;
+  void *ptr;
+  mutable std::vector<Voxel<int> *> cached;
+};
