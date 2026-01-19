@@ -170,6 +170,7 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 	  v-bind:filename="state.filename"
 	  v-bind:filename1="state.filename1"
 	  v-bind:filename2="state.filename2"
+	  v-bind:state="state"
 ></appmodel>
 <appbackground v-on:change_model="change_model()"
 	       v-bind:state="state"></appbackground>
@@ -466,6 +467,20 @@ Vue.component('appmodel_choose', {
      return {
      }
      },
+     props: ['state'],
+     methods: {
+     	      parse_model_count : function(str)
+     	      {
+     	      var arr = str.split(" ");
+     	      return arr[0];
+     	      },
+     	      parse_model_name : function(name)
+	      {
+   	      var arr = name.split(' ');
+   	      return arr[2];
+	      }
+	      },
+
      template: `<div class="border block blockitem height12 customfont">
      Model<br><select name="model" id="model-select" v-on:change="$emit('change_model')">
  <option value="-1">(use drag&drop area)</option>
@@ -534,7 +549,7 @@ Vue.component('appmodel_selected', {
       });
 
 Vue.component('appmodel', {
-  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'is_model_loading', 'filename', 'filename1', 'filename2', 'model_info', 'progress_1', 'progress_2', 'progress_3', 'is_twoline'],
+  props: ['is_example', 'is_link', 'is_selected', 'is_notselected', 'is_loading', 'is_model_loading', 'filename', 'filename1', 'filename2', 'model_info', 'progress_1', 'progress_2', 'progress_3', 'is_twoline', 'state'],
    methods: {
       onHandleDrop: function(event) { this.$emit('root_handle_drop',event); }
    },
@@ -548,7 +563,7 @@ data: function() {
        <appmodel_model_loading></appmodel_model_loading>
        </div>
        <div v-if="is_example=='true'">
-       <appmodel_choose v-on:change_model="$emit('change_choose')"></appmodel_choose>
+       <appmodel_choose v-bind:state="state" v-on:change_model="$emit('change_choose')"></appmodel_choose>
        </div>
        <div v-if="is_link=='true'">
        <appmodel_link v-on:change_model="$emit('change_choose_url')"></appmodel_link>
@@ -795,7 +810,8 @@ fetch(mdl_db).then(response => {
 response.body.getReader().read().then(value=>{
    var str = strfy(value.value);
    store.state.model_db = str.split("\n");
-   store.state.model_db.pop();
+store.state.model_db.pop();
+   console.log(store.state.model_db);
    });
 });
 
