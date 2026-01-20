@@ -2245,6 +2245,7 @@ function serialize_state()
           border  : get_border_value(),
         background: get_background_value(),
 	brightness : get_brightness_value(),
+	acesfilm : get_acesfilm_value(),
          material : get_material_value(),
 	 category : elem && elem.value,
 	 metal : elem2 && elem2.value,
@@ -2268,6 +2269,7 @@ function deserialize_state(txt)
   var metal = ser.metal;
   var plastic = ser.plastic;
   var textured = ser.textured;
+  var acesfilm = ser.acesfilm;
   //var mat = ser.material;
 
   //console.log(ser + " " + model + " " + normals + " " + border + " " + bg + " " + cat + " " + metal + " " + plastic + " " + textured);
@@ -2292,6 +2294,8 @@ function deserialize_state(txt)
   if (elem7) elem7.value = plastic; else { /*console.log("PLASTIC ERROR");*/ }
   var elem8 = document.getElementById("textured-type-select");
   if (elem8) elem8.value = textured;
+  var elem9 = document.getElementById("acesfilm");
+  if (elem9) elem9.value = acesfilm;
 }
 
 function load_data()
