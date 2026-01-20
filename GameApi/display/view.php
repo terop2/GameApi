@@ -2311,7 +2311,7 @@ function deserialize_state(txt)
   var elem8 = document.getElementById("textured-type-select");
   if (elem8) elem8.value = textured;
   var elem9 = document.getElementById("acesfilm");
-  if (elem9) elem9.value = acesfilm;
+  if (elem9) elem9.checked = acesfilm;
 }
 
 function load_data()
