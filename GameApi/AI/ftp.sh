@@ -29,4 +29,5 @@ finish()
     fi
 }
 copy_it AI.php
+copy_it promptimage.png
 finish
