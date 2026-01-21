@@ -208,7 +208,7 @@ echo "<div class=\"bl_item customfont content\">\n";
 echo "<h2>USE CASES SUPPORTED:</h2>\n";
 echo "<ul>\n";
 echo "<li><b>Display 3d models</b> in linux,win32,web,android\n";
-echo "<li><b>Display voxels</b>\n";
+echo "<li><b>Display voxels</b> containing 256 colour palette\n";
 echo "<li><b>GLTF imports</b> from blender,sketchfab,meshy\n";
 echo "<li><b>Exports</b> to script.txt,html5 zip files,android apk files\n";
 echo "<li><b>Running the script.txt</b> via builder, web deploy, cmdline tool in ubuntu/win32, or in wine\n";
