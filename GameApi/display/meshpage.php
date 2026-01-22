@@ -1661,19 +1661,6 @@ text-color: #fff;
   width: 820px;
   height: 620px;
   }
-#canvas {
-<?php
-if ($sitename=="meshpage.org") {
-echo "   background-image: url('load_spinner2.gif');";
-} else
-{
-echo "   background-image: url('dino4.webp');";
-}
-?>
-   background-size: 100% 100%;
-   background-repeat: no-repeat;
-   background-position: center;
-}
 </style>
 <script>
 
@@ -2708,7 +2695,8 @@ function stop_music()
      //Module._stop_music_playing();
    }
 }
-function enable_spinner(a)
+
+function enable_spinner2(a)
 {
   var el = document.getElementById("canvas2");
   var el2 = document.getElementById("canvas");
@@ -2738,6 +2726,13 @@ echo "el.style.backgroundImage = \"url('dino4.webp')\";";
     el2.style.backgroundSize = "auto auto";
     
   }
+}
+
+function enable_spinner(a)
+{
+  if (a) {
+  window.setTimeout(function() { enable_spinner2(a) },2000);
+  } else { enable_spinner2(a); }
 }
 
 function show_emscripten(str,hide,indicator,is_async)
