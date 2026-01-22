@@ -51,6 +51,9 @@ div#box {
 <div id="title">
 <h1>meshpage.org/AI.php</h1>
 </div>
+<div id="subtitle">
+<h3>"fake it until you can make it"</h3>
+</div>
 <div style="height: 30px">
 </div>
 <div id="image">
