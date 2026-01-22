@@ -30,4 +30,6 @@ finish()
 }
 copy_it AI.php
 copy_it promptimage.png
+copy_it resources.js
+copy_it resource_manip.js
 finish
