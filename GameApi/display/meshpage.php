@@ -576,17 +576,17 @@ echo "</script>\n";
 <div id="main_display" class="container-lg" style="display:none"> <!--v-show="state.mesh"-->
 <h1 class="display_title_bar" id="display_title_bar">
 </h1>
-<div class="display" id="display2" style="display:none">
+<div class="display" id="display2">
+<div class="ems" id="canvas2" style="width:330px; height:247px;"></div>
 </div>
-<div class="ems" id="canvas2" style="width:330px; height:247px; display:none;"></div>
-<div class="display" id="display" > <!-- style="display:none" -->
+<div class="display" id="display" style="display:none"> <!-- style="display:none" -->
 
 <?php
 require_once("user.php");
 $mobile = js_mobile();
 $connect = "no";
 
-echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmeny=\"event.preventDefault()\"></canvas>";
+echo "<canvas class=\"ems\" id=\"gpucanvas\" style=\"width:330px; height: 247px; display:none;\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\"></canvas>";
 
 if ($mobile=="yes") {
 echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:330px; height:247px\" width=\"330\" height=\"247\" oncontextmenu=\"event.preventDefault()\" tabindex=\"0\"></canvas>";
