@@ -1180,9 +1180,9 @@ class GLTF_Model_with_prepare : public GLTF_Model
 public:
   std::string name() const { return "GLTF_Model_with_prepare"; }
   GLTF_Model_with_prepare(LoadGltf *load, tinygltf::Model *model) : GLTF_Model(model,load->base_url, load->url), load(load), model(model) { firsttime=true; }
-  virtual void Prepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
-  virtual void Collect(CollectVisitor &vis) {  vis.register_obj(this); }
-  virtual void HeavyPrepare() { if (firsttime&&load) { load->Prepare(); self=&load->model; model=&load->model; firsttime=false; } }
+  virtual void Prepare() { if (firsttime&&load) { load->Prepare(); HeavyPrepare(); } }
+  virtual void Collect(CollectVisitor &vis) { load->Collect(vis); vis.register_obj(this); }
+  virtual void HeavyPrepare() { if (firsttime&&load) { self=&load->model; model=&load->model; firsttime=false; } }
   virtual void execute() { load->execute(); }
 public:
   LoadGltf *load=0;
@@ -7142,7 +7142,6 @@ public:
   void HeavyPrepare()
   {
     FaceCollection *coll = find_facecoll(env,p);
-    coll->Prepare();
     std::pair<float,Point> dim = find_mesh_scale(coll);
     
     GameApi::MN I4=ev.move_api.mn_empty();
@@ -7152,24 +7151,17 @@ public:
     //g_last_resize = mv->get_whole_matrix(0.0,0.01);
     GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
     res = I7;
+    MainLoopItem *item = find_main_loop(env,res);
+    item->Prepare();
 
   }
   virtual void Prepare() {
 
     FaceCollection *coll = find_facecoll(env,p);
     coll->Prepare();
-    std::pair<float,Point> dim = find_mesh_scale(coll);
-    
-    GameApi::MN I4=ev.move_api.mn_empty();
-    GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
-    GameApi::MN I6=ev.move_api.scale2(I5,dim.first,dim.first,dim.first);
-    //Movement *mv = find_move(env,I6);
-    //g_last_resize = mv->get_whole_matrix(0.0,0.01);
-    GameApi::ML I7=ev.move_api.move_ml(ev,ml,I6,1,10.0);
-    res = I7;
-    MainLoopItem *item = find_main_loop(env,ml);
-    item->Prepare();
-
+    MainLoopItem *ml2 = find_main_loop(env,ml);
+    ml2->Prepare();
+    HeavyPrepare();
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -9034,9 +9026,7 @@ public:
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
   virtual void HeavyPrepare() {
-    Prepare();
-  }
-  virtual void Prepare() {
+
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -9045,7 +9035,6 @@ public:
     }
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    interface->Prepare();
     int scene_id = interface->get_default_scene();
     GameApi::P mesh = gltf_scene2_p(env, ev, interface,scene_id,"");
 
@@ -9057,6 +9046,11 @@ public:
       if (item)
 	item->Prepare();
     }
+  }
+  virtual void Prepare() {
+    interface->Prepare();
+
+    HeavyPrepare();
     
   }
   virtual void execute(MainLoopEnv &e) {
@@ -9110,15 +9104,13 @@ public:
 
   virtual void Collect(CollectVisitor &vis) {
     interface->Collect(vis);
+    resize_obj->Collect(vis);
     MatrixArray *ms0 = find_matrix_array(env,ms);
     ms0->Collect(vis);
     vis.register_obj(this);
   }
   virtual bool ReadyToPrepare() const { return interface->ReadyToPrepare(); }
   virtual void HeavyPrepare() {
-    Prepare();
-  }
-  virtual void Prepare() {
     std::string url = interface->Url();
     bool is_binary=false;
     if (int(url.size())>3) {
@@ -9127,15 +9119,12 @@ public:
     }
     // LoadGltf *load = find_gltf_instance(env,base_url,url,gameapi_homepageurl,is_binary);
     //  new LoadGltf(e, base_url, url, gameapi_homepageurl, is_binary);
-    interface->Prepare();
-    resize_obj->Prepare();
-    MatrixArray *ms0 = find_matrix_array(env,ms);
-    ms0->Prepare();
-    int scene_id = interface->get_default_scene();
-    GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id,"");
+    int scene_id2 = resize_obj->get_default_scene();
+    GameApi::P mesh = gltf_scene2_p(env, ev, resize_obj /*interface*/,scene_id2,"");
 
     //GameApi::MS ms2 = scale_to_gltf_size_inv(ev,mesh,ms);
     
+    int scene_id = interface->get_default_scene();
     GameApi::ML ml = gltf_scene2_inst_matrix( env, ev, interface,ms,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm ); // 0 = take numtimeindexes from first animation
     res = scale_to_gltf_size(env,ev,mesh,ml);
 
@@ -9144,7 +9133,15 @@ public:
       if (item)
 	item->Prepare();
     }
-    
+
+
+  }
+  virtual void Prepare() {
+    interface->Prepare();
+    resize_obj->Prepare();
+    MatrixArray *ms0 = find_matrix_array(env,ms);
+    ms0->Prepare();
+    HeavyPrepare();
   }
   virtual void execute(MainLoopEnv &e) {
     interface->execute();
