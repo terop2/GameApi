@@ -3,3 +3,4 @@
 2 Duck.glb Duck
 3 Astronaut.glb Astronaut
 4 CesiumMan.glb CesiumMan
+5 treehouse.vox TreeHouse

@@ -22990,7 +22990,7 @@ public:
     g_lod_debug_vec[pos3]=world;
 
     
-    Point ncd = view * in_Proj;
+    Point ncd = view; /* * in_Proj;*/
     //return view; // TODO
     return ncd;
     }
@@ -23001,17 +23001,21 @@ public:
     Point world = local * p0;
     Point world_rot_inv = world;
 
+
+    
+    
+    /*
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
 
     world_rot_inv.z -= 400.0;
     world_rot_inv.x += quake_pos_x;
     world_rot_inv.z += quake_pos_y;
-    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
+    world_rot_inv = world_rot_inv * Matrix::YRotation(-quake_rot_y*2.0);
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
     world_rot_inv.z += 400.0;
-
+    */
 
 #if 0
     world.z -= 400.0;
@@ -23023,7 +23027,7 @@ public:
 
 
 #endif
-    Point view = world_rot_inv * in_MV *in_T;
+    Point view = world * (in_MV * in_T);
 
     if (pos3>=g_lod_debug_vec.size())
       {
@@ -23031,11 +23035,12 @@ public:
       }
     g_lod_debug_vec[pos3]=world;
 
-    Point ncd = view * in_Proj;
+    Point ncd = view; /* * in_Proj*/;
     //ncd.z-=1.0;
     //ncd.z*=2.0;
     //ncd.z-=1.0;
     //return view;
+    //ncd.z *= -1.0;
     return ncd;
   }
   
@@ -23081,18 +23086,21 @@ public:
   virtual Point Pos(int i) const {
     if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0);
     Point p = points->Pos(pos[i]);
-    return Point(p.x,p.y,-p.z); }
+    return Point(p.x,p.y,p.z); }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
   virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
 
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
-    if (pp.x >= -40.0f && pp.x <= 40.0f) {
-      if (pp.z >= ncd_z_start2*0.5f && pp.z <= ncd_z_end2*2.0f) {
+    pp.x /= pp.z;
+    pp.y /= pp.z;
+    //std::cout << i << " :: " << pp.x << std::endl;
+    if (pp.x >= -1.7f && pp.x <= 1.7f) {
+      if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
 	return true;
 	 }
-    }
+      }
     return false;
   }
 private:
@@ -23203,7 +23211,7 @@ public:
   virtual Matrix Index(int i) const {
     if (i>=pos.size()) { Matrix m=Matrix::Translate(-666666.0,-666666.0,-666666.0); return m; }
     Matrix m = points->Index(pos[i]);
-    m*=Matrix::Scale(1.0f,1.0f,-1.0f);
+    //m*=Matrix::Scale(1.0f,1.0f,-1.0f);
     //m.matrix[4*2+3]=-m.matrix[4*2+3];
     return m;
   }
@@ -23231,9 +23239,9 @@ public:
       Matrix p0 = points->Index(pos);
       Point local(0.0f,0.0f,0.0f);
       Point world = local * p0;
-      world.x -= quake_pos_x;
-      world.z -= quake_pos_y;
-      Point view = world * in_MV * in_T;
+      //world.x -= quake_pos_x;
+      //world.z -= quake_pos_y;
+      Point view = world * (in_MV * in_T);
 
     if (pos>=g_lod_debug_vec.size())
       {
@@ -23242,7 +23250,7 @@ public:
     g_lod_debug_vec[pos]=world;
 
 
-      Point ncd = view * in_Proj;
+    Point ncd = view; /* * in_Proj;*/
       //return view;
       return ncd;
     }
@@ -23253,6 +23261,7 @@ public:
 
     Point world_rot_inv = world;
 
+    /*
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
 
@@ -23263,10 +23272,10 @@ public:
     world_rot_inv.x -= quake_pos_x;
     world_rot_inv.z -= quake_pos_y;
     world_rot_inv.z += 400.0;
-    
+    */
     //world_rot_inv = world_rot_inv * Matrix::YRotation(-quake_rot_y);
     
-    Point view = world_rot_inv * in_MV * in_T;
+    Point view = world_rot_inv * (in_MV * in_T);
 
     //view.z += quake_pos_y;
 
@@ -23278,7 +23287,7 @@ public:
     g_lod_debug_vec[pos]=world;
 
     
-    Point ncd = view * in_Proj;
+    Point ncd = view; /* * in_Proj;*/
 
     //return view;
     return ncd;
@@ -23296,12 +23305,16 @@ public:
     if (pp.z>max_ppz) max_ppz=pp.z;
 #endif
     
+
+
+    pp.x /= pp.z;
+    pp.y /= pp.z;
     
-    if (pp.x >= -40.0f && pp.x <= 40.0f)
+    if (pp.x >= -1.7f && pp.x <= 1.7f)
       //if (pp.y >= -400.0f && pp.y <= 400.0f)
-      if (pp.z >= ncd_z_start2*0.5f && pp.z <= ncd_z_end2*2.0f)
+      if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
 	  return true;
-    return false;
+      //return false;
     
   }
 private:

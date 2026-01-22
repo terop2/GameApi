@@ -21043,6 +21043,91 @@ private:
   float sx,sy,sz;
 };
 
+class OptVoxelRemoveMiddle : public OptVoxel
+{
+public:
+  OptVoxelRemoveMiddle(OptVoxel &vx) : vx(vx) { }
+  virtual void Prepare() { vx.Prepare(); HeavyPrepare(); }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vx.Collect(vis);
+    vis.register_obj(this);
+  }
+  long get_key(int x, int y, int z) const
+  {
+    return (x<<20) | (y << 10) | z;
+  }
+
+  virtual void HeavyPrepare()
+  {
+    std::map<long,bool> voxel_map;
+
+    int s = vx.WorldSize();
+    for(int i=0;i<s;i++)
+      {
+	ElemSpec e = vx.WorldIndex(i);
+	long key = get_key(e.pos.x,e.pos.y,e.pos.z);
+	voxel_map[key] = true;
+      }
+    std::vector<Vector> dirs;
+    dirs.push_back(Vector(1.0,0.0,0.0));
+    dirs.push_back(Vector(0.0,1.0,0.0));
+    dirs.push_back(Vector(0.0,0.0,1.0));
+    dirs.push_back(Vector(-1.0,0.0,0.0));
+    dirs.push_back(Vector(0.0,-1.0,0.0));
+    dirs.push_back(Vector(0.0,0.0,-1.0));
+
+    elems.clear();
+    
+    bool is_visible;
+    for(int i=0;i<s;i++)
+      {
+	ElemSpec e = vx.WorldIndex(i);
+	is_visible = false;
+	int ds = dirs.size();
+	for(int j=0;j<ds;j++)
+	  {
+	    float n_x = e.pos.x + dirs[j].dx;
+	    float n_y = e.pos.y + dirs[j].dy;
+	    float n_z = e.pos.z + dirs[j].dz;
+
+	    long n_key = get_key(n_x,n_y,n_z);
+	    if (voxel_map.find(n_key)==voxel_map.end())
+	      {
+		is_visible = true;
+		break;
+	      }
+	  }
+	if (is_visible) elems.push_back(e);
+      }
+  }
+
+  // the grid
+  virtual SizeSpec Size() const { return vx.Size(); }
+  
+  // the world
+  virtual int ShapeSize() const { return vx.ShapeSize(); }
+  virtual ShapeSpec WorldShapeIndex(int shi) const
+  {
+    return vx.WorldShapeIndex(shi);
+  }
+
+  virtual int SizeSize() const { return vx.SizeSize(); }
+  virtual SizeSpec WorldSizeIndex(int szi) const
+  {
+    return vx.WorldSizeIndex(szi);
+  }
+
+  virtual int WorldSize() const { return elems.size(); }
+  virtual ElemSpec WorldIndex(int w) const
+  {
+    return elems[w];
+  }
+private:
+  OptVoxel &vx;
+  std::vector<ElemSpec> elems;
+};
+
 class OptVoxelResizeVoxels : public OptVoxel
 {
 public:
@@ -22287,6 +22372,43 @@ GameApi::OVX GameApi::VoxelApi::vx_to_ovx(VX vx, std::vector<P> vec)
   return add_opt_voxel(e, new VoxelToOptVoxel(*vvx, facecoll));
 }
 
+#if 0
+class VoxVoxel2 : public OptVoxel
+{
+public:
+  VoxVoxel2(GameApi::Env &e, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz) : ml(e,ev,url,gameapi_homepageurl,sx,sy,sz,model), model(model) { }
+
+  virtual SizeSpec Size() const {
+    SizeSpec sz;
+    sz.sx = sx;
+    sz.sy = sy;
+    sz.sz = sz;
+    return sz;
+  }
+  
+  // the world
+  virtual int ShapeSize() const
+  {
+    return 256;
+  }
+  virtual ShapeSpec WorldShapeIndex(int shi) const
+  {
+    ShapeSpec s;
+    s.color = 
+  }
+
+  virtual int SizeSize() const=0;
+  virtual SizeSpec WorldSizeIndex(int szi) const=0;
+
+  virtual int WorldSize() const=0;
+  virtual ElemSpec WorldIndex(int w) const=0;
+
+  
+private:
+  VoxMainLoopItem ml;
+  int model;  
+};
+#endif
 
 class VoxVoxel : public Voxel<int>
 {
@@ -41576,12 +41698,19 @@ GameApi::Env &GameApi::EveryApi::get_env() { return env; }
 //GameApi::SurfaceApi::~SurfaceApi() {}
 GameApi::EveryApi::~EveryApi() { }
 
-float lod_l0 = 1.0f;
-float lod_l1 = 1.0174f;
-float lod_l2 = 1.03076f;
-float lod_l3 = 1.05387f;
-float lod_l4 = 5.0f;
+float lod_l0 = -60000.0f; //1.3f;
+  float lod_l1 = -6000.0f;//1.0f;
+float lod_l2 = -3000.0f; //0.8f;
+float lod_l3 = -1000.0f;//0.6f;
+float lod_l4 = 600.0f; //0.3f;
 
+float lod_x_1 = 38200.0;
+float lod_x_2 = 29000.0;
+float lod_x_3 = 18400.0;
+float lod_x_4 = 8600.0;
+
+
+float lod_delta = 0.0f;
 
 GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
 {
@@ -41589,10 +41718,10 @@ GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameA
   P p2 = ev.polygon_api.decimate3(p,level2);
   P p3 = ev.polygon_api.decimate3(p,level3);
   P p4 = ev.polygon_api.decimate3(p,level4);
-  PTS I612=ev.points_api.block_pts_lod(pts,-24200.0,24200.0,8000,2000,l4 /*120*/,lod_l0,lod_l1);
-  PTS I613=ev.points_api.block_pts_lod(pts,-15000.0,15000.0,2000,1000,l3 /*95*/,lod_l1,lod_l2);
-  PTS I614=ev.points_api.block_pts_lod(pts,-10400.0,10400.0,1000,0,l2 /*45*/,lod_l2,lod_l3);
-  PTS I615=ev.points_api.block_pts_lod(pts,-5600.0,5600.0,0,-500,l1 /*45*/,lod_l3,lod_l4);
+  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
   ML I15=ev.materials_api.bind_inst(p4,I612,mat);
   ML I151=ev.materials_api.bind_inst(p3,I613,mat);
   ML I152=ev.materials_api.bind_inst(p2,I614,mat);
@@ -41607,10 +41736,10 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix(GameApi::EveryApi &ev, GameApi::P p
   P p2 = ev.polygon_api.decimate3(p,level2);
   P p3 = ev.polygon_api.decimate3(p,level3);
   P p4 = ev.polygon_api.decimate3(p,level4);
-  MS I612=ev.points_api.block_ms_lod(ms,-24200.0,24200.0,2000,8000,l4 /*120*/,lod_l0,lod_l1);
-  MS I613=ev.points_api.block_ms_lod(ms,-15000.0,15000.0,1000,2000,l3 /*95*/,lod_l1,lod_l2);
-  MS I614=ev.points_api.block_ms_lod(ms,-10400.0,10400.0,0,1000,l2 /*45*/,lod_l2,lod_l3);
-  MS I615=ev.points_api.block_ms_lod(ms,-5600.0,5600.0,-500,0,l1 /*45*/,lod_l3,lod_l4);
+  MS I612=ev.points_api.block_ms_lod(ms,-lod_x_1,lod_x_1,2000,8000,l4 /*120*/,lod_l0-lod_delta,lod_l1+lod_delta);
+  MS I613=ev.points_api.block_ms_lod(ms,-lod_x_2,lod_x_2,1000,2000,l3 /*95*/,lod_l1-lod_delta,lod_l2+lod_delta);
+  MS I614=ev.points_api.block_ms_lod(ms,-lod_x_3,lod_x_3,0,1000,l2 /*45*/,lod_l2-lod_delta,lod_l3+lod_delta);
+  MS I615=ev.points_api.block_ms_lod(ms,-lod_x_4,lod_x_4,-1500,0,l1 /*45*/,lod_l3-lod_delta,lod_l4+lod_delta);
   ML I15=ev.materials_api.bind_inst_matrix(p4,I612,mat);
   ML I151=ev.materials_api.bind_inst_matrix(p3,I613,mat);
   ML I152=ev.materials_api.bind_inst_matrix(p2,I614,mat);
@@ -41626,10 +41755,10 @@ GameApi::ML GameApi::MainLoopApi::lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF 
   TF p2 = ev.polygon_api.decimate_tf(p,level2);
   TF p3 = ev.polygon_api.decimate_tf(p,level3);
   TF p4 = ev.polygon_api.decimate_tf(p,level4);
-  PTS I612=ev.points_api.block_pts_lod(pts,-24200.0,24200.0,2000,8000,l4 /*120*/,lod_l0,lod_l1);
-  PTS I613=ev.points_api.block_pts_lod(pts,-15000.0,15000.0,1000,2000,l3 /*95*/,lod_l1,lod_l2);
-  PTS I614=ev.points_api.block_pts_lod(pts,-10400.0,10400.0,0,1000,l2 /*45*/,lod_l2,lod_l3);
-  PTS I615=ev.points_api.block_pts_lod(pts,-5600.0,5600.0,-500,0,l1 /*45*/,lod_l3,lod_l4);
+  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,2000,8000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,1000,2000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,0,1000,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,-1500,0,l1 /*45*/,lod_l3,lod_l4);
 
 
   float b0 = start_brightness;
@@ -41655,10 +41784,10 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix_tf(GameApi::EveryApi &ev, GameApi::
   TF p2 = ev.polygon_api.decimate_tf(p,level2);
   TF p3 = ev.polygon_api.decimate_tf(p,level3);
   TF p4 = ev.polygon_api.decimate_tf(p,level4);
-  MS I612=ev.points_api.block_ms_lod(ms,-24200.0,24200.0,8000,2000,l4 /*120*/,lod_l0,lod_l1);
-  MS I613=ev.points_api.block_ms_lod(ms,-15000.0,15000.0,2000,1000,l3 /*95*/,lod_l1,lod_l2);
-  MS I614=ev.points_api.block_ms_lod(ms,-10400.0,10400.0,1000,0,l2 /*45*/,lod_l2,lod_l3);
-  MS I615=ev.points_api.block_ms_lod(ms,-5600.0,5600.0,0,-500,l1 /*45*/,lod_l3,lod_l4);
+  MS I612=ev.points_api.block_ms_lod(ms,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  MS I613=ev.points_api.block_ms_lod(ms,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  MS I614=ev.points_api.block_ms_lod(ms,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  MS I615=ev.points_api.block_ms_lod(ms,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
 
   float b0 = start_brightness;
   float b1 = start_brightness*0.70+end_brightness*0.30;
