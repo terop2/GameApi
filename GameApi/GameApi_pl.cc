@@ -22956,13 +22956,14 @@ public:
    }
 
   Point calc_pos3(int pos3) const
-  {    
+  {
+#if 0
     if (g_is_quakeml3) {
     Matrix p0 = Matrix::Identity(); //points->Index(pos);
     Point local = points->Pos(pos3); //(0.0f,0.0f,0.0f);
     Point world = local * p0;
-    world.x -= quake_pos_x;
-    world.z -= quake_pos_y;
+    //world.x -= quake_pos_x;
+    //world.z -= quake_pos_y;
 
 
     Point world_rot_inv = world;
@@ -22995,52 +22996,14 @@ public:
     return ncd;
     }
 
-    
-    Matrix p0 = Matrix::Identity(); //points->Index(pos);
-    Point local = points->Pos(pos3); //(0.0f,0.0f,0.0f);
-    Point world = local * p0;
-    Point world_rot_inv = world;
-
-
-    
-    
-    /*
-    world_rot_inv.x -= quake_pos_x;
-    world_rot_inv.z -= quake_pos_y;
-
-    world_rot_inv.z -= 400.0;
-    world_rot_inv.x += quake_pos_x;
-    world_rot_inv.z += quake_pos_y;
-    world_rot_inv = world_rot_inv * Matrix::YRotation(-quake_rot_y*2.0);
-    world_rot_inv.x -= quake_pos_x;
-    world_rot_inv.z -= quake_pos_y;
-    world_rot_inv.z += 400.0;
-    */
-
-#if 0
-    world.z -= 400.0;
-     world_rot_inv = world * Matrix::YRotation(-quake_rot_y);
-     world_rot_inv.z += 400.0;
-    
-    world_rot_inv.x -= quake_pos_x;
-    world_rot_inv.z -= quake_pos_y;
-
-
 #endif
+    
+    
+    Matrix p0 = Matrix::Identity(); 
+    Point local = points->Pos(pos3); 
+    Point world = local * p0;
     Point view = world * (in_MV * in_T);
-
-    if (pos3>=g_lod_debug_vec.size())
-      {
-	g_lod_debug_vec.resize(pos3+1);
-      }
-    g_lod_debug_vec[pos3]=world;
-
-    Point ncd = view; /* * in_Proj*/;
-    //ncd.z-=1.0;
-    //ncd.z*=2.0;
-    //ncd.z-=1.0;
-    //return view;
-    //ncd.z *= -1.0;
+    Point ncd = view;
     return ncd;
   }
   
@@ -23050,7 +23013,7 @@ public:
   }
   virtual bool Update(MainLoopEnv &e) {
     in_Proj = e.in_P;
-    if (firsttime2) { firsttime2=false; std::cout << in_Proj << std::endl; }
+    //if (firsttime2) { firsttime2=false; std::cout << in_Proj << std::endl; }
     g_compare_in_MV = in_MV;
     bool b = points->Update(e);
 
@@ -23063,6 +23026,8 @@ public:
 	HeavyPrepare();
       }
       y_rot_cache = quake_rot_y;
+    } else {
+      //HeavyPrepare();
     }
     pos.clear();
     int s = points->NumPoints();
