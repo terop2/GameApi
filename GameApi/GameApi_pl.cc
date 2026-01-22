@@ -23149,14 +23149,6 @@ public:
 
     if (start>end) std::swap(start,end);
 
- #if 0
-    min_ppx = 6666666.0;
-    min_ppz = 6666666.0;
-    max_ppx = -6666666.0;
-    max_ppz = -6666666.0;
-#endif
-    
-    
     for(int i=start;i<=end;i++)
       {
 	if (enabled(allpoints[i]))
@@ -23165,19 +23157,12 @@ public:
 	  }
       }
 
- #if 0
-    std::cout << "X:" << min_ppx << " " << max_ppx << std::endl;
-    std::cout << "Z:" << min_ppz << " " << max_ppz << std::endl;
-#endif
     
-    //std::cout << "Range:" << minimum << " " << maximum << std::endl;
     return true; }
   virtual int Size() const { return max_points; }
   virtual Matrix Index(int i) const {
     if (i>=pos.size()) { Matrix m=Matrix::Translate(-666666.0,-666666.0,-666666.0); return m; }
     Matrix m = points->Index(pos[i]);
-    //m*=Matrix::Scale(1.0f,1.0f,-1.0f);
-    //m.matrix[4*2+3]=-m.matrix[4*2+3];
     return m;
   }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
@@ -23200,87 +23185,24 @@ public:
   }
   Point calc_pos3(int pos) const
   {
-    if (g_is_quakeml3) {
-      Matrix p0 = points->Index(pos);
-      Point local(0.0f,0.0f,0.0f);
-      Point world = local * p0;
-      //world.x -= quake_pos_x;
-      //world.z -= quake_pos_y;
-      Point view = world * (in_MV * in_T);
-
-    if (pos>=g_lod_debug_vec.size())
-      {
-	g_lod_debug_vec.resize(pos+1);
-      }
-    g_lod_debug_vec[pos]=world;
-
-
-    Point ncd = view; /* * in_Proj;*/
-      //return view;
-      return ncd;
-    }
-    
     Matrix p0 = points->Index(pos);
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
-
-    Point world_rot_inv = world;
-
-    /*
-    world_rot_inv.x -= quake_pos_x;
-    world_rot_inv.z -= quake_pos_y;
-
-    world_rot_inv.z -= 400.0;
-    world_rot_inv.x += quake_pos_x;
-    world_rot_inv.z += quake_pos_y;
-    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
-    world_rot_inv.x -= quake_pos_x;
-    world_rot_inv.z -= quake_pos_y;
-    world_rot_inv.z += 400.0;
-    */
-    //world_rot_inv = world_rot_inv * Matrix::YRotation(-quake_rot_y);
+    Point view = world * (in_MV * in_T);
     
-    Point view = world_rot_inv * (in_MV * in_T);
-
-    //view.z += quake_pos_y;
-
-    
-    if (pos>=g_lod_debug_vec.size())
-      {
-	g_lod_debug_vec.resize(pos+1);
-      }
-    g_lod_debug_vec[pos]=world;
-
-    
-    Point ncd = view; /* * in_Proj;*/
-
-    //return view;
-    return ncd;
+    return view;
   }
   
   bool enabled(int i) const
   {
     Point pp = calc_pos3(i);
 
-#if 0
-    if (pp.x<min_ppx) min_ppx=pp.x;
-    if (pp.z<min_ppz) min_ppz=pp.z;
-    
-    if (pp.x>max_ppx) max_ppx=pp.x;
-    if (pp.z>max_ppz) max_ppz=pp.z;
-#endif
-    
-
-
     pp.x /= pp.z;
     pp.y /= pp.z;
     
     if (pp.x >= -1.7f && pp.x <= 1.7f)
-      //if (pp.y >= -400.0f && pp.y <= 400.0f)
       if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
 	  return true;
-      //return false;
-    
   }
 private:
   GameApi::Env &env;
