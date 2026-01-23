@@ -339,6 +339,7 @@ echo "<div class=\"flex-item p-3 m-0 w-8 h-10 text-left\">";
 echo "<div class=\"flex-container d-flex flex-column align-items-center\">";
 echo "<button type=\"button\" style=\"width: 380px; font-size: 150%;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/view.php'\">3d model viewer</button>";
 echo "<button type=\"button\" style=\"width: 380px; font-size: 150%;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/gltf_to_zip.php'\">Convert GLTF file to html5 zip</button>";
+echo "<button type=\"button\" style=\"width: 380px; font-size: 150%;\" class=\"btn btn-primary m-2 p-2 h-10\" onclick=\"window.location='$https://$site/AI.php'\">Use fake artificial intelligence to generate scenes</button>";
 echo "</div>";
 echo "</div>";
 echo "</div>";
