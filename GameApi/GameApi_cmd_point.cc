@@ -147,6 +147,17 @@ std::vector<GameApiItem*> pointapi_functions()
 		{ "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "", "0.0", "ff000000" },
 			 "ML", "voxel_api", "vox_bind_ml2"));
 #endif
+
+#if (ALL==1)||(LOD_VOX==1)
+ vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::lod_vox,
+			"vox_lod",
+			{ "ev", "vox_url", "model", "sx", "sy", "sz", "mat", "pts", "l1", "l2", "l3", "l4" },
+			{ "EveryApi&", "std::string", "int", "float", "float", "float", "MT", "PTS", "int", "int", "int", "int" },
+			{ "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "", "", "20", "40", "60", "80" },
+			"ML", "voxel_api", "lod_vox"));
+#endif
+
+  
 #if 0
 #if (ALL==1)||(VX_TO_OVX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vx_to_ovx,

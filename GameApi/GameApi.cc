@@ -22219,6 +22219,33 @@ GameApi::OVX GameApi::VoxelApi::empty_ovx()
   return add_opt_voxel(e,new EmptyOptVoxel);
 }
 
+
+class BlurVoxels : public Voxel<int>
+{
+public:
+  BlurVoxels(Voxel<int> &vx) : vx(vx) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    vx.Collect(vis);
+  }
+  void HeavyPrepare() { }
+  virtual void Prepare() { vx.Prepare(); HeavyPrepare(); }
+  virtual int SizeX() const { return vx.SizeX()/2; }
+  virtual int SizeY() const { return vx.SizeY()/2; }
+  virtual int SizeZ() const { return vx.SizeZ()/2; }
+  virtual int Map(int x, int y, int z) const { return vx.Map(2*x,2*y,2*z); }
+  virtual unsigned int Color(int x, int y, int z) const { return vx.Color(2*x,2*y,2*z); }
+  virtual Vector Normal(int x, int y, int z) const { return vx.Normal(2*x,2*y,2*z); }
+  virtual void CleanPrepare() { vx.CleanPrepare(); }
+private:
+  Voxel<int> &vx;
+};
+
+GameApi::VX GameApi::VoxelApi::blur(VX vx)
+{
+  
+}
+
 class VoxelToOptVoxel : public OptVoxel
 {
 public:
@@ -22717,10 +22744,13 @@ private:
 };
 
 
-GameApi::P GameApi::VoxelApi::vox_voxel(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+GameApi::P GameApi::VoxelApi::vox_voxel(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, int level)
 {
   GameApi::VX vx = vox_voxel2(ev,url,model,sx,sy,sz);
-    Voxel<int> *vvx = find_int_voxel(e,vx);
+  if (level>=1) vx = blur(vx);
+  if (level>=2) vx = blur(vx);
+  if (level>=3) vx = blur(vx);  
+  Voxel<int> *vvx = find_int_voxel(e,vx);
     vvx->Prepare();
     int ssx = vvx->SizeX();
     int ssy = vvx->SizeY();
@@ -22757,9 +22787,12 @@ GameApi::P GameApi::VoxelApi::vox_voxel(GameApi::EveryApi &ev, std::string url, 
     return p2;
     //return add_polygon2(e, new VoxFaceCollection(e,ev, url,gameapi_homepageurl,model,sx,sy,sz),1);
 }
-GameApi::P GameApi::VoxelApi::vox_voxel3(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+GameApi::P GameApi::VoxelApi::vox_voxel3(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, int level)
 {
     GameApi::VX vx = vox_voxel2(ev,url,model,sx,sy,sz);
+  if (level>=1) vx = blur(vx);
+  if (level>=2) vx = blur(vx);
+  if (level>=3) vx = blur(vx);  
 
     std::vector<GameApi::P> cubes;
     GameApi::ARR cubes_arr = ev.voxel_api.vox_cubes(ev,url, model, sx,sy,sz);
@@ -22799,7 +22832,7 @@ GameApi::ARR GameApi::VoxelApi::vox_cubes(GameApi::EveryApi &ev, std::string url
 class VoxML : public MainLoopItem
 {
 public:
-  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz),mt(mt) { }
+  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, int level) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz),mt(mt),level(level) { }
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
@@ -22817,6 +22850,10 @@ public:
 	vec2.push_back(p);
       }
     GameApi::VX I2=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
+  if (level>=1) I2 = ev.voxel_api.blur(I2);
+  if (level>=2) I2 = ev.voxel_api.blur(I2);
+  if (level>=3) I2 = ev.voxel_api.blur(I2);  
+
     Voxel<int> *vvx = find_int_voxel(env,I2);
     vvx->Prepare();
     int ssx = vvx->SizeX();
@@ -22863,20 +22900,24 @@ private:
   float sx, sy, sz;
   MainLoopItem *item=0;
   GameApi::MT mt;
+  int level;
 };
 
-GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz)
+GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, int level)
 {
   GameApi::MT mt = ev.materials_api.colour_material(ev,1.0,true);
-  GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt));
+  GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt,level));
   GameApi::MN mn0 = ev.move_api.mn_empty();
   GameApi::MN mn1 = ev.move_api.rotatex(mn0,-3.14159/2.0);
   GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
   return ml1;
 }
-GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, float border_width, unsigned int border_color)
+GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, float border_width, unsigned int border_color, int level)
 {
   GameApi::VX I1=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
+  if (level>=1) I1=ev.voxel_api.blur(I1);
+  if (level>=2) I1=ev.voxel_api.blur(I1);
+  if (level>=3) I1=ev.voxel_api.blur(I1);
   GameApi::ARR I2=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
   ArrayType *t = find_array(e,I2);
   std::vector<GameApi::P> vec;
@@ -22899,17 +22940,21 @@ GameApi::ML GameApi::VoxelApi::vox_ml2(GameApi::EveryApi &ev, std::string url, i
 
 
 
-GameApi::ML GameApi::VoxelApi::vox_bind_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt)
+GameApi::ML GameApi::VoxelApi::vox_bind_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, int level)
 {
-  GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt));
+  GameApi::ML ml = add_main_loop(e, new VoxML(e,ev,url,model,sx,sy,sz,mt,level));
   GameApi::MN mn0 = ev.move_api.mn_empty();
   GameApi::MN mn1 = ev.move_api.rotatex(mn0,-3.14159/2.0);
   GameApi::ML ml1 = ev.move_api.move_ml(ev,ml,mn1,1,10.0);
   return ml1;
 }
-GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, float border_width, unsigned int border_color)
+GameApi::ML GameApi::VoxelApi::vox_bind_ml2(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, float border_width, unsigned int border_color, int level)
 {
   GameApi::VX I1=ev.voxel_api.vox_voxel2(ev,url,model,sx,sy,sz);
+  if (level>=1) I1=ev.voxel_api.blur(I1);
+  if (level>=2) I1=ev.voxel_api.blur(I1);
+  if (level>=3) I1=ev.voxel_api.blur(I1);
+
   GameApi::ARR I2=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
   ArrayType *t = find_array(e,I2);
   std::vector<GameApi::P> vec;
@@ -41711,6 +41756,24 @@ float lod_x_4 = 8600.0;
 
 
 float lod_delta = 0.0f;
+
+GameApi::ML GameApi::VoxelApi::lod_vox(GameApi::EveryApi &ev, std::string vox_url, int model, float sx, float sy, float sz, GameApi::MT mat, GameApi::PTS pts, int l1, int l2, int l3, int l4)
+{
+  P p1 = ev.voxel_api.vox_voxel3(ev,vox_url,model,sx,sy,sz, 0);
+  P p2 = ev.voxel_api.vox_voxel3(ev,vox_url,model,sx*2.0,sy*2.0,sz*2.0, 1);
+  P p3 = ev.voxel_api.vox_voxel3(ev,vox_url,model,sx*4.0,sy*4.0,sz*4.0, 2);
+  P p4 = ev.voxel_api.vox_voxel3(ev,vox_url,model,sx*8.0,sy*8.0,sz*8.0, 3);
+  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
+  ML I15=ev.materials_api.bind_inst(p4,I612,mat);
+  ML I151=ev.materials_api.bind_inst(p3,I613,mat);
+  ML I152=ev.materials_api.bind_inst(p2,I614,mat);
+  ML I153=ev.materials_api.bind_inst(p1,I615,mat);
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+}
 
 GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)
 {
