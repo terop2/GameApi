@@ -124,9 +124,9 @@ std::vector<GameApiItem*> pointapi_functions()
 #if (ALL==1)||(VOX_ML2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_ml2,
 			 "vox_ml2",
-			 { "ev", "url", "model", "sx", "sy", "sz", "border_width", "border_color" },
-			 { "EveryApi&", "std::string", "int", "float", "float", "float", "float", "unsigned int" },
-			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "0.0", "ff000000" },
+			 { "ev", "url", "model", "sx", "sy", "sz", "border_width", "border_color", "level" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float", "float", "unsigned int", "int" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "0.0", "ff000000", "0" },
 			 "ML", "voxel_api", "vox_ml2"));
 #endif
 #if 0
@@ -142,9 +142,9 @@ std::vector<GameApiItem*> pointapi_functions()
 #if (ALL==1)||(VOX_BIND_ML2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::voxel_api, &GameApi::VoxelApi::vox_bind_ml2,
 			 "vox_bind_ml2",
-			 { "ev", "url", "model", "sx", "sy", "sz", "material", "border_width", "border_color" },
-			 { "EveryApi&", "std::string", "int", "float", "float", "float", "MT", "float", "unsigned int" },
-		{ "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "", "0.0", "ff000000" },
+			 { "ev", "url", "model", "sx", "sy", "sz", "material", "border_width", "border_color", "level" },
+			 { "EveryApi&", "std::string", "int", "float", "float", "float", "MT", "float", "unsigned int", "int" },
+			 { "ev", "https://meshpage.org/assets/test.vox", "0", "20.0", "20.0", "20.0", "", "0.0", "ff000000", "0" },
 			 "ML", "voxel_api", "vox_bind_ml2"));
 #endif
 

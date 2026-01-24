@@ -22168,8 +22168,8 @@ private:
   float sx,sy,sz;
   GameApi::ML ml = { -1 };
 
-  mutable OptCubesImpl *cubesimpl;
-  mutable OptVoxelRender *render;
+  mutable OptCubesImpl *cubesimpl=0;
+  mutable OptVoxelRender *render=0;
 
   float border_width;
   unsigned int border_color;
@@ -22230,20 +22230,32 @@ public:
   }
   void HeavyPrepare() { }
   virtual void Prepare() { vx.Prepare(); HeavyPrepare(); }
-  virtual int SizeX() const { return vx.SizeX()/2; }
-  virtual int SizeY() const { return vx.SizeY()/2; }
-  virtual int SizeZ() const { return vx.SizeZ()/2; }
-  virtual int Map(int x, int y, int z) const { return vx.Map(2*x,2*y,2*z); }
-  virtual unsigned int Color(int x, int y, int z) const { return vx.Color(2*x,2*y,2*z); }
-  virtual Vector Normal(int x, int y, int z) const { return vx.Normal(2*x,2*y,2*z); }
-  virtual void CleanPrepare() { vx.CleanPrepare(); }
+  virtual int SizeX() const { return vx.SizeX()/2+2; }
+  virtual int SizeY() const { return vx.SizeY()/2+2; }
+  virtual int SizeZ() const { return vx.SizeZ()/2+2; }
+  virtual int Map(int x, int y, int z) const {
+    if (x==0||y==0||z==0) return -1;
+    if (x==SizeX()-1||y==SizeY()-1||z==SizeZ()-1) return -1;
+    return vx.Map(2*x-1,2*y-1,2*z-1);
+  }
+  virtual unsigned int Color(int x, int y, int z) const {
+    if (x==0||y==0||z==0) return 0xffffffff;
+    if (x==SizeX()-1||y==SizeY()-1||z==SizeZ()-1) return 0xffffffff;
+
+    return vx.Color(2*x-1,2*y-1,2*z-1); }
+  virtual Vector Normal(int x, int y, int z) const {
+    if (x==0||y==0||z==0) return Vector(0.0,0.0,-400.0);
+    if (x==SizeX()-1||y==SizeY()-1||z==SizeZ()-1) return Vector(0.0,0.0,-400.0);
+    return vx.Normal(2*x-1,2*y-1,2*z-1); }
+  virtual void CleanPrepare() { }
 private:
   Voxel<int> &vx;
 };
 
 GameApi::VX GameApi::VoxelApi::blur(VX vx)
 {
-  
+  Voxel<int> *vx2 = find_int_voxel(e,vx);
+  return add_int_voxel(e, new BlurVoxels(*vx2));
 }
 
 class VoxelToOptVoxel : public OptVoxel
@@ -23966,9 +23978,8 @@ public:
     m = Matrix::Identity();
     firsttime = true;
   }
-  void Collect(CollectVisitor &vis) { }
+  void Collect(CollectVisitor &vis) { next->Collect(vis); }
   void HeavyPrepare() { }
-
   void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
   bool Update(MainLoopEnv &e) {
     if (firsttime) { firsttime = false; return true; }
