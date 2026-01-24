@@ -22236,7 +22236,8 @@ public:
   virtual int Map(int x, int y, int z) const {
     if (x==0||y==0||z==0) return -1;
     if (x==SizeX()-1||y==SizeY()-1||z==SizeZ()-1) return -1;
-    return vx.Map(2*x-1,2*y-1,2*z-1);
+    int val = vx.Map(2*x-1,2*y-1,2*z-1);
+    return val;
   }
   virtual unsigned int Color(int x, int y, int z) const {
     if (x==0||y==0||z==0) return 0xffffffff;
