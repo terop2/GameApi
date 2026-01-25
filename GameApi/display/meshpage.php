@@ -2546,7 +2546,7 @@ function remove_keyboard_focus_from_iframe()
 
 function set_keyboard_focus_to_iframe()
 {
-  console.log("set_keyboard_focus_to_iframe()");
+  //console.log("set_keyboard_focus_to_iframe()");
   if (g_keyboard_focus_timeout)
      window.clearTimeout(g_keyboard_focus_timeout);
   g_keyboard_focus_timeout = window.setTimeout(set_keyboard_focus,100);
@@ -3036,11 +3036,11 @@ function fix_keyboard(hide)
   const canvas = document.getElementById("canvas");
   canvas.tabIndex = "0";
   if (hide) {
-  console.log("FIX KEYBOARD TRUE");
+  //console.log("FIX KEYBOARD TRUE");
   window.addEventListener('keydown', e1, true);
   window.addEventListener('keyup', e1, true);
   } else {
-  console.log("FIX KEYBOARD FALSE");
+  //console.log("FIX KEYBOARD FALSE");
   window.removeEventListener('keydown', e1, true);
   window.removeEventListener('keyup', e1, true);
   }
