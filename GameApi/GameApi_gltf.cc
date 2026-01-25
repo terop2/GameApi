@@ -10237,17 +10237,17 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all( GameApi::EveryApi &ev, TF model
   return add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm));
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst2( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent, bool acesfilm)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst2( GameApi::EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent, bool acesfilm, std::string keys)
 {
   GameApi::MS I1=ev.matrices_api.from_points(ms);
-  return gltf_mesh_all_inst_matrix(ev,model0,resize_obj,I1,mix,self_mult,rest_mult,mode,light_dir_x,light_dir_y,light_dir_z,border_width,border_color,transparent,acesfilm);
+  return gltf_mesh_all_inst_matrix(ev,model0,resize_obj,I1,mix,self_mult,rest_mult,mode,light_dir_x,light_dir_y,light_dir_z,border_width,border_color,transparent,acesfilm,keys);
 }
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent, bool acesfilm)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z , float border_width, unsigned int border_color, bool transparent, bool acesfilm, std::string keys)
 {
   GLTFModelInterface *interface = find_gltf(e,model0);
   GLTFModelInterface *interface_resize = find_gltf(e,resize_obj);
-  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,"",Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm));
+  return add_main_loop(e, new GltfMeshAllInstMatrix(e,ev,interface,interface_resize,ms,mix,self_mult, rest_mult, mode,keys,Vector(light_dir_x, light_dir_y, light_dir_z),border_width,border_color,transparent,acesfilm));
 }
 
 
