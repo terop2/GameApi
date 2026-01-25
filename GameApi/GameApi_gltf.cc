@@ -714,8 +714,8 @@ public:
     }
   }
   void Prepare() {
-    unasync();
     if (prepare_done) return;
+    unasync();
 #ifndef EMSCRIPTEN
     PrePrepare();
 #endif
