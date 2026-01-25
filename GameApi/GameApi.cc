@@ -21617,7 +21617,7 @@ public:
     std::vector<CubeSpec> *specs = new std::vector<CubeSpec>;
     int s1 = vx.ShapeSize();
     int s2 = vx.SizeSize();
-    std::cout << "Sizes:" << s1 << " " << s2 << std::endl;
+    //std::cout << "Sizes:" << s1 << " " << s2 << std::endl;
     specs->reserve(s1*s2);
     CubeSpec spec;
     for(int i=0;i<s1;i++)
@@ -21791,7 +21791,7 @@ public:
     std::vector<CubeSpec> *specs = new std::vector<CubeSpec>;
     int s1 = vx.ShapeSize();
     int s2 = vx.SizeSize();
-    std::cout << "Sizes:" << s1 << " " << s2 << std::endl;
+    //std::cout << "Sizes:" << s1 << " " << s2 << std::endl;
     specs->reserve(s1*s2);
     CubeSpec spec;
     for(int i=0;i<s1;i++)
@@ -21895,7 +21895,7 @@ public:
     std::vector<CubeSpec> *specs = new std::vector<CubeSpec>;
     int s1 = vx.ShapeSize();
     int s2 = vx.SizeSize();
-    std::cout << "Sizes:" << s1 << " " << s2 << std::endl;
+    //std::cout << "Sizes:" << s1 << " " << s2 << std::endl;
     specs->reserve(s1*s2);
     CubeSpec spec;
     for(int i=0;i<s1;i++)
