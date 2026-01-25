@@ -22575,15 +22575,20 @@ bool ComparePTSObj(int a, int b)
   //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
+
+bool g_needs_update=false;
+
 float FetchPtsObj_y(int a)
 {
   float val1;
   Point p1 = g_pts->Pos(a);
-    Matrix m = ggg_in_MV * ggg_in_T;
-    
-    p1 = p1*m;
+  static Matrix m;
+  if (g_needs_update) {
+    m = ggg_in_MV * ggg_in_T;
+    g_needs_update=false;
+  }
+  p1 = p1*m;
   val1=p1.z;
-
   return val1;
 }
 bool ComparePTSObj_y(int a, int b)
@@ -22591,49 +22596,15 @@ bool ComparePTSObj_y(int a, int b)
   float val1,val2;
   Point p1 = g_pts->Pos(a);
   Point p2 = g_pts->Pos(b);
-
-#if 0
-    Point world_rot_inv1 = p1;
-    Point world_rot_inv2 = p2;
-    world_rot_inv1.x -= quake_pos_x;
-    world_rot_inv1.z -= quake_pos_y;
-    world_rot_inv2.x -= quake_pos_x;
-    world_rot_inv2.z -= quake_pos_y;
-
-    if (!g_is_quakeml3) {
-
-    world_rot_inv1.z -= 400.0;
-    world_rot_inv1.x += quake_pos_x;
-    world_rot_inv1.z += quake_pos_y;
-    world_rot_inv1 = world_rot_inv1 * Matrix::YRotation(quake_rot_y);
-    world_rot_inv1.x -= quake_pos_x;
-    world_rot_inv1.z -= quake_pos_y;
-    world_rot_inv1.z += 400.0;
-
-    world_rot_inv2.z -= 400.0;
-    world_rot_inv2.x += quake_pos_x;
-    world_rot_inv2.z += quake_pos_y;
-    world_rot_inv2 = world_rot_inv2 * Matrix::YRotation(quake_rot_y);
-    world_rot_inv2.x -= quake_pos_x;
-    world_rot_inv2.z -= quake_pos_y;
-    world_rot_inv2.z += 400.0;
-    }
-    
-    p1=world_rot_inv1;
-    p2=world_rot_inv2;
-#endif    
-
-    Matrix m = ggg_in_MV * ggg_in_T;
-    
-    p1 = p1*m;
-    p2 = p2*m;
+  static Matrix m;
+  if (g_needs_update) {
+    m = ggg_in_MV * ggg_in_T;
+    g_needs_update=false;
+  }
+  p1 = p1*m;
+  p2 = p2*m;
   val1=p1.z;
-  val2=p2.z;
-  
-  //val1=g_pts->Pos(a).z;
-
-  //val2=g_pts->Pos(b).z;
-  //if (std::fabs(val1-val2) < 1e-6f) return a<b;
+  val2=p2.z;  
   return val1<val2;
 }
 float FetchPtsObj_y_matrix(int a)
@@ -22642,7 +22613,12 @@ float FetchPtsObj_y_matrix(int a)
   Matrix m1 = g_pts_matrix->Index(a);
   Point local(0.0f,0.0f,0.0f);
   Point world1 = local * m1;
-  Point view1 = world1 * (ggg_in_MV * ggg_in_T);
+  static Matrix m;
+  if (g_needs_update) {
+    m = ggg_in_MV * ggg_in_T;
+    g_needs_update=false;
+  }
+  Point view1 = world1 * m;
   return view1.z;
 }
 bool ComparePTSObj_y_matrix(int a, int b)
@@ -22656,71 +22632,17 @@ bool ComparePTSObj_y_matrix(int a, int b)
   Point world1 = local * m1;
   Point world2 = local * m2;
 
-#if 0
-    Point world_rot_inv1 = world1;
-    Point world_rot_inv2 = world2;
-
-    world_rot_inv1.x -= quake_pos_x;
-    world_rot_inv1.z -= quake_pos_y;
-    world_rot_inv2.x -= quake_pos_x;
-    world_rot_inv2.z -= quake_pos_y;
-
-    if (g_is_quakeml3) {
-    world_rot_inv1.z -= 400.0;
-    world_rot_inv1.x += quake_pos_x;
-    world_rot_inv1.z += quake_pos_y;
-    world_rot_inv1 = world_rot_inv1 * Matrix::YRotation(quake_rot_y);
-    world_rot_inv1.x -= quake_pos_x;
-    world_rot_inv1.z -= quake_pos_y;
-    world_rot_inv1.z += 400.0;
-
-    world_rot_inv2.z -= 400.0;
-    world_rot_inv2.x += quake_pos_x;
-    world_rot_inv2.z += quake_pos_y;
-    world_rot_inv2 = world_rot_inv2 * Matrix::YRotation(quake_rot_y);
-    world_rot_inv2.x -= quake_pos_x;
-    world_rot_inv2.z -= quake_pos_y;
-    world_rot_inv2.z += 400.0;
-
-    }
-#endif
+  static Matrix m;
+  if (g_needs_update) {
+    m = ggg_in_MV * ggg_in_T;
+    g_needs_update=false;
+  }
     
-    Point view1 = world1 * ggg_in_MV * ggg_in_T;
-    Point view2 = world2 * ggg_in_MV * ggg_in_T;
+  Point view1 = world1 * m;
+  Point view2 = world2 * m; 
 
-    //view1.z += quake_pos_y;
-    //view2.z += quake_pos_y;
-#if 0
-    Point ncd1 = view1 * ggg_in_P;
-    Point ncd2 = view2 * ggg_in_P;
-#endif
     return view1.z < view2.z;
     
-    //return ncd1.z < ncd2.z;
-    /*    
-  m1=m1*Matrix::Translate(-quake_pos_x,0.0,-quake_pos_y);
-  m2=m2*Matrix::Translate(-quake_pos_x,0.0,-quake_pos_y);
-  
-  m1=m1*Matrix::Translate(0.0,0.0,-400.0);
-  m2=m2*Matrix::Translate(0.0,0.0,-400.0);
-
-  m1=m1*Matrix::YRotation(quake_rot_y);
-  m2=m2*Matrix::YRotation(quake_rot_y);
-  
-  m1=m1*Matrix::Translate(0.0,0.0,400.0);
-  m2=m2*Matrix::Translate(0.0,0.0,400.0);
-
-  m1=m1*ggg_in_MV;
-  m2=m2*ggg_in_MV;
-
-  m1=m1*ggg_in_P;
-  m2=m2*ggg_in_P;
-  
-  val1=m1.matrix[4*2+3];
-  val2=m2.matrix[4*2+3];
-  //if (std::fabs(val1-val2) < 1e-6f) return a<b;
-  return val1<val2;
-    */
 }
 class BlockPTS2;
 class BlockPTS2_matrix;
@@ -22757,6 +22679,7 @@ public:
   virtual bool Update(MainLoopEnv &e) {
     ggg_in_MV = e.in_MV;
     ggg_in_T = e.in_T;
+    g_needs_update = true;
     bool b = points->Update(e);
     //pos2=pos;
     pos.clear();
@@ -22955,8 +22878,11 @@ public:
     vis.register_obj(this);
   }
   void HeavyPrepare() {
+    //std::cout << "HeavyPrepare called" << std::endl;
     int s = points->NumPoints();
     allpoints.clear();
+    if (s>0)
+      allpoints.reserve(s);
     for(int i=0;i<s;i++)
       {
 	allpoints.push_back(i);
@@ -22981,52 +22907,10 @@ public:
    }
 
   Point calc_pos3(int pos3) const
-  {
-#if 0
-    if (g_is_quakeml3) {
-    Matrix p0 = Matrix::Identity(); //points->Index(pos);
-    Point local = points->Pos(pos3); //(0.0f,0.0f,0.0f);
-    Point world = local * p0;
-    //world.x -= quake_pos_x;
-    //world.z -= quake_pos_y;
-
-
-    Point world_rot_inv = world;
-
-    //world_rot_inv.x -= quake_pos_x;
-    //world_rot_inv.z -= quake_pos_y;
-
-    /*
-    world_rot_inv.z -= 400.0;
-    world_rot_inv.x += quake_pos_x;
-    world_rot_inv.z += quake_pos_y;
-    world_rot_inv = world_rot_inv * Matrix::YRotation(quake_rot_y);
-    world_rot_inv.x -= quake_pos_x;
-    world_rot_inv.z -= quake_pos_y;
-    world_rot_inv.z += 400.0;
-    */
-    
-    Point view = world_rot_inv * in_MV * in_T;
-    //Point view_rot_inv = view * Matrix::YRotation(quake_rot_y*2.0);
-
-    if (pos3>=g_lod_debug_vec.size())
-      {
-	g_lod_debug_vec.resize(pos3+1);
-      }
-    g_lod_debug_vec[pos3]=world;
-
-    
-    Point ncd = view; /* * in_Proj;*/
-    //return view; // TODO
-    return ncd;
-    }
-
-#endif
-    
-    
-    Matrix p0 = Matrix::Identity(); 
+  {    
+    //Matrix p0 = Matrix::Identity(); 
     Point local = points->Pos(pos3); 
-    Point world = local * p0;
+    Point world = local; // * p0;
     Point view = world * (in_MV * in_T);
     Point ncd = view;
     return ncd;
@@ -23046,6 +22930,7 @@ public:
     in_T = e.in_T;
     ggg_in_MV = e.in_MV;
     ggg_in_T = e.in_T;
+    g_needs_update = true;
     if (!g_is_quakeml3) {
       if (y_rot_cache != quake_rot_y) {
 	HeavyPrepare();
@@ -23059,8 +22944,11 @@ public:
     if (s<1) return true;
     if (allpoints.size()<1) return true;
 
+    g_needs_update = true;
 
+    g_pts = points;
     auto it1 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_start2,[&](int a, float val) { return FetchPtsObj_y(a) < val; });
+    g_needs_update = true;
     auto it2 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_end2,[&](int a, float val) { return FetchPtsObj_y(a) < val; });
     
 
@@ -23069,10 +22957,11 @@ public:
     int end = it2-allpoints.begin(); //allpoints.size()-1;
 
 
-    //std::cout << start << " " << end << std::endl;
     
     if (start>end) std::swap(start,end);
+    //std::cout << start << " " << end << std::endl;
     
+    g_needs_update = true;
   
   for(int i=start;i<=end;i++)
       {
@@ -23164,6 +23053,7 @@ public:
     ggg_in_MV = e.in_MV;
     ggg_in_T = e.in_T;
     ggg_in_P = e.in_P;
+    g_needs_update = true;
     
     bool b = points->Update(e);
     if (!g_is_quakeml3) {
@@ -23180,8 +23070,11 @@ public:
     float end_y = ncd_z_end2; //end_y2; 
     int start,end;
 
+    g_needs_update = true;
+    g_pts_matrix = points;
 
     auto it1 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_start2,[&](int a, float val) { return FetchPtsObj_y_matrix(a) < val; });
+    g_needs_update = true;
     auto it2 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_end2,[&](int a, float val) { return FetchPtsObj_y_matrix(a) < val; });
 
     
@@ -23189,6 +23082,7 @@ public:
     end=it2-allpoints.begin(); //allpoints.size()-1;
 
     if (start>end) std::swap(start,end);
+    g_needs_update = true;
 
     for(int i=start;i<=end;i++)
       {
@@ -23229,7 +23123,13 @@ public:
     Matrix p0 = points->Index(pos);
     Point local(0.0f,0.0f,0.0f);
     Point world = local * p0;
-    Point view = world * (in_MV * in_T);
+  static Matrix m;
+  if (g_needs_update) {
+    m = in_MV * in_T;
+    g_needs_update=false;
+  }
+
+  Point view = world * m; 
     
     return view;
   }
