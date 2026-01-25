@@ -22575,15 +22575,26 @@ bool ComparePTSObj(int a, int b)
   //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
 }
+float FetchPtsObj_y(int a)
+{
+  float val1;
+  Point p1 = g_pts->Pos(a);
+    Matrix m = ggg_in_MV * ggg_in_T;
+    
+    p1 = p1*m;
+  val1=p1.z;
+
+  return val1;
+}
 bool ComparePTSObj_y(int a, int b)
 {
   float val1,val2;
   Point p1 = g_pts->Pos(a);
   Point p2 = g_pts->Pos(b);
 
+#if 0
     Point world_rot_inv1 = p1;
     Point world_rot_inv2 = p2;
-
     world_rot_inv1.x -= quake_pos_x;
     world_rot_inv1.z -= quake_pos_y;
     world_rot_inv2.x -= quake_pos_x;
@@ -22608,12 +22619,14 @@ bool ComparePTSObj_y(int a, int b)
     world_rot_inv2.z += 400.0;
     }
     
-    
     p1=world_rot_inv1;
     p2=world_rot_inv2;
-  
-  p1 = p1*ggg_in_MV*ggg_in_T;
-  p2 = p2*ggg_in_MV*ggg_in_T;
+#endif    
+
+    Matrix m = ggg_in_MV * ggg_in_T;
+    
+    p1 = p1*m;
+    p2 = p2*m;
   val1=p1.z;
   val2=p2.z;
   
@@ -22622,6 +22635,15 @@ bool ComparePTSObj_y(int a, int b)
   //val2=g_pts->Pos(b).z;
   //if (std::fabs(val1-val2) < 1e-6f) return a<b;
   return val1<val2;
+}
+float FetchPtsObj_y_matrix(int a)
+{
+  float val1;
+  Matrix m1 = g_pts_matrix->Index(a);
+  Point local(0.0f,0.0f,0.0f);
+  Point world1 = local * m1;
+  Point view1 = world1 * (ggg_in_MV * ggg_in_T);
+  return view1.z;
 }
 bool ComparePTSObj_y_matrix(int a, int b)
 {
@@ -22633,7 +22655,8 @@ bool ComparePTSObj_y_matrix(int a, int b)
   Point local(0.0f,0.0f,0.0f);
   Point world1 = local * m1;
   Point world2 = local * m2;
-  
+
+#if 0
     Point world_rot_inv1 = world1;
     Point world_rot_inv2 = world2;
 
@@ -22660,18 +22683,20 @@ bool ComparePTSObj_y_matrix(int a, int b)
     world_rot_inv2.z += 400.0;
 
     }
+#endif
     
-    Point view1 = world_rot_inv1 * ggg_in_MV * ggg_in_T;
-    Point view2 = world_rot_inv2 * ggg_in_MV * ggg_in_T;
+    Point view1 = world1 * ggg_in_MV * ggg_in_T;
+    Point view2 = world2 * ggg_in_MV * ggg_in_T;
 
     //view1.z += quake_pos_y;
     //view2.z += quake_pos_y;
-    
+#if 0
     Point ncd1 = view1 * ggg_in_P;
     Point ncd2 = view2 * ggg_in_P;
-
+#endif
+    return view1.z < view2.z;
     
-    return ncd1.z < ncd2.z;
+    //return ncd1.z < ncd2.z;
     /*    
   m1=m1*Matrix::Translate(-quake_pos_x,0.0,-quake_pos_y);
   m2=m2*Matrix::Translate(-quake_pos_x,0.0,-quake_pos_y);
@@ -23033,10 +23058,21 @@ public:
     int s = points->NumPoints();
     if (s<1) return true;
     if (allpoints.size()<1) return true;
-  
-  int start = 0;
-  int end = allpoints.size()-1;
 
+
+    auto it1 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_start2,[&](int a, float val) { return FetchPtsObj_y(a) < val; });
+    auto it2 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_end2,[&](int a, float val) { return FetchPtsObj_y(a) < val; });
+    
+
+    
+    int start = it1-allpoints.begin();
+    int end = it2-allpoints.begin(); //allpoints.size()-1;
+
+
+    //std::cout << start << " " << end << std::endl;
+    
+    if (start>end) std::swap(start,end);
+    
   
   for(int i=start;i<=end;i++)
       {
@@ -23144,8 +23180,13 @@ public:
     float end_y = ncd_z_end2; //end_y2; 
     int start,end;
 
-    start = 0;
-    end=allpoints.size()-1;
+
+    auto it1 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_start2,[&](int a, float val) { return FetchPtsObj_y_matrix(a) < val; });
+    auto it2 = std::lower_bound(allpoints.begin(),allpoints.end(),ncd_z_end2,[&](int a, float val) { return FetchPtsObj_y_matrix(a) < val; });
+
+    
+    start = it1-allpoints.begin();
+    end=it2-allpoints.begin(); //allpoints.size()-1;
 
     if (start>end) std::swap(start,end);
 
