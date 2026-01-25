@@ -23144,6 +23144,7 @@ public:
     if (pp.x >= -1.7f && pp.x <= 1.7f)
       if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
 	  return true;
+    return false;
   }
 private:
   GameApi::Env &env;

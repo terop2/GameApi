@@ -295,9 +295,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_MESH_ALL_INST_MATRIX==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_inst_matrix,
 			 "ml_gltf_all_inst_m",
-			 { "ev", "tf", "resize_obj", "ms", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm" },
-			 { "EveryApi&", "TF", "TF", "MS", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool", "bool" },
-			 { "ev", "", "", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true" },
+			 { "ev", "tf", "resize_obj", "ms", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "keys" },
+			 { "EveryApi&", "TF", "TF", "MS", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool", "bool", "std::string" },
+			 { "ev", "", "", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true", "c" },
 			 "ML", "mainloop_api", "gltf_mesh_all_inst_matrix"));
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
@@ -892,7 +892,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 			"m_lod_matrix_tf",
 			{ "ev", "tf", "ms", "decimate_level1", "decimate_level2", "decimate_level3", "decimate_level4", "max_obj_count1", "max_obj_count2", "max_obj_count3", "max_obj_count4", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_brightness", "end_brightness" },
 			{ "EveryApi&", "TF", "MS", "float", "float","float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool", "bool", "float", "float" },
-	       { "ev", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120", "1.0", "1.0", "1.0", "0", "0.1", "0.1", "-400.0", "0", "ff000000", "false", "true", "1.0", "0.3" },
+			{ "ev", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120", "1.0", "1.0", "1.0", "0", "0.1", "0.1", "-400.0", "0", "ff000000", "false", "true", "1.0", "0.3" },
 			"ML", "mainloop_api", "lod_matrix_tf"));
 #endif
  
