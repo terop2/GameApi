@@ -570,6 +570,7 @@ struct PointArray3
   float *color=0; // 4 items per numpoint
   Vector *normal=0;
   int numpoints;
+  int lastupdatednum;
   Low_GLuint buffer[2];
   Low_GLuint vao[1];
   int color_divisor=-1;
@@ -581,6 +582,7 @@ struct MatrixArray3
   float *color=0; // 4 items per numpoint
   Vector *normal=0;
   int numpoints;
+  int lastupdatednum;
   Low_GLuint buffer[2];
   Low_GLuint vao[1];
   int color_divisor=-1;

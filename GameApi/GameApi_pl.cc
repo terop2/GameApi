@@ -12914,6 +12914,9 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this speeds up dynamic render.
+      //std::cout << "INST:" << arr->numpoints << " " << arr->lastupdatednum << " " << show_num << std::endl;
+
       rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num,arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
@@ -12931,6 +12934,10 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this speeds up dynamic render.
+
+      //std::cout << "INST:" << arr->numpoints << " " << arr->lastupdatednum << " " << show_num << std::endl;
+
       rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
@@ -12950,6 +12957,8 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this speeds up dynamic render.
+      //std::cout << "INST:" << arr->numpoints << " " << arr->lastupdatednum << " " << show_num << std::endl;
 
       rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
@@ -12971,6 +12980,8 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this speeds up dynamic render.
+      //std::cout << "INST:" << arr->numpoints << " " << arr->lastupdatednum << " " << show_num << std::endl;
 
       rend->render_instanced(0, (Point*)arr->array,(Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
@@ -12985,7 +12996,11 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced(ShaderApi &shapi,
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this speeds up dynamic render.
 
+      //std::cout << "INST:" << arr->numpoints << " " << arr->lastupdatednum << " " << show_num << std::endl;
+
+      
       rend->render_instanced(0, (Point*)arr->array, (Vector*)arr->normal, (float*)arr->color,show_num, arr->color_divisor);
       //rend->render(0);
     }
@@ -13122,6 +13137,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this will speed up dynamic rendering.
       rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       ogl->glBindTexture(Low_GL_TEXTURE_2D,0);
       ogl->glBindTexture(Low_GL_TEXTURE_CUBE_MAP,0);
@@ -13139,6 +13155,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this will speed up dynamic rendering.
       rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       TextureEnable(*env->renders[s->texture_id], 0, false);
     }
@@ -13158,6 +13175,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this will speed up dynamic rendering.
 
       rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //rend->render(0);
@@ -13179,6 +13197,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this will speed up dynamic rendering.
 
       rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //g_low->ogl->glDisable(Low_GL_TEXTURE_2D_ARRAY);
@@ -13193,6 +13212,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array_instanced_matrix(ShaderApi 
       int show_num = arr->numpoints-hide_num;
       show_num = std::max(0,show_num);
       show_num = std::min(arr->numpoints, show_num);
+      show_num = std::min(show_num,arr->lastupdatednum); // this will speed up dynamic rendering.
 
       rend->render_instanced_matrix(0, (Matrix*)arr->array, (Vector*)arr->normal, (float*)arr->color, show_num, arr->color_divisor);
       //rend->render(0);
@@ -22880,6 +22900,7 @@ public:
   void HeavyPrepare() {
     //std::cout << "HeavyPrepare called" << std::endl;
     int s = points->NumPoints();
+    //std::cout << "HeavyPrepare numpoints=" << s << std::endl;
     allpoints.clear();
     if (s>0)
       allpoints.reserve(s);
@@ -22916,7 +22937,8 @@ public:
     return ncd;
   }
   
-  virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
+  virtual void Prepare() {
+    points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
     points->HandleEvent(event);
   }
@@ -22931,10 +22953,10 @@ public:
     ggg_in_MV = e.in_MV;
     ggg_in_T = e.in_T;
     g_needs_update = true;
-    if (!g_is_quakeml3) {
-      if (y_rot_cache != quake_rot_y) {
+    if (b||!g_is_quakeml3) {
+      if (b||y_rot_cache != quake_rot_y) {
 	HeavyPrepare();
-      }
+      } 
       y_rot_cache = quake_rot_y;
     } else {
       //HeavyPrepare();
@@ -22972,11 +22994,14 @@ public:
       }
     prev=pos.size();
     return true; }
-  virtual int NumPoints() const { return max_points; }
+  virtual int MaxNumPoints() const { return max_points; }
+  virtual int NumPoints() const { if (pos.size()>max_points) return max_points; if (pos.size()<0) return 0; return pos.size(); }
   virtual Point Pos(int i) const {
-    if (i>=pos.size()) return Point(-9999.0,-9999.0,-9999.0);
+    if (i>=pos.size()) { /*std::cout << "Pos return -9999.0:" << i << " " << pos.size() << std::endl;*/ return Point(-9999.0,-9999.0,-9999.0); }
     Point p = points->Pos(pos[i]);
-    return Point(p.x,p.y,p.z); }
+    //std::cout << "Pos return " << p << std::endl;
+    return Point(p.x,p.y,p.z);
+  }
   virtual unsigned int Color(int i) const { if (i>=pos.size()) return 0xffffffff; return points->Color(pos[i]); }
   virtual Vector Normal(int i) const {if (i>=pos.size()) return Vector(1.0,0.0,0.0); return points->Normal(pos[i]); }
 
@@ -22991,6 +23016,7 @@ public:
 	return true;
 	 }
       }
+    //std::cout << i << "=false" << pp.z << " " << ncd_z_start2 << " " << ncd_z_end2 << std::endl; 
     return false;
   }
 private:
@@ -23010,6 +23036,7 @@ private:
   bool firsttime;
   bool firsttime2=true;
   float y_rot_cache=0.0;
+  mutable int max_size=0;
 };
 
 
@@ -23041,7 +23068,8 @@ public:
     std::sort(allpoints.begin(),allpoints.end(),ComparePTSObj_y_matrix);
   }
   
-  virtual void Prepare() { points->Prepare(); HeavyPrepare(); }
+  virtual void Prepare() {
+    points->Prepare(); HeavyPrepare(); }
   virtual void HandleEvent(MainLoopEvent &event) {
     points->HandleEvent(event);
   }
@@ -23056,12 +23084,12 @@ public:
     g_needs_update = true;
     
     bool b = points->Update(e);
-    if (!g_is_quakeml3) {
-      if (y_rot_cache != quake_rot_y) {
+    if (b||!g_is_quakeml3) {
+      if (b||y_rot_cache != quake_rot_y) {
 	HeavyPrepare();
-      }
+      } 
       y_rot_cache = quake_rot_y;
-    }
+    } 
     pos.clear();
     int s = points->Size();
     if (s<1) return true;
@@ -23094,7 +23122,8 @@ public:
 
     
     return true; }
-  virtual int Size() const { return max_points; }
+  virtual int MaxSize() const { return max_points; }
+  virtual int Size() const { if (pos.size()>max_points) return max_points; if (pos.size()<0) return 0; return pos.size();  }
   virtual Matrix Index(int i) const {
     if (i>=pos.size()) { Matrix m=Matrix::Translate(-666666.0,-666666.0,-666666.0); return m; }
     Matrix m = points->Index(pos[i]);

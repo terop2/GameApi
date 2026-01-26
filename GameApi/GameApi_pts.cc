@@ -126,7 +126,7 @@ public:
     bool b2 = pts2->Update(e);
     return b1 || b2;
   }
-
+  virtual int MaxNumPoints() const { return pts1->MaxNumPoints()+pts2->MaxNumPoints(); }
   virtual int NumPoints() const { return pts1->NumPoints()+pts2->NumPoints(); }
   virtual Point Pos(int i) const
   {
@@ -220,7 +220,7 @@ public:
   void Prepare() { pts->Prepare(); }
   virtual void HandleEvent(MainLoopEvent &event) { pts->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return pts->Update(e); }
-
+  int MaxNumPoints() const { return pts->MaxNumPoints(); }
   int NumPoints() const { return pts->NumPoints(); }
   Point Pos(int i) const {
     Point p = pts->Pos(i);
@@ -304,6 +304,7 @@ public:
     o2->Update(e);
     return true;
   }
+  int MaxNumPoints() const { return std::min(o1->MaxNumPoints(),o2->MaxNumPoints()); }
   int NumPoints() const { 
     if (m_time<start_time ||m_time>=end_time) return 0;
     return std::min(o1->NumPoints(), o2->NumPoints()); }
@@ -460,10 +461,12 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, bool 
   MatrixArray *pts = find_matrix_array(e, p);
   int numpoints = pts->Size();
   if (numpoints<0) numpoints=0;
+
   
   MatrixArray3 *arr = find_matrix_array3(e, pta);
   float *array = arr->array;
   float *color = arr->color;
+  arr->lastupdatednum = numpoints; // this will be used to render.
   int colorindex=0;
   for(int i=0;i<numpoints;i++) 
     {
@@ -530,6 +533,7 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool
   if (numpoints<0) { std::cout << "PTS numpoints=" << numpoints << std::endl; numpoints=0; }
 
   PointArray3 *arr = find_point_array3(e, pta);
+  arr->lastupdatednum = numpoints;
   bool slow = false;
   if (numpoints>arr->numpoints) {
     float *array = arr->array;
@@ -540,7 +544,7 @@ void GameApi::PointsApi::update_from_data(GameApi::PTA pta, GameApi::PTS p, bool
     arr->color = new float[4*(numpoints+1)];
     slow=true;
   }
-  arr->numpoints = numpoints;
+  //arr->numpoints = numpoints;
 
   float *array = arr->array;
   float *color = arr->color;
@@ -628,6 +632,7 @@ public:
     arr->array = new float[(end_range-start_range)*3];
     arr->color = new float[4*(end_range-start_range)];
     arr->numpoints = end_range-start_range;
+    arr->lastupdatednum = arr->numpoints;
     sets.push_back(arr);
 
     ThreadInfo_pts *info = new ThreadInfo_pts;
@@ -661,6 +666,7 @@ public:
     arr->array = new float[(num_items)*3];
     arr->color = new float[num_items*4];
     arr->numpoints = num_items;
+    arr->lastupdatednum = num_items;
     arr->color_divisor = div2;
     int s = sets.size();
     float *array = arr->array;
@@ -726,19 +732,19 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from
   int div = color_from_instance?1:-1; //colour_divisor_calc2(coll);
   MatrixArray *arr2 = find_matrix_array(e, p);
   arr2->Prepare();
-  int num = arr2->Size();
+  int num = std::max(arr2->Size(),arr2->MaxSize());
   float *array = new float[num*16];
   float *color = new float[num*4]; // *div
   Vector *normal = new Vector[num];
   int colorindex = 0;
   for(int i=0;i<num;i++) {
-    Matrix m = arr2->Index(i);
+    Matrix m = i>=0&&i<arr2->Size()?arr2->Index(i):Matrix::Translate(-666666.0,-666666.0,-666666.0);
     float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		      m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		      m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		      m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
-    unsigned int c = arr2->Color(i);
+    unsigned int c = i>=0&&i<arr2->Size()?arr2->Color(i):0xffffffff;
     for(int j=0;j<16;j++) {
       array[i*16+j] = m.matrix[j];
     }
@@ -762,7 +768,7 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from
     colorindex+=4;
     //color[i] = swap_color(c);
 #endif
-    normal[i] = arr2->Normal(i);
+    normal[i] = i>=0&&i<arr2->Size()?arr2->Normal(i):Vector(0.0,0.0,-400.0);
   }
   // note, this isnt done like pts, i.e. its not sent to gpu buffers.
   MatrixArray3 *arr = new MatrixArray3;
@@ -770,6 +776,7 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from
   arr->color = color;
   arr->normal = normal;
   arr->numpoints = num;
+  arr->lastupdatednum = arr2->Size();
   arr->color_divisor = div;
   return add_matrix_array3(e,arr);
 }
@@ -785,8 +792,11 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, bool color_from_
 
   PointsApiPoints *pts = find_pointsapi_points(e, p);
   pts->Prepare();
-  int numpoints = pts->NumPoints();
+  int numpoints = std::max(pts->NumPoints(),pts->MaxNumPoints());
+  int ptscount = pts->NumPoints();
+  //std::cout << "NUMPOINTS:" << pts->NumPoints() << " " << pts->MaxNumPoints() << std::endl;
   if (numpoints<0) { std::cout << "PTS numpoints=" << numpoints << std::endl;  numpoints=0; }
+
 #if 1
   //ndef THREADS
   //ndef THREADS
@@ -797,11 +807,12 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, bool color_from_
   Vector *normal = new Vector[(numpoints+1)];
 
   int colorindex = 0;
+
   
   for(int i=0;i<numpoints;i++)
     {
-      Point p = pts->Pos(i);
-      unsigned int c = pts->Color(i);
+      Point p = i>=0&&i<ptscount?pts->Pos(i):Point(-66666.0,-66666.0,-666660.0);
+      unsigned int c = i>=0&&i<ptscount?pts->Color(i):0xffffffff;
       array[i*3+0] = p.x;
       array[i*3+1] = p.y;
       array[i*3+2] = p.z;
@@ -827,13 +838,14 @@ EXPORT GameApi::PTA GameApi::PointsApi::prepare(GameApi::PTS p, bool color_from_
       colorindex+=4;
       /// color[i] = swap_color(c);
 #endif
-      normal[i] = pts->Normal(i);
+      normal[i] = i>=0&&i<ptscount?pts->Normal(i):Vector(0.0,0.0,-400.0);
     }
   PointArray3 *arr = new PointArray3;
   arr->array = array;
   arr->color = color;
   arr->normal = normal;
   arr->numpoints = numpoints;
+  arr->lastupdatednum = ptscount;
   arr->color_divisor = div;
 #else
   int num_threads = 4;
@@ -1167,7 +1179,9 @@ void *thread_func_pts(void *data)
   ThreadInfo_pts *ti = (ThreadInfo_pts*)data;
 
   int jj=0;
-  for(int i=ti->start_range;i<ti->end_range;i++)
+  int start_num = std::min(ti->start_range,ti->pts->NumPoints());
+  int end_num = std::min(ti->end_range,ti->pts->NumPoints());
+  for(int i=start_num;i<end_num;i++)
     {
       Point p = ti->pts->Pos(i);
       unsigned int c = ti->pts->Color(i);
@@ -1192,7 +1206,7 @@ public:
   void Prepare() { next->Prepare(); }
   void HandleEvent(MainLoopEvent &event) { next->HandleEvent(event); }
   virtual bool Update(MainLoopEnv &e) { return next->Update(e); }
-
+  int MaxNumPoints() const { return next->MaxNumPoints(); }
   int NumPoints() const { return next->NumPoints(); }
   Point Pos(int i) const { return next->Pos(i); }
   unsigned int Color(int i) const {return color; }
@@ -1496,10 +1510,11 @@ public:
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) {
     return false; }
+  virtual int MaxNumPoints() const { return count; }
   virtual int NumPoints() const { if (points) return points->size(); else { const_cast<MeshQuad*>(this)->Prepare(); return points->size(); } }
   virtual Point Pos(int i) const {
     if (points && !(i>=0&&i<points->size())) return Point(0.0,0.0,0.0);
-    if (points) return (*points)[i]; else { const_cast<MeshQuad*>(this)->Prepare();
+    if (points) { return (*points)[i]; } else { const_cast<MeshQuad*>(this)->Prepare();
     if (points && !(i>=0&&i<points->size())) return Point(0.0,0.0,0.0);
 
       return (*points)[i]; } }
@@ -1509,8 +1524,11 @@ public:
       if (color2 && !(i>=0&&i<color2->size())) return 0xffffffff;
       return (*color2)[i];}  }
 
-  void Collect(CollectVisitor &vis) { coll->Collect(vis); vis.register_obj(this); }
+  void Collect(CollectVisitor &vis) {
+    //std::cout << "MeshQuad Collect" << std::endl;
+    coll->Collect(vis); vis.register_obj(this); }
   void HeavyPrepare() {
+    //std::cout << "MeshQuad HeavyPrepare" << std::endl;
     int id = meshquad_calculate_id(coll, count);
     Cont *c = find_meshquad(id);
     if (c) {
@@ -1519,10 +1537,12 @@ public:
       facenum = c->facenum;
       xp_vec = c->xp_vec;
       yp_vec = c->yp_vec;
+      //std::cout << "MeshQuad cached!" << std::endl;
       return;
     }
     if (firsttime) 
       {
+    //std::cout << "MeshQuad HeavyPrepare FIRSTTIME" << std::endl;
 	firsttime = false;
     if (!points)
       points = new std::vector<Point>;
@@ -1544,8 +1564,8 @@ public:
     yp_vec->clear();
     
     int numfaces = coll->NumFaces();
-    Random r;
     
+	Random r;
     for(int i=0;i<count;i++)
       {
 	float zp = double(r.next())/r.maximum();
@@ -1553,9 +1573,8 @@ public:
 	int zpi = int(zp);
 	if (zpi<0) zpi = 0;
 	if (zpi>=numfaces) zpi = numfaces-1;
-	facenum->push_back(zpi);
 	int num = coll->NumPoints(zpi);
-	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
+	if (num != 4 && num != 3) { std::cout << "Error quad: " << num << std::endl; }
 	if (num==4) {
 	  float xp = double(r.next())/r.maximum();
 	  float yp = double(r.next())/r.maximum();
@@ -1563,106 +1582,17 @@ public:
 	  yp*=2.0;
 	  xp-=1.0;
 	  yp-=1.0;
-	  xp_vec->push_back(xp);
-	  yp_vec->push_back(yp);
 	  Point p1 = coll->FacePoint(zpi, 0);
 	  Point p2 = coll->FacePoint(zpi, 1);
 	  Point p3 = coll->FacePoint(zpi, 2);
 	  Point p4 = coll->FacePoint(zpi, 3);
 	  Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
-	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) { std::cout << "NAN" << std::endl; continue; }
 	  points->push_back(p);
 	  color2->push_back(0xffffffff);
-	} else if (num==3)
-	  {
-	    Point p1 = coll->FacePoint(zpi, 0);
-	    Point p2 = coll->FacePoint(zpi, 1);
-	    Point p3 = coll->FacePoint(zpi, 2);
-	    float r1 = double(r.next())/r.maximum();
-	    float r2 = double(r.next())/r.maximum();
-	    xp_vec->push_back(r1);
-	    yp_vec->push_back(r2);
-	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
-	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
-	    points->push_back(p);
-	    color2->push_back(0xffffffff);
-	    
-	  }
-      }
-    int id = meshquad_calculate_id(coll, count);
-    Cont c;
-    c.count = id;
-    c.points = points;
-    c.colours = color2;
-    g_meshquad_data.push_back(c);
-      }
-
-  }
-
-  void Prepare()
-  {
-    coll->Prepare();
-    int id = meshquad_calculate_id(coll, count);
-    Cont *c = find_meshquad(id);
-    if (c) {
-      points = c->points;
-      color2 = c->colours;
-      facenum = c->facenum;
-      xp_vec = c->xp_vec;
-      yp_vec = c->yp_vec;
-      return;
-    }
-    if (firsttime) 
-      {
-	firsttime = false;
-    if (!points)
-      points = new std::vector<Point>;
-    if (!color2)
-      color2 = new std::vector<unsigned int>;
-    if (!facenum)
-      facenum = new std::vector<int>;
-    if (!xp_vec)
-      xp_vec=new std::vector<float>;
-    if (!yp_vec)
-      yp_vec=new std::vector<float>;
-
-    points->clear();
-    color2->clear();
-
-    facenum->clear();
-    xp_vec->clear();
-    yp_vec->clear();
-    
-    int numfaces = coll->NumFaces();
-    
-    Random r;
-    for(int i=0;i<count;i++)
-      {
-	float zp = double(r.next())/r.maximum();
-	zp*=float(numfaces);
-	int zpi = int(zp);
-	if (zpi<0) zpi = 0;
-	if (zpi>=numfaces) zpi = numfaces-1;
+	  xp_vec->push_back(xp);
+	  yp_vec->push_back(yp);
 	facenum->push_back(zpi);
-	int num = coll->NumPoints(zpi);
-	if (num != 4 && num != 3) { /*std::cout << "Error quad: " << num << std::endl;*/ }
-	if (num==4) {
-	  float xp = double(r.next())/r.maximum();
-	  float yp = double(r.next())/r.maximum();
-	  xp*=2.0;
-	  yp*=2.0;
-	  xp-=1.0;
-	  yp-=1.0;
-	  xp_vec->push_back(xp);
-	  yp_vec->push_back(yp);
-	  Point p1 = coll->FacePoint(zpi, 0);
-	  Point p2 = coll->FacePoint(zpi, 1);
-	  Point p3 = coll->FacePoint(zpi, 2);
-	  Point p4 = coll->FacePoint(zpi, 3);
-	  Point p = 1.0/4.0*((1.0f-xp)*(1.0f-yp)*Vector(p1) + (1.0f+xp)*(1.0f-yp)*Vector(p2) + (1.0f+xp)*(1.0f+yp)*Vector(p3) + (1.0f-xp)*(1.0f+yp)*Vector(p4));
-	  if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
-	  points->push_back(p);
-	  color2->push_back(0xffffffff);
 	} else if (num==3)
 	  {
 	    Point p1 = coll->FacePoint(zpi, 0);
@@ -1670,13 +1600,13 @@ public:
 	    Point p3 = coll->FacePoint(zpi, 2);
 	    float r1 = double(r.next())/r.maximum();
 	    float r2 = double(r.next())/r.maximum();
-	    xp_vec->push_back(r1);
-	    yp_vec->push_back(r2);
 	    Point p = Point((1.0-sqrt(r1))*Vector(p1) + (sqrt(r1)*(1.0-r2))*Vector(p2) + (r2*sqrt(r1))*Vector(p3));
-	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) continue;
+	    if (std::isnan(p.x) || std::isnan(p.y) ||std::isnan(p.z)) { std::cout << "NAN" << std::endl; continue; }
 	    points->push_back(p);
 	    color2->push_back(0xffffffff);
-	    
+	    xp_vec->push_back(r1);
+	    yp_vec->push_back(r2);
+	facenum->push_back(zpi);	    
 	  }
       }
     int id = meshquad_calculate_id(coll, count);
@@ -1688,7 +1618,17 @@ public:
     c.xp_vec = xp_vec;
     c.yp_vec = yp_vec;
     g_meshquad_data.push_back(c);
-      }
+      } else {
+      //std::cout << "NOT DOING MESHQUAD" << std::endl;
+    }
+
+  }
+
+  void Prepare()
+  {
+    //std::cout << "MeshQuad Prepare" << std::endl;
+    coll->Prepare();
+    HeavyPrepare();
   }
 private:
   FaceCollection *coll;
@@ -1802,6 +1742,7 @@ public:
   }
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
+  virtual int MaxNumPoints() const { return count; }
   virtual int NumPoints() const { return count; }
   virtual Point Pos(int i) const { if (i>=0&&i<points.size()) return points[i];  return Point(-999999.0,-999999.0,-999999.0); }
   virtual unsigned int Color(int i) const
@@ -2001,6 +1942,7 @@ public:
   void Prepare() { if (firsttime) next->Prepare(); firsttime=false; }
   void HandleEvent(MainLoopEvent &event) { }
   bool Update(MainLoopEnv &e) { return false; }
+  int MaxNumPoints() const { return next->MaxNumPoints(); }
   int NumPoints() const { return next->NumPoints(); }
   Point Pos(int i) const
   {
@@ -2347,7 +2289,7 @@ public:
   void HandleEvent(MainLoopEvent &event) { }
   bool Update(MainLoopEnv &e) { return false; }
   int NumPoints() const { return vec.size(); }
-  Point Pos(int i) const { return vec[i]; }
+  Point Pos(int i) const { if (i>=0 && i<vec.size()) return vec[i]; return Point(-66660.0,-66660.0,-66660.0); }
   unsigned int Color(int i) const { return 0xffffffff; }
 private:
   std::vector<Point> vec;
@@ -2442,6 +2384,7 @@ public:
 
     return pts->Update(e); 
   }
+  int MaxNumPoints() const { return pts->MaxNumPoints(); }
   virtual int NumPoints() const
   {
     return pts->NumPoints();

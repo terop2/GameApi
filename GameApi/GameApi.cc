@@ -10534,6 +10534,8 @@ public:
   {
     // TODO, IS THIS CORRECT IMPLEMENTATION
     find_ml();
+    //FaceCollection *coll = find_facecoll(env,p);
+    //coll->Collect(vis);
      MainLoopItem *item = find_main_loop(env,ml);
      if (item)
        item->Collect(vis);
@@ -10555,6 +10557,8 @@ public:
   {
     if (firsttime) {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+      //coll->Prepare();
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Prepare();
@@ -10600,6 +10604,8 @@ public:
   }
   void Collect(CollectVisitor &vis) {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+    //coll->Collect(vis);
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Collect(vis);
@@ -10614,6 +10620,8 @@ public:
   {
     if (firsttime) {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+      //coll->Prepare();
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Prepare();
@@ -10660,6 +10668,11 @@ public:
   void Collect(CollectVisitor &vis)
   {
     find_ml();
+    //FaceCollection *coll = find_facecoll(env,p);
+    //coll->Collect(vis);
+    //MatrixArray *ma = find_matrix_array(env,ms);
+    //ma->Collect(vis);
+
     MainLoopItem *item = find_main_loop(env,ml);
     if (item)
       item->Collect(vis);
@@ -10673,6 +10686,10 @@ public:
   {
     if (firsttime) {
     find_ml();
+    //FaceCollection *coll = find_facecoll(env,p);
+    // coll->Prepare();
+    // MatrixArray *ma = find_matrix_array(env,ms);
+    //ma->Prepare();
     MainLoopItem *item = find_main_loop(env,ml);
     if (item)
       item->Prepare();
@@ -10684,6 +10701,10 @@ public:
   {
     if (firsttime) {
     find_ml();
+    //FaceCollection *coll = find_facecoll(env,p);
+    //coll->Prepare();
+    //MatrixArray *ma = find_matrix_array(env,ms);
+    //ma->Prepare();
     MainLoopItem *item = find_main_loop(env,ml);
     if (item)
       item->Prepare();
@@ -10736,6 +10757,10 @@ public:
   void Collect(CollectVisitor &vis)
   {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+      //coll->Collect(vis);
+      //PointsApiPoints *pts2 = find_pointsapi_points(env,pts);
+      //pts2->Collect(vis);
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Collect(vis);
@@ -10752,6 +10777,10 @@ public:
     FaceCollection *coll = find_facecoll(env,p);
     if (firsttime) {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+      //coll->Prepare();
+      //PointsApiPoints *pts2 = find_pointsapi_points(env,pts);
+      //pts2->Prepare();
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Prepare();
@@ -10764,6 +10793,10 @@ public:
     if (disabled) return;
     if (firsttime) {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+      //coll->Prepare();
+      //PointsApiPoints *pts2 = find_pointsapi_points(env,pts);
+      //pts2->Prepare();
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Prepare();
@@ -10822,6 +10855,10 @@ public:
   void Collect(CollectVisitor &vis)
   {
     find_ml();
+    //FaceCollection *coll = find_facecoll(env,p);
+    //coll->Collect(vis);
+    //PointsApiPoints *pts2 = find_pointsapi_points(env,pts);
+    //pts2->Collect(vis);
     MainLoopItem *item = find_main_loop(env,ml);
     if (item)
       item->Collect(vis);
@@ -10835,6 +10872,10 @@ public:
   {
     if (firsttime) {
       find_ml();
+      //FaceCollection *coll = find_facecoll(env,p);
+      //coll->Prepare();
+      //PointsApiPoints *pts2 = find_pointsapi_points(env,pts);
+      //pts2->Prepare();
       MainLoopItem *item = find_main_loop(env,ml);
       if (item)
 	item->Prepare();
@@ -10948,7 +10989,7 @@ EXPORT GameApi::ML GameApi::MaterialsApi::bind_inst_fade(P p, PTS pts, MT mat, b
 class RenderInstanced : public MainLoopItem
 {
 public:
-  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, bool color_from_pts) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),color_from_pts(color_from_pts)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
+  RenderInstanced(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, bool color_from_pts) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),color_from_pts(color_from_pts) { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
   std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -11167,7 +11208,7 @@ private:
 class RenderInstanced_matrix : public MainLoopItem
 {
 public:
-  RenderInstanced_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, bool color_from_matrices) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time), color_from_matrices(color_from_matrices)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
+  RenderInstanced_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, bool color_from_matrices) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time), color_from_matrices(color_from_matrices) { firsttime = true; initialized=false; shader.id=-1; va.id=-1; }
   std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
   {
@@ -11365,7 +11406,7 @@ private:
 class RenderInstancedTex : public MainLoopItem
 {
 public:
-  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels, std::vector<bool> is_srgb, float mix) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types),id_labels(id_labels), is_srgb(is_srgb),mix(mix)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  RenderInstancedTex(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels, std::vector<bool> is_srgb, float mix) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types),id_labels(id_labels), is_srgb(is_srgb),mix(mix) { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() {
     if (shader.id<=0) return std::vector<int>(); 
@@ -11587,7 +11628,7 @@ private:
 class RenderInstancedTex_matrix : public MainLoopItem
 {
 public:
-  RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels, std::vector<bool> is_srgb, bool color_from_matrices) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types),id_labels(id_labels),is_srgb(is_srgb), color_from_matrices(color_from_matrices)  { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
+  RenderInstancedTex_matrix(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::MS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels, std::vector<bool> is_srgb, bool color_from_matrices) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm),types(types),id_labels(id_labels),is_srgb(is_srgb), color_from_matrices(color_from_matrices) { firsttime = true; initialized=false; shader.id=-1; va.id=-1;}
   ~RenderInstancedTex_matrix() { ev.texture_api.delete_texid(ids); }
   std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
   void handle_event(MainLoopEvent &e)
@@ -11771,7 +11812,6 @@ public:
 	}
       }
 
-    
     if (va.id!=-1 && !g_filter_execute)
     ev.polygon_api.render_vertex_array_instanced_matrix(ev.shader_api, va, pta, sh, hide_n);
     ev.shader_api.print_log(sh);
@@ -11802,7 +11842,7 @@ private:
 class RenderInstancedTex_id : public MainLoopItem
 {
 public:
-  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm, float mix) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm), mix(mix)  { firsttime = true; shader.id=-1; initialized=false; va.id=-1; }
+  RenderInstancedTex_id(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::PTS pts, bool fade, bool flip, float start_time, float end_time, std::vector<GameApi::TXID> *bm, float mix) : env(e), ev(ev), p(p), pts(pts), fade(fade), flip(flip), start_time(start_time), end_time(end_time),bm(bm), mix(mix) { firsttime = true; shader.id=-1; initialized=false; va.id=-1; }
   //int shader_id() { return shader.id; }
   ~RenderInstancedTex_id() { if (bm) ev.texture_api.delete_texid(*bm); }
   std::vector<int> shader_id() { if (shader.id>=0) return std::vector<int>{shader.id}; return std::vector<int>(); }
@@ -14963,6 +15003,7 @@ public:
   bool Update(MainLoopEnv &e) { return p->Update(e); }
   
   void Prepare() { p->Prepare(); }
+  int MaxSize() const { return p->MaxNumPoints(); }
   int Size() const {
     return p->NumPoints();
   }
@@ -15154,7 +15195,7 @@ public:
 
   void Prepare() { arr1->Prepare(); arr2->Prepare(); }
   int Size() const { return std::min(arr1->Size(),arr2->Size()); }
-  Matrix Index(int i) const { return arr1->Index(i)*arr2->Index(i); }
+  Matrix Index(int i) const { if (i>=0&&i<Size()) return arr1->Index(i)*arr2->Index(i); else return Matrix::Identity(); }
 private:
   MatrixArray *arr1;
   MatrixArray *arr2;
@@ -41759,7 +41800,7 @@ float lod_l0 = -60000.0f; //1.3f;
   float lod_l1 = -6000.0f;//1.0f;
 float lod_l2 = -3000.0f; //0.8f;
 float lod_l3 = -1000.0f;//0.6f;
-float lod_l4 = 600.0f; //0.3f;
+float lod_l4 = 600.0f + 300.0f; //0.3f;
 
 float lod_x_1 = 38200.0;
 float lod_x_2 = 29000.0;
@@ -41857,7 +41898,12 @@ class LodMatrixTF : public MainLoopItem
 {
 public:
   LodMatrixTF(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::TF p, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, float start_brightness, float end_brightness) : env(env), ev(ev), p(p),ms(ms),level1(level1),level2(level2),level3(level3),level4(level4),l1(l1),l2(l2),l3(l3),l4(l4),mix(mix),self_mult(self_mult),rest_mult(rest_mult),mode(mode),light_dir_x(light_dir_x),light_dir_y(light_dir_y),light_dir_z(light_dir_z),border_width(border_width),border_color(border_color), transparent(transparent), acesfilm(acesfilm),start_brightness(start_brightness), end_brightness(end_brightness) { }
-  virtual void Collect(CollectVisitor &vis) { vis.register_obj(this); }
+  virtual void Collect(CollectVisitor &vis) {
+    GLTFModelInterface *interface = find_gltf(env,p);
+    interface->Collect(vis);
+    MatrixArray *arr = find_matrix_array(env,ms);
+    arr->Collect(vis);
+    vis.register_obj(this); }
   virtual void HeavyPrepare() {
     GameApi::TF p1 = ev.polygon_api.decimate_tf(p,level1);
     GameApi::TF p2 = ev.polygon_api.decimate_tf(p,level2);
@@ -41883,7 +41929,13 @@ public:
     MainLoopItem *item = find_main_loop(env,I154);
     item->Prepare();
   }
-  virtual void Prepare() { HeavyPrepare(); }
+  virtual void Prepare() {
+    GLTFModelInterface *interface = find_gltf(env,p);
+    interface->Prepare();
+    MatrixArray *arr = find_matrix_array(env,ms);
+    arr->Prepare();
+    HeavyPrepare();
+  }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
