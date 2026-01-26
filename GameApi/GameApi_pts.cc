@@ -737,14 +737,15 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from
   float *color = new float[num*4]; // *div
   Vector *normal = new Vector[num];
   int colorindex = 0;
+  int num2 = arr2->Size();
   for(int i=0;i<num;i++) {
-    Matrix m = i>=0&&i<arr2->Size()?arr2->Index(i):Matrix::Translate(-666666.0,-666666.0,-666666.0);
+    Matrix m = i>=0&&i<num2?arr2->Index(i):Matrix::Translate(-666666.0,-666666.0,-666666.0);
     float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
 		      m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
 		      m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
 		      m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
 
-    unsigned int c = i>=0&&i<arr2->Size()?arr2->Color(i):0xffffffff;
+    unsigned int c = i>=0&&i<num2?arr2->Color(i):0xffffffff;
     for(int j=0;j<16;j++) {
       array[i*16+j] = m.matrix[j];
     }
@@ -768,7 +769,7 @@ EXPORT GameApi::MSA GameApi::MatricesApi::prepare(GameApi::MS p, bool color_from
     colorindex+=4;
     //color[i] = swap_color(c);
 #endif
-    normal[i] = i>=0&&i<arr2->Size()?arr2->Normal(i):Vector(0.0,0.0,-400.0);
+    normal[i] = i>=0&&i<num2?arr2->Normal(i):Vector(0.0,0.0,-400.0);
   }
   // note, this isnt done like pts, i.e. its not sent to gpu buffers.
   MatrixArray3 *arr = new MatrixArray3;
