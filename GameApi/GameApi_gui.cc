@@ -6610,7 +6610,8 @@ ASyncData async_data[] = {
   { "voxel_api", "vox_ml", 1},
   { "voxel_api", "vox_bind_ml",1},
   { "voxel_api", "vox_ml2", 1},
-  { "voxel_api", "vox_bind_ml2",1}
+  { "voxel_api", "vox_bind_ml2",1},
+  { "voxel_api", "lod_vox", 1}
 };
 IMPORT ASyncData *g_async_ptr = &async_data[0];
 IMPORT int g_async_count = sizeof(async_data)/sizeof(ASyncData);
@@ -7129,7 +7130,8 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 	      ss >> num;
 	      //std::stringstream ss2;
 	      //ss2 << jj;
-	      std::string val = res_vec[num];
+	      
+	      std::string val = num>=0&&num<res_vec.size()?res_vec[num]:"";
 	      std::stringstream ss2(val);
 	      std::string val2;
 	      std::vector<std::string> vec;

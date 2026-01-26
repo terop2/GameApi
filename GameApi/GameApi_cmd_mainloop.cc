@@ -283,12 +283,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true" },
 			 "ML", "mainloop_api", "gltf_mesh_all"));
 #endif
-#if (ALL==1)||(GLTF_MESH_ALL_INST==1)
+#if (ALL==1)||(GLTF_MESH_ALL_INST2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_inst2,
 			 "ml_gltf_all_inst",
-			 { "ev", "tf", "resize_obj", "pts", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm" },
-			 { "EveryApi&", "TF", "TF", "PTS", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool", "bool" },
-			 { "ev", "", "", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true" },
+			 { "ev", "tf", "resize_obj", "pts", "mix", "self_mult", "rest_mult", "mode", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "keys" },
+			 { "EveryApi&", "TF", "TF", "PTS", "float", "float", "float", "int", "float", "float", "float", "float", "unsigned int", "bool", "bool", "std::string" },
+			 { "ev", "", "", "", "1.0","1.0", "1.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true", "c" },
 			 "ML", "mainloop_api", "gltf_mesh_all_inst2"));
 #endif
 

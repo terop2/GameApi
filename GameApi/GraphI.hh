@@ -1435,6 +1435,7 @@ public:
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int Size() const=0;
+  virtual int MaxSize() const { return Size(); }
   virtual Matrix Index(int i) const=0;
   virtual unsigned int Color(int i) const { return 0xffffffff; }
   virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
@@ -1732,6 +1733,7 @@ public:
   virtual void HandleEvent(MainLoopEvent &event) { }
   virtual bool Update(MainLoopEnv &e) { return false; }
   virtual int NumPoints() const=0;
+  virtual int MaxNumPoints() const { return NumPoints(); }
   virtual Point Pos(int i) const=0;
   virtual unsigned int Color(int i) const=0;
   virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }

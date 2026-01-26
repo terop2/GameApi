@@ -1,45 +1,47 @@
 test
 
 
-(200,200)gltf_load2 uid3334 0 0 1 url:*https?//meshpage.org/beast.glb:false:-1:0
-(400,200)decimate_tf uid3335 0 0 1 mesh:*uid3334:false:-1:0 val:*0.8:false:-1:0
-(600,200)ml_gltf_all_anim uid3336 0 0 1 ev:*ev:false:-1:0 tf:*uid3335:false:-1:0 mix:*1.0:false:-1:0 self_mult:*1.0:false:-1:0 rest_mult:*1.0:false:-1:0 mode:*0:false:-1:0 keys:*op:false:-1:0 light_dir_x:*400:false:-1:0 light_dir_y:*-400:false:-1:0 light_dir_z:*300:false:-1:0 border_width:*0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0
+(198,200)gltf_load2 uid3334 0 0 1 url:*https?//meshpage.org/beast.glb:false:-1:0
+(400,200)decimate_tf uid3335 0 0 1 mesh:*uid3334:false:-1:0 val:*1:false:-1:0
+(563,188)ml_gltf_all_anim uid3336 0 0 1 ev:*ev:false:-1:0 tf:*uid3334:false:-1:0 mix:*1.0:false:-1:0 self_mult:*1.0:false:-1:0 rest_mult:*1.0:false:-1:0 mode:*0:false:-1:0 keys:*op:false:-1:0 light_dir_x:*400:false:-1:0 light_dir_y:*-400:false:-1:0 light_dir_z:*300:false:-1:0 border_width:*0:false:-1:0 border_color:*ff000000:false:-1:0 transparent:*false:false:-1:0 acesfilm:*true:false:-1:0
 (800,200)if_keypress uid3337 0 0 1 key:*119:false:-1:0 key_down_value:*1:false:-1:0 key_up_value:*0:false:-1:0
-(1000,200)if_keys uid3338 0 0 1 ml:*uid3336:false:-1:0 fetcher:*uid3337:false:-1:0 keys:*po:false:-1:0
+(998,200)if_keys uid3338 0 0 1 ml:*uid3336:false:-1:0 fetcher:*uid3337:false:-1:0 keys:*po:false:-1:0
 (1200,200)mn_empty uid3339 0 0 1
-(200,400)mn_translate uid3340 0 0 1 next:*uid3339:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*100:false:-1:0
+(198,400)mn_translate uid3340 0 0 1 next:*uid3339:false:-1:0 dx:*0:false:-1:0 dy:*0:false:-1:0 dz:*100:false:-1:0
 (400,400)mn_rotatey uid3341 0 0 1 next:*uid3340:false:-1:0 angle:*3.14159:false:-1:0
 (600,400)move_ml uid3342 0 0 1 ev:*ev:false:-1:0 ml:*uid3338:false:-1:0 mn:*uid3341:false:-1:0 clone_count:*1:false:-1:0 time_delta:*10.0:false:-1:0
-(800,400)gltf_load2 uid3343 0 0 1 url:*https?//meshpage.org/plant1.glb:false:-1:0
-(1000,400)decimate_tf uid3344 0 0 1 mesh:*uid3343:false:-1:0 val:*0.5:false:-1:0
-(1200,400)gltf_mesh_all_p uid3345 0 0 1 ev:*ev:false:-1:0 model:*uid3344:false:-1:0
-(200,600)quad_y uid3346 0 0 1 x1:*-15000:false:-1:0 x2:*15000:false:-1:0 y:*0:false:-1:0 z1:*-1500:false:-1:0 z2:*1500:false:-1:0
+(740,425)gltf_load2 uid3343 0 0 1 url:*https?//meshpage.org/plant1.glb:false:-1:0
+(998,400)decimate_tf uid3344 0 0 1 mesh:*uid3343:false:-1:0 val:*0.5:false:-1:0
+(1200,400)gltf_mesh_all_p uid3345 0 0 1 ev:*ev:false:-1:0 model:*uid3343:false:-1:0
+(198,600)quad_y uid3346 0 0 1 x1:*-15000:false:-1:0 x2:*15000:false:-1:0 y:*0:false:-1:0 z1:*-1500:false:-1:0 z2:*1500:false:-1:0
 (400,600)random_quad uid3347 0 0 1 ev:*ev:false:-1:0 p:*uid3346:false:-1:0 count:*300:false:-1:0
-(600,600)m_gltf uid3348 0 0 1 ev:*ev:false:-1:0 tf:*uid3344:false:-1:0 material_id:*0:false:-1:0 mix:*1.0:false:-1:0 self_mult:*1.0:false:-1:0 rest_mult:*1.0:false:-1:0 light_x:*400.0:false:-1:0 light_y:*-400.0:false:-1:0 light_z:*300.0:false:-1:0
+(600,600)m_gltf uid3348 0 0 1 ev:*ev:false:-1:0 tf:*uid3343:false:-1:0 material_id:*0:false:-1:0 mix:*1.0:false:-1:0 self_mult:*1.0:false:-1:0 rest_mult:*1.0:false:-1:0 light_x:*400.0:false:-1:0 light_y:*-400.0:false:-1:0 light_z:*300.0:false:-1:0
 (800,600)m_phong uid3349 0 0 1 ev:*ev:false:-1:0 nxt:*uid3348:false:-1:0 light_pos_x:*400.0:false:-1:0 light_pos_y:*-400.0:false:-1:0 light_pos_z:*300.0:false:-1:0 ambient:*ff221100:false:-1:0 specular:*ffff8800:false:-1:0 highlight:*ffffffff:false:-1:0 pow:*30.0:false:-1:0
-(1000,600)m_toon_border uid3350 0 0 1 ev:*ev:false:-1:0 next:*uid3349:false:-1:0 border_width:*2:false:-1:0 border_color:*ff000000:false:-1:0 is_gltf:*true:false:-1:0
-(1200,600)m_bind_inst uid3351 0 0 1 p:*uid3345:false:-1:0 pts:*uid3347:false:-1:0 mat:*uid3350:false:-1:0
-(200,800)gltf_load2 uid3352 0 0 1 url:*https?//meshpage.org/stone_cannon.glb:false:-1:0
-(400,800)decimate_tf uid3353 0 0 1 mesh:*uid3352:false:-1:0 val:*0.5:false:-1:0
-(600,800)gltf_mesh_all_p uid3354 0 0 1 ev:*ev:false:-1:0 model:*uid3353:false:-1:0
+(1001,671)m_toon_border uid3350 0 0 1 ev:*ev:false:-1:0 next:*uid3349:false:-1:0 border_width:*2:false:-1:0 border_color:*ff000000:false:-1:0 is_gltf:*true:false:-1:0
+(1156,577)m_bind_inst uid3351 0 0 1 p:*uid3345:false:-1:0 pts:*uid3347:false:-1:0 mat:*uid3350:false:-1:0
+(1039,774)gltf_load2 uid3352 0 0 1 url:*https?//meshpage.org/stone_cannon.glb:false:-1:0
+(1098,907)decimate_tf uid3353 0 0 1 mesh:*uid3352:false:-1:0 val:*0.5:false:-1:0
+(531,751)gltf_mesh_all_p uid3354 0 0 1 ev:*ev:false:-1:0 model:*uid3352:false:-1:0
 (800,800)quad_y uid3355 0 0 1 x1:*-15000:false:-1:0 x2:*15000:false:-1:0 y:*-30:false:-1:0 z1:*-1500:false:-1:0 z2:*1500:false:-1:0
-(1000,800)random_quad uid3356 0 0 1 ev:*ev:false:-1:0 p:*uid3355:false:-1:0 count:*400:false:-1:0
-(1200,800)m_gltf uid3357 0 0 1 ev:*ev:false:-1:0 tf:*uid3353:false:-1:0 material_id:*0:false:-1:0 mix:*0.95:false:-1:0 self_mult:*1.0:false:-1:0 rest_mult:*1.0:false:-1:0 light_x:*400.0:false:-1:0 light_y:*-400.0:false:-1:0 light_z:*300.0:false:-1:0
-(200,1000)m_toon_border uid3358 0 0 1 ev:*ev:false:-1:0 next:*uid3357:false:-1:0 border_width:*2:false:-1:0 border_color:*ff000000:false:-1:0 is_gltf:*true:false:-1:0
+(212,892)random_quad uid3356 0 0 1 ev:*ev:false:-1:0 p:*uid3355:false:-1:0 count:*400:false:-1:0
+(1200,800)m_gltf uid3357 0 0 1 ev:*ev:false:-1:0 tf:*uid3352:false:-1:0 material_id:*0:false:-1:0 mix:*0.95:false:-1:0 self_mult:*1.0:false:-1:0 rest_mult:*1.0:false:-1:0 light_x:*400.0:false:-1:0 light_y:*-400.0:false:-1:0 light_z:*300.0:false:-1:0
+(198,1000)m_toon_border uid3358 0 0 1 ev:*ev:false:-1:0 next:*uid3357:false:-1:0 border_width:*2:false:-1:0 border_color:*ff000000:false:-1:0 is_gltf:*true:false:-1:0
 (400,1000)m_bind_inst uid3359 0 0 1 p:*uid3354:false:-1:0 pts:*uid3356:false:-1:0 mat:*uid3358:false:-1:0
-(600,1000)or_elem_ml uid3360 0 0 1 ev:*ev:false:-1:0 m1:*uid3351:false:-1:0 m2:*uid3359:false:-1:0
+(600,1000)or_elem_ml uid3360 0 0 1 ev:*ev:false:-1:0 m1:*uid319829079:false:-1:0 m2:*uid319829080:false:-1:0
 (800,1000)fly_ml uid3361 0 0 1 ev:*ev:false:-1:0 ship:*uid3342:false:-1:0 world:*uid3360:false:-1:0 speed:*5:false:-1:0 rot_speed:*0.05:false:-1:0 p_x:*0:false:-1:0 p_y:*0:false:-1:0 p_z:*0:false:-1:0
-(1000,1000)quad_z uid3362 0 0 1 x1:*-4500:false:-1:0 x2:*4500:false:-1:0 y1:*-4500:false:-1:0 y2:*4500:false:-1:0 z:*-2040:false:-1:0
+(998,1000)quad_z uid3362 0 0 1 x1:*-4500:false:-1:0 x2:*4500:false:-1:0 y1:*-4500:false:-1:0 y2:*4500:false:-1:0 z:*-2040:false:-1:0
 (1200,1000)bm_url uid3363 0 0 1 url:*https?//meshpage.org/ld57/store/ground.png:false:-1:0
-(200,1200)flip_y uid3364 0 0 1 orig:*uid3363:false:-1:0
-(400,1200)m_texture uid3365 0 0 1 ev:*ev:false:-1:0 bm:*uid3364:false:-1:0 mix:*1.0:false:-1:0
-(600,1200)m_bind uid3366 0 0 1 p:*uid3362:false:-1:0 mat:*uid3365:false:-1:0
+(183,1222)flip_y uid3364 0 0 1 orig:*uid3363:false:-1:0
+(1081,1179)m_texture uid3365 0 0 1 ev:*ev:false:-1:0 bm:*uid3364:false:-1:0 mix:*1.0:false:-1:0
+(578,1216)m_bind uid3366 0 0 1 p:*uid3362:false:-1:0 mat:*uid3365:false:-1:0
 (800,1200)or_elem_ml uid3367 0 0 1 ev:*ev:false:-1:0 m1:*uid3361:false:-1:0 m2:*uid3366:false:-1:0
-(1000,1200)ogl_perspective uid3368 0 0 1 ev:*ev:false:-1:0 ml:*uid3367:false:-1:0 mult:*80.0:false:-1:0 front_plane:*10.1:false:-1:0 end_plane:*60000.0:false:-1:0
+(998,1200)ogl_perspective uid3368 0 0 1 ev:*ev:false:-1:0 ml:*uid3367:false:-1:0 mult:*80.0:false:-1:0 front_plane:*10.1:false:-1:0 end_plane:*60000.0:false:-1:0
 (1200,1200)song_ml uid3369 0 0 1 ev:*ev:false:-1:0 next:*uid3368:false:-1:0 url:*https?//meshpage.org/liplatus4.ogg:false:-1:0
-(200,1400)keys_to_wasd uid3370 0 0 1 ml:*uid3369:false:-1:0
+(198,1400)keys_to_wasd uid3370 0 0 1 ml:*uid3369:false:-1:0
 (400,1400)fullscreen_button uid3371 0 0 1 ev:*ev:false:-1:0
 (600,1400)or_elem_ml uid3372 0 0 1 ev:*ev:false:-1:0 m1:*uid3370:false:-1:0 m2:*uid3371:false:-1:0
 (800,1400)run_window uid3373 0 0 1 ev:*ev:false:-1:0 ml:*uid3372:false:-1:0 logo:*false:false:-1:0 fpscounter:*false:false:-1:0 start_time:*0.0:false:-1:0 duration:*100000.0:false:-1:0
 (677,1614)save_deploy uid734391402 0 0 1 h:*uid734391403:false:-1:0 filename:*gameapi_deploy.zip:false:-1:1556137728
 (522,1627)html_run uid734391403 0 0 1 ev:*ev:false:-1:1556137600 r:*uid3373:false:-1:0 homepage:*https?//meshpage.org/assets/:false:-1:1556137600
+(973,536)m_lod uid319829079 0 0 1 ev:*ev:false:-1:1798172960 mesh:*uid3345:false:-1:0 mat:*uid3350:false:-1:0 pts:*uid3347:false:-1:0 decimate_level1:*0.8:false:-1:1798172960 decimate_level2:*0.6:false:-1:1798172960 decimate_level3:*0.4:false:-1:1798172960 decimate_level4:*0.2:false:-1:1798172960 max_obj_count1:*1500:false:-1:1798172960 max_obj_count2:*1500:false:-1:1798172960 max_obj_count3:*1500:false:-1:1798172960 max_obj_count4:*1500:false:-1:1798172960
+(388,780)m_lod uid319829080 0 0 1 ev:*ev:false:-1:1798172960 mesh:*uid3354:false:-1:0 mat:*uid3358:false:-1:0 pts:*uid3356:false:-1:0 decimate_level1:*0.8:false:-1:1798172960 decimate_level2:*0.6:false:-1:1798172960 decimate_level3:*0.4:false:-1:1798172960 decimate_level4:*0.2:false:-1:1798172960 max_obj_count1:*1500:false:-1:1798172960 max_obj_count2:*1500:false:-1:1798172960 max_obj_count3:*1500:false:-1:1798172960 max_obj_count4:*1500:false:-1:1798172960

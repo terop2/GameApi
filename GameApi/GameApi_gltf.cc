@@ -604,6 +604,7 @@ public:
   void PrePrePrepare(int i, FETCHID id)
   {
     if (!decoder) return;
+    //std::cout << "PrePrePrepare" << i << std::endl;
     if (url.substr(url.size()-3,3)!="glb") {
     prepreprepare_done = true;
     std::vector<unsigned char,GameApiAllocator<unsigned char> > *vec = decoder->get_file(e,id);
@@ -647,8 +648,9 @@ public:
   }
 #endif
     //unasync();
-    if (!decoder) return;
-    if (preprepare_done) return;
+    if (!decoder) { std::cout << "NoDecoder" << std::endl; return; }
+    if (preprepare_done) { std::cout << "PrePrepare already done" << std::endl; return; }
+    //std::cout << "PrePrepare" << url << std::endl;
     preprepare_done = true;
     if (url.substr(url.size()-3,3)!="glb") {
       //std::cout << "PrePrepare()" << url << std::endl;
@@ -669,9 +671,12 @@ public:
     
     std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
 
-    //int ss = image_filenames.size();
-    //std::cout << "filenames_count:" << ss << std::endl;
-    //for(int i=0;i<ss;i++)
+
+
+    
+    //int ss6 = image_filenames.size();
+    //std::cout << "filenames_count:" << ss6 << std::endl;
+    //for(int i=0;i<ss6;i++)
     //  {
     //std::cout << "IMAGE:" << image_filenames[i] << std::endl;
     // }
@@ -715,6 +720,7 @@ public:
   }
   void Prepare() {
     if (prepare_done) return;
+    //std::cout << "Prepare" << std::endl;
     unasync();
 #ifndef EMSCRIPTEN
     PrePrepare();
@@ -864,6 +870,7 @@ void LoadGltf_cb(void *ptr)
 void LoadGltf2_cb(void *ptr)
 {
   LoadGltf2_data *dt = (LoadGltf2_data*)ptr;
+  //std::cout << "LoadGltf2_cb " << dt->id << std::endl;
   dt->obj->PrePrePrepare(dt->id, dt->iid);
 }
 class LoadGltf_from_string : public CollectInterface
@@ -4320,6 +4327,8 @@ public:
     if (res<0) { std::cout << "ERROR, numfaces too small" << res << std::endl; res=0; }
     //std::cout << "TINYGLTF mode wrong in NumFaces() " << mode << std::endl;
     //std::cout << "NumFaces(6):" << res << std::endl;
+
+    //std::cout << "GLTFFaceCollection NumFaces:" << res << std::endl;
     return res;
   }
   virtual int NumPoints(int face) const { 
@@ -8335,9 +8344,8 @@ int arr_fetch_material(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfac
 
       if (transparent) mat_res=mat4; else mat_res=mat2;
       if (acesfilm)
-	mat4 = ev.materials_api.acesfilm_material(ev,mat4);
-      mat4 = ev.materials_api.discard_material(ev,mat4);
-      //return mat2.id; // TEST REMOVED TRANSPARENCY
+       	mat_res = ev.materials_api.acesfilm_material(ev,mat_res);
+      mat_res = ev.materials_api.discard_material(ev,mat_res);
   return mat_res.id;
 }
 
@@ -8437,8 +8445,8 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
 	mat_res = mat4;
       } else { mat_res=mat2_anim; }
       if (acesfilm)
-	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
-      mat_res = ev.materials_api.discard_material(ev,mat_res);
+      	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
+       mat_res = ev.materials_api.discard_material(ev,mat_res);
       
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       GameApi::ML ml = ev.materials_api.bind(p,mat_res);
@@ -8513,7 +8521,7 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
 	mat_res = mat4;
       } else { mat_res=mat2_anim; }
       if (acesfilm)
-	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
+      	mat_res = ev.materials_api.acesfilm_material(ev, mat_res);
       mat_res = ev.materials_api.discard_material(ev,mat_res);
 
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
@@ -8701,7 +8709,7 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       //GameApi::ML ml = ev.materials_api.bind(p,mat2_anim); // TEST, REMOVED TRANSPARENCY
       }
       if (acesfilm)
-	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
+      	mat4 = ev.materials_api.acesfilm_material(ev, mat4);
       mat4 = ev.materials_api.discard_material(ev,mat4);
 
       GameApi::ML ml = ev.materials_api.bind_inst_matrix(p,ms,mat4);
@@ -9440,7 +9448,7 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
 	      {
 		const tinygltf::Primitive &prim = mesh_data.primitives[p];
 		int material = prim.material;
-		std::cout << "Primitive material:" << material << std::endl;
+		//std::cout << "Primitive material:" << material << std::endl;
 		GameApi::MT mat2;
 		if (material==-1)
 		  {
@@ -14999,6 +15007,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
   int s = ids.size();
   for(int i=0;i<s;i++)
     {
+      //std::cout << "FileName:" << remove_dirs(filenames[ids[i]]) << std::endl;
       filenames_.push_back(remove_dirs(filenames[ids[i]]));
     }
 
@@ -15016,6 +15025,7 @@ void GLTFImageDecoder::fetch_all_files(GameApi::Env &e, const std::vector<FETCHI
 void GLTFImageDecoder::set_fetch_callback(GameApi::Env &e, FETCHID id, void (*fptr)(void*), void *user_data)
 {
   std::string url = filenames[id];
+  //std::cout << "Set fetch callback:" << remove_dirs(url) << std::endl;
   e.async_load_callback(remove_dirs(url), fptr, user_data);
 }
 
