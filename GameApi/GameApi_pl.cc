@@ -22884,7 +22884,7 @@ public:
 class BlockPTS2 : public PointsApiPoints
 {
 public:
-  BlockPTS2(GameApi::Env &env, PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, float ncd_z_start, float ncd_z_end,int max_points) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points), ncd_z_start2(ncd_z_start), ncd_z_end2(ncd_z_end) {
+  BlockPTS2(GameApi::Env &env, PointsApiPoints *points, float start_x, float end_x, float start_y, float end_y, float ncd_z_start, float ncd_z_end,int max_points, float x_mult) : env(env), points(points),start_x2(start_x), end_x2(end_x), start_y2(start_y),end_y2(end_y), max_points(max_points), ncd_z_start2(ncd_z_start), ncd_z_end2(ncd_z_end),x_mult(x_mult) {
     
     if (start_x2>end_x2) std::swap(start_x2,end_x2);
     if (start_y2>end_y2) std::swap(start_y2,end_y2);
@@ -23011,7 +23011,7 @@ public:
     pp.x /= pp.z;
     pp.y /= pp.z;
     //std::cout << i << " :: " << pp.x << std::endl;
-    if (pp.x >= -1.7f && pp.x <= 1.7f) {
+    if (pp.x >= -1.7f*x_mult && pp.x <= 1.7f*x_mult) {
       if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
 	return true;
 	 }
@@ -23037,6 +23037,7 @@ private:
   bool firsttime2=true;
   float y_rot_cache=0.0;
   mutable int max_size=0;
+  float x_mult;
 };
 
 
@@ -23200,7 +23201,7 @@ private:
 GameApi::PTS GameApi::PointsApi::block_pts_lod(GameApi::PTS pts, float start_x, float end_x, float start_y, float end_y, int max_points, float ncd_z_s, float ncd_z_e)
 {
   PointsApiPoints *points = find_pointsapi_points(e,pts);
-  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,ncd_z_s,ncd_z_e,max_points));
+  return add_points_api_points(e,new BlockPTS2(e,points,start_x,end_x,start_y,end_y,ncd_z_s,ncd_z_e,max_points,1.0));
 }
 
 GameApi::PTS GameApi::PointsApi::block_pts_debug()
