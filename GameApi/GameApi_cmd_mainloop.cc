@@ -323,7 +323,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "tf","resize_obj", "ms","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm" },
 			 { "EveryApi&", "TF","TF","MS","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool" },
 			 { "ev", "", "","","1.0","1.0","1.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true" },
-			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
+			 "ML", "mainloop_api", "gltf_mesh_all_anim_inst_matrix"));
 #endif
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_ENV==1)
