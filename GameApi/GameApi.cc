@@ -41871,12 +41871,15 @@ GameApi::ML GameApi::MainLoopApi::lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF 
   TF p2 = ev.polygon_api.decimate_tf(p,level2);
   TF p3 = ev.polygon_api.decimate_tf(p,level3);
   TF p4 = ev.polygon_api.decimate_tf(p,level4);
-  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,2000,8000,l4 /*120*/,lod_l0,lod_l1);
-  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,1000,2000,l3 /*95*/,lod_l1,lod_l2);
-  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,0,1000,l2 /*45*/,lod_l2,lod_l3);
-  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,-1500,0,l1 /*45*/,lod_l3,lod_l4);
+  float m = 1.0;
+  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,2000,8000,l4 /*120*/,lod_l0*m,lod_l1*m);
+  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,1000,2000,l3 /*95*/,lod_l1*m,lod_l2*m);
+  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,0,1000,l2 /*45*/,lod_l2*m,lod_l3*m);
+  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,-1500,0,l1 /*45*/,lod_l3*m,lod_l4*m);
 
 
+
+  
   float b0 = start_brightness;
   float b1 = start_brightness*0.70+end_brightness*0.30;
   float b2 = start_brightness*0.30+end_brightness*0.70;
