@@ -2720,11 +2720,11 @@ echo "el.style.backgroundImage = \"url('dino4.webp')\";";
    // console.log("SPINNER DISABLED");
     //el.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
     el.style.backgroundImage = "none";
-    el.style.backgroundColor = "#000000";
+    el.style.backgroundColor = "#000";
     el.style.backgroundSize = "auto auto";
     //el2.style= "border-width:0px; border: 5px solid black; border-radius: 10px; background-color: #000; margin: 0; padding: 0;";
     el2.style.backgroundImage = "none";
-    el2.style.backgroundColor = "#000000";
+    el2.style.backgroundColor = "#000";
     el2.style.backgroundSize = "auto auto";
     
   }

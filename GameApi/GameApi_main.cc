@@ -875,7 +875,7 @@ EXPORT void GameApi::MainLoopApi::clear_3d(unsigned int color)
   a>>=24;
   r>>=16;
   g>>=8;
-  ogl->glClearColor(r/256.0,g/256.0,b/256.0,a/256.0);
+  ogl->glClearColor(r/255.0,g/255.0,b/255.0,a/255.0);
   ogl->glStencilMask(~0);
   if (g_no_clear) {
     ogl->glClear( /*Low_GL_COLOR_BUFFER_BIT |*/ Low_GL_DEPTH_BUFFER_BIT | Low_GL_STENCIL_BUFFER_BIT);
@@ -2822,22 +2822,23 @@ unsigned int g_background_edge[] = { 0xff000000, 0xff000000, 0xff888888, 0xff000
 class Bg : public MainLoopItem
 {
 public:
-  Bg(GameApi::EveryApi &ev) : ev(ev) { }
+  Bg(GameApi::EveryApi &ev, unsigned int color) : ev(ev), color(color) { }
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
   virtual void execute(MainLoopEnv &e)
   {
-    ev.mainloop_api.clear_3d(0xff000000);
+    ev.mainloop_api.clear_3d(color /*0xff253900*/);
   }
   virtual void handle_event(MainLoopEvent &e) { }
   virtual std::vector<int> shader_id() { return std::vector<int>(); }
 private:
   GameApi::EveryApi &ev;
+  unsigned int color;
 };
-GameApi::ML GameApi::MainLoopApi::glClear(GameApi::EveryApi &ev)
+GameApi::ML GameApi::MainLoopApi::glClear(GameApi::EveryApi &ev, unsigned int color)
 {
-  return add_main_loop(e,new Bg(ev));
+  return add_main_loop(e,new Bg(ev,color));
 }
 
 extern bool g_transparent_indication;
@@ -2862,7 +2863,7 @@ GameApi::ML GameApi::MainLoopApi::android_landscape_scale(EveryApi &ev, ML ml)
  return ml;
 }
 
-GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
+GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml, bool is_logo)
 {
   if (g_transparent) {
     if (g_transparent_indication) {
@@ -2880,7 +2881,9 @@ GameApi::ML GameApi::MainLoopApi::display_background(EveryApi &ev, ML ml)
     //BM I2=ev.bitmap_api.scale_bitmap_fullscreen(ev,I1);
     //ML I3=ev.sprite_api.vertex_array_render(ev,I2);
     //ML I4=ev.sprite_api.turn_to_2d(ev,I3,0.0,0.0,800.0,600.0);
-    ML I4=ev.mainloop_api.glClear(ev);
+    unsigned int color = 0xff000000;
+    
+    ML I4=ev.mainloop_api.glClear(ev,color);
     ML I5=ev.mainloop_api.array_ml(ev,std::vector<ML>{I4,ml});
     return I5;
   }
@@ -3116,7 +3119,7 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
 
 
 
-  I17a = ev.mainloop_api.display_background(ev,I17a);
+  I17a = ev.mainloop_api.display_background(ev,I17a,true);
 
  ML res = I17a;
 
@@ -3154,7 +3157,7 @@ MN I31=ev.move_api.mn_empty();
 MN I32=ev.move_api.rotatey(I31,-1.59);
 MN I33=ev.move_api.rotate(I32,0,30,0,0,0,0,1,0,1.59);
 ML I34=ev.move_api.move_ml(ev,I30,I33);
- I34 = ev.mainloop_api.display_background(ev,I34);
+ I34 = ev.mainloop_api.display_background(ev,I34,true);
  ML res = I34;
 #endif
  //ML res2 = ev.mainloop_api.flip_scene_x_if_mobile(ev,res);

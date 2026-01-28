@@ -490,7 +490,7 @@ public:
   IMPORT ML mouse_roll_zoom2(EveryApi &ev, ML nect);
   IMPORT ML perspective(EveryApi &ev, ML next, float mult, float front_plane, float end_plane);
   IMPORT ML anim_ML(EveryApi &ev, std::string url, std::string p1, std::string p2, std::string p3, std::string p4, std::string p5, IF dyn);
-  IMPORT ML glClear(EveryApi &ev);
+  IMPORT ML glClear(EveryApi &ev, unsigned int color);
   IMPORT GS game_state();
   IMPORT ML gs_mouse_pos(GS gs, ML ml, int x, int y);
   IMPORT ML gs_obj_pos(GS gs, ML ml, int x, int y, int z);
@@ -574,7 +574,7 @@ public:
   IMPORT ARR activate_arr_arr(std::vector<ML> arr);
   IMPORT ML slow_activate_item(ML ml,int i);
   IMPORT BM framebuffer_bitmap(FBU framebuffer);
-  IMPORT ML display_background(EveryApi &ev, ML ml);
+  IMPORT ML display_background(EveryApi &ev, ML ml, bool is_logo=false);
   IMPORT ML small_window(EveryApi &ev, ML ml, int x, int y, int sx, int sy);
   IMPORT ML drag_drop_area(EveryApi &ev, ML mainloop, RUN (*fptr)(Env &e, EveryApi &ev, std::string filename));
   IMPORT PTS score_hide_pts(PTS pts);
