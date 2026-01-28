@@ -402,7 +402,7 @@ $display_labels[$ii] = $label;
    $url = "/" . $ii; //"meshpage/2&id=" . $ii; // . "&label=" . $id;
    echo "<div class=\"flex-item col-12 col-sm-6 col-md-4 col-lg-3 p-3 m-0 w-18 h-18 text-center\" itemscope itemtype=\"https://schema.org/CreativeWork\">";
    echo "<div class=\"highlight hover-red child-div top-0 start-0 w-100 h-100\" style=\"border-style: solid; border-width: 2px; border-color: black;\">";
-   echo "<div style=\"width: 100%; font-size: 150%; font-family: 'calibri', sans-serif\" class=\"label\" align=\"center\"><b>$ii : $label</b></div>";
+   echo "<div style=\"display: flex; align-items: center;\"><div style=\"display: flex; padding: 8px; width: 100%; font-size: 150%; height: 60px; font-family: 'calibri', sans-serif; line-height: 0.95;\" class=\"label align-items-center justify-content-center\" align=\"center\"><div style=\"display:flex; justify-content: center;\"><div style=\"text-align: center;\"><b>$ii</b></div><div style=\"margin-left: 6px; margin-right: 6px;\"><b> : </b></div><div style=\"text-align: left;\"><b>$label</b></div></div></div></div>";
    echo "<div class=\"hover-red\">";
    echo "<div class=\"image hover-red\">";
    // BACKGROUND CHANGE
@@ -431,7 +431,7 @@ $display_labels[$ii] = $label;
    echo "</div>";
    $ump = create_id2("terop",$ii);
 
-   echo "<div class=\"zipbutton d-flex align-items-right hover-red justify-content-end\">";
+   echo "<div class=\"zipbutton d-flex align-items-right hover-red justify-content-end m-1\">";
    echo "<div class=\"ziphoriz justify-content-end d-flex align-items-right gap-2 hover-red\">";
    echo "<button id=\"copybutton$ii\" class=\"btn btn-secondary btn-sm btn-light py-1 px-1 hover-red rounded-0\" type=\"button\" onclick=\"show_copy($ii,'$ump')\" onfocus=\"g_focus3=true;\" onblur=\"g_focus3=false;\">&copy;</button>";
  //  echo "<script>";
