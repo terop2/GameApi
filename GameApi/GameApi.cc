@@ -22886,13 +22886,14 @@ GameApi::ARR GameApi::VoxelApi::vox_cubes(GameApi::EveryApi &ev, std::string url
 class VoxML : public MainLoopItem
 {
 public:
-  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, int level) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz),mt(mt),level(level) { }
+  VoxML(GameApi::Env &env, GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, GameApi::MT mt, int level) : env(env), ev(ev), url(url), model(model), sx(sx), sy(sy), sz(sz),mt(mt),level(level) { firsttime=true; }
   virtual void Collect(CollectVisitor &vis)
   {
     vis.register_obj(this);
   }
   virtual void HeavyPrepare()
   {
+    if (firsttime) {
     GameApi::ARR I1=ev.voxel_api.vox_cubes(ev,url,model,sx,sy,sz);
     ArrayType *arr2 = find_array(env,I1);
     std::vector<GameApi::P> vec2;
@@ -22934,6 +22935,8 @@ public:
     item = find_main_loop(env,I5);
     item->Prepare();
     vvx->CleanPrepare();
+    firsttime = false;
+    }
   }
   virtual void Prepare() { HeavyPrepare(); }
   virtual void execute(MainLoopEnv &e) {
@@ -22955,6 +22958,7 @@ private:
   MainLoopItem *item=0;
   GameApi::MT mt;
   int level;
+  bool firsttime;
 };
 
 GameApi::ML GameApi::VoxelApi::vox_ml(GameApi::EveryApi &ev, std::string url, int model, float sx, float sy, float sz, int level)

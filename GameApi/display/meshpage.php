@@ -619,6 +619,7 @@ echo "Introduction: <a href=\"article.php\">article</a><br>";
 echo "Create(private): <a href=\"mesh_login.php?return=create_mesh.php\">mesh</a><br>";
 echo "Vault(private): <a href=\"mesh_login.php?return=mesh_hide.php\">vault</a><br>";
 echo "Adverticement: <a href=\"https://www.youtube.com/watch?v=0UF0zIMI2xA&feature=youtu.be\">Video</a><br><p>";
+echo "Slack group invite link: <a href=\"https://join.slack.com/t/meshpageorgsg-v7a1898/shared_invite/zt-3okqaoin8-XU3fWVr4ww03OJv8Khs~ww\">Join Slack</a><br><p>";
 
 echo "Resume cookie dialog: <a href=\"JavaScript:void(0);\" onClick=\"resume_cookies()\">RESUME</a><br>";
 echo "<script>function resume_cookies() { var c = document.getElementById(\"callout\"); c.style.display=\"block\"; }</script>"; 

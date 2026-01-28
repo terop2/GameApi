@@ -6623,7 +6623,18 @@ public:
   virtual int SizeY() const { return sy; }
   virtual Color Map(int x, int y) const
   {
-    return Color(bmdata[x+sx*y]);
+    unsigned int c = bmdata[x+sx*y];
+    unsigned int ca = c & 0xff;
+    unsigned int cr = c & 0xff000000;
+    unsigned int cg = c & 0xff0000;
+    unsigned int cb = c & 0xff00;
+    cr>>=24;
+    cg>>=16;
+    cb>>=8;
+    ca<<=24;
+    cr<<=16;
+    cg<<=8;
+    return Color(ca+cr+cg+cb);
   }
   void Collect(CollectVisitor &vis)
   {

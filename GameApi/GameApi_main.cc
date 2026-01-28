@@ -2934,9 +2934,9 @@ GameApi::ML GameApi::MainLoopApi::choose_ml_from_status(ML connect, ML download,
 
 GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data);
 
-#include "editor/logo-connecting.inc"
-#include "editor/logo-preparing.inc"
-#include "editor/logo-downloading.inc"
+#include "editor/logo-connecting4.inc"
+#include "editor/logo-preparing4.inc"
+#include "editor/logo-downloading4.inc"
 
 extern bool g_has_fullscreen_button;
 extern double g_dpr;
@@ -2961,7 +2961,7 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
     div_y=2.2;
     }*/
 
-  std::string s = std::string(logo_connecting_raw,logo_connecting_raw+logo_connecting_raw_len);
+  std::string s = std::string(logo_connecting4_raw,logo_connecting4_raw+logo_connecting4_raw_len);
   BM I7A = load_raw_bitmap2(e, s /*"web_page/logo-connecting.raw"*/);
   BM I7aA = I7A; //ev.bitmap_api.flip_x(I7A);
   ML I17A;
@@ -2994,7 +2994,7 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
  I17A=I19; //ev.move_api.move_ml(ev,I5,I11,1,10.0);
   }
 
-  std::string s2 = std::string(logo_downloading_raw,logo_downloading_raw+logo_downloading_raw_len);
+  std::string s2 = std::string(logo_downloading4_raw,logo_downloading4_raw+logo_downloading4_raw_len);
 
   BM I7B = load_raw_bitmap2(e, s2 /*"web_page/logo-downloading.raw"*/);
   BM I7aB = I7B; //ev.bitmap_api.flip_x(I7B);
@@ -3027,7 +3027,7 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
  I17B = I19;
   }
 
-  std::string s3 = std::string(logo_preparing_raw,logo_preparing_raw+logo_preparing_raw_len);
+  std::string s3 = std::string(logo_preparing4_raw,logo_preparing4_raw+logo_preparing4_raw_len);
   BM I7C = load_raw_bitmap2(e, s3 /*"web_page/logo-preparing.raw"*/);
   BM I7aC = I7C; //ev.bitmap_api.flip_x(I7C);
   ML I17C;

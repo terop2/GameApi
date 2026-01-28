@@ -4186,6 +4186,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
 	Env *e2 = new Env;
   Env &e = *e2;
   EveryApi ev(*e2);
+  
   Envi *env = new Envi;
   Envi_tabs *env_tab = new Envi_tabs;
   g_start_tab = env_tab;
@@ -4436,7 +4437,7 @@ printf("DLC 4181720 subscribed: %s\n", SteamApps()->BIsSubscribedApp(4181720) ? 
   ev.mainloop_api.alpha(true);
   int *active_tab = new int(0);
 
-
+  
   std::vector<ASyncTask*> perm_tasks;
   std::vector<BuilderIter*> perm_nodes;
   std::vector<void*> perm_args;
