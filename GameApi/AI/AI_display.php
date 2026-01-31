@@ -32,9 +32,9 @@ RUN I6=ev.blocker_api.game_window2(ev,I5,false,false,0.0,100000.0);
     </pre>
     <pre id="gameapi_modificationdate" style="display:none">
     <?php
-       $files = array("display.html","engine/engine_highmem.wasm",
-       "engine/engine_highmem.js",
-       "engine/gameapi.js");
+       $files = array("display.html","AI_engine/engine_highmem.wasm",
+       "AI_engine/engine_highmem.js",
+       "AI_engine/gameapi.js");
        $max_dt = -2147483648;
        foreach($files as $file) {
        $dt = filemtime($file);
@@ -84,7 +84,7 @@ SatJan3119:10:272026
 
       
     </script>
-    <script src="engine/gameapi.js?1"></script>
+    <script src="AI_engine/gameapi.js?1"></script>
     <script>
 function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border) {
     return function (event) {
