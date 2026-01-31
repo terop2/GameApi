@@ -22,19 +22,19 @@
          and delta_x and delta_y (to position the model)                                                                                                
     -->
     <script>
-      let wd = 800;
-      let hd = 600;
+      let wd = 800-28;
+      let hd = 600-28;
       let delta_x=0;
       let delta_y=0;
-      let container_width=800;
-      let container_height=600;
+      let container_width=800-28;
+      let container_height=600-28;
       let enable_debug_border=false;
       if (window.self !== window.top)
       { // we're inside iframe, use iframe dimensions
-	  wd = window.innerWidth;
-	  hd = window.innerHeight;
-	  container_width = window.innerWidth;
-	  container_height= window.innerHeight;
+	  wd = window.innerWidth-28;
+	  hd = window.innerHeight-28;
+	  container_width = window.innerWidth-28;
+	  container_height= window.innerHeight-28;
       }
 
       
@@ -45,10 +45,10 @@ function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,en
     return function (event) {
       if (window.self !== window.top)
       { // we're inside iframe, use iframe dimensions
-	  wd = window.innerWidth;
-	  hd = window.innerHeight;
-	  container_width = window.innerWidth;
-	  container_height= window.innerHeight;
+	  wd = window.innerWidth-28;
+	  hd = window.innerHeight-28;
+	  container_width = window.innerWidth-28;
+	  container_height= window.innerHeight-28;
       }
 	
           if (Module && g_emscripten_running) {
