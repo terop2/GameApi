@@ -62,7 +62,7 @@ div#box {
 <div style="height: 30px">
 </div>
 <div id="promptdiv">
-<form action="/submit" method="get">
+<form action="/AI_result.php" method="get">
 <div class="horizcontainer" id="horiz">
 <div class="labeldiv" id="labeldiv">
 <label class="label" for="prompt"><b>Prompt:</b></label>

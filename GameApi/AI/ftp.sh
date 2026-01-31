@@ -46,9 +46,12 @@ finish()
     fi
 }
 copy_it AI.php
+copy_it AI_display.php
+copy_it AI_result.php
 copy_it promptimage.png
 copy_it resources.js
 copy_it resource_manip.js
+copy_it_2 AI_engine/gameapi.js
 copy_it_2 AI_engine/engine_highmem.js
 copy_it_2 AI_engine/engine_highmem.wasm
 copy_it_2 AI_engine/engine_highmem.wasm.br
