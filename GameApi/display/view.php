@@ -883,6 +883,14 @@ function parse_material_roughness(mat)
 </style>
 
 <script>
+var canvas = document.getElementById("canvas");
+const gl = canvas.getContext("webgl2");
+const renderer = gl.getParameter(gl.RENDERER);
+if (renderer.toLowerCase().includes("llvmpipe")) {
+  alert("Warning: Your browser is using software rendering/llvmpipe. 3D models may be slow. Please use Chrome/Chromium for best performance (or install firefox-esr in deb package from \"add-apt-repository ppa:mozillateam/ppa\" which isn't using snap's sandbox).");
+}
+
+
 function enable_spinner(a)
 {
   //var el = document.getElementById("canvas2");

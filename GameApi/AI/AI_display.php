@@ -1,6 +1,9 @@
 <?php
   header("Cross-Origin-Opener-Policy: same-origin");
   header("Access-Control-Allow-Headers: Range");
+
+  $keywords_json = $_POST["keywords"];
+  $keywords = json_decode($keywords_json);
   ?>
 <!DOCTYPE html>
 <html>
@@ -130,6 +133,28 @@ c.style.top = (delta_y + cc.offsetTop + (cc.clientHeight-hd)/2).toString() + "px
 window.onresize=resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border);
 window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); },10);
 
+    </script>
+    <script src="resources.js?<?php echo filemtime("resources.js") ?>"></script>
+    <script src="resource_manip.js?<?php echo filemtime("resource_manip.js") ?>"></script>
+    <script src="gameapi_manip.js?<?php echo filemtime("gameapi_manip.js") ?>"></script>
+    <script>
+     var arr = <?php echo json_encode($keywords); ?>;
+     var arr2 = [];
+     var res = [];
+     console.log(arr);
+     var count0 = get_entry_count("");
+     for(var j=0;j<count0;j++) {
+     var count = get_file_count(j);
+     for(var i=0;i<count;i++) {
+          var file = get_file(j,i);
+	  var key = find_keywords(file);
+	  if (arr.includes(key) && arr2[arr.indexOf(key)]!==true) {
+		  res.push(file);
+		  arr2[arr.indexOf(key)]=true;
+	  }
+	  }
+	  }
+	  console.log(res);
     </script>
   </body>
 </html>

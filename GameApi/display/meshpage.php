@@ -668,6 +668,15 @@ echo "<li>External modules have their own licenses, including GPLv2, GPLv3, SIL 
 echo "</ul>";
 ?>
 <script>
+var canvas = document.getElementById("canvas");
+const gl = canvas.getContext("webgl2");
+const renderer = gl.getParameter(gl.RENDERER);
+if (renderer.toLowerCase().includes("llvmpipe")) {
+  alert("Warning: Your browser is using software rendering/llvmpipe 3D models may be slow. Please use Chrome/Chromium for best performance (or install firefox-esr in deb package \"add-apt-repository ppa:mozillateam/ppa\" which isn't using snap's sandbox).");
+}
+
+
+
  var g_counter = 0;
  function onload_button() {
     g_counter = g_counter + 1;
