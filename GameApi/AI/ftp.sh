@@ -45,6 +45,7 @@ finish()
 	scp ${arr_2[@]} terop@$SITE:/home/terop/meshpage.org/AI_engine/
     fi
 }
+copy_it github_access.php
 copy_it AI.php
 copy_it AI_display.php
 copy_it AI_result.php
