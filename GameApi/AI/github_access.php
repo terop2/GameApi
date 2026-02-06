@@ -2,5 +2,5 @@
 
 $url = $_GET["loc"];
 
-$file = file_get_contents("https://raw.githubusercontent.com/" + $url);
+$file = file_get_contents("https://github.com/" . $url);
 echo "$file";
