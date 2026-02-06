@@ -1,25 +1,25 @@
 
 var voxtable = [
-    { base: "https://api.github.com/repos/ephtracy/voxel-model/tree/master/vox/character/",
+    { base: "github_access.php?loc=ephtracy/voxel-model/raw/refs/heads/master/vox/character/",
       files: ["chr_bow.vox","chr_cat.vox","chr_fox.vox","chr_gumi.vox",
 	      "chr_jp.vox", "chr_knight.vox", "chr_man.vox", "chr_mom.vox",
 	      "chr_old.vox", "chr_poem.vox", "chr_rain.vox", "chr_sasami.vox",
 	      "chr_sol.vox", "chr_sword.vox", "chr_tale.vox", "chr_tama.vox",
 	      "chr_tsurugi.vox"] },
-    { base: "https://api.github.com/repos/ephtracy/voxel-model/tree/master/vox/monument/",
+    { base: "github_access.php?loc=ephtracy/voxel-model/raw/refs/heads/master/vox/monument/",
       files: [ "monu0.vox", "monu1.vox", "monu10.vox", "monu16.vox",
 	       "monu2.vox", "monu3.vox", "monu4.vox", "monu5.vox", "monu6.vox",
 	       "monu7.vox", "monu8.vox", "monu9.vox" ]
     },
-    { base: "https://api.github.com/repos/ephtracy/voxel-model/tree/master/vox/procedure/",
+    { base: "github_access.php?loc=ephtracy/voxel-model/raw/refs/heads/master/vox/procedure/",
       files: [ "ff1.vox", "ff2.vox", "ff3.vox", "maze.vox", "maze2D.vox", "menger.vox",
 	       "nature.vox", "snow.vox" ]
     },
-    { base: "https://api.github.com/repos/ephtracy/voxel-model/tree/master/vox/scan/",
+    { base: "github_access.php?loc=ephtracy/voxel-model/raw/refs/heads/master/vox/scan/",
       files: [ "dragon.vox", "teapot.vox" ]
     },
-    { license: "https://api.github.com/repos/mikelovesrobots/mmmm/blob/master/LICENSE",
-      base: "https://api.github.com/repos/mikelovesrobots/mmmm/tree/master/vox/",
+    { license: "github_access.php?loc=mikelovesrobots/mmmm/raw/refs/heads/master/LICENSE",
+      base: "github_access.php?loc=mikelovesrobots/mmmm/raw/refs/heads/master/vox/",
       files: [
 	  
 	  "alien_bot1.vox","alien_bot2.vox","alien_bot3.vox","alien_crawl1.vox",
