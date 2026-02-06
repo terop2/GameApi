@@ -87,7 +87,6 @@ SatJan3119:10:272026
 
       
     </script>
-    <script src="AI_engine/gameapi.js?1"></script>
     <script>
 function resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border) {
     return function (event) {
@@ -147,14 +146,28 @@ window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_wid
      var count = get_file_count(j);
      for(var i=0;i<count;i++) {
           var file = get_file(j,i);
+	  var url = get_url(j,i);
 	  var key = find_keywords(file);
 	  if (arr.includes(key) && arr2[arr.indexOf(key)]!==true) {
-		  res.push(file);
+		  res.push(url);
 		  arr2[arr.indexOf(key)]=true;
 	  }
 	  }
 	  }
 	  console.log(res);
+	  var gameapi_import = [];
+	  let sz = res.length;
+	  for(var i=0;i<sz;i++)
+	  {
+	  gameapi_import.push({type: "vox", url: res[i] });
+	  }
+	  console.log(gameapi_import);
+	  var len = gameapi_import.length;
+	  var script = run_window_script([...Array(len).keys()],0);
+	  console.log(script);
+	  var el = document.getElementById("gameapi_script");
+	  el.innerHTML = script.contents;
     </script>
+    <script src="AI_engine/gameapi.js?1"></script>
   </body>
 </html>
