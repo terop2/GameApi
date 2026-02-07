@@ -171,6 +171,9 @@ $highmem = js_highmem();
 ?>
 </head>
 <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<script>
+ window.showPthreadsDiv = Vue.observable( { value: false });
+</script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -220,22 +223,6 @@ $highmem = js_highmem();
 </script>
 <body id="body" style="overflow:hidden">
 
-<script>
-
-
-if (!crossOriginIsolated) {
-    console.log("NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode");
-    console.log("Your web server needs the following configuration to get gameapi builder animations working:");
-    console.log("Header set Access-Control-Allow-Origin https://meshpage.org");
-console.log("Header set Cross-Origin-Embedder-Policy \"require-corp\"");
-console.log("Header set Cross-Origin-Resource-Policy \"same-site\"");
-console.log("Header set Cross-Origin-Opener-Policy \"same-origin\"");
-console.log("Header set Access-Control-Allow-Headers \"Range\"");
-console.log("NOTE: you should change https://meshpage.org to your own web hosting location");
-
-}
-
-</script>
 
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
@@ -259,6 +246,9 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 </div>
 
 <!-- new navbar ends -->
+
+<div id="pthreads_div" class="pthreads_div d-flex justify-content-end" style="display:none !important;"><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
+
 
 <div class="main" id="main" style="display:none;">
 <?php
@@ -328,6 +318,7 @@ require_once("user.php");
 $user="terop";
 $num = read_num( $user );
 echo "<br><br><br>";
+
 echo "<div class=\"flex-container d-flex flex-wrap align-items-center\">";
    echo "<div class=\"flex-item p-3 m-0 w-3 h-18 text-left\" style=\"width: 60%;\">";
 echo "3D ENGINE STATUS: <span id=\"engstatus\">WAITING FOR NECESSARY COOKIES..</span><br>";
@@ -523,6 +514,40 @@ echo "<div style=\"height:70px\"></div>";
 page_footer();
 echo "<div style=\"height:40px\"></div>";
 echo "</div>";
+
+echo "<script>";
+echo "var pthread_str = sessionStorage.getItem('pthread_enabled');";
+echo "var pthread_state = pthread_str === 'true';";
+echo "var btn = document.getElementById(\"toggle_pthreads\");";
+echo "var btn_div = document.getElementById(\"pthreads_div\");";
+echo "if (pthread_state==true)";
+echo "{";
+echo "   btn.textContent=\"✅\";";
+echo "}";
+echo "if (pthread_state==false)";
+echo "{";
+echo "  btn.textContent=\"❌\";";
+echo "}";
+
+echo "if (pthread_state===null) pthread_state=true;";
+
+echo "if (!crossOriginIsolated || pthread_state==false) {";
+echo "    console.log(\"NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode\");";
+echo "    console.log(\"Your web server needs the following configuration to get gameapi builder animations working:\");";
+echo "    console.log(\"Header set Access-Control-Allow-Origin https://meshpage.org\");";
+echo "    console.log(\"Header set Cross-Origin-Embedder-Policy \\\"require-corp\\\"\");";
+echo " console.log(\"Header set Cross-Origin-Resource-Policy \\\"same-site\\\"\");";
+echo "console.log(\"Header set Cross-Origin-Opener-Policy \\\"same-origin\\\"\");";
+echo "console.log(\"Header set Access-Control-Allow-Headers \\\"Range\\\"\");";
+echo "console.log(\"NOTE: you should change https://meshpage.org to your own web hosting location\");";
+
+echo "}";
+
+echo "</script>";
+
+echo "<script>";
+echo "</script>";
+
 echo "<script>\n";
    echo "var g_background = 0;\n";
 echo "function show_script2(ii,dt) {\n";
@@ -1435,6 +1460,28 @@ function load_anim_pic_reset(num,file_id)
 
 </body>
 <style>
+.pthreads_div {
+   position: relative;
+   top: 0px;
+}
+.toggle {
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.toggle.on {
+  background-color: #2ecc71; /* green */
+  color: white;
+}
+
+.toggle.off {
+  background-color: #e74c3c; /* red */
+  color: white;
+}
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -2000,7 +2047,11 @@ window.choose_nav = function(val)
 
 var app = new Vue({
    el: '#app',
+
    mounted: function() {
+      var d = document.getElementById("pthreads_div");
+      d.style = "";
+      //window.showPthreadsDiv.value = true;
           var vm = this;
      choose_breadlist(0,vm.main_breadcrumb,vm.main_breadcrumb_first,vm.main_breadcrumb_second);
      //start_emscripten(vm);
@@ -2182,13 +2233,20 @@ echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    beforeDestroy() {
    },
    computed: {
+      showDiv() { return window.showPthreadsDiv.value },
       isIndicator2() { return this.indicator[1]; },
       isIndicator3() { return this.indicator[2]!=2 && this.indicator[2]!=0; },
       isIndicator3_2() { return this.indicator[2]==2; },
       isIndicatorNone() { return this.indicator[2]==0; }
    },
    methods: {
-       resume_cookies: function() { resume_cookies(); },
+   pthread_toggle: function() {
+      pthread_state=!pthread_state;
+      sessionStorage.setItem('pthread_enabled',pthread_state?'true':'false');
+      window.location.reload();
+   },
+
+   resume_cookies: function() { resume_cookies(); },
        
        mesh_display(id,label,display_label) {
         var vm = this;
@@ -3103,7 +3161,7 @@ if ($nothreads == "yes") {
    if ($highmem == "yes") {
    //echo "if (!crossOriginIsolated) { import('./engine_nothreads_highmem.js'); } else { import('./engine_highmem.js'); }";
   echo "var filename = 'engine_highmem.js?" . filemtime("engine_highmem.js") . "';";
-  echo "if (!crossOriginIsolated) filename='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
+  echo "if (!crossOriginIsolated||pthread_state==false) filename='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
    } else {
   echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
