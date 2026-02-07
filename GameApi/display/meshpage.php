@@ -703,13 +703,13 @@ function login() {
 <?php
 require_once("user.php");
 list_start("Available documents:");
-list_item($assetsite . "/Linux_compile.txt", "Linux compilation");
+list_item($https . "://" . $site . "/assets/Linux_compile.txt", "Linux compilation");
 list_item($https . "://" . $site . "/feat.php", "Builder Feature list");
-list_item($assetsite . "/Opengl_chain.txt", "Mesh structure");
-list_item($assetsite . "/Math_concepts.txt", "Math concepts");
-list_item($assetsite . "/Printer.txt", "3d printer instructions");
-list_item($assetsite . "/Skills_to_learn.txt", "Skills to learn");
-list_item($assetsite . "/Releasing_animations.txt", "Releasing animations to your web page");
+list_item($https . "://" . $site . "/assets/Opengl_chain.txt", "Mesh structure");
+list_item($https . "://" . $site . "/assets/Math_concepts.txt", "Math concepts");
+list_item($https . "://" . $site . "/assets/Printer.txt", "3d printer instructions");
+list_item($https . "://" . $site . "/assets/Skills_to_learn.txt", "Skills to learn");
+list_item($https . "://" . $site . "/assets/Releasing_animations.txt", "Releasing animations to your web page");
 list_item("$https://$site/mesh_doc.php?menu=0&submenu=0&select=select&1831127721", "API reference manual");
 list_end();
 ?>
@@ -814,7 +814,7 @@ There's now a callback for that purpose
 <div id="deploy">
 <h2>What is the minimal node graph that can be deployed to web?</h2>
 
-<img loading="lazy" src="<?php echo $assetsite ?>/minimal_boxes.png" crossorigin/>
+<img loading="lazy" src="<?php echo $https . "://" . $site ?>/assets/minimal_boxes.png" crossorigin/>
 <p>
 Important part for deployment is the properties of html_run, since it
 contains url to your hosting space, which you need to change. This
