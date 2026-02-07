@@ -4,6 +4,14 @@ $num1 = $_GET["menu"];
 $num2 = $_GET["submenu"];
 $flag = $_GET["select"];
 
+if (!ctype_digit($num1) || !ctype_digit($num2) || !($flag === "select"))
+{
+ http_response_code(400);
+ echo "Invalid input";
+ exit;
+}
+
+
 $cmd1 = "./dump_docs " . $num1;
 $cmd2 = "./dump_docs " . $num1 . " " . $num2;
 $cmd3 = "./dump_docs " . $num1 . " " . $num2 . " " . $flag;
