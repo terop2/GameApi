@@ -138,7 +138,7 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 </script>
 
 <div id="app">
-<appdragdroparea v-on:dragdrop="dragdrop2($event)">
+<appdragdroparea @dragdrop="dragdrop2">
 
 <apptitle><a href="view.php">The 3d model viewer</a></apptitle>
 <br>
@@ -262,7 +262,13 @@ Vue.component('appdragdroparea', {
        return {
           }
 	},
-	template: '<div id="div1" v-on:drop="$emit(`dragdrop`,$event)" ondragover="allowDrop(event)"><slot></slot></div>'
+	template: `<div id="div1" @dragover.prevent @drop="$emit('dragdrop', $event)"><slot></slot></div>`,
+	methods: {
+	  handleDrop(e) {
+	    console.log("DROP INSIDE COMPONENT:", e);
+	    this.$emit('dragdrop', e);
+	    }
+	    }
 	});
 
 Vue.component('appnormals', {
@@ -664,6 +670,10 @@ var app = new Vue({
 
 
    },
+   mounted() {
+      window.addEventListener('dragover', e => e.preventDefault());
+      window.addEventListener('drop', this.dragdrop2);
+   },
    methods: {
 
    handle_changes : function()
@@ -706,6 +716,8 @@ filter_material : function(arr,key)
 
 
       dragdrop2: function(event) {
+   console.log("dragdrop2");
+   console.log(event);
          //console.log("DRAGDROP");
 	 //console.log(event);
         if (repeat_prev==0) {
@@ -1848,6 +1860,8 @@ function load_finished2(succ)
 }
 function drop2(state)
 {
+   console.log("drop2");
+   console.log(state);
    set_filename_info(state,"");
      set_model_info(state,"(loading..)");
   var model_val = get_model_value();
@@ -1913,6 +1927,10 @@ function drop3(state,selectfileelem)
 
 function drop(ev)
 {
+   console.log("drop");
+   console.log(ev);
+
+
    //console.log("CLEARING CACHES");
    Module.ccall('set_string', null, ['number', 'string'],[6,""]);
 
