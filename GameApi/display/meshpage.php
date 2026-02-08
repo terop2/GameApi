@@ -520,6 +520,7 @@ echo "var pthread_str = sessionStorage.getItem('pthread_enabled');";
 echo "var pthread_state = pthread_str === 'true';";
 echo "var btn = document.getElementById(\"toggle_pthreads\");";
 echo "var btn_div = document.getElementById(\"pthreads_div\");";
+echo "if (pthread_str===null) pthread_state=true;";
 echo "if (pthread_state==true)";
 echo "{";
 echo "   btn.textContent=\"✅\";";
@@ -529,7 +530,6 @@ echo "{";
 echo "  btn.textContent=\"❌\";";
 echo "}";
 
-echo "if (pthread_state===null) pthread_state=true;";
 
 echo "if (!crossOriginIsolated || pthread_state==false) {";
 echo "    console.log(\"NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode\");";
