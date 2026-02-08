@@ -716,8 +716,6 @@ filter_material : function(arr,key)
 
 
       dragdrop2: function(event) {
-   console.log("dragdrop2");
-   console.log(event);
          //console.log("DRAGDROP");
 	 //console.log(event);
         if (repeat_prev==0) {
@@ -1860,8 +1858,8 @@ function load_finished2(succ)
 }
 function drop2(state)
 {
-   console.log("drop2");
-   console.log(state);
+   //console.log("drop2");
+   //console.log(state);
    set_filename_info(state,"");
      set_model_info(state,"(loading..)");
   var model_val = get_model_value();
@@ -1927,8 +1925,8 @@ function drop3(state,selectfileelem)
 
 function drop(ev)
 {
-   console.log("drop");
-   console.log(ev);
+   //console.log("drop");
+   //console.log(ev);
 
 
    //console.log("CLEARING CACHES");
