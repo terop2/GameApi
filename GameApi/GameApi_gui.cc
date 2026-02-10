@@ -7496,6 +7496,8 @@ GameApi::W w2_func(void *ptr)
   return w2;
 }
 
+//#define DISPLAY_NUM 1
+
 EXPORT GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert)
 {
   std::vector<std::string> vec2;
@@ -7532,7 +7534,11 @@ EXPORT GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std:
     }
   FunctionsData *dt = new FunctionsData;
   dt->gui = &gui;
-  dt->label = label;
+  std::string num = "";
+#ifdef DISPLAY_NUM
+  std::stringstream ss; ss << s; num = ss.str() + " ";		   
+#endif
+  dt->label = num + label;
   dt->atlas = atlas;
   dt->atlas_bm = atlas_bm;
   dt->vec2 = vec2;

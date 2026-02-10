@@ -171,7 +171,7 @@ echo "</div>\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
-echo "<h2><span class=\"large\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13</span> years of work,<br><span class=\"large\">&nbsp;&nbsp;&nbsp;260</span> kloc of source code,<br> <span class=\"large\">&nbsp;&nbsp;600</span> builder tool nodes,<br><span class=\"large\">2900</span> version control commits,<br>   <span class=\"large\">3700</span> page views,<br><span class=\"large\">&nbsp;&nbsp;600</span> downloads,<br> <span class=\"large\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5</span> paying customers</h2>\n";
+echo "<h2><span class=\"large\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;13</span> years of work,<br><span class=\"large\">&nbsp;&nbsp;&nbsp;260</span> kloc of source code,<br> <span class=\"large\">&nbsp;&nbsp;870</span> builder tool nodes,<br><span class=\"large\">2900</span> version control commits,<br>   <span class=\"large\">3700</span> page views,<br><span class=\"large\">&nbsp;&nbsp;600</span> downloads,<br> <span class=\"large\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5</span> paying customers</h2>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
