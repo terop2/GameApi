@@ -17,9 +17,12 @@
 #define idb_disabled 1
 //#define idb_disabled 0
 
+
+
 bool g_disable_polygons=false;
 bool g_filter_execute = false;
 int g_progress_script_num=-1;
+extern int async_pending_count;
 
 IMPORT std::string g_mod_path;
 
@@ -865,11 +868,12 @@ private:
   //std::cout << "progressbar: " << sum << " " << val << " " <<  url_only2 << std::endl;
   ProgressBar(sum,val,15*150,"fetch: "+url_only2);
   }
-
+  async_pending_count++;
   }
 public:
   void size_success(emscripten_fetch_t *fetch)
   {
+    async_pending_count--;
     //std::cout << "size_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << std::endl;
     if (!fetch || !fetch->data || !fetch->numBytes) { size_failed(fetch); return; } 
     std::string res(&fetch->data[0],&fetch->data[fetch->numBytes]);
@@ -944,6 +948,7 @@ public:
   }
   void size_failed(emscripten_fetch_t *fetch)
   {
+    async_pending_count--;
     std::cout << "FetchInBlocks::size_failed()" << std::endl;
     failed(data);
     emscripten_fetch_close(fetch);
@@ -1007,10 +1012,12 @@ private:
       ptr[url2.size()]=0;
       emscripten_fetch(&attr, ptr);
     }
+    async_pending_count++;
   }
 public:
   void fetch_success(emscripten_fetch_t *fetch)
   {
+    async_pending_count--;
     // std::cout << "fetch_success: " << (int)fetch << " " << int(fetch->data) << " " << int(fetch->numBytes) << " " << fetch->status << std::endl;
     if (!fetch || !fetch->data || !fetch->numBytes) { fetch_failed(fetch); return; } 
     FetchInBlocksUserData *ptr = (FetchInBlocksUserData*)(fetch->userData);
@@ -1135,6 +1142,7 @@ public:
   }
   void fetch_failed(emscripten_fetch_t *fetch)
   {
+    async_pending_count--;
     std::cout << "fetch_failed" << std::endl;
     failcount++;
     if (failcount>10) {

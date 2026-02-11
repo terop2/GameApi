@@ -9209,6 +9209,7 @@ public:
  
   void handle_event(MainLoopEvent &e)
   {
+    next->handle_event(e);
   }
   void Collect(CollectVisitor &vis)
   {
