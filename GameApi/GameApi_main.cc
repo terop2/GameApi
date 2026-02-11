@@ -2947,26 +2947,16 @@ extern double g_dpr;
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
-  //BM I7 = ev.bitmap_api.loadbitmap("web_page/logo.ppm");
   int x = 0;
   int y = 0;
-  int width = 500; //*get_screen_width()/800;
-  int height = 300; //*get_screen_height()/600;
+  int width = 500; 
+  int height = 300; 
   float scale_x = 1.0;
   float scale_y = 1.0;
-  //scale_x = float(get_screen_width())/float(800.0);
-  //scale_y = float(get_screen_height())/float(600.0);
-  /*
-  if (is_mobile(ev)) {
-    width=200;
-    height=100;
-    div_x=2.5;
-    div_y=2.2;
-    }*/
 
   std::string s = std::string(logo_connecting4_raw,logo_connecting4_raw+logo_connecting4_raw_len);
-  BM I7A = load_raw_bitmap2(e, s /*"web_page/logo-connecting.raw"*/);
-  BM I7aA = I7A; //ev.bitmap_api.flip_x(I7A);
+  BM I7A = load_raw_bitmap2(e, s );
+  BM I7aA = I7A; 
   ML I17A;
   {
 
@@ -2980,27 +2970,13 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
 
     
-//    ML I19=ev.sprite_api.vertex_array_render(ev,I18);
-
-    //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-//    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
-//MT I3=ev.materials_api.texture(ev,I7aA,1.0);
-//MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
-//ML I5=ev.materials_api.bind(I1,I3);
-//MN I6=ev.move_api.mn_empty();
-//MN I7=ev.move_api.scale2(I6,4,4,4);
-//MN I8=ev.move_api.trans2(I7,-800,400,0);
-//MN I9=ev.move_api.rotatey(I8,-1.59);
-//MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
-//MN I10 = ev.move_api.rotatey(I9,1.59);
-//MN I11=ev.move_api.trans2(I10,-800,-1400,0);
- I17A=I19; //ev.move_api.move_ml(ev,I5,I11,1,10.0);
+ I17A=I19; 
   }
 
   std::string s2 = std::string(logo_downloading4_raw,logo_downloading4_raw+logo_downloading4_raw_len);
 
-  BM I7B = load_raw_bitmap2(e, s2 /*"web_page/logo-downloading.raw"*/);
-  BM I7aB = I7B; //ev.bitmap_api.flip_x(I7B);
+  BM I7B = load_raw_bitmap2(e, s2 );
+  BM I7aB = I7B; 
   ML I17B;
   {
     
@@ -3014,19 +2990,6 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
  ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
 
     
-    //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-//    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
-//MT I3=ev.materials_api.texture(ev,I7aB,1.0);
-//MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
-//ML I5=ev.materials_api.bind(I1,I3);
-//MN I6=ev.move_api.mn_empty();
-//MN I7=ev.move_api.scale2(I6,4,4,4);
-//MN I8=ev.move_api.trans2(I7,-800,400,0);
-//MN I9=ev.move_api.rotatey(I8,-1.59);
-//MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
-// MN I10 = ev.move_api.rotatey(I9,1.59);
-//MN I11=ev.move_api.trans2(I10,-800,-1400,0);
-//I17B=ev.move_api.move_ml(ev,I5,I11,1,10.0);
  I17B = I19;
   }
 
@@ -3046,32 +3009,14 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
  
 ML I19=ev.sprite_api.turn_to_2d(ev,I7,0.0,0.0,800.0*scale_x,600.0*scale_y);
 
-    //ML I13 = ev.sprite_api.render_sprite_vertex_array_ml(ev, I7a);
-//    P I1=ev.polygon_api.quad_z(x+0,x+width,/*is_mobile(ev)?225:*/y+0,/*is_mobile(ev)?525:*/y+height,0);
-//MT I3=ev.materials_api.texture(ev,I7aC,1.0);
-//MT I4=ev.materials_api.fade(ev,I3,0,5,3000,4000);
-//ML I5=ev.materials_api.bind(I1,I3);
-//MN I6=ev.move_api.mn_empty();
-//MN I7=ev.move_api.scale2(I6,4,4,4);
-//MN I8=ev.move_api.trans2(I7,-800,400,0);
-//MN I9=ev.move_api.rotatey(I8,-1.59);
-//MN I10=ev.move_api.rotate(I9,0,0.00000,0,0,0,0,1,0,1.59);
-// MN I10 = ev.move_api.rotatey(I9,1.59);
-//MN I11=ev.move_api.trans2(I10,-800,-1400,0);
- I17C=I19; //ev.move_api.move_ml(ev,I5,I11,1,10.0);
+ I17C=I19; 
   }
   ML I17 = ev.mainloop_api.choose_ml_from_status(I17A,I17B,I17C);
   //ML I18 = ev.mainloop_api.
   ML I18=ev.sprite_api.turn_to_2d(ev,I17,0,0,800*scale_x,600*scale_y);
-    /*
-  MN I14=ev.move_api.empty();
-  MN I14a=ev.move_api.scale2(I14, 4,4,4);
-  MN I14b=ev.move_api.trans2(I14a,-800,400,0);
-  MN I15=ev.move_api.rotatey(I14b,-1.59);
-  MN I16=ev.move_api.rotate(I15,0,30,0,0,0,0,1,0,1.59);
-  MN I16a=ev.move_api.trans2(I16, -800,-1400,0);
-  ML I17=ev.move_api.move_ml(ev,I13,I16a);
-  */
+  
+
+
   ML I26;
   { // PROGRESS BAR
     
@@ -3093,6 +3038,8 @@ MN AI6=ev.move_api.trans2(AI5,4,4+6,0);
 MN AI7=ev.move_api.scale_progress(AI6,true,false,false);
 ML AI8=ev.move_api.move_ml(ev,AI4,AI7,1,10.0);
 
+
+ 
  ML BI8=ev.mainloop_api.array_ml(ev,std::vector<ML>{I8,AI8}); // I8
  
 
@@ -3128,28 +3075,9 @@ ML I23=ev.move_api.move_ml(ev,I19,I22,1,10);
      GameApi::ML ml = ev.mainloop_api.fullscreen_button(ev);
      res = ev.mainloop_api.array_ml(ev,std::vector<ML>{res,ml});
    }
-
-
-
+ 
+ 
 #else
-#if 0
- BM I18=ev.bitmap_api.newbitmap(500,300,0x00000000);
- FI I19 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 80,80);
- BM I20 = ev.font_api.draw_text_string(I19, "GameApi", 5, 30);
-
- //Ft I19=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",80,80);
- //BM I20=ev.font_api.font_string(I19,"GameApi",5);
-BM I21=ev.bitmap_api.blitbitmap(I18,I20,0,0);
-//Ft I22=ev.font_api.newfont("http://meshpage.org/assets/FreeSans.ttf",18,18);
-//BM I23=ev.font_api.font_string(I22,"Win32Edition",5);
- FI I22 = ev.font_api.load_font("http://meshpage.org/assets/FreeSans.ttf", 18,18);
- BM I23 = ev.font_api.draw_text_string(I22, "Win32Edition", 5, 30);
-BM I24=ev.bitmap_api.blitbitmap(I21,I23,160,88);
- P I25=ev.polygon_api.color_map(I24,0.0,500,0.0,300.0,0);
- //P I26=ev.polygon_api.rotatex(I25,3.14159);
-P I27=ev.polygon_api.scale(I25,2,-2,2);
-P I28=ev.polygon_api.translate(I27,-400,200,0);
-#endif
  P I28=ev.polygon_api.p_empty();
 VA I29=ev.polygon_api.create_vertex_array(I28,true);
 ML I30=ev.polygon_api.render_vertex_array_ml(ev,I29);
