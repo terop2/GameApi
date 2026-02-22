@@ -3546,6 +3546,20 @@ public:
 };
 
 
+class GaussianSplat : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+public:
+  virtual int NumItems() const=0;
+  virtual Point center(int i) const=0;
+  virtual Matrix cov(int i) const=0;
+  virtual unsigned int color(int i) const=0;
+};
+
+
 
 #endif
 
@@ -3772,4 +3786,6 @@ public:
 };
 
 
+
 #endif
+

@@ -2034,190 +2034,7 @@ EXPORT GameApi::BM GameApi::BitmapApi::loadbitmapfromurl(std::string url)
 
 
 void BufferFromBitmap::Gen(int start_x, int end_x, int start_y, int end_y) const
-{
-#if 0
-  if (t.IsDirectSTBIImage())
-    { // FAST PATH FOR STB IMAGE
-      //std::cout << "STBFASTPATH" << std::endl;
-      FlipColours *bm1 = (FlipColours*)&t;
-      BitmapPrepareCache *cache = (BitmapPrepareCache*)&bm1->c;
-      LoadBitmapFromUrl *url = (LoadBitmapFromUrl*)cache->get_bm();
-      BufferRef img = url->img;
-      for(int y=start_y;y<end_y;y++) {
-	int dd = y*buf.ydelta;
-	int dd2= y*img.ydelta;
-	for(int x=start_x;x<end_x;x++)
-	  {
-	    unsigned int val = img.buffer[dd2+x];
-	      unsigned int a = val &0xff000000;
-	      unsigned int r = val &0xff0000;
-	      unsigned int g = val &0x00ff00;
-	      unsigned int b = val &0x0000ff;
-	      r>>=16;
-	      g>>=8;
-	      
-	      b<<=16;
-	      g<<=8;
-	      val = a+r+g+b; 
-
-    unsigned int val_a = val&0xff000000;
-    unsigned int val_r = val&0x00ff0000;
-    unsigned int val_g = val&0x0000ff00;
-    unsigned int val_b = val&0x000000ff;
-    val_a >>= 24;
-    val_r >>= 16;
-    val_g >>= 8;
-    val_b >>= 0;
-
-    // These are opengl RGBA format
-    val_a <<= 24;
-    val_b <<= 16;
-    val_g <<= 8;
-    val_r <<= 0;
-    unsigned int v = val_r+val_g+val_b+val_a;
-
-	    
-	    buf.buffer[dd+x] = v;
-	  }
-      }
-      return;
-    }
-#endif
-
-#if 0
-  if (t.IsDirectGltfImage())
-    { // FAST PATH FOR GLTF IMAGE
-      FlipColours *bm1 = (FlipColours*)&t;
-      BitmapPrepareCache *cache = (BitmapPrepareCache*)&bm1->c;
-      GLTFImage *img=(GLTFImage*)cache->get_bm();
-      const tinygltf::Image *img2 = img->img;
-
-      //std::cout << img2->component << " " << img2->bits << std::endl;
-
-      //std::cout << img2->name << std::endl;
-      //std::cout << img2->width << " " << img2->height << std::endl;
-      //std::cout << img2->name << "::" << img2->width << " " << img2->height << " " << img2->component << " " << img2->bits << " " << img2->pixel_type << std::endl;
-      if (img2 && (img2->component==4 ||img2->component==3)&& img2->bits==8) {
-
-	//std::cout << "GLTFFASTPATH" << std::endl;
-      
-	for(int y=start_y;y<end_y;y++) {
-	  int dd = y*buf.ydelta;
-	  int offset2 = y*img2->width*img2->component * (img2->bits/8);
-	  for(int x=start_x;x<end_x;x++)
-	    {
-	      int offset = (x*img2->component)*(img2->bits/8);
-
-	      unsigned int val = *(unsigned int*)&img2->image[offset+offset2];
-	      
-	      unsigned int a = val &0xff000000;
-	      unsigned int r = val &0xff0000;
-	      unsigned int g = val &0x00ff00;
-	      unsigned int b = val &0x0000ff;
-	      r>>=16;
-	      g>>=8;
-	      
-	      b<<=16;
-	      g<<=8;
-	      val = a+r+g+b; 
-	      //val = Color(val).Pixel();
-
-
-    unsigned int val_a = val&0xff000000;
-    unsigned int val_r = val&0x00ff0000;
-    unsigned int val_g = val&0x0000ff00;
-    unsigned int val_b = val&0x000000ff;
-    val_a >>= 24;
-    val_r >>= 16;
-    val_g >>= 8;
-    val_b >>= 0;
-
-    // These are opengl RGBA format
-    val_a <<= 24;
-    val_b <<= 16;
-    val_g <<= 8;
-    val_r <<= 0;
-    unsigned int v = val_r+val_g+val_b+val_a;
-
-	      
-	      buf.buffer[dd+x] = v;
-	    }
-	}
-	return;
-
-
-      }
-    
-        if (img2 && (img2->component==4 ||img2->component==3)&& img2->bits==16) {
-	  std::cout << "GLTFFASTPATH2" << std::endl;
-
-	for(int y=start_y;y<end_y;y++) {
-	  int dd = y*buf.ydelta;
-	  int offset2 = y*img2->width*img2->component * (img2->bits/8);
-	  for(int x=start_x;x<end_x;x++)
-	    {
-	      int offset = (x*img2->component)*(img2->bits/8);
-
-	      unsigned short *c0 = (unsigned short*)&img2->image[offset+offset2];
-      unsigned short r = c0[0];
-      unsigned short g = c0[1];
-      unsigned short b = c0[2];
-      unsigned short a = c0[3];
-      r>>=8;
-      g>>=8;
-      b>>=8;
-      a>>=8;
-      unsigned int aa = a;
-      unsigned int rr = r;
-      unsigned int gg = g;
-      unsigned int bb = b;
-
-	rr>>=16;
-	gg>>=8;
-
-	bb<<=16;
-	gg<<=8;
-	unsigned int val = aa+rr+gg+bb; 
-	      unsigned int val2 = Color(val).Pixel();
-
-
-	    unsigned int val_a = val2&0xff000000;
-    unsigned int val_r = val2&0x00ff0000;
-    unsigned int val_g = val2&0x0000ff00;
-    unsigned int val_b = val2&0x000000ff;
-    val_a >>= 24;
-    val_r >>= 16;
-    val_g >>= 8;
-    val_b >>= 0;
-
-    // These are opengl RGBA format
-    val_a <<= 24;
-    val_b <<= 16;
-    val_g <<= 8;
-    val_r <<= 0;
-    unsigned int v = val_r+val_g+val_b+val_a;
-
-	
-	      buf.buffer[dd+x] = v;
-	    
-	  }
-	}
-	return;
-	}
-
-	//std::cout << "GLTFSLOWPATH" << std::endl;
-  for(int y=start_y;y<end_y;y++) {
-    int dd = y*buf.ydelta;
-    for(int x=start_x;x<end_x;x++)
-      {
-	unsigned int color = t.Map(x,y).Pixel();
-	buf.buffer[dd+x] = color;
-      }
-  }
-	return;
-    }
-#endif
-  
+{  
   //std::cout << "ORDISLOWPATH" << std::endl;
   int dd = start_y*buf.ydelta;
   for(int y=start_y;y<end_y;y++,dd+=buf.ydelta) {
@@ -2236,6 +2053,8 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 
 #ifdef NO_PREPARE_RENDER
 
+
+#if 0
 class GLTFVertexArrays : public VertexArrays
 {
 public:
@@ -3077,9 +2896,6 @@ GameApi::ML GameApi::MainLoopApi::gltf_material_nop(EveryApi &ev, TF tf, int mes
    return ml;
 }
 
-void resize_reset();
-void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p);
-GameApi::ML resize_model(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML ml);
 
 
 
@@ -3932,93 +3748,310 @@ GLTF_AnimChannel *anim_channel(GameApi::Env &env, GameApi::EveryApi &ev, GameApi
   return new GLTF_AnimChannel(env,ev,tf,anim, anim_channel_id);
 }
 
+#endif
+
 #endif // NO_PREPARE_RENDER
+
+void resize_reset();
+void calc_resize_model(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p);
+GameApi::ML resize_model(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::ML ml);
+
 
 unsigned long g_glb_file_size=0;
 unsigned long g_zip_file_size=0;
 bool g_glb_animated=false;
 
-/*
-class GLTFFaceCollectionMutable : public MutableFaceCollection
+class GLTFGaussianSplat : public GaussianSplat
 {
 public:
-  GLTFFaceCollectionMutable(tinygltf::Accessor *array, tinygltf::Primitive *prim) : array(array), prim(prim) { }
-  virtual std::string name() const { return "GLTFFaceCollectionMutable"; }
-  virtual void Collect(CollectVisitor &vis) { }
-  virtual void HeavyPrepare() {
-    position_index = prim->attributes["POSITION"];
-    normal_index = prim->attributes["NORMAL"];
-    texcoord_index = prim->attributes["TEXCOORD_0"];
-    color_index = prim->attributes["COLOR_0"];
-    joints_index = prim->attributes["JOINTS_0"];
-    weights_index = prim->attributes["WEIGHTS_0"];
-
-    position_bv = array[position_index]->bufferView;
-    normal_bv = array[normal_index]->bufferView;
-    texcoord_bv = array[texcoord_index]->bufferView;
-    color_bv = array[color_index]->bufferView;
-    joints_bv = array[joints_index]->bufferView;
-    weights_bv = array[weights_index]->bufferView;
-  }
-  virtual void Prepare() { }
-
-  virtual int NumVertices() const
+  GLTFGaussianSplat( GLTFModelInterface *interface, int mesh_index, int prim_index ) : interface(interface), mesh_index(mesh_index), prim_index(prim_index) { }
+  void Collect(CollectVisitor &vis)
   {
-    return array[position_index].count;
+    interface->Collect(vis);
+    vis.register_obj(this);
   }
-  virtual void Faces(std::vector<Point> &vec)
+  void HeavyPrepare()
   {
-    int s1 = vec.size();
-    int s2 = NumVertices();
-    int s = std::min(s1,s2);
-    tinygltf::Accessor &a = array[position_index];
-    tinygltf::BufferView &bv = bv_array[position_bv];
-    int buffer = bv.buffer;
-    tinygltf::Buffer &b = b_array[buffer];
-    unsigned char *ptr = b.data;
-    ptr+=bv.byteOffset;
-    size_t stride = bv.byteStride;
-    ptr+=a.byteOffset;
-    int componentType = a.componentType;
-    assert(componentType==TINYGLTF_COMPONENT_TYPE_FLOAT);
-    if (stride==0) stride=sizeof(float);
-    int ss = 0;
-    for(int i=0;i<s;i++)
+
+    if (mesh_index>=0 && mesh_index<int(interface->meshes_size()) && prim_index>=0 && prim_index<int(interface->get_mesh(mesh_index).primitives.size())) {
+      const tinygltf::Mesh &m = interface->get_mesh(mesh_index);
+      prim = m.primitives[prim_index];
+    }
+    else { std::cout << "Prim failed!" << std::endl; return; }
+
+    mode = prim.mode;
+
+    if (mode != TINYGLTF_MODE_POINTS)
       {
-	float *ptr2 = (float*)ptr;
-	vec[i] = Point(ptr2[0],ptr2[1],ptr2[2]);
-	ptr+=stride;
+	std::cout << "This doesn't look like a gaussian splat" << std::endl;
       }
+    
+
+    // POSITION
+    position_index = -1;
+    if (prim.attributes.find("POSITION") != prim.attributes.end())
+      position_index = prim.attributes["POSITION"];
+    position_done = false;
+    if (position_index != -1) {
+      position_acc = &interface->get_accessor(position_index);
+      position_done = true;
+    }
+    position_bv_done = false;
+    if (position_done) {
+      int view = position_acc->bufferView;
+      if (view != -1) {
+	position_bv = &interface->get_bufferview(view);
+	position_bv_done = true;
+      }
+    }
+    position_buf_done = false;
+    if (position_bv_done) {
+      int buf = position_bv->buffer;
+      if (buf != -1)
+	{
+	  position_buf = &interface->get_buffer(buf);
+	  position_buf_done = true;
+	}
+    }
+    // END POSITION
+
+    // COLOR_0
+    color_0_index = -1;
+    if (prim.attributes.find("COLOR_0") != prim.attributes.end())
+      color_0_index = prim.attributes["COLOR_0"];
+    color_0_done = false;
+    if (color_0_index != -1) {
+      color_0_acc = &interface->get_accessor(color_0_index);
+      color_0_done = true;
+    }
+    color_0_bv_done = false;
+    if (color_0_done) {
+      int view = color_0_acc->bufferView;
+      if (view != -1) {
+	color_0_bv = &interface->get_bufferview(view);
+	color_0_bv_done = true;
+      }
+    }
+    color_0_buf_done = false;
+    if (color_0_bv_done) {
+      int buf = color_0_bv->buffer;
+      if (buf != -1)
+	{
+	  color_0_buf = &interface->get_buffer(buf);
+	  color_0_buf_done = true;
+	}
+    }
+    // END COLOR_0
+
+    // TEXCOORD_0
+    texcoord_0_index = -1;
+    if (prim.attributes.find("TEXCOORD_0") != prim.attributes.end())
+      texcoord_0_index = prim.attributes["TEXCOORD_0"];
+    texcoord_0_done = false;
+    if (texcoord_0_index != -1) {
+      texcoord_0_acc = &interface->get_accessor(texcoord_0_index);
+      texcoord_0_done = true;
+    }
+    texcoord_0_bv_done = false;
+    if (texcoord_0_done) {
+      int view = texcoord_0_acc->bufferView;
+      if (view != -1) {
+	texcoord_0_bv = &interface->get_bufferview(view);
+	texcoord_0_bv_done = true;
+      }
+    }
+    texcoord_0_buf_done = false;
+    if (texcoord_0_bv_done) {
+      int buf = texcoord_0_bv->buffer;
+      if (buf != -1)
+	{
+	  texcoord_0_buf = &interface->get_buffer(buf);
+	  texcoord_0_buf_done = true;
+	}
+    }
+    // END TEXCOORD_0
+
+
+    // TEXCOORD_1
+    texcoord_1_index = -1;
+    if (prim.attributes.find("TEXCOORD_1") != prim.attributes.end())
+      texcoord_1_index = prim.attributes["TEXCOORD_1"];
+    texcoord_1_done = false;
+    if (texcoord_1_index != -1) {
+      texcoord_1_acc = &interface->get_accessor(texcoord_1_index);
+      texcoord_1_done = true;
+    }
+    texcoord_1_bv_done = false;
+    if (texcoord_1_done) {
+      int view = texcoord_1_acc->bufferView;
+      if (view != -1) {
+	texcoord_1_bv = &interface->get_bufferview(view);
+	texcoord_1_bv_done = true;
+      }
+    }
+    texcoord_1_buf_done = false;
+    if (texcoord_1_bv_done) {
+      int buf = texcoord_1_bv->buffer;
+      if (buf != -1)
+	{
+	  texcoord_1_buf = &interface->get_buffer(buf);
+	  texcoord_1_buf_done = true;
+	}
+    }
+    // END TEXCOORD_1
+
+
+
+    // CUSTOM_0
+    custom_0_index = -1;
+    if (prim.attributes.find("CUSTOM_0") != prim.attributes.end())
+      custom_0_index = prim.attributes["CUSTOM_0"];
+    custom_0_done = false;
+    if (custom_0_index != -1) {
+      custom_0_acc = &interface->get_accessor(custom_0_index);
+      custom_0_done = true;
+    }
+    custom_0_bv_done = false;
+    if (custom_0_done) {
+      int view = custom_0_acc->bufferView;
+      if (view != -1) {
+	custom_0_bv = &interface->get_bufferview(view);
+	custom_0_bv_done = true;
+      }
+    }
+    custom_0_buf_done = false;
+    if (custom_0_bv_done) {
+      int buf = custom_0_bv->buffer;
+      if (buf != -1)
+	{
+	  custom_0_buf = &interface->get_buffer(buf);
+	  custom_0_buf_done = true;
+	}
+    }
+    // END CUSTOM_0
+
+
+    // CUSTOM_1
+    custom_1_index = -1;
+    if (prim.attributes.find("CUSTOM_1") != prim.attributes.end())
+      custom_1_index = prim.attributes["CUSTOM_1"];
+    custom_1_done = false;
+    if (custom_1_index != -1) {
+      custom_1_acc = &interface->get_accessor(custom_1_index);
+      custom_1_done = true;
+    }
+    custom_1_bv_done = false;
+    if (custom_1_done) {
+      int view = custom_1_acc->bufferView;
+      if (view != -1) {
+	custom_1_bv = &interface->get_bufferview(view);
+	custom_1_bv_done = true;
+      }
+    }
+    custom_1_buf_done = false;
+    if (custom_1_bv_done) {
+      int buf = custom_1_bv->buffer;
+      if (buf != -1)
+	{
+	  custom_1_buf = &interface->get_buffer(buf);
+	  custom_1_buf_done = true;
+	}
+    }
+    // END CUSTOM_1
   }
-  virtual void Normal(std::vector<Vector> &vec)=0;
-  virtual void Color(std::vector<unsigned int> &vec)=0;
-  virtual void Tex(std::vector<Point2d> &vec)=0;
-  virtual void Tex3(std::vector<float> &vec)=0;
-  virtual void Joints(std::vector<VEC4> &vec)=0;
-  virtual void Weights(std::vector<VEC4> &vec)=0;
 
-  virtual int NumFaces() const=0;
-  virtual void Indices(std::vector<int> &vec)=0; // size is numfaces*3
+  virtual int NumItems() const
+  {
+    return position_acc->count;
+  }
+  virtual Point center(int i) const
+  {
+    if (position_bv_done && position_done && position_buf_done)
+      {
+	const unsigned char *pos_ptr = &position_buf->data[0];
+	const unsigned char *pos_ptr2 = pos_ptr + position_bv->byteOffset;
+	int stride = position_bv->byteStride;
+	if (stride==0) stride=3*sizeof(float);
+	int comp = i;
+	const unsigned char *pos_ptr3 = pos_ptr2 + position_acc->byteOffset + comp*stride;
+	const float *pos_ptr4 = (const float*) pos_ptr3;
+	switch(position_acc->componentType) {
+	case TINYGLTF_COMPONENT_TYPE_FLOAT:
+	  return Point(pos_ptr4[0],pos_ptr4[1],pos_ptr4[2]);
+	case TINYGLTF_COMPONENT_TYPE_DOUBLE:
+	  {
+	  const double *pos_ptr4 = (const double*)pos_ptr3; // 3 = num of components in (x,y,z)
+	  return Point(pos_ptr4[0],pos_ptr4[1],pos_ptr4[2]);
+	  }
+	default:
+	  std::cout << "position_acc->componentType ERROR!" << std::endl;
+	}
+      }
+    return Point(0.0,0.0,0.0);
+  }
+  virtual Matrix cov(int i) const=0;
+  virtual unsigned int color(int i) const=0;
 private:
-  tinygltf::BufferView *bf_array;
-  tinygltf::Accessor *array;
-  tinygltf::Primitive *prim;
+  GLTFModelInterface *interface;
+  int mesh_index;
+  int prim_index;
+
+  int mode;
+  
+  tinygltf::Primitive prim;
   int position_index;
-  int normal_index;
-  int texcoord_index;
-  int color_index;
-  int joints_index;
-  int weights_index;
+  int color_0_index;
+  int texcoord_0_index;
+  int texcoord_1_index;
+  int custom_0_index;
+  int custom_1_index;
 
-  int position_bv;
-  int normal_bv;
-  int texcoord_bv;
-  int color_bv;
-  int joints_bv;
-  int weights_bv;
+  const tinygltf::Accessor *position_acc;
+  const tinygltf::Accessor *color_0_acc;
+  const tinygltf::Accessor *texcoord_0_acc;
+  const tinygltf::Accessor *texcoord_1_acc;
+  const tinygltf::Accessor *custom_0_acc;
+  const tinygltf::Accessor *custom_1_acc;
 
+  const tinygltf::BufferView *position_bv;
+  const tinygltf::BufferView *color_0_bv;
+  const tinygltf::BufferView *texcoord_0_bv;
+  const tinygltf::BufferView *texcoord_1_bv;
+  const tinygltf::BufferView *custom_0_bv;
+  const tinygltf::BufferView *custom_1_bv;
+
+  const tinygltf::Buffer *position_buf;
+  const tinygltf::Buffer *color_0_buf;
+  const tinygltf::Buffer *texcoord_0_buf;
+  const tinygltf::Buffer *texcoord_1_buf;
+  const tinygltf::Buffer *custom_0_buf;
+  const tinygltf::Buffer *custom_1_buf;
+
+  bool position_done=false;
+  bool color_0_done=false;
+  bool texcoord_0_done=false;
+  bool texcoord_1_done=false;
+  bool custom_0_done=false;
+  bool custom_1_done=false;
+
+  bool position_bv_done=false;
+  bool color_0_bv_done=false;
+  bool texcoord_0_bv_done=false;
+  bool texcoord_1_bv_done=false;
+  bool custom_0_bv_done=false;
+  bool custom_1_bv_done=false;
+
+  bool position_buf_done=false;
+  bool color_0_buf_done=false;
+  bool texcoord_0_buf_done=false;
+  bool texcoord_1_buf_done=false;
+  bool custom_0_buf_done=false;
+  bool custom_1_buf_done=false;
+
+  
+  
 };
-*/
+
 
 class GLTFFaceCollection : public FaceCollection
 {
@@ -5260,7 +5293,7 @@ private:
   mutable std::vector<unsigned int*> m_p3;
 };
 
-
+#if 0
 GameApi::ML GameApi::MainLoopApi::gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix)
 {
   GLTFModelInterface *interface = find_gltf(e,tf);
@@ -5270,7 +5303,7 @@ GameApi::ML GameApi::MainLoopApi::gltf_material_nop_resize(EveryApi &ev, TF tf, 
    calc_resize_model(e,ev,p);
    return resize_model(e,ev,ml);
 }
-
+#endif
 
 
 GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, TF model0, int image_index )
