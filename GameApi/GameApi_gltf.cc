@@ -11197,7 +11197,7 @@ public:
 	const tinygltf::Skin &skin = interface->get_skin(skin_num); //&load->model.skins[skin_num];
 	int start_node = skin.skeleton;
 	if (start_node==-1) {
-	  std::cout << "skin.skeleton==-1" << std::endl;
+	  //std::cout << "skin.skeleton==-1" << std::endl;
 	  int defscene = interface->get_default_scene();
 	  if (defscene==-1) { std::cout << "Default scene ==-1" << std::endl; start_node=0; } else { 
 	    const tinygltf::Scene &scene = interface->get_scene(defscene);
@@ -11205,7 +11205,7 @@ public:
 	      start_node = scene.nodes[0];
 	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
 	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
-	      std::cout << "scene_node=" << start_node << std::endl;
+	      //std::cout << "scene_node=" << start_node << std::endl;
 	    }
 	    else {
 	      std::cout << "Default Scene nodes size=0" << std::endl;
@@ -11267,7 +11267,7 @@ public:
 	if (start_node==-1) {
 
 
-	  std::cout << "skin.skeleton==-1" << std::endl;
+	  //std::cout << "skin.skeleton==-1" << std::endl;
 	  int defscene = interface->get_default_scene();
 	  if (defscene==-1) { std::cout << "Default scene ==-1" << std::endl; start_node=0; } else { 
 	    const tinygltf::Scene &scene = interface->get_scene(defscene);
@@ -11275,7 +11275,7 @@ public:
 	      start_node = scene.nodes[0];
 	      if (scene.nodes.size()>1) std::cout << "ERROR: Possibly not all scene nodes rendered" << std::endl;
 	      if (start_node==0) std::cout << "scene.nodes[0]==0" << std::endl;
-	      std::cout << "scene_node=" << start_node << std::endl;
+	      //std::cout << "scene_node=" << start_node << std::endl;
 	    }
 	    else {
 	      std::cout << "Default Scene nodes size=0" << std::endl;
