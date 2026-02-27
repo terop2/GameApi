@@ -97,6 +97,9 @@ if ("$machine"=="terop-pc2") {
 <!DOCTYPE html>
 <html id="html"  style="background-color: #eee; overflow: auto;">
 <head>
+<​meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<​meta http-equiv="Pragma" content="no-cache" />
+ <​meta http-equiv="Expires" content="0" /> 
 <title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
 <?php
 $page = $_GET["p"];
