@@ -534,16 +534,16 @@ std::string FloatExprEval(std::string s);
 template<class T>
 class Conv {
 public:
-  static void set(T &target, std::string s) { std::stringstream ss(s); ss >> target; }
-  static void get(const T &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+  static void set(T &target, std::string s, bool allow_expr, std::string &expr) { std::stringstream ss(s); ss >> target; expr=s; }
+  static void get(const T &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; ss << target; s=ss.str(); }
   static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type!"; }
 };
 template<>
 class Conv<std::string>
 {
 public:
-  static void set(std::string &target, std::string s) { target = s; }
-  static void get(const std::string &target, std::string &s) { s=target; }
+  static void set(std::string &target, std::string s, bool allow_expr, std::string &expr) { target = s; }
+  static void get(const std::string &target, std::string &s, bool allow_expr, std::string &expr) { s=target; expr=target; }
   static std::string error(const std::string &target, const std::string &dd_ext) {
     std::string filename = target;
     std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
@@ -554,8 +554,8 @@ template<>
 class Conv<float>
 {
 public:
-  static void set(float &target, std::string s) { s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
-  static void get(const float &target, std::string &s) { std::stringstream ss; ss << target; s=ss.str(); }
+  static void set(float &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr = s; s=FloatExprEval(expr); } else s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
+  static void get(const float &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; if (allow_expr) ss << expr; else ss << target; s=ss.str(); }
   static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type float!"; }
 };
 template<class T>
@@ -590,7 +590,8 @@ public:
 
     if (firsttime)
       {
-	Conv<T>::get(target, label);
+	std::string tmp;
+	Conv<T>::get(target, label, false, tmp);
       }
 #ifdef EMSCRIPTEN
     if (ch>=4 && ch<=29) { ch = ch - 4; ch=ch+'a'; }
@@ -633,7 +634,8 @@ public:
 
     // note, spaces are not allowed.
     if (active) {
-      Conv<T>::set(target, label);
+	std::string tmp;
+	Conv<T>::set(target, label,false,tmp);
     }
 
     if (firsttime || changed)
@@ -681,12 +683,13 @@ private:
 IMPORT bool g_dragdrop_enabled;
 IMPORT std::string g_dragdrop_filename;
 
+std::string g_temp44;
 
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
 public:
-  EditorGuiWidgetAtlas(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap) { firsttime = true; active=false; 
+  EditorGuiWidgetAtlas(GameApi::EveryApi &ev, std::string allowed_chars, T &target_m, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::SH sh, int x_gap, bool allow_expr=false, std::string &expr = g_temp44) : GuiWidgetForward(ev, std::vector<GuiWidget*>()), allowed_chars(allowed_chars), target(target_m), atlas(atlas), atlas_bm(atlas_bm), sh(sh), x_gap(x_gap), allow_expr(allow_expr), expr(expr) { firsttime = true; active=false; 
     Point2d p = { -666.0, -666.0 };
     update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
@@ -751,7 +754,7 @@ public:
 
     if (firsttime)
       {
-	Conv<T>::get(target, label);
+	Conv<T>::get(target, label, allow_expr, expr);
 
 	std::string ext = label.size()<4?"$":label.substr(label.size()-3);
 	drag_drop_ext = ext;
@@ -854,7 +857,7 @@ public:
       //std::cout << "EDITOR UPDATES: " << label << std::endl;
       //std::stringstream ss2(label);
       //ss2 >> target;
-      Conv<T>::set(target, label);
+      Conv<T>::set(target, label, allow_expr, expr);
       //std::cout << "EDITOR UPDATES2: " << target << std::endl;
     }
 
@@ -890,13 +893,15 @@ public:
     return rendered_bitmap.id;
   }
   void set_value(std::string value) { label = value;
-      Conv<T>::set(target, label);
+    Conv<T>::set(target, label,allow_expr,expr);
       externally_set=true;
   }
 private:
   bool firsttime;
   std::string allowed_chars;
-  T &target; 
+  T &target;
+  std::string &expr;
+  bool allow_expr;
   std::string label;
   GameApi::FtA atlas;
   GameApi::BM atlas_bm;
@@ -3772,10 +3777,10 @@ EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_c
   return e2;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string allowed_chars = "0123456789.-+*/";
-  W w = add_widget(e, new EditorGuiWidgetAtlas<float>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  std::string allowed_chars = "0123456789.-+*/%";
+  W w = add_widget(e, new EditorGuiWidgetAtlas<float>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true, expr));
   W w2 = highlight(w);
   return w2;
 }
@@ -4954,7 +4959,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 	}
       else 
 	{
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
       W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
@@ -4962,7 +4967,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     }
   if (type=="float")
     {
-      W edit = float_editor(target.f_value, atlas, atlas_bm, x_gap);
+      W edit = float_editor(target.f_value, target.expr, atlas, atlas_bm, x_gap);
       return edit;
     }
   if (type=="PT")
@@ -4978,14 +4983,15 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 
 EXPORT GameApi::W GameApi::GuiApi::point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap)
 {
+  std::string expr;
   W l0 = text("(",atlas, atlas_bm);
-  W x_edit = float_editor(x, atlas, atlas_bm, x_gap);
+  W x_edit = float_editor(x, expr, atlas, atlas_bm, x_gap);
   W x_edit_2 = highlight(x_edit);
   W l1 = text(";",atlas, atlas_bm);
-  W y_edit = float_editor(y, atlas, atlas_bm, x_gap);
+  W y_edit = float_editor(y, expr,atlas, atlas_bm, x_gap);
   W y_edit_2 = highlight(y_edit);
   W l2 = text(";",atlas,atlas_bm);
-  W z_edit = float_editor(z, atlas,atlas_bm, x_gap);
+  W z_edit = float_editor(z, expr,atlas,atlas_bm, x_gap);
   W z_edit_2 = highlight(z_edit);
   W l3 = text(")",atlas,atlas_bm);
   W array[] = { l0, x_edit_2, l1, y_edit_2, l2, z_edit_2, l3 };
@@ -6822,12 +6828,117 @@ void LoadUrls_codegen(GameApi::Env &env, std::vector<CodeGenLine> vec, std::stri
       LoadUrls_async(env,l, homepage);
   }
 }
-std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num)
+
+struct FunctionSpec
+{
+  bool is_function;
+  std::string name;
+  std::vector<std::string> param_names;
+};
+
+struct FunctionCallSpec
+{
+  bool is_function_call;
+  std::string return_type;
+  std::string label_num;
+  std::string func_name;
+  std::vector<std::string> params;
+};
+
+FunctionCallSpec is_funccall(int lineno, std::string line)
+{
+  FunctionCallSpec spec;
+  spec.is_function_call = false;
+  int first_space = find_char(line,0,' ');
+  if (first_space==-1) { return spec; }
+  std::string return_type = line.substr(0,first_space);
+  if (line[first_space+1]!='I') { return spec; }
+  int num_end_iterator = extend_until(line,first_space+2,"0123456789");
+  if (num_end_iterator==-1) { return spec; }
+  std::string num = line.substr(first_space+2,num_end_iterator-first_space-2);
+  if (line[num_end_iterator]!='=') { return spec; }
+  if (line[num_end_iterator+1]=='e' && line[num_end_iterator+2]=='v' && line[num_end_iterator+3]=='.') { return spec; }
+  int brace_pos = find_char(line,num_end_iterator+1,'(');
+  if (brace_pos==-1) return spec;
+  std::string func_name = line.substr(num_end_iterator+1,brace_pos-num_end_iterator-1);
+  int pos = brace_pos+1;
+  int close_brace_pos = find_char(line,pos,')');
+  int comma_pos = find_char(line,pos,',');
+  std::vector<std::string> params;
+  while(close_brace_pos!=-1 && comma_pos!=-1) {
+    int next_pos = comma_pos!=-1 ? comma_pos : close_brace_pos;
+    std::string param = line.substr(pos,next_pos-pos);
+    params.push_back(param);
+
+    pos = next_pos+1;
+    close_brace_pos = find_char(line,pos,')');
+    comma_pos = find_char(line,pos,',');
+  }
+  spec.is_function_call=true;
+  spec.func_name = func_name;
+  spec.params = params;
+  return spec;
+}
+
+
+FunctionSpec is_line_function(int lineno, std::string line)
+{
+  std::stringstream ss;
+  std::string name;
+  char ch1;
+  int pos = extend_until(line,0," \t");
+  std::string str = line.substr(pos,8);
+  if (str!="function") { FunctionSpec spec; spec.is_function=false; return spec; }
+  int pos2 = find_one(line,pos,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", false);
+  if (pos2==-1) { FunctionSpec spec; spec.is_function=false; return spec; }
+  name = line.substr(pos,pos2-pos);
+  std::cout << "Function name:" << name << std::endl;
+  char ch=line[pos2];
+  if (ch!='(') { FunctionSpec spec; spec.is_function=false; return spec; }
+  std::vector<std::string> param_names;
+  int pos3;
+  for(;;)
+    {
+      pos3 = extend_until(line,pos2+1,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+      std::string param_name = line.substr(pos2+1,pos3-pos2-1);
+      param_names.push_back(param_name);
+      if (line[pos3]==')') break;
+      if (line[pos3]!=',') { std::cout << "Line: " << lineno << " parse error at '" << line[pos3] << "'!" << std::endl; FunctionSpec spec; spec.is_function=false; return spec; }
+      pos2 = pos3;
+    }
+  int pos4 = extend_until(line,pos3+1," \t");
+  char ch2 = line[pos4];
+  if (ch2 != '{') { std::cout << "Line: " << lineno << " parse error at '" << ch2 << "'!" << std::endl; FunctionSpec spec; spec.is_function=false; return spec; } 
+
+  FunctionSpec spec;
+  spec.is_function = true;
+  spec.name = name;
+  spec.param_names = param_names;
+  return spec;
+}
+bool is_line_function_end(std::string line)
+{
+  int pos = extend_until(line,0," \t");
+  int ch = line[pos];
+  return ch=='}';
+}
+
+struct FunctionImpl4
+{
+  std::string name;
+  std::vector<std::string> param_names;
+  std::vector<CodeGenLine> impl;
+};
+
+
+std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev, std::string text, int &error_line_num, std::vector<FunctionImpl4> &functions)
 {
   int idx = 0;
   int old_idx = 0;
   int line_num = 0;
   error_line_num = 0;
+  std::vector<std::vector<CodeGenLine> > linestack;
+  std::vector<FunctionImpl4> stack;
   std::vector<CodeGenLine> vec;
   static std::vector<GameApiItem*> funcs = all_functions(ev);
   std::string homepage = ev.mainloop_api.get_homepage_url();
@@ -6835,6 +6946,43 @@ std::vector<CodeGenLine> parse_codegen(GameApi::Env &env, GameApi::EveryApi &ev,
     {
       std::string line = text.substr(old_idx, idx-old_idx-1);
       //std::cout << "Line:" << line << std::endl;
+
+      FunctionSpec s = is_line_function(line_num,line);
+      if (s.is_function) {
+	FunctionImpl4 impl;
+	impl.name = s.name;
+	impl.param_names = s.param_names;
+	stack.push_back(impl);
+	linestack.push_back(vec);
+	vec.clear();
+      }
+      bool sb = is_line_function_end(line);
+      if (sb && stack.size()==0) { std::cout << "ERROR: function nesting problem!" << std::endl; error_line_num = line_num; return vec; }
+      if (sb && stack.size()>0)
+	{
+	  FunctionImpl4 impl = stack[stack.size()-1];
+	  stack.pop_back();
+	  impl.impl = vec;
+	  vec = linestack[linestack.size()-1];
+	  linestack.pop_back();
+	  functions.push_back(impl);
+	}
+      FunctionCallSpec call = is_funccall(line_num,line);
+      if (call.is_function_call)
+	{
+	  CodeGenLine line2;
+	  line2.return_type = call.return_type;
+	  line2.label_num = call.label_num;
+	  line2.api_name = "@";
+	  line2.func_name = call.func_name;
+	  line2.params = call.params;
+	  vec.push_back(line2);
+	  line_num++;
+	  old_idx = idx+1;
+	  idx++;
+	  continue;
+	}
+      
       if (line.size()<10) { 
 	line_num++;
 	old_idx = idx+1;
@@ -7190,7 +7338,8 @@ IMPORT std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, Ga
 {
   g_async_load_count = 0;
   int error_line_num = 0;
-  std::vector<CodeGenLine> vec = parse_codegen(env, ev, text, error_line_num);
+  std::vector<FunctionImpl4> funcs;
+  std::vector<CodeGenLine> vec = parse_codegen(env, ev, text, error_line_num,funcs);
   if (vec.size()==0) {
     return std::make_pair(0,std::string("Error at line ") + ToString(error_line_num));
   }

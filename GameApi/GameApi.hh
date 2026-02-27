@@ -2158,7 +2158,7 @@ public:
   IMPORT W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type);
   IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
@@ -2172,6 +2172,7 @@ public:
     float f_x, f_y, f_z;
     std::string color;
     std::string s;
+    std::string expr;
   };
   IMPORT W generic_editor(EveryApi &ev, EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy, W &click_target);
   IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target);
