@@ -5,6 +5,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
 
   std::vector<GameApiItem*> vec;
+
+  vec.push_back(new EnvGameApiItem);
+
 #if (ALL==1)||(STRING_BYTESTORE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::string_bytestore,
 			 "bs_string",
@@ -370,6 +373,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
 
 #ifdef NO_PREPARE_RENDER
+#if 0
 #if (ALL==1)||(GLTF_MATERIAL_NOP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_nop_resize,
 			 "tf_nop",
@@ -378,6 +382,8 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "0","0", "0.5" },
 			 "ML","mainloop_api", "gltf_material_nop"));
 #endif
+#endif
+#if 0
 #if (ALL==1)||(GLTF_MATERIAL_MESH==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_material_mesh,
 			 "tf_material",
@@ -386,6 +392,8 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "0", "0.5" },
 			 "ML", "mainloop_api", "gltf_material_mesh"));
 #endif
+#endif
+#if 0
 #if (ALL==1)||(GLTF_NODE2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_node2,
 			 "tf_node",
@@ -394,6 +402,8 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "0", "0.5" },
 			 "ML", "mainloop_api", "gltf_node2"));
 #endif		       
+#endif
+#if 0
 #if (ALL==1)||(GLTF_SCENE2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_scene2,
 			 "tf_scene2",
@@ -402,6 +412,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "0", "0.5" },
 			 "ML", "mainloop_api", "gltf_scene2"));
 
+#endif
 #endif
 #endif
 #if (ALL==1)||(ASYNC_GLTF==1)  

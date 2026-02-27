@@ -119,6 +119,8 @@ void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
 	GameApiParam p_res;
 	std::string paramname = resitem->ParamName(0,i);
 	std::string def = resitem->ParamDefault(0,i);
+	std::string type = resitem->ParamType(0,i);
+	std::string expr = def;
 	int ppcount = line.params.size();
 	int jj = -1;
 	for(int j=0;j<ppcount;j++)
@@ -126,12 +128,15 @@ void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
 	    if (paramname==line.params[j].param_name)
 	      {
 		def = line.params[j].value;
+		expr = line.params[j].expr;
 		jj=j;
 	      }
 	  }
 	if (jj==-1) { std::cout << "Warning: parameter " << paramname << " not found in " << line.module_name << std::endl; }
 	p_res.param_name = paramname;
 	p_res.value = def;
+	p_res.expr = expr;
+	p_res.type = type;
 	std::string ret = resitem->ReturnType(0);
 	p_res.is_array = ret.size()>0&&ret[0]=='['&&ret[ret.size()-1]==']'?true:false;
 	if (jj!=-1)
@@ -216,7 +221,7 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      //std::cout << name_value << std::endl;
 	      int s = name_value.size();
 	      int i = 0;
-	      int i1=0,i2=0,i3=0,i4=0;
+	      int i1=0,i2=0,i3=0,i4=0,i5=0,i6=0;
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      i1 = i;
 	      i++;
@@ -229,6 +234,12 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      i4= i;
 	      i++;
+	      for(;i<s;i++) { if (name_value[i]==':') break; }
+	      i5=i;
+	      i++;
+	      for(;i<s;i++) { if (name_value[i]==':') break; }
+	      i6=i;
+	      i++;
 	      //std::cout << name_value << std::endl;
 	      //std::cout << i1 << " " << i2 << " " << i3 << " " << i4 << std::endl;
 	      p.param_name = name_value.substr(0, std::max(i1,0));
@@ -237,7 +248,12 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      if (is_array_str=="true") { p.is_array = true; }
 	      std::string array_target_str = name_value.substr(i3+1, i4-i3-1);
 	      //std::cout << "S:" << s << " I4:" << i4 << std::endl;
-	      std::string jj = i4!=s?name_value.substr(i4+1, s-i4-1):"0";
+	      std::string jj = i4!=s?(i5!=s?name_value.substr(i4+1,i5-i4-1):name_value.substr(i4+1, s-i4-1)):"0";
+	      std::string expr = i5!=s?unhexify(name_value.substr(i5+1,s-i5-1)):p.value;
+	      p.expr=expr;
+
+	      std::string type = i5!=s && i6!=s?unhexify(name_value.substr(i6+1,s-i6-1)):"";
+	      
 	      int array_index = -1;
 	      std::stringstream ss(array_target_str);
 	      ss >> array_index;
@@ -298,6 +314,8 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
 	      const GameApiParam &p = line.params[i];
 	      std::string name = p.param_name;
 	      std::string value = hexify(p.value);
+	      std::string expr = hexify(p.expr);
+	      std::string type = hexify(p.type);
 	      std::string is_array = p.is_array ? "true" : "false";
 	      int j = p.j;
 	      int array_line = p.array_return_target ? (p.array_return_target - &func.lines[0])/sizeof(GameApiLine) : -1;
@@ -307,7 +325,7 @@ void save_gameapi(const GameApiModule &mod, std::string filename)
 	      std::stringstream ss3;
 	      ss3 << j;
 	      std::string jj2 = ss3.str();
-	      ss << name << ":" << value << ":" << is_array << ":" << array_line_str << ":" << jj2;
+	      ss << name << ":" << value << ":" << is_array << ":" << array_line_str << ":" << jj2 << ":" << expr << ":" << type;
 	      if (i!=s-1) ss << " ";
 	    }
 	  ss << std::endl;
@@ -567,6 +585,29 @@ std::vector<std::string*> remove_unnecessary_refs(std::vector<std::string*> refs
   return res;  
 }
 
+std::vector<std::string*> remove_unnecessary_exprs(std::vector<std::string*> exprs, std::vector<std::string> param_types)
+{
+  std::vector<std::string*> res;
+  int s = param_types.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string type = param_types[i];
+      if (type[0]>='A' && type[0]<='Z' && type.size()<=4)
+	{
+	}
+      else
+      if (type[0]=='[' && type[type.size()-1]==']' && type[1]>='A' && type[1]<='Z' && type.size()<=6)
+	{
+	}
+      else
+	{
+	  res.push_back(exprs[i]);
+	}
+    }
+  return res;  
+}
+
+
 std::string to_upper(std::string s)
 {
   int ss = s.size();
@@ -598,6 +639,67 @@ EXPORT std::string GameApi::WModApi::deps_from_mod(EveryApi &ev, WM mod2)
   return res;
 }
 
+EXPORT std::vector<std::string*> GameApi::WModApi::exprs_from_function(GameApi::EveryApi &ev, WM mod2, int id, std::string funcname)
+{
+  //std::cout << "refs_from_function: " << funcname << std::endl;
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  GameApiModule *mod = env->gameapi_modules[mod2.id];
+  GameApiFunction *func = &mod->funcs[id];
+
+  std::vector<std::string> param_types;
+  std::vector<std::string*> exprs;
+  
+  std::string module_name = "";
+  int sk = func->lines.size();
+  for(int k=0;k<sk;k++)
+    {
+      GameApiLine *line = &func->lines[k];
+      if (funcname == line->uid)
+	{
+	  module_name = line->module_name;
+
+
+	  static std::vector<GameApiItem*> functions = all_functions(ev);
+
+	  //std::vector<GameApiItem*> functions = bitmapapi_functions();
+	  std::vector<std::string> types;
+	  int s = functions.size();
+	  int i = 0;
+	  for(;i<s;i++)
+	    {
+	      GameApiItem* item = functions[i];
+	      std::string name = item->Name(0);
+	      if (name==module_name)
+		{
+		  break;
+		}
+	    }
+	  if (i==s) { std::cout << "ERROR! item not found!" << std::endl; }
+	  GameApiItem *item = functions[i];
+	  int s2 = item->ParamCount(0);
+	  int s3 = line->params.size();
+	  assert(s2==s3);
+	  //std::cout << "Refs count" << s3 << std::endl;
+	  //std::cout << "Chosen line:" << line->module_name << std::endl;
+	  for(int i=0;i<s3;i++)
+	    {
+	      GameApiParam *param = &line->params[i];
+	      std::string *value = &param->value;
+	      std::string *expr = &param->expr;
+	      std::string paramtype = item->ParamType(0, i);
+	      //std::string value = item->ParamDefault(0, i);
+	      param_types.push_back(paramtype);
+	      exprs.push_back(expr);
+	    }
+	  std::vector<std::string*> exprs2 = remove_unnecessary_exprs(exprs, param_types);
+	  return exprs2;
+
+	}
+    }
+  return std::vector<std::string*>();
+
+
+}
 
 EXPORT std::vector<std::string*> GameApi::WModApi::refs_from_function(GameApi::EveryApi &ev, WM mod2, int id, std::string funcname)
 {
@@ -1037,7 +1139,9 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      //level--;
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
-	      std::string pn = param->value;
+	      //std::cout << "PARAM:" << param->value << "::" << param->expr << std::endl;
+	      std::string pn = (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr!="@"?param->expr:param->value;
+	      //std::string pe = param->expr;
 	      std::string rt = "";
 	      int jj = param->j;
 	      int sz = line->sz;
@@ -1188,6 +1292,26 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
   return std::make_pair("","");
 
 }
+
+bool is_one_of(std::string str, std::string chars)
+{
+  int s = str.size();
+  for(int i=0;i<s;i++)
+    {
+      int s2 = chars.size();
+      char ch = str[i];
+      bool found = false;
+      for(int j=0;j<s2;j++) {
+	if (ch==chars[j]) { found=true; break; }
+      }
+      if (!found) return false;
+    }
+  return true;
+}
+
+extern std::vector<std::string> g_float_eval_env;
+std::string FloatExprEval(std::string s);
+
 EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions(ev);
@@ -1225,6 +1349,8 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	    {
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = param->value;
+	      std::string e = param->expr;
+	      std::string t = param->type;
 	      int jj = param->j;
 	      if (level<=0)
 		{ // Stopping recursion
@@ -1295,7 +1421,22 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      else
 		{
 		  //std::cout << "Param: " << p << std::endl;
-
+		  if (t=="float")
+		    {
+		      int s = exeenv.names.size();
+		      for(int i=0;i<s;i++)
+			{
+			  if (exeenv.names[i].size()==2 && exeenv.names[i][0]=='%')
+			    {
+			    int val = exeenv.names[i][1]-'1';
+			    g_float_eval_env.resize(5);
+			    g_float_eval_env[val] = exeenv.values[i];
+			    } 
+			}
+		      
+		      //g_float_eval_env = exeenv.values;
+		      p = FloatExprEval(e);
+		    }
 		  params.push_back(p);
 		}
 	    }
@@ -1775,6 +1916,8 @@ EXPORT void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname
 	GameApiParam pp;
 	pp.param_name = p.first;
 	pp.value = p.second;
+	pp.expr = p.second;
+	pp.type = "";
 	pp.is_array = p.is_array;
 	pp.array_return_target = &func->lines[p.line_index_in_gameapi_function_lines_array];
 	new_line.params.push_back(pp);
@@ -1782,6 +1925,8 @@ EXPORT void GameApi::WModApi::insert_to_mod(WM mod2, int id, std::string modname
 	GameApiParam pp;
 	pp.param_name = p.first;
 	pp.value = p.second;
+	pp.expr = p.second;
+	pp.type = "";
 	pp.is_array = false;
 	pp.array_return_target = 0;
 	new_line.params.push_back(pp);
