@@ -2999,9 +2999,9 @@ static unsigned char cursor_0_mask[16] = {
   ProgressBar(888,0,5,"init");
   // shader initialization
   // Chunkfive.otf
-  font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
-  font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
-  font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
+  font = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
+  font2 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
+  font3 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
 
 
   std::string fname = "atlas0.txt";
@@ -3036,7 +3036,7 @@ static unsigned char cursor_0_mask[16] = {
 	  std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 8*font_scale,12*font_scale, 25*font_scale);
