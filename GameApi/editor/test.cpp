@@ -2167,6 +2167,8 @@ public:
 	      labels = env->ev->mod_api.labels_from_function(*env->ev,env->mod, 0, uid);
 	      std::vector<std::string*> refs;
 	      refs = env->ev->mod_api.refs_from_function(*env->ev,env->mod, 0, uid);
+	      std::vector<std::string*> exprs;
+	      exprs = env->ev->mod_api.exprs_from_function(*env->ev,env->mod,0,uid);
 	      
 	      //std::cout << labels << " " << refs << std::endl;
 	      assert(refs.size()==labels.size());
@@ -2174,7 +2176,8 @@ public:
 	      for(int e=0;e<s;e++)
 		{
 		  std::string *ref = refs[e];
-		  env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
+		  std::string *expr = exprs[e];
+		  env->gui->string_to_generic(*env->vec4[e], types[e], *ref, *expr); 
 		}
 	      
 	      
@@ -2391,15 +2394,22 @@ public:
 	    refs = env->ev->mod_api.refs_from_function(*env->ev,env->mod, 0, uid);
 	    std::vector<std::string> types;
 	    types = env->ev->mod_api.types_from_function(*env->ev,env->mod, 0, uid);
+
+	    std::vector<std::string*> exprs;
+	    exprs = env->ev->mod_api.exprs_from_function(*env->ev,env->mod,0,uid);
+	    
 	    
 	    int s = refs.size();
 	    for(int i=0;i<s;i++)
 	      {
 		std::string *ref = refs[i];
+		std::string *expr = exprs[i];
 		//std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
 		std::string val = *ref;
-		env->gui->generic_to_string(*env->vec4[i], types[i], val);
+		std::string val2 = *expr;
+		env->gui->generic_to_string(*env->vec4[i], types[i], val,val2);
 		*ref = val;
+		*expr = val2;
 	      }
 	  }
       }
@@ -2999,9 +3009,9 @@ static unsigned char cursor_0_mask[16] = {
   ProgressBar(888,0,5,"init");
   // shader initialization
   // Chunkfive.otf
-  font = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
-  font2 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
-  font3 = ev.font_api.newfont("http://tpgames.org/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
+  font = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
+  font2 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
+  font3 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
 
 
   std::string fname = "atlas0.txt";
@@ -3036,7 +3046,7 @@ static unsigned char cursor_0_mask[16] = {
 	  std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 8*font_scale,12*font_scale, 25*font_scale);

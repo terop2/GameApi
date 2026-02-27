@@ -819,9 +819,11 @@ struct GameApiParam
 {
   std::string param_name;
   std::string value;
+  std::string type;
   bool is_array = false;
   GameApiLine *array_return_target = 0;
   int j; // multiple return values
+  std::string expr;
 };
 namespace GameApi {
 class EditNode;
@@ -3546,6 +3548,20 @@ public:
 };
 
 
+class GaussianSplat : public CollectInterface
+{
+public:
+  virtual void Prepare()=0;
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+public:
+  virtual int NumItems() const=0;
+  virtual Point center(int i) const=0;
+  virtual Matrix cov(int i) const=0;
+  virtual unsigned int color(int i) const=0;
+};
+
+
 
 #endif
 
@@ -3772,4 +3788,6 @@ public:
 };
 
 
+
 #endif
+

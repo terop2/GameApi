@@ -421,13 +421,13 @@ public:
   IMPORT ML hires_ml(EveryApi &ev, ML I3, int size, int numsamples, float blur_radius);
   IMPORT ML render_txid(EveryApi &ev, P p1, TXID I7, int size);
   IMPORT ML android_resize(EveryApi &ev, ML ml, float mult);
-  IMPORT ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
-  IMPORT ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
-  IMPORT ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
-  IMPORT ML gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix);
-  IMPORT ML gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix);
-  IMPORT ML gltf_node2(EveryApi &ev, TF tf, int node_id, float mix);
-  IMPORT ML gltf_scene2(EveryApi &ev, TF tf, int scene_id, float mix);
+  //IMPORT ML gltf_material_nop_resize(EveryApi &ev, TF tf, int mesh_index, int prim_index, float mix);
+  //IMPORT ML prim_render(EveryApi &ev, TF tf, int mesh_index, int prim_index, std::vector<GameApi::BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
+  //IMPORT ML mesh_render(EveryApi &ev, TF tf, int mesh_index, std::vector<BM> bm, std::vector<int> types, std::vector<std::string> id_labels);
+  //IMPORT ML gltf_material_nop(EveryApi &ev, TF tf, int mesh_index, int prim_id, float mix);
+  //IMPORT ML gltf_material_mesh(EveryApi &ev, TF tf, int mesh_index, float mix);
+  //IMPORT ML gltf_node2(EveryApi &ev, TF tf, int node_id, float mix);
+  //IMPORT ML gltf_scene2(EveryApi &ev, TF tf, int scene_id, float mix);
   IMPORT ML concurrent_download(ML ml);
   IMPORT ML fullscreen_button(EveryApi &ev);
   IMPORT TT timing_start();
@@ -2158,7 +2158,7 @@ public:
   IMPORT W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W float_editor(float &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type);
   IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
@@ -2172,10 +2172,11 @@ public:
     float f_x, f_y, f_z;
     std::string color;
     std::string s;
+    std::string expr;
   };
   IMPORT W generic_editor(EveryApi &ev, EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy, W &click_target);
-  IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target);
-  IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source);
+  IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target, std::string &expr);
+  IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source, const std::string &expr);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   IMPORT W edit_dialog(EveryApi &ev, const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm, std::vector<W> &enum_click_targets);
   IMPORT W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
@@ -2286,6 +2287,7 @@ public:
   IMPORT std::vector<std::string> types_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
   IMPORT std::vector<std::string> labels_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
   IMPORT std::vector<std::string*> refs_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string*> exprs_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
   IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(GameApi::EveryApi &ev, std::string module_name);
   struct InsertParam {
     std::string first;

@@ -2305,25 +2305,32 @@ public:
     bool b=false;
 #ifdef EMSCRIPTEN
     if (current_state==true) {
-      b = e.button==0 && e.cursor_pos.x>=675 && e.cursor_pos.x<=675+50 &&
+      b = e.button==0 && e.cursor_pos.x>=675 /*&& e.cursor_pos.x<=675+50*/ &&
 	e.cursor_pos.y>=550 && e.cursor_pos.y<=550+50;
     } else {
-      b = e.button==0 && e.cursor_pos.x>=750 && e.cursor_pos.x<=750+50 &&
+      b = e.button==0 && e.cursor_pos.x>=750 /*&& e.cursor_pos.x<=750+50*/ &&
 	e.cursor_pos.y>=550 && e.cursor_pos.y<=550+50;
     }
 #else
-    b = e.button==0 && e.cursor_pos.x>=1140 && e.cursor_pos.x<=1140+50 &&
+    b = e.button==0 && e.cursor_pos.x>=1140 /*&& e.cursor_pos.x<=1140+50*/ &&
       e.cursor_pos.y>=844 && e.cursor_pos.y<=844+50;
 #endif
-      if (b)
+    //std::cout << "b=" << b << std::endl;
+      if (b && !block)
       {
 	req_state=!req_state;
+	block=true;
       }
+      if (e.button!=0) block=false;
+      //std::cout << "reqstate=" << req_state << std::endl;
     if (e.type==0x300 && e.ch==1073741892) { req_state=true; }
     if (e.type==0x300 && e.ch==27) { req_state=false; }
+    //std::cout << "reqstate2=" << req_state << std::endl;
+      //std::cout << "current_state=" << current_state << std::endl;
 #ifdef EMSCRIPTEN
     if (req_state!=current_state) {
       if (req_state==true) {
+	//std::cout << "GOING TO FULLSCREEN!" << std::endl;
 	old_sx = g_resize_event_sx;
 	old_sy = g_resize_event_sy;
 	//emscripten_request_fullscreen("canvas", false);
@@ -2337,6 +2344,7 @@ public:
 	current_state=true;
       } else
 	{
+	  //std::cout << "EXITING FROM FULLSCREEN!" << std::endl;
 	  //emscripten_exit_fullscreen();
 	  //g_low->sdl->SDL_SetWindowFullscreen(sdl_window, 0);
 	  call_exit_fullscreen();
@@ -2363,6 +2371,7 @@ private:
   bool current_state=false;
   bool req_state=false;
   int old_sx, old_sy;
+  bool block=false;
 };
 
 GameApi::ML GameApi::MainLoopApi::fullscreen_button(EveryApi &ev)
