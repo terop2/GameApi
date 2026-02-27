@@ -819,9 +819,11 @@ struct GameApiParam
 {
   std::string param_name;
   std::string value;
+  std::string type;
   bool is_array = false;
   GameApiLine *array_return_target = 0;
   int j; // multiple return values
+  std::string expr;
 };
 namespace GameApi {
 class EditNode;

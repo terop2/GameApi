@@ -2167,6 +2167,8 @@ public:
 	      labels = env->ev->mod_api.labels_from_function(*env->ev,env->mod, 0, uid);
 	      std::vector<std::string*> refs;
 	      refs = env->ev->mod_api.refs_from_function(*env->ev,env->mod, 0, uid);
+	      std::vector<std::string*> exprs;
+	      exprs = env->ev->mod_api.exprs_from_function(*env->ev,env->mod,0,uid);
 	      
 	      //std::cout << labels << " " << refs << std::endl;
 	      assert(refs.size()==labels.size());
@@ -2174,7 +2176,8 @@ public:
 	      for(int e=0;e<s;e++)
 		{
 		  std::string *ref = refs[e];
-		  env->gui->string_to_generic(*env->vec4[e], types[e], *ref); 
+		  std::string *expr = exprs[e];
+		  env->gui->string_to_generic(*env->vec4[e], types[e], *ref, *expr); 
 		}
 	      
 	      
@@ -2391,15 +2394,22 @@ public:
 	    refs = env->ev->mod_api.refs_from_function(*env->ev,env->mod, 0, uid);
 	    std::vector<std::string> types;
 	    types = env->ev->mod_api.types_from_function(*env->ev,env->mod, 0, uid);
+
+	    std::vector<std::string*> exprs;
+	    exprs = env->ev->mod_api.exprs_from_function(*env->ev,env->mod,0,uid);
+	    
 	    
 	    int s = refs.size();
 	    for(int i=0;i<s;i++)
 	      {
 		std::string *ref = refs[i];
+		std::string *expr = exprs[i];
 		//std::cout << i << " " << (*env->vec4[i]).i_value << std::endl;
 		std::string val = *ref;
-		env->gui->generic_to_string(*env->vec4[i], types[i], val);
+		std::string val2 = *expr;
+		env->gui->generic_to_string(*env->vec4[i], types[i], val,val2);
 		*ref = val;
+		*expr = val2;
 	      }
 	  }
       }

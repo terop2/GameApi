@@ -2175,8 +2175,8 @@ public:
     std::string expr;
   };
   IMPORT W generic_editor(EveryApi &ev, EditTypes &target, FtA atlas, BM atlas_bm, std::string type, int x_gap, FtA atlas_tiny, BM atlas_tiny_bm, int sy, W &click_target);
-  IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target);
-  IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source);
+  IMPORT void generic_to_string(const EditTypes &source, std::string type, std::string &target, std::string &expr);
+  IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source, const std::string &expr);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   IMPORT W edit_dialog(EveryApi &ev, const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm, std::vector<W> &enum_click_targets);
   IMPORT W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
@@ -2287,6 +2287,7 @@ public:
   IMPORT std::vector<std::string> types_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
   IMPORT std::vector<std::string> labels_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
   IMPORT std::vector<std::string*> refs_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
+  IMPORT std::vector<std::string*> exprs_from_function(GameApi::EveryApi &ev, WM mod, int id, std::string funcname);
   IMPORT std::vector<std::pair<std::string,std::string> > defaults_from_function(GameApi::EveryApi &ev, std::string module_name);
   struct InsertParam {
     std::string first;
