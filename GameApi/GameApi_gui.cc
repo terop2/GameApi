@@ -555,7 +555,7 @@ class Conv<float>
 {
 public:
   static void set(float &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr = s; s=FloatExprEval(expr); } else s = FloatExprEval(s);  std::stringstream ss(s); ss >> target; }
-  static void get(const float &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; if (allow_expr) ss << expr; else ss << target; s=ss.str(); }
+  static void get(const float &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; if (allow_expr && expr!="" && expr!="@") ss << expr; else ss << target; s=ss.str(); }
   static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type float!"; }
 };
 template<class T>
@@ -4798,9 +4798,10 @@ bool is_enum(std::string type)
   return false;
 }
 
-EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string type, const std::string &source)
+EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string type, const std::string &source, const std::string &expr)
 {
-
+  target.expr = expr;
+  
   //std::cout << "Source: " << source << std::endl;
 
   //std::cout << "string_to_generic" << type << std::endl;
@@ -4833,8 +4834,8 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
     } else
   if (type=="float")
     {
-      std::string source2 = FloatExprEval(source);
-      std::stringstream ss(source2);
+      //std::string source2 = FloatExprEval(source);
+      std::stringstream ss(source);
       ss >> target.f_value;
     } else
     if (type=="bool")
@@ -4857,8 +4858,10 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
       std::cout << "Unknown type at string_to_generic" << std::endl;
     }
 }
-EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::string type, std::string &target)
+EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::string type, std::string &target, std::string &expr)
 {
+  expr = source.expr;
+  
   //std::cout << "generic_to_string" << type << std::endl;
   if (type=="EveryApi&")
     {
@@ -7883,6 +7886,8 @@ int find_float_ch(std::string s, char ch) {
   return -1;
 }
 
+std::vector<std::string> g_float_eval_env;
+
 std::string FloatExprEval(std::string s)
 {
   //std::cout << "FloatExprEval: " << s << std::endl;
@@ -7960,6 +7965,12 @@ std::string FloatExprEval(std::string s)
     return res.str();
   }
 
+  if (s.size()==2 && s[0]=='%' && s[1]>='0' && s[1]<='5')
+    {
+      int val = s[1]-'1';
+      std::string v = g_float_eval_env.size()>val?g_float_eval_env[val]:"";
+      return FloatExprEval(v);
+    }
   //std::cout << "FloatExprEval(result): " << s << std::endl;
   return s;
 
