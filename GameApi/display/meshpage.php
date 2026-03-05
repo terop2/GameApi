@@ -843,6 +843,22 @@ problems normally associated with polygons, given that
 triangle/quad/polygon type change does not cause additional draw
 commands to the opengl rendering.
 
+GLTF standard organisation made significant mistake when specifying GLTF file format, given that they do not support quads and polygons any longer. They're trying to conform tool vendors who explicitly break other people's 3d engines and tools instead of trying to do it properly (and possibly document the correct way to render polygons).
+
+The steps needed to render polygons are:
+<ul>
+ <li> mesh data structure needs to support mixing of triangles,quads and polygons
+ <li> all algorithms handling mesh data structure need to support it
+ <li> opengl rendering of the mesh data structure will need to divide the faces
+    to 3 separate arrays and pass them to opengl in 3 arrays. The algorithm to do this is 3 lines long(hint: polygons become triangle strips), so there's no reason to skip it's implementation and it does not cause perf problems.
+</ul>
+
+The first 2 requirements are why most people cannot implement the
+feature, after internet suggested decimating the feature. The
+performance problem is normally in the 3rd requirement. The perf
+problem is the only thing internet knows about, they're completely
+silent of the first two requirements.
+
 <h2>Now, if I got display.php, how do I embed it to my article</h2>
 
 &lt;iframe scrolling="no" src="display.php" width="830" height="630"&gt;
