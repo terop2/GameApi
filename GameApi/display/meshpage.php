@@ -842,9 +842,9 @@ in competing 3d engines. Our engine does not have the performance
 problems normally associated with polygons, given that
 triangle/quad/polygon type change does not cause additional draw
 commands to the opengl rendering.
-
-GLTF standard organisation made significant mistake when specifying GLTF file format, given that they do not support quads and polygons any longer. They're trying to conform tool vendors who explicitly break other people's 3d engines and tools instead of trying to do it properly (and possibly document the correct way to render polygons).
-
+<p>
+GLTF standard organisation made significant mistake when specifying GLTF file format, given that they do not support quads and polygons any longer. They're trying to conform tool vendors who explicitly break other people's 3d engines and tools instead of trying to do it properly (and possibly document the correct way to render polygons). HINT: correct way is to remove the feature that is misused, not the feature that was successfully broken by the idiots. i.e. they should remove possibility to _only use triangles_, instead of removing polygon feature. At current situation, detecting who is idiot is more important, and this is why our engine _enables polygons by default in .obj files_, so that when you see random bullshit polygons in obj files coming from some tool, you'll know which tool vendors are trying to break 3d engines.
+<p>
 The steps needed to render polygons are:
 <ul>
  <li> mesh data structure needs to support mixing of triangles,quads and polygons
