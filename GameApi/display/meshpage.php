@@ -828,6 +828,21 @@ Useful other sites with gltf viewing capability in web:
 
 Check our gltf-to-zip converter at <a href="<?php echo $https ?>://<?php echo $site ?>/gltf_to_zip.php">Here</a>.
 
+<h2>When loading .obj file, I get some random triangles that do not belong to the model?</h2>
+
+The engine works correctly. The obj file supports triangles, quads and
+polygons. But some external tools that create .obj files insert random
+polygons to the file to discourage rendering of polygons. We consider
+polygon rendering is important feature, and our engine should support
+it by default. If you have problems, we have disable_polygons()
+feature in the engine to get rid of the trash. But real solution is to
+change the tool you use to create the .obj file/check the .obj file
+that it doesn't contain random (invisible) polygons that do not render
+in competing 3d engines. Our engine does not have the performance
+problems normally associated with polygons, given that
+triangle/quad/polygon type change does not cause additional draw
+commands to the opengl rendering.
+
 <h2>Now, if I got display.php, how do I embed it to my article</h2>
 
 &lt;iframe scrolling="no" src="display.php" width="830" height="630"&gt;
