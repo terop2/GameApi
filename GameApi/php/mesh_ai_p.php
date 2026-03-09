@@ -1,4 +1,7 @@
 <?php
+
+exit;
+
 ini_set('zlib.output_compression', 'Off');
 ini_set('output_buffering', 'Off');
 set_time_limit(0);
