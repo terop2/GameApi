@@ -1,4 +1,7 @@
 <?php
+
+exit;
+
 ini_set('output_buffering', 'Off');
 use function OutputControl\ob_start;
 use function OutputControl\ob_end_flush;
