@@ -41854,8 +41854,9 @@ GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameA
   return I154;
 }
 
-GameApi::ML GameApi::MainLoopApi::lod_gpu_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ,s, float level1_tri, float level1_quad, float level1_polygon, float level2_tri, float level2_quad, float level2_polygon, float level3_tri, float level3_quad, float level3_polygon, float level4_tri, float level4_quad, float level4_polygon, int l1, int l2, int l3, int l4)
+GameApi::ML GameApi::MainLoopApi::lod_gpu_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ms, float level1_tri, float level1_quad, float level1_polygon, float level2_tri, float level2_quad, float level2_polygon, float level3_tri, float level3_quad, float level3_polygon, float level4_tri, float level4_quad, float level4_polygon, int l1, int l2, int l3, int l4)
 {
+  // tästä voi tulla ongelmia, koska opengl:n kartassa ei ole uninterleavea
 }
 
 
@@ -41879,6 +41880,7 @@ GameApi::ML GameApi::MainLoopApi::lod_matrix(GameApi::EveryApi &ev, GameApi::P p
 
 GameApi::ML GameApi::MainLoopApi::lod_gpu_pts_tf(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_tri, /*float level1_quad, float level1_polygon*/, float level2_tri, /*float level2_quad, float level2_polygon*/, float level3_tri, /*float level3_quad, float level3_polygon*/, float level4_tri, /*float level4_quad, float level4_polygon*/, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfil, float start_brightness, float end_brightness)
 {
+  // tästä voi tulla ongelmia, koska opengl:n kartassa ei ole uninterleavea
 }
 
 
@@ -42004,6 +42006,7 @@ private:
 
 GameApi::ML GameApi::MainLoopApi::lod_gpu_matrix_tf(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS pts, float level1_tri, /*float level1_quad, float level1_polygon*/, float level2_tri, /*float level2_quad, float level2_polygon*/, float level3_tri, /*float level3_quad, float level3_polygon*/, float level4_tri, /*float level4_quad, float level4_polygon*/, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfil, float start_brightness, float end_brightness)
 {
+  // tästä voi tulla ongelmia, koska opengl:n kartassa ei ole uninterleavea
 }
 
 
