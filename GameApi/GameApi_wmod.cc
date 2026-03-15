@@ -125,6 +125,7 @@ void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
 	int jj = -1;
 	for(int j=0;j<ppcount;j++)
 	  {
+	    //std::cout << "TT:" << paramname << " " << line.params[j].param_name << std::endl;
 	    if (paramname==line.params[j].param_name)
 	      {
 		def = line.params[j].value;
@@ -221,7 +222,7 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      //std::cout << name_value << std::endl;
 	      int s = name_value.size();
 	      int i = 0;
-	      int i1=0,i2=0,i3=0,i4=0,i5=0,i6=0;
+	      int i1=0,i2=0,i3=0,i4=0,i5=0,i6=0,i7=0;
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      i1 = i;
 	      i++;
@@ -240,6 +241,9 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      for(;i<s;i++) { if (name_value[i]==':') break; }
 	      i6=i;
 	      i++;
+	      //for(;i<s;i++) { if (name_value[i]==':') break; }
+	      //i7=i;
+	      //i++;
 	      //std::cout << name_value << std::endl;
 	      //std::cout << i1 << " " << i2 << " " << i3 << " " << i4 << std::endl;
 	      p.param_name = name_value.substr(0, std::max(i1,0));
@@ -249,7 +253,7 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      std::string array_target_str = name_value.substr(i3+1, i4-i3-1);
 	      //std::cout << "S:" << s << " I4:" << i4 << std::endl;
 	      std::string jj = i4!=s?(i5!=s?name_value.substr(i4+1,i5-i4-1):name_value.substr(i4+1, s-i4-1)):"0";
-	      std::string expr = i5!=s?unhexify(name_value.substr(i5+1,s-i5-1)):p.value;
+	      std::string expr = i5!=s?unhexify(name_value.substr(i5+1,i6-i5-1)):p.value;
 	      p.expr=expr;
 
 	      std::string type = i5!=s && i6!=s?unhexify(name_value.substr(i6+1,s-i6-1)):"";
@@ -264,6 +268,10 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      int j=0;
 	      ss2 >> j;
 	      p.j = j;
+
+	      //std::cout << "VALUE:" << p.value << std::endl;
+
+	      
 	      //std::cout << "Name: " << p.param_name << " Value: " << p.value << std::endl;
 	      //std::cout << "PARAMS: " << j << std::endl;
 	      g_line.params.push_back(p);
@@ -1140,7 +1148,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
 	      //std::cout << "PARAM:" << param->value << "::" << param->expr << std::endl;
-	      std::string pn = (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr!="@"?param->expr:param->value;
+	      std::string pn = (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr=="@"?param->expr:param->value;
 	      //std::string pe = param->expr;
 	      std::string rt = "";
 	      int jj = param->j;
