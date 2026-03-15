@@ -29164,6 +29164,18 @@ public:
     VEC4 v;
     return v;
   }
+  int NumObjects() const
+  {
+    return coll->NumObjects();
+  }
+  std::pair<int,int> GetObject(int o) const
+  {
+    // this is probably broken in decimate, since it sorts faces
+    return coll->GetObject(o);
+  }
+  int NumTextures() const { return coll->NumTextures(); }
+  void GenTexture(int num) { coll->GenTexture(num); }
+  BufferRef TextureBuf(int num) const { return coll->TextureBuf(num); }
 private:
   FaceCollection *coll;
   std::vector<int> indices;
