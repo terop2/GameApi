@@ -656,7 +656,7 @@ echo "<script>function resume_cookies() { var c = document.getElementById(\"call
 echo "Technology demonstration: <a href=\"https://youtu.be/WZxCE-RsBDc\">Demo</a><br><p>";
 echo "Video tutorial: <a href=\"$https://$site/assets/builder_greeen_example.mp4\">tutorial</a><br><p>";
 
-echo "Path to steam: <a href="https://ldjam.com/events/ludum-dare/58/fire-walk-with-me/gameapi-builder-is-now-in-steam">gameapi-builder-is-now-in-steam</a><br>";
+echo "Path to steam: <a href=\"https://ldjam.com/events/ludum-dare/58/fire-walk-with-me/gameapi-builder-is-now-in-steam\">gameapi-builder-is-now-in-steam</a><br>";
 echo "Address: kullervonkatu 24a28, 33500 tampere<br>";
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";
