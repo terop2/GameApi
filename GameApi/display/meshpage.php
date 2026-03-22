@@ -645,8 +645,34 @@ echo "<canvas class=\"ems\" id=\"canvas\" style=\"width:800px; height:600px\" wi
 <h1>about and contact info</h1>
 <?php
 echo "Introduction: <a href=\"article.php\">article</a><br>";
-echo "Create(private): <a href=\"mesh_login.php?return=create_mesh.php\">mesh</a><br>";
-echo "Vault(private): <a href=\"mesh_login.php?return=mesh_hide.php\">vault</a><br>";
+//echo "Create(private): <a href=\"https://meshpage.org/meshpage.php#\" onclick=\"sendPost()\">mesh</a><br>";
+echo "Create(private): <form action=\"mesh_login.php\" method=\"POST\">";
+echo "  <input type=\"hidden\" name=\"return\" value=\"create_mesh.php\">";
+echo "  <button type=\"submit\">mesh</button>";
+echo "</form>";
+//echo "<script>";
+//echo "function sendPost() {\n";
+//echo "   fetch('mesh_login.php', {\n";
+//echo "         method: 'POST',\n";
+//echo "         headers: {\n";
+//echo "             'Content-Type': 'application/json'\n";
+//echo "         },\n";
+//echo "         body: JSON.stringify({ return: \"create_mesh.php\" })\n";
+//echo "       });\n";
+//echo " }\n";
+//mesh_login.php?return=create_mesh.php
+echo "</script>";
+
+echo "Vault(private): <form action=\"mesh_login.php\" method=\"POST\">";
+echo "  <input type=\"hidden\" name=\"return\" value=\"mesh_hide.php\">";
+echo "  <button type=\"submit\">vault</button>";
+echo "</form>";
+
+//echo "Vault(private): <a href=\"mesh_login.php?return=mesh_hide.php\">vault</a><br>";
+
+
+
+
 echo "Adverticement: <a href=\"https://www.youtube.com/watch?v=0UF0zIMI2xA&feature=youtu.be\">Video</a><br><p>";
 echo "Slack group invite link: <a href=\"https://join.slack.com/t/meshpageorgsg-v7a1898/shared_invite/zt-3okqaoin8-XU3fWVr4ww03OJv8Khs~ww\">Join Slack</a><br><p>";
 
@@ -872,6 +898,12 @@ There's now a callback for that purpose
 <pre>
   Module.gameapi_cb = function()
    { var d = document.getElementById("img"); d.style="display:none"; }
+</pre>
+
+<h2>How to convert from codegen script to mod.txt</h2>
+<pre>
+gameapi-builder --script script.txt -o mod2.txt
+gameapi-builder --file mod2.txt
 </pre>
 
 <div id="deploy">

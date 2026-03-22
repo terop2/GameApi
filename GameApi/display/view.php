@@ -1504,10 +1504,10 @@ if (bg>=0&&bg<store.state.background_db.length) {
 
 res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
 if (aces_value==true) {
-   res+="MT I198=ev.materials_api.colour_material(ev,1.0);\n"
+   res+="MT I198=ev.materials_api.colour_material(ev,1.0,false);\n"
    res+= "MT I199=ev.materials_api.acesfilm_material(ev,I198);\n"
 } else {
-   res+="MT I199=ev.materials_api.colour_material(ev,1.0);\n"
+   res+="MT I199=ev.materials_api.colour_material(ev,1.0.false);\n"
 }
 
 res+="ML I156=ev.materials_api.bind(I145,I199);\n"

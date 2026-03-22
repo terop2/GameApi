@@ -12,7 +12,7 @@ if ($machine=="terop-pc2") {
    $sitename = "dinoengine.com";
    }
 
-$return = $_GET["return"];
+$return = $_POST["return"];
 
 page_header_plain(7);
 page_title("login","");
