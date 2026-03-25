@@ -894,6 +894,7 @@ function parse_material_roughness(mat)
 #canvas {
   background-image: url('load_spinner2.gif');
   background-size: 100% 100%;
+  }
 </style>
 
 <script>
@@ -2351,6 +2352,8 @@ function load_data()
    var gf = document.getElementById("formgfilename2");
    var gp = document.getElementById("formgpath2");
    */
+   console.log("DOWNLOAD_RESULT");
+   console.log(download_result);
    var st = download_result["state"];
    var ca = download_result["contentsarray"];
    var fa = download_result["filenamearray"];
@@ -2467,7 +2470,7 @@ function encodeBase64(val) {
 }
 
 
-
+/*
 function decodeBase64(encoded) {
     // Step 1: Decode Base64 to a binary string
     let binaryString = atob(encoded);
@@ -2483,7 +2486,9 @@ function decodeBase64(encoded) {
     
     return decodedString;
 }
+*/
 
+/*
 function chunkDecode(encodedVal) {
   // First decode from base64
   const decoded = atob(encodedVal);
@@ -2503,74 +2508,36 @@ function chunkDecode(encodedVal) {
   // Join the decoded chunks
   return chunks.join('');
 }
-/*
-async function array_to_base64(arr) {
-    const res = [];
-    
-    for (const val of arr) {
-        // Convert string to Uint8Array
-        const encoder = new TextEncoder();
-        const uint8Array = encoder.encode(val);
-        
-        // Process in chunks
-        const chunkSize = 80000;
-        const chunks = [];
-        
-        for (let i = 0; i < uint8Array.length; i += chunkSize) {
-            const chunk = uint8Array.slice(i, Math.min(i + chunkSize, uint8Array.length));
-            const decoder = new TextDecoder();
-            const chunkStr = decoder.decode(chunk);
-            chunks.push(new Blob([encodeURIComponent(chunkStr)]));
-        }
-        
-        // Combine chunks using Blob
-        const fullBlob = new Blob(chunks);
-        const fullEncoded = await fullBlob.text();
-        
-        // Convert to base64
-        const base64 = btoa(unescape(fullEncoded));
-        res.push(base64);
-    }
-    
-    return res;
-}
 */
+
 function array_to_base64(arr)
 {
-   var res = [];
-   for(var i=0;i<arr.length;i++)
-   {
-     var val = arr[i];
-     const chunkSize = 80000;
-     const chunks = [];
-     for(let ii=0;ii<val.length;ii+=chunkSize) {
-        const chunk = val.slice(ii,ii+chunkSize);
-	const encodedChunk = encodeURIComponent(chunk);
-	chunks.push(encodedChunk);
-     }
-     let fullEncoded = '';
-     for( const chunk of chunks) {
-        fullEncoded += chunk;
-	}
-     var buffer = btoa(unescape(fullEncoded));
-     //var buffer = encodeBase64(val);
-     res.push(buffer);
-   }
-   return res;
+
+       var base64Array = arr.map(str => {
+	const decoder = new TextEncoder();
+	const bytes = decoder.encode(str);
+       
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    });
+    return base64Array;
 
 }
-
 function base64_to_array(arr)
 {
-   var res = [];
-   for(var i=0;i<arr.length;i++) {
-     var val = arr[i];
-     var res4 = decodeURIComponent(escape(atob(val)));
-     //var res4 = decodeBase64(val);
-     res.push(res4);
-   }
-   return res;
-  
+    return arr.map(str => {
+        var binary = atob(str);
+        var bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+	const decoder = new TextDecoder();
+	const str2 = decoder.decode(bytes);
+        return str2;
+    });
 }
 
 function hash(val)
@@ -2681,6 +2648,13 @@ function formsubmit()
   		   data.append("g_filename", st5_val);
 		   data.append("g_path", st6_val);
   		   data.append("num",i);
+		   console.log("FORMDATA");
+		   console.log(st);
+		   console.log(st3_sub);
+		   console.log(st4_sub);
+		   console.log(st5_val);
+		   console.log(st6_val);
+		   console.log(i);
   		   var xhr2 = new XMLHttpRequest();
 		   xhr2.responseType = 'arraybuffer';
   		   xhr2.open('POST','<?php echo $site ?>/submit_contents.php', true);	

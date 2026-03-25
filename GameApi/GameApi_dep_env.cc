@@ -851,6 +851,7 @@ private:
     //if (url1=="") url1="https://meshpage.org/"; // this doesnt really work, since it gives CORS problem
     
     std::string url2 = url1+"get_file_size.php?" + ss.str() + "&url=" +url; 
+    std::cout << "Size url:" << url2 << std::endl;
     emscripten_fetch(&attr, url2.c_str());
 
     int val = 0;
