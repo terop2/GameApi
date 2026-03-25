@@ -2526,17 +2526,39 @@ function array_to_base64(arr)
     return base64Array;
 
 }
+
+function my_atob(base64) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let output = [];
+    let buffer = 0;
+    let bitsCollected = 0;
+
+    for (let i = 0; i < base64.length; i++) {
+        const c = base64[i];
+        if (c === '=') break; // padding
+        const val = chars.indexOf(c);
+        if (val === -1) continue; // skip invalid characters
+
+        buffer = (buffer << 6) | val;
+        bitsCollected += 6;
+
+        if (bitsCollected >= 8) {
+            bitsCollected -= 8;
+            const byte = (buffer >> bitsCollected) & 0xFF;
+            output.push(byte);
+        }
+    }
+
+    return new Uint8Array(output); // returns bytes, not a string
+}
+
 function base64_to_array(arr)
 {
     return arr.map(str => {
-        var binary = atob(str);
-        var bytes = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) {
-            bytes[i] = binary.charCodeAt(i);
-        }
+        var bytes = my_atob(str);
 	const decoder = new TextDecoder();
-	const str2 = decoder.decode(bytes);
-        return str2;
+	const str3 = decoder.decode(bytes);
+        return str3;
     });
 }
 
