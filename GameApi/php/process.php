@@ -140,7 +140,7 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/screen1.webp\" fetchpriority=\"high\" width=\"100%\"/>\n";
+echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/dingel-banner.webp\" fetchpriority=\"high\" width=\"100%\"/>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
@@ -716,7 +716,7 @@ echo "</footer>";
    echo "<p>\n";
    echo "<div style=\"position: relative;\">\n";
    echo "<div style=\"width: 100%; float:left;\">\n";
-   echo "<div class=\"customfont\" style=\"position: static; margin-left: 27px;\"><strong>3D engine &copy; 2013-2025 Tero Pulkkinen, All rights reserved.<br>\n";
+   echo "<div class=\"customfont\" style=\"position: static; margin-left: 27px;\"><strong>3D engine &copy; 2013-2026 Tero Pulkkinen, All rights reserved.<br>\n";
 echo "Licensed under LGPL/GPL license. See source code at <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>.<br>\n";
 echo "meshpage.org" . "&reg; is a registered trademark of Tero Pulkkinen in Tampere.</strong></div>\n";
    echo "</div>\n";
