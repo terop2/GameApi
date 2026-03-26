@@ -761,7 +761,7 @@ echo "<div class=\"d-flex\">";
    echo "<p>";
    echo "<div style=\"position: relative;\">";
    echo "<div style=\"width: 100%; float:left;\">";
-   echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3d engine &copy; 2013-2025 Tero Pulkkinen, All rights reserved.<br>";
+   echo "<div style=\"font-family: 'calibri', sans-serif\"><strong>3d engine &copy; 2013-2026 Tero Pulkkinen, All rights reserved.<br>";
    echo "Licensed under LGPL/GPL license. See source code at <a href=\"https://github.com/terop2/GameApi\">https://github.com/terop2/GameApi</a>.<br>";
 
 if ($sitename==="meshpage.org") {
