@@ -102,9 +102,9 @@ copy_it_1 engine_highmem.wasm.br /home/terop/meshpage.org/
 copy_it_1 engine_nothreads_highmem.js /home/terop/meshpage.org/
 copy_it_1 engine_nothreads_highmem.wasm /home/terop/meshpage.org/
 copy_it_1 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/
-copy_it_1 engine_lowmem_nothreads.js /home/terop/meshpage.org/
-copy_it_1 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/
-copy_it_1 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/
+#copy_it_1 engine_lowmem_nothreads.js /home/terop/meshpage.org/
+#copy_it_1 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/
+#copy_it_1 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/
 
 #copy_it_2 engine_highmem.worker.js /home/terop/meshpage.org/punk/engine/
 copy_it_2 engine_highmem.js /home/terop/meshpage.org/punk/engine/
@@ -113,9 +113,9 @@ copy_it_2 engine_highmem.wasm.br /home/terop/meshpage.org/punk/engine/
 copy_it_2 engine_nothreads_highmem.js /home/terop/meshpage.org/punk/engine/
 copy_it_2 engine_nothreads_highmem.wasm /home/terop/meshpage.org/punk/engine/
 copy_it_2 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/punk/engine/
-copy_it_2 engine_lowmem_nothreads.js /home/terop/meshpage.org/punk/engine/
-copy_it_2 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/punk/engine/
-copy_it_2 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/punk/engine/
+#copy_it_2 engine_lowmem_nothreads.js /home/terop/meshpage.org/punk/engine/
+#copy_it_2 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/punk/engine/
+#copy_it_2 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/punk/engine/
 
 #copy_it_3 engine_highmem.worker.js /home/terop/meshpage.org/ld57/engine/
 copy_it_3 engine_highmem.js /home/terop/meshpage.org/ld57/engine/
@@ -124,9 +124,9 @@ copy_it_3 engine_highmem.wasm.br /home/terop/meshpage.org/ld57/engine/
 copy_it_3 engine_nothreads_highmem.js /home/terop/meshpage.org/ld57/engine/
 copy_it_3 engine_nothreads_highmem.wasm /home/terop/meshpage.org/ld57/engine/
 copy_it_3 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/ld57/engine/
-copy_it_3 engine_lowmem_nothreads.js /home/terop/meshpage.org/ld57/engine/
-copy_it_3 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/ld57/engine/
-copy_it_3 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/ld57/engine/
+#copy_it_3 engine_lowmem_nothreads.js /home/terop/meshpage.org/ld57/engine/
+#copy_it_3 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/ld57/engine/
+#copy_it_3 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/ld57/engine/
 
 
 #copy_it_4 engine_highmem.worker.js /home/terop/meshpage.org/engine/
@@ -136,9 +136,9 @@ copy_it_4 engine_highmem.wasm.br /home/terop/meshpage.org/engine/
 copy_it_4 engine_nothreads_highmem.js /home/terop/meshpage.org/engine/
 copy_it_4 engine_nothreads_highmem.wasm /home/terop/meshpage.org/engine/
 copy_it_4 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/engine/
-copy_it_4 engine_lowmem_nothreads.js /home/terop/meshpage.org/engine/
-copy_it_4 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/engine/
-copy_it_4 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/engine/
+#copy_it_4 engine_lowmem_nothreads.js /home/terop/meshpage.org/engine/
+#copy_it_4 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/engine/
+#copy_it_4 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/engine/
 
 
 copy_it_5 engine_highmem.js /home/terop/meshpage.org/demoreboot/engine/
@@ -147,9 +147,9 @@ copy_it_5 engine_highmem.wasm.br /home/terop/meshpage.org/demoreboot/engine/
 copy_it_5 engine_nothreads_highmem.js /home/terop/meshpage.org/demoreboot/engine/
 copy_it_5 engine_nothreads_highmem.wasm /home/terop/meshpage.org/demoreboot/engine/
 copy_it_5 engine_nothreads_highmem.wasm.br /home/terop/meshpage.org/demoreboot/engine/
-copy_it_5 engine_lowmem_nothreads.js /home/terop/meshpage.org/demoreboot/engine/
-copy_it_5 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/demoreboot/engine/
-copy_it_5 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/demoreboot/engine/
+#copy_it_5 engine_lowmem_nothreads.js /home/terop/meshpage.org/demoreboot/engine/
+#copy_it_5 engine_lowmem_nothreads.wasm /home/terop/meshpage.org/demoreboot/engine/
+#copy_it_5 engine_lowmem_nothreads.wasm.br /home/terop/meshpage.org/demoreboot/engine/
 
 
 copy_it_6 engine_highmem.js /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
@@ -158,9 +158,9 @@ copy_it_6 engine_highmem.wasm.br /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
 copy_it_6 engine_nothreads_highmem.js /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
 copy_it_6 engine_nothreads_highmem.wasm /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
 copy_it_6 engine_nothreads_highmem.wasm.br /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
-copy_it_6 engine_lowmem_nothreads.js /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
-copy_it_6 engine_lowmem_nothreads.wasm /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
-copy_it_6 engine_lowmem_nothreads.wasm.br /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
+#copy_it_6 engine_lowmem_nothreads.js /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
+#copy_it_6 engine_lowmem_nothreads.wasm /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
+#copy_it_6 engine_lowmem_nothreads.wasm.br /home/terop/cvs/GameApi/GameApi/AI/AI_engine/
 
 
 
