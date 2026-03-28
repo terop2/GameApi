@@ -381,6 +381,23 @@ public:
     GameApi::ML ml = mat2_inst(p2,p3);
     return ml.id;
   }
+    int mat_inst_va_prepare(int p) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::VA va = mat2_inst_va_prepare(p2);
+    return va.id;
+  }
+  int mat_inst_va(int va, int pts) const
+  {
+    GameApi::VA p2;
+    p2.id = va;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat2_inst_va(p2,p3);
+    return ml.id;
+  }
+
   int mat_inst_matrix(int p, int ms) const
   {
     GameApi::P p2;
@@ -413,6 +430,8 @@ public:
   }
   virtual GameApi::ML mat2(GameApi::P p) const=0;
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const=0;
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const=0;
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;

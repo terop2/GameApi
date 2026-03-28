@@ -970,6 +970,24 @@ public:
     GameApi::ML ml = mat2_inst(p2,p3);
     return ml.id;
   }
+  int mat_inst_va_prepare(int p) const
+  {
+    GameApi::P p2;
+    p2.id = p;
+    GameApi::VA va = mat2_inst_va_prepare(p2);
+    return va.id;
+  }
+  int mat_inst_va(int va, int pts) const
+  {
+    GameApi::VA p2;
+    p2.id = va;
+    GameApi::PTS p3;
+    p3.id = pts;
+    GameApi::ML ml = mat2_inst_va(p2,p3);
+    return ml.id;
+  }
+
+  
   int mat_inst_matrix(int p, int ms) const
   {
     GameApi::P p2;
@@ -1002,6 +1020,8 @@ public:
   }
   virtual GameApi::ML mat2(GameApi::P p) const=0;
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const=0;
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const=0;
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const=0;
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const=0;
   virtual GameApi::ML mat2_inst2(GameApi::P p, GameApi::PTA pta) const=0;
   virtual GameApi::ML mat_inst_fade(GameApi::P p, GameApi::PTS pts, bool flip, float start_time, float end_time) const=0;
@@ -1030,7 +1050,26 @@ public:
       sh = ev.mainloop_api.phong_shader3(ev, ml, ambient, highlight, pow);
     return sh;
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    FaceCollection *coll = find_facecoll(env,p);
+    coll->Prepare();
+    Vector v = coll->PointNormal(0,0);
 
+    GameApi::P p0 = p;
+    if (v.Dist()<0.01)
+      p0 = ev.polygon_api.recalculate_normals(p);
+
+    return ev.polygon_api.create_vertex_array(p0,false);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_va(va.id, pts.id);
+    GameApi::ML sh;
+    sh = ev.mainloop_api.phong_shader3(ev, ml, ambient, highlight, pow);
+    return sh;
+  }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     FaceCollection *coll = find_facecoll(env,p);
@@ -1586,6 +1625,24 @@ public:
     
     
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    if (vertexshader.id==-1)
+      shader_from_file();
+    if (fragmentshader.id==-1)
+      shader_from_file2();
+    GameApi::VA va;
+    va.id = next->mat_inst_va_prepare(p.id);
+    return va;
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_va(va.id,pts.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertexshader, fragmentshader, std::vector<GameApi::TXID>());
+    return sh;
+
+  }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
     if (vertexshader.id==-1)
@@ -1774,6 +1831,21 @@ public:
     ml.id = next->mat(p.id);
     GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment, txids);
     return sh;    
+  }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    DoPrepares();
+    GameApi::VA va;
+    va.id = next->mat_inst_va_prepare(p.id);
+    return va;
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    GameApi::ML ml;
+    ml.id = next->mat_inst_va(va.id,pts.id);
+    GameApi::ML sh = ev.mainloop_api.generic_shader(ev,ml,vertex, fragment,txids);
+    return sh;
+
   }
   virtual GameApi::ML mat2_inst(GameApi::P p, GameApi::PTS pts) const
   {
