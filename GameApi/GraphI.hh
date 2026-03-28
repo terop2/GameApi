@@ -1392,6 +1392,8 @@ public:
   virtual void logoexecute() { }
   virtual int mat(int p) const=0; 
   virtual int mat_inst(int p, int pts) const=0;
+  virtual int mat_inst_va_prepare(int p) const=0;
+  virtual int mat_inst_va(int va, int pts) const=0;
   virtual int mat_inst_matrix(int p, int ms) const=0;
   virtual int mat_inst2(int p, int pta) const=0;
   virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const=0;

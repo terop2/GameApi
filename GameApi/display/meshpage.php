@@ -3217,7 +3217,7 @@ $mobile = js_mobile();
 $highmem = js_highmem();
 //echo "MOBILE: $mobile\nNOTHREADS: $nothreads\nHIGHMEM: $highmem\n";
 if ($mobile == "yes") {
-  echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
+  echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
 } else
 if ($nothreads == "yes") {
@@ -3225,7 +3225,7 @@ if ($nothreads == "yes") {
   echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
    } else {
-  echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
+  echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
    }
 } else {
    if ($highmem == "yes") {
@@ -3234,7 +3234,7 @@ if ($nothreads == "yes") {
   echo "if (!crossOriginIsolated||pthread_state==false) filename='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
    } else {
-  echo "var filename = 'engine_lowmem_nothreads.js?" . filemtime("engine_lowmem_nothreads.js") . "';";
+  echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
   }
 }
 ?>

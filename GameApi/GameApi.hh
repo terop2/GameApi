@@ -1777,6 +1777,8 @@ public:
 
   IMPORT ML bind(P p, MT mat);
   IMPORT ML bind_inst(P p, PTS pts, MT mat);
+  IMPORT VA bind_inst_va_prepare(P p, MT mat);
+  IMPORT ML bind_inst_va(VA va, PTS pts, MT mat, float level);
   IMPORT ML bind_inst_matrix(P p, MS ms, MT mat);
   IMPORT ML bind_inst2(P p, PTA pta, MT mat);
   IMPORT ML bind_inst_fade(P p, PTS pts, MT mat, bool flip, float start_time, float end_time);
@@ -1796,6 +1798,9 @@ public:
 
   IMPORT ML render_instanced_ml_fade_texture(EveryApi &ev, P p, PTS pts, bool flip, float start_time, float end_time, std::vector<BM> vec);
   IMPORT ML render_instanced2_ml(EveryApi &ev, VA va, PTA pta, bool color_from_pts=false);
+  IMPORT ML render_instanced2_ml_texture(EveryApi &ev, VA va, PTA pta, std::vector<BM> vec);
+  IMPORT ML render_instanced2_ml_texture2(EveryApi &ev, VA va, PTA pta);
+  IMPORT ML render_instanced2_ml_texture_id(EveryApi &ev, VA va, PTA pta, std::vector<TXID> *vec);
   IMPORT ML render_instanced2_ml_matrix(EveryApi &ev, VA va, MSA pta);
   IMPORT ML render_instanced2_ml_fade(EveryApi &ev, VA va, PTA pta, bool flip, float start_time, float end_time);
   //ML snow(EveryApi &ev, P p);
@@ -2666,6 +2671,7 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P sort_faces_by_area(P p);
   IMPORT ML discard_shader(EveryApi &ev, ML mainloop);
   IMPORT ML acesfilm_shader(EveryApi &ev, ML mainloop);
   IMPORT P multiply_facecoll(P p, int sx, int sy, int sz);

@@ -29038,6 +29038,124 @@ float count_percentage(FaceCollection *coll)
 }
 
 
+class SortFaceByArea : public FaceCollection
+{
+public:
+  SortFacesByArea(FaceCollection *coll) : coll(coll) { }
+
+  int NumFaces() { return vec.size(); }
+  int NumPoints(int face) {
+    return coll->NumPoints(vec[face]);
+  }
+
+  Point FacePoint(int face, int point) const
+  {
+    Point p = coll->FacePoint(vec[face],point);
+    return p;
+  }
+  Vector PointNormal(int face, int point) const
+  {
+    Vector v = coll->PointNormal(vec[face],point);
+    return v;
+  }
+  float Attrib(int face, int point, int id) const
+  {
+    return coll->Attrib(vec[face],point,id);
+  }
+  int AttribI(int face, int point, int id) const
+  {
+    return coll->AttribI(vec[face],point,id);
+  }
+  unsigned int Color(int face, int point) const
+  {
+    return coll->Color(vec[face],point);
+  }
+  Point2d TexCoord(int face, int point) const
+  {
+    return coll->TexCoord(vec[face],point);
+  }
+  float TexCoord3(int face, int point) const
+  {
+    return coll->TexCoord3(vec[face],point);
+  }
+  VEC4 Joints(int face, int point) const
+  {
+    return coll->Joints(vec[face],point);
+  }
+  VEC4 Weights(int face, int point) const
+  {
+    return coll->Weights(vec[face],point);
+  }
+ 
+  
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+
+  void Prepare() {
+    coll->Prepare();
+    HeavyPrepare();
+  }
+
+  virtual void HeavyPrepare()
+  {
+    int count = coll->NumFaces();
+    vec.clear();
+    for(int i=0;i<count;i++)
+      vec.push_back(i);
+    
+
+    
+    auto compareFaces = [this](int i1, int i2) {
+            auto faceArea = [this](int idx) {
+                int n = coll->NumPoints(idx);
+                if (n < 3) return 0.0f; // degenerate
+
+                // handle triangles directly
+                if (n == 3) {
+                    Point a = coll->FacePoint(idx,0);
+                    Point b = coll->FacePoint(idx,1);
+                    Point c = coll->FacePoint(idx,2);
+                    return triArea(a,b,c);
+                }
+
+                // handle quads (or n-gons, just take first 4 verts)
+                Point p1 = coll->FacePoint(idx,0);
+                Point p2 = coll->FacePoint(idx,1);
+                Point p3 = coll->FacePoint(idx,2);
+                Point p4 = coll->FacePoint(idx,3 % n);
+                return quadArea(p1,p2,p3,p4);
+            };
+
+            float area1 = faceArea(i1);
+            float area2 = faceArea(i2);
+
+            if (std::fabs(area1 - area2) < 1e-6f) {
+                // tie-breaker by index to ensure strict weak ordering
+                return i1 < i2;
+            }
+            return area1 > area2;
+        };
+
+    
+    std::sort(vec.begin(),vec.end(),compareFaces);
+    
+  }
+
+  
+private:
+  FaceCollection *coll;
+  std::vector<int> vec;
+};
+
+GameApi::P GameApi::PolygonApi::sort_faces_by_area(P p)
+{
+  FaceCollection *coll = find_facecoll(e,p);
+  return add_polygon2(e, new SortFaceByArea(coll),1);
+}
+
 class DecimatePolygon : public FaceCollection
 {
 public:
