@@ -18077,6 +18077,8 @@ public:
     return choose_mat()->mat(p);
   }
   virtual int mat_inst(int p, int pts) const { return choose_mat()->mat_inst(p,pts); }
+  virtual int mat_inst_va_prepare(int p) const { return choose_mat()->mat_inst_va_prepare(p); }
+  virtual int mat_inst_va(int va, int pts) const { return choose_mat()->mat_inst_va(va,pts); }
   virtual int mat_inst_matrix(int p, int ms) const { return choose_mat()->mat_inst_matrix(p,ms); }
   virtual int mat_inst2(int p, int pta) const { return choose_mat()->mat_inst2(p,pta); }
   virtual int mat_inst_fade(int p, int pts, bool flip, float start_time, float end_time) const
@@ -29041,10 +29043,12 @@ float count_percentage(FaceCollection *coll)
 class SortFaceByArea : public FaceCollection
 {
 public:
-  SortFacesByArea(FaceCollection *coll) : coll(coll) { }
+  SortFaceByArea(FaceCollection *coll) : coll(coll) { }
 
-  int NumFaces() { return vec.size(); }
-  int NumPoints(int face) {
+  std::string name() const { return "SortFaceByArea"; }
+  
+  int NumFaces() const { return vec.size(); }
+  int NumPoints(int face) const {
     return coll->NumPoints(vec[face]);
   }
 
