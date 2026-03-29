@@ -5596,6 +5596,31 @@ public:
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    FaceCollection *coll = find_facecoll(e,p);
+    if (!coll->has_color())
+      {
+	p = ev.polygon_api.color(p,0xffffffff);
+      }
+    if (!coll->has_normal())
+      {
+	p = ev.polygon_api.recalculate_normals(p);
+      }
+
+    GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    return ev.polygon_api.create_vertex_array(I10);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    std::vector<GameApi::BM> bm;
+    GameApi::PTA pta = ev.points_api.prepare(pts,false);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_texture(ev,va,pta,bm);
+    GameApi::ML I18=ev.polygon_api.gltf_shader(ev, I17, mix, false, false, false, false, false, false, false, false, roughness, metallic, base_r,base_g,base_b,base_a, occul, 1.0,false,1.0,1.0,1.0,1.0,1.0,1.0,1.0,false,0.0,0.0,0.0, light_dir.dx,light_dir.dy,light_dir.dz,"",self_mult,rest_mult); 
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
+
+  }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     FaceCollection *coll = find_facecoll(e,p);
@@ -6134,6 +6159,75 @@ public:
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    confirm_texture_usage(ev.get_env(),p);
+    return ev.polygon_api.create_vertex_array(I10);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    interface->Prepare();
+    std::vector<GameApi::BM> bm;
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(j));
+    }
+
+    std::stringstream ss2;
+    ss2 << "gltf" << interface->Url() << material_id;
+    std::string cache_id = ss2.str();
+
+    std::vector<std::string> id_labels;
+    for(int i=0;i<s;i++)
+      {
+	std::stringstream ss;
+	ss << interface->Url() << "_" << material_id << "_" << i << std::endl;
+	id_labels.push_back(ss.str());
+      }
+    std::vector<bool> rgb;
+    for(int i=0;i<s;i++)
+      rgb.push_back(is_srgb(i));
+
+
+    GameApi::PTA pta = ev.points_api.prepare(pts,false);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_texture(ev,va,pta,bm /*, std::vector<int>(),id_labels,rgb*/);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
+      I18 = I17;
+    } else {
+      //if (get_diffuse_index()==-1) {
+      const tinygltf::Material &m = interface->get_material(material_id);
+      std::vector<double> emis=m.emissiveFactor;
+      Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz,cache_id,self_mult,rest_mult);
+    //} else {
+    //	I18 = specglossyshader(ev,I17);
+    // }
+    // const tinygltf::Material &m = interface->get_material(material_id);
+    if (m.alphaMode=="BLEND") {
+      //OpenglLowApi *ogl = g_low->ogl;
+      //ogl->glEnable(Low_GL_BLEND);
+      //I18 = ev.mainloop_api.transparent(I18);
+      //      I18=ev.mainloop_api.blendfunc(I18,2,3);
+      I18 = blendmainloop(e,I18,true);
+    } else
+      {
+      I18 = blendmainloop(e,I18,false);
+      }
+    if (m.doubleSided==true) {
+      I18 = ev.mainloop_api.cullface(I18,false, true);
+    } else {
+      I18 = ev.mainloop_api.cullface(I18,true, true);
+    }
+
+    }
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
+  }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     interface->Prepare();
@@ -6375,6 +6469,40 @@ public:
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    return ev.polygon_api.create_vertex_array(I10);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    std::vector<GameApi::BM> bm;
+    int s = num_indexes();
+    for(int i=0;i<s;i++) {
+      int j = map_index(i);
+      bm.push_back(texture(j));
+    }
+    for(int i=0;i<s;i++)
+      {
+	ev.bitmap_api.prepare(bm[i]);
+      }
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst(p.id,pts.id);
+
+    GameApi::PTA pta = ev.points_api.prepare(pts,false);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_texture(ev,va,pta,bm);
+    GameApi::ML I18;
+    //if (material_id<0 || material_id>=int(load->model.materials.size())) {
+      // I18 = I17;
+      //} else {
+
+      //tinygltf::PbrMetallicRoughness &r = load->model.materials[material_id].pbrMetallicRoughness;
+    //tinygltf::OcclusionTextureInfo &o = load->model.materials[material_id].occlusionTexture;
+    I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,roughnessfactor, metallicfactor, baseColor_red, baseColor_green,baseColor_blue,baseColor_alpha, occulsionStrength, 1.0,false,1.0,1.0,1.0,1.0,1.0,1.0,1.0,false,0.0,0.0,0.0, light_dir.dx,light_dir.dy,light_dir.dz,"",self_mult,rest_mult); // todo base color
+      //}
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
+  }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     //load->Prepare();
@@ -6469,6 +6597,17 @@ public:
     Material *mat2 = find_material(e,mat);
     return mat2->mat_inst(p.id,pts.id);
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    return ev.polygon_api.create_vertex_array(p);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    if (mat.id==-1) mat=mat_from_file();
+    Material *mat2 = find_material(e,mat);
+    return mat2->mat_inst_va(va.id,pts.id);
+  }
+    
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     if (mat.id==-1) mat=mat_from_file();
@@ -6786,6 +6925,37 @@ public:
     }
     //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
     return I18;
+  }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    GameApi::P I10 = p; //ev.polygon_api.flip_normals(p);
+    return ev.polygon_api.create_vertex_array(I10);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    interface->Prepare();
+    std::vector<GameApi::BM> bm;
+    std::vector<int> types;
+    int s = num_indexes();
+    for(int i=0;i<s;i++) { 
+      int j = map_index(i);
+      bm.push_back(texture(j)); types.push_back(type(j)); }
+    //GameApi::ML I13;
+    //I13.id = next->mat_inst(p.id,pts.id);
+    GameApi::PTA pta = ev.points_api.prepare(pts,false);
+    GameApi::ML I17=ev.materials_api.render_instanced2_ml_texture(ev,va,pta,bm /*,types*/);
+    GameApi::ML I18;
+    if (material_id<0 || material_id>=int(interface->materials_size())) {
+      I18 = I17;
+    } else {
+    const tinygltf::Material &m = interface->get_material(material_id);
+    const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
+    const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
+    I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), has_texture(5), has_texture(6), has_texture(7), r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),1.0 /*r.baseColorFactor[3]*/, o.strength, 1.0,false);
+    }
+    //GameApi::ML I19=ev.mainloop_api.flip_scene_if_mobile(ev,I18);
+    return I18;
+
   }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
@@ -10307,6 +10477,18 @@ public:
     ml.id=m_mat->mat_inst(p.id,pts.id);
     return ml;
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    return ev.polygon_api.create_vertex_array(p);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    create_mat();
+    GameApi::ML ml = ev.mainloop_api.ml_empty();
+    if (m_mat)
+    ml.id=m_mat->mat_inst_va(va.id,pts.id);
+    return ml;
+  }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     create_mat();
@@ -12703,6 +12885,42 @@ public:
     GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes);
     return ml2;
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    return ev.polygon_api.create_vertex_array(p);
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    interface->Prepare();
+    calc_num_timeindexes();
+    GameApi::ML ml;
+    std::vector<GameApi::ML> mls;
+    bool success=false;
+    GameApi::ML ml_orig;
+    std::tuple<std::vector<GameApi::ML>,GameApi::ML,GameApi::ML> mlsi = find_mls_cache_item(cache_key, success);
+    if (success) {
+      mls=std::get<0>(mlsi);
+      ml_orig=std::get<1>(mlsi);
+      ml=std::get<2>(mlsi);
+      }
+    GameApi::ML ml_start;
+    ml_start.id = 0;
+    
+    if (!success) {
+    ml.id = next->mat_inst_va(va.id, pts.id);
+    if (num_timeindexes==0) { return ml; }
+    ml_orig  = gltf_joint_matrices2(ml_start,e,ev,interface,skin_num,animation,0,ml,false);
+    //std::cout << "NUM_TIMEINDEXES: " << num_timeindexes << std::endl;
+    for(int i=0;i<num_timeindexes;i++) {
+      GameApi::ML prev = i==0?ml_orig:mls[i-1];
+      GameApi::ML ml1 = gltf_joint_matrices2(prev,e,ev, interface, skin_num, animation, i, ml, true);
+      mls.push_back(ml1);
+    }
+    mls_add_to_cache(cache_key,ml_orig,ml,mls);
+    }
+    GameApi::ML ml2 = ev.polygon_api.gltf_anim_shader(ev,ml_orig, mls,key,mode,num_timeindexes);
+    return ml2;
+  }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     interface->Prepare();
@@ -13064,6 +13282,16 @@ public:
       }*/
     return ev.mainloop_api.key_ml(cache_creation_matinst(env,p,pts,vec,keys), keys);
   }
+  virtual GameApi::VA mat2_inst_va_prepare(GameApi::P p) const
+  {
+    m_p = p;
+    GameApi::VA va = ev.polygon_api.create_vertex_array(p);
+    return va;
+  }
+  virtual GameApi::ML mat2_inst_va(GameApi::VA va, GameApi::PTS pts) const
+  {
+    return ev.mainloop_api.key_ml(cache_creation_matinst(env,m_p,pts,vec,keys), keys);
+  }
   virtual GameApi::ML mat2_inst_matrix(GameApi::P p, GameApi::MS ms) const
   {
     /*
@@ -13104,6 +13332,7 @@ private:
   GameApi::EveryApi &ev;
   std::vector<Material*> vec;
   std::string keys;
+  mutable GameApi::P m_p;
 };
 
 GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std::string keys)
