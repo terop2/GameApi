@@ -3724,6 +3724,8 @@ public:
   ML render_ms_files2_si(EveryApi &ev, std::vector<P> p, std::vector<MT> mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   ML render_ms_files_si(EveryApi &ev, std::vector<P> p, MT mat, VX voxel, int start_type, int end_type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
 
+  IMPORT MS mn_matrix_array(EveryApi &ev, int count, MN move);
+  IMPORT MS random_time_seq(EveryApi &ev, MS inner_start, MS outer, MS inner_end, float outer_time, float inner_time);
   IMPORT MS ms_interface(VX vox, int type, float start_x, float end_x, float start_y, float end_y, float start_z, float end_z);
   IMPORT MS ms_file(std::string url, int use_type);
   IMPORT ML render_ms_files(EveryApi &ev, std::vector<P> p, MT mat, std::string url, int start_type, int end_type);

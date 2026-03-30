@@ -471,10 +471,10 @@ void GameApi::PointsApi::update_from_data(GameApi::MSA pta, GameApi::MS p, bool 
   for(int i=0;i<numpoints;i++) 
     {
       Matrix m = pts->Index(i);
-      float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
-			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
-			m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
-			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
+      //float mat[16] = { m.matrix[0], m.matrix[4], m.matrix[8], m.matrix[12],
+      //			m.matrix[1], m.matrix[5], m.matrix[9], m.matrix[13],
+      //	m.matrix[2], m.matrix[6], m.matrix[10], m.matrix[14],
+			  //			m.matrix[3], m.matrix[7], m.matrix[11], m.matrix[15] };
       
       unsigned int c = pts->Color(i);
       for(int j=0;j<16;j++)
