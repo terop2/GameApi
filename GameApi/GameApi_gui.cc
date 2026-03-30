@@ -7893,6 +7893,17 @@ std::string FloatExprEval(std::string s)
   //std::cout << "FloatExprEval: " << s << std::endl;
   if (s.size()>0 && s[0]==' ') return FloatExprEval(s.substr(1,s.size()-1));
   if (s.size()>0 && s[s.size()-1]==' ') return FloatExprEval(s.substr(0,s.size()-1));
+  if (s.size()>0 && s[0]=='-') {
+    std::string s2 = FloatExprEval(s.substr(1));
+    std::stringstream ss(s2);
+    float val;
+    ss >> val;
+    val = - val;
+    std::stringstream ss2;
+    ss2 << val;
+    return ss2.str();
+  }
+
   if (s.size()>2 && s[0]=='(' && s[s.size()-1]==')')
     {
       return FloatExprEval(s.substr(1,s.size()-2));
