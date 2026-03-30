@@ -4470,6 +4470,108 @@ private:
   bool firsttime;
 };
 
+class MNMatrixArray : public MatrixArray
+{
+public:
+  MNMatrixArray(GameApi::EveryApi &ev, int count, Movement *node) : ev(ev), count(count), node(node), current_time(0.0f) { }
+  virtual void Collect(CollectVisitor &vis)
+  {
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual void HandleEvent(MainLoopEvent &event) { }
+  virtual bool Update(MainLoopEnv &e) {
+    current_time = e.time*10.0;
+    return true;
+  }
+  virtual int Size() const { return count; }
+  virtual int MaxSize() const { return Size(); }
+  virtual Matrix Index(int i) const
+  {
+    return node->get_whole_matrix(current_time, ev.mainloop_api.get_delta_time());
+  }
+  virtual unsigned int Color(int i) const { return 0xffffffff; }
+  virtual Vector Normal(int i) const { Vector v{0.0,0.0,-400.0}; return v; }
+private:
+  GameApi::EveryApi &ev;
+  int count;
+  Movement *node;
+  float current_time;
+};
+GameApi::MS GameApi::MatricesApi::mn_matrix_array(EveryApi &ev, int count, MN move)
+{
+  Movement *move2 = find_move(e,move);
+  return add_matrix_array(e,new MNMatrixArray(ev,count,move2));
+}
+
+class RandomTimeSequenceMatrix : public MatrixArray
+{
+public:
+  RandomTimeSequenceMatrix(GameApi::EveryApi &ev, MatrixArray *inner_start, MatrixArray *outer, MatrixArray *inner_end, float outer_time, float inner_time) : ev(ev), outer(outer), inner_start(inner_start), inner_end(inner_end), outer_time(outer_time), inner_time(inner_time) { }
+  virtual void Collect(CollectVisitor &vis) {
+    vis.register_obj(this);
+  }
+  bool Update(MainLoopEnv &e)
+  {
+    m_env = e;
+    current_time = fmod(e.time*10.0,outer_time);
+    outer->Update(e);
+    return true;
+  }
+  void Prepare() { HeavyPrepare(); }
+  void HeavyPrepare()
+  {
+    outer->Prepare();
+    inner_start->Prepare();
+    inner_end->Prepare();
+
+    inner_start_time.resize(std::max(std::max(outer->Size(),inner_start->Size()),inner_end->Size()));
+    int s = inner_start_time.size();
+    Random r;
+    for(int i=0;i<s;i++)
+      {
+	float val = double(r.next())/r.maximum();
+	val *= (outer_time-inner_time);
+	//std::cout << val << std::endl;
+	inner_start_time[i] = val;
+      }
+    
+  }
+  int Size() const {
+    return std::min(std::min(outer->Size(), inner_start->Size()),inner_end->Size());
+  }
+  Matrix Index(int i) const
+  {
+    //std::cout << current_time << " " << inner_start_time[i] << " " << inner_time << std::endl;
+    if (current_time < inner_start_time[i] ||
+	current_time > inner_start_time[i] + inner_time)
+      {
+	return outer->Index(i);
+      }
+    m_env.time = (current_time - inner_start_time[i])/10.0;
+    bool b = inner_start->Update(m_env);
+    bool b2 = inner_end->Update(m_env);
+    return inner_start->Index(i) * outer->Index(i) * inner_end->Index(i);
+  }
+private:
+  GameApi::EveryApi &ev;
+  MatrixArray *outer;
+  MatrixArray *inner_start;
+  MatrixArray *inner_end;
+  float outer_time;
+  float inner_time;
+  float current_time;
+  std::vector<float> inner_start_time;
+  mutable MainLoopEnv m_env;
+};
+GameApi::MS GameApi::MatricesApi::random_time_seq(EveryApi &ev, MS inner_start, MS outer, MS inner_end, float outer_time, float inner_time)
+{
+  MatrixArray *outer2 = find_matrix_array(e,outer);
+  MatrixArray *inner_start2 = find_matrix_array(e,inner_start);
+  MatrixArray *inner_end2 = find_matrix_array(e,inner_end);
+  return add_matrix_array(e, new RandomTimeSequenceMatrix(ev, inner_start2, outer2,inner_end2,outer_time, inner_time));
+}
+
 class MS_split_interface : public MatrixArray
 {
 public:
