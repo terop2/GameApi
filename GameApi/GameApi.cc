@@ -4542,6 +4542,8 @@ public:
   }
   Matrix Index(int i) const
   {
+    if  (i<0||i>=inner_start_time.size())
+      return Matrix::Identity();
     //std::cout << current_time << " " << inner_start_time[i] << " " << inner_time << std::endl;
     if (current_time < inner_start_time[i] ||
 	current_time > inner_start_time[i] + inner_time)
