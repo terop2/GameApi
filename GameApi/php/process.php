@@ -364,6 +364,8 @@ if (substr_count($descs[$i],"<br>")>=3) {
    echo "</div>\n"; // grid_item
 
 }
+echo " <a href=\'https://www.free-counters.org/\'>Get free Counters</a> <script type=\'text/javascript\' src=\'https://www.freevisitorcounters.com/auth.php?id=87040ba8d9ce5afdf9e93344c64b6e3a4cf730e8\'></script>";
+echo "<script type=\"text/javascript\" src=\"https://www.freevisitorcounters.com/en/home/counter/1528716/t/5\"></script>";
 echo "</div>\n";
 
 
