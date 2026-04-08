@@ -148,6 +148,9 @@ echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; 
 
 echo "</div>\n";
 
+echo "<div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-3Zy55bzyYcZBW341-9.gif' border='0' alt='counter free'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=3Zy55bzyYcZBW341'></script></div>";
+
+
 echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";
 echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
@@ -364,8 +367,8 @@ if (substr_count($descs[$i],"<br>")>=3) {
    echo "</div>\n"; // grid_item
 
 }
-echo " <a href=\'https://www.free-counters.org/\'>Get free Counters</a> <script type=\'text/javascript\' src=\'https://www.freevisitorcounters.com/auth.php?id=87040ba8d9ce5afdf9e93344c64b6e3a4cf730e8\'></script>";
-echo "<script type=\"text/javascript\" src=\"https://www.freevisitorcounters.com/en/home/counter/1528716/t/5\"></script>";
+//echo " <a href=\'https://www.free-counters.org/\'>Get free Counters</a> <script type=\'text/javascript\' src=\'https://www.freevisitorcounters.com/auth.php?id=87040ba8d9ce5afdf9e93344c64b6e3a4cf730e8\'></script>";
+//echo "<script type=\"text/javascript\" src=\"https://www.freevisitorcounters.com/en/home/counter/1528716/t/5\"></script>";
 echo "</div>\n";
 
 
