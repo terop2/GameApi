@@ -251,6 +251,9 @@ $highmem = js_highmem();
 
 <!-- new navbar ends -->
 
+<div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-bADA3C7cY969169y-5.gif' border='0' alt='contador'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=bADA3C7cY969169y'></script></div>
+
+
 <div id="pthreads_div" class="pthreads_div d-flex justify-content-end" style="display:none !important;"><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
 
 
@@ -518,8 +521,6 @@ echo "<div style=\"height:70px\"></div>";
 page_footer();
 echo "<div style=\"height:40px\"></div>";
 echo "</div>";
-echo "<a href=\'https://www.free-counters.org/\'>Get free Counters</a> <script type=\'text/javascript\' src=\'https://www.freevisitorcounters.com/auth.php?id=87040ba8d9ce5afdf9e93344c64b6e3a4cf730e8\'></script>";
-echo "<script type=\"text/javascript\" src=\"https://www.freevisitorcounters.com/en/home/counter/1528716/t/5\"></script>";
 echo "<script>";
 echo "var pthread_str = sessionStorage.getItem('pthread_enabled');";
 echo "var pthread_state = pthread_str === 'true';";
@@ -685,6 +686,7 @@ echo "Video tutorial: <a href=\"$https://$site/assets/builder_greeen_example.mp4
 
 echo "Path to itch: <a href=\"https://terop.itch.io/gameapi-builder\">gameapi-builder-in-itch.io</a><br>";
 echo "Path to steam: <a href=\"https://ldjam.com/events/ludum-dare/58/fire-walk-with-me/gameapi-builder-is-now-in-steam\">gameapi-builder-is-now-in-steam</a><br>";
+echo "skool link: <a href=\"https://www.skool.com/meshpageorgs-gameapi-builder-5962/classroom\">skool</a><br>";
 echo "Address: kullervonkatu 24a28, 33500 tampere<br>";
 echo "Email address: terop@kotiposti.net<br>";
 echo "Phone number: +358 50 5827126<br>";

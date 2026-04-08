@@ -1413,7 +1413,7 @@ public:
   void set_pos(float ddx, float ddy, float ddz) { dx=ddx; dy=ddy; dz=ddz; }
   Matrix get_whole_matrix(float time, float delta_time) const
   {
-    if ((firsttime && delta_time < 1.0f)||time<last_time) {
+    if ((firsttime && delta_time < 1.0f) ||time<time_begin) {
       time_begin = time;
       firsttime = false;
     }
