@@ -43320,8 +43320,10 @@ GameApi::ML GameApi::VoxelApi::lod_vox(GameApi::EveryApi &ev, std::string vox_ur
   return I154;
 }
 
-GameApi::ML GameApi::MainLoopApi::lod_gpu(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_tri, float level1_quad, float level1_polygon, float level2_tri, float level2_quad, float level2_polygon, float level3_tri, float level3_quad, float level3_polygon, float level4_tri, float level4_quad, float level4_polygon, int l1, int l2, int l3, int l4)
+GameApi::ML GameApi::MainLoopApi::lod_gpu(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_tri, /*float level1_quad, float level1_polygon,*/ float level2_tri, /*float level2_quad, float level2_polygon,*/ float level3_tri, /*float level3_quad, float level3_polygon,*/ float level4_tri, /*float level4_quad, float level4_polygon,*/ int l1, int l2, int l3, int l4)
 {
+  std::cout << "Warning: lod_gpu not implemented" << std::endl;
+#if 0
   P p1 = ev.polygon_api.sort_faces_by_area(p);
   PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
   PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
@@ -43335,6 +43337,7 @@ GameApi::ML GameApi::MainLoopApi::lod_gpu(GameApi::EveryApi &ev, GameApi::P p, G
   ML I153=ev.materials_api.bind_inst_va(va,I615,mat,level4_tri);
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
+#endif
 }
 
 GameApi::ML GameApi::MainLoopApi::lod(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4)

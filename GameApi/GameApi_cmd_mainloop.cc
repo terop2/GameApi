@@ -906,6 +906,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 			{ "ev", "", "", "0.8", "0.6","0.4", "0.2", "45", "45", "95", "120", "1.0", "1.0", "1.0", "0", "0.1", "0.1", "-400.0", "0", "ff000000", "false", "true", "1.0", "0.3" },
 			"ML", "mainloop_api", "lod_matrix_tf"));
 #endif
+
+
+#if 0 
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_gpu,
+			"m_gpu_lod",
+			{ "ev", "p", "mat", "pts", "level1_tri", "level2_tri", "level3_tri", "level4_tri", "l1", "l2", "l3", "l4" },
+			{ "EveryApi&", "P", "MT", "PTS", "float", "float","float", "float", "int", "int", "int", "int" },
+			{ "ev", "", "", "", "1.0", "0.8", "0.6", "0.4", "55", "55", "55", "55" },
+			"ML", "mainloop_api", "lod_gpu"));
+#endif
  
 #if (ALL==1)||(GET_MOVEMENT_FROM_MV==1)
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::get_movement_from_MV,
@@ -1490,6 +1500,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "ev", "", "80.0", "10.1", "60000.0" },
 			 "ML", "mainloop_api", "perspective"));
 #endif
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::logo_change,
+			"logo_change",
+			{ "ml", "connect 500x300", "download 500x300", "prepare 500x300" },
+			{ "ML", "BM", "BM", "BM" },
+			{ "", "", "", "" },
+			"ML", "mainloop_api", "logo_change"));
 #if (ALL==1)||(CONCURRENT_DOWNLOAD==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::concurrent_download,
 			 "concurrent_download",

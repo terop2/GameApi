@@ -2944,6 +2944,52 @@ GameApi::BM load_raw_bitmap2(GameApi::Env &e, std::string data);
 extern bool g_has_fullscreen_button;
 extern double g_dpr;
 
+bool g_external_logo=false;
+GameApi::BM g_ext_I7A; // connecting 500x300
+GameApi::BM g_ext_I7B; // downloading
+GameApi::BM g_ext_I7C; // preparing
+class LogoChange;
+LogoChange *g_ext_this;
+
+class LogoChange : public MainLoopItem
+{
+public:
+  LogoChange(MainLoopItem *item, GameApi::BM conn, GameApi::BM download, GameApi::BM prepare) : item(item), conn(conn), download(download), prepare(prepare)
+  {
+    g_ext_I7A = conn;
+    g_ext_I7B = download;
+    g_ext_I7C = prepare;
+    g_ext_this = this;
+    g_external_logo = true;
+  }
+  ~LogoChange()
+  {
+    if (g_ext_this == this)
+      {
+	g_external_logo=false;
+      }
+  }
+  virtual void Collect(CollectVisitor &vis) { item->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { item->Prepare(); }
+  virtual void execute(MainLoopEnv &e) { item->execute(e); }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    item->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() { return item->shader_id(); }  
+private:
+  MainLoopItem *item;
+  GameApi::BM conn;
+  GameApi::BM download;
+  GameApi::BM prepare;
+};
+GameApi::ML GameApi::MainLoopApi::logo_change(ML ml, BM conn, BM download, BM prepare)
+{
+  MainLoopItem *item = find_main_loop(e,ml);
+  return add_main_loop(e, new LogoChange(item,conn,download,prepare));
+}
+
 void GameApi::MainLoopApi::display_logo(EveryApi &ev)
 {
 #ifdef EMSCRIPTEN
@@ -2954,8 +3000,14 @@ void GameApi::MainLoopApi::display_logo(EveryApi &ev)
   float scale_x = 1.0;
   float scale_y = 1.0;
 
-  std::string s = std::string(logo_connecting4_raw,logo_connecting4_raw+logo_connecting4_raw_len);
-  BM I7A = load_raw_bitmap2(e, s );
+  std::string s;
+  BM I7A;
+  if (!g_external_logo) {
+    s = std::string(logo_connecting4_raw,logo_connecting4_raw+logo_connecting4_raw_len);
+    I7A = load_raw_bitmap2(e, s );
+  } else {
+    I7A = g_ext_I7A;
+  }
   BM I7aA = I7A; 
   ML I17A;
   {
@@ -2973,9 +3025,15 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
  I17A=I19; 
   }
 
-  std::string s2 = std::string(logo_downloading4_raw,logo_downloading4_raw+logo_downloading4_raw_len);
+  std::string s2;
+  BM I7B;
+  if (!g_external_logo) {
+    s2 = std::string(logo_downloading4_raw,logo_downloading4_raw+logo_downloading4_raw_len);
 
-  BM I7B = load_raw_bitmap2(e, s2 );
+    I7B = load_raw_bitmap2(e, s2 );
+  } else {
+    I7B = g_ext_I7B;
+  }
   BM I7aB = I7B; 
   ML I17B;
   {
@@ -2992,9 +3050,14 @@ ML I7=ev.move_api.move_ml(ev,I3,I6,1,10.0);
     
  I17B = I19;
   }
-
-  std::string s3 = std::string(logo_preparing4_raw,logo_preparing4_raw+logo_preparing4_raw_len);
-  BM I7C = load_raw_bitmap2(e, s3 /*"web_page/logo-preparing.raw"*/);
+  std::string s3;
+  BM I7C;
+  if (!g_external_logo) {
+    s3 = std::string(logo_preparing4_raw,logo_preparing4_raw+logo_preparing4_raw_len);
+    I7C = load_raw_bitmap2(e, s3 /*"web_page/logo-preparing.raw"*/);
+  } else {
+    I7C = g_ext_I7C;
+  }
   BM I7aC = I7C; //ev.bitmap_api.flip_x(I7C);
   ML I17C;
   {
