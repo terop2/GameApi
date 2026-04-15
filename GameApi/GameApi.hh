@@ -385,13 +385,14 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  GameApi::ML logo_change(ML ml, BM conn, BM download, BM prepare);
   GameApi::ML get_movement_from_MV(GameApi::ML ml);
 
   
   GameApi::ML lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, float start_brightness, float end_brightness);
 
   GameApi::ML lod_matrix_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, float start_brightness, float end_brightness);
-  GameApi::ML lod_gpu(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_tri, float level1_quad, float level1_polygon, float level2_tri, float level2_quad, float level2_polygon, float level3_tri, float level3_quad, float level3_polygon, float level4_tri, float level4_quad, float level4_polygon, int l1, int l2, int l3, int l4);
+  GameApi::ML lod_gpu(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::PTS pts, float level1_tri, /*float level1_quad, float level1_polygon,*/ float level2_tri, /*float level2_quad, float level2_polygon,*/ float level3_tri, /*float level3_quad, float level3_polygon,*/ float level4_tri, /*float level4_quad, float level4_polygon,*/ int l1, int l2, int l3, int l4);
 
 
   GameApi::ML lod_gpu_matrix(GameApi::EveryApi &ev, GameApi::P p, GameApi::MT mat, GameApi::MS ms, float level1_tri, float level1_quad, float level1_polygon, float level2_tri, float level2_quad, float level2_polygon, float level3_tri, float level3_quad, float level3_polygon, float level4_tri, float level4_quad, float level4_polygon, int l1, int l2, int l3, int l4);

@@ -30578,3 +30578,117 @@ GameApi::P GameApi::PolygonApi::spatial_decimate(GameApi::P p, float percentage)
   FaceCollection *coll = find_facecoll(e,p);
   return add_polygon2(e, new SpatialDecimate(coll,percentage),1);
 }
+
+// These are coming from https://arxiv.org/pdf/2603.21852 and https://arxiv.org/src/2603.21852v2/anc/SupplementaryInformation.pdf
+//
+// eml(x,y) = exp(x)-ln(y)
+//
+
+struct Complex
+{
+  Complex() : x(0.0f), iy(0.0f) { }
+  Complex(float x, float iy) : x(x), iy(iy) { }
+  float x;
+  float iy;
+  Complex &operator=(const Complex &z) { x = z.x; iy=z.iy; return *this; }
+  Complex &operator*=(const Complex &z) {
+    float a = x;
+    float b = iy;
+    float c = z.x;
+    float d = z.iy;
+    x = a*c - b*d; iy=a*d-b*c;
+    return *this;
+  }
+  Complex &operator/=(const int &val) {
+    x /= val;
+    iy /= val;
+    return *this;
+  }
+};
+
+Complex mul(Complex x, Complex y)
+{
+  Complex res = x;
+  res *= y;
+  return res;
+}
+
+int huutomerkki(int n)
+{
+  if (n==0) return 0;
+  if (n==1) return 1;
+  return n*huutomerkki(n-1);
+}
+
+float arg(Complex z) { return atan2(z.iy,z.x); }
+float mag(Complex z) { return sqrt(z.x*z.x + z.iy*z.iy); }
+
+Complex exp(Complex z, int n)
+{
+  Complex res;
+  for(int i=0;i<n;i++)
+    {
+      Complex res0 = z;
+      for(int j=2;j<i;j++)
+	{
+	  res0 *= z;
+	}
+      res0 /= huutomerkki(i);
+    }
+}
+Complex ln(Complex z)
+{
+  Complex res = { std::log(mag(z)), arg(z) };
+  return res;
+}
+
+Complex minus(Complex x, Complex y)
+{
+  Complex res = x;
+  res.x -= y.x;
+  res.iy -= y.iy;
+  return res;
+}
+
+Complex e_eml(Complex x, Complex y)
+{
+  int n = 5; // TODO, what is best value
+  return minus(exp(x,n),ln(y));  
+}
+Complex e_one()
+{
+  Complex res = { 1.0, 0.0 };
+  return res;
+}
+Complex e_e() { return e_eml(e_one(),e_one()); }
+Complex e_exp(Complex x) { return e_eml(x,e_one()); }
+Complex e_ln(Complex x) { return e_eml(e_one(),e_exp(e_eml(e_one(),x))); }
+Complex e_minus(Complex x, Complex y) { return e_eml(e_ln(x),e_exp(y)); }
+Complex e_minusone() { return e_minus(e_ln(e_one()),e_one()); }
+Complex e_two() { return e_minus(e_one(),e_minusone()); }
+Complex e_minus_x(Complex x) { return e_minus(e_ln(e_one()),x); }
+Complex e_plus(Complex x, Complex y) { return e_minus(x,e_minus_x(y)); }
+Complex e_one_per_x(Complex x) { return e_exp(e_minus_x(e_ln(x))); }
+Complex e_mul(Complex x, Complex y) { return e_exp(e_plus(e_ln(x),e_ln(y))); }
+Complex e_x_pow_2(Complex x) { return e_mul(x,x); }
+Complex e_x_div_y(Complex x, Complex y) { return e_mul(x,e_one_per_x(y)); }
+Complex e_x_div_2(Complex x) { return e_x_div_y(x,e_two()); }
+Complex e_avg(Complex x, Complex y) { return e_x_div_2(e_plus(x,y)); }
+Complex e_sqrt(Complex x) { return e_exp(e_x_div_2(e_ln(x))); }
+Complex e_pow(Complex x, Complex y) { return e_exp(e_mul(y,e_ln(x))); }
+Complex e_log_x__y(Complex x, Complex y) { return e_x_div_y(e_ln(y),e_ln(x)); }
+Complex e_pi() { return e_sqrt(e_minus_x(e_x_pow_2(e_ln(e_minusone())))); }
+Complex e_hypot(Complex x, Complex y) { return e_sqrt(e_plus(e_mul(x,x),e_mul(y,y))); }
+Complex e_delta(Complex x) { return e_one_per_x(e_eml(e_minus_x(x),e_exp(e_minusone()))); }
+Complex e_cosh(Complex x) { return e_avg(e_exp(x),e_exp(e_minus_x(x))); }
+Complex e_sinh(Complex x) { return e_eml(x,e_exp(e_cosh(x))); }
+Complex e_tanh(Complex x) { return e_x_div_y(e_sinh(x),e_cosh(x)); }
+Complex e_cos(Complex x) { return e_cosh(e_sqrt(e_minus_x(e_x_pow_2(x)))); }
+Complex e_sin(Complex x) { return e_cos(e_minus(x,e_x_div_2(e_pi()))); }
+Complex e_tan(Complex x) { return e_x_div_y(e_sin(x),e_cos(x)); }
+Complex e_asinh(Complex x) { return e_ln(e_plus(x,e_hypot(e_minusone(),x))); }
+Complex e_acosh(Complex x) { return e_asinh(e_hypot(x,e_sqrt(e_minusone()))); }
+Complex e_acos(Complex x) { return e_acosh(e_cos(e_acosh(x))); }
+Complex e_atanh(Complex x) { return e_asinh(e_one_per_x(e_tan(e_acos(x)))); }
+Complex e_asin(Complex x) { return e_minus(e_x_div_2(e_pi()),e_acos(x)); }
+Complex e_atan(Complex x) { return e_asin(e_tanh(e_asinh(x))); }
