@@ -530,6 +530,8 @@ private:
 };
 
 std::string FloatExprEval(std::string s);
+std::string StringExprEval(std::string s);
+std::string IntExprEval(std::string s);
 
 template<class T>
 class Conv {
@@ -542,8 +544,8 @@ template<>
 class Conv<std::string>
 {
 public:
-  static void set(std::string &target, std::string s, bool allow_expr, std::string &expr) { target = s; }
-  static void get(const std::string &target, std::string &s, bool allow_expr, std::string &expr) { s=target; expr=target; }
+  static void set(std::string &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr=s; s=StringExprEval(expr); } else { s=StringExprEval(s); target = s; } }
+  static void get(const std::string &target, std::string &s, bool allow_expr, std::string &expr) { if (allow_expr && expr!="" && expr!="@") s= expr; else s= target; /*expr=target;*/ }
   static std::string error(const std::string &target, const std::string &dd_ext) {
     std::string filename = target;
     std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
@@ -558,6 +560,16 @@ public:
   static void get(const float &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; if (allow_expr && expr!="" && expr!="@") ss << expr; else ss << target; s=ss.str(); }
   static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type float!"; }
 };
+
+template<>
+class Conv<int>
+{
+public:
+  static void set(int &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr = s; s=IntExprEval(expr); } else s = IntExprEval(s);  std::stringstream ss(s); ss >> target; }
+  static void get(const int &target, std::string &s, bool allow_expr, std::string &expr) { std::stringstream ss; if (allow_expr && expr!="" && expr!="@") ss << expr; else ss << target; s=ss.str(); }
+  static std::string error(const std::string &target, const std::string &dd) { return "Drag & Drop not allowed for the type int!"; }
+};
+
 template<class T>
 class MultilineEditor : public GuiWidgetForward
 {
@@ -3244,7 +3256,8 @@ EXPORT GameApi::W GameApi::GuiApi::license_item(std::string filename, std::strin
 {
   W label = text(filename, atlas2,atlas_bm2);
   W author_label = text("Author:", atlas, atlas_bm);
-  W author_edit = string_editor("abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890-_*^@£$!#¤%&/()=? ", author_name, atlas, atlas_bm,0);
+  std::string expr;
+  W author_edit = string_editor("abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890-_*^@£$!#¤%&/()=? ", author_name, expr, atlas, atlas_bm,0);
   W arr_x[] = { author_label, author_edit };
   W author_x = array_x(&arr_x[0], 2, 0);
   W author_marg = margin(author_x,5,0,0,0);
@@ -3764,9 +3777,9 @@ EXPORT GameApi::W GameApi::GuiApi::pts(PTS p, SH sh2, int sx, int sy, int screen
   return add_widget(e, new PTSGuiWidget(e,ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
 
-EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap)
 {
-  W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap, true, expr));
   W e2 = highlight(e1);
   return e2;
 }
@@ -3821,7 +3834,8 @@ EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, in
   //ss << target << " (" << arr[target] << ")";
   
   //  W w = text(ss.str(),atlas,atlas_bm,x_gap);
-  W w = int_editor(target, atlas, atlas_bm, x_gap);
+  std::string expr;
+  W w = int_editor(target, expr, atlas, atlas_bm, x_gap);
   //W w2 = button(30,30,c_tooltip_button,c_tooltip_button2);
   std::string filename;
   if (file_exists("./arrow.ppm")) {
@@ -3932,10 +3946,10 @@ IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
 
 std::map<int, int> int_editor_map;
 
-EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string allowed_chars = "0123456789-";
-  W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  std::string allowed_chars = "0123456789-&";
+  W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr));
   W w2 = highlight(w);
   int_editor_map[w2.id]=w.id;
   return w2;
@@ -3953,7 +3967,8 @@ EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas
 EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap)
 {
   std::string allowed_chars = "0123456789abcdef";
-  W edit = string_editor(allowed_chars, col, atlas, atlas_bm, x_gap);
+  std::string expr;
+  W edit = string_editor(allowed_chars, col, expr, atlas, atlas_bm, x_gap);
   W edit2 = highlight(edit);
   return edit2; 
 }
@@ -4944,7 +4959,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
   if (type=="int")
     {
       //std::cout << "Generic editor << " << target.i_value << std::endl;
-      W edit = int_editor(target.i_value, atlas, atlas_bm, x_gap);
+      W edit = int_editor(target.i_value, target.expr, atlas, atlas_bm, x_gap);
       return edit;
     }
   if (type=="unsigned int")
@@ -4963,7 +4978,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
       else 
 	{
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
-      W edit = string_editor(allowed, target.s, atlas_tiny, atlas_tiny_bm, x_gap);
+      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 	}
@@ -7887,6 +7902,36 @@ int find_float_ch(std::string s, char ch) {
 }
 
 std::vector<std::string> g_float_eval_env;
+std::vector<std::string> g_int_eval_env;
+std::vector<std::string> g_string_eval_env;
+
+std::string IntExprEval(std::string s)
+{
+  //std::cout << "IntExprEval:" << s << std::endl;
+  if (s.size()>0 && s[0]==' ') return IntExprEval(s.substr(1,s.size()-1));
+  if (s.size()>0 && s[s.size()-1]==' ') return IntExprEval(s.substr(0,s.size()-1));
+
+  if (s.size()==2 && s[0]=='&' && s[1]>='1' && s[1]<='5')
+    {
+      int val = s[1]-'1';
+      std::string v = g_int_eval_env.size()>val?g_int_eval_env[val]:"";
+      //std::cout << "IntExprEval(ret):" << IntExprEval(v) << std::endl;
+      return IntExprEval(v);
+    }
+  //std::cout << "IntExprEval(ret2):" << s << std::endl;
+  // TODO, we want proper int expressions here?
+  return s;
+}
+std::string StringExprEval(std::string s)
+{
+  if (s.size()==2 && s[0]=='$' && s[1]>='1' && s[1]<='5')
+    {
+      int val = s[1]-'1';
+      std::string v = g_string_eval_env.size()>val?g_string_eval_env[val]:"";
+      return StringExprEval(v);
+    }
+  return s;
+}
 
 std::string FloatExprEval(std::string s)
 {
@@ -7976,7 +8021,7 @@ std::string FloatExprEval(std::string s)
     return res.str();
   }
 
-  if (s.size()==2 && s[0]=='%' && s[1]>='0' && s[1]<='5')
+  if (s.size()==2 && s[0]=='%' && s[1]>='1' && s[1]<='5')
     {
       int val = s[1]-'1';
       std::string v = g_float_eval_env.size()>val?g_float_eval_env[val]:"";

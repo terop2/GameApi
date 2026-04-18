@@ -5402,7 +5402,8 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
     "#endif\n"
 "#ifdef GLTF_TEX0\n"
 "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
-"#endif\n"
+
+   "#endif\n"
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
     "#endif\n"
@@ -5413,10 +5414,12 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 
 
     "#ifdef GLTF_TEX0\n"
-"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
+"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * vec4(u_SpecFactor,1.0);\n"
+" perceptualRoughness = 1.0-u_GlossiFactor;\n" 
 "#endif\n"
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
+" perceptualRoughness = 1.0-u_GlossiFactor;\n" 
     "#endif\n"
     
    "#ifdef GLTF_TEX1\n";
