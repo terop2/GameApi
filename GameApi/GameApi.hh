@@ -2170,11 +2170,11 @@ public:
   IMPORT W button_with_text(std::string label);
   IMPORT W button_with_icon(BM bitmap);
   IMPORT W opengl_wrapper(W widget);
-  IMPORT W string_editor(std::string allowed_chars, std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W int_editor(int &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W int_editor(int &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type);
   IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
@@ -3160,7 +3160,7 @@ public:
   IMPORT ML texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix, float mix2);
   IMPORT ML texture_arr_shader(EveryApi &ev, ML mainloop, float mix);
   IMPORT ML skeletal_shader(EveryApi &ev, ML mainloop, std::vector<SA> vec);
-  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false, float emis2_r=0.0, float emis2_g=0.0, float emis2_b=0.0, float light_dir_x=0.0, float light_dir_y=0.0, float light_dir_z=-400.0, std::string cache_id="gltf", float self_mult=1.0, float rest_mult=1.0);
+  IMPORT ML gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r=1.0, float diff_factor_g=1.0, float diff_factor_b=1.0, float spec_factor_r=1.0, float spec_factor_g=1.0, float spec_factor_b=1.0, float glossi_factor=1.0, bool unlit=false, float emis2_r=0.0, float emis2_g=0.0, float emis2_b=0.0, float light_dir_x=0.0, float light_dir_y=0.0, float light_dir_z=-400.0, std::string cache_id="gltf", float self_mult=1.0, float rest_mult=0.0);
   IMPORT void explode(VA va, PT pos, float dist);
   //IMPORT int accexss_point_count(VA va, bool triangle);
   //IMPORT float *access_points(VA va, bool triangle, int face, int point);

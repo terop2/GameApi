@@ -841,12 +841,241 @@ GameApiItem* ApiItemF(T (GameApi::EveryApi::*api), RT (T::*fptr)(P...),
   return item;
 }
 
-class EnvGameApiItem : public GameApiItem
+
+class EnvGameApiItem_int : public GameApiItem
 {
 public:
-  EnvGameApiItem() { }
+  EnvGameApiItem_int() { }
   virtual int Count() const { return 1; }
-  virtual std::string Name(int i) const { return "env_params"; }
+  virtual std::string Name(int i) const { return "env_params_int"; }
+  virtual int ParamCount(int i) const { return 1+5; }
+  virtual std::string ParamName(int i, int p) const {
+    switch(p) {
+    case 0: return "ml";
+    case 1: return "&1";
+    case 2: return "&2";
+    case 3: return "&3";
+    case 4: return "&4";
+    case 5: return "&5";
+    default: return "";
+    };
+  }
+  virtual std::string ParamType(int i, int p) const {
+    switch(p) {
+    case 0: return "ML";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "std::string";
+    default:
+      return "";
+    };
+  }
+  virtual std::string ParamDefault(int i, int p) const {
+    switch(p) {
+    case 0: return "";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "@";
+    default:
+      return "";
+    };
+  }
+  virtual std::string DefaultAuthor(int i, int p) const { return ""; }
+  virtual std::string DefaultLicense(int i, int p) const { return ""; }
+  virtual std::string ReturnType(int i) const { return "ML"; }
+  virtual std::string ApiName(int i) const { return "mainloop_api"; }
+  virtual std::string FuncName(int i) const { return "identity_int"; }
+  virtual std::string Symbols() const { return ""; }
+  virtual std::string Comment() const { return "env setup"; }
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
+  {
+    std::stringstream ss2(params[0]);
+    int val = 0;
+    ss2 >> val;
+    return val;
+  }
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  {
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","&1","&2","&3","&4","&5" }, "ML","mainloop_api","identity_int",j);
+    return p;
+  }
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
+    if (params[1].expr != "@")
+      {
+	e.names.push_back("&1");
+	e.values.push_back(params[1].expr);
+      }
+    if (params[2].expr != "@")
+      {
+	e.names.push_back("&2");
+	e.values.push_back(params[2].expr);
+      }
+    if (params[3].expr != "@")
+      {
+	e.names.push_back("&3");
+	e.values.push_back(params[3].expr);
+      }
+
+    if (params[4].expr != "@")
+      {
+	e.names.push_back("&4");
+	e.values.push_back(params[4].expr);
+      }
+    if (params[5].expr != "@")
+      {
+	e.names.push_back("&5");
+	e.values.push_back(params[5].expr);
+      }
+    env_params = params;
+  }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) {
+    int s = e.names.size();
+    for(int i=0;i<s;i++)
+      {
+	if ((e.names[i]=="&1" && env_params[1].expr!="@" )||
+	    (e.names[i]=="&2"  && env_params[2].expr!="@")||
+	    (e.names[i]=="&3"  && env_params[3].expr!="@")||
+	    (e.names[i]=="&4"  && env_params[4].expr!="@")||
+	    (e.names[i]=="&5"  && env_params[5].expr!="@"))
+	  {
+	    e.names.erase(e.names.begin() + i);
+	    e.values.erase(e.values.begin() + i);
+	    i--;
+	    s--;
+	  }
+      }
+
+  }
+private:
+  std::vector<GameApiParam> env_params;  
+};
+
+class EnvGameApiItem_string : public GameApiItem
+{
+public:
+  EnvGameApiItem_string() { }
+  virtual int Count() const { return 1; }
+  virtual std::string Name(int i) const { return "env_params_string"; }
+  virtual int ParamCount(int i) const { return 1+5; }
+  virtual std::string ParamName(int i, int p) const {
+    switch(p) {
+    case 0: return "ml";
+    case 1: return "$1";
+    case 2: return "$2";
+    case 3: return "$3";
+    case 4: return "$4";
+    case 5: return "$5";
+    default: return "";
+    };
+  }
+  virtual std::string ParamType(int i, int p) const {
+    switch(p) {
+    case 0: return "ML";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "std::string";
+    default:
+      return "";
+    };
+  }
+  virtual std::string ParamDefault(int i, int p) const {
+    switch(p) {
+    case 0: return "";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "@";
+    default:
+      return "";
+    };
+  }
+  virtual std::string DefaultAuthor(int i, int p) const { return ""; }
+  virtual std::string DefaultLicense(int i, int p) const { return ""; }
+  virtual std::string ReturnType(int i) const { return "ML"; }
+  virtual std::string ApiName(int i) const { return "mainloop_api"; }
+  virtual std::string FuncName(int i) const { return "identity_string"; }
+  virtual std::string Symbols() const { return ""; }
+  virtual std::string Comment() const { return "env setup"; }
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
+  {
+    std::stringstream ss2(params[0]);
+    int val = 0;
+    ss2 >> val;
+    return val;
+  }
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  {
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","$1","$2","$3","$4","$5" }, "ML","mainloop_api","identity_string",j);
+    return p;
+  }
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
+    if (params[1].expr != "@")
+      {
+	e.names.push_back("$1");
+	e.values.push_back(params[1].expr);
+      }
+    if (params[2].expr != "@")
+      {
+	e.names.push_back("$2");
+	e.values.push_back(params[2].expr);
+      }
+    if (params[3].expr != "@")
+      {
+	e.names.push_back("$3");
+	e.values.push_back(params[3].expr);
+      }
+
+    if (params[4].expr != "@")
+      {
+	e.names.push_back("$4");
+	e.values.push_back(params[4].expr);
+      }
+    if (params[5].expr != "@")
+      {
+	e.names.push_back("$5");
+	e.values.push_back(params[5].expr);
+      }
+    env_params = params;
+  }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) {
+    int s = e.names.size();
+    for(int i=0;i<s;i++)
+      {
+	if ((e.names[i]=="$1" && env_params[1].expr!="@" )||
+	    (e.names[i]=="$2"  && env_params[2].expr!="@")||
+	    (e.names[i]=="$3"  && env_params[3].expr!="@")||
+	    (e.names[i]=="$4"  && env_params[4].expr!="@")||
+	    (e.names[i]=="$5"  && env_params[5].expr!="@"))
+	  {
+	    e.names.erase(e.names.begin() + i);
+	    e.values.erase(e.values.begin() + i);
+	    i--;
+	    s--;
+	  }
+      }
+
+  }
+private:
+  std::vector<GameApiParam> env_params;  
+};
+
+class EnvGameApiItem_float : public GameApiItem
+{
+public:
+  EnvGameApiItem_float() { }
+  virtual int Count() const { return 1; }
+  virtual std::string Name(int i) const { return "env_params_float"; }
   virtual int ParamCount(int i) const { return 1+5; }
   virtual std::string ParamName(int i, int p) const {
     switch(p) {
@@ -889,7 +1118,7 @@ public:
   virtual std::string DefaultLicense(int i, int p) const { return ""; }
   virtual std::string ReturnType(int i) const { return "ML"; }
   virtual std::string ApiName(int i) const { return "mainloop_api"; }
-  virtual std::string FuncName(int i) const { return "identity"; }
+  virtual std::string FuncName(int i) const { return "identity_float"; }
   virtual std::string Symbols() const { return ""; }
   virtual std::string Comment() const { return "env setup"; }
   virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
@@ -901,35 +1130,35 @@ public:
   }
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","%1","%2","%3","%4","%5" }, "ML","mainloop_api","identity",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","%1","%2","%3","%4","%5" }, "ML","mainloop_api","identity_float",j);
     return p;
   }
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
-    if (params[1].value != "@")
+    if (params[1].expr != "@")
       {
 	e.names.push_back("%1");
-	e.values.push_back(params[1].value);
+	e.values.push_back(params[1].expr);
       }
-    if (params[2].value != "@")
+    if (params[2].expr != "@")
       {
 	e.names.push_back("%2");
-	e.values.push_back(params[2].value);
+	e.values.push_back(params[2].expr);
       }
-    if (params[3].value != "@")
+    if (params[3].expr != "@")
       {
 	e.names.push_back("%3");
-	e.values.push_back(params[3].value);
+	e.values.push_back(params[3].expr);
       }
 
-    if (params[4].value != "@")
+    if (params[4].expr != "@")
       {
 	e.names.push_back("%4");
-	e.values.push_back(params[4].value);
+	e.values.push_back(params[4].expr);
       }
-    if (params[5].value != "@")
+    if (params[5].expr != "@")
       {
 	e.names.push_back("%5");
-	e.values.push_back(params[5].value);
+	e.values.push_back(params[5].expr);
       }
     env_params = params;
   }
@@ -937,11 +1166,11 @@ public:
     int s = e.names.size();
     for(int i=0;i<s;i++)
       {
-	if ((e.names[i]=="%1" && env_params[1].value!="@" )||
-	    (e.names[i]=="%2"  && env_params[2].value!="@")||
-	    (e.names[i]=="%3"  && env_params[3].value!="@")||
-	    (e.names[i]=="%4"  && env_params[4].value!="@")||
-	    (e.names[i]=="%5"  && env_params[5].value!="@"))
+	if ((e.names[i]=="%1" && env_params[1].expr!="@" )||
+	    (e.names[i]=="%2"  && env_params[2].expr!="@")||
+	    (e.names[i]=="%3"  && env_params[3].expr!="@")||
+	    (e.names[i]=="%4"  && env_params[4].expr!="@")||
+	    (e.names[i]=="%5"  && env_params[5].expr!="@"))
 	  {
 	    e.names.erase(e.names.begin() + i);
 	    e.values.erase(e.values.begin() + i);

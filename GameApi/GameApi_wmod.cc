@@ -130,6 +130,7 @@ void fill_gline(GameApi::EveryApi &ev, GameApiLine &line)
 	      {
 		def = line.params[j].value;
 		expr = line.params[j].expr;
+		//std::cout << "default-expr:" << def << " -- " << expr << std::endl;
 		jj=j;
 	      }
 	  }
@@ -1148,7 +1149,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
 	      //std::cout << "PARAM:" << param->value << "::" << param->expr << std::endl;
-	      std::string pn = (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr=="@"?param->expr:param->value;
+	      std::string pn = (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr!="@"?param->expr:param->value;
 	      //std::string pe = param->expr;
 	      std::string rt = "";
 	      int jj = param->j;
@@ -1318,7 +1319,11 @@ bool is_one_of(std::string str, std::string chars)
 }
 
 extern std::vector<std::string> g_float_eval_env;
+extern std::vector<std::string> g_int_eval_env;
+extern std::vector<std::string> g_string_eval_env;
 std::string FloatExprEval(std::string s);
+std::string StringExprEval(std::string s);
+std::string IntExprEval(std::string s);
 
 EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j)
 {
@@ -1342,6 +1347,9 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
+		  int s = line->params.size();
+		  //std::cout << "BEGINENV:" << std::endl;
+		  //for(int i=0;i<s;i++) std::cout << "  " << line->params[i].expr << std::endl;
 		  item->BeginEnv(exeenv, line->params);
 		  break;
 		}
@@ -1429,6 +1437,38 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 	      else
 		{
 		  //std::cout << "Param: " << p << std::endl;
+		  //std::cout << "TYPE:'" << t << "'" << std::endl;
+		  if (t=="int")
+		    {
+		      int s = exeenv.names.size();
+		      //std::cout << "exeenv size=" << s << std::endl;
+		      for(int i=0;i<s;i++)
+			{
+			 
+			  if (exeenv.names[i].size()==2 && exeenv.names[i][0]=='&')
+			    {
+			      int val = exeenv.names[i][1]-'1';
+			      g_int_eval_env.resize(5);
+			      //std::cout << "Env:" << val << " == " << exeenv.values[i] << std::endl;
+			      g_int_eval_env[val] = exeenv.values[i];
+			    }			  
+			}
+		      p = IntExprEval(e);
+		    }
+		  if (t=="std::string")
+		    {
+		      int s = exeenv.names.size();
+		      for(int i=0;i<s;i++)
+			{
+			  if (exeenv.names[i].size()==2 && exeenv.names[i][0]=='$')
+			    {
+			      int val = exeenv.names[i][1]-'1';
+			      g_string_eval_env.resize(5);
+			      g_string_eval_env[val] = exeenv.values[i];
+			    }
+			}
+		      p = StringExprEval(e);
+		    }
 		  if (t=="float")
 		    {
 		      int s = exeenv.names.size();
@@ -1439,7 +1479,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 			    int val = exeenv.names[i][1]-'1';
 			    g_float_eval_env.resize(5);
 			    g_float_eval_env[val] = exeenv.values[i];
-			    } 
+			    }
 			}
 		      
 		      //g_float_eval_env = exeenv.values;
