@@ -544,7 +544,7 @@ template<>
 class Conv<std::string>
 {
 public:
-  static void set(std::string &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr=s; s=StringExprEval(expr); } else { s=StringExprEval(s); target = s; } }
+  static void set(std::string &target, std::string s, bool allow_expr, std::string &expr) { if (allow_expr) { expr=s; s=StringExprEval(expr); } else { s=StringExprEval(s); } target = s; }
   static void get(const std::string &target, std::string &s, bool allow_expr, std::string &expr) { if (allow_expr && expr!="" && expr!="@") s= expr; else s= target; /*expr=target;*/ }
   static std::string error(const std::string &target, const std::string &dd_ext) {
     std::string filename = target;
@@ -3256,7 +3256,7 @@ EXPORT GameApi::W GameApi::GuiApi::license_item(std::string filename, std::strin
 {
   W label = text(filename, atlas2,atlas_bm2);
   W author_label = text("Author:", atlas, atlas_bm);
-  std::string expr;
+  static std::string expr;
   W author_edit = string_editor("abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890-_*^@£$!#¤%&/()=? ", author_name, expr, atlas, atlas_bm,0);
   W arr_x[] = { author_label, author_edit };
   W author_x = array_x(&arr_x[0], 2, 0);
@@ -3834,7 +3834,7 @@ EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, in
   //ss << target << " (" << arr[target] << ")";
   
   //  W w = text(ss.str(),atlas,atlas_bm,x_gap);
-  std::string expr;
+  static std::string expr;
   W w = int_editor(target, expr, atlas, atlas_bm, x_gap);
   //W w2 = button(30,30,c_tooltip_button,c_tooltip_button2);
   std::string filename;
@@ -3967,7 +3967,7 @@ EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas
 EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap)
 {
   std::string allowed_chars = "0123456789abcdef";
-  std::string expr;
+  static std::string expr;
   W edit = string_editor(allowed_chars, col, expr, atlas, atlas_bm, x_gap);
   W edit2 = highlight(edit);
   return edit2; 
@@ -5001,7 +5001,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 
 EXPORT GameApi::W GameApi::GuiApi::point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string expr;
+  static std::string expr;
   W l0 = text("(",atlas, atlas_bm);
   W x_edit = float_editor(x, expr, atlas, atlas_bm, x_gap);
   W x_edit_2 = highlight(x_edit);
