@@ -73,7 +73,7 @@ public:
   GLTFImageDecoder(std::string url_prefix, LoadGltf *load) : url_prefix(url_prefix),load(load) { }
   GLTFImageDecoder(std::string url_prefix, LoadGltf_from_string *load) : url_prefix(url_prefix), load2(load) { }
   ~GLTFImageDecoder();
-  std::vector<std::string> scan_gltf_file(std::vector<unsigned char, GameApiAllocator<unsigned char> > &vec);
+  std::vector<std::string> scan_gltf_file(GameApi::ASyncVec *vec /*std::vector<unsigned char, GameApiAllocator<unsigned char> > &vec*/);
   FETCHID fetch_file(GameApi::Env &e, std::string filename);
   std::string get_fetch_filename(FETCHID id);
   std::vector<FETCHID> fetch_ids(const std::vector<std::string> &filenames);
@@ -681,24 +681,24 @@ public:
     GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     if (!vec) { std::cout << "PrePrepare ASYNC not ready!" << std::endl; stackTrace();  return; }
     if (!vec->size()) { std::cout << "PrePrepare FILE SIZE=0!" << std::endl; stackTrace();  return; }
-    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
+    //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(vec->begin(), vec->end());
 
     g_glb_file_size = g_glb_file_size > vec->size() ? g_glb_file_size : vec->size();
 
 
 
     
-    std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
+    std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec);
 
 
 
     
-    //int ss6 = image_filenames.size();
-    //std::cout << "filenames_count:" << ss6 << std::endl;
-    //for(int i=0;i<ss6;i++)
-    //  {
-    //std::cout << "IMAGE:" << image_filenames[i] << std::endl;
-    // }
+    int ss6 = image_filenames.size();
+    std::cout << "filenames_count:" << ss6 << std::endl;
+    for(int i=0;i<ss6;i++)
+      {
+    std::cout << "IMAGE:" << image_filenames[i] << std::endl;
+     }
     
     
     std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
@@ -892,6 +892,20 @@ void LoadGltf2_cb(void *ptr)
   //std::cout << "LoadGltf2_cb " << dt->id << std::endl;
   dt->obj->PrePrePrepare(dt->id, dt->iid);
 }
+
+class WrapASync : public GameApi::ASyncVec
+{
+public:
+  WrapASync(std::string &s) : vec(s.begin(),s.end()) { }
+  virtual const unsigned char &operator[](int i) const { return vec[i]; }
+  virtual int size() const { return vec.size(); }
+  virtual const unsigned char *begin() const { return &vec[0]; }
+  virtual const unsigned char *end() const { return &vec[vec.size()]; }
+  virtual void del() { }
+private:
+  std::vector<unsigned char> vec;
+};
+
 class LoadGltf_from_string : public CollectInterface
 {
 public:
@@ -995,14 +1009,14 @@ public:
     //GameApi::ASyncVec *vec = e.get_loaded_async_url(url);
     //if (!vec) return;
     if (!data.size()) return;
-    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(data.begin(), data.end());
+    //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec3(data.begin(), data.end());
 
     g_glb_file_size = g_glb_file_size > data.size() ? g_glb_file_size : data.size();
 
 
 
-    
-    std::vector<std::string> image_filenames = decoder->scan_gltf_file(vec3);
+    WrapASync w(data);
+    std::vector<std::string> image_filenames = decoder->scan_gltf_file(&w);
 
     //int ss = image_filenames.size();
     //std::cout << "filenames_count:" << ss << std::endl;
@@ -15327,9 +15341,46 @@ GLTFImageDecoder::~GLTFImageDecoder()
 }
 
 
-std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned char,GameApiAllocator<unsigned char> > &vec)
+std::vector<std::string> GLTFImageDecoder::scan_gltf_file(GameApi::ASyncVec *vec /*std::vector<unsigned char,GameApiAllocator<unsigned char> > &vec*/)
 {
-  std::string s(vec.begin(),vec.end());
+  //std::cout << "SCAN" << std::endl;
+#if 1
+  const unsigned char *ptr = vec->begin();
+  const unsigned char *ptr_end = vec->end();
+
+  int s = ptr_end-ptr;
+  int state=0;
+  int pos1 = 0;
+  int pos2 = 0;
+  std::vector<std::string> vec2;
+  for(int i=0;i<s;i++)
+    {
+      if (ptr[i]=='\"' && ptr[i+1]=='u' && ptr[i+2]=='r' && ptr[i+3]=='i' && ptr[i+4]=='\"' && ptr[i+5]==':') { state=1; pos1=i+6; }
+      if (state==1 && ptr[i]==' ') {
+	pos2=i;
+	state=0;
+	std::string url2(&ptr[pos1],&ptr[pos2]);
+	std::string base_url = url_prefix;
+	if (base_url[base_url.size()-1]=='/')
+	  url2 = base_url + url2.substr(1,url2.size()-2);
+	else if (base_url.size()>0)
+	  url2 = base_url + "/" + url2.substr(1,url2.size()-2);
+	else url2 = url2.substr(1,url2.size()-2);
+	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
+
+	if (url2.substr(url2.size()-3,3)!="bin") {
+	  std::cout << "URL:" << url2 << std::endl;
+	  vec2.push_back(url2);
+	}
+	  
+      }
+      if (ptr[i]=='B' && ptr[i+1]=='I' && ptr[i+2]=='N') { break; }
+    }
+  return vec2;
+
+#endif  
+#if 0
+  std::string s(vec->begin(),vec->end());
   std::stringstream ss(s);
   std::string line;
   std::string uri;
@@ -15351,12 +15402,15 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(std::vector<unsigned c
 	if (url2.size()>0 && url2[url2.size()-1]=='\"') url2=url2.substr(0,url2.size()-1);
 
 	//std::cout << "COMPARE:" << url2.substr(url2.size()-3,3) << std::endl;
-	if (url2.substr(url2.size()-3,3)!="bin")
+	if (url2.substr(url2.size()-3,3)!="bin") {
+	  std::cout << "URLXX:" << url2 << std::endl;
 	  vec2.push_back(url2);
+	}
     }
   }
   //std::cout << "FOUND:" << vec2.size() << std::endl;
   return vec2;
+#endif
 }
 
 FETCHID get_new_fetch_id()
