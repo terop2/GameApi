@@ -289,9 +289,11 @@ int main(int argc, char *argv[]) {
       //std::cout << "Arg #" << i << ":" << argv[i] << std::endl;
       cmd_args.push_back(argv[i]);
     }
-  Env e;
-  EveryApi ev(e);
-
+  Env *ee = new Env;
+  Env &e = *ee;
+  EveryApi *ea = new EveryApi(*ee);
+  EveryApi &ev = *ea;
+  
   g_everyapi = &ev;
 
 
