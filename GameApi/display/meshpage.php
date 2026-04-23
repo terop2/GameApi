@@ -174,10 +174,10 @@ $mobile = js_mobile();
 $highmem = js_highmem();
 ?>
 </head>
-<script src="https://meshpage.org/vue.js"></script>
-//<script>
-// window.showPthreadsDiv = Vue.observable({value:false})
-//</script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<script>
+ window.showPthreadsDiv = Vue.observable({value:false})
+</script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -257,7 +257,7 @@ $highmem = js_highmem();
 <div id="pthreads_div" class="pthreads_div d-flex justify-content-end" ><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
 
 
-<div class="main" id="main" >
+<div class="main" id="main" style="display:none;">
 <?php
 if ($sitename=="dinoengine.com") {
   echo "<div class=\"logo\">";
@@ -2000,17 +2000,19 @@ let pageNames2 = [ "main", "main_display" ];
 
 window.set_url = function(id,repl)
 {
-   if (id==3) { window.history.replaceState({page:2}, "title 2", "/meshpage.php"); }
-   if (id==4) { window.history.replaceState({page:2}, "title 2", "/builder-tool-download.php"); }
-   if (id==5) { window.history.replaceState({page:2}, "title 2", "/faq.php"); }
-   if (id==6) { window.history.replaceState({page:2}, "title 2", "/docs.php"); }
-   if (id==7) { window.history.replaceState({page:2}, "title 2", "/about.php"); }
+    console.log("set_url");
+
+   if (id==3) { window.history.replaceState({page:3}, "title 3", "/meshpage.php"); }
+   if (id==4) { window.history.replaceState({page:4}, "title 4", "/builder-tool-download.php"); }
+   if (id==5) { window.history.replaceState({page:5}, "title 5", "/faq.php"); }
+   if (id==6) { window.history.replaceState({page:6}, "title 6", "/docs.php"); }
+   if (id==7) { window.history.replaceState({page:7}, "title 7", "/about.php"); }
 }
 
 
 window.clearActive = function()
 {
-    //console.log("clearActive");
+    console.log("clearActive");
     for (let i=0;i<elementNames.length;i++)
     {
 	var e = document.getElementById(elementNames[i]);
@@ -2024,6 +2026,7 @@ window.clearActive = function()
 }
 window.clearActive2 = function()
 {
+    console.log("clearActive");
     //console.log("clearActive2");
     for (let i=0;i<elementNames2.length;i++)
     {
@@ -2053,6 +2056,7 @@ window.menu = function(val)
 
     var e = document.getElementById(elementNames[val]);
     e.className="active";
+    console.log("BLOCK");
     var e2 = document.getElementById(pageNames[val]);
     e2.style.display="block";
 
@@ -2117,7 +2121,6 @@ window.choose_nav = function(val)
 //menu(0);
 //choose_nav(0);
 
-//store.state = Vue.observable(store.state)
 
 
 var app = new Vue({
@@ -2308,7 +2311,7 @@ echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    beforeDestroy() {
    },
    computed: {
-      state() { return store.state },
+      //state() { return store.state },
       //showDiv() { return window.showPthreadsDiv.value },
       isIndicator2() { return this.indicator[1]; },
       isIndicator3() { return this.indicator[2]!=2 && this.indicator[2]!=0; },
@@ -2374,6 +2377,7 @@ var d = document.getElementById("display_title_bar");
 
    },
    data: {
+     state: store.state,
      main_breadcrumb_second: [{num:0,name: "mesh_all", choose:"main", title:"<?php echo "$sitename"; ?>", link:false},
      {num:1,name:"mesh_display",choose:"mesh",title:"mesh display", link:false},
      ],
@@ -2399,6 +2403,7 @@ var d = document.getElementById("display_title_bar");
 
 
 
+store.state = Vue.observable(store.state)
 
 window.store2 = {
    choose: function(a) {
