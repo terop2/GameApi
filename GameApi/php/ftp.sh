@@ -28,6 +28,8 @@ finish()
 	scp ${arr[@]} terop@$SITE:/home/terop/meshpage.org/
     fi
 }
+copy_it bootstrap.min.css
+copy_it bootstrap.bundle.min.js
 copy_it itch_3d_model_viewer.php
 copy_it itch_zip_converter.php
 copy_it mesh_css.css
