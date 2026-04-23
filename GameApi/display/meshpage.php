@@ -174,10 +174,10 @@ $mobile = js_mobile();
 $highmem = js_highmem();
 ?>
 </head>
-<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
-<script>
- window.showPthreadsDiv = Vue.observable( { value: false });
-</script>
+<script src="https://meshpage.org/vue.js"></script>
+//<script>
+// window.showPthreadsDiv = Vue.observable({value:false})
+//</script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -254,10 +254,10 @@ $highmem = js_highmem();
 <div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-bADA3C7cY969169y-5.gif' border='0' alt='contador'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=bADA3C7cY969169y'></script></div>
 
 
-<div id="pthreads_div" class="pthreads_div d-flex justify-content-end" style="display:none !important;"><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
+<div id="pthreads_div" class="pthreads_div d-flex justify-content-end" ><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
 
 
-<div class="main" id="main" style="display:none;">
+<div class="main" id="main" >
 <?php
 if ($sitename=="dinoengine.com") {
   echo "<div class=\"logo\">";
@@ -2117,6 +2117,8 @@ window.choose_nav = function(val)
 //menu(0);
 //choose_nav(0);
 
+//store.state = Vue.observable(store.state)
+
 
 var app = new Vue({
    el: '#app',
@@ -2306,7 +2308,8 @@ echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    beforeDestroy() {
    },
    computed: {
-      showDiv() { return window.showPthreadsDiv.value },
+      state() { return store.state },
+      //showDiv() { return window.showPthreadsDiv.value },
       isIndicator2() { return this.indicator[1]; },
       isIndicator3() { return this.indicator[2]!=2 && this.indicator[2]!=0; },
       isIndicator3_2() { return this.indicator[2]==2; },
@@ -2371,7 +2374,6 @@ var d = document.getElementById("display_title_bar");
 
    },
    data: {
-     state: store.state,
      main_breadcrumb_second: [{num:0,name: "mesh_all", choose:"main", title:"<?php echo "$sitename"; ?>", link:false},
      {num:1,name:"mesh_display",choose:"mesh",title:"mesh display", link:false},
      ],
@@ -2394,7 +2396,9 @@ var d = document.getElementById("display_title_bar");
    }
    });
 
-store.state = Vue.observable(store.state);
+
+
+
 
 window.store2 = {
    choose: function(a) {
