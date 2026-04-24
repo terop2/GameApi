@@ -2299,6 +2299,10 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
   {
+      if (ml.id!=-1) {
+	MainLoopItem *item = find_main_loop(env,ml);
+	item->handle_event(e);
+      }
 
     //std::cout << e.button << " " << e.cursor_pos.x << " " << e.cursor_pos.y << " " << e.type << " " << e.ch << std::endl;
 
