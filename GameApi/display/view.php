@@ -1646,7 +1646,9 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,3);\n";
  // 
 //res+="ML I11=ev.mainloop_api.hires_ml(ev," + variable + ", 4096);\n";
   res+="ML I11=ev.mainloop_api.perspective(ev," + variable + ",80.0,10.1,60000.0);\n";
-  res+="RUN I12=ev.blocker_api.game_window2(ev,I11,false,false,0.0,1000000.0);\n";
+  res+="ML I12=ev.mainloop_api.fullscreen_button(ev);\n";
+  res+="ML I13=ev.mainloop_api.or_elem_ml(ev,I11,I12);\n";
+res+="RUN I333=ev.blocker_api.game_window2(ev,I13,false,false,0.0,1000000.0);\n";
 
 
 return res;  

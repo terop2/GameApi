@@ -693,12 +693,12 @@ public:
 
 
     
-    int ss6 = image_filenames.size();
-    std::cout << "filenames_count:" << ss6 << std::endl;
-    for(int i=0;i<ss6;i++)
-      {
-    std::cout << "IMAGE:" << image_filenames[i] << std::endl;
-     }
+    //int ss6 = image_filenames.size();
+    //std::cout << "filenames_count:" << ss6 << std::endl;
+    //for(int i=0;i<ss6;i++)
+    //  {
+	//std::cout << "IMAGE:" << image_filenames[i] << std::endl;
+    // }
     
     
     std::vector<FETCHID> image_ids = decoder->fetch_ids(image_filenames);
@@ -930,6 +930,7 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count++;
     async=true;
+    async_pending_plus("LoadGltf_from_string", "ctor");
 #endif
 
     e.async_load_callback(url, &LoadGltf_cb_from_string, (void*)this);
@@ -951,6 +952,7 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count--;
     async=false;
+    async_pending_minus("LoadGltf_from_string", "ctor");
 #endif
     }
 
@@ -962,6 +964,8 @@ public:
 	  {
 	    async_pending_count--;
 	    async_vec[i]=false;
+	    std::stringstream ss; ss << i;
+	    async_pending_minus("LoadGltf_from_string", "PrePrepare" + ss.str());
 	  }
       }
     //#endif
@@ -1034,7 +1038,11 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count+=ss;
     async_vec.resize(ss);
-    for(int kk=0;kk<ss;kk++) async_vec[kk]=true;
+    for(int kk=0;kk<ss;kk++) { async_vec[kk]=true;
+      std::stringstream ss; ss << kk;
+      async_pending_plus("LoadGltf_from_string", "PrePrepare" + ss.str());
+    }
+
 #endif
     for(int ii=0;ii<ss;ii++)
       {
@@ -1963,6 +1971,8 @@ public:
 #ifdef EMSCRIPTEN
     async_pending_count++;
     async=true;
+    async_pending_plus("LoadBitmapFromUrl", "ctor");
+
 #endif
     // id=register_cache_deleter(&del_bitmap_cache,(void*)this);
     env.async_load_callback(url,&bm_cb,this);
@@ -1970,8 +1980,10 @@ public:
   void unasync()
   {
 #ifdef EMSCRIPTEN
-    if (async)
+    if (async) {
       async_pending_count--;
+    async_pending_minus("LoadBitmapFromUrl", "ctor");
+    }
     async=false;
 #endif
   }
@@ -15344,7 +15356,7 @@ GLTFImageDecoder::~GLTFImageDecoder()
 std::vector<std::string> GLTFImageDecoder::scan_gltf_file(GameApi::ASyncVec *vec /*std::vector<unsigned char,GameApiAllocator<unsigned char> > &vec*/)
 {
   //std::cout << "SCAN" << std::endl;
-#if 1
+#if 0
   const unsigned char *ptr = vec->begin();
   const unsigned char *ptr_end = vec->end();
 
@@ -15379,7 +15391,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(GameApi::ASyncVec *vec
   return vec2;
 
 #endif  
-#if 0
+#if 1
   std::string s(vec->begin(),vec->end());
   std::stringstream ss(s);
   std::string line;
@@ -15403,7 +15415,7 @@ std::vector<std::string> GLTFImageDecoder::scan_gltf_file(GameApi::ASyncVec *vec
 
 	//std::cout << "COMPARE:" << url2.substr(url2.size()-3,3) << std::endl;
 	if (url2.substr(url2.size()-3,3)!="bin") {
-	  std::cout << "URLXX:" << url2 << std::endl;
+	  //std::cout << "URLXX:" << url2 << std::endl;
 	  vec2.push_back(url2);
 	}
     }
