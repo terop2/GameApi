@@ -22883,6 +22883,15 @@ public:
 
 };
 
+bool compare_matrix(Matrix m1, Matrix m2)
+{
+  int s = 16;
+  for(int i=0;i<s;i++)
+    {
+      if (fabs(m1.matrix[i]-m2.matrix[i])>0.0000001) return true;
+    }
+  return false;
+}
 
 class BlockPTS2 : public PointsApiPoints
 {
@@ -22957,10 +22966,11 @@ public:
     ggg_in_T = e.in_T;
     g_needs_update = true;
     if (b||!g_is_quakeml3) {
-      if (b||y_rot_cache != quake_rot_y) {
+      if (b||y_rot_cache != quake_rot_y||compare_matrix(e.in_MV,in_mv_cache)) {
 	HeavyPrepare();
       } 
       y_rot_cache = quake_rot_y;
+      in_mv_cache = e.in_MV;
     } else {
       //HeavyPrepare();
     }
@@ -23041,7 +23051,9 @@ private:
   float y_rot_cache=0.0;
   mutable int max_size=0;
   float x_mult;
+  Matrix in_mv_cache;
 };
+
 
 
 
@@ -23089,10 +23101,11 @@ public:
     
     bool b = points->Update(e);
     if (b||!g_is_quakeml3) {
-      if (b||y_rot_cache != quake_rot_y) {
+      if (b||y_rot_cache != quake_rot_y || compare_matrix(e.in_MV,in_mv_cache)) {
 	HeavyPrepare();
       } 
       y_rot_cache = quake_rot_y;
+      in_mv_cache = e.in_MV;
     } 
     pos.clear();
     int s = points->Size();
@@ -23197,6 +23210,7 @@ private:
   mutable float min_ppx,min_ppz;
   mutable float max_ppx,max_ppz;
   mutable float y_rot_cache=0.0;
+  mutable Matrix in_mv_cache;
 };
 
 
