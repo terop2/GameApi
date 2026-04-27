@@ -25125,7 +25125,7 @@ public:
   }
   void HeavyPrepare() { }
 
-  void Prepare() { inner->Prepare(); o->Prepare(); }
+  void Prepare() {  inner->Prepare(); o->Prepare(); }
   virtual void execute(MainLoopEnv &e)
   {
     o->Update(e);
@@ -25164,7 +25164,7 @@ public:
 #endif	
 	
 	ee.in_MV = find_matrix(env, m) * e.in_MV;
-	ee.env = find_matrix(env, m) * e.env;
+	ee.env = find_matrix(env, m) * e.in_MV;
 	inner->execute(ee);
 	ev.shader_api.unuse(s3);
       }	  
