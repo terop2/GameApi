@@ -1037,7 +1037,7 @@ VARYING_OUT + " vec4 ex_Color;\n"
 "#ifdef INSTMAT\n"
 "vec4 instmat(vec4 pos)\n"
 "{\n"
-"   return pos*in_InstMat;\n"
+"   return pos * in_InstMat;\n"
 "}\n"
 "#endif\n"
 "#ifdef EX_COLOR\n"
@@ -6510,7 +6510,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //                                                std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+      //                                                  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);

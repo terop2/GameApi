@@ -1225,6 +1225,34 @@ EXPORT GameApi::MN GameApi::MovementNode::mn_empty()
 {
   return add_move(e, new EmptyMovement);
 }
+class FixRoot : public Movement
+{
+public:
+  FixRoot(GameApi::EveryApi &ev, Movement *mn) : ev(ev), mn(mn) {}
+  virtual void event(MainLoopEvent &e) { }
+  virtual void frame(MainLoopEnv &e) {
+    root = e.in_MV;
+  }
+  virtual void draw_event(FrameLoopEvent &e) { }
+  virtual void draw_frame(DrawLoopEnv &e) { }
+
+  virtual void set_matrix(Matrix m) { }
+  virtual Matrix get_whole_matrix(float time, float delta_time) const
+  {
+    Matrix m = mn->get_whole_matrix(time,delta_time);
+    return root*m;
+  }
+
+private:
+  GameApi::EveryApi &ev;
+  Movement *mn;
+  Matrix root;
+};
+EXPORT GameApi::MN GameApi::MovementNode::fix_root(EveryApi &ev, MN mn)
+{
+  Movement *mn2 = find_move(e,mn);
+  return add_move(e, new FixRoot(ev,mn2));
+}
 class InterpolateMovement : public Movement
 {
 public:
@@ -25136,7 +25164,7 @@ public:
 #endif	
 	
 	ee.in_MV = find_matrix(env, m) * e.in_MV;
-	ee.env = find_matrix(env, m) * e.in_MV;
+	ee.env = find_matrix(env, m) * e.env;
 	inner->execute(ee);
 	ev.shader_api.unuse(s3);
       }	  
@@ -43301,6 +43329,53 @@ float lod_x_4 = 8600.0;
 
 
 float lod_delta = 0.0f;
+
+GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm)
+{
+  // NOT WORKING YET, CLOSE BUT NO CICAR
+  TF p1 = ev.polygon_api.decimate_tf(tf,level1);
+  TF p2 = ev.polygon_api.decimate_tf(tf,level2);
+  TF p3 = ev.polygon_api.decimate_tf(tf,level3);
+  TF p4 = ev.polygon_api.decimate_tf(tf,level4);
+  PTS I612=ev.points_api.block_pts_lod(pts,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I15 = ev.move_api.local_move(ev,I16,I612);
+  ML I151 = ev.move_api.local_move(ev,I161,I613);
+  ML I152 = ev.move_api.local_move(ev,I162,I614);
+  ML I153 = ev.move_api.local_move(ev,I163,I615);
+  
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+}
+GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm)
+{
+  // NOT WORKING YET, CLOSE BUT NO CICAR
+  TF p1 = ev.polygon_api.decimate_tf(tf,level1);
+  TF p2 = ev.polygon_api.decimate_tf(tf,level2);
+  TF p3 = ev.polygon_api.decimate_tf(tf,level3);
+  TF p4 = ev.polygon_api.decimate_tf(tf,level4);
+  MS I612=ev.points_api.block_ms_lod(ms,-lod_x_1,lod_x_1,8000,2000,l4 /*120*/,lod_l0,lod_l1);
+  MS I613=ev.points_api.block_ms_lod(ms,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
+  MS I614=ev.points_api.block_ms_lod(ms,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
+  MS I615=ev.points_api.block_ms_lod(ms,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I15 = ev.move_api.local_move_matrix(ev,I16,I612);
+  ML I151 = ev.move_api.local_move_matrix(ev,I161,I613);
+  ML I152 = ev.move_api.local_move_matrix(ev,I162,I614);
+  ML I153 = ev.move_api.local_move_matrix(ev,I163,I615);
+  
+  ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
+  return I154;
+}
 
 GameApi::ML GameApi::VoxelApi::lod_vox(GameApi::EveryApi &ev, std::string vox_url, int model, float sx, float sy, float sz, GameApi::MT mat, GameApi::PTS pts, int l1, int l2, int l3, int l4)
 {

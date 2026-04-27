@@ -388,6 +388,11 @@ public:
   GameApi::ML logo_change(ML ml, BM conn, BM download, BM prepare);
   GameApi::ML get_movement_from_MV(GameApi::ML ml);
 
+
+  GameApi::ML lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm);
+  GameApi::ML lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm);
+
+
   
   GameApi::ML lod_pts_tf(GameApi::EveryApi &ev, GameApi::TF p, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float selt_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, float start_brightness, float end_brightness);
 
@@ -1946,6 +1951,7 @@ class MovementNode
 {
 public:
   IMPORT MovementNode(Env &e);
+  IMPORT MN fix_root(EveryApi &ev, MN mn);
   IMPORT ML key_move_ml(EveryApi &ev, ML ml, int key_forward, int key_backward, int key_rotate_minus, int key_rotate_plus, float speed, float rot_speed, float start_angle, float start_x, float end_x, float start_z, float end_z);
   IMPORT MN android_landscape_rotate(MN next);
   IMPORT MN android_landscape_rotate_inv(MN next);
