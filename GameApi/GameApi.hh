@@ -385,6 +385,46 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  ML mesh_anim_2(std::vector<P> time_range_start_mesh_array,
+					      std::vector<P> time_range_end_mesh_array,
+					      std::vector<MN> moves_array,
+					      std::vector<MT> materials_array,
+					      std::vector<MS> matrix_array_arrays,
+					      std::vector<IF> state_machines,
+					      std::vector<float> *optional_time_range_duration // probably needs to be implemented using ENUM in builder.
+						);
+
+  ML cmb_2____(GameApi::EveryApi &ev,
+	       std::string a_script_url,
+	       std::string a_param1,
+	       std::string a_param2,
+	       std::string a_param3,
+	       std::string a_param4,
+	       std::string a_param5,
+	       std::string b_script_url,
+	       std::string b_param1,
+	       std::string b_param2,
+	       std::string b_param3,
+	       std::string b_param4,
+	       std::string b_param5,
+	       std::vector<float> *optional_time_range_duration);
+  ML cmb_____(GameApi::EveryApi &ev,
+	      std::string script_url,
+	      std::string param1,
+	      std::string param2,
+	      std::string param3,
+	      std::string param4,
+	      std::string param5
+	      );
+  ML cmb_glb_3d_interpolate(GameApi::EveryApi &ev, std::vector<GameApi::TF> tf_arr,
+			    // Material properties
+			    int material_id, float mix, float self_mult, float rest_mult, float light_dir_x, float light_dir_y, float light_dir_z,
+			    // Animation properties
+			    int skin_num, int animation, int num_timeindexes, MT next, int key, std::string keys, int mode, int inst, int timeid);
+    
+    
+    
+
   GameApi::ML glb_to_download_bar(TF tf, std::string filename);
   GameApi::ML logo_change(ML ml, BM conn, BM download, BM prepare);
   GameApi::ML get_movement_from_MV(GameApi::ML ml);

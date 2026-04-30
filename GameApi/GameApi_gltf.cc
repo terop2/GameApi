@@ -13588,7 +13588,7 @@ GameApi::MT GameApi::MaterialsApi::m_keys(EveryApi &ev, std::vector<MT> vec, std
 }
 
 
-GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key,int mode, int inst, int timeid)
+GameApi::MT gltf_anim_material4(GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int skin_num, int animation, int num_timeindexes, GameApi::MT next, int key,int mode, int inst, int timeid) // timeid not implemented
 {
   Material *next_mat = find_material(e,next);
   Material *mat = new GLTF_Animation_Material(e,ev,interface, skin_num, animation, num_timeindexes, next_mat, key,mode,inst);
