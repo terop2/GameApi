@@ -15777,3 +15777,73 @@ Bitmap<Color> *GLTFImageDecoder::get_converted_image(IMAGEID id)
 
 
 
+class GlbToDownloadBar : public MainLoopItem
+{
+public:
+  GlbToDownloadBar(GameApi::Env &e, GameApi::TF tf, std::string filename) : e(e), tf(tf), filename(filename) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() {
+    GLTFModelInterface *interface = find_gltf(e,tf);
+    std::vector<unsigned char> vec2;
+
+    interface = find_next(interface);
+    interface->Prepare();
+#ifndef EMSCRIPTEN
+  GLTF_Model_with_prepare *prepare = dynamic_cast<GLTF_Model_with_prepare*>(interface);
+  if (!prepare) {
+    GLTF_Model_with_prepare_from_string *prepare = dynamic_cast<GLTF_Model_with_prepare_from_string*>(interface);
+    if (!prepare) { std::cout << "Using tf_ds_tf twice is not possible!" << std::endl; }
+    
+    //prepare->Prepare();
+  GLTF_Model *model = (GLTF_Model*)interface;
+  LoadGltf_from_string *load = prepare->load;
+  tinygltf::Model *self = model->self;
+  std::stringstream ss;
+  bool b = load->tiny.WriteGltfSceneToStream(self, ss, true, true);
+  std::cout << "STATUS:" << b << std::endl;
+  std::string write_buf = ss.str();
+  //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(write_buf.begin(),write_buf.end());
+  //e.store_file(output_filename,g_convert(&vec));
+  vec2 = std::vector<unsigned char>(write_buf.begin(),write_buf.end());
+  
+  //return;
+
+  } else {
+#else
+  GLTF_Model_with_prepare *prepare = (GLTF_Model_with_prepare*)interface;
+  if (1) {
+#endif
+  GLTF_Model *model = (GLTF_Model*)interface;
+  //prepare->Prepare();
+  LoadGltf *load = prepare->load;
+  tinygltf::Model *self = model->self;
+  std::stringstream ss;
+  bool b = load->tiny.WriteGltfSceneToStream(self, ss, true, true);
+  std::cout << "STATUS:" << b << std::endl;
+  std::string write_buf = ss.str();
+  //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(write_buf.begin(),write_buf.end());
+  vec2 = std::vector<unsigned char>(write_buf.begin(),write_buf.end());
+  //e.store_file(output_filename,g_convert(&vec));
+  }
+    
+    int index = e.add_to_download_bar(filename);
+    int ii = e.download_index_mapping(index);
+    e.set_download_data(ii,vec2);
+    e.set_download_ready(ii);
+  }
+  virtual void Prepare() { HeavyPrepare(); }
+  virtual void execute(MainLoopEnv &e) { }
+  virtual void handle_event(MainLoopEvent &e) { }
+  virtual std::vector<int> shader_id() { return std::vector<int>(); }
+
+private:
+  GameApi::Env &e;
+  GameApi::TF tf;
+  std::string filename;
+};
+
+
+GameApi::ML GameApi::MainLoopApi::glb_to_download_bar(TF tf, std::string filename)
+{
+  return add_main_loop(e, new GlbToDownloadBar(e,tf,filename));
+}

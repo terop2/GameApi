@@ -1827,6 +1827,14 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			   { "ev", "", "32", "1.0", "30", "output.gif", "4" },
 			   "ML", "bitmap_api", "gif_anim"));
 #endif
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::glb_to_download_bar,
+			 "download_glb",
+			 { "tf", "filename" },
+			 { "TF", "std::string" },
+			 { "", "output.glb" },
+			 "ML", "mainloop_api", "glb_to_download_bar"));
+  
 #if (ALL==1)||(SAVE_DEPLOY==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::save_deploy,
 			   "save_deploy",

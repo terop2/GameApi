@@ -385,6 +385,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  GameApi::ML glb_to_download_bar(TF tf, std::string filename);
   GameApi::ML logo_change(ML ml, BM conn, BM download, BM prepare);
   GameApi::ML get_movement_from_MV(GameApi::ML ml);
 
