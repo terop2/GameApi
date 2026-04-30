@@ -30706,3 +30706,93 @@ Complex e_acos(Complex x) { return e_acosh(e_cos(e_acosh(x))); }
 Complex e_atanh(Complex x) { return e_asinh(e_one_per_x(e_tan(e_acos(x)))); }
 Complex e_asin(Complex x) { return e_minus(e_x_div_2(e_pi()),e_acos(x)); }
 Complex e_atan(Complex x) { return e_asin(e_tanh(e_asinh(x))); }
+
+
+
+class GridToQuads : public FaceCollection
+{
+public:
+  GridToQuads(float start_x, float end_x,
+	      float start_y, float end_y,
+	      float start_z, float end_z,
+	      int sx, int sy,
+	      std::function<float (float,float)> f)
+    : start_x(start_x), end_x(end_x),
+      start_y(start_y), end_y(end_y),
+      start_z(start_z), end_z(end_z),
+      sx(sx), sy(sy), f(f) { }
+  virtual void Collect(CollectVisitor &vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int NumFaces() const
+  {
+    return sx*sy;
+  }
+  virtual int NumPoints(int face) const
+  {
+    return 4;
+  }
+  virtual Point FacePoint(int face, int point) const
+  {
+    int y = face / sx;
+    int x = face - (y*sx);
+
+    float val_l = float(x)/float(sx);
+    float val_r = val_l + 1.0;
+    float val_t = float(y)/float(sy);
+    float val_b = val_t + 1.0;
+    
+    float l = start_x + (end_x-start_x)*val_l;
+    float r = start_x + (end_x-start_x)*val_r;
+    float t = start_y + (end_y-start_y)*val_t;
+    float b = start_y + (end_y-start_y)*val_b;
+ 
+    //float z0 = start_z;
+    //float z1 = (end_z-start_z);
+    // z0 + z1*val
+    
+    if (point==0) return Point(l,t,f(l,t));
+    if (point==1) return Point(r,t,f(r,t));
+    if (point==2) return Point(r,b,f(r,b));
+    if (point==3) return Point(l,b,f(l,b));
+  }
+  virtual Vector PointNormal(int face, int point) const
+  {
+    Point p = FacePoint(face,point);
+    Point p1 = FacePoint(face,(point+1)%NumPoints(face));
+    Point p2 = FacePoint(face,(point+2)%NumPoints(face));
+    return -Vector::CrossProduct(p1-p,p2-p);
+  }
+  virtual float Attrib(int face, int point, int id) const { return 0.0; }
+  virtual int AttribI(int face, int point, int id) const { return 0; }
+  virtual unsigned int Color(int face, int point) const
+  {
+    return 0xffffffff;
+  }
+  virtual Point2d TexCoord(int face, int point) const
+  {
+    int y = face / sx;
+    int x = face - (y*sx);
+
+    float val_x = float(x)/float(sx);
+    float val_y = float(y)/float(sy);
+    Point2d p;
+    p.x = val_x;
+    p.y = val_y;
+    return p;
+  }
+  virtual float TexCoord3(int face, int point) const { return 0.0; }
+  virtual VEC4 Joints(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+  virtual VEC4 Weights(int face, int point) const { VEC4 v; v.x = 0.0; v.y = 0.0; v.z = 0.0; v.w = 0.0; return v; }
+private:
+  float start_x, end_x;
+  float start_y, end_y;
+  float start_z, end_z;
+  int sx, sy;
+  std::function<float (float,float)> f;
+};
+
+//GameApi::P GameApi::PolygonApi::from_grid_to_quads(float start_x, float end_x, float start_y, float end_y, int sx, int sy, std::function<float (float,float)> f)
+//{
+  
+//}
