@@ -3804,9 +3804,13 @@ public:
 #ifdef LINUX
 		std::string s = getenv("HOME");
 		std::cout << "PTHREAD_SYSTEM xdg" << std::endl;
-		pthread_system((std::string("xdg-open ")+s+"/.gameapi_builder/Downloads/").c_str());
+		pthread_system((std::string("nautilus ")+s+"/.gameapi_builder/Downloads/").c_str());
 #endif
 #ifdef WINDOWS
+		std::string drive=getenv("systemdrive");
+		std::string path=getenv("homepath");
+		std::string p = drive+path+"\\_gameapi_builder\\Downloads\\";
+		pthread_system((std::string("start \"\" ")+p).c_str());
 #endif
 	      }
 	    state=0;

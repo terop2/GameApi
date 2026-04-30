@@ -591,6 +591,7 @@ public:
     if (prepare_done) {
       
     }
+    delete m_vec2;
   }
   void unasync()
   {
@@ -792,7 +793,8 @@ public:
       std::cout << "LoadGLTF: ssz=" << ssz << " at " << url << std::endl;
       return;
     }
-    std::vector<char> vec2(vec->begin(), vec->end());
+    std::vector<char> *vec2 = new std::vector<char>(vec->begin(), vec->end());
+    m_vec2 = vec2;
     std::string str(vec->begin(),vec->end());
 
 
@@ -830,7 +832,7 @@ public:
 #endif
       }
     //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
-      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
+      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
@@ -849,7 +851,7 @@ public:
     if (sz<0) sz=0;
 #endif
       }
-    char *ptr2 = &vec2.operator[](0);
+    char *ptr2 = &vec2->operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
     //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
       tiny.LoadBinaryFromMemory(&model, &err, &warn, ptr3, sz, base_url, tinygltf::REQUIRE_ALL); 
@@ -880,6 +882,7 @@ public:
   std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
   bool async=false;
   std::vector<bool> async_vec;
+  std::vector<char> *m_vec2=0;
 };
 
 void LoadGltf_cb(void *ptr)
@@ -947,6 +950,7 @@ public:
     if (prepare_done) {
       
     }
+    delete m_vec2;
   }
   void unasync()
   {
@@ -1120,7 +1124,8 @@ public:
       std::cout << "LoadGLTF: ssz=" << ssz << std::endl;
       return;
     }
-    std::vector<char> vec2(vec->begin(), vec->end());
+    std::vector<char> *vec2 = new std::vector<char>(vec->begin(), vec->end());
+    m_vec2 = vec2;
     std::string str(vec->begin(),vec->end());
 
 
@@ -1162,7 +1167,7 @@ public:
       }
     //std::cout << "ASCII: " << std::string(vec2.begin(),vec2.end()) << std::endl;
     std::cout << "LoadASCII" << std::endl;
-      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2.operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
+      tiny.LoadASCIIFromString(&model, &err, &warn, &vec2->operator[](0), sz, base_url, tinygltf::REQUIRE_ALL);
     } else {
       int sz = vec->size();
       //std::cout << "File size: " << url  << "::" << sz << std::endl;
@@ -1181,7 +1186,7 @@ public:
     if (sz<0) sz=0;
 #endif
       }
-    char *ptr2 = &vec2.operator[](0);
+    char *ptr2 = &vec2->operator[](0);
     unsigned char *ptr3 = (unsigned char*)ptr2;
     //std::cout << "DATASIZE: " << vec2.size() << " " << sz << std::endl;
     //std::cout << "LoadBInary" << std::endl;
@@ -1211,6 +1216,7 @@ public:
   std::vector<ThreadInfo_gltf_bitmap*> current_gltf_threads;
   bool async=false;
   std::vector<bool> async_vec;
+  std::vector<char> *m_vec2=0;
 };
 
 void LoadGltf_cb_from_string(void *ptr)
@@ -15821,6 +15827,7 @@ public:
   bool b = load->tiny.WriteGltfSceneToStream(self, ss, true, true);
   std::cout << "STATUS:" << b << std::endl;
   std::string write_buf = ss.str();
+  std::cout << "CONTENTS:" << write_buf.substr(0,50) << std::endl;
   //std::vector<unsigned char,GameApiAllocator<unsigned char> > vec(write_buf.begin(),write_buf.end());
   vec2 = std::vector<unsigned char>(write_buf.begin(),write_buf.end());
   //e.store_file(output_filename,g_convert(&vec));
