@@ -44394,5 +44394,106 @@ GameApi::ML GameApi::PointsApi::world_filter_cursor(ML ml, float start_delta_x, 
 }
 
 
+GameApi::ML GameApi::MainLoopApi::mesh_anim_2(std::vector<P> time_range_start_mesh_array,
+					      std::vector<P> time_range_end_mesh_array,
+					      std::vector<MN> moves_array,
+					      std::vector<MT> materials_array,
+					      std::vector<MS> matrix_array_arrays,
+					      std::vector<IF> state_machines,
+					      std::vector<float> *optional_time_range_duration // probably needs to be implemented using ENUM in builder.
+					      )
+{
+}
+
+GameApi::ML GameApi::MainLoopApi::cmb_2____(GameApi::EveryApi &ev,
+					    std::string a_script_url,
+					   std::string a_param1,
+					   std::string a_param2,
+					   std::string a_param3,
+					   std::string a_param4,
+					    std::string a_param5,
+					    std::string b_script_url,
+					   std::string b_param1,
+					   std::string b_param2,
+					   std::string b_param3,
+					   std::string b_param4,
+					    std::string b_param5,
+					    std::vector<float> *optional_time_range_duration)
+{
+  HML h = ev.mainloop_api.html_url(a_script_url);
+  GameApi::ARR p_arr = ev.mainloop_api.load_P_script_array(ev,h,a_param1,a_param2,a_param3,a_param4,a_param5);
+
+  HML h2 = ev.mainloop_api.html_url(b_script_url);
+  GameApi::ARR p_arr2 = ev.mainloop_api.load_P_script_array(ev,h,b_param1,b_param2,b_param3,b_param4,b_param5);
+
+  // uses mesh_anim_2
+
+}
+					    
 
 
+GameApi::ML GameApi::MainLoopApi::cmb_____(GameApi::EveryApi &ev,
+					   std::string script_url,
+					   std::string param1,
+					   std::string param2,
+					   std::string param3,
+					   std::string param4,
+					   std::string param5
+					   )
+{
+  HML h = ev.mainloop_api.html_url(script_url);
+  GameApi::ARR p_arr = ev.mainloop_api.load_P_script_array(ev,h,param1,param2,param3,param4,param5);
+  
+							     
+}
+
+
+GameApi::ML GameApi::MainLoopApi::cmb_glb_3d_interpolate(GameApi::EveryApi &ev, std::vector<GameApi::TF> tf_arr,
+							 // Material properties
+							 int material_id, float mix, float self_mult, float rest_mult, float light_dir_x, float light_dir_y, float light_dir_z,
+							 // Animation properties
+							 int skin_num, int animation, int num_timeindexes, MT next, int key, std::string keys, int mode, int inst, int timeid)
+
+{
+  // this combines animation pieces and messes up with material selection.
+  int s = tf_arr.size();
+  std::vector<GameApi::P> vec;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p = ev.mainloop_api.gltf_mesh_all_p(ev,tf_arr[i]);
+      vec.push_back(p);
+    }
+
+  int s2 = tf_arr.size();
+  std::vector<GameApi::MT> mat_vec;
+  for(int i=0;i<s2;i++)
+    {
+      GameApi::MT mat = ev.materials_api.gltf_material(ev,tf_arr[i], material_id, mix, self_mult, rest_mult, light_dir_x, light_dir_y, light_dir_z);
+      GameApi::MT mat2 = ev.materials_api.gltf_anim_material2(ev,tf_arr[i], skin_num, num_timeindexes, mat, keys, mode);
+      mat_vec.push_back(mat2);
+    }
+
+
+  // THIS IS THE NON-INTERPOLATED VERSION
+  
+  GameApi::ARR ml_arr=ev.mainloop_api.load_ML_script_array(ev,"https://meshpage.org/assets/player_ml.mp","10&5&0&-5&-10&-5&0&5","-10&-5&0&5&10&5&0&-5","c&c","d&d","e&e");
+  ArrayType *ml_arr_type = find_array(e,ml_arr);
+  std::vector<ML> ml_arr2;
+  int s3 = ml_arr_type->vec.size();
+  for(int i=0;i<s3;i++)
+    {
+      GameApi::ML ml;
+      ml.id = ml_arr_type->vec[i];
+      ml_arr2.push_back(ml);
+    }
+  
+  IF I12=ev.mainloop_api.state_int_fetcher("https://meshpage.org/assets/player_anim.sm","s0&s1&s2&s3&s4&s5&s6&s7");
+
+  ML I13=ev.font_api.ml_chooser(ml_arr2,I12);
+  // NON-INTERPOLATED
+
+
+  
+
+}
+							 
