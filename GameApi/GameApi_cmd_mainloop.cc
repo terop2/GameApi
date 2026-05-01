@@ -308,9 +308,9 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
 			 "ml_gltf_all_anim",
-			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm" },
-			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool" },
-			 { "ev", "", "1.0","1.0","0.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true","true" },
+			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm", "start_anim_seq" },
+			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool", "int" },
+			 { "ev", "", "1.0","1.0","0.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true","true", "0" },
 			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
 #endif
 #if 0
@@ -911,16 +911,16 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::me
 
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_anim,
 			"m_lod_anim",
-			{ "ev", "tf", "pts", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm" },
-			{ "EveryApi&", "TF", "PTS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool" },
-			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "1.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true" },
+			{ "ev", "tf", "pts", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_anim_seq" },
+			{ "EveryApi&", "TF", "PTS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool", "int" },
+			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "1.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true", "0" },
 			"ML", "mainloop_api", "lod_anim"));
 
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::lod_anim_matrix,
 			"m_lod_anim_matrix",
-			{ "ev", "tf", "ms", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm" },
-			{ "EveryApi&", "TF", "MS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool" },
-			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "1.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true" },
+			{ "ev", "tf", "ms", "level1", "level2", "level3", "level4", "l1", "l2", "l3", "l4", "mix", "self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color", "transparent", "acesfilm", "start_anim_seq" },
+			{ "EveryApi&", "TF", "MS", "float", "float", "float", "float", "int", "int", "int", "int", "float", "float", "float", "int", "std::string", "float", "float", "float", "float", "unsigned int", "bool", "bool", "int" },
+			{ "ev", "", "", "0.8", "0.6", "0.4", "0.2", "45", "45", "45", "45", "1.0", "1.0", "0.0", "0", "cvb", "0.1", "400.0", "0.1", "0.0", "ff000000", "false", "true", "0" },
 			"ML", "mainloop_api", "lod_anim_matrix"));
 
  
