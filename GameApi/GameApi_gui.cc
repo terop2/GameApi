@@ -764,6 +764,7 @@ public:
     if (type==768 && (ch==1073742054)) { altgr=true; }
     if (type==769 && (ch==1073742054)) { altgr=false; }
 
+    
     if (firsttime)
       {
 	Conv<T>::get(target, label, allow_expr, expr);
@@ -783,6 +784,7 @@ public:
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
     if (ch==13) { ch='\n'; }
+    if (altgr && ch=='4') { ch='$'; }
     if (active && ctrl && type==768 && ch==118) // ctrl-v
       {
 	char *buf = g_low->sdl->SDL_GetClipboardText();
@@ -3308,7 +3310,8 @@ EXPORT GameApi::W GameApi::GuiApi::license_item(std::string filename, std::strin
   W author_x = array_x(&arr_x[0], 2, 0);
   W author_marg = margin(author_x,5,0,0,0);
   W license_label = text("License:", atlas, atlas_bm);
-  W edit = url_editor(license_url, atlas, atlas_bm, 3);
+  static std::string expr2;
+  W edit = url_editor(license_url, atlas, atlas_bm, 3, expr2);
   W arr_x2[] = { license_label, edit };
   W license_x = array_x(&arr_x2[0],2,0);
   W marg = margin(license_x,5,0,0,0);
@@ -3843,14 +3846,14 @@ EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, std::string &expr
   W w2 = highlight(w);
   return w2;
 }
-EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr)
 {
 #ifdef EMSCRIPTEN
   std::string allowed_chars="";
 #else
   std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#€%&/()=?+\\*^.,-<>|§œ;:_$";
 #endif
-  W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap));
+  W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr));
   W w2 = highlight(w);
   return w2;
 }
@@ -4204,7 +4207,8 @@ EXPORT GameApi::W GameApi::GuiApi::navi_bar(GameApi::EveryApi &ev, std::vector<s
 
   W save_click = click_area(save_layer, 0,0,size_x(save_layer),size_y(save_layer),0);
 
-  W url_bar = url_editor(url, atlas, atlas_bm, 3);
+  static std::string expr;
+  W url_bar = url_editor(url, atlas, atlas_bm, 3,expr);
   W url_bar2 = center_y(url_bar, 20+5+20-2-2-1);
   W url_bar21 = size(url_bar2, 630,20+5+20-2-2-1);
   W url_bar3 = margin(url_bar21,30,0,0,0);
@@ -5017,7 +5021,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     {
       if (target.s.size()>4 && (target.s.substr(0,4)=="http" ||target.s.substr(0,4)=="file"))
 	{
-	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap);
+	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap,target.expr);
 	  W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
 	  return edit_2;
 	}

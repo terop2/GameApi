@@ -2224,7 +2224,7 @@ public:
   IMPORT W opengl_wrapper(W widget);
   IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
-  IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr);
   IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W int_editor(int &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
   IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type);
