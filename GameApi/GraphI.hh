@@ -97,6 +97,8 @@ template<class T>
 uint32_t GameApiAllocator<T>::m_used_mem = 0;
 
 
+#define NOT_REDEFINE_ALLOCATOR 1
+
 #ifndef TINYGLTF_IMPLEMENTATION
 #include "tiny_gltf.h"
 #endif
@@ -305,6 +307,16 @@ class CompactBitmap
 {
 public:
   
+};
+
+template<class AllocData, class T>
+class LazyAlloc
+{
+public:
+  virtual void Alloc(AllocData ad)=0;
+  virtual void Destroy()=0;
+  virtual bool ValueAvailable() const=0;
+  virtual T Value() const=0;
 };
 
 template<class C>

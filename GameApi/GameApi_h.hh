@@ -1155,6 +1155,11 @@ ARRMACRO(GameApi::PAR,par)
 //
 // add functions
 //
+//GameApi::UA add_url_array(GameApi::Env &e, Array<int,std::string> *arr);
+//GameApi::BA add_bitmap_array2(GameApi::Env &e, Array<int,Bitmap<unsigned int>*> *arr);
+
+//GameApi::TFA add_tf_array(GameApi::Env &e, Array<int,LazyAlloc<std::string,GLTFModelInterface*>* > * arr);
+//GameApi::TFB add_tf_matrix(GameApi::Env &e, Bitmap<LazyAlloc<GLTFModelInterface*>* >* matrix);
 GameApi::PV add_facecoll_array(GameApi::Env &e, Array<int,FaceCollection*> *arr);
 GameApi::PM add_facecoll_matrix(GameApi::Env &e, Bitmap<FaceCollection*> *arr);
 GameApi::OVX add_opt_voxel(GameApi::Env &e, OptVoxel *vx);
@@ -1322,6 +1327,8 @@ GameApi::CT add_cutter(GameApi::Env &e, Cutter *cut);
 //
 // find() functions
 //
+//Array<int,LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_array(GameApi::Env &e, GameApi::TFA tfa);
+//Bitmap<LazyAlloc<std::string,GLTFModelInterface*> >* find_tf_matrix(GameApi::Env &e, GameApi::TFB tfb);
 Array<int,FaceCollection*> *find_facecoll_array(GameApi::Env &e, GameApi::PV pa);
 Bitmap<FaceCollection*> *find_facecoll_matrix(GameApi::Env &e, GameApi::MA ma);
 OptVoxel *find_opt_voxel(GameApi::Env &e, GameApi::OVX vx);
@@ -1338,7 +1345,7 @@ ShaderCode *find_shader_code(GameApi::Env &e, GameApi::SHC code);
 PixelBufferObject *find_pbo(GameApi::Env &e, GameApi::PBO pbo);
 ShaderParameterI *find_shp(GameApi::Env &e, GameApi::SHP shp);
 ShaderI2 *find_shaderI(GameApi::Env &e, GameApi::SHI sh);
-GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
+IMPORT GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
 GameState *find_game_state(GameApi::Env &e, GameApi::GS gs);
 Attach *find_attach(GameApi::Env &e, GameApi::ATT att);
 UrlMemoryMap *find_urlmemmap(GameApi::Env &e, GameApi::PKG p);

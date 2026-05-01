@@ -1621,7 +1621,7 @@ ShaderParameterI *find_shp(GameApi::Env &e, GameApi::SHP s)
   return env->shp[s.id];
 }
 
-GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf)
+EXPORT GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   return env->tf[tf.id];
