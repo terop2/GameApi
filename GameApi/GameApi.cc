@@ -29199,6 +29199,9 @@ GameApi::ARR GameApi::MainLoopApi::load_ML_script_array(EveryApi &ev, std::strin
   p3 = replace_str(p3, "&amp;", "&");
   p4 = replace_str(p4, "&amp;", "&");
   p5 = replace_str(p5, "&amp;", "&");
+  // has_env_params markers() in GameApi_wmod.cc probably breaks these markers.
+  // since it tests for "&1" "$1" and "%1" exists in the script and gives
+  // different results than expected.
   std::vector<std::string> p1vec = parse_sep(p1,'&');
   std::vector<std::string> p2vec = parse_sep(p2,'&');
   std::vector<std::string> p3vec = parse_sep(p3,'&');

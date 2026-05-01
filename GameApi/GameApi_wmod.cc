@@ -1121,6 +1121,18 @@ EXPORT std::string GameApi::WModApi::extract_deps(std::string filename)
   return res;
 }
 
+bool has_envparams_markers(std::string s)
+{
+  int ss = s.size();
+  for(int i=0;i<ss-1;i++)
+    {
+      if (s[i]=='%' && s[i+1]>='1' && s[i+1]<='5') return true;
+      if (s[i]=='$' && s[i+1]>='1' && s[i+1]<='5') return true;
+      // the next probably breaks &-separators from ML_script_arr/P_script_arr
+      if (s[i]=='&' && s[i+1]>='1' && s[i+1]<='5') return true;
+    }
+  return false;
+}
 
 
 EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev, WM mod2, int id, std::string line_uid, int level, int j)
@@ -1150,6 +1162,15 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      std::string p = "";
 	      //std::cout << "PARAM:" << param->value << "::" << param->expr << std::endl;
 	      std::string pn = /*THIS COMMENTED SECTION BREAKS VALUES TO DEFAULT, but COMMENTING BREAKS envparams => need to investigate.  (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr!="@"?param->expr:*/ param->value;
+
+	      // envparams code
+	      //std::cout << param->param_name << " " << param->value << " " << param->expr << std::endl;
+	      if (has_envparams_markers(param->expr))
+		{
+		  pn = param->expr;
+		}
+	      // end of envparams
+
 	      //std::string pe = param->expr;
 	      std::string rt = "";
 	      int jj = param->j;
@@ -1325,6 +1346,8 @@ std::string FloatExprEval(std::string s);
 std::string StringExprEval(std::string s);
 std::string IntExprEval(std::string s);
 
+
+
 EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string line_uid, ExecuteEnv &exeenv, int level, int j)
 {
   static std::vector<GameApiItem*> vec = all_functions(ev);
@@ -1438,9 +1461,11 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		{
 		  //std::cout << "Param: " << p << std::endl;
 		  //std::cout << "TYPE:'" << t << "'" << std::endl;
-		  /* TODO, THIS WAS COMMENTED BECAUSE IT BREAKS VALUES
-		     BUT THE COMMENTING CLEARLY BREAKS env_params
-		  if (t=="int")
+
+		if (has_envparams_markers(e))
+		{
+
+		     if (t=="int")
 		    {
 		      int s = exeenv.names.size();
 		      //std::cout << "exeenv size=" << s << std::endl;
@@ -1487,7 +1512,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		      //g_float_eval_env = exeenv.values;
 		      p = FloatExprEval(e);
 		    }
-		  */
+		}
 		  params.push_back(p);
 		}
 	    }
@@ -1674,8 +1699,23 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		    {
 		      ASyncData *ptr = &arr[i];
 		      //std::cout << "ASYNCDATA: " << name << " " << ptr->func_name << std::endl;
+		      //std::cout << "Funcname:" << fname << " == " << ptr->func_name << std::endl;
+		      if (fname=="identity_string")
+			{
+			  if (params[ptr->param_num].substr(0,4)=="file" ||
+			      params[ptr->param_num].substr(0,4)=="http")
+			    {
+			      if (params[ptr->param_num]!="@") {
+				res.push_back(params[ptr->param_num]);
+			      }
+			    }
+			}
+
+		      
 		      if (fname==ptr->func_name) {
-			res.push_back(params[ptr->param_num]);
+			if (params[ptr->param_num]!="@") {
+			  res.push_back(params[ptr->param_num]);
+			}
 			if (params[ptr->param_num]==item->ParamDefault(0,ptr->param_num)) { // not edited
 			  authors.push_back(item->DefaultAuthor(0,ptr->param_num));
 			  licenses.push_back(item->DefaultLicense(0,ptr->param_num));
@@ -1688,7 +1728,7 @@ EXPORT std::pair<int,std::vector<std::string> > GameApi::WModApi::collect_urls(E
 		  
 		  //std::cout << "Execute: " << name << std::endl;
 		  //int val = item->Execute(e, ev, params, exeenv);
-		  //item->EndEnv(exeenv);
+		  item->EndEnv(exeenv);
 		  //std::cout << "Execute " << name << " returns " << val << std::endl;
 		  g_collect_authors.push_back(authors);
 		  g_collect_licenses.push_back(licenses);

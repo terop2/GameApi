@@ -1022,27 +1022,32 @@ public:
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
     if (params[1].expr != "@")
       {
+	std::cout << "BeginEnv::Choose 1: " << params[1].expr << std::endl;
 	e.names.push_back("$1");
 	e.values.push_back(params[1].expr);
       }
     if (params[2].expr != "@")
       {
+	std::cout << "BeginEnv::Choose 2: " << params[2].expr << std::endl;
 	e.names.push_back("$2");
 	e.values.push_back(params[2].expr);
       }
     if (params[3].expr != "@")
       {
+	std::cout << "BeginEnv::Choose 3: " << params[3].expr << std::endl;
 	e.names.push_back("$3");
 	e.values.push_back(params[3].expr);
       }
 
     if (params[4].expr != "@")
       {
+	std::cout << "BeginEnv::Choose 4: " << params[4].expr << std::endl;
 	e.names.push_back("$4");
 	e.values.push_back(params[4].expr);
       }
     if (params[5].expr != "@")
       {
+	std::cout << "BeginEnv::Choose 5: " << params[5].expr << std::endl;
 	e.names.push_back("$5");
 	e.values.push_back(params[5].expr);
       }
