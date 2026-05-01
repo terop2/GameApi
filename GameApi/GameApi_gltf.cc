@@ -555,7 +555,7 @@ class LoadGltf : public CollectInterface
 {
 public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
-    std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
+    //std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
     tinygltf::FsCallbacks fs = {
@@ -13797,6 +13797,7 @@ public:
     bool timedone = false;
     
     // Check for stored time
+    /* Commented because breaks animation in MLGuiWidget / builder dialogs
     for (TimeStore &tv : timevec) {
       if (tv.id == id + 300 * g_time_id) {
 	time = tv.time;
@@ -13804,7 +13805,7 @@ public:
 	break;
       }
     }
-    
+    */
     if (keypressed && max_end_time > 0.0001f && time > max_end_time) {
       key_time = ev.mainloop_api.get_time() / 1000.0f;
       time = e.time - key_time;
@@ -13923,7 +13924,7 @@ public:
 	    GLTFJointMatrices *joints = static_cast<GLTFJointMatrices *>(items[t]);
 	    auto *start_time = joints->start_time();
 	    auto *end_time = joints->end_time();
-	    
+
 	    if (ii < int(start_time->size()) && ii < int(end_time->size())) {
 	      if (time >= (*start_time)[ii] && time < (*end_time)[ii]) {
 		current = t;
