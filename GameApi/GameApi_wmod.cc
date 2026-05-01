@@ -254,10 +254,10 @@ GameApiModule load_gameapi(GameApi::EveryApi &ev, std::string filename)
 	      std::string array_target_str = name_value.substr(i3+1, i4-i3-1);
 	      //std::cout << "S:" << s << " I4:" << i4 << std::endl;
 	      std::string jj = i4!=s?(i5!=s?name_value.substr(i4+1,i5-i4-1):name_value.substr(i4+1, s-i4-1)):"0";
-	      std::string expr = i5!=s?unhexify(name_value.substr(i5+1,i6-i5-1)):p.value;
+	      std::string expr = i4!=s && i5!=s?unhexify(name_value.substr(i5+1,i6-i5-1)):p.value;
 	      p.expr=expr;
 
-	      std::string type = i5!=s && i6!=s?unhexify(name_value.substr(i6+1,s-i6-1)):"";
+	      std::string type = i4!=s && i5!=s && i6!=s?unhexify(name_value.substr(i6+1,s-i6-1)):"";
 	      
 	      int array_index = -1;
 	      std::stringstream ss(array_target_str);
@@ -1149,7 +1149,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      GameApiParam *param = &line->params[ii];
 	      std::string p = "";
 	      //std::cout << "PARAM:" << param->value << "::" << param->expr << std::endl;
-	      std::string pn = (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr!="@"?param->expr:param->value;
+	      std::string pn = /*THIS COMMENTED SECTION BREAKS VALUES TO DEFAULT, but COMMENTING BREAKS envparams => need to investigate.  (!(param->value.size()>3 && param->value[0]=='u' && param->value[1]=='i' && param->value[2]=='d')) &&param->expr!="" && param->expr!="@"?param->expr:*/ param->value;
 	      //std::string pe = param->expr;
 	      std::string rt = "";
 	      int jj = param->j;
@@ -1438,6 +1438,8 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		{
 		  //std::cout << "Param: " << p << std::endl;
 		  //std::cout << "TYPE:'" << t << "'" << std::endl;
+		  /* TODO, THIS WAS COMMENTED BECAUSE IT BREAKS VALUES
+		     BUT THE COMMENTING CLEARLY BREAKS env_params
 		  if (t=="int")
 		    {
 		      int s = exeenv.names.size();
@@ -1485,6 +1487,7 @@ EXPORT int GameApi::WModApi::execute(EveryApi &ev, WM mod2, int id, std::string 
 		      //g_float_eval_env = exeenv.values;
 		      p = FloatExprEval(e);
 		    }
+		  */
 		  params.push_back(p);
 		}
 	    }

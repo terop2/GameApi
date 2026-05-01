@@ -44499,3 +44499,11 @@ GameApi::ML GameApi::MainLoopApi::cmb_glb_3d_interpolate(GameApi::EveryApi &ev, 
 
 }
 							 
+EXPORT bool GameApi::MainLoopApi::is_gltf_animated(EveryApi &ev, TF tf)
+{
+  GLTFModelInterface *interface = find_gltf(e,tf);
+  interface->Prepare();
+  int num = interface->animations_size();
+  bool is_animated = num>0;
+  return is_animated;
+}

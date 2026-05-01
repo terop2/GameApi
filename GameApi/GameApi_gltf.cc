@@ -555,6 +555,7 @@ class LoadGltf : public CollectInterface
 {
 public:
   LoadGltf(GameApi::Env &e, std::string base_url, std::string url, std::string homepage, bool is_binary) : e(e), base_url(base_url), url(url), homepage(homepage), is_binary(is_binary) {
+    std::cout << "LoadGltf::URLS:" << base_url << " :: " << url << std::endl;
     g_e = &e;
     decoder = new GLTFImageDecoder(base_url,this);
     tinygltf::FsCallbacks fs = {

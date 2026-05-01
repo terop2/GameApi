@@ -53,73 +53,7 @@
 #ifndef TINY_GLTF_H_
 #define TINY_GLTF_H_
 
-#ifndef NOT_REDEFINE_ALLOCATOR
-template<class T>
-class GameApiAllocator
-{
-public:
-  static uint32_t m_free_mem;
-  static uint32_t m_changed_mem;
-  static uint32_t m_used_mem;
-  
-  typedef T* pointer;
-  typedef const T* const_pointer;
-  typedef void* void_pointer;
-  typedef const void* const_void_pointer;
-  typedef T value_type;
-  typedef uint32_t size_type;
-  typedef int32_t difference_type;
-  void print() const
-  {
-  }
-  T* allocate(uint32_t sz) {
-    if (sz==0) return nullptr;
-    //if (sz*sizeof(T)>=1024000) {
-    //  printf("Allocator large alloc: %ld\n",(long)sz*sizeof(T));
-    //  stackTrace();
-    //}
-    
-#ifdef EMSCRIPTEN
-    void *p = emscripten_builtin_malloc(sz*sizeof(T));
-    if (!p) return nullptr;
-    return static_cast<T*>(p);
-#else
-    void *p = malloc(sz*sizeof(T));
-    if (!p) return nullptr;
-    return (T*)p;
-#endif
-  }
-  void deallocate(T *ptr, uint32_t sz) {
-#if 0
-    *free_mem+=sz*sizeof(T);
-    *changed_mem+=sz*sizeof(T);
-    print();
-    *used_mem-=sz*sizeof(T);
-#endif
-#ifdef EMSCRIPTEN
-    if (ptr) emscripten_builtin_free(ptr);
-#else
-      free((void*)ptr);
-#endif
-  }
-  uint32_t max_size() const { if (free_mem) return *free_mem; return 0x00ff0000; }
-  friend bool operator==(const GameApiAllocator &a1, const GameApiAllocator &a2) { return true; }
-  friend bool operator!=(const GameApiAllocator &a1, const GameApiAllocator &a2) { return false; }
-  GameApiAllocator() : free_mem(&m_free_mem), changed_mem(&m_changed_mem),used_mem(&m_used_mem) { }
-  GameApiAllocator(const GameApiAllocator &a) : free_mem(a.free_mem), changed_mem(&m_changed_mem), used_mem(&m_used_mem) { }
-  GameApiAllocator &operator=(const GameApiAllocator &a)
-  {
-    free_mem = a.free_mem;
-    changed_mem = a.changed_mem;
-    used_mem = a.used_mem;
-    return *this;
-  }
-private:
-  uint32_t *free_mem;
-  uint32_t *changed_mem;
-  uint32_t *used_mem;
-};
-#endif
+#include "GraphI.hh"
 
 #include <array>
 #include <cassert>

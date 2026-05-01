@@ -45,90 +45,6 @@ using namespace GameApi;
 #include <fcntl.h> 
 #endif
 
-#include "tiny_gltf.h"
-class GLTFModelInterface;
-GLTFModelInterface *find_gltf(GameApi::Env &e, GameApi::TF tf);
-
-class CollectInterface;
-class CollectVisitor
-{
-public:
-  virtual ~CollectVisitor() { }
-  virtual void register_obj(CollectInterface *i)=0;
-  virtual void register_first_frame(CollectInterface *i)=0;
-};
-
-class CollectInterface
-{
-public:
-  virtual ~CollectInterface() { }
-  virtual void Collect(CollectVisitor &vis)=0;
-  virtual int NumBlocks() const { return 1; }
-  virtual void HeavyPrepare()=0;
-  virtual void FirstFrame() { }
-};
-
-
-class GLTFModelInterface : public CollectInterface
-{
-public:
-  virtual ~GLTFModelInterface() { }
-  virtual void Prepare()=0;
-  virtual void Collect(CollectVisitor &vis)=0;
-  virtual void HeavyPrepare()=0;
-  virtual bool ReadyToPrepare() const { return true; }
-
-  virtual void execute() { }
-  
-  virtual std::string name() const=0;
-  
-  virtual std::string BaseUrl() const=0;
-  virtual std::string Url() const=0;
-
-  virtual int get_default_scene() const=0;
-  
-  virtual int accessors_size() const=0;
-  virtual const tinygltf::Accessor &get_accessor(int i) const=0;
-
-  virtual int animations_size() const=0;
-  virtual const tinygltf::Animation &get_animation(int i) const=0;
-
-  virtual int buffers_size() const=0;
-  virtual const tinygltf::Buffer &get_buffer(int i) const=0;
-
-  virtual int bufferviews_size() const=0;
-  virtual const tinygltf::BufferView &get_bufferview(int i) const=0;
-
-  virtual int materials_size() const=0;
-  virtual const tinygltf::Material &get_material(int i) const=0;
-
-  virtual int meshes_size() const=0;
-  virtual const tinygltf::Mesh &get_mesh(int i) const=0;
-
-  virtual int nodes_size() const=0;
-  virtual const tinygltf::Node &get_node(int i) const=0;
-
-  virtual int textures_size() const=0;
-  virtual const tinygltf::Texture &get_texture(int i) const=0;
-
-  virtual int images_size() const=0;
-  virtual const tinygltf::Image &get_image(int i) const=0;
-
-  virtual int skins_size() const=0;
-  virtual const tinygltf::Skin &get_skin(int i) const=0;
-
-  virtual int samplers_size() const=0;
-  virtual const tinygltf::Sampler &get_sampler(int i) const=0;
-
-  virtual int cameras_size() const=0;
-  virtual const tinygltf::Camera &get_camera(int i) const=0;
-
-  virtual int scenes_size() const=0;
-  virtual const tinygltf::Scene &get_scene(int i) const=0;
-
-  virtual int lights_size() const=0;
-  virtual const tinygltf::Light &get_light(int i) const=0;
-};
 
 
 extern std::string g_gpu_vendor;
@@ -1731,11 +1647,7 @@ public:
 			if (type=="TF") {
 			  TF tf;
 			  tf.id = id;
-
-			  GLTFModelInterface *interface = find_gltf(*env->env,tf);
-			  interface->Prepare();
-			  int num = interface->animations_size();
-			  bool is_animated = num>0;
+			  bool is_animated = env->ev->mainloop_api.is_gltf_animated(*env->ev,tf);
 			  
 			  ML ml2;
 			  if (is_animated)
