@@ -228,6 +228,8 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(ATT)
   MAC(CX)
   MAC(OVX)
+  MAC(PM)
+  MAC(PV)
 #undef MAC
   
   //template<class T>
@@ -391,7 +393,9 @@ public:
 					      std::vector<MT> materials_array,
 					      std::vector<MS> matrix_array_arrays,
 					      std::vector<IF> state_machines,
-					      std::vector<float> *optional_time_range_duration // probably needs to be implemented using ENUM in builder.
+		 //std::vector<float> *optional_time_range_duration // probably needs to be implemented using ENUM in builder.
+		 std::string optional_time_range_duration_array_with_separators_float,
+		 std::string url_to_mp_file
 						);
 
   ML cmb_2____(GameApi::EveryApi &ev,

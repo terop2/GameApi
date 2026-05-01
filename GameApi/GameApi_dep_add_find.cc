@@ -138,6 +138,29 @@ void add_b(std::shared_ptr<void> ptr)
 }
 
 
+GameApi::PV add_facecoll_array(GameApi::Env &e, Array<int,FaceCollection*> *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->p_array.push_back(arr);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(arr));
+  GameApi::PV im;
+  im.id = env->p_array.size()-1;
+  return im;
+
+}
+GameApi::PM add_facecoll_matrix(GameApi::Env &e, Bitmap<FaceCollection*> *arr)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->p_matrix.push_back(arr);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(arr));
+  GameApi::PM im;
+  im.id = env->p_matrix.size()-1;
+  return im;
+}
+
+
 GameApi::OVX add_opt_voxel(GameApi::Env &e, OptVoxel *vx)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1506,6 +1529,17 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
   GameApi::LL ll = { -1 };
   return ll;
+}
+
+Array<int,FaceCollection*> *find_facecoll_array(GameApi::Env &e, GameApi::PV pa)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->p_array[pa.id];  
+}
+Bitmap<FaceCollection*> *find_facecoll_matrix(GameApi::Env &e, GameApi::MA ma)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->p_matrix[ma.id];  
 }
 
 OptVoxel *find_opt_voxel(GameApi::Env &e, GameApi::OVX vx)
