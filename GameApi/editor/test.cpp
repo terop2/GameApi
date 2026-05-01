@@ -1530,8 +1530,8 @@ public:
 		  urls.erase(last3,urls.end());
 
 		  // printing
-		  int s6 = urls.size();
-		  for(int i=0;i<s6;i++) { std::cout << "test.cpp:urls:" << urls[i] << std::endl; }
+		  //int s6 = urls.size();
+		  //for(int i=0;i<s6;i++) { std::cout << "test.cpp:urls:" << urls[i] << std::endl; }
 		  
 		  // printing
 		  
