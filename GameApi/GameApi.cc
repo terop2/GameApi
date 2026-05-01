@@ -43330,7 +43330,7 @@ float lod_x_4 = 8600.0;
 
 float lod_delta = 0.0f;
 
-GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm)
+GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq)
 {
   // NOT WORKING YET, CLOSE BUT NO CICAR
   TF p1 = ev.polygon_api.decimate_tf(tf,level1);
@@ -43341,10 +43341,10 @@ GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf
   PTS I613=ev.points_api.block_pts_lod(pts,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
   PTS I614=ev.points_api.block_pts_lod(pts,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   PTS I615=ev.points_api.block_pts_lod(pts,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
-  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
-  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
-  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
-  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm,start_anim_seq);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq);
   ML I15 = ev.move_api.local_move(ev,I16,I612);
   ML I151 = ev.move_api.local_move(ev,I161,I613);
   ML I152 = ev.move_api.local_move(ev,I162,I614);
@@ -43353,7 +43353,7 @@ GameApi::ML GameApi::MainLoopApi::lod_anim(GameApi::EveryApi &ev, GameApi::TF tf
   ML I154=ev.mainloop_api.array_ml(ev,std::vector<ML>{I15,I151,I152,I153});
   return I154;
 }
-GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm)
+GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq)
 {
   // NOT WORKING YET, CLOSE BUT NO CICAR
   TF p1 = ev.polygon_api.decimate_tf(tf,level1);
@@ -43364,10 +43364,10 @@ GameApi::ML GameApi::MainLoopApi::lod_anim_matrix(GameApi::EveryApi &ev, GameApi
   MS I613=ev.points_api.block_ms_lod(ms,-lod_x_2,lod_x_2,2000,1000,l3 /*95*/,lod_l1,lod_l2);
   MS I614=ev.points_api.block_ms_lod(ms,-lod_x_3,lod_x_3,1000,0,l2 /*45*/,lod_l2,lod_l3);
   MS I615=ev.points_api.block_ms_lod(ms,-lod_x_4,lod_x_4,0,-1500,l1 /*45*/,lod_l3,lod_l4);
-  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
-  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
-  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
-  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm);
+  ML I16 = ev.mainloop_api.gltf_mesh_all_anim(ev,p4,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq);
+  ML I161 = ev.mainloop_api.gltf_mesh_all_anim(ev,p3,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq);
+  ML I162 = ev.mainloop_api.gltf_mesh_all_anim(ev,p2,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq);
+  ML I163 = ev.mainloop_api.gltf_mesh_all_anim(ev,p1,mix,self_mult,rest_mult,mode, keys, light_dir_x, light_dir_y, light_dir_z, border_width, border_color, transparent, acesfilm, start_anim_seq);
   ML I15 = ev.move_api.local_move_matrix(ev,I16,I612);
   ML I151 = ev.move_api.local_move_matrix(ev,I161,I613);
   ML I152 = ev.move_api.local_move_matrix(ev,I162,I614);

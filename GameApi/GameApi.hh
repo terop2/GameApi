@@ -435,8 +435,8 @@ public:
   GameApi::ML get_movement_from_MV(GameApi::ML ml);
 
 
-  GameApi::ML lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm);
-  GameApi::ML lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm);
+  GameApi::ML lod_anim(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::PTS pts, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq);
+  GameApi::ML lod_anim_matrix(GameApi::EveryApi &ev, GameApi::TF tf, GameApi::MS ms, float level1, float level2, float level3, float level4, int l1, int l2, int l3, int l4,  float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq);
 
 
   
@@ -619,7 +619,7 @@ public:
   IMPORT ML gltf_mesh_all_inst2( EveryApi &ev, TF model0, TF resize_obj, PTS pts, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, std::string keys );
 
   IMPORT ML gltf_mesh_all_inst_matrix( EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix,float self_mult, float rest_mult,int mode, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, std::string keys );
-  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
+  IMPORT ML gltf_mesh_all_anim( EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq );
   IMPORT ML gltf_mesh_all_anim_inst( EveryApi &ev, TF model0, TF resize_obj, PTS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
   IMPORT ML gltf_mesh_all_anim_inst_matrix( EveryApi &ev, TF model0, TF resize_obj, MS ms, float mix, float self_mult, float rest_mult, int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
   IMPORT ML gltf_node( EveryApi &ev, TF model0, int node_id, std::string keys, float mix, float self_mult, float rest_mult, int mode, float light_dir_x, float light_dir_y, float light_dir_z, int animation, float border_width, unsigned int border_color, bool transparent, bool acesfilm );
