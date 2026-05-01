@@ -1151,7 +1151,6 @@ bool g_inside_ml_widget;
 IMPORT extern bool g_transparent;
 extern bool g_inside_mesh_display;
 
-
 class MLGuiWidget : public GuiWidgetForward
 {
 public:

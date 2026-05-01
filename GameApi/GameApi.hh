@@ -387,6 +387,7 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT bool is_gltf_animated(EveryApi &ev, TF tf);
   ML mesh_anim_2(std::vector<P> time_range_start_mesh_array,
 					      std::vector<P> time_range_end_mesh_array,
 					      std::vector<MN> moves_array,
