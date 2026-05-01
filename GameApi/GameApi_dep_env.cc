@@ -4108,7 +4108,7 @@ int g_last_loaded_script=-1;
 
 std::vector<unsigned char, GameApiAllocator<unsigned char> > *load_from_url(std::string url, bool nosize, int progress_script_num)
 {
-  std::cout << "URL:" << url << std::endl;
+  //std::cout << "URL:" << url << std::endl;
   
   url = upgrade_to_https(url);
 #ifdef WINDOWS

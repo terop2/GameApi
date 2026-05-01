@@ -1123,6 +1123,8 @@ EXPORT std::string GameApi::WModApi::extract_deps(std::string filename)
 
 bool has_envparams_markers(std::string s)
 {
+  if (s.substr(0,4)=="file"||s.substr(0,4)=="http") return false;
+  
   int ss = s.size();
   for(int i=0;i<ss-1;i++)
     {
