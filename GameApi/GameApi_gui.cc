@@ -1151,6 +1151,41 @@ bool g_inside_ml_widget;
 IMPORT extern bool g_transparent;
 extern bool g_inside_mesh_display;
 
+
+class CollectInterfaceImpl2 : public CollectVisitor
+{
+public:
+  void register_obj(CollectInterface *i) {    
+    vec.push_back(i);
+  }
+  void register_first_frame(CollectInterface *i) {
+    vec2.push_back(i);
+  }
+  void execute(int i) {
+    int sz = vec.size();
+    if (i>=0 && i<sz && vec[i])
+      vec[i]->HeavyPrepare();
+  }
+  void first_frame(int i) {
+    int sz = vec2.size();
+    if (i>=0 && i<sz && vec2[i])
+      vec2[i]->FirstFrame();
+  }
+			   
+  int count(int i) const
+  {
+    int sz = vec.size();
+    if (i>=0 && i<sz && vec[i])
+      return vec[i]->NumBlocks();
+    return 1;
+  }
+public:
+  std::vector<CollectInterface*> vec;
+  std::vector<CollectInterface*> vec2;
+  //int count=0;
+};
+
+
 class MLGuiWidget : public GuiWidgetForward
 {
 public:
@@ -1283,8 +1318,20 @@ public:
       // firsttime
       MainLoopItem *item = find_main_loop(env, p);
       if (ev.polygon_api.ready_to_prepare(p)) {
+	// COLLECT LOGIC (STILL UNSTABLE)
+	/*
+	CollectInterfaceImpl2 *vis = new CollectInterfaceImpl2;
+	item->Collect(*vis);
+	int s = vis->vec.size();
+	for(int i=0;i<s;i++)
+	  {
+	    vis->execute(s);
+	  }
+	*/
+	// COLLECT LOGIC
+
 	g_inside_mesh_display=true;
-	item->Prepare();
+	item->Prepare(); 
 	g_inside_mesh_display=false;
 	firsttime2 = false;
       } 
