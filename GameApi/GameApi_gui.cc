@@ -1187,6 +1187,7 @@ public:
   //int count=0;
 };
 
+extern int g_time_id;
 
 class MLGuiWidget : public GuiWidgetForward
 {
@@ -1420,7 +1421,7 @@ public:
       } 
     }
       }
-     
+    g_time_id++;
   }
 private:
   GameApi::Env &env;

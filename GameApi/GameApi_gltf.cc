@@ -13802,11 +13802,11 @@ public:
     float time = current_time - key_time;
 
     
-    static std::vector<TimeStore> timevec;
+    static std::vector<TimeStore> timevec; // seems this is important to be static => phonix bird stops if this isn't static.
     bool timedone = false;
     
     // Check for stored time
-    /* Commented because breaks animation in MLGuiWidget / builder dialogs
+    //* Commented because breaks animation in MLGuiWidget / builder dialogs
     for (TimeStore &tv : timevec) {
       if (tv.id == id + 300 * g_time_id) {
 	time = tv.time;
@@ -13814,7 +13814,7 @@ public:
 	break;
       }
     }
-    */
+    
     if (keypressed && max_end_time > 0.0001f && time > max_end_time) {
       key_time = ev.mainloop_api.get_time() / 1000.0f;
       time = e.time - key_time;
@@ -14118,7 +14118,6 @@ private:
   float last_time=0.0f;
   int framenum=0;
   bool frame_firsttime=true;
-
 };
 
 int GltfAnimShaderML::count=2;
