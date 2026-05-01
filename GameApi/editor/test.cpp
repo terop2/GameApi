@@ -1652,7 +1652,9 @@ public:
 			  ML ml2;
 			  if (is_animated)
 			    {
-			      ml2 = env->ev->mainloop_api.gltf_mesh_all_anim(*env->ev, tf, 1.0, 1.0, 0.0, 0, "cvbnmfghjklertyuiop", 400.0,-400.0,300.0, 0, 0xff000000, true, true); 
+			      ml2 = env->ev->mainloop_api.gltf_mesh_all_anim(*env->ev, tf, 1.0, 1.0, 0.0, 0, "cvbnmfghjklertyuiop", 400.0,-400.0,300.0, 0, 0xff000000, true, true);
+			      ml2 = env->ev->mainloop_api.send_key_at_time(ml2,0.01,99);
+			      ml2 = env->ev->mainloop_api.send_key_at_time(ml2,0.03,99);
 			    }
 			  else {
 			    ml2 = env->ev->mainloop_api.gltf_mesh_all(*env->ev,tf,1,1.0,1.0,0,400.0,-400.0,300.0,0,0xff00000,true,true);
