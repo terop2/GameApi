@@ -14898,7 +14898,18 @@ GameApi::TRA GameApi::MainLoopApi::anim_transfer_id(GameApi::TRB id)
   t_id.id = id.id;
   return t_id;
 }
-
+GameApi::ARR GameApi::MainLoopApi::resize_and_anim_transfer_id()
+{
+  GameApi::TRB t = transfer_id();
+  GameApi::TRR t2 = resize_transfer_id(t);
+  GameApi::TRA t3 = anim_transfer_id(t);
+  ArrayType *tn = new ArrayType;
+  tn->type=2;
+  tn->vec.push_back(t.id);
+  tn->vec.push_back(t2.id);
+  tn->vec.push_back(t3.id);
+  return add_array(e,tn);
+}
 
 GameApi::P resize_to_correct_size2(GameApi::Env &e, GameApi::P model, Matrix *mat)
 {
