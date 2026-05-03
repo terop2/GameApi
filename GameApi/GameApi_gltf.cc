@@ -10869,8 +10869,28 @@ GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_inst_matrix( GameApi::EveryApi &
 
 
 
-GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult,int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, TRB transfer_id)
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim( GameApi::EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult,int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq)
 {
+  static int unique_id = 0;
+  unique_id++;
+  
+  
+  GameApi::TRB transfer_id = { 8192 + unique_id };
+  GLTFModelInterface *interface = find_gltf(e,model0);
+  GameApi::ML ml2 = add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color,transparent,acesfilm, transfer_id));
+  if (keys.size()>start_anim_seq) {
+    ml2 = ev.mainloop_api.send_key_at_time(ml2,0.01,keys[start_anim_seq]);
+    ml2 = ev.mainloop_api.send_key_at_time(ml2,0.03,keys[start_anim_seq]);
+  } else if (keys.size()>0)
+    {
+    ml2 = ev.mainloop_api.send_key_at_time(ml2,0.01,keys[0]);
+    ml2 = ev.mainloop_api.send_key_at_time(ml2,0.03,keys[0]);
+    }
+  return ml2;
+}
+GameApi::ML GameApi::MainLoopApi::gltf_mesh_all_anim_lod( GameApi::EveryApi &ev, TF model0, float mix, float self_mult, float rest_mult,int mode, std::string keys, float light_dir_x, float light_dir_y, float light_dir_z, float border_width, unsigned int border_color, bool transparent, bool acesfilm, int start_anim_seq, TRB transfer_id)
+{
+  // THIS FUNCTION IS NOT REGISTERED TO BUILDER TOO AND ONLY LOD_ANIM USES IT
   GLTFModelInterface *interface = find_gltf(e,model0);
   GameApi::ML ml2 = add_main_loop(e, new GltfMeshAll(e,ev,interface,mix,self_mult, rest_mult,mode,keys,Vector(light_dir_x,light_dir_y,light_dir_z),border_width,border_color,transparent,acesfilm, transfer_id));
   if (keys.size()>start_anim_seq) {
