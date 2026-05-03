@@ -467,9 +467,9 @@
 #if (ALL==1)||(GLTF_ANIM_MATERIAL2==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::materials_api, &GameApi::MaterialsApi::gltf_anim_material2,
 			 "m_gltf_anim2",
-			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys", "mode" },
-			 { "EveryApi&", "TF", "int", "int", "MT", "std::string", "int" },
-			 { "ev", "", "0", "150", "", "zxcvbnmfghjklertyuiop", "0" },
+			 { "ev", "tf", "skin_num", "num_timeindexes", "next", "keys", "mode", "anim_transfer_id" },
+			 { "EveryApi&", "TF", "int", "int", "MT", "std::string", "int", "TRA" },
+			 { "ev", "", "0", "150", "", "zxcvbnmfghjklertyuiop", "0", "" },
 			 "MT", "materials_api", "gltf_anim_material2"));
 #endif
 #if (ALL==1)||(GLTF_MATERIAL3==1)

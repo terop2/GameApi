@@ -14686,6 +14686,169 @@ public:
   bool ext_flag = false;
   Matrix *ext_mat=0;
 };
+
+class GLastResizePipelineToGltfAnimation : public Pipeline
+{
+public:
+  void add_matrix(int id, Matrix m) { ids.push_back(id); matrices.push_back(m); }
+  void clear() { ids.clear(); matrices.clear(); }
+  Matrix get_matrix(int id) const {
+    int s= std::min(ids.size(),matrices.size());
+    for(int i=0;i<s;i++)
+      {
+	if (id == ids[i]) return matrices[i];
+      }
+    return Matrix::Identity();
+  }
+private:
+  std::vector<int> ids;
+  std::vector<Matrix> matrices;
+};
+GLastResizePipelineToGltfAnimation pipeline;
+Pipeline *g_last_resize_pipeline = &pipeline;
+
+class ResizeFaceCollection_g : public ForwardFaceCollection
+{
+public:
+  ResizeFaceCollection_g(FaceCollection *coll, bool ext_flag, GameApi::TRR resize_transfer_id) : ForwardFaceCollection(*coll), coll(coll), ext_flag(ext_flag),resize_transfer_id(resize_transfer_id)
+  {
+  }
+  ResizeFaceCollection_g(FaceCollection *coll, Matrix *m, GameApi::TRR resize_transfer_id) : ForwardFaceCollection(*coll), coll(coll), ext_flag(true),ext_mat(m),resize_transfer_id(resize_transfer_id) { }
+  virtual std::string name() const { return "ResizeFaceCollection_g"; }
+  void Collect(CollectVisitor &vis)
+  {
+    coll->Collect(vis);
+    vis.register_obj(this);
+  }
+  void HeavyPrepare() {
+    //stackTrace();
+    find_bounding_box();
+    print_bounding_box();
+    calc_center();
+    calc_size();
+    calc_matrix();
+  }
+
+  void Prepare()
+  {
+    //stackTrace();
+    coll->Prepare();
+
+    find_bounding_box();
+    print_bounding_box();
+    calc_center();
+    calc_size();
+    calc_matrix();
+  }
+  Point FacePoint(int face, int point) const
+  {
+    // METHOD DISABLED
+    if (g_resize_disabled) {
+      Point p = coll->FacePoint(face,point);
+      if (ext_flag) return p; //*(*ext_mat);
+      return p; //*m_m;
+    } else {
+      Point p = coll->FacePoint(face,point);
+      if (ext_flag) return p*(*ext_mat);
+      return p*m_m;
+    }
+  }
+public:
+  Matrix get_matrix() const {
+    if (g_resize_disabled) {
+    // METHOD DISABLED
+    return Matrix::Identity();
+    } else {
+    if (ext_flag) { return *ext_mat; }
+    return m_m;
+    }
+  }
+
+private:
+  void find_bounding_box()
+  {
+
+    start_x = 300000.0;
+      start_y = 300000.0;
+      start_z = 300000.0;
+      end_x =  -300000.0;
+      end_y =  -300000.0;
+      end_z =  -300000.0; 
+
+    int s = std::min(coll->NumFaces(),100);
+    if (s<1) s=1;
+    int step = coll->NumFaces()/s;
+    int faces = coll->NumFaces();
+    for(int i=0;i<faces;i+=step)
+      {
+	    Point p1 = coll->FacePoint(i,0);
+	    Point p2 = coll->FacePoint(i,1);
+	    Point p3 = coll->FacePoint(i,2);
+	    Point p4 = coll->NumPoints(i)==4 ? coll->FacePoint(i,3) : p1;
+
+	    handlepoint(p1);
+	    handlepoint(p2);
+	    handlepoint(p3);
+	    handlepoint(p4);
+      }
+  }
+  void handlepoint(Point p)
+  {
+    if (p.x<start_x) { start_x = p.x; }
+    if (p.y<start_y) { start_y = p.y; }
+    if (p.z<start_z) { start_z = p.z; }
+    if (p.x>end_x) { end_x = p.x; }
+    if (p.y>end_y) { end_y = p.y; }
+    if (p.z>end_z) { end_z = p.z; }    
+  }
+
+  void print_bounding_box()
+  {
+    //std::cout << "Bounding box:" << start_x << " " << end_x << " " << start_y << " " << end_y << " " << start_z << " " << end_z << std::endl;
+  }
+  void calc_center()
+  {
+    center_x = start_x+(end_x-start_x)/2.0;
+    center_y = start_y+(end_y-start_y)/2.0;
+    center_z = start_z+(end_z-start_z)/2.0;
+  }
+  void calc_size()
+  {
+    size_x = fabs(end_x-start_x);
+    size_y = fabs(end_y-start_y);
+    size_z = fabs(end_z-start_z);
+  }
+  void calc_matrix()
+  {
+    Matrix m = Matrix::Translate(-center_x, -center_y, -center_z);
+    
+    float val = std::max(std::max(size_x, size_y), size_z);
+    float val2 = 1.0/val;
+    val2*= 400.0;
+    m_scale = val2;
+    Matrix m2 = Matrix::Scale(val2, val2, val2);
+    Matrix mm = m * m2;
+    m_m= mm;
+    if (!ext_flag) {
+      // g_last_resize = mm; OLD, BREAKS EVERYTHING IN LOD
+      g_last_resize_pipeline->add_matrix(resize_transfer_id.id, mm);
+    }
+  }
+
+public:
+  FaceCollection *coll;
+  float start_x, start_y, start_z;
+  float end_x, end_y, end_z;
+
+  float center_x, center_y, center_z;
+  float size_x, size_y, size_z;
+  Matrix m_m;
+
+  float m_scale;
+  bool ext_flag = false;
+  Matrix *ext_mat=0;
+  GameApi::TRR resize_transfer_id;
+};
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 {
   if (g_resize_disabled) {
@@ -14699,6 +14862,41 @@ std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
   delete coll2;
   return p;
   }
+}
+std::pair<float,Point> find_mesh_scale_g(FaceCollection *coll, GameApi::TRR resize_transfer_id)
+{
+  if (g_resize_disabled) {
+    return std::make_pair(1.0,Point(0.0,0.0,0.0));
+  } else {
+  // METHOD DISABLED
+  
+    ResizeFaceCollection_g *coll2 = new ResizeFaceCollection_g(coll,true,resize_transfer_id);
+  coll2->Prepare();
+  std::pair<float,Point> p = std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
+  delete coll2;
+  return p;
+  }
+}
+
+GameApi::TRB GameApi::MainLoopApi::transfer_id()
+{
+  static int tran_id = 1024;
+  tran_id++;
+  GameApi::TRB t_id;
+  t_id.id = tran_id;
+  return t_id;
+}
+GameApi::TRR GameApi::MainLoopApi::resize_transfer_id(GameApi::TRB id)
+{
+  GameApi::TRR t_id;
+  t_id.id = id.id;
+  return t_id;
+}
+GameApi::TRA GameApi::MainLoopApi::anim_transfer_id(GameApi::TRB id)
+{
+  GameApi::TRA t_id;
+  t_id.id = id.id;
+  return t_id;
 }
 
 
