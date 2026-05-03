@@ -142,6 +142,14 @@ enum DSFlags
   };
 
 
+class Pipeline
+{
+public:
+  virtual void add_matrix(int id, Matrix m)=0;
+  virtual void clear()=0;
+  virtual Matrix get_matrix(int id) const=0;
+};
+
 class CollectVisitor;
 class CollectInterface
 {

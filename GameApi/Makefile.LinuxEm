@@ -281,6 +281,8 @@ dirs: check_emscripten_exists
 	@mkdir -p objs/nothreads/draco/point_cloud
 	@echo "  MKDIR objs/nothreads/draco/metadata"
 	@mkdir -p objs/nothreads/draco/metadata
+	@echo "  MKDIR objs/nothreads/draco/metadata"
+	@mkdir -p objs/nothreads/draco/mesh
 
 nothreads: dirs $(O2Files_nothreads) libGameApi_nothreads.bc
 

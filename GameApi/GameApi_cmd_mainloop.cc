@@ -305,12 +305,32 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "ev", "", "", "", "1.0","1.0", "0.0", "0", "400.0", "-400.0", "300.0", "0.0", "ff000000","true", "true", "c" },
 			 "ML", "mainloop_api", "gltf_mesh_all_inst_matrix"));
 #endif
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::transfer_id,
+			 "transfer_id",
+			 { },
+			 { },
+			 { },
+			 "TRB", "mainloop_api", "transfer_id"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::resize_transfer_id,
+			 "resize_transfer_id",
+			 { "id" },
+			 { "TRB" },
+			 { "" },
+			 "TRB", "mainloop_api", "resize_transfer_id"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::anim_transfer_id,
+			 "anim_transfer_id",
+			 { "id" },
+			 { "TRA" },
+			 { "" },
+			 "TRB", "mainloop_api", "anim_transfer_id"));
+  
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
 			 "ml_gltf_all_anim",
-			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm", "start_anim_seq" },
-			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool", "int" },
-			 { "ev", "", "1.0","1.0","0.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true","true", "0" },
+			 { "ev", "tf","mix","self_mult", "rest_mult", "mode", "keys", "light_dir_x", "light_dir_y", "light_dir_z", "border_width", "border_color","transparent", "acesfilm", "start_anim_seq", "transfer_id" },
+			 { "EveryApi&", "TF","float","float", "float","int","std::string", "float", "float", "float", "float", "unsigned int","bool", "bool", "int", "TRB" },
+			 { "ev", "", "1.0","1.0","0.0","0", "c", "400.0", "-400.0", "300.0", "0.0", "ff000000","true","true", "0", "" },
 			 "ML", "mainloop_api", "gltf_mesh_all_anim"));
 #endif
 #if 0

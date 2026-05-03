@@ -258,6 +258,9 @@ class TypeToString { public: static constexpr const char * str=""; };
   MAC(ATT)
   MAC(CX)
   MAC(OVX)
+  MAC(TRA)
+  MAC(TRB)
+  MAC(TRR)
 #undef MAC
 
 
@@ -538,6 +541,9 @@ MACRO(GameApi::SMT)
 MACRO(GameApi::TT)
 MACRO(GameApi::BS)
 MACRO(GameApi::OVX)
+MACRO(GameApi::TRA)
+MACRO(GameApi::TRB)
+MACRO(GameApi::TRR)
 #undef MACRO
 
 
