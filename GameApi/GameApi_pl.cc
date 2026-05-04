@@ -23234,7 +23234,7 @@ public:
     pp.x /= pp.z;
     pp.y /= pp.z;
     //std::cout << i << " :: " << pp.x << std::endl;
-    if (pp.x >= -1.7f*x_mult && pp.x <= 1.7f*x_mult) {
+    if (pp.x >= -2.0f*x_mult && pp.x <= 2.0f*x_mult) {
       if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2) {
 	return true;
 	 }
@@ -23397,7 +23397,7 @@ public:
     pp.x /= pp.z;
     pp.y /= pp.z;
     
-    if (pp.x >= -1.7f && pp.x <= 1.7f)
+    if (pp.x >= -2.0f && pp.x <= 2.0f)
       if (pp.z >= ncd_z_start2 && pp.z <= ncd_z_end2)
 	  return true;
     return false;
