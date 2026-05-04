@@ -7186,7 +7186,7 @@ GameApi::MT GameApi::MaterialsApi::gltf_material_env( EveryApi &ev, TF model0, i
 
 }
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll);
-std::pair<float,Point> find_mesh_scale_g(FaceCollection *coll, GameApi::TRR resize_transfer_id);
+std::pair<float,Point> find_mesh_scale_g(FaceCollection *coll, GameApi::TRR resize_transfer_id, bool is_animated);
 
 
 class MatrixLineCollection : public LineCollection
@@ -7522,7 +7522,7 @@ private:
 class ScaleToGltf_g : public MainLoopItem
 {
 public:
-  ScaleToGltf_g(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml, GameApi::TRR resize_transfer_id) : env(e), ev(ev), p(p), ml(ml), resize_transfer_id(resize_transfer_id) {res.id=-1; }
+  ScaleToGltf_g(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml, GameApi::TRR resize_transfer_id, bool is_animated) : env(e), ev(ev), p(p), ml(ml), resize_transfer_id(resize_transfer_id), is_animated(is_animated) {res.id=-1; }
   virtual void logoexecute() { }
   void Collect(CollectVisitor &vis)
   {
@@ -7535,7 +7535,7 @@ public:
   void HeavyPrepare()
   {
     FaceCollection *coll = find_facecoll(env,p);
-    std::pair<float,Point> dim = find_mesh_scale_g(coll,resize_transfer_id);
+    std::pair<float,Point> dim = find_mesh_scale_g(coll,resize_transfer_id, is_animated);
     
     GameApi::MN I4=ev.move_api.mn_empty();
     GameApi::MN I5=ev.move_api.trans2(I4,dim.second.x,dim.second.y,dim.second.z);
@@ -7586,6 +7586,7 @@ private:
 
   GameApi::ML res;
   GameApi::TRR resize_transfer_id;
+  bool is_animated;
 };
 
 
@@ -7595,10 +7596,10 @@ GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::
   GameApi::ML ml3 = add_main_loop(e, new ScaleToGltf(e,ev,p,ml));
   return ml3;
 }
-GameApi::ML scale_to_gltf_size(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml, GameApi::TRR resize_transfer_id)
+GameApi::ML scale_to_gltf_size_g(GameApi::Env &e, GameApi::EveryApi &ev, GameApi::P p, GameApi::ML ml, GameApi::TRR resize_transfer_id, bool is_animated)
 {
   //GameApi::ML ml2 = ev.mainloop_api.print_stats(p);
-  GameApi::ML ml3 = add_main_loop(e, new ScaleToGltf_g(e,ev,p,ml,resize_transfer_id));
+  GameApi::ML ml3 = add_main_loop(e, new ScaleToGltf_g(e,ev,p,ml,resize_transfer_id, is_animated));
   return ml3;
 }
 GameApi::MN scale_to_gltf_size_mn(GameApi::EveryApi &ev, GameApi::P p, GameApi::MN mn)
@@ -9596,16 +9597,17 @@ public:
     resize_transfer_id.id = transfer_id.id;
     
     GameApi::ML ml = gltf_scene2( env, ev, interface,scene_id,keys,mix,self_mult,rest_mult,mode,light_dir,0,border_width,border_color,transparent,acesfilm, transfer_id ); // 0 = take numtimeindexes from first animation
+    bool is_animated_g = is_animated(env,interface,mesh);
 #ifdef GLTF_ANIM_RESIZE_TEST
   if (is_animated(env,interface,mesh))
     {
       res = ml;
     } else
     {
-      res= scale_to_gltf_size(env,ev,mesh,ml,resize_transfer_id);    
+      res= scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);    
     }
 #else
-  res = scale_to_gltf_size(env,ev,mesh,ml,resize_transfer_id);
+  res = scale_to_gltf_size_g(env,ev,mesh,ml,resize_transfer_id,is_animated_g);
 #endif
     
     if (res.id!=-1) {

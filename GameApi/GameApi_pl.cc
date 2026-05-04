@@ -14710,10 +14710,10 @@ Pipeline *g_last_resize_pipeline = &pipeline;
 class ResizeFaceCollection_g : public ForwardFaceCollection
 {
 public:
-  ResizeFaceCollection_g(FaceCollection *coll, bool ext_flag, GameApi::TRR resize_transfer_id) : ForwardFaceCollection(*coll), coll(coll), ext_flag(ext_flag),resize_transfer_id(resize_transfer_id)
+  ResizeFaceCollection_g(FaceCollection *coll, bool ext_flag, GameApi::TRR resize_transfer_id, bool is_animated) : ForwardFaceCollection(*coll), coll(coll), ext_flag(ext_flag),resize_transfer_id(resize_transfer_id),is_animated(is_animated)
   {
   }
-  ResizeFaceCollection_g(FaceCollection *coll, Matrix *m, GameApi::TRR resize_transfer_id) : ForwardFaceCollection(*coll), coll(coll), ext_flag(true),ext_mat(m),resize_transfer_id(resize_transfer_id) { }
+  ResizeFaceCollection_g(FaceCollection *coll, Matrix *m, GameApi::TRR resize_transfer_id, bool is_animated) : ForwardFaceCollection(*coll), coll(coll), ext_flag(true),ext_mat(m),resize_transfer_id(resize_transfer_id),is_animated(is_animated) { }
   virtual std::string name() const { return "ResizeFaceCollection_g"; }
   void Collect(CollectVisitor &vis)
   {
@@ -14777,7 +14777,7 @@ private:
 
     int s = std::min(coll->NumFaces(),100);
     if (s<1) s=1;
-    int step = 1; //coll->NumFaces()/s; // 1 is known to be slow precalc, but fixes lod jumps, so _g version uses 1 instead of the other alternative.
+    int step = is_animated?1:coll->NumFaces()/s; // 1 is known to be slow precalc, but fixes lod jumps, so _g version uses 1 instead of the other alternative.
     int faces = coll->NumFaces();
     for(int i=0;i<faces;i+=step)
       {
@@ -14848,6 +14848,7 @@ public:
   bool ext_flag = false;
   Matrix *ext_mat=0;
   GameApi::TRR resize_transfer_id;
+  bool is_animated;
 };
 std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
 {
@@ -14863,14 +14864,14 @@ std::pair<float,Point> find_mesh_scale(FaceCollection *coll)
   return p;
   }
 }
-std::pair<float,Point> find_mesh_scale_g(FaceCollection *coll, GameApi::TRR resize_transfer_id)
+std::pair<float,Point> find_mesh_scale_g(FaceCollection *coll, GameApi::TRR resize_transfer_id, bool is_animated)
 {
   if (g_resize_disabled) {
     return std::make_pair(1.0,Point(0.0,0.0,0.0));
   } else {
   // METHOD DISABLED
   
-    ResizeFaceCollection_g *coll2 = new ResizeFaceCollection_g(coll,true,resize_transfer_id);
+    ResizeFaceCollection_g *coll2 = new ResizeFaceCollection_g(coll,true,resize_transfer_id, is_animated);
   coll2->Prepare();
   std::pair<float,Point> p = std::make_pair(coll2->m_scale, Point(-coll2->center_x, -coll2->center_y, -coll2->center_z));
   delete coll2;

@@ -1420,7 +1420,7 @@ function create_script(filename, contents, filenames)
      if (normals_val!=3 && normals_val!=4)
      	{
 	if (anim_value==true) {
-        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n"; // 0.75
+        res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+",0);\n"; // 0.75
 	border_avoid = true;
 	} else {
         res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",1.0,0.0,0,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n"; // 0.75
@@ -1435,7 +1435,7 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
 	if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+",0);\n";
      border_avoid=true;
      } else {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",1.0,0.0,0,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
@@ -1450,7 +1450,7 @@ function create_script(filename, contents, filenames)
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
      if (anim_value==true) {
-     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
+     res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+",0);\n";
      border_avoid=true;
      } else {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all(ev,I186," + brightness + ",1.0,0.0,0,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+");\n";
