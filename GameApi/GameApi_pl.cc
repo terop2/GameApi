@@ -14777,7 +14777,7 @@ private:
 
     int s = std::min(coll->NumFaces(),100);
     if (s<1) s=1;
-    int step = coll->NumFaces()/s;
+    int step = 1; //coll->NumFaces()/s; // 1 is known to be slow precalc, but fixes lod jumps, so _g version uses 1 instead of the other alternative.
     int faces = coll->NumFaces();
     for(int i=0;i<faces;i+=step)
       {
