@@ -438,7 +438,7 @@ Vue.component('objbrightness', {
     <template v-for="bg in state.brightness_db">
     <option v-bind:value="parse_bright_count(bg)">{{ parse_bright_name(bg) }}</option>
     </template>
-    </select><br><input v-on:change="$emit('change_model')" true-value="true" false-value="false" type="checkbox" name="acesfilm" id="acesfilm"/>acesfilm</div></div>
+    </select><br><input v-on:change="$emit('change_model')" true-value="true" false-value="false" type="checkbox" name="acesfilm" id="acesfilm" checked/>acesfilm</div></div>
     `
 });
 
