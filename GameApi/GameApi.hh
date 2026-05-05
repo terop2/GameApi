@@ -501,6 +501,7 @@ public:
   IMPORT TT timing_start();
   IMPORT TT timing_event(IF fetch, TT timing, ML show);
   IMPORT TT timing(float duration, TT link, ML show);
+  IMPORT TT array_timing_chain(TT prev, std::string durations, std::vector<ML> vec);
   IMPORT TT timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir);
   IMPORT ML timing_exit(TT link);
   IMPORT ML scene_transparency(ML scene);

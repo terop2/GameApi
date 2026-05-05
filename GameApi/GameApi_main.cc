@@ -4346,6 +4346,33 @@ GameApi::TT GameApi::MainLoopApi::timing_start()
   return add_timing(e, new Timing2(e));
 }
 
+std::vector<std::string> parse_sep(std::string s, char ch);
+GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, std::string durations, std::vector<ML> vec)
+{
+  std::vector<std::string> dur = parse_sep(durations,'&');
+  int s = std::min(vec.size(),dur.size());
+  if (s < vec.size() || s < dur.size())
+    {
+      static bool firsttime = true;
+      if (firsttime) {
+	std::cout << "Warning: durations should be separated by &, and there should be same amount of them than you have items in the ML array" << std::endl;
+	firsttime = false; 
+      }
+    }
+  GameApi::TT curr = prev;
+  for(int i=0;i<s;i++)
+    {
+      std::string d = dur[i];
+      std::stringstream ss(d);
+      float duration;
+      ss >> duration;
+      curr = timing(duration, curr,vec[i]);
+    }
+  return curr;
+}
+						    
+						     
+
 
 class TimingEvent : public Timing
 {
