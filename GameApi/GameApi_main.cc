@@ -4347,7 +4347,7 @@ GameApi::TT GameApi::MainLoopApi::timing_start()
 }
 
 std::vector<std::string> parse_sep(std::string s, char ch);
-GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, std::string durations, std::vector<ML> vec)
+GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, float start_time, std::string durations, std::vector<ML> vec)
 {
   std::vector<std::string> dur = parse_sep(durations,'&');
   int s = std::min(vec.size(),dur.size());
@@ -4360,6 +4360,7 @@ GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, std::string durati
       }
     }
   GameApi::TT curr = prev;
+  curr = timing(start_time, curr, ml_empty());
   for(int i=0;i<s;i++)
     {
       std::string d = dur[i];
@@ -4370,10 +4371,10 @@ GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, std::string durati
     }
   return curr;
 }
-GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(std::string durations, std::vector<ML> vec)
+GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(float start_time, std::string durations, std::vector<ML> vec)
 {
   GameApi::TT t0 = timing_start();
-  GameApi::TT t1 = array_timing_chain(t0,durations,vec);
+  GameApi::TT t1 = array_timing_chain(t0,start_time,durations,vec);
   GameApi::ML t2 = timing_exit(t1);
   return t2;
 }
