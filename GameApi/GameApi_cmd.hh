@@ -1216,6 +1216,17 @@ inline std::vector<std::string> choose_param3(std::vector<std::string> vec, int 
   return res;
 }
 
+inline std::string generate_seq(int n, int count)
+{
+  std::stringstream ss;
+  int s = count;
+  for(int i=0;i<s;i++) {
+    ss << "%" << n;
+    if (i!=s-1) ss << "&";
+  }
+  return ss.str();
+}
+
 std::string replace_str(std::string code, std::string repl, std::string subst);
 class EnvGameApiItem_arr : public GameApiItem
 {
@@ -1224,7 +1235,7 @@ public:
   }
   virtual int Count() const { return 1; }
   virtual std::string Name(int i) const { return "env_params_arr"; }
-  virtual int ParamCount(int i) const { return 1+5+5; }
+  virtual int ParamCount(int i) const { return 1+5; }
   virtual std::string ParamName(int i, int p) const {
     switch(p) {
     case 0: return "ml";
@@ -1234,11 +1245,11 @@ public:
     case 4: return "%4";
     case 5: return "%5";
 
-    case 6: return "e1";
-    case 7: return "e2";
-    case 8: return "e3";
-    case 9: return "e4";
-    case 10: return "e5";
+      //case 6: return "e1";
+      //case 7: return "e2";
+      //case 8: return "e3";
+      //case 9: return "e4";
+      //case 10: return "e5";
     default: return "";
     };
   }
@@ -1250,13 +1261,13 @@ public:
     case 3:
     case 4:
     case 5:
-      return "std::string";
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-      return "std::string";
+       return "std::string";
+       //case 6:
+       //case 7:
+       //case 8:
+       //case 9:
+       //case 10:
+       //return "std::string";
     default:
       return "";
     };
@@ -1270,12 +1281,12 @@ public:
     case 4:
     case 5:
       return "@";
-    case 6:
-    case 7:
-    case 8:
-    case 9:
-    case 10:
-      return "@";
+      //case 6:
+      //case 7:
+      //case 8:
+      //case 9:
+      //case 10:
+      //return "@";
     default:
       return "";
     };
@@ -1301,11 +1312,11 @@ public:
     std::vector<std::string> arr4 = parse_sep(params[4],'&');
     std::vector<std::string> arr5 = parse_sep(params[5],'&');
 
-    std::vector<std::string> e1 = parse_sep(params[6],'&');
-    std::vector<std::string> e2 = parse_sep(params[7],'&');
-    std::vector<std::string> e3 = parse_sep(params[8],'&');
-    std::vector<std::string> e4 = parse_sep(params[9],'&');
-    std::vector<std::string> e5 = parse_sep(params[10],'&');
+    //std::vector<std::string> e1 = parse_sep(params[6],'&');
+    //std::vector<std::string> e2 = parse_sep(params[7],'&');
+    //std::vector<std::string> e3 = parse_sep(params[8],'&');
+    //std::vector<std::string> e4 = parse_sep(params[9],'&');
+    //std::vector<std::string> e5 = parse_sep(params[10],'&');
 
 
 
@@ -1314,22 +1325,22 @@ public:
 				       arr3.size()),
 			      arr4.size()),
 		     arr5.size());
-    int N2 = std::max(std::max(std::max(std::max(e1.size(),e2.size()),
-				       e3.size()),
-			      e4.size()),
-		     e5.size());
-    int NN = std::max(N,N2);
+    //int N2 = std::max(std::max(std::max(std::max(e1.size(),e2.size()),
+    //				       e3.size()),
+    //			      e4.size()),
+    //		     e5.size());
+    int NN = N; //std::max(N,N2);
     arr1.resize(NN);
     arr2.resize(NN);
     arr3.resize(NN);
     arr4.resize(NN);
     arr5.resize(NN);
 
-    e1.resize(NN);
-    e2.resize(NN);
-    e3.resize(NN);
-    e4.resize(NN);
-    e5.resize(NN);
+    //e1.resize(NN);
+    //e2.resize(NN);
+    //e3.resize(NN);
+    //e4.resize(NN);
+    //e5.resize(NN);
 
     
     
@@ -1368,11 +1379,11 @@ public:
 	std::stringstream ss2; ss2 << ml.id;
 
 	paramvec.push_back({"ml", ss2.str(),"ML",false,0,0,""});
-	paramvec.push_back({"%1", arr1[i],"float",false,0,0,e1[i]});
-	paramvec.push_back({"%2", arr2[i],"float",false,0,0,e2[i]});
-	paramvec.push_back({"%3", arr3[i],"float",false,0,0,e3[i]});
-	paramvec.push_back({"%4", arr4[i], "float",false,0,0,e4[i]});
-	paramvec.push_back({"%5", arr5[i], "float",false,0,0,e5[i]});
+	paramvec.push_back({"%1", arr1[i],"float",false,0,0,generate_seq(1,arr1.size()) /*e1[i]*/ });
+	paramvec.push_back({"%2", arr2[i],"float",false,0,0,generate_seq(2,arr2.size()) /*e2[i]*/});
+	paramvec.push_back({"%3", arr3[i],"float",false,0,0,generate_seq(3,arr3.size()) /*e3[i]*/});
+	paramvec.push_back({"%4", arr4[i], "float",false,0,0,generate_seq(4,arr4.size()) /*e4[i]*/});
+	paramvec.push_back({"%5", arr5[i], "float",false,0,0,generate_seq(5,arr5.size()) /*e5[i]*/});
 	BeginEnv2(e, paramvec);
 
 
@@ -1409,7 +1420,7 @@ public:
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
     //std::cout << "OUR CODEGEN..." << std::endl;
-    std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "ml", "%1", "%2", "%3", "%4", "%5", "e1", "e2", "e3", "e4", "e5" }, { "ml","%1","%2","%3","%4","%5", "e1", "e2", "e3", "e4", "e5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_arr",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "ml", "%1", "%2", "%3", "%4", "%5" }, { "ml","%1","%2","%3","%4","%5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_arr",j);
     //std::cout << "END_OF_OUR_CODEGEN" << std::endl;
     return p;
   }

@@ -3,7 +3,7 @@
 #include "GameApi_cmd.hh"
 std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 {
-
+ 
   std::vector<GameApiItem*> vec;
 
   vec.push_back(new EnvGameApiItem_float);
