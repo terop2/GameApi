@@ -1254,7 +1254,7 @@ public:
     case 8:
     case 9:
     case 10:
-      return "";
+      return "@";
     default:
       return "";
     };
@@ -1285,11 +1285,24 @@ public:
 				       arr3.size()),
 			      arr4.size()),
 		     arr5.size());
-    arr1.resize(N);
-    arr2.resize(N);
-    arr3.resize(N);
-    arr4.resize(N);
-    arr5.resize(N);
+    int N2 = std::max(std::max(std::max(std::max(e1.size(),e2.size()),
+				       e3.size()),
+			      e4.size()),
+		     e5.size());
+    int NN = std::max(N,N2);
+    arr1.resize(NN);
+    arr2.resize(NN);
+    arr3.resize(NN);
+    arr4.resize(NN);
+    arr5.resize(NN);
+
+    e1.resize(NN);
+    e2.resize(NN);
+    e3.resize(NN);
+    e4.resize(NN);
+    e5.resize(NN);
+
+    
     
     std::stringstream ss2(params[0]);
     int val = 0;
@@ -1320,30 +1333,56 @@ public:
     std::cout << "N:" << N << std::endl;
     for(int i=0;i<N;i++)
       {
+	std::cout << "START LOOP" << std::endl;
+	GameApi::ExecuteEnv ee2 = e;
+	std::cout << "1" << std::endl;
 	std::vector<GameApiParam> paramvec;
+	std::cout << "2" << std::endl;
 	std::stringstream ss2; ss2 << ml.id;
+	std::cout << "3" << std::endl;
+
 	paramvec.push_back({"ml", ss2.str(),"ML",false,0,0,""});
 	paramvec.push_back({"%1", arr1[i],"float",false,0,0,e1[i]});
 	paramvec.push_back({"%2", arr2[i],"float",false,0,0,e2[i]});
 	paramvec.push_back({"%3", arr3[i],"float",false,0,0,e3[i]});
 	paramvec.push_back({"%4", arr4[i], "float",false,0,0,e4[i]});
 	paramvec.push_back({"%5", arr5[i], "float",false,0,0,e5[i]});
+	std::cout << "4" << std::endl;
 	BeginEnv2(e, paramvec);
 
-	res = replace_str(res,"@","\n");
+	std::cout << "5" << std::endl;
+
+	res = replace_str(res, "@", "\n");
 	
-	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,e);
+	std::cout << "execute_script:" << res << std::endl;
+
+
+	
+	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,ee2);
+	std::cout << "6" << std::endl;
+	std::cout << p.first << std::endl;
+	//if (!p.first) { continue; }
 	std::cout << p.first << " " << p.second << std::endl;
+	std::cout << "7" << std::endl;
 	assert(p.second=="ML");
+	std::cout << "8" << std::endl;
 	int id = p.first;
+	std::cout << "9" << std::endl;
 	GameApi::ML res_ml;
+	std::cout << "10" << std::endl;
 	res_ml.id = id;
+	std::cout << "11" << std::endl;
 	res_vec.push_back(res_ml);
+	std::cout << "12" << std::endl;
 	EndEnv2(e);
+	std::cout << "END LOOP" << std::endl;
       }
     std::vector<int> res_vec2;
     int s = res_vec.size();
     for(int i=0;i<s;i++) res_vec2.push_back(res_vec[i].id);
+
+    std::cout << "RESVEC2:" << res_vec2.size() << std::endl;
+
     ArrayType *array = new ArrayType;
     array->type=2;
     array->vec = res_vec2;

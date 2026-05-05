@@ -7410,13 +7410,13 @@ IMPORT std::pair<int,std::string> GameApi::execute_codegen(GameApi::Env &env, Ga
   std::vector<FunctionImpl4> funcs;
   std::vector<CodeGenLine> vec = parse_codegen(env, ev, text, error_line_num,funcs);
   if (vec.size()==0) {
-    return std::make_pair(0,std::string("Error at line ") + ToString(error_line_num));
+    return std::make_pair(-1,std::string("Error at line ") + ToString(error_line_num));
   }
   std::vector<CodeGenVectors> vecvec;
   std::map<std::string, int> envmap = e.envmap; 
   bool err2 = false;
   add_params_linkage(vec,vecvec,err2, envmap);
-  if (err2) { return std::make_pair(0, std::string("Error at params_linkage")); }
+  if (err2) { return std::make_pair(-1, std::string("Error at params_linkage")); }
   static std::vector<GameApiItem*> functions = all_functions(ev);
   link_api_items(vec, functions);
   std::vector<int> val = execute_api(env, ev, vec, vecvec, vec.size()-1, e);
