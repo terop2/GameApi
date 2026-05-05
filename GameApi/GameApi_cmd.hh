@@ -1320,7 +1320,6 @@ public:
     std::string prev_line2;
     std::vector<std::string> vec;
     std::string res;
-    std::cout << "SCRIPT_BEFORE_ALGO:" << script << std::endl;
     //while(std::getline(ss3,line)) {
     //  prev_line2 = prev_line;
     //  prev_line = line;
@@ -1328,18 +1327,12 @@ public:
     //  res+="\n";
     //}
     res=script;
-    std::cout << "SCRIPT_AFTER_ALGO:" << res << std::endl;
     std::vector<GameApi::ML> res_vec;
-    std::cout << "N:" << N << std::endl;
     for(int i=0;i<N;i++)
       {
-	std::cout << "START LOOP" << std::endl;
 	GameApi::ExecuteEnv ee2 = e;
-	std::cout << "1" << std::endl;
 	std::vector<GameApiParam> paramvec;
-	std::cout << "2" << std::endl;
 	std::stringstream ss2; ss2 << ml.id;
-	std::cout << "3" << std::endl;
 
 	paramvec.push_back({"ml", ss2.str(),"ML",false,0,0,""});
 	paramvec.push_back({"%1", arr1[i],"float",false,0,0,e1[i]});
@@ -1347,41 +1340,27 @@ public:
 	paramvec.push_back({"%3", arr3[i],"float",false,0,0,e3[i]});
 	paramvec.push_back({"%4", arr4[i], "float",false,0,0,e4[i]});
 	paramvec.push_back({"%5", arr5[i], "float",false,0,0,e5[i]});
-	std::cout << "4" << std::endl;
 	BeginEnv2(e, paramvec);
 
-	std::cout << "5" << std::endl;
 
 	res = replace_str(res, "@", "\n");
 	
-	std::cout << "execute_script:" << res << std::endl;
 
 
 	
 	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,ee2);
-	std::cout << "6" << std::endl;
-	std::cout << p.first << std::endl;
-	//if (!p.first) { continue; }
-	std::cout << p.first << " " << p.second << std::endl;
-	std::cout << "7" << std::endl;
+	if (p.first==-1) { continue; }
 	assert(p.second=="ML");
-	std::cout << "8" << std::endl;
 	int id = p.first;
-	std::cout << "9" << std::endl;
 	GameApi::ML res_ml;
-	std::cout << "10" << std::endl;
 	res_ml.id = id;
-	std::cout << "11" << std::endl;
 	res_vec.push_back(res_ml);
-	std::cout << "12" << std::endl;
 	EndEnv2(e);
-	std::cout << "END LOOP" << std::endl;
       }
     std::vector<int> res_vec2;
     int s = res_vec.size();
     for(int i=0;i<s;i++) res_vec2.push_back(res_vec[i].id);
 
-    std::cout << "RESVEC2:" << res_vec2.size() << std::endl;
 
     ArrayType *array = new ArrayType;
     array->type=2;
@@ -1391,7 +1370,9 @@ public:
   }
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","%1","%2","%3","%4","%5" }, "ML","mainloop_api","identity_float_arr",j);
+    //std::cout << "OUR CODEGEN..." << std::endl;
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, { "ml", "%1", "%2", "%3", "%4", "%5", "e1", "e2", "e3", "e4", "e5" }, { "ml","%1","%2","%3","%4","%5", "e1", "e2", "e3", "e4", "e5" }, "ML","mainloop_api","identity_float_arr",j);
+    //std::cout << "END_OF_OUR_CODEGEN" << std::endl;
     return p;
   }
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> param) { }

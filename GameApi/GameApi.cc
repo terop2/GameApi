@@ -38855,14 +38855,29 @@ IMPORT void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, i
 IMPORT void clear_codegen();
 std::string do_codegen(GameApi::EveryApi &ev)
 {
-  //std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
+  std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
   ev.mod_api.codegen_reset_counter();
   clear_codegen();
 
   std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level,0); 
-  //std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
+  std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
   return p.second;
 }
+std::string do_codegen2(GameApi::EveryApi &ev, GameApi::WM mod2, int id, std::string line_uid, int level)
+{
+
+  
+  //std::cout << "do_codegen2:" << mod2.id << " " << id << " " << line_uid << " " << level << std::endl;
+  ev.mod_api.codegen_reset_counter();
+  //std::cout << "1" << std::endl;
+  clear_codegen();
+  //std::cout << "2" << std::endl;
+  
+  std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, mod2, id, line_uid, level,0); 
+  //std::cout << "do_codegen2:" << p.first << " " << p.second << std::endl;
+  return p.second;
+}
+
 
 std::string g_emscripten_frame_1(std::string code, std::string homepage) {
   return "<embed width=\"830\" height=\"650\" src=\"https://meshpage.org/builder_display.php?code=" + code + "&homepage=" + homepage + "\"/>";
@@ -39117,8 +39132,9 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std
 
 GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::string homepage, bool is_envparams_arr)
 {
-  std::string gen = do_codegen(ev);
-  std::cout << "DO_CODEGEN returned:" << gen << std::endl;
+  //std::cout << "EMSCRIPTEN_FRAME" << std::endl;
+  std::string gen = is_envparams_arr?do_codegen2(ev,g_codegen_values.mod2,g_codegen_values.id,g_codegen_values.line_uid,g_codegen_values.level):do_codegen(ev);
+  //std::cout << "DO_CODEGEN returned:" << gen << std::endl;
   std::stringstream ss(gen);
   std::stringstream ss3(gen);
   std::string line;
@@ -39132,10 +39148,10 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
     ss2 >> s;
     if (s=="HML") res2_line=line_num;
     if (s=="ML" && is_envparams_arr) {
-      std::cout << "LINE:" << line << std::endl;
+      //std::cout << "LINE:" << line << std::endl;
       if (line.find("identity")!=std::string::npos)
 	{
-	  std::cout << "HEP" << std::endl;
+	  //std::cout << "HEP" << std::endl;
 	  res2_line=line_num;
 	}
     }
@@ -39146,7 +39162,7 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
-    std::cout << "LINENUM:" << line_num << "==" << res2_line << std::endl;
+    //std::cout << "LINENUM:" << line_num << "==" << res2_line << std::endl;
     if (line_num==res2_line) break;
     if (s=="RUN" || output)
       output_str+=line+"@";

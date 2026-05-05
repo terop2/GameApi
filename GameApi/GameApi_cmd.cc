@@ -66,7 +66,7 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 	if (param_names[i]=="@")
 	  {
 	    s+=empty_param(param_type[i]);
-	  }
+	  } 
 	else
 	  s+= param_names[i];
 	if (i!=int(param_names.size())-1) s+=",";

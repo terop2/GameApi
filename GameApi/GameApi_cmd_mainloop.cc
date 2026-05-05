@@ -1631,8 +1631,8 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::ga
 #if (ALL==1)||(EMSCRIPTEN_FRAME2==1)   
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2, 
 			 "html_run",      
-		 	 { "ev", "r", "homepage", "is_in_envparams_arr" },
-			 { "EveryApi&", "RUN", "std::string","bool" },
+		  	 { "ev", "r", "homepage", "is_in_envparams_arr" },
+		    	 { "EveryApi&", "RUN", "std::string","bool" },
 			 { "ev", "", "https://meshpage.org/assets/","false" },
 			 "HML", "mainloop_api", "emscripten_frame2"));
 #endif
@@ -1640,7 +1640,7 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::blocker_api, &GameApi::BlockerApi::ga
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_ML,
 			 "html_ml",
 			 { "ev", "r", "homepage" },
-			 { "EveryApi&", "ML", "std::string" },
+			 { "EveryApi&", "ML", "std::string" }, 
 			 { "ev", "", "https://meshpage.org/assets/" },
 			 "HML", "mainloop_api", "emscripten_frame2_ML"));
   
