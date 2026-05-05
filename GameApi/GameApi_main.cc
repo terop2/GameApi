@@ -4370,7 +4370,13 @@ GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, std::string durati
     }
   return curr;
 }
-						    
+GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(std::string durations, std::vector<ML> vec)
+{
+  GameApi::TT t0 = timing_start();
+  GameApi::TT t1 = array_timing_chain(t0,durations,vec);
+  GameApi::ML t2 = timing_exit(t1);
+  return t2;
+}
 						     
 
 
