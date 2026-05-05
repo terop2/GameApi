@@ -1196,7 +1196,7 @@ private:
 };
 
 std::vector<std::string> parse_sep(std::string s, char sep);
-
+std::string replace_str(std::string code, std::string repl, std::string subst);
 class EnvGameApiItem_float_arr : public GameApiItem
 {
 public:
@@ -1297,7 +1297,7 @@ public:
     GameApi::ML ml;
     ml.id = val;
     GameApi::RUN r = ev.blocker_api.game_window2(ev,ml,false,false,0.0,100000.0);
-    GameApi::HML hml = ev.mainloop_api.emscripten_frame2(ev,r,"https://meshpage.org/assets");
+    GameApi::HML hml = ev.mainloop_api.emscripten_frame2(ev,r,"https://meshpage.org/assets",true);
     Html *hml2 = find_html(ev.get_env(),hml);
     hml2->Prepare();
     std::string script = hml2->script_file();
@@ -1308,14 +1308,16 @@ public:
     std::vector<std::string> vec;
     std::string res;
     std::cout << "SCRIPT_BEFORE_ALGO:" << script << std::endl;
-    while(std::getline(ss3,line)) {
-      prev_line2 = prev_line;
-      prev_line = line;
-      res+=prev_line2;
-      res+="\n";
-    }
+    //while(std::getline(ss3,line)) {
+    //  prev_line2 = prev_line;
+    //  prev_line = line;
+    //  res+=prev_line2;
+    //  res+="\n";
+    //}
+    res=script;
     std::cout << "SCRIPT_AFTER_ALGO:" << res << std::endl;
     std::vector<GameApi::ML> res_vec;
+    std::cout << "N:" << N << std::endl;
     for(int i=0;i<N;i++)
       {
 	std::vector<GameApiParam> paramvec;
@@ -1327,7 +1329,11 @@ public:
 	paramvec.push_back({"%4", arr4[i], "float",false,0,0,e4[i]});
 	paramvec.push_back({"%5", arr5[i], "float",false,0,0,e5[i]});
 	BeginEnv2(e, paramvec);
+
+	res = replace_str(res,"@","\n");
+	
 	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,e);
+	std::cout << p.first << " " << p.second << std::endl;
 	assert(p.second=="ML");
 	int id = p.first;
 	GameApi::ML res_ml;

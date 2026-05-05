@@ -604,7 +604,7 @@ public:
   IMPORT ML create_landscape(EveryApi &ev, std::string url);
   IMPORT ML create_objs(EveryApi &ev, int area_id);
   IMPORT HML emscripten_frame(EveryApi &ev, RUN r, std::string homepage);
-  IMPORT HML emscripten_frame2(EveryApi &ev, RUN r, std::string homepage);
+  IMPORT HML emscripten_frame2(EveryApi &ev, RUN r, std::string homepage, bool is_envparams_arr=false);
   IMPORT HML emscripten_frame2_ML(EveryApi &ev, ML ml, std::string homepage);
   IMPORT HML emscripten_frame2_P(EveryApi &ev, P p, std::string homepage);
   IMPORT HML emscripten_frame2_MN(EveryApi &ev, MN mn, std::string homepage);
