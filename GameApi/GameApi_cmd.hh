@@ -1654,7 +1654,7 @@ public:
 	res = replace_str(res, "%3", arr3[i]);
 	res = replace_str(res, "%4", arr4[i]);
 	res = replace_str(res, "%5", arr5[i]);
-	std::cout << "SCRIPT:" << res << std::endl;
+	//std::cout << "SCRIPT:" << res << std::endl;
 	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,ee2);
 	if (p.first==-1) { continue; }
 	assert(p.second=="P");
