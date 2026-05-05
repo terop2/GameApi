@@ -271,7 +271,7 @@ int funccall(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, T (
 
 
 
-std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name, int j);
+std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::vector<std::string> param_exprs, std::string return_type, std::string api_name, std::string func_name, int j);
 
 struct ApiSplit
 {
@@ -370,9 +370,9 @@ public:
   }
   
 
-  std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, param_type, return_type,api_name,func_name,j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, param_type, param_exprs,return_type,api_name,func_name,j);
     return p;
   }
 private:
@@ -906,9 +906,9 @@ public:
     ss2 >> val;
     return val;
   }
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","&1","&2","&3","&4","&5" }, "ML","mainloop_api","identity_int",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","&1","&2","&3","&4","&5" }, param_exprs, "ML","mainloop_api","identity_int",j);
     return p;
   }
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
@@ -1020,9 +1020,9 @@ public:
     ss2 >> val;
     return val;
   }
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","$1","$2","$3","$4","$5" }, "ML","mainloop_api","identity_string",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","$1","$2","$3","$4","$5" }, param_exprs, "ML","mainloop_api","identity_string",j);
     return p;
   }
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
@@ -1139,9 +1139,9 @@ public:
     ss2 >> val;
     return val;
   }
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","%1","%2","%3","%4","%5" }, "ML","mainloop_api","identity_float",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","%1","%2","%3","%4","%5" }, param_exprs, "ML","mainloop_api","identity_float",j);
     return p;
   }
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
@@ -1194,13 +1194,34 @@ public:
 private:
   std::vector<GameApiParam> env_params;  
 };
-
 std::vector<std::string> parse_sep(std::string s, char sep);
+
+inline std::vector<std::string> choose_param3(std::vector<std::string> vec, int ii)
+{
+  std::vector<std::string> res;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      std::string s2 = vec[i];
+      std::vector<std::string> v = parse_sep(s2,'&');
+      if (ii<v.size())
+	{
+	  res.push_back(v[ii]);
+	}
+      else
+	{
+	  res.push_back(s2);
+	}
+    }
+  return res;
+}
+
 std::string replace_str(std::string code, std::string repl, std::string subst);
 class EnvGameApiItem_float_arr : public GameApiItem
 {
 public:
-  EnvGameApiItem_float_arr() { }
+  EnvGameApiItem_float_arr() {
+  }
   virtual int Count() const { return 1; }
   virtual std::string Name(int i) const { return "env_params_float_arr"; }
   virtual int ParamCount(int i) const { return 1+5+5; }
@@ -1268,6 +1289,12 @@ public:
   virtual std::string Comment() const { return "env setup arr"; }
   virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
   {
+    static int count=0;
+    if (count==0) {
+      count=1;
+      std::cout << "Warning: env_params_float_arr cannot be deployed, and you must move to script_ML_array before deploy." << std::endl;
+    }
+    
     std::vector<std::string> arr1 = parse_sep(params[1],'&');
     std::vector<std::string> arr2 = parse_sep(params[2],'&');
     std::vector<std::string> arr3 = parse_sep(params[3],'&');
@@ -1279,6 +1306,8 @@ public:
     std::vector<std::string> e3 = parse_sep(params[8],'&');
     std::vector<std::string> e4 = parse_sep(params[9],'&');
     std::vector<std::string> e5 = parse_sep(params[10],'&');
+
+
 
     
     int N = std::max(std::max(std::max(std::max(arr1.size(),arr2.size()),
@@ -1309,12 +1338,6 @@ public:
     ss2 >> val;
     GameApi::ML ml;
     ml.id = val;
-    GameApi::RUN r = ev.blocker_api.game_window2(ev,ml,false,false,0.0,100000.0);
-    GameApi::HML hml = ev.mainloop_api.emscripten_frame2(ev,r,"https://meshpage.org/assets",true);
-    Html *hml2 = find_html(ev.get_env(),hml);
-    hml2->Prepare();
-    std::string script = hml2->script_file();
-    std::stringstream ss3(script);
     std::string line;
     std::string prev_line;
     std::string prev_line2;
@@ -1326,11 +1349,21 @@ public:
     //  res+=prev_line2;
     //  res+="\n";
     //}
-    res=script;
     std::vector<GameApi::ML> res_vec;
-    for(int i=0;i<N;i++)
+    for(int i=0;i<NN;i++)
       {
-	GameApi::ExecuteEnv ee2 = e;
+
+    m_ii = i;
+    GameApi::RUN r = ev.blocker_api.game_window2(ev,ml,false,false,0.0,100000.0);
+    GameApi::HML hml = ev.mainloop_api.emscripten_frame2(ev,r,"https://meshpage.org/assets",true);
+    Html *hml2 = find_html(ev.get_env(),hml);
+    hml2->Prepare();
+    std::string script = hml2->script_file();
+    //std::stringstream ss3(script);
+    res=script;
+
+
+	GameApi::ExecuteEnv &ee2 = e;
 	std::vector<GameApiParam> paramvec;
 	std::stringstream ss2; ss2 << ml.id;
 
@@ -1343,10 +1376,15 @@ public:
 	BeginEnv2(e, paramvec);
 
 
-	res = replace_str(res, "@", "\n");
 	
+	res = replace_str(res, "@", "\n");
 
-
+	// these break the feature that envparams_float_array can be used nested multiple times in the hierarchy
+	res = replace_str(res, "%1", arr1[i]);
+	res = replace_str(res, "%2", arr2[i]);
+	res = replace_str(res, "%3", arr3[i]);
+	res = replace_str(res, "%4", arr4[i]);
+	res = replace_str(res, "%5", arr5[i]);
 	
 	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,ee2);
 	if (p.first==-1) { continue; }
@@ -1368,10 +1406,10 @@ public:
     GameApi::ARR a = add_array(ee,array);
     return a.id;
   }
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
     //std::cout << "OUR CODEGEN..." << std::endl;
-    std::pair<std::string,std::string> p = CodeGen_1(ev,params, { "ml", "%1", "%2", "%3", "%4", "%5", "e1", "e2", "e3", "e4", "e5" }, { "ml","%1","%2","%3","%4","%5", "e1", "e2", "e3", "e4", "e5" }, "ML","mainloop_api","identity_float_arr",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "ml", "%1", "%2", "%3", "%4", "%5", "e1", "e2", "e3", "e4", "e5" }, { "ml","%1","%2","%3","%4","%5", "e1", "e2", "e3", "e4", "e5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_float_arr",j);
     //std::cout << "END_OF_OUR_CODEGEN" << std::endl;
     return p;
   }
@@ -1427,4 +1465,5 @@ public:
   }
 private:
   std::vector<GameApiParam> env_params;  
+  int m_ii=0;
 };
