@@ -879,7 +879,7 @@ public:
   virtual std::string Comment() const=0;
   virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)=0;
   //virtual std::vector<GameApi::EditNode*> CollectNodes(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names)=0;
-  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)=0;
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)=0;
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
   //virtual void RegisterToChai(GameApi::EveryApi *ev, chaiscript::ChaiScript *chai) { }

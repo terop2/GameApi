@@ -1642,9 +1642,9 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "ev", "r", "homepage" },
 			 { "EveryApi&", "ML", "std::string" }, 
 			 { "ev", "", "https://meshpage.org/assets/" },
-			 "HML", "mainloop_api", "emscripten_frame2_ML"));
-  
-#endif
+			 "HML", "mainloop_api", "emscripten_frame2_ML")); 
+      
+#endif       
 #if (ALL==1)||(EMSCRIPTEN_FRAME2_P==1)
 vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::emscripten_frame2_P,
 			 "html_p",

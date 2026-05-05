@@ -41,7 +41,7 @@ MACRO2(GameApi::OVX,ev.voxel_api.empty_ovx())
 #undef MACRO2
 
 
-std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::string return_type, std::string api_name, std::string func_name, int j)
+std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_type, std::vector<std::string> param_exprs, std::string return_type, std::string api_name, std::string func_name, int j)
 {
       std::string s;
     int ss = params.size();
@@ -68,7 +68,7 @@ std::pair<std::string,std::string> CodeGen_1(GameApi::EveryApi &ev, std::vector<
 	    s+=empty_param(param_type[i]);
 	  } 
 	else
-	  s+= param_names[i];
+	  s+= param_names[i] ;
 	if (i!=int(param_names.size())-1) s+=",";
       }
     s+=");\n";

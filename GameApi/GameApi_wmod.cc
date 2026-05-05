@@ -1157,6 +1157,18 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	  std::vector<std::string> params;
 	  std::vector<std::string> param_names;
 	  level-=ss;
+	  std::vector<std::string> param_exprs;
+	  // envparams_arr
+	  bool has_exprs = false;
+	  for(int ii=0;ii<ss;ii++)
+	    {
+	      GameApiParam *param = &line->params[ii];
+	      if (has_envparams_markers(param->expr))
+		{
+		  has_exprs = true;
+		}
+	    }
+	  // end of envparams_arr
 	  for(int ii=0;ii<ss;ii++)
 	    {
 	      //level--;
@@ -1172,7 +1184,11 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 		  pn = param->expr;
 		}
 	      // end of envparams
-
+	      // envparams_arr
+	      if (has_exprs)
+		param_exprs.push_back(param->expr);
+	      // envparams_arr
+	      
 	      //std::string pe = param->expr;
 	      std::string rt = "";
 	      int jj = param->j;
@@ -1313,7 +1329,7 @@ EXPORT std::pair<std::string,std::string> GameApi::WModApi::codegen(EveryApi &ev
 	      std::string name = item->Name(0);
 	      if (name == line->module_name)
 		{
-		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names,j);
+		  std::pair<std::string,std::string> val = item->CodeGen(ev, params, param_names, param_exprs,j);
 		  push_codegen(id,line_uid, val.first);
 		  return val;
 		}

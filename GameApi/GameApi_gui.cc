@@ -7270,6 +7270,9 @@ bool is_num(std::string s)
   return true;
 }
 
+
+bool has_envparams_markers(std::string s);
+
 std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std::vector<CodeGenLine> &vec, std::vector<CodeGenVectors> &vecvec, int /*line_num*/, GameApi::ExecuteEnv &e)
 {
   std::vector<std::string> res_vec;
@@ -7363,6 +7366,9 @@ std::vector<int> execute_api(GameApi::Env &ee, GameApi::EveryApi &ev, const std:
 		}
 	    }
 	}
+
+      
+
       
       //std::cout << "Execute: " << params << std::endl;
       std::stringstream sk3;
