@@ -26986,7 +26986,7 @@ public:
 	{
 	  str5 = deploy_replace_string(str5,"%TEMP%",gameapi_temp_dir);
 	}
-      
+       
       int val4 = system(str5.c_str());
       if (val4!=0) { std::cout << "ERROR: mkdir returned error: " << val4 <<std::endl; ok=false; }
 
@@ -39113,9 +39113,12 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2_ML(EveryApi &ev, ML ml, std
   return add_html(e, new EmscriptenFrame2(output_str,homepage));
 }
 
-GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::string homepage)
+
+
+GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::string homepage, bool is_envparams_arr)
 {
   std::string gen = do_codegen(ev);
+  std::cout << "DO_CODEGEN returned:" << gen << std::endl;
   std::stringstream ss(gen);
   std::stringstream ss3(gen);
   std::string line;
@@ -39128,6 +39131,14 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
     std::string s;
     ss2 >> s;
     if (s=="HML") res2_line=line_num;
+    if (s=="ML" && is_envparams_arr) {
+      std::cout << "LINE:" << line << std::endl;
+      if (line.find("identity")!=std::string::npos)
+	{
+	  std::cout << "HEP" << std::endl;
+	  res2_line=line_num;
+	}
+    }
     line_num++;
   }
   line_num=0;
@@ -39135,10 +39146,12 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
     std::stringstream ss2(line);
     std::string s;
     ss2 >> s;
+    std::cout << "LINENUM:" << line_num << "==" << res2_line << std::endl;
     if (line_num==res2_line) break;
     if (s=="RUN" || output)
       output_str+=line+"@";
     if (s=="RUN") output=false;
+    line_num++;
   }
   return add_html(e, new EmscriptenFrame2(output_str,homepage));
 }
