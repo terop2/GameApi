@@ -1195,3 +1195,210 @@ private:
   std::vector<GameApiParam> env_params;  
 };
 
+std::vector<std::string> parse_sep(std::string s, char sep);
+
+class EnvGameApiItem_float_arr : public GameApiItem
+{
+public:
+  EnvGameApiItem_float_arr() { }
+  virtual int Count() const { return 1; }
+  virtual std::string Name(int i) const { return "env_params_float_arr"; }
+  virtual int ParamCount(int i) const { return 1+5+5; }
+  virtual std::string ParamName(int i, int p) const {
+    switch(p) {
+    case 0: return "ml";
+    case 1: return "%1";
+    case 2: return "%2";
+    case 3: return "%3";
+    case 4: return "%4";
+    case 5: return "%5";
+
+    case 6: return "e1";
+    case 7: return "e2";
+    case 8: return "e3";
+    case 9: return "e4";
+    case 10: return "e5";
+    default: return "";
+    };
+  }
+  virtual std::string ParamType(int i, int p) const {
+    switch(p) {
+    case 0: return "ML";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "std::string";
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+      return "std::string";
+    default:
+      return "";
+    };
+  }
+  virtual std::string ParamDefault(int i, int p) const {
+    switch(p) {
+    case 0: return "";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "@";
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+      return "";
+    default:
+      return "";
+    };
+  }
+  virtual std::string DefaultAuthor(int i, int p) const { return ""; }
+  virtual std::string DefaultLicense(int i, int p) const { return ""; }
+  virtual std::string ReturnType(int i) const { return "[ML]"; }
+  virtual std::string ApiName(int i) const { return "mainloop_api"; }
+  virtual std::string FuncName(int i) const { return "identity_float_arr"; }
+  virtual std::string Symbols() const { return ""; }
+  virtual std::string Comment() const { return "env setup arr"; }
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
+  {
+    std::vector<std::string> arr1 = parse_sep(params[1],'&');
+    std::vector<std::string> arr2 = parse_sep(params[2],'&');
+    std::vector<std::string> arr3 = parse_sep(params[3],'&');
+    std::vector<std::string> arr4 = parse_sep(params[4],'&');
+    std::vector<std::string> arr5 = parse_sep(params[5],'&');
+
+    std::vector<std::string> e1 = parse_sep(params[6],'&');
+    std::vector<std::string> e2 = parse_sep(params[7],'&');
+    std::vector<std::string> e3 = parse_sep(params[8],'&');
+    std::vector<std::string> e4 = parse_sep(params[9],'&');
+    std::vector<std::string> e5 = parse_sep(params[10],'&');
+
+    
+    int N = std::max(std::max(std::max(std::max(arr1.size(),arr2.size()),
+				       arr3.size()),
+			      arr4.size()),
+		     arr5.size());
+    arr1.resize(N);
+    arr2.resize(N);
+    arr3.resize(N);
+    arr4.resize(N);
+    arr5.resize(N);
+    
+    std::stringstream ss2(params[0]);
+    int val = 0;
+    ss2 >> val;
+    GameApi::ML ml;
+    ml.id = val;
+    GameApi::RUN r = ev.blocker_api.game_window2(ev,ml,false,false,0.0,100000.0);
+    GameApi::HML hml = ev.mainloop_api.emscripten_frame2(ev,r,"https://meshpage.org/assets");
+    Html *hml2 = find_html(ev.get_env(),hml);
+    hml2->Prepare();
+    std::string script = hml2->script_file();
+    std::stringstream ss3(script);
+    std::string line;
+    std::string prev_line;
+    std::string prev_line2;
+    std::vector<std::string> vec;
+    std::string res;
+    std::cout << "SCRIPT_BEFORE_ALGO:" << script << std::endl;
+    while(std::getline(ss3,line)) {
+      prev_line2 = prev_line;
+      prev_line = line;
+      res+=prev_line2;
+      res+="\n";
+    }
+    std::cout << "SCRIPT_AFTER_ALGO:" << res << std::endl;
+    std::vector<GameApi::ML> res_vec;
+    for(int i=0;i<N;i++)
+      {
+	std::vector<GameApiParam> paramvec;
+	std::stringstream ss2; ss2 << ml.id;
+	paramvec.push_back({"ml", ss2.str(),"ML",false,0,0,""});
+	paramvec.push_back({"%1", arr1[i],"float",false,0,0,e1[i]});
+	paramvec.push_back({"%2", arr2[i],"float",false,0,0,e2[i]});
+	paramvec.push_back({"%3", arr3[i],"float",false,0,0,e3[i]});
+	paramvec.push_back({"%4", arr4[i], "float",false,0,0,e4[i]});
+	paramvec.push_back({"%5", arr5[i], "float",false,0,0,e5[i]});
+	BeginEnv2(e, paramvec);
+	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,e);
+	assert(p.second=="ML");
+	int id = p.first;
+	GameApi::ML res_ml;
+	res_ml.id = id;
+	res_vec.push_back(res_ml);
+	EndEnv2(e);
+      }
+    std::vector<int> res_vec2;
+    int s = res_vec.size();
+    for(int i=0;i<s;i++) res_vec2.push_back(res_vec[i].id);
+    ArrayType *array = new ArrayType;
+    array->type=2;
+    array->vec = res_vec2;
+    GameApi::ARR a = add_array(ee,array);
+    return a.id;
+  }
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, int j)
+  {
+    std::pair<std::string,std::string> p = CodeGen_1(ev,params, param_names, { "ml","%1","%2","%3","%4","%5" }, "ML","mainloop_api","identity_float_arr",j);
+    return p;
+  }
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> param) { }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) { }
+  
+  virtual void BeginEnv2(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
+    if (params[1].expr != "@")
+      {
+	e.names.push_back("%1");
+	e.values.push_back(params[1].expr);
+      }
+    if (params[2].expr != "@")
+      {
+	e.names.push_back("%2");
+	e.values.push_back(params[2].expr);
+      }
+    if (params[3].expr != "@")
+      {
+	e.names.push_back("%3");
+	e.values.push_back(params[3].expr);
+      }
+
+    if (params[4].expr != "@")
+      {
+	e.names.push_back("%4");
+	e.values.push_back(params[4].expr);
+      }
+    if (params[5].expr != "@")
+      {
+	e.names.push_back("%5");
+	e.values.push_back(params[5].expr);
+      }
+    env_params = params;
+  }
+  virtual void EndEnv2(GameApi::ExecuteEnv &e) {
+    int s = e.names.size();
+    for(int i=0;i<s;i++)
+      {
+	if ((e.names[i]=="%1" && env_params[1].expr!="@" )||
+	    (e.names[i]=="%2"  && env_params[2].expr!="@")||
+	    (e.names[i]=="%3"  && env_params[3].expr!="@")||
+	    (e.names[i]=="%4"  && env_params[4].expr!="@")||
+	    (e.names[i]=="%5"  && env_params[5].expr!="@"))
+	  {
+	    e.names.erase(e.names.begin() + i);
+	    e.values.erase(e.values.begin() + i);
+	    i--;
+	    s--;
+	  }
+      }
+
+  }
+private:
+  std::vector<GameApiParam> env_params;  
+};
