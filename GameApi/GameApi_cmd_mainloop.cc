@@ -112,15 +112,15 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_timing_chain,
 			 "t_chain",
-			 { "prev", "durations", "vec" },
-			 { "TT", "std::string", "[ML]" },
-			 { "", "2&2&2", "" },
+			 { "prev", "start_time", "durations", "vec" },
+			 { "TT", "float", "std::string", "[ML]" },
+			 { "", "0.0", "2&2&2", "" },
 			 "TT", "mainloop_api", "array_timing_chain"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_timing_chain_ml,
 			 "t_chain_ml",
-			 { "durations", "vec" },
-			 { "std::string", "[ML]" },
-			 { "2&2&2", "" },
+			 { "start_time", "durations", "vec" },
+			 { "float", "std::string", "[ML]" },
+			 { "0.0", "2&2&2", "" },
 			 "ML", "mainloop_api", "array_timing_chain_ml"));
 #if (ALL==1)||(TIMING_EVENT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_event,
