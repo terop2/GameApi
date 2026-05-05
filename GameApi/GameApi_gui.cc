@@ -3998,7 +3998,7 @@ std::map<int, int> int_editor_map;
 
 EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap)
 {
-  std::string allowed_chars = "0123456789-&";
+  std::string allowed_chars = "0123456789-&%";
   W w = add_widget(e, new EditorGuiWidgetAtlas<int>(ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr));
   W w2 = highlight(w);
   int_editor_map[w2.id]=w.id;

@@ -10,9 +10,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
   vec.push_back(new EnvGameApiItem_string);
   vec.push_back(new EnvGameApiItem_int);
 
-  vec.push_back(new EnvGameApiItem_float_arr);
-  // todo string
-  // todo int
+  vec.push_back(new EnvGameApiItem_arr);
   
 #if (ALL==1)||(STRING_BYTESTORE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::string_bytestore,

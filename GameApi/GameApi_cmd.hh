@@ -1217,13 +1217,13 @@ inline std::vector<std::string> choose_param3(std::vector<std::string> vec, int 
 }
 
 std::string replace_str(std::string code, std::string repl, std::string subst);
-class EnvGameApiItem_float_arr : public GameApiItem
+class EnvGameApiItem_arr : public GameApiItem
 {
 public:
-  EnvGameApiItem_float_arr() {
+  EnvGameApiItem_arr() {
   }
   virtual int Count() const { return 1; }
-  virtual std::string Name(int i) const { return "env_params_float_arr"; }
+  virtual std::string Name(int i) const { return "env_params_arr"; }
   virtual int ParamCount(int i) const { return 1+5+5; }
   virtual std::string ParamName(int i, int p) const {
     switch(p) {
@@ -1284,7 +1284,7 @@ public:
   virtual std::string DefaultLicense(int i, int p) const { return ""; }
   virtual std::string ReturnType(int i) const { return "[ML]"; }
   virtual std::string ApiName(int i) const { return "mainloop_api"; }
-  virtual std::string FuncName(int i) const { return "identity_float_arr"; }
+  virtual std::string FuncName(int i) const { return "identity_arr"; }
   virtual std::string Symbols() const { return ""; }
   virtual std::string Comment() const { return "env setup arr"; }
   virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
@@ -1409,7 +1409,7 @@ public:
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
     //std::cout << "OUR CODEGEN..." << std::endl;
-    std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "ml", "%1", "%2", "%3", "%4", "%5", "e1", "e2", "e3", "e4", "e5" }, { "ml","%1","%2","%3","%4","%5", "e1", "e2", "e3", "e4", "e5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_float_arr",j);
+    std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "ml", "%1", "%2", "%3", "%4", "%5", "e1", "e2", "e3", "e4", "e5" }, { "ml","%1","%2","%3","%4","%5", "e1", "e2", "e3", "e4", "e5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_arr",j);
     //std::cout << "END_OF_OUR_CODEGEN" << std::endl;
     return p;
   }
