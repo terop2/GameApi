@@ -20890,7 +20890,7 @@ GameApi::P GameApi::PolygonApi::stl_load(std::string url)
   set_current_block(-1);
 
   GameApi::P p = add_polygon2(e, new STLFaceCollection(e,url,gameapi_homepageurl),1);
-  print_data(p);
+  //print_data(p);
   FaceCollection *coll = find_facecoll(e,p);
   GameApi::P p2 = add_polygon2(e, new PrepareCache(e,url,coll), 1);
   GameApi::P p3 = resize_to_correct_size(p2);
@@ -31006,3 +31006,37 @@ private:
 //{
   
 //}
+
+class InterpolateMeshPair : public ForwardFaceCollection
+{
+public:
+  InterpolateMeshPair(FaceCollection *start_face, FaceCollection *end_face) : ForwardFaceCollection(*start_face), start_face(start_face), end_face(end_face) { }
+  std::string name() const { return "InterpolateMeshPair"; }
+public:
+  Point FacePoint(int face, int point) const { return ForwardFaceCollection::FacePoint(face,point); }
+  Point EndFacePoint(int face, int point) const {
+    return end_face->FacePoint(face,point);
+  }
+private:
+  FaceCollection *start_face;
+  FaceCollection *end_face;
+};
+
+GameApi::P GameApi::PolygonApi::interpolate_mesh_pair(P start_p, P end_p)
+{
+  FaceCollection *start_c = find_facecoll(e,start_p);
+  FaceCollection *end_c = find_facecoll(e,end_p);
+  return add_polygon2(e, new InterpolateMeshPair(start_c, end_c),1);
+}
+GameApi::ARR GameApi::PolygonApi::interpolate_mesh_pair_arr(std::vector<P> start_ps, std::vector<P> end_ps)
+{
+  int s = std::min(start_ps.size(),end_ps.size());
+  ArrayType *t = new ArrayType;
+  t->type=2;
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p = interpolate_mesh_pair(start_ps[i],end_ps[i]);
+      t->vec.push_back(p.id);
+    }
+  return add_array(e,t);
+}

@@ -11,6 +11,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
   vec.push_back(new EnvGameApiItem_int);
 
   vec.push_back(new EnvGameApiItem_arr);
+  vec.push_back(new EnvGameApiItem_arr_p);
   
 #if (ALL==1)||(STRING_BYTESTORE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::string_bytestore,
@@ -82,7 +83,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "zip_url" },
 			 { "std::string" },
 			 { "" },
-			 "ML", "mainloop_api", "load_zip_assets"));
+			 "ML", "mainloop_api", "load_zip_assets")); 
   */
 #if (ALL==1)||(HIRES_ML==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::hires_ml,
@@ -102,7 +103,7 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 #endif  
 #if (ALL==1)||(TIMING==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing,
-
+ 
 			 "t_time",
 			 { "duration", "link", "show" },
 			 { "float", "TT", "ML" },

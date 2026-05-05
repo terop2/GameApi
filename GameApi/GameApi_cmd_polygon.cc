@@ -367,6 +367,20 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "[P]", "polygon_api", "poly_array"));
 #endif
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::interpolate_mesh_pair,
+			 "p_interp_pair",
+			 { "start_p", "end_p" },
+			 { "P", "P" },
+			 { "", "" },
+			 "P", "polygon_api", "interpolate_mesh_pair"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::interpolate_mesh_pair_arr,
+			 "p_interp_pair_arr",
+			 { "start_ps", "end_ps" },
+			 { "[P]", "[P]" },
+			 { "", "" },
+			 "[P]", "polygon_api", "interpolate_mesh_pair_arr"));
+  
+
 #if (ALL==1)||(TRIANGLE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::triangle,
 			 "triangle",
