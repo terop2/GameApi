@@ -2731,6 +2731,8 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P interpolate_mesh_pair(P start_p, P end_p);
+  IMPORT ARR interpolate_mesh_pair_arr(std::vector<P> start_ps, std::vector<P> end_ps);
   IMPORT P sort_faces_by_area(P p);
   IMPORT ML discard_shader(EveryApi &ev, ML mainloop);
   IMPORT ML acesfilm_shader(EveryApi &ev, ML mainloop);

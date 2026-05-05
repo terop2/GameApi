@@ -1303,7 +1303,7 @@ public:
     static int count=0;
     if (count==0) {
       count=1;
-      std::cout << "Warning: env_params_float_arr cannot be deployed, and you must move to script_ML_array before deploy." << std::endl;
+      std::cout << "Warning: env_params_arr cannot be deployed, and you must move to script_ML_array before deploy." << std::endl;
     }
     
     std::vector<std::string> arr1 = parse_sep(params[1],'&');
@@ -1419,10 +1419,16 @@ public:
   }
   virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
   {
+    if (!recursion_stopper) {
+      recursion_stopper=true;
     //std::cout << "OUR CODEGEN..." << std::endl;
     std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "ml", "%1", "%2", "%3", "%4", "%5" }, { "ml","%1","%2","%3","%4","%5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_arr",j);
     //std::cout << "END_OF_OUR_CODEGEN" << std::endl;
+    recursion_stopper=false;
     return p;
+    } else {
+      return std::make_pair("",""); 
+    }
   }
   virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> param) { }
   virtual void EndEnv(GameApi::ExecuteEnv &e) { }
@@ -1477,4 +1483,261 @@ public:
 private:
   std::vector<GameApiParam> env_params;  
   int m_ii=0;
+  bool recursion_stopper=false;
+};
+class EnvGameApiItem_arr_p : public GameApiItem
+{
+public:
+  EnvGameApiItem_arr_p() {
+  }
+  virtual int Count() const { return 1; }
+  virtual std::string Name(int i) const { return "env_params_arr_p"; }
+  virtual int ParamCount(int i) const { return 1+5; }
+  virtual std::string ParamName(int i, int p) const {
+    switch(p) {
+    case 0: return "ml";
+    case 1: return "%1";
+    case 2: return "%2";
+    case 3: return "%3";
+    case 4: return "%4";
+    case 5: return "%5";
+
+      //case 6: return "e1";
+      //case 7: return "e2";
+      //case 8: return "e3";
+      //case 9: return "e4";
+      //case 10: return "e5";
+    default: return "";
+    };
+  }
+  virtual std::string ParamType(int i, int p) const {
+    switch(p) {
+    case 0: return "P";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+       return "std::string";
+       //case 6:
+       //case 7:
+       //case 8:
+       //case 9:
+       //case 10:
+       //return "std::string";
+    default:
+      return "";
+    };
+  }
+  virtual std::string ParamDefault(int i, int p) const {
+    switch(p) {
+    case 0: return "";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "@";
+      //case 6:
+      //case 7:
+      //case 8:
+      //case 9:
+      //case 10:
+      //return "@";
+    default:
+      return "";
+    };
+  }
+  virtual std::string DefaultAuthor(int i, int p) const { return ""; }
+  virtual std::string DefaultLicense(int i, int p) const { return ""; }
+  virtual std::string ReturnType(int i) const { return "[P]"; }
+  virtual std::string ApiName(int i) const { return "mainloop_api"; }
+  virtual std::string FuncName(int i) const { return "identity_arr_p"; }
+  virtual std::string Symbols() const { return ""; }
+  virtual std::string Comment() const { return "env setup arr"; }
+  virtual int Execute(std::stringstream &ss, GameApi::Env &ee, GameApi::EveryApi &ev, std::vector<std::string> params, GameApi::ExecuteEnv &e, int j)
+  {
+    static int count=0;
+    if (count==0) {
+      count=1;
+      std::cout << "Warning: env_params_arr_p cannot be deployed, and you must move to script_P_array before deploy." << std::endl;
+    }
+    
+    std::vector<std::string> arr1 = parse_sep(params[1],'&');
+    std::vector<std::string> arr2 = parse_sep(params[2],'&');
+    std::vector<std::string> arr3 = parse_sep(params[3],'&');
+    std::vector<std::string> arr4 = parse_sep(params[4],'&');
+    std::vector<std::string> arr5 = parse_sep(params[5],'&');
+
+    //std::vector<std::string> e1 = parse_sep(params[6],'&');
+    //std::vector<std::string> e2 = parse_sep(params[7],'&');
+    //std::vector<std::string> e3 = parse_sep(params[8],'&');
+    //std::vector<std::string> e4 = parse_sep(params[9],'&');
+    //std::vector<std::string> e5 = parse_sep(params[10],'&');
+
+
+
+    
+    int N = std::max(std::max(std::max(std::max(arr1.size(),arr2.size()),
+				       arr3.size()),
+			      arr4.size()),
+		     arr5.size());
+    //int N2 = std::max(std::max(std::max(std::max(e1.size(),e2.size()),
+    //				       e3.size()),
+    //			      e4.size()),
+    //		     e5.size());
+    int NN = N; //std::max(N,N2);
+    arr1.resize(NN);
+    arr2.resize(NN);
+    arr3.resize(NN);
+    arr4.resize(NN);
+    arr5.resize(NN);
+
+    //e1.resize(NN);
+    //e2.resize(NN);
+    //e3.resize(NN);
+    //e4.resize(NN);
+    //e5.resize(NN);
+
+    
+    
+    std::stringstream ss2(params[0]);
+    int val = 0;
+    ss2 >> val;
+    GameApi::P p;
+    p.id = val;
+    std::string line;
+    std::string prev_line;
+    std::string prev_line2;
+    std::vector<std::string> vec;
+    std::string res;
+    //while(std::getline(ss3,line)) {
+    //  prev_line2 = prev_line;
+    //  prev_line = line;
+    //  res+=prev_line2;
+    //  res+="\n";
+    //}
+    std::vector<GameApi::P> res_vec;
+    for(int i=0;i<NN;i++)
+      {
+
+    m_ii = i;
+    GameApi::ML ml = ev.polygon_api.render_vertex_array_ml2(ev,p);
+    GameApi::RUN r = ev.blocker_api.game_window2(ev,ml,false,false,0.0,100000.0);
+    GameApi::HML hml = ev.mainloop_api.emscripten_frame2(ev,r,"https://meshpage.org/assets",true);
+    Html *hml2 = find_html(ev.get_env(),hml);
+    hml2->Prepare();
+    std::string script = hml2->script_file();
+    //std::stringstream ss3(script);
+    res=script;
+
+
+	GameApi::ExecuteEnv &ee2 = e;
+	std::vector<GameApiParam> paramvec;
+	std::stringstream ss2; ss2 << ml.id;
+
+	paramvec.push_back({"ml", ss2.str(),"ML",false,0,0,""});
+	paramvec.push_back({"%1", arr1[i],"float",false,0,0,generate_seq(1,arr1.size()) /*e1[i]*/ });
+	paramvec.push_back({"%2", arr2[i],"float",false,0,0,generate_seq(2,arr2.size()) /*e2[i]*/});
+	paramvec.push_back({"%3", arr3[i],"float",false,0,0,generate_seq(3,arr3.size()) /*e3[i]*/});
+	paramvec.push_back({"%4", arr4[i], "float",false,0,0,generate_seq(4,arr4.size()) /*e4[i]*/});
+	paramvec.push_back({"%5", arr5[i], "float",false,0,0,generate_seq(5,arr5.size()) /*e5[i]*/});
+	BeginEnv2(e, paramvec);
+
+
+	
+	res = replace_str(res, "@", "\n");
+
+	// these break the feature that envparams_float_array can be used nested multiple times in the hierarchy
+	res = replace_str(res, "%1", arr1[i]);
+	res = replace_str(res, "%2", arr2[i]);
+	res = replace_str(res, "%3", arr3[i]);
+	res = replace_str(res, "%4", arr4[i]);
+	res = replace_str(res, "%5", arr5[i]);
+	std::cout << "SCRIPT:" << res << std::endl;
+	std::pair<int,std::string> p = GameApi::execute_codegen(ee,ev,res,ee2);
+	if (p.first==-1) { continue; }
+	assert(p.second=="P");
+	int id = p.first;
+	GameApi::P res_p;
+	res_p.id = id;
+	res_vec.push_back(res_p);
+	EndEnv2(e);
+      }
+    std::vector<int> res_vec2;
+    int s = res_vec.size();
+    for(int i=0;i<s;i++) res_vec2.push_back(res_vec[i].id);
+
+
+    ArrayType *array = new ArrayType;
+    array->type=2;
+    array->vec = res_vec2;
+    GameApi::ARR a = add_array(ee,array);
+    return a.id;
+  }
+  virtual std::pair<std::string,std::string> CodeGen(GameApi::EveryApi &ev, std::vector<std::string> params, std::vector<std::string> param_names, std::vector<std::string> param_exprs, int j)
+  {
+    if (!recursion_stopper) {
+      recursion_stopper=true;
+    //std::cout << "OUR CODEGEN..." << std::endl;
+    std::pair<std::string,std::string> p = CodeGen_1(ev,choose_param3(params,m_ii), { "p", "%1", "%2", "%3", "%4", "%5" }, { "p","%1","%2","%3","%4","%5" }, choose_param3(param_exprs,m_ii), "ML","mainloop_api","identity_arr_p",j);
+    //std::cout << "END_OF_OUR_CODEGEN" << std::endl;
+    recursion_stopper=false;
+    return p;
+    } else { return std::make_pair("",""); }
+  }
+  virtual void BeginEnv(GameApi::ExecuteEnv &e, std::vector<GameApiParam> param) { }
+  virtual void EndEnv(GameApi::ExecuteEnv &e) { }
+  
+  virtual void BeginEnv2(GameApi::ExecuteEnv &e, std::vector<GameApiParam> params) {
+    if (params[1].expr != "@")
+      {
+	e.names.push_back("%1");
+	e.values.push_back(params[1].expr);
+      }
+    if (params[2].expr != "@")
+      {
+	e.names.push_back("%2");
+	e.values.push_back(params[2].expr);
+      }
+    if (params[3].expr != "@")
+      {
+	e.names.push_back("%3");
+	e.values.push_back(params[3].expr);
+      }
+
+    if (params[4].expr != "@")
+      {
+	e.names.push_back("%4");
+	e.values.push_back(params[4].expr);
+      }
+    if (params[5].expr != "@")
+      {
+	e.names.push_back("%5");
+	e.values.push_back(params[5].expr);
+      }
+    env_params = params;
+  }
+  virtual void EndEnv2(GameApi::ExecuteEnv &e) {
+    int s = e.names.size();
+    for(int i=0;i<s;i++)
+      {
+	if ((e.names[i]=="%1" && env_params[1].expr!="@" )||
+	    (e.names[i]=="%2"  && env_params[2].expr!="@")||
+	    (e.names[i]=="%3"  && env_params[3].expr!="@")||
+	    (e.names[i]=="%4"  && env_params[4].expr!="@")||
+	    (e.names[i]=="%5"  && env_params[5].expr!="@"))
+	  {
+	    e.names.erase(e.names.begin() + i);
+	    e.values.erase(e.values.begin() + i);
+	    i--;
+	    s--;
+	  }
+      }
+
+  }
+private:
+  std::vector<GameApiParam> env_params;  
+  int m_ii=0;
+  bool recursion_stopper=false;
 };

@@ -38855,12 +38855,10 @@ IMPORT void set_codegen_values(GameApi::WM mod2, int id, std::string line_uid, i
 IMPORT void clear_codegen();
 std::string do_codegen(GameApi::EveryApi &ev)
 {
-  std::cout << "do_codegen:" << g_codegen_values.mod2.id << " " << g_codegen_values.id << " " << g_codegen_values.line_uid << " " << g_codegen_values.level << std::endl;
   ev.mod_api.codegen_reset_counter();
   clear_codegen();
 
   std::pair<std::string,std::string> p = ev.mod_api.codegen(ev, g_codegen_values.mod2, g_codegen_values.id, g_codegen_values.line_uid, g_codegen_values.level,0); 
-  std::cout << "do_codegen:" << p.first << " " << p.second << std::endl;
   return p.second;
 }
 std::string do_codegen2(GameApi::EveryApi &ev, GameApi::WM mod2, int id, std::string line_uid, int level)
@@ -39147,12 +39145,13 @@ GameApi::HML GameApi::MainLoopApi::emscripten_frame2(EveryApi &ev, RUN r, std::s
     std::string s;
     ss2 >> s;
     if (s=="HML") res2_line=line_num;
-    if (s=="ML" && is_envparams_arr) {
+    if ((s=="P"||s=="ML") && is_envparams_arr) {
       //std::cout << "LINE:" << line << std::endl;
       if (line.find("identity")!=std::string::npos)
 	{
 	  //std::cout << "HEP" << std::endl;
 	  res2_line=line_num;
+	  break;
 	}
     }
     line_num++;
