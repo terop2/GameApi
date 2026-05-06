@@ -100,7 +100,13 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
   			 { },
   			 { },
   			 "TT", "mainloop_api", "timing_start"));
-#endif  
+#endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::current_time,
+			 "t_curr_time",
+			 { "prev" },
+			 { "TT" },
+			 { "" },
+			 "TT", "mainloop_api", "current_time"));
 #if (ALL==1)||(TIMING==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing,
  

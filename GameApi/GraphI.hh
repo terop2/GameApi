@@ -1127,6 +1127,7 @@ public:
   virtual float end_time() const=0;
   virtual float delta_time() const=0;
   virtual Timing *clone() const=0;
+  virtual void execute_without_draw(MainLoopEnv &e)=0;
 };
 
 enum FrameBufferFormat
