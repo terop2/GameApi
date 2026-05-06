@@ -4279,6 +4279,23 @@ public:
     }    
   }
   virtual void FirstFrame() { }
+  void execute_without_draw(MainLoopEnv &e)
+  {
+    if (valid) {
+
+    Timing *t = find_timing(env,link);
+    start_time2 = t->end_time(); //+timing->delta_time();
+    end_time2 = start_time2+duration; //+timing->delta_time();
+
+    if (e.time>=start_time2 && e.time<=end_time2) {
+      Timing *item = find_timing(env,link);
+      MainLoopEnv ee = e;
+      //ee.time = e.time+delta_time();
+      item->execute_without_draw(ee);
+    }
+    }
+    
+  }
   virtual void execute(MainLoopEnv &e)
   {
     if (valid) {
@@ -4382,12 +4399,48 @@ GameApi::ML GameApi::MainLoopApi::array_timing_chain_key_ml(EveryApi &ev, int ke
 {
   GameApi::IF trigger = ev.font_api.keypress_int_fetcher(key,1,0);
   GameApi::TT t0 = timing_start();
-  GameApi::TT t01 = timing_event(trigger, t0, ml_empty());
+  GameApi::TT t00 = current_time(t0);
+  GameApi::TT t01 = timing_event(trigger, t00, ml_empty());
   GameApi::TT t1 = array_timing_chain(t01,start_time,durations,vec);
-  GameApi::TT t2 = t_repeat(t0,t1,repeat);
-  GameApi::ML t3 = timing_exit(t2);
+  //GameApi::TT t2 = t_repeat(t0,t1,repeat);
+  GameApi::ML t3 = timing_exit(t1);
   return t3;
 }
+
+class CurrentTimeTiming : public Timing
+{
+public:
+  CurrentTimeTiming(Timing *prev) : prev(prev) { }
+  float end_time() const { return current_time+delta_time(); }
+  float delta_time() const { return prev->delta_time(); }
+  Timing *clone() const { return new CurrentTimeTiming(prev); }
+  virtual void Collect(CollectVisitor &vis) { prev->Collect(vis); }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { prev->Prepare(); }
+  void execute_without_draw(MainLoopEnv &e) {
+    current_time = e.time;
+  }
+  virtual void execute(MainLoopEnv &e) {
+    current_time = e.time;
+    prev->execute(e);
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    prev->handle_event(e);
+  }
+  virtual std::vector<int> shader_id() {
+    return prev->shader_id();
+  }
+private:
+  Timing *prev;
+  float current_time = 0.0;
+};
+GameApi::TT GameApi::MainLoopApi::current_time(TT prev)
+{
+  Timing *t = find_timing(e,prev);
+  return add_timing(e, new CurrentTimeTiming(t));
+}
+
 
 class TimingRepeat : public Timing
 {
@@ -4395,7 +4448,7 @@ public:
   TimingRepeat(Timing *prev, Timing *curr_to_repeated, int count) : prev(prev), curr_to_repeated(curr_to_repeated), count(count) { }
   float end_time() const {
     start_time = prev->end_time();
-    return start_time + count*curr_to_repeated->end_time(); }
+    return start_time + count*curr_to_repeated->end_time() + delta_time(); }
   float delta_time() const { return prev->delta_time(); }
   Timing *clone() const { return new TimingRepeat(prev,curr_to_repeated,count); }
   virtual void Collect(CollectVisitor &vis)
@@ -4405,6 +4458,17 @@ public:
   }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { prev->Prepare(); curr_to_repeated->Prepare(); HeavyPrepare(); }
+  void execute_without_draw(MainLoopEnv &e) {
+    current_time = e.time;
+    prev->execute_without_draw(e);
+    if (e.time >= start_time && e.time<= end_time()) {
+      float time_delta = e.time - start_time;
+      float time_delta2 = fmod(time_delta, curr_to_repeated->end_time());
+      MainLoopEnv ee = e;
+      ee.time = time_delta2;
+      curr_to_repeated->execute_without_draw(ee);
+    }
+  }
   virtual void execute(MainLoopEnv &e)
   {
     current_time = e.time;
@@ -4472,10 +4536,14 @@ public:
   TimingEvent(GameApi::Env &env, Fetcher<int> *fetch, Timing *timing, MainLoopItem *item) : env(env), fetch(fetch), timing(timing), item(item) { }
   virtual float end_time() const {
     start_time = timing->end_time();
-    if (fetch->get() == 1)
+    //if (fetch->get() == 1)
+    //  {
+    if (last_keypress_time > 0.0)
       {
-	return current_time+delta_time();
+	return last_keypress_time + delta_time();
+	  //return current_time+delta_time();
       }
+	// }
     return start_time+20000.0;
   }
   virtual float delta_time() const { return timing->delta_time(); }
@@ -4490,6 +4558,18 @@ public:
   virtual void HeavyPrepare() { }
   virtual void Prepare() { item->Prepare(); timing->Prepare(); }
   virtual void FirstFrame() { }
+
+  void execute_without_draw(MainLoopEnv &e)
+  {
+    current_time = e.time;
+    fetch->frame(e);
+    start_time = timing->end_time();
+    in_timerange=false;
+    if (e.time >= start_time && e.time<= end_time()) {
+      in_timerange=true;
+      timing->execute_without_draw(e);
+    }
+  }
   virtual void execute(MainLoopEnv &e)
   {
     current_time = e.time;
@@ -4500,6 +4580,7 @@ public:
     if (e.time >= start_time && e.time<= end_time()) {
       in_timerange=true;
       item->execute(e);
+      timing->execute_without_draw(e);
     } else {
       MainLoopEnv ee = e;
       ee.time = e.time+delta_time();
@@ -4512,10 +4593,16 @@ public:
       {
 	fetch->event(e);
 	item->handle_event(e);
+	timing->handle_event(e);
       }
     else
       {
+	fetch->event(e);
 	timing->handle_event(e);
+      }
+    if (fetch->get() == 1)
+      {
+	last_keypress_time = current_time; //e.time;
       }
   }
   virtual std::vector<int> shader_id() { return item->shader_id(); }
@@ -4527,6 +4614,7 @@ private:
   mutable float start_time;
   mutable bool in_timerange;
   mutable float current_time;
+  mutable float last_keypress_time=-9999.0;
 };
 
 GameApi::TT GameApi::MainLoopApi::timing_event(IF trigger, TT link, ML show)
