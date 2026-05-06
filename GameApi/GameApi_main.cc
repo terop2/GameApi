@@ -4233,6 +4233,12 @@ public:
   Timing2(GameApi::Env &e) : env(e),valid(false),is_switch(false) { start_time2=0.0; end_time2=0.0; }
   float end_time() const 
   {
+    if (valid) {
+      Timing *item = find_timing(env,link);
+      Timing *timing = item;
+      start_time2 = timing->end_time(); //+timing->delta_time();
+      end_time2 = start_time2+duration; //+timing->delta_time();
+    }
     return end_time2;
   }
   float delta_time() const
@@ -4292,9 +4298,12 @@ public:
       MainLoopEnv ee = e;
       //ee.time = e.time+delta_time();
       item->execute_without_draw(ee);
+    } else {
+      Timing *item = find_timing(env,link);
+      MainLoopEnv ee = e;
+      item->execute_without_draw(ee);
     }
-    }
-    
+    }    
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -4314,6 +4323,8 @@ public:
 	MainLoopItem *item = find_main_loop(env,show2);
 	item->execute(e);
       }
+      Timing *t = find_timing(env,link);
+      t->execute_without_draw(e);
     } else {
       in_timerange=false;
       Timing *item = find_timing(env,link);
@@ -4325,9 +4336,18 @@ public:
   }
   virtual void handle_event(MainLoopEvent &e)
     {
+      if (valid) {
+	Timing *item = find_timing(env,link);
+	Timing *timing = item;
+	start_time2 = timing->end_time(); //+timing->delta_time();
+	end_time2 = start_time2+duration; //+timing->delta_time();
+      }
+
       if (valid && in_timerange) {
     MainLoopItem *item = find_main_loop(env,show);
     item->handle_event(e);
+	Timing *item2 = find_timing(env,link);
+	item2->handle_event(e);
       } else if (valid && !in_timerange) {
 	Timing *item = find_timing(env,link);
 	item->handle_event(e);
@@ -4349,8 +4369,8 @@ private:
  GameApi::ML show;
  GameApi::ML show2;
  GameApi::TT link;
- float start_time2;
- float end_time2;
+ mutable float start_time2;
+ mutable float end_time2;
  bool valid;
  bool in_timerange;
  bool is_switch;
@@ -4419,6 +4439,7 @@ public:
   virtual void Prepare() { prev->Prepare(); }
   void execute_without_draw(MainLoopEnv &e) {
     current_time = e.time;
+    prev->execute_without_draw(e);
   }
   virtual void execute(MainLoopEnv &e) {
     current_time = e.time;
@@ -4568,7 +4589,10 @@ public:
     if (e.time >= start_time && e.time<= end_time()) {
       in_timerange=true;
       timing->execute_without_draw(e);
-    }
+    } else
+      {
+      timing->execute_without_draw(e);
+      }
   }
   virtual void execute(MainLoopEnv &e)
   {
@@ -4600,10 +4624,12 @@ public:
 	fetch->event(e);
 	timing->handle_event(e);
       }
-    if (fetch->get() == 1)
-      {
-	last_keypress_time = current_time; //e.time;
-      }
+    int f = fetch->get();
+    if (f == 0) { inside_keypress = false; }
+    if (f == 1 && !inside_keypress) {
+      last_keypress_time = current_time; //e.time;
+    }
+    if (f == 1) { inside_keypress = true; }
   }
   virtual std::vector<int> shader_id() { return item->shader_id(); }
 private:
@@ -4615,6 +4641,7 @@ private:
   mutable bool in_timerange;
   mutable float current_time;
   mutable float last_keypress_time=-9999.0;
+  bool inside_keypress=false;
 };
 
 GameApi::TT GameApi::MainLoopApi::timing_event(IF trigger, TT link, ML show)
