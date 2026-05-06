@@ -503,6 +503,8 @@ public:
   IMPORT TT timing(float duration, TT link, ML show);
   IMPORT TT array_timing_chain(TT prev, float start_time, std::string durations, std::vector<ML> vec);
   IMPORT ML array_timing_chain_ml(float start_time, std::string durations, std::vector<ML> vec);
+  IMPORT ML array_timing_chain_key_ml(EveryApi &ev, int key, float time_after_key, std::string durations, std::vector<ML> vec, int repeat);
+  IMPORT TT t_repeat(TT prev, TT curr_to_repeated, int count);
   IMPORT TT timing_switch(EveryApi &ev, float duration, TT link, ML show, ML show2, int switch_dir);
   IMPORT ML timing_exit(TT link);
   IMPORT ML scene_transparency(ML scene);

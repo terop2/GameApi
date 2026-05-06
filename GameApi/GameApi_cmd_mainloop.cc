@@ -122,6 +122,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "float", "std::string", "[ML]" },
 			 { "0.0", "2&2&2", "" },
 			 "ML", "mainloop_api", "array_timing_chain_ml"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::array_timing_chain_key_ml,
+			 "t_chain_key_ml",
+			 { "ev", "key", "time_after_key", "durations", "vec", "repeat" },
+			 { "EveryApi&", "int", "float", "std::string", "[ML]", "int" },
+			 { "ev", "32", "0.0", "2&2&2", "", "1" },
+			 "ML", "mainloop_api", "array_timing_chain_key_ml"));
 #if (ALL==1)||(TIMING_EVENT==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_event,
 			 "t_event",
@@ -130,6 +136,12 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "", "", "" },
 			 "TT", "mainloop_api", "timing_event"));
 #endif
+  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::t_repeat,
+			 "t_repeat",
+			 { "prev", "curr_to_be_repeated", "count" },
+			 { "TT", "TT", "int" },
+			 { "", "", "10000" },
+			 "TT", "mainloop_api", "t_repeat"));
 #if (ALL==1)||(TIMING_SWITCH==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::timing_switch,
 			 "t_time_switch",
