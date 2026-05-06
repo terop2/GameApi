@@ -4417,11 +4417,25 @@ GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(float start_time, std::s
 }
 GameApi::ML GameApi::MainLoopApi::array_timing_chain_key_ml(EveryApi &ev, int key, float start_time, std::string durations, std::vector<ML> vec, int repeat)
 {
+  std::vector<ML> repeated_vec;
+  std::string repeated_durations;
+  int s = repeat;
+  for(int i=0;i<s;i++)
+    {
+      for(int j=0;j<vec.size();j++)
+	{
+	  repeated_vec.push_back(vec[j]);
+	}
+      repeated_durations += durations;
+      if (i!=s-1) repeated_durations += "&";
+    }
+
+  
   GameApi::IF trigger = ev.font_api.keypress_int_fetcher(key,1,0);
   GameApi::TT t0 = timing_start();
   GameApi::TT t00 = current_time(t0);
   GameApi::TT t01 = timing_event(trigger, t00, ml_empty());
-  GameApi::TT t1 = array_timing_chain(t01,start_time,durations,vec);
+  GameApi::TT t1 = array_timing_chain(t01,start_time,repeated_durations,repeated_vec);
   //GameApi::TT t2 = t_repeat(t0,t1,repeat);
   GameApi::ML t3 = timing_exit(t1);
   return t3;
@@ -4482,7 +4496,26 @@ public:
   void execute_without_draw(MainLoopEnv &e) {
     current_time = e.time;
     prev->execute_without_draw(e);
+    //if (e.time >= start_time && e.time<= end_time()) {
+      float time_delta = e.time - start_time;
+      float time_delta2 = fmod(time_delta, curr_to_repeated->end_time());
+      MainLoopEnv ee = e;
+      ee.time = time_delta2;
+      curr_to_repeated->execute_without_draw(ee);
+      //}
+  }
+  virtual void execute(MainLoopEnv &e)
+  {
+    current_time = e.time;
     if (e.time >= start_time && e.time<= end_time()) {
+      prev->execute(e);
+      float time_delta = e.time - start_time;
+      float time_delta2 = fmod(time_delta, curr_to_repeated->end_time());
+      MainLoopEnv ee = e;
+      ee.time = time_delta2;
+      curr_to_repeated->execute(ee);
+    } else {
+      prev->execute(e);
       float time_delta = e.time - start_time;
       float time_delta2 = fmod(time_delta, curr_to_repeated->end_time());
       MainLoopEnv ee = e;
@@ -4490,23 +4523,12 @@ public:
       curr_to_repeated->execute_without_draw(ee);
     }
   }
-  virtual void execute(MainLoopEnv &e)
-  {
-    current_time = e.time;
-    prev->execute(e);
-    if (e.time >= start_time && e.time<= end_time()) {
-      float time_delta = e.time - start_time;
-      float time_delta2 = fmod(time_delta, curr_to_repeated->end_time());
-      MainLoopEnv ee = e;
-      ee.time = time_delta2;
-      curr_to_repeated->execute(ee);
-    }
-  }
   virtual void handle_event(MainLoopEvent &e)
   {
     if (current_time < start_time)
       {
 	prev->handle_event(e);
+	curr_to_repeated->handle_event(e);
       }
     else if (current_time>=start_time && current_time<=end_time())
       {
@@ -4515,15 +4537,16 @@ public:
       }
     else {
       prev->handle_event(e);
+	curr_to_repeated->handle_event(e);
     }
   }
   virtual std::vector<int> shader_id() {
-    if (current_time < start_time)
+    /*    if (current_time < start_time)
       {
 	return prev->shader_id();
       }
-    else if (current_time>=start_time && current_time<=end_time())
-      {
+      else if (current_time>=start_time && current_time<=end_time())
+      { */
 	std::vector<int> v = prev->shader_id();
 	std::vector<int> v2 = curr_to_repeated->shader_id();
 	int s = v2.size();
@@ -4532,8 +4555,8 @@ public:
 	    v.push_back(v2[i]);
 	  }
 	return v;
-      }
-    return prev->shader_id();
+	/*      }
+		return prev->shader_id();*/
   }
 
 private:
