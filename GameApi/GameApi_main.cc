@@ -4378,7 +4378,92 @@ GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(float start_time, std::s
   GameApi::ML t2 = timing_exit(t1);
   return t2;
 }
-						     
+GameApi::ML GameApi::MainLoopApi::array_timing_chain_key_ml(EveryApi &ev, int key, float start_time, std::string durations, std::vector<ML> vec, int repeat)
+{
+  GameApi::IF trigger = ev.font_api.keypress_int_fetcher(key,1,0);
+  GameApi::TT t0 = timing_start();
+  GameApi::TT t01 = timing_event(trigger, t0, ml_empty());
+  GameApi::TT t1 = array_timing_chain(t01,start_time,durations,vec);
+  GameApi::TT t2 = t_repeat(t0,t1,repeat);
+  GameApi::ML t3 = timing_exit(t2);
+  return t3;
+}
+
+class TimingRepeat : public Timing
+{
+public:
+  TimingRepeat(Timing *prev, Timing *curr_to_repeated, int count) : prev(prev), curr_to_repeated(curr_to_repeated), count(count) { }
+  float end_time() const {
+    start_time = prev->end_time();
+    return start_time + count*curr_to_repeated->end_time(); }
+  float delta_time() const { return prev->delta_time(); }
+  Timing *clone() const { return new TimingRepeat(prev,curr_to_repeated,count); }
+  virtual void Collect(CollectVisitor &vis)
+  {
+    prev->Collect(vis);
+    curr_to_repeated->Collect(vis);
+  }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { prev->Prepare(); curr_to_repeated->Prepare(); HeavyPrepare(); }
+  virtual void execute(MainLoopEnv &e)
+  {
+    current_time = e.time;
+    prev->execute(e);
+    if (e.time >= start_time && e.time<= end_time()) {
+      float time_delta = e.time - start_time;
+      float time_delta2 = fmod(time_delta, curr_to_repeated->end_time());
+      MainLoopEnv ee = e;
+      ee.time = time_delta2;
+      curr_to_repeated->execute(ee);
+    }
+  }
+  virtual void handle_event(MainLoopEvent &e)
+  {
+    if (current_time < start_time)
+      {
+	prev->handle_event(e);
+      }
+    else if (current_time>=start_time && current_time<=end_time())
+      {
+	prev->handle_event(e);
+	curr_to_repeated->handle_event(e);
+      }
+    else {
+      prev->handle_event(e);
+    }
+  }
+  virtual std::vector<int> shader_id() {
+    if (current_time < start_time)
+      {
+	return prev->shader_id();
+      }
+    else if (current_time>=start_time && current_time<=end_time())
+      {
+	std::vector<int> v = prev->shader_id();
+	std::vector<int> v2 = curr_to_repeated->shader_id();
+	int s = v2.size();
+	for(int i=0;i<s;i++)
+	  {
+	    v.push_back(v2[i]);
+	  }
+	return v;
+      }
+    return prev->shader_id();
+  }
+
+private:
+  mutable float start_time=0.0;
+  mutable float current_time = 0.0;
+  Timing *prev;
+  Timing *curr_to_repeated;
+  int count;
+};
+GameApi::TT GameApi::MainLoopApi::t_repeat(TT prev, TT curr_to_repeated, int count)
+{
+  Timing *a_prev = find_timing(e,prev);
+  Timing *a_curr = find_timing(e,curr_to_repeated);
+  return add_timing(e, new TimingRepeat(a_prev, a_curr, count));
+}
 
 
 class TimingEvent : public Timing
@@ -4403,7 +4488,7 @@ public:
     timing->Collect(vis);
   }
   virtual void HeavyPrepare() { }
-  virtual void Prepare() { item->Prepare(); }
+  virtual void Prepare() { item->Prepare(); timing->Prepare(); }
   virtual void FirstFrame() { }
   virtual void execute(MainLoopEnv &e)
   {
