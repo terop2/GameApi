@@ -25,6 +25,18 @@ extern int g_pthread_count;
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
 
 
+std::vector<int> id_list = { 15, 6, 0 };
+
+unsigned int test_color(int id, unsigned int color)
+{
+  int s = id_list.size();
+  for(int i=0;i<s;i++)
+    if (id_list[i]==id) return color;
+  
+  std::cout << __FILE__ << " test_color_fail:" << id << " " << std::hex << color << std::dec << std::endl;
+  return color;
+}
+
 template<class T>
 void print(std::string label, T *ptr)
 {
@@ -1934,7 +1946,7 @@ public:
       unsigned short g = c0[1];
       unsigned short b = c0[2];
       unsigned short a = c0[3];
-	if (img->component==3) a=0xff;
+	if (img->component==3) a=0xff00;
       r>>=8;
       g>>=8;
       b>>=8;
@@ -1947,6 +1959,7 @@ public:
 	rr>>=16;
 	gg>>=8;
 
+	aa<<=24;
 	bb<<=16;
 	gg<<=8;
 	unsigned int val = aa+rr+gg+bb; 
@@ -2008,7 +2021,7 @@ public:
     if (!cbm) { return 100; } 
     return cbm->SizeY(); }
   virtual Color Map(int x, int y) const { 
-    if (!cbm) { return Color(0xffffffff); }
+    if (!cbm) { return Color(test_color(1,0xffffffff)); }
     return cbm->Map(x,y); }
   void Collect(CollectVisitor &vis)
   {
@@ -2044,7 +2057,7 @@ public:
       for(int x=0;x<10;x++)
 	for(int y=0;y<10;y++)
 	  {
-	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? 0xffffffff : 0xff000000;
+	    img.buffer[x+y*img.ydelta] = ((x+y)&1)==1 ? test_color(2,0xffffffff) : test_color(3,0xff000000);
 	  }
       //std::cout << "ERROR: File not found: " << filename << std::endl;
     }
@@ -2821,7 +2834,7 @@ public:
   //print_extension_map();
     if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
       std::cout << "Bad material: i=" << i << " material_id=" << material_id << " has_texture(i)=" << has_texture(i) <<std::endl; 
-      return ev.bitmap_api.newbitmap(1,1,0xffffff00);
+      return ev.bitmap_api.newbitmap(1,1,test_color(4, 0xffffff00);
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
@@ -4711,7 +4724,7 @@ public:
       
 	int index = get_index(face,point);
 
-	if (index<0 ||index>=color_acc->count) return 0xff000000;
+	if (index<0 ||index>=color_acc->count) return test_color(5,0xffffffff);
 
 	
 	const unsigned char *pos_ptr = &color_buf->data[0];
@@ -4734,11 +4747,11 @@ public:
     }
     } else {
       //std::cout << "FaceCollection vertex color failed!" << std::endl;
-      return 0xffffffff; // Cozy day model uses this for rendering
+      return test_color(6,0xffffffff); // Cozy day model uses this for rendering
     }
 
     std::cout << "gltf Color unknown mode" << std::endl;
-    return 0xffffffff;
+    return test_color(7,0xffffffff);
 
   }
   void check_joint(float &val) const
@@ -5380,7 +5393,7 @@ GameApi::BM GameApi::PolygonApi::gltf_load_bitmap( GameApi::EveryApi &ev, TF mod
 {
   if (image_index==-1) {
     std::cout << "gltf_load_bitmap image_index==-1" << std::endl;
-    return ev.bitmap_api.newbitmap(1,1, 0xffffffff);
+    return ev.bitmap_api.newbitmap(1,1, test_color(8,0xffffffff));
   }
   GLTFModelInterface *interface = find_gltf(e,model0);
   std::string url = interface->Url();
@@ -5425,7 +5438,7 @@ GameApi::BM gltf_load_bitmap2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModel
 {
   if (image_index==-1) {
     std::cout << "gltf_load_bitmap2 image_index==-1" << std::endl;
-    return ev.bitmap_api.newbitmap(1,1,0xffffffff);
+    return ev.bitmap_api.newbitmap(1,1,test_color(9,0xffffffff));
   }
 
 
@@ -5628,7 +5641,7 @@ public:
     FaceCollection *coll = find_facecoll(e,p);
     if (!coll->has_color())
       {
-	p = ev.polygon_api.color(p,0xffffffff);
+	p = ev.polygon_api.color(p,test_color(10,0xffffffff));
       }
     if (!coll->has_normal())
       {
@@ -5652,7 +5665,7 @@ public:
     FaceCollection *coll = find_facecoll(e,p);
     if (!coll->has_color())
       {
-	p = ev.polygon_api.color(p,0xffffffff);
+	p = ev.polygon_api.color(p,test_color(11,0xffffffff));
       }
     if (!coll->has_normal())
       {
@@ -5672,7 +5685,7 @@ public:
     FaceCollection *coll = find_facecoll(e,p);
     if (!coll->has_color())
       {
-	p = ev.polygon_api.color(p,0xffffffff);
+	p = ev.polygon_api.color(p,test_color(12,0xffffffff));
       }
     if (!coll->has_normal())
       {
@@ -5697,7 +5710,7 @@ public:
     FaceCollection *coll = find_facecoll(e,p);
     if (!coll->has_color())
       {
-	p = ev.polygon_api.color(p,0xffffffff);
+	p = ev.polygon_api.color(p,test_color(13,0xffffffff));
       }
     if (!coll->has_normal())
       {
@@ -5998,7 +6011,7 @@ public:
     //std::cout << "GLOSSY:" << get_diffuse_factor() << " " << get_glossiness_factor() << " " << get_specular_factor() << std::endl;
     GameApi::ML tex1 = ev.polygon_api.texture_many_shader(ev, ml, 0.5*get_glossiness_factor()+0.5*(1.0-get_diffuse_factor()));
 
-    GameApi::ML tex2 = ev.polygon_api.phong_shader(ev,tex1, 0.0,0.0,-1.0,0xff221100, 0xff888888,0xffffffff, (get_specular_factor())*30.0);
+    GameApi::ML tex2 = ev.polygon_api.phong_shader(ev,tex1, 0.0,0.0,-1.0,0xff221100, 0xff888888,test_color(14,0xffffffff), (get_specular_factor())*30.0);
     return tex2;
   }
 #endif  
@@ -6035,7 +6048,7 @@ public:
     print_extension_map();
     if (material_id<0 || material_id>=int(interface->materials_size())||!has_texture(i)) {
       //std::cout << "Bad material: i=" << i << " material_id=" << material_id << " has_texture(i)=" << has_texture(i) <<std::endl; 
-      return ev.bitmap_api.newbitmap(1,1,0xffffffff);
+      return ev.bitmap_api.newbitmap(1,1,test_color(15,0xffffffff));
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
@@ -6790,7 +6803,7 @@ public:
     occul_url = fix_url(url, occul_url);
     emis_url = fix_url(url, emis_url);
 
-#ifdef EMSCRIPTEN
+#ifndef EMSCRIPTEN
     if (baseColor_b) e.async_load_url(baseColor_url, homepage);
     if (metalRough_b) e.async_load_url(metalRough_url, homepage);
     if (normal_b) e.async_load_url(normal_url, homepage);
@@ -6807,31 +6820,31 @@ public:
     GameApi::BM bm_base;
     if (baseColor_b) {
       bm_base = ev.bitmap_api.loadbitmapfromurl(baseColor_url);
-    } else { bm_base = ev.bitmap_api.newbitmap(1,1,0x0); }
+    } else { bm_base = ev.bitmap_api.newbitmap(1,1,test_color(16,0x0)); }
 
     GameApi::BM bm_metalrough;
     if (metalRough_b)
       {
 	bm_metalrough = ev.bitmap_api.loadbitmapfromurl(metalRough_url);
-      } else { bm_metalrough = ev.bitmap_api.newbitmap(1,1,0x0); }
+      } else { bm_metalrough = ev.bitmap_api.newbitmap(1,1,test_color(17,0x0)); }
 
     GameApi::BM bm_normal;
     if (normal_b)
       {
 	bm_normal = ev.bitmap_api.loadbitmapfromurl(normal_url);
-      } else { bm_normal = ev.bitmap_api.newbitmap(1,1,0x0); }
+      } else { bm_normal = ev.bitmap_api.newbitmap(1,1,test_color(18,0x0)); }
 
     GameApi::BM bm_occul;
     if (occul_b)
       {
 	bm_occul = ev.bitmap_api.loadbitmapfromurl(occul_url);
-      } else { bm_occul = ev.bitmap_api.newbitmap(1,1,0x0); }
+      } else { bm_occul = ev.bitmap_api.newbitmap(1,1,test_color(19,0x0)); }
 
     GameApi::BM bm_emis;
     if (emis_b)
       {
 	bm_emis = ev.bitmap_api.loadbitmapfromurl(emis_url);
-      } else { bm_emis = ev.bitmap_api.newbitmap(1,1,0x0); }
+      } else { bm_emis = ev.bitmap_api.newbitmap(1,1,test_color(20,0x0)); }
     
 
     return gltf_material2_manual(e, ev, mix, self_mult,rest_mult,bm_base, bm_metalrough, bm_normal, bm_occul, bm_emis, baseColor_b, metalRough_b, normal_b, occul_b, emis_b, roughFactor, metalFactor, base_b, base_g, base_b, base_a, occul_strength,light_dir);
@@ -6905,7 +6918,7 @@ public:
   }
   GameApi::BM texture(int i) const {
     if (material_id<0 || material_id>=int(interface->materials_size())) {
-      return ev.bitmap_api.newbitmap(1,1,0xff00ffff);
+      return ev.bitmap_api.newbitmap(1,1,test_color(21,0xff00ffff));
     }
     const tinygltf::Material &m = interface->get_material(material_id);
     switch(i) {
@@ -7205,7 +7218,7 @@ public:
   {
     return coll.LinePoint(line,point)*m;
   }
-  virtual unsigned int LineColor(int line, int point) const { return 0xffffffff; }  
+  virtual unsigned int LineColor(int line, int point) const { return test_color(22,0xffffffff); }  
 
 private:
   Matrix m;
@@ -7407,7 +7420,7 @@ public:
     if (res.id!=-1) {
    FaceCollection *coll = find_facecoll(env,res);
     return coll->Color(face,point);
-    } else return 0xfffffff;
+    } else return test_color(23,0xfffffff);
   }
   virtual Point2d TexCoord(int face, int point) const
   {
@@ -8887,7 +8900,7 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       if (mat==-1) { colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
-	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(24,0xff221100), test_color(25,0xffff8888),test_color(26,0xffffffff),10.0);
       } else {
         mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
       }
@@ -8979,7 +8992,7 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       if (mat==-1) { colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
-	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(27,0xff221100), test_color(28,0xffff8888),test_color(29,0xffffffff),10.0);
       } else {
         mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
       }
@@ -9105,7 +9118,7 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       if (mat==-1) { colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
-	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(30,0xff221100), test_color(31,0xffff8888),test_color(32,0xffffffff),10.0);
       } else
 	{
 	  mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
@@ -9185,7 +9198,7 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       if (mat==-1) { colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
-	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(33,0xff221100), test_color(34,0xffff8888),test_color(35,0xffffffff),10.0);
       } else
 	{
 	  mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
@@ -9861,9 +9874,9 @@ public:
   }
   virtual unsigned int Color(int face, int point) const
   {
-    if (res.id==-1) return 0xffff0000;
+    if (res.id==-1) return test_color(33,0xffff0000);
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return 0xff0000ff;
+    if (!coll) return test_color(34,0xff0000ff);
     return coll->Color(face,point);
   }
   virtual Point2d TexCoord(int face, int point) const
@@ -10030,7 +10043,7 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
 		if (material==-1)
 		  {
 		    mat2=ev.materials_api.m_def(ev);
-		    mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,0xff221100, 0xffff8888,0xffffffff,10.0);
+		    mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(35,0xff221100), test_color(36,0xffff8888),test_color(37,0xffffffff),10.0);
 		  } else {
 		GameApi::MT mat = ev.materials_api.gltf_material(ev, model0, material, mix, light_dir_x, light_dir_y, light_dir_z);
 		  mat2 = mat;
@@ -10606,9 +10619,9 @@ public:
   }
   virtual unsigned int Color(int face, int point) const
   {
-    if (res.id==-1) return 0xffff0000;
+    if (res.id==-1) return test_color(36,0xffff0000);
     FaceCollection *coll = find_facecoll(env,res);
-    if (!coll) return 0xff0000ff;
+    if (!coll) return test_color(37,0xff0000ff);
     return coll->Color(face,point);
   }
   virtual Point2d TexCoord(int face, int point) const
@@ -13113,7 +13126,7 @@ public:
   }
   unsigned int LineColor(int line, int point) const
   {
-    return 0xffffffff;
+    return test_color(38,0xffffffff);
   }
 private:
   std::vector<Point> vec;

@@ -452,6 +452,20 @@ void Program::set_var(const char *name, const Vector &v)
     }
 }
 
+std::vector<int> id_list2 = { 3,0 };
+
+unsigned int test_color2(int id, unsigned int color)
+{
+  int s = id_list2.size();
+  for(int i=0;i<s;i++)
+    if (id_list2[i]==id) return color;
+  
+  std::cout << __FILE__ << " test_color_fail:" << id << " " << std::hex << color << std::dec << std::endl;
+  //stackTrace();
+  return color;
+}
+
+
 void Program::set_var(const char *name, const Color &c)
 {
   //Low_GLint loc = g_low->ogl->glGetUniformLocation(priv->program, name.c_str());
@@ -463,7 +477,8 @@ void Program::set_var(const char *name, const Color &c)
   }
   else
     loc=locs[id];
- 
+  //std::cout << "set_var" << name << std::endl;
+  test_color2(1,const_cast<Color&>(c).Pixel());
   g_low->ogl->glUniform3f(loc, c.r/255.0, c.g/255.0, c.b/255.0);
 }
 
@@ -482,6 +497,8 @@ int Program::get_loc(std::string name)
 }
 void Program::set_var(int loc, float val1, float val2, float val3, float val4)
 {
+  Color c(val1,val2,val3,val4);
+  test_color2(2,c.Pixel());
   g_low->ogl->glUniform4f(loc, val1, val2, val3, val4);
 }
 void Program::set_var(const char *name, float val1, float val2, float val3, float val4)
@@ -504,6 +521,8 @@ void Program::set_var(const char *name, float val1, float val2, float val3, floa
   
     if (g_setvar_cache.find(loc)==g_setvar_cache.end() || fabs(g_setvar_cache[loc]-val1)>0.000001f||g_setvar_cache.find(loc2)==g_setvar_cache.end() || fabs(g_setvar_cache[loc2]-val2)>0.000001f||g_setvar_cache.find(loc3)==g_setvar_cache.end() || fabs(g_setvar_cache[loc3]-val3)>0.000001f||g_setvar_cache.find(loc4)==g_setvar_cache.end() || fabs(g_setvar_cache[loc4]-val4)>0.000001f)
     {
+  Color c(val1,val2,val3,val4);
+  test_color2(3,c.Pixel());
 
   g_low->ogl->glUniform4f(loc, val1, val2, val3, val4);
   g_setvar_cache[loc]=val1;
