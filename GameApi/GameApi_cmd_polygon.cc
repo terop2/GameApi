@@ -182,6 +182,26 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 { "http://meshpage.org/assets/teapot.stl@FinlayMcWalter@https://creativecommons.org/share-your-work/public-domain/cc0/" },
 			 "P", "polygon_api", "stl_load"));
 #endif
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::p_array,
+                        "p_array2",
+			 { "vec" },
+                        { "[P]" },
+                        { "" },
+                        "PV", "polygon_api", "p_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::seq_p_array,
+                        "seq_p_array",
+			 { "vec", "vec2" },
+                        { "[P]", "[P]" },
+                        { "", "" },
+                        "[P]", "polygon_api", "seq_p_array"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::array_p_array,
+                        "array_p_array",
+                        { "vec" },
+                        { "[PV]" },
+                        { "" },
+                   "[P]", "polygon_api", "array_p_array"));
+
 #if (ALL==1)||(DECIMATE3==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::decimate3,
 			 "decimate",

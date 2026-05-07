@@ -2736,6 +2736,9 @@ class PolygonApi
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT PV p_array(std::vector<P> vec);
+  IMPORT ARR array_p_array(std::vector<PV> vec);
+  IMPORT ARR seq_p_array(std::vector<P> vec, std::vector<P> vec2);
   IMPORT P interpolate_mesh_pair(P start_p, P end_p);
   IMPORT ARR interpolate_mesh_pair_arr(std::vector<P> start_ps, std::vector<P> end_ps);
   IMPORT P sort_faces_by_area(P p);
