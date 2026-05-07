@@ -659,6 +659,8 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 	ogl->glBindTexture(Low_GL_TEXTURE_2D, ids[i]);
 
 	int rgb = Low_GL_RGBA;
+	//std::cout << "SIZE:" << is_srgb.size() << std::endl;
+	//std::cout << i << std::endl;
 	if (is_srgb.size()>i)
 	  {
 	    if (is_srgb[i]==true)
@@ -666,7 +668,6 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev
 		rgb = Low_GL_SRGB8_ALPHA8;
 	      }
 	  }
-	
 	ogl->glTexImage2D(Low_GL_TEXTURE_2D,0,rgb /*Low_GL_RGBA*/,bm->SizeX(),bm->SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
 	//#ifdef EMSCRIPTEN
 	//	if (mipmaps&&power_of_two)
@@ -802,7 +803,7 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx, bool is_srgb)
 #endif
   ogl->glActiveTexture(Low_GL_TEXTURE0+0);
   ogl->glBindTexture(Low_GL_TEXTURE_2D, id);
-  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, is_srgb?Low_GL_SRGB8_ALPHA8:Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
+  ogl->glTexImage2D(Low_GL_TEXTURE_2D, 0, is_srgb?Low_GL_SRGB8_ALPHA8: Low_GL_RGBA, bm.SizeX(),bm.SizeY(), 0, Low_GL_RGBA, Low_GL_UNSIGNED_BYTE, buf.Buffer().buffer);
 
   int ssx = bm.SizeX();
   int ssy = bm.SizeY();

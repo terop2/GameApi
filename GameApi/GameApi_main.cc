@@ -4408,10 +4408,24 @@ GameApi::TT GameApi::MainLoopApi::array_timing_chain(TT prev, float start_time, 
     }
   return curr;
 }
-GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(float start_time, std::string durations, std::vector<ML> vec)
+GameApi::ML GameApi::MainLoopApi::array_timing_chain_ml(float start_time, std::string durations, std::vector<ML> vec, int repeat)
 {
+  std::vector<ML> repeated_vec;
+  std::string repeated_durations;
+  int s = repeat;
+  for(int i=0;i<s;i++)
+    {
+      for(int j=0;j<vec.size();j++)
+	{
+	  repeated_vec.push_back(vec[j]);
+	}
+      repeated_durations += durations;
+      if (i!=s-1) repeated_durations += "&";
+    }
+
+
   GameApi::TT t0 = timing_start();
-  GameApi::TT t1 = array_timing_chain(t0,start_time,durations,vec);
+  GameApi::TT t1 = array_timing_chain(t0,start_time,repeated_durations,repeated_vec);
   GameApi::ML t2 = timing_exit(t1);
   return t2;
 }

@@ -502,7 +502,7 @@ public:
   IMPORT TT timing_event(IF fetch, TT timing, ML show);
   IMPORT TT timing(float duration, TT link, ML show);
   IMPORT TT array_timing_chain(TT prev, float start_time, std::string durations, std::vector<ML> vec);
-  IMPORT ML array_timing_chain_ml(float start_time, std::string durations, std::vector<ML> vec);
+  IMPORT ML array_timing_chain_ml(float start_time, std::string durations, std::vector<ML> vec, int repeat);
   IMPORT ML array_timing_chain_key_ml(EveryApi &ev, int key, float time_after_key, std::string durations, std::vector<ML> vec, int repeat);
   IMPORT TT current_time(TT prev);
   IMPORT TT t_repeat(TT prev, TT curr_to_repeated, int count);

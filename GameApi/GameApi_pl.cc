@@ -8836,6 +8836,7 @@ public:
 	ev.shader_api.set_var(sh, "color_mult_rest", rest_mult);
 	ev.shader_api.set_var(sh, "u_RoughnessFactor", roughnessfactor);
 	ev.shader_api.set_var(sh, "u_MetallicFactor", metallicfactor);
+	//std::cout << basecolorfactor0 << " " << basecolorfactor1 << " " << basecolorfactor2 << " " << basecolorfactor3 << std::endl;
 	ev.shader_api.set_var(sh, "u_BaseColorFactor", basecolorfactor0,basecolorfactor1,basecolorfactor2, basecolorfactor3);
 	ev.shader_api.set_var(sh, "u_OcculsionStrength", occul_strength);
 	ev.shader_api.set_var(sh, "u_EmissiveFactor", emiss_factor);

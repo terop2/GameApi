@@ -1076,7 +1076,7 @@ function get_is_animated()
       var view = new Uint8Array(buffer);
       for(var i=0;i<length;i++) { view[i] = contents[i]; }
       let str = new TextDecoder().decode(buffer);
-      return str.includes("\"animations\"");
+      return str.indexOf("\"animations\"") !== -1; //str.includes("\"animations\"");
       }
   }
        
@@ -1098,9 +1098,9 @@ function get_border(i,m,filename,border_avoid,aces_value)
 
   var res = "";
   var variable = "I2";
-  if (m==-1) variable="I1";
+  if (m===-1) variable="I1";
   
-  if (width=="0") {
+  if (width==="0") {
    //res+="P I5021=ev.polygon_api.recalculate_normals(" + variable + ");\n";
    res+="P I5023=ev.polygon_api.color(" + variable + ",0);\n"
    res+="ML I5022=ev.polygon_api.render_vertex_array_ml2(ev,I5023);\n"
@@ -1110,14 +1110,14 @@ function get_border(i,m,filename,border_avoid,aces_value)
   var five = "";
   if (/*anim_value &&*/ filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox") { five="5"; if (border_avoid) return "ML I502=ev.mainloop_api.ml_empty();\n"; }
   if (filename.substr(-4)!=".vox") {
-    if (aces_value==true) {
+    if (aces_value===true) {
        res+= "MT I505=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
        res+= "MT I504=ev.materials_api.acesfilm_material(ev,I505);\n";
        } else {
        res+= "MT I504=ev.materials_api.phong(ev,I" + five + "4,1.0,1.0,-400.0,ffff8844,ffffccaa,fffff8ee,30.0);\n";
        }
     } else {
-    if (aces_value==true) {
+    if (aces_value===true) {
     res+="MT I505=ev.materials_api.mt_alt(ev,std::vector&lt;MT&gt;{I" + five + "4},0);\n";
     res+= "MT I504=ev.materials_api.acesfilm_material(ev,I505);\n"
     } else {
@@ -1126,15 +1126,15 @@ function get_border(i,m,filename,border_avoid,aces_value)
     }
   //res+="MT I504=ev.materials_api.gltf_material(ev,I154,0,1,0.0,0.0,-400.0,400.0,400.0);\n";
   var gltf = ",false";
-  if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf=",true"; }
-  if (anim_value==true) { 
+  if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") { gltf=",true"; }
+  if (anim_value===true) { 
      //res+="MT I5011=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I504,cvbnmdfghjklertyuiop,0);\n";
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
       } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
       }
 
-if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf") {
+if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf") {
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
   } else {
     res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
@@ -1304,16 +1304,16 @@ var texcoord_objnormals = "P I2=ev.polygon_api.texcoord_plane(I1,-20,20,-20,20);
 var normals_select = normals;
 var texcoord_normals_select = texcoord_normals;
 var normals_val = get_normals_value();
-if (normals_val==-1) {
-if (filename.substr(-4)==".glb"||filename.substr(-4)==".obj"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox") { normals_val=2; } else { normals_val=0; }
+if (normals_val===-1) {
+if (filename.substr(-4)===".glb"||filename.substr(-4)===".obj"||filename.substr(-4)===".zip"||filename.substr(-4)===".vox") { normals_val=2; } else { normals_val=0; }
 }
-if (normals_val==0||normals_val==5) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
-if (normals_val==1||normals_val==6) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
-if (normals_val==2) { normals_select = objnormals; texcoord_normals_select = texcoord_objnormals; }
+if (normals_val===0||normals_val===5) { normals_select = normals; texcoord_normals_select = texcoord_normals; }
+if (normals_val===1||normals_val===6) { normals_select = smoothnormals; texcoord_normals_select = texcoord_smoothnormals; }
+if (normals_val===2) { normals_select = objnormals; texcoord_normals_select = texcoord_objnormals; }
 
 var phongmaterial = "MT I4=ev.materials_api.phong(ev,I3,-0.3,0.3,-1.0,ffff8800,ffffffff,5.0);\n";
 
-if (i==-1) return ["",normals_select];
+if (i===-1) return ["",normals_select];
 ;
  var metal_color = get_metal_color(i);
  var r = (metal_color&0xff0000)>>16;
@@ -1337,13 +1337,13 @@ if (i==-1) return ["",normals_select];
 var line = find_line_from_material_db(i);
 
 
-if (parse_material_type(line)=='Metal') return [metal,normals_select];
-if (parse_material_type(line)=='Plastic') return [plastic,normals_select];
+if (parse_material_type(line)==='Metal') return [metal,normals_select];
+if (parse_material_type(line)==='Plastic') return [plastic,normals_select];
 
 
 var tex_url = parse_material_url(line);
 var textured_material = "MT I4=ev.materials_api.gltf_material_from_file(ev," + tex_url + ",-400.0,400.0,400.0);\n";
-if (parse_material_type(line)=='Textured') return [textured_material,texcoord_normals_select];
+if (parse_material_type(line)==='Textured') return [textured_material,texcoord_normals_select];
 
 return [phongmaterial,normals_select];
 }
@@ -1374,7 +1374,7 @@ function create_script(filename, contents, filenames)
   var aces_value = get_acesfilm_value();
   
 
-  var anim_value = true;
+  var anim_value = get_is_animated(); //true;
 
   var normals_val = get_normals_value();
   var border_color = "000000";
@@ -1389,10 +1389,10 @@ function create_script(filename, contents, filenames)
   }
 
 
-  if (filename.substr(-4)==".vox") {
+  if (filename.substr(-4)===".vox") {
      res+="P I155=ev.voxel_api.vox_voxel3(ev," + filename + ",0,5,5,5);\n";
      res+="MT I627=ev.materials_api.colour_material(ev,0.5,true);\n"
-     if (aces_value==true) {
+     if (aces_value===true) {
           res+="MT I628=ev.materials_api.phong(ev,I627,30,-400,30,ff222222,ff888888,ffffffff,30);\n"
     	   res+="MT I629=ev.materials_api.acesfilm_material(ev,I628);\n"
 	   } else {
@@ -1400,10 +1400,10 @@ function create_script(filename, contents, filenames)
 	   }
      res+="ML I62=ev.voxel_api.vox_bind_ml2(ev," + filename + ",0,5,5,5,I629,0.0,ff000000);\n";
   } else
-  if (filename.substr(-4)==".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
+  if (filename.substr(-4)===".stl") { res+="P I17=ev.polygon_api.stl_load(" + filename + ");\nP I177=ev.polygon_api.fix_vertex_order(I17);\nP I18=ev.polygon_api.recalculate_normals(I177);\nP I191=ev.polygon_api.flip_normals(I18);\nP I19=ev.polygon_api.color_from_normals(I191);\nP I192=ev.polygon_api.flip_normals(I19);\nP I16=ev.polygon_api.fix_vertex_order(I192);\nP I155=ev.polygon_api.color_grayscale(I16);\n";
      } else
-  if (filename.substr(-4)==".obj") {
-     if (mtl_name=="") {
+  if (filename.substr(-4)===".obj") {
+     if (mtl_name==="") {
        res+="P I122=ev.polygon_api.p_url(ev," + filename + ",350);\n";
        res+="P I155=ev.polygon_api.fix_vertex_order(I122);\n";
        } else {
@@ -1411,15 +1411,15 @@ function create_script(filename, contents, filenames)
        res+="P I155=ev.polygon_api.fix_vertex_order(I122);\n";
        }
      } else
-  if (filename.substr(-3)==".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
-  if (filename.substr(-4)==".zip") {
+  if (filename.substr(-3)===".ds") { res+="P I155=ev.polygon_api.p_url(ev," + filename + ",350);\n"; } else
+  if (filename.substr(-4)===".zip") {
      res+="TF I186=ev.mainloop_api.gltf_load_sketchfab_zip("+filename+");\n"
      //es+="TF I186=ev.polygon_api.decimate_tf(I1860,0.5);\n";
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I186);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4)
      	{
-	if (anim_value==true) {
+	if (anim_value===true) {
         res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+",0);\n"; // 0.75
 	border_avoid = true;
 	} else {
@@ -1428,13 +1428,13 @@ function create_script(filename, contents, filenames)
 	}
 	}
   } else
-  if (filename.substr(-4)==".glb") {
+  if (filename.substr(-4)===".glb") {
      res+="TF I186=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
      //res+="TF I186=ev.polygon_api.decimate_tf(I1860,0.5);\n";
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I186);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
-	if (anim_value==true) {
+	if (anim_value===true) {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+",0);\n";
      border_avoid=true;
      } else {
@@ -1443,13 +1443,13 @@ function create_script(filename, contents, filenames)
      }
      }
   } else
-  if (filename.substr(-5)==".gltf") {
+  if (filename.substr(-5)===".gltf") {
     res+="TF I186=ev.mainloop_api.gltf_loadKK("+base_dir+","+filename+");\n"
      //res+="TF I186=ev.polygon_api.decimate_tf(I1860,0.5);\n";
      res+="P I172=ev.mainloop_api.gltf_mesh_all_p(ev,I186);\n";
      res+="P I155=ev.polygon_api.or_array3(std::vector<P>{I172});\n";
      if (normals_val!=3 && normals_val!=4) {
-     if (anim_value==true) {
+     if (anim_value===true) {
      res+="ML I62=ev.mainloop_api.gltf_mesh_all_anim(ev,I186," + brightness + ",1.0,0.0,0,cvbnmdfghjklertyuiop,-1.0,400.0,1.0," + border_value + ",ff" + border_color + ",true,"+aces_value+",0);\n";
      border_avoid=true;
      } else {
@@ -1471,8 +1471,8 @@ var out = "I4";
      border_color = parse_border_color(name2);
      border_width = parse_border_width(name2);
   }
-  if (border_width=="0") border_width="1.0";
-if (normals_val==3)
+  if (border_width==="0") border_width="1.0";
+if (normals_val===3)
   { // wireframe
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
 
@@ -1483,7 +1483,7 @@ res+="ML I767=ev.mainloop_api.depthfunc(I665,3);\n";
 res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
 
   } else
-  if (normals_val==4)
+  if (normals_val===4)
   { // wireframe with hidden surface removal
 
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
@@ -1505,7 +1505,7 @@ if (bg>=0&&bg<store.state.background_db.length) {
   }
 
 res+="P I145=ev.polygon_api.color(I155,ff" + color + ");\n";
-if (aces_value==true) {
+if (aces_value===true) {
    res+="MT I198=ev.materials_api.colour_material(ev,1.0,false);\n"
    res+= "MT I199=ev.materials_api.acesfilm_material(ev,I198);\n"
 } else {
@@ -1524,7 +1524,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
   if (material[1]!="") {
      res+=material[1];
   } else
-  if (!((filename.substr(-4)==".obj"&&mtl_name!="")||filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox")) {
+  if (!((filename.substr(-4)===".obj"&&mtl_name!="")||filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip"||filename.substr(-4)===".vox")) {
       res+="P I2=ev.polygon_api.recalculate_normals(I1);\n";
       }
   res+="MT I3=ev.materials_api.m_def(ev);\n";
@@ -1532,24 +1532,24 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
      res+="MT I54=ev.materials_api.m_def(ev);\n";
      res+=material[0];
      var gltf = ",false";
-     if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") { gltf = ",true"; }
+     if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") { gltf = ",true"; }
      res+="MT I46=ev.materials_api.toon_border(ev,I4," + border_width + ",ff" + border_color +gltf + ");\n";
      out = "I46";
   } else
-  if (filename.substr(-4)==".obj"&&mtl_name!="") {
+  if (filename.substr(-4)===".obj"&&mtl_name!=="") {
      res+="MT I54=ev.materials_api.m_def(ev);\n";
-     if (aces_value==true) {
+     if (aces_value===true) {
           res+="MT I53=ev.materials_api.texture_many2(ev,0.5);\n"
    	   res+= "MT I4=ev.materials_api.acesfilm_material(ev,I53);\n"
 	   } else {
           res+="MT I4=ev.materials_api.texture_many2(ev,0.5);\n"
 	   }
   } else
-  if (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
+  if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") {
      var five="";
-     if (anim_value==true) { five="5"; }
+     if (anim_value===true) { five="5"; }
      res+="MT I" + five + "4=ev.materials_api.gltf_material(ev,I186,1,1,0.0,0.0,-400.0,400.0,400.0);\n";
-    if (anim_value==true) {
+    if (anim_value===true) {
       if (aces_value==true) {
         res+="MT I55=ev.materials_api.gltf_anim_material2(ev,I186,0,30,I54,cvbnmdfghjklertyuiop,0);\n";
         res+= "MT I4=ev.materials_api.acesfilm_material(ev,I55);\n"
@@ -1557,17 +1557,17 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
         res+="MT I4=ev.materials_api.gltf_anim_material2(ev,I186,0,30,I54,cvbnmdfghjklertyuiop,0);\n";
 	}
       }
-  } else if (filename.substr(-4)==".vox")
+  } else if (filename.substr(-4)===".vox")
   {
   res+="MT I54=ev.materials_api.colour_material(ev,0.5,true);\n";
-  if (aces_value==true) {
+  if (aces_value===true) {
      res+="MT I55=ev.materials_api.phong(ev,I1,30.0,-400.0,30.0,ff221100,ffff8800,ffffffff,30.0);\n";
      res+= "MT I4=ev.materials_api.acesfilm_material(ev,I55);\n"
      } else {
      res+="MT I4=ev.materials_api.phong(ev,I1,30.0,-400.0,30.0,ff221100,ffff8800,ffffffff,30.0);\n";
      }
   } else {
-    if (aces_value==true) {
+    if (aces_value===true) {
       res+="MT I54=ev.materials_api.vertex_phong(ev,I3,-0.3,0.3,1.0,ff888888,ffffffff,5.0,0.5);\n";
       res+= "MT I4=ev.materials_api.acesfilm_material(ev,I54);\n"
       } else {
@@ -1575,7 +1575,7 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
       }
   }
 
- if ((!(filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip"||filename.substr(-4)==".vox"))||material_value!=-1) { 
+ if ((!(filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip"||filename.substr(-4)===".vox"))||material_value!==-1) { 
     res+="ML I62=ev.materials_api.bind(I2," + out + ");\n";
     }
 
@@ -1585,13 +1585,13 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
 
     res+="ML I64=ev.mainloop_api.depthmask(I63,true);\n";
     res+="ML I6=ev.mainloop_api.depthfunc(I64,3);\n";
-  if ((parseInt(material_value)==-1&&parseInt(border_value)==0) && (filename.substr(-4)==".glb"||filename.substr(-5)==".gltf"||filename.substr(-4)==".zip")) {
+  if ((parseInt(material_value)===-1&&parseInt(border_value)===0) && (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip")) {
 
 
   }
 
 
-  if (normals_val==5||normals_val==6) { // wireframe
+  if (normals_val===5||normals_val===6) { // wireframe
 
 res+="P I114=ev.lines_api.p_towards_normal(I1,0.02);\n";
 res+="P I124=ev.lines_api.p_towards_normal(I1,-0.02);\n";
@@ -1614,7 +1614,7 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,3);\n";
   res+="ML I767=ev.mainloop_api.array_ml(ev,std::vector<ML>{I6,I502});\n";
 }
 
-  if (filename.substr(-4)==".glb" || filename.substr(-5)==".gltf"||filename.substr(-4)==".zip") {
+  if (filename.substr(-4)===".glb" || filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") {
     res+="ML I67=ev.mainloop_api.android_resize(ev,I767,1.0);\n";
     res+="ML I88=ev.mainloop_api.async_gltf(I67,I186);\n";
     res+="ML I89=ev.mainloop_api.mouse_roll_zoom2(ev,I88);\n";
@@ -1637,7 +1637,7 @@ res+="ML I502=ev.mainloop_api.depthfunc(I555,3);\n";
 
   res+="ML I14=ev.mainloop_api.or_elem_ml(ev,I44,I9);\n";
   var variable = "I14";
-  if (anim_value==true) {
+  if (anim_value===true) {
   res+="ML I15=ev.mainloop_api.send_key_at_time(I14,0.01,99);\n"
   res+="ML I165=ev.mainloop_api.send_key_at_time(I15,0.02,99);\n"
   variable="I165";
@@ -1659,7 +1659,7 @@ function allowDrop(ev)
 }
 function preventDefault(ev)
 {
-   if (ev.button==2)
+   if (ev.button===2)
       ev.preventDefault();
 }
 
@@ -1692,7 +1692,7 @@ function set_filename_info(state,filename)
    let res = "";
    if (filename) {
    var pos = filename.lastIndexOf('/');
-   if (pos==-1)
+   if (pos===-1)
       res = filename;
    else
       res = filename.substr(pos+1);   
@@ -1726,7 +1726,7 @@ function extract_contents(state,file_array,filenames, filename, path)
    g_filename = filename;
    set_filename_info(state,g_filename);
    state.url = g_path;
-   if (file_array==""||filenames=="") {
+   if (file_array===""||filenames==="") {
       return new Promise((resolve,reject) => {
            resolve("success");
       });
@@ -1755,7 +1755,7 @@ function extract_contents(state,file_array,filenames, filename, path)
 	contents_array2.push(bytes);
 	filename_array.push(fix_filename(filenames[i]));
 	counter++;
-	if (counter==s) resolve("success");
+	if (counter===s) resolve("success");
 	}
      };
      f(fileReader,i);
@@ -1790,7 +1790,7 @@ function extract_contents(state,file_array,filenames, filename, path)
 	contents_array2.push(bytes);
 	filename_array.push(fix_filename(filenames[i]));
 	counter++;
-	if (counter==s) resolve("success");
+	if (counter===s) resolve("success");
 	
 	}
      };
@@ -1812,8 +1812,8 @@ function fix_filename(filename)
   var res = "";
   var s = filename ? filename.length : 0;
   for(var i=0;i<s;i++) {
-     if (filename[i]==' ') res+="_"; else 
-     if (filename[i]=='\\') res+="/"; else res+=filename[i];
+     if (filename[i]===' ') res+="_"; else 
+     if (filename[i]==='\\') res+="/"; else res+=filename[i];
   }
   return res;
 }
@@ -2039,7 +2039,7 @@ function load_emscripten(state,filename, contents, filenames)
       enable_spinner(true);
       const dpr = window.devicePixelRatio || 2;
 
-      if (filename=="") {
+      if (filename==="") {
       Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
       } else {
       Module.arguments = [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", convert_enter_to_at(create_script(filename,contents,filenames)), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href];
@@ -2103,10 +2103,10 @@ function check_em() {
 	//load_file();
 	load_data();
 	app.handle_changes();
-	if (loading_data==0) {
+	if (loading_data===0) {
 	app.change_appmodel(0);	   
 	}
-	if (loading_data==1) {
+	if (loading_data===1) {
 	//console.log("LOADING DATA");
 	app.change_appmodel(1);
 	app.change_category();
@@ -2131,7 +2131,7 @@ function check_em2_func() {
 	   store.state.appmodel_is_model_loading="true";
 	   g_first_time=false;
 	}
-        if (g_download_done==true)
+        if (g_download_done===true)
 	{
 	   //console.log("DOWNLOAD READY");
 	   check_em()();
@@ -2158,7 +2158,7 @@ function check_emscripten_running()
     var canv = document.getElementById("canvas");
     if (Module) {
 	Module['onStartup'] = check_em2();
-	g_timer = setTimeout(function() { if (g_ready_bit==1) check_em2()(); },1000);
+	g_timer = setTimeout(function() { if (g_ready_bit===1) check_em2()(); },1000);
     } else {
 	setTimeout(function() { check_emscripten_running() }, 100);
     }
@@ -2176,7 +2176,7 @@ function emscripten_ready_callback(state)
 {
    //console.log("Ready");
    //app.methods.change_appmodel(0);
-   if (store.state.appmodel_is_loading == "true") {
+   if (store.state.appmodel_is_loading === "true") {
       store.state.appmodel_is_loading = "false";
       store.state.appmodel_is_model_loading = "false";
       store.state.appmodel_is_notselected = "true";
@@ -2190,10 +2190,10 @@ function check_emscripten_ready(state)
     var value = Module.ccall('get_integer', 'number', ['number'],[1]);
     //if (value !== undefined)
     //    console.log('ready: ' . value);
-    if (value==2) { emscripten_loading_callback();
+    if (value===2) { emscripten_loading_callback();
     	 setTimeout(function() { check_emscripten_ready(state) }, 1000);
     } else
-    if (value==1) { emscripten_ready_callback(state); }
+    if (value===1) { emscripten_ready_callback(state); }
     else {
     	 setTimeout(function() { check_emscripten_ready(state) }, 1000);
 	 }
@@ -2231,7 +2231,7 @@ function resize_event(event)
   var hd = window.innerHeight;
 
   var mobile = false;
-  if (navigator.userAgentData!=null && navigator.userAgentData.mobile==true) {
+  if (navigator.userAgentData!=null && navigator.userAgentData.mobile===true) {
      mobile=true;
      var d = document.getElementById("dp");
      d.style="display:block";
@@ -2431,9 +2431,9 @@ function do_base64(data)
 	var s = data.length;
 	var pos = -1;
 	for(var i=0;i<s;i++) {
-	  if (data[i]=='.') pos=i;
+	  if (data[i]==='.') pos=i;
 	}
-	if (pos==-1) { return data; }
+	if (pos===-1) { return data; }
 	var data2 = data.substring(0,pos);
 	var data3 = data.substring(pos+1);
 	return btoa(unescape(encodeURIComponent(data2))) + "." + data3;
@@ -2446,9 +2446,9 @@ function undo_base64(data)
 	var s = data.length;
 	var pos = -1;
 	for(var i=0;i<s;i++) {
-	  if (data[i]=='.') pos=i;
+	  if (data[i]==='.') pos=i;
 	}
-	if (pos==-1) { return data; }
+	if (pos===-1) { return data; }
 	var data2 = data.substring(0,pos);
 	var data3 = data.substring(pos+1);
 	try {
@@ -2583,7 +2583,7 @@ function submitprogressbar(i)
    //{
    //prog.innerHTML = prog.innerHTML + "_";   
    //}
-   if (i==500)
+   if (i===500)
    {
    /*
 	var name = "https://meshpage.org/viewdata/num.txt";
@@ -2639,13 +2639,13 @@ function formsubmit()
 
 		   var start = i*step;
  		   var end = start + step;
-		   if (i==num-1) end=contents_length;
+		   if (i===num-1) end=contents_length;
 		   if (start>contents_length) start=contents_length;
 		   if (end>contents_length) end=contents_length;
 
   		   var start2 = i*step2;
   		   var end2 = start2 + step2;
-		   if (i==num-1) end2=filename_length;
+		   if (i===num-1) end2=filename_length;
 		   if (start2>contents_length) start2=contents_length;
 		   if (end2>contents_length) end2=contents_length;
 
@@ -2658,7 +2658,7 @@ function formsubmit()
 
   		   //var st5 = document.getElementById("formgfilename");
   		   var st5_val = json_stringify(g_filename);
-		   if (g_path=="") { g_path="./"; }
+		   if (g_path==="") { g_path="./"; }
 		   var st6_val = json_stringify(g_path);
 
   		   //var form = document.getElementById("submitcontents");
