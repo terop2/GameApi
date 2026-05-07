@@ -2499,6 +2499,81 @@ private:
   int ticks;
   bool firsttime;
 };
+
+class FaceCollArray : public Array<int,FaceCollection*>
+{
+public:
+  FaceCollArray(std::vector<FaceCollection*> vec) : vec(vec) { }
+  int Size() const { return vec.size(); }
+  FaceCollection *Index(int i) const
+  {
+    if (i<0||i>=vec.size()) return 0;
+    return vec[i];
+  }
+private:
+  std::vector<FaceCollection*> vec;
+};
+
+GameApi::PV GameApi::PolygonApi::p_array(std::vector<P> vec)
+{
+  std::vector<FaceCollection*> vec2;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      vec2.push_back(find_facecoll(e,vec[i]));
+    }
+  
+  return add_facecoll_array(e,new FaceCollArray(vec2));
+}
+
+
+//ret_val = std::vector<GameApi:P>
+GameApi::ARR GameApi::PolygonApi::array_p_array(std::vector<GameApi::PV> vec)
+{
+  std::vector<int> res;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      Array<int,FaceCollection*> *val = find_facecoll_array(e,vec[i]);
+      int s2 = val->Size();
+      for(int j=0;j<s2;j++)
+       {
+         FaceCollection *facecoll = val->Index(j);
+         GameApi::P p = add_polygon2(e,facecoll,1);
+         res.push_back(p.id);
+       }
+    }
+  ArrayType *t = new ArrayType;
+  t->type=2;
+  t->vec = res;
+  return add_array(e,res);
+}
+
+//ret_val = std::vector<GameApi:P>
+GameApi::ARR GameApi::PolygonApi::seq_p_array(std::vector<P> vec, std::vector<P> vec2)
+{
+  std::vector<int> res;
+  int s = vec.size();
+  for(int i=0;i<s;i++)
+    {
+      GameApi::P p = vec[i];
+      res.push_back(p.id);
+    }
+  int s2 = vec2.size();
+  for(int i=0;i<s2;i++)
+    {
+      GameApi::P p = vec2[i];
+      res.push_back(p.id);
+    }
+  ArrayType *t = new ArrayType;
+  t->type=2;
+  t->vec = res;
+  return add_array(e,t);
+}
+
+
+
+
 class ArrayMainLoop : public MainLoopItem
 {
 public:
