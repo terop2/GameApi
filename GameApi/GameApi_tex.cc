@@ -435,6 +435,9 @@ EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many_txid(EveryAp
 
 EXPORT std::vector<GameApi::TXID> GameApi::TextureApi::prepare_many(EveryApi &ev, std::vector<BM> vec, std::vector<int> types, bool mipmaps, std::vector<std::string> id_labels, std::vector<bool> is_srgb)
 {
+  //std::cout << "prepare_many:" << vec.size() << std::endl;
+  //if (vec.size()==0) return std::vector<GameApi::TXID>();
+  
 #if 0
   std::cout << "Prepare Many:" << std::endl;
   int st = vec.size();

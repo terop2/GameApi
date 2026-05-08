@@ -5871,6 +5871,7 @@ public:
 	return i;
       if (has_texture(i)) count++;
     }
+    //return 0;
     return last_tex;
   }
 
@@ -6054,14 +6055,14 @@ public:
     switch(i) {
     case 0: {
       int index = m.pbrMetallicRoughness.baseColorTexture.index;
-      if (get_spec() && get_specglossi_index()!=-1) index=get_specglossi_index();
-      if (get_sheen() && get_sheen_index()!=-1) index=get_sheen_index();
+      if (index==-1 && get_sheen() && get_sheen_index()!=-1) index=get_sheen_index();
+      if (index==-1 && get_spec() && get_specglossi_index()!=-1) index=get_specglossi_index();
       //std::cout << "IMG0=" << index << "(" << get_spec() << "," << get_sheen() << ")" << std::endl;
       return reduce_size(gltf_load_bitmap2(e,ev, interface, index));
     }
     case 1: {
       int index = m.pbrMetallicRoughness.metallicRoughnessTexture.index;
-      if (get_spec() && get_diffuse_index()!=-1) index=get_diffuse_index();
+      if (index==-1 && get_spec() && get_diffuse_index()!=-1) index=get_diffuse_index();
       //std::cout << "IMG1=" << index << "(" << get_spec() << ")" << std::endl;
       return reduce_size(gltf_load_bitmap2(e,ev, interface, index));
     }
@@ -6107,7 +6108,7 @@ public:
       int j = map_index(i);
       bm.push_back(texture(j));
     }
-
+    //if (bm.size()==0) return ev.mainloop_api.ml_empty();
 
 
     std::stringstream ss2;
@@ -6188,6 +6189,7 @@ public:
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+    //if (bm.size()==0) return ev.mainloop_api.ml_empty();
 
     std::stringstream ss2;
     ss2 << "gltf" << interface->Url() << material_id;
@@ -6333,6 +6335,7 @@ public:
       int j = map_index(i);
       bm.push_back(texture(j));
     }
+    //if (bm.size()==0) return ev.mainloop_api.ml_empty();
 
 
 
@@ -8897,13 +8900,14 @@ GameApi::ML gltf_mesh2_with_skeleton( GameApi::Env &e, GameApi::EveryApi &ev, GL
       int mat = m.primitives[i].material;
       bool colour=false;
       GameApi::MT mat2;
-      if (mat==-1) { colour=true;
+      if (mat==-1) {
+	colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
 	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(24,0xff221100), test_color(25,0xffff8888),test_color(26,0xffffffff),10.0);
       } else {
         mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
-      }
+	      }
       GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
       GameApi::MT mat2_anim;
@@ -8989,13 +8993,14 @@ GameApi::ML gltf_mesh2_with_skeleton_inst_matrix( GameApi::Env &e, GameApi::Ever
       int mat = m.primitives[i].material;
       bool colour=false;
       GameApi::MT mat2;
-      if (mat==-1) { colour=true;
+      if (mat==-1) {
+	colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
 	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(27,0xff221100), test_color(28,0xffff8888),test_color(29,0xffffffff),10.0);
       } else {
         mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
-      }
+	}
       GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
       GameApi::MT mat2_anim;
@@ -9115,14 +9120,15 @@ GameApi::ML gltf_mesh2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterfa
       int mat = m.primitives[i].material;
       GameApi::MT mat2;
       bool colour = false;
-      if (mat==-1) { colour=true;
+      if (mat==-1) {
+	colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
 	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(30,0xff221100), test_color(31,0xffff8888),test_color(32,0xffffffff),10.0);
       } else
-	{
+	  {
 	  mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
-	}
+	  }
       GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
       GameApi::MT mat2_anim;
@@ -9195,14 +9201,16 @@ GameApi::ML gltf_mesh2_inst_matrix( GameApi::Env &e, GameApi::EveryApi &ev, GLTF
       int mat = m.primitives[i].material;
       GameApi::MT mat2;
       bool colour = false;
-      if (mat==-1) { colour=true;
+      // RAYGUN TEST
+      if (mat==-1) {
+	colour=true;
 	mat2=ev.materials_api.m_def(ev);
 	//mat2=ev.materials_api.choose_color(ev,mat2,0xff888888,1.0);
 	mat2=ev.materials_api.phong(ev,mat2,0.0,0.0,1.0,test_color(33,0xff221100), test_color(34,0xffff8888),test_color(35,0xffffffff),10.0);
       } else
-	{
+	  {
 	  mat2 = gltf_material2(e, ev, interface, mat, mix,self_mult,rest_mult,light_dir);
-	}
+	  }
       GameApi::MT mat3 = border_width>=0.5?ev.materials_api.toon_border(ev,mat2,border_width,border_color,!colour):mat2;
 
       GameApi::MT mat2_anim;
@@ -10047,8 +10055,8 @@ void handle_p_node(GameApi::Env &e, GameApi::EveryApi &ev, std::vector<int> &mes
 		  } else {
 		GameApi::MT mat = ev.materials_api.gltf_material(ev, model0, material, mix, light_dir_x, light_dir_y, light_dir_z);
 		  mat2 = mat;
-		}
-		std::cout << "append primitive " << p << std::endl;
+		  }
+		//std::cout << "append primitive " << p << std::endl;
 		GameApi::P p2 = gltf_load2(e,ev,interface,mesh,p);
 		materials.push_back(mat2);
 		mesh_ids.push_back(mesh);

@@ -3049,14 +3049,17 @@ s+="   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
     "  metallic = u_MetallicFactor;\n"
     "  perceptualRoughness = u_RoughnessFactor;\n"
     "#endif\n"
+    // " mrSample = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN_TEST
+    
     "#ifdef GLTF_TEX0\n";
   if (webgl2) {
     s+=  "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n";
   } else {
     s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n";
   }
+  //s+="baseColor = vec4(1.0,0.0,0.0,0.0);\n"; // RAYGUN TEST
   s+="#endif\n"
-    "#endif\n"
+    "#endif\n"   // WHY IS THIS TWO TIMES; WHEN OTHER GLTF SHADER DOESN'T HAVE IT?
 
     "#ifndef GLTF_TEX0\n"
     " baseColor = u_BaseColorFactor;\n"
@@ -3072,6 +3075,7 @@ s+="   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
   } else {
     s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * vec4(u_SpecFactor,1.0);\n";
   }
+  //s+="baseColor = vec4(1.0,0.0,0.0,0.0);\n"; // RAYGUN TEST
 
 s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n" 
     
@@ -3094,14 +3098,14 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     "mrSample2.g *= u_DiffFactor.g;\n"
     "mrSample2.b *= u_DiffFactor.b;\n"
 
-    " diffuseColor = mrSample2.rgb;\n" 
+    " diffuseColor = mrSample2.rgb  * (1.0-max(baseColor.r,baseColor.g,baseColor.b));\n" // THIS LINE IS EITHER MISSING * (1.0-max(baseColor.r,baseColor.g,baseColor.b)), or other shader should remove it 
     "f0 = baseColor.rgb;\n"
     "f0.r *= u_SpecFactor.r;\n"
     "f0.g *= u_SpecFactor.g;\n"
     "f0.b *= u_SpecFactor.b;\n"
-    "specAlpha = 1.0;\n"
+    "specAlpha = mrSample2.a;\n" // THIS SHOULD BE EITHER mrSample2.a or other shader should have 1.0
+    " perceptualRoughness = (1.0-baseColor.a);\n" // HERE WE're missing peceptualRoughness = (1.0-baseColor.a)   or other shader should remove it
     "#endif\n"
-    
     
     "#ifndef GLTF_TEX1\n"
     " diffuseColor = vec3(1,1,1)*(1.0-max(max(baseColor.r,baseColor.g),baseColor.b));\n"
@@ -3122,6 +3126,9 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     "#endif\n"
 "#ifndef SPEC\n"
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
+"#endif\n"
+"#ifdef SPEC\n"
+"  diffuseColor = baseColor.rgb * (f0) * (1.0-metallic);\n"
 "#endif\n"
 
     "#ifndef SPEC\n"
@@ -3207,12 +3214,14 @@ s+=   "  vec3 emi = vec3(1.0)-color;\n"
     //    "   color += emissive;\n"
 "#endif\n"
 
+"#ifdef RAYGUN_TEST\n"
 "#ifndef GLTF_TEX4\n"
     "  vec3 emi = vec3(1.0)-color;\n"
     "  emi*=u_EmissiveFactor2;\n"
 "  color+=emi;\n"
 "#endif\n"
-
+"#endif\n"
+  
     //"#endif\n"
     //"#ifndef GLTF_TEX4\n"
     //"emissive = vec3(1.0,1.0,1.0)*u_EmissiveFactor;\n"
@@ -3229,6 +3238,7 @@ s+=   "  vec3 emi = vec3(1.0)-color;\n"
     
     "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
 
+  //"return vec4(1.0,0.0,0.0,1.0);" // RAYGUN_TEST
     "#ifdef SPEC\n"
     "   return vec4(mix(rgb.rgb*color_mult_rest,LINEARtoSRGB(color*color_mult_self),color_mix4), specAlpha);\n"
 "#endif\n"
@@ -5288,6 +5298,7 @@ s+=""
 "uniform float u_OcculsionStrength;\n" 
 "uniform float u_NormalScale;\n"
     "uniform float u_EmissiveFactor;\n"
+  "uniform vec3 u_EmissiveFactor2;\n"
 "uniform vec3 u_DiffFactor;\n"
 "uniform vec3 u_SpecFactor;\n"
 "uniform float u_GlossiFactor;\n"
@@ -5425,11 +5436,13 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 "float specAlpha=1.0;\n"
     "#ifndef SPEC\n"
 "#ifdef GLTF_TEX1\n"
-"  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
+   "  vec4 mrSample = texture2D(texsampler[1],ex_TexCoord.xy);\n"
 "  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
 "  metallic = mrSample.b * u_MetallicFactor;\n"
 "#endif\n"
-    "#ifndef GLTF_TEX1\n"
+   //" mrSample = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN_TEST
+
+   "#ifndef GLTF_TEX1\n"
     "  metallic = u_MetallicFactor;\n"
     "  perceptualRoughness = u_RoughnessFactor;\n"
     "#endif\n"
@@ -5437,9 +5450,11 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
 
    "#endif\n"
+   // "baseColor = vec4(1.0,0.0,0.0,0.0);\n" // RAYGUN TEST
+
+    "#endif\n"
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
-    "#endif\n"
     "#endif\n"
 
 "#ifdef SPEC\n"
@@ -5494,7 +5509,12 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
 "#ifdef SPEC\n"
 "  diffuseColor = baseColor.rgb * (f0) * (1.0-metallic);\n"
 "#endif\n"
+      "#ifndef SPEC\n"
     "  specularColor = mix(f0, baseColor.rgb, metallic);\n"
+    "#endif\n"
+    "#ifdef SPEC\n"
+    "  specularColor.rgb = diffuseColor.rgb*(1.0-max(baseColor.r,max(baseColor.g,baseColor.b)));\n"
+    "#endif\n"
 
     //   "  baseColor.a = 1.0;\n"
     // use next one if material is unlit
@@ -5507,7 +5527,10 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
 "  float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);\n"
 "  vec3 specularEnvironmentR0 = specularColor.rgb;\n"
 "  vec3 specularEnvironmentR90 = vec3(clamp(reflectance * 50.0, 0.0, 1.0));\n"
-    "  MaterialInfo materialInfo = MaterialInfo(\n"
+"#ifdef SPEC\n"
+    "  specularEnvironmentR90=mix(specularColor.rgb,specularEnvironmentR90,u_GlossiFactor);\n"
+"#endif\n"
+  "  MaterialInfo materialInfo = MaterialInfo(\n"
     "    perceptualRoughness,\n"
     "    specularEnvironmentR0,\n"
     "    alphaRoughness,\n"
@@ -5531,7 +5554,14 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
+  //    " color = vec3(1.0,0.0,0.0);\n" // RAYGUN_TEST
 
+"#ifdef UNLIT\n"
+    "color = baseColor.rgb/4.0;\n"
+"#endif\n"
+
+
+  
     // TODO LIGHTS
 "   float ao=1.0;\n"
 "#ifdef GLTF_TEX3\n"
@@ -5540,28 +5570,41 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
 "#endif\n"
 "   vec3 emissive = vec3(0);\n"
 "#ifdef GLTF_TEX4\n"
-"   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor;\n"
-"   color += emissive;\n"
+"   emissive = SRGBtoLINEAR(texture2D(texsampler[4], ex_TexCoord.xy)).rgb * u_EmissiveFactor2;\n"
+"  vec3 emi = vec3(1.0)-color;\n"
+   "  emi*=emissive;\n"
+"  color+=emi;\n"
+  //"   color += emissive;\n"
 "#endif\n"
-    //"   return vec4(metallic,metallic,metallic,1.0);\n"
+"#ifdef RAYGUN_TEST\n"
+"#ifndef GLTF_TEX4\n"
+    "  vec3 emi = vec3(1.0)-color;\n"
+    "  emi*=u_EmissiveFactor2;\n"
+"  color+=emi;\n"
+"#endif\n"
+"#endif\n"
+   "color*=1.5;\n"
+
+
+  //"   return vec4(metallic,metallic,metallic,1.0);\n"
     //"   return vec4(vec3(perceptualRoughness),1.0);\n"
     //"   return vec4(vec3(ao),1.0);\n"
     //"   return vec4(vec3(LINEARtoSRGB(emissive),1.0);\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
 
-"#ifdef UNLIT\n"
-    "color = baseColor.rgb/4.0;\n"
-"#endif\n"
     
     "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
-    "#ifdef SPEC\n"
+
+  //"return vec4(1.0,0.0,0.0,1.0);" // RAYGUN_TEST
+  
+  "#ifdef SPEC\n"
     "   return vec4(mix(rgb.rgb*color_mult_rest,LINEARtoSRGB(color*color_mult_self),color_mix4), specAlpha);\n"
 
 "#endif\n"
 "#ifndef SPEC\n"
     "   return vec4(mix(rgb.rgb*color_mult_rest,LINEARtoSRGB(color*color_mult_self),color_mix4), baseColor.a);\n"
 "#endif\n"
-
+  
     //"   return vec4(LINEARtoSRGB(color), baseColor.a);\n"
 "}\n"
 "#endif\n"
