@@ -421,7 +421,7 @@
 			 "m_gltf",
 			 { "ev", "tf", "material_id", "mix", "self_mult", "rest_mult", "light_x", "light_y", "light_z", "emissive" },
 			 { "EveryApi&", "TF", "int", "float", "float", "float", "float" ,"float", "float", "bool" }, 
-			 { "ev", "", "0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0", "true" },
+			 { "ev", "", "0", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0", "true" },
 			 "MT", "materials_api", "gltf_material"));
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_MT_ARR==1)
@@ -429,7 +429,7 @@
 			 "m_gltf_arr",
 			 { "ev", "tf", "mix", "self_mult", "rest_mult","light_dir_x", "light_dir_y", "light_dir_z", "is_transparent", "emissive" },
 			 { "EveryApi&", "TF", "float", "float", "float","float", "float", "float", "bool", "bool" },
-			 { "ev", "", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0","true", "true" },
+			 { "ev", "", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0","true", "true" },
 			 "[MT]", "materials_api", "gltf_mesh_all_mt_arr"));
 #endif
 #if (ALL==1)||(GLTF_MATERIAL_ENV==1)
@@ -453,7 +453,7 @@
 			 "m_gltf_man",
 			 { "ev", "mix", "self_mult", "rest_mult", "baseColor", "metalrough", "normal", "occlusion", "emissive", "baseColor_b", "metalrough_b", "normal_b", "occlusion_b", "emissive_b", "roughnessfactor", "metallicfactor", "base_r", "base_g", "base_b", "base_a", "occulsionstrength", "light_dir_x", "light_dir_y", "light_dir_z" },
 			   { "EveryApi&", "float", "float", "float", "BM", "BM", "BM", "BM", "BM", "bool", "bool", "bool", "bool", "bool", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float" }, 
-			   { "ev", "1.0", "1.0", "1.0","", "", "", "", "", "true", "true", "true", "true", "true", "0.5", "0.5", "0.5", "0.5", "0.5", "1.0", "1.0", "400.0", "-400.0", "300.0" },
+			   { "ev", "1.0", "3.0", "1.0","", "", "", "", "", "true", "true", "true", "true", "true", "0.5", "0.5", "0.5", "0.5", "0.5", "1.0", "1.0", "400.0", "-400.0", "300.0" },
 			 "MT", "materials_api", "gltf_material_manual"));
 #endif
 #if 0
@@ -477,7 +477,7 @@
 			 "m_material",
 			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix", "self_mult", "rest_mult", "light_dir_x", "light_dir_y", "light_dir_z", "emissive" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "bool" },
-			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0", "true" },
+			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0", "3.0", "1.0", "400.0", "-400.0", "300.0", "true" },
 			 "MT", "materials_api", "gltf_material3"));
 #endif
 #ifndef STABLE
