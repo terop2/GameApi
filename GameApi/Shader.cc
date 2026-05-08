@@ -3234,7 +3234,7 @@ s+=   "  vec3 emi = vec3(1.0)-color;\n"
     //"   return vec4(vec3(baseColor.a),1.0);\n"
 
     // ADD BRIGHTNESS TO THE MODELS
-    "color*=1.5;\n"
+    //"color*=1.5;\n"
     
     "color = clamp(color,vec3(0.0,0.0,0.0),vec3(1.0,1.0,1.0));\n"
 
@@ -5583,7 +5583,7 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
 "  color+=emi;\n"
 "#endif\n"
 "#endif\n"
-   "color*=1.5;\n"
+  // "color*=1.5;\n"
 
 
   //"   return vec4(metallic,metallic,metallic,1.0);\n"

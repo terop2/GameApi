@@ -6084,7 +6084,7 @@ struct CodeGenLine {
   std::vector<int> j; // -1 = check array
   GameApiItem *item;
 };
-void CodeGenLineErrorCheck(const CodeGenLine &line, std::vector<GameApiItem*> functions)
+void CodeGenLineErrorCheck(CodeGenLine &line, std::vector<GameApiItem*> functions)
 {
   int s = functions.size();
   bool found = false;
@@ -6096,7 +6096,15 @@ void CodeGenLineErrorCheck(const CodeGenLine &line, std::vector<GameApiItem*> fu
 	  found = true;
 	  if (item->ParamCount(0) != int(line.params.size()))
 	    {
-	      std::cout << "ERROR: Param arity problem" << std::endl;
+	      //std::cout << "ERROR: Param arity problem" << std::endl;
+	      //std::cout << "Trying to fix" << std::endl;
+	      int s = item->ParamCount(0) - line.params.size();
+	      if (s>0)
+	      for(int j=0;j<s;j++) {
+		  line.params.push_back(item->ParamDefault(0,line.params.size() + j));
+		}
+
+#if 0
 	      std::cout << item->ParamCount(0)<< "!=" << line.params.size() << " -- " << item->ApiName(0) << "::" << item->FuncName(0) << "(";
 	      int ss = item->ParamCount(0);
 	      for(int ii=0;ii<ss;ii++)
@@ -6113,6 +6121,7 @@ void CodeGenLineErrorCheck(const CodeGenLine &line, std::vector<GameApiItem*> fu
 		  if (j!=ss2-1) std::cout << " ";
 		}
 	      std::cout << ");" << std::endl;
+#endif
 	    }
 	}
     }

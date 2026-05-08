@@ -421,7 +421,7 @@
 			 "m_gltf",
 			 { "ev", "tf", "material_id", "mix", "self_mult", "rest_mult", "light_x", "light_y", "light_z", "emissive" },
 			 { "EveryApi&", "TF", "int", "float", "float", "float", "float" ,"float", "float", "bool" }, 
-			 { "ev", "", "0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0", "false" },
+			 { "ev", "", "0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0", "true" },
 			 "MT", "materials_api", "gltf_material"));
 #endif
 #if (ALL==1)||(GLTF_MESH_ALL_MT_ARR==1)
@@ -429,7 +429,7 @@
 			 "m_gltf_arr",
 			 { "ev", "tf", "mix", "self_mult", "rest_mult","light_dir_x", "light_dir_y", "light_dir_z", "is_transparent", "emissive" },
 			 { "EveryApi&", "TF", "float", "float", "float","float", "float", "float", "bool", "bool" },
-			 { "ev", "", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0","true", "false" },
+			 { "ev", "", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0","true", "true" },
 			 "[MT]", "materials_api", "gltf_mesh_all_mt_arr"));
 #endif
 #if (ALL==1)||(GLTF_MATERIAL_ENV==1)
@@ -477,7 +477,7 @@
 			 "m_material",
 			 { "ev", "roughness", "metallic", "base_r", "base_g", "base_b", "base_a", "mix", "self_mult", "rest_mult", "light_dir_x", "light_dir_y", "light_dir_z", "emissive" },
 			 { "EveryApi&", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "float", "bool" },
-			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0", "false" },
+			 { "ev", "0.5", "0.8", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "400.0", "-400.0", "300.0", "true" },
 			 "MT", "materials_api", "gltf_material3"));
 #endif
 #ifndef STABLE
@@ -519,7 +519,7 @@
 			 "m_gltf_shadow",
 			 { "ev", "model", "shadow_p", "shadow_mt", "light_dir_x", "light_dir_y", "light_dir_z", "dark_level", "light_level", "ambient_color", "dark_color", "light_color", "scale", "size", "shadow2_mt", "emissive" },
 			 { "EveryApi&", "TF", "P", "MT", "float", "float", "float", "float", "float", "unsigned int", "unsigned int", "unsigned int", "float", "int", "MT", "bool" },
-			 { "ev", "", "", "", "-0.3", "-1.0", "-0.3", "0", "1", "ff221100", "ffff8800", "ffffffff", "0.8", "1024", "", "false" },
+			 { "ev", "", "", "", "-0.3", "-1.0", "-0.3", "0", "1", "ff221100", "ffff8800", "ffffffff", "0.8", "1024", "", "true" },
 			 "ML", "materials_api", "newshadow2_gltf"));
 #endif
   /*
