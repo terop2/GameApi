@@ -8880,9 +8880,9 @@ public:
 	if (tex3) count++;
 	if (tex4) ev.shader_api.set_var(sh, "texsampler[4]", count);
 	if (tex4) count++;
-	if (tex5) ev.shader_api.set_var(sh, "texsampler_cube[5]", count);
+	if (tex5) ev.shader_api.set_var(sh, "texsampler_cube[5]", count); // cube
 	if (tex5) count++;
-	if (tex6) ev.shader_api.set_var(sh, "texsampler_cube[6]", count);
+	if (tex6) ev.shader_api.set_var(sh, "texsampler_cube[6]", count); // cube
 	if (tex6) count++;
 	if (tex7) ev.shader_api.set_var(sh, "texsampler[7]", count);
 	//std::cout << roughnessfactor << " " << metallicfactor << " " << basecolorfactor0 << " " << basecolorfactor1 << " " << basecolorfactor2 << " " << basecolorfactor3 << " " << occul_strength << " " << emiss_factor << std::endl;
