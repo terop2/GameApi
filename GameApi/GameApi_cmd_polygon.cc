@@ -293,7 +293,7 @@ std::vector<GameApiItem*> polygonapi_functions1()
 			 "gltf_mesh_all_p_arr",
 			 { "ev", "model", "light_dir_x", "light_dir_y", "light_dir_z", "is_transparent", "emissive" },
 			 { "EveryApi&", "TF", "float", "float", "float","bool", "bool" },
-			 { "ev", "", "1.0", "1.0", "1.0","true","false" },
+			 { "ev", "", "1.0", "1.0", "1.0","true","true" },
 			 "[P]", "mainloop_api", "gltf_mesh_all_p_arr"));
 #endif
 #if 0
