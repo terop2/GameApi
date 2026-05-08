@@ -2358,7 +2358,7 @@ GameApi::ARR GameApi::PolygonApi::p_mtl_materials(GameApi::EveryApi &ev, P p)
   for(int i=0;i<s;i++) {
     GameApi::MaterialDef mat = vec[i];
     //std::cout << "Material: Ni=" << mat.Ni << ", Ns=" << mat.Ns << ", Kd=(" << mat.Kd_x << "," << mat.Kd_y << "," << mat.Kd_z << "), d="<< mat.d << std::endl;
-    GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Kd_x,mat.Kd_y,mat.Kd_z,1.0, mat.d,1.0,1.0, 0.0, 0.0, -400.0);
+    GameApi::MT m = ev.materials_api.gltf_material3(ev,mat.Ni,mat.Ns,mat.Kd_x,mat.Kd_y,mat.Kd_z,1.0, mat.d,1.0,1.0, 0.0, 0.0, -400.0,false);
     array->vec.push_back(m.id);
   }
   return add_array(e,array);
@@ -8773,7 +8773,7 @@ private:
 class GLTFShaderML : public MainLoopItem
 {
 public:
-  GLTFShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix, float self_mult, float rest_mult, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7,float roughnessfactor, float metallicfactor, float basecolorfactor0, float basecolorfactor1, float basecolorfactor2, float basecolorfactor3, float occul_strength, float emiss_factor, bool spec, Vector diff_factor, Vector spec_factor, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, Vector light_dir2, std::string cache_id) : ev(ev), next(next),mix(mix), self_mult(self_mult), rest_mult(rest_mult), tex0(tex0), tex1(tex1), tex2(tex2), tex3(tex3), tex4(tex4), tex5(tex5), tex6(tex6), tex7(tex7), roughnessfactor(roughnessfactor), metallicfactor(metallicfactor), basecolorfactor0(basecolorfactor0), basecolorfactor1(basecolorfactor1), basecolorfactor2(basecolorfactor2), basecolorfactor3(basecolorfactor3), occul_strength(occul_strength), emiss_factor(emiss_factor),spec(spec),diff_factor(diff_factor), spec_factor(spec_factor), glossi_factor(glossi_factor), unlit(unlit),emis2(Point(emis2_r,emis2_g,emis2_b)),light_dir2(light_dir2), cache_id(cache_id) 
+  GLTFShaderML(GameApi::EveryApi &ev, MainLoopItem *next, float mix, float self_mult, float rest_mult, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7,float roughnessfactor, float metallicfactor, float basecolorfactor0, float basecolorfactor1, float basecolorfactor2, float basecolorfactor3, float occul_strength, float emiss_factor, bool spec, Vector diff_factor, Vector spec_factor, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, Vector light_dir2, std::string cache_id, bool emissive) : ev(ev), next(next),mix(mix), self_mult(self_mult), rest_mult(rest_mult), tex0(tex0), tex1(tex1), tex2(tex2), tex3(tex3), tex4(tex4), tex5(tex5), tex6(tex6), tex7(tex7), roughnessfactor(roughnessfactor), metallicfactor(metallicfactor), basecolorfactor0(basecolorfactor0), basecolorfactor1(basecolorfactor1), basecolorfactor2(basecolorfactor2), basecolorfactor3(basecolorfactor3), occul_strength(occul_strength), emiss_factor(emiss_factor),spec(spec),diff_factor(diff_factor), spec_factor(spec_factor), glossi_factor(glossi_factor), unlit(unlit),emis2(Point(emis2_r,emis2_g,emis2_b)),light_dir2(light_dir2), cache_id(cache_id), emissive(emissive)
   {
     firsttime = true;
     sh.id=-1;
@@ -8817,7 +8817,7 @@ public:
     }
     fragment.id = ee.us_fragment_shader;
     //std::cout << "ManyTexture::F_ManyTexture" << std::endl;
-    GameApi::US a2f = ev.uber_api.f_gltf(fragment, tex0, tex1, tex2, tex3, tex4,tex5,tex6,tex7,spec,unlit,cache_id);
+    GameApi::US a2f = ev.uber_api.f_gltf(fragment, tex0, tex1, tex2, tex3, tex4,tex5,tex6,tex7,spec,unlit,cache_id, emissive);
     ee.us_fragment_shader = a2f.id;
     }
 
@@ -8915,6 +8915,7 @@ private:
   Point emis2;
   Vector light_dir2;
   std::string cache_id;
+  bool emissive;
 };
 
 
@@ -12303,10 +12304,10 @@ EXPORT GameApi::ML GameApi::PolygonApi::mixshader_shader(EveryApi &ev, ML mainlo
    MainLoopItem *item = find_main_loop(e, mainloop);
    return add_main_loop(e, new TextureManyShaderML(ev, item, mix));
  }
-EXPORT GameApi::ML GameApi::PolygonApi::gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r, float diff_factor_g, float diff_factor_b, float spec_factor_r, float spec_factor_g, float spec_factor_b, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, float light_dir_x, float light_dir_y, float light_dir_z, std::string cache_id, float self_mult, float rest_mult)
+EXPORT GameApi::ML GameApi::PolygonApi::gltf_shader(EveryApi &ev, ML mainloop, float mix, bool tex0, bool tex1, bool tex2, bool tex3, bool tex4, bool tex5, bool tex6, bool tex7, float roughness, float metallic, float basecolor0, float basecolor1, float basecolor2, float basecolor3, float occul, float emiss, bool spec, float diff_factor_r, float diff_factor_g, float diff_factor_b, float spec_factor_r, float spec_factor_g, float spec_factor_b, float glossi_factor, bool unlit, float emis2_r, float emis2_g, float emis2_b, float light_dir_x, float light_dir_y, float light_dir_z, std::string cache_id, float self_mult, float rest_mult, bool emissive)
  {
    MainLoopItem *item = find_main_loop(e, mainloop);
-   return add_main_loop(e, new GLTFShaderML(ev, item, mix,self_mult,rest_mult,tex0,tex1,tex2,tex3,tex4, tex5, tex6,tex7,roughness, metallic, basecolor0,basecolor1,basecolor2, basecolor3, occul, emiss,spec, Vector(diff_factor_r,diff_factor_g, diff_factor_b), Vector(spec_factor_r,spec_factor_g,spec_factor_b), glossi_factor, unlit,emis2_r,emis2_g,emis2_b,Vector(light_dir_x, light_dir_y, light_dir_z),cache_id));
+   return add_main_loop(e, new GLTFShaderML(ev, item, mix,self_mult,rest_mult,tex0,tex1,tex2,tex3,tex4, tex5, tex6,tex7,roughness, metallic, basecolor0,basecolor1,basecolor2, basecolor3, occul, emiss,spec, Vector(diff_factor_r,diff_factor_g, diff_factor_b), Vector(spec_factor_r,spec_factor_g,spec_factor_b), glossi_factor, unlit,emis2_r,emis2_g,emis2_b,Vector(light_dir_x, light_dir_y, light_dir_z),cache_id,emissive));
  }
  EXPORT GameApi::ML GameApi::PolygonApi::texture_cubemap_shader(EveryApi &ev, ML mainloop, float mix=0.5, float mix2=0.5)
  {

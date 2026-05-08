@@ -291,9 +291,9 @@ std::vector<GameApiItem*> polygonapi_functions1()
 #if (ALL==1)||(GLTF_MESH_ALL_P_ARR==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_p_arr,
 			 "gltf_mesh_all_p_arr",
-			 { "ev", "model", "light_dir_x", "light_dir_y", "light_dir_z", "is_transparent" },
-			 { "EveryApi&", "TF", "float", "float", "float","bool" },
-			 { "ev", "", "1.0", "1.0", "1.0","true" },
+			 { "ev", "model", "light_dir_x", "light_dir_y", "light_dir_z", "is_transparent", "emissive" },
+			 { "EveryApi&", "TF", "float", "float", "float","bool", "bool" },
+			 { "ev", "", "1.0", "1.0", "1.0","true","false" },
 			 "[P]", "mainloop_api", "gltf_mesh_all_p_arr"));
 #endif
 #if 0
