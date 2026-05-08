@@ -357,13 +357,13 @@ std::vector<GameApiItem*> blocker_functions(GameApi::EveryApi &ev)
 			 { "id" },
 			 { "TRB" },
 			 { "" },
-			 "TRB", "mainloop_api", "resize_transfer_id"));
+			 "TRR", "mainloop_api", "resize_transfer_id"));
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::anim_transfer_id,
 			 "anim_transfer_id",
 			 { "id" },
-			 { "TRA" },
+			 { "TRB" },
 			 { "" },
-			 "TRB", "mainloop_api", "anim_transfer_id"));
+			 "TRA", "mainloop_api", "anim_transfer_id"));
   
 #if (ALL==1)||(GLTF_MESH_ALL_ANIM==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::gltf_mesh_all_anim,
