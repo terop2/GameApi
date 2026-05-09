@@ -6,6 +6,24 @@ ini_set("memory_limit", "1024M");
 //header("Access-Control-Allow-Headers: Range");
 include("backend.php");
 //header("Cross-Origin-Opener-Policy: same-origin");
+
+
+$cached_file = "engine/engine_highmem.wasm";
+$cached_mtime = filemtime($cached_file);
+$cache_lastmodified = gmdate( "D, d M Y H:i:s", $cached_mtime ) . " GMT";
+
+header("Last-Modified: $cache_lastmodified");
+header("Cache-Control: public, max-age=0");
+
+if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
+   $ifModifiedSince = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
+   if ($ifModifiedSince >= $mtime) {
+      header("HTTP/1.1 304 Not Modified");
+      exit;
+      }
+   }
+
+
 $date = filemtime("engine_highmem.js");
 
 $machine=php_uname("n");
