@@ -148,8 +148,43 @@ echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; 
 
 echo "</div>\n";
 
-echo "<div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-3Zy55bzyYcZBW341-9.gif' border='0' alt='counter free'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=3Zy55bzyYcZBW341'></script></div>";
+echo "<!--div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-3Zy55bzyYcZBW341-9.gif' border='0' alt='counter free'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=3Zy55bzyYcZBW341'></script></div-->";
 
+function visit_counter_inc( $label )
+{
+   $filename = "./user_data/visit_" . $label . ".txt";
+   $num = 0;
+   if (file_exists($filename)) {
+      $data = file_get_contents($filename);
+      $num = intval($data);
+   }
+   $num = $num + 1;
+   $num_str = strval( $num );
+   file_put_contents( $filename, $num_str );   
+   return $num;
+}
+
+
+visit_counter_inc("mainpage");
+
+echo "<div align=\"center\">";
+echo "<div align=\"center\" class=\"counter\">";
+
+ echo file_get_contents("/home/terop/meshpage.org/user_data/visit_mainpage.txt");
+echo "</div>";
+echo "</div>";
+echo "<style>";
+echo ".counter {";
+echo "    font-family: monospace;";
+echo "    font-size: 48px;";
+echo "    background: black;";
+echo "    color: #00ff00;";
+echo "    padding: 10px 20px;";
+echo "    letter-spacing: 4px;";
+echo "    display: inline-block;";
+echo "    border-radius: 8px;";
+echo "}";
+echo "</style>";
 
 echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";

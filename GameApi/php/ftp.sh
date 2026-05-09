@@ -30,11 +30,11 @@ finish()
 }
 copy_it bootstrap.min.css
 copy_it bootstrap.bundle.min.js
-copy_it itch_3d_model_viewer.php
-copy_it itch_zip_converter.php
+#copy_it itch_3d_model_viewer.php
+#copy_it itch_zip_converter.php
 copy_it mesh_css.css
 copy_it .htaccess
-copy_it error.php
+#copy_it error.php
 copy_it _bootswatch.scss
 copy_it _variables.scss
 copy_it bootstrap.css
