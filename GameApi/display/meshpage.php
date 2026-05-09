@@ -268,7 +268,36 @@ $highmem = js_highmem();
 
 <!-- new navbar ends -->
 
-<div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-bADA3C7cY969169y-5.gif' border='0' alt='contador'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=bADA3C7cY969169y'></script></div>
+<!--div align=center><a href='https://www.counter12.com'><img src='https://www.counter12.com/img-bADA3C7cY969169y-5.gif' border='0' alt='contador'></a><script type='text/javascript' src='https://www.counter12.com/ad.js?id=bADA3C7cY969169y'></script></div-->
+
+
+<div align="center">
+<div align="center" class="d-inline-block bg-black text-success p-1 rounded font-monospace fs-1">
+
+<?php
+
+function visit_counter_inc2( $label )
+{
+   $filename = "./user_data/visit_" . $label . ".txt";
+   $num = 0;
+   if (file_exists($filename)) {
+      $data = file_get_contents($filename);
+      $num = intval($data);
+   }
+   $num = $num + 1;
+   $num_str = strval( $num );
+   file_put_contents( $filename, $num_str );   
+   return $num;
+}
+
+visit_counter_inc2("mesh");
+
+ echo file_get_contents("/home/terop/meshpage.org/user_data/visit_mesh.txt");
+?>
+</div>
+</div>
+
+
 
 
 <div id="pthreads_div" class="pthreads_div d-flex justify-content-end" ><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
