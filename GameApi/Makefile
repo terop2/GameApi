@@ -275,7 +275,9 @@ default:
 
 fast: all_targets
 
-cleanbuild: clean fast
+cleanbuild:
+	@$(MAKE) $(MAKEFLAGS) clean
+	@$(MAKE) $(MAKEFLAGS) depbuild
 
 depbuild: 
 	@$(MAKE) $(MAKEFLAGS) dependfiles
