@@ -270,7 +270,7 @@ endif
 .PHONY: default
 
 default:
-	@echo "Usage: make -j 8 [fast] [depbuild] [clean] [cleanbuild]"
+	@echo "Usage: make -j 8 [fast] [depbuild] [cleanbuild] [clean]"
 	@echo ""
 	@echo "Note: 'fast' -- for development (does not build all files)"
 	@echo "      'depbuild' -- do after you do git pull (or if fast fails)" 
