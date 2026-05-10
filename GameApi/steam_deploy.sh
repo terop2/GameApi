@@ -4,7 +4,7 @@ if [[ $1 == "" ]]; then
     exit
 fi
 
-./full_deploy.sh $1 incremental steam noweb
+./full_deploy.sh $1 steam noweb
 cp /home/terop/cvs/GameApi/GameApi/display/gameapi_display.zip /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
 cp /home/terop/cvs/GameApi/GameApi/editor/gameapi-builder /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
 cp /home/terop/cvs/GameApi/GameApi/cmdline/gameapi_cmdline /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
