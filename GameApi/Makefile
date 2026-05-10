@@ -267,11 +267,15 @@ endif
 .PHONY: dirs
 .PHONY: check_compile
 .PHONY: depbuild
+.PHONY: default
+
+default:
+	@echo "Usage: make -j 8 [fast] [depbuild] [clean] [cleanbuild]"
 
 
+fast: all_targets
 
-default: all_targets
-
+cleanbuild: clean fast
 
 depbuild: 
 	@$(MAKE) $(MAKEFLAGS) dependfiles
