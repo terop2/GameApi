@@ -1,29 +1,39 @@
 #!/bin/bash
 if [[ $1 == "" ]]; then
-    echo "Usage: ./full_deploy.sh password [incremental] [steam] [noweb]"
+    echo "Usage: ./full_deploy.sh password [clean] [incremental] [steam] [noweb]"
     exit
 fi
-if [[ $2 != "incremental" ]]; then
+if [[ $2 == "clean" || $3 == "clean" || $4 == "clean" || $5 == "clean" ]]; then
     make clean
 fi
-if [[ $2 == "steam" || $3 == "steam" ]]; then
+if [[ $2 == "incremental" || $3 == "incremental" || $4 == "incremental" || $5 == "incremental" ]]; then
+if [[ $2 == "steam" || $3 == "steam" || $4 == "steam" || $5 == "steam" ]]; then
    make -j 8 STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes
    (cd editor;make -f Makefile.Linux STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes)
 else
     make -j 8
     (cd editor;make -f Makefile.Linux)
 fi
-if [[ $2 != "incremental" ]]; then
+else
+if [[ $2 == "steam" || $3 == "steam" || $4 == "steam" || $5 == "steam" ]]; then
+   make -j 8 depbuild STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes
+   (cd editor;make -f Makefile.Linux STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes)
+else
+    make -j 8 depbuild
+    (cd editor;make -f Makefile.Linux)
+fi       
+fi
+if [[ $2 == "clean" || $3 == "clean" || $4 == "clean" || $5 == "clean" ]]; then
     make -f Makefile.LinuxEm clean
 fi
-if [[ $2 != "noweb" && $3 != "noweb" && $4 != "noweb" ]]; then
+if [[ $2 != "noweb" && $3 != "noweb" && $4 != "noweb" && $5 != "noweb" ]]; then
     ./emmake.sh RELEASE=true
     (cd web_page;./ftp_release.sh)
     (cd display;./ftp_release.sh)
     (cd display;./ftp_package.sh $1)
     (cd php;./ftp.sh)
 fi
-if [[ $2 == "steam" || $3 == "steam" ]]; then
+if [[ $2 == "steam" || $3 == "steam" || $4 == "steam" || $5 == "steam" ]]; then
     echo "SKIP"
 else
     (cd deploytool;./ftp_release.sh)
