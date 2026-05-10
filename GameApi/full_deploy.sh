@@ -8,10 +8,10 @@ if [[ $2 == "clean" || $3 == "clean" || $4 == "clean" || $5 == "clean" ]]; then
 fi
 if [[ $2 == "incremental" || $3 == "incremental" || $4 == "incremental" || $5 == "incremental" ]]; then
 if [[ $2 == "steam" || $3 == "steam" || $4 == "steam" || $5 == "steam" ]]; then
-   make -j 8 STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes
+   make -j 8 fast STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes
    (cd editor;make -f Makefile.Linux STEAM_ENABLE=yes STEAM_DEPLOY_ENABLE=yes)
 else
-    make -j 8
+    make -j 8 fast
     (cd editor;make -f Makefile.Linux)
 fi
 else
