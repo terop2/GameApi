@@ -201,6 +201,12 @@ HFiles = $(patsubst %.cc,%.hh,$(CFiles))
 #GCH2Files = $(patsubst %.cc,objs/%.hh.gch2,$(CFiles))
 Subdirsx = $(patsubst %,%build,$(Subdirs))
 
+DependDFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2))
+DependCMDDFiles = $(patsubst %.cc,objs/%.d,$(CMDFiles))
+DependO2DFiles = $(patsubst %.cc,objs/%.d,$(CFiles) $(CFiles2))
+
+
+
 WARN = -Wno-unused-variable -Wno-sign-compare -Wno-reorder -Wno-unused-but-set-variable -Wno-unused-function -Wno-misleading-indentation -Wno-unused-result  -Wno-maybe-uninitialized -Wno-deprecated-declarations -Wno-restrict -Wno-uninitialized  -Wno-volatile -Wno-nonnull-compare -Wno-address -Wno-bool-compare -Wno-comment -Wno-unused-local-typedefs -Wno-range-loop-construct -Wno-deprecated-enum-enum-conversion -Wno-return-type
 
 #-fsanitize=undefined -fsanitize-recover=undefined
@@ -257,7 +263,32 @@ endif
 endif
 endif
 
-default: check_compile dirs libGameApi.so deploytool/deploytool editor/gameapi-builder cmdline/gameapi_cmdline
+
+.PHONY: dirs
+.PHONY: check_compile
+.PHONY: depbuild
+
+
+
+default: all_targets
+
+
+depbuild: 
+	@$(MAKE) $(MAKEFLAGS) dependfiles
+	@$(MAKE) $(MAKEFLAGS) Makefile.tmp
+	@$(MAKE) $(MAKEFLAGS) depbuild_stage_1
+
+Makefile.tmp: Makefile 
+	@echo "  GENSCRIPT Makefile.tmp"
+	@cat Makefile |sed 's@#include1@-include $$(DependDFiles)@g' |sed 's@#include2@-include $$(DependCMDDFiles)@g' |sed 's@$$(OFiles): objs/%.o : %.cc@$$(OFiles): objs/%.o : %.cc@g' |sed 's@$$(CMDOFiles): objs/%.o : %.cc@$$(CMDOFiles): objs/%.o : %.cc@g' >Makefile.tmp
+
+
+depbuild_stage_1:
+	$(MAKE) $(MAKEFLAGS) -f Makefile.tmp depbuild_stage_2
+
+depbuild_stage_2: all_targets
+
+all_targets: libGameApi.so deploytool/deploytool editor/gameapi-builder cmdline/gameapi_cmdline
 
 
 check_compile:
@@ -340,7 +371,6 @@ libGameApi.so: $(OFiles) $(CMDOFiles) Makefile
 #	@$(CC) -Wl,--gc-sections $(BD_CALVIN_M64) -rdynamic -shared $(OFiles) $(CMDOFiles2a) -std=c++20 -o libGameApi_small.so  $(LDFLAGS) -lstdc++ -lwayland-client 
 
 
-.PHONY: dirs
 
 #`pkg-config gtkmm-2.4 --libs` 
 
@@ -366,13 +396,31 @@ CCWIN = i586-mingw32msvc-g++
 
 
 deploytool/deploytool: deploytool/Makefile deploytool/main.cc libGameApi.so
+	@echo "  MAKE deploytool";
 	@(cd deploytool; make -f Makefile DEBUG="$(DEBUG)")
 
 cmdline/gameapi_cmdline: cmdline/Makefile cmdline/test.cpp libGameApi.so
+	@echo "  MAKE gameapi_cmdline";
 	@(cd cmdline; make -f Makefile DEBUG="$(DEBUG)" STEAM_DEPLOY_ENABLE="$(STEAM_DEPLOY_ENABLE)" STEAM_PATH="$(STEAM_PATH)") 
 
 editor/gameapi-builder: editor/Makefile.Linux editor/test.cpp libGameApi.so
+	@echo "  MAKE editor/gameapi-builder";
 	@(cd editor; make -f Makefile.Linux DEBUG="$(DEBUG)" LDFLAGS="$(LDFLAGS)" STEAM_ENABLE="$(STEAM_ENABLE)" STEAM_PATH="$(STEAM_PATH)")
+
+dependfiles: $(DependDFiles) $(DependCMDDFiles) 
+	@echo "DEPENDSETUP $(MAKECMDGOALS)"
+#	@$(CC) $(PLATFORM_FLAGS) -MM -MP -std=c++20 -g -c $(CCFLAGS) $(CFiles) $(CFiles2) $(CMDFiles) -o depend.d
+
+$(DependDFiles): objs/%.d : %.cc
+	@echo "  DEPEND $@"
+	@$(CC) $(PLATFORM_FLAGS) -MM -MP -std=c++20 -g -c $(CCFLAGS) $< -o $@
+
+
+
+$(DependCMDDFiles): objs/%.d : %.cc
+	@echo "  DEPEND $@"
+	@$(CC) $(PLATFORM_FLAGS) -MM -MP -std=c++20 -g -c $(CCFLAGS) $< -o $@
+
 
 $(OFiles): objs/%.o : %.cc
 	@echo "  CC     $@"
@@ -429,5 +477,6 @@ clean:
 	@rm -rf objs/*.o objs/*.obj objs/*.d objs/*.d2 objs/*.gch objs/*.gch2
 	@echo Clean.
 
-
-#-include $(DFiles)
+#include1
+#include2
+#include3

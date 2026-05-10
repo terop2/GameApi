@@ -27,7 +27,7 @@ endif
 
 
 all:
-	@echo "  LD   cmdline/gameapi_cmdline"
+	@echo "  LD     cmdline/gameapi_cmdline"
 	@g++ $(ADDRESS) $(BD_CALVIN_M64) test.cpp -o gameapi_cmdline -I.. -L.. -lGameApi $(STEAM_CFLAGS) $(STEAM_LIBS)
 
 #@echo "  LD   cmdline/gameapi_cmdline.small"
