@@ -271,7 +271,8 @@ endif
 
 default:
 	@echo "Usage: make -j 8 [fast] [depbuild] [clean] [cleanbuild]"
-
+	@echo ""
+	@echo "Note: 'fast' might not build all needed files, but better for development"
 
 fast: all_targets
 
