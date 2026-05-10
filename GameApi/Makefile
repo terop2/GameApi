@@ -272,7 +272,10 @@ endif
 default:
 	@echo "Usage: make -j 8 [fast] [depbuild] [clean] [cleanbuild]"
 	@echo ""
-	@echo "Note: 'fast' might not build all needed files, but better for development"
+	@echo "Note: 'fast' -- for development (does not build all files)"
+	@echo "      'depbuild' -- do after you do git pull"
+	@echo "      'cleanbuild' -- do after getting new env from repo"
+	@echo "      'clean' -- for getting rid of large files"
 
 fast: all_targets
 
