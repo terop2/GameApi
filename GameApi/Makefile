@@ -280,7 +280,7 @@ depbuild:
 
 Makefile.tmp: Makefile 
 	@echo "  GENSCRIPT Makefile.tmp"
-	@cat Makefile |sed 's@#include1@-include $$(DependDFiles)@g' |sed 's@#include2@-include $$(DependCMDDFiles)@g' |sed 's@$$(OFiles): objs/%.o : %.cc@$$(OFiles): objs/%.o : %.cc@g' |sed 's@$$(CMDOFiles): objs/%.o : %.cc@$$(CMDOFiles): objs/%.o : %.cc@g' >Makefile.tmp
+	@cat Makefile |sed 's@#include1@-include $$(DependDFiles)@g' |sed 's@#include2@-include $$(DependCMDDFiles)@g' >Makefile.tmp
 
 
 depbuild_stage_1:
@@ -413,13 +413,15 @@ dependfiles: $(DependDFiles) $(DependCMDDFiles)
 
 $(DependDFiles): objs/%.d : %.cc
 	@echo "  DEPEND $@"
-	@$(CC) $(PLATFORM_FLAGS) -MM -MP -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) $(PLATFORM_FLAGS) -MM -MP -MF objs/$*.Td -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@sed 's|^\(.*\)\.o:|objs/\1.o:|' objs/$*.Td >objs/$*.d
 
 
 
 $(DependCMDDFiles): objs/%.d : %.cc
 	@echo "  DEPEND $@"
-	@$(CC) $(PLATFORM_FLAGS) -MM -MP -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@$(CC) $(PLATFORM_FLAGS) -MM -MP -MF objs/$*.Td -std=c++20 -g -c $(CCFLAGS) $< -o $@
+	@sed 's|^\(.*\)\.o:|objs/\1.o:|' objs/$*.Td >objs/$*.d
 
 
 $(OFiles): objs/%.o : %.cc
