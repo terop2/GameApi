@@ -112,7 +112,7 @@ if ("$machine"=="terop-pc2") {
    //$assetsite = $https . "://" . $siteprefix . $assetsite;
 ?>
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="light" id="html" style="background-color: #eee; overflow: auto;"> 
+<html lang="en" data-bs-theme="light" id="html" style="overflow: auto;"> 
 <head>
 <title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
 <?php
@@ -300,7 +300,7 @@ visit_counter_inc2("mesh");
 
 
 
-<div id="dark_div" class="dark_div d-flex justify-content-end" ><div><label>dark mode:</label><button @click="dark_toggle()" id="toggle_dark" class="toggle">✅</button></div></div>
+<div id="dark_div" class="dark_div d-flex justify-content-end" ><div><label>dark mode:</label><button @click="dark_toggle()" id="toggle_dark" class="toggle">❌</button></div></div>
 
 <div id="pthreads_div" class="pthreads_div d-flex justify-content-end" ><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
 
@@ -573,7 +573,7 @@ echo "<script>";
 echo "var pthread_str = sessionStorage.getItem('pthread_enabled');";
 echo "var pthread_state = pthread_str === 'true';";
 echo "var btn = document.getElementById(\"toggle_pthreads\");";
-echo "var btn_div = document.getElementById(\"pthreads_div\");";
+echo "var btn_div2 = document.getElementById(\"pthreads_div\");";
 echo "if (pthread_str===null) pthread_state=true;";
 echo "if (pthread_state==true)";
 echo "{";
@@ -1268,7 +1268,7 @@ CONCEPT IMAGES GENERATED VIA ARTIFICIAL INTELLIGENCE(chatgpt4):<br>
 
 DOWNLOADING THE ACTUAL PRODUCT OFFERING:
 <div style="padding: 0px; width: 1324px;">
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
@@ -1279,14 +1279,14 @@ visit_counter_inc( "tool" );
 ?>
 </ul>
 </div>
-<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 400px; height: 150px; float:left;">
 <div style="margin: 30px;">
       (doubleclick msi file to install it)<br>
        start menu -> GameApi-Builder v<?php echo file_get_contents("$https://<?php echo $site ?>/assets/VERSION_WIN.TXT"); ?>.0 -> GameApi_Builder v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.0
 </div>
 </div>
 
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 220px; height: 150px; float:left;">
 <div style="margin: 10px;">
 <img loading="lazy" src="Windows-Symbol.png" width="200" height="120" crossorigin/>
 </div>
@@ -1296,7 +1296,7 @@ visit_counter_inc( "tool" );
 <p>
 <div style="padding: 0px;  width: 1324px;">
 <div></div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
@@ -1304,7 +1304,7 @@ visit_counter_inc( "tool" );
 <li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder_1.0-<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.deb">download deb</a>
 </ul>
 </div>
-<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 400px; height: 150px; float:left;">
 <div style="margin: 30px;">
       sudo dpkg -i gameapi-builder_1.0-<?php echo file_get_contents('$https://$site/assets/VERSION.TXT'); ?>.deb<br>
       gameapi-builder
@@ -1312,7 +1312,7 @@ visit_counter_inc( "tool" );
 </div>
 
 
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 220px; height: 150px; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
 <img loading="lazy" src="data:image/png;base64,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"
 width="120" height="120" crossorigin/>
@@ -1325,7 +1325,7 @@ width="120" height="120" crossorigin/>
 <p>
 <div style="padding: 0px;  width: 1324px;">
 <div></div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
@@ -1333,7 +1333,7 @@ width="120" height="120" crossorigin/>
 <li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi-Builder-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.msi">download msi</a>
 </ul>
 </div>
-<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 400px; height: 150px; float:left;">
 <div style="margin: 30px;">
      (install wine)<br>
      wine msiexec /i GameApi-Builder-v<?php echo file_get_contents("$https://$site/assets/VERSION_WIN.TXT"); ?>.msi<br>
@@ -1343,7 +1343,7 @@ width="120" height="120" crossorigin/>
 </div>
 
 
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 220px; height: 150px; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
 <img loading="lazy" src="<?php echo $https ?>://<?php echo $site ?>/assets/wine_logo.jpeg"
 width="120" height="120" crossorigin/>
@@ -1358,7 +1358,7 @@ width="120" height="120" crossorigin/>
 <p>
 <div style="padding: 0px;  width: 1324px;">
 <div></div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi Builder</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">Modelling Tool, Gamedev</span>
@@ -1367,7 +1367,7 @@ width="120" height="120" crossorigin/>
 <li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder-docker-container-<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.tar.gz">download tar.gz</a>
 </ul>
 </div>
-<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 400px; height: 150px; float:left;">
 <div style="margin: 30px;">
       (install docker, nvidia-container-toolkit)<br>
       sudo docker build -t builder-test:latest .<br>
@@ -1376,7 +1376,7 @@ width="120" height="120" crossorigin/>
 </div>
 
 
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 220px; height: 150px; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
 <img loading="lazy" src="data:image/png;base64,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" width="120" height="120" crossorigin/>
 </div>
@@ -1385,18 +1385,18 @@ width="120" height="120" crossorigin/>
 
 <div style="padding: 0px 0px;  width: 1324px;">
 <div style="height: 400px; width: 1324px;"></div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: none; width: 400px; height: 20px; background-color: #eee; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: none; width: 400px; height: 20px; float:left; ">
 </div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: none; width: 400px; height: 20px; background-color: #eee; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: none; width: 400px; height: 20px; float:left; ">
 </div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: none; width: 400px; height: 20px; background-color: #eee; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: none; width: 400px; height: 20px;  float:left; ">
 </div>
 </div>
 
 <p>
 <div style="padding: 0px 0px;  width: 1324px;">
 <div></div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi CmdLine</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">GameDisplay tool</span>
@@ -1405,7 +1405,7 @@ width="120" height="120" crossorigin/>
 <li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/gameapi-builder-docker-cmdline-<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.tar.gz">download tar.gz</a>
 </ul>
 </div>
-<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 400px; height: 150px; float:left;">
 <div style="margin: 30px;">
       (install docker, nvidia-container-toolkit)<br>
       sudo docker build -t builder-test:latest .<br>
@@ -1416,7 +1416,7 @@ width="120" height="120" crossorigin/>
 </div>
 
 
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 220px; height: 150px; float:left;">
 <div style="margin: 15px 50px 15px 50px;">
 <img loading="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANcAAAB5CAMAAACdtUQZAAAA51BMVEX///8AkrcAgqgAs9wqQ0ey2tkAo8gAuuQfeI4hPUH09fXHy8z4+fng4uNKXF/Lz9BzfoAcgpkQMTUAKjAbOT4Qr9AXhJ8Rl7ktMCwTosAnVmAQqckWj6kqP0KzuLk8UFQgaXwsNzWTm50UKCgAGx8uKiIAIiIOhqcjX24hcoQAIigVl7MoUFYVjq2lrK0mTlp+iYsADhgNeZtZaGsXbIcAFh5mc3YGut0AzPQgMjIlJiEAAA08n7uBxM+Nwchdd3fS9O1viIeHoJ1YtMmZu7l7qrKKra2pysdvrb8AdaGf0NR0lZZim6ngzvSLAAAMoElEQVR4nO2cCXvbNhKG7QiVCN4CIdGmzVNOTF0UbVly1Tbxpu0m3Xb//+9ZDHiL9JFElJSsvxyPTJgUXs5gMAMeJyev+hZpUkXiofuzK6nYLoSpcuj+7EoqDr1c6EfiujgfXAwG5xcXF/c/FNfAuhT657PLvnDxY3GFwGVd9vuvXMevV67vS69c35e+cy75EQFX/3w6vRDOp5ff4bwc648Iof40l/08l7aP3r5ciD4iG5Xy3uftFRnBXvr7Url2f57LD89z9X2haHjWXpLhG/ox1TKub46HQt/0rof9rj8+vxQG/enlmP3nm96wP5x7c9bwrL3sjWAb+n66/CIxrlDw7szF0PNMfzzth+dCvz8bjBmXJXjecDYUBPM5roB4va41Wh+PxZq5rISr743n1gu4xCU2e53uzIj31e1ntRMuiVidTqfXRUa0r34/p4Rr/G1cwajfY2CduY2OZZ7bCdd6NAWsTs8bHUvs2Ikfol86iXr2zZEYrOAafz3XxO+lXMPNel89f1q5Hwq5vcZ5nAeuxVAYP8Ml36CUq9NF7sFivShphVx/Oj+dmt351Dxl8/JgcH4/uID/Lv353DSn5tw8Pe0i7BS7SNuMJa6Ot3EOAsUk3ZBCCFlcIfyzZ2Euyy4aLIRosctkOxOUb+yMqzccBSeyIjmOU8NvW9okZQHN7Fnxg40Wi8WM/WFC1YbSHqSW4eIsbnR6pq2qhNLNhmwIVZ19smlXXrdrsj/wd/j2fnA/GNxf3N8Pfj4rNVz7bCsTa7j/2S4aTLDIlpa/dAuuzQZZfKnYQpt3NNgfGeMaCtb1WBCs+Xj4lpXF4/EAlj8HPjSYniAsWM7rl+pl2xt6oRmOhZA11LmC0TALiOaZx4ZlF2Sac8sn7t7qF8Z1nXF5CZewxWWxJL/Kdc2QQuERLsmw8oDY7XRLMtH+6rLdcykq6uZcFc2xuzdH3D3XSbwZN2KZC7K/TLgFLoX4Zq+O1V2M9ph+tMB1EhloUOcKN/vM79uwV0z9cBtrbhN1z/NXyjXLuCDOC5xrXIrz2fUvzvVEnNdiNLKFLaxh6E/We005GNfp0DsVhkPP7DOu/vnw8n48vby8971Ltg0augLjEti2i/H59HJge/P+mG27FlhrmUsWlVi1ycbrlrHMobegxHbk9mFkJ1dArGIFzfMvYVVtytfW/LxhOPfsfrHoZod8W9KwWacHioJYnaxGtiV0exyrE0K+heyz0TuyjvZAxUaAbbxLNbL9s1y+fVb6wW/+XG2wN9mBRqNffKtvdrNQyOqZG6aVq0fansoVDc3GTMJOdTnt9nqliUvY6KIi7rUAk+wQMpxOb6fK0vh0bFmGtE8mkIM9/tWdVpRgXfp431gnDm2RK8suJnurleVsBnkxV+8LtxdY8015baPdYSarTgPXo3i9znDRvD0UHsUyUy6rnONq7ebxmnGVVKwQNxKuXmduzbq9hvPf65ieb8/m27Zhe8xsOzQ7TTvB0YYmO1VDuzCXEhDcpk9qLkbU1SWI8wlX71yw4EKd1+1Vesl+6g7ZlIqQbVvXJQL2aRjasB2x+bdT2Yv9YHpw/W82nndmRkYixS5BGLUVGxVtucIgOvnVXaPFWPDC2dkZ9JH18swPhXnqQua87y3eshkXcbF527pL2sz52Cq222dvZ2G/qPP7nn+WHI3tgkgQRVGguzcTwr/2aikpu845ZC2KVUJRJoyTy6qoJNv3fW6I7EO5jW2z+a80NPCmWhvGfBWO4mKLocaRtls0WazqRLVv3zBdn+5O128KhTQWG9V2lqhv7ngH2sG6s/GB1q+jd+Fuud6Uha4OtXwtXqE3uwSrYC3Iwa7Ayq5/uzuuCtUbz97falpNgZE44i4iRxXr1r464N02Gl486Yi/vf/w3vwKKoZFD3m5XFziuyfAzJ8eHv7195dTweDS91LyP6aIpAZrBHv/kcw+f/7jOarrGhYiy0NSMVH7CYN9eMDo5vdnuOpUt9ZGPfRdNtFk9rjB/viTUPfzb09i1aiYE9IDhsJUoprmHHWw69M37//+9NOT5mqgup1tDo8FxSW6bQC7FsLZHQuIfzxhrQaoI7EWKCbWbarrhOjOW9h0g+3hlzogWMsmBx9biWSV+v4mqS6wvdmMmLD68Pu/n6SqRwuuO2QcNsCXpGGGMXNdxuWqy4eP/3z6/Pknpsc9sJmJKbRX8bFgwaVgl4Nsq3myfsRSYKzFBh3sDpQmRVfozwauusEeReJY9mR5FBGjUGSgTw1g5ouZILxTHBxHxCjJMYx/6lwfnmEpUYW2sTyy2+W5HEIe6mB//eeFVIhMoqMzFpeiGqTui3+9iMon7vHcnbwtMTbIQy18PGuxO8se0fjI4kVVEiXoYTviP2kx5oCYkD3ex/V1kgN3YnzcstmH62aT3d55M39El/u5ZvyNUgJjQpf/VND+/q0OduuFC3uzwsG+rhl/uwIVG8wf02QqIZuXiMBO9oYQVz3uUVWXFCwnqwl1War4+6dPf4L+ewfyQmuB/I0xIcvAOcbZ6jmJiqNjgym/ZIAxpXA/r2EgPdKU78b7GiRrThDr6/V6uVyu17oex8xI35nrPSF5L5dAXvWqH1Ki8vWh4Bt2bVuiTt2vvUgfIPeoyv6ytBWiX7mWriFM3d32ZnfSJgirX7erBAtYxxr/X7lqeuU6gH4kLlnRNCnNybe5RAUeK2y+h0nh72fL28pcSnUPeDhPeiRHZhNmK9OeHK1VTAl2l1AXVrnEYO2yggS56/qahaSrULoQd51eES9xaapbutzg6C6rZwys6vUaTYvXquu28ESzgwlOaipMjVgsc4lxUW5RUl28VdRSG9KqXA7FmGRTtKaS4iBbl8I0lx2Fte78iWYxvirfiUbUiORcytIotxnlPjk0uQ8u6TFdimUuCYhpmrUEBi7/ZuWZqCAj/nXHXPKSJobipXD67SmXgmADbzL499PiCZkINmBiYOZg7CNVy1wSHCV70UYM54b/JjW4gUtPlKZtxJjseBVVVilQ6RKcZSV2UxtwLgXOM3VjcDFZ08FbaHbl0QEjk2Xiac7aTdLClMsBZppiBQY3J38KRYy4A+Q3ZOtJW7T7sMGcjmHlaa6yJDmXuKbglvlAlwAsfQ5SgUt+Rj7e5LRjnOtEgmOQ9O0hGnTdyFfqxQAslvqzU23boRRunlKMktc045LYt+Ly5SvRBTPwX45JxZ0yAZfqcI/NMmc13ydVRLOzI8KVXtrKIhY4yaRSlIhLnHJBj0jFQeAsUBgI4gSQ64eTsvBA12mMB8jKPdeamls9oFttuxNGtdwCHAe2iau6SQIWKsGHwIEmDWNCyoNqNnXFlB2sNEFLNsDYsK+4xgi382CleMPO3bYjMG8DLu78266/SsyrUxYWGhKQlIvmvVWYdcpxPTI4NT8lYP3al+9GMAXXbhlJ5y9mm3rfWTfh5TRbvc2VcJHihUNK1bDBdkRZ7Qhkux8G84Rtm8BGlXtQPTKkG1k0pE0DQyomiUTsxKGb7OSIOmDlbyOC72mpuGaHpl/EFeRcjQOec5VfLsK50s9J8kLzYzJHb4o9u1CjvZwnuPSX2Kv0vJDCuFaJvVg6yRpXxW7p97Qh5SqfIwvxoMCHWd2WrGvwfAmbCxpmr2x8lYYsxIZJkhLzjLE8VbbIdQLxcHtNDfoeJS60/b4aOA8QwiDeN93LlcXDPI2EnIXPeA7PySoPYLfJxZJejKqbIB8gjFVmo2H7fncdJ8ZQVondtpXNXwUAREC2RxIIq6eiTS7IlaoepYEj8aID+lJ9ZBCSSX724Xxs5SLJ4QDKLVtGBEpdn/BAWLVwm1widJCWwBToVTI38dzRLoHxxC+hcQhqmPmS/FBDvAxIoztkarxSq73Hp02uE433dZ2uRYgOL0bS6BuR8lkWuS+l+bysQzqUpeKyEiSfknxeoSWL8UIIxE+QKOlBNp21ynUSgYtQGjuS5CTVUXHT6pqPCjeAtsDlKVCWIfG+swI6gAflY0ImPDVJ6y9u9KSCzkoG5EbwbL47oVeZ3drlSuo+Vp3DP56KFy/DEHk1hqGMTtrIMh8iGgdjpS7m7bhSLytg9uyGeW3FS30CF6PLeXbLXLBsg3LhvMIAyXG2/MDZcTk8Vtc+jLhkLximtJi6WbFaHIXmLz9sm+tE06+SL8b0ypWqqa6jTtI2slpXk28xSNcrWF9vklGo5NdTAIxkM6PouFeJeemVmgciaYJIy+8LVKKlC4rrjznKWqBCk9pwy5Ps6Hy3dZQ/150/CiWrKC4fJVaTLyhti9E+XpQiP7H+/ESb/OL7Al7+m/+H+h8POMo8WlGdhgAAAABJRU5ErkJggg==" width="120" height="120" crossorigin/>
 </div>
@@ -1427,7 +1427,7 @@ width="120" height="120" crossorigin/>
 <p>
 <div style="padding: 0px;  width: 1324px;">
 <div></div>
-<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left; ">
+<div itemscope itemtype="https://schema.org/SoftwareApplication" style="border-style: solid; width: 400px; height: 150px; float:left; ">
 <ul>
 <li><b>Application name:</b> <span itemprop="name">GameApi CmdLine</span>
 <li><b>Application category:</b> <span itemprop="applicationCategory" itemtype="https://schema.org/SoftwareApplication">GameDisplay tool</span>
@@ -1435,14 +1435,14 @@ width="120" height="120" crossorigin/>
 <li><b>Download url:</b> <a href="<?php echo $https ?>://<?php echo $assetsite ?>/GameApi_cmdline_<?php echo file_get_contents("$https://$site/assets/VERSION.TXT"); ?>.zip">download zip</a>
 </ul>
 </div>
-<div style="border-style: solid; width: 400px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 400px; height: 150px; float:left;">
 <div style="margin: 30px;">
       gameapi_cmdline.exe --file script.txt --homepage homepageurl<p>
 </div>
 </div>
 
 
-<div style="border-style: solid; width: 220px; height: 150px; background-color: white; float:left;">
+<div style="border-style: solid; width: 220px; height: 150px; float:left;">
 <div style="margin: 10px;">
 <img loading="lazy" src="Windows-Symbol.png" width="200" height="120" crossorigin/>
 </div>
