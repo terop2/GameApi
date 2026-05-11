@@ -95,3 +95,8 @@ ErrorDocument 403 /error.php
 ErrorDocument 500 /error.php
 ErrorDocument 502 /error.php
 ErrorDocument 503 /error.php
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css|png|jpg|jpeg|gif|webp|glb|gltf|wasm)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+</IfModule>
