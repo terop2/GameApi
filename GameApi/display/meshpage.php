@@ -112,7 +112,7 @@ if ("$machine"=="terop-pc2") {
    //$assetsite = $https . "://" . $siteprefix . $assetsite;
 ?>
 <!DOCTYPE html>
-<html id="html"  style="background-color: #eee; overflow: auto;">
+<html lang="en" data-bs-theme="light" id="html" style="background-color: #eee; overflow: auto;"> 
 <head>
 <title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
 <?php
@@ -129,9 +129,10 @@ if ($page!="2") {
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"/>
 <meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
 <meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
-
-<link href="bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-<script src="bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<!-- integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"  integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" -->
+<link id="bootstrap-css" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.7/dist/slate/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous">
+<!-- link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.7/dist/spacelab/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous"-->
+<script src="bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
 
 <?php
@@ -299,6 +300,7 @@ visit_counter_inc2("mesh");
 
 
 
+<div id="dark_div" class="dark_div d-flex justify-content-end" ><div><label>dark mode:</label><button @click="dark_toggle()" id="toggle_dark" class="toggle">✅</button></div></div>
 
 <div id="pthreads_div" class="pthreads_div d-flex justify-content-end" ><div><label>pthreads:</label><button @click="pthread_toggle()" id="toggle_pthreads" class="toggle">✅</button></div></div>
 
@@ -581,6 +583,26 @@ echo "if (pthread_state==false)";
 echo "{";
 echo "  btn.textContent=\"❌\";";
 echo "}";
+
+echo "var dark_str = sessionStorage.getItem('dark_enabled');";
+echo "var dark_state = dark_str === 'true';";
+echo "if (dark_state==false) {";
+echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_spacelab.min.css\";";
+echo "} else {";
+echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_slate.min.css\";";
+echo "}";
+echo "var btn = document.getElementById(\"toggle_dark\");";
+echo "var btn_div = document.getElementById(\"dark_div\");";
+echo "if (dark_str===null) dark_state=true;";
+echo "if (dark_state==true)";
+echo "{";
+echo "   btn.textContent=\"✅\";";
+echo "}";
+echo "if (dark_state==false)";
+echo "{";
+echo "  btn.textContent=\"❌\";";
+echo "}";
+
 
 
 echo "if (!crossOriginIsolated || pthread_state==false) {";
@@ -2368,6 +2390,11 @@ echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    pthread_toggle: function() {
       pthread_state=!pthread_state;
       sessionStorage.setItem('pthread_enabled',pthread_state?'true':'false');
+      window.location.reload();
+   },
+   dark_toggle: function() {
+      dark_state=!dark_state;
+      sessionStorage.setItem('dark_enabled',dark_state?'true':'false');
       window.location.reload();
    },
 
