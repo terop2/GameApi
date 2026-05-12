@@ -591,11 +591,12 @@ echo "<div style=\"height:40px\"></div>";
 echo "</div>";
 echo "<script>";
 echo "var pthread_str = sessionStorage.getItem('pthread_enabled');";
+echo "var pthread_exists = pthread_str !== null;";
 echo "var pthread_state = pthread_str === 'true';";
 echo "var btn = document.getElementById(\"toggle_pthreads\");";
 echo "var btn_div2 = document.getElementById(\"pthreads_div\");";
 echo "if (pthread_str===null) pthread_state=true;";
-echo "if (pthread_state==true)";
+echo "if (pthread_state==true || pthread_exists == false)";
 echo "{";
 echo "   btn.textContent=\"✅\";";
 echo "}";
@@ -626,7 +627,7 @@ echo "}";
 
 
 
-echo "if (!crossOriginIsolated || pthread_state==false) {";
+echo "if (!crossOriginIsolated || (pthread_state==false && pthread_exists==true)) {";
 echo "    console.log(\"NOT CROSSORIGIN ISOLATED => running in lowmem/nothreads mode\");";
 echo "    console.log(\"Your web server needs the following configuration to get gameapi builder animations working:\");";
 echo "    console.log(\"Header set Access-Control-Allow-Origin https://meshpage.org\");";
@@ -2419,6 +2420,7 @@ echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    },
    methods: {
    pthread_toggle: function() {
+      if (pthread_exists==false) pthread_state=true;
       pthread_state=!pthread_state;
       sessionStorage.setItem('pthread_enabled',pthread_state?'true':'false');
       window.location.reload();
@@ -3348,7 +3350,7 @@ if ($nothreads == "yes") {
    if ($highmem == "yes") {
    //echo "if (!crossOriginIsolated) { import('./engine_nothreads_highmem.js'); } else { import('./engine_highmem.js'); }";
   echo "var filename = 'engine_highmem.js?" . filemtime("engine_highmem.js") . "';";
-  echo "if (!crossOriginIsolated||pthread_state==false) filename='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
+  echo "if (!crossOriginIsolated||(pthread_state==false&&pthread_exists==true)) filename='engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
 
    } else {
   echo "var filename = 'engine_nothreads_highmem.js?" . filemtime("engine_nothreads_highmem.js") . "';";
