@@ -605,8 +605,9 @@ echo "  btn.textContent=\"❌\";";
 echo "}";
 
 echo "var dark_str = sessionStorage.getItem('dark_enabled');";
+echo "var dark_exists = dark_str !== null;";
 echo "var dark_state = dark_str === 'true';";
-echo "if (dark_state==false) {";
+echo "if (dark_state==false || dark_exists==false) {";
 echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_flatly.min.css\";";
 echo "} else {";
 echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_slate.min.css\";";
@@ -618,7 +619,7 @@ echo "if (dark_state==true)";
 echo "{";
 echo "   btn.textContent=\"✅\";";
 echo "}";
-echo "if (dark_state==false)";
+echo "if (dark_state==false || dark_exists == false)";
 echo "{";
 echo "  btn.textContent=\"❌\";";
 echo "}";
@@ -2102,7 +2103,7 @@ window.set_url = function(id,repl)
 
 window.clearActive = function()
 {
-    console.log("clearActive");
+    //console.log("clearActive");
     for (let i=0;i<elementNames.length;i++)
     {
 	var e = document.getElementById(elementNames[i]);
@@ -2146,7 +2147,7 @@ window.menu = function(val)
 
     var e = document.getElementById(elementNames[val]);
     e.className="active";
-    console.log("BLOCK");
+    //console.log("BLOCK");
     var e2 = document.getElementById(pageNames[val]);
     e2.style.display="block";
 
@@ -2423,6 +2424,7 @@ echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
       window.location.reload();
    },
    dark_toggle: function() {
+      if (dark_exists==false) dark_state=false;
       dark_state=!dark_state;
       sessionStorage.setItem('dark_enabled',dark_state?'true':'false');
       window.location.reload();
