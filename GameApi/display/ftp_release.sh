@@ -1,5 +1,5 @@
 #!/bin/bash
-SITE=meshpage.org
+SITE=ssh.meshpage.org
 #SITE=192.168.1.104
 
 INDEX=0
