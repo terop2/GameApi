@@ -5,20 +5,22 @@
 //header("Access-Control-Allow-Headers: Range");
 
 //header("Access-Control-Allow-Headers: Range");
-//header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-//header("Cache-Control: post-check=0, pre-check=0", false);
-//header("Pragma: no-cache");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+
 
 $cached_file = "engine/engine_highmem.wasm";
 $cached_mtime = filemtime($cached_file);
-$cache_lastmodified = gmdate( "D, d M Y H:i:s", $cached_mtime ) . " GMT";
+//$cache_lastmodified = gmdate( "D, d M Y H:i:s", $cached_mtime ) . " GMT";
 
-header("Last-Modified: $cache_lastmodified");
-header("Cache-Control: public, max-age=0");
+//header("Last-Modified: $cache_lastmodified");
+//header("Cache-Control: public, max-age=0");
 
 if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
    $ifModifiedSince = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
-   if ($ifModifiedSince >= $mtime) {
+   if ($ifModifiedSince >= $cached_mtime) {
       header("HTTP/1.1 304 Not Modified");
       exit;
       }
@@ -133,6 +135,13 @@ if ($page!="2") {
 <link id="bootstrap-css" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.7/dist/slate/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous">
 <!-- link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.7/dist/spacelab/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous"-->
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+<script>
+window.addEventListener("pageshow", function (event) {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+</script>
 
 
 <?php
@@ -281,13 +290,30 @@ function visit_counter_inc2( $label )
 {
    $filename = "./user_data/visit_" . $label . ".txt";
    $num = 0;
-   if (file_exists($filename)) {
-      $data = file_get_contents($filename);
+
+   $fp = fopen($filename, "c+"); // create if missing
+   if (!$fp) {
+      return 0;
+   }
+
+   flock($fp, LOCK_EX);
+
+   $size = filesize($filename);
+   if ($size > 0) {
+      $data = fread($fp, $size);
       $num = intval($data);
    }
-   $num = $num + 1;
-   $num_str = strval( $num );
-   file_put_contents( $filename, $num_str );   
+
+   $num++;
+
+   ftruncate($fp, 0);
+   rewind($fp);
+
+   fwrite($fp, (string)$num);
+
+   fflush($fp);
+   flock($fp, LOCK_UN);
+   fclose($fp);
    return $num;
 }
 

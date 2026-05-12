@@ -6,18 +6,21 @@ ini_set("memory_limit", "1024M");
 //header("Access-Control-Allow-Headers: Range");
 include("backend.php");
 //header("Cross-Origin-Opener-Policy: same-origin");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
 
 
 $cached_file = "engine/engine_highmem.wasm";
 $cached_mtime = filemtime($cached_file);
-$cache_lastmodified = gmdate( "D, d M Y H:i:s", $cached_mtime ) . " GMT";
+//$cache_lastmodified = gmdate( "D, d M Y H:i:s", $cached_mtime ) . " GMT";
 
-header("Last-Modified: $cache_lastmodified");
-header("Cache-Control: public, max-age=0");
+//header("Last-Modified: $cache_lastmodified");
+//header("Cache-Control: public, max-age=0");
 
 if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])) {
    $ifModifiedSince = strtotime( $_SERVER['HTTP_IF_MODIFIED_SINCE'] );
-   if ($ifModifiedSince >= $mtime) {
+   if ($ifModifiedSince >= $cached_mtime) {
       header("HTTP/1.1 304 Not Modified");
       exit;
       }

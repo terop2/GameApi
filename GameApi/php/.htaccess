@@ -97,6 +97,7 @@ ErrorDocument 502 /error.php
 ErrorDocument 503 /error.php
 <IfModule mod_headers.c>
     <FilesMatch "\.(js|css|png|jpg|jpeg|gif|webp|glb|gltf|wasm)$">
-        Header set Cache-Control "public, max-age=0, immutable"
+        Header set Cache-Control "no-store, must-revalidate, max-age=0"
+	Header set Cache-Control "post-check=0, pre-check=0"
     </FilesMatch>
 </IfModule>
