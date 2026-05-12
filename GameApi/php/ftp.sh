@@ -29,7 +29,7 @@ finish()
     fi
 }
 copy_it bootstrap_slate.min.css
-copy_it bootstrap_spacelab.min.css
+copy_it bootstrap_flatly.min.css
 copy_it bootstrap.bundle.min.js
 #copy_it itch_3d_model_viewer.php
 #copy_it itch_zip_converter.php

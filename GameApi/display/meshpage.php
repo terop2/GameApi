@@ -117,6 +117,8 @@ if ("$machine"=="terop-pc2") {
 <html lang="en" data-bs-theme="light" id="html" style="overflow: auto;"> 
 <head>
 <title><?php echo $sitename ?> -- are you ready to bring the web to the next level technologies?</title>
+<link rel="stylesheet" id="bootstrap-css" href="" media="print" onload="this.media='all'" crossorigin="anonymous">
+
 <?php
 $page = $_GET["p"];
 if ($page=="") $page = $_GET["page"];
@@ -132,16 +134,6 @@ if ($page!="2") {
 <meta name="verifyownership" content="e77986b70c2f57469a1bbea0b80ca188"/>
 <meta http-equiv="origin-trial" content="AvkuION9OjDj+c5KxD0L/wgqyzkqE1vqOyceYiQe5LanN5395ZBJ/xfUuZcw7Mu7JkWiEskFjKGghchsKVVBKw4AAABYeyJvcmlnaW4iOiJodHRwczovL21lc2hwYWdlLm9yZzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlUaHJlYWRzIiwiZXhwaXJ5IjoxNTYzOTI2Mzk5fQ=="/>
 <!-- integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"  integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" -->
-<link id="bootstrap-css" href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.7/dist/slate/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous">
-<!-- link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.7/dist/spacelab/bootstrap.min.css" rel="stylesheet"  crossorigin="anonymous"-->
-<script src="bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-<script>
-window.addEventListener("pageshow", function (event) {
-    if (event.persisted) {
-        window.location.reload();
-    }
-});
-</script>
 
 
 <?php
@@ -201,7 +193,10 @@ $mobile = js_mobile();
 $highmem = js_highmem();
 ?>
 </head>
-<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
+<body id="body" style="overflow:hidden">
+<script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
+<script src="vue.js"></script>
 <script>
  window.showPthreadsDiv = Vue.observable({value:false})
 </script>
@@ -252,7 +247,6 @@ $highmem = js_highmem();
   ]
 }
 </script>
-<body id="body" style="overflow:hidden">
 
 
 <div id="result" style="display:none"></div>
@@ -613,7 +607,7 @@ echo "}";
 echo "var dark_str = sessionStorage.getItem('dark_enabled');";
 echo "var dark_state = dark_str === 'true';";
 echo "if (dark_state==false) {";
-echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_spacelab.min.css\";";
+echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_flatly.min.css\";";
 echo "} else {";
 echo "document.getElementById(\"bootstrap-css\").href=\"bootstrap_slate.min.css\";";
 echo "}";
@@ -1900,10 +1894,12 @@ function hide_display(b)
 
 function hide_main(b)
 {
+  if (b) console.log("show_main"); else console.log("hide_main");
   var elem = document.getElementById("main_div");
+  var elem2 = document.getElementById("main");
   if (elem) {
-  if (b) elem.style="";
-  else elem.style="display:none";
+  if (b) { elem.style=""; elem2.style=""; }
+  else { elem.style="display:none;"; elem2.style="display:none;"; }
   if (b) {
      //populate_imgs();
   }
@@ -2333,6 +2329,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(0);";
+      echo "hide_main(true);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==2) {
@@ -2341,6 +2338,7 @@ if ($page!="") {
       echo "window.choose_nav(1);";
       echo "window.clearActive2();";
       echo "window.menu2(1,g_last_id,false);";
+      echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(false);";
       } else
       {
@@ -2352,6 +2350,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(0);";
+      echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==4) {
@@ -2360,6 +2359,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(1);";
+      echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==5) {
@@ -2368,6 +2368,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(2);";
+      echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==6) {
@@ -2376,6 +2377,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(3);";
+      echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
    if ($page==7) {
@@ -2384,6 +2386,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(4);";
+      echo "hide_main(false);";
       echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
    }
 
@@ -2393,6 +2396,7 @@ if ($page!="") {
       echo "window.choose_nav(0);";
       echo "window.clearActive();";
       echo "window.menu(0);";
+      echo "hide_main(true);";
 
 echo "if (typeof fix_keyboard === \"function\") fix_keyboard(true);";
 }
