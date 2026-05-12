@@ -1042,22 +1042,51 @@ function visit_counter_inc( $label )
 {
    $filename = "./user_data/visit_" . $label . ".txt";
    $num = 0;
-   if (file_exists($filename)) {
-      $data = file_get_contents($filename);
+
+   $fp = fopen($filename, "c+"); // create if missing
+   if (!$fp) {
+      return 0;
+   }
+
+   flock($fp, LOCK_EX);
+
+   $size = filesize($filename);
+   if ($size > 0) {
+      $data = fread($fp, $size);
       $num = intval($data);
    }
-   $num = $num + 1;
-   $num_str = strval( $num );
-   file_put_contents( $filename, $num_str );   
+
+   $num++;
+
+   ftruncate($fp, 0);
+   rewind($fp);
+
+   fwrite($fp, (string)$num);
+
+   fflush($fp);
+   flock($fp, LOCK_UN);
+   fclose($fp);
    return $num;
 }
 function visit_counter_get( $label )
 {
   $filename = "./user_data/visit_" . $label . ".txt";
    $num = 0;
-   if (file_exists($filename)) {
-      $data = file_get_contents($filename);
+
+   $fp = fopen($filename, "r");
+   if (!$fp) {
+      return 0;
+   }
+
+   flock($fp, LOCK_SH);
+
+   $size = filesize($filename);
+   if ($size > 0) {
+      $data = fread($fp, $size);
       $num = intval($data);
    }
+
+   flock($fp, LOCK_UN);
+   fclose($fp);
    return $num; 
 }
