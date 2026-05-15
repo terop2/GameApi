@@ -221,9 +221,13 @@ ifeq ($(RELEASE),true)
 	@$(WASM_OPT) --vacuum --merge-blocks --enable-nontrapping-float-to-int --enable-threads --enable-bulk-memory engine_nothreads_highmem.wasm -Oz -o engine_nothreads_highmem.opt.wasm
 	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=11 --force engine_nothreads_highmem.opt.wasm -o engine_nothreads_highmem.wasm.br
+	@echo "  BROTLI engine_nothreads_highmem.js.br"
+	@brotli --quality=11 --force engine_nothreads_highmem.js -o engine_nothreads_highmem.js.br
 else
 	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
+	@echo "  BROTLI engine_nothreads_highmem.js.br"
+	@brotli --quality=5 --force engine_nothreads_highmem.js -o engine_nothreads_highmem.js.br
 endif
 
 #   -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=920Mb
@@ -236,9 +240,13 @@ ifeq ($(RELEASE),true)
 	@$(WASM_OPT) --vacuum --merge-blocks --enable-nontrapping-float-to-int  --enable-threads --enable-bulk-memory engine_lowmem_nothreads.wasm -Oz -o engine_lowmem_nothreads.opt.wasm
 	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=11 --force engine_lowmem_nothreads.opt.wasm -o engine_lowmem_nothreads.wasm.br
+	@echo "  BROTLI engine_lowmem_nothreads.js.br"
+	@brotli --quality=11 --force engine_lowmem_nothreads.js -o engine_lowmem_nothreads.js.br
 else
 	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=5 --force engine_lowmem_nothreads.wasm -o engine_lowmem_nothreads.wasm.br
+	@echo "  BROTLI engine_lowmem_nothreads.js.br"
+	@brotli --quality=5 --force engine_lowmem_nothreads.js -o engine_lowmem_nothreads.js.br
 endif
 
 pthreads_both: pthreads_both_highmem
@@ -253,9 +261,13 @@ ifeq ($(RELEASE),true)
 	@$(WASM_OPT) --vacuum --merge-blocks --enable-nontrapping-float-to-int --enable-threads --enable-bulk-memory engine_highmem.wasm -Oz -o engine_highmem.opt.wasm
 	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=11 --force engine_highmem.opt.wasm -o engine_highmem.wasm.br
+	@echo "  BROTLI engine_highmem.js.br"
+	@brotli --quality=11 --force engine_highmem.js -o engine_highmem.js.br
 else
 	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
+	@echo "  BROTLI engine_highmem.js.br"
+	@brotli --quality=5 --force engine_highmem.js -o engine_highmem.js.br
 endif
 
 #  -Lhssynth2/synthlib/emscripten -lsynthlib -L hssynth2/midiplay/midifile/emscripten -lmidifilelib -s TOTAL_MEMORY=950Mb
@@ -273,9 +285,13 @@ ifeq ($(RELEASE),true)
 	@$(WASM_OPT) --vacuum --merge-blocks --enable-nontrapping-float-to-int --enable-threads --enable-bulk-memory engine_nothreads_highmem.wasm -Oz -o engine_nothreads_highmem.opt.wasm	
 	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=11 --force engine_nothreads_highmem.opt.wasm -o engine_nothreads_highmem.wasm.br
+	@echo "  BROTLI engine_nothreads_highmem.js.br"
+	@brotli --quality=11 --force engine_nothreads_highmem.js -o engine_nothreads_highmem.js.br
 else
 	@echo "  BROTLI engine_nothreads_highmem.wasm.br"
 	@brotli --quality=5 --force engine_nothreads_highmem.wasm -o engine_nothreads_highmem.wasm.br
+	@echo "  BROTLI engine_nothreads_highmem.js.br"
+	@brotli --quality=5 --force engine_nothreads_highmem.js -o engine_nothreads_highmem.js.br
 endif
 
 #-Lhssynth2/synthlib/emscripten -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib
@@ -291,9 +307,13 @@ ifeq ($(RELEASE),true)
 	@$(WASM_OPT) --vacuum --merge-blocks --enable-nontrapping-float-to-int  --enable-threads --enable-bulk-memory engine_lowmem_nothreads.wasm -Oz -o engine_lowmem_nothreads.opt.wasm
 	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=11 --force engine_lowmem_nothreads.opt.wasm -o engine_lowmem_nothreads.wasm.br
+	@echo "  BROTLI engine_lowmem_nothreads.js.br"
+	@brotli --quality=11 --force engine_lowmem_nothreads.js -o engine_lowmem_nothreads.js.br
 else
 	@echo "  BROTLI engine_lowmem_nothreads.wasm.br"
 	@brotli --quality=5 --force engine_lowmem_nothreads.wasm -o engine_lowmem_nothreads.wasm.br
+	@echo "  BROTLI engine_lowmem_nothreads.js.br"
+	@brotli --quality=5 --force engine_lowmem_nothreads.js -o engine_lowmem_nothreads.js.br
 endif
 
 pthreads_both_nodebug: pthreads_both_nodebug_highmem pthreads_both_nodebug_middlemem pthreads_both_nodebug_lowmem
@@ -308,9 +328,13 @@ ifeq ($(RELEASE),true)
 	@$(WASM_OPT) --vacuum --merge-blocks --enable-nontrapping-float-to-int --enable-threads --enable-bulk-memory engine_highmem.wasm -Oz -o engine_highmem.opt.wasm
 	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=11 --force engine_highmem.opt.wasm -o engine_highmem.wasm.br
+	@echo "  BROTLI engine_highmem.js.br"
+	@brotli --quality=11 --force engine_highmem.js -o engine_highmem.js.br
 else
 	@echo "  BROTLI engine_highmem.wasm.br"
 	@brotli --quality=5 --force engine_highmem.wasm -o engine_highmem.wasm.br
+	@echo "  BROTLI engine_highmem.js.br"
+	@brotli --quality=5 --force engine_highmem.js -o engine_highmem.js.br
 endif
 
 # -Lhssynth2/synthlib/emscripten -lsynthlib -Lhssynth2/midiplay/midifile/emscripten -lmidifilelib  -s TOTAL_MEMORY=950Mb
