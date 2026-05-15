@@ -196,7 +196,7 @@ $highmem = js_highmem();
 <!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
 <body id="body" style="overflow:hidden">
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
-<script src="vue.js"></script>
+<script src="vue.js" async></script>
 <script>
  window.showPthreadsDiv = Vue.observable({value:false})
 </script>
@@ -1517,6 +1517,7 @@ echo "     .then(x=>x.text()).then(y=>js2_parse(y));\n";
 echo "fetch(\"$https://$site/mesh_apk.php?id=0&full=array\")\n";
 echo "     .then(x=>x.text()).then(y=>js_parse(y));\n";
 echo "var display_labels = " . json_encode($display_labels) . ";";
+//echo "window.addEventListener(\"load\", () => { loadContent(); });\n";
 echo "</script>";
 
 
@@ -1896,7 +1897,7 @@ function hide_display(b)
 
 function hide_main(b)
 {
-  if (b) console.log("show_main"); else console.log("hide_main");
+  //if (b) console.log("show_main"); else console.log("hide_main");
   var elem = document.getElementById("main_div");
   var elem2 = document.getElementById("main");
   if (elem) {
