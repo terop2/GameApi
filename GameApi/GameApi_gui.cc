@@ -529,21 +529,21 @@ public:
   void set_size(Vector2d size_p)
   {
     GuiWidgetForward::set_size(size_p);
-    w->set_size(size_p);
-    size = size_p;
-    /*
+    w->set_size(w->get_size());
+    size = w->get_size(); //size_p;
+    
     if (!inside_redraw && redraw_w) {
       inside_redraw=true;
       GuiWidget *ww = find_widget(env,*redraw_w);
-      ww->set_pos(ww->get_pos());
+      //ww->set_pos(ww->get_pos());
       ww->set_size(ww->get_size());
       inside_redraw=false;
-      ww->render();
-    }*/
+      //ww->render();
+      }
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    //if (is_visible2()|| (ch==-1&&button==-1&&type==-1)) // check if visible or if going to be made visible by search panel change
+    if (is_visible2()|| (ch==-1&&button==-1&&type==-1)) // check if visible or if going to be made visible by search panel change
       w->update(mouse,button,ch,type,mouse_wheel_y);
     if (is_visible2())
       {
