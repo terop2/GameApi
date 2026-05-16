@@ -336,8 +336,9 @@ public:
   }
   void set_size(Vector2d size)
   {
-    GuiWidgetForward::set_size(size);
-    outer->set_size(size);
+    GuiWidgetForward::set_size(outer->get_size() /*size*/ );
+    outer->set_size(outer->get_size());
+    size = outer->get_size();
   }
   Point2d get_mouse_tweak(Point2d p, bool &done)
   {
@@ -402,9 +403,9 @@ public:
   }
   void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(size_p);
-    w->set_size(w->get_size());
-    size = w->get_size(); //size_p;
+    GuiWidgetForward::set_size(w->get_size() /*size_p*/);
+      w->set_size(w->get_size());
+      size = w->get_size(); //size_p;
   }
   bool is_visible() const { return is_visible2() && GuiWidgetForward::is_visible(); }
   
@@ -438,12 +439,12 @@ public:
     if (is_visible2())
       {
 	size = Vector2d(w->get_size().dx,w->get_size().dy);
-	w->show();
+	//w->show();
       }
     else
       {
 	size = Vector2d(0.0,-5.0);
-	w->hide();
+	//w->hide();
       }
 
     if ((redraw_w && !inside_redraw) && ( button==-1 && ch==-1 && type==-1 ) ) {
@@ -528,10 +529,10 @@ public:
   }
   void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(size_p);
-    w->set_size(w->get_size());
-    size = w->get_size(); //size_p;
-    
+    GuiWidgetForward::set_size(w->get_size() /*size_p*/);
+      w->set_size(w->get_size());
+      size = w->get_size(); //size_p;
+    /*
     if (!inside_redraw && redraw_w) {
       inside_redraw=true;
       GuiWidget *ww = find_widget(env,*redraw_w);
@@ -540,6 +541,7 @@ public:
       inside_redraw=false;
       //ww->render();
       }
+    */
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -2767,6 +2769,7 @@ public:
     size.dx = sz_max;
     size.dy = sz;
 
+
     static bool recursion_stopper = false;
     if (button==-1&& ch==-1 && type==-1 && heavy && !recursion_stopper) {
       recursion_stopper=true;
@@ -2788,6 +2791,7 @@ public:
     }
     GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
 
+    
 
     
     selected_item = -1;
