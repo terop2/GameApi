@@ -403,8 +403,8 @@ public:
   void set_size(Vector2d size_p)
   {
     GuiWidgetForward::set_size(size_p);
-    w->set_size(size_p);
-    size = size_p;
+    w->set_size(w->get_size());
+    size = w->get_size(); //size_p;
   }
   bool is_visible() const { return is_visible2() && GuiWidgetForward::is_visible(); }
   
