@@ -425,13 +425,13 @@ public:
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
     //GuiWidgetForward::update(mouse,button,ch,type,mouse_wheel_y);
-    /*
+    
     int s = items.size();
     for(int i=0;i<s;i++)
       {
 	items[i]->update(mouse,button,ch,type,mouse_wheel_y);
       }
-    */
+    
     if (is_visible2()) {
       GuiWidgetForward::update(mouse,button,ch,type,mouse_wheel_y);
        }
