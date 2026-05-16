@@ -57,10 +57,12 @@ class GuiWidgetForward : public GuiWidget
 {
 public:
   GuiWidgetForward(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec) : ev(ev), vec(vec) { pos=Point2d::NewPoint(0.0, 0.0); size.dx=0.0; size.dy=0.0; current_selected_item=-1; firsttime = 10;
+    
     int s = vec.size();
     for(int i=0;i<s;i++)
       {
 	GuiWidget *w = vec[i];
+	//std::cout << std::hex << (long)w << std::endl;
 	assert(w);
       }
     prev_pos.x = 0.0;
@@ -115,6 +117,7 @@ public:
   }
   virtual void set_size(Vector2d size_p)
   {
+    //std::cout << "Size=" << size_p.dx << " " << size_p.dy << std::endl;
     size = size_p;
     // derived widget must override and implement to set child widgets.
   }
@@ -235,11 +238,11 @@ public:
       }
   }
   virtual int child_count() const { return vec.size(); }
-  virtual GuiWidget *child(int num) const { return vec[num]; }
+  virtual GuiWidget *child(int num) const { if (num>=0 && num<vec.size()) return vec[num];  return 0; }
   virtual std::vector<GuiWidget*> *child_from_path(std::string path)
   {
     std::vector<GuiWidget*> *v = &vec;
-    int s = 0;
+    int s = path.size();
     for(int i=0;i<s;i++)
       {
 	char c = path[i];
@@ -261,8 +264,8 @@ protected:
   Vector2d size;
   int current_selected_item;
   int firsttime;
-  Point2d prev_pos;
-  Point2d old_mouse;
+  Point2d prev_pos = { 0.0, 0.0 };
+  Point2d old_mouse = { 0.0, 0.0 };
 public:
   std::vector<GuiWidget *> vec;
   std::vector<GuiWidget *> sorted;
