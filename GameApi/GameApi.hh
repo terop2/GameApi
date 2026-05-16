@@ -2139,6 +2139,9 @@ class GuiApi
 {
 public:
   GuiApi(Env &e, EveryApi &ev, SH sh) : e(e), ev(ev), sh(sh) { }
+  IMPORT W hide_nonsearchable(W w, std::string label, W *redraw_w);
+  IMPORT W hide_if_array_empty(W w, std::vector<W> items, W *redraw_w);
+  IMPORT W search_panel(int sx, FtA atlas, BM atlas_bm, int x_gap, W *redraw_w);
   IMPORT W download_bar(GameApi::EveryApi &ev, std::vector<std::string> titles, std::vector<W> &close_button, std::vector<W> &buttons, FtA atlas, BM atlas_bm, int active_tab, std::vector<float> progress);
   IMPORT W directory_view(std::vector<std::string> dir_items, int &selection, std::vector<W> &clicks, FtA atlas, BM atlas_bm);
   IMPORT W asset_view(std::string url_or_filename);
@@ -2187,7 +2190,7 @@ public:
   IMPORT W center_align(W item, int sx);
   IMPORT W center_y(W item, int sy);
   IMPORT W layer(W w1, W w2);
-  IMPORT W array_y(W *arr, int size, int y_gap);
+  IMPORT W array_y(std::vector<W> arr, int y_gap);
   IMPORT W array_x(W *arr, int size, int x_gap);
   IMPORT W timed_visibility(W orig, W (*timed_widget_func)(void*),void*data, W insert, float start_duration, float duration, float dx);
   IMPORT W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);
@@ -2219,7 +2222,7 @@ public:
   IMPORT void del_canvas_item(W canvas, int id);
   IMPORT W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, std::vector<W *> connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
   IMPORT W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
-  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert);
+  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w);
   IMPORT W list_item(BM icon, std::string label, int sx, int sy);
   IMPORT W list(W *array, int size, int sx, int sy);
   IMPORT W dialog_item(std::string text, BM icon, int sx, int sy);
@@ -2236,7 +2239,8 @@ public:
   IMPORT W button_with_text(std::string label);
   IMPORT W button_with_icon(BM bitmap);
   IMPORT W opengl_wrapper(W widget);
-  IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W editor_mouse_tweak(W inner, W outer, W outerouter);
+  IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable, W *redraw_w);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr);
   IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
@@ -2260,27 +2264,27 @@ public:
   IMPORT void string_to_generic(EditTypes &target, std::string type, const std::string &source, const std::string &expr);
   IMPORT W edit_dialog(const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, Ft font, const std::vector<std::string> &types, W &cancel_button, W &ok_button);
   IMPORT W edit_dialog(EveryApi &ev, const std::vector<std::string> &labels, const std::vector<EditTypes*> &vec, FtA atlas, BM atlas_bm, const std::vector<std::string> &types, W &cancel_button, W &ok_button, FtA atlas_tiny, BM atlas_tiny_bm, std::vector<W> &enum_click_targets);
-  IMPORT W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W shaderapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W framebuffermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
-  IMPORT W blockerapi_functions_list_item(GameApi::EveryApi &ev, FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert);
+  IMPORT W bitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W boolbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W floatbitmapapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W polygonapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W polygondistapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W shadermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W shaderapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W framebuffermoduleapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W linesapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W pointsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W pointapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W vectorapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W volumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W floatvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W colorvolumeapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W fontapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W textureapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W booleanopsapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W moveapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W waveformapi_functions_list_item(FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
+  IMPORT W blockerapi_functions_list_item(GameApi::EveryApi &ev, FtA font1, BM font1_bm, FtA font2, BM font2_bm, W insert, W *outer);
 
 
   IMPORT std::string bitmapapi_functions_item_label(int i);

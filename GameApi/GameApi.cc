@@ -17401,7 +17401,7 @@ GameApi::W GameApi::GuiApi::popup_box_menu(std::vector<std::string> options, FtA
       W txt_4 = layer(txt_2, txt_3);
       vec[i] = txt_4;
     }
-  W w = array_y(&vec[0], vec.size(), 3);
+  W w = array_y(vec /*&vec[0], vec.size()*/, 3);
   W w2 = button(size_x(w), size_y(w), c_list_item_title, c_list_item_title2);
   W w3 = layer(w2,w);
   W w5 = margin(w3,2,2,2,2);

@@ -2439,7 +2439,7 @@ public:
     if (sel != -1 && e.button==0 && e.type==1025 && !env->insert_ongoing && update)
       {
 	//std::cout << "Scroll_area: " << sel << std::endl;
-	W w = env->gui->get_child(env->array, sel);
+	W w = env->gui->get_child(env->array, sel); 
 	int sel2 = env->gui->chosen_item(w);
 	//std::cout << "Chosen: " << sel2 << std::endl;
 	if (sel2 == 0 && !env->flip_ongoing)
@@ -2459,7 +2459,7 @@ public:
 	  {
 	    std::string name;
 	    //std::cout << "SEL: " << sel << " " << sel2 << std::endl;
-	    switch(sel)
+	    switch(sel-1) // -1 is because is searchpanel
 	      {
 	      case 0:
 		name = env->gui->bitmapapi_functions_item_label(sel2-1);
@@ -2801,6 +2801,7 @@ std::string GetInstallDir()
     return std::string(path);
 }
 #endif
+
 
 
 Low_SDL_Cursor *cursor0, *cursor1;
@@ -3191,35 +3192,37 @@ static unsigned char cursor_0_mask[16] = {
   ProgressBar(888,1,5,"init");
   env.list_tooltips = gui.empty();
   std::vector<W> items;
+  static W g_scroll_area = gui.empty();
+  items.push_back(gui.search_panel(140-5,atlas,atlas_bm,2,&g_scroll_area));
   for(int i=0;i<1;i++)
     {
-      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
 
       ProgressBar(888,2,5,"init");
 
-      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.shaderapi_functions_list_item(atlas,atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.moveapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.shaderapi_functions_list_item(atlas,atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.moveapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
 
       ProgressBar(888,3,5,"init");
 
-      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.blockerapi_functions_list_item(ev,atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
-      items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips));
+      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.blockerapi_functions_list_item(ev,atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
 
       ProgressBar(888,4,5,"init");
       
@@ -3244,8 +3247,10 @@ static unsigned char cursor_0_mask[16] = {
 #endif
 #endif
     }
-  array = gui.array_y(&items[0], items.size(), 5);
+  array = gui.array_y(items /*&items[0], items.size()*/, 5);
   scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
+  g_scroll_area = scroll_area;
+  
   // scroll_area2 = gui.bounding_box(scroll_area);
   
   //W txt2 = gui.scrollbar_y(20, screen_y-30, gui.size_y(array));
