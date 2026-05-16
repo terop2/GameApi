@@ -2190,7 +2190,7 @@ public:
   IMPORT W center_align(W item, int sx);
   IMPORT W center_y(W item, int sy);
   IMPORT W layer(W w1, W w2);
-  IMPORT W array_y(std::vector<W> arr, int y_gap);
+  IMPORT W array_y(std::vector<W> arr, int y_gap, bool heavy=false);
   IMPORT W array_x(W *arr, int size, int x_gap);
   IMPORT W timed_visibility(W orig, W (*timed_widget_func)(void*),void*data, W insert, float start_duration, float duration, float dx);
   IMPORT W tooltip(W orig, W insert, std::string label, FtA atlas, BM atlas_bm, int x_gap=2, float dx=40.0);

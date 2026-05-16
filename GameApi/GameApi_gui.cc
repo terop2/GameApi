@@ -452,14 +452,15 @@ public:
 
 	  Point2d p = { -666.0, -666.0 };
 	  ww->update(p, -1,-1, -1,1);
+	  /*
 	  Point2d p2 = { ww->get_pos().x, ww->get_pos().y };
 	  ww->set_pos(p2);
 	  Vector2d s2 = { ww->get_size().dx, ww->get_size().dy };
 	  ww->set_size(s2);
-	  
+	  */
 	  ww->update(mouse,button,ch,type,mouse_wheel_y);
 
-
+	  /*
 	  Point2d a_p = { -666.0, -666.0 };
 	  ww->update(a_p, -1,-1, -1,0);
 	  Point2d a_p2 = { ww->get_pos().x, ww->get_pos().y };
@@ -468,7 +469,7 @@ public:
 	  ww->set_size(a_s2);
 	  
 	  ww->update(mouse,button,ch,type,mouse_wheel_y);
-
+	  */
 	  inside_redraw=false;
 	}
 
@@ -542,7 +543,7 @@ public:
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
-    if (is_visible2()|| (ch==-1&&button==-1&&type==-1)) // check if visible or if going to be made visible by search panel change
+    //if (is_visible2()|| (ch==-1&&button==-1&&type==-1)) // check if visible or if going to be made visible by search panel change
       w->update(mouse,button,ch,type,mouse_wheel_y);
     if (is_visible2())
       {
@@ -1233,23 +1234,23 @@ public:
 
 	  Point2d p = { -666.0, -666.0 };
 	  ww->update(p, -1,-1, -1,1);
-	  Point2d p2 = { ww->get_pos().x, ww->get_pos().y };
-	  ww->set_pos(p2);
-	  Vector2d s2 = { ww->get_size().dx, ww->get_size().dy };
-	  ww->set_size(s2);
+	  //Point2d p2 = { ww->get_pos().x, ww->get_pos().y };
+	  //ww->set_pos(p2);
+	  //Vector2d s2 = { ww->get_size().dx, ww->get_size().dy };
+	  //ww->set_size(s2);
 	  
 	  ww->update(mouse,button,ch,type,mouse_wheel_y);
-	  ww->render();
+	  //ww->render();
 
-	  Point2d a_p = { -666.0, -666.0 };
-	  ww->update(a_p, -1,-1, -1,0);
-	  Point2d a_p2 = { ww->get_pos().x, ww->get_pos().y };
-	  ww->set_pos(a_p2);
-	  Vector2d a_s2 = { ww->get_size().dx, ww->get_size().dy };
-	  ww->set_size(a_s2);
+	  //Point2d a_p = { -666.0, -666.0 };
+	  //ww->update(a_p, -1,-1, -1,0);
+	  //Point2d a_p2 = { ww->get_pos().x, ww->get_pos().y };
+	  //ww->set_pos(a_p2);
+	  //Vector2d a_s2 = { ww->get_size().dx, ww->get_size().dy };
+	  //ww->set_size(a_s2);
 	  
-	  ww->update(mouse,button,ch,type,mouse_wheel_y);
-	  ww->render();
+	  //ww->update(mouse,button,ch,type,mouse_wheel_y);
+	  //ww->render();
 
 	  inside_redraw=false;
 	}
@@ -2675,10 +2676,8 @@ private:
 class ArrayYWidget : public GuiWidgetForward
 {
 public:
-  ArrayYWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int y_gap) : GuiWidgetForward(ev, vec), y_gap(y_gap) 
+  ArrayYWidget(GameApi::EveryApi &ev, std::vector<GuiWidget*> vec, int y_gap, bool heavy) : GuiWidgetForward(ev, vec), y_gap(y_gap),heavy(heavy) 
   {
-
-    
     Point2d pos = { -666.0, -666.0 };
     update(pos, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
@@ -2768,17 +2767,28 @@ public:
     size.dx = sz_max;
     size.dy = sz;
 
-    if (button==-1&& ch==-1 && type==-1) {
-      int s2 = 7;
+    static bool recursion_stopper = false;
+    if (button==-1&& ch==-1 && type==-1 && heavy && !recursion_stopper) {
+      recursion_stopper=true;
+      int s2 = vec.size();
+      Point2d pp;
+      Vector2d sz1;
       for(int i=0;i<s2;i++)
 	{
-	  Point2d pos = get_pos();
-	  Vector2d sz = get_size();
-	  Point2d pos2 = pos + sz*float(i)*float(1.0/5.0);
+	  GuiWidget *w = vec[i];
+	  Point2d pos = w->get_pos();
+	  Vector2d sz = w->get_size();
+	  Point2d pos2 = pos + sz*0.5;
+	  pp = pos2;
+	  sz1=sz;
 	  GuiWidgetForward::update(pos2,button,ch,type,mouse_wheel_y);
 	}
+      GuiWidgetForward::update(Point2d(pp.x,pp.y+sz1.dy*3),button,ch,type,mouse_wheel_y);
+      recursion_stopper=false;
     }
     GuiWidgetForward::update(mouse,button,ch, type, mouse_wheel_y);
+
+
     
     selected_item = -1;
 
@@ -2813,6 +2823,7 @@ private:
   int selected_item;
   Point2d old_pos = { 0.0,0.0 };
   bool inside=false;
+  bool heavy=false;
 };
 
 int highlight_bitmap = -1;
@@ -3475,8 +3486,21 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   for(int i=0;i<s;i++)
     {
       std::string label = subitems[i];
-      std::string toolt = subitems_tooltip[i];
-      W txt_0 = text(label, atlas2, atlas_bm2);
+      std::string toolt = label + "::" + subitems_tooltip[i];
+      std::string label2;
+      int s2 = label.size();
+      for(int j=0;j<s2;j++) {
+	label2+=label[j];
+	W txt_0 = text(label2,atlas2,atlas_bm2);
+	int sz = size_x(txt_0);
+	if (sz>sx) break;
+      }
+      if (label2 != label) {
+	if (label2.size()>2) label2=label2.substr(0,label2.size()-2);
+	label2+="..";
+      }
+      
+      W txt_0 = text(label2, atlas2, atlas_bm2);
       W txt_1 = margin(txt_0, 5, 2, sx-5-size_x(txt_0), 2);
       W txt_2 = highlight(size_x(txt_1), size_y(txt_1));
       W txt_21 = tooltip(txt_2, insert, toolt, atlas2, atlas_bm2, 2, 40.0);
@@ -3486,7 +3510,7 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
       vec.push_back(txt_4);
       w_vec.push_back(txt_4);
     }
-  W array = array_y(vec /*&vec[0], vec.size()*/,2);
+  W array = array_y(vec /*&vec[0], vec.size()*/,2,true); // this needs heavy=true
   W array_2 = margin(array, 1,1,1,1);
   if (hide) array_2 = title;
   W array_3 = hide_if_array_empty(array_2,w_vec,redraw_w);
@@ -5628,7 +5652,7 @@ EXPORT GameApi::W GameApi::GuiApi::array_x(W *arr, int size, int x_gap)
     }
   return add_widget(e, new ArrayXWidget(ev, vec, x_gap));
 }
-EXPORT GameApi::W GameApi::GuiApi::array_y(std::vector<W> arr, int y_gap)
+EXPORT GameApi::W GameApi::GuiApi::array_y(std::vector<W> arr, int y_gap, bool heavy)
 {
   int s = arr.size();
   std::vector<GuiWidget*> vec;
@@ -5636,7 +5660,7 @@ EXPORT GameApi::W GameApi::GuiApi::array_y(std::vector<W> arr, int y_gap)
     {
       vec.push_back(find_widget(e, arr[i]));
     }
-  return add_widget(e, new ArrayYWidget(ev, vec, y_gap));
+  return add_widget(e, new ArrayYWidget(ev, vec, y_gap,heavy));
 }
 
 EXPORT GameApi::W GameApi::GuiApi::main_menu(std::vector<std::string> labels, FtA atlas, BM atlas_bm)
@@ -8245,7 +8269,7 @@ struct FunctionsData
 GameApi::W w1_func(void* ptr)
 {
   FunctionsData *dt = (FunctionsData*)ptr;
-  GameApi::W w = dt->gui->list_item_opened(140-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, dt->insert,false,dt->outer);
+  GameApi::W w = dt->gui->list_item_opened(130-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, dt->insert,false,dt->outer);
   return w;
 }
 GameApi::W w2_func(void *ptr)
@@ -8253,7 +8277,7 @@ GameApi::W w2_func(void *ptr)
   FunctionsData *dt = (FunctionsData*)ptr;
   //GameApi::W w2 = dt->gui->list_item_title(140-5, dt->label, dt->atlas, dt->atlas_bm);
   GameApi::W e = dt->gui->empty();
-  GameApi::W w = dt->gui->list_item_opened(140-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, e,true, dt->outer);
+  GameApi::W w = dt->gui->list_item_opened(130-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, e,true, dt->outer);
   return w;
 }
 //#define DISPLAY_NUM 1
@@ -8374,7 +8398,7 @@ EXPORT GameApi::W GameApi::GuiApi::shaderapi_functions_list_item(FtA atlas1, BM 
 }
 EXPORT GameApi::W GameApi::GuiApi::framebuffermoduleapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert, W *outer)
 {
-  return functions_widget(*this, "FrameBufferApi", framebuffermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert,outer);
+  return functions_widget(*this, "FrameBufApi", framebuffermoduleapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert,outer);
 }
 EXPORT GameApi::W GameApi::GuiApi::linesapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert, W *outer)
 {

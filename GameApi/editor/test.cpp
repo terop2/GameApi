@@ -3247,7 +3247,7 @@ static unsigned char cursor_0_mask[16] = {
 #endif
 #endif
     }
-  array = gui.array_y(items /*&items[0], items.size()*/, 5);
+  array = gui.array_y(items /*&items[0], items.size()*/, 5,true); // this needs heavy
   scroll_area = gui.scroll_area(array, gui.size_x(array), screen_y-30, screen_y);
   g_scroll_area = scroll_area;
   
