@@ -1249,6 +1249,7 @@ public:
   IMPORT ML save_font_dump(FI font, std::string chars, std::string filename);
   IMPORT FI load_font_dump(std::string url);
   IMPORT GI choose_glyph_from_font(FI font, long idx);
+  IMPORT GI combine_glyphs(GI glyph1, GI glyph2);
   IMPORT SD draw_text_string_sd(std::vector<GI> glyphs, std::string str, int gap_x, int empty_line_height);
   IMPORT BM string_display_to_bitmap(SD sd, int def);
   IMPORT BM draw_text_string(FI font, std::string str, int x_gap, int empty_line_height);

@@ -45,10 +45,19 @@ using namespace GameApi;
 #include <fcntl.h> 
 #endif
 
-
+IMPORT extern bool g_reload_edit_dialog;
+bool g_edit_dialog_available=false;
+std::vector<std::string> g_edit_labels;
+std::vector<GameApi::GuiApi::EditTypes*> g_edit_vec;
+std::vector<std::string> g_edit_types;
+W *g_edit_cancel_button;
+W *g_edit_ok_button;
+std::vector<W*> g_edit_enum_click_targets;
+std::vector<W> g_edit_enum_click_targets2;
 
 extern std::string g_gpu_vendor;
 extern bool g_progress_lock_assets;
+extern bool g_reload_edit_dialog;
 void reset_process_script_num();
 struct ArrayType
 {
@@ -2203,6 +2212,18 @@ public:
 	      
 	      
 	      env->enum_click_targets = std::vector<GameApi::W>();
+	      g_edit_dialog_available=true;
+	      g_edit_labels = labels;
+	      g_edit_vec = env->vec4;
+	      g_edit_types = types;
+	      g_edit_cancel_button = &env->dialog_cancel;
+	      g_edit_ok_button = &env->dialog_ok;
+	      g_edit_enum_click_targets.clear();
+	      int s2 = env->enum_click_targets.size();
+	      for(int i=0;i<s2;i++)
+		{
+		  g_edit_enum_click_targets.push_back(&env->enum_click_targets[i]);
+		}
 	      env->editor = env->gui->edit_dialog(*env->ev,labels,env->vec4,env->atlas3, env->atlas_bm3, types, env->dialog_cancel, env->dialog_ok, env->atlas2, env->atlas_bm2,env->enum_click_targets);
 	      env->enum_types = types;
 	      env->gui->set_pos(env->editor, 200,100);
@@ -2212,7 +2233,24 @@ public:
 	    }
 	  }
       }
-  
+
+    // draganddrop at least causes this
+    if (g_reload_edit_dialog&&g_edit_dialog_available)
+      {
+	g_reload_edit_dialog=false;
+	//g_edit_dialog_available=false;
+	int s = g_edit_enum_click_targets.size();
+	g_edit_enum_click_targets2.clear();
+	for(int i=0;i<s;i++)
+	  {
+	    g_edit_enum_click_targets2.push_back(*g_edit_enum_click_targets[i]);
+	  }
+	
+
+	env->editor = env->gui->edit_dialog(*env->ev,g_edit_labels,g_edit_vec,env->atlas3, env->atlas_bm3, g_edit_types, *g_edit_cancel_button, *g_edit_ok_button, env->atlas2, env->atlas_bm2,g_edit_enum_click_targets2);
+	      env->gui->set_pos(env->editor, 200,100);
+      }
+    
     PT cursor_pos = e.cursor_pos;
     
 
@@ -3032,13 +3070,13 @@ static unsigned char cursor_0_mask[16] = {
   // shader initialization
   // Chunkfive.otf http://meshpage.org/assets/Chunkfive.otf
 
-  font = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
-  font2 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
-  font3 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
+  font = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 8*font_scale,12*font_scale); // 13,15 
+  font2 = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 8*font_scale,12*font_scale); // 10,13
+  font3 = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 20*font_scale,20*font_scale); // 30,30
 
-  FI n_font = ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",8*font_scale,12*font_scale);
-  FI n_font2 = ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",8*font_scale,12*font_scale);
-  FI n_font3 = ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20*font_scale,20*font_scale);
+  FI n_font = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",8*font_scale,12*font_scale);
+  FI n_font2 = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",8*font_scale,12*font_scale);
+  FI n_font3 = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",20*font_scale,20*font_scale);
   
   std::string fname = "atlas0.txt";
   if (file_exists("/usr/share/atlas0.txt")) {
@@ -3075,7 +3113,7 @@ static unsigned char cursor_0_mask[16] = {
 	  std::cout << "Generating font atlas. " << std::endl;
 	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
 
-	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
+	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]"; // 8 12 25
 	  FtA atlas = ev.font_api.font_atlas_info_engine2(ev, n_font, chars, 8*font_scale,12*font_scale, 25*font_scale);
 	  FtA atlas2 = ev.font_api.font_atlas_info_engine2(ev, n_font2, chars, 8*font_scale,12*font_scale, 25*font_scale);
 	  FtA atlas3 = ev.font_api.font_atlas_info_engine2(ev, n_font3, chars, 20*font_scale,20*font_scale, 65*font_scale);
