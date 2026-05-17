@@ -2240,7 +2240,7 @@ public:
   IMPORT W button_with_icon(BM bitmap);
   IMPORT W opengl_wrapper(W widget);
   IMPORT W editor_mouse_tweak(W inner, W outer, W outerouter);
-  IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable, W *redraw_w);
+  IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable, W *redraw_w, bool allow_expr=true);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
   IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr, int noneditnum=0);
   IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
