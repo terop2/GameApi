@@ -2668,7 +2668,7 @@ s+= "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
  }
  s+=   "#ifdef TEXTURE_TEXT_DRAW\n";
  s+=   "rgb=SRGBtoLINEAR_txt(rgb);\n";
- s+=   "t=SRGBtoLINEAR_txt(t);\n";
+ //s+=   "t=SRGBtoLINEAR_txt(t);\n";
  s+=   "#endif\n";
  s+=   "vec4 t2 = vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n";
  s+=   "#ifdef TEXTURE_TEXT_DRAW\n";
@@ -4673,7 +4673,7 @@ s+="   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
 "#ifdef TEXTURE_TEXT_DRAW\n"
   "rgb=SRGBtoLINEAR_txt2(rgb);\n"
-  "t=SRGBtoLINEAR_txt2(t);\n"
+  //"t=SRGBtoLINEAR_txt2(t);\n"
 "#endif\n"
   "   vec4 t2 = vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
 "#ifdef TEXTURE_TEXT_DRAW\n"
