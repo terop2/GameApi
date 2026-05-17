@@ -415,9 +415,11 @@ struct Envi {
   Ft font3;
   FtA atlas;
   FtA atlas2;
+  FtA atlas2_t;
   FtA atlas3;
   BM atlas_bm;
   BM atlas_bm2;
+  BM atlas_bm2_t;
   BM atlas_bm3;
   bool insert_ongoing=false;
   bool insert_ongoing2=false;
@@ -3075,7 +3077,8 @@ static unsigned char cursor_0_mask[16] = {
   font3 = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 20*font_scale,20*font_scale); // 30,30
 
   FI n_font = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",8*font_scale,12*font_scale);
-  FI n_font2 = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",8*font_scale,12*font_scale);
+  FI n_font20 = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",12*font_scale,12*font_scale);
+  FI n_font21 = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",8*font_scale,10*font_scale);
   FI n_font3 = ev.font_api.load_font("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf",20*font_scale,20*font_scale);
   
   std::string fname = "atlas0.txt";
@@ -3115,21 +3118,25 @@ static unsigned char cursor_0_mask[16] = {
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]"; // 8 12 25
 	  FtA atlas = ev.font_api.font_atlas_info_engine2(ev, n_font, chars, 8*font_scale,12*font_scale, 25*font_scale);
-	  FtA atlas2 = ev.font_api.font_atlas_info_engine2(ev, n_font2, chars, 8*font_scale,12*font_scale, 25*font_scale);
-	  FtA atlas3 = ev.font_api.font_atlas_info_engine2(ev, n_font3, chars, 20*font_scale,20*font_scale, 65*font_scale);
+	  FtA atlas20 = ev.font_api.font_atlas_info_engine2(ev, n_font20, chars, 12*font_scale,12*font_scale, 25*font_scale);
+	  FtA atlas21 = ev.font_api.font_atlas_info_engine2(ev, n_font21, chars, 8*font_scale,10*font_scale, 15*font_scale);
+	  FtA atlas3 = ev.font_api.font_atlas_info_engine2(ev, n_font3, chars, 20*font_scale,20*font_scale, 35*font_scale);
 	  BM atlas_bm = ev.font_api.font_atlas_engine2(ev, n_font, atlas, 8*font_scale,12*font_scale);
-	  BM atlas_bm2 = ev.font_api.font_atlas_engine2(ev,n_font2, atlas2, 8*font_scale,12*font_scale);
+	  BM atlas_bm20 = ev.font_api.font_atlas_engine2(ev,n_font20, atlas20, 12*font_scale,12*font_scale);
+	  BM atlas_bm21 = ev.font_api.font_atlas_engine2(ev,n_font21, atlas21, 8*font_scale,10*font_scale);
 	  BM atlas_bm3 = ev.font_api.font_atlas_engine2(ev,n_font3, atlas3, 20*font_scale,20*font_scale);
 	  std::cout << "Saving 0" << std::endl;
 	  ev.font_api.save_atlas(atlas, "atlas0.txt");
 	  std::cout << "Saving 1" << std::endl;
-	  ev.font_api.save_atlas(atlas2, "atlas1.txt");
+	  ev.font_api.save_atlas(atlas20, "atlas1.txt");
+	  ev.font_api.save_atlas(atlas21, "atlas1_t.txt");
 	  std::cout << "Saving 2" << std::endl;
 	  ev.font_api.save_atlas(atlas3, "atlas2.txt");
 	  std::cout << "Saving 0a" << std::endl;
 	  ev.bitmap_api.savebitmap(atlas_bm, "atlas_bm0.ppm", true);
 	  std::cout << "Saving 1a" << std::endl;
-	  ev.bitmap_api.savebitmap(atlas_bm2, "atlas_bm1.ppm", true);
+	  ev.bitmap_api.savebitmap(atlas_bm20, "atlas_bm1.ppm", true);
+	  ev.bitmap_api.savebitmap(atlas_bm21, "atlas_bm1_t.ppm", true);
 	  std::cout << "Saving 1b" << std::endl;
 
 	  ev.bitmap_api.savebitmap(atlas_bm3, "atlas_bm2.ppm", true);
@@ -3173,25 +3180,31 @@ static unsigned char cursor_0_mask[16] = {
 
 #ifdef LINUX
   std::string a_atlas0;
-  std::string a_atlas1;
+  std::string a_atlas10;
+  std::string a_atlas11;
   std::string a_atlas2;
   std::string a_atlas_bm0;
-  std::string a_atlas_bm1;
+  std::string a_atlas_bm10;
+  std::string a_atlas_bm11;
   std::string a_atlas_bm2;
   
   if (file_exists("./atlas0.txt")) {
     a_atlas0 = "atlas0.txt";
-    a_atlas1 = "atlas1.txt";
+    a_atlas10 = "atlas1.txt";
+    a_atlas11 = "atlas1_t.txt";
     a_atlas2 = "atlas2.txt";
     a_atlas_bm0 = "atlas_bm0.ppm";
-    a_atlas_bm1 = "atlas_bm1.ppm";
+    a_atlas_bm10 = "atlas_bm1.ppm";
+    a_atlas_bm11 = "atlas_bm1_t.ppm";
     a_atlas_bm2 = "atlas_bm2.ppm";
   } else {
     a_atlas0 = "/usr/share/atlas0.txt";
-    a_atlas1 = "/usr/share/atlas1.txt";
+    a_atlas10 = "/usr/share/atlas1.txt";
+    a_atlas11 = "/usr/share/atlas1_t.txt";
     a_atlas2 = "/usr/share/atlas2.txt";
     a_atlas_bm0 = "/usr/share/atlas_bm0.ppm";
-    a_atlas_bm1 = "/usr/share/atlas_bm1.ppm";
+    a_atlas_bm10 = "/usr/share/atlas_bm1.ppm";
+    a_atlas_bm11 = "/usr/share/atlas_bm1_t.ppm";
     a_atlas_bm2 = "/usr/share/atlas_bm2.ppm";
   }
 #endif
@@ -3206,17 +3219,21 @@ static unsigned char cursor_0_mask[16] = {
   std::string dir = GetInstallDir();
   if (file_exists(dir+"\\atlas0.txt")) {
   a_atlas0 = dir+"\\atlas0.txt";
-  a_atlas1 = dir+"\\atlas1.txt";
+  a_atlas10 = dir+"\\atlas1.txt";
+  a_atlas11 = dir+"\\atlas1_t.txt";
   a_atlas2 = dir+"\\atlas2.txt";
   a_atlas_bm0 = dir+"\\atlas_bm0.ppm";
-  a_atlas_bm1 = dir+"\\atlas_bm1.ppm";
+  a_atlas_bm10 = dir+"\\atlas_bm1.ppm";
+  a_atlas_bm11 = dir+"\\atlas_bm1_t.ppm";
   a_atlas_bm2 = dir+"\\atlas_bm2.ppm";
   } else {
     a_atlas0 = "atlas0.txt";
-    a_atlas1 = "atlas1.txt";
+    a_atlas10 = "atlas1.txt";
+    a_atlas11 = "atlas1_t.txt";
     a_atlas2 = "atlas2.txt";
     a_atlas_bm0 = "atlas_bm0.ppm";
-    a_atlas_bm1 = "atlas_bm1.ppm";
+    a_atlas_bm10 = "atlas_bm1.ppm";
+    a_atlas_bm11 = "atlas_bm1_t.ppm";
     a_atlas_bm2 = "atlas_bm2.ppm";
   }
 
@@ -3225,10 +3242,12 @@ static unsigned char cursor_0_mask[16] = {
   
   
   atlas = ev.font_api.load_atlas(a_atlas0);
-  atlas2 = ev.font_api.load_atlas(a_atlas1);
+  atlas20 = ev.font_api.load_atlas(a_atlas10);
+  atlas21 = ev.font_api.load_atlas(a_atlas11);
   atlas3 = ev.font_api.load_atlas(a_atlas2);
   atlas_bm = ev.bitmap_api.loadbitmap(a_atlas_bm0);
-  atlas_bm2 = ev.bitmap_api.loadbitmap(a_atlas_bm1);
+  atlas_bm20 = ev.bitmap_api.loadbitmap(a_atlas_bm10);
+  atlas_bm21 = ev.bitmap_api.loadbitmap(a_atlas_bm11);
   atlas_bm3 = ev.bitmap_api.loadbitmap(a_atlas_bm2);
   
     break;
@@ -3241,10 +3260,12 @@ static unsigned char cursor_0_mask[16] = {
 
  
   env.atlas = atlas;
-  env.atlas2 = atlas2;
+  env.atlas2 = atlas20;
+  env.atlas2_t = atlas21;
   env.atlas3 = atlas3;
   env.atlas_bm = atlas_bm;
-  env.atlas_bm2 = atlas_bm2;
+  env.atlas_bm2 = atlas_bm20;
+  env.atlas_bm2_t = atlas_bm21;
   env.atlas_bm3 = atlas_bm3;
 
   g_progress_callback = &refresh;
@@ -3270,36 +3291,41 @@ static unsigned char cursor_0_mask[16] = {
   env.list_tooltips = gui.empty();
   std::vector<W> items;
   static W g_scroll_area = gui.empty();
-  items.push_back(gui.search_panel(140-5,atlas,atlas_bm,2,&g_scroll_area));
+  items.push_back(gui.search_panel(140-5,env.atlas2,env.atlas_bm2,2,&g_scroll_area));
+
+
+  FtA tiny = atlas21;
+  BM tiny_bm = atlas_bm21;
+
   for(int i=0;i<1;i++)
     {
-      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.bitmapapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.boolbitmapapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.floatbitmapapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.polygonapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
 
       ProgressBar(888,2,5,"init");
 
-      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.shaderapi_functions_list_item(atlas,atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.moveapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.shadermoduleapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.shaderapi_functions_list_item(atlas,atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.linesapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.pointsapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.moveapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.pointapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.vectorapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
 
       ProgressBar(888,3,5,"init");
 
-      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.blockerapi_functions_list_item(ev,atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
-      items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, atlas2, atlas_bm2, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.volumeapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.floatvolumeapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.colorvolumeapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.fontapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.textureapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.booleanopsapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.polygondistapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.waveformapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.blockerapi_functions_list_item(ev,atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
+      items.push_back(gui.framebuffermoduleapi_functions_list_item(atlas, atlas_bm, tiny, tiny_bm, env.list_tooltips,&g_scroll_area));
 
       ProgressBar(888,4,5,"init");
       
@@ -3469,8 +3495,8 @@ private:
   GuiApi gui; //(e, ev, sh);
   WM mod;
   int screen_x, screen_y;
-  FtA atlas, atlas2, atlas3;
-  BM atlas_bm, atlas_bm2, atlas_bm3;
+  FtA atlas, atlas20, atlas21, atlas3;
+  BM atlas_bm, atlas_bm20,atlas_bm21, atlas_bm3;
   std::string filename;
   bool has_wayland=false;
   int extra_width, extra_height;
