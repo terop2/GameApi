@@ -786,6 +786,8 @@ private:
   int x_gap;
 };
 #endif
+
+
 template<class T>
 class EditorGuiWidget : public GuiWidgetForward
 {
@@ -1049,6 +1051,9 @@ IMPORT std::string g_dragdrop_filename;
 
 std::string g_temp44;
 
+IMPORT bool g_reload_edit_dialog = false;
+
+
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -1092,6 +1097,7 @@ public:
 	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
       {
 	g_dragdrop_enabled=false;
+	g_reload_edit_dialog = true;
 	std::string filename = g_dragdrop_filename;
 
 	std::string ext = filename.size()<4?"@":filename.substr(filename.size()-3);
@@ -5259,6 +5265,7 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       GameApi::W w; w.id = 0;
       vec3.push_back(w);
     }
+  int max_width=0;
   for(int i=0;i<s;i++)
     {
       EditTypes *target = vec[i];
@@ -5268,13 +5275,15 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       W lab = text(label, atlas,atlas_bm, 8);
       W lab_2 = right_align(lab, size_x1);
       W edit = generic_editor(ev,*target, atlas, atlas_bm, type, 2, atlas_tiny, atlas_tiny_bm, size_y(lab),vec3[i]);
+      max_width = std::max(max_width,size_x(lab)+size_x(edit));
 
       W array2[] = { lab_2, edit };
       W array3 = array_x(&array2[0], 2, 5);
+      //max_width = std::max(max_width,size_x(array3));
       vec2.push_back(array3);
       vec2_ed.push_back(edit);
     }
-  int button_width = 350;
+  int button_width = std::max(max_width/2+30,350);
   if (vec2.size()==0)
     {
       W lab0 = text("", atlas, atlas_bm, 8);
@@ -5649,7 +5658,8 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     {
       if (target.s.size()>4 && (target.s.substr(0,4)=="http" ||target.s.substr(0,4)=="file"))
 	{
-	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap,target.expr,1);
+	  // used to be atlas_tiny => atlas
+	  W edit = url_editor(target.s, atlas, atlas_bm, x_gap,target.expr,1);
 	  W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
 	  return edit_2;
 	}
@@ -5658,14 +5668,14 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 	  if (type=="bool") {
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
   static W redraw_w = empty();
-      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
+      W edit = string_editor(allowed, target.s, target.expr, atlas, atlas_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 
 	  } else {
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@";
   static W redraw_w = empty();
-      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
+      W edit = string_editor(allowed, target.s, target.expr, atlas, atlas_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 	  }

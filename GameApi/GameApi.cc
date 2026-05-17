@@ -20130,6 +20130,23 @@ GameApi::BM GameApi::FontApi::render_glyph(GI glyph)
 
 GameApi::GI GameApi::FontApi::choose_glyph_from_font(FI font, long idx)
 {
+#if 0
+  if ((idx&0xff)==0xe5) { // å
+    FontInterface *fi = find_font_interface(e, font);
+    GameApi::GI gi1 = add_glyph_interface(e, new ChooseGlyphFromFont(*fi, 0x61));
+    GameApi::GI gi2 = add_glyph_interface(e, new ChooseGlyphFromFont(*fi, 0x30a));
+    GameApi::GI gicomb = combine_glyphs(gi1,gi2);
+    return gicomb;
+  }
+  if ((idx&0xff)==0xC5)
+    {
+    FontInterface *fi = find_font_interface(e, font);
+    GameApi::GI gi1 = add_glyph_interface(e, new ChooseGlyphFromFont(*fi, 0x41));
+    GameApi::GI gi2 = add_glyph_interface(e, new ChooseGlyphFromFont(*fi, 0x30a));
+    GameApi::GI gicomb = combine_glyphs(gi1,gi2);
+    return gicomb;
+    }
+#endif  
   FontInterface *fi = find_font_interface(e, font);
   return add_glyph_interface(e, new ChooseGlyphFromFont(*fi, idx));
 }

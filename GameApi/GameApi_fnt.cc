@@ -117,6 +117,50 @@ EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
   return bm2;
 }
 
+class CombineGlyphInterfaces : public GlyphInterface
+{
+public:
+  CombineGlyphInterfaces(GlyphInterface *i1, GlyphInterface *i2) :i1(i1), i2(i2) { }
+  virtual void Collect(CollectVisitor&vis) { }
+  virtual void HeavyPrepare() { }
+  virtual void Prepare() { }
+  virtual int Top() const { return i1->Top(); }
+  virtual int SizeX() const { return std::max(i1->SizeX(),i2->SizeX()); }
+  virtual int SizeY() const { return std::max(i1->SizeY(),i2->SizeY()); }
+  virtual int AdvanceX() const { return std::max(i1->AdvanceX(),i2->AdvanceX()); }
+  virtual unsigned int Map(int x, int y) const
+  {
+    int t1 = i1->Top();
+    int t2 = i2->Top();
+
+    unsigned int pixel1 = 0x0;
+    unsigned int pixel2 = 0x0;
+    if (x>=0 && x<i1->SizeX())
+      if (y>=0 && y<i1->SizeY())
+	{
+	  pixel1 = i1->Map(x,y);
+	}
+    if (x>=0 && x<i2->SizeX())
+      if (y>=0 && y<i2->SizeY())
+	{
+	  pixel2 = i2->Map(x,y);
+	}
+    if (pixel1==0x0) return pixel2;
+    if (pixel2==0x0) return pixel1;
+    return Color::Interpolate(pixel1,pixel2,0.5f);
+  }
+private:
+  GlyphInterface *i1;
+  GlyphInterface *i2;
+};
+
+EXPORT GameApi::GI GameApi::FontApi::combine_glyphs(GI glyph1, GI glyph2)
+{
+  GlyphInterface *i1 = find_glyph_interface(e,glyph1);
+  GlyphInterface *i2 = find_glyph_interface(e,glyph2);
+  return add_glyph_interface(e,new CombineGlyphInterfaces(i1,i2));
+}
+
 EXPORT GameApi::BM GameApi::FontApi::font_atlas_engine2(EveryApi &ev, FI font, FtA atlas, float sx, float sy)
 {
   FontAtlasInfo *info = find_font_atlas(e, atlas);
