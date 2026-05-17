@@ -3469,7 +3469,7 @@ public:
     y/=ysize;
     x*=bitmap.SizeX();
     y*=bitmap.SizeY();
-    return bitmap.Map(x,y);
+    return bitmap.Map(x+0.5,y+0.5);
   }
 private:
   Bitmap<T> &bitmap;
@@ -3495,8 +3495,8 @@ public:
   {
     float xx = x;
     float yy = y;
-    xx /= xsize;
-    yy /= ysize;
+    xx /= float(xsize);
+    yy /= float(ysize);
     xx *= bitmap.SizeX();
     yy *= bitmap.SizeY();
     return bitmap.Map(xx,yy);

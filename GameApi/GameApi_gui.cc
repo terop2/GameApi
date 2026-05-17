@@ -736,7 +736,8 @@ public:
 	
 	int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	int sy = ev.bitmap_api.size_y(rendered_bitmap);
-	scaled_bitmap = rendered_bitmap; //ev.bitmap_api.scale_bitmap(ev,rendered_bitmap, sx/2,sy/2);
+	//GameApi::BM scaled_bitmap0 = ev.bitmap_api.simple_blur(rendered_bitmap, 1.0, 0.25, 0.25, 0.25, 0.25); //
+	scaled_bitmap = rendered_bitmap; //ev.bitmap_api.scale_bitmap(ev,scaled_bitmap0, int(float(sx-2)/8.0),int(float(sy-2)/8.0)); 
 	std::stringstream ss;
 	ss << sx << " " << sy;
 	std::string key = label + ss.str();
