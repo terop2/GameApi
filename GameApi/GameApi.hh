@@ -1224,6 +1224,10 @@ public:
   IMPORT BM font_string(Ft font, std::string str, int x_gap);
   IMPORT FB glyph_fb(Ft font, long idx);
   IMPORT BB glyph_bb(Ft font, long idx);
+
+  IMPORT BM render_glyph(GI glyph);
+  IMPORT BM font_atlas_engine2(EveryApi &ev, FI font, FtA atlas, float sx, float sy);
+  IMPORT FtA font_atlas_info_engine2(EveryApi &ev, FI font, std::string chars, float sx, float sy, int y_delta);
   
   IMPORT FtA font_atlas_info(EveryApi &ev,Ft font, std::string chars, float sx, float sy, int y_delta);
   IMPORT BM font_atlas(EveryApi &ev, Ft font, FtA atlas, float sx, float sy);

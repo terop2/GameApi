@@ -3025,16 +3025,21 @@ static unsigned char cursor_0_mask[16] = {
 
   g_low->sdl->SDL_SetCursor(cursor0);
   
-  float font_scale = 1.5;
-
+  //float font_scale = 1.5;
+  float font_scale = 1.0;
+  
   ProgressBar(888,0,5,"init");
   // shader initialization
-  // Chunkfive.otf
+  // Chunkfive.otf http://meshpage.org/assets/Chunkfive.otf
+
   font = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 13,15 
   font2 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 8*font_scale,12*font_scale); // 10,13
   font3 = ev.font_api.newfont("http://meshpage.org/assets/Chunkfive.otf", 20*font_scale,20*font_scale); // 30,30
 
-
+  FI n_font = ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",8*font_scale,12*font_scale);
+  FI n_font2 = ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",8*font_scale,12*font_scale);
+  FI n_font3 = ev.font_api.load_font("http://meshpage.org/assets/Chunkfive.otf",20*font_scale,20*font_scale);
+  
   std::string fname = "atlas0.txt";
   if (file_exists("/usr/share/atlas0.txt")) {
     fname = "/usr/share/atlas0.txt";
@@ -3062,12 +3067,44 @@ static unsigned char cursor_0_mask[16] = {
     }
   if (argc==2 ||flag)
     {
+      if (flag ||std::string(argv[1])=="--generate-font-atlas2")
+	{
+
+	  std::cout << "Generating logo." << std::endl;
+	  //ev.mainloop_api.save_logo(ev);
+	  std::cout << "Generating font atlas. " << std::endl;
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
+
+	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
+	  FtA atlas = ev.font_api.font_atlas_info_engine2(ev, n_font, chars, 8*font_scale,12*font_scale, 25*font_scale);
+	  FtA atlas2 = ev.font_api.font_atlas_info_engine2(ev, n_font2, chars, 8*font_scale,12*font_scale, 25*font_scale);
+	  FtA atlas3 = ev.font_api.font_atlas_info_engine2(ev, n_font3, chars, 20*font_scale,20*font_scale, 65*font_scale);
+	  BM atlas_bm = ev.font_api.font_atlas_engine2(ev, n_font, atlas, 8*font_scale,12*font_scale);
+	  BM atlas_bm2 = ev.font_api.font_atlas_engine2(ev,n_font2, atlas2, 8*font_scale,12*font_scale);
+	  BM atlas_bm3 = ev.font_api.font_atlas_engine2(ev,n_font3, atlas3, 20*font_scale,20*font_scale);
+	  std::cout << "Saving 0" << std::endl;
+	  ev.font_api.save_atlas(atlas, "atlas0.txt");
+	  std::cout << "Saving 1" << std::endl;
+	  ev.font_api.save_atlas(atlas2, "atlas1.txt");
+	  std::cout << "Saving 2" << std::endl;
+	  ev.font_api.save_atlas(atlas3, "atlas2.txt");
+	  std::cout << "Saving 0a" << std::endl;
+	  ev.bitmap_api.savebitmap(atlas_bm, "atlas_bm0.ppm", true);
+	  std::cout << "Saving 1a" << std::endl;
+	  ev.bitmap_api.savebitmap(atlas_bm2, "atlas_bm1.ppm", true);
+	  std::cout << "Saving 1b" << std::endl;
+
+	  ev.bitmap_api.savebitmap(atlas_bm3, "atlas_bm2.ppm", true);
+	  std::cout << "Done." << std::endl;
+	  //exit(0);
+	}
+      else
       if (flag ||std::string(argv[1])=="--generate-font-atlas")
 	{
 	  std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]";
 	  FtA atlas = ev.font_api.font_atlas_info(ev, font, chars, 8*font_scale,12*font_scale, 25*font_scale);

@@ -1060,7 +1060,7 @@ public:
     bool changed = false;
     Point2d pos = get_pos();
     Vector2d sz = get_size();
-
+    
     //std::cout << "ATTEMPT DRAGDROP: " << g_dragdrop_enabled << " " << button << " " << type << std::endl;
     
     //std::cout << "Attempt active:" << button << type << std::endl;
@@ -1130,6 +1130,11 @@ public:
     if (ch==39) ch='0';
     if (ch>=30 && ch<=38) { ch = ch-30; ch=ch+'1'; }
 #endif
+    // finnish åöä
+    if (ch==229) { ch='\xE5'; }
+    if (ch==246) { ch='\xF6'; }
+    if (ch==228) { ch='\xE4'; }
+    
     if (ch==13) { ch='\n'; }
     if (altgr && ch=='4') { ch='$'; }
     if (ctrl && ch=='s') { ch=0; }
@@ -1155,14 +1160,15 @@ public:
       g_low->sdl->SDL_SetClipboardText(label.c_str());
       changed=true;
     }
+    if (active && ctrl) ch=0;
     //std::cout << "PART1:" << (int)ch << "==" << (char)ch << std::endl;
     if (shift) { 
 #ifdef EMSCRIPTEN
       const unsigned char *chars1 = (unsigned char*)"";
       const unsigned char *chars2 = (unsigned char*)"";
 #else
-      const unsigned char *chars1 = (unsigned char*)"abcdefghijklmnopqrstuvwxyz13567890+',.-";
-      const unsigned char *chars2 = (unsigned char*)"ABCDEFGHIJKLMNOPQRSTUVWXYZ!#%&/()=?*;:_";
+      const unsigned char *chars1 = (unsigned char*)"abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 13567890+',.-";
+      const unsigned char *chars2 = (unsigned char*)"ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6 !#%&/()=?*;:_";
 #endif
       int s = strlen((const char*)chars1);
       for(int i=0;i<s;i++)
@@ -3831,7 +3837,7 @@ EXPORT GameApi::W GameApi::GuiApi::license_item(std::string filename, std::strin
   W author_label = text("Author:", atlas, atlas_bm);
   static std::string expr;
   static W redraw_w = empty();
-  W author_edit = string_editor("abcdefghijklmnopqrstuvwxyzäöåABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ1234567890-_*^@£$!#¤%&/()=? ", author_name, expr, atlas, atlas_bm,0,0,&redraw_w);
+  W author_edit = string_editor("abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6 1234567890-_*^@£$!#¤%&/()=? ", author_name, expr, atlas, atlas_bm,0,0,&redraw_w);
   W arr_x[] = { author_label, author_edit };
   W author_x = array_x(&arr_x[0], 2, 0);
   W author_marg = margin(author_x,5,0,0,0);
@@ -4410,7 +4416,7 @@ EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM
 #ifdef EMSCRIPTEN
   std::string allowed_chars="";
 #else
-  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#€%&/()=?+\\*^.,-<>|§œ;:_$@";
+  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 246ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#€%&/()=?+\\*^.,-<>|§œ;:_$@";
 #endif
  static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
@@ -5641,7 +5647,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
       return edit_2;
 
 	  } else {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@";
   static W redraw_w = empty();
       W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
