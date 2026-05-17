@@ -2242,13 +2242,13 @@ public:
   IMPORT W editor_mouse_tweak(W inner, W outer, W outerouter);
   IMPORT W string_editor(std::string allowed_chars, std::string &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable, W *redraw_w);
   IMPORT W multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height);
-  IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr);
-  IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W int_editor(int &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type);
-  IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr, int noneditnum=0);
+  IMPORT W float_editor(float &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
+  IMPORT W int_editor(int &target, std::string &target_expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum=0);
+  IMPORT W enum_editor(EveryApi &ev, W &click_target, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type,int noneditnum=0);
+  IMPORT W long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap,int noneditnum=0);
   IMPORT W point_editor(float &x, float &y, float &z, FtA atlas, BM atlas_bm, int x_gap);
-  IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap);
+  IMPORT W color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap,int noneditnum=0);
   struct EditTypes
   {
     int i_value;
