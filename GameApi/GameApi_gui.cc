@@ -719,7 +719,8 @@ public:
     Point2d p = { -666.0, -666.0 };
     update(p, -1,-1, -1,0);
     Point2d p2 = { 0.0, 0.0 };
-    set_pos(p2); 
+    set_pos(p2);
+    sh = ev.shader_api.texture_shader(true);
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -1068,6 +1069,7 @@ public:
     shift=false;
     ctrl=false;
     altgr=false;
+    sh = ev.shader_api.texture_shader(true);
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {

@@ -90,12 +90,14 @@ void GameApi::ShaderApi::link_1(GameApi::SH shader)
     seq->link(shader.id);
 }
 extern std::string g_gpu_vendor;
-EXPORT GameApi::SH GameApi::ShaderApi::texture_shader()
+EXPORT GameApi::SH GameApi::ShaderApi::texture_shader(bool text_draw)
 {
+  std::string td = "";
+  if (text_draw) { td=" TEXTURE_TEXT_DRAW"; }
   if (g_gpu_vendor.substr(0,4)=="NVID") {
-  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT"+td,"","");
   } else {
-  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT","","");
+  return get_normal_shader_1("comb", "comb", "", "texture_impl", "texture_impl:light:light", true, {-1}, {-1}, {-1}, "EX_TEXCOORD IN_TEXCOORD", "EX_TEXCOORD COLOR_MIX TEXTURE_IMPL LIGHT"+td,"","");
   }
 }
 EXPORT GameApi::SH GameApi::ShaderApi::texture_array_shader()

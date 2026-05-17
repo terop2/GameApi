@@ -4301,7 +4301,7 @@ public:
 			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
     SH get_normal_shader_1_new(std::string v_format, std::string f_format, std::string g_format,
 			 std::string v_comb="", std::string f_comb="", bool trans=true, SFO mod = { -1 }, US v_c = { -1 }, US f_c = { -1 }, std::string v_defines="IN_NORMAL IN_POSITION IN_COLOR IN_TEXCOORD EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string f_defines="EX_COLOR EX_NORMAL EX_POSITION EX_TEXCOORD", std::string v_shader="", std::string f_shader="");
-  IMPORT SH texture_shader();
+  IMPORT SH texture_shader(bool text_draw=false);
   IMPORT SH texture_array_shader();
   IMPORT SH texture_many_shader();
   IMPORT SH colour_shader();
