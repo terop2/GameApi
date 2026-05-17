@@ -1132,6 +1132,7 @@ public:
 #endif
     if (ch==13) { ch='\n'; }
     if (altgr && ch=='4') { ch='$'; }
+    if (ctrl && ch=='s') { ch=0; }
     if (active && ctrl && type==768 && ch==118) // ctrl-v
       {
 	char *buf = g_low->sdl->SDL_GetClipboardText();
