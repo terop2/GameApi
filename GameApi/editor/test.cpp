@@ -3067,7 +3067,7 @@ static unsigned char cursor_0_mask[16] = {
     }
   if (argc==2 ||flag)
     {
-      if (flag ||std::string(argv[1])=="--generate-font-atlas2")
+      if (flag ||std::string(argv[1])=="--generate-font-atlas")
 	{
 
 	  std::cout << "Generating logo." << std::endl;
@@ -3098,6 +3098,7 @@ static unsigned char cursor_0_mask[16] = {
 	  std::cout << "Done." << std::endl;
 	  //exit(0);
 	}
+#if 0
       else
       if (flag ||std::string(argv[1])=="--generate-font-atlas")
 	{
@@ -3129,6 +3130,7 @@ static unsigned char cursor_0_mask[16] = {
 	  std::cout << "Done." << std::endl;
 	  //exit(0);
 	}
+#endif
     }
 
 #ifdef LINUX
