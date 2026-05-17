@@ -1222,7 +1222,7 @@ public:
     if (firsttime || changed||externally_set)
       {
 	externally_set=false;
-	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(label.substr(1,label.size()-1))+std::string(" ]")).c_str():label.c_str(), x_gap);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	//GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
@@ -4392,23 +4392,23 @@ EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_c
   return e2;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
-  std::string allowed_chars = "0123456789.-+*/%";
+  std::string allowed_chars = "0123456789.-+*/%@";
   static W ww = empty();
-  W w = add_widget(e, new EditorGuiWidgetAtlas<float>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true, expr,0,&ww));
+  W w = add_widget(e, new EditorGuiWidgetAtlas<float>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true, expr,noneditnum ,&ww));
   W w2 = highlight(w);
   return w2;
 }
-EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr)
+EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr, int noneditnum)
 {
 #ifdef EMSCRIPTEN
   std::string allowed_chars="";
 #else
-  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#€%&/()=?+\\*^.,-<>|§œ;:_$";
+  std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!\"#€%&/()=?+\\*^.,-<>|§œ;:_$@";
 #endif
  static W ww = empty();
-  W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,0,&ww));
+  W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
   W w2 = highlight(w);
   return w2;
 }
@@ -4429,7 +4429,7 @@ std::vector<std::string> parse_enum_type(std::string type)
 std::map<int, int> enum_map;
 IMPORT bool file_exists(std::string filename);
 
-EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type)
+EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, int &target, FtA atlas, BM atlas_bm, int x_gap, std::string type, int noneditnum)
 {
   std::vector<std::string> arr = parse_enum_type(type);
   if (target<0||target>=arr.size()) { GameApi::W w; w.id = -1; return w; }
@@ -4439,7 +4439,7 @@ EXPORT GameApi::W GameApi::GuiApi::enum_editor(EveryApi &ev, W &click_widget, in
   
   //  W w = text(ss.str(),atlas,atlas_bm,x_gap);
   static std::string expr;
-  W w = int_editor(target, expr, atlas, atlas_bm, x_gap);
+  W w = int_editor(target, expr, atlas, atlas_bm, x_gap,noneditnum);
   //W w2 = button(30,30,c_tooltip_button,c_tooltip_button2);
   std::string filename;
   if (file_exists("./arrow.ppm")) {
@@ -4550,34 +4550,34 @@ IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
 
 std::map<int, int> int_editor_map;
 
-EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
   std::string allowed_chars = "0123456789-&%";
   static W ww = empty();
-  W w = add_widget(e, new EditorGuiWidgetAtlas<int>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,0,&ww));
+  W w = add_widget(e, new EditorGuiWidgetAtlas<int>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
   W w2 = highlight(w);
   int_editor_map[w2.id]=w.id;
   return w2;
 }
 
-EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
   std::string allowed_chars = "0123456789-";
   static std::string expr;
   static W ww = empty();
   //GuiWidget *ww2 = find_widget(e,ww);
-  W w = add_widget(e, new EditorGuiWidgetAtlas<long>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,false,expr,0,&ww));
+  W w = add_widget(e, new EditorGuiWidgetAtlas<long>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,false,expr,noneditnum,&ww));
   W w2 = highlight(w);
   return w2;
 }
 
 
-EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap)
+EXPORT GameApi::W GameApi::GuiApi::color_editor(std::string &col, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
   std::string allowed_chars = "0123456789abcdef";
   static std::string expr;
     static W redraw_w = empty();
-    W edit = string_editor(allowed_chars, col, expr, atlas, atlas_bm, x_gap,0,&redraw_w);
+    W edit = string_editor(allowed_chars, col, expr, atlas, atlas_bm, x_gap,noneditnum,&redraw_w);
   W edit2 = highlight(edit);
   return edit2; 
 }
@@ -5445,6 +5445,7 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
     {
       std::stringstream ss(source);
       if (ss >> target.l_value) {
+      target.expr = "@" + expr;
 	//std::cout << "Dest: " << target.i_value << std::endl;
       } else { std::cout << "StringStream failed" << std::endl; }
 
@@ -5452,6 +5453,7 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
     if (type=="int"||is_enum(type))
     {
       std::stringstream ss(source);
+      target.expr = "@" + expr;
       if (ss >> target.i_value) {
 	//std::cout << "Dest: " << target.i_value << std::endl;
       } else { std::cout << "StringStream failed" << std::endl; }
@@ -5459,17 +5461,20 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
     } else
   if (type=="unsigned int")
     {
-      target.color = source;
+      target.color = "@" + source;
+      target.expr = "@" + expr;
     } else
   if (type=="std::string")
     {
       target.s = source;
+      target.expr = "@" + expr;
     } else
   if (type=="float")
     {
       //std::string source2 = FloatExprEval(source);
       std::stringstream ss(source);
       ss >> target.f_value;
+      target.expr = "@" + expr;
     } else
     if (type=="bool")
       {
@@ -5508,6 +5513,7 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::stringstream ss;
       ss << val;
       target = ss.str();
+      expr = source.expr.substr(1,source.expr.size()-1);
 
     } else
     if (type=="int"||is_enum(type))
@@ -5517,17 +5523,20 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::stringstream ss;
       ss << val;
       target = ss.str();
+      expr = source.expr.substr(1,source.expr.size()-1);
       //std::cout << "Dest2: " << target << std::endl;
     } else
   if (type=="unsigned int")
     {
-      std::string s = source.color;
+      std::string s = source.color.substr(1,source.color.size()-1);
       target = s;
+      expr = source.expr.substr(1,source.expr.size()-1);
     } else
   if (type=="std::string")
     {
       std::string s = source.s;
       target = s;
+      expr = source.expr.substr(1,source.expr.size()-1);
     } else
     if (type=="bool")
       {
@@ -5541,6 +5550,7 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::stringstream ss;
       ss << f;
       target = ss.str();
+      expr = source.expr.substr(1,source.expr.size()-1);
     } else
   if (type=="PT")
     {
@@ -5567,31 +5577,31 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     }
   if (type=="long")
     {
-      W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap);
+      W edit = long_editor(target.l_value, atlas, atlas_bm, x_gap,1);
       return edit;
     }
   if (is_enum(type))
     {
       //W click_target;
-      W edit = enum_editor(ev,click_target, target.i_value, atlas, atlas_bm, x_gap, type);
+      W edit = enum_editor(ev,click_target, target.i_value, atlas, atlas_bm, x_gap, type,1);
       return edit;
     }
   if (type=="int")
     {
       //std::cout << "Generic editor << " << target.i_value << std::endl;
-      W edit = int_editor(target.i_value, target.expr, atlas, atlas_bm, x_gap);
+      W edit = int_editor(target.i_value, target.expr, atlas, atlas_bm, x_gap,1);
       return edit;
     }
   if (type=="unsigned int")
     {
-      W edit = color_editor(target.color, atlas, atlas_bm, x_gap);
+      W edit = color_editor(target.color, atlas, atlas_bm, x_gap,1);
       return edit;
     }
   if (type=="std::string" || type=="bool")
     {
       if (target.s.size()>4 && (target.s.substr(0,4)=="http" ||target.s.substr(0,4)=="file"))
 	{
-	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap,target.expr);
+	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap,target.expr,1);
 	  W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
 	  return edit_2;
 	}
@@ -5607,7 +5617,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 	  } else {
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
   static W redraw_w = empty();
-      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,0,&redraw_w);
+      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 	  }
@@ -5615,7 +5625,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
     }
   if (type=="float")
     {
-      W edit = float_editor(target.f_value, target.expr, atlas, atlas_bm, x_gap);
+      W edit = float_editor(target.f_value, target.expr, atlas, atlas_bm, x_gap,1);
       return edit;
     }
   if (type=="PT")
@@ -8583,6 +8593,7 @@ std::string StringExprEval(std::string s)
 std::string FloatExprEval(std::string s)
 {
   //std::cout << "FloatExprEval: " << s << std::endl;
+  if (s.size()>0 && s[0]=='@') return FloatExprEval(s.substr(1,s.size()-1));
   if (s.size()>0 && s[0]==' ') return FloatExprEval(s.substr(1,s.size()-1));
   if (s.size()>0 && s[s.size()-1]==' ') return FloatExprEval(s.substr(0,s.size()-1));
   if (s.size()>0 && s[0]=='-') {
