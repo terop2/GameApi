@@ -5659,7 +5659,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
       if (target.s.size()>4 && (target.s.substr(0,4)=="http" ||target.s.substr(0,4)=="file"))
 	{
 	  // used to be atlas_tiny => atlas
-	  W edit = url_editor(target.s, atlas, atlas_bm, x_gap,target.expr,1);
+	  W edit = url_editor(target.s, atlas_tiny, atlas_tiny_bm, x_gap,target.expr,1);
 	  W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
 	  return edit_2;
 	}
@@ -5675,7 +5675,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 	  } else {
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@";
   static W redraw_w = empty();
-      W edit = string_editor(allowed, target.s, target.expr, atlas, atlas_bm, x_gap,1,&redraw_w);
+      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
 	  }
