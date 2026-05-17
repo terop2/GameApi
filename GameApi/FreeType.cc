@@ -12,6 +12,7 @@ struct GlyphPriv
   FT_Library *lib;
   FT_Face face;
   FT_UInt chosen_glyph;
+  bool done_already;
 };
 
 FontGlyphBitmap::FontGlyphBitmap(GameApi::Env &e, void *priv_, std::string filename, int sx, int sy)
@@ -174,6 +175,10 @@ void FontGlyphBitmap::check_load()
 
 
   if ((priv && m_idx != -1 && state!=3) || old_idx != m_idx) {
+    //std::cout << "Glyph:" << m_idx << " " << std::hex << m_idx << std::endl;
+
+    if (m_idx>0x80||m_idx<0x00) m_idx=m_idx&0xff;
+    
     FT_UInt glyphindex = FT_Get_Char_Index(priv->face, m_idx);
     /*int err1 =*/ FT_Load_Glyph(priv->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
     /*int err2 =*/ FT_Render_Glyph(priv->face->glyph, FT_RENDER_MODE_NORMAL);

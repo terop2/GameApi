@@ -20100,6 +20100,34 @@ private:
   long idx;
 };
 
+class GlyphBitmap : public Bitmap<Color>
+{
+public:
+  GlyphBitmap(GlyphInterface *glyph) : glyph(glyph) { }
+  void Collect(CollectVisitor&vis) { }
+  void HeavyPrepare() { }
+  virtual int SizeX() const { return glyph->SizeX(); }
+  virtual int SizeY() const { return glyph->SizeY(); }
+  virtual Color Map(int x, int y) const
+  {
+    return Color(glyph->Map(x,y));
+  }
+  virtual void Prepare() { }
+private:
+  GlyphInterface *glyph;
+};
+
+
+GameApi::BM GameApi::FontApi::render_glyph(GI glyph)
+{
+  GlyphInterface *glyph2 = find_glyph_interface(e,glyph);
+  GlyphBitmap *g = new GlyphBitmap(glyph2);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = g;
+  BM bm = add_bitmap(e, handle2);
+  return bm;
+}
+
 GameApi::GI GameApi::FontApi::choose_glyph_from_font(FI font, long idx)
 {
   FontInterface *fi = find_font_interface(e, font);

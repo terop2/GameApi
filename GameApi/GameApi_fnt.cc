@@ -116,6 +116,70 @@ EXPORT GameApi::BM GameApi::FontApi::glyph(GameApi::Ft font, long idx)
   //BM bm2_b = ev.float_bitmap_api.to_grayscale_color(bm2_a, 255,255,255,255, 0,0,0,0);
   return bm2;
 }
+
+EXPORT GameApi::BM GameApi::FontApi::font_atlas_engine2(EveryApi &ev, FI font, FtA atlas, float sx, float sy)
+{
+  FontAtlasInfo *info = find_font_atlas(e, atlas);
+  BM bg = ev.bitmap_api.newbitmap(info->atlas_sx, info->atlas_sy, 0x00000000);
+  std::map<int, FontAtlasGlyphInfo>::iterator i = info->char_map.begin();
+  for(;i!=info->char_map.end();i++)
+    {
+      std::pair<int,FontAtlasGlyphInfo> p = *i;
+      int ch = p.first;
+      std::cout << ch << std::flush;
+      std::string str;
+      str+=ch;
+      GI glyph = choose_glyph_from_font(font, ((long)(str[0]))&0xff);
+      BM bm = ev.font_api.render_glyph(glyph); //ev.font_api.draw_text_string(font,str,5,30); //glyph(font, ch);
+      //BM bm = glyph(font, ch);
+      bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x, p.second.y+p.second.top);
+    }
+  return bg;  
+}
+
+EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI font, std::string chars, float sx, float sy, int y_delta)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  int s = chars.size();
+  FontAtlasInfo *info = new FontAtlasInfo;
+  int counter = 0;
+  int y = 0;
+  int x = 0;
+  int atlas_sx=0;
+  int atlas_sy=0;
+  for(int i=0;i<s;i++)
+    {
+      char ch = chars[i];
+      std::string str;
+      str+=ch;
+      //BM bm = ev.font_api.draw_text_string(font,str,5,30); //glyph(font, ch);
+      GI glyph = choose_glyph_from_font(font, ((long)(str[0]))&0xff);
+      BM bm = ev.font_api.render_glyph(glyph);
+      GlyphInterface *i2 = find_glyph_interface(e,glyph);
+      int top = -i2->Top(); //bm2->bitmap_top(ch);      
+      int xx = x;
+      int yy = y*y_delta;
+      int sx = i2->SizeX(); //ev.bitmap_api.size_x(bm);
+      int sy = i2->SizeY(); //ev.bitmap_api.size_y(bm);
+      FontAtlasGlyphInfo info2;
+      info2.sx = sx;
+      info2.sy = sy;
+      info2.x = xx;
+      info2.y = yy;
+      info2.top = top;
+      info->char_map[ch] = info2;
+      x+=ev.bitmap_api.size_x(bm);      
+      if (atlas_sx < x) { atlas_sx = x; }
+      if (atlas_sy < y*y_delta + top + ev.bitmap_api.size_y(bm)) { atlas_sy = y*y_delta + top + ev.bitmap_api.size_y(bm); }
+
+      if (counter==10) { y++; counter=-1; x=0; }
+      counter++;
+    }
+  info->atlas_sx = atlas_sx;
+  info->atlas_sy = atlas_sy;
+  return add_font_atlas(e, info);
+}
+
 EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std::string chars, float sx, float sy, int y_delta)
 {
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
