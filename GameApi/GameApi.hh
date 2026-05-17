@@ -887,7 +887,7 @@ public:
 	IMPORT void spritepos(BM bm, float x, float y);
 	IMPORT void preparesprite(BM bm, int bbm_choose = -1);
 
-  IMPORT VA create_vertex_array(BM bm, bool progress=false);
+  IMPORT VA create_vertex_array(BM bm, bool progress=false, bool textrender=false);
   IMPORT void clear_arrays(VA va);
         IMPORT void delete_vertex_array(VA va);
         IMPORT void update_vertex_array(VA va, BM bm);
@@ -954,7 +954,7 @@ public:
 	IMPORT TX tex_coord(TX tx, int id, int x, int y, int width, int height);
 	IMPORT Q get_tex_coord(TX tx, int id);
 	Q get_tex_coord_1(TX tx, int id);
-  IMPORT TXID prepare(TX tx, bool is_srgb=true);
+  IMPORT TXID prepare(TX tx, bool is_srgb=true, bool text_render=false);
   IMPORT TXID bufferref_to_txid(TXID old, const BufferRef &buf);
   IMPORT TXID webcam_txid(int num);
   IMPORT TXID webcam_txid_slow(EveryApi &ev, int num);

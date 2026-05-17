@@ -11476,7 +11476,7 @@ public:
   void UpdateTexCoord(Mesh &mesh, MeshTexCoords &coord, std::pair<int,int> p, int frame);
   void UpdateColors(Mesh &mesh, MeshColors &color, std::pair<int,int> p, int frame);
   void UpdateAllTextures(MeshTextures &texture);
-  void UpdateTexture(MeshTextures &texture, int num);
+  void UpdateTexture(MeshTextures &texture, int num, bool textrender=false);
   void EnableTexture(int num);
   void DisableTexture();
   void Prepare();

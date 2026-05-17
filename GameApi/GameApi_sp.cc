@@ -736,7 +736,7 @@ EXPORT GameApi::ML GameApi::SpriteApi::vertex_array_render(EveryApi &ev, BM bm)
   GameApi::ML ml = render_sprite_vertex_array_ml(ev, bm);
   return ml;
 }
-EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm, bool progress)
+EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm, bool progress, bool textrender)
 {
   BitmapHandle *handle = find_bitmap(e, bm);
   SpritePriv &spriv = *(SpritePriv*)priv;
@@ -748,7 +748,7 @@ EXPORT GameApi::VA GameApi::SpriteApi::create_vertex_array(BM bm, bool progress)
   confirm_texture_usage(s);
   s->set_bm_id(bm.id);
   PrepareSpriteToVA(*sprite, *s);
-  TexturePrepare(*sprite, *env->renders2[bm.id],progress);
+  TexturePrepare(*sprite, *env->renders2[bm.id],progress,textrender);
   s->texture_id = bm.id;
   RenderVertexArray *arr = new RenderVertexArray(g_low, *s); 
   arr->prepare(0);
