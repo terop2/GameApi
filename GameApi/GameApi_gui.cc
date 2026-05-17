@@ -5258,11 +5258,11 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       vec2.push_back(lab0);
     }
   // This still breaks more than it fixes.
-  //W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35);
-  //for(int i=0;i<s;i++)
-  //  {
-  //    vec2[i] = editor_mouse_tweak(vec2_ed[i],vec2[i],array);
-  //  }
+  W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35);
+  for(int i=0;i<s;i++)
+    {
+      vec2[i] = editor_mouse_tweak(vec2_ed[i],vec2[i],array);
+    }
   W array_0 = array_y(vec2 /*&vec2[0],vec2.size()*/,35);
   W array_1 = margin(array_0, 10,10,10,10);
   W array_1a = center_align(array_1, button_width*2);
@@ -5473,7 +5473,8 @@ EXPORT void GameApi::GuiApi::string_to_generic(EditTypes &target, std::string ty
     } else
     if (type=="bool")
       {
-	target.s = source;
+	target.expr = "@" + expr;
+	target.s = "@" + source;
       } else
   if (type=="PT")
     {
@@ -5531,7 +5532,8 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
     if (type=="bool")
       {
 	std::string s = source.s;
-	target = s;
+	expr = source.expr.substr(1,source.expr.size()-1);
+	target = s.substr(1,s.size()-1);
       } else
   if (type=="float")
     {
@@ -5595,11 +5597,20 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
 	}
       else 
 	{
+	  if (type=="bool") {
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
+  static W redraw_w = empty();
+      W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
+      W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
+      return edit_2;
+
+	  } else {
       std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz/.ABCDEFGHIJKLMNOPQRSTUVWXYZ*()-#+/*!\"€%&?\n,:_@";
   static W redraw_w = empty();
       W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,0,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
       return edit_2;
+	  }
 	}
     }
   if (type=="float")
