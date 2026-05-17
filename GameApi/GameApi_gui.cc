@@ -591,12 +591,13 @@ public:
   {
     
     std::string searchstring = g_searchstring;
+    //std::cout << "searchstring:" << searchstring << std::endl;
     if (g_searchstring.size()==0||g_searchstring=="@") {
-      if (g_searchstring.size()==0 || g_searchstring[0]!='@') g_searchstring="@";
+      //if (g_searchstring.size()==0 || g_searchstring[0]!='@') g_searchstring="@";
       return true;
     }
-    if (g_searchstring[0]!='@') g_searchstring="@";
-    if (searchstring[0]=='@') searchstring=searchstring.substr(1,searchstring.size()-1);
+    //if (g_searchstring.size()>0 && g_searchstring[0]!='@') g_searchstring="@";
+    if (searchstring.size()>0 && searchstring[0]=='@') searchstring=searchstring.substr(1,searchstring.size()-1);
     int s = label.size();
     int s2 = searchstring.size();
     for(int i=0;i<s-s2+1;i++)
@@ -1062,14 +1063,16 @@ public:
 
     //std::cout << "ATTEMPT DRAGDROP: " << g_dragdrop_enabled << " " << button << " " << type << std::endl;
     
-
+    //std::cout << "Attempt active:" << button << type << std::endl;
     if (button == 0 && type==1025 && mouse.x>=pos.x && mouse.x < pos.x+sz.dx
 	&& mouse.y>=pos.y && mouse.y<pos.y+sz.dy)
       {
+	//std::cout << "active=true" << std::endl;
 	active = true;
       }
     else if (button==0 && type==1025)
       {
+	//std::cout << "active=false" << std::endl;
 	active = false;
       }
 
@@ -1213,6 +1216,7 @@ public:
     // note, spaces are not allowed.
     if (active) {
       //std::cout << "EDITOR UPDATES: " << label << std::endl;
+      //std::cout << "EDITOR UPDATES0: " << allow_expr << "::"<< expr << std::endl;
       //std::stringstream ss2(label);
       //ss2 >> target;
       Conv<T>::set(target, label, allow_expr, expr);
@@ -4255,8 +4259,8 @@ EXPORT GameApi::W GameApi::GuiApi::overlap(GameApi::EveryApi &ev, std::vector<W>
 
 EXPORT GameApi::W GameApi::GuiApi::search_panel(int sx, FtA atlas, BM atlas_bm, int x_gap, W *redraw_w)
 {
-  static std::string expr;
-  W editor_t = string_editor("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_@", g_searchstring, expr, atlas,atlas_bm,x_gap,1,redraw_w);
+  static std::string expr = "@";
+  W editor_t = string_editor("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_@", g_searchstring, expr, atlas,atlas_bm,x_gap,1,redraw_w,false);
   W node_t0 = margin(editor_t, 5,5,5,5);
   W node_0 = size(node_t0,sx,size_y(node_t0));
   //W node_0 = button(sx, size_y(node_t0), c_list_item_title, c_list_item_title2);
@@ -4379,9 +4383,9 @@ EXPORT GameApi::W GameApi::GuiApi::pts(PTS p, SH sh2, int sx, int sy, int screen
   return add_widget(e, new PTSGuiWidget(e,ev, p, sh2, sh, sx,sy, screen_size_x, screen_size_y));
 }
 
-EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable_char_count, W *redraw_w)
-{
-  W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap, true, expr,non_editable_char_count,redraw_w));
+EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable_char_count, W *redraw_w, bool allow_expr)
+{ 
+  W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap, allow_expr, expr,non_editable_char_count,redraw_w));
   W e2 = highlight(e1);
   return e2;
 }
@@ -5513,8 +5517,11 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::stringstream ss;
       ss << val;
       target = ss.str();
-      expr = source.expr.substr(1,source.expr.size()-1);
-
+      if (source.expr.size()>0 && source.expr[0]=='@')
+	expr = source.expr.substr(1,source.expr.size()-1);
+      else
+	expr = source.expr;
+      
     } else
     if (type=="int"||is_enum(type))
     {
@@ -5523,26 +5530,41 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::stringstream ss;
       ss << val;
       target = ss.str();
-      expr = source.expr.substr(1,source.expr.size()-1);
+      if (source.expr.size()>0 && source.expr[0]=='@')
+	expr = source.expr.substr(1,source.expr.size()-1);
+      else
+	expr = source.expr;
       //std::cout << "Dest2: " << target << std::endl;
     } else
   if (type=="unsigned int")
     {
       std::string s = source.color.substr(1,source.color.size()-1);
       target = s;
-      expr = source.expr.substr(1,source.expr.size()-1);
+      if (source.expr.size()>0 && source.expr[0]=='@')
+	expr = source.expr.substr(1,source.expr.size()-1);
+      else
+	expr = source.expr;
     } else
   if (type=="std::string")
     {
       std::string s = source.s;
       target = s;
-      expr = source.expr.substr(1,source.expr.size()-1);
+      if (source.expr.size()>0 && source.expr[0]=='@')
+	expr = source.expr.substr(1,source.expr.size()-1);
+      else
+	expr = source.expr;
     } else
     if (type=="bool")
       {
 	std::string s = source.s;
-	expr = source.expr.substr(1,source.expr.size()-1);
-	target = s.substr(1,s.size()-1);
+	if (source.expr.size()>0 && source.expr[0]=='@')
+	  expr = source.expr.substr(1,source.expr.size()-1);
+	else
+	  expr = source.expr;
+	if (s.size()>0 && s[0]=='@')
+	  target = s.substr(1,s.size()-1);
+	else
+	  target = s;
       } else
   if (type=="float")
     {
@@ -5550,7 +5572,10 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
       std::stringstream ss;
       ss << f;
       target = ss.str();
-      expr = source.expr.substr(1,source.expr.size()-1);
+      if (source.expr.size()>0 && source.expr[0]=='@')
+	expr = source.expr.substr(1,source.expr.size()-1);
+      else
+	expr = source.expr;
     } else
   if (type=="PT")
     {
