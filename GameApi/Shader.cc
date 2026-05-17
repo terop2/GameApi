@@ -2646,7 +2646,18 @@ s+= "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "#ifdef COLOR_MIX\n"
 "#ifdef TEXTURE_IMPL\n"
 
+"const float GAMMA_txt=2.2;\n"
+"const float INV_GAMMA_txt = 1.0/GAMMA_txt;\n"
+"vec4 LINEARtoSRGB_txt(vec4 c)\n"
+"{\n"
+" return vec4(pow(c, vec3(INV_GAMMA_txt)),c.w);\n"
+"}\n"
+"vec4 SRGBtoLINEAR_txt(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA_txt)), srgbIn.w);\n"
+"}\n"
 
+  
   "vec4 texture_impl(vec4 rgb)\n"
   "{\n";
  if (webgl2) {
@@ -2654,7 +2665,11 @@ s+= "   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
  } else {
    s+=  "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n";
  }
- s+=   "   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
+ s+=   "vec4 rgb2=SRGBtoLINEAR_txt(rgb);\n";
+ s+=   "vec4 t1=SRGBtoLINEAR_txt(t);\n";
+ s+=   "vec4 t2 = vec4(mix(rgb2.rgb, t1.rgb, color_mix),t.a);\n";
+ s+=   "vec4 t3 = LINEARtoSRGB_txt(t2);\n";
+ s+=   "   return t3;\n"
     //"   return vec4(mix(rgb.rgb, texture2D(tex, ex_TexCoord.xy).rgb, color_mix),1.0);\n"
 "}\n"
 "#endif\n"
@@ -4636,11 +4651,25 @@ s+="   vec4 t1 = mix(tex_mx, tex_px, 0.5);\n"
 "#ifdef EX_TEXCOORD\n"
 "#ifdef COLOR_MIX\n"
 
+"const float GAMMA_txt2=2.2;\n"
+"const float INV_GAMMA_txt2 = 1.0/GAMMA_txt2;\n"
+"vec4 LINEARtoSRGB_txt2(vec4 color)\n"
+"{\n"
+" return vec4(pow(color.xyz, vec3(INV_GAMMA_txt2)),color.w);\n"
+"}\n"
+"vec4 SRGBtoLINEAR_txt2(vec4 srgbIn)\n"
+"{\n"
+"  return vec4(pow(srgbIn.xyz,vec3(GAMMA_txt2)), srgbIn.w);\n"
+"}\n"
 
   "vec4 texture_impl(vec4 rgb)\n"
 "{\n"
 "   vec4 t = texture2D(tex, ex_TexCoord.xy);\n"
-"   return vec4(mix(rgb.rgb, t.rgb, color_mix),t.a);\n"
+  "vec4 rgb2=SRGBtoLINEAR_txt2(rgb);\n"
+  "vec4 t1=SRGBtoLINEAR_txt2(t);\n"
+  "   vec4 t2 = vec4(mix(rgb2.rgb, t1.rgb, color_mix),t.a);\n"
+  "   vec4 t3 = LINEARtoSRGB_txt2(t2);\n"
+"   return t3;\n"
     //"   return mix(rgb, texture2D(tex, ex_TexCoord.xy), color_mix);\n"
 "}\n"
 "#endif\n"
@@ -6540,7 +6569,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
       delete pp; pp = 0;
       
       //std::cout << "::" << ss << "::" << std::endl;
-      //                                  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+                                        std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,vertex_c?vertex_c->func_name():"unknown");
       Shader *sha1;
       sha1 = new Shader(*spec, true, false);
@@ -6572,7 +6601,7 @@ int ShaderSeq::GetShader(std::string v_format, std::string f_format, std::string
 
       std::string ss = replace_c(*pp /*shader, f_vec, true, false,is_trans, mod, fragment_c, f_defines, false, f_shader*/);
       delete pp; pp = 0;
-      //                                                  std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
+                                                        std::cout << "::" << add_line_numbers(ss) << "::" << std::endl;
       ShaderSpec *spec = new SingletonShaderSpec(ss,fragment_c?fragment_c->func_name():"unknown");
       Shader *sha2 = new Shader(*spec, false, false);
       p->push_back(*sha2);
