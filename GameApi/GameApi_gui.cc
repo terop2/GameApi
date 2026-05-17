@@ -1173,8 +1173,10 @@ public:
       int s = strlen((const char*)chars1);
       for(int i=0;i<s;i++)
 	{
-	  if (ch == chars1[i]) ch=(unsigned char)(chars2[i]);
-	}
+      if ((((unsigned int)ch)&0xff) == (((unsigned int)(chars1[i]))&0xff)) { ch=(int)(((unsigned int)(chars2[i]))&0xff);
+      }
+       
+    }
       if (ch==45) ch='_';
       //ch = std::toupper(ch); 
     }
@@ -1205,7 +1207,7 @@ public:
 	int s = allowed_chars.size();
 	for(int i=0;i<s;i++)
 	  {
-	    if (allowed_chars[i]==ch)
+	    if ((int((unsigned int)allowed_chars[i])&0xff)==(ch&0xff))
 	      {
 		label.push_back(ch);
 		changed = true;
