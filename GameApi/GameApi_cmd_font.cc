@@ -130,7 +130,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_load",
 			 { "url", "sx", "sy" },
 			 { "std::string", "int", "int" },
-			 { "file://$(instdir)/Chunkfive.otf@TheLeagueOfMoveableType@https://www.fontsquirrel.com/license/chunkfive", "20", "20" },
+			 { "file://$(instdir)/SwanseaBold-D0ox.ttf@FontSpace@public domain", "200", "200" },
 			 "FI", "font_api", "load_font"));
 #endif
 #if (ALL==1)||(DRAW_TEXT_STRING==1)
