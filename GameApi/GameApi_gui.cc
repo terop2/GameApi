@@ -727,7 +727,7 @@ public:
       {
 	int c = get_current_block();
 	set_current_block(-1);
-	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap);
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap*1.2);
 	
 	//GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
@@ -1250,7 +1250,7 @@ public:
     if (firsttime || changed||externally_set)
       {
 	externally_set=false;
-	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(label.substr(1,label.size()-1))+std::string(" ]")).c_str():label.c_str(), x_gap);
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(label.substr(1,label.size()-1))+std::string(" ]")).c_str():label.c_str(), x_gap*1.2);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	//GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
