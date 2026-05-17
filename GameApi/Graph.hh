@@ -6878,7 +6878,7 @@ private:
 
 
 class VertexArraySet;
-void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress);
+void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress, bool textrender=false);
 void TextureEnable(ArrayRender &rend, int frame, bool enable);
 void PrepareSprite(const Sprite &s, ArrayRender &rend);
 void PrepareSpriteToVA(const Sprite &s, VertexArraySet &vas);

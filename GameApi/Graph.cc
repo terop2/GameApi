@@ -1182,7 +1182,7 @@ private:
   //std::vector<ThreadInfo_sprite*> allocs;
 };
 
-void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress)
+void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress, bool textrender)
 {
   int frames = s.NumFrames();
   if (!frames) { std::cout << "TexturePrepare !frames" << std::endl; return; }
@@ -1191,7 +1191,7 @@ void TexturePrepare(const Sprite &s, ArrayRender &rend, bool progress)
   SpriteTexture ss(s,progress);
   for(int i=0;i<frames;i++)
     {
-      rend.UpdateTexture(ss, i);
+      rend.UpdateTexture(ss, i,textrender);
     }  
   rend.Prepare();
 

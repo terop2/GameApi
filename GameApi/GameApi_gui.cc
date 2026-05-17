@@ -747,7 +747,7 @@ public:
 
 	    rendered_bitmap_va.id = (*i).second;
 	  } else {
-	  rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
+	  rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap,false,true); // progress=false, textrender=true
 	  shared_text[key]=rendered_bitmap_va.id;
 	}
 	set_current_block(c);
@@ -766,6 +766,7 @@ public:
     OpenglLowApi *ogl = g_low->ogl;
     //ogl->glAlphaFunc(Low_GL_LESS, 0.9);
     //ogl->glEnable(Low_GL_ALPHA_TEST);
+    ev.shader_api.use(sh);
 	ev.shader_api.set_var(sh, "in_MV", ev.matrix_api.trans(p.x,p.y,0.0));
 	ev.sprite_api.render_sprite_vertex_array(rendered_bitmap_va);
 	//ogl->glDisable(Low_GL_ALPHA_TEST);
@@ -1255,7 +1256,7 @@ public:
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	//GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
 	scaled_bitmap = rendered_bitmap; //ev.cont_bitmap_api.sample(cbm, sx/2, sy/2);
-	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap);
+	rendered_bitmap_va = ev.sprite_api.create_vertex_array(scaled_bitmap,false,true); // progres=false, textrender=true
 	firsttime = false;
        
 	if (redraw_w && !inside_redraw) {

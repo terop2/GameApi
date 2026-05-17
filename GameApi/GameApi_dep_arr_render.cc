@@ -227,7 +227,7 @@ ThreadedUpdateTexture::~ThreadedUpdateTexture() {
 #endif
 
 
-void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
+void ArrayRender::UpdateTexture(MeshTextures &tex, int num, bool textrender)
 {
   OpenglLowApi *ogl = g_low->ogl;
 
@@ -294,8 +294,8 @@ void ArrayRender::UpdateTexture(MeshTextures &tex, int num)
       std::cout << "ArrayRender::UpdateTexture2 error!" << e2 << std::endl;
     }
 #endif
-  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,Low_GL_LINEAR);      
-  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,textrender?Low_GL_NEAREST:Low_GL_LINEAR);      
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,textrender?Low_GL_NEAREST:Low_GL_LINEAR);	
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);
   //ogl->glHint(Low_GL_PERSPECTIVE_CORRECTION_HINT, Low_GL_NICEST);

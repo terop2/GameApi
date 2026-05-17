@@ -194,6 +194,7 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 
   }
   data->lib = (FT_Library*)priv_;
+  //FT_Library_SetLcdFilter( *data->lib, FT_LCD_FILTER_DEFAULT );
   int err = FT_New_Memory_Face( *data->lib,
 				ptr2 /*"font.ttf"*/,
 			        size,
@@ -211,11 +212,11 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
 #endif
     return; //exit(0);
     }
-  FT_Set_Char_Size(data->face, sx*64,sy*64,100,100);
+  FT_Set_Char_Size(data->face, sx*64,sy*64,96,96);
 
   if (idx<0||idx>0x80) idx=idx&0xff;
   FT_UInt glyphindex = FT_Get_Char_Index(data->face, idx);
-  FT_Load_Glyph(data->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_NORMAL);
+  FT_Load_Glyph(data->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_LIGHT);
   FT_Render_Glyph(data->face->glyph, FT_RENDER_MODE_NORMAL);
 
   data->top = -data->face->glyph->bitmap_top;

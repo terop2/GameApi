@@ -757,7 +757,7 @@ EXPORT GameApi::TXA GameApi::TextureApi::prepare_arr(EveryApi &ev, std::vector<B
   i.id=id; 
   return i;
 }
-EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx, bool is_srgb)
+EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx, bool is_srgb, bool text_render)
 {
   OpenglLowApi *ogl = g_low->ogl;
   TextureI *tex = find_texture(e, tx);
@@ -821,8 +821,13 @@ EXPORT GameApi::TXID GameApi::TextureApi::prepare(TX tx, bool is_srgb)
   if (mipmaps&&power_of_two)
     ogl->glGenerateMipmap(Low_GL_TEXTURE_2D);
 
+  int min_filter = mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_LINEAR;
+  if (text_render) min_filter=Low_GL_NEAREST;
+
+  int mag_filter = Low_GL_LINEAR;
+  if (text_render) mag_filter=Low_GL_NEAREST;
   
-  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,mipmaps&&power_of_two?Low_GL_LINEAR_MIPMAP_LINEAR:Low_GL_LINEAR);      
+  ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MIN_FILTER,min_filter);      
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_MAG_FILTER,Low_GL_LINEAR);	
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_S, Low_GL_CLAMP_TO_EDGE);
   ogl->glTexParameteri(Low_GL_TEXTURE_2D,Low_GL_TEXTURE_WRAP_T, Low_GL_CLAMP_TO_EDGE);

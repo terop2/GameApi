@@ -76,9 +76,9 @@ std::vector<GameApiItem*> textureapi_functions()
 #if (ALL==1)||(PREPARE==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::texture_api, &GameApi::TextureApi::prepare,
 			 "tx_prepare",
-			 { "tx", "is_srgb" },
-			 { "TX", "bool" },
-			 { "", "true" },
+			 { "tx", "is_srgb", "text_render" },
+			 { "TX", "bool", "bool" },
+			 { "", "true", "false" },
 			 "TXID", "texture_api", "prepare"));
 #endif
 #if (ALL==1)||(BIND==1)
