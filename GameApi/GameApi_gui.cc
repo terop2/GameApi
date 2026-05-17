@@ -5257,11 +5257,12 @@ EXPORT GameApi::W GameApi::GuiApi::edit_dialog(EveryApi &ev, const std::vector<s
       vec2.push_back(lab_2);
       vec2.push_back(lab0);
     }
-  W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35);
-  for(int i=0;i<s;i++)
-    {
-      vec2[i] = editor_mouse_tweak(vec2_ed[i],vec2[i],array);
-    }
+  // This still breaks more than it fixes.
+  //W array = array_y(vec2 /*&vec2[0], vec2.size()*/, 35);
+  //for(int i=0;i<s;i++)
+  //  {
+  //    vec2[i] = editor_mouse_tweak(vec2_ed[i],vec2[i],array);
+  //  }
   W array_0 = array_y(vec2 /*&vec2[0],vec2.size()*/,35);
   W array_1 = margin(array_0, 10,10,10,10);
   W array_1a = center_align(array_1, button_width*2);
