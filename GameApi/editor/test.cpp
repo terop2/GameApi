@@ -3066,12 +3066,12 @@ static unsigned char cursor_0_mask[16] = {
   g_low->sdl->SDL_SetCursor(cursor0);
   
   //float font_scale = 1.5;
-  float font_scale = 1.0;
+  float font_scale = 1.0; //1.0;
   
   ProgressBar(888,0,5,"init");
   // shader initialization
   // Chunkfive.otf http://meshpage.org/assets/Chunkfive.otf
-
+  // http://meshpage.org/fonts/SwanseaBold-D0ox.ttf
   font = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 8*font_scale,12*font_scale); // 13,15 
   font2 = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 8*font_scale,12*font_scale); // 10,13
   font3 = ev.font_api.newfont("http://meshpage.org/fonts/SwanseaBold-D0ox.ttf", 20*font_scale,20*font_scale); // 30,30

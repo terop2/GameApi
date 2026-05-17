@@ -3802,7 +3802,11 @@ public:
     r*=right;
     t*=top;
     b*=bottom;
-    return c+l+r+t+b;
+    unsigned int cc = Color::max_color(c.Pixel(),l.Pixel());
+    unsigned int rr = Color::max_color(cc,r.Pixel());
+    unsigned int tt = Color::max_color(rr,t.Pixel());
+    unsigned int bb = Color::max_color(tt,b.Pixel());
+    return bb; //c+l+r+t+b;
   }
 private:
   Bitmap<Color> &bm;
