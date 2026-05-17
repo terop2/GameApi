@@ -317,7 +317,9 @@ private:
   int x_gap;
 };
 
+#ifndef EMSCRIPTEN
 std::string g_searchstring="@";
+#endif
 
 class MousePositionTweakForEditors : public GuiWidgetForward
 {
@@ -385,6 +387,8 @@ GameApi::W GameApi::GuiApi::editor_mouse_tweak(W inner, W outer, W outerouter)
   GuiWidget *outout = find_widget(e,outerouter);
   return add_widget(e, new MousePositionTweakForEditors(ev,in,out,outout));
 }
+
+#ifndef EMSCRIPTEN
 class HideWidgetIfArrayEmpty : public GuiWidgetForward
 {
 public:
@@ -510,7 +514,9 @@ private:
 };
 
 bool HideWidgetIfArrayEmpty::inside_redraw=false;
+#endif
 
+#ifndef EMSCRIPTEN
 class HideNonSearchableGuiWidget : public GuiWidgetForward
 {
 public:
@@ -634,7 +640,9 @@ private:
   GameApi::W *redraw_w=0;
   static bool inside_redraw;
 };
+
 bool HideNonSearchableGuiWidget::inside_redraw = false;
+#endif
 
 class AltGuiWidget : public GuiWidgetForward
 {
@@ -4268,6 +4276,7 @@ EXPORT GameApi::W GameApi::GuiApi::overlap(GameApi::EveryApi &ev, std::vector<W>
 
 EXPORT GameApi::W GameApi::GuiApi::search_panel(int sx, FtA atlas, BM atlas_bm, int x_gap, W *redraw_w)
 {
+#ifndef EMSCRIPTEN
   static std::string expr = "@";
   W editor_t = string_editor("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_@", g_searchstring, expr, atlas,atlas_bm,x_gap,1,redraw_w,false);
   W node_t0 = margin(editor_t, 5,5,5,5);
@@ -4277,15 +4286,19 @@ EXPORT GameApi::W GameApi::GuiApi::search_panel(int sx, FtA atlas, BM atlas_bm, 
   W node_2 = highlight(node_0);
   W node_3 = editor_mouse_tweak(editor_t,node_2,node_2);
   return node_3;
+#endif
 }
 
 EXPORT GameApi::W GameApi::GuiApi::hide_nonsearchable(W w, std::string label, W *redraw_w)
 {
+#ifndef EMSCRIPTEN
   GuiWidget *ww = find_widget(e,w);
   return add_widget(e, new HideNonSearchableGuiWidget(e,ev,ww,label,redraw_w));
+#endif
 }
 EXPORT GameApi::W GameApi::GuiApi::hide_if_array_empty(W w, std::vector<W> items, W *redraw_w)
 {
+#ifndef EMSCRIPTEN
   GuiWidget *ww = find_widget(e,w);
   std::vector<GuiWidget*> items2;
   int s = items.size();
@@ -4294,6 +4307,7 @@ EXPORT GameApi::W GameApi::GuiApi::hide_if_array_empty(W w, std::vector<W> items
       items2.push_back(find_widget(e,items[i]));
     }
   return add_widget(e,new HideWidgetIfArrayEmpty(e,ev,ww,items2,redraw_w));
+#endif
 }
 
 EXPORT GameApi::W GameApi::GuiApi::alt(std::vector<W> vec, int *choose)
