@@ -8564,6 +8564,7 @@ std::vector<std::string> g_string_eval_env;
 
 std::string IntExprEval(std::string s)
 {
+  if (s.size()>0 && s[0]=='@') return StringExprEval(s.substr(1,s.size()-1));
   //std::cout << "IntExprEval:" << s << std::endl;
   if (s.size()>0 && s[0]==' ') return IntExprEval(s.substr(1,s.size()-1));
   if (s.size()>0 && s[s.size()-1]==' ') return IntExprEval(s.substr(0,s.size()-1));
@@ -8581,6 +8582,7 @@ std::string IntExprEval(std::string s)
 }
 std::string StringExprEval(std::string s)
 {
+  if (s.size()>0 && s[0]=='@') return StringExprEval(s.substr(1,s.size()-1));
   if (s.size()==2 && s[0]=='$' && s[1]>='1' && s[1]<='5')
     {
       int val = s[1]-'1';
