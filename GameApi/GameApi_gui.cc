@@ -334,9 +334,9 @@ public:
     Point2d p = { pos.x, pos.y };
     outer->set_pos(p);
   }
-  void set_size(Vector2d size)
+  void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(outer->get_size() /*size*/ );
+    GuiWidgetForward::set_size(size_p);
     outer->set_size(outer->get_size());
     size = outer->get_size();
   }
@@ -403,7 +403,7 @@ public:
   }
   void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(w->get_size() /*size_p*/);
+    GuiWidgetForward::set_size(size_p);
       w->set_size(w->get_size());
       size = w->get_size(); //size_p;
   }
@@ -529,19 +529,19 @@ public:
   }
   void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(w->get_size() /*size_p*/);
+    GuiWidgetForward::set_size(size_p);
       w->set_size(w->get_size());
       size = w->get_size(); //size_p;
-    /*
+      /*
     if (!inside_redraw && redraw_w) {
       inside_redraw=true;
       GuiWidget *ww = find_widget(env,*redraw_w);
-      //ww->set_pos(ww->get_pos());
+      ww->set_pos(ww->get_pos());
       ww->set_size(ww->get_size());
       inside_redraw=false;
-      //ww->render();
+      ww->render();
       }
-    */
+      */
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
   {
@@ -2505,11 +2505,16 @@ public:
     Point2d p2 = { 0.0, 0.0 };
     set_pos(p2);
   }
-  void set_size(Vector2d size)
+  void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(size);
+    GuiWidgetForward::set_size(size_p);
     Vector2d delta = { float(l+r), float(t+b) };
-    vec[0]->set_size(size + (- delta));
+    vec[0]->set_size(size_p + (- delta));
+
+    Vector2d v = vec[0]->get_size();
+    Vector2d vv = { float(l+r), float(t+b) };
+    Vector2d vvv = v+vv;
+    size = vvv;
   }
   void set_pos(Point2d p)
   {
@@ -2524,6 +2529,9 @@ public:
     Vector2d vv = { float(l+r), float(t+b) };
     Vector2d vvv = v+vv;
     size = vvv;
+
+    set_pos(get_pos());
+    set_size(get_size());
   }
   int chosen_item() const
   {
@@ -2728,9 +2736,9 @@ public:
 	delta += w->get_size().dy + y_gap;
       }
   }
-  void set_size(Vector2d size)
+  void set_size(Vector2d size_p)
   {
-    GuiWidgetForward::set_size(size);
+    GuiWidgetForward::set_size(size_p);
     int s = vec.size();
     float sz = 0;
     float sz_max = 0;
@@ -2741,19 +2749,22 @@ public:
       }
     size.dx = sz_max;
     size.dy = sz;
-
+    
     int s2 = vec.size();
     for(int i=0;i<s2;i++)
       {
 	vec[i]->set_size(vec[i]->get_size());
       }
-    /*
+    
+      
+    
     if (!inside) {
       inside=true;
       set_pos(old_pos);
       inside=false;
     }
-    */
+    
+    
     //set_pos(old_pos);
   }
   void update(Point2d mouse, int button, int ch, int type, int mouse_wheel_y)
@@ -2807,11 +2818,13 @@ public:
 	    selected_item = j;
 	  }
       }
+    
     if (!inside) {
       inside=true;
       set_pos(old_pos);
       inside=false;
     }
+    
 
   }
   int chosen_item() const { return selected_item; }
