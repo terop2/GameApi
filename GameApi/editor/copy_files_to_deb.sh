@@ -15,9 +15,11 @@ strip gameapi-builder_1.0-$1/usr/lib/libGameApi.so
 cp -r ../gameapi_content gameapi-builder_1.0-$1/usr/share/
 cp atlas0.txt gameapi-builder_1.0-$1/usr/share/atlas0.txt
 cp atlas1.txt gameapi-builder_1.0-$1/usr/share/atlas1.txt
+cp atlas1_t.txt gameapi-builder_1.0-$1/usr/share/atlas1_t.txt
 cp atlas2.txt gameapi-builder_1.0-$1/usr/share/atlas2.txt
 cp atlas_bm0.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm0.ppm
 cp atlas_bm1.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm1.ppm
+cp atlas_bm1_t.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm1_t.ppm
 cp atlas_bm2.ppm gameapi-builder_1.0-$1/usr/share/atlas_bm2.ppm
 cp ../display/gameapi_0.html gameapi-builder_1.0-$1/usr/share/gameapi_0.html
 cp ../display/gameapi_0_seamless.html gameapi-builder_1.0-$1/usr/share/gameapi_0_seamless.html

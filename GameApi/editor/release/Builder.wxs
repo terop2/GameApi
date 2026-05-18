@@ -52,11 +52,15 @@
 </File>
 <File Id='bm1' Name='atlas_bm1.ppm' DiskId='1' Source='editor/atlas_bm1.ppm' KeyPath='no'>
 </File>
+<File Id='bm1_t' Name='atlas_bm1_t.ppm' DiskId='1' Source='editor/atlas_bm1_t.ppm' KeyPath='no'>
+</File>
 <File Id='bm2' Name='atlas_bm2.ppm' DiskId='1' Source='editor/atlas_bm2.ppm' KeyPath='no'>
 </File>
 <File Id='atlas0' Name='atlas0.txt' DiskId='1' Source='editor/atlas0.txt' KeyPath='no'>
 </File>
 <File Id='atlas1' Name='atlas1.txt' DiskId='1' Source='editor/atlas1.txt' KeyPath='no'>
+</File>
+<File Id='atlas1_t' Name='atlas1_t.txt' DiskId='1' Source='editor/atlas1_t.txt' KeyPath='no'>
 </File>
 <File Id='atlas2' Name='atlas2.txt' DiskId='1' Source='editor/atlas2.txt' KeyPath='no'>
 </File>
