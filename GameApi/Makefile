@@ -294,7 +294,7 @@ Makefile.tmp: Makefile
 
 
 depbuild_stage_1:
-	$(MAKE) $(MAKEFLAGS) -f Makefile.tmp depbuild_stage_2
+	$(MAKE) -f Makefile.tmp $(MAKEFLAGS) depbuild_stage_2
 
 depbuild_stage_2: all_targets
 
