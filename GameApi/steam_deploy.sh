@@ -10,6 +10,8 @@ cp /home/terop/cvs/GameApi/GameApi/editor/gameapi-builder /home/terop/cvs/GameAp
 cp /home/terop/cvs/GameApi/GameApi/cmdline/gameapi_cmdline /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
 cp /home/terop/cvs/GameApi/GameApi/libGameApi.so /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/libs/
 
+cp -R /home/terop/cvs/GameApi/GameApi/gameapi_content /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/
+
 cp /home/terop/cvs/GameApi/GameApi/display/gameapi_0.html /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/gameapi_0.html
 cp /home/terop/cvs/GameApi/GameApi/display/gameapi_0_seamless.html /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/gameapi_0_seamless.html
 cp /home/terop/cvs/GameApi/GameApi/display/gameapi_1.html /home/terop/cvs/GameApi/GameApi/editor/builder/GameApiBuilder/gameapi_1.html
