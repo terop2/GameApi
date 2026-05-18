@@ -3210,10 +3210,12 @@ static unsigned char cursor_0_mask[16] = {
 #endif
 #ifdef WINDOWS
   std::string a_atlas0;
-  std::string a_atlas1;
+  std::string a_atlas10;
+  std::string a_atlas11;
   std::string a_atlas2;
   std::string a_atlas_bm0;
-  std::string a_atlas_bm1;
+  std::string a_atlas_bm10;
+  std::string a_atlas_bm11;
   std::string a_atlas_bm2;
   {
   std::string dir = GetInstallDir();
