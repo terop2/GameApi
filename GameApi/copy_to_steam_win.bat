@@ -22,10 +22,10 @@ copy %EDITOR_DIR%\atlas1.txt %DEPOT_DIR%\atlas1.txt
 copy %EDITOR_DIR%\atlas1_t.txt %DEPOT_DIR%\atlas1_t.txt
 copy %EDITOR_DIR%\atlas2.txt %DEPOT_DIR%\atlas2.txt
 
-copy %EDITOR_DIR%\atlas_bm0.txt %DEPOT_DIR%\atlas_bm0.txt
-copy %EDITOR_DIR%\atlas_bm1.txt %DEPOT_DIR%\atlas_bm1.txt
-copy %EDITOR_DIR%\atlas_bm1_t.txt %DEPOT_DIR%\atlas_bm1_t.txt
-copy %EDITOR_DIR%\atlas_bm2.txt %DEPOT_DIR%\atlas_bm2.txt
+copy %EDITOR_DIR%\atlas_bm0.ppm %DEPOT_DIR%\atlas_bm0.ppm
+copy %EDITOR_DIR%\atlas_bm1.ppm %DEPOT_DIR%\atlas_bm1.ppm
+copy %EDITOR_DIR%\atlas_bm1_t.ppm %DEPOT_DIR%\atlas_bm1_t.ppm
+copy %EDITOR_DIR%\atlas_bm2.ppm %DEPOT_DIR%\atlas_bm2.ppm
 
 copy %DISPLAY_DIR%\get_file_size.php %DEPOT_DIR%\get_file_size.php
 
