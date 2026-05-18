@@ -20020,6 +20020,7 @@ public:
   }
   Color Map(int x, int y) const
   {
+    if (x<0||x>=size_x) return def;
     std::vector<int> &pos = x_array[x];
     int y_0 = y_array_start[y];
     int y_1 = y_array_end[y];
@@ -20030,6 +20031,7 @@ public:
     int s = pos.size();
     for(int i=0;i<s;i++)
       {
+	if (i<0||i>=s) break;
 	int val = pos.operator[](i);
 	if (val>=y_0 && val<=y_1) {
 	  int xx = sd.X(val);
