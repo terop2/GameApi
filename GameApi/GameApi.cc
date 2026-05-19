@@ -20405,7 +20405,9 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
 	str = replace_str3(str, "{058}", ":");
 	str = replace_str3(str, "{059}", ";");
 	str = replace_str3(str, "{124}", "|");
-  
+	str = replace_str3(str, "{123}", "{");
+	str = replace_str3(str, "{125}", "}");
+	
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
   std::vector<GI> glyphs;

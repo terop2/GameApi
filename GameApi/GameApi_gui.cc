@@ -736,7 +736,9 @@ public:
 	display_label = replace_str3(display_label, "{058}", ":");
 	display_label = replace_str3(display_label, "{059}", ";");
 	display_label = replace_str3(display_label, "{124}", "|");
-	
+	display_label = replace_str3(display_label, "{123}", "{");
+	display_label = replace_str3(display_label, "{125}", "}");
+
 	int c = get_current_block();
 	set_current_block(-1);
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, display_label.c_str(), x_gap*1.2);
@@ -1319,6 +1321,24 @@ public:
 	label.push_back('}');
 	changed=true;
       }
+    else if (active && ch=='{' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('1');
+	label.push_back('2');
+	label.push_back('3');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch=='}' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('1');
+	label.push_back('2');
+	label.push_back('5');
+	label.push_back('}');
+	changed=true;
+      }
     else
     if (active && type==768 && !changed)
       {
@@ -1345,7 +1365,9 @@ public:
 		"{035}",
 		"{058}",
 		"{059}",
-		"{124}"
+		"{124}",
+		"{123}",
+		"{125}"
 	      };
 	      while(1) {
 		int s = labels.size();
@@ -1401,7 +1423,9 @@ public:
 	display_label = replace_str3(display_label, "{058}", ":");
 	display_label = replace_str3(display_label, "{059}", ";");
 	display_label = replace_str3(display_label, "{124}", "|");
-	
+	display_label = replace_str3(display_label, "{123}", "{");
+	display_label = replace_str3(display_label, "{125}", "}");
+
 	
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);

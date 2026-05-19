@@ -3114,7 +3114,7 @@ static unsigned char cursor_0_mask[16] = {
 	  std::cout << "Generating logo." << std::endl;
 	  //ev.mainloop_api.save_logo(ev);
 	  std::cout << "Generating font atlas. " << std::endl;
-	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@";
+	  std::string chars = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#¤%&/()=?+\\*^.,-<>|§½;:[]_ $@{}";
 
 	  //std::string chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-();:_*/%+><[]"; // 8 12 25
 	  FtA atlas = ev.font_api.font_atlas_info_engine2(ev, n_font, chars, 8*font_scale,12*font_scale, 25*font_scale);
