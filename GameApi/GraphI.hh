@@ -1693,10 +1693,14 @@ class FontInterface : public CollectInterface
 public:
   virtual ~FontInterface() { }
   virtual void Prepare() { }
+  virtual int Left(long idx) const=0;
   virtual int Top(long idx) const=0;
   virtual int SizeX(long idx) const=0;
   virtual int SizeY(long idx) const=0;
   virtual int AdvanceX(long idx) const=0;
+  virtual int Ascender(long idx) const=0;
+  virtual int Descender(long idx) const=0;
+  virtual int Height(long idx) const=0;
   virtual unsigned int Map(long idx, int x, int y) const=0;
 };
 
@@ -1705,10 +1709,14 @@ class GlyphInterface : public CollectInterface
 public:
   virtual ~GlyphInterface() { }
   virtual void Prepare() { }
+  virtual int Left() const=0;
   virtual int Top() const=0; // needs to be fast
   virtual int SizeX() const=0;
   virtual int SizeY() const=0; // needs to be fast
   virtual int AdvanceX() const=0;
+  virtual int Ascender() const=0;
+  virtual int Descender() const=0;
+  virtual int Height() const=0;
   virtual unsigned int Map(int x, int y) const=0;
 };
 

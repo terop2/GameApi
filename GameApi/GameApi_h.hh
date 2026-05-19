@@ -615,6 +615,10 @@ struct FontAtlasGlyphInfo
   int sx, sy;
   int x,y;
   int top;
+  int left=0;
+  int ascender=0;
+  int descender=0;
+  int height=0;
 };
 struct FontAtlasInfo
 {

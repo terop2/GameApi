@@ -13,9 +13,13 @@
 
 struct GlyphData
 {
+  int left=0;
   int top=0;
   int sx=0,sy=0;
   int advance_x=0;
+  int ascender=0;
+  int descender=0;
+  int height=0;
   unsigned int *bitmap_data=0;
 
   FT_Library *lib=0;
@@ -39,6 +43,39 @@ FontInterfaceImpl::FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string t
 std::map<std::string,std::map<long,GlyphData*>*> global_glyph_data;
 
 
+int FontInterfaceImpl::Ascender(long idx) const
+{
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
+  return data2->operator[](idx)->ascender;
+}
+int FontInterfaceImpl::Descender(long idx) const
+{
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
+  return data2->operator[](idx)->descender;
+}
+int FontInterfaceImpl::Height(long idx) const
+{
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
+  return data2->operator[](idx)->height;
+}
+
+int FontInterfaceImpl::Left(long idx) const
+{
+  const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
+  if (!data2) data2=global_glyph_data[key];
+  if (!data2) return 0;
+  if (!data2->operator[](idx)) return 0;
+  return data2->operator[](idx)->left;
+}
 
 int FontInterfaceImpl::Top(long idx) const {
   const_cast<FontInterfaceImpl*>(this)->gen_glyph_data(idx);
@@ -219,10 +256,16 @@ void FontInterfaceImpl::gen_glyph_data(long idx)
   FT_Load_Glyph(data->face, glyphindex, FT_LOAD_RENDER|FT_LOAD_TARGET_LIGHT);
   FT_Render_Glyph(data->face->glyph, FT_RENDER_MODE_NORMAL);
 
+  data->left = data->face->glyph->bitmap_left;
   data->top = -data->face->glyph->bitmap_top;
   data->sx = data->face->glyph->bitmap.width;
   data->sy = data->face->glyph->bitmap.rows;
   data->advance_x = data->face->glyph->advance.x >> 6;
+
+  data->ascender = data->face->size->metrics.ascender >> 6;
+  data->descender = data->face->size->metrics.descender >> 6;
+  data->height = data->face->size->metrics.height >> 6;
+
   //std::cout << "Glyph:" << idx << " " << data->sx << " " << data->sy << " " << data->top << std::endl;
   int ssx = data->sx;
   int ssy = data->sy;

@@ -10,11 +10,15 @@ public:
   FontInterfaceImpl(GameApi::Env &e, void *priv_, std::string ttf_filename, std::string homepage, int sx, int sy);
   void Collect(CollectVisitor &vis) { }
   void HeavyPrepare() { }
+  virtual int Left(long idx) const;
   virtual int Top(long idx) const;
   virtual int SizeX(long idx) const;
   virtual int SizeY(long idx) const;
   virtual unsigned int Map(long idx, int x, int y) const;
   virtual int AdvanceX(long idx) const;
+  virtual int Ascender(long idx) const;
+  virtual int Descender(long idx) const;
+  virtual int Height(long idx) const;
   void gen_glyph_data(long idx);
 private:
   GameApi::Env &e;

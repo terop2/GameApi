@@ -8,7 +8,7 @@
 
 struct FontPriv
 {
-};
+}; 
 
 EXPORT GameApi::FontApi::FontApi(Env &e) : e(e) 
 {
@@ -124,26 +124,36 @@ public:
   virtual void Collect(CollectVisitor&vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
+  virtual int Left() const { return std::min(i1->Left(),i2->Left()); }
   virtual int Top() const { return i1->Top(); }
   virtual int SizeX() const { return std::max(i1->SizeX(),i2->SizeX()); }
   virtual int SizeY() const { return std::max(i1->SizeY(),i2->SizeY()); }
   virtual int AdvanceX() const { return std::max(i1->AdvanceX(),i2->AdvanceX()); }
+  virtual int Ascender() const { return i1->Ascender(); }
+  virtual int Descender() const { return i1->Descender(); }
+  virtual int Height() const { return i1->Height(); }
   virtual unsigned int Map(int x, int y) const
   {
     int t1 = i1->Top();
     int t2 = i2->Top();
 
+    int l1 = i1->Left();
+    int l2 = i2->Left();
+    int minl1l2 = std::min(l1,l2);
+
     unsigned int pixel1 = 0x0;
     unsigned int pixel2 = 0x0;
-    if (x>=0 && x<i1->SizeX())
+    int x1 = x; //-l1;
+    if (x1>=0 && x1<i1->SizeX())
       if (y>=0 && y<i1->SizeY())
 	{
-	  pixel1 = i1->Map(x,y);
+	  pixel1 = i1->Map(x1,y);
 	}
-    if (x>=0 && x<i2->SizeX())
+    int x2 = x; //-l2;
+    if (x2>=0 && x2<i2->SizeX())
       if (y>=0 && y<i2->SizeY())
 	{
-	  pixel2 = i2->Map(x,y);
+	  pixel2 = i2->Map(x2,y);
 	}
     if (pixel1==0x0) return pixel2;
     if (pixel2==0x0) return pixel1;
@@ -176,7 +186,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas_engine2(EveryApi &ev, FI font, F
       GI glyph = choose_glyph_from_font(font, ((long)(str[0]))&0xff);
       BM bm = ev.font_api.render_glyph(glyph); //ev.font_api.draw_text_string(font,str,5,30); //glyph(font, ch);
       //BM bm = glyph(font, ch);
-      bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x, p.second.y+p.second.top);
+      bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x /*+p.second.left*/, p.second.y+ /*p.second.ascender+*/ p.second.top);
     }
   return bg;  
 }
@@ -200,19 +210,27 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI f
       GI glyph = choose_glyph_from_font(font, ((long)(str[0]))&0xff);
       BM bm = ev.font_api.render_glyph(glyph);
       GlyphInterface *i2 = find_glyph_interface(e,glyph);
+      int left = i2->Left();
       int top = -i2->Top(); //bm2->bitmap_top(ch);      
       int xx = x;
       int yy = y*y_delta;
       int sx = i2->SizeX(); //ev.bitmap_api.size_x(bm);
       int sy = i2->SizeY(); //ev.bitmap_api.size_y(bm);
+      int ascender = i2->Ascender();
+      int descender = i2->Descender();
+      int height = i2->Height();
       FontAtlasGlyphInfo info2;
       info2.sx = sx;
       info2.sy = sy;
       info2.x = xx;
       info2.y = yy;
       info2.top = top;
+      info2.left = left;
+      info2.ascender = ascender;
+      info2.descender = descender;
+      info2.height = height;
       info->char_map[ch] = info2;
-      x+=ev.bitmap_api.size_x(bm);      
+      x+=left + ev.bitmap_api.size_x(bm);      
       if (atlas_sx < x) { atlas_sx = x; }
       if (atlas_sy < y*y_delta + top + ev.bitmap_api.size_y(bm)) { atlas_sy = y*y_delta + top + ev.bitmap_api.size_y(bm); }
 
@@ -252,7 +270,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std
       info2.x = xx;
       info2.y = yy;
       info2.top = top;
-
+      info2.left = 0;
       info->char_map[ch] = info2;
       
       x+=ev.bitmap_api.size_x(bm);      
@@ -278,7 +296,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas(EveryApi &ev, Ft font, FtA atlas
       int ch = p.first;
       std::cout << ch << std::flush;
       BM bm = glyph(font, ch);
-      bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x, p.second.y+p.second.top);
+      bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x+p.second.left, p.second.y+p.second.top);
     }
   return bg;
 }
@@ -314,6 +332,7 @@ public:
   {
     int s = vec.size();
     Point topleft = { 0.0, 0.0, 0.0 };
+    topleft.x = info[face].left;
     for(int i=0;i<face;i++)
       {
 	Bitmap<::Color> *bbm = find_bitmap2(e,vec[i]);
@@ -363,7 +382,7 @@ EXPORT GameApi::P GameApi::FontApi::font_string_from_atlas_opengl_pipeline(Every
       BM bm;
       FontAtlasGlyphInfo ii = info->char_map[ch];
       if (!d) {
-	bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x, ii.y+ii.top, ii.sx,ii.sy);
+	bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x /*+ii.left*/, ii.y+ii.top, ii.sx,ii.sy);
 	FontCacheData *dd = new FontCacheData;
 	dd->atlas_bm = atlas_bm;
 	dd->ch = ch;
@@ -394,7 +413,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
       BM bm;
       FontAtlasGlyphInfo ii = info->char_map[ch];
       if (!d) {
-	bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x, ii.y+ii.top, ii.sx,ii.sy);
+	bm = ev.bitmap_api.subbitmap(atlas_bm, ii.x /*+ii.left*/, ii.y+ii.top, ii.sx,ii.sy);
 	FontCacheData *dd = new FontCacheData;
 	dd->atlas_bm = atlas_bm;
 	dd->ch = ch;
@@ -406,9 +425,14 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
 	}
 	//glyph(font, ch);
       int top = ii.top; //env->fonts[font.id].bm->bitmap_top(ch);
+      int asc = ii.ascender;
+      int hgt = ii.height;
+      int adv = ii.left;
+      int desc = ii.descender;
       BitmapHandle *handle = find_bitmap(e,bm);
       Bitmap<Color> *col = find_color_bitmap(handle);
-      array->push_back(col, top);
+      adv +=col->SizeX();
+      array->push_back(col, top,asc,hgt,adv,desc);
     }
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = array;
@@ -429,17 +453,29 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
       int x;
       int y;
       int top;
-      ss >> sx;
-      ss >> sy;
+      int left=0;
+      int ascender=0;
+      int descender=0;
+      int height=0;
+      ss >> sx;  
+      ss >> sy; 
       ss >> x;
-      ss >> y;
-      ss >> top;
+      ss >> y;   
+      ss >> top;      
+      ss >> left;       
+      ss >> ascender;    
+      ss >> descender;   
+      ss >> height;
       FontAtlasGlyphInfo i;
       i.sx = sx;
       i.sy = sy;
       i.x = x;
       i.y = y;
       i.top = top;
+      i.left = left;
+      i.ascender = ascender;
+      i.descender = descender;
+      i.height = height;
       info->char_map[num] = i;
     }
   return add_font_atlas(e, info);
@@ -457,6 +493,10 @@ EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
       ss << p.second.sx << " " << p.second.sy << std::endl;
       ss << p.second.x << " " << p.second.y << std::endl;
       ss << p.second.top << std::endl;
+      ss << p.second.left << std::endl;
+      ss << p.second.ascender << std::endl;
+      ss << p.second.descender << std::endl;
+      ss << p.second.height << std::endl;
     }
   ss.close();
 }
@@ -2104,10 +2144,10 @@ EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x
       BM bm = glyph(font, ch);
       Bitmap<int> *bm2 = env->fonts[font.id].bm;
       FontGlyphBitmap *bm3 = static_cast<FontGlyphBitmap*>(bm2);
-      int top = bm3->bitmap_top(ch);
+      int top = bm3->bitmap_top(ch); 
       BitmapHandle *handle = find_bitmap(e,bm);
-      Bitmap<Color> *col = find_color_bitmap(handle);
-      array->push_back(col, top);
+      Bitmap<Color> *col = find_color_bitmap(handle);    
+      array->push_back(col, top,0,col->SizeY(),col->SizeX(),0);
     }
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = array;

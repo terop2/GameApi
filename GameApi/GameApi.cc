@@ -20089,10 +20089,14 @@ public:
   }
 
   virtual void Prepare() { fi.Prepare(); }
+  virtual int Left() const { return fi.Left(idx); }
   virtual int Top() const { return fi.Top(idx); }
   virtual int SizeX() const { return fi.SizeX(idx); }
   virtual int SizeY() const { return fi.SizeY(idx); }
   virtual int AdvanceX() const { return fi.AdvanceX(idx); }
+  virtual int Ascender() const { return fi.Ascender(idx); }
+  virtual int Descender() const { return fi.Descender(idx); }
+  virtual int Height() const { return fi.Height(idx); }
   virtual unsigned int Map(int x, int y) const
   {
     return fi.Map(idx,x,y);
@@ -20112,7 +20116,9 @@ public:
   virtual int SizeY() const { return glyph->SizeY(); }
   virtual Color Map(int x, int y) const
   {
-    return Color(glyph->Map(x,y));
+    if (x>=0 && x<=glyph->SizeX())
+      return Color(glyph->Map(x,y));
+    else return Color(0x0);
   }
   virtual void Prepare() { }
 private:
@@ -20191,6 +20197,8 @@ public:
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
+    //GlyphInterface *gi = vec[c];
+    //tmp+=gi->Left();
     return tmp;
   }
     c1=c;
@@ -20203,6 +20211,8 @@ public:
 #ifdef THREADS
 	  pthread_mutex_unlock(&mutex);
 #endif
+	  //GlyphInterface *gi = vec[i];
+	  //x+=gi->Left();
 	  return x;
 	}
 	GlyphInterface *gi = vec[i];
@@ -20251,7 +20261,7 @@ public:
 	}
       }
     c2=c;
-    int tmp = y2=y+PositiveDelta()+vec[c]->Top();
+    int tmp = y2=y +PositiveDelta()+vec[c]->Top();
 #ifdef THREADS
     pthread_mutex_unlock(&mutex);
 #endif
@@ -37265,10 +37275,14 @@ public:
 	{
 	  long idx = chars[i];
 	  int top = font->Top(idx);
+	  int left = font->Left(idx);
 	  int sx = font->SizeX(idx);
 	  int sy = font->SizeY(idx);
 	  int advance_x = font->AdvanceX(idx);
-	  ss << idx << " " << top << " " << sx << " " << sy << " " << advance_x << std::endl;
+	  int ascender = font->Ascender(idx);
+	  int descender = font->Descender(idx);
+	  int height = font->Height(idx);
+	  ss << idx << " " << top << " " << sx << " " << sy << " " << advance_x << " " << left << " " << ascender << " " << descender << " " << height << std::endl;
 	  for(int y=0;y<sy;y++)
 	    for(int x=0;x<sx;x++)
 	      {
@@ -37326,14 +37340,18 @@ public:
       int count = -1;
       long idx = -1;
       int top = -1;
+      int left = -1;
       int sx = -1;
       int sy = -1;
       int advance_x=-1;
+      int ascender=-1;
+      int descender=-1;
+      int height=-1;
       ss >> count;
       //std::cout << "Loading font: ";
       for(int i=0;i<count;i++)
 	{
-	  ss >> idx >> top >> sx >> sy >> advance_x;
+	  ss >> idx >> top >> sx >> sy >> advance_x >> left >> ascender >> descender >> height;
 	  //std::cout << idx;
 	  unsigned int *ptr = new unsigned int[sx*sy];
 	  for(int y=0;y<sy;y++) {
@@ -37345,13 +37363,26 @@ public:
 	  }
 	  m_idx.push_back(idx);
 	  m_top.push_back(top);
+	  m_left.push_back(left);
 	  m_sx.push_back(sx);
 	  m_sy.push_back(sy);
 	  m_data.push_back(ptr);
 	  m_advance_x.push_back(advance_x);
+	  m_ascender.push_back(ascender);
+	  m_descender.push_back(descender);
+	  m_height.push_back(height);
 	}
       //std::cout << std::endl;
     }
+  }
+  virtual int Left(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_left[index];
+    }
+    return 0;
+
   }
   virtual int Top(long idx) const { 
     int index = find_index(idx);
@@ -37384,6 +37415,33 @@ public:
     }
     return 0;
   }
+  virtual int Ascender(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_ascender[index];
+    }
+    return 0;
+
+  }
+  virtual int Descender(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_descender[index];
+    }
+    return 0;
+
+  }
+  virtual int Height(long idx) const
+  {
+    int index = find_index(idx);
+    if (index!=-1) {
+      return m_height[index];
+    }
+    return 0;
+
+  }
   virtual unsigned int Map(long idx, int x, int y) const
   {
     int sx = SizeX(idx);
@@ -37411,10 +37469,14 @@ private:
   std::string homepageurl;
   std::vector<long> m_idx;
   std::vector<int> m_top;
+  std::vector<int> m_left;
   std::vector<int> m_sx;
   std::vector<int> m_sy;
   std::vector<unsigned int*> m_data;
   std::vector<int> m_advance_x;
+  std::vector<int> m_ascender;
+  std::vector<int> m_descender;
+  std::vector<int> m_height;
   bool firsttime;
 };
 
