@@ -710,6 +710,8 @@ private:
 };
 
 
+std::string replace_str3(std::string val, std::string repl, std::string subst);
+
 std::map<std::string, int> shared_text;
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -726,9 +728,14 @@ public:
   {
     if (firsttime)
       {
+	std::string display_label = label;
+
+	display_label = replace_str3(display_label, "{32}", " ");
+
+	
 	int c = get_current_block();
 	set_current_block(-1);
-	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, label.c_str(), x_gap*1.2);
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, display_label.c_str(), x_gap*1.2);
 	
 	//GameApi::CBM sca = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0, 1.0);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
@@ -1057,6 +1064,28 @@ std::string g_temp44;
 IMPORT bool g_reload_edit_dialog = false;
 
 
+int find_str(std::string val, std::string repl);
+
+int find_str_pos(std::string val, int pos, std::string repl)
+{
+  std::size_t pos2 = val.find(repl,pos);
+  if (pos2==std::string::npos) return -1;
+  return pos2;
+}
+
+std::string replace_str3(std::string val, std::string repl, std::string subst)
+{
+
+  
+  while(1) {
+  int pos = find_str(val, repl);
+  if (pos==-1) return val;
+  val = val.replace(pos,repl.size(),subst);
+  }
+  return val;
+}
+
+
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
 {
@@ -1219,7 +1248,15 @@ public:
     }
     //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
 
-    
+    if (active && ch==32 && type==768)
+      {
+	label.push_back('{');
+	label.push_back('3');
+	label.push_back('2');
+	label.push_back('}');
+	changed=true;
+      }
+    else
     if (active && type==768 && !changed)
       {
 	int s = allowed_chars.size();
@@ -1235,8 +1272,31 @@ public:
 	if (!changed) {
 	if ((ch==8 ||ch==42) && label.size()>non_editable)
 	  {
-	    label.erase(label.begin()+(label.size()-1));
-	    changed = true;
+	    if (label.size()>3) {
+	      int pos = 0;
+	      int loc = -1;
+	      while(1) {
+		pos=find_str_pos(label,pos,"{32}");
+		if (pos==-1) break; else loc=pos;
+		pos++;
+	      }
+	      if (loc!=-1 && loc==label.size()-4)
+		{
+		  label.erase(label.begin()+(label.size()-1));
+		  label.erase(label.begin()+(label.size()-1));
+		  label.erase(label.begin()+(label.size()-1));
+		  label.erase(label.begin()+(label.size()-1));
+		  changed=true;
+		}
+	      else {
+		  label.erase(label.begin()+(label.size()-1));
+		  changed = true;
+	        }
+	      
+	    } else {
+	      label.erase(label.begin()+(label.size()-1));
+	      changed = true;
+	    }
 	  }
 	}
       }
@@ -1253,7 +1313,12 @@ public:
     if (firsttime || changed||externally_set)
       {
 	externally_set=false;
-	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(label.substr(1,label.size()-1))+std::string(" ]")).c_str():label.c_str(), x_gap*1.2);
+	std::string display_label = label;
+
+	display_label = replace_str3(display_label, "{32}", " ");
+	
+	
+	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
 	//int sy = ev.bitmap_api.size_y(rendered_bitmap);
 	//GameApi::CBM cbm = ev.cont_bitmap_api.from_bitmap(rendered_bitmap, 1.0,1.0);
@@ -5677,7 +5742,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
       return edit_2;
 
 	  } else {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@ ";
   static W redraw_w = empty();
       W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
