@@ -709,6 +709,8 @@ private:
   std::vector<GuiWidget*> vec;
 };
 
+#ifndef EMSCRIPTEN
+
 struct CharConv { std::string repl; std::string ch_str; char ch; };
 std::vector<CharConv> conv_table = {
   { "{032}", " ",' ' },
@@ -722,11 +724,13 @@ std::vector<CharConv> conv_table = {
   { "{091}", "[",'[' },
   { "{093}", "]",']' }
 };
-
+#endif
 
 std::string replace_str3(std::string val, std::string repl, std::string subst);
 
 std::map<std::string, int> shared_text;
+
+#ifndef EMSCRIPTEN
 class TextGuiWidgetAtlas : public GuiWidgetForward
 {
 public:
@@ -812,7 +816,7 @@ private:
   int x_gap;
 };
 #endif
-
+#endif
 
 template<class T>
 class EditorGuiWidget : public GuiWidgetForward
@@ -1121,6 +1125,7 @@ bool is_allowed(std::string chars, char ch)
   return false;
 }
 
+#ifndef EMSCRIPTEN
 
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
@@ -1466,7 +1471,7 @@ private:
   GameApi::W *redraw_w=0;
   bool inside_redraw=false;
 };
-
+#endif
 
 
 
@@ -4537,10 +4542,12 @@ EXPORT GameApi::W GameApi::GuiApi::pts(PTS p, SH sh2, int sx, int sy, int screen
 }
 
 EXPORT GameApi::W GameApi::GuiApi::string_editor(std::string allowed_chars, std::string &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int non_editable_char_count, W *redraw_w, bool allow_expr)
-{ 
+{
+#ifndef EMSCRIPTEN
   W e1 = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap, allow_expr, expr,non_editable_char_count,redraw_w));
   W e2 = highlight(e1);
   return e2;
+#endif
 }
 EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_chars, std::string &target, FI font, int x_gap, int line_height)
 {
@@ -4551,11 +4558,13 @@ EXPORT GameApi::W GameApi::GuiApi::multiline_string_editor(std::string allowed_c
 
 EXPORT GameApi::W GameApi::GuiApi::float_editor(float &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
+#ifndef EMSCRIPTEN
   std::string allowed_chars = "0123456789.-+*/%@";
   static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<float>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true, expr,noneditnum ,&ww));
   W w2 = highlight(w);
   return w2;
+#endif
 }
 EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM atlas_bm, int x_gap, std::string &expr, int noneditnum)
 {
@@ -4564,10 +4573,13 @@ EXPORT GameApi::W GameApi::GuiApi::url_editor(std::string &target, FtA atlas, BM
 #else
   std::string allowed_chars = "0123456789.-abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6 246ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6~!\"#€%&/()=?+\\*^.,-<>|§œ;:_$@";
 #endif
+
+#ifndef EMSCRIPTEN
  static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<std::string>(e,ev,allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
   W w2 = highlight(w);
   return w2;
+#endif
 }
 
 std::vector<std::string> parse_array(std::string s);
@@ -4682,6 +4694,7 @@ IMPORT void enum_editor_handle_event(GameApi::GuiApi &gui, std::vector<GameApi::
 extern std::map<int,int> int_editor_map;
 IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
 {
+#ifndef EMSCRIPTEN
   GuiWidget *w = find_widget(e,enum_click);
   std::string val = w->get_id();
   if (val!="") {
@@ -4703,22 +4716,26 @@ IMPORT void enum_set_value(GameApi::Env &e, GameApi::W enum_click, int value)
       ed->update(pp,-1,-1,-1,-1);
       //std::cout << "SetValue: " << val << "::" << value << std::endl;
   }
+#endif
 }
 
 std::map<int, int> int_editor_map;
 
 EXPORT GameApi::W GameApi::GuiApi::int_editor(int &target, std::string &expr, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
+#ifndef EMSCRIPTEN
   std::string allowed_chars = "0123456789-&%";
   static W ww = empty();
   W w = add_widget(e, new EditorGuiWidgetAtlas<int>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,true,expr,noneditnum,&ww));
   W w2 = highlight(w);
   int_editor_map[w2.id]=w.id;
   return w2;
+#endif
 }
 
 EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas_bm, int x_gap, int noneditnum)
 {
+#ifndef EMSCRIPTEN
   std::string allowed_chars = "0123456789-";
   static std::string expr;
   static W ww = empty();
@@ -4726,6 +4743,7 @@ EXPORT GameApi::W GameApi::GuiApi::long_editor(long &target, FtA atlas, BM atlas
   W w = add_widget(e, new EditorGuiWidgetAtlas<long>(e,ev, allowed_chars, target, atlas, atlas_bm, sh, x_gap,false,expr,noneditnum,&ww));
   W w2 = highlight(w);
   return w2;
+#endif
 }
 
 

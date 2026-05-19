@@ -20407,13 +20407,14 @@ private:
 
 std::string replace_str3(std::string val, std::string repl, std::string subst);
 
+#ifndef EMSCRIPTEN
 struct CharConv { std::string repl; std::string ch_str; char ch; };
 extern std::vector<CharConv> conv_table;
-
+#endif
 
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
-
+#ifndef EMSCRIPTEN
 	int s7 = conv_table.size();
 	for(int i=0;i<s7;i++)
 	  {
@@ -20439,6 +20440,7 @@ GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_g
   //BM bm2 = add_bitmap(e,handle);
 
   return bm;
+#endif
 }
 
 class LargeTextBitmap : public Bitmap<Color>

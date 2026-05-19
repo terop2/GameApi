@@ -497,21 +497,25 @@ public:
       }
   }
 
-  void push_back(Bitmap<T> *bm, int top) 
+  void push_back(Bitmap<T> *bm, int top, int ascender, int height, int advance_x, int descender) 
   { 
     vec.push_back(bm); 
-    vec2.push_back(top);
+    topt.push_back(top);
+    asc.push_back(ascender);
+    hgt.push_back(height);
+    adv.push_back(advance_x);
+    desc.push_back(descender);
   }
   virtual int SizeX() const 
   {
     int sz=vec.size();
     int pixels = 0;
-    for(int i=0;i<sz;i++) { pixels+=vec[i]->SizeX()+x_gap; }
+    for(int i=0;i<sz;i++) { pixels+=adv[i] /*vec[i]->SizeX()*/ +x_gap; }
     return pixels;
   }
   virtual int SizeY() const 
   {
-    return PositiveDelta()+Height();
+    return PositiveDelta()+ Height();
   }
   virtual T Map(int x, int y) const
   {
@@ -522,42 +526,49 @@ public:
     int i=0;
     for(;i<sz;i++) 
       { 
-	pixels+=vec[i]->SizeX()+x_gap;
+	pixels+=adv[i] /*vec[i]->SizeX()*/ +x_gap;
 	if (pixels>x) break;
 	oldpixels = pixels;
       }
     if (i==sz) { return def; }
-    int delta = -vec2[i];
+    int delta = -(topt[i]);
     if (y<delta) return def;
     if (y>=delta+vec[i]->SizeY()) return def;
     if (x-oldpixels>=vec[i]->SizeX()) return def;
-    return vec[i]->Map(x-oldpixels,y-delta);
+    int left = adv[i]-vec[i]->SizeX();
+    return vec[i]->Map(x-left-oldpixels,y-delta);
   }
   int PositiveDelta() const
   {
-    int sz = vec2.size();
+    int sz = topt.size();
     int min_delta=0;
     for(int i=0;i<sz;i++)
       {
-	int delta = (-vec2[i]);
+	int delta = -asc[i]; //(-topt[i]);
+	//int delta = asc[i];
+	//std::cout << "delta=" << delta << std::endl;
 	if (delta<min_delta) min_delta=delta;
       }
     return -min_delta;
   }
   int Height() const
   {
-    int sz = vec2.size();
+    int sz = topt.size();
     int max_height=0;
     for(int i=0;i<sz;i++)
       {
-	int height = (-vec2[i])+vec[i]->SizeY();
+	int height = (-topt[i])+vec[i]->SizeY();
 	if (height>max_height) max_height=height;
       }
     return max_height;
   }
 private:
   std::vector<Bitmap<T>*> vec;
-  std::vector<int> vec2;
+  std::vector<int> topt;
+  std::vector<int> asc;
+  std::vector<int> hgt;
+  std::vector<int> adv;
+  std::vector<int> desc;
   T def;
   int x_gap;
 };
