@@ -709,22 +709,7 @@ private:
   std::vector<GuiWidget*> vec;
 };
 
-#ifndef EMSCRIPTEN
-
-struct CharConv { std::string repl; std::string ch_str; char ch; };
-std::vector<CharConv> conv_table = {
-  { "{032}", " ",' ' },
-  { "{063}", "?",'?' },
-  { "{035}", "#",'#' },
-  { "{058}", ":",':' },
-  { "{059}", ";",';' },
-  { "{124}", "|",'|' },
-  { "{123}", "{",'{' },
-  { "{125}", "}",'}' },
-  { "{091}", "[",'[' },
-  { "{093}", "]",']' }
-};
-#endif
+IMPORT extern ConversionTableInterface *g_conv_table;
 
 std::string replace_str3(std::string val, std::string repl, std::string subst);
 
@@ -748,10 +733,10 @@ public:
       {
 	std::string display_label = label;
 
-	int s7 = conv_table.size();
+	int s7 = g_conv_table->get_size();
 	for(int i=0;i<s7;i++)
 	  {
-	    display_label = replace_str3(display_label, conv_table[i].repl, conv_table[i].ch_str);
+	    display_label = replace_str3(display_label, g_conv_table->get_label(i), g_conv_table->get_str_ch(i));
 	  }
 	int c = get_current_block();
 	set_current_block(-1);
@@ -1290,15 +1275,15 @@ public:
     //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
 
     bool done = false;
-    int s8 = conv_table.size();
+    int s8 = g_conv_table->get_size();
     for(int i=0;i<s8;i++)
       {
-	if (active && ch==conv_table[i].ch && is_allowed(allowed_chars,conv_table[i].ch) && type==768)
+	if (active && ch==g_conv_table->get_ch(i) && is_allowed(allowed_chars,g_conv_table->get_ch(i)) && type==768)
 	  {
-	    int s9=conv_table[i].repl.size();
+	    int s9=g_conv_table->get_label(i).size();
 	    for(int j=0;j<s9;j++)
 	      {
-		label.push_back(conv_table[i].repl[j]);
+		label.push_back(g_conv_table->get_label(i)[j]);
 	      }
 	    changed=true;
 	    done = true;
@@ -1325,11 +1310,11 @@ public:
 	      int pos2 = -1;
 	      int loc = -1;
 	      while(1) {
-		int s = conv_table.size();
+		int s = g_conv_table->get_size();
 		bool found=false;
 		for(int i=0;i<s;i++) {
 		  //std::cout << "pos=" << pos << std::endl;
-		  int res = find_str_pos(label,pos,conv_table[i].repl);
+		  int res = find_str_pos(label,pos,g_conv_table->get_label(i));
 		  //std::cout << "Result:" << res << std::endl;
 		  if (res!=-1) { pos2=std::max(pos2,res); found=true; }
 		}
@@ -1372,10 +1357,10 @@ public:
 	externally_set=false;
 	std::string display_label = label;
 
-	int s7 = conv_table.size();
+	int s7 = g_conv_table->get_size();
 	for(int i=0;i<s7;i++)
 	  {
-	    display_label = replace_str3(display_label, conv_table[i].repl, conv_table[i].ch_str);
+	    display_label = replace_str3(display_label, g_conv_table->get_label(i), g_conv_table->get_str_ch(i));
 	  }
 	
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
@@ -8891,3 +8876,27 @@ std::string FloatExprEval(std::string s)
   return s;
 
 }
+struct CharConv { std::string repl; std::string ch_str; char ch; };
+
+class ConversionTable : public ConversionTableInterface {
+public:
+  int get_size() const { return conv_table.size(); }
+  std::string get_label(int i) const { return conv_table[i].repl; }
+  virtual std::string get_str_ch(int i) const { return conv_table[i].ch_str; }
+  virtual char get_ch(int i) const { return conv_table[i].ch; }
+private:
+  std::vector<CharConv> conv_table = {
+    { "{032}", " ",' ' },
+    { "{063}", "?",'?' },
+    { "{035}", "#",'#' },
+    { "{058}", ":",':' },
+    { "{059}", ";",';' },
+    { "{124}", "|",'|' },
+    { "{123}", "{",'{' },
+    { "{125}", "}",'}' },
+    { "{091}", "[",'[' },
+    { "{093}", "]",']' }
+  };
+};
+ConversionTable g_conv_table_impl;
+EXPORT ConversionTableInterface *g_conv_table = &g_conv_table_impl;
