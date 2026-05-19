@@ -20395,8 +20395,12 @@ private:
 };
 
 
+std::string replace_str3(std::string val, std::string repl, std::string subst);
+
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
+  str=replace_str3(str,"{32}", " ");
+  
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
   std::vector<GI> glyphs;
@@ -26034,6 +26038,7 @@ IMPORT int find_str(std::string val, std::string repl)
   if (pos==std::string::npos) return -1;
   return pos;
 }
+
 
 IMPORT std::string replace_str(std::string val, std::string repl, std::string subst)
 {
