@@ -20,6 +20,9 @@ public:
   virtual std::string get_label(int i) const=0;
   virtual std::string get_str_ch(int i) const=0;
   virtual char get_ch(int i) const=0;
+
+  virtual std::string convert_string(std::string str) const=0;
+  virtual int find_last_location(std::string label) const=0;
 };
 
 class ByteStore

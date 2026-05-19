@@ -20411,12 +20411,9 @@ IMPORT extern ConversionTableInterface *g_conv_table;
 
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
-  int s7 = g_conv_table->get_size();
-  for(int i=0;i<s7;i++)
-    {
-      str = replace_str3(str, g_conv_table->get_label(i), g_conv_table->get_str_ch(i));
-    }
-	
+
+  str = g_conv_table->convert_string(str);
+  	
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
   std::vector<GI> glyphs;
