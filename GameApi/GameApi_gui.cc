@@ -709,6 +709,20 @@ private:
   std::vector<GuiWidget*> vec;
 };
 
+struct CharConv { std::string repl; std::string ch_str; char ch; };
+std::vector<CharConv> conv_table = {
+  { "{032}", " ",' ' },
+  { "{063}", "?",'?' },
+  { "{035}", "#",'#' },
+  { "{058}", ":",':' },
+  { "{059}", ";",';' },
+  { "{124}", "|",'|' },
+  { "{123}", "{",'{' },
+  { "{125}", "}",'}' },
+  { "{091}", "[",'[' },
+  { "{093}", "]",']' }
+};
+
 
 std::string replace_str3(std::string val, std::string repl, std::string subst);
 
@@ -730,17 +744,11 @@ public:
       {
 	std::string display_label = label;
 
-	display_label = replace_str3(display_label, "{032}", " ");
-	display_label = replace_str3(display_label, "{063}", "?");
-	display_label = replace_str3(display_label, "{035}", "#");
-	display_label = replace_str3(display_label, "{058}", ":");
-	display_label = replace_str3(display_label, "{059}", ";");
-	display_label = replace_str3(display_label, "{124}", "|");
-	display_label = replace_str3(display_label, "{123}", "{");
-	display_label = replace_str3(display_label, "{125}", "}");
-	display_label = replace_str3(display_label, "{091}", "[");
-	display_label = replace_str3(display_label, "{093}", "]");
-
+	int s7 = conv_table.size();
+	for(int i=0;i<s7;i++)
+	  {
+	    display_label = replace_str3(display_label, conv_table[i].repl, conv_table[i].ch_str);
+	  }
 	int c = get_current_block();
 	set_current_block(-1);
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, display_label.c_str(), x_gap*1.2);
@@ -1276,97 +1284,22 @@ public:
     }
     //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
 
-    if (active && ch==' ' && is_allowed(allowed_chars,' ') && type==768)
+    bool done = false;
+    int s8 = conv_table.size();
+    for(int i=0;i<s8;i++)
       {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('3');
-	label.push_back('2');
-	label.push_back('}');
-	changed=true;
+	if (active && ch==conv_table[i].ch && is_allowed(allowed_chars,conv_table[i].ch) && type==768)
+	  {
+	    int s9=conv_table[i].repl.size();
+	    for(int j=0;j<s9;j++)
+	      {
+		label.push_back(conv_table[i].repl[j]);
+	      }
+	    changed=true;
+	    done = true;
+	  }
       }
-    else if (active && ch=='?' && is_allowed(allowed_chars,'?') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('6');
-	label.push_back('3');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch=='#' && is_allowed(allowed_chars,'#') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('3');
-	label.push_back('5');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch==':' && is_allowed(allowed_chars,':') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('5');
-	label.push_back('8');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch==';' && is_allowed(allowed_chars,';') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('5');
-	label.push_back('9');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch=='|' && is_allowed(allowed_chars,'|') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('1');
-	label.push_back('2');
-	label.push_back('4');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch=='{' && is_allowed(allowed_chars,'{') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('1');
-	label.push_back('2');
-	label.push_back('3');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch=='}' && is_allowed(allowed_chars,'}') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('1');
-	label.push_back('2');
-	label.push_back('5');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch=='[' && is_allowed(allowed_chars,'[') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('9');
-	label.push_back('1');
-	label.push_back('}');
-	changed=true;
-      }
-    else if (active && ch==']' && is_allowed(allowed_chars,']') && type==768)
-      {
-	label.push_back('{');
-	label.push_back('0');
-	label.push_back('9');
-	label.push_back('3');
-	label.push_back('}');
-	changed=true;
-      }
-    else
+    if (!done)
     if (active && type==768 && !changed)
       {
 	int s = allowed_chars.size();
@@ -1386,24 +1319,12 @@ public:
 	      int pos = 0;
 	      int pos2 = -1;
 	      int loc = -1;
-	      std::vector<std::string> labels = {
-		"{032}",
-		"{063}",
-		"{035}",
-		"{058}",
-		"{059}",
-		"{124}",
-		"{123}",
-		"{125}",
-		"{091}",
-		"{093}"
-	      };
 	      while(1) {
-		int s = labels.size();
+		int s = conv_table.size();
 		bool found=false;
 		for(int i=0;i<s;i++) {
 		  //std::cout << "pos=" << pos << std::endl;
-		  int res = find_str_pos(label,pos,labels[i]);
+		  int res = find_str_pos(label,pos,conv_table[i].repl);
 		  //std::cout << "Result:" << res << std::endl;
 		  if (res!=-1) { pos2=std::max(pos2,res); found=true; }
 		}
@@ -1446,17 +1367,11 @@ public:
 	externally_set=false;
 	std::string display_label = label;
 
-	display_label = replace_str3(display_label, "{032}", " ");
-	display_label = replace_str3(display_label, "{063}", "?");
-	display_label = replace_str3(display_label, "{035}", "#");
-	display_label = replace_str3(display_label, "{058}", ":");
-	display_label = replace_str3(display_label, "{059}", ";");
-	display_label = replace_str3(display_label, "{124}", "|");
-	display_label = replace_str3(display_label, "{123}", "{");
-	display_label = replace_str3(display_label, "{125}", "}");
-	display_label = replace_str3(display_label, "{091}", "[");
-	display_label = replace_str3(display_label, "{093}", "]");
-
+	int s7 = conv_table.size();
+	for(int i=0;i<s7;i++)
+	  {
+	    display_label = replace_str3(display_label, conv_table[i].repl, conv_table[i].ch_str);
+	  }
 	
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);

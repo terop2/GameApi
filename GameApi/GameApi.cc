@@ -20397,18 +20397,19 @@ private:
 
 std::string replace_str3(std::string val, std::string repl, std::string subst);
 
+struct CharConv { std::string repl; std::string ch_str; char ch; };
+extern std::vector<CharConv> conv_table;
+
+
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
-	str = replace_str3(str, "{032}", " ");
-	str = replace_str3(str, "{063}", "?");
-	str = replace_str3(str, "{035}", "#");
-	str = replace_str3(str, "{058}", ":");
-	str = replace_str3(str, "{059}", ";");
-	str = replace_str3(str, "{124}", "|");
-	str = replace_str3(str, "{123}", "{");
-	str = replace_str3(str, "{125}", "}");
-	str = replace_str3(str, "{091}", "[");
-	str = replace_str3(str, "{093}", "]");
+
+	int s7 = conv_table.size();
+	for(int i=0;i<s7;i++)
+	  {
+	    str = replace_str3(str, conv_table[i].repl, conv_table[i].ch_str);
+	  }
+
 	
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
