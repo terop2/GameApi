@@ -13,6 +13,15 @@
 #include <emscripten/heap.h>
 #endif
 
+class ConversionTableInterface
+{
+public:
+  virtual int get_size() const=0;
+  virtual std::string get_label(int i) const=0;
+  virtual std::string get_str_ch(int i) const=0;
+  virtual char get_ch(int i) const=0;
+};
+
 class ByteStore
 {
 public:
