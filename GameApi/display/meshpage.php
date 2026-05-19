@@ -1432,7 +1432,7 @@ width="120" height="120" crossorigin/>
       (install docker, nvidia-container-toolkit)<br>
       sudo docker build -t builder-test:latest .<br>
       ./run.sh script.txt homepageurl<p>
-      OR ON UBUNTU 25.04:<br>
+      OR ON UBUNTU 26.04:<br>
       LD_LIBRARY_PATH=. ./gameapi_cmdline --file script.txt --homepage homepageurl<br>
 </div>
 </div>
