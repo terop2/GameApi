@@ -20399,7 +20399,12 @@ std::string replace_str3(std::string val, std::string repl, std::string subst);
 
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
-  str=replace_str3(str,"{32}", " ");
+	str = replace_str3(str, "{032}", " ");
+	str = replace_str3(str, "{063}", "?");
+	str = replace_str3(str, "{035}", "#");
+	str = replace_str3(str, "{058}", ":");
+	str = replace_str3(str, "{059}", ";");
+	str = replace_str3(str, "{124}", "|");
   
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();

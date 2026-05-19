@@ -730,8 +730,12 @@ public:
       {
 	std::string display_label = label;
 
-	display_label = replace_str3(display_label, "{32}", " ");
-
+	display_label = replace_str3(display_label, "{032}", " ");
+	display_label = replace_str3(display_label, "{063}", "?");
+	display_label = replace_str3(display_label, "{035}", "#");
+	display_label = replace_str3(display_label, "{058}", ":");
+	display_label = replace_str3(display_label, "{059}", ";");
+	display_label = replace_str3(display_label, "{124}", "|");
 	
 	int c = get_current_block();
 	set_current_block(-1);
@@ -1068,9 +1072,22 @@ int find_str(std::string val, std::string repl);
 
 int find_str_pos(std::string val, int pos, std::string repl)
 {
-  std::size_t pos2 = val.find(repl,pos);
-  if (pos2==std::string::npos) return -1;
-  return pos2;
+  //std::cout << "pos=" << pos << std::endl;
+  //std::cout << "val=" << val << std::endl;
+  //std::cout << "repl=" << repl << std::endl;
+  //std::size_t pos2 = val.find(repl,pos);
+  int s = val.size()-repl.size()+1;
+  for(int i=pos;i<s;i++)
+    {
+      int s2 = repl.size();
+      bool found = true;
+      for(int j=0;j<s2;j++)
+	{
+	  if (val[i+j]!=repl[j]) { found=false; break; }
+	}
+      if (found) return i;
+    }
+  return -1;
 }
 
 std::string replace_str3(std::string val, std::string repl, std::string subst)
@@ -1248,11 +1265,57 @@ public:
     }
     //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
 
-    if (active && ch==32 && type==768)
+    if (active && ch==' ' && type==768)
       {
 	label.push_back('{');
+	label.push_back('0');
 	label.push_back('3');
 	label.push_back('2');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch=='?' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('0');
+	label.push_back('6');
+	label.push_back('3');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch=='#' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('0');
+	label.push_back('3');
+	label.push_back('5');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch==':' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('0');
+	label.push_back('5');
+	label.push_back('8');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch==';' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('0');
+	label.push_back('5');
+	label.push_back('9');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch=='|' && type==768)
+      {
+	label.push_back('{');
+	label.push_back('1');
+	label.push_back('2');
+	label.push_back('4');
 	label.push_back('}');
 	changed=true;
       }
@@ -1272,16 +1335,33 @@ public:
 	if (!changed) {
 	if ((ch==8 ||ch==42) && label.size()>non_editable)
 	  {
-	    if (label.size()>3) {
+	    if (label.size()>4 && label.size()>non_editable+4) {
 	      int pos = 0;
+	      int pos2 = -1;
 	      int loc = -1;
+	      std::vector<std::string> labels = {
+		"{032}",
+		"{063}",
+		"{035}",
+		"{058}",
+		"{059}",
+		"{124}"
+	      };
 	      while(1) {
-		pos=find_str_pos(label,pos,"{32}");
-		if (pos==-1) break; else loc=pos;
-		pos++;
+		int s = labels.size();
+		bool found=false;
+		for(int i=0;i<s;i++) {
+		  //std::cout << "pos=" << pos << std::endl;
+		  int res = find_str_pos(label,pos,labels[i]);
+		  //std::cout << "Result:" << res << std::endl;
+		  if (res!=-1) { pos2=std::max(pos2,res); found=true; }
+		}
+		if (!found) break; else loc=pos2;
+		pos = pos2 + 1;
 	      }
-	      if (loc!=-1 && loc==label.size()-4)
+	      if (loc!=-1 && loc==label.size()-5)
 		{
+		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
 		  label.erase(label.begin()+(label.size()-1));
@@ -1315,7 +1395,12 @@ public:
 	externally_set=false;
 	std::string display_label = label;
 
-	display_label = replace_str3(display_label, "{32}", " ");
+	display_label = replace_str3(display_label, "{032}", " ");
+	display_label = replace_str3(display_label, "{063}", "?");
+	display_label = replace_str3(display_label, "{035}", "#");
+	display_label = replace_str3(display_label, "{058}", ":");
+	display_label = replace_str3(display_label, "{059}", ";");
+	display_label = replace_str3(display_label, "{124}", "|");
 	
 	
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
@@ -5742,7 +5827,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
       return edit_2;
 
 	  } else {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@ ";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@ |?;";
   static W redraw_w = empty();
       W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
