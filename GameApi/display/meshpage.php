@@ -2119,7 +2119,7 @@ window.clearActive = function()
 }
 window.clearActive2 = function()
 {
-    console.log("clearActive");
+    //console.log("clearActive");
     //console.log("clearActive2");
     for (let i=0;i<elementNames2.length;i++)
     {

@@ -587,7 +587,7 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   g_low->sdl->SDL_GetCurrentDisplayMode(0, &current);
   g_display_width = current.w;
   g_display_height = current.h;
-  std::cout << "DISPLAY SIZE:" << g_display_width << " " << g_display_height << std::endl;
+  //std::cout << "DISPLAY SIZE:" << g_display_width << " " << g_display_height << std::endl;
   
   if (screenx ==-1) { scr_x = g_display_width; screenx = g_display_width; }
   if (screeny ==-1) { scr_y = g_display_height; screeny = g_display_height; }
@@ -656,46 +656,46 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLEBUFFERS, 1);
   //SDL_GL_SetAttribute( SDL_GL_MULTISAMPLESAMPLES, 4);
 
-  std::cout << "Context Requesting version:";
+  //std::cout << "Context Requesting version:";
   
 #ifndef ANDROID
 #if !defined(OPENGL_ES) && !defined(EMSCRIPTEN) && !defined(BD_CALVIN_COMPUTER)
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  std::cout << "3,";
+  //std::cout << "3,";
 #ifdef RASPI
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 1);
-  std::cout << "1";
+  //std::cout << "1";
 #else
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 3);
-  std::cout << "3";
+  //std::cout << "3";
 #endif
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_CORE);
-  std::cout << " core" << std::endl;
+  //std::cout << " core" << std::endl;
 #else
 #ifdef RASPI
-  std::cout << "2,";
+  //std::cout << "2,";
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
-  std::cout << "0";
+  //std::cout << "0";
 #else
-  std::cout << "2,";
+  //std::cout << "2,";
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
-  std::cout << "0";
+  //std::cout << "0";
 #endif
   
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
-  std::cout << " es" << std::endl;
+  //std::cout << " es" << std::endl;
 
 #endif
 #else
-  std::cout << "2,";
+  //std::cout << "2,";
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MAJOR_VERSION, 2); // 2
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_MINOR_VERSION, 0); // 0
-  std::cout << "0";
+  //std::cout << "0";
 
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_CONTEXT_PROFILE_MASK, Low_SDL_GL_CONTEXT_PROFILE_ES);
-  std::cout << " es" << std::endl;
+  //std::cout << " es" << std::endl;
 #endif
   
   //g_low->sdl->SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);

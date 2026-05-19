@@ -323,13 +323,13 @@ int main(int argc, char *argv[]) {
 	  ss >> w_width;
 	  std::stringstream ss2(height);
 	  ss2 >> w_height;
-	  std::cout << "Choose size: " << w_width << "x" << w_height << std::endl;
+	  //std::cout << "Choose size: " << w_width << "x" << w_height << std::endl;
 	  current_arg+=3;
 	  continue;
 	} else
       if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--code")
 	{
-	  std::cout << "Choosing code!" << std::endl;
+	  //std::cout << "Choosing code!" << std::endl;
 	  code = insert_enter(strip_spaces(decode(cmd_args[current_arg+1])));
 	  code = replace_str(code, "&lt;", "<");
 	  code = replace_str(code, "&gt;", ">");
@@ -375,7 +375,7 @@ int main(int argc, char *argv[]) {
 	} else
 	if (check_count(cmd_args, current_arg, 2) && cmd_args[current_arg]=="--platform")
 	  {
-	    std::cout << "Using platform:" << cmd_args[current_arg+1] << std::endl;
+	    //std::cout << "Using platform:" << cmd_args[current_arg+1] << std::endl;
 	    g_platform = cmd_args[current_arg+1];
 	  current_arg+=2;
 	  } else
