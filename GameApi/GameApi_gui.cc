@@ -738,6 +738,8 @@ public:
 	display_label = replace_str3(display_label, "{124}", "|");
 	display_label = replace_str3(display_label, "{123}", "{");
 	display_label = replace_str3(display_label, "{125}", "}");
+	display_label = replace_str3(display_label, "{091}", "[");
+	display_label = replace_str3(display_label, "{093}", "]");
 
 	int c = get_current_block();
 	set_current_block(-1);
@@ -1104,6 +1106,13 @@ std::string replace_str3(std::string val, std::string repl, std::string subst)
   return val;
 }
 
+bool is_allowed(std::string chars, char ch)
+{
+  int s = chars.size();
+  for(int i=0;i<s;i++) if (ch==chars[i]) return true;
+  return false;
+}
+
 
 template<class T>
 class EditorGuiWidgetAtlas : public GuiWidgetForward
@@ -1267,7 +1276,7 @@ public:
     }
     //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
 
-    if (active && ch==' ' && type==768)
+    if (active && ch==' ' && is_allowed(allowed_chars,' ') && type==768)
       {
 	label.push_back('{');
 	label.push_back('0');
@@ -1276,7 +1285,7 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch=='?' && type==768)
+    else if (active && ch=='?' && is_allowed(allowed_chars,'?') && type==768)
       {
 	label.push_back('{');
 	label.push_back('0');
@@ -1285,7 +1294,7 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch=='#' && type==768)
+    else if (active && ch=='#' && is_allowed(allowed_chars,'#') && type==768)
       {
 	label.push_back('{');
 	label.push_back('0');
@@ -1294,7 +1303,7 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch==':' && type==768)
+    else if (active && ch==':' && is_allowed(allowed_chars,':') && type==768)
       {
 	label.push_back('{');
 	label.push_back('0');
@@ -1303,7 +1312,7 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch==';' && type==768)
+    else if (active && ch==';' && is_allowed(allowed_chars,';') && type==768)
       {
 	label.push_back('{');
 	label.push_back('0');
@@ -1312,7 +1321,7 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch=='|' && type==768)
+    else if (active && ch=='|' && is_allowed(allowed_chars,'|') && type==768)
       {
 	label.push_back('{');
 	label.push_back('1');
@@ -1321,7 +1330,7 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch=='{' && type==768)
+    else if (active && ch=='{' && is_allowed(allowed_chars,'{') && type==768)
       {
 	label.push_back('{');
 	label.push_back('1');
@@ -1330,12 +1339,30 @@ public:
 	label.push_back('}');
 	changed=true;
       }
-    else if (active && ch=='}' && type==768)
+    else if (active && ch=='}' && is_allowed(allowed_chars,'}') && type==768)
       {
 	label.push_back('{');
 	label.push_back('1');
 	label.push_back('2');
 	label.push_back('5');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch=='[' && is_allowed(allowed_chars,'[') && type==768)
+      {
+	label.push_back('{');
+	label.push_back('0');
+	label.push_back('9');
+	label.push_back('1');
+	label.push_back('}');
+	changed=true;
+      }
+    else if (active && ch==']' && is_allowed(allowed_chars,']') && type==768)
+      {
+	label.push_back('{');
+	label.push_back('0');
+	label.push_back('9');
+	label.push_back('3');
 	label.push_back('}');
 	changed=true;
       }
@@ -1367,7 +1394,9 @@ public:
 		"{059}",
 		"{124}",
 		"{123}",
-		"{125}"
+		"{125}",
+		"{091}",
+		"{093}"
 	      };
 	      while(1) {
 		int s = labels.size();
@@ -1425,6 +1454,8 @@ public:
 	display_label = replace_str3(display_label, "{124}", "|");
 	display_label = replace_str3(display_label, "{123}", "{");
 	display_label = replace_str3(display_label, "{125}", "}");
+	display_label = replace_str3(display_label, "{091}", "[");
+	display_label = replace_str3(display_label, "{093}", "]");
 
 	
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
@@ -5851,7 +5882,7 @@ EXPORT GameApi::W GameApi::GuiApi::generic_editor(EveryApi&ev,EditTypes &target,
       return edit_2;
 
 	  } else {
-      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@ |?;";
+      std::string allowed = "0123456789abcdefghijklmnopqrstuvwxyz\xE5\xE4\xF6/.ABCDEFGHIJKLMNOPQRSTUVWXYZ\xC5\xC4\xD6*()-#+/*!\"€%&?\n,:_@ |?;[]{}";
   static W redraw_w = empty();
       W edit = string_editor(allowed, target.s, target.expr, atlas_tiny, atlas_tiny_bm, x_gap,1,&redraw_w);
       W edit_2 = margin(edit, 0, sy-size_y(edit), 0, 0);
