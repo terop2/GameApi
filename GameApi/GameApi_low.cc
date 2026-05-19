@@ -530,7 +530,9 @@ public:
     if (i==GL_NO_ERROR) i=Low_GL_NO_ERROR;
     else
       {
-	if (i==GL_INVALID_ENUM) std::cout << "GL_INVALID_ENUM" << std::endl;
+	if (i==GL_INVALID_ENUM) {
+	  std::cout << "GL_INVALID_ENUM" << std::endl;
+	}
 	if (i==GL_INVALID_VALUE) std::cout << "GL_INVALID_VALUE" << std::endl;
 	if (i==GL_INVALID_OPERATION) std::cout << "GL_INVALID_OPERATION" << std::endl;
 	if (i==GL_INVALID_FRAMEBUFFER_OPERATION) std::cout << "GL_INVALID_FRAMEBUFFER_OPERATION" << std::endl;
