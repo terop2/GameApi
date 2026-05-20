@@ -19952,6 +19952,7 @@ public:
 
     int ss = SizeX();
     size_x=ss;
+    size_y = SizeY();
     
     int s = sd.Count();
     for(int i=0;i<s;i++)
@@ -20021,6 +20022,8 @@ public:
   Color Map(int x, int y) const
   {
     if (x<0||x>=size_x) return def;
+    if (y<0||y>=size_y) return def;
+    if (!y_array_start || !y_array_end) return def;
     std::vector<int> &pos = x_array[x];
     int y_0 = y_array_start[y];
     int y_1 = y_array_end[y];
@@ -20062,9 +20065,10 @@ private:
   StringDisplay &sd;
   int def;
   std::vector<int> *x_array;
-  int *y_array_start;
-  int *y_array_end;
+  int *y_array_start = 0;
+  int *y_array_end = 0;
   int size_x;
+  int size_y;
 };
 GameApi::BM GameApi::FontApi::string_display_to_bitmap(SD sd, int def)
 {
@@ -20447,6 +20451,7 @@ public:
   }
 
   void Prepare() {
+    if (bms.size()==0) {
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
@@ -20459,10 +20464,14 @@ public:
       bms = std::vector<GameApi::BM>();
       while(std::getline(ss,line)) {
 	line = line.substr(0,line.size());
+	//std::cout << " Line:" << line << std::endl;
 	GameApi::BM bm = ev.font_api.draw_text_string(font, line, x_gap, empty_line_height);
+	Bitmap<Color> *bbm = find_bitmap2(env,bm);
+	bbm->Prepare();
 	if (baseline_separation<1) baseline_separation=ev.bitmap_api.size_y(bm);
 	bms.push_back(bm);
       }
+    }
   }
   int SizeX() const {
     int s=bms.size();
