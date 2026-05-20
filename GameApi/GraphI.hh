@@ -21,8 +21,8 @@ public:
   virtual std::string get_str_ch(int i) const=0;
   virtual char get_ch(int i) const=0;
 
-  virtual std::string convert_string(std::string str) const=0;
-  virtual int find_last_location(std::string label) const=0;
+  virtual std::string convert_labels_to_chars(std::string str) const=0;
+  virtual int find_last_location(std::string str) const=0;
   virtual bool insert_label_to_string(std::string *str, char ch) const=0;
 };
 
