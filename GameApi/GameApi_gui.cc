@@ -1067,25 +1067,6 @@ IMPORT bool g_reload_edit_dialog = false;
 
 int find_str(std::string val, std::string repl);
 
-int find_str_pos(std::string val, int pos, std::string repl)
-{
-  //std::cout << "pos=" << pos << std::endl;
-  //std::cout << "val=" << val << std::endl;
-  //std::cout << "repl=" << repl << std::endl;
-  //std::size_t pos2 = val.find(repl,pos);
-  int s = val.size()-repl.size()+1;
-  for(int i=pos;i<s;i++)
-    {
-      int s2 = repl.size();
-      bool found = true;
-      for(int j=0;j<s2;j++)
-	{
-	  if (val[i+j]!=repl[j]) { found=false; break; }
-	}
-      if (found) return i;
-    }
-  return -1;
-}
 
 
 bool is_allowed(std::string chars, char ch)
@@ -1258,22 +1239,12 @@ public:
 	}
     }
     //std::cout << "PART3:" << (int)ch << "==" << (char)ch << std::endl;
-
     bool done = false;
-    int s8 = g_conv_table->get_size();
-    for(int i=0;i<s8;i++)
+    if (active && is_allowed(allowed_chars,ch) && type==768)
       {
-	if (active && ch==g_conv_table->get_ch(i) && is_allowed(allowed_chars,g_conv_table->get_ch(i)) && type==768)
-	  {
-	    int s9=g_conv_table->get_label(i).size();
-	    for(int j=0;j<s9;j++)
-	      {
-		label.push_back(g_conv_table->get_label(i)[j]);
-	      }
-	    changed=true;
-	    done = true;
-	  }
+	done = g_conv_table->insert_label_to_string(&label,ch);
       }
+    if (done) changed=true;
     if (!done)
     if (active && type==768 && !changed)
       {
@@ -8847,6 +8818,22 @@ struct CharConv { std::string repl; std::string ch_str; char ch; };
 
 class ConversionTable : public ConversionTableInterface {
 public:
+  static int find_str_pos(std::string val, int pos, std::string repl)
+  {
+    int s = val.size()-repl.size()+1;
+    for(int i=pos;i<s;i++)
+      {
+	int s2 = repl.size();
+	bool found = true;
+	for(int j=0;j<s2;j++)
+	  {
+	    if (val[i+j]!=repl[j]) { found=false; break; }
+	  }
+	if (found) return i;
+      }
+    return -1;
+  }
+
   static std::string replace_str3(std::string val, std::string repl, std::string subst)
   {
     while(1) {
@@ -8890,6 +8877,26 @@ public:
       pos = pos2 + 1;
     }
     return loc;
+  }
+
+  virtual bool insert_label_to_string(std::string *str, char ch) const
+  {
+    bool done = false;
+    int s8 = get_size();
+    for(int i=0;i<s8;i++)
+      {
+	if (ch==get_ch(i))
+	  {
+	    std::string label = get_label(i);
+	    int s9=label.size();
+	    for(int j=0;j<s9;j++)
+	      {
+		str->push_back(label[j]);
+	      }
+	    done = true;
+	  }
+      }
+    return done;
   }
 private:
   std::vector<CharConv> conv_table = {
