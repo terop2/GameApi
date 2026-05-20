@@ -81,8 +81,9 @@ c.style.top = (delta_y + cc.offsetTop + (cc.clientHeight-hd)/2).toString() + "px
           } else window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); }, 100);
       }
 }
-
-window.onresize=resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border);
+window.addEventListener("resize", function() {
+   resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null);
+});
 window.setTimeout(function() { resize_event2(wd,hd,delta_x,delta_y,container_width,container_height,enable_debug_border)(null); },10);
 
     </script>
