@@ -732,7 +732,7 @@ public:
       {
 	std::string display_label = label;
 
-	display_label = g_conv_table->convert_string(display_label);
+	display_label = g_conv_table->convert_labels_to_chars(display_label);
 	
 	int c = get_current_block();
 	set_current_block(-1);
@@ -1299,7 +1299,7 @@ public:
 	externally_set=false;
 	std::string display_label = label;
 
-	display_label = g_conv_table->convert_string(display_label);
+	display_label = g_conv_table->convert_labels_to_chars(display_label);
 		
 	rendered_bitmap = ev.font_api.font_string_from_atlas(ev, atlas, atlas_bm, non_editable>0?(std::string("[ ") + std::string(display_label.substr(1,display_label.size()-1))+std::string(" ]")).c_str():display_label.c_str(), x_gap*1.2);
 	//int sx = ev.bitmap_api.size_x(rendered_bitmap);
@@ -8850,7 +8850,7 @@ public:
   virtual std::string get_str_ch(int i) const { return conv_table[i].ch_str; }
   virtual char get_ch(int i) const { return conv_table[i].ch; }
 
-  virtual std::string convert_string(std::string str) const
+  virtual std::string convert_labels_to_chars(std::string str) const
   {
     int s7 = get_size();
     for(int i=0;i<s7;i++)
@@ -8859,7 +8859,7 @@ public:
       }
     return str;
   }
-  virtual int find_last_location(std::string label) const
+  virtual int find_last_location(std::string str) const
   {
     int pos = 0;
     int pos2 = -1;
@@ -8869,7 +8869,7 @@ public:
       bool found=false;
       for(int i=0;i<s;i++) {
 	//std::cout << "pos=" << pos << std::endl;
-	int res = find_str_pos(label,pos,get_label(i));
+	int res = find_str_pos(str,pos,get_label(i));
 	//std::cout << "Result:" << res << std::endl;
 	if (res!=-1) { pos2=std::max(pos2,res); found=true; }
       }

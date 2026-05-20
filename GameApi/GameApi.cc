@@ -20411,7 +20411,7 @@ IMPORT extern ConversionTableInterface *g_conv_table;
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
 
-  str = g_conv_table->convert_string(str);
+  str = g_conv_table->convert_labels_to_chars(str);
   	
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
