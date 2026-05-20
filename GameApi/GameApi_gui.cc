@@ -711,7 +711,6 @@ private:
 
 IMPORT extern ConversionTableInterface *g_conv_table;
 
-std::string replace_str3(std::string val, std::string repl, std::string subst);
 
 std::map<std::string, int> shared_text;
 
@@ -1088,17 +1087,6 @@ int find_str_pos(std::string val, int pos, std::string repl)
   return -1;
 }
 
-std::string replace_str3(std::string val, std::string repl, std::string subst)
-{
-
-  
-  while(1) {
-  int pos = find_str(val, repl);
-  if (pos==-1) return val;
-  val = val.replace(pos,repl.size(),subst);
-  }
-  return val;
-}
 
 bool is_allowed(std::string chars, char ch)
 {
@@ -8859,6 +8847,17 @@ struct CharConv { std::string repl; std::string ch_str; char ch; };
 
 class ConversionTable : public ConversionTableInterface {
 public:
+  static std::string replace_str3(std::string val, std::string repl, std::string subst)
+  {
+    while(1) {
+      int pos = find_str(val, repl);
+      if (pos==-1) return val;
+      val = val.replace(pos,repl.size(),subst);
+    }
+    return val;
+  }
+
+  
   int get_size() const { return conv_table.size(); }
   std::string get_label(int i) const { return conv_table[i].repl; }
   virtual std::string get_str_ch(int i) const { return conv_table[i].ch_str; }

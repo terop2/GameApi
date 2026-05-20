@@ -20405,7 +20405,6 @@ private:
 };
 
 
-std::string replace_str3(std::string val, std::string repl, std::string subst);
 
 IMPORT extern ConversionTableInterface *g_conv_table;
 
