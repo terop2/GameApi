@@ -104,7 +104,7 @@ fclose($fp);
 
 echo "<!DOCTYPE html>\n";
 echo "<html lang=\"en\">\n";
-echo "<title>A way to display your 3d models on the web -- jpg of 3d</title>\n";
+echo "<title>A way to display your 3d models on the web -- gltf supported</title>\n";
 echo "<head>\n";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no\"/>";
 echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">\n";
@@ -140,7 +140,7 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/phoenix_bird_scr.png\" fetchpriority=\"high\" width=\"100%\"/>\n";
+echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1; width:100%; height:auto;\" src=\"$https://$site/phoenix_bird_scr.webp\" fetchpriority=\"high\" width=\"1165\" height=\"879\"/>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
@@ -189,7 +189,7 @@ echo "</style>";
 echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";
 echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
-echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>\n";
+echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- gltf supported)</h2>\n";
 
 echo "</div>\n";
 echo "</div>\n";
@@ -277,7 +277,7 @@ echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img class=\"bl_img\" src=\"$https://$site/row1.webp\"/>\n";
+echo "<img class=\"bl_img\" width=\"1204\" height=\"931\" src=\"$https://$site/row1.webp\"/>\n";
 //echo "<img class=\"bl_img\" src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -285,7 +285,7 @@ echo "</div>\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img clasS=\"bl_img\" src=\"$https://$site/row2.webp\"/>\n";
+echo "<img clasS=\"bl_img\" width=\"1202\" height=\"931\" src=\"$https://$site/row2.webp\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
@@ -329,7 +329,7 @@ echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img class=\"bl_img\" src=\"$https://$site/row3.webp\"/>\n";
+echo "<img class=\"bl_img\" width=\"800\" height=\"600\" src=\"$https://$site/row3.webp\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 
@@ -340,8 +340,9 @@ echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 
 echo "<div class=\"bl_item img\">\n";
-// allow=\"cross-origin-isolated\" 
-echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"$https://$site/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
+// allow=\"cross-origin-isolated\"
+// seamless=\"seamless\"
+echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\"  src=\"$https://$site/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
 echo "</div></div>\n";
 echo "<div class=\"bl_column\"><div class=\"bl_item customfont content\">\n";
 echo "<a href=\"$https://$site/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"$https://$site/assets/gnome2.webp\">gnome2</a>)\n";
