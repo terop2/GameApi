@@ -26930,7 +26930,9 @@ PersistentFuncSpec g_persistent_func[] =
     { "polygon_api", "load_ds_from_temp_p", 2 },
     { "bitmap_api", "stable_diffusion", 2 },
     { "polygon_api", "meshy", 2 },
-    { "polygon_api", "tf_glb_tf", 2 }
+    { "polygon_api", "tf_glb_tf", 2 },
+    { "font_api", "FI_sprite_atlas_persistent_cache", 3 },
+    { "font_api", "FI_sprite_atlas_persistent_cache", 4 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
