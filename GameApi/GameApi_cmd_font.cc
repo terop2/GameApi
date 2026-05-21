@@ -149,6 +149,34 @@ std::vector<GameApiItem*> fontapi_functions()
 			 { "ev", "", "file://$(instdir)/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
 			 "BM", "font_api", "draw_text_large"));
 #endif
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::FI_sprite_atlas,
+			 "FI_sprite_atlas",
+			 { "ev", "font", "chars", "sx", "sy", "y_delta" },
+			 { "EveryApi&", "FI", "std::string", "int", "int", "int" },
+			 { "ev", "", "abcdefghijklmnopqrstuvwxyz\xE5\xF6\xE4{032}ABCDEFGHIJKLMNOPQRSTUCWXYZ\xC5\xC4\xD6{032}0123456789{035}{058}$%&{123}{091}{093}{125}+-~{063}", "20", "20", "35" },
+			 "FtA,BM", "font_api", "FI_sprite_atlas"));
+			    
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::FI_sprite_atlas_persistent_cache,
+			 "FI_cache",
+			 { "ev", "atlas", "atlas_bm", "atlas_filename", "atlas_bm_filename" },
+			 { "EveryApi&", "FtA", "BM", "std::string", "std::string" },
+			 { "ev", "", "", "atlas.txt", "atlas_bm.png" },
+			 "FtA,BM", "font_api", "FI_sprite_atlas_persistent_cache"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::font_string_from_atlas,
+			 "FI_fast_drawtext",
+			 { "ev", "atlas", "atlas_bm", "string", "x_gap" },
+			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
+			 { "ev", "", "", "Hello World!", "0" },
+			 "BM", "font_api", "font_string_from_atlas"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::large_string_from_atlas,
+			 "FI_fast_largetext",
+			 { "ev", "atlas", "atlas_bm", "url", "x_gap", "empty_line_height", "baseline_separation" },
+			 { "EveryApi&", "FtA", "BM", "std::string", "int", "int", "int" },
+			 { "ev", "", "", "file://$(instdir)/text_test.txt@TeroPulkkinen@https://creativecommons.org/licenses/by/3.0", "5", "30", "-1" },
+			 "BM", "font_api", "large_string_from_atlas"));
+  
 #if 0
 #if (ALL==1)||(SAVE_FONT_DUMP==1)
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::save_font_dump,

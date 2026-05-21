@@ -20120,7 +20120,7 @@ public:
   virtual int SizeY() const { return glyph->SizeY(); }
   virtual Color Map(int x, int y) const
   {
-    if (x>=0 && x<=glyph->SizeX())
+    if (x>=0 && x<glyph->SizeX())
       return Color(glyph->Map(x,y));
     else return Color(0x0);
   }
