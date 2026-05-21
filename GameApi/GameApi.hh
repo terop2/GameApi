@@ -1214,6 +1214,11 @@ class FontApi
 public:
   IMPORT FontApi(Env &e);
   IMPORT ~FontApi();
+  IMPORT void save_atlas_store_file(FtA atlas, std::string filename);
+  IMPORT FtA load_atlas_from_string(std::string buf);
+  IMPORT ARR FI_sprite_atlas(EveryApi &ev, FI font, std::string chars, int sx, int sy, int y_delta);
+  IMPORT ARR FI_sprite_atlas_persistent_cache(EveryApi &ev, FtA atlas, BM atlas_bm, std::string atlas_filename, std::string atlas_bm_filename);
+  IMPORT BM large_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string url, int x_gap, int empty_line_height, int baseline_separation);
   IMPORT FF span_key_fetcher(float start_x, float end_x, float speed_x, int down_key, int up_key);
   IMPORT ARR choose_screen(float left_x, float right_x, int min_screen, int max_screen);
   IMPORT IF quake_area_fetcher(float start_x, float end_x, float start_z, float end_z);
