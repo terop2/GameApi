@@ -2232,7 +2232,7 @@ public:
   IMPORT void del_canvas_item(W canvas, int id);
   IMPORT W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, std::vector<W *> connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
   IMPORT W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
-  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w);
+  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w, std::vector<std::string> subitems_funcname);
   IMPORT W list_item(BM icon, std::string label, int sx, int sy);
   IMPORT W list(W *array, int size, int sx, int sy);
   IMPORT W dialog_item(std::string text, BM icon, int sx, int sy);

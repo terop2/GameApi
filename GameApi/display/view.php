@@ -886,7 +886,9 @@ function parse_material_url(mat)
 function parse_material_color(mat)
 {
    var arr = mat.split(" ");
-   return arr[3];
+   var ret = arr[3];
+   //console.log(ret);
+   return ret;
 }
 function parse_material_roughness(mat)
 {
@@ -1150,10 +1152,18 @@ function get_border(i,m,filename,border_avoid,aces_value)
   if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") { gltf=",true"; }
   if (anim_value===true) { 
      //res+="MT I5011=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I504,cvbnmdfghjklertyuiop,0);\n";
+     if (width==0) {
+     res+="MT I501=ev.materials_api.mt_alt(ev,std::vector<MT>{I504},0);\n";
+     } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
-      } else {
+    }
+ } else {
+     if (width==0) {
+     res+="MT I501=ev.materials_api.mt_alt(ev,std::vector<MT>{I504},0);\n";
+     } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
-      }
+    }
+  }
 
 if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf") {
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
@@ -1291,6 +1301,7 @@ function hex_color_to_number(text)
             hash = digit + (hash << 4);
         }
 
+
         var c = (hash & 0x00FFFFFF);
         return c;
 	} return 0;
@@ -1346,13 +1357,16 @@ if (i===-1) return ["",normals_select];
  var rrs = rr.toString();
  var ggs = gg.toString();
  var bbs = bb.toString();
+ console.log(rrs);
+ console.log(ggs);
+ console.log(bbs);
 
  var rough = get_metal_roughness(i);
  var roughstr = rough.toString();
 
- var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95,1.0,0.0," + rrs + "," + ggs + "," + bbs + ",1,1,-400.0,400.0,400.0);\n";
+ var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1,3.0,0.0,-400.0,400.0,400.0);\n";
 
- var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1,1.0,0.0," + rrs + "," + ggs + "," + bbs + ",1,1,-400.0,400.0,400.0);\n";
+ var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1,3.0,0.0,-400.0,400.0,400.0);\n";
 
 
 var line = find_line_from_material_db(i);
@@ -1399,7 +1413,7 @@ function create_script(filename, contents, filenames)
 
   var normals_val = get_normals_value();
   var border_color = "000000";
-  var border_width = "1.0";
+  var border_width = "0.0";
   var brd = get_border_value();
   var border_avoid = false;
 
@@ -1492,7 +1506,7 @@ var out = "I4";
      border_color = parse_border_color(name2);
      border_width = parse_border_width(name2);
   }
-  if (border_width==="0") border_width="1.0";
+  //if (border_width==="0") border_width="1.0";
 if (normals_val===3)
   { // wireframe
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
@@ -1554,8 +1568,13 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
      res+=material[0];
      var gltf = ",false";
      if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") { gltf = ",true"; }
+     if (parseFloat(border_width)<0.01) {
+     res+="MT I46=ev.materials_api.mt_alt(ev,std::vector<MT>{I4},0);\n";
+     out = "I46";
+     } else {
      res+="MT I46=ev.materials_api.toon_border(ev,I4," + border_width + ",ff" + border_color +gltf + ");\n";
      out = "I46";
+     }
   } else
   if (filename.substr(-4)===".obj"&&mtl_name!=="") {
      res+="MT I54=ev.materials_api.m_def(ev);\n";
