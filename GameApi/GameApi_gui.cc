@@ -3572,7 +3572,7 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_title(int sx, std::string label, Ft
   return node_2;
  }
 
-EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w)
+EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w, std::vector<std::string> subitems_funcname)
 {
   W title = list_item_title(sx, label, atlas, atlas_bm);
   std::vector<W> vec;
@@ -3602,7 +3602,7 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
       W txt_21 = tooltip(txt_2, insert, toolt, atlas2, atlas_bm2, 2, 40.0);
       W txt_3 = layer(txt_1, txt_21);
       //W txt_30 = size(txt_3,140-5,32);
-      W txt_4 = hide_nonsearchable(txt_3,label,redraw_w);
+      W txt_4 = hide_nonsearchable(txt_3,label+"::"+subitems_funcname[i],redraw_w);
       vec.push_back(txt_4);
       w_vec.push_back(txt_4);
     }
@@ -7068,12 +7068,14 @@ GameApiLine convert_line(GameApi::EveryApi &ev, std::vector<CodeGenLine> &lines,
   static std::vector<GameApiItem*> funcs = all_functions(ev);
   int s2 = funcs.size();
   std::string module_name = "";
+  GameApiItem *res_item = 0;
   for(int k=0;k<s2;k++)
     {
       GameApiItem *item = funcs[k];
       if (item->ApiName(0)==l.api_name && item->FuncName(0)==l.func_name)
 	{
 	  module_name = item->Name(0);
+	  res_item = item;
 	  break;
 	}
     }
@@ -7088,15 +7090,22 @@ GameApiLine convert_line(GameApi::EveryApi &ev, std::vector<CodeGenLine> &lines,
   res.sz = i<vecs.size()?vecs[i].j.size():1;
   res.array_return = l.return_type.size()>0 && l.return_type[0]=='[' && l.return_type[l.return_type.size()-1]==']';
 
-  int s = l.params.size();
+  int s = std::max(int(l.params.size()),res_item->ParamCount(0));
   for(int i=0;i<s;i++)
     {
-      std::string param = l.params[i];
-      //std::string link = l.params_linkage[i];
-      int j = l.j[i];
-
-      res.params.push_back(convert_param(ev,lines,lines2,l.api_name,l.func_name,i,param,j));
-      
+      if (i>=l.params.size())
+	{
+	  std::string param = res_item->ParamDefault(0,i);
+	  int j = l.j[i];
+	  res.params.push_back(convert_param(ev,lines,lines2,l.api_name,l.func_name,i,param,j));
+	}
+      else {
+	std::string param = l.params[i];
+	//std::string link = l.params_linkage[i];
+	int j = l.j[i];
+	
+	res.params.push_back(convert_param(ev,lines,lines2,l.api_name,l.func_name,i,param,j));
+      }
     }
   return res;
 }
@@ -8421,6 +8430,7 @@ struct FunctionsData
   GameApi::FtA atlas;
   GameApi::BM atlas_bm;
   std::vector<std::string> vec2;
+  std::vector<std::string> vec2_0; 
   std::vector<std::string> vec3;
   GameApi::FtA atlas2;
   GameApi::BM atlas_bm2;
@@ -8431,7 +8441,7 @@ struct FunctionsData
 GameApi::W w1_func(void* ptr)
 {
   FunctionsData *dt = (FunctionsData*)ptr;
-  GameApi::W w = dt->gui->list_item_opened(130-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, dt->insert,false,dt->outer);
+  GameApi::W w = dt->gui->list_item_opened(130-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, dt->insert,false,dt->outer, dt->vec2_0);
   return w;
 }
 GameApi::W w2_func(void *ptr)
@@ -8439,7 +8449,7 @@ GameApi::W w2_func(void *ptr)
   FunctionsData *dt = (FunctionsData*)ptr;
   //GameApi::W w2 = dt->gui->list_item_title(140-5, dt->label, dt->atlas, dt->atlas_bm);
   GameApi::W e = dt->gui->empty();
-  GameApi::W w = dt->gui->list_item_opened(130-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, e,true, dt->outer);
+  GameApi::W w = dt->gui->list_item_opened(130-5, dt->label, dt->atlas, dt->atlas_bm, dt->vec2, dt->vec3, dt->atlas2, dt->atlas_bm2, e,true, dt->outer, dt->vec2_0);
   return w;
 }
 //#define DISPLAY_NUM 1
@@ -8447,12 +8457,14 @@ GameApi::W w2_func(void *ptr)
 EXPORT GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std::vector<GameApiItem*> vec, GameApi::FtA atlas, GameApi::BM atlas_bm, GameApi::FtA atlas2, GameApi::BM atlas_bm2, GameApi::W insert, GameApi::W *outer)
 {
   std::vector<std::string> vec2;
+  std::vector<std::string> vec2_0;
   std::vector<std::string> vec3;
   int s = vec.size();
   for(int i=0;i<s;i++)
     {
       GameApiItem *item = vec[i];
       vec2.push_back(item->Name(0));
+      vec2_0.push_back(item->FuncName(0));
       int sp = item->ParamCount(0);
       std::string typestr = "(";
       for(int j=0;j<sp;j++)
@@ -8488,6 +8500,7 @@ EXPORT GameApi::W functions_widget(GameApi::GuiApi &gui, std::string label, std:
   dt->atlas = atlas;
   dt->atlas_bm = atlas_bm;
   dt->vec2 = vec2;
+  dt->vec2_0 = vec2_0;
   dt->vec3 = vec3;
   dt->atlas2 = atlas2;
   dt->atlas_bm2 = atlas_bm2;
@@ -8914,3 +8927,212 @@ private:
 };
 ConversionTable g_conv_table_impl;
 EXPORT ConversionTableInterface *g_conv_table = &g_conv_table_impl;
+
+
+struct KeyData
+{
+    int key;
+    int sdl_scancode;
+    const char *normal;
+    const char *shift;
+    const char *altgr;
+};
+std::string g_current_language = "fi";
+
+
+
+
+std::vector<KeyData> finnish_scancodes =
+{
+    // number row (physical positions)
+    { 0, 30, "1", "!", "" },     // SDL_SCANCODE_1
+    { 1, 31, "2", "\"", "@" },   // SDL_SCANCODE_2
+    { 2, 32, "3", "#", "£" },    // SDL_SCANCODE_3
+    { 3, 33, "4", "$", "¤" },    // SDL_SCANCODE_4
+    { 4, 34, "5", "%", "€" },    // SDL_SCANCODE_5
+    { 5, 35, "6", "&", "" },     // SDL_SCANCODE_6
+    { 6, 36, "7", "/", "{" },    // SDL_SCANCODE_7
+    { 7, 37, "8", "(", "[" },    // SDL_SCANCODE_8
+    { 8, 38, "9", ")", "]" },    // SDL_SCANCODE_9
+    { 9, 39, "0", "=", "}" },    // SDL_SCANCODE_0
+
+    // punctuation row
+    { 10, 45, "+", "?", "\\" },  // SDL_SCANCODE_MINUS (Finnish position)
+    { 11, 46, "´", "`", "" },    // SDL_SCANCODE_EQUALS (dead key in FI layout)
+
+    // QWERTY top row
+    { 12, 4,  "q", "Q", "" },    // SDL_SCANCODE_A (actually physical A-row starts here)
+    { 13, 5,  "w", "W", "" },    // SDL_SCANCODE_B
+    { 14, 6,  "e", "E", "€" },   // SDL_SCANCODE_C
+    { 15, 7,  "r", "R", "" },    // SDL_SCANCODE_D
+    { 16, 8,  "t", "T", "" },    // SDL_SCANCODE_E
+    { 17, 9,  "y", "Y", "" },    // SDL_SCANCODE_F
+    { 18, 10, "u", "U", "" },    // SDL_SCANCODE_G
+    { 19, 11, "i", "I", "" },    // SDL_SCANCODE_H
+    { 20, 12, "o", "O", "" },    // SDL_SCANCODE_I
+    { 21, 13, "p", "P", "" },    // SDL_SCANCODE_J
+
+    // Finnish letters (important part)
+    { 22, 14, "\xE5", "\xC5", "" }, // SDL_SCANCODE_K = åÅ
+    { 23, 15, "\xF6", "\xD6", "" }, // SDL_SCANCODE_L = öÖ
+    { 24, 16, "\xE4", "\xC4", "" }, // SDL_SCANCODE_M = äÄ
+
+    // middle row
+    { 25, 17, "a", "A", "" },
+    { 26, 18, "s", "S", "" },
+    { 27, 19, "d", "D", "" },
+    { 28, 20, "f", "F", "" },
+    { 29, 21, "g", "G", "" },
+    { 30, 22, "h", "H", "" },
+    { 31, 23, "j", "J", "" },
+    { 32, 24, "k", "K", "" },
+    { 33, 25, "l", "L", "" },
+
+    // bottom row
+    { 34, 26, "z", "Z", "" },
+    { 35, 27, "x", "X", "" },
+    { 36, 28, "c", "C", "" },
+    { 37, 29, "v", "V", "" },
+    { 38, 30, "b", "B", "" },
+    { 39, 31, "n", "N", "" },
+    { 40, 32, "m", "M", "" },
+
+    // punctuation
+    { 41, 44, ",", ";", "" }, // comma
+    { 42, 45, ".", ":", "" }, // period
+    { 43, 46, "-", "_", "" }, // slash area depending layout
+};
+
+
+
+std::vector<KeyData> us_scancodes =
+{
+    // number row
+    { 0, 30, "1", "!", "" },   // SDL_SCANCODE_1
+    { 1, 31, "2", "@", "" },   // SDL_SCANCODE_2
+    { 2, 32, "3", "#", "" },   // SDL_SCANCODE_3
+    { 3, 33, "4", "$", "" },   // SDL_SCANCODE_4
+    { 4, 34, "5", "%", "" },   // SDL_SCANCODE_5
+    { 5, 35, "6", "^", "" },   // SDL_SCANCODE_6
+    { 6, 36, "7", "&", "" },   // SDL_SCANCODE_7
+    { 7, 37, "8", "*", "" },   // SDL_SCANCODE_8
+    { 8, 38, "9", "(", "" },   // SDL_SCANCODE_9
+    { 9, 39, "0", ")", "" },   // SDL_SCANCODE_0
+
+    // punctuation row
+    { 10, 45, "-", "_", "" },  // SDL_SCANCODE_MINUS
+    { 11, 46, "=", "+", "" },  // SDL_SCANCODE_EQUALS
+
+    { 12, 47, "[", "{", "" },  // SDL_SCANCODE_LEFTBRACKET
+    { 13, 48, "]", "}", "" },  // SDL_SCANCODE_RIGHTBRACKET
+    { 14, 49, "\\", "|", "" }, // SDL_SCANCODE_BACKSLASH
+
+    { 15, 51, ";", ":", "" },  // SDL_SCANCODE_SEMICOLON
+    { 16, 52, "'", "\"", "" }, // SDL_SCANCODE_APOSTROPHE
+    { 17, 53, "`", "~", "" },  // SDL_SCANCODE_GRAVE
+
+    { 18, 54, ",", "<", "" },  // SDL_SCANCODE_COMMA
+    { 19, 55, ".", ">", "" },  // SDL_SCANCODE_PERIOD
+    { 20, 56, "/", "?", "" },  // SDL_SCANCODE_SLASH
+
+    // QWERTY row
+    { 21, 4, "a", "A", "" },
+    { 22, 5, "b", "B", "" },
+    { 23, 6, "c", "C", "" },
+    { 24, 7, "d", "D", "" },
+    { 25, 8, "e", "E", "" },
+    { 26, 9, "f", "F", "" },
+    { 27, 10, "g", "G", "" },
+    { 28, 11, "h", "H", "" },
+    { 29, 12, "i", "I", "" },
+    { 30, 13, "j", "J", "" },
+    { 31, 14, "k", "K", "" },
+    { 32, 15, "l", "L", "" },
+
+    { 33, 16, "m", "M", "" },
+    { 34, 17, "n", "N", "" },
+    { 35, 18, "o", "O", "" },
+    { 36, 19, "p", "P", "" },
+    { 37, 20, "q", "Q", "" },
+    { 38, 21, "r", "R", "" },
+    { 39, 22, "s", "S", "" },
+    { 40, 23, "t", "T", "" },
+    { 41, 24, "u", "U", "" },
+    { 42, 25, "v", "V", "" },
+    { 43, 26, "w", "W", "" },
+    { 44, 27, "x", "X", "" },
+    { 45, 28, "y", "Y", "" },
+    { 46, 29, "z", "Z", "" },
+};
+
+
+
+std::vector<KeyData> german_scancodes =
+{
+    // number row (DE layout differences!)
+    { 0, 30, "1", "!", "" },     // SDL_SCANCODE_1
+    { 1, 31, "2", "\"", "²" },   // SDL_SCANCODE_2
+    { 2, 32, "3", "§", "³" },    // SDL_SCANCODE_3
+    { 3, 33, "4", "$", "" },     // SDL_SCANCODE_4
+    { 4, 34, "5", "%", "" },     // SDL_SCANCODE_5
+    { 5, 35, "6", "&", "" },     // SDL_SCANCODE_6
+    { 6, 36, "7", "/", "{" },    // SDL_SCANCODE_7
+    { 7, 37, "8", "(", "[" },    // SDL_SCANCODE_8
+    { 8, 38, "9", ")", "]" },    // SDL_SCANCODE_9
+    { 9, 39, "0", "=", "}" },    // SDL_SCANCODE_0
+
+    // punctuation row (DE layout)
+    { 10, 45, "ß", "?", "\\" },  // SDL_SCANCODE_MINUS
+    { 11, 46, "´", "`", "" },    // SDL_SCANCODE_EQUALS (dead key)
+
+    { 12, 47, "ü", "Ü", "" },    // SDL_SCANCODE_LEFTBRACKET
+    { 13, 48, "+", "*", "~" },   // SDL_SCANCODE_RIGHTBRACKET
+    { 14, 49, "#", "'", "" },    // SDL_SCANCODE_BACKSLASH
+
+    { 15, 51, "ö", "Ö", "" },    // SDL_SCANCODE_SEMICOLON
+    { 16, 52, "ä", "Ä", "" },    // SDL_SCANCODE_APOSTROPHE
+    { 17, 53, "^", "°", "" },    // SDL_SCANCODE_GRAVE
+
+    { 18, 54, ",", ";", "" },    // SDL_SCANCODE_COMMA
+    { 19, 55, ".", ":", "" },    // SDL_SCANCODE_PERIOD
+    { 20, 56, "-", "_", "" },    // SDL_SCANCODE_SLASH
+
+    // QWERTZ letter row
+    { 21, 4, "a", "A", "" },
+    { 22, 5, "b", "B", "" },
+    { 23, 6, "c", "C", "" },
+    { 24, 7, "d", "D", "" },
+    { 25, 8, "e", "E", "€" },
+    { 26, 9, "f", "F", "" },
+    { 27, 10, "g", "G", "" },
+    { 28, 11, "h", "H", "" },
+    { 29, 12, "i", "I", "" },
+    { 30, 13, "j", "J", "" },
+    { 31, 14, "k", "K", "" },
+    { 32, 15, "l", "L", "" },
+
+    { 33, 16, "m", "M", "" },
+    { 34, 17, "n", "N", "" },
+    { 35, 18, "o", "O", "" },
+    { 36, 19, "p", "P", "" },
+    { 37, 20, "q", "Q", "@" },
+    { 38, 21, "r", "R", "" },
+    { 39, 22, "s", "S", "" },
+    { 40, 23, "t", "T", "" },
+    { 41, 24, "u", "U", "" },
+    { 42, 25, "v", "V", "" },
+    { 43, 26, "w", "W", "" },
+    { 44, 27, "x", "X", "" },
+    { 45, 28, "z", "Z", "" }, // NOTE: swapped y/z in QWERTZ
+    { 46, 29, "y", "Y", "" },
+};
+
+
+std::vector<KeyData> choose_keydata()
+{
+  if (g_current_language=="fi") return finnish_scancodes;
+  if (g_current_language=="us") return us_scancodes;
+  if (g_current_language=="ge") return german_scancodes;
+  std::cout << "Warning: " << g_current_language << " language not available at choose_keydata()." << std::endl;
+  return finnish_scancodes;
+}
