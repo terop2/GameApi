@@ -1203,7 +1203,7 @@ function get_background_value()
 function get_brightness_value()
 {
   var elem = document.getElementById("brightness-select");
-  return parseFloat(elem.value);
+  return parseInt(elem.value);
 }
 function get_brightness(i)
 {
@@ -1364,9 +1364,12 @@ if (i===-1) return ["",normals_select];
  var rough = get_metal_roughness(i);
  var roughstr = rough.toString();
 
- var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1,3.0,0.0,-400.0,400.0,400.0);\n";
+ var bright_value = get_brightness_value();
+ var brightness = get_brightness(bright_value);
 
- var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1,3.0,0.0,-400.0,400.0,400.0);\n";
+ var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1," + brightness + ",0.0,-400.0,400.0,400.0);\n";
+
+ var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1," + brightness + ",0.0,-400.0,400.0,400.0);\n";
 
 
 var line = find_line_from_material_db(i);

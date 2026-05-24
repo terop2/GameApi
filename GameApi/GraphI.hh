@@ -13,6 +13,7 @@
 #include <emscripten/heap.h>
 #endif
 
+
 class ConversionTableInterface
 {
 public:
@@ -181,6 +182,33 @@ public:
   virtual void register_obj(CollectInterface *i)=0;
   virtual void register_first_frame(CollectInterface *i)=0;
 };
+
+class FloatRay
+{
+public:
+  virtual Point Ray(float x) const=0;
+};
+
+class FloatScene : public CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  
+  virtual float Field(Point p) const=0;
+  virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const=0;
+  virtual unsigned int BaseColor(Point p) const=0;
+  virtual unsigned int MetalRoughnessColor(Point p) const=0;
+  virtual unsigned int NormalColor(Point p) const=0;
+  virtual unsigned int OcculsionColor(Point p) const=0;
+  virtual unsigned int EmissiveColor(Point p) const=0;
+  virtual unsigned int SheenColor(Point p) const=0;
+  virtual unsigned int SpecGlossiColor(Point p) const=0;
+  virtual unsigned int DiffuseColor(Point p) const=0;
+};
+
+
 class OGLVisitor;
 class OpenGlNode
 {

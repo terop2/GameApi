@@ -2,7 +2,8 @@
 #include "GameApi_h.hh"
 
 
-class FF_Ray : public FloatFieldRay
+
+class FF_Ray : public FloatRay
 {
 public:
   FF_Ray(Point p1, Point p2) : p1(p1), p2(p2) { }
@@ -15,22 +16,13 @@ private:
 class FF_RayField : public Function<float,float>
 {
 public:
-  FF_RayField(FloatFieldRay &ray, FloatField &field) : ray(ray), field(field) {}
+  FF_RayField(FloatRay &ray, FloatScene &field) : ray(ray), field(field) {}
   float Index(float a) const { return field.Field(ray.Ray(a)); }
 private:
   FloatFieldRay &ray;
   FloatField &field;
 };
 
-class FF_SphereFloatField : public FloatField
-{
-public:
-  FF_SphereFloatField(Point center, float radius) : center(center), radius(radius) { }
-  float Field(Point p) const { return (p-center).Dist()-radius; }
-private:
-  Point center;
-  float radius;
-};
 
 class FF_SphereRays : public FF_Ray
 {
@@ -76,7 +68,7 @@ class SphereRaysBitmap : public Bitmap<Color>
 public:
   SphereRaysBitmap(Point center, float radius,
 		   float delta_alfa, float delta_beta,
-		   FloatField &field,
+		   FloatScene &field,
 		   int maxiter, float c,
 		   unsigned int (FloatField::*fptr)(Point))
     : center(center), radius(radius), delta_alfa(delta_alfa), delta_beta(delta_beta), field(field), maxiter(maxiter), c(c), fptr(fptr) { }
@@ -113,16 +105,41 @@ private:
   float radius;
   float delta_alfa;
   float delta_beta;
-  FloatField &field;
+  FloatScene &field;
   int maxiter;
   float c;
   unsigned int (FloatField::*fptr)(Point);
 };
 
+
+
+GameApi::BM GameApi::BitmapApi::sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius,
+						   float delta_alfa, float delta_beta,
+						   GameApi::FS field,
+						   int maxiter, float c,
+						   int fptr_enum)
+{
+  FloatScene *scene = find_float_scene(e,field);
+  unsigned int (FloatScene::*fptr)(Point);
+  if (fptr_enum==0) fptr = &FloatScene::BaseColor;
+  if (fptr_enum==1) fptr = &FloatScene::MetalRoughnessColor;
+  if (fptr_enum==2) fptr = &FloatScene::NormalColor;
+  if (fptr_enum==3) fptr = &FloatScene::OcculsionColor;
+  if (fptr_enum==4) fptr = &FloatScene::EmissiveColor;
+  if (fptr_enum==5) fptr = &FloatScene::SheenColor;
+  if (fptr_enum==6) fptr = &FloatScene::SpecGlossiColor;
+  if (fptr_enum==7) fptr = &FloatScene::DiffuseColor;
+  Bitmap<Color> *bm = new SphereRaysBitamp(Point(center_x,center_y,center_z),radius,delta_alfa,delta_beta,*scene,maxiter,c,fptr);
+  BitmapColorHandle *handle2 = new BitmapColorHandle;
+  handle2->bm = bm;
+  BM bm2 = add_bitmap(e, handle2);
+  return bm2;
+}
+
 class SphereRays : public FaceCollection
 {
 public:
-  SphereRays(Point center, float radius, float delta_alfa, float delta_beta, FloatField &field, int maxiter, float c)
+  SphereRays(Point center, float radius, float delta_alfa, float delta_beta, FloatScene &field, int maxiter, float c)
     : center(center), radius(radius), delta_alfa(delta_alfa), delta_beta(delta_beta), field(field) { }
 
   virtual void Collect(CollectVisitor &vis) { field.Collect(vis); }
@@ -210,9 +227,73 @@ private:
   float radius;
   float delta_alfa;
   float delta_beta;
-  FloatField &field;
+  FloatScene &field;
   int maxiter;
   float c;
   mutable int store_face;
   mutable Vector store_res;
+};
+GameApi::P GameApi::PolygonApi::sphere_rays(float center_x, float center_y, float center_z, float radius,
+					    float delta_alfa, float delta_beta,
+					    GameApi::FS field,
+					    int maxiter, float c)
+{
+  FloatScene *scene = find_float_scene(e,field);
+  FaceCollection *coll = new SphereRays(Point(center_x, center_y, center_z), radius, delta_alfa, delta_beta, *scene, maxiter, c);
+  return add_polygon2(e,coll,1);
+}
+
+class FloatSceneWithExecute : public FloatScene
+{
+public:
+  Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const
+  {
+    FF_SphereRays s_rays(center,radius,alfa,beta);
+    FF_RayField r_field(s_rays,field);
+    RootFinding_Lipschitz root(r_field,0.0f,1.0f,maxiter,c);
+    float x = root.root(found);
+    Point p = s_rays.Ray(x);
+    return p;
+  }
+};
+
+class FF_FloatFieldColor : public FloatSceneWithExecute
+{
+public:
+  FF_FloatFieldColor(FloatScene &scene, unsigned int color, int fptr_enum) : scene(scene), color(color), fptr_enum(fptr_enum) { }
+  virtual float Field(Point p) const { return scene.Field(p); }
+  virtual unsigned int BaseColor(Point p) const { if (fptr_enum==0) return color; else return scene.BaseColor(p); }
+  virtual unsigned int MetalRoughnessColor(Point p) const { if (fptr_enum==1) return color; else return scene.MetalRoughnessColor(p); }
+  virtual unsigned int NormalColor(Point p) const { if (fptr_enum==2) return color; else return scene.NormalColor(p); }
+  virtual unsigned int OcculsionColor(Point p) const { if (fptr_enum==3) return color; else return scene.OcculsionColor(p); }
+  virtual unsigned int EmissiveColor(Point p) const { if (fptr_enum==4) return color; else return scene.EmissiveColor(p); }
+  virtual unsigned int SheenColor(Point p) const { if (fptr_enum==5) return color; else return scene.SheenColor(p); }
+  virtual unsigned int SpecGlossiColor(Point p) const { if (fptr_enum==6) return color; else return scene.SpecGlossiColor(p); }
+  virtual unsigned int DiffuseColor(Point p) const { if (fptr_enum==7) return color; else return scene.DiffuseColor(p); }
+private:
+  FloatScene &scene;
+  unsigned int color;
+  int fptr_enum;
+};
+GameApi::FS GameApi::FloatSceneApi::color_scene(FS scene2, unsigned int color, int fptr_enum)
+{
+  FloatScene *scene = find_float_scene(e,scene2);
+  return add_float_scene(e, new FF_FloatFieldColor(scene, color, fptr_enum));
+}
+class FF_SphereFloatField : public FloatSceneWithExecute
+{
+public:
+  FF_SphereFloatField(Point center, float radius) : center(center), radius(radius) { }
+  float Field(Point p) const { return (p-center).Dist()-radius; }
+  virtual unsigned int BaseColor(Point p) const { return 0xffffffff; }
+  virtual unsigned int MetalRoughnessColor(Point p) const { return 0xff000000; }
+  virtual unsigned int NormalColor(Point p) const { return 0xff000000; }
+  virtual unsigned int OcculsionColor(Point p) const { return 0xff000000; }
+  virtual unsigned int EmissiveColor(Point p) const { return 0xff000000; }
+  virtual unsigned int SheenColor(Point p) const { return 0xff000000; }
+  virtual unsigned int SpecGlossiColor(Point p) const { return 0xff000000; }
+  virtual unsigned int DiffuseColor(Point p) const { return 0xff000000; }
+private:
+  Point center;
+  float radius;
 };
