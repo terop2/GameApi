@@ -2754,6 +2754,7 @@ public:
   IMPORT FloatSceneApi(Env &e);
   FS fs_sphere(float center_x, float center_y, float center_z, float radius);
   FS color_scene(FS scene, unsigned int color, int fptr_enum);
+  FS fd_to_fs(EveryApi &ev, FD fd);
 private:
   Env &e;
 };
@@ -2767,7 +2768,7 @@ public:
   IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
 		       float delta_alfa, float delta_beta,
 		       FS field,
-		       int maxiter, float c);
+		       int maxiter, float c, std::vector<PT> vec);
   IMPORT PV p_array(std::vector<P> vec);
   IMPORT ARR array_p_array(std::vector<PV> vec);
   IMPORT ARR seq_p_array(std::vector<P> vec, std::vector<P> vec2);
