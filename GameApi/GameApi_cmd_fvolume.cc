@@ -30,6 +30,35 @@ std::vector<GameApiItem*> floatvolumeapi_functions()
 {
   std::vector<GameApiItem*> vec;
 
+  // THIS IS ACTUALLY FOR FLOATSCENE
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::fs_sphere,
+			 "fs_sphere",
+			 { "center_x", "center_y", "center_z", "radius" },
+			 { "float", "float", "float" ,"float" },
+			 { "0.0", "0.0", "0.0", "300.0" },
+			 "FS", "float_scene_api", "fs_sphere"));
+  vec.push_back(ApiItemF(&GameApi::EveryApi::float_scene_api, &GameApi::FloatSceneApi::color_scene,
+			 "fs_color",
+			 { "scene", "color", "enum" },
+			 { "FS", "unsigned int", "{BaseColor,MetalRoughnessColor,NormalColor,OcculsionColor,EmissiveColor,SheenColor,SpecGlossiColor,DiffuseColor}" },
+			 { "", "ff000000", "0" },
+			 "FS", "float_scene_api", "color_scene"));
+  
+  vec.push_back(ApiItemF(&GameApi::EveryApi::bitmap_api, &GameApi::BitmapApi::sphere_rays_bitmap,
+			 "fs_bitmap",
+			 { "center_x", "center_y", "center_z", "radius", "delta_alfa", "delta_beta", "scene", "maxiter", "c", "fptr_enum" },
+			 { "float", "float", "float", "float", "float", "float", "FS", "int", "float", "int" },
+			 { "0.0", "0.0", "0.0", "400.0", "0.01", "0.01", "", "128", "0.00125", "0" },
+			 "BM", "bitmap_api", "sphere_rays_bitmap"));
+
+  vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::sphere_rays,
+			 "fs_p",
+			 { "center_x", "center_y", "center_z", "radius", "delta_alfa", "delta_beta", "scene", "maxiter", "c" },
+			 { "float", "float", "float", "float", "float", "float", "FS", "int", "float" },
+			 { "0.0", "0.0", "0.0", "400.0", "0.01", "0.01", "", "128", "0.00125" },
+			 "P", "polygon_api", "sphere_rays"));
+  
 #if 0
   
   vec.push_back(ApiItemF(&GameApi::EveryApi::polygon_api, &GameApi::PolygonApi::colourspace_sphere2,

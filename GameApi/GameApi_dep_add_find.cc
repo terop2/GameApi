@@ -138,6 +138,17 @@ void add_b(std::shared_ptr<void> ptr)
 }
 
 
+GameApi::FS add_float_scene(GameApi::Env &e, FloatScene *scene)
+{
+  EnvImpl *env = ::EnvImpl::Environment(&e);
+  env->float_scenes.push_back(scene);
+  if (g_current_block != -2)
+    add_b(std::shared_ptr<void>(scene));
+  GameApi::FS im;
+  im.id = env->float_scenes.size()-1;
+  return im;
+}
+
 GameApi::PV add_facecoll_array(GameApi::Env &e, Array<int,FaceCollection*> *arr)
 {
   EnvImpl *env = ::EnvImpl::Environment(&e);
@@ -1529,6 +1540,12 @@ GameApi::LL add_pos(GameApi::Env &e, GameApi::L l, GameApi::MV point)
 #endif
   GameApi::LL ll = { -1 };
   return ll;
+}
+
+FloatScene *find_float_scene(GameApi::Env &e, GameApi::FS fs)
+{
+  ::EnvImpl *env = ::EnvImpl::Environment(&e);
+  return env->float_scenes[fs.id];  
 }
 
 Array<int,FaceCollection*> *find_facecoll_array(GameApi::Env &e, GameApi::PV pa)

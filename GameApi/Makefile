@@ -120,7 +120,7 @@ CFiles=	GameApi_dep_store.cc GameApi_dep_add_find.cc GameApi_dep_env.cc GameApi_
         GameApi_vbo.cc GameApi_ve.cc GameApi_wmod.cc \
         GameApi_wv.cc GameApi_cut.cc GameApi_in.cc \
 	GameApi_imp.cc GameApi_plane.cc GameApi_integrator.cc Main.cc GameApi_vr.cc GameApi_low.cc GameApi_qt.cc Math2.cc \
-	GameApi_cmd.cc cpushader.cc \
+	GameApi_cmd.cc cpushader.cc GameApi_ff.cc \
 draco/attributes/attribute_octahedron_transform.cc    draco/attributes/geometry_attribute.cc \
 draco/attributes/attribute_quantization_transform.cc  draco/attributes/point_attribute.cc \
 draco/attributes/attribute_transform.cc \

@@ -8555,7 +8555,7 @@ EXPORT GameApi::W GameApi::GuiApi::volumeapi_functions_list_item(FtA atlas1, BM 
 }
 EXPORT GameApi::W GameApi::GuiApi::floatvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert, W *outer)
 {
-  return functions_widget(*this, "FVolumeApi", floatvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert,outer);
+  return functions_widget(*this, "FloatSceneApi", floatvolumeapi_functions(), atlas1, atlas_bm1, atlas2, atlas_bm2, insert,outer);
 }
 EXPORT GameApi::W GameApi::GuiApi::colorvolumeapi_functions_list_item(FtA atlas1, BM atlas_bm1, FtA atlas2, BM atlas_bm2, W insert, W *outer)
 {
