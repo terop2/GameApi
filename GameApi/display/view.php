@@ -162,7 +162,7 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 
 </script>
 
-<div id="app">
+<div id="app" v-cloak>
 <appdragdroparea @dragdrop="dragdrop2">
 
 <apptitle><a href="view.php">The 3d model viewer</a></apptitle>
@@ -899,6 +899,7 @@ function parse_material_roughness(mat)
 
 </script>
 <style>
+[v-cloak] { display:none; }
 .lab { width:70%; height: 30px; text-align:center; }
 .canvas { border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px; }
 .block { display: block;   }
