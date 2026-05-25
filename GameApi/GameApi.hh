@@ -1016,7 +1016,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
-  IMPORT BM sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius, float delta_alfa, float delta_beta, FS field, int maxiter, float c, int fptr_enum);
+  IMPORT BM sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius, float delta_alfa, float delta_beta, FS field, int maxiter, float c, int fptr_enum, std::vector<PT> vec, int vec_choose);
   IMPORT TXID video_source(std::string filename, int sx, int sy);
   IMPORT BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
   // temp store
@@ -2766,6 +2766,10 @@ public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
   IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
+		       float delta_alfa, float delta_beta,
+		       FS field,
+		       int maxiter, float c, std::vector<PT> vec);
+  IMPORT ARR sphere_rays2(EveryApi &ev, float center_x, float center_y, float center_z, float radius,
 		       float delta_alfa, float delta_beta,
 		       FS field,
 		       int maxiter, float c, std::vector<PT> vec);

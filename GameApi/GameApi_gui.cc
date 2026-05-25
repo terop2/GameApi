@@ -5635,7 +5635,7 @@ EXPORT void GameApi::GuiApi::generic_to_string(const EditTypes &source, std::str
     } else
   if (type=="unsigned int")
     {
-      std::string s = source.color.substr(1,source.color.size()-1);
+      std::string s = source.color.size()>0 && source.color[0]=='@' ? source.color.substr(1,source.color.size()-1) : source.color;
       target = s;
       if (source.expr.size()>0 && source.expr[0]=='@')
 	expr = source.expr.substr(1,source.expr.size()-1);
