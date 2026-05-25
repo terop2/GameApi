@@ -232,6 +232,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(OVX)
   MAC(PM)
   MAC(PV)
+  MAC(FS)
   struct TRB { int id; }; // g_resize_transfer_id+g_anim_transfer_id, both included
   struct TRR { int id; }; // g_resize_transfer_id
   struct TRA { int id; }; // g_anim_transfer_id
@@ -1015,6 +1016,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius, float delta_alfa, float delta_beta, FS field, int maxiter, float c, int fptr_enum);
   IMPORT TXID video_source(std::string filename, int sx, int sy);
   IMPORT BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
   // temp store
@@ -2746,12 +2748,26 @@ struct MaterialDef
   std::string bump;
 };
 
+class FloatSceneApi
+{
+public:
+  IMPORT FloatSceneApi(Env &e);
+  FS fs_sphere(float center_x, float center_y, float center_z, float radius);
+  FS color_scene(FS scene, unsigned int color, int fptr_enum);
+private:
+  Env &e;
+};
+
 
 class PolygonApi
 {
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
+		       float delta_alfa, float delta_beta,
+		       FS field,
+		       int maxiter, float c);
   IMPORT PV p_array(std::vector<P> vec);
   IMPORT ARR array_p_array(std::vector<PV> vec);
   IMPORT ARR seq_p_array(std::vector<P> vec, std::vector<P> vec2);
@@ -4529,6 +4545,7 @@ struct EveryApi
   NewPlaneApi newplane_api;
   SurfaceApi surface_api;
   LowFrameBufferApi low_frame_api;
+  FloatSceneApi float_scene_api;
 private:
   Env &env;
   EveryApi(const EveryApi&);
