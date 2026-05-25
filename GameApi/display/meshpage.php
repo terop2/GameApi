@@ -198,7 +198,6 @@ $highmem = js_highmem();
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
 <script src="vue.js" async></script>
 <script>
- window.showPthreadsDiv = Vue.observable({value:false})
 </script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -251,7 +250,7 @@ $highmem = js_highmem();
 
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
-<div id="app" class="container-lg">
+<div id="app" class="container-lg" v-cloak>
 
 <!-- new navbar -->
 <div id="navbar1" style="display:none">
@@ -1624,6 +1623,7 @@ function load_anim_pic_reset(num,file_id)
 
 </body>
 <style>
+[v-cloak] { display: none; }
 .pthreads_div {
    position: relative;
    top: 0px;
@@ -2220,6 +2220,7 @@ var app = new Vue({
    el: '#app',
 
    mounted: function() {
+      window.showPthreadsDiv = Vue.observable({value:false});
       var d = document.getElementById("pthreads_div");
       d.style = "";
       //window.showPthreadsDiv.value = true;
