@@ -3131,7 +3131,7 @@ function show_emscripten(str,hide,indicator,is_async)
 <script type="text/javascript">
   var canv = document.getElementById("canvas");
 
-  var Module = {
+window.Module = {
       onStartup: function() {
         //console.log("onRuntimeInitialized done");
       	window.setTimeout(function() { check_em(app.indicator)(); },30);
@@ -3140,9 +3140,9 @@ function show_emscripten(str,hide,indicator,is_async)
       },
       onAbort: function() { reloadPage("onAbort"); }
   };
-Module.canvas = canv;
+window.Module.canvas = canv;
 
-Module.locateFile = function(path, prefix) {
+window.Module.locateFile = function(path, prefix) {
     if (path.endsWith('.js')) {
         if (!window.wasmJSContentPromise) {
             window.wasmJSContentPromise = fetch(prefix + path)
