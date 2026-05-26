@@ -81,7 +81,7 @@ if ($id>0)
 <meta http-equiv="Expires" content="0" />
 
 </head>
-<body>
+<body class="preload-hidden">
 <script>
 setInterval(() => {
   console.log(
@@ -222,6 +222,58 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 </appdragdroparea>
 </div> <!-- vue ends here -->
 Warning: If you submit content to using the submit button and the content is owned by someone else, you need to obtain reproduction rights and give meshpage.org permission to publish the content in meshpage.org. While the content is available only to people who gets access to resulting urls, the reproduction rights are still required.
+
+<script>
+ window.addEventListener("load", () => {
+   document.body.classList.remove("preload-hidden");
+   });
+</script>
+
+<script>
+  const MAX_RELOADS = 3;
+
+  let reloads =
+    parseInt(sessionStorage.getItem("reloads") || "0");
+
+  function reloadPage(reason) {
+
+    console.log("Reload reason:", reason);
+
+    if (reloads >= MAX_RELOADS) {
+
+      document.body.innerHTML = `
+        <h1>Startup Failed</h1>
+        <p>Too many reload attempts.</p>
+        <button onclick="sessionStorage.clear(); location.reload()">
+          Retry
+        </button>
+      `;
+
+      return;
+    }
+
+    reloads++;
+
+    sessionStorage.setItem(
+      "reloads",
+      String(reloads)
+    );
+
+    location.reload();
+    }
+
+window.onerror = function() {
+  reloadPage("window.onerror");
+};
+
+window.addEventListener("unhandledrejection", e => {
+  if (String(e.reason).includes("WebAssembly")) {
+     reloadPage("unhandledrejection");
+    
+  }
+});
+</script>
+
 </body>
 </html>
 
@@ -899,6 +951,7 @@ function parse_material_roughness(mat)
 
 </script>
 <style>
+.preload-hidden { display:none; }
 [v-cloak] { display:none; }
 .lab { width:70%; height: 30px; text-align:center; }
 .canvas { border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px; }
@@ -2057,6 +2110,8 @@ canvas : canv,
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
+   onAbort: function() { reloadPage("onAbort"); }
+
    };
 
 

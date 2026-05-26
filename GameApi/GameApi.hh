@@ -393,6 +393,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML ogl_set_frame_rate(ML ml, int fps);
+  IMPORT float get_frame_time() const;
   IMPORT TRB transfer_id();
   IMPORT TRR resize_transfer_id(TRB id);
   IMPORT TRA anim_transfer_id(TRB id);

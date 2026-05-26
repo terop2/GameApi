@@ -71,6 +71,7 @@ std::string GetContentInstallDir(bool b);
 
 
 
+
 IMPORT extern GameApi::EveryApi *g_everyapi;
 std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
 
@@ -18010,7 +18011,7 @@ void blocker_iter(void *arg)
     Envi_2 *env = (Envi_2*)arg;
   env->ev->mainloop_api.fpscounter_frameready();
 	}
-    env->ev->mainloop_api.swapbuffers();
+	  env->ev->mainloop_api.swapbuffers();
 #ifdef WAYLAND
     static uint64_t t0 = get_time_us();
     uint64_t t1 = get_time_us();
@@ -18245,7 +18246,7 @@ public:
     
 #ifdef EMSCRIPTEN
     if (need_change2) {
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
+      //emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       need_change=true;
       need_change2=false;
@@ -18487,7 +18488,7 @@ public:
 #ifdef EMSCRIPTEN
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
+      //emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
     }
@@ -18695,7 +18696,6 @@ public:
     if (err != Low_GL_NO_ERROR) { printf("GL error: %x\n", err); }
 #endif
 
-    
    env->ev->mainloop_api.swapbuffers();
 
 #ifdef WAYLAND
@@ -18893,8 +18893,8 @@ public:
     }
 #else
     if (!g_new_blocker_block)
-            emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1); // 0,1
-    //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
+      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1); // 0,1
+      //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
     else
       g_pending_blocker_env = env;
 #endif
@@ -19040,6 +19040,57 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
   blk2->Execute();
 }
 
+#ifdef EMSCRIPTEN
+#if 0
+void *splitter_iter4(void *userData)
+{
+  
+  return 0;
+}
+#endif
+#endif
+
+bool g_render_trigger=false;
+EM_BOOL splitter_iter3(double time, void *userData)
+{
+  splitter_iter2(userData);
+  //g_render_trigger=true;
+  //std::cout << "Trigger" << std::endl;
+  //tasks_add(5151,&splitter_iter4,userData);
+  return EM_TRUE;
+}
+
+#ifdef EMSCRIPTEN
+#if 0
+void *render_thread(void *userData)
+{
+  while(1) {
+    if (g_render_trigger) {
+      std::cout << "Render" << std::endl;
+      g_render_trigger=false;
+      //splitter_iter4(userData);
+    }
+  }
+  return 0;
+}
+void start_render_thread()
+{
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 4096000);
+    //std::cout << "phread_create" << std::endl;
+    pthread_t *thread_id = new pthread_t;
+    pthread_create(thread_id, &attr, &render_thread, (void*)0);
+    //std::cout << "pthread_create_return: " << val << std::endl;
+    pthread_attr_destroy(&attr);
+
+  
+}
+#endif
+#endif
+
+int g_splitter_fps = 0;
 
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
@@ -19076,7 +19127,7 @@ void splitter_iter2(void *arg)
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
 	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1); // 0,1
-	//emscripten_request_animation_frame_loop(splitter_iter2, (void*)next);
+	//emscripten_request_animation_frame_loop(splitter_iter3, (void*)next);
       }
 #else
       splitter_current = next;
@@ -19107,6 +19158,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
   if (spl2->NoMainLoop()) { } else {
     //emscripten_request_animation_frame_loop(splitter_iter2,(void*)spl2);
     emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1); // 0.1
+    //emscripten_request_animation_frame_loop(splitter_iter3, (void*)spl2);
   }
 #endif
 #else

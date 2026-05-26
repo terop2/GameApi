@@ -2571,6 +2571,24 @@ GameApi::ARR GameApi::PolygonApi::seq_p_array(std::vector<P> vec, std::vector<P>
   return add_array(e,t);
 }
 
+float GameApi::MainLoopApi::get_frame_time() const
+{
+  MainLoopPriv *p = (MainLoopPriv*)priv;
+  return p->frame_time;
+}
+
+float get_execute_array_delta_time(GameApi::EveryApi &ev, MainLoopEnv &env)
+{
+  unsigned int frame_time0 = ev.mainloop_api.get_frame_time();
+  float frame_time = float(frame_time0)/100.0;
+
+  unsigned int time = g_low->sdl->SDL_GetTicks();
+  float curr_time = float(time)/100.0;
+
+  float delta_time = curr_time - frame_time;
+  std::cout << "DELTA_TIME" << delta_time << std::endl;
+  return delta_time;
+}
 
 
 
@@ -2660,6 +2678,14 @@ private:
   std::vector<MainLoopItem*> vec;
 
 };
+
+extern int g_splitter_fps;
+
+GameApi::ML GameApi::MainLoopApi::ogl_set_frame_rate(GameApi::ML ml, int fps)
+{
+  g_splitter_fps = fps;
+  return ml;
+}
 
 class FrameBufferArrayMainLoop : public FrameBufferLoop
 {
