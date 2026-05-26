@@ -264,7 +264,9 @@ extern double g_dpr;
 
 IMPORT extern const char * g_html_dir;
 IMPORT const char * get_html_directory2();
-
+//#ifdef THREADS
+//void start_render_thread();
+//#endif
 
 int main(int argc, char *argv[]) {
 #ifdef THREADS
@@ -274,7 +276,9 @@ int main(int argc, char *argv[]) {
   g_html_dir = get_html_directory2();
   
   tasks_init();
-
+  //#ifdef THREADS
+  // start_render_thread();
+  //#endif  
   std::set_new_handler(&out_of_memory);
   
   call_count++;

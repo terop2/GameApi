@@ -554,26 +554,6 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
   
   initialize_low(0);
 
-#ifdef EMSCRIPTEN
-  EmscriptenWebGLContextAttributes attr;
-  emscripten_webgl_init_context_attributes(&attr);
-  attr.majorVersion = 2; attr.minorVersion = 0;
-  //attr.antialias=false;
-  
-  
-  attr.enableExtensionsByDefault = false;
-
-
-  
-  //attr.desynchronized = true;
-  //attr.premultipliedAlpha = true;
-  //attr.antialias = true;
-  //attr.depth = true;
-  //attr.alpha = true;
-  
-  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context("#canvas", &attr);
-  emscripten_webgl_make_context_current(ctx);
-#endif
   
   
 #ifdef SDL2_USED
@@ -597,6 +577,26 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
     //   std::cout << "TEST:" << std::endl;
 
+#ifdef EMSCRIPTEN
+  EmscriptenWebGLContextAttributes attr;
+  emscripten_webgl_init_context_attributes(&attr);
+  attr.majorVersion = 2; attr.minorVersion = 0;
+  //attr.antialias=false;
+  
+  
+  attr.enableExtensionsByDefault = false;
+
+
+  
+  //attr.desynchronized = true;
+  //attr.premultipliedAlpha = true;
+  //attr.antialias = true;
+  //attr.depth = true;
+  //attr.alpha = true;
+  
+  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context("#canvas", &attr);
+  emscripten_webgl_make_context_current(ctx);
+#endif
     
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_RED_SIZE, 8);
   g_low->sdl->SDL_GL_SetAttribute(Low_SDL_GL_GREEN_SIZE, 8);
@@ -725,10 +725,12 @@ Low_SDL_Surface *InitSDL2(int scr_x, int scr_y, bool vblank, bool antialias, boo
 
   //std::cout << "Trying to create context" << std::endl;
   g_context = g_low->sdl->SDL_GL_CreateContext(sdl_window);
+  
   if (!g_context) { 
     std::cout << "Could not create Opengl3.2 context" << std::endl; 
     std::cout << g_low->sdl->SDL_GetError() << std::endl;
   }
+  
 
 
   

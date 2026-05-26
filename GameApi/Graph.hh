@@ -497,7 +497,7 @@ public:
       }
   }
 
-  void push_back(Bitmap<T> *bm, int top, int ascender, int height, int advance_x, int descender) 
+  void push_back(Bitmap<T> *bm, int top, int ascender, int height, int advance_x, int descender, int left) 
   { 
     vec.push_back(bm); 
     topt.push_back(top);
@@ -505,12 +505,13 @@ public:
     hgt.push_back(height);
     adv.push_back(advance_x);
     desc.push_back(descender);
+    lefts.push_back(left);
   }
   virtual int SizeX() const 
   {
     int sz=vec.size();
     int pixels = 0;
-    for(int i=0;i<sz;i++) { pixels+=adv[i] /*vec[i]->SizeX()*/ +x_gap; }
+    for(int i=0;i<sz;i++) { pixels+=adv[i] + lefts[i]/*vec[i]->SizeX()*/ +x_gap; }
     return pixels;
   }
   virtual int SizeY() const 
@@ -526,7 +527,7 @@ public:
     int i=0;
     for(;i<sz;i++) 
       { 
-	pixels+=adv[i] /*vec[i]->SizeX()*/ +x_gap;
+	pixels+=adv[i] + lefts[i]/*vec[i]->SizeX()*/ +x_gap;
 	if (pixels>x) break;
 	oldpixels = pixels;
       }
@@ -534,9 +535,9 @@ public:
     int delta = -(topt[i]);
     if (y<delta) return def;
     if (y>=delta+vec[i]->SizeY()) return def;
-    if (x-oldpixels>=vec[i]->SizeX()) return def;
-    int left = adv[i]-vec[i]->SizeX();
-    return vec[i]->Map(x-left-oldpixels,y-delta);
+    if (x-lefts[i]-oldpixels<0) return def;
+    if (x-lefts[i]-oldpixels>=vec[i]->SizeX()) return def;
+    return vec[i]->Map(x-lefts[i]-oldpixels,y-delta);
   }
   int PositiveDelta() const
   {
@@ -569,6 +570,7 @@ private:
   std::vector<int> hgt;
   std::vector<int> adv;
   std::vector<int> desc;
+  std::vector<int> lefts;
   T def;
   int x_gap;
 };

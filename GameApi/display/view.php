@@ -81,7 +81,7 @@ if ($id>0)
 <meta http-equiv="Expires" content="0" />
 
 </head>
-<body>
+<body class="preload-hidden">
 <script>
 setInterval(() => {
   console.log(
@@ -162,7 +162,7 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 
 </script>
 
-<div id="app">
+<div id="app" v-cloak>
 <appdragdroparea @dragdrop="dragdrop2">
 
 <apptitle><a href="view.php">The 3d model viewer</a></apptitle>
@@ -222,6 +222,58 @@ console.log("NOTE: you should change https://meshpage.org to your own web hostin
 </appdragdroparea>
 </div> <!-- vue ends here -->
 Warning: If you submit content to using the submit button and the content is owned by someone else, you need to obtain reproduction rights and give meshpage.org permission to publish the content in meshpage.org. While the content is available only to people who gets access to resulting urls, the reproduction rights are still required.
+
+<script>
+ window.addEventListener("load", () => {
+   document.body.classList.remove("preload-hidden");
+   });
+</script>
+
+<script>
+  const MAX_RELOADS = 3;
+
+  let reloads =
+    parseInt(sessionStorage.getItem("reloads") || "0");
+
+  function reloadPage(reason) {
+
+    console.log("Reload reason:", reason);
+
+    if (reloads >= MAX_RELOADS) {
+
+      document.body.innerHTML = `
+        <h1>Startup Failed</h1>
+        <p>Too many reload attempts.</p>
+        <button onclick="sessionStorage.clear(); location.reload()">
+          Retry
+        </button>
+      `;
+
+      return;
+    }
+
+    reloads++;
+
+    sessionStorage.setItem(
+      "reloads",
+      String(reloads)
+    );
+
+    location.reload();
+    }
+
+window.onerror = function() {
+  reloadPage("window.onerror");
+};
+
+window.addEventListener("unhandledrejection", e => {
+  if (String(e.reason).includes("WebAssembly")) {
+     reloadPage("unhandledrejection");
+    
+  }
+});
+</script>
+
 </body>
 </html>
 
@@ -886,7 +938,9 @@ function parse_material_url(mat)
 function parse_material_color(mat)
 {
    var arr = mat.split(" ");
-   return arr[3];
+   var ret = arr[3];
+   //console.log(ret);
+   return ret;
 }
 function parse_material_roughness(mat)
 {
@@ -897,6 +951,8 @@ function parse_material_roughness(mat)
 
 </script>
 <style>
+.preload-hidden { display:none; }
+[v-cloak] { display:none; }
 .lab { width:70%; height: 30px; text-align:center; }
 .canvas { border-width:0px;border: 5px solid black; border-radius: 10px; background-color: #000000; margin:0; padding:0; width: 820px; height: 620px; }
 .block { display: block;   }
@@ -1150,10 +1206,18 @@ function get_border(i,m,filename,border_avoid,aces_value)
   if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") { gltf=",true"; }
   if (anim_value===true) { 
      //res+="MT I5011=ev.materials_api.gltf_anim_material2(ev,I154,0,30,I504,cvbnmdfghjklertyuiop,0);\n";
+     if (width==0) {
+     res+="MT I501=ev.materials_api.mt_alt(ev,std::vector<MT>{I504},0);\n";
+     } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
-      } else {
+    }
+ } else {
+     if (width==0) {
+     res+="MT I501=ev.materials_api.mt_alt(ev,std::vector<MT>{I504},0);\n";
+     } else {
     res+= "MT I501=ev.materials_api.toon_border(ev,I504," + width + ",ff" + color + gltf + ");\n";
-      }
+    }
+  }
 
 if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf") {
   res+="ML I5022=ev.materials_api.bind(I206,I501);\n";
@@ -1193,7 +1257,7 @@ function get_background_value()
 function get_brightness_value()
 {
   var elem = document.getElementById("brightness-select");
-  return parseFloat(elem.value);
+  return parseInt(elem.value);
 }
 function get_brightness(i)
 {
@@ -1291,6 +1355,7 @@ function hex_color_to_number(text)
             hash = digit + (hash << 4);
         }
 
+
         var c = (hash & 0x00FFFFFF);
         return c;
 	} return 0;
@@ -1346,13 +1411,19 @@ if (i===-1) return ["",normals_select];
  var rrs = rr.toString();
  var ggs = gg.toString();
  var bbs = bb.toString();
+ console.log(rrs);
+ console.log(ggs);
+ console.log(bbs);
 
  var rough = get_metal_roughness(i);
  var roughstr = rough.toString();
 
- var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95,1.0,0.0," + rrs + "," + ggs + "," + bbs + ",1,1,-400.0,400.0,400.0);\n";
+ var bright_value = get_brightness_value();
+ var brightness = get_brightness(bright_value);
 
- var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1,1.0,0.0," + rrs + "," + ggs + "," + bbs + ",1,1,-400.0,400.0,400.0);\n";
+ var metal = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr + ",0.95," + rrs + "," + ggs + "," + bbs + ",1,1," + brightness + ",0.0,-400.0,400.0,400.0);\n";
+
+ var plastic = "MT I4=ev.materials_api.gltf_material3(ev," + roughstr +",0.1," + rrs + "," + ggs + "," + bbs + ",1,1," + brightness + ",0.0,-400.0,400.0,400.0);\n";
 
 
 var line = find_line_from_material_db(i);
@@ -1399,7 +1470,7 @@ function create_script(filename, contents, filenames)
 
   var normals_val = get_normals_value();
   var border_color = "000000";
-  var border_width = "1.0";
+  var border_width = "0.0";
   var brd = get_border_value();
   var border_avoid = false;
 
@@ -1492,7 +1563,7 @@ var out = "I4";
      border_color = parse_border_color(name2);
      border_width = parse_border_width(name2);
   }
-  if (border_width==="0") border_width="1.0";
+  //if (border_width==="0") border_width="1.0";
 if (normals_val===3)
   { // wireframe
   res+= "MT I4=ev.materials_api.m_def(ev);\n"
@@ -1554,8 +1625,13 @@ res+="ML I62=ev.mainloop_api.array_ml(ev,std::vector<ML>{I767});\n"
      res+=material[0];
      var gltf = ",false";
      if (filename.substr(-4)===".glb"||filename.substr(-5)===".gltf"||filename.substr(-4)===".zip") { gltf = ",true"; }
+     if (parseFloat(border_width)<0.01) {
+     res+="MT I46=ev.materials_api.mt_alt(ev,std::vector<MT>{I4},0);\n";
+     out = "I46";
+     } else {
      res+="MT I46=ev.materials_api.toon_border(ev,I4," + border_width + ",ff" + border_color +gltf + ");\n";
      out = "I46";
+     }
   } else
   if (filename.substr(-4)===".obj"&&mtl_name!=="") {
      res+="MT I54=ev.materials_api.m_def(ev);\n";
@@ -2034,6 +2110,8 @@ canvas : canv,
    arguments : [ "--size", "800", "600", "--code", default_script(), "--homepage", "<?php echo $assetsite ?>/", "--href", window.location.href],
    print : (function() { return function(text) { console.log(text); } })(),
    printErr : (function() { return function(text) { console.log(text); } })(),
+   onAbort: function() { reloadPage("onAbort"); }
+
    };
 
 

@@ -194,11 +194,13 @@ $highmem = js_highmem();
 ?>
 </head>
 <!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
-<body id="body" style="overflow:hidden">
+<style>
+.preload-hidden { display:none; }
+</style>
+<body id="body" class="preload-hidden" style="overflow:hidden;">
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
 <script src="vue.js" async></script>
 <script>
- window.showPthreadsDiv = Vue.observable({value:false})
 </script>
 <script type="application/ld+json">{
   "@context": "https://schema.org",
@@ -251,7 +253,7 @@ $highmem = js_highmem();
 
 <div id="result" style="display:none"></div>
 <div id="result2" style="display:none"></div>
-<div id="app" class="container-lg">
+<div id="app" class="container-lg" v-cloak>
 
 <!-- new navbar -->
 <div id="navbar1" style="display:none">
@@ -1621,9 +1623,65 @@ function load_anim_pic_reset(num,file_id)
 }
 </script>
 
+<script>
+ window.addEventListener("load", () => {
+   document.body.classList.remove("preload-hidden");
+   });
+</script>
+
+<script>
+  const MAX_RELOADS = 3;
+
+  let reloads =
+    parseInt(sessionStorage.getItem("reloads") || "0");
+
+  function reloadPage(reason) {
+
+    console.log("Reload reason:", reason);
+
+    if (reloads >= MAX_RELOADS) {
+
+      document.body.innerHTML = `
+        <h1>Startup Failed</h1>
+        <p>Too many reload attempts.</p>
+        <button onclick="sessionStorage.clear(); location.reload()">
+          Retry
+        </button>
+      `;
+
+      return;
+    }
+
+    reloads++;
+
+    sessionStorage.setItem(
+      "reloads",
+      String(reloads)
+    );
+
+    location.reload();
+    }
+
+//Module.onAbort = function() {
+//  reloadPage("Module.onAbort");
+//};
+
+window.onerror = function() {
+  reloadPage("window.onerror");
+};
+
+window.addEventListener("unhandledrejection", e => {
+  if (String(e.reason).includes("WebAssembly")) {
+     reloadPage("unhandledrejection");
+    
+  }
+});
+</script>
 
 </body>
 <style>
+
+[v-cloak] { display:none; }
 .pthreads_div {
    position: relative;
    top: 0px;
@@ -2220,6 +2278,7 @@ var app = new Vue({
    el: '#app',
 
    mounted: function() {
+      window.showPthreadsDiv = Vue.observable({value:false});
       var d = document.getElementById("pthreads_div");
       d.style = "";
       //window.showPthreadsDiv.value = true;
@@ -3072,17 +3131,18 @@ function show_emscripten(str,hide,indicator,is_async)
 <script type="text/javascript">
   var canv = document.getElementById("canvas");
 
-  var Module = {
+window.Module = {
       onStartup: function() {
         //console.log("onRuntimeInitialized done");
       	window.setTimeout(function() { check_em(app.indicator)(); },30);
 	const canvas = Module.canvas;
 	canvas.tabIndex = 0;
-      }
+      },
+      onAbort: function() { reloadPage("onAbort"); }
   };
-Module.canvas = canv;
+window.Module.canvas = canv;
 
-Module.locateFile = function(path, prefix) {
+window.Module.locateFile = function(path, prefix) {
     if (path.endsWith('.js')) {
         if (!window.wasmJSContentPromise) {
             window.wasmJSContentPromise = fetch(prefix + path)

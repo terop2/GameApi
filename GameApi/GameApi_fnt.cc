@@ -3,8 +3,10 @@
 #include <iostream>
 #include <iomanip>
 #ifdef EMSCRIPTEN
-#include <emscripten.h>
+#include <emscripten.h> 
 #endif
+
+IMPORT bool file_exists(std::string filename);
 
 struct FontPriv
 {
@@ -180,7 +182,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas_engine2(EveryApi &ev, FI font, F
     {
       std::pair<int,FontAtlasGlyphInfo> p = *i;
       int ch = p.first;
-      std::cout << ch << std::flush;
+      //std::cout << ch << std::flush;
       std::string str;
       str+=ch;
       GI glyph = choose_glyph_from_font(font, ((long)(str[0]))&0xff);
@@ -191,8 +193,12 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas_engine2(EveryApi &ev, FI font, F
   return bg;  
 }
 
+IMPORT extern ConversionTableInterface *g_conv_table;
+
+
 EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI font, std::string chars, float sx, float sy, int y_delta)
 {
+  g_conv_table->convert_labels_to_chars(chars);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   int s = chars.size();
   FontAtlasInfo *info = new FontAtlasInfo;
@@ -230,7 +236,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI f
       info2.descender = descender;
       info2.height = height;
       info->char_map[ch] = info2;
-      x+=left + ev.bitmap_api.size_x(bm);      
+      x+=ev.bitmap_api.size_x(bm)+3;      
       if (atlas_sx < x) { atlas_sx = x; }
       if (atlas_sy < y*y_delta + top + ev.bitmap_api.size_y(bm)) { atlas_sy = y*y_delta + top + ev.bitmap_api.size_y(bm); }
 
@@ -241,6 +247,115 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI f
   info->atlas_sy = atlas_sy;
   return add_font_atlas(e, info);
 }
+
+EXPORT GameApi::ARR GameApi::FontApi::FI_sprite_atlas(EveryApi &ev, FI font, std::string chars, int sx, int sy, int y_delta)
+{
+  FtA atlas = font_atlas_info_engine2(ev,font,chars,sx,sy,y_delta);
+  BM atlas_bm = font_atlas_engine2(ev,font,atlas,sx,sy);
+  
+  ArrayType *arr = new ArrayType;
+  arr->type = 2;
+  arr->vec.push_back(atlas.id);
+  arr->vec.push_back(atlas_bm.id);
+  return add_array(e,arr);
+}
+
+void sprite_atlas_cb(void *ptr);
+class SpriteAtlasPersistentCache
+{
+public:
+  SpriteAtlasPersistentCache(GameApi::Env &e, GameApi::EveryApi &ev, int &bm_id, int &atlas_id, GameApi::FtA atlas, GameApi::BM atlas_bm, std::string atlas_filename, std::string atlas_bm_filename) :e(e),ev(ev), bm_id(bm_id), atlas_id(atlas_id), atlas(atlas), atlas_bm(atlas_bm), atlas_filename(atlas_filename), atlas_bm_filename(atlas_bm_filename) { } 
+  void start()
+  {
+    if (!e.store_file_exists(atlas_filename)) {
+      ev.font_api.save_atlas_store_file(atlas,atlas_filename);
+    }
+    e.load_file(atlas_filename, &sprite_atlas_cb, (void*)this, success);
+  }
+  void loaded() {
+    //std::cout << "loaded cb" << std::endl;
+    if (success) {
+      GameApi::ASyncVec *v = e.load_file_result(atlas_filename);
+      std::string buf(v->begin(),v->end());
+      GameApi::FtA atlas2 = ev.font_api.load_atlas_from_string(buf);
+      
+      atlas_id = atlas2.id;
+    }
+    m_wait_ended = true;
+  }
+  bool wait_ended() const { return m_wait_ended; }
+private:
+  GameApi::Env &e;
+  GameApi::EveryApi &ev;
+  int &bm_id;
+  int &atlas_id;
+  GameApi::FtA atlas;
+  GameApi::BM atlas_bm;
+  std::string atlas_filename;
+  std::string atlas_bm_filename;
+  bool success = false;
+  bool m_wait_ended = false;
+};
+void sprite_atlas_cb(void *ptr)
+{
+  SpriteAtlasPersistentCache *cache = (SpriteAtlasPersistentCache*)ptr;
+  cache->loaded();
+}
+
+void *persistent_cache_wait_task(void* ptr)
+{
+  SpriteAtlasPersistentCache *cache = (SpriteAtlasPersistentCache*)ptr; 
+  while(1) {
+    if (cache->wait_ended()) break;
+  }
+  return 0;
+}
+
+EXPORT GameApi::ARR GameApi::FontApi::FI_sprite_atlas_persistent_cache(EveryApi &ev, FtA atlas, BM atlas_bm, std::string atlas_filename, std::string atlas_bm_filename)
+{
+  GameApi::BM cached_bm = ev.bitmap_api.bm_png_bm(ev,atlas_bm,atlas_bm_filename);
+  /*
+  std::string tmp_filename = "atlas0.txt";  
+#ifdef LINUX
+  if (file_exists("./atlas0.txt")) {
+    tmp_filename = "atlas0.txt";
+  } else {
+    tmp_filename = "/usr/share/atlas0.txt";
+  }
+#endif
+#ifdef WINDOWS
+    std::string dir = GetInstallDir();
+    if (file_exists(dir+"\\atlas0.txt")) {
+      tmp_filename = dir+"\\atlas0.txt";
+    }
+#endif
+#ifdef EMSCRIPTEN
+    std::string dir = GetInstallDir();
+    if (file_exists(dir+"\\atlas0.txt")) {
+      tmp_filename = dir+"\\atlas0.txt";
+    }
+#endif
+    //GameApi::FtA tmp_atlas = ev.font_api.load_atlas(tmp_filename);
+    */
+  ArrayType *arr = new ArrayType;
+  arr->type=2;
+  arr->vec.push_back(-1 /*tmp_atlas.id*/); // these will be filled after loading finishes.
+  arr->vec.push_back(cached_bm.id);
+
+  SpriteAtlasPersistentCache *cache = new SpriteAtlasPersistentCache(e,ev,arr->vec[1],arr->vec[0], atlas, atlas_bm, atlas_filename, atlas_bm_filename);
+
+  //std::cout << "Task start" << std::endl;
+#ifdef THREADS
+  tasks_add(1122, &persistent_cache_wait_task, (void*)cache);
+  cache->start(); // start loading immediately.
+  tasks_join(1122);
+#else
+  std::cout << "Warning: NO_THREADS build doesn't have FI_cache implemented." << std::endl;
+#endif
+  //std::cout << "Task end" << std::endl;
+  return add_array(e,arr);  
+}
+
 
 EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std::string chars, float sx, float sy, int y_delta)
 {
@@ -255,7 +370,7 @@ EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info(EveryApi &ev, Ft font, std
   for(int i=0;i<s;i++)
     {
       char ch = chars[i];
-      std::cout << ch << std::flush;
+      //std::cout << ch << std::flush;
       BM bm = glyph(font, ch);
       Bitmap<int> *bmA = env->fonts[font.id].bm;
       FontGlyphBitmap *bm2 = static_cast<FontGlyphBitmap*>(bmA);
@@ -294,7 +409,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_atlas(EveryApi &ev, Ft font, FtA atlas
     {
       std::pair<int,FontAtlasGlyphInfo> p = *i;
       int ch = p.first;
-      std::cout << ch << std::flush;
+      //std::cout << ch << std::flush;
       BM bm = glyph(font, ch);
       bg = ev.bitmap_api.blitbitmap(bg, bm, p.second.x+p.second.left, p.second.y+p.second.top);
     }
@@ -400,12 +515,112 @@ EXPORT GameApi::P GameApi::FontApi::font_string_from_atlas_opengl_pipeline(Every
 }
 
 
+class LargeTextBitmap_atlas : public Bitmap<Color>
+{
+public:
+  LargeTextBitmap_atlas(GameApi::Env &env, GameApi::EveryApi &ev, GameApi::FtA font_atlas, GameApi::BM font_atlas_bm, std::string url, std::string homepage, int x_gap, int empty_line_height, int baseline_separation) : env(env), ev(ev), font_atlas(font_atlas), font_atlas_bm(font_atlas_bm), url(url), homepage(homepage), x_gap(x_gap), empty_line_height(empty_line_height), baseline_separation(baseline_separation) { }
+  void Collect(CollectVisitor &vis)
+  {
+    vis.register_obj(this);
+  }
+  void HeavyPrepare()
+  {
+    Prepare();
+  }
+
+  void Prepare() {
+    ev.bitmap_api.prepare(font_atlas_bm);
+    if (bms.size()==0) {
+#ifndef EMSCRIPTEN
+      env.async_load_url(url, homepage);
+#endif
+      GameApi::ASyncVec *vec = env.get_loaded_async_url(url);
+      if (!vec) { std::cout << "async not ready!" << std::endl; return; }
+      std::string s(vec->begin(), vec->end());
+
+      std::stringstream ss(s);
+      std::string line;
+      bms = std::vector<GameApi::BM>();
+      while(std::getline(ss,line)) {
+	line = line.substr(0,line.size());
+	//std::cout << " Line:" << line << std::endl;
+	GameApi::BM bm = ev.font_api.font_string_from_atlas(ev, font_atlas, font_atlas_bm, line, x_gap);
+	Bitmap<Color> *bbm = find_bitmap2(env,bm);
+	bbm->Prepare();
+	if (baseline_separation<1) baseline_separation=ev.bitmap_api.size_y(bm);
+	bms.push_back(bm);
+      }
+    }
+  }
+  int SizeX() const {
+    int s=bms.size();
+    int size = 0;
+    for(int i=0;i<s;i++) {
+      GameApi::BM bm = bms[i];
+      size = std::max(size,ev.bitmap_api.size_x(bm));
+    }
+    return size;
+  }
+  int SizeY() const {
+    if (bms.size()<1) return 0;
+    GameApi::BM bm = bms[0];
+    int size = ev.bitmap_api.size_y(bm);
+    return size + (bms.size()-1)*baseline_separation;
+  }
+  Color Map(int x, int y) const {
+    int s=bms.size();
+    for(int i=0;i<s;i++) {
+      int start_y = i*baseline_separation;
+      int end_y = i*baseline_separation+ev.bitmap_api.size_y(bms[i]);
+      if (x>=0 && x<ev.bitmap_api.size_x(bms[i]) && y>=start_y && y<end_y) {
+	unsigned int c = ev.bitmap_api.colorvalue(bms[i],x,y-start_y); 
+	if ((c&0xff000000) == 0x0) { continue; }
+	return c;
+      }
+    }
+    return 0x0;
+  }
+private:
+  GameApi::Env &env;
+  GameApi::EveryApi &ev;
+  GameApi::FtA font_atlas;
+  GameApi::BM font_atlas_bm;
+  std::string url, homepage;
+  int x_gap;
+  int empty_line_height;
+  int baseline_separation;
+  std::vector<GameApi::BM> bms;
+};
+
+
+extern std::string gameapi_homepageurl;
+GameApi::ASyncVec *g_convert(std::vector<unsigned char, GameApiAllocator<unsigned char> > *vec);
+
+
+EXPORT GameApi::BM GameApi::FontApi::large_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string url, int x_gap, int empty_line_height, int baseline_separation)
+{
+  if (atlas.id==-1 || atlas_bm.id==-1) { std::cout << "Probably cache failed to load the persistent cache files" << std::endl; return ev.bitmap_api.newbitmap(4,4,0xffffffff); }
+  Bitmap<Color> *bm = new LargeTextBitmap_atlas(e,ev,atlas,atlas_bm,url,gameapi_homepageurl,x_gap,empty_line_height, baseline_separation);
+  
+  BitmapColorHandle *chandle2 = new BitmapColorHandle;
+  chandle2->bm = bm;
+  return add_bitmap(e,chandle2);
+}
+
+IMPORT extern ConversionTableInterface *g_conv_table;
+
+
 EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string str, int x_gap)
 {
+  if (atlas.id==-1 || atlas_bm.id==-1) { std::cout << "Probably cache failed to load the persistent cache files" << std::endl; return ev.bitmap_api.newbitmap(4,4,0xffffffff); }
+  str = g_conv_table->convert_labels_to_chars(str);
   FontAtlasInfo *info = find_font_atlas(e, atlas);
-  //::EnvImpl *env = ::EnvImpl::Environment(&e);
+  ev.bitmap_api.prepare(atlas_bm);
+  
   int sz = str.length();
   FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0f,0.0f,0.0f,0.0f), x_gap);
+
+  
   for(int i=0;i<sz;i++)
     {
       char ch = str[i];
@@ -427,16 +642,59 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
       int top = ii.top; //env->fonts[font.id].bm->bitmap_top(ch);
       int asc = ii.ascender;
       int hgt = ii.height;
-      int adv = ii.left;
+      int adv = 0; //ii.left;
       int desc = ii.descender;
       BitmapHandle *handle = find_bitmap(e,bm);
       Bitmap<Color> *col = find_color_bitmap(handle);
       adv +=col->SizeX();
-      array->push_back(col, top,asc,hgt,adv,desc);
+      array->push_back(col, top,asc,hgt,adv,desc,ii.left);
     }
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = array;
   return add_bitmap(e,chandle2);
+}
+EXPORT GameApi::FtA GameApi::FontApi::load_atlas_from_string(std::string data)
+{
+  FontAtlasInfo *info = new FontAtlasInfo;
+  std::stringstream ss(data.c_str());
+  ss.tie(nullptr);
+  //char c;
+  ss >> info->atlas_sx >> info->atlas_sy;
+  int num;
+  while(ss >> num)
+    {
+      int sx;
+      int sy;
+      int x;
+      int y;
+      int top;
+      int left=0;
+      int ascender=0;
+      int descender=0;
+      int height=0;
+      ss >> sx;  
+      ss >> sy; 
+      ss >> x;
+      ss >> y;   
+      ss >> top;      
+      ss >> left;       
+      ss >> ascender;    
+      ss >> descender;   
+      ss >> height;
+      FontAtlasGlyphInfo i;
+      i.sx = sx;
+      i.sy = sy;
+      i.x = x;
+      i.y = y;
+      i.top = top;
+      i.left = left;
+      i.ascender = ascender;
+      i.descender = descender;
+      i.height = height;
+      info->char_map[num] = i;
+    }
+  return add_font_atlas(e, info);
+
 }
 EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
 {
@@ -479,6 +737,29 @@ EXPORT GameApi::FtA GameApi::FontApi::load_atlas(std::string filename)
       info->char_map[num] = i;
     }
   return add_font_atlas(e, info);
+}
+EXPORT void GameApi::FontApi::save_atlas_store_file(FtA atlas, std::string filename)
+{
+    FontAtlasInfo *info = find_font_atlas(e, atlas);
+    std::stringstream ss;
+    ss << info->atlas_sx << " " << info->atlas_sy << std::endl;
+    std::map<int, FontAtlasGlyphInfo>::iterator i = info->char_map.begin();
+    for(;i!=info->char_map.end();i++)
+      {
+	std::pair<int,FontAtlasGlyphInfo> p = *i;
+	ss << p.first << std::endl;
+	ss << p.second.sx << " " << p.second.sy << std::endl;
+	ss << p.second.x << " " << p.second.y << std::endl;
+	ss << p.second.top << std::endl;
+	ss << p.second.left << std::endl;
+	ss << p.second.ascender << std::endl;
+	ss << p.second.descender << std::endl;
+	ss << p.second.height << std::endl;
+      }
+    std::string s = ss.str();
+    std::vector<unsigned char,GameApiAllocator<unsigned char> > vec0(s.begin(),s.end());
+    GameApi::ASyncVec *vec = g_convert(&vec0);
+    e.store_file(filename,vec);
 }
 EXPORT void GameApi::FontApi::save_atlas(FtA atlas, std::string filename)
 {
@@ -2147,7 +2428,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string(Ft font, std::string str, int x
       int top = bm3->bitmap_top(ch); 
       BitmapHandle *handle = find_bitmap(e,bm);
       Bitmap<Color> *col = find_color_bitmap(handle);    
-      array->push_back(col, top,0,col->SizeY(),col->SizeX(),0);
+      array->push_back(col, top,0,col->SizeY(),col->SizeX(),0,0);
     }
   BitmapColorHandle *chandle2 = new BitmapColorHandle;
   chandle2->bm = array;

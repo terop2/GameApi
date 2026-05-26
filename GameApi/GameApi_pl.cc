@@ -12563,6 +12563,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
 
   
 #ifdef VAO
+#if 0
   if (rend->tri_count>0)
     ogl->glBindVertexArray(rend->vao[0]);
   else
@@ -12571,6 +12572,7 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
   else
   if (rend->poly_count>0)
     ogl->glBindVertexArray(rend->vao[2]);
+#endif
 #endif
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   if (s->texture_many_ids.size()!=0) {
@@ -12674,7 +12676,9 @@ EXPORT void GameApi::PolygonApi::render_vertex_array(VA va)
       rend->render(0);
     }
 #ifdef VAO
+#if 0
   ogl->glBindVertexArray(0);
+#endif
 #endif
 }
 EXPORT void GameApi::PolygonApi::clone(VA va)
