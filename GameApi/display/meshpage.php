@@ -194,7 +194,10 @@ $highmem = js_highmem();
 ?>
 </head>
 <!-- https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js -->
-<body id="body" style="overflow:hidden">
+<style>
+.preload-hidden { display:none; }
+</style>
+<body id="body" class="preload-hidden" style="overflow:hidden;">
 <script src="bootstrap.bundle.min.js" crossorigin="anonymous" async></script>
 <script src="vue.js" async></script>
 <script>
@@ -1620,10 +1623,65 @@ function load_anim_pic_reset(num,file_id)
 }
 </script>
 
+<script>
+ window.addEventListener("load", () => {
+   document.body.classList.remove("preload-hidden");
+   });
+</script>
+
+<script>
+  const MAX_RELOADS = 3;
+
+  let reloads =
+    parseInt(sessionStorage.getItem("reloads") || "0");
+
+  function reloadPage(reason) {
+
+    console.log("Reload reason:", reason);
+
+    if (reloads >= MAX_RELOADS) {
+
+      document.body.innerHTML = `
+        <h1>Startup Failed</h1>
+        <p>Too many reload attempts.</p>
+        <button onclick="sessionStorage.clear(); location.reload()">
+          Retry
+        </button>
+      `;
+
+      return;
+    }
+
+    reloads++;
+
+    sessionStorage.setItem(
+      "reloads",
+      String(reloads)
+    );
+
+    location.reload();
+    }
+
+//Module.onAbort = function() {
+//  reloadPage("Module.onAbort");
+//};
+
+window.onerror = function() {
+  reloadPage("window.onerror");
+};
+
+window.addEventListener("unhandledrejection", e => {
+  if (String(e.reason).includes("WebAssembly")) {
+     reloadPage("unhandledrejection");
+    
+  }
+});
+</script>
 
 </body>
 <style>
-[v-cloak] { display: none; }
+
+[v-cloak] { display:none; }
 .pthreads_div {
    position: relative;
    top: 0px;
@@ -3079,7 +3137,8 @@ function show_emscripten(str,hide,indicator,is_async)
       	window.setTimeout(function() { check_em(app.indicator)(); },30);
 	const canvas = Module.canvas;
 	canvas.tabIndex = 0;
-      }
+      },
+      onAbort: function() { reloadPage("onAbort"); }
   };
 Module.canvas = canv;
 
