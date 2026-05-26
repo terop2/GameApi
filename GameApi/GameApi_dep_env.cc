@@ -772,7 +772,7 @@ std::string get_html_directory()
 
 #ifdef EMSCRIPTEN
 IMPORT const char * get_html_directory2() {
-    const char* dir = (const char*)EM_ASM_PTR({
+  const char* dir = (const char*)EM_ASM_PTR({
         var href = window.location.href;
         var dir = href.substring(0, href.lastIndexOf('/') + 1);
         var lengthBytes = lengthBytesUTF8(dir) + 1;
@@ -4810,4 +4810,3 @@ void EnvImpl::async_scheduler()
 	}
     }
 }
-

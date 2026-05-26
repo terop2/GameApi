@@ -104,7 +104,7 @@ fclose($fp);
 
 echo "<!DOCTYPE html>\n";
 echo "<html lang=\"en\">\n";
-echo "<title>A way to display your 3d models on the web -- jpg of 3d</title>\n";
+echo "<title>A way to display your 3d models on the web -- gltf supported</title>\n";
 echo "<head>\n";
 echo "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, shrink-to-fit=no\"/>";
 echo "<meta name=\"description\" content=\"Getting the best rendering result from gltf files is not easy task, but we're now getting the best result available on the market.\">\n";
@@ -140,7 +140,7 @@ echo "<body>\n";
 
 //echo "<img src=\"gnome.webp\" width=\"300px\" height=\"150px\" style=\"position:absolute; top:1px; right:0px;\"/>";
 echo "<div class=\"image-wrapper\">\n";
-echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" src=\"$https://$site/phoenix_bird_scr.png\" fetchpriority=\"high\" width=\"100%\"/>\n";
+echo "<img style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1; width:100%; height:auto;\" src=\"$https://$site/phoenix_bird_scr.webp\" fetchpriority=\"high\" width=\"1165\" height=\"879\"/>\n";
 //echo "<video style=\"border-radius: 30px; border-width: 2px; border-style: solid; width:100%; height: auto; top: 0px; left: 0px; z-order: -1;\" width=\"100%\" height=\"auto\" playsinline loop autoplay muted controls>";
 //echo "  <source src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\" type=\"video/mp4\">";
 //echo "  Your browser does not support video tag.";
@@ -189,7 +189,7 @@ echo "</style>";
 echo "<div style=\"left: 80px;\" class=\"media\">\n";
 echo "<div>\n";
 echo "<h1 class=\"customfont hardshadow fontsize orange\" align=\"left\" style=\"position: static; left: -120px;\">MESHPAGE.ORG&reg;</h1>\n";
-echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- jpg of 3d)</h2>\n";
+echo "<h2 class=\"customfont hardshadow label_a white\" align=\"left\" style=\"position: relative; top: 0px; left: 50px; font-size: 22px;\">(A way to display your 3d models on the web -- gltf supported)</h2>\n";
 
 echo "</div>\n";
 echo "</div>\n";
@@ -277,7 +277,7 @@ echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img class=\"bl_img\" src=\"$https://$site/row1.webp\"/>\n";
+echo "<img class=\"bl_img\" width=\"1204\" height=\"931\" src=\"$https://$site/row1.webp\"/>\n";
 //echo "<img class=\"bl_img\" src=\"$https://$site/assets/gameapi_bdcalvin_intro.mp4\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -285,7 +285,7 @@ echo "</div>\n";
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img clasS=\"bl_img\" src=\"$https://$site/row2.webp\"/>\n";
+echo "<img clasS=\"bl_img\" width=\"1202\" height=\"931\" src=\"$https://$site/row2.webp\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
@@ -302,6 +302,7 @@ echo "<li>Phong shading is already outdated\n";
 echo "<li>File size limits at 250Mb sketchfab zip file size\n";
 echo "<li>Builder is unusable for newbies\n";
 echo "<li>Android deliverables require installation of ndk and a working build\n";
+echo "<li>After updating engine files, reload from browser is needed or browser gives error messages and fails to load 3d engine\n";
 echo "</ul>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -329,7 +330,7 @@ echo "</div>\n";
 echo "</div>\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item content\">\n";
-echo "<img class=\"bl_img\" src=\"$https://$site/row3.webp\"/>\n";
+echo "<img class=\"bl_img\" width=\"800\" height=\"600\" src=\"$https://$site/row3.webp\"/>\n";
 echo "</div>\n";
 echo "</div>\n";
 
@@ -340,26 +341,27 @@ echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 
 echo "<div class=\"bl_item img\">\n";
-// allow=\"cross-origin-isolated\" 
-echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\" seamless=\"seamless\" src=\"$https://$site/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
+// allow=\"cross-origin-isolated\"
+// seamless=\"seamless\"
+echo "<iframe id=\"frame\" class=\"bl_iframe\" scrolling=\"no\"  src=\"$https://$site/punk/index.html\" width=\"100%\" height=\"auto\" style=\"aspect-ratio: 16/9; overflow: visible; border: none;\"></iframe>\n";
 echo "</div></div>\n";
 echo "<div class=\"bl_column\"><div class=\"bl_item customfont content\">\n";
 echo "<a href=\"$https://$site/punk/gnome.zip\">gnome.zip</a>(<a href=\"#gnomeauthor\">*</a>) (We wanted this: <a href=\"$https://$site/assets/gnome2.webp\">gnome2</a>)\n";
 echo "<pre class=\"customfont\" style=\"font-size: 14px;\">\n";
-echo "TF I1=ev.mainloop_api.gltf_loadKK2($https://$site/punk/mesh_garden_gnome.glb);\n";
+echo "TF I1=ev.mainloop_api.gltf_loadKK2(https://meshpage.org/punk/mesh_garden_gnome.glb);\n";
 echo "P I2=ev.mainloop_api.gltf_mesh_all_p(ev,I1);\n";
 echo "P I3=ev.polygon_api.color_alpha(I2,ff);\n";
-echo "MT I4=ev.materials_api.colour_material(ev,0);\n";
+echo "MT I4=ev.materials_api.colour_material(ev,0,false);\n";
 echo "MT I5=ev.materials_api.toon_border(ev,I4,2,ff000000,true);\n";
-echo "MT I6=ev.materials_api.gltf_material(ev,I1,0,1.5,400,-400,300);\n";
+echo "MT I6=ev.materials_api.gltf_material(ev,I1,0,0.95,3.5,3.0,400,-400,300);\n";
 echo "MT I7=ev.materials_api.combine_materials(ev,I4,I6);\n";
 echo "MT I8=ev.materials_api.combine_materials(ev,I5,I7);\n";
-echo "MT I9=ev.materials_api.colour_material(ev,0.1);\n";
-echo "MT I100=ev.materials_api.phong(ev,I9,30,-30,300,ff000000,ffffffff,120);\n";
+echo "MT I9=ev.materials_api.colour_material(ev,0.1,false);\n";
+echo "MT I100=ev.materials_api.phong(ev,I9,30,-30,800,ff111111,ff222222,ffffffff,300);\n";
 echo "MT I110=ev.materials_api.combine_materials(ev,I8,I100);\n";
 echo "ML I120=ev.materials_api.bind(I3,I110);\n";
 echo "MN I10=ev.move_api.mn_empty();\n";
-echo "MN I11=ev.move_api.scale2(I10,2,2,2);\n";
+echo "MN I11=ev.move_api.scale2(I10,1.5,1.5,1.5);\n";
 echo "MN I12=ev.move_api.rotate(I11,0,30,0,0,0,0,1,0,1.57);\n";
 echo "MN I13=ev.move_api.rotate(I12,30,100,0,0,0,0,1,0,-3.141);\n";
 echo "MN I14=ev.move_api.rotate(I13,100,130,0,0,0,0,1,0,1.57);\n";
@@ -774,6 +776,53 @@ echo "</script>\n";
 echo "<script src=\"https://code.jquery.com/jquery-3.4.1.slim.min.js\" integrity=\"sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n\" crossorigin=\"anonymous\"></script>";
 echo "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js\" integrity=\"sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo\" crossorigin=\"anonymous\"></script>";
 echo "<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js\" integrity=\"sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6\" crossorigin=\"anonymous\"></script>";
+
+
+echo "<script>\n";
+echo "  const MAX_RELOADS = 3;";
+
+echo "  let reloads =";
+echo "    parseInt(sessionStorage.getItem(\"reloads\") || \"0\");";
+
+echo "  function reloadPage(reason) {";
+
+echo "    console.log(\"Reload reason:\", reason);";
+
+echo "    if (reloads >= MAX_RELOADS) {";
+
+echo "      document.body.innerHTML = `";
+echo "        <h1>Startup Failed</h1>";
+echo "        <p>Too many reload attempts.</p>";
+echo "        <button onclick=\"sessionStorage.clear(); location.reload()\">";
+echo "          Retry";
+echo "        </button>";
+echo "      `;";
+
+echo "      return;";
+echo "    }";
+
+echo "    reloads++;";
+
+echo "    sessionStorage.setItem(";
+echo "      \"reloads\",";
+echo "      String(reloads)";
+echo "    );";
+
+echo "    location.reload();";
+echo "    }";
+
+echo "window.onerror = function() {";
+echo "  reloadPage(\"window.onerror\");";
+echo "};";
+
+echo "window.addEventListener(\"unhandledrejection\", e => {";
+echo "  if (String(e.reason).includes(\"WebAssembly\")) {";
+echo "     reloadPage(\"unhandledrejection\");";
+    
+echo "  }";
+echo "});";
+</script>
+
 
 
 echo "</body>\n";

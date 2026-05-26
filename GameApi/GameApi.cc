@@ -71,6 +71,7 @@ std::string GetContentInstallDir(bool b);
 
 
 
+
 IMPORT extern GameApi::EveryApi *g_everyapi;
 std::string deploy_replace_string(std::string data, std::string subst, std::string repl);
 
@@ -18010,7 +18011,7 @@ void blocker_iter(void *arg)
     Envi_2 *env = (Envi_2*)arg;
   env->ev->mainloop_api.fpscounter_frameready();
 	}
-    env->ev->mainloop_api.swapbuffers();
+	  env->ev->mainloop_api.swapbuffers();
 #ifdef WAYLAND
     static uint64_t t0 = get_time_us();
     uint64_t t1 = get_time_us();
@@ -18245,7 +18246,7 @@ public:
     
 #ifdef EMSCRIPTEN
     if (need_change2) {
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
+      //emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       need_change=true;
       need_change2=false;
@@ -18487,7 +18488,7 @@ public:
 #ifdef EMSCRIPTEN
     if (need_change) {
       if (debug_enabled) status += "NEED_CHANGE ";
-      emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
+      //emscripten_set_main_loop_timing(EM_TIMING_RAF, 2);
       //emscripten_set_main_loop_timing(EM_TIMING_SETIMMEDIATE, 1);
       //emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, 100);
     }
@@ -18695,7 +18696,6 @@ public:
     if (err != Low_GL_NO_ERROR) { printf("GL error: %x\n", err); }
 #endif
 
-    
    env->ev->mainloop_api.swapbuffers();
 
 #ifdef WAYLAND
@@ -18893,8 +18893,8 @@ public:
     }
 #else
     if (!g_new_blocker_block)
-            emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1); // 0,1
-    //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
+      emscripten_set_main_loop_arg(blocker_iter, (void*)env, 0,1); // 0,1
+      //emscripten_request_animation_frame_loop(blocker_iter, (void*)env);
     else
       g_pending_blocker_env = env;
 #endif
@@ -19040,6 +19040,59 @@ EXPORT void GameApi::BlockerApi::run(BLK blk)
   blk2->Execute();
 }
 
+#ifdef EMSCRIPTEN
+#if 0
+void *splitter_iter4(void *userData)
+{
+  
+  return 0;
+}
+#endif
+#endif
+
+#ifdef EMSCRIPTEN
+bool g_render_trigger=false;
+EM_BOOL splitter_iter3(double time, void *userData)
+{
+  splitter_iter2(userData);
+  //g_render_trigger=true;
+  //std::cout << "Trigger" << std::endl;
+  //tasks_add(5151,&splitter_iter4,userData);
+  return EM_TRUE;
+}
+#endif
+
+#ifdef EMSCRIPTEN
+#if 0
+void *render_thread(void *userData)
+{
+  while(1) {
+    if (g_render_trigger) {
+      std::cout << "Render" << std::endl;
+      g_render_trigger=false;
+      //splitter_iter4(userData);
+    }
+  }
+  return 0;
+}
+void start_render_thread()
+{
+    pthread_attr_t attr;
+
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 4096000);
+    //std::cout << "phread_create" << std::endl;
+    pthread_t *thread_id = new pthread_t;
+    pthread_create(thread_id, &attr, &render_thread, (void*)0);
+    //std::cout << "pthread_create_return: " << val << std::endl;
+    pthread_attr_destroy(&attr);
+
+  
+}
+#endif
+#endif
+
+int g_splitter_fps = 0;
 
 Splitter *splitter_current = 0;
 void splitter_iter2(void *arg)
@@ -19076,7 +19129,7 @@ void splitter_iter2(void *arg)
       // TODO, VR ISSUES
       if (!next->NoMainLoop()) {
 	emscripten_set_main_loop_arg(splitter_iter2, (void*)next, 0,1); // 0,1
-	//emscripten_request_animation_frame_loop(splitter_iter2, (void*)next);
+	//emscripten_request_animation_frame_loop(splitter_iter3, (void*)next);
       }
 #else
       splitter_current = next;
@@ -19107,6 +19160,7 @@ EXPORT void GameApi::BlockerApi::run2(EveryApi &ev, RUN spl)
   if (spl2->NoMainLoop()) { } else {
     //emscripten_request_animation_frame_loop(splitter_iter2,(void*)spl2);
     emscripten_set_main_loop_arg(splitter_iter2, (void*)spl2, 0,1); // 0.1
+    //emscripten_request_animation_frame_loop(splitter_iter3, (void*)spl2);
   }
 #endif
 #else
@@ -19952,6 +20006,7 @@ public:
 
     int ss = SizeX();
     size_x=ss;
+    size_y = SizeY();
     
     int s = sd.Count();
     for(int i=0;i<s;i++)
@@ -20021,6 +20076,8 @@ public:
   Color Map(int x, int y) const
   {
     if (x<0||x>=size_x) return def;
+    if (y<0||y>=size_y) return def;
+    if (!y_array_start || !y_array_end) return def;
     std::vector<int> &pos = x_array[x];
     int y_0 = y_array_start[y];
     int y_1 = y_array_end[y];
@@ -20062,9 +20119,10 @@ private:
   StringDisplay &sd;
   int def;
   std::vector<int> *x_array;
-  int *y_array_start;
-  int *y_array_end;
+  int *y_array_start = 0;
+  int *y_array_end = 0;
   int size_x;
+  int size_y;
 };
 GameApi::BM GameApi::FontApi::string_display_to_bitmap(SD sd, int def)
 {
@@ -20116,7 +20174,7 @@ public:
   virtual int SizeY() const { return glyph->SizeY(); }
   virtual Color Map(int x, int y) const
   {
-    if (x>=0 && x<=glyph->SizeX())
+    if (x>=0 && x<glyph->SizeX())
       return Color(glyph->Map(x,y));
     else return Color(0x0);
   }
@@ -20411,7 +20469,7 @@ IMPORT extern ConversionTableInterface *g_conv_table;
 GameApi::BM GameApi::FontApi::draw_text_string(FI font, std::string str, int x_gap, int empty_line_height)
 {
 
-  str = g_conv_table->convert_string(str);
+  str = g_conv_table->convert_labels_to_chars(str);
   	
   // std::cout << "draw_text_string: " << str << std::endl;
   int s = str.size();
@@ -20447,6 +20505,7 @@ public:
   }
 
   void Prepare() {
+    if (bms.size()==0) {
 #ifndef EMSCRIPTEN
       env.async_load_url(url, homepage);
 #endif
@@ -20459,10 +20518,14 @@ public:
       bms = std::vector<GameApi::BM>();
       while(std::getline(ss,line)) {
 	line = line.substr(0,line.size());
+	//std::cout << " Line:" << line << std::endl;
 	GameApi::BM bm = ev.font_api.draw_text_string(font, line, x_gap, empty_line_height);
+	Bitmap<Color> *bbm = find_bitmap2(env,bm);
+	bbm->Prepare();
 	if (baseline_separation<1) baseline_separation=ev.bitmap_api.size_y(bm);
 	bms.push_back(bm);
       }
+    }
   }
   int SizeX() const {
     int s=bms.size();
@@ -26921,7 +26984,9 @@ PersistentFuncSpec g_persistent_func[] =
     { "polygon_api", "load_ds_from_temp_p", 2 },
     { "bitmap_api", "stable_diffusion", 2 },
     { "polygon_api", "meshy", 2 },
-    { "polygon_api", "tf_glb_tf", 2 }
+    { "polygon_api", "tf_glb_tf", 2 },
+    { "font_api", "FI_sprite_atlas_persistent_cache", 3 },
+    { "font_api", "FI_sprite_atlas_persistent_cache", 4 }
   };
 int g_persistent_func_size = sizeof(g_persistent_func)/sizeof(PersistentFuncSpec);
 
@@ -43458,7 +43523,7 @@ GameApi::LayoutApi::LayoutApi(Env &e) : e(e) { }
 GameApi::DrawApi::DrawApi(Env &e) : e(e) { }
 GameApi::EveryApi::EveryApi(Env &e)
 	  : mainloop_api(e), point_api(e), vector_api(e), matrix_api(e), sprite_api(e), grid_api(e), bitmap_api(e), polygon_api(e), bool_bitmap_api(e), float_bitmap_api(e), cont_bitmap_api(e),
-	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e), low_frame_api(e),
+	    font_api(e), anim_api(e), event_api(e), /*curve_api(e),*/ function_api(e), volume_api(e), float_volume_api(e), color_volume_api(e), dist_api(e), vector_volume_api(e), shader_api(e), state_change_api(e, shader_api), texture_api(e), separate_api(e), waveform_api(e),  color_api(e), lines_api(e), plane_api(e), points_api(e), voxel_api(e), fbo_api(e), sample_api(e), tracker_api(e), sh_api(e), mod_api(e), physics_api(e), ts_api(e), cutter_api(e), bool_api(e), collision_api(e), move_api(e), implicit_api(e), picking_api(e), tree_api(e), materials_api(e), uber_api(e), curve_api(e), matrices_api(e), skeletal_api(e), polygon_arr_api(e),polygon_dist_api(e), blocker_api(e), vertex_anim_api(e), newplane_api(e), surface_api(e), low_frame_api(e), float_scene_api(e),
 
 	    env(e)
   { }

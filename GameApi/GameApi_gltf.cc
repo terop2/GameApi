@@ -25,7 +25,7 @@ extern int g_pthread_count;
 GameApi::P gltf_load2( GameApi::Env &e, GameApi::EveryApi &ev, GLTFModelInterface *interface, int mesh_index, int prim_index );
 
 
-std::vector<int> id_list = { 15, 6, 0 };
+std::vector<int> id_list = { 11,1,15, 6, 0 };
 
 unsigned int test_color(int id, unsigned int color)
 {
@@ -2032,6 +2032,7 @@ public:
   }
   void Prepare()
   {
+    //std::cout << "LoadBitmapFromUrl::Prepare()" << std::endl;
     if (!cbm) {
       unasync();
 
@@ -2047,7 +2048,7 @@ public:
       //std::cout << "VEC2 size=" << vec2.size() << std::endl;
 
       // sometimes we get failures if prepare is called too early, so this is good place to try to recover from it. Next prepare call will have correct data.
-      if (vec2.size()<3) return; 
+      if (vec2.size()<3) { std::cout << "Prepare ignored!" << std::endl; return; } 
       
       bool b = false;
       img = LoadImageFromString(vec2, b);
@@ -6810,13 +6811,14 @@ public:
     occul_url = fix_url(url, occul_url);
     emis_url = fix_url(url, emis_url);
 
-#ifndef EMSCRIPTEN
+    // These are not away in emscripten since it actually needs to start loading it here. Our preparation is not parsing the files to find urls.
+    //#ifndef EMSCRIPTEN
     if (baseColor_b) e.async_load_url(baseColor_url, homepage);
     if (metalRough_b) e.async_load_url(metalRough_url, homepage);
     if (normal_b) e.async_load_url(normal_url, homepage);
     if (occul_b) e.async_load_url(occul_url, homepage);
     if (emis_b) e.async_load_url(emis_url, homepage);
-#endif
+    //#endif
     //std::cout << "Loading: " << baseColor_url << std::endl;
     //std::cout << "Loading: " << metalRough_url << std::endl;
     //std::cout << "Loading: " << normal_url << std::endl;

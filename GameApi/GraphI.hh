@@ -13,6 +13,7 @@
 #include <emscripten/heap.h>
 #endif
 
+
 class ConversionTableInterface
 {
 public:
@@ -21,8 +22,9 @@ public:
   virtual std::string get_str_ch(int i) const=0;
   virtual char get_ch(int i) const=0;
 
-  virtual std::string convert_string(std::string str) const=0;
-  virtual int find_last_location(std::string label) const=0;
+  virtual std::string convert_labels_to_chars(std::string str) const=0;
+  virtual int find_last_location(std::string str) const=0;
+  virtual bool insert_label_to_string(std::string *str, char ch) const=0;
 };
 
 class ByteStore
@@ -180,6 +182,33 @@ public:
   virtual void register_obj(CollectInterface *i)=0;
   virtual void register_first_frame(CollectInterface *i)=0;
 };
+
+class FloatRay
+{
+public:
+  virtual Point Ray(float x) const=0;
+};
+
+class FloatScene : public CollectInterface
+{
+public:
+  virtual void Collect(CollectVisitor &vis)=0;
+  virtual void HeavyPrepare()=0;
+  virtual void Prepare()=0;
+  
+  virtual float Field(Point p) const=0;
+  virtual Point execute(float alfa, float beta, bool &found, Point center, float radius, int maxiter, float c) const=0;
+  virtual unsigned int BaseColor(Point p) const=0;
+  virtual unsigned int MetalRoughnessColor(Point p) const=0;
+  virtual unsigned int NormalColor(Point p) const=0;
+  virtual unsigned int OcculsionColor(Point p) const=0;
+  virtual unsigned int EmissiveColor(Point p) const=0;
+  virtual unsigned int SheenColor(Point p) const=0;
+  virtual unsigned int SpecGlossiColor(Point p) const=0;
+  virtual unsigned int DiffuseColor(Point p) const=0;
+};
+
+
 class OGLVisitor;
 class OpenGlNode
 {

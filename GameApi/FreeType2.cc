@@ -114,7 +114,9 @@ unsigned int FontInterfaceImpl::Map(long idx, int x, int y) const
   if (!data2) data2=global_glyph_data[key];
   if (!data2) return 0;
   if (!data2->operator[](idx)) return 0;
-  return data2->operator[](idx)->bitmap_data[x+y*ssx];
+  unsigned int val = data2->operator[](idx)->bitmap_data[x+y*ssx]; 
+  if (val==0xff000000) return 0;
+  return val;
 }
 
 struct K { std::string filename; unsigned char *buffer; int size; };

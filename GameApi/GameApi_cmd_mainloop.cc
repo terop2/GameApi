@@ -1576,6 +1576,12 @@ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::
 			 { "ev", "", "80.0", "10.1", "60000.0" },
 			 "ML", "mainloop_api", "perspective"));
 #endif
+ vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::ogl_set_frame_rate,
+			"ogl_frame_rate",
+			{ "ml", "fps" },
+			{ "ML", "int" },
+			{ "", "60" },
+			"ML", "mainloop_api", "ogl_set_frame_rate"));
  vec.push_back(ApiItemF(&GameApi::EveryApi::mainloop_api, &GameApi::MainLoopApi::logo_change,
 			"logo_change",
 			{ "ml", "connect 500x300", "download 500x300", "prepare 500x300" },

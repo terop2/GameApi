@@ -76,26 +76,31 @@ copy_it pthread-main.js $1
 #copy_it web_page_lowmem.worker.js 
 copy_it engine_highmem.data $1 
 copy_it engine_highmem.js $1
+copy_it engine_highmem.js.br $1
 copy_it engine_highmem.wasm $1
-copy_it engine_highmem.dwp $1
+#copy_it engine_highmem.dwp $1
 copy_it engine_highmem.wasm.br $1
 copy_it engine_highmem.worker.js $1
+copy_it engine_highmem.worker.js.br $1
 #copy_it web_page_nothreads.data 
 #copy_it web_page_nothreads.js 
 #copy_it web_page_nothreads.wasm 
 #copy_it web_page_nothreads.worker.js 
 copy_it engine_lowmem_nothreads.data $1 
 copy_it engine_lowmem_nothreads.js $1
+copy_it engine_lowmem_nothreads.js.br $1
 copy_it engine_lowmem_nothreads.wasm $1
-copy_it engine_lowmem_nothreads.dwp $1
+#copy_it engine_lowmem_nothreads.dwp $1
 copy_it engine_lowmem_nothreads.wasm.br $1
 #copy_it web_page_lowmem_nothreads.worker.js 
 copy_it engine_nothreads_highmem.data $1
 copy_it engine_nothreads_highmem.js $1
+copy_it engine_nothreads_highmem.js.br $1
 copy_it engine_nothreads_highmem.wasm $1
-copy_it engine_nothreads_highmem.dwp $1
+#copy_it engine_nothreads_highmem.dwp $1
 copy_it engine_nothreads_highmem.wasm.br $1
 copy_it engine_nothreads_highmem.worker.js $1
+copy_it engine_nothreads_highmem.worker.js.br $1
 finish
 
 cp gameapi_example.html build/gameapi_example.html

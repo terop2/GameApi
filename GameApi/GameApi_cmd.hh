@@ -83,6 +83,7 @@ MACRO2(GameApi::PTS,ev.points_api.pt_array(ev,std::vector<GameApi::PT>{ev.point_
 MACRO2(GameApi::IBM,ev.bitmap_api.convert_fb_to_ibm_bitmap(ev.float_bitmap_api.fb_empty(10,10),0.0,0.3))
 MACRO2(GameApi::TF,ev.mainloop_api.gltf_loadKK2("https://meshpage.org/assets/test.glb"))
 MACRO2(GameApi::OVX,ev.voxel_api.empty_ovx())
+MACRO2(GameApi::FS,ev.float_scene_api.fs_sphere(0.0,0.0,0.0,300.0))
 #undef MACRO2
 
 std::string empty_param(std::string s);  
@@ -261,6 +262,7 @@ class TypeToString { public: static constexpr const char * str=""; };
   MAC(TRA)
   MAC(TRB)
   MAC(TRR)
+  MAC(FS)
 #undef MAC
 
 
@@ -545,6 +547,7 @@ MACRO(GameApi::TRA)
 MACRO(GameApi::TRB)
 MACRO(GameApi::TRR)
 MACRO(GameApi::PV)
+MACRO(GameApi::FS)
 #undef MACRO
 
 

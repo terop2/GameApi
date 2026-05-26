@@ -232,6 +232,7 @@ struct PinOut { T data; }; // one-element class that fetches data from pins. Als
   MAC(OVX)
   MAC(PM)
   MAC(PV)
+  MAC(FS)
   struct TRB { int id; }; // g_resize_transfer_id+g_anim_transfer_id, both included
   struct TRR { int id; }; // g_resize_transfer_id
   struct TRA { int id; }; // g_anim_transfer_id
@@ -392,6 +393,8 @@ class MainLoopApi
 public:
 	IMPORT MainLoopApi(Env &e);
 	IMPORT ~MainLoopApi();
+  IMPORT ML ogl_set_frame_rate(ML ml, int fps);
+  IMPORT float get_frame_time() const;
   IMPORT TRB transfer_id();
   IMPORT TRR resize_transfer_id(TRB id);
   IMPORT TRA anim_transfer_id(TRB id);
@@ -1015,6 +1018,7 @@ class BitmapApi
 public:
 	IMPORT BitmapApi(Env &e);
 	IMPORT ~BitmapApi();
+  IMPORT BM sphere_rays_bitmap(float center_x, float center_y, float center_z, float radius, float delta_alfa, float delta_beta, FS field, int maxiter, float c, int fptr_enum, std::vector<PT> vec, int vec_choose);
   IMPORT TXID video_source(std::string filename, int sx, int sy);
   IMPORT BM stable_diffusion(EveryApi &ev, std::string prompt, std::string filename);
   // temp store
@@ -1214,6 +1218,11 @@ class FontApi
 public:
   IMPORT FontApi(Env &e);
   IMPORT ~FontApi();
+  IMPORT void save_atlas_store_file(FtA atlas, std::string filename);
+  IMPORT FtA load_atlas_from_string(std::string buf);
+  IMPORT ARR FI_sprite_atlas(EveryApi &ev, FI font, std::string chars, int sx, int sy, int y_delta);
+  IMPORT ARR FI_sprite_atlas_persistent_cache(EveryApi &ev, FtA atlas, BM atlas_bm, std::string atlas_filename, std::string atlas_bm_filename);
+  IMPORT BM large_string_from_atlas(EveryApi &ev, FtA atlas, BM atlas_bm, std::string url, int x_gap, int empty_line_height, int baseline_separation);
   IMPORT FF span_key_fetcher(float start_x, float end_x, float speed_x, int down_key, int up_key);
   IMPORT ARR choose_screen(float left_x, float right_x, int min_screen, int max_screen);
   IMPORT IF quake_area_fetcher(float start_x, float end_x, float start_z, float end_z);
@@ -2227,7 +2236,7 @@ public:
   IMPORT void del_canvas_item(W canvas, int id);
   IMPORT W canvas_item_gameapi_node(int sx, int sy, std::string label, std::vector<std::string> param_types, std::vector<std::string> param_tooltips, std::string return_type, FtA atlas, BM atlas_bm, std::vector<W *> connect_click, std::string uid, std::vector<W> &params, std::string symbol, std::string comment);
   IMPORT W list_item_title(int sx, std::string label, FtA atlas, BM atlas_bm);
-  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w);
+  IMPORT W list_item_opened(int sx, std::string label, FtA atlas, BM atlas_bm, std::vector<std::string> subitems, std::vector<std::string> subitems_tooltip, FtA atlas2, BM atlas_bm2, W insert, bool hide, W *redraw_w, std::vector<std::string> subitems_funcname);
   IMPORT W list_item(BM icon, std::string label, int sx, int sy);
   IMPORT W list(W *array, int size, int sx, int sy);
   IMPORT W dialog_item(std::string text, BM icon, int sx, int sy);
@@ -2741,12 +2750,31 @@ struct MaterialDef
   std::string bump;
 };
 
+class FloatSceneApi
+{
+public:
+  IMPORT FloatSceneApi(Env &e);
+  FS fs_sphere(float center_x, float center_y, float center_z, float radius);
+  FS color_scene(FS scene, unsigned int color, int fptr_enum);
+  FS fd_to_fs(EveryApi &ev, FD fd);
+private:
+  Env &e;
+};
+
 
 class PolygonApi
 {
 public:
 	IMPORT PolygonApi(Env &e);
 	IMPORT ~PolygonApi();
+  IMPORT P sphere_rays(float center_x, float center_y, float center_z, float radius,
+		       float delta_alfa, float delta_beta,
+		       FS field,
+		       int maxiter, float c, std::vector<PT> vec);
+  IMPORT ARR sphere_rays2(EveryApi &ev, float center_x, float center_y, float center_z, float radius,
+		       float delta_alfa, float delta_beta,
+		       FS field,
+		       int maxiter, float c, std::vector<PT> vec);
   IMPORT PV p_array(std::vector<P> vec);
   IMPORT ARR array_p_array(std::vector<PV> vec);
   IMPORT ARR seq_p_array(std::vector<P> vec, std::vector<P> vec2);
@@ -4524,6 +4552,7 @@ struct EveryApi
   NewPlaneApi newplane_api;
   SurfaceApi surface_api;
   LowFrameBufferApi low_frame_api;
+  FloatSceneApi float_scene_api;
 private:
   Env &env;
   EveryApi(const EveryApi&);

@@ -33,13 +33,13 @@ var canv = document.getElementById("canvas");
 var hom = document.getElementById("homepage");
 var hom2 = hom.innerHTML;
 const dpr = window.devicePixelRatio || 2;
-var Module = {
+window.Module = {
     onStartup : function() { check_em()(); },
     canvas : canv,
     arguments : [ "--size", (800*dpr).toString(), (600*dpr).toString(), "--code", data4, "--homepage", hom2, "--href", window.location.href, "--deploy"],
     print : (function() { return function(text) { console.log(text); } })(),
 };
-  Module.locateFile = function(path) { return "engine/" + path+"?"+data2; }
+window.Module.locateFile = function(path) { return "engine/" + path+"?"+data2; }
 
 var g_emscripten_running = false;
 function load_file()
