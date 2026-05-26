@@ -778,5 +778,52 @@ echo "<script src=\"https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/poppe
 echo "<script src=\"https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js\" integrity=\"sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6\" crossorigin=\"anonymous\"></script>";
 
 
+echo "<script>\n";
+echo "  const MAX_RELOADS = 3;";
+
+echo "  let reloads =";
+echo "    parseInt(sessionStorage.getItem(\"reloads\") || \"0\");";
+
+echo "  function reloadPage(reason) {";
+
+echo "    console.log(\"Reload reason:\", reason);";
+
+echo "    if (reloads >= MAX_RELOADS) {";
+
+echo "      document.body.innerHTML = `";
+echo "        <h1>Startup Failed</h1>";
+echo "        <p>Too many reload attempts.</p>";
+echo "        <button onclick=\"sessionStorage.clear(); location.reload()\">";
+echo "          Retry";
+echo "        </button>";
+echo "      `;";
+
+echo "      return;";
+echo "    }";
+
+echo "    reloads++;";
+
+echo "    sessionStorage.setItem(";
+echo "      \"reloads\",";
+echo "      String(reloads)";
+echo "    );";
+
+echo "    location.reload();";
+echo "    }";
+
+echo "window.onerror = function() {";
+echo "  reloadPage(\"window.onerror\");";
+echo "};";
+
+echo "window.addEventListener(\"unhandledrejection\", e => {";
+echo "  if (String(e.reason).includes(\"WebAssembly\")) {";
+echo "     reloadPage(\"unhandledrejection\");";
+    
+echo "  }";
+echo "});";
+</script>
+
+
+
 echo "</body>\n";
 echo "</html>\n";
