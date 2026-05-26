@@ -19050,6 +19050,7 @@ void *splitter_iter4(void *userData)
 #endif
 #endif
 
+#ifdef EMSCRIPTEN
 bool g_render_trigger=false;
 EM_BOOL splitter_iter3(double time, void *userData)
 {
@@ -19059,6 +19060,7 @@ EM_BOOL splitter_iter3(double time, void *userData)
   //tasks_add(5151,&splitter_iter4,userData);
   return EM_TRUE;
 }
+#endif
 
 #ifdef EMSCRIPTEN
 #if 0
