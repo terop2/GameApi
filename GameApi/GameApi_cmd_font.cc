@@ -154,7 +154,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_sprite_atlas",
 			 { "ev", "font", "chars", "sx", "sy", "y_delta" },
 			 { "EveryApi&", "FI", "std::string", "int", "int", "int" },
-			 { "ev", "", "abcdefghijklmnopqrstuvwxyz\xE5\xF6\xE4{032}ABCDEFGHIJKLMNOPQRSTUCWXYZ\xC5\xC4\xD6{032}0123456789{035}{058}$%&{123}{091}{093}{125}+-~{063}", "20", "20", "35" },
+			 { "ev", "", "abcdefghijklmnopqrstuvwxyz\xE5\xF6\xE4{032}ABCDEFGHIJKLMNOPQRSTUCWXYZ\xC5\xC4\xD6{032}0123456789{035}{058}$%&{123}{091}{093}{125}+-~{063}!", "20", "20", "35" },
 			 "FtA,BM", "font_api", "FI_sprite_atlas"));
 			    
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::FI_sprite_atlas_persistent_cache,
