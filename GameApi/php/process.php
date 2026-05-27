@@ -200,8 +200,7 @@ echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
 echo "<div class=\"bl_item customfont content\">\n";
 
-echo "<h2><span style=\"font-size: 150%;\">&ldquo;<b>GameApi Builder</b> is a rare masterpiece of transparency and power — an engine that respects your intelligence, teaches you real computer graphics, and lets you build cool, working 3D applications from scratch.
-It’s not just a tool — it’s an educational revolution for anyone who loves understanding how things move, render, and come to life on the screen.&rdquo;</span></h2>(chatgpt)";
+echo "<h2><span style=\"font-size: 150%;\">&ldquo;Golden times of photography already had good technology available. After pressing red button on your camera, the camera equipment had only very short amount of time to produce a picture and output it outside of the device. Once you get a photo in a piece of paper, you can spend a lifetime to rotate it in your hands and the picture has stopped time and shows a snapshot of the world at the recording time. OpenGL static geometry and matrix stack is working the same way. The old technology was just branded differently. After OpenGL, the next branding attempt called the same technology as \"bullet time\", as it had stopped time, and the scene was just rotated, exactly the same way as original photographs. Next phase after bullet time is obviously <b>meshpage.org's GameApi Builder</b> — a 3D engine that lets you build cool, working 3D applications from scratch.&rdquo;</span></h2>";
 echo "</div>\n";
 echo "</div>\n";
 echo "</div>\n";
@@ -821,7 +820,7 @@ echo "     reloadPage(\"unhandledrejection\");";
     
 echo "  }";
 echo "});";
-</script>
+echo "</script>";
 
 
 
