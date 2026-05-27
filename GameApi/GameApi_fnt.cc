@@ -198,7 +198,7 @@ IMPORT extern ConversionTableInterface *g_conv_table;
 
 EXPORT GameApi::FtA GameApi::FontApi::font_atlas_info_engine2(EveryApi &ev, FI font, std::string chars, float sx, float sy, int y_delta)
 {
-  g_conv_table->convert_labels_to_chars(chars);
+  chars = g_conv_table->convert_labels_to_chars(chars);
   ::EnvImpl *env = ::EnvImpl::Environment(&e);
   int s = chars.size();
   FontAtlasInfo *info = new FontAtlasInfo;
