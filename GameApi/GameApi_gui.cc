@@ -3581,32 +3581,34 @@ EXPORT GameApi::W GameApi::GuiApi::list_item_opened(int sx, std::string label, F
   std::vector<W> w_vec;
   for(int i=0;i<s;i++)
     {
+      W txt_3;
+      //if  (!hide) {
       std::string label = subitems[i];
       std::string toolt = label + "::" + subitems_tooltip[i];
       std::string label2;
+      if (!hide) {
       int s2 = label.size();
       for(int j=0;j<s2;j++) {
 	label2+=label[j];
-	W txt_0 = text(label2,atlas2,atlas_bm2);
-	int sz = size_x(txt_0);
+	GameApi::BM txt_0=ev.font_api.font_string_from_atlas(ev,atlas2,atlas_bm2,label2,3*1.2);
+	int sz = ev.bitmap_api.size_x(txt_0);
 	if (sz>sx) break;
       }
       if (label2 != label) {
 	if (label2.size()>2) label2=label2.substr(0,label2.size()-2);
 	label2+="..";
       }
-      
+      } else { label2=label; }
       W txt_0 = text(label2, atlas2, atlas_bm2);
       W txt_1 = margin(txt_0, 5, 2, sx-5-size_x(txt_0), 2);
       W txt_2 = highlight(size_x(txt_1), size_y(txt_1));
       W txt_21 = tooltip(txt_2, insert, toolt, atlas2, atlas_bm2, 2, 40.0);
-      W txt_3 = layer(txt_1, txt_21);
-      //W txt_30 = size(txt_3,140-5,32);
+      txt_3 = layer(txt_1, txt_21);
       W txt_4 = hide_nonsearchable(txt_3,label+"::"+subitems_funcname[i],redraw_w);
       vec.push_back(txt_4);
       w_vec.push_back(txt_4);
     }
-  W array = array_y(vec /*&vec[0], vec.size()*/,2,true); // this needs heavy=true
+  W array = array_y(vec /*&vec[0], vec.size()*/,2,true); // this needs heavy=true  
   W array_2 = margin(array, 1,1,1,1);
   if (hide) array_2 = title;
   W array_3 = hide_if_array_empty(array_2,w_vec,redraw_w);
