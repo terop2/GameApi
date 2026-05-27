@@ -167,7 +167,7 @@ std::vector<GameApiItem*> fontapi_functions()
 			 "FI_fast_drawtext",
 			 { "ev", "atlas", "atlas_bm", "string", "x_gap" },
 			 { "EveryApi&", "FtA", "BM", "std::string", "int" },
-			 { "ev", "", "", "Hello World!", "0" },
+			 { "ev", "", "", "Hello{032}World!", "0" },
 			 "BM", "font_api", "font_string_from_atlas"));
 
   vec.push_back(ApiItemF(&GameApi::EveryApi::font_api, &GameApi::FontApi::large_string_from_atlas,

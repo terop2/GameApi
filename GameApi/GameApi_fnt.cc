@@ -618,6 +618,7 @@ EXPORT GameApi::BM GameApi::FontApi::font_string_from_atlas(EveryApi &ev, FtA at
   ev.bitmap_api.prepare(atlas_bm);
   
   int sz = str.length();
+  //std::cout << str.length() << "::" << str << "::" << std::endl;
   FontCharacterString<Color> *array = new FontCharacterString<Color>(Color(0.0f,0.0f,0.0f,0.0f), x_gap);
 
   
