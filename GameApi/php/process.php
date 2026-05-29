@@ -335,6 +335,27 @@ echo "</div>\n";
 
 echo "</div>\n";
 
+echo "<div class=\"bl_row\">\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item customfont content\">\n";
+echo "<br><h2>SPONSORS:</h2>\n";
+echo "<ul>\n";
+echo "<li><a href=\"https://www.pelock.com\">PELock Software Protection</a>";
+echo "<img width=\"200\" height=\"150\" crossorigin src=\"https://meshpage.org/pelock-software-protection.jpg\"/>";
+echo "<li>(if you want your logo and url to this page, send email to terop@kotiposti.net)\n";
+echo "<li><img src=\"qrcode.png\"/>";
+echo "</ul>\n";
+echo "</div>\n";
+echo "</div>\n";
+echo "<div class=\"bl_column\">\n";
+echo "<div class=\"bl_item content\">\n";
+echo "<img class=\"bl_img\" width=\"800\" height=\"600\" src=\"$https://$site/investor.webp\"/>\n";
+echo "</div>\n";
+echo "</div>\n";
+
+echo "</div>\n";
+
+
 
 echo "<div class=\"bl_row\">\n";
 echo "<div class=\"bl_column\">\n";
@@ -764,6 +785,7 @@ echo "meshpage.org" . "&reg; is a registered trademark of Tero Pulkkinen in Tamp
    echo "</div>\n";
    echo "</div>\n";
    echo "</div>\n";
+echo "<p>";
 echo "<p><p><p><p><p><p><p><br><br><br><br><br>\n";
 
 echo "<script>\n";
