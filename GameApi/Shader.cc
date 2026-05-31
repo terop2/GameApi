@@ -3069,7 +3069,7 @@ s+="   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
     "  metallic = u_MetallicFactor;\n"
     "  perceptualRoughness = u_RoughnessFactor;\n"
     "#endif\n"
-    // " mrSample = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN_TEST
+    //" mrSample = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN_TEST NOT COZY
     
     "#ifdef GLTF_TEX0\n";
   if (webgl2) {
@@ -3077,13 +3077,16 @@ s+="   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
   } else {
     s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n";
   }
-  //s+="baseColor = vec4(1.0,0.0,0.0,0.0);\n"; // RAYGUN TEST
+  //s+="baseColor = vec4(1.0,0.0,0.0,1.0);\n"; // RAYGUN TEST
   s+="#endif\n"
     "#endif\n"   // WHY IS THIS TWO TIMES; WHEN OTHER GLTF SHADER DOESN'T HAVE IT?
+    // "baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST NO
 
     "#ifndef GLTF_TEX0\n"
     " baseColor = u_BaseColorFactor;\n"
     "#endif\n"
+
+    // "baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST YES
 
 
 "#ifdef SPEC\n"
@@ -3106,6 +3109,8 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     " perceptualRoughness=1.0-u_GlossiFactor;\n"
     "#endif\n"
 
+  // "baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST NO?
+  
     //"baseColor= clamp(baseColor,vec4(0.0,0.0,0.0,0.0),vec4(1.0,1.0,1.0,1.0));\n"
     
   "#ifdef GLTF_TEX1\n";
@@ -3142,7 +3147,7 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     "#endif\n"
     
     "#ifndef SPEC\n"
-    "  baseColor *= getVertexColor();\n"
+    "  baseColor *= getVertexColor();\n" // COZYDAY NOT
     "#endif\n"
 "#ifndef SPEC\n"
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
@@ -3197,11 +3202,14 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
 "#endif\n"
 "#endif\n"
 "#endif\n"
+    //"baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY YES
 
+    
 "#ifdef UNLIT\n"
     "color = baseColor.rgb/4.0;\n"
 "#endif\n"
-
+    // "color=vec3(1.0,0.0,0.0);\n" // RAYGUN TEST, COZYDAY YES
+    
 
     // TODO LIGHTS
 "   float ao=1.0;\n"
@@ -5479,7 +5487,7 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 "  perceptualRoughness = mrSample.g * u_RoughnessFactor;\n"
 "  metallic = mrSample.b * u_MetallicFactor;\n"
 "#endif\n"
-   //" mrSample = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN_TEST
+   //" mrSample = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN_TEST NOT COZY
 
    "#ifndef GLTF_TEX1\n"
     "  metallic = u_MetallicFactor;\n"
@@ -5489,13 +5497,18 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * u_BaseColorFactor;\n"
 
    "#endif\n"
-   // "baseColor = vec4(1.0,0.0,0.0,0.0);\n" // RAYGUN TEST
+   //"baseColor = vec4(1.0,0.0,0.0,1.0);\n" // RAYGUN TEST
 
-    "#endif\n"
+   "#endif\n" // ifndef SPEC
+
+   // "baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST NO
+
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
     "#endif\n"
 
+   // "baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST YES
+   
 "#ifdef SPEC\n"
 
 
@@ -5508,7 +5521,9 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
     "  baseColor = u_BaseColorFactor;\n"
 " perceptualRoughness = 1.0-u_GlossiFactor;\n" 
     "#endif\n"
-    
+
+   //"baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST NO?
+   
    "#ifdef GLTF_TEX1\n";
  if (webgl2) {
    s+=   "  vec4 mrSample2 = texture(texsampler[1],ex_TexCoord.xy);\n";
@@ -5534,13 +5549,17 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
    "f0.r *= u_SpecFactor.r;\n"
    "f0.g *= u_SpecFactor.g;\n"
    "f0.b *= u_SpecFactor.b;\n"
-    "perceptualRoughness = (1.0-baseColor.a);\n"
+    "perceptualRoughness = (1.0-u_GlossiFactor);\n"
     //"perceptualRoughness=perceptualRoughness*perceptualRoughness;\n"
     "#endif\n"
     "#endif\n"
 
+    "#ifdef SPEC\n"
+    "baseColor.rgb *= u_SpecFactor.rgb;\n"
+    "#endif\n"
+  
     "#ifndef SPEC\n"    
-    "  baseColor *= getVertexColor();\n"
+  "  baseColor *= getVertexColor();\n" // COZYDAY NOT
     "#endif\n"
 "#ifndef SPEC\n"
 "  diffuseColor = baseColor.rgb * (vec3(1.0)-f0) * (1.0-metallic);\n"
@@ -5595,9 +5614,12 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
 "#endif\n"
   //    " color = vec3(1.0,0.0,0.0);\n" // RAYGUN_TEST
 
+  //"baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY YES
+  
 "#ifdef UNLIT\n"
     "color = baseColor.rgb/4.0;\n"
 "#endif\n"
+  // " color = vec3(1.0,0.0,0.0);\n" // RAYGUN_TEST, COZYDAY YES
 
 
   

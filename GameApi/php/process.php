@@ -343,7 +343,7 @@ echo "<ul>\n";
 echo "<li><a href=\"https://www.pelock.com\">PELock Software Protection</a>";
 echo "<img width=\"200\" height=\"150\" crossorigin src=\"https://meshpage.org/pelock-software-protection.jpg\"/>";
 echo "<li>(if you want your logo and url to this page, send email to terop@kotiposti.net)\n";
-echo "<li><img src=\"qrcode.png\"/>";
+echo "<li><a href=\"https://meshpage.org/pp3/pp.html\">paypal</a>";
 echo "</ul>\n";
 echo "</div>\n";
 echo "</div>\n";

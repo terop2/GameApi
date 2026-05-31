@@ -30845,8 +30845,7 @@ Complex mul(Complex x, Complex y)
 
 int huutomerkki(int n)
 {
-  if (n==0) return 0;
-  if (n==1) return 1;
+  if (n==0) return 1;
   return n*huutomerkki(n-1);
 }
 
@@ -30863,8 +30862,10 @@ Complex exp(Complex z, int n)
 	{
 	  res0 *= z;
 	}
-      res0 /= huutomerkki(i);
+      res = res0;
+      res /= huutomerkki(i);
     }
+  return res;
 }
 Complex ln(Complex z)
 {

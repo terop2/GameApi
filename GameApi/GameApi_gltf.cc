@@ -6100,6 +6100,13 @@ public:
     };
   }
 
+  std::string get_cache_id_string() const
+  {
+    std::stringstream ss2;
+    ss2 << "gltf" << interface->Url()<< "_" << (emissive?"e":"ne") << "_" << has_texture(0) << "_" << has_texture(1) << "_" << has_texture(2) << "_" << has_texture(3) << "_" << has_texture(4) << "_" << material_id << "_" << get_sheen_index() << "_" << get_diffuse_index() << "_" << get_specglossi_index() << "_" << get_spec() << "_" << get_glossiness_factor() <<  "_" << get_specular_factor().dx << "_" << get_specular_factor().dy << "_" << get_specular_factor().dz<< "_" << get_diffuse_factor().dx<< "_" << get_diffuse_factor().dy<< "_" << get_diffuse_factor().dz << "_" << get_sheen() << "_" << get_unlit() << "_" << IsTransparent(); // << material_id;
+    return ss2.str();
+  }
+  
   virtual GameApi::ML mat2(GameApi::P p) const
   {
 
@@ -6115,9 +6122,7 @@ public:
     //if (bm.size()==0) return ev.mainloop_api.ml_empty();
 
 
-    std::stringstream ss2;
-    ss2 << "gltf" << interface->Url()<< "_" << (emissive?"e":"ne"); // << material_id;
-    std::string cache_id = ss2.str();
+    std::string cache_id = get_cache_id_string();
 
     
     //GameApi::ML I13;
@@ -6154,7 +6159,6 @@ public:
       Point emis2= { float(emis[0]),float(emis[1]),float(emis[2]) };
       const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
       const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
-      //std::cout << "GLTF: basecolor=" << r.baseColorFactor[0] << " " << r.baseColorFactor[1] << " " << r.baseColorFactor[2] << " " << r.baseColorFactor[3] << " " << std::endl;
 
       I18=ev.polygon_api.gltf_shader(ev, I17, mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4), false,false, false,r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx, light_dir.dy, light_dir.dz,cache_id,self_mult,rest_mult,emissive); // todo base color
 
@@ -6195,9 +6199,9 @@ public:
     }
     //if (bm.size()==0) return ev.mainloop_api.ml_empty();
 
-    std::stringstream ss2;
-    ss2 << "gltf" << interface->Url() << material_id << "_" << (emissive?"e":"ne");
-    std::string cache_id = ss2.str();
+    //std::stringstream ss2;
+    //ss2 << "gltf" << interface->Url() << material_id << "_" << (emissive?"e":"ne") << "_" << has_texture(0) << "_" << has_texture(1) << "_" << has_texture(2) << "_" << has_texture(3) << "_" << has_texture(4);
+    std::string cache_id = get_cache_id_string();
 
 
     //GameApi::ML I13;
@@ -6233,7 +6237,10 @@ public:
     const tinygltf::PbrMetallicRoughness &r = m.pbrMetallicRoughness;
     const tinygltf::OcclusionTextureInfo &o = m.occlusionTexture;
     //std::cout << "GLTF: basecolor=" << r.baseColorFactor[0] << " " << r.baseColorFactor[1] << " " << r.baseColorFactor[2] << " " << r.baseColorFactor[3] << " " << std::endl;
+      std::cout << "GLTF:rgbbasecolorfactor=" << baseColorFactor << std::endl;
+      std::cout << "GLTF: basecolor=" << r.baseColorFactor[0] << " " << r.baseColorFactor[1] << " " << r.baseColorFactor[2] << " " << r.baseColorFactor[3] << " " << std::endl;
 
+    
     I18=ev.polygon_api.gltf_shader(ev, I17,mix, has_texture(0), has_texture(1), has_texture(2), has_texture(3), has_texture(4),false, false, false, r.roughnessFactor, r.metallicFactor, baseColorChange(r.baseColorFactor[0]*baseColorFactor),baseColorChange(r.baseColorFactor[1]*baseColorFactor),baseColorChange(r.baseColorFactor[2]*baseColorFactor),r.baseColorFactor[3], o.strength, 1.0,get_spec(),get_diffuse_factor().dx,get_diffuse_factor().dy,get_diffuse_factor().dz, get_specular_factor().dx,get_specular_factor().dy,get_specular_factor().dz, get_glossiness_factor(), get_unlit(),emis2.x,emis2.y,emis2.z,light_dir.dx,light_dir.dy,light_dir.dz,cache_id,self_mult,rest_mult, emissive);
     //} else {
     //	I18 = specglossyshader(ev,I17);
@@ -6275,9 +6282,10 @@ public:
       bm.push_back(texture(j));
     }
 
-    std::stringstream ss2;
-    ss2 << "gltf" << interface->Url() << material_id<< "_" << (emissive?"e":"ne");
-    std::string cache_id = ss2.str();
+    //std::stringstream ss2;
+    //ss2 << "gltf" << interface->Url() << material_id<< "_" << (emissive?"e":"ne") << "_" << has_texture(0) << "_" << has_texture(1) << "_" << has_texture(2) << "_" << has_texture(3) << "_" << has_texture(4);
+    //std::string cache_id = ss2.str();
+    std::string cache_id = get_cache_id_string();
 
     std::vector<std::string> id_labels;
     for(int i=0;i<s;i++)
@@ -6367,9 +6375,10 @@ public:
       rgb.push_back(is_srgb(i));
 
     
-    std::stringstream ss2;
-    ss2 << "gltf" << interface->Url() << material_id<< "_" << (emissive?"e":"ne");
-    std::string cache_id = ss2.str();
+    //std::stringstream ss2;
+    //ss2 << "gltf" << interface->Url() << material_id<< "_" << (emissive?"e":"ne") << "_" << has_texture(0) << "_" << has_texture(1) << "_" << has_texture(2) << "_" << has_texture(3) << "_" << has_texture(4) << "_" << material_id;
+    //std::string cache_id = ss2.str();
+    std::string cache_id = get_cache_id_string();
 
 
     
@@ -13422,7 +13431,9 @@ char key_mapping(char ch, int type);
 class CacheMLmat : public MainLoopItem
 {
 public:
-  CacheMLmat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), vec(vec),i(i),keys(keys) { firsttime=true;  firsttime2=true; ml.id=-1;}
+  CacheMLmat(GameApi::Env &env, GameApi::P p, std::vector<Material*> vec, int i, std::string keys) : env(env), p(p), vec(vec),i(i),keys(keys) { firsttime=true;  firsttime2=true; ml.id=-1;
+
+  }
   virtual void Collect(CollectVisitor &vis) { }
   virtual void HeavyPrepare() { }
   virtual void Prepare() { }
@@ -13431,9 +13442,11 @@ public:
   {
     if (firsttime2 && i==0) {
       ml.id = vec[i]->mat(p.id);
-      MainLoopItem *item = find_main_loop(env,ml);
-      item->Prepare();
-      
+      //if (!is_prepared[i]) {
+	MainLoopItem *item = find_main_loop(env,ml);
+	item->Prepare();
+	//is_prepared[i]=1;
+	//}
       firsttime = false;
       firsttime2=false;
     }
