@@ -3094,19 +3094,19 @@ s+="   vec3 diffLight = SRGBtoLINEAR(diff).rgb;\n"
 
     "#ifdef GLTF_TEX0\n";
   if (webgl2) {
-    s+=  "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy))* vec4(u_SpecFactor,1.0);\n";
+    s+=  "  baseColor = SRGBtoLINEAR(texture(texsampler[0],ex_TexCoord.xy));\n"; /* vec4(u_SpecFactor,1.0);\n";*/
   } else {
-    s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * vec4(u_SpecFactor,1.0);\n";
+    s+=  "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy));\n"; /* * vec4(u_SpecFactor,1.0);\n";*/
   }
   //s+="baseColor = vec4(1.0,0.0,0.0,0.0);\n"; // RAYGUN TEST
 
-s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n" 
+s+= " perceptualRoughness = 1.0-baseColor.a*u_GlossiFactor;\n" 
     
     "#endif\n"
 
     "#ifndef GLTF_TEX0\n"
     " baseColor = u_BaseColorFactor;\n"
-    " perceptualRoughness=1.0-u_GlossiFactor;\n"
+    " perceptualRoughness=1.0-baseColor.a*u_GlossiFactor;\n"
     "#endif\n"
 
   // "baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST NO?
@@ -3129,7 +3129,7 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     "f0.g *= u_SpecFactor.g;\n"
     "f0.b *= u_SpecFactor.b;\n"
     "specAlpha = mrSample2.a;\n" // THIS SHOULD BE EITHER mrSample2.a or other shader should have 1.0
-    " perceptualRoughness = (1.0-baseColor.a);\n" // HERE WE're missing peceptualRoughness = (1.0-baseColor.a)   or other shader should remove it
+    " perceptualRoughness = (1.0-baseColor.a*u_GlossiFactor);\n" 
     "#endif\n"
     
     "#ifndef GLTF_TEX1\n"
@@ -3138,7 +3138,7 @@ s+= " perceptualRoughness = 1.0-u_GlossiFactor;\n"
     "f0.r *= u_SpecFactor.r;\n"
     "f0.g *= u_SpecFactor.g;\n"
     "f0.b *= u_SpecFactor.b;\n"
-    " perceptualRoughness = 1.0-u_GlossiFactor;\n" 
+    " perceptualRoughness = 1.0-baseColor.a*u_GlossiFactor;\n" 
     "#endif\n"
     "#endif\n"
 
@@ -5514,12 +5514,12 @@ s+="   vec2 bfrd = texture2D(texsampler[7], bfrdsample).rg;\n"
 
 
     "#ifdef GLTF_TEX0\n"
-"  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy)) * vec4(u_SpecFactor,1.0);\n"
-" perceptualRoughness = 1.0-u_GlossiFactor;\n" 
+   "  baseColor = SRGBtoLINEAR(texture2D(texsampler[0],ex_TexCoord.xy));\n" /* * vec4(u_SpecFactor,1.0);\n"*/
+" perceptualRoughness = 1.0-baseColor.a*u_GlossiFactor;\n" 
 "#endif\n"
     "#ifndef GLTF_TEX0\n"
     "  baseColor = u_BaseColorFactor;\n"
-" perceptualRoughness = 1.0-u_GlossiFactor;\n" 
+" perceptualRoughness = 1.0-baseColor.a*u_GlossiFactor;\n" 
     "#endif\n"
 
    //"baseColor = vec4(1.0,0.0,0.0,1.0);\n" // COZYDAY TEST NO?
@@ -5540,7 +5540,7 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
    "f0.g *= u_SpecFactor.g;\n"
    "f0.b *= u_SpecFactor.b;\n"
     "specAlpha = mrSample2.a;\n"
-    " perceptualRoughness = (1.0-baseColor.a);\n"
+    " perceptualRoughness = (1.0-baseColor.a*u_GlossiFactor);\n"
     //" perceptualRoughness=perceptualRoughness*perceptualRoughness;\n"
     "#endif\n"
     "#ifndef GLTF_TEX1\n"
@@ -5549,7 +5549,7 @@ s+=        "mrSample2.r *= u_DiffFactor.r;\n"
    "f0.r *= u_SpecFactor.r;\n"
    "f0.g *= u_SpecFactor.g;\n"
    "f0.b *= u_SpecFactor.b;\n"
-    "perceptualRoughness = (1.0-u_GlossiFactor);\n"
+    "perceptualRoughness = (1.0-baseColor.a*u_GlossiFactor);\n"
     //"perceptualRoughness=perceptualRoughness*perceptualRoughness;\n"
     "#endif\n"
     "#endif\n"
