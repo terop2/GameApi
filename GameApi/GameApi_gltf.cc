@@ -6103,7 +6103,7 @@ public:
   std::string get_cache_id_string() const
   {
     std::stringstream ss2;
-    ss2 << "gltf" << interface->Url()<< "_" << (emissive?"e":"ne") << "_" << has_texture(0) << "_" << has_texture(1) << "_" << has_texture(2) << "_" << has_texture(3) << "_" << has_texture(4) << "_" << get_sheen_index() << "_" << get_diffuse_index() << "_" << get_specglossi_index() << "_" << get_spec() << "_" << get_glossiness_factor() <<  "_" << get_specular_factor().dx << "_" << get_specular_factor().dy << "_" << get_specular_factor().dz<< "_" << get_diffuse_factor().dx<< "_" << get_diffuse_factor().dy<< "_" << get_diffuse_factor().dz << "_" << get_sheen() << "_" << get_unlit() << "_" << IsTransparent() << "_" << self_mult << "_" << rest_mult << "_" << light_dir.dx << "_" << light_dir.dy << "_" << light_dir.dz; // << material_id;
+    ss2 << "gltf" << interface->Url()<< "_" << (emissive?"e":"ne") << "_" << has_texture(0) << "_" << has_texture(1) << "_" << has_texture(2) << "_" << has_texture(3) << "_" << has_texture(4) << "_" << "_" << get_spec() << "_" << "_" << get_sheen() << "_" << get_unlit() << "_" << IsTransparent(); // << material_id;
     return ss2.str();
   }
   
