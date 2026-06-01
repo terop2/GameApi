@@ -259,7 +259,7 @@ Warning: If you submit content to using the submit button and the content is own
       String(reloads)
     );
 
-    location.reload();
+    window.location.replace(window.location.pathname + window.location.search + "?reload=" + Date.now());
     }
 
 window.onerror = function() {

@@ -1768,7 +1768,7 @@ function load_anim_pic_reset(num,file_id)
       String(reloads)
     );
 
-    location.reload();
+    window.location.replace(window.location.pathname + window.location.search + "?reload=" + Date.now());
     }
 
 //Module.onAbort = function() {
