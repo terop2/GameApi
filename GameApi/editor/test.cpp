@@ -3927,8 +3927,27 @@ public:
 	      for(int i=0;i<s;i++)
 		if (home[i]=='\\') home[i]='/';
 
+	      home = replace_str(home, "%", "%25");
 	      home = replace_str(home, " ", "%20");
-	      
+	      home = replace_str(home, "(", "%28");
+	      home = replace_str(home, ")", "%29");
+	      home = replace_str(home, "!", "%21");
+	      home = replace_str(home, "#", "%23");
+	      home = replace_str(home, "$", "%24");
+	      home = replace_str(home, "!", "%21");
+	      home = replace_str(home, "&", "%26");
+	      home = replace_str(home, "'", "%27");
+	      home = replace_str(home, "+", "%2B");
+	      home = replace_str(home, ",", "%2C");
+	      home = replace_str(home, ":", "%3A");
+	      home = replace_str(home, ";", "%3B");
+	      home = replace_str(home, "=", "%3D");
+	      home = replace_str(home, "?", "%3F");
+	      home = replace_str(home, "@", "%40");
+	      home = replace_str(home, "[", "%5B");
+	      home = replace_str(home, "]", "%5D");
+
+
 	    //std::string drive = getenv("systemdrive");
 	    //std::string path = getenv("homepath");
 	    g_dragdrop_filename = std::string("file://") + home + "/_gameapi_builder/Downloads/" + env->env->get_download_bar_filename(i);

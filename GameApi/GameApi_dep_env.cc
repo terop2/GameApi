@@ -26,6 +26,8 @@ extern int async_pending_count;
 
 IMPORT std::string g_mod_path;
 
+
+
 FILE * my_popen(const char *cmd, const char *c)
 {
   //std::cout << "MY_POPEN:" << cmd << std::endl;
@@ -4731,6 +4733,8 @@ void save_download(std::string filename, const std::vector<unsigned char> *vec)
     {
       home = gameapi_temp_dir;
     }
+  home = deploy_replace_string(home,"\"","");
+  home = deploy_replace_string(home,"\"","");  
   std::string filename_with_path = home + std::string("\\_gameapi_builder\\Downloads\\") + filename;
   std::ofstream ss(filename_with_path.c_str(),std::ios::binary);
   std::string val(vec->begin(),vec->end());
