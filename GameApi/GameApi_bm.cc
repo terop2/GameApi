@@ -2191,6 +2191,9 @@ EXPORT GameApi::FB GameApi::FloatBitmapApi::perlin_noise2(int sx, int sy, float 
 {
   return add_float_bitmap(e, new PerlinNoise2(sx,sy,key));
 }
+
+
+
 EXPORT GameApi::BM GameApi::FloatBitmapApi::choose_bitmap(FB fb, BM bitmap_0, BM bitmap_1)
 {
   Bitmap<float> *bools2 = find_float_bitmap(e, fb)->bitmap;

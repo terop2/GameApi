@@ -37,6 +37,7 @@ RewriteEngine On
 #RewriteCond %{HTTP:X-Forwarded-Proto} !https
 #RewriteCond %{HTTPS} off
 #RewriteRule ^(.*)$ http://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteRule ^$ process.php [L]
 RewriteRule ^builder-tool-download.php$ meshpage_4
 RewriteRule ^faq.php$ meshpage_5
 RewriteRule ^docs.php$ meshpage_6

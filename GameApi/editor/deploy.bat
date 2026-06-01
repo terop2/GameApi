@@ -19,7 +19,7 @@ set "ZIPFILE=%P1%"
 "%OLDDIR%\unzip.exe" "%ZIPFILE%"
 type gameapi.js |"%OLDDIR%\sed.exe" s@web_page@engine/web_page@ >gameapi2.js
 move gameapi2.js gameapi.js
-set "OUTPUT=%TEMP%\_gameapi_builder\deploy\display.php"
+set "OUTPUT=%TEMP%\_gameapi_builder\deploy\display.html"
 if "%P2%"=="seamless" (
 > "%OUTPUT%" (
    type "%TEMP%\_gameapi_builder\gameapi_0_seamless.html" 
@@ -42,7 +42,6 @@ if NOT "%P2%"=="seamless" (
    type "%TEMP%\_gameapi_builder\gameapi_3.html" 
    )
 )
-copy "%TEMP%\_gameapi_builder\get_file_size.php" "%TEMP%\_gameapi_builder\deploy\get_file_size.php"
 cd ..
 "%OLDDIR%\zip.exe" -r gameapi_deploy.zip *
 :END
