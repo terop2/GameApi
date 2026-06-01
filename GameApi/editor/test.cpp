@@ -3939,7 +3939,6 @@ public:
 	      home = replace_str(home, "'", "%27");
 	      home = replace_str(home, "+", "%2B");
 	      home = replace_str(home, ",", "%2C");
-	      home = replace_str(home, ":", "%3A");
 	      home = replace_str(home, ";", "%3B");
 	      home = replace_str(home, "=", "%3D");
 	      home = replace_str(home, "?", "%3F");
@@ -3947,6 +3946,9 @@ public:
 	      home = replace_str(home, "[", "%5B");
 	      home = replace_str(home, "]", "%5D");
 
+	      home = replace_str(home, "\"", "");
+	      home = replace_str(home, "\"", "");
+		      
 
 	    //std::string drive = getenv("systemdrive");
 	    //std::string path = getenv("homepath");
